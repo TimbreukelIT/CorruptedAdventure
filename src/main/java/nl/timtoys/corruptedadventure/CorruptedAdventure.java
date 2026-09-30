@@ -1,4 +1,4 @@
-package nl.corruptedadventure;
+package nl.timtoys.corruptedadventure;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;

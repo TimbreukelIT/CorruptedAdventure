@@ -8,7 +8,6 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [mobs] Post-game boss: wie of wat? (bron: ontwerp)
 
 ## Uit sparring fase 1 (2026-09-30)
-- [infra] Code-package hernoemen van `nl.corruptedadventure` naar `nl.timtoys.corruptedadventure` (incl. `mod_group_id` en `CODEBASE.md`); gepland als change 0. (bron: sparring fase 1)
 - [items] Gear-tiers per ring: elke ring één tier hoger; netherite ≈ ring 1–2-niveau, zodat het in ring 3 zwak is vergeleken met ringmateriaal. (bron: sparring fase 1)
 - [corruption] Ring 1-horror-events: verdwijnende/verplaatste fakkels, Herobrine-silhouetten in de verte, geluiden achter je. (bron: sparring fase 1)
 - [structures] Ring 1: kleine 'Herobrine-schrijnen' (goudblokken, netherrack, redstone-fakkels) als zeldzame vondst. (bron: sparring fase 1)

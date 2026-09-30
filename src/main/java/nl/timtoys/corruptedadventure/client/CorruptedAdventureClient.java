@@ -1,10 +1,10 @@
-package nl.corruptedadventure.client;
+package nl.timtoys.corruptedadventure.client;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import nl.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.CorruptedAdventure;
 
 /**
  * Client-only entrypoint. Never loaded on a dedicated server.

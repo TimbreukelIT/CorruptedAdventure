@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-09-30 — sparring fase 1 sessie 2 (ring 3–5 ontworpen, bouwplan tot change 96)
-**Huidige fase:** 1 — Wereld (sparring afgerond: sessie 1 fundament + ring 1–2, sessie 2 ring 3–5; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; wacht op startsein voor change 0)
+**Laatst bijgewerkt:** 2026-09-30 — change 0 (package hernoemd naar `nl.timtoys.corruptedadventure`)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; change 0 klaar, volgende: change 1)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | Sparring afgerond, bouw nog niet gestart |
+| 1 — Wereld | In bouw — change 0 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -26,7 +26,7 @@
 Status: ✅ bestaat · 🔲 gepland
 
 ```
-src/main/java/nl/corruptedadventure/
+src/main/java/nl/timtoys/corruptedadventure/
   CorruptedAdventure.java      ✅ @Mod-entrypoint (common); MOD_ID, LOGGER, id(path). Registreert straks de DeferredRegisters
   config/                      🔲 ModConfig: ringgrenzen, balanswaarden (enige plek voor ringgrenzen)
   ring/                        🔲 Ring (enum), RingLayout.ringAt(dimension, x, z)
@@ -72,8 +72,8 @@ docs/
 
 | Class | Pakket | Verantwoordelijkheid | Gebruikt door |
 |---|---|---|---|
-| `CorruptedAdventure` | `nl.corruptedadventure` | common entrypoint, `MOD_ID`, `LOGGER`, `id(path)` | alles |
-| `CorruptedAdventureClient` | `nl.corruptedadventure.client` | client entrypoint (`Dist.CLIENT`) | — |
+| `CorruptedAdventure` | `nl.timtoys.corruptedadventure` | common entrypoint, `MOD_ID`, `LOGGER`, `id(path)` | alles |
+| `CorruptedAdventureClient` | `nl.timtoys.corruptedadventure.client` | client entrypoint (`Dist.CLIENT`) | — |
 
 ---
 
@@ -105,7 +105,7 @@ docs/
 
 | Bestand | Inhoud |
 |---|---|
-| `gradle.properties` | MC 1.21.1, NeoForge 21.1.252, parchment 2024.11.17, `mod_id`, `mod_group_id=nl.corruptedadventure`, versie |
+| `gradle.properties` | MC 1.21.1, NeoForge 21.1.252, parchment 2024.11.17, `mod_id`, `mod_group_id=nl.timtoys.corruptedadventure`, versie |
 | `build.gradle` | ModDevGradle; runs: client, server, gameTestServer, data (output naar `src/generated/resources`) |
 | `.github/workflows/build.yml` | CI-build uit de MDK |
 
@@ -128,3 +128,4 @@ docs/
 ## Bekende valkuilen
 
 - _Voeg hier dingen toe die tijd kostten om uit te zoeken, zodat een volgende sessie ze niet opnieuw hoeft te ontdekken._
+- `./gradlew runServer` stuurt stdin niet door: `stop` via een pipe werkt niet. Wacht in de log op `Done (`, stop daarna het server-JVM-proces (`java.exe` met `-Dfml.modFolders=corruptedadventure…`). `run/eula.txt` (`eula=true`) is nodig; `run/` staat in `.gitignore`.
