@@ -54,3 +54,45 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-09-30 | atmosphere | Sfeer Nether-2: grijsgroene fog, druppelgeluiden, zwevende sporen (alles biome-data) | Nat contrast, geen code nodig |
 | 2026-09-30 | infra | Ringgrenzen: config geeft standaardwaarden; bij wereldcreatie vastgelegd in de wereld en daarna alleen die snapshot gebruikt; server synct naar client | Geen breuklijnen bij latere config-wijziging |
 | 2026-09-30 | infra | Package wordt `nl.timtoys.corruptedadventure` (vervangt `nl.corruptedadventure`); hernoemen als change 0 vóór het skelet | Eén naam, gelijk aan `CLAUDE.md` |
+| 2026-09-30 | worldgen | Ring 3-biomes: `ashen_wastes`, `volcanic_peaks` (kern), `dried_seabed`, `basalt_flows`, `sulfur_fields` | Afwisseling + het gestolen water zichtbaar in de lege zeekom |
+| 2026-09-30 | worldgen | Overgang 3→4: stoomvenen (`steam_fens`: hete modder, geisers, stoom) | Het gestolen water komt terug en kookt; opmaat naar moeras |
+| 2026-09-30 | conditions | Geplaatst water verdampt in ring 3 alleen bovengronds (lucht zichtbaar); ondergronds werkt water | Gestolen water voelbaar, bouwen onder dak blijft mogelijk |
+| 2026-09-30 | worldgen | Ring 3-ores: vulkaniet (hoofdmateriaal, diep bij lava), zwavel (ondiep, fumarolen), vuurrobijn (zeldzaam, magmakamers) | Risico = beloning, utility en schat |
+| 2026-09-30 | conditions | Hitte ring 3: ↑ bovengronds overdag en bij hittebronnen/weer; ↓ 's nachts, ondergronds, in water; fire resistance halveert | Grotten als schuilplaats, sluit aan op de water-regel |
+| 2026-09-30 | atmosphere | Ring 3-weer: asregen (hitte ×1,5) en uitbarsting met lavabommen (vanilla small fireballs, server-side; hitte ×2) | Actiemoment zonder nieuwe entity |
+| 2026-09-30 | worldgen | Ring 3-grotten: lavabuizen en magmakamers | Reisroutes + risicovolle ertsplekken |
+| 2026-09-30 | worldgen | Ring 3-horror in fase 1: as-afgietsels, voetsporen in de as, gerommel/trillingen (client-only) | Onrust via wereld zelf |
+| 2026-09-30 | blocks | Ring 3-blokken: vanilla basalt/blackstone als basis + as, puimsteen-set, smeulsteen, verkoold hout-set, zwavelkorst, fumarole, kokende modder, geiser | Eigen karakter zonder vanilla te dupliceren |
+| 2026-09-30 | worldgen | Nether-3: bevroren lavazee + rijpwoud + gletsjerkloven; ruimte beoordelen in de W-test, zo nodig ring 3 verbreden via config | Maximale variatie; koppeling ÷4 blijft intact |
+| 2026-09-30 | blocks | Nether-3-blokken: koudlava-set, Nether-ijs, rijp-netherrack, rijpzwam-set, ijsstalactieten, gloeiende scheur, oerijs | Eigen bouwmateriaal + warmtebronnen voor de kou-conditie |
+| 2026-09-30 | worldgen | Sleutelmateriaal Nether-3: oerijs (kern van ijspilaren, silk touch), zuiver water als basis van gifbescherming | Schoon water als tegengif voor het gifmoeras |
+| 2026-09-30 | conditions | Kou Nether-3: eigen meter; ↓ bij warmtebronnen; leren armor remt; hoogste drempel = vanilla-bevriezing (`ticksFrozen`) | Consistent met andere condities, vanilla-visuals gratis gesynct |
+| 2026-09-30 | atmosphere | Sfeer Nether-3: blauwwitte fog, ijskristal-particles, wind en krakend ijs (biome-data); geen Nether-ringweer | Geen code nodig |
+| 2026-09-30 | worldgen | Ring 4-biomes: `toxic_bog`, `root_forest` (kern), `drowned_forest`, `peat_moors`, `reed_marsh` | Sterk voor horror: zicht boven, diepte onder |
+| 2026-09-30 | worldgen | Overgang 4→5: rottend moeras (`blighted_mire`) met eerste glitchplekken | Sluit aan op de muur gifdamp → glitchruis |
+| 2026-09-30 | conditions | Gifwater = vanilla water met groene kleur + gif-regel in de condities-tick; geen eigen fluid | Laag risico; emmers en farms blijven werken |
+| 2026-09-30 | worldgen | Ring 4-ores: veenijzer (hoofdmateriaal, veen/poelbodem), gifkristal (grotholtes), jade (zeldzaam, diep) | Duiken als risico; utility + schat |
+| 2026-09-30 | conditions | Gif ring 4: ↑ in water, `toxic_bog`-lucht, bronnen, gas, gifregen; ↓ op droog land; melk −40, honing −20; drempels misselijkheid → gif → wither | Constante druk met vanilla-noodmiddelen |
+| 2026-09-30 | atmosphere | Ring 4-weer: dikke mist (zicht) en gifregen (gif ↑ onder open lucht) | Duidelijk verschil: angst vs. gevaar |
+| 2026-09-30 | worldgen | Ring 4-grotten: overstroomde grotten, wortelgrotten en moerasgaskamers | Duiken, verkennen en echt gevaar |
+| 2026-09-30 | blocks | Moerasgas als onzichtbaar gasblok; vuur/fakkel/lava → ketting-ontploffing (cap per tick, `mobGriefing`), hoofd in gas = gif ↑ | Block-updates i.p.v. zone-check: eenvoudiger en server-veilig |
+| 2026-09-30 | worldgen | Ring 4-horror in fase 1: dwaallichten, geritsel in het riet (client-only), bellen uit de diepte | Wat je niet ziet is het engst |
+| 2026-09-30 | blocks | Ring 4-blokken: veen, zuigmodder, riet, moerascipres-set, hangend moerasmos, gifzwam, moerasgas, bellenbron | Moerasflora + eigen hout |
+| 2026-09-30 | worldgen | Nether-4: `bone_dunes`, `crystal_spires`, `geode_hollows`; ruimte beoordelen in de W-test | Maximale variatie in de droge tegenpool |
+| 2026-09-30 | blocks | Nether-4-blokken: bottenzand, gebleekt netherrack, fossielsteen-set, zuiverkristal (blok, scherf, lamp); ribbenkasten van vanilla bone block | Bouwmateriaal + grondstoffen van hemelglas |
+| 2026-09-30 | worldgen | Sleutelmateriaal Nether-4: hemelglas (bottenzand + zuiverkristal, maakt glitches zichtbaar); fase 1 alleen grondstoffen, blok/recipe/lens in fase 2 | Crafting-gedreven sleutel; fases blijven zuiver |
+| 2026-09-30 | conditions | Nether-4 is zuiverend: alle conditie-meters zakken er extra snel (geen eigen conditie) | Tegenpool van het gifmoeras voelbaar maken |
+| 2026-09-30 | atmosphere | Sfeer Nether-4: wit-beige fog, droge wind, kristalgezoem, stof (biome-data) + pulserend kristallicht (fog-hook in `client/`) | Sterk, eigen effect; geen sync nodig |
+| 2026-09-30 | worldgen | Ring 5-biomes: `corrupted_wastes`, `glitch_fields` (kern), `void_scars`, `inverted_hills`, `false_meadow` | Van kapot tot 'thuis dat niet klopt' |
+| 2026-09-30 | worldgen | Void-scheuren gaan echt tot de void (geen bedrock), met goed zichtbare voidsteen-randen | Sterk en eng; eerlijk door zichtbaarheid |
+| 2026-09-30 | blocks | Corrupted varianten van vanilla-natuurblokken met data map `corrupted → vanilla` + tag `corruptedadventure:corrupted`; gedrag pas in fase 5. Plus glitchblok en voidsteen | Fase 5 voegt alleen gedrag toe |
+| 2026-09-30 | worldgen | Ring 5-materialen: nulliet (hoofdmateriaal, void-scheuren/diep) en glitchscherven (drop van glitchblokken); vanilla-ores vrijwel weg | Risico aan de afgrond; glitches oogsten |
+| 2026-09-30 | worldgen | Ring 5-grotten: onmogelijke gangen (te perfecte rasters) en void-grotten | Echo van de ring 1-tunnels; echt gevaar |
+| 2026-09-30 | atmosphere | Ring 5-weer: glitchstorm (void ×2) en omgekeerde regen (void ×1,5) | Twee verschillende 'fouten' |
+| 2026-09-30 | conditions | Void-meter ring 5: licht (≥ 12) remt; drempels glitch-visuals → korte teleports (alleen naar veilige plek) → darkness + schade | Unieke 'de wereld klopt niet'-sensatie; bouwen met licht als verdediging |
+| 2026-09-30 | worldgen | Ring 5-horror in fase 1: ontbrekende chunks, Herobrine-tekens, echo-voetstappen (client-only) | Direct Herobrine voelbaar |
+| 2026-09-30 | worldgen | Nether-5: één biome `white_halls` (witte zuilenrasters, spiegelsteen-vloer waar de lavazee lag) | Het kale en eentonige is het punt |
+| 2026-09-30 | blocks | Nether-5-blokken: kalkrack, witsteen-set, spiegelsteen, stil licht, witte kern | Eigen bouwmateriaal, steriel wit |
+| 2026-09-30 | worldgen | Sleutelmateriaal Nether-5: witte kern (in de zuilen), toegang tot kastelen/final battle, basis zuiveringsgear | Laatste schakel van de Nether-lus |
+| 2026-09-30 | conditions | Stilte Nether-5: ↓ door geluid maken (bel, goat horn, note block, jukebox; server-side game events) en spelers in de buurt; drempels geluid gedempt → HUD weg → alles stil + darkness → schade | Samenspelen beloond; horror via zintuigen |
+| 2026-09-30 | infra | Bouwplan fase 1 aangevuld: blok E (ring 3, changes 38–57), F (ring 4, 58–76), G (ring 5, 77–95), H (worldgen-eindtest, 96); volgorde zoals ring 2 | Compleet plan tot het einde van fase 1 |

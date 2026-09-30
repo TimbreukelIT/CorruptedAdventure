@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-09-30 — repo opgezet vanuit NeoForge MDK 1.21.1 (ModDevGradle), example-code verwijderd
-**Huidige fase:** 1 — Wereld (sparring sessie 1 klaar: fundament + ring 1–2; bouwplan in `docs/design/fase-1-wereld.md` §3)
+**Laatst bijgewerkt:** 2026-09-30 — sparring fase 1 sessie 2 (ring 3–5 ontworpen, bouwplan tot change 96)
+**Huidige fase:** 1 — Wereld (sparring afgerond: sessie 1 fundament + ring 1–2, sessie 2 ring 3–5; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; wacht op startsein voor change 0)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | Sparring |
+| 1 — Wereld | Sparring afgerond, bouw nog niet gestart |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |

@@ -34,6 +34,10 @@ Technische architectuur en afspraken. De werkafspraken voor Claude Code staan in
 - **Sfeer:** lucht-, fog- en waterkleuren zoveel mogelijk via biome-data (data-driven); alleen afwijkend gedrag (bijv. glitch-fog in ring 5) via client-code.
 - **Omgevingscondities** (hitte, gif, void-effecten): per conditie een meter 0–100 per speler (player attachment). Een server-side tick-handler (elke 20 ticks) bepaalt via `ringAt`, biome en ringweer of de meter oploopt of afneemt; drempels geven effecten (config). De waarde wordt bij verandering gesynct voor een HUD-balk (client-only). Geen condities berekenen op de client. Nether-condities alleen in Nether-3 en Nether-5.
 - Condities hebben een tegenmaatregel (gear, item of blok) die in fase 2 komt; in fase 1 alleen de conditie zelf, met config-waarden voor sterkte.
+- In Nether-4 zakken alle meters extra snel (zuiverend); een regel in dezelfde tick-handler.
+- **Client-effecten uit meters** (glitch-visuals bij void, volume-demping en HUD verbergen bij stilte, vanilla `ticksFrozen` bij kou): de server bepaalt de meter, de client leest alleen de gesyncte waarde en rendert. `ticksFrozen` wordt door vanilla zelf gesynct.
+- **Server-side ringregels** buiten de meters: water verdampt bovengronds in ring 3 (alle plaatsingsroutes: emmer, dispenser, ijs), geluid-detectie voor stilte via vanilla `GameEvent`s, korte void-teleports met een veilige-plek-check.
+- **Kettingreacties** (moerasgas) altijd via scheduled ticks met een cap per tick, nooit recursief in één tick.
 
 ## The End uitschakelen
 - Eigen biomes krijgen geen `has_structure/stronghold`-tag, dus er genereren geen strongholds en er ontstaat geen End-portal.
@@ -56,7 +60,7 @@ Technische architectuur en afspraken. De werkafspraken voor Claude Code staan in
 - Blokken die moeten vervallen of genezen (kasteelblokken, corrupted varianten) krijgen **random ticks**. Bij een tick controleren ze de server-vlag "Herobrine verslagen" en vervallen ze tot een ruïne- of gezonde variant.
 - Voordeel: geen dure chunk-scans; de verandering gebeurt vanzelf in gebieden waar spelers komen. Werkt volledig server-side.
 - Sfeer (lucht, fog, muziek) leest dezelfde vlag via sync naar de client.
-- Tip voor fase 1: blokken die later moeten vervallen of genezen, kunnen nu al als aparte "corrupted"-variant worden ontworpen, zodat fase 5 alleen gedrag toevoegt.
+- Besloten in fase 1: corrupted blokken zijn aparte varianten van vanilla-natuurblokken, met tag `corruptedadventure:corrupted` en een data map `corrupted → vanilla` (de gezonde tegenhanger). Fase 5 voegt alleen het random-tick-gedrag toe dat die map leest.
 
 ## Multiplayer-regels (vanaf dag 1)
 - Alle gameplaylogica draait server-side; de client toont alleen.

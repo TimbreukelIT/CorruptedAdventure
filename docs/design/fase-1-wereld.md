@@ -3,7 +3,7 @@
 Uitwerking van de sparringsessie(s) voor fase 1. Bron van waarheid voor *wat* we in fase 1 bouwen.
 Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 
-**Status:** sessie 1 afgerond — fundament, ring 1 en ring 2 (incl. Nether-tegenpolen) staan vast. Volgende sessie: ring 3, 4 en 5.
+**Status:** sparring afgerond. Sessie 1: fundament, ring 1 en ring 2. Sessie 2: ring 3, 4 en 5 (alle met Nether-tegenpolen). Bouwplan compleet (changes 0–96, §3). Volgende stap: change 0 (startsein van de gebruiker).
 
 ---
 
@@ -57,7 +57,9 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - **HUD-balk** op de client toont de meter; waarde wordt gesynct (alleen bij verandering). HUD-code in `client/`.
 - Tegenmaatregelen (gear/items) komen in fase 2 en remmen de opbouw; in fase 1 alleen de conditie zelf.
 - Ring 1 heeft geen conditie; het systeem verschijnt voor het eerst in ring 2.
-- Nether-condities alleen in **Nether-3** (kou/bevriezing) en **Nether-5** (stilte); de andere Nether-ringen hebben er geen.
+- Nether-condities alleen in **Nether-3** (kou/bevriezing) en **Nether-5** (stilte); de andere Nether-ringen hebben er geen. **Nether-4 is zuiverend**: daar zakken alle meters extra snel.
+- Overzicht condities: ring 2 uitdroging · ring 3 hitte · ring 4 gif · ring 5 void/glitches · Nether-3 kou · Nether-5 stilte.
+- Sommige drempels sturen **client-effecten** aan (glitch-visuals, volume en HUD bij stilte). De client leest daarvoor alleen de gesyncte meter en beslist zelf niets.
 
 ### 1.10 Biome-varianten
 - Ring 1: kopieën van vanilla biomes (zie §1.7).
@@ -70,13 +72,13 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Netherite/ancient debris blijft zoals vanilla. Ring-gear is per ring een tier hoger (fase 2), zodat netherite rond ring 3 al achterloopt.
 
 ### 1.12 Nether-tegenpolen (schema)
-| Ring | Overworld | Nether-tegenpool |
-|---|---|---|
-| 1 | Vertrouwd vanilla | Vanilla-Nether (kopieën: wastes, crimson, warped) |
-| 2 | Droog, canyons, oases | Doorweekte schimmel-Nether |
-| 3 | Vulkanisch, water gestolen | Bevroren Nether (ijs, gestolde lava) |
-| 4 | Moeras, gif | Droge kristal-/bottenwoestijn (zuiverend) |
-| 5 | Corrupted, void | 'Zuivere' witte Nether, onheilspellend stil |
+| Ring | Overworld | Nether-tegenpool | Sleutelmateriaal (tegengif voor) |
+|---|---|---|---|
+| 1 | Vertrouwd vanilla | Vanilla-Nether (kopieën: wastes, crimson, warped) | Zielkristal (bewaker 1→2) |
+| 2 | Droog, canyons, oases | Doorweekte schimmel-Nether | Dauwkristal (hitte, ring 3) |
+| 3 | Vulkanisch, water gestolen | Bevroren Nether (ijs, gestolde lava) | Oerijs (gif, ring 4) |
+| 4 | Moeras, gif | Droge kristal-/bottenwoestijn (zuiverend) | Hemelglas (void/glitches, ring 5) |
+| 5 | Corrupted, void | 'Zuivere' witte Nether, onheilspellend stil | Witte kern (Herobrine, kastelen, final) |
 
 Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
@@ -187,19 +189,239 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - Uitdroging-meter: attachment + sync; HUD client-only.
 
 ### Ring 3 — Vulkanische ring (3.500 – 5.500)
-_Volgende sessie._
+
+**Terrein en sfeer**
+- Zwart-grijs aslandschap met vulkaankegels, kraters, lavameren en gestolde lavastromen. Lucht rood-oranje, fog dicht en asgrijs.
+- Eigen ring 3-invoer voor `ring_blend`, met per biome-regio een eigen vorm (kegels, stromen, zeekom).
+- Het gestolen water is overal zichtbaar: geen natuurlijk water, een lege zeekom, en geplaatst water verdampt bovengronds.
+
+**Biomes (5)**
+| Biome (werktitel) | Karakter |
+|---|---|
+| `ashen_wastes` | Grijze asvlakte met verkoolde bomen en aslagen — kernbiome |
+| `volcanic_peaks` | Vulkaankegels met kraters en lavastromen; heetste plek — kernbiome |
+| `dried_seabed` | Lege zeekom: diepe kom met dode koraalbanken (vanilla dead coral), het gestolen water |
+| `basalt_flows` | Gestolde lavastromen met gloeiende scheuren (smeulsteen) |
+| `sulfur_fields` | Gele zwavelkorst en fumarolen |
+
+- Overgangsbiome 3→4: **stoomvenen** (`steam_fens`): hete modderpoelen, geisers en stoomkolommen. Hier komt het gestolen water terug en kookt het tegen de hitte. Stoom is biome-particles (data).
+
+**Unieke blokken (placeholders eerst)**
+- Basis is vanilla basalt / blackstone / magma. Eigen blokken:
+- **As**: asblok + aslaag (gedraagt zich als sneeuwlaag).
+- **Puimsteen-set**: puimsteen, gepolijst, bricks, slab, stairs, wall.
+- **Smeulsteen**: gloeiende scheuren, geeft licht, hitte ↑ in de buurt.
+- **Verkoold hout-set**: log, wood, planks + houtset.
+- **Zwavelkorst + fumarole**: fumarole geeft stoompuffen (client-particles via `animateTick`), hitte ↑ erboven.
+- **Stoomvenen**: kokende modder (vertraagt, hitte ↑) en geiser (duwt periodiek omhoog, server-side).
+
+**Ores**
+- **Vulkaniet** (hoofdmateriaal, kandidaat ring 3-gear-tier): diep in basalt nabij lava. Risico is beloning.
+- **Zwavel**: veel en ondiep bij fumarolen en in `sulfur_fields`; nut in fase 2 (buskruit, vuur, brandstof).
+- **Vuurrobijn**: zeldzame edelsteen in de wanden van magmakamers.
+- Vanilla-ores verder afgebouwd dan in ring 2: ijzer en kolen schaars, diamant bijna afwezig.
+
+**Grotten**
+- **Lavabuizen**: lange, gladde basalttunnels, soms met een lavarivier; bruikbaar als reisroute.
+- **Magmakamers**: grote holtes boven een lavameer, met vulkaniet en vuurrobijn in de wanden.
+
+**Water: verdampt bovengronds**
+- Geplaatst water (emmer, dispenser, gebroken/smeltend ijs) verdampt direct **op plekken waar de lucht zichtbaar is**, net als in de Nether. Ondergronds en onder een dak werkt water normaal.
+- Server-side check met `ringAt` + lucht zichtbaar bij plaatsing.
+
+**Weer (ringweer)**
+- **Asregen**: zicht omlaag, as-particles (client); hitte ×1,5 (server).
+- **Uitbarsting**: rode lucht, gerommel (client); de server laat **lavabommen** (vanilla small fireballs) uit de lucht vallen, die vuur zetten (volgt de `mobGriefing`-gamerule) maar niet ontploffen; hitte ×2.
+
+**Conditie: hitte**
+- Meter ↑ bovengronds overdag (langzaam); sneller binnen ~4 blokken van lava/magma/smeulsteen/fumarolen/kokende modder, in `volcanic_peaks` en tijdens ringweer (×1,5 / ×2).
+- Meter ↓ 's nachts, ondergronds (lucht niet zichtbaar en niet bij lava) en in water. Water werkt alleen ondergronds, dus **grotten zijn de schuilplaats**.
+- **Fire resistance halveert** de opbouw (maakt niet immuun).
+- Drempels (config): traagheid → zwakte → in brand vliegen.
+- Tegenmaatregel in fase 2: hittebescherming op basis van dauwkristal (Nether-2).
+
+**Horror-elementen (fase 1)**
+- **As-afgietsels**: Pompeii-achtige figuren van asblokken in menselijke houdingen (kruipend, knielend). Deterministische feature.
+- **Voetsporen in de as**: een spoor van indrukken in aslagen dat abrupt stopt of in een krater eindigt. Feature.
+- **Gerommel en trillingen**: onregelmatig diep gerommel (biome-ambient) en een lichte camera-shake; client-only, per speler willekeurig en bewust niet gesynct.
+
+**Grensmuur 3→4** (fase 5): zwarte aswolk met vonken.
+
+**Nether-tegenpool — Nether-ring 3 (875 – 1.375): bevroren Nether**
+- **Terrein**: de lavazee is gestold tot een enorme vlakte van ijs en koudlava, met scheuren waarin nog gloeiende lava ligt (zeldzame warme plekken). Daarnaast gletsjermassa's met smalle kloven en tunnels.
+- **Biomes (3)**: `frozen_lava_sea` (hoofdbiome: open vlakte, ijspilaren van vloer tot plafond), `rime_forest` (verstijfde reuzenzwammen onder rijp), `glacier_rifts` (ijsmassa's met kloven en tunnels). De biome-schaal is kleiner dan in de overworld (biomes wisselen vaker). **Ruimte-check** in de W-test: voelt het krap, dan verbreden we ring 3 via de config (alleen voor nieuwe werelden).
+- **Blokken**: koudlava-set (gestolde lava: blok, gepolijst, bricks, slab, stairs, wall), Nether-ijs (smelt niet, glad; plus verpakte variant), rijp-netherrack, rijpzwam-set (steel, hoed, planks + houtset), ijsstalactieten (dripstone-gedrag, vallen), gloeiende scheur (warmtebron). Vanilla packed/blue ice waar het kan.
+- **Sleutelmateriaal: oerijs**, ijs dat bevroor vóór de corruptie (zuiver water). Het zit als kern in ijspilaren en is alleen met silk touch te winnen (anders breekt het). Nodig voor bewaker 3→4; in fase 2 smelt je het tot zuiver water, de basis van gifbescherming voor ring 4.
+- **Sfeer**: blauwwitte fog, zwevende ijskristallen (particles), gierende wind en krakend ijs (ambient). Alles biome-data; geen ringweer in de Nether.
+- **Conditie: kou/bevriezing**
+  - Meter ↑ overal in Nether-3, sneller op ijs en in de open vlakte.
+  - Meter ↓ bij warmte: lava, vuur, kampvuur, magma, gloeiende scheur, smeulsteen (uit ring 3).
+  - **Leren armor remt** de opbouw (vanilla-tag `freeze_immune_wearables`).
+  - Drempels: traagheid → mining fatigue → vanilla-bevriezing (`ticksFrozen`: frost-overlay en schade, door vanilla al gesynct).
+
+**Client/server-risico's**
+- Water verdampen, geiser-duw, lavabommen en de hitte- en kou-meters: allemaal server-side. De lavabommen zijn gewone server-entities, dus alle clients zien dezelfde.
+- Camera-shake, gerommel, as- en stoomparticles, uitbarstingslucht: alleen client (`client/` of biome-data). Fumarole-particles via `animateTick` (draait alleen op de client-level, geen client-class nodig).
+- `ticksFrozen` is vanilla entity-data en wordt al gesynct. Onze meter stuurt de waarde server-side aan.
+- Water-check: alle plaatsingsroutes afvangen (emmer, dispenser, ijs), anders ontstaan er gaten in de regel.
 
 ### Ring 4 — Moerasring (5.500 – 7.500)
-_Volgende sessie._
+
+**Terrein en sfeer**
+- Laag, vlak en nat: het gestolen water is hier bedorven. Groengrijze lucht, mistig, gifgroen water (biome-waterkleur).
+- Bovengronds beperken riet en wortels het zicht. Onder water zie je niet wat er zwemt.
+- Eigen ring 4-invoer voor `ring_blend`: laag terrein rond zeeniveau, diepe poelen, zinkgaten in het veen.
+
+**Biomes (5)**
+| Biome (werktitel) | Karakter |
+|---|---|
+| `toxic_bog` | Gifgroen water, borrelende poelen, gifzwammen; de lucht zelf is giftig — kernbiome |
+| `root_forest` | Reuzenwortels boven het water, hangend moerasmos, moerascipressen — kernbiome |
+| `drowned_forest` | Dode bomen in diep, donker water |
+| `peat_moors` | Veenvlakte met zinkgaten en dwaallichten |
+| `reed_marsh` | Rietvelden hoger dan de speler: je ziet niets, je hoort iets bewegen |
+
+- Overgangsbiome 4→5: **rottend moeras** (`blighted_mire`). Het moeras sterft af: grijs verkleurd, stilstaand zwart water, verdorde planten, en de eerste glitchplekken (vierkante gaten, verkeerde blokken) als kleine feature.
+
+**Unieke blokken (placeholders eerst)**
+- **Veen**: brandbaar, bruikbaar als brandstof; oppervlak van `peat_moors`.
+- **Zuigmodder**: je zakt erin weg zoals in poedersneeuw (server-side).
+- **Riet**: 2–3 blokken hoog, blokkeert het zicht.
+- **Moerascipres-set**: log, wood, planks, leaves, sapling + houtset; eigen tree feature.
+- **Hangend moerasmos**, **gifzwam** (zwak licht, gif ↑ in de buurt).
+- **Moerasgas**: onzichtbaar gasblok (zie Grotten).
+- **Bellenbron**: bodemblok dat bellen en geborrel geeft (particles via `animateTick`, zonder stroming).
+- Vanilla mud en mangrove roots waar het kan.
+
+**Ores**
+- **Veenijzer** (werktitel; hoofdmateriaal, kandidaat ring 4-gear-tier): ondiep in veen en op de bodem van giftige poelen. Je moet dus duiken in gifwater.
+- **Gifkristal**: groeit in vochtige grotholtes en wortelgrotten; fase 2 voor gifwapens en -pijlen.
+- **Jade**: zeldzame edelsteen, diep in overstroomde grotten.
+- Vanilla-ores verder afgebouwd dan in ring 3.
+
+**Grotten**
+- **Overstroomde grotten**: grote aquifers vol gifwater met luchtkamers; je moet duiken.
+- **Wortelgrotten**: tunnels langs reuzenwortels, met hangende wortels en gifkristal.
+- **Moerasgaskamers**: holtes gevuld met het moerasgasblok.
+  - Het gas is onzichtbaar en niet-solide (vervangbaar, zoals lucht), met subtiele gele particles. Oplettende spelers kunnen het zien.
+  - Vuur, fakkel of lava ernaast geeft een **ketting-ontploffing** door het verbonden gas. Er is een cap op het aantal blokken per tick (geen server-lag), en blokschade volgt `mobGriefing`.
+  - Hoofd in gas: gif ↑.
+  - Alles via server-side block-updates, zonder zone-check.
+
+**Water**
+- Gewoon vanilla water met gifgroene kleur; emmers, farms en waterliften werken. De gif-regel zit in de conditie.
+
+**Weer (ringweer)**
+- **Dikke mist**: zicht sterk omlaag (client-fog), geen gif. De horror zit in wat je niet ziet.
+- **Gifregen**: groene regen (eigen client-rendering); gif ↑ onder open lucht (server).
+
+**Conditie: gif**
+- Meter ↑ snel in water in ring 4; langzaam in de lucht van `toxic_bog`; bij gifzwammen, borrelende poelen en in moerasgas; tijdens gifregen onder open lucht.
+- Meter ↓ op droog land buiten `toxic_bog`. Noodmiddelen: melk −40, honingfles −20 (vanilla-items, zoals de waterfles in ring 2).
+- Drempels (config): misselijkheid → vanilla-gif (doodt niet) → wither (kan doden).
+- Tegenmaatregel in fase 2: gifbescherming op basis van oerijs (Nether-3).
+
+**Horror-elementen (fase 1)**
+- **Dwaallichten**: zwevende lichtjes boven veen en water die van je wegdrijven (biome-particles).
+- **Geritsel in het riet**: geritsel en stappen rondom je in `reed_marsh`, altijd net buiten zicht. Client-only ambient, per speler willekeurig.
+- **Bellen uit de diepte**: grote bellenstromen en geborrel uit diepe poelen (bellenbron-feature + biome-ambient); er ligt iets groots onder.
+
+**Grensmuur 4→5** (fase 5): groene gifdamp die overgaat in glitchruis.
+
+**Nether-tegenpool — Nether-ring 4 (1.375 – 1.875): droge kristal-/bottenwoestijn**
+- **Terrein**: de lavazee is diep weggezakt. Erboven liggen brede vlaktes van bottenzand tussen reusachtige fossiele ribbenkasten, kristalzuilen van vloer tot plafond, en gigantische holle geodes.
+- **Biomes (3)**: `bone_dunes` (hoofdbiome: bottenzand, ribbenkasten), `crystal_spires` (kristalzuilen), `geode_hollows` (holle kristalgeodes waar je in kunt lopen). **Ruimte-check** in de W-test, zoals bij Nether-3.
+- **Blokken**: bottenzand (valt zoals zand), gebleekt netherrack, fossielsteen-set (steen, gepolijst, bricks, slab, stairs, wall), zuiverkristal (blok, scherf/cluster, kristallamp). Ribbenkasten van vanilla bone block.
+- **Sleutelmateriaal: hemelglas**, gesmolten uit bottenzand + zuiverkristal. Het maakt glitches zichtbaar (lens). **Fase 1 bouwt alleen de grondstoffen**; hemelglas-blok, recipe en lens-functie komen in fase 2 (`items`). Nodig voor bewaker 4→5; basis van bescherming tegen void en glitches in ring 5.
+- **Zuiverend (mechaniek)**: geen eigen conditie, maar in Nether-4 zakken **alle conditie-meters** (gif, hitte, kou) extra snel. Wie vergiftigd uit ring 4 komt, knapt hier op. Regel in de condities-tick, server-side.
+- **Sfeer**: bijna wit-beige fog met ver zicht, droge wind, zacht kristalgezoem, dwarrelende stofparticles (biome-data). Daarbovenop **pulserend kristallicht**: de fog-kleur pulseert zacht (client-code: fog-hook in `client/`).
+
+**Client/server-risico's**
+- Gif-meter, zuigmodder, gasontploffing (met cap per tick) en de zuiverende regel: server-side.
+- Mist, gifregen-rendering, dwaallichten, geritsel en de pulserende fog: alleen client. De fog-hook leest de biome op de camerapositie en de tijd. Pulsen hoeven tussen spelers niet synchroon te lopen, dus er is geen sync nodig.
+- Gas- en bellen-particles via `animateTick` (client-level, geen client-class).
+- Ketting-ontploffing: nooit recursief in één tick. Plan de ontploffingen gespreid in (scheduled ticks), anders lagt of crasht een server bij grote kamers.
 
 ### Ring 5 — Corrupted ring (7.500 – 9.500)
-_Volgende sessie._
+
+**Terrein en sfeer**
+- Grijze, dode wastezone waar de wereld zichtbaar "fout" is: blokkerig terrein, zwevende brokken, scheuren tot in de void, en landschappen die net niet kloppen.
+- Lucht donkergrijs met een zweem violet, fog dik en kleurloos. Afwijkend fog-gedrag (glitch-fog) via client-code.
+- Eigen ring 5-invoer voor `ring_blend`. Blokkerige glitchvormen vragen mogelijk een eigen density function-type (bijv. kwantiseren); alleen als JSON niet volstaat.
+- Voorbij 9.500 brokkelt ring 5 af tot zwevende eilanden en void (§1.8).
+
+**Biomes (5)**
+| Biome (werktitel) | Karakter |
+|---|---|
+| `corrupted_wastes` | Grijze dode vlakte, corrupted gras/aarde, dode bomen — kernbiome |
+| `glitch_fields` | Blokkerig terrein, zwevende kubussen, verschoven lagen, glitchblokken — kernbiome |
+| `void_scars` | Kraters en scheuren **tot in de void**: geen bedrock, vallen is dood (items weg). Randen van voidsteen met void-particles, zodat ze goed zichtbaar zijn |
+| `inverted_hills` | Heuvels die omgekeerd in de lucht hangen, met bomen ondersteboven |
+| `false_meadow` | Een perfecte kopie van een vanilla-weide waar alles net fout is: geen geluid, geen mobs, gespiegelde bomen. "Thuis" dat niet klopt |
+
+- Geen overgangsbiome naar buiten: de buitenrand (9.500–10.000) is de void-invoer van `ring_blend`.
+
+**Unieke blokken (placeholders eerst)**
+- **Corrupted varianten** van vanilla-natuurblokken: gras, aarde, steen, cobble, zand, log, wood, planks, leaves.
+  - Elk heeft een vaste gezonde tegenhanger in een **data map** (`corrupted → vanilla`) en de tag `corruptedadventure:corrupted`.
+  - Fase 5 voegt alleen het random-tick-gedrag toe (genezen/vervallen). In fase 1 hebben ze **geen gedrag**.
+- **Glitchblok**: missing-texture-look, flikkert (geanimeerde texture). Dropt glitchscherven.
+- **Voidsteen**: zwart, met void-particles (`animateTick`); randen van void-scheuren.
+
+**Ores en materialen**
+- **Nulliet** (werktitel; hoofdmateriaal, kandidaat ring 5-gear-tier): in de wanden van void-scheuren en diep in de ring. Het risico zit aan de rand van de afgrond.
+- **Glitchscherven**: droppen uit glitchblokken (loot table), dus je oogst de glitches zelf.
+- Vanilla-ores vrijwel afwezig.
+
+**Grotten**
+- **Onmogelijke gangen**: rechte, te perfecte 2×1- en 3×3-tunnels in rasterpatronen, doodlopend of in lussen. Het groot geworden broertje van de ring 1-tunnels.
+- **Void-grotten**: grotten met gaten in de bodem naar de void.
+
+**Weer (ringweer)**
+- **Glitchstorm**: beeldruis-overlay, HUD flikkert, geluiden haperen (client); void ↑ ×2 (server).
+- **Omgekeerde regen**: zwarte druppels die omhoog vallen (client); void ↑ ×1,5 (server).
+
+**Conditie: void/glitches**
+- Meter ↑ overal in ring 5 (langzaam); sneller bij void-scheuren, glitchblokken, 's nachts en tijdens ringweer.
+- Meter ↓ in fel licht: lichtniveau ≥ 12 van eigen lichtbronnen, want "licht houdt de void weg". Daalt ook buiten ring 5, en snel in Nether-4.
+- Drempels (config):
+  1. Glitch-visuals: client, gestuurd door de gesyncte meter.
+  2. Korte teleports van 1–5 blokken: server, **alleen naar een veilige plek, nooit richting void**.
+  3. Darkness + void-schade.
+- Tegenmaatregel in fase 2: bescherming op basis van hemelglas (Nether-4).
+
+**Horror-elementen (fase 1)**
+- **Ontbrekende chunks**: hele 16×16-kolommen die ontbreken tot in de void, precies op het chunkraster. Deterministische feature.
+- **Herobrine-tekens**: bordjes met korte teksten ("ga terug", "hij ziet je"; vertaalbare keys) en redstone-fakkels in patronen. Feature.
+- **Echo-voetstappen**: je eigen voetstappen klinken even later nog eens, alsof iemand je volgt. Client-only, per speler.
+
+**Grensmuur**: geen uitgaande grens; de buitenrand is void + world border.
+
+**Nether-tegenpool — Nether-ring 5 (1.875 – 2.375): 'zuivere' witte, stille Nether**
+- **Terrein**: na alle chaos is dit de engste plek, juist omdat alles schoon, wit, geordend en doodstil is. Gladde witte vlaktes met perfecte zuilen van vloer tot plafond, in rasters. Waar de lavazee lag, ligt een glad, glanzend en begaanbaar oppervlak van spiegelsteen, eindeloos en leeg.
+- **Biome (1)**: `white_halls`. Het kale en eentonige is juist het punt.
+- **Blokken**: kalkrack (wit netherrack, anders dan het beige gebleekte netherrack van Nether-4), witsteen-set (glad, gepolijst, bricks, zuil, slab, stairs, wall), spiegelsteen, stil licht (witte lichtbron zonder geluid of particles).
+- **Sleutelmateriaal: witte kern**, het "hart van de stilte". Zeldzaam, in de kern van de zuilen. Nodig voor toegang tot Herobrines kastelen en de final battle (fase 3/5); in fase 2 de basis van zuiveringsgear tegen corruptie. Geen gedrag in fase 1.
+- **Sfeer**: witte fog, geen ambient-geluid, geen muziek, bijna geen particles (biome-data).
+- **Conditie: stilte**
+  - Meter ↑ overal in Nether-5, sneller in de open vlaktes.
+  - Meter ↓ door **zelf geluid te maken**: bel luiden, goat horn, note block of jukebox in de buurt (server-side via vanilla game events).
+  - **Andere spelers binnen ~8 blokken remmen de opbouw**: samen sta je sterker.
+  - Drempels: geluid gedempt → HUD weg (behalve hotbar) → alle geluid weg + darkness → schade (hartslag).
+  - De server stuurt de meter; de client past alleen volume en HUD aan.
+
+**Client/server-risico's**
+- Void-meter, teleports (veilige-plek-check op de server, nooit in blokken of richting void) en de stilte-meter: server-side.
+- Glitch-visuals, HUD-flikker, beeldruis, omgekeerde regen, glitch-fog, echo-voetstappen, volume-demping en HUD-verbergen: alleen client (`client/`), aangestuurd door gesyncte meters en ringweer.
+- Stilte: geluid-detectie via server-side game events (`GameEvent`-listener), niet via client-geluid.
+- Void-scheuren en ontbrekende chunks zonder bedrock: deterministisch per seed. Aandachtspunt: mob-spawning en item-verlies in de void zijn vanilla-gedrag.
+- Glitchblok-flikkering: texture-animatie (`.mcmeta`), geen code.
 
 ---
 
 ## 3. Bouwplan
 
-Elke change: één categorie, afgesloten met `/code-review`, `CODEBASE.md` bijgewerkt. Ring 3–5 worden na de volgende sparringsessie aan dit plan toegevoegd.
+Elke change: één categorie, afgesloten met `/code-review`, `CODEBASE.md` bijgewerkt. Changes 0–37 uit sessie 1, 38–96 uit sessie 2.
 
 **Standaardtests** (per change aangegeven):
 - **B** — `./gradlew build` slaagt.
@@ -260,3 +482,78 @@ Elke change: één categorie, afgesloten met `/code-review`, `CODEBASE.md` bijge
 | 35 | `worldgen` | Nether-2-terrein (zwamkathedralen) + biomes reuzenzwamwoud en sporengrotten + dauwbron-features. | B, D, W (Nether) |
 | 36 | `atmosphere` | Nether-2-sfeer: grijsgroene fog, druppelgeluiden, sporen-particles (biome-data). | runClient |
 | 37 | `textures` | Definitieve textures ring 2 + Nether-ring 2. | runClient |
+
+### E. Ring 3 (+ Nether-ring 3)
+| # | Categorie | Change | Test |
+|---|---|---|---|
+| 38 | `blocks` | As (blok + laag), puimsteen-set, smeulsteen (licht), verkoold hout-set. | B, D |
+| 39 | `worldgen` | Ring 3-terrein (ring 3-invoer `ring_blend`: kegels, kraters, lavameren, geen natuurlijk water) + kernbiomes `ashen_wastes` en `volcanic_peaks` (surface rules, kleuren) + verkoolde-boom-feature. | B, D, W |
+| 40 | `blocks` | Vulkaniet-, zwavel- en vuurrobijn-erts. | B, D |
+| 41 | `worldgen` | Ores ring 3: vulkaniet (diep bij lava), zwavel (ondiep), vuurrobijn (magmakamers), vanilla-ores verder afgebouwd. | B, W: verdeling klopt per diepte |
+| 42 | `worldgen` | Grotten ring 3: lavabuizen + magmakamers. | B, W |
+| 43 | `conditions` | Hitte (op/af-regels, hittebronnen binnen ~4 blokken, fire resistance halveert, drempels). | B, S: dag/nacht/grot/water/lava gedragen zich zoals beschreven |
+| 44 | `conditions` | Water verdampt bovengronds in ring 3 (emmer, dispenser, gebroken/smeltend ijs; lucht zichtbaar). | B, S: bovengronds verdampt, onder dak en ondergronds niet; buiten ring 3 normaal |
+| 45 | `atmosphere` | Ring 3-weer: asregen (zicht, particles, hitte ×1,5) en uitbarsting (rode lucht, gerommel, lavabommen als vanilla small fireballs, hitte ×2). | B, S: twee clients zien dezelfde bommen; `mobGriefing false` → geen vuur |
+| 46 | `blocks` | Zwavelkorst, fumarole (stoompuf), kokende modder (vertraagt), geiser (periodieke duw, server-side). | B, D, S |
+| 47 | `worldgen` | Extra biomes: `dried_seabed`, `basalt_flows`, `sulfur_fields` (terreinvormen + surface + fumarole-features). | B, D, W |
+| 48 | `worldgen` | Overgangsbiome 3→4 `steam_fens` (modderpoelen, geisers, stoom). | B, D, W |
+| 49 | `worldgen` | Horror-features ring 3: as-afgietsels + voetsporen in de as. | B, D, W: `/place feature` + in het wild |
+| 50 | `atmosphere` | Ring 3-sfeer: lucht/fog-kleuren, as- en stoomparticles, gerommel (ambient) + camera-shake (client). | runClient; S (geen client-class op server) |
+| 51 | `blocks` | Nether-3-blokken: koudlava-set, Nether-ijs (+ verpakt), rijp-netherrack, rijpzwam-set, ijsstalactieten, gloeiende scheur. | B, D, S (vallende stalactieten server-side) |
+| 52 | `blocks` | Oerijs (alleen met silk touch; anders breekt het zonder drop). | B, D |
+| 53 | `worldgen` | Nether-3-terrein (bevroren lavazee met gloeiende scheuren, ijspilaren met oerijs-kern) + biomes `frozen_lava_sea` en `rime_forest`. | B, D, W (Nether) |
+| 54 | `worldgen` | Nether-3-biome `glacier_rifts` (kloven, tunnels) + **ruimte-check** van Nether-3; zo nodig ring 3 verbreden via config en vastleggen. | B, D, W (Nether) |
+| 55 | `conditions` | Kou Nether-3 (meter, warmtebronnen, leren armor remt, hoogste drempel = `ticksFrozen`). | B, S: frost-overlay op beide clients, warmte laat meter zakken |
+| 56 | `atmosphere` | Nether-3-sfeer: blauwwitte fog, ijskristal-particles, wind en krakend ijs (biome-data). | runClient |
+| 57 | `textures` | Definitieve textures ring 3 + Nether-ring 3. | runClient |
+
+### F. Ring 4 (+ Nether-ring 4)
+| # | Categorie | Change | Test |
+|---|---|---|---|
+| 58 | `blocks` | Moerascipres-set (+ sapling), riet, hangend moerasmos, veen (brandstof). | B, D |
+| 59 | `worldgen` | Ring 4-terrein (laag, poelen, zinkgaten) + kernbiomes `toxic_bog` en `root_forest` (surface, gifgroene waterkleur) + cipres- en reuzenwortel-features. | B, D, W |
+| 60 | `blocks` | Veenijzer-, gifkristal- en jade-erts. | B, D |
+| 61 | `worldgen` | Ores ring 4: veenijzer (veen/poelbodem), gifkristal (grotholtes), jade (diep), vanilla-ores verder afgebouwd. | B, W |
+| 62 | `worldgen` | Grotten ring 4: overstroomde grotten (gif-aquifers met luchtkamers) + wortelgrotten. | B, W |
+| 63 | `blocks` | Moerasgas: onzichtbaar gasblok, gele particles, ketting-ontploffing via scheduled ticks met cap per tick, blokschade volgt `mobGriefing`. | B, D, S: grote gaskamer ontsteken → geen lag-spike/crash |
+| 64 | `worldgen` | Moerasgaskamers (holtes gevuld met gas). | B, W |
+| 65 | `conditions` | Gif (water, `toxic_bog`-lucht, bronnen, gas, gifregen; melk −40, honing −20; drempels misselijkheid → gif → wither). | B, S |
+| 66 | `atmosphere` | Ring 4-weer: dikke mist (zicht) en gifregen (groene regen, gif ↑ onder open lucht). | B, S: effect op twee clients gelijk |
+| 67 | `blocks` | Zuigmodder (wegzakken, server-side), gifzwam (licht, gif-bron), bellenbron (particles, geen stroming). | B, D, S |
+| 68 | `worldgen` | Extra biomes: `drowned_forest`, `peat_moors` (zinkgaten), `reed_marsh` + bellenbron-feature in diepe poelen. | B, D, W |
+| 69 | `worldgen` | Overgangsbiome 4→5 `blighted_mire` + kleine glitchplek-feature. | B, D, W |
+| 70 | `atmosphere` | Ring 4-sfeer: lucht/fog-kleuren, dwaallichten (particles), geritsel in het riet (client-only), geborrel (ambient). | runClient; S |
+| 71 | `blocks` | Nether-4-blokken: bottenzand, gebleekt netherrack, fossielsteen-set, zuiverkristal (blok, scherf, lamp). | B, D |
+| 72 | `worldgen` | Nether-4-terrein (lavazee diep, bottenvlaktes) + biomes `bone_dunes` (ribbenkasten van bone block) en `crystal_spires`. | B, D, W (Nether) |
+| 73 | `worldgen` | Nether-4-biome `geode_hollows` + **ruimte-check** van Nether-4. | B, D, W (Nether) |
+| 74 | `conditions` | Zuiverend: alle conditie-meters zakken extra snel in Nether-4. | B, S |
+| 75 | `atmosphere` | Nether-4-sfeer: biome-data (fog, wind, gezoem, stof) + pulserend kristallicht (fog-hook in `client/`). | runClient; S |
+| 76 | `textures` | Definitieve textures ring 4 + Nether-ring 4. | runClient |
+
+### G. Ring 5 (+ Nether-ring 5)
+| # | Categorie | Change | Test |
+|---|---|---|---|
+| 77 | `blocks` | Corrupted varianten (gras, aarde, steen, cobble, zand, log, wood, planks, leaves) + tag `corruptedadventure:corrupted` + data map `corrupted → vanilla`. Geen gedrag. | B, D: elke corrupted variant heeft een mapping |
+| 78 | `blocks` | Glitchblok (drop: glitchscherf als minimaal basis-item) + voidsteen (void-particles). | B, D |
+| 79 | `worldgen` | Ring 5-terrein (ring 5-invoer `ring_blend`: dode vlakte, blokkerige glitchvormen; eigen density function-type alleen als JSON niet volstaat) + kernbiomes `corrupted_wastes` en `glitch_fields`. | B, D, W |
+| 80 | `blocks` | Nulliet-erts. | B, D |
+| 81 | `worldgen` | Ores ring 5: nulliet (void-scheurwanden, diep), glitchblok-plaatsing, vanilla-ores vrijwel weg. | B, W |
+| 82 | `worldgen` | Biome `void_scars`: scheuren tot in de void (geen bedrock), voidsteen-randen. | B, D, W: vallen = void; randen goed zichtbaar |
+| 83 | `worldgen` | Grotten ring 5: onmogelijke gangen (rasters, lussen) + void-grotten. | B, W |
+| 84 | `conditions` | Void-meter (licht ≥ 12 remt; drempels glitch-visuals (client) → teleports 1–5 blokken met veilige-plek-check → darkness + schade). | B, S: teleport nooit in blokken of richting void; visuals alleen client |
+| 85 | `atmosphere` | Ring 5-weer: glitchstorm (beeldruis, HUD-flikker, void ×2) en omgekeerde regen (void ×1,5). | B, S |
+| 86 | `worldgen` | Extra biome `false_meadow` (vanilla-weide-kopie, stil, zonder mobs, gespiegelde bomen). | B, D, W |
+| 87 | `worldgen` | Extra biome `inverted_hills` (omgekeerde zwevende heuvels). | B, D, W |
+| 88 | `worldgen` | Horror-features ring 5: ontbrekende chunks (op chunkraster, tot de void) + Herobrine-tekens (bordjes met vertaalbare teksten, redstone-fakkelpatronen). | B, D, W |
+| 89 | `worldgen` | Buitenrand afstemmen: ring 5-terrein brokkelt af tot zwevende eilanden en void (void-invoer uit change 6 op ring 5 afgestemd). | B, W: vloeiende afbrokkeling 9.500–10.000 |
+| 90 | `atmosphere` | Ring 5-sfeer: lucht/fog-kleuren, glitch-fog (client), echo-voetstappen (client-only). | runClient; S |
+| 91 | `blocks` | Nether-5-blokken: kalkrack, witsteen-set, spiegelsteen, stil licht, witte kern. | B, D |
+| 92 | `worldgen` | Nether-5-terrein + biome `white_halls` (zuilenrasters, spiegelsteen-vloer, witte kern in zuilen). | B, D, W (Nether) |
+| 93 | `conditions` | Stilte (meter; ↓ via server-side game events van bel, goat horn, note block, jukebox en spelers binnen ~8 blokken; client dempt volume en verbergt HUD). | B, S: twee spelers samen bouwen langzamer op; HUD-verbergen alleen client |
+| 94 | `atmosphere` | Nether-5-sfeer: witte fog, geen ambient, geen muziek (biome-data). | runClient |
+| 95 | `textures` | Definitieve textures ring 5 + Nether-ring 5 (incl. geanimeerd glitchblok). | runClient |
+
+### H. Afsluiting fase 1
+| # | Categorie | Change | Test |
+|---|---|---|---|
+| 96 | `worldgen` | **Worldgen-eindtest fase 1**: met de testseed elke ring en elke grens (overworld én Nether) bezoeken, overgangsbiomes, buitenrand en world border controleren, portal-test vanuit elke ring, `/locate structure stronghold` ✗, chunk-generatietijd per ring meten. Gevonden fouten klein oplossen of als losse change in de backlog. | B, D, S, W volledig; runServer met twee clients |
