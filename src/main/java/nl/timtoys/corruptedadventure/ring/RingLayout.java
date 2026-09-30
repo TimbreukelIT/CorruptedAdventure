@@ -72,13 +72,18 @@ public final class RingLayout {
     }
 
     public RingPosition sample(ResourceKey<Level> dimension, double x, double z) {
-        int scale = Level.NETHER.equals(dimension) ? NETHER_SCALE : 1;
+        int scale = scale(dimension);
         return sampleOverworld(x * scale, z * scale);
+    }
+
+    /** Overworld blocks per block of {@code dimension}. */
+    public static int scale(ResourceKey<Level> dimension) {
+        return Level.NETHER.equals(dimension) ? NETHER_SCALE : 1;
     }
 
     /** @param x overworld x (Nether positions already multiplied by {@link #NETHER_SCALE}) */
     public RingPosition sampleOverworld(double x, double z) {
-        double distance = Math.sqrt(x * x + z * z) + boundaryOffset(x, z);
+        double distance = effectiveDistance(x, z);
         for (int i = 0; i < radii.size(); i++) {
             double zoneStart = radii.get(i) - halfTransition;
             if (distance < zoneStart) {
@@ -89,6 +94,16 @@ public final class RingLayout {
             }
         }
         return RingPosition.within(Ring.VOID);
+    }
+
+    /**
+     * Distance from (0,0) shifted by the boundary noise; this is what gets compared against the ring radii, so a
+     * position lies exactly on a boundary when this equals that boundary's radius.
+     *
+     * @param x overworld x (Nether positions already multiplied by {@link #NETHER_SCALE})
+     */
+    public double effectiveDistance(double x, double z) {
+        return Math.sqrt(x * x + z * z) + boundaryOffset(x, z);
     }
 
     /** Clamped so a boundary never moves more than {@code boundaryNoise}; {@link RingSettings#validate()} relies on that. */

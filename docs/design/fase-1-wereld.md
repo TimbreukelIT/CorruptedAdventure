@@ -82,6 +82,13 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 
 Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
+### 1.13 Debugcommando's (change 3)
+- `/ca …` alleen voor OP's (permissieniveau 2), vaste Engelse tekst (geen lang-keys).
+- `/ca ring`: ring (bij overgang: beide ringen en het gewicht), afstand tot 0,0 (in de Nether ook het overworld-equivalent) en de afstand tot de dichtstbijzijnde grens **inclusief ruis, met teken** (+ buiten, − binnen). Afstanden in blokken van de huidige dimensie.
+- `/ca tpring <1–6> [nether]` (6 = void-rand): naar het radiale midden van de nominale ring (750 / 2.500 / 4.500 / 6.500 / 8.500 / 9.750; Nether ÷4), **in je huidige richting vanaf 0,0** (op 0,0 zelf: oost). Zonder `nether` gaat het naar de overworld.
+- `/ca tpboundary <1–5> [nether]`: naar de echte, verruisde grens (gewicht 0,5) tussen ring n en n+1, in dezelfde richting. Bedoeld voor test W.
+- Landingshoogte: overworld bovenste blok (heightmap); Nether de hoogste plek met 2 blokken lucht op een stevige vloer, onder het dak. Geen veilige plek (void, lava)? Dan toch teleporteren naar een vaste Y (overworld 100, Nether 64), met een waarschuwing in de chat.
+
 ---
 
 ## 2. Ringen

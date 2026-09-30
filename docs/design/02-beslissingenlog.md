@@ -98,3 +98,7 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-09-30 | infra | Bouwplan fase 1 aangevuld: blok E (ring 3, changes 38–57), F (ring 4, 58–76), G (ring 5, 77–95), H (worldgen-eindtest, 96); volgorde zoals ring 2 | Compleet plan tot het einde van fase 1 |
 | 2026-09-30 | infra | Ringgrens-snapshot als JSON-bestand in de wereldmap, gelezen bij `ServerAboutToStartEvent`; ongeldige config of snapshot laat de server niet starten | Moet vóór de eerste chunk bestaan; liever een duidelijke fout dan een wereld met verkeerde grenzen |
 | 2026-09-30 | worldgen | Grensruis: golven (~600 blokken) + rimpels (~150 blokken), constante in code | Natuurlijke grens zonder zichtbare cirkel; bij te stellen na de W-test in change 6 |
+| 2026-09-30 | infra | `/ca tpring` landt op het radiale midden van de ring, in je huidige richting vanaf 0,0 (op 0,0: oost) | Langs één lijn door de ringen stappen |
+| 2026-09-30 | infra | Debugdoelen: `tpring 1–6` (6 = void-rand) plus `/ca tpboundary <1–5> [nether]` op de verruisde grens (gewicht 0,5) | Test W in één commando per ring en per grens |
+| 2026-09-30 | infra | Geen veilige landingsplek → toch teleporteren naar Y 100 (overworld) / 64 (Nether), met waarschuwing in de chat | OP's testen meestal in creative; het commando werkt altijd, ook in de void |
+| 2026-09-30 | infra | `/ca ring` in vaste Engelse tekst, met afstand tot de dichtstbijzijnde grens inclusief ruis (met teken); `RingLayout.effectiveDistance` read-only erbij | Grensruis controleerbaar; lang-keys pas zinvol met datagen |

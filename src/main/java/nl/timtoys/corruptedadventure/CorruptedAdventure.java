@@ -7,6 +7,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
+import nl.timtoys.corruptedadventure.command.CaCommand;
 import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
@@ -27,6 +28,7 @@ public final class CorruptedAdventure {
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
         RingSettingsSnapshot.register(NeoForge.EVENT_BUS);
         RingLayout.register(NeoForge.EVENT_BUS);
+        CaCommand.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {
