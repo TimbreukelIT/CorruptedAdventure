@@ -9,6 +9,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
+import nl.timtoys.corruptedadventure.ring.RingLayout;
 import org.slf4j.Logger;
 
 /**
@@ -25,6 +26,7 @@ public final class CorruptedAdventure {
         LOGGER.info("The Corrupted Adventure is loading");
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
         RingSettingsSnapshot.register(NeoForge.EVENT_BUS);
+        RingLayout.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

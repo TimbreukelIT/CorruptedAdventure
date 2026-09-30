@@ -34,3 +34,6 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [corruption] Ring 5-events: gefluister bij hoge stilte/void-meter, Herobrine achter je in `false_meadow`, blokken die veranderen als je wegkijkt. (bron: sparring fase 1 sessie 2)
 - [worldgen] Onmogelijke objecten in ring 5 (gras op plafonds, stilstaand water in de lucht) viel af voor fase 1; eventueel later als extra horror-feature. (bron: sparring fase 1 sessie 2)
 - [items] Placeholder-items uit fase 1-blockchanges: glitchscherf (drop van glitchblok, change 78) en zuiverkristal-scherf (change 71) worden als minimaal basis-item geregistreerd; nut, recipes en balans in fase 2. (bron: sparring fase 1 sessie 2)
+
+## Uit bouw fase 1
+- [infra] Change 18 (sync naar client): de client kent de wereldseed niet, maar `RingLayout` heeft hem nodig voor de grensruis. Sync een afgeleide ruis-seed (bijv. hash van de wereldseed), nooit de seed zelf. (bron: change 2)

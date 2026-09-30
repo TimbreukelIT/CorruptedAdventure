@@ -105,6 +105,16 @@ neoForge {
             sourceSet(sourceSets.main)
         }
     }
+
+    // JUnit tests run inside a loaded FML environment, so they can use Minecraft classes.
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
 }
 
 // Sets up a dependency configuration called 'localRuntime'.
@@ -116,6 +126,10 @@ configurations {
 }
 
 dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

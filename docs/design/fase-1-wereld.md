@@ -20,7 +20,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Client/server: puur worldgen, deterministisch per seed; geen sync nodig.
 
 ### 1.3 Ringgrenzen en overgangszones
-- Grenzen uit config (zie `00-overzicht.md`), vervormd met seeded ruis van **±96 blokken**.
+- Grenzen uit config (zie `00-overzicht.md`), vervormd met seeded ruis van **±96 blokken**. Vorm (change 2): twee lagen simplex-ruis, golven van ~600 en rimpels van ~150 blokken (75/25), gesampled in overworld-coördinaten zodat de Nether exact meeloopt.
 - Overgangszone van **~128 blokken** rond elke grens (Nether: ÷4, dus ~32 blokken en ±24 ruis).
 - In de overgangszone: blend van terrein en een eigen overgangsbiome per grens (uit te werken per ring).
 - **Config → snapshot per wereld:** de config geeft de standaardwaarden. Bij het aanmaken van een wereld worden ze in die wereld vastgelegd; daarna gebruikt `ringAt` alleen die snapshot. Een aangepaste config geldt alleen voor nieuwe werelden. De server synct de waarden naar de client (voor HUD en muren).
