@@ -15,6 +15,7 @@ import nl.timtoys.corruptedadventure.registry.ModBiomeSources;
 import nl.timtoys.corruptedadventure.registry.ModChunkGenerators;
 import nl.timtoys.corruptedadventure.registry.ModDensityFunctionTypes;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
+import nl.timtoys.corruptedadventure.worldgen.border.RingWorldBorder;
 import org.slf4j.Logger;
 
 /**
@@ -36,6 +37,7 @@ public final class CorruptedAdventure {
         DataGenerators.register(modEventBus);
         RingSettingsSnapshot.register(NeoForge.EVENT_BUS);
         RingLayout.register(NeoForge.EVENT_BUS);
+        RingWorldBorder.register(NeoForge.EVENT_BUS);
         CaCommand.register(NeoForge.EVENT_BUS);
     }
 

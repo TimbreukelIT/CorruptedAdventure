@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-09-30 — change 6 (`ring_blend`, placeholder-terrein, void-rand, chunk-generator `ring_noise`)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–6 klaar, volgende: change 7)
+**Laatst bijgewerkt:** 2026-09-30 — change 7 (world border 10.000, afgeleide Nether-border 2.500, `/ca border`)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–7 klaar, volgende: change 8)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — changes 0–6 klaar |
+| 1 — Wereld | In bouw — changes 0–7 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -41,6 +41,7 @@ src/main/java/nl/timtoys/corruptedadventure/
     CaCommand.java             ✅ `/ca`-root, registratie via `RegisterCommandsEvent`
     RingInfoCommand.java       ✅ `/ca ring`
     RingTeleportCommand.java   ✅ `/ca tpring <1–6> [nether]`, `/ca tpboundary <1–5> [nether]` + veilige landingshoogte
+    BorderInfoCommand.java     ✅ `/ca border`: border (grootte, midden, lerp) van de huidige dimensie
     RingTargets.java           ✅ pure rekenwerk: richting, ringmidden, verruisde grens (bisectie), dichtstbijzijnde grens
   registry/                    ✅ DeferredRegisters en ResourceKeys; 🔲 ModBlocks, ModItems, ModCreativeTabs, …
     ModBiomeSources.java       ✅ biome-source-type `corruptedadventure:ring`
@@ -58,6 +59,9 @@ src/main/java/nl/timtoys/corruptedadventure/
       RingChunkGenerator.java  ✅ `ring_noise`: vanilla `noise` + geen vloeistof in de void-zone
       RingFluidPicker.java     ✅ globale zee: geen vloeistof vanaf de zone ring 5 → void, anders vanilla
       RingAquifer.java         ✅ wrapper om de aquifer van elke noise chunk: ook geen lokale (lava)vloeistof in de void-zone
+    border/                    ✅ world border (server-side)
+      RingWorldBorder.java     ✅ zet de overworld-border bij de start (alleen vanilla-standaard, alleen `ring_noise`-werelden), leidt de Nether-border af, stuurt die naar Nether-spelers
+      ScaledBorderListener.java ✅ listener op de overworld-border: geschaalde dimensie = grootte ÷ `coordinate_scale` (ook lerps); `clientView` met ongeschaald midden
     feature/                   🔲 eigen features
     structure/                 🔲 (fase 3) FixedRingPlacement e.d.
   block/                       🔲 custom block-classes (alleen als gedrag nodig is)
@@ -94,6 +98,7 @@ src/test/java/nl/timtoys/corruptedadventure/
   worldgen/densityfunction/RingBlendTest.java ✅ ring kiezen, smoothstep-menging, bereik, ontbrekende ring
   worldgen/chunk/RingFluidPickerTest.java ✅ zee in de ringen, geen vloeistof vanaf de zone ring 5 → void
   worldgen/chunk/RingAquiferTest.java ✅ geen lokale lava in de void-zone, vast blijft vast, ringen houden vanilla-vloeistof
+  worldgen/border/RingWorldBorderTest.java ✅ startgrootte, vanilla-standaard (grootte én midden), Nether ÷4 (ook lerp), client-view houdt het ongeschaalde midden
 
 src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, NIET lezen om te begrijpen
   data/corruptedadventure/worldgen/biome/  12 biomes uit `PlaceholderBiomes`
@@ -130,6 +135,8 @@ docs/
 | `RingChunkGenerator` | `…worldgen.chunk` | `corruptedadventure:ring_noise`: codec van vanilla `noise` + `dimension`; vervangt in de constructor de globale vloeistof-kiezer door `RingFluidPicker` en maakt in `createBiomes`/`fillFromNoise`/`buildSurface`/`applyCarvers` zelf de noise chunk (met `RingAquifer`), omdat vanilla's fabriek private is | preset `corrupted_world` |
 | `RingFluidPicker` | `…worldgen.chunk` | `noFluid(position)` = `outer == VOID` (één regel voor beide lagen); anders de vanilla-kiezer (zeeniveau / lava onder -54). Ook gebruikt door hoogtevragen (`getBaseHeight`, structure-plaatsing) | `RingChunkGenerator`, `RingAquifer` |
 | `RingAquifer` | `…worldgen.chunk` | wrapt vanilla's aquifer: open ruimte in de void-zone → lucht, geen fluid-update; anders vanilla | `RingChunkGenerator` |
+| `RingWorldBorder` | `…worldgen.border` | `ServerStartingEvent` (ná `loadLevel()`, dat de opgeslagen border pas aan het eind toepast): per dimensie met `coordinate_scale` ≠ 1 een `ScaledBorderListener` op de overworld-border (ná vanilla's delegate); daarna overworld → midden 0,0, diameter 2 × `voidOuterRadius` als hij nog op de vanilla-standaard staat (grootte 59999968, midden 0,0, geen lerp). Bekende beperking: een admin die bewust terugzet naar 59999968 op 0,0 krijgt na een herstart weer 10.000 (geaccepteerd; geen SavedData-vlag). Na login/dimensiewissel/respawn een `ClientboundInitializeBorderPacket` naar spelers in een geschaalde dimensie. Preset-check: overworld-generator is `RingChunkGenerator` | `CorruptedAdventure` |
+| `ScaledBorderListener` | `…worldgen.border` | past alleen de grootte aan (set/lerp); midden, waarschuwing en schade komen van vanilla's delegate; broadcast via callback naar spelers in die dimensie | `RingWorldBorder` |
 | `ModBiomes` / `ModBiomeSources` | `…registry` | biome-keys / DeferredRegister voor `Registries.BIOME_SOURCE` | worldgen, datagen |
 | `DataGenerators` | `…datagen` | mod-bus-listener voor `GatherDataEvent`; nieuwe providers en datapack-registries hier aanhaken | `CorruptedAdventure` |
 
@@ -189,7 +196,7 @@ docs/
 | `data/corruptedadventure/worldgen/noise/placeholder_terrain.json`, `void_islands.json` | noise-parameters voor placeholder-terrein en void-eilanden |
 | `META-INF/accesstransformer.cfg` | wordt automatisch opgepikt door ModDevGradle en FML (geen extra config nodig) |
 
-Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=terrain-test-2` (nieuwe wereldmap per test = andere `level-name`).
+Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=border-test` (nieuwe wereldmap per test = andere `level-name`).
 
 ---
 
@@ -198,6 +205,7 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 | Naam | Soort (payload / SavedData / attachment) | Richting / scope | Doel |
 |---|---|---|---|
 | `ring_settings.json` | bestand in de wereldmap (`<wereld>/corruptedadventure/`) | server | ringgrenzen bevroren per wereld (geen SavedData: moet er zijn vóór `loadLevel()`) |
+| world border | vanilla (`level.dat`, alleen de overworld) + vanilla-border-packets | server → client | Nether-border wordt niet opgeslagen maar bij elke start afgeleid; Nether-spelers krijgen een eigen `ClientboundInitializeBorderPacket` |
 
 ---
 
@@ -220,3 +228,5 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 - Vanilla vindt het "preliminary surface" (aquifers, `above_preliminary_surface`) waar `initial_density_without_jaggedness` > 0,390625 is; tel die drempel op bij een terrein met zijn oppervlak op dichtheid 0.
 - Vanilla vult **alle** open ruimte onder `sea_level` met de standaardvloeistof (ook zonder aquifers), en de noise-aquifer zet daarnaast eigen lokale vloeistofniveaus (onder Y -10 vaak lava) zodra er een preliminary surface is, bijv. onder zwevende eilanden. Daarom `ring_noise` met eigen vloeistof-kiezer **én** aquifer-wrapper. De `lava`-router-noise helpt niet: de aquifer sampelt die op rastercoördinaten (x/64, y/40, z/64), niet op blokposities.
 - Terreincheck zonder client: RCON aanzetten in `run/server.properties` (`enable-rcon`, `rcon.password`), dan `forceload add` + `execute if block …` per Y via een klein RCON-script. Vloeistof tellen per chunk: `fill <16×128×16> minecraft:air replace minecraft:lava` (het aantal staat in de feedback; `replace lava` door lava telt 0). Daarna RCON weer uitzetten.
+- **World border:** vanilla kent in feite één border (overworld, in `level.dat`). Andere dimensies krijgen via `DelegateBorderChangeListener` de **grootte 1-op-1**; alleen het midden deelt `Level` door `coordinate_scale`. De client krijgt in elke dimensie de overworld-border (`PlayerList.sendLevelInfo`, `broadcastAll`), en `/worldborder get/set/center` werkt altijd op de overworld, ook uitgevoerd in de Nether. Test de Nether-border dus met `/ca border`. `loadLevel()` roept aan het eind `applySettings` aan: een border die je eerder zet (bijv. in `LevelEvent.Load`) wordt overschreven; zet hem in `ServerStartingEvent`. Stuur je zelf een border-packet naar een geschaalde dimensie, geef dan het **ongeschaalde** midden mee (de client deelt zelf).
+- Border en commando's testen zonder client: RCON (zie hierboven) — `/ca` werkt via RCON (permissieniveau 4), bijv. `execute in minecraft:the_nether run ca border`; `stop` via RCON slaat netjes op.

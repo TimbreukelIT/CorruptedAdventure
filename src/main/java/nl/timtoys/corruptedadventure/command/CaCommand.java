@@ -20,6 +20,7 @@ public final class CaCommand {
                 .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(RingInfoCommand.build())
                 .then(RingTeleportCommand.buildTpRing())
-                .then(RingTeleportCommand.buildTpBoundary()));
+                .then(RingTeleportCommand.buildTpBoundary())
+                .then(BorderInfoCommand.build()));
     }
 }
