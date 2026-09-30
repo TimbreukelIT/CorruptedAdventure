@@ -37,6 +37,7 @@ public final class RingLayout {
     private static volatile RingLayout current;
 
     private final List<Integer> radii;
+    private final int voidOuterRadius;
     private final int boundaryNoise;
     private final double halfTransition;
     private final SimplexNoise waves;
@@ -44,6 +45,7 @@ public final class RingLayout {
 
     public RingLayout(RingSettings settings, long seed) {
         this.radii = settings.ringOuterRadii();
+        this.voidOuterRadius = settings.voidOuterRadius();
         this.boundaryNoise = settings.boundaryNoise();
         this.halfTransition = settings.transitionWidth() / 2.0;
         RandomSource random = new XoroshiroRandomSource(seed).forkPositional().fromHashOf(CorruptedAdventure.id("ring_boundary"));
@@ -104,6 +106,17 @@ public final class RingLayout {
      */
     public double effectiveDistance(double x, double z) {
         return Math.sqrt(x * x + z * z) + boundaryOffset(x, z);
+    }
+
+    /**
+     * How far a position has crossed the void edge: 0 on the noisy outer boundary of ring 5, 1 at the void outer
+     * radius (the world border), clamped to 0–1. The far end has no noise because the world border has none either.
+     *
+     * @param x overworld x (Nether positions already multiplied by {@link #NETHER_SCALE})
+     */
+    public double voidEdgeProgress(double x, double z) {
+        double start = radii.getLast() - boundaryOffset(x, z);
+        return Mth.clamp((Math.sqrt(x * x + z * z) - start) / (voidOuterRadius - start), 0.0, 1.0);
     }
 
     /** Clamped so a boundary never moves more than {@code boundaryNoise}; {@link RingSettings#validate()} relies on that. */

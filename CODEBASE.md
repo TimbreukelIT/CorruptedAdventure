@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-09-30 — change 5 (`RingBiomeSource`, placeholder-biomes, datagen-opzet)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–5 klaar, volgende: change 6)
+**Laatst bijgewerkt:** 2026-09-30 — change 6 (`ring_blend`, placeholder-terrein, void-rand, chunk-generator `ring_noise`)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–6 klaar, volgende: change 7)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — changes 0–5 klaar |
+| 1 — Wereld | In bouw — changes 0–6 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -35,7 +35,8 @@ src/main/java/nl/timtoys/corruptedadventure/
   ring/                        ✅ ringindeling
     Ring.java                  ✅ enum RING_1…RING_5, VOID; `CODEC` (`ring_1`…`ring_5`, `void`)
     RingPosition.java          ✅ record (inner, outer, blend 0–1); `ring()`, `inTransition()`
-    RingLayout.java            ✅ `ringAt(dimension, x, z)`: seeded grensruis, Nether ×4, overgangszones
+    RingLayout.java            ✅ `ringAt(dimension, x, z)`: seeded grensruis, Nether ×4, overgangszones; `voidEdgeProgress`
+    RingColumnCache.java       ✅ per-thread kolomcache van `RingLayout` voor worldgen (ring + void-voortgang per x,z)
   command/                     ✅ debugcommando's `/ca …` (OP-only, server-side; vaste Engelse tekst)
     CaCommand.java             ✅ `/ca`-root, registratie via `RegisterCommandsEvent`
     RingInfoCommand.java       ✅ `/ca ring`
@@ -44,11 +45,19 @@ src/main/java/nl/timtoys/corruptedadventure/
   registry/                    ✅ DeferredRegisters en ResourceKeys; 🔲 ModBlocks, ModItems, ModCreativeTabs, …
     ModBiomeSources.java       ✅ biome-source-type `corruptedadventure:ring`
     ModBiomes.java             ✅ ResourceKeys van alle eigen biomes (de biomes zelf komen uit datagen)
+    ModDensityFunctionTypes.java ✅ density-function-types `ring_blend`, `void_edge`
+    ModChunkGenerators.java    ✅ chunk-generator-type `ring_noise`
   worldgen/
     biome/                     ✅ biome-source en biome-bootstraps
       RingBiomeSource.java     ✅ kiest per positie de geneste BiomeSource van de ring (via `RingLayout`)
       PlaceholderBiomes.java   ✅ datagen-bootstrap: placeholder per ring + void-rand, overworld en Nether
-    densityfunction/           🔲 eigen density functions (alleen als JSON niet volstaat)
+    densityfunction/           ✅ eigen density functions (alleen als JSON niet volstaat)
+      RingBlend.java           ✅ `ring_blend`: terrein per ring, smoothstep in de overgangszone
+      VoidEdge.java            ✅ `void_edge`: 0 op de grens van ring 5 → 1 op de border (voor de void-JSON)
+    chunk/                     ✅ chunk-generator
+      RingChunkGenerator.java  ✅ `ring_noise`: vanilla `noise` + geen vloeistof in de void-zone
+      RingFluidPicker.java     ✅ globale zee: geen vloeistof vanaf de zone ring 5 → void, anders vanilla
+      RingAquifer.java         ✅ wrapper om de aquifer van elke noise chunk: ook geen lokale (lava)vloeistof in de void-zone
     feature/                   🔲 eigen features
     structure/                 🔲 (fase 3) FixedRingPlacement e.d.
   block/                       🔲 custom block-classes (alleen als gedrag nodig is)
@@ -68,10 +77,12 @@ src/main/templates/META-INF/neoforge.mods.toml  ✅ mod-metadata; ${…} komt ui
 src/main/resources/                (lang staat niet hier maar in datagen: `datagen/*LanguageProvider`)
   data/corruptedadventure/
     worldgen/world_preset/        ✅ corrupted_world.json
-    worldgen/noise_settings/      🔲 per dimensie
-    worldgen/density_function/    🔲 terrein per ring
+    worldgen/noise_settings/      ✅ overworld.json, nether.json (kopie vanilla, terrein via `ring_blend`)
+    worldgen/density_function/    ✅ `ring_blend/<dim>`, `ring_1…5/<dim>`, `void/<dim>` (dim = overworld, nether)
+    worldgen/noise/               ✅ placeholder_terrain, void_islands (noise-parameters)
     dimension_type/               ✅ corrupted_nether.json (coordinate_scale 4)
   data/minecraft/tags/worldgen/world_preset/normal.json  ✅ zet de preset in het menu "World Type" (replace: false)
+  META-INF/accesstransformer.cfg  ✅ opent `NoiseBasedChunkGenerator.globalFluidPicker` en `NoiseChunk.aquifer` (voor `ring_noise`)
   assets/corruptedadventure/
     textures/                     🔲 handgemaakte textures
 
@@ -79,6 +90,10 @@ src/test/java/nl/timtoys/corruptedadventure/
   ring/RingLayoutTest.java     ✅ grenzen, overgang, grensruis, Nether-schaal, determinisme per seed
   command/RingTargetsTest.java ✅ ringmiddens binnen hun ring, grens-teleport op gewicht 0,5, grensafstand met teken
   worldgen/biome/RingBiomeSourceTest.java ✅ biome per ringmidden (overworld + Nether), harde wissel op gewicht 0,5, alle ringen verplicht
+  ring/RingColumnCacheTest.java ✅ cache = layout (ook na verdringen), Nether/overworld niet verward, nieuwe layout wist
+  worldgen/densityfunction/RingBlendTest.java ✅ ring kiezen, smoothstep-menging, bereik, ontbrekende ring
+  worldgen/chunk/RingFluidPickerTest.java ✅ zee in de ringen, geen vloeistof vanaf de zone ring 5 → void
+  worldgen/chunk/RingAquiferTest.java ✅ geen lokale lava in de void-zone, vast blijft vast, ringen houden vanilla-vloeistof
 
 src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, NIET lezen om te begrijpen
   data/corruptedadventure/worldgen/biome/  12 biomes uit `PlaceholderBiomes`
@@ -103,12 +118,18 @@ docs/
 | `RingSettingsSnapshot` | `…config` | leest/maakt `<wereld>/corruptedadventure/ring_settings.json` bij `ServerAboutToStartEvent`, wist bij `ServerStoppedEvent`; `current()` gooit als er geen server draait | `RingLayout` |
 | `Ring` | `…ring` | enum van de ringen + `VOID`; `byIndex(0..5)`, `number()` (1..6); `CODEC` op de namen `ring_1`…`void` | alles wat ringen kent |
 | `RingPosition` | `…ring` | resultaat van `ringAt`: binnen-/buitenring van de dichtstbijzijnde grens en `blend` (lineair; smoothstep is aan de gebruiker) | worldgen, condities, commando's |
-| `RingLayout` | `…ring` | **de enige ringfunctie**. Static `ringAt(dimension, x, z)` via `current()` (gezet bij `ServerAboutToStartEvent` met prioriteit LOW, ná de snapshot; wereldseed uit `WorldOptions`). Instantie-API `sample`/`sampleOverworld` voor tests en worldgen; `effectiveDistance` (afstand + grensruis, read-only) en static `scale(dimension)`. Ruis: simplex, golven 1/600 + rimpels 1/150, geklemd op ±`boundaryNoise`, gesampled in overworld-coördinaten | commando's, `RingBiomeSource`, straks `ring_blend`, condities |
+| `RingColumnCache` | `…ring` | ThreadLocal, direct-mapped op de lage 5 bits van x/z (32×32 kolommen), sleutel in overworld-coördinaten; wist zichzelf bij een andere `RingLayout` (nieuwe wereld). Static `ringAt`/`voidEdgeProgress` via `RingLayout.current()` | `ring_blend`, `void_edge`, `RingFluidPicker` |
+| `RingLayout` | `…ring` | **de enige ringfunctie**. Static `ringAt(dimension, x, z)` via `current()` (gezet bij `ServerAboutToStartEvent` met prioriteit LOW, ná de snapshot; wereldseed uit `WorldOptions`). Instantie-API `sample`/`sampleOverworld` voor tests en worldgen; `effectiveDistance` (afstand + grensruis, read-only), `voidEdgeProgress` (0 op de verruisde grens van ring 5, 1 op `voidOuterRadius` zonder ruis, geklemd) en static `scale(dimension)`. Ruis: simplex, golven 1/600 + rimpels 1/150, geklemd op ±`boundaryNoise`, gesampled in overworld-coördinaten | commando's, `RingBiomeSource`, `RingColumnCache`, straks condities |
 | `CaCommand` | `…command` | `/ca`-root (permissieniveau 2); nieuwe debug-subcommando's (bijv. `/ca weather`, change 20) hier aanhaken | — |
 | `RingTeleportCommand` | `…command` | teleport langs je huidige richting vanaf 0,0 (op 0,0: oost) naar ringmidden of verruisde grens; zonder `nether` altijd naar de overworld. Geen veilige plek → Y 100 / 64 + waarschuwing | `CaCommand` |
 | `RingTargets` | `…command` | pure functies in overworld-blokken; `boundaryRadius` bisecteert `effectiveDistance` binnen ±`boundaryNoise`; `nearestBoundary` meet radiaal tot de echte grens in dezelfde richting | commando's, `RingTargetsTest` |
 | `RingBiomeSource` | `…worldgen.biome` | biome-source `corruptedadventure:ring`. Codec: `dimension` (level-key; de source kent zijn dimensie anders niet) + `rings` (per `Ring` een geneste BiomeSource, alle 6 verplicht). `getNoiseBiome` → `RingLayout.current().sample(dimension, …).ring()` (harde wissel op gewicht 0,5) → geneste source met dezelfde sampler. `possibleBiomes` = unie, zonder layout. Overgangsbiomes: later een optioneel veld | preset `corrupted_world` |
 | `PlaceholderBiomes` | `…worldgen.biome` | bootstrap voor `Registries.BIOME` (datagen): alleen kleuren + neerslag/temperatuur; geen features, geen mob-spawns, geen tags | `DataGenerators` |
+| `RingBlend` | `…worldgen.densityfunction` | `corruptedadventure:ring_blend`. Codec: `dimension` + `rings` (per `Ring` een density function, alle 6 verplicht). Rekent alleen de 1–2 nodige inputs; `mapAll` geeft de visitor door aan alle inputs | `ring_blend/*.json` |
+| `VoidEdge` | `…worldgen.densityfunction` | `corruptedadventure:void_edge` (`dimension`); 2D, 0–1 | `void/*.json` |
+| `RingChunkGenerator` | `…worldgen.chunk` | `corruptedadventure:ring_noise`: codec van vanilla `noise` + `dimension`; vervangt in de constructor de globale vloeistof-kiezer door `RingFluidPicker` en maakt in `createBiomes`/`fillFromNoise`/`buildSurface`/`applyCarvers` zelf de noise chunk (met `RingAquifer`), omdat vanilla's fabriek private is | preset `corrupted_world` |
+| `RingFluidPicker` | `…worldgen.chunk` | `noFluid(position)` = `outer == VOID` (één regel voor beide lagen); anders de vanilla-kiezer (zeeniveau / lava onder -54). Ook gebruikt door hoogtevragen (`getBaseHeight`, structure-plaatsing) | `RingChunkGenerator`, `RingAquifer` |
+| `RingAquifer` | `…worldgen.chunk` | wrapt vanilla's aquifer: open ruimte in de void-zone → lucht, geen fluid-update; anders vanilla | `RingChunkGenerator` |
 | `ModBiomes` / `ModBiomeSources` | `…registry` | biome-keys / DeferredRegister voor `Registries.BIOME_SOURCE` | worldgen, datagen |
 | `DataGenerators` | `…datagen` | mod-bus-listener voor `GatherDataEvent`; nieuwe providers en datapack-registries hier aanhaken | `CorruptedAdventure` |
 
@@ -138,6 +159,9 @@ docs/
 | Naam | Type | Waar |
 |---|---|---|
 | `corruptedadventure:ring` | biome source (`RingBiomeSource`) | `ModBiomeSources`; gebruikt in `corrupted_world.json` (overworld + Nether) |
+| `corruptedadventure:ring_blend` | density function type (`RingBlend`) | `ModDensityFunctionTypes`; `ring_blend/overworld.json`, `ring_blend/nether.json` |
+| `corruptedadventure:void_edge` | density function type (`VoidEdge`) | `ModDensityFunctionTypes`; `void/*.json` |
+| `corruptedadventure:ring_noise` | chunk generator (`RingChunkGenerator`) | `ModChunkGenerators`; gebruikt in `corrupted_world.json` (overworld + Nether) |
 
 ---
 
@@ -155,11 +179,17 @@ docs/
 
 | Pad | Doel |
 |---|---|
-| `data/corruptedadventure/worldgen/world_preset/corrupted_world.json` | preset `corruptedadventure:corrupted_world`: overworld (vanilla type + noise) en `minecraft:the_nether` met type `corrupted_nether` (vanilla Nether-noise), beide met biome-source `corruptedadventure:ring` (per ring een `minecraft:fixed` met de placeholder / void-rand); The End vanilla |
+| `data/corruptedadventure/worldgen/world_preset/corrupted_world.json` | preset `corruptedadventure:corrupted_world`: overworld (vanilla type) en `minecraft:the_nether` met type `corrupted_nether`, beide met generator `corruptedadventure:ring_noise` (+ `dimension`), noise settings `corruptedadventure:overworld` / `corruptedadventure:nether` en biome-source `corruptedadventure:ring` (per ring een `minecraft:fixed` met de placeholder / void-rand); The End vanilla |
 | `data/corruptedadventure/dimension_type/corrupted_nether.json` | kopie van vanilla `the_nether` met `coordinate_scale` 4 (portals ÷4) |
 | `data/minecraft/tags/worldgen/world_preset/normal.json` | preset zichtbaar in "World Type" (niet de standaard) |
+| `data/corruptedadventure/worldgen/noise_settings/overworld.json` / `nether.json` | kopie van vanilla (incl. surface rules, aquifers, ore veins); alleen `final_density` → `ring_blend/<dim>` en (overworld) `initial_density_without_jaggedness` → `0.390625 + ring_blend/overworld` |
+| `data/corruptedadventure/worldgen/density_function/ring_blend/{overworld,nether}.json` | `ring_blend` met per ring een verwijzing naar `ring_N/<dim>` en `void/<dim>` |
+| `data/corruptedadventure/worldgen/density_function/ring_{1..5}/{overworld,nether}.json` | **placeholder-terrein** (tijdelijk): `y_clamped_gradient` + 2D-ruis; hoogtes in `fase-1-wereld.md` §1.15 |
+| `data/corruptedadventure/worldgen/density_function/void/{overworld,nether}.json` | zwevende eilanden in een hoogteband, uitdunnend met `void_edge`, leeg vanaf `void_edge` 0,8 |
+| `data/corruptedadventure/worldgen/noise/placeholder_terrain.json`, `void_islands.json` | noise-parameters voor placeholder-terrein en void-eilanden |
+| `META-INF/accesstransformer.cfg` | wordt automatisch opgepikt door ModDevGradle en FML (geen extra config nodig) |
 
-Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=biome-test` (nieuwe wereldmap per test = andere `level-name`).
+Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=terrain-test-2` (nieuwe wereldmap per test = andere `level-name`).
 
 ---
 
@@ -185,3 +215,8 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 - Lang staat alleen in datagen (`src/generated`). Zet geen handgeschreven `en_us.json`/`nl_nl.json` in `src/main/resources`: dat botst met de datagen-output (twee bestanden op hetzelfde pad in de jar).
 - `RingBiomeSource.getNoiseBiome` vraagt `RingLayout.current()`: alleen aanroepen zolang er een server draait (worldgen doet dat altijd). Tests gebruiken de package-private variant met een eigen `RingLayout`.
 - `RingLayout.current()`/`ringAt` bestaan alleen server-side zolang er een server draait. De client kent de wereldseed niet; zie backlog (change 18).
+- **Density functions:** `NoiseChunk` vult bij elke chunk *alle* `interpolated`-markers die via `mapAll` bereikbaar zijn, ook van ringen die ver weg liggen. Dure terreininvoer (bijv. vanilla-terrein als ring 1-invoer in change 9) kost dus in elke chunk; meet dat.
+- **Density functions** worden gedecodeerd vóór `ServerAboutToStartEvent` (worldgen-registries laden eerst): `RingLayout.current()` nooit in een codec of constructor aanroepen, alleen in `compute`. `initial_density_without_jaggedness` wordt ongewrapt en vanaf meerdere threads aangeroepen: geen veranderlijke instantiestaat in density functions; cache via `RingColumnCache` (ThreadLocal).
+- Vanilla vindt het "preliminary surface" (aquifers, `above_preliminary_surface`) waar `initial_density_without_jaggedness` > 0,390625 is; tel die drempel op bij een terrein met zijn oppervlak op dichtheid 0.
+- Vanilla vult **alle** open ruimte onder `sea_level` met de standaardvloeistof (ook zonder aquifers), en de noise-aquifer zet daarnaast eigen lokale vloeistofniveaus (onder Y -10 vaak lava) zodra er een preliminary surface is, bijv. onder zwevende eilanden. Daarom `ring_noise` met eigen vloeistof-kiezer **én** aquifer-wrapper. De `lava`-router-noise helpt niet: de aquifer sampelt die op rastercoördinaten (x/64, y/40, z/64), niet op blokposities.
+- Terreincheck zonder client: RCON aanzetten in `run/server.properties` (`enable-rcon`, `rcon.password`), dan `forceload add` + `execute if block …` per Y via een klein RCON-script. Vloeistof tellen per chunk: `fill <16×128×16> minecraft:air replace minecraft:lava` (het aantal staat in de feedback; `replace lava` door lava telt 0). Daarna RCON weer uitzetten.

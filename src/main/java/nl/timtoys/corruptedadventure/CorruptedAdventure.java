@@ -12,6 +12,8 @@ import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
 import nl.timtoys.corruptedadventure.registry.ModBiomeSources;
+import nl.timtoys.corruptedadventure.registry.ModChunkGenerators;
+import nl.timtoys.corruptedadventure.registry.ModDensityFunctionTypes;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import org.slf4j.Logger;
 
@@ -29,6 +31,8 @@ public final class CorruptedAdventure {
         LOGGER.info("The Corrupted Adventure is loading");
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
         ModBiomeSources.register(modEventBus);
+        ModDensityFunctionTypes.register(modEventBus);
+        ModChunkGenerators.register(modEventBus);
         DataGenerators.register(modEventBus);
         RingSettingsSnapshot.register(NeoForge.EVENT_BUS);
         RingLayout.register(NeoForge.EVENT_BUS);

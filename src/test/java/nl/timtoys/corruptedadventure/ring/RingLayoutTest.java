@@ -107,6 +107,25 @@ class RingLayoutTest {
     }
 
     @Test
+    void voidEdgeProgressStartsAtTheNoisyBoundaryAndEndsAtTheBorder() {
+        for (int angle = 0; angle < 360; angle += 5) {
+            double radians = Math.toRadians(angle);
+            double previous = 0.0;
+            for (int distance = 9500 - REACH; distance <= 10_050; distance += 5) {
+                double x = Math.cos(radians) * distance;
+                double z = Math.sin(radians) * distance;
+                double progress = layout.voidEdgeProgress(x, z);
+                assertEquals(layout.effectiveDistance(x, z) > 9500, progress > 0, "at " + distance + ", angle " + angle);
+                assertTrue(progress >= previous, "progress drops at " + distance + ", angle " + angle);
+                if (distance >= 10_000) {
+                    assertEquals(1.0, progress, 1e-9);
+                }
+                previous = progress;
+            }
+        }
+    }
+
+    @Test
     void ringNumbering() {
         assertEquals(1, Ring.RING_1.number());
         assertEquals(6, Ring.VOID.number());

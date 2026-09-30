@@ -15,7 +15,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 
 ### 1.2 Terrein-architectuur
 - Er is één noise settings per dimensie. Terrein per ring komt uit een eigen density function **`corruptedadventure:ring_blend`** (Java-type + codec).
-- `ring_blend` krijgt per ring een eigen density function (JSON, in `worldgen/density_function/<ring>/…`) en kiest op basis van `ringAt` welke geldt. In de overgangszone mengt hij lineair (of smoothstep) tussen de twee aangrenzende ringen.
+- `ring_blend` krijgt per ring een eigen density function (JSON, in `worldgen/density_function/<ring>/…`) en kiest op basis van `ringAt` welke geldt. In de overgangszone mengt hij met een **smoothstep** (3t² − 2t³) op het lineaire gewicht tussen de twee aangrenzende ringen: geen knik aan de randen van de zone (zie §1.15).
 - Alle overige terreinlogica (vorm, canyons, vulkanen) blijft data-driven in JSON.
 - Client/server: puur worldgen, deterministisch per seed; geen sync nodig.
 
@@ -49,6 +49,8 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 ### 1.8 Buitenrand
 - 9.500–10.000: het terrein van ring 5 brokkelt af tot **zwevende eilanden** en daarna lege **void** (via `ring_blend`: een aparte 'void'-invoer).
 - **World border op 10.000** (Nether: 2.500 via `coordinate_scale` 4). Gezet bij het aanmaken van de wereld (server-side).
+- Vorm (change 6): zwevende eilanden (overworld Y ~50–110, Nether Y ~30–90) die van de grens van ring 5 tot ~9.900 dunner en zeldzamer worden; de laatste ~100 blokken vóór de border zijn leeg. Nether ÷4. Afstemming op het echte ring 5-terrein volgt in change 89.
+- **Geen water of lava in de void:** vanaf het begin van de overgangszone ring 5 → void geeft de wereld geen zee-vloeistof meer (eigen chunk-generator, zie §1.15).
 
 ### 1.9 Omgevingscondities (systeem)
 - Per conditie (hitte, gif, void, …) een **meter 0–100 per speler**, opgeslagen in een player attachment.
@@ -94,6 +96,22 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Placeholders (tijdelijk):** `placeholder_ring_1…5` (overworld) en `placeholder_nether_ring_1…5` (Nether). Alleen een **eigen kleur** (lucht, fog, water, gras, blad; Nether vooral fog) en **eigen weer** (neerslag en temperatuur: ring 1 en 4 met regen, ring 2, 3, 5 en de Nether droog). **Geen features, geen mob-spawns**, geen `has_structure/*`-tags. Ze verdwijnen zodra de echte biomes van een ring er zijn.
 - **Void (blijvend):** `void_edge` (overworld) en `nether_void_edge` (Nether), voorbij ring 5; aparte biomes zodat sfeer later per dimensie kan.
 - Overgangszone: harde wissel op gewicht 0,5 tot er overgangsbiomes zijn (§1.3).
+
+### 1.15 `ring_blend` en placeholder-terrein (change 6)
+- **Chunk-generator `corruptedadventure:ring_noise`** (overworld en Nether): vanilla noise-generatie zonder vloeistof in de void-zone. Vanilla vult alle open ruimte onder zeeniveau met water (overworld) of lava (Nether) en zet daarnaast lokale aquifer-vloeistof (onder Y -10 lava, bijv. onder zwevende eilanden); `ring_noise` doet geen van beide vanaf de zone ring 5 → void (vloeistof-kiezer + aquifer-wrapper). Later ook bruikbaar voor ringen met een eigen vloeistofregel.
+- **Mengcurve:** smoothstep op het lineaire gewicht van `ringAt`.
+- **Placeholder-terrein (tijdelijk; elke ring vervangt het in zijn eigen terreinchange):**
+
+| Ring | Overworld: oppervlak | Nether: vloer (dak vanaf Y ~110) |
+|---|---|---|
+| 1 | Y ~70 | Y ~30 (lavazee op 32 zichtbaar) |
+| 2 | Y ~95 | Y ~40 |
+| 3 | Y ~120 | Y ~55 |
+| 4 | Y ~64 (rond zeeniveau) | Y ~45 |
+| 5 | Y ~85 | Y ~60 |
+
+  Overworld ±8 blokken ruis; Nether-vloer ±8, dak ±4. Grootste sprong (ring 3 → 4, 56 blokken) over een zone van 128 blokken: helling < 1:2, geen kliffen.
+- **Void-invoer:** zie §1.8. Aan de void-kant zakt het terrein van ring 5 in de overgangszone weg tot een afbrokkelende rand; midden in de zone valt het naar de void.
 
 ---
 
@@ -451,7 +469,7 @@ Elke change: één categorie, afgesloten met `/code-review`, `CODEBASE.md` bijge
 | 3 | `infra` | Debugcommando's: `/ca ring` (ring, afstand, overgangsgewicht op je positie) en `/ca tpring <n> [nether]`. Alleen voor OP's. | B, S; commando's werken op de server |
 | 4 | `worldgen` | World preset `corrupted_world` + dimension type `corrupted_nether` (`coordinate_scale` 4, `ultrawarm`), voorlopig met vanilla terrein en vaste biome (overworld `minecraft:plains`, Nether `minecraft:nether_wastes`; de overworld houdt het vanilla dimension type). The End blijft technisch in de preset. Testseed: `20260930`. Menunaam "Corrupted World" / "Corrupte wereld"; de preset is niet de standaard. | B, S, W: preset kiesbaar; portals landen op ÷4. *("End niet bereikbaar" verschoven naar change 5: vaste plains zit in `has_structure/stronghold`, dus tot change 5 bestaan er nog strongholds.)* |
 | 5 | `worldgen` | `RingBiomeSource` (+ codec) + één placeholder-biome per ring in overworld en Nether (datagen), plus een void-biome. Geen stronghold-tags. | B, D, S, W: F3 toont de juiste placeholder per ring; `/locate structure stronghold` vindt niets, End dus niet bereikbaar (test uit change 4) |
-| 6 | `worldgen` | Density function `ring_blend` (+ codec) met per ring een placeholder-terrein (duidelijk verschillende hoogtes) en een void-invoer (zwevende eilanden → leegte, 9.500–10.000). Voor overworld en Nether. | B, S, W: hoogteverschil per ring zichtbaar, overgang zonder kliffen, void voorbij 9.500 |
+| 6 | `worldgen` | Density function `ring_blend` (+ codec) met per ring een placeholder-terrein (duidelijk verschillende hoogtes) en een void-invoer (zwevende eilanden → leegte, 9.500–10.000). Voor overworld en Nether. Plus chunk-generator `ring_noise`: geen water/lava in de void (§1.15). | B, S, W: hoogteverschil per ring zichtbaar, overgang zonder kliffen, void voorbij 9.500 |
 | 7 | `worldgen` | World border op 10.000 bij wereldcreatie (Nether 2.500 via schaal). | B, S: `/worldborder get` in overworld en Nether |
 
 ### B. Ring 1

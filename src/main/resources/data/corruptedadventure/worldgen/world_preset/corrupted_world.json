@@ -3,7 +3,8 @@
     "minecraft:overworld": {
       "type": "minecraft:overworld",
       "generator": {
-        "type": "minecraft:noise",
+        "type": "corruptedadventure:ring_noise",
+        "dimension": "minecraft:overworld",
         "biome_source": {
           "type": "corruptedadventure:ring",
           "dimension": "minecraft:overworld",
@@ -34,13 +35,14 @@
             }
           }
         },
-        "settings": "minecraft:overworld"
+        "settings": "corruptedadventure:overworld"
       }
     },
     "minecraft:the_nether": {
       "type": "corruptedadventure:corrupted_nether",
       "generator": {
-        "type": "minecraft:noise",
+        "type": "corruptedadventure:ring_noise",
+        "dimension": "minecraft:the_nether",
         "biome_source": {
           "type": "corruptedadventure:ring",
           "dimension": "minecraft:the_nether",
@@ -71,7 +73,7 @@
             }
           }
         },
-        "settings": "minecraft:nether"
+        "settings": "corruptedadventure:nether"
       }
     },
     "minecraft:the_end": {

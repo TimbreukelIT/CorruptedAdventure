@@ -1,0 +1,46 @@
+{
+  "type": "minecraft:interpolated",
+  "argument": {
+    "type": "minecraft:max",
+    "argument1": {
+      "type": "minecraft:add",
+      "argument1": {
+        "type": "minecraft:y_clamped_gradient",
+        "from_y": 39,
+        "to_y": 71,
+        "from_value": 1.0,
+        "to_value": -1.0
+      },
+      "argument2": {
+        "type": "minecraft:mul",
+        "argument1": 0.5,
+        "argument2": {
+          "type": "minecraft:noise",
+          "noise": "corruptedadventure:placeholder_terrain",
+          "xz_scale": 1.0,
+          "y_scale": 0.0
+        }
+      }
+    },
+    "argument2": {
+      "type": "minecraft:add",
+      "argument1": {
+        "type": "minecraft:y_clamped_gradient",
+        "from_y": 94,
+        "to_y": 126,
+        "from_value": -1.0,
+        "to_value": 1.0
+      },
+      "argument2": {
+        "type": "minecraft:mul",
+        "argument1": 0.25,
+        "argument2": {
+          "type": "minecraft:noise",
+          "noise": "corruptedadventure:placeholder_terrain",
+          "xz_scale": 1.7,
+          "y_scale": 0.0
+        }
+      }
+    }
+  }
+}
