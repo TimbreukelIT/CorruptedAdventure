@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-09-30 — change 3 (debugcommando's `/ca ring`, `/ca tpring`, `/ca tpboundary`)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–3 klaar, volgende: change 4)
+**Laatst bijgewerkt:** 2026-09-30 — change 4 (world preset `corrupted_world` + dimension type `corrupted_nether`)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–4 klaar, volgende: change 5)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — changes 0–3 klaar |
+| 1 — Wereld | In bouw — changes 0–4 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -58,14 +58,16 @@ src/main/java/nl/timtoys/corruptedadventure/
     CorruptedAdventureClient.java ✅ client-entrypoint (@Mod dist = CLIENT)
 
 src/main/resources/
-  assets/corruptedadventure/lang/en_us.json  ✅ leeg; wordt straks door datagen vervangen
+  assets/corruptedadventure/lang/en_us.json  ✅ handgeschreven (alleen de preset-naam); wordt straks door datagen vervangen
+  assets/corruptedadventure/lang/nl_nl.json  ✅ idem, Nederlands
 src/main/templates/META-INF/neoforge.mods.toml  ✅ mod-metadata; ${…} komt uit gradle.properties
   data/corruptedadventure/
-    worldgen/world_preset/        🔲 corrupted_world.json
+    worldgen/world_preset/        ✅ corrupted_world.json
     worldgen/noise_settings/      🔲 per dimensie
     worldgen/density_function/    🔲 terrein per ring
     worldgen/biome/               🔲 biomes per ring (of via datagen)
-    dimension_type/               🔲 corrupted_nether.json (coordinate_scale 4)
+    dimension_type/               ✅ corrupted_nether.json (coordinate_scale 4)
+  data/minecraft/tags/worldgen/world_preset/normal.json  ✅ zet de preset in het menu "World Type" (replace: false)
   assets/corruptedadventure/
     textures/                     🔲 handgemaakte textures
 
@@ -139,7 +141,11 @@ docs/
 
 | Pad | Doel |
 |---|---|
-| _nog geen_ | |
+| `data/corruptedadventure/worldgen/world_preset/corrupted_world.json` | preset `corruptedadventure:corrupted_world`: overworld (vanilla type + noise, vaste biome `plains`), `minecraft:the_nether` met type `corrupted_nether` (vanilla Nether-noise, vaste biome `nether_wastes`), The End vanilla. Vaste biomes zijn tijdelijk tot `RingBiomeSource` (change 5) |
+| `data/corruptedadventure/dimension_type/corrupted_nether.json` | kopie van vanilla `the_nether` met `coordinate_scale` 4 (portals ÷4) |
+| `data/minecraft/tags/worldgen/world_preset/normal.json` | preset zichtbaar in "World Type" (niet de standaard) |
+
+Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=preset-test` (nieuwe wereldmap per test = andere `level-name`).
 
 ---
 
@@ -158,4 +164,7 @@ docs/
 - `ServerAboutToStartEvent` komt vóór `loadLevel()` (dedicated en integrated); dat is het moment voor staat die vóór de eerste chunk nodig is. Een exception daar crasht de server bewust; bij het afsluiten volgt dan een onschuldige vanilla-NPE (`getWorldBorder()` op een niet-geladen level).
 - Unit tests draaien mee met `./gradlew build` (FML-omgeving, eerste run ~2 min). Resultaten: `build/test-results/test/*.xml`; de console toont alleen fouten.
 - Heightmaps van een niet-geladen chunk lezen als leeg (`getMinBuildHeight`): eerst `level.getChunk(cx, cz)` (laadt/genereert), dan `getHeight`. Nether: niet de heightmap gebruiken (die geeft het dak), maar van onder het dak omlaag zoeken.
+- De Nether-dimensie moet de key `minecraft:the_nether` houden (met ons type `corrupted_nether`): `RingLayout.scale` en vanilla's portal-logica werken op `Level.NETHER`. Portalschaal = `coordinate_scale` bron ÷ doel.
+- Lang-key van een world preset: `generator.<namespace>.<path>`.
+- Tot change 5 zit de vaste `minecraft:plains` in `#has_structure/stronghold` (via `#is_overworld`): testwerelden van change 4 hebben dus nog strongholds.
 - `RingLayout.current()`/`ringAt` bestaan alleen server-side zolang er een server draait. De client kent de wereldseed niet; zie backlog (change 18).

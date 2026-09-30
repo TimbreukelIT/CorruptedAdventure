@@ -102,3 +102,7 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-09-30 | infra | Debugdoelen: `tpring 1–6` (6 = void-rand) plus `/ca tpboundary <1–5> [nether]` op de verruisde grens (gewicht 0,5) | Test W in één commando per ring en per grens |
 | 2026-09-30 | infra | Geen veilige landingsplek → toch teleporteren naar Y 100 (overworld) / 64 (Nether), met waarschuwing in de chat | OP's testen meestal in creative; het commando werkt altijd, ook in de void |
 | 2026-09-30 | infra | `/ca ring` in vaste Engelse tekst, met afstand tot de dichtstbijzijnde grens inclusief ruis (met teken); `RingLayout.effectiveDistance` read-only erbij | Grensruis controleerbaar; lang-keys pas zinvol met datagen |
+| 2026-09-30 | worldgen | Change 4: vaste biome `minecraft:plains` (overworld) en `minecraft:nether_wastes` (Nether) tot de `RingBiomeSource` er is; test "End niet bereikbaar" schuift naar change 5 | Simpelst; testwerelden van change 4 zijn wegwerp, change 5 vervangt de biome-source toch |
+| 2026-09-30 | worldgen | Testseed voor test W: `20260930` | Numeriek en makkelijk te typen; gelijk in singleplayer en `server.properties` |
+| 2026-09-30 | worldgen | Preset-naam in het menu: "Corrupted World" (en_us) / "Corrupte wereld" (nl_nl); lang met de hand tot er datagen is | Sluit aan op de registry-naam |
+| 2026-09-30 | worldgen | Overworld houdt het vanilla dimension type; de preset is niet de standaard in "World Type" | Alleen de Nether heeft een afwijkende schaal nodig; vanilla-presets blijven onaangetast |
