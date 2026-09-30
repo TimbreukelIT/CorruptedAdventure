@@ -24,7 +24,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Overgangszone van **~128 blokken** rond elke grens (Nether: ÷4, dus ~32 blokken en ±24 ruis).
 - In de overgangszone: blend van terrein en een eigen overgangsbiome per grens (uit te werken per ring).
 - **Config → snapshot per wereld:** de config geeft de standaardwaarden. Bij het aanmaken van een wereld worden ze in die wereld vastgelegd; daarna gebruikt `ringAt` alleen die snapshot. Een aangepaste config geldt alleen voor nieuwe werelden. De server synct de waarden naar de client (voor HUD en muren).
-- Aandachtspunt voor de bouw: de snapshot moet beschikbaar zijn **vóór de eerste chunk** gegenereerd wordt (ook de spawn-chunks). Waarschijnlijk betekent dat een eigen bestand in de wereldmap, gelezen bij `ServerAboutToStartEvent`, in plaats van gewone `SavedData` (die pas bestaat als de level geladen is). Uitzoeken in change 1.
+- Snapshot (gebouwd in change 1): `<wereld>/corruptedadventure/ring_settings.json`, gelezen of aangemaakt bij `ServerAboutToStartEvent` (die op dedicated én integrated server vóór `loadLevel()` komt, dus vóór de spawn-chunks). Geen `SavedData`, want die bestaat pas als de level geladen is. Een bestaand snapshot gaat altijd vóór de config. Ongeldige config of corrupt snapshot → de server start niet (duidelijke foutmelding), nooit stilletjes terugvallen.
 
 ### 1.4 Textures
 - Eerst **placeholders**: getinte/gerecolorde vanilla-textures, zodat worldgen en sfeer testbaar zijn.

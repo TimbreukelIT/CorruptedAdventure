@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-09-30 — change 0 (package hernoemd naar `nl.timtoys.corruptedadventure`)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; change 0 klaar, volgende: change 1)
+**Laatst bijgewerkt:** 2026-09-30 — change 1 (ringgrenzen in config + snapshot per wereld)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–1 klaar, volgende: change 2)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — change 0 klaar |
+| 1 — Wereld | In bouw — changes 0–1 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -28,7 +28,10 @@ Status: ✅ bestaat · 🔲 gepland
 ```
 src/main/java/nl/timtoys/corruptedadventure/
   CorruptedAdventure.java      ✅ @Mod-entrypoint (common); MOD_ID, LOGGER, id(path). Registreert straks de DeferredRegisters
-  config/                      🔲 ModConfig: ringgrenzen, balanswaarden (enige plek voor ringgrenzen)
+  config/                      ✅ config en per-wereld-snapshot (enige plek voor ringgrenzen)
+    CommonConfig.java          ✅ COMMON-config (`corruptedadventure-common.toml`): standaard-ringgrenzen; 🔲 balanswaarden
+    RingSettings.java          ✅ record + Codec + validatie van de ringgrenzen
+    RingSettingsSnapshot.java  ✅ snapshot per wereld; `current()` voor `ringAt` (server-side, sync in change 18)
   ring/                        🔲 Ring (enum), RingLayout.ringAt(dimension, x, z)
   registry/                    🔲 ModBlocks, ModItems, ModBiomes, ModCreativeTabs, ModBiomeSources, …
   worldgen/
@@ -74,6 +77,9 @@ docs/
 |---|---|---|---|
 | `CorruptedAdventure` | `nl.timtoys.corruptedadventure` | common entrypoint, `MOD_ID`, `LOGGER`, `id(path)` | alles |
 | `CorruptedAdventureClient` | `nl.timtoys.corruptedadventure.client` | client entrypoint (`Dist.CLIENT`) | — |
+| `CommonConfig` | `…config` | COMMON-config; ringgrenzen als standaard voor **nieuwe** werelden. `ringSettings()` is package-private: alleen de snapshot leest de config | `RingSettingsSnapshot` |
+| `RingSettings` | `…config` | 5 buitenradii, void-rand, grensruis, overgangsbreedte (overworld-blokken; Nether ÷4 in `ringAt`). `CODEC` + `validate()` | snapshot, straks `RingLayout` |
+| `RingSettingsSnapshot` | `…config` | leest/maakt `<wereld>/corruptedadventure/ring_settings.json` bij `ServerAboutToStartEvent`, wist bij `ServerStoppedEvent`; `current()` gooit als er geen server draait | straks `RingLayout.ringAt` |
 
 ---
 
@@ -108,6 +114,8 @@ docs/
 | `gradle.properties` | MC 1.21.1, NeoForge 21.1.252, parchment 2024.11.17, `mod_id`, `mod_group_id=nl.timtoys.corruptedadventure`, versie |
 | `build.gradle` | ModDevGradle; runs: client, server, gameTestServer, data (output naar `src/generated/resources`) |
 | `.github/workflows/build.yml` | CI-build uit de MDK |
+| `run/config/corruptedadventure-common.toml` | (niet in git) COMMON-config, ontstaat bij de eerste start |
+| `tools/server-smoke-test.sh` | test S: start `runServer`, wacht op `Done (` of een fout, stopt de server-JVM; log in `build/runServer.log` |
 
 ## Databestanden (handgeschreven)
 
@@ -121,11 +129,12 @@ docs/
 
 | Naam | Soort (payload / SavedData / attachment) | Richting / scope | Doel |
 |---|---|---|---|
-| _nog geen_ | | | |
+| `ring_settings.json` | bestand in de wereldmap (`<wereld>/corruptedadventure/`) | server | ringgrenzen bevroren per wereld (geen SavedData: moet er zijn vóór `loadLevel()`) |
 
 ---
 
 ## Bekende valkuilen
 
 - _Voeg hier dingen toe die tijd kostten om uit te zoeken, zodat een volgende sessie ze niet opnieuw hoeft te ontdekken._
-- `./gradlew runServer` stuurt stdin niet door: `stop` via een pipe werkt niet. Wacht in de log op `Done (`, stop daarna het server-JVM-proces (`java.exe` met `-Dfml.modFolders=corruptedadventure…`). `run/eula.txt` (`eula=true`) is nodig; `run/` staat in `.gitignore`.
+- `./gradlew runServer` stuurt stdin niet door: `stop` via een pipe werkt niet. Gebruik `tools/server-smoke-test.sh` (wacht op `Done (`, stopt dan de server-JVM). `run/eula.txt` (`eula=true`) is nodig; `run/` staat in `.gitignore`.
+- `ServerAboutToStartEvent` komt vóór `loadLevel()` (dedicated en integrated); dat is het moment voor staat die vóór de eerste chunk nodig is. Een exception daar crasht de server bewust; bij het afsluiten volgt dan een onschuldige vanilla-NPE (`getWorldBorder()` op een niet-geladen level).
