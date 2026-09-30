@@ -92,7 +92,7 @@ Een fase begint altijd met een sparringsessie (§3). Werk niet vooruit in een la
 Details: `docs/design/01-techniek.md`. Samenvatting:
 
 - Minecraft 1.21.1, NeoForge 21.1.x, Java 21, Gradle met ModDevGradle.
-- Mod-ID `corruptedadventure`, package `nl.corruptedadventure`.
+- Mod-ID `corruptedadventure`, package `nl.timtoys.corruptedadventure`.
 - Registries via `DeferredRegister`; namen in snake_case (`scorched_sandstone`, `ash_ore`).
 - Eigen world preset `corruptedadventure:corrupted_world` met eigen overworld en eigen Nether (`coordinate_scale` 4). The End is onbereikbaar (geen strongholds).
 - **Eén ringfunctie:** `ringAt(dimension, x, z)` in de `ring`-package. Worldgen, grenssysteem, kompas en condities gebruiken allemaal deze functie. Ringgrenzen staan alleen in config, nergens anders hardcoded.
