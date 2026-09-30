@@ -11,14 +11,14 @@ Avontuur-, horror- en survivalmod rond Herobrine. De speler reist van een vertro
 | 3 | Vulkanische ring | Vulkanen en lavameren; het water is "gestolen" | 3.500 – 5.500 | 875 – 1.375 |
 | 4 | Moerasring | Gestolen water, gif, enge beesten boven en onder de grond | 5.500 – 7.500 | 1.375 – 1.875 |
 | 5 | Corrupted ring | Wastezone, void, glitches; Herobrines kastelen | 7.500 – 9.500 | 1.875 – 2.375 |
-| — | Buitenrand | Pure void + world border | > 9.500 | > 2.375 |
+| — | Buitenrand | Afbrokkelend terrein en void; world border op 10.000 | 9.500 – 10.000 | 2.375 – 2.500 |
 
-Grenzen hebben ruis (geen perfecte cirkels) en overgangszones. Alle waarden staan centraal in config, zodat ze te balanceren zijn.
+Grenzen hebben ruis (±96 blokken) en overgangszones (~128 blokken). Alle waarden staan centraal in config, zodat ze te balanceren zijn. Elke grens krijgt een eigen soort muur (mist, as, …) die de ring erachter vaag houdt tot de bewaker verslagen is. Uitwerking: `fase-1-wereld.md`.
 
 Verhaallijn: het water uit ring 3 is gestolen en naar ring 4 gestroomd. Dit is een aanknopingspunt voor quests en lore.
 
 ## De Nether als tussenwereld
-- De Nether volgt dezelfde ringindeling, met **coördinatenschaal 4**. Elke Nether-ring is de **tegenpool** van de bijbehorende overworld-ring.
+- De Nether volgt dezelfde ringindeling, met **coördinatenschaal 4**. Elke Nether-ring is de **tegenpool** van de bijbehorende overworld-ring: 1 vanilla-Nether · 2 doorweekte schimmel-Nether · 3 bevroren Nether · 4 droge kristal-/bottenwoestijn · 5 'zuivere' witte, stille Nether. Het sleutelmateriaal van Nether-ring N is thematisch een tegengif voor ring N+1.
 - Een portal in overworld-ring N komt automatisch uit in Nether-ring N.
 - De Nether-ringen bevatten speciale items en quests die nodig zijn voor progressie naar de volgende ring.
 - Voorstel voor de progressielus per ring: overworld-ring N verkennen → Nether-ring N (tegenpool, sleutelmateriaal) → bewaker van grens N oproepen en verslaan → ring N+1 open.

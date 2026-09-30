@@ -5,7 +5,7 @@
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
 **Laatst bijgewerkt:** 2026-09-30 — repo opgezet vanuit NeoForge MDK 1.21.1 (ModDevGradle), example-code verwijderd
-**Huidige fase:** 1 — Wereld (sparringsessie)
+**Huidige fase:** 1 — Wereld (sparring sessie 1 klaar: fundament + ring 1–2; bouwplan in `docs/design/fase-1-wereld.md` §3)
 
 ---
 
@@ -61,7 +61,7 @@ src/main/templates/META-INF/neoforge.mods.toml  ✅ mod-metadata; ${…} komt ui
 src/generated/resources/       🔲 datagen-output — NIET handmatig bewerken, NIET lezen om te begrijpen
 
 docs/
-  design/                      ✅ 00-overzicht, 01-techniek, 02-beslissingenlog; 🔲 fase-N-*
+  design/                      ✅ 00-overzicht, 01-techniek, 02-beslissingenlog, fase-1-wereld (incl. bouwplan); 🔲 fase-2..5
   prompts/                     ✅ opdrachten voor Claude Code (opdracht-01-sparring-fase-1)
   backlog.md                   ✅
 ```

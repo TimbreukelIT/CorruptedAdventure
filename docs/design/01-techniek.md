@@ -4,7 +4,7 @@ Technische architectuur en afspraken. De werkafspraken voor Claude Code staan in
 ## Stack
 - Minecraft 1.21.1, NeoForge 21.1.x (Java 21, Gradle, NeoForge MDK / ModDevGradle)
 - Mod-ID: `corruptedadventure`
-- Package: `nl.corruptedadventure`
+- Package: `nl.timtoys.corruptedadventure`
 - Registries via `DeferredRegister`; namen in snake_case (`scorched_sandstone`, `ash_ore`)
 - Assets en data zoveel mogelijk via **datagen** (blockstates, models, loot tables, tags, recipes, lang)
 
@@ -16,11 +16,12 @@ Technische architectuur en afspraken. De werkafspraken voor Claude Code staan in
 
 ## Ringarchitectuur (fase 1)
 - Eigen **BiomeSource** die de ring bepaalt op basis van afstand tot (0,0), met ruis op de grens, zodat ringen geen perfecte cirkels zijn.
-- Binnen een ring bepalen noise-parameters welke biome-variant verschijnt.
-- Overgangszones tussen ringen met eigen overgangsbiomes.
-- Terrein per ring via density functions en noise settings (JSON), met Java alleen waar data-driven niet volstaat.
+- Binnen een ring bepalen noise-parameters welke biome-variant verschijnt. Ring 1 gebruikt eigen kopieën van de vanilla biomes (datagen, zonder stronghold-tag) met de vanilla-klimaatparameters.
+- Overgangszones (~128 blokken, grensruis ±96) tussen ringen met eigen overgangsbiomes.
+- Terrein per ring via één eigen density function `corruptedadventure:ring_blend`: kiest per positie (via `ringAt`) de JSON-density function van de ring en mengt in de overgangszone. Er is één noise settings per dimensie; al het overige terrein blijft JSON.
+- Buitenrand: `ring_blend` heeft een aparte void-invoer (zwevende eilanden → leegte, 9.500–10.000). World border op 10.000, server-side gezet bij het aanmaken van de wereld.
 - Grotten via carvers en density functions per ring; ores via placed features per biome.
-- Ringgrenzen staan in één centrale config/constante. Er is één functie `ringAt(dimension, x, z)` die door worldgen, condities, het grenssysteem en het kompas wordt gebruikt.
+- Ringgrenzen staan in één centrale config. Bij het aanmaken van een wereld worden de waarden als snapshot in die wereld vastgelegd (vóór de eerste chunk); daarna gebruikt `ringAt` alleen die snapshot, zodat een latere config-wijziging geen breuklijnen geeft. De server synct de snapshot naar de client. Er is één functie `ringAt(dimension, x, z)` die door worldgen, condities, het grenssysteem en het kompas wordt gebruikt.
 
 ## Nether (fase 1)
 - Eigen Nether-dimension type (`corruptedadventure:corrupted_nether`) met **`coordinate_scale` 4** en een BiomeSource met dezelfde ringlogica.
@@ -29,9 +30,9 @@ Technische architectuur en afspraken. De werkafspraken voor Claude Code staan in
 - Hoogtelimiet van de Nether: bedrock-plafond op Y 128. Structures plat en breed houden.
 
 ## Weer, sfeer en omgevingscondities (fase 1)
-- **Weer per ring:** de weerstaat (per ring of per regio) leeft server-side en wordt naar de client gesynct. De client rendert alleen (lucht, fog, neerslag, particles) in de `client`-package.
+- **Weer per ring:** vanilla regen/onweer blijft (alleen zichtbaar in biomes met neerslag). Daarnaast een eigen weercyclus per ring (niet per regio), in `SavedData` per dimensie, die server-side leeft en naar de client wordt gesynct. De client rendert alleen (lucht, fog, neerslag, particles) in de `client`-package.
 - **Sfeer:** lucht-, fog- en waterkleuren zoveel mogelijk via biome-data (data-driven); alleen afwijkend gedrag (bijv. glitch-fog in ring 5) via client-code.
-- **Omgevingscondities** (hitte, gif, void-effecten): een server-side tick-handler (bijv. elke 20 ticks) bepaalt via `ringAt` en biome wat een speler ondervindt en past effecten toe. Geen condities berekenen op de client.
+- **Omgevingscondities** (hitte, gif, void-effecten): per conditie een meter 0–100 per speler (player attachment). Een server-side tick-handler (elke 20 ticks) bepaalt via `ringAt`, biome en ringweer of de meter oploopt of afneemt; drempels geven effecten (config). De waarde wordt bij verandering gesynct voor een HUD-balk (client-only). Geen condities berekenen op de client. Nether-condities alleen in Nether-3 en Nether-5.
 - Condities hebben een tegenmaatregel (gear, item of blok) die in fase 2 komt; in fase 1 alleen de conditie zelf, met config-waarden voor sterkte.
 
 ## The End uitschakelen
