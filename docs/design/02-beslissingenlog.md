@@ -106,3 +106,7 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-09-30 | worldgen | Testseed voor test W: `20260930` | Numeriek en makkelijk te typen; gelijk in singleplayer en `server.properties` |
 | 2026-09-30 | worldgen | Preset-naam in het menu: "Corrupted World" (en_us) / "Corrupte wereld" (nl_nl); lang met de hand tot er datagen is | Sluit aan op de registry-naam |
 | 2026-09-30 | worldgen | Overworld houdt het vanilla dimension type; de preset is niet de standaard in "World Type" | Alleen de Nether heeft een afwijkende schaal nodig; vanilla-presets blijven onaangetast |
+| 2026-09-30 | worldgen | Overgangszone kiest tot er overgangsbiomes zijn hard op gewicht 0,5 (inner/outer); overgangsbiomes later via een optioneel veld van de ring-BiomeSource | Niets om weg te gooien; de zone is via `/ca ring` zichtbaar |
+| 2026-09-30 | worldgen | Placeholder-biomes: alleen eigen kleur en eigen weer (neerslag/temperatuur) per ring; geen features, geen mob-spawns, geen structure-tags | Minimaal werk, per ring herkenbaar; vijandige mobs hinderen test W niet |
+| 2026-09-30 | worldgen | Void-biomes `void_edge` en `nether_void_edge` zijn blijvend; ringplaceholders heten tijdelijk `placeholder_ring_1…5` / `placeholder_nether_ring_1…5` | Void-sfeer later per dimensie; placeholders zijn aan de naam als tijdelijk herkenbaar |
+| 2026-09-30 | worldgen | Lang (incl. preset-naam) vanaf change 5 via datagen (`en_us` + `nl_nl`); handgeschreven lang-bestanden verwijderd | Conventie "lang-keys via datagen" (CLAUDE.md §9) |

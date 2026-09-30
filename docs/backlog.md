@@ -37,3 +37,4 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 
 ## Uit bouw fase 1
 - [infra] Change 18 (sync naar client): de client kent de wereldseed niet, maar `RingLayout` heeft hem nodig voor de grensruis. Sync een afgeleide ruis-seed (bijv. hash van de wereldseed), nooit de seed zelf. (bron: change 2)
+- [worldgen] Vanilla kiest het spawnpunt op het klimaat uit de noise settings (`spawn_target`), niet op de BiomeSource: het kan tot ~2.500 blokken van 0,0 liggen, dus buiten ring 1. Expliciet oplossen in change 9 (gegarandeerd land rond spawn nabij 0,0). (bron: change 5, review)

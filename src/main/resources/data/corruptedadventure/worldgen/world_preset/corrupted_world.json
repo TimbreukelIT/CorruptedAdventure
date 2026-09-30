@@ -5,8 +5,34 @@
       "generator": {
         "type": "minecraft:noise",
         "biome_source": {
-          "type": "minecraft:fixed",
-          "biome": "minecraft:plains"
+          "type": "corruptedadventure:ring",
+          "dimension": "minecraft:overworld",
+          "rings": {
+            "ring_1": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:placeholder_ring_1"
+            },
+            "ring_2": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:placeholder_ring_2"
+            },
+            "ring_3": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:placeholder_ring_3"
+            },
+            "ring_4": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:placeholder_ring_4"
+            },
+            "ring_5": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:placeholder_ring_5"
+            },
+            "void": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:void_edge"
+            }
+          }
         },
         "settings": "minecraft:overworld"
       }
@@ -16,8 +42,34 @@
       "generator": {
         "type": "minecraft:noise",
         "biome_source": {
-          "type": "minecraft:fixed",
-          "biome": "minecraft:nether_wastes"
+          "type": "corruptedadventure:ring",
+          "dimension": "minecraft:the_nether",
+          "rings": {
+            "ring_1": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:placeholder_nether_ring_1"
+            },
+            "ring_2": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:placeholder_nether_ring_2"
+            },
+            "ring_3": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:placeholder_nether_ring_3"
+            },
+            "ring_4": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:placeholder_nether_ring_4"
+            },
+            "ring_5": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:placeholder_nether_ring_5"
+            },
+            "void": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:nether_void_edge"
+            }
+          }
         },
         "settings": "minecraft:nether"
       }
