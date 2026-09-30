@@ -107,6 +107,7 @@ src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, N
 docs/
   design/                      ✅ 00-overzicht, 01-techniek, 02-beslissingenlog, fase-1-wereld (incl. bouwplan); 🔲 fase-2..5
   prompts/                     ✅ opdrachten voor Claude Code (opdracht-01-sparring-fase-1)
+  plans/                       ✅ uitgewerkte bouwplannen per change (`change-NN.md`: scope, stappen, tests, beantwoorde ontwerpvragen); klaar: 08–17. Een bouw-subagent leest eerst zijn plan
   backlog.md                   ✅
 ```
 
