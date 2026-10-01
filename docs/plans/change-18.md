@@ -213,3 +213,14 @@ Concept-regels bij de aanbevolen opties (datum = dag van beantwoorden):
 | 2026-10-01 | infra | Ringsystemen (layout-sync, later meters en ringweer) alleen in `corrupted_world`-werelden (`RingWorld.isActive`) | Gewone werelden met de mod blijven vanilla; zelfde regel als de world border |
 | 2026-10-01 | infra | Clientbound handlers via common dispatch-tabel die de client-entrypoint vult; common code noemt nooit `client/`; `ClientIsolationTest` bewaakt dat | Harde regel dedicated server afdwingbaar; vast patroon voor alle latere payloads |
 | 2026-10-01 | infra | Client-debug: F3-regel `CA ring (client)` | Snel vergelijken met `/ca ring`; herbruikbaar voor weer-tests |
+
+---
+
+## Bouwnotities (change 18, 2026-10-01)
+
+- Geverifieerd in NeoForge 21.1.252: `RegisterPayloadHandlersEvent` is een mod-bus-event (`IModBusEvent`); `PayloadRegistrar` draait handlers standaard op de main thread (`HandlerThread.MAIN`); payloads worden ook bij een geheugenverbinding (singleplayer) geserialiseerd.
+- Afwijking: 1.21.1 heeft geen `ByteBufCodecs.LONG`, alleen `VAR_LONG`. De ruis-seed gaat als vaste 8 bytes via een eigen `StreamCodec.of(ByteBuf::writeLong, ByteBuf::readLong)` (een hash is als var-long meestal langer dan 8 bytes).
+- Afwijking: de javadoc van `RingSettingsSnapshot` noemde "sync in change 18" niet (alleen `CODEBASE.md`); er is een zin over de client-sync toegevoegd.
+- `ClientIsolationTest` controleert naast imports ook volledig gekwalificeerde namen (elke niet-commentaarregel).
+- `RingMembership` is een geneste enum van `RingPacketDistributor` (`RingPacketDistributor.RingMembership`).
+- Quick-play: een nieuwe gamemap (`run/client2`) toont eerst het toegankelijkheidsscherm en quick-play wacht daarop; `run/client2/options.txt` met `onboardAccessibility:false` lost dat op (valkuil in `CODEBASE.md`).

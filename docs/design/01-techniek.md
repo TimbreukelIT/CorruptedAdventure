@@ -67,6 +67,10 @@ Technische architectuur en afspraken. De werkafspraken voor Claude Code staan in
 - Alle gameplaylogica draait server-side; de client toont alleen.
 - Client-only code (renderers, schermen, fog, sky, weer-rendering, particles) strikt gescheiden (`Dist.CLIENT`, aparte client-classes). Een dedicated server mag nooit client-classes laden.
 - Synchronisatie via `CustomPacketPayload` + `StreamCodec` (1.21-netwerk-API).
+- **Netwerkversie (change 18):** eigen `ModNetwork.PROTOCOL_VERSION`, verplicht voor de client (niet `optional()`); ophogen bij elke wijziging aan een payload of codec en bij elke nieuwe payload. Een client met een andere versie krijgt NeoForge's disconnectmelding.
+- **Clientbound handlers (change 18):** common code noemt nooit een class uit `client/` (ook niet in een lambda of method reference). Payload + codec in `network/`, handler in `client/network/`, koppeling via de dispatch-tabel `ClientboundHandlers` die `CorruptedAdventureClient` vult. `ClientIsolationTest` bewaakt de scheiding.
+- **Ringen op de client (change 18):** de client krijgt bij login de ringgrenzen + een **ruis-seed** = SHA-256(wereldseed ‖ `corruptedadventure:ring_boundary`), nooit de wereldseed, en rekent daarmee exact dezelfde `ringAt` als de server (`ClientRingLayout`; client-code gebruikt nooit `RingLayout.current()`).
+- **Ringwereld-check:** ringsystemen (layout-sync, later meters en ringweer) draaien alleen als `RingWorld.isActive(server)`; een wereld met een andere preset blijft vanilla.
 - Persistente staat via `SavedData` (wereld: weer, corruptie, Herobrine verslagen, actief gevecht) en attachments (speler: unlocks, quests).
 - Elke feature wordt ook getest met `runServer` + client, niet alleen singleplayer.
 

@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.ring;
 
+import com.google.common.hash.Hashing;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -14,6 +15,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.OptionalDouble;
 
@@ -23,6 +25,10 @@ import java.util.OptionalDouble;
  * <p>
  * Boundaries are the snapshot radii, shifted by seeded noise of at most {@code boundaryNoise} blocks. The noise is
  * sampled in overworld coordinates, so Nether boundaries line up exactly with the overworld.
+ * <p>
+ * The noise is seeded with {@link #noiseSeed(long)}, a one-way hash of the world seed, so the layout (settings plus
+ * noise seed) can be sent to clients without revealing the world seed. Clients build their own instance from that and
+ * get exactly the same {@link #sample} results.
  */
 public final class RingLayout {
     /** Must match {@code coordinate_scale} of the {@code corrupted_nether} dimension type. */
@@ -37,6 +43,10 @@ public final class RingLayout {
     // Written on the server thread, read by worldgen worker threads.
     private static volatile RingLayout current;
 
+    private static final String NOISE_SEED_SALT = CorruptedAdventure.id("ring_boundary").toString();
+
+    private final RingSettings settings;
+    private final long noiseSeed;
     private final List<Integer> radii;
     private final int voidOuterRadius;
     private final int boundaryNoise;
@@ -44,14 +54,37 @@ public final class RingLayout {
     private final SimplexNoise waves;
     private final SimplexNoise ripples;
 
-    public RingLayout(RingSettings settings, long seed) {
+    /** @param noiseSeed seed of the boundary noise; on a server always {@link #noiseSeed(long)} of the world seed */
+    public RingLayout(RingSettings settings, long noiseSeed) {
+        this.settings = settings;
+        this.noiseSeed = noiseSeed;
         this.radii = settings.ringOuterRadii();
         this.voidOuterRadius = settings.voidOuterRadius();
         this.boundaryNoise = settings.boundaryNoise();
         this.halfTransition = settings.transitionWidth() / 2.0;
-        RandomSource random = new XoroshiroRandomSource(seed).forkPositional().fromHashOf(CorruptedAdventure.id("ring_boundary"));
+        RandomSource random = new XoroshiroRandomSource(noiseSeed).forkPositional().fromHashOf(CorruptedAdventure.id("ring_boundary"));
         this.waves = new SimplexNoise(random);
         this.ripples = new SimplexNoise(random);
+    }
+
+    /**
+     * Seed of the boundary noise for a world: the first 8 bytes (little-endian) of SHA-256(world seed, salt). Like
+     * vanilla's {@code BiomeManager.obfuscateSeed} the world seed cannot be recovered from it, and the own salt keeps
+     * it different from the hashed seed vanilla already sends to clients.
+     */
+    public static long noiseSeed(long worldSeed) {
+        return Hashing.sha256().newHasher()
+                .putLong(worldSeed)
+                .putString(NOISE_SEED_SALT, StandardCharsets.UTF_8)
+                .hash().asLong();
+    }
+
+    public RingSettings settings() {
+        return settings;
+    }
+
+    public long noiseSeed() {
+        return noiseSeed;
     }
 
     public static void register(IEventBus gameBus) {
@@ -151,8 +184,8 @@ public final class RingLayout {
     }
 
     private static void onServerAboutToStart(ServerAboutToStartEvent event) {
-        long seed = event.getServer().getWorldData().worldGenOptions().seed();
-        current = new RingLayout(RingSettingsSnapshot.current(), seed);
+        long worldSeed = event.getServer().getWorldData().worldGenOptions().seed();
+        current = new RingLayout(RingSettingsSnapshot.current(), noiseSeed(worldSeed));
     }
 
     private static void onServerStopped(ServerStoppedEvent event) {

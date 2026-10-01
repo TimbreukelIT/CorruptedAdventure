@@ -12,6 +12,8 @@ import nl.timtoys.corruptedadventure.command.CaCommand;
 import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
+import nl.timtoys.corruptedadventure.network.ModNetwork;
+import nl.timtoys.corruptedadventure.network.RingLayoutSync;
 import nl.timtoys.corruptedadventure.registry.ModBiomeSources;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModChunkGenerators;
@@ -49,9 +51,11 @@ public final class CorruptedAdventure {
         ModFeatures.register(modEventBus);
         ModSoundEvents.register(modEventBus);
         DataGenerators.register(modEventBus);
+        ModNetwork.register(modEventBus);
         RingSettingsSnapshot.register(NeoForge.EVENT_BUS);
         RingLayout.register(NeoForge.EVENT_BUS);
         RingWorldBorder.register(NeoForge.EVENT_BUS);
+        RingLayoutSync.register(NeoForge.EVENT_BUS);
         CaCommand.register(NeoForge.EVENT_BUS);
     }
 

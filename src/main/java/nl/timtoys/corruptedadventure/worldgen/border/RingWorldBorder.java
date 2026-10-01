@@ -12,7 +12,7 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
-import nl.timtoys.corruptedadventure.worldgen.chunk.RingChunkGenerator;
+import nl.timtoys.corruptedadventure.ring.RingWorld;
 
 /**
  * World border of the {@code corrupted_world} preset (server-side; clients only receive vanilla border packets).
@@ -49,7 +49,7 @@ public final class RingWorldBorder {
 
     private static void onServerStarting(ServerStartingEvent event) {
         MinecraftServer server = event.getServer();
-        if (!isCorruptedWorld(server)) {
+        if (!RingWorld.isActive(server)) {
             return;
         }
         WorldBorder overworld = server.overworld().getWorldBorder();
@@ -87,16 +87,12 @@ public final class RingWorldBorder {
         }
         ServerLevel level = player.serverLevel();
         MinecraftServer server = level.getServer();
-        if (level.dimensionType().coordinateScale() != 1.0 && isCorruptedWorld(server)) {
+        if (level.dimensionType().coordinateScale() != 1.0 && RingWorld.isActive(server)) {
             player.connection.send(initializePacket(server.overworld().getWorldBorder(), level));
         }
     }
 
     private static ClientboundInitializeBorderPacket initializePacket(WorldBorder overworld, ServerLevel level) {
         return new ClientboundInitializeBorderPacket(ScaledBorderListener.clientView(overworld, level.getWorldBorder()));
-    }
-
-    private static boolean isCorruptedWorld(MinecraftServer server) {
-        return server.overworld().getChunkSource().getGenerator() instanceof RingChunkGenerator;
     }
 }

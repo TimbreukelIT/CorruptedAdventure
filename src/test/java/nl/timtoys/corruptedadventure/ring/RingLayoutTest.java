@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.ring;
 
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.BiomeManager;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import org.junit.jupiter.api.Test;
 
@@ -164,6 +165,24 @@ class RingLayoutTest {
         assertEquals(6, Ring.VOID.number());
         assertEquals(Ring.RING_3, Ring.byIndex(2));
         assertFalse(RingPosition.within(Ring.RING_2).inTransition());
+    }
+
+    @Test
+    void noiseSeedIsAStableOneWayHashOfTheWorldSeed() {
+        for (long worldSeed : new long[]{0L, 1L, -1L, 20260930L, SEED, Long.MIN_VALUE}) {
+            long noiseSeed = RingLayout.noiseSeed(worldSeed);
+            assertEquals(noiseSeed, RingLayout.noiseSeed(worldSeed));
+            assertNotEquals(worldSeed, noiseSeed);
+            // Own salt: never the hashed seed vanilla already sends to clients.
+            assertNotEquals(BiomeManager.obfuscateSeed(worldSeed), noiseSeed);
+        }
+        assertNotEquals(RingLayout.noiseSeed(20260930L), RingLayout.noiseSeed(20260931L));
+    }
+
+    @Test
+    void settingsAndNoiseSeedAreKept() {
+        assertEquals(DEFAULTS, layout.settings());
+        assertEquals(SEED, layout.noiseSeed());
     }
 
     private static OptionalDouble progressAt(RingLayout layout, Ring ring, double distance, int angleDegrees) {

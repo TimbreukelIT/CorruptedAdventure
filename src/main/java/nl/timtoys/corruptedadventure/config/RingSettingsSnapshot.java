@@ -23,6 +23,8 @@ import java.nio.file.StandardCopyOption;
  * This is a plain file instead of {@code SavedData}: SavedData only exists once the levels are loaded, but the
  * snapshot must be known before the first (spawn) chunk is generated. {@link ServerAboutToStartEvent} fires
  * right before {@code loadLevel()} on both the dedicated and the integrated server.
+ * <p>
+ * Server-side only; clients receive these settings with the ring layout on login ({@code RingLayoutPayload}).
  */
 public final class RingSettingsSnapshot {
     private static final String FILE = CorruptedAdventure.MOD_ID + "/ring_settings.json";
