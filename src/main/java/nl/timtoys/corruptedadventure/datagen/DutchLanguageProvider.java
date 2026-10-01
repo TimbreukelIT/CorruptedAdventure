@@ -135,6 +135,22 @@ final class DutchLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.POTTED_DRY_SHRUB, "Opgepotte dorre struik");
         addBlock(ModBlocks.POTTED_BARREL_CACTUS, "Opgepotte tonnetjescactus");
         addBlock(ModBlocks.POTTED_DESERT_FLOWER, "Opgepotte woestijnbloem");
+        addBlock(ModBlocks.PALM_LOG, "Palmstam");
+        addBlock(ModBlocks.PALM_WOOD, "Palmhout");
+        addBlock(ModBlocks.STRIPPED_PALM_LOG, "Gestripte palmstam");
+        addBlock(ModBlocks.STRIPPED_PALM_WOOD, "Gestript palmhout");
+        addBlock(ModBlocks.PALM_PLANKS, "Palmhouten planken");
+        addBlock(ModBlocks.PALM_STAIRS, "Palmhouten trap");
+        addBlock(ModBlocks.PALM_SLAB, "Palmhouten plaat");
+        addBlock(ModBlocks.PALM_FENCE, "Palmhouten hek");
+        addBlock(ModBlocks.PALM_FENCE_GATE, "Palmhouten poort");
+        addBlock(ModBlocks.PALM_DOOR, "Palmhouten deur");
+        addBlock(ModBlocks.PALM_TRAPDOOR, "Palmhouten valluik");
+        addBlock(ModBlocks.PALM_PRESSURE_PLATE, "Palmhouten drukplaat");
+        addBlock(ModBlocks.PALM_BUTTON, "Palmhouten knop");
+        addBlock(ModBlocks.PALM_LEAVES, "Palmbladeren");
+        addBlock(ModBlocks.PALM_SAPLING, "Palmzaailing");
+        addBlock(ModBlocks.POTTED_PALM_SAPLING, "Opgepotte palmzaailing");
 
         biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
         biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder ring 2");

@@ -13,6 +13,11 @@ public final class ModWoodTypes {
     // The fence gate only uses the wood type for its sounds.
     public static final WoodType DEAD = new WoodType(CorruptedAdventure.id("dead").toString(), DEAD_SET);
 
+    /** {@code corruptedadventure:palm}: oak sounds and behaviour. */
+    public static final BlockSetType PALM_SET = BlockSetType.register(new BlockSetType(CorruptedAdventure.id("palm").toString()));
+    /** Not registered, for the same reason as {@link #DEAD}. */
+    public static final WoodType PALM = new WoodType(CorruptedAdventure.id("palm").toString(), PALM_SET);
+
     private ModWoodTypes() {
     }
 }

@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-10-01 — change 21 (ring 2-blokken: kloofsteen-set, scorched sandstone-set, `loose_sand` + speler-trigger, woestijnflora + bloempotten; texturescript ring 2)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–21 klaar, volgende: change 22)
+**Laatst bijgewerkt:** 2026-10-01 — change 22 (palm-set: houtset, bladeren, zaailing + pot; zaailing wacht op de feature `palm_tree` van change 23)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–22 klaar, volgende: change 23)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — changes 0–21 klaar |
+| 1 — Wereld | In bouw — changes 0–22 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -52,14 +52,14 @@ src/main/java/nl/timtoys/corruptedadventure/
     ModBlocks.java             ✅ alle blokken + hun blockitem (`register` / `registerDoor`; zonder item: `registerWithoutItem`, bloempotten via `registerPot`); volgorde = creative-tab-volgorde; `entries()`
     ModItems.java              ✅ alle items: blockitems (via `ModBlocks`) + losse items (`soul_crystal`); `ITEMS` package-private; `entries()`
     ModCreativeTabs.java       ✅ één tab `corruptedadventure:main`: eerst alle blokken met een item (blokregistratievolgorde; potten overgeslagen), dan de losse items
-    ModTags.java               ✅ eigen TagKeys (`Blocks`/`Items`: `dead_logs`, `canyon_stones`, `c:ores/soul_crystal`; `Blocks`: `desert_plant_soil`; `Items`: `c:gems/soul_crystal`; `Biomes`: `has_feature/bare_patch`, `has_feature/unnatural_tunnel`, `has_feature/crimson_soul_crystal_ore`, `is_nether_ring_1`)
+    ModTags.java               ✅ eigen TagKeys (`Blocks`/`Items`: `dead_logs`, `palm_logs`, `canyon_stones`, `c:ores/soul_crystal`; `Blocks`: `desert_plant_soil`; `Items`: `c:gems/soul_crystal`; `Biomes`: `has_feature/bare_patch`, `has_feature/unnatural_tunnel`, `has_feature/crimson_soul_crystal_ore`, `is_nether_ring_1`)
     ModBiomeSources.java       ✅ biome-source-types `corruptedadventure:ring`, `vanilla_climate`
     ModBiomes.java             ✅ ResourceKeys van alle eigen biomes (de biomes zelf komen uit datagen)
     ModDensityFunctionTypes.java ✅ density-function-types `ring_blend`, `void_edge`, `radial_falloff`
     ModChunkGenerators.java    ✅ chunk-generator-type `ring_noise`
     ModPlacementModifierTypes.java ✅ placement-modifier-type `ring_chance`
     ModFeatures.java           ✅ feature-types met eigen code: `bare_patch`, `unnatural_tunnel`
-    ModConfiguredFeatures.java ✅ ResourceKeys van de eigen configured features (de features zelf komen uit datagen)
+    ModConfiguredFeatures.java ✅ ResourceKeys van de eigen configured features (de features zelf komen uit datagen); `PALM_TREE` (change 22) is nog alleen een key, de feature komt in change 23
     ModPlacedFeatures.java     ✅ ResourceKeys van de eigen placed features (idem)
     ModSoundEvents.java        ✅ sound events (common: biome-JSON noemt ze): `ambient.ring_1.strange_cave`
     ModAttachments.java        ✅ attachment types: `condition_meters` (`ConditionMeters`, opgeslagen, geen `copyOnDeath`)
@@ -98,9 +98,11 @@ src/main/java/nl/timtoys/corruptedadventure/
     DeadGrassBlock.java        ✅ dood gras: `SnowyDirtBlock` met eigen random tick (→ verdorde aarde / spreidt alleen naar verdorde aarde), schop/schoffel
     WitheredDirtBlock.java     ✅ verdorde aarde: schop → pad, schoffel → farmland; `dirtToolState` gedeeld met `DeadGrassBlock`
     StrippableLogBlock.java    ✅ log/wood die een bijl naar een gestripte variant (`Supplier<Block>`) maakt, as behouden; voor elke houtset
-    ModWoodTypes.java          ✅ `BlockSetType DEAD_SET` (geregistreerd) en `WoodType DEAD` (bewust niet geregistreerd); latere houtsets hier
-    ModFlammables.java         ✅ vuurkansen (dood hout zoals eikenhout; `dry_shrub`/`desert_flower` 60/100 zoals dode struik en bloemen) via `FireBlock#setFlammable` in `FMLCommonSetupEvent#enqueueWork`
-    ModFlowerPots.java         ✅ `addPlant` op de lege vanilla-pot voor `potted_dry_shrub`/`_barrel_cactus`/`_desert_flower` (common setup, `enqueueWork`)
+    ModWoodTypes.java          ✅ `BlockSetType DEAD_SET`/`PALM_SET` (geregistreerd) en `WoodType DEAD`/`PALM` (bewust niet geregistreerd); latere houtsets hier
+    ModFlammables.java         ✅ vuurkansen (dood hout en palm zoals eikenhout, `palm_leaves` 30/60 zoals eikenbladeren; `dry_shrub`/`desert_flower` 60/100 zoals dode struik en bloemen) via `FireBlock#setFlammable` in `FMLCommonSetupEvent#enqueueWork`
+    ModFlowerPots.java         ✅ `addPlant` op de lege vanilla-pot voor `potted_dry_shrub`/`_barrel_cactus`/`_desert_flower`/`_palm_sapling` (common setup, `enqueueWork`)
+    ModTreeGrowers.java        ✅ `TreeGrower PALM` (naam `corruptedadventure:palm`) → `ModConfiguredFeatures.PALM_TREE`
+    PalmSaplingBlock.java      ✅ palmzaailing: `SaplingBlock` met eigen codec; grond = vanilla (`#dirt`, farmland) **of** `desert_plant_soil`
     DryShrubBlock.java         ✅ dorre struik: `BushBlock` met de vorm van de dode struik, grond `desert_plant_soil`
     BarrelCactusBlock.java     ✅ tonnetjescactus: `BushBlock`, vorm/collision `SHAPE` (3–13 px, 10 hoog), schade alleen bij echte aanraking (`touches`), path type `DAMAGE_OTHER`/`DANGER_OTHER`, grond `desert_plant_soil`
     DesertFlowerBlock.java     ✅ woestijnbloem: `FlowerBlock` (eigen codec), grond `desert_plant_soil`
@@ -143,11 +145,11 @@ src/main/java/nl/timtoys/corruptedadventure/
     ModBlockStateProvider.java ✅ blockstates + blockmodels (NeoForge-helpers; `render_type` cutout voor deur/valluik/ertsen in de model-JSON); `oreWithOverlay` = tweelaags-ertsmodel (vanilla-basis als verwijzing + eigen overlay, per top/zijkant/bodem via `CubeTextures`; overlay-element emissive 15/15 zonder AO)
     ModItemModelProvider.java  ✅ itemmodels: blockmodel als parent; hek/knop inventory-model, valluik `_bottom`, deur en `soul_crystal` plat item
     ModBlockLootProvider.java  ✅ blok-loot (`create` → `LootTableProvider`); `getKnownBlocks` = alle `ModBlocks`, dus elk blok moet een table hebben
-    ModBlockTagsProvider.java  ✅ blok-tags (vanilla `wooden_*`/`planks`/`logs_that_burn`/`dirt`/`mineable/shovel`/`mineable/pickaxe`/`needs_iron_tool`, `c:`-tags, `dead_logs`)
+    ModBlockTagsProvider.java  ✅ blok-tags (vanilla `wooden_*`/`planks`/`logs_that_burn`/`leaves`/`saplings`/`dirt`/`mineable/*`/`needs_iron_tool`, `c:`-tags, `dead_logs`, `palm_logs`)
     ModItemTagsProvider.java   ✅ item-tags: kopie van de blok-tags + `c:gems(/soul_crystal)`
     ModSoundDefinitionsProvider.java ✅ `sounds.json` (client-asset): eigen events als `event`-verwijzing naar vanilla-geluiden + ondertitel
     ModBiomeTagsProvider.java  ✅ spiegelt vanilla biome-tags naar de ring 1-kopieën (`data/minecraft/tags/…`, `replace: false`) + eigen `has_feature/*`-tags
-    ModDataMapProvider.java    ✅ NeoForge-data maps: `villager_types` voor de kopieën
+    ModDataMapProvider.java    ✅ NeoForge-data maps: `villager_types` voor de kopieën, `compostables` (palmbladeren/-zaailing)
     EnglishLanguageProvider.java ✅ `en_us` (verplicht voor elke key)
     DutchLanguageProvider.java ✅ `nl_nl`
   client/                      ✅ ALLEEN Dist.CLIENT: fog, sky, weer-rendering, particles, renderers
@@ -174,7 +176,7 @@ src/main/resources/                (lang staat niet hier maar in datagen: `datag
   data/minecraft/tags/worldgen/world_preset/normal.json  ✅ zet de preset in het menu "World Type" (replace: false)
   META-INF/accesstransformer.cfg  ✅ opent `NoiseBasedChunkGenerator.globalFluidPicker` en `NoiseChunk.aquifer` (voor `ring_noise`)
   assets/corruptedadventure/
-    textures/                     ✅ ring 2-placeholders (change 21) uit `tools/textures/Ring2Textures.java`: `block/` red_/orange_/cream_canyon_stone, canyon_cobblestone, canyon_stone_bricks, scorched_sandstone(_top/_bottom), cut_/chiseled_scorched_sandstone, loose_sand, cracked_clay, dry_shrub, desert_flower (cutout), barrel_cactus_top/_side. Ring 1: definitief (change 17) uit `tools/textures/Ring1Textures.java` (gecommit, PNG's én `.mcmeta`): `block/` withered_dirt, dead_grass_block_{top,side,snow}, dead_log(_top), stripped_dead_log(_top), dead_planks, dead_door_{top,bottom}, dead_trapdoor, soul_crystal_ore_overlay, crimson_soul_crystal_ore_overlay_{top,side} (transparante overlays, 16×128 animatiestrip + `.png.mcmeta`); `item/` dead_door, soul_crystal (animatiestrip + `.mcmeta`)
+    textures/                     ✅ ring 2-placeholders (changes 21, 22) uit `tools/textures/Ring2Textures.java`: `block/` red_/orange_/cream_canyon_stone, canyon_cobblestone, canyon_stone_bricks, scorched_sandstone(_top/_bottom), cut_/chiseled_scorched_sandstone, loose_sand, cracked_clay, dry_shrub, desert_flower (cutout), barrel_cactus_top/_side, palm_log(_top), stripped_palm_log(_top), palm_planks, palm_door_{top,bottom}, palm_trapdoor, palm_leaves (vaste kleur, cutout_mipped), palm_sapling (cutout); `item/` palm_door. Ring 1: definitief (change 17) uit `tools/textures/Ring1Textures.java` (gecommit, PNG's én `.mcmeta`): `block/` withered_dirt, dead_grass_block_{top,side,snow}, dead_log(_top), stripped_dead_log(_top), dead_planks, dead_door_{top,bottom}, dead_trapdoor, soul_crystal_ore_overlay, crimson_soul_crystal_ore_overlay_{top,side} (transparante overlays, 16×128 animatiestrip + `.png.mcmeta`); `item/` dead_door, soul_crystal (animatiestrip + `.mcmeta`)
 
 src/test/java/nl/timtoys/corruptedadventure/
   ring/RingLayoutTest.java     ✅ grenzen, overgang, grensruis, Nether-schaal, determinisme per seed, `ringProgress` (ring 1 en ring 2), `noiseSeed` (stabiel, ≠ seed, ≠ `BiomeManager.obfuscateSeed`), getters
@@ -205,7 +207,9 @@ src/test/java/nl/timtoys/corruptedadventure/
   datagen/ModBiomeTagsProviderTest.java ✅ `is_overworld`, stronghold-tags en `has_structure/ancient_city` worden nooit gespiegeld; `is_nether` + `bastion_remnant` wel, `nether_fossil` niet; `BARE_PATCH_BIOMES` uniek en allemaal gekopieerd
   ring/RingColumnCacheTest.java ✅ cache = layout (ook na verdringen), Nether/overworld niet verward, nieuwe layout wist
   worldgen/densityfunction/RingBlendTest.java ✅ ring kiezen, smoothstep-menging, bereik, ontbrekende ring
-  registry/ModBlocksTest.java  ✅ elk blok behalve de potten heeft een blockitem met dezelfde naam (potten: `AIR`); potten houden hun plant; de creative tab toont eerst de blokken, dan de losse items, elk item precies één keer; `loose_sand` tussen de scorched sandstone-set en de flora
+  registry/ModBlocksTest.java  ✅ elk blok behalve de potten heeft een blockitem met dezelfde naam (potten: `AIR`); potten houden hun plant; de creative tab toont eerst de blokken, dan de losse items, elk item precies één keer; `loose_sand` tussen de scorched sandstone-set en de flora; palm-set (log … zaailing) direct na de woestijnbloem
+  block/PalmSaplingBlockTest.java ✅ grondregel: `#dirt`, farmland en `desert_plant_soil` ja, steen/kloofsteen/los zand/grind nee (tags met de hand gebonden via `BLOCK.bindTags`, na elke test `resetTags`); zonder de grondtag geen zand
+  block/ModTreeGrowersTest.java ✅ `TreeGrower.CODEC` rondreis van `PALM` als `"corruptedadventure:palm"`; codec van de zaailing schrijft dezelfde grower
   block/LooseSandTriggerTest.java ✅ `scanBox` (27 posities, footprint ±1 × hoofd … +2, 3 blokken boven het hoofd erbuiten, entity over een blokrand), `shouldTrigger` (vrij eronder ja; spectator, vast eronder, al gepland, gewoon zand nee)
   block/BarrelCactusBlockTest.java ✅ `touches`: tegen de zijkant en erbovenop ja, in dezelfde blokcel zonder contact nee
   worldgen/densityfunction/RadialFalloffTest.java ✅ 1 binnen / 0 buiten, 0,5 halverwege, monotoon, horizontale afstand, codec (inner < outer, niet negatief)
@@ -221,6 +225,7 @@ src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, N
   data/c/tags/worldgen/biome/              NeoForge-conventietags voor de Nether-kopieën: `is_nether`, `is_hot/nether`, `is_dry/nether`, `is_nether_forest`
   data/minecraft/tags/worldgen/biome/**    gespiegelde vanilla-tags met de kopieën (`ModBiomeTagsProvider`)
   data/neoforge/data_maps/worldgen/biome/villager_types.json  villager-types van de kopieën
+  data/neoforge/data_maps/item/compostables.json  composteerkansen (palmbladeren, palmzaailing 0,3)
   data/minecraft/wolf_variant/             6 overschreven vanilla-wolf-varianten (vanilla-biome + kopie)
   assets/corruptedadventure/lang/          en_us, nl_nl
   assets/corruptedadventure/sounds.json    sound-definities (`ModSoundDefinitionsProvider`)
@@ -231,7 +236,7 @@ src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, N
 docs/
   design/                      ✅ 00-overzicht, 01-techniek, 02-beslissingenlog, fase-1-wereld (incl. bouwplan); 🔲 fase-2..5
   prompts/                     ✅ opdrachten voor Claude Code (opdracht-01-sparring-fase-1)
-  plans/                       ✅ uitgewerkte bouwplannen per change (`change-NN.md`: scope, stappen, tests, beantwoorde ontwerpvragen); klaar: 08–21. Een bouw-subagent leest eerst zijn plan
+  plans/                       ✅ uitgewerkte bouwplannen per change (`change-NN.md`: scope, stappen, tests, beantwoorde ontwerpvragen); klaar: 08–22. Een bouw-subagent leest eerst zijn plan
   backlog.md                   ✅
 ```
 
@@ -304,7 +309,8 @@ docs/
 | `ModBiomes` / `ModBiomeSources` | `…registry` | biome-keys / DeferredRegister voor `Registries.BIOME_SOURCE` | worldgen, datagen |
 | `DataGenerators` | `…datagen` | mod-bus-listener voor `GatherDataEvent`; nieuwe providers en datapack-registries hier aanhaken (configured/placed features vóór de biomes, biome modifiers erna). Alle bootstraps van één registry in één lambda (een registry mag maar één keer in de `RegistrySetBuilder`). Mod-ids `corruptedadventure` + `minecraft` (de wolf-varianten overschrijven vanilla-entries) | `CorruptedAdventure` |
 | `ModBiomeTagsProvider` | `…datagen` | draait vanilla's `BiomeTagsProvider.addTags` en houdt per tag in `MIRRORED_TAGS` alleen de directe entries van gekopieerde biomes (`COPIES`) over (als `copyOf`); `#tag`-entries lossen vanzelf op. Tags zonder kopieën → geen bestand. Nether: `is_nether` (geeft via `#is_nether` fortress, Nether-ruined-portals, warme kikkers) en `has_structure/bastion_remnant` gespiegeld; `c:is_nether`, `c:is_hot/nether`, `c:is_dry/nether`, `c:is_nether_forest` (crimson + warped) en `is_nether_ring_1` uitgeschreven. Daarna eigen tags: `has_feature/bare_patch` (`BARE_PATCH_BIOMES`: 21 begroeide land-kopieën), `has_feature/unnatural_tunnel` (alle 52 kopieën, gesorteerd), `has_feature/crimson_soul_crystal_ore` (crimson-forest-kopie) | `DataGenerators` |
-| `ModDataMapProvider` | `…datagen` | `NeoForgeDataMaps.VILLAGER_TYPES` voor de kopieën, gelijk aan vanilla's `VillagerType.BY_BIOME` (29 entries) | `DataGenerators` |
+| `ModDataMapProvider` | `…datagen` | `NeoForgeDataMaps.VILLAGER_TYPES` voor de kopieën, gelijk aan vanilla's `VillagerType.BY_BIOME` (29 entries); `COMPOSTABLES` voor eigen bladeren/zaailingen (vanilla-kans 0,3) | `DataGenerators` |
+| `PalmSaplingBlock` / `ModTreeGrowers` | `…block` | zaailing met `ModTreeGrowers.PALM` → key `ModConfiguredFeatures.PALM_TREE`. **Overdracht naar change 23:** de feature moet precies die key gebruiken; bladeren vervallen op > 6 blokken (via bladeren) van een `#logs`-blok; vanilla's `TrunkPlacer` vervangt niet-`#dirt` onder de stam door de `dirt_provider` (op zand dus een zand-provider); `would_survive(palm_sapling)` volgt de grondregel (`#dirt`, farmland, `desert_plant_soil`). Vóór change 23: `growTree` vindt geen holder → `false` (NeoForge-event krijgt `null`, geen crash), zaailing blijft op `stage=1`, bonemeal wordt wel verbruikt | `ModBlocks`, change 23 |
 
 ---
 
@@ -332,13 +338,20 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `barrel_cactus` | 2 | `BarrelCactusBlock` | eigen properties (als cactus, zonder random ticks); eigen model (één box, cutout); `#enderman_holdable` |
 | `desert_flower` | 2 | `DesertFlowerBlock` | kopie `poppy`, stew Fire Resistance 4 s; `#small_flowers`; kruismodel cutout, plat item |
 | `potted_dry_shrub`, `potted_barrel_cactus`, `potted_desert_flower` | 2 | `FlowerPotBlock` (NeoForge-constructor) | **geen item**; `ModFlowerPots`; loot `dropPottedContents`; `#flower_pots`; models `flower_pot_cross` / eigen (pot + kleine cactus), cutout |
+| `palm_log`, `palm_wood` | 2 | `StrippableLogBlock` | bijl → `stripped_palm_log` / `_wood`; `MapColor` zijkant `TERRACOTTA_BROWN` (schors), kopse kant log `SAND`; `#corruptedadventure:palm_logs` (in `#logs_that_burn`) |
+| `stripped_palm_log`, `stripped_palm_wood` | 2 | `RotatedPillarBlock` | `SAND`; `#palm_logs`, `c:stripped_logs` / `c:stripped_woods` |
+| `palm_planks`, `palm_stairs`, `palm_slab`, `palm_fence`, `palm_fence_gate` | 2 | vanilla-classes | kopie eik + `SAND`; `#planks`, `#wooden_*`, `#fence_gates` (+ `c:fence_gates/wooden`); poort met `ModWoodTypes.PALM` |
+| `palm_door`, `palm_trapdoor`, `palm_pressure_plate`, `palm_button` | 2 | vanilla-classes | `BlockSetType` `corruptedadventure:palm`, `SAND`; knop 30 ticks; deur/valluik cutout; deur → `DoubleHighBlockItem` |
+| `palm_leaves` | 2 | `LeavesBlock` (vanilla) | kopie `oak_leaves`; vaste kleur (geen tint), `cutout_mipped`; loot zoals eikenbladeren (schaar/Silk Touch → bladeren, anders zaailing 1/20 + Fortune, stokken 1/50); `#leaves`, `#mineable/hoe`; vuur 30/60; compost 0,3 |
+| `palm_sapling` | 2 | `PalmSaplingBlock` | kopie `oak_sapling`; `#saplings` (→ brandstof); kruismodel cutout, plat item; compost 0,3; groeit pas vanaf change 23 |
+| `potted_palm_sapling` | 2 | `FlowerPotBlock` (NeoForge-constructor) | **geen item**; `ModFlowerPots`; `flower_pot_cross` met `palm_sapling`; `#flower_pots` |
 | `soul_crystal_ore` | Nether 1 | `DropExperienceBlock` (XP 3–7) | kopie `nether_quartz_ore` + licht 3; loot `createOreDrop` → `soul_crystal` (Fortune, Silk Touch → zichzelf); `#mineable/pickaxe`, `#needs_iron_tool`, `c:ores/soul_crystal` (in `c:ores`), `c:ore_rates/singular`, `c:ores_in_ground/netherrack`; model `oreWithOverlay` (netherrack + overlay, cutout) |
 | `crimson_soul_crystal_ore` | Nether 1 | `DropExperienceBlock` (XP 3–7) | idem, maar `MapColor.CRIMSON_NYLIUM`, `SoundType.NYLIUM`; geen `ores_in_ground`, **niet** in `#nylium`; zonder Silk Touch alleen `soul_crystal`; model crimson nylium (top/zijkant/bodem) + overlays `_top`/`_side`/`soul_crystal_ore_overlay` |
 
 ### Items
 | Registry-naam | Ring | Class | Opmerking |
 |---|---|---|---|
-| alle blokken hierboven | 1, Nether 1 | `BlockItem` (deur: `DoubleHighBlockItem`) | via `ModBlocks` |
+| alle blokken hierboven behalve de potten | 1, 2, Nether 1 | `BlockItem` (deur: `DoubleHighBlockItem`) | via `ModBlocks` |
 | `soul_crystal` | Nether 1 | `Item` | **placeholder**, nut in fase 2 (backlog); drop van beide zielkristal-ertsen; `c:gems/soul_crystal` (in `c:gems`) |
 
 ### Biomes
@@ -369,6 +382,10 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `corruptedadventure:main` | creative tab | `ModCreativeTabs`; titel `itemGroup.corruptedadventure.main` |
 | `corruptedadventure:dead` | `BlockSetType` (+ niet-geregistreerde `WoodType`) | `ModWoodTypes` |
 | `corruptedadventure:dead_logs` | blok- en item-tag | `ModTags`; zit in `minecraft:logs_that_burn` |
+| `corruptedadventure:palm` | `BlockSetType` (+ niet-geregistreerde `WoodType`) en `TreeGrower`-naam | `ModWoodTypes`, `ModTreeGrowers` |
+| `corruptedadventure:palm_logs` | blok- en item-tag | `ModTags`; zit in `minecraft:logs_that_burn` |
+| `corruptedadventure:palm_tree` | configured-feature-**key** (nog geen feature) | `ModConfiguredFeatures.PALM_TREE`; change 23 registreert de feature; tot dan geeft `/place feature` "There is no feature" |
+| `neoforge:compostables` | data map (datagen) | `ModDataMapProvider`; `palm_leaves`, `palm_sapling` 0,3 |
 | `corruptedadventure:canyon_stones` | blok- en item-tag | `ModTags`; de drie kloofsteen-tinten; voor surface rules (23) en ertsdoelen (24/25) |
 | `corruptedadventure:desert_plant_soil` | blok-tag | `ModTags`; `#sand`, `#terracotta`, `#dirt`, `cracked_clay`; grond van de woestijnflora (en de palmzaailing, change 22) |
 | `c:ores/soul_crystal` (blok + item), `c:gems/soul_crystal` (item) | conventietags (datagen) | `ModTags`; via `addTag` in `c:ores` / `c:gems` |
@@ -400,7 +417,7 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `run/config/corruptedadventure-common.toml` | (niet in git) COMMON-config, ontstaat bij de eerste start |
 | `run/config/corruptedadventure-server.toml` | (niet in git) SERVER-config (balanswaarden), ontstaat bij de eerste serverstart; per wereld overschrijven via `<wereld>/serverconfig/` |
 | `tools/textures/Ring1Textures.java` | texturescript ring 1, **definitief** sinds change 17 (single-file Java, alleen JDK, buiten Gradle en de jar): `java tools/textures/Ring1Textures.java` vanuit de repo-root. Eigen pixels, geen vanilla; vaste seed per bestandsnaam (twee keer draaien = byte-identiek, ook de `.mcmeta`). `TEXTURES` = naam → tekenmethode, `still`/`pulsing` (pulsing = 8-frame-strip via `pulseStrip` + `.mcmeta`, `PULSE_FRAMES`/`PULSE_FRAMETIME`). Paletten bovenin (zie `fase-1-wereld.md`), gedeelde patronen (`valueNoise`, `furrow`, `topBand`, `crystalClusters` + `outline`/`merge`, `window`, `rail`). `render(naam)` hergebruikt pixels (grasblokzijkant = `withered_dirt`, gestripte kopse kant = log-kopse kant). `HAND_EDITED`: met de hand bewerkte bestanden, worden overgeslagen en van schijf gelezen. Schrijft ook het contactblad `build/texture-preview/ring1.png` (niet in git) |
-| `tools/textures/Ring2Textures.java` | texturescript ring 2 (+ Nether-ring 2), **placeholders** sinds change 21; zelfde opzet als ring 1 (helpers gekopieerd), plus: record `Animation` (frames, frametime, interpolate, gloeikleur), `still(naam, painter)` / `pulsing(naam, gloed, painter)`, en `check` vóór het schrijven (16×16 of 16×(16·n), particles 8×8; alpha alleen 0/255; zelfde alpha-masker per frame). Extra patronen: `Cells` (wrappende Voronoi: keien, kleiplaten), `valueNoise(cellX, cellY)` (horizontaal gerekte korrel), `soot`, `twig`. Contactblad `build/texture-preview/ring2.png`. Changes 22, 24, 29, 33, 34, 37 breiden dit script uit |
+| `tools/textures/Ring2Textures.java` | texturescript ring 2 (+ Nether-ring 2), **placeholders** sinds change 21; zelfde opzet als ring 1 (helpers gekopieerd), plus: record `Animation` (frames, frametime, interpolate, gloeikleur), `still(naam, painter)` / `pulsing(naam, gloed, painter)`, en `check` vóór het schrijven (16×16 of 16×(16·n), particles 8×8; alpha alleen 0/255; zelfde alpha-masker per frame). Extra patronen: `Cells` (wrappende Voronoi: keien, kleiplaten), `valueNoise(cellX, cellY)` (horizontaal gerekte korrel), `soot`, `twig`. Contactblad `build/texture-preview/ring2.png`. Change 22: palm-set (eigen `palmBoards`/`palmFrame`/`palmRail`/`palmWindow`, `copy`). Changes 24, 29, 33, 34, 37 breiden dit script verder uit |
 | `tools/server-smoke-test.sh` | test S: start `runServer`, wacht op `Done (` of een fout, stopt de server-JVM; log in `build/runServer.log` |
 
 ## Databestanden (handgeschreven)
@@ -421,7 +438,7 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `data/corruptedadventure/worldgen/noise/placeholder_terrain.json`, `void_islands.json` | noise-parameters voor placeholder-terrein en void-eilanden |
 | `META-INF/accesstransformer.cfg` | wordt automatisch opgepikt door ModDevGradle en FML (geen extra config nodig) |
 
-Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change21` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer), van vóór change 14 ook niet (`placeholder_nether_ring_1`); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
+Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change22` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer), van vóór change 14 ook niet (`placeholder_nether_ring_1`); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
 
 ---
 
@@ -502,7 +519,7 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 - **Loot testen via RCON** (change 15): `setblock` erts + kist, `loot insert <kist> mine <erts> minecraft:iron_pickaxe[minecraft:enchantments={levels:{"minecraft:fortune":3}}]`, dan `data get block <kist> Items`. `loot … mine` controleert de tool-tier niet en geeft geen XP.
 - `WoodType.register` **niet** aanroepen zolang er geen bord-textures zijn (de client bouwt dan bord-materialen); `FenceGateBlock` gebruikt de `WoodType` alleen voor geluid. `BlockSetType.register` wel (de `BlockSetType`-codec zoekt op naam).
 - `FireBlock#setFlammable` is in NeoForge al `public`: geen access transformer nodig. Aanroepen in `enqueueWork` (de map is niet thread-safe).
-- Vanilla-tagketens dekken veel al: `#mineable/axe` bevat `#logs`, `#planks` en alle `#wooden_*`; NeoForge's `furnace_fuels`-data map werkt op `#logs`, `#planks`, `#wooden_*` en `#fence_gates`; `c:fences/wooden` bevat `#wooden_fences`. Alleen `c:stripped_logs`, `c:stripped_woods` en `c:fence_gates/wooden` noemen blokken los.
+- Vanilla-tagketens dekken veel al: `#mineable/axe` bevat `#logs`, `#planks` en alle `#wooden_*`; NeoForge's `furnace_fuels`-data map werkt op `#logs`, `#planks`, `#wooden_*`, `#fence_gates` en `#saplings` (item-tags); `c:fences/wooden` bevat `#wooden_fences`. Alleen `c:stripped_logs`, `c:stripped_woods` en `c:fence_gates/wooden` noemen blokken los.
 - **Random ticks testen:** in 1.21.1 krijgen chunks alleen random ticks als er een speler binnen ~128 blokken is; geforceloade chunks via RCON zonder speler ticken niet (ook vanilla-gras niet). Gedrag van dood gras dus in-game testen, niet via RCON. Tags en loot wel via RCON: `execute if block … #tag`, `loot insert <kist> mine <pos> <tool>`, `execute if items block … container.N #tag`.
 - **Features tellen via RCON** met `fill … replace <blok>` verandert de wereld: vervang je de **grond** (bijv. dood gras → glas), dan vallen de planten erop meteen weg (blockupdate). Tel begroeiing (`short_grass`, `dead_bush`) dus eerst, of in verse chunks. Na `forceload add` staan de features er wel (decoratie heeft geen speler nodig, random ticks wel).
 - **Boom zonder blad:** `minecraft:tree` met lucht als `foliage_provider` en `BlobFoliagePlacer(0, 0, 0)`. Vanilla's `TreeFeature` kijkt niet naar de grond; het placed feature moet zelf op `#dirt` eronder filteren (er is geen sapling voor `would_survive`).
@@ -527,4 +544,9 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 - **Vanilla-subklasse met een eigen codec:** klassen als `DeadBushBlock` en `ColoredFallingBlock` geven `MapCodec<DeadBushBlock>` (geen wildcard) terug; een subklasse kan dat niet versmallen tot `MapCodec<Sub>`. Erf dan van de abstracte ouder (`BushBlock`, `FallingBlock`; die hebben `MapCodec<? extends …>`), of gebruik de vanilla-klasse zelf als er geen eigen gedrag is (`loose_sand`).
 - **`entityInside` negeert de blokvorm:** vanilla roept het aan voor elke blokcel die de box van de entity raakt. Voor een blok kleiner dan zijn cel (tonnetjescactus) zelf op echte aanraking testen (`BarrelCactusBlock.touches`, marge 0,05).
 - **Blokken zonder item** (potten): `asItem()` is `AIR`; de creative tab filtert ze (anders "stack must not be empty") en `ModBlocksTest` verwacht `AIR`. Potten koppelen aan de lege vanilla-pot via `FlowerPotBlock#addPlant` in common setup (`ModFlowerPots`), niet via de deprecated constructor.
+- **Zaailing zonder feature (change 22):** een `TreeGrower` die naar een nog niet bestaande configured-feature-key wijst, crasht niet: `growTree` vuurt NeoForge's `BlockGrowFeatureEvent` met `null` en geeft `false`; de zaailing blijft op `stage=1`, bonemeal (ook uit een dispenser) wordt wel verbruikt, de log blijft schoon. `TreeGrower`-namen staan in één globale vanilla-map: altijd met namespace.
+- **Bladeren:** vanilla's `#mineable/hoe` noemt alle bladeren los (niet via `#leaves`): eigen bladeren daar zelf in zetten. `#sword_efficient`, `#replaceable_by_trees`, `#parrots_spawnable_on` en `#lava_pool_stone_cannot_replace` gaan wel via `#leaves`. Render type `cutout_mipped` in de model-JSON (NeoForge) geldt ook bij Fast graphics. Verval: `distance` > 6 (via bladeren) van een `#logs`-blok; `/setblock` zet zelf de juiste `distance` (na 1 tick).
+- **Random ticks met de quick-play-client:** met `Dev` in de buurt (`tp`, creatief) en `gamerule randomTickSpeed 300` zijn bladverval en zaailing-stadia in ~25 s via RCON te testen (change 22); daarna `randomTickSpeed 3` terug.
+- **Zand in RCON-tests valt:** een `setblock … minecraft:sand` boven lucht valt na 2 ticks (zwaartekracht), en de plant erop breekt mee. Leg eerst een vaste laag eronder.
+- **Tags in unit tests:** de testomgeving laadt geen datapack, dus alle tags zijn leeg. `BuiltInRegistries.BLOCK.bindTags(Map.of(tag, holders))` bindt ze met de hand (holders via `wrapAsHolder`); `resetTags()` in `@AfterEach`. Test zo alleen de Java-logica; de echte tag-inhoud via RCON (test S).
 - **Model-overerving:** een child-model met `elements` vervangt die van de parent volledig; een pot met een eigen plant (`potted_barrel_cactus`) schrijft dus ook het pot-element zelf (zoals vanilla `potted_cactus`). NeoForge laat face-`uv` weg als die gelijk is aan de automatische UV.

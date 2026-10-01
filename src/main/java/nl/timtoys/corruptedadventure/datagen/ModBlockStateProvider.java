@@ -100,6 +100,37 @@ final class ModBlockStateProvider extends BlockStateProvider {
         simpleBlock(ModBlocks.POTTED_DESERT_FLOWER.get(), models().flowerPotCross("potted_desert_flower",
                 blockTexture(ModBlocks.DESERT_FLOWER.get())).renderType("cutout"));
         pottedBarrelCactus();
+
+        palm();
+    }
+
+    /** The palm set, laid out like the dead wood set, plus leaves, sapling and its pot. */
+    private void palm() {
+        logBlock(ModBlocks.PALM_LOG.get());
+        axisBlock(ModBlocks.PALM_WOOD.get(), blockTexture(ModBlocks.PALM_LOG.get()), blockTexture(ModBlocks.PALM_LOG.get()));
+        logBlock(ModBlocks.STRIPPED_PALM_LOG.get());
+        axisBlock(ModBlocks.STRIPPED_PALM_WOOD.get(),
+                blockTexture(ModBlocks.STRIPPED_PALM_LOG.get()), blockTexture(ModBlocks.STRIPPED_PALM_LOG.get()));
+
+        ResourceLocation planks = blockTexture(ModBlocks.PALM_PLANKS.get());
+        simpleBlock(ModBlocks.PALM_PLANKS.get());
+        stairsBlock(ModBlocks.PALM_STAIRS.get(), planks);
+        slabBlock(ModBlocks.PALM_SLAB.get(), planks, planks);
+        fenceBlock(ModBlocks.PALM_FENCE.get(), planks);
+        fenceGateBlock(ModBlocks.PALM_FENCE_GATE.get(), planks);
+        doorBlockWithRenderType(ModBlocks.PALM_DOOR.get(),
+                modLoc("block/palm_door_bottom"), modLoc("block/palm_door_top"), "cutout");
+        trapdoorBlockWithRenderType(ModBlocks.PALM_TRAPDOOR.get(), modLoc("block/palm_trapdoor"), true, "cutout");
+        pressurePlateBlock(ModBlocks.PALM_PRESSURE_PLATE.get(), planks);
+        buttonBlock(ModBlocks.PALM_BUTTON.get(), planks);
+
+        // Fixed colour in the texture (no biome tint, so no tintindex), like the dead grass.
+        simpleBlock(ModBlocks.PALM_LEAVES.get(), models().cubeAll("palm_leaves", blockTexture(ModBlocks.PALM_LEAVES.get()))
+                .renderType("cutout_mipped"));
+        // The stage property does not change the model.
+        cross(ModBlocks.PALM_SAPLING.get());
+        simpleBlock(ModBlocks.POTTED_PALM_SAPLING.get(), models().flowerPotCross("potted_palm_sapling",
+                blockTexture(ModBlocks.PALM_SAPLING.get())).renderType("cutout"));
     }
 
     /** A full block with its stairs, slab and wall, all on the block's own texture. */

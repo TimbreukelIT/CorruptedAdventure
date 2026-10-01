@@ -106,6 +106,36 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.SMALL_FLOWERS).add(ModBlocks.DESERT_FLOWER.get());
         tag(BlockTags.ENDERMAN_HOLDABLE).add(ModBlocks.BARREL_CACTUS.get());
         tag(BlockTags.FLOWER_POTS).add(
-                ModBlocks.POTTED_DRY_SHRUB.get(), ModBlocks.POTTED_BARREL_CACTUS.get(), ModBlocks.POTTED_DESERT_FLOWER.get());
+                ModBlocks.POTTED_DRY_SHRUB.get(), ModBlocks.POTTED_BARREL_CACTUS.get(), ModBlocks.POTTED_DESERT_FLOWER.get(),
+                ModBlocks.POTTED_PALM_SAPLING.get());
+
+        palm();
+    }
+
+    /**
+     * The palm set, tagged like the dead wood set. {@code #leaves} gives the leaves sword mining, tree replaceability
+     * ({@code #replaceable_by_trees}, needed by the palm tree feature) and parrot spawns through vanilla's tag chains;
+     * {@code #mineable/hoe} lists vanilla's leaves one by one, so ours goes in by hand. {@code #logs} (via
+     * {@code #logs_that_burn}) keeps the leaves from decaying.
+     */
+    private void palm() {
+        tag(ModTags.Blocks.PALM_LOGS).add(
+                ModBlocks.PALM_LOG.get(), ModBlocks.PALM_WOOD.get(), ModBlocks.STRIPPED_PALM_LOG.get(), ModBlocks.STRIPPED_PALM_WOOD.get());
+        tag(BlockTags.LOGS_THAT_BURN).addTag(ModTags.Blocks.PALM_LOGS);
+        tag(BlockTags.PLANKS).add(ModBlocks.PALM_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.PALM_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.PALM_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.PALM_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.PALM_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.PALM_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.PALM_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.PALM_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.PALM_BUTTON.get());
+        tag(BlockTags.LEAVES).add(ModBlocks.PALM_LEAVES.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.PALM_LEAVES.get());
+        tag(BlockTags.SAPLINGS).add(ModBlocks.PALM_SAPLING.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_PALM_LOG.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_PALM_WOOD.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.PALM_FENCE_GATE.get());
     }
 }

@@ -226,3 +226,52 @@ Antwoord: **A** — zoals eikenbladeren: schaar/Silk Touch → bladeren; anders 
 - **C. Zaailing zonder groei** (geen `TreeGrower`, eigen `BushBlock` zonder bonemeal tot change 23). Nul risico in deze change, maar change 23 moet het blok omzetten naar een echte sapling (`blocks`-werk in een `worldgen`-change) en de blockstate (`stage`) verandert.
 
 Antwoord: **A** — `TreeGrower` naar de (nog niet bestaande) key `corruptedadventure:palm_tree`; bonemeal verbruikt, geen groei, geen crash tot change 23.
+
+
+---
+
+## Bouwnotities (change 22, 2026-10-01)
+
+Aannames gecontroleerd tegen de code na change 21 (`df9db95`): klopten. `Ring2Textures.java`, `registerWithoutItem` + `registerPot`, `ModFlowerPots`, het tab-/testfilter en de tag `desert_plant_soil` (`#sand`, `#terracotta`, `#dirt`, `cracked_clay`) bestaan. Bouwstap §4 in de 21.1.252-sources: `SaplingBlock.codec()` geeft `MapCodec<? extends SaplingBlock>` (versmallen mag); `TreeGrower.growTree` zoekt de holder met `getHolder(key).orElse(null)`, `EventHooks.fireBlockGrowFeature` neemt een `@Nullable` holder, en bij `null` volgt `return false` — dus geen NPE (vraag 5 A blijft). Zand heeft geen `canSustainPlant`-override (alleen plantblokken), dus `BushBlock.canSurvive` valt terug op `mayPlaceOn`.
+
+Afwijkingen van het plan (implementatiedetails, door de agent gekozen):
+- **`#mineable/hoe` expliciet:** vanilla's `mineable/hoe` noemt elke bladsoort los (niet `#leaves`); `palm_leaves` staat er dus zelf in. De andere bladtags (`sword_efficient`, `replaceable_by_trees`, `parrots_spawnable_on`, `lava_pool_stone_cannot_replace`) gaan wel via `#leaves` (via RCON bevestigd).
+- **nl-naam pot:** "Opgepotte palmzaailing" i.p.v. "Palmzaailing in pot" — vanilla-term ("Opgepotte eikenzaailing") en gelijk aan change 21.
+- **Kaartkleur:** `SAND` op de hele planken-familie, ook deur, valluik, drukplaat en knop (vanilla geeft die de kleur van de planken).
+- **Pot** via de bestaande `registerPot` (change 21); de palm-set staat achter `potted_desert_flower` (einde ring 2-sectie), de pot direct na de zaailing.
+- **`PalmSaplingBlockTest`** bindt de tags met de hand (`BuiltInRegistries.BLOCK.bindTags`, `resetTags` na elke test): unit tests hebben geen datapack, dus tags zijn daar leeg. De test dekt de Java-logica (`super || desert_plant_soil`); de echte tag-inhoud dekt test S. `ModTreeGrowersTest` controleert ook dat de codec van de zaailing de grower `corruptedadventure:palm` schrijft.
+- **Valluik-texture:** latwerk = planken met drie doorzichtige spleten (1 px) en een middenstijl.
+
+### Testresultaten
+
+- **Script:** `java tools/textures/Ring2Textures.java` schrijft 11 nieuwe PNG's (16×16; `check` bewaakt alpha 0/255); tweede run byte-identiek (md5); bestaande ring 2-PNG's ongewijzigd.
+- **B:** `./gradlew build` geslaagd, 36 testklassen zonder fouten; nieuw: `PalmSaplingBlockTest` (2), `ModTreeGrowersTest` (2); `ModBlocksTest` (5, +1: palm-volgorde).
+- **D:** `./gradlew runData` geslaagd, geen "texture does not exist"; nieuw o.a. blockstates/models/loot van 16 blokken, `minecraft:leaves`/`saplings`/`mineable/hoe` (blok), `leaves`/`saplings` (item), `corruptedadventure:palm_logs`, `neoforge/data_maps/item/compostables.json`, lang.
+- **S:** `tools/server-smoke-test.sh` met `level-name=smoke-change22`: `Done (6.258s)`, geen fouten of client-class-meldingen. Daarna RCON-script (`build/tmp/c22_test.py`), **118/118 geslaagd**:
+  - alle 16 blokken plaatsbaar; 39 bloktag-checks (o.a. log in `#palm_logs`/`#logs`/`#logs_that_burn`/`#mineable/axe`, bladeren in `#leaves`/`#mineable/hoe`/`#sword_efficient`/`#replaceable_by_trees`/`#parrots_spawnable_on`/`#lava_pool_stone_cannot_replace`, zaailing in `#saplings` en **niet** `#replaceable`, pot in `#flower_pots`) + 3 negatieve; 12 itemtag-checks;
+  - loot: bladeren + schaar → bladeren, + Silk Touch → bladeren; met de hand ×400 → 24 zaailingen (verwacht ~20) en 7 stokken (verwacht ~12), niets anders; dubbele plaat → 2; deur (onderste helft) → 1; pot → bloempot + zaailing; overige 11 → zichzelf;
+  - grond (zaailing op zand, daarna de grond vervangen): blijft op zand, rood zand, terracotta, oranje terracotta, gebarsten klei, aarde, gras, grove aarde, podzol, dood gras, verdorde aarde, farmland; breekt op steen, rode kloofsteen, los zand, grind, scorched sandstone, zandsteen, klei, glas;
+  - bladeren naast palmstam/-hout/gestript → `distance=1`; los → `distance=7`;
+  - **bonemeal zonder feature:** dispenser met 64 beendermeel, 12 pulsen → 12 verbruikt, zaailing op `stage=1`, geen stam, geen exception in de log; `place feature corruptedadventure:palm_tree` → "There is no feature with type …" (verwacht);
+  - composter onder een trechter met palmbladeren vult; palmzaailing gaat via een trechter in het brandstofvak van een oven (brandstof via `#saplings`), palmbladeren niet.
+  - Met de quick-play-client `Dev` (joint, `Received ring layout`) in creatief bij de testplek en `randomTickSpeed 300`, 25 s: losse niet-persistente bladeren vervallen, `persistent=true` en bladeren naast een stam blijven; zaailingen (ook op zand) naar `stage=1`, geen groei, geen exception. Daarna `randomTickSpeed 3`, server via RCON `stop`, client-JVM gestopt, RCON weer uit.
+
+## In-game checklist (W)
+
+W-achteraf (niet blokkerend; gebundeld in de ring 2-eindcheck, teststop 3 ná change 37). ~10 min. `./gradlew runClient`, nieuwe wereld **Corrupted World**, seed `20260930`, cheats aan, creatief. Testplek in de lucht boven spawn: `/fill -8 150 -8 8 150 8 minecraft:stone` en `/tp @s 0 151 0`.
+
+1. **Creative tab** "The Corrupted Adventure": direct na de woestijnbloem palmstam, palmhout, gestripte stam, gestript hout, planken, trap, plaat, hek, poort, deur, valluik, drukplaat, knop, palmbladeren, palmzaailing; **geen** pot; daarna `soul_crystal`. Namen en/nl kloppen (o.a. "Palmzaailing", "Palmhouten valluik").
+2. **Plaatsen:** alle blokken op het platform; geen paars-zwart. Stam en hout draaien mee met de as (liggend plaatsen); schors met horizontale ringen, kopse kant zandgeel zonder jaarringen. Bijl op stam/hout → gestripte variant (as blijft).
+3. **Transparantie:** deur (twee ramen), valluik (spleten), bladeren (gaten, ook bij Graphics: Fast) en zaailing zijn doorzichtig waar het hoort; geen zwarte randen.
+4. **Houtset-gedrag:** hek verbindt met een eikenhek; poort opent; deur/valluik openen met eikengeluid; knop (30 ticks) en drukplaat geven redstone (`/setblock ~ ~ ~ redstone_lamp` ernaast).
+5. **Zaailing-grond:** zaailing plaatsen lukt op zand, rood zand, terracotta, gebarsten klei, gras, aarde; niet op steen, kloofsteen, los zand. Grond eronder weghalen → zaailing valt weg (dropt zichzelf).
+6. **Zaailing zonder feature:** `/gamemode survival`, `/give @s minecraft:bone_meal 16`, 5× beendermeel op een zaailing → beendermeel verbruikt, groene deeltjes, **geen boom, geen crash**, zaailing blijft staan. (Na change 23: dezelfde test → palm.)
+7. **Pot:** `/give @s minecraft:flower_pot`, pot plaatsen, rechtsklik met de palmzaailing → zaailing in de pot; lege hand → zaailing terug. Pot kapot → pot + zaailing.
+8. **Bladverval:** `/gamerule randomTickSpeed 100`. Bladeren naast een palmstam plaatsen → blijven; losse bladeren met `/setblock ~2 ~ ~ corruptedadventure:palm_leaves` (niet-persistent) → verdwijnen binnen ~10 s; met de hand geplaatste bladeren (persistent) blijven. Daarna `/gamerule randomTickSpeed 3`.
+9. **Mijnen (survival):** bladeren met de hand / schoffel → soms zaailing of stokken; met een schaar → bladeren; schoffel breekt bladeren sneller dan de hand. Stam met een bijl sneller dan met de hand.
+10. **Vuur en compost:** `minecraft:fire` naast palmstam, planken en bladeren → ze branden weg (bladeren snel). Composter + palmbladeren/-zaailing → niveau stijgt soms. Oven met een palmzaailing als brandstof → brandt kort.
+11. **Recepten via tags:** palmstam → houtskool in een oven; palmplanken → stokken, werkbank, kist, houten pickaxe (alleen tag-recepten; eigen palm-recepten zijn backlog `items`).
+
+### Code review (`/code-review medium`)
+
+Geen bugs gevonden. Eén visuele opmerking: de placeholder `palm_leaves.png` is grotendeels doorzichtig en kan bij Graphics: Fast donker ogen → **niet aangepast** (placeholder; `textures`-categorie), als backlogpunt voor change 37 genoteerd.

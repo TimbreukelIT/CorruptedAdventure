@@ -135,6 +135,22 @@ final class EnglishLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.POTTED_DRY_SHRUB, "Potted Dry Shrub");
         addBlock(ModBlocks.POTTED_BARREL_CACTUS, "Potted Barrel Cactus");
         addBlock(ModBlocks.POTTED_DESERT_FLOWER, "Potted Desert Flower");
+        addBlock(ModBlocks.PALM_LOG, "Palm Log");
+        addBlock(ModBlocks.PALM_WOOD, "Palm Wood");
+        addBlock(ModBlocks.STRIPPED_PALM_LOG, "Stripped Palm Log");
+        addBlock(ModBlocks.STRIPPED_PALM_WOOD, "Stripped Palm Wood");
+        addBlock(ModBlocks.PALM_PLANKS, "Palm Planks");
+        addBlock(ModBlocks.PALM_STAIRS, "Palm Stairs");
+        addBlock(ModBlocks.PALM_SLAB, "Palm Slab");
+        addBlock(ModBlocks.PALM_FENCE, "Palm Fence");
+        addBlock(ModBlocks.PALM_FENCE_GATE, "Palm Fence Gate");
+        addBlock(ModBlocks.PALM_DOOR, "Palm Door");
+        addBlock(ModBlocks.PALM_TRAPDOOR, "Palm Trapdoor");
+        addBlock(ModBlocks.PALM_PRESSURE_PLATE, "Palm Pressure Plate");
+        addBlock(ModBlocks.PALM_BUTTON, "Palm Button");
+        addBlock(ModBlocks.PALM_LEAVES, "Palm Leaves");
+        addBlock(ModBlocks.PALM_SAPLING, "Palm Sapling");
+        addBlock(ModBlocks.POTTED_PALM_SAPLING, "Potted Palm Sapling");
 
         biome(ModBiomes.WITHERED_EXPANSE, "Withered Expanse");
         biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder Ring 2");

@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.registry;
 
+import net.minecraft.core.Direction;
 import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
@@ -13,6 +14,7 @@ import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -34,7 +36,9 @@ import nl.timtoys.corruptedadventure.block.DesertFlowerBlock;
 import nl.timtoys.corruptedadventure.block.DryShrubBlock;
 import nl.timtoys.corruptedadventure.block.LooseSandTrigger;
 import nl.timtoys.corruptedadventure.block.ModFlowerPots;
+import nl.timtoys.corruptedadventure.block.ModTreeGrowers;
 import nl.timtoys.corruptedadventure.block.ModWoodTypes;
+import nl.timtoys.corruptedadventure.block.PalmSaplingBlock;
 import nl.timtoys.corruptedadventure.block.StrippableLogBlock;
 import nl.timtoys.corruptedadventure.block.WitheredDirtBlock;
 
@@ -165,6 +169,43 @@ public final class ModBlocks {
     public static final DeferredBlock<FlowerPotBlock> POTTED_BARREL_CACTUS = registerPot("potted_barrel_cactus", BARREL_CACTUS);
     public static final DeferredBlock<FlowerPotBlock> POTTED_DESERT_FLOWER = registerPot("potted_desert_flower", DESERT_FLOWER);
 
+    // Palm: light sand-yellow wood under grey-brown bark (map colours: bark on the sides, wood on the ends).
+    public static final DeferredBlock<StrippableLogBlock> PALM_LOG = register("palm_log",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_PALM_LOG, Properties.ofFullCopy(Blocks.OAK_LOG)
+                    .mapColor(state -> state.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y
+                            ? MapColor.SAND : MapColor.TERRACOTTA_BROWN)));
+    public static final DeferredBlock<StrippableLogBlock> PALM_WOOD = register("palm_wood",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_PALM_WOOD, Properties.ofFullCopy(Blocks.OAK_WOOD)
+                    .mapColor(MapColor.TERRACOTTA_BROWN)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_PALM_LOG = register("stripped_palm_log",
+            () -> new RotatedPillarBlock(palm(Blocks.STRIPPED_OAK_LOG)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_PALM_WOOD = register("stripped_palm_wood",
+            () -> new RotatedPillarBlock(palm(Blocks.STRIPPED_OAK_WOOD)));
+    public static final DeferredBlock<Block> PALM_PLANKS = register("palm_planks",
+            () -> new Block(palm(Blocks.OAK_PLANKS)));
+    public static final DeferredBlock<StairBlock> PALM_STAIRS = register("palm_stairs",
+            () -> new StairBlock(PALM_PLANKS.get().defaultBlockState(), palm(Blocks.OAK_STAIRS)));
+    public static final DeferredBlock<SlabBlock> PALM_SLAB = register("palm_slab",
+            () -> new SlabBlock(palm(Blocks.OAK_SLAB)));
+    public static final DeferredBlock<FenceBlock> PALM_FENCE = register("palm_fence",
+            () -> new FenceBlock(palm(Blocks.OAK_FENCE)));
+    public static final DeferredBlock<FenceGateBlock> PALM_FENCE_GATE = register("palm_fence_gate",
+            () -> new FenceGateBlock(ModWoodTypes.PALM, palm(Blocks.OAK_FENCE_GATE)));
+    public static final DeferredBlock<DoorBlock> PALM_DOOR = registerDoor("palm_door",
+            () -> new DoorBlock(ModWoodTypes.PALM_SET, palm(Blocks.OAK_DOOR)));
+    public static final DeferredBlock<TrapDoorBlock> PALM_TRAPDOOR = register("palm_trapdoor",
+            () -> new TrapDoorBlock(ModWoodTypes.PALM_SET, palm(Blocks.OAK_TRAPDOOR)));
+    public static final DeferredBlock<PressurePlateBlock> PALM_PRESSURE_PLATE = register("palm_pressure_plate",
+            () -> new PressurePlateBlock(ModWoodTypes.PALM_SET, palm(Blocks.OAK_PRESSURE_PLATE)));
+    public static final DeferredBlock<ButtonBlock> PALM_BUTTON = register("palm_button",
+            () -> new ButtonBlock(ModWoodTypes.PALM_SET, 30, palm(Blocks.OAK_BUTTON)));
+    public static final DeferredBlock<LeavesBlock> PALM_LEAVES = register("palm_leaves",
+            () -> new LeavesBlock(Properties.ofFullCopy(Blocks.OAK_LEAVES)));
+    /** Grows into {@code corruptedadventure:palm_tree} (change 23); until then bonemeal is used up without growth. */
+    public static final DeferredBlock<PalmSaplingBlock> PALM_SAPLING = register("palm_sapling",
+            () -> new PalmSaplingBlock(ModTreeGrowers.PALM, Properties.ofFullCopy(Blocks.OAK_SAPLING)));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_PALM_SAPLING = registerPot("potted_palm_sapling", PALM_SAPLING);
+
     private ModBlocks() {
     }
 
@@ -179,6 +220,11 @@ public final class ModBlocks {
 
     private static Properties scorched(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_BROWN);
+    }
+
+    /** Palm wood without bark (planks family, stripped): light sand-yellow on the map. */
+    private static Properties palm(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.SAND);
     }
 
     private static <B extends Block> DeferredBlock<B> register(String name, Supplier<B> block) {

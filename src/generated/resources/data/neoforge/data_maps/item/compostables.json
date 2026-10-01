@@ -1,0 +1,10 @@
+{
+  "values": {
+    "corruptedadventure:palm_leaves": {
+      "chance": 0.3
+    },
+    "corruptedadventure:palm_sapling": {
+      "chance": 0.3
+    }
+  }
+}

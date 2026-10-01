@@ -8,12 +8,17 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.neoforged.neoforge.common.data.DataMapProvider;
 import net.neoforged.neoforge.registries.datamaps.builtin.BiomeVillagerType;
+import net.neoforged.neoforge.registries.datamaps.builtin.Compostable;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
 import java.util.concurrent.CompletableFuture;
 
-/** NeoForge data maps; vanilla looks villager types up by biome key, so the ring 1 copies need their own entries. */
+/**
+ * NeoForge data maps: villager types (vanilla looks them up by biome key, so the ring 1 copies need their own entries)
+ * and compostables.
+ */
 final class ModDataMapProvider extends DataMapProvider {
     ModDataMapProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
         super(output, lookup);
@@ -32,6 +37,11 @@ final class ModDataMapProvider extends DataMapProvider {
         villager(villagers, VillagerType.SWAMP, Biomes.SWAMP, Biomes.MANGROVE_SWAMP);
         villager(villagers, VillagerType.TAIGA, Biomes.OLD_GROWTH_SPRUCE_TAIGA, Biomes.OLD_GROWTH_PINE_TAIGA,
                 Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.TAIGA, Biomes.WINDSWEPT_FOREST);
+
+        // Vanilla's chance for leaves and saplings.
+        builder(NeoForgeDataMaps.COMPOSTABLES)
+                .add(ModBlocks.PALM_LEAVES.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.PALM_SAPLING.getId(), new Compostable(0.3F), false);
     }
 
     @SafeVarargs

@@ -196,3 +196,9 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-01 | blocks | Los zand `loose_sand` (keuze gebruiker, uit change 26 vraag 5 B): valt vanilla-gewijs bij buur-updates én stort na een korte waarschuwing (stof, kraakgeluid, ~0,75 s) in als een **speler** (geen mob; keuze gebruiker) binnen ~2 blokken eronder komt; server-side via `PlayerTickEvent`-check + scheduled tick, geen random ticks | Echte valstrikken voor spelers; grotten blijven intact tot een speler komt |
 | 2026-10-01 | blocks | `loose_sand` dropt `minecraft:sand`, Silk Touch zichzelf; niet in `#minecraft:sand` (implementatiekeuze) | Geen valstrikmateriaal zonder Silk Touch; geen plantengrond op plafonds |
 | 2026-10-01 | textures | Ring 2 krijgt een eigen texturescript `tools/textures/Ring2Textures.java` (zelfde opzet als ring 1, helpers gekopieerd); placeholders nu, definitief in change 37 | Eén script per ring; ring 1-textures blijven onaangeroerd |
+| 2026-10-01 | blocks | Palm-set = log, wood, gestripte log en wood, planks + houtset, palm_leaves, palm_sapling (geen borden/boten) | Houtset-definitie ring 2 |
+| 2026-10-01 | blocks | Palmzaailing groeit op #dirt + corruptedadventure:desert_plant_soil | Eén grondregel voor alle ring 2-planten; palmen direct op zand |
+| 2026-10-01 | blocks | Palmbladeren vaste kleur (geen biome-tint) | Geen client-code; lijn van dood gras (change 17) |
+| 2026-10-01 | blocks | Potplant palmzaailing: ja | Zoals elke vanilla-sapling |
+| 2026-10-01 | blocks | Bladloot palm zoals eikenbladeren | Vertrouwd; puur data |
+| 2026-10-01 | blocks | Palmzaailing verwijst vóór change 23 naar de nog niet bestaande feature corruptedadventure:palm_tree: bonemeal verbruikt, geen groei, geen crash | Change 23 registreert alleen de feature; geen blokwerk meer |

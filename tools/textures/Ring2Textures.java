@@ -51,6 +51,9 @@ public final class Ring2Textures {
     private static final int CACTUS_SPINE = 0xE6D9A8;
     private static final int[] DESERT_FLOWER_PETAL = {0xA8326E, 0xC94C8A, 0xE27AAB};
     private static final int[] DESERT_FLOWER_STEM = {0x4F6A33, 0x6B8A45};
+    private static final int[] PALM_BARK = {0x463B30, 0x5C4F40, 0x716250, 0x877762, 0x9C8C75};
+    private static final int[] PALM_WOOD = {0x9A7F52, 0xB49862, 0xC9AE76, 0xDAC28A, 0xE8D3A0};
+    private static final int[] PALM_LEAVES = {0x28561C, 0x377425, 0x4A9030, 0x62AA3E};
 
     /**
      * How a texture moves: {@code frames} frames of {@code frametime} ticks, optionally interpolated; {@code glow} is
@@ -95,6 +98,17 @@ public final class Ring2Textures {
         still("block/desert_flower", Ring2Textures::desertFlower);
         still("block/barrel_cactus_top", Ring2Textures::barrelCactusTop);
         still("block/barrel_cactus_side", Ring2Textures::barrelCactusSide);
+        still("block/palm_log", Ring2Textures::palmLog);
+        still("block/palm_log_top", Ring2Textures::palmLogTop);
+        still("block/stripped_palm_log", Ring2Textures::strippedPalmLog);
+        still("block/stripped_palm_log_top", Ring2Textures::strippedPalmLogTop);
+        still("block/palm_planks", Ring2Textures::palmPlanks);
+        still("block/palm_door_top", Ring2Textures::palmDoorTop);
+        still("block/palm_door_bottom", Ring2Textures::palmDoorBottom);
+        still("block/palm_trapdoor", Ring2Textures::palmTrapdoor);
+        still("block/palm_leaves", Ring2Textures::palmLeaves);
+        still("block/palm_sapling", Ring2Textures::palmSapling);
+        still("item/palm_door", Ring2Textures::palmDoorItem);
     }
 
     private static void still(String name, Painter painter) {
@@ -474,6 +488,269 @@ public final class Ring2Textures {
         }
     }
 
+    // ---- Palm -----------------------------------------------------------------------------------------------
+
+    /**
+     * Palm trunk: grey-brown bark in horizontal rings (the scars of old fronds), each ring a lit upper row, a body and a
+     * dark seam, with small scale notches; no vertical grain.
+     */
+    private static void palmLog(BufferedImage image, Random random) {
+        int[] seams = {3, 7, 11, 15};
+        int y0 = 0;
+        for (int seam : seams) {
+            double ring = 0.35 + 0.3 * random.nextDouble();
+            int shift = random.nextInt(4);
+            for (int y = y0; y <= seam; y++) {
+                for (int x = 0; x < SIZE; x++) {
+                    if (y == seam) {
+                        set(image, x, y, Math.floorMod(x + shift, 4) == 0 ? PALM_BARK[1] : PALM_BARK[0]);
+                    } else if (y == y0) {
+                        set(image, x, y, shade(PALM_BARK, ring + 0.3 + 0.15 * random.nextDouble()));
+                    } else {
+                        set(image, x, y, shade(PALM_BARK, ring + 0.25 * (random.nextDouble() - 0.5)));
+                    }
+                }
+            }
+            // A scale notch: a short dark tick below the seam above, every few pixels.
+            for (int x = shift; x < SIZE; x += 4 + random.nextInt(2)) {
+                set(image, x, Math.min(seam - 1, y0 + 1), PALM_BARK[1]);
+            }
+            y0 = seam + 1;
+        }
+    }
+
+    /** End grain without year rings (palm wood is fibrous): sand-yellow with darker fibre dots, a 1-pixel bark rim. */
+    private static void palmLogTop(BufferedImage image, Random random) {
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double radius = Math.hypot(x - 7.5, y - 7.5);
+                int color = shade(PALM_WOOD, 0.75 - radius / 18.0 + 0.2 * random.nextDouble());
+                set(image, x, y, random.nextInt(6) == 0 ? PALM_WOOD[0] : color);
+            }
+        }
+        rim(image, random, PALM_BARK, 0.0, 0.6);
+    }
+
+    /** Light sand-yellow wood with fine lengthwise fibres. */
+    private static void strippedPalmLog(BufferedImage image, Random random) {
+        double[] columns = new double[SIZE];
+        for (int x = 0; x < SIZE; x++) {
+            columns[x] = random.nextDouble();
+        }
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(PALM_WOOD, 0.35 + 0.4 * columns[x] + 0.15 * random.nextDouble()));
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            int x = 1 + 4 * i + random.nextInt(2);
+            int start = random.nextInt(SIZE);
+            int length = 6 + random.nextInt(8);
+            for (int j = 0; j < length; j++) {
+                setWrapped(image, x, start + j, PALM_WOOD[1]);
+            }
+        }
+    }
+
+    /** The log's end grain (same pixels) with a wood rim instead of bark. */
+    private static void strippedPalmLogTop(BufferedImage image, Random random) {
+        copy(renderUnchecked("block/palm_log_top"), image);
+        rim(image, random, PALM_WOOD, 0.2, 0.55);
+    }
+
+    /** Four planks of four rows like the dead planks: dark seam row, lit top row, staggered joints, grain streaks. */
+    private static void palmPlanks(BufferedImage image, Random random) {
+        int[] joints = {5, 12, 2, 9};
+        for (int plank = 0; plank < 4; plank++) {
+            double plankShade = 0.35 + random.nextDouble() * 0.3;
+            for (int row = 0; row < 4; row++) {
+                int y = plank * 4 + row;
+                for (int x = 0; x < SIZE; x++) {
+                    if (row == 3 || x == joints[plank]) {
+                        set(image, x, y, PALM_WOOD[0]);
+                    } else {
+                        double lit = row == 0 ? 0.2 : 0.0;
+                        set(image, x, y, shade(PALM_WOOD, plankShade + lit + (random.nextDouble() - 0.5) * 0.25));
+                    }
+                }
+            }
+            for (int i = 0; i < 2; i++) {
+                int y = plank * 4 + 1 + random.nextInt(2);
+                int x = random.nextInt(SIZE);
+                int length = 3 + random.nextInt(4);
+                for (int j = 0; j < length; j++) {
+                    if ((x + j) % SIZE != joints[plank]) {
+                        setWrapped(image, x + j, y, PALM_WOOD[1]);
+                    }
+                }
+            }
+        }
+    }
+
+    /** Upper door half: palm boards in a bark frame, two window slits, one rail. */
+    private static void palmDoorTop(BufferedImage image, Random random) {
+        palmBoards(image, random);
+        palmFrame(image, random, true, false);
+        palmRail(image, random, 11);
+        palmWindow(image, 3, 3, 3, 5);
+        palmWindow(image, 10, 3, 3, 5);
+    }
+
+    /** Lower door half: boards, two rails and a handle near the top edge. */
+    private static void palmDoorBottom(BufferedImage image, Random random) {
+        palmBoards(image, random);
+        palmFrame(image, random, false, true);
+        palmRail(image, random, 2);
+        palmRail(image, random, 12);
+        set(image, 12, 0, PALM_BARK[0]);
+        set(image, 12, 1, PALM_BARK[0]);
+    }
+
+    /** Trapdoor as a lattice: horizontal slats with see-through gaps between them, in a bark frame. */
+    private static void palmTrapdoor(BufferedImage image, Random random) {
+        palmBoards(image, random);
+        palmFrame(image, random, true, true);
+        for (int gap : new int[] {3, 7, 11}) {
+            for (int x = 2; x < SIZE - 2; x++) {
+                if (x != 7 && x != 8) {
+                    image.setRGB(x, gap, TRANSPARENT);
+                }
+            }
+        }
+        for (int y = 1; y < SIZE - 1; y++) {
+            set(image, 7, y, PALM_BARK[2]);
+            set(image, 8, y, PALM_BARK[1]);
+        }
+    }
+
+    /** The door in the inventory (8 wide, columns 4–11): boards, rails, two window slits and the handle. */
+    private static void palmDoorItem(BufferedImage image, Random random) {
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 4; x < 12; x++) {
+                boolean edge = x == 4 || x == 11 || y == 0 || y == SIZE - 1;
+                if (edge) {
+                    set(image, x, y, shade(PALM_BARK, 0.2 + random.nextDouble() * 0.4));
+                } else if (x == 8) {
+                    set(image, x, y, PALM_WOOD[0]);
+                } else {
+                    set(image, x, y, shade(PALM_WOOD, 0.35 + random.nextDouble() * 0.4));
+                }
+            }
+        }
+        for (int y = 2; y <= 4; y++) {
+            image.setRGB(6, y, TRANSPARENT);
+            image.setRGB(9, y, TRANSPARENT);
+        }
+        for (int y : new int[] {6, 13}) {
+            for (int x = 5; x < 11; x++) {
+                set(image, x, y, PALM_BARK[2]);
+            }
+        }
+        set(image, 10, 8, PALM_BARK[0]);
+    }
+
+    /** Three vertical boards (seams at x 5 and 10), each with its own tone. */
+    private static void palmBoards(BufferedImage image, Random random) {
+        double[] boards = {0.35 + random.nextDouble() * 0.3, 0.35 + random.nextDouble() * 0.3, 0.35 + random.nextDouble() * 0.3};
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                if (x == 5 || x == 10) {
+                    set(image, x, y, PALM_WOOD[0]);
+                } else {
+                    set(image, x, y, shade(PALM_WOOD, boards[x < 5 ? 0 : x < 10 ? 1 : 2] + (random.nextDouble() - 0.5) * 0.25));
+                }
+            }
+        }
+    }
+
+    /** Bark edges left and right, optionally along the top and bottom row. */
+    private static void palmFrame(BufferedImage image, Random random, boolean top, boolean bottom) {
+        for (int i = 0; i < SIZE; i++) {
+            set(image, 0, i, shade(PALM_BARK, 0.2 + random.nextDouble() * 0.5));
+            set(image, SIZE - 1, i, shade(PALM_BARK, 0.2 + random.nextDouble() * 0.5));
+            if (top) {
+                set(image, i, 0, shade(PALM_BARK, 0.2 + random.nextDouble() * 0.5));
+            }
+            if (bottom) {
+                set(image, i, SIZE - 1, shade(PALM_BARK, 0.2 + random.nextDouble() * 0.5));
+            }
+        }
+    }
+
+    /** A two-row bark rail with a nail near each end. */
+    private static void palmRail(BufferedImage image, Random random, int y) {
+        for (int x = 1; x < SIZE - 1; x++) {
+            set(image, x, y, shade(PALM_BARK, 0.6 + random.nextDouble() * 0.4));
+            set(image, x, y + 1, shade(PALM_BARK, 0.3 + random.nextDouble() * 0.3));
+        }
+        set(image, 2, y, PALM_BARK[0]);
+        set(image, SIZE - 3, y, PALM_BARK[0]);
+    }
+
+    /** A see-through hole with a dark rim (cutout: alpha 0 or 255). */
+    private static void palmWindow(BufferedImage image, int x0, int y0, int width, int height) {
+        for (int y = y0 - 1; y <= y0 + height; y++) {
+            for (int x = x0 - 1; x <= x0 + width; x++) {
+                boolean inside = x >= x0 && x < x0 + width && y >= y0 && y < y0 + height;
+                if (inside) {
+                    image.setRGB(x, y, TRANSPARENT);
+                } else {
+                    set(image, x, y, PALM_BARK[1]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Fixed bright green (no biome tint): long narrow leaflets running diagonally in two directions, wrapping, with
+     * see-through gaps between them (cutout_mipped).
+     */
+    private static void palmLeaves(BufferedImage image, Random random) {
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                image.setRGB(x, y, TRANSPARENT);
+            }
+        }
+        for (int i = 0; i < 11; i++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            int dx = i % 2 == 0 ? 1 : -1;
+            int length = 6 + random.nextInt(5);
+            for (int j = 0; j < length; j++) {
+                // Lit edge on top, darker body below: a narrow leaflet two pixels thick.
+                int tone = j == 0 || j == length - 1 ? 1 : 2 + random.nextInt(2);
+                setWrapped(image, x + j * dx, y + j, PALM_LEAVES[tone]);
+                setWrapped(image, x + j * dx, y + j + 1, PALM_LEAVES[Math.max(0, tone - 2)]);
+            }
+        }
+    }
+
+    /** A small palm: a thin curved trunk and four arching fronds; transparent background (cutout). */
+    private static void palmSapling(BufferedImage image, Random random) {
+        for (int y = 15; y >= 8; y--) {
+            int x = y > 12 ? 8 : 7;
+            set(image, x, y, PALM_BARK[y % 2 == 0 ? 2 : 1]);
+        }
+        int[][] fronds = {{-1, -1}, {1, -1}, {-1, 0}, {1, 0}};
+        for (int[] frond : fronds) {
+            int x = 7;
+            int y = 7;
+            int length = 5 + random.nextInt(2);
+            for (int j = 0; j < length; j++) {
+                x += frond[0];
+                // Rising first, then drooping at the tip.
+                y += j < 2 ? frond[1] : j >= length - 2 ? 1 : 0;
+                set(image, x, y, PALM_LEAVES[j == length - 1 ? 1 : 2 + random.nextInt(2)]);
+                if (j > 0 && j < length - 1) {
+                    set(image, x, y + 1, PALM_LEAVES[0]);
+                }
+            }
+        }
+        set(image, 7, 7, PALM_LEAVES[3]);
+        set(image, 7, 6, PALM_LEAVES[2]);
+        set(image, 7, 5, PALM_LEAVES[1]);
+    }
+
     // ---- Animation ------------------------------------------------------------------------------------------
 
     /**
@@ -673,6 +950,14 @@ public final class Ring2Textures {
     /** {@link #set} wrapping around the tile edges, for seamless textures. */
     private static void setWrapped(BufferedImage image, int x, int y, int rgb) {
         set(image, Math.floorMod(x, SIZE), Math.floorMod(y, SIZE), rgb);
+    }
+
+    private static void copy(BufferedImage from, BufferedImage to) {
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                to.setRGB(x, y, from.getRGB(x, y));
+            }
+        }
     }
 
     private static double smoothstep(double t) {

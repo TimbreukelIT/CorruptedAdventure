@@ -20,6 +20,8 @@ public final class ModTags {
         public static final TagKey<Block> ORES_SOUL_CRYSTAL = TagKey.create(Registries.BLOCK, common("ores/soul_crystal"));
         /** The three natural canyon stone tints (red, orange, cream): surface rules, ore targets. */
         public static final TagKey<Block> CANYON_STONES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("canyon_stones"));
+        /** Palm log, wood and their stripped variants; part of {@code #minecraft:logs_that_burn}. */
+        public static final TagKey<Block> PALM_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("palm_logs"));
         /** Ground for the desert flora (and the palm sapling): sand, terracotta, dirt and cracked clay. */
         public static final TagKey<Block> DESERT_PLANT_SOIL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("desert_plant_soil"));
 
@@ -30,6 +32,7 @@ public final class ModTags {
     public static final class Items {
         public static final TagKey<Item> DEAD_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("dead_logs"));
         public static final TagKey<Item> CANYON_STONES = TagKey.create(Registries.ITEM, CorruptedAdventure.id("canyon_stones"));
+        public static final TagKey<Item> PALM_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("palm_logs"));
         public static final TagKey<Item> ORES_SOUL_CRYSTAL = TagKey.create(Registries.ITEM, common("ores/soul_crystal"));
         /** Convention tag {@code c:gems/soul_crystal}; part of {@code c:gems}. */
         public static final TagKey<Item> GEMS_SOUL_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/soul_crystal"));

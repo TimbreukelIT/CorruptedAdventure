@@ -1,0 +1,23 @@
+package nl.timtoys.corruptedadventure.block;
+
+import net.minecraft.world.level.block.grower.TreeGrower;
+import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures;
+
+import java.util.Optional;
+
+/**
+ * Tree growers of our saplings. A {@link TreeGrower} adds itself to vanilla's global name map (used by
+ * {@link TreeGrower#CODEC}), so the name carries our namespace.
+ */
+public final class ModTreeGrowers {
+    /**
+     * Grows {@link ModConfiguredFeatures#PALM_TREE}. While that feature does not exist (before change 23),
+     * {@code TreeGrower.growTree} finds no holder and returns false: the sapling stays, bonemeal is used up.
+     */
+    public static final TreeGrower PALM = new TreeGrower(CorruptedAdventure.id("palm").toString(),
+            Optional.empty(), Optional.of(ModConfiguredFeatures.PALM_TREE), Optional.empty());
+
+    private ModTreeGrowers() {
+    }
+}

@@ -22,6 +22,8 @@ public final class ModConfiguredFeatures {
     // Nether ring 1.
     public static final ResourceKey<ConfiguredFeature<?, ?>> SOUL_CRYSTAL_ORE = key("soul_crystal_ore");
     public static final ResourceKey<ConfiguredFeature<?, ?>> CRIMSON_SOUL_CRYSTAL_ORE = key("crimson_soul_crystal_ore");
+    // Ring 2. The palm tree feature itself comes in change 23 (worldgen); until then the palm sapling cannot grow.
+    public static final ResourceKey<ConfiguredFeature<?, ?>> PALM_TREE = key("palm_tree");
 
     private ModConfiguredFeatures() {
     }

@@ -65,6 +65,23 @@ final class ModItemModelProvider extends ItemModelProvider {
         flatBlockItem(ModBlocks.DRY_SHRUB);
         blockItem(ModBlocks.BARREL_CACTUS);
         flatBlockItem(ModBlocks.DESERT_FLOWER);
+
+        ResourceLocation palmPlanks = modLoc("block/palm_planks");
+        blockItem(ModBlocks.PALM_LOG);
+        blockItem(ModBlocks.PALM_WOOD);
+        blockItem(ModBlocks.STRIPPED_PALM_LOG);
+        blockItem(ModBlocks.STRIPPED_PALM_WOOD);
+        blockItem(ModBlocks.PALM_PLANKS);
+        blockItem(ModBlocks.PALM_STAIRS);
+        blockItem(ModBlocks.PALM_SLAB);
+        fenceInventory(ModBlocks.PALM_FENCE.getId().getPath(), palmPlanks);
+        blockItem(ModBlocks.PALM_FENCE_GATE);
+        basicItem(ModBlocks.PALM_DOOR.asItem());
+        withExistingParent(ModBlocks.PALM_TRAPDOOR.getId().getPath(), modLoc("block/palm_trapdoor_bottom"));
+        blockItem(ModBlocks.PALM_PRESSURE_PLATE);
+        buttonInventory(ModBlocks.PALM_BUTTON.getId().getPath(), palmPlanks);
+        blockItem(ModBlocks.PALM_LEAVES);
+        flatBlockItem(ModBlocks.PALM_SAPLING);
         // Potted plants have no item.
     }
 

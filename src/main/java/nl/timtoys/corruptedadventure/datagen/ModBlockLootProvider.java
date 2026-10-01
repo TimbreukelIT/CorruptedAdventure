@@ -90,6 +90,24 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropPottedContents(ModBlocks.POTTED_DRY_SHRUB.get());
         dropPottedContents(ModBlocks.POTTED_BARREL_CACTUS.get());
         dropPottedContents(ModBlocks.POTTED_DESERT_FLOWER.get());
+
+        dropSelf(ModBlocks.PALM_LOG.get());
+        dropSelf(ModBlocks.PALM_WOOD.get());
+        dropSelf(ModBlocks.STRIPPED_PALM_LOG.get());
+        dropSelf(ModBlocks.STRIPPED_PALM_WOOD.get());
+        dropSelf(ModBlocks.PALM_PLANKS.get());
+        dropSelf(ModBlocks.PALM_STAIRS.get());
+        add(ModBlocks.PALM_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.PALM_FENCE.get());
+        dropSelf(ModBlocks.PALM_FENCE_GATE.get());
+        add(ModBlocks.PALM_DOOR.get(), this::createDoorTable);
+        dropSelf(ModBlocks.PALM_TRAPDOOR.get());
+        dropSelf(ModBlocks.PALM_PRESSURE_PLATE.get());
+        dropSelf(ModBlocks.PALM_BUTTON.get());
+        // Like oak leaves: shears/Silk Touch -> the leaves; otherwise sapling 1/20 (Fortune more) and sticks 1/50.
+        add(ModBlocks.PALM_LEAVES.get(), block -> createLeavesDrops(block, ModBlocks.PALM_SAPLING.get(), NORMAL_LEAVES_SAPLING_CHANCES));
+        dropSelf(ModBlocks.PALM_SAPLING.get());
+        dropPottedContents(ModBlocks.POTTED_PALM_SAPLING.get());
     }
 
     @Override

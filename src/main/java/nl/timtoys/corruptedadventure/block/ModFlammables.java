@@ -22,19 +22,22 @@ public final class ModFlammables {
     }
 
     /**
-     * Same odds as oak in {@code FireBlock.bootStrap} (doors, trapdoors, buttons and pressure plates do not burn) and as
-     * the dead bush and flowers.
+     * Same odds as oak (and oak leaves) in {@code FireBlock.bootStrap} (doors, trapdoors, buttons, pressure plates and
+     * saplings do not burn) and as the dead bush and flowers.
      */
     private static void setFireOdds() {
         FireBlock fire = (FireBlock) Blocks.FIRE;
         for (Block log : new Block[] {
-                ModBlocks.DEAD_LOG.get(), ModBlocks.DEAD_WOOD.get(), ModBlocks.STRIPPED_DEAD_LOG.get(), ModBlocks.STRIPPED_DEAD_WOOD.get()}) {
+                ModBlocks.DEAD_LOG.get(), ModBlocks.DEAD_WOOD.get(), ModBlocks.STRIPPED_DEAD_LOG.get(), ModBlocks.STRIPPED_DEAD_WOOD.get(),
+                ModBlocks.PALM_LOG.get(), ModBlocks.PALM_WOOD.get(), ModBlocks.STRIPPED_PALM_LOG.get(), ModBlocks.STRIPPED_PALM_WOOD.get()}) {
             fire.setFlammable(log, 5, 5);
         }
         for (Block planks : new Block[] {
-                ModBlocks.DEAD_PLANKS.get(), ModBlocks.DEAD_STAIRS.get(), ModBlocks.DEAD_SLAB.get(), ModBlocks.DEAD_FENCE.get(), ModBlocks.DEAD_FENCE_GATE.get()}) {
+                ModBlocks.DEAD_PLANKS.get(), ModBlocks.DEAD_STAIRS.get(), ModBlocks.DEAD_SLAB.get(), ModBlocks.DEAD_FENCE.get(), ModBlocks.DEAD_FENCE_GATE.get(),
+                ModBlocks.PALM_PLANKS.get(), ModBlocks.PALM_STAIRS.get(), ModBlocks.PALM_SLAB.get(), ModBlocks.PALM_FENCE.get(), ModBlocks.PALM_FENCE_GATE.get()}) {
             fire.setFlammable(planks, 5, 20);
         }
+        fire.setFlammable(ModBlocks.PALM_LEAVES.get(), 30, 60);
         // Like the dead bush and flowers.
         fire.setFlammable(ModBlocks.DRY_SHRUB.get(), 60, 100);
         fire.setFlammable(ModBlocks.DESERT_FLOWER.get(), 60, 100);
