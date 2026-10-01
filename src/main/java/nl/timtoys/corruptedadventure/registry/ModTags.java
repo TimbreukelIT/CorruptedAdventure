@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.registry;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
@@ -15,6 +16,8 @@ public final class ModTags {
     public static final class Blocks {
         /** Dead log, wood and their stripped variants; part of {@code #minecraft:logs_that_burn}. */
         public static final TagKey<Block> DEAD_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("dead_logs"));
+        /** Convention tag {@code c:ores/soul_crystal}; part of {@code c:ores}. */
+        public static final TagKey<Block> ORES_SOUL_CRYSTAL = TagKey.create(Registries.BLOCK, common("ores/soul_crystal"));
 
         private Blocks() {
         }
@@ -22,6 +25,9 @@ public final class ModTags {
 
     public static final class Items {
         public static final TagKey<Item> DEAD_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("dead_logs"));
+        public static final TagKey<Item> ORES_SOUL_CRYSTAL = TagKey.create(Registries.ITEM, common("ores/soul_crystal"));
+        /** Convention tag {@code c:gems/soul_crystal}; part of {@code c:gems}. */
+        public static final TagKey<Item> GEMS_SOUL_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/soul_crystal"));
 
         private Items() {
         }
@@ -37,5 +43,10 @@ public final class ModTags {
 
         private Biomes() {
         }
+    }
+
+    /** A tag in the shared {@code c} namespace (conventions shared with other mods). */
+    private static ResourceLocation common(String path) {
+        return ResourceLocation.fromNamespaceAndPath("c", path);
     }
 }

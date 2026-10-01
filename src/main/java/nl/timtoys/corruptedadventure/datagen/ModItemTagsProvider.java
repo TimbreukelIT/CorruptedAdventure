@@ -10,11 +10,12 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 
 import java.util.concurrent.CompletableFuture;
 
-/** Item tags: copies of the block tags, so vanilla recipes (sticks, crafting table, charcoal) and fuels work. */
+/** Item tags: mostly copies of the block tags, so vanilla recipes (sticks, crafting table, charcoal) and fuels work. */
 final class ModItemTagsProvider extends ItemTagsProvider {
     ModItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup,
                         CompletableFuture<TagsProvider.TagLookup<Block>> blockTags, ExistingFileHelper existingFileHelper) {
@@ -38,5 +39,12 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         copy(Tags.Blocks.STRIPPED_LOGS, Tags.Items.STRIPPED_LOGS);
         copy(Tags.Blocks.STRIPPED_WOODS, Tags.Items.STRIPPED_WOODS);
         copy(Tags.Blocks.FENCE_GATES_WOODEN, Tags.Items.FENCE_GATES_WOODEN);
+
+        copy(ModTags.Blocks.ORES_SOUL_CRYSTAL, ModTags.Items.ORES_SOUL_CRYSTAL);
+        copy(Tags.Blocks.ORES, Tags.Items.ORES);
+        copy(Tags.Blocks.ORE_RATES_SINGULAR, Tags.Items.ORE_RATES_SINGULAR);
+        copy(Tags.Blocks.ORES_IN_GROUND_NETHERRACK, Tags.Items.ORES_IN_GROUND_NETHERRACK);
+        tag(ModTags.Items.GEMS_SOUL_CRYSTAL).add(ModItems.SOUL_CRYSTAL.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_SOUL_CRYSTAL);
     }
 }

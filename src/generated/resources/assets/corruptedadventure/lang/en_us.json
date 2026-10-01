@@ -65,6 +65,7 @@
   "biome.corruptedadventure.windswept_savanna": "Windswept Savanna",
   "biome.corruptedadventure.withered_expanse": "Withered Expanse",
   "biome.corruptedadventure.wooded_badlands": "Wooded Badlands",
+  "block.corruptedadventure.crimson_soul_crystal_ore": "Crimson Soul Crystal Ore",
   "block.corruptedadventure.dead_button": "Dead Button",
   "block.corruptedadventure.dead_door": "Dead Door",
   "block.corruptedadventure.dead_fence": "Dead Fence",
@@ -77,10 +78,12 @@
   "block.corruptedadventure.dead_stairs": "Dead Stairs",
   "block.corruptedadventure.dead_trapdoor": "Dead Trapdoor",
   "block.corruptedadventure.dead_wood": "Dead Wood",
+  "block.corruptedadventure.soul_crystal_ore": "Soul Crystal Ore",
   "block.corruptedadventure.stripped_dead_log": "Stripped Dead Log",
   "block.corruptedadventure.stripped_dead_wood": "Stripped Dead Wood",
   "block.corruptedadventure.withered_dirt": "Withered Dirt",
   "generator.corruptedadventure.corrupted_world": "Corrupted World",
+  "item.corruptedadventure.soul_crystal": "Soul Crystal",
   "itemGroup.corruptedadventure.main": "The Corrupted Adventure",
   "subtitles.corruptedadventure.ambient.ring_1.strange_cave": "Something stirs in the dark"
 }

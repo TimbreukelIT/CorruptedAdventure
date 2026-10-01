@@ -144,3 +144,12 @@ Antwoord (2026-09-30): **A** — zonder Silk Touch alleen `soul_crystal` (Fortun
 - **B:** ja. Het erts gaat op in het crimson forest (fungi en roots erop), dus beter verstopt en natuurlijker; spelers kunnen er fungi op planten. Bijwerking: bonemeal op aangrenzend netherrack wordt verspild.
 
 Antwoord (2026-09-30): **A** — niet in `minecraft:nylium`.
+
+---
+
+## Afwijkingen bij de bouw (2026-10-01)
+
+- **Overlay-namen volgen het plan van change 17:** drie overlays in plaats van twee: `soul_crystal_ore_overlay` (netherrack-erts en onderkant van de crimson-variant), `crimson_soul_crystal_ore_overlay_top` en `crimson_soul_crystal_ore_overlay_side` (bovenste 6 rijen vrij, zodat de rode nylium-rand van `crimson_nylium_side` zichtbaar blijft). Zo hoeft change 17 alleen de PNG's te vervangen.
+- **Creative tab:** losse items worden vóór de blockitems geregistreerd (class-init-volgorde van `ModItems`), dus de tab sorteert nu zelf: eerst alle blokken in blokregistratievolgorde, dan de losse items. `ModBlocksTest` aangepast.
+- **Conventietags:** `c:ores` en `c:gems` bevatten `#c:ores/soul_crystal` / `#c:gems/soul_crystal` (tag-verwijzing, NeoForge-conventie) in plaats van de blokken/items los.
+- Item-models via de bestaande `ModItemModelProvider.blockItem` (niet `simpleBlockItem`), zoals de rest van de repo.

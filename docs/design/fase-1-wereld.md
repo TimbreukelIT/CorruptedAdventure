@@ -202,6 +202,9 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Structures (change 14):** vanilla fortress, bastion en Nether-ruined-portals via de vanilla-tags van de kopieën (`#is_nether`, `#has_structure/bastion_remnant`), vanilla-spacing. Geen nether fossils (alleen soul sand valley). Een gegarandeerde fortress per seed volgt in fase 3 (backlog).
 - Vanilla Nether-ores (quartz, goud, ancient debris).
 - **Sleutelmateriaal: zielkristal** — nieuw, zeldzaam erts in de crimson-bodem en netherrack, alleen in Nether-ring 1. Nodig voor bewaker 1→2 (fase 5); gebruik in fase 2.
+  - **Blokken (change 15):** twee varianten: `soul_crystal_ore` (netherrack met kristal) en `crimson_soul_crystal_ore` (crimson nylium met kristal; change 16 vervangt er crimson nylium mee). Beide: hardheid 3 zoals Nether-kwartserts, **ijzeren pickaxe** nodig (`needs_iron_tool`), XP 3–7, **licht 3**, geen particles. De crimson-variant heeft nylium-geluid en -kaartkleur, maar geen nylium-gedrag (spreidt niet, geen bonemeal) en zit **niet** in `minecraft:nylium`: er groeien geen fungi of roots op, de kale plek is een vindplaats-hint.
+  - **Drop:** 1 `soul_crystal` (Fortune III: 1–4); Silk Touch → de eigen variant (zonder XP). Ook de crimson-variant laat zonder Silk Touch niets anders achter (geen netherrack); het blok wordt lucht. `soul_crystal` is tot fase 2 een placeholder-item.
+  - **Model:** tweelaags (vanilla netherrack / crimson nylium als **verwijzing**, eigen transparante overlay erover, cutout); overlays `soul_crystal_ore_overlay`, `crimson_soul_crystal_ore_overlay_top`/`_side` uit het texturescript, definitief in change 17.
 - Geen conditie.
 
 **Client/server-risico's:** geen bijzondere. Stille zones zijn biome-ambient (data) of client-only; tunnels en kale plekken zijn deterministische features.

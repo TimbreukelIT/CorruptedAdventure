@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModItems;
 
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,11 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.DEAD_TRAPDOOR.get());
         dropSelf(ModBlocks.DEAD_PRESSURE_PLATE.get());
         dropSelf(ModBlocks.DEAD_BUTTON.get());
+
+        // Silk Touch -> the ore itself; otherwise 1 soul crystal (Fortune), the crimson variant leaves no netherrack.
+        // XP comes from DropExperienceBlock, not from the loot table.
+        add(ModBlocks.SOUL_CRYSTAL_ORE.get(), block -> createOreDrop(block, ModItems.SOUL_CRYSTAL.get()));
+        add(ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE.get(), block -> createOreDrop(block, ModItems.SOUL_CRYSTAL.get()));
     }
 
     @Override

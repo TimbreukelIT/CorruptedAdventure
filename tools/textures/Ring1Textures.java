@@ -9,11 +9,13 @@ import java.util.Random;
 import java.util.function.BiConsumer;
 
 /**
- * Generates the ring 1 block and item textures from our own pixels (no vanilla pixels are read or copied).
+ * Generates the ring 1 block and item textures (Nether ring 1 included) from our own pixels (no vanilla pixels are
+ * read or copied). Ore overlays are transparent and drawn over a vanilla texture that the model only references.
  * Run from the repository root: {@code java tools/textures/Ring1Textures.java}.
  *
  * <p>Deterministic: every texture has a fixed seed (hash of its file name), so running twice gives identical PNGs.
- * Change 10 version: simple working placeholders. Change 17 refines palettes and patterns into the final textures.
+ * Change 10 version: simple working placeholders; change 15 adds the soul crystal placeholders. Change 17 refines
+ * palettes and patterns into the final textures.
  */
 public final class Ring1Textures {
     private static final int SIZE = 16;
@@ -26,6 +28,8 @@ public final class Ring1Textures {
     private static final int[] DEAD_BARK = {0x4F463F, 0x635950, 0x776C61, 0x8A7F72};
     private static final int[] DEAD_WOOD = {0x8A8072, 0x9C9282, 0xADA392, 0xBDB3A1};
     private static final int[] SNOW = {0xDCE6EA, 0xEDF3F5, 0xFFFFFF};
+    /** Soul crystal: outline, shadow, base (soul fire cyan), light, highlight. */
+    private static final int[] SOUL_CRYSTAL = {0x0E3F55, 0x1F8FA6, 0x3FD8E0, 0x8CF2F2, 0xE2FFFF};
 
     public static void main(String[] args) throws IOException {
         if (!Files.isDirectory(Path.of("src/main/resources"))) {
@@ -45,6 +49,10 @@ public final class Ring1Textures {
         textures.put("block/dead_door_bottom", Ring1Textures::deadDoorBottom);
         textures.put("block/dead_trapdoor", Ring1Textures::deadTrapdoor);
         textures.put("item/dead_door", Ring1Textures::deadDoorItem);
+        textures.put("block/soul_crystal_ore_overlay", Ring1Textures::soulCrystalOreOverlay);
+        textures.put("block/crimson_soul_crystal_ore_overlay_top", Ring1Textures::crimsonSoulCrystalOreOverlayTop);
+        textures.put("block/crimson_soul_crystal_ore_overlay_side", Ring1Textures::crimsonSoulCrystalOreOverlaySide);
+        textures.put("item/soul_crystal", Ring1Textures::soulCrystalItem);
 
         for (Map.Entry<String, BiConsumer<BufferedImage, Random>> texture : textures.entrySet()) {
             BufferedImage image = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
@@ -195,7 +203,114 @@ public final class Ring1Textures {
         }
     }
 
+    /** Overlay over netherrack (also the bottom of the crimson variant): four upright crystal clusters. */
+    private static void soulCrystalOreOverlay(BufferedImage image, Random random) {
+        crystalClusters(image, random, 4, 1);
+    }
+
+    /** Overlay over the crimson nylium top: crystal tips seen from above, denser than on the sides. */
+    private static void crimsonSoulCrystalOreOverlayTop(BufferedImage image, Random random) {
+        int placed = 0;
+        for (int attempt = 0; attempt < 200 && placed < 7; attempt++) {
+            int x = 1 + random.nextInt(SIZE - 3);
+            int y = 1 + random.nextInt(SIZE - 3);
+            if (isFree(image, x - 1, y - 1, 4, 4)) {
+                // A 2×2 tip: lit top-left, shadow bottom-right, sometimes a third pixel as a slanted facet.
+                set(image, x, y, SOUL_CRYSTAL[4]);
+                set(image, x + 1, y, SOUL_CRYSTAL[2]);
+                set(image, x, y + 1, SOUL_CRYSTAL[3]);
+                set(image, x + 1, y + 1, SOUL_CRYSTAL[1]);
+                if (random.nextBoolean()) {
+                    set(image, x + 2, y + 1, SOUL_CRYSTAL[0]);
+                }
+                placed++;
+            }
+        }
+    }
+
+    /** Overlay over the crimson nylium side: clusters below the top rows, so the red nylium edge stays visible. */
+    private static void crimsonSoulCrystalOreOverlaySide(BufferedImage image, Random random) {
+        crystalClusters(image, random, 3, 6);
+    }
+
+    /** The item: one large faceted crystal with a smaller one at its foot. */
+    private static void soulCrystalItem(BufferedImage image, Random random) {
+        crystal(image, 8, 1, 14, 3);
+        crystal(image, 4, 7, 14, 2);
+    }
+
     // ---- Shared patterns ------------------------------------------------------------------------------------
+
+    /**
+     * {@code count} clusters of two upright shards, tips no higher than row {@code minTop + 1}; clusters keep a free
+     * pixel between them and stay inside the tile (ore overlays do not wrap).
+     */
+    private static void crystalClusters(BufferedImage image, Random random, int count, int minTop) {
+        int placed = 0;
+        for (int attempt = 0; attempt < 200 && placed < count; attempt++) {
+            int x = 1 + random.nextInt(SIZE - 5);
+            int y = minTop + random.nextInt(SIZE - 1 - minTop - 4);
+            if (!isFree(image, x - 1, y - 1, 6, 6)) {
+                continue;
+            }
+            int baseline = y + 4;
+            shard(image, x, baseline, 2 + random.nextInt(2));
+            shard(image, x + 2, baseline, 3 + random.nextInt(2));
+            if (random.nextBoolean()) {
+                set(image, x + 1, baseline, SOUL_CRYSTAL[0]);
+            }
+            placed++;
+        }
+    }
+
+    /** A 2-wide upright shard: light left column, shadow right column, highlight at the tip. */
+    private static void shard(BufferedImage image, int x, int baseline, int height) {
+        for (int i = 0; i < height; i++) {
+            int y = baseline - i;
+            set(image, x, y, i == height - 1 ? SOUL_CRYSTAL[4] : SOUL_CRYSTAL[3]);
+            if (i < height - 1) {
+                set(image, x + 1, y, i == 0 ? SOUL_CRYSTAL[0] : SOUL_CRYSTAL[1]);
+            }
+        }
+    }
+
+    /**
+     * An upright hexagonal crystal centred on column {@code cx} from row {@code top} to {@code bottom}, at most
+     * {@code halfWidth} pixels to each side: dark outline, light left facets, base middle, shadow right facets.
+     */
+    private static void crystal(BufferedImage image, int cx, int top, int bottom, int halfWidth) {
+        for (int y = top; y <= bottom; y++) {
+            int width = Math.min(halfWidth, Math.min(y - top, bottom - y) + 1);
+            for (int x = cx - width; x < cx + width; x++) {
+                boolean edge = x == cx - width || x == cx + width - 1 || y == top || y == bottom;
+                int color;
+                if (edge) {
+                    color = SOUL_CRYSTAL[0];
+                } else if (x < cx - 1) {
+                    color = SOUL_CRYSTAL[3];
+                } else if (x == cx - 1) {
+                    color = y < top + 3 ? SOUL_CRYSTAL[4] : SOUL_CRYSTAL[2];
+                } else if (x == cx) {
+                    color = SOUL_CRYSTAL[2];
+                } else {
+                    color = SOUL_CRYSTAL[1];
+                }
+                set(image, x, y, color);
+            }
+        }
+    }
+
+    /** True if the rectangle (clipped to the tile) has no opaque pixel yet. */
+    private static boolean isFree(BufferedImage image, int x0, int y0, int width, int height) {
+        for (int y = Math.max(0, y0); y < Math.min(SIZE, y0 + height); y++) {
+            for (int x = Math.max(0, x0); x < Math.min(SIZE, x0 + width); x++) {
+                if ((image.getRGB(x, y) >>> 24) != 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     /** A 2–4 pixel band along the top edge, hanging unevenly down the side. */
     private static void overhang(BufferedImage image, Random random, int[] palette) {

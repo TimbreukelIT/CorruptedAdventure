@@ -44,5 +44,14 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_DEAD_LOG.get());
         tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_DEAD_WOOD.get());
         tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.DEAD_FENCE_GATE.get());
+
+        // Soul crystal ores. The crimson variant is deliberately not in #nylium (no fungi or roots on it) and has no
+        // ores_in_ground tag (there is no convention tag for nylium).
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SOUL_CRYSTAL_ORE.get(), ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE.get());
+        tag(BlockTags.NEEDS_IRON_TOOL).add(ModBlocks.SOUL_CRYSTAL_ORE.get(), ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE.get());
+        tag(ModTags.Blocks.ORES_SOUL_CRYSTAL).add(ModBlocks.SOUL_CRYSTAL_ORE.get(), ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE.get());
+        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_SOUL_CRYSTAL);
+        tag(Tags.Blocks.ORE_RATES_SINGULAR).add(ModBlocks.SOUL_CRYSTAL_ORE.get(), ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE.get());
+        tag(Tags.Blocks.ORES_IN_GROUND_NETHERRACK).add(ModBlocks.SOUL_CRYSTAL_ORE.get());
     }
 }

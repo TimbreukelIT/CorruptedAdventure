@@ -8,6 +8,7 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModItems;
 
 /** Item models. Block items use their block model, except where vanilla uses a separate inventory model. */
 final class ModItemModelProvider extends ItemModelProvider {
@@ -33,6 +34,10 @@ final class ModItemModelProvider extends ItemModelProvider {
         withExistingParent(ModBlocks.DEAD_TRAPDOOR.getId().getPath(), modLoc("block/dead_trapdoor_bottom"));
         blockItem(ModBlocks.DEAD_PRESSURE_PLATE);
         buttonInventory(ModBlocks.DEAD_BUTTON.getId().getPath(), planks);
+
+        blockItem(ModBlocks.SOUL_CRYSTAL_ORE);
+        blockItem(ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE);
+        basicItem(ModItems.SOUL_CRYSTAL.get());
     }
 
     private void blockItem(DeferredBlock<? extends Block> block) {

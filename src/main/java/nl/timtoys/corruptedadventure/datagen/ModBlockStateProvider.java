@@ -1,9 +1,12 @@
 package nl.timtoys.corruptedadventure.datagen;
 
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SnowyDirtBlock;
+import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
@@ -42,6 +45,48 @@ final class ModBlockStateProvider extends BlockStateProvider {
         trapdoorBlockWithRenderType(ModBlocks.DEAD_TRAPDOOR.get(), modLoc("block/dead_trapdoor"), true, "cutout");
         pressurePlateBlock(ModBlocks.DEAD_PRESSURE_PLATE.get(), planks);
         buttonBlock(ModBlocks.DEAD_BUTTON.get(), planks);
+
+        ResourceLocation netherrack = mcLoc("block/netherrack");
+        oreWithOverlay(ModBlocks.SOUL_CRYSTAL_ORE.get(), netherrack,
+                CubeTextures.all(netherrack), CubeTextures.all(modLoc("block/soul_crystal_ore_overlay")));
+        oreWithOverlay(ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE.get(), mcLoc("block/crimson_nylium"),
+                new CubeTextures(mcLoc("block/crimson_nylium"), mcLoc("block/crimson_nylium_side"), netherrack),
+                new CubeTextures(modLoc("block/crimson_soul_crystal_ore_overlay_top"),
+                        modLoc("block/crimson_soul_crystal_ore_overlay_side"), modLoc("block/soul_crystal_ore_overlay")));
+    }
+
+    /**
+     * Ore as two full cubes: a base (a reference to the vanilla texture, no copy) with our own transparent overlay on
+     * top, like vanilla's grass block overlay. Cutout, so overlay pixels must have alpha 0 or 255.
+     */
+    private void oreWithOverlay(Block block, ResourceLocation particle, CubeTextures base, CubeTextures overlay) {
+        BlockModelBuilder model = models().withExistingParent(BuiltInRegistries.BLOCK.getKey(block).getPath(), mcLoc("block/block"))
+                .renderType("cutout")
+                .texture("particle", particle);
+        base.apply(model, "base");
+        overlay.apply(model, "overlay");
+        model.element().allFaces((direction, face) -> face.texture("#base_" + CubeTextures.face(direction)).cullface(direction)).end();
+        model.element().allFaces((direction, face) -> face.texture("#overlay_" + CubeTextures.face(direction)).cullface(direction)).end();
+        simpleBlock(block, model);
+    }
+
+    /** Textures for the top, the four sides and the bottom of a cube. */
+    private record CubeTextures(ResourceLocation top, ResourceLocation side, ResourceLocation bottom) {
+        static CubeTextures all(ResourceLocation texture) {
+            return new CubeTextures(texture, texture, texture);
+        }
+
+        static String face(Direction direction) {
+            return switch (direction) {
+                case UP -> "top";
+                case DOWN -> "bottom";
+                default -> "side";
+            };
+        }
+
+        void apply(BlockModelBuilder model, String prefix) {
+            model.texture(prefix + "_top", top).texture(prefix + "_side", side).texture(prefix + "_bottom", bottom);
+        }
     }
 
     /** Own textures for every face (no tint, no vanilla textures); bottom and particle are withered dirt. */

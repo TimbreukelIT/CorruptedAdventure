@@ -8,6 +8,7 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
 /** {@code en_us}: mandatory for every key. */
@@ -98,6 +99,11 @@ final class EnglishLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.DEAD_TRAPDOOR, "Dead Trapdoor");
         addBlock(ModBlocks.DEAD_PRESSURE_PLATE, "Dead Pressure Plate");
         addBlock(ModBlocks.DEAD_BUTTON, "Dead Button");
+
+        // Nether ring 1.
+        addBlock(ModBlocks.SOUL_CRYSTAL_ORE, "Soul Crystal Ore");
+        addBlock(ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE, "Crimson Soul Crystal Ore");
+        addItem(ModItems.SOUL_CRYSTAL, "Soul Crystal");
 
         biome(ModBiomes.WITHERED_EXPANSE, "Withered Expanse");
         biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder Ring 2");

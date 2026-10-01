@@ -1,15 +1,18 @@
 package nl.timtoys.corruptedadventure.registry;
 
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
@@ -67,6 +70,16 @@ public final class ModBlocks {
             () -> new PressurePlateBlock(ModWoodTypes.DEAD_SET, Properties.ofFullCopy(Blocks.OAK_PRESSURE_PLATE)));
     public static final DeferredBlock<ButtonBlock> DEAD_BUTTON = register("dead_button",
             () -> new ButtonBlock(ModWoodTypes.DEAD_SET, 30, Properties.ofFullCopy(Blocks.OAK_BUTTON)));
+
+    // ---- Nether ring 1 ----
+    /** Soul crystal in netherrack; drops {@link ModItems#SOUL_CRYSTAL}. Faint glow, no particles. */
+    public static final DeferredBlock<DropExperienceBlock> SOUL_CRYSTAL_ORE = register("soul_crystal_ore",
+            () -> new DropExperienceBlock(UniformInt.of(3, 7), Properties.ofFullCopy(Blocks.NETHER_QUARTZ_ORE)
+                    .lightLevel(state -> 3)));
+    /** Soul crystal in crimson nylium: looks like nylium but is an ore (no spreading, no bonemeal, not {@code #nylium}). */
+    public static final DeferredBlock<DropExperienceBlock> CRIMSON_SOUL_CRYSTAL_ORE = register("crimson_soul_crystal_ore",
+            () -> new DropExperienceBlock(UniformInt.of(3, 7), Properties.ofFullCopy(Blocks.NETHER_QUARTZ_ORE)
+                    .mapColor(MapColor.CRIMSON_NYLIUM).sound(SoundType.NYLIUM).lightLevel(state -> 3)));
 
     private ModBlocks() {
     }

@@ -8,6 +8,7 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
 /** {@code nl_nl}: optional; missing keys fall back to {@code en_us}. */
@@ -98,6 +99,11 @@ final class DutchLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.DEAD_TRAPDOOR, "Doodhouten valluik");
         addBlock(ModBlocks.DEAD_PRESSURE_PLATE, "Doodhouten drukplaat");
         addBlock(ModBlocks.DEAD_BUTTON, "Doodhouten knop");
+
+        // Nether ring 1.
+        addBlock(ModBlocks.SOUL_CRYSTAL_ORE, "Zielkristalerts");
+        addBlock(ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE, "Karmozijnrood zielkristalerts");
+        addItem(ModItems.SOUL_CRYSTAL, "Zielkristal");
 
         biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
         biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder ring 2");

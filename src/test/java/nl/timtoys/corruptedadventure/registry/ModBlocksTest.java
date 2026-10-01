@@ -11,6 +11,8 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,12 +31,18 @@ class ModBlocksTest {
     }
 
     @Test
-    void creativeTabShowsAllItemsInRegistrationOrder() {
+    void creativeTabShowsBlocksThenStandaloneItemsInRegistrationOrder() {
         CreativeModeTab tab = ModCreativeTabs.MAIN.get();
         tab.buildContents(new CreativeModeTab.ItemDisplayParameters(
                 FeatureFlags.DEFAULT_FLAGS, false, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY)));
         List<Item> shown = tab.getDisplayItems().stream().map(ItemStack::getItem).toList();
-        List<Item> registered = ModItems.entries().stream().<Item>map(DeferredHolder::get).toList();
-        assertEquals(registered, shown);
+
+        List<Item> expected = new ArrayList<>();
+        ModBlocks.entries().forEach(block -> expected.add(block.get().asItem()));
+        ModItems.entries().stream().<Item>map(DeferredHolder::get).filter(item -> !(item instanceof BlockItem)).forEach(expected::add);
+        assertEquals(expected, shown);
+        // Every item exactly once.
+        assertEquals(ModItems.entries().size(), shown.size());
+        assertEquals(new HashSet<>(ModItems.entries().stream().<Item>map(DeferredHolder::get).toList()), new HashSet<>(shown));
     }
 }

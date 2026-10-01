@@ -17,7 +17,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [structures] Ring 2: oasedorpen met villagers, verlaten kampen, halfbegraven ruïnes. (bron: sparring fase 1)
 - [items] Ring 2: veldfles/waterzak tegen uitdroging; zonnesteen-gear-tier; turkoois als handelswaar. (bron: sparring fase 1)
 - [mobs] Ring 2: zandwormen in de duinenzee, schorpioenen in canyons, mummies bij begraven skeletten. Nether-2: sporenmonsters, slijmwezens. (bron: sparring fase 1)
-- [items] Nether-2: dauwkristal als basis van hittebescherming voor ring 3; druipzwam-hout; zielkristal (Nether-1) gebruik bepalen. (bron: sparring fase 1)
+- [items] Nether-2: dauwkristal als basis van hittebescherming voor ring 3; druipzwam-hout; zielkristal (Nether-1) gebruik bepalen. (bron: sparring fase 1) Zie ook de regel van change 15 (`soul_crystal`).
 
 ## Uit sparring fase 1, sessie 2 (2026-09-30)
 - [items] Ring 3: vulkaniet-gear-tier; zwavel → buskruit/vuur/brandstof; vuurrobijn als edelsteen/handelswaar; hittebescherming op basis van dauwkristal. (bron: sparring fase 1 sessie 2)
@@ -53,4 +53,6 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [infra] Optioneel `/ca`-debughulp om tunnels en kale plekken te vinden (`/locate` werkt niet voor features); alleen bouwen als test W te veel zoekwerk blijkt. (bron: change 12)
 - [atmosphere] Optioneel client-side verloop (kleur en grotgeluid) over de buitenste ~300 blokken van ring 1 op basis van gesyncte ringdata; pas ná change 18. Nu is "valer/vreemder richting de rand" alleen binnen/buiten `withered_expanse`. (bron: change 13)
 - [structures] Nether-ring 1: per seed gegarandeerd minstens één fortress, en liefst ook één bastion (bijv. eigen structure set of `FixedRingPlacement` voor ring 1). Fase 3. Aanleiding: bij vanilla-spacing ~40 % kans op geen fortress in de ring. (bron: change 14)
+- [items] Placeholder-item `soul_crystal` (drop van `soul_crystal_ore` en `crimson_soul_crystal_ore`) is een minimaal basis-item zonder recipes of rarity; nut, smelten van het Silk Touch-erts en balans in fase 2. (bron: change 15)
+- [items] Creative tab: sinds change 15 eerst alle blokken (per ring), dan alle losse items. Bij fase 2 (veel items) herzien: eventueel per ring blokken + items samen, of aparte tabs. (bron: change 15)
 - [worldgen] (alleen als een meting het nodig maakt) de ring-invoeren van `ring_blend` niet vullen in chunks waar die ring niet voorkomt; zie de bestaande ring-gate-regel (change 9). Change 14 gemeten: vanilla Nether-invoer kost in Nether-ring 3 niets meetbaars. (bron: change 14)

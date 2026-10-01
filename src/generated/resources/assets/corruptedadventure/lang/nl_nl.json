@@ -65,6 +65,7 @@
   "biome.corruptedadventure.windswept_savanna": "Onstuimige savanne",
   "biome.corruptedadventure.withered_expanse": "Verdorde vlakte",
   "biome.corruptedadventure.wooded_badlands": "Beboste badlands",
+  "block.corruptedadventure.crimson_soul_crystal_ore": "Karmozijnrood zielkristalerts",
   "block.corruptedadventure.dead_button": "Doodhouten knop",
   "block.corruptedadventure.dead_door": "Doodhouten deur",
   "block.corruptedadventure.dead_fence": "Doodhouten hek",
@@ -77,10 +78,12 @@
   "block.corruptedadventure.dead_stairs": "Doodhouten trap",
   "block.corruptedadventure.dead_trapdoor": "Doodhouten valluik",
   "block.corruptedadventure.dead_wood": "Doodhout",
+  "block.corruptedadventure.soul_crystal_ore": "Zielkristalerts",
   "block.corruptedadventure.stripped_dead_log": "Gestripte doodhouten stam",
   "block.corruptedadventure.stripped_dead_wood": "Gestript doodhout",
   "block.corruptedadventure.withered_dirt": "Verdorde aarde",
   "generator.corruptedadventure.corrupted_world": "Corrupte wereld",
+  "item.corruptedadventure.soul_crystal": "Zielkristal",
   "itemGroup.corruptedadventure.main": "The Corrupted Adventure",
   "subtitles.corruptedadventure.ambient.ring_1.strange_cave": "Er beweegt iets in het donker"
 }
