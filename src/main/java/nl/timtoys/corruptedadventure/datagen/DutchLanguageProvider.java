@@ -75,6 +75,7 @@ final class DutchLanguageProvider extends LanguageProvider {
         copy(Biomes.DEEP_DARK, "Diep duister");
 
         add("itemGroup.corruptedadventure.main", "The Corrupted Adventure");
+        add("subtitles.corruptedadventure.ambient.ring_1.strange_cave", "Er beweegt iets in het donker");
 
         // Ring 1 blocks.
         addBlock(ModBlocks.DEAD_GRASS_BLOCK, "Dood grasblok");

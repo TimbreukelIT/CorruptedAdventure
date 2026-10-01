@@ -6,7 +6,6 @@ import net.minecraft.data.worldgen.BiomeDefaultFeatures;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.level.biome.AmbientMoodSettings;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -26,6 +25,9 @@ import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
  * "Feature order cycle".
  */
 public final class TransitionBiomes {
+    /** How far the sky, fog and water of {@code withered_expanse} are faded towards grey, matching its faded grass. */
+    static final float WITHERED_EXPANSE_FADE = 0.4F;
+
     private TransitionBiomes() {
     }
 
@@ -53,19 +55,20 @@ public final class TransitionBiomes {
         BiomeDefaultFeatures.commonSpawns(spawns);
         spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
 
-        // Starting colours; tuned in the atmosphere change for ring 1.
+        // Ring 1 fades towards its edge: paler sky, fog and water than the rest of ring 1, and strange cave sounds.
+        BiomeAmbience.Palette colours = BiomeAmbience.Palette.RING_1.desaturated(WITHERED_EXPANSE_FADE);
         return new Biome.BiomeBuilder()
                 .hasPrecipitation(false)
                 .temperature(2.0F)
                 .downfall(0.0F)
                 .specialEffects(new BiomeSpecialEffects.Builder()
-                        .skyColor(0x8CB6F4)
-                        .fogColor(0xD6D4C0)
-                        .waterColor(0x4E8A92)
-                        .waterFogColor(0x1A3336)
+                        .skyColor(colours.sky())
+                        .fogColor(colours.fog())
+                        .waterColor(colours.water())
+                        .waterFogColor(colours.waterFog())
                         .grassColorOverride(0xA8A070)
                         .foliageColorOverride(0x9A9060)
-                        .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
+                        .ambientMoodSound(BiomeAmbience.STRANGE.orElseThrow())
                         .build())
                 .mobSpawnSettings(spawns.build())
                 .generationSettings(generation.build())

@@ -79,5 +79,6 @@
   "block.corruptedadventure.stripped_dead_wood": "Stripped Dead Wood",
   "block.corruptedadventure.withered_dirt": "Withered Dirt",
   "generator.corruptedadventure.corrupted_world": "Corrupted World",
-  "itemGroup.corruptedadventure.main": "The Corrupted Adventure"
+  "itemGroup.corruptedadventure.main": "The Corrupted Adventure",
+  "subtitles.corruptedadventure.ambient.ring_1.strange_cave": "Something stirs in the dark"
 }

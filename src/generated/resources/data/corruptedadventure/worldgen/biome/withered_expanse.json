@@ -8,18 +8,18 @@
   },
   "downfall": 0.0,
   "effects": {
-    "fog_color": 14079168,
+    "fog_color": 13228014,
     "foliage_color": 10129504,
     "grass_color": 11051120,
     "mood_sound": {
-      "block_search_extent": 8,
-      "offset": 2.0,
-      "sound": "minecraft:ambient.cave",
-      "tick_delay": 6000
+      "block_search_extent": 12,
+      "offset": 3.0,
+      "sound": "corruptedadventure:ambient.ring_1.strange_cave",
+      "tick_delay": 1800
     },
-    "sky_color": 9221876,
-    "water_color": 5147282,
-    "water_fog_color": 1717046
+    "sky_color": 9020890,
+    "water_color": 5469366,
+    "water_fog_color": 460579
   },
   "features": [
     [],

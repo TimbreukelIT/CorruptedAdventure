@@ -109,3 +109,13 @@ Antwoord: **A** (2026-09-30) — muziek blijft vanilla.
 - **C:** gewoon vanilla `ambient.cave`, alleen vaker. — Nul werk, maar niet "vreemd"; spelers herkennen het direct.
 
 Antwoord: **A** (2026-09-30) — eigen sound event met vanilla-samples (lager gepitcht, zachter) via `sounds.json`.
+
+---
+
+## Afwijkingen bij de bouw (2026-10-01)
+
+- **Bootstrap change 8** is niet `Ring1Biomes`/`OverworldBiomes` maar `VanillaBiomeCopies` (vanilla's `BiomeData.bootstrap` via een doorgeefcontext). De stille kopieën gaan daar in `CopyingContext.register` door `BiomeAmbience.withMood` (map `VanillaBiomeCopies.MOODS`).
+- **Geen `withColors`:** `withered_expanse` wordt in `TransitionBiomes` zelf gebouwd, dus de kleuren gaan direct in de builder (`BiomeAmbience.Palette.RING_1.desaturated(0,4)`). `withMood` gebruikt `Biome.ClimateSettings` (record) direct; `ClimateSettingsBuilder` is niet nodig. Om een mood te kunnen wissen is er een kleine `BiomeSpecialEffectsBuilder`-subklasse.
+- **Waarden:** `STRANGE` = `tick_delay` 1800 (~1,5 min), extent 12, offset 3; vervaging 40 %. Vanilla-referentie = plains (`Palette.RING_1`, test tegen vanilla).
+- Beslissingenlog met datum 2026-10-01 (bouwdatum).
+- **Nieuwe vraag tijdens de bouw** (backlog change 12): tunnels als stille zone? Antwoord **A** (gebruiker, 2026-10-01): nee, tunnels erven het grotgeluid van hun biome; backlog-item gesloten.

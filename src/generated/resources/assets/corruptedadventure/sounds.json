@@ -1,0 +1,25 @@
+{
+  "ambient.ring_1.strange_cave": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "ambient.cave",
+        "pitch": 0.5,
+        "volume": 0.8
+      },
+      {
+        "type": "event",
+        "name": "ambient.cave",
+        "pitch": 0.6,
+        "volume": 0.8
+      },
+      {
+        "type": "event",
+        "name": "ambient.cave",
+        "pitch": 0.7,
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_1.strange_cave"
+  }
+}

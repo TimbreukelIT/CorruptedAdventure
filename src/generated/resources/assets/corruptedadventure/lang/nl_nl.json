@@ -79,5 +79,6 @@
   "block.corruptedadventure.stripped_dead_wood": "Gestript doodhout",
   "block.corruptedadventure.withered_dirt": "Verdorde aarde",
   "generator.corruptedadventure.corrupted_world": "Corrupte wereld",
-  "itemGroup.corruptedadventure.main": "The Corrupted Adventure"
+  "itemGroup.corruptedadventure.main": "The Corrupted Adventure",
+  "subtitles.corruptedadventure.ambient.ring_1.strange_cave": "Er beweegt iets in het donker"
 }

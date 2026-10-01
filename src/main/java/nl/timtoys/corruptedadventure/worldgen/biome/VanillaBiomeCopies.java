@@ -13,12 +13,14 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.WolfVariant;
 import net.minecraft.world.entity.animal.WolfVariants;
+import net.minecraft.world.level.biome.AmbientMoodSettings;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,7 +29,8 @@ import java.util.stream.Stream;
 /**
  * Ring 1's own copies ({@code corruptedadventure:<vanilla path>}) of the vanilla overworld biomes, minus mushroom
  * fields. The datagen bootstrap runs vanilla's own {@link BiomeData#bootstrap} and keeps only those biomes, so the
- * copies stay identical to vanilla without retyping {@code OverworldBiomes}.
+ * copies stay identical to vanilla without retyping {@code OverworldBiomes}. The only difference is the cave sound of
+ * a few copies ({@link #MOODS}).
  * <p>
  * Vanilla data that names biomes by key instead of by tag has to learn the copies too; for wolf variants that is
  * {@link #bootstrapWolfVariants}.
@@ -38,6 +41,12 @@ public final class VanillaBiomeCopies {
             MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD.usedBiomes()
                     .filter(key -> !key.equals(Biomes.MUSHROOM_FIELDS))
                     .collect(Collectors.toUnmodifiableSet());
+    /** Copies with another cave mood sound than vanilla's: the silent zones of ring 1. */
+    static final Map<ResourceKey<Biome>, Optional<AmbientMoodSettings>> MOODS = Map.of(
+            Biomes.DARK_FOREST, BiomeAmbience.SILENT,
+            Biomes.OLD_GROWTH_PINE_TAIGA, BiomeAmbience.SILENT,
+            Biomes.OLD_GROWTH_SPRUCE_TAIGA, BiomeAmbience.SILENT,
+            Biomes.DRIPSTONE_CAVES, BiomeAmbience.SILENT);
 
     private VanillaBiomeCopies() {
     }
@@ -58,12 +67,16 @@ public final class VanillaBiomeCopies {
         WolfVariants.bootstrap(new WolfVariantContext(context));
     }
 
-    /** Passes lookups through; registers only {@link #OVERWORLD_COPIES}, under {@link #copyOf}. */
+    /** Passes lookups through; registers only {@link #OVERWORLD_COPIES}, under {@link #copyOf}, with {@link #MOODS}. */
     private record CopyingContext(BootstrapContext<Biome> delegate) implements BootstrapContext<Biome> {
         @Override
         public Holder.Reference<Biome> register(ResourceKey<Biome> key, Biome value, Lifecycle lifecycle) {
-            // BiomeData ignores the returned holder, so skipped biomes can return null.
-            return OVERWORLD_COPIES.contains(key) ? delegate.register(copyOf(key), value, lifecycle) : null;
+            if (!OVERWORLD_COPIES.contains(key)) {
+                // BiomeData ignores the returned holder, so skipped biomes can return null.
+                return null;
+            }
+            Optional<AmbientMoodSettings> mood = MOODS.get(key);
+            return delegate.register(copyOf(key), mood == null ? value : BiomeAmbience.withMood(value, mood), lifecycle);
         }
 
         @Override

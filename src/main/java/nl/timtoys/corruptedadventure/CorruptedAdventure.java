@@ -20,6 +20,7 @@ import nl.timtoys.corruptedadventure.registry.ModDensityFunctionTypes;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModPlacementModifierTypes;
+import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.worldgen.border.RingWorldBorder;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ public final class CorruptedAdventure {
         ModChunkGenerators.register(modEventBus);
         ModPlacementModifierTypes.register(modEventBus);
         ModFeatures.register(modEventBus);
+        ModSoundEvents.register(modEventBus);
         DataGenerators.register(modEventBus);
         RingSettingsSnapshot.register(NeoForge.EVENT_BUS);
         RingLayout.register(NeoForge.EVENT_BUS);

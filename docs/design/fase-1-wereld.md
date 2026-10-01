@@ -146,6 +146,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - Initiële dichtheid: aparte `ring_blend/overworld_initial` (ring 1 = vanilla's eigen `initial_density_without_jaggedness`, overige ringen `0,390625 + terrein`).
   - Performance: zie `CODEBASE.md` (valkuil density functions). Beslisregel: noise-stap ≤ 1,3× vanilla → geen ring gate; gemeten 1,17× (ring 1) en 0,92× (ring 3), dus de ring gate volgt bij de eerste zware ring 2-invoer (change 23).
 - Lucht, fog en kleuren vanilla; in de buitenste zone subtiel valer (via het randbiome/overgangsbiome).
+- **Uitwerking (change 13):** het "randbiome" is `withered_expanse` (geen apart randbiome). Lucht, fog, water en waterfog zijn de vanilla-vlaktekleuren van ring 1 (`BiomeAmbience.Palette.RING_1`: `0x78A7FF`, `0xC0D8FF`, `0x3F76E4`, `0x050533`), 40 % naar grijs gemengd (`desaturate`, luma): `0x89A5DA`, `0xC9D7EE`, `0x5374B6`, `0x070723`. De overgang is vanilla's client-side biome-blending (geen harde lijn, wel kort: ~10–20 blokken). Binnen ring 1 geen radiaal verloop: de client kent de ringdata pas na change 18 (backlog).
 
 **Biomes**
 - Eigen kopieën van de vanilla overworld-biomes (zie §1.7), inclusief deep dark. **Geen** mushroom fields.
@@ -154,7 +155,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - Bodem (surface rule bovenaan `above_preliminary_surface` in `noise_settings/overworld.json`): dood gras als hoofdbodem, vlekken grove aarde en verdorde aarde (surface-ruis), zandsteen op hellingen (`steep`), verdorde aarde eronder en onder water.
   - Features: kale bomen (`dead_tree`, `dead_tree_forked`: `dead_log` zonder blad, 70 % gevorkt), dode struiken en kort gras, zandsteenkeien en vlekken zand met grove aarde. Verloop via placement modifier `ring_chance` (signaal `transition` van grens 1): bomen 1,0 → 0,2, keien 0,1 → 1,0, zandvlekken 0 → 0,8 van de ring 1- naar de ring 2-kant. Zandvlekken komen vóór de begroeiing (stap `LOCAL_MODIFICATIONS`), zodat er geen gras op zand staat. Aantallen zijn startwaarden (test W).
   - Klimaat: als savanne (temperatuur 2,0, geen neerslag). Spawns: vanilla-monsters ('s nachts), als enige dier konijnen (gewicht 4, zoals de woestijn). Konijnen spawnen alleen op `#rabbits_spawnable_on` (o.a. zand, niet op dood gras): in de zone dus vooral op de zandvlekken.
-  - Kleuren (startwaarden, fijnafstemming in change 13): lucht `0x8CB6F4`, fog `0xD6D4C0`, gras `0xA8A070`, blad `0x9A9060`, water `0x4E8A92` / waterfog `0x1A3336`.
+  - Kleuren: gras `0xA8A070`, blad `0x9A9060`; lucht, fog en water sinds change 13 (zie Terrein en sfeer).
   - Vanilla-features in vanilla-volgorde (`globalOverworldGeneration`, ores, soft disks), eigen features achteraan per stap; geen `has_structure/*`- of `is_overworld`-tags.
 
 **Unieke blokken (fase 1, placeholders)**
@@ -170,6 +171,12 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 **Grotten**
 - Vanilla noise caves en carvers, inclusief deep dark (zonder ancient cities; beslissing in fase 3).
 - **Stille zones**: plekken waar ambient geluid wegvalt of vreemde cave sounds vaker klinken, vaker richting de rand (client-side ambient).
+- **Uitwerking (change 13):** puur data, via de vanilla-`mood_sound` per biome (de client speelt die alleen in het donker zonder hemellicht, dus in de praktijk alleen ondergronds). Biomes zijn 3D en gaan met de chunk mee, dus de zones zijn voor alle spelers gelijk; wanneer een geluid klinkt verschilt per speler (vanilla-toeval).
+  - **Stil** (geen `mood_sound`): de kopieën van dark forest, old growth pine taiga, old growth spruce taiga en dripstone caves (`VanillaBiomeCopies.MOODS`).
+  - **Vreemd**: `withered_expanse`, de hele kolom, dus ook in de grotten onder de grens. Eigen sound event `corruptedadventure:ambient.ring_1.strange_cave` (`tick_delay` 1800 ≈ 1,5 min in het donker, `block_search_extent` 12, `offset` 3). Klinkt als vanilla's `ambient.cave` met pitch 0,5/0,6/0,7 en volume 0,8 (`sounds.json`, type `event`, geen eigen audio). Ondertitel "Something stirs in the dark" / "Er beweegt iets in het donker".
+  - Alle andere kopieën (ook deep dark en lush caves) houden vanilla's grotgeluid. Muziek blijft overal vanilla.
+  - Onnatuurlijke tunnels (change 12) krijgen geen eigen stille zone: ze erven het grotgeluid van hun biome (stil, vreemd of vanilla).
+  - Bekend: stilte valt pas op na lang verblijf (vanilla speelt zelf al maar ~1× per 5 min); onderwater speelt nooit een mood-geluid.
 
 **Weer en condities**
 - Alleen vanilla regen/onweer. Geen ringweer, **geen conditie**.
