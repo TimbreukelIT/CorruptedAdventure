@@ -192,7 +192,7 @@ Antwoord: **A** — Java-enum `RingWeatherType` met ring en dimensie per waarde;
 - **B — Vanilla-ritme: helder 10 min–2,5 uur, weer 10–20 min.** Vertrouwd en zeldzaam; kans dat je een ring doorkruist zonder het weer ooit te zien, terwijl het een kernkenmerk van de ring is.
 - **C — Vaak: helder 5–15 min, weer 2–5 min.** Veel afwisseling; kan onrustig en uitputtend worden zodra condities ×2 gaan, en grensmuur-/zichteffecten wisselen vaak.
 
-Antwoord: **B (keuze gebruiker)** — vanilla-ritme: helder 12.000–180.000 ticks (zoals vanilla's rain-delay; 10 min–2,5 uur speeltijd), weer 12.000–24.000 ticks (zoals vanilla's regenduur; 10–20 min = 0,5–1 MC-dag); per ring instelbaar in de SERVER-config; gelijke gewichten per type. Config-standaardwaarden: `clearMinSeconds` 600, `clearMaxSeconds` 9000, `weatherMinSeconds` 600, `weatherMaxSeconds` 1200.
+Antwoord: **B (keuze gebruiker)** — vanilla-ritme: helder 12.000–180.000 ticks (zoals vanilla's rain-delay; 0,5–7,5 MC-dag = 10 min–2,5 uur speeltijd; bevestigd door de gebruiker 2026-10-01), weer 12.000–24.000 ticks (zoals vanilla's regenduur; 10–20 min = 0,5–1 MC-dag); per ring instelbaar in de SERVER-config; gelijke gewichten per type. Config-standaardwaarden: `clearMinSeconds` 600, `clearMaxSeconds` 9000, `weatherMinSeconds` 600, `weatherMaxSeconds` 1200.
 
 ### 4. Overgang in tijd en ruimte (rendering; gameplay wisselt altijd hard op de ringgrens)?
 In alle opties: gameplay (condities, later) gebruikt de ring van `ringAt(…).ring()` (wissel op 0,5, zoals de biome); de void-rand volgt het weer van ring 5.
