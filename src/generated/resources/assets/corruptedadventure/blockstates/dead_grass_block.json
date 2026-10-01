@@ -1,0 +1,24 @@
+{
+  "variants": {
+    "snowy=false": [
+      {
+        "model": "corruptedadventure:block/dead_grass_block"
+      },
+      {
+        "model": "corruptedadventure:block/dead_grass_block",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/dead_grass_block",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/dead_grass_block",
+        "y": 270
+      }
+    ],
+    "snowy=true": {
+      "model": "corruptedadventure:block/dead_grass_block_snow"
+    }
+  }
+}

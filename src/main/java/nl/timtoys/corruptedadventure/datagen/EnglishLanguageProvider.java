@@ -7,6 +7,7 @@ import net.minecraft.world.level.biome.Biomes;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
 /** {@code en_us}: mandatory for every key. */
@@ -72,6 +73,25 @@ final class EnglishLanguageProvider extends LanguageProvider {
         copy(Biomes.DRIPSTONE_CAVES, "Dripstone Caves");
         copy(Biomes.LUSH_CAVES, "Lush Caves");
         copy(Biomes.DEEP_DARK, "Deep Dark");
+
+        add("itemGroup.corruptedadventure.main", "The Corrupted Adventure");
+
+        // Ring 1 blocks.
+        addBlock(ModBlocks.DEAD_GRASS_BLOCK, "Dead Grass Block");
+        addBlock(ModBlocks.WITHERED_DIRT, "Withered Dirt");
+        addBlock(ModBlocks.DEAD_LOG, "Dead Log");
+        addBlock(ModBlocks.DEAD_WOOD, "Dead Wood");
+        addBlock(ModBlocks.STRIPPED_DEAD_LOG, "Stripped Dead Log");
+        addBlock(ModBlocks.STRIPPED_DEAD_WOOD, "Stripped Dead Wood");
+        addBlock(ModBlocks.DEAD_PLANKS, "Dead Planks");
+        addBlock(ModBlocks.DEAD_STAIRS, "Dead Stairs");
+        addBlock(ModBlocks.DEAD_SLAB, "Dead Slab");
+        addBlock(ModBlocks.DEAD_FENCE, "Dead Fence");
+        addBlock(ModBlocks.DEAD_FENCE_GATE, "Dead Fence Gate");
+        addBlock(ModBlocks.DEAD_DOOR, "Dead Door");
+        addBlock(ModBlocks.DEAD_TRAPDOOR, "Dead Trapdoor");
+        addBlock(ModBlocks.DEAD_PRESSURE_PLATE, "Dead Pressure Plate");
+        addBlock(ModBlocks.DEAD_BUTTON, "Dead Button");
 
         biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder Ring 2");
         biome(ModBiomes.PLACEHOLDER_RING_3, "Placeholder Ring 3");

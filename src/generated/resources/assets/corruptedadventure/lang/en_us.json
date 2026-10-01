@@ -62,5 +62,21 @@
   "biome.corruptedadventure.windswept_hills": "Windswept Hills",
   "biome.corruptedadventure.windswept_savanna": "Windswept Savanna",
   "biome.corruptedadventure.wooded_badlands": "Wooded Badlands",
-  "generator.corruptedadventure.corrupted_world": "Corrupted World"
+  "block.corruptedadventure.dead_button": "Dead Button",
+  "block.corruptedadventure.dead_door": "Dead Door",
+  "block.corruptedadventure.dead_fence": "Dead Fence",
+  "block.corruptedadventure.dead_fence_gate": "Dead Fence Gate",
+  "block.corruptedadventure.dead_grass_block": "Dead Grass Block",
+  "block.corruptedadventure.dead_log": "Dead Log",
+  "block.corruptedadventure.dead_planks": "Dead Planks",
+  "block.corruptedadventure.dead_pressure_plate": "Dead Pressure Plate",
+  "block.corruptedadventure.dead_slab": "Dead Slab",
+  "block.corruptedadventure.dead_stairs": "Dead Stairs",
+  "block.corruptedadventure.dead_trapdoor": "Dead Trapdoor",
+  "block.corruptedadventure.dead_wood": "Dead Wood",
+  "block.corruptedadventure.stripped_dead_log": "Stripped Dead Log",
+  "block.corruptedadventure.stripped_dead_wood": "Stripped Dead Wood",
+  "block.corruptedadventure.withered_dirt": "Withered Dirt",
+  "generator.corruptedadventure.corrupted_world": "Corrupted World",
+  "itemGroup.corruptedadventure.main": "The Corrupted Adventure"
 }

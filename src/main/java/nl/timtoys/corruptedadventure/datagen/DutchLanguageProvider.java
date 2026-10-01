@@ -7,6 +7,7 @@ import net.minecraft.world.level.biome.Biomes;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
 /** {@code nl_nl}: optional; missing keys fall back to {@code en_us}. */
@@ -72,6 +73,25 @@ final class DutchLanguageProvider extends LanguageProvider {
         copy(Biomes.DRIPSTONE_CAVES, "Druipsteengrotten");
         copy(Biomes.LUSH_CAVES, "Weelderige grotten");
         copy(Biomes.DEEP_DARK, "Diep duister");
+
+        add("itemGroup.corruptedadventure.main", "The Corrupted Adventure");
+
+        // Ring 1 blocks.
+        addBlock(ModBlocks.DEAD_GRASS_BLOCK, "Dood grasblok");
+        addBlock(ModBlocks.WITHERED_DIRT, "Verdorde aarde");
+        addBlock(ModBlocks.DEAD_LOG, "Doodhouten stam");
+        addBlock(ModBlocks.DEAD_WOOD, "Doodhout");
+        addBlock(ModBlocks.STRIPPED_DEAD_LOG, "Gestripte doodhouten stam");
+        addBlock(ModBlocks.STRIPPED_DEAD_WOOD, "Gestript doodhout");
+        addBlock(ModBlocks.DEAD_PLANKS, "Doodhouten planken");
+        addBlock(ModBlocks.DEAD_STAIRS, "Doodhouten trap");
+        addBlock(ModBlocks.DEAD_SLAB, "Doodhouten plaat");
+        addBlock(ModBlocks.DEAD_FENCE, "Doodhouten hek");
+        addBlock(ModBlocks.DEAD_FENCE_GATE, "Doodhouten poort");
+        addBlock(ModBlocks.DEAD_DOOR, "Doodhouten deur");
+        addBlock(ModBlocks.DEAD_TRAPDOOR, "Doodhouten valluik");
+        addBlock(ModBlocks.DEAD_PRESSURE_PLATE, "Doodhouten drukplaat");
+        addBlock(ModBlocks.DEAD_BUTTON, "Doodhouten knop");
 
         biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder ring 2");
         biome(ModBiomes.PLACEHOLDER_RING_3, "Placeholder ring 3");

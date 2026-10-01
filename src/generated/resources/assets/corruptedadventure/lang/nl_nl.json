@@ -62,5 +62,21 @@
   "biome.corruptedadventure.windswept_hills": "Onstuimige heuvels",
   "biome.corruptedadventure.windswept_savanna": "Onstuimige savanne",
   "biome.corruptedadventure.wooded_badlands": "Beboste badlands",
-  "generator.corruptedadventure.corrupted_world": "Corrupte wereld"
+  "block.corruptedadventure.dead_button": "Doodhouten knop",
+  "block.corruptedadventure.dead_door": "Doodhouten deur",
+  "block.corruptedadventure.dead_fence": "Doodhouten hek",
+  "block.corruptedadventure.dead_fence_gate": "Doodhouten poort",
+  "block.corruptedadventure.dead_grass_block": "Dood grasblok",
+  "block.corruptedadventure.dead_log": "Doodhouten stam",
+  "block.corruptedadventure.dead_planks": "Doodhouten planken",
+  "block.corruptedadventure.dead_pressure_plate": "Doodhouten drukplaat",
+  "block.corruptedadventure.dead_slab": "Doodhouten plaat",
+  "block.corruptedadventure.dead_stairs": "Doodhouten trap",
+  "block.corruptedadventure.dead_trapdoor": "Doodhouten valluik",
+  "block.corruptedadventure.dead_wood": "Doodhout",
+  "block.corruptedadventure.stripped_dead_log": "Gestripte doodhouten stam",
+  "block.corruptedadventure.stripped_dead_wood": "Gestript doodhout",
+  "block.corruptedadventure.withered_dirt": "Verdorde aarde",
+  "generator.corruptedadventure.corrupted_world": "Corrupte wereld",
+  "itemGroup.corruptedadventure.main": "The Corrupted Adventure"
 }

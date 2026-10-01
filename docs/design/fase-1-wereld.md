@@ -27,8 +27,10 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Snapshot (gebouwd in change 1): `<wereld>/corruptedadventure/ring_settings.json`, gelezen of aangemaakt bij `ServerAboutToStartEvent` (die op dedicated én integrated server vóór `loadLevel()` komt, dus vóór de spawn-chunks). Geen `SavedData`, want die bestaat pas als de level geladen is. Een bestaand snapshot gaat altijd vóór de config. Ongeldige config of corrupt snapshot → de server start niet (duidelijke foutmelding), nooit stilletjes terugvallen.
 
 ### 1.4 Textures
-- Eerst **placeholders**: getinte/gerecolorde vanilla-textures, zodat worldgen en sfeer testbaar zijn.
-- Per ring een aparte `textures`-change die de textures definitief maakt.
+- **Productiemethode: eigen pixels uit een deterministisch generatorscript, geen vanilla-pixels in de repo** — ook niet voor placeholders (vervangt "getinte/gerecolorde vanilla-textures", besloten 2026-09-30). Ring 1: `tools/textures/Ring1Textures.java` (single-file Java, alleen JDK, vaste seed per texture). Vanilla dient hooguit als visuele referentie voor de indeling; models mogen wel naar vanilla-textures **verwijzen** (bijv. netherrack als onderlaag van een erts).
+- Eerst **placeholders** (eenvoudige eerste scriptversie, zie change 10), zodat worldgen en sfeer testbaar zijn.
+- Per ring een aparte `textures`-change die het script verfijnt tot de definitieve textures.
+- Alle mod-blokken en -items staan in **één eigen creative tab** "The Corrupted Adventure" (`corruptedadventure:main`), per ring gesorteerd (registratievolgorde); niet in de vanilla-tabs.
 
 ### 1.5 Grensmuur (ontwerp nu, bouw in fase 5)
 - Elke grens krijgt een **eigen soort muur** die zicht op de volgende ring vaag houdt tot de speler de bewaker van die grens heeft verslagen. Type per grens: zie de ringsecties.
@@ -150,6 +152,10 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 **Unieke blokken (fase 1, placeholders)**
 - Dood gras / verdorde aarde, dood hout (log + planks) voor kale plekken en het overgangsbiome.
+- **Uitwerking (change 10):** `dead_grass_block`, `withered_dirt` en de dood-hout-set (`dead_log`, `dead_wood`, `stripped_dead_log`, `stripped_dead_wood`, `dead_planks` + houtset). Geen bladeren, geen sapling (dode bomen komen alleen uit worldgen).
+  - **Dood gras gedraagt zich als gras**, maar binnen zijn eigen familie: bedekt/geen licht → verdorde aarde; in het licht spreidt het alleen naar verdorde aarde. Vanilla-gras en dood gras beïnvloeden elkaar niet. `snowy`-state met eigen sneeuwzijkant. Schop → pad, schoffel → farmland op beide blokken (pad en farmland worden later vanilla-aarde: een speler kan een dode plek zo "genezen"; geaccepteerd voor fase 1).
+  - Vaste kleur (geen biome-tint). Silk Touch → dood gras, anders verdorde aarde. In `#minecraft:dirt` (planten groeien erop, carvers snijden erdoor), niet in `#animals_spawnable_on` (geen dieren op dode grond).
+  - Brandbaarheid zoals eikenhout (log/wood 5/5; planks, trap, plaat, hek, poort 5/20; deur, valluik, knop, drukplaat branden niet).
 
 **Ores**
 - Alle vanilla-ores, vanilla-verdeling.
@@ -198,6 +204,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Kloofsteen-set**: gelaagde canyonsteen in 3 tinten + cobble, bricks, slab, stairs, wall.
 - **Zout-set**: zoutkorst (bovenlaag zoutvlakte), zoutblok, gepolijst zout, zoutkristal (decoratie, zwak licht).
 - **Palm-set**: log, wood, planks, leaves, sapling + houtset (deur, trapdoor, hek, poort, trap, slab, knop, drukplaat); eigen tree feature.
+  - **Definitie "houtset"** (geldt voor elke set: dood hout, palm, druipzwam, verkoold, rijpzwam, cipres): deur, valluik, hek, poort, trap, plaat, knop, drukplaat, plus **gestripte log en gestript wood** als vast onderdeel (bijl werkt zoals vanilla, via `StrippableLogBlock`). Geen borden, hangborden of boten (zie backlog).
 - **Woestijnflora + scorched sandstone**: scorched sandstone-set, gebarsten klei, dorre struik, tonnetjescactus, woestijnbloem.
 
 **Ores**
@@ -497,7 +504,7 @@ Elke change: één categorie, afgesloten met `/code-review`, `CODEBASE.md` bijge
 |---|---|---|---|
 | 8 | `worldgen` | Kopieën van vanilla overworld-biomes (datagen via `OverworldBiomes`, zonder mushroom fields), met vanilla-klimaatparameters binnen ring 1; tags: villages e.d. wel, stronghold niet. | B, D, W: vertrouwde biomeverdeling; `/locate` village ✓, stronghold ✗ |
 | 9 | `worldgen` | Ring 1-terrein: vanilla noise router als ring 1-invoer van `ring_blend` + gegarandeerd land rond spawn (~300 blokken). | B, W: 10 seeds → spawn altijd op land nabij 0,0; oceanen/bergen/deep dark aanwezig |
-| 10 | `blocks` | Dood gras/verdorde aarde, dood hout-set (log, wood, planks + houtset). Placeholder-textures (getinte vanilla). | B, D; creative tab, loot, tags (log, planks) kloppen |
+| 10 | `blocks` | Dood gras/verdorde aarde, dood hout-set (log, wood, planks + houtset). Placeholder-textures (eigen pixels via het texturescript). | B, D; creative tab, loot, tags (log, planks) kloppen |
 | 11 | `worldgen` | Overgangsbiome 1→2 `withered_expanse` (bladloze bossen, vaal gras, zandsteenranden). | B, D, W: zone van ~128 blokken rond grens 1 |
 | 12 | `worldgen` | Horror-features ring 1: kale plekken met dode bomen (vaker richting de rand) + onnatuurlijke 2×1-tunnels. | B, D, W: `/place feature` + in het wild gevonden |
 | 13 | `atmosphere` | Stille zones in grotten (ambient/mood per biome) + valere kleuren aan de rand van ring 1. | B, runClient: hoorbaar/zichtbaar verschil |

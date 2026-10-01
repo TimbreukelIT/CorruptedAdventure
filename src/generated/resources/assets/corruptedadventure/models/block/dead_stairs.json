@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "corruptedadventure:block/dead_planks",
+    "side": "corruptedadventure:block/dead_planks",
+    "top": "corruptedadventure:block/dead_planks"
+  }
+}
