@@ -155,3 +155,8 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-01 | blocks | Zielkristal-erts geeft licht 3, geen particles | Valt op in het donker zonder client-code; licht 3 heeft geen effect op Nether-spawns |
 | 2026-10-01 | blocks | `crimson_soul_crystal_ore` laat zonder Silk Touch alleen `soul_crystal` achter; het blok wordt lucht (geen netherrack) | Eenvoudig, één loot-helper, consistent met het netherrack-erts |
 | 2026-10-01 | blocks | `crimson_soul_crystal_ore` zit niet in `minecraft:nylium` | Geen fungi/roots op de ertsplekken (kale plek = vindplaats-hint), geen bijwerkingen van bonemeal |
+| 2026-10-01 | worldgen | Zielkristal: 2 aders per chunk, grootte 4 (iets vaker dan ancient debris) | Voelt als zoeken, maar een paar stuks in 10–20 minuten; marge als fase 2 er meerdere per item vraagt |
+| 2026-10-01 | worldgen | Zielkristal zichtbaar: `discard_chance_on_air_exposure` 0 | Erts ook in wanden en in de crimson-bodem; vinden = verkennen |
+| 2026-10-01 | worldgen | Zielkristal in alle drie de Nether-ring 1-kopieën; één ore-feature met doelen netherrack → `soul_crystal_ore` en crimson nylium → `crimson_soul_crystal_ore` | Letterlijk het design, geen seed-risico, één tarief om te balanceren |
+| 2026-10-01 | worldgen | Extra vloerfeature voor crimson_soul_crystal_ore in crimson-bossen | Nylium is één laag, dus gewone aders raken hem zelden; "extra zichtbaar in crimson" (antwoord 3A) moet echt waar zijn |
+| 2026-10-01 | worldgen | De crimson-vloerfeature plaatst via `environment_scan` (omlaag naar crimson nylium of het crimson-erts), niet via `count_on_every_layer` | `count_on_every_layer` hangt af van de generatievolgorde (fungi van buurchunks veranderen de lagen); worldgen moet deterministisch zijn per seed |

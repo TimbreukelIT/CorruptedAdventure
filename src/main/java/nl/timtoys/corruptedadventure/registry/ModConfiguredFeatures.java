@@ -19,6 +19,9 @@ public final class ModConfiguredFeatures {
     // Ring 1 horror features.
     public static final ResourceKey<ConfiguredFeature<?, ?>> BARE_PATCH = key("bare_patch");
     public static final ResourceKey<ConfiguredFeature<?, ?>> UNNATURAL_TUNNEL = key("unnatural_tunnel");
+    // Nether ring 1.
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SOUL_CRYSTAL_ORE = key("soul_crystal_ore");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> CRIMSON_SOUL_CRYSTAL_ORE = key("crimson_soul_crystal_ore");
 
     private ModConfiguredFeatures() {
     }

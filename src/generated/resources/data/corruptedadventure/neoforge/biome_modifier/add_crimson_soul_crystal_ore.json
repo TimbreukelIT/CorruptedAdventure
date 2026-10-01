@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#corruptedadventure:has_feature/crimson_soul_crystal_ore",
+  "features": "corruptedadventure:crimson_soul_crystal_ore",
+  "step": "underground_decoration"
+}

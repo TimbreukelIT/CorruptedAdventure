@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-10-01 — change 15 (zielkristal-ertsen `soul_crystal_ore` + `crimson_soul_crystal_ore`, placeholder-item `soul_crystal`, tweelaags-ertsmodel)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–15 klaar, volgende: change 16)
+**Laatst bijgewerkt:** 2026-10-01 — change 16 (plaatsing zielkristal in Nether-ring 1: aders + crimson-vloerfeature, `NetherRing1Features`)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–16 klaar, volgende: change 17)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — changes 0–15 klaar |
+| 1 — Wereld | In bouw — changes 0–16 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -47,7 +47,7 @@ src/main/java/nl/timtoys/corruptedadventure/
     ModBlocks.java             ✅ alle blokken + hun blockitem (`register` / `registerDoor`); volgorde = creative-tab-volgorde; `entries()`
     ModItems.java              ✅ alle items: blockitems (via `ModBlocks`) + losse items (`soul_crystal`); `ITEMS` package-private; `entries()`
     ModCreativeTabs.java       ✅ één tab `corruptedadventure:main`: eerst alle blokken (blokregistratievolgorde), dan de losse items
-    ModTags.java               ✅ eigen TagKeys (`Blocks`/`Items`: `dead_logs`, `c:ores/soul_crystal`; `Items`: `c:gems/soul_crystal`; `Biomes`: `has_feature/bare_patch`, `has_feature/unnatural_tunnel`, `is_nether_ring_1`)
+    ModTags.java               ✅ eigen TagKeys (`Blocks`/`Items`: `dead_logs`, `c:ores/soul_crystal`; `Items`: `c:gems/soul_crystal`; `Biomes`: `has_feature/bare_patch`, `has_feature/unnatural_tunnel`, `has_feature/crimson_soul_crystal_ore`, `is_nether_ring_1`)
     ModBiomeSources.java       ✅ biome-source-types `corruptedadventure:ring`, `vanilla_climate`
     ModBiomes.java             ✅ ResourceKeys van alle eigen biomes (de biomes zelf komen uit datagen)
     ModDensityFunctionTypes.java ✅ density-function-types `ring_blend`, `void_edge`, `radial_falloff`
@@ -65,7 +65,7 @@ src/main/java/nl/timtoys/corruptedadventure/
       BiomeAmbience.java       ✅ sfeer in datagen: mood-profielen `SILENT`/`STRANGE`, `withMood` (biome herbouwen met alleen een andere mood), `desaturate`, `Palette` (`RING_1`)
       VanillaClimateBiomeSource.java ✅ `vanilla_climate`: vanilla multi-noise-preset met onze kopieën (+ `replace`)
       TransitionBiomes.java    ✅ datagen-bootstrap van de overgangsbiomes (één per grens): `withered_expanse`
-      Ring1BiomeModifiers.java ✅ datagen-bootstrap biome modifiers `add_bare_patch`, `add_unnatural_tunnel` (NeoForge `add_features` op de `has_feature/*`-tags)
+      Ring1BiomeModifiers.java ✅ datagen-bootstrap biome modifiers `add_bare_patch`, `add_unnatural_tunnel`, `add_soul_crystal_ore`, `add_crimson_soul_crystal_ore` (NeoForge `add_features` op eigen biome-tags)
     densityfunction/           ✅ eigen density functions (alleen als JSON niet volstaat)
       RingBlend.java           ✅ `ring_blend`: terrein per ring, smoothstep in de overgangszone
       VoidEdge.java            ✅ `void_edge`: 0 op de grens van ring 5 → 1 op de border (voor de void-JSON)
@@ -86,6 +86,7 @@ src/main/java/nl/timtoys/corruptedadventure/
       UnnaturalTunnelConfiguration.java ✅ config van `unnatural_tunnel` (record + codec)
       UnnaturalTunnelFeature.java ✅ onnatuurlijke 2×1-tunnel: mond zoeken, hele pad valideren (alles-of-niets), uithakken
       Ring1HorrorFeatures.java ✅ datagen-bootstraps configured + placed features `bare_patch`, `unnatural_tunnel`
+      NetherRing1Features.java ✅ datagen-bootstraps configured + placed features `soul_crystal_ore` (aders) en `crimson_soul_crystal_ore` (crimson-vloer)
     structure/                 🔲 (fase 3) FixedRingPlacement e.d.
   block/                       ✅ custom block-classes (alleen als gedrag nodig is) en blok-hulpklassen
     DeadGrassBlock.java        ✅ dood gras: `SnowyDirtBlock` met eigen random tick (→ verdorde aarde / spreidt alleen naar verdorde aarde), schop/schoffel
@@ -147,8 +148,8 @@ src/test/java/nl/timtoys/corruptedadventure/
 
 src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, NIET lezen om te begrijpen
   data/corruptedadventure/worldgen/biome/  10 uit `PlaceholderBiomes` + 55 kopieën uit `VanillaBiomeCopies` (52 overworld, 3 Nether) + `withered_expanse` (`TransitionBiomes`)
-  data/corruptedadventure/worldgen/{configured,placed}_feature/  eigen features (`WitheredExpanseFeatures`, `Ring1HorrorFeatures`)
-  data/corruptedadventure/neoforge/biome_modifier/  `add_bare_patch`, `add_unnatural_tunnel` (`Ring1BiomeModifiers`)
+  data/corruptedadventure/worldgen/{configured,placed}_feature/  eigen features (`WitheredExpanseFeatures`, `Ring1HorrorFeatures`, `NetherRing1Features`)
+  data/corruptedadventure/neoforge/biome_modifier/  `add_bare_patch`, `add_unnatural_tunnel`, `add_soul_crystal_ore`, `add_crimson_soul_crystal_ore` (`Ring1BiomeModifiers`)
   data/corruptedadventure/tags/worldgen/biome/  eigen biome-tags: `has_feature/*` (biome modifiers), `is_nether_ring_1` (`ModBiomeTagsProvider`)
   data/c/tags/worldgen/biome/              NeoForge-conventietags voor de Nether-kopieën: `is_nether`, `is_hot/nether`, `is_dry/nether`, `is_nether_forest`
   data/minecraft/tags/worldgen/biome/**    gespiegelde vanilla-tags met de kopieën (`ModBiomeTagsProvider`)
@@ -192,7 +193,8 @@ docs/
 | `UnnaturalTunnelFeature` | `…worldgen.feature` | `corruptedadventure:unnatural_tunnel`. `TunnelPath.random` → mond = eerste kandidaat (langs de richting, door de herkomst, op herkomsthoogte) met 2 lege blokken ervoor en 2 `replaceable` blokken erin → valideren (geen vloeistof in/naast een cel incl. vloer en dak, geen `FallingBlock` in het dak, geen rots in een cel zonder dak — anders geul of prop —, geen `#features_cannot_replace`, ≥ `min_solid_fraction` rots) → alle rotsblokken van de cellen → `cave_air`. Alles-of-niets | `Ring1HorrorFeatures` |
 | `TunnelPath` | `…worldgen.feature` | record (richting, optionele bocht, lengtes); `cells(mouth)` en `mouthCandidates(origin)`: alleen monden waarbij het blok ervoor en alle cellen (+ 1 blok buren) binnen de 3×3 chunks rond de herkomstchunk blijven. Max. lengtes 32 / 15 (codec) | `UnnaturalTunnelFeature`, `TunnelPathTest` |
 | `Ring1HorrorFeatures` | `…worldgen.feature` | bootstraps `configured`/`placed`. `bare_patch`: straal 4–9, `edge_jitter` 0,35, `dead_grass_block`/`withered_dirt` (1–2 diep), grond grass/dirt/coarse dirt/podzol/rooted dirt, bomen `withered_trees` (1–3), struiken 0,05; placed `in_square` → `ring_chance` (`progress`, ring 1, 0 → 0,12, start 0,33, exponent 2) → heightmap `MOTION_BLOCKING_NO_LEAVES` → `biome`. `unnatural_tunnel`: 12–28 + 50 % bocht 6–14, `#overworld_carver_replaceables`, rots ≥ 0,7; placed `rarity_filter` 12 → `in_square` → Y −48…160 → `biome` | `DataGenerators` |
-| `Ring1BiomeModifiers` | `…worldgen.biome` | NeoForge `add_features`: `add_bare_patch` (`#has_feature/bare_patch`, `VEGETAL_DECORATION`), `add_unnatural_tunnel` (`#has_feature/unnatural_tunnel`, `TOP_LAYER_MODIFICATION`); elk achteraan zijn stap. Features in de kopieën altijd via modifiers, niet in `VanillaBiomeCopies` | `DataGenerators` |
+| `NetherRing1Features` | `…worldgen.feature` | bootstraps `configured`/`placed`. `soul_crystal_ore`: één `minecraft:ore` (grootte 4, discard 0) met `block_match` netherrack → `soul_crystal_ore` en crimson nylium → `crimson_soul_crystal_ore`; placed `count` 2 → `in_square` → Y 10–117 **absoluut** → `biome`. `crimson_soul_crystal_ore`: ore (grootte 3) alleen crimson nylium → crimson-variant; placed `rarity_filter` 2 → `count` 20 → `in_square` → Y 32–127 → `environment_scan` omlaag (max. 32) naar crimson nylium **of** `crimson_soul_crystal_ore` → +1 Y → `biome` (volgorde-onafhankelijk, zie valkuilen) | `DataGenerators` |
+| `Ring1BiomeModifiers` | `…worldgen.biome` | NeoForge `add_features`: `add_bare_patch` (`#has_feature/bare_patch`, `VEGETAL_DECORATION`), `add_unnatural_tunnel` (`#has_feature/unnatural_tunnel`, `TOP_LAYER_MODIFICATION`), `add_soul_crystal_ore` (`#is_nether_ring_1`, `UNDERGROUND_DECORATION`), `add_crimson_soul_crystal_ore` (`#has_feature/crimson_soul_crystal_ore`, `UNDERGROUND_DECORATION`; vóór de fungi, volgorde t.o.v. de aders maakt niet uit — NeoForge past modifiers alfabetisch toe); elk achteraan zijn stap. Features in de kopieën altijd via modifiers, niet in `VanillaBiomeCopies` | `DataGenerators` |
 | `WitheredExpanseFeatures` | `…worldgen.feature` | bootstraps `configured`/`placed`. `dead_tree`/`dead_tree_forked` = `minecraft:tree` met `dead_log` en lucht als blad (`BlobFoliagePlacer` 0), ondergrond `withered_dirt` (alleen als de grond geen `#dirt` is); het placed feature filtert zelf op `#dirt` eronder (geen sapling) | `DataGenerators` |
 | `VanillaBiomeCopies` | `…worldgen.biome` | `OVERWORLD_COPIES` = vanilla's `Preset.OVERWORLD.usedBiomes()` zonder mushroom fields (52); `NETHER_COPIES` = nether wastes, crimson forest, warped forest (Nether-ring 1); `COPIES` = beide; `copyOf` = `corruptedadventure:<zelfde pad>`. `bootstrap` draait vanilla's `BiomeData.bootstrap` met een doorgeefcontext die alleen de keys uit `COPIES` registreert, onder `copyOf`; kopieën in `MOODS` (dark forest, old growth pine/spruce taiga, dripstone caves → `SILENT`) gaan door `BiomeAmbience.withMood`. `bootstrapWolfVariants` draait vanilla's `WolfVariants.bootstrap` en overschrijft alleen de varianten met een biome-lijst (pale, snowy, black, ashen, woods, chestnut): vanilla-biome + kopie; tag-varianten blijven vanilla | `DataGenerators`, `VanillaClimateBiomeSource`, tags, data map, lang |
 | `VanillaClimateBiomeSource` | `…worldgen.biome` | biome-source `corruptedadventure:vanilla_climate`. Codec: `preset` (vanilla `minecraft:overworld`/`minecraft:nether`) + optioneel `replace` (vanilla-key → eigen key, voor biomes zonder kopie) + biome-getter uit de `RegistryOps`. Bouwt bij het decoden eenmalig de `Climate.ParameterList` (R-tree) met `replace` of `copyOf`; ontbrekende biome of onbekende `replace`-key → `DataResult.error`. Slaat alleen `preset` + `replace` op | preset `corrupted_world` (ring 1, overworld en Nether) |
@@ -208,7 +210,7 @@ docs/
 | `ScaledBorderListener` | `…worldgen.border` | past alleen de grootte aan (set/lerp); midden, waarschuwing en schade komen van vanilla's delegate; broadcast via callback naar spelers in die dimensie | `RingWorldBorder` |
 | `ModBiomes` / `ModBiomeSources` | `…registry` | biome-keys / DeferredRegister voor `Registries.BIOME_SOURCE` | worldgen, datagen |
 | `DataGenerators` | `…datagen` | mod-bus-listener voor `GatherDataEvent`; nieuwe providers en datapack-registries hier aanhaken (configured/placed features vóór de biomes, biome modifiers erna). Alle bootstraps van één registry in één lambda (een registry mag maar één keer in de `RegistrySetBuilder`). Mod-ids `corruptedadventure` + `minecraft` (de wolf-varianten overschrijven vanilla-entries) | `CorruptedAdventure` |
-| `ModBiomeTagsProvider` | `…datagen` | draait vanilla's `BiomeTagsProvider.addTags` en houdt per tag in `MIRRORED_TAGS` alleen de directe entries van gekopieerde biomes (`COPIES`) over (als `copyOf`); `#tag`-entries lossen vanzelf op. Tags zonder kopieën → geen bestand. Nether: `is_nether` (geeft via `#is_nether` fortress, Nether-ruined-portals, warme kikkers) en `has_structure/bastion_remnant` gespiegeld; `c:is_nether`, `c:is_hot/nether`, `c:is_dry/nether`, `c:is_nether_forest` (crimson + warped) en `is_nether_ring_1` uitgeschreven. Daarna eigen tags: `has_feature/bare_patch` (`BARE_PATCH_BIOMES`: 21 begroeide land-kopieën), `has_feature/unnatural_tunnel` (alle 52 kopieën, gesorteerd) | `DataGenerators` |
+| `ModBiomeTagsProvider` | `…datagen` | draait vanilla's `BiomeTagsProvider.addTags` en houdt per tag in `MIRRORED_TAGS` alleen de directe entries van gekopieerde biomes (`COPIES`) over (als `copyOf`); `#tag`-entries lossen vanzelf op. Tags zonder kopieën → geen bestand. Nether: `is_nether` (geeft via `#is_nether` fortress, Nether-ruined-portals, warme kikkers) en `has_structure/bastion_remnant` gespiegeld; `c:is_nether`, `c:is_hot/nether`, `c:is_dry/nether`, `c:is_nether_forest` (crimson + warped) en `is_nether_ring_1` uitgeschreven. Daarna eigen tags: `has_feature/bare_patch` (`BARE_PATCH_BIOMES`: 21 begroeide land-kopieën), `has_feature/unnatural_tunnel` (alle 52 kopieën, gesorteerd), `has_feature/crimson_soul_crystal_ore` (crimson-forest-kopie) | `DataGenerators` |
 | `ModDataMapProvider` | `…datagen` | `NeoForgeDataMaps.VILLAGER_TYPES` voor de kopieën, gelijk aan vanilla's `VillagerType.BY_BIOME` (29 entries) | `DataGenerators` |
 
 ---
@@ -255,6 +257,7 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `minecraft:*` biome-tags (gespiegeld) | tags (datagen) | `ModBiomeTagsProvider`; klasse-, gedrag- en `has_structure/*`-tags, Nether: `is_nether`, `has_structure/bastion_remnant`; **nooit** `is_overworld`, `has_structure/stronghold`, `stronghold_biased_to`, `has_structure/ancient_city`, `has_structure/nether_fossil` |
 | `c:is_nether`, `c:is_hot/nether`, `c:is_dry/nether`, `c:is_nether_forest` | biome-tags (datagen) | `ModBiomeTagsProvider`; de Nether-kopieën (forest: crimson + warped) |
 | `corruptedadventure:is_nether_ring_1` | biome-tag (datagen) | `ModTags.Biomes`, `ModBiomeTagsProvider`; de 3 Nether-kopieën (zielkristal change 16, later sfeer/weer per Nether-ring) |
+| `corruptedadventure:has_feature/crimson_soul_crystal_ore` | biome-tag (datagen) | `ModTags.Biomes`, `ModBiomeTagsProvider`; alleen de crimson-forest-kopie |
 | `neoforge:villager_types` | data map (datagen) | `ModDataMapProvider` |
 | `minecraft:pale`, `snowy`, `black`, `ashen`, `woods`, `chestnut` | wolf variant (datapack-override, datagen) | `VanillaBiomeCopies.bootstrapWolfVariants` |
 | `corruptedadventure:ring_blend` | density function type (`RingBlend`) | `ModDensityFunctionTypes`; `ring_blend/overworld.json`, `ring_blend/nether.json` |
@@ -267,7 +270,8 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `corruptedadventure:ring_chance` | placement modifier type (`RingChanceFilter`) | `ModPlacementModifierTypes`; signalen `transition`, `progress` |
 | `corruptedadventure:bare_patch`, `unnatural_tunnel` | feature types (`BarePatchFeature`, `UnnaturalTunnelFeature`) | `ModFeatures` |
 | `bare_patch`, `unnatural_tunnel` | configured + placed features (datagen) | `ModConfiguredFeatures`, `ModPlacedFeatures`, `Ring1HorrorFeatures`; testen met `/place feature corruptedadventure:…` (slaat de placement modifiers over) |
-| `corruptedadventure:add_bare_patch`, `add_unnatural_tunnel` | biome modifiers (`neoforge:add_features`, datagen) | `Ring1BiomeModifiers` |
+| `corruptedadventure:add_bare_patch`, `add_unnatural_tunnel`, `add_soul_crystal_ore`, `add_crimson_soul_crystal_ore` | biome modifiers (`neoforge:add_features`, datagen) | `Ring1BiomeModifiers` |
+| `soul_crystal_ore`, `crimson_soul_crystal_ore` | configured + placed features (datagen) | `ModConfiguredFeatures`, `ModPlacedFeatures`, `NetherRing1Features`; alleen Nether-ring 1 (crimson-vloer: alleen crimson forest). Gemeten (change 16, seed 20260930, 900 chunks): 2,39 erts per chunk, crimson-variant 0,67 per crimson-chunk |
 | `corruptedadventure:has_feature/bare_patch`, `has_feature/unnatural_tunnel` | biome-tags (datagen) | `ModTags.Biomes`, `ModBiomeTagsProvider`; niet in de Nether of `withered_expanse` |
 | `dead_tree`, `dead_tree_forked`, `withered_trees`, `withered_vegetation`, `withered_sandstone_rock`, `withered_sand_patch` | configured features (datagen) | `ModConfiguredFeatures`, `WitheredExpanseFeatures`; `dead_tree` herbruikbaar (change 12) |
 | `withered_expanse_trees`, `…_vegetation` (`VEGETAL_DECORATION`), `…_rocks`, `…_sand_patches` (`LOCAL_MODIFICATIONS`) | placed features (datagen) | `ModPlacedFeatures`, `WitheredExpanseFeatures`; alleen in `withered_expanse` |
@@ -305,7 +309,7 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `data/corruptedadventure/worldgen/noise/placeholder_terrain.json`, `void_islands.json` | noise-parameters voor placeholder-terrein en void-eilanden |
 | `META-INF/accesstransformer.cfg` | wordt automatisch opgepikt door ModDevGradle en FML (geen extra config nodig) |
 
-Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change15` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer), van vóór change 14 ook niet (`placeholder_nether_ring_1`); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
+Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change16` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer), van vóór change 14 ook niet (`placeholder_nether_ring_1`); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
 
 ---
 
@@ -374,4 +378,8 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 - **Grotgeluid (`mood_sound`)** is vanilla client-code (`BiomeAmbientSoundsHandler`): elke tick één willekeurig blok binnen `block_search_extent` rond de ogen; zonder hemellicht telt het `(1 − bloklicht) / tick_delay` op (ook vaste rots telt mee), met hemellicht trekt het af. Bij 1 speelt het geluid. Daarom alleen ondergronds, fakkels vertragen het. Biome = die op de positie van de speler. Vanilla's builder kan een mood zetten maar niet wissen: zie `BiomeAmbience.withMood`.
 - **`sounds.json` met type `event`** verwijst naar een ander sound event; pitch en volume vermenigvuldigen die van dat event. `SoundDefinitionsProvider` controleert zo'n verwijzing alleen tegen de sound-event-registry, niet tegen `.ogg`-bestanden. Eigen sound events moeten common geregistreerd zijn: een biome-JSON die ze noemt, laadt anders niet op de dedicated server.
 - **Ring-invoer met `squeeze`:** kleine waarden → overgang te kort. Het teken bepaalt vast/leeg, de grootte bepaalt de menging in `ring_blend`. Vanilla's Nether-`final_density` eindigt op `squeeze(0,64 · x)` (max ±0,46); `ring_1/nether.json` laat die weg (teken gelijk, dus blok voor blok vanilla). **Controle change 14** (seed 20260930, Nether-chunk 1,0, Y 0–127): lucht 16.029 vs. vanilla-preset 16.028, lava 335 vs. 327, bedrock gelijk (rest = andere biome → andere features). Wandkloktijd 256 chunks in Nether-ring 3 via RCON-`forceload` + `execute if loaded`-polling: 5,5 s vóór en na change 14 (vanilla-preset op die plek 7–8 s): de vanilla-invoer kost buiten ring 1 niets meetbaars.
+- **Nether-hoogte in placements:** de Nether is 256 hoog, dus `VerticalAnchor.belowTop(n)` = Y 255 − n, boven het bedrock-dak (vanilla verspilt zo de helft van zijn Nether-ertspogingen). Gebruik absolute ankers (zielkristal: Y 10–117).
+- **Generatievolgorde:** een placement of feature die de wereld leest (`count_on_every_layer`, heightmaps, scans op lucht) ziet wat buurchunks al in deze chunk zetten (fungi, bomen, aders) en geeft dan per generatievolgorde iets anders. Gemeten change 16: `count_on_every_layer` voor de crimson-vloerfeature gaf in een tweede verse wereld met dezelfde seed andere tellingen. Oplossing: lees alleen blokken die buren niet veranderen, of alleen naar een bekende eindstaat (de crimson-vloerfeature scant naar crimson nylium **of** het eigen erts). `minecraft:ore` met alleen vervangbare doelblokken is volgorde-onafhankelijk (de unie van de aders). Test: twee verse werelden met dezelfde seed, de tweede in omgekeerde volgorde laden, per chunk vergelijken. Vanilla zelf is dat niet helemaal (quartz verschilde 1 blok in één van 24 chunks).
+- `environment_scan` heeft max. 32 stappen (codec, faalt in `runData`). Kleine aders (`minecraft:ore` grootte 3) zetten vaak 0–1 blok (straal ~0,5–0,7 rond de punten): meet het tarief, schat het niet.
+- **Ertsen tellen via RCON** (change 16): `forceload add` van 15×15 chunks tegelijk, `execute if loaded` pollen, dan per chunk `fill <16×128×16> minecraft:air replace <erts>` (Nether: Y 0–127; overworld in drie lagen). 900 Nether-chunks in ~1–2 min. `execute if biome` werkt alleen in geladen chunks (anders "That position is not loaded"); `locate biome` niet.
 - **Vanilla-namen in andere talen** (bijv. `nl_nl` voor kopie-biomes) staan niet in de jars maar in de asset-cache: `~/.gradle/caches/neoformruntime/assets/indexes/17.json` → hash van `minecraft/lang/nl_nl.json` → `objects/<eerste 2 tekens>/<hash>`.

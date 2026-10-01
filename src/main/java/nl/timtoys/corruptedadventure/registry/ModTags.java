@@ -38,6 +38,8 @@ public final class ModTags {
         public static final TagKey<Biome> HAS_BARE_PATCH = TagKey.create(Registries.BIOME, CorruptedAdventure.id("has_feature/bare_patch"));
         /** Biomes that get unnatural tunnels (ring 1: every copy, cave biomes included). */
         public static final TagKey<Biome> HAS_UNNATURAL_TUNNEL = TagKey.create(Registries.BIOME, CorruptedAdventure.id("has_feature/unnatural_tunnel"));
+        /** Biomes that get the crimson floor soul crystal ore (Nether ring 1: the crimson forest copy). */
+        public static final TagKey<Biome> HAS_CRIMSON_SOUL_CRYSTAL_ORE = TagKey.create(Registries.BIOME, CorruptedAdventure.id("has_feature/crimson_soul_crystal_ore"));
         /** The biomes of Nether ring 1 (the vanilla Nether copies). */
         public static final TagKey<Biome> IS_NETHER_RING_1 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_nether_ring_1"));
 

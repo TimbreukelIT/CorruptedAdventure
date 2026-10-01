@@ -111,6 +111,7 @@ final class ModBiomeTagsProvider extends BiomeTagsProvider {
         tag(ModTags.Biomes.HAS_BARE_PATCH).addAll(BARE_PATCH_BIOMES.stream().map(VanillaBiomeCopies::copyOf).toList());
         // Every copy, cave biomes included: the biome filter checks the biome at the tunnel's own height.
         tag(ModTags.Biomes.HAS_UNNATURAL_TUNNEL).addAll(copies(VanillaBiomeCopies.OVERWORLD_COPIES));
+        tag(ModTags.Biomes.HAS_CRIMSON_SOUL_CRYSTAL_ORE).add(VanillaBiomeCopies.copyOf(Biomes.CRIMSON_FOREST));
     }
 
     /** The copies of {@code vanilla}, sorted for a stable file. */

@@ -15,6 +15,8 @@ public final class ModPlacedFeatures {
     public static final ResourceKey<PlacedFeature> WITHERED_EXPANSE_SAND_PATCHES = key("withered_expanse_sand_patches");
     public static final ResourceKey<PlacedFeature> BARE_PATCH = key("bare_patch");
     public static final ResourceKey<PlacedFeature> UNNATURAL_TUNNEL = key("unnatural_tunnel");
+    public static final ResourceKey<PlacedFeature> SOUL_CRYSTAL_ORE = key("soul_crystal_ore");
+    public static final ResourceKey<PlacedFeature> CRIMSON_SOUL_CRYSTAL_ORE = key("crimson_soul_crystal_ore");
 
     private ModPlacedFeatures() {
     }

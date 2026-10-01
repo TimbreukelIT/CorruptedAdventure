@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#corruptedadventure:is_nether_ring_1",
+  "features": "corruptedadventure:soul_crystal_ore",
+  "step": "underground_decoration"
+}
