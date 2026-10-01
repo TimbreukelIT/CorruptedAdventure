@@ -16,6 +16,8 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [corruption] Fata morgana in ring 2: oase/gebouw in de verte dat verdwijnt bij nadering. Server kiest posities (client kent de seed niet), client rendert nep-silhouet; renderer delen met Herobrine-silhouetten. (bron: sparring fase 1)
 - [structures] Ring 2: oasedorpen met villagers, verlaten kampen, halfbegraven ruïnes. (bron: sparring fase 1)
 - [items] Ring 2: veldfles/waterzak tegen uitdroging; zonnesteen-gear-tier; turkoois als handelswaar. (bron: sparring fase 1)
+- [items] Placeholder-items `raw_sunstone` en `raw_turquoise` (ruwe drops van de ring 2-ertsen) zijn minimale basis-items zonder recipes of rarity; het gesmolten product (naam en vorm nog open), het smeltrecept (ruw materiaal en erts → product, oven/hoogoven), zonnesteen-gear-tier en turkoois als handelswaar in fase 2. (bron: change 24)
+- [items] Ruwe opslagblokken `raw_sunstone_block` en `raw_turquoise_block` (9× ruw materiaal, zoals `raw_iron_block`) en hun recipes; het blok zelf is blocks-werk in fase 2. (bron: change 24)
 - [mobs] Ring 2: zandwormen in de duinenzee, schorpioenen in canyons, mummies bij begraven skeletten. Nether-2: sporenmonsters, slijmwezens. (bron: sparring fase 1)
 - [items] Nether-2: dauwkristal als basis van hittebescherming voor ring 3; druipzwam-hout; zielkristal (Nether-1) gebruik bepalen. (bron: sparring fase 1) Zie ook de regel van change 15 (`soul_crystal`).
 

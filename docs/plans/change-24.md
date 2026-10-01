@@ -256,3 +256,41 @@ Antwoord: **A** — zonnesteen licht 3 + emissive overlay; turkoois geen licht, 
 | 2026-10-01 | blocks | Ertsnamen `<gastgesteente>_<erts>_ore`; één overlay per erts, gedeeld door alle gastgesteenten; plaatsing per gesteente via `BlockMatchTest` (change 25) | Zoals vanilla `deepslate_*_ore`; weinig textures, het erts valt weg in zijn eigen laag |
 
 Commit (na `/code-review`): `blocks: add sunstone and turquoise ores with loot and tags`.
+
+---
+
+## Bouwnotities (change 24, 2026-10-01)
+
+Aannames gecontroleerd tegen de code na change 23 (`865dd89`): klopten. Namen uit 21–23 zoals in het plan (`red_/orange_/cream_canyon_stone`, `scorched_sandstone(_top/_bottom)`, `CANYON_STONES`, `Ring2Textures.java` met `still`/`pulsing`, palm-set achteraan de ring 2-sectie). `Tags.Items.RAW_MATERIALS` (`c:raw_materials`) bestaat in 21.1.252. Afwijkingen van het plan (implementatiedetails, door de agent gekozen):
+
+- **Tags via de sub-tags:** `#mineable/pickaxe`, `#needs_iron_tool` en `c:ore_rates/singular` krijgen `#c:ores/sunstone` en `#c:ores/turquoise` (i.p.v. elk blok los); zelfde inhoud, nieuwe varianten gaan vanzelf mee. Item-tag `c:ore_rates/singular` volgt via `copy`.
+- **Helpers:** `ModBlocks.sunstoneOre(MapColor)` / `turquoiseOre(MapColor)` (properties op één plek); `ModBlockStateProvider.ring2Ores()` + `canyonOre(...)`. `oreWithOverlay` kreeg de parameter `emissive`; zielkristal geeft `true` mee, de twee zielkristal-models zijn byte-identiek (lege `git diff`).
+- **nl-naam scorched-variant:** "Zonnesteenerts in geschroeid zandsteen" (onzijdig, zoals bestaand "Geschroeid zandsteen" en vanilla "Rood zandsteen"), niet "geschroeide zandsteen".
+- **Texture-details:** zonnesteen 4–5 achthoekige brokjes (straal 1,4–2,3), turkoois 2–3 ronde knollen (straal 2,3–3,2) met 1–2 bruine adertjes; ruwe items = onregelmatige klomp (straal 4,5–6, 7 hoekpunten) met gesteenteresten (rode resp. crème kloofsteen), turkoois met 3 adertjes. `outline` (kleur als parameter), `merge`, `isOpaque` overgenomen uit `Ring1Textures`. Previewrij "ores" via `ORE_PREVIEWS`.
+- **XP niet via RCON:** NeoForge laat `DropExperienceBlock` alleen XP vallen als een speler het blok breekt (`getExpDrop`); `loot … mine` en `setblock … destroy` geven nooit XP. Daarom een unit test op het bereik via `DropExperienceBlock.CODEC` (veld `experience`); de echte drop in de W-checklist. Valkuil in `CODEBASE.md`.
+- **Extra tests in `ModBlocksTest`:** volgorde (ertsen direct na de palmzaailing, losse items `soul_crystal`, `raw_sunstone`, `raw_turquoise`), lichtniveau (3 / 0), XP-bereik.
+
+### Testresultaten
+
+- **Script:** `java tools/textures/Ring2Textures.java` schrijft 4 nieuwe PNG's (16×16, alpha alleen 0/255); tweede run byte-identiek (md5 van alle block-/item-PNG's); bestaande ring 2-PNG's en `Ring1Textures.java` ongewijzigd. Contactblad: overlays leesbaar op rood, oranje, crème en geschroeid zandsteen.
+- **B:** `./gradlew build` geslaagd, 40 testklassen / 197 tests, geen fouten (`ModBlocksTest` 8, +3).
+- **D:** `./gradlew runData` geslaagd, geen "texture does not exist". Nieuw: 7 blockstates, 7 block-models (zonnesteen met `neoforge_data` emissive, turkoois zonder), 9 item-models, 7 loot tables (Silk Touch-tak, `apply_bonus` `ore_drops`, `explosion_decay`), tags `c:ores/sunstone`, `c:ores/turquoise` (blok + item), `c:raw_materials(/sunstone, /turquoise)`; gewijzigd: `c:ores`, `c:ore_rates/singular` (blok + item), `mineable/pickaxe`, `needs_iron_tool`, lang en/nl. `soul_crystal_ore.json` en `crimson_soul_crystal_ore.json` ongewijzigd.
+- **S:** `tools/server-smoke-test.sh` met `level-name=smoke-change24` (preset `corrupted_world`, seed 20260930): `Done (7.905s)`, geen fouten of client-class-meldingen. Daarna server met RCON (`build/tmp/c24_test.py`), **133/133 geslaagd**, per variant (7):
+  - in `#c:ores`, eigen `c:ores/<erts>`, `#mineable/pickaxe`, `#needs_iron_tool`, `c:ore_rates/singular`; **niet** in `#overworld_carver_replaceables`, `#base_stone_overworld`, `c:ores_in_ground/stone`/`deepslate`, `#needs_diamond_tool`, `#canyon_stones`, de andere erts-tag;
+  - ijzeren pickaxe → precies 1 ruw item; dat item in `c:raw_materials/<erts>` en `c:raw_materials`, niet in `c:gems`; Fortune III 60× → 1–4 (gemiddeld 1,97–2,43; vanilla-verwachting 2,2); Silk Touch → de eigen variant, als item in `c:ores` en de eigen sub-tag;
+  - lichtniveau op de plek van het erts in een dichte stenen doos: zonnesteen 3, turkoois 0.
+  - Server via RCON `stop`; RCON weer uit, `run/server.properties` op `level-name=smoke-change24`.
+
+### Code review (`/code-review medium`)
+
+Geen bugs gevonden (blokken, models incl. byte-identieke zielkristal-models, loot, tags, lang en texturescript nagelopen). Eén onderhoudspunt: de nieuwe test eiste de exacte lijst losse items en zou bij elk later item breken → **aangepast**: de test controleert nu alleen dat `raw_sunstone` en `raw_turquoise` direct na `soul_crystal` komen; `build` opnieuw groen.
+
+## In-game checklist (W) — W-achteraf (ring 2-eindcheck, teststop 3 ná change 37)
+
+Niet blokkerend. ~10 min. `./gradlew runClient`, nieuwe wereld **Corrupted World**, seed `20260930`, cheats aan, creatief. Testplek in de lucht boven spawn: `/fill -8 150 -8 8 150 8 minecraft:stone` en `/tp @s 0 151 0`.
+
+1. **Creative tab:** direct na de palmzaailing de 7 ertsen (rood/oranje/crème/geschroeid zonnesteen, dan rood/oranje/crème turkoois); achteraan de losse items `soul_crystal`, `raw_sunstone`, `raw_turquoise`. Namen en/nl kloppen (taal wisselen).
+2. **Plaatsen:** elke ertsvariant naast zijn eigen gastgesteente (rode/oranje/crème kloofsteen, geschroeid zandsteen); geen paars-zwart, geen zwarte randen of z-fighting rond de overlay; de basis is gelijk aan het gesteente ernaast (scorched-variant: top, zijkant en bodem verschillen zoals bij het zandsteen).
+3. **Gloed:** `/time set midnight`, een 3×3 dicht kamertje van steen bouwen met binnenin een zonnesteen- en een turkoois-erts (zonder fakkels). Zonnesteen-overlay helder (emissive), het blok geeft zwak licht (F3: *Light* naast het erts 2); turkoois mat en donker, geen licht.
+4. **Survival:** `/gamemode survival`, `/give @s minecraft:stone_pickaxe`, `/give @s minecraft:iron_pickaxe`, `/give @s minecraft:iron_pickaxe[minecraft:enchantments={levels:{"minecraft:silk_touch":1}}]`. Stenen pickaxe → niets; ijzeren → 1 ruwe zonnesteen / ruw turkoois **+ XP-bolletjes**; Silk Touch → het erts zelf, **zonder** XP. Breeksnelheid als ijzererts.
+5. **Items:** `raw_sunstone` en `raw_turquoise` tonen hun eigen plaatje (geen paars-zwart); geen recept in het receptenboek (verwacht, fase 2).

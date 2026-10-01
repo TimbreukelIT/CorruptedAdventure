@@ -152,6 +152,17 @@ final class EnglishLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.PALM_SAPLING, "Palm Sapling");
         addBlock(ModBlocks.POTTED_PALM_SAPLING, "Potted Palm Sapling");
 
+        // Ring 2 ores.
+        addBlock(ModBlocks.RED_CANYON_SUNSTONE_ORE, "Red Canyon Sunstone Ore");
+        addBlock(ModBlocks.ORANGE_CANYON_SUNSTONE_ORE, "Orange Canyon Sunstone Ore");
+        addBlock(ModBlocks.CREAM_CANYON_SUNSTONE_ORE, "Cream Canyon Sunstone Ore");
+        addBlock(ModBlocks.SCORCHED_SANDSTONE_SUNSTONE_ORE, "Scorched Sandstone Sunstone Ore");
+        addBlock(ModBlocks.RED_CANYON_TURQUOISE_ORE, "Red Canyon Turquoise Ore");
+        addBlock(ModBlocks.ORANGE_CANYON_TURQUOISE_ORE, "Orange Canyon Turquoise Ore");
+        addBlock(ModBlocks.CREAM_CANYON_TURQUOISE_ORE, "Cream Canyon Turquoise Ore");
+        addItem(ModItems.RAW_SUNSTONE, "Raw Sunstone");
+        addItem(ModItems.RAW_TURQUOISE, "Raw Turquoise");
+
         biome(ModBiomes.WITHERED_EXPANSE, "Withered Expanse");
         biome(ModBiomes.CANYONLANDS, "Canyonlands");
         biome(ModBiomes.OASIS_FLATS, "Oasis Flats");

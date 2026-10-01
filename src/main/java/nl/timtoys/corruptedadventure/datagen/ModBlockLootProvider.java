@@ -108,6 +108,16 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         add(ModBlocks.PALM_LEAVES.get(), block -> createLeavesDrops(block, ModBlocks.PALM_SAPLING.get(), NORMAL_LEAVES_SAPLING_CHANCES));
         dropSelf(ModBlocks.PALM_SAPLING.get());
         dropPottedContents(ModBlocks.POTTED_PALM_SAPLING.get());
+
+        // Like iron ore -> raw iron: one raw item (Fortune), Silk Touch -> the ore variant itself.
+        for (Block ore : List.of(ModBlocks.RED_CANYON_SUNSTONE_ORE.get(), ModBlocks.ORANGE_CANYON_SUNSTONE_ORE.get(),
+                ModBlocks.CREAM_CANYON_SUNSTONE_ORE.get(), ModBlocks.SCORCHED_SANDSTONE_SUNSTONE_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.RAW_SUNSTONE.get()));
+        }
+        for (Block ore : List.of(ModBlocks.RED_CANYON_TURQUOISE_ORE.get(), ModBlocks.ORANGE_CANYON_TURQUOISE_ORE.get(),
+                ModBlocks.CREAM_CANYON_TURQUOISE_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.RAW_TURQUOISE.get()));
+        }
     }
 
     @Override

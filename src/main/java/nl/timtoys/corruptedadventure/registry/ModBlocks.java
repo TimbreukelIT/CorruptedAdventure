@@ -206,6 +206,24 @@ public final class ModBlocks {
             () -> new PalmSaplingBlock(ModTreeGrowers.PALM, Properties.ofFullCopy(Blocks.OAK_SAPLING)));
     public static final DeferredBlock<FlowerPotBlock> POTTED_PALM_SAPLING = registerPot("potted_palm_sapling", PALM_SAPLING);
 
+    // Ores: one block per host rock, so each blends into its own stratum (worldgen picks the variant per rock).
+    /** Sunstone in red canyon stone; drops {@link ModItems#RAW_SUNSTONE}. Faint glow (light 3, emissive overlay). */
+    public static final DeferredBlock<DropExperienceBlock> RED_CANYON_SUNSTONE_ORE = register("red_canyon_sunstone_ore",
+            () -> sunstoneOre(MapColor.TERRACOTTA_RED));
+    public static final DeferredBlock<DropExperienceBlock> ORANGE_CANYON_SUNSTONE_ORE = register("orange_canyon_sunstone_ore",
+            () -> sunstoneOre(MapColor.TERRACOTTA_ORANGE));
+    public static final DeferredBlock<DropExperienceBlock> CREAM_CANYON_SUNSTONE_ORE = register("cream_canyon_sunstone_ore",
+            () -> sunstoneOre(MapColor.TERRACOTTA_WHITE));
+    public static final DeferredBlock<DropExperienceBlock> SCORCHED_SANDSTONE_SUNSTONE_ORE = register("scorched_sandstone_sunstone_ore",
+            () -> sunstoneOre(MapColor.TERRACOTTA_BROWN));
+    /** Turquoise in red canyon stone; drops {@link ModItems#RAW_TURQUOISE}. No light: a matte gem that has to be found. */
+    public static final DeferredBlock<DropExperienceBlock> RED_CANYON_TURQUOISE_ORE = register("red_canyon_turquoise_ore",
+            () -> turquoiseOre(MapColor.TERRACOTTA_RED));
+    public static final DeferredBlock<DropExperienceBlock> ORANGE_CANYON_TURQUOISE_ORE = register("orange_canyon_turquoise_ore",
+            () -> turquoiseOre(MapColor.TERRACOTTA_ORANGE));
+    public static final DeferredBlock<DropExperienceBlock> CREAM_CANYON_TURQUOISE_ORE = register("cream_canyon_turquoise_ore",
+            () -> turquoiseOre(MapColor.TERRACOTTA_WHITE));
+
     private ModBlocks() {
     }
 
@@ -220,6 +238,17 @@ public final class ModBlocks {
 
     private static Properties scorched(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_BROWN);
+    }
+
+    /** Iron ore's hardness and tool rule (harder than its host rock), XP 2–5, light 3. */
+    private static DropExperienceBlock sunstoneOre(MapColor color) {
+        return new DropExperienceBlock(UniformInt.of(2, 5), Properties.ofFullCopy(Blocks.IRON_ORE).mapColor(color)
+                .lightLevel(state -> 3));
+    }
+
+    /** Iron ore's hardness and tool rule, XP 3–7, no light. */
+    private static DropExperienceBlock turquoiseOre(MapColor color) {
+        return new DropExperienceBlock(UniformInt.of(3, 7), Properties.ofFullCopy(Blocks.IRON_ORE).mapColor(color));
     }
 
     /** Palm wood without bark (planks family, stripped): light sand-yellow on the map. */

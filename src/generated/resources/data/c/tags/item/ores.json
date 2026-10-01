@@ -1,5 +1,7 @@
 {
   "values": [
-    "#c:ores/soul_crystal"
+    "#c:ores/soul_crystal",
+    "#c:ores/sunstone",
+    "#c:ores/turquoise"
   ]
 }

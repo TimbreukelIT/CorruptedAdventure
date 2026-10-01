@@ -20,6 +20,8 @@
     "corruptedadventure:chiseled_scorched_sandstone",
     "corruptedadventure:smooth_scorched_sandstone",
     "corruptedadventure:smooth_scorched_sandstone_stairs",
-    "corruptedadventure:smooth_scorched_sandstone_slab"
+    "corruptedadventure:smooth_scorched_sandstone_slab",
+    "#c:ores/sunstone",
+    "#c:ores/turquoise"
   ]
 }

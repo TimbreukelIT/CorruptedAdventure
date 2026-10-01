@@ -54,11 +54,11 @@ final class ModBlockStateProvider extends BlockStateProvider {
 
         ResourceLocation netherrack = mcLoc("block/netherrack");
         oreWithOverlay(ModBlocks.SOUL_CRYSTAL_ORE.get(), netherrack,
-                CubeTextures.all(netherrack), CubeTextures.all(modLoc("block/soul_crystal_ore_overlay")));
+                CubeTextures.all(netherrack), CubeTextures.all(modLoc("block/soul_crystal_ore_overlay")), true);
         oreWithOverlay(ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE.get(), mcLoc("block/crimson_nylium"),
                 new CubeTextures(mcLoc("block/crimson_nylium"), mcLoc("block/crimson_nylium_side"), netherrack),
                 new CubeTextures(modLoc("block/crimson_soul_crystal_ore_overlay_top"),
-                        modLoc("block/crimson_soul_crystal_ore_overlay_side"), modLoc("block/soul_crystal_ore_overlay")));
+                        modLoc("block/crimson_soul_crystal_ore_overlay_side"), modLoc("block/soul_crystal_ore_overlay")), true);
 
         ring2();
     }
@@ -102,6 +102,31 @@ final class ModBlockStateProvider extends BlockStateProvider {
         pottedBarrelCactus();
 
         palm();
+        ring2Ores();
+    }
+
+    /**
+     * Ring 2 ores: per host rock its own texture as the base, with one overlay per ore shared by all host rocks. Only
+     * sunstone glows; turquoise is a matte gem.
+     */
+    private void ring2Ores() {
+        CubeTextures scorchedSandstone = new CubeTextures(modLoc("block/scorched_sandstone_top"),
+                modLoc("block/scorched_sandstone"), modLoc("block/scorched_sandstone_bottom"));
+        CubeTextures sunstone = CubeTextures.all(modLoc("block/sunstone_ore_overlay"));
+        CubeTextures turquoise = CubeTextures.all(modLoc("block/turquoise_ore_overlay"));
+        canyonOre(ModBlocks.RED_CANYON_SUNSTONE_ORE.get(), ModBlocks.RED_CANYON_STONE.get(), sunstone, true);
+        canyonOre(ModBlocks.ORANGE_CANYON_SUNSTONE_ORE.get(), ModBlocks.ORANGE_CANYON_STONE.get(), sunstone, true);
+        canyonOre(ModBlocks.CREAM_CANYON_SUNSTONE_ORE.get(), ModBlocks.CREAM_CANYON_STONE.get(), sunstone, true);
+        oreWithOverlay(ModBlocks.SCORCHED_SANDSTONE_SUNSTONE_ORE.get(), scorchedSandstone.side(), scorchedSandstone, sunstone, true);
+        canyonOre(ModBlocks.RED_CANYON_TURQUOISE_ORE.get(), ModBlocks.RED_CANYON_STONE.get(), turquoise, false);
+        canyonOre(ModBlocks.ORANGE_CANYON_TURQUOISE_ORE.get(), ModBlocks.ORANGE_CANYON_STONE.get(), turquoise, false);
+        canyonOre(ModBlocks.CREAM_CANYON_TURQUOISE_ORE.get(), ModBlocks.CREAM_CANYON_STONE.get(), turquoise, false);
+    }
+
+    /** An ore over a canyon stone tint (the same texture on every face). */
+    private void canyonOre(Block ore, Block canyonStone, CubeTextures overlay, boolean emissive) {
+        ResourceLocation stone = blockTexture(canyonStone);
+        oreWithOverlay(ore, stone, CubeTextures.all(stone), overlay, emissive);
     }
 
     /** The palm set, laid out like the dead wood set, plus leaves, sapling and its pot. */
@@ -191,22 +216,25 @@ final class ModBlockStateProvider extends BlockStateProvider {
     }
 
     /**
-     * Ore as two full cubes: a base (a reference to the vanilla texture, no copy) with our own transparent overlay on
-     * top, like vanilla's grass block overlay. Cutout, so overlay pixels must have alpha 0 or 255. The overlay is
-     * emissive (NeoForge {@code neoforge_data}: full block and sky light) without ambient occlusion, so it glows evenly
-     * in the dark; this only affects rendering, not the light the block emits.
+     * Ore as two full cubes: a base (a reference to the host rock's texture, vanilla or ours, never a copy) with our own
+     * transparent overlay on top, like vanilla's grass block overlay. Cutout, so overlay pixels must have alpha 0 or
+     * 255. An {@code emissive} overlay gets NeoForge {@code neoforge_data} (full block and sky light) without ambient
+     * occlusion, so it glows evenly in the dark; this only affects rendering, not the light the block emits.
      */
-    private void oreWithOverlay(Block block, ResourceLocation particle, CubeTextures base, CubeTextures overlay) {
+    private void oreWithOverlay(Block block, ResourceLocation particle, CubeTextures base, CubeTextures overlay,
+                                boolean emissive) {
         BlockModelBuilder model = models().withExistingParent(BuiltInRegistries.BLOCK.getKey(block).getPath(), mcLoc("block/block"))
                 .renderType("cutout")
                 .texture("particle", particle);
         base.apply(model, "base");
         overlay.apply(model, "overlay");
         model.element().allFaces((direction, face) -> face.texture("#base_" + CubeTextures.face(direction)).cullface(direction)).end();
-        model.element().allFaces((direction, face) -> face.texture("#overlay_" + CubeTextures.face(direction)).cullface(direction))
-                .emissivity(15, 15)
-                .ao(false)
-                .end();
+        var overlayElement = model.element()
+                .allFaces((direction, face) -> face.texture("#overlay_" + CubeTextures.face(direction)).cullface(direction));
+        if (emissive) {
+            overlayElement.emissivity(15, 15).ao(false);
+        }
+        overlayElement.end();
         simpleBlock(block, model);
     }
 

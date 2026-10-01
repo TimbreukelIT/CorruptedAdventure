@@ -20,6 +20,12 @@ public final class ModItems {
     /** Drop of the soul crystal ores. Placeholder: its use, recipes and balance follow in phase 2. */
     public static final DeferredItem<Item> SOUL_CRYSTAL = ITEMS.registerSimpleItem("soul_crystal");
 
+    // ---- Ring 2 ----
+    /** Drop of the sunstone ores. Placeholder raw material: smelting, product, recipes and balance follow in phase 2. */
+    public static final DeferredItem<Item> RAW_SUNSTONE = ITEMS.registerSimpleItem("raw_sunstone");
+    /** Drop of the turquoise ores. Placeholder raw material: smelting, product, recipes and balance follow in phase 2. */
+    public static final DeferredItem<Item> RAW_TURQUOISE = ITEMS.registerSimpleItem("raw_turquoise");
+
     private ModItems() {
     }
 

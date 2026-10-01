@@ -110,6 +110,22 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.POTTED_PALM_SAPLING.get());
 
         palm();
+        ring2Ores();
+    }
+
+    /**
+     * Sunstone and turquoise ores, every host rock variant. No {@code ores_in_ground} tag (there is none for canyon stone
+     * or sandstone) and not in {@code #overworld_carver_replaceables}: ore features run after the carvers.
+     */
+    private void ring2Ores() {
+        tag(ModTags.Blocks.ORES_SUNSTONE).add(ModBlocks.RED_CANYON_SUNSTONE_ORE.get(), ModBlocks.ORANGE_CANYON_SUNSTONE_ORE.get(),
+                ModBlocks.CREAM_CANYON_SUNSTONE_ORE.get(), ModBlocks.SCORCHED_SANDSTONE_SUNSTONE_ORE.get());
+        tag(ModTags.Blocks.ORES_TURQUOISE).add(ModBlocks.RED_CANYON_TURQUOISE_ORE.get(),
+                ModBlocks.ORANGE_CANYON_TURQUOISE_ORE.get(), ModBlocks.CREAM_CANYON_TURQUOISE_ORE.get());
+        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
+        tag(BlockTags.NEEDS_IRON_TOOL).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
+        tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
     }
 
     /**

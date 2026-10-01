@@ -215,3 +215,9 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-01 | worldgen | Spawns ring 2 tot fase 4: vanilla-woestijn (husks, konijnen, kamelen in de oase) | Droog en levend tot de ring 2-mobs van fase 4 |
 | 2026-10-01 | worldgen | Ring 2-biomes zonder `minecraft:`-tags (geen vanilla-structures tot fase 3); eigen tag `is_ring_2` + `c:is_hot/overworld`, `c:is_dry/overworld` | Structures zijn fase 3; tag voor ertsen/grotten/biomes van latere changes |
 | 2026-10-01 | worldgen | Lucht/fog/water van alle ring 2-biomes uit één `BiomeAmbience.Palette.RING_2` (placeholder-kleuren); definitief in change 32 | Eén plek voor de sfeerchange |
+| 2026-10-01 | blocks | Zonnesteen-erts per gastgesteente: drie kloofsteen-tinten + geschroeide zandsteen | Elke variant valt weg in zijn laag; hoodoos krijgen ook zonnesteen |
+| 2026-10-01 | blocks | Turkoois-erts per gastgesteente: de drie kloofsteen-tinten | Strikt "diep in kloofsteen" |
+| 2026-10-01 | blocks | Drops ring 2-ertsen (keuze gebruiker): ruwe materialen `raw_sunstone` en `raw_turquoise` (Fortune, Silk Touch → erts), tags `c:raw_materials/*`; placeholder-items, smelten/product/ruwe blokken in fase 2 | Metaal-achtige verwerking voor beide ring 2-materialen |
+| 2026-10-01 | blocks | Tool-tier en XP ring 2-ertsen: beide ijzer; XP zonnesteen 2–5, turkoois 3–7 | Gelijk aan zielkristal en vanilla diamant/smaragd |
+| 2026-10-01 | blocks | Licht/gloed ring 2-ertsen: zonnesteen licht 3 + emissive, turkoois mat zonder licht | Zonnesteen als zichtbaar klimdoel; turkoois blijft zoekwerk |
+| 2026-10-01 | blocks | Ertsnamen `<gastgesteente>_<erts>_ore`; één overlay per erts, gedeeld door alle gastgesteenten; plaatsing per gesteente via `BlockMatchTest` (change 25) | Zoals vanilla `deepslate_*_ore`; weinig textures, het erts valt weg in zijn eigen laag |

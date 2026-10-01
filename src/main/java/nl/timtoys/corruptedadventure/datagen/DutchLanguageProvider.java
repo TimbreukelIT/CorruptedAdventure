@@ -152,6 +152,17 @@ final class DutchLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.PALM_SAPLING, "Palmzaailing");
         addBlock(ModBlocks.POTTED_PALM_SAPLING, "Opgepotte palmzaailing");
 
+        // Ring 2 ores (vanilla pattern: "Ruw ijzer").
+        addBlock(ModBlocks.RED_CANYON_SUNSTONE_ORE, "Zonnesteenerts in rode kloofsteen");
+        addBlock(ModBlocks.ORANGE_CANYON_SUNSTONE_ORE, "Zonnesteenerts in oranje kloofsteen");
+        addBlock(ModBlocks.CREAM_CANYON_SUNSTONE_ORE, "Zonnesteenerts in crèmekleurige kloofsteen");
+        addBlock(ModBlocks.SCORCHED_SANDSTONE_SUNSTONE_ORE, "Zonnesteenerts in geschroeid zandsteen");
+        addBlock(ModBlocks.RED_CANYON_TURQUOISE_ORE, "Turkooiserts in rode kloofsteen");
+        addBlock(ModBlocks.ORANGE_CANYON_TURQUOISE_ORE, "Turkooiserts in oranje kloofsteen");
+        addBlock(ModBlocks.CREAM_CANYON_TURQUOISE_ORE, "Turkooiserts in crèmekleurige kloofsteen");
+        addItem(ModItems.RAW_SUNSTONE, "Ruwe zonnesteen");
+        addItem(ModItems.RAW_TURQUOISE, "Ruw turkoois");
+
         biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
         biome(ModBiomes.CANYONLANDS, "Kloofland");
         biome(ModBiomes.OASIS_FLATS, "Oasevlakte");

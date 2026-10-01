@@ -83,6 +83,16 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.PALM_LEAVES);
         flatBlockItem(ModBlocks.PALM_SAPLING);
         // Potted plants have no item.
+
+        blockItem(ModBlocks.RED_CANYON_SUNSTONE_ORE);
+        blockItem(ModBlocks.ORANGE_CANYON_SUNSTONE_ORE);
+        blockItem(ModBlocks.CREAM_CANYON_SUNSTONE_ORE);
+        blockItem(ModBlocks.SCORCHED_SANDSTONE_SUNSTONE_ORE);
+        blockItem(ModBlocks.RED_CANYON_TURQUOISE_ORE);
+        blockItem(ModBlocks.ORANGE_CANYON_TURQUOISE_ORE);
+        blockItem(ModBlocks.CREAM_CANYON_TURQUOISE_ORE);
+        basicItem(ModItems.RAW_SUNSTONE.get());
+        basicItem(ModItems.RAW_TURQUOISE.get());
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

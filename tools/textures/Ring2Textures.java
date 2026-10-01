@@ -33,6 +33,16 @@ public final class Ring2Textures {
     private static final Path OUTPUT = Path.of("src/main/resources/assets/corruptedadventure/textures");
     private static final Path PREVIEW = Path.of("build/texture-preview/ring2.png");
 
+    /** Preview only: each ore overlay over every host rock texture it is used on (overlay, base). */
+    private static final String[][] ORE_PREVIEWS = {
+            {"block/sunstone_ore_overlay", "block/red_canyon_stone"},
+            {"block/sunstone_ore_overlay", "block/orange_canyon_stone"},
+            {"block/sunstone_ore_overlay", "block/cream_canyon_stone"},
+            {"block/sunstone_ore_overlay", "block/scorched_sandstone"},
+            {"block/turquoise_ore_overlay", "block/red_canyon_stone"},
+            {"block/turquoise_ore_overlay", "block/orange_canyon_stone"},
+            {"block/turquoise_ore_overlay", "block/cream_canyon_stone"}};
+
     /** Retouched by hand after generation; the script skips these and the preview reads them from disk. */
     private static final Set<String> HAND_EDITED = Set.of();
 
@@ -54,6 +64,10 @@ public final class Ring2Textures {
     private static final int[] PALM_BARK = {0x463B30, 0x5C4F40, 0x716250, 0x877762, 0x9C8C75};
     private static final int[] PALM_WOOD = {0x9A7F52, 0xB49862, 0xC9AE76, 0xDAC28A, 0xE8D3A0};
     private static final int[] PALM_LEAVES = {0x28561C, 0x377425, 0x4A9030, 0x62AA3E};
+    // Ore working palettes (change 24, placeholders; final in change 37): outline → highlight.
+    private static final int[] SUNSTONE = {0x5A2A08, 0x9A4A0C, 0xD9801A, 0xF2B23A, 0xFFE07A, 0xFFF6C8};
+    private static final int[] TURQUOISE = {0x0E3B3A, 0x1C6B66, 0x2E9C92, 0x4FC6B5, 0x8FE6D6};
+    private static final int TURQUOISE_VEIN = 0x3A2A1E;
 
     /**
      * How a texture moves: {@code frames} frames of {@code frametime} ticks, optionally interpolated; {@code glow} is
@@ -109,6 +123,10 @@ public final class Ring2Textures {
         still("block/palm_leaves", Ring2Textures::palmLeaves);
         still("block/palm_sapling", Ring2Textures::palmSapling);
         still("item/palm_door", Ring2Textures::palmDoorItem);
+        still("block/sunstone_ore_overlay", Ring2Textures::sunstoneOreOverlay);
+        still("block/turquoise_ore_overlay", Ring2Textures::turquoiseOreOverlay);
+        still("item/raw_sunstone", Ring2Textures::rawSunstone);
+        still("item/raw_turquoise", Ring2Textures::rawTurquoise);
     }
 
     private static void still(String name, Painter painter) {
@@ -751,6 +769,156 @@ public final class Ring2Textures {
         set(image, 7, 5, PALM_LEAVES[1]);
     }
 
+    // ---- Ores (sunstone, turquoise) -------------------------------------------------------------------------
+
+    /**
+     * Sunstone overlay, shared by all host rocks: 4–5 angular chunks with a dark 1-px outline (crystal style), lit
+     * top-left, shadowed bottom-right. The outline keeps them readable on red, orange, cream and brown.
+     */
+    private static void sunstoneOreOverlay(BufferedImage image, Random random) {
+        int target = 4 + random.nextInt(2);
+        int placed = 0;
+        for (int attempt = 0; attempt < 500 && placed < target; attempt++) {
+            double radius = 1.4 + random.nextDouble() * 0.9;
+            double cx = 1.5 + radius + random.nextDouble() * (SIZE - 3 - 2 * radius);
+            double cy = 1.5 + radius + random.nextDouble() * (SIZE - 3 - 2 * radius);
+            double stretch = 0.75 + random.nextDouble() * 0.5;
+            BufferedImage chunk = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+            int highlightX = -1;
+            int highlightY = -1;
+            for (int y = 1; y < SIZE - 1; y++) {
+                for (int x = 1; x < SIZE - 1; x++) {
+                    double dx = (x + 0.5 - cx) * stretch;
+                    double dy = (y + 0.5 - cy) / stretch;
+                    // Octagon: a square with its corners cut off, so the chunk looks faceted, not round.
+                    if (Math.abs(dx) + Math.abs(dy) > radius * 1.25 || Math.max(Math.abs(dx), Math.abs(dy)) > radius) {
+                        continue;
+                    }
+                    double facet = (dx + dy) / radius;
+                    int color = facet < -0.45 ? SUNSTONE[4] : facet < 0.2 ? SUNSTONE[3] : facet < 0.8 ? SUNSTONE[2] : SUNSTONE[1];
+                    set(chunk, x, y, color);
+                    if (highlightX < 0 || x + y < highlightX + highlightY) {
+                        highlightX = x;
+                        highlightY = y;
+                    }
+                }
+            }
+            if (highlightX < 0) {
+                continue;
+            }
+            set(chunk, highlightX, highlightY, SUNSTONE[5]);
+            outline(chunk, SUNSTONE[0]);
+            if (merge(image, chunk)) {
+                placed++;
+            }
+        }
+    }
+
+    /**
+     * Turquoise overlay, shared by all host rocks: 2–3 round, matte nodules (a gem in the rock, no facets) with a dark
+     * teal outline and thin brown matrix veins.
+     */
+    private static void turquoiseOreOverlay(BufferedImage image, Random random) {
+        int target = 2 + random.nextInt(2);
+        int placed = 0;
+        for (int attempt = 0; attempt < 500 && placed < target; attempt++) {
+            double radius = 2.3 + random.nextDouble() * 0.9;
+            double cx = 1.5 + radius + random.nextDouble() * (SIZE - 3 - 2 * radius);
+            double cy = 1.5 + radius + random.nextDouble() * (SIZE - 3 - 2 * radius);
+            BufferedImage nodule = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+            for (int y = 1; y < SIZE - 1; y++) {
+                for (int x = 1; x < SIZE - 1; x++) {
+                    double dx = x + 0.5 - cx;
+                    double dy = y + 0.5 - cy;
+                    if (Math.hypot(dx, dy) > radius) {
+                        continue;
+                    }
+                    double light = -(dx + dy) / (2 * radius);
+                    set(nodule, x, y, shade(TURQUOISE, 0.45 + 0.45 * light + 0.25 * random.nextDouble()));
+                }
+            }
+            veins(nodule, random, 1 + random.nextInt(2));
+            outline(nodule, TURQUOISE[0]);
+            if (merge(image, nodule)) {
+                placed++;
+            }
+        }
+    }
+
+    /** Raw sunstone, like vanilla raw iron: an irregular lump with a golden core and bits of red canyon stone. */
+    private static void rawSunstone(BufferedImage image, Random random) {
+        rawLump(image, random, SUNSTONE, RED_CANYON_STONE, SUNSTONE[0]);
+    }
+
+    /** Raw turquoise: an unpolished nodule with matrix veins and bits of cream canyon stone (no cut gem). */
+    private static void rawTurquoise(BufferedImage image, Random random) {
+        rawLump(image, random, TURQUOISE, CREAM_CANYON_STONE, TURQUOISE[0]);
+        veins(image, random, 3);
+    }
+
+    /**
+     * An irregular lump (radius 4.5–6 around the middle, varying with the angle) lit from the top-left, with patches of
+     * host rock ({@code rock}) and a 1-px {@code outline}. The core skips its darkest colour (index 0, the outline).
+     */
+    private static void rawLump(BufferedImage image, Random random, int[] core, int[] rock, int outline) {
+        int corners = 7;
+        double[] radii = new double[corners];
+        for (int i = 0; i < corners; i++) {
+            radii[i] = 4.5 + random.nextDouble() * 1.5;
+        }
+        double[][] patches = valueNoise(random, 4, 4);
+        double cx = 8.0;
+        double cy = 8.3;
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double dx = x + 0.5 - cx;
+                double dy = y + 0.5 - cy;
+                double angle = (Math.atan2(dy, dx) / (2 * Math.PI) + 1) % 1 * corners;
+                int i = (int) angle;
+                double radius = lerp(radii[i], radii[(i + 1) % corners], smoothstep(angle - i));
+                double distance = Math.hypot(dx, dy);
+                if (distance > radius) {
+                    continue;
+                }
+                double light = 0.5 - 0.5 * (dx + dy) / (radius * 1.4) + 0.15 * random.nextDouble();
+                if (patches[x][y] > 0.62 && distance > radius * 0.35) {
+                    set(image, x, y, shade(rock, light));
+                } else {
+                    set(image, x, y, core[1 + (int) (Math.max(0, Math.min(0.999, light)) * (core.length - 1))]);
+                }
+            }
+        }
+        outline(image, outline);
+    }
+
+    /**
+     * {@code count} thin veins wandering across the tile, drawn only on opaque pixels that are not outline (so the
+     * shape and its outline stay intact).
+     */
+    private static void veins(BufferedImage image, Random random, int count) {
+        boolean[][] inner = new boolean[SIZE][SIZE];
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                inner[x][y] = isOpaque(image, x, y) && isOpaque(image, x - 1, y) && isOpaque(image, x + 1, y)
+                        && isOpaque(image, x, y - 1) && isOpaque(image, x, y + 1);
+            }
+        }
+        for (int v = 0; v < count; v++) {
+            boolean horizontal = random.nextBoolean();
+            int across = 3 + random.nextInt(SIZE - 6);
+            for (int step = 0; step < SIZE; step++) {
+                int x = horizontal ? step : across;
+                int y = horizontal ? across : step;
+                if (inner[x][y] && random.nextInt(5) != 0) {
+                    set(image, x, y, TURQUOISE_VEIN);
+                }
+                if (random.nextInt(3) == 0) {
+                    across = Math.max(1, Math.min(SIZE - 2, across + (random.nextBoolean() ? 1 : -1)));
+                }
+            }
+        }
+    }
+
     // ---- Animation ------------------------------------------------------------------------------------------
 
     /**
@@ -837,11 +1005,59 @@ public final class Ring2Textures {
         }
     }
 
+    /** Every transparent pixel next to (4-neighbourhood) an opaque one becomes {@code color}. */
+    private static void outline(BufferedImage image, int color) {
+        boolean[][] opaque = new boolean[SIZE][SIZE];
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                opaque[x][y] = isOpaque(image, x, y);
+            }
+        }
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                boolean next = (x > 0 && opaque[x - 1][y]) || (x < SIZE - 1 && opaque[x + 1][y])
+                        || (y > 0 && opaque[x][y - 1]) || (y < SIZE - 1 && opaque[x][y + 1]);
+                if (!opaque[x][y] && next) {
+                    set(image, x, y, color);
+                }
+            }
+        }
+    }
+
+    /**
+     * Copies the opaque pixels of {@code part} into {@code image} if none of them touches (4-neighbourhood) a pixel
+     * that is already opaque; returns whether it did.
+     */
+    private static boolean merge(BufferedImage image, BufferedImage part) {
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                if (isOpaque(part, x, y) && (isOpaque(image, x, y) || isOpaque(image, x - 1, y)
+                        || isOpaque(image, x + 1, y) || isOpaque(image, x, y - 1) || isOpaque(image, x, y + 1))) {
+                    return false;
+                }
+            }
+        }
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                if (isOpaque(part, x, y)) {
+                    image.setRGB(x, y, part.getRGB(x, y));
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Opaque pixel inside the tile; outside counts as transparent. */
+    private static boolean isOpaque(BufferedImage image, int x, int y) {
+        return x >= 0 && y >= 0 && x < SIZE && y < SIZE && (image.getRGB(x, y) >>> 24) != 0;
+    }
+
     // ---- Preview --------------------------------------------------------------------------------------------
 
     /**
      * One row per texture: name, the rest frame 8×, a 3×3 tiling at 8× (seams and repetition) and, if animated, every
-     * frame at 4×. Transparency over a dusty brown backdrop, roughly the tone of the canyon floor.
+     * frame at 4×. Transparency over a dusty brown backdrop, roughly the tone of the canyon floor. Then one row per ore
+     * overlay ({@link #ORE_PREVIEWS}): the overlay over each of its host rocks, tiled 3×3 at 4×.
      */
     private static void writePreview() throws IOException {
         int scale = 8;
@@ -850,7 +1066,18 @@ public final class Ring2Textures {
         int frameScale = 4;
         int maxFrames = TEXTURES.values().stream().mapToInt(texture -> texture.animation().frames()).max().orElse(1);
         int width = label + tile + 16 + 3 * tile + 16 + maxFrames * (SIZE * frameScale + 4);
-        int height = TEXTURES.size() * (3 * tile + 16);
+        int oreTile = 3 * SIZE * 4;
+        int oreRows = 0;
+        int oreColumns = 0;
+        int columnsInRow = 0;
+        for (int i = 0; i < ORE_PREVIEWS.length; i++) {
+            boolean newRow = i == 0 || !ORE_PREVIEWS[i][0].equals(ORE_PREVIEWS[i - 1][0]);
+            oreRows += newRow ? 1 : 0;
+            columnsInRow = newRow ? 1 : columnsInRow + 1;
+            oreColumns = Math.max(oreColumns, columnsInRow);
+        }
+        width = Math.max(width, label + oreColumns * (oreTile + 8));
+        int height = TEXTURES.size() * (3 * tile + 16) + oreRows * (oreTile + 16);
         BufferedImage sheet = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = sheet.createGraphics();
         graphics.setColor(new Color(0x2B2B2B));
@@ -877,6 +1104,35 @@ public final class Ring2Textures {
                 }
             }
             row++;
+        }
+        // Ores: every overlay over each of its host rocks, tiled 3×3 at 4×; one row per overlay (preview only).
+        int oreTop = row * (3 * tile + 16) + 8 - (oreTile + 16);
+        String overlay = null;
+        int column = 0;
+        for (String[] pair : ORE_PREVIEWS) {
+            if (!pair[0].equals(overlay)) {
+                overlay = pair[0];
+                oreTop += oreTile + 16;
+                column = 0;
+                graphics.setColor(Color.WHITE);
+                graphics.drawString("ores: " + overlay, 8, oreTop + 16);
+            }
+            BufferedImage composite = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+            copy(render(pair[1]), composite);
+            BufferedImage ore = render(pair[0]);
+            for (int y = 0; y < SIZE; y++) {
+                for (int x = 0; x < SIZE; x++) {
+                    if (isOpaque(ore, x, y)) {
+                        composite.setRGB(x, y, ore.getRGB(x, y));
+                    }
+                }
+            }
+            for (int ty = 0; ty < 3; ty++) {
+                for (int tx = 0; tx < 3; tx++) {
+                    draw(graphics, composite, label + column * (oreTile + 8) + tx * SIZE * 4, oreTop + ty * SIZE * 4, 4);
+                }
+            }
+            column++;
         }
         graphics.dispose();
         Files.createDirectories(PREVIEW.getParent());
