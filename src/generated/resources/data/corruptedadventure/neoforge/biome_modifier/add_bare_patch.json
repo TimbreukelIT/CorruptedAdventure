@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#corruptedadventure:has_feature/bare_patch",
+  "features": "corruptedadventure:bare_patch",
+  "step": "vegetal_decoration"
+}

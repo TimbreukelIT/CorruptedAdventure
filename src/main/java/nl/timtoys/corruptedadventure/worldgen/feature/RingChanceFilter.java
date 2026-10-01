@@ -27,7 +27,8 @@ import java.util.OptionalDouble;
  * deterministic.
  * <p>
  * Signals: {@code transition} = the blend across the transition zone of the boundary whose inner ring is {@code ring}
- * (0 at the ring side, 1 at the outer ring side).
+ * (0 at the ring side, 1 at the outer ring side); {@code progress} = how far across {@code ring} itself the position
+ * lies ({@link RingLayout#ringProgress}: 0 at its inner boundary, 1 at its outer boundary).
  */
 public final class RingChanceFilter extends PlacementFilter {
     public static final MapCodec<RingChanceFilter> CODEC = RecordCodecBuilder.<RingChanceFilter>mapCodec(instance -> instance.group(
@@ -60,6 +61,11 @@ public final class RingChanceFilter extends PlacementFilter {
         return new RingChanceFilter(Signal.TRANSITION, inner, fromChance, toChance, 0.0, 1.0);
     }
 
+    /** Chance across the whole of {@code ring}, from its inner to its outer boundary. */
+    public static RingChanceFilter progress(Ring ring, double fromChance, double toChance, double start, double exponent) {
+        return new RingChanceFilter(Signal.PROGRESS, ring, fromChance, toChance, start, exponent);
+    }
+
     private static DataResult<RingChanceFilter> validate(RingChanceFilter filter) {
         if (filter.start >= 1.0) {
             return DataResult.error(() -> "ring_chance: start must be below 1, got " + filter.start);
@@ -69,6 +75,9 @@ public final class RingChanceFilter extends PlacementFilter {
         }
         if (filter.signal == Signal.TRANSITION && filter.ring == Ring.VOID) {
             return DataResult.error(() -> "ring_chance: there is no transition beyond the void");
+        }
+        if (filter.signal == Signal.PROGRESS && filter.ring == Ring.VOID) {
+            return DataResult.error(() -> "ring_chance: the void has no outer boundary to progress towards");
         }
         return DataResult.success(filter);
     }
@@ -89,6 +98,10 @@ public final class RingChanceFilter extends PlacementFilter {
     private OptionalDouble signal(RingLayout layout, ResourceKey<Level> dimension, int x, int z) {
         return switch (signal) {
             case TRANSITION -> transition(ring, layout.sample(dimension, x, z));
+            case PROGRESS -> {
+                int scale = RingLayout.scale(dimension);
+                yield layout.ringProgress(ring, (double) x * scale, (double) z * scale);
+            }
         };
     }
 
@@ -111,7 +124,8 @@ public final class RingChanceFilter extends PlacementFilter {
     }
 
     public enum Signal implements StringRepresentable {
-        TRANSITION;
+        TRANSITION,
+        PROGRESS;
 
         public static final Codec<Signal> CODEC = StringRepresentable.fromEnum(Signal::values);
 

@@ -1,0 +1,18 @@
+{
+  "type": "corruptedadventure:unnatural_tunnel",
+  "config": {
+    "first_length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 28,
+      "min_inclusive": 12
+    },
+    "min_solid_fraction": 0.7,
+    "replaceable": "#minecraft:overworld_carver_replaceables",
+    "second_length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 14,
+      "min_inclusive": 6
+    },
+    "turn_chance": 0.5
+  }
+}

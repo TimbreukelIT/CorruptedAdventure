@@ -5,6 +5,7 @@ import nl.timtoys.corruptedadventure.config.RingSettings;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.OptionalDouble;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,6 +18,7 @@ class RingLayoutTest {
     private static final long SEED = 12345L;
     // Furthest a boundary effect can reach: noise plus half the transition zone.
     private static final int REACH = 96 + 64;
+    private static final double MAX_DIP = 0.02;
 
     private final RingLayout layout = new RingLayout(DEFAULTS, SEED);
 
@@ -126,11 +128,47 @@ class RingLayoutTest {
     }
 
     @Test
+    void ringProgressRunsFromTheCentreToTheNoisyBoundaryOfRingOne() {
+        assertEquals(0.0, layout.ringProgress(Ring.RING_1, 0, 0).orElseThrow(), 1e-9);
+        for (int angle = 0; angle < 360; angle += 5) {
+            double boundary = boundaryDistance(layout, RADII.getFirst(), angle);
+            double previous = 0.0;
+            for (double distance = 0; distance < boundary - 1; distance += 8) {
+                double progress = progressAt(layout, Ring.RING_1, distance, angle).orElseThrow();
+                // The boundary noise can be locally steeper than the ray, so allow small dips.
+                assertTrue(progress > previous - MAX_DIP && progress < 1.0, "progress " + progress + " at " + distance + ", angle " + angle);
+                previous = Math.max(previous, progress);
+            }
+            assertEquals(1.0, progressAt(layout, Ring.RING_1, boundary - 0.5, angle).orElseThrow(), 0.01, "angle " + angle);
+            assertTrue(progressAt(layout, Ring.RING_1, boundary + 0.5, angle).isEmpty(), "angle " + angle);
+        }
+    }
+
+    @Test
+    void ringProgressOfAnOuterRingStartsAtItsInnerBoundaryAndMatchesItsRing() {
+        for (int angle = 0; angle < 360; angle += 5) {
+            double inner = boundaryDistance(layout, RADII.get(0), angle);
+            double outer = boundaryDistance(layout, RADII.get(1), angle);
+            assertEquals(0.0, progressAt(layout, Ring.RING_2, inner + 0.5, angle).orElseThrow(), 0.01, "angle " + angle);
+            assertEquals(1.0, progressAt(layout, Ring.RING_2, outer - 0.5, angle).orElseThrow(), 0.01, "angle " + angle);
+            for (double distance = 0; distance < RADII.get(2); distance += 50) {
+                boolean inRing = atAngle(layout, distance, angle).ring() == Ring.RING_2;
+                assertEquals(inRing, progressAt(layout, Ring.RING_2, distance, angle).isPresent(), distance + ", angle " + angle);
+            }
+        }
+    }
+
+    @Test
     void ringNumbering() {
         assertEquals(1, Ring.RING_1.number());
         assertEquals(6, Ring.VOID.number());
         assertEquals(Ring.RING_3, Ring.byIndex(2));
         assertFalse(RingPosition.within(Ring.RING_2).inTransition());
+    }
+
+    private static OptionalDouble progressAt(RingLayout layout, Ring ring, double distance, int angleDegrees) {
+        double radians = Math.toRadians(angleDegrees);
+        return layout.ringProgress(ring, Math.cos(radians) * distance, Math.sin(radians) * distance);
     }
 
     private static RingPosition atAngle(RingLayout layout, double distance, int angleDegrees) {

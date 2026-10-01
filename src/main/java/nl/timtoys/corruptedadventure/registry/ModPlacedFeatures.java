@@ -13,6 +13,8 @@ public final class ModPlacedFeatures {
     public static final ResourceKey<PlacedFeature> WITHERED_EXPANSE_VEGETATION = key("withered_expanse_vegetation");
     public static final ResourceKey<PlacedFeature> WITHERED_EXPANSE_ROCKS = key("withered_expanse_rocks");
     public static final ResourceKey<PlacedFeature> WITHERED_EXPANSE_SAND_PATCHES = key("withered_expanse_sand_patches");
+    public static final ResourceKey<PlacedFeature> BARE_PATCH = key("bare_patch");
+    public static final ResourceKey<PlacedFeature> UNNATURAL_TUNNEL = key("unnatural_tunnel");
 
     private ModPlacedFeatures() {
     }

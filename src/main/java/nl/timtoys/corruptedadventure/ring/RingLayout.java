@@ -15,6 +15,7 @@ import nl.timtoys.corruptedadventure.config.RingSettings;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 
 import java.util.List;
+import java.util.OptionalDouble;
 
 /**
  * The single source of truth for "which ring is this position in". Worldgen, conditions, borders and the compass
@@ -117,6 +118,29 @@ public final class RingLayout {
     public double voidEdgeProgress(double x, double z) {
         double start = radii.getLast() - boundaryOffset(x, z);
         return Mth.clamp((Math.sqrt(x * x + z * z) - start) / (voidOuterRadius - start), 0.0, 1.0);
+    }
+
+    /**
+     * How far a position lies across {@code ring}: 0 on its inner boundary (ring 1: at 0,0), towards 1 at its noisy
+     * outer boundary. Empty outside the ring, with the same switch as {@link #sampleOverworld}{@code .ring()}.
+     * Measured against both boundaries as shifted at this position, so ring 1 starts at 0 in the centre where no
+     * boundary noise applies.
+     *
+     * @param x overworld x (Nether positions already multiplied by {@link #NETHER_SCALE})
+     */
+    public OptionalDouble ringProgress(Ring ring, double x, double z) {
+        if (ring == Ring.VOID) {
+            throw new IllegalArgumentException("The void has no outer boundary; use voidEdgeProgress");
+        }
+        int index = ring.ordinal();
+        double distance = Math.sqrt(x * x + z * z);
+        double offset = boundaryOffset(x, z);
+        double inner = index == 0 ? 0.0 : radii.get(index - 1) - offset;
+        double outer = radii.get(index) - offset;
+        if (distance < inner || distance >= outer) {
+            return OptionalDouble.empty();
+        }
+        return OptionalDouble.of((distance - inner) / (outer - inner));
     }
 
     /** Clamped so a boundary never moves more than {@code boundaryNoise}; {@link RingSettings#validate()} relies on that. */

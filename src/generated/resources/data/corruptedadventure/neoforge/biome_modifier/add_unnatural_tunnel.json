@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#corruptedadventure:has_feature/unnatural_tunnel",
+  "features": "corruptedadventure:unnatural_tunnel",
+  "step": "top_layer_modification"
+}

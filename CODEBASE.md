@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-10-01 — change 11 (overgangsbiome 1→2 `withered_expanse`; veld `transitions` in `RingBiomeSource`; placement modifier `ring_chance`; eerste eigen features)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–11 klaar, volgende: change 12)
+**Laatst bijgewerkt:** 2026-10-01 — change 12 (horror-features ring 1: kale plekken `bare_patch` en onnatuurlijke tunnels `unnatural_tunnel`; signaal `progress` in `ring_chance`; eerste biome modifiers)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–12 klaar, volgende: change 13)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — changes 0–11 klaar |
+| 1 — Wereld | In bouw — changes 0–12 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -35,7 +35,7 @@ src/main/java/nl/timtoys/corruptedadventure/
   ring/                        ✅ ringindeling
     Ring.java                  ✅ enum RING_1…RING_5, VOID; `CODEC` (`ring_1`…`ring_5`, `void`)
     RingPosition.java          ✅ record (inner, outer, blend 0–1); `ring()`, `inTransition()`
-    RingLayout.java            ✅ `ringAt(dimension, x, z)`: seeded grensruis, Nether ×4, overgangszones; `voidEdgeProgress`
+    RingLayout.java            ✅ `ringAt(dimension, x, z)`: seeded grensruis, Nether ×4, overgangszones; `voidEdgeProgress`, `ringProgress`
     RingColumnCache.java       ✅ per-thread kolomcache van `RingLayout` voor worldgen (ring + void-voortgang per x,z)
   command/                     ✅ debugcommando's `/ca …` (OP-only, server-side; vaste Engelse tekst)
     CaCommand.java             ✅ `/ca`-root, registratie via `RegisterCommandsEvent`
@@ -47,12 +47,13 @@ src/main/java/nl/timtoys/corruptedadventure/
     ModBlocks.java             ✅ alle blokken + hun blockitem (`register` / `registerDoor`); volgorde = creative-tab-volgorde; `entries()`
     ModItems.java              ✅ alle items (nu alleen blockitems via `ModBlocks`); `ITEMS` package-private; `entries()`
     ModCreativeTabs.java       ✅ één tab `corruptedadventure:main` met alle `ModItems` in registratievolgorde
-    ModTags.java               ✅ eigen TagKeys (`Blocks`/`Items`): `corruptedadventure:dead_logs`
+    ModTags.java               ✅ eigen TagKeys (`Blocks`/`Items`: `dead_logs`; `Biomes`: `has_feature/bare_patch`, `has_feature/unnatural_tunnel`)
     ModBiomeSources.java       ✅ biome-source-types `corruptedadventure:ring`, `vanilla_climate`
     ModBiomes.java             ✅ ResourceKeys van alle eigen biomes (de biomes zelf komen uit datagen)
     ModDensityFunctionTypes.java ✅ density-function-types `ring_blend`, `void_edge`, `radial_falloff`
     ModChunkGenerators.java    ✅ chunk-generator-type `ring_noise`
     ModPlacementModifierTypes.java ✅ placement-modifier-type `ring_chance`
+    ModFeatures.java           ✅ feature-types met eigen code: `bare_patch`, `unnatural_tunnel`
     ModConfiguredFeatures.java ✅ ResourceKeys van de eigen configured features (de features zelf komen uit datagen)
     ModPlacedFeatures.java     ✅ ResourceKeys van de eigen placed features (idem)
   worldgen/
@@ -62,6 +63,7 @@ src/main/java/nl/timtoys/corruptedadventure/
       VanillaBiomeCopies.java  ✅ ring 1: `OVERWORLD_COPIES` (52 vanilla-keys), `copyOf(key)`, datagen-bootstraps via vanilla's `BiomeData` en `WolfVariants`
       VanillaClimateBiomeSource.java ✅ `vanilla_climate`: vanilla multi-noise-preset met onze kopieën (+ `replace`)
       TransitionBiomes.java    ✅ datagen-bootstrap van de overgangsbiomes (één per grens): `withered_expanse`
+      Ring1BiomeModifiers.java ✅ datagen-bootstrap biome modifiers `add_bare_patch`, `add_unnatural_tunnel` (NeoForge `add_features` op de `has_feature/*`-tags)
     densityfunction/           ✅ eigen density functions (alleen als JSON niet volstaat)
       RingBlend.java           ✅ `ring_blend`: terrein per ring, smoothstep in de overgangszone
       VoidEdge.java            ✅ `void_edge`: 0 op de grens van ring 5 → 1 op de border (voor de void-JSON)
@@ -74,8 +76,14 @@ src/main/java/nl/timtoys/corruptedadventure/
       RingWorldBorder.java     ✅ zet de overworld-border bij de start (alleen vanilla-standaard, alleen `ring_noise`-werelden), leidt de Nether-border af, stuurt die naar Nether-spelers
       ScaledBorderListener.java ✅ listener op de overworld-border: geschaalde dimensie = grootte ÷ `coordinate_scale` (ook lerps); `clientView` met ongeschaald midden
     feature/                   ✅ eigen features en placement modifiers
-      RingChanceFilter.java    ✅ placement modifier `ring_chance`: kans volgt een ringsignaal (`transition`; change 12: `progress`)
+      RingChanceFilter.java    ✅ placement modifier `ring_chance`: kans volgt een ringsignaal (`transition`, `progress`)
       WitheredExpanseFeatures.java ✅ datagen-bootstraps configured + placed features van `withered_expanse` (kale bomen, begroeiing, keien, zandvlekken)
+      BarePatchConfiguration.java ✅ config van `bare_patch` (record + codec)
+      BarePatchFeature.java    ✅ kale plek: rafelige plek dood gras/verdorde aarde, bestaande bomen verdorren, eigen dode bomen + dode struiken
+      TunnelPath.java          ✅ pure padvorm van een tunnel (richting, lengtes, bocht) + mondkandidaten binnen de 3×3 chunks
+      UnnaturalTunnelConfiguration.java ✅ config van `unnatural_tunnel` (record + codec)
+      UnnaturalTunnelFeature.java ✅ onnatuurlijke 2×1-tunnel: mond zoeken, hele pad valideren (alles-of-niets), uithakken
+      Ring1HorrorFeatures.java ✅ datagen-bootstraps configured + placed features `bare_patch`, `unnatural_tunnel`
     structure/                 🔲 (fase 3) FixedRingPlacement e.d.
   block/                       ✅ custom block-classes (alleen als gedrag nodig is) en blok-hulpklassen
     DeadGrassBlock.java        ✅ dood gras: `SnowyDirtBlock` met eigen random tick (→ verdorde aarde / spreidt alleen naar verdorde aarde), schop/schoffel
@@ -89,13 +97,13 @@ src/main/java/nl/timtoys/corruptedadventure/
   network/                     🔲 CustomPacketPayloads + registratie
   data/                        🔲 SavedData (wereld) en attachments (speler)
   datagen/                     ✅ providers (`./gradlew runData`); 🔲 recipes
-    DataGenerators.java        ✅ `GatherDataEvent`: datapack-registries (configured/placed features, biomes) + tags, data maps, lang, blockstates/models, loot
+    DataGenerators.java        ✅ `GatherDataEvent`: datapack-registries (configured/placed features, biomes, wolf-varianten, biome modifiers) + tags, data maps, lang, blockstates/models, loot
     ModBlockStateProvider.java ✅ blockstates + blockmodels (NeoForge-helpers; `render_type` cutout voor deur/valluik in de model-JSON)
     ModItemModelProvider.java  ✅ itemmodels: blockmodel als parent; hek/knop inventory-model, valluik `_bottom`, deur plat item
     ModBlockLootProvider.java  ✅ blok-loot (`create` → `LootTableProvider`); `getKnownBlocks` = alle `ModBlocks`, dus elk blok moet een table hebben
     ModBlockTagsProvider.java  ✅ blok-tags (vanilla `wooden_*`/`planks`/`logs_that_burn`/`dirt`/`mineable/shovel`, `c:`-tags, `dead_logs`)
     ModItemTagsProvider.java   ✅ item-tags: kopie van de blok-tags
-    ModBiomeTagsProvider.java  ✅ spiegelt vanilla biome-tags naar de ring 1-kopieën (`data/minecraft/tags/…`, `replace: false`)
+    ModBiomeTagsProvider.java  ✅ spiegelt vanilla biome-tags naar de ring 1-kopieën (`data/minecraft/tags/…`, `replace: false`) + eigen `has_feature/*`-tags
     ModDataMapProvider.java    ✅ NeoForge-data maps: `villager_types` voor de kopieën
     EnglishLanguageProvider.java ✅ `en_us` (verplicht voor elke key)
     DutchLanguageProvider.java ✅ `nl_nl`
@@ -116,14 +124,15 @@ src/main/resources/                (lang staat niet hier maar in datagen: `datag
     textures/                     ✅ uit `tools/textures/Ring1Textures.java` (gecommit): `block/` withered_dirt, dead_grass_block_{top,side,snow}, dead_log(_top), stripped_dead_log(_top), dead_planks, dead_door_{top,bottom}, dead_trapdoor; `item/dead_door`
 
 src/test/java/nl/timtoys/corruptedadventure/
-  ring/RingLayoutTest.java     ✅ grenzen, overgang, grensruis, Nether-schaal, determinisme per seed
+  ring/RingLayoutTest.java     ✅ grenzen, overgang, grensruis, Nether-schaal, determinisme per seed, `ringProgress` (ring 1 en ring 2)
   command/RingTargetsTest.java ✅ ringmiddens binnen hun ring, grens-teleport op gewicht 0,5, grensafstand met teken
   worldgen/biome/RingBiomeSourceTest.java ✅ biome per ringmidden (overworld + Nether), harde wissel op gewicht 0,5, alle ringen verplicht; `transitions`: hele zone = overgangsbiome, andere grenzen hard, `possibleBiomes`, codec (optioneel, `void` fout)
   worldgen/biome/VanillaBiomeCopiesTest.java ✅ 52 kopieën zonder mushroom, bootstrap registreert precies de kopieën in onze namespace, wolf-varianten krijgen de kopieën
   worldgen/biome/VanillaClimateBiomeSourceTest.java ✅ elk vanilla-parameterpunt → kopie/vervanger, lookup = vanilla, possibleBiomes, fouten (ontbrekende kopie, onbekende `replace`), encode
   worldgen/biome/StandaloneHolderGetter.java ✅ test-hulp: nep-`HolderGetter` met losse references; `ops(registry, known)` = JSON-`RegistryOps` voor codec-tests
-  worldgen/feature/RingChanceFilterTest.java ✅ kanscurve (op-/aflopend, `start`, `exponent`), signaal `transition` alleen in de eigen zone, codec (rondreis, standaardwaarden, fouten)
-  datagen/ModBiomeTagsProviderTest.java ✅ `is_overworld`, stronghold-tags en `has_structure/ancient_city` worden nooit gespiegeld
+  worldgen/feature/RingChanceFilterTest.java ✅ kanscurve (op-/aflopend, `start`, `exponent`), signaal `transition` alleen in de eigen zone, signaal `progress` (0 op 0,0 → ≈ 1 aan de rand, 0 buiten de ring, Nether ×4), codec (rondreis, standaardwaarden, fouten)
+  worldgen/feature/TunnelPathTest.java ✅ zelfde seed = zelfde pad, lengtes binnen de providers, bocht 90°, recht en horizontaal, elke mondkandidaat houdt het pad (+ 1 blok buren) binnen de 3×3 chunks
+  datagen/ModBiomeTagsProviderTest.java ✅ `is_overworld`, stronghold-tags en `has_structure/ancient_city` worden nooit gespiegeld; `BARE_PATCH_BIOMES` uniek en allemaal gekopieerd
   ring/RingColumnCacheTest.java ✅ cache = layout (ook na verdringen), Nether/overworld niet verward, nieuwe layout wist
   worldgen/densityfunction/RingBlendTest.java ✅ ring kiezen, smoothstep-menging, bereik, ontbrekende ring
   registry/ModBlocksTest.java  ✅ elk blok heeft een blockitem met dezelfde naam; de creative tab toont alle items in registratievolgorde
@@ -134,7 +143,9 @@ src/test/java/nl/timtoys/corruptedadventure/
 
 src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, NIET lezen om te begrijpen
   data/corruptedadventure/worldgen/biome/  11 uit `PlaceholderBiomes` + 52 kopieën uit `VanillaBiomeCopies` + `withered_expanse` (`TransitionBiomes`)
-  data/corruptedadventure/worldgen/{configured,placed}_feature/  eigen features (`WitheredExpanseFeatures`)
+  data/corruptedadventure/worldgen/{configured,placed}_feature/  eigen features (`WitheredExpanseFeatures`, `Ring1HorrorFeatures`)
+  data/corruptedadventure/neoforge/biome_modifier/  `add_bare_patch`, `add_unnatural_tunnel` (`Ring1BiomeModifiers`)
+  data/corruptedadventure/tags/worldgen/biome/has_feature/  eigen biome-tags voor de biome modifiers (`ModBiomeTagsProvider`)
   data/minecraft/tags/worldgen/biome/**    gespiegelde vanilla-tags met de kopieën (`ModBiomeTagsProvider`)
   data/neoforge/data_maps/worldgen/biome/villager_types.json  villager-types van de kopieën
   data/minecraft/wolf_variant/             6 overschreven vanilla-wolf-varianten (vanilla-biome + kopie)
@@ -164,13 +175,18 @@ docs/
 | `Ring` | `…ring` | enum van de ringen + `VOID`; `byIndex(0..5)`, `number()` (1..6); `CODEC` op de namen `ring_1`…`void` | alles wat ringen kent |
 | `RingPosition` | `…ring` | resultaat van `ringAt`: binnen-/buitenring van de dichtstbijzijnde grens en `blend` (lineair; smoothstep is aan de gebruiker) | worldgen, condities, commando's |
 | `RingColumnCache` | `…ring` | ThreadLocal, direct-mapped op de lage 5 bits van x/z (32×32 kolommen), sleutel in overworld-coördinaten; wist zichzelf bij een andere `RingLayout` (nieuwe wereld). Static `ringAt`/`voidEdgeProgress` via `RingLayout.current()` | `ring_blend`, `void_edge`, `RingFluidPicker` |
-| `RingLayout` | `…ring` | **de enige ringfunctie**. Static `ringAt(dimension, x, z)` via `current()` (gezet bij `ServerAboutToStartEvent` met prioriteit LOW, ná de snapshot; wereldseed uit `WorldOptions`). Instantie-API `sample`/`sampleOverworld` voor tests en worldgen; `effectiveDistance` (afstand + grensruis, read-only), `voidEdgeProgress` (0 op de verruisde grens van ring 5, 1 op `voidOuterRadius` zonder ruis, geklemd) en static `scale(dimension)`. Ruis: simplex, golven 1/600 + rimpels 1/150, geklemd op ±`boundaryNoise`, gesampled in overworld-coördinaten | commando's, `RingBiomeSource`, `RingColumnCache`, straks condities |
+| `RingLayout` | `…ring` | **de enige ringfunctie**. Static `ringAt(dimension, x, z)` via `current()` (gezet bij `ServerAboutToStartEvent` met prioriteit LOW, ná de snapshot; wereldseed uit `WorldOptions`). Instantie-API `sample`/`sampleOverworld` voor tests en worldgen; `effectiveDistance` (afstand + grensruis, read-only), `voidEdgeProgress` (0 op de verruisde grens van ring 5, 1 op `voidOuterRadius` zonder ruis, geklemd), `ringProgress(ring, x, z)` (0 op de binnengrens — ring 1: 0,0 — tot 1 op de verruisde buitengrens, beide grenzen verschoven met de ruis op die plek; leeg buiten de ring, zelfde wissel als `ring()`; `VOID` gooit) en static `scale(dimension)`. Ruis: simplex, golven 1/600 + rimpels 1/150, geklemd op ±`boundaryNoise`, gesampled in overworld-coördinaten | commando's, `RingBiomeSource`, `RingColumnCache`, straks condities |
 | `CaCommand` | `…command` | `/ca`-root (permissieniveau 2); nieuwe debug-subcommando's (bijv. `/ca weather`, change 20) hier aanhaken | — |
 | `RingTeleportCommand` | `…command` | teleport langs je huidige richting vanaf 0,0 (op 0,0: oost) naar ringmidden of verruisde grens; zonder `nether` altijd naar de overworld. Geen veilige plek → Y 100 / 64 + waarschuwing | `CaCommand` |
 | `RingTargets` | `…command` | pure functies in overworld-blokken; `boundaryRadius` bisecteert `effectiveDistance` binnen ±`boundaryNoise`; `nearestBoundary` meet radiaal tot de echte grens in dezelfde richting | commando's, `RingTargetsTest` |
 | `RingBiomeSource` | `…worldgen.biome` | biome-source `corruptedadventure:ring`. Codec: `dimension` (level-key; de source kent zijn dimensie anders niet) + `rings` (per `Ring` een geneste BiomeSource, alle 6 verplicht; overworld ring 1 = `vanilla_climate`). `getNoiseBiome` → `RingLayout.current().sample(dimension, …).ring()` (harde wissel op gewicht 0,5) → geneste source met dezelfde sampler. `possibleBiomes` = unie van ringen en overgangen, zonder layout. Optioneel `transitions` (sleutel = binnenring van de grens, `void` ongeldig): in een overgangszone met overgangsbiome wint die source in de **hele** zone (ook boven water); andere grenzen hard op 0,5 | preset `corrupted_world` |
 | `TransitionBiomes` | `…worldgen.biome` | datagen-bootstrap van de overgangsbiomes. Vanilla-helpers in vanilla-volgorde (eigen kopie van het private `globalOverworldGeneration`), eigen features achteraan per stap (anders "Feature order cycle") | `DataGenerators` |
-| `RingChanceFilter` | `…worldgen.feature` | placement modifier `corruptedadventure:ring_chance`: `signal` (enum, nu `transition`), `ring`, `from_chance`, `to_chance`, `start` (0), `exponent` (1). Kans = 0 zonder signaal of onder `start`, anders `from + (to − from) · ((t − start)/(1 − start))^exponent`; trekking met vanilla's geseede decoration-random. `transition`: `t` = blend als de positie in de zone van grens `ring` → `ring + 1` ligt. `RingLayout.current()` alleen in `shouldPlace`; dimensie via `context.getLevel().getLevel()`. Change 12 voegt signaal `progress` toe (één `case` in `signal`) | placed features van `withered_expanse` |
+| `RingChanceFilter` | `…worldgen.feature` | placement modifier `corruptedadventure:ring_chance`: `signal` (enum `transition`, `progress`), `ring`, `from_chance`, `to_chance`, `start` (0), `exponent` (1). Kans = 0 zonder signaal of onder `start`, anders `from + (to − from) · ((t − start)/(1 − start))^exponent`; trekking met vanilla's geseede decoration-random. `transition`: `t` = blend als de positie in de zone van grens `ring` → `ring + 1` ligt. `progress`: `t` = `RingLayout.ringProgress(ring, x·s, z·s)` (`s` = `scale(dim)`), geen signaal buiten `ring`; `void` ongeldig. `RingLayout.current()` alleen in `shouldPlace`; dimensie via `context.getLevel().getLevel()`. Nieuw signaal = enumwaarde + één `case` | placed features van `withered_expanse`, `bare_patch` |
+| `BarePatchFeature` | `…worldgen.feature` | `corruptedadventure:bare_patch`. Rafelige rand: 8 punten rond de cirkel met elk een eigen inkeping (`edge_jitter`), lineair ertussen. Per kolom vanaf `WORLD_SURFACE` max. 32 blokken omlaag: bladeren → lucht (of water als ze waterlogged waren; tot 3 blokken buiten de rand met afnemende kans; een sneeuwlaag erop verdwijnt mee), binnen de plek `#logs` → `dead_log` (as behouden) en kleine planten weg zodra er `replaceable` grond is; stopt bij vloeistof of andere grond. Bovenste blok → `surface` (onder een stam `subsurface`), `snowy` volgt de sneeuwlaag; daaronder `subsurface_depth` × `#dirt` → `subsurface`. Daarna `tree_count` bomen op nieuwe `surface`-blokken binnen 0,7 × straal met 2 lucht erboven, dan dode struiken (`dead_bush_chance`). Max. straal 9 (codec) | `Ring1HorrorFeatures` |
+| `UnnaturalTunnelFeature` | `…worldgen.feature` | `corruptedadventure:unnatural_tunnel`. `TunnelPath.random` → mond = eerste kandidaat (langs de richting, door de herkomst, op herkomsthoogte) met 2 lege blokken ervoor en 2 `replaceable` blokken erin → valideren (geen vloeistof in/naast een cel incl. vloer en dak, geen `FallingBlock` in het dak, geen rots in een cel zonder dak — anders geul of prop —, geen `#features_cannot_replace`, ≥ `min_solid_fraction` rots) → alle rotsblokken van de cellen → `cave_air`. Alles-of-niets | `Ring1HorrorFeatures` |
+| `TunnelPath` | `…worldgen.feature` | record (richting, optionele bocht, lengtes); `cells(mouth)` en `mouthCandidates(origin)`: alleen monden waarbij het blok ervoor en alle cellen (+ 1 blok buren) binnen de 3×3 chunks rond de herkomstchunk blijven. Max. lengtes 32 / 15 (codec) | `UnnaturalTunnelFeature`, `TunnelPathTest` |
+| `Ring1HorrorFeatures` | `…worldgen.feature` | bootstraps `configured`/`placed`. `bare_patch`: straal 4–9, `edge_jitter` 0,35, `dead_grass_block`/`withered_dirt` (1–2 diep), grond grass/dirt/coarse dirt/podzol/rooted dirt, bomen `withered_trees` (1–3), struiken 0,05; placed `in_square` → `ring_chance` (`progress`, ring 1, 0 → 0,12, start 0,33, exponent 2) → heightmap `MOTION_BLOCKING_NO_LEAVES` → `biome`. `unnatural_tunnel`: 12–28 + 50 % bocht 6–14, `#overworld_carver_replaceables`, rots ≥ 0,7; placed `rarity_filter` 12 → `in_square` → Y −48…160 → `biome` | `DataGenerators` |
+| `Ring1BiomeModifiers` | `…worldgen.biome` | NeoForge `add_features`: `add_bare_patch` (`#has_feature/bare_patch`, `VEGETAL_DECORATION`), `add_unnatural_tunnel` (`#has_feature/unnatural_tunnel`, `TOP_LAYER_MODIFICATION`); elk achteraan zijn stap. Features in de kopieën altijd via modifiers, niet in `VanillaBiomeCopies` | `DataGenerators` |
 | `WitheredExpanseFeatures` | `…worldgen.feature` | bootstraps `configured`/`placed`. `dead_tree`/`dead_tree_forked` = `minecraft:tree` met `dead_log` en lucht als blad (`BlobFoliagePlacer` 0), ondergrond `withered_dirt` (alleen als de grond geen `#dirt` is); het placed feature filtert zelf op `#dirt` eronder (geen sapling) | `DataGenerators` |
 | `VanillaBiomeCopies` | `…worldgen.biome` | `OVERWORLD_COPIES` = vanilla's `Preset.OVERWORLD.usedBiomes()` zonder mushroom fields (52); `copyOf` = `corruptedadventure:<zelfde pad>`. `bootstrap` draait vanilla's `BiomeData.bootstrap` met een doorgeefcontext die alleen die keys registreert, onder `copyOf`. `bootstrapWolfVariants` draait vanilla's `WolfVariants.bootstrap` en overschrijft alleen de varianten met een biome-lijst (pale, snowy, black, ashen, woods, chestnut): vanilla-biome + kopie; tag-varianten blijven vanilla | `DataGenerators`, `VanillaClimateBiomeSource`, tags, data map, lang |
 | `VanillaClimateBiomeSource` | `…worldgen.biome` | biome-source `corruptedadventure:vanilla_climate`. Codec: `preset` (vanilla `minecraft:overworld`/`minecraft:nether`) + optioneel `replace` (vanilla-key → eigen key, voor biomes zonder kopie) + biome-getter uit de `RegistryOps`. Bouwt bij het decoden eenmalig de `Climate.ParameterList` (R-tree) met `replace` of `copyOf`; ontbrekende biome of onbekende `replace`-key → `DataResult.error`. Slaat alleen `preset` + `replace` op | preset `corrupted_world` (ring 1) |
@@ -184,8 +200,8 @@ docs/
 | `RingWorldBorder` | `…worldgen.border` | `ServerStartingEvent` (ná `loadLevel()`, dat de opgeslagen border pas aan het eind toepast): per dimensie met `coordinate_scale` ≠ 1 een `ScaledBorderListener` op de overworld-border (ná vanilla's delegate); daarna overworld → midden 0,0, diameter 2 × `voidOuterRadius` als hij nog op de vanilla-standaard staat (grootte 59999968, midden 0,0, geen lerp). Bekende beperking: een admin die bewust terugzet naar 59999968 op 0,0 krijgt na een herstart weer 10.000 (geaccepteerd; geen SavedData-vlag). Na login/dimensiewissel/respawn een `ClientboundInitializeBorderPacket` naar spelers in een geschaalde dimensie. Preset-check: overworld-generator is `RingChunkGenerator` | `CorruptedAdventure` |
 | `ScaledBorderListener` | `…worldgen.border` | past alleen de grootte aan (set/lerp); midden, waarschuwing en schade komen van vanilla's delegate; broadcast via callback naar spelers in die dimensie | `RingWorldBorder` |
 | `ModBiomes` / `ModBiomeSources` | `…registry` | biome-keys / DeferredRegister voor `Registries.BIOME_SOURCE` | worldgen, datagen |
-| `DataGenerators` | `…datagen` | mod-bus-listener voor `GatherDataEvent`; nieuwe providers en datapack-registries hier aanhaken (configured/placed features vóór de biomes). Alle biome-bootstraps in één lambda (een registry mag maar één keer in de `RegistrySetBuilder`). Mod-ids `corruptedadventure` + `minecraft` (de wolf-varianten overschrijven vanilla-entries) | `CorruptedAdventure` |
-| `ModBiomeTagsProvider` | `…datagen` | draait vanilla's `BiomeTagsProvider.addTags` en houdt per tag in `MIRRORED_TAGS` alleen de directe entries van gekopieerde biomes over (als `copyOf`); `#tag`-entries lossen vanzelf op. Tags zonder kopieën → geen bestand | `DataGenerators` |
+| `DataGenerators` | `…datagen` | mod-bus-listener voor `GatherDataEvent`; nieuwe providers en datapack-registries hier aanhaken (configured/placed features vóór de biomes, biome modifiers erna). Alle bootstraps van één registry in één lambda (een registry mag maar één keer in de `RegistrySetBuilder`). Mod-ids `corruptedadventure` + `minecraft` (de wolf-varianten overschrijven vanilla-entries) | `CorruptedAdventure` |
+| `ModBiomeTagsProvider` | `…datagen` | draait vanilla's `BiomeTagsProvider.addTags` en houdt per tag in `MIRRORED_TAGS` alleen de directe entries van gekopieerde biomes over (als `copyOf`); `#tag`-entries lossen vanzelf op. Tags zonder kopieën → geen bestand. Daarna eigen tags: `has_feature/bare_patch` (`BARE_PATCH_BIOMES`: 21 begroeide land-kopieën), `has_feature/unnatural_tunnel` (alle 52 kopieën, gesorteerd) | `DataGenerators` |
 | `ModDataMapProvider` | `…datagen` | `NeoForgeDataMaps.VILLAGER_TYPES` voor de kopieën, gelijk aan vanilla's `VillagerType.BY_BIOME` (29 entries) | `DataGenerators` |
 
 ---
@@ -234,7 +250,11 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `corruptedadventure:main` | creative tab | `ModCreativeTabs`; titel `itemGroup.corruptedadventure.main` |
 | `corruptedadventure:dead` | `BlockSetType` (+ niet-geregistreerde `WoodType`) | `ModWoodTypes` |
 | `corruptedadventure:dead_logs` | blok- en item-tag | `ModTags`; zit in `minecraft:logs_that_burn` |
-| `corruptedadventure:ring_chance` | placement modifier type (`RingChanceFilter`) | `ModPlacementModifierTypes`; change 12 breidt uit met signaal `progress` (geen eigen type) |
+| `corruptedadventure:ring_chance` | placement modifier type (`RingChanceFilter`) | `ModPlacementModifierTypes`; signalen `transition`, `progress` |
+| `corruptedadventure:bare_patch`, `unnatural_tunnel` | feature types (`BarePatchFeature`, `UnnaturalTunnelFeature`) | `ModFeatures` |
+| `bare_patch`, `unnatural_tunnel` | configured + placed features (datagen) | `ModConfiguredFeatures`, `ModPlacedFeatures`, `Ring1HorrorFeatures`; testen met `/place feature corruptedadventure:…` (slaat de placement modifiers over) |
+| `corruptedadventure:add_bare_patch`, `add_unnatural_tunnel` | biome modifiers (`neoforge:add_features`, datagen) | `Ring1BiomeModifiers` |
+| `corruptedadventure:has_feature/bare_patch`, `has_feature/unnatural_tunnel` | biome-tags (datagen) | `ModTags.Biomes`, `ModBiomeTagsProvider`; niet in de Nether of `withered_expanse` |
 | `dead_tree`, `dead_tree_forked`, `withered_trees`, `withered_vegetation`, `withered_sandstone_rock`, `withered_sand_patch` | configured features (datagen) | `ModConfiguredFeatures`, `WitheredExpanseFeatures`; `dead_tree` herbruikbaar (change 12) |
 | `withered_expanse_trees`, `…_vegetation` (`VEGETAL_DECORATION`), `…_rocks`, `…_sand_patches` (`LOCAL_MODIFICATIONS`) | placed features (datagen) | `ModPlacedFeatures`, `WitheredExpanseFeatures`; alleen in `withered_expanse` |
 | `corruptedadventure:ring_noise` | chunk generator (`RingChunkGenerator`) | `ModChunkGenerators`; gebruikt in `corrupted_world.json` (overworld + Nether) |
@@ -269,7 +289,7 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `data/corruptedadventure/worldgen/noise/placeholder_terrain.json`, `void_islands.json` | noise-parameters voor placeholder-terrein en void-eilanden |
 | `META-INF/accesstransformer.cfg` | wordt automatisch opgepikt door ModDevGradle en FML (geen extra config nodig) |
 
-Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change11` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
+Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change12c` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
 
 ---
 
@@ -324,4 +344,11 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 - **Random ticks testen:** in 1.21.1 krijgen chunks alleen random ticks als er een speler binnen ~128 blokken is; geforceloade chunks via RCON zonder speler ticken niet (ook vanilla-gras niet). Gedrag van dood gras dus in-game testen, niet via RCON. Tags en loot wel via RCON: `execute if block … #tag`, `loot insert <kist> mine <pos> <tool>`, `execute if items block … container.N #tag`.
 - **Features tellen via RCON** met `fill … replace <blok>` verandert de wereld: vervang je de **grond** (bijv. dood gras → glas), dan vallen de planten erop meteen weg (blockupdate). Tel begroeiing (`short_grass`, `dead_bush`) dus eerst, of in verse chunks. Na `forceload add` staan de features er wel (decoratie heeft geen speler nodig, random ticks wel).
 - **Boom zonder blad:** `minecraft:tree` met lucht als `foliage_provider` en `BlobFoliagePlacer(0, 0, 0)`. Vanilla's `TreeFeature` kijkt niet naar de grond; het placed feature moet zelf op `#dirt` eronder filteren (er is geen sapling voor `would_survive`).
+- **Features schrijven alleen in de 3×3 chunks** rond de chunk van hun herkomst (vanilla `WorldGenRegion`, `blockStateWriteRadius` 1); daarbuiten wordt `setBlock` genegeerd met "Detected setBlock in a far chunk" in de log, en lezen daarbuiten gooit. Reken met de chunkgrenzen van de herkomst (zoals `TunnelPath.fits`), niet met ±16 rond de herkomst, en houd 1 blok marge als je buren leest.
+- **Kale plekken en latere buurchunks:** `bare_patch` reikt tot ~12 blokken in de buurchunks. Een buur die zijn `VEGETAL_DECORATION` pas later draait, zet er alsnog vanilla-bomen, bloemen en gras op (dood gras zit in `#dirt`); een buur die al eerder decoreerde verdort wel. Bekende, geaccepteerde beperking (review change 12; opties in de backlog). Schrijven alleen in "al gedecoreerde" buren is geen oplossing: dat hangt af van de generatievolgorde en is dus niet deterministisch per seed.
+- De `biome`-placement-filter kijkt naar de **3D-biome op de hoogte van de herkomst**: ondergrondse features (tunnels) moeten ook in de cave biomes (lush/dripstone caves, deep dark) staan, anders vallen ze daar weg.
+- `/place feature` plaatst het **configured** feature en slaat alle placement modifiers (`ring_chance`, `biome`, `rarity`) over: test daarmee de vorm, niet de verdeling.
+- **Biome modifiers** (NeoForge `add_features`) voegen features achteraan een stap toe; zolang elke feature in alle biomes op dezelfde plek staat, geen "Feature order cycle". Features voor de ring 1-kopieën gaan via modifiers (`Ring1BiomeModifiers`), niet in `VanillaBiomeCopies`.
+- **Blokken tellen via RCON met `fill … replace`:** `fill` roept `updateFromNeighbourShapes` aan, dus "dood gras → dood gras[snowy=true]" telt 0 (de state wordt teruggezet). Tel met een ander doelblok (glas) of een echt andere blok-state (`dead_log` → `stripped_dead_log`). `forceload add` weigert gebieden van meer dan 256 chunks; `fill` max. 32.768 blokken (16×16×128).
+- **`effectiveDistance` is langs een straal niet strikt monotoon:** de grensruis kan lokaal steiler zijn dan 1 blok per blok. Tests op "loopt op richting de rand" (`ringProgress`, `ring_chance`) hebben een kleine tolerantie nodig.
 - **Konijnen** spawnen alleen op `#minecraft:rabbits_spawnable_on` (gras, sneeuw, zand), los van `#animals_spawnable_on`: in `withered_expanse` dus alleen op de zandvlekken, niet op dood gras.

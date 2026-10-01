@@ -1,0 +1,25 @@
+{
+  "values": [
+    "corruptedadventure:plains",
+    "corruptedadventure:sunflower_plains",
+    "corruptedadventure:meadow",
+    "corruptedadventure:forest",
+    "corruptedadventure:flower_forest",
+    "corruptedadventure:birch_forest",
+    "corruptedadventure:old_growth_birch_forest",
+    "corruptedadventure:dark_forest",
+    "corruptedadventure:taiga",
+    "corruptedadventure:old_growth_pine_taiga",
+    "corruptedadventure:old_growth_spruce_taiga",
+    "corruptedadventure:savanna",
+    "corruptedadventure:savanna_plateau",
+    "corruptedadventure:windswept_savanna",
+    "corruptedadventure:windswept_hills",
+    "corruptedadventure:windswept_forest",
+    "corruptedadventure:jungle",
+    "corruptedadventure:sparse_jungle",
+    "corruptedadventure:bamboo_jungle",
+    "corruptedadventure:swamp",
+    "corruptedadventure:cherry_grove"
+  ]
+}

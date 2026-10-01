@@ -16,6 +16,9 @@ public final class ModConfiguredFeatures {
     public static final ResourceKey<ConfiguredFeature<?, ?>> WITHERED_VEGETATION = key("withered_vegetation");
     public static final ResourceKey<ConfiguredFeature<?, ?>> WITHERED_SANDSTONE_ROCK = key("withered_sandstone_rock");
     public static final ResourceKey<ConfiguredFeature<?, ?>> WITHERED_SAND_PATCH = key("withered_sand_patch");
+    // Ring 1 horror features.
+    public static final ResourceKey<ConfiguredFeature<?, ?>> BARE_PATCH = key("bare_patch");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> UNNATURAL_TUNNEL = key("unnatural_tunnel");
 
     private ModConfiguredFeatures() {
     }

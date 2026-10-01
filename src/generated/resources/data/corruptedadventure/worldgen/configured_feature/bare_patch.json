@@ -1,0 +1,46 @@
+{
+  "type": "corruptedadventure:bare_patch",
+  "config": {
+    "dead_bush_chance": 0.05,
+    "dead_log": "corruptedadventure:dead_log",
+    "edge_jitter": 0.35,
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 9,
+      "min_inclusive": 4
+    },
+    "replaceable": [
+      "minecraft:grass_block",
+      "minecraft:dirt",
+      "minecraft:coarse_dirt",
+      "minecraft:podzol",
+      "minecraft:rooted_dirt"
+    ],
+    "subsurface": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:withered_dirt"
+      }
+    },
+    "subsurface_depth": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "surface": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:dead_grass_block",
+        "Properties": {
+          "snowy": "false"
+        }
+      }
+    },
+    "tree_count": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "trees": "corruptedadventure:withered_trees"
+  }
+}

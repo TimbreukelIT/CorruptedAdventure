@@ -10,10 +10,13 @@ import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.registry.ModTags;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +29,8 @@ import java.util.concurrent.CompletableFuture;
  * <p>
  * Never mirrored: {@code is_overworld} (vanilla's {@code has_structure/stronghold} is {@code #is_overworld}),
  * {@code has_structure/stronghold}, {@code stronghold_biased_to} and {@code has_structure/ancient_city}.
+ * <p>
+ * Also our own {@code has_feature/*} tags, which the biome modifiers of {@code Ring1BiomeModifiers} use.
  */
 final class ModBiomeTagsProvider extends BiomeTagsProvider {
     static final List<TagKey<Biome>> MIRRORED_TAGS = List.of(
@@ -53,6 +58,17 @@ final class ModBiomeTagsProvider extends BiomeTagsProvider {
             BiomeTags.HAS_RUINED_PORTAL_MOUNTAIN, BiomeTags.HAS_RUINED_PORTAL_OCEAN, BiomeTags.HAS_RUINED_PORTAL_SWAMP,
             BiomeTags.HAS_BURIED_TREASURE, BiomeTags.HAS_TRIAL_CHAMBERS);
 
+    /**
+     * Vanilla biomes whose ring 1 copies get bare patches: vegetated land. Not oceans, rivers, beaches, deserts,
+     * badlands, snow and ice, peaks, mangroves or caves.
+     */
+    static final List<ResourceKey<Biome>> BARE_PATCH_BIOMES = List.of(
+            Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS, Biomes.MEADOW, Biomes.FOREST, Biomes.FLOWER_FOREST, Biomes.BIRCH_FOREST,
+            Biomes.OLD_GROWTH_BIRCH_FOREST, Biomes.DARK_FOREST, Biomes.TAIGA, Biomes.OLD_GROWTH_PINE_TAIGA,
+            Biomes.OLD_GROWTH_SPRUCE_TAIGA, Biomes.SAVANNA, Biomes.SAVANNA_PLATEAU, Biomes.WINDSWEPT_SAVANNA,
+            Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.JUNGLE, Biomes.SPARSE_JUNGLE, Biomes.BAMBOO_JUNGLE,
+            Biomes.SWAMP, Biomes.CHERRY_GROVE);
+
     ModBiomeTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup, ExistingFileHelper existingFileHelper) {
         super(output, lookup, CorruptedAdventure.MOD_ID, existingFileHelper);
     }
@@ -78,5 +94,12 @@ final class ModBiomeTagsProvider extends BiomeTagsProvider {
                 tag(tag).addAll(copies);
             }
         }
+
+        tag(ModTags.Biomes.HAS_BARE_PATCH).addAll(BARE_PATCH_BIOMES.stream().map(VanillaBiomeCopies::copyOf).toList());
+        // Every copy, cave biomes included: the biome filter checks the biome at the tunnel's own height.
+        tag(ModTags.Biomes.HAS_UNNATURAL_TUNNEL).addAll(VanillaBiomeCopies.OVERWORLD_COPIES.stream()
+                .sorted(Comparator.comparing(ResourceKey::location))
+                .map(VanillaBiomeCopies::copyOf)
+                .toList());
     }
 }

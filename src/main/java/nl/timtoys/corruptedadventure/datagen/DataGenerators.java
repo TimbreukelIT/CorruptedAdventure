@@ -5,10 +5,13 @@ import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.biome.PlaceholderBiomes;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring1BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.TransitionBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring1HorrorFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.WitheredExpanseFeatures;
 
 import java.util.Set;
@@ -25,16 +28,23 @@ public final class DataGenerators {
     }
 
     private static void gatherData(GatherDataEvent event) {
-        // A registry may be added only once, so all biome bootstraps share one lambda.
+        // A registry may be added only once, so all bootstraps of one registry share one lambda.
         event.createDatapackRegistryObjects(new RegistrySetBuilder()
-                .add(Registries.CONFIGURED_FEATURE, WitheredExpanseFeatures::configured)
-                .add(Registries.PLACED_FEATURE, WitheredExpanseFeatures::placed)
+                .add(Registries.CONFIGURED_FEATURE, context -> {
+                    WitheredExpanseFeatures.configured(context);
+                    Ring1HorrorFeatures.configured(context);
+                })
+                .add(Registries.PLACED_FEATURE, context -> {
+                    WitheredExpanseFeatures.placed(context);
+                    Ring1HorrorFeatures.placed(context);
+                })
                 .add(Registries.BIOME, context -> {
                     PlaceholderBiomes.bootstrap(context);
                     VanillaBiomeCopies.bootstrap(context);
                     TransitionBiomes.bootstrap(context);
                 })
-                .add(Registries.WOLF_VARIANT, VanillaBiomeCopies::bootstrapWolfVariants),
+                .add(Registries.WOLF_VARIANT, VanillaBiomeCopies::bootstrapWolfVariants)
+                .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, Ring1BiomeModifiers::bootstrap),
                 // "minecraft": the wolf variants override vanilla's entries.
                 Set.of(CorruptedAdventure.MOD_ID, "minecraft"));
         // Created after the datapack registries, so their lookup contains our biomes.
