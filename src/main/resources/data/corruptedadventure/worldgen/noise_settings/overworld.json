@@ -24,8 +24,8 @@
       "xz_scale": 1.0,
       "y_scale": 0.5
     },
-    "continents": "minecraft:overworld/continents",
-    "depth": "minecraft:overworld/depth",
+    "continents": "corruptedadventure:ring_1/overworld/continents",
+    "depth": "corruptedadventure:ring_1/overworld/depth",
     "erosion": "minecraft:overworld/erosion",
     "final_density": "corruptedadventure:ring_blend/overworld",
     "fluid_level_floodedness": {
@@ -40,11 +40,7 @@
       "xz_scale": 1.0,
       "y_scale": 0.7142857142857143
     },
-    "initial_density_without_jaggedness": {
-      "type": "minecraft:add",
-      "argument1": 0.390625,
-      "argument2": "corruptedadventure:ring_blend/overworld"
-    },
+    "initial_density_without_jaggedness": "corruptedadventure:ring_blend/overworld_initial",
     "lava": {
       "type": "minecraft:noise",
       "noise": "minecraft:aquifer_lava",
@@ -143,50 +139,26 @@
   "spawn_target": [
     {
       "continentalness": [
-        -0.11,
-        1.0
+        -2.0,
+        2.0
       ],
       "depth": 0.0,
       "erosion": [
-        -1.0,
-        1.0
+        -2.0,
+        2.0
       ],
       "humidity": [
-        -1.0,
-        1.0
+        -2.0,
+        2.0
       ],
       "offset": 0.0,
       "temperature": [
-        -1.0,
-        1.0
+        -2.0,
+        2.0
       ],
       "weirdness": [
-        -1.0,
-        -0.16
-      ]
-    },
-    {
-      "continentalness": [
-        -0.11,
-        1.0
-      ],
-      "depth": 0.0,
-      "erosion": [
-        -1.0,
-        1.0
-      ],
-      "humidity": [
-        -1.0,
-        1.0
-      ],
-      "offset": 0.0,
-      "temperature": [
-        -1.0,
-        1.0
-      ],
-      "weirdness": [
-        0.16,
-        1.0
+        -2.0,
+        2.0
       ]
     }
   ],

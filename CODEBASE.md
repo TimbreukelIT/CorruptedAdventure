@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-10-01 — change 8 (ring 1: kopieën van de vanilla overworld-biomes, biome-source `vanilla_climate`, tags en villager-types)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–8 klaar, volgende: change 9)
+**Laatst bijgewerkt:** 2026-10-01 — change 9 (ring 1-terrein: vanilla-terreinketen als ring 1-invoer, land rond spawn via `radial_falloff`, spawn rond 0,0)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–9 klaar, volgende: change 10)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — changes 0–8 klaar |
+| 1 — Wereld | In bouw — changes 0–9 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -46,7 +46,7 @@ src/main/java/nl/timtoys/corruptedadventure/
   registry/                    ✅ DeferredRegisters en ResourceKeys; 🔲 ModBlocks, ModItems, ModCreativeTabs, …
     ModBiomeSources.java       ✅ biome-source-types `corruptedadventure:ring`, `vanilla_climate`
     ModBiomes.java             ✅ ResourceKeys van alle eigen biomes (de biomes zelf komen uit datagen)
-    ModDensityFunctionTypes.java ✅ density-function-types `ring_blend`, `void_edge`
+    ModDensityFunctionTypes.java ✅ density-function-types `ring_blend`, `void_edge`, `radial_falloff`
     ModChunkGenerators.java    ✅ chunk-generator-type `ring_noise`
   worldgen/
     biome/                     ✅ biome-source en biome-bootstraps
@@ -57,6 +57,7 @@ src/main/java/nl/timtoys/corruptedadventure/
     densityfunction/           ✅ eigen density functions (alleen als JSON niet volstaat)
       RingBlend.java           ✅ `ring_blend`: terrein per ring, smoothstep in de overgangszone
       VoidEdge.java            ✅ `void_edge`: 0 op de grens van ring 5 → 1 op de border (voor de void-JSON)
+      RadialFalloff.java       ✅ `radial_falloff`: 1 binnen `inner_radius` van 0,0 → 0 vanaf `outer_radius` (smoothstep)
     chunk/                     ✅ chunk-generator
       RingChunkGenerator.java  ✅ `ring_noise`: vanilla `noise` + geen vloeistof in de void-zone
       RingFluidPicker.java     ✅ globale zee: geen vloeistof vanaf de zone ring 5 → void, anders vanilla
@@ -86,7 +87,7 @@ src/main/resources/                (lang staat niet hier maar in datagen: `datag
   data/corruptedadventure/
     worldgen/world_preset/        ✅ corrupted_world.json
     worldgen/noise_settings/      ✅ overworld.json, nether.json (kopie vanilla, terrein via `ring_blend`)
-    worldgen/density_function/    ✅ `ring_blend/<dim>`, `ring_1…5/<dim>`, `void/<dim>` (dim = overworld, nether)
+    worldgen/density_function/    ✅ `ring_blend/<dim>` (+ `overworld_initial`), `ring_1…5/<dim>`, `ring_1/overworld/*` (vanilla-keten), `void/<dim>` (dim = overworld, nether)
     worldgen/noise/               ✅ placeholder_terrain, void_islands (noise-parameters)
     dimension_type/               ✅ corrupted_nether.json (coordinate_scale 4)
   data/minecraft/tags/worldgen/world_preset/normal.json  ✅ zet de preset in het menu "World Type" (replace: false)
@@ -104,6 +105,7 @@ src/test/java/nl/timtoys/corruptedadventure/
   datagen/ModBiomeTagsProviderTest.java ✅ `is_overworld`, stronghold-tags en `has_structure/ancient_city` worden nooit gespiegeld
   ring/RingColumnCacheTest.java ✅ cache = layout (ook na verdringen), Nether/overworld niet verward, nieuwe layout wist
   worldgen/densityfunction/RingBlendTest.java ✅ ring kiezen, smoothstep-menging, bereik, ontbrekende ring
+  worldgen/densityfunction/RadialFalloffTest.java ✅ 1 binnen / 0 buiten, 0,5 halverwege, monotoon, horizontale afstand, codec (inner < outer, niet negatief)
   worldgen/chunk/RingFluidPickerTest.java ✅ zee in de ringen, geen vloeistof vanaf de zone ring 5 → void
   worldgen/chunk/RingAquiferTest.java ✅ geen lokale lava in de void-zone, vast blijft vast, ringen houden vanilla-vloeistof
   worldgen/border/RingWorldBorderTest.java ✅ startgrootte, vanilla-standaard (grootte én midden), Nether ÷4 (ook lerp), client-view houdt het ongeschaalde midden
@@ -146,6 +148,7 @@ docs/
 | `PlaceholderBiomes` | `…worldgen.biome` | bootstrap voor `Registries.BIOME` (datagen): alleen kleuren + neerslag/temperatuur; geen features, geen mob-spawns, geen tags | `DataGenerators` |
 | `RingBlend` | `…worldgen.densityfunction` | `corruptedadventure:ring_blend`. Codec: `dimension` + `rings` (per `Ring` een density function, alle 6 verplicht). Rekent alleen de 1–2 nodige inputs; `mapAll` geeft de visitor door aan alle inputs | `ring_blend/*.json` |
 | `VoidEdge` | `…worldgen.densityfunction` | `corruptedadventure:void_edge` (`dimension`); 2D, 0–1 | `void/*.json` |
+| `RadialFalloff` | `…worldgen.densityfunction` | `corruptedadventure:radial_falloff` (`inner_radius`, `outer_radius`, blokken in de eigen dimensie; 0 ≤ inner < outer); 2D, 0–1, stateless, geen `RingLayout`. Waarden in JSON, niet in config (wijziging = naden in bestaande werelden) | `ring_1/overworld/continents.json` |
 | `RingChunkGenerator` | `…worldgen.chunk` | `corruptedadventure:ring_noise`: codec van vanilla `noise` + `dimension`; vervangt in de constructor de globale vloeistof-kiezer door `RingFluidPicker` en maakt in `createBiomes`/`fillFromNoise`/`buildSurface`/`applyCarvers` zelf de noise chunk (met `RingAquifer`), omdat vanilla's fabriek private is | preset `corrupted_world` |
 | `RingFluidPicker` | `…worldgen.chunk` | `noFluid(position)` = `outer == VOID` (één regel voor beide lagen); anders de vanilla-kiezer (zeeniveau / lava onder -54). Ook gebruikt door hoogtevragen (`getBaseHeight`, structure-plaatsing) | `RingChunkGenerator`, `RingAquifer` |
 | `RingAquifer` | `…worldgen.chunk` | wrapt vanilla's aquifer: open ruimte in de void-zone → lucht, geen fluid-update; anders vanilla | `RingChunkGenerator` |
@@ -189,6 +192,7 @@ docs/
 | `minecraft:pale`, `snowy`, `black`, `ashen`, `woods`, `chestnut` | wolf variant (datapack-override, datagen) | `VanillaBiomeCopies.bootstrapWolfVariants` |
 | `corruptedadventure:ring_blend` | density function type (`RingBlend`) | `ModDensityFunctionTypes`; `ring_blend/overworld.json`, `ring_blend/nether.json` |
 | `corruptedadventure:void_edge` | density function type (`VoidEdge`) | `ModDensityFunctionTypes`; `void/*.json` |
+| `corruptedadventure:radial_falloff` | density function type (`RadialFalloff`) | `ModDensityFunctionTypes`; `ring_1/overworld/continents.json` |
 | `corruptedadventure:ring_noise` | chunk generator (`RingChunkGenerator`) | `ModChunkGenerators`; gebruikt in `corrupted_world.json` (overworld + Nether) |
 
 ---
@@ -210,14 +214,17 @@ docs/
 | `data/corruptedadventure/worldgen/world_preset/corrupted_world.json` | preset `corruptedadventure:corrupted_world`: overworld (vanilla type) en `minecraft:the_nether` met type `corrupted_nether`, beide met generator `corruptedadventure:ring_noise` (+ `dimension`), noise settings `corruptedadventure:overworld` / `corruptedadventure:nether` en biome-source `corruptedadventure:ring` (ring 1 overworld: `vanilla_climate` met preset `minecraft:overworld` en `replace` mushroom fields → `corruptedadventure:plains`; verder per ring een `minecraft:fixed` met de placeholder / void-rand); The End vanilla |
 | `data/corruptedadventure/dimension_type/corrupted_nether.json` | kopie van vanilla `the_nether` met `coordinate_scale` 4 (portals ÷4) |
 | `data/minecraft/tags/worldgen/world_preset/normal.json` | preset zichtbaar in "World Type" (niet de standaard) |
-| `data/corruptedadventure/worldgen/noise_settings/overworld.json` / `nether.json` | kopie van vanilla (incl. surface rules, aquifers, ore veins); alleen `final_density` → `ring_blend/<dim>` en (overworld) `initial_density_without_jaggedness` → `0.390625 + ring_blend/overworld`. Overworld-surface rules: alle `biome_is`-keys → `corruptedadventure:<pad>` (ring 1-kopieën), mycelium-tak (mushroom fields) weg |
+| `data/corruptedadventure/worldgen/noise_settings/overworld.json` / `nether.json` | kopie van vanilla (incl. surface rules, aquifers, ore veins); `final_density` → `ring_blend/<dim>`. Overworld daarnaast: `continents` → `ring_1/overworld/continents` (geboost), `depth` → `ring_1/overworld/depth`, `initial_density_without_jaggedness` → `ring_blend/overworld_initial`, `spawn_target` = één punt met alle klimaatparameters `[-2, 2]` (spawn altijd rond 0,0). Overworld-surface rules: alle `biome_is`-keys → `corruptedadventure:<pad>` (ring 1-kopieën), mycelium-tak (mushroom fields) weg |
 | `data/corruptedadventure/worldgen/density_function/ring_blend/{overworld,nether}.json` | `ring_blend` met per ring een verwijzing naar `ring_N/<dim>` en `void/<dim>` |
-| `data/corruptedadventure/worldgen/density_function/ring_{1..5}/{overworld,nether}.json` | **placeholder-terrein** (tijdelijk): `y_clamped_gradient` + 2D-ruis; hoogtes in `fase-1-wereld.md` §1.15 |
+| `data/corruptedadventure/worldgen/density_function/ring_blend/overworld_initial.json` | `ring_blend` voor `initial_density_without_jaggedness`: ring 1 → `ring_1/overworld/initial_density`, ring 2–5 en void → `0.390625 + ring_N/overworld` |
+| `data/corruptedadventure/worldgen/density_function/ring_1/overworld.json` | ring 1 overworld = vanilla `final_density` (inline), `sloped_cheese` → `ring_1/overworld/sloped_cheese` |
+| `data/corruptedadventure/worldgen/density_function/ring_1/overworld/*.json` | kopie van de continentalness-afhankelijke vanilla-keten: `offset`, `factor`, `jaggedness`, `depth`, `sloped_cheese`, `initial_density` (vanilla's inline `initial_density_without_jaggedness`), onderling verwijzend naar `ring_1/overworld/…`; grotten, `erosion`, `ridges(_folded)` en noises blijven `minecraft:`. `continents` = `flat_cache(c + radial_falloff(300, 450) · max(0, 0,03 − c))` met `c` = vanilla-continentalness |
+| `data/corruptedadventure/worldgen/density_function/ring_{2..5}/overworld.json`, `ring_{1..5}/nether.json` | **placeholder-terrein** (tijdelijk): `y_clamped_gradient` + 2D-ruis; hoogtes in `fase-1-wereld.md` §1.15 |
 | `data/corruptedadventure/worldgen/density_function/void/{overworld,nether}.json` | zwevende eilanden in een hoogteband, uitdunnend met `void_edge`, leeg vanaf `void_edge` 0,8 |
 | `data/corruptedadventure/worldgen/noise/placeholder_terrain.json`, `void_islands.json` | noise-parameters voor placeholder-terrein en void-eilanden |
 | `META-INF/accesstransformer.cfg` | wordt automatisch opgepikt door ModDevGradle en FML (geen extra config nodig) |
 
-Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change08` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer).
+Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change09` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
 
 ---
 
@@ -244,7 +251,7 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 - Lang staat alleen in datagen (`src/generated`). Zet geen handgeschreven `en_us.json`/`nl_nl.json` in `src/main/resources`: dat botst met de datagen-output (twee bestanden op hetzelfde pad in de jar).
 - `RingBiomeSource.getNoiseBiome` vraagt `RingLayout.current()`: alleen aanroepen zolang er een server draait (worldgen doet dat altijd). Tests gebruiken de package-private variant met een eigen `RingLayout`.
 - `RingLayout.current()`/`ringAt` bestaan alleen server-side zolang er een server draait. De client kent de wereldseed niet; zie backlog (change 18).
-- **Density functions:** `NoiseChunk` vult bij elke chunk *alle* `interpolated`-markers die via `mapAll` bereikbaar zijn, ook van ringen die ver weg liggen. Dure terreininvoer (bijv. vanilla-terrein als ring 1-invoer in change 9) kost dus in elke chunk; meet dat.
+- **Density functions:** `NoiseChunk` vult bij elke chunk *alle* `interpolated`-markers die via `mapAll` bereikbaar zijn, ook van ringen die ver weg liggen. Dure terreininvoer kost dus in elke chunk; meet dat bij elke zware nieuwe ringinvoer. **Meting change 9** (seed 20260930, JFR `minecraft.ChunkGeneration`, 16×16 chunks per ring, tweede (warme) ronde, ms per chunk, stap `noise` gemiddeld / mediaan / p95): vóór change 9 ring 1 34,9 / 31,5 / 49,4, ring 3 31,2 / 29,0 / 41,8; na change 9 ring 1 40,9 / 40,8 / 55,0, ring 3 31,0 / 29,6 / 50,2; vanilla-preset 35,1 / 33,7 / 50,5 en 33,5 / 30,2 / 63,5. Dus ring 1 = 1,17× vanilla, ring 3 0,92× (de vanilla-invoer is in ring 3 niet meetbaar: de noise-stap wordt gedomineerd door per-blok-interpolatie, aquifer en ore veins). Budget 1,3×; ring gate nog niet nodig (backlog, change 23). Werkwijze: via RCON `jfr start` → `forceload add` → `execute if loaded` pollen → `jfr stop` → `jfr print --json --events minecraft.ChunkGeneration run/debug/<bestand>.jfr`, filteren op `chunkPosX/Z`.
 - **Density functions** worden gedecodeerd vóór `ServerAboutToStartEvent` (worldgen-registries laden eerst): `RingLayout.current()` nooit in een codec of constructor aanroepen, alleen in `compute`. `initial_density_without_jaggedness` wordt ongewrapt en vanaf meerdere threads aangeroepen: geen veranderlijke instantiestaat in density functions; cache via `RingColumnCache` (ThreadLocal).
 - Vanilla vindt het "preliminary surface" (aquifers, `above_preliminary_surface`) waar `initial_density_without_jaggedness` > 0,390625 is; tel die drempel op bij een terrein met zijn oppervlak op dichtheid 0.
 - Vanilla vult **alle** open ruimte onder `sea_level` met de standaardvloeistof (ook zonder aquifers), en de noise-aquifer zet daarnaast eigen lokale vloeistofniveaus (onder Y -10 vaak lava) zodra er een preliminary surface is, bijv. onder zwevende eilanden. Daarom `ring_noise` met eigen vloeistof-kiezer **én** aquifer-wrapper. De `lava`-router-noise helpt niet: de aquifer sampelt die op rastercoördinaten (x/64, y/40, z/64), niet op blokposities.
@@ -254,8 +261,13 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 - **Biome-keys in vanilla-data:** surface rules (`biome_is`), villager-types (`VillagerType.BY_BIOME`), wolf-varianten, advancements (*Adventuring Time*) en visloot werken op de biome-**key**. Eigen kopieën krijgen dat alleen via een eigen surface-rule-tak, de `villager_types`-data map, overschreven wolf-varianten enz. (advancement en visloot: backlog). Nieuwe ringbiomes (ring 2–5) hebben hun eigen surface-rule-takken nodig.
 - `minecraft:is_overworld` bevat de kopieën bewust niet: vanilla's `has_structure/stronghold` = `#is_overworld`, dus lidmaatschap geeft strongholds (en daarmee een End-portal).
 - Een tag-provider die naar eigen datapack-biomes verwijst moet ná `createDatapackRegistryObjects` via `event.createProvider((output, lookup) -> …)` gemaakt worden; anders kent zijn lookup de biomes niet en faalt de tagcontrole.
-- **3D-biomes tot change 9:** het klimaat (incl. `depth`) is vanilla, het terrein nog placeholder. Op één x,z kan de biome per Y verschillen (bijv. badlands op Y 67, desert op Y 80) en het oppervlak volgt de biome op oppervlaktehoogte. Biome checken via RCON: `execute if biome x y z <key>`.
+- **3D-biomes:** de biome hangt ook van Y af (klimaat-`depth`); sinds change 9 volgt `depth` in ring 1 het echte terrein. Op één x,z kan de biome per Y toch verschillen (bijv. river op de bodem, forest op Y 62). Biome checken via RCON: `execute if biome x y z <key>` op de juiste hoogte (`execute positioned x 0 z positioned over ocean_floor …`).
 - NeoForge logt bij de start "ocelot … MONSTER mob category" voor `corruptedadventure:jungle` / `bamboo_jungle`: dat is vanilla's eigen jungle-spawnlijst, 1-op-1 gekopieerd; onschuldig.
 - **Feature-volgorde:** `RingBiomeSource.possibleBiomes` is de unie van alle ringen. Eigen ringbiomes die vanilla-features per decoratiestap in een andere volgorde gebruiken dan de kopieën, geven vanilla's "Feature order cycle"-crash bij het laden. Houd per stap de vanilla-volgorde aan.
 - `WolfVariant.wildTexture()` (en tame/angry) geeft het volledige pad `textures/…png`, de constructor wil het korte pad; bij het namaken van een variant terugrekenen.
 - `/summon` mét NBT slaat `finalizeSpawn` over: een wolf krijgt dan altijd `pale`. Test biome-afhankelijke varianten met `/summon minecraft:wolf x y z` zonder NBT.
+- **Vanilla worldgen-JSON** (density functions, noise settings) staat alleen in `build/moddev/artifacts/neoforge-21.1.252-client-extra-aka-minecraft-resources.jar`, niet in de merged- of sources-jar. De ring 1-keten (`ring_1/overworld/*`, `ring_1/overworld.json`) is daar eenmalig uit gekopieerd met alleen de verwijzingen naar `continents`, `offset`, `factor`, `jaggedness`, `depth`, `sloped_cheese` vervangen; bij een MC-upgrade opnieuw kopiëren en controleren (terugvervangen = vanilla).
+- **Continentalness zit op drie plekken:** router-veld `continents` (klimaat → biomes en spawn-finder) én de splines `overworld/offset`, `factor`, `jaggedness` (terreinvorm, via `depth`/`sloped_cheese`). Wie continentalness aanpast, moet de hele keten meenemen; anders krijg je landbiomes op oceaanterrein. Overschrijf nooit `minecraft:overworld/…`: dat raakt alle vanilla-werelden.
+- **Spawn:** vanilla zoekt het spawnpunt op het klimaat (`spawn_target` + afstandsboete, tot ~2.500 blokken ver). Met `spawn_target` = alle parameters `[-2, 2]` is de klimaat-fitness overal 0 en wint 0,0; daarna kiest vanilla's 11×11-chunkspiraal de eerste vaste plek zonder vloeistof (in chunk 0,0 vaak exact 0,0). Spawn op bladeren kan (vanilla). Gemeten over 10 seeds (change 9): altijd ring 1, ≤ 32 blokken van 0,0, nooit in water/lava.
+- **Land rond spawn** (change 9): de opgetilde zone ligt op de ondergrens (continentalness 0,03) en is daar laag, rond zeeniveau. Naast rivieren komen ondiepe plassen (1–6 blokken) in bos-/vlaktebiomes voor: 15 van de 240 meetpunten (r = 100/200/300, 8 richtingen, 10 seeds), rivieren 28.
+- RCON-commando's draaien op de world spawn (`RconConsoleSource` = `getSharedSpawnPos`). Spawnpositie uitlezen: `summon minecraft:marker ~ ~ ~ {Tags:["s"]}` + `data get entity @e[tag=s,limit=1] Pos`; hoogte van een kolom: `execute positioned x 0 z positioned over world_surface run summon …`.

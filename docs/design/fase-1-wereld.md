@@ -117,7 +117,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 | Ring | Overworld: oppervlak | Nether: vloer (dak vanaf Y ~110) |
 |---|---|---|
-| 1 | Y ~70 | Y ~30 (lavazee op 32 zichtbaar) |
+| 1 | vanilla (change 9) | Y ~30 (lavazee op 32 zichtbaar) |
 | 2 | Y ~95 | Y ~40 |
 | 3 | Y ~120 | Y ~55 |
 | 4 | Y ~64 (rond zeeniveau) | Y ~45 |
@@ -135,6 +135,13 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 **Terrein en sfeer**
 - Vanilla-terrein (vanilla noise router als ring 1-invoer van `ring_blend`). Oceanen, rivieren, hoge bergen en pieken blijven.
 - Rond de spawn (~300 blokken) wordt de continentalness omhoog geschoven: altijd land in het midden.
+- **Uitwerking (change 9):**
+  - Keten: de continentalness-afhankelijke vanilla-density-functions (`continents`, `offset`, `factor`, `jaggedness`, `depth`, `sloped_cheese`, initiële dichtheid) zijn gekopieerd naar `corruptedadventure:ring_1/overworld/…`; ring 1 = vanilla `final_density` op die keten. Grotten, erosion, ridges en noises blijven vanilla. De router-velden `continents` en `depth` wijzen naar de ring 1-versies, zodat biomes, spawn-finder en terrein dezelfde continentalness zien. `minecraft:overworld/…` wordt nooit overschreven (zou vanilla-werelden raken).
+  - Boost: `c' = c + w · max(0, 0,03 − c)`, met `w` = `radial_falloff` (1 tot 300 blokken van 0,0, smoothstep naar 0 bij 450). Land dat al hoger ligt blijft ongemoeid; binnen 300 blokken minstens "mid-inland", daarbuiten glijdend naar vanilla. Straal en ondergrens staan in de JSON, niet in de config (geen ringgrens; wijzigen zou naden in bestaande werelden geven).
+  - Rivieren blijven toegestaan in de landzone (weirdness/ridges ongemoeid). Op de ondergrens ligt het land laag (rond zeeniveau): ook ondiepe plassen in bos- en vlaktebiomes komen voor.
+  - Spawn: `spawn_target` = één punt met alle klimaatparameters `[-2, 2]`; daardoor wint 0,0 altijd en kiest vanilla's 11×11-chunkspiraal de eerste droge, vaste plek rond 0,0. Geen eigen spawn-code (fallback via `LevelEvent.CreateSpawnPosition` alleen als dat nodig blijkt).
+  - Initiële dichtheid: aparte `ring_blend/overworld_initial` (ring 1 = vanilla's eigen `initial_density_without_jaggedness`, overige ringen `0,390625 + terrein`).
+  - Performance: zie `CODEBASE.md` (valkuil density functions). Beslisregel: noise-stap ≤ 1,3× vanilla → geen ring gate; gemeten 1,17× (ring 1) en 0,92× (ring 3), dus de ring gate volgt bij de eerste zware ring 2-invoer (change 23).
 - Lucht, fog en kleuren vanilla; in de buitenste zone subtiel valer (via het randbiome/overgangsbiome).
 
 **Biomes**

@@ -7,6 +7,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.RadialFalloff;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingBlend;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VoidEdge;
 
@@ -21,6 +22,10 @@ public final class ModDensityFunctionTypes {
     /** {@code corruptedadventure:void_edge} */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<VoidEdge>> VOID_EDGE =
             DENSITY_FUNCTION_TYPES.register("void_edge", () -> VoidEdge.MAP_CODEC);
+
+    /** {@code corruptedadventure:radial_falloff} */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<RadialFalloff>> RADIAL_FALLOFF =
+            DENSITY_FUNCTION_TYPES.register("radial_falloff", () -> RadialFalloff.MAP_CODEC);
 
     private ModDensityFunctionTypes() {
     }

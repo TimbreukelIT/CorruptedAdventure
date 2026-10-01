@@ -1,0 +1,32 @@
+{
+  "type": "corruptedadventure:ring_blend",
+  "dimension": "minecraft:overworld",
+  "rings": {
+    "ring_1": "corruptedadventure:ring_1/overworld/initial_density",
+    "ring_2": {
+      "type": "minecraft:add",
+      "argument1": 0.390625,
+      "argument2": "corruptedadventure:ring_2/overworld"
+    },
+    "ring_3": {
+      "type": "minecraft:add",
+      "argument1": 0.390625,
+      "argument2": "corruptedadventure:ring_3/overworld"
+    },
+    "ring_4": {
+      "type": "minecraft:add",
+      "argument1": 0.390625,
+      "argument2": "corruptedadventure:ring_4/overworld"
+    },
+    "ring_5": {
+      "type": "minecraft:add",
+      "argument1": 0.390625,
+      "argument2": "corruptedadventure:ring_5/overworld"
+    },
+    "void": {
+      "type": "minecraft:add",
+      "argument1": 0.390625,
+      "argument2": "corruptedadventure:void/overworld"
+    }
+  }
+}
