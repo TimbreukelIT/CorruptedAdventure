@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-10-01 — change 18 (netwerkbasis: payload-registratie, clientbound-handlerpatroon, ring-layout naar de client, F3-regel, tweede dev-client)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–18 klaar, volgende: change 19)
+**Laatst bijgewerkt:** 2026-10-01 — change 19 (meter-systeem omgevingscondities: player attachment, tick-handler, drempels, SERVER-config, sync, HUD-balk, `/ca condition`)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–19 klaar, volgende: change 20)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — changes 0–18 klaar |
+| 1 — Wereld | In bouw — changes 0–19 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -29,7 +29,9 @@ Status: ✅ bestaat · 🔲 gepland
 src/main/java/nl/timtoys/corruptedadventure/
   CorruptedAdventure.java      ✅ @Mod-entrypoint (common); MOD_ID, LOGGER, id(path). Registreert de DeferredRegisters en datagen
   config/                      ✅ config en per-wereld-snapshot (enige plek voor ringgrenzen)
-    CommonConfig.java          ✅ COMMON-config (`corruptedadventure-common.toml`): standaard-ringgrenzen; 🔲 balanswaarden
+    CommonConfig.java          ✅ COMMON-config (`corruptedadventure-common.toml`): alleen standaard-ringgrenzen
+    ServerConfig.java          ✅ SERVER-config (`corruptedadventure-server.toml`, door NeoForge naar de client gesynct): **alle balanswaarden** (nu `[conditions.debug]`; change 20 `[weather]`)
+    ThresholdLevels.java       ✅ `threshold1..N` van één conditiesectie (1–100, strikt oplopend; anders standaardwaarden + error-log bij laden)
     RingSettings.java          ✅ record + Codec + validatie van de ringgrenzen
     RingSettingsSnapshot.java  ✅ snapshot per wereld; `current()` voor `ringAt` (server-side; de client krijgt de waarden via `RingLayoutPayload`)
   ring/                        ✅ ringindeling
@@ -43,6 +45,7 @@ src/main/java/nl/timtoys/corruptedadventure/
     RingInfoCommand.java       ✅ `/ca ring`
     RingTeleportCommand.java   ✅ `/ca tpring <1–6> [nether]`, `/ca tpboundary <1–5> [nether]` + veilige landingshoogte
     BorderInfoCommand.java     ✅ `/ca border`: border (grootte, midden, lerp) van de huidige dimensie
+    ConditionCommand.java      ✅ `/ca condition get [<targets>]`, `set <targets> <condition> <0–100>`, `debug <targets> rise|fall|off`
     RingTargets.java           ✅ pure rekenwerk: richting, ringmidden, verruisde grens (bisectie), dichtstbijzijnde grens
   registry/                    ✅ DeferredRegisters, ResourceKeys en TagKeys
     ModBlocks.java             ✅ alle blokken + hun blockitem (`register` / `registerDoor`); volgorde = creative-tab-volgorde; `entries()`
@@ -58,6 +61,7 @@ src/main/java/nl/timtoys/corruptedadventure/
     ModConfiguredFeatures.java ✅ ResourceKeys van de eigen configured features (de features zelf komen uit datagen)
     ModPlacedFeatures.java     ✅ ResourceKeys van de eigen placed features (idem)
     ModSoundEvents.java        ✅ sound events (common: biome-JSON noemt ze): `ambient.ring_1.strange_cave`
+    ModAttachments.java        ✅ attachment types: `condition_meters` (`ConditionMeters`, opgeslagen, geen `copyOnDeath`)
   worldgen/
     biome/                     ✅ biome-source en biome-bootstraps
       RingBiomeSource.java     ✅ kiest per positie de geneste BiomeSource van de ring (via `RingLayout`)
@@ -97,14 +101,29 @@ src/main/java/nl/timtoys/corruptedadventure/
     ModFlammables.java         ✅ vuurkansen (zoals eikenhout) via `FireBlock#setFlammable` in `FMLCommonSetupEvent#enqueueWork`
   item/                        🔲 (fase 2)
   weather/                     🔲 server-side weerstaat per ring
-  condition/                   🔲 server-side omgevingscondities per ring (tick-handler)
+  condition/                   ✅ omgevingscondities: meters, regels, drempels, tick-handler (server-side; `ConditionDefinitions.thresholdLevels` ook op de client voor de HUD)
+    Condition.java             ✅ enum (`StringRepresentable`, `CODEC` op naam) + HUD-kleur; nu alleen `DEBUG` (`debug`)
+    ConditionMeters.java       ✅ attachment-data: float 0–100 per conditie, lenient `CODEC` (map naam → float, onbekende namen overgeslagen), `roundedChanged`/`markSynced`, `applySync` (client), transient aantal toegepaste drempels
+    ConditionContext.java      ✅ record (`player`, `level`, `position` = `RingLayout.ringAt`, `biome`), één keer per speler per tick
+    ConditionRule.java         ✅ `ratePerSecond(ctx)` (+ op, − af); `recover(fallRate)`
+    RateModifier.java          ✅ `modify(condition, ctx, rate)`; pijplijn na de regel, registratievolgorde
+    ThresholdEffect.java       ✅ `apply` (elke seconde zolang bereikt) / `clear` (eronder)
+    Threshold.java             ✅ record (`level`, `effect`)
+    MobEffectThreshold.java    ✅ mob effect, 240 ticks, ambient, geen particles; `clear` alleen als het actieve exemplaar ambient is (elke amplifier; config kan live gewijzigd zijn)
+    DamageThreshold.java       ✅ schade (`damageType`, `amount`, `intervalSeconds`, `DifficultyFloor`)
+    DifficultyFloor.java       ✅ `NONE`, `VANILLA_STARVATION` (peaceful geen, easy tot 10 HP, normal tot 1 HP, hard dodelijk), `NEVER_LETHAL` (stopt op 1 HP)
+    ConditionDefinitions.java  ✅ per conditie regel, drempelniveaus (config) en effecten (Java); `addModifier`/`modifiers`
+    ConditionTicker.java       ✅ `PlayerTickEvent.Post`, elke 20 ticks, alleen `RingWorld.isActive`; pure delen `rate` en `ThresholdUpdate`
+    PlayerConditions.java      ✅ instant-API `get`/`set`/`add` (synct direct) + volledige sync bij login/respawn/dimensiewissel
+    DebugConditionDriver.java  ✅ `UUID → RISE/FALL/OFF` (niet opgeslagen; gewist bij uitloggen en server-stop); regel van `DEBUG`
   network/                     ✅ CustomPacketPayloads + registratie (common; noemt nooit een `client/`-class)
     ModNetwork.java            ✅ `RegisterPayloadHandlersEvent` (mod-bus), `PROTOCOL_VERSION`, één regel per payload
     ClientboundHandlers.java   ✅ dispatch-tabel: `forward(type)` voor de registratie, `set(type, handler)` vanuit `CorruptedAdventureClient`
     RingLayoutPayload.java     ✅ `corruptedadventure:ring_layout`: `RingSettings` + ruis-seed, `STREAM_CODEC` (`ByteBuf`)
     RingLayoutSync.java        ✅ stuurt de layout bij `PlayerLoggedInEvent` (alleen ringwereld)
     RingPacketDistributor.java ✅ `RingMembership` (`CORE`/`TOUCHING`), `matches`, `playersInRing`, `sendToPlayersInRing`
-  data/                        🔲 SavedData (wereld) en attachments (speler)
+    ConditionSyncPayload.java  ✅ `corruptedadventure:condition_sync`: alle meters afgerond, 1 byte per conditie (enum-volgorde), alleen naar de eigen speler
+  data/                        🔲 SavedData (wereld); attachments staan in `registry/ModAttachments`
   datagen/                     ✅ providers (`./gradlew runData`); 🔲 recipes
     DataGenerators.java        ✅ `GatherDataEvent`: datapack-registries (configured/placed features, biomes, wolf-varianten, biome modifiers) + tags, data maps, lang, blockstates/models, loot
     ModBlockStateProvider.java ✅ blockstates + blockmodels (NeoForge-helpers; `render_type` cutout voor deur/valluik/ertsen in de model-JSON); `oreWithOverlay` = tweelaags-ertsmodel (vanilla-basis als verwijzing + eigen overlay, per top/zijkant/bodem via `CubeTextures`; overlay-element emissive 15/15 zonder AO)
@@ -122,6 +141,8 @@ src/main/java/nl/timtoys/corruptedadventure/
     ClientRingLayout.java      ✅ de ring-layout op de client (`get`, `ringAt`); leeg zonder ontvangst, gewist bij uitloggen
     RingDebugOverlay.java      ✅ de enige F3-hook (`CustomizeGuiOverlayEvent.DebugText`): `CA ring (client): …`
     network/RingLayoutHandler.java ✅ valideert de settings en bouwt `RingLayout` → `ClientRingLayout`
+    network/ConditionSyncHandler.java ✅ zet de gesyncte meters in de attachment van de lokale speler (+ DEBUG-log `Received condition meters for <naam>: [..]`)
+    hud/ConditionHudLayer.java ✅ GUI-layer `corruptedadventure:conditions` boven `air_level`: balk 81×5 per meter > 0 boven de hongerbalk (via `Gui.rightHeight`, rijen van 6 px), drempelstreepjes; verborgen met F1, in creatief/spectator; placeholder (`fill`)
 
 src/main/templates/META-INF/neoforge.mods.toml  ✅ mod-metadata; ${…} komt uit gradle.properties
 src/main/resources/                (lang staat niet hier maar in datagen: `datagen/*LanguageProvider`)
@@ -141,6 +162,11 @@ src/test/java/nl/timtoys/corruptedadventure/
   network/RingLayoutPayloadTest.java ✅ codec-rondreis (buffer leeg, extreme seeds), layout uit de gedecodeerde payload = server-layout op een raster door alle zones, void-rand en Nether
   network/RingPacketDistributorTest.java ✅ `matches` voor `CORE` (wissel op 0,5) en `TOUCHING` (beide kanten van een zone), buurring zonder zone
   network/ClientboundHandlersTest.java ✅ `forward` roept de gezette handler aan; zonder handler geen exception
+  condition/ConditionMetersTest.java ✅ klemmen 0–100 (ook NaN), "afgerond veranderd" (0,4 → 0,6 sync, 0,6 → 0,9 niet), `applySync`, codec-rondreis, onbekende conditie overgeslagen, geladen waarden geklemd
+  condition/ConditionTickerTest.java ✅ modifiers op volgorde, creatief nooit omhoog, drempels cumulatief (49/50/75/100), zakken 76 → 74 wist alleen drempel 2, na laden alle niet-bereikte wissen
+  condition/DamageThresholdTest.java ✅ `DifficultyFloor` (`NONE`, `VANILLA_STARVATION` per moeilijkheid incl. peaceful, `NEVER_LETHAL` stopt op 1 HP), interval in hele seconden
+  network/ConditionSyncPayloadTest.java ✅ codec-rondreis (1 byte per conditie), lengte/bereik geweigerd, array gekopieerd
+  config/ThresholdLevelsTest.java ✅ strikt oplopend, foute standaardwaarden = exception, `ServerConfig` bouwt
   ClientIsolationTest.java     ✅ geen bestand buiten `client/` en `datagen/` noemt `net.minecraft.client.`, `com.mojang.blaze3d.`, `net.neoforged.neoforge.client.` of `…corruptedadventure.client.` (import of volledig gekwalificeerd; commentaarregels tellen niet)
   command/RingTargetsTest.java ✅ ringmiddens binnen hun ring, grens-teleport op gewicht 0,5, grensafstand met teken
   worldgen/biome/RingBiomeSourceTest.java ✅ biome per ringmidden (overworld + Nether), harde wissel op gewicht 0,5, alle ringen verplicht; `transitions`: hele zone = overgangsbiome, andere grenzen hard, `possibleBiomes`, codec (optioneel, `void` fout)
@@ -177,7 +203,7 @@ src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, N
 docs/
   design/                      ✅ 00-overzicht, 01-techniek, 02-beslissingenlog, fase-1-wereld (incl. bouwplan); 🔲 fase-2..5
   prompts/                     ✅ opdrachten voor Claude Code (opdracht-01-sparring-fase-1)
-  plans/                       ✅ uitgewerkte bouwplannen per change (`change-NN.md`: scope, stappen, tests, beantwoorde ontwerpvragen); klaar: 08–18. Een bouw-subagent leest eerst zijn plan
+  plans/                       ✅ uitgewerkte bouwplannen per change (`change-NN.md`: scope, stappen, tests, beantwoorde ontwerpvragen); klaar: 08–19. Een bouw-subagent leest eerst zijn plan
   backlog.md                   ✅
 ```
 
@@ -188,16 +214,24 @@ docs/
 | Class | Pakket | Verantwoordelijkheid | Gebruikt door |
 |---|---|---|---|
 | `CorruptedAdventure` | `nl.timtoys.corruptedadventure` | common entrypoint, `MOD_ID`, `LOGGER`, `id(path)` | alles |
-| `CorruptedAdventureClient` | `nl.timtoys.corruptedadventure.client` | client entrypoint (`Dist.CLIENT`); `ClientboundHandlers.set` per clientbound payload, game-bus-listeners (logout, F3) | — |
-| `ModNetwork` | `…network` | `PROTOCOL_VERSION` (`"1"`, verplicht, **ophogen bij elke payloadwijziging en elke nieuwe payload**); `register(PayloadRegistrar)` = één regel per payload; handlers draaien op de main thread (standaard van de registrar, geverifieerd) | `CorruptedAdventure` |
+| `CorruptedAdventureClient` | `nl.timtoys.corruptedadventure.client` | client entrypoint (`Dist.CLIENT`); `ClientboundHandlers.set` per clientbound payload, game-bus-listeners (logout, F3), mod-bus: GUI-layers (`ConditionHudLayer`) | — |
+| `ModNetwork` | `…network` | `PROTOCOL_VERSION` (`"2"` sinds change 19, verplicht, **ophogen bij elke payloadwijziging en elke nieuwe payload**); `register(PayloadRegistrar)` = één regel per payload; handlers draaien op de main thread (standaard van de registrar, geverifieerd) | `CorruptedAdventure` |
 | `ClientboundHandlers` | `…network` | `ConcurrentHashMap` type → handler. `forward(type)` zoekt bij ontvangst op; zonder handler één waarschuwing, payload genegeerd. Patroon: payload + codec in `network/`, handler in `client/network/`, `set` in `CorruptedAdventureClient` | `ModNetwork`, `CorruptedAdventureClient` |
 | `RingLayoutPayload` | `…network` | record (`RingSettings`, `noiseSeed`); codec: radii (var-int-lijst, max. 5), void-rand, ruis, overgangsbreedte (var-int), ruis-seed (vaste 8 bytes); `of(RingLayout)` | `RingLayoutSync`, client |
 | `RingLayoutSync` | `…network` | `PlayerLoggedInEvent`: `RingWorld.isActive` → `sendToPlayer`. Niet bij dimensiewissel/respawn (één layout dekt beide dimensies) | `CorruptedAdventure` |
 | `RingPacketDistributor` | `…network` | `CORE` = `position.ring() == ring`; `TOUCHING` = `inner == ring \|\| outer == ring`. `playersInRing` via `RingLayout.ringAt` (ook voor server-gameplay); aanroeper checkt `RingWorld.isActive` | change 28 (wind) |
-| `RingWorld` | `…ring` | `isActive(server)` = overworld-generator is `RingChunkGenerator`; **de enige** "is dit een ringwereld"-check (border, layout-sync, later condities en weer) | `RingWorldBorder`, `RingLayoutSync` |
+| `RingWorld` | `…ring` | `isActive(server)` = overworld-generator is `RingChunkGenerator`; **de enige** "is dit een ringwereld"-check (border, layout-sync, `ConditionTicker`, later weer) | `RingWorldBorder`, `RingLayoutSync`, `ConditionTicker` |
 | `ClientRingLayout` | `…client` | `volatile RingLayout`; `get()`, `ringAt(dimension, x, z)` (Optional); `set` door de handler, gewist bij `ClientPlayerNetworkEvent.LoggingOut`. **Client-code gebruikt altijd deze class**, nooit `RingLayout.current()` | `RingDebugOverlay`, later HUD/weer |
 | `RingLayoutHandler` | `…client.network` | `settings.validate()` → `new RingLayout(settings, noiseSeed)` + info-log `Received ring layout from the server: …`; ongeldig → error-log, layout leeg | `CorruptedAdventureClient` |
 | `RingDebugOverlay` | `…client` | rechts in F3: `CA ring (client): ring_1`, `ring_2 → ring_3 @ 0.43` of `—` (geen layout); positie/dimensie van de camera-entity. Changes 20 en 28 voegen hier hun regels toe | `CorruptedAdventureClient` |
+| `ConditionTicker` | `…condition` | `PlayerTickEvent.Post`, alleen `ServerPlayer` (geen `FakePlayer`), levend, `tickCount % 20 == 0`, `RingWorld.isActive`. Per conditie: regel → `RateModifier`s op volgorde → creatief/spectator nooit omhoog → `add` (klemmen) → `ThresholdUpdate` (cumulatief; eerst **alle** clears van alle condities, dan alle applies) → sync als een afgeronde waarde veranderde. Instant-wijzigingen (commando, items) krijgen hun drempeleffecten bij de volgende tick (≤ 1 s) | `CorruptedAdventure` |
+| `ConditionMeters` | `…condition` | attachment-data. Server = waarheid (float), client = laatst gesyncte ints. Transient (niet opgeslagen): laatst gesyncte afgeronde waarden (−1 = nog nooit) en per conditie het aantal toegepaste drempels (`UNKNOWN` na laden → eerste tick wist alle niet-bereikte drempels, ook effecten die met de speler zijn opgeslagen). Afronding `Math.round` | ticker, `PlayerConditions`, HUD |
+| `ConditionDefinitions` | `…condition` | `rule(c)`, `thresholdLevels(c)` (config, ook client), `thresholds(c)` (niveau + effect), `addModifier`/`modifiers` (`CopyOnWriteArrayList`; registreren tijdens mod-setup, bijv. change 28 vanuit `weather/`). Nieuwe conditie = enumwaarde + een `case` in `rule`, `thresholdLevels` en `effects` + een `ServerConfig`-sectie | ticker, HUD, latere condities |
+| `PlayerConditions` | `…condition` | `get`/`set`/`add` + direct syncen (alleen bij een veranderde afgeronde waarde). Volledige momentopname bij `PlayerLoggedInEvent`, `PlayerRespawnEvent`, `PlayerChangedDimensionEvent` (de client maakt dan een nieuwe `LocalPlayer` met lege attachment); niet afhankelijk van `RingWorld` (meters zijn gewone spelerdata, alleen de **ticker** is een ringsysteem) | ticker, `ConditionCommand`, latere item-hooks |
+| `ConditionSyncPayload` | `…network` | record `int[] values` (gekopieerd, lengte = aantal condities, 0–100); codec 1 byte per conditie zonder lengte (zelfde mod-versie, `PROTOCOL_VERSION`). Eigen `equals`/`hashCode` (array) | `PlayerConditions`, client |
+| `ConditionSyncHandler` | `…client.network` | `context.player().getData(CONDITION_METERS).applySync(...)`; geen `enqueueWork` nodig (main thread, zoals 18) | `CorruptedAdventureClient` |
+| `ConditionHudLayer` | `…client.hud` | `RegisterGuiLayersEvent.registerAbove(AIR_LEVEL, …)`. Eigen layers vallen **niet** onder vanilla's F1-groep: zelf `options.hideGui` checken; `gameMode.canHurtPlayer()` zoals de hongerbalk; `ServerConfig.SPEC.isLoaded()`. Per meter (afgerond) > 0 een rij van 6 px (`gui.rightHeight += 6`), eerste balk onderaan uitgelijnd met een vanilla-icoonrij (offset 4) | `CorruptedAdventureClient` |
+| `ServerConfig` | `…config` | SERVER-config, **de enige plek voor balanswaarden** (condities, straks ringweer en weereffecten). NeoForge 21.1: standaard `config/corruptedadventure-server.toml` (globaal, live herladen); een kopie in `<wereld>/serverconfig/` overschrijft hem per wereld. Gesynct naar de client bij het joinen (`ConfigTracker.acceptSyncedConfig`); op de client ook zonder wereld geladen met standaardwaarden. Per conditie een geneste klasse (`DebugCondition`) + `ThresholdLevels`; validatie bij `ModConfigEvent.Loading`/`Reloading` | condities, HUD, change 20 |
 | `CommonConfig` | `…config` | COMMON-config; ringgrenzen als standaard voor **nieuwe** werelden. `ringSettings()` is package-private: alleen de snapshot leest de config | `RingSettingsSnapshot` |
 | `RingSettings` | `…config` | 5 buitenradii, void-rand, grensruis, overgangsbreedte (overworld-blokken; Nether ÷4 in `ringAt`). `CODEC` + `validate()` | snapshot, straks `RingLayout` |
 | `RingSettingsSnapshot` | `…config` | leest/maakt `<wereld>/corruptedadventure/ring_settings.json` bij `ServerAboutToStartEvent`, wist bij `ServerStoppedEvent`; `current()` gooit als er geen server draait (server-side; de client krijgt de waarden via `RingLayoutPayload`) | `RingLayout` |
@@ -299,7 +333,10 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `withered_expanse_trees`, `…_vegetation` (`VEGETAL_DECORATION`), `…_rocks`, `…_sand_patches` (`LOCAL_MODIFICATIONS`) | placed features (datagen) | `ModPlacedFeatures`, `WitheredExpanseFeatures`; alleen in `withered_expanse` |
 | `corruptedadventure:ambient.ring_1.strange_cave` | sound event (variabel bereik) | `ModSoundEvents`; `mood_sound` van `withered_expanse`; `sounds.json` uit `ModSoundDefinitionsProvider` (vanilla `ambient.cave`, pitch 0,5–0,7, volume 0,8); testen met `/playsound corruptedadventure:ambient.ring_1.strange_cave ambient @s` |
 | `corruptedadventure:ring_noise` | chunk generator (`RingChunkGenerator`) | `ModChunkGenerators`; gebruikt in `corrupted_world.json` (overworld + Nether) |
-| `corruptedadventure:ring_layout` | payload (`RingLayoutPayload`, play, server → client) | `ModNetwork` (protocol `1`) |
+| `corruptedadventure:ring_layout` | payload (`RingLayoutPayload`, play, server → client) | `ModNetwork` (protocol `2`) |
+| `corruptedadventure:condition_sync` | payload (`ConditionSyncPayload`, play, server → client) | `ModNetwork` |
+| `corruptedadventure:condition_meters` | attachment type (`ConditionMeters`) | `ModAttachments`; op `ServerPlayer` (opgeslagen) en `LocalPlayer` (gesyncte kopie) |
+| `corruptedadventure:conditions` | GUI-layer (`ConditionHudLayer`) | boven `minecraft:air_level` |
 
 ---
 
@@ -311,6 +348,7 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `build.gradle` | ModDevGradle; runs: client (`--username Dev`, map `run`), **client2** (`runClient2`, `--username Dev2`, eigen map `run/client2`), server, gameTestServer, data (output naar `src/generated/resources`); **quick-play**: `-PquickPlay` (of `-PquickPlay=host:poort`, standaard `localhost:25565`) geeft beide clients `--quickPlayMultiplayer`, zodat ze na het opstarten zelf joinen; JUnit 5 via `neoForge.unitTest` (tests draaien in een FML-omgeving, Minecraft-classes bruikbaar) |
 | `.github/workflows/build.yml` | CI-build uit de MDK |
 | `run/config/corruptedadventure-common.toml` | (niet in git) COMMON-config, ontstaat bij de eerste start |
+| `run/config/corruptedadventure-server.toml` | (niet in git) SERVER-config (balanswaarden), ontstaat bij de eerste serverstart; per wereld overschrijven via `<wereld>/serverconfig/` |
 | `tools/textures/Ring1Textures.java` | texturescript ring 1, **definitief** sinds change 17 (single-file Java, alleen JDK, buiten Gradle en de jar): `java tools/textures/Ring1Textures.java` vanuit de repo-root. Eigen pixels, geen vanilla; vaste seed per bestandsnaam (twee keer draaien = byte-identiek, ook de `.mcmeta`). `TEXTURES` = naam → tekenmethode, `still`/`pulsing` (pulsing = 8-frame-strip via `pulseStrip` + `.mcmeta`, `PULSE_FRAMES`/`PULSE_FRAMETIME`). Paletten bovenin (zie `fase-1-wereld.md`), gedeelde patronen (`valueNoise`, `furrow`, `topBand`, `crystalClusters` + `outline`/`merge`, `window`, `rail`). `render(naam)` hergebruikt pixels (grasblokzijkant = `withered_dirt`, gestripte kopse kant = log-kopse kant). `HAND_EDITED`: met de hand bewerkte bestanden, worden overgeslagen en van schijf gelezen. Schrijft ook het contactblad `build/texture-preview/ring1.png` (niet in git) |
 | `tools/server-smoke-test.sh` | test S: start `runServer`, wacht op `Done (` of een fout, stopt de server-JVM; log in `build/runServer.log` |
 
@@ -332,7 +370,7 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `data/corruptedadventure/worldgen/noise/placeholder_terrain.json`, `void_islands.json` | noise-parameters voor placeholder-terrein en void-eilanden |
 | `META-INF/accesstransformer.cfg` | wordt automatisch opgepikt door ModDevGradle en FML (geen extra config nodig) |
 
-Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change18` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer), van vóór change 14 ook niet (`placeholder_nether_ring_1`); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
+Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change19` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer), van vóór change 14 ook niet (`placeholder_nether_ring_1`); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
 
 ---
 
@@ -342,9 +380,23 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 |---|---|---|---|
 | `ring_settings.json` | bestand in de wereldmap (`<wereld>/corruptedadventure/`) | server | ringgrenzen bevroren per wereld (geen SavedData: moet er zijn vóór `loadLevel()`) |
 | world border | vanilla (`level.dat`, alleen de overworld) + vanilla-border-packets | server → client | Nether-border wordt niet opgeslagen maar bij elke start afgeleid; Nether-spelers krijgen een eigen `ClientboundInitializeBorderPacket` |
+| `corruptedadventure:condition_meters` | attachment (speler-NBT) | server; niet gekopieerd bij dood | meters 0–100 per conditie (map naam → float) |
+| `corruptedadventure:condition_sync` | payload (`ConditionSyncPayload`, 1 byte per conditie) | server → **alleen de eigen speler**; bij verandering van een afgeronde waarde (≤ 1/s) + login/respawn/dimensiewissel | volledige momentopname van de meters voor de HUD |
+| `corruptedadventure-server.toml` | SERVER-config | server → client (NeoForge-configsync bij het joinen) | balanswaarden; de HUD leest er de drempels uit |
 | `corruptedadventure:ring_layout` | payload (`RingLayoutPayload`, ~30 bytes) | server → client, bij login, alleen ringwereld | ringgrenzen + ruis-seed (nooit de wereldseed); client bouwt `ClientRingLayout` en rekent zelf `ringAt` |
 
 ---
+
+### Meter-systeem: haken voor latere condities (change 19)
+
+| Nodig | Haak |
+|---|---|
+| nieuwe conditie (27 uitdroging, 43 hitte, 55 kou, 65 gif, 84 void, 93 stilte) | `Condition`-waarde + `case`s in `ConditionDefinitions` + sectie in `ServerConfig` (met `ThresholdLevels.define`); HUD-kleur in de enum |
+| wanneer op/af | `ConditionRule` (leest `ConditionContext`; afgeleide checks zoals zon/hemel/water voegt de eerste gebruiker toe aan de context) |
+| vermenigvuldigers (ringweer 28, fire resistance, gear, Nether-4 zuiverend, spelers in de buurt) | `RateModifier` via `ConditionDefinitions.addModifier` (draait voor elke conditie, ook buiten haar zone) |
+| effecten | `MobEffectThreshold`, `DamageThreshold` (+ `DifficultyFloor`), of een eigen `ThresholdEffect` (ignite, freeze, teleport) |
+| items (waterfles −30, melk −40, honing −20) | `PlayerConditions.add` |
+| client-effecten (glitch, stilte) | lees de gesyncte meter uit de attachment van de lokale speler |
 
 ## Bekende valkuilen
 
@@ -362,6 +414,10 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 - `RingLayout.current()`/`ringAt` bestaan alleen server-side zolang er een server draait. **Client-code gebruikt altijd `ClientRingLayout`**, nooit `RingLayout.current()`: dat werkt in singleplayer per ongeluk (zelfde JVM), maar crasht op een client bij een dedicated server.
 - **Netwerk (change 18):** `ModNetwork.PROTOCOL_VERSION` **ophogen bij elke wijziging aan een payload of codec én bij elke nieuwe payload**; anders joinen oude clients en decoderen ze onzin. Clientbound handlers altijd via `ClientboundHandlers` (common code noemt nooit een `client/`-class, ook niet in een lambda of method reference). `ClientIsolationTest` bewaakt dat op tekst. Handlers draaien op de main thread (standaard van NeoForge's `PayloadRegistrar`); payloads worden ook in singleplayer altijd geserialiseerd. 1.21.1 heeft geen `ByteBufCodecs.LONG` (alleen `VAR_LONG`): voor een hash `StreamCodec.of(ByteBuf::writeLong, ByteBuf::readLong)`.
 - **Twee dev-clients tegen `runServer`** (change 18): `./gradlew runServer` (achtergrond, `online-mode=false`), dan `./gradlew runClient -PquickPlay` en `./gradlew runClient2 -PquickPlay`, elk met stdout naar een eigen log (bijv. `build/runClient.log`); join controleren op `Received ring layout from the server` in die log en `Dev joined the game` in de serverlog. Een **nieuwe** gamemap toont eerst het toegankelijkheidsscherm en quick-play wacht daarop: zet `onboardAccessibility:false` in `run/client2/options.txt` (`run/options.txt` heeft het al). `runClient` en `runServer` delen `run/logs/`: log4j kan bij de start `latest.log` niet roteren ("Unable to delete file", onschuldig) — lees de client-log uit de Gradle-stdout, niet uit `run/logs`. Stoppen: RCON `stop` voor de server, de client-JVM's via `Stop-Process` op `clientRun`/`client2Run` in de commandline. Een speler die na `/ca tpring 6` zonder grond in de lucht hangt, wordt in survival gekickt ("Flying is not enabled"): eerst `gamemode creative`.
+- **Condities (change 19):** de tick telt eerst de rate op en kijkt dan pas naar de drempels: `/ca condition set Dev debug 76` met modus `off` staat bij de volgende tick al op 71 (alleen traagheid). Test drempels in creatief + `rise` (meter blijft staan: creatief gaat nooit omhoog) of met `rise` in survival. Effecten checken via RCON: `data get entity Dev active_effects`. Dood testen zonder client-klik: `gamerule doImmediateRespawn true`. Twee namen in één selector (`get Dev Dev2`) werkt niet; gebruik `@a`.
+- **Mob effects van condities** worden elke seconde ververst met 240 ticks (vanilla laat het icoon knipperen onder 200 ticks). `MobEffectInstance.update` verlengt alleen bij gelijke amplifier; een drankje met dezelfde amplifier en langere duur blijft dus staan (niet ambient → onze `clear` laat het staan). Bekende beperking: is ons effect sterker dan een drankje, dan verbergt vanilla het drankje onder het onze (`hiddenEffect`, private) en verdwijnt het drankje mee bij `clear`. Twee condities met hetzelfde effect: clears gaan vóór applies, zodat de ene de andere niet wist.
+- **SERVER-config in NeoForge 21.1** staat standaard in `config/` (niet in `<wereld>/serverconfig/`; die map is alleen voor overrides per wereld). Op de client is hij ook in het hoofdmenu "geladen" (standaardwaarden) en wordt hij bij het joinen van een dedicated server vervangen door de servercopy (`Reloading`-event).
+- **Eigen GUI-layers** (`RegisterGuiLayersEvent`) vallen niet onder vanilla's `hideGui`-groep: F1 zelf checken.
 - **Density functions:** `NoiseChunk` vult bij elke chunk *alle* `interpolated`-markers die via `mapAll` bereikbaar zijn, ook van ringen die ver weg liggen. Dure terreininvoer kost dus in elke chunk; meet dat bij elke zware nieuwe ringinvoer. **Meting change 9** (seed 20260930, JFR `minecraft.ChunkGeneration`, 16×16 chunks per ring, tweede (warme) ronde, ms per chunk, stap `noise` gemiddeld / mediaan / p95): vóór change 9 ring 1 34,9 / 31,5 / 49,4, ring 3 31,2 / 29,0 / 41,8; na change 9 ring 1 40,9 / 40,8 / 55,0, ring 3 31,0 / 29,6 / 50,2; vanilla-preset 35,1 / 33,7 / 50,5 en 33,5 / 30,2 / 63,5. Dus ring 1 = 1,17× vanilla, ring 3 0,92× (de vanilla-invoer is in ring 3 niet meetbaar: de noise-stap wordt gedomineerd door per-blok-interpolatie, aquifer en ore veins). Budget 1,3×; ring gate nog niet nodig (backlog, change 23). Werkwijze: via RCON `jfr start` → `forceload add` → `execute if loaded` pollen → `jfr stop` → `jfr print --json --events minecraft.ChunkGeneration run/debug/<bestand>.jfr`, filteren op `chunkPosX/Z`.
 - **Density functions** worden gedecodeerd vóór `ServerAboutToStartEvent` (worldgen-registries laden eerst): `RingLayout.current()` nooit in een codec of constructor aanroepen, alleen in `compute`. `initial_density_without_jaggedness` wordt ongewrapt en vanaf meerdere threads aangeroepen: geen veranderlijke instantiestaat in density functions; cache via `RingColumnCache` (ThreadLocal).
 - Vanilla vindt het "preliminary surface" (aquifers, `above_preliminary_surface`) waar `initial_density_without_jaggedness` > 0,390625 is; tel die drempel op bij een terrein met zijn oppervlak op dichtheid 0.

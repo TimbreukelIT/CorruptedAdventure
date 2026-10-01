@@ -9,11 +9,16 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.block.ModFlammables;
 import nl.timtoys.corruptedadventure.command.CaCommand;
+import nl.timtoys.corruptedadventure.condition.ConditionTicker;
+import nl.timtoys.corruptedadventure.condition.DebugConditionDriver;
+import nl.timtoys.corruptedadventure.condition.PlayerConditions;
 import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
+import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
 import nl.timtoys.corruptedadventure.network.ModNetwork;
 import nl.timtoys.corruptedadventure.network.RingLayoutSync;
+import nl.timtoys.corruptedadventure.registry.ModAttachments;
 import nl.timtoys.corruptedadventure.registry.ModBiomeSources;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModChunkGenerators;
@@ -40,6 +45,8 @@ public final class CorruptedAdventure {
         // DeferredRegisters and network registration are added per change (see CODEBASE.md).
         LOGGER.info("The Corrupted Adventure is loading");
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
+        ServerConfig.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
@@ -50,6 +57,7 @@ public final class CorruptedAdventure {
         ModPlacementModifierTypes.register(modEventBus);
         ModFeatures.register(modEventBus);
         ModSoundEvents.register(modEventBus);
+        ModAttachments.register(modEventBus);
         DataGenerators.register(modEventBus);
         ModNetwork.register(modEventBus);
         RingSettingsSnapshot.register(NeoForge.EVENT_BUS);
@@ -57,6 +65,9 @@ public final class CorruptedAdventure {
         RingWorldBorder.register(NeoForge.EVENT_BUS);
         RingLayoutSync.register(NeoForge.EVENT_BUS);
         CaCommand.register(NeoForge.EVENT_BUS);
+        ConditionTicker.register(NeoForge.EVENT_BUS);
+        PlayerConditions.register(NeoForge.EVENT_BUS);
+        DebugConditionDriver.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

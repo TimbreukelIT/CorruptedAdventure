@@ -262,3 +262,49 @@ Antwoord: **A** — bij dood alle meters naar 0 (geen `copyOnDeath`); in creatie
 | 2026-10-01 | conditions | HUD: balk per meter > 0 rechts boven de hongerbalk met drempelstreepjes; placeholder-look, definitief in een `textures`-change | Vanilla-gevoel; verschijnt alleen als het speelt |
 | 2026-10-01 | conditions | Dood/creatief: meters naar 0 bij dood; geen opbouw en geen effecten in creatief/spectator | Geen doodsspiraal; bouwers niet gestoord |
 | 2026-10-01 | conditions | Meters gesynct als volledige momentopname, alleen naar de eigen speler, alleen bij verandering van de afgeronde waarde + bij login/respawn/dimensiewissel | Klein, robuust tegen gemiste pakketten; HUD na respawn direct correct |
+
+---
+
+## Bouwnotities (change 19, 2026-10-01)
+
+- Aannames over change 18 klopten: `ModNetwork.register(PayloadRegistrar)` (één regel per payload), `ClientboundHandlers.forward/set`, `RingWorld.isActive`, `client2` + `-PquickPlay`. Handlerpatroon volgens de afstemming (handler in `client/network/`). `PROTOCOL_VERSION` → `"2"`.
+- **Afwijking config-locatie:** NeoForge 21.1 zet SERVER-configs standaard in `config/corruptedadventure-server.toml` (globaal); `<wereld>/serverconfig/` is alleen een override-map per wereld. Het plan (en plan 20) noemde `serverconfig/…` als standaardplek. Gedrag "per wereld instelbaar" blijft (via de override), de standaard geldt voor alle werelden. Op de client is de config ook in het hoofdmenu geladen (standaardwaarden) en wordt hij bij het joinen vervangen door de servercopy.
+- Handler zonder `enqueueWork`: payload-handlers draaien al op de main thread (geverifieerd in 18); zelfde als `RingLayoutHandler`.
+- `Condition` heeft geen `STREAM_CODEC`: de payload stuurt alle meters op enum-volgorde, er wordt nergens één conditie over het netwerk gestuurd.
+- Effectduur 240 ticks (12 s) i.p.v. ~11 s: na 20 ticks staat er nog 220 over, ruim boven vanilla's knippergrens van 200.
+- Extra configsleutel `damageInterval` (1 s) voor de schade-drempel (`DamageThreshold.intervalSeconds`, afstemming). Drempels moeten **strikt** oplopen; anders standaardwaarden + error-log.
+- `DifficultyFloor.VANILLA_STARVATION` sluit peaceful expliciet uit (vanilla's formule zelf zou boven 10 HP ook in peaceful schaden; daar raakt honger alleen nooit op).
+- Drempel-opruiming: per speler per conditie het aantal toegepaste drempels (transient). Na laden "onbekend" → de eerste tick wist alle niet-bereikte drempels (effecten worden met de speler opgeslagen). Eerst alle clears van alle condities, dan alle applies. `clear` haalt een effect alleen weg als het actieve exemplaar ambient is (na review: geen amplifier-check meer, zodat een live gewijzigde amplifier niet blijft hangen). Bekende beperking: een zwakker drankje onder ons sterkere effect (vanilla `hiddenEffect`) verdwijnt mee.
+- Instant-wijzigingen (`/ca condition set`, latere items) syncen direct; de drempeleffecten volgen bij de volgende tick (≤ 1 s).
+- Volledige sync bij login/respawn/dimensiewissel ook in niet-ringwerelden (meters zijn spelerdata); alleen de ticker is aan `RingWorld.isActive` gebonden.
+- `debug fall` en `debug off` gedragen zich hetzelfde (−`fallRate`); `off` haalt de speler alleen uit de map.
+
+### Testresultaten
+- **B:** `./gradlew build` groen, 122 tests (nieuw: `ConditionMetersTest`, `ConditionTickerTest`, `DamageThresholdTest`, `ConditionSyncPayloadTest`, `ThresholdLevelsTest`); `ClientIsolationTest` groen.
+- **D:** n.v.t. (geen datagen).
+- **S:** `tools/server-smoke-test.sh` met `level-name=smoke-change19`: `Done (5.5 s)`, geen fouten. Daarna RCON + `Dev` en `Dev2` via quick-play:
+  1. `ca condition debug Dev rise` → `Dev` 80 → 90 → 100 in ~2 s-stappen (~5/s); `Dev2` bleef 0.
+  2. Bij 100: `Dev` had slowness + weakness (ambient, `show_particles: 0b`, duur 231); Health 13 → 11 in 3 s (normal). `Dev2` geen effecten, Health 20.
+  3. `debug Dev fall`: 85/80 beide effecten, 70 alleen slowness, 50 slowness, 45 geen effecten.
+  4. `ca condition set Dev2 debug 60` → alleen `Dev2` slowness.
+  5. Relog `Dev` (kick + client opnieuw): login-sync `[42]` = waarde vóór het uitloggen. Server `stop` + herstart: `Dev [30]`, `Dev2 [63]` = waarden vóór de stop. `kill Dev` (met `doImmediateRespawn`) → meter 0, client kreeg `[80]` → `[0]`.
+  6. Dimensiewissel (creatief + `rise` = meter staat stil op 42): Nether en terug, meter 42, client kreeg na elke wissel `[42]`.
+  7. Client-logs: elke client ontving alleen zijn eigen meters (Dev: 107 berichten, 0 van Dev2; Dev2: 19, 0 van Dev); geen "unknown payload", geen kicks buiten de geplande (kick/stop).
+  Extra: een slowness-drankje (60 s) bleef staan toen de meter onder 50 zakte; creatief: geen effecten, meter stijgt niet.
+- Blokkerende HUD-check: onderdeel van teststop 1 na change 20 (zie hieronder en `change-20.md`).
+
+## In-game checklist (W)
+
+Wereld: `corrupted_world`, seed `20260930` (dedicated server met `Dev` + `Dev2`, of singleplayer voor stap 1–5). Spawn ligt in ring 1 bij ~0,0; de condities hangen niet van de ring af, alleen van "ringwereld" (F3 rechts: `CA ring (client): ring_1`). Survival, `/difficulty normal`.
+
+1. **Opbouw + HUD:** `/ca condition debug Dev rise`. Verwacht: rechts boven de hongerbalk verschijnt een paarse balk (81 px breed, even breed als de hongerbalk) die in ~20 s volloopt; drie witte streepjes op 50/75/100 %. Bij 50 traagheid-icoon, bij 75 zwakte-icoon (beide zonder particles, knipperen **niet**), bij 100 elke seconde een halve hartje schade.
+2. **Afbouw:** `/ca condition debug Dev fall`. Zwakte verdwijnt direct onder 75, traagheid onder 50, de balk verdwijnt bij 0. `/ca condition get Dev` toont de waarde met één decimaal.
+3. **Stapeling met luchtbellen:** `/ca condition set Dev debug 60` + `/ca condition debug Dev rise` + `/effect give Dev minecraft:resistance 120 4 true`, dan `/fill ~-1 ~ ~-1 ~1 ~2 ~1 minecraft:water replace minecraft:air` en kopje onder. Luchtbellen staan direct boven de hongerbalk, de conditiebalk erboven (schuift mee); weer boven water schuift hij terug.
+4. **Verbergen:** F1 → balk weg. `/gamemode creative` → balk weg, effecten weg, meter stijgt niet (`/ca condition get Dev`). `/gamemode spectator` → balk weg. `/gamemode survival` → balk direct terug.
+5. **Respawn en dimensiewissel:** met de meter op 100 en resistance (stap 3): `/ca tpring 1 nether` → balk staat **direct** vol na het laden (niet eerst leeg). `/ca tpring 1` terug → idem. Daarna `/kill Dev` → na respawn geen balk (meter 0), geen effecten.
+6. **Per speler (dedicated):** `/ca condition set Dev2 debug 60` → alleen `Dev2` ziet een balk + traagheid; `Dev` ziet niets van `Dev2`. `/ca condition debug Dev rise` → `Dev2` ziet niets van `Dev`.
+7. **Persistentie:** `/gamemode creative`, `/ca condition set Dev debug 40`, uitloggen (in creatief zakt de meter alleen met `fall`/`off`; zet daarom eerst `/ca condition debug Dev rise`, dan blijft hij staan). Opnieuw joinen, `/gamemode survival` → balk staat direct op ~40 en zakt daarna (de debug-modus wordt bij uitloggen vergeten).
+8. **Drankje blijft:** `/effect give Dev minecraft:slowness 60 0`, `/ca condition set Dev debug 60`, dan `debug fall` → onder 50 blijft het traagheid-drankje (met particles) staan.
+
+### Code review (`/code-review medium`)
+Geen correctheidsfouten. Twee lage bevindingen in `MobEffectThreshold.clear`: (1) een zwakker drankje dat vanilla onder ons sterkere effect verbergt (`hiddenEffect`) verdwijnt mee — vastgelegd als bekende beperking (alleen bij een amplifier > 0 in de config; voor traagheid/zwakte is dat voor de speler gunstig; de verborgen instantie is private); (2) een live verlaagde amplifier bleef na het zakken hangen — opgelost: `clear` checkt alleen nog "ambient", niet de amplifier.

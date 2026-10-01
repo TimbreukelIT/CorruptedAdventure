@@ -6,8 +6,11 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
+import nl.timtoys.corruptedadventure.client.network.ConditionSyncHandler;
 import nl.timtoys.corruptedadventure.client.network.RingLayoutHandler;
 import nl.timtoys.corruptedadventure.network.ClientboundHandlers;
+import nl.timtoys.corruptedadventure.network.ConditionSyncPayload;
 import nl.timtoys.corruptedadventure.network.RingLayoutPayload;
 
 /**
@@ -20,6 +23,8 @@ public final class CorruptedAdventureClient {
     public CorruptedAdventureClient(IEventBus modEventBus, ModContainer modContainer) {
         CorruptedAdventure.LOGGER.info("The Corrupted Adventure client is loading");
         ClientboundHandlers.set(RingLayoutPayload.TYPE, RingLayoutHandler::handle);
+        ClientboundHandlers.set(ConditionSyncPayload.TYPE, ConditionSyncHandler::handle);
+        modEventBus.addListener(ConditionHudLayer::onRegisterGuiLayers);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);
     }

@@ -83,6 +83,16 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Overzicht condities: ring 2 uitdroging · ring 3 hitte · ring 4 gif · ring 5 void/glitches · Nether-3 kou · Nether-5 stilte.
 - Sommige drempels sturen **client-effecten** aan (glitch-visuals, volume en HUD bij stilte). De client leest daarvoor alleen de gesyncte meter en beslist zelf niets.
 
+**Uitwerking (change 19, gebouwd):**
+- **Model:** Java-enum `Condition` (nu alleen de blijvende test-conditie `debug`); per conditie precies één regel (`ConditionRule`, punten per seconde, + op / − af) en N drempels. Opslag op naam (lenient: een onbekende naam wordt overgeslagen), sync op volgorde.
+- **Rate-pijplijn (elke 20 ticks, alleen ringwerelden):** regel → alle `RateModifier`s in registratievolgorde (ringweer, gear, zuiverend Nether-4, …; ook buiten de zone van de conditie) → in creatief/spectator nooit omhoog (wel omlaag) → meter klemmen op 0–100.
+- **Drempels cumulatief:** alle drempels ≤ meter zijn actief. Mob effects worden elke seconde ververst met 12 s duur, ambient en zonder particles (geen knipperend icoon); onder de drempel haalt de server "ons" effect direct weg (alleen als het actieve exemplaar ambient is, dus een actief drankje blijft staan). Schade-drempels: interval in seconden + ondergrens per conditie (`DifficultyFloor`: altijd / zoals vanilla-verhongeren / nooit dodelijk). In creatief/spectator geen effecten.
+- **Dood:** alle meters naar 0. Bewaard bij uitloggen, serverherstart en dimensiewissel. Moeilijkheidsgraad alleen via de schade-ondergrens.
+- **Config:** SERVER-config `corruptedadventure-server.toml` (standaard in `config/`, per wereld te overschrijven via `<wereld>/serverconfig/`), alleen getallen, door NeoForge naar de client gesynct. Welk effect bij welke drempel hoort staat in Java. Drempels strikt oplopend, anders standaardwaarden.
+- **Sync:** volledige momentopname (afgerond, 1 byte per conditie) alleen naar de eigen speler, alleen als een afgeronde waarde verandert (≤ 1/s), plus bij login, respawn en dimensiewissel. Andere spelers krijgen andermans meters nooit.
+- **HUD:** per meter > 0 een balk (81 × 5 px) rechts boven de hongerbalk, gestapeld boven luchtbellen, met streepjes op de drempels; verborgen met F1, in creatief en spectator. Placeholder-look (vlakken), definitief in een `textures`-change.
+- **Debug:** `/ca condition get [<spelers>]`, `/ca condition set <spelers> <conditie> <0–100>`, `/ca condition debug <spelers> rise|fall|off` (stuurt de `debug`-conditie: rise +5/s, anders −5/s; drempels 50 traagheid, 75 zwakte, 100 schade 1/s).
+
 ### 1.10 Biome-varianten
 - Ring 1: kopieën van vanilla biomes (zie §1.7).
 - Ring 2–5: **4–5 varianten per ring** + **1 overgangsbiome per grens**. Nether-ringen: aantal per ring in de ringsecties.
