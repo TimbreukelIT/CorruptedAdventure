@@ -57,7 +57,9 @@ final class ModBlockStateProvider extends BlockStateProvider {
 
     /**
      * Ore as two full cubes: a base (a reference to the vanilla texture, no copy) with our own transparent overlay on
-     * top, like vanilla's grass block overlay. Cutout, so overlay pixels must have alpha 0 or 255.
+     * top, like vanilla's grass block overlay. Cutout, so overlay pixels must have alpha 0 or 255. The overlay is
+     * emissive (NeoForge {@code neoforge_data}: full block and sky light) without ambient occlusion, so it glows evenly
+     * in the dark; this only affects rendering, not the light the block emits.
      */
     private void oreWithOverlay(Block block, ResourceLocation particle, CubeTextures base, CubeTextures overlay) {
         BlockModelBuilder model = models().withExistingParent(BuiltInRegistries.BLOCK.getKey(block).getPath(), mcLoc("block/block"))
@@ -66,7 +68,10 @@ final class ModBlockStateProvider extends BlockStateProvider {
         base.apply(model, "base");
         overlay.apply(model, "overlay");
         model.element().allFaces((direction, face) -> face.texture("#base_" + CubeTextures.face(direction)).cullface(direction)).end();
-        model.element().allFaces((direction, face) -> face.texture("#overlay_" + CubeTextures.face(direction)).cullface(direction)).end();
+        model.element().allFaces((direction, face) -> face.texture("#overlay_" + CubeTextures.face(direction)).cullface(direction))
+                .emissivity(15, 15)
+                .ao(false)
+                .end();
         simpleBlock(block, model);
     }
 

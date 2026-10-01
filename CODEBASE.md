@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-10-01 — change 16 (plaatsing zielkristal in Nether-ring 1: aders + crimson-vloerfeature, `NetherRing1Features`)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–16 klaar, volgende: change 17)
+**Laatst bijgewerkt:** 2026-10-01 — change 17 (definitieve textures ring 1 uit het texturescript; emissive, pulserende zielkristal-overlays)
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–17 klaar, volgende: change 18)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — changes 0–16 klaar |
+| 1 — Wereld | In bouw — changes 0–17 klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -101,7 +101,7 @@ src/main/java/nl/timtoys/corruptedadventure/
   data/                        🔲 SavedData (wereld) en attachments (speler)
   datagen/                     ✅ providers (`./gradlew runData`); 🔲 recipes
     DataGenerators.java        ✅ `GatherDataEvent`: datapack-registries (configured/placed features, biomes, wolf-varianten, biome modifiers) + tags, data maps, lang, blockstates/models, loot
-    ModBlockStateProvider.java ✅ blockstates + blockmodels (NeoForge-helpers; `render_type` cutout voor deur/valluik/ertsen in de model-JSON); `oreWithOverlay` = tweelaags-ertsmodel (vanilla-basis als verwijzing + eigen overlay, per top/zijkant/bodem via `CubeTextures`)
+    ModBlockStateProvider.java ✅ blockstates + blockmodels (NeoForge-helpers; `render_type` cutout voor deur/valluik/ertsen in de model-JSON); `oreWithOverlay` = tweelaags-ertsmodel (vanilla-basis als verwijzing + eigen overlay, per top/zijkant/bodem via `CubeTextures`; overlay-element emissive 15/15 zonder AO)
     ModItemModelProvider.java  ✅ itemmodels: blockmodel als parent; hek/knop inventory-model, valluik `_bottom`, deur en `soul_crystal` plat item
     ModBlockLootProvider.java  ✅ blok-loot (`create` → `LootTableProvider`); `getKnownBlocks` = alle `ModBlocks`, dus elk blok moet een table hebben
     ModBlockTagsProvider.java  ✅ blok-tags (vanilla `wooden_*`/`planks`/`logs_that_burn`/`dirt`/`mineable/shovel`/`mineable/pickaxe`/`needs_iron_tool`, `c:`-tags, `dead_logs`)
@@ -125,7 +125,7 @@ src/main/resources/                (lang staat niet hier maar in datagen: `datag
   data/minecraft/tags/worldgen/world_preset/normal.json  ✅ zet de preset in het menu "World Type" (replace: false)
   META-INF/accesstransformer.cfg  ✅ opent `NoiseBasedChunkGenerator.globalFluidPicker` en `NoiseChunk.aquifer` (voor `ring_noise`)
   assets/corruptedadventure/
-    textures/                     ✅ uit `tools/textures/Ring1Textures.java` (gecommit): `block/` withered_dirt, dead_grass_block_{top,side,snow}, dead_log(_top), stripped_dead_log(_top), dead_planks, dead_door_{top,bottom}, dead_trapdoor, soul_crystal_ore_overlay, crimson_soul_crystal_ore_overlay_{top,side} (transparante overlays); `item/` dead_door, soul_crystal
+    textures/                     ✅ definitief (change 17) uit `tools/textures/Ring1Textures.java` (gecommit, PNG's én `.mcmeta`): `block/` withered_dirt, dead_grass_block_{top,side,snow}, dead_log(_top), stripped_dead_log(_top), dead_planks, dead_door_{top,bottom}, dead_trapdoor, soul_crystal_ore_overlay, crimson_soul_crystal_ore_overlay_{top,side} (transparante overlays, 16×128 animatiestrip + `.png.mcmeta`); `item/` dead_door, soul_crystal (animatiestrip + `.mcmeta`)
 
 src/test/java/nl/timtoys/corruptedadventure/
   ring/RingLayoutTest.java     ✅ grenzen, overgang, grensruis, Nether-schaal, determinisme per seed, `ringProgress` (ring 1 en ring 2)
@@ -288,7 +288,7 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `build.gradle` | ModDevGradle; runs: client, server, gameTestServer, data (output naar `src/generated/resources`); JUnit 5 via `neoForge.unitTest` (tests draaien in een FML-omgeving, Minecraft-classes bruikbaar) |
 | `.github/workflows/build.yml` | CI-build uit de MDK |
 | `run/config/corruptedadventure-common.toml` | (niet in git) COMMON-config, ontstaat bij de eerste start |
-| `tools/textures/Ring1Textures.java` | texturescript ring 1 (single-file Java, alleen JDK, buiten Gradle en de jar): `java tools/textures/Ring1Textures.java` vanuit de repo-root. Eigen pixels, geen vanilla; vaste seed per bestandsnaam (twee keer draaien = byte-identiek). Per texture een tekenmethode, paletten bovenin, gedeelde helpers (ruis, palet) in hetzelfde bestand. Change 10 = eenvoudige werkversie; change 15 voegt het zielkristal toe (palet `SOUL_CRYSTAL`, helpers `crystalClusters`/`shard`/`crystal`/`isFree`; overlays beginnen transparant, `set` schrijft altijd alpha 255), change 17 verfijnt |
+| `tools/textures/Ring1Textures.java` | texturescript ring 1, **definitief** sinds change 17 (single-file Java, alleen JDK, buiten Gradle en de jar): `java tools/textures/Ring1Textures.java` vanuit de repo-root. Eigen pixels, geen vanilla; vaste seed per bestandsnaam (twee keer draaien = byte-identiek, ook de `.mcmeta`). `TEXTURES` = naam → tekenmethode, `still`/`pulsing` (pulsing = 8-frame-strip via `pulseStrip` + `.mcmeta`, `PULSE_FRAMES`/`PULSE_FRAMETIME`). Paletten bovenin (zie `fase-1-wereld.md`), gedeelde patronen (`valueNoise`, `furrow`, `topBand`, `crystalClusters` + `outline`/`merge`, `window`, `rail`). `render(naam)` hergebruikt pixels (grasblokzijkant = `withered_dirt`, gestripte kopse kant = log-kopse kant). `HAND_EDITED`: met de hand bewerkte bestanden, worden overgeslagen en van schijf gelezen. Schrijft ook het contactblad `build/texture-preview/ring1.png` (niet in git) |
 | `tools/server-smoke-test.sh` | test S: start `runServer`, wacht op `Done (` of een fout, stopt de server-JVM; log in `build/runServer.log` |
 
 ## Databestanden (handgeschreven)
@@ -309,7 +309,7 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `data/corruptedadventure/worldgen/noise/placeholder_terrain.json`, `void_islands.json` | noise-parameters voor placeholder-terrein en void-eilanden |
 | `META-INF/accesstransformer.cfg` | wordt automatisch opgepikt door ModDevGradle en FML (geen extra config nodig) |
 
-Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change16` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer), van vóór change 14 ook niet (`placeholder_nether_ring_1`); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
+Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change17` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer), van vóór change 14 ook niet (`placeholder_nether_ring_1`); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
 
 ---
 
@@ -358,6 +358,8 @@ Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `
 - RCON-commando's draaien op de world spawn (`RconConsoleSource` = `getSharedSpawnPos`). Spawnpositie uitlezen: `summon minecraft:marker ~ ~ ~ {Tags:["s"]}` + `data get entity @e[tag=s,limit=1] Pos`; hoogte van een kolom: `execute positioned x 0 z positioned over world_surface run summon …`.
 - **Blokken toevoegen** (sjabloon change 10): blok in `ModBlocks` via `register` (blockitem komt vanzelf, deur via `registerDoor`); daarna blockstate/model in `ModBlockStateProvider`, itemmodel in `ModItemModelProvider`, loot in `ModBlockLootProvider` (anders faalt `runData`), tags, lang (en + nl), textures via het script. Houtsets: `StrippableLogBlock` + `BlockSetType`/`WoodType` in `ModWoodTypes` + vuurkansen in `ModFlammables`.
 - **Textures vóór `runData`:** de model-providers controleren via `ExistingFileHelper` (`--existing src/main/resources`) of elke texture bestaat. Eerst het texturescript draaien. Cutout-textures (deur, valluik, erts-overlays) alleen alpha 0 of 255.
+- **Emissive overlay** (change 17): `ElementBuilder.emissivity(15, 15).ao(false)` op het overlay-element → `neoforge_data` met `block_light`/`sky_light` 15 en `ambient_occlusion` false. Faces erven de data van hun element. Zonder `ao(false)` verdonkert smooth lighting de hoeken van de gloeiende pixels (NeoForge `ClientHooks.calculateFaceWithoutAO` slaat AO alleen over voor quads zonder AO). Alleen render-effect, los van het `lightLevel` van het blok. Sodium/shaderpacks negeren het mogelijk.
+- **Geanimeerde textures** (change 17): verticale strip 16×(16·n) + `<naam>.png.mcmeta` naast de PNG. Met `interpolate` mengt de client per kanaal, ook alpha: houd het alpha-masker in alle frames gelijk (alleen kleur animeren), anders ontstaan halftransparante pixels in een cutout-model.
 - **Tweelaags-ertsmodel** (`oreWithOverlay`, change 15): twee even grote kubussen met `cullface`, overlay als tweede element (zoals vanilla's grasblok-overlay; geen z-fighting). `render_type` cutout in de model-JSON, dus de overlay mag alleen alpha 0/255 hebben. De basis is een verwijzing naar de vanilla-texture (`minecraft:block/netherrack`), nooit een kopie; `ExistingFileHelper` kent de vanilla-textures zelf. Nieuwe ringertsen: `oreWithOverlay` hergebruiken.
 - **Losse items registreren vóór de blockitems** (de eerste `ModBlocks.register` triggert de class-init van `ModItems`, inclusief zijn eigen velden). Daarom sorteert `ModCreativeTabs` zelf (blokken eerst), niet `ModItems.entries()`.
 - **Loot testen via RCON** (change 15): `setblock` erts + kist, `loot insert <kist> mine <erts> minecraft:iron_pickaxe[minecraft:enchantments={levels:{"minecraft:fortune":3}}]`, dan `data get block <kist> Items`. `loot … mine` controleert de tool-tier niet en geeft geen XP.
