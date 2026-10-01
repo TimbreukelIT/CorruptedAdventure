@@ -1,0 +1,26 @@
+{
+  "feature": "corruptedadventure:withered_sand_patch",
+  "placement": [
+    {
+      "type": "minecraft:count",
+      "count": 2
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "corruptedadventure:ring_chance",
+      "from_chance": 0.0,
+      "ring": "ring_1",
+      "signal": "transition",
+      "to_chance": 0.8
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "OCEAN_FLOOR_WG"
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "feature": "corruptedadventure:withered_trees",
+  "placement": [
+    {
+      "type": "minecraft:noise_threshold_count",
+      "above_noise": 5,
+      "below_noise": 1,
+      "noise_level": 0.0
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:surface_water_depth_filter",
+      "max_water_depth": 0
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "OCEAN_FLOOR"
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:matching_block_tag",
+        "offset": [
+          0,
+          -1,
+          0
+        ],
+        "tag": "minecraft:dirt"
+      }
+    },
+    {
+      "type": "corruptedadventure:ring_chance",
+      "from_chance": 1.0,
+      "ring": "ring_1",
+      "signal": "transition",
+      "to_chance": 0.2
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": {
+      "feature": "corruptedadventure:dead_tree",
+      "placement": []
+    },
+    "features": [
+      {
+        "chance": 0.7,
+        "feature": {
+          "feature": "corruptedadventure:dead_tree_forked",
+          "placement": []
+        }
+      }
+    ]
+  }
+}

@@ -20,6 +20,9 @@ public final class ModBiomes {
     public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_4 = key("placeholder_nether_ring_4");
     public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_5 = key("placeholder_nether_ring_5");
 
+    // Transition biomes: one per boundary, filling its transition zone.
+    public static final ResourceKey<Biome> WITHERED_EXPANSE = key("withered_expanse");
+
     // Permanent: beyond ring 5 (floating islands, then void).
     public static final ResourceKey<Biome> VOID_EDGE = key("void_edge");
     public static final ResourceKey<Biome> NETHER_VOID_EDGE = key("nether_void_edge");

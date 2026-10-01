@@ -93,6 +93,7 @@ final class DutchLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.DEAD_PRESSURE_PLATE, "Doodhouten drukplaat");
         addBlock(ModBlocks.DEAD_BUTTON, "Doodhouten knop");
 
+        biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
         biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder ring 2");
         biome(ModBiomes.PLACEHOLDER_RING_3, "Placeholder ring 3");
         biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder ring 4");

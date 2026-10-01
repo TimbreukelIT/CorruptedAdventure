@@ -1,9 +1,14 @@
 package nl.timtoys.corruptedadventure.worldgen.biome;
 
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderOwner;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 
@@ -25,6 +30,20 @@ final class StandaloneHolderGetter<T> implements HolderGetter<T> {
 
     HolderOwner<T> owner() {
         return owner;
+    }
+
+    /** JSON registry ops that know only {@code registry}, with a fresh getter for {@code known}. */
+    static <T> RegistryOps<JsonElement> ops(ResourceKey<? extends Registry<T>> registry, Predicate<ResourceKey<T>> known) {
+        StandaloneHolderGetter<T> getter = new StandaloneHolderGetter<>(known);
+        return RegistryOps.create(JsonOps.INSTANCE, new RegistryOps.RegistryInfoLookup() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public <E> Optional<RegistryOps.RegistryInfo<E>> lookup(ResourceKey<? extends Registry<? extends E>> registryKey) {
+                return registryKey.equals(registry)
+                        ? Optional.of((RegistryOps.RegistryInfo<E>) (Object) new RegistryOps.RegistryInfo<>(getter.owner(), getter, Lifecycle.stable()))
+                        : Optional.empty();
+            }
+        });
     }
 
     @Override

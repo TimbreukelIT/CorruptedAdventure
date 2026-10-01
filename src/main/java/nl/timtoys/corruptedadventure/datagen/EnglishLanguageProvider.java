@@ -93,6 +93,7 @@ final class EnglishLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.DEAD_PRESSURE_PLATE, "Dead Pressure Plate");
         addBlock(ModBlocks.DEAD_BUTTON, "Dead Button");
 
+        biome(ModBiomes.WITHERED_EXPANSE, "Withered Expanse");
         biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder Ring 2");
         biome(ModBiomes.PLACEHOLDER_RING_3, "Placeholder Ring 3");
         biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder Ring 4");

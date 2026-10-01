@@ -36,6 +36,12 @@
               "type": "minecraft:fixed",
               "biome": "corruptedadventure:void_edge"
             }
+          },
+          "transitions": {
+            "ring_1": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:withered_expanse"
+            }
           }
         },
         "settings": "corruptedadventure:overworld"

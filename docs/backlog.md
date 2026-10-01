@@ -48,3 +48,4 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [corruption] Idee: dood gras dat naar vanilla-gras spreidt ("groeiende dode plekken"). (bron: change 10)
 - [blocks] Pad en farmland van verdorde aarde/dood gras worden bij bedekken/uitdrogen vanilla-aarde (vanilla hardcodet `Blocks.DIRT`); een speler kan een dode plek zo "genezen". Eigen pad/farmland als dat ongewenst blijkt. (bron: change 10)
 - [mobs] Dood gras en verdorde aarde staan bewust niet in `#minecraft:animals_spawnable_on` (geen dieren op dode grond); spawnregels voor `withered_expanse` en kale plekken bij de mobs-fase nagaan. (bron: change 10)
+- [mobs] `dead_grass_block` (en evt. `withered_dirt`) aan `#rabbits_spawnable_on` toevoegen, anders spawnen konijnen in de withered expanse alleen op zand (bron: change 11)

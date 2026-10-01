@@ -22,7 +22,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 ### 1.3 Ringgrenzen en overgangszones
 - Grenzen uit config (zie `00-overzicht.md`), vervormd met seeded ruis van **±96 blokken**. Vorm (change 2): twee lagen simplex-ruis, golven van ~600 en rimpels van ~150 blokken (75/25), gesampled in overworld-coördinaten zodat de Nether exact meeloopt.
 - Overgangszone van **~128 blokken** rond elke grens (Nether: ÷4, dus ~32 blokken en ±24 ruis).
-- In de overgangszone: blend van terrein en een eigen overgangsbiome per grens (uit te werken per ring). Tot een grens zijn overgangsbiome heeft, wisselt de biome **hard op gewicht 0,5** (precies op de verruisde grens); overgangsbiomes komen later via een optioneel veld van de ring-BiomeSource (zie §1.14).
+- In de overgangszone: blend van terrein en een eigen overgangsbiome per grens (uit te werken per ring). Een overgangsbiome vult **de hele zone**, ook boven water (change 11). Tot een grens zijn overgangsbiome heeft, wisselt de biome **hard op gewicht 0,5** (precies op de verruisde grens); overgangsbiomes staan in het optionele veld `transitions` van de ring-BiomeSource (zie §1.14).
 - **Config → snapshot per wereld:** de config geeft de standaardwaarden. Bij het aanmaken van een wereld worden ze in die wereld vastgelegd; daarna gebruikt `ringAt` alleen die snapshot. Een aangepaste config geldt alleen voor nieuwe werelden. De server synct de waarden naar de client (voor HUD en muren).
 - Snapshot (gebouwd in change 1): `<wereld>/corruptedadventure/ring_settings.json`, gelezen of aangemaakt bij `ServerAboutToStartEvent` (die op dedicated én integrated server vóór `loadLevel()` komt, dus vóór de spawn-chunks). Geen `SavedData`, want die bestaat pas als de level geladen is. Een bestaand snapshot gaat altijd vóór de config. Ongeldige config of corrupt snapshot → de server start niet (duidelijke foutmelding), nooit stilletjes terugvallen.
 
@@ -111,6 +111,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Placeholders (tijdelijk):** `placeholder_ring_1…5` (overworld) en `placeholder_nether_ring_1…5` (Nether). Alleen een **eigen kleur** (lucht, fog, water, gras, blad; Nether vooral fog) en **eigen weer** (neerslag en temperatuur: ring 1 en 4 met regen, ring 2, 3, 5 en de Nether droog). **Geen features, geen mob-spawns**, geen `has_structure/*`-tags. Ze verdwijnen zodra de echte biomes van een ring er zijn.
 - **Void (blijvend):** `void_edge` (overworld) en `nether_void_edge` (Nether), voorbij ring 5; aparte biomes zodat sfeer later per dimensie kan.
 - Overgangszone: harde wissel op gewicht 0,5 tot er overgangsbiomes zijn (§1.3).
+- **Overgangsbiomes (change 11):** optioneel veld `transitions` (sleutel = binnenring van de grens, `ring_1` = grens 1→2; `void` is ongeldig), per grens een geneste biome-source. Binnen de hele zone (`inTransition`, ~128 blokken, Nether ~32) wint die source; grenzen zonder overgang wisselen hard op 0,5. Nu alleen overworld grens 1 (`withered_expanse`); de Nether heeft geen overgangen.
 
 ### 1.15 `ring_blend` en placeholder-terrein (change 6)
 - **Chunk-generator `corruptedadventure:ring_noise`** (overworld en Nether): vanilla noise-generatie zonder vloeistof in de void-zone. Vanilla vult alle open ruimte onder zeeniveau met water (overworld) of lava (Nether) en zet daarnaast lokale aquifer-vloeistof (onder Y -10 lava, bijv. onder zwevende eilanden); `ring_noise` doet geen van beide vanaf de zone ring 5 → void (vloeistof-kiezer + aquifer-wrapper). Later ook bruikbaar voor ringen met een eigen vloeistofregel.
@@ -149,6 +150,12 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 **Biomes**
 - Eigen kopieën van de vanilla overworld-biomes (zie §1.7), inclusief deep dark. **Geen** mushroom fields.
 - Overgangsbiome 1→2: **verdorde vlakte** (`withered_expanse`, werktitel): bladloze bossen, vaal gras, zandsteenranden, een voorbode van ring 2.
+- **Uitwerking (change 11):** `corruptedadventure:withered_expanse` vult de hele zone van grens 1, ook boven water.
+  - Bodem (surface rule bovenaan `above_preliminary_surface` in `noise_settings/overworld.json`): dood gras als hoofdbodem, vlekken grove aarde en verdorde aarde (surface-ruis), zandsteen op hellingen (`steep`), verdorde aarde eronder en onder water.
+  - Features: kale bomen (`dead_tree`, `dead_tree_forked`: `dead_log` zonder blad, 70 % gevorkt), dode struiken en kort gras, zandsteenkeien en vlekken zand met grove aarde. Verloop via placement modifier `ring_chance` (signaal `transition` van grens 1): bomen 1,0 → 0,2, keien 0,1 → 1,0, zandvlekken 0 → 0,8 van de ring 1- naar de ring 2-kant. Zandvlekken komen vóór de begroeiing (stap `LOCAL_MODIFICATIONS`), zodat er geen gras op zand staat. Aantallen zijn startwaarden (test W).
+  - Klimaat: als savanne (temperatuur 2,0, geen neerslag). Spawns: vanilla-monsters ('s nachts), als enige dier konijnen (gewicht 4, zoals de woestijn). Konijnen spawnen alleen op `#rabbits_spawnable_on` (o.a. zand, niet op dood gras): in de zone dus vooral op de zandvlekken.
+  - Kleuren (startwaarden, fijnafstemming in change 13): lucht `0x8CB6F4`, fog `0xD6D4C0`, gras `0xA8A070`, blad `0x9A9060`, water `0x4E8A92` / waterfog `0x1A3336`.
+  - Vanilla-features in vanilla-volgorde (`globalOverworldGeneration`, ores, soft disks), eigen features achteraan per stap; geen `has_structure/*`- of `is_overworld`-tags.
 
 **Unieke blokken (fase 1, placeholders)**
 - Dood gras / verdorde aarde, dood hout (log + planks) voor kale plekken en het overgangsbiome.

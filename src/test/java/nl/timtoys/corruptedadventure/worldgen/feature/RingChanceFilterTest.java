@@ -1,0 +1,105 @@
+package nl.timtoys.corruptedadventure.worldgen.feature;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.world.level.Level;
+import nl.timtoys.corruptedadventure.config.RingSettings;
+import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.ring.RingLayout;
+import nl.timtoys.corruptedadventure.ring.RingPosition;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class RingChanceFilterTest {
+    private static final List<Integer> RADII = List.of(1500, 3500, 5500, 7500, 9500);
+    private static final RingLayout LAYOUT = new RingLayout(new RingSettings(RADII, 10000, 96, 128), 12345L);
+    private static final int REACH = 96 + 64;
+    private static final double EPSILON = 1e-9;
+
+    @Test
+    void curveRunsFromTheFirstToTheSecondChance() {
+        assertEquals(0.2, RingChanceFilter.curve(0.2, 1.0, 0.0, 1.0, 0.0), EPSILON);
+        assertEquals(0.6, RingChanceFilter.curve(0.2, 1.0, 0.0, 1.0, 0.5), EPSILON);
+        assertEquals(1.0, RingChanceFilter.curve(0.2, 1.0, 0.0, 1.0, 1.0), EPSILON);
+        // Decreasing.
+        assertEquals(0.8, RingChanceFilter.curve(1.0, 0.2, 0.0, 1.0, 0.25), EPSILON);
+    }
+
+    @Test
+    void curveIsZeroBeforeStartAndStretchedAfterIt() {
+        assertEquals(0.0, RingChanceFilter.curve(0.4, 1.0, 0.5, 1.0, 0.49), EPSILON);
+        assertEquals(0.4, RingChanceFilter.curve(0.4, 1.0, 0.5, 1.0, 0.5), EPSILON);
+        assertEquals(0.7, RingChanceFilter.curve(0.4, 1.0, 0.5, 1.0, 0.75), EPSILON);
+    }
+
+    @Test
+    void exponentBendsTheCurve() {
+        assertEquals(0.25, RingChanceFilter.curve(0.0, 1.0, 0.0, 2.0, 0.5), EPSILON);
+        assertEquals(Math.sqrt(0.5), RingChanceFilter.curve(0.0, 1.0, 0.0, 0.5, 0.5), EPSILON);
+    }
+
+    @Test
+    void transitionSignalIsTheBlendOfItsOwnBoundaryOnly() {
+        assertEquals(0.3, RingChanceFilter.transition(Ring.RING_1, new RingPosition(Ring.RING_1, Ring.RING_2, 0.3)).orElseThrow(), EPSILON);
+        assertTrue(RingChanceFilter.transition(Ring.RING_1, RingPosition.within(Ring.RING_1)).isEmpty());
+        assertTrue(RingChanceFilter.transition(Ring.RING_1, RingPosition.within(Ring.RING_2)).isEmpty());
+        assertTrue(RingChanceFilter.transition(Ring.RING_1, new RingPosition(Ring.RING_2, Ring.RING_3, 0.3)).isEmpty());
+    }
+
+    @Test
+    void chanceFollowsTheBlendInTheZoneAndIsZeroElsewhere() {
+        RingChanceFilter linear = RingChanceFilter.transition(Ring.RING_1, 0.0, 1.0);
+        for (int angle = 0; angle < 360; angle += 15) {
+            boolean sawZone = false;
+            for (int distance = 0; distance <= RADII.get(1) + REACH; distance += 8) {
+                int x = (int) Math.floor(distance * Math.cos(Math.toRadians(angle)));
+                int z = (int) Math.floor(distance * Math.sin(Math.toRadians(angle)));
+                RingPosition position = LAYOUT.sample(Level.OVERWORLD, x, z);
+                boolean inZone = position.inTransition() && position.inner() == Ring.RING_1;
+                double expected = inZone ? position.blend() : 0.0;
+                assertEquals(expected, linear.chance(LAYOUT, Level.OVERWORLD, x, z), EPSILON, "angle " + angle + " at " + distance);
+                sawZone |= inZone;
+            }
+            assertTrue(sawZone, "no zone of boundary 1 at angle " + angle);
+        }
+    }
+
+    @Test
+    void codecRoundTripsAndFillsDefaults() {
+        String json = """
+                {"signal": "transition", "ring": "ring_1", "from_chance": 1.0, "to_chance": 0.2}""";
+        RingChanceFilter filter = decode(json).getOrThrow();
+        JsonElement encoded = RingChanceFilter.CODEC.codec().encodeStart(JsonOps.INSTANCE, filter).getOrThrow();
+        assertEquals(JsonParser.parseString(json), encoded);
+
+        RingChanceFilter shaped = decode("""
+                {"signal": "transition", "ring": "ring_1", "from_chance": 0.0, "to_chance": 1.0, "start": 0.5, "exponent": 2.0}""").getOrThrow();
+        JsonElement shapedJson = RingChanceFilter.CODEC.codec().encodeStart(JsonOps.INSTANCE, shaped).getOrThrow();
+        assertEquals(0.5, shapedJson.getAsJsonObject().get("start").getAsDouble(), EPSILON);
+        assertEquals(2.0, shapedJson.getAsJsonObject().get("exponent").getAsDouble(), EPSILON);
+    }
+
+    @Test
+    void codecRejectsInvalidShapes() {
+        assertTrue(decode("""
+                {"signal": "transition", "ring": "void", "from_chance": 0.0, "to_chance": 1.0}""").isError());
+        assertTrue(decode("""
+                {"signal": "transition", "ring": "ring_1", "from_chance": 0.0, "to_chance": 1.5}""").isError());
+        assertTrue(decode("""
+                {"signal": "transition", "ring": "ring_1", "from_chance": 0.0, "to_chance": 1.0, "start": 1.0}""").isError());
+        assertTrue(decode("""
+                {"signal": "transition", "ring": "ring_1", "from_chance": 0.0, "to_chance": 1.0, "exponent": 0.0}""").isError());
+        assertTrue(decode("""
+                {"signal": "nonsense", "ring": "ring_1", "from_chance": 0.0, "to_chance": 1.0}""").isError());
+    }
+
+    private static DataResult<RingChanceFilter> decode(String json) {
+        return RingChanceFilter.CODEC.codec().parse(JsonOps.INSTANCE, JsonParser.parseString(json));
+    }
+}

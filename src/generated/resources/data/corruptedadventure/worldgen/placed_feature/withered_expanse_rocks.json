@@ -1,0 +1,26 @@
+{
+  "feature": "corruptedadventure:withered_sandstone_rock",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 3
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "corruptedadventure:ring_chance",
+      "from_chance": 0.1,
+      "ring": "ring_1",
+      "signal": "transition",
+      "to_chance": 1.0
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "MOTION_BLOCKING"
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

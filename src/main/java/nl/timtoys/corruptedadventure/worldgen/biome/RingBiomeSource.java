@@ -13,6 +13,7 @@ import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
+import nl.timtoys.corruptedadventure.ring.RingPosition;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -25,24 +26,34 @@ import java.util.stream.Stream;
  * variants within a ring stay data-driven.
  * <p>
  * A biome source knows neither its dimension nor the world seed: the dimension is a codec field, the seeded layout
- * comes from {@link RingLayout#current()}. Transition zones switch hard at the boundary (blend 0.5) until transition
- * biomes get their own optional field.
+ * comes from {@link RingLayout#current()}.
+ * <p>
+ * Optional {@code transitions}, keyed by the ring on the inside of a boundary ({@code ring_1} = boundary 1→2): that
+ * source fills the whole transition zone of the boundary, water included. Boundaries without one switch hard at
+ * blend 0.5.
  */
 public final class RingBiomeSource extends BiomeSource {
     private static final Codec<Map<Ring, BiomeSource>> RINGS_CODEC =
             Codec.unboundedMap(Ring.CODEC, BiomeSource.CODEC).validate(RingBiomeSource::validateRings);
 
+    private static final Codec<Map<Ring, BiomeSource>> TRANSITIONS_CODEC =
+            Codec.unboundedMap(Ring.CODEC, BiomeSource.CODEC).validate(RingBiomeSource::validateTransitions);
+
     public static final MapCodec<RingBiomeSource> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(source -> source.dimension),
-            RINGS_CODEC.fieldOf("rings").forGetter(source -> source.rings)
+            RINGS_CODEC.fieldOf("rings").forGetter(source -> source.rings),
+            TRANSITIONS_CODEC.optionalFieldOf("transitions", Map.of()).forGetter(source -> source.transitions)
     ).apply(instance, RingBiomeSource::new));
 
     private final ResourceKey<Level> dimension;
     private final Map<Ring, BiomeSource> rings;
+    private final Map<Ring, BiomeSource> transitions;
 
-    public RingBiomeSource(ResourceKey<Level> dimension, Map<Ring, BiomeSource> rings) {
+    public RingBiomeSource(ResourceKey<Level> dimension, Map<Ring, BiomeSource> rings, Map<Ring, BiomeSource> transitions) {
         this.dimension = dimension;
         this.rings = new EnumMap<>(rings);
+        // EnumMap's copy constructor rejects an empty plain Map.
+        this.transitions = transitions.isEmpty() ? Map.of() : new EnumMap<>(transitions);
     }
 
     static DataResult<Map<Ring, BiomeSource>> validateRings(Map<Ring, BiomeSource> rings) {
@@ -52,6 +63,12 @@ public final class RingBiomeSource extends BiomeSource {
                 : DataResult.error(() -> "Ring biome source is missing rings: " + Arrays.toString(missing));
     }
 
+    static DataResult<Map<Ring, BiomeSource>> validateTransitions(Map<Ring, BiomeSource> transitions) {
+        return transitions.containsKey(Ring.VOID)
+                ? DataResult.error(() -> "Ring biome source has a transition for void, but there is no boundary beyond the void")
+                : DataResult.success(transitions);
+    }
+
     @Override
     protected MapCodec<? extends BiomeSource> codec() {
         return CODEC;
@@ -59,7 +76,8 @@ public final class RingBiomeSource extends BiomeSource {
 
     @Override
     protected Stream<Holder<Biome>> collectPossibleBiomes() {
-        return rings.values().stream().flatMap(source -> source.possibleBiomes().stream());
+        return Stream.concat(rings.values().stream(), transitions.values().stream())
+                .flatMap(source -> source.possibleBiomes().stream());
     }
 
     @Override
@@ -69,7 +87,9 @@ public final class RingBiomeSource extends BiomeSource {
 
     /** @param x quart position, like {@link #getNoiseBiome(int, int, int, Climate.Sampler)} */
     Holder<Biome> getNoiseBiome(RingLayout layout, int x, int y, int z, Climate.Sampler sampler) {
-        Ring ring = layout.sample(dimension, QuartPos.toBlock(x), QuartPos.toBlock(z)).ring();
-        return rings.get(ring).getNoiseBiome(x, y, z, sampler);
+        RingPosition position = layout.sample(dimension, QuartPos.toBlock(x), QuartPos.toBlock(z));
+        BiomeSource transition = position.inTransition() ? transitions.get(position.inner()) : null;
+        BiomeSource source = transition != null ? transition : rings.get(position.ring());
+        return source.getNoiseBiome(x, y, z, sampler);
     }
 }

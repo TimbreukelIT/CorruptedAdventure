@@ -4,10 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
@@ -18,7 +15,6 @@ import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -95,16 +91,7 @@ class VanillaClimateBiomeSourceTest {
     }
 
     private static RegistryOps<JsonElement> ops(Predicate<ResourceKey<Biome>> known) {
-        StandaloneHolderGetter<Biome> biomes = new StandaloneHolderGetter<>(known);
-        return RegistryOps.create(JsonOps.INSTANCE, new RegistryOps.RegistryInfoLookup() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public <T> Optional<RegistryOps.RegistryInfo<T>> lookup(ResourceKey<? extends Registry<? extends T>> registryKey) {
-                return registryKey.equals(Registries.BIOME)
-                        ? Optional.of((RegistryOps.RegistryInfo<T>) (Object) new RegistryOps.RegistryInfo<>(biomes.owner(), biomes, Lifecycle.stable()))
-                        : Optional.empty();
-            }
-        });
+        return StandaloneHolderGetter.ops(Registries.BIOME, known);
     }
 
     private static Predicate<ResourceKey<Biome>> allCopies() {

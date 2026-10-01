@@ -7,7 +7,9 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.biome.PlaceholderBiomes;
+import nl.timtoys.corruptedadventure.worldgen.biome.TransitionBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
+import nl.timtoys.corruptedadventure.worldgen.feature.WitheredExpanseFeatures;
 
 import java.util.Set;
 
@@ -25,9 +27,12 @@ public final class DataGenerators {
     private static void gatherData(GatherDataEvent event) {
         // A registry may be added only once, so all biome bootstraps share one lambda.
         event.createDatapackRegistryObjects(new RegistrySetBuilder()
+                .add(Registries.CONFIGURED_FEATURE, WitheredExpanseFeatures::configured)
+                .add(Registries.PLACED_FEATURE, WitheredExpanseFeatures::placed)
                 .add(Registries.BIOME, context -> {
                     PlaceholderBiomes.bootstrap(context);
                     VanillaBiomeCopies.bootstrap(context);
+                    TransitionBiomes.bootstrap(context);
                 })
                 .add(Registries.WOLF_VARIANT, VanillaBiomeCopies::bootstrapWolfVariants),
                 // "minecraft": the wolf variants override vanilla's entries.
