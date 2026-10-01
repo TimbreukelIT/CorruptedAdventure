@@ -75,8 +75,11 @@ public final class TransitionBiomes {
                 .build();
     }
 
-    /** Same as vanilla's private {@code OverworldBiomes.globalOverworldGeneration}, in the same order. */
-    private static void globalOverworldGeneration(BiomeGenerationSettings.Builder generation) {
+    /**
+     * Same as vanilla's private {@code OverworldBiomes.globalOverworldGeneration}, in the same order. Shared with the
+     * ring biomes ({@link Ring2Biomes}).
+     */
+    static void globalOverworldGeneration(BiomeGenerationSettings.Builder generation) {
         BiomeDefaultFeatures.addDefaultCarversAndLakes(generation);
         BiomeDefaultFeatures.addDefaultCrystalFormations(generation);
         BiomeDefaultFeatures.addDefaultMonsterRoom(generation);

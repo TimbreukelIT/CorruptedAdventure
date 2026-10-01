@@ -17,8 +17,33 @@
               }
             },
             "ring_2": {
-              "type": "minecraft:fixed",
-              "biome": "corruptedadventure:placeholder_ring_2"
+              "type": "minecraft:multi_noise",
+              "biomes": [
+                {
+                  "biome": "corruptedadventure:canyonlands",
+                  "parameters": {
+                    "temperature": [0.0, 2.0],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:oasis_flats",
+                  "parameters": {
+                    "temperature": [-2.0, 0.0],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                }
+              ]
             },
             "ring_3": {
               "type": "minecraft:fixed",

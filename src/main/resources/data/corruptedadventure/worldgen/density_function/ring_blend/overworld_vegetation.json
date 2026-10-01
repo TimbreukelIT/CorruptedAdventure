@@ -1,0 +1,20 @@
+{
+  "type": "corruptedadventure:ring_blend",
+  "dimension": "minecraft:overworld",
+  "rings": {
+    "ring_1": {
+      "type": "minecraft:shifted_noise",
+      "noise": "minecraft:vegetation",
+      "shift_x": "minecraft:shift_x",
+      "shift_y": 0.0,
+      "shift_z": "minecraft:shift_z",
+      "xz_scale": 0.25,
+      "y_scale": 0.0
+    },
+    "ring_2": "corruptedadventure:ring_2/overworld/moisture",
+    "ring_3": 0.0,
+    "ring_4": 0.0,
+    "ring_5": 0.0,
+    "void": 0.0
+  }
+}

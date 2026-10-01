@@ -20,6 +20,7 @@ class RingColumnCacheTest {
                 for (int z = -120; z < 120; z += 7) {
                     assertEquals(LAYOUT.sampleOverworld(x, z), cache.position(LAYOUT, 1, x, z));
                     assertEquals(LAYOUT.voidEdgeProgress(x, z), cache.voidEdgeProgress(LAYOUT, 1, x, z));
+                    assertEquals(LAYOUT.effectiveDistance(x, z), cache.effectiveDistance(LAYOUT, 1, x, z));
                 }
             }
         }

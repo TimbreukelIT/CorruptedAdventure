@@ -337,3 +337,72 @@ Antwoord: **A** — vanilla-woestijn: 's nachts monsters met husks i.p.v. zombie
 | 2026-10-01 | worldgen | Lucht/fog/water van alle ring 2-biomes uit één `BiomeAmbience.Palette.RING_2` (placeholder-kleuren); definitief in change 32 | Eén plek voor de sfeerchange |
 
 Commit (na `/code-review`): `worldgen: add ring 2 terrain, canyonlands and oasis flats biomes, palm tree`.
+
+---
+
+## Bouwnotities (change 23, 2026-10-01)
+
+Aannames gecontroleerd tegen de code na change 22 (`af38c05`): klopten (kloofsteen niet in `#base_stone_overworld`, `ModConfiguredFeatures.PALM_TREE`, grondregel zaailing = `#dirt`/farmland/`desert_plant_soil`, `RingBlend`, `RingColumnCache`, `TransitionBiomes.globalOverworldGeneration`). Afwijkingen van het plan (implementatiedetails, door de agent gekozen):
+
+- **Drempel T in `relief` gebakken:** `relief` = ruis + 0,035, biomegrens op precies 0 (`canyonlands` [0, 2], `oasis_flats` [−2, 0]). In zone 2→3 mengt de router `relief` met 0; een grens op 0 blijft dan exact (een grens op T ≠ 0 zou verschuiven). 0,035 geeft gemiddeld over seeds ~55 %; seed 20260930: 59 % (r 1.650–3.350), 50 % op r = 2.500.
+- **Extra ruis `ring_2_canyon_branch`** (firstOctave −8) voor de zijtakken; `canyon_signal` = min(|kloof|, |zijtak| + 0,15·|kloof|): zijtakken worden ondieper verder van de hoofdkloof en eindigen in het plateau.
+- **Afgestemde waarden** (devkaarten): steilrand ±0,025 (plan ±0,04; anders ~130 blokken breed), kloofprofiel bodem ≤ 0,022, 4 wanden van Δ 0,006 en 3 treden van Δ 0,015 tot 0,091 (smallere treden verdwijnen door de interpolatie), poelen via 4 splinepunten met een flauw stuk rond de waterlijn (bredere grasoever), ~5 % van de oase is water.
+- **Eigen preliminary surface `initial_terrain`** (plan: `0,390625 + terrain`): kloofbodemhoogte over het hele rotsgebied en poelen 2× zo diep. Zonder dit (1) slaan de oppervlakteregels kloofbodems over (vanilla interpoleert de preliminary surface over 16 blokken) en (2) laat de aquifer ondiepe poelen droog (hij vult alleen zeker nabij een preliminary surface onder ~Y 55). Het echte terrein (poelbodem Y 59, poelen 1–4 diep) is ongewijzigd. Zijeffect: grotbodems in het plateau boven ~Y 64 krijgen de vloerregels (rood zand).
+- **Lagen ook als laatste element van de `canyonlands`-tak:** vanilla's regels binnen `above_preliminary_surface` zetten anders gras op steile vlakken. Het top-level lagenblok staat waar afgesproken.
+- **Oeverpalmen 24 pogingen per chunk** (plan 3): met 10 kregen maar 2 van de 10 poelchunks een palm; nu 6 van 10 (2–7 palmen per poel).
+- **Canyonlands-flora als één gewogen `simple_block`** (4 per chunk: dorre struik 30, dode struik 8, tonnetjescactus 5, woestijnbloem 1) i.p.v. losse features; zelfde tarieven.
+- **Kamelen:** vanilla kent geen spawn placement voor kamelen (NeoForge logt een ERROR, kamelen zouden zonder regels spawnen). Minimale registratie in `worldgen/biome/BiomeSpawnPlacements` (als andere dieren: op gras); raakt `mobs`, in de backlog genoteerd.
+- **Grotgeluid** van beide biomes: vanilla's standaard (`LEGACY_CAVE_SETTINGS`); change 32 beslist.
+- **Ring gate:** marge 16 blokken van de dimensie (Nether ×4 in effectieve afstand); `RingLayout.reaches` + effectieve afstand in `RingColumnCache`; interpolated-markers herkend aan de codec-instantie (vanilla's markertypes zijn niet publiek).
+- **Heightmap-keuze (bouwstap):** `WORLD_SURFACE_WG` (een chunk staat tijdens zijn features op `carvers`: alleen de final heightmaps worden bijgewerkt). Vastgelegd in `CODEBASE.md`.
+- **Werkwijze:** tijdelijk debugcommando (`/cadev`: PNG-kaarten uit de density functions, bovenaanzicht en doorsnedes van gegenereerde chunks) en scripts in `build/c23/` (niet gecommit); de JSON van de density functions en surface rules komt uit `build/c23/gen_df.py` en `gen_surface.py`.
+
+### Testresultaten
+
+- **B:** `./gradlew build` geslaagd, 40 testklassen / 194 tests, geen fouten. Nieuw: `RingGateTest` (5), `Ring2TerrainJsonTest` (1, script-controle), `PalmTreeShapeTest` (2 × 200 seeds), `Ring2BiomesTest` (4); uitgebreid: `RingBlendTest` (+1 `mapAll`), `RingColumnCacheTest` (effectieve afstand).
+- **D:** `./gradlew runData` geslaagd: `canyonlands.json`, `oasis_flats.json`, `placeholder_ring_2.json` weg; `palm_tree`, `oasis_vegetation`, `canyonlands_vegetation` + 4 placed features; tags `is_ring_2`, `c:is_hot/overworld`, `c:is_dry/overworld`; lang en/nl. Geen ring 2-biome in een `minecraft:`-tag.
+- **S** (seed 20260930, RCON, `max-tick-time=-1`, werelden `smoke-change23-*`; rooktest `tools/server-smoke-test.sh` met `level-name=smoke-change23`: `Done (6.668s)`, geen ERROR, geen "Feature order cycle", geen client-class-melding):
+  - **Ring 1 ongewijzigd:** 300 biomepunten (r 0–1.350, Y −30/20/62/oppervlak) 300/300 gelijk aan de wereld van vóór change 23; 6 chunks: steen en deepslate identiek; lucht/water/lava wijken per chunk tot ~1 % af door vanilla's globale feature-index (nieuwe biomes met features → andere decoratie-seeds; ook vanilla's eigen laadvolgorde geeft 2–4 blokken verschil). Zie `CODEBASE.md`, valkuilen.
+  - **Gate:** wereld zonder en met gate, 12 chunks (4 midden zone 1→2, 4 ring 2, 4 op grens 2→3), 12 bloksoorten × 3 lagen: **identiek** (geen naden).
+  - **Performance** (noise-stap, gemiddelde van twee schone rondes): met gate 1,28× / 1,36× / 0,93× vanilla in ring 1 / 2 / 3, zonder gate 1,38× / 1,50× / 1,16×. Ring 2 iets boven het budget 1,3× (backlog). Een eerste ronde liep tegelijk met een handmatig gestarte client en is overgedaan.
+  - **Biomes:** `locate biome` vanaf (±2.500, 0) en (0, ±2.500): beide biomes gevonden binnen ring 2 (r 2.316–2.500). Op r = 2.500: canyonlands 50 %, vlekken gemiddeld ~950 blokken (max ~2.200).
+  - **Hoogtes** (100 punten per biome, `motion_blocking_no_leaves`): canyonlands Y 68–136 (mediaan 130; kloofbodems vanaf 68; één grotingang 56), **0 van 100 met water**; oasis_flats Y 61–92 (mediaan 70; 6 punten in een poel op Y 63; 4 punten 81–92 = de onderste helft van de steilrand, die bij de oase hoort; één grotingang 24). Bovenaanzicht 384 × 384 canyonlands: 0,28 % van de bovenste blokken water (volgelopen grotingangen onder Y 63), 0,03 % lava (vanilla-lavameren).
+  - **Lagen:** canyonlands-chunk Y 60–145: oranje 4.420, crème 2.560 (rood geteld in de determinismetest: 123.799 in 16 kloofchunks); oase-chunk 0; onder Y 8 0.
+  - **Palm:** `place feature` op zand en op gras: 7–10 stamblokken, 24–35 bladeren, blok onder de stam altijd zand.
+  - **Palmen in het wild:** 6 van 10 poelchunks met palmen (2–7 per poel), 1 van 6 oasechunks zonder poel, 0 in 16 kloofchunks.
+  - **Determinisme:** tweede verse wereld, chunks in omgekeerde volgorde geladen: 32/32 chunks identiek (palmstam, -bladeren, dorre struik, tonnetjescactus, woestijnbloem, dode struik, kort gras, suikerriet, rode kloofsteen, water).
+  - **`tick query`** na de tests: gemiddeld 0,8 ms/tick (P99 10,6 ms) zonder spelers.
+  - RCON weer uit, `run/server.properties` op `level-name=smoke-change23`.
+- **Let op:** tijdens de eerste testsessie startte de gebruiker per ongeluk `./gradlew runClient` (werelden `New World` en `New World (1)` in `run/saves/`, niet aangeraakt). Alleen die eerste perf-meting kan verstoord zijn; hij is overgedaan. Determinisme, naden en ring 1-vergelijking hangen niet van CPU-belasting af; `run/server.properties` stond steeds op de testinstellingen.
+
+### Code review (`/code-review medium`)
+
+- **Opgelost:** de vaste gate-marge van 16 blokken dekt de celhoeken alleen tot een `boundaryNoise` van ~180 (config staat tot 4.096 toe); daarboven konden hoeken buiten de marge vallen (kleine kuilen/richels bij de zones). Nu `RingLayout.reachMargin`: 16 blokken van de dimensie × max(1, `boundaryNoise` / 96); `RingGateTest` controleert de celhoeken met grensruis 96, 400 en 1.000. Standaardwerelden ongewijzigd (factor 1), de S-resultaten blijven gelden.
+- **Verduidelijkt (geen bug):** `flat_cache`-markers in de ring 2-invoer worden niet gegate; de noise chunk vult ze vooraf (5 × 5 per chunk), goedkoop. Commentaar van `RingGate` en `CODEBASE.md` aangepast.
+- **Extra controle na de review:** Nether met en zonder gate (12 chunks rond Nether-grens 1, ring 1 en 2): netherrack, lava, bedrock en nylium identiek; één chunk 11 blokken lucht anders (volgorde-afhankelijke Nether-features). Rooktest daarna opnieuw: `Done (5.916s)`, geen fouten.
+
+## In-game checklist (W) — teststop 2 (terreincheck ring 2, blokkerend vóór change 25)
+
+~15 min. **Opstarten:** `./gradlew runClient` → Singleplayer → Create New World → World Type **Corrupted World**, Seed `20260930`, Allow Cheats **aan** → Create. Dan `/gamemode creative` en F3 (links de biome, rechts `CA ring (client)`). Vliegen met dubbel-spatie.
+
+1. **Overgang 1 → 2 over land:** `/tp @s 0 100 -1400`, kijk naar het noorden (F3 *Facing: north*) en vlieg naar z −1650. Ring 1 (Y ~76) → withered expanse → steile stijging naar het plateau (Y ~130 vanaf z −1500, ~50 blokken omhoog over ~50 blokken). Let op: steilte, zwevende brokken, waterwanden, de grens tussen grijze steen en de lagen.
+2. **Overgang 1 → 2 vanaf zee:** `/tp @s 1400 90 0`, kijk naar het oosten: klif van zee (Y 63) naar plateau (Y ~133) bij x 1500–1550.
+3. **Kloven:** `/tp @s 2200 140 -720` (kloofbodem Y ~67 recht onder je), `/tp @s 2100 140 -830` (kruising met brede bodem en treden), `/tp @s 2240 140 -650` (plateau tussen kloven). Let op: diepte (55–70) en breedte, meanderen, zijtakken, treden in de wanden (3 per wand) en of je eruit kunt klimmen, ruwe wanden, kloofsteenlagen (horizontale banden rood/oranje/crème, aan beide wanden gelijk), bodem (rood zand, gebarsten klei, grind), flora (dorre struik, tonnetjescactus).
+4. **Oase:** `/tp @s 2550 80 -115` (poel, water tot Y 63) en `/tp @s 2480 80 -64`. Let op: poelen met groene oever, palmen vooral aan het water (ook losse op het zand), kort gras, varens, suikerriet; en de steilrand naar het plateau (onderste helft = oase = zand/zandsteen op grijze steen, bovenste helft = lagen).
+5. **Palm van dichtbij:** vorm (stam 6–10, licht overhellend, kruisvormige kroon met hangende topjes), geen zwevende of losse bladeren.
+6. **Biomes zoeken:** `/tp @s 2500 140 0`, dan `/locate biome corruptedadventure:canyonlands` (verwacht ~2308, 192) en `/locate biome corruptedadventure:oasis_flats` (verwacht: hier, 2500, 0). F3: rotsig = canyonlands, vlak = oasis_flats, grens halverwege de steilrand.
+7. **Rondkijken in de ring:** kijk naar het noorden/oosten/zuiden/westen en doe telkens `/ca tpring 2`.
+8. **Grenzen:** `/ca tpboundary 1` en `/ca tpboundary 2`. Grens 2 → 3: vloeiend naar placeholder ring 3 (Y ~120); harde biomewissel met een verticale naad in de rotskleur (bekend tot change 31).
+9. **Geen regen in ring 2:** in ring 1 `/weather rain`, dan `/ca tpring 2` → droog.
+
+**Afstemvragen:**
+1. Kloven: diepte, breedte (bodem ~10–40, bovenrand ~60–110) en aantal (hoofdkloven om de ~300–500 blokken, plus zijtakken) goed? Meer, minder of breder?
+2. Treden in kloofwanden en steilranden: duidelijk en beklimbaar genoeg, of breder/meer treden (minder steil)?
+3. Onderste helft van de steilrand (oasekant) is grijze steen met zand/zandsteen erop: zo laten, zandsteen erin, ook lagen, of de biomegrens naar de voet van de steilrand?
+4. Overgang ring 1 → plateau (tot ~70 blokken stijging over ~50 blokken): acceptabel, of afzwakken?
+5. Kloofsteenlagen: dikte, verhouding (rood 28 / oranje 12 / crème 8 per 48 blokken) en golving goed?
+6. Oase: aantal en grootte van de poelen (~5 % water), breedte van de grasoever, aantal palmen (oever + verspreid)?
+7. Palm: groter of voller (nu kroon ~7 breed)?
+8. Kloofbodem: gebarsten klei en (soms grote) grindvlekken goed?
+9. Grotten in het plateau: veel en soms vlak onder het oppervlak (dunne daken), rood zand op grotbodems: goed?
+10. Verhouding canyonlands ~59 % / oase ~41 % (tijdelijk tot change 30): goed?

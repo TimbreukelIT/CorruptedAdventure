@@ -17,6 +17,8 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Er is één noise settings per dimensie. Terrein per ring komt uit een eigen density function **`corruptedadventure:ring_blend`** (Java-type + codec).
 - `ring_blend` krijgt per ring een eigen density function (JSON, in `worldgen/density_function/<ring>/…`) en kiest op basis van `ringAt` welke geldt. In de overgangszone mengt hij met een **smoothstep** (3t² − 2t³) op het lineaire gewicht tussen de twee aangrenzende ringen: geen knik aan de randen van de zone (zie §1.15).
 - Alle overige terreinlogica (vorm, canyons, vulkanen) blijft data-driven in JSON.
+- **Klimaat per ring via de router (change 23):** de router-velden `temperature` en `vegetation` zijn ook een `ring_blend` (`ring_blend/overworld_temperature`/`_vegetation`): ring 1 = de vanilla-klimaatruis (ongewijzigd, dus ring 1 blijft blok voor blok gelijk), ring 2 = de eigen regio-assen `relief`/`moisture`, ring 3–5 en void = 0 tot hun eigen terreinchange. De biome-source van een ring is een inline `minecraft:multi_noise` op die velden; een biome-source krijgt alleen de klimaatsampler, niet de `RandomState`, dus terrein en biome delen hun regio's via de router. Terrein en biome lezen dezelfde named density function: grenzen vallen exact samen, zonder Java. Ring 3–5 en de Nether-ringen (change 35) volgen hetzelfde patroon.
+- **Ring gate (change 23):** `RingBlend.mapAll` zet in elke `interpolated`-marker van een ringinvoer een `corruptedadventure:ring_gate`: buiten de ring, zijn overgangszones en 16 blokken marge geeft hij 0. Zo rekent elke chunk alleen het terrein van de 1–2 ringen die er gewicht hebben. Meting en naadcontrole in `CODEBASE.md` (valkuilen).
 - Client/server: puur worldgen, deterministisch per seed; geen sync nodig.
 
 ### 1.3 Ringgrenzen en overgangszones
@@ -108,6 +110,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Ring 1: kopieën van vanilla biomes (zie §1.7).
 - Ring 2–5: **4–5 varianten per ring** + **1 overgangsbiome per grens**. Nether-ringen: aantal per ring in de ringsecties.
 - Bouwvolgorde per ring: eerst 2–3 kernvarianten, de overige als latere changes binnen dezelfde ring.
+- Verdeling binnen een ring (vanaf ring 2): regio-assen in de router + `multi_noise` (§1.2). Vlekken in ring 2 ~500–1.000 blokken.
 
 ### 1.11 Ores (algemeen)
 - Ring 1 heeft alle vanilla-ores.
@@ -148,7 +151,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 | Ring | Overworld: oppervlak | Nether: vloer (dak vanaf Y ~110) |
 |---|---|---|
 | 1 | vanilla (change 9) | vanilla-terrein (change 14) |
-| 2 | Y ~95 | Y ~40 |
+| 2 | eigen terrein (change 23): vlakte Y 66–74, plateau Y 125–140, kloofbodem Y ~70 | Y ~40 |
 | 3 | Y ~120 | Y ~55 |
 | 4 | Y ~64 (rond zeeniveau) | Y ~45 |
 | 5 | Y ~85 | Y ~60 |
@@ -279,6 +282,21 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **Houtset:** `palm_log`, `palm_wood`, `stripped_palm_log`, `stripped_palm_wood`, `palm_planks`, `palm_stairs`, `palm_slab`, `palm_fence`, `palm_fence_gate`, `palm_door`, `palm_trapdoor`, `palm_pressure_plate`, `palm_button` (zoals de dood-hout-set: eikengedrag en -geluid via `BlockSetType` `corruptedadventure:palm`, bijl strip, vuur als eik). Uiterlijk: grijsbruine schors met horizontale ringen, licht zandgeel hout zonder jaarringen (kaartkleur `TERRACOTTA_BROWN` / `SAND`). Geen borden, hangborden of boten.
   - **Bladeren** `palm_leaves`: vaste heldergroene kleur in de texture (**geen biome-tint**), `cutout_mipped`, vanilla-verval op `#logs`; loot zoals eikenbladeren (schaar/Silk Touch → bladeren, anders zaailing 1/20 met Fortune hoger en stokken 1/50); brandbaar en composteerbaar als vanilla-bladeren.
   - **Zaailing** `palm_sapling`: groeit op `#dirt` (en farmland) **en** `desert_plant_soil` (zand, rood zand, terracotta, gebarsten klei) — dezelfde grondregel als de woestijnflora. Potplant `potted_palm_sapling` (geen item). Vóór change 23 bestaat de feature `corruptedadventure:palm_tree` nog niet: bonemeal wordt verbruikt, de zaailing gaat naar stadium 1 maar groeit niet, geen crash. Change 23 registreert de feature onder precies die key.
+
+- **Uitwerking terrein en kernbiomes (change 23)** — `canyonlands` en `oasis_flats`; terrein in `density_function/ring_2/overworld/`, waarden zijn startwaarden voor de terreincheck (teststop 2):
+  - **Regio-assen:** `relief` (rotsig ↔ vlak; ruis `ring_2_relief` + 0,035) en `moisture` (nog ongebruikt). `canyonlands` = relief ≥ 0, `oasis_flats` = relief < 0 (`multi_noise` op `temperature`). Gemeten (seed 20260930): canyonlands 59 % van ring 2, op r = 2.500 50 %; vlekken langs r = 2.500 gemiddeld ~950 blokken (max ~2.200). De offset geeft ~55 % gemiddeld over seeds. Tot change 30 is er naar verhouding veel oase (~45 %).
+  - **Geplande indeling change 30 (niet gebouwd):** rotsig → `canyonlands` (vochtig/midden) en `hoodoo_fields` (droog); vlak → `oasis_flats` (vochtig), `dune_sea` (midden), `salt_flats` (droog), via `humidity`-bereiken op `moisture`; de oase krimpt dan naar het vochtige deel (~12 %).
+  - **Hoogtes (keuze gebruiker, diep):** vlakte Y 66–74 (70 ± 4), poelen tot Y 59 (water tot zeeniveau 63), plateau Y 125–139 (132 ± 7), kloofbodem Y 67–71; buiten de poelen nergens onder Y 66 (geen zeewater in de kloven).
+  - **Steilrand** vlakte ↔ plateau (~55–70 blokken): `relief_weight`, 3 steile stappen met 2 treden; de biomegrens ligt halverwege. **Kloven:** meanderende hoofdkloven (`ring_2_canyon`) met zijtakken (`ring_2_canyon_branch`) die vanaf de hoofdkloof ondieper worden en in het plateau eindigen; bodem ~10–40 blokken breed, 4 steile wanden van ~15 blokken met 3 treden van ~6 blokken, bovenrand ~60–110 breed. Lichte 3D-ruis maakt kloofwanden en steilranden ruw. Treden smaller dan ~4–6 blokken verdwijnen door de interpolatie van het terrein (cellen 4 × 8 × 4).
+  - **Grotten:** vanilla noise-grotten, ingangen en noodles (de ring 2-invoer is vanilla's final density met het eigen terrein) + vanilla carvers. Overgang 1 → 2 mengt vanilla en het plateau: steil (tot ~75 blokken); 2 → 3 mengt met placeholder ring 3 (Y ~120).
+  - **Kloofsteenlagen:** horizontale banden van 2–7 blokken (rood 28, oranje 12, crème 8 per periode van 48), vanaf Y 8 tot het oppervlak in canyonlands; de grenzen golven een paar blokken mee met de surface-diepte; beide kloofwanden tonen dezelfde lagen.
+  - **Oppervlak canyonlands:** rood zand op plateau en treden; kloofbodem rood zand met gebarsten klei (drooggevallen beekjes) en grind; rode zandsteen eronder en onder plafonds; steile vlakken tonen de lagen. **Oasis_flats:** zand (zandsteen op steile vlakken en vanaf ~6 diep), zand onder water, gras alleen op de lage oever (boven water, onder Y 66).
+  - **Oase:** poelen uit het terrein (ruis `ring_2_pools`), ~5 % van de oase is water; palmen vooral aan de oever (24 pogingen per chunk op gras), verspreid ook op het zand (1 per 4 chunks); kort gras, varens, woestijnbloemen op de oever; vanilla-suikerriet.
+  - **Palm** (`corruptedadventure:palm_tree`, ook uit de zaailing): stam 6–10, eerste derde recht, dan 1–2 blokken overhellend; kroon = topblad + 4 rechte bladwaaiers van 2–3 met een hangend topje + 2–4 diagonale waaiers één laag lager; elk blad ≤ 5 stappen van de stam (vanilla-verval 6); zand onder de stam.
+  - **Canyonlands-flora:** dorre struik (~2,7 per chunk), dode struik, tonnetjescactus (~0,45), woestijnbloem (zeldzaam).
+  - **Spawns tot fase 4:** vanilla-woestijn ('s nachts monsters met vooral husks, konijnen), in de oase ook kamelen (op gras).
+  - **Tags:** `corruptedadventure:is_ring_2`, `c:is_hot/overworld`, `c:is_dry/overworld`; geen `minecraft:`-tags (geen vanilla-structures tot fase 3).
+  - **Sfeer:** lucht/fog/water uit `BiomeAmbience.Palette.RING_2` (placeholder: lucht `9FC4E8`, fog `E8D7A8`, water `32A598`); geen regen; definitief in change 32.
 
 **Ores**
 - **Zonnesteen** (hoofdmateriaal, kandidaat ring 2-gear-tier): gloeiend erts hoog in canyonwanden en hoodoos.

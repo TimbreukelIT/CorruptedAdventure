@@ -15,6 +15,7 @@ import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModTags;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring2Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
 import java.util.Collection;
@@ -107,6 +108,12 @@ final class ModBiomeTagsProvider extends BiomeTagsProvider {
         tag(Tags.Biomes.IS_DRY_NETHER).addAll(netherCopies);
         tag(Tags.Biomes.IS_NETHER_FOREST).addAll(copies(List.of(Biomes.CRIMSON_FOREST, Biomes.WARPED_FOREST)));
         tag(ModTags.Biomes.IS_NETHER_RING_1).addAll(netherCopies);
+
+        // Ring 2: own and convention tags only. No minecraft: tags, so no vanilla structures until phase 3 (and no
+        // is_badlands: that would bring mesa mineshafts).
+        tag(ModTags.Biomes.IS_RING_2).addAll(Ring2Biomes.ALL);
+        tag(Tags.Biomes.IS_HOT_OVERWORLD).addAll(Ring2Biomes.ALL);
+        tag(Tags.Biomes.IS_DRY_OVERWORLD).addAll(Ring2Biomes.ALL);
 
         tag(ModTags.Biomes.HAS_BARE_PATCH).addAll(BARE_PATCH_BIOMES.stream().map(VanillaBiomeCopies::copyOf).toList());
         // Every copy, cave biomes included: the biome filter checks the biome at the tunnel's own height.

@@ -21,6 +21,7 @@ public final class RingColumnCache {
 
     private final long[] keys = new long[1 << (2 * BITS)];
     private final RingPosition[] positions = new RingPosition[keys.length];
+    private final double[] effectiveDistance = new double[keys.length];
     private final double[] voidEdgeProgress = new double[keys.length];
     private RingLayout layout;
 
@@ -32,6 +33,16 @@ public final class RingColumnCache {
         return PER_THREAD.get().position(RingLayout.current(), RingLayout.scale(dimension), x, z);
     }
 
+    /**
+     * {@link RingLayout#reaches}: whether {@code ring} can have weight within {@code margin} blocks of the dimension
+     * ({@link RingLayout#reachMargin}) of a block column of the running server's world.
+     */
+    public static boolean reaches(ResourceKey<Level> dimension, Ring ring, int x, int z, double margin) {
+        RingLayout layout = RingLayout.current();
+        int scale = RingLayout.scale(dimension);
+        return layout.reaches(ring, PER_THREAD.get().effectiveDistance(layout, scale, x, z), layout.reachMargin(margin, scale));
+    }
+
     /** {@link RingLayout#voidEdgeProgress} at a block column of the running server's world. */
     public static double voidEdgeProgress(ResourceKey<Level> dimension, int x, int z) {
         return PER_THREAD.get().voidEdgeProgress(RingLayout.current(), RingLayout.scale(dimension), x, z);
@@ -39,6 +50,10 @@ public final class RingColumnCache {
 
     RingPosition position(RingLayout layout, int scale, int x, int z) {
         return positions[fill(layout, scale, x, z)];
+    }
+
+    double effectiveDistance(RingLayout layout, int scale, int x, int z) {
+        return effectiveDistance[fill(layout, scale, x, z)];
     }
 
     double voidEdgeProgress(RingLayout layout, int scale, int x, int z) {
@@ -57,7 +72,8 @@ public final class RingColumnCache {
         long key = overworldX << 32 | overworldZ & 0xFFFFFFFFL;
         if (positions[index] == null || keys[index] != key) {
             keys[index] = key;
-            positions[index] = layout.sampleOverworld(overworldX, overworldZ);
+            effectiveDistance[index] = layout.effectiveDistance(overworldX, overworldZ);
+            positions[index] = layout.positionAt(effectiveDistance[index]);
             voidEdgeProgress[index] = layout.voidEdgeProgress(overworldX, overworldZ);
         }
         return index;

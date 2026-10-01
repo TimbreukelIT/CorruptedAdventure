@@ -1,0 +1,107 @@
+package nl.timtoys.corruptedadventure.worldgen.densityfunction;
+
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.KeyDispatchDataCodec;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.DensityFunction;
+import net.minecraft.world.level.levelgen.DensityFunctions;
+import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.ring.RingColumnCache;
+
+import java.util.Arrays;
+
+/**
+ * {@code corruptedadventure:ring_gate}: {@code argument} where {@code ring} can have weight (inside the ring, in a
+ * transition zone with it, or within {@link #MARGIN} blocks of that), {@code 0} elsewhere.
+ * <p>
+ * {@link RingBlend#mapAll} puts one inside every {@code interpolated} marker of each ring input. The noise chunk fills
+ * every interpolator in every chunk, also of rings far away; behind the gate those cost one column lookup instead
+ * of the ring's 3D terrain. {@code flat_cache} markers are not gated: the noise chunk fills them eagerly (5 × 5 per
+ * chunk), which is cheap. The margin keeps every cell corner (4 blocks apart) of a cell where the ring has weight
+ * computed for real; it is 16 rather than 4 because the effective distance can locally run steeper than one block
+ * per block, and grows with a stronger boundary noise ({@link nl.timtoys.corruptedadventure.ring.RingLayout#reachMargin}).
+ */
+public record RingGate(ResourceKey<Level> dimension, Ring ring, DensityFunction argument) implements DensityFunction {
+    /** Blocks of the dimension, so cells of 4 blocks with room to spare. */
+    static final double MARGIN = 16.0;
+
+    public static final MapCodec<RingGate> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(RingGate::dimension),
+            Ring.CODEC.fieldOf("ring").forGetter(RingGate::ring),
+            DensityFunction.HOLDER_HELPER_CODEC.fieldOf("argument").forGetter(RingGate::argument)
+    ).apply(instance, RingGate::new));
+
+    public static final KeyDispatchDataCodec<RingGate> CODEC = KeyDispatchDataCodec.of(MAP_CODEC);
+
+    // Vanilla's marker types are not public; every interpolated marker (also the noise chunk's interpolator) shares
+    // this codec instance.
+    private static final KeyDispatchDataCodec<? extends DensityFunction> INTERPOLATED =
+            DensityFunctions.interpolated(DensityFunctions.zero()).codec();
+
+    /**
+     * {@code function} itself, or, if it is an {@code interpolated} marker whose argument is not gated yet, the same
+     * marker around a gate. Idempotent: {@code mapAll} runs both when the random state wires the noises and again in
+     * every noise chunk.
+     */
+    static DensityFunction gateInterpolated(ResourceKey<Level> dimension, Ring ring, DensityFunction function) {
+        if (function instanceof DensityFunctions.MarkerOrMarked marker && marker.codec() == INTERPOLATED
+                && !(marker.wrapped() instanceof RingGate)) {
+            return DensityFunctions.interpolated(new RingGate(dimension, ring, marker.wrapped()));
+        }
+        return function;
+    }
+
+    @Override
+    public double compute(FunctionContext context) {
+        return compute(context, reaches(context));
+    }
+
+    double compute(FunctionContext context, boolean reaches) {
+        return reaches ? argument.compute(context) : 0.0;
+    }
+
+    private boolean reaches(FunctionContext context) {
+        return RingColumnCache.reaches(dimension, ring, context.blockX(), context.blockZ(), MARGIN);
+    }
+
+    @Override
+    public void fillArray(double[] array, ContextProvider contextProvider) {
+        // Interpolators fill a slice of cell corners at a time; usually all or none of them are in reach.
+        boolean any = false;
+        boolean all = true;
+        for (int i = 0; i < array.length && (all || !any); i++) {
+            boolean reaches = reaches(contextProvider.forIndex(i));
+            any |= reaches;
+            all &= reaches;
+        }
+        if (all) {
+            argument.fillArray(array, contextProvider);
+        } else if (!any) {
+            Arrays.fill(array, 0.0);
+        } else {
+            contextProvider.fillAllDirectly(array, this);
+        }
+    }
+
+    @Override
+    public DensityFunction mapAll(Visitor visitor) {
+        return visitor.apply(new RingGate(dimension, ring, argument.mapAll(visitor)));
+    }
+
+    @Override
+    public double minValue() {
+        return Math.min(0.0, argument.minValue());
+    }
+
+    @Override
+    public double maxValue() {
+        return Math.max(0.0, argument.maxValue());
+    }
+
+    @Override
+    public KeyDispatchDataCodec<? extends DensityFunction> codec() {
+        return CODEC;
+    }
+}

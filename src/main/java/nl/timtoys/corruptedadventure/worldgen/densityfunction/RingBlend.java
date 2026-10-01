@@ -23,8 +23,8 @@ import java.util.Map;
  * {@link RingPosition#blend()}, so the terrain has no kink where the zone starts or ends.
  * <p>
  * Only the one or two inputs a position needs are computed. Interpolation markers inside the inputs still work
- * because {@link #mapAll} passes the visitor on, but note that the noise chunk then fills those interpolators for
- * every chunk, whether or not the ring is nearby.
+ * because {@link #mapAll} passes the visitor on; the noise chunk then fills those interpolators in every chunk,
+ * whether or not the ring is nearby, so {@link #mapAll} puts a {@link RingGate} inside each of them first.
  */
 public final class RingBlend implements DensityFunction {
     private static final Codec<Map<Ring, DensityFunction>> RINGS_CODEC =
@@ -93,10 +93,25 @@ public final class RingBlend implements DensityFunction {
     @Override
     public DensityFunction mapAll(Visitor visitor) {
         DensityFunction[] mapped = new DensityFunction[rings.length];
-        for (int i = 0; i < rings.length; i++) {
-            mapped[i] = rings[i].mapAll(visitor);
+        for (Ring ring : Ring.values()) {
+            mapped[ring.ordinal()] = rings[ring.ordinal()].mapAll(gating(ring, visitor));
         }
         return visitor.apply(new RingBlend(dimension, mapped));
+    }
+
+    /** {@code visitor}, but every interpolated marker of the input of {@code ring} gets a {@link RingGate} first. */
+    private Visitor gating(Ring ring, Visitor visitor) {
+        return new Visitor() {
+            @Override
+            public DensityFunction apply(DensityFunction function) {
+                return visitor.apply(RingGate.gateInterpolated(dimension, ring, function));
+            }
+
+            @Override
+            public NoiseHolder visitNoise(NoiseHolder noise) {
+                return visitor.visitNoise(noise);
+            }
+        };
     }
 
     @Override

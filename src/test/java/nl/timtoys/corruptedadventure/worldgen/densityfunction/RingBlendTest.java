@@ -7,7 +7,9 @@ import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,6 +60,30 @@ class RingBlendTest {
     void rangeCoversAllInputs() {
         assertEquals(0.0, blend.minValue());
         assertEquals(50.0, blend.maxValue());
+    }
+
+    @Test
+    void mapAllGatesEveryInterpolatedMarkerWithItsOwnRingOnce() {
+        Map<Ring, DensityFunction> rings = new EnumMap<>(Ring.class);
+        for (Ring ring : Ring.values()) {
+            rings.put(ring, DensityFunctions.add(
+                    DensityFunctions.interpolated(DensityFunctions.constant(ring.ordinal())),
+                    DensityFunctions.flatCache(DensityFunctions.constant(ring.ordinal()))));
+        }
+        // mapAll runs twice in a real world (random state, then every noise chunk); record what the second pass sees.
+        DensityFunction once = new RingBlend(Level.OVERWORLD, rings).mapAll(function -> function);
+        List<DensityFunction> seen = new ArrayList<>();
+        once.mapAll(function -> {
+            seen.add(function);
+            return function;
+        });
+        List<RingGate> gates = seen.stream().filter(RingGate.class::isInstance).map(RingGate.class::cast).toList();
+        // One per ring: the flat caches are left alone, nothing is gated twice.
+        assertEquals(Ring.values().length, gates.size());
+        for (Ring ring : Ring.values()) {
+            assertEquals(1, gates.stream().filter(gate -> gate.ring() == ring
+                    && gate.argument().equals(DensityFunctions.constant(ring.ordinal()))).count(), ring.toString());
+        }
     }
 
     @Test

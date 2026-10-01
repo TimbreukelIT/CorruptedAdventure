@@ -59,6 +59,11 @@ public final class BiomeAmbience {
     public record Palette(int sky, int fog, int water, int waterFog) {
         /** Vanilla plains (temperature 0.8, normal water): the reference colours of ring 1. */
         public static final Palette RING_1 = new Palette(0x78A7FF, 0xC0D8FF, 0x3F76E4, 0x050533);
+        /**
+         * Ring 2, every biome: pale yellowish-blue sky, sandy fog, turquoise water. Placeholder colours (those of the
+         * former {@code placeholder_ring_2}); change 32 makes them final, here in one place.
+         */
+        public static final Palette RING_2 = new Palette(0x9FC4E8, 0xE8D7A8, 0x32A598, 0x0B3A35);
 
         public Palette desaturated(float amount) {
             return new Palette(desaturate(sky, amount), desaturate(fog, amount), desaturate(water, amount), desaturate(waterFog, amount));

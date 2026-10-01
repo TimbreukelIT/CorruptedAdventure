@@ -153,7 +153,8 @@ final class EnglishLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.POTTED_PALM_SAPLING, "Potted Palm Sapling");
 
         biome(ModBiomes.WITHERED_EXPANSE, "Withered Expanse");
-        biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder Ring 2");
+        biome(ModBiomes.CANYONLANDS, "Canyonlands");
+        biome(ModBiomes.OASIS_FLATS, "Oasis Flats");
         biome(ModBiomes.PLACEHOLDER_RING_3, "Placeholder Ring 3");
         biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder Ring 4");
         biome(ModBiomes.PLACEHOLDER_RING_5, "Placeholder Ring 5");

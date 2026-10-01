@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:min",
+  "argument1": {
+    "type": "minecraft:abs",
+    "argument": {
+      "type": "minecraft:noise",
+      "noise": "corruptedadventure:ring_2_canyon",
+      "xz_scale": 1.0,
+      "y_scale": 0.0
+    }
+  },
+  "argument2": {
+    "type": "minecraft:add",
+    "argument1": {
+      "type": "minecraft:abs",
+      "argument": {
+        "type": "minecraft:noise",
+        "noise": "corruptedadventure:ring_2_canyon_branch",
+        "xz_scale": 1.0,
+        "y_scale": 0.0
+      }
+    },
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": 0.15,
+      "argument2": {
+        "type": "minecraft:abs",
+        "argument": {
+          "type": "minecraft:noise",
+          "noise": "corruptedadventure:ring_2_canyon",
+          "xz_scale": 1.0,
+          "y_scale": 0.0
+        }
+      }
+    }
+  }
+}

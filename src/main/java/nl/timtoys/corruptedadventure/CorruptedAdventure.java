@@ -27,11 +27,14 @@ import nl.timtoys.corruptedadventure.registry.ModChunkGenerators;
 import nl.timtoys.corruptedadventure.registry.ModCreativeTabs;
 import nl.timtoys.corruptedadventure.registry.ModDensityFunctionTypes;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
+import nl.timtoys.corruptedadventure.registry.ModFoliagePlacerTypes;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModPlacementModifierTypes;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
+import nl.timtoys.corruptedadventure.registry.ModTrunkPlacerTypes;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.weather.RingWeather;
+import nl.timtoys.corruptedadventure.worldgen.biome.BiomeSpawnPlacements;
 import nl.timtoys.corruptedadventure.worldgen.border.RingWorldBorder;
 import org.slf4j.Logger;
 
@@ -56,10 +59,13 @@ public final class CorruptedAdventure {
         ModFlammables.register(modEventBus);
         ModFlowerPots.register(modEventBus);
         ModBiomeSources.register(modEventBus);
+        BiomeSpawnPlacements.register(modEventBus);
         ModDensityFunctionTypes.register(modEventBus);
         ModChunkGenerators.register(modEventBus);
         ModPlacementModifierTypes.register(modEventBus);
         ModFeatures.register(modEventBus);
+        ModTrunkPlacerTypes.register(modEventBus);
+        ModFoliagePlacerTypes.register(modEventBus);
         ModSoundEvents.register(modEventBus);
         ModAttachments.register(modEventBus);
         DataGenerators.register(modEventBus);

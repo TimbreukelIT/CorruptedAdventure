@@ -119,7 +119,11 @@ public final class RingLayout {
 
     /** @param x overworld x (Nether positions already multiplied by {@link #NETHER_SCALE}) */
     public RingPosition sampleOverworld(double x, double z) {
-        double distance = effectiveDistance(x, z);
+        return positionAt(effectiveDistance(x, z));
+    }
+
+    /** The ring position at an {@link #effectiveDistance}. */
+    RingPosition positionAt(double distance) {
         for (int i = 0; i < radii.size(); i++) {
             double zoneStart = radii.get(i) - halfTransition;
             if (distance < zoneStart) {
@@ -140,6 +144,27 @@ public final class RingLayout {
      */
     public double effectiveDistance(double x, double z) {
         return Math.sqrt(x * x + z * z) + boundaryOffset(x, z);
+    }
+
+    /**
+     * Whether {@code ring} can have weight within {@code margin} of an {@link #effectiveDistance}: inside the ring, in
+     * a transition zone with it, or at most {@code margin} (effective distance) beyond. Outside this, every blend of
+     * the ring's terrain gives it weight 0.
+     */
+    public boolean reaches(Ring ring, double distance, double margin) {
+        int index = ring.ordinal();
+        double lower = index == 0 ? Double.NEGATIVE_INFINITY : radii.get(index - 1) - halfTransition - margin;
+        double upper = index >= radii.size() ? Double.POSITIVE_INFINITY : radii.get(index) + halfTransition + margin;
+        return distance > lower && distance < upper;
+    }
+
+    /**
+     * Margin for {@link #reaches} in effective distance: {@code blocks} of the dimension ({@code scale} overworld
+     * blocks each), widened in proportion to the boundary noise above its default of 96. The effective distance runs
+     * steeper than one block per block where the noise is strong; the margin must still cover a cell's corners.
+     */
+    public double reachMargin(double blocks, int scale) {
+        return blocks * scale * Math.max(1.0, boundaryNoise / 96.0);
     }
 
     /**

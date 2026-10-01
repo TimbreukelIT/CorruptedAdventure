@@ -17,6 +17,10 @@ public final class ModPlacedFeatures {
     public static final ResourceKey<PlacedFeature> UNNATURAL_TUNNEL = key("unnatural_tunnel");
     public static final ResourceKey<PlacedFeature> SOUL_CRYSTAL_ORE = key("soul_crystal_ore");
     public static final ResourceKey<PlacedFeature> CRIMSON_SOUL_CRYSTAL_ORE = key("crimson_soul_crystal_ore");
+    public static final ResourceKey<PlacedFeature> OASIS_PALMS_SHORE = key("oasis_palms_shore");
+    public static final ResourceKey<PlacedFeature> OASIS_PALMS_SAND = key("oasis_palms_sand");
+    public static final ResourceKey<PlacedFeature> OASIS_VEGETATION = key("oasis_vegetation");
+    public static final ResourceKey<PlacedFeature> CANYONLANDS_VEGETATION = key("canyonlands_vegetation");
 
     private ModPlacedFeatures() {
     }

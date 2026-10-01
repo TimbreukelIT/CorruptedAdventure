@@ -9,7 +9,7 @@ import nl.timtoys.corruptedadventure.registry.ModBiomes;
 
 /**
  * Datagen bootstrap for the skeleton biomes: one placeholder per ring and a void edge, per dimension. Ring 1 (overworld
- * and Nether) no longer has one: it uses {@link VanillaBiomeCopies}.
+ * and Nether) no longer has one: it uses {@link VanillaBiomeCopies}; overworld ring 2 neither: {@link Ring2Biomes}.
  * Only colours and weather (precipitation, temperature) differ; no features and no mob spawns, and no
  * {@code has_structure/*} tags, so no vanilla structures (strongholds included) can generate in them.
  */
@@ -22,9 +22,6 @@ public final class PlaceholderBiomes {
     }
 
     public static void bootstrap(BootstrapContext<Biome> context) {
-        // Ring 2: dry, sandy haze.
-        context.register(ModBiomes.PLACEHOLDER_RING_2, overworld(false, 2.0F, 0.0F,
-                0x9FC4E8, 0xE8D7A8, 0x32A598, 0x0B3A35, 0xBFB755, 0xAEA42A));
         // Ring 3: volcanic, reddish ash sky.
         context.register(ModBiomes.PLACEHOLDER_RING_3, overworld(false, 2.0F, 0.0F,
                 0xB0705A, 0x8A6A5A, 0x6B6B6B, 0x2A2A2A, 0x6B5A3A, 0x5A4A2E));

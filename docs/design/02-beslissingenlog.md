@@ -202,3 +202,16 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-01 | blocks | Potplant palmzaailing: ja | Zoals elke vanilla-sapling |
 | 2026-10-01 | blocks | Bladloot palm zoals eikenbladeren | Vertrouwd; puur data |
 | 2026-10-01 | blocks | Palmzaailing verwijst vóór change 23 naar de nog niet bestaande feature corruptedadventure:palm_tree: bonemeal verbruikt, geen groei, geen crash | Change 23 registreert alleen de feature; geen blokwerk meer |
+| 2026-10-01 | worldgen | Biomeverdeling ring 2: klimaat per ring via de router (`ring_blend` op `temperature`/`vegetation`) + inline `multi_noise` | Terrein en biome lezen dezelfde functie; puur JSON; herbruikbaar voor ring 3–5 en de Nether |
+| 2026-10-01 | worldgen | Ring 2-regio's: assen `relief` (rotsig/vlak) en `moisture`; geplande indeling change 30: canyonlands/hoodoo_fields op rotsig, oasis_flats/dune_sea/salt_flats op vlak | Eén kader waar change 30 alleen punten en hoogtes aan toevoegt |
+| 2026-10-01 | worldgen | Biomevlekken ring 2: ~500–1.000 blokken | Gebieden om te verkennen; elke biome komt vaak voor |
+| 2026-10-01 | worldgen | Ring gate nu gebouwd (noise-stap met gate 1,28× / 1,36× / 0,93× vanilla in ring 1 / 2 / 3, zonder 1,38× / 1,50× / 1,16×; geen naden) | Schaalt voor ring 3–5; naadcontrole bij de eerste echte grens |
+| 2026-10-01 | worldgen | Grotten in ring 2: vanilla noise-grotten + carvers | Ring 2 geen massief blok; change 26 bouwt erop voort |
+| 2026-10-01 | worldgen | Hoogtes ring 2 (keuze gebruiker, diep): plateau Y 125–140, kloven 55–70 diep (bodem Y ~70), vlakte Y 66–74; kloofbodem en vlakte ≥ Y 66 (geen zeewater in de kloven) | Spectaculaire canyons; steilere overgang vanuit ring 1 geaccepteerd |
+| 2026-10-01 | worldgen | Kloofwanden: steil met terrassen (3–4 treden in de kloof, 2–3 in de steilrand) + lichte 3D-ruis | Klassiek canyonbeeld; treden als natuurlijke paden |
+| 2026-10-01 | worldgen | Kloofsteenlagen: vaste `y_above`-banden in JSON (periode ~48), diepte Y 8 tot het oppervlak in canyonlands | Horizontale lagen, beide wanden gelijk; ruimte voor turkoois diep in kloofsteen |
+| 2026-10-01 | worldgen | Oasewater uit het terrein (poelen tot Y ~59, water tot 63, groene oeverrand) | Organische poelen zonder feature; sluit aan op de reservoirs |
+| 2026-10-01 | worldgen | Palm: vanilla `minecraft:tree` met `PalmTrunkPlacer` en `PalmFoliagePlacer`; feature onder de key `corruptedadventure:palm_tree` uit change 22 | Leest als palm; vanilla regelt bladverval en zaailing |
+| 2026-10-01 | worldgen | Spawns ring 2 tot fase 4: vanilla-woestijn (husks, konijnen, kamelen in de oase) | Droog en levend tot de ring 2-mobs van fase 4 |
+| 2026-10-01 | worldgen | Ring 2-biomes zonder `minecraft:`-tags (geen vanilla-structures tot fase 3); eigen tag `is_ring_2` + `c:is_hot/overworld`, `c:is_dry/overworld` | Structures zijn fase 3; tag voor ertsen/grotten/biomes van latere changes |
+| 2026-10-01 | worldgen | Lucht/fog/water van alle ring 2-biomes uit één `BiomeAmbience.Palette.RING_2` (placeholder-kleuren); definitief in change 32 | Eén plek voor de sfeerchange |

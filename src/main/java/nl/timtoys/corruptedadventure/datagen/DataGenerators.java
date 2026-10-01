@@ -9,10 +9,12 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.biome.PlaceholderBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring1BiomeModifiers;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring2Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.TransitionBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing1Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring1HorrorFeatures;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.WitheredExpanseFeatures;
 
 import java.util.Set;
@@ -35,16 +37,19 @@ public final class DataGenerators {
                     WitheredExpanseFeatures.configured(context);
                     Ring1HorrorFeatures.configured(context);
                     NetherRing1Features.configured(context);
+                    Ring2Features.configured(context);
                 })
                 .add(Registries.PLACED_FEATURE, context -> {
                     WitheredExpanseFeatures.placed(context);
                     Ring1HorrorFeatures.placed(context);
                     NetherRing1Features.placed(context);
+                    Ring2Features.placed(context);
                 })
                 .add(Registries.BIOME, context -> {
                     PlaceholderBiomes.bootstrap(context);
                     VanillaBiomeCopies.bootstrap(context);
                     TransitionBiomes.bootstrap(context);
+                    Ring2Biomes.bootstrap(context);
                 })
                 .add(Registries.WOLF_VARIANT, VanillaBiomeCopies::bootstrapWolfVariants)
                 .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, Ring1BiomeModifiers::bootstrap),

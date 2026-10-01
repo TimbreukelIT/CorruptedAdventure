@@ -153,7 +153,8 @@ final class DutchLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.POTTED_PALM_SAPLING, "Opgepotte palmzaailing");
 
         biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
-        biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder ring 2");
+        biome(ModBiomes.CANYONLANDS, "Kloofland");
+        biome(ModBiomes.OASIS_FLATS, "Oasevlakte");
         biome(ModBiomes.PLACEHOLDER_RING_3, "Placeholder ring 3");
         biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder ring 4");
         biome(ModBiomes.PLACEHOLDER_RING_5, "Placeholder ring 5");
