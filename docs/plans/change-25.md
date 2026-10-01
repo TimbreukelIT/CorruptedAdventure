@@ -17,11 +17,24 @@ Bron: `fase-1-wereld.md` §1.11 (ores algemeen: naar buiten afbouwen, ringores n
 
 Afgestemd met 21, 23, 24, 26, 30 en 31 (basis: de aanbevolen opties). De aannames A2–A4, de doelen in stap 3, de Y-bereiken in vraag 4 en 6 en de tellingen zijn inline bijgewerkt.
 - **Ertsblokken per gastgesteente (24):** zonnesteen in de drie tinten + `scorched_sandstone`, turkoois in de drie tinten; per gastgesteente een `BlockMatchTest` in één `minecraft:ore`. Zonnesteen komt zo ook in de hoodoo-kaprotsen (30) en de `scorched_sandstone`-hellingen van `dry_riverbeds` (31).
-- **Hoogtes uit 23 (23 vraag 5 = B, keuze gebruiker: diep):** plateau Y 125–140, kloofbodem ~70 (kloven 55–70 diep), vlaktes Y 66–74, kloofsteen Y 8 → oppervlak. Startwaarden: zonnesteen `trapezoid` Y 95–150 (vol 110–140; bovenste helft van de wand Y ~70–140, het trapezium schuift mee: vol vanaf ~57 % van de wandhoogte tot de plateaurand, aanloop 15 blokken eronder, 10 boven de hoogste plateaurand zoals voorheen), turkoois `uniform` Y 10–40 (blijft: onderste ~30 blokken kloofsteen).
+- **Hoogtes uit 23 (23 vraag 5 = B, keuze gebruiker: diep):** plateau Y 125–140, kloofbodem ~70 (kloven 55–70 diep), vlaktes Y 66–74, kloofsteen Y 8 → oppervlak. Startwaarden: zonnesteen `trapezoid` Y 95–150 (vol 110–140; bovenste helft van de wand Y ~70–140, het trapezium schuift mee: vol vanaf ~57 % van de wandhoogte tot de plateaurand, aanloop 15 blokken eronder, 10 boven de hoogste plateaurand zoals voorheen), turkoois `uniform` Y 10–40 (blijft: onderste ~30 blokken kloofsteen). **Bijgewerkt 2026-10-01 (23b, tafelbergen tot Y ~178):** zonnesteen `trapezoid` Y 95–180, `plateau` 60 (vol ~108–168), 14 aders × 8; zie "Afstemming na teststop 2".
 - **Bestaande bouwstenen:** `is_ring_2` en `Ring2Biomes.ALL` (23) hergebruiken; `Ring2Features` (23) **uitbreiden** (niet opnieuw aanmaken); `Ring2BiomeModifiers` maakt deze change. Het ertsenslot van `Ring2Biomes.generation` (23) wordt hier vervangen.
 - **Ring 1:** binnen ring 1 blijft alles blok voor blok gelijk (baseline-check). `vein_toggle` via `ring_blend` (vraag 3 A) laat de ore veins in de overgangszone 1→2 geleidelijk uitlopen, ook in de ring 1-helft van `withered_expanse`. **Besloten 2026-10-01 (gebruiker, punt B2):** geaccepteerd, samen met de floodedness van change 26.
-- Teststop: geen (alles via RCON; W-achteraf in de gebundelde ring 2-eindcheck, teststop 3 ná change 37). **Start pas na akkoord op teststop 2** (terreincheck na change 23), omdat de Y-bereiken op dat terrein rusten.
+- Teststop: geen eigen stop (alles via RCON). **Bijgewerkt 2026-10-01:** niet meer wachten op een akkoord van teststop 2; start na de commit van change 23c. De in-game check (W-achteraf hieronder) gaat mee in **teststop 2b na change 30** (gebundelde terreincheck ring 2, blokkerend vóór 31; keuze gebruiker 23b-17).
 - **Drops (24 vraag 3 = B):** de ertsen droppen `raw_sunstone`/`raw_turquoise`; deze change telt alleen ertsblokken (`#c:ores/*`), dus de meting verandert niet.
+
+## Afstemming na teststop 2 (2026-10-01)
+
+Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). Waar de tekst hieronder iets anders zegt, geldt dit blok; de belangrijkste plekken zijn inline gecorrigeerd.
+- **Terrein na 23b:** tafelbergen bovenop het plateau (toppen Y ~145–178, wanden Y ~132–178), spleetkloven (wanden Y ~90–140), richels en nissen in de kloofwanden, rotsvormen (naalden, keien, vinnen) en treden/kolken in de kloofbodem. Meer kloofsteenvolume per chunk.
+- **Zonnesteen opgerekt tot ~Y 180 (besloten 2026-10-01),** zodat ook de tafelbergwanden zonnesteen hebben. Doorgerekend:
+  - `trapezoid` **Y 95–180, `plateau` 60** → vol ~Y 108–168, aanloop ~12–13 blokken aan beide kanten. Let op: vanilla's `trapezoid` legt het vlakke deel **in het midden** van [min, max]; de oude omschrijving "vol 110–140, aanloop 15 onder en 10 boven" kon vanilla niet exact (Y 95–150 met `plateau` 30 gaf vol ~108–138). De ondergrens 95 en de aanloop blijven dus gelijk; alleen de bovenkant en het vlakke deel groeien.
+  - **Aantal (startwaarde):** het verticale bereik groeit van 42,5 naar 72,5 "volle" blokken (×1,7), en aders boven de plateaurand (Y ~140–180) vallen buiten de tafelbergen in de lucht (geen erts). Om de dichtheid in de kloofwanden ongeveer gelijk te houden: **14 aders per chunk** (was 8), grootte 8. Het doel blijft "≈ ring 1-ijzer per `canyonlands`-chunk"; afstemmen op de meting (meer kloofsteenvolume = meer treffers).
+  - Hoodoos (30, vloer Y ~88, toppen tot ~135) en spleetwanden blijven volledig binnen het bereik.
+- **Meer crème (23b-13 B):** rood 22 / oranje 12 / crème 14 per 48. Meer `cream_canyon_*_ore` in de telling; de normalisatie per gastgesteente (`#canyon_stones` totaal) vangt het op. Per tint apart rapporteren.
+- **Keien en puin van 23c** zijn dezelfde kloofsteentinten boven het oppervlak (`LOCAL_MODIFICATIONS`, vóór `UNDERGROUND_ORES`): een `minecraft:ore` kan er zonnesteen van maken ("glinsterend puin", onschuldig). In de telling per gastgesteente meenemen en apart melden hoeveel ertsblokken boven `WORLD_SURFACE_WG` liggen.
+- **Testplekken "hoog in de wanden"** kunnen nu ook richels, nissen en tafelbergwanden zijn.
+- **Teststop:** zie hierboven (teststop 2b na 30).
 
 ---
 
@@ -77,7 +90,7 @@ In de ring 2-biome-bootstrap van change 23 (A2): `BiomeDefaultFeatures.addDefaul
 - `corruptedadventure:turquoise_ore` (feature-naam): `minecraft:ore`, doelen volgens vraag 6 (A: per tint `BlockMatchTest(<tint>_canyon_stone)` → `<tint>_canyon_turquoise_ore`), adergrootte vraag 6, discard vraag 7.
 
 **Placed features** (`ModPlacedFeatures`), alleen deterministische, chunk-lokale modifiers:
-- `sunstone_ore`: `count` (vraag 5) → `in_square` → `height_range` **absoluut** (vraag 4; start A: `trapezoid` Y 95–150, vol tussen 110 en 140) → `biome`.
+- `sunstone_ore`: `count` (vraag 5; na 23b: 14) → `in_square` → `height_range` **absoluut** (vraag 4; na 23b: `trapezoid` Y 95–180, `plateau` 60, vol ~108–168) → `biome`.
 - `turquoise_ore`: `rarity_filter`/`count` (vraag 6) → `in_square` → `height_range` absoluut (vraag 6; start A: `uniform` Y 10–40) → `biome`.
 - **Bewust niet:** `heightmap`, `surface_relative_threshold_filter`, `environment_scan`, `count_on_every_layer`, `random_offset` naar een oppervlak — die lezen blokken die buurchunks (bomen, rotsen, meren) al dan niet al gezet hebben en hangen dus af van de generatievolgorde. "Hoog in de wand" wordt daarom een absoluut Y-bereik + het gastgesteente (kloofsteen bestaat alleen in de wanden), niet "x blokken onder het oppervlak".
 - Geen `ring_chance` op de eigen ertsen: de `biome`-filter + het gastgesteente begrenzen ze al tot ring 2 (kloofsteen bestaat alleen in ring 2-biomes).
@@ -161,14 +174,14 @@ Bouwplan: **B, W** ("verdeling klopt per diepte"). Daarbij **D** (datagen gewijz
    - **Ring 1 ongewijzigd:** ring 1-proefvlakken per chunk identiek aan de baseline (ores én `raw_iron_block`/`raw_copper_block`). Bewijst dat `ring_blend` op `vein_toggle` ring 1 niet raakt.
    - **Afbouw per diepte:** per erts (alle banden samen, en per band waar vanilla plaatst) verhouding ring 2 ÷ ring 1 van het kengetal ≈ de factor uit vraag 1 (tolerantie ±25 %, diamant ±50 % wegens kleine aantallen). Tabel per band vastleggen in `fase-1-wereld.md`.
    - **Ore veins** (vraag 3 A): `raw_iron_block` + `raw_copper_block` in ring 2 en ring 3 = **0**, in ring 1 > 0; zone 1→2 ertussenin.
-   - **Zonnesteen:** > 0 in de `canyonlands`-vlakken, ≥ 80 % in het gekozen Y-bereik (vraag 4), het tarief per chunk binnen ±30 % van het doel (vraag 5; het ring 1-ijzer uit dezelfde run is de maatstaf); **0** in ring 1, ring 3, Nether en (bij aanname A3) `oasis_flats`.
+   - **Zonnesteen:** > 0 in de `canyonlands`-vlakken, ≥ 80 % in het gekozen Y-bereik (vraag 4; na 23b Y 95–180), > 0 boven Y 150 in vlakken met tafelbergen (tafelbergwanden), per tint gerapporteerd (meer crème na 23b-13 B), het tarief per chunk binnen ±30 % van het doel (vraag 5; het ring 1-ijzer uit dezelfde run is de maatstaf); **0** in ring 1, ring 3, Nether en (bij aanname A3) `oasis_flats`. Ertsblokken in keien boven het oppervlak (23c) apart melden.
    - **Turkoois:** alleen in zijn band (vraag 6), tarief binnen ±50 % van het doel (ring 1-diamant als maatstaf); 0 buiten ring 2.
    - Smaragd: 0 in ring 2.
 5. **Determinisme:** twee verse werelden met dezelfde seed (andere `level-name`), de tweede met de vlakken in omgekeerde volgorde geladen → zonnesteen en turkoois per chunk en per band **identiek**; geschaalde vanilla-ores identiek op hooguit vanilla's eigen ruis na (change 16: 1 blok in 1 van 24 chunks).
 6. `latest.log` zonder fouten (feature order cycle, onbekende biome in tag, codecfouten).
 
-**Blokkerende handmatige test: nee.** Alles waar latere changes op bouwen (welke ertsen waar, hoeveel per diepte, alleen in ring 2, ring 1 ongewijzigd, determinisme) is automatisch te meten via B, D en RCON op de dedicated server. Zichtbaarheid en speelgevoel zijn afstemming (getallen in datagen, zonder code bij te stellen). → **W-achteraf** (runClient, verse wereld met seed `20260930`):
-- [ ] `/ca tpring 2` → `/locate biome corruptedadventure:canyonlands`: zonnesteen zichtbaar hoog in de wanden vanaf de kloofbodem; gloed in de schemering (blok uit change 24).
+**Blokkerende handmatige test: nee.** Alles waar latere changes op bouwen (welke ertsen waar, hoeveel per diepte, alleen in ring 2, ring 1 ongewijzigd, determinisme) is automatisch te meten via B, D en RCON op de dedicated server. Zichtbaarheid en speelgevoel zijn afstemming (getallen in datagen, zonder code bij te stellen). → **W-achteraf, afgelopen in teststop 2b na change 30** (bijgewerkt 2026-10-01; de bouwer van 30 neemt deze lijst op in de gebundelde checklist) (runClient, verse wereld met seed `20260930`):
+- [ ] `/ca tpring 2` → `/locate biome corruptedadventure:canyonlands`: zonnesteen zichtbaar hoog in de wanden vanaf de kloofbodem, ook in tafelbergwanden, op richels en in nissen; gloed in de schemering (blok uit change 24).
 - [ ] Zonnesteen en turkoois droppen `raw_sunstone`/`raw_turquoise` (24 vraag 3 B), Silk Touch het erts.
 - [ ] Turkoois vinden door in de onderste kloofsteenlagen te graven: voelt zeldzaam maar haalbaar (bijv. binnen 10–15 min).
 - [ ] Mijnen in ring 2 voelt "armer" dan ring 1, maar ijzer en kolen blijven bruikbaar; geen grote ijzeraders.
@@ -229,7 +242,7 @@ Alle opties: doel = kloofsteen (`#canyon_stones`), discard 0 (zichtbaar in de wa
 - **B. De hele wand:** `uniform` Y 66–150. Makkelijker te vinden (ook op loopniveau), minder "hoog".
 - **C. Alleen de rand:** `uniform` Y 125–150. Sterk klimdoel/randmateriaal, maar in ondiepe canyons komt er weinig voor.
 
-Antwoord: **A** — bovenste helft van de wanden: `trapezoid` Y 95–150, vol tussen 110 en 140 (doorgerekend op de diepe hoogtes van change 23 vraag 5 B: wand Y ~70–140).
+Antwoord: **A** — bovenste helft van de wanden: `trapezoid` Y 95–150, vol tussen 110 en 140 (doorgerekend op de diepe hoogtes van change 23 vraag 5 B: wand Y ~70–140). **Bijgewerkt 2026-10-01 (23b, tafelbergen):** opgerekt tot `trapezoid` Y 95–180, `plateau` 60 (vol ~108–168), zodat ook de tafelbergwanden zonnesteen hebben.
 
 ### 5. Zonnesteen: hoeveel?
 Zonnesteen is het hoofdmateriaal (kandidaat gear-tier ring 2). Maatstaf: ring 1-ijzer per chunk uit dezelfde W-meting.
@@ -237,7 +250,7 @@ Zonnesteen is het hoofdmateriaal (kandidaat gear-tier ring 2). Maatstaf: ring 1-
 - **B. Als goud:** start 4 aders, grootte 6; doel ≈ ¼ van ijzer. Kostbaarder materiaal, langere grind voor een set.
 - **C. Rijk:** start 12 aders, grootte 9; doel ≈ 1,5× ijzer. Snel uitgerust; zonnesteen voelt dan niet als iets bijzonders.
 
-Antwoord: **A** — als ijzer, alleen in de canyonwanden: start 8 aders per chunk, grootte 8; doel ≈ ring 1-ijzer per `canyonlands`-chunk.
+Antwoord: **A** — als ijzer, alleen in de canyonwanden: start 8 aders per chunk, grootte 8; doel ≈ ring 1-ijzer per `canyonlands`-chunk. **Bijgewerkt 2026-10-01:** start 14 aders (het groter bereik van vraag 4 verdunt 8 aders ×1,7); het doel blijft gelijk.
 
 ### 6. Turkoois: waar en hoeveel?
 - **A. Onderste kloofsteenlagen, zeldzaam als diamant (aanbevolen):** doel `#canyon_stones`, `uniform` Y 10–40 (startwaarde, = onderste ~30 blokken kloofsteen bij change 23 vraag 8 A), 1 ader per chunk, grootte 4; doel ≈ ring 1-diamant per `canyonlands`-chunk. Letterlijk "zeldzaam, diep in kloofsteen"; één blok uit change 24 volstaat.
@@ -270,7 +283,7 @@ Antwoord: **A** — nee: in kloofsteen alleen zonnesteen en turkoois; vanilla-er
 | 2026-10-01 | worldgen | Factoren vanilla-ores ring 2: kolen/ijzer/koper ×0,6; goud/redstone/lapis ×0,5; diamant ×0,25 | Merkbaar armer, ijzer blijft bruikbaar; ruimte voor verdere afbouw in ring 3–5 |
 | 2026-10-01 | worldgen | Verloop afbouw: vaste factor per ring | Eenvoudig meten en balanceren; past bij een tier per ring |
 | 2026-10-01 | worldgen | Ore veins alleen in ring 1 (`vein_toggle` via `ring_blend`); uitlopen in de ring 1-helft van zone 1→2 geaccepteerd | Ondersteunt "ijzer minder"; ring 1 buiten de zone blok voor blok gelijk |
-| 2026-10-01 | worldgen | Zonnesteen: `trapezoid` Y 95–150 (vol 110–140, bovenste helft van de diepe wanden), 8 aders × 8 per chunk; discard 0, alleen in kloofsteen en geschroeide zandsteen | Klimdoel zichtbaar vanaf de kloofbodem; hoeveelheid als ijzer |
+| 2026-10-01 | worldgen | Zonnesteen: `trapezoid` Y 95–180 (`plateau` 60, vol ~108–168: bovenste helft van de diepe wanden én de tafelbergwanden van 23b), 14 aders × 8 per chunk (startwaarde); discard 0, alleen in kloofsteen en geschroeide zandsteen | Klimdoel zichtbaar vanaf de kloofbodem en in de tafelbergen; hoeveelheid als ijzer |
 | 2026-10-01 | worldgen | Turkoois: onderste kloofsteenlagen Y 10–40, 1 ader × 4 per chunk, discard 0 | Zeldzaam en diep in kloofsteen; volgorde-onafhankelijk |
 | 2026-10-01 | worldgen | Vanilla-ertsen in kloofsteen: nee | Canyons voelen anders; geen nieuwe blokken |
 | 2026-10-01 | worldgen | Ringores via één biome modifier per ring (`add_ring_2_ores` op `#is_ring_2`, vaste volgorde), alleen chunk-lokale placements met absolute Y | Volgt change 16; geen feature-order-cycle; volgorde-onafhankelijk |

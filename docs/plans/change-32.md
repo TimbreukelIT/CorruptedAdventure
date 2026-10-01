@@ -22,6 +22,13 @@ Afgestemd met 20, 23, 28, 30, 31 en 36 (basis: de aanbevolen opties).
 - **`BiomeAmbience`-helpers** (`darken`, `Palette.darkened`, `withSky`, `withFog`, `withWater`) worden hier aangemaakt; 36 gebruikt ze.
 - Teststop: geen eigen stop; de runClient-acceptatie gaat mee in de gebundelde eindcheck ring 2 + Nether-2 (teststop 3) ná change 37 (W-achteraf).
 
+## Afstemming na teststop 2 (2026-10-01)
+
+Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). **Geen wijziging aan deze change.**
+- **Windgeluid in spleetkloven** (fluiten/huilen in de smalle, diepe spleten van 23b) is een mooie aanvulling, maar vraagt ambient **per positie** (niet per biome) en dus client-logica die de spleten herkent. Niet in deze change: backlog `[atmosphere]` (toegevoegd 2026-10-01). Wordt het later gebouwd, dan kan het de synthese-pijplijn (`tools/sounds/Ring2Sounds.java`) van deze change hergebruiken.
+- **Wandbronnen (23c-4 C)** maken geen eigen geluid; vanilla-water klinkt vanzelf.
+- Change 30 is nu gevolgd door teststop 2b (terrein); deze change blijft in teststop 3.
+
 ---
 
 ## Afhankelijkheden en aannames

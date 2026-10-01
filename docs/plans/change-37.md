@@ -18,9 +18,18 @@ Afgestemd met 21, 22, 24, 28, 29 en 33–36 (basis: de aanbevolen opties).
 - **Namen:** Nether-ring 2-biomes `dripshroom_forest`/`spore_caves` (35 vraag 9 A); PNG-telling van 33 gecorrigeerd naar 26.
 - **Particles:** `ModParticleDescriptionProvider` bestaat (28).
 - **Kloofsteen-placeholders (21)** hebben al geen harde laaglijn (richting vraag 5 A).
-- **Teststop (besloten 2026-10-01, teststop 3 van 3):** na deze change volgt de **blokkerende gebundelde eindcheck ring 2 + Nether-2** (runClient + dedicated server, contactblad vooraf): de vroegere blokkerende Nether-2-check van 35 (die change is nu W-achteraf) plus de W-achteraf-lijsten van 21–37. Change 38 begint pas na akkoord van de gebruiker. Zie Tests → "Teststop 3".
+- **Teststop (besloten 2026-10-01, teststop 3 van 3):** na deze change volgt de **blokkerende gebundelde eindcheck ring 2 + Nether-2** (runClient + dedicated server, contactblad vooraf): de vroegere blokkerende Nether-2-check van 35 (die change is nu W-achteraf) plus de W-achteraf-lijsten van 21–37 (behalve wat al in teststop 2b na change 30 akkoord is: terrein 23/23b/23c, ertsen 25, grotten 26, extra biomes 30). Change 38 begint pas na akkoord van de gebruiker. Zie Tests → "Teststop 3".
 - **Keuzes van de gebruiker die deze lijst raken (2026-10-01):** 24 vraag 3 B → items `raw_sunstone` (pulseert mee) en `raw_turquoise` (still) i.p.v. `sunstone`/`turquoise`; 26 vraag 5 B → nieuw blok `loose_sand` (change 21) met een eigen texture; 23 vraag 5 B → diepere kloven (banden van 2–8 blokken, periode ~48); 35 vraag 6 B → dauwbronnen in geodes (geen nieuwe textures).
 - **`loose_sand`-texture (routinekeuze van de agent, gemarkeerd):** subtiel donkerder en grover gekorreld dan zand, zodat een oplettende speler een zandgrot-plafond kan herkennen zonder dat het opvalt; geen nieuwe ontwerpvraag.
+
+## Afstemming na teststop 2 (2026-10-01)
+
+Afgestemd met de plannen 23b en 23c en de feedback van teststop 2 (`docs/plans/teststop-2-feedback.md`, punt 3).
+- **Expliciet aandachtspunt: palet van `canyon_cobblestone` herzien.** Feedback van de gebruiker: *"voelt raar qua palet"*. Het nieuwe palet moet passen bij de drie kloofsteentinten (rood/oranje/crème): kloofkeien lezen als "gebroken kloofsteen" (gemengde brokken in de drie tinten, iets donkerder en met donkere voegen), niet als een vreemde vierde kleur of als vanilla-keien met een rode zweem. Na 23c ligt `canyon_cobblestone` veel in het zicht (keienvelden, puin op puinhellingen, rotsval aan wandvoeten), dus dit is geen detail meer. Controle: in het contactblad een rij `canyon_cobblestone` naast de drie tinten, en in-game een keienveld naast een kloofwand. Neem dit op in de checklist hieronder (Textures) en vraag het de gebruiker expliciet in teststop 3.
+- **Meer crème in de wanden (23b-13 B):** rood 22 / oranje 12 / crème 14 per 48, in 4 crème banden. `cream_canyon_stone` is daardoor veel beter zichtbaar: de crème-texture verdient evenveel aandacht als rood, en het contrast van de zonnesteen-overlay op crème (risico "overlay op vier ondergronden") weegt zwaarder.
+- **Grind op puinhellingen (23b)** naast de kloofsteentinten in-game beoordelen (vanilla-grind, geen eigen texture; alleen melden als het vloekt).
+- **Oase (23c):** `moss_block` en `coarse_dirt` (vanilla) liggen nu naast de palmbladeren en op de bredere grasoever (23b-8). Beoordelen of `palm_leaves` en het oasegras daarmee samengaan.
+- **Teststop:** de terrein-W-lijsten van 23, 23b, 23c, 25, 26 en 30 zijn al afgelopen in **teststop 2b** (na change 30); teststop 3 hoeft die niet opnieuw te doen (wel de textures en de overige lijsten).
 
 ---
 
@@ -52,7 +61,7 @@ Pad: `src/main/resources/assets/corruptedadventure/textures/…`. **Vet** = krij
 | Bestand | Voor | Herkomst | Animatie / gloed |
 |---|---|---|---|
 | `block/red_canyon_stone.png`, `block/orange_canyon_stone.png`, `block/cream_canyon_stone.png` | drie tinten (lagen in de kloofwanden); ook de basis van de zonnesteen- en turkooisertsen | 21 | still; laagstructuur vraag 5 |
-| `block/canyon_cobblestone.png` | keien + trap/plaat/muur | 21 | still |
+| `block/canyon_cobblestone.png` | keien + trap/plaat/muur; **palet herzien** (teststop 2: "voelt raar qua palet"; zie Afstemming na teststop 2) | 21 | still |
 | `block/canyon_stone_bricks.png` | bakstenen + trap/plaat/muur | 21 | still |
 | `block/scorched_sandstone_top.png`, `block/scorched_sandstone.png`, `block/scorched_sandstone_bottom.png` | zandsteen + trap/plaat/muur; top ook voor `smooth_` en als boven-/onderkant van `cut_`/`chiseled_`; basis van `scorched_sandstone_sunstone_ore` | 21 | still |
 | `block/cut_scorched_sandstone.png`, `block/chiseled_scorched_sandstone.png` | zijkanten | 21 | still |
@@ -238,6 +247,7 @@ Bouwplan: **runClient** (visuele check). Daarnaast goedkoop en automatisch: scri
   - [ ] De log bevat geen `Missing textures in model` / `Unable to load model` / `Unable to parse animation metadata` voor `corruptedadventure`. F3+T (resource reload) gaat zonder fouten.
   - [ ] Creative tab: alle ring 2- en Nether-ring 2-blokken en -items hebben hun definitieve texture (geen paars-zwart). Items `raw_sunstone` en `dew_crystal` pulseren (vraag 1); `raw_turquoise` is still.
   - [ ] **Kloofsteen** (`/ca tpring 2`, dan `/locate biome corruptedadventure:canyonlands`): de kloofwand leest als gelaagd gesteente in banden. Er is geen streep-per-blok-patroon (vraag 5) en er zijn geen zichtbare naden in een 5×5-wand per tint. Keien en bakstenen staan herkenbaar naast vanilla-keien en -steenbakstenen. Muur, trap en plaat zijn in orde.
+  - [ ] **Kloofkeien-palet** (teststop 2, punt 3; expliciet aandachtspunt): `canyon_cobblestone` in een keienveld en in rotsval aan een wandvoet (23c) past bij de drie tinten en leest als gebroken kloofsteen, niet als een vreemde vierde kleur. Crème banden (23b-13 B) en grind op puinhellingen vloeken niet.
   - [ ] **Scorched sandstone** (`hoodoo_fields`, `dry_riverbeds`): top/zijkant/bodem passen op elkaar, cut/chiseled/smooth zijn opgebouwd zoals vanilla. Het is niet te verwarren met vanilla- of rode zandsteen.
   - [ ] **Los zand:** naast vanilla-zand subtiel donkerder/korreliger, maar op afstand een zandplafond; in een zandgrot (change 26) leest het plafond als zand.
   - [ ] **Gebarsten klei** (`dry_riverbeds`): een groot vlak zonder zichtbare herhaling (willekeurige rotatie).
@@ -269,7 +279,8 @@ Bouwplan: **runClient** (visuele check). Daarnaast goedkoop en automatisch: scri
 Na de commit van deze change, vóór change 38. De agent bereidt alles voor (verse wereld seed `20260930`, preset `corrupted_world`, dedicated server + `Dev`/`Dev2` waar twee clients nodig zijn, RCON-hulpcommando's, contactblad); de gebruiker loopt de lijsten af en geeft akkoord. Bevindingen worden backlogregels of een fix-change in de juiste categorie.
 1. **Nether-2 (blokkerend, verhuisd uit change 35):** de lijst "Blokkerend in teststop 3" uit `change-35.md` (zwamkathedralen, zuilen, lavazee met eilanden en dam, sporengrotten, dauwgeodes, grenzen zonder lavawand).
 2. **Textures (deze change):** de runClient-checklist hierboven.
-3. **W-achteraf-lijsten** uit `change-21.md` t/m `change-36.md` (blokken incl. instortend `loose_sand`, palm, ertsen en `raw_*`-drops, uitdroging, zandstorm/hittegolf op twee clients, zout, grotten en zandgrotten, extra biomes en hoodoos, `dry_riverbeds`, ring 2-sfeer en zingend zand, Nether-2-blokken, dauwgroei, Nether-2-sfeer). Wat al in teststop 1 of 2 akkoord is, hoeft niet opnieuw.
+3. **W-achteraf-lijsten** uit `change-21.md` t/m `change-36.md` (blokken incl. instortend `loose_sand`, palm, uitdroging, zandstorm/hittegolf op twee clients, zout, `dry_riverbeds`, ring 2-sfeer en zingend zand, Nether-2-blokken, dauwgroei, Nether-2-sfeer). Wat al in teststop 1, 2 of **2b** akkoord is, hoeft niet opnieuw: de terreinlijsten van 23/23b/23c, ertsen (25), grotten en zandgrotten (26) en extra biomes/hoodoos (30) zijn in teststop 2b (na change 30) afgelopen.
+   - **Expliciet vragen:** het nieuwe palet van `canyon_cobblestone` (teststop 2, punt 3) in een keienveld naast een kloofwand.
 4. **Standaard-W:** midden van elke ring en elke grens (overworld en Nether) en een portal vanuit elke ring; geen fouten in client- of serverlog.
 
 ---

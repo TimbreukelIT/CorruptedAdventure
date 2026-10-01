@@ -17,6 +17,13 @@ Afgestemd met 18, 19, 20, 23, 28 en 30 (basis: de aanbevolen opties).
 - **Ringweer-ritme (20 vraag 3 = B, keuze gebruiker):** vanilla-ritme, dus een hittegolf (change 28) is zeldzaam; het basistempo van vraag 1 draagt de conditie zelf.
 - Teststop: geen (W-achteraf in de gebundelde ring 2-eindcheck, teststop 3 ná change 37).
 
+## Afstemming na teststop 2 (2026-10-01)
+
+Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). **Geen wijziging aan de regels van deze change**; alleen feiten om te weten bij de bouw en de tests.
+- **Schaduw in het nieuwe terrein (23b):** spleetkloven (3–6 breed, 25–45 diep), wandnissen en de overhangende kaprots aan de plateaurand blokkeren de hemel vaak (`canSeeSky` = false). De regel van vraag 2 A werkt daar vanzelf: het zijn natuurlijke schuilplekken. Onderin een open spleet kan de hemel nog zichtbaar zijn (dan is het "zon"); dat is bewust. Testplek voor "schaduw" in S/W mag een nis of overdekt spleetstuk zijn.
+- **Wandbron (23c-4 C, keuze gebruiker):** zeldzaam (~1 per 8–15 kloofchunks) echt water in de kloven: bron in de wand, val, stroompje (geul 1 diep), kolk (tot 2 diep). Met vraag 7 A ("ondergedompeld tot boven het middel") telt het stroompje vermoedelijk **niet**, de kolk en de val vermoedelijk **wel**; de wandvoet geeft ook schaduw. Dat is een tweede, zeldzame koelplek naast de oase. **Alleen noteren:** of dat zo mag, staat als `[conditions]`-regel in de backlog; deze change verandert er niets aan. Bij de bouw in S één keer meten wat de water-check in een wandbron-kolk en in het stroompje geeft en het in `CODEBASE.md` zetten.
+- **Oase (23b-8):** de waterfractie blijft ~6–8 % en de grasoever wordt breder; de oase-regel werkt op de biome-key en verandert niet.
+
 ---
 
 ## Afhankelijkheden en aannames

@@ -22,6 +22,12 @@ Afgestemd met 18, 19, 20, 27, 32, 36 en 37 (basis: de aanbevolen opties). Waar d
 - **Geluid (vraag 8 A):** vanilla-verwijzing, geen audiobestand; de synthese-pijplijn van change 32 (`Ring2Sounds.java`) kan de wind later vervangen (backlog, geen blokkade).
 - **Teststop (besloten 2026-10-01):** W-achteraf in de gebundelde eindcheck ring 2 + Nether-2 (teststop 3) ná change 37 (ruim vóór change 45). Tests gebruiken `/ca weather 2 <type> <seconden>`; het vanilla-ritme van het ringweer (20 vraag 3 = B) hoeft niet afgewacht te worden.
 
+## Afstemming na teststop 2 (2026-10-01)
+
+Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). **Geen wijziging aan deze change.**
+- **Valgevaar door de wind-duw:** ring 2 krijgt in 23b spleetkloven (3–6 breed, 25–45 diep), richels van 1–3 breed in de kloofwanden, tafelbergranden en een overhangende kaprots. Een windstoot tijdens een zandstorm kan een speler daar laten vallen. De duw werkt alleen met `canSeeSky` (vraag 3 A), dus in nissen en overdekte spleetstukken niet, maar op richels en plateauranden wel. Dit is een gameplay-keuze en hoort niet in deze change: **backlog `[atmosphere]`** (toegevoegd 2026-10-01). Bij de bouw alleen in de W-achteraf-lijst één punt opnemen: "zandstorm op een richel of spleetrand: voelt de duw eerlijk of te gevaarlijk?".
+- **Windgeluid in spleten** is een aparte backlog-kandidaat (`[atmosphere]`, ambient per positie); niet in deze change.
+
 ---
 
 ## Afhankelijkheden en aannames

@@ -14,12 +14,23 @@ Buiten scope: het echte ring 3-terrein en de ring 3-blokken (as, verkoold hout: 
 
 Afgestemd met 23, 25, 26, 30 en 32 (basis: de aanbevolen opties).
 - **Plan 30 bestaat:** `height.json` heeft dan regio's (`flat + relief_weight · (rock − flat)`, klem ≥ 66); de beddingen-term komt op het eindresultaat. Hoodoo-pilaren staan op de echte `height` (30), dus niet zwevend boven een bedding.
-- **Ertsen (25):** per gastgesteente; zonnesteen ook in `scorched_sandstone` (oeverhellingen) binnen Y 95–150 (doorgerekend op 23 vraag 5 B) — in de praktijk alleen bij beddingen op plateaus; op de vlakte (Y 66–74) niet.
+- **Ertsen (25):** per gastgesteente; zonnesteen ook in `scorched_sandstone` (oeverhellingen) binnen Y 95–150 (doorgerekend op 23 vraag 5 B; na 23b Y 95–180) — in de praktijk alleen bij beddingen op plateaus; op de vlakte (Y 66–74) niet.
 - **Hoogtes (23 vraag 5 = B, keuze gebruiker):** plateau Y 125–140, kloofbodem ~70, vlakte Y 66–74. In de zone 2→3 mengt dat met placeholder ring 3 (Y ~120): vlaktes stijgen, plateaus zakken iets. De beddingen (3–6 diep, relatief aan het lokale oppervlak) veranderen niet.
 - **`dry_riverbeds` in `Ring2Biomes.ALL` (23)**, hoewel de bootstrap in `TransitionBiomes` staat; tags komen uit die lijst.
 - **Kleuren zijn hier geen vraag meer:** placeholder `Palette.RING_2.desaturated(0.3)`; de definitieve kleur is change 32 vraag 3 (`Palette.DRY_RIVERBEDS` vervangt `DRY_RIVERBEDS_FADE`). Vraag 5 gaat nu over klimaat, spawns en grotgeluid.
 - **Lijsten:** lagenblok en zandgrot-tak via de controlelijst van 23 bijwerken.
-- Teststop: geen (W-achteraf in de gebundelde ring 2-eindcheck, teststop 3 ná change 37).
+- Teststop: geen (W-achteraf in de gebundelde ring 2-eindcheck, teststop 3 ná change 37). **Bijgewerkt 2026-10-01:** deze change begint pas na akkoord op **teststop 2b** (blokkerend, na change 30; keuze gebruiker 23b-17).
+
+## Afstemming na teststop 2 (2026-10-01)
+
+Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). Waar de tekst hieronder iets anders zegt, geldt dit blok; de belangrijkste plekken zijn inline gecorrigeerd.
+- **Beddingen op het eindresultaat van `height`:** sinds 23b bevat `height` tafelbergen (`plateau_surface` = `plateau_height` + `mesa_height`), treden en kolken in de kloofbodem (`canyon_floor`) en het nieuwe `canyon_depth` (zijtakken, puinhellingen); 30 voegt de regio's toe. De bedding-term blijft `min(h, max(66, h − riverbed_mask · riverbeds))` op dat eindresultaat. Een bedding over een tafelberg = een geul in de tafelberg; "3–6 diep, relatief" blijft kloppen.
+- **De poel-term heet `pools.json` (23b).** Daar komt `× (1 − riverbed_mask)` (niet in `flats_height.json`), zodat ook `initial_height` (die `pools.json` gebruikt) de droge poelen volgt en de aquifer er geen water zet. `ring_2_pools` heeft sinds 23b-8 een extra grove octaaf (poelen plaatselijk breder); dat verandert niets aan het masker.
+- **Oasezones:** de grasoever en overgangsring van `oasis_flats` (surface rules op `ring_2_pools`) gelden alleen in de `oasis_flats`-tak. De zone is biome `dry_riverbeds` met een eigen tak: geen grasringen rond droge poelen. Bij de bouw nalopen dat de `dry_riverbeds`-tak vóór of los van de oasezones staat.
+- **Fijne vormen vervallen in de zone:** spleten, rotsvormen, richels/nissen en tafelbergen van 23b hangen aan `core_mask` (ring 2 = 1 buiten de zones). In de zone 2→3 is het terrein dus vlakker dan het kloofgebied; dat past bij "brede lege beddingen". Hoodoos (30) vervallen er ook.
+- **Zonnesteen (25, bijgewerkt):** `trapezoid` Y 95–180 (`plateau` 60), 14 aders. Voor `scorched_sandstone`-oeverhellingen verandert er praktisch niets (die liggen bij beddingen op plateaus; op de vlakte niet).
+- **Features (23c):** gestrande botten/resten kunnen `rubble` + `slope` hergebruiken (in dezelfde volgorde binnen de stap); oasefeatures vallen in de zone weg via de biome-filter. Liever `jittered_grid`/`noise_band`/`slope` dan `count` + `in_square` (geen toeval-knotten).
+- **Prestatiebudget (23b-9 C, keuze gebruiker):** ring 2-noise-stap **≤ 1,75× vanilla**, gedeeld met 23b/26/30 (was 1,3×).
 
 ---
 
@@ -38,7 +49,7 @@ Afgestemd met 23, 25, 26, 30 en 32 (basis: de aanbevolen opties).
 - **A1 — change 21:** `cracked_clay` (in `#minecraft:dead_bush_may_place_on` en `#overworld_carver_replaceables`), `dry_shrub` (grond `#corruptedadventure:desert_plant_soil`, met `cracked_clay` erin), `scorched_sandstone`, de kloofsteentinten met tag `#corruptedadventure:canyon_stones`.
 - **A2 — change 23:**
   - de ring 2-invoer in `density_function/ring_2/overworld/`, met een 2D-`height.json` (`flats + relief_weight · (plateau − flats) − relief_weight · canyon_depth`, kloofbodem en vlakte geklemd op ≥ Y 66) en `terrain.json` = `(height − y) / S`;
-  - de poelen in `flats_height.json` via `ring_2_pools`, tot Y ~59;
+  - de poelen in `flats_height.json` via `ring_2_pools`, tot Y ~59 (**na 23b:** eigen bestand `pools.json`, ook gebruikt door `initial_height`);
   - `ring_blend/overworld_initial` ring 2 = `0,390625 + ring_2/overworld/terrain`;
   - `Ring2Biomes.generation(...)` als gedeelde helper (vanilla `globalOverworldGeneration` package-private, ertsenslot);
   - `BiomeAmbience.Palette.RING_2`;
@@ -47,7 +58,7 @@ Afgestemd met 23, 25, 26, 30 en 32 (basis: de aanbevolen opties).
   - de ring gate in `RingBlend.mapAll` (vraag 3 van change 23).
 
   Heeft change 23 geen 2D-hoogte (bijvoorbeeld een andere opbouw), dan geldt stap 2 op de plek waar de oppervlaktehoogte van ring 2 wordt bepaald. Is er geen hoogte-domein, dan valt vraag 1 terug op optie B.
-- **A3 — change 25:** `add_ring_2_ores` (`add_features` op `#is_ring_2`, stap `UNDERGROUND_ORES`), met de geschaalde vanilla-ores (`ring_chance` `progress` ring 2: **kans 0 buiten ring 2**) en zonnesteen en turkoois (per gastgesteente een `BlockMatchTest` → variant uit change 24; zonnesteen ook in `scorched_sandstone`, dus ook in de oeverhellingen van deze zone binnen Y 95–150). In de ring 2-biomes staat `addDefaultOres` vervangen door alleen de niet-ertsen. De vanilla-ore veins staan alleen in ring 1 aan.
+- **A3 — change 25:** `add_ring_2_ores` (`add_features` op `#is_ring_2`, stap `UNDERGROUND_ORES`), met de geschaalde vanilla-ores (`ring_chance` `progress` ring 2: **kans 0 buiten ring 2**) en zonnesteen en turkoois (per gastgesteente een `BlockMatchTest` → variant uit change 24; zonnesteen ook in `scorched_sandstone`, dus ook in de oeverhellingen van deze zone binnen Y 95–150; na 23b Y 95–180). In de ring 2-biomes staat `addDefaultOres` vervangen door alleen de niet-ertsen. De vanilla-ore veins staan alleen in ring 1 aan.
 - **A4 — change 26:** de ring 2-biomes hebben vanilla-carvers en geen lavameren. De surface-rule-tak voor zandgrotten heeft een `biome_is`-lijst. Afspraak: nieuwe ring 2-biomes (30/31) komen in die lijst.
 - **A5 — change 30** (plan, afgestemd 2026-10-01): `salt_flats`, `hoodoo_fields` en `dune_sea` komen als regio's in dezelfde `height.json` (`flat + relief_weight · (rock − flat)`, daarna de klem ≥ 66), en `hoodoo_fields` komt in het lagenblok. Ze liggen dus ook in de zone 2→3. De beddingen (stap 2) snijden door alle regio's; de hoodoo-pilaren staan op de echte `height` (change 30, `floor` = `height`) en zweven dus niet boven een bedding.
 - **A6 — changes 27/28** (uitdroging, ringweer) werken hard op `ringAt(...).ring()`. Deze change verandert niets aan hun gedrag in de zone.
@@ -91,8 +102,8 @@ Handgeschreven, in `data/corruptedadventure/worldgen/`:
 | `density_function/ring_2/overworld/riverbeds.json` | 2D-diepte: `minecraft:noise` `dry_riverbeds_channel` (`xz_scale` 1, `y_scale` 0; zie Achtergrond), `abs` → `spline`: \|n\| ≤ 0,04 → volle diepte 5 (vlakke, brede bodem, 15–40 blokken), 0,04–0,07 → oever met 1–2 treden, ≥ 0,07 → 0 |
 
 - **`ring_2/overworld/height.json`** (change 23) wordt `min(h, max(66, h − riverbed_mask · riverbeds))`. Een bedding verlaagt alleen, nooit onder Y 66, dus er staat geen zeewater in een bedding (zelfde klem als de kloofbodems van change 23). Op een plateau worden het droge geulen in de mesa, op de vlakte ondiepe linten.
-- **Poelen vallen droog** (vraag 2 A): in `flats_height.json` (of waar change 23 de poel-term aftrekt) wordt die term `× (1 − riverbed_mask)`. In de zone liggen dan geen oasepoelen meer. Ondergrondse reservoirs (change 26) blijven.
-- De initiële dichtheid volgt vanzelf (`ring_blend/overworld_initial` → `terrain` → `height`). Aquifers en surface rules zien dus hetzelfde oppervlak.
+- **Poelen vallen droog** (vraag 2 A): in `flats_height.json` (of waar change 23 de poel-term aftrekt) wordt die term `× (1 − riverbed_mask)`. **Na 23b:** in `pools.json`, zodat `initial_height` meegaat. In de zone liggen dan geen oasepoelen meer. Ondergrondse reservoirs (change 26) blijven.
+- De initiële dichtheid volgt vanzelf (`ring_blend/overworld_initial` → `terrain` → `height`). Aquifers en surface rules zien dus hetzelfde oppervlak. **Na 23/23b:** de initiële dichtheid gebruikt `initial_height`/`initial_terrain` (rotsgebied op de laagste kloofbodem, oase op de vlakte met `pools.json` 2× diep). Een bedding van ≤ 6 diep op de vlakte blijft ≥ Y 66 en dus boven zeeniveau; nalopen dat er onder het preliminary surface geen nieuwe open ruimte onder Y 63 ontstaat (valkuil change 23).
 - **Buiten de zone verandert niets:** `riverbed_mask = 0` geeft `h` exact terug (vergelijkingstest in S).
 - **Verloop:** de beddingen zitten alleen in de ring 2-invoer. Hun zichtbare diepte neemt dus af naarmate ring 3 (placeholder Y ~120) meeweegt: diep aan de ring 2-kant, aan de ring 3-kant lopen ze dood in geblakerde grond (stap 5). Change 39 kan hetzelfde masker (`ring_weight/overworld/ring_2` in de ring 3-invoer) gebruiken als de beddingen ook aan de ring 3-kant moeten doorlopen (overdracht).
 - Ring gate (change 23): de geneste `ring_blend` met constanten is geen `interpolated`-marker. De gate wikkelt hem niet en hij kost alleen de cache-opzoeking. Controleren bij de bouw.
@@ -233,7 +244,7 @@ Bouwplan: **B, D, W**. Aanbevolen ook **S** (preset, codecs, surface rule en fea
 - [ ] **Verloop:** `scorched_patch`-blokken (`blackstone` + `basalt` aan de oppervlakte) per chunk in de binnenste vs. buitenste 40 blokken van de zone → buiten duidelijk meer. Fossiel-`bone_block` binnen > buiten.
 - [ ] **Ertsen:** `coal_ore`/`iron_ore` in zone-chunks aan de ring 2-kant > 0, aan de ring 3-kant 0 (tot change 41).
 - [ ] **Determinisme:** twee verse werelden, de tweede in omgekeerde volgorde geladen (zoals change 16). Per chunk (24 zone-chunks) tellingen van `bone_block`, `cracked_clay`, `blackstone`, `basalt`, `dead_log`, `dry_shrub` → identiek.
-- [ ] **Performance** (JFR, stap `noise`, zoals change 9): zone 2→3 vóór en na → hooguit een paar procent erbij, binnen het budget van 1,3× vanilla. Getal in `CODEBASE.md`.
+- [ ] **Performance** (JFR, stap `noise`, zoals change 9): zone 2→3 vóór en na → hooguit een paar procent erbij, binnen het budget van **1,75× vanilla** (23b-9 C, gedeeld; was 1,3×). Getal in `CODEBASE.md`.
 
 ### W — blokkerende handmatige test: **nee** → W-achteraf
 **Reden:** geen latere change bouwt direct op de vorm of de inhoud van de beddingen. Change 32 (sfeer) en 37 (textures) raken alleen kleuren en pixels. Change 39 herziet de zone toch, als ring 3 echt terrein krijgt. Alles wat meetbaar is (biome, zonebreedte, droog, diepte, verloop, ertsen, determinisme, naden) staat onder S. Wat overblijft is smaak en afstemming, en die kan achteraf.

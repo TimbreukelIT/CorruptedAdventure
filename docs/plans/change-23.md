@@ -23,6 +23,7 @@ Afgestemd met 21, 22, 24–27, 30–32 en 35 (basis: de aanbevolen opties). Deze
 - **Ring 1 moet blok voor blok gelijk blijven** (router-`temperature`/`vegetation` verplaatst, ring gate): ring 1 is in-game goedgekeurd; de S-vergelijking A↔B is daarom verplicht.
 - **Kloofsteen-placeholders** (21) hebben geen harde laaglijn per blok, zodat de terreincheck representatief is.
 - **Teststop (besloten 2026-10-01, teststop 2 van 3):** de **blokkerende terreincheck ring 2 (~15 min)** ná deze change. Hij mag plaatsvinden terwijl change 24 (`blocks`, onafhankelijk) gebouwd wordt, maar moet akkoord zijn **vóór change 25**. De check beoordeelt de diepe hoogtes van vraag 5 B (plateau Y 125–140, kloven 55–70 diep, vlaktes Y 66–74).
+  - **Bijgewerkt 2026-10-01 (na de eerste ronde):** de eerste ronde van teststop 2 is gedaan; de feedback staat in `docs/plans/teststop-2-feedback.md` en is uitgewerkt in de changes **23b** (terreinvormen) en **23c** (aankleding). Er volgt **geen akkoord vóór change 25** meer: de rest van de terreincheck (incl. de afstemvragen hieronder die nog open waren) gaat naar **teststop 2b, één blokkerende stop na change 30, vóór 31** (gebundeld 23 + 23b + 23c + 25 + 26 + 30; keuze gebruiker, 23b-17). De gebundelde checklist staat in plan 30.
 - **Hoogtes (vraag 5 = B, keuze gebruiker):** plateau Y 125–140, kloofbodem Y ~70, vlaktes Y 66–74. Afhankelijke waarden zijn bijgewerkt in 24 (aannames), 25 (zonnesteen Y 95–150, vol 110–140; turkoois Y 10–40 blijft), 26 (opmerking kolomhoogte zandzones), 30 (hoodoovloer Y 85–91, pilaren tot ~plateauhoogte, kaprotsgrens Y 94; duinen en zoutvlak ongewijzigd want relatief aan de vlakte) en 31 (gemengd terrein in de zone).
 
 ---
@@ -197,6 +198,8 @@ Bouwplan: **B, D, W**; aanbevolen ook **S** (preset, codecs, feature-volgorde wo
 - [ ] **Performance** (zoals change 9, JFR `minecraft.ChunkGeneration`, 16×16 chunks, tweede ronde telt): ring 1 (x 750), ring 2 (x 2.500), ring 3 (x 4.500) in wereld A, B (zonder gate), C (met gate) en de vanilla-preset. Budget noise-stap ≤ 1,3× vanilla in alle drie. Getallen in `CODEBASE.md`.
 
 ### W — blokkerende handmatige test: **ja — teststop 2 (terreincheck ring 2)**, ná deze change; mag lopen tijdens de bouw van change 24, akkoord vereist vóór change 25 (en dus vóór 26/30)
+
+> **Bijgewerkt 2026-10-01:** eerste ronde gedaan (feedback → `teststop-2-feedback.md`, uitgewerkt in 23b/23c). Het akkoord verhuist naar **teststop 2b na change 30** (vóór 31); change 25 wacht er niet meer op.
 **Reden:** of de kloven, steilranden, lagen en oases er goed uitzien en goed spelen is niet automatisch te meten, en changes 25 (zonnesteen "hoog in canyonwanden", turkoois "diep in kloofsteen": Y-bereiken), 26 (grotten en reservoirs onder dit terrein) en 30 (drie nieuwe regio's in hetzelfde hoogtekader en lagenblok) bouwen direct op deze hoogtes en vormen. Later bijstellen betekent die changes opnieuw afstemmen. Alles wat wél automatisch kan (hoogtes, water, aandelen, determinisme, ring 1 ongewijzigd, naden) staat onder S.
 
 Blokkerend (runClient, testseed, ~15 min; beoordeelt de hoogtes van vraag 5 B):
@@ -382,6 +385,8 @@ Aannames gecontroleerd tegen de code na change 22 (`af38c05`): klopten (kloofste
 - **Extra controle na de review:** Nether met en zonder gate (12 chunks rond Nether-grens 1, ring 1 en 2): netherrack, lava, bedrock en nylium identiek; één chunk 11 blokken lucht anders (volgorde-afhankelijke Nether-features). Rooktest daarna opnieuw: `Done (5.916s)`, geen fouten.
 
 ## In-game checklist (W) — teststop 2 (terreincheck ring 2, blokkerend vóór change 25)
+
+> **Status 2026-10-01: eerste ronde gedaan.** Feedback in `docs/plans/teststop-2-feedback.md`; verwerkt in `change-23b.md`/`change-23c.md` (afstemvragen 1 en 6 beantwoord door de feedback, 2–5 en 7–10 als vragen 23b-10 … 23b-16 en 23c-7). De resterende beoordeling gaat naar **teststop 2b na change 30** (blokkerend, vóór 31; checklist in plan 30). Deze lijst blijft als referentie; plekken en hoogtes kunnen door 23b veranderd zijn.
 
 ~15 min. **Opstarten:** `./gradlew runClient` → Singleplayer → Create New World → World Type **Corrupted World**, Seed `20260930`, Allow Cheats **aan** → Create. Dan `/gamemode creative` en F3 (links de biome, rechts `CA ring (client)`). Vliegen met dubbel-spatie.
 

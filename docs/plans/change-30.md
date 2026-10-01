@@ -26,12 +26,33 @@ Buiten scope:
 
 Afgestemd met 23–29 en 31 (basis: de aanbevolen opties). De aannames A3 en A4 en de `floor`-invoer van `HoodooPillars` zijn inline bijgewerkt.
 - **Zout-set (29) staat vast:** `salt_crust` vol en niet vallend, `salt_crystal` = `AmethystClusterBlock` met standaard `facing=up`.
-- **Ertsen (25):** per gastgesteente, incl. `scorched_sandstone`; zonnesteen Y 95–150 (vol 110–140; doorgerekend op 23 vraag 5 B). De hoodoo-pilaren (vloer Y ~88, toppen tot ~135) en kaprotsen vallen grotendeels in dat bereik; "zonnesteen in hoodoos" (design) klopt bij vraag 6 A.
-- **Hoogtes (23 vraag 5 = B, keuze gebruiker):** plateau Y 125–140, kloofbodem ~70, vlaktes Y 66–74. Gevolg hier, verhoudingen behouden: hoodoovloer Y 85–91 (basis 88; ligt op ~30 % tussen vlakte en plateau, zoals eerder 81 tussen 70 en ~107), pilaren 15–45 hoog (toppen tot ~plateauhoogte), kaprotsgrens Y 94, steilrand plateau → hoodoovloer met 2–3 treden. Duinen (basis Y 68, kammen tot ~100) en zoutvlak (Y 66) liggen relatief aan de vlakte en veranderen niet. Horizontale maten (cel 12, straal, bogen) blijven gelijk — **afstempunt**: verhouding hoogte/straal afstemmen na de in-game test in teststop 3 (besloten 2026-10-01).
+- **Ertsen (25):** per gastgesteente, incl. `scorched_sandstone`; zonnesteen Y 95–150 (vol 110–140; doorgerekend op 23 vraag 5 B; **na 23b: Y 95–180**, zie Afstemming na teststop 2, punt 7). De hoodoo-pilaren (vloer Y ~88, toppen tot ~135) en kaprotsen vallen grotendeels in dat bereik; "zonnesteen in hoodoos" (design) klopt bij vraag 6 A.
+- **Hoogtes (23 vraag 5 = B, keuze gebruiker):** plateau Y 125–140, kloofbodem ~70, vlaktes Y 66–74. Gevolg hier, verhoudingen behouden: hoodoovloer Y 85–91 (basis 88; ligt op ~30 % tussen vlakte en plateau, zoals eerder 81 tussen 70 en ~107), pilaren 15–45 hoog (toppen tot ~plateauhoogte), kaprotsgrens Y 94, steilrand plateau → hoodoovloer met 2–3 treden. Duinen (basis Y 68, kammen tot ~100) en zoutvlak (Y 66) liggen relatief aan de vlakte en veranderen niet. Horizontale maten (cel 12, straal, bogen) blijven gelijk — **afstempunt**: verhouding hoogte/straal afstemmen na de in-game test in teststop 3 (besloten 2026-10-01; **bijgewerkt 2026-10-01: in teststop 2b na deze change**).
 - **`Ring2Biomes.ALL` bestaat (23):** alleen drie regels erbij. Lagenblok en zandgrot-tak: op de controlelijst van 23 bijwerken.
 - **Technische correctie (geen ontwerpkeuze):** `HoodooPillars.floor` = de echte oppervlaktehoogte (`ring_2/overworld/height`) i.p.v. `hoodoo_floor`. Zo begint een pilaar nooit boven lucht, ook niet waar change 31 een bedding uitsnijdt of in partiële gewichten. `HoodooPillarsTest` toetst dan "verbonden met `floor − 2`" op die invoer.
 - **Volgorde `height.json`:** 23 (basis) → deze change (regio's) → 31 (beddingen, op het eindresultaat).
-- Teststop: geen (W-achteraf in de gebundelde ring 2-eindcheck, teststop 3 ná change 37, vóór fase 3).
+- Teststop: ~~geen (W-achteraf in teststop 3)~~ → **bijgewerkt 2026-10-01: na deze change volgt teststop 2b** (blokkerend; zie hieronder).
+
+## Afstemming na teststop 2 (2026-10-01)
+
+Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). **Waar de tekst hieronder iets anders zegt, geldt dit blok**; de belangrijkste plekken zijn inline gemarkeerd.
+
+1. **Geen eigen type `hoodoo_pillars` meer.** Change 23b maakt het generieke density-function-type `corruptedadventure:rock_pillars` (naald, kei, vin met optioneel gat = boog, optionele kap; codec `hash`, `cell_size`, `weight`, `floor`, `exclude`, `max_floor_step`, `chance`, `shapes`). De hoodoos worden een **JSON-instantie** `ring_2/overworld/hoodoos.json`: vorm `needle` met `cap` (kans 0,35, extra straal 1–2) en een brede voet; hoogte 15–45, straal 2–4, cel 12, kans 0,6. **Geen nieuwe Java** in stap 3.
+   - **Bogen:** een boog van 10–16 lang past niet in een cel van 12 (vorm binnen de cel minus 1 marge is een harde regel van `rock_pillars`). Daarom een **tweede instantie** `ring_2/overworld/hoodoo_arches.json`: vorm `fin` met `hole` (kans 1), lengte 10–16, dikte 3, hoogte 10–16, cel 24, kans ~0,12 (≈ dezelfde dichtheid als 0,03 per cel van 12). Technische correctie, geen ontwerpkeuze.
+   - Ontbreekt er iets in `rock_pillars` (bijv. een kaprots met een andere vorm of een hals-profiel), dan breidt deze change `rock_pillars` uit (codec + `RockPillarsTest`); **geen tweede type**.
+   - `HoodooPillarsTest` vervalt: `RockPillarsTest` krijgt een parametrisatie met de hoodoo- en boog-instellingen (nooit zwevend, binnen de cel, hoogtes × `weight`, kap breder dan de hals, gat open, poten op de vloer).
+2. **`cache_2d` → kolomtabel.** Per blok helpt `cache_2d` niet (de noise-stap wisselt bij elk blok van kolom). `rock_pillars` gebruikt de kolomtabel van 23b (`ColumnTable`); niets apart te doen.
+3. **`height.json` is opgesplitst (23b):** `plateau_surface` (= `plateau_height` + `mesa_height`), `canyon_floor` (bodem + treden + kolken) en `canyon_depth` (met hangende zijtakken en puinhellingen); `pools.json` apart. De `rock`-term van stap 2 wordt:
+   `rock = hoodoo_w · hoodoo_floor + (1 − hoodoo_w) · max(66, plateau_surface + canyon_depth · (canyon_floor − plateau_surface))`.
+   - `hoodoo_w` moet in het hoodooveld ook de **fijne vormen en tafelbergen van 23b uitzetten**: `mesa_height`-masker, het gewicht van `slot_network` (spleten), `plateau_rocks` en `canyon_spires` krijgen elk `× (1 − hoodoo_w)`. Richels/nissen (`canyon_details`) blijven op de steilrand plateau → hoodoovloer (dat is een wand); op de pilaren komen ze niet (die zitten niet in `shell`).
+4. **Prestatiebudget (23b-9 C, keuze gebruiker): ≤ 1,75× vanilla**, gedeeld met 23b/26/31 (was 1,3× in dit plan). Meten in `hoodoo_fields`, `dune_sea`, `canyonlands` (met tafelbergen) en x 2.500. Boven 1,75× na de onzichtbare knoppen (krapper y-venster, grotere cel alleen als de vorm gelijk blijft): **stop-en-vraag**.
+5. **Overgangszones via `core_mask` (23b):** het `weight` van beide hoodoo-instanties = `relief_weight · hoodoo_weight · core_mask`. Pilaren worden in de zones kleiner en vervallen onder de minimumhoogte, i.p.v. van boven af gekapt te worden. De S-test "Overgangszones" toetst dus: geen pilaren/zwevende brokken in de zones.
+6. **`ring_2/overworld.json` is een omhulling (23b):** `canyon_details(argument = max(stack, plateau_rocks, canyon_spires, hoodoos, hoodoo_arches), …)`. De hoodoos komen in de `max(…)`, niet rond de stapel. `Ring2TerrainJsonTest` en de ring gate-test (de `shell`-marker één keer gegate) blijven groen.
+7. **Zonnesteen (25, bijgewerkt):** `trapezoid` Y 95–180 (`plateau` 60, vol ~108–168), 14 aders. De pilaren (Y ~88–135) liggen er geheel in, op de onderste ~7–20 blokken na (aanloop).
+8. **Lagen (23b-13 B, keuze gebruiker):** rood 22 / oranje 12 / crème 14 per 48 in 4 crème banden. Geldt via het lagenblok ook voor de pilaren.
+9. **Features (23c):** `hoodoo_fields_vegetation` en eventueel puin in het hoodooveld hergebruiken `rubble`/`canyon_rockfall` in **dezelfde volgorde** binnen de stap (geen "Feature order cycle"). Voor zoutkristallen en duinflora de placement modifiers van 23c gebruiken (`jittered_grid`, `noise_band`, `slope`) i.p.v. `count` + `in_square` (geen toeval-knotten).
+10. **Hoogtecontrole canyonlands (S):** plateau nu Y 123–178 (tafelbergen), kloofbodems Y 66–95 (treden).
+11. **Teststop 2b (keuze gebruiker, 23b-17):** na deze change volgt de **blokkerende, gebundelde terreincheck ring 2** (23 + 23b + 23c + 25 + 26 + 30), vóór change 31. De bouwer van deze change **schrijft de gebundelde checklist** (zie "In-game checklist (W) — teststop 2b" onderaan). Het afstempunt hoodoovorm (was teststop 3) verhuist naar teststop 2b.
 
 ---
 
@@ -60,7 +81,7 @@ Gecontroleerd in de code (stand na change 17, commit `7714b77`). **Changes 18–
   - Heten de blokken anders of mist er een, volg dan change 29. Ontbreekt de zout-set helemaal, dan gebruik je een minimale placeholder (`minecraft:white_concrete_powder` / `calcite`) plus een backlogregel `[blocks]`.
 - **A4 — ertsen uit change 24/25:**
   - Zonnesteen-varianten: `red_`, `orange_` en `cream_canyon_sunstone_ore` en `scorched_sandstone_sunstone_ore` (change 24 vraag 1 A).
-  - Change 25 plaatst ze met de biome modifier `add_ring_2_ores` op **`#is_ring_2`**, per gastgesteente een `BlockMatchTest` (incl. `scorched_sandstone` → `scorched_sandstone_sunstone_ore`), Y `trapezoid` 95–150 (vol 110–140, absoluut; afgestemd op de diepe hoogtes van 23), discard 0. Turkoois zit in de onderste kloofsteenlagen (Y 10–40). De hoodoo-pilaren (vloer 85–91, toppen tot ~135) en hun kaprotsen vallen dus grotendeels in het zonnesteenbereik (de onderste ~5–10 blokken van een pilaar liggen onder de aanloop).
+  - Change 25 plaatst ze met de biome modifier `add_ring_2_ores` op **`#is_ring_2`**, per gastgesteente een `BlockMatchTest` (incl. `scorched_sandstone` → `scorched_sandstone_sunstone_ore`), Y `trapezoid` 95–150 (vol 110–140, absoluut; afgestemd op de diepe hoogtes van 23; **na 23b: Y 95–180, `plateau` 60, 14 aders**), discard 0. Turkoois zit in de onderste kloofsteenlagen (Y 10–40). De hoodoo-pilaren (vloer 85–91, toppen tot ~135) en hun kaprotsen vallen dus grotendeels in het zonnesteenbereik (de onderste ~5–10 blokken van een pilaar liggen onder de aanloop).
   - **Gevolg:** een biome in `#is_ring_2` krijgt automatisch de ring 2-ertsen. Zonnesteen verschijnt alleen waar zijn gastgesteente ligt. Of het scorched-doel in de ore-feature zit, hangt af van de bouw van change 25 (zijn plan noemt `TagMatchTest(canyon_stones)`, change 24 per gastgesteente een `BlockMatchTest`); dat bij de start nalopen.
 - **A5 — grotten uit change 26:**
   - De **zandgrot-tak** in de surface rules is een top-level-element vóór het lagenblok, met een `biome_is`-lijst.
@@ -126,7 +147,7 @@ De getallen zijn startwaarden (vraag 3 A, 4 A, 7 A). Je stemt ze af in test S (h
 | `salt_height.json` | Y 66 vlak (constant; vraag 3 A). Geen poelen. Ligt ≥ 66, dus geen zeewater |
 | `dune_height.json` | basis Y 68 + `amp · ridge`, met `ridge` = spline op `1 − |shifted_noise(ring_2_dunes, warp ring_2_dune_warp)|` (scherpe kam, brede trog) en `amp` = spline op `ring_2_dune_amplitude`, 10 → 32. Kammen tot Y ~100, troggen Y 66–70. Golflengte ~40–80 blokken |
 | `hoodoo_floor.json` | hoodoovloer Y 85–91 (basis 88 + `ring_2_hills` ±3): een uitgesleten "amfitheater" onder het plateau Y 125–140 (vraag 7 A; 23 vraag 5 B) |
-| `height.json` (gewijzigd) | `flat = salt_w · salt_h + dune_w · dune_h + (1 − salt_w − dune_w) · flats_height`; `rock = hoodoo_w · hoodoo_floor + (1 − hoodoo_w) · (plateau − canyon_depth)`; `height = flat + relief_weight · (rock − flat)`. Daarna dezelfde klem als change 23 (kloofbodem ≥ 66). `flats_height.json` blijft de oase (naam onveranderd, minder churn) |
+| `height.json` (gewijzigd) | `flat = salt_w · salt_h + dune_w · dune_h + (1 − salt_w − dune_w) · flats_height`; `rock = hoodoo_w · hoodoo_floor + (1 − hoodoo_w) · (plateau − canyon_depth)` → **na 23b:** `rock = hoodoo_w · hoodoo_floor + (1 − hoodoo_w) · max(66, plateau_surface + canyon_depth · (canyon_floor − plateau_surface))` (zie Afstemming na teststop 2, punt 3); `height = flat + relief_weight · (rock − flat)`. Daarna dezelfde klem als change 23 (kloofbodem ≥ 66). `flats_height.json` blijft de oase (naam onveranderd, minder churn; de poelen zitten sinds 23b in `pools.json`) |
 | `terrain.json` (gewijzigd) | de 3D-wandruis `ring_2_wall` × `(1 − salt_w − dune_w)` (alleen rotsige en oase-delen). Zandduinen en zoutvlak krijgen dus geen ruwe wanden of overhangen |
 
 - Nieuwe noise-parameters (`worldgen/noise/`): `ring_2_dunes`, `ring_2_dune_warp`, `ring_2_dune_amplitude` en `ring_2_hoodoo_cells` (stap 3). `ring_2_hills` wordt hergebruikt.
@@ -139,7 +160,9 @@ De getallen zijn startwaarden (vraag 3 A, 4 A, 7 A). Je stemt ze af in test S (h
 
 ### 3. Hoodoos: density function `corruptedadventure:hoodoo_pillars` (vraag 5 A, 6 A, 7 A)
 
-Nieuw: `worldgen/densityfunction/HoodooPillars.java`, geregistreerd in `ModDensityFunctionTypes`.
+> **Bijgewerkt 2026-10-01 (na 23b):** geen eigen Java-type. De hoodoos zijn JSON-instanties van `rock_pillars` uit 23b: `hoodoos.json` (naalden met kap) en `hoodoo_arches.json` (bogen, cel 24). De vormregels, codec-velden en kosten hieronder blijven de **eisen** aan die instanties (en aan een eventuele uitbreiding van `rock_pillars`); `cache_2d` wordt de kolomtabel van 23b. Zie "Afstemming na teststop 2", punt 1–6.
+
+~~Nieuw: `worldgen/densityfunction/HoodooPillars.java`, geregistreerd in `ModDensityFunctionTypes`.~~
 
 - **Codec:**
   - `weight` (DF, 0–1: `relief_weight · hoodoo_weight`);
@@ -161,15 +184,15 @@ Nieuw: `worldgen/densityfunction/HoodooPillars.java`, geregistreerd in `ModDensi
   - **Boog** (zeldzaam): een verticale schijf van 3 dik en 10–16 lang in een getrokken richting, met een elliptisch gat. Hoogte 10–16 (ongewijzigd: de boog is aan de celbreedte gebonden). De poten lopen tot `floor` op hun eigen x,z.
   - **Dichtheid:** +1 binnen de vorm, anders −1. Eén vaste waarde, zodat menging in een overgangszone van boven af kapt (zie Achtergrond).
   - **Alles binnen de cel:** pilaar en boog passen binnen de cel minus 1 blok marge. `compute` kijkt alleen naar de eigen cel (en bij een jitter tot over de rand naar 3×3 cellen). Elk blok van een vorm hangt via de vorm aan de voet: **nooit zwevend** (unit test).
-- **In de dichtheid:** `ring_2/overworld.json` wordt `max(<bestaande stapel>, corruptedadventure:ring_2/overworld/hoodoos)`, **buiten** `interpolated` (exact per blok, zie Achtergrond). Niet in `initial_density`: het preliminary surface blijft de hoodoovloer (aquifers, surface depth), net als de grotten. `ring_gate` hoeft niets te doen (geen marker).
+- **In de dichtheid:** `ring_2/overworld.json` wordt `max(<bestaande stapel>, corruptedadventure:ring_2/overworld/hoodoos)` → **na 23b:** `hoodoos` en `hoodoo_arches` komen in de `max(stack, plateau_rocks, canyon_spires, …)` binnen `canyon_details`, **buiten** `interpolated` (exact per blok, zie Achtergrond). Niet in `initial_density`: het preliminary surface blijft de hoodoovloer (aquifers, surface depth), net als de grotten. `ring_gate` hoeft niets te doen (geen marker).
 - **Kosten:**
   - Vroege exits: `weight` == 0 → −1.
   - Y buiten [`floor − 2`, `floor + max_height + 2`] → −1.
-  - `floor` en `weight` via `cache_2d` (exact per kolom, geen `flat_cache`).
+  - `floor` en `weight` via ~~`cache_2d`~~ de kolomtabel van 23b (`ColumnTable`; `cache_2d` helpt per blok niet).
   - Celgegevens per kolom via een ThreadLocal-cache (zoals `RingColumnCache`), zonder veranderlijke instantiestaat (valkuil).
   - `minValue`/`maxValue` = −1/+1.
-  - Meten in S (JFR, budget 1,3× vanilla).
-- **Materiaal (vraag 6 A):** komt uit de surface rules (stap 4). De pilaren zelf zijn `default_block` (steen) en worden zo kloofsteenlagen met een kaprots van geschroeide zandsteen. Zonnesteen (change 25, Y 95–150) komt dan vanzelf in de pilaarwanden.
+  - Meten in S (JFR, budget **≤ 1,75× vanilla**, gedeeld met 23b; was 1,3×).
+- **Materiaal (vraag 6 A):** komt uit de surface rules (stap 4). De pilaren zelf zijn `default_block` (steen) en worden zo kloofsteenlagen met een kaprots van geschroeide zandsteen. Zonnesteen (change 25, Y 95–150; na 23b Y 95–180) komt dan vanzelf in de pilaarwanden.
 - **Carvers** kunnen pilaren aansnijden (vanilla-gedrag; geaccepteerd). Noise-grotten niet: `max` komt ná de grotten.
 
 ### 4. Surface rules (`noise_settings/overworld.json`)
@@ -235,7 +258,7 @@ Loop de lijsten hieronder na met `Grep` op `canyonlands` en `oasis_flats` in `sr
 
 ### 7. Unit tests (`./gradlew build`)
 
-- **`worldgen/densityfunction/HoodooPillarsTest`:**
+- **`worldgen/densityfunction/HoodooPillarsTest`** → **na 23b: een parametrisatie van `RockPillarsTest`** met de instellingen van `hoodoos.json` en `hoodoo_arches.json` (dezelfde eisen):
   - **Nooit zwevend:** voor 2.000 cellen (10 seeds) is elk vast blok van de vorm via vaste buren verbonden met `floor − 2` (flood fill in de bounding box), ook bij `weight` 0,3, 0,6 en 1,0.
   - **Binnen de cel:** de vorm (+1 marge) blijft binnen de cel.
   - **Hoogtes:** tussen `min · weight` en `max · weight`.
@@ -254,8 +277,8 @@ Loop de lijsten hieronder na met `Grep` op `canyonlands` en `oasis_flats` in `sr
 ### 8. Documentatie
 
 - **`CODEBASE.md`:**
-  - **Klassen:** `HoodooPillars` (mappenstructuur en tabel Belangrijke classes) en `Ring2Biomes.ALL`.
-  - **Registries:** `hoodoo_pillars`, de biomes-tabel (3 nieuw) en de placed/configured features.
+  - **Klassen:** ~~`HoodooPillars`~~ (na 23b geen nieuwe class; eventuele uitbreiding van `RockPillars` vermelden) en `Ring2Biomes.ALL`.
+  - **Registries:** ~~`hoodoo_pillars`~~ (geen nieuw DF-type; databestanden `hoodoos.json`, `hoodoo_arches.json`), de biomes-tabel (3 nieuw) en de placed/configured features.
   - **Databestanden:** `ring_2/overworld/*` (nieuw/gewijzigd), noises, preset (5 punten) en surface rules (takken, lagenblok, zandgrotlijst).
   - **Valkuilen:**
     - richting kan niet in JSON;
@@ -297,10 +320,10 @@ Loop de lijsten hieronder na met `Grep` op `canyonlands` en `oasis_flats` in `sr
 
 - **Puur worldgen, server-side en deterministisch per seed.**
   - Alle ruis is geseed via noise-keys.
-  - `HoodooPillars` trekt celeigenschappen uit een geseede `NoiseHolder`. Het is een pure functie van (seed, x, y, z): geen `RingLayout.current()`, geen gedeelde staat (ThreadLocal-cache).
+  - De hoodoo-instanties van `rock_pillars` (was `HoodooPillars`) trekken celeigenschappen uit een geseede `NoiseHolder`. Het is een pure functie van (seed, x, y, z): geen `RingLayout.current()`, geen gedeelde staat (ThreadLocal-cache).
   - Features zijn chunk-lokaal, met de heightmap van change 23.
   - Geen netwerk, geen SavedData/attachments en geen client-code.
-- **Common registry:** het density-function-type `hoodoo_pillars` (worldgen-registry, niet gesynct; de datapack-JSON verwijst ernaar). Een dedicated server laadt geen client-class.
+- **Common registry:** ~~het density-function-type `hoodoo_pillars`~~ na 23b geen nieuw type: de datapack-JSON verwijst naar `rock_pillars` (23b; worldgen-registry, niet gesynct). Een dedicated server laadt geen client-class.
 - **Wat de client krijgt:** biomes gaan via vanilla naar de client (kleuren, geen neerslag). `salt_crystal`-licht is blokgedrag van change 29.
 - **Bestaande testwerelden:** de ring 2-indeling verandert (nieuwe punten, ander `T`). Op de rand tussen oude en nieuwe chunks in ring 2 ontstaan naden. Ring 1 en de router blijven gelijk. Maak dus verse werelden voor S en W.
 
@@ -314,7 +337,7 @@ Bouwplan: **B, D, W**. Aanbevolen ook **S**: preset, surface rules en het nieuwe
 - Daarna RCON weer uit. Destructieve tellingen alleen in wegwerpwerelden.
 
 ### B — `./gradlew build`
-- [ ] `HoodooPillarsTest`, `Ring2BiomesTest` (uitgebreid) en `Ring2RegionSharesTest` zijn groen. Bestaande tests (`RingBlendTest`, `RingGateTest`, `RingBiomeSourceTest`) blijven groen.
+- [ ] `RockPillarsTest` (met de hoodoo-instellingen; was `HoodooPillarsTest`), `Ring2BiomesTest` (uitgebreid) en `Ring2RegionSharesTest` zijn groen. Bestaande tests (`RingBlendTest`, `RingGateTest`, `RingBiomeSourceTest`) blijven groen.
 
 ### D — `./gradlew runData`
 - [ ] Gegenereerd en gecommit:
@@ -325,27 +348,27 @@ Bouwplan: **B, D, W**. Aanbevolen ook **S**: preset, surface rules en het nieuwe
 - [ ] `add_ring_2_ores` is ongewijzigd en werkt op `#is_ring_2`.
 
 ### S — server + RCON (geautomatiseerd)
-- [ ] **Start:** `tools/server-smoke-test.sh` start zonder fouten: geen "Feature order cycle", preset en codecs (`hoodoo_pillars`, `multi_noise`) laden, geen client-class-melding.
+- [ ] **Start:** `tools/server-smoke-test.sh` start zonder fouten: geen "Feature order cycle", preset en codecs (`rock_pillars`-instanties `hoodoos`/`hoodoo_arches`, `multi_noise`) laden, geen client-class-melding.
 - [ ] **Biomes vindbaar:** `locate biome` voor elk van de 5 ring 2-biomes vanaf de `tpring 2`-punten in 4 richtingen → gevonden binnen ring 2.
 - [ ] **Aandelen:** langs de cirkels r = 2.000, 2.500 en 3.000, elke 32 blokken, `execute if biome` op Y 80. Per biome het doel van vraag 1 ± 5 pp. Gemiddelde vlekgrootte (aaneengesloten punten op de cirkel) per biome noteren. Buurrelaties: `salt_flats` grenst nooit direct aan `oasis_flats` (vraag 2 A).
 - [ ] **Hoogtes** (100 kolommen per biome, `positioned over world_surface` + marker):
   - `salt_flats`: Y 66 (±1);
   - `dune_sea`: Y 66–102, met minstens 20 % van de kolommen ≥ Y 85 ("hoog");
   - `hoodoo_fields`: vloer Y 83–93 (`ocean_floor`-mediaan over een 16×16-raster), met in elke hoodoo-chunk kolommen ≥ vloer + 15 (pilaren).
-  - `canyonlands` (controle 23 vraag 5 B): plateau Y 123–142, kloofbodem Y 66–76. Aandeel pilaarkolommen ≈ het doel van vraag 7 (startwaarde 8–15 %).
+  - `canyonlands` (controle 23 vraag 5 B + 23b): plateau Y 123–178 (tafelbergen), kloofbodem Y 66–95 (treden). Aandeel pilaarkolommen in `hoodoo_fields` ≈ het doel van vraag 7 (startwaarde 8–15 %); in `hoodoo_fields` geen tafelbergen, spleten of plateaurotsen van 23b (`× (1 − hoodoo_w)`).
 - [ ] **Geen oppervlaktewater** in `salt_flats`, `dune_sea` en `hoodoo_fields`: `fill <chunk Y 60–140> glass replace water` geeft 0 boven Y 63 in 8 chunks per biome. Water onder 63 in grotten is toegestaan (change 26).
 - [ ] **Materialen** (per biome 8 chunks, Y 40–145; telling = blokken):
   - `salt_crust` > 0 alleen in zoutchunks, `salt_block` eronder;
   - `sand` > 0 in duinchunks;
   - in hoodoo-chunks `red_canyon_stone` + `orange_` + `cream_` > 0 (lagen in de pilaren), `scorched_sandstone` > 0 (kappen) en `red_sand` > 0;
   - in zout- en duinchunks kloofsteen = 0.
-- [ ] **Zonnesteen in hoodoos** (als change 25 gebouwd is): `#c:ores/sunstone` (of de 4 varianten) in 16 hoodoo-chunks, Y 85–150 → > 0. In zout/duin = 0.
+- [ ] **Zonnesteen in hoodoos** (als change 25 gebouwd is): `#c:ores/sunstone` (of de 4 varianten) in 16 hoodoo-chunks, Y 85–180 → > 0. In zout/duin = 0.
 - [ ] **Ring 1 ongewijzigd:** de router is niet aangeraakt. `execute if biome` op 300 ring 1-punten en blokkentellingen in 6 ring 1-chunks zijn identiek aan een wereld van vóór change 30.
 - [ ] **Determinisme / geen buurchunk-afhankelijkheid:** twee verse werelden met dezelfde seed, de tweede in **omgekeerde laadvolgorde** (zoals change 16). Vergelijk per chunk (8 chunks per nieuw biome + 8 in zone 1→2) de tellingen van `salt_crust`, `salt_crystal`, `sand`, `scorched_sandstone`, de drie kloofsteentinten, `dry_shrub`, `dead_bush`, `barrel_cactus` en `desert_flower`, en een hoogte-hash (som van 64 `world_surface`-hoogtes) → **identiek**. Elk verschil is een bug in een placement, of gedocumenteerd vanilla-restgedrag.
-- [ ] **Overgangszones:** in 4 chunks met hoodoos in de zone 1→2 of 2→3 (via `tpboundary` + `locate`) hebben de pilaren geen vast blok met lucht eronder én erboven in de bovenste 3 blokken van een pilaarkolom. Grove RCON-scan per kolom; zwevende brokken controleer je verder in W.
-- [ ] **Performance** (JFR `minecraft.ChunkGeneration`, stap `noise`, 16×16 chunks, tweede ronde telt): midden in `hoodoo_fields`, `dune_sea` en `canyonlands`, vóór en na change 30, en de vanilla-preset. Budget ≤ 1,3× vanilla; getallen in `CODEBASE.md`.
+- [ ] **Overgangszones:** in 4 chunks met hoodoos in de zone 1→2 of 2→3 (via `tpboundary` + `locate`) hebben de pilaren geen vast blok met lucht eronder én erboven in de bovenste 3 blokken van een pilaarkolom. Grove RCON-scan per kolom; zwevende brokken controleer je verder in W. **Na 23b:** pilaren worden in de zones via `core_mask` kleiner en vervallen; de flood-fill-test van 23b ("geen zwevende brokken") ook hier draaien.
+- [ ] **Performance** (JFR `minecraft.ChunkGeneration`, stap `noise`, 16×16 chunks, tweede ronde telt): midden in `hoodoo_fields`, `dune_sea` en `canyonlands` (met tafelbergen), en x 2.500, vóór en na change 30, en de vanilla-preset. Budget **≤ 1,75× vanilla** (23b-9 C, gedeeld; was 1,3×); getallen in `CODEBASE.md`.
 
-### W — blokkerende handmatige test: **nee** → W-achteraf
+### W — blokkerende handmatige test: ~~**nee** → W-achteraf~~ **ja — teststop 2b** (bijgewerkt 2026-10-01, keuze gebruiker 23b-17; zie "In-game checklist (W) — teststop 2b" onderaan). De tekst hieronder (reden "nee") is vervangen; de W-achteraf-lijst gaat op in teststop 2b.
 
 **Reden:** alles waar latere changes op bouwen, is automatisch te toetsen via B, D en S:
 - biome-keys, tags en lijsten (31: `Ring2Biomes.ALL`; 32: de `dune_sea`-key);
@@ -356,7 +379,7 @@ Bouwplan: **B, D, W**. Aanbevolen ook **S**: preset, surface rules en het nieuwe
 Wat overblijft, is het uiterlijk: hoe de duinen golven, of de hoodoos als hoodoos lezen, en de kaprotsen en bogen. Dat zijn **afstemgetallen in de JSON** van deze change. Geen latere fase 1-change bouwt op de exacte vorm: change 31 maakt zijn eigen zonevorm, 32 is ambient en 37 vervangt alleen pixels. Advies: doe de W-achteraf vóór change 37 en vóór fase 3 (structures in deze biomes).
 
 W-achteraf (runClient, testseed, ~15 min):
-- [ ] **Hoodoos (afstempunt, teststop 3):** `locate biome corruptedadventure:hoodoo_fields`. Lezen de pilaren van 15–45 hoog niet als naalden? Zo niet: straal of `max_height` bijstellen. De pilaren lezen als hoodoos: lagen rood/oranje/crème, met donkere kaprots. Er zijn balancerende kappen en af en toe een boog. Geen zwevende brokken, ook niet in de overgangszones. Zonnesteen is zichtbaar in pilaarwanden.
+- [ ] **Hoodoos (afstempunt, teststop 2b):** `locate biome corruptedadventure:hoodoo_fields`. Lezen de pilaren van 15–45 hoog niet als naalden? Zo niet: straal of `max_height` bijstellen. De pilaren lezen als hoodoos: lagen rood/oranje/crème, met donkere kaprots. Er zijn balancerende kappen en af en toe een boog. Geen zwevende brokken, ook niet in de overgangszones. Zonnesteen is zichtbaar in pilaarwanden.
 - [ ] **Duinenzee:** hoge, golvende duinen; zonder kompas raak je de weg kwijt; kaal. Geen zandwanden of zwevend zand aan het oppervlak.
 - [ ] **Zoutvlakte:** wit en vlak tot de horizon. Een geleidelijke rand naar de duinen, steile randen tegen de hoodoo-steilrand. Zoutkristallen glinsteren 's nachts.
 - [ ] **Overgangen:** kloof → hoodoo (terrassen), duin → oase (duinen lopen uit op de oasevlakte), duin → zout. `/ca tpboundary 1` en `/ca tpboundary 2`: geen verticale wanden of afgekapte pilaren die zweven.
@@ -377,7 +400,8 @@ W-achteraf (runClient, testseed, ~15 min):
 - **Hangend zand:** duinen zijn zand op een zandstenen kern. Carvers onder duinen geven hangend zand, zoals in vanilla-woestijnen. Grote kettingreacties beperkt de kerndiepte (`secondary_depth_range` 6).
 - **De surface-tak valt door naar vanilla:** een `steep`-geval zonder blok krijgt vanilla-gras of -aarde, als vanilla's standaard eerder komt dan het lagenblok. Controle in S (geen `grass_block` in hoodoo-chunks boven Y 94).
 - **Een vaste Y-grens voor de kaprots (94):** een lage pilaar op een hoge vloer kan een rode-zandtop krijgen, en een heuvel op de vloer boven 94 een kaprots. Stem af met de hoodoovloer (Y 85–91) en `min_height` (15).
-- **Hoge, slanke pilaren** (23 vraag 5 B): pilaren tot 45 hoog met hals 1,5–2,5 kunnen als naalden lezen. **Afstempunt (besloten 2026-10-01, optie A):** de vorm wordt afgestemd na de in-game test in teststop 3 (eindcheck ring 2 + Nether-2); bij te slanke pilaren daar de straal of `max_height` in `hoodoos.json` bijstellen (geen nieuwe ontwerpvraag nodig).
+- **Hoge, slanke pilaren** (23 vraag 5 B): pilaren tot 45 hoog met hals 1,5–2,5 kunnen als naalden lezen. **Afstempunt (besloten 2026-10-01, optie A):** de vorm wordt afgestemd na de in-game test in ~~teststop 3~~ **teststop 2b** (direct na deze change; bijgewerkt 2026-10-01); bij te slanke pilaren daar de straal of `max_height` in `hoodoos.json` bijstellen (geen nieuwe ontwerpvraag nodig).
+- **Teststop 2b is groot** (zes changes gebundeld, ~45–60 min). Risico: een terreinbevinding raakt 25/26/30 tegelijk. Mitigatie: alle maten in JSON; bevindingen sorteren in "afstemgetal" (direct in een fix-commit in `worldgen`) en "vorm" (stop-en-vraag, eventueel een change 30b vóór 31).
 - **Feature order cycle:** `hoodoo_fields_vegetation` hergebruikt de configured feature in een eigen placed feature; nieuwe placed features achteraan hun stap (S vangt het).
 - **De zout-set ontbreekt of heet anders** (A3): placeholder + backlog, geen eigen blokken in deze change.
 - **Zonnesteen in de kaprots** hangt af van het scorched-doel in de ore-feature van change 25 (A4). Zonder dat doel zit zonnesteen alleen in de kloofsteenlagen van de pilaren. Dat is ook goed: "hoog in hoodoos" klopt dan nog steeds.
@@ -423,7 +447,7 @@ Antwoord: **A** — JSON: richtingloze ruggen met domain warp, basis Y 68, kamme
 - **B. Alleen JSON: pilaren als drempel op een fijne 2D-ruis, recht omhoog; kappen en bogen naar de backlog.** Geen Java. Kappen kunnen in JSON gaan zweven, dus die laat je weg. De pilaren worden vlekkerig van vorm (ruisvlekken, geen ronde zuilen), zeker binnen de interpolatie.
 - **C. Feature (Java) die pilaren en bogen op het oppervlak zet.** Vrije vorm, maar max. ~40 blokken (3×3 chunks). De feature leest het oppervlak, en buurchunk-features (zie generatievolgorde) maken dat volgorde-afhankelijk. De lagen moet hij zelf kleuren, en zonnesteen zit niet in pilaren die na de ertsen van de buurchunk komen. Afgeraden.
 
-Antwoord: **A** — eigen density function `hoodoo_pillars` (Java), per blok buiten de interpolatie.
+Antwoord: **A** — eigen density function `hoodoo_pillars` (Java), per blok buiten de interpolatie. **Bijgewerkt 2026-10-01 (na 23b):** de aanpak blijft (Java-DF per blok, buiten de interpolatie), maar via het generieke type `rock_pillars` van 23b als JSON-instanties (`hoodoos.json`, `hoodoo_arches.json`); geen eigen type.
 
 ### 6. Waarvan zijn de hoodoos gemaakt?
 Design: "zandsteenpilaren"; zonnesteen "hoog in canyonwanden en hoodoos" (change 24 vraag 1 A: varianten in de drie kloofsteentinten en geschroeide zandsteen).
@@ -457,10 +481,29 @@ Antwoord: **A** — zout: zeldzame kristallen, alleen monsters; duinen: vrijwel 
 | 2026-10-01 | worldgen | Buren op de vochtas: zout — duin — oase | Oase ligt in de duinen; zout aan de droogste kant |
 | 2026-10-01 | worldgen | Zoutvlakte: kurkdroog en vlak op Y 66 (korst, 2–4 zoutblok, zandsteen), zeldzame kristallen | "Kaal, wit en vlak"; geen tweede waterbron |
 | 2026-10-01 | worldgen | Duinen: JSON, richtingloze ruggen met domain warp, basis Y 68, kammen tot ~100; zand op een zandstenen kern | Geen Java, golvend en hoog; beperkt hangend zand boven grotten |
-| 2026-10-01 | worldgen | Hoodoos: eigen density function `hoodoo_pillars`; pilaren per blok buiten `interpolated`, één vaste dichtheid binnen de vorm, niet in de initiële dichtheid | Pilaren, kappen en bogen, nooit zwevend, pure functie; dunne vormen overleven interpolatie niet; menging kapt van boven af, dus niets zweeft |
+| 2026-10-01 | worldgen | Hoodoos: per-blok-density function, na 23b als JSON-instanties `hoodoos`/`hoodoo_arches` van `rock_pillars` (geen eigen type `hoodoo_pillars`); pilaren per blok buiten `interpolated`, één vaste dichtheid binnen de vorm, niet in de initiële dichtheid | Pilaren, kappen en bogen, nooit zwevend, pure functie; dunne vormen overleven interpolatie niet; menging kapt van boven af, dus niets zweeft |
 | 2026-10-01 | worldgen | Hoodoo-materiaal: kloofsteenlagen met kaprots van geschroeide zandsteen | Klassiek hoodoobeeld; zonnesteen in hoodoos (design) |
 | 2026-10-01 | worldgen | Hoodoo-maat en -dichtheid: vloer Y 85–91, pilaren 15–45 (toppen tot ~plateau Y 125–140), straal 2–4, cel 12, kans 0,6, 35 % kap, af en toe een boog (verhoudingen van optie A op de diepe hoogtes van change 23) | Uitgesleten plateau, goed doorloopbaar |
 | 2026-10-01 | worldgen | Flora en spawns zout/duin/hoodoo: zout alleen kristallen en monsters; duinen vrijwel kaal; hoodoos dunnere kloofflora | Elk biome een eigen karakter |
 | 2026-10-01 | worldgen | `Ring2Biomes.ALL` is de enige lijst van ring 2-biomes voor tags en tests; nieuwe ring 2-biomes ook in het lagenblok/de zandgrot-tak waar van toepassing | Eén plek om bij te werken (change 31 en later) |
 
 Commit (na `/code-review`): `worldgen: add salt flats, hoodoo fields and dune sea biomes`.
+
+---
+
+## In-game checklist (W) — teststop 2b (gebundelde terreincheck ring 2, BLOKKEREND, besloten 2026-10-01)
+
+**Besluit (keuze gebruiker, 23b-17):** de in-game terreincheck van ring 2 is één blokkerende stop **na deze change, vóór change 31**, "als alles is ingericht". Hij bundelt de W-lijsten van **23** (resterende punten van teststop 2), **23b**, **23c**, **25**, **26** en **30**. Change 31 begint pas na akkoord van de gebruiker. Teststop 3 (na 37) blijft en slaat wat hier akkoord is over.
+
+**Wat de bouwer van deze change doet** (na de commit van 30, vóór het rapport):
+1. **De gebundelde checklist schrijven** onder dit kopje (vervangt deze opzet), gegroepeerd per onderwerp, met per punt een concrete plek (`/tp`-coördinaten, seed `20260930`, preset `corrupted_world`) en waar nodig een `/ca`- of `/locate`-commando:
+   - **Overgang en hoofdvorm ring 2** (23, 23b): `/ca tpboundary 1` en `2`, overgang ring 1 → plateau (23b-12), geen zwevende brokken of afgekapte vormen in de zones.
+   - **Plateau en kloven** (23b): oversteken (~400 blokken in survival), spleten met bruggen/klemblokken en hangende mondingen, tafelbergen, rotsvormen (naalden, keien, vinnen, bogen, torens), wanden (richels op de crème banden, nissen, overhangende kaprots), kloofbodem (treden met kolk, hangende zijtakken, puinhellingen), lagen (meer crème, 23b-13 B), plateaugrotten (23b-15).
+   - **Aankleding** (23c): keienvelden, puin, rotsval, wandbronnen (bron, val, stroompje, kolk), oase (bredere groene rand, plaatselijk bredere poelen, palmgroepjes, struikpalmen, overgangsring), palmvorm.
+   - **Ertsen** (25): zonnesteen hoog in kloof- en tafelbergwanden (tot Y ~180), turkoois diep, `raw_*`-drops, "armer" mijnen.
+   - **Grotten** (26): grotten en ingangen, reservoirs, zandgrotten met instorting (survival), overgang 1→2 onder de grond.
+   - **Extra biomes** (30): hoodoos (afstempunt vorm), bogen, duinenzee, zoutvlakte, overgangen kloof ↔ hoodoo ↔ vlak, biomeverhouding (23b-16).
+   - **Standaard-W:** midden van elke ring en elke grens (overworld en Nether), portal vanuit ring 2 (kloof, tafelberg en duin) naar de Nether en terug; geen fouten in client- of serverlog.
+2. **Bronnen:** de lijsten "W" in `change-23b.md` en `change-23c.md` (met de coördinaten die hun bouwers daar zetten), de W-achteraf-lijsten in `change-25.md` en `change-26.md`, de W-achteraf-lijst van dit plan, en de resterende punten van teststop 2 in `change-23.md`. **Coördinaten opnieuw controleren**: deze change verschuift drempel `T` en voegt regio's toe, dus plekken uit 23b/23c kunnen nu in een ander biome liggen.
+3. **Voorbereiden:** verse wereld (`level-name` `teststop2b`), devkaarten (bovenaanzicht + doorsnede) van 4 vaste plekken als bijlage, RCON weer uit. Duur: ~45–60 min; mag in twee sessies.
+4. **Afstemvragen** onderaan de checklist, per onderwerp (bijv. spleetbreedte, tafelbergaandeel, aantal richels, poelbreedte/oever, frequentie wandbronnen, zonnesteen-tarief, hoodoovorm, duinhoogte). Antwoorden worden afstemgetallen in JSON (fix-commit in `worldgen`, zonder nieuwe ontwerpvraag) of, bij een vormwijziging, stop-en-vraag (eventueel een change 30b vóór 31).

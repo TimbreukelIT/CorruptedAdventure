@@ -24,7 +24,17 @@ Afgestemd met 23, 25, 29, 30, 31 en 35 (basis: de aanbevolen opties).
 - **Vraag 1 vervalt** (23 vraag 4 A, besloten): de basisgrotten zitten in change 23; stap 1 wordt niet gebouwd.
 - **Los zand (vraag 5 = B, keuze gebruiker):** zandgrot-plafonds gebruiken `corruptedadventure:loose_sand` uit change 21 in plaats van vanilla-zand; de vloer blijft vanilla-zand. RCON-test van het instorten in S.
 - **Hoogtes (23 vraag 5 = B):** onder de plateaus (tot Y ~140) is de kolom van Y 0 tot het oppervlak hoger dan eerder gepland; de zandzone-regel is relatief (`not above_preliminary_surface`) en hoeft niet te veranderen, maar er zijn per kolom meer grotlagen met een zandplafond — meten in S.
-- Teststop: geen (W-achteraf in de gebundelde ring 2-eindcheck, teststop 3 ná change 37).
+- Teststop: geen eigen stop. **Bijgewerkt 2026-10-01:** de W-achteraf-lijst gaat mee in **teststop 2b na change 30** (gebundelde terreincheck ring 2, blokkerend vóór 31; keuze gebruiker 23b-17), niet meer in teststop 3.
+
+## Afstemming na teststop 2 (2026-10-01)
+
+Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). Waar de tekst hieronder iets anders zegt, geldt dit blok.
+- **Zandgrot-tak raakt de nieuwe vormen nooit:** spleten, nissen, richels, overhangen, tafelbergen en rotsvormen van 23b liggen allemaal **boven** het preliminary surface (dat ligt in het rotsgebied op de laagste kloofbodem). De regel `not above_preliminary_surface` sluit ze dus uit. Dat klopt met "nooit een overhang aan het oppervlak": niets aan te passen, wel als feit in `CODEBASE.md` noteren.
+- **Onder tafelbergen** (toppen tot Y ~178) liggen meer grotlagen: meer plafonds en meer noise-tijd. Zandplafonds niet: die blijven onder het preliminary surface, en dat ligt in het hele rotsgebied op de laagste kloofbodem (~Y 69), ook onder plateau en tafelbergen. Meetpunt "grootste plafond" (`tick query` bij instorten) en perf ook in het kloofgebied doen, op een plek met tafelbergen (meetplek uit `CODEBASE.md`, vastgelegd door 23b).
+- **Floodedness-band** (Y < 60) verandert niet; 23b houdt alle open ruimte ≥ Y 66 en het preliminary surface op de laagste kloofbodem.
+- **Carvers** kunnen bruggen, vinnen en naalden aansnijden (vanilla-gedrag, geaccepteerd zoals bij de hoodoos).
+- **Prestatiebudget (23b-9 C, keuze gebruiker):** de ring 2-noise-stap mag **≤ 1,75× vanilla** (gedeeld budget voor 23b + 26 + 30 + 31), niet meer 1,3×. Deze change meet vóór/na in het kloofgebied en op x 2.500; een stijging van meer dan ~0,05× door de floodedness is een melding waard.
+- **Oase-water (23b-8):** de oasepoelen blijven ~6–8 % van `oasis_flats` (oppervlak, Y ≤ 63) en zijn geen aquiferwater; de S-meting "boven Y 60 vrijwel geen aquiferwater" telt de poelen apart.
 
 ---
 
@@ -112,7 +122,7 @@ Reservoirs en zandplafonds hebben holtes nodig. Ring 1 heeft vanilla-noise-grott
 Seed 20260930, 15×15 chunks (`forceload add`, `execute if loaded` pollen) rond `/ca tpring 2` in 3 richtingen. Referentie: 15×15 chunks in ring 1. Tellen met `fill … replace`, in een verse wereld per meting.
 - **Reservoirs**: water en lucht in Y −54…62 per chunk. Doel (startwaarde): in ring 2 is het aandeel water in de holtes 2–3× zo groot als in ring 1. Boven Y 60 vrijwel geen aquiferwater (en wel de oasepoelen van change 23).
 - **Lava** in ring 2, Y −54…−10: 0 (vraag 3 A). Ring 1: vanilla-waarden.
-- **Zand** in ring 2, Y 0…(preliminary surface − 8): `corruptedadventure:loose_sand` en `minecraft:sand` > 0 in de zandzones, 0 daarbuiten (de bands boven Y 127 meetellen: plateaus tot Y ~140). Steekproef: plafond = `loose_sand` met lucht eronder (`execute if block … corruptedadventure:loose_sand` + `if block ~ ~-1 ~ air`), vloer = `minecraft:sand`; geen `loose_sand` buiten plafonds.
+- **Zand** in ring 2, Y 0…(preliminary surface − 8): `corruptedadventure:loose_sand` en `minecraft:sand` > 0 in de zandzones, 0 daarbuiten (de bands boven Y 127 meetellen: plateaus tot Y ~140, tafelbergen van 23b tot Y ~178; let op: sinds 23/23b ligt het preliminary surface in het rotsgebied op de laagste kloofbodem, ~Y 69, dus daar verwacht je boven ~Y 61 geen zand — zand hoger in de kolom is een fout). Steekproef: plafond = `loose_sand` met lucht eronder (`execute if block … corruptedadventure:loose_sand` + `if block ~ ~-1 ~ air`), vloer = `minecraft:sand`; geen `loose_sand` buiten plafonds.
 - **Instorting — RCON-test van `loose_sand` in een echte zandgrot** (geforceloade chunk; scheduled ticks en entities lopen daar, random ticks zijn niet nodig):
   1. *Speler-trigger:* de quick-play-client `Dev` (change 18) joint automatisch; een gemeten zandgrot-plafond zoeken (steekproef hierboven), RCON `gamemode survival Dev` + `tp Dev <x> <y> <z>` op de grotvloer eronder (bovenkant hoofd ≤ 2 blokken onder het plafond) → binnen ~60 ticks is het plafond boven de speler weg (`execute if block … air`) en ligt er zand op de vloer; de kettingreactie neemt het aaneengesloten plafond mee (tellen met `fill … glass replace corruptedadventure:loose_sand` vóór en na). Lukt de automatische client-join niet: deze stap naar W-achteraf.
   2. *Controle:* een ander plafond met een `summon`-de zombie (`NoAI:1b`) eronder en een derde zonder iets eronder hangen na 200 ticks nog (mobs triggeren niet).
@@ -121,7 +131,7 @@ Seed 20260930, 15×15 chunks (`forceload add`, `execute if loaded` pollen) rond 
   Werkt een stap via RCON toch niet, dan in-game (W).
 - **Ring 1 ongewijzigd**: water en lava in 5×5 ring 1-chunks zijn gelijk aan dezelfde chunks vóór deze change (floodedness ring 1 = vanilla-definitie).
 - **Determinisme**: twee verse werelden met dezelfde seed, de tweede in omgekeerde volgorde geladen. Per chunk dezelfde aantallen water, lava en zand.
-- **Performance** (JFR, `minecraft.ChunkGeneration`, stap `noise`, zoals bij change 9): ring 2 vóór en na change 26, budget 1,3× vanilla. Leg de getallen vast in `CODEBASE.md`. Zonder ring gate (A3) ook ring 3 meten, want die betaalt dan mee.
+- **Performance** (JFR, `minecraft.ChunkGeneration`, stap `noise`, zoals bij change 9): ring 2 vóór en na change 26 (kloofgebied met tafelbergen en x 2.500), budget **≤ 1,75× vanilla** (23b-9 C, gedeeld met 23b/30/31; was 1,3×). Leg de getallen vast in `CODEBASE.md`. Zonder ring gate (A3) ook ring 3 meten, want die betaalt dan mee.
 
 ### 7. Documentatie
 
@@ -158,7 +168,7 @@ Bouwplan: **B, W**. Extra: **S** (aanbevolen: de JSON moet op een dedicated serv
 - [ ] **B**: `./gradlew build` slaagt, `RingAquiferTest` en `RingFluidPickerTest` zijn groen.
 - [ ] **D** (voorwaardelijk): `./gradlew runData` slaagt. De ring 2-biome-JSON's hebben carvers en (vraag 3 A) geen `lake_lava_*`. Output gecommit.
 - [ ] **S**: `tools/server-smoke-test.sh` met `level-name=smoke-change26`. Server start zonder fouten (density functions, surface rule en noise laden). Daarna de metingen van stap 6 via RCON. Daarna RCON weer uit.
-- **Blokkerende handmatige test: nee.** Alles waar latere changes op bouwen, is automatisch te toetsen via build, serverstart en RCON-tellingen: het vloeistofgedrag per ring (change 27 rekent op water in ring 2, change 42/62 breiden `waterOnly`/floodedness uit), de surface-rule-tak met biome-lijst (changes 30/31), het determinisme en de instorting via de quick-play-speler (`tp`) en `setblock`. Het speelgevoel (hoe het eruitziet, hoe eng het voelt) is afstemming. → **W-achteraf**, in-game checklist (seed 20260930, preset `corrupted_world`, spectator en survival):
+- **Blokkerende handmatige test: nee.** Alles waar latere changes op bouwen, is automatisch te toetsen via build, serverstart en RCON-tellingen: het vloeistofgedrag per ring (change 27 rekent op water in ring 2, change 42/62 breiden `waterOnly`/floodedness uit), de surface-rule-tak met biome-lijst (changes 30/31), het determinisme en de instorting via de quick-play-speler (`tp`) en `setblock`. Het speelgevoel (hoe het eruitziet, hoe eng het voelt) is afstemming. → **W-achteraf, afgelopen in teststop 2b na change 30** (bijgewerkt 2026-10-01; de bouwer van 30 neemt deze lijst op in de gebundelde checklist), in-game checklist (seed 20260930, preset `corrupted_world`, spectator en survival):
   - [ ] `/ca tpring 2` + rondvliegen onder de grond: er zijn grotten (vraag 1). Ze scheuren niet overal open aan het oppervlak, en de ingangen in canyonwanden lezen natuurlijk.
   - [ ] Reservoirs: overstroomde grotten tot de grondwaterspiegel (Y 63) en lokale meren erboven. Vlak onder het oppervlak droog. Geen lava tussen Y −54 en −10 (vraag 3).
   - [ ] Zandgrotten: zones met plafond van los zand en zandvloer, stof-particles onder het plafond. Niet aan het oppervlak, niet in de deepslate-laag.
