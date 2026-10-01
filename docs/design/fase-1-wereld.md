@@ -107,8 +107,8 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - Landingshoogte: overworld bovenste blok (heightmap); Nether de hoogste plek met 2 blokken lucht op een stevige vloer, onder het dak. Geen veilige plek (void, lava)? Dan toch teleporteren naar een vaste Y (overworld 100, Nether 64), met een waarschuwing in de chat.
 
 ### 1.14 Ring-BiomeSource en placeholder-biomes (change 5)
-- `corruptedadventure:ring` kiest per positie de ring (via `ringAt`) en geeft de keuze door aan een **geneste biome-source per ring**: nu `minecraft:fixed` met een placeholder, later bijv. `minecraft:multi_noise` voor de varianten binnen een ring (ring 1: `corruptedadventure:vanilla_climate` sinds change 8, zie §1.7).
-- **Placeholders (tijdelijk):** `placeholder_ring_1…5` (overworld) en `placeholder_nether_ring_1…5` (Nether). Alleen een **eigen kleur** (lucht, fog, water, gras, blad; Nether vooral fog) en **eigen weer** (neerslag en temperatuur: ring 1 en 4 met regen, ring 2, 3, 5 en de Nether droog). **Geen features, geen mob-spawns**, geen `has_structure/*`-tags. Ze verdwijnen zodra de echte biomes van een ring er zijn.
+- `corruptedadventure:ring` kiest per positie de ring (via `ringAt`) en geeft de keuze door aan een **geneste biome-source per ring**: nu `minecraft:fixed` met een placeholder, later bijv. `minecraft:multi_noise` voor de varianten binnen een ring (ring 1: `corruptedadventure:vanilla_climate` sinds change 8, zie §1.7; Nether-ring 1 sinds change 14).
+- **Placeholders (tijdelijk):** `placeholder_ring_1…5` (overworld) en `placeholder_nether_ring_1…5` (Nether); ring 1 is ze kwijt sinds change 8 (overworld) en change 14 (Nether). Alleen een **eigen kleur** (lucht, fog, water, gras, blad; Nether vooral fog) en **eigen weer** (neerslag en temperatuur: ring 1 en 4 met regen, ring 2, 3, 5 en de Nether droog). **Geen features, geen mob-spawns**, geen `has_structure/*`-tags. Ze verdwijnen zodra de echte biomes van een ring er zijn.
 - **Void (blijvend):** `void_edge` (overworld) en `nether_void_edge` (Nether), voorbij ring 5; aparte biomes zodat sfeer later per dimensie kan.
 - Overgangszone: harde wissel op gewicht 0,5 tot er overgangsbiomes zijn (§1.3).
 - **Overgangsbiomes (change 11):** optioneel veld `transitions` (sleutel = binnenring van de grens, `ring_1` = grens 1→2; `void` is ongeldig), per grens een geneste biome-source. Binnen de hele zone (`inTransition`, ~128 blokken, Nether ~32) wint die source; grenzen zonder overgang wisselen hard op 0,5. Nu alleen overworld grens 1 (`withered_expanse`); de Nether heeft geen overgangen.
@@ -120,7 +120,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 | Ring | Overworld: oppervlak | Nether: vloer (dak vanaf Y ~110) |
 |---|---|---|
-| 1 | vanilla (change 9) | Y ~30 (lavazee op 32 zichtbaar) |
+| 1 | vanilla (change 9) | vanilla-terrein (change 14) |
 | 2 | Y ~95 | Y ~40 |
 | 3 | Y ~120 | Y ~55 |
 | 4 | Y ~64 (rond zeeniveau) | Y ~45 |
@@ -197,6 +197,9 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 **Nether-tegenpool — Nether-ring 1 (0 – 375)**
 - Kopieën van nether wastes, crimson forest, warped forest (geen soul sand valley, geen basalt deltas). Vanilla Nether-terrein.
+- **Verdeling (change 14):** `corruptedadventure:vanilla_climate` met `preset: minecraft:nether`; `replace` zet soul sand valley en basalt deltas om naar nether wastes, dus crimson en warped liggen precies waar vanilla ze legt. De klimaatruis van de Nether-router (`temperature`/`vegetation`, `xz_scale` 0,25 → 1,0) is 4× fijner, zodat alle drie de biomes in de kleine ring voorkomen; dat geldt voor **alle** Nether-ringen.
+- **Terrein (change 14):** vanilla's Nether-`final_density` zonder de buitenste `squeeze`/`× 0,64` (teken gelijk, dus blok voor blok vanilla; grootte vergelijkbaar met de placeholder-invoer van Nether-ring 2, zodat de overgang over de hele zone mengt). Lavazee op 32, vanilla-dak.
+- **Structures (change 14):** vanilla fortress, bastion en Nether-ruined-portals via de vanilla-tags van de kopieën (`#is_nether`, `#has_structure/bastion_remnant`), vanilla-spacing. Geen nether fossils (alleen soul sand valley). Een gegarandeerde fortress per seed volgt in fase 3 (backlog).
 - Vanilla Nether-ores (quartz, goud, ancient debris).
 - **Sleutelmateriaal: zielkristal** — nieuw, zeldzaam erts in de crimson-bodem en netherrack, alleen in Nether-ring 1. Nodig voor bewaker 1→2 (fase 5); gebruik in fase 2.
 - Geen conditie.

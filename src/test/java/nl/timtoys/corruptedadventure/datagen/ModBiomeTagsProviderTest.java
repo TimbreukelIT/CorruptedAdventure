@@ -20,6 +20,12 @@ class ModBiomeTagsProviderTest {
     }
 
     @Test
+    void netherCopiesGetFortressesAndBastionsButNoFossils() {
+        assertTrue(ModBiomeTagsProvider.MIRRORED_TAGS.containsAll(List.of(BiomeTags.IS_NETHER, BiomeTags.HAS_BASTION_REMNANT)));
+        assertFalse(ModBiomeTagsProvider.MIRRORED_TAGS.contains(BiomeTags.HAS_NETHER_FOSSIL));
+    }
+
+    @Test
     void barePatchBiomesAreUniqueCopiedBiomes() {
         assertEquals(ModBiomeTagsProvider.BARE_PATCH_BIOMES.size(), Set.copyOf(ModBiomeTagsProvider.BARE_PATCH_BIOMES).size());
         for (var biome : ModBiomeTagsProvider.BARE_PATCH_BIOMES) {

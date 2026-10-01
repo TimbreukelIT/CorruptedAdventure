@@ -26,9 +26,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class VanillaClimateBiomeSourceTest {
     private static final String OVERWORLD = """
             {"preset": "minecraft:overworld", "replace": {"minecraft:mushroom_fields": "corruptedadventure:plains"}}""";
+    private static final String NETHER = """
+            {"preset": "minecraft:nether", "replace": {"minecraft:soul_sand_valley": "corruptedadventure:nether_wastes",
+             "minecraft:basalt_deltas": "corruptedadventure:nether_wastes"}}""";
     private static final ResourceKey<Biome> PLAINS_COPY = VanillaBiomeCopies.copyOf(Biomes.PLAINS);
+    private static final ResourceKey<Biome> WASTES_COPY = VanillaBiomeCopies.copyOf(Biomes.NETHER_WASTES);
     private static final Climate.ParameterList<ResourceKey<Biome>> VANILLA =
             MultiNoiseBiomeSourceParameterList.knownPresets().get(MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD);
+    private static final Climate.ParameterList<ResourceKey<Biome>> VANILLA_NETHER =
+            MultiNoiseBiomeSourceParameterList.knownPresets().get(MultiNoiseBiomeSourceParameterList.Preset.NETHER);
 
     @Test
     void everyVanillaPointGetsItsCopyOrTheReplacement() {
@@ -61,6 +67,26 @@ class VanillaClimateBiomeSourceTest {
                 .collect(Collectors.toSet());
         assertEquals(VanillaBiomeCopies.OVERWORLD_COPIES.stream().map(VanillaBiomeCopies::copyOf).collect(Collectors.toSet()), possible);
         assertEquals(52, possible.size());
+    }
+
+    @Test
+    void everyVanillaNetherPointGetsItsCopyOrNetherWastes() {
+        List<Pair<Climate.ParameterPoint, Holder<Biome>>> ours = decode(NETHER, allCopies()).getOrThrow().parameters().values();
+        assertEquals(VANILLA_NETHER.values().size(), ours.size());
+        for (int i = 0; i < ours.size(); i++) {
+            ResourceKey<Biome> vanilla = VANILLA_NETHER.values().get(i).getSecond();
+            ResourceKey<Biome> expected = VanillaBiomeCopies.NETHER_COPIES.contains(vanilla) ? VanillaBiomeCopies.copyOf(vanilla) : WASTES_COPY;
+            assertEquals(VANILLA_NETHER.values().get(i).getFirst(), ours.get(i).getFirst());
+            assertEquals(expected, key(ours.get(i).getSecond()), "point " + i + " (" + vanilla.location() + ")");
+        }
+    }
+
+    @Test
+    void netherPossibleBiomesAreTheThreeNetherCopies() {
+        Set<ResourceKey<Biome>> possible = decode(NETHER, allCopies()).getOrThrow().possibleBiomes().stream()
+                .map(VanillaClimateBiomeSourceTest::key)
+                .collect(Collectors.toSet());
+        assertEquals(VanillaBiomeCopies.NETHER_COPIES.stream().map(VanillaBiomeCopies::copyOf).collect(Collectors.toSet()), possible);
     }
 
     @Test
@@ -99,7 +125,7 @@ class VanillaClimateBiomeSourceTest {
     }
 
     private static boolean isCopy(ResourceKey<Biome> key) {
-        return VanillaBiomeCopies.OVERWORLD_COPIES.stream().map(VanillaBiomeCopies::copyOf).anyMatch(key::equals);
+        return VanillaBiomeCopies.COPIES.stream().map(VanillaBiomeCopies::copyOf).anyMatch(key::equals);
     }
 
     private static ResourceKey<Biome> key(Holder<Biome> holder) {

@@ -11,11 +11,13 @@ import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -23,14 +25,16 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Adds ring 1's copies to the vanilla biome tags their originals are in ({@code replace: false}). Membership comes
+ * Adds the ring 1 and Nether ring 1 copies to the vanilla biome tags their originals are in ({@code replace: false}). Membership comes
  * from running vanilla's own tag provider and keeping its direct entries for copied biomes; {@code #tag} entries need
  * no copy, they resolve once the referenced tag is mirrored too.
  * <p>
  * Never mirrored: {@code is_overworld} (vanilla's {@code has_structure/stronghold} is {@code #is_overworld}),
  * {@code has_structure/stronghold}, {@code stronghold_biased_to} and {@code has_structure/ancient_city}.
  * <p>
- * Also our own {@code has_feature/*} tags, which the biome modifiers of {@code Ring1BiomeModifiers} use.
+ * Also the NeoForge {@code c:} Nether tags for the Nether copies (written out: vanilla's provider does not know them),
+ * our own {@code has_feature/*} tags, which the biome modifiers of {@code Ring1BiomeModifiers} use, and
+ * {@code is_nether_ring_1}.
  */
 final class ModBiomeTagsProvider extends BiomeTagsProvider {
     static final List<TagKey<Biome>> MIRRORED_TAGS = List.of(
@@ -56,7 +60,9 @@ final class ModBiomeTagsProvider extends BiomeTagsProvider {
             BiomeTags.HAS_TRAIL_RUINS, BiomeTags.HAS_MINESHAFT, BiomeTags.HAS_MINESHAFT_MESA,
             BiomeTags.HAS_RUINED_PORTAL_STANDARD, BiomeTags.HAS_RUINED_PORTAL_DESERT, BiomeTags.HAS_RUINED_PORTAL_JUNGLE,
             BiomeTags.HAS_RUINED_PORTAL_MOUNTAIN, BiomeTags.HAS_RUINED_PORTAL_OCEAN, BiomeTags.HAS_RUINED_PORTAL_SWAMP,
-            BiomeTags.HAS_BURIED_TREASURE, BiomeTags.HAS_TRIAL_CHAMBERS);
+            BiomeTags.HAS_BURIED_TREASURE, BiomeTags.HAS_TRIAL_CHAMBERS,
+            // Nether: is_nether also brings fortresses and Nether ruined portals (#is_nether); bastions are listed apart
+            BiomeTags.IS_NETHER, BiomeTags.HAS_BASTION_REMNANT);
 
     /**
      * Vanilla biomes whose ring 1 copies get bare patches: vegetated land. Not oceans, rivers, beaches, deserts,
@@ -87,7 +93,7 @@ final class ModBiomeTagsProvider extends BiomeTagsProvider {
             List<ResourceKey<Biome>> copies = original.build().stream()
                     .filter(entry -> !entry.isTag())
                     .map(entry -> ResourceKey.create(Registries.BIOME, entry.getId()))
-                    .filter(VanillaBiomeCopies.OVERWORLD_COPIES::contains)
+                    .filter(VanillaBiomeCopies.COPIES::contains)
                     .map(VanillaBiomeCopies::copyOf)
                     .toList();
             if (!copies.isEmpty()) {
@@ -95,11 +101,23 @@ final class ModBiomeTagsProvider extends BiomeTagsProvider {
             }
         }
 
+        List<ResourceKey<Biome>> netherCopies = copies(VanillaBiomeCopies.NETHER_COPIES);
+        tag(Tags.Biomes.IS_NETHER).addAll(netherCopies);
+        tag(Tags.Biomes.IS_HOT_NETHER).addAll(netherCopies);
+        tag(Tags.Biomes.IS_DRY_NETHER).addAll(netherCopies);
+        tag(Tags.Biomes.IS_NETHER_FOREST).addAll(copies(List.of(Biomes.CRIMSON_FOREST, Biomes.WARPED_FOREST)));
+        tag(ModTags.Biomes.IS_NETHER_RING_1).addAll(netherCopies);
+
         tag(ModTags.Biomes.HAS_BARE_PATCH).addAll(BARE_PATCH_BIOMES.stream().map(VanillaBiomeCopies::copyOf).toList());
         // Every copy, cave biomes included: the biome filter checks the biome at the tunnel's own height.
-        tag(ModTags.Biomes.HAS_UNNATURAL_TUNNEL).addAll(VanillaBiomeCopies.OVERWORLD_COPIES.stream()
+        tag(ModTags.Biomes.HAS_UNNATURAL_TUNNEL).addAll(copies(VanillaBiomeCopies.OVERWORLD_COPIES));
+    }
+
+    /** The copies of {@code vanilla}, sorted for a stable file. */
+    private static List<ResourceKey<Biome>> copies(Collection<ResourceKey<Biome>> vanilla) {
+        return vanilla.stream()
                 .sorted(Comparator.comparing(ResourceKey::location))
                 .map(VanillaBiomeCopies::copyOf)
-                .toList());
+                .toList();
     }
 }

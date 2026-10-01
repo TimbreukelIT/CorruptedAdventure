@@ -57,8 +57,12 @@
           "dimension": "minecraft:the_nether",
           "rings": {
             "ring_1": {
-              "type": "minecraft:fixed",
-              "biome": "corruptedadventure:placeholder_nether_ring_1"
+              "type": "corruptedadventure:vanilla_climate",
+              "preset": "minecraft:nether",
+              "replace": {
+                "minecraft:soul_sand_valley": "corruptedadventure:nether_wastes",
+                "minecraft:basalt_deltas": "corruptedadventure:nether_wastes"
+              }
             },
             "ring_2": {
               "type": "minecraft:fixed",

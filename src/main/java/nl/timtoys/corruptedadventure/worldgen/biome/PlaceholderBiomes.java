@@ -8,8 +8,8 @@ import net.minecraft.world.level.biome.MobSpawnSettings;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 
 /**
- * Datagen bootstrap for the skeleton biomes: one placeholder per ring and a void edge, per dimension. Overworld ring 1
- * no longer has one: it uses {@link VanillaBiomeCopies}.
+ * Datagen bootstrap for the skeleton biomes: one placeholder per ring and a void edge, per dimension. Ring 1 (overworld
+ * and Nether) no longer has one: it uses {@link VanillaBiomeCopies}.
  * Only colours and weather (precipitation, temperature) differ; no features and no mob spawns, and no
  * {@code has_structure/*} tags, so no vanilla structures (strongholds included) can generate in them.
  */
@@ -37,8 +37,8 @@ public final class PlaceholderBiomes {
         context.register(ModBiomes.VOID_EDGE, overworld(false, 0.5F, 0.0F,
                 0x000000, 0x14141C, 0x1A1A24, 0x050508, 0x3A3A3A, 0x333333));
 
-        // Nether counterparts (see fase-1-wereld.md §1.12); fog is what sets them apart.
-        context.register(ModBiomes.PLACEHOLDER_NETHER_RING_1, nether(0x330808, DEFAULT_WATER));   // vanilla Nether
+        // Nether counterparts (see fase-1-wereld.md §1.12); fog is what sets them apart. Nether ring 1 has none:
+        // it uses VanillaBiomeCopies.
         context.register(ModBiomes.PLACEHOLDER_NETHER_RING_2, nether(0x2E4A3A, 0x3D8C7A));        // soggy fungal
         context.register(ModBiomes.PLACEHOLDER_NETHER_RING_3, nether(0x9CC4D8, 0x8FB8DE));        // frozen
         context.register(ModBiomes.PLACEHOLDER_NETHER_RING_4, nether(0xD8CBA6, DEFAULT_WATER));   // bone desert

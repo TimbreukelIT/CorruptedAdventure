@@ -35,6 +35,14 @@ class VanillaBiomeCopiesTest {
     }
 
     @Test
+    void netherCopiesAreWastesCrimsonAndWarped() {
+        assertEquals(Set.of(Biomes.NETHER_WASTES, Biomes.CRIMSON_FOREST, Biomes.WARPED_FOREST), VanillaBiomeCopies.NETHER_COPIES);
+        assertEquals(55, VanillaBiomeCopies.COPIES.size());
+        assertTrue(VanillaBiomeCopies.COPIES.containsAll(VanillaBiomeCopies.OVERWORLD_COPIES));
+        assertTrue(VanillaBiomeCopies.COPIES.containsAll(VanillaBiomeCopies.NETHER_COPIES));
+    }
+
+    @Test
     void copyKeepsThePathInOurNamespace() {
         assertEquals(CorruptedAdventure.id("cherry_grove"), VanillaBiomeCopies.copyOf(Biomes.CHERRY_GROVE).location());
     }
@@ -44,12 +52,13 @@ class VanillaBiomeCopiesTest {
         RecordingContext context = new RecordingContext();
         VanillaBiomeCopies.bootstrap(context);
 
-        Set<ResourceKey<Biome>> expected = VanillaBiomeCopies.OVERWORLD_COPIES.stream()
+        Set<ResourceKey<Biome>> expected = VanillaBiomeCopies.COPIES.stream()
                 .map(VanillaBiomeCopies::copyOf)
                 .collect(Collectors.toSet());
         assertEquals(expected, context.registered);
         assertTrue(context.registered.stream().allMatch(key -> key.location().getNamespace().equals(CorruptedAdventure.MOD_ID)));
-        for (ResourceKey<Biome> excluded : List.of(Biomes.MUSHROOM_FIELDS, Biomes.THE_VOID, Biomes.NETHER_WASTES, Biomes.THE_END)) {
+        for (ResourceKey<Biome> excluded : List.of(Biomes.MUSHROOM_FIELDS, Biomes.THE_VOID, Biomes.SOUL_SAND_VALLEY,
+                Biomes.BASALT_DELTAS, Biomes.THE_END)) {
             assertFalse(context.registered.contains(VanillaBiomeCopies.copyOf(excluded)), excluded.toString());
         }
     }

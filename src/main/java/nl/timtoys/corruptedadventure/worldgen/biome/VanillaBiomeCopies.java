@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 
 /**
  * Ring 1's own copies ({@code corruptedadventure:<vanilla path>}) of the vanilla overworld biomes, minus mushroom
- * fields. The datagen bootstrap runs vanilla's own {@link BiomeData#bootstrap} and keeps only those biomes, so the
+ * fields, and Nether ring 1's copies of three vanilla Nether biomes. The datagen bootstrap runs vanilla's own {@link BiomeData#bootstrap} and keeps only those biomes, so the
  * copies stay identical to vanilla without retyping {@code OverworldBiomes}. The only difference is the cave sound of
  * a few copies ({@link #MOODS}).
  * <p>
@@ -41,6 +41,12 @@ public final class VanillaBiomeCopies {
             MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD.usedBiomes()
                     .filter(key -> !key.equals(Biomes.MUSHROOM_FIELDS))
                     .collect(Collectors.toUnmodifiableSet());
+    /** Vanilla keys that get a copy for Nether ring 1: no soul sand valley, no basalt deltas. */
+    public static final Set<ResourceKey<Biome>> NETHER_COPIES =
+            Set.of(Biomes.NETHER_WASTES, Biomes.CRIMSON_FOREST, Biomes.WARPED_FOREST);
+    /** Every vanilla key that gets a copy, overworld and Nether. */
+    public static final Set<ResourceKey<Biome>> COPIES =
+            Stream.concat(OVERWORLD_COPIES.stream(), NETHER_COPIES.stream()).collect(Collectors.toUnmodifiableSet());
     /** Copies with another cave mood sound than vanilla's: the silent zones of ring 1. */
     static final Map<ResourceKey<Biome>, Optional<AmbientMoodSettings>> MOODS = Map.of(
             Biomes.DARK_FOREST, BiomeAmbience.SILENT,
@@ -67,11 +73,11 @@ public final class VanillaBiomeCopies {
         WolfVariants.bootstrap(new WolfVariantContext(context));
     }
 
-    /** Passes lookups through; registers only {@link #OVERWORLD_COPIES}, under {@link #copyOf}, with {@link #MOODS}. */
+    /** Passes lookups through; registers only {@link #COPIES}, under {@link #copyOf}, with {@link #MOODS}. */
     private record CopyingContext(BootstrapContext<Biome> delegate) implements BootstrapContext<Biome> {
         @Override
         public Holder.Reference<Biome> register(ResourceKey<Biome> key, Biome value, Lifecycle lifecycle) {
-            if (!OVERWORLD_COPIES.contains(key)) {
+            if (!COPIES.contains(key)) {
                 // BiomeData ignores the returned holder, so skipped biomes can return null.
                 return null;
             }
@@ -98,7 +104,7 @@ public final class VanillaBiomeCopies {
             HolderGetter<Biome> biomes = delegate.lookup(Registries.BIOME);
             List<Holder<Biome>> copies = vanilla.stream()
                     .flatMap(biome -> biome.unwrapKey().stream())
-                    .filter(OVERWORLD_COPIES::contains)
+                    .filter(COPIES::contains)
                     .<Holder<Biome>>map(biome -> biomes.getOrThrow(copyOf(biome)))
                     .toList();
             if (copies.isEmpty()) {

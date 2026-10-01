@@ -34,7 +34,7 @@
       "shift_x": "minecraft:shift_x",
       "shift_y": 0.0,
       "shift_z": "minecraft:shift_z",
-      "xz_scale": 0.25,
+      "xz_scale": 1.0,
       "y_scale": 0.0
     },
     "vegetation": {
@@ -43,7 +43,7 @@
       "shift_x": "minecraft:shift_x",
       "shift_y": 0.0,
       "shift_z": "minecraft:shift_z",
-      "xz_scale": 0.25,
+      "xz_scale": 1.0,
       "y_scale": 0.0
     },
     "vein_gap": 0.0,
@@ -398,7 +398,8 @@
               "if_true": {
                 "type": "minecraft:biome",
                 "biome_is": [
-                  "minecraft:warped_forest"
+                  "minecraft:warped_forest",
+                  "corruptedadventure:warped_forest"
                 ]
               },
               "then_run": {
@@ -456,7 +457,8 @@
               "if_true": {
                 "type": "minecraft:biome",
                 "biome_is": [
-                  "minecraft:crimson_forest"
+                  "minecraft:crimson_forest",
+                  "corruptedadventure:crimson_forest"
                 ]
               },
               "then_run": {
@@ -517,7 +519,8 @@
         "if_true": {
           "type": "minecraft:biome",
           "biome_is": [
-            "minecraft:nether_wastes"
+            "minecraft:nether_wastes",
+            "corruptedadventure:nether_wastes"
           ]
         },
         "then_run": {

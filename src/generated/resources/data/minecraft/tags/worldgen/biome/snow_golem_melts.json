@@ -1,10 +1,13 @@
 {
   "values": [
     "corruptedadventure:badlands",
+    "corruptedadventure:crimson_forest",
     "corruptedadventure:desert",
     "corruptedadventure:eroded_badlands",
+    "corruptedadventure:nether_wastes",
     "corruptedadventure:savanna",
     "corruptedadventure:savanna_plateau",
+    "corruptedadventure:warped_forest",
     "corruptedadventure:windswept_savanna",
     "corruptedadventure:wooded_badlands"
   ]

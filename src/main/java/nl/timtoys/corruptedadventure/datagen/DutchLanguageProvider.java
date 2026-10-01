@@ -74,6 +74,11 @@ final class DutchLanguageProvider extends LanguageProvider {
         copy(Biomes.LUSH_CAVES, "Weelderige grotten");
         copy(Biomes.DEEP_DARK, "Diep duister");
 
+        // Nether ring 1: copies of three vanilla Nether biomes, with vanilla's names.
+        copy(Biomes.NETHER_WASTES, "Netherwoestenij");
+        copy(Biomes.CRIMSON_FOREST, "Helrood bos");
+        copy(Biomes.WARPED_FOREST, "Spookachtig bos");
+
         add("itemGroup.corruptedadventure.main", "The Corrupted Adventure");
         add("subtitles.corruptedadventure.ambient.ring_1.strange_cave", "Er beweegt iets in het donker");
 
@@ -100,7 +105,6 @@ final class DutchLanguageProvider extends LanguageProvider {
         biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder ring 4");
         biome(ModBiomes.PLACEHOLDER_RING_5, "Placeholder ring 5");
         biome(ModBiomes.VOID_EDGE, "Voidrand");
-        biome(ModBiomes.PLACEHOLDER_NETHER_RING_1, "Placeholder Nether-ring 1");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_2, "Placeholder Nether-ring 2");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_3, "Placeholder Nether-ring 3");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_4, "Placeholder Nether-ring 4");
