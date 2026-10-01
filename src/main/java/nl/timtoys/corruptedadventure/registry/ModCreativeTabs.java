@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -23,7 +24,9 @@ public final class ModCreativeTabs {
             .title(Component.translatable("itemGroup.corruptedadventure.main"))
             .icon(() -> new ItemStack(ModBlocks.DEAD_LOG.get()))
             .displayItems((parameters, output) -> {
-                ModBlocks.entries().forEach(block -> output.accept(block.get()));
+                // Blocks without an item (potted plants) would be an empty stack.
+                ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR)
+                        .forEach(output::accept);
                 ModItems.entries().stream().map(DeferredHolder::get)
                         .filter(item -> !(item instanceof BlockItem))
                         .forEach(output::accept);

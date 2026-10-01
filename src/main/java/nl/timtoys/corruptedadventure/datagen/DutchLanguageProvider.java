@@ -105,6 +105,37 @@ final class DutchLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE, "Karmozijnrood zielkristalerts");
         addItem(ModItems.SOUL_CRYSTAL, "Zielkristal");
 
+        // Ring 2 blocks (vanilla nl_nl terms: keisteen, blokstenen, zandsteen, opgepot).
+        addBlock(ModBlocks.RED_CANYON_STONE, "Rode kloofsteen");
+        addBlock(ModBlocks.ORANGE_CANYON_STONE, "Oranje kloofsteen");
+        addBlock(ModBlocks.CREAM_CANYON_STONE, "Crèmekleurige kloofsteen");
+        addBlock(ModBlocks.CANYON_COBBLESTONE, "Kloofkeisteen");
+        addBlock(ModBlocks.CANYON_COBBLESTONE_STAIRS, "Kloofkeistenen trap");
+        addBlock(ModBlocks.CANYON_COBBLESTONE_SLAB, "Kloofkeistenen plaat");
+        addBlock(ModBlocks.CANYON_COBBLESTONE_WALL, "Kloofkeistenen muur");
+        addBlock(ModBlocks.CANYON_STONE_BRICKS, "Kloofblokstenen");
+        addBlock(ModBlocks.CANYON_STONE_BRICK_STAIRS, "Kloofblokstenen trap");
+        addBlock(ModBlocks.CANYON_STONE_BRICK_SLAB, "Kloofblokstenen plaat");
+        addBlock(ModBlocks.CANYON_STONE_BRICK_WALL, "Kloofblokstenen muur");
+        addBlock(ModBlocks.SCORCHED_SANDSTONE, "Geschroeid zandsteen");
+        addBlock(ModBlocks.SCORCHED_SANDSTONE_STAIRS, "Geschroeide zandstenen trap");
+        addBlock(ModBlocks.SCORCHED_SANDSTONE_SLAB, "Geschroeide zandstenen plaat");
+        addBlock(ModBlocks.SCORCHED_SANDSTONE_WALL, "Geschroeide zandstenen muur");
+        addBlock(ModBlocks.CUT_SCORCHED_SANDSTONE, "Gesneden geschroeid zandsteen");
+        addBlock(ModBlocks.CUT_SCORCHED_SANDSTONE_SLAB, "Gesneden geschroeide zandstenen plaat");
+        addBlock(ModBlocks.CHISELED_SCORCHED_SANDSTONE, "Gebeiteld geschroeid zandsteen");
+        addBlock(ModBlocks.SMOOTH_SCORCHED_SANDSTONE, "Glad geschroeid zandsteen");
+        addBlock(ModBlocks.SMOOTH_SCORCHED_SANDSTONE_STAIRS, "Gladde geschroeide zandstenen trap");
+        addBlock(ModBlocks.SMOOTH_SCORCHED_SANDSTONE_SLAB, "Gladde geschroeide zandstenen plaat");
+        addBlock(ModBlocks.LOOSE_SAND, "Los zand");
+        addBlock(ModBlocks.CRACKED_CLAY, "Gebarsten klei");
+        addBlock(ModBlocks.DRY_SHRUB, "Dorre struik");
+        addBlock(ModBlocks.BARREL_CACTUS, "Tonnetjescactus");
+        addBlock(ModBlocks.DESERT_FLOWER, "Woestijnbloem");
+        addBlock(ModBlocks.POTTED_DRY_SHRUB, "Opgepotte dorre struik");
+        addBlock(ModBlocks.POTTED_BARREL_CACTUS, "Opgepotte tonnetjescactus");
+        addBlock(ModBlocks.POTTED_DESERT_FLOWER, "Opgepotte woestijnbloem");
+
         biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
         biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder ring 2");
         biome(ModBiomes.PLACEHOLDER_RING_3, "Placeholder ring 3");

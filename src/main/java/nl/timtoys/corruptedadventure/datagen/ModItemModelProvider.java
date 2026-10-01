@@ -38,6 +38,40 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.SOUL_CRYSTAL_ORE);
         blockItem(ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE);
         basicItem(ModItems.SOUL_CRYSTAL.get());
+
+        blockItem(ModBlocks.RED_CANYON_STONE);
+        blockItem(ModBlocks.ORANGE_CANYON_STONE);
+        blockItem(ModBlocks.CREAM_CANYON_STONE);
+        blockItem(ModBlocks.CANYON_COBBLESTONE);
+        blockItem(ModBlocks.CANYON_COBBLESTONE_STAIRS);
+        blockItem(ModBlocks.CANYON_COBBLESTONE_SLAB);
+        wallInventory(ModBlocks.CANYON_COBBLESTONE_WALL.getId().getPath(), modLoc("block/canyon_cobblestone"));
+        blockItem(ModBlocks.CANYON_STONE_BRICKS);
+        blockItem(ModBlocks.CANYON_STONE_BRICK_STAIRS);
+        blockItem(ModBlocks.CANYON_STONE_BRICK_SLAB);
+        wallInventory(ModBlocks.CANYON_STONE_BRICK_WALL.getId().getPath(), modLoc("block/canyon_stone_bricks"));
+        blockItem(ModBlocks.SCORCHED_SANDSTONE);
+        blockItem(ModBlocks.SCORCHED_SANDSTONE_STAIRS);
+        blockItem(ModBlocks.SCORCHED_SANDSTONE_SLAB);
+        wallInventory(ModBlocks.SCORCHED_SANDSTONE_WALL.getId().getPath(), modLoc("block/scorched_sandstone"));
+        blockItem(ModBlocks.CUT_SCORCHED_SANDSTONE);
+        blockItem(ModBlocks.CUT_SCORCHED_SANDSTONE_SLAB);
+        blockItem(ModBlocks.CHISELED_SCORCHED_SANDSTONE);
+        blockItem(ModBlocks.SMOOTH_SCORCHED_SANDSTONE);
+        blockItem(ModBlocks.SMOOTH_SCORCHED_SANDSTONE_STAIRS);
+        blockItem(ModBlocks.SMOOTH_SCORCHED_SANDSTONE_SLAB);
+        blockItem(ModBlocks.LOOSE_SAND);
+        blockItem(ModBlocks.CRACKED_CLAY);
+        flatBlockItem(ModBlocks.DRY_SHRUB);
+        blockItem(ModBlocks.BARREL_CACTUS);
+        flatBlockItem(ModBlocks.DESERT_FLOWER);
+        // Potted plants have no item.
+    }
+
+    /** A flat item showing the block texture, like vanilla's plants. */
+    private void flatBlockItem(DeferredBlock<? extends Block> block) {
+        String name = block.getId().getPath();
+        withExistingParent(name, mcLoc("item/generated")).texture("layer0", modLoc("block/" + name));
     }
 
     private void blockItem(DeferredBlock<? extends Block> block) {

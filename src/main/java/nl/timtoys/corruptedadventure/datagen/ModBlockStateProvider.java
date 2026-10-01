@@ -5,7 +5,10 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SnowyDirtBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
@@ -14,9 +17,12 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 
+import java.util.Set;
+
 /**
  * Blockstates and block models. Textures must exist before {@code runData}
- * (generate them with {@code tools/textures/Ring1Textures.java}). Render types live in the model JSON.
+ * (generate them with {@code tools/textures/Ring1Textures.java} and {@code Ring2Textures.java}). Render types live in the
+ * model JSON.
  */
 final class ModBlockStateProvider extends BlockStateProvider {
     ModBlockStateProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
@@ -53,6 +59,104 @@ final class ModBlockStateProvider extends BlockStateProvider {
                 new CubeTextures(mcLoc("block/crimson_nylium"), mcLoc("block/crimson_nylium_side"), netherrack),
                 new CubeTextures(modLoc("block/crimson_soul_crystal_ore_overlay_top"),
                         modLoc("block/crimson_soul_crystal_ore_overlay_side"), modLoc("block/soul_crystal_ore_overlay")));
+
+        ring2();
+    }
+
+    private void ring2() {
+        simpleBlock(ModBlocks.RED_CANYON_STONE.get());
+        simpleBlock(ModBlocks.ORANGE_CANYON_STONE.get());
+        simpleBlock(ModBlocks.CREAM_CANYON_STONE.get());
+        stoneFamily(ModBlocks.CANYON_COBBLESTONE.get(), ModBlocks.CANYON_COBBLESTONE_STAIRS.get(),
+                ModBlocks.CANYON_COBBLESTONE_SLAB.get(), ModBlocks.CANYON_COBBLESTONE_WALL.get());
+        stoneFamily(ModBlocks.CANYON_STONE_BRICKS.get(), ModBlocks.CANYON_STONE_BRICK_STAIRS.get(),
+                ModBlocks.CANYON_STONE_BRICK_SLAB.get(), ModBlocks.CANYON_STONE_BRICK_WALL.get());
+
+        // Scorched sandstone in vanilla sandstone's layout: cut and chiseled are columns, smooth is the top texture.
+        ResourceLocation top = modLoc("block/scorched_sandstone_top");
+        ResourceLocation side = modLoc("block/scorched_sandstone");
+        ResourceLocation bottom = modLoc("block/scorched_sandstone_bottom");
+        simpleBlock(ModBlocks.SCORCHED_SANDSTONE.get(), models().cubeBottomTop("scorched_sandstone", side, bottom, top));
+        stairsBlock(ModBlocks.SCORCHED_SANDSTONE_STAIRS.get(), side, bottom, top);
+        slabBlock(ModBlocks.SCORCHED_SANDSTONE_SLAB.get(), modLoc("block/scorched_sandstone"), side, bottom, top);
+        wallBlock(ModBlocks.SCORCHED_SANDSTONE_WALL.get(), side);
+        ResourceLocation cutSide = blockTexture(ModBlocks.CUT_SCORCHED_SANDSTONE.get());
+        simpleBlock(ModBlocks.CUT_SCORCHED_SANDSTONE.get(), models().cubeColumn("cut_scorched_sandstone", cutSide, top));
+        slabBlock(ModBlocks.CUT_SCORCHED_SANDSTONE_SLAB.get(), modLoc("block/cut_scorched_sandstone"), cutSide, top, top);
+        simpleBlock(ModBlocks.CHISELED_SCORCHED_SANDSTONE.get(), models().cubeColumn("chiseled_scorched_sandstone",
+                blockTexture(ModBlocks.CHISELED_SCORCHED_SANDSTONE.get()), top));
+        simpleBlock(ModBlocks.SMOOTH_SCORCHED_SANDSTONE.get(), models().cubeAll("smooth_scorched_sandstone", top));
+        stairsBlock(ModBlocks.SMOOTH_SCORCHED_SANDSTONE_STAIRS.get(), top);
+        slabBlock(ModBlocks.SMOOTH_SCORCHED_SANDSTONE_SLAB.get(), modLoc("block/smooth_scorched_sandstone"), top);
+
+        simpleBlock(ModBlocks.LOOSE_SAND.get());
+
+        randomlyRotated(ModBlocks.CRACKED_CLAY.get());
+        cross(ModBlocks.DRY_SHRUB.get());
+        barrelCactus();
+        cross(ModBlocks.DESERT_FLOWER.get());
+        simpleBlock(ModBlocks.POTTED_DRY_SHRUB.get(), models().flowerPotCross("potted_dry_shrub",
+                blockTexture(ModBlocks.DRY_SHRUB.get())).renderType("cutout"));
+        simpleBlock(ModBlocks.POTTED_DESERT_FLOWER.get(), models().flowerPotCross("potted_desert_flower",
+                blockTexture(ModBlocks.DESERT_FLOWER.get())).renderType("cutout"));
+        pottedBarrelCactus();
+    }
+
+    /** A full block with its stairs, slab and wall, all on the block's own texture. */
+    private void stoneFamily(Block block, StairBlock stairs, SlabBlock slab, WallBlock wall) {
+        ResourceLocation texture = blockTexture(block);
+        simpleBlock(block);
+        stairsBlock(stairs, texture);
+        slabBlock(slab, texture, texture);
+        wallBlock(wall, texture);
+    }
+
+    /** Cross model like vanilla plants; cutout, so the texture only has alpha 0 or 255. */
+    private void cross(Block block) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        simpleBlock(block, models().cross(name, blockTexture(block)).renderType("cutout"));
+    }
+
+    /** One box with the same bounds as {@code BarrelCactusBlock.SHAPE} (3–13 px wide, 10 px high). */
+    private void barrelCactus() {
+        BlockModelBuilder model = models().withExistingParent("barrel_cactus", mcLoc("block/block"))
+                .renderType("cutout")
+                .texture("particle", modLoc("block/barrel_cactus_side"))
+                .texture("top", modLoc("block/barrel_cactus_top"))
+                .texture("side", modLoc("block/barrel_cactus_side"));
+        model.element().from(3, 0, 3).to(13, 10, 13).allFaces((direction, face) -> {
+            switch (direction) {
+                case UP -> face.texture("#top").uvs(3, 3, 13, 13);
+                case DOWN -> face.texture("#top").uvs(3, 3, 13, 13).cullface(Direction.DOWN);
+                default -> face.texture("#side").uvs(3, 6, 13, 16);
+            }
+        }).end();
+        simpleBlock(ModBlocks.BARREL_CACTUS.get(), model);
+    }
+
+    /** Like vanilla's potted cactus: a one-box pot and a smaller cactus in it (a child model cannot add elements). */
+    private void pottedBarrelCactus() {
+        BlockModelBuilder model = models().withExistingParent("potted_barrel_cactus", mcLoc("block/block"))
+                .renderType("cutout")
+                .ao(false)
+                .texture("particle", mcLoc("block/flower_pot"))
+                .texture("flowerpot", mcLoc("block/flower_pot"))
+                .texture("top", modLoc("block/barrel_cactus_top"))
+                .texture("side", modLoc("block/barrel_cactus_side"));
+        model.element().from(5, 0, 5).to(11, 6, 11).allFaces((direction, face) -> {
+            switch (direction) {
+                case DOWN -> face.texture("#flowerpot").uvs(5, 5, 11, 11).cullface(Direction.DOWN);
+                default -> face.texture("#flowerpot");
+            }
+        }).end();
+        model.element().from(5.5f, 6, 5.5f).to(10.5f, 11, 10.5f).allFacesExcept((direction, face) -> {
+            if (direction == Direction.UP) {
+                face.texture("#top").uvs(3, 3, 13, 13);
+            } else {
+                face.texture("#side").uvs(3, 6, 13, 16);
+            }
+        }, Set.of(Direction.DOWN)).end();
+        simpleBlock(ModBlocks.POTTED_BARREL_CACTUS.get(), model);
     }
 
     /**

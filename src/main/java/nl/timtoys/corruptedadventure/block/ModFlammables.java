@@ -21,7 +21,10 @@ public final class ModFlammables {
         event.enqueueWork(ModFlammables::setFireOdds);
     }
 
-    /** Same odds as oak in {@code FireBlock.bootStrap}: doors, trapdoors, buttons and pressure plates do not burn. */
+    /**
+     * Same odds as oak in {@code FireBlock.bootStrap} (doors, trapdoors, buttons and pressure plates do not burn) and as
+     * the dead bush and flowers.
+     */
     private static void setFireOdds() {
         FireBlock fire = (FireBlock) Blocks.FIRE;
         for (Block log : new Block[] {
@@ -32,5 +35,8 @@ public final class ModFlammables {
                 ModBlocks.DEAD_PLANKS.get(), ModBlocks.DEAD_STAIRS.get(), ModBlocks.DEAD_SLAB.get(), ModBlocks.DEAD_FENCE.get(), ModBlocks.DEAD_FENCE_GATE.get()}) {
             fire.setFlammable(planks, 5, 20);
         }
+        // Like the dead bush and flowers.
+        fire.setFlammable(ModBlocks.DRY_SHRUB.get(), 60, 100);
+        fire.setFlammable(ModBlocks.DESERT_FLOWER.get(), 60, 100);
     }
 }

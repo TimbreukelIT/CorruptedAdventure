@@ -5,8 +5,12 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
@@ -48,6 +52,44 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         // XP comes from DropExperienceBlock, not from the loot table.
         add(ModBlocks.SOUL_CRYSTAL_ORE.get(), block -> createOreDrop(block, ModItems.SOUL_CRYSTAL.get()));
         add(ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE.get(), block -> createOreDrop(block, ModItems.SOUL_CRYSTAL.get()));
+
+        // Canyon stone tints break into canyon cobblestone, like stone into cobblestone.
+        for (Block tint : new Block[] {
+                ModBlocks.RED_CANYON_STONE.get(), ModBlocks.ORANGE_CANYON_STONE.get(), ModBlocks.CREAM_CANYON_STONE.get()}) {
+            add(tint, block -> createSingleItemTableWithSilkTouch(block, ModBlocks.CANYON_COBBLESTONE.get()));
+        }
+        dropSelf(ModBlocks.CANYON_COBBLESTONE.get());
+        dropSelf(ModBlocks.CANYON_COBBLESTONE_STAIRS.get());
+        add(ModBlocks.CANYON_COBBLESTONE_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.CANYON_COBBLESTONE_WALL.get());
+        dropSelf(ModBlocks.CANYON_STONE_BRICKS.get());
+        dropSelf(ModBlocks.CANYON_STONE_BRICK_STAIRS.get());
+        add(ModBlocks.CANYON_STONE_BRICK_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.CANYON_STONE_BRICK_WALL.get());
+
+        dropSelf(ModBlocks.SCORCHED_SANDSTONE.get());
+        dropSelf(ModBlocks.SCORCHED_SANDSTONE_STAIRS.get());
+        add(ModBlocks.SCORCHED_SANDSTONE_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.SCORCHED_SANDSTONE_WALL.get());
+        dropSelf(ModBlocks.CUT_SCORCHED_SANDSTONE.get());
+        add(ModBlocks.CUT_SCORCHED_SANDSTONE_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.CHISELED_SCORCHED_SANDSTONE.get());
+        dropSelf(ModBlocks.SMOOTH_SCORCHED_SANDSTONE.get());
+        dropSelf(ModBlocks.SMOOTH_SCORCHED_SANDSTONE_STAIRS.get());
+        add(ModBlocks.SMOOTH_SCORCHED_SANDSTONE_SLAB.get(), this::createSlabItemTable);
+
+        // Plain sand without Silk Touch: no ready-made trap material.
+        add(ModBlocks.LOOSE_SAND.get(), block -> createSingleItemTableWithSilkTouch(block, Items.SAND));
+
+        dropSelf(ModBlocks.CRACKED_CLAY.get());
+        // Like vanilla's dead bush: itself with shears, otherwise 0-2 sticks.
+        add(ModBlocks.DRY_SHRUB.get(), block -> createShearsDispatchTable(block, applyExplosionDecay(block,
+                LootItem.lootTableItem(Items.STICK).apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 2.0F))))));
+        dropSelf(ModBlocks.BARREL_CACTUS.get());
+        dropSelf(ModBlocks.DESERT_FLOWER.get());
+        dropPottedContents(ModBlocks.POTTED_DRY_SHRUB.get());
+        dropPottedContents(ModBlocks.POTTED_BARREL_CACTUS.get());
+        dropPottedContents(ModBlocks.POTTED_DESERT_FLOWER.get());
     }
 
     @Override

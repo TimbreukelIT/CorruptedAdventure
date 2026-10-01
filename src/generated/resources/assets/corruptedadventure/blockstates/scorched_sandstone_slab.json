@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "corruptedadventure:block/scorched_sandstone_slab"
+    },
+    "type=double": {
+      "model": "corruptedadventure:block/scorched_sandstone"
+    },
+    "type=top": {
+      "model": "corruptedadventure:block/scorched_sandstone_slab_top"
+    }
+  }
+}

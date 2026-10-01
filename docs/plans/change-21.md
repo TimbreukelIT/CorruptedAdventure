@@ -345,3 +345,52 @@ Antwoord: **B (keuze gebruiker, 2026-10-01)** — `loose_sand` in change 21 (zie
 | 2026-10-01 | textures | Ring 2 krijgt een eigen texturescript `tools/textures/Ring2Textures.java` (zelfde opzet als ring 1, helpers gekopieerd); placeholders nu, definitief in change 37 | Eén script per ring; ring 1-textures blijven onaangeroerd |
 
 Commit (na `/code-review`): `blocks: add canyon stone, scorched sandstone and desert flora`.
+
+---
+
+## Bouwnotities (change 21, 2026-10-01)
+
+Aannames gecontroleerd tegen de code na change 20 (`1cd0ddd`): klopten (blok-infrastructuur, `Ring1Textures.java`, geen blok-registries in 18–20). Afwijkingen van het plan (implementatiedetails, door de agent gekozen):
+
+- **Geen `LooseSandBlock`:** `loose_sand` is de vanilla-klasse `ColoredFallingBlock` (zoals zand, stofkleur van zand). Het blok zelf heeft geen eigen gedrag (de trigger staat in `LooseSandTrigger`), en een subklasse kan `codec()` niet versmallen (`ColoredFallingBlock.codec()` geeft `MapCodec<ColoredFallingBlock>` zonder wildcard).
+- **`DryShrubBlock extends BushBlock`** (niet `DeadBushBlock`), om dezelfde codec-reden; vorm van de dode struik overgenomen. `IShearable` weggelaten: NeoForge 21.1 past dat niet toe op blokken; shears → struik komt uit de loot table (zoals vanilla).
+- **`barrel_cactus`:** properties zelf opgebouwd zoals cactus (`PLANT`, 0,4, wol, `DESTROY`) zonder `randomTicks` (een `ofFullCopy(CACTUS)` zou random ticks meenemen). Render type cutout (change 37 kan transparante stekels tekenen). Raakmarge 0,05 blok. In `#enderman_holdable` (zoals cactus).
+- **Kaartkleuren:** kloofkeien `TERRACOTTA_ORANGE`, kloofbakstenen `TERRACOTTA_RED`, gebarsten klei `DIRT`, scorched-set `TERRACOTTA_BROWN` (alle 10).
+- **Trigger-details:** check elke 10 ticks per speler (gespreid op entity-id), vak = footprint ±1 × (blok met de bovenkant van de box … +2) = 27 posities; waarschuwing `falling_dust` (6 per blok, onder het blok) + één `gravel_break` (volume 0,6, toonhoogte 0,5) per check; daarna `scheduleTick(15)`.
+- **Bloempot-model `potted_barrel_cactus`:** zelfstandig model zoals vanilla `potted_cactus` (pot als één box + cactus 5 × 5 × 5 px), want een child-model kan geen elementen aan de parent toevoegen.
+- **Testmethode los zand (afwijking van stap S en de W-regel):** hangend `loose_sand` is met commando's of met de hand **niet** te bouwen — elke plaatsing/verwijdering geeft `onPlace`/`updateShape` en het zand valt meteen (vanilla). Alleen worldgen (change 26) maakt hangende plafonds. Test S gebruikte daarom een testdatapack in de testwereld (`minecraft:barrier` in `#minecraft:fire` → telt voor `FallingBlock.isFree` als vrij, zonder blok-update); werkwijze in `CODEBASE.md` (valkuilen). Een gevallen blok landt dan op de barrier en wordt een item; "landt weer als `loose_sand`" is los getest.
+- **Placeholder-textures:** 16 PNG's, palet uit het plan; `pulsing` en de `Animation`-record staan klaar maar zijn nog ongebruikt (eerste gebruiker: zonnesteen, change 24).
+
+### Testresultaten
+
+- **Script:** `java tools/textures/Ring2Textures.java` schrijft 16 PNG's van 16×16 + `build/texture-preview/ring2.png`; tweede run byte-identiek (md5); kruismodellen alleen alpha 0/255; ring 1-PNG's en `Ring1Textures.java` ongewijzigd.
+- **B:** `./gradlew build` geslaagd; nieuw/aangepast: `ModBlocksTest` (4), `LooseSandTriggerTest` (5), `BarrelCactusBlockTest` (3), alle tests groen.
+- **D:** `./gradlew runData` geslaagd, geen "texture does not exist"; 160 gegenereerde bestanden (blockstates, models, item-models, loot, tags, lang).
+- **S:** `tools/server-smoke-test.sh` met `level-name=smoke-change21`: `Done (5.693s)`, geen fouten of client-class-meldingen. Daarna server + quick-play-client `Dev` (joint, `Received ring layout`), via RCON:
+  - tags: 32 bloktag-checks en 8 itemtag-checks zoals verwacht (o.a. tinten in `#canyon_stones`/`#mineable/pickaxe`/`#overworld_carver_replaceables`, **niet** in `#base_stone_overworld`; muren in `#walls`; `loose_sand` niet in `#sand`; `cracked_clay` in `#desert_plant_soil` en `#dead_bush_may_place_on`, niet in `#dirt`; `barrel_cactus` niet `#replaceable`; kloofkeien-item in `#stone_tool_materials`/`#stone_crafting_materials`/`c:cobblestones`);
+  - loot: tint + ijzeren/houten pickaxe → `canyon_cobblestone`, Silk Touch → tint; dubbele platen → 2; `loose_sand` + schop → `minecraft:sand`, Silk Touch → `loose_sand`; `dry_shrub` + shears → struik, met de hand 2 / 1 / 0 stokken; potten → bloempot + plant; overige → zichzelf;
+  - overleven (buur-update na `setblock`): alle drie de planten breken op steen, kloofsteen en `loose_sand`; blijven op zand, rood zand, gebarsten klei, gras en terracotta;
+  - **los zand** (3×3-plafonds op barrier, testdatapack): zonder speler 100 ticks na `reload` alle 7 plafonds intact; NoAI-zombie eronder 100 ticks → intact; `Dev` survival eronder (hoofd 1,2 blok onder het zand) → hele plafond weg ≤ 1,4 s; `Dev` onder een plafond 1 blok hoger (2,2 blok boven het hoofd) → intact; spectator → intact; creatief → valt; buur-update (`setblock` naast het plafond, geen speler) → hele plafond valt (kettingreactie); los blok boven lucht landt als `loose_sand` op de vloer. `tick query`: gemiddeld 5,3 ms/tick (P50 4,4–4,5 ms).
+  - Server via RCON `stop`, client-JVM gestopt; RCON weer uit, `level-name=smoke-change21` blijft staan.
+
+## In-game checklist (W) — W-achteraf (teststop 3, ná change 37)
+
+Niet blokkerend. ~15 min. `./gradlew runClient`, nieuwe wereld **Corrupted World**, seed `20260930`, cheats aan, creatief. Testplek in de lucht boven spawn (los van terrein):
+`/fill -8 150 -8 8 150 8 minecraft:stone` en `/tp @s 0 151 0`.
+
+1. **Creative tab** "The Corrupted Adventure": ná `crimson_soul_crystal_ore` de ring 2-blokken in deze volgorde: rode/oranje/crème kloofsteen → kloofkeien (+ trap/plaat/muur) → kloofbakstenen (+ trap/plaat/muur) → geschroeid zandsteen-set (10) → los zand → gebarsten klei, dorre struik, tonnetjescactus, woestijnbloem; **geen** potten; daarna `soul_crystal`. Namen en/nl kloppen (taal wisselen: Opties → Taal).
+2. **Plaatsen:** alle blokken op het platform; geen paars-zwart. De drie tinten naast/boven elkaar lezen als lagen. Muren verbinden onderling en met een vanilla-keienmuur; trappen (hoeken) en platen (onder/boven/dubbel) kloppen.
+3. **Geschroeid zandsteen:** top/zijkant/bodem verschillen; gesneden en gebeiteld hebben de top als boven-/onderkant; glad = de top op alle zijden (zoals vanilla-zandsteen).
+4. **Mijnen (survival):** `/gamemode survival`, `/give @s minecraft:wooden_pickaxe`, `/give @s minecraft:iron_shovel`, `/give @s minecraft:iron_pickaxe[minecraft:enchantments={levels:{"minecraft:silk_touch":1}}]`. Tint met houten pickaxe → kloofkeien; met Silk Touch → de tint; met de hand → niets. Gebarsten klei met de schop → zichzelf (geluid als packed mud).
+5. **Flora-grond:** in creatief dorre struik, tonnetjescactus en woestijnbloem proberen op zand, rood zand, oranje terracotta, gras, gebarsten klei (lukt) en op steen/kloofsteen (lukt niet). Grond eronder weghalen → plant breekt.
+6. **Tonnetjescactus (survival):** ertegenaan lopen → 1 schade (rood knipperen); er schuin naast staan zonder hem te raken → geen schade; erop springen → schade. Een item ertegen gooien (Q) → verdwijnt. Mobs: `/difficulty easy`, `/time set night`, rij cactussen tussen jou en een `/summon minecraft:zombie ~6 ~ ~` → de zombie loopt eromheen, niet erdoorheen.
+7. **Bloempot:** `/give @s minecraft:flower_pot`, pot plaatsen, met elk van de drie planten rechtsklikken → zichtbaar in de pot; lege hand rechtsklikken → plant terug.
+8. **Woestijnbloem:** `/summon minecraft:bee ~ ~1 ~` naast een paar bloemen → bij gaat erop zitten; suspicious stew (kom + rode + bruine paddenstoel + woestijnbloem) opeten → Fire Resistance ~4 s.
+9. **Vuur:** vuur (`minecraft:fire`) naast dorre struik en woestijnbloem → ze branden weg; naast kloofsteen en geschroeid zandsteen blijft alles staan.
+10. **Los zand:** lijkt op zand (iets grover/donkerder). Eén blok boven lucht plaatsen → valt meteen. Hangend plafond: na change 26 in een zandgrot, of nu met het testdatapack (`CODEBASE.md`, valkuil "Hangende vallende blokken"): `/fill 2 153 2 4 153 4 minecraft:barrier`, `/fill 2 154 2 4 154 4 corruptedadventure:loose_sand`, datapack `ca21test` (uit `run/smoke-change21/datapacks/`) in `saves/<wereld>/datapacks/` zetten, `/reload`. In survival onder het plafond (`/tp @s 3 151 3`) → eerst stof en een kraakgeluid, ~0,75 s later valt het hele plafond; in spectator gebeurt niets. Los zand dropt zand, met een Silk Touch-schop zichzelf.
+11. **Recepten via tags:** stenen pickaxe en een oven craften met alleen kloofkeien.
+
+### Code review (`/code-review medium`)
+
+1. **Bodem van de pot in `potted_barrel_cactus` uitgerekt** (uv `5,5,6,11` uit vanilla `potted_cactus` overgenomen, hoort daar bij een wandje van 1 px) → **opgelost**: automatische UV (`5,5,11,11`), `runData` + `build` opnieuw groen.
+2. **`loose_sand` als item zonder Silk Touch:** landt een vallend blok op een plek waar het niet geplaatst kan worden (fakkel, plaat, rail), dan dropt vanilla `FallingBlockEntity` het blok zelf, buiten de loot table om. → **Geaccepteerd, niet aangepast:** een geplaatst `loose_sand` kan nooit hangen (plaatsen of de steun weghalen geeft altijd een update en dan valt het meteen), dus zo'n item is geen valstrikmateriaal; het gedraagt zich als gewoon zand met de speler-trigger. Onderdrukken kan alleen met `dropItem = false` (het zand verdwijnt dan helemaal) of een mixin; beide niet de moeite waard.

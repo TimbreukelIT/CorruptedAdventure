@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "corruptedadventure:block/scorched_sandstone_top",
+    "side": "corruptedadventure:block/chiseled_scorched_sandstone"
+  }
+}

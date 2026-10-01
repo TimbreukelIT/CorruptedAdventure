@@ -7,7 +7,9 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
+import nl.timtoys.corruptedadventure.block.LooseSandTrigger;
 import nl.timtoys.corruptedadventure.block.ModFlammables;
+import nl.timtoys.corruptedadventure.block.ModFlowerPots;
 import nl.timtoys.corruptedadventure.command.CaCommand;
 import nl.timtoys.corruptedadventure.condition.ConditionTicker;
 import nl.timtoys.corruptedadventure.condition.DebugConditionDriver;
@@ -52,6 +54,7 @@ public final class CorruptedAdventure {
         ModItems.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
         ModFlammables.register(modEventBus);
+        ModFlowerPots.register(modEventBus);
         ModBiomeSources.register(modEventBus);
         ModDensityFunctionTypes.register(modEventBus);
         ModChunkGenerators.register(modEventBus);
@@ -70,6 +73,7 @@ public final class CorruptedAdventure {
         PlayerConditions.register(NeoForge.EVENT_BUS);
         DebugConditionDriver.register(NeoForge.EVENT_BUS);
         RingWeather.register(NeoForge.EVENT_BUS);
+        LooseSandTrigger.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

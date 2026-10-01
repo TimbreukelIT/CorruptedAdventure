@@ -28,7 +28,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Snapshot (gebouwd in change 1): `<wereld>/corruptedadventure/ring_settings.json`, gelezen of aangemaakt bij `ServerAboutToStartEvent` (die op dedicated én integrated server vóór `loadLevel()` komt, dus vóór de spawn-chunks). Geen `SavedData`, want die bestaat pas als de level geladen is. Een bestaand snapshot gaat altijd vóór de config. Ongeldige config of corrupt snapshot → de server start niet (duidelijke foutmelding), nooit stilletjes terugvallen.
 
 ### 1.4 Textures
-- **Productiemethode: eigen pixels uit een deterministisch generatorscript, geen vanilla-pixels in de repo** — ook niet voor placeholders (vervangt "getinte/gerecolorde vanilla-textures", besloten 2026-09-30). Ring 1: `tools/textures/Ring1Textures.java` (single-file Java, alleen JDK, vaste seed per texture). Vanilla dient hooguit als visuele referentie voor de indeling; models mogen wel naar vanilla-textures **verwijzen** (bijv. netherrack als onderlaag van een erts).
+- **Productiemethode: eigen pixels uit een deterministisch generatorscript, geen vanilla-pixels in de repo** — ook niet voor placeholders (vervangt "getinte/gerecolorde vanilla-textures", besloten 2026-09-30). Eén script per ring: ring 1 `tools/textures/Ring1Textures.java`, ring 2 (+ Nether-ring 2) `tools/textures/Ring2Textures.java` (sinds change 21; helpers gekopieerd, generieke opzet met `Animation`-record, gloeikleur per materiaal en ingebouwde controles op afmeting/alpha). Single-file Java, alleen JDK, vaste seed per texture. Vanilla dient hooguit als visuele referentie voor de indeling; models mogen wel naar vanilla-textures **verwijzen** (bijv. netherrack als onderlaag van een erts).
 - Eerst **placeholders** (eenvoudige eerste scriptversie, zie change 10), zodat worldgen en sfeer testbaar zijn.
 - Per ring een aparte `textures`-change die het script verfijnt tot de definitieve textures.
 - **Stijl (change 17; ring 1 definitief, sjabloon voor de textures-changes van ring 2–5):**
@@ -270,6 +270,11 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Palm-set**: log, wood, planks, leaves, sapling + houtset (deur, trapdoor, hek, poort, trap, slab, knop, drukplaat); eigen tree feature.
   - **Definitie "houtset"** (geldt voor elke set: dood hout, palm, druipzwam, verkoold, rijpzwam, cipres): deur, valluik, hek, poort, trap, plaat, knop, drukplaat, plus **gestripte log en gestript wood** als vast onderdeel (bijl werkt zoals vanilla, via `StrippableLogBlock`). Geen borden, hangborden of boten (zie backlog).
 - **Woestijnflora + scorched sandstone**: scorched sandstone-set, gebarsten klei, dorre struik, tonnetjescactus, woestijnbloem.
+- **Uitwerking (change 21)** — 29 blokken, placeholders uit `Ring2Textures.java` (definitief in change 37):
+  - **Kloofsteen-set (11):** `red_`, `orange_`, `cream_canyon_stone` (drie aparte natuurlijke tinten; change 23 legt er lagen mee, geen harde laaglijn in de texture), `canyon_cobblestone` (gemengde tinten) en `canyon_stone_bricks` (rood), elk met trap/plaat/muur. Tinten droppen kloofkeien (Silk Touch → tint); kloofkeien tellen voor stenen tools, oven (`#stone_tool_materials`, `#stone_crafting_materials`) en `c:cobblestones`. Tag `corruptedadventure:canyon_stones` (de tinten) voor surface rules en ertsdoelen (24/25). Niet in `#base_stone_overworld`; tinten, keien, natuurlijke scorched sandstone, gebarsten klei en los zand wel in `#overworld_carver_replaceables`.
+  - **Scorched sandstone-set (10):** zoals vanilla-zandsteen (`scorched_sandstone` + trap/plaat/muur, `cut_` + plaat, `chiseled_`, `smooth_` + trap/plaat); dropt zichzelf; `c:sandstone/*`.
+  - **Los zand** `loose_sand`: ziet eruit als zand, valt als zand (vanilla `ColoredFallingBlock`), en stort in als een **speler** (geen mob, geen spectator; creatief wel) er binnen ~2 blokken onder komt: elke 10 ticks per speler een vak van footprint ±1 × (bovenkant hoofd … +2) → stof (`falling_dust`) + kraakgeluid → na 15 ticks (0,75 s) de vanilla-val, buren volgen vanzelf. Dropt `minecraft:sand` (Silk Touch → zichzelf; een vallend blok dat niet kan landen, bijv. op een fakkel, dropt zichzelf zoals vanilla — geaccepteerd: geplaatst los zand kan nooit hangen); niet in `#minecraft:sand`. Hangen kan alleen zo uit worldgen (geen blok-updates); change 26 zet het als zandgrotplafond.
+  - **Woestijnflora:** `cracked_clay` (schop, dropt zichzelf, packed-mud-geluid, niet in `#dirt`, ook in `#dead_bush_may_place_on`), `dry_shrub` (als dode struik: shears → zichzelf, anders 0–2 stokken; brandbaar), `barrel_cactus` (10 × 10 × 10 px, vorm definitief; 1 schade bij echte aanraking, groeit niet, mobs mijden hem), `desert_flower` (`#small_flowers`, stew Fire Resistance 4 s; brandbaar) + drie bloempotten (geen item). Alle drie de planten groeien op `corruptedadventure:desert_plant_soil` = `#sand`, `#terracotta`, `#dirt`, `cracked_clay`.
 
 **Ores**
 - **Zonnesteen** (hoofdmateriaal, kandidaat ring 2-gear-tier): gloeiend erts hoog in canyonwanden en hoodoos.
@@ -278,7 +283,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 **Grotten**
 - **Ondergrondse waterreservoirs** (aquifers) die de oases voeden; oriëntatie en lore.
-- **Instortende zandgrotten**: plafonds van los zand (vanilla-zwaartekracht, server-side).
+- **Instortende zandgrotten**: plafonds van los zand (`loose_sand`, change 21: vanilla-zwaartekracht + speler-trigger, server-side).
 
 **Weer (ringweer)**
 - **Zandstorm**: zicht sterk beperkt (client fog + particles), lichte wind-duw (server).

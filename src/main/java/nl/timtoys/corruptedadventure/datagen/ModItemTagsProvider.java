@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 
@@ -46,5 +47,18 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         copy(Tags.Blocks.ORES_IN_GROUND_NETHERRACK, Tags.Items.ORES_IN_GROUND_NETHERRACK);
         tag(ModTags.Items.GEMS_SOUL_CRYSTAL).add(ModItems.SOUL_CRYSTAL.get());
         tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_SOUL_CRYSTAL);
+
+        copy(ModTags.Blocks.CANYON_STONES, ModTags.Items.CANYON_STONES);
+        copy(BlockTags.STAIRS, ItemTags.STAIRS);
+        copy(BlockTags.SLABS, ItemTags.SLABS);
+        copy(BlockTags.WALLS, ItemTags.WALLS);
+        copy(BlockTags.SMALL_FLOWERS, ItemTags.SMALL_FLOWERS);
+        copy(Tags.Blocks.COBBLESTONES, Tags.Items.COBBLESTONES);
+        copy(Tags.Blocks.SANDSTONE_BLOCKS, Tags.Items.SANDSTONE_BLOCKS);
+        copy(Tags.Blocks.SANDSTONE_SLABS, Tags.Items.SANDSTONE_SLABS);
+        copy(Tags.Blocks.SANDSTONE_STAIRS, Tags.Items.SANDSTONE_STAIRS);
+        // Canyon cobblestone makes stone tools, furnaces and the other cobblestone recipes, like vanilla cobblestone.
+        tag(ItemTags.STONE_TOOL_MATERIALS).add(ModBlocks.CANYON_COBBLESTONE.asItem());
+        tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.CANYON_COBBLESTONE.asItem());
     }
 }

@@ -105,6 +105,37 @@ final class EnglishLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE, "Crimson Soul Crystal Ore");
         addItem(ModItems.SOUL_CRYSTAL, "Soul Crystal");
 
+        // Ring 2 blocks.
+        addBlock(ModBlocks.RED_CANYON_STONE, "Red Canyon Stone");
+        addBlock(ModBlocks.ORANGE_CANYON_STONE, "Orange Canyon Stone");
+        addBlock(ModBlocks.CREAM_CANYON_STONE, "Cream Canyon Stone");
+        addBlock(ModBlocks.CANYON_COBBLESTONE, "Canyon Cobblestone");
+        addBlock(ModBlocks.CANYON_COBBLESTONE_STAIRS, "Canyon Cobblestone Stairs");
+        addBlock(ModBlocks.CANYON_COBBLESTONE_SLAB, "Canyon Cobblestone Slab");
+        addBlock(ModBlocks.CANYON_COBBLESTONE_WALL, "Canyon Cobblestone Wall");
+        addBlock(ModBlocks.CANYON_STONE_BRICKS, "Canyon Stone Bricks");
+        addBlock(ModBlocks.CANYON_STONE_BRICK_STAIRS, "Canyon Stone Brick Stairs");
+        addBlock(ModBlocks.CANYON_STONE_BRICK_SLAB, "Canyon Stone Brick Slab");
+        addBlock(ModBlocks.CANYON_STONE_BRICK_WALL, "Canyon Stone Brick Wall");
+        addBlock(ModBlocks.SCORCHED_SANDSTONE, "Scorched Sandstone");
+        addBlock(ModBlocks.SCORCHED_SANDSTONE_STAIRS, "Scorched Sandstone Stairs");
+        addBlock(ModBlocks.SCORCHED_SANDSTONE_SLAB, "Scorched Sandstone Slab");
+        addBlock(ModBlocks.SCORCHED_SANDSTONE_WALL, "Scorched Sandstone Wall");
+        addBlock(ModBlocks.CUT_SCORCHED_SANDSTONE, "Cut Scorched Sandstone");
+        addBlock(ModBlocks.CUT_SCORCHED_SANDSTONE_SLAB, "Cut Scorched Sandstone Slab");
+        addBlock(ModBlocks.CHISELED_SCORCHED_SANDSTONE, "Chiseled Scorched Sandstone");
+        addBlock(ModBlocks.SMOOTH_SCORCHED_SANDSTONE, "Smooth Scorched Sandstone");
+        addBlock(ModBlocks.SMOOTH_SCORCHED_SANDSTONE_STAIRS, "Smooth Scorched Sandstone Stairs");
+        addBlock(ModBlocks.SMOOTH_SCORCHED_SANDSTONE_SLAB, "Smooth Scorched Sandstone Slab");
+        addBlock(ModBlocks.LOOSE_SAND, "Loose Sand");
+        addBlock(ModBlocks.CRACKED_CLAY, "Cracked Clay");
+        addBlock(ModBlocks.DRY_SHRUB, "Dry Shrub");
+        addBlock(ModBlocks.BARREL_CACTUS, "Barrel Cactus");
+        addBlock(ModBlocks.DESERT_FLOWER, "Desert Flower");
+        addBlock(ModBlocks.POTTED_DRY_SHRUB, "Potted Dry Shrub");
+        addBlock(ModBlocks.POTTED_BARREL_CACTUS, "Potted Barrel Cactus");
+        addBlock(ModBlocks.POTTED_DESERT_FLOWER, "Potted Desert Flower");
+
         biome(ModBiomes.WITHERED_EXPANSE, "Withered Expanse");
         biome(ModBiomes.PLACEHOLDER_RING_2, "Placeholder Ring 2");
         biome(ModBiomes.PLACEHOLDER_RING_3, "Placeholder Ring 3");

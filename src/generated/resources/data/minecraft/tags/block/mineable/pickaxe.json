@@ -1,6 +1,25 @@
 {
   "values": [
     "corruptedadventure:soul_crystal_ore",
-    "corruptedadventure:crimson_soul_crystal_ore"
+    "corruptedadventure:crimson_soul_crystal_ore",
+    "#corruptedadventure:canyon_stones",
+    "corruptedadventure:canyon_cobblestone",
+    "corruptedadventure:canyon_cobblestone_stairs",
+    "corruptedadventure:canyon_cobblestone_slab",
+    "corruptedadventure:canyon_cobblestone_wall",
+    "corruptedadventure:canyon_stone_bricks",
+    "corruptedadventure:canyon_stone_brick_stairs",
+    "corruptedadventure:canyon_stone_brick_slab",
+    "corruptedadventure:canyon_stone_brick_wall",
+    "corruptedadventure:scorched_sandstone",
+    "corruptedadventure:scorched_sandstone_stairs",
+    "corruptedadventure:scorched_sandstone_slab",
+    "corruptedadventure:scorched_sandstone_wall",
+    "corruptedadventure:cut_scorched_sandstone",
+    "corruptedadventure:cut_scorched_sandstone_slab",
+    "corruptedadventure:chiseled_scorched_sandstone",
+    "corruptedadventure:smooth_scorched_sandstone",
+    "corruptedadventure:smooth_scorched_sandstone_stairs",
+    "corruptedadventure:smooth_scorched_sandstone_slab"
   ]
 }

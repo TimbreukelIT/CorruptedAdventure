@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "corruptedadventure:block/cream_canyon_stone"
+  }
+}
