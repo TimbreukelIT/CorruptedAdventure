@@ -39,3 +39,6 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [infra] Change 18 (sync naar client): de client kent de wereldseed niet, maar `RingLayout` heeft hem nodig voor de grensruis. Sync een afgeleide ruis-seed (bijv. hash van de wereldseed), nooit de seed zelf. (bron: change 2)
 - [worldgen] Vanilla kiest het spawnpunt op het klimaat uit de noise settings (`spawn_target`), niet op de BiomeSource: het kan tot ~2.500 blokken van 0,0 liggen, dus buiten ring 1. Expliciet oplossen in change 9 (gegarandeerd land rond spawn nabij 0,0). (bron: change 5, review)
 - [infra] Access transformer `META-INF/accesstransformer.cfg` is als minimale placeholder in een worldgen-change gekomen (twee regels: `NoiseBasedChunkGenerator.globalFluidPicker`, `NoiseChunk.aquifer`); bij een volgende infra-change nagaan of dit de gewenste plek/vorm is en het in `01-techniek.md` onder de stack vastleggen. (bron: change 6)
+- [progression] *Adventuring Time* (en later *Hot Tourist Destinations*) is onhaalbaar met kopie-biomes; vervangen of aanpassen in fase 5. (bron: change 8)
+- [items] Visloot: de bamboe-junk in jungles (`gameplay/fishing/junk`, `location_check` op vanilla-keys) valt weg in de jungle-kopieën. (bron: change 8)
+- [worldgen] NeoForge `c:`-biome-tags (`c:is_hot/overworld`, …) voor de ring 1-kopieën, voor mod-compatibiliteit. (bron: change 8)

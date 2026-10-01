@@ -10,8 +10,11 @@
           "dimension": "minecraft:overworld",
           "rings": {
             "ring_1": {
-              "type": "minecraft:fixed",
-              "biome": "corruptedadventure:placeholder_ring_1"
+              "type": "corruptedadventure:vanilla_climate",
+              "preset": "minecraft:overworld",
+              "replace": {
+                "minecraft:mushroom_fields": "corruptedadventure:plains"
+              }
             },
             "ring_2": {
               "type": "minecraft:fixed",

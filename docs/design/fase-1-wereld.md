@@ -46,6 +46,16 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Kopieën krijgen de `has_structure/*`-tags die we willen (bijv. villages), maar **nooit** `has_structure/stronghold` → geen strongholds, geen End-portal.
 - Ring 1 gebruikt de vanilla-klimaatparameters, zodat de biomeverdeling vertrouwd aanvoelt.
 
+**Uitwerking (change 8):**
+- **52 kopieën** (`corruptedadventure:<vanilla-pad>`): alle biomes uit vanilla's overworld-klimaatlijst behalve mushroom fields, inclusief cherry grove, mangrove swamp, lush/dripstone caves en deep dark. Datagen draait vanilla's eigen `BiomeData.bootstrap` en houdt alleen deze biomes over, onder onze namespace. `placeholder_ring_1` is daarmee weg.
+- **Verdeling:** eigen biome-source `corruptedadventure:vanilla_climate` (`preset: minecraft:overworld`) als ring 1-source van `corruptedadventure:ring`. Die zet vanilla's parameterlijst bij het laden om naar onze kopieën; omdat de klimaatruis vanilla is, heeft ring 1 op elke x,y,z de kopie van het biome dat een vanilla-wereld met dezelfde seed daar heeft. Herbruikbaar voor Nether-ring 1 (`preset: minecraft:nether`, change 14).
+- **Mushroom fields → `corruptedadventure:plains`** (veld `replace`): een gewoon grasland-eiland, met gewone mob-spawns.
+- **Tags:** de kopieën komen in dezelfde vanilla-tags als hun origineel (klasse-tags, gedrag-tags, `has_structure/*`), via datagen naar de vanilla-tagpaden (`replace: false`). Alle vanilla overworld-structures dus, **inclusief trial chambers** (niet in deep dark). **Nooit:** `is_overworld` (vanilla's `has_structure/stronghold` = `#is_overworld`), `has_structure/stronghold`, `stronghold_biased_to`, `has_structure/ancient_city`.
+- **Villager-types:** NeoForge-data map `villager_types` voor de kopieën, gelijk aan vanilla (woestijn, jungle, savanne, sneeuw, moeras, taiga).
+- **Wolf-varianten:** de vanilla-varianten met een vaste biome (pale, snowy, black, ashen, woods, chestnut) worden overschreven met vanilla-biome + kopie; de tag-varianten (spotted, rusty, striped) werken via de gespiegelde tags.
+- **Surface rules:** de vanilla surface rules in `noise_settings/overworld.json` verwijzen naar de kopieën in plaats van de `minecraft:`-biomes; de mycelium-tak is weg.
+- **Bekend tot change 9:** het terrein is nog placeholder (vlak), het klimaat al vanilla: oceaanbiomes op land, pieken zonder bergen en cave-biomes op vanilla-diepte zijn verwacht.
+
 ### 1.8 Buitenrand
 - 9.500–10.000: het terrein van ring 5 brokkelt af tot **zwevende eilanden** en daarna lege **void** (via `ring_blend`: een aparte 'void'-invoer).
 - **World border op 10.000** (Nether: 2.500). Server-side, alleen in werelden met de `corrupted_world`-preset (herkend aan de chunk-generator `ring_noise` van de overworld); andere presets blijven vanilla.
@@ -95,7 +105,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - Landingshoogte: overworld bovenste blok (heightmap); Nether de hoogste plek met 2 blokken lucht op een stevige vloer, onder het dak. Geen veilige plek (void, lava)? Dan toch teleporteren naar een vaste Y (overworld 100, Nether 64), met een waarschuwing in de chat.
 
 ### 1.14 Ring-BiomeSource en placeholder-biomes (change 5)
-- `corruptedadventure:ring` kiest per positie de ring (via `ringAt`) en geeft de keuze door aan een **geneste biome-source per ring**: nu `minecraft:fixed` met een placeholder, later bijv. `minecraft:multi_noise` voor de varianten binnen een ring (ring 1: vanilla-klimaatparameters).
+- `corruptedadventure:ring` kiest per positie de ring (via `ringAt`) en geeft de keuze door aan een **geneste biome-source per ring**: nu `minecraft:fixed` met een placeholder, later bijv. `minecraft:multi_noise` voor de varianten binnen een ring (ring 1: `corruptedadventure:vanilla_climate` sinds change 8, zie §1.7).
 - **Placeholders (tijdelijk):** `placeholder_ring_1…5` (overworld) en `placeholder_nether_ring_1…5` (Nether). Alleen een **eigen kleur** (lucht, fog, water, gras, blad; Nether vooral fog) en **eigen weer** (neerslag en temperatuur: ring 1 en 4 met regen, ring 2, 3, 5 en de Nether droog). **Geen features, geen mob-spawns**, geen `has_structure/*`-tags. Ze verdwijnen zodra de echte biomes van een ring er zijn.
 - **Void (blijvend):** `void_edge` (overworld) en `nether_void_edge` (Nether), voorbij ring 5; aparte biomes zodat sfeer later per dimensie kan.
 - Overgangszone: harde wissel op gewicht 0,5 tot er overgangsbiomes zijn (§1.3).

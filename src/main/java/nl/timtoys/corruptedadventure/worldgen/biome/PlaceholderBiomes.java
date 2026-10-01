@@ -8,7 +8,8 @@ import net.minecraft.world.level.biome.MobSpawnSettings;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 
 /**
- * Datagen bootstrap for the skeleton biomes: one placeholder per ring and a void edge, per dimension.
+ * Datagen bootstrap for the skeleton biomes: one placeholder per ring and a void edge, per dimension. Overworld ring 1
+ * no longer has one: it uses {@link VanillaBiomeCopies}.
  * Only colours and weather (precipitation, temperature) differ; no features and no mob spawns, and no
  * {@code has_structure/*} tags, so no vanilla structures (strongholds included) can generate in them.
  */
@@ -21,9 +22,6 @@ public final class PlaceholderBiomes {
     }
 
     public static void bootstrap(BootstrapContext<Biome> context) {
-        // Ring 1: familiar green; vanilla rain.
-        context.register(ModBiomes.PLACEHOLDER_RING_1, overworld(true, 0.8F, 0.4F,
-                0x78A7FF, 0xC0D8FF, DEFAULT_WATER, DEFAULT_WATER_FOG, 0x79C05A, 0x59AE30));
         // Ring 2: dry, sandy haze.
         context.register(ModBiomes.PLACEHOLDER_RING_2, overworld(false, 2.0F, 0.0F,
                 0x9FC4E8, 0xE8D7A8, 0x32A598, 0x0B3A35, 0xBFB755, 0xAEA42A));

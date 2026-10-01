@@ -1,0 +1,82 @@
+package nl.timtoys.corruptedadventure.datagen;
+
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.tags.BiomeTagsProvider;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BiomeTags;
+import net.minecraft.tags.TagBuilder;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.biome.Biome;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * Adds ring 1's copies to the vanilla biome tags their originals are in ({@code replace: false}). Membership comes
+ * from running vanilla's own tag provider and keeping its direct entries for copied biomes; {@code #tag} entries need
+ * no copy, they resolve once the referenced tag is mirrored too.
+ * <p>
+ * Never mirrored: {@code is_overworld} (vanilla's {@code has_structure/stronghold} is {@code #is_overworld}),
+ * {@code has_structure/stronghold}, {@code stronghold_biased_to} and {@code has_structure/ancient_city}.
+ */
+final class ModBiomeTagsProvider extends BiomeTagsProvider {
+    static final List<TagKey<Biome>> MIRRORED_TAGS = List.of(
+            // Biome classes
+            BiomeTags.IS_OCEAN, BiomeTags.IS_DEEP_OCEAN, BiomeTags.IS_BEACH, BiomeTags.IS_RIVER, BiomeTags.IS_MOUNTAIN,
+            BiomeTags.IS_HILL, BiomeTags.IS_BADLANDS, BiomeTags.IS_JUNGLE, BiomeTags.IS_FOREST, BiomeTags.IS_SAVANNA,
+            BiomeTags.IS_TAIGA,
+            // Behaviour
+            BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS, BiomeTags.SPAWNS_COLD_VARIANT_FROGS, BiomeTags.SPAWNS_WARM_VARIANT_FROGS,
+            BiomeTags.SPAWNS_GOLD_RABBITS, BiomeTags.SPAWNS_WHITE_RABBITS, BiomeTags.SPAWNS_SNOW_FOXES,
+            BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS, BiomeTags.HAS_CLOSER_WATER_FOG, BiomeTags.WATER_ON_MAP_OUTLINES,
+            BiomeTags.PLAYS_UNDERWATER_MUSIC, BiomeTags.PRODUCES_CORALS_FROM_BONEMEAL, BiomeTags.SNOW_GOLEM_MELTS,
+            BiomeTags.POLAR_BEARS_SPAWN_ON_ALTERNATE_BLOCKS, BiomeTags.INCREASED_FIRE_BURNOUT,
+            BiomeTags.REDUCED_WATER_AMBIENT_SPAWNS, BiomeTags.ALLOWS_TROPICAL_FISH_SPAWNS_AT_ANY_HEIGHT,
+            BiomeTags.WITHOUT_ZOMBIE_SIEGES, BiomeTags.WITHOUT_PATROL_SPAWNS, BiomeTags.WITHOUT_WANDERING_TRADER_SPAWNS,
+            BiomeTags.MINESHAFT_BLOCKING, BiomeTags.REQUIRED_OCEAN_MONUMENT_SURROUNDING,
+            // Overworld structures, except stronghold and ancient city
+            BiomeTags.HAS_VILLAGE_DESERT, BiomeTags.HAS_VILLAGE_PLAINS, BiomeTags.HAS_VILLAGE_SAVANNA,
+            BiomeTags.HAS_VILLAGE_SNOWY, BiomeTags.HAS_VILLAGE_TAIGA, BiomeTags.HAS_DESERT_PYRAMID,
+            BiomeTags.HAS_JUNGLE_TEMPLE, BiomeTags.HAS_SWAMP_HUT, BiomeTags.HAS_IGLOO, BiomeTags.HAS_PILLAGER_OUTPOST,
+            BiomeTags.HAS_WOODLAND_MANSION, BiomeTags.HAS_OCEAN_MONUMENT, BiomeTags.HAS_SHIPWRECK,
+            BiomeTags.HAS_SHIPWRECK_BEACHED, BiomeTags.HAS_OCEAN_RUIN_COLD, BiomeTags.HAS_OCEAN_RUIN_WARM,
+            BiomeTags.HAS_TRAIL_RUINS, BiomeTags.HAS_MINESHAFT, BiomeTags.HAS_MINESHAFT_MESA,
+            BiomeTags.HAS_RUINED_PORTAL_STANDARD, BiomeTags.HAS_RUINED_PORTAL_DESERT, BiomeTags.HAS_RUINED_PORTAL_JUNGLE,
+            BiomeTags.HAS_RUINED_PORTAL_MOUNTAIN, BiomeTags.HAS_RUINED_PORTAL_OCEAN, BiomeTags.HAS_RUINED_PORTAL_SWAMP,
+            BiomeTags.HAS_BURIED_TREASURE, BiomeTags.HAS_TRIAL_CHAMBERS);
+
+    ModBiomeTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup, ExistingFileHelper existingFileHelper) {
+        super(output, lookup, CorruptedAdventure.MOD_ID, existingFileHelper);
+    }
+
+    @Override
+    protected void addTags(HolderLookup.Provider provider) {
+        super.addTags(provider);
+        Map<ResourceLocation, TagBuilder> vanilla = new HashMap<>(builders);
+        builders.clear();
+
+        for (TagKey<Biome> tag : MIRRORED_TAGS) {
+            TagBuilder original = vanilla.get(tag.location());
+            if (original == null) {
+                throw new IllegalStateException("Vanilla has no biome tag " + tag.location());
+            }
+            List<ResourceKey<Biome>> copies = original.build().stream()
+                    .filter(entry -> !entry.isTag())
+                    .map(entry -> ResourceKey.create(Registries.BIOME, entry.getId()))
+                    .filter(VanillaBiomeCopies.OVERWORLD_COPIES::contains)
+                    .map(VanillaBiomeCopies::copyOf)
+                    .toList();
+            if (!copies.isEmpty()) {
+                tag(tag).addAll(copies);
+            }
+        }
+    }
+}

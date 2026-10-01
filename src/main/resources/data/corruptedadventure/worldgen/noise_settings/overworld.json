@@ -237,7 +237,7 @@
                     "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
-                        "minecraft:wooded_badlands"
+                        "corruptedadventure:wooded_badlands"
                       ]
                     },
                     "then_run": {
@@ -336,7 +336,7 @@
                     "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
-                        "minecraft:swamp"
+                        "corruptedadventure:swamp"
                       ]
                     },
                     "then_run": {
@@ -388,7 +388,7 @@
                     "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
-                        "minecraft:mangrove_swamp"
+                        "corruptedadventure:mangrove_swamp"
                       ]
                     },
                     "then_run": {
@@ -443,9 +443,9 @@
               "if_true": {
                 "type": "minecraft:biome",
                 "biome_is": [
-                  "minecraft:badlands",
-                  "minecraft:eroded_badlands",
-                  "minecraft:wooded_badlands"
+                  "corruptedadventure:badlands",
+                  "corruptedadventure:eroded_badlands",
+                  "corruptedadventure:wooded_badlands"
                 ]
               },
               "then_run": {
@@ -743,8 +743,8 @@
                       "if_true": {
                         "type": "minecraft:biome",
                         "biome_is": [
-                          "minecraft:frozen_ocean",
-                          "minecraft:deep_frozen_ocean"
+                          "corruptedadventure:frozen_ocean",
+                          "corruptedadventure:deep_frozen_ocean"
                         ]
                       },
                       "then_run": {
@@ -803,7 +803,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:frozen_peaks"
+                              "corruptedadventure:frozen_peaks"
                             ]
                           },
                           "then_run": {
@@ -874,7 +874,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:snowy_slopes"
+                              "corruptedadventure:snowy_slopes"
                             ]
                           },
                           "then_run": {
@@ -939,7 +939,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:jagged_peaks"
+                              "corruptedadventure:jagged_peaks"
                             ]
                           },
                           "then_run": {
@@ -980,7 +980,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:grove"
+                              "corruptedadventure:grove"
                             ]
                           },
                           "then_run": {
@@ -1036,7 +1036,7 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:stony_peaks"
+                                  "corruptedadventure:stony_peaks"
                                 ]
                               },
                               "then_run": {
@@ -1071,7 +1071,7 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:stony_shore"
+                                  "corruptedadventure:stony_shore"
                                 ]
                               },
                               "then_run": {
@@ -1127,7 +1127,7 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:windswept_hills"
+                                  "corruptedadventure:windswept_hills"
                                 ]
                               },
                               "then_run": {
@@ -1151,9 +1151,9 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:warm_ocean",
-                                  "minecraft:beach",
-                                  "minecraft:snowy_beach"
+                                  "corruptedadventure:warm_ocean",
+                                  "corruptedadventure:beach",
+                                  "corruptedadventure:snowy_beach"
                                 ]
                               },
                               "then_run": {
@@ -1189,7 +1189,7 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:desert"
+                                  "corruptedadventure:desert"
                                 ]
                               },
                               "then_run": {
@@ -1225,7 +1225,7 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:dripstone_caves"
+                                  "corruptedadventure:dripstone_caves"
                                 ]
                               },
                               "then_run": {
@@ -1242,7 +1242,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:windswept_savanna"
+                              "corruptedadventure:windswept_savanna"
                             ]
                           },
                           "then_run": {
@@ -1286,7 +1286,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:windswept_gravelly_hills"
+                              "corruptedadventure:windswept_gravelly_hills"
                             ]
                           },
                           "then_run": {
@@ -1416,8 +1416,8 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:old_growth_pine_taiga",
-                              "minecraft:old_growth_spruce_taiga"
+                              "corruptedadventure:old_growth_pine_taiga",
+                              "corruptedadventure:old_growth_spruce_taiga"
                             ]
                           },
                           "then_run": {
@@ -1464,7 +1464,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:ice_spikes"
+                              "corruptedadventure:ice_spikes"
                             ]
                           },
                           "then_run": {
@@ -1488,31 +1488,13 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:mangrove_swamp"
+                              "corruptedadventure:mangrove_swamp"
                             ]
                           },
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
                               "Name": "minecraft:mud"
-                            }
-                          }
-                        },
-                        {
-                          "type": "minecraft:condition",
-                          "if_true": {
-                            "type": "minecraft:biome",
-                            "biome_is": [
-                              "minecraft:mushroom_fields"
-                            ]
-                          },
-                          "then_run": {
-                            "type": "minecraft:block",
-                            "result_state": {
-                              "Name": "minecraft:mycelium",
-                              "Properties": {
-                                "snowy": "false"
-                              }
                             }
                           }
                         },
@@ -1576,8 +1558,8 @@
                       "if_true": {
                         "type": "minecraft:biome",
                         "biome_is": [
-                          "minecraft:frozen_ocean",
-                          "minecraft:deep_frozen_ocean"
+                          "corruptedadventure:frozen_ocean",
+                          "corruptedadventure:deep_frozen_ocean"
                         ]
                       },
                       "then_run": {
@@ -1614,7 +1596,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:frozen_peaks"
+                              "corruptedadventure:frozen_peaks"
                             ]
                           },
                           "then_run": {
@@ -1685,7 +1667,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:snowy_slopes"
+                              "corruptedadventure:snowy_slopes"
                             ]
                           },
                           "then_run": {
@@ -1750,7 +1732,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:jagged_peaks"
+                              "corruptedadventure:jagged_peaks"
                             ]
                           },
                           "then_run": {
@@ -1765,7 +1747,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:grove"
+                              "corruptedadventure:grove"
                             ]
                           },
                           "then_run": {
@@ -1812,7 +1794,7 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:stony_peaks"
+                                  "corruptedadventure:stony_peaks"
                                 ]
                               },
                               "then_run": {
@@ -1847,7 +1829,7 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:stony_shore"
+                                  "corruptedadventure:stony_shore"
                                 ]
                               },
                               "then_run": {
@@ -1903,7 +1885,7 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:windswept_hills"
+                                  "corruptedadventure:windswept_hills"
                                 ]
                               },
                               "then_run": {
@@ -1927,9 +1909,9 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:warm_ocean",
-                                  "minecraft:beach",
-                                  "minecraft:snowy_beach"
+                                  "corruptedadventure:warm_ocean",
+                                  "corruptedadventure:beach",
+                                  "corruptedadventure:snowy_beach"
                                 ]
                               },
                               "then_run": {
@@ -1965,7 +1947,7 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:desert"
+                                  "corruptedadventure:desert"
                                 ]
                               },
                               "then_run": {
@@ -2001,7 +1983,7 @@
                               "if_true": {
                                 "type": "minecraft:biome",
                                 "biome_is": [
-                                  "minecraft:dripstone_caves"
+                                  "corruptedadventure:dripstone_caves"
                                 ]
                               },
                               "then_run": {
@@ -2018,7 +2000,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:windswept_savanna"
+                              "corruptedadventure:windswept_savanna"
                             ]
                           },
                           "then_run": {
@@ -2042,7 +2024,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:windswept_gravelly_hills"
+                              "corruptedadventure:windswept_gravelly_hills"
                             ]
                           },
                           "then_run": {
@@ -2149,7 +2131,7 @@
                           "if_true": {
                             "type": "minecraft:biome",
                             "biome_is": [
-                              "minecraft:mangrove_swamp"
+                              "corruptedadventure:mangrove_swamp"
                             ]
                           },
                           "then_run": {
@@ -2173,9 +2155,9 @@
                     "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
-                        "minecraft:warm_ocean",
-                        "minecraft:beach",
-                        "minecraft:snowy_beach"
+                        "corruptedadventure:warm_ocean",
+                        "corruptedadventure:beach",
+                        "corruptedadventure:snowy_beach"
                       ]
                     },
                     "then_run": {
@@ -2200,7 +2182,7 @@
                     "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
-                        "minecraft:desert"
+                        "corruptedadventure:desert"
                       ]
                     },
                     "then_run": {
@@ -2240,8 +2222,8 @@
                     "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
-                        "minecraft:frozen_peaks",
-                        "minecraft:jagged_peaks"
+                        "corruptedadventure:frozen_peaks",
+                        "corruptedadventure:jagged_peaks"
                       ]
                     },
                     "then_run": {
@@ -2256,9 +2238,9 @@
                     "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
-                        "minecraft:warm_ocean",
-                        "minecraft:lukewarm_ocean",
-                        "minecraft:deep_lukewarm_ocean"
+                        "corruptedadventure:warm_ocean",
+                        "corruptedadventure:lukewarm_ocean",
+                        "corruptedadventure:deep_lukewarm_ocean"
                       ]
                     },
                     "then_run": {

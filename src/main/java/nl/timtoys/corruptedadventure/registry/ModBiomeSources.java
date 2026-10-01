@@ -8,6 +8,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.biome.RingBiomeSource;
+import nl.timtoys.corruptedadventure.worldgen.biome.VanillaClimateBiomeSource;
 
 public final class ModBiomeSources {
     private static final DeferredRegister<MapCodec<? extends BiomeSource>> BIOME_SOURCES =
@@ -16,6 +17,10 @@ public final class ModBiomeSources {
     /** {@code corruptedadventure:ring} */
     public static final DeferredHolder<MapCodec<? extends BiomeSource>, MapCodec<RingBiomeSource>> RING =
             BIOME_SOURCES.register("ring", () -> RingBiomeSource.CODEC);
+
+    /** {@code corruptedadventure:vanilla_climate} */
+    public static final DeferredHolder<MapCodec<? extends BiomeSource>, MapCodec<VanillaClimateBiomeSource>> VANILLA_CLIMATE =
+            BIOME_SOURCES.register("vanilla_climate", () -> VanillaClimateBiomeSource.CODEC);
 
     private ModBiomeSources() {
     }

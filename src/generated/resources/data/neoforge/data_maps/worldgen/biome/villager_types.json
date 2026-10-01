@@ -1,0 +1,91 @@
+{
+  "values": {
+    "corruptedadventure:badlands": {
+      "villager_type": "minecraft:desert"
+    },
+    "corruptedadventure:bamboo_jungle": {
+      "villager_type": "minecraft:jungle"
+    },
+    "corruptedadventure:deep_frozen_ocean": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:desert": {
+      "villager_type": "minecraft:desert"
+    },
+    "corruptedadventure:eroded_badlands": {
+      "villager_type": "minecraft:desert"
+    },
+    "corruptedadventure:frozen_ocean": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:frozen_peaks": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:frozen_river": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:grove": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:ice_spikes": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:jagged_peaks": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:jungle": {
+      "villager_type": "minecraft:jungle"
+    },
+    "corruptedadventure:mangrove_swamp": {
+      "villager_type": "minecraft:swamp"
+    },
+    "corruptedadventure:old_growth_pine_taiga": {
+      "villager_type": "minecraft:taiga"
+    },
+    "corruptedadventure:old_growth_spruce_taiga": {
+      "villager_type": "minecraft:taiga"
+    },
+    "corruptedadventure:savanna": {
+      "villager_type": "minecraft:savanna"
+    },
+    "corruptedadventure:savanna_plateau": {
+      "villager_type": "minecraft:savanna"
+    },
+    "corruptedadventure:snowy_beach": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:snowy_plains": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:snowy_slopes": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:snowy_taiga": {
+      "villager_type": "minecraft:snow"
+    },
+    "corruptedadventure:sparse_jungle": {
+      "villager_type": "minecraft:jungle"
+    },
+    "corruptedadventure:swamp": {
+      "villager_type": "minecraft:swamp"
+    },
+    "corruptedadventure:taiga": {
+      "villager_type": "minecraft:taiga"
+    },
+    "corruptedadventure:windswept_forest": {
+      "villager_type": "minecraft:taiga"
+    },
+    "corruptedadventure:windswept_gravelly_hills": {
+      "villager_type": "minecraft:taiga"
+    },
+    "corruptedadventure:windswept_hills": {
+      "villager_type": "minecraft:taiga"
+    },
+    "corruptedadventure:windswept_savanna": {
+      "villager_type": "minecraft:savanna"
+    },
+    "corruptedadventure:wooded_badlands": {
+      "villager_type": "minecraft:desert"
+    }
+  }
+}
