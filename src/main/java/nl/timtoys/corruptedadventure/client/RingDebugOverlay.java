@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
+import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Locale;
 
 /**
  * The mod's only F3 hook: lines on the right of the debug screen, to compare the client's view with {@code /ca ring}.
- * Later debug lines (ring weather, wind) are added here. Fixed English text, like {@code /ca}.
+ * Later debug lines (e.g. wind) are added here. Fixed English text, like {@code /ca}.
  */
 final class RingDebugOverlay {
     private RingDebugOverlay() {
@@ -26,6 +27,7 @@ final class RingDebugOverlay {
         right.add("CA ring (client): " + ClientRingLayout.ringAt(camera.level().dimension(), camera.getX(), camera.getZ())
                 .map(RingDebugOverlay::describe)
                 .orElse("—"));
+        right.add("CA weather (client): " + RingWeatherClientHooks.describe(camera.level(), camera.getX(), camera.getZ()));
     }
 
     /** E.g. {@code ring_1} or {@code ring_2 → ring_3 @ 0.43}. */

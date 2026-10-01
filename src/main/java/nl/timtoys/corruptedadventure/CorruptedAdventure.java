@@ -29,6 +29,7 @@ import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModPlacementModifierTypes;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
+import nl.timtoys.corruptedadventure.weather.RingWeather;
 import nl.timtoys.corruptedadventure.worldgen.border.RingWorldBorder;
 import org.slf4j.Logger;
 
@@ -68,6 +69,7 @@ public final class CorruptedAdventure {
         ConditionTicker.register(NeoForge.EVENT_BUS);
         PlayerConditions.register(NeoForge.EVENT_BUS);
         DebugConditionDriver.register(NeoForge.EVENT_BUS);
+        RingWeather.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

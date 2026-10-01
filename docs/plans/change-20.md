@@ -50,7 +50,7 @@ Afgestemd met 18, 19, 27, 28 en 32 (basis: de aanbevolen opties). Waar de tekst 
 
 ### 2. Config
 
-Nieuwe sectie `[weather]` in `config/ServerConfig` van change 19 (SERVER, per wereld: `<wereld>/serverconfig/corruptedadventure-server.toml`), per ring met typen een subsectie `[weather.ring2]` … `[weather.ring5]`:
+Nieuwe sectie `[weather]` in `config/ServerConfig` van change 19 (SERVER; standaard globaal in `config/corruptedadventure-server.toml`, per wereld te overschrijven met een kopie in `<wereld>/serverconfig/` — bouwnotitie change 19), per ring met typen een subsectie `[weather.ring2]` … `[weather.ring5]`:
 - `clearMinSeconds`, `clearMaxSeconds`, `weatherMinSeconds`, `weatherMaxSeconds` — standaard (vraag 3 = B, vanilla-ritme) **600 / 9000 / 600 / 1200** s (= 12.000 / 180.000 / 12.000 / 24.000 ticks), voor elke ring gelijk; validatie min ≤ max, ≥ 1 (bovengrens bijv. 86.400 s);
 - per type `<type>Weight` (0–100, standaard 1 = gelijke gewichten; 0 = komt in de cyclus niet voor, `/ca weather` kan het nog wel zetten).
 - Accessor `ringWeather(Ring)` → `RingWeatherSettings`, live gelezen (geen snapshot: een gewijzigde config geldt vanaf de volgende wissel; er ontstaan geen breuklijnen zoals bij ringgrenzen).
@@ -124,8 +124,8 @@ Aangehaakt in `CaCommand`; vaste Engelse tekst; werkt in de dimensie van de bron
 - `ca weather` → vier ringen (2–5) met `clear` of een type en een resterende tijd; `execute in minecraft:the_nether run ca weather` → "No ring weather in this dimension".
 - `ca weather 2 sandstorm 120` → bevestiging; `ca weather` → ring 2 `sandstorm`, ~120 s; `ca weather 2 eruption` → fout; `ca weather 1 sandstorm` → fout.
 - `gamerule doWeatherCycle false` → twee keer `ca weather` met 10 s ertussen: resterende tijd gelijk; weer `true` → loopt af (vraag 5 → A).
-- Standaardritme: na de eerste start staan in `<wereld>/serverconfig/corruptedadventure-server.toml` per ring 600/9000/600/1200; `ca weather` direct na de start toont per ring `clear` met een resterende tijd tussen 600 en 9000 s (of een type met 600–1200 s).
-- Cyclus (het vanilla-ritme is te traag om af te wachten): in `<wereld>/serverconfig/corruptedadventure-server.toml` tijdelijk alle duren op 5–10 s → server herstarten → `ca weather` een minuut pollen: elke ring wisselt `clear` ↔ type, nooit een type van een andere ring. Daarna config terugzetten.
+- Standaardritme: na de eerste start staan in `config/corruptedadventure-server.toml` (globaal) per ring 600/9000/600/1200; `ca weather` direct na de start toont per ring `clear` met een resterende tijd tussen 600 en 9000 s (of een type met 600–1200 s).
+- Cyclus (het vanilla-ritme is te traag om af te wachten): per-wereld-override `<wereld>/serverconfig/corruptedadventure-server.toml` (kopie van de globale file) met alle duren op 5–10 s → server herstarten → per ring `ca weather <ring> clear 1` (de config geldt pas vanaf het volgende weer) → `ca weather` een minuut pollen: elke ring wisselt `clear` ↔ type, nooit een type van een andere ring. Daarna de override weghalen.
 - Persistentie: `ca weather 3 ash_rain 600`, `stop` via RCON, opnieuw starten → ring 3 nog `ash_rain` met ~dezelfde resterende tijd; `<wereld>/data/corruptedadventure_ring_weather.dat` bestaat, `<wereld>/DIM-1/data/` heeft er geen.
 - Vanilla-preset (`level-type=minecraft:normal`, aparte `level-name`): `ca weather` → geen ringweer, geen `.dat`, geen fouten.
 - Daarna RCON uit, server stoppen.
@@ -222,3 +222,83 @@ Antwoord: **A** — onafhankelijk van vanilla-weer, maar de cyclus staat stil al
 | 2026-10-01 | atmosphere | Ringweer t.o.v. vanilla-weer: onafhankelijk, cyclus volgt `doWeatherCycle` | Vanilla blijft vertrouwd; admins en tests kunnen het weer stilzetten |
 | 2026-10-01 | atmosphere | Sync: elke speler krijgt de volledige ringweerstaat van zijn dimensie (login, dimensiewissel, respawn, elke wissel); de client telt zelf af en kiest zelf de ring | Geen per-tick-packets, geen pop-in aan grenzen, basis voor grensmuren |
 | 2026-10-01 | atmosphere | Geen Nether-ringweer: systeem per dimensie generiek, maar alleen dimensies met typen krijgen staat en `SavedData` (nu alleen de overworld) | Volgt het design; geen lege bestanden of ticks |
+
+---
+
+## Bouwnotities (change 20, 2026-10-01)
+
+- Aannames over 18/19 klopten: `RingWorld.isActive`, `ClientRingLayout`, `ClientboundHandlers` (handler in `client/network/`), `RingDebugOverlay` (enige F3-hook), `ServerConfig`. `PROTOCOL_VERSION` `"2"` → `"3"` (nieuwe payload).
+- **Afwijking config-locatie** (zelfde als 19): de SERVER-config staat standaard globaal in `config/corruptedadventure-server.toml`; `<wereld>/serverconfig/` is een override per wereld. Tekst in Plan §2 en Tests S aangepast; de cyclus-test gebruikte een override in `run/smoke-change20/serverconfig/`.
+- **Extra veld in de payload:** `cycleRunning` (stand van `doWeatherCycle`). Nodig omdat de client zelf aftelt: zonder dat veld zou de client doortellen terwijl de server stilstaat. De server stuurt de staat opnieuw als de gamerule omslaat (gecontroleerd elke 20 ticks). Gevolg van vraag 4 + 5: met `doWeatherCycle false` staat ook de fade stil (een net gezet weer blijft op intensiteit 0).
+- **`/tick freeze`:** de server-cyclus loopt alleen als `tickRateManager().runsNormally()` (anders zou `gameTime % 20` elke tick waar zijn).
+- **Afwijking client-aftelling (na review):** niet "lokaal afgeteld per client-tick" (plan §7), maar uit de game time: de payload draagt de game time van het level bij verzending, de client trekt het verschil met de game time van zijn level af. Reden: met eigen ticks loopt de client bij serverlag voor (weer op de client voorbij terwijl gameplay het nog toepast). Payloadformaat daarmee: dimensie, game time, `cycleRunning`, staat per ring (nog steeds protocol `"3"`, niet eerder uitgebracht).
+- **`/ca weather 1 clear`** geeft ook een fout ("ring_1 has no ring weather"), niet alleen ring 1 met een weertype: ring 1 heeft geen staat om te zetten.
+- **Ruimtelijke menging** staat als pure common-klasse `weather/RingWeatherMix` (getest, `RingWeatherMixTest`); de client-hook en later de grensmuren gebruiken hem. `RingWeather.weatherRing` (void → ring 5) is de gedeelde regel.
+- **Extra tests** naast het plan: `RingWeatherMixTest`, `network/RingWeatherPayloadTest`; de configtest heet `config/RingWeatherConfigTest`.
+- `seed` wordt alleen bij een weertype getrokken; `clear` heeft seed 0.
+- F3-formaat: `CA weather (client): ring_2 sandstorm 0.83 (412 s)`; in een overgangszone `ring_2 sandstorm 0.40 (weight 0.48, 412 s) | ring_3 clear (weight 0.52, 1200 s)`; ring 1 `ring_1 none`; geen layout of geen ringweer in deze dimensie (Nether) `—`; met `doWeatherCycle false` `(cycle paused)` erachter. De sterkte = intensiteit × ruimtelijk gewicht.
+- `run/ops.json` (niet in git) bevat nu `Dev` en `Dev2` (niveau 4), zodat beide clients bij de teststop `/ca …` kunnen gebruiken; `run/server.properties` staat op `level-name=teststop1` (verse wereld), RCON uit.
+
+### Testresultaten
+- **B:** `./gradlew build` groen, 166 tests (was 122; nieuw: `RingWeatherTypeTest`, `RingWeatherStateTest`, `RingWeatherCycleTest`, `RingWeatherDataTest`, `RingWeatherMixTest`, `RingWeatherPayloadTest`, `RingWeatherConfigTest`); `ClientIsolationTest` groen.
+- **D:** n.v.t. (geen datagen).
+- **S:** `tools/server-smoke-test.sh` met `level-name=smoke-change20`: `Done (5.9 s)`, geen fouten. Daarna RCON:
+  - `ca weather` → ring 2–5 `clear` met 1644–6391 s (binnen 600–9000); Nether → "No ring weather in this dimension".
+  - `ca weather 2 sandstorm 120` → gezet; `ca weather 2 eruption` → "eruption is not a weather of ring_2; use one of: clear, sandstorm, heat_wave"; `ca weather 1 sandstorm` en `ca weather 1 clear` → "ring_1 has no ring weather"; zonder seconden: `glitch_storm` 1195 s (600–1200).
+  - Aftellen 10 s → −10 s, intensiteit 0,17 → 0,50 (fade 30 s); `doWeatherCycle false` → 2× 10 s later gelijk ("cycle paused"); `true` → loopt weer. `dense_fog 30` (korter dan 2 × fade) piekte op 0,50 en werd daarna `clear` met een nieuwe duur.
+  - Persistentie: `ca weather 3 ash_rain 600`, RCON `stop`, herstart → `ash_rain 594 s of 600`; `data/corruptedadventure_ring_weather.dat` bestaat, `DIM-1/data/` heeft er geen.
+  - Cyclus (override 5–10 s + per ring `clear 1`, 15× pollen in 60 s): elke ring wisselde `clear` ↔ eigen type (ring 2: sandstorm/heat_wave, 3: ash_rain/eruption, 4: dense_fog, 5: glitch_storm), nooit een vreemd type, duren 5–10 s. Override daarna verwijderd.
+  - Vanilla-preset (`smoke-change20-vanilla`): `ca weather` → "No ring weather: this is not a ring world", geen `.dat`, geen fouten.
+  - Twee clients (`runClient -PquickPlay`, `runClient2 -PquickPlay`): beide joinen en krijgen bij login layout + ringweer (DEBUG `Received ring weather for Dev in minecraft:overworld (cycle running): [ring_2=sandstorm 920/2400, …]`). `ca weather 2 sandstorm 60` → beide in dezelfde seconde `ring_2=sandstorm 1200/1200`. Dev2 naar de Nether → `[]`; terug → volledige staat. `doWeatherCycle false/true` → beide `cycle paused` / `cycle running`. `kill Dev` (immediate respawn) → Dev kreeg de staat opnieuw. Dev2 in de Nether kreeg geen overworld-updates. Geen fouten in client- of serverlog (alleen de bekende log4j-rotatiemelding).
+  - Coördinaten seed 20260930 richting oost (na `tp @s 100 ~ 0`): ring 2 midden 2499 94 12, grens 1 1469 73 7, grens 2 3457 107 17, ring 3 midden 4499 121 22, void 9749 100 48, Nether-grens 2 864 43 4, ring 1 midden 749 63 3.
+  - RCON daarna uit, server gestopt.
+
+## In-game checklist (W) — teststop 1
+
+**Blokkerend: change 21 begint pas na akkoord.** Gebundeld voor 18 (ringdata op de client), 19 (meters/HUD) en 20 (ringweer). ~20 min. Wereld: `corrupted_world`, seed `20260930`, verse map `teststop1` (staat al in `run/server.properties`). `Dev` en `Dev2` zijn op (`run/ops.json`).
+
+**Opstarten** (drie terminals in de repo-root):
+1. `./gradlew runServer` — wacht op `Done (…)`.
+2. `./gradlew runClient -PquickPlay` — client **Dev** joint vanzelf `localhost:25565`.
+3. `./gradlew runClient2 -PquickPlay` — client **Dev2** joint vanzelf.
+4. Op beide clients F3 aan; rechts staan `CA ring (client): …` en `CA weather (client): …`.
+5. Stoppen: `/stop` in de chat van Dev, daarna de clients sluiten.
+
+Vaste coördinaten: eerst `/tp @s 100 ~ 0` (richting vanaf 0,0 = oost), dan landen de `/ca tp…`-commando's op de punten hieronder (±1 blok).
+
+### Deel 1 — change 18: ringdata op de client
+- [ ] Beide clients joinen zonder disconnect; F3 bij spawn: `CA ring (client): ring_1`; `/ca ring` zegt `Ring 1`.
+- [ ] Dev: `/gamemode creative`, `/tp @s 100 ~ 0`, dan F3 vergelijken met `/ca ring` (zelfde ring, gewicht ±0,01) op:
+  - `/ca tpboundary 1` → ~1469 73 7: `ring_1 → ring_2 @ 0.50`;
+  - `/ca tpring 3` → ~4499 121 22: `ring_3`;
+  - `/ca tpboundary 2 nether` → ~864 43 4 (Nether): `ring_2 → ring_3 @ 0.50`;
+  - `/ca tpring 6` → ~9749 100 48: `void`.
+- [ ] Grens 1 (`/ca tpboundary 1`): even rondkijken; de overgang (withered expanse) ziet er normaal uit met de nieuwe ruis-seed.
+- [ ] Dev: Disconnect → Singleplayer → nieuwe wereld met World Type **Default** → F3 `CA ring (client): —` en `CA weather (client): —`. Daarna een singleplayer-wereld met World Type **Corrupted World** → beide regels zijn er weer en `CA ring` klopt met `/ca ring`. Dan Dev terug naar de server (Multiplayer → Direct Connection → `localhost`).
+
+### Deel 2 — change 19: meters en HUD (Dev in survival, `/difficulty normal`)
+- [ ] `/ca condition debug Dev rise` → rechts boven de hongerbalk een paarse balk (even breed als de hongerbalk) die in ~20 s volloopt; streepjes op 50/75/100 %. Bij 50 traagheid-, bij 75 zwakte-icoon (geen particles, **knipperen niet**), bij 100 elke seconde een half hartje schade.
+- [ ] `/ca condition debug Dev fall` → zwakte weg onder 75, traagheid onder 50, balk weg bij 0.
+- [ ] Luchtbellen: `/ca condition set Dev debug 60`, `/ca condition debug Dev rise`, `/effect give Dev minecraft:resistance 120 4 true`, `/fill ~-1 ~ ~-1 ~1 ~2 ~1 minecraft:water replace minecraft:air`, kopje onder → bellen direct boven de hongerbalk, conditiebalk erboven; boven water schuift hij terug.
+- [ ] F1 → balk weg. `/gamemode creative` → balk en effecten weg, meter stijgt niet (`/ca condition get Dev`). `/gamemode spectator` → weg. `/gamemode survival` → direct terug.
+- [ ] Met meter 100 (+ resistance): `/ca tpring 1 nether` → balk staat **direct** vol na het laden; `/ca tpring 1` terug → idem. `/kill Dev` → na respawn geen balk, geen effecten.
+- [ ] Per speler: `/ca condition set Dev2 debug 60` → alleen Dev2 ziet een balk + traagheid; `/ca condition debug Dev rise` → Dev2 ziet niets van Dev.
+- [ ] Persistentie: `/ca condition set Dev debug 40`, `/ca condition debug Dev rise`, `/gamemode creative`, Dev uitloggen en opnieuw joinen, `/gamemode survival` → balk direct op ~40, zakt daarna.
+- [ ] Drankje: `/effect give Dev minecraft:slowness 60 0`, `/ca condition set Dev debug 60`, `/ca condition debug Dev fall` → onder 50 blijft het traagheid-drankje (met particles) staan.
+- [ ] Opruimen: `/ca condition debug @a off`, `/ca condition set @a debug 0`, `/effect clear @a`.
+
+### Deel 3 — change 20: ringweer (beide in creatief: `/gamemode creative @a`)
+- [ ] Dev: `/tp @s 100 ~ 0`, `/ca tpring 2` (~2499 94 12); Dev2: `/tp Dev2 Dev`. F3 op beide: `CA weather (client): ring_2 clear (N s)`, N gelijk (±1 s) en gelijk aan `/ca weather`.
+- [ ] Ring 1 (`/ca tpring 1`, ~749 63 3): F3 `ring_1 none`. Terug met `/ca tpring 2`.
+- [ ] Dev: `/ca weather 2 sandstorm 60` → F3 van Dev **en** Dev2 binnen 1 s `ring_2 sandstorm 0.00 (60 s)`; de sterkte loopt in 30 s op naar `1.00`, zakt in de laatste 30 s naar `0.00`; daarna op beide `ring_2 clear (…)` met een nieuwe duur.
+- [ ] Dev2: `/ca tpring 3` (~4499 121 22) → F3 van Dev2 toont `ring_3 …` (zelfde als ring 3 in `/ca weather`), niet ring 2; Dev ziet nog ring 2.
+- [ ] Overgang: `/ca weather 2 sandstorm 600`, 30 s wachten, Dev `/ca tpboundary 2` (~3457 107 17), langzaam naar het oosten lopen tot het tweede deel verdwijnt, en terug: F3 toont `ring_2 sandstorm S (weight W, …) | ring_3 … (weight 1−W, …)`; W loopt vloeiend van ~1 naar ~0 over ~128 blokken, S = W; buiten de zone één deel.
+- [ ] Void: `/ca weather 5 glitch_storm 300`, Dev `/ca tpring 6` (~9749 100 48) → F3 `ring_5 glitch_storm …` (void volgt ring 5).
+- [ ] Dev2: `/ca tpring 1 nether` → F3 `CA weather (client): —`; `/ca tpring 2` terug → direct de juiste ring 2-regel.
+- [ ] Dev2 uitloggen en opnieuw joinen → zelfde staat in F3 en `/ca weather`.
+- [ ] `/gamerule doWeatherCycle false` → F3 op beide `… (cycle paused)`, resterende tijd staat stil; `/gamerule doWeatherCycle true` → loopt weer.
+- [ ] Vanilla-weer: beide `/ca tpring 1`, `/weather rain` → gewone vanilla-regen; `/ca weather` en F3 (`ring_1 none`) onveranderd. Daarna `/weather clear`.
+- [ ] Geen fouten of disconnects in de drie terminals.
+
+### Code review (`/code-review medium`)
+Eén bevinding (medium): de client telde af op zijn eigen 20 TPS terwijl de server alleen bij een wissel synct, dus bij serverlag liep het weer op de client voor (eerder afgelopen dan op de server, gameplay paste het nog toe). **Opgelost:** `RingWeatherPayload` draagt de game time bij verzending; `ClientRingWeather.states(level)` rekent `ontvangen − (level.getGameTime() − gameTime)`. Build (166 tests) en een join-hercontrole (server + `Dev`, `ca weather 2 heat_wave 90` → client ontving `heat_wave 1800/1800`) daarna groen. Verder geen bevindingen.

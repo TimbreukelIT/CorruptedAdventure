@@ -22,6 +22,7 @@ public final class CaCommand {
                 .then(RingTeleportCommand.buildTpRing())
                 .then(RingTeleportCommand.buildTpBoundary())
                 .then(BorderInfoCommand.build())
-                .then(ConditionCommand.build()));
+                .then(ConditionCommand.build())
+                .then(RingWeatherCommand.build()));
     }
 }
