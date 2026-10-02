@@ -41,4 +41,21 @@ class DamageThresholdTest {
         assertFalse(DamageThreshold.isDue(100, 4));
         assertTrue(DamageThreshold.isDue(160, 4));
     }
+
+    @Test
+    void fourSecondIntervalHitsOnceEveryFourHandlerTicks() {
+        // Dehydration (like vanilla starving): the handler runs every 20 ticks; 40 seconds = 10 hits, 4 s apart.
+        int hits = 0;
+        int last = -1;
+        for (int tick = 20; tick <= 800; tick += 20) {
+            if (DamageThreshold.isDue(tick, 4)) {
+                if (last >= 0) {
+                    assertEquals(80, tick - last);
+                }
+                last = tick;
+                hits++;
+            }
+        }
+        assertEquals(10, hits);
+    }
 }

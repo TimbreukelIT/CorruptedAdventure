@@ -357,6 +357,15 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - Meter ↓ in schaduw, in water, in het oase-biome, 's nachts, en ~30 punten per vanilla-waterfles.
 - Drempels (config): sneller honger → traagheid → mining fatigue → lichte schade.
 - Tegenmaatregel in fase 2: veldfles/waterzak.
+- **Uitwerking (change 27)** — alles server-side (`condition/DehydrationRule`, `WaterBottleDrink`), waarden in `[conditions.dehydration]` van de SERVER-config:
+  - **Zone:** alleen de overworld, hard op de ringgrens: `ringAt(...).ring() == RING_2` (wissel op blend 0,5, zoals biomes en ringweer). Nether-ring 2 heeft geen conditie.
+  - **Opbouw** alleen in direct zonlicht overdag in de zone, droog en buiten de oase: **+0,4/s** (0 → 100 in ~4 min). "Overdag" = de zon boven de horizon volgens de tijd van de dag (vanilla-zonnehoek: dagtijd 23.215 t/m 12.785); vanilla-regen en -onweer tellen niet. "Direct zonlicht" = hemellicht 15 op ooghoogte (`canSeeSky`): daken, overhangen, nissen en bladeren geven schaduw, glas niet.
+  - **Afname** (de sterkste wint, niets stapelt): schaduw overdag 0,5/s, nacht 0,5/s (beide in de zone), **water** 2,0/s (ondergedompeld tot boven het middel: water ≥ 1 blok boven de voeten; zwemmen en een waterval tellen, een plasje of 1 laag in een geul niet; overal), **oase** (`oasis_flats`) 2,0/s ook in de volle zon, **buiten ring 2** 0,5/s (ring 1, 3–5, void, Nether). Alleen de zon geeft een positieve rate; de hittegolf (change 28) verdubbelt precies die.
+  - **Waterfles:** een gedronken vanilla-waterfles (`Potions.WATER`) haalt 30 punten af, overal, zonder cooldown. Splash/lingering en andere drankjes niet.
+  - **Drempels** (cumulatief): 25 honger I, 50 traagheid I, 75 mining fatigue I, 100 schade.
+  - **Schade:** 1 (half hartje) per 4 s zoals verhongeren, door harnas heen; peaceful geen, easy tot 10 HP, normal tot 1 HP, hard dodelijk. Eigen damage type `corruptedadventure:dehydration` (tags als vanilla `starve`), doodsbericht "%1$s dried out" / "%1$s is uitgedroogd".
+  - **Creatief/spectator:** de meter stijgt nooit en drempels gelden niet (change 19). Na de dood staat de meter op 0.
+  - **Wandbronnen (23c):** echt water; de val telt als water, een kolk alleen waar hij 2 diep is, het stroompje niet (gemeten in change 27; of dat zo mag: backlog).
 
 **Horror-elementen (fase 1)**
 - **Zingend zand**: laag zoemend geluid in de duinenzee, vooral 's nachts (biome-ambient, data).

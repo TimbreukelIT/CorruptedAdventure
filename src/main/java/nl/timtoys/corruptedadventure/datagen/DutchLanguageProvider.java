@@ -175,6 +175,10 @@ final class DutchLanguageProvider extends LanguageProvider {
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_4, "Placeholder Nether-ring 4");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_5, "Placeholder Nether-ring 5");
         biome(ModBiomes.NETHER_VOID_EDGE, "Nether-voidrand");
+
+        // Death messages of the conditions (damage types: ConditionDamageTypes).
+        add("death.attack.corruptedadventure.dehydration", "%1$s is uitgedroogd");
+        add("death.attack.corruptedadventure.dehydration.player", "%1$s droogde uit tijdens het gevecht met %2$s");
     }
 
     private void biome(ResourceKey<Biome> biome, String name) {

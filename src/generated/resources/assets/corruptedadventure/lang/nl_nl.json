@@ -135,6 +135,8 @@
   "block.corruptedadventure.stripped_palm_log": "Gestripte palmstam",
   "block.corruptedadventure.stripped_palm_wood": "Gestript palmhout",
   "block.corruptedadventure.withered_dirt": "Verdorde aarde",
+  "death.attack.corruptedadventure.dehydration": "%1$s is uitgedroogd",
+  "death.attack.corruptedadventure.dehydration.player": "%1$s droogde uit tijdens het gevecht met %2$s",
   "generator.corruptedadventure.corrupted_world": "Corrupte wereld",
   "item.corruptedadventure.raw_sunstone": "Ruwe zonnesteen",
   "item.corruptedadventure.raw_turquoise": "Ruw turkoois",

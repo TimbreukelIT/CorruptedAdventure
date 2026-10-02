@@ -41,6 +41,10 @@ public final class ThresholdLevels {
         return ascending(configured) ? configured : defaults.clone();
     }
 
+    int[] defaults() {
+        return defaults.clone();
+    }
+
     void validate() {
         int[] configured = values.stream().mapToInt(ModConfigSpec.IntValue::get).toArray();
         if (!ascending(configured)) {

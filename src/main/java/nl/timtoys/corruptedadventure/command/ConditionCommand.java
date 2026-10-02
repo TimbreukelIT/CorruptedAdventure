@@ -13,9 +13,13 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import nl.timtoys.corruptedadventure.condition.Condition;
+import nl.timtoys.corruptedadventure.condition.ConditionContext;
+import nl.timtoys.corruptedadventure.condition.ConditionDefinitions;
 import nl.timtoys.corruptedadventure.condition.ConditionMeters;
+import nl.timtoys.corruptedadventure.condition.ConditionTicker;
 import nl.timtoys.corruptedadventure.condition.DebugConditionDriver;
 import nl.timtoys.corruptedadventure.condition.PlayerConditions;
+import nl.timtoys.corruptedadventure.ring.RingWorld;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +29,8 @@ import java.util.stream.Collectors;
 
 /**
  * {@code /ca condition get [<targets>]}, {@code set <targets> <condition> <0-100>} and
- * {@code debug <targets> rise|fall|off}. Works for every condition, also from RCON (with explicit targets).
+ * {@code debug <targets> rise|fall|off}. Works for every condition, also from RCON (with explicit targets). {@code get}
+ * also shows the current rate and the rule's label (a dry run: nothing is applied).
  */
 final class ConditionCommand {
     private static final DynamicCommandExceptionType UNKNOWN_CONDITION =
@@ -55,14 +60,33 @@ final class ConditionCommand {
     }
 
     private static int get(CommandSourceStack source, Collection<ServerPlayer> players) {
+        boolean ticking = RingWorld.isActive(source.getServer());
         String text = players.stream()
-                .map(player -> player.getGameProfile().getName() + ": " + Arrays.stream(Condition.values())
-                        .map(condition -> String.format(Locale.ROOT, "%s %.1f",
-                                condition.getSerializedName(), PlayerConditions.get(player, condition)))
-                        .collect(Collectors.joining(", ")))
+                .map(player -> player.getGameProfile().getName() + ": " + describe(player, ticking))
                 .collect(Collectors.joining("\n"));
         source.sendSuccess(() -> Component.literal(text), false);
         return players.size();
+    }
+
+    /**
+     * {@code dehydration 42.3 (+0.40/s, sun)}: per meter the value and, where the handler ticks (ring worlds), the
+     * rate of the next tick after all modifiers plus the rule's label.
+     */
+    private static String describe(ServerPlayer player, boolean ticking) {
+        ConditionContext context = ticking ? ConditionContext.of(player) : null;
+        return Arrays.stream(Condition.values())
+                .map(condition -> {
+                    String value = String.format(Locale.ROOT, "%s %.1f",
+                            condition.getSerializedName(), PlayerConditions.get(player, condition));
+                    if (context == null) {
+                        return value;
+                    }
+                    float rate = ConditionTicker.rate(player, condition, context);
+                    String label = ConditionDefinitions.rule(condition).debugLabel(context);
+                    return String.format(Locale.ROOT, "%s (%+.2f/s%s)", value, rate == 0 ? 0f : rate,
+                            label.isEmpty() ? "" : ", " + label);
+                })
+                .collect(Collectors.joining(", "));
     }
 
     private static int set(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {

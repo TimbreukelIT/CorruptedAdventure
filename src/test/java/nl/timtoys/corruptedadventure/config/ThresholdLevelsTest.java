@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.config;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,5 +30,12 @@ class ThresholdLevelsTest {
     void serverConfigDefinesTheDebugThresholds() {
         // Building the spec must not throw (rising defaults, one comment per threshold).
         assertTrue(ServerConfig.SPEC != null && ServerConfig.DEBUG.thresholds != null);
+    }
+
+    @Test
+    void dehydrationHasFourRisingThresholds() {
+        int[] defaults = ServerConfig.DEHYDRATION.thresholds.defaults();
+        assertArrayEquals(new int[]{25, 50, 75, 100}, defaults);
+        assertTrue(ThresholdLevels.ascending(defaults));
     }
 }

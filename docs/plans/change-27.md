@@ -268,3 +268,50 @@ Antwoord: **A** — ondergedompeld tot boven het middel (water ≥ ~1 blok hoog 
 | 2026-10-01 | conditions | Schade uitdroging: 1 HP per 4 s met `VANILLA_STARVATION`-ondergrens; eigen damage type `corruptedadventure:dehydration` met doodsbericht | Vertrouwd als verhongeren; moeilijkheid regelt de straf |
 | 2026-10-01 | conditions | "In water" voor uitdroging = ondergedompeld tot boven het middel | Water blijft schaars; geen draagbare oase met één emmer |
 | 2026-10-01 | conditions | Waterfles: alleen vanilla-waterfles (`Potions.WATER`), −30 (config), werkt overal, geen cooldown | Volgt het design; directe tegenmaatregel vóór de fase 2-veldfles |
+
+---
+
+## Bouwnotities (change 27, 2026-10-02)
+
+- **Aannames over 18–26 klopten:** `Condition`, `ConditionContext` (record zonder afgeleide checks), `ConditionRule.recover`, `RateModifier`, `MobEffectThreshold`, `DamageThreshold` (met `intervalSeconds`) en `DifficultyFloor.VANILLA_STARVATION` uit 19; `ServerConfig` met een geneste klasse per conditie + `ThresholdLevels.define` (N drempels); `/ca condition get/set/debug`; `ModBiomes.OASIS_FLATS` (geen oase-tag); `RingWorld.isActive` in de ticker. Niets te generaliseren.
+- **Context (vraag 2, 3, 7):** `ConditionContext.isSunUp()` (`Sun.isUp(dimensionType, dayTime)` = vanilla's zonnehoek `DimensionType.timeOfDay`; op = hoek < 0,25 of > 0,75 → zon op van dagtijd 23.215 t/m 12.785; regen/onweer genegeerd; vaste tijd (Nether) nooit), `canSeeSky()` (`level.canSeeSky` op het blok van de ogen = hemellicht 15), `isSubmerged()` (NeoForge `getFluidTypeHeight(WATER_TYPE)` ≥ 1,0 blok boven de voeten). Elke aanroep rekent opnieuw (één keer per tick per conditie).
+- **Invoer-record:** `DehydrationRule.Input(inZone, sunUp, directSun, inWater, inOasis)` (genest, i.p.v. los `DehydrationInput`); `zoneWeight` vervallen (vraag 4 = A). Pure tabel `DehydrationRule.evaluate(Input, Rates)` → `Result(rate, exposure)`.
+- **Bronnen per zone (uitwerking van "sterkste wint"):** water en oase koelen overal; nacht en schaduw tellen alleen in de zone (hun configsleutels zijn ring 2-waarden); buiten de zone geldt `fallRateOutside`. Dus water in ring 1 koelt met 2,0/s (sterkste van water en buiten). Bij gelijke rates wint de eerste in de volgorde water, oase, buiten, nacht, schaduw (alleen het label verschilt). Een `fallRate` van 0 geeft +0,0 (geen "−0.00/s").
+- **Configsleutel:** `damageInterval` (zoals de `debug`-sectie) i.p.v. `damageIntervalSeconds` uit de tabel; `waterBottleAmount` is een double (30,0). Sectie `[conditions.dehydration]` staat in `config/corruptedadventure-server.toml`.
+- **Damage type** `corruptedadventure:dehydration` = vanilla `starve` (`exhaustion` 0, scaling `when_caused_by_living_non_player`, msgId `corruptedadventure.dehydration`). Tags = die van `starve`: `minecraft:bypasses_armor` (→ ook `bypasses_shield`), `bypasses_effects`, `no_knockback`, `bypasses_wolf_armor` en NeoForge `neoforge:is_environment`.
+- **Waterfles:** `LivingEntityUseItemEvent.Finish#getItem()` is in NeoForge 21.1.252 een **kopie van het stack vóór het drinken** (`LivingEntity.completeUsingItem`); `getResultStack()` is de lege fles. Check = `Items.POTION` met `PotionContents.is(Potions.WATER)`.
+- **Debug-uitvoer:** `ConditionRule.debugLabel(ctx)` (default leeg) en `ConditionTicker.rate(player, condition, ctx)` (public, dezelfde berekening als de tick: regel → modifiers → creatief/spectator nooit omhoog). `/ca condition get` toont `dehydration 42.3 (+0.40/s, sun)`; in een niet-ringwereld alleen de waarden.
+- **Extra tests** naast het plan: `ConditionMetersTest` (applySync met te lange array, nu lengte-onafhankelijk), `DamageThresholdTest` (40 s → 10 hits, 4 s uit elkaar), `ThresholdLevelsTest` (uitdroging 25/50/75/100).
+
+### Testresultaten
+- **B:** `./gradlew build` groen, 279 tests (nieuw: `DehydrationRuleTest`, `SunTest`, `WaterBottleDrinkTest`; uitgebreid: `DamageThresholdTest`, `ThresholdLevelsTest`, `ConditionMetersTest`); `ClientIsolationTest` groen.
+- **D:** `./gradlew runData` groen: `data/corruptedadventure/damage_type/dehydration.json`, `data/minecraft/tags/damage_type/{bypasses_armor,bypasses_effects,no_knockback,bypasses_wolf_armor}.json`, `data/neoforge/tags/damage_type/is_environment.json`, lang en + nl (2 doodsberichten).
+- **S:** `tools/server-smoke-test.sh` met `level-name=smoke-change27`: `Done (10.7 s)`, geen fouten. Daarna RCON + quick-play-client `Dev` (seed 20260930, `doDaylightCycle false`, `doMobSpawning false`). Elke meting: `ca condition set`, 10 s, `ca condition get`:
+  1. **Zon** (canyonlands-kloofbodem 2307 85 204, geen oase): 0 → 4,0 `(+0.40/s, sun)`.
+  2. **Schaduw** (dak 3 boven het hoofd): steen 50 → 45,0 `shade`; `oak_leaves[persistent=true]` 50 → 45,0 `shade`; glas 50 → 54,0 `sun`.
+  3. **Nacht:** `time set midnight` 50 → 45,0 `night`. Wissel: 12000 en 12780 `sun`, 12830 en 13000 `night`, 23190 `night`, 23240/23500/0 `sun`. `weather thunder` (12 s) → blijft `sun` (+0,4/s).
+  4. **Water** (glazen bak, 2 lagen): 50 → 30,0 `water`; 1 laag op voethoogte → 50 → 54,0 `sun`.
+  5. **Oase** (`ca tpring 2` = 2499 66 12, `oasis_flats`, open lucht, middag): 50 → 30,0 `(-2.00/s, oasis)`.
+  6. **Buiten ring 2:** ring 1 droog (700 88 60) 50 → 45,0 `outside`; ring 3 (4499 121 22) 50 → 45,0 `outside`; Nether-ring 2 (624 38 3) 50 → 45,0 `outside`. Het ringmidden van ring 1 (749 46 3) ligt in een meer: `water`, −2,0/s.
+  7. **Grens:** grens 1 (1469 63 7): 20 blokken naar binnen (1449, ring 1, gewicht 0,35) `water` (meer), naar buiten (1489 68 7, ring 2, 0,66) in survival 0 → 4,0 `sun`. Grens 2 (3457 125 17): binnen (3437 129 17, ring 2, 0,37) 0 → 4,0 `sun`; buiten (3477 124 17, ring 3, 0,58) `outside`.
+  8. **Drempels:** 30 → `minecraft:hunger` (ambient, geen particles, 240 ticks); 55 → + `slowness`; 80 → + `mining_fatigue`; 40 → alleen `hunger`. Bij 100: peaceful 10 s Health 20 → 20; easy (zonder `naturalRegeneration`) 12 → 11 → 10, dan 30 s op 10; normal 6,17 → 0,17 en daar blijven (vanilla-formule: schade zolang Health > 1, dus een gebroken waarde zakt onder 1, net als bij verhongeren); hard 3 → dood, serverlog en chat van de client `Dev dried out`; na respawn meter 0.
+  9. **Creatief** in de zon: 0 → 0,0 `(+0.00/s, sun)`, geen effecten.
+  10. **Wandbron** (2427 66 530, change 23c): in de kolk (2427 66 530, hier 1 diep) `sun`; in het stroompje (2426 66 533) `sun` (de stroming duwt de speler mee); onder de val (2425 66 534) `water` (vallend water heeft hoogte 1,0). Een kolk van 2 diep telt dus wel, deze 1 diepe niet.
+  11. Daarna RCON uit, server via RCON `stop`, client-JVM gestopt.
+  - Bij-meldingen in de serverlog: alleen `Unprimed heightmap: WORLD_SURFACE_WG` van een mislukte `place feature corruptedadventure:canyon_spring` op een geladen chunk (testpoging, backlog `[worldgen]`). Client-log zonder fouten.
+
+### Code review (`/code-review medium`)
+Geen correctheidsfouten. Twee opmerkingen zonder wijziging: (1) `/ca condition get` toont ook een rate voor dode spelers en fake players, die de tick overslaat (alleen debug-uitvoer); (2) de invoer van de regel (incl. de hemellicht-lookup) wordt per `get` twee keer berekend, voor rate en label (verwaarloosbaar, alleen bij het commando).
+
+## In-game checklist (W)
+
+Niet blokkerend (W-achteraf in de gebundelde ring 2-eindcheck na change 37), ~10 min. Wereld `corrupted_world`, seed `20260930`, survival, `/difficulty normal`. Eerst `/tp @s 100 ~ 0` (richting oost), dan landen `/ca tp…` op de punten hieronder.
+
+1. **Opbouw + HUD:** `/time set noon`, `/gamerule doDaylightCycle false`, `/tp @s 2307 85 204` (kloofbodem canyonlands, open lucht). Een zandgele balk verschijnt boven de hongerbalk en loopt in ~4 min vol (`/ca condition get` toont `(+0.40/s, sun)`); streepjes op 25/50/75/100 %. Bij 25 groene hongerbalk (honger), bij 50 traagheid, bij 75 mining fatigue (geen particles, iconen knipperen niet), bij 100 elke 4 s een half hartje (stopt op normal bij een half hartje).
+2. **Waterfles:** `/ca condition set @s dehydration 50`, `/give @s minecraft:potion[potion_contents={potion:"minecraft:water"}]` en opdrinken → balk zakt direct naar ~20 (`/ca condition get`: 20,x), lege fles terug in de hand. Nog een fles bij meter 0 → niets bijzonders. Een `splash_potion` van water gooien en een awkward potion drinken → geen verandering.
+3. **Schaduw:** in de kloof bij 2307 85 204 onder een overhang of in een nis staan → `shade` (balk zakt 0,5/s). Een dak van glas boven je → blijft `sun`; een dak van bladeren → `shade`. Voelt "schaduw" logisch?
+4. **Oase:** `/ca tpring 2` (2499 66 12, oase) → in de volle zon `oasis`, balk zakt 2/s. Onder palmbladeren idem (oase wint).
+5. **Water:** in een oasepoel of de val van de wandbron bij 2425 66 534 → `water` (2/s); in het stroompje (2426 66 533) of de 1 diepe kolk (2427 66 530) blijft het `sun`.
+6. **Nacht en buiten:** `/time set midnight` → `night`; `/ca tpring 1` en `/ca tpring 3` → `outside`.
+7. **Doodsbericht:** `/difficulty hard`, `/ca condition set @s dehydration 100`, in de zon blijven (2307 85 204) → na ~80 s dood, chat "Dev dried out" (`nl_nl`: "Dev is uitgedroogd"); na respawn geen balk.
+8. **Tempo:** een paar minuten door de kloven lopen in de middagzon: spannend maar niet frustrerend? Helpt één waterfles merkbaar (~75 s extra zon)?

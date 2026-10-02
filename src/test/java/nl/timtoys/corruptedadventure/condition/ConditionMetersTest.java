@@ -46,7 +46,10 @@ class ConditionMetersTest {
         client.applySync(new int[]{42});
         assertEquals(42, client.rounded(Condition.DEBUG));
         assertFalse(client.roundedChanged());
-        client.applySync(new int[]{7, 99});
+        int[] tooLong = new int[Condition.values().length + 1];
+        tooLong[0] = 7;
+        tooLong[tooLong.length - 1] = 99;
+        client.applySync(tooLong);
         assertEquals(7, client.rounded(Condition.DEBUG), "extra entries are ignored");
     }
 

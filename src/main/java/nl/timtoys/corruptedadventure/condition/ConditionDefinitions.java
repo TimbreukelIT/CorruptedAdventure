@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.condition;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffects;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
+import nl.timtoys.corruptedadventure.registry.ModDamageTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public final class ConditionDefinitions {
         return switch (condition) {
             case DEBUG -> DebugConditionDriver.rule(
                     ServerConfig.DEBUG.riseRate.get().floatValue(), ServerConfig.DEBUG.fallRate.get().floatValue());
+            case DEHYDRATION -> DehydrationRule.fromConfig();
         };
     }
 
@@ -30,6 +32,7 @@ public final class ConditionDefinitions {
     public static int[] thresholdLevels(Condition condition) {
         return switch (condition) {
             case DEBUG -> ServerConfig.DEBUG.thresholds.get();
+            case DEHYDRATION -> ServerConfig.DEHYDRATION.thresholds.get();
         };
     }
 
@@ -52,6 +55,15 @@ public final class ConditionDefinitions {
                     new MobEffectThreshold(MobEffects.WEAKNESS, ServerConfig.DEBUG.effect2Amplifier.get()),
                     new DamageThreshold(DamageTypes.GENERIC, ServerConfig.DEBUG.damage.get().floatValue(),
                             ServerConfig.DEBUG.damageInterval.get(), DifficultyFloor.NONE));
+            case DEHYDRATION -> {
+                ServerConfig.DehydrationCondition config = ServerConfig.DEHYDRATION;
+                yield List.of(
+                        new MobEffectThreshold(MobEffects.HUNGER, config.effect1Amplifier.get()),
+                        new MobEffectThreshold(MobEffects.MOVEMENT_SLOWDOWN, config.effect2Amplifier.get()),
+                        new MobEffectThreshold(MobEffects.DIG_SLOWDOWN, config.effect3Amplifier.get()),
+                        new DamageThreshold(ModDamageTypes.DEHYDRATION, config.damage.get().floatValue(),
+                                config.damageInterval.get(), DifficultyFloor.VANILLA_STARVATION));
+            }
         };
     }
 

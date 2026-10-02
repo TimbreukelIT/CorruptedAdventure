@@ -35,14 +35,12 @@ public final class ConditionTicker {
     private static void tick(ServerPlayer player) {
         ConditionMeters meters = PlayerConditions.meters(player);
         ConditionContext context = ConditionContext.of(player);
-        boolean exposed = !player.isCreative() && !player.isSpectator();
+        boolean exposed = isExposed(player);
         List<ThresholdEffect> toClear = new ArrayList<>();
         List<ThresholdEffect> toApply = new ArrayList<>();
 
         for (Condition condition : Condition.values()) {
-            float rate = rate(condition, context, ConditionDefinitions.rule(condition).ratePerSecond(context),
-                    ConditionDefinitions.modifiers(), exposed);
-            meters.add(condition, rate); // one tick = one second
+            meters.add(condition, rate(player, condition, context)); // one tick = one second
 
             List<Threshold> thresholds = ConditionDefinitions.thresholds(condition);
             ThresholdUpdate update = ThresholdUpdate.of(
@@ -56,6 +54,19 @@ public final class ConditionTicker {
         toClear.forEach(effect -> effect.clear(player));
         toApply.forEach(effect -> effect.apply(player));
         PlayerConditions.syncIfChanged(player, meters);
+    }
+
+    /**
+     * The rate the next tick applies to this player (rule and all modifiers, points per second), without applying it;
+     * also for {@code /ca condition get}.
+     */
+    public static float rate(ServerPlayer player, Condition condition, ConditionContext context) {
+        return rate(condition, context, ConditionDefinitions.rule(condition).ratePerSecond(context),
+                ConditionDefinitions.modifiers(), isExposed(player));
+    }
+
+    private static boolean isExposed(ServerPlayer player) {
+        return !player.isCreative() && !player.isSpectator();
     }
 
     /** The rule's rate through all modifiers in order; unexposed players (creative, spectator) never rise. */

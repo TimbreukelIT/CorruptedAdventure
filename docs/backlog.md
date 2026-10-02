@@ -59,7 +59,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [items] Balans zielkristal (fase 2): twee tarieven. Aders `soul_crystal_ore` (2 per chunk, grootte 4; gemeten 2,2–2,4 erts per chunk in Nether-ring 1) en de crimson-vloerfeature (rarity 2 × 20 pogingen, grootte 3; gemeten 0,67 per crimson-chunk). Bijstellen in `NetherRing1Features` zodra het verbruik per item bekend is. (bron: change 16)
 - [infra] Debugcommando `/ca count <blok> <straal>` als herbruikbare teltool voor de ertsplaatsing van ring 2–5 (changes 25, 41, 61, 81), ook per Y-band en per gastgesteente; change 25 gebruikte een tijdelijk dumpcommando (alle blockstates van 5 × 5 chunks naar een bestand) + Python, werkwijze in plan 25 en `CODEBASE.md`. (bron: change 16, aangevuld change 25)
 - [textures] Definitieve HUD-balk en icoon per conditie; nu een placeholder van vlakken (`ConditionHudLayer`, `fill`, kleur uit `Condition.hudColor`). (bron: change 19)
-- [conditions] Eigen damage types met doodsberichten per conditie (uitdroging, hitte, …) in de change van die conditie; de `debug`-conditie gebruikt `minecraft:generic`. (bron: change 19)
+- [conditions] Eigen damage types met doodsberichten per conditie (uitdroging: klaar in change 27; hitte, …) in de change van die conditie; de `debug`-conditie gebruikt `minecraft:generic`. (bron: change 19)
 - [items] Recipes kloofsteen-set (keien → trap/plaat/muur, tinten → bakstenen, steenzaag), scorched sandstone-set (incl. smelten → smooth), woestijnbloem → kleurstof. Stenen tools en oven van kloofkeien werken al via `#stone_tool_materials`/`#stone_crafting_materials`. (bron: change 21)
 - [blocks] Idee (afgewezen in change 21, vraag 6 C): tonnetjescactus die langzaam groeit (random tick: kleine cactusjes ernaast of een groter stadium). (bron: change 21)
 - [infra] Optioneel `/ca`-debughulp om hangend `loose_sand` te plaatsen (zonder blok-updates), voor tests; nu via een testdatapack (barrier in `#minecraft:fire`, werkwijze in `CODEBASE.md`, valkuilen). Alleen bouwen als change 26 of test W het nodig heeft. (bron: change 21)
@@ -77,7 +77,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [mobs] Ring 2-kloofmobs die de nieuwe vormen gebruiken (klimmende schorpioenen op richels, nesten in nissen, iets in de spleten). Zie de ring 2-mobsregel hierboven. Fase 4. (bron: change 23b, teststop 2)
 - [atmosphere] Windgeluid/fluiten in spleetkloven: ambient per positie (niet per biome), client-side; kan de synthese-pijplijn van change 32 hergebruiken. (bron: change 23b)
 - [atmosphere] Zandstorm-duw (change 28) bij spleetkloven, richels en tafelbergranden: valgevaar. Nagaan of de duw daar beperkt moet worden (bijv. geen duw richting een afgrond, of zwakker op smalle richels); nu duwt hij overal waar de speler de hemel ziet. (bron: change 23b)
-- [conditions] Wandbron in de kloof (change 23c, vraag 23c-4 C: bron in de wand, val, stroompje, kolk; ~1 per 8–15 kloofchunks) is echt water: een tweede, zeldzame koelplek naast de oase. Met change 27 vraag 7 A telt het stroompje (1 diep) vermoedelijk niet, de kolk (tot 2 diep) en de val wel. Beslissen of dat zo mag, of dat kloofwater anders telt dan oasewater. (bron: change 23c)
+- [conditions] Wandbron in de kloof (change 23c, vraag 23c-4 C: bron in de wand, val, stroompje, kolk; ~1 per 8–15 kloofchunks) is echt water: een tweede, zeldzame koelplek naast de oase. Met change 27 vraag 7 A telt het stroompje (1 diep) niet, de kolk alleen waar hij 2 diep is, de val wel (gemeten in change 27 bij 2427 66 530: 1 diepe kolk en stroompje `sun`, val `water`). Beslissen of dat zo mag, of dat kloofwater anders telt dan oasewater. (bron: change 23c)
 - [structures] Wandbronnen en oases als ankerpunt voor kampen, putten of trappen naar de grondwaterspiegel (zie de reservoirs van change 26). Fase 3. (bron: change 23c)
 
 ## Uit change 25
@@ -89,3 +89,6 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [structures] Reservoirs en lore: oude putten, pompstations of trappen naar de grondwaterspiegel onder oases (fase 3). (bron: change 26)
 - [progression] Lore "het water van ring 2 zit onder de grond / is gestolen door ring 3" in quests of teksten (fase 5). (bron: change 26)
 - [worldgen] Ring 3–5 houden in `ring_blend/overworld_floodedness` en `ring_blend/overworld_erosion` de vanilla-invoer; hun grotten-changes (42 lavabuizen, 62 overstroomde grotten, 83) kiezen hun eigen floodedness en of de deep-dark-check (router-erosion) daar weg moet. (bron: change 26)
+
+## Uit change 27
+- [worldgen] `/place feature corruptedadventure:canyon_spring` op een al geladen chunk faalt ("Failed to place feature" + `Unprimed heightmap: WORLD_SURFACE_WG` in de log): de feature leest de WG-heightmap. Voor tests eventueel een fallback op `WORLD_SURFACE` als de WG-heightmap ontbreekt, of het als bekende beperking laten. (bron: change 27)

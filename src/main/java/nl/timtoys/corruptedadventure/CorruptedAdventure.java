@@ -14,6 +14,7 @@ import nl.timtoys.corruptedadventure.command.CaCommand;
 import nl.timtoys.corruptedadventure.condition.ConditionTicker;
 import nl.timtoys.corruptedadventure.condition.DebugConditionDriver;
 import nl.timtoys.corruptedadventure.condition.PlayerConditions;
+import nl.timtoys.corruptedadventure.condition.WaterBottleDrink;
 import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
@@ -78,6 +79,7 @@ public final class CorruptedAdventure {
         ConditionTicker.register(NeoForge.EVENT_BUS);
         PlayerConditions.register(NeoForge.EVENT_BUS);
         DebugConditionDriver.register(NeoForge.EVENT_BUS);
+        WaterBottleDrink.register(NeoForge.EVENT_BUS);
         RingWeather.register(NeoForge.EVENT_BUS);
         LooseSandTrigger.register(NeoForge.EVENT_BUS);
     }

@@ -7,6 +7,7 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.condition.ConditionDamageTypes;
 import nl.timtoys.corruptedadventure.worldgen.biome.PlaceholderBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring1BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2BiomeModifiers;
@@ -58,12 +59,14 @@ public final class DataGenerators {
                 .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, context -> {
                     Ring1BiomeModifiers.bootstrap(context);
                     Ring2BiomeModifiers.bootstrap(context);
-                }),
+                })
+                .add(Registries.DAMAGE_TYPE, ConditionDamageTypes::bootstrap),
                 // "minecraft": the wolf variants override vanilla's entries.
                 Set.of(CorruptedAdventure.MOD_ID, "minecraft"));
         // Created after the datapack registries, so their lookup contains our biomes.
         event.createProvider((output, lookup) -> new ModBiomeTagsProvider(output, lookup, event.getExistingFileHelper()));
         event.createProvider(ModDataMapProvider::new);
+        event.createProvider((output, lookup) -> new ModDamageTypeTagsProvider(output, lookup, event.getExistingFileHelper()));
 
         ExistingFileHelper files = event.getExistingFileHelper();
         // Models check that their textures exist in src/main/resources: run tools/textures/Ring1Textures.java first.

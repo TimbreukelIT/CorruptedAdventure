@@ -25,6 +25,7 @@ import java.util.Map;
 public final class ServerConfig {
     public static final ModConfigSpec SPEC;
     public static final DebugCondition DEBUG;
+    public static final DehydrationCondition DEHYDRATION;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
     /** Per ring with weather types; package-private for tests. */
@@ -35,6 +36,7 @@ public final class ServerConfig {
         builder.comment("Environmental conditions: one meter 0-100 per player per condition, updated every second.")
                 .push("conditions");
         DEBUG = new DebugCondition(builder);
+        DEHYDRATION = new DehydrationCondition(builder);
         builder.pop();
         builder.comment("Ring weather: a cycle per ring (clear, then a weather of that ring, then clear again).",
                 "Durations in seconds, drawn uniformly between min and max; edits apply from the next change of weather.")
@@ -44,7 +46,7 @@ public final class ServerConfig {
         }
         builder.pop();
         SPEC = builder.build();
-        ALL_THRESHOLDS = List.of(DEBUG.thresholds);
+        ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds);
     }
 
     private ServerConfig() {
@@ -98,6 +100,58 @@ public final class ServerConfig {
                     .defineInRange("damage", 1.0, 0.0, 100.0);
             damageInterval = builder.comment("Seconds between two hits at threshold3.")
                     .defineInRange("damageInterval", 1, 1, 600);
+            builder.pop();
+        }
+    }
+
+    /** {@code [conditions.dehydration]}: ring 2 (change 27). */
+    public static final class DehydrationCondition {
+        public final ModConfigSpec.DoubleValue riseRate;
+        public final ModConfigSpec.DoubleValue fallRateShade;
+        public final ModConfigSpec.DoubleValue fallRateNight;
+        public final ModConfigSpec.DoubleValue fallRateWater;
+        public final ModConfigSpec.DoubleValue fallRateOasis;
+        public final ModConfigSpec.DoubleValue fallRateOutside;
+        public final ModConfigSpec.DoubleValue waterBottleAmount;
+        public final ThresholdLevels thresholds;
+        public final ModConfigSpec.IntValue effect1Amplifier;
+        public final ModConfigSpec.IntValue effect2Amplifier;
+        public final ModConfigSpec.IntValue effect3Amplifier;
+        public final ModConfigSpec.DoubleValue damage;
+        public final ModConfigSpec.IntValue damageInterval;
+
+        private DehydrationCondition(ModConfigSpec.Builder builder) {
+            builder.comment("Dehydration in ring 2 of the overworld. Rises only in direct sunlight by day (full sky light",
+                            "at eye height; rain is ignored). Every other case falls; when several apply the strongest",
+                            "fall rate wins (they do not stack).")
+                    .push("dehydration");
+            riseRate = builder.comment("Points per second in direct sunlight by day in ring 2 (0.4: 0 -> 100 in ~4 min).")
+                    .defineInRange("riseRate", 0.4, 0.0, 100.0);
+            fallRateShade = builder.comment("Points per second in shade by day in ring 2 (no full sky light at eye height).")
+                    .defineInRange("fallRateShade", 0.5, 0.0, 100.0);
+            fallRateNight = builder.comment("Points per second while the sun is down, in ring 2.")
+                    .defineInRange("fallRateNight", 0.5, 0.0, 100.0);
+            fallRateWater = builder.comment("Points per second when submerged above the waist (swimming counts), anywhere.")
+                    .defineInRange("fallRateWater", 2.0, 0.0, 100.0);
+            fallRateOasis = builder.comment("Points per second in the oasis biome, also in full sun.")
+                    .defineInRange("fallRateOasis", 2.0, 0.0, 100.0);
+            fallRateOutside = builder.comment("Points per second outside ring 2 (other rings, the void, the Nether).")
+                    .defineInRange("fallRateOutside", 0.5, 0.0, 100.0);
+            waterBottleAmount = builder.comment("Points removed per vanilla water bottle drunk (anywhere, no cooldown).")
+                    .defineInRange("waterBottleAmount", 30.0, 0.0, 100.0);
+            thresholds = ThresholdLevels.define(builder, "conditions.dehydration", new int[]{25, 50, 75, 100},
+                    "Hunger from here.", "Slowness from here.", "Mining fatigue from here.", "Damage from here.");
+            effect1Amplifier = builder.comment("Hunger amplifier (0 = level I).")
+                    .defineInRange("effect1Amplifier", 0, 0, 9);
+            effect2Amplifier = builder.comment("Slowness amplifier (0 = level I).")
+                    .defineInRange("effect2Amplifier", 0, 0, 9);
+            effect3Amplifier = builder.comment("Mining fatigue amplifier (0 = level I).")
+                    .defineInRange("effect3Amplifier", 0, 0, 9);
+            damage = builder.comment("Damage (half hearts) per hit at threshold4; through armour. Like starving: none on",
+                            "peaceful, down to 10 health on easy, down to 1 on normal, lethal on hard.")
+                    .defineInRange("damage", 1.0, 0.0, 100.0);
+            damageInterval = builder.comment("Seconds between two hits at threshold4 (vanilla starving: 4).")
+                    .defineInRange("damageInterval", 4, 1, 600);
             builder.pop();
         }
     }
