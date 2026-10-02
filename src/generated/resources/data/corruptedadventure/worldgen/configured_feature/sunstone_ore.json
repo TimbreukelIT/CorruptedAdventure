@@ -1,0 +1,45 @@
+{
+  "type": "minecraft:ore",
+  "config": {
+    "discard_chance_on_air_exposure": 0.0,
+    "size": 8,
+    "targets": [
+      {
+        "state": {
+          "Name": "corruptedadventure:red_canyon_sunstone_ore"
+        },
+        "target": {
+          "block": "corruptedadventure:red_canyon_stone",
+          "predicate_type": "minecraft:block_match"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:orange_canyon_sunstone_ore"
+        },
+        "target": {
+          "block": "corruptedadventure:orange_canyon_stone",
+          "predicate_type": "minecraft:block_match"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:cream_canyon_sunstone_ore"
+        },
+        "target": {
+          "block": "corruptedadventure:cream_canyon_stone",
+          "predicate_type": "minecraft:block_match"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:scorched_sandstone_sunstone_ore"
+        },
+        "target": {
+          "block": "corruptedadventure:scorched_sandstone",
+          "predicate_type": "minecraft:block_match"
+        }
+      }
+    ]
+  }
+}

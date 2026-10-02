@@ -9,6 +9,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.biome.PlaceholderBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring1BiomeModifiers;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring2BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.TransitionBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
@@ -52,7 +53,10 @@ public final class DataGenerators {
                     Ring2Biomes.bootstrap(context);
                 })
                 .add(Registries.WOLF_VARIANT, VanillaBiomeCopies::bootstrapWolfVariants)
-                .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, Ring1BiomeModifiers::bootstrap),
+                .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, context -> {
+                    Ring1BiomeModifiers.bootstrap(context);
+                    Ring2BiomeModifiers.bootstrap(context);
+                }),
                 // "minecraft": the wolf variants override vanilla's entries.
                 Set.of(CorruptedAdventure.MOD_ID, "minecraft"));
         // Created after the datapack registries, so their lookup contains our biomes.

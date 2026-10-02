@@ -18,10 +18,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockColumnConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.featuresize.TwoLayersFeatureSize;
@@ -30,17 +32,24 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStatePr
 import net.minecraft.world.level.levelgen.placement.BiomeFilter;
 import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
+import net.minecraft.world.level.levelgen.heightproviders.TrapezoidHeight;
+import net.minecraft.world.level.levelgen.placement.HeightRangePlacement;
 import net.minecraft.world.level.levelgen.placement.HeightmapPlacement;
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import net.minecraft.world.level.levelgen.placement.RarityFilter;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTest;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.Fluids;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
+import nl.timtoys.corruptedadventure.ring.Ring;
+
+import java.util.List;
+import java.util.Map;
 
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.CANYONLANDS_VEGETATION;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.CANYON_BOULDER;
@@ -54,10 +63,12 @@ import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_VEGETATION;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.PALM_BUSH;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.PALM_TREE;
+import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.SUNSTONE_ORE;
+import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.TURQUOISE_ORE;
 
 /**
- * Datagen bootstraps for the features of ring 2 (changes 25 and 30 add theirs here). Amounts are starting values,
- * tuned in-game (teststop 2b).
+ * Datagen bootstraps for the features of ring 2, including its ores (change 25; change 30 adds its features here).
+ * Amounts are starting values, tuned in-game (teststop 2b).
  * <p>
  * Determinism rules (change 23c): a placement starts in its own chunk and reads only the {@code WORLD_SURFACE_WG}
  * heightmap (during the features step it shows the terrain alone, never what neighbouring chunks placed), seeded
@@ -100,6 +111,12 @@ public final class Ring2Features {
     static final int FLOOR_TOP = 100;
     static final int PLATEAU_BOTTOM = 118;
 
+    /**
+     * Vanilla's ores in ring 2 ({@link RingVanillaOres}): coal, iron and copper ×0.6; gold, redstone and lapis ×0.5;
+     * diamond ×0.25. Balance numbers live here, not in config: a change would leave seams in existing worlds.
+     */
+    static final Map<ResourceKey<PlacedFeature>, Double> RING_2_FACTORS = RingVanillaOres.factors(0.6, 0.5, 0.25);
+
     private static final PlacementModifier SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
     /** One cell of the palm grid; see the class comment. */
     private static final int PALM_CELL = 8;
@@ -109,6 +126,20 @@ public final class Ring2Features {
     }
 
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
+        // Ores: one vein, the variant per host rock. Canyon stone only lies in the walls and the stone below them, so
+        // the host keeps them in the canyons; exposed blocks stay (sunstone is meant to be seen in the walls).
+        FeatureUtils.register(context, SUNSTONE_ORE, Feature.ORE, new OreConfiguration(List.of(
+                ore(ModBlocks.RED_CANYON_STONE.get(), ModBlocks.RED_CANYON_SUNSTONE_ORE.get()),
+                ore(ModBlocks.ORANGE_CANYON_STONE.get(), ModBlocks.ORANGE_CANYON_SUNSTONE_ORE.get()),
+                ore(ModBlocks.CREAM_CANYON_STONE.get(), ModBlocks.CREAM_CANYON_SUNSTONE_ORE.get()),
+                ore(ModBlocks.SCORCHED_SANDSTONE.get(), ModBlocks.SCORCHED_SANDSTONE_SUNSTONE_ORE.get())),
+                8, 0.0F));
+        FeatureUtils.register(context, TURQUOISE_ORE, Feature.ORE, new OreConfiguration(List.of(
+                ore(ModBlocks.RED_CANYON_STONE.get(), ModBlocks.RED_CANYON_TURQUOISE_ORE.get()),
+                ore(ModBlocks.ORANGE_CANYON_STONE.get(), ModBlocks.ORANGE_CANYON_TURQUOISE_ORE.get()),
+                ore(ModBlocks.CREAM_CANYON_STONE.get(), ModBlocks.CREAM_CANYON_TURQUOISE_ORE.get())),
+                4, 0.0F));
+
         // Vanilla replaces any non-#dirt ground under the trunk (and grass) with the dirt provider: sand under a palm.
         FeatureUtils.register(context, PALM_TREE, Feature.TREE, palm(PALM_TRUNK, PALM_CROWN));
         FeatureUtils.register(context, PALM_BUSH, Feature.TREE, palm(BUSH_TRUNK, BUSH_CROWN));
@@ -167,6 +198,24 @@ public final class Ring2Features {
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
         HolderGetter<ConfiguredFeature<?, ?>> features = context.lookup(Registries.CONFIGURED_FEATURE);
+
+        // Ores (UNDERGROUND_ORES, through the biome modifier add_ring_2_ores): vanilla's, tapered, then our own. Only
+        // chunk-local placements with absolute heights: "high in the walls" is a height band plus the host rock, never a
+        // distance below a surface that neighbouring chunks may already have changed.
+        RingVanillaOres.placed(context, Ring.RING_2, RING_2_FACTORS);
+        // The upper half of the canyon walls and the mesa walls: full from ~Y 108 to ~168, ramping over ~13 blocks.
+        // About a quarter of ring 1's iron per canyonlands chunk (tuned at teststop 2b).
+        PlacementUtils.register(context, ModPlacedFeatures.SUNSTONE_ORE, features.getOrThrow(SUNSTONE_ORE),
+                CountPlacement.of(14),
+                InSquarePlacement.spread(),
+                HeightRangePlacement.of(TrapezoidHeight.of(VerticalAnchor.absolute(95), VerticalAnchor.absolute(180), 60)),
+                BiomeFilter.biome());
+        // The lowest layers of canyon stone (it starts at Y 8): about a quarter of ring 1's diamond per chunk.
+        PlacementUtils.register(context, ModPlacedFeatures.TURQUOISE_ORE, features.getOrThrow(TURQUOISE_ORE),
+                CountPlacement.of(4),
+                InSquarePlacement.spread(),
+                HeightRangePlacement.uniform(VerticalAnchor.absolute(10), VerticalAnchor.absolute(40)),
+                BiomeFilter.biome());
 
         // Canyonlands, LOCAL_MODIFICATIONS, in this order (the spring last, see CanyonSpringFeature).
         PlacementUtils.register(context, ModPlacedFeatures.CANYON_BOULDER_FIELDS, features.getOrThrow(CANYON_BOULDER),
@@ -298,6 +347,10 @@ public final class Ring2Features {
                 .add(ModBlocks.ORANGE_CANYON_STONE.get().defaultBlockState(), 2)
                 .add(ModBlocks.CREAM_CANYON_STONE.get().defaultBlockState(), 2)
                 .add(ModBlocks.CANYON_COBBLESTONE.get().defaultBlockState(), 3));
+    }
+
+    private static OreConfiguration.TargetBlockState ore(Block host, Block ore) {
+        return OreConfiguration.target(new BlockMatchTest(host), ore.defaultBlockState());
     }
 
     private static BlockStateProvider weighted(SimpleWeightedRandomList.Builder<BlockState> states) {

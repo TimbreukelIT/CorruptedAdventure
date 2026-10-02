@@ -36,6 +36,9 @@ public final class ModConfiguredFeatures {
     public static final ResourceKey<ConfiguredFeature<?, ?>> CANYON_RUBBLE = key("canyon_rubble");
     public static final ResourceKey<ConfiguredFeature<?, ?>> CANYON_ROCKFALL = key("canyon_rockfall");
     public static final ResourceKey<ConfiguredFeature<?, ?>> CANYON_SPRING = key("canyon_spring");
+    // Ring 2 ores (change 25); the tapered vanilla ores reuse vanilla's configured features.
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SUNSTONE_ORE = key("sunstone_ore");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> TURQUOISE_ORE = key("turquoise_ore");
 
     private ModConfiguredFeatures() {
     }

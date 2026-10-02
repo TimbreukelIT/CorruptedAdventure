@@ -4,6 +4,7 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.data.worldgen.placement.CavePlacements;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -21,9 +22,9 @@ import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
 import java.util.List;
 
 /**
- * Datagen bootstrap for the biomes of ring 2. All share {@link #generation} (vanilla features in vanilla order, then
- * the ring 2 ores) and {@link BiomeAmbience.Palette#RING_2}; their own features come last in each step, or loading
- * the world fails with "Feature order cycle".
+ * Datagen bootstrap for the biomes of ring 2. All share {@link #generation} (vanilla features in vanilla order; the
+ * ring 2 ores come through {@link Ring2BiomeModifiers}) and {@link BiomeAmbience.Palette#RING_2}; their own features
+ * come last in each step, or loading the world fails with "Feature order cycle".
  * <p>
  * Which biome lies where is decided by the {@code multi_noise} source of ring 2 in the world preset, on the router's
  * {@code temperature} (= {@code ring_2/overworld/relief}): rocky (relief ≥ 0) is {@code canyonlands}, flat is
@@ -80,15 +81,16 @@ public final class Ring2Biomes {
     }
 
     /**
-     * The shared base of every ring 2 biome: vanilla's global overworld features, ores and soft disks, in vanilla's
-     * order. The one place for ring 2-wide generation: change 25 replaces the ores here, change 26 the lava lakes
-     * (part of the global features).
+     * The shared base of every ring 2 biome: vanilla's global overworld features and soft disks, in vanilla's order,
+     * without vanilla's ores (see {@link Ring2BiomeModifiers}). The one place for ring 2-wide generation: change 26
+     * replaces the lava lakes here (part of the global features).
      */
     static BiomeGenerationSettings.Builder generation(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(features, carvers);
         TransitionBiomes.globalOverworldGeneration(generation);
-        // Temporary: vanilla's ores (they only replace #stone_ore_replaceables, so none in canyon stone) until change 25.
-        BiomeDefaultFeatures.addDefaultOres(generation);
+        // Of vanilla's addDefaultOres only the non-ore, in its place. The ores come tapered, with sunstone and turquoise,
+        // through the biome modifier add_ring_2_ores (Ring2BiomeModifiers).
+        generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, CavePlacements.UNDERWATER_MAGMA);
         BiomeDefaultFeatures.addDefaultSoftDisks(generation);
         return generation;
     }

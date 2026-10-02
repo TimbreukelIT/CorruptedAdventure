@@ -117,6 +117,11 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Ring 1 heeft alle vanilla-ores.
 - Naar buiten toe **bouwen vanilla-ores af**: ijzer en kolen schaarser, diamant bijna afwezig. Ringores nemen het over.
 - Netherite/ancient debris blijft zoals vanilla. Ring-gear is per ring een tier hoger (fase 2), zodat netherite rond ring 3 al achterloopt.
+- **Uitwerking (change 25) — afbouwmechanisme voor ring 2–5 (changes 25, 41, 61, 81):**
+  - Per ring en vanilla-erts een eigen placed feature `corruptedadventure:ring_<n>/<vanilla-pad>` = vanilla's eigen placed feature (zelfde configured feature, aantallen, hoogtes en air-exposure) met één `ring_chance` (`progress`, vaste kans = factor) direct vóór de biome-filter. Buiten de ring is de kans 0. Helper `RingVanillaOres` (`placed`, `keys`, `factors`); vanilla's getallen worden gelezen, niet gekopieerd.
+  - De biomes van een ring krijgen géén vanilla-ertsen (alleen `underwater_magma` uit `addDefaultOres` blijft); de geschaalde ertsen en de ringores komen via één biome modifier per ring (`add_ring_<n>_ores`, `UNDERGROUND_ORES`, vaste volgorde).
+  - Vaste factor per ring (geen verloop binnen de ring); `withered_expanse` (zone 1→2) houdt volle vanilla-ertsen. Vanilla-ertsen alleen in steen/deepslate, nooit in ringgesteente.
+  - **Ore veins** (grote ijzer-/koperaders uit de noise router) alleen in ring 1: router-`vein_toggle` via `ring_blend` (ring 1 vanilla, ring 2–5 en void 0); in de zone 1→2 lopen ze uit. Ring 1 blijft blok voor blok gelijk.
 
 ### 1.12 Nether-tegenpolen (schema)
 | Ring | Overworld | Nether-tegenpool | Sleutelmateriaal (tegengif voor) |
@@ -325,6 +330,11 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **Model:** tweelaags (`oreWithOverlay`): de texture van het gastgesteente als basis (scorched-variant: top/zijkant/bodem) + één overlay per erts, gedeeld door alle gastgesteenten (`sunstone_ore_overlay`, `turquoise_ore_overlay`). Placeholders uit `Ring2Textures.java` (stil; werkpaletten zonnesteen `5A2A08 9A4A0C D9801A F2B23A FFE07A FFF6C8`, turkoois `0E3B3A 1C6B66 2E9C92 4FC6B5 8FE6D6` + ader `3A2A1E`); definitieve textures en de puls van zonnesteen in change 37.
   - **Tags:** `c:ores/sunstone`, `c:ores/turquoise` (in `c:ores`), `c:ore_rates/singular`, `c:raw_materials/sunstone`, `c:raw_materials/turquoise` (in `c:raw_materials`); geen `ores_in_ground`, niet in `#overworld_carver_replaceables` of `#base_stone_overworld`.
   - **Overdracht:** change 25 plaatst per erts één `minecraft:ore` met per gastgesteente een `block_match` → variant (een tag-target kan niet per tint een variant kiezen) en telt via `#c:ores/sunstone` / `#c:ores/turquoise`. Turkoois "diep in kloofsteen" leunt op de kloofsteenlagen van change 23 (Y 8 tot het oppervlak in `canyonlands`). **Randvoorwaarde voor change 30:** hoodoos bestaan uit kloofsteen-tinten of `scorched_sandstone` (vanilla-zandsteen krijgt geen zonnesteen-variant), anders zit er geen zonnesteen in.
+- **Uitwerking (change 25, plaatsing):**
+  - **Zonnesteen:** één `minecraft:ore` (grootte 8, discard 0) met per gastgesteente een doel (rood/oranje/crème kloofsteen, `scorched_sandstone`); 14 aders per chunk, `trapezoid` Y 95–180 (`plateau` 60, vol ~108–168): bovenste helft van de kloofwanden, spleet- en tafelbergwanden. Gemeten (seed 20260930, 99 `canyonlands`-chunks): **19,7 per chunk** (~¼ ring 1-ijzer, 75,8; keuze gebruiker na meting), 99,5 % in Y 95–180, 161 blokken boven Y 150, ~5 % bloot; tafelbergen 47 per chunk, lage kloofgebieden bijna niets. 0 in `oasis_flats`, ring 1, ring 3, Nether.
+  - **Turkoois:** `minecraft:ore` (grootte 4, discard 0) in de drie tinten; 4 aders per chunk, `uniform` Y 10–40 (onderste kloofsteenlagen). Gemeten **7,1 per `canyonlands`-chunk** (~¼ ring 1-diamant, 23,8; keuze gebruiker na meting), Y 8–40.
+  - Beide zijn afstemwaarden voor teststop 2b (alleen getallen in datagen).
+  - **Vanilla-ertsen:** kolen/ijzer/koper ×0,6; goud/redstone/lapis ×0,5; diamant ×0,25 (vaste factor in heel ring 2); geen ore veins; geen vanilla-ertsen in kloofsteen. Gemeten per band (erts per 10.000 steen + deepslate; ring 2 ÷ ring 1 zonder aders / ring 2 na ÷ vóór op hetzelfde terrein): kolen 0…63 0,55 / 0,59; ijzer −64…−1 0,64 / —, 0…63 0,60 / 0,61; koper −64…−1 0,83 / 0,59, 0…63 0,53 / 0,56; goud −64…−1 0,50 / 0,51, 0…63 0,47 / 0,42; redstone −64…−1 0,47 / 0,49, 0…63 0,60 / 0,52; lapis −64…−1 0,48 / 0,50, 0…63 0,60 / 0,53; diamant −64…−1 0,26 / 0,28. Volledige tabel in plan 25.
 
 **Grotten**
 - **Ondergrondse waterreservoirs** (aquifers) die de oases voeden; oriëntatie en lore.

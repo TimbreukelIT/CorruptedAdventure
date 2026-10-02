@@ -6,6 +6,8 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.data.worldgen.placement.CavePlacements;
+import net.minecraft.data.worldgen.placement.MiscOverworldPlacements;
 import net.minecraft.data.worldgen.placement.VegetationPlacements;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
@@ -16,6 +18,8 @@ import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
+import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.worldgen.feature.RingVanillaOres;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
@@ -85,6 +89,21 @@ class Ring2BiomesTest {
         assertFalse(plants.contains(VegetationPlacements.PATCH_SUGAR_CANE_DESERT));
         assertTrue(Ring2Biomes.OASIS_VEGETATION.indexOf(ModPlacedFeatures.OASIS_SHORE_PLANTS)
                 < Ring2Biomes.OASIS_VEGETATION.indexOf(ModPlacedFeatures.OASIS_PALM_GROVES));
+    }
+
+    @Test
+    void noVanillaOresButUnderwaterMagmaAndTheRing2OresThroughOneModifier() {
+        for (Biome biome : bootstrap().values()) {
+            List<ResourceKey<PlacedFeature>> ores = step(biome, GenerationStep.Decoration.UNDERGROUND_ORES);
+            for (ResourceKey<PlacedFeature> ore : RingVanillaOres.ORES) {
+                assertFalse(ores.contains(ore), ore.toString());
+            }
+            assertTrue(ores.contains(CavePlacements.UNDERWATER_MAGMA));
+            assertTrue(ores.contains(MiscOverworldPlacements.DISK_GRAVEL));
+        }
+        List<ResourceKey<PlacedFeature>> added = Ring2BiomeModifiers.ores();
+        assertEquals(RingVanillaOres.keys(Ring.RING_2), added.subList(0, RingVanillaOres.ORES.size()));
+        assertEquals(List.of(ModPlacedFeatures.SUNSTONE_ORE, ModPlacedFeatures.TURQUOISE_ORE), added.subList(RingVanillaOres.ORES.size(), added.size()));
     }
 
     private static List<ResourceKey<PlacedFeature>> step(Biome biome, GenerationStep.Decoration step) {
