@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.LevelSimulatedReader;
@@ -24,7 +25,9 @@ import java.util.List;
  *     leaves two diagonal steps out, also ending in a hanging leaf.</li>
  * </ul>
  * Every leaf reaches the trunk through leaves in at most 5 face steps, inside vanilla's decay distance of 6. A frond
- * stops at the first leaf that cannot be placed, so no leaf is ever cut off from the trunk.
+ * stops at the first leaf that cannot be placed, so no leaf is ever cut off from the trunk; only a log (another palm's
+ * trunk) is skipped, as the leaves beyond it hang on that log. That keeps neighbouring palms independent of which grew
+ * first: a log placed later replaces the leaf anyway, so either way the frond runs on past the trunk.
  */
 public final class PalmFoliagePlacer extends FoliagePlacer {
     public static final MapCodec<PalmFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(instance -> foliagePlacerParts(instance)
@@ -53,7 +56,8 @@ public final class PalmFoliagePlacer extends FoliagePlacer {
         BlockPos crown = attachment.pos().above(offset);
         for (List<BlockPos> frond : fronds(random)) {
             for (BlockPos leaf : frond) {
-                if (!tryPlaceLeaf(level, blockSetter, random, config, crown.offset(leaf))) {
+                BlockPos pos = crown.offset(leaf);
+                if (!tryPlaceLeaf(level, blockSetter, random, config, pos) && !level.isStateAtPosition(pos, state -> state.is(BlockTags.LOGS))) {
                     break;
                 }
             }

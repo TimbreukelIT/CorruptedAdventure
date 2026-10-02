@@ -22,7 +22,7 @@ Buiten scope:
 - mobs (fase 4);
 - condities, zoals of een wandbron koelt (change 27; alleen noteren, backlog `[conditions]`).
 
-**Status:** plan, **afgestemd 2026-10-01** (alle ontwerpvragen beantwoord; afwijkende keuze van de gebruiker: 23c-4 C). Gebouwd ná 23b; daarna direct change 25. De in-game check (W) gaat mee in **teststop 2b na change 30** (vraag 23b-17, keuze gebruiker).
+**Status:** gebouwd 2026-10-02 (afgestemd 2026-10-01; vervolgvraag wandbron 2026-10-02) (alle ontwerpvragen beantwoord; afwijkende keuze van de gebruiker: 23c-4 C). Gebouwd ná 23b; daarna direct change 25. De in-game check (W) gaat mee in **teststop 2b na change 30** (vraag 23b-17, keuze gebruiker).
 
 ## Afstemming (2026-10-01)
 
@@ -288,6 +288,8 @@ Antwoord: **A** — matig: keienvelden op ~20 % van de kloofbodems, puin op de p
 
 Antwoord: **C (keuze gebruiker)** — wandbron met stroompje: water komt uit de kloofwand, valt langs de wand en stroomt als klein stroompje over de kloofbodem naar een kolk. Uitwerking (eigen feature, chunk-lokaal, vooraf "gestroomd" water zonder fluid ticks, ~1 per 8–15 kloofchunks) in stap 2 en de tests; stop-en-vraag-punten bij de risico's.
 
+Antwoord (vervolg, keuze gebruiker 2026-10-02): **A — bron in een uitgehakte kerf.** Bij de bouw bleek (stop-en-vraagpunt 2) dat kloofwanden aan de voet flauw uitlopen: een wand die al in het eerste blok ≥ 8 hoger ligt, met vlakke vloer ervoor, kwam in 400 kloofgebied-chunks op 5 chunks voor en leverde 0 bronnen op. Nu: de bron zit 3–8 boven de vloer in een wand die **binnen 3 blokken** ≥ 8 stijgt, in de dichtstbijzijnde kolom achter de voet die boven de bron uitkomt; de feature hakt een kerf van 1 breed uit de helling (de kolom vóór de bron tot de vloer, de kolommen ertussen open naar boven), zodat de val een smal recht gordijn blijft. Daarna stroompje en kolk zoals gepland; water in eindtoestand, alles in de eigen chunk. Doel ~1 per 8–15 kloofchunks, nagemeten (zie bouwnotities).
+
 ### 23c-5. (routine) Materiaal van keien en puin
 - **A. Mix van de drie kloofsteentinten + `canyon_cobblestone` (dat in change 37 een nieuw palet krijgt) (aanbevolen).**
 - **B. Alleen de drie tinten** (tot 37 het palet van de kloofkeien herziet).
@@ -312,11 +314,59 @@ Antwoord: **A** — palmvorm laten; de knotten waren een plaatsingsprobleem.
 
 | Datum | Categorie | Beslissing | Reden |
 |---|---|---|---|
-| 2026-10-xx | worldgen | Determinisme-regels voor ring 2-features: plaatsing alleen op `WORLD_SURFACE_WG` + geseede ruis; alles behalve palmen schrijft alleen in de eigen chunk; palmen op een wereldvast raster met minimale afstand | Volgorde-onafhankelijk per seed, ook over chunkgrenzen |
-| 2026-10-xx | worldgen | Eigen placement modifiers `jittered_grid`, `noise_band`, `slope` | Afstand zonder buren te lezen; features volgen exact de terreinzones van 23b |
-| 2026-10-xx | worldgen | Palmen in groepjes van 2–4 (stammen ≥ 4 uit elkaar) aan de oeverrand + struikpalmen; losse palm op het zand | Geen knotten; oogt als een palmoase |
-| 2026-10-xx | worldgen | Oase-aankleding per zone: groen aan het water, dor in de overgangsring, zandsteenkeien | Zachte overgang naar de woestijn |
-| 2026-10-xx | worldgen | Kloof-aankleding: keienvelden (~20 % van de bodems), puin op puinhellingen, rotsval aan wandvoeten | Afbrokkelende wanden zonder rommeligheid |
-| 2026-10-xx | worldgen | Wandbronnen (keuze gebruiker): water uit de kloofwand (3–8 boven de voet), val, stroompje in een geul van 3–6 naar een kolk op de kloofbodem; ~1 per 8–15 kloofchunks; eigen feature `canyon_spring`, chunk-lokaal, water in zijn eindtoestand zonder fluid ticks | Spectaculair zichtbare bron; deterministisch per seed en volgorde-onafhankelijk (vanilla's tick-route stroomt na de generatie buurchunks in) |
+| 2026-10-02 | worldgen | Determinisme-regels voor ring 2-features: plaatsing alleen op `WORLD_SURFACE_WG` + geseede ruis; alles behalve palmen schrijft alleen in de eigen chunk; palmen op een wereldvast raster met minimale afstand | Volgorde-onafhankelijk per seed, ook over chunkgrenzen |
+| 2026-10-02 | worldgen | Eigen placement modifiers `jittered_grid`, `noise_band`, `slope` | Afstand zonder buren te lezen; features volgen exact de terreinzones van 23b |
+| 2026-10-02 | worldgen | Palmen in groepjes van 2–4 (stammen ≥ 4 uit elkaar) aan de oeverrand + struikpalmen; losse palm op het zand | Geen knotten; oogt als een palmoase |
+| 2026-10-02 | worldgen | Oase-aankleding per zone: groen aan het water, dor in de overgangsring, zandsteenkeien | Zachte overgang naar de woestijn |
+| 2026-10-02 | worldgen | Kloof-aankleding: keienvelden (~20 % van de bodems), puin op puinhellingen, rotsval aan wandvoeten | Afbrokkelende wanden zonder rommeligheid |
+| 2026-10-02 | worldgen | Wandbronnen (keuze gebruiker): water uit de kloofwand (3–8 boven de voet), val, stroompje in een geul van 3–6 naar een kolk op de kloofbodem; ~1 per 8–15 kloofchunks; eigen feature `canyon_spring`, chunk-lokaal, water in zijn eindtoestand zonder fluid ticks | Spectaculair zichtbare bron; deterministisch per seed en volgorde-onafhankelijk (vanilla's tick-route stroomt na de generatie buurchunks in) |
+
+| 2026-10-02 | worldgen | Wandbron in een uitgehakte kerf (keuze gebruiker, vervolg 23c-4): bron in een wand die binnen 3 blokken ≥ 8 stijgt, kerf van 1 breed van de bron naar de vloer | Kloofwanden lopen onderaan flauw uit; met een loodrechte wand als eis kwamen er 0 bronnen in 400 chunks |
 
 Commit (na `/code-review`): `worldgen: add ring 2 dressing: rubble, rockfall, wall springs, oasis vegetation and palm groves`.
+
+## Bouwnotities (change 23c, 2026-10-02)
+
+Aannames gecontroleerd tegen de code na 23b (`4d43b62`): `canyon_details`, `rock_pillars`, `pools.json` (poelruis `ring_2_pools`, zones 0,02 / 0,12 / 0,22 in de surface rules), `ring_2_talus` (≥ 0,325, Y 90–118), kolken en treden: klopten. Tijdelijke hulpmiddelen (dev-commando `/cadev dump|noise`, analysescripts in `build/c23c/`, een baseline-datapack zonder ring 2-features en een git-worktree van 23b voor de prestatiemeting) zijn niet gecommit.
+
+- **Stop-en-vraag (punt 2, frequentie wandbron):** met de geplande vorm (wand ≥ 8 hoger in het eerste blok, vlakke vloer ervoor) kwamen er 0 bronnen in 400 kloofgebied-chunks; zulke plekken waren er in 5 chunks. Keuze gebruiker: **A, kerf** (zie 23c-4, vervolg). Na de wijziging 14 bronnen in 400 chunks (140 kloofchunks) = ~1 per 10.
+- **Afwijkingen van het plan (implementatie en afstemming):**
+  - **Vierde placement modifier `height_band`** (Y-band): plateau, puinhellingen en kloofbodem hebben dezelfde grond (rood zand), dus "y onder de plateauhoogte via grond" kon niet; vanilla heeft alleen filters relatief aan een heightmap. Grenzen: kloofbodem ≤ 100, puin 88–120, plateau ≥ 118.
+  - **`slope`** heeft twee maten: `rise` (hoogste buur − eigen kolom: wandvoet, niet de bovenrand) en `relief` (grootste verschil: vlak).
+  - **`noise_band` met `snap`:** de palmbanden worden in het celmidden van het palmraster gelezen. Zo krijgen groepspalmen, losse palmen op het zand en struikpalmen nooit dezelfde cel, en staan **alle** palmstammen ≥ 5 uit elkaar (ook struikpalmen). De losse palm op het zand gebruikt daarom ook cel 8 (kans 1⁄24 ≈ 1 per 6 chunks) i.p.v. cel 16 met 1⁄6.
+  - **Palmgroepjes afgestemd:** poelband 0,05–0,28 (plan: buitenrand oever + binnenste overgangsring), `ring_2_palm_groves` ≥ 0 (~50 %), kans 0,75 (plan 0,6). Met 0,6 en een hoge drempel kwam het gemiddelde op ~1 palm per poel.
+  - **`PalmFoliagePlacer`:** een waaier slaat een log (stam van een buurpalm) over in plaats van te stoppen. Zonder dat hing de kroon af van welke palm eerst groeide (kronen reiken de buurchunk in). Gevonden met `PalmNeighboursTest`, die zonder de aanpassing faalt. Een losse palm verandert er niet door (een waaier raakt nooit de eigen stam).
+  - **Struikpalm:** `PalmTrunkPlacer` 1–2 recht, kroon radius 1–2 met 1–3 diagonale waaiers (binnen ±2, dus in de eigen chunk); zand onder de stam zoals bij de palm.
+  - **Rubble:** één materiaal per kei (uit de provider), half ingegraven vanaf grootte 2. Een kolom wordt overgeslagen als de grond meer dan 1 afwijkt, of als onder het grondblok geen vast blok zit. Dat laatste kwam uit test S: 3 keiblokken hingen boven door vanilla-carvers uitgeholde grond (het bekende hangende zand van change 23b).
+  - **Wandbron:** de feature loopt alle 14 × 14 kolommen binnen de chunk in willekeurige volgorde af en probeert tot 24 wandvoeten. Het plan noemde 16 willekeurige kandidaatkolommen, maar die raakten een wandvoet zelden. Geen `rarity_filter` en geen `slope` op de herkomst meer: één poging per kloofchunk, de feature zoekt zelf; de vloerhoogte 66–100 staat in de config (`min_water_y`, `max_floor_y`). Bron, geul, kolk, kerf en rand liggen ≥ 1 blok van de chunkrand; 6 blokken vóór de voet open (geen spleten). Stroomlengte inclusief de cel onder de val; een knik alleen buiten de kerf.
+  - **Suikerriet / waterrand:** de oevers lopen steil naar het water (gemeten ~2 kolommen per oasechunk met grond op waterhoogte naast water), dus 2 × 32 pogingen (`jittered_grid` 16/1, zodat het water ernaast in de eigen chunk ligt). `oasis_shore_plants` is gesplitst in `oasis_shore_cane` (suikerriet, alleen waar het kan groeien) en `oasis_shore_plants` (hoog gras en varens, ook naast water dat één blok lager ligt), beide vóór de palmen (review, zie hieronder).
+  - **Oasebegroeiing:** 6 → 10 pogingen op gras; overgangsring 4 pogingen.
+- **Bouwstap-verificaties (1.21.1-bronnen):** `NoiseBandFilter` haalt de ruis uit `getChunkSource().randomState()`: dezelfde `NormalNoise` als `noise_threshold` (unit test: gelijk aan een `noise`-DF). `WorldGenRegion.setBlock` markeert alleen blokken met `hasPostProcess` (paddenstoelen e.d.) voor post-processing, nooit water; `LevelChunk.postProcessGeneration` laat alleen díe vloeistoffen tikken. Vooraf gestroomd water tikt dus niet bij FULL (valkuil in `CODEBASE.md`).
+
+### Testresultaten
+
+- **B:** `./gradlew build` groen, met de nieuwe tests `JitteredGridPlacementTest`, `NoiseBandFilterTest`, `SlopeFilterTest`, `RubbleFeatureTest`, `CanyonSpringFeatureTest` (2.000 synthetische wanden, loodrecht en hellend; een eigen naslag van vanilla's vloeiregels vanaf alleen bron + kolk komt exact op de layout uit en verandert niets als alles opnieuw tikt) en `PalmNeighboursTest`; `Ring2BiomesTest` uitgebreid.
+- **D:** `./gradlew runData`: 9 configured en 13 placed features nieuw of gewijzigd, `oasis_palms_shore` weg, `canyonlands.json`/`oasis_flats.json` met de nieuwe lijsten (vanilla `patch_sugar_cane_desert` eruit). Geen andere biomes gewijzigd.
+- **S** (seed 20260930; rooktest `tools/server-smoke-test.sh` met `level-name=smoke-change23c`: `Done`, geen ERROR, geen "Feature order cycle", geen "Detected setBlock in a far chunk"; metingen in `smoke-change23c-a6` (eindcode), `-b6` (omgekeerd geladen) en `-base` (zelfde code, datapack zonder ring 2-features)):
+  - **Palmen** (256 oasechunks, x 2.368–2.623, z −128…127): 94 palmen + 64 struikpalmen; **kleinste afstand tussen twee stammen 5,0** (0 paren < 4, ook met struikpalmen); gemiddeld **2,3 palmen per poel** (18 poelen ≥ 30 kolommen; verdeling 0–8; 7 poelen zonder palm); groepjes: 8 van 2–4, 6 van 6–11 aan grote poelen, de rest los (o.a. de losse palmen op het zand); **0 palmen in 400 kloofchunks**.
+  - **Puin** (400 kloofchunks, verschil met de baseline): 526 keien (423 op de kloofbodem, 64 op puinhellingen, 39 op het plateau); keienvelden op 21,3 % van de bodemkolommen; **keien in 96 van 130 (74 %) chunks met een keienveld**; rotsval in 15 van de eerste 16 chunks met een steile wand (148 van 261 in totaal); **0 zwevende keiblokken**.
+  - **Wandbronnen:** **14 in 400 chunks** (140 kloofchunks met een wand ≥ 8 binnen 3 blokken op kloofbodem of trede; 40 met een loodrechte wand) = ~1 per 10; alle in één chunk, geen water op een chunkrand; waterlijn ≥ Y 66; elke bron met bron in de wand, val, geul en kolk (13–29 waterblokken). **Stabiliteit:** 10 bronchunks + hun 8 buren gedumpt, op elk waterblok met lucht erboven (7–15 per bron) een blok gezet en weggehaald, 15 s gewacht: **10/10 identiek** (states en aantallen), geen nieuw water in de buren.
+  - **Determinisme** (16 kloofchunks waarvan 14 met een bron + 16 oasechunks met poelen/palmen; tweede wereld omgekeerd geladen; vergelijking blok voor blok Y 40–220, alle states, alleen de `distance` van bladeren genegeerd): **27/32 chunks identiek**; de rest alleen vanilla's ondergrondse blobs/ertsen (224 blokken graniet/dioriet/andesiet/kolen) en 6 blokken zand ↔ grind aan één oeverrand (vanilla `disk_gravel`, schrijft in buurchunks). Van ~800 palmbladeren hadden er 4 een andere `distance`.
+  - **Ring 1:** biomes **300/300** gelijk aan 23b; steen/deepslate in 5 van 6 chunks gelijk op ≤ 5 blokken (55,55: steen +5); chunk 0,0 (spawnchunk) steen −21 / deepslate +80, maar die chunk verschilt ook tussen twee runs van 23b zelf (steen 41); lucht in laag Y 64–191 tot ~1 % anders (feature-index, bekend).
+  - **Prestaties:** JFR `minecraft.ChunkGeneration`, meetplekken van 23b (kloofgebied chunks x 144–159 / z 32–47, oase x 148–163 / z −8–7), tweede ronde, 3 rondes per variant afwisselend, 23b = git-worktree van `4d43b62` in dezelfde sessie. **Features-stap:** kloof 23b 2,65 → 23c **2,88 ms (+8,7 %)**, oase 3,67 → **2,98 ms (−19 %**; minder palmpogingen dan de 24 van change 23); **hele chunk:** kloof 95,9 → 98,7 ms (+3 %, binnen de spreiding van ±5 %), oase 95,3 → 94,3 ms. Doel ≤ +15 % op de features-stap: gehaald. De hele chunk verandert binnen de ruis, dus de verhouding tot vanilla uit 23b (ring 2 onder vanilla) blijft; vanilla is in deze sessie niet opnieuw gemeten (de absolute tijden lagen deze sessie ~20 % hoger dan in 23b, ook voor 23b zelf).
+- **Devkaarten:** niet gemaakt (de dumps in `run/devmap/` dienden als controle).
+
+### Code review (`/code-review medium`)
+
+- **Opgelost (laag):** `oasis_shore_plants` was een `random_selector` (suikerriet 0,5, anders hoog gras/varens); vanilla valt niet terug op de default als de gekozen feature faalt, dus waar de oever één blok naar het water afstapt (suikerriet kan er niet groeien) bleef de helft van de pogingen leeg. Nu twee placed features (`oasis_shore_cane` met `would_survive`, `oasis_shore_plants`), elk 32 pogingen. Hertest (verse wereld, zelfde 256 oasechunks, Y 60–75): suikerriet 74 blokken (was 70), hoog gras 11, grote varen 6, varen 119; build, runData en rooktest opnieuw schoon. Determinisme ongewijzigd van aard (zelfde soort chunk-lokale plaatsing).
+- **Nagelopen, geen probleem:** heightmaps tijdens de features-stap, `SpringLayout.settle`/`fits` tegen vanilla's `FlowingFluid`, feature-volgorde over de biomes, rasterafstand en disjuncte banden, palmlogs in `#minecraft:logs`.
+
+## In-game checklist (W) — voor teststop 2b (na change 30; overnemen in plan 30)
+
+runClient, seed `20260930`, creatief/spectator. Coördinaten x y z (y ≈ grond).
+- [ ] **Wandbronnen:** 2.427 66 530 (loodrechte wand, kolk met mos/gras en suikerriet), 2.499 73 550 en 2.493 73 553 (twee vlak bij elkaar, met kerf), 2.491 73 595, 2.460 75 582, 2.481 87 539 (op een trede), 2.244 69 466. Herkenbaar als bron (water uit de wand, val in de kerf, stroompje, kolk)? Zeldzaam genoeg (~1 per 10 kloofchunks)? Graaf naast een geul en zet een blok op het water: geen rare stromen, alleen vanilla-gedrag waar je de geul openbreekt.
+- [ ] **Keienvelden:** kloofbodem bij 2.528–2.559 / 544–575 en 2.336–2.367 / 448–479; keien 1–3, half ingegraven, tinten + kloofkeien; niet rommelig, niet leeg.
+- [ ] **Puin en rotsval:** puinhelling bij 2.295 98 559 en 2.312 99 568; rotsval (losse kloofkeien) langs de wandvoeten; plateaukei bij 2.482 121 716.
+- [ ] **Oase — palmen:** groepjes bij 2.485 67 12, 2.405 67 −102, 2.523 66 100 en 2.523 66 −109; struikpalmen bij 2.507 64 −45 en 2.371 64 −12; geen knotten en geen stammen tegen elkaar. Grote poelen krijgen soms een rij van 6–11: goed, of minder?
+- [ ] **Oase — begroeiing:** suikerriet aan het water bij 2.537 63 −127 en 2.427 63 −119; dorre struiken in de overgangsring bij 2.565 68 −123 en 2.511 69 −102; zandsteenkei bij 2.416 69 65; overgang van groen naar dor richting woestijn. Suikerriet is schaars omdat de oevers steil naar het water lopen: genoeg?
+- [ ] **Palmvorm** (23c-7 A: ongewijzigd) en kronen die over een buurstam heen lopen.

@@ -3,17 +3,23 @@ package nl.timtoys.corruptedadventure.worldgen.biome;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.data.worldgen.placement.VegetationPlacements;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
+import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
+import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,6 +65,32 @@ class Ring2BiomesTest {
         for (ResourceKey<Biome> biome : Ring2Biomes.ALL) {
             assertFalse(VanillaBiomeCopies.COPIES.stream().map(VanillaBiomeCopies::copyOf).anyMatch(biome::equals), biome.toString());
         }
+    }
+
+    @Test
+    void ownFeaturesLastInTheirStepInAFixedOrder() {
+        Map<ResourceKey<Biome>, Biome> biomes = bootstrap();
+        Biome canyonlands = biomes.get(ModBiomes.CANYONLANDS);
+        List<ResourceKey<PlacedFeature>> rocks = step(canyonlands, GenerationStep.Decoration.LOCAL_MODIFICATIONS);
+        assertEquals(Ring2Biomes.CANYONLANDS_ROCKS, rocks.subList(rocks.size() - Ring2Biomes.CANYONLANDS_ROCKS.size(), rocks.size()));
+        assertEquals(ModPlacedFeatures.CANYON_SPRINGS, rocks.getLast(), "the spring last: it avoids the boulders of its chunk");
+        assertEquals(ModPlacedFeatures.CANYONLANDS_VEGETATION, step(canyonlands, GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
+
+        Biome oasis = biomes.get(ModBiomes.OASIS_FLATS);
+        assertEquals(ModPlacedFeatures.OASIS_ROCKS, step(oasis, GenerationStep.Decoration.LOCAL_MODIFICATIONS).getLast());
+        // After vanilla's glow lichen only our own plants: vanilla's sugar cane random_patch is replaced by the
+        // chunk-local shore plants.
+        List<ResourceKey<PlacedFeature>> plants = step(oasis, GenerationStep.Decoration.VEGETAL_DECORATION);
+        assertEquals(Ring2Biomes.OASIS_VEGETATION, plants.subList(plants.size() - Ring2Biomes.OASIS_VEGETATION.size(), plants.size()));
+        assertFalse(plants.contains(VegetationPlacements.PATCH_SUGAR_CANE_DESERT));
+        assertTrue(Ring2Biomes.OASIS_VEGETATION.indexOf(ModPlacedFeatures.OASIS_SHORE_PLANTS)
+                < Ring2Biomes.OASIS_VEGETATION.indexOf(ModPlacedFeatures.OASIS_PALM_GROVES));
+    }
+
+    private static List<ResourceKey<PlacedFeature>> step(Biome biome, GenerationStep.Decoration step) {
+        List<HolderSet<PlacedFeature>> steps = biome.getGenerationSettings().features();
+        return steps.size() <= step.ordinal() ? List.of()
+                : steps.get(step.ordinal()).stream().map(holder -> holder.unwrapKey().orElseThrow()).toList();
     }
 
     private static boolean spawns(Biome biome, MobCategory category, EntityType<?> type) {

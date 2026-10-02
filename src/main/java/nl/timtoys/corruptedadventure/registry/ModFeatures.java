@@ -8,6 +8,10 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.CanyonSpringConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.CanyonSpringFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.RubbleConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.RubbleFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
 
@@ -21,6 +25,12 @@ public final class ModFeatures {
     /** {@code corruptedadventure:unnatural_tunnel} */
     public static final DeferredHolder<Feature<?>, Feature<UnnaturalTunnelConfiguration>> UNNATURAL_TUNNEL =
             FEATURES.register("unnatural_tunnel", () -> new UnnaturalTunnelFeature(UnnaturalTunnelConfiguration.CODEC));
+    /** {@code corruptedadventure:rubble} */
+    public static final DeferredHolder<Feature<?>, Feature<RubbleConfiguration>> RUBBLE =
+            FEATURES.register("rubble", () -> new RubbleFeature(RubbleConfiguration.CODEC));
+    /** {@code corruptedadventure:canyon_spring} */
+    public static final DeferredHolder<Feature<?>, Feature<CanyonSpringConfiguration>> CANYON_SPRING =
+            FEATURES.register("canyon_spring", () -> new CanyonSpringFeature(CanyonSpringConfiguration.CODEC));
 
     private ModFeatures() {
     }

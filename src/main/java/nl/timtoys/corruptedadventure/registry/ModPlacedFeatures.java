@@ -17,10 +17,21 @@ public final class ModPlacedFeatures {
     public static final ResourceKey<PlacedFeature> UNNATURAL_TUNNEL = key("unnatural_tunnel");
     public static final ResourceKey<PlacedFeature> SOUL_CRYSTAL_ORE = key("soul_crystal_ore");
     public static final ResourceKey<PlacedFeature> CRIMSON_SOUL_CRYSTAL_ORE = key("crimson_soul_crystal_ore");
-    public static final ResourceKey<PlacedFeature> OASIS_PALMS_SHORE = key("oasis_palms_shore");
-    public static final ResourceKey<PlacedFeature> OASIS_PALMS_SAND = key("oasis_palms_sand");
-    public static final ResourceKey<PlacedFeature> OASIS_VEGETATION = key("oasis_vegetation");
+    // Ring 2, in the order of their biome's feature lists (Ring2Biomes).
+    public static final ResourceKey<PlacedFeature> CANYON_BOULDER_FIELDS = key("canyon_boulder_fields");
+    public static final ResourceKey<PlacedFeature> CANYON_TALUS_RUBBLE = key("canyon_talus_rubble");
+    public static final ResourceKey<PlacedFeature> CANYON_ROCKFALL = key("canyon_rockfall");
+    public static final ResourceKey<PlacedFeature> PLATEAU_RUBBLE = key("plateau_rubble");
+    public static final ResourceKey<PlacedFeature> CANYON_SPRINGS = key("canyon_springs");
     public static final ResourceKey<PlacedFeature> CANYONLANDS_VEGETATION = key("canyonlands_vegetation");
+    public static final ResourceKey<PlacedFeature> OASIS_ROCKS = key("oasis_rocks");
+    public static final ResourceKey<PlacedFeature> OASIS_SHORE_CANE = key("oasis_shore_cane");
+    public static final ResourceKey<PlacedFeature> OASIS_SHORE_PLANTS = key("oasis_shore_plants");
+    public static final ResourceKey<PlacedFeature> OASIS_PALM_GROVES = key("oasis_palm_groves");
+    public static final ResourceKey<PlacedFeature> OASIS_PALMS_SAND = key("oasis_palms_sand");
+    public static final ResourceKey<PlacedFeature> OASIS_PALM_BUSHES = key("oasis_palm_bushes");
+    public static final ResourceKey<PlacedFeature> OASIS_VEGETATION = key("oasis_vegetation");
+    public static final ResourceKey<PlacedFeature> OASIS_TRANSITION_VEGETATION = key("oasis_transition_vegetation");
 
     private ModPlacedFeatures() {
     }

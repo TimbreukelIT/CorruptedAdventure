@@ -1,39 +1,40 @@
 {
-  "feature": "corruptedadventure:palm_tree",
+  "feature": "corruptedadventure:canyon_rubble",
   "placement": [
     {
       "type": "minecraft:count",
-      "count": 24
+      "count": 4
     },
     {
       "type": "minecraft:in_square"
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.325,
+      "noise": "corruptedadventure:ring_2_talus"
     },
     {
       "type": "minecraft:heightmap",
       "heightmap": "WORLD_SURFACE_WG"
     },
     {
+      "type": "corruptedadventure:height_band",
+      "max_y": 120,
+      "min_y": 88
+    },
+    {
       "type": "minecraft:block_predicate_filter",
       "predicate": {
         "type": "minecraft:matching_blocks",
-        "blocks": "minecraft:grass_block",
+        "blocks": [
+          "minecraft:red_sand",
+          "minecraft:gravel"
+        ],
         "offset": [
           0,
           -1,
           0
         ]
-      }
-    },
-    {
-      "type": "minecraft:block_predicate_filter",
-      "predicate": {
-        "type": "minecraft:would_survive",
-        "state": {
-          "Name": "corruptedadventure:palm_sapling",
-          "Properties": {
-            "stage": "0"
-          }
-        }
       }
     },
     {

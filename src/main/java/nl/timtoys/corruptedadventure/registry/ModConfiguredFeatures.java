@@ -26,6 +26,16 @@ public final class ModConfiguredFeatures {
     public static final ResourceKey<ConfiguredFeature<?, ?>> PALM_TREE = key("palm_tree");
     public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_VEGETATION = key("oasis_vegetation");
     public static final ResourceKey<ConfiguredFeature<?, ?>> CANYONLANDS_VEGETATION = key("canyonlands_vegetation");
+    // Ring 2 dressing (change 23c).
+    public static final ResourceKey<ConfiguredFeature<?, ?>> PALM_BUSH = key("palm_bush");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_SHORE_CANE = key("oasis_shore_cane");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_SHORE_PLANTS = key("oasis_shore_plants");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_TRANSITION_VEGETATION = key("oasis_transition_vegetation");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_ROCK = key("oasis_rock");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> CANYON_BOULDER = key("canyon_boulder");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> CANYON_RUBBLE = key("canyon_rubble");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> CANYON_ROCKFALL = key("canyon_rockfall");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> CANYON_SPRING = key("canyon_spring");
 
     private ModConfiguredFeatures() {
     }

@@ -1,0 +1,43 @@
+{
+  "feature": "corruptedadventure:palm_tree",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.75,
+      "margin": 2
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "max": 0.28,
+      "min": 0.05,
+      "noise": "corruptedadventure:ring_2_pools",
+      "snap": 8
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.0,
+      "noise": "corruptedadventure:ring_2_palm_groves",
+      "snap": 8
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:would_survive",
+        "state": {
+          "Name": "corruptedadventure:palm_sapling",
+          "Properties": {
+            "stage": "0"
+          }
+        }
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

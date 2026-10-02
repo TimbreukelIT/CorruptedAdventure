@@ -1,0 +1,25 @@
+{
+  "feature": "corruptedadventure:oasis_rock",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 2
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "max": 0.12,
+      "min": 0.02,
+      "noise": "corruptedadventure:ring_2_pools"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

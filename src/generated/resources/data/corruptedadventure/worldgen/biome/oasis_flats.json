@@ -28,7 +28,8 @@
       "minecraft:lake_lava_surface"
     ],
     [
-      "minecraft:amethyst_geode"
+      "minecraft:amethyst_geode",
+      "corruptedadventure:oasis_rocks"
     ],
     [
       "minecraft:monster_room",
@@ -74,10 +75,13 @@
     ],
     [
       "minecraft:glow_lichen",
-      "minecraft:patch_sugar_cane_desert",
-      "corruptedadventure:oasis_palms_shore",
+      "corruptedadventure:oasis_shore_cane",
+      "corruptedadventure:oasis_shore_plants",
+      "corruptedadventure:oasis_palm_groves",
       "corruptedadventure:oasis_palms_sand",
-      "corruptedadventure:oasis_vegetation"
+      "corruptedadventure:oasis_palm_bushes",
+      "corruptedadventure:oasis_vegetation",
+      "corruptedadventure:oasis_transition_vegetation"
     ],
     [
       "minecraft:freeze_top_layer"

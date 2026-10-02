@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:simple_block",
+  "config": {
+    "to_place": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:canyon_cobblestone"
+          },
+          "weight": 4
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:red_canyon_stone"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:orange_canyon_stone"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:cream_canyon_stone"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "type": "corruptedadventure:rubble",
+  "config": {
+    "size": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "state_provider": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:red_canyon_stone"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:orange_canyon_stone"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:cream_canyon_stone"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:canyon_cobblestone"
+          },
+          "weight": 3
+        }
+      ]
+    }
+  }
+}

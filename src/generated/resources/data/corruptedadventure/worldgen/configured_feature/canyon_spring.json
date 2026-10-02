@@ -1,0 +1,82 @@
+{
+  "type": "corruptedadventure:canyon_spring",
+  "config": {
+    "candidates": 24,
+    "floor": [
+      "minecraft:red_sand",
+      "corruptedadventure:cracked_clay",
+      "minecraft:gravel"
+    ],
+    "max_floor_y": 100,
+    "min_water_y": 66,
+    "plant_chance": 0.6,
+    "pool_depth": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "pool_size": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    },
+    "rim": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:moss_block"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:grass_block",
+            "Properties": {
+              "snowy": "false"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "rim_plants": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:fern"
+          },
+          "weight": 4
+        },
+        {
+          "data": {
+            "Name": "minecraft:short_grass"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:large_fern",
+            "Properties": {
+              "half": "lower"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "spring_height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 8,
+      "min_inclusive": 3
+    },
+    "stream_length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 6,
+      "min_inclusive": 3
+    },
+    "sugar_cane": 0.5,
+    "wall_height": 8
+  }
+}

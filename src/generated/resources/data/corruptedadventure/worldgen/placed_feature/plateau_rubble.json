@@ -1,0 +1,28 @@
+{
+  "feature": "corruptedadventure:canyon_rubble",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 2
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:height_band",
+      "min_y": 118
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 3,
+      "radius": 2
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

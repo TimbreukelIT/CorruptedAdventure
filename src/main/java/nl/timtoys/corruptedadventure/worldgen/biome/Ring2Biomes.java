@@ -4,7 +4,6 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
 import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.data.worldgen.placement.VegetationPlacements;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -37,6 +36,17 @@ public final class Ring2Biomes {
      * {@code CODEBASE.md} ("Plekken die ring 2-biomes opsommen").
      */
     public static final List<ResourceKey<Biome>> ALL = List.of(ModBiomes.CANYONLANDS, ModBiomes.OASIS_FLATS);
+    /**
+     * Rubble and springs of the canyonlands ({@code LOCAL_MODIFICATIONS}), in this fixed order; change 30 reuses them
+     * in the same order. The spring comes last: it only digs where no boulder of its chunk lies.
+     */
+    static final List<ResourceKey<PlacedFeature>> CANYONLANDS_ROCKS = List.of(ModPlacedFeatures.CANYON_BOULDER_FIELDS,
+            ModPlacedFeatures.CANYON_TALUS_RUBBLE, ModPlacedFeatures.CANYON_ROCKFALL, ModPlacedFeatures.PLATEAU_RUBBLE,
+            ModPlacedFeatures.CANYON_SPRINGS);
+    /** The plants and palms of the oasis ({@code VEGETAL_DECORATION}), from the water outwards, in this fixed order. */
+    static final List<ResourceKey<PlacedFeature>> OASIS_VEGETATION = List.of(ModPlacedFeatures.OASIS_SHORE_CANE, ModPlacedFeatures.OASIS_SHORE_PLANTS,
+            ModPlacedFeatures.OASIS_PALM_GROVES, ModPlacedFeatures.OASIS_PALMS_SAND, ModPlacedFeatures.OASIS_PALM_BUSHES,
+            ModPlacedFeatures.OASIS_VEGETATION, ModPlacedFeatures.OASIS_TRANSITION_VEGETATION);
 
     private Ring2Biomes() {
     }
@@ -51,6 +61,9 @@ public final class Ring2Biomes {
     /** Deep canyons and plateaus of layered canyon stone; dry scrub. */
     private static Biome canyonlands(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
+        for (ResourceKey<PlacedFeature> feature : CANYONLANDS_ROCKS) {
+            generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
+        }
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.CANYONLANDS_VEGETATION);
         return biome(0.0F, 0xBFB755, 0xAEA42A, spawns(false), generation);
     }
@@ -58,11 +71,10 @@ public final class Ring2Biomes {
     /** Sand flats with pools, green shores and palms: the only safe water of the ring. */
     private static Biome oasisFlats(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
-        // Vanilla's sugar cane first (its place in vanilla's order), our own features after it.
-        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUGAR_CANE_DESERT);
-        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.OASIS_PALMS_SHORE);
-        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.OASIS_PALMS_SAND);
-        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.OASIS_VEGETATION);
+        generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, ModPlacedFeatures.OASIS_ROCKS);
+        for (ResourceKey<PlacedFeature> feature : OASIS_VEGETATION) {
+            generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
+        }
         // Downfall only colours (and farmland); there is no rain in ring 2.
         return biome(0.4F, 0x6FB33F, 0x5DA032, spawns(true), generation);
     }

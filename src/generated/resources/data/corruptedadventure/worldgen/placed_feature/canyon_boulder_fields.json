@@ -1,0 +1,49 @@
+{
+  "feature": "corruptedadventure:canyon_boulder",
+  "placement": [
+    {
+      "type": "minecraft:count",
+      "count": 6
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.27,
+      "noise": "corruptedadventure:ring_2_boulder_fields"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:height_band",
+      "max_y": 100
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 2,
+      "radius": 2
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:matching_blocks",
+        "blocks": [
+          "minecraft:red_sand",
+          "corruptedadventure:cracked_clay",
+          "minecraft:gravel"
+        ],
+        "offset": [
+          0,
+          -1,
+          0
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

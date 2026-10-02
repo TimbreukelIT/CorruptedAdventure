@@ -28,7 +28,12 @@
       "minecraft:lake_lava_surface"
     ],
     [
-      "minecraft:amethyst_geode"
+      "minecraft:amethyst_geode",
+      "corruptedadventure:canyon_boulder_fields",
+      "corruptedadventure:canyon_talus_rubble",
+      "corruptedadventure:canyon_rockfall",
+      "corruptedadventure:plateau_rubble",
+      "corruptedadventure:canyon_springs"
     ],
     [
       "minecraft:monster_room",
