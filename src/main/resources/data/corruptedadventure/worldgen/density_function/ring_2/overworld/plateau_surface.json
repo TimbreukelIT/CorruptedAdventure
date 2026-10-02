@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:add",
+    "argument1": "corruptedadventure:ring_2/overworld/plateau_height",
+    "argument2": "corruptedadventure:ring_2/overworld/mesa_height"
+  }
+}

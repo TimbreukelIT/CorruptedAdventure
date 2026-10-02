@@ -1,48 +1,367 @@
 {
-  "type": "minecraft:spline",
-  "spline": {
-    "coordinate": "corruptedadventure:ring_2/overworld/canyon_signal",
-    "points": [
-      {
-        "location": 0.022,
-        "value": 1.0,
-        "derivative": 0.0
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:add",
+    "argument1": {
+      "type": "minecraft:max",
+      "argument1": {
+        "type": "minecraft:spline",
+        "spline": {
+          "coordinate": {
+            "type": "minecraft:abs",
+            "argument": {
+              "type": "minecraft:noise",
+              "noise": "corruptedadventure:ring_2_canyon",
+              "xz_scale": 1.0,
+              "y_scale": 0.0
+            }
+          },
+          "points": [
+            {
+              "location": 0.022,
+              "value": 1.0,
+              "derivative": 0.0
+            },
+            {
+              "location": 0.028,
+              "value": 0.75,
+              "derivative": 0.0
+            },
+            {
+              "location": 0.043,
+              "value": 0.75,
+              "derivative": 0.0
+            },
+            {
+              "location": 0.049,
+              "value": 0.5,
+              "derivative": 0.0
+            },
+            {
+              "location": 0.064,
+              "value": 0.5,
+              "derivative": 0.0
+            },
+            {
+              "location": 0.07,
+              "value": 0.25,
+              "derivative": 0.0
+            },
+            {
+              "location": 0.085,
+              "value": 0.25,
+              "derivative": 0.0
+            },
+            {
+              "location": 0.091,
+              "value": 0.0,
+              "derivative": 0.0
+            }
+          ]
+        }
       },
-      {
-        "location": 0.028,
-        "value": 0.75,
-        "derivative": 0.0
-      },
-      {
-        "location": 0.043,
-        "value": 0.75,
-        "derivative": 0.0
-      },
-      {
-        "location": 0.049,
-        "value": 0.5,
-        "derivative": 0.0
-      },
-      {
-        "location": 0.064,
-        "value": 0.5,
-        "derivative": 0.0
-      },
-      {
-        "location": 0.07,
-        "value": 0.25,
-        "derivative": 0.0
-      },
-      {
-        "location": 0.085,
-        "value": 0.25,
-        "derivative": 0.0
-      },
-      {
-        "location": 0.091,
-        "value": 0.0,
-        "derivative": 0.0
+      "argument2": {
+        "type": "minecraft:mul",
+        "argument1": 0.7,
+        "argument2": {
+          "type": "minecraft:spline",
+          "spline": {
+            "coordinate": {
+              "type": "minecraft:add",
+              "argument1": {
+                "type": "minecraft:abs",
+                "argument": {
+                  "type": "minecraft:noise",
+                  "noise": "corruptedadventure:ring_2_canyon_branch",
+                  "xz_scale": 1.0,
+                  "y_scale": 0.0
+                }
+              },
+              "argument2": {
+                "type": "minecraft:mul",
+                "argument1": 0.15,
+                "argument2": {
+                  "type": "minecraft:abs",
+                  "argument": {
+                    "type": "minecraft:noise",
+                    "noise": "corruptedadventure:ring_2_canyon",
+                    "xz_scale": 1.0,
+                    "y_scale": 0.0
+                  }
+                }
+              }
+            },
+            "points": [
+              {
+                "location": 0.022,
+                "value": 1.0,
+                "derivative": 0.0
+              },
+              {
+                "location": 0.028,
+                "value": 0.75,
+                "derivative": 0.0
+              },
+              {
+                "location": 0.043,
+                "value": 0.75,
+                "derivative": 0.0
+              },
+              {
+                "location": 0.049,
+                "value": 0.5,
+                "derivative": 0.0
+              },
+              {
+                "location": 0.064,
+                "value": 0.5,
+                "derivative": 0.0
+              },
+              {
+                "location": 0.07,
+                "value": 0.25,
+                "derivative": 0.0
+              },
+              {
+                "location": 0.085,
+                "value": 0.25,
+                "derivative": 0.0
+              },
+              {
+                "location": 0.091,
+                "value": 0.0,
+                "derivative": 0.0
+              }
+            ]
+          }
+        }
       }
-    ]
+    },
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": "corruptedadventure:ring_2/overworld/talus_mask",
+      "argument2": {
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "minecraft:clamp",
+          "input": {
+            "type": "minecraft:max",
+            "argument1": {
+              "type": "minecraft:spline",
+              "spline": {
+                "coordinate": {
+                  "type": "minecraft:abs",
+                  "argument": {
+                    "type": "minecraft:noise",
+                    "noise": "corruptedadventure:ring_2_canyon",
+                    "xz_scale": 1.0,
+                    "y_scale": 0.0
+                  }
+                },
+                "points": [
+                  {
+                    "location": 0.022,
+                    "value": 1.0,
+                    "derivative": -6.756756756756756
+                  },
+                  {
+                    "location": 0.17,
+                    "value": 0.0,
+                    "derivative": -6.756756756756756
+                  }
+                ]
+              }
+            },
+            "argument2": {
+              "type": "minecraft:mul",
+              "argument1": 0.7,
+              "argument2": {
+                "type": "minecraft:spline",
+                "spline": {
+                  "coordinate": {
+                    "type": "minecraft:add",
+                    "argument1": {
+                      "type": "minecraft:abs",
+                      "argument": {
+                        "type": "minecraft:noise",
+                        "noise": "corruptedadventure:ring_2_canyon_branch",
+                        "xz_scale": 1.0,
+                        "y_scale": 0.0
+                      }
+                    },
+                    "argument2": {
+                      "type": "minecraft:mul",
+                      "argument1": 0.15,
+                      "argument2": {
+                        "type": "minecraft:abs",
+                        "argument": {
+                          "type": "minecraft:noise",
+                          "noise": "corruptedadventure:ring_2_canyon",
+                          "xz_scale": 1.0,
+                          "y_scale": 0.0
+                        }
+                      }
+                    }
+                  },
+                  "points": [
+                    {
+                      "location": 0.022,
+                      "value": 1.0,
+                      "derivative": -6.756756756756756
+                    },
+                    {
+                      "location": 0.17,
+                      "value": 0.0,
+                      "derivative": -6.756756756756756
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "min": 0.0,
+          "max": 1.0
+        },
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": -1.0,
+          "argument2": {
+            "type": "minecraft:max",
+            "argument1": {
+              "type": "minecraft:spline",
+              "spline": {
+                "coordinate": {
+                  "type": "minecraft:abs",
+                  "argument": {
+                    "type": "minecraft:noise",
+                    "noise": "corruptedadventure:ring_2_canyon",
+                    "xz_scale": 1.0,
+                    "y_scale": 0.0
+                  }
+                },
+                "points": [
+                  {
+                    "location": 0.022,
+                    "value": 1.0,
+                    "derivative": 0.0
+                  },
+                  {
+                    "location": 0.028,
+                    "value": 0.75,
+                    "derivative": 0.0
+                  },
+                  {
+                    "location": 0.043,
+                    "value": 0.75,
+                    "derivative": 0.0
+                  },
+                  {
+                    "location": 0.049,
+                    "value": 0.5,
+                    "derivative": 0.0
+                  },
+                  {
+                    "location": 0.064,
+                    "value": 0.5,
+                    "derivative": 0.0
+                  },
+                  {
+                    "location": 0.07,
+                    "value": 0.25,
+                    "derivative": 0.0
+                  },
+                  {
+                    "location": 0.085,
+                    "value": 0.25,
+                    "derivative": 0.0
+                  },
+                  {
+                    "location": 0.091,
+                    "value": 0.0,
+                    "derivative": 0.0
+                  }
+                ]
+              }
+            },
+            "argument2": {
+              "type": "minecraft:mul",
+              "argument1": 0.7,
+              "argument2": {
+                "type": "minecraft:spline",
+                "spline": {
+                  "coordinate": {
+                    "type": "minecraft:add",
+                    "argument1": {
+                      "type": "minecraft:abs",
+                      "argument": {
+                        "type": "minecraft:noise",
+                        "noise": "corruptedadventure:ring_2_canyon_branch",
+                        "xz_scale": 1.0,
+                        "y_scale": 0.0
+                      }
+                    },
+                    "argument2": {
+                      "type": "minecraft:mul",
+                      "argument1": 0.15,
+                      "argument2": {
+                        "type": "minecraft:abs",
+                        "argument": {
+                          "type": "minecraft:noise",
+                          "noise": "corruptedadventure:ring_2_canyon",
+                          "xz_scale": 1.0,
+                          "y_scale": 0.0
+                        }
+                      }
+                    }
+                  },
+                  "points": [
+                    {
+                      "location": 0.022,
+                      "value": 1.0,
+                      "derivative": 0.0
+                    },
+                    {
+                      "location": 0.028,
+                      "value": 0.75,
+                      "derivative": 0.0
+                    },
+                    {
+                      "location": 0.043,
+                      "value": 0.75,
+                      "derivative": 0.0
+                    },
+                    {
+                      "location": 0.049,
+                      "value": 0.5,
+                      "derivative": 0.0
+                    },
+                    {
+                      "location": 0.064,
+                      "value": 0.5,
+                      "derivative": 0.0
+                    },
+                    {
+                      "location": 0.07,
+                      "value": 0.25,
+                      "derivative": 0.0
+                    },
+                    {
+                      "location": 0.085,
+                      "value": 0.25,
+                      "derivative": 0.0
+                    },
+                    {
+                      "location": 0.091,
+                      "value": 0.0,
+                      "derivative": 0.0
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

@@ -1,0 +1,48 @@
+{
+  "type": "corruptedadventure:rock_pillars",
+  "hash": "corruptedadventure:ring_2_fin_cells",
+  "cell_size": 24,
+  "chance": 1.0,
+  "margin": 1,
+  "weight": "corruptedadventure:ring_2/overworld/plateau_rock_weight",
+  "min_weight": 0.5,
+  "floor": "corruptedadventure:ring_2/overworld/height",
+  "exclude": "corruptedadventure:ring_2/overworld/slot_network",
+  "exclude_below": 3.0,
+  "max_floor_step": 6.0,
+  "root_y": 50,
+  "shapes": [
+    {
+      "weight": 1,
+      "shape": {
+        "type": "fin",
+        "length": [
+          12,
+          30
+        ],
+        "thickness": [
+          2,
+          4
+        ],
+        "height": [
+          6,
+          18
+        ],
+        "orientation": "aligned",
+        "spread": 30.0,
+        "align_scale": 300.0,
+        "hole": {
+          "chance": 0.27,
+          "width": [
+            0.3,
+            0.5
+          ],
+          "height": [
+            0.4,
+            0.6
+          ]
+        }
+      }
+    }
+  ]
+}

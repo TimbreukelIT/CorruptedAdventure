@@ -13,35 +13,17 @@
           "argument1": 66.0,
           "argument2": {
             "type": "minecraft:add",
-            "argument1": "corruptedadventure:ring_2/overworld/plateau_height",
+            "argument1": "corruptedadventure:ring_2/overworld/plateau_surface",
             "argument2": {
               "type": "minecraft:mul",
               "argument1": "corruptedadventure:ring_2/overworld/canyon_depth",
               "argument2": {
                 "type": "minecraft:add",
-                "argument1": {
-                  "type": "minecraft:add",
-                  "argument1": 69.0,
-                  "argument2": {
-                    "type": "minecraft:mul",
-                    "argument1": 2.0,
-                    "argument2": {
-                      "type": "minecraft:clamp",
-                      "input": {
-                        "type": "minecraft:noise",
-                        "noise": "corruptedadventure:ring_2_hills",
-                        "xz_scale": 1.7,
-                        "y_scale": 0.0
-                      },
-                      "min": -1.0,
-                      "max": 1.0
-                    }
-                  }
-                },
+                "argument1": "corruptedadventure:ring_2/overworld/canyon_floor",
                 "argument2": {
                   "type": "minecraft:mul",
                   "argument1": -1.0,
-                  "argument2": "corruptedadventure:ring_2/overworld/plateau_height"
+                  "argument2": "corruptedadventure:ring_2/overworld/plateau_surface"
                 }
               }
             }

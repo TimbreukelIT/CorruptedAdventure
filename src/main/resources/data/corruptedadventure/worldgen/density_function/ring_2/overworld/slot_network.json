@@ -1,0 +1,10 @@
+{
+  "type": "corruptedadventure:cell_edges",
+  "cell_size": 110.0,
+  "jitter": 0.8,
+  "open_chance": 0.6,
+  "warp": "corruptedadventure:ring_2_slot_warp",
+  "warp_amplitude": 14.0,
+  "hash": "corruptedadventure:ring_2_slot_cells",
+  "max_distance": 24.0
+}

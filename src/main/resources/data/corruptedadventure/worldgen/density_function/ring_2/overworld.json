@@ -1,139 +1,126 @@
 {
-  "type": "minecraft:min",
-  "argument1": {
-    "type": "minecraft:squeeze",
+  "type": "corruptedadventure:canyon_details",
+  "argument": "corruptedadventure:ring_2/overworld/stack",
+  "rocks": [
+    "corruptedadventure:ring_2/overworld/plateau_rocks",
+    "corruptedadventure:ring_2/overworld/plateau_fins",
+    "corruptedadventure:ring_2/overworld/canyon_spires"
+  ],
+  "terrain": "corruptedadventure:ring_2/overworld/terrain",
+  "slot_network": "corruptedadventure:ring_2/overworld/slot_network",
+  "slot_weight": "corruptedadventure:ring_2/overworld/slot_weight",
+  "height": "corruptedadventure:ring_2/overworld/height",
+  "plateau_height": "corruptedadventure:ring_2/overworld/plateau_height",
+  "plateau_surface": "corruptedadventure:ring_2/overworld/plateau_surface",
+  "canyon_floor": "corruptedadventure:ring_2/overworld/canyon_floor",
+  "wall_weight": "corruptedadventure:ring_2/overworld/wall_weight",
+  "wobble": {
+    "type": "minecraft:interpolated",
     "argument": {
-      "type": "minecraft:mul",
-      "argument1": 0.64,
-      "argument2": {
-        "type": "minecraft:interpolated",
-        "argument": {
-          "type": "minecraft:blend_density",
-          "argument": {
-            "type": "minecraft:add",
-            "argument1": 0.1171875,
-            "argument2": {
-              "type": "minecraft:mul",
-              "argument1": {
-                "type": "minecraft:y_clamped_gradient",
-                "from_value": 0.0,
-                "from_y": -64,
-                "to_value": 1.0,
-                "to_y": -40
-              },
-              "argument2": {
-                "type": "minecraft:add",
-                "argument1": -0.1171875,
-                "argument2": {
-                  "type": "minecraft:add",
-                  "argument1": -0.078125,
-                  "argument2": {
-                    "type": "minecraft:mul",
-                    "argument1": {
-                      "type": "minecraft:y_clamped_gradient",
-                      "from_value": 1.0,
-                      "from_y": 240,
-                      "to_value": 0.0,
-                      "to_y": 256
-                    },
-                    "argument2": {
-                      "type": "minecraft:add",
-                      "argument1": 0.078125,
-                      "argument2": {
-                        "type": "minecraft:range_choice",
-                        "input": "corruptedadventure:ring_2/overworld/terrain",
-                        "max_exclusive": 1.5625,
-                        "min_inclusive": -1000000.0,
-                        "when_in_range": {
-                          "type": "minecraft:min",
-                          "argument1": "corruptedadventure:ring_2/overworld/terrain",
-                          "argument2": {
-                            "type": "minecraft:mul",
-                            "argument1": 5.0,
-                            "argument2": "minecraft:overworld/caves/entrances"
-                          }
-                        },
-                        "when_out_of_range": {
-                          "type": "minecraft:max",
-                          "argument1": {
-                            "type": "minecraft:min",
-                            "argument1": {
-                              "type": "minecraft:min",
-                              "argument1": {
-                                "type": "minecraft:add",
-                                "argument1": {
-                                  "type": "minecraft:mul",
-                                  "argument1": 4.0,
-                                  "argument2": {
-                                    "type": "minecraft:square",
-                                    "argument": {
-                                      "type": "minecraft:noise",
-                                      "noise": "minecraft:cave_layer",
-                                      "xz_scale": 1.0,
-                                      "y_scale": 8.0
-                                    }
-                                  }
-                                },
-                                "argument2": {
-                                  "type": "minecraft:add",
-                                  "argument1": {
-                                    "type": "minecraft:clamp",
-                                    "input": {
-                                      "type": "minecraft:add",
-                                      "argument1": 0.27,
-                                      "argument2": {
-                                        "type": "minecraft:noise",
-                                        "noise": "minecraft:cave_cheese",
-                                        "xz_scale": 1.0,
-                                        "y_scale": 0.6666666666666666
-                                      }
-                                    },
-                                    "max": 1.0,
-                                    "min": -1.0
-                                  },
-                                  "argument2": {
-                                    "type": "minecraft:clamp",
-                                    "input": {
-                                      "type": "minecraft:add",
-                                      "argument1": 1.5,
-                                      "argument2": {
-                                        "type": "minecraft:mul",
-                                        "argument1": -0.64,
-                                        "argument2": "corruptedadventure:ring_2/overworld/terrain"
-                                      }
-                                    },
-                                    "max": 0.5,
-                                    "min": 0.0
-                                  }
-                                }
-                              },
-                              "argument2": "minecraft:overworld/caves/entrances"
-                            },
-                            "argument2": {
-                              "type": "minecraft:add",
-                              "argument1": "minecraft:overworld/caves/spaghetti_2d",
-                              "argument2": "minecraft:overworld/caves/spaghetti_roughness_function"
-                            }
-                          },
-                          "argument2": {
-                            "type": "minecraft:range_choice",
-                            "input": "minecraft:overworld/caves/pillars",
-                            "max_exclusive": 0.03,
-                            "min_inclusive": -1000000.0,
-                            "when_in_range": -1000000.0,
-                            "when_out_of_range": "minecraft:overworld/caves/pillars"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      "type": "minecraft:noise",
+      "noise": "corruptedadventure:ring_2_slot_wobble",
+      "xz_scale": 1.0,
+      "y_scale": 1.0
     }
   },
-  "argument2": "minecraft:overworld/caves/noodle"
+  "band_noise": "corruptedadventure:ring_2_wall_bands",
+  "surface_noise": "minecraft:surface",
+  "slots": {
+    "width": [
+      3.5,
+      6.0
+    ],
+    "depth": [
+      25.0,
+      45.0
+    ],
+    "undercut": [
+      1.0,
+      2.0
+    ],
+    "wobble": 0.75,
+    "min_weight": 0.5,
+    "min_bottom": 70.0,
+    "floor_clearance": 4.0,
+    "bridge_spacing": 70.0,
+    "bridge_jitter": 15.0,
+    "bridge_length": [
+      3.0,
+      6.0
+    ],
+    "bridge_thickness": [
+      3.0,
+      6.0
+    ],
+    "chockstone_chance": 0.3,
+    "chockstone_thickness": [
+      2.0,
+      3.0
+    ]
+  },
+  "walls": {
+    "min_slope": 2.0,
+    "min_weight": 0.5,
+    "bands": {
+      "bottom": 8,
+      "period": 48,
+      "periods": 4,
+      "cream": [
+        [
+          5,
+          7
+        ],
+        [
+          19,
+          22
+        ],
+        [
+          31,
+          33
+        ],
+        [
+          44,
+          47
+        ]
+      ]
+    },
+    "ledges": {
+      "threshold": 0.0,
+      "ramp": 0.3,
+      "reach": [
+        1.0,
+        3.0
+      ],
+      "foot_distance": 3.0,
+      "min_height": 6.0
+    },
+    "niches": {
+      "threshold": 0.5,
+      "ramp": 0.2,
+      "min_floor": 66,
+      "height": [
+        4.0,
+        7.0
+      ],
+      "depth": [
+        3.0,
+        8.0
+      ]
+    },
+    "rim": {
+      "depth": [
+        3.0,
+        5.0
+      ],
+      "reach": [
+        2.0,
+        3.0
+      ],
+      "undercut_height": 2,
+      "undercut_depth": [
+        1.0,
+        2.0
+      ]
+    }
+  }
 }

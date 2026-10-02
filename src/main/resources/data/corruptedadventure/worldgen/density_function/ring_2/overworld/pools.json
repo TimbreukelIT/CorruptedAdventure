@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:spline",
+  "spline": {
+    "coordinate": {
+      "type": "minecraft:noise",
+      "noise": "corruptedadventure:ring_2_pools",
+      "xz_scale": 1.0,
+      "y_scale": 0.0
+    },
+    "points": [
+      {
+        "location": 0.22,
+        "value": 0.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.42,
+        "value": 3.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.5,
+        "value": 7.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.58,
+        "value": 13.0,
+        "derivative": 0.0
+      }
+    ]
+  }
+}

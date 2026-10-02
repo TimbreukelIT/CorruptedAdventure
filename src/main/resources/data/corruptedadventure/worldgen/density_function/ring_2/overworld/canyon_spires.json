@@ -1,0 +1,37 @@
+{
+  "type": "corruptedadventure:rock_pillars",
+  "hash": "corruptedadventure:ring_2_spire_cells",
+  "cell_size": 32,
+  "chance": 1.0,
+  "margin": 2,
+  "weight": "corruptedadventure:ring_2/overworld/canyon_spire_weight",
+  "min_weight": 0.85,
+  "floor": "corruptedadventure:ring_2/overworld/height",
+  "max_floor_step": 4.0,
+  "root_y": 50,
+  "shapes": [
+    {
+      "weight": 1,
+      "shape": {
+        "type": "needle",
+        "height": [
+          25,
+          50
+        ],
+        "base_radius": [
+          2.5,
+          4.0
+        ],
+        "top_radius": [
+          1.5,
+          3.0
+        ],
+        "flare": [
+          2.0,
+          3.5
+        ],
+        "flare_height": 0.3
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "type": "corruptedadventure:ring_blend",
+  "dimension": "minecraft:overworld",
+  "rings": {
+    "ring_1": 0.0,
+    "ring_2": 1.0,
+    "ring_3": 0.0,
+    "ring_4": 0.0,
+    "ring_5": 0.0,
+    "void": 0.0
+  }
+}
