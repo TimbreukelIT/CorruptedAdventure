@@ -25,6 +25,8 @@ public final class ModItems {
     public static final DeferredItem<Item> RAW_SUNSTONE = ITEMS.registerSimpleItem("raw_sunstone");
     /** Drop of the turquoise ores. Placeholder raw material: smelting, product, recipes and balance follow in phase 2. */
     public static final DeferredItem<Item> RAW_TURQUOISE = ITEMS.registerSimpleItem("raw_turquoise");
+    /** Drop of the salt crust. Placeholder: its use and recipes follow in phase 2. */
+    public static final DeferredItem<Item> SALT = ITEMS.registerSimpleItem("salt");
 
     private ModItems() {
     }

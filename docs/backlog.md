@@ -99,3 +99,8 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [atmosphere] Windgeluid van de zandstorm is een verwijzing naar vanilla `item.elytra.flying` (pitch 0,7); de synthese-pijplijn van change 32 (`Ring2Sounds.java`) kan het vervangen door een eigen wind. (bron: change 28)
 - [atmosphere] Wind-duw ook voor items, mobs en spelers op een rijdier/in een boot, als dat later gewenst is (nu alleen spelers te voet). (bron: change 28)
 - [atmosphere] Post-shader `heat_haze` met shaderpacks (Iris) of performance-mods: het effect valt daar mogelijk weg (geaccepteerd in het plan); bij klachten een particle-alternatief (plan 28 vraag 5 B). (bron: change 28)
+
+## Uit change 29
+- [items] Zout (`salt`): doel en recipes in fase 2 — 4 zout ↔ zoutblok (`c:storage_blocks/salt`), zoutblok → gepolijst zout (+ steenzaag: trap/plaat/muur); eventueel voedsel/conservering of een rol bij uitdroging. Gepolijst zout en zijn vormen hebben tot dan geen survival-bron. (bron: change 29)
+- [blocks] Later-ideeën uit de zout-sparring (afgewezen voor nu): vallende/brosse zoutkorst, een zoutbakstenen-familie (`salt_bricks` + trap/plaat/muur, bijv. voor zoutstructures in fase 3), trap/plaat/muur van het ruwe zoutblok, zoutkristallen die groeien (zoals amethist). (bron: change 29)
+- [blocks] Zoutkristal hergebruikt vanilla `AmethystClusterBlock`: een projectiel-treffer speelt het amethist-belgeluid. Bij change 37 (geluid/uiterlijk) beoordelen of een eigen class met eigen geluid nodig is. (bron: change 29)

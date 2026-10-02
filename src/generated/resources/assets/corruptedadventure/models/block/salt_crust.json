@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "corruptedadventure:block/salt_block",
+    "side": "corruptedadventure:block/salt_crust_side",
+    "top": "corruptedadventure:block/salt_crust_top"
+  }
+}

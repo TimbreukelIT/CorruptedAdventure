@@ -4,6 +4,8 @@
     "corruptedadventure:canyon_cobblestone",
     "corruptedadventure:scorched_sandstone",
     "corruptedadventure:cracked_clay",
-    "corruptedadventure:loose_sand"
+    "corruptedadventure:loose_sand",
+    "corruptedadventure:salt_crust",
+    "corruptedadventure:salt_block"
   ]
 }

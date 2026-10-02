@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
@@ -118,6 +119,16 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
                 ModBlocks.CREAM_CANYON_TURQUOISE_ORE.get())) {
             add(ore, block -> createOreDrop(block, ModItems.RAW_TURQUOISE.get()));
         }
+
+        // Like clay -> 4 clay balls (no Fortune); Silk Touch -> the crust itself.
+        add(ModBlocks.SALT_CRUST.get(), block -> createSingleItemTableWithSilkTouch(block, ModItems.SALT.get(), ConstantValue.exactly(4.0F)));
+        dropSelf(ModBlocks.SALT_BLOCK.get());
+        dropSelf(ModBlocks.POLISHED_SALT.get());
+        dropSelf(ModBlocks.POLISHED_SALT_STAIRS.get());
+        add(ModBlocks.POLISHED_SALT_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.POLISHED_SALT_WALL.get());
+        // Decoration you want to take along: itself, with any tool.
+        dropSelf(ModBlocks.SALT_CRYSTAL.get());
     }
 
     @Override

@@ -164,6 +164,16 @@ final class DutchLanguageProvider extends LanguageProvider {
         addItem(ModItems.RAW_SUNSTONE, "Ruwe zonnesteen");
         addItem(ModItems.RAW_TURQUOISE, "Ruw turkoois");
 
+        // Ring 2 salt (vanilla pattern: "Gepolijst andesiet", "Gepolijste andesiettrap", "Sneeuwblok").
+        addBlock(ModBlocks.SALT_CRUST, "Zoutkorst");
+        addBlock(ModBlocks.SALT_BLOCK, "Zoutblok");
+        addBlock(ModBlocks.POLISHED_SALT, "Gepolijst zout");
+        addBlock(ModBlocks.POLISHED_SALT_STAIRS, "Gepolijste zouttrap");
+        addBlock(ModBlocks.POLISHED_SALT_SLAB, "Gepolijste zoutplaat");
+        addBlock(ModBlocks.POLISHED_SALT_WALL, "Gepolijste zoutmuur");
+        addBlock(ModBlocks.SALT_CRYSTAL, "Zoutkristal");
+        addItem(ModItems.SALT, "Zout");
+
         biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
         biome(ModBiomes.CANYONLANDS, "Kloofland");
         biome(ModBiomes.OASIS_FLATS, "Oasevlakte");

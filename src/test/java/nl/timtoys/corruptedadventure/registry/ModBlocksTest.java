@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.registry;
 
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -12,9 +13,12 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DropExperienceBlock;
+import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.junit.jupiter.api.Test;
@@ -106,6 +110,33 @@ class ModBlocksTest {
         int soulCrystal = standalone.indexOf(ModItems.SOUL_CRYSTAL.get());
         assertEquals(List.of(ModItems.RAW_SUNSTONE.get(), ModItems.RAW_TURQUOISE.get()),
                 standalone.subList(soulCrystal + 1, soulCrystal + 3));
+    }
+
+    @Test
+    void saltSetFollowsTheRing2OresAndSaltFollowsRawTurquoise() {
+        List<Item> shown = new ArrayList<>();
+        ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).forEach(shown::add);
+        int ore = shown.indexOf(ModBlocks.CREAM_CANYON_TURQUOISE_ORE.asItem());
+        assertEquals(List.of(ModBlocks.SALT_CRUST.asItem(), ModBlocks.SALT_BLOCK.asItem(), ModBlocks.POLISHED_SALT.asItem(),
+                ModBlocks.POLISHED_SALT_STAIRS.asItem(), ModBlocks.POLISHED_SALT_SLAB.asItem(),
+                ModBlocks.POLISHED_SALT_WALL.asItem(), ModBlocks.SALT_CRYSTAL.asItem()), shown.subList(ore + 1, ore + 8));
+        List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
+                .filter(item -> !(item instanceof BlockItem)).toList();
+        assertEquals(standalone.indexOf(ModItems.RAW_TURQUOISE.get()) + 1, standalone.indexOf(ModItems.SALT.get()));
+    }
+
+    /** Worldgen (change 30) places the default state on the crust, so it must face up and glow faintly. */
+    @Test
+    void saltCrystalStandsUpDryAndGlowsFaintly() {
+        BlockState crystal = ModBlocks.SALT_CRYSTAL.get().defaultBlockState();
+        assertEquals(Direction.UP, crystal.getValue(AmethystClusterBlock.FACING));
+        assertFalse(crystal.getValue(AmethystClusterBlock.WATERLOGGED));
+        assertEquals(3, crystal.getLightEmission());
+    }
+
+    @Test
+    void saltCrustDoesNotFall() {
+        assertFalse(ModBlocks.SALT_CRUST.get() instanceof FallingBlock);
     }
 
     @Test

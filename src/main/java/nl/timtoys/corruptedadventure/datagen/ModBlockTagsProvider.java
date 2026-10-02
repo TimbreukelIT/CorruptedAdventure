@@ -111,6 +111,24 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
 
         palm();
         ring2Ores();
+        salt();
+    }
+
+    /**
+     * The salt set. Crust and salt block are natural ground that carvers cut through, but deliberately in no plant or
+     * ground tag ({@code #sand}, {@code #dirt}, {@code #base_stone_overworld}, {@code desert_plant_soil},
+     * {@code #dead_bush_may_place_on}, {@code #animals_spawnable_on}): the salt flats stay bare, and vanilla's desert and
+     * underground rules stay off salt.
+     */
+    private void salt() {
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.SALT_CRUST.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SALT_BLOCK.get(), ModBlocks.POLISHED_SALT.get(),
+                ModBlocks.POLISHED_SALT_STAIRS.get(), ModBlocks.POLISHED_SALT_SLAB.get(), ModBlocks.POLISHED_SALT_WALL.get(),
+                ModBlocks.SALT_CRYSTAL.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.POLISHED_SALT_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.POLISHED_SALT_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.POLISHED_SALT_WALL.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.SALT_CRUST.get(), ModBlocks.SALT_BLOCK.get());
     }
 
     /**

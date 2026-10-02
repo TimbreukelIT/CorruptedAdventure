@@ -68,6 +68,13 @@ public final class Ring2Textures {
     private static final int[] SUNSTONE = {0x5A2A08, 0x9A4A0C, 0xD9801A, 0xF2B23A, 0xFFE07A, 0xFFF6C8};
     private static final int[] TURQUOISE = {0x0E3B3A, 0x1C6B66, 0x2E9C92, 0x4FC6B5, 0x8FE6D6};
     private static final int TURQUOISE_VEIN = 0x3A2A1E;
+    // Salt working palettes (change 29, placeholders; final in change 37): dark to light.
+    private static final int[] SALT = {0xB8AE9A, 0xCFC7B6, 0xE2DCCF, 0xEFEBE2, 0xF7F5EF};
+    private static final int SALT_RIDGE = 0xFFFFFF;
+    private static final int SALT_RIDGE_SHADOW = 0xC9C0AE;
+    private static final int SALT_OUTLINE = 0x8A8070;
+    private static final int[] SALT_CRYSTAL = {0xBFCFD8, 0xDCE6EB, 0xF1F5F7, 0xFFFFFF};
+    private static final int SALT_CRYSTAL_BLUSH = 0xEBD9D6;
 
     /**
      * How a texture moves: {@code frames} frames of {@code frametime} ticks, optionally interpolated; {@code glow} is
@@ -127,6 +134,12 @@ public final class Ring2Textures {
         still("block/turquoise_ore_overlay", Ring2Textures::turquoiseOreOverlay);
         still("item/raw_sunstone", Ring2Textures::rawSunstone);
         still("item/raw_turquoise", Ring2Textures::rawTurquoise);
+        still("block/salt_crust_top", Ring2Textures::saltCrustTop);
+        still("block/salt_crust_side", Ring2Textures::saltCrustSide);
+        still("block/salt_block", Ring2Textures::saltBlock);
+        still("block/polished_salt", Ring2Textures::polishedSalt);
+        still("block/salt_crystal", Ring2Textures::saltCrystal);
+        still("item/salt", Ring2Textures::saltItem);
     }
 
     private static void still(String name, Painter painter) {
@@ -917,6 +930,144 @@ public final class Ring2Textures {
                 }
             }
         }
+    }
+
+    // ---- Salt -----------------------------------------------------------------------------------------------
+
+    /**
+     * Salt flat crust from above: coarse polygons (wrapping cells, like the cracked clay plates) parted by raised white
+     * ridges, each ridge casting a thin shadow on the plate below it.
+     */
+    private static void saltCrustTop(BufferedImage image, Random random) {
+        Cells cells = Cells.random(random, 5);
+        double[] plate = new double[cells.count()];
+        for (int i = 0; i < plate.length; i++) {
+            plate[i] = 0.3 + 0.3 * random.nextDouble();
+        }
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                Cells.Nearest nearest = cells.nearest(x, y);
+                double gap = nearest.secondDistance() - nearest.distance();
+                if (gap < 0.7) {
+                    set(image, x, y, SALT_RIDGE);
+                } else if (gap < 1.6 && nearest.dy() < 0) {
+                    set(image, x, y, SALT_RIDGE_SHADOW);
+                } else {
+                    set(image, x, y, shade(SALT, plate[nearest.index()] + 0.2 * random.nextDouble()));
+                }
+            }
+        }
+    }
+
+    /**
+     * Crust side: the salt block's own pixels (taken from that texture, so the two always match) under a crust band of
+     * 2–3 px with a shadowed lower edge.
+     */
+    private static void saltCrustSide(BufferedImage image, Random random) {
+        copy(renderUnchecked("block/salt_block"), image);
+        for (int x = 0; x < SIZE; x++) {
+            int depth = 2 + random.nextInt(2);
+            for (int y = 0; y < depth - 1; y++) {
+                set(image, x, y, random.nextInt(3) == 0 ? SALT[4] : SALT_RIDGE);
+            }
+            set(image, x, depth - 1, SALT_RIDGE_SHADOW);
+        }
+    }
+
+    /** Fine-grained salt with a few small crystal faces (lit top-left, shadowed bottom-right). */
+    private static void saltBlock(BufferedImage image, Random random) {
+        double[][] noise = valueNoise(random, 4, 4);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(SALT, 0.15 + 0.4 * noise[x][y] + 0.3 * random.nextDouble()));
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            setWrapped(image, x, y, SALT_RIDGE);
+            setWrapped(image, x + 1, y, SALT[3]);
+            setWrapped(image, x, y + 1, SALT[3]);
+            setWrapped(image, x + 1, y + 1, SALT[1]);
+        }
+    }
+
+    /** Polished, as vanilla lays it out: a smooth face with a light top-left and a dark bottom-right rim. */
+    private static void polishedSalt(BufferedImage image, Random random) {
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(SALT, 0.6 + 0.2 * random.nextDouble()));
+            }
+        }
+        for (int i = 0; i < SIZE; i++) {
+            set(image, i, 0, SALT[4]);
+            set(image, 0, i, SALT[4]);
+        }
+        for (int i = 0; i < SIZE; i++) {
+            set(image, i, SIZE - 1, SALT[0]);
+            set(image, SIZE - 1, i, SALT[0]);
+        }
+        for (int i = 1; i < SIZE - 1; i++) {
+            set(image, i, SIZE - 2, SALT[1]);
+            set(image, SIZE - 2, i, SALT[1]);
+        }
+    }
+
+    /**
+     * Three pointed crystals growing from the bottom edge (cross model, cutout): a tall one in the middle and two
+     * shorter ones leaning outwards; light left facet, bright ridge, shaded right facet, a faint pink blush here and
+     * there. Transparent background.
+     */
+    private static void saltCrystal(BufferedImage image, Random random) {
+        crystalSpike(image, random, 7.5, 3, 13, 0);
+        crystalSpike(image, random, 3.5, 2, 8 + random.nextInt(2), -2);
+        crystalSpike(image, random, 11.5, 2, 7 + random.nextInt(2), 2);
+    }
+
+    /**
+     * One crystal from the bottom row up: {@code halfWidth} px either side of the ridge, tapering to a point over the top
+     * rows, its ridge shifting {@code lean} px over the full {@code height}.
+     */
+    private static void crystalSpike(BufferedImage image, Random random, double centre, int halfWidth, int height, int lean) {
+        for (int row = 0; row < height; row++) {
+            int y = SIZE - 1 - row;
+            int ridge = (int) Math.round(centre + lean * row / (double) height);
+            int fromTop = height - 1 - row;
+            int half = Math.min(halfWidth, fromTop * halfWidth / (halfWidth + 1));
+            for (int x = ridge - half; x <= ridge + half; x++) {
+                if (x < 0 || x >= SIZE) {
+                    continue;
+                }
+                int color = x < ridge ? SALT_CRYSTAL[2] : x == ridge ? SALT_CRYSTAL[3] : SALT_CRYSTAL[x == ridge + half ? 0 : 1];
+                if (x != ridge && random.nextInt(9) == 0) {
+                    color = SALT_CRYSTAL_BLUSH;
+                }
+                set(image, x, y, color);
+            }
+        }
+    }
+
+    /** A small heap of salt grains with a few sparkling crystals and a dark outline (like vanilla's dusts). */
+    private static void saltItem(BufferedImage image, Random random) {
+        for (int y = 6; y < SIZE - 1; y++) {
+            for (int x = 1; x < SIZE - 1; x++) {
+                double dx = (x + 0.5 - 8.0) / 6.5;
+                double dy = (y + 0.5 - 15.0) / 8.0;
+                if (dx * dx + dy * dy > 1) {
+                    continue;
+                }
+                double light = 0.75 - 0.35 * (dx - dy) + 0.3 * (random.nextDouble() - 0.5);
+                set(image, x, y, shade(SALT, light));
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            int x = 4 + random.nextInt(8);
+            int y = 10 + random.nextInt(4);
+            if (isOpaque(image, x, y)) {
+                set(image, x, y, SALT_RIDGE);
+            }
+        }
+        outline(image, SALT_OUTLINE);
     }
 
     // ---- Animation ------------------------------------------------------------------------------------------

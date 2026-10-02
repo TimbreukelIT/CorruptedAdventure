@@ -5,6 +5,7 @@ import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.DoubleHighBlockItem;
+import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
@@ -223,6 +224,32 @@ public final class ModBlocks {
             () -> turquoiseOre(MapColor.TERRACOTTA_ORANGE));
     public static final DeferredBlock<DropExperienceBlock> CREAM_CANYON_TURQUOISE_ORE = register("cream_canyon_turquoise_ore",
             () -> turquoiseOre(MapColor.TERRACOTTA_WHITE));
+
+    // Salt: the crust and block of the salt flats, polished salt to build with, and a crystal for decoration.
+    /**
+     * Top layer of the salt flats; drops {@link ModItems#SALT}. Sand's strength and sound, but it does not fall: the
+     * flats lie above caves, and a falling crust would cave in at every hole.
+     */
+    public static final DeferredBlock<Block> SALT_CRUST = register("salt_crust",
+            () -> new Block(Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.SNOW)));
+    public static final DeferredBlock<Block> SALT_BLOCK = register("salt_block",
+            () -> new Block(Properties.ofFullCopy(Blocks.CALCITE).mapColor(MapColor.QUARTZ)));
+    public static final DeferredBlock<Block> POLISHED_SALT = register("polished_salt",
+            () -> new Block(Properties.ofFullCopy(Blocks.CALCITE).mapColor(MapColor.QUARTZ)));
+    public static final DeferredBlock<StairBlock> POLISHED_SALT_STAIRS = register("polished_salt_stairs",
+            () -> new StairBlock(POLISHED_SALT.get().defaultBlockState(), Properties.ofFullCopy(POLISHED_SALT.get())));
+    public static final DeferredBlock<SlabBlock> POLISHED_SALT_SLAB = register("polished_salt_slab",
+            () -> new SlabBlock(Properties.ofFullCopy(POLISHED_SALT.get())));
+    /** Solid for support like vanilla walls ({@code forceSolidOn}), which a copy of a full block does not carry. */
+    public static final DeferredBlock<WallBlock> POLISHED_SALT_WALL = register("polished_salt_wall",
+            () -> new WallBlock(Properties.ofFullCopy(POLISHED_SALT.get()).forceSolidOn()));
+    /**
+     * Vanilla's amethyst cluster behaviour (any face, waterloggable, breaks without support) in its shape, with a faint
+     * glow (light 3). The default state faces up, which worldgen places on the crust.
+     */
+    public static final DeferredBlock<AmethystClusterBlock> SALT_CRYSTAL = register("salt_crystal",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, Properties.ofFullCopy(Blocks.AMETHYST_CLUSTER)
+                    .mapColor(MapColor.QUARTZ).lightLevel(state -> 3)));
 
     private ModBlocks() {
     }

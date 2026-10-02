@@ -103,6 +103,33 @@ final class ModBlockStateProvider extends BlockStateProvider {
 
         palm();
         ring2Ores();
+        salt();
+    }
+
+    /** The salt set: a crust over salt block (its bottom is the salt block), polished salt with its shapes, a crystal. */
+    private void salt() {
+        ResourceLocation saltBlock = blockTexture(ModBlocks.SALT_BLOCK.get());
+        simpleBlock(ModBlocks.SALT_CRUST.get(), models().cubeBottomTop("salt_crust",
+                modLoc("block/salt_crust_side"), saltBlock, modLoc("block/salt_crust_top")));
+        simpleBlock(ModBlocks.SALT_BLOCK.get());
+        ResourceLocation polished = blockTexture(ModBlocks.POLISHED_SALT.get());
+        simpleBlock(ModBlocks.POLISHED_SALT.get());
+        stairsBlock(ModBlocks.POLISHED_SALT_STAIRS.get(), polished);
+        slabBlock(ModBlocks.POLISHED_SALT_SLAB.get(), polished, polished);
+        wallBlock(ModBlocks.POLISHED_SALT_WALL.get(), polished);
+        crystalCluster(ModBlocks.SALT_CRYSTAL.get());
+    }
+
+    /**
+     * A crystal on any face, like vanilla's amethyst cluster: one cutout cross model, rotated per {@code facing} exactly
+     * as vanilla's blockstate (the same model when waterlogged), and a flat item with the block texture on vanilla's
+     * amethyst bud transforms. Shared by every crystal block (salt crystal; later the dew crystal stages).
+     */
+    private void crystalCluster(Block block) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        ResourceLocation texture = blockTexture(block);
+        directionalBlock(block, models().cross(name, texture).renderType("cutout"));
+        itemModels().withExistingParent(name, mcLoc("item/amethyst_bud")).texture("layer0", texture);
     }
 
     /**

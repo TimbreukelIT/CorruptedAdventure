@@ -93,6 +93,15 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.CREAM_CANYON_TURQUOISE_ORE);
         basicItem(ModItems.RAW_SUNSTONE.get());
         basicItem(ModItems.RAW_TURQUOISE.get());
+
+        blockItem(ModBlocks.SALT_CRUST);
+        blockItem(ModBlocks.SALT_BLOCK);
+        blockItem(ModBlocks.POLISHED_SALT);
+        blockItem(ModBlocks.POLISHED_SALT_STAIRS);
+        blockItem(ModBlocks.POLISHED_SALT_SLAB);
+        wallInventory(ModBlocks.POLISHED_SALT_WALL.getId().getPath(), modLoc("block/polished_salt"));
+        // salt_crystal: ModBlockStateProvider.crystalCluster writes its item model.
+        basicItem(ModItems.SALT.get());
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

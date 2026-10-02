@@ -22,6 +22,12 @@
     "corruptedadventure:smooth_scorched_sandstone_stairs",
     "corruptedadventure:smooth_scorched_sandstone_slab",
     "#c:ores/sunstone",
-    "#c:ores/turquoise"
+    "#c:ores/turquoise",
+    "corruptedadventure:salt_block",
+    "corruptedadventure:polished_salt",
+    "corruptedadventure:polished_salt_stairs",
+    "corruptedadventure:polished_salt_slab",
+    "corruptedadventure:polished_salt_wall",
+    "corruptedadventure:salt_crystal"
   ]
 }

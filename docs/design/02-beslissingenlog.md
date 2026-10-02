@@ -277,3 +277,9 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-02 | atmosphere | Geluid ring 2-weer: wind-loop bij de zandstorm (vanilla-geluid), hittegolf stil | Storm zonder wind voelt kaal; geen audiobestand nodig |
 | 2026-10-02 | atmosphere | Hittegolf ×2 als `RateModifier` in `weather/` die de weerstaat zelf leest; `ConditionContext` en `DehydrationRule` blijven ongewijzigd, alleen de registratie raakt `conditions` | Scope `atmosphere` houden; latere weer-changes volgen hetzelfde patroon |
 | 2026-10-02 | atmosphere | Zandstorm-particle `corruptedadventure:sand_gust` met vanilla `generic_*`-sprites; visuele waarden als constanten, geen client-config | Geen textures-werk in deze change; spelers kunnen het zicht niet terugzetten |
+| 2026-10-02 | blocks | Zout-set: `salt_crust`, `salt_block`, `polished_salt`, `salt_crystal` + `polished_salt_stairs`/`_slab`/`_wall` | Gepolijst zout wordt echt bouwmateriaal; geen extra textures |
+| 2026-10-02 | blocks | Zoutkorst: vol blok dat niet valt, geluid/sterkte als zand; korst en zoutblok in `#overworld_carver_replaceables`, niet in `#sand`/`#dirt`/`#base_stone_overworld` | Surface rule-bovenlaag voor `salt_flats` (change 30); grotten snijden erdoor; geen vanilla-woestijn- of ondergrondregels op zout |
+| 2026-10-02 | blocks | Zout-drops: korst → 4 `salt` (Silk Touch → korst), rest zichzelf; zout-item wel als placeholder (nut fase 2), `c:dusts/salt` | Zoals klei → kleiballen; spelers verzamelen al voor fase 2 |
+| 2026-10-02 | blocks | Zoutkristal: vanilla `AmethystClusterBlock(7, 3)` | Geen eigen class; vertrouwd gedrag |
+| 2026-10-02 | blocks | Zoutkristal-licht: 3, geen emissive (beslist in change 37) | "Zwak licht" uit het design |
+| 2026-10-02 | blocks | Woestijnflora op zoutkorst: nee, zout in geen plant-tag | Zoutvlakte blijft kaal |

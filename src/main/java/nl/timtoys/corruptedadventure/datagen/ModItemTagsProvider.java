@@ -55,6 +55,8 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         tag(ModTags.Items.RAW_MATERIALS_SUNSTONE).add(ModItems.RAW_SUNSTONE.get());
         tag(ModTags.Items.RAW_MATERIALS_TURQUOISE).add(ModItems.RAW_TURQUOISE.get());
         tag(Tags.Items.RAW_MATERIALS).addTag(ModTags.Items.RAW_MATERIALS_SUNSTONE).addTag(ModTags.Items.RAW_MATERIALS_TURQUOISE);
+        tag(ModTags.Items.DUSTS_SALT).add(ModItems.SALT.get());
+        tag(Tags.Items.DUSTS).addTag(ModTags.Items.DUSTS_SALT);
 
         copy(ModTags.Blocks.CANYON_STONES, ModTags.Items.CANYON_STONES);
         copy(BlockTags.STAIRS, ItemTags.STAIRS);

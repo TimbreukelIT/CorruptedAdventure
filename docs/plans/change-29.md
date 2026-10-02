@@ -248,3 +248,50 @@ Antwoord: **A** — nee: zout in geen enkele plant-tag.
 | 2026-10-01 | blocks | Woestijnflora op zoutkorst: nee, zout in geen plant-tag | Zoutvlakte blijft kaal |
 
 Commit (na `/code-review`): `blocks: add salt set`.
+
+---
+
+## Bouwnotities (change 29, 2026-10-02)
+
+Aannames gecontroleerd tegen de code na change 28 (`2e7567d`): klopten. Ring 2-sectie in `ModBlocks` eindigt op `cream_canyon_turquoise_ore` (de zoutblokken komen daarna), `raw_turquoise` is het laatste losse item, `Ring2Textures.java` heeft `still`/`renderUnchecked`/`Cells`/`outline`, `desert_plant_soil` bestaat. `Tags.Items.DUSTS` (`c:dusts`) bestaat in NeoForge 21.1.252, dus `c:dusts/salt` gaat erin (zelfde patroon als `c:gems/soul_crystal`). Beslissingenlog-regels met de bouwdatum 2026-10-02.
+
+Afwijkingen en implementatiedetails (door de agent gekozen):
+- **Vanilla-itemmodel `amethyst_cluster`:** heeft in 1.21.1 parent `minecraft:item/generated` (alleen een `head`-transform), niet `item/amethyst_bud` zoals het plan stelt. De afgestemde keuze (parent `item/amethyst_bud`, de knop-transforms) is gevolgd; het verschil is alleen hoe groot het kristal in de hand/GUI staat. Valkuil in `CODEBASE.md`.
+- **`crystalCluster` schrijft het itemmodel zelf** via `itemModels()` van de `BlockStateProvider` (één helper voor blockstate + model + item, zoals afgesproken); `ModItemModelProvider` slaat `salt_crystal` dus over (anders twee providers op hetzelfde bestand).
+- **Muur:** `ofFullCopy(polished_salt).forceSolidOn()` — vanilla-muren hebben `forceSolidOn`, een kopie van een vol blok niet. Trap/plaat: `ofFullCopy(polished_salt)`.
+- **nl-namen:** "Gepolijste zouttrap/-plaat/-muur" (vanilla "Gepolijste andesiettrap", "Gepolijste andesietplaat").
+- **Texture-details:** korst-top = 5 wrappende cellen met witte opstaande randen (`gap` < 0,7) en een schaduwrand aan de bovenkant van elke plaat; korst-zijkant = de pixels van `salt_block` (via `renderUnchecked`, dus altijd gelijk) met een korstband van 2–3 px waarvan de onderste rij schaduw is; zoutblok = korrel + 4 kristalvlakjes; gepolijst = glad vlak met lichte rand linksboven en donkere dubbele rand rechtsonder; kristal = 3 punten (midden 13 hoog, zijkanten 7–9, naar buiten hellend), roze zweem op ~1/9 van de vlakpixels; item `salt` = hoopje korrels met een donkere omlijning (`SALT_OUTLINE` `8A8070`, extra werkkleur).
+- **Extra tests in `ModBlocksTest`** (8 → 11): volgorde zout-set na het laatste erts en `salt` direct na `raw_turquoise`; kristal standaard `facing=up`, droog, licht 3; korst geen `FallingBlock`.
+
+### Testresultaten
+
+- **Script:** `java tools/textures/Ring2Textures.java` schrijft 6 nieuwe PNG's (16×16; kristal en item alpha 0/255, de rest volledig dekkend); tweede run byte-identiek (md5); alle bestaande ring 2-PNG's ongewijzigd (md5 vóór/na); `salt_crust_side` rijen 3–15 = `salt_block` pixel voor pixel.
+- **B:** `./gradlew build` geslaagd, 62 testklassen / 301 tests, geen fouten (`ModBlocksTest` 11).
+- **D:** `./gradlew runData` geslaagd, geen "texture does not exist". Nieuw: 7 blockstates (kristal 12 varianten, rotaties = vanilla `amethyst_cluster`), 12 block-models (kristal `render_type` cutout), 8 item-models (`salt_crystal` parent `item/amethyst_bud`, `salt`), 7 loot tables (korst: Silk Touch-tak → korst, anders `set_count` 4 + `explosion_decay`), `c:dusts`, `c:dusts/salt`; gewijzigd (alleen nieuwe regels): `mineable/pickaxe`, `mineable/shovel`, `overworld_carver_replaceables`, `stairs`/`slabs`/`walls` (blok + item), lang en/nl.
+- **S:** `tools/server-smoke-test.sh` met `level-name=smoke-change29` (preset `corrupted_world`, seed 20260930): `Done (9.450s)`, geen fouten of client-class-meldingen. Daarna server met RCON (`build/tmp/c29_test.py`), **101/101 geslaagd**:
+  - alle 7 blokken plaatsbaar; tags: korst in `#mineable/shovel` + `#overworld_carver_replaceables`, zoutblok in `#mineable/pickaxe` + `#overworld_carver_replaceables`, gepolijst + vormen + kristal in `#mineable/pickaxe`, vormen in `#stairs`/`#slabs`/`#walls`; korst en zoutblok **niet** in `#sand`, `#dirt`, `#base_stone_overworld`, `desert_plant_soil`, `#dead_bush_may_place_on`, `#animals_spawnable_on`; gepolijst/kristal niet in `#overworld_carver_replaceables`;
+  - kristal-standaardstaat `facing=up,waterlogged=false`;
+  - loot: korst + ijzeren schop → 4 `salt`, met de hand → 4, Fortune III 10× → altijd 4, Silk Touch → korst; `salt` in `#c:dusts/salt` en `#c:dusts`, niet `#c:gems`; zoutblok/gepolijst/trap/muur met houten pickaxe en Fortune III → zichzelf; plaat → 1, dubbel → 2; kristal met de hand, houten pickaxe, Silk Touch en Fortune III → zichzelf; vormen als item in `#stairs`/`#slabs`/`#walls`;
+  - overleven: kristal `facing=north` aan steen blijft, steen weg → kristal weg; `facing=up` op korst blijft, korst weg → weg; `facing=down` onder zoutblok blijft, zoutblok weg → weg; `waterlogged=true` blijft;
+  - korst, zoutblok en gepolijst zout boven lucht + buur-update → blijven staan (vallen niet);
+  - licht in een dichte stenen doos: 3 op het kristal, 2 en 1 op 1 en 2 blokken afstand, 2 erboven;
+  - flora breekt als de grond (zand/aarde/gras) door korst of zoutblok wordt vervangen: dorre struik, tonnetjescactus, woestijnbloem, palmzaailing, dode struik, klaproos, kort gras, eikenzaailing, cactus; suikerriet aan water op korst ook.
+  - Server via RCON `stop` (wereld opgeslagen), geen draaiende server; RCON weer uit, `run/server.properties` op `level-name=smoke-change29`.
+
+### Code review (`/code-review medium`)
+
+Geen bugs gevonden (registry, datagen incl. blockstate-rotaties, loot, tags, itemmodel maar één keer geschreven, test en texturescript nagelopen tegen de gegenereerde output). Niets aangepast.
+
+## In-game checklist (W)
+
+W-achteraf (niet blokkerend; gebundeld in de ring 2-eindcheck, teststop 3 ná change 37). ~10 min. `./gradlew runClient`, nieuwe wereld **Corrupted World**, seed `20260930`, cheats aan, creatief. Testplek in de lucht boven spawn: `/fill -8 150 -8 8 150 8 minecraft:stone` en `/tp @s 0 151 0`.
+
+1. **Creative tab:** direct na `cream_canyon_turquoise_ore` zoutkorst, zoutblok, gepolijst zout, gepolijste zouttrap, -plaat, -muur, zoutkristal; achteraan de losse items `soul_crystal`, `raw_sunstone`, `raw_turquoise`, `salt`. Namen en/nl kloppen (taal wisselen).
+2. **Plaatsen:** alle blokken op het platform; geen paars-zwart. Zoutkorst: top met witte korstranden, zijkant zoutblok met een witte band bovenaan, bodem = zoutblok (blok omkeren met `/setblock` onder het platform en van onderen kijken). Muur verbindt met een vanilla-andesietmuur; trap (hoeken) en plaat (onder/boven/dubbel) kloppen.
+3. **Kristal:** plaatsen op de vloer, tegen alle vier de wanden en tegen een plafond → steeds juist georiënteerd (punt van de steun af). In een waterbron plaatsen → waterlogged (water blijft). Steun weghalen → kristal breekt en dropt zichzelf. Kristal in de hand/GUI: plat, redelijk formaat (amethist-knop-transforms).
+4. **Licht:** `/time set midnight`, dicht kamertje van steen met één kristal → F3 *Light* 3 op het kristal, 2 ernaast; in creatief geen monsters naast het kristal (`/difficulty easy`, even wachten in het donker rondom).
+5. **Mijnen (survival):** `/gamemode survival`, `/give @s minecraft:iron_shovel`, `/give @s minecraft:wooden_pickaxe`, `/give @s minecraft:iron_shovel[minecraft:enchantments={levels:{"minecraft:silk_touch":1}}]`. Korst met de hand en met de schop (sneller) → 4 zout; met Silk Touch → korst. Zoutblok/gepolijst: met de hand → niets, met houten pickaxe → zichzelf. Kristal met de hand → zichzelf.
+6. **Korst valt niet:** korst als plafond (3 hoog) bouwen, een blok eronder weghalen / eronder staan → korst blijft hangen.
+7. **Flora:** in creatief dorre struik, woestijnbloem, palmzaailing, dode struik, cactus en een bloem op korst en zoutblok proberen te plaatsen → lukt niet.
+8. **Geluiden:** korst klinkt als zand, zoutblok/gepolijst als calciet, kristal als amethist (ook een pijl erop: belgeluid, bekend). Definitief later.
+9. **Item `salt`:** eigen plaatje (hoopje korrels), geen recept (verwacht, fase 2).

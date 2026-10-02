@@ -164,6 +164,16 @@ final class EnglishLanguageProvider extends LanguageProvider {
         addItem(ModItems.RAW_SUNSTONE, "Raw Sunstone");
         addItem(ModItems.RAW_TURQUOISE, "Raw Turquoise");
 
+        // Ring 2 salt.
+        addBlock(ModBlocks.SALT_CRUST, "Salt Crust");
+        addBlock(ModBlocks.SALT_BLOCK, "Salt Block");
+        addBlock(ModBlocks.POLISHED_SALT, "Polished Salt");
+        addBlock(ModBlocks.POLISHED_SALT_STAIRS, "Polished Salt Stairs");
+        addBlock(ModBlocks.POLISHED_SALT_SLAB, "Polished Salt Slab");
+        addBlock(ModBlocks.POLISHED_SALT_WALL, "Polished Salt Wall");
+        addBlock(ModBlocks.SALT_CRYSTAL, "Salt Crystal");
+        addItem(ModItems.SALT, "Salt");
+
         biome(ModBiomes.WITHERED_EXPANSE, "Withered Expanse");
         biome(ModBiomes.CANYONLANDS, "Canyonlands");
         biome(ModBiomes.OASIS_FLATS, "Oasis Flats");

@@ -46,6 +46,8 @@ public final class ModTags {
         public static final TagKey<Item> RAW_MATERIALS_SUNSTONE = TagKey.create(Registries.ITEM, common("raw_materials/sunstone"));
         /** Convention tag {@code c:raw_materials/turquoise}; part of {@code c:raw_materials}. */
         public static final TagKey<Item> RAW_MATERIALS_TURQUOISE = TagKey.create(Registries.ITEM, common("raw_materials/turquoise"));
+        /** Convention tag {@code c:dusts/salt}; part of {@code c:dusts}. */
+        public static final TagKey<Item> DUSTS_SALT = TagKey.create(Registries.ITEM, common("dusts/salt"));
 
         private Items() {
         }
