@@ -30,6 +30,7 @@ import nl.timtoys.corruptedadventure.registry.ModDensityFunctionTypes;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
 import nl.timtoys.corruptedadventure.registry.ModFoliagePlacerTypes;
 import nl.timtoys.corruptedadventure.registry.ModItems;
+import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 import nl.timtoys.corruptedadventure.registry.ModPlacementModifierTypes;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.registry.ModTrunkPlacerTypes;
@@ -68,6 +69,7 @@ public final class CorruptedAdventure {
         ModTrunkPlacerTypes.register(modEventBus);
         ModFoliagePlacerTypes.register(modEventBus);
         ModSoundEvents.register(modEventBus);
+        ModParticleTypes.register(modEventBus);
         ModAttachments.register(modEventBus);
         DataGenerators.register(modEventBus);
         ModNetwork.register(modEventBus);

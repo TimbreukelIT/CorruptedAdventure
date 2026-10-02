@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * Server config ({@code config/corruptedadventure-server.toml}; a copy in {@code <world>/serverconfig/} overrides it
- * for that world), synced to clients by NeoForge on join. The only place for balance values: conditions and ring weather now, weather effects later. Only
+ * for that world), synced to clients by NeoForge on join. The only place for balance values: conditions, ring weather and its effects. Only
  * numbers; which effect belongs to which threshold is code. Values are read live, so edits apply without a restart.
  * <p>
  * Readable only while a world is loaded (on the client: once the synced copy has arrived); check
@@ -26,6 +26,8 @@ public final class ServerConfig {
     public static final ModConfigSpec SPEC;
     public static final DebugCondition DEBUG;
     public static final DehydrationCondition DEHYDRATION;
+    /** {@code [weather.ring2]}: the effects of sandstorm and heat wave (change 28). */
+    public static final Ring2WeatherEffects RING_2_WEATHER;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
     /** Per ring with weather types; package-private for tests. */
@@ -45,6 +47,7 @@ public final class ServerConfig {
             RING_WEATHER.put(ring, new RingWeather(builder, ring));
         }
         builder.pop();
+        RING_2_WEATHER = RING_WEATHER.get(Ring.RING_2).ring2Effects;
         SPEC = builder.build();
         ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds);
     }
@@ -156,6 +159,24 @@ public final class ServerConfig {
         }
     }
 
+    /** The effects of the ring 2 weather, in {@code [weather.ring2]} next to its cycle (change 28). */
+    public static final class Ring2WeatherEffects {
+        public final ModConfigSpec.DoubleValue heatWaveDehydrationMultiplier;
+        public final ModConfigSpec.DoubleValue sandstormPushStrength;
+        public final ModConfigSpec.IntValue sandstormGustTicks;
+
+        private Ring2WeatherEffects(ModConfigSpec.Builder builder) {
+            heatWaveDehydrationMultiplier = builder.comment("Factor on rising dehydration during a full heat wave; follows the",
+                            "fade of the weather (1 + (factor - 1) x intensity). Only the rise in the sun, never the fall.")
+                    .defineInRange("heatWaveDehydrationMultiplier", 2.0, 1.0, 5.0);
+            sandstormPushStrength = builder.comment("Wind push per gust during a full sandstorm, in blocks per tick, for players",
+                            "in ring 2 who see the sky (0.08 with a gust every 10 ticks: ~0.35 blocks per second drift).")
+                    .defineInRange("sandstormPushStrength", 0.08, 0.0, 0.5);
+            sandstormGustTicks = builder.comment("Ticks between two wind gusts (one small packet per exposed player per gust).")
+                    .defineInRange("sandstormGustTicks", 10, 5, 100);
+        }
+    }
+
     /** {@code [weather.ringN]}: the cycle of one ring with weather types. */
     static final class RingWeather {
         static final int DEFAULT_CLEAR_MIN = 600;
@@ -171,6 +192,8 @@ public final class ServerConfig {
         final ModConfigSpec.IntValue weatherMinSeconds;
         final ModConfigSpec.IntValue weatherMaxSeconds;
         final Map<RingWeatherType, ModConfigSpec.IntValue> weights = new EnumMap<>(RingWeatherType.class);
+        /** Only in {@code [weather.ring2]}; null for the other rings. */
+        final Ring2WeatherEffects ring2Effects;
 
         private RingWeather(ModConfigSpec.Builder builder, Ring ring) {
             String name = "ring" + ring.number();
@@ -189,6 +212,7 @@ public final class ServerConfig {
                                 + " after a clear spell; 0 = never in the cycle.")
                         .defineInRange(weightKey(type), DEFAULT_WEIGHT, 0, 100));
             }
+            ring2Effects = ring == Ring.RING_2 ? new Ring2WeatherEffects(builder) : null;
             builder.pop();
         }
 

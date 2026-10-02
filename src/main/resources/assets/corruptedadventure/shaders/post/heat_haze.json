@@ -1,0 +1,19 @@
+{
+    "targets": [
+        "swap",
+        "depth"
+    ],
+    "passes": [
+        {
+            "name": "corruptedadventure:heat_haze",
+            "intarget": "minecraft:main",
+            "outtarget": "swap",
+            "use_linear_filter": true
+        },
+        {
+            "name": "blit",
+            "intarget": "swap",
+            "outtarget": "minecraft:main"
+        }
+    ]
+}

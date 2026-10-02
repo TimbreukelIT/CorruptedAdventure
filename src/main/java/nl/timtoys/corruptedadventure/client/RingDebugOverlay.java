@@ -11,7 +11,7 @@ import java.util.Locale;
 
 /**
  * The mod's only F3 hook: lines on the right of the debug screen, to compare the client's view with {@code /ca ring}.
- * Later debug lines (e.g. wind) are added here. Fixed English text, like {@code /ca}.
+ * Later debug lines are added here. Fixed English text, like {@code /ca}.
  */
 final class RingDebugOverlay {
     private RingDebugOverlay() {
@@ -28,6 +28,7 @@ final class RingDebugOverlay {
                 .map(RingDebugOverlay::describe)
                 .orElse("—"));
         right.add("CA weather (client): " + RingWeatherClientHooks.describe(camera.level(), camera.getX(), camera.getZ()));
+        right.add("CA wind (client): " + RingWeatherClientHooks.describeWind(camera.level(), camera.getX(), camera.getZ()));
     }
 
     /** E.g. {@code ring_1} or {@code ring_2 → ring_3 @ 0.43}. */

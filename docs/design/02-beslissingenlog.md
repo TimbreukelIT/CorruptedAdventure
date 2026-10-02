@@ -267,3 +267,13 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-02 | conditions | Schade uitdroging: 1 HP per 4 s met `VANILLA_STARVATION`-ondergrens; eigen damage type `corruptedadventure:dehydration` met doodsbericht | Vertrouwd als verhongeren; moeilijkheid regelt de straf |
 | 2026-10-02 | conditions | "In water" voor uitdroging = ondergedompeld tot boven het middel | Water blijft schaars; geen draagbare oase met één emmer |
 | 2026-10-02 | conditions | Waterfles: alleen vanilla-waterfles (`Potions.WATER`), −30 (config), werkt overal, geen cooldown | Volgt het design; directe tegenmaatregel vóór de fase 2-veldfles |
+| 2026-10-02 | atmosphere | Wind-duw zandstorm: additieve windstoten via `WindGustPayload`, door de server beslist; alleen spelers, niet in creatief/spectator of als passagier | Vloeiend, overschrijft de eigen beweging niet |
+| 2026-10-02 | atmosphere | Windrichting zandstorm: één willekeurige richting per storm uit de `seed` van de weerstaat | Elke storm anders; alle clients gelijk |
+| 2026-10-02 | atmosphere | Ringweer binnen/ondergronds: naar blootstelling (hemellicht; duw alleen met `canSeeSky`) | Schuilen werkt en voelt logisch |
+| 2026-10-02 | atmosphere | Hevigheid volle zandstorm: zicht ~24, ~40 particles/tick, duw ≈ 0,35 blok/s (zicht, particles, duw) | Zicht sterk beperkt, navigeren op korte afstand blijft mogelijk |
+| 2026-10-02 | atmosphere | Trilling hittegolf: post-processing-shader; altijd warme waas, sterkte volgt "Distortion Effects" | Lijkt echt op hittewaas |
+| 2026-10-02 | atmosphere | Hittegolf-×2 en duw volgen het weer: mee met de fade in de tijd, hard op de ringgrens | Gelijk met wat je ziet; harde gameplay-grens zoals change 20 |
+| 2026-10-02 | atmosphere | Config weer-effecten ring 2: `[weather.ring2]` in de SERVER-config | Weer beheert zijn eigen effecten; `conditions` onaangeroerd |
+| 2026-10-02 | atmosphere | Geluid ring 2-weer: wind-loop bij de zandstorm (vanilla-geluid), hittegolf stil | Storm zonder wind voelt kaal; geen audiobestand nodig |
+| 2026-10-02 | atmosphere | Hittegolf ×2 als `RateModifier` in `weather/` die de weerstaat zelf leest; `ConditionContext` en `DehydrationRule` blijven ongewijzigd, alleen de registratie raakt `conditions` | Scope `atmosphere` houden; latere weer-changes volgen hetzelfde patroon |
+| 2026-10-02 | atmosphere | Zandstorm-particle `corruptedadventure:sand_gust` met vanilla `generic_*`-sprites; visuele waarden als constanten, geen client-config | Geen textures-werk in deze change; spelers kunnen het zicht niet terugzetten |

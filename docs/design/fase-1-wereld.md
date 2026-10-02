@@ -351,6 +351,14 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 **Weer (ringweer)**
 - **Zandstorm**: zicht sterk beperkt (client fog + particles), lichte wind-duw (server).
 - **Hittegolf**: lucht trilt (client), uitdroging loopt 2× sneller (server).
+- **Uitwerking (change 28)** — gameplay server-side (`weather/SandstormWind`, `weather/HeatWaveDehydrationModifier`, waarden in `[weather.ring2]` van de SERVER-config); beeld en geluid client-side (`client/weather/`), alleen uit de gesyncte staat:
+  - **Windrichting:** één willekeurige richting per storm, afgeleid uit de `seed` van de weerstaat (gehele kompasgraden waar de wind vandaan komt; 0 = noord, 90 = oost). Server, particles, F3 en `/ca weather` (`wind 225° (from SW)`) gebruiken dezelfde functie: alle clients zien dezelfde richting. Blijft gelijk na een herstart.
+  - **Duw:** de server stuurt elke `sandstormGustTicks` (10) een additieve stoot `richting × sandstormPushStrength (0,08) × intensiteit` (`wind_gust`) naar elke speler in ring 2 (hard op 0,5) die de hemel ziet op ooghoogte (`canSeeSky`, dezelfde regel als direct zonlicht); niet in creatief/spectator of als passagier, niet in de Nether. Gemeten: ~3,4 blokken per 10 s drift (0,34 blok/s) op een vlak platform; onder een dak 0.
+  - **Blootstelling (beeld/geluid):** hemellicht op de camera ÷ 15, gladgestreken over ~2 s: binnen en ondergronds verdwijnen fog, particles, trilling en wind geleidelijk. Gameplay blijft hard (aan/uit).
+  - **Zandstorm in beeld:** fog naar ~24 blokken (terrein én lucht), kleur naar zand `#C9A46B` (× daglicht), ~40 particles `sand_gust` per tick in een kader van ±16 rond de camera, alleen boven de `MOTION_BLOCKING`-heightmap, met de wind mee; vanilla's instelling "Particles" telt mee. In water/lava/poedersneeuw en met blindness/darkness blijft vanilla-fog staan.
+  - **Hittegolf in beeld:** post-shader `heat_haze` (zacht golvend beeld, sterkst onderin, hand en GUI niet), sterkte × "Distortion Effects"; lichte warme waas (fog-afstand × 0,85, kleur 30 % naar `#F2DDAA`).
+  - **Uitdroging ×2:** factor `1 + (heatWaveDehydrationMultiplier (2,0) − 1) × intensiteit` op een positieve rate (alleen de zon), hard op de ringgrens; schaduw, water en oase blijven gelijk. Gemeten: `+0.80/s, sun` bij volle intensiteit, `+0.52/s` bij 0,30.
+  - **Geluid:** wind-loop `weather.ring_2.sandstorm` (verwijzing naar vanilla `item.elytra.flying`, pitch 0,7; volume 0,6 × sterkte × blootstelling, weer-schuif); de hittegolf is stil. Keuze van het vanilla-geluid valt in de W-achteraf.
 
 **Conditie: uitdroging**
 - Meter ↑ overdag in direct zonlicht (hemel zichtbaar); 2× in een hittegolf.

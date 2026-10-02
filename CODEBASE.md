@@ -4,8 +4,8 @@
 > Werk het bij in elke change die classes, registries of databestanden toevoegt, hernoemt of verwijdert.
 > Houd het beknopt: per regel *wat* en *waar*, geen uitleg die al in de code staat.
 
-**Laatst bijgewerkt:** 2026-10-02 — change 27 (uitdroging ring 2: regel zon/schaduw/nacht/water/oase/buiten, waterfles, drempels, damage type `dehydration`, rate + label in `/ca condition get`)
-**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–27, 23b en 23c klaar, volgende: change 28; teststop 2b (gebundelde terreincheck ring 2) na change 30)
+**Laatst bijgewerkt:** 2026-10-02 — change 28 (ring 2-weer: zandstorm (fog, particles, wind-loop, wind-duw via `wind_gust`) en hittegolf (post-shader `heat_haze`, warme waas, uitdroging ×2))
+**Huidige fase:** 1 — Wereld (bouw gestart; bouwplan changes 0–96 in `docs/design/fase-1-wereld.md` §3; changes 0–28, 23b en 23c klaar, volgende: change 29; teststop 2b (gebundelde terreincheck ring 2) na change 30)
 
 ---
 
@@ -13,7 +13,7 @@
 
 | Fase | Status |
 |---|---|
-| 1 — Wereld | In bouw — changes 0–27, 23b en 23c klaar |
+| 1 — Wereld | In bouw — changes 0–28, 23b en 23c klaar |
 | 2 — Items en tools | — |
 | 3 — Structures | — |
 | 4 — Mobs en bosses | — |
@@ -30,7 +30,7 @@ src/main/java/nl/timtoys/corruptedadventure/
   CorruptedAdventure.java      ✅ @Mod-entrypoint (common); MOD_ID, LOGGER, id(path). Registreert de DeferredRegisters en datagen
   config/                      ✅ config en per-wereld-snapshot (enige plek voor ringgrenzen)
     CommonConfig.java          ✅ COMMON-config (`corruptedadventure-common.toml`): alleen standaard-ringgrenzen
-    ServerConfig.java          ✅ SERVER-config (`corruptedadventure-server.toml`, door NeoForge naar de client gesynct): **alle balanswaarden** (`[conditions.debug]`, `[weather.ring2..5]`)
+    ServerConfig.java          ✅ SERVER-config (`corruptedadventure-server.toml`, door NeoForge naar de client gesynct): **alle balanswaarden** (`[conditions.debug]`, `[conditions.dehydration]`, `[weather.ring2..5]`; in `[weather.ring2]` ook de weer-effecten `RING_2_WEATHER`)
     ThresholdLevels.java       ✅ `threshold1..N` van één conditiesectie (1–100, strikt oplopend; anders standaardwaarden + error-log bij laden)
     RingSettings.java          ✅ record + Codec + validatie van de ringgrenzen
     RingSettingsSnapshot.java  ✅ snapshot per wereld; `current()` voor `ringAt` (server-side; de client krijgt de waarden via `RingLayoutPayload`)
@@ -46,7 +46,7 @@ src/main/java/nl/timtoys/corruptedadventure/
     RingTeleportCommand.java   ✅ `/ca tpring <1–6> [nether]`, `/ca tpboundary <1–5> [nether]` + veilige landingshoogte
     BorderInfoCommand.java     ✅ `/ca border`: border (grootte, midden, lerp) van de huidige dimensie
     ConditionCommand.java      ✅ `/ca condition get [<targets>]` (per meter waarde + in een ringwereld de rate van de volgende tick en het label van de regel: `dehydration 42.3 (+0.40/s, sun)`), `set <targets> <condition> <0–100>`, `debug <targets> rise|fall|off`
-    RingWeatherCommand.java    ✅ `/ca weather` (staat per ring in de dimensie van de bron), `/ca weather <1–5> <type> [seconds]`
+    RingWeatherCommand.java    ✅ `/ca weather` (staat per ring in de dimensie van de bron; bij een zandstorm `wind 225° (from SW)`), `/ca weather <1–5> <type> [seconds]`
     RingTargets.java           ✅ pure rekenwerk: richting, ringmidden, verruisde grens (bisectie), dichtstbijzijnde grens
   registry/                    ✅ DeferredRegisters, ResourceKeys en TagKeys
     ModBlocks.java             ✅ alle blokken + hun blockitem (`register` / `registerDoor`; zonder item: `registerWithoutItem`, bloempotten via `registerPot`); volgorde = creative-tab-volgorde; `entries()`
@@ -64,7 +64,8 @@ src/main/java/nl/timtoys/corruptedadventure/
     ModConfiguredCarvers.java  ✅ ResourceKeys van de eigen configured carvers (datagen): `ring_2/cave`, `ring_2/cave_extra_underground`, `ring_2/canyon`
     ModConfiguredFeatures.java ✅ ResourceKeys van de eigen configured features (de features zelf komen uit datagen); `PALM_TREE` = ook wat de palmzaailing laat groeien
     ModPlacedFeatures.java     ✅ ResourceKeys van de eigen placed features (idem)
-    ModSoundEvents.java        ✅ sound events (common: biome-JSON noemt ze): `ambient.ring_1.strange_cave`
+    ModSoundEvents.java        ✅ sound events (common: biome-JSON noemt ze): `ambient.ring_1.strange_cave`, `weather.ring_2.sandstorm` (change 28)
+    ModParticleTypes.java      ✅ particle types (common, registry gesynct): `sand_gust` (`SimpleParticleType`; provider in `client/particle/`)
     ModAttachments.java        ✅ attachment types: `condition_meters` (`ConditionMeters`, opgeslagen, geen `copyOnDeath`)
     ModDamageTypes.java        ✅ ResourceKeys van de eigen damage types (de types zelf uit datagen: `ConditionDamageTypes`): `dehydration`
   worldgen/
@@ -147,6 +148,8 @@ src/main/java/nl/timtoys/corruptedadventure/
     RingWeatherData.java       ✅ `SavedData` per dimensie (`corruptedadventure_ring_weather.dat`): staat per ring met typen; lenient laden
     RingWeather.java           ✅ server: cyclus (`LevelTickEvent.Post`, elke 20 ticks, `doWeatherCycle`), sync, API `data`/`state`/`stateAt`/`set`/`weatherRing`
     RingWeatherMix.java        ✅ pure menging voor rendering: aandeel per ring op een `RingPosition` (smoothstep over de zone, void → ring 5)
+    SandstormWind.java         ✅ windrichting per storm (`fromDegrees`/`direction`/`describe` uit de `seed`) en de wind-duw: `PlayerTickEvent.Post` → `WindGustPayload` naar blootgestelde spelers in ring 2 (`pushes`, `impulse` puur)
+    HeatWaveDehydrationModifier.java ✅ `RateModifier`: positieve uitdrogings-rate × `1 + (m − 1) × intensiteit` tijdens een hittegolf in de ring van de speler (`factor`, `apply` puur)
   condition/                   ✅ omgevingscondities: meters, regels, drempels, tick-handler (server-side; `ConditionDefinitions.thresholdLevels` ook op de client voor de HUD)
     Condition.java             ✅ enum (`StringRepresentable`, `CODEC` op naam) + HUD-kleur: `DEBUG` (`debug`), `DEHYDRATION` (`dehydration`, zandgeel `0xFFD9A441`, placeholder)
     ConditionMeters.java       ✅ attachment-data: float 0–100 per conditie, lenient `CODEC` (map naam → float, onbekende namen overgeslagen), `roundedChanged`/`markSynced`, `applySync` (client), transient aantal toegepaste drempels
@@ -175,6 +178,7 @@ src/main/java/nl/timtoys/corruptedadventure/
     RingPacketDistributor.java ✅ `RingMembership` (`CORE`/`TOUCHING`), `matches`, `playersInRing`, `sendToPlayersInRing`
     ConditionSyncPayload.java  ✅ `corruptedadventure:condition_sync`: alle meters afgerond, 1 byte per conditie (enum-volgorde), alleen naar de eigen speler
     RingWeatherPayload.java    ✅ `corruptedadventure:ring_weather`: dimensie + game time bij verzending + `cycleRunning` + staat per ring (leeg = geen ringweer hier)
+    WindGustPayload.java       ✅ `corruptedadventure:wind_gust`: `(float x, float z)` = additieve impuls (blok/tick) van één windstoot, naar één speler
   data/                        🔲 SavedData (wereld); attachments staan in `registry/ModAttachments`
   datagen/                     ✅ providers (`./gradlew runData`); 🔲 recipes
     DataGenerators.java        ✅ `GatherDataEvent`: datapack-registries (configured/placed features, biomes, wolf-varianten, biome modifiers, damage types) + tags, data maps, lang, blockstates/models, loot
@@ -185,6 +189,7 @@ src/main/java/nl/timtoys/corruptedadventure/
     ModBlockTagsProvider.java  ✅ blok-tags (vanilla `wooden_*`/`planks`/`logs_that_burn`/`leaves`/`saplings`/`dirt`/`mineable/*`/`needs_iron_tool`, `c:`-tags, `dead_logs`, `palm_logs`)
     ModItemTagsProvider.java   ✅ item-tags: kopie van de blok-tags + `c:gems(/soul_crystal)`, `c:raw_materials(/sunstone, /turquoise)`
     ModSoundDefinitionsProvider.java ✅ `sounds.json` (client-asset): eigen events als `event`-verwijzing naar vanilla-geluiden + ondertitel
+    ModParticleDescriptionProvider.java ✅ `particles/<naam>.json` (client-asset): `sand_gust` = vanilla `generic_0..7`
     ModBiomeTagsProvider.java  ✅ spiegelt vanilla biome-tags naar de ring 1-kopieën (`data/minecraft/tags/…`, `replace: false`) + eigen `has_feature/*`-tags
     ModDataMapProvider.java    ✅ NeoForge-data maps: `villager_types` voor de kopieën, `compostables` (palmbladeren/-zaailing)
     EnglishLanguageProvider.java ✅ `en_us` (verplicht voor elke key)
@@ -192,14 +197,23 @@ src/main/java/nl/timtoys/corruptedadventure/
   client/                      ✅ ALLEEN Dist.CLIENT: fog, sky, weer-rendering, particles, renderers
     CorruptedAdventureClient.java ✅ client-entrypoint (@Mod dist = CLIENT): koppelt clientbound handlers (`ClientboundHandlers.set`) en game-bus-listeners
     ClientRingLayout.java      ✅ de ring-layout op de client (`get`, `ringAt`); leeg zonder ontvangst, gewist bij uitloggen
-    RingDebugOverlay.java      ✅ de enige F3-hook (`CustomizeGuiOverlayEvent.DebugText`): `CA ring (client): …`, `CA weather (client): …`
+    RingDebugOverlay.java      ✅ de enige F3-hook (`CustomizeGuiOverlayEvent.DebugText`): `CA ring (client): …`, `CA weather (client): …`, `CA wind (client): 225° (from SW), strength 0.83, exposure 0.85` (of `—`)
     network/RingLayoutHandler.java ✅ valideert de settings en bouwt `RingLayout` → `ClientRingLayout`
     network/ConditionSyncHandler.java ✅ zet de gesyncte meters in de attachment van de lokale speler (+ DEBUG-log `Received condition meters for <naam>: [..]`)
     network/RingWeatherHandler.java ✅ `ClientRingWeather.set` (+ DEBUG-log `Received ring weather for <naam> in <dim> (cycle running|paused): [ring_2=<type> <rest>/<duur>, …]`)
+    network/WindGustHandler.java ✅ `context.player().push(x, 0, z)` (additief, zoals vanilla-explosieknockback; geen `enqueueWork`, main thread)
+    particle/SandGustParticle.java ✅ zandkorrel (`TextureSheetParticle` + `Provider`): 4-argumentconstructor (geen vanilla-snelheidsruis), geen zwaartekracht, 20–40 ticks, zandkleur, weg zodra een muur hem stopt
     weather/ClientRingWeather.java ✅ ringweer van de huidige dimensie; resterende tijd = ontvangen − (game time van het level − game time bij verzending), zolang `cycleRunning`; gewist bij uitloggen
-    weather/RingWeatherRenderer.java ✅ interface met alleen `default`-methodes: `clientTick`, `renderFog`, `fogColor`, `renderLevel` (elk met `strength`)
-    weather/RingWeatherRenderers.java ✅ `register(type, renderer)` (één per type, niet `clear`); leeg in change 20
-    weather/RingWeatherClientHooks.java ✅ de vier client-events → `shares` (layout + staat + `RingWeatherMix`) → renderers; `describe` voor F3
+    weather/RingWeatherRenderer.java ✅ interface met alleen `default`-methodes: `clientTick`, `renderFog`, `fogColor`, `renderLevel` (elk met `strength`); static `clearView(camera)` (lucht, geen blindness/darkness) en `daylight(level, pt)` (vanilla `getSkyDarken`)
+    weather/RingWeatherRenderers.java ✅ `register(type, renderer)` (één per type, niet `clear`); sinds change 28 `sandstorm` en `heat_wave`
+    weather/RingWeatherClientHooks.java ✅ de vier client-events → `shares` (layout + staat + `RingWeatherMix`) → renderers; `felt(level, x, z, type)`; `describe`/`describeWind` voor F3; `registerRing2` (renderers, `SkyExposure`, `HeatHazeEffect`-levenscyclus)
+    weather/SkyExposure.java   ✅ blootstelling 0–1 = hemellicht op de camera ÷ 15, max. 1/40 per tick (~2 s), eigen `ClientTickEvent.Post` vóór de renderers; nieuw level = direct de echte waarde
+    weather/FogBlend.java      ✅ pure fog-rekenkunde (`far`, `near`, `colour`): van vanilla naar het weer, nooit verder dan vanilla
+    weather/SandstormRenderer.java ✅ zandstorm: fog naar 24 (terrein + lucht, `setCanceled`), kleur `#C9A46B` × daglicht, ~40 `sand_gust`/tick (±16 rond de camera, bovenwinds verschoven, boven `MOTION_BLOCKING`), wind-loop; alles × sterkte × blootstelling
+    weather/SandstormSound.java ✅ wind-loop (`AbstractTickableSoundInstance`, `WEATHER`, relatief, geen demping, `canStartSilent`): volume volgt de feed van de renderer, zonder feed naar 0 en stop
+    weather/HeatWaveRenderer.java ✅ hittegolf: fog-afstand × 0,85, kleur 30 % naar `#F2DDAA`, `AFTER_LEVEL` → `HeatHazeEffect` (× "Distortion Effects")
+    weather/HeatHazeEffect.java ✅ eigen `PostChain` `shaders/post/heat_haze.json` op de main target: lui laden (DEBUG `Loaded the heat haze shader`), `resize` bij een andere grootte, sluiten bij resource-reload en uitloggen; diepte via de lege target `depth` bewaard; laadfout → één WARN, geen nieuwe poging tot de volgende reload
+    weather/RingWeatherDebugLog.java ✅ DEBUG `[ring weather] <speler>: ring_2 sandstorm strength 0.75 wind 122° (from SE)` bij elke wissel (sterkte in stappen van 0,25); voor de twee-clients-vergelijking van test S
     hud/ConditionHudLayer.java ✅ GUI-layer `corruptedadventure:conditions` boven `air_level`: balk 81×5 per meter > 0 boven de hongerbalk (via `Gui.rightHeight`, rijen van 6 px), drempelstreepjes; verborgen met F1, in creatief/spectator; placeholder (`fill`)
 
 src/main/templates/META-INF/neoforge.mods.toml  ✅ mod-metadata; ${…} komt uit gradle.properties
@@ -213,6 +227,7 @@ src/main/resources/                (lang staat niet hier maar in datagen: `datag
   data/minecraft/tags/worldgen/world_preset/normal.json  ✅ zet de preset in het menu "World Type" (replace: false)
   META-INF/accesstransformer.cfg  ✅ opent `NoiseBasedChunkGenerator.globalFluidPicker` en `NoiseChunk.aquifer` (voor `ring_noise`)
   assets/corruptedadventure/
+    shaders/post/heat_haze.json, shaders/program/heat_haze.{json,fsh} ✅ hittegolf-trilling (change 28): pass `corruptedadventure:heat_haze` main → `swap` (lineair), `blit` → main; targets `swap` + `depth` (dieptekopie); uniforms `Strength`, `HazeTime` (niet `Time`: die zet `PostPass` zelf)
     textures/                     ✅ ring 2-placeholders (changes 21, 22) uit `tools/textures/Ring2Textures.java`: `block/` red_/orange_/cream_canyon_stone, canyon_cobblestone, canyon_stone_bricks, scorched_sandstone(_top/_bottom), cut_/chiseled_scorched_sandstone, loose_sand, cracked_clay, dry_shrub, desert_flower (cutout), barrel_cactus_top/_side, palm_log(_top), stripped_palm_log(_top), palm_planks, palm_door_{top,bottom}, palm_trapdoor, palm_leaves (vaste kleur, cutout_mipped), palm_sapling (cutout); `item/` palm_door. Change 24: `block/` sunstone_ore_overlay, turquoise_ore_overlay (transparante overlays, nog `still`; puls in change 37); `item/` raw_sunstone, raw_turquoise. Ring 1: definitief (change 17) uit `tools/textures/Ring1Textures.java` (gecommit, PNG's én `.mcmeta`): `block/` withered_dirt, dead_grass_block_{top,side,snow}, dead_log(_top), stripped_dead_log(_top), dead_planks, dead_door_{top,bottom}, dead_trapdoor, soul_crystal_ore_overlay, crimson_soul_crystal_ore_overlay_{top,side} (transparante overlays, 16×128 animatiestrip + `.png.mcmeta`); `item/` dead_door, soul_crystal (animatiestrip + `.mcmeta`)
 
 src/test/java/nl/timtoys/corruptedadventure/
@@ -228,13 +243,17 @@ src/test/java/nl/timtoys/corruptedadventure/
   condition/WaterBottleDrinkTest.java ✅ alleen `potion` met `Potions.WATER`; awkward/mundane/thick/swiftness, splash/lingering water, potion zonder inhoud, lege fles, melk, leeg stack nee
   network/ConditionSyncPayloadTest.java ✅ codec-rondreis (1 byte per conditie), lengte/bereik geweigerd, array gekopieerd
   config/ThresholdLevelsTest.java ✅ strikt oplopend, foute standaardwaarden = exception, `ServerConfig` bouwt, uitdroging 25/50/75/100
-  config/RingWeatherConfigTest.java ✅ standaard 600/9000/600/1200 s + gewicht 1 per type, sectie-/sleutelnamen (`heatWaveWeight`), ring 1/void `NONE`, seconden → ticks, foute settings = exception
+  config/RingWeatherConfigTest.java ✅ standaard 600/9000/600/1200 s + gewicht 1 per type, sectie-/sleutelnamen (`heatWaveWeight`), ring 1/void `NONE`, seconden → ticks, foute settings = exception; weer-effecten alleen in `[weather.ring2]` (2,0 / 0,08 / 10)
   weather/RingWeatherTypeTest.java ✅ namen uniek + rondreis, elk type behalve `clear` hoort bij precies één overworld-ring 2–5, geen Nether-ringweer, `allowedIn`
   weather/RingWeatherStateTest.java ✅ `intensity` (0 begin/eind, 1 midden, korte duur < 2 × fade, `clear`/`STILL` 0), aftellen + klemmen, seed alleen bij weer, `CODEC` (NBT/JSON, zonder seed → 0) en `STREAM_CODEC`
   weather/RingWeatherCycleTest.java ✅ duur binnen [min, max] (vanilla-ritme én 5–10 s), na weer altijd `clear`, alleen eigen typen, gewicht 0 nooit, alles 0 → `clear`, ring zonder typen `STILL`, stappen van 20, zelfde seed = zelfde reeks, seed per weer
   weather/RingWeatherDataTest.java ✅ nieuw = ringen 2–5, opslaan/laden-rondreis, ontbrekende ring / onbekende naam / type van andere ring / kapotte waarde / opgeslagen `STILL` → `clear`, Nether leeg
   weather/RingWeatherMixTest.java ✅ één aandeel in een ring, ring 1 zonder weer, smoothstep over de zone (som 1, monotoon), void → ring 5
   network/RingWeatherPayloadTest.java ✅ codec-rondreis (volledige overworld, lege Nether), staat gekopieerd en read-only
+  network/WindGustPayloadTest.java ✅ codec-rondreis (8 bytes)
+  weather/SandstormWindTest.java ✅ richting: horizontale eenheidsvector, vast per seed, 1.000 opeenvolgende seeds over alle kwadranten (> 150 elk), kompas (van noord → +Z, van oost → −X …), `describe`; `impulse` 0 bij intensiteit/blootstelling 0, lineair; `pushes`: alleen `CORE` ring 2 (0,49/0,51 op grens 1 en 2), niet creatief/spectator/passagier
+  weather/HeatWaveDehydrationModifierTest.java ✅ factor ×1/×1,5/×2 bij intensiteit 0/0,5/1, negatieve en nul-rate, `DEBUG`, zandstorm/clear/`STILL` ongewijzigd, vermenigvuldiger 1 = ×1
+  client/weather/WeatherClientMathTest.java ✅ `FogBlend` (far/near/kleur, nooit verder dan vanilla, near ≤ far), `SkyExposure.approach` (~40 ticks van 1 naar 0), debugregel gelijk bij gelijke sterkte-stap
   ClientIsolationTest.java     ✅ geen bestand buiten `client/` en `datagen/` noemt `net.minecraft.client.`, `com.mojang.blaze3d.`, `net.neoforged.neoforge.client.` of `…corruptedadventure.client.` (import of volledig gekwalificeerd; commentaarregels tellen niet)
   command/RingTargetsTest.java ✅ ringmiddens binnen hun ring, grens-teleport op gewicht 0,5, grensafstand met teken
   worldgen/biome/RingBiomeSourceTest.java ✅ biome per ringmidden (overworld + Nether), harde wissel op gewicht 0,5, alle ringen verplicht; `transitions`: hele zone = overgangsbiome, andere grenzen hard, `possibleBiomes`, codec (optioneel, `void` fout)
@@ -291,6 +310,7 @@ src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, N
   data/corruptedadventure/damage_type/     `dehydration` (`ConditionDamageTypes`)
   data/{minecraft,neoforge}/tags/damage_type/  `bypasses_armor`, `bypasses_effects`, `no_knockback`, `bypasses_wolf_armor`, `is_environment` (`ModDamageTypeTagsProvider`)
   assets/corruptedadventure/sounds.json    sound-definities (`ModSoundDefinitionsProvider`)
+  assets/corruptedadventure/particles/     `sand_gust.json` (`ModParticleDescriptionProvider`)
   assets/corruptedadventure/blockstates/, models/block/, models/item/   blokken en items (`ModBlockStateProvider`, `ModItemModelProvider`)
   data/corruptedadventure/loot_table/blocks/  blok-loot (`ModBlockLootProvider`)
   data/{corruptedadventure,minecraft,c}/tags/{block,item}/  blok- en item-tags (`ModBlockTagsProvider`, `ModItemTagsProvider`)
@@ -298,7 +318,7 @@ src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, N
 docs/
   design/                      ✅ 00-overzicht, 01-techniek, 02-beslissingenlog, fase-1-wereld (incl. bouwplan); 🔲 fase-2..5
   prompts/                     ✅ opdrachten voor Claude Code (opdracht-01-sparring-fase-1)
-  plans/                       ✅ uitgewerkte bouwplannen per change (`change-NN.md`: scope, stappen, tests, beantwoorde ontwerpvragen); klaar: 08–27, 23b, 23c. Een bouw-subagent leest eerst zijn plan
+  plans/                       ✅ uitgewerkte bouwplannen per change (`change-NN.md`: scope, stappen, tests, beantwoorde ontwerpvragen); klaar: 08–28, 23b, 23c. Een bouw-subagent leest eerst zijn plan
   backlog.md                   ✅
 ```
 
@@ -309,12 +329,12 @@ docs/
 | Class | Pakket | Verantwoordelijkheid | Gebruikt door |
 |---|---|---|---|
 | `CorruptedAdventure` | `nl.timtoys.corruptedadventure` | common entrypoint, `MOD_ID`, `LOGGER`, `id(path)` | alles |
-| `CorruptedAdventureClient` | `nl.timtoys.corruptedadventure.client` | client entrypoint (`Dist.CLIENT`); `ClientboundHandlers.set` per clientbound payload, game-bus-listeners (logout, F3, `RingWeatherClientHooks`), mod-bus: GUI-layers (`ConditionHudLayer`); weer-renderers registreren hier (`RingWeatherRenderers.register`) | — |
-| `ModNetwork` | `…network` | `PROTOCOL_VERSION` (`"3"` sinds change 20, verplicht, **ophogen bij elke payloadwijziging en elke nieuwe payload**); `register(PayloadRegistrar)` = één regel per payload; handlers draaien op de main thread (standaard van de registrar, geverifieerd) | `CorruptedAdventure` |
+| `CorruptedAdventureClient` | `nl.timtoys.corruptedadventure.client` | client entrypoint (`Dist.CLIENT`); `ClientboundHandlers.set` per clientbound payload, game-bus-listeners (logout, F3, `RingWeatherClientHooks`), mod-bus: GUI-layers (`ConditionHudLayer`), particle-providers (`RegisterParticleProvidersEvent`); weer-renderers via `RingWeatherClientHooks.registerRing2` (later per ring zo'n regel) | — |
+| `ModNetwork` | `…network` | `PROTOCOL_VERSION` (`"4"` sinds change 28, verplicht, **ophogen bij elke payloadwijziging en elke nieuwe payload**); `register(PayloadRegistrar)` = één regel per payload; handlers draaien op de main thread (standaard van de registrar, geverifieerd) | `CorruptedAdventure` |
 | `ClientboundHandlers` | `…network` | `ConcurrentHashMap` type → handler. `forward(type)` zoekt bij ontvangst op; zonder handler één waarschuwing, payload genegeerd. Patroon: payload + codec in `network/`, handler in `client/network/`, `set` in `CorruptedAdventureClient` | `ModNetwork`, `CorruptedAdventureClient` |
 | `RingLayoutPayload` | `…network` | record (`RingSettings`, `noiseSeed`); codec: radii (var-int-lijst, max. 5), void-rand, ruis, overgangsbreedte (var-int), ruis-seed (vaste 8 bytes); `of(RingLayout)` | `RingLayoutSync`, client |
 | `RingLayoutSync` | `…network` | `PlayerLoggedInEvent`: `RingWorld.isActive` → `sendToPlayer`. Niet bij dimensiewissel/respawn (één layout dekt beide dimensies) | `CorruptedAdventure` |
-| `RingPacketDistributor` | `…network` | `CORE` = `position.ring() == ring`; `TOUCHING` = `inner == ring \|\| outer == ring`. `playersInRing` via `RingLayout.ringAt` (ook voor server-gameplay); aanroeper checkt `RingWorld.isActive` | change 28 (wind) |
+| `RingPacketDistributor` | `…network` | `CORE` = `position.ring() == ring`; `TOUCHING` = `inner == ring \|\| outer == ring`. `playersInRing` via `RingLayout.ringAt` (ook voor server-gameplay); aanroeper checkt `RingWorld.isActive`; `matches` public sinds change 28 | `SandstormWind` |
 | `RingWorld` | `…ring` | `isActive(server)` = overworld-generator is `RingChunkGenerator`; **de enige** "is dit een ringwereld"-check (border, layout-sync, `ConditionTicker`, ringweer) | `RingWorldBorder`, `RingLayoutSync`, `ConditionTicker`, `RingWeather`, `RingWeatherCommand` |
 | `ClientRingLayout` | `…client` | `volatile RingLayout`; `get()`, `ringAt(dimension, x, z)` (Optional); `set` door de handler, gewist bij `ClientPlayerNetworkEvent.LoggingOut`. **Client-code gebruikt altijd deze class**, nooit `RingLayout.current()` | `RingDebugOverlay`, later HUD/weer |
 | `RingLayoutHandler` | `…client.network` | `settings.validate()` → `new RingLayout(settings, noiseSeed)` + info-log `Received ring layout from the server: …`; ongeldig → error-log, layout leeg | `CorruptedAdventureClient` |
@@ -327,6 +347,9 @@ docs/
 | `RingWeatherPayload` | `…network` | record (dimensie, `gameTime` van het level bij verzending, `cycleRunning`, `Map<Ring, state>` → read-only EnumMap); codec: dimensie-key, var-long, bool, map (ring op index, max. 6) | `RingWeather`, client |
 | `ClientRingWeather` | `…client.weather` | statische staat (main thread): dimensie, game time bij verzending, `cycleRunning`, ontvangen staat. `states(level)` alleen als de dimensie klopt en er ringen zijn (een payload voor een nieuwe dimensie kan na de respawn-packet komen); telt af met het verschil in **game time** (vanilla synct die elke seconde), niet met eigen client-ticks: een server op 10 TPS laat de client anders voorlopen (review). Pauze, `/tick freeze` en `doWeatherCycle false` zitten daar vanzelf in | `RingWeatherClientHooks`, F3 |
 | `RingWeatherClientHooks` | `…client.weather` | `ClientTickEvent.Post` (`clientTick` van de renderers), `ViewportEvent.RenderFog`/`ComputeFogColor`, `RenderLevelStageEvent` (alle stages; renderer kiest). Positie = camera. Renderers alleen bij `strength > 0`; zonder renderers wordt niets berekend. `describe`: `ring_2 sandstorm 0.83 (412 s)`, in een zone `… (weight 0.48, 412 s) / ring_3 clear (weight 0.52, … s)` (scheiding ` \| `), `ring_1 none`, `—` zonder layout of zonder ringweer in deze dimensie, `(cycle paused)` | `CorruptedAdventureClient`, `RingDebugOverlay` |
+| `SandstormWind` | `…weather` | Richting: `fromDegrees` = `floorMod(murmur3-fmix(seed), 360)` (waar de wind vandaan komt, kompas: 0 noord/−Z, 90 oost/+X), `direction` = `(−sin, 0, cos)` (waarheen). Duw: `PlayerTickEvent.Post`, echte levende `ServerPlayer`, `tickCount % sandstormGustTicks`, overworld + `RingWorld.isActive`, staat ring 2 = `SANDSTORM` met intensiteit > 0, `pushes` (CORE ring 2, niet creatief/spectator/passagier), `level.canSeeSky` op ooghoogte → `WindGustPayload(richting × pushStrength × intensiteit)`. Geregistreerd in `RingWeather.register` | `RingWeather`, client (richting), `/ca weather` |
+| `HeatWaveDehydrationModifier` | `…weather` | `RateModifier` (via `ConditionDefinitions.addModifier` in `RingWeather.register`): alleen `DEHYDRATION` met rate > 0; staat van `weatherRing(ctx.position().ring())` = `HEAT_WAVE` → × `1 + (heatWaveDehydrationMultiplier − 1) × intensity()`. Leest de staat zelf; `ConditionContext`/`DehydrationRule` weten niets van weer | condities-pijplijn |
+| `HeatHazeEffect` | `…client.weather` | `PostChain`-levenscyclus (zie mappenstructuur). Draait in `RenderLevelStageEvent` `AFTER_LEVEL` (vóór hand en GUI): `depth.copyDepthFrom(main)` → `disableBlend`/`disableDepthTest` → `process` → `main.copyDepthFrom(depth)` → `main.bindWrite(true)` → `enableDepthTest` | `HeatWaveRenderer` |
 | `ConditionTicker` | `…condition` | `PlayerTickEvent.Post`, alleen `ServerPlayer` (geen `FakePlayer`), levend, `tickCount % 20 == 0`, `RingWorld.isActive`. Per conditie: regel → `RateModifier`s op volgorde → creatief/spectator nooit omhoog → `add` (klemmen) → `ThresholdUpdate` (cumulatief; eerst **alle** clears van alle condities, dan alle applies) → sync als een afgeronde waarde veranderde. Instant-wijzigingen (commando, items) krijgen hun drempeleffecten bij de volgende tick (≤ 1 s) | `CorruptedAdventure` |
 | `ConditionMeters` | `…condition` | attachment-data. Server = waarheid (float), client = laatst gesyncte ints. Transient (niet opgeslagen): laatst gesyncte afgeronde waarden (−1 = nog nooit) en per conditie het aantal toegepaste drempels (`UNKNOWN` na laden → eerste tick wist alle niet-bereikte drempels, ook effecten die met de speler zijn opgeslagen). Afronding `Math.round` | ticker, `PlayerConditions`, HUD |
 | `ConditionDefinitions` | `…condition` | `rule(c)`, `thresholdLevels(c)` (config, ook client), `thresholds(c)` (niveau + effect), `addModifier`/`modifiers` (`CopyOnWriteArrayList`; registreren tijdens mod-setup, bijv. change 28 vanuit `weather/`). Nieuwe conditie = enumwaarde + een `case` in `rule`, `thresholdLevels` en `effects` + een `ServerConfig`-sectie | ticker, HUD, latere condities |
@@ -334,7 +357,7 @@ docs/
 | `ConditionSyncPayload` | `…network` | record `int[] values` (gekopieerd, lengte = aantal condities, 0–100); codec 1 byte per conditie zonder lengte (zelfde mod-versie, `PROTOCOL_VERSION`). Eigen `equals`/`hashCode` (array) | `PlayerConditions`, client |
 | `ConditionSyncHandler` | `…client.network` | `context.player().getData(CONDITION_METERS).applySync(...)`; geen `enqueueWork` nodig (main thread, zoals 18) | `CorruptedAdventureClient` |
 | `ConditionHudLayer` | `…client.hud` | `RegisterGuiLayersEvent.registerAbove(AIR_LEVEL, …)`. Eigen layers vallen **niet** onder vanilla's F1-groep: zelf `options.hideGui` checken; `gameMode.canHurtPlayer()` zoals de hongerbalk; `ServerConfig.SPEC.isLoaded()`. Per meter (afgerond) > 0 een rij van 6 px (`gui.rightHeight += 6`), eerste balk onderaan uitgelijnd met een vanilla-icoonrij (offset 4) | `CorruptedAdventureClient` |
-| `ServerConfig` | `…config` | SERVER-config, **de enige plek voor balanswaarden** (condities, ringweer; straks weereffecten). Secties: `[conditions.debug]`, `[conditions.dehydration]` (rates op/af, `waterBottleAmount`, 4 drempels, 3 amplifiers, `damage`/`damageInterval`), `[weather.ringN]`. NeoForge 21.1: standaard `config/corruptedadventure-server.toml` (globaal, live herladen); een kopie in `<wereld>/serverconfig/` overschrijft hem per wereld. Gesynct naar de client bij het joinen (`ConfigTracker.acceptSyncedConfig`); op de client ook zonder wereld geladen met standaardwaarden. Per conditie een geneste klasse (`DebugCondition`) + `ThresholdLevels`; per ring met weertypen `[weather.ringN]` (`RingWeather`: `clear/weatherMin/MaxSeconds` 600/9000/600/1200, `<type>Weight` 0–100, standaard 1) → `ringWeather(Ring)` (live, ring zonder typen `NONE`; min > max → standaardpaar + error-log bij laden); validatie bij `ModConfigEvent.Loading`/`Reloading` | condities, HUD, ringweer |
+| `ServerConfig` | `…config` | SERVER-config, **de enige plek voor balanswaarden** (condities, ringweer en zijn effecten). `[weather.ring2]` heeft naast de cyclus `RING_2_WEATHER` (`Ring2WeatherEffects`): `heatWaveDehydrationMultiplier` 2,0 (1–5), `sandstormPushStrength` 0,08 (0–0,5), `sandstormGustTicks` 10 (5–100); later per ring zo'n klasse in dezelfde sectie. Secties: `[conditions.debug]`, `[conditions.dehydration]` (rates op/af, `waterBottleAmount`, 4 drempels, 3 amplifiers, `damage`/`damageInterval`), `[weather.ringN]`. NeoForge 21.1: standaard `config/corruptedadventure-server.toml` (globaal, live herladen); een kopie in `<wereld>/serverconfig/` overschrijft hem per wereld. Gesynct naar de client bij het joinen (`ConfigTracker.acceptSyncedConfig`); op de client ook zonder wereld geladen met standaardwaarden. Per conditie een geneste klasse (`DebugCondition`) + `ThresholdLevels`; per ring met weertypen `[weather.ringN]` (`RingWeather`: `clear/weatherMin/MaxSeconds` 600/9000/600/1200, `<type>Weight` 0–100, standaard 1) → `ringWeather(Ring)` (live, ring zonder typen `NONE`; min > max → standaardpaar + error-log bij laden); validatie bij `ModConfigEvent.Loading`/`Reloading` | condities, HUD, ringweer |
 | `CommonConfig` | `…config` | COMMON-config; ringgrenzen als standaard voor **nieuwe** werelden. `ringSettings()` is package-private: alleen de snapshot leest de config | `RingSettingsSnapshot` |
 | `RingSettings` | `…config` | 5 buitenradii, void-rand, grensruis, overgangsbreedte (overworld-blokken; Nether ÷4 in `ringAt`). `CODEC` + `validate()` | snapshot, straks `RingLayout` |
 | `RingSettingsSnapshot` | `…config` | leest/maakt `<wereld>/corruptedadventure/ring_settings.json` bij `ServerAboutToStartEvent`, wist bij `ServerStoppedEvent`; `current()` gooit als er geen server draait (server-side; de client krijgt de waarden via `RingLayoutPayload`) | `RingLayout` |
@@ -498,6 +521,9 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `corruptedadventure:ring_layout` | payload (`RingLayoutPayload`, play, server → client) | `ModNetwork` |
 | `corruptedadventure:condition_sync` | payload (`ConditionSyncPayload`, play, server → client) | `ModNetwork` |
 | `corruptedadventure:ring_weather` | payload (`RingWeatherPayload`, play, server → client) | `ModNetwork` (protocol `3`) |
+| `corruptedadventure:wind_gust` | payload (`WindGustPayload`, play, server → client) | `ModNetwork` (protocol `4`) |
+| `corruptedadventure:sand_gust` | particle type (`SimpleParticleType`) | `ModParticleTypes`; sprites `particles/sand_gust.json` (vanilla `generic_0..7`); `/particle corruptedadventure:sand_gust ~ ~1 ~` |
+| `corruptedadventure:weather.ring_2.sandstorm` | sound event (variabel bereik) | `ModSoundEvents`; `sounds.json`: `event` → `item.elytra.flying`, pitch 0,7; ondertitel en + nl; gespeeld door `SandstormSound` (categorie weer) |
 | `corruptedadventure:condition_meters` | attachment type (`ConditionMeters`) | `ModAttachments`; op `ServerPlayer` (opgeslagen) en `LocalPlayer` (gesyncte kopie) |
 | `corruptedadventure:dehydration` | damage type (datagen) | `ModDamageTypes`, `ConditionDamageTypes`; als vanilla `starve`; doodsbericht `death.attack.corruptedadventure.dehydration(.player)` |
 | `minecraft:bypasses_armor`, `bypasses_effects`, `no_knockback`, `bypasses_wolf_armor`, `neoforge:is_environment` | damage-type-tags (datagen, `replace: false`) | `ModDamageTypeTagsProvider`; bevatten `corruptedadventure:dehydration` |
@@ -544,7 +570,7 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 | `data/corruptedadventure/worldgen/noise/sand_cave_zone.json` | zandgrotzones (change 26): firstOctave −8, [1, 1] (vlekken ~200–400); `noise_threshold` ≥ 0,21 = 25,3 % van ring 2 (gemeten op een raster van 16 over r 1.500–3.500) |
 | `META-INF/accesstransformer.cfg` | wordt automatisch opgepikt door ModDevGradle en FML (geen extra config nodig) |
 
-Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change26` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer), van vóór change 14 ook niet (`placeholder_nether_ring_1`), van vóór change 23 ook niet (`placeholder_ring_2`); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
+Testseed voor test W: **`20260930`**. Test S: `run/server.properties` staat op `level-type=corruptedadventure:corrupted_world`, `level-seed=20260930`, `level-name=smoke-change28` (nieuwe wereldmap per test = andere `level-name`). Werelden van vóór change 8 laden niet meer (`placeholder_ring_1` bestaat niet meer), van vóór change 14 ook niet (`placeholder_nether_ring_1`), van vóór change 23 ook niet (`placeholder_ring_2`); werelden van vóór change 9 krijgen naden tussen oud en nieuw ring 1-terrein.
 
 ### Plekken die ring 2-biomes opsommen (controlelijst, change 23)
 Java leest `Ring2Biomes.ALL` (tags `is_ring_2`, `c:is_hot/overworld`, `c:is_dry/overworld`, `Ring2BiomesTest`). Handgeschreven JSON kan dat niet; een nieuwe ring 2-biome (changes 26, 30, 31) moet hier ook bij:
@@ -565,6 +591,7 @@ Java leest `Ring2Biomes.ALL` (tags `is_ring_2`, `c:is_hot/overworld`, `c:is_dry/
 | `corruptedadventure-server.toml` | SERVER-config | server → client (NeoForge-configsync bij het joinen) | balanswaarden; de HUD leest er de drempels uit |
 | `corruptedadventure:ring_layout` | payload (`RingLayoutPayload`, ~30 bytes) | server → client, bij login, alleen ringwereld | ringgrenzen + ruis-seed (nooit de wereldseed); client bouwt `ClientRingLayout` en rekent zelf `ringAt` |
 | `corruptedadventure_ring_weather.dat` | `SavedData` (`RingWeatherData`, `<wereld>/data/`) | server; alleen overworld van een ringwereld | per ring 2–5 type, resterende/totale duur, seed (op naam) |
+| `corruptedadventure:wind_gust` | payload (`WindGustPayload`, 8 bytes) | server → één speler, elke `sandstormGustTicks` (10) per blootgestelde speler in ring 2, alleen tijdens een zandstorm | additieve windstoot; de client doet `push` |
 | `corruptedadventure:ring_weather` | payload (`RingWeatherPayload`, ~30 bytes) | server → alle spelers van een dimensie bij elk nieuw weer, `/ca weather`-wijziging en `doWeatherCycle`-wissel; → één speler bij login/dimensiewissel/respawn (lege lijst in de Nether); alleen ringwereld | volledige ringweerstaat van de dimensie; de client telt zelf af en kiest zelf de ring(en) |
 
 ---
@@ -575,7 +602,7 @@ Java leest `Ring2Biomes.ALL` (tags `is_ring_2`, `c:is_hot/overworld`, `c:is_dry/
 |---|---|
 | nieuwe conditie (43 hitte, 55 kou, 65 gif, 84 void, 93 stilte; 27 uitdroging is klaar) | `Condition`-waarde + `case`s in `ConditionDefinitions` + sectie in `ServerConfig` (met `ThresholdLevels.define`); HUD-kleur in de enum; damage type in `ModDamageTypes` + `ConditionDamageTypes` + tags in `ModDamageTypeTagsProvider` + doodsbericht (en + nl) |
 | wanneer op/af | `ConditionRule` (leest `ConditionContext`: `isSunUp`, `canSeeSky`, `isSubmerged` sinds 27; nieuwe afgeleide checks voegt de eerste gebruiker toe); `debugLabel` voor `/ca condition get`; pure tabel naar het voorbeeld van `DehydrationRule.evaluate` |
-| vermenigvuldigers (ringweer 28, fire resistance, gear, Nether-4 zuiverend, spelers in de buurt) | `RateModifier` via `ConditionDefinitions.addModifier` (draait voor elke conditie, ook buiten haar zone) |
+| vermenigvuldigers (ringweer: 28 hittegolf klaar (`HeatWaveDehydrationModifier`), fire resistance, gear, Nether-4 zuiverend, spelers in de buurt) | `RateModifier` via `ConditionDefinitions.addModifier` (draait voor elke conditie, ook buiten haar zone); weer-modifiers lezen `RingWeather.state` zelf |
 | effecten | `MobEffectThreshold`, `DamageThreshold` (+ `DifficultyFloor`), of een eigen `ThresholdEffect` (ignite, freeze, teleport) |
 | items (waterfles −30, melk −40, honing −20) | `PlayerConditions.add` |
 | client-effecten (glitch, stilte) | lees de gesyncte meter uit de attachment van de lokale speler |
@@ -706,3 +733,10 @@ Java leest `Ring2Biomes.ALL` (tags `is_ring_2`, `c:is_hot/overworld`, `c:is_dry/
 - **`LivingEntityUseItemEvent.Finish`:** `getItem()` is een kopie van het stack vóór het gebruik (`LivingEntity.completeUsingItem`), `getResultStack()` het resultaat (lege fles). Het event vuurt op client en server: filter op `ServerPlayer`.
 - **Damage type van een conditie:** `DamageType`-msgId met namespace (`corruptedadventure.dehydration`) → lang-key `death.attack.corruptedadventure.dehydration`; `.player` alleen met een recente aanvaller (`getKillCredit`). Vanilla's starve-regel (`VANILLA_STARVATION`) schaadt op normal zolang Health > 1: een gebroken waarde (1,17) zakt dus tot 0,17, net als bij verhongeren.
 - **`/place feature corruptedadventure:canyon_spring`** op een al geladen chunk faalde in change 27 ("Failed to place feature", met `Unprimed heightmap: WORLD_SURFACE_WG` in de log). Echte wandbronnen staan in de bouwnotities van change 23c.
+- **Weer-fog (change 28):** `ViewportEvent.RenderFog` past near/far/shape alleen toe als het event **gecanceld** wordt (`ClientHooks.onFogRender`). Het vuurt voor `FOG_TERRAIN` én `FOG_SKY`; een korte far in `FOG_SKY` laat de lucht in de fog-kleur opgaan. Vanilla's water/lava/poedersneeuw/blindness-fog staat al in de near/far van het event: daar niets doen (`RingWeatherRenderer.clearView`). Fog-kleur zelf × `ClientLevel.getSkyDarken` (anders gloeit de weerkleur 's nachts).
+- **Post-shader zonder mixin (change 28):** `PostChain(textureManager, resourceManager, mainTarget, id)`, `setUniform`, `resize`, `process`, `getTempTarget` en `close` zijn publiek in 1.21.1; een pass-naam met namespace (`corruptedadventure:heat_haze`) laadt `corruptedadventure:shaders/program/heat_haze.json`, een vertex zonder namespace (`blit`) de vanilla-versie. `PostPass` zet zelf `Time` (lus 0–1 per 20 ticks), `ProjMat`, `InSize`, `OutSize`: eigen tijd onder een andere naam. Uniforms die het programma niet gebruikt niet in de JSON zetten (WARN). Een pass naar `minecraft:main` wist ook de **diepte** van de main target: bewaren via een extra temp target (`copyDepthFrom`). Na `process` zelf `main.bindWrite(true)`. `AFTER_LEVEL` komt vóór de hand: hand en GUI blijven scherp.
+- **Additieve duw op de client (change 28):** `Entity.push(x, y, z)` telt op bij de snelheid (`hasImpulse`); op de grond houdt een speler per tick 0,546 van zijn snelheid over, dus één stoot `v` geeft ~`v / 0,454` blokken verplaatsing (0,08 → 0,18 blok; 2 stoten/s ≈ 0,35 blok/s, gemeten 0,34). De server ziet de verplaatsing via de gewone bewegingspakketten; geen "moved too quickly" door de wind (wel door RCON-teleports, onschuldig).
+- **Particles (change 28):** de 7-argumentconstructor van `Particle` gooit vanilla's willekeurige spreiding over de snelheid; voor een gerichte snelheid de 4-argumentconstructor + zelf `xd/yd/zd`. `level.addParticle` volgt de vanilla-instelling "Particles". `Particle.move` zet een snelheidscomponent op 0 bij een botsing: daarop testen om een korrel bij een muur weg te halen. De client-heightmap `MOTION_BLOCKING` is beschikbaar (de server stuurt hem mee).
+- **Tickable sound met volume 0** start alleen als `canStartSilent()` true geeft (anders slaat `SoundEngine.play` hem over). Een geluid dat de renderer alleen "voedt" zolang het weer gevoeld wordt, moet zelf uitfaden en `stop()`en: `clientTick` van een renderer komt niet meer als de sterkte 0 is.
+- **RCON en niet-ASCII:** `°` in commando-uitvoer komt via RCON (en in de Windows-console-log van de clients) als `�`/mojibake binnen; in de chat en F3 klopt hij. Vergelijk logs van twee clients op de hele regel (beide even verminkt).
+- **Wind-duw testen via RCON (change 28):** een stenen platform hoog in de lucht (`forceload add` + `fill … y 180`), spelers aan de **bovenwindse** rand (drift ~3,4 blokken per 10 s); een speler die over de rand drijft, valt dood (survival). `Vec3.equals` faalt op −0,0 vs 0,0 (tests: lengte vergelijken). De lucht boven een ring 2-biome is dezelfde biome (`multi_noise` alleen op `temperature`): een platform boven de kloof is `canyonlands` (2318 181 212), boven het ringmidden `oasis_flats` (label `oasis`). Een dode quick-play-client respawnt zelf bij opnieuw joinen als `doImmediateRespawn` aan staat (het login-pakket zet `showDeathScreen` uit): client-JVM stoppen en opnieuw starten.

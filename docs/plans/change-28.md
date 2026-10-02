@@ -307,14 +307,14 @@ Daarna een dedicated server met RCON en `online-mode=false`, seed `20260930`, ee
 **W**: geen worldgen; de standaard portal-test is niet nodig.
 
 **Checklist (concept)**
-- [ ] Scope `atmosphere` benoemd; namen van 18, 19, 20 en 27 gecontroleerd en dit plan aangepast
-- [ ] Aanraking `conditions` beperkt tot de registratie van de modifier (+ backlog-regel)
-- [ ] B groen (incl. nieuwe tests en `ClientIsolationTest`); D groen en output gecommit
-- [ ] S: smoke-test + RCON-stappen 1–8 groen; `PROTOCOL_VERSION` opgehoogd
-- [ ] `CODEBASE.md`, `fase-1-wereld.md` (Ring 2, uitwerking change 28), beslissingenlog en backlog bijgewerkt
-- [ ] `/code-review` gedaan, bevindingen afgehandeld
-- [ ] Commit `atmosphere: add sandstorm and heat wave effects for ring 2`
-- [ ] W-achteraf-checklist doorgegeven voor teststop 3 (na change 37)
+- [x] Scope `atmosphere` benoemd; namen van 18, 19, 20 en 27 gecontroleerd en dit plan aangepast
+- [x] Aanraking `conditions` beperkt tot de registratie van de modifier (+ backlog-regel)
+- [x] B groen (incl. nieuwe tests en `ClientIsolationTest`); D groen en output gecommit
+- [x] S: smoke-test + RCON-stappen 1–8 groen; `PROTOCOL_VERSION` opgehoogd
+- [x] `CODEBASE.md`, `fase-1-wereld.md` (Ring 2, uitwerking change 28), beslissingenlog en backlog bijgewerkt
+- [x] `/code-review` gedaan, bevindingen afgehandeld
+- [x] Commit `atmosphere: add sandstorm and heat wave effects for ring 2`
+- [x] W-achteraf-checklist doorgegeven voor teststop 3 (na change 37)
 
 ---
 
@@ -419,3 +419,66 @@ Antwoord: **A** — wind-loop bij de zandstorm (vanilla-geluid via eigen sound e
 | 2026-10-01 | atmosphere | Geluid ring 2-weer: wind-loop bij de zandstorm (vanilla-geluid), hittegolf stil | Storm zonder wind voelt kaal; geen audiobestand nodig |
 | 2026-10-01 | atmosphere | Hittegolf ×2 als `RateModifier` in `weather/` die de weerstaat zelf leest; `ConditionContext` en `DehydrationRule` blijven ongewijzigd, alleen de registratie raakt `conditions` | Scope `atmosphere` houden; latere weer-changes volgen hetzelfde patroon |
 | 2026-10-01 | atmosphere | Zandstorm-particle `corruptedadventure:sand_gust` met vanilla `generic_*`-sprites; visuele waarden als constanten, geen client-config | Geen textures-werk in deze change; spelers kunnen het zicht niet terugzetten |
+
+---
+
+## Bouwnotities (change 28, 2026-10-02)
+
+- **Aannames over 18–20 en 27 klopten:** `RingWeatherRenderer` (alleen defaults), `RingWeatherRenderers.register`, `RingWeatherClientHooks` (strength = intensiteit × gewicht), `ClientRingWeather`, `RingDebugOverlay` (enige F3-hook), `ClientboundHandlers.set/forward`, `PROTOCOL_VERSION "3"` (nu `"4"`), `seed` in `RingWeatherState` (sinds 20, in `CODEC`/`STREAM_CODEC`), `ConditionDefinitions.addModifier`, `DehydrationRule` (alleen `SUN` positief), `client2`/`Dev2` + `-PquickPlay`. De plantekst over "`seed` toevoegen" en de uitbreiding van `RingWeatherStateTest`/`RingWeatherCycleTest` vervalt (zat al in 20, zie afstemming).
+- **Post-shader zonder mixin of AT:** `PostChain` (constructor, `setUniform`, `resize`, `process`, `getTempTarget`, `close`) is publiek in 1.21.1; `corruptedadventure:heat_haze` als pass-naam laadt het eigen programma (`EffectInstance` gebruikt `ResourceLocation.tryParse`). Stage `AFTER_LEVEL` (vóór de hand). Het stop-en-vraag-punt is dus niet geraakt. Eigen tijd-uniform `HazeTime` (`PostPass` overschrijft `Time`). Omdat een pass naar `minecraft:main` ook de diepte wist, bewaart een extra temp target `depth` die (voor latere `AFTER_LEVEL`-renderers van andere mods).
+- **Afwijking:** `RingPacketDistributor.matches` was package-private; nu `public` (één woord, `network/`), zodat `SandstormWind.pushes` precies `CORE` gebruikt.
+- **Afwijking:** de client-handler `WindGustHandler` doet `push` direct, zonder `enqueueWork` (handlers draaien al op de main thread, zoals alle handlers sinds 18).
+- **Windrichting:** gehele kompasgraden waar de wind **vandaan** komt (0 = noord/−Z, 90 = oost/+X; weerbericht-conventie, zoals het F3-voorbeeld `225° (from SW)`), uit `murmur3-fmix(seed) mod 360`. De vector (waarheen) wordt uit die gehele graden gerekend, dus server, particles, F3, `/ca weather` en de debuglog zijn exact gelijk.
+- **Blootstelling op de server:** `level.canSeeSky(BlockPos.containing(eyePosition))`, dezelfde definitie als `ConditionContext.canSeeSky` (geen context bouwen per stoot).
+- **Config:** `ServerConfig.RING_2_WEATHER` (`Ring2WeatherEffects`) wordt binnen de `[weather.ring2]`-sectie van de bestaande `RingWeather`-klasse aangemaakt (alleen voor ring 2).
+- **F3:** eigen regel `CA wind (client): 122° (from SE), strength 1.00, exposure 1.00` (of `—`) onder de weerregel.
+- **Debuglog:** `[ring weather] Dev: ring_2 sandstorm strength 0.75 wind 122° (from SE)` bij elke wissel; de sterkte in stappen van 0,25 (anders logt hij elke tick tijdens de fade), zodat twee clients dezelfde reeks loggen.
+- **Fog-kleur × `getSkyDarken`:** de zand-/warme kleur wordt met vanilla's daglichtfactor (0,2–1) vermenigvuldigd, anders gloeit de storm 's nachts. Fog alleen als `clearView` (camera in lucht, geen blindness/darkness).
+- **Geluid:** `weather.ring_2.sandstorm` → `item.elytra.flying`, pitch 0,7, categorie **Weather**, max. volume 0,6 × sterkte × blootstelling; de loop faadt zelf uit (1 s) en stopt zonder feed. Keuze definitief in W-achteraf.
+- **Particles:** 4-argumentconstructor (de 7-argumentversie strooit willekeurige snelheid), geen zwaartekracht, `hasPhysics`, weg zodra een muur hem stopt; het spawn-kader is bovenwinds verschoven (½ × 16), zodat het zand langs de camera waait.
+- **Sky exposure** tikt in een eigen `ClientTickEvent.Post`-listener die vóór die van `RingWeatherClientHooks` geregistreerd is.
+
+### Testresultaten
+- **B:** `./gradlew build` groen, 298 tests (was 279; nieuw: `SandstormWindTest`, `HeatWaveDehydrationModifierTest`, `WindGustPayloadTest`, `client/weather/WeatherClientMathTest`; uitgebreid: `RingWeatherConfigTest`); `ClientIsolationTest` groen.
+- **D:** `./gradlew runData` groen: `assets/corruptedadventure/particles/sand_gust.json` (generic_0..7), `sounds.json` (`weather.ring_2.sandstorm`), lang en + nl (ondertitel).
+- **S:** `tools/server-smoke-test.sh` met `level-name=smoke-change28`: `Done (8.3 s)`, geen fouten (alleen "config … Correcting" voor de nieuwe sleutels en de bekende ocelot-melding). Daarna `runServer` + RCON + `Dev` en `Dev2` via quick-play (seed 20260930, `doDaylightCycle false`, middag, peaceful). Testplatforms: steen op Y 180, 2480…2520 × −20…20 (boven `oasis_flats`) en 2295…2321 × 194…216 (boven `canyonlands`).
+  1. `ca weather 2 sandstorm 600` → `wind 122° (from SE)` (verwachte driftrichting (−0,848; −0,530)). Na 32 s intensiteit 1,00.
+  2. **Duw:** in 10 s Dev Δ(−2,909; −1,777) = 3,41 blokken (0,34 blok/s), richting 0,6° van de verwachte; Dev2 exact dezelfde Δ. Herhaald na een reset: beide opnieuw Δ(−2,910; −1,777).
+  3. **Blootstelling:** een dak (13 × 13 steen, 3 boven het hoofd) boven Dev2 → Dev2 10 s lang 0 verplaatsing; Dev dreef door (en viel van de platformrand dood; daarna respawn via `doImmediateRespawn` + client-herstart). Dak weg → Dev2 dreef weer.
+  4. **Uitzonderingen:** `gamemode creative Dev` → 0 (Dev2 dreef); ring 3 (4499 121 22) → 0; Nether-ring 2 (622 34 53) → 0, `ca weather` daar "No ring weather in this dimension"; grens 2: Dev op 3442 (ring 2, gewicht 0,40) dreef volledig, Dev2 op 3482 (ring 3, 0,59) 0; `ca weather 2 clear` → 0. Wind uit W (282°) duwde naar +x.
+  5. **Hittegolf ×2** (boven `canyonlands`, 2318 181 212/200): `+0.80/s, sun` voor beide; Dev2 onder een dak `-0.50/s, shade` (zelfde als zonder hittegolf); `ca weather 2 sandstorm` → `+0.40/s`; fade-in na 9 s (intensiteit 0,30) `+0.52/s` (= 0,4 × 1,30); Dev in ring 3 `-0.50/s, outside`. Boven het ringmidden (`oasis_flats`) blijft het `-2.00/s, oasis`.
+  6. **Twee clients:** beide client-logs dezelfde reeks `[ring weather] …: ring_2 sandstorm strength 0.00 → 0.25 → 0.50 → 0.75 → 1.00 wind 122° (from SE)`; in de overgangszone Dev2 `0.25` (ring 3-kant). Geen fouten, geen `unknown payload`/`No client handler`, alleen de bekende log4j-rotatiemelding. Geen shader-/uniform-WARN van `heat_haze` (beide stonden tijdens de hittegolf in de open lucht).
+  7. **Persistentie:** `ca weather 2 sandstorm 600` → `243° (from SW)`, RCON `stop`, herstart → `243° (from SW)`.
+  8. **Vanilla-preset** (`smoke-change28-vanilla`): `ca weather` → "not a ring world", geen fouten.
+  9. Serverlog: "moved too quickly" alleen op de momenten van RCON-teleports (sprongen van honderden blokken), niet door de wind. Daarna RCON uit, `level-name=smoke-change28`, testwerelden verwijderd, server en clients gestopt.
+
+### Code review (`/code-review medium`)
+Geen correctheidsfouten (gecontroleerd: geen client-class in common code, protocol `4`, windrichting en kompas, server-duw met uitzonderingen, ×2 alleen op een positieve rate, config-paden, fog nooit verder dan vanilla en near ≤ far, `clearView`, volgorde `SkyExposure` vóór de renderers, particle-bereik ≤ 32, uniforms van `heat_haze`, dieptekopie). Eén lage opmerking, **opgelost**: kon de geluidsengine de wind-loop niet starten (alle kanalen bezet), dan maakte `SandstormRenderer` elke tick een nieuwe `SandstormSound` (WARN per tick). Nu hooguit één poging per 100 ticks (`SOUND_RETRY_TICKS`, game time; een andere wereld met een lagere game time mag direct). Build daarna groen (298 tests).
+
+## In-game checklist (W)
+
+**Niet blokkerend**: W-achteraf in de gebundelde ring 2-eindcheck (teststop 3, na change 37). ~15 min. Wereld `corrupted_world`, seed `20260930`, dedicated server + twee clients.
+
+**Opstarten** (drie terminals in de repo-root): `./gradlew runServer` (wacht op `Done`), `./gradlew runClient -PquickPlay` (**Dev**), `./gradlew runClient2 -PquickPlay` (**Dev2**). Op beide F3 aan: rechts `CA weather (client): …` en `CA wind (client): …`. Eerst op beide `/tp @s 100 ~ 0` (richting oost), dan `/gamerule doDaylightCycle false`, `/time set noon`, `/difficulty peaceful`.
+
+**Zandstorm** (beide in survival, naast elkaar)
+- [ ] `/tp Dev 2307 85 204` (kloofbodem canyonlands, open lucht), `/tp Dev2 2309 85 204`, `/ca weather 2 sandstorm 600`. Beide zien in ~30 s de storm opkomen: zicht naar ~24 blokken, lucht en fog zandkleurig, zandkorrels die horizontaal waaien. F3 op beide toont **dezelfde** `CA wind`-graden als `/ca weather`.
+- [ ] De korrels waaien op beide clients dezelfde kant op, en dat is ook de kant waarheen je (zonder te lopen) langzaam wegdrijft. Tegen de wind in lopen gaat merkbaar trager, met de wind mee iets sneller; geen haperingen of terugspringen (rubber-banding).
+- [ ] Wind-loop hoorbaar (met ondertitels aan: "Sandstorm howls" / "Zandstorm raast"); volume volgt de storm. Klinkt het vanilla-geluid goed, of liever een ander (bijv. `ambient.basalt_deltas.loop`)?
+- [ ] Binnen: bouw een hut van 5 × 5 × 4 met een deur (of loop een grot in). Binnen verdwijnen fog, korrels en wind in ~2 s, er komen geen korrels binnen en de duw stopt (F3 `exposure` naar 0). Naar buiten: alles komt in ~2 s terug.
+- [ ] Onder één blok overhang: fog deels, duw weg (bewust: beeld zacht, gameplay hard). Voelt dat logisch?
+- [ ] In water (oasepoel bij `/ca tpring 2`, ~2499 66 12) en met `/effect give @s minecraft:blindness 10`: vanilla-fog, geen zandfog.
+- [ ] Grens 2→3: `/ca tpboundary 2` (~3457 107 17), langzaam naar het oosten en terug: de fog dunt vloeiend uit over ~128 blokken; de duw stopt hard op de grens (F3 `CA ring` springt van ring_2 naar ring_3). Idem grens 1→2 (`/ca tpboundary 1`, ~1469 73 7).
+- [ ] **Richel/spleetrand** (afstemming na teststop 2): op het plateau boven 2307 204 (~Y 130) een spleet- of kloofrand opzoeken en daar stilstaan tijdens de storm. Voelt de duw eerlijk of te gevaarlijk?
+- [ ] Video-instelling Particles op "Minimal": nauwelijks korrels, wel fog.
+- [ ] `/ca weather 2 clear`: direct helder (aan het natuurlijke eind van een storm via een fade van 30 s); de wind-loop faadt in ~1 s uit.
+
+**Hittegolf**
+- [ ] `/ca weather 2 heat_wave 600`, beide op 2307 85 204 / 2309 85 204: na ~30 s trilt het beeld zacht, het sterkst onderin; hand, hotbar en chat trillen **niet**; lichte warme waas.
+- [ ] Toegankelijkheid → "Distortion Effects" op 0 % → geen trilling (waas blijft); daarna terug op 100 %.
+- [ ] Venster vergroten/verkleinen, fullscreen (F11) en F3+T: geen zwart beeld, de trilling werkt daarna nog; de client-log toont geen WARN `Could not load the heat haze shader`.
+- [ ] Geen merkbaar FPS-verlies (F3-fps met en zonder hittegolf).
+- [ ] Graphics op "Fabulous!": trilling werkt, geen zwart scherm.
+- [ ] Uitdrogingsbalk (survival) loopt in de hittegolf zichtbaar ~2× zo snel vol als zonder (`/ca condition get` → `+0.80/s, sun`).
+- [ ] In een grot of hut: geen trilling.
+- [ ] Met Sodium/Iris (indien beschikbaar): geen crash (dat de trilling met een shaderpack ontbreekt, is geaccepteerd).

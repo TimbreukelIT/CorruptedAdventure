@@ -23,6 +23,10 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
         add(ModSoundEvents.RING_1_STRANGE_CAVE, SoundDefinition.definition()
                 .subtitle("subtitles.corruptedadventure.ambient.ring_1.strange_cave")
                 .with(caveSound(0.5F), caveSound(0.6F), caveSound(0.7F)));
+        // Sandstorm wind loop: vanilla's elytra wind, lower. Volume follows the storm on the client (SandstormSound).
+        add(ModSoundEvents.RING_2_SANDSTORM, SoundDefinition.definition()
+                .subtitle("subtitles.corruptedadventure.weather.ring_2.sandstorm")
+                .with(sound(SoundEvents.ELYTRA_FLYING.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.7F)));
     }
 
     private static SoundDefinition.Sound caveSound(float pitch) {

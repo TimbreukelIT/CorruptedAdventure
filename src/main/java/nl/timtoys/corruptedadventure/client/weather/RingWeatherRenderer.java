@@ -1,6 +1,10 @@
 package nl.timtoys.corruptedadventure.client.weather;
 
+import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.material.FogType;
 import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
@@ -25,5 +29,22 @@ public interface RingWeatherRenderer {
 
     /** World rendering; check {@code event.getStage()} (e.g. {@code AFTER_WEATHER}). */
     default void renderLevel(RenderLevelStageEvent event, float strength) {
+    }
+
+    /**
+     * Whether weather fog and screen effects may apply: the camera is in air and its entity has no blindness or
+     * darkness. Otherwise vanilla's fog (water, lava, powder snow, blindness) stays untouched.
+     */
+    static boolean clearView(Camera camera) {
+        if (camera.getFluidInCamera() != FogType.NONE) {
+            return false;
+        }
+        return !(camera.getEntity() instanceof LivingEntity living)
+                || !living.hasEffect(MobEffects.BLINDNESS) && !living.hasEffect(MobEffects.DARKNESS);
+    }
+
+    /** Daylight factor of the fog colour, 0.2 at night to 1 at noon (vanilla's own sky darkening, incl. rain). */
+    static float daylight(ClientLevel level, float partialTick) {
+        return level.getSkyDarken(partialTick);
     }
 }

@@ -36,6 +36,24 @@ public final class RingWeatherClientHooks {
         gameBus.addListener(RingWeatherClientHooks::onComputeFogColor);
         gameBus.addListener(RingWeatherClientHooks::onRenderLevelStage);
         gameBus.addListener(ClientRingWeather::onLoggingOut);
+        gameBus.addListener(RingWeatherDebugLog::onLoggingOut);
+    }
+
+    /**
+     * Ring 2 (change 28): sandstorm and heat wave renderers plus what they share. Sky exposure ticks before the
+     * renderers, which are called from this class's own tick listener (registered after this).
+     */
+    public static void registerRing2(IEventBus modBus, IEventBus gameBus) {
+        gameBus.addListener(SkyExposure::onClientTick);
+        modBus.addListener(HeatHazeEffect::onRegisterReloadListeners);
+        gameBus.addListener(HeatHazeEffect::onLoggingOut);
+        RingWeatherRenderers.register(RingWeatherType.SANDSTORM, new SandstormRenderer());
+        RingWeatherRenderers.register(RingWeatherType.HEAT_WAVE, new HeatWaveRenderer());
+    }
+
+    /** F3: the sandstorm wind felt at x, z ({@code 225° (from SW), strength 0.83, exposure 0.85}) or {@code —}. */
+    public static String describeWind(Level level, double x, double z) {
+        return SandstormRenderer.describeWind(level, x, z);
     }
 
     /** The rings felt at x, z in {@code level}; empty without a layout or without ring weather in that dimension. */
@@ -47,6 +65,13 @@ public final class RingWeatherClientHooks {
         }
         Map<Ring, RingWeatherState> known = states.get();
         return RingWeatherMix.at(position.get(), ring -> known.getOrDefault(ring, RingWeatherState.STILL));
+    }
+
+    /** The share of {@code type} felt at x, z (strength > 0); empty if that weather is not felt there. */
+    public static Optional<RingWeatherMix.Share> felt(Level level, double x, double z, RingWeatherType type) {
+        return shares(level, x, z).stream()
+                .filter(share -> share.state().type() == type && share.strength() > 0.0F)
+                .findFirst();
     }
 
     /**
@@ -80,8 +105,9 @@ public final class RingWeatherClientHooks {
         if (RingWeatherRenderers.isEmpty() || minecraft.level == null || minecraft.player == null || minecraft.isPaused()) {
             return;
         }
-        forEachFelt(minecraft.gameRenderer.getMainCamera().getPosition(),
-                (renderer, strength) -> renderer.clientTick(minecraft.level, minecraft.player, strength));
+        Vec3 camera = minecraft.gameRenderer.getMainCamera().getPosition();
+        forEachFelt(camera, (renderer, strength) -> renderer.clientTick(minecraft.level, minecraft.player, strength));
+        RingWeatherDebugLog.update(minecraft.player.getGameProfile().getName(), shares(minecraft.level, camera.x, camera.z));
     }
 
     private static void onRenderFog(ViewportEvent.RenderFog event) {

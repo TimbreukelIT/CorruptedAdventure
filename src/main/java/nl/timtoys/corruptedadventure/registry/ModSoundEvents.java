@@ -16,6 +16,8 @@ public final class ModSoundEvents {
 
     /** Cave mood sound of the strange zones in ring 1 ({@code withered_expanse}). */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_1_STRANGE_CAVE = register("ambient.ring_1.strange_cave");
+    /** Wind loop of the ring 2 sandstorm (change 28), played by the client while the storm is felt. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_2_SANDSTORM = register("weather.ring_2.sandstorm");
 
     private ModSoundEvents() {
     }

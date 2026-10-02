@@ -37,6 +37,20 @@ class RingWeatherConfigTest {
     }
 
     @Test
+    void ring2EffectsLiveInTheRing2Section() {
+        ServerConfig.Ring2WeatherEffects effects = ServerConfig.RING_2_WEATHER;
+        assertSame(section(Ring.RING_2).ring2Effects, effects);
+        assertEquals(java.util.List.of("weather", "ring2", "heatWaveDehydrationMultiplier"),
+                effects.heatWaveDehydrationMultiplier.getPath());
+        assertEquals(java.util.List.of("weather", "ring2", "sandstormPushStrength"), effects.sandstormPushStrength.getPath());
+        assertEquals(java.util.List.of("weather", "ring2", "sandstormGustTicks"), effects.sandstormGustTicks.getPath());
+        assertEquals(2.0, effects.heatWaveDehydrationMultiplier.getDefault());
+        assertEquals(0.08, effects.sandstormPushStrength.getDefault());
+        assertEquals(10, effects.sandstormGustTicks.getDefault());
+        assertSame(null, section(Ring.RING_3).ring2Effects);
+    }
+
+    @Test
     void ringsWithoutWeatherHaveNoSettings() {
         assertSame(RingWeatherSettings.NONE, ServerConfig.ringWeather(Ring.RING_1));
         assertSame(RingWeatherSettings.NONE, ServerConfig.ringWeather(Ring.VOID));

@@ -9,6 +9,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import nl.timtoys.corruptedadventure.condition.ConditionDefinitions;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.network.RingWeatherPayload;
 import nl.timtoys.corruptedadventure.ring.Ring;
@@ -34,6 +35,9 @@ public final class RingWeather {
 
     public static void register(IEventBus gameBus) {
         gameBus.addListener(RingWeather::onLevelTick);
+        // The gameplay effects of the weather (change 28; later 45, 66, 85 the same way).
+        SandstormWind.register(gameBus);
+        ConditionDefinitions.addModifier(new HeatWaveDehydrationModifier());
         gameBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> sendTo(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, event -> sendTo(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerRespawnEvent.class, event -> sendTo(event.getEntity()));

@@ -21,5 +21,15 @@
       }
     ],
     "subtitle": "subtitles.corruptedadventure.ambient.ring_1.strange_cave"
+  },
+  "weather.ring_2.sandstorm": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "item.elytra.flying",
+        "pitch": 0.7
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.weather.ring_2.sandstorm"
   }
 }

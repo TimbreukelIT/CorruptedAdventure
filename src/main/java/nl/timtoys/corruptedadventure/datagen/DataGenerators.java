@@ -76,6 +76,7 @@ public final class DataGenerators {
         ModBlockTagsProvider blockTags = event.createProvider((output, lookup) -> new ModBlockTagsProvider(output, lookup, files));
         event.createProvider((output, lookup) -> new ModItemTagsProvider(output, lookup, blockTags.contentsGetter(), files));
         event.createProvider(output -> new ModSoundDefinitionsProvider(output, files));
+        event.createProvider(output -> new ModParticleDescriptionProvider(output, files));
 
         event.createProvider(EnglishLanguageProvider::new);
         event.createProvider(DutchLanguageProvider::new);

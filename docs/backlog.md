@@ -92,3 +92,10 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 
 ## Uit change 27
 - [worldgen] `/place feature corruptedadventure:canyon_spring` op een al geladen chunk faalt ("Failed to place feature" + `Unprimed heightmap: WORLD_SURFACE_WG` in de log): de feature leest de WG-heightmap. Voor tests eventueel een fallback op `WORLD_SURFACE` als de WG-heightmap ontbreekt, of het als bekende beperking laten. (bron: change 27)
+
+## Uit change 28
+- [conditions] Ringweer-modifiers (28 hittegolf; later 45 asregen/uitbarsting, 66 gifregen, 85) hangen zich elk via `ConditionDefinitions.addModifier` in de condities-pijplijn, in registratievolgorde (nu vanuit `RingWeather.register`). Bij change 43 (hitte) nagaan of een vaste volgorde nodig is (weer vóór gear, zuiverend als laatste). (bron: change 28)
+- [textures] Eigen sprite voor de `sand_gust`-particle (nu vanilla `generic_0..7`, zandkleurig getint), bij de ring 2-textures (change 37). (bron: change 28)
+- [atmosphere] Windgeluid van de zandstorm is een verwijzing naar vanilla `item.elytra.flying` (pitch 0,7); de synthese-pijplijn van change 32 (`Ring2Sounds.java`) kan het vervangen door een eigen wind. (bron: change 28)
+- [atmosphere] Wind-duw ook voor items, mobs en spelers op een rijdier/in een boot, als dat later gewenst is (nu alleen spelers te voet). (bron: change 28)
+- [atmosphere] Post-shader `heat_haze` met shaderpacks (Iris) of performance-mods: het effect valt daar mogelijk weg (geaccepteerd in het plan); bij klachten een particle-alternatief (plan 28 vraag 5 B). (bron: change 28)

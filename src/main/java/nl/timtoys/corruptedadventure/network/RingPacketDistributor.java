@@ -26,7 +26,7 @@ public final class RingPacketDistributor {
     private RingPacketDistributor() {
     }
 
-    static boolean matches(RingPosition position, Ring ring, RingMembership membership) {
+    public static boolean matches(RingPosition position, Ring ring, RingMembership membership) {
         return switch (membership) {
             case CORE -> position.ring() == ring;
             case TOUCHING -> position.inner() == ring || position.outer() == ring;

@@ -4,17 +4,22 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
 import nl.timtoys.corruptedadventure.client.network.ConditionSyncHandler;
 import nl.timtoys.corruptedadventure.client.network.RingLayoutHandler;
 import nl.timtoys.corruptedadventure.client.network.RingWeatherHandler;
+import nl.timtoys.corruptedadventure.client.network.WindGustHandler;
+import nl.timtoys.corruptedadventure.client.particle.SandGustParticle;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
 import nl.timtoys.corruptedadventure.network.ClientboundHandlers;
 import nl.timtoys.corruptedadventure.network.ConditionSyncPayload;
 import nl.timtoys.corruptedadventure.network.RingLayoutPayload;
 import nl.timtoys.corruptedadventure.network.RingWeatherPayload;
+import nl.timtoys.corruptedadventure.network.WindGustPayload;
+import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 
 /**
  * Client-only entrypoint. Never loaded on a dedicated server.
@@ -28,10 +33,17 @@ public final class CorruptedAdventureClient {
         ClientboundHandlers.set(RingLayoutPayload.TYPE, RingLayoutHandler::handle);
         ClientboundHandlers.set(ConditionSyncPayload.TYPE, ConditionSyncHandler::handle);
         ClientboundHandlers.set(RingWeatherPayload.TYPE, RingWeatherHandler::handle);
+        ClientboundHandlers.set(WindGustPayload.TYPE, WindGustHandler::handle);
         modEventBus.addListener(ConditionHudLayer::onRegisterGuiLayers);
+        modEventBus.addListener(CorruptedAdventureClient::onRegisterParticleProviders);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);
         // Weather renderers (changes 28, 45, 66, 85): RingWeatherRenderers.register(type, renderer) here.
+        RingWeatherClientHooks.registerRing2(modEventBus, NeoForge.EVENT_BUS);
         RingWeatherClientHooks.register(NeoForge.EVENT_BUS);
+    }
+
+    private static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ModParticleTypes.SAND_GUST.get(), SandGustParticle.Provider::new);
     }
 }

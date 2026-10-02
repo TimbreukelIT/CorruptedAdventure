@@ -21,6 +21,7 @@ import nl.timtoys.corruptedadventure.weather.RingWeatherData;
 import nl.timtoys.corruptedadventure.weather.RingWeatherSettings;
 import nl.timtoys.corruptedadventure.weather.RingWeatherState;
 import nl.timtoys.corruptedadventure.weather.RingWeatherType;
+import nl.timtoys.corruptedadventure.weather.SandstormWind;
 
 import java.util.Locale;
 import java.util.Optional;
@@ -62,11 +63,12 @@ final class RingWeatherCommand {
         return data.states().size();
     }
 
-    /** E.g. {@code ring_2: sandstorm, 412 s of 600 left, intensity 0.83}. */
+    /** E.g. {@code ring_2: sandstorm, 412 s of 600 left, intensity 0.83, wind 225° (from SW)}. */
     static String describe(Ring ring, RingWeatherState state) {
-        return String.format(Locale.ROOT, "%s: %s, %d s of %d left, intensity %.2f", ring.getSerializedName(),
+        String wind = state.type() == RingWeatherType.SANDSTORM ? ", wind " + SandstormWind.describe(state) : "";
+        return String.format(Locale.ROOT, "%s: %s, %d s of %d left, intensity %.2f%s", ring.getSerializedName(),
                 state.type().getSerializedName(), seconds(state.remainingTicks()), seconds(state.durationTicks()),
-                state.intensity());
+                state.intensity(), wind);
     }
 
     private static int set(CommandContext<CommandSourceStack> context, Optional<Integer> seconds) throws CommandSyntaxException {
