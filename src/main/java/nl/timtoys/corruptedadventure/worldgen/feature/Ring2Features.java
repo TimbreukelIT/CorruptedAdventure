@@ -8,6 +8,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.FeatureUtils;
+import net.minecraft.data.worldgen.features.MiscOverworldFeatures;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.SimpleWeightedRandomList;
@@ -117,6 +118,20 @@ public final class Ring2Features {
      */
     static final Map<ResourceKey<PlacedFeature>, Double> RING_2_FACTORS = RingVanillaOres.factors(0.6, 0.5, 0.25);
 
+    /**
+     * Vanilla's soft disks (placed key → vanilla's configured disk and its count per chunk), with the origin at least
+     * {@link #DISK_MARGIN} from the chunk edge. Vanilla's {@code in_square} origin lets a disk write up to its radius
+     * into a neighbouring chunk; whether that neighbour decorated first then decided whether its shore plants saw grass
+     * or sand, and the plants of that chunk moved (change 26, found behind the {@code oasis_vegetation} differences of
+     * change 25).
+     */
+    static final Map<ResourceKey<PlacedFeature>, Map.Entry<ResourceKey<ConfiguredFeature<?, ?>>, Integer>> RING_2_DISKS = Map.of(
+            ModPlacedFeatures.RING_2_DISK_SAND, Map.entry(MiscOverworldFeatures.DISK_SAND, 3),
+            ModPlacedFeatures.RING_2_DISK_CLAY, Map.entry(MiscOverworldFeatures.DISK_CLAY, 1),
+            ModPlacedFeatures.RING_2_DISK_GRAVEL, Map.entry(MiscOverworldFeatures.DISK_GRAVEL, 1));
+    /** The largest radius of vanilla's disks (sand 2–6). */
+    static final int DISK_MARGIN = 6;
+
     private static final PlacementModifier SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
     /** One cell of the palm grid; see the class comment. */
     private static final int PALM_CELL = 8;
@@ -203,6 +218,13 @@ public final class Ring2Features {
         // chunk-local placements with absolute heights: "high in the walls" is a height band plus the host rock, never a
         // distance below a surface that neighbouring chunks may already have changed.
         RingVanillaOres.placed(context, Ring.RING_2, RING_2_FACTORS);
+        // Disks (UNDERGROUND_ORES, before the ores; see RING_2_DISKS): vanilla's placement with a chunk-local origin.
+        RING_2_DISKS.forEach((key, disk) -> PlacementUtils.register(context, key, features.getOrThrow(disk.getKey()),
+                CountPlacement.of(disk.getValue()),
+                JitteredGridPlacement.of(16, DISK_MARGIN, 1.0F),
+                PlacementUtils.HEIGHTMAP_TOP_SOLID,
+                BlockPredicateFilter.forPredicate(BlockPredicate.matchesFluids(Fluids.WATER)),
+                BiomeFilter.biome()));
         // The upper half of the canyon walls and the mesa walls: full from ~Y 108 to ~168, ramping over ~13 blocks.
         // About a quarter of ring 1's iron per canyonlands chunk (tuned at teststop 2b).
         PlacementUtils.register(context, ModPlacedFeatures.SUNSTONE_ORE, features.getOrThrow(SUNSTONE_ORE),

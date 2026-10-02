@@ -7,6 +7,7 @@ import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,5 +35,25 @@ class RingFluidPickerTest {
                 assertTrue(PICKER.computeFluid(position, 0, y, 0).at(y).isAir(), "fluid at y " + y + " in " + position);
             }
         }
+    }
+
+    @Test
+    void waterOnlyInOverworldRing2AboveTheLavaLayer() {
+        RingPosition ring2 = RingPosition.within(Ring.RING_2);
+        assertTrue(RingFluidPicker.waterOnly(Level.OVERWORLD, ring2, -54));
+        assertTrue(RingFluidPicker.waterOnly(Level.OVERWORLD, ring2, 62));
+        assertFalse(RingFluidPicker.waterOnly(Level.OVERWORLD, ring2, -55));
+        assertFalse(RingFluidPicker.waterOnly(Level.NETHER, ring2, 20));
+        for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_3, Ring.RING_4, Ring.RING_5, Ring.VOID}) {
+            assertFalse(RingFluidPicker.waterOnly(Level.OVERWORLD, RingPosition.within(ring), -20), ring.name());
+        }
+        assertTrue(RingFluidPicker.waterOnly(Level.OVERWORLD, new RingPosition(Ring.RING_1, Ring.RING_2, 0.5), -20));
+        assertFalse(RingFluidPicker.waterOnly(Level.OVERWORLD, new RingPosition(Ring.RING_2, Ring.RING_3, 0.5), -20));
+    }
+
+    @Test
+    void noFluidIsUnchangedByWaterOnly() {
+        assertFalse(RingFluidPicker.noFluid(RingPosition.within(Ring.RING_2)));
+        assertTrue(RingFluidPicker.noFluid(new RingPosition(Ring.RING_5, Ring.VOID, 0.1)));
     }
 }

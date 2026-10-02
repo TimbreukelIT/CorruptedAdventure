@@ -35,6 +35,10 @@ public final class ModPlacedFeatures {
     // Ring 2 ores (change 25). The tapered vanilla ores (ring_2/ore_*) have no constants: RingVanillaOres.keys.
     public static final ResourceKey<PlacedFeature> SUNSTONE_ORE = key("sunstone_ore");
     public static final ResourceKey<PlacedFeature> TURQUOISE_ORE = key("turquoise_ore");
+    // Vanilla's soft disks with a chunk-local origin (change 26), in vanilla's order.
+    public static final ResourceKey<PlacedFeature> RING_2_DISK_SAND = key("ring_2/disk_sand");
+    public static final ResourceKey<PlacedFeature> RING_2_DISK_CLAY = key("ring_2/disk_clay");
+    public static final ResourceKey<PlacedFeature> RING_2_DISK_GRAVEL = key("ring_2/disk_gravel");
 
     private ModPlacedFeatures() {
     }

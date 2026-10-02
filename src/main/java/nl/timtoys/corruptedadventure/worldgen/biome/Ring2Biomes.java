@@ -5,6 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.placement.CavePlacements;
+import net.minecraft.data.worldgen.placement.MiscOverworldPlacements;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
+import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 
 import java.util.List;
 
@@ -48,6 +50,10 @@ public final class Ring2Biomes {
     static final List<ResourceKey<PlacedFeature>> OASIS_VEGETATION = List.of(ModPlacedFeatures.OASIS_SHORE_CANE, ModPlacedFeatures.OASIS_SHORE_PLANTS,
             ModPlacedFeatures.OASIS_PALM_GROVES, ModPlacedFeatures.OASIS_PALMS_SAND, ModPlacedFeatures.OASIS_PALM_BUSHES,
             ModPlacedFeatures.OASIS_VEGETATION, ModPlacedFeatures.OASIS_TRANSITION_VEGETATION);
+
+    /** In place of vanilla's soft disks, in vanilla's order. */
+    static final List<ResourceKey<PlacedFeature>> DISKS = List.of(ModPlacedFeatures.RING_2_DISK_SAND, ModPlacedFeatures.RING_2_DISK_CLAY,
+            ModPlacedFeatures.RING_2_DISK_GRAVEL);
 
     private Ring2Biomes() {
     }
@@ -82,16 +88,29 @@ public final class Ring2Biomes {
 
     /**
      * The shared base of every ring 2 biome: vanilla's global overworld features and soft disks, in vanilla's order,
-     * without vanilla's ores (see {@link Ring2BiomeModifiers}). The one place for ring 2-wide generation: change 26
-     * replaces the lava lakes here (part of the global features).
+     * without vanilla's ores (see {@link Ring2BiomeModifiers}) and without local lava (change 26: no lava lakes, no
+     * lava springs; the aquifer turns its lava into water, {@code RingAquifer}). Vanilla's carvers only deep
+     * ({@link Ring2Carvers}), its disks with a chunk-local origin ({@code Ring2Features.RING_2_DISKS}). The one place
+     * for ring 2-wide generation.
      */
     static BiomeGenerationSettings.Builder generation(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(features, carvers);
-        TransitionBiomes.globalOverworldGeneration(generation);
+        // TransitionBiomes.globalOverworldGeneration without the lava lakes and lava springs, and with vanilla's carvers
+        // only deep (Ring2Carvers: near the surface they leave sand hanging over their tunnels).
+        for (ResourceKey<ConfiguredWorldCarver<?>> carver : Ring2Carvers.COPIES.keySet()) {
+            generation.addCarver(GenerationStep.Carving.AIR, carver);
+        }
+        BiomeDefaultFeatures.addDefaultCrystalFormations(generation);
+        BiomeDefaultFeatures.addDefaultMonsterRoom(generation);
+        BiomeDefaultFeatures.addDefaultUndergroundVariety(generation);
+        generation.addFeature(GenerationStep.Decoration.FLUID_SPRINGS, MiscOverworldPlacements.SPRING_WATER);
+        BiomeDefaultFeatures.addSurfaceFreezing(generation);
         // Of vanilla's addDefaultOres only the non-ore, in its place. The ores come tapered, with sunstone and turquoise,
         // through the biome modifier add_ring_2_ores (Ring2BiomeModifiers).
         generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, CavePlacements.UNDERWATER_MAGMA);
-        BiomeDefaultFeatures.addDefaultSoftDisks(generation);
+        for (ResourceKey<PlacedFeature> disk : DISKS) {
+            generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, disk);
+        }
         return generation;
     }
 

@@ -1,9 +1,9 @@
 {
   "carvers": {
     "air": [
-      "minecraft:cave",
-      "minecraft:cave_extra_underground",
-      "minecraft:canyon"
+      "corruptedadventure:ring_2/cave",
+      "corruptedadventure:ring_2/cave_extra_underground",
+      "corruptedadventure:ring_2/canyon"
     ]
   },
   "downfall": 0.0,
@@ -23,10 +23,7 @@
   },
   "features": [
     [],
-    [
-      "minecraft:lake_lava_underground",
-      "minecraft:lake_lava_surface"
-    ],
+    [],
     [
       "minecraft:amethyst_geode",
       "corruptedadventure:canyon_boulder_fields",
@@ -52,14 +49,13 @@
       "minecraft:ore_andesite_lower",
       "minecraft:ore_tuff",
       "minecraft:underwater_magma",
-      "minecraft:disk_sand",
-      "minecraft:disk_clay",
-      "minecraft:disk_gravel"
+      "corruptedadventure:ring_2/disk_sand",
+      "corruptedadventure:ring_2/disk_clay",
+      "corruptedadventure:ring_2/disk_gravel"
     ],
     [],
     [
-      "minecraft:spring_water",
-      "minecraft:spring_lava"
+      "minecraft:spring_water"
     ],
     [
       "minecraft:glow_lichen",

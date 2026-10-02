@@ -76,10 +76,10 @@ public final class TransitionBiomes {
     }
 
     /**
-     * Same as vanilla's private {@code OverworldBiomes.globalOverworldGeneration}, in the same order. Shared with the
-     * ring biomes ({@link Ring2Biomes}).
+     * Same as vanilla's private {@code OverworldBiomes.globalOverworldGeneration}, in the same order. Ring 2 has its
+     * own variant without local lava ({@link Ring2Biomes#generation}).
      */
-    static void globalOverworldGeneration(BiomeGenerationSettings.Builder generation) {
+    private static void globalOverworldGeneration(BiomeGenerationSettings.Builder generation) {
         BiomeDefaultFeatures.addDefaultCarversAndLakes(generation);
         BiomeDefaultFeatures.addDefaultCrystalFormations(generation);
         BiomeDefaultFeatures.addDefaultMonsterRoom(generation);

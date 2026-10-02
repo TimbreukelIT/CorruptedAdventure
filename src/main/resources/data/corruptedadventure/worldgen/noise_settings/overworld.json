@@ -26,14 +26,9 @@
     },
     "continents": "corruptedadventure:ring_1/overworld/continents",
     "depth": "corruptedadventure:ring_1/overworld/depth",
-    "erosion": "minecraft:overworld/erosion",
+    "erosion": "corruptedadventure:ring_blend/overworld_erosion",
     "final_density": "corruptedadventure:ring_blend/overworld",
-    "fluid_level_floodedness": {
-      "type": "minecraft:noise",
-      "noise": "minecraft:aquifer_fluid_level_floodedness",
-      "xz_scale": 1.0,
-      "y_scale": 0.67
-    },
+    "fluid_level_floodedness": "corruptedadventure:ring_blend/overworld_floodedness",
     "fluid_level_spread": {
       "type": "minecraft:noise",
       "noise": "minecraft:aquifer_fluid_level_spread",
@@ -5338,6 +5333,101 @@
               }
             }
           ]
+        }
+      },
+      {
+        "type": "minecraft:condition",
+        "if_true": {
+          "type": "minecraft:not",
+          "invert": {
+            "type": "minecraft:above_preliminary_surface"
+          }
+        },
+        "then_run": {
+          "type": "minecraft:condition",
+          "if_true": {
+            "type": "minecraft:y_above",
+            "anchor": {
+              "absolute": 8
+            },
+            "surface_depth_multiplier": 0,
+            "add_stone_depth": false
+          },
+          "then_run": {
+            "type": "minecraft:sequence",
+            "sequence": [
+              {
+                "type": "minecraft:condition",
+                "if_true": {
+                  "type": "minecraft:stone_depth",
+                  "offset": 1,
+                  "add_surface_depth": false,
+                  "secondary_depth_range": 1,
+                  "surface_type": "ceiling"
+                },
+                "then_run": {
+                  "type": "minecraft:condition",
+                  "if_true": {
+                    "type": "minecraft:noise_threshold",
+                    "noise": "corruptedadventure:sand_cave_zone",
+                    "min_threshold": 0.21,
+                    "max_threshold": 1.7976931348623157e+308
+                  },
+                  "then_run": {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "minecraft:biome",
+                      "biome_is": [
+                        "corruptedadventure:canyonlands",
+                        "corruptedadventure:oasis_flats"
+                      ]
+                    },
+                    "then_run": {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "corruptedadventure:loose_sand"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "minecraft:condition",
+                "if_true": {
+                  "type": "minecraft:stone_depth",
+                  "offset": 0,
+                  "add_surface_depth": false,
+                  "secondary_depth_range": 0,
+                  "surface_type": "floor"
+                },
+                "then_run": {
+                  "type": "minecraft:condition",
+                  "if_true": {
+                    "type": "minecraft:noise_threshold",
+                    "noise": "corruptedadventure:sand_cave_zone",
+                    "min_threshold": 0.21,
+                    "max_threshold": 1.7976931348623157e+308
+                  },
+                  "then_run": {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "minecraft:biome",
+                      "biome_is": [
+                        "corruptedadventure:canyonlands",
+                        "corruptedadventure:oasis_flats"
+                      ]
+                    },
+                    "then_run": {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "minecraft:sand"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       {

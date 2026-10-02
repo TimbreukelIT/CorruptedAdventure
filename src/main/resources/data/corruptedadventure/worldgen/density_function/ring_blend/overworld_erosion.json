@@ -1,0 +1,12 @@
+{
+  "type": "corruptedadventure:ring_blend",
+  "dimension": "minecraft:overworld",
+  "rings": {
+    "ring_1": "minecraft:overworld/erosion",
+    "ring_2": 0.0,
+    "ring_3": "minecraft:overworld/erosion",
+    "ring_4": "minecraft:overworld/erosion",
+    "ring_5": "minecraft:overworld/erosion",
+    "void": "minecraft:overworld/erosion"
+  }
+}

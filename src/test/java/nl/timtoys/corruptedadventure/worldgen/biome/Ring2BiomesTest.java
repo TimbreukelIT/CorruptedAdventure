@@ -19,6 +19,7 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.feature.RingVanillaOres;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -99,11 +101,33 @@ class Ring2BiomesTest {
                 assertFalse(ores.contains(ore), ore.toString());
             }
             assertTrue(ores.contains(CavePlacements.UNDERWATER_MAGMA));
-            assertTrue(ores.contains(MiscOverworldPlacements.DISK_GRAVEL));
+            // Vanilla's disks write into neighbouring chunks; ring 2 has chunk-local ones in their place, in vanilla's order.
+            assertEquals(Ring2Biomes.DISKS, ores.subList(ores.size() - Ring2Biomes.DISKS.size(), ores.size()));
+            for (ResourceKey<PlacedFeature> disk : List.of(MiscOverworldPlacements.DISK_SAND, MiscOverworldPlacements.DISK_CLAY,
+                    MiscOverworldPlacements.DISK_GRAVEL)) {
+                assertFalse(ores.contains(disk), disk.toString());
+            }
         }
         List<ResourceKey<PlacedFeature>> added = Ring2BiomeModifiers.ores();
         assertEquals(RingVanillaOres.keys(Ring.RING_2), added.subList(0, RingVanillaOres.ORES.size()));
         assertEquals(List.of(ModPlacedFeatures.SUNSTONE_ORE, ModPlacedFeatures.TURQUOISE_ORE), added.subList(RingVanillaOres.ORES.size(), added.size()));
+    }
+
+    @Test
+    void noLocalLavaDeepCarversAndWaterSprings() {
+        for (Biome biome : bootstrap().values()) {
+            List<ResourceKey<PlacedFeature>> all = biome.getGenerationSettings().features().stream()
+                    .flatMap(HolderSet::stream).map(holder -> holder.unwrapKey().orElseThrow()).toList();
+            for (ResourceKey<PlacedFeature> lava : List.of(MiscOverworldPlacements.LAKE_LAVA_UNDERGROUND, MiscOverworldPlacements.LAKE_LAVA_SURFACE,
+                    MiscOverworldPlacements.SPRING_LAVA, MiscOverworldPlacements.SPRING_LAVA_FROZEN)) {
+                assertFalse(all.contains(lava), lava.toString());
+            }
+            assertEquals(List.of(MiscOverworldPlacements.SPRING_WATER), step(biome, GenerationStep.Decoration.FLUID_SPRINGS));
+            assertTrue(step(biome, GenerationStep.Decoration.LAKES).isEmpty());
+            assertEquals(List.copyOf(Ring2Carvers.COPIES.keySet()),
+                    StreamSupport.stream(biome.getGenerationSettings().getCarvers(GenerationStep.Carving.AIR).spliterator(), false)
+                            .map(holder -> holder.unwrapKey().orElseThrow()).toList());
+        }
     }
 
     private static List<ResourceKey<PlacedFeature>> step(Biome biome, GenerationStep.Decoration step) {

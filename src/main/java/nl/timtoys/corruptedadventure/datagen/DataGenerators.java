@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.worldgen.biome.PlaceholderBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring1BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2Biomes;
+import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.biome.TransitionBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing1Features;
@@ -40,6 +41,7 @@ public final class DataGenerators {
                     NetherRing1Features.configured(context);
                     Ring2Features.configured(context);
                 })
+                .add(Registries.CONFIGURED_CARVER, Ring2Carvers::bootstrap)
                 .add(Registries.PLACED_FEATURE, context -> {
                     WitheredExpanseFeatures.placed(context);
                     Ring1HorrorFeatures.placed(context);
