@@ -44,6 +44,22 @@ public final class ModPlacedFeatures {
     public static final ResourceKey<PlacedFeature> SALT_FLATS_CRYSTAL_FIELDS = key("salt_flats_crystal_fields");
     public static final ResourceKey<PlacedFeature> DUNE_SEA_OASES = key("dune_sea_oases");
     public static final ResourceKey<PlacedFeature> DUNE_SEA_OUTCROPS = key("dune_sea_outcrops");
+    // Ring 2 vegetation and dressing (change 30c, Ring2DressingFeatures; the oasis ones in Ring2Features).
+    public static final ResourceKey<PlacedFeature> DUNE_SEA_FOSSILS = key("dune_sea_fossils");
+    public static final ResourceKey<PlacedFeature> DUNE_SEA_BONES = key("dune_sea_bones");
+    public static final ResourceKey<PlacedFeature> DUNE_SEA_VALLEY_FLORA = key("dune_sea_valley_flora");
+    public static final ResourceKey<PlacedFeature> DUNE_SEA_VALLEY_GRASS = key("dune_sea_valley_grass");
+    public static final ResourceKey<PlacedFeature> DUNE_SEA_CACTUS_GROUPS = key("dune_sea_cactus_groups");
+    public static final ResourceKey<PlacedFeature> HOODOO_PILLAR_FOOT_FLORA = key("hoodoo_pillar_foot_flora");
+    public static final ResourceKey<PlacedFeature> HOODOO_CACTUS_GROUPS = key("hoodoo_cactus_groups");
+    public static final ResourceKey<PlacedFeature> SALT_ISLAND_FOSSILS = key("salt_island_fossils");
+    public static final ResourceKey<PlacedFeature> SALT_ISLAND_BONES = key("salt_island_bones");
+    public static final ResourceKey<PlacedFeature> SALT_ISLAND_FLORA = key("salt_island_flora");
+    public static final ResourceKey<PlacedFeature> SALT_ISLAND_CACTUS = key("salt_island_cactus");
+    public static final ResourceKey<PlacedFeature> OASIS_FLOWERS_WARM = key("oasis_flowers_warm");
+    public static final ResourceKey<PlacedFeature> OASIS_FLOWERS_WHITE = key("oasis_flowers_white");
+    public static final ResourceKey<PlacedFeature> OASIS_FLOWERS_PURPLE = key("oasis_flowers_purple");
+    public static final ResourceKey<PlacedFeature> OASIS_EDGE_SHRUBS = key("oasis_edge_shrubs");
     // Ring 2 ores (change 25). The tapered vanilla ores (ring_2/ore_*) have no constants: RingVanillaOres.keys.
     public static final ResourceKey<PlacedFeature> SUNSTONE_ORE = key("sunstone_ore");
     public static final ResourceKey<PlacedFeature> TURQUOISE_ORE = key("turquoise_ore");

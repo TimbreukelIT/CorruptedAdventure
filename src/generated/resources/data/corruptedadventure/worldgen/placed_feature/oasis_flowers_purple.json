@@ -1,0 +1,48 @@
+{
+  "feature": "corruptedadventure:oasis_flowers_purple",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 4,
+      "chance": 0.42
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.12,
+      "noise": "corruptedadventure:ring_2_pools"
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.2,
+      "noise": "corruptedadventure:ring_2_flower_patches"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:air"
+          },
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:grass_block",
+            "offset": [
+              0,
+              -1,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

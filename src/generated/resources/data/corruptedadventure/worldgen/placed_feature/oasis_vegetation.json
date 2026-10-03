@@ -3,10 +3,12 @@
   "placement": [
     {
       "type": "minecraft:count",
-      "count": 10
+      "count": 2
     },
     {
-      "type": "minecraft:in_square"
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 4,
+      "chance": 0.8
     },
     {
       "type": "minecraft:heightmap",

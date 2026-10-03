@@ -45,6 +45,20 @@ public final class ModConfiguredFeatures {
     public static final ResourceKey<ConfiguredFeature<?, ?>> SALT_PILLAR = key("salt_pillar");
     public static final ResourceKey<ConfiguredFeature<?, ?>> DUNE_ROCK = key("dune_rock");
     public static final ResourceKey<ConfiguredFeature<?, ?>> SALT_ISLAND_ROCK = key("salt_island_rock");
+    // Ring 2 vegetation, cactus groups, fossils and bones (change 30c, Ring2DressingFeatures); the oasis flowers and
+    // shrubs are with the rest of the oasis (Ring2Features).
+    public static final ResourceKey<ConfiguredFeature<?, ?>> DUNE_VALLEY_FLORA = key("dune_valley_flora");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> DRY_GRASS = key("dry_grass");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> CACTUS_COLUMN = key("cactus_column");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SHORT_CACTUS_COLUMN = key("short_cactus_column");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> PILLAR_FOOT_FLORA = key("pillar_foot_flora");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SALT_ISLAND_FLORA = key("salt_island_flora");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> DESERT_FOSSIL = key("desert_fossil");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> BONE_RUBBLE = key("bone_rubble");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_FLOWERS_WARM = key("oasis_flowers_warm");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_FLOWERS_WHITE = key("oasis_flowers_white");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_FLOWERS_PURPLE = key("oasis_flowers_purple");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_EDGE_SHRUBS = key("oasis_edge_shrubs");
     // Ring 2 ores (change 25); the tapered vanilla ores reuse vanilla's configured features.
     public static final ResourceKey<ConfiguredFeature<?, ?>> SUNSTONE_ORE = key("sunstone_ore");
     public static final ResourceKey<ConfiguredFeature<?, ?>> TURQUOISE_ORE = key("turquoise_ore");

@@ -22,6 +22,7 @@ import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Datagen bootstrap for the biomes of ring 2. All share {@link #generation} (vanilla features in vanilla order; the
@@ -49,10 +50,17 @@ public final class Ring2Biomes {
     static final List<ResourceKey<PlacedFeature>> CANYONLANDS_ROCKS = List.of(ModPlacedFeatures.CANYON_BOULDER_FIELDS,
             ModPlacedFeatures.CANYON_TALUS_RUBBLE, ModPlacedFeatures.CANYON_ROCKFALL, ModPlacedFeatures.PLATEAU_RUBBLE,
             ModPlacedFeatures.CANYON_SPRINGS);
-    /** The plants and palms of the oasis ({@code VEGETAL_DECORATION}), from the water outwards, in this fixed order. */
+    /**
+     * The plants and palms of the oasis ({@code VEGETAL_DECORATION}), from the water outwards, in this fixed order. The
+     * flowers and shrubs (change 30c) come after the palms: a palm that stands blocks a shrub, never the other way round.
+     */
     static final List<ResourceKey<PlacedFeature>> OASIS_VEGETATION = List.of(ModPlacedFeatures.OASIS_SHORE_CANE, ModPlacedFeatures.OASIS_SHORE_PLANTS,
             ModPlacedFeatures.OASIS_PALM_GROVES, ModPlacedFeatures.OASIS_PALMS_SAND, ModPlacedFeatures.OASIS_PALM_BUSHES,
-            ModPlacedFeatures.OASIS_VEGETATION, ModPlacedFeatures.OASIS_TRANSITION_VEGETATION);
+            ModPlacedFeatures.OASIS_VEGETATION, ModPlacedFeatures.OASIS_FLOWERS_WARM, ModPlacedFeatures.OASIS_FLOWERS_WHITE,
+            ModPlacedFeatures.OASIS_FLOWERS_PURPLE, ModPlacedFeatures.OASIS_EDGE_SHRUBS, ModPlacedFeatures.OASIS_TRANSITION_VEGETATION);
+    /** The plants of the hoodoo fields ({@code VEGETAL_DECORATION}): between the pillars, at their feet, cactus groups. */
+    static final List<ResourceKey<PlacedFeature>> HOODOO_FIELDS_VEGETATION = List.of(ModPlacedFeatures.HOODOO_FIELDS_VEGETATION,
+            ModPlacedFeatures.HOODOO_PILLAR_FOOT_FLORA, ModPlacedFeatures.HOODOO_CACTUS_GROUPS);
 
     /**
      * Shapes and water of the salt flats ({@code LOCAL_MODIFICATIONS}, change 30b), in this fixed order: the brine pools
@@ -60,11 +68,22 @@ public final class Ring2Biomes {
      */
     static final List<ResourceKey<PlacedFeature>> SALT_FLATS_SHAPES = List.of(ModPlacedFeatures.SALT_FLATS_BRINE_POOLS,
             ModPlacedFeatures.SALT_FLATS_PILLAR_FIELDS, ModPlacedFeatures.SALT_FLATS_PILLARS, ModPlacedFeatures.SALT_ISLAND_ROCKS);
+    /** Fossils and bones on the salt islands ({@code LOCAL_MODIFICATIONS}, change 30c), after the shapes. */
+    static final List<ResourceKey<PlacedFeature>> SALT_ISLAND_BONES = List.of(ModPlacedFeatures.SALT_ISLAND_FOSSILS,
+            ModPlacedFeatures.SALT_ISLAND_BONES);
     /** The crystals of the salt flats ({@code VEGETAL_DECORATION}): the single ones, then the fields (change 30b). */
     static final List<ResourceKey<PlacedFeature>> SALT_FLATS_CRYSTALS = List.of(ModPlacedFeatures.SALT_FLATS_CRYSTALS,
             ModPlacedFeatures.SALT_FLATS_CRYSTAL_FIELDS);
+    /** Life on the salt islands ({@code VEGETAL_DECORATION}, change 30c), after the crystals. */
+    static final List<ResourceKey<PlacedFeature>> SALT_ISLAND_VEGETATION = List.of(ModPlacedFeatures.SALT_ISLAND_FLORA,
+            ModPlacedFeatures.SALT_ISLAND_CACTUS);
     /** Oases and rock islands of the dune sea ({@code LOCAL_MODIFICATIONS}, change 30b): the oases first. */
     static final List<ResourceKey<PlacedFeature>> DUNE_SEA_SHAPES = List.of(ModPlacedFeatures.DUNE_SEA_OASES, ModPlacedFeatures.DUNE_SEA_OUTCROPS);
+    /** Fossils and bones of the dune sea ({@code LOCAL_MODIFICATIONS}, change 30c), after the shapes. */
+    static final List<ResourceKey<PlacedFeature>> DUNE_SEA_BONES = List.of(ModPlacedFeatures.DUNE_SEA_FOSSILS, ModPlacedFeatures.DUNE_SEA_BONES);
+    /** The plants of the dune sea ({@code VEGETAL_DECORATION}): flanks, then the valleys (change 30c); crests bare. */
+    static final List<ResourceKey<PlacedFeature>> DUNE_SEA_VEGETATION = List.of(ModPlacedFeatures.DUNE_SEA_VEGETATION,
+            ModPlacedFeatures.DUNE_SEA_VALLEY_FLORA, ModPlacedFeatures.DUNE_SEA_VALLEY_GRASS, ModPlacedFeatures.DUNE_SEA_CACTUS_GROUPS);
 
     /** In place of vanilla's soft disks, in vanilla's order. */
     static final List<ResourceKey<PlacedFeature>> DISKS = List.of(ModPlacedFeatures.RING_2_DISK_SAND, ModPlacedFeatures.RING_2_DISK_CLAY,
@@ -104,37 +123,44 @@ public final class Ring2Biomes {
         return biome(0.4F, 0x6FB33F, 0x5DA032, spawns(true), generation);
     }
 
-    /** Pillars, arches and balanced rocks of layered canyon stone; thinner canyon flora, rock fallen at the pillar feet. */
+    /** Pillars, arches and balanced rocks of layered canyon stone; scrub and cacti between them, rock fallen at the pillar feet. */
     private static Biome hoodooFields(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
         // A subset of CANYONLANDS_ROCKS in the same order (one global order per step).
         generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, ModPlacedFeatures.CANYON_ROCKFALL);
-        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.HOODOO_FIELDS_VEGETATION);
+        for (ResourceKey<PlacedFeature> feature : HOODOO_FIELDS_VEGETATION) {
+            generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
+        }
         return biome(0.0F, 0xBFB755, 0xAEA42A, spawns(false), generation);
     }
 
     /**
-     * White and flat: salt crust cracked into polygons, brine pools, salt chimneys, crystal fields and low sand islands;
-     * nothing to eat, only monsters.
+     * White and flat: salt crust cracked into polygons, brine pools, salt chimneys, crystal fields and low sand islands
+     * with scrub, cacti and bones; nothing to eat, only monsters.
      */
     private static Biome saltFlats(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
-        for (ResourceKey<PlacedFeature> feature : SALT_FLATS_SHAPES) {
+        for (ResourceKey<PlacedFeature> feature : concat(SALT_FLATS_SHAPES, SALT_ISLAND_BONES)) {
             generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
         }
-        for (ResourceKey<PlacedFeature> feature : SALT_FLATS_CRYSTALS) {
+        for (ResourceKey<PlacedFeature> feature : concat(SALT_FLATS_CRYSTALS, SALT_ISLAND_VEGETATION)) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
         return biome(0.0F, 0xC9C08A, 0xB5AC6E, withoutCreatures(spawns(false)), generation);
     }
 
-    /** High rolling dunes, a rare rock island as a landmark, hidden oases in deep valleys; now and then a dry shrub. */
+    /**
+     * High rolling dunes with bare crests and scrubby valleys (cactus groups, dry grass, half-buried fossils), a rare rock
+     * island as a landmark, hidden oases in deep valleys.
+     */
     private static Biome duneSea(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
-        for (ResourceKey<PlacedFeature> feature : DUNE_SEA_SHAPES) {
+        for (ResourceKey<PlacedFeature> feature : concat(DUNE_SEA_SHAPES, DUNE_SEA_BONES)) {
             generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
         }
-        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.DUNE_SEA_VEGETATION);
+        for (ResourceKey<PlacedFeature> feature : DUNE_SEA_VEGETATION) {
+            generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
+        }
         return biome(0.0F, 0xBFB755, 0xAEA42A, spawns(false), generation);
     }
 
@@ -186,6 +212,10 @@ public final class Ring2Biomes {
         }
         builder.creatureGenerationProbability(spawns.getCreatureProbability());
         return builder.build();
+    }
+
+    private static List<ResourceKey<PlacedFeature>> concat(List<ResourceKey<PlacedFeature>> first, List<ResourceKey<PlacedFeature>> then) {
+        return Stream.concat(first.stream(), then.stream()).toList();
     }
 
     private static Biome biome(float downfall, int grass, int foliage, MobSpawnSettings spawns, BiomeGenerationSettings.Builder generation) {

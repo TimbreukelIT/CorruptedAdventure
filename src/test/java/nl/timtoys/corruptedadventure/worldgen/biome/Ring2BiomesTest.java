@@ -110,25 +110,40 @@ class Ring2BiomesTest {
         Biome hoodoos = biomes.get(ModBiomes.HOODOO_FIELDS);
         assertEquals(ModPlacedFeatures.CANYON_ROCKFALL, step(hoodoos, GenerationStep.Decoration.LOCAL_MODIFICATIONS).getLast());
         assertTrue(Ring2Biomes.CANYONLANDS_ROCKS.contains(ModPlacedFeatures.CANYON_ROCKFALL));
-        assertEquals(ModPlacedFeatures.HOODOO_FIELDS_VEGETATION, step(hoodoos, GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
-        assertEquals(ModPlacedFeatures.DUNE_SEA_VEGETATION, step(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
+        // Change 30c: the hoodoo flora, then the pillar feet and the cactus groups.
+        assertEquals(List.of(ModPlacedFeatures.HOODOO_FIELDS_VEGETATION, ModPlacedFeatures.HOODOO_PILLAR_FOOT_FLORA,
+                ModPlacedFeatures.HOODOO_CACTUS_GROUPS), own(hoodoos, GenerationStep.Decoration.VEGETAL_DECORATION));
 
         // Change 30b: shapes and water of the salt flats and the dune sea, the pools first (later features fail on
         // their water), the crystal fields after the single crystals.
+        // Change 30c: fossils and bones after the shapes, the island life after the crystals.
         assertEquals(List.of(ModPlacedFeatures.SALT_FLATS_BRINE_POOLS, ModPlacedFeatures.SALT_FLATS_PILLAR_FIELDS,
-                ModPlacedFeatures.SALT_FLATS_PILLARS, ModPlacedFeatures.SALT_ISLAND_ROCKS), own(biomes.get(ModBiomes.SALT_FLATS),
-                GenerationStep.Decoration.LOCAL_MODIFICATIONS));
-        assertEquals(List.of(ModPlacedFeatures.SALT_FLATS_CRYSTALS, ModPlacedFeatures.SALT_FLATS_CRYSTAL_FIELDS),
+                ModPlacedFeatures.SALT_FLATS_PILLARS, ModPlacedFeatures.SALT_ISLAND_ROCKS, ModPlacedFeatures.SALT_ISLAND_FOSSILS,
+                ModPlacedFeatures.SALT_ISLAND_BONES), own(biomes.get(ModBiomes.SALT_FLATS), GenerationStep.Decoration.LOCAL_MODIFICATIONS));
+        assertEquals(List.of(ModPlacedFeatures.SALT_FLATS_CRYSTALS, ModPlacedFeatures.SALT_FLATS_CRYSTAL_FIELDS,
+                ModPlacedFeatures.SALT_ISLAND_FLORA, ModPlacedFeatures.SALT_ISLAND_CACTUS),
                 own(biomes.get(ModBiomes.SALT_FLATS), GenerationStep.Decoration.VEGETAL_DECORATION));
-        assertEquals(List.of(ModPlacedFeatures.DUNE_SEA_OASES, ModPlacedFeatures.DUNE_SEA_OUTCROPS),
-                own(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.LOCAL_MODIFICATIONS));
-        // Every placed feature of ours belongs to one biome only: no order between biomes (no "Feature order cycle").
+        assertEquals(List.of(ModPlacedFeatures.DUNE_SEA_OASES, ModPlacedFeatures.DUNE_SEA_OUTCROPS, ModPlacedFeatures.DUNE_SEA_FOSSILS,
+                ModPlacedFeatures.DUNE_SEA_BONES), own(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.LOCAL_MODIFICATIONS));
+        assertEquals(List.of(ModPlacedFeatures.DUNE_SEA_VEGETATION, ModPlacedFeatures.DUNE_SEA_VALLEY_FLORA, ModPlacedFeatures.DUNE_SEA_VALLEY_GRASS,
+                ModPlacedFeatures.DUNE_SEA_CACTUS_GROUPS), own(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.VEGETAL_DECORATION));
+        // The oasis flowers and shrubs after the palms (a standing palm blocks a shrub, never the other way round).
+        List<ResourceKey<PlacedFeature>> oasisPlants = Ring2Biomes.OASIS_VEGETATION;
+        for (ResourceKey<PlacedFeature> late : List.of(ModPlacedFeatures.OASIS_FLOWERS_WARM, ModPlacedFeatures.OASIS_FLOWERS_WHITE,
+                ModPlacedFeatures.OASIS_FLOWERS_PURPLE, ModPlacedFeatures.OASIS_EDGE_SHRUBS)) {
+            for (ResourceKey<PlacedFeature> palm : List.of(ModPlacedFeatures.OASIS_PALM_GROVES, ModPlacedFeatures.OASIS_PALMS_SAND,
+                    ModPlacedFeatures.OASIS_PALM_BUSHES)) {
+                assertTrue(oasisPlants.indexOf(palm) < oasisPlants.indexOf(late), late + " after " + palm);
+            }
+        }
+        // Every placed feature of ours belongs to one biome only (the canyon rockfall, shared by the hoodoo fields in the
+        // same place of the step, aside): no order between biomes (no "Feature order cycle"). Configured features are
+        // shared freely (cactus_column, bone_rubble, desert_fossil).
         Map<ResourceKey<PlacedFeature>, ResourceKey<Biome>> owner = new LinkedHashMap<>();
         for (Map.Entry<ResourceKey<Biome>, Biome> entry : biomes.entrySet()) {
             for (GenerationStep.Decoration decoration : GenerationStep.Decoration.values()) {
                 for (ResourceKey<PlacedFeature> feature : own(entry.getValue(), decoration)) {
-                    if (Ring2Biomes.SALT_FLATS_SHAPES.contains(feature) || Ring2Biomes.DUNE_SEA_SHAPES.contains(feature)
-                            || feature.equals(ModPlacedFeatures.SALT_FLATS_CRYSTAL_FIELDS)) {
+                    if (!feature.equals(ModPlacedFeatures.CANYON_ROCKFALL)) {
                         ResourceKey<Biome> before = owner.put(feature, entry.getKey());
                         assertTrue(before == null || before.equals(entry.getKey()), feature + " in two biomes");
                     }

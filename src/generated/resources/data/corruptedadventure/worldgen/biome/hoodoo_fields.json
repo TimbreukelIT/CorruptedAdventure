@@ -55,7 +55,9 @@
     ],
     [
       "minecraft:glow_lichen",
-      "corruptedadventure:hoodoo_fields_vegetation"
+      "corruptedadventure:hoodoo_fields_vegetation",
+      "corruptedadventure:hoodoo_pillar_foot_flora",
+      "corruptedadventure:hoodoo_cactus_groups"
     ],
     [
       "minecraft:freeze_top_layer"

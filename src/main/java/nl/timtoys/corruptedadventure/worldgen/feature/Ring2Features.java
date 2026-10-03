@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Vec3i;
@@ -17,6 +18,7 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
@@ -58,6 +60,10 @@ import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.CANYO
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.CANYON_RUBBLE;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.CANYON_SPRING;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.DUNE_SEA_VEGETATION;
+import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_EDGE_SHRUBS;
+import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_FLOWERS_PURPLE;
+import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_FLOWERS_WARM;
+import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_FLOWERS_WHITE;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_ROCK;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_SHORE_CANE;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_SHORE_PLANTS;
@@ -93,6 +99,8 @@ public final class Ring2Features {
     static final ResourceKey<NormalNoise.NoiseParameters> TALUS = noise("ring_2_talus");
     static final ResourceKey<NormalNoise.NoiseParameters> BOULDER_FIELDS = noise("ring_2_boulder_fields");
     static final ResourceKey<NormalNoise.NoiseParameters> PALM_GROVES = noise("ring_2_palm_groves");
+    /** Colour patches of the oasis flowers (change 30c). */
+    static final ResourceKey<NormalNoise.NoiseParameters> FLOWER_PATCHES = noise("ring_2_flower_patches");
 
     // Zones of the oasis on ring_2_pools, as in the oasis_flats surface rules (noise_settings/overworld.json): the
     // grass shore from 0.12 (water from ~0.42), the transition ring 0.02–0.12, sand below.
@@ -104,6 +112,12 @@ public final class Ring2Features {
     static final double GROVE_TO = 0.28;
     /** Single palms on the open sand, clear of the transition ring. */
     static final double SAND_BELOW = 0.0;
+    /** Shrubs and berries: the outer edge of the shore and the inner part of the transition ring (change 30c). */
+    static final double SHRUBS_FROM = 0.05;
+    static final double SHRUBS_TO = 0.16;
+    /** The flower colours on {@code ring_2_flower_patches}: warm below, white between, purple above. */
+    static final double WARM_BELOW = -0.2;
+    static final double PURPLE_ABOVE = 0.2;
     /** Where {@code ring_2_palm_groves} is at least this, palms group; elsewhere palm bushes. */
     static final double GROVE_NOISE = 0.0;
     /** Boulder fields where {@code ring_2_boulder_fields} is at least this: ~20 % of the floors. */
@@ -161,12 +175,35 @@ public final class Ring2Features {
         FeatureUtils.register(context, PALM_TREE, Feature.TREE, palm(PALM_TRUNK, PALM_CROWN));
         FeatureUtils.register(context, PALM_BUSH, Feature.TREE, palm(BUSH_TRUNK, BUSH_CROWN));
 
-        // The simple block feature checks survival of the chosen state itself.
+        // The simple block feature checks survival of the chosen state itself (and places both halves of a double plant).
+        // Change 30c: dense grass and ferns; the flowers come in colour patches of their own.
         FeatureUtils.register(context, OASIS_VEGETATION, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(weighted(
                 SimpleWeightedRandomList.<BlockState>builder()
-                        .add(Blocks.SHORT_GRASS.defaultBlockState(), 4)
-                        .add(Blocks.FERN.defaultBlockState(), 1)
+                        .add(Blocks.SHORT_GRASS.defaultBlockState(), 6)
+                        .add(Blocks.FERN.defaultBlockState(), 3)
+                        .add(Blocks.TALL_GRASS.defaultBlockState(), 1)
+                        .add(Blocks.LARGE_FERN.defaultBlockState(), 1))));
+        FeatureUtils.register(context, OASIS_FLOWERS_WARM, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(weighted(
+                SimpleWeightedRandomList.<BlockState>builder()
+                        .add(Blocks.POPPY.defaultBlockState(), 3)
+                        .add(Blocks.DANDELION.defaultBlockState(), 2)
+                        .add(ModBlocks.DESERT_FLOWER.get().defaultBlockState(), 2))));
+        FeatureUtils.register(context, OASIS_FLOWERS_WHITE, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(weighted(
+                SimpleWeightedRandomList.<BlockState>builder()
+                        .add(Blocks.OXEYE_DAISY.defaultBlockState(), 3)
+                        .add(Blocks.CORNFLOWER.defaultBlockState(), 2)
                         .add(ModBlocks.DESERT_FLOWER.get().defaultBlockState(), 1))));
+        FeatureUtils.register(context, OASIS_FLOWERS_PURPLE, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(weighted(
+                SimpleWeightedRandomList.<BlockState>builder()
+                        .add(Blocks.ALLIUM.defaultBlockState(), 3)
+                        .add(Blocks.CORNFLOWER.defaultBlockState(), 2))));
+        // Shrubs at the edge of the green: azalea (now and then flowering) and ripe sweet berry bushes. Both need #dirt
+        // (azalea also clay), so they stand on the grass and the coarse dirt, not on the sand of the transition ring.
+        FeatureUtils.register(context, OASIS_EDGE_SHRUBS, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(weighted(
+                SimpleWeightedRandomList.<BlockState>builder()
+                        .add(Blocks.AZALEA.defaultBlockState(), 3)
+                        .add(Blocks.FLOWERING_AZALEA.defaultBlockState(), 1)
+                        .add(Blocks.SWEET_BERRY_BUSH.defaultBlockState().setValue(SweetBerryBushBlock.AGE, SweetBerryBushBlock.MAX_AGE), 2))));
         FeatureUtils.register(context, OASIS_TRANSITION_VEGETATION, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(weighted(
                 SimpleWeightedRandomList.<BlockState>builder()
                         .add(ModBlocks.DRY_SHRUB.get().defaultBlockState(), 6)
@@ -343,16 +380,29 @@ public final class Ring2Features {
                 NoiseBandFilter.snapped(PALM_GROVES, -Double.MAX_VALUE, Math.nextDown(GROVE_NOISE), PALM_CELL),
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.PALM_SAPLING.get()),
                 BiomeFilter.biome());
+        // Change 30c: two passes over a grid of cell 4 (~26 spread candidates) instead of 10 random ones: about three times
+        // the plants of change 30 on the shore.
+        BlockPredicate onGrass = BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks(below(), Blocks.GRASS_BLOCK));
         PlacementUtils.register(context, ModPlacedFeatures.OASIS_VEGETATION, features.getOrThrow(OASIS_VEGETATION),
-                CountPlacement.of(10),
-                InSquarePlacement.spread(),
+                CountPlacement.of(2),
+                JitteredGridPlacement.of(4, 0, 0.8F),
                 SURFACE,
-                BlockPredicateFilter.forPredicate(BlockPredicate.allOf(
-                        BlockPredicate.ONLY_IN_AIR_PREDICATE,
-                        BlockPredicate.matchesBlocks(below(), Blocks.GRASS_BLOCK))),
+                BlockPredicateFilter.forPredicate(onGrass),
+                BiomeFilter.biome());
+        // Flowers on the grass shore, in colour patches of a seeded world noise (vanilla's noise_provider has a fixed
+        // seed): each candidate passes for the one colour whose band it lies in, ~5-6 flowers per shore chunk.
+        flowers(context, ModPlacedFeatures.OASIS_FLOWERS_WARM, features.getOrThrow(OASIS_FLOWERS_WARM), -Double.MAX_VALUE, WARM_BELOW, onGrass);
+        flowers(context, ModPlacedFeatures.OASIS_FLOWERS_WHITE, features.getOrThrow(OASIS_FLOWERS_WHITE), WARM_BELOW, PURPLE_ABOVE, onGrass);
+        flowers(context, ModPlacedFeatures.OASIS_FLOWERS_PURPLE, features.getOrThrow(OASIS_FLOWERS_PURPLE), PURPLE_ABOVE, Double.MAX_VALUE, onGrass);
+        // After the palms: a palm that stands blocks the spot, a shrub never blocks a palm.
+        PlacementUtils.register(context, ModPlacedFeatures.OASIS_EDGE_SHRUBS, features.getOrThrow(OASIS_EDGE_SHRUBS),
+                JitteredGridPlacement.of(4, 1, 0.25F),
+                NoiseBandFilter.between(POOLS, SHRUBS_FROM, SHRUBS_TO),
+                SURFACE,
+                PlacementUtils.isEmpty(),
                 BiomeFilter.biome());
         PlacementUtils.register(context, ModPlacedFeatures.OASIS_TRANSITION_VEGETATION, features.getOrThrow(OASIS_TRANSITION_VEGETATION),
-                CountPlacement.of(4),
+                CountPlacement.of(8),
                 InSquarePlacement.spread(),
                 NoiseBandFilter.between(POOLS, TRANSITION, SHORE),
                 SURFACE,
@@ -360,9 +410,10 @@ public final class Ring2Features {
                 BiomeFilter.biome());
 
         // Change 30, VEGETAL_DECORATION; one candidate per grid cell (no random clumps).
-        // Hoodoo fields: the canyon flora, thinner (~1.5 per chunk).
+        // Hoodoo fields: the canyon flora between the pillars (~6.4 tries per chunk since change 30c; more at the pillar feet,
+        // Ring2DressingFeatures).
         PlacementUtils.register(context, ModPlacedFeatures.HOODOO_FIELDS_VEGETATION, features.getOrThrow(CANYONLANDS_VEGETATION),
-                JitteredGridPlacement.of(8, 1, 0.375F),
+                JitteredGridPlacement.of(4, 0, 0.4F),
                 SURFACE,
                 PlacementUtils.isEmpty(),
                 BiomeFilter.biome());
@@ -373,11 +424,24 @@ public final class Ring2Features {
                 BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
                         BlockPredicate.matchesBlocks(below(), ModBlocks.SALT_CRUST.get()))),
                 BiomeFilter.biome());
-        // Dune sea: almost bare, no landmarks (~0.2 per chunk).
+        // Dune sea: since change 30c only the flanks (at most 0.8 per chunk); the valleys get their own plants
+        // (Ring2DressingFeatures), the crests stay bare.
         PlacementUtils.register(context, ModPlacedFeatures.DUNE_SEA_VEGETATION, features.getOrThrow(DUNE_SEA_VEGETATION),
-                JitteredGridPlacement.of(16, 1, 0.2F),
+                JitteredGridPlacement.of(8, 0, 0.2F),
                 SURFACE,
+                HeightBandFilter.between(Ring2DressingFeatures.VALLEY_TOP + 2, Ring2DressingFeatures.FLANK_TOP + 1),
                 PlacementUtils.isEmpty(),
+                BiomeFilter.biome());
+    }
+
+    private static void flowers(BootstrapContext<PlacedFeature> context, ResourceKey<PlacedFeature> key, Holder<ConfiguredFeature<?, ?>> flowers,
+                                double min, double max, BlockPredicate onGrass) {
+        PlacementUtils.register(context, key, flowers,
+                JitteredGridPlacement.of(4, 0, 0.42F),
+                NoiseBandFilter.between(POOLS, SHORE, Double.MAX_VALUE),
+                NoiseBandFilter.between(FLOWER_PATCHES, min, max),
+                SURFACE,
+                BlockPredicateFilter.forPredicate(onGrass),
                 BiomeFilter.biome());
     }
 

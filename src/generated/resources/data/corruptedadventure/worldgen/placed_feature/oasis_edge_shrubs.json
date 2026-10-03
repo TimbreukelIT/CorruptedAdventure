@@ -1,0 +1,31 @@
+{
+  "feature": "corruptedadventure:oasis_edge_shrubs",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 4,
+      "chance": 0.25,
+      "margin": 1
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "max": 0.16,
+      "min": 0.05,
+      "noise": "corruptedadventure:ring_2_pools"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:matching_blocks",
+        "blocks": "minecraft:air"
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

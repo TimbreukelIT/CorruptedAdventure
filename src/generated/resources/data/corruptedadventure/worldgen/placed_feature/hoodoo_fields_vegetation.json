@@ -3,9 +3,8 @@
   "placement": [
     {
       "type": "corruptedadventure:jittered_grid",
-      "cell_size": 8,
-      "chance": 0.375,
-      "margin": 1
+      "cell_size": 4,
+      "chance": 0.4
     },
     {
       "type": "minecraft:heightmap",

@@ -29,7 +29,9 @@
       "corruptedadventure:salt_flats_brine_pools",
       "corruptedadventure:salt_flats_pillar_fields",
       "corruptedadventure:salt_flats_pillars",
-      "corruptedadventure:salt_island_rocks"
+      "corruptedadventure:salt_island_rocks",
+      "corruptedadventure:salt_island_fossils",
+      "corruptedadventure:salt_island_bones"
     ],
     [
       "minecraft:monster_room",
@@ -59,7 +61,9 @@
     [
       "minecraft:glow_lichen",
       "corruptedadventure:salt_flats_crystals",
-      "corruptedadventure:salt_flats_crystal_fields"
+      "corruptedadventure:salt_flats_crystal_fields",
+      "corruptedadventure:salt_island_flora",
+      "corruptedadventure:salt_island_cactus"
     ],
     [
       "minecraft:freeze_top_layer"

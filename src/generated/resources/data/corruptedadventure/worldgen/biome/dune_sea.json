@@ -27,7 +27,9 @@
     [
       "minecraft:amethyst_geode",
       "corruptedadventure:dune_sea_oases",
-      "corruptedadventure:dune_sea_outcrops"
+      "corruptedadventure:dune_sea_outcrops",
+      "corruptedadventure:dune_sea_fossils",
+      "corruptedadventure:dune_sea_bones"
     ],
     [
       "minecraft:monster_room",
@@ -56,7 +58,10 @@
     ],
     [
       "minecraft:glow_lichen",
-      "corruptedadventure:dune_sea_vegetation"
+      "corruptedadventure:dune_sea_vegetation",
+      "corruptedadventure:dune_sea_valley_flora",
+      "corruptedadventure:dune_sea_valley_grass",
+      "corruptedadventure:dune_sea_cactus_groups"
     ],
     [
       "minecraft:freeze_top_layer"

@@ -14,6 +14,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.OutcropConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.OutcropFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.RubbleConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.RubbleFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.SurfaceFossilConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SurfaceFossilFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
@@ -41,6 +43,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:outcrop} (change 30b) */
     public static final DeferredHolder<Feature<?>, Feature<OutcropConfiguration>> OUTCROP =
             FEATURES.register("outcrop", () -> new OutcropFeature(OutcropConfiguration.CODEC));
+    /** {@code corruptedadventure:surface_fossil} (change 30c) */
+    public static final DeferredHolder<Feature<?>, Feature<SurfaceFossilConfiguration>> SURFACE_FOSSIL =
+            FEATURES.register("surface_fossil", () -> new SurfaceFossilFeature(SurfaceFossilConfiguration.CODEC));
 
     private ModFeatures() {
     }

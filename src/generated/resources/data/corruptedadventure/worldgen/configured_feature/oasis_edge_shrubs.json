@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:simple_block",
+  "config": {
+    "to_place": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:azalea"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:flowering_azalea"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "minecraft:sweet_berry_bush",
+            "Properties": {
+              "age": "3"
+            }
+          },
+          "weight": 2
+        }
+      ]
+    }
+  }
+}

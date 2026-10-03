@@ -3,13 +3,17 @@
   "placement": [
     {
       "type": "corruptedadventure:jittered_grid",
-      "cell_size": 16,
-      "chance": 0.2,
-      "margin": 1
+      "cell_size": 8,
+      "chance": 0.2
     },
     {
       "type": "minecraft:heightmap",
       "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:height_band",
+      "max_y": 79,
+      "min_y": 73
     },
     {
       "type": "minecraft:block_predicate_filter",

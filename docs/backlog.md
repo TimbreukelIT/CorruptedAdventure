@@ -115,3 +115,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [conditions] Pekelpoelen (change 30b): vanilla laat een glazen fles water scheppen uit elke poel; pekel niet drinkbaar maken (of zout water dat uitdroging verhoogt)? (bron: change 30b)
 - [atmosphere] Pekelpoelen: eigen watertint voor `salt_flats`; ambient bij mini-oases en kristalvelden (change 32). (bron: change 30b)
 - [structures] Mini-oases als kampplek/rustpunt van een karavaan (fase 3). (bron: change 30b)
+
+## Uit change 30c
+- [mobs] Fase 4: dieren in oase en duindalen (konijnen, fennecs/woestijnvos?, hagedissen) nu de begroeiing er is. (bron: change 30c)
+- [conditions] Zoete bessen in de oase (change 30c): extra voedselbron in ring 2; balans van uitdroging/honger nalopen. (bron: change 30c)
