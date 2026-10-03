@@ -17,7 +17,7 @@
   },
   "argument2": {
     "type": "minecraft:mul",
-    "argument1": "corruptedadventure:ring_2/overworld/wall_mask",
+    "argument1": "corruptedadventure:ring_2/overworld/wall_roughness",
     "argument2": {
       "type": "minecraft:mul",
       "argument1": 0.25,

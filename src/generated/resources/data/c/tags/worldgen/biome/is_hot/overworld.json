@@ -1,6 +1,9 @@
 {
   "values": [
     "corruptedadventure:canyonlands",
-    "corruptedadventure:oasis_flats"
+    "corruptedadventure:oasis_flats",
+    "corruptedadventure:hoodoo_fields",
+    "corruptedadventure:salt_flats",
+    "corruptedadventure:dune_sea"
   ]
 }

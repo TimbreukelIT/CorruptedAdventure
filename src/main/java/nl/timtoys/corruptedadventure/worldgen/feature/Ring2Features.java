@@ -57,6 +57,7 @@ import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.CANYO
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.CANYON_ROCKFALL;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.CANYON_RUBBLE;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.CANYON_SPRING;
+import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.DUNE_SEA_VEGETATION;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_ROCK;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_SHORE_CANE;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_SHORE_PLANTS;
@@ -64,6 +65,7 @@ import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.OASIS_VEGETATION;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.PALM_BUSH;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.PALM_TREE;
+import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.SALT_CRYSTAL;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.SUNSTONE_ORE;
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.TURQUOISE_ORE;
 
@@ -209,6 +211,14 @@ public final class Ring2Features {
                         .add(Blocks.SHORT_GRASS.defaultBlockState(), 2)
                         .add(Blocks.LARGE_FERN.defaultBlockState(), 1)),
                 0.6F, 0.5F));
+
+        // Change 30: a salt crystal (default state facing=up) and the scarce dune flora.
+        FeatureUtils.register(context, SALT_CRYSTAL, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(
+                BlockStateProvider.simple(ModBlocks.SALT_CRYSTAL.get())));
+        FeatureUtils.register(context, DUNE_SEA_VEGETATION, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(weighted(
+                SimpleWeightedRandomList.<BlockState>builder()
+                        .add(ModBlocks.DRY_SHRUB.get().defaultBlockState(), 2)
+                        .add(Blocks.DEAD_BUSH.defaultBlockState(), 1))));
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
@@ -345,6 +355,27 @@ public final class Ring2Features {
                 CountPlacement.of(4),
                 InSquarePlacement.spread(),
                 NoiseBandFilter.between(POOLS, TRANSITION, SHORE),
+                SURFACE,
+                PlacementUtils.isEmpty(),
+                BiomeFilter.biome());
+
+        // Change 30, VEGETAL_DECORATION; one candidate per grid cell (no random clumps).
+        // Hoodoo fields: the canyon flora, thinner (~1.5 per chunk).
+        PlacementUtils.register(context, ModPlacedFeatures.HOODOO_FIELDS_VEGETATION, features.getOrThrow(CANYONLANDS_VEGETATION),
+                JitteredGridPlacement.of(8, 1, 0.375F),
+                SURFACE,
+                PlacementUtils.isEmpty(),
+                BiomeFilter.biome());
+        // Salt flats: a rare crystal on the crust (~1 per chunk), dimly lit at night.
+        PlacementUtils.register(context, ModPlacedFeatures.SALT_FLATS_CRYSTALS, features.getOrThrow(SALT_CRYSTAL),
+                JitteredGridPlacement.of(8, 1, 0.25F),
+                SURFACE,
+                BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
+                        BlockPredicate.matchesBlocks(below(), ModBlocks.SALT_CRUST.get()))),
+                BiomeFilter.biome());
+        // Dune sea: almost bare, no landmarks (~0.2 per chunk).
+        PlacementUtils.register(context, ModPlacedFeatures.DUNE_SEA_VEGETATION, features.getOrThrow(DUNE_SEA_VEGETATION),
+                JitteredGridPlacement.of(16, 1, 0.2F),
                 SURFACE,
                 PlacementUtils.isEmpty(),
                 BiomeFilter.biome());

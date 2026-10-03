@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:spline",
+    "spline": {
+      "coordinate": "corruptedadventure:ring_2/overworld/moisture",
+      "points": [
+        {
+          "location": -0.215,
+          "value": 0.0,
+          "derivative": 0.0
+        },
+        {
+          "location": -0.155,
+          "value": 1.0,
+          "derivative": 0.0
+        },
+        {
+          "location": 0.174,
+          "value": 1.0,
+          "derivative": 0.0
+        },
+        {
+          "location": 0.234,
+          "value": 0.0,
+          "derivative": 0.0
+        }
+      ]
+    }
+  }
+}

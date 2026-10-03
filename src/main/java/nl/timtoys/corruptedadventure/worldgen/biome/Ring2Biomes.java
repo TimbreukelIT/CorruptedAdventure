@@ -28,9 +28,11 @@ import java.util.List;
  * ring 2 ores come through {@link Ring2BiomeModifiers}) and {@link BiomeAmbience.Palette#RING_2}; their own features
  * come last in each step, or loading the world fails with "Feature order cycle".
  * <p>
- * Which biome lies where is decided by the {@code multi_noise} source of ring 2 in the world preset, on the router's
- * {@code temperature} (= {@code ring_2/overworld/relief}): rocky (relief ≥ 0) is {@code canyonlands}, flat is
- * {@code oasis_flats}. The terrain reads the same density function, so biome and terrain borders coincide.
+ * Which biome lies where is decided by the {@code multi_noise} source of ring 2 in the world preset, on two region axes:
+ * the router's {@code temperature} (= {@code ring_2/overworld/relief}: rocky ≥ 0, flat below) and {@code vegetation}
+ * (= {@code ring_2/overworld/moisture}). Rocky: {@code hoodoo_fields} (dry) and {@code canyonlands}; flat:
+ * {@code salt_flats} (dry), {@code dune_sea} and {@code oasis_flats} (moist). The terrain reads the same density
+ * functions, so biome and terrain borders coincide.
  */
 public final class Ring2Biomes {
     /**
@@ -38,7 +40,8 @@ public final class Ring2Biomes {
      * {@code c:is_hot/overworld} and {@code c:is_dry/overworld} read it. Hand-written JSON that lists them is in
      * {@code CODEBASE.md} ("Plekken die ring 2-biomes opsommen").
      */
-    public static final List<ResourceKey<Biome>> ALL = List.of(ModBiomes.CANYONLANDS, ModBiomes.OASIS_FLATS);
+    public static final List<ResourceKey<Biome>> ALL = List.of(ModBiomes.CANYONLANDS, ModBiomes.OASIS_FLATS,
+            ModBiomes.HOODOO_FIELDS, ModBiomes.SALT_FLATS, ModBiomes.DUNE_SEA);
     /**
      * Rubble and springs of the canyonlands ({@code LOCAL_MODIFICATIONS}), in this fixed order; change 30 reuses them
      * in the same order. The spring comes last: it only digs where no boulder of its chunk lies.
@@ -63,6 +66,9 @@ public final class Ring2Biomes {
         HolderGetter<ConfiguredWorldCarver<?>> carvers = context.lookup(Registries.CONFIGURED_CARVER);
         context.register(ModBiomes.CANYONLANDS, canyonlands(features, carvers));
         context.register(ModBiomes.OASIS_FLATS, oasisFlats(features, carvers));
+        context.register(ModBiomes.HOODOO_FIELDS, hoodooFields(features, carvers));
+        context.register(ModBiomes.SALT_FLATS, saltFlats(features, carvers));
+        context.register(ModBiomes.DUNE_SEA, duneSea(features, carvers));
     }
 
     /** Deep canyons and plateaus of layered canyon stone; dry scrub. */
@@ -84,6 +90,29 @@ public final class Ring2Biomes {
         }
         // Downfall only colours (and farmland); there is no rain in ring 2.
         return biome(0.4F, 0x6FB33F, 0x5DA032, spawns(true), generation);
+    }
+
+    /** Pillars, arches and balanced rocks of layered canyon stone; thinner canyon flora, rock fallen at the pillar feet. */
+    private static Biome hoodooFields(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+        BiomeGenerationSettings.Builder generation = generation(features, carvers);
+        // A subset of CANYONLANDS_ROCKS in the same order (one global order per step).
+        generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, ModPlacedFeatures.CANYON_ROCKFALL);
+        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.HOODOO_FIELDS_VEGETATION);
+        return biome(0.0F, 0xBFB755, 0xAEA42A, spawns(false), generation);
+    }
+
+    /** Bare, white and flat: salt crust with a rare salt crystal; nothing to eat, only monsters. */
+    private static Biome saltFlats(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+        BiomeGenerationSettings.Builder generation = generation(features, carvers);
+        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.SALT_FLATS_CRYSTALS);
+        return biome(0.0F, 0xC9C08A, 0xB5AC6E, withoutCreatures(spawns(false)), generation);
+    }
+
+    /** High rolling dunes without landmarks: now and then a dry or dead shrub. */
+    private static Biome duneSea(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+        BiomeGenerationSettings.Builder generation = generation(features, carvers);
+        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.DUNE_SEA_VEGETATION);
+        return biome(0.0F, 0xBFB755, 0xAEA42A, spawns(false), generation);
     }
 
     /**
@@ -122,6 +151,18 @@ public final class Ring2Biomes {
             spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.CAMEL, 1, 1, 1));
         }
         return spawns.build();
+    }
+
+    /** {@code spawns} without its creatures (animals); monsters, bats and the rest stay. */
+    static MobSpawnSettings withoutCreatures(MobSpawnSettings spawns) {
+        MobSpawnSettings.Builder builder = new MobSpawnSettings.Builder();
+        for (MobCategory category : MobCategory.values()) {
+            if (category != MobCategory.CREATURE) {
+                spawns.getMobs(category).unwrap().forEach(data -> builder.addSpawn(category, data));
+            }
+        }
+        builder.creatureGenerationProbability(spawns.getCreatureProbability());
+        return builder.build();
     }
 
     private static Biome biome(float downfall, int grass, int foliage, MobSpawnSettings spawns, BiomeGenerationSettings.Builder generation) {

@@ -81,7 +81,6 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [structures] Wandbronnen en oases als ankerpunt voor kampen, putten of trappen naar de grondwaterspiegel (zie de reservoirs van change 26). Fase 3. (bron: change 23c)
 
 ## Uit change 25
-- [worldgen] Change 30: `hoodoo_fields`, `salt_flats` en `dune_sea` in `#is_ring_2` (dan krijgen ze `add_ring_2_ores`); zonnesteen komt alleen in hoodoos van kloofsteen-tinten of `scorched_sandstone` (de `scorched_sandstone_sunstone_ore`-variant bestaat al). (bron: change 25)
 - [worldgen] Change 31: `dry_riverbeds` ligt deels voorbij grens 2→3, waar `ring_chance` (`progress`, ring 2) kans 0 geeft: geschaalde vanilla-ores vallen daar weg; eigen ertsset kiezen (bijv. signaal `transition`). (bron: change 25)
 
 ## Uit change 26
@@ -104,3 +103,10 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [items] Zout (`salt`): doel en recipes in fase 2 — 4 zout ↔ zoutblok (`c:storage_blocks/salt`), zoutblok → gepolijst zout (+ steenzaag: trap/plaat/muur); eventueel voedsel/conservering of een rol bij uitdroging. Gepolijst zout en zijn vormen hebben tot dan geen survival-bron. (bron: change 29)
 - [blocks] Later-ideeën uit de zout-sparring (afgewezen voor nu): vallende/brosse zoutkorst, een zoutbakstenen-familie (`salt_bricks` + trap/plaat/muur, bijv. voor zoutstructures in fase 3), trap/plaat/muur van het ruwe zoutblok, zoutkristallen die groeien (zoals amethist). (bron: change 29)
 - [blocks] Zoutkristal hergebruikt vanilla `AmethystClusterBlock`: een projectiel-treffer speelt het amethist-belgeluid. Bij change 37 (geluid/uiterlijk) beoordelen of een eigen class met eigen geluid nodig is. (bron: change 29)
+
+## Uit change 30
+- [conditions] Zoutvlakte: uitdroging sneller (weerkaatsing/zout)? Nu gelijk aan de rest van ring 2. (bron: change 30)
+- [atmosphere] Duinenzee: zandstorm dichter/vaker dan elders in ring 2 (verdwalen), naast het zingende zand van change 32. (bron: change 30)
+- [structures] Hoodoovelden: klifwoningen/uitkijkposten in pilaren; duinenzee: halfbegraven ruïnes (bij de ring 2-structures van fase 3). (bron: change 30)
+- [worldgen] Change 31: in de zone 2→3 mengt het terrein ook duinen en hoodoo-pilaren met ring 3 (pilaren vervallen via `core_mask`, duinen worden van boven af gekapt); `dry_riverbeds` bepaalt zijn eigen zonevorm. Daar mengt de router ook `moisture` met 0, zodat de biomegrenzen op de vochtas in de buitenste helft van de zone wat verschuiven t.o.v. het terrein. De hoodoovloer stijgt daar boven de kaprotsgrens (Y 94, absoluut) en wordt dan geschroeide zandsteen (gemeten in de zone 2→3). (bron: change 30)
+- [worldgen] Duinen met windrichting (Java-type `dune_ridges`) als de richtingloze duinen niet overtuigen. (bron: change 30)

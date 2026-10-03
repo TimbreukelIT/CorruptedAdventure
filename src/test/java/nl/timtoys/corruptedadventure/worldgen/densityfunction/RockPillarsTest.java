@@ -8,6 +8,9 @@ import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.DensityFunctions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +58,7 @@ class RockPillarsTest {
                     int j = n / 50 - 20;
                     RockPillars.Placed placed = rocks.place(i, j);
                     assertNotNull(placed, "chance 1 places a shape in every cell");
-                    arches += checkCell(rocks, placed, i, j, shape, weight) ? 1 : 0;
+                    arches += checkCell(rocks, placed, i, j, CELL, MARGIN, shape, weight) ? 1 : 0;
                 }
             }
         }
@@ -63,25 +66,26 @@ class RockPillarsTest {
     }
 
     /** Flood fill from the base of every column; returns whether the cell holds an arch (a column with a gap). */
-    private static boolean checkCell(RockPillars rocks, RockPillars.Placed placed, int i, int j, Shape shape, double weight) {
+    private static boolean checkCell(RockPillars rocks, RockPillars.Placed placed, int i, int j, int cell, int margin, Shape shape,
+                                     double weight) {
         Set<Long> solid = new HashSet<>();
         ArrayDeque<long[]> queue = new ArrayDeque<>();
         Set<Long> seen = new HashSet<>();
         int top = Integer.MIN_VALUE;
         boolean gap = false;
-        for (int x = i * CELL - 2; x < (i + 1) * CELL + 2; x++) {
-            for (int z = j * CELL - 2; z < (j + 1) * CELL + 2; z++) {
+        for (int x = i * cell - 2; x < (i + 1) * cell + 2; x++) {
+            for (int z = j * cell - 2; z < (j + 1) * cell + 2; z++) {
                 int[] spans = rocks.solidAt(x, z);
                 if (spans.length == 0) {
                     continue;
                 }
-                assertTrue(x >= i * CELL + MARGIN && x < (i + 1) * CELL - MARGIN && z >= j * CELL + MARGIN && z < (j + 1) * CELL - MARGIN,
+                assertTrue(x >= i * cell + margin && x < (i + 1) * cell - margin && z >= j * cell + margin && z < (j + 1) * cell - margin,
                         shape.type() + " outside its cell at " + x + "," + z);
-                if (shape != CAPPED) {
+                if (!(placed.draw() instanceof Shape.NeedleDraw needle && needle.capRadius() > 0.0)) {
                     // Only the overhang of a cap starts higher (it hangs on the stem; the flood fill checks that).
                     assertEquals(placed.base(), spans[0], "every column starts at the base");
                 }
-                gap |= spans.length > 2 && shape != CAPPED;
+                gap |= spans.length > 2 && shape instanceof Shape.Fin;
                 for (int s = 0; s < spans.length; s += 2) {
                     for (int y = spans[s]; y <= spans[s + 1]; y++) {
                         solid.add(key(x, y, z));
@@ -115,6 +119,58 @@ class RockPillarsTest {
             assertTrue(placed.draw() instanceof Shape.FinDraw fin && fin.hasHole(placed));
         }
         return gap;
+    }
+
+    /**
+     * The hoodoos of change 30 with their settings from the JSON (both pillar grids and the arches): never floating, inside
+     * their cell, heights × weight, a cap wider than a neck that is never 0, arches open with their legs on the floor.
+     */
+    @Test
+    void hoodooSettingsFromTheJson() throws IOException {
+        int arches = 0;
+        int caps = 0;
+        for (String name : List.of("hoodoos", "hoodoos_offset", "hoodoo_arches")) {
+            JsonObject json = JsonParser.parseString(Files.readString(densityFunctions().resolve("ring_2/overworld/" + name + ".json"))).getAsJsonObject();
+            int cell = json.get("cell_size").getAsInt();
+            int margin = json.get("margin").getAsInt();
+            double minWeight = json.get("min_weight").getAsDouble();
+            List<RockPillars.WeightedShape> shapes = RockPillars.WeightedShape.CODEC.listOf().parse(JsonOps.INSTANCE, json.get("shapes")).getOrThrow();
+            Shape shape = shapes.getFirst().shape();
+            for (double weight : new double[]{minWeight, 0.75, 1.0}) {
+                RockPillars rocks = new RockPillars(HASH, cell, 1.0, margin, DensityFunctions.constant(weight), minWeight, FLOOR, Optional.empty(),
+                        0.0, 1024.0, Optional.empty(), shapes);
+                for (int n = 0; n < 700; n++) {
+                    int i = n % 35 - 17;
+                    int j = n / 35 - 10;
+                    RockPillars.Placed placed = rocks.place(i, j);
+                    if (placed == null) {
+                        continue;
+                    }
+                    arches += checkCell(rocks, placed, i, j, cell, margin, shape, weight) ? 1 : 0;
+                    if (placed.draw() instanceof Shape.NeedleDraw needle) {
+                        assertTrue(needle.topRadius() >= 0.5, name + ": the neck is never 0");
+                        if (needle.capRadius() > 0.0) {
+                            caps++;
+                            assertTrue(needle.capRadius() >= needle.topRadius() + 0.5, name + ": the cap is wider than the neck");
+                        }
+                        double min = ((Shape.Needle) shape).height().min() * weight;
+                        assertTrue(needle.height() >= min - 1e-9, name + ": lower than its minimum × weight");
+                    }
+                }
+            }
+        }
+        assertTrue(arches > 50, "arches: " + arches);
+        assertTrue(caps > 300, "caps: " + caps);
+    }
+
+    private static Path densityFunctions() {
+        for (Path dir = Path.of("").toAbsolutePath(); dir != null; dir = dir.getParent()) {
+            Path candidate = dir.resolve("src/main/resources/data/corruptedadventure/worldgen/density_function");
+            if (Files.isDirectory(candidate)) {
+                return candidate;
+            }
+        }
+        throw new AssertionError("density_function folder not found");
     }
 
     private static long key(int x, int y, int z) {

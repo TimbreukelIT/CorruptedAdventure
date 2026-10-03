@@ -12,6 +12,9 @@ public final class ModBiomes {
     // Ring 2 (Ring2Biomes; Ring2Biomes.ALL lists every biome with ring 2 worldgen).
     public static final ResourceKey<Biome> CANYONLANDS = key("canyonlands");
     public static final ResourceKey<Biome> OASIS_FLATS = key("oasis_flats");
+    public static final ResourceKey<Biome> HOODOO_FIELDS = key("hoodoo_fields");
+    public static final ResourceKey<Biome> SALT_FLATS = key("salt_flats");
+    public static final ResourceKey<Biome> DUNE_SEA = key("dune_sea");
 
     // Temporary: one per ring until the ring's real biomes exist. Ring 1's copies (overworld and Nether):
     // VanillaBiomeCopies.copyOf.

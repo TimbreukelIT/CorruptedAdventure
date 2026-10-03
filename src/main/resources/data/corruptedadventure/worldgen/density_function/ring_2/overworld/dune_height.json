@@ -1,0 +1,101 @@
+{
+  "type": "minecraft:add",
+  "argument1": {
+    "type": "minecraft:add",
+    "argument1": 67.0,
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": 2.0,
+      "argument2": {
+        "type": "minecraft:clamp",
+        "input": {
+          "type": "minecraft:noise",
+          "noise": "corruptedadventure:ring_2_hills",
+          "xz_scale": 1.0,
+          "y_scale": 0.0
+        },
+        "min": -1.0,
+        "max": 1.0
+      }
+    }
+  },
+  "argument2": {
+    "type": "minecraft:mul",
+    "argument1": {
+      "type": "minecraft:spline",
+      "spline": {
+        "coordinate": {
+          "type": "minecraft:noise",
+          "noise": "corruptedadventure:ring_2_dune_amplitude",
+          "xz_scale": 1.0,
+          "y_scale": 0.0
+        },
+        "points": [
+          {
+            "location": -0.35,
+            "value": 10.0,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.35,
+            "value": 32.0,
+            "derivative": 0.0
+          }
+        ]
+      }
+    },
+    "argument2": {
+      "type": "minecraft:spline",
+      "spline": {
+        "coordinate": {
+          "type": "minecraft:abs",
+          "argument": {
+            "type": "minecraft:shifted_noise",
+            "noise": "corruptedadventure:ring_2_dunes",
+            "xz_scale": 1.4,
+            "y_scale": 0.0,
+            "shift_x": {
+              "type": "minecraft:mul",
+              "argument1": 6.0,
+              "argument2": {
+                "type": "minecraft:shift_a",
+                "argument": "corruptedadventure:ring_2_dune_warp"
+              }
+            },
+            "shift_y": 0.0,
+            "shift_z": {
+              "type": "minecraft:mul",
+              "argument1": 6.0,
+              "argument2": {
+                "type": "minecraft:shift_b",
+                "argument": "corruptedadventure:ring_2_dune_warp"
+              }
+            }
+          }
+        },
+        "points": [
+          {
+            "location": 0.0,
+            "value": 1.0,
+            "derivative": -2.0
+          },
+          {
+            "location": 0.2,
+            "value": 0.6,
+            "derivative": -2.0
+          },
+          {
+            "location": 0.45,
+            "value": 0.12,
+            "derivative": -0.4
+          },
+          {
+            "location": 0.6,
+            "value": 0.0,
+            "derivative": 0.0
+          }
+        ]
+      }
+    }
+  }
+}

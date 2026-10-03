@@ -32,6 +32,10 @@ public final class ModPlacedFeatures {
     public static final ResourceKey<PlacedFeature> OASIS_PALM_BUSHES = key("oasis_palm_bushes");
     public static final ResourceKey<PlacedFeature> OASIS_VEGETATION = key("oasis_vegetation");
     public static final ResourceKey<PlacedFeature> OASIS_TRANSITION_VEGETATION = key("oasis_transition_vegetation");
+    // Ring 2 extra biomes (change 30).
+    public static final ResourceKey<PlacedFeature> HOODOO_FIELDS_VEGETATION = key("hoodoo_fields_vegetation");
+    public static final ResourceKey<PlacedFeature> SALT_FLATS_CRYSTALS = key("salt_flats_crystals");
+    public static final ResourceKey<PlacedFeature> DUNE_SEA_VEGETATION = key("dune_sea_vegetation");
     // Ring 2 ores (change 25). The tapered vanilla ores (ring_2/ore_*) have no constants: RingVanillaOres.keys.
     public static final ResourceKey<PlacedFeature> SUNSTONE_ORE = key("sunstone_ore");
     public static final ResourceKey<PlacedFeature> TURQUOISE_ORE = key("turquoise_ore");

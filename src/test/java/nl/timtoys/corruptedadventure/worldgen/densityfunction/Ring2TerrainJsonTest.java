@@ -34,7 +34,7 @@ class Ring2TerrainJsonTest {
         assertEquals("corruptedadventure:canyon_details", ring2.get("type").getAsString());
         assertEquals("corruptedadventure:ring_2/overworld/stack", ring2.get("argument").getAsString());
         String rocks = ring2.get("rocks").toString();
-        for (String part : new String[]{"plateau_rocks", "plateau_fins", "canyon_spires"}) {
+        for (String part : new String[]{"plateau_rocks", "plateau_fins", "canyon_spires", "hoodoos", "hoodoos_offset", "hoodoo_arches"}) {
             assertTrue(rocks.contains("\"corruptedadventure:ring_2/overworld/" + part + "\""), part);
         }
         assertEquals("corruptedadventure:ring_2/overworld/terrain", ring2.get("terrain").getAsString());

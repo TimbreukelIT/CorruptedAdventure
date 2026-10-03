@@ -1,0 +1,48 @@
+{
+  "type": "corruptedadventure:rock_pillars",
+  "hash": "corruptedadventure:ring_2_hoodoo_offset_cells",
+  "cell_size": 23,
+  "chance": 0.75,
+  "margin": 1,
+  "weight": "corruptedadventure:ring_2/overworld/hoodoo_rock_weight",
+  "min_weight": 0.5,
+  "floor": "corruptedadventure:ring_2/overworld/height",
+  "max_floor_step": 4.0,
+  "root_y": 50,
+  "shapes": [
+    {
+      "weight": 1,
+      "shape": {
+        "type": "needle",
+        "height": [
+          15,
+          45
+        ],
+        "base_radius": [
+          2.5,
+          4.0
+        ],
+        "top_radius": [
+          1.5,
+          2.5
+        ],
+        "flare": [
+          0.5,
+          1.0
+        ],
+        "flare_height": 0.2,
+        "cap": {
+          "chance": 0.35,
+          "extra_radius": [
+            1.0,
+            2.0
+          ],
+          "thickness": [
+            3.0,
+            5.0
+          ]
+        }
+      }
+    }
+  ]
+}

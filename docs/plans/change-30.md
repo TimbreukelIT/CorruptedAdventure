@@ -498,17 +498,124 @@ Commit (na `/code-review`): `worldgen: add salt flats, hoodoo fields and dune se
 
 ## In-game checklist (W) — teststop 2b (gebundelde terreincheck ring 2, BLOKKEREND, besloten 2026-10-01)
 
-**Besluit (keuze gebruiker, 23b-17):** de in-game terreincheck van ring 2 is één blokkerende stop **na deze change, vóór change 31**, "als alles is ingericht". Hij bundelt de W-lijsten van **23** (resterende punten van teststop 2), **23b**, **23c**, **25**, **26** en **30**. Change 31 begint pas na akkoord van de gebruiker. Teststop 3 (na 37) blijft en slaat wat hier akkoord is over.
+Bundelt de W-lijsten van 23, 23b, 23c, 25, 26, 27 en 30. Change 31 begint pas na akkoord. Alle coördinaten zijn op 2026-10-03 gecontroleerd tegen de build van change 30 (servergegenereerde wereld met dezelfde seed). Plekken uit oudere lijsten die door change 30 in een ander biome kwamen te liggen, zijn vervangen: het oude kloofgebied rond 2.400–2.600 / 450–720 is nu **hoodooveld**, en de oude oase rond 2.500 / 0 is nu **duinenzee**. Devkaarten (bovenaanzicht + doorsnede) staan in `build/devmaps/change30/teststop2b/`.
 
-**Wat de bouwer van deze change doet** (na de commit van 30, vóór het rapport):
-1. **De gebundelde checklist schrijven** onder dit kopje (vervangt deze opzet), gegroepeerd per onderwerp, met per punt een concrete plek (`/tp`-coördinaten, seed `20260930`, preset `corrupted_world`) en waar nodig een `/ca`- of `/locate`-commando:
-   - **Overgang en hoofdvorm ring 2** (23, 23b): `/ca tpboundary 1` en `2`, overgang ring 1 → plateau (23b-12), geen zwevende brokken of afgekapte vormen in de zones.
-   - **Plateau en kloven** (23b): oversteken (~400 blokken in survival), spleten met bruggen/klemblokken en hangende mondingen, tafelbergen, rotsvormen (naalden, keien, vinnen, bogen, torens), wanden (richels op de crème banden, nissen, overhangende kaprots), kloofbodem (treden met kolk, hangende zijtakken, puinhellingen), lagen (meer crème, 23b-13 B), plateaugrotten (23b-15).
-   - **Aankleding** (23c): keienvelden, puin, rotsval, wandbronnen (bron, val, stroompje, kolk), oase (bredere groene rand, plaatselijk bredere poelen, palmgroepjes, struikpalmen, overgangsring), palmvorm.
-   - **Ertsen** (25): zonnesteen hoog in kloof- en tafelbergwanden (tot Y ~180), turkoois diep, `raw_*`-drops, "armer" mijnen.
-   - **Grotten** (26): grotten en ingangen, reservoirs, zandgrotten met instorting (survival), overgang 1→2 onder de grond.
-   - **Extra biomes** (30): hoodoos (afstempunt vorm), bogen, duinenzee, zoutvlakte, overgangen kloof ↔ hoodoo ↔ vlak, biomeverhouding (23b-16).
-   - **Standaard-W:** midden van elke ring en elke grens (overworld en Nether), portal vanuit ring 2 (kloof, tafelberg en duin) naar de Nether en terug; geen fouten in client- of serverlog.
-2. **Bronnen:** de lijsten "W" in `change-23b.md` en `change-23c.md` (met de coördinaten die hun bouwers daar zetten), de W-achteraf-lijsten in `change-25.md` en `change-26.md`, de W-achteraf-lijst van dit plan, en de resterende punten van teststop 2 in `change-23.md`. **Coördinaten opnieuw controleren**: deze change verschuift drempel `T` en voegt regio's toe, dus plekken uit 23b/23c kunnen nu in een ander biome liggen.
-3. **Voorbereiden:** verse wereld (`level-name` `teststop2b`), devkaarten (bovenaanzicht + doorsnede) van 4 vaste plekken als bijlage, RCON weer uit. Duur: ~45–60 min; mag in twee sessies.
-4. **Afstemvragen** onderaan de checklist, per onderwerp (bijv. spleetbreedte, tafelbergaandeel, aantal richels, poelbreedte/oever, frequentie wandbronnen, zonnesteen-tarief, hoodoovorm, duinhoogte). Antwoorden worden afstemgetallen in JSON (fix-commit in `worldgen`, zonder nieuwe ontwerpvraag) of, bij een vormwijziging, stop-en-vraag (eventueel een change 30b vóór 31).
+**Opstarten (eenmalig):** `./gradlew runClient` → Singleplayer → Create New World → World Type **Corrupted World**, seed `20260930`, Allow Cheats **aan** → Create. Oude werelden laden niet meer (nieuwe biomes). Daarna `/gamemode creative`, F3 aan (biome links). Coördinaten zijn x y z; `/tp @s x y z` zet je op of vlak boven de grond. Voor de survival-punten: `/gamemode survival`, en `/time set noon` + `/gamerule doDaylightCycle false` waar het om zon gaat.
+
+**Duur:** ~50 min. **Sessie 1** (~25 min): A, B, C, D. **Sessie 2** (~25 min): E, F, G, H, I.
+
+### A. Overgang en hoofdvorm (23, 23b)
+- [ ] **Ring 1 → ring 2 over land:** `/tp @s 0 100 -1400`, kijk naar het noorden en vlieg tot z −1.750: ring 1 (Y ~89) → verdorde vlakte → hoodoovloer (Y ~87, z −1.570) → steilrand naar het plateau (Y ~133 vanaf z −1.650). Steilte acceptabel (23b-12)? Geen zwevende brokken of waterwanden.
+- [ ] **Grenzen:** `/ca tpboundary 1` en `/ca tpboundary 2` (kijk telkens even rond): geen zwevende brokken, afgekapte pilaren of rotsvormen in de zones. In de zone 2→3 kan de hoodoovloer geschroeide zandsteen zijn (bekend, change 31).
+- [ ] **Geen regen:** in ring 1 `/weather rain`, dan `/ca tpring 2` → droog.
+
+### B. Plateau en kloven (23b) — gebied rond 1.860–2.470 / 130–370 en 2.050–3.100 / −1.020…−770
+- [ ] **Oversteken (survival):** start `/tp @s 1890 131 320` en loop ~400 blokken naar het oosten (tot x ~2.290; daarna komt een tafelberg tot Y 170 bij 2.432 320). Uitdagend maar te doen (randen, bruggen, treden)?
+- [ ] **Spleten:** `/tp @s 2089 140 270` en `/tp @s 1965 140 155` (spleet onder je, bodem Y ~94); `/tp @s 2298 130 -796`. Breedte, diepte, ondergraven wanden, bruggen/klemblokken, hangende monding in de kloofwand.
+- [ ] **Tafelbergen:** `/tp @s 2952 190 -954` (top Y 186, oostelijk gebied vol tafelbergen) en `/tp @s 1866 175 261`. Treden, wandhoogte, afstand tot de kloofrand.
+- [ ] **Rotsvormen op het plateau:** naalden `/tp @s 2058 152 298`, vinnen `/tp @s 2025 148 234` en `/tp @s 2003 148 136`, bogen `/tp @s 1906 145 156` en `/tp @s 2080 144 319`, keien `/tp @s 2004 140 203`. Geen zwevende delen; lagen op de wanden.
+- [ ] **Torens in de kloofbodem:** `/tp @s 2255 125 -984` en `/tp @s 2218 125 -1001` (kloofbodem Y ~75).
+- [ ] **Wanden en lagen:** `/tp @s 2160 100 -1090` en kijk langs de wand (Y 80–130): 4 crème banden per 48 blokken (23b-13), richels op de crème banden, nissen, overhangende kaprots aan de plateaurand.
+- [ ] **Kloofbodem:** treden met droge kolk, hangende zijtakken, puinhellingen als klimroute: `/tp @s 2249 97 -897` (grote puinhelling, grind) en `/tp @s 1961 115 213`. Gebarsten klei/grind op de bodem (23b-14).
+- [ ] **Plateaugrotten** (23b-15): kijk rond bij de spleten; soms dunne daken, rood zand op grotbodems.
+
+### C. Aankleding en wandbronnen (23c)
+- [ ] **Wandbronnen:** `/tp @s 2257 76 -990`, `/tp @s 2134 76 -1005`, `/tp @s 2059 83 -1004` (alle drie met kolk, mos, suikerriet), `/tp @s 2153 83 -1023`. Herkenbaar (water uit de wand, val in de kerf, stroompje, kolk)? Zeldzaam genoeg? Zet een blok op het water en breek een geul open: alleen vanilla-gedrag.
+- [ ] **Keienveld:** `/tp @s 2168 92 -840` (kloofbodem; keien 1–3, half ingegraven): niet rommelig, niet leeg?
+- [ ] **Puin en rotsval:** puinhelling bij `/tp @s 2249 97 -897`; losse kloofkeien langs de wandvoeten; plateaukei bij `/tp @s 2051 133 -899`.
+
+### D. Ertsen (25)
+- [ ] **Zonnesteen in tafelbergwanden:** bloot erts bij 2963 171 −949 (`/tp @s 2970 172 -949`, kijk naar het westen). Gloed in de schemering (`/time set 13000`)? Zichtbaar genoeg als klimdoel?
+- [ ] **Zonnesteen in kloofwanden:** 2027 158 135 en 1892 155 230 (hoog), 2043 95 353 (laag in de wand). ~1 zichtbaar blok per kloofchunk: genoeg?
+- [ ] **Hoeveelheid zonnesteen** (gemeten 28–35 per kloofchunk, keuze C): 10 min mijnen rond 2952 170 −950 (tafelbergen): kostbaar maar haalbaar?
+- [ ] **Turkoois:** bloot erts in grotten bij 2043 10 282, 1959 10 289 en 2139 10 −1007; strip-mijnen op Y ~25 onder 2000 85 300 (gemeten ~7 per chunk): een paar binnen 10–15 min?
+- [ ] **Drops:** ijzeren pickaxe → `raw_sunstone` / `raw_turquoise` + XP; Silk Touch → het erts.
+- [ ] **Vanilla-ertsen in ring 2:** mijnen onder Y 8 onder 2000 −20 300: ijzer/kolen armer dan in ring 1, diamant zeldzamer, geen grote ertsaders, geen grijze ertsen in de kloofsteen. **Ring 1:** ore veins nog aanwezig (koper rond 0 30 −1000).
+
+### E. Oase (23b, 23c) — gebied 900–1.150 / −2.560…−2.300
+- [ ] **Poelen en oever:** `/tp @s 918 70 -2376` (grootste poel) en `/tp @s 973 70 -2473`: plaatselijk verbrede poelen, brede grasoever, overgangsring naar de woestijn.
+- [ ] **Palmen:** groepjes bij `/tp @s 1051 68 -2437` en `/tp @s 1036 69 -2371`; struikpalm bij 938 66 −2557; geen knotten, geen stammen tegen elkaar, kronen die over een buurstam lopen. Palmvorm (23c-7).
+- [ ] **Begroeiing:** suikerriet bij 1027 64 −2556 (gemeten 68 kolommen in 256 oasechunks), dorre struiken in de overgangsring bij 1134 70 −2550, zandsteenkei bij 999 70 −2560.
+- [ ] **Oasekant van de steilrand:** `/tp @s 1696 80 -288` en kijk naar het oosten (oase → kloofplateau): lagen boven Y 74.
+
+### F. Grotten, zandgrotten en reservoirs (26)
+- [ ] **Reservoirs:** grotmeer bij `/tp @s 39 -23 -2536` (oppervlak Y −24), −2534 −20 29 en 269 −20 2027; lokale meren bij 38 34 −2535, −9 17 2472 en 2430 17 −549. Leest het als "water onder de grond"? Te veel/te weinig?
+- [ ] **Geen lava** tussen Y −54 en −10 (rondvliegen rond 0 −30 −2500); de lavalaag onder −54 is er nog.
+- [ ] **Zandgrotten:** plafond van los zand bij −22 10 2538 en −8 14 2527 (nu onder de duinenzee), −2511 25 −26, 2394 15 590 (onder het hoodooveld). Stof-particles onder het plafond.
+- [ ] **Survival-instorting (onder een duin):** sta op `/tp @s 7 31 2510` (grootste plafond, nu onder de duinenzee): stof, gekraak, dan een golf; zakt er geen hele duin weg? Hak bij 5 47 2486 één plafondblok (Y ~50) weg en kijk met `/tick query` of de server hapert.
+- [ ] **Zandgrot boven een reservoir:** 39 32 −2479 en 31 20 2468: na het laden vaak al in het water gezakt (geaccepteerd); geen rare vloeistofmuren?
+- [ ] **Oppervlak:** geen hangend zand boven grotgangen in oase, duinen en kloof; geen ravijnen boven Y ~40. **Overgang 1 → 2 onder de grond** (`/ca tpboundary 1`, dan omlaag): geen harde naad. Ring 1 en 3 onder de grond ongewijzigd.
+
+### G. Uitdroging (27) — survival, `/difficulty normal`, middag
+- [ ] **Opbouw + HUD:** `/tp @s 1980 86 356` (kloofbodem, open lucht): balk loopt in ~4 min vol (`/ca condition get` → `sun`); effecten bij 25/50/75/100.
+- [ ] **Waterfles:** `/ca condition set @s dehydration 50`, water-potion drinken → ~20, lege fles terug.
+- [ ] **Schaduw:** onder een overhang of in een nis → `shade`; dak van glas → `sun`, van bladeren → `shade`.
+- [ ] **Oase:** `/tp @s 1051 67 -2437` → `oasis` (het oude oasepunt 2499 66 12 is nu duinenzee: daar `sun`).
+- [ ] **Water:** in een oasepoel (918 62 −2376) of in de val van de wandbron (2257 74 −990) → `water`; in het stroompje of de 1 diepe kolk blijft het `sun`.
+- [ ] **Nacht/buiten** (`/time set midnight` → `night`; `/ca tpring 1`/`3` → `outside`), **doodsbericht** ("Dev dried out" / "Dev is uitgedroogd") en **tempo** (spannend maar niet frustrerend?).
+
+### H. Nieuwe biomes (30)
+- [ ] **Hoodoovelden:** `/tp @s 2420 140 719` en vlieg rond in 2.300–2.560 / 640–900. Lezen de pilaren (15–45 hoog) als hoodoos of als naalden? Lagen rood/oranje/crème met donkere kaprots, balancerende kappen (bijv. 2448 131 747), bogen bij 2459 98 713 en 2483 102 848. Pilaardichtheid (gemeten ~10 % van de kolommen) en de verdeling (twee rasters, geen rijen)? Zonnesteen in een kaprots bij 2361 127 703 en in een pilaarwand bij 2374 97 821.
+- [ ] **Kloof → hoodoo:** `/tp @s 2368 150 370`, kijk naar het zuiden: steilrand van het plateau (Y ~144) naar de hoodoovloer (Y ~88) met treden.
+- [ ] **Duinenzee:** hoge duinen bij `/tp @s 2700 105 -1408` en `/tp @s 2552 105 -349` (kammen tot Y ~100), lage duinen bij `/tp @s 2500 90 0`. Golvend, kaal, zonder kompas verdwalen? Geen zandwanden of zwevend zand.
+- [ ] **Zoutvlakte:** `/tp @s 2750 70 1050`: wit en vlak tot de horizon; zoutkristallen (bijv. 2741 66 1378) glinsteren 's nachts (`/time set midnight`). Zout → duin bij `/tp @s 2636 80 -360` (zandvlekken over de korst, geleidelijk), zout → hoodoo-steilrand bij `/tp @s 2656 82 -392` (steile rand).
+- [ ] **Duin → oase:** `/tp @s -2272 100 1152`, kijk naar het westen: de duinen lopen uit op de oasevlakte (x −2.336).
+- [ ] **F3 en spawns:** biome klopt bij het terrein; 's nachts husks in duinen en hoodoos, geen dieren op het zout.
+
+### I. Standaard-W
+- [ ] Midden van elke ring en elke grens, overworld en Nether (`/ca tpring 1…5`, `/ca tpboundary 1…4`, ook met `nether`).
+- [ ] Portal vanuit ring 2 naar de Nether en terug: vanuit een kloof (1980 86 356), een tafelberg (2952 186 −954) en een duin (2552 100 −349).
+- [ ] Geen fouten of nieuwe waarschuwingen in de client-log bij het aanmaken van de wereld.
+
+### Afstemvragen (antwoord per nummer; een getal wordt een fix-commit in `worldgen`, een vormwijziging wordt stop-en-vraag, eventueel change 30b vóór 31)
+1. **Plateau:** spleetbreedte/-diepte, aandeel tafelbergen en aantal rotsvormen goed? Oversteken te makkelijk of te moeilijk?
+2. **Wanden:** genoeg richels en nissen? Liggen de richels op (of 1 rij naast) een crème band — storend?
+3. **Wandbronnen:** frequentie goed (nu ~1 per 10 kloofchunks)? De kolk telt nu niet als water voor de uitdroging (alleen de val): moet de kolk ook verkoelen (dan `conditions`, backlog)?
+4. **Oase:** poelgrootte en oeverbreedte goed? Grote poelen krijgen soms rijen van 6–11 palmen: goed of minder? Genoeg suikerriet?
+5. **Ertsen:** zonnesteen ~28–35 per kloofchunk (in hoodoos ~1–2 per chunk) en turkoois ~7 per chunk: goed, of meer/minder? Zonnesteen zichtbaar genoeg als klimdoel?
+6. **Grotten:** reservoirs te veel/te weinig? Is er een merkbare tick-piek bij een grote zandinstorting? Storen grotingangen die (deels) vol zand zijn gelopen?
+7. **Hoodoos (afstempunt vorm):** pilaren slank/hoog genoeg of te naaldachtig (straal/`max_height` bijstellen)? Dichtheid en kapkans (35 %) goed? Bogen te zeldzaam?
+8. **Duinen:** hoogte (kammen tot ~100) en afwisseling hoog/laag goed? Voelt het als een zee om in te verdwalen?
+9. **Zoutvlakte:** grootte en de rand naar de duinen goed? Kristallen te weinig (nu ~1 per chunk)?
+10. **Biomeverhouding** (23b-16): op deze seed kloven ~36 %, duinen ~21 %, hoodoos ~18 %, zout ~13 %, oase ~12 % (doel 30/25/20/13/12; per seed wisselend). Goed zo, of andere verhouding of vlekgrootte?
+
+---
+
+## Bouwnotities (change 30, 2026-10-02 – 2026-10-03)
+
+Gebouwd in twee sessies: de eerste bouwer stopte op 2026-10-02 (sessielimiet) in de docs-fase; de tweede heeft het ongecommitte werk nagelopen, alle tests opnieuw gedraaid (eindcode), de docs afgemaakt en de teststop-checklist geschreven. Aannames A1–A7 kloppen met de code na change 29 (`de685ff`): `Ring2Biomes.ALL`/`generation`, `rock_pillars` met `root_y`, `canyon_details.rocks`, de zout-set van 29 (`salt_crust`, `salt_block`, `salt_crystal` met standaard `facing=up`), `add_ring_2_ores` op `#is_ring_2` met het scorched-doel, de zandgrot-tak als top-level element [2]. Tijdelijke hulpmiddelen zijn niet gecommit: het dev-commando `/cadev` (`dev/DevMapCommand`, kopie in `build/c30/dev-backup/`), scripts in `build/c30/` en `build/c30r/`, en de git-worktree `../ca-head` (`de685ff`) voor de vóór-metingen.
+
+**Afwijkingen van het plan (implementatie, geen vormwijziging):**
+1. **Twee pilaarrasters i.p.v. één:** `hoodoos` (cel 17, hash `ring_2_hoodoo_cells`) en `hoodoos_offset` (cel 23, hash `ring_2_hoodoo_offset_cells`), elk kans 0,75, plus `hoodoo_arches` (cel 24, kans 0,12, hash `ring_2_arch_cells`). Eén raster van 12 met kans 0,6 gaf zichtbare rijen, en een pilaar met voet 4 + uitloper + kap past niet in 12 − marge (hij krimpt dan). Dichtheid gelijk aan het plan (~1 pilaar per 250 blokken², plan 240). Afstempunt in teststop 2b.
+2. **Pilaarmaten:** voet 2,5–4 + uitloper 0,5–1 (onderste 20 %), hals 1,5–2,5, kap hals + 1–2, 3–5 dik (plan: straal 2–4, hals 1,5–2,5). `min_weight` 0,5: in de overgang naar kloof/vlak worden pilaren kleiner en vervallen ze onder het halve gewicht.
+3. **Terreinopbouw:** `height` = `flat_height` ↔ `rock_height` over `relief_weight`, elk deel één keer genoemd (elke JSON-verwijzing wordt apart uitgerekend); `flat_height` = oase/zout(66)/duin gewogen, `rock_height` = kloof/plateau ↔ `hoodoo_floor` over `hoodoo_weight`. `relief` verloor de offset 0,035 (T = 0 op de ruwe ruis: rotsig : vlak = 50 : 50). Duinbasis 67 ± 2 (plan 68).
+4. **Ruwe wanden:** `terrain` gebruikt `wall_roughness` = `wall_mask` × alleen het rotsige deel (i.p.v. `× (1 − salt_w − dune_w)` over alles): de duin-/zoutkant van een steilrand blijft glad, de rotskant ruw.
+5. **Fijne vormen uit het hoodooveld:** `plateau_rock_weight`, `slot_weight`, `canyon_spire_weight`, `mesa_limit` en de poelen krijgen een spline op `moisture` (weg van het hoodooveld en zijn steilrand; poelen alleen aan de oasekant), i.p.v. `× (1 − hoodoo_w)`; `wall_mask` = kloofwanden × (1 − `hoodoo_weight`) + de steilrand plateau → hoodoovloer.
+6. **Preliminary surface:** `initial_height` legt zout en duinen op Y 66 (de troggen) en `initial_terrain` leest `initial_height` via `cache_2d`. Dat laatste is een prestatieknop (onzichtbaar): de preliminary-surface-zoektocht rekende de hele 2D-keten per y opnieuw uit.
+7. **Features:** `jittered_grid` (23c) i.p.v. `rarity_filter`/`count` + `in_square`: hoodooflora cel 8 kans 0,375 (~1,5/chunk), zoutkristal cel 8 kans 0,25 (~1/chunk, alleen op `salt_crust`), duinflora cel 16 kans 0,2. De hoodoos krijgen ook `canyon_rockfall` (in `LOCAL_MODIFICATIONS`, deelverzameling van `CANYONLANDS_ROCKS` in dezelfde volgorde).
+8. **Surface rules:** zout krijgt aan de duinkant zandvlekken via `noise_threshold` op `ring_2_moisture` (± surface-ruis) i.p.v. alleen `minecraft:surface`; de duinen krijgen in de steilrandzone (`ring_2_relief` ≥ −0,025) lagen vanaf Y 74, en hun zandsteenkern begint op Y 60. De kaprots (`scorched_sandstone`) geldt voor vloer én plafond boven Y 94.
+9. **Spawns zout:** `withoutCreatures(spawns)` haalt alle `CREATURE`-spawns weg (konijnen); monsters en vleermuizen blijven.
+10. **Biome-aandelen op de testseed:** de S-eis "± 5 pp" haalt `canyonlands` op seed 20260930 net niet (cirkels 35,9 %, hele ring 36,5 %; doel 30 %). Oorzaak: per-seed-spreiding van de reliëfruis (rotsig : vlak 55 : 45 op deze seed); stationair (3 seeds, `Ring2RegionSharesTest`) liggen alle vijf binnen ± 3 pp. Niet per seed bijgesteld; afstemvraag 10 in teststop 2b.
+
+### Testresultaten (eindcode, 2026-10-03)
+
+- **B:** `./gradlew build` groen; `./gradlew test --rerun`: 305 tests, 0 fouten (o.a. `RockPillarsTest.hoodooSettingsFromTheJson`, `Ring2BiomesTest` uitgebreid, `Ring2RegionSharesTest` nieuw, `Ring2TerrainJsonTest`).
+- **D:** `./gradlew runData`: `written: 0` (output gelijk aan de gecommitte bestanden): `salt_flats`/`hoodoo_fields`/`dune_sea.json` met `ring_2/*`-carvers, zonder lavameren/`spring_lava`, zonder vanilla-`ore_*`-ertsen (alleen de klodders van `addDefaultOres`, zoals de kloven), basisfeatures per stap gelijk aan `canyonlands`; configured `salt_crystal`, `dune_sea_vegetation`; placed `hoodoo_fields_vegetation`, `salt_flats_crystals`, `dune_sea_vegetation`; tags `is_ring_2`, `c:is_hot/overworld`, `c:is_dry/overworld` met 5 biomes; lang en/nl. `add_ring_2_ores` ongewijzigd.
+- **S:** rooktest `tools/server-smoke-test.sh`, verse `level-name=smoke-change30`, preset `corrupted_world`, seed 20260930 (zonder dev-commando): `Done (7.128s)`, geen "Feature order cycle", geen codec- of client-class-fout; alleen de bekende ocelot-waarschuwing van de ring 1-kopieën. Metingen via RCON (testharnas zet RCON alleen tijdelijk aan) in `smoke-change30` en losse wegwerpwerelden:
+  - **Biomes vindbaar:** `locate biome` vanaf 2.500/0, 0/2.500, −2.500/0 en 0/−2.500 vindt alle 5 biomes binnen 0–720 blokken, steeds in ring 2.
+  - **Aandelen** (cirkels r 2.000/2.500/3.000, elke 32 blokken, Y 80): kloven 35,9 %, duinen 22,9 %, hoodoos 15,9 %, zout 12,4 %, oase 12,9 % (hele ring op een raster van 32: 36,5 / 20,7 / 18,4 / 12,7 / 11,6). Gemiddelde vlek langs de cirkel: kloven 705, oase 608, zout 488, duinen 469, hoodoos 416 blokken. Buren: zout grenst nooit aan de oase (0 van 84 overgangen).
+  - **Hoogtes** (15 gebieden van 5 × 5 chunks): zout Y 66 (bovenste blok 65, 6.400/6.400 kolommen `salt_crust`); duinen Y 66–99, per gebied laag (max 81/84) of hoog (74 % ≥ Y 85, max 99), gemiddeld 25 % ≥ 85; hoodoovloer mediaan 87–88, pilaarkolommen (≥ vloer + 15) 10,4–12,5 %, toppen tot Y 130–133; kloven plateau tot 147, kloofbodem vanaf 66.
+  - **Geen oppervlaktewater** in zout, duinen en hoodoos (0 open water ≥ Y 63); in de kloven alleen wandbronnen.
+  - **Materialen:** zout: korst + 14.700–15.800 `salt_block` per 25 chunks, zandsteen eronder; duinen: zand + zandsteenkern; hoodoos: alle drie kloofsteentinten, `scorched_sandstone` 1.530–1.920 (kappen), rood zand; kloofsteen in zout/duin 0; geen `grass_block` boven Y 94 in hoodoo-chunks.
+  - **Zonnesteen in hoodoos:** 25–47 per 25 hoodoo-chunks (~1–2 per chunk; in 256 hoodoo-chunks 357, waarvan 218 bloot in pilaarwanden en kappen, ook de `scorched_sandstone`-variant); kloven 28–35 per chunk; zout/duin 0. Turkoois ~7 per chunk in kloven en hoodoos.
+  - **Ring 1 ongewijzigd** (verse wereld na ↔ verse wereld `de685ff`, random ticks uit): biomes op 1.681 punten (r ≤ 1.300) identiek; in 5 ring 1-gebieden (125 chunks) steen/lucht/water/lava op 0–116 blokken na gelijk (springs/meren); bomen en planten liggen anders door de verschoven feature-index (bekende valkuil).
+  - **Zwevende blokken** (flood fill vanaf Y 60, 15 gebieden): hoodoos, duinen en zout 0; zone 1→2 met hoodoo-terrein 4–22 losse blokjes (diagonale zandsteenrandjes op steile hellingen en verdorde aarde van features), zone 2→3 0; in de kloven 6–44 (een rotstoren boven een carvergrot, bekend sinds 23b).
+  - **Determinisme:** twee verse werelden, de tweede omgekeerd en chunk voor chunk geladen, 60 s uitzakken, 8 gebieden van 3 × 3 chunks (2 per nieuw biome + zone 1→2): in de nieuwe biomes blok voor blok gelijk op vanilla's ondergrondse klodders en ertsen na (0 andere verschillen); zone 1→2: 5 blokken verdorde-vlakte-flora en 68 blokken stromend water/obsidiaan (tijd, vanilla).
+  - **Prestaties** (≤ 1,75× vanilla): zie `CODEBASE.md` (meting change 30). Hoogste 1,54× (meetpunt x 2.500, nu duinen); hoodoos 0,69×, kloven 1,09×, oase 0,70×; overal sneller dan vóór change 30.
+- `run/server.properties` staat op `level-name=smoke-change30`, RCON uit; geen server of client meer actief.
+
+### Code review (`/code-review medium`)
+
+Geen bugs gevonden (preset-drempels en terreinsplines vallen samen, alle ring 2-lijsten compleet, geen feature-volgordecyclus, `withoutCreatures` behoudt monsters en kans, plaatsingstempo's kloppen). Twee kanttekeningen:
+- **`RockPillarsTest.checkCell`** sloeg de controle "elke kolom begint op de voet" over voor alle hoodoos, ook de ~65 % zonder kap. Opgelost: de uitzondering geldt nu alleen voor een getekende naald met kap (`NeedleDraw.capRadius() > 0`); test opnieuw groen.
+- **`initial_height` legt duinen op Y 66** terwijl de kammen tot ~100 reiken: bewust (zoals de kloofbodem in het rotsgebied: het preliminary surface ligt nooit boven het echte oppervlak, zie afwijking 6). Niet gewijzigd.

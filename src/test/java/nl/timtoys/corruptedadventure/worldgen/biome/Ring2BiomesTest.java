@@ -37,7 +37,9 @@ class Ring2BiomesTest {
     @Test
     void bootstrapRegistersExactlyTheRing2List() {
         assertEquals(Set.copyOf(Ring2Biomes.ALL), bootstrap().keySet());
-        assertEquals(Set.of(ModBiomes.CANYONLANDS, ModBiomes.OASIS_FLATS), Set.copyOf(Ring2Biomes.ALL));
+        assertEquals(Set.of(ModBiomes.CANYONLANDS, ModBiomes.OASIS_FLATS, ModBiomes.HOODOO_FIELDS, ModBiomes.SALT_FLATS, ModBiomes.DUNE_SEA),
+                Set.copyOf(Ring2Biomes.ALL));
+        assertEquals(5, Ring2Biomes.ALL.size());
     }
 
     @Test
@@ -55,14 +57,26 @@ class Ring2BiomesTest {
     }
 
     @Test
-    void desertSpawnsAndCamelsOnlyInTheOasis() {
+    void desertSpawnsCamelsOnlyInTheOasisAndNoAnimalsOnTheSalt() {
         Map<ResourceKey<Biome>, Biome> biomes = bootstrap();
-        for (Biome biome : biomes.values()) {
+        for (Map.Entry<ResourceKey<Biome>, Biome> entry : biomes.entrySet()) {
+            Biome biome = entry.getValue();
             assertTrue(spawns(biome, MobCategory.MONSTER, EntityType.HUSK));
-            assertTrue(spawns(biome, MobCategory.CREATURE, EntityType.RABBIT));
+            boolean salt = entry.getKey().equals(ModBiomes.SALT_FLATS);
+            assertEquals(!salt, spawns(biome, MobCategory.CREATURE, EntityType.RABBIT), entry.getKey().toString());
+            assertEquals(entry.getKey().equals(ModBiomes.OASIS_FLATS), spawns(biome, MobCategory.CREATURE, EntityType.CAMEL));
         }
-        assertTrue(spawns(biomes.get(ModBiomes.OASIS_FLATS), MobCategory.CREATURE, EntityType.CAMEL));
-        assertFalse(spawns(biomes.get(ModBiomes.CANYONLANDS), MobCategory.CREATURE, EntityType.CAMEL));
+        Biome salt = biomes.get(ModBiomes.SALT_FLATS);
+        assertTrue(salt.getMobSettings().getMobs(MobCategory.CREATURE).isEmpty());
+        // Only the animals go: monsters and bats as in the other biomes.
+        Biome dunes = biomes.get(ModBiomes.DUNE_SEA);
+        for (MobCategory category : MobCategory.values()) {
+            if (category != MobCategory.CREATURE) {
+                // SpawnerData has no equals: compare type, weight and group sizes (its toString).
+                assertEquals(dunes.getMobSettings().getMobs(category).unwrap().toString(), salt.getMobSettings().getMobs(category).unwrap().toString(),
+                        category.toString());
+            }
+        }
     }
 
     @Test
@@ -91,6 +105,34 @@ class Ring2BiomesTest {
         assertFalse(plants.contains(VegetationPlacements.PATCH_SUGAR_CANE_DESERT));
         assertTrue(Ring2Biomes.OASIS_VEGETATION.indexOf(ModPlacedFeatures.OASIS_SHORE_PLANTS)
                 < Ring2Biomes.OASIS_VEGETATION.indexOf(ModPlacedFeatures.OASIS_PALM_GROVES));
+
+        // Change 30: the hoodoo fields reuse the canyon rockfall (same place in the step), each biome its own plants.
+        Biome hoodoos = biomes.get(ModBiomes.HOODOO_FIELDS);
+        assertEquals(ModPlacedFeatures.CANYON_ROCKFALL, step(hoodoos, GenerationStep.Decoration.LOCAL_MODIFICATIONS).getLast());
+        assertTrue(Ring2Biomes.CANYONLANDS_ROCKS.contains(ModPlacedFeatures.CANYON_ROCKFALL));
+        assertEquals(ModPlacedFeatures.HOODOO_FIELDS_VEGETATION, step(hoodoos, GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
+        assertEquals(ModPlacedFeatures.SALT_FLATS_CRYSTALS, step(biomes.get(ModBiomes.SALT_FLATS), GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
+        assertEquals(ModPlacedFeatures.DUNE_SEA_VEGETATION, step(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
+        for (ResourceKey<Biome> flat : List.of(ModBiomes.SALT_FLATS, ModBiomes.DUNE_SEA)) {
+            List<ResourceKey<PlacedFeature>> local = step(biomes.get(flat), GenerationStep.Decoration.LOCAL_MODIFICATIONS);
+            assertTrue(local.stream().noneMatch(key -> key.location().getNamespace().equals("corruptedadventure")), flat.toString());
+        }
+    }
+
+    @Test
+    void everyRing2BiomeHasTheSameGlobalFeaturesBeforeItsOwn() {
+        // One global order per step (no "Feature order cycle"): the shared base is identical in every ring 2 biome.
+        Map<ResourceKey<Biome>, Biome> biomes = bootstrap();
+        Biome canyonlands = biomes.get(ModBiomes.CANYONLANDS);
+        for (Biome biome : biomes.values()) {
+            for (GenerationStep.Decoration decoration : GenerationStep.Decoration.values()) {
+                List<ResourceKey<PlacedFeature>> base = step(canyonlands, decoration).stream()
+                        .filter(key -> !key.location().getNamespace().equals("corruptedadventure")).toList();
+                List<ResourceKey<PlacedFeature>> own = step(biome, decoration).stream()
+                        .filter(key -> !key.location().getNamespace().equals("corruptedadventure")).toList();
+                assertEquals(base, own, decoration.toString());
+            }
+        }
     }
 
     @Test

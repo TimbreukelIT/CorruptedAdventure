@@ -177,6 +177,9 @@ final class DutchLanguageProvider extends LanguageProvider {
         biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
         biome(ModBiomes.CANYONLANDS, "Kloofland");
         biome(ModBiomes.OASIS_FLATS, "Oasevlakte");
+        biome(ModBiomes.HOODOO_FIELDS, "Hoodoovelden");
+        biome(ModBiomes.SALT_FLATS, "Zoutvlakte");
+        biome(ModBiomes.DUNE_SEA, "Duinenzee");
         biome(ModBiomes.PLACEHOLDER_RING_3, "Placeholder ring 3");
         biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder ring 4");
         biome(ModBiomes.PLACEHOLDER_RING_5, "Placeholder ring 5");

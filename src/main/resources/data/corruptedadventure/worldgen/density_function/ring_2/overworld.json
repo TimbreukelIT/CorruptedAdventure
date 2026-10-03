@@ -4,7 +4,10 @@
   "rocks": [
     "corruptedadventure:ring_2/overworld/plateau_rocks",
     "corruptedadventure:ring_2/overworld/plateau_fins",
-    "corruptedadventure:ring_2/overworld/canyon_spires"
+    "corruptedadventure:ring_2/overworld/canyon_spires",
+    "corruptedadventure:ring_2/overworld/hoodoos",
+    "corruptedadventure:ring_2/overworld/hoodoos_offset",
+    "corruptedadventure:ring_2/overworld/hoodoo_arches"
   ],
   "terrain": "corruptedadventure:ring_2/overworld/terrain",
   "slot_network": "corruptedadventure:ring_2/overworld/slot_network",

@@ -5,36 +5,57 @@
     "argument1": {
       "type": "minecraft:mul",
       "argument1": {
-        "type": "minecraft:spline",
-        "spline": {
-          "coordinate": "corruptedadventure:ring_2/overworld/relief",
-          "points": [
-            {
-              "location": 0.028,
-              "value": 0.0,
-              "derivative": 0.0
-            },
-            {
-              "location": 0.04,
-              "value": 1.0,
-              "derivative": 0.0
-            }
-          ]
+        "type": "minecraft:mul",
+        "argument1": {
+          "type": "minecraft:spline",
+          "spline": {
+            "coordinate": "corruptedadventure:ring_2/overworld/relief",
+            "points": [
+              {
+                "location": 0.028,
+                "value": 0.0,
+                "derivative": 0.0
+              },
+              {
+                "location": 0.04,
+                "value": 1.0,
+                "derivative": 0.0
+              }
+            ]
+          }
+        },
+        "argument2": {
+          "type": "minecraft:spline",
+          "spline": {
+            "coordinate": "corruptedadventure:ring_2/overworld/canyon_depth",
+            "points": [
+              {
+                "location": 0.0,
+                "value": 1.0,
+                "derivative": 0.0
+              },
+              {
+                "location": 0.01,
+                "value": 0.0,
+                "derivative": 0.0
+              }
+            ]
+          }
         }
       },
       "argument2": {
         "type": "minecraft:spline",
         "spline": {
-          "coordinate": "corruptedadventure:ring_2/overworld/canyon_depth",
+          "coordinate": "corruptedadventure:ring_2/overworld/core_mask",
           "points": [
             {
-              "location": 0.0,
-              "value": 1.0,
+              "location": 0.95,
+              "value": 0.0,
               "derivative": 0.0
             },
             {
-              "location": 0.01,
-              "value": 0.0,
+              "location": 1.0,
+              "value": 1.0,
               "derivative": 0.0
             }
           ]
@@ -44,15 +65,15 @@
     "argument2": {
       "type": "minecraft:spline",
       "spline": {
-        "coordinate": "corruptedadventure:ring_2/overworld/core_mask",
+        "coordinate": "corruptedadventure:ring_2/overworld/moisture",
         "points": [
           {
-            "location": 0.95,
+            "location": -0.045,
             "value": 0.0,
             "derivative": 0.0
           },
           {
-            "location": 1.0,
+            "location": -0.033,
             "value": 1.0,
             "derivative": 0.0
           }
