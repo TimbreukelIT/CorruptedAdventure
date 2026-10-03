@@ -1,0 +1,46 @@
+{
+  "type": "corruptedadventure:outcrop",
+  "config": {
+    "height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 6,
+      "min_inclusive": 2
+    },
+    "knobs": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "palettes": [
+      {
+        "data": [
+          {
+            "Name": "corruptedadventure:salt_block"
+          }
+        ],
+        "weight": 1
+      }
+    ],
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 1.6,
+      "min_inclusive": 0.8
+    },
+    "sink": 1,
+    "spread": 3.0,
+    "taper": 0.5,
+    "top_decoration": {
+      "chance": 0.3,
+      "state": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "corruptedadventure:salt_crystal",
+          "Properties": {
+            "facing": "up",
+            "waterlogged": "false"
+          }
+        }
+      }
+    }
+  }
+}

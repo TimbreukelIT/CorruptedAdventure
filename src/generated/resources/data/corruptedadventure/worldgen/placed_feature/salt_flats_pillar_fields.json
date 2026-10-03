@@ -1,0 +1,38 @@
+{
+  "feature": "corruptedadventure:salt_pillar",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.5,
+      "margin": 2
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.4,
+      "noise": "corruptedadventure:ring_2_salt_pillars"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:matching_blocks",
+        "blocks": [
+          "corruptedadventure:salt_crust",
+          "corruptedadventure:salt_block"
+        ],
+        "offset": [
+          0,
+          -1,
+          0
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

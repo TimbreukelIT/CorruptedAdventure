@@ -33,6 +33,7 @@ import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 import nl.timtoys.corruptedadventure.registry.ModPlacementModifierTypes;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
+import nl.timtoys.corruptedadventure.registry.ModSurfaceConditions;
 import nl.timtoys.corruptedadventure.registry.ModTrunkPlacerTypes;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.weather.RingWeather;
@@ -66,6 +67,7 @@ public final class CorruptedAdventure {
         ModChunkGenerators.register(modEventBus);
         ModPlacementModifierTypes.register(modEventBus);
         ModFeatures.register(modEventBus);
+        ModSurfaceConditions.register(modEventBus);
         ModTrunkPlacerTypes.register(modEventBus);
         ModFoliagePlacerTypes.register(modEventBus);
         ModSoundEvents.register(modEventBus);

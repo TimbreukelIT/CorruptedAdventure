@@ -5183,6 +5183,45 @@
                           "type": "minecraft:condition",
                           "if_true": {
                             "type": "minecraft:noise_threshold",
+                            "noise": "corruptedadventure:ring_2_salt_islands",
+                            "min_threshold": 0.55,
+                            "max_threshold": 1.7976931348623157e+308
+                          },
+                          "then_run": {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:noise_threshold",
+                              "noise": "minecraft:surface",
+                              "min_threshold": 0.3,
+                              "max_threshold": 1.7976931348623157e+308
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "minecraft:red_sand"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "noise": "corruptedadventure:ring_2_salt_islands",
+                            "min_threshold": 0.46,
+                            "max_threshold": 1.7976931348623157e+308
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "minecraft:sand"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
                             "noise": "corruptedadventure:ring_2_moisture",
                             "min_threshold": -0.193,
                             "max_threshold": 1.7976931348623157e+308
@@ -5228,10 +5267,31 @@
                           }
                         },
                         {
-                          "type": "minecraft:block",
-                          "result_state": {
-                            "Name": "corruptedadventure:salt_crust"
-                          }
+                          "type": "minecraft:sequence",
+                          "sequence": [
+                            {
+                              "type": "minecraft:condition",
+                              "if_true": {
+                                "type": "corruptedadventure:polygon_edge",
+                                "cell_size": 7.5,
+                                "jitter": 0.3,
+                                "width": 1.0,
+                                "hash": "corruptedadventure:ring_2_salt_polygons"
+                              },
+                              "then_run": {
+                                "type": "minecraft:block",
+                                "result_state": {
+                                  "Name": "corruptedadventure:salt_block"
+                                }
+                              }
+                            },
+                            {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "corruptedadventure:salt_crust"
+                              }
+                            }
+                          ]
                         }
                       ]
                     }
@@ -5261,6 +5321,21 @@
                             "type": "minecraft:block",
                             "result_state": {
                               "Name": "minecraft:sandstone"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "noise": "corruptedadventure:ring_2_salt_islands",
+                            "min_threshold": 0.46,
+                            "max_threshold": 1.7976931348623157e+308
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "minecraft:sand"
                             }
                           }
                         },

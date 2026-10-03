@@ -25,7 +25,9 @@
     [],
     [],
     [
-      "minecraft:amethyst_geode"
+      "minecraft:amethyst_geode",
+      "corruptedadventure:dune_sea_oases",
+      "corruptedadventure:dune_sea_outcrops"
     ],
     [
       "minecraft:monster_room",

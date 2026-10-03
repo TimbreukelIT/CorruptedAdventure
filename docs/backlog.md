@@ -110,3 +110,8 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [structures] Hoodoovelden: klifwoningen/uitkijkposten in pilaren; duinenzee: halfbegraven ruïnes (bij de ring 2-structures van fase 3). (bron: change 30)
 - [worldgen] Change 31: in de zone 2→3 mengt het terrein ook duinen en hoodoo-pilaren met ring 3 (pilaren vervallen via `core_mask`, duinen worden van boven af gekapt); `dry_riverbeds` bepaalt zijn eigen zonevorm. Daar mengt de router ook `moisture` met 0, zodat de biomegrenzen op de vochtas in de buitenste helft van de zone wat verschuiven t.o.v. het terrein. De hoodoovloer stijgt daar boven de kaprotsgrens (Y 94, absoluut) en wordt dan geschroeide zandsteen (gemeten in de zone 2→3). (bron: change 30)
 - [worldgen] Duinen met windrichting (Java-type `dune_ridges`) als de richtingloze duinen niet overtuigen. (bron: change 30)
+
+## Uit change 30b
+- [conditions] Pekelpoelen (change 30b): vanilla laat een glazen fles water scheppen uit elke poel; pekel niet drinkbaar maken (of zout water dat uitdroging verhoogt)? (bron: change 30b)
+- [atmosphere] Pekelpoelen: eigen watertint voor `salt_flats`; ambient bij mini-oases en kristalvelden (change 32). (bron: change 30b)
+- [structures] Mini-oases als kampplek/rustpunt van een karavaan (fase 3). (bron: change 30b)

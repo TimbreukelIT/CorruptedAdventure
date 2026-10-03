@@ -39,6 +39,12 @@ public final class ModConfiguredFeatures {
     // Ring 2 extra biomes (change 30); the hoodoo fields reuse CANYONLANDS_VEGETATION.
     public static final ResourceKey<ConfiguredFeature<?, ?>> SALT_CRYSTAL = key("salt_crystal");
     public static final ResourceKey<ConfiguredFeature<?, ?>> DUNE_SEA_VEGETATION = key("dune_sea_vegetation");
+    // Ring 2 salt and dune shapes and water (change 30b, Ring2FlatsFeatures).
+    public static final ResourceKey<ConfiguredFeature<?, ?>> BRINE_POOL = key("brine_pool");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> DUNE_OASIS = key("dune_oasis");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SALT_PILLAR = key("salt_pillar");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> DUNE_ROCK = key("dune_rock");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SALT_ISLAND_ROCK = key("salt_island_rock");
     // Ring 2 ores (change 25); the tapered vanilla ores reuse vanilla's configured features.
     public static final ResourceKey<ConfiguredFeature<?, ?>> SUNSTONE_ORE = key("sunstone_ore");
     public static final ResourceKey<ConfiguredFeature<?, ?>> TURQUOISE_ORE = key("turquoise_ore");

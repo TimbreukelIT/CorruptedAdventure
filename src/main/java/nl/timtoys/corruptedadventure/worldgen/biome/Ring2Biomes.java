@@ -54,6 +54,18 @@ public final class Ring2Biomes {
             ModPlacedFeatures.OASIS_PALM_GROVES, ModPlacedFeatures.OASIS_PALMS_SAND, ModPlacedFeatures.OASIS_PALM_BUSHES,
             ModPlacedFeatures.OASIS_VEGETATION, ModPlacedFeatures.OASIS_TRANSITION_VEGETATION);
 
+    /**
+     * Shapes and water of the salt flats ({@code LOCAL_MODIFICATIONS}, change 30b), in this fixed order: the brine pools
+     * first, the pillars and rocks fail on their water.
+     */
+    static final List<ResourceKey<PlacedFeature>> SALT_FLATS_SHAPES = List.of(ModPlacedFeatures.SALT_FLATS_BRINE_POOLS,
+            ModPlacedFeatures.SALT_FLATS_PILLAR_FIELDS, ModPlacedFeatures.SALT_FLATS_PILLARS, ModPlacedFeatures.SALT_ISLAND_ROCKS);
+    /** The crystals of the salt flats ({@code VEGETAL_DECORATION}): the single ones, then the fields (change 30b). */
+    static final List<ResourceKey<PlacedFeature>> SALT_FLATS_CRYSTALS = List.of(ModPlacedFeatures.SALT_FLATS_CRYSTALS,
+            ModPlacedFeatures.SALT_FLATS_CRYSTAL_FIELDS);
+    /** Oases and rock islands of the dune sea ({@code LOCAL_MODIFICATIONS}, change 30b): the oases first. */
+    static final List<ResourceKey<PlacedFeature>> DUNE_SEA_SHAPES = List.of(ModPlacedFeatures.DUNE_SEA_OASES, ModPlacedFeatures.DUNE_SEA_OUTCROPS);
+
     /** In place of vanilla's soft disks, in vanilla's order. */
     static final List<ResourceKey<PlacedFeature>> DISKS = List.of(ModPlacedFeatures.RING_2_DISK_SAND, ModPlacedFeatures.RING_2_DISK_CLAY,
             ModPlacedFeatures.RING_2_DISK_GRAVEL);
@@ -101,16 +113,27 @@ public final class Ring2Biomes {
         return biome(0.0F, 0xBFB755, 0xAEA42A, spawns(false), generation);
     }
 
-    /** Bare, white and flat: salt crust with a rare salt crystal; nothing to eat, only monsters. */
+    /**
+     * White and flat: salt crust cracked into polygons, brine pools, salt chimneys, crystal fields and low sand islands;
+     * nothing to eat, only monsters.
+     */
     private static Biome saltFlats(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
-        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.SALT_FLATS_CRYSTALS);
+        for (ResourceKey<PlacedFeature> feature : SALT_FLATS_SHAPES) {
+            generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
+        }
+        for (ResourceKey<PlacedFeature> feature : SALT_FLATS_CRYSTALS) {
+            generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
+        }
         return biome(0.0F, 0xC9C08A, 0xB5AC6E, withoutCreatures(spawns(false)), generation);
     }
 
-    /** High rolling dunes without landmarks: now and then a dry or dead shrub. */
+    /** High rolling dunes, a rare rock island as a landmark, hidden oases in deep valleys; now and then a dry shrub. */
     private static Biome duneSea(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
+        for (ResourceKey<PlacedFeature> feature : DUNE_SEA_SHAPES) {
+            generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
+        }
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.DUNE_SEA_VEGETATION);
         return biome(0.0F, 0xBFB755, 0xAEA42A, spawns(false), generation);
     }

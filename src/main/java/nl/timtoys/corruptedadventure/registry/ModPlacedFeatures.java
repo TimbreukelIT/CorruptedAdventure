@@ -36,6 +36,14 @@ public final class ModPlacedFeatures {
     public static final ResourceKey<PlacedFeature> HOODOO_FIELDS_VEGETATION = key("hoodoo_fields_vegetation");
     public static final ResourceKey<PlacedFeature> SALT_FLATS_CRYSTALS = key("salt_flats_crystals");
     public static final ResourceKey<PlacedFeature> DUNE_SEA_VEGETATION = key("dune_sea_vegetation");
+    // Ring 2 salt and dune shapes and water (change 30b, Ring2FlatsFeatures), in the order of their biome's lists.
+    public static final ResourceKey<PlacedFeature> SALT_FLATS_BRINE_POOLS = key("salt_flats_brine_pools");
+    public static final ResourceKey<PlacedFeature> SALT_FLATS_PILLAR_FIELDS = key("salt_flats_pillar_fields");
+    public static final ResourceKey<PlacedFeature> SALT_FLATS_PILLARS = key("salt_flats_pillars");
+    public static final ResourceKey<PlacedFeature> SALT_ISLAND_ROCKS = key("salt_island_rocks");
+    public static final ResourceKey<PlacedFeature> SALT_FLATS_CRYSTAL_FIELDS = key("salt_flats_crystal_fields");
+    public static final ResourceKey<PlacedFeature> DUNE_SEA_OASES = key("dune_sea_oases");
+    public static final ResourceKey<PlacedFeature> DUNE_SEA_OUTCROPS = key("dune_sea_outcrops");
     // Ring 2 ores (change 25). The tapered vanilla ores (ring_2/ore_*) have no constants: RingVanillaOres.keys.
     public static final ResourceKey<PlacedFeature> SUNSTONE_ORE = key("sunstone_ore");
     public static final ResourceKey<PlacedFeature> TURQUOISE_ORE = key("turquoise_ore");

@@ -10,8 +10,12 @@ import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.CanyonSpringConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.CanyonSpringFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.OutcropConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.OutcropFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.RubbleConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.RubbleFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
 
@@ -31,6 +35,12 @@ public final class ModFeatures {
     /** {@code corruptedadventure:canyon_spring} */
     public static final DeferredHolder<Feature<?>, Feature<CanyonSpringConfiguration>> CANYON_SPRING =
             FEATURES.register("canyon_spring", () -> new CanyonSpringFeature(CanyonSpringConfiguration.CODEC));
+    /** {@code corruptedadventure:surface_pool} (change 30b) */
+    public static final DeferredHolder<Feature<?>, Feature<SurfacePoolConfiguration>> SURFACE_POOL =
+            FEATURES.register("surface_pool", () -> new SurfacePoolFeature(SurfacePoolConfiguration.CODEC));
+    /** {@code corruptedadventure:outcrop} (change 30b) */
+    public static final DeferredHolder<Feature<?>, Feature<OutcropConfiguration>> OUTCROP =
+            FEATURES.register("outcrop", () -> new OutcropFeature(OutcropConfiguration.CODEC));
 
     private ModFeatures() {
     }

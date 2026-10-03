@@ -20,7 +20,7 @@ Buiten scope:
 - textures van zoutkorst en zoutblok (change 37);
 - condities, bijv. of pekel drinkbaar is (`conditions` → backlog).
 
-**Status:** plan (2026-10-03); ontwerpvragen beantwoord (alle A, 2026-10-03).
+**Status:** gebouwd (2026-10-03); ontwerpvragen beantwoord (alle A, 2026-10-03); bouwnotities en W-checklist onderaan.
 
 ### Waarom twee changes
 
@@ -452,3 +452,58 @@ Antwoord: **A** (gebruiker, 2026-10-03) — noise ≤ 1,75×; surface zout ≤ +
 | _(bouw)_ | worldgen | Teststop na 30b/30c (30b-8): _antwoord_ | "Levendig" is alleen in-game te beoordelen |
 
 Commit (na `/code-review`): `worldgen: add ring 2 brine pools, salt polygons, pillars, islands, dune outcrops and hidden oases`.
+
+---
+
+## Bouwnotities (change 30b, 2026-10-03)
+
+Gebouwd in twee sessies: de eerste bouwer stopte (API-limiet) met de AT, `SeededHash`-overload, `PolygonEdgeCondition`/`PolygonGrid`, `ModSurfaceConditions` en `SurfacePoolFeature`/`PoolLayout`/`SurfacePoolConfiguration` ongecommit; de tweede heeft dat nagelopen (compileerde, AT werkt) en de rest gebouwd. Aannames A1–A7 kloppen met de code na change 30 (`eacc15b`). A7: `SurfaceRules$Context` is `protected static final`, `Condition` package-private, `ConditionSource` publiek; vijf AT-regels (twee klassen, drie velden) volstaan, dus geen terugval naar 30b-2 C. Tijdelijke hulpmiddelen zijn niet gecommit: het dev-commando `/cadev` (`dev/DevMapCommand`, uitgebreid met `nq` = aandeel van een ruis boven drempels per biome; kopie in `build/c30b/dev-backup/`), scripts in `build/c30b/` en de git-worktree `../ca-head` (`eacc15b`) voor de nulmeting en de vóór-prestaties.
+
+**Afwijkingen van het plan (implementatie en afstemming, binnen de antwoorden):**
+1. **Barstenpatroon: cel 7,5 en breedte 1** (startwaarden 7 / 0,8). Breedte 0,8 gaf onderbroken lijnen (~12.000 gaten per 512² kolommen), breedte 1 geeft gesloten lijnen van losse blokken; met cel 7 was het randaandeel dan 24,9–25,4 % (bovengrens), met 7,5 **22,9 %** gemeten in de wereld. `PolygonGrid` meet de afstand tot de middelloodlijn langs de steilste as (max-norm van het siteverschil), daardoor is een lijn in elke richting precies één kolom breed.
+2. **Kristalvelden: drempel 0,4** (plan 0,35): gemeten 0,35 → 13–14 %, 0,4 → 9,9–10,3 % van de zoutvlakte (doel ~10 %). Pilaarvelden 0,4 → 11,5–12,1 % (klopte).
+3. **Mini-oases: dalbodem ≤ Y 71 (filter `height_band` ≤ 72 op de herkomst) en rasterkans 0,25** (plan ≤ 69 en 0,08). Gemeten: de duindalen liggen vooral op Y 66–72; met ≤ 68 en 0,08 kwamen er **0 oases in 512 duinchunks**. Bij hoge duinen (`ring_2_dune_amplitude` ≥ 0,15: kammen ~94–99) haalt maar ~5 % van de kolommen de dalfilters (bodem ≤ 71, relief ≤ 2 binnen 4, poel past). Met kans 0,5 → ~1 per 18 hoge-duinchunks, met **0,25 → 18 oases in 768 chunks (~1 per 40)**. De m1-meetgebieden van change 30 ("hoge duinen" x −160 / x 2.500) hebben maar 5–6 % kolommen boven 0,15; de oasemeting gebruikt drie vakken van 16 × 16 chunks met 87–96 % hoge duinen (gezocht met `nq`).
+4. **Pilaarvelden: `jittered_grid` vóór `noise_band`** (plan: band → raster): zo wordt de band per kandidaat gelezen, niet één keer per chunk.
+5. **`dune_oasis` diepte constant 2** (kern 2, rand 1; plan "1–2 (kern 2)"), zodat elke mini-oase een afkoelbare kern heeft.
+6. **`surface_pool` bomen:** config = gewogen lijst + aantal + `spot`-predicaat (`would_survive(palm_sapling)`); de stamplekken kiest de pure kern (`PoolLayout.trunks`, testbaar), de feature plaatst. Palmkronen volgen de palmregels van 23c.
+7. **`outcrop`:** kolomtop = grond in het knobbelmidden + knobbelhoogte (absoluut): bergop raakt de rots deels begraven, bergaf een hogere wand; elke kolom loopt van zijn eigen grond omhoog (nooit zwevend). Banden tellen vanaf het laagste blok van de rots met een willekeurig startpalet (= absolute banden met een verschuiving per rots). Grond van een kolom = van de heightmap omlaag door lucht/planten (≤ 4); water of `grass_block` (een poel van dezelfde chunk, niet in `WORLD_SURFACE_WG`) laat de hele rots afvallen. Kraag: breadth-first vanaf de knobbelblokken op de tophoogte (1–2 dik, straal + 1–2, binnen 70°), alleen boven grond die ≥ 2 lager ligt, en alleen als ≥ 3 kolommen een dak krijgen.
+8. **Floodedness +0,575** (plan "startwaarde +0,50"): gemeten +0,45 / 0,50 / 0,55 / 0,575 → 8,4 / 10,3 / 13,4 / **15,2 %** (nulmeting `eacc15b` 22,2 %); +0,575 ligt het dichtst bij 15 %.
+9. **`SeededHash` publiek** met een `NormalNoise`-overload (dezelfde hash als de `NoiseHolder`-variant): surface-condities krijgen een `NormalNoise` van de `RandomState`, geen `NoiseHolder`.
+
+### Testresultaten
+
+- **B:** `./gradlew build` groen; `./gradlew test --rerun`: 66 testklassen, 319 tests, 0 fouten. Nieuw: `PolygonEdgeConditionTest`, `SurfacePoolFeatureTest`, `OutcropShapeTest`; uitgebreid: `Ring2BiomesTest` (lijsten en volgorde, elke 30b-feature in één biome), `Ring2TerrainJsonTest` (eilandterm één keer, alleen × `salt_weight`).
+- **D:** `./gradlew runData` (tweede run `written: 0`): configured `brine_pool`, `dune_oasis`, `salt_pillar`, `dune_rock`, `salt_island_rock`; placed `salt_flats_brine_pools`, `salt_flats_pillar_fields`, `salt_flats_pillars`, `salt_island_rocks`, `salt_flats_crystal_fields`, `dune_sea_oases`, `dune_sea_outcrops`; `salt_flats.json`, `dune_sea.json` met de nieuwe lijsten. Geen andere biomes gewijzigd.
+- **S — rooktest** (`tools/server-smoke-test.sh`, verse `level-name=smoke-change30b`, preset `corrupted_world`, seed 20260930, zonder dev-commando): `Done (6.988s)`, geen "Feature order cycle", geen codecfout (ook `polygon_edge`), geen "Detected setBlock in a far chunk", geen client-class; alleen de bekende ocelot- en offline-waarschuwingen. Metingen via RCON (testharnas zet RCON alleen tijdelijk aan) in wegwerpwerelden `smoke-change30b-m1…m3`, `-f045/-f055/-f0575` (floodedness via een wereld-datapack), `-detA/-detB`, `-r1new` en op `../ca-head` (`eacc15b`):
+  - **Watergrotten** (14 gebieden van change 26, 60 s uitgezakt, water ÷ (water + lucht) onder een dak, Y −54…62): ring 2 nulmeting **22,2 %** → +0,45 8,4 % / +0,50 10,3 % / +0,55 13,4 % / **+0,575 15,2 %**; ring 1 11,0 % (ongewijzigd); zone 1→2 65 → 62 %; water onder een dak op Y 60–62 gelijk (324, alleen in de zone).
+  - **Zoutvlakte** (256 zoutchunks x −2.816…−2.561, z −1.664…−1.409): randkolommen **22,9 %** van de korst; eilandjes **4,8 %** verhoogd (bovenste blok Y 66–67; 5,4 % zand, 609 kolommen rood zand), 149 rotsjesblokken; **36 pekelpoelen** (~1 per 7 chunks), 9–53 waterkolommen, alle bronnen, 1 diep, rand korst (+ kristallen), **0 water op een chunkrand**, 0 water boven Y 65; 46 kristallen onder water; **142 pilaargroepen in 74 chunks**, hoofdknobbels 2–6 hoog (lagere zijknobbels 1); kristallen 539 (veldchunks 5–13); pilaarvelden 11,5–12,1 % en kristalvelden 9,9–10,3 % van de vlakte (`nq`).
+  - **Duinenzee** (3 × 256 chunks, 87–96 % hoge duinen): **rotsuitstekels 20 / 21 / 27** (~1 per 10–13 chunks), ≤ 11 breed, componenthoogte 7–18 (incl. 2 ingegraven en de bergafkant), **8–12 met een kraag (~40 %)**, palet 40–45 % kloofsteen; **18 mini-oases** (~1 per 40 chunks hoge duinen), water Y 64–70, alle bronnen, grasrand 39–56 blokken, suikerriet 1–11, 14 met 1–2 palmen; kleinste afstand tussen twee palmstammen **5,8** (ook over chunkgrenzen). In de m1-gebieden van change 30 (weinig hoge duinen) 29/35 rotsen per 256 chunks en 0 oases.
+  - **Geen zwevende blokken** (flood fill vanaf Y 60, alle meetgebieden): zout 0; duinen 0 van eigen vormen (pilaren, rotsen, kragen). Gevonden en verklaard: schuin aansluitende palmstammen (bekend), blokken op de rand van het gedumpte gebied, een rij van 5 zandsteen boven een grotkrater (`-2360 80 -244`: ook op `eacc15b`), diagonale zandsteenrandjes in de steilrandzone (change 30).
+  - **Waterstabiliteit:** 10 pekelpoel- en 5 oasechunks + hun 8 buren gedumpt, op elk waterblok met lucht erboven (9–50 per chunk) een blok gezet en weggehaald, 15 s gewacht: **15/15 identiek**, water in de buren voor en na gelijk.
+  - **Determinisme:** twee verse werelden, de tweede omgekeerd en chunk voor chunk geladen, 60 s uitzakken, 3 × 3-gebieden (2 zout met poelen en pilaren, 2 duin met een oase en een rots, zone 1→2): **0 andere verschillen** dan vanilla's ondergrondse klodders/ertsen in zout en duin (plus 2 blokken glow lichen in een grot); zone 1→2 alleen stromend water en obsidiaan/lava (tijd, vanilla, als in 26/30).
+  - **Ring 1:** biomes op **1.681/1.681** punten gelijk aan `eacc15b`; in 4 van 5 gebieden steen/deepslate op ≤ 96 blokken gelijk; in het spawngebied (25 chunks rond 0,0) liggen druipsteenclusters anders (−6.621 `dripstone_block`, de plek wordt steen/deepslate): verschoven feature-index, decoratie, geen terrein (bekende valkuil).
+  - **Prestaties:** zie `CODEBASE.md` (meting change 30b): noise zout 1,35× / duinen 1,19× / x 2.500 1,38× vanilla, ±0 t.o.v. vóór (binnen de spreiding); surface zout −0,3 ms; features zout +0,09 / duinen −0,02 ms; hele chunk zout +4,3 %, duinen +0,4 %.
+- `run/server.properties` staat op `level-name=smoke-change30b`, RCON uit; geen server of client actief. In `../ca-head/run/server.properties` staat RCON ook uit.
+
+### Code review (`/code-review medium`)
+
+Geen bugs gevonden (stale heightmap na een poel, lege vormen, lezen/schrijven buiten de chunk, lekken van de kom, `PolygonGrid`-rand en -bereik, thread safety en determinisme, registratie en codec-bereiken nagelopen). Eén documentatiepunt opgelost: de javadoc van `OutcropConfiguration.palettes` zei "banden op absolute Y"; de banden tellen vanaf het laagste blok van de rots met een eigen startpunt per rots (zoals het plan bedoelt: "per outcrop een verschuiving"). Build en tests daarna opnieuw groen.
+
+## In-game checklist (W) — voor teststop 2c (na change 30c; overnemen in plan 30c)
+
+Seed `20260930`, verse wereld met preset `corruptedadventure:corrupted_world`. Coördinaten uit de meetwereld `smoke-change30b-m3` (zelfde code). Tijd: ~10 min.
+
+**Zoutvlakte** (rond x −2.700, z −1.550; `/tp @s -2700 90 -1560`):
+- [ ] **Barstenpatroon:** vanaf Y ~90 en op de grond rondkijken: leesbaar als zeshoeken (~7 blokken), gesloten lijnen van zoutblok in de korst, niet te druk? Ook op afstand (render distance). Textures zijn nog placeholders (37 maakt de korst rustiger, zie gevolgen).
+- [ ] **Pekelpoelen:** `-2638 66 -1658`, `-2761 66 -1653`, `-2717 66 -1628`: vorm (rafelig rond), wit-turquoise, korstrand met kristallen, een kristal in het water (`-2633 65 -1653`); erin staan → `/ca condition get` blijft `sun` (te ondiep).
+- [ ] **Pilaarvelden:** `-2616 66 -1656` (dichtste veld), `-2791 66 -1580`, `-2693 66 -1480`: groepjes zoutschoorstenen 2–6 hoog, toelopend, soms een kristal erop; niet te regelmatig?
+- [ ] **Eilandjes:** `-2576 67 -1646`, `-2600 67 -1470`: 2 blokken verhoogd met een zandrand en rood-zandvlekken, rotsjes (`-2569 67 -1654`); leest het als "eiland"?
+- [ ] **Kristalvelden 's nachts:** `/time set night`, `-2680 66 -1624`: zwak gloeiende vlek; geen monsters vlakbij.
+
+**Duinenzee:**
+- [ ] **Rotsuitstekels als oriëntatiepunt:** op de kam `-2281 102 723` rondkijken (rots `-2247 87 663`) en op de kam `2666 100 -156` (rots `2648 78 -136`): zichtbaar, niet te vaak (~1 per 10 chunks)?
+- [ ] **Schaduw onder een kraag:** `/tp @s -2249 75 659` (onder de kraag van `-2247 87 663`) of `2652 72 -136`, overdag: `/ca condition get` → `shade`.
+- [ ] **Mini-oases:** `-2141 66 755`, `2632 69 -120`, `-2333 65 -168`, `2742 69 -93`: verborgen genoeg (pas te zien vanaf de kam erboven)? Grasrand, suikerriet, 1–2 palmen; erin staan in de kern (2 diep) → `water`. Beloning genoeg?
+
+**Grotten:**
+- [ ] Spectator onder zout (`-2700 30 -1560`), duinen (`2600 30 -100`) en kloven (`2392 40 552`): minder volgelopen grotten dan in 2b, reservoirs nog herkenbaar (bijv. `39 -23 -2536`, `-2534 -20 29`).

@@ -111,11 +111,29 @@ class Ring2BiomesTest {
         assertEquals(ModPlacedFeatures.CANYON_ROCKFALL, step(hoodoos, GenerationStep.Decoration.LOCAL_MODIFICATIONS).getLast());
         assertTrue(Ring2Biomes.CANYONLANDS_ROCKS.contains(ModPlacedFeatures.CANYON_ROCKFALL));
         assertEquals(ModPlacedFeatures.HOODOO_FIELDS_VEGETATION, step(hoodoos, GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
-        assertEquals(ModPlacedFeatures.SALT_FLATS_CRYSTALS, step(biomes.get(ModBiomes.SALT_FLATS), GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
         assertEquals(ModPlacedFeatures.DUNE_SEA_VEGETATION, step(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
-        for (ResourceKey<Biome> flat : List.of(ModBiomes.SALT_FLATS, ModBiomes.DUNE_SEA)) {
-            List<ResourceKey<PlacedFeature>> local = step(biomes.get(flat), GenerationStep.Decoration.LOCAL_MODIFICATIONS);
-            assertTrue(local.stream().noneMatch(key -> key.location().getNamespace().equals("corruptedadventure")), flat.toString());
+
+        // Change 30b: shapes and water of the salt flats and the dune sea, the pools first (later features fail on
+        // their water), the crystal fields after the single crystals.
+        assertEquals(List.of(ModPlacedFeatures.SALT_FLATS_BRINE_POOLS, ModPlacedFeatures.SALT_FLATS_PILLAR_FIELDS,
+                ModPlacedFeatures.SALT_FLATS_PILLARS, ModPlacedFeatures.SALT_ISLAND_ROCKS), own(biomes.get(ModBiomes.SALT_FLATS),
+                GenerationStep.Decoration.LOCAL_MODIFICATIONS));
+        assertEquals(List.of(ModPlacedFeatures.SALT_FLATS_CRYSTALS, ModPlacedFeatures.SALT_FLATS_CRYSTAL_FIELDS),
+                own(biomes.get(ModBiomes.SALT_FLATS), GenerationStep.Decoration.VEGETAL_DECORATION));
+        assertEquals(List.of(ModPlacedFeatures.DUNE_SEA_OASES, ModPlacedFeatures.DUNE_SEA_OUTCROPS),
+                own(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.LOCAL_MODIFICATIONS));
+        // Every placed feature of ours belongs to one biome only: no order between biomes (no "Feature order cycle").
+        Map<ResourceKey<PlacedFeature>, ResourceKey<Biome>> owner = new LinkedHashMap<>();
+        for (Map.Entry<ResourceKey<Biome>, Biome> entry : biomes.entrySet()) {
+            for (GenerationStep.Decoration decoration : GenerationStep.Decoration.values()) {
+                for (ResourceKey<PlacedFeature> feature : own(entry.getValue(), decoration)) {
+                    if (Ring2Biomes.SALT_FLATS_SHAPES.contains(feature) || Ring2Biomes.DUNE_SEA_SHAPES.contains(feature)
+                            || feature.equals(ModPlacedFeatures.SALT_FLATS_CRYSTAL_FIELDS)) {
+                        ResourceKey<Biome> before = owner.put(feature, entry.getKey());
+                        assertTrue(before == null || before.equals(entry.getKey()), feature + " in two biomes");
+                    }
+                }
+            }
         }
     }
 
@@ -176,6 +194,12 @@ class Ring2BiomesTest {
         List<HolderSet<PlacedFeature>> steps = biome.getGenerationSettings().features();
         return steps.size() <= step.ordinal() ? List.of()
                 : steps.get(step.ordinal()).stream().map(holder -> holder.unwrapKey().orElseThrow()).toList();
+    }
+
+    /** Our own features of a step, in order. */
+    private static List<ResourceKey<PlacedFeature>> own(Biome biome, GenerationStep.Decoration step) {
+        return step(biome, step).stream().filter(key -> key.location().getNamespace().equals("corruptedadventure")
+                && !key.location().getPath().startsWith("ring_2/")).toList();
     }
 
     private static boolean spawns(Biome biome, MobCategory category, EntityType<?> type) {

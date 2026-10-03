@@ -1,0 +1,52 @@
+{
+  "type": "corruptedadventure:surface_pool",
+  "config": {
+    "depth": 1,
+    "edge_jitter": 0.35,
+    "ground": [
+      "corruptedadventure:salt_crust",
+      "corruptedadventure:salt_block"
+    ],
+    "max_step": 0,
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 5.0,
+      "min_inclusive": 2.0
+    },
+    "rim": {
+      "state": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "corruptedadventure:salt_crust"
+        }
+      },
+      "width": 1
+    },
+    "rim_decoration": {
+      "chance": 0.12,
+      "state": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "corruptedadventure:salt_crystal",
+          "Properties": {
+            "facing": "up",
+            "waterlogged": "false"
+          }
+        }
+      }
+    },
+    "underwater_decoration": {
+      "chance": 0.04,
+      "state": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "corruptedadventure:salt_crystal",
+          "Properties": {
+            "facing": "up",
+            "waterlogged": "true"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "type": "corruptedadventure:surface_pool",
+  "config": {
+    "depth": 2,
+    "edge_jitter": 0.3,
+    "ground": "minecraft:sand",
+    "max_step": 2,
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 3.0,
+      "min_inclusive": 1.5
+    },
+    "rim": {
+      "state": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "minecraft:grass_block",
+          "Properties": {
+            "snowy": "false"
+          }
+        }
+      },
+      "width": 2
+    },
+    "rim_plants": {
+      "chance": 0.5,
+      "state": {
+        "type": "minecraft:weighted_state_provider",
+        "entries": [
+          {
+            "data": {
+              "Name": "minecraft:short_grass"
+            },
+            "weight": 5
+          },
+          {
+            "data": {
+              "Name": "minecraft:fern"
+            },
+            "weight": 3
+          },
+          {
+            "data": {
+              "Name": "minecraft:tall_grass",
+              "Properties": {
+                "half": "lower"
+              }
+            },
+            "weight": 1
+          },
+          {
+            "data": {
+              "Name": "corruptedadventure:desert_flower"
+            },
+            "weight": 1
+          }
+        ]
+      }
+    },
+    "shore_column": {
+      "chance": 0.3,
+      "height": {
+        "type": "minecraft:uniform",
+        "max_inclusive": 2,
+        "min_inclusive": 1
+      },
+      "state": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "minecraft:sugar_cane",
+          "Properties": {
+            "age": "0"
+          }
+        }
+      }
+    },
+    "trees": {
+      "count": {
+        "type": "minecraft:uniform",
+        "max_inclusive": 2,
+        "min_inclusive": 1
+      },
+      "features": [
+        {
+          "data": "corruptedadventure:palm_tree",
+          "weight": 3
+        },
+        {
+          "data": "corruptedadventure:palm_bush",
+          "weight": 1
+        }
+      ],
+      "spot": {
+        "type": "minecraft:would_survive",
+        "state": {
+          "Name": "corruptedadventure:palm_sapling",
+          "Properties": {
+            "stage": "0"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "feature": "corruptedadventure:dune_oasis",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 16,
+      "chance": 0.25,
+      "margin": 1
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.15,
+      "noise": "corruptedadventure:ring_2_dune_amplitude"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:height_band",
+      "max_y": 72
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 2,
+      "radius": 4
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:matching_blocks",
+        "blocks": "minecraft:sand",
+        "offset": [
+          0,
+          -1,
+          0
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}
