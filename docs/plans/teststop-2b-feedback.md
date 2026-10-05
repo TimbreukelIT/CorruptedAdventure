@@ -32,3 +32,9 @@ Scope: `worldgen` (ring 2, changes 23–30). Status: **verwerkt in 30b/30c** —
 - **Verdeling:** 30b = pekelpoelen, barstenpatroon, zoutpilaren/kristalvelden, zout-eilandjes, rotsuitstekels, mini-oases, watergrotten; 30c = begroeiing (duindalen, oase, hoodoos, eilandjes), cactusgroepjes, fossielen en botten.
 - **Dieren:** niet nu; wachten op fase 4 (`mobs`).
 - Determinisme- en prestatie-eisen blijven gelden (features chunk-lokaal, budget noise-stap ≤ 1,75×).
+
+## Teststop 2c (2026-10-05)
+
+Gebruiker: **alles akkoord (voor nu)** na 30b/30c — ring 2 voelt levendig genoeg om door te gaan. Afstemvragen
+uit `change-30c.md` blijven zoals gebouwd. Volgende stap: changes 31–37 afronden (incl. definitieve textures in 37),
+daarna teststop 3.
