@@ -19,6 +19,11 @@ public final class ModSoundEvents {
     /** Wind loop of the ring 2 sandstorm (change 28), played by the client while the storm is felt. */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_2_SANDSTORM = register("weather.ring_2.sandstorm");
 
+    /** Low hum of the singing sand in the dune sea (change 32), played by the client at night mostly ({@code SingingSandAmbience}). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_2_SINGING_SAND = register("ambient.ring_2.singing_sand");
+    /** Birds and insects of the oasis (change 32), the additions sound of {@code oasis_flats}. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_2_OASIS = register("ambient.ring_2.oasis");
+
     private ModSoundEvents() {
     }
 

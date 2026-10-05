@@ -32,7 +32,7 @@ public final class TransitionBiomes {
     /** How far the sky, fog and water of {@code withered_expanse} are faded towards grey, matching its faded grass. */
     static final float WITHERED_EXPANSE_FADE = 0.4F;
 
-    /** How far the sky, fog and water of {@code dry_riverbeds} are faded towards grey: a foretaste of ashen ring 3. */
+    /** How far the grass and foliage of {@code dry_riverbeds} are faded towards grey (worldgen, change 31; the sky, fog and water colours are {@code Palette.DRY_RIVERBEDS}). */
     static final float DRY_RIVERBEDS_FADE = 0.3F;
     /** Scorched ground, fossils, bones and stones of the riverbeds ({@code LOCAL_MODIFICATIONS}), in this fixed order. */
     static final List<ResourceKey<PlacedFeature>> DRY_RIVERBEDS_SHAPES = List.of(ModPlacedFeatures.DRY_RIVERBEDS_SCORCHED_PATCHES,
@@ -55,7 +55,7 @@ public final class TransitionBiomes {
     /**
      * Transition 2→3: the dry beds of the stolen water, scorched ever blacker towards ring 3. A ring 2 biome in all but
      * name ({@link Ring2Biomes#ALL}: same vanilla features, ores, carvers and spawns), with its own features last, and
-     * the ring 2 palette 30 % towards grey.
+     * {@link BiomeAmbience.Palette#DRY_RIVERBEDS}.
      */
     private static Biome dryRiverbeds(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = Ring2Biomes.generation(features, carvers);
@@ -65,7 +65,7 @@ public final class TransitionBiomes {
         for (ResourceKey<PlacedFeature> feature : DRY_RIVERBEDS_VEGETATION) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
-        BiomeAmbience.Palette colours = BiomeAmbience.Palette.RING_2.desaturated(DRY_RIVERBEDS_FADE);
+        BiomeAmbience.Palette colours = BiomeAmbience.Palette.DRY_RIVERBEDS;
         // Grass and foliage as the canyonlands, faded like the sky.
         return new Biome.BiomeBuilder()
                 .hasPrecipitation(false)

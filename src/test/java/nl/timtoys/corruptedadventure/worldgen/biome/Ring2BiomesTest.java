@@ -18,6 +18,7 @@ import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
+import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.feature.RingVanillaOres;
@@ -55,7 +56,7 @@ class Ring2BiomesTest {
         Biome canyonlands = ring2.get(ModBiomes.CANYONLANDS);
         assertFalse(riverbeds.hasPrecipitation());
         assertEquals(2.0F, riverbeds.getBaseTemperature());
-        BiomeAmbience.Palette faded = BiomeAmbience.Palette.RING_2.desaturated(TransitionBiomes.DRY_RIVERBEDS_FADE);
+        BiomeAmbience.Palette faded = BiomeAmbience.Palette.DRY_RIVERBEDS;
         assertEquals(faded.sky(), riverbeds.getSkyColor());
         assertEquals(faded.fog(), riverbeds.getFogColor());
         assertEquals(faded.water(), riverbeds.getWaterColor());
@@ -96,17 +97,45 @@ class Ring2BiomesTest {
     }
 
     @Test
-    void dryHotAndTheRing2Palette() {
-        BiomeAmbience.Palette palette = BiomeAmbience.Palette.RING_2;
-        for (Biome biome : bootstrap().values()) {
+    void dryHotAndEveryBiomeHasItsOwnPalette() {
+        Map<ResourceKey<Biome>, BiomeAmbience.Palette> expected = Map.of(
+                ModBiomes.CANYONLANDS, BiomeAmbience.Palette.CANYONLANDS,
+                ModBiomes.OASIS_FLATS, BiomeAmbience.Palette.OASIS_FLATS,
+                ModBiomes.HOODOO_FIELDS, BiomeAmbience.Palette.HOODOO_FIELDS,
+                ModBiomes.SALT_FLATS, BiomeAmbience.Palette.SALT_FLATS,
+                ModBiomes.DUNE_SEA, BiomeAmbience.Palette.DUNE_SEA);
+        Map<ResourceKey<Biome>, Biome> biomes = bootstrap();
+        assertEquals(expected.keySet(), biomes.keySet());
+        for (Map.Entry<ResourceKey<Biome>, Biome> entry : biomes.entrySet()) {
+            Biome biome = entry.getValue();
             assertFalse(biome.hasPrecipitation());
             assertEquals(2.0F, biome.getBaseTemperature());
             BiomeSpecialEffects effects = biome.getSpecialEffects();
-            assertEquals(palette.sky(), effects.getSkyColor());
-            assertEquals(palette.fog(), effects.getFogColor());
-            assertEquals(palette.water(), effects.getWaterColor());
-            assertEquals(palette.waterFog(), effects.getWaterFogColor());
+            BiomeAmbience.Palette palette = expected.get(entry.getKey());
+            assertEquals(palette.sky(), effects.getSkyColor(), entry.getKey().toString());
+            assertEquals(palette.fog(), effects.getFogColor(), entry.getKey().toString());
+            assertEquals(palette.water(), effects.getWaterColor(), entry.getKey().toString());
+            assertEquals(palette.waterFog(), effects.getWaterFogColor(), entry.getKey().toString());
         }
+        assertEquals(biomes.size() + 1, Stream.concat(expected.values().stream(), Stream.of(BiomeAmbience.Palette.DRY_RIVERBEDS)).distinct().count(),
+                "all six palettes differ");
+    }
+
+    @Test
+    void onlyTheOasisHasAnAdditionsSound() {
+        // The singing sand is client code on the dune_sea key (SingingSandAmbience), not biome data.
+        for (Map.Entry<ResourceKey<Biome>, Biome> entry : bootstrap().entrySet()) {
+            var additions = entry.getValue().getSpecialEffects().getAmbientAdditionsSettings();
+            if (entry.getKey().equals(ModBiomes.OASIS_FLATS)) {
+                assertTrue(additions.isPresent());
+                assertEquals(ModSoundEvents.RING_2_OASIS.get(), additions.get().getSoundEvent().value());
+                assertEquals(0.004, additions.get().getTickChance());
+            } else {
+                assertTrue(additions.isEmpty(), entry.getKey().toString());
+            }
+            assertTrue(entry.getValue().getSpecialEffects().getAmbientLoopSoundEvent().isEmpty(), entry.getKey().toString());
+        }
+        assertTrue(transitions().get(ModBiomes.DRY_RIVERBEDS).getSpecialEffects().getAmbientAdditionsSettings().isEmpty());
     }
 
     @Test

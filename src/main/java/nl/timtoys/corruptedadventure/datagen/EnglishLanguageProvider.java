@@ -83,6 +83,8 @@ final class EnglishLanguageProvider extends LanguageProvider {
         add("itemGroup.corruptedadventure.main", "The Corrupted Adventure");
         add("subtitles.corruptedadventure.ambient.ring_1.strange_cave", "Something stirs in the dark");
         add("subtitles.corruptedadventure.weather.ring_2.sandstorm", "Sandstorm howls");
+        add("subtitles.corruptedadventure.ambient.ring_2.singing_sand", "Sand hums");
+        add("subtitles.corruptedadventure.ambient.ring_2.oasis", "Birds and insects chirp");
 
         // Ring 1 blocks.
         addBlock(ModBlocks.DEAD_GRASS_BLOCK, "Dead Grass Block");

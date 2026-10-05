@@ -155,5 +155,7 @@
   "item.corruptedadventure.soul_crystal": "Soul Crystal",
   "itemGroup.corruptedadventure.main": "The Corrupted Adventure",
   "subtitles.corruptedadventure.ambient.ring_1.strange_cave": "Something stirs in the dark",
+  "subtitles.corruptedadventure.ambient.ring_2.oasis": "Birds and insects chirp",
+  "subtitles.corruptedadventure.ambient.ring_2.singing_sand": "Sand hums",
   "subtitles.corruptedadventure.weather.ring_2.sandstorm": "Sandstorm howls"
 }

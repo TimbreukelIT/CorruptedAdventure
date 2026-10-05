@@ -7,6 +7,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.client.ambient.SingingSandAmbience;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
 import nl.timtoys.corruptedadventure.client.network.ConditionSyncHandler;
 import nl.timtoys.corruptedadventure.client.network.RingLayoutHandler;
@@ -38,6 +39,7 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(CorruptedAdventureClient::onRegisterParticleProviders);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);
+        NeoForge.EVENT_BUS.addListener(SingingSandAmbience::onClientTick);
         // Weather renderers (changes 28, 45, 66, 85): RingWeatherRenderers.register(type, renderer) here.
         RingWeatherClientHooks.registerRing2(modEventBus, NeoForge.EVENT_BUS);
         RingWeatherClientHooks.register(NeoForge.EVENT_BUS);

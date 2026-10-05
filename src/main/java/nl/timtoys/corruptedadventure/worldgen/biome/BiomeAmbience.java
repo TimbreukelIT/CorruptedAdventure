@@ -51,6 +51,12 @@ public final class BiomeAmbience {
         return mix(red, grey, amount) << 16 | mix(green, grey, amount) << 8 | mix(blue, grey, amount);
     }
 
+    /** Mixes each channel of {@code rgb} towards black: 0 keeps the colour, 1 gives black. */
+    public static int darken(int rgb, float amount) {
+        return Math.round((rgb >> 16 & 0xFF) * (1 - amount)) << 16 | Math.round((rgb >> 8 & 0xFF) * (1 - amount)) << 8
+                | Math.round((rgb & 0xFF) * (1 - amount));
+    }
+
     private static int mix(int channel, float grey, float amount) {
         return Math.round(channel + (grey - channel) * amount);
     }
@@ -59,14 +65,39 @@ public final class BiomeAmbience {
     public record Palette(int sky, int fog, int water, int waterFog) {
         /** Vanilla plains (temperature 0.8, normal water): the reference colours of ring 1. */
         public static final Palette RING_1 = new Palette(0x78A7FF, 0xC0D8FF, 0x3F76E4, 0x050533);
-        /**
-         * Ring 2, every biome: pale yellowish-blue sky, sandy fog, turquoise water. Placeholder colours (those of the
-         * former {@code placeholder_ring_2}); change 32 makes them final, here in one place.
-         */
-        public static final Palette RING_2 = new Palette(0x9FC4E8, 0xE8D7A8, 0x32A598, 0x0B3A35);
+        /** Ring 2 base: pale yellowish-blue sky, sandy fog, turquoise water. Every biome below is a nuance of it. */
+        public static final Palette RING_2 = new Palette(0xAEC8E0, 0xE4D2A6, 0x32A598, 0x0B3A35);
+        /** Red-orange dust of the canyon stone on the horizon. */
+        public static final Palette CANYONLANDS = RING_2.withFog(0xE2BC93);
+        /** Fresher and a touch bluer: the safe place. */
+        public static final Palette OASIS_FLATS = RING_2.withSky(0x9EC5EC).withFog(0xE8DDBA);
+        /** Dazzling, almost white; the brine pools are a milky, lighter turquoise against the crust. */
+        public static final Palette SALT_FLATS = RING_2.withSky(0xBCD3E8).withFog(0xEEEAE0).withWater(0x5AC8B8, 0x1B5048);
+        /** Ochre. */
+        public static final Palette HOODOO_FIELDS = RING_2.withFog(0xDDC291);
+        /** Golden yellow, the warmest. */
+        public static final Palette DUNE_SEA = RING_2.withSky(0xB4CADA).withFog(0xEACF96);
+        /** Ashen and scorched: the ring 2 palette 35 % towards grey and 10 % darker, a foretaste of ring 3. */
+        public static final Palette DRY_RIVERBEDS = RING_2.desaturated(0.35F).darkened(0.1F);
 
         public Palette desaturated(float amount) {
             return new Palette(desaturate(sky, amount), desaturate(fog, amount), desaturate(water, amount), desaturate(waterFog, amount));
+        }
+
+        public Palette darkened(float amount) {
+            return new Palette(darken(sky, amount), darken(fog, amount), darken(water, amount), darken(waterFog, amount));
+        }
+
+        public Palette withSky(int sky) {
+            return new Palette(sky, fog, water, waterFog);
+        }
+
+        public Palette withFog(int fog) {
+            return new Palette(sky, fog, water, waterFog);
+        }
+
+        public Palette withWater(int water, int waterFog) {
+            return new Palette(sky, fog, water, waterFog);
         }
     }
 

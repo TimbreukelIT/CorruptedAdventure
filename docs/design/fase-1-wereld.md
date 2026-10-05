@@ -41,6 +41,11 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
   - Beoordeling: het script schrijft een contactblad (`build/texture-preview/ring1.png`, niet in git: 8×, 3×3-tegeling, alle frames). Met de hand bijgewerkte textures komen in de lijst `HAND_EDITED` van het script; het script slaat ze daarna over.
 - Alle mod-blokken en -items staan in **één eigen creative tab** "The Corrupted Adventure" (`corruptedadventure:main`), per ring gesorteerd (registratievolgorde); niet in de vanilla-tabs.
 
+### Geluid (productiemethode, change 32)
+- **Eigen, deterministisch synthesescript, geen vanilla-audio in de repo:** `tools/sounds/Ring2Sounds.java` (single-file Java, alleen JDK, buiten Gradle en de jar) schrijft mono WAV's naar `build/sounds/` (vaste seed per bestand, `StrictMath`, twee keer draaien = identiek) en laat ffmpeg (libvorbis, `-ac 1 -q:a 4`) er mono Ogg Vorbis van maken in `assets/corruptedadventure/sounds/`. De `.ogg`-bestanden staan in git; build en CI hebben ffmpeg niet nodig.
+- Varianten: `drone` (laag, zwellend, overtonen), `ambient` (vogels/insecten); `loop` komt in change 36. Sjabloon voor de geluiden van ring 3-5 (changes 50, 70, 90).
+- Positionele geluiden zijn mono; de pitch-klem van vanilla is 0,5-2,0, dus echt diepe klanken vragen eigen audio. Kwaliteit is "nette programmer-audio", later te vervangen door eigen opnames zonder andere wijzigingen.
+
 ### 1.5 Grensmuur (ontwerp nu, bouw in fase 5)
 - Elke grens krijgt een **eigen soort muur** die zicht op de volgende ring vaag houdt tot de speler de bewaker van die grens heeft verslagen. Type per grens: zie de ringsecties.
 - De muur is **per speler** (volgt de per-speler unlocks). Rendering client-side in de overgangszone, staat server-side en gesynct.
@@ -431,7 +436,13 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **Wandbronnen (23c):** echt water; de val telt als water, een kolk alleen waar hij 2 diep is, het stroompje niet (gemeten in change 27; of dat zo mag: backlog).
 
 **Horror-elementen (fase 1)**
-- **Zingend zand**: laag zoemend geluid in de duinenzee, vooral 's nachts (biome-ambient, data).
+- **Zingend zand**: laag zoemend geluid in de duinenzee, vooral 's nachts (client-only ambient op de biome-key `dune_sea`, `SingingSandAmbience`).
+
+**Uitwerking sfeer (change 32)**
+- **Kleuren** (lucht / fog; water / waterfog overal `32A598` / `0B3A35`, tenzij vermeld): basis `AEC8E0` / `E4D2A6` (bleek geelblauw, zanderige fog, geen lichtwijziging). Per biome een nuance, vooral in de fog: `canyonlands` fog `E2BC93` (roodoranje stof); `oasis_flats` `9EC5EC` / `E8DDBA` (frisser, "veilig"); `salt_flats` `BCD3E8` / `EEEAE0` (verblindend), pekelwater `5AC8B8` / `1B5048` (melkachtig turkoois tegen de korst); `hoodoo_fields` fog `DDC291` (oker); `dune_sea` `B4CADA` / `EACF96` (goudgeel, het warmst); `dry_riverbeds` = basis 35 % ontzadigd en 10 % donkerder (grauw, geblakerd, voorbode van ring 3). Gras en blad blijven worldgen. Zandstorm en hittegolf (change 28) leggen zich als overlay over deze basiskleuren.
+- **Zingend zand:** alleen in `dune_sea`, alleen onder open hemel (niet in de grotten eronder). Kans per tick naar de tijd van de dag: 's nachts gemiddeld 1x per ~40 s, overdag 1x per ~4 min, zachte overgang in de schemering, cooldown 12 s. Positioneel, 8-16 blokken van de speler uit een wisselende richting; per speler eigen toeval, niet gesynct. Geen netwerk, geen serverstaat.
+- **Oase-ambient:** `oasis_flats` heeft als enige ring 2-biome een `additions_sound` (`ambient.ring_2.oasis`: vogel, krekel, tjilpjes; `tick_chance` 0,004, laag en zacht). De mini-oases in `dune_sea` blijven stil.
+- **Audio:** eigen synthese, zie "Geluid" onder §1.4.
 - Fata morgana → fase 5 (backlog).
 
 **Grensmuur 2→3** (fase 5): wervelende zandstorm.

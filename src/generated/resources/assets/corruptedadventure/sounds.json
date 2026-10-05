@@ -22,6 +22,46 @@
     ],
     "subtitle": "subtitles.corruptedadventure.ambient.ring_1.strange_cave"
   },
+  "ambient.ring_2.oasis": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "corruptedadventure:ambient/ring_2/oasis_1",
+        "volume": 0.8
+      },
+      {
+        "attenuation_distance": 24,
+        "name": "corruptedadventure:ambient/ring_2/oasis_2",
+        "volume": 0.8
+      },
+      {
+        "attenuation_distance": 24,
+        "name": "corruptedadventure:ambient/ring_2/oasis_3",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_2.oasis"
+  },
+  "ambient.ring_2.singing_sand": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "corruptedadventure:ambient/ring_2/singing_sand_1",
+        "volume": 0.8
+      },
+      {
+        "attenuation_distance": 24,
+        "name": "corruptedadventure:ambient/ring_2/singing_sand_2",
+        "volume": 0.8
+      },
+      {
+        "attenuation_distance": 24,
+        "name": "corruptedadventure:ambient/ring_2/singing_sand_3",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_2.singing_sand"
+  },
   "weather.ring_2.sandstorm": {
     "sounds": [
       {

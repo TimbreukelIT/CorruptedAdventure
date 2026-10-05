@@ -418,3 +418,39 @@ Antwoord: **A** — nee, het windgeluid van de zandstorm blijft backlog; 32 bepe
 | 2026-10-01 | atmosphere | Biome-kleuren = basis (change 32), weer-fog = overlay via de client-hook (change 28) | Eén bron per laag, geen dubbele fog-kleur |
 
 Commit (na `/code-review`): `atmosphere: add ring 2 sky and fog colours and singing sand ambience`.
+
+---
+
+## Bouwnotities (2026-10-05)
+
+- **Afwijkingen van het plan:**
+  - `TransitionBiomes.DRY_RIVERBEDS_FADE` (0,3) is **niet verwijderd**: hij stuurt nog gras en blad van `dry_riverbeds` (worldgen, change 31). Alleen sky/fog/water gebruiken nu `Palette.DRY_RIVERBEDS`.
+  - Het grotgeluid van `dry_riverbeds` blijft vanilla (`LEGACY_CAVE_SETTINGS`), conform "buiten scope"; backlog.
+  - `Ring2Biomes.biome(...)` kreeg `palette` en `additions` als extra parameters.
+  - Oppervlaktecheck: `level.canSeeSky` op ooghoogte (de uitwijkoptie uit de risico's), niet hemellicht ≥ 10.
+- **Audio:** `Ring2Sounds.java` levert 3 × `drone` (5,9 / 6,7 / 7,5 s) en 3 × `ambient` (2,5 / 3,0 / 3,5 s). WAV's bewezen byte-identiek bij tweemaal draaien (`cmp`). Afstemwaarden: zie `Ring2Sounds.java` (drone-amplitudes, ruis `9 ×`, swell 1,5/2 s; oase-tonen) en `sounds.json` (volume 0,8, `attenuation_distance` 24); frequentie in `SingingSandTiming`.
+- **Getest:** `./gradlew build` (340+ tests) groen; `runData` groen (diff: 6 biome-JSON alleen `effects`, `sounds.json`, lang en/nl); `tools/server-smoke-test.sh` met `level-name=smoke-change32`: server start (Done 9,8 s), geen sound-/biome-/client-class-fouten. Client-joinchecks en het horen van de audio zijn niet door de agent gedaan: W.
+
+## In-game checklist (W)
+
+Nieuwe wereld, preset `corrupted_world`, seed `20260930`, ondertitels aan, koptelefoon.
+
+1. **Kleuren per biome** (`/ca tpring 2`, 4 richtingen; F3 toont het biome; vergelijk met `/ca tpring 1`). Overdag, bij zonsondergang (`/time set 12500`), 's nachts (`/time set 18000`):
+   - `canyonlands`: lucht bleek geelblauw, fog roodoranje stof.
+   - `oasis_flats`: iets blauwere lucht, lichte fog; voelt "veilig".
+   - `salt_flats`: bijna witte lucht en fog; pekelpoelen melkachtig turkoois (`5AC8B8`), onder water groenig donker.
+   - `hoodoo_fields`: okerfog.
+   - `dune_sea`: goudgele fog, het warmst.
+   - Niet te wit of te grauw; de biomes horen bij elkaar.
+2. **Overgangen:** loop over een grens tussen twee ring 2-biomes: geen harde lijn (kleurwissel over ~10-20 blokken). `/ca tpboundary 1` (`withered_expanse` naar ring 2) en `/ca tpboundary 2`: `dry_riverbeds` is duidelijk grauwer/donkerder dan ring 2 en wijkt af van de ring 3-placeholder.
+3. **Water:** in een oasepoel (`/locate biome corruptedadventure:oasis_flats`) en onder water: turkoois, helder genoeg.
+4. **Geluid los:** `/playsound corruptedadventure:ambient.ring_2.singing_sand ambient @s` (een paar keer): laag gezoem, ondertitel "Het zand zingt"/"Sand hums" (taal wisselen), geen klik aan begin/eind, niet irritant. Idem `ambient.ring_2.oasis` (ondertitel "Vogels en insecten tjilpen").
+5. **Zingend zand** in `dune_sea` (`/locate biome corruptedadventure:dune_sea`, `/tp` erheen, op een duin onder open hemel):
+   - `/time set 18000`: binnen ~1-2 min meerdere hums, uit wisselende richtingen, nooit twee binnen 12 s.
+   - `/time set 6000`: zelden (ca. 1 per ~4 min).
+   - In een grot onder de duinen (graaf omlaag of onder een overhang): niets. Net buiten de biome: niets.
+   - Ambient-schuif in de geluidsopties op 0: stil.
+6. **Oase-ambient:** in `oasis_flats` zacht en zeldzaam vogel/insect, ook ondergronds hoorbaar (vanilla `additions_sound`); niet in `dune_sea` of de mini-oases.
+7. **Zandstorm** (`/ca weather 2 sandstorm`): de weer-fog ligt over de biome-fog zonder kleurbreuk bij begin en einde. Let op overlap van het zingende zand met de wind (backlog).
+8. **Wereldregen** (`/weather rain`): de lucht in ring 2 wordt grauw (vanilla, bekend; backlog); niet storend?
+9. **Dedicated server:** `runServer` + `runClient`/`runClient2` (`-PquickPlay`): kleuren gelijk aan singleplayer; beide clients horen het zingende zand op verschillende momenten (verwacht, per-speler toeval).

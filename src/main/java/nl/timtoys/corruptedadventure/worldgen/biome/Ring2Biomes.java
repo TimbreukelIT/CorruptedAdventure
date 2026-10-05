@@ -9,6 +9,7 @@ import net.minecraft.data.worldgen.placement.MiscOverworldPlacements;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.biome.AmbientAdditionsSettings;
 import net.minecraft.world.level.biome.AmbientMoodSettings;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
@@ -19,14 +20,16 @@ import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
+import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
  * Datagen bootstrap for the biomes of ring 2. All share {@link #generation} (vanilla features in vanilla order; the
- * ring 2 ores come through {@link Ring2BiomeModifiers}) and {@link BiomeAmbience.Palette#RING_2}; their own features
+ * ring 2 ores come through {@link Ring2BiomeModifiers}) and their own {@link BiomeAmbience.Palette} (a nuance of {@code RING_2}); their own features
  * come last in each step, or loading the world fails with "Feature order cycle".
  * <p>
  * Which biome lies where is decided by the {@code multi_noise} source of ring 2 in the world preset, on two region axes:
@@ -109,7 +112,7 @@ public final class Ring2Biomes {
             generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
         }
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.CANYONLANDS_VEGETATION);
-        return biome(0.0F, 0xBFB755, 0xAEA42A, spawns(false), generation);
+        return biome(BiomeAmbience.Palette.CANYONLANDS, 0.0F, 0xBFB755, 0xAEA42A, Optional.empty(), spawns(false), generation);
     }
 
     /** Sand flats with pools, green shores and palms: the only safe water of the ring. */
@@ -120,8 +123,14 @@ public final class Ring2Biomes {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
         // Downfall only colours (and farmland); there is no rain in ring 2.
-        return biome(0.4F, 0x6FB33F, 0x5DA032, spawns(true), generation);
+        return biome(BiomeAmbience.Palette.OASIS_FLATS, 0.4F, 0x6FB33F, 0x5DA032, OASIS_BIRDS, spawns(true), generation);
     }
+
+    /**
+     * Birds and insects of the oasis: the only ring 2 biome with an additions sound (the singing sand is client code on
+     * the biome key). Soft and rare: vanilla's biomes use 0.0111 for loud ones.
+     */
+    static final Optional<AmbientAdditionsSettings> OASIS_BIRDS = Optional.of(new AmbientAdditionsSettings(ModSoundEvents.RING_2_OASIS, 0.004));
 
     /** Pillars, arches and balanced rocks of layered canyon stone; scrub and cacti between them, rock fallen at the pillar feet. */
     private static Biome hoodooFields(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
@@ -131,7 +140,7 @@ public final class Ring2Biomes {
         for (ResourceKey<PlacedFeature> feature : HOODOO_FIELDS_VEGETATION) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
-        return biome(0.0F, 0xBFB755, 0xAEA42A, spawns(false), generation);
+        return biome(BiomeAmbience.Palette.HOODOO_FIELDS, 0.0F, 0xBFB755, 0xAEA42A, Optional.empty(), spawns(false), generation);
     }
 
     /**
@@ -146,7 +155,7 @@ public final class Ring2Biomes {
         for (ResourceKey<PlacedFeature> feature : concat(SALT_FLATS_CRYSTALS, SALT_ISLAND_VEGETATION)) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
-        return biome(0.0F, 0xC9C08A, 0xB5AC6E, withoutCreatures(spawns(false)), generation);
+        return biome(BiomeAmbience.Palette.SALT_FLATS, 0.0F, 0xC9C08A, 0xB5AC6E, Optional.empty(), withoutCreatures(spawns(false)), generation);
     }
 
     /**
@@ -161,7 +170,7 @@ public final class Ring2Biomes {
         for (ResourceKey<PlacedFeature> feature : DUNE_SEA_VEGETATION) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
-        return biome(0.0F, 0xBFB755, 0xAEA42A, spawns(false), generation);
+        return biome(BiomeAmbience.Palette.DUNE_SEA, 0.0F, 0xBFB755, 0xAEA42A, Optional.empty(), spawns(false), generation);
     }
 
     /**
@@ -218,21 +227,21 @@ public final class Ring2Biomes {
         return Stream.concat(first.stream(), then.stream()).toList();
     }
 
-    private static Biome biome(float downfall, int grass, int foliage, MobSpawnSettings spawns, BiomeGenerationSettings.Builder generation) {
-        BiomeAmbience.Palette colours = BiomeAmbience.Palette.RING_2;
+    private static Biome biome(BiomeAmbience.Palette colours, float downfall, int grass, int foliage, Optional<AmbientAdditionsSettings> additions, MobSpawnSettings spawns, BiomeGenerationSettings.Builder generation) {
+        BiomeSpecialEffects.Builder effects = new BiomeSpecialEffects.Builder()
+                .skyColor(colours.sky())
+                .fogColor(colours.fog())
+                .waterColor(colours.water())
+                .waterFogColor(colours.waterFog())
+                .grassColorOverride(grass)
+                .foliageColorOverride(foliage)
+                .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS);
+        additions.ifPresent(effects::ambientAdditionsSound);
         return new Biome.BiomeBuilder()
                 .hasPrecipitation(false)
                 .temperature(2.0F)
                 .downfall(downfall)
-                .specialEffects(new BiomeSpecialEffects.Builder()
-                        .skyColor(colours.sky())
-                        .fogColor(colours.fog())
-                        .waterColor(colours.water())
-                        .waterFogColor(colours.waterFog())
-                        .grassColorOverride(grass)
-                        .foliageColorOverride(foliage)
-                        .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
-                        .build())
+                .specialEffects(effects.build())
                 .mobSpawnSettings(spawns)
                 .generationSettings(generation.build())
                 .build();

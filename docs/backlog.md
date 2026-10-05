@@ -127,3 +127,12 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [atmosphere] Change 32: kleuren (`Palette.RING_2` 30 % naar grijs is een placeholder) en grotgeluid van `dry_riverbeds` definitief; maskeer de harde bodemwissel aan de zonegrens. (bron: change 31)
 - [mobs] Fase 4: ring 2-mobs ook in `dry_riverbeds`. (bron: change 31)
 - [infra] Unit tests: de bestaande worldgen-checks "buiten de zone ongewijzigd" vergelijken best de deep-solid-mask (terrein) in plaats van alle blokken; nieuwe placed features verschuiven de decoratie-seeds (feature-index) en veranderen dus elke feature buiten het eigen biome. (bron: change 31)
+
+## Uit change 32
+- [atmosphere] Regen dimt de lucht in ring 2 (geen neerslag in de biome): vanilla-gedrag, niet met data op te lossen; eventueel via het ringweer (change 20/28) met een eigen `DimensionSpecialEffects` of mixin. (bron: change 32)
+- [atmosphere] Zingend zand luider of stil tijdens een zandstorm (nu speelt het gewoon door); letten op overlap in teststop 3. (bron: change 32)
+- [atmosphere] Mini-oases (in `dune_sea`) en pekelpoelen hebben geen ambient: vraagt een client-class met een positiecheck op water/gras (32-8 B). (bron: change 32)
+- [infra] Audioscript in Gradle hangen, alleen als ring 3 een tweede geluidsscript toevoegt (zoals bij de textures). (bron: change 32)
+- [atmosphere] Windgeluid van de zandstorm vervangen door eigen wind met `Ring2Sounds.java` (nu nog vanilla `item.elytra.flying`). (bron: change 32)
+- [atmosphere] Grotgeluid (`mood_sound`) van `dry_riverbeds` is nog vanilla `LEGACY_CAVE_SETTINGS`; change 32 laat het ongemoeid (de opmerking "grotgeluid definitief" uit plan 31 is niet uitgevoerd). (bron: change 32)
+

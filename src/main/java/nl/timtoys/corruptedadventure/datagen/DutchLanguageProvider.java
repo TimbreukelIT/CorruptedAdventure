@@ -83,6 +83,8 @@ final class DutchLanguageProvider extends LanguageProvider {
         add("itemGroup.corruptedadventure.main", "The Corrupted Adventure");
         add("subtitles.corruptedadventure.ambient.ring_1.strange_cave", "Er beweegt iets in het donker");
         add("subtitles.corruptedadventure.weather.ring_2.sandstorm", "Zandstorm raast");
+        add("subtitles.corruptedadventure.ambient.ring_2.singing_sand", "Het zand zingt");
+        add("subtitles.corruptedadventure.ambient.ring_2.oasis", "Vogels en insecten tjilpen");
 
         // Ring 1 blocks.
         addBlock(ModBlocks.DEAD_GRASS_BLOCK, "Dood grasblok");

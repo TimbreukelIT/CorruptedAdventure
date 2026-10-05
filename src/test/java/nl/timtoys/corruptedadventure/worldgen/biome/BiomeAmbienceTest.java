@@ -17,6 +17,7 @@ import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -65,6 +66,37 @@ class BiomeAmbienceTest {
         assertEquals(0x4C4C4C, BiomeAmbience.desaturate(0xFF0000, 1.0F), "luma of pure red is 0.299 · 255");
         assertEquals(0xA62626, BiomeAmbience.desaturate(0xFF0000, 0.5F));
         assertEquals(0x808080, BiomeAmbience.desaturate(0x808080, 0.7F), "grey stays grey");
+    }
+
+    @Test
+    void darkenMixesTowardsBlack() {
+        for (int rgb : new int[]{0x000000, 0xFFFFFF, 0x123456, 0xE4D2A6}) {
+            assertEquals(rgb, BiomeAmbience.darken(rgb, 0.0F));
+            assertEquals(0x000000, BiomeAmbience.darken(rgb, 1.0F));
+        }
+        assertEquals(0x808080, BiomeAmbience.darken(0xFFFFFF, 0.5F));
+        assertEquals(0xCCCCCC, BiomeAmbience.darken(0xFFFFFF, 0.2F));
+    }
+
+    @Test
+    void paletteWithersChangeOnlyTheirOwnField() {
+        BiomeAmbience.Palette base = new BiomeAmbience.Palette(1, 2, 3, 4);
+        assertEquals(new BiomeAmbience.Palette(9, 2, 3, 4), base.withSky(9));
+        assertEquals(new BiomeAmbience.Palette(1, 9, 3, 4), base.withFog(9));
+        assertEquals(new BiomeAmbience.Palette(1, 2, 8, 9), base.withWater(8, 9));
+    }
+
+    @Test
+    void ring2PalettesDifferFromEachOtherAndFromRing1() {
+        List<BiomeAmbience.Palette> palettes = List.of(BiomeAmbience.Palette.RING_2, BiomeAmbience.Palette.CANYONLANDS,
+                BiomeAmbience.Palette.OASIS_FLATS, BiomeAmbience.Palette.SALT_FLATS, BiomeAmbience.Palette.HOODOO_FIELDS,
+                BiomeAmbience.Palette.DUNE_SEA, BiomeAmbience.Palette.DRY_RIVERBEDS, BiomeAmbience.Palette.RING_1);
+        assertEquals(palettes.size(), palettes.stream().distinct().count());
+        assertEquals(new BiomeAmbience.Palette(0xAEC8E0, 0xE4D2A6, 0x32A598, 0x0B3A35), BiomeAmbience.Palette.RING_2);
+        assertEquals(new BiomeAmbience.Palette(0xAEC8E0, 0xE4D2A6, 0x32A598, 0x0B3A35).desaturated(0.35F).darkened(0.1F),
+                BiomeAmbience.Palette.DRY_RIVERBEDS);
+        assertEquals(0x5AC8B8, BiomeAmbience.Palette.SALT_FLATS.water());
+        assertEquals(0x1B5048, BiomeAmbience.Palette.SALT_FLATS.waterFog());
     }
 
     @Test

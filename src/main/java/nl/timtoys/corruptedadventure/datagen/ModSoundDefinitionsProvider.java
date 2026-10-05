@@ -9,8 +9,9 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 
 /**
- * {@code sounds.json}. Our sounds reuse vanilla's samples through {@code event} entries (pitch and volume multiply
- * those of the vanilla event), so there are no audio files yet; own {@code .ogg}s can replace them here later.
+ * {@code sounds.json}. Ring 1 and the sandstorm reuse vanilla's samples through {@code event} entries (pitch and volume
+ * multiply those of the vanilla event); the ring 2 ambient sounds are our own {@code .ogg}s ({@code tools/sounds/Ring2Sounds.java}),
+ * which must exist before datagen runs: the provider checks the files.
  */
 final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
     ModSoundDefinitionsProvider(PackOutput output, ExistingFileHelper files) {
@@ -27,6 +28,19 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
         add(ModSoundEvents.RING_2_SANDSTORM, SoundDefinition.definition()
                 .subtitle("subtitles.corruptedadventure.weather.ring_2.sandstorm")
                 .with(sound(SoundEvents.ELYTRA_FLYING.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.7F)));
+        // Singing sand: a low hum; positional on the client, so it fades with distance (the .ogg's are mono).
+        add(ModSoundEvents.RING_2_SINGING_SAND, SoundDefinition.definition()
+                .subtitle("subtitles.corruptedadventure.ambient.ring_2.singing_sand")
+                .with(ring2File("singing_sand_1"), ring2File("singing_sand_2"), ring2File("singing_sand_3")));
+        add(ModSoundEvents.RING_2_OASIS, SoundDefinition.definition()
+                .subtitle("subtitles.corruptedadventure.ambient.ring_2.oasis")
+                .with(ring2File("oasis_1"), ring2File("oasis_2"), ring2File("oasis_3")));
+    }
+
+    private static SoundDefinition.Sound ring2File(String name) {
+        return sound(CorruptedAdventure.id("ambient/ring_2/" + name), SoundDefinition.SoundType.SOUND)
+                .volume(0.8F)
+                .attenuationDistance(24);
     }
 
     private static SoundDefinition.Sound caveSound(float pitch) {

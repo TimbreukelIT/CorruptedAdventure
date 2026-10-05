@@ -8,7 +8,11 @@
   },
   "downfall": 0.4,
   "effects": {
-    "fog_color": 15259560,
+    "additions_sound": {
+      "sound": "corruptedadventure:ambient.ring_2.oasis",
+      "tick_chance": 0.004
+    },
+    "fog_color": 15261114,
     "foliage_color": 6135858,
     "grass_color": 7320383,
     "mood_sound": {
@@ -17,7 +21,7 @@
       "sound": "minecraft:ambient.cave",
       "tick_delay": 6000
     },
-    "sky_color": 10470632,
+    "sky_color": 10405356,
     "water_color": 3319192,
     "water_fog_color": 735797
   },
