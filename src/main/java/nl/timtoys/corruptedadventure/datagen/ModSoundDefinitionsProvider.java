@@ -35,6 +35,20 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
         add(ModSoundEvents.RING_2_OASIS, SoundDefinition.definition()
                 .subtitle("subtitles.corruptedadventure.ambient.ring_2.oasis")
                 .with(ring2File("oasis_1"), ring2File("oasis_2"), ring2File("oasis_3")));
+        // Nether ring 2: our own seamless loop (streamed, no subtitle like vanilla's loops) and vanilla's dripstone drops.
+        add(ModSoundEvents.NETHER_RING_2_DRIP_LOOP, SoundDefinition.definition()
+                .with(netherFile("drip_loop_1"), netherFile("drip_loop_2")));
+        add(ModSoundEvents.NETHER_RING_2_DRIPS, SoundDefinition.definition()
+                .subtitle("subtitles.corruptedadventure.ambient.nether_ring_2.drips")
+                .with(sound(SoundEvents.POINTED_DRIPSTONE_DRIP_WATER.getLocation(), SoundDefinition.SoundType.EVENT)
+                                .weight(3).pitch(0.85F).volume(0.75F),
+                        sound(SoundEvents.POINTED_DRIPSTONE_DRIP_WATER_INTO_CAULDRON.getLocation(), SoundDefinition.SoundType.EVENT)
+                                .weight(1).pitch(0.75F).volume(0.75F)));
+    }
+
+    private static SoundDefinition.Sound netherFile(String name) {
+        return sound(CorruptedAdventure.id("ambient/nether_ring_2/" + name), SoundDefinition.SoundType.SOUND)
+                .stream();
     }
 
     private static SoundDefinition.Sound ring2File(String name) {

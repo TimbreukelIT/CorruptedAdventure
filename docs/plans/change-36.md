@@ -362,3 +362,22 @@ Antwoord: **A** — vanilla-particles via biome-data: `spore_blossom_air` in het
 | 2026-10-01 | atmosphere | Muziek en `mood_sound` Nether-ring 2 blijven zoals change 35 ze zet; blok-druppels (slijmstalactieten, dauwbron) zijn `blocks` | Eén bron per laag; volgt change 13 |
 
 Commit (na `/code-review`): `atmosphere: add nether ring 2 fog, drip ambience and spore particles`.
+
+---
+
+## Bouwnotities (2026-10-05)
+
+- Afwijking van het plan: `NetherRing2Biomes` bestond bij de start nog niet (change 35 parallel in bouw). De effects zijn daarom builders in `BiomeAmbience` (`dripshroomForestEffects()`, `sporeCavesEffects()`); 35 zet er mood en muziek bij. Geen extra ontwerpkeuze.
+- Audio: `Ring2Sounds.java` variant `loop` (periodiek: sinussen op hele veelvouden van de looplengte + druppels die om het einde wikkelen). Bij elke run herschrijft het script ook de ring 2-`.ogg`'s (andere bytes): die zijn teruggezet, alleen `drip_loop_{1,2}.ogg` zijn nieuw.
+- Getest: B groen (inclusief `ClientIsolationTest`), D groen (geen eigen diff buiten `sounds.json`, lang en de twee biome-JSON's van 35), S: server start op `smoke-change36` zonder sound/particle-meldingen en een client (`runClient -PquickPlay`) joint zonder fouten. Niet getest: het luisteren/kijken zelf (W).
+
+## In-game checklist (W)
+
+Nieuwe wereld, preset `corruptedadventure:corrupted_world`, seed `20260930`, ondertitels aan, kijkafstand 12, jezelf op op. Hangt af van change 35 (Nether-ring 2-terrein en de biomes `dripshroom_forest`/`spore_caves`); zonder die commit staan er geen biomes om in te testen.
+1. `/ca tpring 2 nether` (4 keer, na elke keer 90 graden draaien; of `/tp` 300 blokken verderop): F3 toont `corruptedadventure:dripshroom_forest`; fog is grijsgroen (`56645A`), niet rood/zwart; zwamkathedralen blijven als ruimte leesbaar. Vergelijk met `/ca tpring 1 nether`.
+2. `/ca tpboundary 1 nether`: loop heen en weer over de grens; fog-kleur verloopt zonder harde lijn; de druppelloop begint/eindigt met een fade.
+3. `/locate biome corruptedadventure:spore_caves`, `/tp` erheen: fog donkerder blauwgroen (`3E5A50`); glow-spikkels steken af.
+4. Geluid: loop constant hoorbaar; een minuut luisteren, geen klik bij de loopnaad; losse druppels met ondertitel "Water drips"/"Water druppelt"; niet irritant; ambient-schuif regelt het volume. `/playsound corruptedadventure:ambient.nether_ring_2.drips ambient @s` en `.drip_loop`: beide hoorbaar.
+5. Particles: `spore_blossom_air` in het woud en `glow` in de grotten zichtbaar maar niet hinderlijk; F3 `P:` stabiel en geen merkbare fps-daling t.o.v. Nether-ring 1. Particles "Minimal" vermindert ze.
+6. Twee clients (`runClient` + `runClient2 -PquickPlay` tegen `runServer`): beide zien dezelfde fog-kleuren en horen de loop; de losse druppels en particles verschillen per speler (vanilla, bewust).
+Afstemwaarden: fog `56645A`/`3E5A50`; `tick_chance` 0,01/0,02; particle `probability` 0,0005 (`spore_blossom_air`) en 0,004 (`glow`) in `BiomeAmbience`.

@@ -1,6 +1,10 @@
 package nl.timtoys.corruptedadventure.worldgen.biome;
 
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.level.biome.AmbientAdditionsSettings;
 import net.minecraft.world.level.biome.AmbientMoodSettings;
+import net.minecraft.world.level.biome.AmbientParticleSettings;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.neoforged.neoforge.common.world.BiomeSpecialEffectsBuilder;
@@ -26,6 +30,30 @@ public final class BiomeAmbience {
             Optional.of(new AmbientMoodSettings(ModSoundEvents.RING_1_STRANGE_CAVE, 1800, 12, 3.0));
 
     private BiomeAmbience() {
+    }
+
+    /**
+     * Effects of {@code dripshroom_forest}: grey-green mist, a constant drip loop, single drops and slowly drifting
+     * spores. No mood sound and no music: the biome bootstrap sets those. Fog distance is vanilla Nether's (not biome data).
+     */
+    public static BiomeSpecialEffects.Builder dripshroomForestEffects() {
+        return netherRing2Effects(Palette.DRIPSHROOM_FOREST, 0.01, ParticleTypes.SPORE_BLOSSOM_AIR, 0.0005F);
+    }
+
+    /** Effects of {@code spore_caves}: darker mist, wetter (twice the drops) and glowing spores. */
+    public static BiomeSpecialEffects.Builder sporeCavesEffects() {
+        return netherRing2Effects(Palette.SPORE_CAVES, 0.02, ParticleTypes.GLOW, 0.004F);
+    }
+
+    private static BiomeSpecialEffects.Builder netherRing2Effects(Palette palette, double dropChance, ParticleOptions particle, float probability) {
+        return new BiomeSpecialEffects.Builder()
+                .skyColor(palette.sky())
+                .fogColor(palette.fog())
+                .waterColor(palette.water())
+                .waterFogColor(palette.waterFog())
+                .ambientLoopSound(ModSoundEvents.NETHER_RING_2_DRIP_LOOP)
+                .ambientAdditionsSound(new AmbientAdditionsSettings(ModSoundEvents.NETHER_RING_2_DRIPS, dropChance))
+                .ambientParticle(new AmbientParticleSettings(particle, probability));
     }
 
     /** The same biome with only its mood sound replaced: climate, generation, spawns and every other effect are kept. */
@@ -79,6 +107,13 @@ public final class BiomeAmbience {
         public static final Palette DUNE_SEA = RING_2.withSky(0xB4CADA).withFog(0xEACF96);
         /** Ashen and scorched: the ring 2 palette 35 % towards grey and 10 % darker, a foretaste of ring 3. */
         public static final Palette DRY_RIVERBEDS = RING_2.desaturated(0.35F).darkened(0.1F);
+
+        /** Nether ring 2 base: grey-green, damp, medium dark fog (reads as mist, not as darkness); no sky in the Nether. */
+        public static final Palette NETHER_RING_2 = new Palette(0x000000, 0x56645A, 0x3D8C7A, 0x0F2A24);
+        /** The main biome: the base fog. */
+        public static final Palette DRIPSHROOM_FOREST = NETHER_RING_2;
+        /** Darker and bluer, so the glowing spores stand out. */
+        public static final Palette SPORE_CAVES = NETHER_RING_2.withFog(0x3E5A50);
 
         public Palette desaturated(float amount) {
             return new Palette(desaturate(sky, amount), desaturate(fog, amount), desaturate(water, amount), desaturate(waterFog, amount));

@@ -149,3 +149,5 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [blocks] Later-idee: verplaatsbare dauwbron (Silk Touch) of ring-gebonden groei (`RingLayout.ringAt` in `randomTick`); afgewezen in 34-2. (bron: change 34)
 - [blocks] De dauwkristal-stadia spelen het amethist-belgeluid bij een projectieltreffer (vanilla `AmethystClusterBlock`, zoals `salt_crystal`). (bron: change 34)
 - [textures] Change 37: dauwbron en dauwkristal zijn nu `still` en in een werkpalet; emissive voor de stadia (patroon `oreWithOverlay`) en een golf-animatie voor de dauwbron zijn 37 vraag 1/2. (bron: change 34)
+- [atmosphere] Als de runClient-check het vraagt: een overgangsbiome Nether-ring 1 → 2 voor een zachtere loop-wissel (de fog-kleur mengt al zelf). (bron: change 36)
+- [blocks] Positionele druppels uit slijmstalactieten (geen `animateTick` in change 33); de biome-druppels van change 36 zijn nu de enige. (bron: change 36)

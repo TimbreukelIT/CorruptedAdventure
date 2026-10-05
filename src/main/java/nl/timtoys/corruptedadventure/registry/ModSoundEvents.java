@@ -24,6 +24,11 @@ public final class ModSoundEvents {
     /** Birds and insects of the oasis (change 32), the additions sound of {@code oasis_flats}. */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_2_OASIS = register("ambient.ring_2.oasis");
 
+    /** Seamless damp loop, the ambient sound of both Nether ring 2 biomes (change 36). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_2_DRIP_LOOP = register("ambient.nether_ring_2.drip_loop");
+    /** Single drops, the additions sound of both Nether ring 2 biomes (change 36). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_2_DRIPS = register("ambient.nether_ring_2.drips");
+
     private ModSoundEvents() {
     }
 

@@ -21,7 +21,9 @@ import javax.sound.sampled.AudioSystem;
  * <ul>
  *   <li>{@code drone}: a low, slowly swelling hum with a few overtones, a slow beat and a hint of filtered noise
  *       (singing sand, change 32);</li>
- *   <li>{@code ambient}: short birds and insects (oasis, change 32).</li>
+ *   <li>{@code ambient}: short birds and insects (oasis, change 32);</li>
+ *   <li>{@code loop}: a seamless damp bed of drops and soft noise (Nether ring 2, change 36); everything is periodic in
+ *       the loop length, so the end runs straight into the start.</li>
  * </ul>
  *
  * <p>Deterministic: every file has a fixed seed (hash of its name) and uses {@link StrictMath}, so running twice gives
@@ -43,7 +45,9 @@ public final class Ring2Sounds {
             new Sound("ambient/ring_2/singing_sand_3", "drone", 3),
             new Sound("ambient/ring_2/oasis_1", "ambient", 1),
             new Sound("ambient/ring_2/oasis_2", "ambient", 2),
-            new Sound("ambient/ring_2/oasis_3", "ambient", 3));
+            new Sound("ambient/ring_2/oasis_3", "ambient", 3),
+            new Sound("ambient/nether_ring_2/drip_loop_1", "loop", 1),
+            new Sound("ambient/nether_ring_2/drip_loop_2", "loop", 2));
 
     private Ring2Sounds() {
     }
@@ -60,9 +64,12 @@ public final class Ring2Sounds {
             double[] samples = switch (sound.variant()) {
                 case "drone" -> drone(random, sound.index());
                 case "ambient" -> ambient(random, sound.index());
+                case "loop" -> loop(random, sound.index());
                 default -> throw new IllegalStateException(sound.variant());
             };
-            check(sound, samples);
+            if (!sound.variant().equals("loop")) {
+                check(sound, samples);
+            }
             Path wav = WAV_DIR.resolve(sound.path() + ".wav");
             Path ogg = OUTPUT.resolve(sound.path() + ".ogg");
             Files.createDirectories(wav.getParent());
@@ -132,6 +139,44 @@ public final class Ring2Sounds {
             }
         }
         return normalise(out, 0.6);
+    }
+
+    /**
+     * Nether ring 2 loop, 8 s or 10 s: noise built from sines at whole multiples of the loop frequency (so it is exactly
+     * periodic), plus 9-12 drops whose tails wrap around the end. No fade: the loop point has no click by construction.
+     */
+    private static double[] loop(Random random, int index) {
+        double seconds = 6 + index * 2;
+        int length = (int) (seconds * RATE);
+        double[] out = new double[length];
+        // Damp bed: 60 partials on whole multiples of 1/seconds between 40 and 700 Hz, falling off with frequency.
+        for (int p = 0; p < 60; p++) {
+            double frequency = Math.round((40 + random.nextDouble() * 660) * seconds) / seconds;
+            double phase = random.nextDouble() * 2 * Math.PI;
+            double amp = 0.05 * (80 / (80 + frequency));
+            for (int i = 0; i < length; i++) {
+                out[i] += amp * StrictMath.sin(2 * Math.PI * frequency * i / RATE + phase);
+            }
+        }
+        int drops = 9 + index;
+        for (int d = 0; d < drops; d++) {
+            double start = (d + 0.2 + random.nextDouble() * 0.6) * seconds / drops;
+            drop(out, start, 1100 + random.nextDouble() * 900, 0.35 + random.nextDouble() * 0.45);
+        }
+        return normalise(out, 0.7);
+    }
+
+    /** One water drop: a short falling-then-rising blip with a decaying tail, wrapped around the end of {@code out}. */
+    private static void drop(double[] out, double start, double frequency, double amp) {
+        int first = (int) (start * RATE);
+        int count = (int) (0.35 * RATE);
+        double phase = 0;
+        for (int i = 0; i < count; i++) {
+            double t = i / (double) RATE;
+            phase += 2 * Math.PI * frequency * (1 + 3.5 * t) / RATE;
+            double envelope = (1 - StrictMath.exp(-t * 900)) * StrictMath.exp(-t * 16);
+            out[(first + i) % out.length] += amp * envelope * StrictMath.sin(phase);
+        }
     }
 
     /** A bird note: a frequency sweep with a smooth envelope and a light vibrato, added into {@code out}. */

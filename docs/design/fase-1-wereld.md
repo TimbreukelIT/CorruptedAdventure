@@ -454,6 +454,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Dauwbron**: eigen natuurblok dat water-achtig oogt en druppelt; **geen echte waterfluid**, de Nether blijft `ultrawarm`.
 - **Sleutelmateriaal: dauwkristal**, groeit langzaam aan dauwbronnen (zoals budding amethyst). Nodig voor bewaker 2→3; in fase 2 de basis van hittebescherming voor ring 3.
 - **Sfeer**: dichte grijsgroene fog, constante druppelgeluiden, zwevende sporen-particles (alles biome-data).
+- **Uitwerking (change 36):** fog `56645A` in `dripshroom_forest`, `3E5A50` (donkerder, blauwer) in `spore_caves`; fog-dichtheid vanilla-Nether (alleen de kleur is data, geen client-code). Geluid: `ambient_sound` = eigen gesynthetiseerde naadloze loop (`ambient.nether_ring_2.drip_loop`, `Ring2Sounds.java`), `additions_sound` = vanilla dripstone-druppels (`ambient.nether_ring_2.drips`) met `tick_chance` 0,01 (woud) en 0,02 (grotten). Particles: `spore_blossom_air` 0,0005 (woud), `glow` 0,004 (grotten). Mood en muziek zoals change 35 ze zet.
 - Geen conditie.
 - **Uitwerking (change 33, gebouwd)** — 20 blokken, placeholders uit `Ring2Textures.java` (definitief in change 37); alleen blokken, plaatsing in de wereld is change 35:
   - **Namen:** `dripshroom_*` (stem, hyphae, gestript, planks + houtset, `_cap`, `_lamp`), `soaked_netherrack`, `spore_moss`, `slime_stalactite`, `glow_mold`, `spore_sprouts`. Tag `corruptedadventure:fungal_growths` (stam, hyfen, gestript, hoed, lamp, stalactiet, gloeischimmel, sporenspruiten) is het contract met 34/35.

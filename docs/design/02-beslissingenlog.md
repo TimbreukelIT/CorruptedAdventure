@@ -356,3 +356,8 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-05 | blocks | Licht dauwbron/dauwkristal: stadia 1/2/4/5, bron 0 (34-6 A) | Rijpe clusters vindbaar; bron blijft "water" |
 | 2026-10-05 | blocks | Druppelen dauwbron: `animateTick` met `DRIPPING_WATER` in deze change (34-7 A) | "Druppelt" is een eigenschap van het blok; vanilla-patroon |
 | 2026-10-05 | blocks | Tag `corruptedadventure:fungal_growths` aangemaakt in change 33 (stam, hyfen, gestript, hoed, lamp, stalactiet, gloeischimmel, sporenspruiten) | Contract met 34 (dauwkristal) en 35 (determinismeregel) |
+| 2026-10-05 | atmosphere | Fog Nether-ring 2: woud `56645A`, sporengrotten `3E5A50`; palettes `NETHER_RING_2`, `DRIPSHROOM_FOREST`, `SPORE_CAVES` in `BiomeAmbience.Palette` (36-1 A) | Vochtige mist met contrast tussen de twee biomes |
+| 2026-10-05 | atmosphere | Fog-dichtheid Nether-ring 2: vanilla-Nether, alleen kleur (36-2 A) | Pure biome-data; kathedralen blijven zichtbaar |
+| 2026-10-05 | atmosphere | Druppelgeluiden Nether-ring 2: eigen naadloze loop (`Ring2Sounds.java`, variant `loop`) + vanilla dripstone-druppels; events `ambient.nether_ring_2.drip_loop` en `.drips` (36-3 A) | Constant door de loop, herkenbare druppels erbovenop; geen vanilla-audio in de repo |
+| 2026-10-05 | atmosphere | Sporen-particles Nether-ring 2: `spore_blossom_air` (woud, 0,0005), `glow` (grotten, 0,004) via biome-data (36-4 A) | Geen code of texture; zoals het design |
+| 2026-10-05 | atmosphere | Mood en muziek Nether-ring 2 blijven zoals change 35; de effects komen als builders uit `BiomeAmbience`, `NetherRing2Biomes` voegt mood/muziek toe | Eén bron per laag; volgt change 13 |

@@ -5,6 +5,8 @@ import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.particles.ParticleTypes;
+import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.biome.BiomeData;
@@ -53,6 +55,34 @@ class BiomeAmbienceTest {
         BiomeSpecialEffects plains = bootstrap(BiomeData::bootstrap).get(Biomes.PLAINS).getSpecialEffects();
         assertEquals(new BiomeAmbience.Palette(plains.getSkyColor(), plains.getFogColor(), plains.getWaterColor(), plains.getWaterFogColor()),
                 BiomeAmbience.Palette.RING_1);
+    }
+
+    @Test
+    void netherRing2PalettesAreGreyGreenAndDistinct() {
+        assertEquals(0x56645A, BiomeAmbience.Palette.DRIPSHROOM_FOREST.fog());
+        assertEquals(0x3E5A50, BiomeAmbience.Palette.SPORE_CAVES.fog());
+        assertNotEquals(BiomeAmbience.Palette.DRIPSHROOM_FOREST, BiomeAmbience.Palette.SPORE_CAVES);
+        assertNotEquals(BiomeAmbience.Palette.RING_1, BiomeAmbience.Palette.NETHER_RING_2);
+        assertNotEquals(BiomeAmbience.Palette.RING_2, BiomeAmbience.Palette.NETHER_RING_2);
+        assertEquals(0x000000, BiomeAmbience.Palette.NETHER_RING_2.sky());
+    }
+
+    @Test
+    void netherRing2EffectsCarryFogSoundsAndParticles() {
+        BiomeSpecialEffects forest = BiomeAmbience.dripshroomForestEffects().build();
+        BiomeSpecialEffects caves = BiomeAmbience.sporeCavesEffects().build();
+        assertEquals(0x56645A, forest.getFogColor());
+        assertEquals(0x3E5A50, caves.getFogColor());
+        for (BiomeSpecialEffects effects : List.of(forest, caves)) {
+            assertSame(ModSoundEvents.NETHER_RING_2_DRIP_LOOP, effects.getAmbientLoopSoundEvent().orElseThrow());
+            assertSame(ModSoundEvents.NETHER_RING_2_DRIPS, effects.getAmbientAdditionsSettings().orElseThrow().getSoundEvent());
+            assertEquals(Optional.empty(), effects.getAmbientMoodSettings());
+            assertEquals(Optional.empty(), effects.getBackgroundMusic());
+        }
+        assertEquals(0.01, forest.getAmbientAdditionsSettings().orElseThrow().getTickChance());
+        assertEquals(0.02, caves.getAmbientAdditionsSettings().orElseThrow().getTickChance());
+        assertEquals(ParticleTypes.SPORE_BLOSSOM_AIR, forest.getAmbientParticleSettings().orElseThrow().getOptions());
+        assertEquals(ParticleTypes.GLOW, caves.getAmbientParticleSettings().orElseThrow().getOptions());
     }
 
     @Test
