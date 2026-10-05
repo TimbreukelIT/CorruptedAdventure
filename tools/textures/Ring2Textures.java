@@ -85,9 +85,9 @@ public final class Ring2Textures {
     private static final int[] SALT_CRYSTAL = {0xBFCFD8, 0xDCE6EB, 0xF1F5F7, 0xFFFFFF};
     private static final int SALT_CRYSTAL_BLUSH = 0xEBD9D6;
     // Nether ring 2 working palettes (change 33, placeholders; final in change 37): dark to light.
-    private static final int[] SOAKED_NETHERRACK = {0x2E1A1A, 0x47282A, 0x5E3634, 0x6F4A44};
-    private static final int SOAKED_DAMP = 0x3E4A3C;
-    private static final int SOAKED_GLOSS = 0x8A7A70;
+    private static final int[] SOAKED_NETHERRACK = {0x2A1618, 0x3D2024, 0x52302F, 0x6A423E, 0x84574D};
+    private static final int SOAKED_DAMP = 0x34402F;
+    private static final int SOAKED_GLOSS = 0xA38F82;
     private static final int[] SPORE_MOSS = {0x3E4A3C, 0x556450, 0x6E7F66, 0x8C9A80};
     private static final int SPORE_DOT = 0xC8D4B0;
     private static final int[] DRIPSHROOM_BARK = {0x3A3440, 0x4E4A58, 0x66667A};
@@ -1387,23 +1387,38 @@ public final class Ring2Textures {
 
     // ---- Nether ring 2 --------------------------------------------------------------------------------------
 
-    /** Dark red-brown, wet: two noise scales, a few grey-green damp spots and short horizontal gloss highlights. */
+    /**
+     * Wet netherrack: ~20 wrapping lumps (like vanilla's bumpy netherrack, but darker and more purple-brown), each lit
+     * from the top left with its own base tone, parted by dark crevices; a broad noise varies the tone across the tile so
+     * the repetition is hard to see. Short gloss highlights on the lit lumps and a few damp grey-green specks in the
+     * crevices. No hard outlines.
+     */
     private static void soakedNetherrack(BufferedImage image, Random random) {
-        double[][] broad = valueNoise(random, 4, 4);
+        Cells cells = Cells.random(random, 20);
+        double[] base = new double[cells.count()];
+        for (int i = 0; i < base.length; i++) {
+            base[i] = 0.45 + 0.3 * random.nextDouble();
+        }
+        double[][] broad = valueNoise(random, 8, 8);
         double[][] fine = valueNoise(random, 2, 2);
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                set(image, x, y, shade(SOAKED_NETHERRACK, 0.7 * broad[x][y] + 0.3 * fine[x][y]));
+                Cells.Nearest nearest = cells.nearest(x, y);
+                double gap = nearest.secondDistance() - nearest.distance();
+                double light = base[nearest.index()] + 0.3 * (broad[x][y] - 0.5) + 0.12 * (fine[x][y] - 0.5)
+                        - 0.1 * (nearest.dx() + nearest.dy());
+                if (gap < 0.6) {
+                    light = Math.min(light, 0.28);
+                    if (random.nextInt(12) == 0) {
+                        set(image, x, y, SOAKED_DAMP);
+                        continue;
+                    }
+                }
+                set(image, x, y, shade(SOAKED_NETHERRACK, light));
+                if (gap >= 0.6 && light > 0.78 && nearest.dy() < 0 && random.nextInt(2) == 0) {
+                    set(image, x, y, SOAKED_GLOSS);
+                }
             }
-        }
-        for (int i = 0; i < 14; i++) {
-            set(image, random.nextInt(SIZE), random.nextInt(SIZE), SOAKED_DAMP);
-        }
-        for (int i = 0; i < 5; i++) {
-            int x = random.nextInt(SIZE);
-            int y = random.nextInt(SIZE);
-            setWrapped(image, x, y, SOAKED_GLOSS);
-            setWrapped(image, x + 1, y, SOAKED_GLOSS);
         }
     }
 
