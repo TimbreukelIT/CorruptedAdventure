@@ -56,11 +56,20 @@ public final class Ring2Textures {
     private static final int[] LOOSE_SAND = {0xC9B98A, 0xD6C799, 0xDFD1A5, 0xE8DCB2};
     private static final int[] CRACKED_CLAY = {0x7C6A58, 0x92806A, 0xA8957C, 0xBCA98F};
     private static final int CLAY_CRACK = 0x4E4236;
-    private static final int[] DRY_SHRUB = {0x5A4630, 0x75603F, 0x917A52};
-    private static final int[] BARREL_CACTUS = {0x2F4A2A, 0x3F6136, 0x557A44, 0x6E9455};
+    // Own plants (change 37, decision 10 A): accents vanilla's plants do not have, readable at ~10 blocks.
+    private static final int[] DRY_SHRUB = {0x5F5648, 0x7B7060, 0x9A8F7C};
+    private static final int DRY_SHRUB_TIP = 0xD2C7AE;
+    private static final int[] BARREL_CACTUS = {0x264A3C, 0x356052, 0x4A7A68, 0x66987F};
     private static final int CACTUS_SPINE = 0xE6D9A8;
-    private static final int[] DESERT_FLOWER_PETAL = {0xA8326E, 0xC94C8A, 0xE27AAB};
-    private static final int[] DESERT_FLOWER_STEM = {0x4F6A33, 0x6B8A45};
+    private static final int[] CACTUS_BUD = {0xD94F7A, 0xF28DB0};
+    private static final int CACTUS_BUD_CORE = 0xF4D35E;
+    private static final int[] DESERT_FLOWER_PETAL = {0xC4452A, 0xE8703F, 0xF5A05E};
+    private static final int DESERT_FLOWER_TIP = 0xFFE9B8;
+    private static final int[] DESERT_FLOWER_CORE = {0x1B7F76, 0x2FB5A8};
+    private static final int[] DESERT_FLOWER_STEM = {0x5B6B45, 0x7E9160};
+    private static final int CANYON_MORTAR_WARM = 0x6B3A22;
+    private static final int GREY = 0x8C7F74;
+    private static final int[] SALT_BLOCK = {0xB8AE9A, 0xC6BEAB, 0xD6CFBF, 0xE2DCCF};
     private static final int[] PALM_BARK = {0x463B30, 0x5C4F40, 0x716250, 0x877762, 0x9C8C75};
     private static final int[] PALM_WOOD = {0x9A7F52, 0xB49862, 0xC9AE76, 0xDAC28A, 0xE8D3A0};
     private static final int[] PALM_LEAVES = {0x28561C, 0x377425, 0x4A9030, 0x62AA3E};
@@ -92,22 +101,25 @@ public final class Ring2Textures {
     // Dew working palettes (change 34, placeholders; final in change 37): dark to light.
     private static final int[] DEW_SOURCE = {0x173F52, 0x1F5F78, 0x2E86A6, 0x4FAFC8, 0x86D2E0};
     private static final int DEW_SOURCE_GLINT = 0xD6F4FA;
-    private static final int[] DEW_CRYSTAL = {0x2A7F99, 0x4FB8D0, 0x8FDDEB, 0xC6F1FA, 0xE8FBFF};
-    private static final int DEW_CRYSTAL_OUTLINE = 0x17475A;
+    // Clear, almost colourless drop of water with a pale blue core (decision 2 A); the soul crystal is saturated cyan.
+    private static final int[] DEW_CRYSTAL = {0x5E9FB4, 0x82BACB, 0xA6D3E0, 0xD6EEF4, 0xF4FCFF};
+    private static final int DEW_CRYSTAL_OUTLINE = 0x1B4A5C;
+    private static final int SUNSTONE_GLOW = 0xFFF0B0;
+    private static final int DEW_GLOW = 0xF0FCFF;
 
     /**
      * How a texture moves: {@code frames} frames of {@code frametime} ticks, optionally interpolated; {@code glow} is
      * the colour bright frames mix towards (per material). {@link #STILL} for textures without animation.
      */
-    private record Animation(int frames, int frametime, boolean interpolate, int glow) {
-        static final Animation STILL = new Animation(1, 1, false, 0);
+    private record Animation(int frames, int frametime, boolean interpolate, int glow, boolean cycling) {
+        static final Animation STILL = new Animation(1, 1, false, 0, false);
 
         boolean animated() {
             return frames > 1;
         }
     }
 
-    private record Texture(Painter painter, Animation animation) {
+    private record Texture(Painter painter, CyclingPainter cyclingPainter, Animation animation) {
     }
 
     @FunctionalInterface
@@ -115,11 +127,20 @@ public final class Ring2Textures {
         void paint(BufferedImage image, Random random);
     }
 
+    /** Paints one frame of an opaque, moving texture; {@code phase} runs from 0 (inclusive) to 1 (exclusive) over a cycle. */
+    @FunctionalInterface
+    private interface CyclingPainter {
+        void paint(BufferedImage image, Random random, double phase);
+    }
+
     /** Pulse used by glowing ores and crystals, as in ring 1: 8 frames, frame time 4, interpolated. */
     private static final int PULSE_FRAMES = 8;
     private static final int PULSE_FRAMETIME = 4;
 
     private static final Map<String, Texture> TEXTURES = new LinkedHashMap<>();
+
+    /** Preview only (never written): variants the contact sheet compares with the chosen texture. */
+    private static final Map<String, Painter> PREVIEW_ONLY = new LinkedHashMap<>();
 
     static {
         still("block/red_canyon_stone", (image, random) -> canyonStone(image, random, RED_CANYON_STONE));
@@ -149,9 +170,9 @@ public final class Ring2Textures {
         still("block/palm_leaves", Ring2Textures::palmLeaves);
         still("block/palm_sapling", Ring2Textures::palmSapling);
         still("item/palm_door", (image, random) -> doorItem(image, random, PALM_WOOD, PALM_BARK));
-        still("block/sunstone_ore_overlay", Ring2Textures::sunstoneOreOverlay);
+        pulsing("block/sunstone_ore_overlay", SUNSTONE_GLOW, Ring2Textures::sunstoneOreOverlay);
         still("block/turquoise_ore_overlay", Ring2Textures::turquoiseOreOverlay);
-        still("item/raw_sunstone", Ring2Textures::rawSunstone);
+        pulsing("item/raw_sunstone", SUNSTONE_GLOW, Ring2Textures::rawSunstone);
         still("item/raw_turquoise", Ring2Textures::rawTurquoise);
         still("block/salt_crust_top", Ring2Textures::saltCrustTop);
         still("block/salt_crust_side", Ring2Textures::saltCrustSide);
@@ -159,11 +180,14 @@ public final class Ring2Textures {
         still("block/polished_salt", Ring2Textures::polishedSalt);
         still("block/salt_crystal", Ring2Textures::saltCrystal);
         still("item/salt", Ring2Textures::saltItem);
+        for (char variant : new char[] {'O', 'B', 'C'}) {
+            PREVIEW_ONLY.put("variant/cobble_" + variant, (image, random) -> cobblestoneVariant(image, variant));
+        }
         // Nether ring 2 (change 33).
         still("block/soaked_netherrack", Ring2Textures::soakedNetherrack);
         still("block/spore_moss", Ring2Textures::sporeMoss);
         still("block/spore_moss_side", Ring2Textures::sporeMossSide);
-        still("block/dripshroom_stem", Ring2Textures::dripshroomStem);
+        cycling("block/dripshroom_stem", 16, 8, Ring2Textures::dripshroomStem);
         still("block/dripshroom_stem_top", Ring2Textures::dripshroomStemTop);
         still("block/stripped_dripshroom_stem", (image, random) -> strippedLog(image, random, DRIPSHROOM_WOOD));
         still("block/stripped_dripshroom_stem_top", (image, random) -> strippedLogTop(image, random, "block/dripshroom_stem_top", DRIPSHROOM_WOOD));
@@ -187,21 +211,35 @@ public final class Ring2Textures {
         }
         still("item/slime_stalactite", Ring2Textures::slimeStalactiteItem);
         // Nether ring 2 dew (change 34).
-        still("block/dew_source", Ring2Textures::dewSource);
-        still("block/small_dew_crystal_bud", (image, random) -> dewBud(image, random, 1));
-        still("block/medium_dew_crystal_bud", (image, random) -> dewBud(image, random, 2));
-        still("block/large_dew_crystal_bud", (image, random) -> dewBud(image, random, 3));
-        still("block/dew_crystal_cluster", (image, random) -> dewBud(image, random, 4));
-        still("item/dew_crystal", Ring2Textures::dewCrystalItem);
+        cycling("block/dew_source", 16, 4, Ring2Textures::dewSource);
+        pulsing("block/small_dew_crystal_bud", DEW_GLOW, (image, random) -> dewBud(image, random, 1));
+        pulsing("block/medium_dew_crystal_bud", DEW_GLOW, (image, random) -> dewBud(image, random, 2));
+        pulsing("block/large_dew_crystal_bud", DEW_GLOW, (image, random) -> dewBud(image, random, 3));
+        pulsing("block/dew_crystal_cluster", DEW_GLOW, (image, random) -> dewBud(image, random, 4));
+        pulsing("item/dew_crystal", DEW_GLOW, Ring2Textures::dewCrystalItem);
+        // Particles (decision 7 A): light grey grains, tinted sand by SandGustParticle.
+        for (int i = 0; i < 4; i++) {
+            int grain = i;
+            still("particle/sand_gust_" + i, (image, random) -> sandGrain(image, grain));
+        }
     }
 
     private static void still(String name, Painter painter) {
-        TEXTURES.put(name, new Texture(painter, Animation.STILL));
+        TEXTURES.put(name, new Texture(painter, null, Animation.STILL));
     }
 
     /** An 8-frame pulse towards {@code glow}, the glow colour of this material. */
     private static void pulsing(String name, int glow, Painter painter) {
-        TEXTURES.put(name, new Texture(painter, new Animation(PULSE_FRAMES, PULSE_FRAMETIME, true, glow)));
+        TEXTURES.put(name, new Texture(painter, null, new Animation(PULSE_FRAMES, PULSE_FRAMETIME, true, glow, false)));
+    }
+
+    /**
+     * A moving, opaque pattern (water, slime): {@code frames} frames of {@code frametime} ticks, not interpolated, that
+     * loop seamlessly because the painter is periodic in {@code phase}. Never for cutout textures: frames would not
+     * share an alpha mask (the script checks that the texture is fully opaque).
+     */
+    private static void cycling(String name, int frames, int frametime, CyclingPainter painter) {
+        TEXTURES.put(name, new Texture(null, painter, new Animation(frames, frametime, false, 0, true)));
     }
 
     public static void main(String[] args) throws IOException {
@@ -217,7 +255,8 @@ public final class Ring2Textures {
                 continue;
             }
             Animation animation = entry.getValue().animation();
-            BufferedImage output = animation.animated() ? pulseStrip(render(name), animation) : render(name);
+            BufferedImage output = animation.cycling() ? cyclingStrip(name, animation)
+                    : animation.animated() ? pulseStrip(render(name), animation) : render(name);
             check(name, output, animation);
             Files.createDirectories(file.getParent());
             ImageIO.write(output, "png", file.toFile());
@@ -229,6 +268,7 @@ public final class Ring2Textures {
                 System.out.println("wrote " + meta);
             }
         }
+        checkSideRules();
         writePreview();
     }
 
@@ -241,10 +281,21 @@ public final class Ring2Textures {
         }
         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         try {
-            TEXTURES.get(name).painter().paint(image, seeded(name));
+            Texture texture = TEXTURES.get(name);
+            if (texture.cyclingPainter() != null) {
+                texture.cyclingPainter().paint(image, seeded(name), 0.0);
+            } else {
+                texture.painter().paint(image, seeded(name));
+            }
         } catch (UncheckedIOException e) {
             throw e.getCause();
         }
+        return image;
+    }
+
+    private static BufferedImage rendered(Map<String, Painter> painters, String name) {
+        BufferedImage image = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+        painters.get(name).paint(image, seeded(name));
         return image;
     }
 
@@ -279,8 +330,33 @@ public final class Ring2Textures {
                     throw new IllegalStateException(name + ": alpha " + alpha + " at " + x + "," + y);
                 }
                 boolean opaque = alpha != 0;
+                if (animation.cycling() && !opaque) {
+                    throw new IllegalStateException(name + ": a cycling texture must be opaque (transparent at " + x + "," + y + ")");
+                }
                 if (opaque != ((image.getRGB(x, y % width) >>> 24) != 0)) {
                     throw new IllegalStateException(name + ": frame " + y / width + " has another alpha mask at " + x + "," + y % width);
+                }
+            }
+        }
+    }
+
+    /**
+     * Side textures that show their ground (a block under a crust or moss rim) must carry exactly the pixels of that
+     * ground below the rim: {side, ground, first row that is ground}.
+     */
+    private static final String[][] SIDE_RULES = {
+            {"block/salt_crust_side", "block/salt_block", "3"},
+            {"block/spore_moss_side", "block/soaked_netherrack", "6"}};
+
+    private static void checkSideRules() throws IOException {
+        for (String[] rule : SIDE_RULES) {
+            BufferedImage side = render(rule[0]);
+            BufferedImage ground = render(rule[1]);
+            for (int y = Integer.parseInt(rule[2]); y < SIZE; y++) {
+                for (int x = 0; x < SIZE; x++) {
+                    if (side.getRGB(x, y) != ground.getRGB(x, y)) {
+                        throw new IllegalStateException(rule[0] + " differs from " + rule[1] + " at " + x + "," + y);
+                    }
                 }
             }
         }
@@ -311,24 +387,49 @@ public final class Ring2Textures {
         }
     }
 
-    /** Rounded stones in all three tints with a dark mortar between them (wrapping Voronoi cells). */
+    /**
+     * Broken canyon stone (decision 8 A): one dominant orange tint (shades 1 to 3 of 5) with one red or cream guest stone
+     * per tile (~14 %) and a warm, not black, mortar. The strata colours live in the walls; the cobbles are their average.
+     */
     private static void canyonCobblestone(BufferedImage image, Random random) {
-        int[][] palettes = {RED_CANYON_STONE, ORANGE_CANYON_STONE, CREAM_CANYON_STONE};
         Cells cells = Cells.random(random, 7);
-        int[] tint = new int[cells.count()];
-        for (int i = 0; i < tint.length; i++) {
-            tint[i] = i % palettes.length;
-        }
+        int guest = random.nextInt(cells.count());
+        int[] guestPalette = random.nextBoolean() ? RED_CANYON_STONE : CREAM_CANYON_STONE;
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 Cells.Nearest nearest = cells.nearest(x, y);
                 if (nearest.secondDistance() - nearest.distance() < 0.7) {
-                    set(image, x, y, CANYON_MORTAR);
+                    set(image, x, y, CANYON_MORTAR_WARM);
                     continue;
                 }
+                int[] palette = nearest.index() == guest ? guestPalette : ORANGE_CANYON_STONE;
                 // Lit towards the top left of each stone, shadowed towards the bottom right.
+                double light = 0.5 - 0.1 * (nearest.dx() + nearest.dy()) + 0.15 * random.nextDouble();
+                set(image, x, y, shade(palette, Math.max(0.25, Math.min(0.75, light))));
+            }
+        }
+    }
+
+    /**
+     * Preview only: the first placeholder 'O' (all three tints per stone, black-red mortar: the one that "feels
+     * strange"), 'B' (all tints 40 % towards grey, dark mortar) and 'C' (all tints, muted, light mortar), to compare
+     * with the choice.
+     */
+    private static void cobblestoneVariant(BufferedImage image, char variant) {
+        Random random = seeded("block/canyon_cobblestone");
+        int[][] palettes = {RED_CANYON_STONE, ORANGE_CANYON_STONE, CREAM_CANYON_STONE};
+        double muting = variant == 'B' ? 0.4 : variant == 'C' ? 0.2 : 0.0;
+        int mortar = variant == 'B' ? 0x3A2C26 : variant == 'C' ? 0x9A6A50 : CANYON_MORTAR;
+        Cells cells = Cells.random(random, 7);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                Cells.Nearest nearest = cells.nearest(x, y);
+                if (nearest.secondDistance() - nearest.distance() < 0.7) {
+                    set(image, x, y, mortar);
+                    continue;
+                }
                 double light = 0.55 - 0.12 * (nearest.dx() + nearest.dy()) + 0.2 * random.nextDouble();
-                set(image, x, y, shade(palettes[tint[nearest.index()]], light));
+                set(image, x, y, mix(shade(palettes[nearest.index() % 3], light), GREY, muting));
             }
         }
     }
@@ -496,10 +597,11 @@ public final class Ring2Textures {
         twig(image, random, 9, 14, 1, 6, 1);
     }
 
-    /** A twig growing up from (x, y), leaning {@code lean} per few rows, forking once or twice. */
+    /** A twig growing up from (x, y), leaning {@code lean} per few rows, forking once or twice; its tip is pale. */
     private static void twig(BufferedImage image, Random random, int x, int y, int lean, int length, int depth) {
         for (int i = 0; i < length && y >= 1 && x >= 0 && x < SIZE; i++) {
-            set(image, x, y, DRY_SHRUB[i < 2 ? 0 : 1 + random.nextInt(2)]);
+            boolean tip = i == length - 1 || y == 1;
+            set(image, x, y, tip ? DRY_SHRUB_TIP : DRY_SHRUB[i < 2 ? 0 : 1 + random.nextInt(2)]);
             y--;
             if (lean != 0 && random.nextInt(2) == 0) {
                 x += lean;
@@ -510,32 +612,37 @@ public final class Ring2Textures {
         }
     }
 
-    /** A stem with two leaves and a five-petal flower head; transparent background (cutout). */
+    /**
+     * A sage-green stem with two leaves and a six-pointed star flower (coral with cream tips, a turquoise heart): a
+     * silhouette and colours none of vanilla's flowers have. Transparent background (cutout).
+     */
     private static void desertFlower(BufferedImage image, Random random) {
-        for (int y = 8; y < SIZE; y++) {
+        for (int y = 9; y < SIZE; y++) {
             set(image, 7 + (y > 12 ? 1 : 0), y, DESERT_FLOWER_STEM[y % 3 == 0 ? 1 : 0]);
         }
-        set(image, 6, 12, DESERT_FLOWER_STEM[1]);
-        set(image, 5, 11, DESERT_FLOWER_STEM[1]);
-        set(image, 9, 11, DESERT_FLOWER_STEM[1]);
-        set(image, 10, 10, DESERT_FLOWER_STEM[0]);
-        int[][] petals = {{7, 3}, {5, 5}, {9, 5}, {6, 7}, {8, 7}};
-        for (int[] petal : petals) {
-            for (int dy = 0; dy < 2; dy++) {
-                for (int dx = 0; dx < 2; dx++) {
-                    set(image, petal[0] + dx - (petal[0] > 7 ? 1 : 0), petal[1] + dy,
-                            DESERT_FLOWER_PETAL[1 + random.nextInt(2)]);
-                }
+        set(image, 6, 13, DESERT_FLOWER_STEM[1]);
+        set(image, 5, 12, DESERT_FLOWER_STEM[1]);
+        set(image, 4, 12, DESERT_FLOWER_STEM[0]);
+        set(image, 9, 12, DESERT_FLOWER_STEM[1]);
+        set(image, 10, 11, DESERT_FLOWER_STEM[1]);
+        set(image, 11, 11, DESERT_FLOWER_STEM[0]);
+        for (int arm = 0; arm < 6; arm++) {
+            double angle = Math.toRadians(-90 + 60 * arm);
+            for (int r = 1; r <= 4; r++) {
+                int x = (int) Math.round(7.5 + Math.cos(angle) * r);
+                int y = (int) Math.round(5.5 + Math.sin(angle) * r);
+                set(image, x, y, r == 4 ? DESERT_FLOWER_TIP : DESERT_FLOWER_PETAL[Math.min(2, r - 1)]);
             }
         }
-        set(image, 7, 5, CACTUS_SPINE);
-        set(image, 7, 6, DESERT_FLOWER_PETAL[0]);
-        set(image, 6, 6, DESERT_FLOWER_PETAL[0]);
+        set(image, 7, 5, DESERT_FLOWER_CORE[1]);
+        set(image, 8, 5, DESERT_FLOWER_CORE[1]);
+        set(image, 7, 6, DESERT_FLOWER_CORE[0]);
+        set(image, 8, 6, DESERT_FLOWER_CORE[0]);
     }
 
     /**
-     * Seen from above (the model uses pixels 3–12): ribs as spokes from a lighter crown, spines on the ribs, darker
-     * towards the rim.
+     * Seen from above (the model uses pixels 3-12): ribs as spokes, a crown of pale spines on the rim and a rose-pink
+     * flower bud with a yellow heart in the middle.
      */
     private static void barrelCactusTop(BufferedImage image, Random random) {
         for (int y = 0; y < SIZE; y++) {
@@ -547,16 +654,22 @@ public final class Ring2Textures {
                 boolean rib = Math.cos(angle * 8) > 0.55;
                 double light = 0.85 - radius / 8.0 + (rib ? 0.2 : -0.1) + 0.1 * random.nextDouble();
                 set(image, x, y, shade(BARREL_CACTUS, light));
-                if (rib && radius > 2 && radius < 5.5 && random.nextInt(4) == 0) {
+                if (rib && radius > 3.6 && radius < 6.2 && random.nextInt(2) == 0) {
                     set(image, x, y, CACTUS_SPINE);
                 }
             }
         }
-        set(image, 7, 7, CACTUS_SPINE);
-        set(image, 8, 8, CACTUS_SPINE);
+        for (int y = 6; y <= 9; y++) {
+            for (int x = 6; x <= 9; x++) {
+                boolean corner = (x == 6 || x == 9) && (y == 6 || y == 9);
+                if (!corner) {
+                    set(image, x, y, x >= 7 && x <= 8 && y >= 7 && y <= 8 ? CACTUS_BUD_CORE : CACTUS_BUD[(x + y) % 2]);
+                }
+            }
+        }
     }
 
-    /** Vertical ribs (lit ridge, shadowed groove) with spines along the ridges; the model shows rows 6–15. */
+    /** Vertical ribs (lit ridge, shadowed groove) with V-shaped spine tufts along the ridges; the model shows rows 6-15. */
     private static void barrelCactusSide(BufferedImage image, Random random) {
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
@@ -566,8 +679,10 @@ public final class Ring2Textures {
             }
         }
         for (int x = 3; x < 13; x += 3) {
-            for (int y = 7; y < SIZE; y += 2 + random.nextInt(2)) {
+            for (int y = 8; y < SIZE; y += 3 + random.nextInt(2)) {
                 set(image, x, y, CACTUS_SPINE);
+                set(image, x - 1, y - 1, CACTUS_SPINE);
+                set(image, x + 1, y - 1, CACTUS_SPINE);
             }
         }
     }
@@ -795,7 +910,7 @@ public final class Ring2Textures {
                 image.setRGB(x, y, TRANSPARENT);
             }
         }
-        for (int i = 0; i < 11; i++) {
+        for (int i = 0; i < 20; i++) {
             int x = random.nextInt(SIZE);
             int y = random.nextInt(SIZE);
             int dx = i % 2 == 0 ? 1 : -1;
@@ -988,26 +1103,16 @@ public final class Ring2Textures {
     // ---- Salt -----------------------------------------------------------------------------------------------
 
     /**
-     * Salt flat crust from above: coarse polygons (wrapping cells, like the cracked clay plates) parted by raised white
-     * ridges, each ridge casting a thin shadow on the plate below it.
+     * Salt flat crust from above (decision 9 A): calm, no polygons of its own (the hexagons are the {@code salt_block}
+     * lines of the world, 30b): fine grain and soft blotches in the three lightest salt tints, tiling without a seam.
      */
     private static void saltCrustTop(BufferedImage image, Random random) {
-        Cells cells = Cells.random(random, 5);
-        double[] plate = new double[cells.count()];
-        for (int i = 0; i < plate.length; i++) {
-            plate[i] = 0.3 + 0.3 * random.nextDouble();
-        }
+        int[] crust = {SALT[2], SALT[3], SALT[4]};
+        double[][] broad = valueNoise(random, 8, 8);
+        double[][] mid = valueNoise(random, 4, 4);
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                Cells.Nearest nearest = cells.nearest(x, y);
-                double gap = nearest.secondDistance() - nearest.distance();
-                if (gap < 0.7) {
-                    set(image, x, y, SALT_RIDGE);
-                } else if (gap < 1.6 && nearest.dy() < 0) {
-                    set(image, x, y, SALT_RIDGE_SHADOW);
-                } else {
-                    set(image, x, y, shade(SALT, plate[nearest.index()] + 0.2 * random.nextDouble()));
-                }
+                set(image, x, y, shade(crust, 0.1 + 0.4 * broad[x][y] + 0.25 * mid[x][y] + 0.3 * random.nextDouble()));
             }
         }
     }
@@ -1027,21 +1132,24 @@ public final class Ring2Textures {
         }
     }
 
-    /** Fine-grained salt with a few small crystal faces (lit top-left, shadowed bottom-right). */
+    /**
+     * Coarser and darker than the crust (decision 9 A), so the block lines the world draws in the crust stand out:
+     * clumped grain in the four darker salt tints and a few small crystal faces (lit top-left, shadowed bottom-right).
+     */
     private static void saltBlock(BufferedImage image, Random random) {
         double[][] noise = valueNoise(random, 4, 4);
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                set(image, x, y, shade(SALT, 0.15 + 0.4 * noise[x][y] + 0.3 * random.nextDouble()));
+                set(image, x, y, shade(SALT_BLOCK, 0.1 + 0.5 * noise[x][y] + 0.35 * random.nextDouble()));
             }
         }
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             int x = random.nextInt(SIZE);
             int y = random.nextInt(SIZE);
-            setWrapped(image, x, y, SALT_RIDGE);
-            setWrapped(image, x + 1, y, SALT[3]);
-            setWrapped(image, x, y + 1, SALT[3]);
-            setWrapped(image, x + 1, y + 1, SALT[1]);
+            setWrapped(image, x, y, SALT[3]);
+            setWrapped(image, x + 1, y, SALT[2]);
+            setWrapped(image, x, y + 1, SALT[2]);
+            setWrapped(image, x + 1, y + 1, SALT_BLOCK[1]);
         }
     }
 
@@ -1148,6 +1256,27 @@ public final class Ring2Textures {
             }
         }
         return strip;
+    }
+
+    /** The frames of a cycling texture under each other: the same painter and seed, only the phase moves. */
+    private static BufferedImage cyclingStrip(String name, Animation animation) {
+        BufferedImage strip = new BufferedImage(SIZE, SIZE * animation.frames(), BufferedImage.TYPE_INT_ARGB);
+        CyclingPainter painter = TEXTURES.get(name).cyclingPainter();
+        for (int i = 0; i < animation.frames(); i++) {
+            BufferedImage frame = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+            painter.paint(frame, seeded(name), i / (double) animation.frames());
+            for (int y = 0; y < SIZE; y++) {
+                for (int x = 0; x < SIZE; x++) {
+                    strip.setRGB(x, i * SIZE + y, frame.getRGB(x, y));
+                }
+            }
+        }
+        return strip;
+    }
+
+    /** All frames of an animated texture, for the contact sheet. */
+    private static BufferedImage animationStrip(String name, BufferedImage rest, Animation animation) {
+        return animation.cycling() ? cyclingStrip(name, animation) : pulseStrip(rest, animation);
     }
 
     // ---- Shared patterns ------------------------------------------------------------------------------------
@@ -1307,8 +1436,12 @@ public final class Ring2Textures {
         }
     }
 
-    /** Grey-purple bark in vertical furrows with slime running down it. */
-    private static void dripshroomStem(BufferedImage image, Random random) {
+    /**
+     * Grey-purple bark in vertical furrows with slime running down it: the streaks glide down one pixel per frame
+     * ({@code phase} 0 to 1 is one full turn of the 16-px tile, so the loop is seamless).
+     */
+    private static void dripshroomStem(BufferedImage image, Random random, double phase) {
+        int shift = (int) Math.round(phase * SIZE);
         double[] columns = new double[SIZE];
         for (int x = 0; x < SIZE; x++) {
             columns[x] = random.nextDouble();
@@ -1330,7 +1463,7 @@ public final class Ring2Textures {
             int start = random.nextInt(SIZE);
             int length = 3 + random.nextInt(5);
             for (int j = 0; j < length; j++) {
-                setWrapped(image, x, start + j, DRIPSHROOM_SLIME[j == length - 1 ? 1 : 0]);
+                setWrapped(image, x, start + j + shift, DRIPSHROOM_SLIME[j == length - 1 ? 1 : 0]);
             }
         }
     }
@@ -1475,13 +1608,13 @@ public final class Ring2Textures {
     }
 
     /**
-     * Still water in a block: dark blue-green with wavy lines of lighter water, a few glints; opaque. The waves wrap
-     * around the tile edges.
+     * Water in a block: dark blue-green with wavy lines of lighter water that drift one wave length per cycle (slow,
+     * seamless), a few fixed glints; opaque. The waves wrap around the tile edges.
      */
-    private static void dewSource(BufferedImage image, Random random) {
+    private static void dewSource(BufferedImage image, Random random, double phase) {
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                double wave = Math.sin((x + 2.0 * Math.sin(y * Math.PI / 4.0)) * Math.PI / 4.0 + y * Math.PI / 2.0);
+                double wave = Math.sin((x + 2.0 * Math.sin(y * Math.PI / 4.0)) * Math.PI / 4.0 + y * Math.PI / 2.0 - 2 * Math.PI * phase);
                 double t = 0.45 + 0.3 * wave + 0.2 * (random.nextDouble() - 0.5);
                 set(image, x, y, shade(DEW_SOURCE, t));
             }
@@ -1551,6 +1684,29 @@ public final class Ring2Textures {
         outline(image, DEW_CRYSTAL_OUTLINE);
     }
 
+    // ---- Particles ------------------------------------------------------------------------------------------
+
+    /** 8x8 grains, small to large: '#' light, 'o' mid, 'x' shadow, '.' transparent. */
+    private static final String[][] SAND_GRAINS = {
+            {"........", "........", "........", "...##...", "...ox...", "........", "........", "........"},
+            {"........", "........", "..###...", "..###o..", "..#oox..", "...xx...", "........", "........"},
+            {"........", "..###...", ".#####..", ".####o..", ".###oox.", "..ooxx..", "...xx...", "........"},
+            {"...##...", ".######.", ".#####o.", "######o.", ".####oo.", ".ooooxx.", "..oxxx..", "........"}};
+
+    private static void sandGrain(BufferedImage image, int grain) {
+        for (int y = 0; y < PARTICLE_SIZE; y++) {
+            for (int x = 0; x < PARTICLE_SIZE; x++) {
+                switch (SAND_GRAINS[grain][y].charAt(x)) {
+                    case '#' -> set(image, x, y, 0xF2F2F2);
+                    case 'o' -> set(image, x, y, 0xCFCFCF);
+                    case 'x' -> set(image, x, y, 0xA8A8A8);
+                    default -> {
+                    }
+                }
+            }
+        }
+    }
+
     // ---- Preview --------------------------------------------------------------------------------------------
 
     /**
@@ -1576,15 +1732,20 @@ public final class Ring2Textures {
             oreColumns = Math.max(oreColumns, columnsInRow);
         }
         width = Math.max(width, label + oreColumns * (oreTile + 8));
-        int height = TEXTURES.size() * (3 * tile + 16) + oreRows * (oreTile + 16);
+        int height = EXTRAS_HEIGHT + TEXTURES.size() * (3 * tile + 16) + oreRows * (oreTile + 16);
         BufferedImage sheet = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = sheet.createGraphics();
         graphics.setColor(new Color(0x2B2B2B));
         graphics.fillRect(0, 0, width, height);
+        drawExtras(graphics);
         int row = 0;
         for (Map.Entry<String, Texture> entry : TEXTURES.entrySet()) {
             BufferedImage frame = render(entry.getKey());
-            int top = row * (3 * tile + 16) + 8;
+            int top = EXTRAS_HEIGHT + row * (3 * tile + 16) + 8;
+            if (row == 0 || entry.getKey().equals("block/soaked_netherrack")) {
+                graphics.setColor(new Color(0xFFC857));
+                graphics.drawString(row == 0 ? "== RING 2 ==" : "== NETHER RING 2 ==", 8, top + 48);
+            }
             graphics.setColor(Color.WHITE);
             graphics.drawString(entry.getKey() + (HAND_EDITED.contains(entry.getKey()) ? " (hand)" : ""), 8, top + 16);
             draw(graphics, frame, label, top, scale);
@@ -1595,7 +1756,7 @@ public final class Ring2Textures {
             }
             Animation animation = entry.getValue().animation();
             if (animation.animated()) {
-                BufferedImage strip = pulseStrip(frame, animation);
+                BufferedImage strip = animationStrip(entry.getKey(), frame, animation);
                 int size = frame.getWidth();
                 for (int i = 0; i < animation.frames(); i++) {
                     BufferedImage single = strip.getSubimage(0, i * size, size, size);
@@ -1605,7 +1766,7 @@ public final class Ring2Textures {
             row++;
         }
         // Ores: every overlay over each of its host rocks, tiled 3×3 at 4×; one row per overlay (preview only).
-        int oreTop = row * (3 * tile + 16) + 8 - (oreTile + 16);
+        int oreTop = EXTRAS_HEIGHT + row * (3 * tile + 16) + 8 - (oreTile + 16);
         String overlay = null;
         int column = 0;
         for (String[] pair : ORE_PREVIEWS) {
@@ -1637,6 +1798,76 @@ public final class Ring2Textures {
         Files.createDirectories(PREVIEW.getParent());
         ImageIO.write(sheet, "png", PREVIEW.toFile());
         System.out.println("wrote " + PREVIEW);
+    }
+
+    private static final int EXTRAS_HEIGHT = 760;
+
+    /** Preview only: tile {@code name} {@code columns} x {@code rows} at 4x, from (left, top). */
+    private static void drawTiled(Graphics2D graphics, BufferedImage tile, int left, int top, int columns, int rows) {
+        for (int ty = 0; ty < rows; ty++) {
+            for (int tx = 0; tx < columns; tx++) {
+                draw(graphics, tile, left + tx * SIZE * 4, top + ty * SIZE * 4, 4);
+            }
+        }
+    }
+
+    private static BufferedImage rotated(BufferedImage image, int quarterTurns) {
+        BufferedImage turned = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                int rx = x;
+                int ry = y;
+                for (int i = 0; i < quarterTurns; i++) {
+                    int nx = SIZE - 1 - ry;
+                    ry = rx;
+                    rx = nx;
+                }
+                turned.setRGB(rx, ry, image.getRGB(x, y));
+            }
+        }
+        return turned;
+    }
+
+    /**
+     * Extra preview bands above the per-texture rows: the cobblestone choice next to the old placeholder, the other
+     * variants and the three tints; the strata of a canyon wall (7 blocks, three tints in bands); cracked clay with
+     * random rotations; a salt flat of crust with some salt blocks (the world's lines) between.
+     */
+    private static void drawExtras(Graphics2D graphics) throws IOException {
+        int block = SIZE * 4;
+        int top = 8;
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("canyon cobblestone: placeholder (O), chosen (A, the real texture), B, C | red, orange, cream, bricks", 8, top + 12);
+        top += 20;
+        BufferedImage[] row = {rendered(PREVIEW_ONLY, "variant/cobble_O"), render("block/canyon_cobblestone"),
+                rendered(PREVIEW_ONLY, "variant/cobble_B"), rendered(PREVIEW_ONLY, "variant/cobble_C"),
+                render("block/red_canyon_stone"), render("block/orange_canyon_stone"), render("block/cream_canyon_stone"),
+                render("block/canyon_stone_bricks")};
+        for (int i = 0; i < row.length; i++) {
+            drawTiled(graphics, row[i], 8 + i * (3 * block + 16), top, 3, 3);
+        }
+        top += 3 * block + 24;
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("strata (red, orange, cream bands as in the wall) with cobblestone at the foot; cracked clay 4x4 random rotations; salt flat 5x5", 8, top + 12);
+        top += 20;
+        String[] bands = {"red", "red", "orange", "cream", "cream", "red", "orange"};
+        for (int i = 0; i < bands.length; i++) {
+            drawTiled(graphics, render("block/" + bands[i] + "_canyon_stone"), 8, top + i * block, 3, 1);
+        }
+        Random rotation = new Random(7);
+        for (int ty = 0; ty < 4; ty++) {
+            for (int tx = 0; tx < 4; tx++) {
+                draw(graphics, rotated(render("block/cracked_clay"), rotation.nextInt(4)), 8 + 3 * block + 24 + tx * block, top + ty * block, 4);
+            }
+        }
+        BufferedImage crust = render("block/salt_crust_top");
+        BufferedImage saltBlock = render("block/salt_block");
+        int saltLeft = 8 + 3 * block + 24 + 4 * block + 24;
+        for (int ty = 0; ty < 5; ty++) {
+            for (int tx = 0; tx < 5; tx++) {
+                draw(graphics, (tx + 2 * ty) % 5 == 0 ? saltBlock : crust, saltLeft + tx * block, top + ty * block, 4);
+            }
+        }
     }
 
     private static void draw(Graphics2D graphics, BufferedImage image, int left, int top, int scale) {

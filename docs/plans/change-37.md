@@ -18,7 +18,7 @@ Afgestemd met 21, 22, 24, 28, 29 en 33–36 (basis: de aanbevolen opties).
 - **Namen:** Nether-ring 2-biomes `dripshroom_forest`/`spore_caves` (35 vraag 9 A); PNG-telling van 33 gecorrigeerd naar 26.
 - **Particles:** `ModParticleDescriptionProvider` bestaat (28).
 - **Kloofsteen-placeholders (21)** hebben al geen harde laaglijn (richting vraag 5 A).
-- **Teststop (besloten 2026-10-01, teststop 3 van 3):** na deze change volgt de **blokkerende gebundelde eindcheck ring 2 + Nether-2** (runClient + dedicated server, contactblad vooraf): de vroegere blokkerende Nether-2-check van 35 (die change is nu W-achteraf) plus de W-achteraf-lijsten van 21–37 (behalve wat al in teststop 2b na change 30 akkoord is: terrein 23/23b/23c, ertsen 25, grotten 26, extra biomes 30). Change 38 begint pas na akkoord van de gebruiker. Zie Tests → "Teststop 3".
+- **Teststop (besloten 2026-10-01, teststop 3 van 3):** na deze change volgt de **blokkerende gebundelde eindcheck ring 2 + Nether-2** (runClient + dedicated server, contactblad vooraf): de vroegere blokkerende Nether-2-check van 35 (die change is nu W-achteraf) plus de W-achteraf-lijsten van 21–37 (behalve wat al in teststop 2b na change 30 akkoord is: terrein 23/23b/23c, ertsen 25, grotten 26, extra biomes 30). Change 38 begint pas na akkoord van de gebruiker. Zie Tests → "Teststop 3" en de uitgewerkte checklist "Teststop 3 — gebundelde checklist" na de bouw-afwijkingen.
 - **Keuzes van de gebruiker die deze lijst raken (2026-10-01):** 24 vraag 3 B → items `raw_sunstone` (pulseert mee) en `raw_turquoise` (still) i.p.v. `sunstone`/`turquoise`; 26 vraag 5 B → nieuw blok `loose_sand` (change 21) met een eigen texture; 23 vraag 5 B → diepere kloven (banden van 2–8 blokken, periode ~48); 35 vraag 6 B → dauwbronnen in geodes (geen nieuwe textures).
 - **`loose_sand`-texture (routinekeuze van de agent, gemarkeerd):** subtiel donkerder en grover gekorreld dan zand, zodat een oplettende speler een zandgrot-plafond kan herkennen zonder dat het opvalt; geen nieuwe ontwerpvraag.
 
@@ -303,6 +303,76 @@ Na de commit van deze change, vóór change 38. De agent bereidt alles voor (ver
 
 ---
 
+## Afwijkingen bij de bouw (2026-10-05)
+
+- **Wat er echt veranderd is:** alleen wat de antwoorden beslissen is herschreven. De overige sets (paletten van kloofsteen, geschroeid zandsteen, palm, turkoois, Nether-ring 2-hout, hoed, lamp, stalactieten) zijn de werkversies van de changes 21–34, die al in de stijl van §1.4 zijn getekend; ze zijn op het contactblad nagelopen en blijven ongewijzigd. Elk definitief oordeel volgt uit teststop 3, met bijsturing via `HAND_EDITED` (backlog).
+- **Script** (`tools/textures/Ring2Textures.java`): `cycling(name, frames, frametime, painter)` met `CyclingPainter(image, random, phase)` (zelfde seed per frame, alleen de fase beweegt; controle dat de texture volledig opaak is); `Animation` heeft een `cycling`-vlag; `pulsing` krijgt de gloeikleur per materiaal (`SUNSTONE_GLOW` `FFF0B0`, `DEW_GLOW` `F0FCFF`); nieuwe controle `SIDE_RULES` (zijkant = exact de pixels van zijn grond onder de rand: `salt_crust_side` onder rij 3 en `spore_moss_side` onder rij 6); particles `particle/sand_gust_{0..3}` (8×8, lichte grijswaarden, `still`).
+- **Contactblad** (`build/texture-preview/ring2.png`, niet in git): bovenaan een extra-blok (kloofkeien: oude placeholder O, gekozen A, varianten B en C naast rood/oranje/crème/bakstenen; strata-kolom van 7 blokken; gebarsten klei 4×4 met willekeurige rotaties; zoutvlakte 5×5 met zoutblokken als wereldlijnen), daaronder de secties "RING 2" en "NETHER RING 2", onderaan de ertsrijen.
+- **Antwoorden 8–10 uitgevoerd zoals besloten:** `canyon_cobblestone` = oranje middentint (tint 1–3 van 5) + één rode of crème gast-steen per tegel (7 cellen, ≈ 14 %) + voeg `6B3A22`; `salt_crust_top` zonder polygonen (fijne korrel + zachte vlekken, 3 lichte tinten); `salt_block` donkerder/grover (eigen palet `SALT_BLOCK`; één texture voor alle zijden, dus ook de `salt_crust_side` en de bodem volgen mee); `dry_shrub` grijs met lichte takpunten, `desert_flower` zes-puntige ster (koraal, crème toppen, turkoois hart, saliegroene steel), `barrel_cactus` blauwgroener met stekelkrans, V-vormige stekeltjes en een roze knop met geel hart. `bone_block` blijft vanilla.
+- **Dauwkristal** volgt vraag 2 A (`1B4A5C`-omlijning, `5E9FB4 82BACB A6D3E0 D6EEF4 F4FCFF`); stadia, item en zonnesteen-overlay/`raw_sunstone` pulseren (8 frames, `frametime` 4, interpolate); dauwbron `cycling` 16 × 4 (één golflengte per cyclus, trage drift), druipzwam-stam `cycling` 16 × 8 (slijmstrepen 1 px per frame omlaag). **9 `.mcmeta`'s** (conform plan). Tellingen: ring 2 37 + Nether-ring 2 33 = 70 PNG's, plus 4 particle-sprites.
+- **`palm_leaves`** dichter gemaakt (20 bladlobben i.p.v. 11; ≈ 23 % doorzichtig i.p.v. 42 %): backlog-regel van change 22 (review) afgehandeld; in-game bij Graphics: Fast én Fancy controleren (W).
+- **Datagen** (`ModBlockStateProvider`): `crystalCluster(block, emissive)` met `emissiveCross` (twee elementen als vanilla `block/cross` uit de 21.1.252-jar, `rescale`, `shade` false, `emissivity(15, 15)`, `ao(false)`) voor de vier dauwstadia; het zoutkristal houdt het gewone `cross`-model (JSON ongewijzigd, besluit 3 A). `glow_mold`: `emissivity(15, 15)` op het element. `ModParticleDescriptionProvider`: `sand_gust` → `corruptedadventure:sand_gust_0…3`. `SandGustParticle` ongewijzigd (tint, `pickSprite`, opaque sheet; alpha 0/255 werkt met de alpha-discard).
+- **Niet gedaan:** spore-sprites voor change 36 (er is geen `textures/particle/spore_*`; 36 gebruikt vanilla-particles, de map bevat alleen `sand_gust_*`).
+- **Test:** script tweemaal gedraaid → byte-identiek (md5 en `git status`); `./gradlew build` (met `ClientIsolationTest`) groen; `runData` raakt van mij alleen de 4 dauwstadia-modellen, `glow_mold.json` en `particles/sand_gust.json`; `runServer` (level `smoke-change37`) start zonder fouten en `runClient -PquickPlay` (Dev) joint; de clientlog bevat geen `Missing textures`, `Unable to load model` of animatiefouten voor `corruptedadventure`.
+
+## In-game checklist (W)
+
+W-achteraf, onderdeel van teststop 3. Aanvulling op de runClient-lijst bij "Tests" hierboven, voor wat bij de bouw is toegevoegd of besloten. Seed `20260930`, preset `corrupted_world`, creatief. Eerst het contactblad `build/texture-preview/ring2.png` (draai `java tools/textures/Ring2Textures.java`).
+
+1. **Contactblad:** de kloofkeien-rij (O, gekozen, B, C) naast rood/oranje/crème; de gekozen variant leest als één steensoort die bij de tinten past (vraag 8), niet als lappendeken. Zoutvlakte-blok 5×5: de zoutblokken steken duidelijk af tegen de korst. Gebarsten klei 4×4: geen zichtbare herhaling.
+2. **Zonnesteen:** `/give @s corruptedadventure:red_canyon_sunstone_ore` (en de andere drie): overlay gloeit in het donker en pulseert vloeiend, alle varianten gelijk. `raw_sunstone` pulseert in de inventory, is niet emissive; `raw_turquoise` is still.
+3. **Dauwset (Nether-ring 2 of `/setblock` in de overworld):** de vier stadia en `dew_crystal` gloeien en pulseren gelijk; schaduw en vorm kloppen met een vanilla-amethistcluster ernaast (eigen elementen); naast `soul_crystal` (inventory) en `soul_crystal_ore` zijn ze duidelijk anders (helder, bijna kleurloos tegen verzadigd cyaan). `dew_source` golft traag zonder naden of flikkering op een 5×5-vlak en zonder harde sprong aan het einde van de cyclus.
+4. **Druipzwam-stam:** slijmstrepen glijden traag omlaag, ook op een liggende stam en de hyfen; geen sprong bij het herhalen; in een zwamkathedraal niet onrustig.
+5. **Gloeischimmel:** gloeit ook zonder dat er licht op valt (donkere grot), op muur, plafond en vloer.
+6. **Zoutkristal:** blijft still, niet emissive (besluit 3 A).
+7. **Zandstorm** (`/ca weather 2 sandstorm 600`): korrels zijn herkenbaar als zandkorrels (4 groottes, zandgetint), geen zwarte of witte vierkantjes.
+8. **Zoutvlakte:** korst is rustig, de zeshoeken zijn alleen de `salt_block`-lijnen uit de wereld; de zijkant van de korst sluit aan op het zoutblok eronder (ook gespiegeld/van onder bekeken).
+9. **Eigen planten:** `dry_shrub` (grijs met lichte punten), `desert_flower` (ster in koraal met turkoois hart) en `barrel_cactus` (blauwgroen met knop) zijn op ~10 blokken te onderscheiden van `dead_bush`, klaproos/allium/korenbloem en `cactus`.
+10. **Palmbladeren:** bij Graphics: Fast en Fancy niet te donker of te leeg; kroon met bladwaaiers oogt nog open genoeg.
+11. **Kloofkeien in het veld:** keienveld en rotsval naast een kloofwand (23c): past bij de wand, de gast-stenen lezen als toeval, de voeg is warm. **Expliciete vraag aan de gebruiker** (feedback teststop 2, punt 3).
+
+## Teststop 3 — gebundelde checklist (uitgewerkt bij de bouw van 37, 2026-10-05)
+
+Blokkerend vóór change 38. De agent bereidt voor, de gebruiker loopt af. Per onderwerp staat hier de samenvatting en de bron: de volledige stappen staan in de sectie "In-game checklist (W)" van het genoemde plan (voor 21/22/24/29/27/28 ook de regelverwijzing in "Tests → Teststop 3"). **Stand van 35 en 36:** gebouwd (f922e9b, a169607); hun W-lijsten staan in `change-35.md` en `change-36.md`. Hieronder zijn de gebouwde afwijkingen en afstemvragen verwerkt; lees die plannen bij de start van de stop nog eens na.
+
+**Wat niet opnieuw hoeft** (akkoord in teststop 1, 2, 2b, 2c): terrein 23/23b/23c, ertsen 25, grotten en zandgrotten 26, extra biomes en hoodoos 30/30b/30c.
+
+### Voorbereiding (agent)
+- `java tools/textures/Ring2Textures.java`, contactblad `build/texture-preview/ring2.png` aan de gebruiker voorleggen **vóór** de game (feedback hierop = iteratieronde, geen blokkade).
+- Verse wereld seed `20260930`, preset `corrupted_world`; `./gradlew runServer` + `runClient -PquickPlay` (Dev) + `runClient2 -PquickPlay` (Dev2); RCON-hulpcommando's: `/ca tpring 2`, `/ca tpring 2 nether`, `/ca tpboundary 1|2 [nether]`, `/ca weather 2 sandstorm|heat_wave|clear`, `/ca condition get|set`, `/locate biome corruptedadventure:<biome>`. Testplatform: `/fill -8 150 -8 8 150 8 minecraft:stone`, `/tp @s 0 151 0`.
+- `build` en `runData` groen, geen fouten in de serverlog bij het aanmaken van de wereld.
+
+### Sessie 1 — ring 2, singleplayer of server met één client (~60–75 min)
+1. **Textures ring 2** (37; "Tests → runClient — visuele checklist" + "In-game checklist (W)"): kloofsteen in banden, kloofkeien-palet (expliciete vraag), geschroeid zandsteen, los zand, gebarsten klei, flora, palm, ertsen (gloed en puls), zout, eigen planten naast vanilla, stijl naast ring 1.
+   - *Afstemvragen:* gekozen kloofkeien (A) goed of terug naar B/C? Dichtheid van de gast-stenen? Moeten `dry_shrub`, `desert_flower` en `barrel_cactus` nog meer afsteken (zo ja: `HAND_EDITED`-ronde)? `salt_block` donker genoeg om de wereldlijnen te zien?
+2. **Blokken en items ring 2** (21, 22, 24, 29): creative tab-volgorde en namen (en/nl), plaatsen, mijnen in survival, flora-grondregels, cactusschade, bloempot, palmset-gedrag en zaailing, bladverval, ertsen (XP, Silk Touch, licht), zoutkorst/kristal (oriëntatie, licht, waterlogged, valt niet), los zand (instortend plafond met trigger, zonder speler blijft hangen), recepten via tags.
+   - *Afstemvragen:* licht van zonnesteen (3) en zoutkristal (3) goed? Breeksnelheden? Geluiden zout (calciet) en kristal acceptabel of nieuwe backlog `blocks`?
+3. **Uitdroging** (27): HUD-balk, effecten bij 25/50/75/100 %, waterfles, schaduw/oase/water/nacht/buiten, doodsbericht, tempo.
+   - *Afstemvragen:* tempo (spannend of frustrerend)? Wat telt als schaduw (glas, bladeren)?
+4. **Overgangszone `dry_riverbeds`** (31): bedding leest als rivierbedding, bodem, fossielen, lagen, levendigheid (2 minuten lopen), zonegrens, spawns.
+   - *Afstemvragen:* te leeg of juist goed? Botblokken (vanilla `bone_block`) als eigen blok gewenst (backlog `blocks`)?
+5. **Sfeer ring 2** (32): kleuren per biome (dag/zonsondergang/nacht), overgangen, `dry_riverbeds` grauw, water turkoois, zingend zand (`/playsound`, `dune_sea` 's nachts), ambient-schuif, wereldregen.
+   - *Afstemvragen:* zingend zand: frequentie/volume; ambient van de oase (32 vraag 8); pekelwater-tint van `salt_flats`; bijt het zingende zand met de zandstorm-wind?
+
+### Sessie 2 — dedicated server + twee clients (~60–75 min)
+6. **Weer ring 2** (28): zandstorm (opkomst, wind-richting gelijk op beide clients, binnen/onder overhang, water, grens 2→3 en 1→2, deeltjes-instelling Minimal), hittegolf (trilling, toegankelijkheid op 0 %, fullscreen/F3+T, FPS, Fabulous, grot), uitdrogingstempo in hittegolf; **zandstorm in beeld én geluid** en **de duw bij richels en spleetranden** (backlog 23b).
+   - *Afstemvragen:* voelt de duw eerlijk of te gevaarlijk (richel, spleetrand, tafelberg)? Windgeluid goed of een ander vanilla-geluid/eigen wind (backlog `atmosphere`)? Zandstorm-sprites goed (nieuw in 37)? Hittegolf-trilling sterk genoeg?
+7. **Nether-ring 2 terrein — BLOKKEREND** (35): vier richtingen hoge open hallen; zuilen als reuzenzwammen, dichtheid; lavazee met sporenmos-eilanden en dam; sporengrotten anders dan het woud en genoeg licht; een dauwgeode vinden; grenzen `tpboundary 1|2 nether` zonder lavawand of klif. Daarna 35 W-achteraf: portal ring 2 ↔ Nether-ring 2 (÷4), dauwgroei in een geode, spawns, F3-biome, vuur.
+   - *Afstemvragen:* halgrootte, zuildichtheid, lavaniveau, zeldzaamheid van geodes, spawns (striders, endermen, piglins, ghast).
+   - **Gebouwd (35, f922e9b):** hallen met vloer Y ~31 en plafond Y ~105 (`/ca ring` blijft "Ring 2" tijdens het vliegen). **Kubussen-punt:** oogt het terrein organisch (hellend, bobbelig) en niet als dozen met verticale randen? Kijk vanaf hoge vlieghoogte op `/tp @s 250 70 433` (woud) en `/tp @s 300 70 452`, en in de grotten `/tp @s -319 60 384`; ruwheid bijstellen via `rough` in `terrain.json` (versterking 1,2, bias -0,2).
+   - **Extra afstemvragen:** prestatie Nether-ring 2 (~1,9× vanilla geaccepteerd, 35-12): merkbaar bij vliegen en laden? Carver (35-11 A): grotten/gangen goed naast de hallen?
+8. **Nether-ring 2 blokken** (33, 34 + texturepunten van 37): sporenmos-spreiding en bonemeal, sporenspruiten, houtset, niet brandbaar, hoed/lamp (licht 15), gloeischimmel (gloeit), slijmstalactiet (hangend/staand/`tip_merge`), doorweekt netherrack, dauwbron/-groei/-mijnen/druppels, twee clients zien dezelfde blockstates.
+   - *Afstemvragen:* voelt de set als één familie (grijsgroen/paars/slijm) en niet als crimson/warped? Dauwkristal duidelijk anders dan zielkristal? Groeisnelheid dauwkristal?
+9. **Nether-ring 2 sfeer** (36): fog "grijsgroene mist" per biome, overgang bij `tpboundary 1 nether`, geluid (loop, naad, druppels, ondertitels), particles (sporen, fps), Minimal, dedicated server = singleplayer.
+   - *Afstemvragen:* fogdichtheid per hal; particles te veel/te weinig; bodemplanten voor "levendig" (33 vraag 9)?
+   - **Gebouwd (36, a169607):** fog, druipgeluiden (`/playsound corruptedadventure:ambient.nether_ring_2.drips ambient @s` en `…drip_loop`) en spore-particles volgens de W-lijst in `change-36.md`; fog-dichtheid afstemmen op de halgrootte uit 35.
+10. **Standaard-W:** midden van elke ring en elke grens (overworld en Nether), een portal vanuit elke ring, geen fouten in client- of serverlog, beide clients stabiel.
+
+### Na afloop
+Bevindingen worden backlogregels of een fix-change in de juiste categorie (textures → `HAND_EDITED`-ronde). Pas na akkoord begint change 38.
+
+---
+
 ## Risico's / aandachtspunten
 
 - **Kwaliteit van gegenereerde textures** ("programmer art") bij ~69 bestanden. Mitigatie: het contactblad met extra rijen (strata, ores, vlakken), iteratierondes achteraf en `HAND_EDITED`. Reken op 1–2 rondes per set.
@@ -468,5 +538,10 @@ Antwoord: **A** — herkenbare ring 2-signatuur binnen de stijl van §1.4 (kleur
 | 2026-10-01 | textures | Particle-sprites ring 2: eigen `sand_gust_{0..3}` | Zandstorm oogt als zandkorrels |
 | 2026-10-01 | textures | `loose_sand`-texture subtiel donkerder/korreliger dan vanilla-zand (routinekeuze agent, gemarkeerd); items `raw_sunstone` (puls) en `raw_turquoise` (still) volgen 24 vraag 3 B | Zandgrot-plafond van dichtbij herkenbaar zonder op te vallen |
 | 2026-10-01 | textures | Textures-changes tekenen binnen de bestaande vormen; vorm- en `MapColor`-wijzigingen gaan als `blocks` naar de backlog | Eén categorie per change; vormen zijn Java-code |
+| 2026-10-05 | textures | `canyon_cobblestone`: één dominante oranje tint met ~15 % rode/crème gast-stenen en warme voeg `6B3A22` (8 A) | De oude drie-tinten-placeholder voelde "raar qua palet"; de wanden dragen de laagkleuren |
+| 2026-10-05 | textures | `salt_crust_top` rustig zonder eigen polygonen, `salt_block` donkerder/grover (9 A) | De zeshoeken komen uit de wereld (30b); geen dubbel patroon of 16-px-herhaling |
+| 2026-10-05 | textures | Eigen planten met ring 2-signatuur (10 A): grijze struik met lichte punten, sterbloem koraal/turkoois, blauwgroene cactus met roze knop; `bone_block` blijft vanilla | Herkenbaar naast vanilla-planten; eigen botblok is `blocks` (backlog) |
+| 2026-10-05 | textures | Script controleert "zijkant = grond" (`SIDE_RULES`) en dat `cycling`-textures opaak zijn; `cycling` en `pulsing(glow)` in `Ring2Textures.java` | Stijlregels automatisch bewaakt |
+| 2026-10-05 | textures | `palm_leaves` dichter (≈ 23 % doorzichtig, was 42 %) | Backlog change 22 (Graphics: Fast) |
 
 Commit (na `/code-review`): `textures: finalize ring 2 and nether ring 2 textures`.

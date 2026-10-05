@@ -21,6 +21,11 @@
         0,
         0.1
       ],
+      "neoforge_data": {
+        "ambient_occlusion": false,
+        "block_light": 15,
+        "sky_light": 15
+      },
       "to": [
         16,
         16,

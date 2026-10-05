@@ -65,7 +65,6 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [infra] Optioneel `/ca`-debughulp om hangend `loose_sand` te plaatsen (zonder blok-updates), voor tests; nu via een testdatapack (barrier in `#minecraft:fire`, werkwijze in `CODEBASE.md`, valkuilen). Alleen bouwen als change 26 of test W het nodig heeft. (bron: change 21)
 - [items] Recipes palm-set (log → planks, wood, trap, plaat, hek, poort, deur, valluik, knop, drukplaat). Generieke vanilla-recipes (stokken, werkbank, kist, houten tools, houtskool) werken al via `#planks` / `#logs_that_burn`. (bron: change 22)
 - [items] Idee: palmvrucht (dadels/kokosnoot) als extra bladdrop of voedsel in de droge ring (uitdroging/voedsel in de oase). (bron: change 22)
-- [textures] Placeholder `palm_leaves.png` is voor ~50 % doorzichtig; bij de definitieve texture (change 37) dichter maken en in-game controleren bij Graphics: Fast én Fancy (render type `cutout_mipped` uit de model-JSON). (bron: change 22, review)
 - [structures] Ring 2-biomes (`canyonlands`, `oasis_flats`) hebben geen `minecraft:has_structure/*`-tags: geen woestijnpiramides, woestijndorpen, mineshafts of ruined portals in ring 2. Keuze per structure in fase 3. (bron: change 23)
 - [mobs] Kamelen in `oasis_flats` (change 23, vraag 11 A) hebben een spawn placement nodig die vanilla niet heeft (vanilla spawnt kamelen nooit natuurlijk): minimale registratie in `worldgen/biome/BiomeSpawnPlacements` (op de grond, `Animal::checkAnimalSpawnRules`: alleen op `#animals_spawnable_on`, dus de grasoevers). In fase 4 herzien of naar de mobs-code verhuizen. (bron: change 23)
 - [worldgen] Grotingangen in kloofbodems die onder Y 63 komen lopen vol (aquifer): kleine waterplekken aan het oppervlak van canyonlands (gemeten 0,28 % van de bovenste blokken op 384 × 384, 0 van 100 willekeurige hoogtepunten). Change 26 maakt het niet erger (de floodedness-band is 0 boven Y 60; 7–24 kolommen per 25 kloofchunks, vóór 14–24); in teststop 2b beoordelen of het zo mag. (bron: change 23, bijgewerkt change 26)
@@ -94,7 +93,6 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 
 ## Uit change 28
 - [conditions] Ringweer-modifiers (28 hittegolf; later 45 asregen/uitbarsting, 66 gifregen, 85) hangen zich elk via `ConditionDefinitions.addModifier` in de condities-pijplijn, in registratievolgorde (nu vanuit `RingWeather.register`). Bij change 43 (hitte) nagaan of een vaste volgorde nodig is (weer vóór gear, zuiverend als laatste). (bron: change 28)
-- [textures] Eigen sprite voor de `sand_gust`-particle (nu vanilla `generic_0..7`, zandkleurig getint), bij de ring 2-textures (change 37). (bron: change 28)
 - [atmosphere] Windgeluid van de zandstorm is een verwijzing naar vanilla `item.elytra.flying` (pitch 0,7); de synthese-pijplijn van change 32 (`Ring2Sounds.java`) kan het vervangen door een eigen wind. (bron: change 28)
 - [atmosphere] Wind-duw ook voor items, mobs en spelers op een rijdier/in een boot, als dat later gewenst is (nu alleen spelers te voet). (bron: change 28)
 - [atmosphere] Post-shader `heat_haze` met shaderpacks (Iris) of performance-mods: het effect valt daar mogelijk weg (geaccepteerd in het plan); bij klachten een particle-alternatief (plan 28 vraag 5 B). (bron: change 28)
@@ -148,7 +146,9 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [items] Idee: fles vullen bij een dauwbron (water in de Nether). (bron: change 34)
 - [blocks] Later-idee: verplaatsbare dauwbron (Silk Touch) of ring-gebonden groei (`RingLayout.ringAt` in `randomTick`); afgewezen in 34-2. (bron: change 34)
 - [blocks] De dauwkristal-stadia spelen het amethist-belgeluid bij een projectieltreffer (vanilla `AmethystClusterBlock`, zoals `salt_crystal`). (bron: change 34)
-- [textures] Change 37: dauwbron en dauwkristal zijn nu `still` en in een werkpalet; emissive voor de stadia (patroon `oreWithOverlay`) en een golf-animatie voor de dauwbron zijn 37 vraag 1/2. (bron: change 34)
+- [textures] Ring 2- en Nether-ring 2-textures zijn definitief uit het script, maar nog niet in-game beoordeeld: 1–2 iteratierondes na teststop 3, handwerk in `HAND_EDITED` van `Ring2Textures.java`. `palm_leaves` is dichter gemaakt (≈ 23 % doorzichtig); controleer bij Graphics: Fast én Fancy. (bron: change 37)
+- [textures] Ring 2: sets die in 37 ongewijzigd uit de werkversies zijn overgenomen (kloofsteen-tinten, geschroeid zandsteen, palm, turkoois, Nether-ring 2-hout/hoed/lamp/stalactieten) krijgen pas na teststop 3 een tweede palet-ronde als de gebruiker dat wil. (bron: change 37)
+- [infra] De texturescripts hebben nu twee definitieve versies met gekopieerde helpers (`Ring1Textures.java`, `Ring2Textures.java`); `cycling`, `SIDE_RULES` en het extra-blok in het contactblad zitten alleen in ring 2. Ontdubbelen kan als ring 3 een derde kopie zou worden. (bron: change 37)
 - [atmosphere] Als de runClient-check het vraagt: een overgangsbiome Nether-ring 1 → 2 voor een zachtere loop-wissel (de fog-kleur mengt al zelf). (bron: change 36)
 - [blocks] Positionele druppels uit slijmstalactieten (geen `animateTick` in change 33); de biome-druppels van change 36 zijn nu de enige. (bron: change 36)
 
@@ -158,5 +158,5 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [structures] Nether-ring 2 heeft geen vanilla-structures (geen `minecraft:`-biometags); keuze en eigen structures in fase 3. (bron: change 35)
 - [mobs] Nether-ring 2: sporenmonsters en slijmwezens (fase 4); tot dan de vanilla-mix (zombified piglin, enderman, strider, af en toe een ghast). (bron: change 35)
 - [worldgen] Vanilla-ertsaders onderling (magma, grind, blackstone, kwarts, goud) hangen af van de laadvolgorde: 54 van 126 chunks 1–40 blokken verschil tussen twee werelden. Oplossen kan met een eigen erts-feature die per aderpositie één eindtoestand heeft. (bron: change 35)
-- [worldgen] Afstemmen na de W-check: ruwheid en luchtaandeel van het woud (0,54; `terrain.json`, `walls.json`, `masses.json`), dichtheid van zuilen en schimmel. (bron: change 35)
+- [worldgen] Afstemmen na de W-check: luchtaandeel van het woud (0,47, doel > 0,5: `walls.json`, `masses.json`), geodes in de sporengrotten (1 per 7 chunks, doel 5–6: `dew_geodes.json`), dichtheid van zuilen en schimmel. (bron: change 35)
 - [worldgen] Nether-ring 1: de feature-indexverschuiving door de Nether-2-biomes maakt ertsen en lavabronnen in ring 1 anders dan vóór change 35 (terreinvorm gelijk); alleen relevant als iemand een bestaande wereld vergelijkt. (bron: change 35)

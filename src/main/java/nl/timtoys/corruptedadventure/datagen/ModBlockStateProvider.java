@@ -144,21 +144,21 @@ final class ModBlockStateProvider extends BlockStateProvider {
         slimeStalactite();
         cross(ModBlocks.SPORE_SPROUTS.get());
         simpleBlock(ModBlocks.DEW_SOURCE.get());
-        crystalCluster(ModBlocks.SMALL_DEW_CRYSTAL_BUD.get());
-        crystalCluster(ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.get());
-        crystalCluster(ModBlocks.LARGE_DEW_CRYSTAL_BUD.get());
-        crystalCluster(ModBlocks.DEW_CRYSTAL_CLUSTER.get());
+        crystalCluster(ModBlocks.SMALL_DEW_CRYSTAL_BUD.get(), true);
+        crystalCluster(ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.get(), true);
+        crystalCluster(ModBlocks.LARGE_DEW_CRYSTAL_BUD.get(), true);
+        crystalCluster(ModBlocks.DEW_CRYSTAL_CLUSTER.get(), true);
     }
 
     /**
-     * Vanilla's glow lichen model: one double-sided plane just inside the north face, rotated per face exactly like
+     * Vanilla's glow lichen model (full-bright, decision 37-4 A: the mold glows in the texture, not only through its light): one double-sided plane just inside the north face, rotated per face exactly like
      * vanilla's multipart blockstate (a block without faces is never shown, so vanilla's all-false fallback is left out).
      */
     private void glowMold() {
         ResourceLocation texture = blockTexture(ModBlocks.GLOW_MOLD.get());
         BlockModelBuilder model = models().getBuilder("glow_mold").renderType("cutout").ao(false)
                 .texture("particle", texture).texture("glow_mold", texture);
-        model.element().from(0, 0, 0.1f).to(16, 16, 0.1f)
+        model.element().from(0, 0, 0.1f).to(16, 16, 0.1f).emissivity(15, 15).ao(false)
                 .face(Direction.NORTH).uvs(16, 0, 0, 16).texture("#glow_mold").end()
                 .face(Direction.SOUTH).uvs(0, 0, 16, 16).texture("#glow_mold").end().end();
         MultiPartBlockStateBuilder states = getMultipartBuilder(ModBlocks.GLOW_MOLD.get());
@@ -200,19 +200,38 @@ final class ModBlockStateProvider extends BlockStateProvider {
         stairsBlock(ModBlocks.POLISHED_SALT_STAIRS.get(), polished);
         slabBlock(ModBlocks.POLISHED_SALT_SLAB.get(), polished, polished);
         wallBlock(ModBlocks.POLISHED_SALT_WALL.get(), polished);
-        crystalCluster(ModBlocks.SALT_CRYSTAL.get());
+        crystalCluster(ModBlocks.SALT_CRYSTAL.get(), false);
     }
 
     /**
      * A crystal on any face, like vanilla's amethyst cluster: one cutout cross model, rotated per {@code facing} exactly
      * as vanilla's blockstate (the same model when waterlogged), and a flat item with the block texture on vanilla's
-     * amethyst bud transforms. Shared by every crystal block (salt crystal, the dew crystal stages).
+     * amethyst bud transforms. Shared by every crystal block (salt crystal, the dew crystal stages). An {@code emissive}
+     * crystal glows evenly in the dark (NeoForge {@code neoforge_data}, rendering only); that needs its own elements, a
+     * copy of vanilla's {@code block/cross}, because the vanilla parent allows no extra data on its elements.
      */
-    private void crystalCluster(Block block) {
+    private void crystalCluster(Block block, boolean emissive) {
         String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
         ResourceLocation texture = blockTexture(block);
-        directionalBlock(block, models().cross(name, texture).renderType("cutout"));
+        directionalBlock(block, emissive ? emissiveCross(name, texture) : models().cross(name, texture).renderType("cutout"));
         itemModels().withExistingParent(name, mcLoc("item/amethyst_bud")).texture("layer0", texture);
+    }
+
+    /** Vanilla's {@code block/cross} (two diagonal planes, no shading) with full-bright elements and no ambient occlusion. */
+    private BlockModelBuilder emissiveCross(String name, ResourceLocation texture) {
+        BlockModelBuilder model = models().getBuilder(name).renderType("cutout").ao(false)
+                .texture("particle", texture).texture("cross", texture);
+        model.element().from(0.8f, 0, 8).to(15.2f, 16, 8)
+                .rotation().origin(8, 8, 8).axis(Direction.Axis.Y).angle(45).rescale(true).end().shade(false)
+                .emissivity(15, 15).ao(false)
+                .face(Direction.NORTH).uvs(0, 0, 16, 16).texture("#cross").end()
+                .face(Direction.SOUTH).uvs(0, 0, 16, 16).texture("#cross").end().end();
+        model.element().from(8, 0, 0.8f).to(8, 16, 15.2f)
+                .rotation().origin(8, 8, 8).axis(Direction.Axis.Y).angle(45).rescale(true).end().shade(false)
+                .emissivity(15, 15).ao(false)
+                .face(Direction.WEST).uvs(0, 0, 16, 16).texture("#cross").end()
+                .face(Direction.EAST).uvs(0, 0, 16, 16).texture("#cross").end().end();
+        return model;
     }
 
     /**
