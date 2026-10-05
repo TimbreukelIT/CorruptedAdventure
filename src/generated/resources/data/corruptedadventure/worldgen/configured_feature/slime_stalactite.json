@@ -1,0 +1,18 @@
+{
+  "type": "corruptedadventure:slime_stalactite",
+  "config": {
+    "length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 5,
+      "min_inclusive": 1
+    },
+    "stalactite": {
+      "Name": "corruptedadventure:slime_stalactite",
+      "Properties": {
+        "thickness": "tip",
+        "vertical_direction": "up",
+        "waterlogged": "false"
+      }
+    }
+  }
+}

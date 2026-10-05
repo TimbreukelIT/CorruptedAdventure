@@ -9,8 +9,10 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.CanyonDetails;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.CellEdges;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.DewGeodes;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RadialFalloff;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingBlend;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingEdge;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingGate;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RockPillars;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VoidEdge;
@@ -30,6 +32,14 @@ public final class ModDensityFunctionTypes {
     /** {@code corruptedadventure:void_edge} */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<VoidEdge>> VOID_EDGE =
             DENSITY_FUNCTION_TYPES.register("void_edge", () -> VoidEdge.MAP_CODEC);
+
+    /** {@code corruptedadventure:ring_edge} */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<RingEdge>> RING_EDGE =
+            DENSITY_FUNCTION_TYPES.register("ring_edge", () -> RingEdge.MAP_CODEC);
+
+    /** {@code corruptedadventure:dew_geodes} (change 35) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<DewGeodes>> DEW_GEODES =
+            DENSITY_FUNCTION_TYPES.register("dew_geodes", () -> DewGeodes.MAP_CODEC);
 
     /** {@code corruptedadventure:radial_falloff} */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<RadialFalloff>> RADIAL_FALLOFF =

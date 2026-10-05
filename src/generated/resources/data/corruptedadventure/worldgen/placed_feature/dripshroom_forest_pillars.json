@@ -1,0 +1,21 @@
+{
+  "feature": "corruptedadventure:giant_fungus",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 3
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "absolute": 64
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

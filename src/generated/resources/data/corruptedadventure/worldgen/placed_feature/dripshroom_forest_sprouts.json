@@ -1,0 +1,31 @@
+{
+  "feature": "corruptedadventure:spore_sprouts_patch",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.5,
+      "margin": 1
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.1,
+      "noise": "corruptedadventure:nether_ring_2_sprouts"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "type": "minecraft:uniform",
+        "max_inclusive": {
+          "absolute": 100
+        },
+        "min_inclusive": {
+          "absolute": 26
+        }
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

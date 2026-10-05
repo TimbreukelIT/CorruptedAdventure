@@ -14,6 +14,9 @@ public final class ModConfiguredCarvers {
     public static final ResourceKey<ConfiguredWorldCarver<?>> RING_2_CAVE_EXTRA_UNDERGROUND = key("ring_2/cave_extra_underground");
     public static final ResourceKey<ConfiguredWorldCarver<?>> RING_2_CANYON = key("ring_2/canyon");
 
+    /** Nether ring 2 (change 35): vanilla's {@code nether_cave} as {@code ring_nether_cave}, so its lava follows the ring's lava sea. */
+    public static final ResourceKey<ConfiguredWorldCarver<?>> NETHER_RING_2_CAVE = key("nether_ring_2/cave");
+
     private ModConfiguredCarvers() {
     }
 

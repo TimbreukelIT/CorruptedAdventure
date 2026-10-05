@@ -14,7 +14,7 @@ public final class SeededHash {
     private SeededHash() {
     }
 
-    static long hash(DensityFunction.NoiseHolder noise, long a, long b, long salt) {
+    public static long hash(DensityFunction.NoiseHolder noise, long a, long b, long salt) {
         return combine(noise.getValue(sampleX(a, salt), sampleY(salt), sampleZ(b)), a, b, salt);
     }
 

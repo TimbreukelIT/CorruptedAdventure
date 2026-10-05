@@ -1,0 +1,14 @@
+{
+  "type": "corruptedadventure:spore_sprouts_patch",
+  "config": {
+    "density": 0.5,
+    "plant": {
+      "Name": "corruptedadventure:spore_sprouts"
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    }
+  }
+}

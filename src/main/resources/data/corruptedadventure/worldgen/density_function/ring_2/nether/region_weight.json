@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:clamp",
+    "input": {
+      "type": "minecraft:add",
+      "argument1": {
+        "type": "minecraft:mul",
+        "argument1": "corruptedadventure:ring_2/nether/region_raw",
+        "argument2": 10.0
+      },
+      "argument2": 1.5000000000000002
+    },
+    "min": 0.0,
+    "max": 1.0
+  }
+}

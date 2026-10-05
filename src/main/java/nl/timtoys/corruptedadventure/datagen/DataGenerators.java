@@ -8,15 +8,18 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.condition.ConditionDamageTypes;
+import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing2Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.PlaceholderBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring1BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2Biomes;
+import nl.timtoys.corruptedadventure.worldgen.carver.NetherRing2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.biome.TransitionBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 import nl.timtoys.corruptedadventure.worldgen.feature.DryRiverbedsFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing1Features;
+import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing2Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring1HorrorFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2DressingFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2Features;
@@ -43,16 +46,21 @@ public final class DataGenerators {
                     WitheredExpanseFeatures.configured(context);
                     Ring1HorrorFeatures.configured(context);
                     NetherRing1Features.configured(context);
+                    NetherRing2Features.configured(context);
                     Ring2Features.configured(context);
                     Ring2FlatsFeatures.configured(context);
                     Ring2DressingFeatures.configured(context);
                     DryRiverbedsFeatures.configured(context);
                 })
-                .add(Registries.CONFIGURED_CARVER, Ring2Carvers::bootstrap)
+                .add(Registries.CONFIGURED_CARVER, context -> {
+                    Ring2Carvers.bootstrap(context);
+                    NetherRing2Carvers.bootstrap(context);
+                })
                 .add(Registries.PLACED_FEATURE, context -> {
                     WitheredExpanseFeatures.placed(context);
                     Ring1HorrorFeatures.placed(context);
                     NetherRing1Features.placed(context);
+                    NetherRing2Features.placed(context);
                     Ring2Features.placed(context);
                     Ring2FlatsFeatures.placed(context);
                     Ring2DressingFeatures.placed(context);
@@ -63,6 +71,7 @@ public final class DataGenerators {
                     VanillaBiomeCopies.bootstrap(context);
                     TransitionBiomes.bootstrap(context);
                     Ring2Biomes.bootstrap(context);
+                    NetherRing2Biomes.bootstrap(context);
                 })
                 .add(Registries.WOLF_VARIANT, VanillaBiomeCopies::bootstrapWolfVariants)
                 .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, context -> {

@@ -1,0 +1,101 @@
+{
+  "carvers": {
+    "air": "corruptedadventure:nether_ring_2/cave"
+  },
+  "downfall": 0.0,
+  "effects": {
+    "additions_sound": {
+      "sound": "corruptedadventure:ambient.nether_ring_2.drips",
+      "tick_chance": 0.01
+    },
+    "ambient_sound": "corruptedadventure:ambient.nether_ring_2.drip_loop",
+    "fog_color": 5661786,
+    "mood_sound": {
+      "block_search_extent": 8,
+      "offset": 2.0,
+      "sound": "minecraft:ambient.cave",
+      "tick_delay": 6000
+    },
+    "music": {
+      "max_delay": 24000,
+      "min_delay": 12000,
+      "replace_current_music": false,
+      "sound": "minecraft:music.nether.nether_wastes"
+    },
+    "particle": {
+      "options": {
+        "type": "minecraft:spore_blossom_air"
+      },
+      "probability": 5.0E-4
+    },
+    "sky_color": 0,
+    "water_color": 4033658,
+    "water_fog_color": 993828
+  },
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:nether_ring_2_ore_gravel",
+      "corruptedadventure:nether_ring_2_ore_blackstone",
+      "corruptedadventure:nether_ring_2_ore_gold",
+      "corruptedadventure:nether_ring_2_ore_quartz",
+      "corruptedadventure:nether_ring_2_ore_debris_large",
+      "corruptedadventure:nether_ring_2_ore_debris_small",
+      "corruptedadventure:nether_ring_2_ore_magma",
+      "corruptedadventure:dew_geode"
+    ],
+    [],
+    [
+      "corruptedadventure:dripshroom_forest_pillars",
+      "corruptedadventure:dripshroom_forest_fungi",
+      "corruptedadventure:dripshroom_forest_stalactites",
+      "corruptedadventure:dripshroom_forest_mold",
+      "corruptedadventure:dripshroom_forest_sprouts"
+    ]
+  ],
+  "has_precipitation": false,
+  "spawn_costs": {},
+  "spawners": {
+    "ambient": [],
+    "axolotls": [],
+    "creature": [
+      {
+        "type": "minecraft:strider",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 60
+      }
+    ],
+    "misc": [],
+    "monster": [
+      {
+        "type": "minecraft:ghast",
+        "maxCount": 4,
+        "minCount": 4,
+        "weight": 10
+      },
+      {
+        "type": "minecraft:zombified_piglin",
+        "maxCount": 4,
+        "minCount": 4,
+        "weight": 100
+      },
+      {
+        "type": "minecraft:enderman",
+        "maxCount": 4,
+        "minCount": 4,
+        "weight": 1
+      }
+    ],
+    "underground_water_creature": [],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "temperature": 2.0
+}

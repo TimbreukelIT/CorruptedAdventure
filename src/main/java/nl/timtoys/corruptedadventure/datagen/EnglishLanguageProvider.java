@@ -216,7 +216,8 @@ final class EnglishLanguageProvider extends LanguageProvider {
         biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder Ring 4");
         biome(ModBiomes.PLACEHOLDER_RING_5, "Placeholder Ring 5");
         biome(ModBiomes.VOID_EDGE, "Void Edge");
-        biome(ModBiomes.PLACEHOLDER_NETHER_RING_2, "Placeholder Nether Ring 2");
+        biome(ModBiomes.DRIPSHROOM_FOREST, "Dripshroom Forest");
+        biome(ModBiomes.SPORE_CAVES, "Spore Caves");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_3, "Placeholder Nether Ring 3");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_4, "Placeholder Nether Ring 4");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_5, "Placeholder Nether Ring 5");

@@ -1,0 +1,23 @@
+{
+  "type": "corruptedadventure:dew_geodes",
+  "terrain": "corruptedadventure:ring_2/nether/terrain",
+  "edge": "corruptedadventure:ring_2/nether/edge",
+  "region": "corruptedadventure:ring_2/nether/region_raw",
+  "noise": "corruptedadventure:nether_ring_2_geode_cells",
+  "settings": {
+    "cell_size": 32,
+    "region_threshold": -0.1,
+    "chance_forest": 0.9,
+    "chance_caves": 0.95,
+    "radius_min_forest": 3,
+    "radius_max_forest": 5,
+    "radius_min_caves": 3,
+    "radius_max_caves": 4,
+    "y_min_forest": 30,
+    "y_max_forest": 112,
+    "y_min_caves": 26,
+    "y_max_caves": 110,
+    "bottom": 23,
+    "shell": 2
+  }
+}

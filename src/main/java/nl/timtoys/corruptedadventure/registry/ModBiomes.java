@@ -16,12 +16,15 @@ public final class ModBiomes {
     public static final ResourceKey<Biome> SALT_FLATS = key("salt_flats");
     public static final ResourceKey<Biome> DUNE_SEA = key("dune_sea");
 
+    // Nether ring 2 (NetherRing2Biomes).
+    public static final ResourceKey<Biome> DRIPSHROOM_FOREST = key("dripshroom_forest");
+    public static final ResourceKey<Biome> SPORE_CAVES = key("spore_caves");
+
     // Temporary: one per ring until the ring's real biomes exist. Ring 1's copies (overworld and Nether):
     // VanillaBiomeCopies.copyOf.
     public static final ResourceKey<Biome> PLACEHOLDER_RING_3 = key("placeholder_ring_3");
     public static final ResourceKey<Biome> PLACEHOLDER_RING_4 = key("placeholder_ring_4");
     public static final ResourceKey<Biome> PLACEHOLDER_RING_5 = key("placeholder_ring_5");
-    public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_2 = key("placeholder_nether_ring_2");
     public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_3 = key("placeholder_nether_ring_3");
     public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_4 = key("placeholder_nether_ring_4");
     public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_5 = key("placeholder_nether_ring_5");

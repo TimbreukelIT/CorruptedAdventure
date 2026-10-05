@@ -470,6 +470,15 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **Stadia:** vanilla `AmethystClusterBlock` (maten van amethist), licht 1/2/4/5 (6 A), in `fungal_growths` en `c:buds`/`c:clusters`.
   - **Drops (4 A):** placeholder-item `dew_crystal` (`c:gems/dew_crystal`); cluster: pickaxe geeft 4 (Fortune), anders 2, Silk Touch geeft het cluster; knoppen alleen met Silk Touch. Nut en recipes in fase 2.
   - **Overdracht 35:** blok en stadia op registry-naam en `facing` (richting van de bron af); de bron zit in geen carver-/stone-/nylium-tag, dus als feature na de carvers plaatsen.
+- **Uitwerking (change 35, gebouwd)** — terrein, biomes, lavazee, zwammen en dauwgeodes (afstemwaarden in `src/main/resources/data/corruptedadventure/worldgen/`; W-checklist onderaan `docs/plans/change-35.md`, nagelopen in teststop 3):
+  - **Terrein (2 A, 5 A):** hallen met vloer Y ~28 ± 5 (woud) en plafond Y ~108 (woud) / ~70 (grotten); dikke wanden en ribben uit 3D-ruis met doorgangen (`walls`), een dichter grottenstelsel in de sporengrotten (`caves`), rare massieve rotspijlers van vloer tot plafond (`masses`, drempel 0,6), lavabekkens met sporenmos-eilanden (vloer net boven de lava) en een dam van doorweekt netherrack langs beide ringgrenzen. Terreinvorm = `ring_2/nether/terrain`, ingevoerd als ring 2 in `ring_blend`.
+  - **Lavazee (1 A):** Y 22 via `fluid_levels` in de preset + de dam (`ring_edge`, vast tot Y 33 binnen 48 blokken van de grenzen). Vanilla's Nether-carver zet zelf lava tot Y 31: de ring 2-biomes gebruiken `ring_nether_cave` (eigen carver-type, vloeistof uit de aquifer); ring 1 blijft vanilla.
+  - **Biomes (3 A, 9 A):** regio-as `temperature` (= `ring_2/nether/region`) in de Nether-router; `multi_noise` met drempel −0,10: `dripshroom_forest` erboven (gemeten 74,0 % (r 460), 56,1 % (r 625), 74,8 % (r 780)), `spore_caves` eronder. Geen overgangsbiome. Tags `is_nether_ring_2`, `c:is_nether`, `c:is_hot/nether`, `c:is_wet/nether`, `c:is_nether_forest` (woud), geen `minecraft:`-tags (geen vanilla-structures tot fase 3). Spawns (8 A): zombified piglin, enderman, strider, af en toe een ghast.
+  - **Oppervlak en ertsen (7 A):** de hele ring is `soaked_netherrack` (surface-rule-tak vóór vanilla's `hole` → lava); `spore_moss` op eilanden en oevers (Y 23–26) en in vlekken (woud ~80 %, grotten ~40 %); vanilla's Nether-ertsen als kopieën met doel `soaked_netherrack` en vanilla's tarieven (absolute Y's).
+  - **Zwammen en groeisels (4 A):** `giant_fungus` (zuilen en vrijstaande reuzenzwammen), `slime_stalactite`, `mold_patch` (gloeischimmel) en `spore_sprouts_patch` (33-9 A), allemaal volgens de determinismeregel: lezen alleen terrein, schrijven op rang (`GrowthPriority`), nooit uitwijken. Geen lavabronnen, vuur, glowstone of basalt in de biomes.
+  - **Dauwgeodes (6 B):** holte uit de density function `dew_geodes` (puur van seed en positie, wandtest op het terrein), bekleding (~5 % van de binnenwand → `dew_source`, knoppen op ~25 % van de vrije zijden, enkele plekken gloeischimmel) uit de feature `dew_geode`. Gewijzigd t.o.v. het plan om het tarief te halen: 48 pogingen per cel in plaats van één, geodes ook in de rots boven de plafonds en in de pijlers, kleinere bollen (straal 3–5 woud, 3–4 grotten, schil 2). Gemeten: woud 1 per 11,7 chunks (doel 8–12), grotten 1 per 5,8 (doel 5–6), gem. 19 (woud 3–45, grotten 6–34) bronnen per geode; geen losse bronnen buiten geodes.
+  - **Prestatie (35-10/35-12 A):** noise-stap Nether-ring 2 ≈ 1,9× (gebruiker accepteert dit, 35-12 A; budget was 1,75×) vanilla-Nether.
+  - **Overdracht:** Nether-3/4 hergebruiken `fluid_levels`, `ring_edge`, `ring_nether_cave`, `giant_fungus` (andere blokken), `FungalTerrainScan`/`GrowthPriority`; change 36/37 hebben fog, geluid en textures van de blokken al geleverd.
 
 **Client/server-risico's**
 - Zandstorm-duw en hittegolf-effect: server-side (condities-tick/ringweer); fog, particles en luchttrilling alleen client (`client/`).
@@ -767,7 +776,7 @@ Elke change: één categorie, afgesloten met `/code-review`, `CODEBASE.md` bijge
 | 32 | `atmosphere` | Ring 2-sfeer: lucht/fog-kleuren, zingend zand (ambient). | runClient |
 | 33 | `blocks` | Nether-2-blokken: reuzenzwam-set, doorweekt netherrack, sporenmos (spreiding), slijmstalactieten, lichtgevende schimmel, zwamlamp. | B, D, S (random ticks server-side) |
 | 34 | `blocks` | Dauwbron + dauwkristal (groei aan dauwbron, zoals amethist). | B, D, S |
-| 35 | `worldgen` | Nether-2-terrein (zwamkathedralen) + biomes reuzenzwamwoud en sporengrotten + dauwbron-features. | B, D, W (Nether) |
+| 35 | `worldgen` | Nether-2-terrein (zwamkathedralen) + biomes reuzenzwamwoud en sporengrotten + dauwbron-features. | B, D, S, W (Nether) |
 | 36 | `atmosphere` | Nether-2-sfeer: grijsgroene fog, druppelgeluiden, sporen-particles (biome-data). | runClient |
 | 37 | `textures` | Definitieve textures ring 2 + Nether-ring 2. | runClient |
 

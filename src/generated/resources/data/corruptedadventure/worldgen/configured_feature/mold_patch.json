@@ -1,0 +1,23 @@
+{
+  "type": "corruptedadventure:mold_patch",
+  "config": {
+    "chance": 0.3,
+    "mold": {
+      "Name": "corruptedadventure:glow_mold",
+      "Properties": {
+        "down": "false",
+        "east": "false",
+        "north": "false",
+        "south": "false",
+        "up": "false",
+        "waterlogged": "false",
+        "west": "false"
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 4,
+      "min_inclusive": 2
+    }
+  }
+}

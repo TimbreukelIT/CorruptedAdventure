@@ -1,0 +1,26 @@
+{
+  "type": "corruptedadventure:giant_fungus",
+  "config": {
+    "cap": {
+      "Name": "corruptedadventure:dripshroom_cap"
+    },
+    "lamp": {
+      "Name": "corruptedadventure:dripshroom_lamp"
+    },
+    "pillars": false,
+    "stalactite": {
+      "Name": "corruptedadventure:slime_stalactite",
+      "Properties": {
+        "thickness": "tip",
+        "vertical_direction": "up",
+        "waterlogged": "false"
+      }
+    },
+    "stem": {
+      "Name": "corruptedadventure:dripshroom_stem",
+      "Properties": {
+        "axis": "y"
+      }
+    }
+  }
+}

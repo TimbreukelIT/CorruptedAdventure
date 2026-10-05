@@ -390,30 +390,26 @@ Bouwplan: **B, D, W (Nether)**; daarnaast **S**, omdat preset, codecs en de feat
   - wandkloktijd voor 256 chunks in Nether-ring 2 en JFR `minecraft.ChunkGeneration` (noise-stap gemiddeld/mediaan/p95), vergeleken met de vanilla-Nether op dezelfde plek en Nether-ring 3;
   - budget ≤ 1,3× vanilla (incl. de per-blok-geode-DF); getallen in `CODEBASE.md`. Overschrijding door `dew_geodes` → stop-en-vraag (zie Afstemming).
 
-### W — handmatige test: **W-achteraf — opgenomen in teststop 3** (gebundelde eindcheck ring 2 + Nether-2 ná change 37, vóór change 38; besloten 2026-10-01). Hieronder de Nether-2-lijst (~15 min) die daar blokkerend wordt afgelopen.
+## In-game checklist (W)
 
-**Reden:**
-- Of de zwamkathedralen werken als zwamkathedralen kan RCON niet meten: halgrootte, wanden en doorgangen, zuilen als blikvanger, of je er kunt reizen zonder alles te overbruggen, en of de sporengrotten genoeg licht en herkenbaarheid hebben.
-- Change 36 stemt fog-dichtheid en particles af op de halgrootte.
-- Nether-3 hergebruikt het zuilfeature en het lavaniveau-mechanisme.
-- Later bijstellen betekent die changes opnieuw afstemmen.
-- Alles wat wél automatisch kan, staat onder S: hoogtes, lava, wanden, aandelen, tarieven, determinisme en ring 1 ongewijzigd.
+**W-achteraf: opgenomen in teststop 3** (gebundelde eindcheck ring 2 + Nether-2 ná change 37, vóór change 38). Of de zwamkathedralen werken als zwamkathedralen kan RCON niet meten (halgrootte, wanden en doorgangen, zuilen als blikvanger, reisbaarheid, licht); alles wat wel automatisch kan staat onder S (hoogtes, lava, wanden, aandelen, tarieven, determinisme, ring 1).
 
-Blokkerend in teststop 3 (runClient, testseed):
-- [ ] `/ca tpring 2 nether` in 4 richtingen: hoge open hallen met wanden en ribben, geen eindeloze vlakte en geen doolhof (vraag 2).
-- [ ] Zuilen lezen als reuzenzwammen van vloer tot plafond; dichtheid goed (niet bos-dicht, niet zeldzaam); vrijstaande zwammen ertussen (vraag 4).
-- [ ] Lagere lavazee met sporenmos-eilanden die als stapstenen werken; oever (dam) bij de grens oogt natuurlijk (vragen 1, 5).
-- [ ] Sporengrotten: duidelijk anders dan het woud (lager, dichter, meer schimmel), genoeg licht om te navigeren (vraag 3).
-- [ ] Een dauwgeode gevonden binnen ~10 min zoeken (langs wanden graven, of een door een carver opengebroken exemplaar); de holte leest als geode: binnenwand met dauwbronnen en kristalknoppen, niet zwevend in een hal (vraag 6 B; zeldzaamheid beoordelen).
-- [ ] `/ca tpboundary 1 nether` en `2 nether`: geen lavawand, geen klif, geen zwevende brokken.
+Voorbereiding: nieuwe wereld, preset `corrupted_world`, seed `20260930`, `/gamemode creative` (vliegen), OP. Hulpmiddelen: `/ca ring` (ring, afstand, dichtstbijzijnde grens), `/ca tpring <1–6> nether` (naar het midden van een ring), `/ca tpboundary <1–5> nether` (naar de grens), `/tp @s <x> <y> <z>`, F3 (XYZ, biome, licht), `/locate biome corruptedadventure:spore_caves`. Nether-coördinaten hieronder zijn voor seed 20260930.
 
-W-achteraf (checklist, niet blokkerend):
-- [ ] Portal vanuit overworld-ring 2 → landt in Nether-ring 2 (÷4) op een veilige plek, niet in de lava; terug landt in ring 2.
-- [ ] Dauwkristal groeit aan een gegenereerde bron in een geode (`/gamerule randomTickSpeed 100`, speler in de buurt; random ticks vragen een speler). Sporenmos spreidt (gedrag change 33/34).
-- [ ] Spawns volgens vraag 8 (striders op de lava, endermen en zombified piglins in de hallen, af en toe een ghast).
-- [ ] F3: biome klopt bij het terrein; fog-kleur = placeholder; geen fouten of waarschuwingen in de log.
-- [ ] Ghast-vuurballen of lava naast zwamblokken: brandt het woud af? (vlambaarheid is change 33; alleen notitie of backlog).
+- [ ] `/ca tpring 2 nether`, daarna in 4 richtingen vliegen (`/ca ring` moet "Ring 2" blijven): hoge open hallen (vloer Y ~31, plafond Y ~105) met dikke wanden en ribben en doorgangen; geen eindeloze vlakte en geen doolhof. Vaste plek in het woud: `/tp @s 250 70 433`.
+- [ ] **Terrein oogt organisch, geen kubussen of dozen** (vloeren, plafonds en wanden hellend en bobbelig, geen vlakke platen met verticale randen): kijk vanaf een hoge vlieghoogte op `/tp @s 250 70 433` (woud) en `/tp @s 300 70 452`, en in de grotten `/tp @s -319 60 384`; ruwheid te veel/weinig: `rough` in `terrain.json` (versterking 1,2, bias −0,2).
+- [ ] Zuilen lezen als reuzenzwammen van vloer tot plafond (steel, hoedschijven, lampen, druipende slijmstalactieten); dichtheid goed (niet bos-dicht, niet zeldzaam); vrijstaande zwammen ertussen; rotspijlers (massieve kolommen) vallen op als bouwwerk, niet als rommel.
+- [ ] Lavazee: lager dan in ring 1 (Y 22), bekkens met sporenmos-eilanden als stapstenen (Y 23–25 net boven de lava); oever (dam) langs de grens oogt natuurlijk; geen lava-gevulde tunnels boven Y 22.
+- [ ] `/ca tpboundary 1 nether` en `/ca tpboundary 2 nether`: geen lavawand, geen klif, geen zwevende brokken; de overgang naar de vanilla-Nether (ring 1) en naar de placeholder (ring 3) is begaanbaar.
+- [ ] Sporengrotten (`/tp @s -319 60 384`, of `/locate biome corruptedadventure:spore_caves`): duidelijk anders dan het woud (lager plafond Y ~65, dichter grottenstelsel, meer gloeischimmel), genoeg licht om te navigeren, plafond-lichtjes herkenbaar.
+- [ ] Een dauwgeode vinden binnen ~10 min: woud-geode rond (434, 36, 111) (de bol ligt op Y 30–43 in een wand: vlieg erheen en graaf), grotten-geode rond (433, 98, 22) (in de rots boven het grotplafond, Y 95–102: graaf omhoog vanaf de grot) (graven in de wand, of een door een carver opengebroken exemplaar): holte met binnenwand van dauwbronnen en kristalknoppen, ingesloten in rots, niet zwevend in een hal; tarief beoordelen (woud ~1 per 11 chunks, grotten ~1 per 7).
+- [ ] F3: biome klopt bij het terrein (woud vs grotten), fog-kleur woud grijsgroen en grotten donkerder; geen fouten of waarschuwingen in de log.
+- [ ] Portal vanuit overworld-ring 2 (`/ca tpring 2`, bouw een portal) landt in Nether-ring 2 (÷4) op een veilige plek, niet in de lava; terug landt in ring 2 (portal-landing op een hoed of eiland is geaccepteerd).
+- [ ] Dauwkristal groeit aan een gegenereerde bron in een geode (`/gamerule randomTickSpeed 100`, speler in de buurt; random ticks vragen een speler); sporenmos spreidt (gedrag change 33/34).
+- [ ] Spawns: striders op de lava, endermen en zombified piglins in de hallen, af en toe een ghast; geen piglins/hoglins/magma cubes.
+- [ ] Notitie, geen blokkade: ghast-vuurballen of lava naast zwamblokken — brandt het woud af? (vlambaarheid is change 33); fog-dichtheid vs halgrootte (change 36).
 
+**Afstemwaarden** (alles in `worldgen/density_function/ring_2/nether/` en `NetherRing2Features`): regiodrempel `REGION_THRESHOLD` −0,10 (aandeel woud), `walls.json` (wanddikte 0,025 en gatenfactor 0,5), `masses.json` (pijlerdrempel 0,6), `floor_height.json` (bekken 0,15, eiland 0,20), `ceiling_height.json`, `caves.json`, `dew_geodes.json` (kans, stralen, schil), placement-tarieven in `NetherRing2Features.placed`.
 ---
 
 ## Risico's / aandachtspunten
@@ -510,6 +506,22 @@ Dit plan zegt ≤ 1,3× vanilla-Nether. Ring 2 in de overworld mocht na 23b van 
 Antwoord: **A** — noise-stap Nether-ring 2 ≤ 1,75× vanilla-Nether, gelijk aan ring 2 in de overworld.
 
 ---
+
+### 11. Eigen carver voor de lavazee van ring 2? (nieuw, 2026-10-05)
+Vanilla's `nether_cave` zet lava tot minGenY + 31, los van `fluid_levels`. Antwoord: **A** — eigen carver-type `ring_nether_cave` (subclass van `NetherWorldCarver`, vloeistof uit de aquifer); ring 1 blijft vanilla. (Alternatieven: geen carvers in ring 2; vanilla laten.)
+
+### 12. Prestatiebudget na de bouw (nieuw, 2026-10-05)
+Gemeten ≈ 1,9× (gebruiker accepteert dit, 35-12 A; budget was 1,75×). Antwoord: **A** — ~1,9× accepteren voor Nether-ring 2 (het budget 1,75× uit 35-10 geldt hier niet meer); de gebruiker kan de prestatie in teststop 3 beoordelen.
+
+## Bouwnotities (2026-10-05)
+
+Wat anders is gelopen dan in dit plan staat (alles ook in `02-beslissingenlog.md` en `CODEBASE.md`):
+- **Eigen carver `ring_nether_cave`:** vanilla's `nether_cave` zet lava tot minGenY + 31 (los van `fluid_levels`); zonder eigen type was "lava boven Y 22 = 0" niet te halen. Optie A voorgesteld aan de hoofdsessie (andere opties: geen carvers in ring 2, of vanilla laten).
+- **Geodes:** de wandtest met één poging per cel gaf ~1 geode per 100 chunks. Nu 48 pogingen per cel (`DewGeodeShape.ATTEMPTS`), geodes ook boven de plafonds (Y tot 112/110) en in rotspijlers (`masses.json`, nieuw in het terrein), straal 3–5/3–4, schil 2, kans per cel 0,9/0,95. Gemeten woud 1 per 11,7, grotten 1 per 5,8 chunks.
+- **Kubussen-feedback (gebruiker):** de eerste versie had planaire wanden en vlakke vloeren/plafonds met verticale randen (versterking van de dichtheid 16/8/12 liet de contour binnen één interpolatiecel springen). Nu versterking 8/5/4 en een 3D-ruwheidsruis (`nether_ring_2_rough`) over het hele oppervlak; voor: vlakke platen, na: hellende bobbelige vlakken (RCON-doorsneden); luchtaandeel woud 0,47 → 0,54, geodes woud 1 per 11,7 en grotten 1 per 5,8.
+- **Reviewpunten:** `ring_edge` weigert nu `void` in de codec; de stam van een zuil volgt het eigen plafond van elke kolom (geen gaten meer); een fantoom-bekleding van een niet-uitgegraven poging blijft theoretisch mogelijk (de feature eist een vrij middelpunt en vaste wandpunten, dus alleen een ingesloten luchtbel); de feature-check is bewust iets strenger (inset 1) dan die van de density function.
+- **Terrein:** `masses.json` (rotspijlers, 2D-ruis, dus per kolom gecachet) is nieuw; de 2D-delen (`region_weight`, `floor_height`, `ceiling_height`, `masses`) zitten in `flat_cache`; wanddikte 0,025 (plan: dikke wanden): luchtaandeel woud na de ruwheidsfix 0,54.
+- **S-resultaten:** biomes 74,0 % (r 460), 56,1 % (r 625), 74,8 % (r 780); lava boven Y 22: 0; lavawanden 0 van 1.998; ring 1: biomes 200/200 gelijk, terreinvorm gelijk, ertsen anders (feature-indexverschuiving); determinisme 126 chunks: eigen blokken identiek, alleen vanilla-erts onderling verschilt; prestatie mediaan 6–8 ms per chunk (verse servers, tweede ronde van 256 chunks) tegen 3,9 ms voor de vanilla-Nether op dezelfde plek; raamwerk met de HEAD-placeholder in ring 2: 5,1 ms; geode-DF ~0,8 ms (≈ 1,9× (gebruiker accepteert dit, 35-12 A; budget was 1,75×)).
 
 ## Beslissingenlog-regels (datum = bouwdatum; invullen na de antwoorden)
 

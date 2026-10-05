@@ -27,6 +27,7 @@ import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModChunkGenerators;
 import nl.timtoys.corruptedadventure.registry.ModCreativeTabs;
 import nl.timtoys.corruptedadventure.registry.ModDensityFunctionTypes;
+import nl.timtoys.corruptedadventure.registry.ModCarverTypes;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
 import nl.timtoys.corruptedadventure.registry.ModFoliagePlacerTypes;
 import nl.timtoys.corruptedadventure.registry.ModItems;
@@ -67,6 +68,7 @@ public final class CorruptedAdventure {
         ModChunkGenerators.register(modEventBus);
         ModPlacementModifierTypes.register(modEventBus);
         ModFeatures.register(modEventBus);
+        ModCarverTypes.register(modEventBus);
         ModSurfaceConditions.register(modEventBus);
         ModTrunkPlacerTypes.register(modEventBus);
         ModFoliagePlacerTypes.register(modEventBus);

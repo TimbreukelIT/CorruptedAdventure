@@ -72,6 +72,21 @@ public final class ModConfiguredFeatures {
     public static final ResourceKey<ConfiguredFeature<?, ?>> SUNSTONE_ORE = key("sunstone_ore");
     public static final ResourceKey<ConfiguredFeature<?, ?>> TURQUOISE_ORE = key("turquoise_ore");
 
+    // Nether ring 2 (change 35, NetherRing2Features).
+    public static final ResourceKey<ConfiguredFeature<?, ?>> GIANT_FUNGUS = key("giant_fungus");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> GIANT_FUNGUS_FREE = key("giant_fungus_free");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SLIME_STALACTITE = key("slime_stalactite");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MOLD_PATCH = key("mold_patch");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SPORE_SPROUTS_PATCH = key("spore_sprouts_patch");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> DEW_GEODE = key("dew_geode");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> NETHER_RING_2_ORE_GRAVEL = key("nether_ring_2_ore_gravel");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> NETHER_RING_2_ORE_BLACKSTONE = key("nether_ring_2_ore_blackstone");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> NETHER_RING_2_ORE_GOLD = key("nether_ring_2_ore_gold");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> NETHER_RING_2_ORE_QUARTZ = key("nether_ring_2_ore_quartz");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> NETHER_RING_2_ORE_DEBRIS_LARGE = key("nether_ring_2_ore_debris_large");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> NETHER_RING_2_ORE_DEBRIS_SMALL = key("nether_ring_2_ore_debris_small");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> NETHER_RING_2_ORE_MAGMA = key("nether_ring_2_ore_magma");
+
     private ModConfiguredFeatures() {
     }
 

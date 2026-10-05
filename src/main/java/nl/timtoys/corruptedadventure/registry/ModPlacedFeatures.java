@@ -78,6 +78,25 @@ public final class ModPlacedFeatures {
     public static final ResourceKey<PlacedFeature> RING_2_DISK_CLAY = key("ring_2/disk_clay");
     public static final ResourceKey<PlacedFeature> RING_2_DISK_GRAVEL = key("ring_2/disk_gravel");
 
+    // Nether ring 2 (change 35, NetherRing2Features), in the order of their biomes' lists (NetherRing2Biomes).
+    public static final ResourceKey<PlacedFeature> NETHER_RING_2_ORE_GRAVEL = key("nether_ring_2_ore_gravel");
+    public static final ResourceKey<PlacedFeature> NETHER_RING_2_ORE_BLACKSTONE = key("nether_ring_2_ore_blackstone");
+    public static final ResourceKey<PlacedFeature> NETHER_RING_2_ORE_GOLD = key("nether_ring_2_ore_gold");
+    public static final ResourceKey<PlacedFeature> NETHER_RING_2_ORE_QUARTZ = key("nether_ring_2_ore_quartz");
+    public static final ResourceKey<PlacedFeature> NETHER_RING_2_ORE_DEBRIS_LARGE = key("nether_ring_2_ore_debris_large");
+    public static final ResourceKey<PlacedFeature> NETHER_RING_2_ORE_DEBRIS_SMALL = key("nether_ring_2_ore_debris_small");
+    public static final ResourceKey<PlacedFeature> NETHER_RING_2_ORE_MAGMA = key("nether_ring_2_ore_magma");
+    public static final ResourceKey<PlacedFeature> DEW_GEODE = key("dew_geode");
+    public static final ResourceKey<PlacedFeature> DRIPSHROOM_FOREST_PILLARS = key("dripshroom_forest_pillars");
+    public static final ResourceKey<PlacedFeature> DRIPSHROOM_FOREST_FUNGI = key("dripshroom_forest_fungi");
+    public static final ResourceKey<PlacedFeature> DRIPSHROOM_FOREST_STALACTITES = key("dripshroom_forest_stalactites");
+    public static final ResourceKey<PlacedFeature> DRIPSHROOM_FOREST_MOLD = key("dripshroom_forest_mold");
+    public static final ResourceKey<PlacedFeature> DRIPSHROOM_FOREST_SPROUTS = key("dripshroom_forest_sprouts");
+    public static final ResourceKey<PlacedFeature> SPORE_CAVES_FUNGI = key("spore_caves_fungi");
+    public static final ResourceKey<PlacedFeature> SPORE_CAVES_STALACTITES = key("spore_caves_stalactites");
+    public static final ResourceKey<PlacedFeature> SPORE_CAVES_MOLD = key("spore_caves_mold");
+    public static final ResourceKey<PlacedFeature> SPORE_CAVES_SPROUTS = key("spore_caves_sprouts");
+
     private ModPlacedFeatures() {
     }
 

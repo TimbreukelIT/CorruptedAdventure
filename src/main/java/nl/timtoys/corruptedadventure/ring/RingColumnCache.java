@@ -43,6 +43,16 @@ public final class RingColumnCache {
         return layout.reaches(ring, PER_THREAD.get().effectiveDistance(layout, scale, x, z), layout.reachMargin(margin, scale));
     }
 
+    /**
+     * {@link RingLayout#boundaryDepth} at a block column of the running server's world, in blocks of {@code dimension}:
+     * how far the column lies inside {@code ring}, to its nearest boundary; negative outside.
+     */
+    public static double boundaryDepth(ResourceKey<Level> dimension, Ring ring, int x, int z) {
+        RingLayout layout = RingLayout.current();
+        int scale = RingLayout.scale(dimension);
+        return layout.boundaryDepth(ring, PER_THREAD.get().effectiveDistance(layout, scale, x, z)) / scale;
+    }
+
     /** {@link RingLayout#voidEdgeProgress} at a block column of the running server's world. */
     public static double voidEdgeProgress(ResourceKey<Level> dimension, int x, int z) {
         return PER_THREAD.get().voidEdgeProgress(RingLayout.current(), RingLayout.scale(dimension), x, z);

@@ -78,6 +78,9 @@ public final class ModTags {
         /** The biomes of Nether ring 1 (the vanilla Nether copies). */
         public static final TagKey<Biome> IS_NETHER_RING_1 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_nether_ring_1"));
 
+        /** The biomes of Nether ring 2 ({@code NetherRing2Biomes.ALL}). */
+        public static final TagKey<Biome> IS_NETHER_RING_2 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_nether_ring_2"));
+
         private Biomes() {
         }
     }

@@ -147,6 +147,20 @@ public final class RingLayout {
     }
 
     /**
+     * How far an {@link #effectiveDistance} lies inside {@code ring}, measured to the nearest of its two boundaries (ring 1
+     * has no inner one), in overworld blocks. Negative outside the ring. The boundaries are the radii: the boundary noise is
+     * already in the effective distance.
+     */
+    public double boundaryDepth(Ring ring, double distance) {
+        if (ring == Ring.VOID) {
+            throw new IllegalArgumentException("The void has no outer boundary");
+        }
+        int index = ring.ordinal();
+        double inner = index == 0 ? Double.POSITIVE_INFINITY : distance - radii.get(index - 1);
+        return Math.min(inner, radii.get(index) - distance);
+    }
+
+    /**
      * Whether {@code ring} can have weight within {@code margin} of an {@link #effectiveDistance}: inside the ring, in
      * a transition zone with it, or at most {@code margin} (effective distance) beyond. Outside this, every blend of
      * the ring's terrain gives it weight 0.

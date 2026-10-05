@@ -151,3 +151,12 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [textures] Change 37: dauwbron en dauwkristal zijn nu `still` en in een werkpalet; emissive voor de stadia (patroon `oreWithOverlay`) en een golf-animatie voor de dauwbron zijn 37 vraag 1/2. (bron: change 34)
 - [atmosphere] Als de runClient-check het vraagt: een overgangsbiome Nether-ring 1 → 2 voor een zachtere loop-wissel (de fog-kleur mengt al zelf). (bron: change 36)
 - [blocks] Positionele druppels uit slijmstalactieten (geen `animateTick` in change 33); de biome-druppels van change 36 zijn nu de enige. (bron: change 36)
+
+
+## Uit change 35
+- [blocks] Erts-varianten in doorweekt netherrack (kwarts, goud, ancient debris, grind, blackstone, magma hebben nu de gewone ertstexture in groengrijze rots). (bron: change 35)
+- [structures] Nether-ring 2 heeft geen vanilla-structures (geen `minecraft:`-biometags); keuze en eigen structures in fase 3. (bron: change 35)
+- [mobs] Nether-ring 2: sporenmonsters en slijmwezens (fase 4); tot dan de vanilla-mix (zombified piglin, enderman, strider, af en toe een ghast). (bron: change 35)
+- [worldgen] Vanilla-ertsaders onderling (magma, grind, blackstone, kwarts, goud) hangen af van de laadvolgorde: 54 van 126 chunks 1–40 blokken verschil tussen twee werelden. Oplossen kan met een eigen erts-feature die per aderpositie één eindtoestand heeft. (bron: change 35)
+- [worldgen] Afstemmen na de W-check: ruwheid en luchtaandeel van het woud (0,54; `terrain.json`, `walls.json`, `masses.json`), dichtheid van zuilen en schimmel. (bron: change 35)
+- [worldgen] Nether-ring 1: de feature-indexverschuiving door de Nether-2-biomes maakt ertsen en lavabronnen in ring 1 anders dan vóór change 35 (terreinvorm gelijk); alleen relevant als iemand een bestaande wereld vergelijkt. (bron: change 35)

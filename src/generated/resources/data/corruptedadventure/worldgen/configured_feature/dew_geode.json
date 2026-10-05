@@ -1,0 +1,26 @@
+{
+  "type": "corruptedadventure:dew_geode",
+  "config": {
+    "bud_chance": 0.25,
+    "cell_noise": "corruptedadventure:nether_ring_2_geode_cells",
+    "mold_chance": 0.04,
+    "region_noise": "corruptedadventure:nether_ring_2_region",
+    "shape": {
+      "bottom": 23,
+      "cell_size": 32,
+      "chance_caves": 0.95,
+      "chance_forest": 0.9,
+      "radius_max_caves": 4,
+      "radius_max_forest": 5,
+      "radius_min_caves": 3,
+      "radius_min_forest": 3,
+      "region_threshold": -0.1,
+      "shell": 2,
+      "y_max_caves": 110,
+      "y_max_forest": 112,
+      "y_min_caves": 26,
+      "y_min_forest": 30
+    },
+    "source_chance": 0.05
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:clamp",
+    "input": {
+      "type": "minecraft:mul",
+      "argument1": {
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "minecraft:noise",
+          "noise": "corruptedadventure:nether_ring_2_masses",
+          "xz_scale": 1.0,
+          "y_scale": 0.0
+        },
+        "argument2": -0.6
+      },
+      "argument2": 4.0
+    },
+    "min": -2.5,
+    "max": 2.5
+  }
+}

@@ -130,8 +130,33 @@
               }
             },
             "ring_2": {
-              "type": "minecraft:fixed",
-              "biome": "corruptedadventure:placeholder_nether_ring_2"
+              "type": "minecraft:multi_noise",
+              "biomes": [
+                {
+                  "biome": "corruptedadventure:dripshroom_forest",
+                  "parameters": {
+                    "temperature": [-0.1, 2.0],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:spore_caves",
+                  "parameters": {
+                    "temperature": [-2.0, -0.1],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                }
+              ]
             },
             "ring_3": {
               "type": "minecraft:fixed",
@@ -150,6 +175,9 @@
               "biome": "corruptedadventure:nether_void_edge"
             }
           }
+        },
+        "fluid_levels": {
+          "ring_2": 22
         },
         "settings": "corruptedadventure:nether"
       }

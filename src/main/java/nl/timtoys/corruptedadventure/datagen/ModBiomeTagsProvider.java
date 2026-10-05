@@ -15,6 +15,7 @@ import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModTags;
+import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing2Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
@@ -108,6 +109,14 @@ final class ModBiomeTagsProvider extends BiomeTagsProvider {
         tag(Tags.Biomes.IS_DRY_NETHER).addAll(netherCopies);
         tag(Tags.Biomes.IS_NETHER_FOREST).addAll(copies(List.of(Biomes.CRIMSON_FOREST, Biomes.WARPED_FOREST)));
         tag(ModTags.Biomes.IS_NETHER_RING_1).addAll(netherCopies);
+
+        // Nether ring 2: own and convention tags only, no minecraft: tags (no is_nether: no fortresses, no ruined portals,
+        // no has_structure/*) until phase 3.
+        tag(ModTags.Biomes.IS_NETHER_RING_2).addAll(NetherRing2Biomes.ALL);
+        tag(Tags.Biomes.IS_NETHER).addAll(NetherRing2Biomes.ALL);
+        tag(Tags.Biomes.IS_HOT_NETHER).addAll(NetherRing2Biomes.ALL);
+        tag(Tags.Biomes.IS_WET_NETHER).addAll(NetherRing2Biomes.ALL);
+        tag(Tags.Biomes.IS_NETHER_FOREST).add(nl.timtoys.corruptedadventure.registry.ModBiomes.DRIPSHROOM_FOREST);
 
         // Ring 2: own and convention tags only. No minecraft: tags, so no vanilla structures until phase 3 (and no
         // is_badlands: that would bring mesa mineshafts).

@@ -216,7 +216,8 @@ final class DutchLanguageProvider extends LanguageProvider {
         biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder ring 4");
         biome(ModBiomes.PLACEHOLDER_RING_5, "Placeholder ring 5");
         biome(ModBiomes.VOID_EDGE, "Voidrand");
-        biome(ModBiomes.PLACEHOLDER_NETHER_RING_2, "Placeholder Nether-ring 2");
+        biome(ModBiomes.DRIPSHROOM_FOREST, "Druipzwamwoud");
+        biome(ModBiomes.SPORE_CAVES, "Sporengrotten");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_3, "Placeholder Nether-ring 3");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_4, "Placeholder Nether-ring 4");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_5, "Placeholder Nether-ring 5");

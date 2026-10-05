@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.worldgen.chunk;
 
 import com.google.common.base.Suppliers;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
@@ -23,7 +24,9 @@ import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import nl.timtoys.corruptedadventure.ring.Ring;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
@@ -42,16 +45,26 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
     public static final MapCodec<RingChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             BiomeSource.CODEC.fieldOf("biome_source").forGetter(ChunkGenerator::getBiomeSource),
             NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(NoiseBasedChunkGenerator::generatorSettings),
-            Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(generator -> generator.dimension)
+            Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(generator -> generator.dimension),
+            Codec.unboundedMap(Ring.CODEC, Codec.intRange(-64, 320)).optionalFieldOf("fluid_levels", Map.of())
+                    .forGetter(generator -> generator.fluidLevels)
     ).apply(instance, instance.stable(RingChunkGenerator::new)));
 
     private final ResourceKey<Level> dimension;
+    private final Map<Ring, Integer> fluidLevels;
 
     public RingChunkGenerator(BiomeSource biomeSource, Holder<NoiseGeneratorSettings> settings, ResourceKey<Level> dimension) {
+        this(biomeSource, settings, dimension, Map.of());
+    }
+
+    /** @param fluidLevels per ring the Y up to and including which open space holds the default fluid (default: the dimension's sea level) */
+    public RingChunkGenerator(BiomeSource biomeSource, Holder<NoiseGeneratorSettings> settings, ResourceKey<Level> dimension,
+                              Map<Ring, Integer> fluidLevels) {
         super(biomeSource, settings);
         this.dimension = dimension;
+        this.fluidLevels = Map.copyOf(fluidLevels);
         Supplier<Aquifer.FluidPicker> vanilla = this.globalFluidPicker;
-        this.globalFluidPicker = Suppliers.memoize(() -> new RingFluidPicker(dimension, vanilla.get()));
+        this.globalFluidPicker = Suppliers.memoize(() -> new RingFluidPicker(dimension, vanilla.get(), this.fluidLevels));
     }
 
     private void createNoiseChunk(ChunkAccess chunk, StructureManager structureManager, Blender blender, RandomState random) {

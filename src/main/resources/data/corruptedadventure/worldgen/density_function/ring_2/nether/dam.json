@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:mul",
+  "argument1": 2.5,
+  "argument2": {
+    "type": "minecraft:mul",
+    "argument1": "corruptedadventure:ring_2/nether/edge",
+    "argument2": {
+      "type": "minecraft:y_clamped_gradient",
+      "from_y": 29,
+      "to_y": 33,
+      "from_value": 1.0,
+      "to_value": 0.0
+    }
+  }
+}
