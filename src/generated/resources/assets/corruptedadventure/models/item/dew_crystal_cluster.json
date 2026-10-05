@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/amethyst_bud",
+  "textures": {
+    "layer0": "corruptedadventure:block/dew_crystal_cluster"
+  }
+}

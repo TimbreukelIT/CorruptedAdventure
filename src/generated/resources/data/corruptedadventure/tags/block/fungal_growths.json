@@ -5,6 +5,10 @@
     "corruptedadventure:dripshroom_lamp",
     "corruptedadventure:slime_stalactite",
     "corruptedadventure:glow_mold",
-    "corruptedadventure:spore_sprouts"
+    "corruptedadventure:spore_sprouts",
+    "corruptedadventure:small_dew_crystal_bud",
+    "corruptedadventure:medium_dew_crystal_bud",
+    "corruptedadventure:large_dew_crystal_bud",
+    "corruptedadventure:dew_crystal_cluster"
   ]
 }

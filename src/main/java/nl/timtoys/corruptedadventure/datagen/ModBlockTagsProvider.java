@@ -160,6 +160,17 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(ModTags.Blocks.FUNGAL_GROWTHS).addTag(ModTags.Blocks.DRIPSHROOM_STEMS).add(ModBlocks.DRIPSHROOM_CAP.get(),
                 ModBlocks.DRIPSHROOM_LAMP.get(), ModBlocks.SLIME_STALACTITE.get(), ModBlocks.GLOW_MOLD.get(),
                 ModBlocks.SPORE_SPROUTS.get());
+
+        // Dew: like vanilla's amethyst (budding block, buds, cluster), mined with a pickaxe. Deliberately in no ground,
+        // carver or spreading tag, and not in #crystal_sound_blocks (it is water, not crystal). The stages are growth.
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.DEW_SOURCE.get(), ModBlocks.SMALL_DEW_CRYSTAL_BUD.get(),
+                ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.get(), ModBlocks.LARGE_DEW_CRYSTAL_BUD.get(), ModBlocks.DEW_CRYSTAL_CLUSTER.get());
+        tag(Tags.Blocks.BUDDING_BLOCKS).add(ModBlocks.DEW_SOURCE.get());
+        tag(Tags.Blocks.BUDS).add(ModBlocks.SMALL_DEW_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.get(),
+                ModBlocks.LARGE_DEW_CRYSTAL_BUD.get());
+        tag(Tags.Blocks.CLUSTERS).add(ModBlocks.DEW_CRYSTAL_CLUSTER.get());
+        tag(ModTags.Blocks.FUNGAL_GROWTHS).add(ModBlocks.SMALL_DEW_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.get(),
+                ModBlocks.LARGE_DEW_CRYSTAL_BUD.get(), ModBlocks.DEW_CRYSTAL_CLUSTER.get());
     }
 
     /**

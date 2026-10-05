@@ -28,6 +28,10 @@ public final class ModItems {
     /** Drop of the salt crust. Placeholder: its use and recipes follow in phase 2. */
     public static final DeferredItem<Item> SALT = ITEMS.registerSimpleItem("salt");
 
+    // ---- Nether ring 2 ----
+    /** Drop of the grown dew crystal. Placeholder: its use, recipes and balance follow in phase 2. */
+    public static final DeferredItem<Item> DEW_CRYSTAL = ITEMS.registerSimpleItem("dew_crystal");
+
     private ModItems() {
     }
 

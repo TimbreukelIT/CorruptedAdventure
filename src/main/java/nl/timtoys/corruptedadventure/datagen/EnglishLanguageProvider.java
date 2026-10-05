@@ -197,6 +197,12 @@ final class EnglishLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.GLOW_MOLD, "Glow Mold");
         addBlock(ModBlocks.SLIME_STALACTITE, "Slime Stalactite");
         addBlock(ModBlocks.SPORE_SPROUTS, "Spore Sprouts");
+        addBlock(ModBlocks.DEW_SOURCE, "Dew Source");
+        addBlock(ModBlocks.SMALL_DEW_CRYSTAL_BUD, "Small Dew Crystal Bud");
+        addBlock(ModBlocks.MEDIUM_DEW_CRYSTAL_BUD, "Medium Dew Crystal Bud");
+        addBlock(ModBlocks.LARGE_DEW_CRYSTAL_BUD, "Large Dew Crystal Bud");
+        addBlock(ModBlocks.DEW_CRYSTAL_CLUSTER, "Dew Crystal Cluster");
+        addItem(ModItems.DEW_CRYSTAL, "Dew Crystal");
 
         biome(ModBiomes.WITHERED_EXPANSE, "Withered Expanse");
         biome(ModBiomes.DRY_RIVERBEDS, "Dry Riverbeds");

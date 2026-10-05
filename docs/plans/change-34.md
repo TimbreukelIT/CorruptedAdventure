@@ -299,3 +299,29 @@ Antwoord: **A** — ja, in deze change: `animateTick` met vanilla `DRIPPING_WATE
 | 2026-10-01 | blocks | Druppelen dauwbron: `animateTick` met `DRIPPING_WATER` in deze change | "Druppelt" is een eigenschap van het blok; vanilla-patroon |
 
 Commit (na `/code-review`): `blocks: add dew source with growing dew crystal`.
+
+---
+
+## Afwijkingen bij de bouw (2026-10-05)
+
+Stand gecontroleerd tegen `60272ec` (change 33); de aannames klopten, geen vragen nodig.
+- `crystalCluster(Block)` (change 29) en de Nether-ring 2-sectie in `ModBlocks`/`ModBlockStateProvider`/`ModBlockTagsProvider`/de lang-providers bestonden; de dauwblokken staan achteraan die secties. `fungal_growths` bestond; de vier stadia zijn toegevoegd.
+- `Tags.Blocks.BUDDING_BLOCKS`/`BUDS`/`CLUSTERS` en de item-tegenhangers bestaan in NeoForge 21.1.252; ze zijn gebruikt (item-tags via `copy`).
+- `BuddingAmethystBlock.canClusterGrowAtState` is public static in 1.21.1 en hergebruikt.
+- Dutch namen komen uit de vanilla-`nl_nl` (amethistknop/-cluster), dus "dauwkristalknop"/"Dauwkristalcluster".
+- `ModBlocksTest` kreeg een extra test (dauwblokken direct na `spore_sprouts`, `dew_crystal` direct na `salt`); de bestaande Nether-ring 2-test (20 blokken vanaf `soaked_netherrack`) blijft ongewijzigd groen.
+- Test S: server via een handmatige `runServer` met RCON aan (de smoke-test-script stopt de server direct na "Done"); level `smoke-change34`, RCON daarna weer uit. Geen `runClient`: de plan-checks zijn RCON-checks; het uiterlijk valt onder de W-lijst en teststop 3.
+- Texturescript: `crystalSpike` (zout) is niet aangepast (zoutkristal byte-identiek); dauw heeft een eigen `dewSpike` zonder blush, met donkere outline.
+
+## In-game checklist (W)
+
+Nieuwe wereld, preset `corrupted_world`, seed `20260930`, creatief (`/gamemode creative`), OP. De dauwgeodes komen pas in change 35; plaats een bron met commando's. Plek: `/ca tpring 2 nether` (Nether-ring 2) of in de overworld op `/tp @s 1000 200 1000`.
+
+- [ ] Creative tab: dauwbron + 4 stadia staan direct na de sporenspruiten (achteraan Nether-ring 2); `dew_crystal` staat achteraan de losse items (na `salt`); namen en/nl kloppen.
+- [ ] **Groei:** `/setblock ~ ~3 ~ corruptedadventure:dew_source` met vrije lucht om de bron, `/gamerule randomTickSpeed 4096`, speler ernaast: binnen ~1 minuut knoppen op meerdere zijden die doorgroeien tot clusters met de juiste oriëntatie (ook onder- en bovenkant). Een knop met een andere `facing` (zelf geplaatst) groeit niet door; volle clusters groeien niet verder. Daarna `/gamerule randomTickSpeed 3`.
+- [ ] Een bron omringd door blokken groeit niet; een blok weghalen: op die zijde begint de groei.
+- [ ] Mijnen in survival: bron met pickaxe: niets (ook met Silk Touch); cluster met pickaxe: 4 `dew_crystal`, met de hand of stok: 2, Fortune III: 4 tot 16; knoppen zonder Silk Touch: niets; met Silk Touch de knop.
+- [ ] Piston duwt de bron: bron vernietigd, geen drop; stadia ook.
+- [ ] Druppelen: onder een bron met lucht eronder vallen af en toe waterdruppels (ook in de Nether); geen druppels als er direct een vol blok onder zit.
+- [ ] Licht (F3, per stadium 1/2/4/5, bron 0); geen paars-zwart; kruismodellen zonder zwarte randen; de bron leest als "water in een blok".
+- [ ] Twee clients: beiden zien dezelfde stadia op dezelfde plek (blockstate-sync); druppels zijn puur client-side en mogen per client verschillen.

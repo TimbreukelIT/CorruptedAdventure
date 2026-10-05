@@ -183,6 +183,19 @@ class ModBlocksTest {
     }
 
     @Test
+    void dewBlocksEndTheNetherRing2SectionAndTheDewCrystalEndsTheLooseItems() {
+        List<Item> shown = new ArrayList<>();
+        ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).forEach(shown::add);
+        int sprouts = shown.indexOf(ModBlocks.SPORE_SPROUTS.asItem());
+        assertEquals(List.of(ModBlocks.DEW_SOURCE.asItem(), ModBlocks.SMALL_DEW_CRYSTAL_BUD.asItem(),
+                ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.asItem(), ModBlocks.LARGE_DEW_CRYSTAL_BUD.asItem(),
+                ModBlocks.DEW_CRYSTAL_CLUSTER.asItem()), shown.subList(sprouts + 1, sprouts + 6));
+        List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
+                .filter(item -> !(item instanceof BlockItem)).toList();
+        assertEquals(standalone.indexOf(ModItems.SALT.get()) + 1, standalone.indexOf(ModItems.DEW_CRYSTAL.get()));
+    }
+
+    @Test
     void netherRing2BlocksTickLightAndSoundAsPlanned() {
         assertTrue(ModBlocks.SPORE_MOSS.get().defaultBlockState().isRandomlyTicking());
         assertFalse(ModBlocks.SOAKED_NETHERRACK.get().defaultBlockState().isRandomlyTicking());

@@ -31,6 +31,11 @@
     "corruptedadventure:salt_crystal",
     "corruptedadventure:soaked_netherrack",
     "corruptedadventure:spore_moss",
-    "corruptedadventure:slime_stalactite"
+    "corruptedadventure:slime_stalactite",
+    "corruptedadventure:dew_source",
+    "corruptedadventure:small_dew_crystal_bud",
+    "corruptedadventure:medium_dew_crystal_bud",
+    "corruptedadventure:large_dew_crystal_bud",
+    "corruptedadventure:dew_crystal_cluster"
   ]
 }

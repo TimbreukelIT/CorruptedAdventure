@@ -66,6 +66,11 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         tag(Tags.Items.RAW_MATERIALS).addTag(ModTags.Items.RAW_MATERIALS_SUNSTONE).addTag(ModTags.Items.RAW_MATERIALS_TURQUOISE);
         tag(ModTags.Items.DUSTS_SALT).add(ModItems.SALT.get());
         tag(Tags.Items.DUSTS).addTag(ModTags.Items.DUSTS_SALT);
+        tag(ModTags.Items.GEMS_DEW_CRYSTAL).add(ModItems.DEW_CRYSTAL.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_DEW_CRYSTAL);
+        copy(Tags.Blocks.BUDDING_BLOCKS, Tags.Items.BUDDING_BLOCKS);
+        copy(Tags.Blocks.BUDS, Tags.Items.BUDS);
+        copy(Tags.Blocks.CLUSTERS, Tags.Items.CLUSTERS);
 
         copy(ModTags.Blocks.CANYON_STONES, ModTags.Items.CANYON_STONES);
         copy(BlockTags.STAIRS, ItemTags.STAIRS);

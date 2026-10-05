@@ -130,6 +130,9 @@ final class ModItemModelProvider extends ItemModelProvider {
         withExistingParent(ModBlocks.SLIME_STALACTITE.getId().getPath(), mcLoc("item/generated"))
                 .texture("layer0", modLoc("item/slime_stalactite"));
         flatBlockItem(ModBlocks.SPORE_SPROUTS);
+        blockItem(ModBlocks.DEW_SOURCE);
+        // The dew crystal stages: ModBlockStateProvider.crystalCluster writes their item models.
+        basicItem(ModItems.DEW_CRYSTAL.get());
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

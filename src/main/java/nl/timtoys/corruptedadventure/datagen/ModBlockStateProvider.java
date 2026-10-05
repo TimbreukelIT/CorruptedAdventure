@@ -143,6 +143,11 @@ final class ModBlockStateProvider extends BlockStateProvider {
         glowMold();
         slimeStalactite();
         cross(ModBlocks.SPORE_SPROUTS.get());
+        simpleBlock(ModBlocks.DEW_SOURCE.get());
+        crystalCluster(ModBlocks.SMALL_DEW_CRYSTAL_BUD.get());
+        crystalCluster(ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.get());
+        crystalCluster(ModBlocks.LARGE_DEW_CRYSTAL_BUD.get());
+        crystalCluster(ModBlocks.DEW_CRYSTAL_CLUSTER.get());
     }
 
     /**
@@ -201,7 +206,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
     /**
      * A crystal on any face, like vanilla's amethyst cluster: one cutout cross model, rotated per {@code facing} exactly
      * as vanilla's blockstate (the same model when waterlogged), and a flat item with the block texture on vanilla's
-     * amethyst bud transforms. Shared by every crystal block (salt crystal; later the dew crystal stages).
+     * amethyst bud transforms. Shared by every crystal block (salt crystal, the dew crystal stages).
      */
     private void crystalCluster(Block block) {
         String name = BuiltInRegistries.BLOCK.getKey(block).getPath();

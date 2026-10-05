@@ -32,7 +32,7 @@ public final class ModTags {
         public static final TagKey<Block> DRIPSHROOM_STEMS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("dripshroom_stems"));
         /**
          * Everything that grows in the Nether ring 2 fungal forest and caves: stems, caps, lamp, stalactites, mould,
-         * sprouts. Worldgen of that ring keeps its determinism rules on this tag; later changes add the dew crystal.
+         * sprouts. Worldgen of that ring keeps its determinism rules on this tag; also the dew crystal stages.
          */
         public static final TagKey<Block> FUNGAL_GROWTHS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("fungal_growths"));
 
@@ -56,6 +56,8 @@ public final class ModTags {
         public static final TagKey<Item> RAW_MATERIALS_TURQUOISE = TagKey.create(Registries.ITEM, common("raw_materials/turquoise"));
         /** Convention tag {@code c:dusts/salt}; part of {@code c:dusts}. */
         public static final TagKey<Item> DUSTS_SALT = TagKey.create(Registries.ITEM, common("dusts/salt"));
+        /** Convention tag {@code c:gems/dew_crystal}; part of {@code c:gems}. */
+        public static final TagKey<Item> GEMS_DEW_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/dew_crystal"));
 
         private Items() {
         }

@@ -37,6 +37,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.block.BarrelCactusBlock;
 import nl.timtoys.corruptedadventure.block.DeadGrassBlock;
 import nl.timtoys.corruptedadventure.block.DesertFlowerBlock;
+import nl.timtoys.corruptedadventure.block.DewSourceBlock;
 import nl.timtoys.corruptedadventure.block.DryShrubBlock;
 import nl.timtoys.corruptedadventure.block.GlowMoldBlock;
 import nl.timtoys.corruptedadventure.block.LooseSandTrigger;
@@ -320,6 +321,23 @@ public final class ModBlocks {
     public static final DeferredBlock<SporeSproutsBlock> SPORE_SPROUTS = register("spore_sprouts",
             () -> new SporeSproutsBlock(Properties.ofFullCopy(Blocks.NETHER_SPROUTS).mapColor(MapColor.TERRACOTTA_GREEN)));
 
+    /**
+     * Budding amethyst's properties (hard to break, pushed away by pistons) plus random ticks, set explicitly: it grows
+     * dew crystal on its sides. Drops nothing, so every source in the world comes from worldgen.
+     */
+    public static final DeferredBlock<DewSourceBlock> DEW_SOURCE = register("dew_source",
+            () -> new DewSourceBlock(Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).mapColor(MapColor.WATER).randomTicks()));
+    /** The dew crystal stages are vanilla's amethyst bud behaviour and shapes, with the same light levels (1, 2, 4, 5). */
+    public static final DeferredBlock<AmethystClusterBlock> SMALL_DEW_CRYSTAL_BUD = register("small_dew_crystal_bud",
+            () -> new AmethystClusterBlock(3.0F, 4.0F, dewCrystal(Blocks.SMALL_AMETHYST_BUD, 1)));
+    public static final DeferredBlock<AmethystClusterBlock> MEDIUM_DEW_CRYSTAL_BUD = register("medium_dew_crystal_bud",
+            () -> new AmethystClusterBlock(4.0F, 3.0F, dewCrystal(Blocks.MEDIUM_AMETHYST_BUD, 2)));
+    public static final DeferredBlock<AmethystClusterBlock> LARGE_DEW_CRYSTAL_BUD = register("large_dew_crystal_bud",
+            () -> new AmethystClusterBlock(5.0F, 3.0F, dewCrystal(Blocks.LARGE_AMETHYST_BUD, 4)));
+    /** Full-grown stage; the default state faces up. */
+    public static final DeferredBlock<AmethystClusterBlock> DEW_CRYSTAL_CLUSTER = register("dew_crystal_cluster",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, dewCrystal(Blocks.AMETHYST_CLUSTER, 5)));
+
     private ModBlocks() {
     }
 
@@ -355,6 +373,11 @@ public final class ModBlocks {
     /** Dripshroom wood (planks family, stripped): crimson's behaviour in a light grey-green on the map. */
     private static Properties dripshroom(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_LIGHT_GREEN);
+    }
+
+    /** A dew crystal stage: the amethyst stage's behaviour and sounds, light level given per stage, light blue on the map. */
+    private static Properties dewCrystal(Block vanilla, int light) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.COLOR_LIGHT_BLUE).lightLevel(state -> light);
     }
 
     /** Dripshroom stem and hyphae (bark outside): dark grey-green on the map. */

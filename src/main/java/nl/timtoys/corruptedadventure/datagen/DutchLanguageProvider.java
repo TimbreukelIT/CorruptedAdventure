@@ -197,6 +197,12 @@ final class DutchLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.GLOW_MOLD, "Gloeischimmel");
         addBlock(ModBlocks.SLIME_STALACTITE, "Slijmstalactiet");
         addBlock(ModBlocks.SPORE_SPROUTS, "Sporenspruiten");
+        addBlock(ModBlocks.DEW_SOURCE, "Dauwbron");
+        addBlock(ModBlocks.SMALL_DEW_CRYSTAL_BUD, "Kleine dauwkristalknop");
+        addBlock(ModBlocks.MEDIUM_DEW_CRYSTAL_BUD, "Middelgrote dauwkristalknop");
+        addBlock(ModBlocks.LARGE_DEW_CRYSTAL_BUD, "Grote dauwkristalknop");
+        addBlock(ModBlocks.DEW_CRYSTAL_CLUSTER, "Dauwkristalcluster");
+        addItem(ModItems.DEW_CRYSTAL, "Dauwkristal");
 
         biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
         biome(ModBiomes.DRY_RIVERBEDS, "Drooggevallen rivierbeddingen");

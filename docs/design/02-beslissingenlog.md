@@ -348,4 +348,11 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-05 | blocks | Slijmstalactieten: vorm en vallen, geen groei of druppels; generieke `StalactiteBlock` (kopie van vanilla pointed dripstone), ook voor de ijsstalactieten van Nether-ring 3 (33-7 A) | Vanilla hardcodet pointed dripstone; één class voor beide ringen |
 | 2026-10-05 | blocks | Lichtgevende schimmel: multiface-laag zoals glow lichen (licht 7, eigen `GlowMoldBlock`); zwamlamp licht 15 zoals shroomlight (33-8 A) | Ideaal voor wanden en plafonds van de sporengrotten |
 | 2026-10-05 | textures | Nether-ring 2-textures in `tools/textures/Ring2Textures.java` (één script per ring); placeholders in change 33, definitief in change 37 | Afspraak één script per ring; ring 1 deed hetzelfde met het zielkristal |
+| 2026-10-05 | blocks | Dauwbron (`dew_source`, eigen class `DewSourceBlock`): vol, opaak blok met water-achtige texture; geen waterfluid (34-1 A) | Eenvoudigst; groei op alle zes zijden |
+| 2026-10-05 | blocks | Dauwbron verkrijgbaar: nee (geen drop, ook niet met Silk Touch; piston vernietigt) (34-2 A) | Sleutelmateriaal blijft aan Nether-ring 2 gebonden |
+| 2026-10-05 | blocks | Dauwkristal-stadia: vier, zoals amethist (vanilla `AmethystClusterBlock`); groeit via random ticks (server-side) op lucht naast de bron, alleen vanaf de eigen zijde (34-3 A) | Herkenbaar; geen eigen class |
+| 2026-10-05 | blocks | Dauwkristal-drops: cluster 4 (Fortune) met pickaxe, anders 2, Silk Touch geeft het cluster; knoppen alleen Silk Touch; placeholder-item `dew_crystal` (nut fase 2) (34-4 A) | 1-op-1 amethist |
+| 2026-10-05 | blocks | Groeisnelheid dauwkristal: als amethist (1/5 per random tick, `GROWTH_CHANCE`) (34-5 A) | Vertrouwd tempo; een constante |
+| 2026-10-05 | blocks | Licht dauwbron/dauwkristal: stadia 1/2/4/5, bron 0 (34-6 A) | Rijpe clusters vindbaar; bron blijft "water" |
+| 2026-10-05 | blocks | Druppelen dauwbron: `animateTick` met `DRIPPING_WATER` in deze change (34-7 A) | "Druppelt" is een eigenschap van het blok; vanilla-patroon |
 | 2026-10-05 | blocks | Tag `corruptedadventure:fungal_growths` aangemaakt in change 33 (stam, hyfen, gestript, hoed, lamp, stalactiet, gloeischimmel, sporenspruiten) | Contract met 34 (dauwkristal) en 35 (determinismeregel) |

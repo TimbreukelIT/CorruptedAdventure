@@ -89,6 +89,11 @@ public final class Ring2Textures {
     private static final int[] DRIPSHROOM_LAMP = {0xB8D27A, 0xCFE38F, 0xE3F0AE, 0xF4FAD2};
     private static final int[] GLOW_MOLD = {0x5FD6B8, 0x8BEACF, 0xC2F7E6};
     private static final int[] SLIME_STALACTITE = {0x4E8A4A, 0x6AA860, 0x8CC47A, 0xB2DE9E};
+    // Dew working palettes (change 34, placeholders; final in change 37): dark to light.
+    private static final int[] DEW_SOURCE = {0x173F52, 0x1F5F78, 0x2E86A6, 0x4FAFC8, 0x86D2E0};
+    private static final int DEW_SOURCE_GLINT = 0xD6F4FA;
+    private static final int[] DEW_CRYSTAL = {0x2A7F99, 0x4FB8D0, 0x8FDDEB, 0xC6F1FA, 0xE8FBFF};
+    private static final int DEW_CRYSTAL_OUTLINE = 0x17475A;
 
     /**
      * How a texture moves: {@code frames} frames of {@code frametime} ticks, optionally interpolated; {@code glow} is
@@ -181,6 +186,13 @@ public final class Ring2Textures {
             still("block/slime_stalactite_up_" + thickness, (image, random) -> flippedVertically(image, down));
         }
         still("item/slime_stalactite", Ring2Textures::slimeStalactiteItem);
+        // Nether ring 2 dew (change 34).
+        still("block/dew_source", Ring2Textures::dewSource);
+        still("block/small_dew_crystal_bud", (image, random) -> dewBud(image, random, 1));
+        still("block/medium_dew_crystal_bud", (image, random) -> dewBud(image, random, 2));
+        still("block/large_dew_crystal_bud", (image, random) -> dewBud(image, random, 3));
+        still("block/dew_crystal_cluster", (image, random) -> dewBud(image, random, 4));
+        still("item/dew_crystal", Ring2Textures::dewCrystalItem);
     }
 
     private static void still(String name, Painter painter) {
@@ -1460,6 +1472,83 @@ public final class Ring2Textures {
                 set(image, x, y, color);
             }
         }
+    }
+
+    /**
+     * Still water in a block: dark blue-green with wavy lines of lighter water, a few glints; opaque. The waves wrap
+     * around the tile edges.
+     */
+    private static void dewSource(BufferedImage image, Random random) {
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double wave = Math.sin((x + 2.0 * Math.sin(y * Math.PI / 4.0)) * Math.PI / 4.0 + y * Math.PI / 2.0);
+                double t = 0.45 + 0.3 * wave + 0.2 * (random.nextDouble() - 0.5);
+                set(image, x, y, shade(DEW_SOURCE, t));
+            }
+        }
+        for (int i = 0; i < 6; i++) {
+            set(image, random.nextInt(SIZE), random.nextInt(SIZE), DEW_SOURCE_GLINT);
+        }
+    }
+
+    /**
+     * Dew crystal bud stage 1 to 4 (small, medium, large, cluster): 1, 2, 3 and 5 pointed crystals from the bottom edge
+     * (cross model, cutout), the later stages taller. Transparent background.
+     */
+    private static void dewBud(BufferedImage image, Random random, int stage) {
+        switch (stage) {
+            case 1 -> dewSpike(image, 7.5, 1, 5, 0);
+            case 2 -> {
+                dewSpike(image, 4.5, 1, 6, -1);
+                dewSpike(image, 10.5, 1, 8 + random.nextInt(2), 1);
+            }
+            case 3 -> {
+                dewSpike(image, 3.5, 1, 7, -1);
+                dewSpike(image, 11.5, 1, 8, 1);
+                dewSpike(image, 7.5, 2, 11 + random.nextInt(2), 0);
+            }
+            default -> {
+                dewSpike(image, 2.5, 1, 6 + random.nextInt(2), -2);
+                dewSpike(image, 12.5, 1, 7 + random.nextInt(2), 2);
+                dewSpike(image, 5.5, 2, 10, -1);
+                dewSpike(image, 9.5, 2, 11, 1);
+                dewSpike(image, 7.5, 2, 14, 0);
+            }
+        }
+        outline(image, DEW_CRYSTAL_OUTLINE);
+    }
+
+    /** One crystal from the bottom row up, as {@link #crystalSpike}: light left facet, bright ridge, shaded right facet, bright tip. */
+    private static void dewSpike(BufferedImage image, double centre, int halfWidth, int height, int lean) {
+        for (int row = 0; row < height; row++) {
+            int y = SIZE - 1 - row;
+            int ridge = (int) Math.round(centre + lean * row / (double) height);
+            int fromTop = height - 1 - row;
+            int half = Math.min(halfWidth, fromTop * halfWidth / (halfWidth + 1));
+            for (int x = ridge - half; x <= ridge + half; x++) {
+                if (x < 0 || x >= SIZE) {
+                    continue;
+                }
+                int color = x < ridge ? DEW_CRYSTAL[2] : x == ridge ? DEW_CRYSTAL[3] : DEW_CRYSTAL[x == ridge + half ? 0 : 1];
+                set(image, x, y, fromTop == 0 ? DEW_CRYSTAL[4] : color);
+            }
+        }
+    }
+
+    /** One faceted dew crystal in the inventory, diagonal, with a dark outline. */
+    private static void dewCrystalItem(BufferedImage image, Random random) {
+        for (int y = 2; y < 14; y++) {
+            double centre = 11.0 - (y - 2) * 0.55;
+            double half = y < 5 ? (y - 1) * 0.9 : y > 11 ? (14 - y) * 1.0 : 2.6;
+            for (int x = (int) Math.round(centre - half); x <= (int) Math.round(centre + half); x++) {
+                double t = half == 0 ? 0.5 : (x - centre) / half;
+                int color = t < -0.35 ? DEW_CRYSTAL[3] : t > 0.45 ? DEW_CRYSTAL[0] : DEW_CRYSTAL[1 + random.nextInt(2)];
+                set(image, x, y, color);
+            }
+        }
+        set(image, 10, 3, DEW_CRYSTAL[4]);
+        set(image, 9, 4, DEW_CRYSTAL[4]);
+        outline(image, DEW_CRYSTAL_OUTLINE);
     }
 
     // ---- Preview --------------------------------------------------------------------------------------------

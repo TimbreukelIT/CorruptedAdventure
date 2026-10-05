@@ -142,3 +142,10 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [blocks] Kleine druipzwam (zaailing-equivalent, plant op sporenmos, bonemeal -> reuzenzwam) om de set hernieuwbaar te maken; nu is het hout alleen uit reuzenzwammen te halen. (bron: change 33)
 - [infra] GameTest-opzet (lege template, `gameTestServer`) om random-tick-gedrag (dood gras, sporenmos, latere groeiblokken) automatisch te testen via `state.randomTick(level, pos, seededRandom)`; nu alleen met een speler of dispenser te testen. (bron: change 33)
 - [textures] Change 37: de dikte-modellen van de slijmstalactiet delen nu per dikte een gespiegelde `up`/`down`-texture; definitief kan een eigen stijl per richting. Stam/hyfen, gloeischimmel en zwamlamp zijn nog `still` (animatie/emissive: 37 vraag 4). (bron: change 33)
+
+## Uit change 34
+- [items] Dauwkristal (`dew_crystal`, placeholder uit change 34): nut en recipes in fase 2 (basis van hittebescherming voor ring 3); eventueel een dauwkristalblok (opslag/bouwblok, zoals amethistblok). (bron: change 34)
+- [items] Idee: fles vullen bij een dauwbron (water in de Nether). (bron: change 34)
+- [blocks] Later-idee: verplaatsbare dauwbron (Silk Touch) of ring-gebonden groei (`RingLayout.ringAt` in `randomTick`); afgewezen in 34-2. (bron: change 34)
+- [blocks] De dauwkristal-stadia spelen het amethist-belgeluid bij een projectieltreffer (vanilla `AmethystClusterBlock`, zoals `salt_crystal`). (bron: change 34)
+- [textures] Change 37: dauwbron en dauwkristal zijn nu `still` en in een werkpalet; emissive voor de stadia (patroon `oreWithOverlay`) en een golf-animatie voor de dauwbron zijn 37 vraag 1/2. (bron: change 34)

@@ -1,6 +1,10 @@
 package nl.timtoys.corruptedadventure.datagen;
 
+import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
@@ -8,7 +12,9 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.predicates.MatchTool;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
@@ -156,6 +162,21 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         add(ModBlocks.GLOW_MOLD.get(), block -> createMultifaceBlockDrops(block, HAS_SHEARS));
         dropSelf(ModBlocks.SLIME_STALACTITE.get());
         dropSelf(ModBlocks.SPORE_SPROUTS.get());
+
+        // Like budding amethyst: the source drops nothing, not even with Silk Touch; buds only with Silk Touch.
+        add(ModBlocks.DEW_SOURCE.get(), noDrop());
+        dropWhenSilkTouch(ModBlocks.SMALL_DEW_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.LARGE_DEW_CRYSTAL_BUD.get());
+        // Like the amethyst cluster: Silk Touch -> the cluster; a pickaxe -> 4 crystals (Fortune), anything else 2.
+        add(ModBlocks.DEW_CRYSTAL_CLUSTER.get(), block -> createSilkTouchDispatchTable(block,
+                LootItem.lootTableItem(ModItems.DEW_CRYSTAL.get())
+                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(4.0F)))
+                        .apply(ApplyBonusCount.addOreBonusCount(registries.lookupOrThrow(Registries.ENCHANTMENT)
+                                .getOrThrow(Enchantments.FORTUNE)))
+                        .when(MatchTool.toolMatches(ItemPredicate.Builder.item().of(ItemTags.CLUSTER_MAX_HARVESTABLES)))
+                        .otherwise(applyExplosionDecay(block, LootItem.lootTableItem(ModItems.DEW_CRYSTAL.get())
+                                .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))))));
     }
 
     @Override
