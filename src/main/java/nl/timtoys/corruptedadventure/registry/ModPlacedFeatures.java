@@ -60,6 +60,16 @@ public final class ModPlacedFeatures {
     public static final ResourceKey<PlacedFeature> OASIS_FLOWERS_WHITE = key("oasis_flowers_white");
     public static final ResourceKey<PlacedFeature> OASIS_FLOWERS_PURPLE = key("oasis_flowers_purple");
     public static final ResourceKey<PlacedFeature> OASIS_EDGE_SHRUBS = key("oasis_edge_shrubs");
+    // Dry riverbeds, transition 2→3 (change 31, DryRiverbedsFeatures), in the order of their biome's lists.
+    public static final ResourceKey<PlacedFeature> DRY_RIVERBEDS_SCORCHED_PATCHES = key("dry_riverbeds_scorched_patches");
+    public static final ResourceKey<PlacedFeature> DRY_RIVERBEDS_SCORCHED_SPECKS = key("dry_riverbeds_scorched_specks");
+    public static final ResourceKey<PlacedFeature> DRY_RIVERBEDS_FOSSILS = key("dry_riverbeds_fossils");
+    public static final ResourceKey<PlacedFeature> DRY_RIVERBEDS_BONES = key("dry_riverbeds_bones");
+    public static final ResourceKey<PlacedFeature> DRY_RIVERBEDS_STONES = key("dry_riverbeds_stones");
+    public static final ResourceKey<PlacedFeature> DRY_RIVERBEDS_DEAD_TREES = key("dry_riverbeds_dead_trees");
+    public static final ResourceKey<PlacedFeature> DRY_RIVERBEDS_VEGETATION = key("dry_riverbeds_vegetation");
+    public static final ResourceKey<PlacedFeature> DRY_RIVERBEDS_GRASS = key("dry_riverbeds_grass");
+    public static final ResourceKey<PlacedFeature> DRY_RIVERBEDS_CACTUS_GROUPS = key("dry_riverbeds_cactus_groups");
     // Ring 2 ores (change 25). The tapered vanilla ores (ring_2/ore_*) have no constants: RingVanillaOres.keys.
     public static final ResourceKey<PlacedFeature> SUNSTONE_ORE = key("sunstone_ore");
     public static final ResourceKey<PlacedFeature> TURQUOISE_ORE = key("turquoise_ore");

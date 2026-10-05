@@ -175,6 +175,7 @@ final class EnglishLanguageProvider extends LanguageProvider {
         addItem(ModItems.SALT, "Salt");
 
         biome(ModBiomes.WITHERED_EXPANSE, "Withered Expanse");
+        biome(ModBiomes.DRY_RIVERBEDS, "Dry Riverbeds");
         biome(ModBiomes.CANYONLANDS, "Canyonlands");
         biome(ModBiomes.OASIS_FLATS, "Oasis Flats");
         biome(ModBiomes.HOODOO_FIELDS, "Hoodoo Fields");

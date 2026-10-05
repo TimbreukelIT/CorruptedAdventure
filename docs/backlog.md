@@ -119,3 +119,11 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 ## Uit change 30c
 - [mobs] Fase 4: dieren in oase en duindalen (konijnen, fennecs/woestijnvos?, hagedissen) nu de begroeiing er is. (bron: change 30c)
 - [conditions] Zoete bessen in de oase (change 30c): extra voedselbron in ring 2; balans van uitdroging/honger nalopen. (bron: change 30c)
+
+## Uit change 31
+- [worldgen] Change 39: geblakerde vlekken in `dry_riverbeds` van vanilla `blackstone`/`basalt` naar as en verkoold hout (change 38); de snede in `ring_3/overworld.json` (placeholder, −1/64 × `riverbed_cut`) herzien: de beddingen doorlopen in het echte ring 3-terrein of lopen uit (masker `riverbed_mask` doodt uit bij ring 3-gewicht 0,8–0,98). (bron: change 31)
+- [worldgen] Change 41: ring 3-ertsset ook in `dry_riverbeds` (ring 3-helft van de zone). (bron: change 31)
+- [structures] Gestrande resten in `dry_riverbeds`: wrakken op het droge, oude bruggen en steigers over de beddingen, drooggevallen putten (fase 3); geen `has_structure/*`-tags tot dan. (bron: change 31)
+- [atmosphere] Change 32: kleuren (`Palette.RING_2` 30 % naar grijs is een placeholder) en grotgeluid van `dry_riverbeds` definitief; maskeer de harde bodemwissel aan de zonegrens. (bron: change 31)
+- [mobs] Fase 4: ring 2-mobs ook in `dry_riverbeds`. (bron: change 31)
+- [infra] Unit tests: de bestaande worldgen-checks "buiten de zone ongewijzigd" vergelijken best de deep-solid-mask (terrein) in plaats van alle blokken; nieuwe placed features verschuiven de decoratie-seeds (feature-index) en veranderen dus elke feature buiten het eigen biome. (bron: change 31)

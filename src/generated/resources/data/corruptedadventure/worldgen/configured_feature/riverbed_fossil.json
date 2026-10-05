@@ -1,0 +1,28 @@
+{
+  "type": "corruptedadventure:surface_fossil",
+  "config": {
+    "buried": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 0.7,
+      "min_inclusive": 0.4
+    },
+    "ground": [
+      "minecraft:red_sand",
+      "minecraft:coarse_dirt",
+      "corruptedadventure:cracked_clay",
+      "minecraft:gravel",
+      "corruptedadventure:scorched_sandstone"
+    ],
+    "integrity": 0.85,
+    "templates": [
+      "minecraft:fossil/spine_1",
+      "minecraft:fossil/spine_2",
+      "minecraft:fossil/spine_3",
+      "minecraft:fossil/spine_4",
+      "minecraft:fossil/skull_1",
+      "minecraft:fossil/skull_2",
+      "minecraft:fossil/skull_3",
+      "minecraft:fossil/skull_4"
+    ]
+  }
+}

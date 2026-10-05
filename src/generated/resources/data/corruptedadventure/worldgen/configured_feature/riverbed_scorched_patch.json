@@ -1,0 +1,67 @@
+{
+  "type": "minecraft:disk",
+  "config": {
+    "half_height": 1,
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 5,
+      "min_inclusive": 3
+    },
+    "state_provider": {
+      "fallback": {
+        "type": "minecraft:weighted_state_provider",
+        "entries": [
+          {
+            "data": {
+              "Name": "minecraft:blackstone"
+            },
+            "weight": 3
+          },
+          {
+            "data": {
+              "Name": "minecraft:basalt",
+              "Properties": {
+                "axis": "y"
+              }
+            },
+            "weight": 2
+          },
+          {
+            "data": {
+              "Name": "corruptedadventure:scorched_sandstone"
+            },
+            "weight": 2
+          }
+        ]
+      },
+      "rules": [
+        {
+          "if_true": {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:air",
+            "offset": [
+              0,
+              -1,
+              0
+            ]
+          },
+          "then": {
+            "type": "minecraft:simple_state_provider",
+            "state": {
+              "Name": "corruptedadventure:scorched_sandstone"
+            }
+          }
+        }
+      ]
+    },
+    "target": {
+      "type": "minecraft:matching_blocks",
+      "blocks": [
+        "minecraft:red_sand",
+        "minecraft:coarse_dirt",
+        "corruptedadventure:cracked_clay",
+        "minecraft:gravel"
+      ]
+    }
+  }
+}

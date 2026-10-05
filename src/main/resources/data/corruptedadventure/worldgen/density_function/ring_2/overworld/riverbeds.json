@@ -1,0 +1,46 @@
+{
+  "type": "minecraft:spline",
+  "spline": {
+    "coordinate": {
+      "type": "minecraft:abs",
+      "argument": {
+        "type": "minecraft:noise",
+        "noise": "corruptedadventure:dry_riverbeds_channel",
+        "xz_scale": 1.0,
+        "y_scale": 0.0
+      }
+    },
+    "points": [
+      {
+        "location": 0.0,
+        "value": 5.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.04,
+        "value": 5.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.048,
+        "value": 3.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.058,
+        "value": 3.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.064,
+        "value": 1.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.07,
+        "value": 0.0,
+        "derivative": 0.0
+      }
+    ]
+  }
+}

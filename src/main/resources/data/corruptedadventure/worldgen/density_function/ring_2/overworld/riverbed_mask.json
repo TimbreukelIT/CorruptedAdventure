@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:spline",
+  "spline": {
+    "coordinate": "corruptedadventure:ring_weight/overworld/ring_3",
+    "points": [
+      {
+        "location": 0.0,
+        "value": 0.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.25,
+        "value": 1.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.8,
+        "value": 1.0,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.98,
+        "value": 0.0,
+        "derivative": 0.0
+      }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:simple_block",
+  "config": {
+    "to_place": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:dry_shrub"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:dead_bush"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:barrel_cactus"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

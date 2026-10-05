@@ -1,0 +1,25 @@
+{
+  "feature": "corruptedadventure:riverbed_scorched_patch",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 16,
+      "margin": 6
+    },
+    {
+      "type": "corruptedadventure:ring_chance",
+      "exponent": 1.5,
+      "from_chance": 0.0,
+      "ring": "ring_2",
+      "signal": "transition",
+      "to_chance": 0.9
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "OCEAN_FLOOR_WG"
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

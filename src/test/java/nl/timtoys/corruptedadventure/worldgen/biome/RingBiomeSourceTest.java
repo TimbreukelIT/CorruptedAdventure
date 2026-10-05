@@ -43,6 +43,9 @@ class RingBiomeSourceTest {
     private final RingBiomeSource nether;
     /** Overworld with a transition biome for boundary 1 only. */
     private final RingBiomeSource withTransition;
+    private final Holder<Biome> secondTransitionBiome = Holder.direct(biome());
+    /** Overworld with a transition biome for boundaries 1 and 2 (change 31). */
+    private final RingBiomeSource withTwoTransitions;
 
     RingBiomeSourceTest() {
         Map<Ring, BiomeSource> sources = new EnumMap<>(Ring.class);
@@ -54,6 +57,8 @@ class RingBiomeSourceTest {
         overworld = new RingBiomeSource(Level.OVERWORLD, sources, Map.of());
         nether = new RingBiomeSource(Level.NETHER, sources, Map.of());
         withTransition = new RingBiomeSource(Level.OVERWORLD, sources, Map.of(Ring.RING_1, new FixedBiomeSource(transitionBiome)));
+        withTwoTransitions = new RingBiomeSource(Level.OVERWORLD, sources, Map.of(Ring.RING_1, new FixedBiomeSource(transitionBiome),
+                Ring.RING_2, new FixedBiomeSource(secondTransitionBiome)));
     }
 
     @Test
@@ -94,6 +99,38 @@ class RingBiomeSourceTest {
             // Quart corners lie up to ~6 blocks apart along a diagonal, so the edges are only reached approximately.
             assertTrue(lowestBlend < 0.1 && highestBlend > 0.9, "zone at angle " + angle + " not crossed: " + lowestBlend + "–" + highestBlend);
         }
+    }
+
+    @Test
+    void everyBoundaryWithATransitionBiomeFillsItsOwnZoneAndTheRestStaysHard() {
+        for (int angle = 0; angle < 360; angle += 15) {
+            double lowestBlend = 1.0;
+            double highestBlend = 0.0;
+            for (int boundary = 1; boundary <= 2; boundary++) {
+                Holder<Biome> expectedZone = boundary == 1 ? transitionBiome : secondTransitionBiome;
+                for (int distance = RADII.get(boundary - 1) - REACH; distance <= RADII.get(boundary - 1) + REACH; distance++) {
+                    RingPosition position = positionAt(Level.OVERWORLD, distance, angle);
+                    if (position.inTransition() && position.inner() == Ring.values()[boundary - 1]) {
+                        assertEquals(expectedZone, biomeAt(withTwoTransitions, distance, angle), "zone of boundary " + boundary + " at " + distance);
+                        if (boundary == 2) {
+                            lowestBlend = Math.min(lowestBlend, position.blend());
+                            highestBlend = Math.max(highestBlend, position.blend());
+                        }
+                    }
+                }
+            }
+            assertTrue(lowestBlend < 0.1 && highestBlend > 0.9, "zone 2 not crossed at angle " + angle);
+            for (int boundary = 3; boundary <= RADII.size(); boundary++) {
+                assertHardSwitch(withTwoTransitions, boundary, angle);
+            }
+            assertEquals(biomes.get(Ring.RING_2), biomeAt(withTwoTransitions, CENTRES[1], angle));
+            assertEquals(biomes.get(Ring.RING_3), biomeAt(withTwoTransitions, CENTRES[2], angle));
+        }
+        Set<Holder<Biome>> expected = new HashSet<>(biomes.values());
+        expected.add(transitionBiome);
+        expected.add(secondTransitionBiome);
+        assertEquals(expected, withTwoTransitions.possibleBiomes());
+        assertTrue(decode(", \"transitions\": {\"ring_1\": " + fixed("a") + ", \"ring_2\": " + fixed("b") + "}").isSuccess());
     }
 
     @Test

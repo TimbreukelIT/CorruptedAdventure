@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:mul",
+    "argument1": "corruptedadventure:ring_2/overworld/riverbed_mask",
+    "argument2": "corruptedadventure:ring_2/overworld/riverbeds"
+  }
+}

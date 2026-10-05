@@ -1,54 +1,66 @@
 {
   "type": "minecraft:mul",
   "argument1": {
-    "type": "minecraft:spline",
-    "spline": {
-      "coordinate": {
-        "type": "minecraft:noise",
-        "noise": "corruptedadventure:ring_2_pools",
-        "xz_scale": 1.0,
-        "y_scale": 0.0
-      },
-      "points": [
-        {
-          "location": 0.22,
-          "value": 0.0,
-          "derivative": 0.0
+    "type": "minecraft:mul",
+    "argument1": {
+      "type": "minecraft:spline",
+      "spline": {
+        "coordinate": {
+          "type": "minecraft:noise",
+          "noise": "corruptedadventure:ring_2_pools",
+          "xz_scale": 1.0,
+          "y_scale": 0.0
         },
-        {
-          "location": 0.42,
-          "value": 3.0,
-          "derivative": 0.0
-        },
-        {
-          "location": 0.5,
-          "value": 7.0,
-          "derivative": 0.0
-        },
-        {
-          "location": 0.58,
-          "value": 13.0,
-          "derivative": 0.0
-        }
-      ]
+        "points": [
+          {
+            "location": 0.22,
+            "value": 0.0,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.42,
+            "value": 3.0,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.5,
+            "value": 7.0,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.58,
+            "value": 13.0,
+            "derivative": 0.0
+          }
+        ]
+      }
+    },
+    "argument2": {
+      "type": "minecraft:spline",
+      "spline": {
+        "coordinate": "corruptedadventure:ring_2/overworld/moisture",
+        "points": [
+          {
+            "location": 0.204,
+            "value": 0.0,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.224,
+            "value": 1.0,
+            "derivative": 0.0
+          }
+        ]
+      }
     }
   },
   "argument2": {
-    "type": "minecraft:spline",
-    "spline": {
-      "coordinate": "corruptedadventure:ring_2/overworld/moisture",
-      "points": [
-        {
-          "location": 0.204,
-          "value": 0.0,
-          "derivative": 0.0
-        },
-        {
-          "location": 0.224,
-          "value": 1.0,
-          "derivative": 0.0
-        }
-      ]
+    "type": "minecraft:add",
+    "argument1": 1.0,
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": -1.0,
+      "argument2": "corruptedadventure:ring_2/overworld/pools_dry"
     }
   }
 }

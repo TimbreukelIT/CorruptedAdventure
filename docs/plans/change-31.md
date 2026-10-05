@@ -393,3 +393,69 @@ Antwoord: **A** — harde bodemwissel aan de zonegrens accepteren; de biome-kleu
 | 2026-10-01 | worldgen | `dry_riverbeds` zonder `minecraft:`-tags (geen vanilla-structures tot fase 3); in de zandgrot-lijst van change 26 | Structures zijn fase 3; afspraak change 26 |
 
 Commit (na `/code-review`): `worldgen: add dry riverbeds transition biome between ring 2 and 3`.
+
+---
+
+## Bouwnotities (2026-10-05)
+
+Gebouwd volgens het plan, met deze afwijkingen en uitvoeringsbesluiten (alles in de categorie `worldgen`):
+
+- **De snede zit in beide terreininvoeren (afwijking, uitvoering van antwoord 1 A).** Het plan sneed alleen de ring 2-hoogte. Gemeten in de eerste wereld: de beddingen waren in de zone bijna onzichtbaar (gemiddeld 0,5 diep, op vlak terrein 0). Oorzaak: ring 2's eindwaarde loopt door `squeeze(0,64 · x)`, die verzadigt zodra het gemengde oppervlak meer dan ~12 blokken van ring 2's eigen hoogte ligt (de hele zone: ring 3 trekt het oppervlak naar Y ~120). Een snede in een verzadigde invoer verschuift niets. Oplossing, nog steeds JSON: `ring_3/overworld.json` (placeholder) krijgt `− 1/64 × riverbed_cut` (1/64 = helling van zijn gradiënt per blok), zodat de bedding in de hele zone `cut` blokken diep is. Het masker `riverbed_mask` dooft uit bij ring 3-gewicht 0,8 → 0,98 (geen beddingen in ring 3 zelf). Change 39 herziet de placeholder (backlog).
+- **Extra bestanden:** `riverbed_cut.json` (`flat_cache(mask × riverbeds)`, gedeeld door `height`, `initial_height` en `ring_3/overworld`), `pools_dry.json` (de eigen ramp). `height`/`initial_height` zijn wikkels om `height_base`/`initial_height_base`; `initial_height` krijgt de bedding-term over de hele functie (monotoon in `h`, dus `initial_height ≤ height` blijft gelden en de bedding krijgt zijn oppervlakteregels).
+- **Surface rule:** de bedding-tak staat als element [6] van `above_preliminary_surface`. De oever-`scorched_sandstone` (steil + `|n| < 0,07`) geldt alleen voor de bovenlaag; de grove-aarde-vlekken kregen een smaller venster (surface-ruis −0,35…0, ~30 % i.p.v. −0,5…0,2 = 60 %, gemeten).
+- **Features:** `riverbed_dead_trees` (eigen `tree`-configs met grove aarde onder de stam, geen verdorde aarde) in plaats van `dead_tree` hergebruiken: op rood zand of klei zou de verdorde aarde van ring 1 verschijnen, en grove aarde-alleen als grond liet te weinig bomen toe. Extra: `riverbed_scorched_speck` (kleine spikkels naast de grote vlekken) en `dry_riverbeds_grass`/`_cactus_groups` apart (de plan-tabel noemt ze in één regel). Fossielgrond bevat ook `gravel` (de grindvlekjes van de bedding).
+- **Determinisme / "buiten de zone ongewijzigd":** zie "Resultaten S" hieronder. Een nieuwe placed feature verschuift de decoratie-seeds (feature-index) van alle features erna, dus een letterlijke blokvergelijking buiten de zone is zinloos; vergeleken is de deep-solid-mask (terrein), die identiek is.
+
+## Resultaten (B/D/S, 2026-10-05)
+
+- **B:** `./gradlew build` groen, 333 tests (0 fouten; `ClientIsolationTest` groen). Nieuw/uitgebreid: `Ring2BiomesTest` (6 biomes, `dry_riverbeds`), `RingBiomeSourceTest` (twee overgangen), `RingBlendTest` (constante invoer = ringgewicht), `Ring2TerrainJsonTest` (wikkels, `pools_dry`, `ring_weight`, gedeelde ruis en knikken van terrein en surface rule, snede in ring 3).
+- **D:** `./gradlew runData` geslaagd; gegenereerd en meegecommit: `biome/dry_riverbeds.json`, 8 configured + 9 placed features, tags `is_ring_2`/`c:is_hot`/`c:is_dry`, lang en/nl. Vanilla-volgorde in `dry_riverbeds.json` gelijk aan de andere ring 2-biomes, eigen features achteraan (`Ring2BiomesTest`).
+- **S:** `tools/server-smoke-test.sh` (`level-name=smoke-change31`, seed 20260930): start zonder fouten ("Feature order cycle", preset, surface rule en density functions laden; geen client-class-melding). Eén client (`runClient -PquickPlay`, Dev) joint een dedicated server, staat na `/tp` in de zone (`execute if biome` = `dry_riverbeds`), geen client-fouten. Twee clients niet apart gedaan: puur worldgen, geen netwerk, de client kent de zone alleen als blokken en als biome-kleur via de registry-sync. Metingen op de strook x 3.376–3.615, z 0–511 (480 chunks, meetwerelden met de eindcode, uitgelezen uit de regiobestanden, RCON voor `forceload`/`save-all`/`locate`):
+  - **Biome:** `/locate biome corruptedadventure:dry_riverbeds` en `withered_expanse` vinden de zones; langs +x ligt de zone bij z 0 op x 3.388–3.571 (183 breed), verder noordwaarts 75–160 breed (grensruis). Grens 1 blijft `withered_expanse`.
+  - **Droog:** 0 × `water` boven Y 60 in alle chunks die de zone raken (ook de eerste 10 blokken).
+  - **Beddingen:** vlakke bodem met `cracked_clay` (8,8 % van de zone-kolommen), op vlak terrein 5–6 blokken onder de oevers (`3510 104`: Y 116–117 t.o.v. 122, gemeten: gemiddeld 3,1 in het midden van de zone, 1,4 in het uitdovende laatste kwart); bedding 15–40 breed. Eerste gemeten wereld (snede alleen in ring 2): 0,5 diep, daarom de aanpassing in "Bouwnotities".
+  - **Bodem (zone-kolommen):** rood zand 41,0 %, grove aarde 36,6 %, klei 8,8 %, blackstone/basalt/`scorched_sandstone` 11,2 % (laatste kwart 20 %), kloofsteen 1,5 %; geen kolom met kale `stone`/`dirt` als bovenste blok (bedding-dekking: geen oppervlakteregel gemist). Verloop blakeren: `blackstone`+`basalt` per chunk 1,8 → 10,8 → 21,6 → 34,7 over de vier kwarten van de zone.
+  - **Levendigheid:** botten (losse brokken) ~1 per 5 chunks, fossielen ~1 per 28 chunks (53/45/41/41/35/… botten), dode bomen (stammen) gemiddeld 1,5–2,3 blokken per chunk aan de ring 2-kant (~0,4 bomen per chunk), 1,2–1,6 in het laatste kwart; planten (struik, dode struik, tonnetjescactus, cactus) ~4,8 per 256 kolommen, gras erbij 6,5; geen enkel 4 × 4-chunkgebied zonder struik, bot, steen of boom (78 vensters, kleinste som 125).
+  - **Ertsen:** ring 2-helft (eerste twee kwarten): kolen/ijzer/koper/goud/redstone/diamant/zonnesteen aanwezig; derde kwart enkele resten (rand van de ring 2-features), laatste kwart 0.
+  - **Determinisme:** twee verse werelden, de tweede in omgekeerde tegelvolgorde geladen (24 tegels van 5 × 4 chunks): per blok identiek voor alle blokken die onze features en bodemregels leggen (bone_block, cracked_clay, blackstone, basalt, dead_log, dry_shrub, dead_bush, gras, cactus, cobblestone, scorched_sandstone, coarse_dirt, red_sand) in alle 480 chunks. Verschillen blijven er alleen in vanilla-ertsblobs (granite/diorite/andesite/tuff/ertsen/grind, vanilla-gedrag: overlappende `ore`-features).
+  - **Buiten de zone:** `smoke-change31-new` (na) tegen een worktree van `HEAD` (vóór), 5 groepen van 4 × 4 chunks (ring 2-midden x 2.500, zone 1→2 x 1.500, vlak vóór de zone, ring 3 x 4.500 en x 5.300): de deep-solid-mask (Y −40…55: terrein, grotten, aquifers) is in alle 80 chunks identiek (0 verschillen); in ring 3 zijn alle blokken identiek. Features in ring 2 en zone 1→2 verschillen wél: nieuwe placed features verschuiven de decoratie-seeds van alle features erna (feature-index, zie valkuil "Feature-index ook binnen ring 2"); twee nieuwe werelden met dezelfde code zijn identiek in die chunks.
+  - **Prestaties** (JFR `minecraft.ChunkGeneration`, stap `noise`, tweede ronde, chunks x 211–226, z −16…−1 (zone 2→3 met een stuk ring 2 en ring 3), 3 rondes per variant afwisselend, vóór = git-worktree van `59745a5`; de machine was druk, spreiding ±20 %): vanilla-preset gemiddeld 59,7 ms (53,6 / 57,6 / 67,9), mediaan 38,7; vóór **68,5** (66,1 / 82,8 / 56,6), mediaan 61,0; na **62,6** (55,1 / 68,2 / 64,5), mediaan 59,5. Na ÷ vóór = 0,91 (gemiddelde) / 0,98 (mediaan): de snede kost niets meetbaars; t.o.v. vanilla 1,05× (gemiddelde) / 1,54× (mediaan), onder het budget van 1,75×. Hele chunk 102,1 → 104,7 ms (vanilla 84,7).
+
+## In-game checklist (W)
+
+Niet blokkerend; nalopen in teststop 3. Tijd ~15 min. Kern: **leest de zone als drooggevallen rivierbeddingen, levendig en steeds zwarter richting ring 3?** Coördinaten op seed `20260930`, gecontroleerd tegen de build van change 31 (meetwerelden met dezelfde code); `x y z`, y = boven de grond. De zone ligt langs de +x-as bij z = 0 tussen x ≈ 3.390 (ring 2-kant) en x ≈ 3.570 (ring 3-kant); verder noordwaarts schuift ze naar x ≈ 3.400–3.500.
+
+**Opstarten (~2 min)**
+1. `./gradlew runClient` → Singleplayer → **Create New World**. Gebruik een **nieuwe** wereld (nieuwe biome, nieuw terrein, andere feature-posities).
+2. Tab *World*: World Type **Corrupted World**, Seed **20260930**. Tab *Game*: Game Mode **Creative**, **Allow Cheats: ON**. → Create.
+3. `/time set noon`, `/gamerule doDaylightCycle false`, `/ca weather 2 clear 3600`. Render distance ≥ 12.
+
+**A. Zone en biome (~3 min)**
+- [ ] `/ca tpboundary 2`: je staat op de verruisde grens (blend 0,5). F3: biome `dry_riverbeds`. Loop 100 blokken westwaarts (richting ring 2) en oostwaarts: aan de ring 2-kant wissel je (rond x ≈ 3.390) naar een ring 2-biome (`dune_sea`, `canyonlands`, …), aan de ring 3-kant (rond x ≈ 3.570) naar `placeholder_ring_3`. Zone ongeveer 110–180 blokken breed.
+- [ ] Kleuren iets grauwer dan ring 2 (lucht/fog); geen regen als het in ring 1 regent (`/ca weather` in de ring 2-kant is droog).
+- [ ] **Zonegrens (31-9):** de bodemwissel (rood zand / zoutkorst / oasegras → grove aarde en klei) is acceptabel? Is de harde rand te opvallend (de biome-kleur van change 32 moet hem later maskeren)?
+
+**B. Beddingen (~6 min)**
+- [ ] **Bedding op vlak terrein:** `/tp @s 3510 128 104`. Een bedding van ~25–30 blokken breed (loop west-oost over `x 3490…3540`), bodem 5 blokken onder de oevers (Y 117 t.o.v. 122), vlakke bodem van gebarsten klei met grindvlekjes, oevers van grove aarde met 1–2 treden. Leest als lege rivierbedding en niet als geverfd lint? Geen verticale wanden, zwevende brokken of gaten?
+- [ ] **Diepere bedding:** `/tp @s 3526 130 98` (bodem Y 117, oevers 123) en loop de bedding af (noord-zuid): meandert ze mooi, loopt ze uit richting ring 3 (rond x ≈ 3.560 verdwijnt de snede, de klei blijft als lint)?
+- [ ] **Begin van de zone, bedding op een plateau/kloofrand:** `/tp @s 3430 140 280` (kleilint op het plateau Y 132, kloof met bodem Y ~93 op `3414 100 280`). Het begin van de zone (eerste kwart) heeft nog nauwelijks snede; acceptabel, of mist hier een geul? Kloofwanden die de zone in lopen houden hun lagen (rood/oranje/crème) zonder lelijke naad: kijk vanaf `3414 105 280` naar de wand.
+- [ ] Geen water: nergens plassen of poelen in de zone, ook niet in de eerste 10 blokken ervan (`/tp @s 3395 140 100`). Nog wel pekel of poelen in ring 2 vlak vóór de zone.
+- [ ] Bodem: klei in de bedding, grove aarde op de oevers en in vlekken, rood zand eromheen, `scorched_sandstone` op steile oevers. Past de verhouding (ongeveer 41 % rood zand, 37 % grove aarde, 9 % klei)?
+
+**C. Geblakerd richting ring 3 (~2 min)**
+- [ ] Loop van `/tp @s 3420 130 56` naar `/tp @s 3560 130 56` (West → Oost): steeds meer `blackstone`/`basalt`/`scorched_sandstone`-vlekken; aan het ring 3-einde (`3560 130 56`) duidelijk zwart geblakerd. Is dat zwart genoeg, te "Nether-achtig" (placeholder tot change 38/39)? Vergelijk met de vlekken van `withered_expanse` in zone 1→2 (`/ca tpboundary 1`).
+
+**D. Leven (~5 min)** — norm: levendig, niet leeg
+- [ ] Loop 2 minuten over een bedding en de oevers (bijv. `3510 128 104` → `3510 128 200`): steeds iets te zien (struik, bot, fossiel, steen, dode boom). Geen kale kilometers? Vergelijk met de duindalen van 30c.
+- [ ] **Fossielen:** `/tp @s 3495 134 20` (groot, 53 botten), `3513 134 6`, `3480 134 42` (kleiner). Half begraven, niet zwevend, niet geheel onder de grond; niet te vaak (~1 per 25 chunks)?
+- [ ] **Botten en keien:** losse botblokken (~1 per 5 chunks, bijv. `3462 128 6`) en donkere keien (cobblestone/andesiet/blackstone) op de oevers.
+- [ ] **Dode bomen:** `/tp @s 3556 130 10` en `3466 130 92`: dode bomen met grove aarde onder de stam, langs de bedding; dunner richting ring 3. Genoeg (~1 per 3–4 chunks aan de ring 2-kant)?
+- [ ] **Begroeiing:** dorre struiken, dode struiken, tonnetjescactussen; droog gras op grove aarde; cactusgroepje bij `/tp @s 3506 124 150`.
+- [ ] Spawns zoals canyonlands ('s nachts husks e.d., overdag konijnen).
+
+**E. Overig**
+- [ ] Ertsen: in de ring 2-helft van de zone vind je kolen/ijzer (graaf of spectator onder `3430 40 100`); aan de ring 3-kant (`3550 40 100`) geen vanilla-ertsen (tot change 41).
+- [ ] Portal in de zone → Nether ÷4 en terug (standaard-W).
+- [ ] Geen fouten of waarschuwingen in de log bij het aanmaken van de wereld.
+
+**Afstemwaarden om te beoordelen** (startwaarden in `DryRiverbedsFeatures`/JSON): breedte en afstand van de beddingen (`dry_riverbeds_channel` firstOctave −8, drempels 0,04/0,07), diepte (5), uitdoving van de snede (ring 3-gewicht 0,8–0,98), hoeveelheid geblakerde vlekken (`scorched_patches`/`_specks`), dichtheid van bomen, botten, fossielen en keien, verhouding grove aarde/rood zand (surface-ruis −0,35…0).

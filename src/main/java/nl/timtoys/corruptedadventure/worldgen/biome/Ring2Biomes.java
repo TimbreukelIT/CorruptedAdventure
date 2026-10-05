@@ -42,7 +42,7 @@ public final class Ring2Biomes {
      * {@code CODEBASE.md} ("Plekken die ring 2-biomes opsommen").
      */
     public static final List<ResourceKey<Biome>> ALL = List.of(ModBiomes.CANYONLANDS, ModBiomes.OASIS_FLATS,
-            ModBiomes.HOODOO_FIELDS, ModBiomes.SALT_FLATS, ModBiomes.DUNE_SEA);
+            ModBiomes.HOODOO_FIELDS, ModBiomes.SALT_FLATS, ModBiomes.DUNE_SEA, ModBiomes.DRY_RIVERBEDS);
     /**
      * Rubble and springs of the canyonlands ({@code LOCAL_MODIFICATIONS}), in this fixed order; change 30 reuses them
      * in the same order. The spring comes last: it only digs where no boulder of its chunk lies.

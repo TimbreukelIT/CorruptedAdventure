@@ -102,6 +102,10 @@
             "ring_1": {
               "type": "minecraft:fixed",
               "biome": "corruptedadventure:withered_expanse"
+            },
+            "ring_2": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:dry_riverbeds"
             }
           }
         },

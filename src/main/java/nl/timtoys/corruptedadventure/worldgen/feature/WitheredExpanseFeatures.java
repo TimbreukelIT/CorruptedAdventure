@@ -130,6 +130,11 @@ public final class WitheredExpanseFeatures {
 
     /** A trunk without leaves: the foliage is air. Keeps the ground block when it is already {@code #dirt}. */
     private static TreeConfiguration bareTree(TrunkPlacer trunk, TwoLayersFeatureSize size) {
+        return bareTree(trunk, size, ModBlocks.WITHERED_DIRT.get());
+    }
+
+    /** As {@link #bareTree(TrunkPlacer, TwoLayersFeatureSize)}, with {@code dirt} under a trunk that does not stand on {@code #dirt}. */
+    static TreeConfiguration bareTree(TrunkPlacer trunk, TwoLayersFeatureSize size, Block dirt) {
         Block log = ModBlocks.DEAD_LOG.get();
         return new TreeConfiguration.TreeConfigurationBuilder(
                 BlockStateProvider.simple(log),
@@ -137,7 +142,7 @@ public final class WitheredExpanseFeatures {
                 BlockStateProvider.simple(Blocks.AIR),
                 new BlobFoliagePlacer(ConstantInt.of(0), ConstantInt.of(0), 0),
                 size)
-                .dirt(BlockStateProvider.simple(ModBlocks.WITHERED_DIRT.get()))
+                .dirt(BlockStateProvider.simple(dirt))
                 .ignoreVines()
                 .build();
     }

@@ -59,6 +59,15 @@ public final class ModConfiguredFeatures {
     public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_FLOWERS_WHITE = key("oasis_flowers_white");
     public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_FLOWERS_PURPLE = key("oasis_flowers_purple");
     public static final ResourceKey<ConfiguredFeature<?, ?>> OASIS_EDGE_SHRUBS = key("oasis_edge_shrubs");
+    // Dry riverbeds, transition 2→3 (change 31, DryRiverbedsFeatures); the rest reuses dead_tree, dry_grass, bone_rubble.
+    public static final ResourceKey<ConfiguredFeature<?, ?>> RIVERBED_SCORCHED_PATCH = key("riverbed_scorched_patch");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> RIVERBED_SCORCHED_SPECK = key("riverbed_scorched_speck");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> RIVERBED_FOSSIL = key("riverbed_fossil");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> RIVERBED_STONES = key("riverbed_stones");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> RIVERBED_FLORA = key("riverbed_flora");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> RIVERBED_DEAD_TREE = key("riverbed_dead_tree");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> RIVERBED_DEAD_TREE_FORKED = key("riverbed_dead_tree_forked");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> RIVERBED_DEAD_TREES = key("riverbed_dead_trees");
     // Ring 2 ores (change 25); the tapered vanilla ores reuse vanilla's configured features.
     public static final ResourceKey<ConfiguredFeature<?, ?>> SUNSTONE_ORE = key("sunstone_ore");
     public static final ResourceKey<ConfiguredFeature<?, ?>> TURQUOISE_ORE = key("turquoise_ore");

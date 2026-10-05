@@ -27,19 +27,72 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Ring2BiomesTest {
     @Test
     void bootstrapRegistersExactlyTheRing2List() {
-        assertEquals(Set.copyOf(Ring2Biomes.ALL), bootstrap().keySet());
-        assertEquals(Set.of(ModBiomes.CANYONLANDS, ModBiomes.OASIS_FLATS, ModBiomes.HOODOO_FIELDS, ModBiomes.SALT_FLATS, ModBiomes.DUNE_SEA),
-                Set.copyOf(Ring2Biomes.ALL));
-        assertEquals(5, Ring2Biomes.ALL.size());
+        // dry_riverbeds (change 31) is a ring 2 biome that TransitionBiomes registers, next to withered_expanse.
+        Set<ResourceKey<Biome>> registered = new java.util.HashSet<>(bootstrap().keySet());
+        registered.add(ModBiomes.DRY_RIVERBEDS);
+        assertEquals(Set.copyOf(Ring2Biomes.ALL), registered);
+        assertTrue(transitions().containsKey(ModBiomes.DRY_RIVERBEDS));
+        assertEquals(Set.of(ModBiomes.CANYONLANDS, ModBiomes.OASIS_FLATS, ModBiomes.HOODOO_FIELDS, ModBiomes.SALT_FLATS, ModBiomes.DUNE_SEA,
+                ModBiomes.DRY_RIVERBEDS), Set.copyOf(Ring2Biomes.ALL));
+        assertEquals(6, Ring2Biomes.ALL.size());
+    }
+
+    @Test
+    void dryRiverbedsIsARing2BiomeFadedTowardsRing3() {
+        Map<ResourceKey<Biome>, Biome> ring2 = bootstrap();
+        Biome riverbeds = transitions().get(ModBiomes.DRY_RIVERBEDS);
+        Biome canyonlands = ring2.get(ModBiomes.CANYONLANDS);
+        assertFalse(riverbeds.hasPrecipitation());
+        assertEquals(2.0F, riverbeds.getBaseTemperature());
+        BiomeAmbience.Palette faded = BiomeAmbience.Palette.RING_2.desaturated(TransitionBiomes.DRY_RIVERBEDS_FADE);
+        assertEquals(faded.sky(), riverbeds.getSkyColor());
+        assertEquals(faded.fog(), riverbeds.getFogColor());
+        assertEquals(faded.water(), riverbeds.getWaterColor());
+        assertEquals(faded.waterFog(), riverbeds.getWaterFogColor());
+        assertNotEquals(BiomeAmbience.Palette.RING_2.sky(), riverbeds.getSkyColor());
+        // Spawns as the canyonlands (SpawnerData has no equals: compare its toString).
+        for (MobCategory category : MobCategory.values()) {
+            assertEquals(canyonlands.getMobSettings().getMobs(category).unwrap().toString(),
+                    riverbeds.getMobSettings().getMobs(category).unwrap().toString(), category.toString());
+        }
+        // The shared base in vanilla's order (one global order per step: no "Feature order cycle"), our own features
+        // last and in a fixed order, in no other biome.
+        for (GenerationStep.Decoration decoration : GenerationStep.Decoration.values()) {
+            List<ResourceKey<PlacedFeature>> base = step(canyonlands, decoration).stream()
+                    .filter(key -> !key.location().getNamespace().equals("corruptedadventure")).toList();
+            assertEquals(base, step(riverbeds, decoration).stream()
+                    .filter(key -> !key.location().getNamespace().equals("corruptedadventure")).toList(), decoration.toString());
+        }
+        List<ResourceKey<PlacedFeature>> shapes = step(riverbeds, GenerationStep.Decoration.LOCAL_MODIFICATIONS);
+        assertEquals(TransitionBiomes.DRY_RIVERBEDS_SHAPES, shapes.subList(shapes.size() - TransitionBiomes.DRY_RIVERBEDS_SHAPES.size(), shapes.size()));
+        List<ResourceKey<PlacedFeature>> plants = step(riverbeds, GenerationStep.Decoration.VEGETAL_DECORATION);
+        assertEquals(TransitionBiomes.DRY_RIVERBEDS_VEGETATION, plants.subList(plants.size() - TransitionBiomes.DRY_RIVERBEDS_VEGETATION.size(), plants.size()));
+        assertTrue(shapes.indexOf(ModPlacedFeatures.DRY_RIVERBEDS_SCORCHED_PATCHES) < shapes.indexOf(ModPlacedFeatures.DRY_RIVERBEDS_FOSSILS),
+                "the black ground first: fossils and bones skip it");
+        for (ResourceKey<PlacedFeature> own : Stream.concat(TransitionBiomes.DRY_RIVERBEDS_SHAPES.stream(), TransitionBiomes.DRY_RIVERBEDS_VEGETATION.stream()).toList()) {
+            for (Biome other : ring2.values()) {
+                for (GenerationStep.Decoration decoration : GenerationStep.Decoration.values()) {
+                    assertFalse(step(other, decoration).contains(own), own + " in a ring 2 biome");
+                }
+            }
+        }
+        // The ring 2 ores come through the modifier on #is_ring_2; the biome itself has none of vanilla's.
+        List<ResourceKey<PlacedFeature>> ores = step(riverbeds, GenerationStep.Decoration.UNDERGROUND_ORES);
+        for (ResourceKey<PlacedFeature> ore : RingVanillaOres.ORES) {
+            assertFalse(ores.contains(ore), ore.toString());
+        }
+        assertEquals(Ring2Biomes.DISKS, ores.subList(ores.size() - Ring2Biomes.DISKS.size(), ores.size()));
     }
 
     @Test
@@ -222,9 +275,17 @@ class Ring2BiomesTest {
     }
 
     private static Map<ResourceKey<Biome>, Biome> bootstrap() {
+        return bootstrap(Ring2Biomes::bootstrap);
+    }
+
+    private static Map<ResourceKey<Biome>, Biome> transitions() {
+        return bootstrap(TransitionBiomes::bootstrap);
+    }
+
+    private static Map<ResourceKey<Biome>, Biome> bootstrap(java.util.function.Consumer<BootstrapContext<Biome>> bootstrap) {
         Map<ResourceKey<Biome>, Biome> registered = new LinkedHashMap<>();
         StandaloneHolderGetter<Biome> biomes = new StandaloneHolderGetter<>(key -> true);
-        Ring2Biomes.bootstrap(new BootstrapContext<>() {
+        bootstrap.accept(new BootstrapContext<>() {
             @Override
             public Holder.Reference<Biome> register(ResourceKey<Biome> key, Biome value, Lifecycle lifecycle) {
                 registered.put(key, value);

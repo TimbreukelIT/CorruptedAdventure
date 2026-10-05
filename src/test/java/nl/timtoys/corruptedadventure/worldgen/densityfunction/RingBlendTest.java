@@ -45,6 +45,23 @@ class RingBlendTest {
     }
 
     @Test
+    void constantInputsGiveTheWeightOfOneRing() {
+        // ring_weight/overworld/ring_3 (change 31): ring 3 = 1, the rest 0, so the blend returns the smoothstep weight of ring 3.
+        Map<Ring, DensityFunction> rings = new EnumMap<>(Ring.class);
+        for (Ring ring : Ring.values()) {
+            rings.put(ring, DensityFunctions.constant(ring == Ring.RING_3 ? 1.0 : 0.0));
+        }
+        RingBlend weight = new RingBlend(Level.OVERWORLD, rings);
+        assertEquals(0.0, weight.compute(ANYWHERE, RingPosition.within(Ring.RING_2)));
+        assertEquals(1.0, weight.compute(ANYWHERE, RingPosition.within(Ring.RING_3)));
+        assertEquals(0.0, weight.compute(ANYWHERE, new RingPosition(Ring.RING_1, Ring.RING_2, 0.7)), "zone 1→2 has no ring 3 weight");
+        assertEquals(0.0, weight.compute(ANYWHERE, new RingPosition(Ring.RING_2, Ring.RING_3, 0.0)));
+        assertEquals(0.5, weight.compute(ANYWHERE, new RingPosition(Ring.RING_2, Ring.RING_3, 0.5)), 1e-9);
+        assertEquals(RingBlend.smoothstep(0.25), weight.compute(ANYWHERE, new RingPosition(Ring.RING_2, Ring.RING_3, 0.25)), 1e-9);
+        assertEquals(1.0, weight.compute(ANYWHERE, new RingPosition(Ring.RING_2, Ring.RING_3, 1.0)));
+    }
+
+    @Test
     void smoothstepIsFlatAtBothEndsAndMonotonic() {
         assertEquals(0.0, RingBlend.smoothstep(0.0));
         assertEquals(1.0, RingBlend.smoothstep(1.0));

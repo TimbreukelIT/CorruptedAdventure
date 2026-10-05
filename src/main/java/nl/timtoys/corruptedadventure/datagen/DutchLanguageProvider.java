@@ -175,6 +175,7 @@ final class DutchLanguageProvider extends LanguageProvider {
         addItem(ModItems.SALT, "Zout");
 
         biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
+        biome(ModBiomes.DRY_RIVERBEDS, "Drooggevallen rivierbeddingen");
         biome(ModBiomes.CANYONLANDS, "Kloofland");
         biome(ModBiomes.OASIS_FLATS, "Oasevlakte");
         biome(ModBiomes.HOODOO_FIELDS, "Hoodoovelden");

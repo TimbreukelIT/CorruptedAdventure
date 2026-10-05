@@ -28,6 +28,8 @@ public final class ModBiomes {
 
     // Transition biomes: one per boundary, filling its transition zone.
     public static final ResourceKey<Biome> WITHERED_EXPANSE = key("withered_expanse");
+    // Listed in Ring2Biomes.ALL (ring 2 worldgen, tags), registered by TransitionBiomes.
+    public static final ResourceKey<Biome> DRY_RIVERBEDS = key("dry_riverbeds");
 
     // Permanent: beyond ring 5 (floating islands, then void).
     public static final ResourceKey<Biome> VOID_EDGE = key("void_edge");

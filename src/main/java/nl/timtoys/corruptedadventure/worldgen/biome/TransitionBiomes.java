@@ -4,8 +4,10 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.biome.AmbientMoodSettings;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -15,6 +17,8 @@ import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
+
+import java.util.List;
 
 /**
  * Datagen bootstrap for the transition biomes, one per boundary, filling the whole transition zone
@@ -28,6 +32,16 @@ public final class TransitionBiomes {
     /** How far the sky, fog and water of {@code withered_expanse} are faded towards grey, matching its faded grass. */
     static final float WITHERED_EXPANSE_FADE = 0.4F;
 
+    /** How far the sky, fog and water of {@code dry_riverbeds} are faded towards grey: a foretaste of ashen ring 3. */
+    static final float DRY_RIVERBEDS_FADE = 0.3F;
+    /** Scorched ground, fossils, bones and stones of the riverbeds ({@code LOCAL_MODIFICATIONS}), in this fixed order. */
+    static final List<ResourceKey<PlacedFeature>> DRY_RIVERBEDS_SHAPES = List.of(ModPlacedFeatures.DRY_RIVERBEDS_SCORCHED_PATCHES,
+            ModPlacedFeatures.DRY_RIVERBEDS_SCORCHED_SPECKS, ModPlacedFeatures.DRY_RIVERBEDS_FOSSILS, ModPlacedFeatures.DRY_RIVERBEDS_BONES,
+            ModPlacedFeatures.DRY_RIVERBEDS_STONES);
+    /** Trees, scrub, grass and cactus groups of the riverbeds ({@code VEGETAL_DECORATION}), in this fixed order. */
+    static final List<ResourceKey<PlacedFeature>> DRY_RIVERBEDS_VEGETATION = List.of(ModPlacedFeatures.DRY_RIVERBEDS_DEAD_TREES,
+            ModPlacedFeatures.DRY_RIVERBEDS_VEGETATION, ModPlacedFeatures.DRY_RIVERBEDS_GRASS, ModPlacedFeatures.DRY_RIVERBEDS_CACTUS_GROUPS);
+
     private TransitionBiomes() {
     }
 
@@ -35,6 +49,40 @@ public final class TransitionBiomes {
         HolderGetter<PlacedFeature> features = context.lookup(Registries.PLACED_FEATURE);
         HolderGetter<ConfiguredWorldCarver<?>> carvers = context.lookup(Registries.CONFIGURED_CARVER);
         context.register(ModBiomes.WITHERED_EXPANSE, witheredExpanse(features, carvers));
+        context.register(ModBiomes.DRY_RIVERBEDS, dryRiverbeds(features, carvers));
+    }
+
+    /**
+     * Transition 2→3: the dry beds of the stolen water, scorched ever blacker towards ring 3. A ring 2 biome in all but
+     * name ({@link Ring2Biomes#ALL}: same vanilla features, ores, carvers and spawns), with its own features last, and
+     * the ring 2 palette 30 % towards grey.
+     */
+    private static Biome dryRiverbeds(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+        BiomeGenerationSettings.Builder generation = Ring2Biomes.generation(features, carvers);
+        for (ResourceKey<PlacedFeature> feature : DRY_RIVERBEDS_SHAPES) {
+            generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
+        }
+        for (ResourceKey<PlacedFeature> feature : DRY_RIVERBEDS_VEGETATION) {
+            generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
+        }
+        BiomeAmbience.Palette colours = BiomeAmbience.Palette.RING_2.desaturated(DRY_RIVERBEDS_FADE);
+        // Grass and foliage as the canyonlands, faded like the sky.
+        return new Biome.BiomeBuilder()
+                .hasPrecipitation(false)
+                .temperature(2.0F)
+                .downfall(0.0F)
+                .specialEffects(new BiomeSpecialEffects.Builder()
+                        .skyColor(colours.sky())
+                        .fogColor(colours.fog())
+                        .waterColor(colours.water())
+                        .waterFogColor(colours.waterFog())
+                        .grassColorOverride(BiomeAmbience.desaturate(0xBFB755, DRY_RIVERBEDS_FADE))
+                        .foliageColorOverride(BiomeAmbience.desaturate(0xAEA42A, DRY_RIVERBEDS_FADE))
+                        .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
+                        .build())
+                .mobSpawnSettings(Ring2Biomes.spawns(false))
+                .generationSettings(generation.build())
+                .build();
     }
 
     /** Transition 1→2: bare trees, faded grass and sandstone; dry like a savanna, the first sign of ring 2. */
