@@ -75,6 +75,20 @@ public final class Ring2Textures {
     private static final int SALT_OUTLINE = 0x8A8070;
     private static final int[] SALT_CRYSTAL = {0xBFCFD8, 0xDCE6EB, 0xF1F5F7, 0xFFFFFF};
     private static final int SALT_CRYSTAL_BLUSH = 0xEBD9D6;
+    // Nether ring 2 working palettes (change 33, placeholders; final in change 37): dark to light.
+    private static final int[] SOAKED_NETHERRACK = {0x2E1A1A, 0x47282A, 0x5E3634, 0x6F4A44};
+    private static final int SOAKED_DAMP = 0x3E4A3C;
+    private static final int SOAKED_GLOSS = 0x8A7A70;
+    private static final int[] SPORE_MOSS = {0x3E4A3C, 0x556450, 0x6E7F66, 0x8C9A80};
+    private static final int SPORE_DOT = 0xC8D4B0;
+    private static final int[] DRIPSHROOM_BARK = {0x3A3440, 0x4E4A58, 0x66667A};
+    private static final int[] DRIPSHROOM_SLIME = {0x5E8466, 0x7FA88A};
+    private static final int[] DRIPSHROOM_WOOD = {0x6E7A6A, 0x87947F, 0xA0AC94, 0xB8C2A8};
+    private static final int[] DRIPSHROOM_CAP = {0x4A3F55, 0x5F516C, 0x75688A};
+    private static final int DRIPSHROOM_CAP_DROP = 0x9FC3A8;
+    private static final int[] DRIPSHROOM_LAMP = {0xB8D27A, 0xCFE38F, 0xE3F0AE, 0xF4FAD2};
+    private static final int[] GLOW_MOLD = {0x5FD6B8, 0x8BEACF, 0xC2F7E6};
+    private static final int[] SLIME_STALACTITE = {0x4E8A4A, 0x6AA860, 0x8CC47A, 0xB2DE9E};
 
     /**
      * How a texture moves: {@code frames} frames of {@code frametime} ticks, optionally interpolated; {@code glow} is
@@ -121,15 +135,15 @@ public final class Ring2Textures {
         still("block/barrel_cactus_side", Ring2Textures::barrelCactusSide);
         still("block/palm_log", Ring2Textures::palmLog);
         still("block/palm_log_top", Ring2Textures::palmLogTop);
-        still("block/stripped_palm_log", Ring2Textures::strippedPalmLog);
-        still("block/stripped_palm_log_top", Ring2Textures::strippedPalmLogTop);
-        still("block/palm_planks", Ring2Textures::palmPlanks);
-        still("block/palm_door_top", Ring2Textures::palmDoorTop);
-        still("block/palm_door_bottom", Ring2Textures::palmDoorBottom);
-        still("block/palm_trapdoor", Ring2Textures::palmTrapdoor);
+        still("block/stripped_palm_log", (image, random) -> strippedLog(image, random, PALM_WOOD));
+        still("block/stripped_palm_log_top", (image, random) -> strippedLogTop(image, random, "block/palm_log_top", PALM_WOOD));
+        still("block/palm_planks", (image, random) -> planks(image, random, PALM_WOOD));
+        still("block/palm_door_top", (image, random) -> doorTop(image, random, PALM_WOOD, PALM_BARK));
+        still("block/palm_door_bottom", (image, random) -> doorBottom(image, random, PALM_WOOD, PALM_BARK));
+        still("block/palm_trapdoor", (image, random) -> trapdoor(image, random, PALM_WOOD, PALM_BARK));
         still("block/palm_leaves", Ring2Textures::palmLeaves);
         still("block/palm_sapling", Ring2Textures::palmSapling);
-        still("item/palm_door", Ring2Textures::palmDoorItem);
+        still("item/palm_door", (image, random) -> doorItem(image, random, PALM_WOOD, PALM_BARK));
         still("block/sunstone_ore_overlay", Ring2Textures::sunstoneOreOverlay);
         still("block/turquoise_ore_overlay", Ring2Textures::turquoiseOreOverlay);
         still("item/raw_sunstone", Ring2Textures::rawSunstone);
@@ -140,6 +154,33 @@ public final class Ring2Textures {
         still("block/polished_salt", Ring2Textures::polishedSalt);
         still("block/salt_crystal", Ring2Textures::saltCrystal);
         still("item/salt", Ring2Textures::saltItem);
+        // Nether ring 2 (change 33).
+        still("block/soaked_netherrack", Ring2Textures::soakedNetherrack);
+        still("block/spore_moss", Ring2Textures::sporeMoss);
+        still("block/spore_moss_side", Ring2Textures::sporeMossSide);
+        still("block/dripshroom_stem", Ring2Textures::dripshroomStem);
+        still("block/dripshroom_stem_top", Ring2Textures::dripshroomStemTop);
+        still("block/stripped_dripshroom_stem", (image, random) -> strippedLog(image, random, DRIPSHROOM_WOOD));
+        still("block/stripped_dripshroom_stem_top", (image, random) -> strippedLogTop(image, random, "block/dripshroom_stem_top", DRIPSHROOM_WOOD));
+        still("block/dripshroom_planks", (image, random) -> planks(image, random, DRIPSHROOM_WOOD));
+        still("block/dripshroom_door_top", (image, random) -> doorTop(image, random, DRIPSHROOM_WOOD, DRIPSHROOM_BARK));
+        still("block/dripshroom_door_bottom", (image, random) -> doorBottom(image, random, DRIPSHROOM_WOOD, DRIPSHROOM_BARK));
+        still("block/dripshroom_trapdoor", (image, random) -> trapdoor(image, random, DRIPSHROOM_WOOD, DRIPSHROOM_BARK));
+        still("item/dripshroom_door", (image, random) -> doorItem(image, random, DRIPSHROOM_WOOD, DRIPSHROOM_BARK));
+        still("block/dripshroom_cap", Ring2Textures::dripshroomCap);
+        still("block/dripshroom_lamp", Ring2Textures::dripshroomLamp);
+        still("block/glow_mold", Ring2Textures::glowMold);
+        still("block/spore_sprouts", Ring2Textures::sporeSprouts);
+        still("block/slime_stalactite_down_base", (image, random) -> slimeStalactite(image, random, 12, false));
+        still("block/slime_stalactite_down_middle", (image, random) -> slimeStalactite(image, random, 10, false));
+        still("block/slime_stalactite_down_frustum", (image, random) -> slimeStalactite(image, random, 8, false));
+        still("block/slime_stalactite_down_tip_merge", (image, random) -> slimeStalactite(image, random, 6, false));
+        still("block/slime_stalactite_down_tip", (image, random) -> slimeStalactite(image, random, 6, true));
+        for (String thickness : new String[] {"base", "middle", "frustum", "tip_merge", "tip"}) {
+            String down = "block/slime_stalactite_down_" + thickness;
+            still("block/slime_stalactite_up_" + thickness, (image, random) -> flippedVertically(image, down));
+        }
+        still("item/slime_stalactite", Ring2Textures::slimeStalactiteItem);
     }
 
     private static void still(String name, Painter painter) {
@@ -562,15 +603,15 @@ public final class Ring2Textures {
         rim(image, random, PALM_BARK, 0.0, 0.6);
     }
 
-    /** Light sand-yellow wood with fine lengthwise fibres. */
-    private static void strippedPalmLog(BufferedImage image, Random random) {
+    /** Wood with fine lengthwise fibres. */
+    private static void strippedLog(BufferedImage image, Random random, int[] wood) {
         double[] columns = new double[SIZE];
         for (int x = 0; x < SIZE; x++) {
             columns[x] = random.nextDouble();
         }
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                set(image, x, y, shade(PALM_WOOD, 0.35 + 0.4 * columns[x] + 0.15 * random.nextDouble()));
+                set(image, x, y, shade(wood, 0.35 + 0.4 * columns[x] + 0.15 * random.nextDouble()));
             }
         }
         for (int i = 0; i < 4; i++) {
@@ -578,19 +619,19 @@ public final class Ring2Textures {
             int start = random.nextInt(SIZE);
             int length = 6 + random.nextInt(8);
             for (int j = 0; j < length; j++) {
-                setWrapped(image, x, start + j, PALM_WOOD[1]);
+                setWrapped(image, x, start + j, wood[1]);
             }
         }
     }
 
-    /** The log's end grain (same pixels) with a wood rim instead of bark. */
-    private static void strippedPalmLogTop(BufferedImage image, Random random) {
-        copy(renderUnchecked("block/palm_log_top"), image);
-        rim(image, random, PALM_WOOD, 0.2, 0.55);
+    /** The log's end grain {@code topName} (same pixels) with a wood rim instead of bark. */
+    private static void strippedLogTop(BufferedImage image, Random random, String topName, int[] wood) {
+        copy(renderUnchecked(topName), image);
+        rim(image, random, wood, 0.2, 0.55);
     }
 
-    /** Four planks of four rows like the dead planks: dark seam row, lit top row, staggered joints, grain streaks. */
-    private static void palmPlanks(BufferedImage image, Random random) {
+    /** Four planks of four rows: dark seam row, lit top row, staggered joints, grain streaks. */
+    private static void planks(BufferedImage image, Random random, int[] wood) {
         int[] joints = {5, 12, 2, 9};
         for (int plank = 0; plank < 4; plank++) {
             double plankShade = 0.35 + random.nextDouble() * 0.3;
@@ -598,10 +639,10 @@ public final class Ring2Textures {
                 int y = plank * 4 + row;
                 for (int x = 0; x < SIZE; x++) {
                     if (row == 3 || x == joints[plank]) {
-                        set(image, x, y, PALM_WOOD[0]);
+                        set(image, x, y, wood[0]);
                     } else {
                         double lit = row == 0 ? 0.2 : 0.0;
-                        set(image, x, y, shade(PALM_WOOD, plankShade + lit + (random.nextDouble() - 0.5) * 0.25));
+                        set(image, x, y, shade(wood, plankShade + lit + (random.nextDouble() - 0.5) * 0.25));
                     }
                 }
             }
@@ -611,36 +652,36 @@ public final class Ring2Textures {
                 int length = 3 + random.nextInt(4);
                 for (int j = 0; j < length; j++) {
                     if ((x + j) % SIZE != joints[plank]) {
-                        setWrapped(image, x + j, y, PALM_WOOD[1]);
+                        setWrapped(image, x + j, y, wood[1]);
                     }
                 }
             }
         }
     }
 
-    /** Upper door half: palm boards in a bark frame, two window slits, one rail. */
-    private static void palmDoorTop(BufferedImage image, Random random) {
-        palmBoards(image, random);
-        palmFrame(image, random, true, false);
-        palmRail(image, random, 11);
-        palmWindow(image, 3, 3, 3, 5);
-        palmWindow(image, 10, 3, 3, 5);
+    /** Upper door half: boards in a bark frame, two window slits, one rail. */
+    private static void doorTop(BufferedImage image, Random random, int[] wood, int[] bark) {
+        boards(image, random, wood);
+        frame(image, random, bark, true, false);
+        rail(image, random, bark, 11);
+        window(image, bark, 3, 3, 3, 5);
+        window(image, bark, 10, 3, 3, 5);
     }
 
     /** Lower door half: boards, two rails and a handle near the top edge. */
-    private static void palmDoorBottom(BufferedImage image, Random random) {
-        palmBoards(image, random);
-        palmFrame(image, random, false, true);
-        palmRail(image, random, 2);
-        palmRail(image, random, 12);
-        set(image, 12, 0, PALM_BARK[0]);
-        set(image, 12, 1, PALM_BARK[0]);
+    private static void doorBottom(BufferedImage image, Random random, int[] wood, int[] bark) {
+        boards(image, random, wood);
+        frame(image, random, bark, false, true);
+        rail(image, random, bark, 2);
+        rail(image, random, bark, 12);
+        set(image, 12, 0, bark[0]);
+        set(image, 12, 1, bark[0]);
     }
 
     /** Trapdoor as a lattice: horizontal slats with see-through gaps between them, in a bark frame. */
-    private static void palmTrapdoor(BufferedImage image, Random random) {
-        palmBoards(image, random);
-        palmFrame(image, random, true, true);
+    private static void trapdoor(BufferedImage image, Random random, int[] wood, int[] bark) {
+        boards(image, random, wood);
+        frame(image, random, bark, true, true);
         for (int gap : new int[] {3, 7, 11}) {
             for (int x = 2; x < SIZE - 2; x++) {
                 if (x != 7 && x != 8) {
@@ -649,22 +690,22 @@ public final class Ring2Textures {
             }
         }
         for (int y = 1; y < SIZE - 1; y++) {
-            set(image, 7, y, PALM_BARK[2]);
-            set(image, 8, y, PALM_BARK[1]);
+            set(image, 7, y, bark[2]);
+            set(image, 8, y, bark[1]);
         }
     }
 
     /** The door in the inventory (8 wide, columns 4–11): boards, rails, two window slits and the handle. */
-    private static void palmDoorItem(BufferedImage image, Random random) {
+    private static void doorItem(BufferedImage image, Random random, int[] wood, int[] bark) {
         for (int y = 0; y < SIZE; y++) {
             for (int x = 4; x < 12; x++) {
                 boolean edge = x == 4 || x == 11 || y == 0 || y == SIZE - 1;
                 if (edge) {
-                    set(image, x, y, shade(PALM_BARK, 0.2 + random.nextDouble() * 0.4));
+                    set(image, x, y, shade(bark, 0.2 + random.nextDouble() * 0.4));
                 } else if (x == 8) {
-                    set(image, x, y, PALM_WOOD[0]);
+                    set(image, x, y, wood[0]);
                 } else {
-                    set(image, x, y, shade(PALM_WOOD, 0.35 + random.nextDouble() * 0.4));
+                    set(image, x, y, shade(wood, 0.35 + random.nextDouble() * 0.4));
                 }
             }
         }
@@ -674,59 +715,59 @@ public final class Ring2Textures {
         }
         for (int y : new int[] {6, 13}) {
             for (int x = 5; x < 11; x++) {
-                set(image, x, y, PALM_BARK[2]);
+                set(image, x, y, bark[2]);
             }
         }
-        set(image, 10, 8, PALM_BARK[0]);
+        set(image, 10, 8, bark[0]);
     }
 
     /** Three vertical boards (seams at x 5 and 10), each with its own tone. */
-    private static void palmBoards(BufferedImage image, Random random) {
+    private static void boards(BufferedImage image, Random random, int[] wood) {
         double[] boards = {0.35 + random.nextDouble() * 0.3, 0.35 + random.nextDouble() * 0.3, 0.35 + random.nextDouble() * 0.3};
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 if (x == 5 || x == 10) {
-                    set(image, x, y, PALM_WOOD[0]);
+                    set(image, x, y, wood[0]);
                 } else {
-                    set(image, x, y, shade(PALM_WOOD, boards[x < 5 ? 0 : x < 10 ? 1 : 2] + (random.nextDouble() - 0.5) * 0.25));
+                    set(image, x, y, shade(wood, boards[x < 5 ? 0 : x < 10 ? 1 : 2] + (random.nextDouble() - 0.5) * 0.25));
                 }
             }
         }
     }
 
     /** Bark edges left and right, optionally along the top and bottom row. */
-    private static void palmFrame(BufferedImage image, Random random, boolean top, boolean bottom) {
+    private static void frame(BufferedImage image, Random random, int[] bark, boolean top, boolean bottom) {
         for (int i = 0; i < SIZE; i++) {
-            set(image, 0, i, shade(PALM_BARK, 0.2 + random.nextDouble() * 0.5));
-            set(image, SIZE - 1, i, shade(PALM_BARK, 0.2 + random.nextDouble() * 0.5));
+            set(image, 0, i, shade(bark, 0.2 + random.nextDouble() * 0.5));
+            set(image, SIZE - 1, i, shade(bark, 0.2 + random.nextDouble() * 0.5));
             if (top) {
-                set(image, i, 0, shade(PALM_BARK, 0.2 + random.nextDouble() * 0.5));
+                set(image, i, 0, shade(bark, 0.2 + random.nextDouble() * 0.5));
             }
             if (bottom) {
-                set(image, i, SIZE - 1, shade(PALM_BARK, 0.2 + random.nextDouble() * 0.5));
+                set(image, i, SIZE - 1, shade(bark, 0.2 + random.nextDouble() * 0.5));
             }
         }
     }
 
     /** A two-row bark rail with a nail near each end. */
-    private static void palmRail(BufferedImage image, Random random, int y) {
+    private static void rail(BufferedImage image, Random random, int[] bark, int y) {
         for (int x = 1; x < SIZE - 1; x++) {
-            set(image, x, y, shade(PALM_BARK, 0.6 + random.nextDouble() * 0.4));
-            set(image, x, y + 1, shade(PALM_BARK, 0.3 + random.nextDouble() * 0.3));
+            set(image, x, y, shade(bark, 0.6 + random.nextDouble() * 0.4));
+            set(image, x, y + 1, shade(bark, 0.3 + random.nextDouble() * 0.3));
         }
-        set(image, 2, y, PALM_BARK[0]);
-        set(image, SIZE - 3, y, PALM_BARK[0]);
+        set(image, 2, y, bark[0]);
+        set(image, SIZE - 3, y, bark[0]);
     }
 
     /** A see-through hole with a dark rim (cutout: alpha 0 or 255). */
-    private static void palmWindow(BufferedImage image, int x0, int y0, int width, int height) {
+    private static void window(BufferedImage image, int[] bark, int x0, int y0, int width, int height) {
         for (int y = y0 - 1; y <= y0 + height; y++) {
             for (int x = x0 - 1; x <= x0 + width; x++) {
                 boolean inside = x >= x0 && x < x0 + width && y >= y0 && y < y0 + height;
                 if (inside) {
                     image.setRGB(x, y, TRANSPARENT);
                 } else {
-                    set(image, x, y, PALM_BARK[1]);
+                    set(image, x, y, bark[1]);
                 }
             }
         }
@@ -1201,6 +1242,224 @@ public final class Ring2Textures {
     /** Opaque pixel inside the tile; outside counts as transparent. */
     private static boolean isOpaque(BufferedImage image, int x, int y) {
         return x >= 0 && y >= 0 && x < SIZE && y < SIZE && (image.getRGB(x, y) >>> 24) != 0;
+    }
+
+    // ---- Nether ring 2 --------------------------------------------------------------------------------------
+
+    /** Dark red-brown, wet: two noise scales, a few grey-green damp spots and short horizontal gloss highlights. */
+    private static void soakedNetherrack(BufferedImage image, Random random) {
+        double[][] broad = valueNoise(random, 4, 4);
+        double[][] fine = valueNoise(random, 2, 2);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(SOAKED_NETHERRACK, 0.7 * broad[x][y] + 0.3 * fine[x][y]));
+            }
+        }
+        for (int i = 0; i < 14; i++) {
+            set(image, random.nextInt(SIZE), random.nextInt(SIZE), SOAKED_DAMP);
+        }
+        for (int i = 0; i < 5; i++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            setWrapped(image, x, y, SOAKED_GLOSS);
+            setWrapped(image, x + 1, y, SOAKED_GLOSS);
+        }
+    }
+
+    /** Grey-green moss with pale spore dots. */
+    private static void sporeMoss(BufferedImage image, Random random) {
+        double[][] broad = valueNoise(random, 4, 4);
+        double[][] fine = valueNoise(random, 2, 2);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(SPORE_MOSS, 0.65 * broad[x][y] + 0.35 * fine[x][y]));
+            }
+        }
+        for (int i = 0; i < 9; i++) {
+            set(image, random.nextInt(SIZE), random.nextInt(SIZE), SPORE_DOT);
+        }
+    }
+
+    /** Soaked netherrack (exactly its pixels) under a ragged moss rim, 3–5 pixels deep. */
+    private static void sporeMossSide(BufferedImage image, Random random) {
+        copy(renderUnchecked("block/soaked_netherrack"), image);
+        double[][] fine = valueNoise(random, 2, 2);
+        for (int x = 0; x < SIZE; x++) {
+            int depth = 3 + random.nextInt(3);
+            for (int y = 0; y < depth; y++) {
+                set(image, x, y, shade(SPORE_MOSS, 0.2 + 0.6 * fine[x][y] + (y == 0 ? 0.2 : 0.0)));
+            }
+            if (random.nextInt(6) == 0) {
+                set(image, x, 1, SPORE_DOT);
+            }
+        }
+    }
+
+    /** Grey-purple bark in vertical furrows with slime running down it. */
+    private static void dripshroomStem(BufferedImage image, Random random) {
+        double[] columns = new double[SIZE];
+        for (int x = 0; x < SIZE; x++) {
+            columns[x] = random.nextDouble();
+        }
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(DRIPSHROOM_BARK, 0.25 + 0.5 * columns[x] + 0.2 * random.nextDouble()));
+            }
+        }
+        for (int x = 1 + random.nextInt(3); x < SIZE; x += 4 + random.nextInt(2)) {
+            for (int y = 0; y < SIZE; y++) {
+                if (random.nextInt(4) != 0) {
+                    set(image, x, y, DRIPSHROOM_BARK[0]);
+                }
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            int x = random.nextInt(SIZE);
+            int start = random.nextInt(SIZE);
+            int length = 3 + random.nextInt(5);
+            for (int j = 0; j < length; j++) {
+                setWrapped(image, x, start + j, DRIPSHROOM_SLIME[j == length - 1 ? 1 : 0]);
+            }
+        }
+    }
+
+    /** End grain: pale inner flesh in faint rings, a bark rim. */
+    private static void dripshroomStemTop(BufferedImage image, Random random) {
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double radius = Math.hypot(x - 7.5, y - 7.5);
+                set(image, x, y, shade(DRIPSHROOM_WOOD, 0.5 + 0.2 * Math.cos(radius * 1.6) + 0.2 * (random.nextDouble() - 0.5)));
+            }
+        }
+        rim(image, random, DRIPSHROOM_BARK, 0.0, 0.7);
+    }
+
+    /** Four slimy lumps with seams, like a cap's underside: wart-block mottling in the cap palette, dripping spots. */
+    private static void dripshroomCap(BufferedImage image, Random random) {
+        double[][] broad = valueNoise(random, 4, 4);
+        double[][] fine = valueNoise(random, 2, 2);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(DRIPSHROOM_CAP, 0.6 * broad[x][y] + 0.4 * fine[x][y]));
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            int x = random.nextInt(SIZE);
+            int start = random.nextInt(SIZE);
+            int length = 2 + random.nextInt(3);
+            for (int j = 0; j < length; j++) {
+                setWrapped(image, x, start + j, DRIPSHROOM_CAP_DROP);
+            }
+        }
+    }
+
+    /** Glowing cells: random seed points, bright in the middle of each cell and dark along the borders between cells. */
+    private static void dripshroomLamp(BufferedImage image, Random random) {
+        int count = 6;
+        double[] px = new double[count];
+        double[] py = new double[count];
+        for (int i = 0; i < count; i++) {
+            px[i] = random.nextDouble() * SIZE;
+            py[i] = random.nextDouble() * SIZE;
+        }
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double nearest = Double.MAX_VALUE;
+                double second = Double.MAX_VALUE;
+                for (int i = 0; i < count; i++) {
+                    double dx = Math.abs(x - px[i]);
+                    double dy = Math.abs(y - py[i]);
+                    double distance = Math.hypot(Math.min(dx, SIZE - dx), Math.min(dy, SIZE - dy));
+                    if (distance < nearest) {
+                        second = nearest;
+                        nearest = distance;
+                    } else if (distance < second) {
+                        second = distance;
+                    }
+                }
+                double border = second - nearest;
+                set(image, x, y, border < 1.4 ? DRIPSHROOM_LAMP[0] : shade(DRIPSHROOM_LAMP, 0.9 - nearest / 9.0 + 0.1 * random.nextDouble()));
+            }
+        }
+    }
+
+    /** Loose, tiny glowing patches on a transparent background (cutout): a bright core with a dimmer fringe. */
+    private static void glowMold(BufferedImage image, Random random) {
+        for (int i = 0; i < 9; i++) {
+            int x = 1 + random.nextInt(SIZE - 2);
+            int y = 1 + random.nextInt(SIZE - 2);
+            set(image, x, y, GLOW_MOLD[2]);
+            for (int[] step : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                if (random.nextInt(3) != 0) {
+                    set(image, x + step[0], y + step[1], GLOW_MOLD[random.nextInt(2)]);
+                }
+            }
+        }
+    }
+
+    /** Small tuft: a few thin stalks of different heights, each with a pale spore cap; transparent background (cutout). */
+    private static void sporeSprouts(BufferedImage image, Random random) {
+        int[] columns = {3, 5, 7, 9, 11, 12};
+        for (int column : columns) {
+            int x = column + random.nextInt(2) - (column == 12 ? 1 : 0);
+            int top = 5 + random.nextInt(7);
+            for (int y = 15; y > top; y--) {
+                set(image, x, y, SPORE_MOSS[y > 12 ? 0 : 1 + random.nextInt(2)]);
+            }
+            set(image, x, top, SPORE_DOT);
+            set(image, x - 1, top + 1, SPORE_MOSS[3]);
+            set(image, x + 1, top + 1, SPORE_MOSS[3]);
+        }
+    }
+
+    /**
+     * A slime stalactite hanging from the top of the tile; {@code up} variants are these flipped. Widths follow the
+     * block shapes (base 12, middle 10, frustum 8, merged tip 6 px); the lone tip tapers to a point after 11 rows.
+     * Lit on the left, dark on the right, a darker outline and a few glints.
+     */
+    private static void slimeStalactite(BufferedImage image, Random random, int width, boolean taper) {
+        for (int y = 0; y < SIZE; y++) {
+            double rowWidth = width;
+            if (taper) {
+                if (y > 10) {
+                    continue;
+                }
+                rowWidth = width - (width - 1) * y / 10.0;
+            }
+            int left = (int) Math.round(7.5 - rowWidth / 2.0) + (taper ? 0 : random.nextInt(2));
+            int right = (int) Math.round(7.5 + rowWidth / 2.0) - 1 - (taper ? 0 : random.nextInt(2));
+            for (int x = left; x <= right; x++) {
+                double t = right == left ? 0.5 : (x - left) / (double) (right - left);
+                int color = x == left || x == right ? SLIME_STALACTITE[0]
+                        : random.nextInt(14) == 0 ? SLIME_STALACTITE[3] : shade(SLIME_STALACTITE, 0.9 - 0.6 * t + 0.2 * random.nextDouble());
+                set(image, x, y, color);
+            }
+        }
+    }
+
+    /** The hanging stalactite {@code name} mirrored top to bottom: a stalagmite. */
+    private static void flippedVertically(BufferedImage image, String name) {
+        BufferedImage source = renderUnchecked(name);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                image.setRGB(x, y, source.getRGB(x, SIZE - 1 - y));
+            }
+        }
+    }
+
+    /** The whole stalactite in the inventory: a diagonal cone from the top-left, tapering to a point. */
+    private static void slimeStalactiteItem(BufferedImage image, Random random) {
+        for (int y = 0; y < SIZE; y++) {
+            double rowWidth = 12.0 - 11.0 * y / 15.0;
+            int left = (int) Math.round(7.5 - rowWidth / 2.0);
+            int right = (int) Math.round(7.5 + rowWidth / 2.0) - 1;
+            for (int x = left; x <= right; x++) {
+                double t = right == left ? 0.5 : (x - left) / (double) (right - left);
+                int color = x == left || x == right ? SLIME_STALACTITE[0]
+                        : random.nextInt(12) == 0 ? SLIME_STALACTITE[3] : shade(SLIME_STALACTITE, 0.9 - 0.6 * t + 0.2 * random.nextDouble());
+                set(image, x, y, color);
+            }
+        }
     }
 
     // ---- Preview --------------------------------------------------------------------------------------------

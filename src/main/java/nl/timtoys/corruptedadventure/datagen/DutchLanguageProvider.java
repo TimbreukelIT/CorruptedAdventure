@@ -176,6 +176,28 @@ final class DutchLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.SALT_CRYSTAL, "Zoutkristal");
         addItem(ModItems.SALT, "Zout");
 
+        // Nether ring 2 blocks.
+        addBlock(ModBlocks.SOAKED_NETHERRACK, "Doorweekt netherrack");
+        addBlock(ModBlocks.SPORE_MOSS, "Sporenmos");
+        addBlock(ModBlocks.DRIPSHROOM_STEM, "Druipzwamsteel");
+        addBlock(ModBlocks.DRIPSHROOM_HYPHAE, "Druipzwamhyfen");
+        addBlock(ModBlocks.STRIPPED_DRIPSHROOM_STEM, "Gestripte druipzwamsteel");
+        addBlock(ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE, "Gestripte druipzwamhyfen");
+        addBlock(ModBlocks.DRIPSHROOM_PLANKS, "Druipzwamplanken");
+        addBlock(ModBlocks.DRIPSHROOM_STAIRS, "Druipzwamtrap");
+        addBlock(ModBlocks.DRIPSHROOM_SLAB, "Druipzwamplaat");
+        addBlock(ModBlocks.DRIPSHROOM_FENCE, "Druipzwamhek");
+        addBlock(ModBlocks.DRIPSHROOM_FENCE_GATE, "Druipzwampoort");
+        addBlock(ModBlocks.DRIPSHROOM_DOOR, "Druipzwamdeur");
+        addBlock(ModBlocks.DRIPSHROOM_TRAPDOOR, "Druipzwamvalluik");
+        addBlock(ModBlocks.DRIPSHROOM_PRESSURE_PLATE, "Druipzwamdrukplaat");
+        addBlock(ModBlocks.DRIPSHROOM_BUTTON, "Druipzwamknop");
+        addBlock(ModBlocks.DRIPSHROOM_CAP, "Druipzwamhoed");
+        addBlock(ModBlocks.DRIPSHROOM_LAMP, "Zwamlamp");
+        addBlock(ModBlocks.GLOW_MOLD, "Gloeischimmel");
+        addBlock(ModBlocks.SLIME_STALACTITE, "Slijmstalactiet");
+        addBlock(ModBlocks.SPORE_SPROUTS, "Sporenspruiten");
+
         biome(ModBiomes.WITHERED_EXPANSE, "Verdorde vlakte");
         biome(ModBiomes.DRY_RIVERBEDS, "Drooggevallen rivierbeddingen");
         biome(ModBiomes.CANYONLANDS, "Kloofland");

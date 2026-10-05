@@ -1,5 +1,7 @@
 package nl.timtoys.corruptedadventure.block;
 
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
@@ -17,6 +19,18 @@ public final class ModWoodTypes {
     public static final BlockSetType PALM_SET = BlockSetType.register(new BlockSetType(CorruptedAdventure.id("palm").toString()));
     /** Not registered, for the same reason as {@link #DEAD}. */
     public static final WoodType PALM = new WoodType(CorruptedAdventure.id("palm").toString(), PALM_SET);
+
+    /** {@code corruptedadventure:dripshroom}: Nether wood, with the sounds and behaviour of vanilla's crimson set. */
+    public static final BlockSetType DRIPSHROOM_SET = BlockSetType.register(new BlockSetType(CorruptedAdventure.id("dripshroom").toString(),
+            true, true, true, BlockSetType.PressurePlateSensitivity.EVERYTHING, SoundType.NETHER_WOOD,
+            SoundEvents.NETHER_WOOD_DOOR_CLOSE, SoundEvents.NETHER_WOOD_DOOR_OPEN,
+            SoundEvents.NETHER_WOOD_TRAPDOOR_CLOSE, SoundEvents.NETHER_WOOD_TRAPDOOR_OPEN,
+            SoundEvents.NETHER_WOOD_PRESSURE_PLATE_CLICK_OFF, SoundEvents.NETHER_WOOD_PRESSURE_PLATE_CLICK_ON,
+            SoundEvents.NETHER_WOOD_BUTTON_CLICK_OFF, SoundEvents.NETHER_WOOD_BUTTON_CLICK_ON));
+    /** Not registered, for the same reason as {@link #DEAD}; the fence gate takes its sounds from here. */
+    public static final WoodType DRIPSHROOM = new WoodType(CorruptedAdventure.id("dripshroom").toString(), DRIPSHROOM_SET,
+            SoundType.NETHER_WOOD, SoundType.NETHER_WOOD_HANGING_SIGN,
+            SoundEvents.NETHER_WOOD_FENCE_GATE_CLOSE, SoundEvents.NETHER_WOOD_FENCE_GATE_OPEN);
 
     private ModWoodTypes() {
     }

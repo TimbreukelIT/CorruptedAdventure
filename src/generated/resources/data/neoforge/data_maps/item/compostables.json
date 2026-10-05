@@ -1,9 +1,21 @@
 {
   "values": {
+    "corruptedadventure:dripshroom_cap": {
+      "chance": 0.85
+    },
+    "corruptedadventure:dripshroom_lamp": {
+      "chance": 0.65
+    },
+    "corruptedadventure:glow_mold": {
+      "chance": 0.5
+    },
     "corruptedadventure:palm_leaves": {
       "chance": 0.3
     },
     "corruptedadventure:palm_sapling": {
+      "chance": 0.3
+    },
+    "corruptedadventure:spore_sprouts": {
       "chance": 0.3
     }
   }

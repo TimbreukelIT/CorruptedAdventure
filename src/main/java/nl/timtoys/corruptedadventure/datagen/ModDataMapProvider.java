@@ -41,7 +41,12 @@ final class ModDataMapProvider extends DataMapProvider {
         // Vanilla's chance for leaves and saplings.
         builder(NeoForgeDataMaps.COMPOSTABLES)
                 .add(ModBlocks.PALM_LEAVES.getId(), new Compostable(0.3F), false)
-                .add(ModBlocks.PALM_SAPLING.getId(), new Compostable(0.3F), false);
+                .add(ModBlocks.PALM_SAPLING.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.SPORE_SPROUTS.getId(), new Compostable(0.3F), false)
+                // Like nether wart blocks, shroomlight and glow lichen.
+                .add(ModBlocks.DRIPSHROOM_CAP.getId(), new Compostable(0.85F), false)
+                .add(ModBlocks.DRIPSHROOM_LAMP.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.GLOW_MOLD.getId(), new Compostable(0.5F), false);
     }
 
     @SafeVarargs

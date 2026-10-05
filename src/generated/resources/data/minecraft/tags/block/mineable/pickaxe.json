@@ -28,6 +28,9 @@
     "corruptedadventure:polished_salt_stairs",
     "corruptedadventure:polished_salt_slab",
     "corruptedadventure:polished_salt_wall",
-    "corruptedadventure:salt_crystal"
+    "corruptedadventure:salt_crystal",
+    "corruptedadventure:soaked_netherrack",
+    "corruptedadventure:spore_moss",
+    "corruptedadventure:slime_stalactite"
   ]
 }

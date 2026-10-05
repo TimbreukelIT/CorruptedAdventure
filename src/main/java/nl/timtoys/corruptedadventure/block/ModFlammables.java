@@ -41,5 +41,7 @@ public final class ModFlammables {
         // Like the dead bush and flowers.
         fire.setFlammable(ModBlocks.DRY_SHRUB.get(), 60, 100);
         fire.setFlammable(ModBlocks.DESERT_FLOWER.get(), 60, 100);
+        // Glow mold burns like glow lichen; the dripshroom set is Nether wood and gets no odds (like crimson and warped).
+        fire.setFlammable(ModBlocks.GLOW_MOLD.get(), 15, 100);
     }
 }

@@ -55,6 +55,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(Tags.Blocks.ORES_IN_GROUND_NETHERRACK).add(ModBlocks.SOUL_CRYSTAL_ORE.get());
 
         ring2();
+        netherRing2();
     }
 
     /**
@@ -112,6 +113,53 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         palm();
         ring2Ores();
         salt();
+    }
+
+    /**
+     * Nether ring 2. The dripshroom set is Nether wood: in {@code #logs} (via its own tag) but not in
+     * {@code #logs_that_burn}, like crimson and warped. Soaked netherrack is in {@code #base_stone_nether} (vanilla Nether
+     * carvers and {@code #base_stone_nether} features work in it) but not in the {@code #infiniburn_*} tags: fire dies on
+     * wet ground. Spore moss is deliberately not in {@code #nylium}: no vanilla fungi or roots on it, and bonemeal on
+     * vanilla netherrack next to it is not wasted.
+     */
+    private void netherRing2() {
+        tag(ModTags.Blocks.DRIPSHROOM_STEMS).add(ModBlocks.DRIPSHROOM_STEM.get(), ModBlocks.DRIPSHROOM_HYPHAE.get(),
+                ModBlocks.STRIPPED_DRIPSHROOM_STEM.get(), ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE.get());
+        tag(BlockTags.LOGS).addTag(ModTags.Blocks.DRIPSHROOM_STEMS);
+        tag(BlockTags.PLANKS).add(ModBlocks.DRIPSHROOM_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.DRIPSHROOM_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.DRIPSHROOM_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.DRIPSHROOM_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.DRIPSHROOM_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.DRIPSHROOM_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.DRIPSHROOM_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.DRIPSHROOM_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.DRIPSHROOM_BUTTON.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_DRIPSHROOM_STEM.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.DRIPSHROOM_FENCE_GATE.get());
+
+        tag(BlockTags.BASE_STONE_NETHER).add(ModBlocks.SOAKED_NETHERRACK.get());
+        tag(Tags.Blocks.NETHERRACKS).add(ModBlocks.SOAKED_NETHERRACK.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SOAKED_NETHERRACK.get(), ModBlocks.SPORE_MOSS.get(),
+                ModBlocks.SLIME_STALACTITE.get());
+        tag(BlockTags.NETHER_CARVER_REPLACEABLES).add(ModBlocks.SPORE_MOSS.get());
+
+        // Vanilla lists its wart blocks in #mineable/hoe one by one, so the cap goes in by hand.
+        tag(BlockTags.WART_BLOCKS).add(ModBlocks.DRIPSHROOM_CAP.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.DRIPSHROOM_CAP.get(), ModBlocks.DRIPSHROOM_LAMP.get());
+
+        // Glow mould copies glow lichen's tags, the sprouts those of nether sprouts.
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.GLOW_MOLD.get(), ModBlocks.SPORE_SPROUTS.get());
+        tag(BlockTags.REPLACEABLE_BY_TREES).add(ModBlocks.GLOW_MOLD.get(), ModBlocks.SPORE_SPROUTS.get());
+        tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.GLOW_MOLD.get(), ModBlocks.SPORE_SPROUTS.get());
+        tag(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.GLOW_MOLD.get());
+        tag(BlockTags.INSIDE_STEP_SOUND_BLOCKS).add(ModBlocks.GLOW_MOLD.get());
+        tag(BlockTags.COMBINATION_STEP_SOUND_BLOCKS).add(ModBlocks.SPORE_SPROUTS.get());
+
+        tag(ModTags.Blocks.FUNGAL_GROWTHS).addTag(ModTags.Blocks.DRIPSHROOM_STEMS).add(ModBlocks.DRIPSHROOM_CAP.get(),
+                ModBlocks.DRIPSHROOM_LAMP.get(), ModBlocks.SLIME_STALACTITE.get(), ModBlocks.GLOW_MOLD.get(),
+                ModBlocks.SPORE_SPROUTS.get());
     }
 
     /**

@@ -5,16 +5,20 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SnowyDirtBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
+import net.neoforged.neoforge.client.model.generators.MultiPartBlockStateBuilder;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.block.StalactiteBlock;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 
 import java.util.Set;
@@ -104,6 +108,80 @@ final class ModBlockStateProvider extends BlockStateProvider {
         palm();
         ring2Ores();
         salt();
+
+        netherRing2();
+    }
+
+    /** Nether ring 2: soaked netherrack with spore moss, the dripshroom set (laid out like the palm set), growths. */
+    private void netherRing2() {
+        simpleBlock(ModBlocks.SOAKED_NETHERRACK.get());
+        // Like nylium: moss on top and as a rim on the sides, the bottom is the ground it grows on.
+        simpleBlock(ModBlocks.SPORE_MOSS.get(), models().cubeBottomTop("spore_moss", modLoc("block/spore_moss_side"),
+                blockTexture(ModBlocks.SOAKED_NETHERRACK.get()), modLoc("block/spore_moss")));
+
+        logBlock(ModBlocks.DRIPSHROOM_STEM.get());
+        axisBlock(ModBlocks.DRIPSHROOM_HYPHAE.get(),
+                blockTexture(ModBlocks.DRIPSHROOM_STEM.get()), blockTexture(ModBlocks.DRIPSHROOM_STEM.get()));
+        logBlock(ModBlocks.STRIPPED_DRIPSHROOM_STEM.get());
+        axisBlock(ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE.get(),
+                blockTexture(ModBlocks.STRIPPED_DRIPSHROOM_STEM.get()), blockTexture(ModBlocks.STRIPPED_DRIPSHROOM_STEM.get()));
+
+        ResourceLocation planks = blockTexture(ModBlocks.DRIPSHROOM_PLANKS.get());
+        simpleBlock(ModBlocks.DRIPSHROOM_PLANKS.get());
+        stairsBlock(ModBlocks.DRIPSHROOM_STAIRS.get(), planks);
+        slabBlock(ModBlocks.DRIPSHROOM_SLAB.get(), planks, planks);
+        fenceBlock(ModBlocks.DRIPSHROOM_FENCE.get(), planks);
+        fenceGateBlock(ModBlocks.DRIPSHROOM_FENCE_GATE.get(), planks);
+        doorBlockWithRenderType(ModBlocks.DRIPSHROOM_DOOR.get(),
+                modLoc("block/dripshroom_door_bottom"), modLoc("block/dripshroom_door_top"), "cutout");
+        trapdoorBlockWithRenderType(ModBlocks.DRIPSHROOM_TRAPDOOR.get(), modLoc("block/dripshroom_trapdoor"), true, "cutout");
+        pressurePlateBlock(ModBlocks.DRIPSHROOM_PRESSURE_PLATE.get(), planks);
+        buttonBlock(ModBlocks.DRIPSHROOM_BUTTON.get(), planks);
+
+        simpleBlock(ModBlocks.DRIPSHROOM_CAP.get());
+        simpleBlock(ModBlocks.DRIPSHROOM_LAMP.get());
+        glowMold();
+        slimeStalactite();
+        cross(ModBlocks.SPORE_SPROUTS.get());
+    }
+
+    /**
+     * Vanilla's glow lichen model: one double-sided plane just inside the north face, rotated per face exactly like
+     * vanilla's multipart blockstate (a block without faces is never shown, so vanilla's all-false fallback is left out).
+     */
+    private void glowMold() {
+        ResourceLocation texture = blockTexture(ModBlocks.GLOW_MOLD.get());
+        BlockModelBuilder model = models().getBuilder("glow_mold").renderType("cutout").ao(false)
+                .texture("particle", texture).texture("glow_mold", texture);
+        model.element().from(0, 0, 0.1f).to(16, 16, 0.1f)
+                .face(Direction.NORTH).uvs(16, 0, 0, 16).texture("#glow_mold").end()
+                .face(Direction.SOUTH).uvs(0, 0, 16, 16).texture("#glow_mold").end().end();
+        MultiPartBlockStateBuilder states = getMultipartBuilder(ModBlocks.GLOW_MOLD.get());
+        glowMoldFace(states, model, MultifaceBlock.getFaceProperty(Direction.NORTH), 0, 0);
+        glowMoldFace(states, model, MultifaceBlock.getFaceProperty(Direction.EAST), 0, 90);
+        glowMoldFace(states, model, MultifaceBlock.getFaceProperty(Direction.SOUTH), 0, 180);
+        glowMoldFace(states, model, MultifaceBlock.getFaceProperty(Direction.WEST), 0, 270);
+        glowMoldFace(states, model, MultifaceBlock.getFaceProperty(Direction.UP), 270, 0);
+        glowMoldFace(states, model, MultifaceBlock.getFaceProperty(Direction.DOWN), 90, 0);
+    }
+
+    private static void glowMoldFace(MultiPartBlockStateBuilder states, ModelFile model, BooleanProperty face, int x, int y) {
+        states.part().modelFile(model).rotationX(x).rotationY(y).uvLock(true).addModel().condition(face, true).end();
+    }
+
+    /**
+     * Ten cutout models like vanilla's pointed dripstone (one per direction and thickness, same parent), each on its own
+     * texture; the waterlogged property does not change the model.
+     */
+    private void slimeStalactite() {
+        getVariantBuilder(ModBlocks.SLIME_STALACTITE.get()).forAllStatesExcept(state -> {
+            String direction = state.getValue(StalactiteBlock.TIP_DIRECTION).getSerializedName();
+            String thickness = state.getValue(StalactiteBlock.THICKNESS).getSerializedName();
+            String name = "slime_stalactite_" + direction + "_" + thickness;
+            ModelFile model = models().withExistingParent(name, mcLoc("block/pointed_dripstone"))
+                    .texture("cross", modLoc("block/" + name)).renderType("cutout");
+            return ConfiguredModel.builder().modelFile(model).build();
+        }, StalactiteBlock.WATERLOGGED);
     }
 
     /** The salt set: a crust over salt block (its bottom is the salt block), polished salt with its shapes, a crystal. */

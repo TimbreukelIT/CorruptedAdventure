@@ -18,6 +18,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
+import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -162,6 +164,37 @@ class ModBlocksTest {
                 ModBlocks.ORANGE_CANYON_TURQUOISE_ORE, ModBlocks.CREAM_CANYON_TURQUOISE_ORE)) {
             assertEquals(UniformInt.of(3, 7).toString(), experience(ore.get()), ore.getId().toString());
         }
+    }
+
+    @Test
+    void netherRing2FollowsTheSaltSetInOrderAndEndsWithTheSprouts() {
+        List<Item> shown = new ArrayList<>();
+        ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).forEach(shown::add);
+        int soaked = shown.indexOf(ModBlocks.SOAKED_NETHERRACK.asItem());
+        assertEquals(ModBlocks.SALT_CRYSTAL.asItem(), shown.get(soaked - 1));
+        assertEquals(List.of(ModBlocks.SOAKED_NETHERRACK.asItem(), ModBlocks.SPORE_MOSS.asItem(),
+                ModBlocks.DRIPSHROOM_STEM.asItem(), ModBlocks.DRIPSHROOM_HYPHAE.asItem(), ModBlocks.STRIPPED_DRIPSHROOM_STEM.asItem(),
+                ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE.asItem(), ModBlocks.DRIPSHROOM_PLANKS.asItem(), ModBlocks.DRIPSHROOM_STAIRS.asItem(),
+                ModBlocks.DRIPSHROOM_SLAB.asItem(), ModBlocks.DRIPSHROOM_FENCE.asItem(), ModBlocks.DRIPSHROOM_FENCE_GATE.asItem(),
+                ModBlocks.DRIPSHROOM_DOOR.asItem(), ModBlocks.DRIPSHROOM_TRAPDOOR.asItem(), ModBlocks.DRIPSHROOM_PRESSURE_PLATE.asItem(),
+                ModBlocks.DRIPSHROOM_BUTTON.asItem(), ModBlocks.DRIPSHROOM_CAP.asItem(), ModBlocks.DRIPSHROOM_LAMP.asItem(),
+                ModBlocks.GLOW_MOLD.asItem(), ModBlocks.SLIME_STALACTITE.asItem(), ModBlocks.SPORE_SPROUTS.asItem()),
+                shown.subList(soaked, soaked + 20));
+    }
+
+    @Test
+    void netherRing2BlocksTickLightAndSoundAsPlanned() {
+        assertTrue(ModBlocks.SPORE_MOSS.get().defaultBlockState().isRandomlyTicking());
+        assertFalse(ModBlocks.SOAKED_NETHERRACK.get().defaultBlockState().isRandomlyTicking());
+        assertFalse(ModBlocks.SPORE_SPROUTS.get().defaultBlockState().isRandomlyTicking());
+        assertFalse(ModBlocks.SLIME_STALACTITE.get().defaultBlockState().isRandomlyTicking());
+        assertEquals(SoundType.MUD, ModBlocks.SOAKED_NETHERRACK.get().defaultBlockState().getSoundType());
+        assertEquals(15, ModBlocks.DRIPSHROOM_LAMP.get().defaultBlockState().getLightEmission());
+        // Glow mould has no face by default (dark); with a face it glows like glow lichen.
+        assertEquals(0, ModBlocks.GLOW_MOLD.get().defaultBlockState().getLightEmission());
+        assertEquals(7, ModBlocks.GLOW_MOLD.get().defaultBlockState()
+                .setValue(MultifaceBlock.getFaceProperty(Direction.UP), true).getLightEmission());
+        assertEquals(0, ModBlocks.SPORE_SPROUTS.get().defaultBlockState().getLightEmission());
     }
 
     private static String experience(DropExperienceBlock ore) {

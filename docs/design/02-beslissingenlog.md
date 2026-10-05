@@ -339,3 +339,13 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-05 | atmosphere | Oase-ambient (32-8 A): `additions_sound` `ambient.ring_2.oasis` alleen op `oasis_flats` (eigen vogels/insecten, `tick_chance` 0,004); mini-oases stil | Leven via geluid zonder client-code |
 | 2026-10-05 | atmosphere | Pekelwater zoutvlakte (32-9 A): `Palette.SALT_FLATS` water `5AC8B8` / waterfog `1B5048` | Pekelpoelen vallen op tegen de witte korst |
 | 2026-10-05 | atmosphere | Windgeluid zandstorm (32-10 A): blijft backlog; `Ring2Sounds.java` kent alleen `drone` en `ambient` (36 voegt `loop` toe) | Klein houden; vanilla-wind is geaccepteerd |
+| 2026-10-05 | blocks | Reuzenzwam-set heet `dripshroom_*`: steel (`stem`), hyfen, gestript, planks + houtset, hoed, zwamlamp (33-1 A) | Kort, leest als druipende zwam; geen conflict met latere ringen |
+| 2026-10-05 | blocks | Druipzwam-hout gedraagt zich als Nether-hout: niet brandbaar, geen ovenbrandstof, nether-hout-geluiden (33-2 A) | Past bij "doorweekt" en de Nether; geen extra code |
+| 2026-10-05 | blocks | Druipzwam-hoed: vol blok zoals een wratblok (33-3 A) | Geen eigen class; bruikbaar in vanilla `huge_fungus` |
+| 2026-10-05 | blocks | Kleine druipzwam (zaailing-equivalent): nu niet, backlog (33-4 A) | Binnen het design; reuzenzwammen leveren genoeg hout |
+| 2026-10-05 | blocks | Sporenmos spreidt via random tick binnen de eigen familie + bonemeal (niet in `#nylium`); bedekt → doorweekt netherrack; Silk Touch → sporenmos, anders doorweekt netherrack (33-5 A) | Volgt het design zonder woekering naar ring 1 of bases |
+| 2026-10-05 | blocks | Doorweekt netherrack: nat grondblok, geen eeuwig vuur, in `#base_stone_nether` en `c:netherracks` (33-6 A) | Alleen data; carvers en features werken erin |
+| 2026-10-05 | blocks | Slijmstalactieten: vorm en vallen, geen groei of druppels; generieke `StalactiteBlock` (kopie van vanilla pointed dripstone), ook voor de ijsstalactieten van Nether-ring 3 (33-7 A) | Vanilla hardcodet pointed dripstone; één class voor beide ringen |
+| 2026-10-05 | blocks | Lichtgevende schimmel: multiface-laag zoals glow lichen (licht 7, eigen `GlowMoldBlock`); zwamlamp licht 15 zoals shroomlight (33-8 A) | Ideaal voor wanden en plafonds van de sporengrotten |
+| 2026-10-05 | textures | Nether-ring 2-textures in `tools/textures/Ring2Textures.java` (één script per ring); placeholders in change 33, definitief in change 37 | Afspraak één script per ring; ring 1 deed hetzelfde met het zielkristal |
+| 2026-10-05 | blocks | Tag `corruptedadventure:fungal_growths` aangemaakt in change 33 (stam, hyfen, gestript, hoed, lamp, stalactiet, gloeischimmel, sporenspruiten) | Contract met 34 (dauwkristal) en 35 (determinismeregel) |

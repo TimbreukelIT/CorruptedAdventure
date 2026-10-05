@@ -28,6 +28,13 @@ public final class ModTags {
         public static final TagKey<Block> ORES_TURQUOISE = TagKey.create(Registries.BLOCK, common("ores/turquoise"));
         /** Ground for the desert flora (and the palm sapling): sand, terracotta, dirt and cracked clay. */
         public static final TagKey<Block> DESERT_PLANT_SOIL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("desert_plant_soil"));
+        /** Dripshroom stem, hyphae and their stripped variants; part of {@code #minecraft:logs}, deliberately not of {@code #logs_that_burn}. */
+        public static final TagKey<Block> DRIPSHROOM_STEMS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("dripshroom_stems"));
+        /**
+         * Everything that grows in the Nether ring 2 fungal forest and caves: stems, caps, lamp, stalactites, mould,
+         * sprouts. Worldgen of that ring keeps its determinism rules on this tag; later changes add the dew crystal.
+         */
+        public static final TagKey<Block> FUNGAL_GROWTHS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("fungal_growths"));
 
         private Blocks() {
         }
@@ -37,6 +44,7 @@ public final class ModTags {
         public static final TagKey<Item> DEAD_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("dead_logs"));
         public static final TagKey<Item> CANYON_STONES = TagKey.create(Registries.ITEM, CorruptedAdventure.id("canyon_stones"));
         public static final TagKey<Item> PALM_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("palm_logs"));
+        public static final TagKey<Item> DRIPSHROOM_STEMS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("dripshroom_stems"));
         public static final TagKey<Item> ORES_SOUL_CRYSTAL = TagKey.create(Registries.ITEM, common("ores/soul_crystal"));
         /** Convention tag {@code c:gems/soul_crystal}; part of {@code c:gems}. */
         public static final TagKey<Item> GEMS_SOUL_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/soul_crystal"));

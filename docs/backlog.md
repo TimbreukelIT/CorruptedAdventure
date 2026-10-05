@@ -136,3 +136,9 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [atmosphere] Windgeluid van de zandstorm vervangen door eigen wind met `Ring2Sounds.java` (nu nog vanilla `item.elytra.flying`). (bron: change 32)
 - [atmosphere] Grotgeluid (`mood_sound`) van `dry_riverbeds` is nog vanilla `LEGACY_CAVE_SETTINGS`; change 32 laat het ongemoeid (de opmerking "grotgeluid definitief" uit plan 31 is niet uitgevoerd). (bron: change 32)
 
+## Uit change 33
+- [items] Recipes druipzwam-set (steel -> planken, hyfen, trap, plaat, hek, poort, deur, valluik, knop, drukplaat) en eventueel zwamlamp/hoed; tag-gebaseerde vanilla-recipes (stokken, werkbank, kist) werken al via `#planks`. (bron: change 33)
+- [atmosphere] Druppel-particles van slijmstalactieten en doorweekt netherrack (change 36: biome-particles of `animateTick`). (bron: change 33)
+- [blocks] Kleine druipzwam (zaailing-equivalent, plant op sporenmos, bonemeal -> reuzenzwam) om de set hernieuwbaar te maken; nu is het hout alleen uit reuzenzwammen te halen. (bron: change 33)
+- [infra] GameTest-opzet (lege template, `gameTestServer`) om random-tick-gedrag (dood gras, sporenmos, latere groeiblokken) automatisch te testen via `state.randomTick(level, pos, seededRandom)`; nu alleen met een speler of dispenser te testen. (bron: change 33)
+- [textures] Change 37: de dikte-modellen van de slijmstalactiet delen nu per dikte een gespiegelde `up`/`down`-texture; definitief kan een eigen stijl per richting. Stam/hyfen, gloeischimmel en zwamlamp zijn nog `still` (animatie/emissive: 37 vraag 4). (bron: change 33)

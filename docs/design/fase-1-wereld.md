@@ -455,6 +455,14 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Sleutelmateriaal: dauwkristal**, groeit langzaam aan dauwbronnen (zoals budding amethyst). Nodig voor bewaker 2→3; in fase 2 de basis van hittebescherming voor ring 3.
 - **Sfeer**: dichte grijsgroene fog, constante druppelgeluiden, zwevende sporen-particles (alles biome-data).
 - Geen conditie.
+- **Uitwerking (change 33, gebouwd)** — 20 blokken, placeholders uit `Ring2Textures.java` (definitief in change 37); alleen blokken, plaatsing in de wereld is change 35:
+  - **Namen:** `dripshroom_*` (stem, hyphae, gestript, planks + houtset, `_cap`, `_lamp`), `soaked_netherrack`, `spore_moss`, `slime_stalactite`, `glow_mold`, `spore_sprouts`. Tag `corruptedadventure:fungal_growths` (stam, hyfen, gestript, hoed, lamp, stalactiet, gloeischimmel, sporenspruiten) is het contract met 34/35.
+  - **Houtset = Nether-hout (antwoord 2 A):** `stem`/`hyphae`, in `#logs` maar niet `#logs_that_burn`, geen vuurkansen, items in `#non_flammable_wood` (geen ovenbrandstof), `BlockSetType`/`WoodType` `corruptedadventure:dripshroom` met nether-hout-geluiden. Hoed = wratblok (antwoord 3 A), lamp = shroomlight (licht 15). Geen kleine druipzwam (4 A, backlog).
+  - **Sporenmos (5 A + 9 A):** random tick binnen de eigen familie: bedekt → doorweekt netherrack; onbedekt: één poging per tick naar onbedekt doorweekt netherrack in 3×5×3; nooit naar vanilla-netherrack; geen licht-/dimensie-eis; niet in `#nylium`. Bonemeal op doorweekt netherrack naast sporenmos → sporenmos; bonemeal op sporenmos met lucht erboven → `spore_sprouts` in vlekken. Silk Touch → sporenmos, anders doorweekt netherrack.
+  - **Doorweekt netherrack (6 A):** netherrack-hardheid, modder-geluid, geen eeuwig vuur, `#base_stone_nether` + `c:netherracks`.
+  - **Slijmstalactiet (7 A):** generieke `StalactiteBlock` (vorm per dikte, samenvoegende punten, valt als kolom en doet schade, stalagmiet-valschade, trident breekt hem; geen groei, geen druppels; slijmgeluid), bedoeld voor hergebruik door de ijsstalactieten van Nether-ring 3 (change 51).
+  - **Gloeischimmel (8 A):** multiface zoals glow lichen (licht 7, alleen met schaar, bonemeal spreidt), eigen `GlowMoldBlock`; **sporenspruiten (9 A):** kruismodel, alleen op sporenmos/doorweekt netherrack, geen random tick, composteerbaar.
+  - **Compost:** hoed 0,85, lamp 0,65, schimmel 0,5, spruiten 0,3. **Overdracht 35:** stalactieten alleen met steun en expliciete dikte-states; reuzenzwam via `huge_fungus` of een eigen feature; gloeischimmel via `multiface_growth`; quartz/goud/magma gebruiken `block_match` netherrack en dus niet doorweekt netherrack.
 
 **Client/server-risico's**
 - Zandstorm-duw en hittegolf-effect: server-side (condities-tick/ringweer); fog, particles en luchttrilling alleen client (`client/`).

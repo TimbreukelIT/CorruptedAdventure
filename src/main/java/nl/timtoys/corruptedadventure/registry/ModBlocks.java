@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
+import net.minecraft.world.level.block.GlowLichenBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
@@ -23,7 +24,9 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
@@ -35,11 +38,16 @@ import nl.timtoys.corruptedadventure.block.BarrelCactusBlock;
 import nl.timtoys.corruptedadventure.block.DeadGrassBlock;
 import nl.timtoys.corruptedadventure.block.DesertFlowerBlock;
 import nl.timtoys.corruptedadventure.block.DryShrubBlock;
+import nl.timtoys.corruptedadventure.block.GlowMoldBlock;
 import nl.timtoys.corruptedadventure.block.LooseSandTrigger;
 import nl.timtoys.corruptedadventure.block.ModFlowerPots;
 import nl.timtoys.corruptedadventure.block.ModTreeGrowers;
 import nl.timtoys.corruptedadventure.block.ModWoodTypes;
 import nl.timtoys.corruptedadventure.block.PalmSaplingBlock;
+import nl.timtoys.corruptedadventure.block.SoakedNetherrackBlock;
+import nl.timtoys.corruptedadventure.block.SporeMossBlock;
+import nl.timtoys.corruptedadventure.block.SporeSproutsBlock;
+import nl.timtoys.corruptedadventure.block.StalactiteBlock;
 import nl.timtoys.corruptedadventure.block.StrippableLogBlock;
 import nl.timtoys.corruptedadventure.block.WitheredDirtBlock;
 
@@ -251,6 +259,67 @@ public final class ModBlocks {
             () -> new AmethystClusterBlock(7.0F, 3.0F, Properties.ofFullCopy(Blocks.AMETHYST_CLUSTER)
                     .mapColor(MapColor.QUARTZ).lightLevel(state -> 3)));
 
+    // ---- Nether ring 2 ----
+    // Wet fungal Nether: soaked netherrack with spore moss on top, the dripshroom wood set, cap and lamp, and the
+    // growths on walls, ceilings and floor. Nether wood: no fire odds, no furnace fuel (like crimson and warped).
+    public static final DeferredBlock<SoakedNetherrackBlock> SOAKED_NETHERRACK = register("soaked_netherrack",
+            () -> new SoakedNetherrackBlock(Properties.ofFullCopy(Blocks.NETHERRACK)
+                    .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.MUD)));
+    public static final DeferredBlock<SporeMossBlock> SPORE_MOSS = register("spore_moss",
+            () -> new SporeMossBlock(Properties.ofFullCopy(Blocks.CRIMSON_NYLIUM)
+                    .mapColor(MapColor.TERRACOTTA_GREEN).randomTicks()));
+
+    public static final DeferredBlock<StrippableLogBlock> DRIPSHROOM_STEM = register("dripshroom_stem",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_DRIPSHROOM_STEM, dripshroomBark(Blocks.CRIMSON_STEM)));
+    public static final DeferredBlock<StrippableLogBlock> DRIPSHROOM_HYPHAE = register("dripshroom_hyphae",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE, dripshroomBark(Blocks.CRIMSON_HYPHAE)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_DRIPSHROOM_STEM = register("stripped_dripshroom_stem",
+            () -> new RotatedPillarBlock(dripshroom(Blocks.STRIPPED_CRIMSON_STEM)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_DRIPSHROOM_HYPHAE = register("stripped_dripshroom_hyphae",
+            () -> new RotatedPillarBlock(dripshroom(Blocks.STRIPPED_CRIMSON_HYPHAE)));
+    public static final DeferredBlock<Block> DRIPSHROOM_PLANKS = register("dripshroom_planks",
+            () -> new Block(dripshroom(Blocks.CRIMSON_PLANKS)));
+    public static final DeferredBlock<StairBlock> DRIPSHROOM_STAIRS = register("dripshroom_stairs",
+            () -> new StairBlock(DRIPSHROOM_PLANKS.get().defaultBlockState(), dripshroom(Blocks.CRIMSON_STAIRS)));
+    public static final DeferredBlock<SlabBlock> DRIPSHROOM_SLAB = register("dripshroom_slab",
+            () -> new SlabBlock(dripshroom(Blocks.CRIMSON_SLAB)));
+    public static final DeferredBlock<FenceBlock> DRIPSHROOM_FENCE = register("dripshroom_fence",
+            () -> new FenceBlock(dripshroom(Blocks.CRIMSON_FENCE)));
+    public static final DeferredBlock<FenceGateBlock> DRIPSHROOM_FENCE_GATE = register("dripshroom_fence_gate",
+            () -> new FenceGateBlock(ModWoodTypes.DRIPSHROOM, dripshroom(Blocks.CRIMSON_FENCE_GATE)));
+    public static final DeferredBlock<DoorBlock> DRIPSHROOM_DOOR = registerDoor("dripshroom_door",
+            () -> new DoorBlock(ModWoodTypes.DRIPSHROOM_SET, dripshroom(Blocks.CRIMSON_DOOR)));
+    public static final DeferredBlock<TrapDoorBlock> DRIPSHROOM_TRAPDOOR = register("dripshroom_trapdoor",
+            () -> new TrapDoorBlock(ModWoodTypes.DRIPSHROOM_SET, dripshroom(Blocks.CRIMSON_TRAPDOOR)));
+    public static final DeferredBlock<PressurePlateBlock> DRIPSHROOM_PRESSURE_PLATE = register("dripshroom_pressure_plate",
+            () -> new PressurePlateBlock(ModWoodTypes.DRIPSHROOM_SET, dripshroom(Blocks.CRIMSON_PRESSURE_PLATE)));
+    public static final DeferredBlock<ButtonBlock> DRIPSHROOM_BUTTON = register("dripshroom_button",
+            () -> new ButtonBlock(ModWoodTypes.DRIPSHROOM_SET, 30, dripshroom(Blocks.CRIMSON_BUTTON)));
+
+    /** The giant fungus' cap: a wart block (hoe, drops itself). */
+    public static final DeferredBlock<Block> DRIPSHROOM_CAP = register("dripshroom_cap",
+            () -> new Block(Properties.ofFullCopy(Blocks.NETHER_WART_BLOCK).mapColor(MapColor.TERRACOTTA_PURPLE)));
+    /** The giant fungus' lamp: shroomlight (light 15, hoe, drops itself). */
+    public static final DeferredBlock<Block> DRIPSHROOM_LAMP = register("dripshroom_lamp",
+            () -> new Block(Properties.ofFullCopy(Blocks.SHROOMLIGHT).mapColor(MapColor.COLOR_LIGHT_GREEN)));
+
+    /** A multiface layer on walls, ceilings and floors; glow lichen's light (7), shears and bonemeal. */
+    public static final DeferredBlock<GlowMoldBlock> GLOW_MOLD = register("glow_mold",
+            () -> new GlowMoldBlock(Properties.ofFullCopy(Blocks.GLOW_LICHEN).mapColor(MapColor.WARPED_WART_BLOCK)
+                    .lightLevel(GlowLichenBlock.emission(7))));
+    /**
+     * Pointed dripstone's properties minus random ticks (it neither grows nor drips here), with slime sounds. Falls
+     * when its support goes; the column falls as one.
+     */
+    public static final DeferredBlock<StalactiteBlock> SLIME_STALACTITE = register("slime_stalactite",
+            () -> new StalactiteBlock(Properties.of().mapColor(MapColor.COLOR_LIGHT_GREEN).forceSolidOn()
+                    .instrument(NoteBlockInstrument.BASEDRUM).noOcclusion().sound(SoundType.SLIME_BLOCK)
+                    .strength(1.5F, 3.0F).dynamicShape().offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(PushReaction.DESTROY).isRedstoneConductor((state, level, pos) -> false)));
+    /** Small ground plant on spore moss and soaked netherrack. Plucked by hand: no random ticks, nothing to grow. */
+    public static final DeferredBlock<SporeSproutsBlock> SPORE_SPROUTS = register("spore_sprouts",
+            () -> new SporeSproutsBlock(Properties.ofFullCopy(Blocks.NETHER_SPROUTS).mapColor(MapColor.TERRACOTTA_GREEN)));
+
     private ModBlocks() {
     }
 
@@ -281,6 +350,16 @@ public final class ModBlocks {
     /** Palm wood without bark (planks family, stripped): light sand-yellow on the map. */
     private static Properties palm(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.SAND);
+    }
+
+    /** Dripshroom wood (planks family, stripped): crimson's behaviour in a light grey-green on the map. */
+    private static Properties dripshroom(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_LIGHT_GREEN);
+    }
+
+    /** Dripshroom stem and hyphae (bark outside): dark grey-green on the map. */
+    private static Properties dripshroomBark(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_GRAY);
     }
 
     private static <B extends Block> DeferredBlock<B> register(String name, Supplier<B> block) {

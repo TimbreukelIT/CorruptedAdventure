@@ -176,6 +176,28 @@ final class EnglishLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.SALT_CRYSTAL, "Salt Crystal");
         addItem(ModItems.SALT, "Salt");
 
+        // Nether ring 2 blocks.
+        addBlock(ModBlocks.SOAKED_NETHERRACK, "Soaked Netherrack");
+        addBlock(ModBlocks.SPORE_MOSS, "Spore Moss");
+        addBlock(ModBlocks.DRIPSHROOM_STEM, "Dripshroom Stem");
+        addBlock(ModBlocks.DRIPSHROOM_HYPHAE, "Dripshroom Hyphae");
+        addBlock(ModBlocks.STRIPPED_DRIPSHROOM_STEM, "Stripped Dripshroom Stem");
+        addBlock(ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE, "Stripped Dripshroom Hyphae");
+        addBlock(ModBlocks.DRIPSHROOM_PLANKS, "Dripshroom Planks");
+        addBlock(ModBlocks.DRIPSHROOM_STAIRS, "Dripshroom Stairs");
+        addBlock(ModBlocks.DRIPSHROOM_SLAB, "Dripshroom Slab");
+        addBlock(ModBlocks.DRIPSHROOM_FENCE, "Dripshroom Fence");
+        addBlock(ModBlocks.DRIPSHROOM_FENCE_GATE, "Dripshroom Fence Gate");
+        addBlock(ModBlocks.DRIPSHROOM_DOOR, "Dripshroom Door");
+        addBlock(ModBlocks.DRIPSHROOM_TRAPDOOR, "Dripshroom Trapdoor");
+        addBlock(ModBlocks.DRIPSHROOM_PRESSURE_PLATE, "Dripshroom Pressure Plate");
+        addBlock(ModBlocks.DRIPSHROOM_BUTTON, "Dripshroom Button");
+        addBlock(ModBlocks.DRIPSHROOM_CAP, "Dripshroom Cap");
+        addBlock(ModBlocks.DRIPSHROOM_LAMP, "Dripshroom Lamp");
+        addBlock(ModBlocks.GLOW_MOLD, "Glow Mold");
+        addBlock(ModBlocks.SLIME_STALACTITE, "Slime Stalactite");
+        addBlock(ModBlocks.SPORE_SPROUTS, "Spore Sprouts");
+
         biome(ModBiomes.WITHERED_EXPANSE, "Withered Expanse");
         biome(ModBiomes.DRY_RIVERBEDS, "Dry Riverbeds");
         biome(ModBiomes.CANYONLANDS, "Canyonlands");

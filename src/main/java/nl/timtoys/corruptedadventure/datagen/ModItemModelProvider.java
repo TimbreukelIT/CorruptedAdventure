@@ -102,6 +102,34 @@ final class ModItemModelProvider extends ItemModelProvider {
         wallInventory(ModBlocks.POLISHED_SALT_WALL.getId().getPath(), modLoc("block/polished_salt"));
         // salt_crystal: ModBlockStateProvider.crystalCluster writes its item model.
         basicItem(ModItems.SALT.get());
+
+        netherRing2();
+    }
+
+    private void netherRing2() {
+        ResourceLocation planks = modLoc("block/dripshroom_planks");
+        blockItem(ModBlocks.SOAKED_NETHERRACK);
+        blockItem(ModBlocks.SPORE_MOSS);
+        blockItem(ModBlocks.DRIPSHROOM_STEM);
+        blockItem(ModBlocks.DRIPSHROOM_HYPHAE);
+        blockItem(ModBlocks.STRIPPED_DRIPSHROOM_STEM);
+        blockItem(ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE);
+        blockItem(ModBlocks.DRIPSHROOM_PLANKS);
+        blockItem(ModBlocks.DRIPSHROOM_STAIRS);
+        blockItem(ModBlocks.DRIPSHROOM_SLAB);
+        fenceInventory(ModBlocks.DRIPSHROOM_FENCE.getId().getPath(), planks);
+        blockItem(ModBlocks.DRIPSHROOM_FENCE_GATE);
+        basicItem(ModBlocks.DRIPSHROOM_DOOR.asItem());
+        withExistingParent(ModBlocks.DRIPSHROOM_TRAPDOOR.getId().getPath(), modLoc("block/dripshroom_trapdoor_bottom"));
+        blockItem(ModBlocks.DRIPSHROOM_PRESSURE_PLATE);
+        buttonInventory(ModBlocks.DRIPSHROOM_BUTTON.getId().getPath(), planks);
+        blockItem(ModBlocks.DRIPSHROOM_CAP);
+        blockItem(ModBlocks.DRIPSHROOM_LAMP);
+        flatBlockItem(ModBlocks.GLOW_MOLD);
+        // The stalactite's item is flat on its own texture, like vanilla's pointed dripstone.
+        withExistingParent(ModBlocks.SLIME_STALACTITE.getId().getPath(), mcLoc("item/generated"))
+                .texture("layer0", modLoc("item/slime_stalactite"));
+        flatBlockItem(ModBlocks.SPORE_SPROUTS);
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

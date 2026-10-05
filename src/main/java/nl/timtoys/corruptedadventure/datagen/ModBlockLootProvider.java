@@ -129,6 +129,33 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.POLISHED_SALT_WALL.get());
         // Decoration you want to take along: itself, with any tool.
         dropSelf(ModBlocks.SALT_CRYSTAL.get());
+
+        netherRing2();
+    }
+
+    private void netherRing2() {
+        dropSelf(ModBlocks.SOAKED_NETHERRACK.get());
+        // Like nylium -> netherrack: Silk Touch keeps the moss, otherwise soaked netherrack.
+        add(ModBlocks.SPORE_MOSS.get(), block -> createSingleItemTableWithSilkTouch(block, ModBlocks.SOAKED_NETHERRACK.get()));
+        dropSelf(ModBlocks.DRIPSHROOM_STEM.get());
+        dropSelf(ModBlocks.DRIPSHROOM_HYPHAE.get());
+        dropSelf(ModBlocks.STRIPPED_DRIPSHROOM_STEM.get());
+        dropSelf(ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE.get());
+        dropSelf(ModBlocks.DRIPSHROOM_PLANKS.get());
+        dropSelf(ModBlocks.DRIPSHROOM_STAIRS.get());
+        add(ModBlocks.DRIPSHROOM_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.DRIPSHROOM_FENCE.get());
+        dropSelf(ModBlocks.DRIPSHROOM_FENCE_GATE.get());
+        add(ModBlocks.DRIPSHROOM_DOOR.get(), this::createDoorTable);
+        dropSelf(ModBlocks.DRIPSHROOM_TRAPDOOR.get());
+        dropSelf(ModBlocks.DRIPSHROOM_PRESSURE_PLATE.get());
+        dropSelf(ModBlocks.DRIPSHROOM_BUTTON.get());
+        dropSelf(ModBlocks.DRIPSHROOM_CAP.get());
+        dropSelf(ModBlocks.DRIPSHROOM_LAMP.get());
+        // Like glow lichen: only with shears, one item per face.
+        add(ModBlocks.GLOW_MOLD.get(), block -> createMultifaceBlockDrops(block, HAS_SHEARS));
+        dropSelf(ModBlocks.SLIME_STALACTITE.get());
+        dropSelf(ModBlocks.SPORE_SPROUTS.get());
     }
 
     @Override

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "corruptedadventure:block/stripped_dripshroom_stem_top",
+    "side": "corruptedadventure:block/stripped_dripshroom_stem"
+  }
+}

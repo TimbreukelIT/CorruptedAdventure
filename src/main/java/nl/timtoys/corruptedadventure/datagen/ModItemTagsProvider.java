@@ -27,6 +27,15 @@ final class ModItemTagsProvider extends ItemTagsProvider {
     protected void addTags(HolderLookup.Provider provider) {
         copy(ModTags.Blocks.DEAD_LOGS, ModTags.Items.DEAD_LOGS);
         copy(ModTags.Blocks.PALM_LOGS, ModTags.Items.PALM_LOGS);
+        copy(ModTags.Blocks.DRIPSHROOM_STEMS, ModTags.Items.DRIPSHROOM_STEMS);
+        tag(ItemTags.LOGS).addTag(ModTags.Items.DRIPSHROOM_STEMS);
+        // Nether wood: no furnace fuel, like crimson and warped.
+        tag(ItemTags.NON_FLAMMABLE_WOOD).add(ModBlocks.DRIPSHROOM_STEM.asItem(), ModBlocks.DRIPSHROOM_HYPHAE.asItem(),
+                ModBlocks.STRIPPED_DRIPSHROOM_STEM.asItem(), ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE.asItem(),
+                ModBlocks.DRIPSHROOM_PLANKS.asItem(), ModBlocks.DRIPSHROOM_STAIRS.asItem(), ModBlocks.DRIPSHROOM_SLAB.asItem(),
+                ModBlocks.DRIPSHROOM_FENCE.asItem(), ModBlocks.DRIPSHROOM_FENCE_GATE.asItem(), ModBlocks.DRIPSHROOM_DOOR.asItem(),
+                ModBlocks.DRIPSHROOM_TRAPDOOR.asItem(), ModBlocks.DRIPSHROOM_BUTTON.asItem(),
+                ModBlocks.DRIPSHROOM_PRESSURE_PLATE.asItem());
         copy(BlockTags.LEAVES, ItemTags.LEAVES);
         copy(BlockTags.SAPLINGS, ItemTags.SAPLINGS);
         copy(BlockTags.LOGS_THAT_BURN, ItemTags.LOGS_THAT_BURN);
@@ -64,6 +73,8 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         copy(BlockTags.WALLS, ItemTags.WALLS);
         copy(BlockTags.SMALL_FLOWERS, ItemTags.SMALL_FLOWERS);
         copy(Tags.Blocks.COBBLESTONES, Tags.Items.COBBLESTONES);
+        copy(Tags.Blocks.NETHERRACKS, Tags.Items.NETHERRACKS);
+        copy(BlockTags.WART_BLOCKS, ItemTags.WART_BLOCKS);
         copy(Tags.Blocks.SANDSTONE_BLOCKS, Tags.Items.SANDSTONE_BLOCKS);
         copy(Tags.Blocks.SANDSTONE_SLABS, Tags.Items.SANDSTONE_SLABS);
         copy(Tags.Blocks.SANDSTONE_STAIRS, Tags.Items.SANDSTONE_STAIRS);
