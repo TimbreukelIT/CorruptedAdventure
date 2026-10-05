@@ -305,3 +305,14 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-03 | worldgen | Droog gras in de duindalen (30c-3 A): harde dalbodem (grove aarde/gebarsten klei, ~12 % onder Y 70) met kort gras in de droge duintint | Kort gras groeit niet op zand |
 | 2026-10-03 | worldgen | Fossielen en botten (30c-5 A): eigen feature `surface_fossil` op vanilla-sjablonen, 0,4–0,7 van de hoogte begraven, verweerd, chunk-lokaal (~1 per 26 duinchunks, ook op de zout-eilandjes) + losse botblokken (~1 per 5 duinchunks) | Vanilla `FossilFeature` begraaft diep en schrijft in buurchunks |
 | 2026-10-03 | worldgen | Cactusgroepjes (30c-6 A) en flora aan de pilaarvoeten in de hoodoovelden: groepjes van 2–5 (1–3 hoog) op ~9 % van het land via `ring_2_cactus_groups` (firstOctave −5), soms een groter veld in een breed dal | Leven tussen de pilaren en in de dalen |
+| 2026-10-05 | worldgen | Beddingen `dry_riverbeds` (31-7 A): klem blijft Y 66; op lage regio's (zout, duindal, oase-vlakte) alleen een gebarsten-klei-lint via de surface rule, echte geulen waar het terrein ≥ ~Y 70 ligt | Geen waterrisico; weinig werk |
+| 2026-10-05 | worldgen | Levendigheid `dry_riverbeds` (31-8 A): matig, op het niveau van de duindalen van 30c; gestrande botten via bestaande `surface_fossil`/`rubble`, geen tweede fossielfeature | Teststop 2b/2c: ring 2 moet levendig voelen; hergebruik |
+| 2026-10-05 | worldgen | Bodem aan de zonegrens 2→3 (31-9 A): harde wissel geaccepteerd | Biome-kleur maskeert de rand; geen extra werk |
+| 2026-10-05 | atmosphere | Oase-ambient (32-8 A): alleen de oase, biome-data `additions_sound` met eigen gesynthetiseerde vogels/insecten; mini-oases stil | Leven via geluid zonder client-code |
+| 2026-10-05 | atmosphere | Watertint `salt_flats` (32-9 A): lichter, melkachtig turkoois (~`5AC8B8`) | Pekelpoelen vallen op tegen het witte zout |
+| 2026-10-05 | atmosphere | Windgeluid zandstorm (32-10 A): blijft vanilla, backlog | Change 32 klein houden |
+| 2026-10-05 | blocks | Kleine bodemplant Nether-ring 2 (33-9 A): `spore_sprouts` (kruismodel, op sporenmos/doorweekt netherrack, bonemeal plant ze); plaatsing in change 35, texture in 37 | Levendige Nether-vloer; bonemeal op sporenmos krijgt een doel |
+| 2026-10-05 | worldgen | Prestatiebudget noise-stap Nether-ring 2 (35-10 A): ≤ 1,75× vanilla-Nether | Eén norm voor ring 2 |
+| 2026-10-05 | textures | `canyon_cobblestone` (37-8 A): één dominante oranje tint met ~15 % rode/crème gast-stenen en warme voeg; oude placeholder (drie tinten) was het probleem | Leest als één gebroken steensoort |
+| 2026-10-05 | textures | `salt_crust` (37-9 A): rustige korst zonder eigen polygonen; `salt_block`-top donkerder/grover | De zeshoeken komen uit de wereld (30b) |
+| 2026-10-05 | textures | Eigen ring 2-planten (37-10 A): herkenbare signatuur binnen §1.4; eigen botblok buiten 37 | Moeten afsteken tegen vanilla-planten en botblokken |

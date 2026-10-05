@@ -29,9 +29,19 @@ Afgestemd met 28, 32, 33, 34, 35 en 37 (basis: de aanbevolen opties). Namen in d
 
 ---
 
+## Afstemming na bouw 18–30c (2026-10-05)
+
+Nagelopen tegen de stand na `3abf6f3`; geen wijziging aan de antwoorden en geen nieuwe vragen.
+- **`registry/ModParticleTypes` en `ModParticleDescriptionProvider` bestaan** (28: `sand_gust`, een `SimpleParticleType` met provider in `client/particle/SandGustParticle`: 4-argumentconstructor zonder vanilla-snelheidsruis, geen zwaartekracht, getint). Bij vraag 4 B is `DriftingSporeParticle` een tweede klasse in `client/particle/` op dat patroon (lange levensduur, lichte zwaartekracht); de sprites komen uit `textures/particle/` (die map bestaat nog niet; `sand_gust` gebruikt vanilla `generic_0..7`).
+- **`client/weather/FogBlend`** (28) is pure fog-rekenkunde (`far`, `near`, `colour`: van vanilla naar het weer, nooit verder dan vanilla) en `RingWeatherRenderer`/`ViewportEvent.RenderFog` is het vaste patroon voor fog-hooks. Bij vraag 2 B/C (dichtere fog) dit patroon volgen in `client/ambient/NetherRing2Fog` en `FogBlend` hergebruiken of uitbreiden voor de menging over de afstand tot de biomegrens, in plaats van een tweede rekenklasse. De weer-hook is in de Nether uit (geen ringweer), dus geen conflict.
+- **`BiomeAmbience.Palette`** heeft nu `RING_1` en `RING_2` (placeholder, `desaturated(float)`); `darken`/`with*` en de ring 2-palettes komen in change 32; `Palette.NETHER_RING_2` in change 35.
+- **`tools/sounds/` bestaat nog niet** (32 maakt `Ring2Sounds.java` met de variant `drone`); deze change voegt `loop` toe. Valt 32 vraag 10 B (eigen wind als loop), dan bestaat de loopvariant al.
+- **`ModSoundEvents`** heeft `ambient.ring_1.strange_cave` en `weather.ring_2.sandstorm`; de Nether-2-events komen erbij.
+- **Levendig:** de sfeer van de Nether-tegenhanger (druppels, sporen) is al in het plan een kernpunt; er zijn geen nieuwe keuzes. Bijen/vlinders zijn niet aan de orde (Nether).
+
 ## Afhankelijkheden en aannames
 
-De code is gecontroleerd op de stand na change 17 (commit `7714b77`). **Changes 18–35 zijn nog niet gebouwd. Hun plannen zijn de bron.** De plannen van 33, 34 en 35 bestaan inmiddels; namen hieronder zijn op 2026-10-01 daarop afgestemd. **Alles hieronder dat uit 18–35 komt is een aanname en moet bij de start opnieuw worden nagelopen** in `CODEBASE.md` en in de antwoorden in `docs/plans/change-18.md` … `change-35.md`.
+De code is gecontroleerd op de stand na change 17 (commit `7714b77`), ververst op 2026-10-05 (zie het blok hierboven). **Changes 18–30c zijn gebouwd; 31–35 volgen nog en hun plannen zijn de bron.** De plannen van 33, 34 en 35 bestaan inmiddels; namen hieronder zijn op 2026-10-01 daarop afgestemd. **Alles hieronder dat uit 18–35 komt is een aanname en moet bij de start opnieuw worden nagelopen** in `CODEBASE.md` en in de antwoorden in `docs/plans/change-18.md` … `change-35.md`.
 
 - **Bestaat al (change 13):**
   - `BiomeAmbience` met `Palette(sky, fog, water, waterFog)`, `desaturate` en `withMood`.

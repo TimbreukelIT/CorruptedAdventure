@@ -22,6 +22,23 @@ Afgestemd met 20, 23, 28, 30, 31 en 36 (basis: de aanbevolen opties).
 - **`BiomeAmbience`-helpers** (`darken`, `Palette.darkened`, `withSky`, `withFog`, `withWater`) worden hier aangemaakt; 36 gebruikt ze.
 - Teststop: geen eigen stop; de runClient-acceptatie gaat mee in de gebundelde eindcheck ring 2 + Nether-2 (teststop 3) ná change 37 (W-achteraf).
 
+## Afstemming na bouw 23b–30c (2026-10-05)
+
+Nagelopen tegen de stand na `3abf6f3` (changes 0–30, 23b, 23c, 30b, 30c gebouwd; 31 wordt vóór deze change gebouwd). Antwoorden blijven staan; dit zijn feiten uit de code en de gevolgen-secties.
+- **`Palette.RING_2` is nu de placeholder** `9FC4E8` / `E8D7A8` / `32A598` / `0B3A35`, en `Palette.desaturated(float)` bestaat. Deze change zet de **definitieve** waarden uit antwoord 2 A (lucht `AEC8E0`, fog `E4D2A6`); water `32A598` / waterfog `0B3A35` blijven.
+- **`Ring2Biomes` bouwt alle vijf ring 2-biomes met één private helper `biome(downfall, grass, foliage, spawns, generation)`** met `Palette.RING_2` en `ALL` (6e entry `dry_riverbeds` na change 31). Het palette per biome wordt dus één extra parameter in die helper; `hoodoo_fields` en `dune_sea` delen kleuren en spawns met `canyonlands` en moeten hun eigen palette krijgen. De gegenereerde biome-JSON verandert voor **6** biomes (5 + `dry_riverbeds`).
+- **`withered_expanse`-fade is 0,4** (`WITHERED_EXPANSE_FADE`, in `TransitionBiomes`). `dry_riverbeds` krijgt na change 31 een eigen constante `DRY_RIVERBEDS_FADE` = 0,3 (placeholder) in dezelfde klasse; deze change vervangt die door `Palette.DRY_RIVERBEDS` en verwijdert de constante.
+- **`ModSoundEvents` heeft al een ring 2-event** (`weather.ring_2.sandstorm`, change 28; `sounds.json` entry van type `event` naar `item.elytra.flying`). `ModSoundDefinitionsProvider` kent dus event-entries; entries van type `sound` (eigen `.ogg`) zijn nieuw. De naamgeving `ambient.ring_2.*` naast `weather.ring_2.*` blijft zoals gepland.
+- **`tools/sounds/` en `client/ambient/` bestaan nog niet** (alleen `tools/textures/`); `CorruptedAdventureClient` en `client/weather/` wel. `client/weather/SkyExposure` (change 28) meet "open hemel" als hemellicht op de camera ÷ 15 met een vloeiende benadering; voor het zingende zand is een directe `level.canSeeSky(pos)`/hemellicht-drempel genoeg (geen `SkyExposure`: die is voor het weer en hoort bij de renderers).
+- **Gevolgen 30b/30c voor deze change:**
+  - pekelpoelen nemen de ring 2-watertint (`32A598`) over; een eigen, lichtere tint voor `salt_flats` is een open keuze (vraag 9);
+  - de mini-oases en kristalvelden (30b), de oase met meer bloemen en gras (30c) en de begroeide duindalen zijn kandidaten voor ambient (vogels/insecten bij water, zacht zoemen bij kristallen): vraag 8. Door de ontwerpregel "ring 2 moet levendig voelen" (teststop 2b/2c) is leven via geluid een logische aanvulling op het zingende zand;
+  - bijen/vlinders zijn particles (`atmosphere`) of mobs (fase 4): buiten deze change.
+- **De mini-oases liggen in biome `dune_sea`** (niet in `oasis_flats`). Ambient per biome kan ze dus niet apart bedienen; alleen een client-class met een positiecheck (water/gras in de buurt) kan dat (vraag 8 B).
+- **Zandstorm en zingend zand:** de zandstorm (28) heeft een wind-loop (`SandstormSound`). Of het zingende zand tijdens de storm zwijgt of doorklinkt is geen besluit; het blijft op de backlog, de W-lijst vraagt erom te letten op overlap.
+- **Windgeluid van de zandstorm** is nu vanilla `item.elytra.flying` (backlog 28): vervangen door een eigen wind met dezelfde synthese-pijplijn is een kleine uitbreiding van `Ring2Sounds.java` (vraag 10).
+- **Teststop 2c is akkoord**, maar de sfeer (kleuren, geluid) is daar niet apart getest; alles gaat mee in teststop 3.
+
 ## Afstemming na teststop 2 (2026-10-01)
 
 Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). **Geen wijziging aan deze change.**
@@ -31,9 +48,14 @@ Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). **Geen wijziging aa
 
 ---
 
+### Gevolgen van de antwoorden 8–10 (2026-10-05)
+- **8 A:** `oasis_flats` krijgt als enige ring 2-biome `additions_sound` (`ambient.ring_2.oasis`, 2–3 mono `.ogg` vogels/insecten uit `Ring2Sounds.java`, variant `ambient`; `tick_chance` startwaarde ~0,004, laag en zacht, ondertitel en/nl). **De test "geen enkele ring 2-biome heeft `additions_sound`" (stap 4) wordt:** alleen `oasis_flats` heeft het, `dune_sea` en de rest niet (het zingende zand blijft client-only). Nieuw sound event common geregistreerd (valkuil change 13). Uitbreiding van `Ring2BiomesTest`, `ModSoundEvents`, `ModSoundDefinitionsProvider`.
+- **9 A:** nieuwe `Palette.SALT_FLATS` met water ~`5AC8B8` / waterfog ~`1B5048` (de tabel in stap 1 had water "basis"); `Ring2BiomesTest` en `BiomeAmbienceTest` bijwerken.
+- **10 A:** geen `loop`-variant in 32; `Ring2Sounds.java` krijgt de varianten `drone` en `ambient` (36 voegt `loop` toe).
+
 ## Afhankelijkheden en aannames
 
-De code is gecontroleerd op de stand na change 17 (commit `7714b77`). **Changes 18–31 zijn nog niet gebouwd. Hun plannen zijn de bron. Alles hieronder dat uit 18–31 komt is een aanname en moet bij de start opnieuw worden nagelopen** in `CODEBASE.md` en de antwoorden in `docs/plans/change-18.md` … `change-31.md`.
+De code is gecontroleerd op de stand na change 17 (commit `7714b77`), ververst op 2026-10-05 tegen `3abf6f3` (zie "Afstemming na bouw"). **Changes 18–30c zijn gebouwd; 31 volgt vóór deze change.** Wat hieronder uit 31 komt (`dry_riverbeds`, `DRY_RIVERBEDS_FADE`) is nog aanname en moet bij de start naast `CODEBASE.md` gelegd worden.
 
 - **Bestaat al (change 13):**
   - `BiomeAmbience` (`worldgen/biome/`) met `record Palette(int sky, int fog, int water, int waterFog)`, `Palette.RING_1`, `Palette.desaturated(float)`, `desaturate(rgb, amount)` (luma-menging), `withMood`, `SILENT`/`STRANGE`.
@@ -41,8 +63,8 @@ De code is gecontroleerd op de stand na change 17 (commit `7714b77`). **Changes 
   - `ModSoundDefinitionsProvider` (`sounds.json`; tot nu toe alleen entries van type `event`).
   - Ondertitels in beide lang-providers.
   - Valkuil: sound events moeten common geregistreerd zijn, anders laadt een biome-JSON die ze noemt niet op de dedicated server.
-- **Aanname change 23 (plan):** `BiomeAmbience.Palette.RING_2` = de placeholder-kleuren (lucht `9FC4E8`, fog `E8D7A8`, water `32A598`, waterfog `0B3A35`), **één plek** die change 32 definitief maakt. Alle ring 2-biomes gebruiken hem via `worldgen/biome/Ring2Biomes.java`. `ModBiomes.CANYONLANDS`, `ModBiomes.OASIS_FLATS` en de tag `corruptedadventure:is_ring_2` bestaan. Het overdrachtsblok van change 23 noemt voor change 32: "`Palette.RING_2` (één plek); mood/ambient per biome in `Ring2Biomes`". `Ring2BiomesTest` controleert "lucht/fog/water = `Palette.RING_2`": die test past deze change aan.
-- **Uit het plan van change 30 (afgestemd 2026-10-01):** `salt_flats`, `hoodoo_fields` en `dune_sea` staan in `Ring2Biomes` met keys `ModBiomes.SALT_FLATS`, `HOODOO_FIELDS` en `DUNE_SEA`, en gebruiken ook `Palette.RING_2`. In `dune_sea` is de hele kolom dezelfde biome (de multi-noise van ring 2 laat `depth` op [−2, 2]), dus ook de grotten eronder.
+- **Gebouwd (change 23):** `BiomeAmbience.Palette.RING_2` = de placeholder-kleuren (lucht `9FC4E8`, fog `E8D7A8`, water `32A598`, waterfog `0B3A35`), **één plek** die change 32 definitief maakt. Alle ring 2-biomes gebruiken hem via `worldgen/biome/Ring2Biomes.java`. `ModBiomes.CANYONLANDS`, `ModBiomes.OASIS_FLATS` en de tag `corruptedadventure:is_ring_2` bestaan. Het overdrachtsblok van change 23 noemt voor change 32: "`Palette.RING_2` (één plek); mood/ambient per biome in `Ring2Biomes`". `Ring2BiomesTest` controleert "lucht/fog/water = `Palette.RING_2`": die test past deze change aan.
+- **Gebouwd (change 30; 2026-10-05 bevestigd):** `salt_flats`, `hoodoo_fields` en `dune_sea` staan in `Ring2Biomes` met keys `ModBiomes.SALT_FLATS`, `HOODOO_FIELDS` en `DUNE_SEA`, en gebruiken ook `Palette.RING_2`. In `dune_sea` is de hele kolom dezelfde biome (de multi-noise van ring 2 laat `depth` op [−2, 2]), dus ook de grotten eronder.
 - **Uit het plan van change 31 (afgestemd):** `dry_riverbeds` (overgang 2→3, `ModBiomes.DRY_RIVERBEDS`) staat in `TransitionBiomes`, naast `withered_expanse`, met placeholder `Palette.RING_2.desaturated(DRY_RIVERBEDS_FADE)` (0,3). Deze change vervangt dat door `Palette.DRY_RIVERBEDS` (vraag 3 is de enige plek voor die kleur). Staat hij ergens anders, dan verschuift alleen de plek waar de palette wordt gezet.
 - **Uit het plan van change 28 (afgestemd):** de zandstorm kleurt de fog alleen tijdens het weer (`SandstormRenderer.fogColor`, constante `#C9A46B`, gemengd met `strength × exposure`; de hittegolf mengt licht naar warm wit-geel), via de client-hook van change 20 (`RingWeatherRenderer`, `ViewportEvent.ComputeFogColor`). Hij verandert geen biome-data. Zet change 28 toch biome-kleuren of een vaste "stoffige" fog-kleur, dan bij de start afstemmen: de biome-palette blijft van change 32, de weerkleur van change 28.
 - **Aanname change 18/20 (plannen):**
@@ -182,7 +204,7 @@ De code is gecontroleerd op de stand na change 17 (commit `7714b77`). **Changes 
 
 Bestanden:
 - **nieuw:** `client/ambient/SingingSandAmbience.java` en `SingingSandTiming.java` (bij 4 A), `tools/sounds/Ring2Sounds.java` en 3 × `.ogg` (bij 5 A), `SingingSandAmbienceTest.java` (bij 4 A);
-- **gewijzigd:** `BiomeAmbience.java`, `Ring2Biomes.java`, `TransitionBiomes.java`, `ModSoundEvents.java`, `ModSoundDefinitionsProvider.java`, beide lang-providers, `CorruptedAdventureClient.java` (bij 4 A), `BiomeAmbienceTest.java`, `Ring2BiomesTest.java`, de gegenereerde biome-JSON (6×), `sounds.json` en lang, docs.
+- **gewijzigd:** `BiomeAmbience.java`, `Ring2Biomes.java`, `TransitionBiomes.java`, `ModSoundEvents.java`, `ModSoundDefinitionsProvider.java`, beide lang-providers, `CorruptedAdventureClient.java` (bij 4 A), `BiomeAmbienceTest.java`, `Ring2BiomesTest.java`, de gegenereerde biome-JSON (6×, incl. `dry_riverbeds`), `sounds.json` en lang, docs.
 
 ---
 
@@ -355,6 +377,31 @@ Antwoord: **A** — 's nachts gemiddeld 1× per ~40 s, overdag 1× per ~4 min, c
   - Eenvoudigste check (alleen de biome); in grotten onder de duinen kan het verwarrend klinken.
 
 Antwoord: **A** — alleen in `dune_sea`, alleen aan het oppervlak (open hemel).
+
+### Nieuwe vragen na de bouw van 30–30c (2026-10-05, beantwoord: alles A)
+
+### 8. Krijgt de oase (en de mini-oases) ambient-geluid, als "leven via geluid"?
+30b/30c maakten de oase, mini-oases en duindalen levendiger, maar niet hoorbaar. De mini-oases liggen in `dune_sea`, de oase in `oasis_flats`.
+- **A. Alleen de oase, als biome-data (`additions_sound`) met eigen gesynthetiseerde vogels/insecten, laag en zacht (aanbevolen).** Past in dit plan (zelfde synthese-pijplijn, `Ring2Sounds.java`, 2–3 mono `.ogg`'s), geen client-code, niet positioneel ("in je hoofd") en dag en nacht gelijk. Mini-oases blijven stil. Multiplayer: geen invloed.
+- **B. A plus een client-class die bij water of gras in de buurt (mini-oases, pekelpoelen) positioneel ambient afspeelt.** Meest levendig en hoorbaar waar het water ligt, maar nieuwe client-logica (zoals het zingende zand, zonder netwerk) en een extra test S; per speler eigen toeval.
+- **C. Niets; ambient voor de oase naar de backlog.** Kleinste change, maar de oase blijft stil terwijl de rest van de ring levendig wordt.
+
+Antwoord: **A** — alleen de oase, als biome-data (`additions_sound`) met eigen gesynthetiseerde vogels/insecten (2–3 mono `.ogg` uit `Ring2Sounds.java`), laag en zacht; mini-oases blijven stil.
+
+### 9. Krijgt de zoutvlakte (en de pekelpoelen) een eigen watertint?
+30b: de pekelpoelen nemen nu de ring 2-watertint (`32A598`) over; de 30b-gevolgen noemen een eigen, lichtere tint "voor 32".
+- **A. Lichtere, melkachtig turkooise tint voor `salt_flats` (water ~`5AC8B8`, waterfog ~`1B5048`) (aanbevolen).** Past bij zout/pekel en maakt de poelen opvallend tegen de witte korst. Pure data in `Palette.SALT_FLATS`.
+- **B. Zelfde water als de rest van ring 2 (`32A598`).** Eenheid van ring 2, minder opvallend tegen het witte zout.
+- **C. Heel licht, bijna melkwit pekelwater.** Leest als zout, maar kan als "geen echt water" overkomen en botst mogelijk met de fog.
+
+Antwoord: **A** — lichtere, melkachtig turkooise tint voor `salt_flats` (water ~`5AC8B8`, waterfog ~`1B5048`) als `Palette.SALT_FLATS`.
+
+### 10. Vervangt deze change het windgeluid van de zandstorm (nu vanilla `item.elytra.flying`) door een eigen wind?
+Backlog 28; de synthese-pijplijn komt hier toch.
+- **A. Nee, blijft backlog; alleen het zingende zand en eventueel 8 (aanbevolen).** Klein en beperkt tot één script-soort (`drone`). Het vanilla-geluid werkt en is geaccepteerd in teststop 2c.
+- **B. Ja, een tweede variant `loop` (eigen wind, naadloos) in dezelfde change.** Alle ring 2-geluid is dan eigen en consistent, en het opzetje voor de loop komt voor change 36 (druppels) vooruit; wel meer audio-iteratie en een extra `.ogg`-set.
+
+Antwoord: **A** — nee, het windgeluid van de zandstorm blijft backlog; 32 beperkt zich tot het zingende zand (scriptvariant `drone`) en de oase-ambient.
 
 ---
 

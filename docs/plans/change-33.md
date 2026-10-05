@@ -22,15 +22,29 @@ Afgestemd met 34, 35, 36 en 37 (basis: de aanbevolen opties).
 
 ---
 
+## Afstemming na bouw 18–30c (2026-10-05)
+
+Nagelopen tegen de stand na `3abf6f3` (changes 0–30, 23b, 23c, 30b, 30c gebouwd; 31 en 32 volgen eerst). Antwoorden blijven staan; dit zijn feiten uit de code.
+- **`ModBlocks`** heeft de secties `// ---- Ring 1 ----`, `// ---- Nether ring 1 ----` en `// ---- Ring 2 ----` (nu inclusief de zout-set en de ertsen). `// ---- Nether ring 2 ----` komt **achteraan**, ná de ring 2-sectie (de creative-tab-volgorde volgt de registratievolgorde). `registerWithoutItem` en `registerDoor` bestaan; `ModFlowerPots`, `ModFlammables` en `StrippableLogBlock` ook.
+- **`ModWoodTypes`** kent `DEAD_SET`/`DEAD` en `PALM_SET`/`PALM` met de **korte** constructors (`new BlockSetType(id)`, `new WoodType(id, set)`, zonder eigen geluiden). `DRIPSHROOM_SET`/`DRIPSHROOM` met de crimson-velden en nether-hout-geluiden is de eerste set met eigen geluiden: de vanilla-constructor `WoodType(String, BlockSetType, SoundType, SoundType, SoundEvent, SoundEvent)` is publiek, controleer de signatuur bij de bouw.
+- **Compost:** `ModDataMapProvider` heeft `NeoForgeDataMaps.COMPOSTABLES` al (`palm_leaves`, `palm_sapling` 0,3); deze change voegt `dripshroom_cap`, `dripshroom_lamp`, `glow_mold` toe aan hetzelfde `builder(...)`.
+- **Textures:** `tools/textures/Ring2Textures.java` bestaat (≈ 1.380 regels; `still(...)`, `pulsing(name, glow, painter)`, `Animation.STILL`, `check` vóór het schrijven, `HAND_EDITED` leeg, helpers o.a. `Cells`, `valueNoise`, `soot`, `twig`, kristal-/zoutpatronen). Er staat nog **geen** Nether-ring 2-blok in het script; de "Nether ring 2"-sectie komt achteraan `TEXTURES`. `ModBlockStateProvider.crystalCluster(Block)` bestaat (voor 34) maar is `private`.
+- **Valkuil random ticks:** geforceloade chunks krijgen zonder speler geen random ticks (en bonemeal via dispenser werkt wel): het sporenmos-gedrag komt dus in de W-lijst, de dispenser-test blijft in S.
+- **Sjabloon spreiding:** `DeadGrassBlock` bestaat zoals beschreven (`isAreaLoaded`-guards, `LightEngine.getLightBlockInto`).
+- **"Levendig" geldt ook voor de Nether** (teststop 2b/2c-les). Het blokkenpakket van dit plan heeft geen kleine bodemplant: de vloer van het woud is mos met zuilen, stalactieten en schimmel op de wanden. Zie vraag 9.
+
+### Gevolgen van antwoord 9 (2026-10-05)
+- **9 A:** één extra blok `spore_sprouts` achteraan de Nether ring 2-sectie (20 blokken in plaats van 19): kleine plant, kruismodel `cutout`, plat item, staat op `spore_moss`/`soaked_netherrack` (eigen `canSurvive`/grondtag; niet `#nylium`), licht 0, geen random tick, geen eigen drop-gedrag buiten zichzelf met schaar/hand (`dropSelf`), `#replaceable`, in `fungal_growths`, compost 0,3, vuurkans 0. **Bonemeal:** `SporeMossBlock.isValidBonemealTarget` wordt `true` voor een vrije plek erboven (kans, in vlekken) en plant `spore_sprouts`; dit vervangt de regel "bonemeal op sporenmos doet niets" van antwoord 5 A voor sporenmos zelf en sluit de backlogregel af. Texture `block/spore_sprouts.png` (+1 PNG, 27) in `Ring2Textures.java`, lang en/nl ("Spore Sprouts" / "Sporenspruiten"), loot `dropSelf`. Plaatsing in de wereld: change 35.
+
 ## Afhankelijkheden en aannames
 
-Gecontroleerd in de code op 2026-10-01 (stand na change 17, commit `7714b77`). **Changes 18–32 zijn nog niet gebouwd; hun plannen zijn de bron. Alles wat hieronder uit die plannen komt is een aanname en wordt bij de start nagelopen** (echte namen uit `CODEBASE.md` volgen).
+Gecontroleerd in de code op 2026-10-01 (stand na change 17, commit `7714b77`), ververst op 2026-10-05 (zie het blok hierboven). **Changes 18–30c zijn gebouwd; 31 en 32 volgen nog vóór deze change.** Wat hieronder uit 31/32 komt is aanname en wordt bij de start nagelopen (echte namen uit `CODEBASE.md` volgen).
 
 - **Blok-infrastructuur (gebouwd, change 10/15):** `registry/ModBlocks` (`register` = blok + blockitem, `registerDoor`, `entries()`, volgorde = creative tab, secties `// ---- Ring 1 ----`, `// ---- Nether ring 1 ----`), `block/StrippableLogBlock(Supplier<Block>, Properties)`, `block/ModWoodTypes` (`DEAD_SET` geregistreerd, `WoodType DEAD` bewust niet), `block/ModFlammables` (`enqueueWork`), `registry/ModTags` (`Blocks`/`Items`/`Biomes`, `common(path)`), datagen-providers (`ModBlockStateProvider`, `ModItemModelProvider`, `ModBlockLootProvider` met `getKnownBlocks` = alle `ModBlocks`, `ModBlockTagsProvider`, `ModItemTagsProvider` (`copy`), `EnglishLanguageProvider`, `DutchLanguageProvider`), `ModBlocksTest`.
 - **Sjabloon random-tick-spreiding (gebouwd):** `block/DeadGrassBlock#randomTick` — eigen familie (dood gras ↔ verdorde aarde), `isAreaLoaded`-guards, `LightEngine.getLightBlockInto` voor "bedekt". Sporenmos volgt dezelfde opbouw.
-- **Aanname change 21:** sectie `// ---- Ring 2 ----` in `ModBlocks` ná Nether-ring 1; helper `ModBlocks.registerWithoutItem`; `block/ModFlowerPots` (bloempotten in `enqueueWork`); `ModCreativeTabs` en `ModBlocksTest` slaan blokken zonder item over; **texturescript `tools/textures/Ring2Textures.java`** (zelfde opzet als `Ring1Textures`: `TEXTURES`, `still`/`pulsing`, vaste seed per bestandsnaam, `HAND_EDITED`, paletten bovenin, contactblad `build/texture-preview/ring2.png`). Ontbreekt het script bij de start: **stoppen en vragen** (het hoort bij change 21).
-- **Aanname change 22:** `ModWoodTypes.PALM_SET`/`PALM`, `NeoForgeDataMaps.COMPOSTABLES` in `ModDataMapProvider`. Bestaat compost nog niet, dan voegt deze change hem toe.
-- **Aanname changes 24/29:** breiden `Ring2Textures.java` uit; deze change voegt een eigen blok "Nether ring 2" toe aan hetzelfde script.
+- **Gebouwd (change 21; 2026-10-05 bevestigd):** sectie `// ---- Ring 2 ----` in `ModBlocks` ná Nether-ring 1; helper `ModBlocks.registerWithoutItem`; `block/ModFlowerPots` (bloempotten in `enqueueWork`); `ModCreativeTabs` en `ModBlocksTest` slaan blokken zonder item over; **texturescript `tools/textures/Ring2Textures.java`** (zelfde opzet als `Ring1Textures`: `TEXTURES`, `still`/`pulsing`, vaste seed per bestandsnaam, `HAND_EDITED`, paletten bovenin, contactblad `build/texture-preview/ring2.png`). Ontbreekt het script bij de start: **stoppen en vragen** (het hoort bij change 21).
+- **Gebouwd (change 22; 2026-10-05 bevestigd):** `ModWoodTypes.PALM_SET`/`PALM` (korte constructors), `NeoForgeDataMaps.COMPOSTABLES` in `ModDataMapProvider` (alleen uitbreiden).
+- **Gebouwd (changes 24/29):** hebben `Ring2Textures.java` uitgebreid; deze change voegt een eigen blok "Nether ring 2" toe aan hetzelfde script.
 - **Textures Nether-ring 2 → `Ring2Textures.java`.** Afspraak "één texturescript per ring" (opdracht ring 2, change 21 §5 noemt 33/34 expliciet), en de Nether-tegenpool hoort bij zijn ring (ring 1: zielkristal staat in `Ring1Textures.java`; change 37 = "ring 2 + Nether-ring 2"). Geen apart `NetherRing2Textures.java`.
 - **Changes 18–20, 23, 25–28, 30–32** raken geen blok-registries; deze change hangt alleen naast hun registraties.
 - **Houtset-definitie** (`fase-1-wereld.md` §2 Ring 2): deur, valluik, hek, poort, trap, plaat, knop, drukplaat + gestripte log en wood; geen borden/hangborden/boten (backlog). Voor een zwam heten log/wood vanilla-stijl **stem/hyphae** (vraag 2).
@@ -321,6 +335,14 @@ In alle opties: de zwamlamp = shroomlight-achtig vol blok, licht 15, schoffel, d
 - **C. Dunne laag (carpet) op elke bovenkant, licht 5:** leest als "schimmelvloer", maar alleen horizontaal en zwakker licht.
 
 Antwoord: **A** — multiface-laag zoals glow lichen (licht 7, schaar, bonemeal spreidt); zwamlamp licht 15.
+
+### 9. Komt er een kleine bodemplant voor de Nether-ring 2, naast zuilen, stalactieten en schimmel? (nieuw, 2026-10-05; beantwoord 2026-10-05)
+Ring 2 moet levendig aanvoelen, ook de Nether-tegenhanger. Nu bestaat de vloer uit sporenmos zonder planten; bonemeal op sporenmos doet niets (antwoord 5 A, backlog).
+- **A. Ja: één kleine bodemplant `spore_sprouts` (kruismodel, staat op `spore_moss`/`soaked_netherrack`, licht 0, geen random tick) (aanbevolen).** +1 blok, +1 texture, +1 feature in change 35 (plaatsing in vlekken), bonemeal op sporenmos plant ze en geeft bonemeal een doel (lost de backlogregel op); composteerbaar; schaar of hand haalt hem weg (geen extra drop). Multiplayer: server-side bonemeal, verder niets. Speelgevoel: de vloer leeft; je ziet vanaf afstand "begroeid".
+- **B. Nee, zoals het plan: alleen mos, zuilen, stalactieten, schimmel.** Minste werk, geen nieuwe texture; risico dat de vloer na teststop 3 als "kaal" wordt beoordeeld, zoals de overworld-biomes na teststop 2b.
+- **C. Ja, twee planten: `spore_sprouts` (A) en een kleine lichtgevende `glow_cap` (licht 5, kruismodel).** Meer sfeer in de sporengrotten en meer licht op de vloer, maar +2 blokken, +2 textures, +2 features in 35 en een extra balans met `glow_mold` en `dripshroom_lamp` (te veel licht).
+
+Antwoord: **A** — ja, één kleine bodemplant `spore_sprouts` (kruismodel, op `spore_moss`/`soaked_netherrack`, licht 0, geen random tick; bonemeal op sporenmos plant ze; composteerbaar; +1 blok, +1 texture, plaatsing in vlekken in change 35).
 
 ---
 

@@ -33,9 +33,25 @@ Afgestemd met 23, 26, 33, 34, 36 en 37 (basis: de aanbevolen opties). Namen in d
 
 ---
 
+## Afstemming na bouw 18–30c (2026-10-05)
+
+Nagelopen tegen de stand na `3abf6f3` (changes 0–30, 23b, 23c, 30b, 30c gebouwd; 31–34 volgen eerst). Antwoorden blijven staan; dit zijn feiten uit de code en de bouwnotities.
+- **Gedeelde aanpak van 23 is gebouwd** zoals gepland: de router-invoer per ring staat als `ring_blend/overworld_temperature.json` / `overworld_vegetation.json` (ring 1 = vanilla's `shifted_noise`, ring 2 = `ring_2/overworld/relief` / `moisture`, de rest 0) en de preset geeft ring 2 een `minecraft:multi_noise` met vijf punten. Stap 2 (Nether: `ring_blend/nether_temperature.json` + `multi_noise` met twee punten) kan dat patroon letterlijk volgen; de ring gate (`RingBlend.mapAll`) geldt vanzelf.
+- **`RingFluidPicker`** heeft `noFluid(position)` en `waterOnly(dimension, position, y)` (26; `LAVA_LAYER_TOP` −54). `fluid_levels` komt ernaast; `RingAquifer` blijft zoals hij is (de Nether heeft geen aquifer).
+- **Prestatiebudget:** het ring 2-budget voor de overworld is door de gebruiker verhoogd van 1,3× naar **1,75×** vanilla (23b-9 C; hoogste meetpunt nu 1,54×). Dit plan noemt voor de Nether nog **≤ 1,3× vanilla-Nether** (ring gate-beslisregel van 23). Of de Nether hetzelfde ruimere budget krijgt, is vraag 10 (antwoord A: ≤ 1,75×).
+- **Determinisme-aanpak van de overworld (23c/30b) is anders dan stap 6 van dit plan:** daar schrijft elke feature **alleen in de eigen chunk**, met `jittered_grid` (wereldvast raster met minimale afstand), `noise_band` (vlekken op geseede ruis) en `slope`/`height_band`; de volgorde-onafhankelijkheid komt van "nooit lezen wat een buurchunk schrijft". Stap 6 (`FungalTerrainScan` + `GrowthPriority`, 3×3-schrijvers) blijft nodig voor zuilen en geodes die tot ±15 blokken reiken en daarom niet in één chunk passen; voor de **kleine** features (schimmel, stalactieten, bodemplanten) mag de bouwer de overworld-aanpak gebruiken (`jittered_grid` met marge, `noise_band` voor vlekken), zodat ze niet als willekeurige knotten komen. De plaatsingsmodifiers `jittered_grid`, `noise_band` en `height_band` (filter op de Y van de herkomst) lezen geen heightmap en zijn in de Nether bruikbaar met absolute Y-ankers; alleen `slope` leest `WORLD_SURFACE_WG`. Geen beslissing: implementatiedetail.
+- **Heightmaps in de Nether:** `WORLD_SURFACE_WG` is in de Nether het dak (bedrock); de overworld-modifier die hem leest (`slope`) werkt niet. Vloer en plafond zoek je met `FungalTerrainScan` (stap 6) of met absolute Y-ankers.
+- **Levendig voor de Nether:** de woudvloer heeft in dit plan alleen sporenmos, zuilen, stalactieten en schimmel; een kleine bodemplant (33 vraag 9, open) zou hier met een feature in vlekken geplaatst worden: `spore_sprouts` (A) en eventueel `glow_cap` (C), `jittered_grid` 8/1 + `noise_band`. Tot het antwoord er is, niets bouwen.
+- **Geen overgangsbiome in de Nether** (§1.14) blijft; de ring-edge-dam (stap 1) is de enige vormvoorziening aan de grenzen.
+- **Teststop 3** is ná change 37 en loopt de Nether-2-lijst hieronder als blokkerend af; de ring 2-overworld is dan ook beoordeeld op "levendig" (reden om de Nether niet kaler te laten).
+
+### Gevolgen van de antwoorden 9 (plan 33) en 10 (2026-10-05)
+- **35-10 A:** budget voor de noise-stap van Nether-ring 2 = **≤ 1,75× vanilla-Nether**; waar dit plan "≤ 1,3×" noemt (stop-en-vraag-punt geodes, ring gate-beslisregel) geldt nu 1,75×.
+- **33-9 A:** nieuwe feature `spore_sprouts_patch` (hergebruik `simple_block`/`block_column`-loos, kruisplant op `spore_moss`) in beide biomes: `jittered_grid` 8/1 → `noise_band` (eigen ruis `nether_ring_2_sprouts`, vlekken ~10–20 blokken) → vaste Y/floor-scan (`FungalTerrainScan`) → `biome`; lage rang in `GrowthPriority` (onder schimmel). Dichter in de sporengrotten. Bonemeal op sporenmos plant ze ook.
+
 ## Afhankelijkheden en aannames
 
-De code is gecontroleerd op de stand na change 17 (commit `7714b77`). **Changes 18–34 zijn nog niet gebouwd. Hun plannen zijn de bron; alles hieronder wat uit 18–34 komt is een aanname en moet bij de start opnieuw worden nagelopen** in `CODEBASE.md` en in `docs/plans/change-23.md`, `change-33.md` en `change-34.md`.
+De code is gecontroleerd op de stand na change 17 (commit `7714b77`), ververst op 2026-10-05 (zie het blok hierboven). **Changes 18–30c zijn gebouwd; 31–34 volgen nog.** Alles hieronder wat uit 31–34 komt is een aanname en moet bij de start opnieuw worden nagelopen in `CODEBASE.md` en in `docs/plans/change-33.md` en `change-34.md`.
 
 **Bestaat al (gecontroleerd):**
 - `ring_blend/nether.json` verwijst naar `ring_2/nether.json`. Dat is nu een placeholder: `interpolated(max(vloer-gradiënt 24→56 + 0,5·ruis, dak-gradiënt 94→126 + 0,25·ruis))` met `placeholder_terrain`.
@@ -56,10 +72,10 @@ De code is gecontroleerd op de stand na change 17 (commit `7714b77`). **Changes 
   - een `environment_scan` die alleen naar een bekende eindstaat zoekt;
   - geen `count_on_every_layer`.
 
-**Aanname change 23 (plan, antwoorden nog open):**
+**Change 23 (gebouwd; 2026-10-05 bevestigd, zie het blok "Afstemming na bouw"):**
 - Vraag 1 = A: klimaat per ring via de router. `temperature`/`vegetation` worden een `ring_blend`, met ring 1 = de huidige vanilla-ruis, en de ring krijgt een `minecraft:multi_noise` met uitgeschreven parameters. Het overdrachtsblok noemt expliciet: "35 Nether-ring 2: zelfde patroon: `ring_blend` in de Nether-router + `multi_noise`; ring gate geldt ook in de Nether".
 - Valt vraag 1 van change 23 anders uit (B: eigen `ring_regions`-source; C: vanilla-klimaat), dan volgt deze change **die** aanpak, zodat er één mechanisme in het project blijft. Stap 2 verschuift dan, de rest niet.
-- Ring gate (change 23 vraag 3): gebouwd → hij geldt vanzelf voor de nieuwe Nether-ring 2-invoer (`RingBlend.mapAll`). Niet gebouwd → meten volgens de beslisregel (≤ 1,3× vanilla-Nether).
+- Ring gate (change 23 vraag 3): gebouwd → hij geldt vanzelf voor de nieuwe Nether-ring 2-invoer (`RingBlend.mapAll`). Meten volgens de beslisregel; het getal waaraan getoetst wordt (≤ 1,3× of ≤ 1,75×) hangt af van vraag 10.
 
 **Uit het plan van change 33 (afgestemd 2026-10-01; bij de start tegen `CODEBASE.md` leggen):**
 
@@ -484,6 +500,14 @@ Antwoord: **A** — vanilla-mix (zombified piglins, endermen, striders, af en to
 - **C. `soggy_fungal_forest` / `spore_grottos`.** Benadrukt "doorweekt"; minder direct.
 
 Antwoord: **A** — `dripshroom_forest` "Dripshroom Forest"/"Druipzwamwoud" en `spore_caves` "Spore Caves"/"Sporengrotten".
+
+### 10. Welk prestatiebudget krijgt de noise-stap van Nether-ring 2? (nieuw, 2026-10-05; beantwoord 2026-10-05)
+Dit plan zegt ≤ 1,3× vanilla-Nether. Ring 2 in de overworld mocht na 23b van 1,3× naar 1,75× (nu 1,54×). De geode-density function (stap 3b) en de hallen zijn zwaar, en het plan zegt: halen we het budget niet, dan terug naar de gebruiker.
+- **A. ≤ 1,75× vanilla-Nether, hetzelfde als ring 2 (aanbevolen).** Eén norm voor "ring 2", meer ruimte voor hallen, wanden, grotten en geodes zonder terugkoppeling; de Nether is kleiner dan de overworld, dus de absolute tijd blijft laag. Risico: de ring voelt zwaarder bij een zwakke server (meer ms per chunk) — in multiplayer meetbaar, niet merkbaar bij normale spelers.
+- **B. Blijft ≤ 1,3×.** Strakste norm en de lichtste servers, maar het dwingt kleinere hallen/minder 3D-wanden of een lichtere geode-DF af en vergroot de kans op een stop-en-vraag-punt tijdens de bouw.
+- **C. ≤ 1,5×.** Tussenweg: iets meer ruimte dan nu, minder dan overworld ring 2; als het niet haalbaar blijkt, ook weer een stop.
+
+Antwoord: **A** — noise-stap Nether-ring 2 ≤ 1,75× vanilla-Nether, gelijk aan ring 2 in de overworld.
 
 ---
 

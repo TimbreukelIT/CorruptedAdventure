@@ -34,9 +34,34 @@ Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). Waar de tekst hiero
 
 ---
 
+## Afstemming na bouw 23b–30c (2026-10-05)
+
+Nagelopen tegen de stand na `3abf6f3` (changes 0–30, 23b, 23c, 30b, 30c gebouwd; teststop 2c akkoord, "levendig genoeg om door te gaan"). Waar de tekst verderop iets anders zegt, geldt dit blok; de belangrijkste plekken zijn inline gecorrigeerd.
+- **`height.json` is anders opgebouwd.** Sinds 30: `flat_cache(flat_height · (1 − relief_weight) + relief_weight · rock_height)`. De klem ≥ Y 66 zit in de delen (`rock_height` = `max(66, …)`, zout 66, duinbasis 67 ± 2, `flats_height` `max(59, …)` tot de poelen), niet bovenop. De bedding-term wordt een wikkel: `h − min(riverbed_mask · riverbeds, max(0, h − 66))`. Let op de valkuil "elke JSON-verwijzing wordt apart uitgerekend": `h` komt twee keer voor, dus hernoem de huidige `height.json` naar `height_base.json` (flat_cache) en laat `height.json` een dunne `flat_cache`-wikkel zijn; meet de noise-stap.
+- **`initial_height.json` bestaat apart** (30; `initial_terrain` leest hem via `cache_2d`) en kent de bedding niet. Hij moet de bedding-term **ook** krijgen in het vlakke deel (`flats`: `70 + 4 · hills`, tot 74), anders ligt het preliminary surface tot ~6 blokken **boven** de echte bodem van de bedding en krijgt de bedding geen `above_preliminary_surface`-regels (geen gebarsten klei, valkuil change 23). Zout (66), duin (66) en het rotsdeel (69 ± 2, onder de echte kloofbodem) liggen er al onder en blijven ongewijzigd. Controle in S: per 10.000 bedding-kolommen 0 × "echte bodem lager dan preliminary surface" zonder dat de bodem een oppervlakteregel mist.
+- **`pools.json` is het enige poelen-bestand** (gebruikt door `flats_height` en `initial_height`; de poel-term is `spline(ring_2_pools) × spline(moisture)`). De droogval-term `× (1 − pools_dry)` komt daar. **Eigen steile ramp**, niet de `riverbed_mask`: de hele zone is al `dry_riverbeds` vanaf blend > 0, maar `riverbed_mask` is pas 1 vanaf w3 0,25; met die ramp bleven er in de eerste kwart-zone nog diepe poelen met water in een biome die "droog" heet. `pools_dry` = spline op `ring_weight/overworld/ring_3`: 0 bij 0 → 1 bij 0,03.
+- **Wat er in de zone aan terreinregio's ligt** (30): zout (Y 66, `salt_weight`), duinen (Y 66–99), hoodoovloer (~Y 87, pilaren vervallen via `core_mask`), oase-vlakte (Y 66–74) en kloof/plateau. `core_mask` (= ring-2-gewicht) dooft alleen `canyon_spire_weight`, `hoodoo_rock_weight`, `mesa_limit`, `plateau_rock_weight`, `slot_weight` en `wall_weight`; `canyon_depth`, `plateau_surface` en de regio-gewichten blijven. De zone is dus niet overal "vlak": canyonwanden en duinen lopen er (gemengd met ring 3 op Y ~120) in door. Gevolg voor de klem ≥ 66: zie vraag 7.
+- **Surface-rule-structuur (30–30c).** `above_preliminary_surface` heeft takken voor `withered_expanse` [0], `canyonlands` [1], `oasis_flats` [2], `hoodoo_fields` [3], `salt_flats` [4], `dune_sea` [5], dan vanilla's badlands. De `dry_riverbeds`-tak komt als **[6]** (voor de `stone_depth`-restregel; de volgorde tussen biome-takken doet er niet toe). De `canyonlands`-tak volgt het patroon "niet steil → bovenlaag, steil → val door naar de top-level lagen [3]". Neem dat patroon over voor kloofwanden in de zone (antwoord 6 A: de lagen lopen door); alleen steile **bedding-oevers** (binnen de `|n| < 0,07`-band van het bedding-ruisveld) krijgen `scorched_sandstone`. Zo botsen antwoord 2 A (scorched op hellingen) en 6 A (lagen onder de zone) niet.
+- **Top-level lijsten (nu):** [2] zandgrottak (twee `biome_is`-lijsten: plafond en vloer), [3] kloofsteenlagen `canyonlands, hoodoo_fields`, [4] oasis-lagen. `dry_riverbeds` komt in [2] en [3] (controlelijst `CODEBASE.md`, "Plekken die ring 2-biomes opsommen"), plus `Ring2Biomes.ALL` (tags en `Ring2BiomesTest`).
+- **Bestaande hulpmiddelen hergebruiken in plaats van nieuw bouwen:**
+  - gestrande botten = bestaande `corruptedadventure:surface_fossil` (30c; sjablonen `fossil/spine_1…4`, `skull_1…4`, half begraven, verweerd, chunk-lokaal, voetafdruk [1, 14] van de chunk, alleen botblokken) + `bone_rubble` (`rubble` van `bone_block`). **`StrandedFossilFeature`/`-Configuration`/`-Test` vervallen** (zie vraag 3);
+  - plaatsing met `jittered_grid` (geen toeval-knotten), `noise_band` (vlekken op geseede ruis, bijv. een eigen of bestaande `ring_2_*`-ruis), `slope` en `height_band`; geen `count` + `in_square` en geen `rarity_filter` voor zichtbare velden;
+  - `rubble` (keien, ook donkere/geblakerde stenen) en `canyon_rockfall` voor stenen in de bedding, `outcrop` voor een enkele rotsnaald;
+  - `desert_fossil`-config (grond zand/rood zand) moet voor de zone een variant met grond `red_sand`/`coarse_dirt`/`cracked_clay`/`scorched_sandstone` krijgen (nieuwe configured `riverbed_fossil`, zelfde sjablonen);
+  - `dry_shrub`, `dead_bush`, `barrel_cactus`-groepen (`cactus_column`, `short_cactus_column` met `ring_2_cactus_groups`), kort/hoog droog gras (`dry_grass`) en de harde-dalbodem-regel van 30c (`coarse_dirt`/`cracked_clay` + kort gras) zijn voorbeelden voor de oevers.
+- **"Levendig" is de norm** (teststop 2b/2c): de plan-aantallen in stap 5 (3 flora-features, ~4 pogingen per chunk) zijn van vóór de teststops en worden als ondergrens gezien; zie vraag 8.
+- **Water:** de pekelpoelen, mini-oases, wandbronnen en oase-poelen van 23c/30b vallen in de zone weg via de biome-filter. Er is geen water in de zone boven Y 60 (S-eis blijft).
+- **Prestaties:** hoogste meetpunt ring 2 nu **1,54×** vanilla (x 2.500, duinen); budget 1,75× → ruimte voor deze change ≈ 0,2×. De bedding-DF is 2D en gaat in `flat_cache`/`cache_2d`; meet vóór en na op een zonemeetpunt (tot 30 had dat punt het hoogste getal). Een tweede referentie naar `height_base` is een risico (zie hierboven).
+- **Teststop 2b/2c is gedaan:** de zone zelf is er niet getest. Het werk van 31 gaat mee in teststop 3.
+
+### Gevolgen van de antwoorden 7–9 (2026-10-05)
+- **7 A:** geen klem-wijziging; stap 2 blijft zoals hierboven. In de surface rule krijgt de `dry_riverbeds`-tak voor de bedding-bodem de `noise_threshold` op `dry_riverbeds_channel` ook op terrein dat te laag ligt voor een geul (lint gebarsten klei). S meet bedding-kolommen op zout/duin apart.
+- **8 A:** de features-tabel in stap 5 is de bouwopdracht (matig, niveau 30c); `riverbed_stones` en de oever-cactusgroepjes horen erbij; geen `outcrop`/wrakken.
+- **9 A:** geen extra features voor een zachte rand; de W-lijst vraagt alleen of de harde wissel acceptabel is.
+
 ## Afhankelijkheden en aannames
 
-**Gecontroleerd in de code** (stand na change 17, commit `7714b77`):
+**Gecontroleerd in de code** (stand na change 17, commit `7714b77`; ververst op 2026-10-05, zie het blok hierboven):
 - `RingBiomeSource` (`worldgen/biome/RingBiomeSource.java` r. 31–92): `transitions` is generiek. De sleutel is de binnenring (`ring_2` = grens 2→3), `void` is ongeldig, `collectPossibleBiomes` neemt de unie van `rings` en `transitions`, en `getNoiseBiome` kiest in `inTransition()` de overgangssource van `position.inner()`. **Voor grens 2 hoeft er geen Java bij**: alleen een preset-entry.
 - `TransitionBiomes` (r. 27–87): bootstrap met alleen `withered_expanse`. `globalOverworldGeneration` is een private kopie van vanilla. Kleuren via `BiomeAmbience.Palette.RING_1.desaturated(0.4F)`, mood `STRANGE`. Het commentaar zegt al "één per grens".
 - `RingChanceFilter.transition(Ring inner, from, to)` (r. 60, 108): het signaal werkt voor elke grens, dus `transition(RING_2, …)` = blend in de zone 2→3, anders geen signaal (kans 0).
@@ -45,7 +70,7 @@ Afgestemd met de plannen 23b en 23c (antwoorden 2026-10-01). Waar de tekst hiero
 - Surface rules (`noise_settings/overworld.json`): de tak van `withered_expanse` is het eerste element van `above_preliminary_surface`. Afspraak in `CODEBASE.md`: eigen takken komen als losse blokken bovenaan.
 - `BiomeAmbienceTest` test de kleuren en de mood van `withered_expanse`. `RingBiomeSourceTest` (`transitions`) test één overgang.
 
-**Aangenomen** (changes 18–30 zijn nog niet gebouwd; hun plannen zijn de bron). **Bij de start nalopen in `CODEBASE.md` en de code, en namen en paden hieronder aanpassen.**
+**Aangenomen bij het schrijven; changes 18–30c zijn inmiddels gebouwd en nagelopen (2026-10-05).** Wat afwijkt staat in "Afstemming na bouw 23b–30c"; bij de start nog één keer naast `CODEBASE.md` leggen.
 - **A1 — change 21:** `cracked_clay` (in `#minecraft:dead_bush_may_place_on` en `#overworld_carver_replaceables`), `dry_shrub` (grond `#corruptedadventure:desert_plant_soil`, met `cracked_clay` erin), `scorched_sandstone`, de kloofsteentinten met tag `#corruptedadventure:canyon_stones`.
 - **A2 — change 23:**
   - de ring 2-invoer in `density_function/ring_2/overworld/`, met een 2D-`height.json` (`flats + relief_weight · (plateau − flats) − relief_weight · canyon_depth`, kloofbodem en vlakte geklemd op ≥ Y 66) en `terrain.json` = `(height − y) / S`;
@@ -101,32 +126,32 @@ Handgeschreven, in `data/corruptedadventure/worldgen/`:
 | `density_function/ring_2/overworld/riverbed_mask.json` | `spline` op `ring_weight/overworld/ring_3`: 0 bij 0, 1 vanaf 0,25 → de beddingen beginnen kort na de binnenrand van de zone |
 | `density_function/ring_2/overworld/riverbeds.json` | 2D-diepte: `minecraft:noise` `dry_riverbeds_channel` (`xz_scale` 1, `y_scale` 0; zie Achtergrond), `abs` → `spline`: \|n\| ≤ 0,04 → volle diepte 5 (vlakke, brede bodem, 15–40 blokken), 0,04–0,07 → oever met 1–2 treden, ≥ 0,07 → 0 |
 
-- **`ring_2/overworld/height.json`** (change 23) wordt `min(h, max(66, h − riverbed_mask · riverbeds))`. Een bedding verlaagt alleen, nooit onder Y 66, dus er staat geen zeewater in een bedding (zelfde klem als de kloofbodems van change 23). Op een plateau worden het droge geulen in de mesa, op de vlakte ondiepe linten.
-- **Poelen vallen droog** (vraag 2 A): in `flats_height.json` (of waar change 23 de poel-term aftrekt) wordt die term `× (1 − riverbed_mask)`. **Na 23b:** in `pools.json`, zodat `initial_height` meegaat. In de zone liggen dan geen oasepoelen meer. Ondergrondse reservoirs (change 26) blijven.
-- De initiële dichtheid volgt vanzelf (`ring_blend/overworld_initial` → `terrain` → `height`). Aquifers en surface rules zien dus hetzelfde oppervlak. **Na 23/23b:** de initiële dichtheid gebruikt `initial_height`/`initial_terrain` (rotsgebied op de laagste kloofbodem, oase op de vlakte met `pools.json` 2× diep). Een bedding van ≤ 6 diep op de vlakte blijft ≥ Y 66 en dus boven zeeniveau; nalopen dat er onder het preliminary surface geen nieuwe open ruimte onder Y 63 ontstaat (valkuil change 23).
+- **`ring_2/overworld/height.json`** (wikkel, zie "Afstemming na bouw") wordt `h − min(riverbed_mask · riverbeds, max(0, h − 66))` met `h` = de huidige opbouw, hernoemd naar `height_base.json`. Een bedding verlaagt alleen, nooit onder Y 66, dus er staat geen zeewater in een bedding (zelfde klem als de kloofbodems van change 23). Op een plateau worden het droge geulen in de mesa, op de vlakte ondiepe linten, in zout (Y 66) en duindalen (66–67) is er geen diepte meer over (vraag 7).
+- **Poelen vallen droog** (vraag 2 A): in `pools.json` (de poel-term van `flats_height` én `initial_height`) wordt de term `× (1 − pools_dry)`, met een eigen steile ramp (`pools_dry` = spline op `ring_weight/overworld/ring_3`, 0 bij 0 → 1 bij 0,03; niet de `riverbed_mask`, zie "Afstemming na bouw"). In de zone liggen dan geen oasepoelen meer. Ondergrondse reservoirs (change 26) blijven.
+- De initiële dichtheid volgt **niet** vanzelf: `ring_blend/overworld_initial` → `initial_terrain` → `initial_height` (apart bestand, 30). `initial_height` krijgt dezelfde bedding-term in het `flats`-deel (zie "Afstemming na bouw"); zout (66), duin (66) en het rotsdeel (69 ± 2) liggen al onder de echte bodem. Een bedding van ≤ 6 diep op de vlakte blijft ≥ Y 66 en dus boven zeeniveau; nalopen dat er onder het preliminary surface geen nieuwe open ruimte onder Y 63 ontstaat (valkuil change 23).
 - **Buiten de zone verandert niets:** `riverbed_mask = 0` geeft `h` exact terug (vergelijkingstest in S).
-- **Verloop:** de beddingen zitten alleen in de ring 2-invoer. Hun zichtbare diepte neemt dus af naarmate ring 3 (placeholder Y ~120) meeweegt: diep aan de ring 2-kant, aan de ring 3-kant lopen ze dood in geblakerde grond (stap 5). Change 39 kan hetzelfde masker (`ring_weight/overworld/ring_2` in de ring 3-invoer) gebruiken als de beddingen ook aan de ring 3-kant moeten doorlopen (overdracht).
+- **Verloop:** de beddingen zitten alleen in de ring 2-invoer. Hun zichtbare diepte neemt dus af naarmate ring 3 (placeholder Y ~120) meeweegt: diep aan de ring 2-kant, aan de ring 3-kant lopen ze dood in geblakerde grond (stap 5). (De `ring_blend` over de ring 2-invoer weegt de hoogte met `w2`; de bedding-diepte schaalt daar dus automatisch mee.) Change 39 kan hetzelfde masker (`ring_weight/overworld/ring_2` in de ring 3-invoer) gebruiken als de beddingen ook aan de ring 3-kant moeten doorlopen (overdracht).
 - Ring gate (change 23): de geneste `ring_blend` met constanten is geen `interpolated`-marker. De gate wikkelt hem niet en hij kost alleen de cache-opzoeking. Controleren bij de bouw.
 
 ### 3. Biome `dry_riverbeds` (datagen, in `TransitionBiomes`)
 
 - `ModBiomes.DRY_RIVERBEDS`. `TransitionBiomes.bootstrap` registreert hem naast `withered_expanse`.
-- **Generation:** `Ring2Biomes.generation(...)` van change 23/25/26 (vanilla `globalOverworldGeneration` in vanilla-volgorde, alleen de niet-ertsen uit `addDefaultOres`, soft disks, vanilla-carvers, geen lavameren). De ertsen komen via de biome modifier (vraag 4). Eigen features achteraan per stap (stap 5). Zo heeft `dry_riverbeds` dezelfde vanilla-featurevolgorde als de ring 2-biomes, en dat voorkomt een "Feature order cycle".
+- **Generation:** `Ring2Biomes.generation(...)` (package-private, zelfde package als `TransitionBiomes`; vanilla-volgorde, `underwater_magma` als enige van `addDefaultOres`, chunk-lokale disks `ring_2/disk_*` i.p.v. `addDefaultSoftDisks`, diepe `Ring2Carvers`, geen lavameren/`spring_lava`). De ertsen komen via de biome modifier (vraag 4). Eigen features achteraan per stap (stap 5), in een vaste volgorde. `TransitionBiomes.globalOverworldGeneration` blijft alleen voor `withered_expanse`. Zo heeft `dry_riverbeds` dezelfde vanilla-featurevolgorde als de ring 2-biomes, en dat voorkomt een "Feature order cycle".
 - **Klimaat (vraag 5 A):** `temperature` 2,0, `downfall` 0, `hasPrecipitation` false.
-- **Spawns (vraag 5 A):** dezelfde lijst als `canyonlands` (change 23 vraag 11). Bij voorkeur via een gedeelde helper in `Ring2Biomes`, anders een kopie.
-- **Kleuren (placeholder, geen ontwerpvraag meer — afgestemd 2026-10-01; de definitieve kleur van `dry_riverbeds` is change 32 vraag 3, die `DRY_RIVERBEDS_FADE` vervangt door `Palette.DRY_RIVERBEDS`):** lucht/fog/water `BiomeAmbience.Palette.RING_2.desaturated(0.3F)` als voorbode van de asgrijze ring 3 (constante `DRY_RIVERBEDS_FADE` naast `WITHERED_EXPANSE_FADE`). Gras en blad als `canyonlands` (`BFB755`/`AEA42A`), 30 % naar grijs. Grotgeluid zoals de ring 2-biomes (change 32 beslist).
-- **Tags** (`ModBiomeTagsProvider`): `corruptedadventure:is_ring_2` (vraag 4 A), `c:is_hot/overworld`, `c:is_dry/overworld`. **Geen** `minecraft:`-tags (geen `is_overworld`, geen `has_structure/*`).
+- **Spawns (vraag 5 A):** dezelfde lijst als `canyonlands`: `Ring2Biomes.spawns(false)` (package-private, gedeeld door canyonlands/hoodoos/duinen; geen kamelen).
+- **Kleuren (placeholder, geen ontwerpvraag meer — afgestemd 2026-10-01; `Palette.RING_2` is nu de placeholder `9FC4E8`/`E8D7A8`/`32A598`/`0B3A35` en `Palette.desaturated` bestaat; de definitieve kleur van `dry_riverbeds` is change 32 vraag 3, die `DRY_RIVERBEDS_FADE` vervangt door `Palette.DRY_RIVERBEDS`):** lucht/fog/water `BiomeAmbience.Palette.RING_2.desaturated(0.3F)` als voorbode van de asgrijze ring 3 (constante `DRY_RIVERBEDS_FADE` naast `WITHERED_EXPANSE_FADE`). Gras en blad als `canyonlands` (`BFB755`/`AEA42A`), 30 % naar grijs. Grotgeluid zoals de ring 2-biomes (change 32 beslist).
+- **Tags** (`ModBiomeTagsProvider`): `corruptedadventure:is_ring_2` (vraag 4 A), `c:is_hot/overworld`, `c:is_dry/overworld`, via `Ring2Biomes.ALL` (6e entry; `Ring2BiomesTest` leest die lijst: bootstrap = `ALL`, dus de test dekt `dry_riverbeds` mee; `TransitionBiomes.bootstrap` moet hem dus ook registreren). **Geen** `minecraft:`-tags (geen `is_overworld`, geen `has_structure/*`).
 - Lang: `biome.corruptedadventure.dry_riverbeds` → en_us "Dry Riverbeds", nl_nl "Drooggevallen Rivierbeddingen".
 
 ### 4. Surface rules (`noise_settings/overworld.json`, vraag 2 A, 6 A)
 
-**Tak bovenaan `above_preliminary_surface`**, ná `withered_expanse` en de ring 2-takken (één los blok, duidelijk gemarkeerd):
+**Tak in `above_preliminary_surface`**, als element [6] ná `dune_sea` (één los blok, duidelijk gemarkeerd; zie "Afstemming na bouw" voor het steil/niet-steil-patroon):
 ```
 condition(biome [dry_riverbeds],
   sequence[
     condition(stone_depth floor, offset 0,
       sequence[
-        condition(steep, scorched_sandstone),                                  // oeverwanden en hellingen
+        condition(steep AND noise_threshold dry_riverbeds_channel -0.07…0.07, scorched_sandstone), // alleen oevers van de bedding; andere steile wanden (kloof) vallen door naar de lagen [3]
         condition(noise_threshold dry_riverbeds_channel -0.04…0.04,             // beddingbodem (zelfde ruis als het terrein)
           sequence[ condition(noise_threshold surface 0.6…, gravel), cracked_clay ]),
         condition(noise_threshold dry_riverbeds_channel -0.07…0.07, coarse_dirt), // oever
@@ -137,33 +162,32 @@ condition(biome [dry_riverbeds],
 ```
 Startdrempels voor de surface-ruis worden in W bijgesteld (geen ontwerpvraag). De `noise_threshold`-drempels van de bedding moeten gelijk zijn aan de spline-knikken van `riverbeds.json` (één bron: een commentaarregel in beide bestanden).
 
-**Ondergrond (vraag 6 A):** `dry_riverbeds` komt in de `biome_is`-lijst van het kloofsteenlagenblok van change 23. Kloven die de zone in lopen, houden zo hun lagen, en de beddingen snijden door de lagen. **Zandgrotten** (change 26, afspraak): `dry_riverbeds` komt in de `biome_is`-lijst van die tak.
+**Ondergrond (vraag 6 A):** `dry_riverbeds` komt in de `biome_is`-lijst van het top-level kloofsteenlagenblok [3] (nu `canyonlands, hoodoo_fields`). Kloven die de zone in lopen, houden zo hun lagen, en de beddingen snijden door de lagen. **Zandgrotten** (change 26): `dry_riverbeds` komt in beide `biome_is`-lijsten van top-level element [2] (plafond en vloer). De `dry_riverbeds`-tak doet voor zout- en oaseterrein in de zone niets bijzonders: hij legt overal dezelfde bodem (rood zand / grove aarde / gebarsten klei), dus de zoutkorst, het gras en de poelranden van ring 2 stoppen aan de zonegrens.
 
-### 5. Features (datagen): `worldgen/feature/DryRiverbedsFeatures.java` (sjabloon `WitheredExpanseFeatures`)
+### 5. Features (datagen): `worldgen/feature/DryRiverbedsFeatures.java` (sjabloon `WitheredExpanseFeatures` en `Ring2DressingFeatures`)
 
-Keys in `ModConfiguredFeatures`/`ModPlacedFeatures`. Alles chunk-lokaal (`in_square`, geen `random_patch` of `count_on_every_layer`: afspraak change 23, valkuil "Generatievolgorde").
+Keys in `ModConfiguredFeatures`/`ModPlacedFeatures`. Alles chunk-lokaal volgens de determinisme-regels van 23c/30b (plaatsing begint in de eigen chunk, leest alleen `WORLD_SURFACE_WG`, geseede ruis en de placement-random; schrijft alleen in de eigen chunk, ≥ 1 van de rand). **Geen** `random_patch`, `count_on_every_layer`, `environment_scan`. Zichtbare velden met `jittered_grid` (en `noise_band` voor vlekken), niet met `count` + `in_square`. Aantallen zijn startwaarden (W); de norm is "levendig" (zie vraag 8: de tabel hieronder is de aanbevolen optie).
 
 | Configured | Type | Inhoud |
 |---|---|---|
-| `scorched_patch` | `minecraft:disk` | geblakerde vlek (vraag 2 A): `blackstone` 3, `basalt` 2, `scorched_sandstone` 2 (alleen gesteente, geen ertsen); `RuleBasedBlockStateProvider` met `scorched_sandstone` boven lucht (zoals de zandvlek). Doel: `red_sand`, `coarse_dirt`, `cracked_clay`, `gravel`. Straal 2–5 |
-| `stranded_fossil` | eigen `corruptedadventure:stranded_fossil` (vraag 3 A) | vanilla-fossielsjablonen (`spine_1…4`, `skull_1…4`; `_coal`-overlays niet: kolen aan de oppervlakte zijn een exploit) half begraven in de bodem |
-| `riverbed_vegetation` | `minecraft:simple_block` | `dry_shrub` 3, `dead_bush` 2 (grond via `would_survive`) |
+| `scorched_patch` | `minecraft:disk` | geblakerde vlek (vraag 2 A): `blackstone` 3, `basalt` 2, `scorched_sandstone` 2 (alleen gesteente, geen ertsen); `RuleBasedBlockStateProvider` met `scorched_sandstone` boven lucht (zoals de zandvlek van `withered_expanse`). Doel: `red_sand`, `coarse_dirt`, `cracked_clay`, `gravel`. Straal 2–5. **Determinisme:** vanilla `disk` kan in buurchunks schrijven; gebruik dezelfde oplossing als `ring_2/disk_*` (30): `jittered_grid` met marge ≥ de grootste straal (6), zodat de hele vlek in de eigen chunk blijft, en geen `in_square`. De `withered_expanse`-zandvlek (`count` → `in_square`) is dus **geen** sjabloon voor de plaatsing |
+| `riverbed_fossil` | **bestaande** `corruptedadventure:surface_fossil` (30c) | zelfde sjablonen als `desert_fossil` (`fossil/spine_1…4`, `skull_1…4`, `buried` 0,4–0,7, `integrity` 0,85), grond `red_sand`/`coarse_dirt`/`cracked_clay`/`scorched_sandstone`. Geen nieuwe Java-class |
+| `riverbed_bones` | **bestaande** `rubble` (`bone_rubble`-config van 30c) | losse botblokken (as x 2 / z 2 / y 1, grootte 1–2) |
+| `riverbed_stones` | **bestaande** `rubble` | keien van `cobblestone`/`andesite`/`blackstone` (donker, "aangevoerd door het water") 1–2, op de bedding en de oevers |
+| `riverbed_vegetation` | `minecraft:simple_block` / `random_boolean_selector` zoals `dune_valley_flora` | `dry_shrub` 3, `dead_bush` 2 (grond via `would_survive`), op oevers ook `short_cactus_column`-groepjes en kort/hoog droog gras (`dry_grass`) op `coarse_dirt` |
 
 | Placed | Stap | Plaatsing |
 |---|---|---|
-| `dry_riverbeds_scorched_patches` | `LOCAL_MODIFICATIONS` (vóór de begroeiing) | `count` 3 → `in_square` → `ring_chance` (`transition`, `ring_2`, 0 → 0,9, `exponent` 1,5) → heightmap `WORLD_SURFACE_WG` → `biome` |
-| `dry_riverbeds_fossils` | `SURFACE_STRUCTURES` | `rarity_filter` 12 → `in_square` → `ring_chance` (`transition`, `ring_2`, 1,0 → 0,3) → `biome` (Y bepaalt de feature zelf) |
-| `dry_riverbeds_dead_trees` | `VEGETAL_DECORATION` | **hergebruik** `corruptedadventure:dead_tree` (change 11): `rarity_filter` 3 → `in_square` → `surface_water_depth_filter` 0 → heightmap → filter `#dirt` eronder (oevers: `coarse_dirt`) → `ring_chance` (`transition`, `ring_2`, 0,8 → 0,1) → `biome` |
-| `dry_riverbeds_vegetation` | `VEGETAL_DECORATION` | `count` 4 → `in_square` → heightmap → `block_predicate_filter` (lucht + `would_survive(dry_shrub)`) → `biome` |
+| `dry_riverbeds_scorched_patches` | `LOCAL_MODIFICATIONS` (vóór de begroeiing) | `jittered_grid` (cel 16, marge 6 = grootste straal + 1, kans 0,5) → `ring_chance` (`transition`, `ring_2`, 0 → 0,9, `exponent` 1,5) → `WORLD_SURFACE_WG` → `biome` |
+| `dry_riverbeds_fossils` | `LOCAL_MODIFICATIONS` (naast de duinfossielen) | `jittered_grid` 16/1/0,25 → `ring_chance` (`transition`, `ring_2`, 1,0 → 0,3) → `WORLD_SURFACE_WG` → bodemfilter (`red_sand`/`coarse_dirt`/`cracked_clay`) → `biome`; doel ~1 per 25–30 chunks in de ring 2-helft (`dune_sea_fossils`: 1 per 26) |
+| `dry_riverbeds_bones` | `LOCAL_MODIFICATIONS` | `jittered_grid` 8/1/0,3 → `ring_chance` (1,0 → 0,5) → heightmap → bodemfilter → `biome` |
+| `dry_riverbeds_stones` | `LOCAL_MODIFICATIONS` | `jittered_grid` 8/1/0,3 → `slope` (oeverhellingen/bedding) → `biome` |
+| `dry_riverbeds_dead_trees` | `VEGETAL_DECORATION` | **hergebruik** `corruptedadventure:dead_tree` (change 11): `jittered_grid` 16/2/0,25 (geen knotten) → heightmap → filter `#dirt` eronder (oevers: `coarse_dirt`) → `ring_chance` (`transition`, `ring_2`, 0,8 → 0,1) → `biome` |
+| `dry_riverbeds_vegetation` | `VEGETAL_DECORATION` | `jittered_grid` 4/0/0,35 → heightmap → `block_predicate_filter` (lucht + `would_survive`) → `biome`; vlekkerig via `noise_band` op `ring_2_flower_patches`/`ring_2_cactus_groups` of een eigen ruis |
 
-Aantallen zijn startwaarden (W).
+Volgorde binnen de stap vast: vlekken → fossielen → botten → stenen; dode bomen → begroeiing. Nieuwe placed features achteraan de lijsten van `dry_riverbeds`.
 
-**`StrandedFossilFeature`** (vraag 3 A; `worldgen/feature/`, registratie `ModFeatures`, config `StrandedFossilConfiguration`: lijst van template-ids, `sink` 1–3, `max_empty_corners`):
-- Kies een sjabloon en rotatie met de feature-random. De footprint komt uit `StructureTemplate.getSize` + rotatie, met als hoek de **chunk-minhoek** van de herkomst (zoals vanilla's `FossilFeature`). Zo blijft hij altijd binnen de 3×3 chunks (valkuil "Features schrijven alleen in de 3×3 chunks"; grootste fossiel ≤ 16).
-- Y = laagste `WORLD_SURFACE_WG` over de footprint − `sink`, dus half begraven. Geen plaatsing als meer dan `max_empty_corners` hoeken boven lucht of vloeistof liggen (zoals vanilla).
-- Plaatsen met `StructurePlaceSettings` (`BlockIgnoreProcessor.STRUCTURE_AND_AIR`, alleen bot), `Block.UPDATE_INVISIBLE`, geen vervanging van vloeistof.
-- Leest alleen de heightmap van de eigen footprint. De generatievolgorde kan die nog veranderen (een boom van een buurchunk op de heightmap). Daarom `WORLD_SURFACE_WG`, die tijdens de features-stap alleen het terrein toont (de keuze van change 23 volgen) — en de determinismetest in S.
-- Unit test (stap 7).
+**Geen `StrandedFossilFeature` meer.** Antwoord 3 A (vanilla-fossielsjablonen half begraven) is sinds 30c gebouwd als `surface_fossil` + `FossilLayout`, dat precies de eisen van dit plan haalt (footprint binnen de eigen chunk, hele lagen begraven, verwering zonder zwevende brokken, getest op de echte sjablonen). Een tweede feature zou dubbel werk zijn. De unit test van de footprint (`SurfaceFossilFeatureTest`) bestaat al.
 
 ### 6. Ertsen in de zone (vraag 4 A)
 
@@ -176,15 +200,15 @@ Aantallen zijn startwaarden (W).
 - `RingBiomeSourceTest`: een geval met **twee** overgangen (`ring_1`, `ring_2`). Beide zones krijgen hun eigen overgangsbiome (blend ~0,01 / 0,5 / ~0,99), grens 3 wisselt nog hard op 0,5 en `possibleBiomes` bevat beide.
 - `RingBlendTest`: constante invoer `{ring_3: 1, rest 0}` geeft 0 in ring 2, `smoothstep(blend)` in de zone 2→3, 1 in ring 3, 0 in de zone 1→2. Codec-rondreis met getallen als invoer (`StandaloneHolderGetter.ops`).
 - `BiomeAmbienceTest` (of een nieuw `TransitionBiomesTest`): `dry_riverbeds` heeft geen neerslag, temperatuur 2,0 en lucht/fog/water = `Palette.RING_2.desaturated(DRY_RIVERBEDS_FADE)`.
-- `StrandedFossilFeatureTest` (vraag 3 A): voor alle sjablonen × 4 rotaties × elke herkomst in een chunk blijft de footprint binnen de 3×3 chunks (met 1 blok marge). De config-codec is begrensd.
+- Geen `StrandedFossilFeatureTest`: `SurfaceFossilFeatureTest` (30c) dekt de footprint al. Nieuw: `Ring2BiomesTest`/`TransitionBiomesTest` uitbreiden met de volgorde en de losse lijsten van `dry_riverbeds` (eigen features achteraan hun stap, alleen chunk-lokale modifiers, geen `count_on_every_layer`/`random_patch`/vanilla-`disk_*` zonder marge), en `Ring2TerrainJsonTest` met de bedding-term (één keer per bestand genoemd, `pools_dry` in `pools.json`, `initial_height` mee).
 
 ### 8. Documentatie
 
 - `CODEBASE.md`:
   - kopregel en status naar change 31;
   - `TransitionBiomes` (nu twee biomes);
-  - nieuwe classes `DryRiverbedsFeatures`, `StrandedFossilFeature`, `StrandedFossilConfiguration`;
-  - registries (feature-type `stranded_fossil`, configured/placed features, biome);
+  - nieuwe class `DryRiverbedsFeatures` (geen nieuw feature-type: `surface_fossil` en `rubble` worden hergebruikt);
+  - registries (configured/placed features, biome);
   - biome-tabel (`dry_riverbeds`);
   - "Overige" (`ring_weight/overworld/ring_3`);
   - databestanden: preset `transitions.ring_2`, `ring_2/overworld/{riverbed_mask,riverbeds}.json`, noise `dry_riverbeds_channel`, `height.json`/`flats_height.json` gewijzigd, surface-rule-tak, lagen- en zandgrotlijst;
@@ -208,7 +232,7 @@ Aantallen zijn startwaarden (W).
 | Change | Wat er klaarligt |
 |---|---|
 | 32 sfeer ring 2 | `DRY_RIVERBEDS_FADE` + `Palette.RING_2` (één plek); mood/ambient van `dry_riverbeds` |
-| 37 textures | `cracked_clay`, `scorched_sandstone` zijn hier in grote vlakken te zien: goede testplek |
+| 37 textures | `cracked_clay`, `scorched_sandstone` zijn hier in grote vlakken te zien: goede testplek; `bone_block`-fossielen en `coarse_dirt`/`red_sand` liggen er naast de eigen planten (dorre struik, tonnetjescactus) naast vanilla `dead_bush`: beoordelen of de eigen planten genoeg afsteken |
 | 38/39 ring 3 | het zonemasker-patroon (`ring_weight/overworld/ring_N`); vlekken van vanilla- naar asblokken; ring 3-terrein mengt met de beddingen aan de ring 2-kant |
 | 41 ores ring 3 | `dry_riverbeds` ook de ring 3-set (stap 6) |
 | 48/69 overgangen 3→4, 4→5 | hetzelfde patroon: `transitions.ring_N`, `TransitionBiomes`, `<Naam>Features` met `ring_chance transition`, zonevorm via `ring_weight` in de binnenring-invoer |
@@ -219,7 +243,7 @@ Aantallen zijn startwaarden (W).
 
 - Puur worldgen, server-side en deterministisch per seed. De ruis is geseed via een eigen noise-key, het ring-gewicht via `RingLayout` (wereldseed, `RingColumnCache` ThreadLocal), en de feature-random is vanilla's geseede decoration-random. Geen netwerk, geen SavedData of attachments, geen client-code.
 - Biome-kleuren gaan via vanilla's registry-sync naar de client. De client kent de beddingen alleen als blokken.
-- `StrandedFossilFeature` leest vanilla-structure-templates via de server (`WorldGenLevel.getLevel().getServer().getStructureManager()`, zoals vanilla's `FossilFeature`). Alleen tijdens worldgen.
+- `surface_fossil` (30c) leest vanilla-structure-templates via de server (`getStructureManager()` vanuit de worldgen-thread, zoals vanilla's `FossilFeature`). Alleen tijdens worldgen.
 - Bestaande testwerelden krijgen naden in de zone 2→3 (nieuwe biome, nieuw terrein). Test altijd in een nieuwe wereld.
 
 ---
@@ -240,11 +264,13 @@ Bouwplan: **B, D, W**. Aanbevolen ook **S** (preset, codecs, surface rule en fea
 - [ ] **Biome:** vanaf `/ca tpboundary 2` in 4 richtingen `execute if biome … corruptedadventure:dry_riverbeds` op gewicht ~0,5. Langs een straal: de wissel naar ring 2-biomes bij gewicht ~0 en naar `placeholder_ring_3` bij ~1, zonebreedte ≈ 128. Grens 1 blijft `withered_expanse`, grens 3 wisselt hard, de Nether-grens 2 wisselt hard.
 - [ ] **Buiten de zone ongewijzigd:** wereld A (vóór change 31) en B (na), zelfde seed. Tellingen per chunk (steen, lucht, water, `red_sand`, kloofsteen) in 4 chunks ring 2-midden, 4 chunks zone 1→2 en 2 chunks ring 3 → identiek.
 - [ ] **Beddingen:** in 16 zone-chunks (ring 2-helft): `cracked_clay` > 0 in de meeste chunks. 50 punten met `execute if block` bodem = `cracked_clay` → hoogte (marker) ≥ Y 66 en 3–6 lager dan het oppervlak 12 blokken ernaast (gemiddeld).
-- [ ] **Droog:** in 32 zone-chunks `fill … replace water` boven Y 60 → 0 (geen poelen, geen water in de beddingen). Onder Y 55 mag aquiferwater staan.
+- [ ] **Droog:** in 32 zone-chunks `fill … replace water` boven Y 60 → 0 (geen poelen, geen water in de beddingen), **ook in de eerste 10 blokken van de zone** (de eigen `pools_dry`-ramp). Onder Y 55 mag aquiferwater staan.
 - [ ] **Verloop:** `scorched_patch`-blokken (`blackstone` + `basalt` aan de oppervlakte) per chunk in de binnenste vs. buitenste 40 blokken van de zone → buiten duidelijk meer. Fossiel-`bone_block` binnen > buiten.
+- [ ] **Levendigheid (norm teststop 2b/2c):** planten (dorre/dode struik, cactus, droog gras) per 256 bedding-/oeverkolommen in de orde van de duindalen van 30c (4–5); botten (`bone_block`-brokken) ~1 per 5 chunks, fossielen ~1 per 25–30 chunks in de ring 2-helft, dode bomen ≥ 1 per ~4 chunks aan de ring 2-kant; geen enkel gebied van 4 × 4 chunks zonder iets (struik, bot, steen of boom) op de bedding.
+- [ ] **Bedding-dekking:** `initial_height` ≥ echte bodem in 0 van 10.000 bedding-kolommen (anders mist de bedding zijn `cracked_clay`); bedding-kolommen op zout/duin-terrein (klem) apart geteld (vraag 7).
 - [ ] **Ertsen:** `coal_ore`/`iron_ore` in zone-chunks aan de ring 2-kant > 0, aan de ring 3-kant 0 (tot change 41).
 - [ ] **Determinisme:** twee verse werelden, de tweede in omgekeerde volgorde geladen (zoals change 16). Per chunk (24 zone-chunks) tellingen van `bone_block`, `cracked_clay`, `blackstone`, `basalt`, `dead_log`, `dry_shrub` → identiek.
-- [ ] **Performance** (JFR, stap `noise`, zoals change 9): zone 2→3 vóór en na → hooguit een paar procent erbij, binnen het budget van **1,75× vanilla** (23b-9 C, gedeeld; was 1,3×). Getal in `CODEBASE.md`.
+- [ ] **Performance** (JFR, stap `noise`, zoals change 9): zone 2→3 vóór en na → hooguit een paar procent erbij, binnen het budget van **1,75× vanilla** (23b-9 C, gedeeld; hoogste meetpunt nu 1,54× op x 2.500). Vergelijk met een git-worktree van `HEAD`, zoals 30–30c. Getal in `CODEBASE.md`.
 
 ### W — blokkerende handmatige test: **nee** → W-achteraf
 **Reden:** geen latere change bouwt direct op de vorm of de inhoud van de beddingen. Change 32 (sfeer) en 37 (textures) raken alleen kleuren en pixels. Change 39 herziet de zone toch, als ring 3 echt terrein krijgt. Alles wat meetbaar is (biome, zonebreedte, droog, diepte, verloop, ertsen, determinisme, naden) staat onder S. Wat overblijft is smaak en afstemming, en die kan achteraf.
@@ -255,6 +281,9 @@ W-achteraf (runClient, testseed, checklist):
 - [ ] Fossielen: half begraven, niet zwevend, niet geheel onder de grond; niet te vaak.
 - [ ] Kloven die de zone in lopen houden hun lagen, zonder lelijke naad.
 - [ ] F3: `dry_riverbeds`; geen regen als het in ring 1 regent; kleuren iets grauwer dan ring 2.
+- [ ] **Levendig, niet leeg** (norm van teststop 2b/2c): loop 2 minuten over een bedding en de oevers; er is steeds iets te zien (struik, bot, fossiel, steen, dode boom). Vergelijk met de duindalen van 30c. Geen kale kilometers.
+- [ ] Op de vlakte/het zout in de zone: de bedding leest (afhankelijk van antwoord 7) als geul of lint, zonder gaten of water.
+- [ ] Zonegrens (9): de bodemwissel (zoutkorst/gras → rood zand/klei) is acceptabel.
 - [ ] Spawns zoals canyonlands ('s nachts husks e.d., overdag konijnen).
 - [ ] Portal in de zone → Nether ÷4 en terug (standaard-W).
 - [ ] Geen fouten of waarschuwingen in de log bij het aanmaken van de wereld.
@@ -298,6 +327,8 @@ Antwoord: **A** — bedding gebarsten klei met grindvlekjes, oevers grove aarde,
 
 Antwoord: **A** — vanilla-fossielsjablonen half begraven via een kleine eigen feature `stranded_fossil`.
 
+*Bijgewerkt 2026-10-05 (geen nieuwe keuze, uitvoering):* de feature uit dit antwoord bestaat sinds change 30c als `surface_fossil` (+ `FossilLayout`, configured `desert_fossil`, plus `bone_rubble`). Change 31 bouwt geen tweede feature, maar een configured `riverbed_fossil` met dezelfde sjablonen en een bedding-bodem als grond. Betekenis van antwoord A blijft: vanilla-sjablonen, half begraven, chunk-lokaal.
+
 ### 4. Welke ertsen krijgt de zone?
 - **A. De ring 2-set via `#is_ring_2` (geschaalde vanilla-ores alleen in de ring 2-helft, zonnesteen/turkoois in kloofsteen); de ring 3-helft volgt in change 41 (aanbevolen).** De ertsen volgen de ring onder je voeten, zonder nieuwe features. De ring 3-helft is tijdelijk ertsarm, net als placeholder ring 3.
 - **B. Volle vanilla-ores, zoals `withered_expanse`.** Het eenvoudigst, maar dan ligt er een strook van 128 blokken die rijker is dan ring 2 en ring 3 eromheen: een exploit.
@@ -319,6 +350,32 @@ Antwoord: **A** — droog (2,0, geen neerslag), spawns zoals canyonlands, grotge
 
 Antwoord: **A** — de kloofsteenlagen van canyonlands lopen door onder `dry_riverbeds`.
 
+### Nieuwe vragen na de bouw van 30–30c (2026-10-05, beantwoord: alles A)
+
+### 7. Wat doen de beddingen op lage terreinregio's (zout, duindal, oase-vlakte)?
+Sinds 30 ligt er in de zone ook zout (Y 66), duindalen (66–67) en oase-vlakte (66–74). De klem ≥ Y 66 (antwoord 1 A) laat daar 0–6 diepte over; de bedding verdwijnt als geul.
+- **A. Klem blijft 66; op lage regio's alleen een gebarsten-klei-lint via de surface rule (zelfde ruis), echte geulen waar het terrein ≥ ~Y 70 ligt (aanbevolen).** Laagste complexiteit en geen waterrisico. Leest op plateau, heuvels en duinruggen als geul, op de vlakte als een plat lint klei. Multiplayer: geen invloed.
+- **B. Klem naar Y 64 (1 boven zeeniveau 63).** Ook op de vlakte een geul van 2–3 diep. Risico: water in een bedding bij een lage terreinruis, en de preliminary-surface-controle wordt strakker (meer metingen). Leest het meest als rivierbedding.
+- **C. Zone-regio's dempen: zout/duin/oase-gewichten × (1 − zone-ramp), zodat de zone een eigen vlakke bedding-vallei wordt.** Alleen JSON, maar de duinen en het zout stoppen dan abrupt voor de zone en de zone wordt een eigen landschap (dat was antwoord 1 C, afgewezen). Speelgevoel: de zone is overal "brede lege vlakte"; verlies van ring 2-regio-variatie in de zone.
+
+Antwoord: **A** — klem blijft Y 66; op lage regio's (zout, duindal, oase-vlakte) alleen een gebarsten-klei-lint via de surface rule met dezelfde ruis, echte geulen waar het terrein ≥ ~Y 70 ligt.
+
+### 8. Hoe levendig worden de beddingen?
+Het plan stamt van vóór teststop 2b ("alles te kaal"). Nu is "levendig" de norm.
+- **A. Matig, op het niveau van de duindalen van 30c (aanbevolen):** droge struiken/dode struiken/cactusgroepjes en kort droog gras op oevers en harde bodem, botten ~1 per 5 chunks, fossielen ~1 per 25–30 chunks, dode bomen langs oevers, keien, geblakerde vlekken richting ring 3 (tabel in stap 5). Gemeten in S. Complexiteit laag (alleen bestaande features en modifiers); geen multiplayer-impact; "drooggevallen maar niet leeg".
+- **B. Minimaal, zoals het oorspronkelijke plan:** 3 flora-features (~4 pogingen per chunk), fossielen en dode bomen. Minste werk en snelste noise/features-stap, maar na teststop 2b waarschijnlijk te kaal; "verhaal van het gestolen water" komt minder over.
+- **C. Rijk: A plus rotsuitstekels (`outcrop`) als oriëntatiepunt, stapels `dead_log`/botten als "wrak" en kleine blokkenrijen steen langs de oevers.** Sterkste sfeer en oriëntatie, maar meer afstemming (features-stap +0,1–0,2 ms) en een kleine kans dat het op structures van fase 3 vooruitloopt.
+
+Antwoord: **A** — matig, op het niveau van de duindalen van 30c (struiken, cactusgroepjes, droog gras, botten ~1 per 5 chunks, fossielen ~1 per 25–30 chunks, dode bomen, keien, geblakerde vlekken; tabel in stap 5).
+
+### 9. Wat gebeurt er met de bodem aan de zonegrens (zoutkorst, oasegras)?
+De zone is één biome met één bodemtak; zoutkorst, oasegras en poelranden van ring 2 stoppen op de grens. De `dry_riverbeds`-tak legt overal rood zand / grove aarde / gebarsten klei.
+- **A. Harde bodemwissel accepteren (aanbevolen).** Geen extra werk; de biomewissel is toch al een rand (net als `withered_expanse`). Leest als "hier begint het uitgedroogde gebied". Biome-kleur (change 32) maskeert de rand.
+- **B. Zachte rand: in de buitenste ~20 blokken van de zone vlekken van de ring 2-bodem (`ring_chance`-features met `transition` 0 → 1, zoals de zandvlekken van `withered_expanse`).** Geen Java, wel 1–2 extra features en extra determinisme-metingen; zoutkorst/oasegras kunnen dan niet als vlek (ze zijn surface-bepaald), dus alleen zand/klei-vlekken.
+- **C. Zout- en oaseterrein blijven hun eigen bodem houden in de zone (surface-rule-conditie op `salt_weight`/`moisture`-ruis).** Meest samenhangend, maar de zone is dan niet meer "overal gebarsten klei" en de surface rule krijgt extra ruisconditie (kleine noise-stap/surface-kosten); vraagt een heroverweging van antwoord 2 A.
+
+Antwoord: **A** — harde bodemwissel aan de zonegrens accepteren; de biome-kleur van change 32 maskeert de rand.
+
 ---
 
 ## Beslissingenlog-regels (datum = bouwdatum; invullen na de antwoorden)
@@ -329,7 +386,7 @@ Antwoord: **A** — de kloofsteenlagen van canyonlands lopen door onder `dry_riv
 | 2026-10-01 | worldgen | Beddingen: ondiepe geulen (3–6 diep, 15–40 breed, ≥ Y 66) in de ring 2-hoogte met een zonemasker in JSON | Geen Java; initiële dichtheid en aquifers kloppen vanzelf |
 | 2026-10-01 | worldgen | Zonevorm via een ring-gewicht als density function: `ring_blend` met constante invoer (`ring_weight/overworld/ring_N`), geen Java | Herbruikbaar voor 3→4 en 4→5 |
 | 2026-10-01 | worldgen | Bodem en blakeren: gebarsten klei, grove aarde, rood zand, `scorched_sandstone`; geblakerde vlekken vanilla `blackstone`/`basalt` via `ring_chance`; poelen vallen droog | Leest als drooggevallen en als voorbode van ring 3 |
-| 2026-10-01 | worldgen | Gestrande botten: vanilla-fossielsjablonen half begraven via feature `stranded_fossil` | Leest direct als skelet; deterministisch binnen 3×3 chunks |
+| 2026-10-01 | worldgen | Gestrande botten: vanilla-fossielsjablonen half begraven via de bestaande feature `surface_fossil` (30c) met een eigen config `riverbed_fossil`; geen tweede feature | Leest direct als skelet; deterministisch en chunk-lokaal; hergebruik i.p.v. dubbel werk |
 | 2026-10-01 | worldgen | Ertsen in de zone 2→3: ring 2-set via `#is_ring_2`; ring 3-helft in change 41 | Ertsen volgen de ring; geen exploit-strook |
 | 2026-10-01 | worldgen | Klimaat/spawns `dry_riverbeds`: droog, spawns als canyonlands, grotgeluid als ring 2 (kleuren in change 32) | Ring 2 die verschraalt richting ring 3 |
 | 2026-10-01 | worldgen | Ondergrond zone 2→3: kloofsteenlagen lopen door (lagenblok-lijst) | Kloven houden hun lagen in de zone |
