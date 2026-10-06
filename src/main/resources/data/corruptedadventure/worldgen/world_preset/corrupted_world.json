@@ -82,8 +82,105 @@
               ]
             },
             "ring_3": {
-              "type": "minecraft:fixed",
-              "biome": "corruptedadventure:placeholder_ring_3"
+              "type": "minecraft:multi_noise",
+              "biomes": [
+                {
+                  "biome": "corruptedadventure:ashen_wastes",
+                  "parameters": {
+                    "temperature": [-2.0, -0.051],
+                    "humidity": [-0.122, 0.122],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 0.5],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:volcanic_peaks",
+                  "parameters": {
+                    "temperature": [0.166, 2.0],
+                    "humidity": [-2.0, 0.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 0.5],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:ember_woods",
+                  "parameters": {
+                    "temperature": [-0.051, 0.166],
+                    "humidity": [0.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 0.5],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:basalt_flows",
+                  "parameters": {
+                    "temperature": [0.166, 2.0],
+                    "humidity": [0.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 0.5],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:sulfur_fields",
+                  "parameters": {
+                    "temperature": [-0.051, 0.166],
+                    "humidity": [-2.0, 0.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 0.5],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:dried_seabed",
+                  "parameters": {
+                    "temperature": [-2.0, -0.051],
+                    "humidity": [-2.0, -0.122],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 0.5],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:titan_fields",
+                  "parameters": {
+                    "temperature": [-2.0, -0.051],
+                    "humidity": [0.122, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 0.5],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:dormant_caldera",
+                  "parameters": {
+                    "temperature": [-2.0, 2.0],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [0.5, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                }
+              ]
             },
             "ring_4": {
               "type": "minecraft:fixed",

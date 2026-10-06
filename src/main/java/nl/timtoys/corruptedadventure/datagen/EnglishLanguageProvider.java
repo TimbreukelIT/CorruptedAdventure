@@ -218,7 +218,6 @@ final class EnglishLanguageProvider extends LanguageProvider implements LangOutp
         biome(ModBiomes.HOODOO_FIELDS, "Hoodoo Fields");
         biome(ModBiomes.SALT_FLATS, "Salt Flats");
         biome(ModBiomes.DUNE_SEA, "Dune Sea");
-        biome(ModBiomes.PLACEHOLDER_RING_3, "Placeholder Ring 3");
         biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder Ring 4");
         biome(ModBiomes.PLACEHOLDER_RING_5, "Placeholder Ring 5");
         biome(ModBiomes.VOID_EDGE, "Void Edge");
