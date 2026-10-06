@@ -24,7 +24,7 @@ Bron: `contract.md` §4; `fase-1-wereld.md` §1.2 (klimaat per ring via de route
    - in `ring_blend/overworld_temperature.json` → ring 3 = `region_heat`; in `_vegetation.json` → ring 3 = `region_ground`;
    - in de Nether-router (zoals change 35) → ring 3 = `ring_3/nether/region`.
    - Ring 1/2 blijven blok voor blok gelijk.
-   - *Als vraag V8 = A:* een derde router-veld (`weirdness` via een nieuwe `ring_blend/overworld_weirdness`, ring 1 = vanilla letterlijk, ring 3 = `caldera_dormant`, rest 0). Ring 1 moet identiek blijven: test zoals `vein_toggle`.
+   - **Derde as (V8 = A):** een derde router-veld (`weirdness` via een nieuwe `ring_blend/overworld_weirdness`, ring 1 = vanilla letterlijk, ring 3 = `caldera_dormant`, rest 0). Ring 1 moet identiek blijven: test zoals `vein_toggle`.
 4. **Stubs** (constante `0`, flat): `ring_3/overworld/height`, `caldera_mask`, `caldera_dormant`, `lava_channel`, `island_mask`; `ring_3/nether/terrain` blijft voorlopig de placeholder (die bestaat al als `ring_3/nether.json`; W-nether verplaatst hem in 53).
 5. **Preset:** `fluid_levels.ring_3` (Nether) volgens het contract: geen lavazee. Een niveau onder de vloer (bijv. Y 8); W-nether mag het in 53 bijstellen.
 
@@ -39,6 +39,6 @@ Geen (alleen worldgen-data, deterministisch per seed).
 - Regio-assen: een korte PNG of tabel van `region_heat`/`region_ground` over r 3.500–6.000 (vlekgrootte), en de verdeling (histogram) als input voor 39b.
 
 ## Open
-- Hangt af van vraag **V8** (`contract.md` §9) voor stap 3 (derde as). Zonder antwoord: stap 3 overslaan en melden.
+- Niets: V8 = A (2026-10-06). Stap 3 hoort erbij; ring 1 moet blok voor blok gelijk blijven (biomes op 300 punten, ook de vanilla-weirdness-afhankelijke biomes).
 
 Commit: `worldgen: add ring 3 region axes and shared density function stubs`.

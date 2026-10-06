@@ -5,13 +5,13 @@ Scope: `atmosphere` — werkpakket 45; branch `ring3/atmosphere-g1`. (50 en 56, 
 **Doel:** de drie weertypes van ring 3 (antwoorden 10 en 11), gameplay server-side en beeld client-side:
 - **asregen:** zicht omlaag, `ash_flake`-particles, hitte ×1,5;
 - **uitbarsting:** rode lucht, gerommel, lavabommen, hitte ×2;
-- **aswolk** (nieuw `ASH_CLOUD`): donker, hitte ×3, schuilen; frequentie *V6*.
+- **aswolk** (nieuw `ASH_CLOUD`): donker, hitte ×3, schuilen; zeldzaam (V6 = A).
 
 Bron: `fase-1-wereld.md` §1.6 (weermodel, client-hook), Ring 3 "Weer" + sparring-aanvulling; `contract.md` §5, §6; sjabloon change 28 (`SandstormWind`, `HeatWaveDehydrationModifier`, `client/weather/SandstormRenderer`, `HeatWaveRenderer`, `HeatHazeEffect`, `FogBlend`, `SkyExposure`, `RingWeatherRenderers`).
 
 ## Werk
-1. `RingWeatherType.ASH_CLOUD` (ring 3, overworld); `[weather.ring3]` met gewichten (*V6*), duur en hitte-factoren.
-   - Een waarschuwing vooraf (aswolk ~20 s gerommel/verdonkering bij *V6* = A) via de bestaande fade-in (`intensity`), zonder extra payload.
+1. `RingWeatherType.ASH_CLOUD` (ring 3, overworld); `[weather.ring3]` met gewichten asregen 45 / uitbarsting 40 / aswolk 15 (V6 = A), duur (aswolk 120–240 s) en hitte-factoren.
+   - Een waarschuwing vooraf (aswolk ~20 s gerommel/verdonkering, V6 = A) via de bestaande fade-in (`intensity`), zonder extra payload.
 2. **Hitte-factoren:** alleen de config-waarden (`ashRainHeatMultiplier` 1,5, `eruptionHeatMultiplier` 2,0, `ashCloudHeatMultiplier` 3,0) en een publieke getter. De modifiers zelf bouwt C (`contract.md` §5), zodat A en C in golf 1 niet op elkaar wachten.
 3. **Lavabommen (server):** tijdens een uitbarsting vallen vanilla `SmallFireball`s op willekeurige plekken rond spelers in ring 3 onder open lucht, met een hogere dichtheid in `#heat_peaks`.
    - Vuur volgt `mobGriefing`; geen explosie.
@@ -27,7 +27,7 @@ Bron: `fase-1-wereld.md` §1.6 (weermodel, client-hook), Ring 3 "Weer" + sparrin
 6. **Sound events** `weather.ring_3.*` registreren. Audio: vanilla-verwijzingen in golf 1 (zoals de zandstorm-wind); eigen synthese in golf 2 (`Ring3Sounds.java`).
 
 ## Afhankelijk van open vragen
-- *V6* (aswolk-frequentie en -keten).
+- Geen meer: V6 = A (2026-10-06), verwerkt hierboven.
 
 ## Client/server-impact
 - **Server:** staat, cyclus, modifiers, bommen; geen nieuwe payloads (de ringweerstaat wordt al volledig gesynct).

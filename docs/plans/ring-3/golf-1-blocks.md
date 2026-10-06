@@ -16,9 +16,9 @@ Bron: `fase-1-wereld.md` Ring 3 "Unieke blokken" + "Uitwerking sparring ring 3";
   - Smeulsteen: licht (voorstel 7), geen eigen schade (de hitte komt van C via `heat_sources`).
   - Verkoold hout is niet brandbaar (Nether-hout-patroon, zoals `DRIPSHROOM`), `BlockSetType`/`WoodType` `charred`, geluiden als `nether_wood` of `basalt` (agent kiest).
 - **38b — smeulwoud en vuurflora.**
-  - `ember_leaves`: bladeren die niet vervallen; licht volgens *V3*.
+  - `ember_leaves`: bladeren die niet vervallen; geen bloklicht, alleen een emissive texture (V3 = A).
   - `fire_bloom` (+ pot) en `ash_sprouts`, met de grondregel "as, coarse dirt, `ash_layer`" in een eigen grondtag (`corruptedadventure:ash_plant_soil`, naam melden aan main).
-  - `ember_berry_bush` alleen als *V7* ≠ B.
+  - `ember_berry_bush` (V7 = A): zeldzame eetbare struik, drop voorlopig vanilla `sweet_berries`; grond as/`coarse_dirt`/mos.
   - `ash_crust`: instort-gedrag via `LooseSandTrigger` (generaliseren naar een tag `corruptedadventure:collapsing_blocks` of een tweede blok in de trigger; implementatiedetail).
   - `smoldering_ash`: emissive scheuren, licht 0–3.
 - **40 — ertsen.** `DropExperienceBlock`; XP, sterkte en tool-tier als ring 2 + één stap (vulkaniet `needs_iron_tool`, vuurrobijn `needs_iron_tool`, zwavel steen). Vuurrobijn-overlay emissive. Ruwe items als placeholders.
@@ -32,12 +32,10 @@ Bron: `fase-1-wereld.md` Ring 3 "Unieke blokken" + "Uitwerking sparring ring 3";
 - **52 — oerijs** `primordial_ice`: loot alleen met Silk Touch, anders niets.
 
 ## Tags (inhoud)
-`heat_sources`, `warmth_sources`, `ring_3_stones`, `charred_logs`, `rimeshroom_stems`, `#logs`, `#planks`, `#wooden_*`, `#mineable/*`, `needs_*_tool`, `c:`-tags, `#small_flowers`, `goats_spawnable_on` (*V7*), carver-replaceables voor as/puimsteen (grotten snijden erdoor).
+`heat_sources`, `warmth_sources`, `ring_3_stones`, `charred_logs`, `rimeshroom_stems`, `#logs`, `#planks`, `#wooden_*`, `#mineable/*`, `needs_*_tool`, `c:`-tags, `#small_flowers`, `goats_spawnable_on` (+ basalt, blackstone, `ash_block`), carver-replaceables voor as/puimsteen (grotten snijden erdoor).
 
 ## Afhankelijk van open vragen
-- *V2* (zielvuur in `heat_sources`);
-- *V3* (licht `ember_leaves`);
-- *V7* (bes-struik, geiten-grondtag).
+- Geen meer (2026-10-06): V2 = A (zielvuur niet in `heat_sources`), V3 = A (geen licht), V7 = A (bes-struik, geiten-grondtag). Verkoold hout niet brandbaar = besluit van de gebruiker.
 
 ## Client/server-impact
 Gedrag server-side (instorten, geiser-duw, Silk Touch). Particles via `animateTick` (client-level, geen client-class). Geen payloads.

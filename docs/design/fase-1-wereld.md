@@ -516,17 +516,27 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - zeldzame zwevende basalteilanden (boven calderameren en lavarivieren);
   - caldera's, deels slapend en groen.
   - **Basaltzuilvelden zijn geen signatuur** (niet gekozen); `basalt_flows` blijft "gestolde stromen met gloeiende scheuren".
-- **Oase = slapende kraters:** een koele, groene caldera als rustpunt (de rol van `oasis_flats` in ring 2). Vorm, biome en water: open vraag in `contract.md`.
+- **Oase = slapende kraters:** een koele, groene caldera als rustpunt (de rol van `oasis_flats` in ring 2). Uitgewerkt in V8 hieronder.
 - **Overlevingskern: hitte-ritme + schaarste.**
   - Hitte stijgt in de zon overdag van **0 naar 100 in ~3 min** (uitdroging ~4 min), **×1,5–2** bij hittebronnen en in de pieken. Ze daalt 's nachts, ondergronds, in water en in een slapende krater.
   - Drempels: **25 traagheid → 50 zwakte → 75 mining fatigue → 100 in brand**. Fire resistance halveert de opbouw (sessie 2).
   - Water verdampt bovengronds (sessie 2); water blijft schaars.
-- **Voedsel:** **zeldzaam vee: geiten op de pieken** (`volcanic_peaks`); dat wijkt af van de aanbevolen optie "geen vee". Eetbare vuurflora en waterschaarste blijven, tenzij ze botsen (vervolgvraag in `contract.md`).
+- **Voedsel:** **zeldzaam vee: geiten op de pieken** (`volcanic_peaks`); dat wijkt af van de aanbevolen optie "geen vee". Eetbare vuurflora en waterschaarste blijven (V7 hieronder: geen botsing).
 - **Weer:** asregen + uitbarsting (sessie 2) + een **zeldzame aswolk** (pyroclastisch: donker, extra hitte, schuilen). **Lavabommen** vallen ringbreed rond spelers onder open lucht, dichter bij de pieken.
 - **Ertsen:** zoals sessie 2 (vulkaniet, zwavel, vuurrobijn; vanilla verder afgebouwd) + **vuurkristal-geodes** (zeldzaam, gloeiend; nut in fase 2).
 - **Horror:** as-afgietsels, voetsporen en gerommel blijven. Daarbij komen **as-afgietsels die 's nachts zwak gloeien**.
 - **Nether-ring 3:** het ontwerp van sessie 2 blijft. Daarbij komen de levendig-eis en een eigen wow: **bevroren lavavallen**, rijpwoud met **ijspegels** en **gloeiende scheuren als warme eilandjes**.
 - **Prestatie:** noise-stap **≤ 1,75× vanilla** (zoals ring 2); stromende lava bij generatie alleen met een cap per chunk.
+- **Detailbesluiten (vervolgvragen V1–V8, 2026-10-06, alle A; `contract.md` §9):**
+  - **V1 — reuzenskeletten en titanen-rotsen:** skeletten 20–40 blokken lang (`bone_block` + verweerd basalt), half begraven; titanen-rotsen als liggende of geknielde reuzensilhouetten van basalt (15–35 hoog). Beide als sjabloon-features binnen 3×3 chunks (hergebruik `surface_fossil`, eigen `.nbt`-sjablonen uit een deterministisch script). Kolossale exemplaren zouden een structure zijn (fase 3).
+  - **V2 — zielvuur:** vanilla zielvuur op zielgrond rond de skeletten: blijvend, licht 10, brandschade bij aanraking, **geen** hittebron.
+  - **V3 — smeulwoud:** verkoolde stammen met `ember_leaves`: emissive texture, **geen bloklicht**; bomen 6–12 hoog, dicht genoeg voor een woud.
+  - **V4 — zwevende eilanden:** Y 150–210, alleen boven calderameren en lavarivieren, ~1 cluster van 1–4 eilanden (8–30 breed) per ~3 caldera's, met lavavalletjes eraf.
+  - **V5 — horizon-vulkanen:** de grootste kegels Y 230–260 (boven de wolken, ruimte voor de pluim tot de bouwlimiet), gewone kegels Y 140–200.
+  - **V6 — aswolk:** gewichten asregen 45 / uitbarsting 40 / aswolk 15; aswolk 120–240 s, met ~20 s waarschuwing (gerommel, verdonkering).
+  - **V7 — voedsel:** geiten alleen in `volcanic_peaks` (lage weight, groepjes 1–3, op basalt/blackstone/as); één zeldzame eetbare plant (`ember_berry_bush`), alleen in `ember_woods` en de slapende krater.
+  - **V8 — slapende krater:** een eigen micro-biome **`dormant_caldera`** (8e biome naast de 7 sub-biomes; hitte ↓ 2,0/s zoals `oasis_flats`, groen, eigen kleuren en geluid), **zonder natuurlijk water**. Water in ring 3 alleen diep ondergronds (aquifers onder Y ~0). Gekozen via een derde router-as: `weirdness` = `ring_3/overworld/caldera_dormant` (`ring_blend/overworld_weirdness`; ring 1 blijft vanilla).
+  - **Verkoold hout is niet brandbaar** (besluit gebruiker).
 - **Werkwijze (infra):**
   - contract-first in golven; stromen parallel in eigen git-worktrees; één integratie-agent (merge, `runData`, prestatie, docs);
   - drie teststops: **4a** terrein-wow (blokkerend), **4b** overleving + sfeer, **4c** eindcheck incl. Nether-3;
@@ -539,7 +549,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - Eigen ring 3-invoer voor `ring_blend`, met per biome-regio een eigen vorm (kegels, stromen, zeekom).
 - Het gestolen water is overal zichtbaar: geen natuurlijk water, een lege zeekom, en geplaatst water verdampt bovengronds.
 
-**Biomes (7; was 5)**
+**Biomes (7 + micro-biome `dormant_caldera`; was 5)**
 | Biome (werktitel) | Karakter |
 |---|---|
 | `ashen_wastes` | Grijze asvlakte met verkoolde bomen en aslagen — kernbiome |
@@ -549,6 +559,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 | `sulfur_fields` | Gele zwavelkorst en fumarolen |
 | `ember_woods` | Smeulwoud: verkoolde stammen met gloeiende askronen, vuurflora (sparring ring 3, 2026-10-06) |
 | `titan_fields` | Fantasy-biome (werktitel): titanenveld met half begraven reuzenskeletten, zielvuur rond de skeletten, titanen-rotsen (sparring ring 3) |
+| `dormant_caldera` | Micro-biome (8e, de "oase"): slapende krater, koel en groen, zonder natuurlijk water; gekozen via router-as `weirdness` (V8) |
 
 - Overgangsbiome 3→4: **stoomvenen** (`steam_fens`): hete modderpoelen, geisers en stoomkolommen. Hier komt het gestolen water terug en kookt het tegen de hitte. Stoom is biome-particles (data).
 
@@ -838,10 +849,10 @@ Elke change: één categorie, afgesloten met `/code-review`, `CODEBASE.md` bijge
 |---|---|---|---|
 | 37c | `infra` | Standaard-ringradii 1.500 / 3.500 / **6.000 / 7.800** / 9.500 in `CommonConfig`; contract-sleutels als constanten (`ModBiomes`, `ModTags`); lang-helpers per stroom | 0 |
 | 37d | `infra` | Terreinkaart-debugcommando (PNG: hoogte, biome, doorsnede; backlog) voor de review van teststop 4a | 1 |
-| 39a | `worldgen` | Ring 3-regio-assen + router-klimaat (`ring_blend`), stubs van alle gedeelde ring 3-DF's, Nether-3-regio-as | 0 |
+| 39a | `worldgen` | Ring 3-regio-assen + router-klimaat (`ring_blend`), derde router-as `weirdness` (`caldera_dormant`, V8), stubs van alle gedeelde ring 3-DF's, Nether-3-regio-as | 0 |
 | 38b | `blocks` | Smeulwoud- en vuurflora-set, instortende askorst, gloeiend as-afgietsel | 1 |
 | 40b | `blocks` | Vuurkristal (blok, knoppen, cluster, item) | 1 |
-| 39b | `worldgen` | Biome-skelet ring 3 (7 biomes + slapende krater volgens de antwoorden), klimaatindeling, kleuren, voorlopige surface met vanilla-blokken | 1 |
+| 39b | `worldgen` | Biome-skelet ring 3 (7 sub-biomes + `dormant_caldera`), klimaatindeling, kleuren, voorlopige surface met vanilla-blokken | 1 |
 | 39c | `worldgen` | Echte ring 3-blokken in de surface (na integratie van `blocks`), vóór teststop 4a | 1 (na merge) |
 | 41b | `worldgen` | Vuurkristal-geodes (holte + bekleding, sjabloon dauwgeodes) | 2 |
 | 47b | `worldgen` | `titan_fields`: reuzenskeletten, zielvuur, titanen-rotsen (features) | 2 |

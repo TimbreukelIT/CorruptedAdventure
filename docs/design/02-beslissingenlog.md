@@ -408,3 +408,12 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-06 | textures | Ring 3: direct goede eerste textures in 37b-stijl, geen placeholder-ronde (vraag 20; uitzondering op §1.4) | Teststop 4a ziet echte kleur en gloed |
 | 2026-10-06 | infra | Bouwplan: 38–57 blijven als werkpakketten, nieuwe pakketten krijgen een letter (37c, 37d, 38b, 39a–c, 40b, 41b, 47b, 47c, 53b, 57a) (vraag 21) | Verwijzingen in backlog en docs blijven kloppen |
 | 2026-10-06 | infra | Orkestratie ring 3: handmatig door de hoofdsessie met agents, geen Workflow-tool (vraag 22) | Keuze gebruiker |
+| 2026-10-06 | worldgen | V1 A: reuzenskeletten 20–40 blokken (`bone_block` + basalt), titanen-rotsen 15–35 hoog, beide als sjabloon-features binnen 3×3 chunks (hergebruik `surface_fossil`) | Herkenbaar, deterministisch, binnen de feature-grens; kolossaal = structure (fase 3) |
+| 2026-10-06 | worldgen | V2 A: zielvuur = vanilla (blijvend, licht 10, brandschade), geen hittebron | Geen code; blauw fantasy-contrast zonder de schaarste te ondermijnen |
+| 2026-10-06 | blocks | V3 A: `ember_leaves` emissive zonder bloklicht; smeulwoud-bomen 6–12 hoog | Gloed zonder lichtkosten bij generatie; monsters spawnen er gewoon |
+| 2026-10-06 | worldgen | V4 A: zwevende basalteilanden Y 150–210, alleen boven calderameren/lavarivieren, ~1 cluster (1–4 eilanden, 8–30 breed) per ~3 caldera's, met lavavalletjes | Zeldzaam landmark binnen het prestatiebudget |
+| 2026-10-06 | worldgen | V5 A: grootste kegels Y 230–260, gewone Y 140–200 | Boven de wolken zichtbaar vanuit `dry_riverbeds`; ruimte voor de pluim |
+| 2026-10-06 | atmosphere | V6 A: weergewichten ring 3 asregen 45 / uitbarsting 40 / aswolk 15; aswolk 120–240 s met ~20 s waarschuwing | Piekmoment dat je kunt ontvluchten |
+| 2026-10-06 | worldgen | V7 A: geiten alleen in `volcanic_peaks` (lage weight, groepjes 1–3); één zeldzame eetbare plant (`ember_berry_bush`) alleen in `ember_woods` en `dormant_caldera` | Voedsel blijft schaars en riskant; geen botsing met de schaarste |
+| 2026-10-06 | worldgen | V8 A: slapende krater = micro-biome `dormant_caldera` (8e biome; hitte ↓ 2,0/s), zonder natuurlijk water; water in ring 3 alleen diep ondergronds; derde router-as `weirdness` = `caldera_dormant` | Duidelijk rustpunt zoals `oasis_flats`; past bij "water gestolen" |
+| 2026-10-06 | blocks | Verkoold hout (houtset ring 3) is niet brandbaar | Besluit gebruiker; geen bosbranden naast lava |

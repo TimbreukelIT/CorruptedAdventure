@@ -17,7 +17,7 @@ Bron: `docs/plans/ring-3/contract.md` §1, §2, §3 (tags), §8; `docs/plans/rin
    - `RingTargets.middleRadius` geeft 4.750/6.900/8.650.
    - Tests die vaste coördinaten van ring 3–5 gebruiken, nalopen.
    - `fase-1-wereld.md` §1.13 is al bijgewerkt.
-2. **Biome-keys** in `ModBiomes` (alleen `ResourceKey`-constanten, geen bootstrap): `ASHEN_WASTES`, `VOLCANIC_PEAKS`, `EMBER_WOODS`, `BASALT_FLOWS`, `SULFUR_FIELDS`, `DRIED_SEABED`, `TITAN_FIELDS`, `DORMANT_CALDERA` (*alleen als vraag V8 = A of B*), `STEAM_FENS`, `FROZEN_LAVA_SEA`, `RIME_FOREST`, `GLACIER_RIFTS`. Een key zonder biome in de registry is geen fout zolang niemand hem in data gebruikt.
+2. **Biome-keys** in `ModBiomes` (alleen `ResourceKey`-constanten, geen bootstrap): `ASHEN_WASTES`, `VOLCANIC_PEAKS`, `EMBER_WOODS`, `BASALT_FLOWS`, `SULFUR_FIELDS`, `DRIED_SEABED`, `TITAN_FIELDS`, `DORMANT_CALDERA` (V8 = A), `STEAM_FENS`, `FROZEN_LAVA_SEA`, `RIME_FOREST`, `GLACIER_RIFTS`. Een key zonder biome in de registry is geen fout zolang niemand hem in data gebruikt.
 3. **TagKeys** in `ModTags`:
    - blok: `heat_sources`, `warmth_sources`, `ring_3_stones`, `charred_logs`, `rimeshroom_stems`;
    - item: `charred_logs`, `rimeshroom_stems`;

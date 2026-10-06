@@ -19,7 +19,7 @@ Scope: ring 3 + Nether-ring 3 (bouwplan blok E). Werkwijze besloten in de sparri
 ## 2. Golven
 
 ### Golf 0 — fundament (sequentieel, in de hoofdwerkmap)
-1. **Open vragen V1–V8** (`contract.md` §9) laten beantwoorden en in het contract verwerken. Daarna staat het contract vast.
+1. **Open vragen V1–V8** (`contract.md` §9): beantwoord 2026-10-06, alle A; verwerkt in het contract en de plannen. Het contract staat vast.
 2. **37c** (`infra`, plan `docs/plans/change-37c.md`):
    - ringradii 6.000/7.800 in `CommonConfig`;
    - contract-sleutels als constanten (`ModBiomes`-keys, `ModTags`-TagKeys);
@@ -37,12 +37,12 @@ Scope: ring 3 + Nether-ring 3 (bouwplan blok E). Werkwijze besloten in de sparri
 
 | Stroom | Pakketten | Af als | Afhankelijk van |
 |---|---|---|---|
-| B | 38, 38b, 40, 40b, 46, 51, 52 (in die volgorde, één commit per pakket) | alle contractblokken geregistreerd met gedrag, loot, tags; models verwijzen naar T's paden | golf 0; V2, V3, V7 |
-| W-terrein | 39 | kegels, caldera's (actief/slapend), lavarivieren + vloeistofregel, zwevende eilanden, asvlaktes, zeekom, titanenveldvorm; surface tijdelijk vanilla (basalt, blackstone, magma); prestatie gemeten in de eigen worktree (indicatief) | golf 0; V4, V5, V8 |
-| W-biomes | 39b | 7 (+ slapende krater, V8) biomes in de `multi_noise` van ring 3 op de regio-assen; kleuren, temperatuur, spawns (geiten V7); voorlopige surface met vanilla-blokken; tags `is_ring_3`, `heat_peaks`, `heat_refuges`; lang | golf 0 (stubs); V7, V8 |
+| B | 38, 38b, 40, 40b, 46, 51, 52 (in die volgorde, één commit per pakket) | alle contractblokken geregistreerd met gedrag, loot, tags; models verwijzen naar T's paden | golf 0 |
+| W-terrein | 39 | kegels, caldera's (actief/slapend), lavarivieren + vloeistofregel, zwevende eilanden, asvlaktes, zeekom, titanenveldvorm; surface tijdelijk vanilla (basalt, blackstone, magma); prestatie gemeten in de eigen worktree (indicatief) | golf 0 |
+| W-biomes | 39b | 7 sub-biomes + `dormant_caldera` (8e, router-as `weirdness`) in de `multi_noise` van ring 3 op de regio-assen; kleuren, temperatuur, spawns (geiten in `volcanic_peaks`); voorlopige surface met vanilla-blokken; tags `is_ring_3`, `heat_peaks`, `heat_refuges`; lang | golf 0 (stubs) |
 | W-nether | 53 | Nether-3-terrein (bevroren lavazee, ijspilaren-vormen, warme scheuren als vorm), `ring_3/nether/terrain` in `ring_blend/nether`; surface tijdelijk vanilla (`packed_ice`, `blue_ice`, `basalt`) | golf 0 |
 | C | 43, 44 | hitte-meter volgens contract §5 (incl. weer-modifiers asregen/uitbarsting) + water verdampt (alle routes); unit tests; S | golf 0 (tags/keys) |
-| A | 45 | asregen, uitbarsting (rode lucht, gerommel, lavabommen), aswolk (nieuw type); hitte-factoren in de config (de modifiers bouwt C); particles `ash_flake`/`ember`; S + 2 clients | golf 0; V6 |
+| A | 45 | asregen, uitbarsting (rode lucht, gerommel, lavabommen), aswolk (nieuw type); hitte-factoren in de config (de modifiers bouwt C); particles `ash_flake`/`ember`; S + 2 clients | golf 0 |
 | T | 57a | eerste goede versies van alle ring 3- en Nether-3-textures + particle-sprites; contactblad + `VanillaCompare` | golf 0 (namen) |
 | I | 37d | `/ca terrainmap` (PNG: hoogte, biome, doorsnede) | golf 0 |
 
@@ -94,6 +94,9 @@ Scope: ring 3 + Nether-ring 3 (bouwplan blok E). Werkwijze besloten in de sparri
 - Backlog-opruiming ring 3.
 
 **Teststop 4c — eindcheck** ring 3 + Nether-3, alle W-lijsten van de pakketten, standaard-W (elke ring en grens, portal per ring, ook overworld ring 3 → Nether-3), prestatie en determinisme.
+
+## 2b. Implementatiekeuzes (niet door de gebruiker besloten)
+- **Hitte-modifiers van het ring 3-weer bouwt C, niet A** (afwijking van ring 2, waar change 28 de hittegolf-modifier in `weather/` bouwde). Reden: A en C wachten in golf 1 niet op elkaar. A levert alleen de factoren in `[weather.ring3]`; de aswolk-modifier koppelt C in golf 2 (`contract.md` §5).
 
 ## 3. Afhankelijkheden in één oogopslag
 - Iedereen ← golf 0 (contract, constanten, stubs, lang-raamwerk).
