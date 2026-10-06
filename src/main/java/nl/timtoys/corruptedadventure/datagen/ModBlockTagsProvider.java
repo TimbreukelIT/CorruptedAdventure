@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.datagen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
@@ -56,6 +57,58 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
 
         ring2();
         netherRing2();
+        ring3();
+    }
+
+    /**
+     * Ring 3. Ash and pumice are natural ground that carvers cut through, deliberately not in
+     * {@code #base_stone_overworld} (ring 3 picks its own ore hosts through {@code ring_3_stones}). The ash layer is in
+     * {@code #replaceable} like snow, but in no snow tag. Charred wood is Nether wood: in {@code #logs} (via its own
+     * tag) but not in {@code #logs_that_burn}.
+     */
+    private void ring3() {
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.ASH_BLOCK.get(), ModBlocks.ASH_LAYER.get());
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.ASH_LAYER.get());
+        // Like snow: walking through thin ash sounds like ash, not like the block under it.
+        tag(BlockTags.INSIDE_STEP_SOUND_BLOCKS).add(ModBlocks.ASH_LAYER.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.PUMICE.get(), ModBlocks.PUMICE_STAIRS.get(),
+                ModBlocks.PUMICE_SLAB.get(), ModBlocks.PUMICE_WALL.get(), ModBlocks.POLISHED_PUMICE.get(),
+                ModBlocks.POLISHED_PUMICE_STAIRS.get(), ModBlocks.POLISHED_PUMICE_SLAB.get(), ModBlocks.POLISHED_PUMICE_WALL.get(),
+                ModBlocks.PUMICE_BRICKS.get(), ModBlocks.PUMICE_BRICK_STAIRS.get(), ModBlocks.PUMICE_BRICK_SLAB.get(),
+                ModBlocks.PUMICE_BRICK_WALL.get(), ModBlocks.SMOLDERING_STONE.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.PUMICE_STAIRS.get(), ModBlocks.POLISHED_PUMICE_STAIRS.get(),
+                ModBlocks.PUMICE_BRICK_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.PUMICE_SLAB.get(), ModBlocks.POLISHED_PUMICE_SLAB.get(), ModBlocks.PUMICE_BRICK_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.PUMICE_WALL.get(), ModBlocks.POLISHED_PUMICE_WALL.get(), ModBlocks.PUMICE_BRICK_WALL.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get(),
+                ModBlocks.SMOLDERING_STONE.get());
+        tag(ModTags.Blocks.RING_3_STONES).add(Blocks.BASALT, Blocks.BLACKSTONE, ModBlocks.PUMICE.get(), ModBlocks.ASH_BLOCK.get());
+        // Goats only spawn where a biome lists them (volcanic_peaks); this tag only says on what ground: the peak surface,
+        // vanilla basalt, smooth basalt and blackstone (39b) plus pumice and ash (39c). Not smouldering stone (a heat source).
+        tag(BlockTags.GOATS_SPAWNABLE_ON).add(Blocks.BASALT, Blocks.SMOOTH_BASALT, Blocks.BLACKSTONE,
+                ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get());
+
+        // Heat (ring 3) and warmth (Nether ring 3) within a few blocks; soul fire is deliberately no heat source.
+        tag(ModTags.Blocks.HEAT_SOURCES).add(Blocks.LAVA, Blocks.MAGMA_BLOCK, Blocks.FIRE, Blocks.CAMPFIRE,
+                ModBlocks.SMOLDERING_STONE.get());
+        tag(ModTags.Blocks.WARMTH_SOURCES).add(Blocks.LAVA, Blocks.FIRE, Blocks.SOUL_FIRE, Blocks.CAMPFIRE,
+                Blocks.SOUL_CAMPFIRE, Blocks.MAGMA_BLOCK, ModBlocks.SMOLDERING_STONE.get());
+
+        tag(ModTags.Blocks.CHARRED_LOGS).add(ModBlocks.CHARRED_LOG.get(), ModBlocks.CHARRED_WOOD.get(),
+                ModBlocks.STRIPPED_CHARRED_LOG.get(), ModBlocks.STRIPPED_CHARRED_WOOD.get());
+        tag(BlockTags.LOGS).addTag(ModTags.Blocks.CHARRED_LOGS);
+        tag(BlockTags.PLANKS).add(ModBlocks.CHARRED_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.CHARRED_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.CHARRED_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.CHARRED_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.CHARRED_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.CHARRED_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.CHARRED_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.CHARRED_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.CHARRED_BUTTON.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_CHARRED_LOG.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_CHARRED_WOOD.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.CHARRED_FENCE_GATE.get());
     }
 
     /**

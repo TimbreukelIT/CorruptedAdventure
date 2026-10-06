@@ -36,6 +36,19 @@
     "corruptedadventure:small_dew_crystal_bud",
     "corruptedadventure:medium_dew_crystal_bud",
     "corruptedadventure:large_dew_crystal_bud",
-    "corruptedadventure:dew_crystal_cluster"
+    "corruptedadventure:dew_crystal_cluster",
+    "corruptedadventure:pumice",
+    "corruptedadventure:pumice_stairs",
+    "corruptedadventure:pumice_slab",
+    "corruptedadventure:pumice_wall",
+    "corruptedadventure:polished_pumice",
+    "corruptedadventure:polished_pumice_stairs",
+    "corruptedadventure:polished_pumice_slab",
+    "corruptedadventure:polished_pumice_wall",
+    "corruptedadventure:pumice_bricks",
+    "corruptedadventure:pumice_brick_stairs",
+    "corruptedadventure:pumice_brick_slab",
+    "corruptedadventure:pumice_brick_wall",
+    "corruptedadventure:smoldering_stone"
   ]
 }

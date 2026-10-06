@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column_horizontal",
+  "textures": {
+    "end": "corruptedadventure:block/charred_log",
+    "side": "corruptedadventure:block/charred_log"
+  }
+}

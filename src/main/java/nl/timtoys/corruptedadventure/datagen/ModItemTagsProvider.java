@@ -36,6 +36,15 @@ final class ModItemTagsProvider extends ItemTagsProvider {
                 ModBlocks.DRIPSHROOM_FENCE.asItem(), ModBlocks.DRIPSHROOM_FENCE_GATE.asItem(), ModBlocks.DRIPSHROOM_DOOR.asItem(),
                 ModBlocks.DRIPSHROOM_TRAPDOOR.asItem(), ModBlocks.DRIPSHROOM_BUTTON.asItem(),
                 ModBlocks.DRIPSHROOM_PRESSURE_PLATE.asItem());
+        copy(ModTags.Blocks.CHARRED_LOGS, ModTags.Items.CHARRED_LOGS);
+        tag(ItemTags.LOGS).addTag(ModTags.Items.CHARRED_LOGS);
+        // Charred wood does not burn (decision 2026-10-06): no furnace fuel either, like the Nether wood sets.
+        tag(ItemTags.NON_FLAMMABLE_WOOD).add(ModBlocks.CHARRED_LOG.asItem(), ModBlocks.CHARRED_WOOD.asItem(),
+                ModBlocks.STRIPPED_CHARRED_LOG.asItem(), ModBlocks.STRIPPED_CHARRED_WOOD.asItem(),
+                ModBlocks.CHARRED_PLANKS.asItem(), ModBlocks.CHARRED_STAIRS.asItem(), ModBlocks.CHARRED_SLAB.asItem(),
+                ModBlocks.CHARRED_FENCE.asItem(), ModBlocks.CHARRED_FENCE_GATE.asItem(), ModBlocks.CHARRED_DOOR.asItem(),
+                ModBlocks.CHARRED_TRAPDOOR.asItem(), ModBlocks.CHARRED_BUTTON.asItem(),
+                ModBlocks.CHARRED_PRESSURE_PLATE.asItem());
         copy(BlockTags.LEAVES, ItemTags.LEAVES);
         copy(BlockTags.SAPLINGS, ItemTags.SAPLINGS);
         copy(BlockTags.LOGS_THAT_BURN, ItemTags.LOGS_THAT_BURN);

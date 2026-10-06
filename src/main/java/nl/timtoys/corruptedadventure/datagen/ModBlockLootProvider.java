@@ -1,6 +1,11 @@
 package nl.timtoys.corruptedadventure.datagen;
 
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.world.level.block.SnowLayerBlock;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.ItemTags;
@@ -137,6 +142,50 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.SALT_CRYSTAL.get());
 
         netherRing2();
+        ring3();
+    }
+
+    private void ring3() {
+        dropSelf(ModBlocks.ASH_BLOCK.get());
+        add(ModBlocks.ASH_LAYER.get(), this::createAshLayerTable);
+        for (Block block : List.of(ModBlocks.PUMICE.get(), ModBlocks.PUMICE_STAIRS.get(), ModBlocks.PUMICE_WALL.get(),
+                ModBlocks.POLISHED_PUMICE.get(), ModBlocks.POLISHED_PUMICE_STAIRS.get(), ModBlocks.POLISHED_PUMICE_WALL.get(),
+                ModBlocks.PUMICE_BRICKS.get(), ModBlocks.PUMICE_BRICK_STAIRS.get(), ModBlocks.PUMICE_BRICK_WALL.get())) {
+            dropSelf(block);
+        }
+        for (Block slab : List.of(ModBlocks.PUMICE_SLAB.get(), ModBlocks.POLISHED_PUMICE_SLAB.get(), ModBlocks.PUMICE_BRICK_SLAB.get())) {
+            add(slab, this::createSlabItemTable);
+        }
+        dropSelf(ModBlocks.SMOLDERING_STONE.get());
+
+        dropSelf(ModBlocks.CHARRED_LOG.get());
+        dropSelf(ModBlocks.CHARRED_WOOD.get());
+        dropSelf(ModBlocks.STRIPPED_CHARRED_LOG.get());
+        dropSelf(ModBlocks.STRIPPED_CHARRED_WOOD.get());
+        dropSelf(ModBlocks.CHARRED_PLANKS.get());
+        dropSelf(ModBlocks.CHARRED_STAIRS.get());
+        add(ModBlocks.CHARRED_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.CHARRED_FENCE.get());
+        dropSelf(ModBlocks.CHARRED_FENCE_GATE.get());
+        add(ModBlocks.CHARRED_DOOR.get(), this::createDoorTable);
+        dropSelf(ModBlocks.CHARRED_TRAPDOOR.get());
+        dropSelf(ModBlocks.CHARRED_PRESSURE_PLATE.get());
+        dropSelf(ModBlocks.CHARRED_BUTTON.get());
+    }
+
+    /**
+     * One ash layer item per layer (8 for a full block). There is no loose ash item, so this is vanilla's snow layer
+     * table with the layer itself as the drop; the block's tool rule (shovel) decides whether anything drops.
+     */
+    private LootTable.Builder createAshLayerTable(Block block) {
+        var item = LootItem.lootTableItem(block);
+        for (int layers = 2; layers <= SnowLayerBlock.MAX_HEIGHT; layers++) {
+            item.apply(SetItemCountFunction.setCount(ConstantValue.exactly(layers))
+                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                            .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SnowLayerBlock.LAYERS, layers))));
+        }
+        return LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                .setRolls(ConstantValue.exactly(1.0F)).add(item)));
     }
 
     private void netherRing2() {

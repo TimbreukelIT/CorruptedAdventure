@@ -2,7 +2,10 @@ package nl.timtoys.corruptedadventure.registry;
 
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -28,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -208,6 +212,55 @@ class ModBlocksTest {
         assertEquals(7, ModBlocks.GLOW_MOLD.get().defaultBlockState()
                 .setValue(MultifaceBlock.getFaceProperty(Direction.UP), true).getLightEmission());
         assertEquals(0, ModBlocks.SPORE_SPROUTS.get().defaultBlockState().getLightEmission());
+    }
+
+    /** Ring 3 follows Nether ring 2 directly (contract §3), in this order. */
+    @Test
+    void ring3FollowsTheDewBlocksInOrder() {
+        List<Item> shown = blockItems();
+        int cluster = shown.indexOf(ModBlocks.DEW_CRYSTAL_CLUSTER.asItem());
+        List<Item> ring3 = Stream.of(ModBlocks.ASH_BLOCK, ModBlocks.ASH_LAYER,
+                ModBlocks.PUMICE, ModBlocks.PUMICE_STAIRS, ModBlocks.PUMICE_SLAB, ModBlocks.PUMICE_WALL,
+                ModBlocks.POLISHED_PUMICE, ModBlocks.POLISHED_PUMICE_STAIRS, ModBlocks.POLISHED_PUMICE_SLAB,
+                ModBlocks.POLISHED_PUMICE_WALL, ModBlocks.PUMICE_BRICKS, ModBlocks.PUMICE_BRICK_STAIRS,
+                ModBlocks.PUMICE_BRICK_SLAB, ModBlocks.PUMICE_BRICK_WALL, ModBlocks.SMOLDERING_STONE,
+                ModBlocks.CHARRED_LOG, ModBlocks.CHARRED_WOOD, ModBlocks.STRIPPED_CHARRED_LOG, ModBlocks.STRIPPED_CHARRED_WOOD,
+                ModBlocks.CHARRED_PLANKS, ModBlocks.CHARRED_STAIRS, ModBlocks.CHARRED_SLAB, ModBlocks.CHARRED_FENCE,
+                ModBlocks.CHARRED_FENCE_GATE, ModBlocks.CHARRED_DOOR, ModBlocks.CHARRED_TRAPDOOR,
+                ModBlocks.CHARRED_PRESSURE_PLATE, ModBlocks.CHARRED_BUTTON).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(ring3, shown.subList(cluster + 1, cluster + 1 + ring3.size()));
+    }
+
+    @Test
+    void smolderingStoneGlowsAtSevenOnlyThroughItsOverlay() {
+        BlockState stone = ModBlocks.SMOLDERING_STONE.get().defaultBlockState();
+        assertEquals(7, stone.getLightEmission());
+        // Two layers (decision 2026-10-06): the block is lit normally, only the model's glow overlay is full-bright.
+        assertFalse(stone.emissiveRendering(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+        assertFalse(stone.isRandomlyTicking());
+    }
+
+    /** Decision 2026-10-06: charred wood does not burn, so lava never sets it alight (no fire odds either: S). */
+    @Test
+    void charredWoodIsNotIgnitedByLava() {
+        for (DeferredBlock<?> block : List.of(ModBlocks.CHARRED_LOG, ModBlocks.CHARRED_WOOD, ModBlocks.STRIPPED_CHARRED_LOG,
+                ModBlocks.STRIPPED_CHARRED_WOOD, ModBlocks.CHARRED_PLANKS, ModBlocks.CHARRED_STAIRS, ModBlocks.CHARRED_SLAB,
+                ModBlocks.CHARRED_FENCE, ModBlocks.CHARRED_FENCE_GATE, ModBlocks.CHARRED_DOOR, ModBlocks.CHARRED_TRAPDOOR,
+                ModBlocks.CHARRED_PRESSURE_PLATE, ModBlocks.CHARRED_BUTTON)) {
+            assertFalse(block.get().defaultBlockState().ignitedByLava(), block.getId().toString());
+        }
+        assertTrue(Blocks.OAK_PLANKS.defaultBlockState().ignitedByLava());
+    }
+
+    @Test
+    void ashBlockDoesNotFall() {
+        assertFalse(ModBlocks.ASH_BLOCK.get() instanceof FallingBlock);
+    }
+
+    private static List<Item> blockItems() {
+        List<Item> shown = new ArrayList<>();
+        ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).forEach(shown::add);
+        return shown;
     }
 
     private static String experience(DropExperienceBlock ore) {

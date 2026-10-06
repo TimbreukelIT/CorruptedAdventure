@@ -12,6 +12,19 @@
     "corruptedadventure:dripshroom_door",
     "corruptedadventure:dripshroom_trapdoor",
     "corruptedadventure:dripshroom_button",
-    "corruptedadventure:dripshroom_pressure_plate"
+    "corruptedadventure:dripshroom_pressure_plate",
+    "corruptedadventure:charred_log",
+    "corruptedadventure:charred_wood",
+    "corruptedadventure:stripped_charred_log",
+    "corruptedadventure:stripped_charred_wood",
+    "corruptedadventure:charred_planks",
+    "corruptedadventure:charred_stairs",
+    "corruptedadventure:charred_slab",
+    "corruptedadventure:charred_fence",
+    "corruptedadventure:charred_fence_gate",
+    "corruptedadventure:charred_door",
+    "corruptedadventure:charred_trapdoor",
+    "corruptedadventure:charred_button",
+    "corruptedadventure:charred_pressure_plate"
   ]
 }

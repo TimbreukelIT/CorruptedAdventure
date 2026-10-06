@@ -133,6 +133,42 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.DEW_SOURCE);
         // The dew crystal stages: ModBlockStateProvider.crystalCluster writes their item models.
         basicItem(ModItems.DEW_CRYSTAL.get());
+
+        ring3();
+    }
+
+    private void ring3() {
+        blockItem(ModBlocks.ASH_BLOCK);
+        // Like vanilla's snow item: the one-layer model.
+        withExistingParent(ModBlocks.ASH_LAYER.getId().getPath(), modLoc("block/ash_layer_height2"));
+        blockItem(ModBlocks.PUMICE);
+        blockItem(ModBlocks.PUMICE_STAIRS);
+        blockItem(ModBlocks.PUMICE_SLAB);
+        wallInventory(ModBlocks.PUMICE_WALL.getId().getPath(), modLoc("block/pumice"));
+        blockItem(ModBlocks.POLISHED_PUMICE);
+        blockItem(ModBlocks.POLISHED_PUMICE_STAIRS);
+        blockItem(ModBlocks.POLISHED_PUMICE_SLAB);
+        wallInventory(ModBlocks.POLISHED_PUMICE_WALL.getId().getPath(), modLoc("block/polished_pumice"));
+        blockItem(ModBlocks.PUMICE_BRICKS);
+        blockItem(ModBlocks.PUMICE_BRICK_STAIRS);
+        blockItem(ModBlocks.PUMICE_BRICK_SLAB);
+        wallInventory(ModBlocks.PUMICE_BRICK_WALL.getId().getPath(), modLoc("block/pumice_bricks"));
+        blockItem(ModBlocks.SMOLDERING_STONE);
+
+        ResourceLocation planks = modLoc("block/charred_planks");
+        blockItem(ModBlocks.CHARRED_LOG);
+        blockItem(ModBlocks.CHARRED_WOOD);
+        blockItem(ModBlocks.STRIPPED_CHARRED_LOG);
+        blockItem(ModBlocks.STRIPPED_CHARRED_WOOD);
+        blockItem(ModBlocks.CHARRED_PLANKS);
+        blockItem(ModBlocks.CHARRED_STAIRS);
+        blockItem(ModBlocks.CHARRED_SLAB);
+        fenceInventory(ModBlocks.CHARRED_FENCE.getId().getPath(), planks);
+        blockItem(ModBlocks.CHARRED_FENCE_GATE);
+        basicItem(ModBlocks.CHARRED_DOOR.asItem());
+        withExistingParent(ModBlocks.CHARRED_TRAPDOOR.getId().getPath(), modLoc("block/charred_trapdoor_bottom"));
+        blockItem(ModBlocks.CHARRED_PRESSURE_PLATE);
+        buttonInventory(ModBlocks.CHARRED_BUTTON.getId().getPath(), planks);
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

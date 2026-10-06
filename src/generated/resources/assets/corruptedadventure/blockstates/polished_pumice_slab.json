@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "corruptedadventure:block/polished_pumice_slab"
+    },
+    "type=double": {
+      "model": "corruptedadventure:block/polished_pumice"
+    },
+    "type=top": {
+      "model": "corruptedadventure:block/polished_pumice_slab_top"
+    }
+  }
+}

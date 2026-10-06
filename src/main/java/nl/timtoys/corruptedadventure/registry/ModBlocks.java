@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
@@ -338,6 +339,83 @@ public final class ModBlocks {
     public static final DeferredBlock<AmethystClusterBlock> DEW_CRYSTAL_CLUSTER = register("dew_crystal_cluster",
             () -> new AmethystClusterBlock(7.0F, 3.0F, dewCrystal(Blocks.AMETHYST_CLUSTER, 5)));
 
+    // ---- Ring 3 ----
+    // Volcanic ring: ash ground, pumice, smouldering stone and the charred wood set.
+    /** Plain ash ground: sand's strength and sound, but it does not fall. */
+    public static final DeferredBlock<Block> ASH_BLOCK = register("ash_block",
+            () -> new Block(Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_GRAY)));
+    /**
+     * Vanilla's snow layer (1–8 layers, stacking, survival, no drops without a shovel) with properties that leave out
+     * the random ticks: a snow layer only melts from a random tick, so ash never melts. In no snow tag. Like any full
+     * light-occluder it smothers grass under it, even at one layer (vanilla only spares grass under one snow layer).
+     */
+    public static final DeferredBlock<SnowLayerBlock> ASH_LAYER = register("ash_layer",
+            () -> new SnowLayerBlock(Properties.of().mapColor(MapColor.COLOR_GRAY).replaceable().forceSolidOff()
+                    .strength(0.1F).requiresCorrectToolForDrops().sound(SoundType.SAND)
+                    .isViewBlocking((state, level, pos) -> state.getValue(SnowLayerBlock.LAYERS) >= SnowLayerBlock.MAX_HEIGHT)
+                    .pushReaction(PushReaction.DESTROY)));
+
+    // Pumice: the tuff family's shapes and sounds in a light porous stone.
+    public static final DeferredBlock<Block> PUMICE = register("pumice", () -> new Block(pumice(Blocks.TUFF)));
+    public static final DeferredBlock<StairBlock> PUMICE_STAIRS = register("pumice_stairs",
+            () -> new StairBlock(PUMICE.get().defaultBlockState(), pumice(Blocks.TUFF_STAIRS)));
+    public static final DeferredBlock<SlabBlock> PUMICE_SLAB = register("pumice_slab",
+            () -> new SlabBlock(pumice(Blocks.TUFF_SLAB)));
+    public static final DeferredBlock<WallBlock> PUMICE_WALL = register("pumice_wall",
+            () -> new WallBlock(pumice(Blocks.TUFF_WALL)));
+    public static final DeferredBlock<Block> POLISHED_PUMICE = register("polished_pumice",
+            () -> new Block(pumice(Blocks.POLISHED_TUFF)));
+    public static final DeferredBlock<StairBlock> POLISHED_PUMICE_STAIRS = register("polished_pumice_stairs",
+            () -> new StairBlock(POLISHED_PUMICE.get().defaultBlockState(), pumice(Blocks.POLISHED_TUFF_STAIRS)));
+    public static final DeferredBlock<SlabBlock> POLISHED_PUMICE_SLAB = register("polished_pumice_slab",
+            () -> new SlabBlock(pumice(Blocks.POLISHED_TUFF_SLAB)));
+    public static final DeferredBlock<WallBlock> POLISHED_PUMICE_WALL = register("polished_pumice_wall",
+            () -> new WallBlock(pumice(Blocks.POLISHED_TUFF_WALL)));
+    public static final DeferredBlock<Block> PUMICE_BRICKS = register("pumice_bricks",
+            () -> new Block(pumice(Blocks.TUFF_BRICKS)));
+    public static final DeferredBlock<StairBlock> PUMICE_BRICK_STAIRS = register("pumice_brick_stairs",
+            () -> new StairBlock(PUMICE_BRICKS.get().defaultBlockState(), pumice(Blocks.TUFF_BRICK_STAIRS)));
+    public static final DeferredBlock<SlabBlock> PUMICE_BRICK_SLAB = register("pumice_brick_slab",
+            () -> new SlabBlock(pumice(Blocks.TUFF_BRICK_SLAB)));
+    public static final DeferredBlock<WallBlock> PUMICE_BRICK_WALL = register("pumice_brick_wall",
+            () -> new WallBlock(pumice(Blocks.TUFF_BRICK_WALL)));
+
+    /**
+     * Blackstone with glowing cracks (light 7; only the cracks glow in the dark, through the emissive overlay of its
+     * model). It does no damage itself; the heat comes from the conditions (it is in {@code #heat_sources}).
+     */
+    public static final DeferredBlock<Block> SMOLDERING_STONE = register("smoldering_stone",
+            () -> new Block(Properties.ofFullCopy(Blocks.BLACKSTONE).lightLevel(state -> 7)));
+
+    // Charred wood: burnt-out wood that no longer burns (decision 2026-10-06), so the crimson set is the template
+    // (no fire odds, not ignited by lava, no furnace fuel): no forest fires next to the lava.
+    public static final DeferredBlock<StrippableLogBlock> CHARRED_LOG = register("charred_log",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_CHARRED_LOG, charred(Blocks.CRIMSON_STEM)));
+    public static final DeferredBlock<StrippableLogBlock> CHARRED_WOOD = register("charred_wood",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_CHARRED_WOOD, charred(Blocks.CRIMSON_HYPHAE)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_CHARRED_LOG = register("stripped_charred_log",
+            () -> new RotatedPillarBlock(charred(Blocks.STRIPPED_CRIMSON_STEM)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_CHARRED_WOOD = register("stripped_charred_wood",
+            () -> new RotatedPillarBlock(charred(Blocks.STRIPPED_CRIMSON_HYPHAE)));
+    public static final DeferredBlock<Block> CHARRED_PLANKS = register("charred_planks",
+            () -> new Block(charred(Blocks.CRIMSON_PLANKS)));
+    public static final DeferredBlock<StairBlock> CHARRED_STAIRS = register("charred_stairs",
+            () -> new StairBlock(CHARRED_PLANKS.get().defaultBlockState(), charred(Blocks.CRIMSON_STAIRS)));
+    public static final DeferredBlock<SlabBlock> CHARRED_SLAB = register("charred_slab",
+            () -> new SlabBlock(charred(Blocks.CRIMSON_SLAB)));
+    public static final DeferredBlock<FenceBlock> CHARRED_FENCE = register("charred_fence",
+            () -> new FenceBlock(charred(Blocks.CRIMSON_FENCE)));
+    public static final DeferredBlock<FenceGateBlock> CHARRED_FENCE_GATE = register("charred_fence_gate",
+            () -> new FenceGateBlock(ModWoodTypes.CHARRED, charred(Blocks.CRIMSON_FENCE_GATE)));
+    public static final DeferredBlock<DoorBlock> CHARRED_DOOR = registerDoor("charred_door",
+            () -> new DoorBlock(ModWoodTypes.CHARRED_SET, charred(Blocks.CRIMSON_DOOR)));
+    public static final DeferredBlock<TrapDoorBlock> CHARRED_TRAPDOOR = register("charred_trapdoor",
+            () -> new TrapDoorBlock(ModWoodTypes.CHARRED_SET, charred(Blocks.CRIMSON_TRAPDOOR)));
+    public static final DeferredBlock<PressurePlateBlock> CHARRED_PRESSURE_PLATE = register("charred_pressure_plate",
+            () -> new PressurePlateBlock(ModWoodTypes.CHARRED_SET, charred(Blocks.CRIMSON_PRESSURE_PLATE)));
+    public static final DeferredBlock<ButtonBlock> CHARRED_BUTTON = register("charred_button",
+            () -> new ButtonBlock(ModWoodTypes.CHARRED_SET, 30, charred(Blocks.CRIMSON_BUTTON)));
+
     private ModBlocks() {
     }
 
@@ -383,6 +461,16 @@ public final class ModBlocks {
     /** Dripshroom stem and hyphae (bark outside): dark grey-green on the map. */
     private static Properties dripshroomBark(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_GRAY);
+    }
+
+    /** Pumice (all shapes): the tuff family's behaviour and sounds, light grey on the map. */
+    private static Properties pumice(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.COLOR_LIGHT_GRAY);
+    }
+
+    /** Charred wood (all shapes): crimson's behaviour and sounds, black on the map. */
+    private static Properties charred(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.COLOR_BLACK);
     }
 
     private static <B extends Block> DeferredBlock<B> register(String name, Supplier<B> block) {

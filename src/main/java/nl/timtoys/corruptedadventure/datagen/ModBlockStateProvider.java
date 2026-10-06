@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SnowyDirtBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WallBlock;
@@ -65,6 +66,61 @@ final class ModBlockStateProvider extends BlockStateProvider {
                         modLoc("block/crimson_soul_crystal_ore_overlay_side"), modLoc("block/soul_crystal_ore_overlay")), true);
 
         ring2();
+        ring3();
+    }
+
+    /** Ring 3: ash, pumice, smouldering stone and the charred set (laid out like the dripshroom set). */
+    private void ring3() {
+        ModelFile ash = cubeAll(ModBlocks.ASH_BLOCK.get());
+        simpleBlock(ModBlocks.ASH_BLOCK.get(), ash);
+        ashLayer(ash);
+        stoneFamily(ModBlocks.PUMICE.get(), ModBlocks.PUMICE_STAIRS.get(), ModBlocks.PUMICE_SLAB.get(), ModBlocks.PUMICE_WALL.get());
+        stoneFamily(ModBlocks.POLISHED_PUMICE.get(), ModBlocks.POLISHED_PUMICE_STAIRS.get(),
+                ModBlocks.POLISHED_PUMICE_SLAB.get(), ModBlocks.POLISHED_PUMICE_WALL.get());
+        stoneFamily(ModBlocks.PUMICE_BRICKS.get(), ModBlocks.PUMICE_BRICK_STAIRS.get(),
+                ModBlocks.PUMICE_BRICK_SLAB.get(), ModBlocks.PUMICE_BRICK_WALL.get());
+        glowingCube(ModBlocks.SMOLDERING_STONE.get());
+
+        logBlock(ModBlocks.CHARRED_LOG.get());
+        axisBlock(ModBlocks.CHARRED_WOOD.get(), blockTexture(ModBlocks.CHARRED_LOG.get()), blockTexture(ModBlocks.CHARRED_LOG.get()));
+        logBlock(ModBlocks.STRIPPED_CHARRED_LOG.get());
+        axisBlock(ModBlocks.STRIPPED_CHARRED_WOOD.get(),
+                blockTexture(ModBlocks.STRIPPED_CHARRED_LOG.get()), blockTexture(ModBlocks.STRIPPED_CHARRED_LOG.get()));
+        ResourceLocation planks = blockTexture(ModBlocks.CHARRED_PLANKS.get());
+        simpleBlock(ModBlocks.CHARRED_PLANKS.get());
+        stairsBlock(ModBlocks.CHARRED_STAIRS.get(), planks);
+        slabBlock(ModBlocks.CHARRED_SLAB.get(), planks, planks);
+        fenceBlock(ModBlocks.CHARRED_FENCE.get(), planks);
+        fenceGateBlock(ModBlocks.CHARRED_FENCE_GATE.get(), planks);
+        doorBlockWithRenderType(ModBlocks.CHARRED_DOOR.get(),
+                modLoc("block/charred_door_bottom"), modLoc("block/charred_door_top"), "cutout");
+        trapdoorBlockWithRenderType(ModBlocks.CHARRED_TRAPDOOR.get(), modLoc("block/charred_trapdoor"), true, "cutout");
+        pressurePlateBlock(ModBlocks.CHARRED_PRESSURE_PLATE.get(), planks);
+        buttonBlock(ModBlocks.CHARRED_BUTTON.get(), planks);
+    }
+
+    /**
+     * A block whose glowing parts glow in the dark (decision 2026-10-06: two layers): the base texture {@code <name>}
+     * lit normally, with the emissive cutout overlay {@code <name>_glow} (only the glowing pixels) on top, the ore model.
+     */
+    private void glowingCube(Block block) {
+        ResourceLocation base = blockTexture(block);
+        oreWithOverlay(block, base, CubeTextures.all(base), CubeTextures.all(base.withSuffix("_glow")), true);
+    }
+
+    /**
+     * Like vanilla's snow layer: layers 1–7 reuse vanilla's {@code snow_height2..14} shapes with the ash texture, 8 layers
+     * is the ash block's model. The item uses the one-layer model.
+     */
+    private void ashLayer(ModelFile full) {
+        ResourceLocation ash = blockTexture(ModBlocks.ASH_BLOCK.get());
+        getVariantBuilder(ModBlocks.ASH_LAYER.get()).forAllStates(state -> {
+            int layers = state.getValue(SnowLayerBlock.LAYERS);
+            ModelFile model = layers == SnowLayerBlock.MAX_HEIGHT ? full
+                    : models().withExistingParent("ash_layer_height" + 2 * layers, mcLoc("block/snow_height" + 2 * layers))
+                            .texture("particle", ash).texture("texture", ash);
+            return ConfiguredModel.builder().modelFile(model).build();
+        });
     }
 
     private void ring2() {

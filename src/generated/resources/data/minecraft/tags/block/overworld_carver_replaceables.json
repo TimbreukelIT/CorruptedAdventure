@@ -6,6 +6,9 @@
     "corruptedadventure:cracked_clay",
     "corruptedadventure:loose_sand",
     "corruptedadventure:salt_crust",
-    "corruptedadventure:salt_block"
+    "corruptedadventure:salt_block",
+    "corruptedadventure:ash_block",
+    "corruptedadventure:pumice",
+    "corruptedadventure:smoldering_stone"
   ]
 }

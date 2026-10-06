@@ -53,3 +53,48 @@ Gedrag server-side (instorten, geiser-duw, Silk Touch). Particles via `animateTi
 
 ## Bij afronding
 Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onderaan dit bestand; rapport aan main.
+
+## CODEBASE-delta
+
+**Mappenstructuur / Belangrijke classes**
+- `block/ModWoodTypes.java`: + `CHARRED_SET` (geregistreerd, `corruptedadventure:charred`) en `CHARRED` (niet geregistreerd); Nether-hout-sets via de helpers `netherWoodSet`/`netherWood` (crimson-geluiden; `DRIPSHROOM_*` gebruikt ze nu ook).
+- `datagen/ModBlockStateProvider.java`: + `ring3()`, `ashLayer(full)` (lagen 1–7 = vanilla `snow_height2..14` als parent met de as-texture, 8 = het asblok-model), `glowingCube(block)` = twee lagen: basis `<naam>` + emissive cutout-overlay `<naam>_glow` (via `oreWithOverlay`).
+- `datagen/ModBlockLootProvider.java`: + `ring3()`, `createAshLayerTable` (aantal = lagen).
+- `datagen/lang/Ring3BlockNames.java`: namen (en + nl) van alle ring 3-/Nether-3-blokken en -items.
+- Tests: `block/AshLayerTest.java` (vormen = vanilla-sneeuwlaag per laag, alleen `layers`, nooit random ticks, volle stapel blokkeert zicht); `ModWoodTypesTest` + charred; `ModBlocksTest` + ring 3-volgorde (direct na `dew_crystal_cluster`), smeulsteen licht 7 zonder `emissiveRendering`, verkoold hout niet `ignitedByLava`, asblok valt niet.
+
+**Registries — Blocks (ring 3, volgorde = creative tab, direct na Nether-ring 2)**
+| Registry-naam | Ring | Class | Opmerking |
+|---|---|---|---|
+| `ash_block` | 3 | `Block` | kopie `sand` (valt niet) + `COLOR_GRAY`; dropt zichzelf; `#mineable/shovel`, `#overworld_carver_replaceables`, `ring_3_stones`, `#goats_spawnable_on`; `cube_all` |
+| `ash_layer` | 3 | `SnowLayerBlock` (vanilla) | eigen properties = vanilla-sneeuwlaag zonder `randomTicks` (smelt dus nooit), `COLOR_GRAY`, `SoundType.SAND`, shovel nodig voor drop; loot = `ash_layer` × lagen; `#replaceable`, `#inside_step_sound_blocks`, `#mineable/shovel`; **geen** sneeuwtag; smoort gras eronder (ook bij 1 laag); models `ash_layer_height2..14` (parent vanilla `snow_height*`), 8 lagen = `ash_block` |
+| `pumice`, `polished_pumice`, `pumice_bricks` (+ `_stairs`, `_slab`, `_wall`; bakstenen: `pumice_brick_*`) | 3 | vanilla-classes | kopie tuff-familie (geluiden tuff/polished tuff/tuff bricks) + `COLOR_LIGHT_GRAY`; dropt zichzelf; `#mineable/pickaxe`, `#stairs`/`#slabs`/`#walls`; `pumice` ook `#overworld_carver_replaceables`, `ring_3_stones`, `#goats_spawnable_on` |
+| `smoldering_stone` | 3 | `Block` | kopie `blackstone` + licht 7; geen schade; `heat_sources`, `warmth_sources`, `#mineable/pickaxe`, `#overworld_carver_replaceables`; model `glowingCube` (basis `smoldering_stone` + emissive `smoldering_stone_glow`) |
+| `charred_log`, `charred_wood` (+ `stripped_*`), `charred_planks`, `_stairs`, `_slab`, `_fence`, `_fence_gate`, `_door`, `_trapdoor`, `_pressure_plate`, `_button` | 3 | `StrippableLogBlock` / vanilla-classes | kopie crimson-set + `COLOR_BLACK`; **niet brandbaar** (geen vuurkansen, niet `ignitedByLava`, items in `#non_flammable_wood` = geen brandstof); `BlockSetType` `corruptedadventure:charred` (nether-hout-geluiden), knop 30 ticks; `charred_logs` (in `#logs`, niet `#logs_that_burn`), `#planks`, `#wooden_*`, `c:stripped_*`, `c:fence_gates/wooden`; deur/valluik cutout |
+
+**Registries — overige**
+| `corruptedadventure:charred` | `BlockSetType` + niet-geregistreerde `WoodType`, nether-hout-geluiden | `ModWoodTypes` |
+
+**Tags (inhoud, B)**
+- `heat_sources`: `lava`, `magma_block`, `fire`, `campfire`, `smoldering_stone` (+ latere pakketten). `warmth_sources`: `lava`, `fire`, `soul_fire`, `campfire`, `soul_campfire`, `magma_block`, `smoldering_stone` (+ later).
+- `ring_3_stones`: `basalt`, `blackstone`, `pumice`, `ash_block`.
+- `minecraft:goats_spawnable_on` + `basalt`, `smooth_basalt`, `blackstone`, `ash_block`, `pumice` (op verzoek van W-biomes via main: de piek-bovenlaag van 39b en 39c; contract §3 noemde alleen basalt/blackstone/as).
+
+**Valkuilen**
+- Gloed in twee lagen (besluit gebruiker 2026-10-06): blokken met gloeiende delen krijgen `<naam>` + emissive cutout-overlay `<naam>_glow` (`glowingCube`), niet `emissiveRendering` (dat maakt het hele blok fullbright).
+- Een vanilla-`SnowLayerBlock` smelt alleen via een random tick: properties zonder `randomTicks()` = nooit smelten, geen eigen class nodig.
+
+## Beslissingen
+- 2026-10-06 · blocks · Gloed van smeulsteen, smeulende as, smeulblad en gloeiende scheur in twee lagen (`<naam>` + emissive `<naam>_glow`) · besluit gebruiker via main.
+- 2026-10-06 · blocks · Verkoold hout als Nether-hout (crimson-sjabloon, nether-hout-geluiden, geen brandstof) · gevolg van "niet brandbaar" (gebruiker).
+- 2026-10-06 · blocks · `goats_spawnable_on` ook `smooth_basalt` en `pumice` · piek-bovenlaag van 39b/39c (W-biomes via main).
+- 2026-10-06 · blocks · Baksteen-vormen heten `pumice_brick_*` / `cold_lava_brick_*` (vanilla-/ring 2-patroon) · akkoord main.
+- 2026-10-06 · blocks · `ash_layer` = vanilla `SnowLayerBlock` zonder random ticks; dropt zichzelf × lagen (shovel); smoort gras eronder · implementatiekeuze.
+
+## Backlog
+
+## Voortgang
+Voortgang: 2026-10-06 20:51 38 B groen (429 tests)
+Voortgang: 2026-10-06 21:41 38 B+D groen (gloed als twee lagen _glow na afstemming)
+Voortgang: 2026-10-06 21:44 38 S groen (loot, tags, aslaag-steun via RCON)
+Voortgang: 2026-10-06 22:01 38 review verwerkt (AshLayerBlock geschrapt, inside_step_sound, gedeeld model, tagcommentaar); B/D/S opnieuw groen

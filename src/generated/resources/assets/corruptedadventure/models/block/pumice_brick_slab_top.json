@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "corruptedadventure:block/pumice_bricks",
+    "side": "corruptedadventure:block/pumice_bricks",
+    "top": "corruptedadventure:block/pumice_bricks"
+  }
+}

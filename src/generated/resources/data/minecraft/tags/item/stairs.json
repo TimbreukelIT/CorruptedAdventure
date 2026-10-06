@@ -4,6 +4,9 @@
     "corruptedadventure:canyon_stone_brick_stairs",
     "corruptedadventure:scorched_sandstone_stairs",
     "corruptedadventure:smooth_scorched_sandstone_stairs",
-    "corruptedadventure:polished_salt_stairs"
+    "corruptedadventure:polished_salt_stairs",
+    "corruptedadventure:pumice_stairs",
+    "corruptedadventure:polished_pumice_stairs",
+    "corruptedadventure:pumice_brick_stairs"
   ]
 }
