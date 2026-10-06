@@ -3,8 +3,8 @@ package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
+import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import nl.timtoys.corruptedadventure.worldgen.feature.DewGeodeShape;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing2Features;
 import org.junit.jupiter.api.Test;
@@ -14,28 +14,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+import static nl.timtoys.corruptedadventure.worldgen.WorldgenData.read;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** The hand-written JSON of Nether ring 2 against the Java constants it must agree with. */
 class NetherRing2JsonTest {
-    private static final Path WORLDGEN = findWorldgen();
+    private static final Path WORLDGEN = WorldgenData.root();
     private static final Path RING_2 = WORLDGEN.resolve("density_function/ring_2/nether");
-
-    private static Path findWorldgen() {
-        String relative = "src/main/resources/data/corruptedadventure/worldgen";
-        for (Path dir = Path.of("").toAbsolutePath(); dir != null; dir = dir.getParent()) {
-            if (Files.isDirectory(dir.resolve(relative))) {
-                return dir.resolve(relative);
-            }
-        }
-        throw new IllegalStateException("Could not find " + relative);
-    }
-
-    private static JsonObject read(Path path) throws IOException {
-        return JsonParser.parseString(Files.readString(path)).getAsJsonObject();
-    }
 
     @Test
     void geodeSettingsInTheDensityFunctionAreTheFeaturesSettings() throws IOException {

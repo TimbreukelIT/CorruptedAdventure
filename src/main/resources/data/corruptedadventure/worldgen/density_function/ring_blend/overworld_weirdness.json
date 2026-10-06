@@ -1,0 +1,17 @@
+{
+  "type": "corruptedadventure:ring_blend",
+  "dimension": "minecraft:overworld",
+  "rings": {
+    "ring_1": "minecraft:overworld/ridges",
+    "ring_2": 0.0,
+    "ring_3": "corruptedadventure:ring_3/overworld/caldera_dormant",
+    "ring_4": 0.0,
+    "ring_5": 0.0,
+    "void": 0.0
+  },
+  "switch_at": [
+    "ring_3",
+    "ring_4",
+    "ring_5"
+  ]
+}

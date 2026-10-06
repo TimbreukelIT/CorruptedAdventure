@@ -3,18 +3,18 @@ package nl.timtoys.corruptedadventure.worldgen.biome;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+import static nl.timtoys.corruptedadventure.worldgen.WorldgenData.read;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -26,16 +26,15 @@ import static org.junit.jupiter.api.Assertions.fail;
  * ring 2 holds only a few dozen regions (seed 20260930: rocky 54 %). The terrain weights switch on the same thresholds.
  */
 class Ring2RegionSharesTest {
-    private static final String WORLDGEN = "src/main/resources/data/corruptedadventure/worldgen";
     private static final Map<String, Double> TARGET = Map.of("canyonlands", 0.30, "hoodoo_fields", 0.20, "dune_sea", 0.25,
             "salt_flats", 0.13, "oasis_flats", 0.12);
 
     @Test
     void sharesOfTheStationaryNoiseAreTheTargets() throws IOException {
-        Path root = findRoot();
+        Path root = WorldgenData.root();
         Thresholds t = thresholds(root);
-        NormalNoise.NoiseParameters relief = parameters(root, "ring_2_relief");
-        NormalNoise.NoiseParameters moisture = parameters(root, "ring_2_moisture");
+        NormalNoise.NoiseParameters relief = WorldgenData.noiseParameters("ring_2_relief");
+        NormalNoise.NoiseParameters moisture = WorldgenData.noiseParameters("ring_2_moisture");
         double reliefOffset = reliefOffset(root);
         Map<String, Integer> counts = new HashMap<>();
         int total = 0;
@@ -63,7 +62,7 @@ class Ring2RegionSharesTest {
 
     @Test
     void terrainWeightsSwitchOnTheBiomeThresholds() throws IOException {
-        Path root = findRoot();
+        Path root = WorldgenData.root();
         Thresholds t = thresholds(root);
         assertEquals(0.0, t.relief, "the relief offset carries T; the border stays exact where the zones mix relief with 0");
         assertCentredOn(root, "hoodoo_weight", t.hoodoo);
@@ -134,29 +133,5 @@ class Ring2RegionSharesTest {
         }
         assertEquals("minecraft:noise", argument.get("type").getAsString());
         return 0.0;
-    }
-
-    private static NormalNoise.NoiseParameters parameters(Path root, String name) throws IOException {
-        JsonObject json = read(root.resolve("noise/" + name + ".json"));
-        JsonArray amplitudes = json.getAsJsonArray("amplitudes");
-        double[] rest = new double[amplitudes.size() - 1];
-        for (int i = 1; i < amplitudes.size(); i++) {
-            rest[i - 1] = amplitudes.get(i).getAsDouble();
-        }
-        return new NormalNoise.NoiseParameters(json.get("firstOctave").getAsInt(), amplitudes.get(0).getAsDouble(), rest);
-    }
-
-    private static JsonObject read(Path path) throws IOException {
-        return JsonParser.parseString(Files.readString(path)).getAsJsonObject();
-    }
-
-    private static Path findRoot() {
-        for (Path dir = Path.of("").toAbsolutePath(); dir != null; dir = dir.getParent()) {
-            Path candidate = dir.resolve(WORLDGEN);
-            if (Files.isDirectory(candidate)) {
-                return candidate;
-            }
-        }
-        return fail("Could not find " + WORLDGEN);
     }
 }

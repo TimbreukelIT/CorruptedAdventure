@@ -1,11 +1,14 @@
 package nl.timtoys.corruptedadventure.ring;
 
+import net.minecraft.core.QuartPos;
+import net.minecraft.world.level.Level;
 import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import org.junit.jupiter.api.Test;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingColumnCacheTest {
     private static final RingSettings DEFAULTS = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128);
@@ -35,6 +38,32 @@ class RingColumnCacheTest {
                 assertEquals(LAYOUT.sampleOverworld(x, z), cache.position(LAYOUT, 1, x, z));
             }
         }
+    }
+
+    /**
+     * The climate in the router (a {@code ring_blend} reading this cache at block columns) and {@code RingBiomeSource}
+     * (sampling the layout at {@code QuartPos.toBlock}) see the same ring at every biome sample across every boundary,
+     * overworld and Nether: a {@code switch_at} boundary switches exactly where the biome source does.
+     */
+    @Test
+    void climateAndBiomeSourceSeeTheSameRingAtEveryQuart() {
+        RingColumnCache cache = new RingColumnCache();
+        int switches = 0;
+        for (int radius : CommonConfig.DEFAULT_OUTER_RADII) {
+            for (int scale : new int[]{1, RingLayout.NETHER_SCALE}) {
+                var dimension = scale == 1 ? Level.OVERWORLD : Level.NETHER;
+                int centre = QuartPos.fromBlock(radius / scale), reach = QuartPos.fromBlock(250 / scale) + 2;
+                for (int qx = centre - reach; qx <= centre + reach; qx++) {
+                    for (int qz = -60; qz < 60; qz += 7) {
+                        int x = QuartPos.toBlock(qx), z = QuartPos.toBlock(qz);
+                        RingPosition expected = LAYOUT.sample(dimension, x, z);
+                        assertEquals(expected.ring(), cache.position(LAYOUT, scale, x, z).ring(), dimension + " " + x + " " + z);
+                        switches += expected.inTransition() && expected.blend() >= 0.5 ? 1 : 0;
+                    }
+                }
+            }
+        }
+        assertTrue(switches > 0, "the samples cross the middle of the zones");
     }
 
     @Test

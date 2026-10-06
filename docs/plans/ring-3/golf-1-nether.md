@@ -15,7 +15,9 @@ Bron: `fase-1-wereld.md` Nether-ring 3 + sparring-aanvulling; `contract.md` §4;
    - vlakte op Y ~35 met ijspilaren (3D-ruis of kolommen, zoals `masses` van change 35);
    - plafond ~110;
    - regio's via `ring_3/nether/region` (39a).
-2. **Vloeistof:** geen lavazee (`fluid_levels.ring_3` uit 39a); de ring 2-dam (`ring_edge`) aan de 2→3-grens moet blijven werken.
+2. **Vloeistof:** geen zichtbare lavazee; `fluid_levels.ring_3` = 22 (39a, antwoord 2026-10-06: gelijk aan ring 2, dus geen trede en geen lavawanden op 2→3). De ring 2-dam (`ring_edge`) aan de 2→3-grens moet blijven werken.
+   - **Harde eis (39a-review):** trede 3|4 (22/32). Aan de ring 3-kant van zone 3→4 vast tot boven Y 32 (eigen `ring_edge`-dam, carvers niet erdoor). `Ring3JsonTest.everyNetherLavaStepIsCoveredBySolidGround` faalt bewust zodra het placeholder-terrein weg is: vervang die tak door een controle op de eigen dam. Test S: `tools/nether-lava-walls.py` op r 875 en 1500 → 0 wanden. Zie `contract.md` §4.
+   - Biomes: de router-`temperature` wisselt vanaf zone 2→3 hard op de middellijn (`switch_at` in `ring_blend/nether_temperature`); Nether-3-biomes lezen tot de middellijn alleen `ring_3/nether/region`.
    - Ring 3-biomes gebruiken `ring_nether_cave`, zodat de vanilla-carver geen lava zet.
    - Grens 3→4: let op het lavaniveau van Nether-4 (later); nu placeholder.
 3. **Ruimte-check** (vooruitlopend op 54): voelt 625 breed met biome-wissels genoeg? Meet de hal- en kloofmaten.

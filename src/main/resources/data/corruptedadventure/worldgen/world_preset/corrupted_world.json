@@ -177,7 +177,8 @@
           }
         },
         "fluid_levels": {
-          "ring_2": 22
+          "ring_2": 22,
+          "ring_3": 22
         },
         "settings": "corruptedadventure:nether"
       }

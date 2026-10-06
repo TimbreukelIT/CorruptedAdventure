@@ -42,7 +42,7 @@
       "xz_scale": 1.0,
       "y_scale": 1.0
     },
-    "ridges": "minecraft:overworld/ridges",
+    "ridges": "corruptedadventure:ring_blend/overworld_weirdness",
     "temperature": "corruptedadventure:ring_blend/overworld_temperature",
     "vegetation": "corruptedadventure:ring_blend/overworld_vegetation",
     "vein_gap": {

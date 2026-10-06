@@ -119,6 +119,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Ring 2–5: **4–5 varianten per ring** + **1 overgangsbiome per grens**. Nether-ringen: aantal per ring in de ringsecties.
 - Bouwvolgorde per ring: eerst 2–3 kernvarianten, de overige als latere changes binnen dezelfde ring.
 - Verdeling binnen een ring (vanaf ring 2): regio-assen in de router + `multi_noise` (§1.2). Vlekken in ring 2 ~500–1.000 blokken.
+- Ring 3 (change 39a): regio-assen `region_heat`/`region_ground` op firstOctave −11, één octaaf grover dan ring 2. Reden: 8 biomes op twee assen geven kleinere vlakken; op −10 zou een biome langs een lijn gemiddeld elke ~310 blokken wisselen (ring 2: ~500), op −11 ~580. Nether-3 op dezelfde voet (÷4): −9, drie biomes ~270 Nether-blokken (Nether-2: ~240).
 
 ### 1.11 Ores (algemeen)
 - Ring 1 heeft alle vanilla-ores.
@@ -547,6 +548,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 **Terrein en sfeer**
 - Zwart-grijs aslandschap met vulkaankegels, kraters, lavameren en gestolde lavastromen. Lucht rood-oranje, fog dicht en asgrijs.
 - Eigen ring 3-invoer voor `ring_blend`, met per biome-regio een eigen vorm (kegels, stromen, zeekom).
+- **Router (change 39a):** `temperature` = `ring_3/overworld/region_heat` (heet: pieken, stromen ↔ koel: zeekom, as), `vegetation` = `ring_3/overworld/region_ground` (begroeid/vreemd ↔ mineraal), `weirdness` (router-`ridges`) = `ring_3/overworld/caldera_dormant` via `ring_blend/overworld_weirdness` (ring 1 blijft letterlijk vanilla). Het klimaat wisselt vanaf zone 3→4 hard op de middellijn (`switch_at`): de ring 3-kant van die zone leest de eigen assen, ook vóór `steam_fens`. De gedeelde terreinsleutels (`height`, `caldera_mask`, `caldera_dormant`, `lava_channel`, `island_mask`) bestaan als stubs (0) tot W-terrein ze in 39 invult.
 - Het gestolen water is overal zichtbaar: geen natuurlijk water, een lege zeekom, en geplaatst water verdampt bovengronds.
 
 **Biomes (7 + micro-biome `dormant_caldera`; was 5)**
@@ -606,6 +608,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 **Nether-tegenpool — Nether-ring 3 (875 – 1.500; was 875 – 1.375): bevroren Nether**
 - **Terrein**: de lavazee is gestold tot een enorme vlakte van ijs en koudlava, met scheuren waarin nog gloeiende lava ligt (zeldzame warme plekken). Daarnaast gletsjermassa's met smalle kloven en tunnels.
+- **Router en lava (change 39a):** Nether-`temperature` in ring 3 = `ring_3/nether/region`, vanaf zone 2→3 hard gewisseld op de middellijn (`switch_at`: elke kant kiest zijn biome op de eigen regio, de as die ook zijn terrein volgt); `fluid_levels.ring_3` = Y 22, gelijk aan ring 2 (antwoord 2026-10-06): geen zichtbare lavazee (vloer Y ~35), lava alleen onder het ijs (diepe holtes) en in de gloeiende scheuren. Een ander niveau dan ring 2 gaf lavawanden op de middellijn 2→3, waar de carvers van ring 2 door de dam snijden (Y 8: 195, de standaard 32: 81, Y 22: 0). De trede 3|4 (22/32) moet het terrein van 53 afdekken (contract §4, harde eis).
 - **Biomes (3)**: `frozen_lava_sea` (hoofdbiome: open vlakte, ijspilaren van vloer tot plafond), `rime_forest` (verstijfde reuzenzwammen onder rijp), `glacier_rifts` (ijsmassa's met kloven en tunnels). De biome-schaal is kleiner dan in de overworld (biomes wisselen vaker). **Ruimte-check** in de W-test: voelt het krap, dan verbreden we ring 3 via de config (alleen voor nieuwe werelden).
 - **Blokken**: koudlava-set (gestolde lava: blok, gepolijst, bricks, slab, stairs, wall), Nether-ijs (smelt niet, glad; plus verpakte variant), rijp-netherrack, rijpzwam-set (steel, hoed, planks + houtset), ijsstalactieten (dripstone-gedrag, vallen), gloeiende scheur (warmtebron). Vanilla packed/blue ice waar het kan.
 - **Sleutelmateriaal: oerijs**, ijs dat bevroor vóór de corruptie (zuiver water). Het zit als kern in ijspilaren en is alleen met silk touch te winnen (anders breekt het). Nodig voor bewaker 3→4; in fase 2 smelt je het tot zuiver water, de basis van gifbescherming voor ring 4.
