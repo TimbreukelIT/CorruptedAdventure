@@ -372,6 +372,8 @@ Blokkerend vóór change 38. De agent bereidt voor, de gebruiker loopt af. Per o
 ### Na afloop
 Bevindingen worden backlogregels of een fix-change in de juiste categorie (textures → `HAND_EDITED`-ronde). Pas na akkoord begint change 38.
 
+**Akkoord (2026-10-06):** teststop 3 goedgekeurd na change 37b ("Ja dit is top"); zie `docs/plans/teststop-3-feedback.md`.
+
 ---
 
 ## Risico's / aandachtspunten
