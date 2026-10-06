@@ -99,7 +99,6 @@ public final class Ring2Textures {
     private static final int SOAKED_PORE = 0x2A0E10;
     private static final int SOAKED_DAMP = 0x3A4634;
     private static final int SOAKED_GLOSS = 0x9A5650;
-    private static final int SOAKED_GLINT = 0xBC8880;
     // Six tones (37b): blue-green in the shadows, warmer in the light.
     private static final int[] SPORE_MOSS = {0x34403A, 0x45533F, 0x586A4E, 0x6E8160, 0x879877, 0xA3B28C};
     private static final int SPORE_DOT = 0xC8D4B0;
@@ -1742,11 +1741,52 @@ public final class Ring2Textures {
     /**
      * Wet netherrack (37b-1 A): lumps on vanilla netherrack's scale and tone ladder, so vanilla's nether ores sit in it
      * without a red square. Each lump has its own base tone, is lit from the top left and shadowed along its lower right
-     * edge. What makes it soaked lives inside the tile, never on its outer pixel ring (that ring stays on the ladder, so
-     * a neighbouring ore block meets the same tones as in vanilla): two dark wet puddles with a short reflection in
-     * their upper-left part, glossy lumps, and crevices that hold black-red pores and damp grey-green specks.
+     * edge. What makes it soaked stays soft, so the lumps dominate and the 16-px repetition does not read as a grid:
+     * damp zones (a broad, tileable noise) darken the rock by about one tone and carry the wet gloss on their lumps,
+     * and the crevices hold black-red pores and damp grey-green specks. The outer pixel ring keeps to the plain ladder
+     * (no gloss, pores or specks), so a neighbouring ore block meets the same tones as in vanilla.
      */
     private static void soakedNetherrack(BufferedImage image, Random random) {
+        // Several layouts from the same seed; keep the one whose rows and columns are most even, so no lump row or
+        // crevice line repeats as a stripe every 16 pixels.
+        BufferedImage best = null;
+        double bestScore = Double.MAX_VALUE;
+        for (int attempt = 0; attempt < 8; attempt++) {
+            BufferedImage candidate = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+            soakedNetherrackLayout(candidate, new Random(random.nextLong()));
+            double score = stripeScore(candidate);
+            if (score < bestScore) {
+                bestScore = score;
+                best = candidate;
+            }
+        }
+        copy(best, image);
+    }
+
+    /**
+     * How strongly a tile reads as stripes when repeated: the largest step in mean brightness between neighbouring rows
+     * or columns (wrapping, so the seam between two tiles counts too).
+     */
+    private static double stripeScore(BufferedImage image) {
+        double[] rows = new double[SIZE];
+        double[] columns = new double[SIZE];
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double l = luminance(image.getRGB(x, y) & 0xFFFFFF) / SIZE;
+                rows[y] += l;
+                columns[x] += l;
+            }
+        }
+        double worst = 0;
+        for (int i = 0; i < SIZE; i++) {
+            worst = Math.max(worst, Math.abs(rows[i] - rows[(i + 1) % SIZE]));
+            worst = Math.max(worst, Math.abs(columns[i] - columns[(i + 1) % SIZE]));
+        }
+        return worst;
+    }
+
+    /** One layout of {@link #soakedNetherrack}. */
+    private static void soakedNetherrackLayout(BufferedImage image, Random random) {
         Cells cells = Cells.random(random, 16);
         double[] base = new double[cells.count()];
         boolean[] glossy = new boolean[cells.count()];
@@ -1754,11 +1794,8 @@ public final class Ring2Textures {
             base[i] = 0.38 + 0.35 * random.nextDouble();
             glossy[i] = random.nextInt(5) < 3;
         }
-        double[][] puddles = new double[2][];
-        for (int i = 0; i < puddles.length; i++) {
-            puddles[i] = new double[] {4.5 + random.nextDouble() * 7, 4.5 + random.nextDouble() * 7, i == 0 ? 3.2 + 0.5 * random.nextDouble() : 2.2};
-        }
         double[][] broad = valueNoise(random, 8, 8);
+        double[][] damp = valueNoise(random, 8, 8);
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 boolean rim = x == 0 || y == 0 || x == SIZE - 1 || y == SIZE - 1;
@@ -1767,30 +1804,18 @@ public final class Ring2Textures {
                 double slope = nearest.dx() + nearest.dy();
                 if (gap < 0.45) {
                     int roll = random.nextInt(18);
-                    set(image, x, y, rim ? SOAKED_NETHERRACK[0] : roll < 3 ? SOAKED_DAMP : roll < 8 ? SOAKED_PORE : SOAKED_NETHERRACK[0]);
+                    set(image, x, y, rim ? SOAKED_NETHERRACK[0] : roll < 3 ? SOAKED_DAMP : roll < 7 ? SOAKED_PORE : SOAKED_NETHERRACK[0]);
                     continue;
                 }
-                double light = base[nearest.index()] + 0.2 * (broad[x][y] - 0.5) - 0.3 * slope + 0.08 * random.nextDouble();
+                double wet = Math.max(0, damp[x][y] - 0.5) * 2;
+                double light = base[nearest.index()] + 0.2 * (broad[x][y] - 0.5) - 0.3 * slope - 0.2 * wet + 0.08 * random.nextDouble();
                 if (gap < 1.1 && slope > 0.15) {
                     light -= 0.12;
                 }
                 int color = shade(SOAKED_NETHERRACK, light);
-                if (!rim) {
-                    for (double[] puddle : puddles) {
-                        double dx = x + 0.5 - puddle[0];
-                        double dy = y + 0.5 - puddle[1];
-                        double distance = Math.hypot(dx, dy * 1.4) * (1 + 0.25 * Math.sin(3 * Math.atan2(dy, dx) + puddle[0]));
-                        if (distance < puddle[2]) {
-                            // Standing water darkens the rock; a short reflection glints in its upper-left part.
-                            boolean reflection = distance > puddle[2] * 0.25 && distance < puddle[2] * 0.6
-                                    && dx + dy < -puddle[2] * 0.45 && Math.abs(dx - dy) < 1.2;
-                            color = reflection ? SOAKED_GLINT : distance < puddle[2] * 0.65 ? SOAKED_PORE : SOAKED_NETHERRACK[1];
-                        }
-                    }
-                    if (color != SOAKED_GLINT && glossy[nearest.index()] && gap > 0.9 && slope < -0.15 && light > 0.65
-                            && random.nextInt(3) != 0) {
-                        color = SOAKED_GLOSS;
-                    }
+                if (!rim && glossy[nearest.index()] && wet > 0.2 && gap > 0.9 && slope < -0.15 && light > 0.5
+                        && random.nextInt(3) != 0) {
+                    color = SOAKED_GLOSS;
                 }
                 set(image, x, y, color);
             }
@@ -2153,30 +2178,64 @@ public final class Ring2Textures {
     }
 
     /**
-     * One dew crystal shard in the inventory (37b, hand laid after feedback): an asymmetric, faceted shard pointing to
-     * the top right like vanilla's amethyst shard: a sharp tip, a wide lit face on the upper left with a glinting ridge,
-     * a middle face, a narrow shadowed face on the lower right and a slanted broken foot; selective outline.
+     * One dew crystal shard in the inventory (37b, redrawn after feedback): a broad, uneven shard, not a rod: a polygon
+     * with a sharp tip at the top right, the widest part in the middle and a blunter, broken foot at the bottom left. A ridge runs
+     * from the tip to the middle of the foot: the face left of it is lit (brightest along the upper-left edge), the face
+     * right of it is shaded and darkest along the lower-right edge; the foot row lies in shadow. Selective outline.
      */
     private static void dewCrystalItem(BufferedImage image, Random random) {
-        sprite(image, new String[] {
-                "................",
-                "................",
-                "................",
-                ".............4..",
-                "...........341..",
-                "..........3421..",
-                "........33421...",
-                ".......334210...",
-                ".....3334210....",
-                "....3333210.....",
-                "....333210......",
-                "...23210........",
-                "...2210.........",
-                "..110...........",
-                "................",
-                "................"}, Map.of(
-                '0', DEW_CRYSTAL[0], '1', DEW_CRYSTAL[1], '2', DEW_CRYSTAL[2], '3', DEW_CRYSTAL[3], '4', DEW_CRYSTAL[4]));
+        double[][] shard = {{13.0, 1.5}, {13.8, 6.5}, {10.8, 12.0}, {7.0, 14.2}, {3.5, 12.5}, {4.8, 8.0}, {8.5, 4.0}};
+        double[] tip = shard[0];
+        double[] foot = shard[3];
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double px = x + 0.5;
+                double py = y + 0.5;
+                if (!insidePolygon(shard, px, py)) {
+                    continue;
+                }
+                // Which side of the ridge (tip to foot): negative is the lit left face.
+                double side = (foot[0] - tip[0]) * (py - tip[1]) - (foot[1] - tip[1]) * (px - tip[0]);
+                double ridge = Math.abs(side) / Math.hypot(foot[0] - tip[0], foot[1] - tip[1]);
+                int tone;
+                if (side > 0) {
+                    tone = ridge < 1.2 ? 4 : edgeDistance(shard, px, py, 4, 7) < 1.3 ? 4 : 3;
+                } else {
+                    tone = ridge < 1.0 ? 2 : edgeDistance(shard, px, py, 1, 3) < 1.3 ? 0 : 1;
+                }
+                if (y >= 13) {
+                    tone = Math.max(0, tone - 2);
+                }
+                set(image, x, y, DEW_CRYSTAL[tone]);
+            }
+        }
         outlineSelective(image, DEW_CRYSTAL_OUTLINE_LIGHT, DEW_CRYSTAL_OUTLINE);
+    }
+
+    /** Even-odd test of the point against a closed polygon. */
+    private static boolean insidePolygon(double[][] polygon, double x, double y) {
+        boolean inside = false;
+        for (int i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            if ((polygon[i][1] > y) != (polygon[j][1] > y)
+                    && x < (polygon[j][0] - polygon[i][0]) * (y - polygon[i][1]) / (polygon[j][1] - polygon[i][1]) + polygon[i][0]) {
+                inside = !inside;
+            }
+        }
+        return inside;
+    }
+
+    /** Shortest distance from the point to the polygon edges from vertex {@code from} up to vertex {@code to} (wrapping). */
+    private static double edgeDistance(double[][] polygon, double x, double y, int from, int to) {
+        double best = Double.MAX_VALUE;
+        for (int i = from; i < to; i++) {
+            double[] a = polygon[i % polygon.length];
+            double[] b = polygon[(i + 1) % polygon.length];
+            double dx = b[0] - a[0];
+            double dy = b[1] - a[1];
+            double t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / (dx * dx + dy * dy)));
+            best = Math.min(best, Math.hypot(x - a[0] - t * dx, y - a[1] - t * dy));
+        }
+        return best;
     }
 
     // ---- Particles ------------------------------------------------------------------------------------------
