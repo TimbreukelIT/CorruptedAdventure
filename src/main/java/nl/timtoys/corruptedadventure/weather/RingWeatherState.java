@@ -16,7 +16,7 @@ import net.minecraft.network.codec.StreamCodec;
  * @param seed           drawn for every new weather (e.g. the wind direction of change 28); 0 for {@code clear}
  */
 public record RingWeatherState(RingWeatherType type, int remainingTicks, int durationTicks, int seed) {
-    /** Fade-in and fade-out of every weather: 30 seconds. */
+    /** Fade-in and fade-out of a weather: 30 seconds, unless its type has its own ({@link RingWeatherType#fadeTicks()}). */
     public static final int FADE_TICKS = 600;
 
     /** A ring without ring weather: clear, without end. */
@@ -47,13 +47,13 @@ public record RingWeatherState(RingWeatherType type, int remainingTicks, int dur
         return new RingWeatherState(type, durationTicks, durationTicks, type == RingWeatherType.CLEAR ? 0 : seed);
     }
 
-    /** 0 for {@code clear}; otherwise rises from 0 to 1 over the first {@link #FADE_TICKS} and falls back to 0 over the last. */
+    /** 0 for {@code clear}; otherwise rises from 0 to 1 over the type's first fade ticks and falls back to 0 over the last. */
     public float intensity() {
         if (type == RingWeatherType.CLEAR || durationTicks == 0) {
             return 0.0F;
         }
         int elapsed = durationTicks - remainingTicks;
-        return Math.min(1.0F, Math.min(elapsed, remainingTicks) / (float) FADE_TICKS);
+        return Math.min(1.0F, Math.min(elapsed, remainingTicks) / (float) type.fadeTicks());
     }
 
     /** This weather {@code ticks} later, at least 0 left (choosing the next weather is {@link RingWeatherCycle}'s job). */

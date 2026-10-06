@@ -13,6 +13,8 @@ import nl.timtoys.corruptedadventure.client.network.ConditionSyncHandler;
 import nl.timtoys.corruptedadventure.client.network.RingLayoutHandler;
 import nl.timtoys.corruptedadventure.client.network.RingWeatherHandler;
 import nl.timtoys.corruptedadventure.client.network.WindGustHandler;
+import nl.timtoys.corruptedadventure.client.particle.AshFlakeParticle;
+import nl.timtoys.corruptedadventure.client.particle.EmberParticle;
 import nl.timtoys.corruptedadventure.client.particle.SandGustParticle;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
 import nl.timtoys.corruptedadventure.network.ClientboundHandlers;
@@ -42,10 +44,13 @@ public final class CorruptedAdventureClient {
         NeoForge.EVENT_BUS.addListener(SingingSandAmbience::onClientTick);
         // Weather renderers (changes 28, 45, 66, 85): RingWeatherRenderers.register(type, renderer) here.
         RingWeatherClientHooks.registerRing2(modEventBus, NeoForge.EVENT_BUS);
+        RingWeatherClientHooks.registerRing3();
         RingWeatherClientHooks.register(NeoForge.EVENT_BUS);
     }
 
     private static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ModParticleTypes.SAND_GUST.get(), SandGustParticle.Provider::new);
+        event.registerSpriteSet(ModParticleTypes.ASH_FLAKE.get(), AshFlakeParticle.Provider::new);
+        event.registerSpriteSet(ModParticleTypes.EMBER.get(), EmberParticle.Provider::new);
     }
 }

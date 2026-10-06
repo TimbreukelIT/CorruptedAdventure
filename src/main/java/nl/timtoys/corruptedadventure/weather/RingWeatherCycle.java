@@ -38,12 +38,13 @@ public final class RingWeatherCycle {
         return type == null ? startClear(settings, random) : start(type, settings, random);
     }
 
-    /** {@code type} with a duration drawn from the settings (clear or weather range) and a new seed. */
+    /** {@code type} with a duration drawn from the settings (clear range, or the type's weather range) and a new seed. */
     public static RingWeatherState start(RingWeatherType type, RingWeatherSettings settings, RandomSource random) {
         if (type == RingWeatherType.CLEAR) {
             return startClear(settings, random);
         }
-        int duration = between(settings.weatherMinTicks(), settings.weatherMaxTicks(), random);
+        RingWeatherSettings.Range range = settings.weatherRange(type);
+        int duration = between(range.min(), range.max(), random);
         return RingWeatherState.start(type, duration, random.nextInt());
     }
 

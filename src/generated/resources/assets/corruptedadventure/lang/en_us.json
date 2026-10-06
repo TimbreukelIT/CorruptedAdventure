@@ -185,5 +185,8 @@
   "subtitles.corruptedadventure.ambient.ring_1.strange_cave": "Something stirs in the dark",
   "subtitles.corruptedadventure.ambient.ring_2.oasis": "Birds and insects chirp",
   "subtitles.corruptedadventure.ambient.ring_2.singing_sand": "Sand hums",
-  "subtitles.corruptedadventure.weather.ring_2.sandstorm": "Sandstorm howls"
+  "subtitles.corruptedadventure.weather.ring_2.sandstorm": "Sandstorm howls",
+  "subtitles.corruptedadventure.weather.ring_3.ash_cloud": "Ash cloud roars",
+  "subtitles.corruptedadventure.weather.ring_3.ash_rain": "Ash rain crackles",
+  "subtitles.corruptedadventure.weather.ring_3.eruption": "Volcano rumbles"
 }

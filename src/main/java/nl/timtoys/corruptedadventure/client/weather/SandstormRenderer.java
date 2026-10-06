@@ -9,6 +9,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
+import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.weather.RingWeatherMix;
 import nl.timtoys.corruptedadventure.weather.RingWeatherType;
 import nl.timtoys.corruptedadventure.weather.SandstormWind;
@@ -37,11 +38,8 @@ final class SandstormRenderer implements RingWeatherRenderer {
     private static final double WIND_SPEED = 0.6;
     /** Volume of the wind loop in a full storm in the open. */
     private static final float MAX_VOLUME = 0.6F;
-    /** Ticks between two attempts to start the wind loop, if the sound engine had no free channel. */
-    private static final long SOUND_RETRY_TICKS = 100L;
 
-    private SandstormSound sound;
-    private long lastSoundAttempt = -SOUND_RETRY_TICKS;
+    private final WeatherLoop wind = new WeatherLoop(ModSoundEvents.RING_2_SANDSTORM, MAX_VOLUME);
 
     @Override
     public void clientTick(ClientLevel level, LocalPlayer player, float strength) {
@@ -52,7 +50,7 @@ final class SandstormRenderer implements RingWeatherRenderer {
             return;
         }
         float amount = strength * SkyExposure.get();
-        playWind(minecraft, level.getGameTime(), amount);
+        wind.play(minecraft, level.getGameTime(), amount);
         spawnSand(level, camera, SandstormWind.direction(share.get().state()), amount);
     }
 
@@ -90,18 +88,6 @@ final class SandstormRenderer implements RingWeatherRenderer {
                 .map(share -> String.format(Locale.ROOT, "%s, strength %.2f, exposure %.2f",
                         SandstormWind.describe(share.state()), share.strength(), SkyExposure.get()))
                 .orElse("—");
-    }
-
-    private void playWind(Minecraft minecraft, long gameTime, float amount) {
-        if (sound == null || !minecraft.getSoundManager().isActive(sound)) {
-            if (amount <= 0.0F || gameTime - lastSoundAttempt < SOUND_RETRY_TICKS && gameTime >= lastSoundAttempt) {
-                return;
-            }
-            lastSoundAttempt = gameTime;
-            sound = new SandstormSound();
-            minecraft.getSoundManager().play(sound);
-        }
-        sound.feed(amount * MAX_VOLUME);
     }
 
     /**

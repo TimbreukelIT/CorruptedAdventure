@@ -185,5 +185,8 @@
   "subtitles.corruptedadventure.ambient.ring_1.strange_cave": "Er beweegt iets in het donker",
   "subtitles.corruptedadventure.ambient.ring_2.oasis": "Vogels en insecten tjilpen",
   "subtitles.corruptedadventure.ambient.ring_2.singing_sand": "Het zand zingt",
-  "subtitles.corruptedadventure.weather.ring_2.sandstorm": "Zandstorm raast"
+  "subtitles.corruptedadventure.weather.ring_2.sandstorm": "Zandstorm raast",
+  "subtitles.corruptedadventure.weather.ring_3.ash_cloud": "Aswolk raast",
+  "subtitles.corruptedadventure.weather.ring_3.ash_rain": "Asregen knispert",
+  "subtitles.corruptedadventure.weather.ring_3.eruption": "Vulkaan rommelt"
 }

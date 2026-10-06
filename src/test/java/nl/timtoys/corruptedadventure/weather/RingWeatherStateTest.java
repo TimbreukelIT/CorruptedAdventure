@@ -27,6 +27,16 @@ class RingWeatherStateTest {
     }
 
     @Test
+    void theAshCloudWarnsForTwentySeconds() {
+        int duration = 3_600;
+        assertEquals(400, RingWeatherType.ASH_CLOUD.fadeTicks());
+        assertEquals(FADE_TICKS, RingWeatherType.ERUPTION.fadeTicks());
+        assertEquals(0.5F, at(RingWeatherType.ASH_CLOUD, duration - 200, duration).intensity(), EPSILON);
+        assertEquals(1.0F, at(RingWeatherType.ASH_CLOUD, duration - 400, duration).intensity(), EPSILON);
+        assertEquals(0.25F, at(RingWeatherType.ASH_CLOUD, 100, duration).intensity(), EPSILON);
+    }
+
+    @Test
     void shortWeatherNeverReachesFullStrength() {
         int duration = FADE_TICKS; // shorter than fade-in + fade-out
         assertEquals(0.5F, at(RingWeatherType.ASH_RAIN, duration / 2, duration).intensity(), EPSILON);

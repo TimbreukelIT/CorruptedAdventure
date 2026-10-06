@@ -28,6 +28,8 @@ public final class ServerConfig {
     public static final DehydrationCondition DEHYDRATION;
     /** {@code [weather.ring2]}: the effects of sandstorm and heat wave (change 28). */
     public static final Ring2WeatherEffects RING_2_WEATHER;
+    /** {@code [weather.ring3]}: ash cloud duration, heat factors and lava bombs (package 45). */
+    public static final Ring3WeatherEffects RING_3_WEATHER;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
     /** Per ring with weather types; package-private for tests. */
@@ -48,6 +50,7 @@ public final class ServerConfig {
         }
         builder.pop();
         RING_2_WEATHER = RING_WEATHER.get(Ring.RING_2).ring2Effects;
+        RING_3_WEATHER = RING_WEATHER.get(Ring.RING_3).ring3Effects;
         SPEC = builder.build();
         ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds);
     }
@@ -177,6 +180,65 @@ public final class ServerConfig {
         }
     }
 
+    /**
+     * The extras of the ring 3 weather, in {@code [weather.ring3]} next to its cycle (package 45): the ash cloud's own
+     * duration, the heat factors (read by the heat modifiers of stream C) and the lava bombs of an eruption.
+     */
+    public static final class Ring3WeatherEffects {
+        static final int DEFAULT_ASH_CLOUD_MIN = 120;
+        static final int DEFAULT_ASH_CLOUD_MAX = 240;
+
+        public final ModConfigSpec.IntValue ashCloudMinSeconds;
+        public final ModConfigSpec.IntValue ashCloudMaxSeconds;
+        public final ModConfigSpec.DoubleValue ashRainHeatMultiplier;
+        public final ModConfigSpec.DoubleValue eruptionHeatMultiplier;
+        public final ModConfigSpec.DoubleValue ashCloudHeatMultiplier;
+        public final ModConfigSpec.DoubleValue lavaBombsPerMinute;
+        public final ModConfigSpec.IntValue lavaBombRadius;
+        public final ModConfigSpec.DoubleValue lavaBombPeakFactor;
+
+        private Ring3WeatherEffects(ModConfigSpec.Builder builder) {
+            ashCloudMinSeconds = builder.comment("Shortest ash cloud; it is shorter than the other ring 3 weathers (its own",
+                            "range instead of weatherMinSeconds/weatherMaxSeconds). The first 20 s are the warning.")
+                    .defineInRange("ashCloudMinSeconds", DEFAULT_ASH_CLOUD_MIN, 1, RingWeather.MAX_SECONDS);
+            ashCloudMaxSeconds = builder.comment("Longest ash cloud. Not below ashCloudMinSeconds.")
+                    .defineInRange("ashCloudMaxSeconds", DEFAULT_ASH_CLOUD_MAX, 1, RingWeather.MAX_SECONDS);
+            ashRainHeatMultiplier = builder.comment("Factor on the rising heat meter during full ash rain; follows the fade of",
+                            "the weather (1 + (factor - 1) x intensity).")
+                    .defineInRange("ashRainHeatMultiplier", 1.5, 1.0, 10.0);
+            eruptionHeatMultiplier = builder.comment("Factor on the rising heat meter during a full eruption.")
+                    .defineInRange("eruptionHeatMultiplier", 2.0, 1.0, 10.0);
+            ashCloudHeatMultiplier = builder.comment("Factor on the rising heat meter in a full ash cloud.")
+                    .defineInRange("ashCloudHeatMultiplier", 3.0, 1.0, 10.0);
+            lavaBombsPerMinute = builder.comment("Lava bombs (small fireballs) per minute around each player in ring 3 under the",
+                            "open sky, during a full eruption (scaled by its fade). Fire on landing follows mobGriefing.")
+                    .defineInRange("lavaBombsPerMinute", 12.0, 0.0, 60.0);
+            lavaBombRadius = builder.comment("Lava bombs land at most this many blocks from the player (horizontally).")
+                    .defineInRange("lavaBombRadius", 40, 8, 96);
+            lavaBombPeakFactor = builder.comment("Factor on lavaBombsPerMinute while the player stands in a #corruptedadventure:heat_peaks",
+                            "biome. lavaBombsPerMinute x lavaBombPeakFactor is the cap per player per minute.")
+                    .defineInRange("lavaBombPeakFactor", 2.0, 1.0, 4.0);
+        }
+
+        /** The heat factor of a full {@code type} (ash rain, eruption, ash cloud); 1 for every other type. */
+        public double heatMultiplier(RingWeatherType type) {
+            return switch (type) {
+                case ASH_RAIN -> ashRainHeatMultiplier.get();
+                case ERUPTION -> eruptionHeatMultiplier.get();
+                case ASH_CLOUD -> ashCloudHeatMultiplier.get();
+                default -> 1.0;
+            };
+        }
+
+        /** The ash cloud's own duration in seconds; a min above its max falls back to the defaults. */
+        RingWeatherSettings.Range ashCloudSeconds() {
+            int min = ashCloudMinSeconds.get();
+            int max = ashCloudMaxSeconds.get();
+            return min > max ? new RingWeatherSettings.Range(DEFAULT_ASH_CLOUD_MIN, DEFAULT_ASH_CLOUD_MAX)
+                    : new RingWeatherSettings.Range(min, max);
+        }
+    }
+
     /** {@code [weather.ringN]}: the cycle of one ring with weather types. */
     static final class RingWeather {
         static final int DEFAULT_CLEAR_MIN = 600;
@@ -194,6 +256,8 @@ public final class ServerConfig {
         final Map<RingWeatherType, ModConfigSpec.IntValue> weights = new EnumMap<>(RingWeatherType.class);
         /** Only in {@code [weather.ring2]}; null for the other rings. */
         final Ring2WeatherEffects ring2Effects;
+        /** Only in {@code [weather.ring3]}; null for the other rings. */
+        final Ring3WeatherEffects ring3Effects;
 
         private RingWeather(ModConfigSpec.Builder builder, Ring ring) {
             String name = "ring" + ring.number();
@@ -210,10 +274,21 @@ public final class ServerConfig {
             for (RingWeatherType type : RingWeatherType.typesFor(Level.OVERWORLD, ring)) {
                 weights.put(type, builder.comment("Relative chance of " + type.getSerializedName()
                                 + " after a clear spell; 0 = never in the cycle.")
-                        .defineInRange(weightKey(type), DEFAULT_WEIGHT, 0, 100));
+                        .defineInRange(weightKey(type), defaultWeight(type), 0, 100));
             }
             ring2Effects = ring == Ring.RING_2 ? new Ring2WeatherEffects(builder) : null;
+            ring3Effects = ring == Ring.RING_3 ? new Ring3WeatherEffects(builder) : null;
             builder.pop();
+        }
+
+        /** Equal weights, except ring 3: ash rain 45, eruption 40, the rare ash cloud 15 (decision V6, 2026-10-06). */
+        static int defaultWeight(RingWeatherType type) {
+            return switch (type) {
+                case ASH_RAIN -> 45;
+                case ERUPTION -> 40;
+                case ASH_CLOUD -> 15;
+                default -> DEFAULT_WEIGHT;
+            };
         }
 
         /** {@code heat_wave} → {@code heatWaveWeight}. */
@@ -246,12 +321,18 @@ public final class ServerConfig {
             }
             Map<RingWeatherType, Integer> configured = new EnumMap<>(RingWeatherType.class);
             weights.forEach((type, value) -> configured.put(type, value.get()));
-            return RingWeatherSettings.ofSeconds(clearMin, clearMax, weatherMin, weatherMax, configured);
+            Map<RingWeatherType, RingWeatherSettings.Range> durations = ring3Effects == null ? Map.of()
+                    : Map.of(RingWeatherType.ASH_CLOUD, ring3Effects.ashCloudSeconds());
+            return RingWeatherSettings.ofSeconds(clearMin, clearMax, weatherMin, weatherMax, configured, durations);
         }
 
         private void validate() {
             check(clearMinSeconds, clearMaxSeconds, DEFAULT_CLEAR_MIN, DEFAULT_CLEAR_MAX);
             check(weatherMinSeconds, weatherMaxSeconds, DEFAULT_WEATHER_MIN, DEFAULT_WEATHER_MAX);
+            if (ring3Effects != null) {
+                check(ring3Effects.ashCloudMinSeconds, ring3Effects.ashCloudMaxSeconds,
+                        Ring3WeatherEffects.DEFAULT_ASH_CLOUD_MIN, Ring3WeatherEffects.DEFAULT_ASH_CLOUD_MAX);
+            }
         }
 
         private void check(ModConfigSpec.IntValue min, ModConfigSpec.IntValue max, int defaultMin, int defaultMax) {

@@ -5,6 +5,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.material.FogType;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
@@ -29,6 +30,18 @@ public interface RingWeatherRenderer {
 
     /** World rendering; check {@code event.getStage()} (e.g. {@code AFTER_WEATHER}). */
     default void renderLevel(RenderLevelStageEvent event, float strength) {
+    }
+
+    /**
+     * The sky colour (package 45, through the only mixin, on {@code ClientLevel#getSkyColor}); returns {@code colour}
+     * unchanged by default. Vanilla's fog colour starts from it, {@link #fogColor} still comes after.
+     */
+    default Vec3 skyColor(ClientLevel level, Vec3 colour, float partialTick, float strength) {
+        return colour;
+    }
+
+    /** Camera angles (package 45: the eruption's shake); follow vanilla's "Screen Effects" option. */
+    default void cameraAngles(ViewportEvent.ComputeCameraAngles event, float strength) {
     }
 
     /**

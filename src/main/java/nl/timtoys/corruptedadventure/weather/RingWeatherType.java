@@ -25,6 +25,8 @@ public enum RingWeatherType implements StringRepresentable {
     HEAT_WAVE(Ring.RING_2, Level.OVERWORLD),
     ASH_RAIN(Ring.RING_3, Level.OVERWORLD),
     ERUPTION(Ring.RING_3, Level.OVERWORLD),
+    /** Pyroclastic ash cloud (ring 3, package 45): rare and short; its shorter fade-in is the ~20 s warning. */
+    ASH_CLOUD(Ring.RING_3, Level.OVERWORLD, 400),
     DENSE_FOG(Ring.RING_4, Level.OVERWORLD),
     TOXIC_RAIN(Ring.RING_4, Level.OVERWORLD),
     GLITCH_STORM(Ring.RING_5, Level.OVERWORLD),
@@ -37,11 +39,17 @@ public enum RingWeatherType implements StringRepresentable {
 
     private final @Nullable Ring ring;
     private final @Nullable ResourceKey<Level> dimension;
+    private final int fadeTicks;
     private final String serializedName = name().toLowerCase(Locale.ROOT);
 
     RingWeatherType(@Nullable Ring ring, @Nullable ResourceKey<Level> dimension) {
+        this(ring, dimension, RingWeatherState.FADE_TICKS);
+    }
+
+    RingWeatherType(@Nullable Ring ring, @Nullable ResourceKey<Level> dimension, int fadeTicks) {
         this.ring = ring;
         this.dimension = dimension;
+        this.fadeTicks = fadeTicks;
     }
 
     /** The ring of this type; null for {@link #CLEAR}. */
@@ -52,6 +60,11 @@ public enum RingWeatherType implements StringRepresentable {
     /** The dimension of this type; null for {@link #CLEAR}. */
     public @Nullable ResourceKey<Level> dimension() {
         return dimension;
+    }
+
+    /** Length of the fade-in and fade-out of this type ({@link RingWeatherState#intensity()}). */
+    public int fadeTicks() {
+        return fadeTicks;
     }
 
     /** The weather types of one ring (without {@code clear}); empty for a ring without ring weather. */

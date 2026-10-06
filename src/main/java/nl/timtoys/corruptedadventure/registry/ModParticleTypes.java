@@ -19,6 +19,12 @@ public final class ModParticleTypes {
     /** Sand blown by the ring 2 sandstorm (change 28); vanilla {@code generic_*} sprites until change 37. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SAND_GUST =
             PARTICLE_TYPES.register("sand_gust", () -> new SimpleParticleType(false));
+    /** Falling ash of the ring 3 weather (package 45); sprites {@code ash_flake_0..3} from stream T. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ASH_FLAKE =
+            PARTICLE_TYPES.register("ash_flake", () -> new SimpleParticleType(false));
+    /** Glowing spark of an eruption and an ash cloud (package 45); sprites {@code ember_0..3} from stream T. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> EMBER =
+            PARTICLE_TYPES.register("ember", () -> new SimpleParticleType(false));
 
     private ModParticleTypes() {
     }

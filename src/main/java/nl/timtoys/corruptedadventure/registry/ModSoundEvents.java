@@ -29,6 +29,13 @@ public final class ModSoundEvents {
     /** Single drops, the additions sound of both Nether ring 2 biomes (change 36). */
     public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_2_DRIPS = register("ambient.nether_ring_2.drips");
 
+    /** Soft crackling loop of ash rain (package 45), played by the client while it is felt. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_3_ASH_RAIN = register("weather.ring_3.ash_rain");
+    /** Deep rumble of an eruption (package 45): one-shots at random intervals, also the ash cloud's warning. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_3_ERUPTION = register("weather.ring_3.eruption");
+    /** Roaring loop inside an ash cloud (package 45). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_3_ASH_CLOUD = register("weather.ring_3.ash_cloud");
+
     private ModSoundEvents() {
     }
 
