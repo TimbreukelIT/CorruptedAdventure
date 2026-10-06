@@ -154,9 +154,13 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 
 
 ## Uit change 35
-- [blocks] Erts-varianten in doorweekt netherrack (kwarts, goud, ancient debris, grind, blackstone, magma hebben nu de gewone ertstexture in groengrijze rots). (bron: change 35)
+- [blocks] Erts-varianten in doorweekt netherrack (kwarts, goud, ancient debris, grind, blackstone, magma hebben nu de gewone ertstexture in groengrijze rots). Change 37b (vraag 1 A) brengt het palet van `soaked_netherrack` naar de toonladder van vanilla-netherrack; eigen kwarts-/gouderts-varianten (`blocks` + `worldgen`) alleen nog als de rest-naad in teststop 3 stoort. (bron: change 35, bijgewerkt 37b)
 - [structures] Nether-ring 2 heeft geen vanilla-structures (geen `minecraft:`-biometags); keuze en eigen structures in fase 3. (bron: change 35)
 - [mobs] Nether-ring 2: sporenmonsters en slijmwezens (fase 4); tot dan de vanilla-mix (zombified piglin, enderman, strider, af en toe een ghast). (bron: change 35)
 - [worldgen] Vanilla-ertsaders onderling (magma, grind, blackstone, kwarts, goud) hangen af van de laadvolgorde: 54 van 126 chunks 1–40 blokken verschil tussen twee werelden. Oplossen kan met een eigen erts-feature die per aderpositie één eindtoestand heeft. (bron: change 35)
 - [worldgen] Afstemmen na de W-check: luchtaandeel van het woud (0,47, doel > 0,5: `walls.json`, `masses.json`), geodes in de sporengrotten (1 per 7 chunks, doel 5–6: `dew_geodes.json`), dichtheid van zuilen en schimmel. (bron: change 35)
 - [worldgen] Nether-ring 1: de feature-indexverschuiving door de Nether-2-biomes maakt ertsen en lavabronnen in ring 1 anders dan vóór change 35 (terreinvorm gelijk); alleen relevant als iemand een bestaande wereld vergelijkt. (bron: change 35)
+
+## Uit change 37b
+- [blocks] `soaked_netherrack`: `MapColor.TERRACOTTA_BROWN` → `MapColor.NETHER` (het palet ligt sinds 37b op de toonladder van vanilla-netherrack); `dripshroom_planks` (+ set): kaartkleur nalopen nu de planken donkerder zijn (37b-4 A). (bron: change 37b)
+- [textures] Ring 1: selectieve omlijning (37b-3 A) ook voor het zielkristal (item + erts-overlays) in `Ring1Textures.java`; tot dan heeft ring 1 nog één randkleur rondom. (bron: change 37b)
