@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -99,6 +100,11 @@ public final class Ring2Textures {
     private static final int SOAKED_PORE = 0x2A0E10;
     private static final int SOAKED_DAMP = 0x3A4634;
     private static final int SOAKED_GLOSS = 0x9A5650;
+    /** Crevice pixels of {@link #soakedNetherrack}: {@code SOAKED_PORE_ODDS} in {@code SOAKED_CREVICE_ROLLS} become a pore. */
+    private static final int SOAKED_CREVICE_ROLLS = 18;
+    private static final int SOAKED_PORE_ODDS = 3;
+    /** Damp specks per tile, each on its own row, column and diagonal (wrapping) so they never line up as a stripe. */
+    private static final int SOAKED_DAMP_SPECKS = 4;
     // Six tones (37b): blue-green in the shadows, warmer in the light.
     private static final int[] SPORE_MOSS = {0x34403A, 0x45533F, 0x586A4E, 0x6E8160, 0x879877, 0xA3B28C};
     private static final int SPORE_DOT = 0xC8D4B0;
@@ -1740,62 +1746,72 @@ public final class Ring2Textures {
 
     /**
      * Wet netherrack (37b-1 A): lumps on vanilla netherrack's scale and tone ladder, so vanilla's nether ores sit in it
-     * without a red square. Each lump has its own base tone, is lit from the top left and shadowed along its lower right
+     * without a square. Each lump has its own base tone, is lit from the top left and shadowed along its lower right
      * edge. What makes it soaked stays soft, so the lumps dominate and the 16-px repetition does not read as a grid:
-     * damp zones (a broad, tileable noise) darken the rock by about one tone and carry the wet gloss on their lumps,
-     * and the crevices hold black-red pores and damp grey-green specks. The outer pixel ring keeps to the plain ladder
-     * (no gloss, pores or specks), so a neighbouring ore block meets the same tones as in vanilla.
+     * damp zones (a broad, tileable noise) darken the rock by about one tone and carry the wet gloss on their lumps;
+     * the crevices hold black-red pores ({@link #SOAKED_PORE_ODDS} in {@link #SOAKED_CREVICE_ROLLS}) and a few damp
+     * grey-green specks ({@link #SOAKED_DAMP_SPECKS}, scattered so no two share a row, column or diagonal). The damp
+     * runs softly over the whole tile and across its seams (tileable noise); the lumps are lit so the tile's mean
+     * brightness matches vanilla netherrack's (~0.20), so a neighbouring ore block shows no lighter or darker square and
+     * no frame appears at the seams. The outer pixel ring carries no gloss, pores or specks.
      */
     private static void soakedNetherrack(BufferedImage image, Random random) {
-        // Several layouts from the same seed; keep the one whose rows and columns are most even, so no lump row or
-        // crevice line repeats as a stripe every 16 pixels.
+        // Several layouts from the same seed; keep the one that repeats least visibly (rows, columns and diagonals).
         BufferedImage best = null;
         double bestScore = Double.MAX_VALUE;
         for (int attempt = 0; attempt < 8; attempt++) {
             BufferedImage candidate = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
-            soakedNetherrackLayout(candidate, new Random(random.nextLong()));
+            if (!soakedNetherrackLayout(candidate, new Random(random.nextLong()))) {
+                continue;
+            }
             double score = stripeScore(candidate);
             if (score < bestScore) {
                 bestScore = score;
                 best = candidate;
             }
         }
+        if (best == null) {
+            throw new IllegalStateException("soaked_netherrack: no layout fits " + SOAKED_DAMP_SPECKS + " damp specks");
+        }
         copy(best, image);
     }
 
     /**
-     * How strongly a tile reads as stripes when repeated: the largest step in mean brightness between neighbouring rows
-     * or columns (wrapping, so the seam between two tiles counts too).
+     * How strongly a tile reads as stripes when repeated: the largest step in mean brightness between neighbouring rows,
+     * columns, diagonals or anti-diagonals (all wrapping, so the seam between two tiles counts too).
      */
     private static double stripeScore(BufferedImage image) {
-        double[] rows = new double[SIZE];
-        double[] columns = new double[SIZE];
+        double[][] lines = new double[4][SIZE];
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 double l = luminance(image.getRGB(x, y) & 0xFFFFFF) / SIZE;
-                rows[y] += l;
-                columns[x] += l;
+                lines[0][y] += l;
+                lines[1][x] += l;
+                lines[2][(x + y) % SIZE] += l;
+                lines[3][Math.floorMod(x - y, SIZE)] += l;
             }
         }
         double worst = 0;
-        for (int i = 0; i < SIZE; i++) {
-            worst = Math.max(worst, Math.abs(rows[i] - rows[(i + 1) % SIZE]));
-            worst = Math.max(worst, Math.abs(columns[i] - columns[(i + 1) % SIZE]));
+        for (double[] line : lines) {
+            for (int i = 0; i < SIZE; i++) {
+                worst = Math.max(worst, Math.abs(line[i] - line[(i + 1) % SIZE]));
+            }
         }
         return worst;
     }
 
-    /** One layout of {@link #soakedNetherrack}. */
-    private static void soakedNetherrackLayout(BufferedImage image, Random random) {
+    /** One layout of {@link #soakedNetherrack}; false when its crevices do not fit all the damp specks. */
+    private static boolean soakedNetherrackLayout(BufferedImage image, Random random) {
         Cells cells = Cells.random(random, 16);
         double[] base = new double[cells.count()];
         boolean[] glossy = new boolean[cells.count()];
         for (int i = 0; i < base.length; i++) {
-            base[i] = 0.38 + 0.35 * random.nextDouble();
+            base[i] = 0.55 + 0.35 * random.nextDouble();
             glossy[i] = random.nextInt(5) < 3;
         }
         double[][] broad = valueNoise(random, 8, 8);
         double[][] damp = valueNoise(random, 8, 8);
+        List<int[]> crevices = new ArrayList<>();
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 boolean rim = x == 0 || y == 0 || x == SIZE - 1 || y == SIZE - 1;
@@ -1803,8 +1819,11 @@ public final class Ring2Textures {
                 double gap = nearest.secondDistance() - nearest.distance();
                 double slope = nearest.dx() + nearest.dy();
                 if (gap < 0.45) {
-                    int roll = random.nextInt(18);
-                    set(image, x, y, rim ? SOAKED_NETHERRACK[0] : roll < 3 ? SOAKED_DAMP : roll < 7 ? SOAKED_PORE : SOAKED_NETHERRACK[0]);
+                    boolean pore = !rim && random.nextInt(SOAKED_CREVICE_ROLLS) < SOAKED_PORE_ODDS;
+                    set(image, x, y, pore ? SOAKED_PORE : SOAKED_NETHERRACK[0]);
+                    if (!rim && !pore) {
+                        crevices.add(new int[] {x, y});
+                    }
                     continue;
                 }
                 double wet = Math.max(0, damp[x][y] - 0.5) * 2;
@@ -1820,6 +1839,30 @@ public final class Ring2Textures {
                 set(image, x, y, color);
             }
         }
+        // Every crevice pixel once, in a seeded random order: the first ones that share no line with an earlier speck.
+        Collections.shuffle(crevices, random);
+        List<int[]> specks = new ArrayList<>();
+        for (int[] spot : crevices) {
+            if (specks.size() < SOAKED_DAMP_SPECKS && specks.stream().noneMatch(other -> sharesLine(spot, other))) {
+                specks.add(spot);
+                set(image, spot[0], spot[1], SOAKED_DAMP);
+            }
+        }
+        return specks.size() == SOAKED_DAMP_SPECKS;
+    }
+
+    /** Whether two pixels of a repeating tile lie on (or next to) the same row, column, diagonal or anti-diagonal. */
+    private static boolean sharesLine(int[] a, int[] b) {
+        int dx = Math.floorMod(a[0] - b[0], SIZE);
+        int dy = Math.floorMod(a[1] - b[1], SIZE);
+        int diagonal = Math.floorMod(dx - dy, SIZE);
+        int anti = Math.floorMod(dx + dy, SIZE);
+        return near(dx) || near(dy) || near(diagonal) || near(anti);
+    }
+
+    /** A wrapped offset within one pixel of zero. */
+    private static boolean near(int offset) {
+        return offset <= 1 || offset >= SIZE - 1;
     }
 
     /**
