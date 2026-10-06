@@ -147,6 +147,7 @@ Voortgang: 21:25 na review: D, B groen (82 klassen, 428 tests), S `biomes-g1-s2`
 ## Beslissingen
 - 2026-10-06 · worldgen · Ring 3-biomes in de `multi_noise` op `region_heat` × `region_ground`: heet (h ≥ 0,166) pieken/stromen, midden zwavel/smeulwoud, koel (h < −0,051) zeekom/as/titanen; grondas op 0 resp. ±0,122; elk biome 1/7; `dormant_caldera` op weirdness ≥ 0,5 · het startvoorstel van plan 39b, gelijke aandelen, vlakken ~700 blokken (≥ ring 2).
 - 2026-10-06 · worldgen · Ring 3 golf 1: alleen de diepe carvers van ring 2, geen features; monsters = ring 2-woestijnset zonder dieren; geiten weight 1, groepjes 1–3, generatiekans 0,03 en spawn cost 1,0/0,12 · geen invloed op de featurevolgorde van ring 1/2; geiten zijn het enige dier, dus "lage weight" werkt pas met een lagere generatiekans en een spawn cost (anders vullen ze de creature-cap).
+- 2026-10-06 · worldgen · Ring 3-monsters voorlopig = ring 2-woestijnset (husks), tot fase 4; wijkt af van contract "vanilla" · besluit gebruiker.
 - 2026-10-06 · worldgen · `placeholder_ring_3` verwijderd (39b) · vervangen door de echte biomes; oude werelden laden niet meer.
 
 ## Backlog
