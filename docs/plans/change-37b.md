@@ -458,9 +458,37 @@ Alle zes vragen: **A**.
 
 ---
 
-## Afwijkingen bij de bouw
+## Bijsturing na de tussenstand (gebruiker, 2026-10-06)
 
-*(in te vullen door de bouwer)*
+De gebruiker bekeek batch 1 (`build/texture-preview/37b-batch1.png`): richting goed, met vier bijsturingen.
+1. **`soaked_netherrack` was bijna niet van vanilla-netherrack te onderscheiden.** Antwoord: zichtbaar natter maken zonder de aansluiting op vanilla-ertsen te verliezen. Gebouwd: twee onregelmatige donkere plassen per tegel (kern `2A0E10`, rand `4A191A`) met een korte reflectie `BC8880` in het lichte deel, glans `9A5650` op 3/5 van de klonten, vochtige voegen (poriën 5/18, vocht 3/18). Al het "natte" blijft binnen de tegel: de buitenste pixelring blijft op de netherrack-toonladder, zodat een vanilla-ertsblok ernaast dezelfde tonen raakt als in vanilla. Opnieuw gecontroleerd op de muur met kwarts en goud (`37b-batch1b.png`, `ring2-vs-vanilla.png`).
+2. **`dew_crystal` was nog een staafje.** Antwoord: een echte puntige scherf. Gebouwd als hand-gelegde sprite: asymmetrische ruit, scherpe punt rechtsboven, breed in het midden, gebroken voet linksonder; vlakken: licht (links), glinsterende rug, midden, schaduw (rechts), selectieve omlijning.
+3. **`raw_turquoise` was te klonterig/cartoonachtig.** Antwoord: één ruwe, hoekige brok zoals vanilla's ruwe koper/ijzer. Gebouwd: vlak licht bovenvlak, middenvlak en schaduwvlak met rechte kanten, bruine aders, crème gesteente eraan, mat.
+4. **`raw_sunstone` moest oranjer/roder ("zon"), verder van `raw_gold`.** Antwoord: het hele zonnesteenpalet schuift naar oranjerood: `5A1A06 9A300C D95A16 F2862A FFB85A FFEBC0` (was `5A2A08 9A4A0C D9801A F2B23A FFE07A FFF6C8`), gloei `FFE0A8` (was `FFF0B0`), dimtint `9A300C`. Dat geldt consistent voor `raw_sunstone` en voor `sunstone_ore_overlay`, dus voor alle vier de zonnesteenertsen (die delen de overlay). Aandachtspunt: op rode en oranje kloofsteen is het contrast van de overlay lager. De lichte facetten en de donkere rand houden hem leesbaar, en in het donker gloeit hij (emissive). Beoordelen in teststop 3.
+
+## Afwijkingen bij de bouw (2026-10-06)
+
+- **Omvang:** 56 PNG's veranderd (≈ 50 gepland). Erbij gekomen doordat gedeelde helpers meeveranderen: `stripped_palm_log` (nieuwe `strippedLog`, ook voor de druipzwam), `stripped_palm_log_top` en `palm_log_top` (vezelring), `dripshroom_stem_top` (nieuw palet + pit) en `chiseled_scorched_sandstone` (de zwarte middenpixel werd `SCORCHED_SANDSTONE[0]`). **Ongewijzigd (P3):** kloofsteen-tinten, `loose_sand`, `palm_planks`, `palm_leaves`, `barrel_cactus_*`, zout (korst, blok, gepolijst: de optionele tweede bevelring van `polished_salt` is niet gedaan), `dew_source`, `glow_mold`, particles. Ring 1 byte-identiek.
+- **Items als hand-gelegde sprites (routinekeuze, gemarkeerd):** `raw_sunstone` en `raw_turquoise` staan als 16×16-tekenreeksen in het script (`sprite(rows, legend)`): eigen pixels, deterministisch, en de enige manier om een tros-silhouet zoals vanilla's ruwe ertsen te krijgen; de omlijning komt daarna uit `outlineSelective`. `dew_crystal` (diagonale scherf langs `x − y` / `x + y`) en `salt` (masker + korrels + kubusjes) zijn procedureel. Vastgelegd in §1.4.
+- **Alpha-maskers:** deuren, valluiken en deur-items exact gelijk aan 959249a (gecontroleerd per pixel). Anders: `salt_crystal` (+35 px: nu met omlijning, §1.4), de stalactiet-dikten zonder kartels (bijv. `down_middle` 20 px; kruismodellen, geen hitbox), de items (nieuw silhouet).
+- **Puls:** `pulsing(naam, gloed, dim, painter)`: dim 12 % naar `SUNSTONE_DIM` `9A4A0C` / `DEW_DIM` `5E9FB4`, gloed 30 %, alleen tonen lichter dan de dimtint bewegen. `.mcmeta`'s ongewijzigd.
+- **`soaked_netherrack`:** 16 klonten (cel ~16 px), basistint 0,38–0,73, helling −0,3, rand rechtsonder −0,12, voeg < 0,45 met poriën (3/18) en vocht (2/18), glans op 2/5 van de klonten. Na de bijsturing (zie hierboven) komen er plassen, meer glans en vochtige voegen bij; buitenrand op de ladder. Met vanilla-kwarts/-goud erin blijft een vage, iets gladdere vlek over (verwacht bij A; muur bovenaan `ring2-vs-vanilla.png`).
+- **Sporenmos-zijkant:** 1-px-plukjes onder de rand (alleen waar de rand < 5 diep is, zodat `SIDE_RULES` vanaf rij 6 blijft gelden).
+- **Contactblad:** twee extra banden onder de zoutvlakte ("items in a slot" 1×/2×/3× en een Nether-ring 2-muur), `EXTRAS_HEIGHT` 760 → 1230; het lint-totaal staat in de bandkop.
+- **Lint `FLAT_OK`:** `salt_crust_top`, `salt_block`, `polished_salt` (9 A, glad), `loose_sand` (zandkorrel), `red_canyon_stone` (P3, 37-5 A), `barrel_cactus_top` (rand valt buiten het model), `glow_mold` (decal), `palm_leaves` (P3). Eindstand: 0 waarschuwingen.
+- **Beelden (alleen `build/`, niet in git):** `build/texture-preview/37b-overview-vs-vanilla.png` (alle gewijzigde PNG's: voor | na | 3×3 | vanilla-buur), `37b-batch1b.png` (ertsmuur + items na de bijsturing), `37b-before-after.png` (alle 56 voor/na + 3×3), `37b-batch1.png` (ertsmuur voor/na + eerste items), `ring2-vs-vanilla.png` (`VanillaCompare`), `ring2.png` (contactblad).
+- **`/code-review` (medium, 10 bevindingen):**
+  - opgelost:
+    1. `canyonStoneBricks` heeft één toon per steen per rij (geen toonsprong midden in de 16-px-steen);
+    2. `soot` wikkelt niet meer verticaal (geen roet in de lichte bovenband);
+    3. de V-kerf van de palmstam heeft een donkere punt (`PALM_BARK[0]`);
+    4. `CODEBASE.md` noemt `Animation` met dimtint, `pulsing(…, dim, …)` en de vervallen `rawLump`/`outline`/`veins`;
+    5. de turkoois-ader loopt door het knolmidden (`vein(image, random, x, y)`);
+    6. het hart van de woestijnbloem is 2×2 turkoois met één lichte glinsterpixel (`8FE6D6`) i.p.v. een crème pixel;
+    8. `VanillaCompare.findJar` weigert bij meer dan één resources-jar;
+    10. de haarscheurtjes van `cracked_clay` alleen binnen grote platen.
+  - Niet gedaan: 7 (het Voronoi-klontpatroon staat 5× in licht verschillende vorm; een gedeelde helper verandert de uitvoer en hoort bij de bestaande `[infra]`-backlogregel over ontdubbeling van de texturescripts) en 9 (`lint` rendert opnieuw: ~1 s extra, geen cache nodig).
+- **Tests:** script 2× → md5 identiek; lint 0; `./gradlew build` groen (incl. `ClientIsolationTest`); `runData` groen, diff van `src/generated` leeg; `runServer` (level `smoke-change37b`, seed 20260930) + `runClient -PquickPlay`: Dev joint, via RCON `tpring 2 nether`, `setblock` van kwarts-/gouderts, debris, lamp, hoed en dauwcluster in `soaked_netherrack` en `give` van de items gelukt; de clientlog bevat geen `Missing textures`, `Unable to load model` of animatiefouten. Het visuele oordeel in de game (W-lijst hierboven) is aan de gebruiker in teststop 3.
 
 ---
 
@@ -474,6 +502,7 @@ Alle zes vragen: **A**.
 | 2026-10-06 | textures | 37b-4 A: druipzwam-planken ~2 stappen donkerder (gemiddelde ~0,40), zelfde tint — herziet besluit 37-6 A ("planken lichter grijsgroen") deels | Lichte planken lichtten op in de donkere Nether (crimson/warped 0,30–0,36) |
 | 2026-10-06 | textures | 37b-5 A: `canyon_stone_bricks` in de indeling van vanilla `stone_bricks` | Las als kleibakstenen (`minecraft:bricks`) |
 | 2026-10-06 | textures | 37b-6 A: vergelijkingsblad `tools/textures/VanillaCompare.java` (leest de moddev-jar, schrijft alleen `build/`) | Herbruikbaar per ring; vanilla alleen als referentie (§1.4) |
+| 2026-10-06 | textures | 37b-bijsturing: zonnesteen oranjerood `5A1A06 9A300C D95A16 F2862A FFB85A FFEBC0`, gloei `FFE0A8` (item, overlay en dus alle zonnesteenertsen); `soaked_netherrack` natter (plassen, glans, vochtige voegen, buitenrand op de netherrack-ladder); `dew_crystal` puntige scherf; `raw_turquoise` hoekige brok | Feedback gebruiker op de tussenstand: zonnesteen verder van `raw_gold`, doorweekt netherrack eigen naast vanilla, items minder staaf-/klontachtig |
 | 2026-10-06 | textures | Pulsweging ring 2: dim ≤ 10 % naar een materiaaltint, piek alleen op de midden- en lichte tonen; vlakheidscontrole (lint) in `Ring2Textures.java` | Rustframe blijft goud of helder; "half getekend" meetbaar bewaakt |
 
 Commit (na `/code-review`): `textures: polish ring 2 items and nether ring 2 accents`.
