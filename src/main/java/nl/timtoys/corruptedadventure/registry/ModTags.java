@@ -36,6 +36,24 @@ public final class ModTags {
          */
         public static final TagKey<Block> FUNGAL_GROWTHS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("fungal_growths"));
 
+        // Ring 3 and Nether ring 3 (docs/plans/ring-3/contract.md §3); contents from the blocks stream.
+        /** Blocks that raise the heat meter of players within a few blocks (ring 3). */
+        public static final TagKey<Block> HEAT_SOURCES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("heat_sources"));
+        /** Blocks that lower the cold meter of players within a few blocks (Nether ring 3). */
+        public static final TagKey<Block> WARMTH_SOURCES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("warmth_sources"));
+        /** Host rocks of the ring 3 ores. */
+        public static final TagKey<Block> RING_3_STONES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("ring_3_stones"));
+        /** Charred log, wood and their stripped variants; part of {@code #minecraft:logs}, deliberately not of {@code #logs_that_burn}. */
+        public static final TagKey<Block> CHARRED_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("charred_logs"));
+        /** Rimeshroom stem, hyphae and their stripped variants; part of {@code #minecraft:logs}. */
+        public static final TagKey<Block> RIMESHROOM_STEMS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("rimeshroom_stems"));
+        /** Convention tag {@code c:ores/volcanite} (all host rocks); part of {@code c:ores}. */
+        public static final TagKey<Block> ORES_VOLCANITE = TagKey.create(Registries.BLOCK, common("ores/volcanite"));
+        /** Convention tag {@code c:ores/sulfur} (all host rocks); part of {@code c:ores}. */
+        public static final TagKey<Block> ORES_SULFUR = TagKey.create(Registries.BLOCK, common("ores/sulfur"));
+        /** Convention tag {@code c:ores/fire_ruby} (all host rocks); part of {@code c:ores}. */
+        public static final TagKey<Block> ORES_FIRE_RUBY = TagKey.create(Registries.BLOCK, common("ores/fire_ruby"));
+
         private Blocks() {
         }
     }
@@ -59,6 +77,21 @@ public final class ModTags {
         /** Convention tag {@code c:gems/dew_crystal}; part of {@code c:gems}. */
         public static final TagKey<Item> GEMS_DEW_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/dew_crystal"));
 
+        // Ring 3 and Nether ring 3 (docs/plans/ring-3/contract.md §3); contents from the blocks stream.
+        public static final TagKey<Item> CHARRED_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("charred_logs"));
+        public static final TagKey<Item> RIMESHROOM_STEMS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("rimeshroom_stems"));
+        public static final TagKey<Item> ORES_VOLCANITE = TagKey.create(Registries.ITEM, common("ores/volcanite"));
+        public static final TagKey<Item> ORES_SULFUR = TagKey.create(Registries.ITEM, common("ores/sulfur"));
+        public static final TagKey<Item> ORES_FIRE_RUBY = TagKey.create(Registries.ITEM, common("ores/fire_ruby"));
+        /** Convention tag {@code c:raw_materials/volcanite}; part of {@code c:raw_materials}. */
+        public static final TagKey<Item> RAW_MATERIALS_VOLCANITE = TagKey.create(Registries.ITEM, common("raw_materials/volcanite"));
+        /** Convention tag {@code c:dusts/sulfur}; part of {@code c:dusts}. */
+        public static final TagKey<Item> DUSTS_SULFUR = TagKey.create(Registries.ITEM, common("dusts/sulfur"));
+        /** Convention tag {@code c:gems/fire_ruby}; part of {@code c:gems}. */
+        public static final TagKey<Item> GEMS_FIRE_RUBY = TagKey.create(Registries.ITEM, common("gems/fire_ruby"));
+        /** Convention tag {@code c:gems/fire_crystal}; part of {@code c:gems}. */
+        public static final TagKey<Item> GEMS_FIRE_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/fire_crystal"));
+
         private Items() {
         }
     }
@@ -80,6 +113,16 @@ public final class ModTags {
 
         /** The biomes of Nether ring 2 ({@code NetherRing2Biomes.ALL}). */
         public static final TagKey<Biome> IS_NETHER_RING_2 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_nether_ring_2"));
+
+        // Ring 3 and Nether ring 3 (docs/plans/ring-3/contract.md §2); contents from the worldgen streams.
+        /** Every biome with ring 3 worldgen, the transition biome {@code steam_fens} included. */
+        public static final TagKey<Biome> IS_RING_3 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_ring_3"));
+        /** The biomes of Nether ring 3. */
+        public static final TagKey<Biome> IS_NETHER_RING_3 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_nether_ring_3"));
+        /** Biomes where the heat meter rises faster ({@code volcanic_peaks}). */
+        public static final TagKey<Biome> HEAT_PEAKS = TagKey.create(Registries.BIOME, CorruptedAdventure.id("heat_peaks"));
+        /** Biomes where the heat meter falls ({@code dormant_caldera}). */
+        public static final TagKey<Biome> HEAT_REFUGES = TagKey.create(Registries.BIOME, CorruptedAdventure.id("heat_refuges"));
 
         private Biomes() {
         }

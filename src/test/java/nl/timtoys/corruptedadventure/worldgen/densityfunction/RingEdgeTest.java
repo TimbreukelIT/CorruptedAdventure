@@ -3,12 +3,12 @@ package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 import com.mojang.serialization.JsonOps;
 import com.google.gson.JsonParser;
 import net.minecraft.world.level.Level;
+import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,7 +35,7 @@ class RingEdgeTest {
 
     @Test
     void measuresToTheNearestOfBothBoundaries() {
-        RingLayout layout = new RingLayout(new RingSettings(List.of(1500, 3500, 5500, 7500, 9500), 10000, 96, 128), 1L);
+        RingLayout layout = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128), 1L);
         // Ring 2 runs from 1.500 to 3.500 (overworld blocks).
         assertEquals(100.0, layout.boundaryDepth(Ring.RING_2, 1600.0), 1e-9);
         assertEquals(100.0, layout.boundaryDepth(Ring.RING_2, 3400.0), 1e-9);

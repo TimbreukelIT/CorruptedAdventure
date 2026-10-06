@@ -56,6 +56,7 @@ public final class CorruptedAdventure {
         LOGGER.info("The Corrupted Adventure is loading");
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
+        CommonConfig.register(modEventBus);
         ServerConfig.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);

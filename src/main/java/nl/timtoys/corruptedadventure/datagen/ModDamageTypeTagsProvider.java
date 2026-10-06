@@ -7,6 +7,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.tags.Ring3DamageTypeTags;
 import nl.timtoys.corruptedadventure.registry.ModDamageTypes;
 
 import java.util.concurrent.CompletableFuture;
@@ -28,5 +29,7 @@ final class ModDamageTypeTagsProvider extends DamageTypeTagsProvider {
         tag(DamageTypeTags.NO_KNOCKBACK).add(ModDamageTypes.DEHYDRATION);
         tag(DamageTypeTags.BYPASSES_WOLF_ARMOR).add(ModDamageTypes.DEHYDRATION);
         tag(Tags.DamageTypes.IS_ENVIRONMENT).add(ModDamageTypes.DEHYDRATION);
+        // Ring 3: the conditions stream adds its tags in its own helper.
+        Ring3DamageTypeTags.addTags(this::tag);
     }
 }

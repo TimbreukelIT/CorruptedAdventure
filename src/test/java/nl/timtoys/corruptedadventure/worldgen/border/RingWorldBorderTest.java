@@ -2,11 +2,11 @@ package nl.timtoys.corruptedadventure.worldgen.border;
 
 import net.minecraft.world.level.border.BorderChangeListener;
 import net.minecraft.world.level.border.WorldBorder;
+import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -42,7 +42,7 @@ class RingWorldBorderTest {
 
     @Test
     void initialSizeIsTheVoidEdgeDiameter() {
-        RingSettings settings = new RingSettings(List.of(1500, 3500, 5500, 7500, 9500), 10000, 96, 128);
+        RingSettings settings = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128);
         assertEquals(20000.0, RingWorldBorder.initialSize(settings));
     }
 

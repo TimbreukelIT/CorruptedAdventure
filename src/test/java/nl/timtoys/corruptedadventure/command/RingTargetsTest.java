@@ -1,18 +1,18 @@
 package nl.timtoys.corruptedadventure.command;
 
+import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingTargetsTest {
-    private static final RingSettings DEFAULTS = new RingSettings(List.of(1500, 3500, 5500, 7500, 9500), 10000, 96, 128);
+    private static final RingSettings DEFAULTS = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128);
 
     private final RingLayout layout = new RingLayout(DEFAULTS, 12345L);
 
@@ -25,7 +25,9 @@ class RingTargetsTest {
     @Test
     void middleRadiusIsTheMiddleOfTheNominalBand() {
         assertEquals(750, RingTargets.middleRadius(DEFAULTS, Ring.RING_1));
-        assertEquals(4500, RingTargets.middleRadius(DEFAULTS, Ring.RING_3));
+        assertEquals(4750, RingTargets.middleRadius(DEFAULTS, Ring.RING_3));
+        assertEquals(6900, RingTargets.middleRadius(DEFAULTS, Ring.RING_4));
+        assertEquals(8650, RingTargets.middleRadius(DEFAULTS, Ring.RING_5));
         assertEquals(9750, RingTargets.middleRadius(DEFAULTS, Ring.VOID));
     }
 

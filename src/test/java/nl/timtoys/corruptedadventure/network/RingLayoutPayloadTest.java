@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.world.level.Level;
+import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingLayoutPayloadTest {
-    private static final List<Integer> RADII = List.of(1500, 3500, 5500, 7500, 9500);
+    private static final List<Integer> RADII = CommonConfig.DEFAULT_OUTER_RADII;
     private static final RingSettings SETTINGS = new RingSettings(RADII, 10000, 96, 128);
     private static final RingLayout SERVER = new RingLayout(SETTINGS, RingLayout.noiseSeed(20260930L));
 

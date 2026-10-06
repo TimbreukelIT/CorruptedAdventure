@@ -96,6 +96,7 @@ Scope: ring 3 + Nether-ring 3 (bouwplan blok E). Werkwijze besloten in de sparri
 **Teststop 4c — eindcheck** ring 3 + Nether-3, alle W-lijsten van de pakketten, standaard-W (elke ring en grens, portal per ring, ook overworld ring 3 → Nether-3), prestatie en determinisme.
 
 ## 2b. Implementatiekeuzes (niet door de gebruiker besloten)
+- **37c is `infra` maar zet ook worldgen-/blocks-artefacten neer** (biome-keys, tag-keys, lege bootstrap- en helperklassen per stroom; geen inhoud). Bewuste uitzondering op één categorie per change: het is het contractraamwerk van golf 0, en splitsen zou juist de gedeelde-bestandsconflicten in golf 1 terugbrengen. De haken per stroom staan in `CODEBASE.md` ("Ring 3-haken per stroom").
 - **Hitte-modifiers van het ring 3-weer bouwt C, niet A** (afwijking van ring 2, waar change 28 de hittegolf-modifier in `weather/` bouwde). Reden: A en C wachten in golf 1 niet op elkaar. A levert alleen de factoren in `[weather.ring3]`; de aswolk-modifier koppelt C in golf 2 (`contract.md` §5).
 
 ## 3. Afhankelijkheden in één oogopslag

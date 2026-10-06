@@ -6,13 +6,19 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.lang.LangOutput;
+import nl.timtoys.corruptedadventure.datagen.lang.NetherRing3BiomeNames;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring3BiomeNames;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring3BlockNames;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring3ConditionText;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring3WeatherText;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
 /** {@code en_us}: mandatory for every key. */
-final class EnglishLanguageProvider extends LanguageProvider {
+final class EnglishLanguageProvider extends LanguageProvider implements LangOutput {
     EnglishLanguageProvider(PackOutput output) {
         super(output, CorruptedAdventure.MOD_ID, "en_us");
     }
@@ -223,13 +229,16 @@ final class EnglishLanguageProvider extends LanguageProvider {
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_5, "Placeholder Nether Ring 5");
         biome(ModBiomes.NETHER_VOID_EDGE, "Nether Void Edge");
 
+        // Ring 3 and Nether ring 3: one helper per stream, so the streams never edit this file.
+        Ring3BlockNames.addEnglish(this);
+        Ring3BiomeNames.addEnglish(this);
+        NetherRing3BiomeNames.addEnglish(this);
+        Ring3ConditionText.addEnglish(this);
+        Ring3WeatherText.addEnglish(this);
+
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s dried out");
         add("death.attack.corruptedadventure.dehydration.player", "%1$s dried out whilst fighting %2$s");
-    }
-
-    private void biome(ResourceKey<Biome> biome, String name) {
-        add(biome.location().toLanguageKey("biome"), name);
     }
 
     private void copy(ResourceKey<Biome> vanilla, String name) {

@@ -20,6 +20,24 @@ public final class ModBiomes {
     public static final ResourceKey<Biome> DRIPSHROOM_FOREST = key("dripshroom_forest");
     public static final ResourceKey<Biome> SPORE_CAVES = key("spore_caves");
 
+    // Ring 3 (Ring3Biomes; docs/plans/ring-3/contract.md §2). Keys only until the biomes are registered.
+    public static final ResourceKey<Biome> ASHEN_WASTES = key("ashen_wastes");
+    public static final ResourceKey<Biome> VOLCANIC_PEAKS = key("volcanic_peaks");
+    public static final ResourceKey<Biome> EMBER_WOODS = key("ember_woods");
+    public static final ResourceKey<Biome> BASALT_FLOWS = key("basalt_flows");
+    public static final ResourceKey<Biome> SULFUR_FIELDS = key("sulfur_fields");
+    public static final ResourceKey<Biome> DRIED_SEABED = key("dried_seabed");
+    public static final ResourceKey<Biome> TITAN_FIELDS = key("titan_fields");
+    /** Micro-biome inside dormant calderas, chosen on the router's {@code weirdness}; a heat refuge. */
+    public static final ResourceKey<Biome> DORMANT_CALDERA = key("dormant_caldera");
+    /** Transition biome of boundary 3 (ring 3 | ring 4). */
+    public static final ResourceKey<Biome> STEAM_FENS = key("steam_fens");
+
+    // Nether ring 3 (NetherRing3Biomes). Keys only until the biomes are registered.
+    public static final ResourceKey<Biome> FROZEN_LAVA_SEA = key("frozen_lava_sea");
+    public static final ResourceKey<Biome> RIME_FOREST = key("rime_forest");
+    public static final ResourceKey<Biome> GLACIER_RIFTS = key("glacier_rifts");
+
     // Temporary: one per ring until the ring's real biomes exist. Ring 1's copies (overworld and Nether):
     // VanillaBiomeCopies.copyOf.
     public static final ResourceKey<Biome> PLACEHOLDER_RING_3 = key("placeholder_ring_3");

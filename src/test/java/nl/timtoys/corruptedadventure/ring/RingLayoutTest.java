@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.ring;
 
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
+import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingLayoutTest {
-    private static final List<Integer> RADII = List.of(1500, 3500, 5500, 7500, 9500);
+    private static final List<Integer> RADII = CommonConfig.DEFAULT_OUTER_RADII;
     private static final RingSettings DEFAULTS = new RingSettings(RADII, 10000, 96, 128);
     private static final long SEED = 12345L;
     // Furthest a boundary effect can reach: noise plus half the transition zone.
@@ -102,8 +103,8 @@ class RingLayoutTest {
         RingLayout other = new RingLayout(DEFAULTS, SEED + 1);
         boolean differs = false;
         for (int angle = 0; angle < 360; angle += 3) {
-            assertEquals(boundaryDistance(layout, 5500, angle), boundaryDistance(same, 5500, angle));
-            differs |= boundaryDistance(layout, 5500, angle) != boundaryDistance(other, 5500, angle);
+            assertEquals(boundaryDistance(layout, 6000, angle), boundaryDistance(same, 6000, angle));
+            differs |= boundaryDistance(layout, 6000, angle) != boundaryDistance(other, 6000, angle);
         }
         assertTrue(differs, "different seeds produced identical boundaries");
         assertNotEquals(layout.sampleOverworld(3480, 777), other.sampleOverworld(3480, 777));

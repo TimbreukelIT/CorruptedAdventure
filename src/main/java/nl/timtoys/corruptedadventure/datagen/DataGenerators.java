@@ -8,22 +8,31 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.condition.ConditionDamageTypes;
+import nl.timtoys.corruptedadventure.condition.Ring3DamageTypes;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing2Biomes;
+import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing3BiomeModifiers;
+import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing3Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.PlaceholderBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring1BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2Biomes;
-import nl.timtoys.corruptedadventure.worldgen.carver.NetherRing2Carvers;
-import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring3BiomeModifiers;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring3Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.TransitionBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
+import nl.timtoys.corruptedadventure.worldgen.carver.NetherRing2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.carver.NetherRing3Carvers;
+import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.carver.Ring3Carvers;
 import nl.timtoys.corruptedadventure.worldgen.feature.DryRiverbedsFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing1Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing2Features;
+import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing3Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring1HorrorFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2DressingFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2FlatsFeatures;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring3Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.WitheredExpanseFeatures;
 
 import java.util.Set;
@@ -40,7 +49,8 @@ public final class DataGenerators {
     }
 
     private static void gatherData(GatherDataEvent event) {
-        // A registry may be added only once, so all bootstraps of one registry share one lambda.
+        // A registry may be added only once, so all bootstraps of one registry share one lambda. Ring 3 and Nether ring 3
+        // have one entry class per stream (and registry); a stream calls its further classes from there.
         event.createDatapackRegistryObjects(new RegistrySetBuilder()
                 .add(Registries.CONFIGURED_FEATURE, context -> {
                     WitheredExpanseFeatures.configured(context);
@@ -51,10 +61,14 @@ public final class DataGenerators {
                     Ring2FlatsFeatures.configured(context);
                     Ring2DressingFeatures.configured(context);
                     DryRiverbedsFeatures.configured(context);
+                    Ring3Features.configured(context);
+                    NetherRing3Features.configured(context);
                 })
                 .add(Registries.CONFIGURED_CARVER, context -> {
                     Ring2Carvers.bootstrap(context);
                     NetherRing2Carvers.bootstrap(context);
+                    Ring3Carvers.bootstrap(context);
+                    NetherRing3Carvers.bootstrap(context);
                 })
                 .add(Registries.PLACED_FEATURE, context -> {
                     WitheredExpanseFeatures.placed(context);
@@ -65,6 +79,8 @@ public final class DataGenerators {
                     Ring2FlatsFeatures.placed(context);
                     Ring2DressingFeatures.placed(context);
                     DryRiverbedsFeatures.placed(context);
+                    Ring3Features.placed(context);
+                    NetherRing3Features.placed(context);
                 })
                 .add(Registries.BIOME, context -> {
                     PlaceholderBiomes.bootstrap(context);
@@ -72,13 +88,20 @@ public final class DataGenerators {
                     TransitionBiomes.bootstrap(context);
                     Ring2Biomes.bootstrap(context);
                     NetherRing2Biomes.bootstrap(context);
+                    Ring3Biomes.bootstrap(context);
+                    NetherRing3Biomes.bootstrap(context);
                 })
                 .add(Registries.WOLF_VARIANT, VanillaBiomeCopies::bootstrapWolfVariants)
                 .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, context -> {
                     Ring1BiomeModifiers.bootstrap(context);
                     Ring2BiomeModifiers.bootstrap(context);
+                    Ring3BiomeModifiers.bootstrap(context);
+                    NetherRing3BiomeModifiers.bootstrap(context);
                 })
-                .add(Registries.DAMAGE_TYPE, ConditionDamageTypes::bootstrap),
+                .add(Registries.DAMAGE_TYPE, context -> {
+                    ConditionDamageTypes.bootstrap(context);
+                    Ring3DamageTypes.bootstrap(context);
+                }),
                 // "minecraft": the wolf variants override vanilla's entries.
                 Set.of(CorruptedAdventure.MOD_ID, "minecraft"));
         // Created after the datapack registries, so their lookup contains our biomes.

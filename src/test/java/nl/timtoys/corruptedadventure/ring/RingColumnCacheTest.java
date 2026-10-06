@@ -1,14 +1,14 @@
 package nl.timtoys.corruptedadventure.ring;
 
+import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RingColumnCacheTest {
-    private static final RingSettings DEFAULTS = new RingSettings(List.of(1500, 3500, 5500, 7500, 9500), 10000, 96, 128);
+    private static final RingSettings DEFAULTS = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128);
     private static final RingLayout LAYOUT = new RingLayout(DEFAULTS, 12345L);
 
     @Test

@@ -14,6 +14,7 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
@@ -32,9 +33,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingBiomeSourceTest {
-    private static final List<Integer> RADII = List.of(1500, 3500, 5500, 7500, 9500);
+    private static final List<Integer> RADII = CommonConfig.DEFAULT_OUTER_RADII;
     private static final RingLayout LAYOUT = new RingLayout(new RingSettings(RADII, 10000, 96, 128), 12345L);
-    private static final int[] CENTRES = {750, 2500, 4500, 6500, 8500, 9750};
+    private static final int[] CENTRES = {750, 2500, 4750, 6900, 8650, 9750};
     private static final int REACH = 96 + 64;
 
     private final Map<Ring, Holder<Biome>> biomes = new EnumMap<>(Ring.class);
