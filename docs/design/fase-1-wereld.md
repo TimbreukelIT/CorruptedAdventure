@@ -3,7 +3,7 @@
 Uitwerking van de sparringsessie(s) voor fase 1. Bron van waarheid voor *wat* we in fase 1 bouwen.
 Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 
-**Status:** sparring afgerond. Sessie 1: fundament, ring 1 en ring 2. Sessie 2: ring 3, 4 en 5 (alle met Nether-tegenpolen). Bouwplan compleet (changes 0–96, §3). Volgende stap: change 0 (startsein van de gebruiker).
+**Status:** sparring afgerond. Sessie 1: fundament, ring 1 en ring 2. Sessie 2: ring 3, 4 en 5 (alle met Nether-tegenpolen). Bouwplan compleet (changes 0–96, §3). Changes 0–37 (+ 23b, 23c, 30b, 30c, 37b) gebouwd; teststop 3 akkoord (2026-10-06). **Sparring ring 3 (2026-10-06)** herziet ring 3 en de ringbreedtes (zie Ring 3 → "Uitwerking sparring ring 3"); bouw van ring 3 in parallelle golven volgens `docs/plans/ring-3/waves.md`.
 
 ---
 
@@ -144,7 +144,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 ### 1.13 Debugcommando's (change 3)
 - `/ca …` alleen voor OP's (permissieniveau 2), vaste Engelse tekst (geen lang-keys).
 - `/ca ring`: ring (bij overgang: beide ringen en het gewicht), afstand tot 0,0 (in de Nether ook het overworld-equivalent) en de afstand tot de dichtstbijzijnde grens **inclusief ruis, met teken** (+ buiten, − binnen). Afstanden in blokken van de huidige dimensie.
-- `/ca tpring <1–6> [nether]` (6 = void-rand): naar het radiale midden van de nominale ring (750 / 2.500 / 4.500 / 6.500 / 8.500 / 9.750; Nether ÷4), **in je huidige richting vanaf 0,0** (op 0,0 zelf: oost). Zonder `nether` gaat het naar de overworld.
+- `/ca tpring <1–6> [nether]` (6 = void-rand): naar het radiale midden van de nominale ring (uit de snapshot; met de standaardwaarden sinds de sparring ring 3: 750 / 2.500 / 4.750 / 6.900 / 8.650 / 9.750, daarvóór 4.500 / 6.500 / 8.500 voor ring 3–5; Nether ÷4), **in je huidige richting vanaf 0,0** (op 0,0 zelf: oost). Zonder `nether` gaat het naar de overworld.
 - `/ca tpboundary <1–5> [nether]`: naar de echte, verruisde grens (gewicht 0,5) tussen ring n en n+1, in dezelfde richting. Bedoeld voor test W.
 - `/ca border` (change 7): grootte, straal en midden van de border in de huidige dimensie (plus doel en resttijd als hij beweegt). Nodig omdat vanilla `/worldborder get` ook in de Nether de overworld-border toont. Kleine uitzondering op de categorie: gebouwd in change 7 (`worldgen`).
 - Landingshoogte: overworld bovenste blok (heightmap); Nether de hoogste plek met 2 blokken lucht op een stevige vloer, onder het dak. Geen veilige plek (void, lava)? Dan toch teleporteren naar een vaste Y (overworld 100, Nether 64), met een waarschuwing in de chat.
@@ -501,14 +501,45 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - Instortend zand, dauwkristalgroei en sporenmos-spreiding: vanilla-mechanismen / random ticks, server-side.
 - Uitdroging-meter: attachment + sync; HUD client-only.
 
-### Ring 3 — Vulkanische ring (3.500 – 5.500)
+### Ring 3 — Vulkanische ring (3.500 – 6.000; was 3.500 – 5.500)
+
+**Uitwerking sparring ring 3 (2026-10-06)** — gaat vóór de tekst van sessie 2 hieronder waar die botst. Bron: `docs/plans/ring-3-sparring.md` (vragen 1–22); contract en golven: `docs/plans/ring-3/contract.md`, `docs/plans/ring-3/waves.md`.
+- **Visie:** de "midden"-ring wordt de langste en zwaarste overleving, levendig (les ring 2) en met een wow-moment bij binnenkomst. **Richting "Smeulend Vuurland"**: een levend vulkanisch land, aangevuld met zwevende eilanden en lavavallen (episch) en een dag/nacht-ritme (survival). **Fantasy: hoog**: reuzenskeletten, zielvuur en titanen-rotsen horen erbij.
+- **Wow bij de grens 2→3:** horizon-vulkanen. Vanuit `dry_riverbeds` zie je kegels boven de wolkenlaag (Y 192) met gloed en een rookpluim (particles). Op de grens slaat de lucht om naar asrood met opstijgende vonken.
+- **Breedte:** ring 3 = 3.500 – 6.000 (2.500 breed, de grootste ring); ring 4 = 6.000 – 7.800; ring 5 = 7.800 – 9.500; Nether-3 = 875 – 1.500 (625 breed, lost de ruimte-check op). De standaardwaarden in `CommonConfig` passen mee in werkpakket 37c (code). Een gewijzigde config geldt alleen voor nieuwe werelden; bestaande testwerelden houden hun snapshot.
+- **Sub-biomes (7):** de vijf uit sessie 2 (`ashen_wastes`, `volcanic_peaks`, `dried_seabed`, `basalt_flows`, `sulfur_fields`) plus:
+  - **`ember_woods`** (smeulwoud: verkoolde stammen met gloeiende askronen, vuurflora; het "levendige" biome);
+  - één fantasy-biome **`titan_fields`** (werktitel; titanenveld met half begraven reuzenskeletten en zielvuur rond de skeletten). De skeletten zijn **worldgen-features**, geen structures en geen loot.
+  - Overgang 3→4 blijft `steam_fens`.
+- **Terrein-signatuur:**
+  - lavarivieren met spaarzame lavavallen;
+  - zeldzame zwevende basalteilanden (boven calderameren en lavarivieren);
+  - caldera's, deels slapend en groen.
+  - **Basaltzuilvelden zijn geen signatuur** (niet gekozen); `basalt_flows` blijft "gestolde stromen met gloeiende scheuren".
+- **Oase = slapende kraters:** een koele, groene caldera als rustpunt (de rol van `oasis_flats` in ring 2). Vorm, biome en water: open vraag in `contract.md`.
+- **Overlevingskern: hitte-ritme + schaarste.**
+  - Hitte stijgt in de zon overdag van **0 naar 100 in ~3 min** (uitdroging ~4 min), **×1,5–2** bij hittebronnen en in de pieken. Ze daalt 's nachts, ondergronds, in water en in een slapende krater.
+  - Drempels: **25 traagheid → 50 zwakte → 75 mining fatigue → 100 in brand**. Fire resistance halveert de opbouw (sessie 2).
+  - Water verdampt bovengronds (sessie 2); water blijft schaars.
+- **Voedsel:** **zeldzaam vee: geiten op de pieken** (`volcanic_peaks`); dat wijkt af van de aanbevolen optie "geen vee". Eetbare vuurflora en waterschaarste blijven, tenzij ze botsen (vervolgvraag in `contract.md`).
+- **Weer:** asregen + uitbarsting (sessie 2) + een **zeldzame aswolk** (pyroclastisch: donker, extra hitte, schuilen). **Lavabommen** vallen ringbreed rond spelers onder open lucht, dichter bij de pieken.
+- **Ertsen:** zoals sessie 2 (vulkaniet, zwavel, vuurrobijn; vanilla verder afgebouwd) + **vuurkristal-geodes** (zeldzaam, gloeiend; nut in fase 2).
+- **Horror:** as-afgietsels, voetsporen en gerommel blijven. Daarbij komen **as-afgietsels die 's nachts zwak gloeien**.
+- **Nether-ring 3:** het ontwerp van sessie 2 blijft. Daarbij komen de levendig-eis en een eigen wow: **bevroren lavavallen**, rijpwoud met **ijspegels** en **gloeiende scheuren als warme eilandjes**.
+- **Prestatie:** noise-stap **≤ 1,75× vanilla** (zoals ring 2); stromende lava bij generatie alleen met een cap per chunk.
+- **Werkwijze (infra):**
+  - contract-first in golven; stromen parallel in eigen git-worktrees; één integratie-agent (merge, `runData`, prestatie, docs);
+  - drie teststops: **4a** terrein-wow (blokkerend), **4b** overleving + sfeer, **4c** eindcheck incl. Nether-3;
+  - textures direct als goede eerste versies in de 37b-stijl (geen placeholder-ronde; uitzondering op §1.4 "placeholders eerst");
+  - nummers 38–57 blijven als werkpakketten, nieuwe pakketten krijgen een letter;
+  - de hoofdsessie orkestreert handmatig met agents (geen Workflow-tool).
 
 **Terrein en sfeer**
 - Zwart-grijs aslandschap met vulkaankegels, kraters, lavameren en gestolde lavastromen. Lucht rood-oranje, fog dicht en asgrijs.
 - Eigen ring 3-invoer voor `ring_blend`, met per biome-regio een eigen vorm (kegels, stromen, zeekom).
 - Het gestolen water is overal zichtbaar: geen natuurlijk water, een lege zeekom, en geplaatst water verdampt bovengronds.
 
-**Biomes (5)**
+**Biomes (7; was 5)**
 | Biome (werktitel) | Karakter |
 |---|---|
 | `ashen_wastes` | Grijze asvlakte met verkoolde bomen en aslagen — kernbiome |
@@ -516,6 +547,8 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 | `dried_seabed` | Lege zeekom: diepe kom met dode koraalbanken (vanilla dead coral), het gestolen water |
 | `basalt_flows` | Gestolde lavastromen met gloeiende scheuren (smeulsteen) |
 | `sulfur_fields` | Gele zwavelkorst en fumarolen |
+| `ember_woods` | Smeulwoud: verkoolde stammen met gloeiende askronen, vuurflora (sparring ring 3, 2026-10-06) |
+| `titan_fields` | Fantasy-biome (werktitel): titanenveld met half begraven reuzenskeletten, zielvuur rond de skeletten, titanen-rotsen (sparring ring 3) |
 
 - Overgangsbiome 3→4: **stoomvenen** (`steam_fens`): hete modderpoelen, geisers en stoomkolommen. Hier komt het gestolen water terug en kookt het tegen de hitte. Stoom is biome-particles (data).
 
@@ -560,12 +593,13 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 **Grensmuur 3→4** (fase 5): zwarte aswolk met vonken.
 
-**Nether-tegenpool — Nether-ring 3 (875 – 1.375): bevroren Nether**
+**Nether-tegenpool — Nether-ring 3 (875 – 1.500; was 875 – 1.375): bevroren Nether**
 - **Terrein**: de lavazee is gestold tot een enorme vlakte van ijs en koudlava, met scheuren waarin nog gloeiende lava ligt (zeldzame warme plekken). Daarnaast gletsjermassa's met smalle kloven en tunnels.
 - **Biomes (3)**: `frozen_lava_sea` (hoofdbiome: open vlakte, ijspilaren van vloer tot plafond), `rime_forest` (verstijfde reuzenzwammen onder rijp), `glacier_rifts` (ijsmassa's met kloven en tunnels). De biome-schaal is kleiner dan in de overworld (biomes wisselen vaker). **Ruimte-check** in de W-test: voelt het krap, dan verbreden we ring 3 via de config (alleen voor nieuwe werelden).
 - **Blokken**: koudlava-set (gestolde lava: blok, gepolijst, bricks, slab, stairs, wall), Nether-ijs (smelt niet, glad; plus verpakte variant), rijp-netherrack, rijpzwam-set (steel, hoed, planks + houtset), ijsstalactieten (dripstone-gedrag, vallen), gloeiende scheur (warmtebron). Vanilla packed/blue ice waar het kan.
 - **Sleutelmateriaal: oerijs**, ijs dat bevroor vóór de corruptie (zuiver water). Het zit als kern in ijspilaren en is alleen met silk touch te winnen (anders breekt het). Nodig voor bewaker 3→4; in fase 2 smelt je het tot zuiver water, de basis van gifbescherming voor ring 4.
 - **Sfeer**: blauwwitte fog, zwevende ijskristallen (particles), gierende wind en krakend ijs (ambient). Alles biome-data; geen ringweer in de Nether.
+- **Sparring ring 3 (2026-10-06):** ontwerp blijft; levendig-eis en eigen wow: bevroren lavavallen (ijsvormen langs wanden), rijpwoud met ijspegels (`ice_stalactite`), gloeiende scheuren als warme eilandjes. Ring 625 breed (875 – 1.500) door de verbreding van ring 3; de ruimte-check van change 54 blijft als controle.
 - **Conditie: kou/bevriezing**
   - Meter ↑ overal in Nether-3, sneller op ijs en in de open vlakte.
   - Meter ↓ bij warmte: lava, vuur, kampvuur, magma, gloeiende scheur, smeulsteen (uit ring 3).
@@ -578,7 +612,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - `ticksFrozen` is vanilla entity-data en wordt al gesynct. Onze meter stuurt de waarde server-side aan.
 - Water-check: alle plaatsingsroutes afvangen (emmer, dispenser, ijs), anders ontstaan er gaten in de regel.
 
-### Ring 4 — Moerasring (5.500 – 7.500)
+### Ring 4 — Moerasring (6.000 – 7.800; was 5.500 – 7.500)
 
 **Terrein en sfeer**
 - Laag, vlak en nat: het gestolen water is hier bedorven. Groengrijze lucht, mistig, gifgroen water (biome-waterkleur).
@@ -641,7 +675,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 **Grensmuur 4→5** (fase 5): groene gifdamp die overgaat in glitchruis.
 
-**Nether-tegenpool — Nether-ring 4 (1.375 – 1.875): droge kristal-/bottenwoestijn**
+**Nether-tegenpool — Nether-ring 4 (1.500 – 1.950; was 1.375 – 1.875): droge kristal-/bottenwoestijn**
 - **Terrein**: de lavazee is diep weggezakt. Erboven liggen brede vlaktes van bottenzand tussen reusachtige fossiele ribbenkasten, kristalzuilen van vloer tot plafond, en gigantische holle geodes.
 - **Biomes (3)**: `bone_dunes` (hoofdbiome: bottenzand, ribbenkasten), `crystal_spires` (kristalzuilen), `geode_hollows` (holle kristalgeodes waar je in kunt lopen). **Ruimte-check** in de W-test, zoals bij Nether-3.
 - **Blokken**: bottenzand (valt zoals zand), gebleekt netherrack, fossielsteen-set (steen, gepolijst, bricks, slab, stairs, wall), zuiverkristal (blok, scherf/cluster, kristallamp). Ribbenkasten van vanilla bone block.
@@ -655,7 +689,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - Gas- en bellen-particles via `animateTick` (client-level, geen client-class).
 - Ketting-ontploffing: nooit recursief in één tick. Plan de ontploffingen gespreid in (scheduled ticks), anders lagt of crasht een server bij grote kamers.
 
-### Ring 5 — Corrupted ring (7.500 – 9.500)
+### Ring 5 — Corrupted ring (7.800 – 9.500; was 7.500 – 9.500)
 
 **Terrein en sfeer**
 - Grijze, dode wastezone waar de wereld zichtbaar "fout" is: blokkerig terrein, zwevende brokken, scheuren tot in de void, en landschappen die net niet kloppen.
@@ -710,7 +744,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 **Grensmuur**: geen uitgaande grens; de buitenrand is void + world border.
 
-**Nether-tegenpool — Nether-ring 5 (1.875 – 2.375): 'zuivere' witte, stille Nether**
+**Nether-tegenpool — Nether-ring 5 (1.950 – 2.375; was 1.875 – 2.375): 'zuivere' witte, stille Nether**
 - **Terrein**: na alle chaos is dit de engste plek, juist omdat alles schoon, wit, geordend en doodstil is. Gladde witte vlaktes met perfecte zuilen van vloer tot plafond, in rasters. Waar de lavazee lag, ligt een glad, glanzend en begaanbaar oppervlak van spiegelsteen, eindeloos en leeg.
 - **Biome (1)**: `white_halls`. Het kale en eentonige is juist het punt.
 - **Blokken**: kalkrack (wit netherrack, anders dan het beige gebleekte netherrack van Nether-4), witsteen-set (glad, gepolijst, bricks, zuil, slab, stairs, wall), spiegelsteen, stil licht (witte lichtbron zonder geluid of particles).
@@ -797,6 +831,25 @@ Elke change: één categorie, afgesloten met `/code-review`, `CODEBASE.md` bijge
 | 37 | `textures` | Definitieve textures ring 2 + Nether-ring 2. | runClient |
 
 ### E. Ring 3 (+ Nether-ring 3)
+
+**Herzien 2026-10-06 (sparring ring 3):** de nummers 38–57 blijven als werkpakketten; ze worden in parallelle golven gebouwd (stromen, contract en integratie: `docs/plans/ring-3/waves.md`, `docs/plans/ring-3/contract.md`). Nieuwe pakketten:
+
+| # | Categorie | Pakket | Golf |
+|---|---|---|---|
+| 37c | `infra` | Standaard-ringradii 1.500 / 3.500 / **6.000 / 7.800** / 9.500 in `CommonConfig`; contract-sleutels als constanten (`ModBiomes`, `ModTags`); lang-helpers per stroom | 0 |
+| 37d | `infra` | Terreinkaart-debugcommando (PNG: hoogte, biome, doorsnede; backlog) voor de review van teststop 4a | 1 |
+| 39a | `worldgen` | Ring 3-regio-assen + router-klimaat (`ring_blend`), stubs van alle gedeelde ring 3-DF's, Nether-3-regio-as | 0 |
+| 38b | `blocks` | Smeulwoud- en vuurflora-set, instortende askorst, gloeiend as-afgietsel | 1 |
+| 40b | `blocks` | Vuurkristal (blok, knoppen, cluster, item) | 1 |
+| 39b | `worldgen` | Biome-skelet ring 3 (7 biomes + slapende krater volgens de antwoorden), klimaatindeling, kleuren, voorlopige surface met vanilla-blokken | 1 |
+| 39c | `worldgen` | Echte ring 3-blokken in de surface (na integratie van `blocks`), vóór teststop 4a | 1 (na merge) |
+| 41b | `worldgen` | Vuurkristal-geodes (holte + bekleding, sjabloon dauwgeodes) | 2 |
+| 47b | `worldgen` | `titan_fields`: reuzenskeletten, zielvuur, titanen-rotsen (features) | 2 |
+| 47c | `worldgen` | `ember_woods` en slapende kraters: bomen, vuurflora, aankleding; lavavallen; geiten-spawns | 2 |
+| 53b | `worldgen` | Nether-3-biomes + aankleding (oerijs-pilaren, bevroren lavavallen, ijspegels, warme scheuren) | 2 |
+| 57a | `textures` | `Ring3Textures.java`: goede eerste versies van alle ring 3- en Nether-3-textures (37b-stijl) | 1 |
+
+Rij 39 wordt alleen het **terrein** (kegels, caldera's, lavarivieren, zwevende eilanden, asvlaktes, zeekom, titanenveldvorm) + de vloeistofregel. De biomes zitten in 39b/39c, de verkoolde-boom-feature in 47c. Rij 53 wordt alleen het Nether-3-**terrein**; de biomes zitten in 53b. Rij 57 is de eindronde na teststop 4b.
 | # | Categorie | Change | Test |
 |---|---|---|---|
 | 38 | `blocks` | As (blok + laag), puimsteen-set, smeulsteen (licht), verkoold hout-set. | B, D |

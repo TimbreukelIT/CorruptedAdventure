@@ -386,3 +386,25 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-06 | textures | 37b-5 A: `canyon_stone_bricks` in de indeling van vanilla `stone_bricks` | Las als kleibakstenen (`minecraft:bricks`) |
 | 2026-10-06 | textures | 37b-6 A: vergelijkingsblad `tools/textures/VanillaCompare.java` (leest de moddev-jar, schrijft alleen `build/`) | Herbruikbaar per ring; vanilla alleen als referentie (§1.4) |
 | 2026-10-06 | textures | 37b-bijsturing: zonnesteen oranjerood `5A1A06 9A300C D95A16 F2862A FFB85A FFEBC0`, gloei `FFE0A8` (item, overlay en dus alle zonnesteenertsen); `soaked_netherrack` natter (zachte vochtzones met glans, vochtige voegen, geen 16-px-raster, buitenrand op de netherrack-ladder); `dew_crystal` brede puntige scherf (polygoon); `raw_turquoise` hoekige brok | Feedback gebruiker op de tussenstand: zonnesteen verder van `raw_gold`, doorweekt netherrack eigen naast vanilla, items minder staaf-/klontachtig |
+| 2026-10-06 | infra | Teststop 3 (ring 2 + Nether-ring 2, changes 31–37 + 37b) akkoord | Gebruiker: "Ja dit is top" |
+| 2026-10-06 | worldgen | Ring 3-richting "Smeulend Vuurland" + zwevende eilanden en lavavallen (episch) + dag/nacht-ritme (survival) (sparring ring 3, vraag 1) | Levendig én gevaarlijk; past op wat al gebouwd is; wow zonder de prestatie van een lavazee |
+| 2026-10-06 | worldgen | Fantasy-niveau ring 3: hoog (reuzenskeletten, zielvuur, titanen-rotsen) (vraag 2) | Visie gebruiker: "fantasy-elementen", "wow" |
+| 2026-10-06 | worldgen | Wow-moment grens 2→3: horizon-vulkanen boven de wolken, lucht slaat om op de grens (vraag 3) | Het wow begint al vóór de grens; geen multiplayer-impact |
+| 2026-10-06 | conditions | Overlevingskern ring 3: hitte met dag/nacht-ritme + schaarste (vraag 4) | Eigen speelritme; maakt ring 3 de langste overleving |
+| 2026-10-06 | worldgen | Ring 3-biomes: 5 uit sessie 2 + `ember_woods` + fantasy-biome `titan_fields` (titanenveld met zielvuur rond de skeletten; skeletten als features, geen structures/loot) = 7 (vraag 5, 13) | Levendigheid structureel + een fantasy-plek |
+| 2026-10-06 | worldgen | Terrein-signatuur ring 3: lavarivieren + lavavallen, zwevende basalteilanden, caldera's (deels slapend/groen); geen basaltzuilvelden (vraag 6) | Gekozen door de gebruiker |
+| 2026-10-06 | worldgen | "Oase" van ring 3 = slapende kraters (vraag 7) | Rustpunt zoals `oasis_flats`; ontdekking in het landschap |
+| 2026-10-06 | worldgen | Ringbreedtes: ring 3 3.500–6.000, ring 4 6.000–7.800, ring 5 7.800–9.500 (Nether-3 875–1.500); standaardwaarden in config, alleen nieuwe werelden (vraag 8) | Ring 3 wordt de grootste ring; Nether-3-ruimte; ring 4/5 nog niet gebouwd |
+| 2026-10-06 | conditions | Hitte: zon 0→100 in ~3 min, ×1,5–2 bij bronnen/pieken, drempels 25 traagheid / 50 zwakte / 75 mining fatigue / 100 in brand (vraag 9) | Merkbaar zwaarder dan uitdroging, te doen met het ritme |
+| 2026-10-06 | atmosphere | Ring 3-weer: asregen + uitbarsting + zeldzame aswolk (vraag 10) | Echte piekmomenten; één extra weertype |
+| 2026-10-06 | atmosphere | Lavabommen ringbreed rond spelers onder open lucht, dichter bij de pieken (vraag 11) | Iedereen voelt een uitbarsting; geen vulkaanposities nodig |
+| 2026-10-06 | worldgen | Voedsel ring 3: zeldzaam vee (geiten op de pieken); waterschaarste en eetbare vuurflora blijven tenzij ze botsen (vraag 12; afwijking van de aanbevolen optie) | Keuze gebruiker; risico = beloning op de heetste plek |
+| 2026-10-06 | worldgen | Ertsen ring 3: ontwerp sessie 2 + vuurkristal-geodes (vraag 14) | Ontdekkingsplezier; sjabloon dauwgeodes |
+| 2026-10-06 | worldgen | Nether-ring 3: ontwerp sessie 2 + levendig-eis + eigen wow (bevroren lavavallen, ijspegels, warme scheur-eilandjes) (vraag 15) | Les ring 2: niet kaal |
+| 2026-10-06 | worldgen | Prestatiebudget ring 3: noise-stap ≤ 1,75× vanilla; stromende lava bij generatie alleen met een cap per chunk (vraag 16) | Bewezen haalbaar en speelbaar in multiplayer |
+| 2026-10-06 | worldgen | Horror ring 3: ontwerp + as-afgietsels die 's nachts zwak gloeien (vraag 17) | Extra sfeer met weinig werk |
+| 2026-10-06 | infra | Werkwijze ring 3: contract-first in golven, stromen parallel in eigen git-worktrees, één integratie-agent (merge, `runData`, prestatie, docs) (vraag 18) | Echt parallel met weinig conflicten |
+| 2026-10-06 | infra | Teststops ring 3: 4a terrein-wow (blokkerend), 4b overleving + sfeer, 4c eindcheck incl. Nether-3 (vraag 19) | Het wow-oordeel vroeg (les ring 2) |
+| 2026-10-06 | textures | Ring 3: direct goede eerste textures in 37b-stijl, geen placeholder-ronde (vraag 20; uitzondering op §1.4) | Teststop 4a ziet echte kleur en gloed |
+| 2026-10-06 | infra | Bouwplan: 38–57 blijven als werkpakketten, nieuwe pakketten krijgen een letter (37c, 37d, 38b, 39a–c, 40b, 41b, 47b, 47c, 53b, 57a) (vraag 21) | Verwijzingen in backlog en docs blijven kloppen |
+| 2026-10-06 | infra | Orkestratie ring 3: handmatig door de hoofdsessie met agents, geen Workflow-tool (vraag 22) | Keuze gebruiker |

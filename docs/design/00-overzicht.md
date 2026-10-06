@@ -8,12 +8,12 @@ Avontuur-, horror- en survivalmod rond Herobrine. De speler reist van een vertro
 |---|---|---|---|---|
 | 1 | Vanilla-ring | Vertrouwd Minecraft, rust vóór de storm | 0 – 1.500 | 0 – 375 |
 | 2 | Droge ring | Canyons en oases met villagers | 1.500 – 3.500 | 375 – 875 |
-| 3 | Vulkanische ring | Vulkanen en lavameren; het water is "gestolen" | 3.500 – 5.500 | 875 – 1.375 |
-| 4 | Moerasring | Gestolen water, gif, enge beesten boven en onder de grond | 5.500 – 7.500 | 1.375 – 1.875 |
-| 5 | Corrupted ring | Wastezone, void, glitches; Herobrines kastelen | 7.500 – 9.500 | 1.875 – 2.375 |
+| 3 | Vulkanische ring | Vulkanen, lavarivieren en zwevende eilanden; het water is "gestolen"; de langste overleving | 3.500 – 6.000 | 875 – 1.500 |
+| 4 | Moerasring | Gestolen water, gif, enge beesten boven en onder de grond | 6.000 – 7.800 | 1.500 – 1.950 |
+| 5 | Corrupted ring | Wastezone, void, glitches; Herobrines kastelen | 7.800 – 9.500 | 1.950 – 2.375 |
 | — | Buitenrand | Afbrokkelend terrein en void; world border op 10.000 | 9.500 – 10.000 | 2.375 – 2.500 |
 
-Grenzen hebben ruis (±96 blokken) en overgangszones (~128 blokken). Alle waarden staan centraal in config, zodat ze te balanceren zijn. Elke grens krijgt een eigen soort muur (mist, as, …) die de ring erachter vaag houdt tot de bewaker verslagen is. Uitwerking: `fase-1-wereld.md`.
+Ring 3 is sinds de sparring van 2026-10-06 de breedste ring (2.500 blokken): de "midden"-ring is de langste en zwaarste overleving. Grenzen hebben ruis (±96 blokken) en overgangszones (~128 blokken). Alle waarden staan centraal in config (standaard-buitenradii 1.500 / 3.500 / 6.000 / 7.800 / 9.500; een wijziging geldt alleen voor nieuwe werelden), zodat ze te balanceren zijn. Elke grens krijgt een eigen soort muur (mist, as, …) die de ring erachter vaag houdt tot de bewaker verslagen is. Uitwerking: `fase-1-wereld.md`.
 
 Omgevingscondities per ring: 1 geen · 2 uitdroging · 3 hitte · 4 gif · 5 void/glitches. In de Nether: kou in Nether-3, stilte in Nether-5; Nether-4 is zuiverend (meters zakken er snel).
 
@@ -81,7 +81,7 @@ Werkcategorieën (één per change): `worldgen`, `blocks`, `textures`, `atmosphe
 ## Vastgelegde beslissingen
 - Minecraft 1.21.1, NeoForge; modnaam The Corrupted Adventure
 - Eigen world preset; multiplayer en dedicated servers zijn een must
-- Ringbreedtes zoals in de tabel (startwaarden)
+- Ringbreedtes zoals in de tabel (startwaarden; ring 3 verbreed naar 3.500–6.000 op 2026-10-06)
 - 4 bewakersstructures per grens, 4 kastelen in ring 5
 - Progressie deels per speler, deels per server
 - Final battle één keer per server, één groep tegelijk
