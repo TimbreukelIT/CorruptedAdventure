@@ -128,6 +128,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.FALL_DAMAGE_RESETTING).add(ModBlocks.EMBER_BERRY_BUSH.get());
 
         ring3Ores();
+        sulfurAndSteam();
     }
 
     /**
@@ -160,6 +161,17 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(Tags.Blocks.BUDS).add(ModBlocks.SMALL_FIRE_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get(),
                 ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get());
         tag(Tags.Blocks.CLUSTERS).add(ModBlocks.FIRE_CRYSTAL_CLUSTER.get());
+    }
+
+    /**
+     * Sulfur fields and steam fens. Crust and mud are natural ground that carvers cut through; boiling mud is
+     * deliberately not in {@code #dirt} (nothing grows on it). The geyser is no heat source (contract §3).
+     */
+    private void sulfurAndSteam() {
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.SULFUR_CRUST.get(), ModBlocks.BOILING_MUD.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.FUMAROLE.get(), ModBlocks.GEYSER.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.SULFUR_CRUST.get(), ModBlocks.BOILING_MUD.get());
+        tag(ModTags.Blocks.HEAT_SOURCES).add(ModBlocks.FUMAROLE.get(), ModBlocks.BOILING_MUD.get());
     }
 
     /**

@@ -57,6 +57,8 @@
     "corruptedadventure:small_fire_crystal_bud",
     "corruptedadventure:medium_fire_crystal_bud",
     "corruptedadventure:large_fire_crystal_bud",
-    "corruptedadventure:fire_crystal_cluster"
+    "corruptedadventure:fire_crystal_cluster",
+    "corruptedadventure:fumarole",
+    "corruptedadventure:geyser"
   ]
 }

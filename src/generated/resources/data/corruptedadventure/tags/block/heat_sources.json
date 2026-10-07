@@ -4,6 +4,8 @@
     "minecraft:magma_block",
     "minecraft:fire",
     "minecraft:campfire",
-    "corruptedadventure:smoldering_stone"
+    "corruptedadventure:smoldering_stone",
+    "corruptedadventure:fumarole",
+    "corruptedadventure:boiling_mud"
   ]
 }

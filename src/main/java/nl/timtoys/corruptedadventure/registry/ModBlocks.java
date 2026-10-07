@@ -38,6 +38,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.block.AshSproutsBlock;
 import nl.timtoys.corruptedadventure.block.BarrelCactusBlock;
+import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
 import nl.timtoys.corruptedadventure.block.EmberBerryBushBlock;
 import nl.timtoys.corruptedadventure.block.EmberLeavesBlock;
 import nl.timtoys.corruptedadventure.block.FireBloomBlock;
@@ -45,6 +46,8 @@ import nl.timtoys.corruptedadventure.block.DeadGrassBlock;
 import nl.timtoys.corruptedadventure.block.DesertFlowerBlock;
 import nl.timtoys.corruptedadventure.block.DewSourceBlock;
 import nl.timtoys.corruptedadventure.block.DryShrubBlock;
+import nl.timtoys.corruptedadventure.block.FumaroleBlock;
+import nl.timtoys.corruptedadventure.block.GeyserBlock;
 import nl.timtoys.corruptedadventure.block.GlowMoldBlock;
 import nl.timtoys.corruptedadventure.block.LooseSandTrigger;
 import nl.timtoys.corruptedadventure.block.ModFlowerPots;
@@ -494,6 +497,22 @@ public final class ModBlocks {
     /** Full-grown stage; the default state faces up. */
     public static final DeferredBlock<AmethystClusterBlock> FIRE_CRYSTAL_CLUSTER = register("fire_crystal_cluster",
             () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_ORANGE)));
+
+    // Sulfur fields and steam fens: the crust, the vents and the mud. Their heat comes from the conditions
+    // (#heat_sources); vanilla particles and sounds until atmosphere delivers its own (wave 2).
+    /** Top layer of the sulfur fields: sand's strength and sound, but it does not fall (like the salt crust). */
+    public static final DeferredBlock<Block> SULFUR_CRUST = register("sulfur_crust",
+            () -> new Block(Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_YELLOW)));
+    /** A vent in basalt that puffs steam (client-side only). */
+    public static final DeferredBlock<FumaroleBlock> FUMAROLE = register("fumarole",
+            () -> new FumaroleBlock(Properties.ofFullCopy(Blocks.BASALT).mapColor(MapColor.TERRACOTTA_YELLOW)));
+    /** Mud's shape (you sink in a little) with honey's slowness: speed 0.4, jump 0.5. */
+    public static final DeferredBlock<BoilingMudBlock> BOILING_MUD = register("boiling_mud",
+            () -> new BoilingMudBlock(Properties.ofFullCopy(Blocks.MUD).mapColor(MapColor.TERRACOTTA_BROWN)
+                    .speedFactor(0.4F).jumpFactor(0.5F)));
+    /** Throws what stands on it up now and then; random ticks only start the cycle of a worldgen geyser. */
+    public static final DeferredBlock<GeyserBlock> GEYSER = register("geyser",
+            () -> new GeyserBlock(Properties.ofFullCopy(Blocks.BASALT).mapColor(MapColor.TERRACOTTA_LIGHT_GRAY).randomTicks()));
 
     private ModBlocks() {
     }

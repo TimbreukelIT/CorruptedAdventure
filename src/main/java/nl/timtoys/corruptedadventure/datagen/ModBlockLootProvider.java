@@ -207,6 +207,12 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropWhenSilkTouch(ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get());
         dropWhenSilkTouch(ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get());
         add(ModBlocks.FIRE_CRYSTAL_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.FIRE_CRYSTAL.get()));
+
+        // The crust drops itself, not sulfur: sulfur comes from the ores.
+        dropSelf(ModBlocks.SULFUR_CRUST.get());
+        dropSelf(ModBlocks.FUMAROLE.get());
+        dropSelf(ModBlocks.BOILING_MUD.get());
+        dropWhenSilkTouch(ModBlocks.GEYSER.get());
     }
 
     /**

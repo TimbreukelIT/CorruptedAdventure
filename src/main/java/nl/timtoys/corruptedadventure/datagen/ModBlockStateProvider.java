@@ -114,6 +114,12 @@ final class ModBlockStateProvider extends BlockStateProvider {
         });
 
         ring3Ores();
+
+        // Sulfur fields and steam fens.
+        simpleBlock(ModBlocks.SULFUR_CRUST.get());
+        vent(ModBlocks.FUMAROLE.get());
+        simpleBlock(ModBlocks.BOILING_MUD.get());
+        vent(ModBlocks.GEYSER.get());
     }
 
     /**
@@ -142,6 +148,13 @@ final class ModBlockStateProvider extends BlockStateProvider {
         crystalCluster(ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get(), true);
         crystalCluster(ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get(), true);
         crystalCluster(ModBlocks.FIRE_CRYSTAL_CLUSTER.get(), true);
+    }
+
+    /** A vent: its opening {@code <name>_top} on top, the rock {@code <name>_side} on the sides and the bottom. */
+    private void vent(Block block) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        ResourceLocation side = modLoc("block/" + name + "_side");
+        simpleBlock(block, models().cubeBottomTop(name, side, side, modLoc("block/" + name + "_top")));
     }
 
     /**

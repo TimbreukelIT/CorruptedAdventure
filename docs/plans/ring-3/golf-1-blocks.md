@@ -65,6 +65,7 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 - Tests 38b: `block/AshPlantSoilTest.java` (tag met de hand gebonden: as, grove aarde, volle aslaag ja; aslaag 1/7, steen, gras, aarde, askorst nee; bes-struik ook op mos), `LooseSandTriggerTest` (tag gebonden; askorst stort in, asblok niet), `ModBlocksTest` (volgorde, smeulblad tikt/vervalt nooit en geeft geen licht, smeulende as licht 2, flora niet `ignitedByLava`, bes-struik tikt wel).
 - 40/40b: `registry/ModBlocks`: `oreIn(vanillaOre)` (kopie + `destroyTime` + `RING_3_ORE_EXTRA_HARDNESS` 0,5), `oreInBasalt(vanillaOre)`, `crystalStage(vanillaStage, color)` (vervangt `dewCrystal`; dauw- en vuurkristalstadia = amethist-gedrag en -licht 1/2/4/5 in eigen kaartkleur). `ModBlockStateProvider.ring3Ores()` (basis vanilla `stone`, `deepslate`+`_top`, `basalt_side`+`_top`); `crystalCluster` nu ook voor de vuurkristalstadia. `ModBlockLootProvider.createCrystalClusterTable(block, crystal)` (amethist-clustertabel, gedeeld door dauw- en vuurkristal; de dauwtabel is niet meer inline). Tests: `ModBlocksTest` (ertsen XP/licht/hardheid/blastweerstand, losse items na `dew_crystal`, vuurkristal licht 1/2/4/5, wand zonder licht).
 - Tests: `block/AshLayerTest.java` (vormen = vanilla-sneeuwlaag per laag, alleen `layers`, nooit random ticks, volle stapel blokkeert zicht); `ModWoodTypesTest` + charred; `ModBlocksTest` + ring 3-volgorde (direct na `dew_crystal_cluster`), smeulsteen licht 7 zonder `emissiveRendering`, verkoold hout niet `ignitedByLava`, asblok valt niet.
+- 46: `block/FumaroleBlock.java` (alleen `animateTick`: vanilla `CAMPFIRE_COSY_SMOKE`/`CLOUD` via gewone `addParticle` (de particle-instelling van de client telt) + zacht `LAVA_EXTINGUISH` zolang `GeyserBlock.ventOpen`), `block/BoilingMudBlock.java` (`MudBlock`: 14 px botsing; traagheid via properties `speedFactor` 0,4 / `jumpFactor` 0,5 = honing; bubbels `BUBBLE_POP` client-side), `block/GeyserBlock.java` (scheduled tick elke `INTERVAL_TICKS` 100; `onPlace` start de cyclus, een random tick start hem voor worldgen-geisers zonder geplande tick; uitbarsting alleen als `ventOpen(level, pos)` (geen botsvorm op de opening; dezelfde regel voor de rook van geiser en fumarole): entities in `column(pos)` (`REACH` 4 blokken boven de geiser) met hun middelpunt boven de geiser (`overVent`), geen spectators/vliegende spelers, krijgen `launched()` = verticaal max(y, `LAUNCH_SPEED` 0,9), `hurtMarked`, valafstand 0; `CLOUD` via `sendParticles` + `GENERIC_EXTINGUISH_FIRE`; `fallOn` zonder valschade; `animateTick` witte rook). `ModBlockStateProvider.vent(block)` (`cubeBottomTop`: `<naam>_side` zijkant en onder, `<naam>_top` boven). `ModBlockTagsProvider.sulfurAndSteam()`. Tests: `block/GeyserBlockTest.java` (kolom, duw, alleen gecentreerde entities), `ModBlocksTest` (volgorde na `fire_crystal_cluster`; alleen de geiser tikt; modder = honing-snelheid/-sprong in modder-botsvorm; niets valt of geeft licht).
 
 **Registries — Blocks (ring 3, volgorde = creative tab, direct na Nether-ring 2)**
 | Registry-naam | Ring | Class | Opmerking |
@@ -86,6 +87,10 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 | `fire_ruby_ore`, `deepslate_fire_ruby_ore`, `basalt_fire_ruby_ore` | 3 | `DropExperienceBlock` (XP 4–8) | kopie `iron_ore` / `deepslate_iron_ore` (basalt als hierboven) + 0,5 + **licht 3**; **contract §3 bijwerken:** vuurrobijn krijgt ook een basaltvariant (besluit gebruiker 2026-10-07; magmakamerwanden), zelfde overlay, dus geen nieuwe texture voor T; loot → `fire_ruby`; `c:ores/fire_ruby`, `#needs_iron_tool`, `c:ore_rates/singular`; overlay `fire_ruby_ore_overlay` **emissive** |
 | `fire_crystal_block` | 3 | `AmethystBlock` (vanilla) | kopie `amethyst_block` + `COLOR_ORANGE`; geen licht, niet emissive (wand van de geode); dropt zichzelf; `#mineable/pickaxe`, `#crystal_sound_blocks`; `cube_all` |
 | `small_`/`medium_`/`large_fire_crystal_bud`, `fire_crystal_cluster` | 3 | `AmethystClusterBlock` (vanilla; 3/4, 4/3, 5/3, 7/3) | kopie van de amethist-stadia + `COLOR_ORANGE`, licht 1/2/4/5; geen groei (alleen worldgen, 41b); loot: knoppen alleen Silk Touch, cluster Silk Touch → cluster, pickaxe → 4 `fire_crystal` (Fortune), anders 2 (`createCrystalClusterTable`, gedeeld met dauw); `#mineable/pickaxe`, `c:buds` / `c:clusters`; emissive kruis via `crystalCluster(…, true)`, plat item |
+| `sulfur_crust` | 3 | `Block` | kopie `sand` (valt niet, zoals `salt_crust`) + `COLOR_YELLOW`; dropt zichzelf (geen zwavel: die komt uit de ertsen; V1, gebruiker); `#mineable/shovel`, `#overworld_carver_replaceables`; `cube_all` |
+| `fumarole` | 3 | `FumaroleBlock` | kopie `basalt` + `TERRACOTTA_YELLOW`; stoompuf client-side (`animateTick`, vanilla-particles tot A `steam_puff` levert); `heat_sources`; dropt zichzelf; `#mineable/pickaxe`; model `vent` (`fumarole_top` / `fumarole_side`) |
+| `boiling_mud` | 3 | `BoilingMudBlock` | kopie `mud` + `TERRACOTTA_BROWN`, `speedFactor` 0,4, `jumpFactor` 0,5 (honing); `heat_sources`; dropt zichzelf; `#mineable/shovel`, `#overworld_carver_replaceables`, **niet** `#dirt`; `cube_all` |
+| `geyser` | 3 | `GeyserBlock` | kopie `basalt` + `TERRACOTTA_LIGHT_GRAY` + random ticks (start van de cyclus); duw elke 100 ticks server-side, ~4,9 blokken hoog; landen erop geeft geen valschade; **niet** in `heat_sources` (contract); loot alleen met Silk Touch, anders niets (V2, gebruiker); `#mineable/pickaxe`; model `vent` (`geyser_top` / `geyser_side`) |
 
 **Registries — Items (ring 3, losse items na `dew_crystal`)**
 | Registry-naam | Ring | Class | Opmerking |
@@ -104,6 +109,7 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 - `minecraft:goats_spawnable_on` + `basalt`, `smooth_basalt`, `blackstone`, `ash_block`, `pumice` (op verzoek van W-biomes via main: de piek-bovenlaag van 39b en 39c; contract §3 noemde alleen basalt/blackstone/as).
 - 40: `c:ores/volcanite`, `c:ores/sulfur`, `c:ores/fire_ruby` (alle gastgesteenten; in `c:ores`), `#needs_iron_tool` (vulkaniet, vuurrobijn), `#needs_stone_tool` (zwavel), `c:ore_rates/singular` (vulkaniet, vuurrobijn) / `dense` (zwavel), `c:ores_in_ground/stone` en `/deepslate`; items `c:raw_materials/volcanite`, `c:dusts/sulfur`, `c:gems/fire_ruby`.
 - 40b: `#crystal_sound_blocks` + `fire_crystal_block`; `c:buds` + drie vuurkristalknoppen, `c:clusters` + `fire_crystal_cluster`; item `c:gems/fire_crystal`.
+- 46: `heat_sources` + `fumarole`, `boiling_mud`; `#mineable/shovel` + `sulfur_crust`, `boiling_mud`; `#mineable/pickaxe` + `fumarole`, `geyser`; `#overworld_carver_replaceables` + `sulfur_crust`, `boiling_mud`.
 - **Nieuw (38b, akkoord main; contract bijwerken):** `corruptedadventure:ash_plant_soil` (`ash_block`, `coarse_dirt`, `ash_layer`) en `corruptedadventure:collapsing_blocks` (`loose_sand`, `ash_crust`; alleen vallende blokken).
 
 **Valkuilen**
@@ -123,6 +129,12 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 - 2026-10-06 · blocks · Vuurkristalblok (geodewand) zonder licht en niet emissive, als het amethistblok; alleen de stadia gloeien (emissive kruis, licht 1/2/4/5) · akkoord gebruiker via main (afstemming texturepaden 2026-10-06).
 - 2026-10-07 · blocks · `basalt_fire_ruby_ore` erbij (vuurrobijn in de basaltwanden van magmakamers; contract §3 krijgt een basaltvariant voor vuurrobijn) · besluit gebruiker (B) via main.
 - 2026-10-07 · blocks · Askorst stort alleen in van onderen (`loose_sand`-mechanisme); instorten-van-bovenaf blijft een idee in de backlog, beslissen na teststop 4b · besluit gebruiker (A) via main.
+- 2026-10-07 · blocks · Zwavelkorst dropt zichzelf, geen zwavel (zwavel komt alleen uit de ertsen; anders maakt de korst het erts overbodig) · besluit gebruiker (V1) via main.
+- 2026-10-07 · blocks · Geiser dropt alleen met Silk Touch, anders niets · besluit gebruiker (V2) via main.
+- 2026-10-07 · blocks · Kokende modder = vorm van vanilla-modder (je zakt 2 px weg) met de traagheid van honing (snelheid 0,4, sprong 0,5) via de blokproperties, zodat server en client hetzelfde voorspellen · implementatiekeuze (plan: honing of poedersneeuw).
+- 2026-10-07 · blocks · Geiser met scheduled ticks (geen block entity): elke 100 ticks, 4 blokken bereik, duw 0,9 omhoog (~4,9 blokken); een bedekte opening (botsvorm) blokkeert; worldgen-geisers starten bij hun eerste random tick · implementatiekeuze.
+- 2026-10-07 · blocks · Fumarole en geiser: basalt-eigenschappen (houweel, basaltgeluid) · implementatiekeuze.
+- 2026-10-07 · blocks · Landen op een geiser geeft geen valschade, en alleen wie met zijn middelpunt boven de geiser staat wordt gelanceerd · review 46 (anders verliest wie erop staat elke 5 s ~1 hart, en wordt de buurman meegegooid).
 
 ## Backlog
 - `items` · Placeholder-items ring 3 `raw_volcanite`, `sulfur`, `fire_ruby` (pakket 40) en `fire_crystal` (40b): smelten, producten, recipes en balans in fase 2 (zoals `raw_sunstone`).
@@ -130,6 +142,9 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 - `items` · `ember_berry_bush` is in survival niet te verkrijgen/verplanten (plukken geeft vanilla `sweet_berries`, die een vanilla-struik planten); eigen bes-item dat de struik plant in fase 2.
 - `worldgen` · `ember_berry_bush` groeit alleen terug bij licht ≥ 9 boven de struik (vanilla); onder een dicht smeulblad-dak (geen bloklicht, V3) groeit hij niet. 47c: struiken in open plekken zetten (placement `would_survive` + open lucht), of afstemmen in 4b.
 - `worldgen` · De grondregel van de bes-struik is `ash_plant_soil` **of** `moss_block` (hard in `EmberBerryBushBlock`); features moeten op `would_survive` filteren, niet op de tag.
+- `blocks` · Geiser: interval (100 ticks) en duw (0,9 ≈ 4,9 blokken) afstemmen na teststop 4a/4b.
+- `worldgen` · 48 (`steam_fens`): de feature die geisers plaatst moet `WorldGenLevel.scheduleTick(pos, GEYSER, GeyserBlock.INTERVAL_TICKS)` doen (de proto-chunk bewaart die tick, zoals bij vanilla-bronnen). Zonder dat start een worldgen-geiser pas bij zijn eerste random tick (gemiddeld ~68 s, nooit bij `randomTickSpeed` 0); de random tick blijft alleen als vangnet.
+- `blocks` · 46-rest (golf 2): eigen geluiden `block.fumarole.puff`, `block.geyser.burst`, `block.boiling_mud.bubble` en particle `steam_puff` van A aan fumarole/geiser/modder koppelen (nu vanilla).
 
 ## Voortgang
 Voortgang: 2026-10-06 20:51 38 B groen (429 tests)
@@ -194,4 +209,14 @@ Voortgang: 2026-10-07 10:10 40b B/D/S groen na review; commit
 - Ertsen: `Properties.destroyTime(...)` gebruiken, niet `strength(h, 3.0F)` (dat overschrijft de blastweerstand).
 - Random ticks (bes-struik, geiser-start) testen niet via RCON zonder speler: W-checklist.
 
-**W-checklist tot nu toe (in-game, met T's textures):** creative tab compleet en in volgorde; `_glow`-gloed van smeulsteen/smeulende as/smeulblad in het donker; vuurrobijn-overlay en vuurkristalstadia gloeien, vuurkristalblok niet; verkoold hout en smeulblad vatten geen vlam naast lava; askorst stort in onder een speler (niet erbovenop); bes-struik groeit terug na plukken (licht ≥ 9 nodig); aslaag-geluid bij lopen.
+**W-checklist tot nu toe (in-game, met T's textures):** creative tab compleet en in volgorde; `_glow`-gloed van smeulsteen/smeulende as/smeulblad in het donker; vuurrobijn-overlay en vuurkristalstadia gloeien, vuurkristalblok niet; verkoold hout en smeulblad vatten geen vlam naast lava; askorst stort in onder een speler (niet erbovenop); bes-struik groeit terug na plukken (licht ≥ 9 nodig); aslaag-geluid bij lopen. 46: fumarole puft stoom (niet als er iets op staat); kokende modder vertraagt lopen en springen en bubbelt; geiser gooit een speler ~5 blokken omhoog (ook in multiplayer zichtbaar voor anderen), niet als er een blok op ligt en niet in creatief vliegen; een met de hand geplaatste geiser start meteen, een worldgen-geiser binnen ~1 min.
+
+## Voortgang vervolgagent (46, 51, 52)
+Voortgang: 2026-10-07 10:15 46 code klaar (hervat door vervolgagent), B/D gestart
+Voortgang: 2026-10-07 10:16 46 B/D groen (442 tests); S gestart
+Voortgang: 2026-10-07 10:22 46 S groen (geiser-duw 201 -> 205,9; bedekt blijft staan; loot/tags); review gestart
+Voortgang: 2026-10-07 10:26 46 review verwerkt (valschade, gecentreerd, ventOpen, addParticle, S-cyclus x2); V1/V2 (drops) bij main; herbouw
+Voortgang: 2026-10-07 10:37 46 B/D/S opnieuw groen na review (442 tests; 2 uitbarstingen, buurman blijft staan); wacht op V1/V2 van main
+Voortgang: 2026-10-07 11:18 46 wacht nog op V1/V2 (main herinnerd); 51 als patchscript klaar buiten de repo
+Voortgang: 2026-10-07 11:40 46 V1/V2 binnen (korst dropt zichzelf, geiser alleen Silk Touch); B/D/S gestart (derde agent)
+Voortgang: 2026-10-07 11:43 46 B/D/S groen met V1/V2 (442 tests; geiser zonder Silk Touch niets, met Silk Touch zichzelf; korst beide zichzelf); commit

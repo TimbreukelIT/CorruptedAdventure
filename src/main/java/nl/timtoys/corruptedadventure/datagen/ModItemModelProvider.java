@@ -193,6 +193,11 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.FIRE_CRYSTAL_BLOCK);
         // The fire crystal stages: ModBlockStateProvider.crystalCluster writes their item models.
         basicItem(ModItems.FIRE_CRYSTAL.get());
+
+        blockItem(ModBlocks.SULFUR_CRUST);
+        blockItem(ModBlocks.FUMAROLE);
+        blockItem(ModBlocks.BOILING_MUD);
+        blockItem(ModBlocks.GEYSER);
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

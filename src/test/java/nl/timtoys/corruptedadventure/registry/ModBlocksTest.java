@@ -235,7 +235,8 @@ class ModBlocksTest {
                 ModBlocks.SULFUR_ORE, ModBlocks.BASALT_SULFUR_ORE, ModBlocks.FIRE_RUBY_ORE,
                 ModBlocks.DEEPSLATE_FIRE_RUBY_ORE, ModBlocks.BASALT_FIRE_RUBY_ORE,
                 ModBlocks.FIRE_CRYSTAL_BLOCK, ModBlocks.SMALL_FIRE_CRYSTAL_BUD, ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD,
-                ModBlocks.LARGE_FIRE_CRYSTAL_BUD, ModBlocks.FIRE_CRYSTAL_CLUSTER).<Item>map(DeferredBlock::asItem).toList();
+                ModBlocks.LARGE_FIRE_CRYSTAL_BUD, ModBlocks.FIRE_CRYSTAL_CLUSTER,
+                ModBlocks.SULFUR_CRUST, ModBlocks.FUMAROLE, ModBlocks.BOILING_MUD, ModBlocks.GEYSER).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(ring3, shown.subList(cluster + 1, cluster + 1 + ring3.size()));
     }
 
@@ -331,6 +332,23 @@ class ModBlocksTest {
         }
         assertEquals(0, ModBlocks.FIRE_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
         assertFalse(ModBlocks.FIRE_CRYSTAL_BLOCK.get().defaultBlockState().isRandomlyTicking());
+    }
+
+    /** Only the geyser ticks (to start its cycle); the mud slows like honey; neither crust nor mud falls or glows. */
+    @Test
+    void sulfurAndSteamBlocksBehaveAsPlanned() {
+        assertTrue(ModBlocks.GEYSER.get().defaultBlockState().isRandomlyTicking());
+        for (DeferredBlock<?> block : List.of(ModBlocks.SULFUR_CRUST, ModBlocks.FUMAROLE, ModBlocks.BOILING_MUD)) {
+            assertFalse(block.get().defaultBlockState().isRandomlyTicking(), block.getId().toString());
+        }
+        for (DeferredBlock<?> block : List.of(ModBlocks.SULFUR_CRUST, ModBlocks.FUMAROLE, ModBlocks.BOILING_MUD, ModBlocks.GEYSER)) {
+            assertEquals(0, block.get().defaultBlockState().getLightEmission(), block.getId().toString());
+            assertFalse(block.get() instanceof FallingBlock, block.getId().toString());
+        }
+        assertEquals(Blocks.HONEY_BLOCK.getSpeedFactor(), ModBlocks.BOILING_MUD.get().getSpeedFactor());
+        assertEquals(Blocks.HONEY_BLOCK.getJumpFactor(), ModBlocks.BOILING_MUD.get().getJumpFactor());
+        assertEquals(Blocks.MUD.defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO),
+                ModBlocks.BOILING_MUD.get().defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
     }
 
     private static List<Item> blockItems() {

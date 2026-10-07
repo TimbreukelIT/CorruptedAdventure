@@ -64,6 +64,10 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.LARGE_FIRE_CRYSTAL_BUD, "Large Fire Crystal Bud");
         lang.addBlock(ModBlocks.FIRE_CRYSTAL_CLUSTER, "Fire Crystal Cluster");
         lang.addItem(ModItems.FIRE_CRYSTAL, "Fire Crystal");
+        lang.addBlock(ModBlocks.SULFUR_CRUST, "Sulfur Crust");
+        lang.addBlock(ModBlocks.FUMAROLE, "Fumarole");
+        lang.addBlock(ModBlocks.BOILING_MUD, "Boiling Mud");
+        lang.addBlock(ModBlocks.GEYSER, "Geyser");
     }
 
     /** Vanilla nl_nl patterns: "Tufsteen", "Gepolijste tufsteentrap", "Tufstenen blokstenen", "Karmozijnrode trap". */
@@ -121,5 +125,9 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.LARGE_FIRE_CRYSTAL_BUD, "Grote vuurkristalknop");
         lang.addBlock(ModBlocks.FIRE_CRYSTAL_CLUSTER, "Vuurkristalcluster");
         lang.addItem(ModItems.FIRE_CRYSTAL, "Vuurkristal");
+        lang.addBlock(ModBlocks.SULFUR_CRUST, "Zwavelkorst");
+        lang.addBlock(ModBlocks.FUMAROLE, "Fumarole");
+        lang.addBlock(ModBlocks.BOILING_MUD, "Kokende modder");
+        lang.addBlock(ModBlocks.GEYSER, "Geiser");
     }
 }
