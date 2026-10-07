@@ -126,6 +126,32 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.ASH_SPROUTS.get(), ModBlocks.EMBER_BERRY_BUSH.get());
         // Like the sweet berry bush: landing in it breaks the fall.
         tag(BlockTags.FALL_DAMAGE_RESETTING).add(ModBlocks.EMBER_BERRY_BUSH.get());
+
+        ring3Ores();
+    }
+
+    /**
+     * Ring 3 ores. Volcanite and fire ruby need an iron pickaxe, sulfur a stone one. Not in
+     * {@code #overworld_carver_replaceables}: ore features run after the carvers. {@code ores_in_ground} only where a
+     * convention tag exists (stone, deepslate; none for basalt).
+     */
+    private void ring3Ores() {
+        tag(ModTags.Blocks.ORES_VOLCANITE).add(ModBlocks.VOLCANITE_ORE.get(), ModBlocks.DEEPSLATE_VOLCANITE_ORE.get(),
+                ModBlocks.BASALT_VOLCANITE_ORE.get());
+        tag(ModTags.Blocks.ORES_SULFUR).add(ModBlocks.SULFUR_ORE.get(), ModBlocks.BASALT_SULFUR_ORE.get());
+        tag(ModTags.Blocks.ORES_FIRE_RUBY).add(ModBlocks.FIRE_RUBY_ORE.get(), ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get(),
+                ModBlocks.BASALT_FIRE_RUBY_ORE.get());
+        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_SULFUR)
+                .addTag(ModTags.Blocks.ORES_FIRE_RUBY);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_SULFUR)
+                .addTag(ModTags.Blocks.ORES_FIRE_RUBY);
+        tag(BlockTags.NEEDS_IRON_TOOL).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_FIRE_RUBY);
+        tag(BlockTags.NEEDS_STONE_TOOL).addTag(ModTags.Blocks.ORES_SULFUR);
+        tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_FIRE_RUBY);
+        tag(Tags.Blocks.ORE_RATES_DENSE).addTag(ModTags.Blocks.ORES_SULFUR);
+        tag(Tags.Blocks.ORES_IN_GROUND_STONE).add(ModBlocks.VOLCANITE_ORE.get(), ModBlocks.SULFUR_ORE.get(),
+                ModBlocks.FIRE_RUBY_ORE.get());
+        tag(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE).add(ModBlocks.DEEPSLATE_VOLCANITE_ORE.get(), ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get());
     }
 
     /**

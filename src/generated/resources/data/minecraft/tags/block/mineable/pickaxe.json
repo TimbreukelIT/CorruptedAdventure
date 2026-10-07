@@ -49,6 +49,9 @@
     "corruptedadventure:pumice_brick_stairs",
     "corruptedadventure:pumice_brick_slab",
     "corruptedadventure:pumice_brick_wall",
-    "corruptedadventure:smoldering_stone"
+    "corruptedadventure:smoldering_stone",
+    "#c:ores/volcanite",
+    "#c:ores/sulfur",
+    "#c:ores/fire_ruby"
   ]
 }

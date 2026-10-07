@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.datagen.lang;
 
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModItems;
 
 /**
  * Names of the ring 3 and Nether ring 3 blocks and items. Owned by stream B
@@ -46,6 +47,17 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.POTTED_FIRE_BLOOM, "Potted Fire Bloom");
         lang.addBlock(ModBlocks.ASH_SPROUTS, "Ash Sprouts");
         lang.addBlock(ModBlocks.EMBER_BERRY_BUSH, "Ember Berry Bush");
+        lang.addBlock(ModBlocks.VOLCANITE_ORE, "Volcanite Ore");
+        lang.addBlock(ModBlocks.DEEPSLATE_VOLCANITE_ORE, "Deepslate Volcanite Ore");
+        lang.addBlock(ModBlocks.BASALT_VOLCANITE_ORE, "Basalt Volcanite Ore");
+        lang.addBlock(ModBlocks.SULFUR_ORE, "Sulfur Ore");
+        lang.addBlock(ModBlocks.BASALT_SULFUR_ORE, "Basalt Sulfur Ore");
+        lang.addBlock(ModBlocks.FIRE_RUBY_ORE, "Fire Ruby Ore");
+        lang.addBlock(ModBlocks.DEEPSLATE_FIRE_RUBY_ORE, "Deepslate Fire Ruby Ore");
+        lang.addBlock(ModBlocks.BASALT_FIRE_RUBY_ORE, "Basalt Fire Ruby Ore");
+        lang.addItem(ModItems.RAW_VOLCANITE, "Raw Volcanite");
+        lang.addItem(ModItems.SULFUR, "Sulfur");
+        lang.addItem(ModItems.FIRE_RUBY, "Fire Ruby");
     }
 
     /** Vanilla nl_nl patterns: "Tufsteen", "Gepolijste tufsteentrap", "Tufstenen blokstenen", "Karmozijnrode trap". */
@@ -85,5 +97,17 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.POTTED_FIRE_BLOOM, "Opgepotte vuurbloem");
         lang.addBlock(ModBlocks.ASH_SPROUTS, "Askruid");
         lang.addBlock(ModBlocks.EMBER_BERRY_BUSH, "Gloeibesstruik");
+        // Vanilla pattern: "Diepleisteen-ijzererts", "Ruw ijzer".
+        lang.addBlock(ModBlocks.VOLCANITE_ORE, "Vulkanieterts");
+        lang.addBlock(ModBlocks.DEEPSLATE_VOLCANITE_ORE, "Diepleisteen-vulkanieterts");
+        lang.addBlock(ModBlocks.BASALT_VOLCANITE_ORE, "Basalt-vulkanieterts");
+        lang.addBlock(ModBlocks.SULFUR_ORE, "Zwavelerts");
+        lang.addBlock(ModBlocks.BASALT_SULFUR_ORE, "Basalt-zwavelerts");
+        lang.addBlock(ModBlocks.FIRE_RUBY_ORE, "Vuurrobijnerts");
+        lang.addBlock(ModBlocks.DEEPSLATE_FIRE_RUBY_ORE, "Diepleisteen-vuurrobijnerts");
+        lang.addBlock(ModBlocks.BASALT_FIRE_RUBY_ORE, "Basalt-vuurrobijnerts");
+        lang.addItem(ModItems.RAW_VOLCANITE, "Ruw vulkaniet");
+        lang.addItem(ModItems.SULFUR, "Zwavel");
+        lang.addItem(ModItems.FIRE_RUBY, "Vuurrobijn");
     }
 }

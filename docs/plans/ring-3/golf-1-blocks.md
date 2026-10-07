@@ -80,6 +80,14 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 | `potted_fire_bloom` | 3 | `FlowerPotBlock` (NeoForge-constructor) | **geen item**; `ModFlowerPots`; `flower_pot_cross`; `#flower_pots` |
 | `ash_sprouts` | 3 | `AshSproutsBlock` | kopie `nether_sprouts` + `COLOR_GRAY`, offset XYZ; grond `AshPlantSoil`; alleen met schaar; `#replaceable`, `#replaceable_by_trees`, `#sword_efficient`; kruismodel, plat item; compost 0,3 |
 | `ember_berry_bush` | 3 | `EmberBerryBushBlock` | kopie `sweet_berry_bush` + `COLOR_ORANGE` (random ticks: groeit terug na plukken, doornen); grond `AshPlantSoil` of `moss_block`; plukken/loot = vanilla `sweet_berries` (eigen voedsel fase 2); `#sword_efficient`, `#fall_damage_resetting`; per leeftijd kruismodel `ember_berry_bush_stage0..3`, item plat op `stage3` |
+| `volcanite_ore`, `deepslate_volcanite_ore`, `basalt_volcanite_ore` | 3 | `DropExperienceBlock` (XP 3–6) | kopie `iron_ore` / `deepslate_iron_ore` (basalt: `iron_ore` + `COLOR_BLACK` + `SoundType.BASALT`), hardheid vanilla + 0,5 (`RING_3_ORE_EXTRA_HARDNESS`); loot `createOreDrop` → `raw_volcanite`; `c:ores/volcanite` (in `c:ores`), `#mineable/pickaxe`, `#needs_iron_tool`, `c:ore_rates/singular`, `c:ores_in_ground/stone`/`/deepslate` (basalt: geen conventietag); model `oreWithOverlay` (vanilla `stone` / `deepslate`+`_top` / `basalt_side`+`_top` + `volcanite_ore_overlay`, mat) |
+| `sulfur_ore`, `basalt_sulfur_ore` | 3 | `DropExperienceBlock` (XP 1–3) | kopie `coal_ore` (basalt als hierboven) + 0,5; loot 2–4 `sulfur` (Fortune, zoals koper; Silk Touch → zichzelf); `c:ores/sulfur`, `#needs_stone_tool`, `c:ore_rates/dense`; overlay `sulfur_ore_overlay` mat |
+| `fire_ruby_ore`, `deepslate_fire_ruby_ore`, `basalt_fire_ruby_ore` | 3 | `DropExperienceBlock` (XP 4–8) | kopie `iron_ore` / `deepslate_iron_ore` (basalt als hierboven) + 0,5 + **licht 3**; **contract §3 bijwerken:** vuurrobijn krijgt ook een basaltvariant (besluit gebruiker 2026-10-07; magmakamerwanden), zelfde overlay, dus geen nieuwe texture voor T; loot → `fire_ruby`; `c:ores/fire_ruby`, `#needs_iron_tool`, `c:ore_rates/singular`; overlay `fire_ruby_ore_overlay` **emissive** |
+
+**Registries — Items (ring 3, losse items na `dew_crystal`)**
+| `raw_volcanite` | 3 | `Item` | **placeholder** (zoals `raw_sunstone`); drop vulkaniet-ertsen; `c:raw_materials/volcanite` (in `c:raw_materials`) |
+| `sulfur` | 3 | `Item` | **placeholder**; drop zwavelertsen (2–4); `c:dusts/sulfur` (in `c:dusts`) |
+| `fire_ruby` | 3 | `Item` | **placeholder**; drop vuurrobijn-ertsen; `c:gems/fire_ruby` (in `c:gems`) |
 
 **Registries — overige**
 | `corruptedadventure:charred` | `BlockSetType` + niet-geregistreerde `WoodType`, nether-hout-geluiden | `ModWoodTypes` |
@@ -103,9 +111,12 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 - 2026-10-06 · blocks · Smeulblad en vuurflora ook niet brandbaar (geen vuurkansen, niet `ignitedByLava`) · zelfde reden als verkoold hout: geen branden naast lava.
 - 2026-10-06 · blocks · Vuurflora staat alleen op een volle aslaag (anders zweeft de plant); `ember_berry_bush` = vanilla bes-struik incl. doornen en terugroei, plukt vanilla `sweet_berries` · implementatiekeuze.
 - 2026-10-06 · blocks · Smeulende as licht 2 (plan: 0–3) · implementatiekeuze.
+- 2026-10-07 · blocks · Ertsen ring 3 "één stap boven ring 2": hardheid vanilla-erts van het gastgesteente + 0,5; XP vulkaniet 3–6, zwavel 1–3, vuurrobijn 4–8; zwavel 2–4 per erts (zoals koper); vuurrobijn licht 3 (zoals zonnesteen); gastgesteenten = contractset (geen blackstone, gebruiker) · implementatiekeuze + gebruiker.
+- 2026-10-07 · blocks · `basalt_fire_ruby_ore` erbij (vuurrobijn in de basaltwanden van magmakamers; contract §3 krijgt een basaltvariant voor vuurrobijn) · besluit gebruiker (B) via main.
 - 2026-10-07 · blocks · Askorst stort alleen in van onderen (`loose_sand`-mechanisme); instorten-van-bovenaf blijft een idee in de backlog, beslissen na teststop 4b · besluit gebruiker (A) via main.
 
 ## Backlog
+- `items` · Placeholder-items ring 3 `raw_volcanite`, `sulfur`, `fire_ruby` (pakket 40): smelten, producten, recipes en balans in fase 2 (zoals `raw_sunstone`).
 - `blocks` · `ash_crust` stort alleen in als een speler eronder loopt (het `loose_sand`-mechanisme van het contract); wie erover loopt (dak van een lavabuis) zakt er niet door. Instorten-van-bovenaf: beslissen na teststop 4b (gebruiker, 2026-10-07).
 - `items` · `ember_berry_bush` is in survival niet te verkrijgen/verplanten (plukken geeft vanilla `sweet_berries`, die een vanilla-struik planten); eigen bes-item dat de struik plant in fase 2.
 - `worldgen` · `ember_berry_bush` groeit alleen terug bij licht ≥ 9 boven de struik (vanilla); onder een dicht smeulblad-dak (geen bloklicht, V3) groeit hij niet. 47c: struiken in open plekken zetten (placement `would_survive` + open lucht), of afstemmen in 4b.
@@ -128,3 +139,7 @@ Voortgang: 2026-10-06 22:01 38 review verwerkt (AshLayerBlock geschrapt, inside_
 Voortgang: 2026-10-07 08:14 hervat na herstart; 38b afmaken
 Voortgang: 2026-10-07 08:47 38b B/D/S groen (434 tests)
 Voortgang: 2026-10-07 09:14 38b review verwerkt (FallingBlock-check in trigger, crossModel; rest in Backlog/Beslissingen); B/D/S opnieuw groen
+Voortgang: 2026-10-07 09:16 40 code klaar, B/D/S gestart
+Voortgang: 2026-10-07 09:22 40 B/D/S groen; review gestart
+Voortgang: 2026-10-07 09:35 40 review verwerkt + basalt_fire_ruby_ore (besluit gebruiker); B/D/S opnieuw gestart
+Voortgang: 2026-10-07 09:37 40 B/D/S groen na review + basaltvariant; commit

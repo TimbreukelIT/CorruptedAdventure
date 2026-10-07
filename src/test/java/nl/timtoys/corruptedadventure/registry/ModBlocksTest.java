@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -229,7 +230,10 @@ class ModBlocksTest {
                 ModBlocks.CHARRED_PLANKS, ModBlocks.CHARRED_STAIRS, ModBlocks.CHARRED_SLAB, ModBlocks.CHARRED_FENCE,
                 ModBlocks.CHARRED_FENCE_GATE, ModBlocks.CHARRED_DOOR, ModBlocks.CHARRED_TRAPDOOR,
                 ModBlocks.CHARRED_PRESSURE_PLATE, ModBlocks.CHARRED_BUTTON,
-                ModBlocks.EMBER_LEAVES, ModBlocks.FIRE_BLOOM, ModBlocks.ASH_SPROUTS, ModBlocks.EMBER_BERRY_BUSH).<Item>map(DeferredBlock::asItem).toList();
+                ModBlocks.EMBER_LEAVES, ModBlocks.FIRE_BLOOM, ModBlocks.ASH_SPROUTS, ModBlocks.EMBER_BERRY_BUSH,
+                ModBlocks.VOLCANITE_ORE, ModBlocks.DEEPSLATE_VOLCANITE_ORE, ModBlocks.BASALT_VOLCANITE_ORE,
+                ModBlocks.SULFUR_ORE, ModBlocks.BASALT_SULFUR_ORE, ModBlocks.FIRE_RUBY_ORE,
+                ModBlocks.DEEPSLATE_FIRE_RUBY_ORE, ModBlocks.BASALT_FIRE_RUBY_ORE).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(ring3, shown.subList(cluster + 1, cluster + 1 + ring3.size()));
     }
 
@@ -277,6 +281,37 @@ class ModBlocksTest {
             assertFalse(plant.get().defaultBlockState().ignitedByLava(), plant.getId().toString());
         }
         assertTrue(ModBlocks.EMBER_BERRY_BUSH.get().defaultBlockState().isRandomlyTicking());
+    }
+
+    /** One step above ring 2: XP volcanite 3–6, sulfur 1–3, fire ruby 4–8; half a point harder than the host's vanilla ore. */
+    @Test
+    void ring3OresHaveTheirXpLightAndHardness() {
+        Map<UniformInt, List<DeferredBlock<DropExperienceBlock>>> xp = Map.of(
+                UniformInt.of(3, 6), List.of(ModBlocks.VOLCANITE_ORE, ModBlocks.DEEPSLATE_VOLCANITE_ORE, ModBlocks.BASALT_VOLCANITE_ORE),
+                UniformInt.of(1, 3), List.of(ModBlocks.SULFUR_ORE, ModBlocks.BASALT_SULFUR_ORE),
+                UniformInt.of(4, 8), List.of(ModBlocks.FIRE_RUBY_ORE, ModBlocks.DEEPSLATE_FIRE_RUBY_ORE, ModBlocks.BASALT_FIRE_RUBY_ORE));
+        xp.forEach((range, ores) -> ores.forEach(ore -> assertEquals(range.toString(), experience(ore.get()), ore.getId().toString())));
+        assertEquals(3, ModBlocks.FIRE_RUBY_ORE.get().defaultBlockState().getLightEmission());
+        assertEquals(3, ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get().defaultBlockState().getLightEmission());
+        assertEquals(3, ModBlocks.BASALT_FIRE_RUBY_ORE.get().defaultBlockState().getLightEmission());
+        assertEquals(0, ModBlocks.VOLCANITE_ORE.get().defaultBlockState().getLightEmission());
+        assertEquals(0, ModBlocks.SULFUR_ORE.get().defaultBlockState().getLightEmission());
+        float extra = ModBlocks.RING_3_ORE_EXTRA_HARDNESS;
+        assertEquals(Blocks.IRON_ORE.defaultDestroyTime() + extra, ModBlocks.VOLCANITE_ORE.get().defaultDestroyTime());
+        assertEquals(Blocks.DEEPSLATE_IRON_ORE.defaultDestroyTime() + extra, ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get().defaultDestroyTime());
+        assertEquals(Blocks.COAL_ORE.defaultDestroyTime() + extra, ModBlocks.SULFUR_ORE.get().defaultDestroyTime());
+        assertEquals(Blocks.COAL_ORE.defaultDestroyTime() + extra, ModBlocks.BASALT_SULFUR_ORE.get().defaultDestroyTime());
+        assertEquals(Blocks.IRON_ORE.getExplosionResistance(), ModBlocks.VOLCANITE_ORE.get().getExplosionResistance());
+        assertEquals(SoundType.BASALT, ModBlocks.BASALT_SULFUR_ORE.get().defaultBlockState().getSoundType());
+    }
+
+    @Test
+    void ring3RawMaterialsFollowTheDewCrystal() {
+        List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
+                .filter(item -> !(item instanceof BlockItem)).toList();
+        int dew = standalone.indexOf(ModItems.DEW_CRYSTAL.get());
+        assertEquals(List.of(ModItems.RAW_VOLCANITE.get(), ModItems.SULFUR.get(), ModItems.FIRE_RUBY.get()),
+                standalone.subList(dew + 1, dew + 4));
     }
 
     private static List<Item> blockItems() {

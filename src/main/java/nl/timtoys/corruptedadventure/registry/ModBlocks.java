@@ -70,6 +70,8 @@ public final class ModBlocks {
     private static final int SAND_DUST_COLOR = 0xDBD3A0;
     /** Falling dust colour of the ash crust: warm ash grey. */
     private static final int ASH_DUST_COLOR = 0x8A8580;
+    /** Ring 3 ores are this much harder than the vanilla ore of their host ("one step above ring 2"). */
+    static final float RING_3_ORE_EXTRA_HARDNESS = 0.5F;
 
     // ---- Ring 1 ----
     public static final DeferredBlock<DeadGrassBlock> DEAD_GRASS_BLOCK = register("dead_grass_block",
@@ -454,6 +456,29 @@ public final class ModBlocks {
     public static final DeferredBlock<EmberBerryBushBlock> EMBER_BERRY_BUSH = register("ember_berry_bush",
             () -> new EmberBerryBushBlock(Properties.ofFullCopy(Blocks.SWEET_BERRY_BUSH).mapColor(MapColor.COLOR_ORANGE)));
 
+    // Ores: one block per host rock (stone, deepslate, basalt; no blackstone). One step above ring 2: half a point
+    // harder than the vanilla ore of that host, more XP.
+    /** Volcanite, ring 3's main metal: iron pickaxe, XP 3–6, matte; drops {@link ModItems#RAW_VOLCANITE}. */
+    public static final DeferredBlock<DropExperienceBlock> VOLCANITE_ORE = register("volcanite_ore",
+            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.IRON_ORE)));
+    public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_VOLCANITE_ORE = register("deepslate_volcanite_ore",
+            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.DEEPSLATE_IRON_ORE)));
+    public static final DeferredBlock<DropExperienceBlock> BASALT_VOLCANITE_ORE = register("basalt_volcanite_ore",
+            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreInBasalt(Blocks.IRON_ORE)));
+    /** Sulfur: any stone pickaxe, XP 1–3, matte; drops several {@link ModItems#SULFUR}. */
+    public static final DeferredBlock<DropExperienceBlock> SULFUR_ORE = register("sulfur_ore",
+            () -> new DropExperienceBlock(UniformInt.of(1, 3), oreIn(Blocks.COAL_ORE)));
+    public static final DeferredBlock<DropExperienceBlock> BASALT_SULFUR_ORE = register("basalt_sulfur_ore",
+            () -> new DropExperienceBlock(UniformInt.of(1, 3), oreInBasalt(Blocks.COAL_ORE)));
+    /** Fire ruby, a rare gem: iron pickaxe, XP 4–8, faint glow (light 3, emissive overlay); drops {@link ModItems#FIRE_RUBY}. */
+    public static final DeferredBlock<DropExperienceBlock> FIRE_RUBY_ORE = register("fire_ruby_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.IRON_ORE).lightLevel(state -> 3)));
+    public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_FIRE_RUBY_ORE = register("deepslate_fire_ruby_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.DEEPSLATE_IRON_ORE).lightLevel(state -> 3)));
+    /** In the basalt walls of magma chambers (decision 2026-10-07, beyond the contract's first set). */
+    public static final DeferredBlock<DropExperienceBlock> BASALT_FIRE_RUBY_ORE = register("basalt_fire_ruby_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreInBasalt(Blocks.IRON_ORE).lightLevel(state -> 3)));
+
     private ModBlocks() {
     }
 
@@ -499,6 +524,19 @@ public final class ModBlocks {
     /** Dripshroom stem and hyphae (bark outside): dark grey-green on the map. */
     private static Properties dripshroomBark(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_GRAY);
+    }
+
+    /**
+     * A ring 3 ore in a vanilla host: that vanilla ore's look, sound and blast resistance, half a point harder. The tool
+     * tier comes from the {@code needs_*_tool} tags.
+     */
+    private static Properties oreIn(Block vanillaOre) {
+        return Properties.ofFullCopy(vanillaOre).destroyTime(vanillaOre.defaultDestroyTime() + RING_3_ORE_EXTRA_HARDNESS);
+    }
+
+    /** {@link #oreIn} with basalt's colour and sound (the stone variant's ore as the template). */
+    private static Properties oreInBasalt(Block vanillaOre) {
+        return oreIn(vanillaOre).mapColor(MapColor.COLOR_BLACK).sound(SoundType.BASALT);
     }
 
     /** Pumice (all shapes): the tuff family's behaviour and sounds, light grey on the map. */

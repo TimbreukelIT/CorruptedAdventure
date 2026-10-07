@@ -1,0 +1,91 @@
+{
+  "parent": "minecraft:block/block",
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#base_bottom"
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#base_side"
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#base_side"
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#base_side"
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#base_top"
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#base_side"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#overlay_bottom"
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#overlay_side"
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#overlay_side"
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#overlay_side"
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#overlay_top"
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#overlay_side"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    }
+  ],
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "base_bottom": "minecraft:block/stone",
+    "base_side": "minecraft:block/stone",
+    "base_top": "minecraft:block/stone",
+    "overlay_bottom": "corruptedadventure:block/sulfur_ore_overlay",
+    "overlay_side": "corruptedadventure:block/sulfur_ore_overlay",
+    "overlay_top": "corruptedadventure:block/sulfur_ore_overlay",
+    "particle": "minecraft:block/stone"
+  }
+}

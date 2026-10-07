@@ -112,6 +112,29 @@ final class ModBlockStateProvider extends BlockStateProvider {
             String name = "ember_berry_bush_stage" + state.getValue(SweetBerryBushBlock.AGE);
             return ConfiguredModel.builder().modelFile(crossModel(name, modLoc("block/" + name))).build();
         });
+
+        ring3Ores();
+    }
+
+    /**
+     * Ring 3 ores over vanilla stone, deepslate (column texture) and basalt (column texture), one overlay per ore shared
+     * by all hosts. Only the fire ruby glows; volcanite and sulfur are matte.
+     */
+    private void ring3Ores() {
+        CubeTextures stone = CubeTextures.all(mcLoc("block/stone"));
+        CubeTextures deepslate = new CubeTextures(mcLoc("block/deepslate_top"), mcLoc("block/deepslate"), mcLoc("block/deepslate_top"));
+        CubeTextures basalt = new CubeTextures(mcLoc("block/basalt_top"), mcLoc("block/basalt_side"), mcLoc("block/basalt_top"));
+        CubeTextures volcanite = CubeTextures.all(modLoc("block/volcanite_ore_overlay"));
+        CubeTextures sulfur = CubeTextures.all(modLoc("block/sulfur_ore_overlay"));
+        CubeTextures fireRuby = CubeTextures.all(modLoc("block/fire_ruby_ore_overlay"));
+        oreWithOverlay(ModBlocks.VOLCANITE_ORE.get(), stone.side(), stone, volcanite, false);
+        oreWithOverlay(ModBlocks.DEEPSLATE_VOLCANITE_ORE.get(), deepslate.side(), deepslate, volcanite, false);
+        oreWithOverlay(ModBlocks.BASALT_VOLCANITE_ORE.get(), basalt.side(), basalt, volcanite, false);
+        oreWithOverlay(ModBlocks.SULFUR_ORE.get(), stone.side(), stone, sulfur, false);
+        oreWithOverlay(ModBlocks.BASALT_SULFUR_ORE.get(), basalt.side(), basalt, sulfur, false);
+        oreWithOverlay(ModBlocks.FIRE_RUBY_ORE.get(), stone.side(), stone, fireRuby, true);
+        oreWithOverlay(ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get(), deepslate.side(), deepslate, fireRuby, true);
+        oreWithOverlay(ModBlocks.BASALT_FIRE_RUBY_ORE.get(), basalt.side(), basalt, fireRuby, true);
     }
 
     /**

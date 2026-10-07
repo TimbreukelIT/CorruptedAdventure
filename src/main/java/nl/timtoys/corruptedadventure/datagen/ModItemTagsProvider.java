@@ -77,6 +77,18 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         tag(Tags.Items.DUSTS).addTag(ModTags.Items.DUSTS_SALT);
         tag(ModTags.Items.GEMS_DEW_CRYSTAL).add(ModItems.DEW_CRYSTAL.get());
         tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_DEW_CRYSTAL);
+        copy(ModTags.Blocks.ORES_VOLCANITE, ModTags.Items.ORES_VOLCANITE);
+        copy(ModTags.Blocks.ORES_SULFUR, ModTags.Items.ORES_SULFUR);
+        copy(ModTags.Blocks.ORES_FIRE_RUBY, ModTags.Items.ORES_FIRE_RUBY);
+        copy(Tags.Blocks.ORE_RATES_DENSE, Tags.Items.ORE_RATES_DENSE);
+        copy(Tags.Blocks.ORES_IN_GROUND_STONE, Tags.Items.ORES_IN_GROUND_STONE);
+        copy(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE, Tags.Items.ORES_IN_GROUND_DEEPSLATE);
+        tag(ModTags.Items.RAW_MATERIALS_VOLCANITE).add(ModItems.RAW_VOLCANITE.get());
+        tag(Tags.Items.RAW_MATERIALS).addTag(ModTags.Items.RAW_MATERIALS_VOLCANITE);
+        tag(ModTags.Items.DUSTS_SULFUR).add(ModItems.SULFUR.get());
+        tag(Tags.Items.DUSTS).addTag(ModTags.Items.DUSTS_SULFUR);
+        tag(ModTags.Items.GEMS_FIRE_RUBY).add(ModItems.FIRE_RUBY.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_FIRE_RUBY);
         copy(Tags.Blocks.BUDDING_BLOCKS, Tags.Items.BUDDING_BLOCKS);
         copy(Tags.Blocks.BUDS, Tags.Items.BUDS);
         copy(Tags.Blocks.CLUSTERS, Tags.Items.CLUSTERS);

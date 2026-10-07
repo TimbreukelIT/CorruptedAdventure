@@ -178,6 +178,18 @@ final class ModItemModelProvider extends ItemModelProvider {
         // A flat bush with berries (vanilla's bush has no item of its own: its item is the berries).
         withExistingParent(ModBlocks.EMBER_BERRY_BUSH.getId().getPath(), mcLoc("item/generated"))
                 .texture("layer0", modLoc("block/ember_berry_bush_stage3"));
+
+        blockItem(ModBlocks.VOLCANITE_ORE);
+        blockItem(ModBlocks.DEEPSLATE_VOLCANITE_ORE);
+        blockItem(ModBlocks.BASALT_VOLCANITE_ORE);
+        blockItem(ModBlocks.SULFUR_ORE);
+        blockItem(ModBlocks.BASALT_SULFUR_ORE);
+        blockItem(ModBlocks.FIRE_RUBY_ORE);
+        blockItem(ModBlocks.DEEPSLATE_FIRE_RUBY_ORE);
+        blockItem(ModBlocks.BASALT_FIRE_RUBY_ORE);
+        basicItem(ModItems.RAW_VOLCANITE.get());
+        basicItem(ModItems.SULFUR.get());
+        basicItem(ModItems.FIRE_RUBY.get());
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

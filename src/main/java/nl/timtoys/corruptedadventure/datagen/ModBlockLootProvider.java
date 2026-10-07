@@ -183,6 +183,22 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         // Like nether sprouts: only with shears.
         add(ModBlocks.ASH_SPROUTS.get(), BlockLootSubProvider::createShearsOnlyDrop);
         add(ModBlocks.EMBER_BERRY_BUSH.get(), this::createBerryBushTable);
+
+        // Like iron ore -> raw iron / diamond ore -> diamond: one item (Fortune), Silk Touch -> the ore itself.
+        for (Block ore : List.of(ModBlocks.VOLCANITE_ORE.get(), ModBlocks.DEEPSLATE_VOLCANITE_ORE.get(), ModBlocks.BASALT_VOLCANITE_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.RAW_VOLCANITE.get()));
+        }
+        for (Block ore : List.of(ModBlocks.FIRE_RUBY_ORE.get(), ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get(), ModBlocks.BASALT_FIRE_RUBY_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.FIRE_RUBY.get()));
+        }
+        // Like copper ore: several at once (2–4, Fortune adds), Silk Touch -> the ore itself.
+        for (Block ore : List.of(ModBlocks.SULFUR_ORE.get(), ModBlocks.BASALT_SULFUR_ORE.get())) {
+            add(ore, block -> createSilkTouchDispatchTable(block, applyExplosionDecay(block,
+                    LootItem.lootTableItem(ModItems.SULFUR.get())
+                            .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                            .apply(ApplyBonusCount.addOreBonusCount(registries.lookupOrThrow(Registries.ENCHANTMENT)
+                                    .getOrThrow(Enchantments.FORTUNE))))));
+        }
     }
 
     /**

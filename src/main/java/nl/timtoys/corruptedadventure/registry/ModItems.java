@@ -32,6 +32,15 @@ public final class ModItems {
     /** Drop of the grown dew crystal. Placeholder: its use, recipes and balance follow in phase 2. */
     public static final DeferredItem<Item> DEW_CRYSTAL = ITEMS.registerSimpleItem("dew_crystal");
 
+    // ---- Ring 3 ----
+    // Placeholders like raw_sunstone: smelting, products, recipes and balance follow in phase 2.
+    /** Drop of the volcanite ores (ring 3's main metal). */
+    public static final DeferredItem<Item> RAW_VOLCANITE = ITEMS.registerSimpleItem("raw_volcanite");
+    /** Drop of the sulfur ores (several per ore). */
+    public static final DeferredItem<Item> SULFUR = ITEMS.registerSimpleItem("sulfur");
+    /** Drop of the fire ruby ores. */
+    public static final DeferredItem<Item> FIRE_RUBY = ITEMS.registerSimpleItem("fire_ruby");
+
     private ModItems() {
     }
 
