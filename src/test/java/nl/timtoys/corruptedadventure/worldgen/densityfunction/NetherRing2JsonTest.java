@@ -129,9 +129,11 @@ class NetherRing2JsonTest {
         assertEquals(t, forest.getAsJsonObject("parameters").getAsJsonArray("temperature").get(0).getAsDouble());
         assertEquals(t, caves.getAsJsonObject("parameters").getAsJsonArray("temperature").get(1).getAsDouble());
         assertFalse(Files.readString(WORLDGEN.resolve("world_preset/corrupted_world.json")).contains("placeholder_nether_ring_2"));
-        // The overworld has no fluid levels.
-        assertFalse(read(WORLDGEN.resolve("world_preset/corrupted_world.json")).getAsJsonObject("dimensions")
-                .getAsJsonObject("minecraft:overworld").getAsJsonObject("generator").has("fluid_levels"));
+        // The overworld has only ring 3's level (no sea above Y 0).
+        JsonObject overworldLevels = read(WORLDGEN.resolve("world_preset/corrupted_world.json")).getAsJsonObject("dimensions")
+                .getAsJsonObject("minecraft:overworld").getAsJsonObject("generator").getAsJsonObject("fluid_levels");
+        assertEquals(1, overworldLevels.size());
+        assertEquals(-1, overworldLevels.get("ring_3").getAsInt());
     }
 
     @Test

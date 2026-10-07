@@ -25,7 +25,9 @@ import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -52,6 +54,8 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
 
     private final ResourceKey<Level> dimension;
     private final Map<Ring, Integer> fluidLevels;
+    // One random state per level in practice; remembered so the router is searched once.
+    private volatile VolcanicFieldLookup volcanicLookup;
 
     public RingChunkGenerator(BiomeSource biomeSource, Holder<NoiseGeneratorSettings> settings, ResourceKey<Level> dimension) {
         this(biomeSource, settings, dimension, Map.of());
@@ -71,9 +75,26 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
         chunk.getOrCreateNoiseChunk(access -> {
             NoiseChunk noiseChunk = NoiseChunk.forChunk(access, random, Beardifier.forStructuresInChunk(structureManager, access.getPos()),
                     generatorSettings().value(), globalFluidPicker.get(), blender);
-            noiseChunk.aquifer = new RingAquifer(dimension, noiseChunk.aquifer);
+            VolcanicField volcanic = volcanicField(random);
+            // The noise chunk's memo returns its own instance of the (equal) field: one column cache for terrain and lava.
+            noiseChunk.aquifer = new RingAquifer(dimension, noiseChunk.aquifer,
+                    volcanic == null ? null : (VolcanicField) noiseChunk.wrap(volcanic));
             return noiseChunk;
         });
+    }
+
+    /** The ring 3 terrain inside this generator's final density (wired by {@code random}), or null if it has none. */
+    @Nullable
+    private VolcanicField volcanicField(RandomState random) {
+        VolcanicFieldLookup lookup = volcanicLookup;
+        if (lookup == null || lookup.random() != random) {
+            lookup = new VolcanicFieldLookup(random, VolcanicField.find(random.router().finalDensity()));
+            volcanicLookup = lookup;
+        }
+        return lookup.field();
+    }
+
+    private record VolcanicFieldLookup(RandomState random, @Nullable VolcanicField field) {
     }
 
     @Override

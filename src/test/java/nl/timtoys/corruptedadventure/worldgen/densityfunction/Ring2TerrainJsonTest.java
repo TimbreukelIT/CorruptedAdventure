@@ -77,18 +77,24 @@ class Ring2TerrainJsonTest {
     }
 
     @Test
-    void ringThreeInputCarriesTheSameCutInItsOwnGradientUnits() throws IOException {
+    void ringThreeHeightCarriesTheSameCut() throws IOException {
         // Ring 2's term saturates (the squeeze) where the blended surface lies 12+ blocks from ring 2's own height, so in the
-        // zone the cut must also lower ring 3's input: a cut of c blocks = c · slope of ring 3's gradient (2 / 128 per block).
-        JsonObject ring3 = JsonParser.parseString(Files.readString(findRoot().resolve("ring_3/overworld.json"))).getAsJsonObject();
-        JsonObject sum = ring3.getAsJsonObject("argument");
-        JsonObject gradient = sum.getAsJsonObject("argument1").getAsJsonObject("argument1");
-        double slope = (gradient.get("from_value").getAsDouble() - gradient.get("to_value").getAsDouble())
-                / (gradient.get("to_y").getAsDouble() - gradient.get("from_y").getAsDouble());
-        JsonObject cut = sum.getAsJsonObject("argument2");
-        assertEquals("minecraft:mul", cut.get("type").getAsString());
-        assertEquals(-slope, cut.get("argument1").getAsDouble(), 1e-12);
-        assertEquals("corruptedadventure:ring_2/overworld/riverbed_cut", cut.get("argument2").getAsString());
+        // zone the cut must also lower ring 3's input: ring 3's height is h2 + ramp · (field − cut − h2), so the cut is in
+        // both inputs and the bed is cut blocks deep wherever the zone puts the surface.
+        for (String name : new String[]{"ring_3/overworld/height.json", "ring_3/overworld/initial_height.json"}) {
+            String text = Files.readString(findRoot().resolve(name));
+            JsonObject root = JsonParser.parseString(text).getAsJsonObject();
+            JsonObject choice = root.get("type").getAsString().equals("minecraft:flat_cache") ? root.getAsJsonObject("argument") : root;
+            // In ring 3's core (ramp 1) only the field; elsewhere the blend that carries the cut.
+            assertEquals("minecraft:range_choice", choice.get("type").getAsString(), name);
+            assertEquals(1.0, choice.get("min_inclusive").getAsDouble(), name);
+            JsonObject sum = choice.getAsJsonObject("when_out_of_range");
+            JsonObject ramped = sum.getAsJsonObject("argument2");
+            assertEquals("corruptedadventure:ring_3/overworld/zone_ramp", ramped.get("argument1").getAsString(), name);
+            JsonObject cut = ramped.getAsJsonObject("argument2").getAsJsonObject("argument1").getAsJsonObject("argument2");
+            assertEquals(-1.0, cut.get("argument1").getAsDouble(), name);
+            assertEquals("corruptedadventure:ring_2/overworld/riverbed_cut", cut.get("argument2").getAsString(), name);
+        }
         // The mask rises in the first quarter of the zone and fades out again before ring 3 proper (no beds in its core).
         JsonObject mask = JsonParser.parseString(Files.readString(findRoot().resolve("ring_2/overworld/riverbed_mask.json"))).getAsJsonObject();
         var points = mask.getAsJsonObject("spline").getAsJsonArray("points");

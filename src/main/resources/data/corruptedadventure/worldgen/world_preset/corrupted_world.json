@@ -109,6 +109,9 @@
             }
           }
         },
+        "fluid_levels": {
+          "ring_3": -1
+        },
         "settings": "corruptedadventure:overworld"
       }
     },

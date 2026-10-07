@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:range_choice",
+  "input": "corruptedadventure:ring_3/overworld/zone_ramp",
+  "min_inclusive": 1.0,
+  "max_exclusive": 2.0,
+  "when_in_range": {
+    "type": "corruptedadventure:volcanic_output",
+    "field": "corruptedadventure:ring_3/overworld/field",
+    "output": "initial_height"
+  },
+  "when_out_of_range": {
+    "type": "minecraft:add",
+    "argument1": "corruptedadventure:ring_2/overworld/initial_height",
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": "corruptedadventure:ring_3/overworld/zone_ramp",
+      "argument2": {
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "minecraft:add",
+          "argument1": {
+            "type": "corruptedadventure:volcanic_output",
+            "field": "corruptedadventure:ring_3/overworld/field",
+            "output": "initial_height"
+          },
+          "argument2": {
+            "type": "minecraft:mul",
+            "argument1": -1.0,
+            "argument2": "corruptedadventure:ring_2/overworld/riverbed_cut"
+          }
+        },
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": -1.0,
+          "argument2": "corruptedadventure:ring_2/overworld/initial_height"
+        }
+      }
+    }
+  }
+}
