@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "corruptedadventure:block/rimeshroom_planks",
+    "side": "corruptedadventure:block/rimeshroom_planks",
+    "top": "corruptedadventure:block/rimeshroom_planks"
+  }
+}

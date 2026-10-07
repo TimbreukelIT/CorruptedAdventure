@@ -1,21 +1,38 @@
 package nl.timtoys.corruptedadventure.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModTags;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** The tag {@code collapsing_blocks} is bound by hand (no datapack in unit tests); its real contents: test S. */
 class LooseSandTriggerTest {
+    @BeforeEach
+    void bindCollapsingBlocks() {
+        BuiltInRegistries.BLOCK.bindTags(Map.of(ModTags.Blocks.COLLAPSING_BLOCKS, List.of(
+                BuiltInRegistries.BLOCK.wrapAsHolder(ModBlocks.LOOSE_SAND.get()), BuiltInRegistries.BLOCK.wrapAsHolder(ModBlocks.ASH_CRUST.get()))));
+    }
+
+    @AfterEach
+    void resetTags() {
+        BuiltInRegistries.BLOCK.resetTags();
+    }
+
     /** A standing player (0.6 × 1.8) with its feet on block (10, 64, -5). */
     private static final AABB PLAYER = new AABB(10.2, 64.0, -4.8, 10.8, 65.8, -4.2);
 
@@ -58,6 +75,25 @@ class LooseSandTriggerTest {
         BlockState sand = ModBlocks.LOOSE_SAND.get().defaultBlockState();
         assertTrue(LooseSandTrigger.shouldTrigger(false, sand, Blocks.AIR.defaultBlockState(), false));
         assertTrue(LooseSandTrigger.shouldTrigger(false, sand, Blocks.WATER.defaultBlockState(), false));
+    }
+
+    @Test
+    void ashCrustCavesInLikeLooseSand() {
+        BlockState crust = ModBlocks.ASH_CRUST.get().defaultBlockState();
+        assertTrue(LooseSandTrigger.shouldTrigger(false, crust, Blocks.AIR.defaultBlockState(), false));
+        assertTrue(LooseSandTrigger.shouldTrigger(false, crust, Blocks.LAVA.defaultBlockState(), false));
+        assertFalse(LooseSandTrigger.shouldTrigger(false, crust, Blocks.BASALT.defaultBlockState(), false));
+        assertFalse(LooseSandTrigger.shouldTrigger(false, ModBlocks.ASH_BLOCK.get().defaultBlockState(), Blocks.AIR.defaultBlockState(), false));
+    }
+
+    /** A block in the tag that does not fall would be warned about forever; it never triggers. */
+    @Test
+    void aBlockThatDoesNotFallNeverTriggersEvenInTheTag() {
+        BuiltInRegistries.BLOCK.resetTags();
+        BuiltInRegistries.BLOCK.bindTags(Map.of(ModTags.Blocks.COLLAPSING_BLOCKS,
+                List.of(BuiltInRegistries.BLOCK.wrapAsHolder(ModBlocks.ASH_BLOCK.get()))));
+        assertFalse(LooseSandTrigger.shouldTrigger(false, ModBlocks.ASH_BLOCK.get().defaultBlockState(),
+                Blocks.AIR.defaultBlockState(), false));
     }
 
     @Test

@@ -4,6 +4,12 @@
     "corruptedadventure:withered_dirt",
     "corruptedadventure:cracked_clay",
     "corruptedadventure:loose_sand",
-    "corruptedadventure:salt_crust"
+    "corruptedadventure:salt_crust",
+    "corruptedadventure:ash_block",
+    "corruptedadventure:ash_layer",
+    "corruptedadventure:ash_crust",
+    "corruptedadventure:smoldering_ash",
+    "corruptedadventure:sulfur_crust",
+    "corruptedadventure:boiling_mud"
   ]
 }

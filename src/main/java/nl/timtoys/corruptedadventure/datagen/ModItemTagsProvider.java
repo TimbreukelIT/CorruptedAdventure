@@ -36,6 +36,23 @@ final class ModItemTagsProvider extends ItemTagsProvider {
                 ModBlocks.DRIPSHROOM_FENCE.asItem(), ModBlocks.DRIPSHROOM_FENCE_GATE.asItem(), ModBlocks.DRIPSHROOM_DOOR.asItem(),
                 ModBlocks.DRIPSHROOM_TRAPDOOR.asItem(), ModBlocks.DRIPSHROOM_BUTTON.asItem(),
                 ModBlocks.DRIPSHROOM_PRESSURE_PLATE.asItem());
+        copy(ModTags.Blocks.CHARRED_LOGS, ModTags.Items.CHARRED_LOGS);
+        tag(ItemTags.LOGS).addTag(ModTags.Items.CHARRED_LOGS);
+        // Charred wood does not burn (decision 2026-10-06): no furnace fuel either, like the Nether wood sets.
+        tag(ItemTags.NON_FLAMMABLE_WOOD).add(ModBlocks.CHARRED_LOG.asItem(), ModBlocks.CHARRED_WOOD.asItem(),
+                ModBlocks.STRIPPED_CHARRED_LOG.asItem(), ModBlocks.STRIPPED_CHARRED_WOOD.asItem(),
+                ModBlocks.CHARRED_PLANKS.asItem(), ModBlocks.CHARRED_STAIRS.asItem(), ModBlocks.CHARRED_SLAB.asItem(),
+                ModBlocks.CHARRED_FENCE.asItem(), ModBlocks.CHARRED_FENCE_GATE.asItem(), ModBlocks.CHARRED_DOOR.asItem(),
+                ModBlocks.CHARRED_TRAPDOOR.asItem(), ModBlocks.CHARRED_BUTTON.asItem(),
+                ModBlocks.CHARRED_PRESSURE_PLATE.asItem());
+        copy(ModTags.Blocks.RIMESHROOM_STEMS, ModTags.Items.RIMESHROOM_STEMS);
+        tag(ItemTags.LOGS).addTag(ModTags.Items.RIMESHROOM_STEMS);
+        tag(ItemTags.NON_FLAMMABLE_WOOD).add(ModBlocks.RIMESHROOM_STEM.asItem(), ModBlocks.RIMESHROOM_HYPHAE.asItem(),
+                ModBlocks.STRIPPED_RIMESHROOM_STEM.asItem(), ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.asItem(),
+                ModBlocks.RIMESHROOM_PLANKS.asItem(), ModBlocks.RIMESHROOM_STAIRS.asItem(), ModBlocks.RIMESHROOM_SLAB.asItem(),
+                ModBlocks.RIMESHROOM_FENCE.asItem(), ModBlocks.RIMESHROOM_FENCE_GATE.asItem(), ModBlocks.RIMESHROOM_DOOR.asItem(),
+                ModBlocks.RIMESHROOM_TRAPDOOR.asItem(), ModBlocks.RIMESHROOM_BUTTON.asItem(),
+                ModBlocks.RIMESHROOM_PRESSURE_PLATE.asItem());
         copy(BlockTags.LEAVES, ItemTags.LEAVES);
         copy(BlockTags.SAPLINGS, ItemTags.SAPLINGS);
         copy(BlockTags.LOGS_THAT_BURN, ItemTags.LOGS_THAT_BURN);
@@ -68,6 +85,20 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         tag(Tags.Items.DUSTS).addTag(ModTags.Items.DUSTS_SALT);
         tag(ModTags.Items.GEMS_DEW_CRYSTAL).add(ModItems.DEW_CRYSTAL.get());
         tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_DEW_CRYSTAL);
+        copy(ModTags.Blocks.ORES_VOLCANITE, ModTags.Items.ORES_VOLCANITE);
+        copy(ModTags.Blocks.ORES_SULFUR, ModTags.Items.ORES_SULFUR);
+        copy(ModTags.Blocks.ORES_FIRE_RUBY, ModTags.Items.ORES_FIRE_RUBY);
+        copy(Tags.Blocks.ORE_RATES_DENSE, Tags.Items.ORE_RATES_DENSE);
+        copy(Tags.Blocks.ORES_IN_GROUND_STONE, Tags.Items.ORES_IN_GROUND_STONE);
+        copy(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE, Tags.Items.ORES_IN_GROUND_DEEPSLATE);
+        tag(ModTags.Items.RAW_MATERIALS_VOLCANITE).add(ModItems.RAW_VOLCANITE.get());
+        tag(Tags.Items.RAW_MATERIALS).addTag(ModTags.Items.RAW_MATERIALS_VOLCANITE);
+        tag(ModTags.Items.DUSTS_SULFUR).add(ModItems.SULFUR.get());
+        tag(Tags.Items.DUSTS).addTag(ModTags.Items.DUSTS_SULFUR);
+        tag(ModTags.Items.GEMS_FIRE_RUBY).add(ModItems.FIRE_RUBY.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_FIRE_RUBY);
+        tag(ModTags.Items.GEMS_FIRE_CRYSTAL).add(ModItems.FIRE_CRYSTAL.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_FIRE_CRYSTAL);
         copy(Tags.Blocks.BUDDING_BLOCKS, Tags.Items.BUDDING_BLOCKS);
         copy(Tags.Blocks.BUDS, Tags.Items.BUDS);
         copy(Tags.Blocks.CLUSTERS, Tags.Items.CLUSTERS);

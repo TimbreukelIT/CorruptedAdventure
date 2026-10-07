@@ -2,7 +2,10 @@ package nl.timtoys.corruptedadventure.registry;
 
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -21,13 +24,20 @@ import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -56,6 +66,7 @@ class ModBlocksTest {
         assertSame(ModBlocks.BARREL_CACTUS.get(), ModBlocks.POTTED_BARREL_CACTUS.get().getPotted());
         assertSame(ModBlocks.DESERT_FLOWER.get(), ModBlocks.POTTED_DESERT_FLOWER.get().getPotted());
         assertSame(ModBlocks.PALM_SAPLING.get(), ModBlocks.POTTED_PALM_SAPLING.get().getPotted());
+        assertSame(ModBlocks.FIRE_BLOOM.get(), ModBlocks.POTTED_FIRE_BLOOM.get().getPotted());
     }
 
     @Test
@@ -208,6 +219,224 @@ class ModBlocksTest {
         assertEquals(7, ModBlocks.GLOW_MOLD.get().defaultBlockState()
                 .setValue(MultifaceBlock.getFaceProperty(Direction.UP), true).getLightEmission());
         assertEquals(0, ModBlocks.SPORE_SPROUTS.get().defaultBlockState().getLightEmission());
+    }
+
+    /** Ring 3 follows Nether ring 2 directly (contract §3), in this order. */
+    @Test
+    void ring3FollowsTheDewBlocksInOrder() {
+        List<Item> shown = blockItems();
+        int cluster = shown.indexOf(ModBlocks.DEW_CRYSTAL_CLUSTER.asItem());
+        List<Item> ring3 = Stream.of(ModBlocks.ASH_BLOCK, ModBlocks.ASH_LAYER, ModBlocks.ASH_CRUST, ModBlocks.SMOLDERING_ASH,
+                ModBlocks.PUMICE, ModBlocks.PUMICE_STAIRS, ModBlocks.PUMICE_SLAB, ModBlocks.PUMICE_WALL,
+                ModBlocks.POLISHED_PUMICE, ModBlocks.POLISHED_PUMICE_STAIRS, ModBlocks.POLISHED_PUMICE_SLAB,
+                ModBlocks.POLISHED_PUMICE_WALL, ModBlocks.PUMICE_BRICKS, ModBlocks.PUMICE_BRICK_STAIRS,
+                ModBlocks.PUMICE_BRICK_SLAB, ModBlocks.PUMICE_BRICK_WALL, ModBlocks.SMOLDERING_STONE,
+                ModBlocks.CHARRED_LOG, ModBlocks.CHARRED_WOOD, ModBlocks.STRIPPED_CHARRED_LOG, ModBlocks.STRIPPED_CHARRED_WOOD,
+                ModBlocks.CHARRED_PLANKS, ModBlocks.CHARRED_STAIRS, ModBlocks.CHARRED_SLAB, ModBlocks.CHARRED_FENCE,
+                ModBlocks.CHARRED_FENCE_GATE, ModBlocks.CHARRED_DOOR, ModBlocks.CHARRED_TRAPDOOR,
+                ModBlocks.CHARRED_PRESSURE_PLATE, ModBlocks.CHARRED_BUTTON,
+                ModBlocks.EMBER_LEAVES, ModBlocks.FIRE_BLOOM, ModBlocks.ASH_SPROUTS, ModBlocks.EMBER_BERRY_BUSH,
+                ModBlocks.VOLCANITE_ORE, ModBlocks.DEEPSLATE_VOLCANITE_ORE, ModBlocks.BASALT_VOLCANITE_ORE,
+                ModBlocks.SULFUR_ORE, ModBlocks.BASALT_SULFUR_ORE, ModBlocks.FIRE_RUBY_ORE,
+                ModBlocks.DEEPSLATE_FIRE_RUBY_ORE, ModBlocks.BASALT_FIRE_RUBY_ORE,
+                ModBlocks.FIRE_CRYSTAL_BLOCK, ModBlocks.SMALL_FIRE_CRYSTAL_BUD, ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD,
+                ModBlocks.LARGE_FIRE_CRYSTAL_BUD, ModBlocks.FIRE_CRYSTAL_CLUSTER,
+                ModBlocks.SULFUR_CRUST, ModBlocks.FUMAROLE, ModBlocks.BOILING_MUD, ModBlocks.GEYSER).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(ring3, shown.subList(cluster + 1, cluster + 1 + ring3.size()));
+    }
+
+    @Test
+    void smolderingStoneGlowsAtSevenOnlyThroughItsOverlay() {
+        BlockState stone = ModBlocks.SMOLDERING_STONE.get().defaultBlockState();
+        assertEquals(7, stone.getLightEmission());
+        // Two layers (decision 2026-10-06): the block is lit normally, only the model's glow overlay is full-bright.
+        assertFalse(stone.emissiveRendering(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+        assertFalse(stone.isRandomlyTicking());
+    }
+
+    /** Decision 2026-10-06: charred wood does not burn, so lava never sets it alight (no fire odds either: S). */
+    @Test
+    void charredWoodIsNotIgnitedByLava() {
+        for (DeferredBlock<?> block : List.of(ModBlocks.CHARRED_LOG, ModBlocks.CHARRED_WOOD, ModBlocks.STRIPPED_CHARRED_LOG,
+                ModBlocks.STRIPPED_CHARRED_WOOD, ModBlocks.CHARRED_PLANKS, ModBlocks.CHARRED_STAIRS, ModBlocks.CHARRED_SLAB,
+                ModBlocks.CHARRED_FENCE, ModBlocks.CHARRED_FENCE_GATE, ModBlocks.CHARRED_DOOR, ModBlocks.CHARRED_TRAPDOOR,
+                ModBlocks.CHARRED_PRESSURE_PLATE, ModBlocks.CHARRED_BUTTON)) {
+            assertFalse(block.get().defaultBlockState().ignitedByLava(), block.getId().toString());
+        }
+        assertTrue(Blocks.OAK_PLANKS.defaultBlockState().ignitedByLava());
+    }
+
+    @Test
+    void ashBlockDoesNotFallButTheCrustDoes() {
+        assertFalse(ModBlocks.ASH_BLOCK.get() instanceof FallingBlock);
+        assertInstanceOf(FallingBlock.class, ModBlocks.ASH_CRUST.get());
+    }
+
+    /** V3 = A: the ember leaves only glow in their texture; the smouldering ash glows faintly (light 2). */
+    @Test
+    void emberLeavesNeverTickOrDecayAndGiveNoLight() {
+        for (BlockState state : ModBlocks.EMBER_LEAVES.get().getStateDefinition().getPossibleStates()) {
+            assertFalse(state.isRandomlyTicking(), state.toString());
+            assertEquals(0, state.getLightEmission(), state.toString());
+            assertFalse(state.ignitedByLava(), state.toString());
+        }
+        assertEquals(2, ModBlocks.SMOLDERING_ASH.get().defaultBlockState().getLightEmission());
+    }
+
+    @Test
+    void fireFloraDoesNotBurnButTheBerryBushStillGrows() {
+        for (DeferredBlock<?> plant : List.of(ModBlocks.FIRE_BLOOM, ModBlocks.ASH_SPROUTS, ModBlocks.EMBER_BERRY_BUSH)) {
+            assertFalse(plant.get().defaultBlockState().ignitedByLava(), plant.getId().toString());
+        }
+        assertTrue(ModBlocks.EMBER_BERRY_BUSH.get().defaultBlockState().isRandomlyTicking());
+    }
+
+    /** One step above ring 2: XP volcanite 3–6, sulfur 1–3, fire ruby 4–8; half a point harder than the host's vanilla ore. */
+    @Test
+    void ring3OresHaveTheirXpLightAndHardness() {
+        Map<UniformInt, List<DeferredBlock<DropExperienceBlock>>> xp = Map.of(
+                UniformInt.of(3, 6), List.of(ModBlocks.VOLCANITE_ORE, ModBlocks.DEEPSLATE_VOLCANITE_ORE, ModBlocks.BASALT_VOLCANITE_ORE),
+                UniformInt.of(1, 3), List.of(ModBlocks.SULFUR_ORE, ModBlocks.BASALT_SULFUR_ORE),
+                UniformInt.of(4, 8), List.of(ModBlocks.FIRE_RUBY_ORE, ModBlocks.DEEPSLATE_FIRE_RUBY_ORE, ModBlocks.BASALT_FIRE_RUBY_ORE));
+        xp.forEach((range, ores) -> ores.forEach(ore -> assertEquals(range.toString(), experience(ore.get()), ore.getId().toString())));
+        assertEquals(3, ModBlocks.FIRE_RUBY_ORE.get().defaultBlockState().getLightEmission());
+        assertEquals(3, ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get().defaultBlockState().getLightEmission());
+        assertEquals(3, ModBlocks.BASALT_FIRE_RUBY_ORE.get().defaultBlockState().getLightEmission());
+        assertEquals(0, ModBlocks.VOLCANITE_ORE.get().defaultBlockState().getLightEmission());
+        assertEquals(0, ModBlocks.SULFUR_ORE.get().defaultBlockState().getLightEmission());
+        float extra = ModBlocks.RING_3_ORE_EXTRA_HARDNESS;
+        assertEquals(Blocks.IRON_ORE.defaultDestroyTime() + extra, ModBlocks.VOLCANITE_ORE.get().defaultDestroyTime());
+        assertEquals(Blocks.DEEPSLATE_IRON_ORE.defaultDestroyTime() + extra, ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get().defaultDestroyTime());
+        assertEquals(Blocks.COAL_ORE.defaultDestroyTime() + extra, ModBlocks.SULFUR_ORE.get().defaultDestroyTime());
+        assertEquals(Blocks.COAL_ORE.defaultDestroyTime() + extra, ModBlocks.BASALT_SULFUR_ORE.get().defaultDestroyTime());
+        assertEquals(Blocks.IRON_ORE.getExplosionResistance(), ModBlocks.VOLCANITE_ORE.get().getExplosionResistance());
+        assertEquals(SoundType.BASALT, ModBlocks.BASALT_SULFUR_ORE.get().defaultBlockState().getSoundType());
+    }
+
+    @Test
+    void ring3RawMaterialsFollowTheDewCrystal() {
+        List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
+                .filter(item -> !(item instanceof BlockItem)).toList();
+        int dew = standalone.indexOf(ModItems.DEW_CRYSTAL.get());
+        assertEquals(List.of(ModItems.RAW_VOLCANITE.get(), ModItems.SULFUR.get(), ModItems.FIRE_RUBY.get(), ModItems.FIRE_CRYSTAL.get()),
+                standalone.subList(dew + 1, dew + 5));
+    }
+
+    /** Like the dew crystal stages: light 1, 2, 4, 5, facing up and dry by default; the wall gives no light and never ticks. */
+    @Test
+    void fireCrystalStagesGlowAndTheWallDoesNot() {
+        List<DeferredBlock<AmethystClusterBlock>> stages = List.of(ModBlocks.SMALL_FIRE_CRYSTAL_BUD, ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD,
+                ModBlocks.LARGE_FIRE_CRYSTAL_BUD, ModBlocks.FIRE_CRYSTAL_CLUSTER);
+        int[] light = {1, 2, 4, 5};
+        for (int i = 0; i < stages.size(); i++) {
+            BlockState stage = stages.get(i).get().defaultBlockState();
+            assertEquals(light[i], stage.getLightEmission(), stages.get(i).getId().toString());
+            assertEquals(Direction.UP, stage.getValue(AmethystClusterBlock.FACING));
+            assertFalse(stage.getValue(AmethystClusterBlock.WATERLOGGED));
+            assertFalse(stage.isRandomlyTicking());
+        }
+        assertEquals(0, ModBlocks.FIRE_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
+        assertFalse(ModBlocks.FIRE_CRYSTAL_BLOCK.get().defaultBlockState().isRandomlyTicking());
+    }
+
+    /** Only the geyser ticks (to start its cycle); the mud slows like honey; neither crust nor mud falls or glows. */
+    @Test
+    void sulfurAndSteamBlocksBehaveAsPlanned() {
+        assertTrue(ModBlocks.GEYSER.get().defaultBlockState().isRandomlyTicking());
+        for (DeferredBlock<?> block : List.of(ModBlocks.SULFUR_CRUST, ModBlocks.FUMAROLE, ModBlocks.BOILING_MUD)) {
+            assertFalse(block.get().defaultBlockState().isRandomlyTicking(), block.getId().toString());
+        }
+        for (DeferredBlock<?> block : List.of(ModBlocks.SULFUR_CRUST, ModBlocks.FUMAROLE, ModBlocks.BOILING_MUD, ModBlocks.GEYSER)) {
+            assertEquals(0, block.get().defaultBlockState().getLightEmission(), block.getId().toString());
+            assertFalse(block.get() instanceof FallingBlock, block.getId().toString());
+        }
+        assertEquals(Blocks.HONEY_BLOCK.getSpeedFactor(), ModBlocks.BOILING_MUD.get().getSpeedFactor());
+        assertEquals(Blocks.HONEY_BLOCK.getJumpFactor(), ModBlocks.BOILING_MUD.get().getJumpFactor());
+        assertEquals(Blocks.MUD.defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO),
+                ModBlocks.BOILING_MUD.get().defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+    }
+
+    /** Nether ring 3 follows ring 3 directly (contract §3), in this order. */
+    @Test
+    void netherRing3FollowsRing3InOrder() {
+        List<Item> shown = blockItems();
+        int geyser = shown.indexOf(ModBlocks.GEYSER.asItem());
+        List<Item> netherRing3 = Stream.of(ModBlocks.COLD_LAVA, ModBlocks.COLD_LAVA_STAIRS, ModBlocks.COLD_LAVA_SLAB,
+                ModBlocks.COLD_LAVA_WALL, ModBlocks.POLISHED_COLD_LAVA, ModBlocks.POLISHED_COLD_LAVA_STAIRS,
+                ModBlocks.POLISHED_COLD_LAVA_SLAB, ModBlocks.POLISHED_COLD_LAVA_WALL, ModBlocks.COLD_LAVA_BRICKS,
+                ModBlocks.COLD_LAVA_BRICK_STAIRS, ModBlocks.COLD_LAVA_BRICK_SLAB, ModBlocks.COLD_LAVA_BRICK_WALL,
+                ModBlocks.NETHER_ICE, ModBlocks.PACKED_NETHER_ICE, ModBlocks.RIME_NETHERRACK,
+                ModBlocks.RIMESHROOM_STEM, ModBlocks.RIMESHROOM_HYPHAE, ModBlocks.STRIPPED_RIMESHROOM_STEM,
+                ModBlocks.STRIPPED_RIMESHROOM_HYPHAE, ModBlocks.RIMESHROOM_PLANKS, ModBlocks.RIMESHROOM_STAIRS,
+                ModBlocks.RIMESHROOM_SLAB, ModBlocks.RIMESHROOM_FENCE, ModBlocks.RIMESHROOM_FENCE_GATE,
+                ModBlocks.RIMESHROOM_DOOR, ModBlocks.RIMESHROOM_TRAPDOOR, ModBlocks.RIMESHROOM_PRESSURE_PLATE,
+                ModBlocks.RIMESHROOM_BUTTON, ModBlocks.RIMESHROOM_CAP, ModBlocks.ICE_STALACTITE,
+                ModBlocks.GLOWING_FISSURE, ModBlocks.PRIMORDIAL_ICE).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(netherRing3, shown.subList(geyser + 1, geyser + 1 + netherRing3.size()));
+    }
+
+    /**
+     * Decision 2026-10-06: Nether ice is opaque and solid and never melts (no random ticks), with the hardness and
+     * slipperiness of its vanilla source: packed ice for the Nether ice, blue ice for primordial ice. No light.
+     */
+    @Test
+    void netherIceIsOpaqueAndNeverMeltsWithItsSourcesHardnessAndSlipperiness() {
+        Map<DeferredBlock<Block>, Block> sources = Map.of(ModBlocks.NETHER_ICE, Blocks.PACKED_ICE,
+                ModBlocks.PACKED_NETHER_ICE, Blocks.PACKED_ICE, ModBlocks.PRIMORDIAL_ICE, Blocks.BLUE_ICE);
+        sources.forEach((ice, source) -> {
+            BlockState state = ice.get().defaultBlockState();
+            assertTrue(state.canOcclude(), ice.getId().toString());
+            assertFalse(state.isRandomlyTicking(), ice.getId().toString());
+            assertEquals(0, state.getLightEmission(), ice.getId().toString());
+            assertEquals(source.getFriction(), ice.get().getFriction(), ice.getId().toString());
+            assertEquals(source.defaultDestroyTime(), ice.get().defaultDestroyTime(), ice.getId().toString());
+        });
+    }
+
+    /** Decision 2026-10-07: ghast fireballs and creepers cannot blow the pillar cores away (obsidian's resistance). */
+    @Test
+    void primordialIceResistsExplosionsLikeObsidian() {
+        assertEquals(Blocks.OBSIDIAN.getExplosionResistance(), ModBlocks.PRIMORDIAL_ICE.get().getExplosionResistance());
+    }
+
+    @Test
+    void netherRing3WoodDoesNotBurnAndTheFissureGlowsAtSevenOnlyThroughItsOverlay() {
+        for (DeferredBlock<?> block : List.of(ModBlocks.RIMESHROOM_STEM, ModBlocks.RIMESHROOM_HYPHAE,
+                ModBlocks.STRIPPED_RIMESHROOM_STEM, ModBlocks.STRIPPED_RIMESHROOM_HYPHAE, ModBlocks.RIMESHROOM_PLANKS,
+                ModBlocks.RIMESHROOM_STAIRS, ModBlocks.RIMESHROOM_SLAB, ModBlocks.RIMESHROOM_FENCE,
+                ModBlocks.RIMESHROOM_FENCE_GATE, ModBlocks.RIMESHROOM_DOOR, ModBlocks.RIMESHROOM_TRAPDOOR,
+                ModBlocks.RIMESHROOM_PRESSURE_PLATE, ModBlocks.RIMESHROOM_BUTTON)) {
+            assertFalse(block.get().defaultBlockState().ignitedByLava(), block.getId().toString());
+        }
+        BlockState fissure = ModBlocks.GLOWING_FISSURE.get().defaultBlockState();
+        assertEquals(7, fissure.getLightEmission());
+        assertFalse(fissure.emissiveRendering(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+        assertFalse(ModBlocks.ICE_STALACTITE.get().defaultBlockState().isRandomlyTicking());
+        assertEquals(SoundType.GLASS, ModBlocks.ICE_STALACTITE.get().defaultBlockState().getSoundType());
+        assertEquals(NoteBlockInstrument.CHIME, ModBlocks.ICE_STALACTITE.get().defaultBlockState().instrument());
+    }
+
+    /** Nether wood is no furnace fuel: every rimeshroom item is in the generated {@code #non_flammable_wood}. */
+    @Test
+    void everyRimeshroomItemIsNonFlammableWood() {
+        String relative = "src/generated/resources/data/minecraft/tags/item/non_flammable_wood.json";
+        Path dir = Path.of("").toAbsolutePath();
+        while (!Files.exists(dir.resolve(relative))) {
+            dir = dir.getParent();
+        }
+        Set<String> values = new HashSet<>();
+        WorldgenData.read(dir.resolve(relative)).getAsJsonArray("values").forEach(value -> values.add(value.getAsString()));
+        List<String> rimeshroomWood = ModBlocks.entries().stream()
+                .filter(block -> block.get().asItem() != Items.AIR && !block.getId().equals(ModBlocks.RIMESHROOM_CAP.getId()))
+                .map(block -> block.getId().toString()).filter(id -> id.contains("rimeshroom")).toList();
+        assertEquals(13, rimeshroomWood.size());
+        rimeshroomWood.forEach(id -> assertTrue(values.contains(id), id));
+    }
+
+    private static List<Item> blockItems() {
+        List<Item> shown = new ArrayList<>();
+        ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).forEach(shown::add);
+        return shown;
     }
 
     private static String experience(DropExperienceBlock ore) {

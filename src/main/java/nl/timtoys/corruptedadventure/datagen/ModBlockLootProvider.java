@@ -1,6 +1,12 @@
 package nl.timtoys.corruptedadventure.datagen;
 
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.world.level.block.SnowLayerBlock;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.ItemTags;
@@ -9,6 +15,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -137,6 +144,146 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.SALT_CRYSTAL.get());
 
         netherRing2();
+        ring3();
+        netherRing3();
+    }
+
+    private void netherRing3() {
+        for (Block block : List.of(ModBlocks.COLD_LAVA.get(), ModBlocks.COLD_LAVA_STAIRS.get(), ModBlocks.COLD_LAVA_WALL.get(),
+                ModBlocks.POLISHED_COLD_LAVA.get(), ModBlocks.POLISHED_COLD_LAVA_STAIRS.get(), ModBlocks.POLISHED_COLD_LAVA_WALL.get(),
+                ModBlocks.COLD_LAVA_BRICKS.get(), ModBlocks.COLD_LAVA_BRICK_STAIRS.get(), ModBlocks.COLD_LAVA_BRICK_WALL.get())) {
+            dropSelf(block);
+        }
+        for (Block slab : List.of(ModBlocks.COLD_LAVA_SLAB.get(), ModBlocks.POLISHED_COLD_LAVA_SLAB.get(), ModBlocks.COLD_LAVA_BRICK_SLAB.get())) {
+            add(slab, this::createSlabItemTable);
+        }
+        // Like vanilla ice: only Silk Touch takes it along.
+        dropWhenSilkTouch(ModBlocks.NETHER_ICE.get());
+        dropWhenSilkTouch(ModBlocks.PACKED_NETHER_ICE.get());
+        dropSelf(ModBlocks.RIME_NETHERRACK.get());
+
+        dropSelf(ModBlocks.RIMESHROOM_STEM.get());
+        dropSelf(ModBlocks.RIMESHROOM_HYPHAE.get());
+        dropSelf(ModBlocks.STRIPPED_RIMESHROOM_STEM.get());
+        dropSelf(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get());
+        dropSelf(ModBlocks.RIMESHROOM_PLANKS.get());
+        dropSelf(ModBlocks.RIMESHROOM_STAIRS.get());
+        add(ModBlocks.RIMESHROOM_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.RIMESHROOM_FENCE.get());
+        dropSelf(ModBlocks.RIMESHROOM_FENCE_GATE.get());
+        add(ModBlocks.RIMESHROOM_DOOR.get(), this::createDoorTable);
+        dropSelf(ModBlocks.RIMESHROOM_TRAPDOOR.get());
+        dropSelf(ModBlocks.RIMESHROOM_PRESSURE_PLATE.get());
+        dropSelf(ModBlocks.RIMESHROOM_BUTTON.get());
+        dropSelf(ModBlocks.RIMESHROOM_CAP.get());
+        dropSelf(ModBlocks.ICE_STALACTITE.get());
+        dropSelf(ModBlocks.GLOWING_FISSURE.get());
+        dropWhenSilkTouch(ModBlocks.PRIMORDIAL_ICE.get());
+    }
+
+    private void ring3() {
+        dropSelf(ModBlocks.ASH_BLOCK.get());
+        add(ModBlocks.ASH_LAYER.get(), this::createAshLayerTable);
+        // Like loose sand: plain ash without Silk Touch, no ready-made trap material.
+        add(ModBlocks.ASH_CRUST.get(), block -> createSingleItemTableWithSilkTouch(block, ModBlocks.ASH_BLOCK.get()));
+        dropSelf(ModBlocks.SMOLDERING_ASH.get());
+        for (Block block : List.of(ModBlocks.PUMICE.get(), ModBlocks.PUMICE_STAIRS.get(), ModBlocks.PUMICE_WALL.get(),
+                ModBlocks.POLISHED_PUMICE.get(), ModBlocks.POLISHED_PUMICE_STAIRS.get(), ModBlocks.POLISHED_PUMICE_WALL.get(),
+                ModBlocks.PUMICE_BRICKS.get(), ModBlocks.PUMICE_BRICK_STAIRS.get(), ModBlocks.PUMICE_BRICK_WALL.get())) {
+            dropSelf(block);
+        }
+        for (Block slab : List.of(ModBlocks.PUMICE_SLAB.get(), ModBlocks.POLISHED_PUMICE_SLAB.get(), ModBlocks.PUMICE_BRICK_SLAB.get())) {
+            add(slab, this::createSlabItemTable);
+        }
+        dropSelf(ModBlocks.SMOLDERING_STONE.get());
+
+        dropSelf(ModBlocks.CHARRED_LOG.get());
+        dropSelf(ModBlocks.CHARRED_WOOD.get());
+        dropSelf(ModBlocks.STRIPPED_CHARRED_LOG.get());
+        dropSelf(ModBlocks.STRIPPED_CHARRED_WOOD.get());
+        dropSelf(ModBlocks.CHARRED_PLANKS.get());
+        dropSelf(ModBlocks.CHARRED_STAIRS.get());
+        add(ModBlocks.CHARRED_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.CHARRED_FENCE.get());
+        dropSelf(ModBlocks.CHARRED_FENCE_GATE.get());
+        add(ModBlocks.CHARRED_DOOR.get(), this::createDoorTable);
+        dropSelf(ModBlocks.CHARRED_TRAPDOOR.get());
+        dropSelf(ModBlocks.CHARRED_PRESSURE_PLATE.get());
+        dropSelf(ModBlocks.CHARRED_BUTTON.get());
+
+        // No sapling: like mangrove leaves, shears/Silk Touch -> the leaves, otherwise sticks now and then.
+        add(ModBlocks.EMBER_LEAVES.get(), this::createMangroveLeavesDrops);
+        dropSelf(ModBlocks.FIRE_BLOOM.get());
+        dropPottedContents(ModBlocks.POTTED_FIRE_BLOOM.get());
+        // Like nether sprouts: only with shears.
+        add(ModBlocks.ASH_SPROUTS.get(), BlockLootSubProvider::createShearsOnlyDrop);
+        add(ModBlocks.EMBER_BERRY_BUSH.get(), this::createBerryBushTable);
+
+        // Like iron ore -> raw iron / diamond ore -> diamond: one item (Fortune), Silk Touch -> the ore itself.
+        for (Block ore : List.of(ModBlocks.VOLCANITE_ORE.get(), ModBlocks.DEEPSLATE_VOLCANITE_ORE.get(), ModBlocks.BASALT_VOLCANITE_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.RAW_VOLCANITE.get()));
+        }
+        for (Block ore : List.of(ModBlocks.FIRE_RUBY_ORE.get(), ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get(), ModBlocks.BASALT_FIRE_RUBY_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.FIRE_RUBY.get()));
+        }
+        // Like copper ore: several at once (2–4, Fortune adds), Silk Touch -> the ore itself.
+        for (Block ore : List.of(ModBlocks.SULFUR_ORE.get(), ModBlocks.BASALT_SULFUR_ORE.get())) {
+            add(ore, block -> createSilkTouchDispatchTable(block, applyExplosionDecay(block,
+                    LootItem.lootTableItem(ModItems.SULFUR.get())
+                            .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                            .apply(ApplyBonusCount.addOreBonusCount(registries.lookupOrThrow(Registries.ENCHANTMENT)
+                                    .getOrThrow(Enchantments.FORTUNE))))));
+        }
+
+        // Fire crystal like amethyst: the wall drops itself, buds only with Silk Touch, the cluster gives crystals.
+        dropSelf(ModBlocks.FIRE_CRYSTAL_BLOCK.get());
+        dropWhenSilkTouch(ModBlocks.SMALL_FIRE_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get());
+        add(ModBlocks.FIRE_CRYSTAL_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.FIRE_CRYSTAL.get()));
+
+        // The crust drops itself, not sulfur: sulfur comes from the ores.
+        dropSelf(ModBlocks.SULFUR_CRUST.get());
+        dropSelf(ModBlocks.FUMAROLE.get());
+        dropSelf(ModBlocks.BOILING_MUD.get());
+        dropWhenSilkTouch(ModBlocks.GEYSER.get());
+    }
+
+    /**
+     * Vanilla's sweet berry bush table on the ember berry bush: a ripe bush (age 3) drops 2–3 sweet berries, age 2 drops
+     * 1–2 (Fortune adds); younger bushes drop nothing. Vanilla sweet berries until the bush gets its own food (phase 2).
+     */
+    private LootTable.Builder createBerryBushTable(Block block) {
+        var fortune = registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.FORTUNE);
+        return applyExplosionDecay(block, LootTable.lootTable()
+                .withPool(LootPool.lootPool().when(age(block, SweetBerryBushBlock.MAX_AGE))
+                        .add(LootItem.lootTableItem(Items.SWEET_BERRIES))
+                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 3.0F)))
+                        .apply(ApplyBonusCount.addUniformBonusCount(fortune)))
+                .withPool(LootPool.lootPool().when(age(block, 2))
+                        .add(LootItem.lootTableItem(Items.SWEET_BERRIES))
+                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F)))
+                        .apply(ApplyBonusCount.addUniformBonusCount(fortune))));
+    }
+
+    private static LootItemBlockStatePropertyCondition.Builder age(Block block, int age) {
+        return LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SweetBerryBushBlock.AGE, age));
+    }
+
+    /**
+     * One ash layer item per layer (8 for a full block). There is no loose ash item, so this is vanilla's snow layer
+     * table with the layer itself as the drop; the block's tool rule (shovel) decides whether anything drops.
+     */
+    private LootTable.Builder createAshLayerTable(Block block) {
+        var item = LootItem.lootTableItem(block);
+        for (int layers = 2; layers <= SnowLayerBlock.MAX_HEIGHT; layers++) {
+            item.apply(SetItemCountFunction.setCount(ConstantValue.exactly(layers))
+                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                            .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SnowLayerBlock.LAYERS, layers))));
+        }
+        return LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                .setRolls(ConstantValue.exactly(1.0F)).add(item)));
     }
 
     private void netherRing2() {
@@ -169,14 +316,19 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropWhenSilkTouch(ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.get());
         dropWhenSilkTouch(ModBlocks.LARGE_DEW_CRYSTAL_BUD.get());
         // Like the amethyst cluster: Silk Touch -> the cluster; a pickaxe -> 4 crystals (Fortune), anything else 2.
-        add(ModBlocks.DEW_CRYSTAL_CLUSTER.get(), block -> createSilkTouchDispatchTable(block,
-                LootItem.lootTableItem(ModItems.DEW_CRYSTAL.get())
+        add(ModBlocks.DEW_CRYSTAL_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.DEW_CRYSTAL.get()));
+    }
+
+    /** Like the amethyst cluster: Silk Touch -> the cluster; a pickaxe -> 4 crystals (Fortune), anything else 2. */
+    private LootTable.Builder createCrystalClusterTable(Block block, Item crystal) {
+        return createSilkTouchDispatchTable(block,
+                LootItem.lootTableItem(crystal)
                         .apply(SetItemCountFunction.setCount(ConstantValue.exactly(4.0F)))
                         .apply(ApplyBonusCount.addOreBonusCount(registries.lookupOrThrow(Registries.ENCHANTMENT)
                                 .getOrThrow(Enchantments.FORTUNE)))
                         .when(MatchTool.toolMatches(ItemPredicate.Builder.item().of(ItemTags.CLUSTER_MAX_HARVESTABLES)))
-                        .otherwise(applyExplosionDecay(block, LootItem.lootTableItem(ModItems.DEW_CRYSTAL.get())
-                                .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))))));
+                        .otherwise(applyExplosionDecay(block, LootItem.lootTableItem(crystal)
+                                .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F))))));
     }
 
     @Override

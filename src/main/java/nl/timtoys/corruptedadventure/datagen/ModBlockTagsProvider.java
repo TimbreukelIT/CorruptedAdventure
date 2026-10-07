@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.datagen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
@@ -56,6 +57,181 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
 
         ring2();
         netherRing2();
+        ring3();
+        netherRing3();
+    }
+
+    /**
+     * Nether ring 3. Cold lava and rime netherrack are Nether ground like basalt and netherrack ({@code #base_stone_nether},
+     * so Nether carvers cut through them); rime netherrack is not in the {@code #infiniburn_*} tags (fire dies on frozen
+     * ground) nor in {@code #nylium}. The Nether ice is in every ice tag of packed ice, and carvers cut through it;
+     * primordial ice gets blue ice's tags and is deliberately not carver-replaceable, so caves never eat the pillar cores
+     * (nor a growth: it is terrain for {@code FungalTerrainScan}). The rimeshroom set is Nether wood: in {@code #logs} (via
+     * its own tag) but not in {@code #logs_that_burn}.
+     */
+    private void netherRing3() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.COLD_LAVA.get(), ModBlocks.COLD_LAVA_STAIRS.get(),
+                ModBlocks.COLD_LAVA_SLAB.get(), ModBlocks.COLD_LAVA_WALL.get(), ModBlocks.POLISHED_COLD_LAVA.get(),
+                ModBlocks.POLISHED_COLD_LAVA_STAIRS.get(), ModBlocks.POLISHED_COLD_LAVA_SLAB.get(),
+                ModBlocks.POLISHED_COLD_LAVA_WALL.get(), ModBlocks.COLD_LAVA_BRICKS.get(), ModBlocks.COLD_LAVA_BRICK_STAIRS.get(),
+                ModBlocks.COLD_LAVA_BRICK_SLAB.get(), ModBlocks.COLD_LAVA_BRICK_WALL.get(), ModBlocks.NETHER_ICE.get(),
+                ModBlocks.PACKED_NETHER_ICE.get(), ModBlocks.RIME_NETHERRACK.get(), ModBlocks.ICE_STALACTITE.get(),
+                ModBlocks.GLOWING_FISSURE.get(), ModBlocks.PRIMORDIAL_ICE.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.COLD_LAVA_STAIRS.get(), ModBlocks.POLISHED_COLD_LAVA_STAIRS.get(),
+                ModBlocks.COLD_LAVA_BRICK_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.COLD_LAVA_SLAB.get(), ModBlocks.POLISHED_COLD_LAVA_SLAB.get(),
+                ModBlocks.COLD_LAVA_BRICK_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.COLD_LAVA_WALL.get(), ModBlocks.POLISHED_COLD_LAVA_WALL.get(),
+                ModBlocks.COLD_LAVA_BRICK_WALL.get());
+        tag(BlockTags.BASE_STONE_NETHER).add(ModBlocks.COLD_LAVA.get(), ModBlocks.RIME_NETHERRACK.get());
+        tag(Tags.Blocks.NETHERRACKS).add(ModBlocks.RIME_NETHERRACK.get());
+        // The ice tags of packed ice (Nether ice) and blue ice (primordial ice).
+        tag(BlockTags.ICE).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get(), ModBlocks.PRIMORDIAL_ICE.get());
+        tag(BlockTags.GEODE_INVALID_BLOCKS).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get(),
+                ModBlocks.PRIMORDIAL_ICE.get());
+        tag(BlockTags.SNOW_LAYER_CANNOT_SURVIVE_ON).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get());
+        tag(BlockTags.SNAPS_GOAT_HORN).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get());
+        tag(BlockTags.NETHER_CARVER_REPLACEABLES).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get());
+
+        tag(ModTags.Blocks.RIMESHROOM_STEMS).add(ModBlocks.RIMESHROOM_STEM.get(), ModBlocks.RIMESHROOM_HYPHAE.get(),
+                ModBlocks.STRIPPED_RIMESHROOM_STEM.get(), ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get());
+        tag(BlockTags.LOGS).addTag(ModTags.Blocks.RIMESHROOM_STEMS);
+        tag(BlockTags.PLANKS).add(ModBlocks.RIMESHROOM_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.RIMESHROOM_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.RIMESHROOM_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.RIMESHROOM_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.RIMESHROOM_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.RIMESHROOM_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.RIMESHROOM_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.RIMESHROOM_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.RIMESHROOM_BUTTON.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_RIMESHROOM_STEM.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.RIMESHROOM_FENCE_GATE.get());
+        // Vanilla lists its wart blocks in #mineable/hoe one by one, so the cap goes in by hand.
+        tag(BlockTags.WART_BLOCKS).add(ModBlocks.RIMESHROOM_CAP.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.RIMESHROOM_CAP.get());
+        // Growths, not terrain, for the Nether features' determinism rule (FungalTerrainScan), like the dripshroom set.
+        tag(ModTags.Blocks.FUNGAL_GROWTHS).addTag(ModTags.Blocks.RIMESHROOM_STEMS).add(ModBlocks.RIMESHROOM_CAP.get(),
+                ModBlocks.ICE_STALACTITE.get());
+
+        // The glowing fissure warms against the Nether cold and heats like the ring 3 heat sources (contract §3).
+        tag(ModTags.Blocks.HEAT_SOURCES).add(ModBlocks.GLOWING_FISSURE.get());
+        tag(ModTags.Blocks.WARMTH_SOURCES).add(ModBlocks.GLOWING_FISSURE.get());
+    }
+
+    /**
+     * Ring 3. Ash and pumice are natural ground that carvers cut through, deliberately not in
+     * {@code #base_stone_overworld} (ring 3 picks its own ore hosts through {@code ring_3_stones}). The ash layer is in
+     * {@code #replaceable} like snow, but in no snow tag. Charred wood is Nether wood: in {@code #logs} (via its own
+     * tag) but not in {@code #logs_that_burn}.
+     */
+    private void ring3() {
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.ASH_BLOCK.get(), ModBlocks.ASH_LAYER.get());
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.ASH_LAYER.get());
+        // Like snow: walking through thin ash sounds like ash, not like the block under it.
+        tag(BlockTags.INSIDE_STEP_SOUND_BLOCKS).add(ModBlocks.ASH_LAYER.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.PUMICE.get(), ModBlocks.PUMICE_STAIRS.get(),
+                ModBlocks.PUMICE_SLAB.get(), ModBlocks.PUMICE_WALL.get(), ModBlocks.POLISHED_PUMICE.get(),
+                ModBlocks.POLISHED_PUMICE_STAIRS.get(), ModBlocks.POLISHED_PUMICE_SLAB.get(), ModBlocks.POLISHED_PUMICE_WALL.get(),
+                ModBlocks.PUMICE_BRICKS.get(), ModBlocks.PUMICE_BRICK_STAIRS.get(), ModBlocks.PUMICE_BRICK_SLAB.get(),
+                ModBlocks.PUMICE_BRICK_WALL.get(), ModBlocks.SMOLDERING_STONE.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.PUMICE_STAIRS.get(), ModBlocks.POLISHED_PUMICE_STAIRS.get(),
+                ModBlocks.PUMICE_BRICK_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.PUMICE_SLAB.get(), ModBlocks.POLISHED_PUMICE_SLAB.get(), ModBlocks.PUMICE_BRICK_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.PUMICE_WALL.get(), ModBlocks.POLISHED_PUMICE_WALL.get(), ModBlocks.PUMICE_BRICK_WALL.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get(),
+                ModBlocks.SMOLDERING_STONE.get());
+        tag(ModTags.Blocks.RING_3_STONES).add(Blocks.BASALT, Blocks.BLACKSTONE, ModBlocks.PUMICE.get(), ModBlocks.ASH_BLOCK.get());
+        // Goats only spawn where a biome lists them (volcanic_peaks); this tag only says on what ground: the peak surface,
+        // vanilla basalt, smooth basalt and blackstone (39b) plus pumice and ash (39c). Not smouldering stone (a heat source).
+        tag(BlockTags.GOATS_SPAWNABLE_ON).add(Blocks.BASALT, Blocks.SMOOTH_BASALT, Blocks.BLACKSTONE,
+                ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get());
+
+        // Heat (ring 3) and warmth (Nether ring 3) within a few blocks; soul fire is deliberately no heat source.
+        tag(ModTags.Blocks.HEAT_SOURCES).add(Blocks.LAVA, Blocks.MAGMA_BLOCK, Blocks.FIRE, Blocks.CAMPFIRE,
+                ModBlocks.SMOLDERING_STONE.get());
+        tag(ModTags.Blocks.WARMTH_SOURCES).add(Blocks.LAVA, Blocks.FIRE, Blocks.SOUL_FIRE, Blocks.CAMPFIRE,
+                Blocks.SOUL_CAMPFIRE, Blocks.MAGMA_BLOCK, ModBlocks.SMOLDERING_STONE.get());
+
+        tag(ModTags.Blocks.CHARRED_LOGS).add(ModBlocks.CHARRED_LOG.get(), ModBlocks.CHARRED_WOOD.get(),
+                ModBlocks.STRIPPED_CHARRED_LOG.get(), ModBlocks.STRIPPED_CHARRED_WOOD.get());
+        tag(BlockTags.LOGS).addTag(ModTags.Blocks.CHARRED_LOGS);
+        tag(BlockTags.PLANKS).add(ModBlocks.CHARRED_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.CHARRED_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.CHARRED_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.CHARRED_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.CHARRED_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.CHARRED_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.CHARRED_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.CHARRED_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.CHARRED_BUTTON.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_CHARRED_LOG.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_CHARRED_WOOD.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.CHARRED_FENCE_GATE.get());
+
+        // Ash crust caves in like loose sand; the smouldering ash is cast material (features), no natural ground.
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.ASH_CRUST.get(), ModBlocks.SMOLDERING_ASH.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.ASH_CRUST.get());
+        tag(ModTags.Blocks.COLLAPSING_BLOCKS).add(ModBlocks.LOOSE_SAND.get(), ModBlocks.ASH_CRUST.get());
+
+        // Ember woods and fire flora. One ground rule for the fire flora (a partial ash layer does not count: AshPlantSoil).
+        tag(ModTags.Blocks.ASH_PLANT_SOIL).add(ModBlocks.ASH_BLOCK.get(), Blocks.COARSE_DIRT, ModBlocks.ASH_LAYER.get());
+        tag(BlockTags.LEAVES).add(ModBlocks.EMBER_LEAVES.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.EMBER_LEAVES.get());
+        tag(BlockTags.SMALL_FLOWERS).add(ModBlocks.FIRE_BLOOM.get());
+        tag(BlockTags.FLOWER_POTS).add(ModBlocks.POTTED_FIRE_BLOOM.get());
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.ASH_SPROUTS.get());
+        tag(BlockTags.REPLACEABLE_BY_TREES).add(ModBlocks.ASH_SPROUTS.get());
+        tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.ASH_SPROUTS.get(), ModBlocks.EMBER_BERRY_BUSH.get());
+        // Like the sweet berry bush: landing in it breaks the fall.
+        tag(BlockTags.FALL_DAMAGE_RESETTING).add(ModBlocks.EMBER_BERRY_BUSH.get());
+
+        ring3Ores();
+        sulfurAndSteam();
+    }
+
+    /**
+     * Ring 3 ores. Volcanite and fire ruby need an iron pickaxe, sulfur a stone one. Not in
+     * {@code #overworld_carver_replaceables}: ore features run after the carvers. {@code ores_in_ground} only where a
+     * convention tag exists (stone, deepslate; none for basalt).
+     */
+    private void ring3Ores() {
+        tag(ModTags.Blocks.ORES_VOLCANITE).add(ModBlocks.VOLCANITE_ORE.get(), ModBlocks.DEEPSLATE_VOLCANITE_ORE.get(),
+                ModBlocks.BASALT_VOLCANITE_ORE.get());
+        tag(ModTags.Blocks.ORES_SULFUR).add(ModBlocks.SULFUR_ORE.get(), ModBlocks.BASALT_SULFUR_ORE.get());
+        tag(ModTags.Blocks.ORES_FIRE_RUBY).add(ModBlocks.FIRE_RUBY_ORE.get(), ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get(),
+                ModBlocks.BASALT_FIRE_RUBY_ORE.get());
+        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_SULFUR)
+                .addTag(ModTags.Blocks.ORES_FIRE_RUBY);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_SULFUR)
+                .addTag(ModTags.Blocks.ORES_FIRE_RUBY);
+        tag(BlockTags.NEEDS_IRON_TOOL).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_FIRE_RUBY);
+        tag(BlockTags.NEEDS_STONE_TOOL).addTag(ModTags.Blocks.ORES_SULFUR);
+        tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_FIRE_RUBY);
+        tag(Tags.Blocks.ORE_RATES_DENSE).addTag(ModTags.Blocks.ORES_SULFUR);
+        tag(Tags.Blocks.ORES_IN_GROUND_STONE).add(ModBlocks.VOLCANITE_ORE.get(), ModBlocks.SULFUR_ORE.get(),
+                ModBlocks.FIRE_RUBY_ORE.get());
+        tag(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE).add(ModBlocks.DEEPSLATE_VOLCANITE_ORE.get(), ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get());
+
+        // Fire crystal: amethyst's tags (the wall chimes underfoot like an amethyst block); no budding block, no growth.
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.FIRE_CRYSTAL_BLOCK.get(), ModBlocks.SMALL_FIRE_CRYSTAL_BUD.get(),
+                ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get(), ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get(), ModBlocks.FIRE_CRYSTAL_CLUSTER.get());
+        tag(BlockTags.CRYSTAL_SOUND_BLOCKS).add(ModBlocks.FIRE_CRYSTAL_BLOCK.get());
+        tag(Tags.Blocks.BUDS).add(ModBlocks.SMALL_FIRE_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get(),
+                ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get());
+        tag(Tags.Blocks.CLUSTERS).add(ModBlocks.FIRE_CRYSTAL_CLUSTER.get());
+    }
+
+    /**
+     * Sulfur fields and steam fens. Crust and mud are natural ground that carvers cut through; boiling mud is
+     * deliberately not in {@code #dirt} (nothing grows on it). The geyser is no heat source (contract §3).
+     */
+    private void sulfurAndSteam() {
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.SULFUR_CRUST.get(), ModBlocks.BOILING_MUD.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.FUMAROLE.get(), ModBlocks.GEYSER.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.SULFUR_CRUST.get(), ModBlocks.BOILING_MUD.get());
+        tag(ModTags.Blocks.HEAT_SOURCES).add(ModBlocks.FUMAROLE.get(), ModBlocks.BOILING_MUD.get());
     }
 
     /**

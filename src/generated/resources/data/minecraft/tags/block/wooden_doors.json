@@ -2,6 +2,8 @@
   "values": [
     "corruptedadventure:dead_door",
     "corruptedadventure:palm_door",
-    "corruptedadventure:dripshroom_door"
+    "corruptedadventure:dripshroom_door",
+    "corruptedadventure:charred_door",
+    "corruptedadventure:rimeshroom_door"
   ]
 }

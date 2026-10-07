@@ -1,0 +1,12 @@
+{
+  "values": [
+    "minecraft:lava",
+    "minecraft:fire",
+    "minecraft:soul_fire",
+    "minecraft:campfire",
+    "minecraft:soul_campfire",
+    "minecraft:magma_block",
+    "corruptedadventure:smoldering_stone",
+    "corruptedadventure:glowing_fissure"
+  ]
+}

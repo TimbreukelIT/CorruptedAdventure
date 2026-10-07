@@ -3,6 +3,8 @@
     "corruptedadventure:soul_crystal_ore",
     "corruptedadventure:crimson_soul_crystal_ore",
     "#c:ores/sunstone",
-    "#c:ores/turquoise"
+    "#c:ores/turquoise",
+    "#c:ores/volcanite",
+    "#c:ores/fire_ruby"
   ]
 }

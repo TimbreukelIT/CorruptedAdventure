@@ -133,6 +133,112 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.DEW_SOURCE);
         // The dew crystal stages: ModBlockStateProvider.crystalCluster writes their item models.
         basicItem(ModItems.DEW_CRYSTAL.get());
+
+        ring3();
+    }
+
+    private void ring3() {
+        blockItem(ModBlocks.ASH_BLOCK);
+        // Like vanilla's snow item: the one-layer model.
+        withExistingParent(ModBlocks.ASH_LAYER.getId().getPath(), modLoc("block/ash_layer_height2"));
+        blockItem(ModBlocks.ASH_CRUST);
+        blockItem(ModBlocks.SMOLDERING_ASH);
+        blockItem(ModBlocks.PUMICE);
+        blockItem(ModBlocks.PUMICE_STAIRS);
+        blockItem(ModBlocks.PUMICE_SLAB);
+        wallInventory(ModBlocks.PUMICE_WALL.getId().getPath(), modLoc("block/pumice"));
+        blockItem(ModBlocks.POLISHED_PUMICE);
+        blockItem(ModBlocks.POLISHED_PUMICE_STAIRS);
+        blockItem(ModBlocks.POLISHED_PUMICE_SLAB);
+        wallInventory(ModBlocks.POLISHED_PUMICE_WALL.getId().getPath(), modLoc("block/polished_pumice"));
+        blockItem(ModBlocks.PUMICE_BRICKS);
+        blockItem(ModBlocks.PUMICE_BRICK_STAIRS);
+        blockItem(ModBlocks.PUMICE_BRICK_SLAB);
+        wallInventory(ModBlocks.PUMICE_BRICK_WALL.getId().getPath(), modLoc("block/pumice_bricks"));
+        blockItem(ModBlocks.SMOLDERING_STONE);
+
+        ResourceLocation planks = modLoc("block/charred_planks");
+        blockItem(ModBlocks.CHARRED_LOG);
+        blockItem(ModBlocks.CHARRED_WOOD);
+        blockItem(ModBlocks.STRIPPED_CHARRED_LOG);
+        blockItem(ModBlocks.STRIPPED_CHARRED_WOOD);
+        blockItem(ModBlocks.CHARRED_PLANKS);
+        blockItem(ModBlocks.CHARRED_STAIRS);
+        blockItem(ModBlocks.CHARRED_SLAB);
+        fenceInventory(ModBlocks.CHARRED_FENCE.getId().getPath(), planks);
+        blockItem(ModBlocks.CHARRED_FENCE_GATE);
+        basicItem(ModBlocks.CHARRED_DOOR.asItem());
+        withExistingParent(ModBlocks.CHARRED_TRAPDOOR.getId().getPath(), modLoc("block/charred_trapdoor_bottom"));
+        blockItem(ModBlocks.CHARRED_PRESSURE_PLATE);
+        buttonInventory(ModBlocks.CHARRED_BUTTON.getId().getPath(), planks);
+
+        blockItem(ModBlocks.EMBER_LEAVES);
+        flatBlockItem(ModBlocks.FIRE_BLOOM);
+        flatBlockItem(ModBlocks.ASH_SPROUTS);
+        // A flat bush with berries (vanilla's bush has no item of its own: its item is the berries).
+        withExistingParent(ModBlocks.EMBER_BERRY_BUSH.getId().getPath(), mcLoc("item/generated"))
+                .texture("layer0", modLoc("block/ember_berry_bush_stage3"));
+
+        blockItem(ModBlocks.VOLCANITE_ORE);
+        blockItem(ModBlocks.DEEPSLATE_VOLCANITE_ORE);
+        blockItem(ModBlocks.BASALT_VOLCANITE_ORE);
+        blockItem(ModBlocks.SULFUR_ORE);
+        blockItem(ModBlocks.BASALT_SULFUR_ORE);
+        blockItem(ModBlocks.FIRE_RUBY_ORE);
+        blockItem(ModBlocks.DEEPSLATE_FIRE_RUBY_ORE);
+        blockItem(ModBlocks.BASALT_FIRE_RUBY_ORE);
+        basicItem(ModItems.RAW_VOLCANITE.get());
+        basicItem(ModItems.SULFUR.get());
+        basicItem(ModItems.FIRE_RUBY.get());
+        blockItem(ModBlocks.FIRE_CRYSTAL_BLOCK);
+        // The fire crystal stages: ModBlockStateProvider.crystalCluster writes their item models.
+        basicItem(ModItems.FIRE_CRYSTAL.get());
+
+        blockItem(ModBlocks.SULFUR_CRUST);
+        blockItem(ModBlocks.FUMAROLE);
+        blockItem(ModBlocks.BOILING_MUD);
+        blockItem(ModBlocks.GEYSER);
+
+        netherRing3();
+    }
+
+    private void netherRing3() {
+        blockItem(ModBlocks.COLD_LAVA);
+        blockItem(ModBlocks.COLD_LAVA_STAIRS);
+        blockItem(ModBlocks.COLD_LAVA_SLAB);
+        wallInventory(ModBlocks.COLD_LAVA_WALL.getId().getPath(), modLoc("block/cold_lava"));
+        blockItem(ModBlocks.POLISHED_COLD_LAVA);
+        blockItem(ModBlocks.POLISHED_COLD_LAVA_STAIRS);
+        blockItem(ModBlocks.POLISHED_COLD_LAVA_SLAB);
+        wallInventory(ModBlocks.POLISHED_COLD_LAVA_WALL.getId().getPath(), modLoc("block/polished_cold_lava"));
+        blockItem(ModBlocks.COLD_LAVA_BRICKS);
+        blockItem(ModBlocks.COLD_LAVA_BRICK_STAIRS);
+        blockItem(ModBlocks.COLD_LAVA_BRICK_SLAB);
+        wallInventory(ModBlocks.COLD_LAVA_BRICK_WALL.getId().getPath(), modLoc("block/cold_lava_bricks"));
+        blockItem(ModBlocks.NETHER_ICE);
+        blockItem(ModBlocks.PACKED_NETHER_ICE);
+        blockItem(ModBlocks.RIME_NETHERRACK);
+
+        ResourceLocation planks = modLoc("block/rimeshroom_planks");
+        blockItem(ModBlocks.RIMESHROOM_STEM);
+        blockItem(ModBlocks.RIMESHROOM_HYPHAE);
+        blockItem(ModBlocks.STRIPPED_RIMESHROOM_STEM);
+        blockItem(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE);
+        blockItem(ModBlocks.RIMESHROOM_PLANKS);
+        blockItem(ModBlocks.RIMESHROOM_STAIRS);
+        blockItem(ModBlocks.RIMESHROOM_SLAB);
+        fenceInventory(ModBlocks.RIMESHROOM_FENCE.getId().getPath(), planks);
+        blockItem(ModBlocks.RIMESHROOM_FENCE_GATE);
+        basicItem(ModBlocks.RIMESHROOM_DOOR.asItem());
+        withExistingParent(ModBlocks.RIMESHROOM_TRAPDOOR.getId().getPath(), modLoc("block/rimeshroom_trapdoor_bottom"));
+        blockItem(ModBlocks.RIMESHROOM_PRESSURE_PLATE);
+        buttonInventory(ModBlocks.RIMESHROOM_BUTTON.getId().getPath(), planks);
+        blockItem(ModBlocks.RIMESHROOM_CAP);
+        // Flat on its own texture, like the slime stalactite.
+        withExistingParent(ModBlocks.ICE_STALACTITE.getId().getPath(), mcLoc("item/generated"))
+                .texture("layer0", modLoc("item/ice_stalactite"));
+        blockItem(ModBlocks.GLOWING_FISSURE);
+        blockItem(ModBlocks.PRIMORDIAL_ICE);
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

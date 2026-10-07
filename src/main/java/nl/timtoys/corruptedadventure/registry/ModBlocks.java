@@ -5,6 +5,7 @@ import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.DoubleHighBlockItem;
+import net.minecraft.world.level.block.AmethystBlock;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
@@ -34,11 +36,18 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.block.AshSproutsBlock;
 import nl.timtoys.corruptedadventure.block.BarrelCactusBlock;
+import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
+import nl.timtoys.corruptedadventure.block.EmberBerryBushBlock;
+import nl.timtoys.corruptedadventure.block.EmberLeavesBlock;
+import nl.timtoys.corruptedadventure.block.FireBloomBlock;
 import nl.timtoys.corruptedadventure.block.DeadGrassBlock;
 import nl.timtoys.corruptedadventure.block.DesertFlowerBlock;
 import nl.timtoys.corruptedadventure.block.DewSourceBlock;
 import nl.timtoys.corruptedadventure.block.DryShrubBlock;
+import nl.timtoys.corruptedadventure.block.FumaroleBlock;
+import nl.timtoys.corruptedadventure.block.GeyserBlock;
 import nl.timtoys.corruptedadventure.block.GlowMoldBlock;
 import nl.timtoys.corruptedadventure.block.LooseSandTrigger;
 import nl.timtoys.corruptedadventure.block.ModFlowerPots;
@@ -63,6 +72,10 @@ public final class ModBlocks {
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(CorruptedAdventure.MOD_ID);
     /** Vanilla sand's falling dust colour. */
     private static final int SAND_DUST_COLOR = 0xDBD3A0;
+    /** Falling dust colour of the ash crust: warm ash grey. */
+    private static final int ASH_DUST_COLOR = 0x8A8580;
+    /** Ring 3 ores are this much harder than the vanilla ore of their host ("one step above ring 2"). */
+    static final float RING_3_ORE_EXTRA_HARDNESS = 0.5F;
 
     // ---- Ring 1 ----
     public static final DeferredBlock<DeadGrassBlock> DEAD_GRASS_BLOCK = register("dead_grass_block",
@@ -329,14 +342,267 @@ public final class ModBlocks {
             () -> new DewSourceBlock(Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).mapColor(MapColor.WATER).randomTicks()));
     /** The dew crystal stages are vanilla's amethyst bud behaviour and shapes, with the same light levels (1, 2, 4, 5). */
     public static final DeferredBlock<AmethystClusterBlock> SMALL_DEW_CRYSTAL_BUD = register("small_dew_crystal_bud",
-            () -> new AmethystClusterBlock(3.0F, 4.0F, dewCrystal(Blocks.SMALL_AMETHYST_BUD, 1)));
+            () -> new AmethystClusterBlock(3.0F, 4.0F, crystalStage(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
     public static final DeferredBlock<AmethystClusterBlock> MEDIUM_DEW_CRYSTAL_BUD = register("medium_dew_crystal_bud",
-            () -> new AmethystClusterBlock(4.0F, 3.0F, dewCrystal(Blocks.MEDIUM_AMETHYST_BUD, 2)));
+            () -> new AmethystClusterBlock(4.0F, 3.0F, crystalStage(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
     public static final DeferredBlock<AmethystClusterBlock> LARGE_DEW_CRYSTAL_BUD = register("large_dew_crystal_bud",
-            () -> new AmethystClusterBlock(5.0F, 3.0F, dewCrystal(Blocks.LARGE_AMETHYST_BUD, 4)));
+            () -> new AmethystClusterBlock(5.0F, 3.0F, crystalStage(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
     /** Full-grown stage; the default state faces up. */
     public static final DeferredBlock<AmethystClusterBlock> DEW_CRYSTAL_CLUSTER = register("dew_crystal_cluster",
-            () -> new AmethystClusterBlock(7.0F, 3.0F, dewCrystal(Blocks.AMETHYST_CLUSTER, 5)));
+            () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_LIGHT_BLUE)));
+
+    // ---- Ring 3 ----
+    // Volcanic ring: ash ground, pumice, smouldering stone and the charred wood set.
+    /** Plain ash ground: sand's strength and sound, but it does not fall. */
+    public static final DeferredBlock<Block> ASH_BLOCK = register("ash_block",
+            () -> new Block(Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_GRAY)));
+    /**
+     * Vanilla's snow layer (1–8 layers, stacking, survival, no drops without a shovel) with properties that leave out
+     * the random ticks: a snow layer only melts from a random tick, so ash never melts. In no snow tag. Like any full
+     * light-occluder it smothers grass under it, even at one layer (vanilla only spares grass under one snow layer).
+     */
+    public static final DeferredBlock<SnowLayerBlock> ASH_LAYER = register("ash_layer",
+            () -> new SnowLayerBlock(Properties.of().mapColor(MapColor.COLOR_GRAY).replaceable().forceSolidOff()
+                    .strength(0.1F).requiresCorrectToolForDrops().sound(SoundType.SAND)
+                    .isViewBlocking((state, level, pos) -> state.getValue(SnowLayerBlock.LAYERS) >= SnowLayerBlock.MAX_HEIGHT)
+                    .pushReaction(PushReaction.DESTROY)));
+    /**
+     * A crust of ash over caves and lava tubes: falls like sand and caves in when a player walks under it (the
+     * {@code collapsing_blocks} tag, {@link LooseSandTrigger}). Breaks into plain ash.
+     */
+    public static final DeferredBlock<ColoredFallingBlock> ASH_CRUST = register("ash_crust",
+            () -> new ColoredFallingBlock(new ColorRGBA(ASH_DUST_COLOR), Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_GRAY)));
+    /** Ash with glowing cracks, the material of the glowing ash casts: light 2 and an emissive glow overlay. */
+    public static final DeferredBlock<Block> SMOLDERING_ASH = register("smoldering_ash",
+            () -> new Block(Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_BLACK).lightLevel(state -> 2)));
+
+    // Pumice: the tuff family's shapes and sounds in a light porous stone.
+    public static final DeferredBlock<Block> PUMICE = register("pumice", () -> new Block(pumice(Blocks.TUFF)));
+    public static final DeferredBlock<StairBlock> PUMICE_STAIRS = register("pumice_stairs",
+            () -> new StairBlock(PUMICE.get().defaultBlockState(), pumice(Blocks.TUFF_STAIRS)));
+    public static final DeferredBlock<SlabBlock> PUMICE_SLAB = register("pumice_slab",
+            () -> new SlabBlock(pumice(Blocks.TUFF_SLAB)));
+    public static final DeferredBlock<WallBlock> PUMICE_WALL = register("pumice_wall",
+            () -> new WallBlock(pumice(Blocks.TUFF_WALL)));
+    public static final DeferredBlock<Block> POLISHED_PUMICE = register("polished_pumice",
+            () -> new Block(pumice(Blocks.POLISHED_TUFF)));
+    public static final DeferredBlock<StairBlock> POLISHED_PUMICE_STAIRS = register("polished_pumice_stairs",
+            () -> new StairBlock(POLISHED_PUMICE.get().defaultBlockState(), pumice(Blocks.POLISHED_TUFF_STAIRS)));
+    public static final DeferredBlock<SlabBlock> POLISHED_PUMICE_SLAB = register("polished_pumice_slab",
+            () -> new SlabBlock(pumice(Blocks.POLISHED_TUFF_SLAB)));
+    public static final DeferredBlock<WallBlock> POLISHED_PUMICE_WALL = register("polished_pumice_wall",
+            () -> new WallBlock(pumice(Blocks.POLISHED_TUFF_WALL)));
+    public static final DeferredBlock<Block> PUMICE_BRICKS = register("pumice_bricks",
+            () -> new Block(pumice(Blocks.TUFF_BRICKS)));
+    public static final DeferredBlock<StairBlock> PUMICE_BRICK_STAIRS = register("pumice_brick_stairs",
+            () -> new StairBlock(PUMICE_BRICKS.get().defaultBlockState(), pumice(Blocks.TUFF_BRICK_STAIRS)));
+    public static final DeferredBlock<SlabBlock> PUMICE_BRICK_SLAB = register("pumice_brick_slab",
+            () -> new SlabBlock(pumice(Blocks.TUFF_BRICK_SLAB)));
+    public static final DeferredBlock<WallBlock> PUMICE_BRICK_WALL = register("pumice_brick_wall",
+            () -> new WallBlock(pumice(Blocks.TUFF_BRICK_WALL)));
+
+    /**
+     * Blackstone with glowing cracks (light 7; only the cracks glow in the dark, through the emissive overlay of its
+     * model). It does no damage itself; the heat comes from the conditions (it is in {@code #heat_sources}).
+     */
+    public static final DeferredBlock<Block> SMOLDERING_STONE = register("smoldering_stone",
+            () -> new Block(Properties.ofFullCopy(Blocks.BLACKSTONE).lightLevel(state -> 7)));
+
+    // Charred wood: burnt-out wood that no longer burns (decision 2026-10-06), so the crimson set is the template
+    // (no fire odds, not ignited by lava, no furnace fuel): no forest fires next to the lava.
+    public static final DeferredBlock<StrippableLogBlock> CHARRED_LOG = register("charred_log",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_CHARRED_LOG, charred(Blocks.CRIMSON_STEM)));
+    public static final DeferredBlock<StrippableLogBlock> CHARRED_WOOD = register("charred_wood",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_CHARRED_WOOD, charred(Blocks.CRIMSON_HYPHAE)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_CHARRED_LOG = register("stripped_charred_log",
+            () -> new RotatedPillarBlock(charred(Blocks.STRIPPED_CRIMSON_STEM)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_CHARRED_WOOD = register("stripped_charred_wood",
+            () -> new RotatedPillarBlock(charred(Blocks.STRIPPED_CRIMSON_HYPHAE)));
+    public static final DeferredBlock<Block> CHARRED_PLANKS = register("charred_planks",
+            () -> new Block(charred(Blocks.CRIMSON_PLANKS)));
+    public static final DeferredBlock<StairBlock> CHARRED_STAIRS = register("charred_stairs",
+            () -> new StairBlock(CHARRED_PLANKS.get().defaultBlockState(), charred(Blocks.CRIMSON_STAIRS)));
+    public static final DeferredBlock<SlabBlock> CHARRED_SLAB = register("charred_slab",
+            () -> new SlabBlock(charred(Blocks.CRIMSON_SLAB)));
+    public static final DeferredBlock<FenceBlock> CHARRED_FENCE = register("charred_fence",
+            () -> new FenceBlock(charred(Blocks.CRIMSON_FENCE)));
+    public static final DeferredBlock<FenceGateBlock> CHARRED_FENCE_GATE = register("charred_fence_gate",
+            () -> new FenceGateBlock(ModWoodTypes.CHARRED, charred(Blocks.CRIMSON_FENCE_GATE)));
+    public static final DeferredBlock<DoorBlock> CHARRED_DOOR = registerDoor("charred_door",
+            () -> new DoorBlock(ModWoodTypes.CHARRED_SET, charred(Blocks.CRIMSON_DOOR)));
+    public static final DeferredBlock<TrapDoorBlock> CHARRED_TRAPDOOR = register("charred_trapdoor",
+            () -> new TrapDoorBlock(ModWoodTypes.CHARRED_SET, charred(Blocks.CRIMSON_TRAPDOOR)));
+    public static final DeferredBlock<PressurePlateBlock> CHARRED_PRESSURE_PLATE = register("charred_pressure_plate",
+            () -> new PressurePlateBlock(ModWoodTypes.CHARRED_SET, charred(Blocks.CRIMSON_PRESSURE_PLATE)));
+    public static final DeferredBlock<ButtonBlock> CHARRED_BUTTON = register("charred_button",
+            () -> new ButtonBlock(ModWoodTypes.CHARRED_SET, 30, charred(Blocks.CRIMSON_BUTTON)));
+
+    // Ember woods and fire flora: smouldering leaves on the charred trunks, flora on ash ground. Like the charred wood
+    // none of it burns (no fire odds, not ignited by lava): no fires next to the lava.
+    /**
+     * Never decays (the trunk is dead); no light of its own, only the emissive glow overlay of its model (V3 = A).
+     * Nothing spawns on it.
+     */
+    public static final DeferredBlock<EmberLeavesBlock> EMBER_LEAVES = register("ember_leaves",
+            () -> new EmberLeavesBlock(Properties.of().mapColor(MapColor.TERRACOTTA_RED).strength(0.2F).sound(SoundType.GRASS)
+                    .noOcclusion().isValidSpawn((state, level, pos, type) -> false)
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false)
+                    .pushReaction(PushReaction.DESTROY).isRedstoneConductor((state, level, pos) -> false)));
+    /** Poppy's properties on ash ground; Fire Resistance in suspicious stew, like the desert flower. */
+    public static final DeferredBlock<FireBloomBlock> FIRE_BLOOM = register("fire_bloom",
+            () -> new FireBloomBlock(MobEffects.FIRE_RESISTANCE, 4.0F, Properties.ofFullCopy(Blocks.POPPY).mapColor(MapColor.COLOR_ORANGE)));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_FIRE_BLOOM = registerPot("potted_fire_bloom", FIRE_BLOOM);
+    /** Nether sprouts' behaviour (replaceable, instant, shears) in short grass' outline, on ash ground. */
+    public static final DeferredBlock<AshSproutsBlock> ASH_SPROUTS = register("ash_sprouts",
+            () -> new AshSproutsBlock(Properties.ofFullCopy(Blocks.NETHER_SPROUTS).mapColor(MapColor.COLOR_GRAY)
+                    .offsetType(BlockBehaviour.OffsetType.XYZ)));
+    /** Sweet berry bush properties (random ticks: it grows back after picking); rare, ember woods and dormant calderas. */
+    public static final DeferredBlock<EmberBerryBushBlock> EMBER_BERRY_BUSH = register("ember_berry_bush",
+            () -> new EmberBerryBushBlock(Properties.ofFullCopy(Blocks.SWEET_BERRY_BUSH).mapColor(MapColor.COLOR_ORANGE)));
+
+    // Ores: one block per host rock (stone, deepslate, basalt; no blackstone). One step above ring 2: half a point
+    // harder than the vanilla ore of that host, more XP.
+    /** Volcanite, ring 3's main metal: iron pickaxe, XP 3–6, matte; drops {@link ModItems#RAW_VOLCANITE}. */
+    public static final DeferredBlock<DropExperienceBlock> VOLCANITE_ORE = register("volcanite_ore",
+            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.IRON_ORE)));
+    public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_VOLCANITE_ORE = register("deepslate_volcanite_ore",
+            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.DEEPSLATE_IRON_ORE)));
+    public static final DeferredBlock<DropExperienceBlock> BASALT_VOLCANITE_ORE = register("basalt_volcanite_ore",
+            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreInBasalt(Blocks.IRON_ORE)));
+    /** Sulfur: any stone pickaxe, XP 1–3, matte; drops several {@link ModItems#SULFUR}. */
+    public static final DeferredBlock<DropExperienceBlock> SULFUR_ORE = register("sulfur_ore",
+            () -> new DropExperienceBlock(UniformInt.of(1, 3), oreIn(Blocks.COAL_ORE)));
+    public static final DeferredBlock<DropExperienceBlock> BASALT_SULFUR_ORE = register("basalt_sulfur_ore",
+            () -> new DropExperienceBlock(UniformInt.of(1, 3), oreInBasalt(Blocks.COAL_ORE)));
+    /** Fire ruby, a rare gem: iron pickaxe, XP 4–8, faint glow (light 3, emissive overlay); drops {@link ModItems#FIRE_RUBY}. */
+    public static final DeferredBlock<DropExperienceBlock> FIRE_RUBY_ORE = register("fire_ruby_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.IRON_ORE).lightLevel(state -> 3)));
+    public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_FIRE_RUBY_ORE = register("deepslate_fire_ruby_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.DEEPSLATE_IRON_ORE).lightLevel(state -> 3)));
+    /** In the basalt walls of magma chambers (decision 2026-10-07, beyond the contract's first set). */
+    public static final DeferredBlock<DropExperienceBlock> BASALT_FIRE_RUBY_ORE = register("basalt_fire_ruby_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreInBasalt(Blocks.IRON_ORE).lightLevel(state -> 3)));
+
+    // Fire crystal: the geode wall and four stages, like amethyst. No growth (only worldgen places them); use in phase 2.
+    /** The geode wall: amethyst block behaviour (chime when hit), no light and no glow. */
+    public static final DeferredBlock<AmethystBlock> FIRE_CRYSTAL_BLOCK = register("fire_crystal_block",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.COLOR_ORANGE)));
+    /** The stages are vanilla's amethyst bud behaviour, shapes and light levels (1, 2, 4, 5), like the dew crystal. */
+    public static final DeferredBlock<AmethystClusterBlock> SMALL_FIRE_CRYSTAL_BUD = register("small_fire_crystal_bud",
+            () -> new AmethystClusterBlock(3.0F, 4.0F, crystalStage(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
+    public static final DeferredBlock<AmethystClusterBlock> MEDIUM_FIRE_CRYSTAL_BUD = register("medium_fire_crystal_bud",
+            () -> new AmethystClusterBlock(4.0F, 3.0F, crystalStage(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
+    public static final DeferredBlock<AmethystClusterBlock> LARGE_FIRE_CRYSTAL_BUD = register("large_fire_crystal_bud",
+            () -> new AmethystClusterBlock(5.0F, 3.0F, crystalStage(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
+    /** Full-grown stage; the default state faces up. */
+    public static final DeferredBlock<AmethystClusterBlock> FIRE_CRYSTAL_CLUSTER = register("fire_crystal_cluster",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_ORANGE)));
+
+    // Sulfur fields and steam fens: the crust, the vents and the mud. Their heat comes from the conditions
+    // (#heat_sources); vanilla particles and sounds until atmosphere delivers its own (wave 2).
+    /** Top layer of the sulfur fields: sand's strength and sound, but it does not fall (like the salt crust). */
+    public static final DeferredBlock<Block> SULFUR_CRUST = register("sulfur_crust",
+            () -> new Block(Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_YELLOW)));
+    /** A vent in basalt that puffs steam (client-side only). */
+    public static final DeferredBlock<FumaroleBlock> FUMAROLE = register("fumarole",
+            () -> new FumaroleBlock(Properties.ofFullCopy(Blocks.BASALT).mapColor(MapColor.TERRACOTTA_YELLOW)));
+    /** Mud's shape (you sink in a little) with honey's slowness: speed 0.4, jump 0.5. */
+    public static final DeferredBlock<BoilingMudBlock> BOILING_MUD = register("boiling_mud",
+            () -> new BoilingMudBlock(Properties.ofFullCopy(Blocks.MUD).mapColor(MapColor.TERRACOTTA_BROWN)
+                    .speedFactor(0.4F).jumpFactor(0.5F)));
+    /** Throws what stands on it up now and then; random ticks only start the cycle of a worldgen geyser. */
+    public static final DeferredBlock<GeyserBlock> GEYSER = register("geyser",
+            () -> new GeyserBlock(Properties.ofFullCopy(Blocks.BASALT).mapColor(MapColor.TERRACOTTA_LIGHT_GRAY).randomTicks()));
+
+    // ---- Nether ring 3 ----
+    // Frozen Nether: cold lava with its shapes, Nether ice, rime netherrack, the rimeshroom wood set and cap, ice
+    // stalactites and the warm glowing fissures. Rimeshroom is Nether wood: no fire odds, no furnace fuel.
+    // Cold lava: basalt's behaviour and sound in three building variants with their shapes (like the pumice set).
+    public static final DeferredBlock<Block> COLD_LAVA = register("cold_lava", () -> new Block(coldLava()));
+    public static final DeferredBlock<StairBlock> COLD_LAVA_STAIRS = register("cold_lava_stairs",
+            () -> new StairBlock(COLD_LAVA.get().defaultBlockState(), coldLava()));
+    public static final DeferredBlock<SlabBlock> COLD_LAVA_SLAB = register("cold_lava_slab", () -> new SlabBlock(coldLava()));
+    /** Solid for support like vanilla walls ({@code forceSolidOn}), which a copy of a full block does not carry. */
+    public static final DeferredBlock<WallBlock> COLD_LAVA_WALL = register("cold_lava_wall",
+            () -> new WallBlock(coldLava().forceSolidOn()));
+    public static final DeferredBlock<Block> POLISHED_COLD_LAVA = register("polished_cold_lava", () -> new Block(coldLava()));
+    public static final DeferredBlock<StairBlock> POLISHED_COLD_LAVA_STAIRS = register("polished_cold_lava_stairs",
+            () -> new StairBlock(POLISHED_COLD_LAVA.get().defaultBlockState(), coldLava()));
+    public static final DeferredBlock<SlabBlock> POLISHED_COLD_LAVA_SLAB = register("polished_cold_lava_slab",
+            () -> new SlabBlock(coldLava()));
+    public static final DeferredBlock<WallBlock> POLISHED_COLD_LAVA_WALL = register("polished_cold_lava_wall",
+            () -> new WallBlock(coldLava().forceSolidOn()));
+    public static final DeferredBlock<Block> COLD_LAVA_BRICKS = register("cold_lava_bricks", () -> new Block(coldLava()));
+    public static final DeferredBlock<StairBlock> COLD_LAVA_BRICK_STAIRS = register("cold_lava_brick_stairs",
+            () -> new StairBlock(COLD_LAVA_BRICKS.get().defaultBlockState(), coldLava()));
+    public static final DeferredBlock<SlabBlock> COLD_LAVA_BRICK_SLAB = register("cold_lava_brick_slab",
+            () -> new SlabBlock(coldLava()));
+    public static final DeferredBlock<WallBlock> COLD_LAVA_BRICK_WALL = register("cold_lava_brick_wall",
+            () -> new WallBlock(coldLava().forceSolidOn()));
+
+    /**
+     * Packed ice's properties: opaque and solid (decision 2026-10-06), as slippery as ice, and no random ticks, so it
+     * never melts. Mobs spawn on it (the Nether floor). Only Silk Touch takes it along, like vanilla ice.
+     */
+    public static final DeferredBlock<Block> NETHER_ICE = register("nether_ice",
+            () -> new Block(Properties.ofFullCopy(Blocks.PACKED_ICE)));
+    public static final DeferredBlock<Block> PACKED_NETHER_ICE = register("packed_nether_ice",
+            () -> new Block(Properties.ofFullCopy(Blocks.PACKED_ICE).mapColor(MapColor.COLOR_LIGHT_BLUE)));
+    /**
+     * Frosted netherrack: netherrack's strength and sound, but frozen ground (decision 2026-10-07): fire does not burn on it
+     * forever (not in the infiniburn tags), and as a plain {@code Block} (not a {@code NetherrackBlock}) bone meal does not
+     * spread nylium onto it.
+     */
+    public static final DeferredBlock<Block> RIME_NETHERRACK = register("rime_netherrack",
+            () -> new Block(Properties.ofFullCopy(Blocks.NETHERRACK).mapColor(MapColor.TERRACOTTA_LIGHT_BLUE)));
+
+    public static final DeferredBlock<StrippableLogBlock> RIMESHROOM_STEM = register("rimeshroom_stem",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_RIMESHROOM_STEM, rimeshroomBark(Blocks.CRIMSON_STEM)));
+    public static final DeferredBlock<StrippableLogBlock> RIMESHROOM_HYPHAE = register("rimeshroom_hyphae",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE, rimeshroomBark(Blocks.CRIMSON_HYPHAE)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_RIMESHROOM_STEM = register("stripped_rimeshroom_stem",
+            () -> new RotatedPillarBlock(rimeshroom(Blocks.STRIPPED_CRIMSON_STEM)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_RIMESHROOM_HYPHAE = register("stripped_rimeshroom_hyphae",
+            () -> new RotatedPillarBlock(rimeshroom(Blocks.STRIPPED_CRIMSON_HYPHAE)));
+    public static final DeferredBlock<Block> RIMESHROOM_PLANKS = register("rimeshroom_planks",
+            () -> new Block(rimeshroom(Blocks.CRIMSON_PLANKS)));
+    public static final DeferredBlock<StairBlock> RIMESHROOM_STAIRS = register("rimeshroom_stairs",
+            () -> new StairBlock(RIMESHROOM_PLANKS.get().defaultBlockState(), rimeshroom(Blocks.CRIMSON_STAIRS)));
+    public static final DeferredBlock<SlabBlock> RIMESHROOM_SLAB = register("rimeshroom_slab",
+            () -> new SlabBlock(rimeshroom(Blocks.CRIMSON_SLAB)));
+    public static final DeferredBlock<FenceBlock> RIMESHROOM_FENCE = register("rimeshroom_fence",
+            () -> new FenceBlock(rimeshroom(Blocks.CRIMSON_FENCE)));
+    public static final DeferredBlock<FenceGateBlock> RIMESHROOM_FENCE_GATE = register("rimeshroom_fence_gate",
+            () -> new FenceGateBlock(ModWoodTypes.RIMESHROOM, rimeshroom(Blocks.CRIMSON_FENCE_GATE)));
+    public static final DeferredBlock<DoorBlock> RIMESHROOM_DOOR = registerDoor("rimeshroom_door",
+            () -> new DoorBlock(ModWoodTypes.RIMESHROOM_SET, rimeshroom(Blocks.CRIMSON_DOOR)));
+    public static final DeferredBlock<TrapDoorBlock> RIMESHROOM_TRAPDOOR = register("rimeshroom_trapdoor",
+            () -> new TrapDoorBlock(ModWoodTypes.RIMESHROOM_SET, rimeshroom(Blocks.CRIMSON_TRAPDOOR)));
+    public static final DeferredBlock<PressurePlateBlock> RIMESHROOM_PRESSURE_PLATE = register("rimeshroom_pressure_plate",
+            () -> new PressurePlateBlock(ModWoodTypes.RIMESHROOM_SET, rimeshroom(Blocks.CRIMSON_PRESSURE_PLATE)));
+    public static final DeferredBlock<ButtonBlock> RIMESHROOM_BUTTON = register("rimeshroom_button",
+            () -> new ButtonBlock(ModWoodTypes.RIMESHROOM_SET, 30, rimeshroom(Blocks.CRIMSON_BUTTON)));
+    /** The frozen fungus' cap: a wart block (hoe, drops itself). */
+    public static final DeferredBlock<Block> RIMESHROOM_CAP = register("rimeshroom_cap",
+            () -> new Block(Properties.ofFullCopy(Blocks.NETHER_WART_BLOCK).mapColor(MapColor.ICE)));
+
+    /** The slime stalactite's behaviour (hangs or stands, falls without support, never grows) in ice: glass sounds, chime. */
+    public static final DeferredBlock<StalactiteBlock> ICE_STALACTITE = register("ice_stalactite",
+            () -> new StalactiteBlock(Properties.ofFullCopy(SLIME_STALACTITE.get()).mapColor(MapColor.ICE).sound(SoundType.GLASS)
+                    .instrument(NoteBlockInstrument.CHIME)));
+    /**
+     * A warm crack in the frozen ground: light 7 (decision 2026-10-07; only the glowing crack shines in the dark, through the emissive overlay
+     * of its model) and a warmth and heat source for the conditions. No damage of its own.
+     */
+    public static final DeferredBlock<Block> GLOWING_FISSURE = register("glowing_fissure",
+            () -> new Block(Properties.ofFullCopy(Blocks.NETHERRACK).mapColor(MapColor.COLOR_ORANGE).lightLevel(state -> 7)));
+    /**
+     * The key material of Nether ring 3, the core of the ice pillars: blue ice's hardness and slipperiness (opaque, never
+     * melts), but obsidian's blast resistance (decision 2026-10-07), so ghast fireballs and creepers cannot destroy it
+     * without a drop. Only Silk Touch takes it along; otherwise it breaks without a drop.
+     */
+    public static final DeferredBlock<Block> PRIMORDIAL_ICE = register("primordial_ice",
+            () -> new Block(Properties.ofFullCopy(Blocks.BLUE_ICE).explosionResistance(Blocks.OBSIDIAN.getExplosionResistance())));
 
     private ModBlocks() {
     }
@@ -375,14 +641,55 @@ public final class ModBlocks {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_LIGHT_GREEN);
     }
 
-    /** A dew crystal stage: the amethyst stage's behaviour and sounds, light level given per stage, light blue on the map. */
-    private static Properties dewCrystal(Block vanilla, int light) {
-        return Properties.ofFullCopy(vanilla).mapColor(MapColor.COLOR_LIGHT_BLUE).lightLevel(state -> light);
+    /**
+     * A crystal stage (dew, fire): the amethyst stage's behaviour, sounds and light level (1, 2, 4, 5), in its own map
+     * colour.
+     */
+    private static Properties crystalStage(Block vanillaStage, MapColor color) {
+        return Properties.ofFullCopy(vanillaStage).mapColor(color);
     }
 
     /** Dripshroom stem and hyphae (bark outside): dark grey-green on the map. */
     private static Properties dripshroomBark(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_GRAY);
+    }
+
+    /**
+     * A ring 3 ore in a vanilla host: that vanilla ore's look, sound and blast resistance, half a point harder. The tool
+     * tier comes from the {@code needs_*_tool} tags.
+     */
+    private static Properties oreIn(Block vanillaOre) {
+        return Properties.ofFullCopy(vanillaOre).destroyTime(vanillaOre.defaultDestroyTime() + RING_3_ORE_EXTRA_HARDNESS);
+    }
+
+    /** {@link #oreIn} with basalt's colour and sound (the stone variant's ore as the template). */
+    private static Properties oreInBasalt(Block vanillaOre) {
+        return oreIn(vanillaOre).mapColor(MapColor.COLOR_BLACK).sound(SoundType.BASALT);
+    }
+
+    /** Pumice (all shapes): the tuff family's behaviour and sounds, light grey on the map. */
+    private static Properties pumice(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.COLOR_LIGHT_GRAY);
+    }
+
+    /** Charred wood (all shapes): crimson's behaviour and sounds, black on the map. */
+    private static Properties charred(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.COLOR_BLACK);
+    }
+
+    /** Cold lava (all shapes and variants): basalt's strength and sound. */
+    private static Properties coldLava() {
+        return Properties.ofFullCopy(Blocks.BASALT);
+    }
+
+    /** Rimeshroom wood (planks family, stripped): crimson's behaviour in a pale ice blue on the map. */
+    private static Properties rimeshroom(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.COLOR_LIGHT_BLUE);
+    }
+
+    /** Rimeshroom stem and hyphae (frosted bark outside): dark cyan on the map. */
+    private static Properties rimeshroomBark(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_CYAN);
     }
 
     private static <B extends Block> DeferredBlock<B> register(String name, Supplier<B> block) {

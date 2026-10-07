@@ -21,17 +21,40 @@ public final class ModWoodTypes {
     public static final WoodType PALM = new WoodType(CorruptedAdventure.id("palm").toString(), PALM_SET);
 
     /** {@code corruptedadventure:dripshroom}: Nether wood, with the sounds and behaviour of vanilla's crimson set. */
-    public static final BlockSetType DRIPSHROOM_SET = BlockSetType.register(new BlockSetType(CorruptedAdventure.id("dripshroom").toString(),
-            true, true, true, BlockSetType.PressurePlateSensitivity.EVERYTHING, SoundType.NETHER_WOOD,
-            SoundEvents.NETHER_WOOD_DOOR_CLOSE, SoundEvents.NETHER_WOOD_DOOR_OPEN,
-            SoundEvents.NETHER_WOOD_TRAPDOOR_CLOSE, SoundEvents.NETHER_WOOD_TRAPDOOR_OPEN,
-            SoundEvents.NETHER_WOOD_PRESSURE_PLATE_CLICK_OFF, SoundEvents.NETHER_WOOD_PRESSURE_PLATE_CLICK_ON,
-            SoundEvents.NETHER_WOOD_BUTTON_CLICK_OFF, SoundEvents.NETHER_WOOD_BUTTON_CLICK_ON));
+    public static final BlockSetType DRIPSHROOM_SET = BlockSetType.register(netherWoodSet("dripshroom"));
     /** Not registered, for the same reason as {@link #DEAD}; the fence gate takes its sounds from here. */
-    public static final WoodType DRIPSHROOM = new WoodType(CorruptedAdventure.id("dripshroom").toString(), DRIPSHROOM_SET,
-            SoundType.NETHER_WOOD, SoundType.NETHER_WOOD_HANGING_SIGN,
-            SoundEvents.NETHER_WOOD_FENCE_GATE_CLOSE, SoundEvents.NETHER_WOOD_FENCE_GATE_OPEN);
+    public static final WoodType DRIPSHROOM = netherWood("dripshroom", DRIPSHROOM_SET);
+
+    /**
+     * {@code corruptedadventure:charred}: the burnt-out wood of ring 3. It does not burn (decision 2026-10-06), so it is
+     * Nether wood like {@link #DRIPSHROOM_SET}: crimson's sounds and behaviour.
+     */
+    public static final BlockSetType CHARRED_SET = BlockSetType.register(netherWoodSet("charred"));
+    /** Not registered, for the same reason as {@link #DEAD}. */
+    public static final WoodType CHARRED = netherWood("charred", CHARRED_SET);
+
+    /** {@code corruptedadventure:rimeshroom}: the frozen giant fungus of Nether ring 3, Nether wood like {@link #DRIPSHROOM_SET}. */
+    public static final BlockSetType RIMESHROOM_SET = BlockSetType.register(netherWoodSet("rimeshroom"));
+    /** Not registered, for the same reason as {@link #DEAD}. */
+    public static final WoodType RIMESHROOM = netherWood("rimeshroom", RIMESHROOM_SET);
 
     private ModWoodTypes() {
+    }
+
+    /** A block set type with the sounds and behaviour of vanilla's crimson (Nether wood) set. */
+    private static BlockSetType netherWoodSet(String name) {
+        return new BlockSetType(CorruptedAdventure.id(name).toString(),
+                true, true, true, BlockSetType.PressurePlateSensitivity.EVERYTHING, SoundType.NETHER_WOOD,
+                SoundEvents.NETHER_WOOD_DOOR_CLOSE, SoundEvents.NETHER_WOOD_DOOR_OPEN,
+                SoundEvents.NETHER_WOOD_TRAPDOOR_CLOSE, SoundEvents.NETHER_WOOD_TRAPDOOR_OPEN,
+                SoundEvents.NETHER_WOOD_PRESSURE_PLATE_CLICK_OFF, SoundEvents.NETHER_WOOD_PRESSURE_PLATE_CLICK_ON,
+                SoundEvents.NETHER_WOOD_BUTTON_CLICK_OFF, SoundEvents.NETHER_WOOD_BUTTON_CLICK_ON);
+    }
+
+    /** A wood type on {@code set} with crimson's sounds (the fence gate takes its sounds from here). */
+    private static WoodType netherWood(String name, BlockSetType set) {
+        return new WoodType(CorruptedAdventure.id(name).toString(), set,
+                SoundType.NETHER_WOOD, SoundType.NETHER_WOOD_HANGING_SIGN,
+                SoundEvents.NETHER_WOOD_FENCE_GATE_CLOSE, SoundEvents.NETHER_WOOD_FENCE_GATE_OPEN);
     }
 }

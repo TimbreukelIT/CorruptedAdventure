@@ -7,8 +7,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SnowyDirtBlock;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
@@ -65,6 +67,160 @@ final class ModBlockStateProvider extends BlockStateProvider {
                         modLoc("block/crimson_soul_crystal_ore_overlay_side"), modLoc("block/soul_crystal_ore_overlay")), true);
 
         ring2();
+        ring3();
+        netherRing3();
+    }
+
+    /** Nether ring 3: cold lava, Nether ice, rime netherrack, the rimeshroom set (laid out like the dripshroom set). */
+    private void netherRing3() {
+        stoneFamily(ModBlocks.COLD_LAVA.get(), ModBlocks.COLD_LAVA_STAIRS.get(), ModBlocks.COLD_LAVA_SLAB.get(),
+                ModBlocks.COLD_LAVA_WALL.get());
+        stoneFamily(ModBlocks.POLISHED_COLD_LAVA.get(), ModBlocks.POLISHED_COLD_LAVA_STAIRS.get(),
+                ModBlocks.POLISHED_COLD_LAVA_SLAB.get(), ModBlocks.POLISHED_COLD_LAVA_WALL.get());
+        stoneFamily(ModBlocks.COLD_LAVA_BRICKS.get(), ModBlocks.COLD_LAVA_BRICK_STAIRS.get(),
+                ModBlocks.COLD_LAVA_BRICK_SLAB.get(), ModBlocks.COLD_LAVA_BRICK_WALL.get());
+        // Opaque, solid render type (decision 2026-10-06), unlike vanilla's translucent ice.
+        simpleBlock(ModBlocks.NETHER_ICE.get());
+        simpleBlock(ModBlocks.PACKED_NETHER_ICE.get());
+        simpleBlock(ModBlocks.RIME_NETHERRACK.get());
+
+        logBlock(ModBlocks.RIMESHROOM_STEM.get());
+        axisBlock(ModBlocks.RIMESHROOM_HYPHAE.get(),
+                blockTexture(ModBlocks.RIMESHROOM_STEM.get()), blockTexture(ModBlocks.RIMESHROOM_STEM.get()));
+        logBlock(ModBlocks.STRIPPED_RIMESHROOM_STEM.get());
+        axisBlock(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get(),
+                blockTexture(ModBlocks.STRIPPED_RIMESHROOM_STEM.get()), blockTexture(ModBlocks.STRIPPED_RIMESHROOM_STEM.get()));
+        ResourceLocation planks = blockTexture(ModBlocks.RIMESHROOM_PLANKS.get());
+        simpleBlock(ModBlocks.RIMESHROOM_PLANKS.get());
+        stairsBlock(ModBlocks.RIMESHROOM_STAIRS.get(), planks);
+        slabBlock(ModBlocks.RIMESHROOM_SLAB.get(), planks, planks);
+        fenceBlock(ModBlocks.RIMESHROOM_FENCE.get(), planks);
+        fenceGateBlock(ModBlocks.RIMESHROOM_FENCE_GATE.get(), planks);
+        doorBlockWithRenderType(ModBlocks.RIMESHROOM_DOOR.get(),
+                modLoc("block/rimeshroom_door_bottom"), modLoc("block/rimeshroom_door_top"), "cutout");
+        trapdoorBlockWithRenderType(ModBlocks.RIMESHROOM_TRAPDOOR.get(), modLoc("block/rimeshroom_trapdoor"), true, "cutout");
+        pressurePlateBlock(ModBlocks.RIMESHROOM_PRESSURE_PLATE.get(), planks);
+        buttonBlock(ModBlocks.RIMESHROOM_BUTTON.get(), planks);
+        simpleBlock(ModBlocks.RIMESHROOM_CAP.get());
+
+        stalactite(ModBlocks.ICE_STALACTITE.get());
+        glowingCube(ModBlocks.GLOWING_FISSURE.get());
+        simpleBlock(ModBlocks.PRIMORDIAL_ICE.get());
+    }
+
+    /** Ring 3: ash, pumice, smouldering stone and the charred set (laid out like the dripshroom set). */
+    private void ring3() {
+        ModelFile ash = cubeAll(ModBlocks.ASH_BLOCK.get());
+        simpleBlock(ModBlocks.ASH_BLOCK.get(), ash);
+        ashLayer(ash);
+        simpleBlock(ModBlocks.ASH_CRUST.get());
+        glowingCube(ModBlocks.SMOLDERING_ASH.get());
+        stoneFamily(ModBlocks.PUMICE.get(), ModBlocks.PUMICE_STAIRS.get(), ModBlocks.PUMICE_SLAB.get(), ModBlocks.PUMICE_WALL.get());
+        stoneFamily(ModBlocks.POLISHED_PUMICE.get(), ModBlocks.POLISHED_PUMICE_STAIRS.get(),
+                ModBlocks.POLISHED_PUMICE_SLAB.get(), ModBlocks.POLISHED_PUMICE_WALL.get());
+        stoneFamily(ModBlocks.PUMICE_BRICKS.get(), ModBlocks.PUMICE_BRICK_STAIRS.get(),
+                ModBlocks.PUMICE_BRICK_SLAB.get(), ModBlocks.PUMICE_BRICK_WALL.get());
+        glowingCube(ModBlocks.SMOLDERING_STONE.get());
+
+        logBlock(ModBlocks.CHARRED_LOG.get());
+        axisBlock(ModBlocks.CHARRED_WOOD.get(), blockTexture(ModBlocks.CHARRED_LOG.get()), blockTexture(ModBlocks.CHARRED_LOG.get()));
+        logBlock(ModBlocks.STRIPPED_CHARRED_LOG.get());
+        axisBlock(ModBlocks.STRIPPED_CHARRED_WOOD.get(),
+                blockTexture(ModBlocks.STRIPPED_CHARRED_LOG.get()), blockTexture(ModBlocks.STRIPPED_CHARRED_LOG.get()));
+        ResourceLocation planks = blockTexture(ModBlocks.CHARRED_PLANKS.get());
+        simpleBlock(ModBlocks.CHARRED_PLANKS.get());
+        stairsBlock(ModBlocks.CHARRED_STAIRS.get(), planks);
+        slabBlock(ModBlocks.CHARRED_SLAB.get(), planks, planks);
+        fenceBlock(ModBlocks.CHARRED_FENCE.get(), planks);
+        fenceGateBlock(ModBlocks.CHARRED_FENCE_GATE.get(), planks);
+        doorBlockWithRenderType(ModBlocks.CHARRED_DOOR.get(),
+                modLoc("block/charred_door_bottom"), modLoc("block/charred_door_top"), "cutout");
+        trapdoorBlockWithRenderType(ModBlocks.CHARRED_TRAPDOOR.get(), modLoc("block/charred_trapdoor"), true, "cutout");
+        pressurePlateBlock(ModBlocks.CHARRED_PRESSURE_PLATE.get(), planks);
+        buttonBlock(ModBlocks.CHARRED_BUTTON.get(), planks);
+
+        // Fixed colour (no tint); the glowing specks are the emissive overlay.
+        glowingCube(ModBlocks.EMBER_LEAVES.get(), "cutout_mipped");
+        cross(ModBlocks.FIRE_BLOOM.get());
+        simpleBlock(ModBlocks.POTTED_FIRE_BLOOM.get(), models().flowerPotCross("potted_fire_bloom",
+                blockTexture(ModBlocks.FIRE_BLOOM.get())).renderType("cutout"));
+        cross(ModBlocks.ASH_SPROUTS.get());
+        // Like vanilla's sweet berry bush: one cross model per age.
+        getVariantBuilder(ModBlocks.EMBER_BERRY_BUSH.get()).forAllStates(state -> {
+            String name = "ember_berry_bush_stage" + state.getValue(SweetBerryBushBlock.AGE);
+            return ConfiguredModel.builder().modelFile(crossModel(name, modLoc("block/" + name))).build();
+        });
+
+        ring3Ores();
+
+        // Sulfur fields and steam fens.
+        simpleBlock(ModBlocks.SULFUR_CRUST.get());
+        vent(ModBlocks.FUMAROLE.get());
+        simpleBlock(ModBlocks.BOILING_MUD.get());
+        vent(ModBlocks.GEYSER.get());
+    }
+
+    /**
+     * Ring 3 ores over vanilla stone, deepslate (column texture) and basalt (column texture), one overlay per ore shared
+     * by all hosts. Only the fire ruby glows; volcanite and sulfur are matte.
+     */
+    private void ring3Ores() {
+        CubeTextures stone = CubeTextures.all(mcLoc("block/stone"));
+        CubeTextures deepslate = new CubeTextures(mcLoc("block/deepslate_top"), mcLoc("block/deepslate"), mcLoc("block/deepslate_top"));
+        CubeTextures basalt = new CubeTextures(mcLoc("block/basalt_top"), mcLoc("block/basalt_side"), mcLoc("block/basalt_top"));
+        CubeTextures volcanite = CubeTextures.all(modLoc("block/volcanite_ore_overlay"));
+        CubeTextures sulfur = CubeTextures.all(modLoc("block/sulfur_ore_overlay"));
+        CubeTextures fireRuby = CubeTextures.all(modLoc("block/fire_ruby_ore_overlay"));
+        oreWithOverlay(ModBlocks.VOLCANITE_ORE.get(), stone.side(), stone, volcanite, false);
+        oreWithOverlay(ModBlocks.DEEPSLATE_VOLCANITE_ORE.get(), deepslate.side(), deepslate, volcanite, false);
+        oreWithOverlay(ModBlocks.BASALT_VOLCANITE_ORE.get(), basalt.side(), basalt, volcanite, false);
+        oreWithOverlay(ModBlocks.SULFUR_ORE.get(), stone.side(), stone, sulfur, false);
+        oreWithOverlay(ModBlocks.BASALT_SULFUR_ORE.get(), basalt.side(), basalt, sulfur, false);
+        oreWithOverlay(ModBlocks.FIRE_RUBY_ORE.get(), stone.side(), stone, fireRuby, true);
+        oreWithOverlay(ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get(), deepslate.side(), deepslate, fireRuby, true);
+        oreWithOverlay(ModBlocks.BASALT_FIRE_RUBY_ORE.get(), basalt.side(), basalt, fireRuby, true);
+
+        // Fire crystal: the wall is a plain cube; the stages glow like the dew crystal stages.
+        simpleBlock(ModBlocks.FIRE_CRYSTAL_BLOCK.get());
+        crystalCluster(ModBlocks.SMALL_FIRE_CRYSTAL_BUD.get(), true);
+        crystalCluster(ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get(), true);
+        crystalCluster(ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get(), true);
+        crystalCluster(ModBlocks.FIRE_CRYSTAL_CLUSTER.get(), true);
+    }
+
+    /** A vent: its opening {@code <name>_top} on top, the rock {@code <name>_side} on the sides and the bottom. */
+    private void vent(Block block) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        ResourceLocation side = modLoc("block/" + name + "_side");
+        simpleBlock(block, models().cubeBottomTop(name, side, side, modLoc("block/" + name + "_top")));
+    }
+
+    /**
+     * A block whose glowing parts glow in the dark (decision 2026-10-06: two layers): the base texture {@code <name>}
+     * lit normally, with the emissive cutout overlay {@code <name>_glow} (only the glowing pixels) on top, the ore model.
+     */
+    private void glowingCube(Block block) {
+        glowingCube(block, "cutout");
+    }
+
+    private void glowingCube(Block block, String renderType) {
+        ResourceLocation base = blockTexture(block);
+        overlayCube(block, base, CubeTextures.all(base), CubeTextures.all(base.withSuffix("_glow")), true, renderType);
+    }
+
+    /**
+     * Like vanilla's snow layer: layers 1–7 reuse vanilla's {@code snow_height2..14} shapes with the ash texture, 8 layers
+     * is the ash block's model. The item uses the one-layer model.
+     */
+    private void ashLayer(ModelFile full) {
+        ResourceLocation ash = blockTexture(ModBlocks.ASH_BLOCK.get());
+        getVariantBuilder(ModBlocks.ASH_LAYER.get()).forAllStates(state -> {
+            int layers = state.getValue(SnowLayerBlock.LAYERS);
+            ModelFile model = layers == SnowLayerBlock.MAX_HEIGHT ? full
+                    : models().withExistingParent("ash_layer_height" + 2 * layers, mcLoc("block/snow_height" + 2 * layers))
+                            .texture("particle", ash).texture("texture", ash);
+            return ConfiguredModel.builder().modelFile(model).build();
+        });
     }
 
     private void ring2() {
@@ -141,7 +297,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
         simpleBlock(ModBlocks.DRIPSHROOM_CAP.get());
         simpleBlock(ModBlocks.DRIPSHROOM_LAMP.get());
         glowMold();
-        slimeStalactite();
+        stalactite(ModBlocks.SLIME_STALACTITE.get());
         cross(ModBlocks.SPORE_SPROUTS.get());
         simpleBlock(ModBlocks.DEW_SOURCE.get());
         crystalCluster(ModBlocks.SMALL_DEW_CRYSTAL_BUD.get(), true);
@@ -176,13 +332,14 @@ final class ModBlockStateProvider extends BlockStateProvider {
 
     /**
      * Ten cutout models like vanilla's pointed dripstone (one per direction and thickness, same parent), each on its own
-     * texture; the waterlogged property does not change the model.
+     * texture {@code <name>_<direction>_<thickness>}; the waterlogged property does not change the model. Slime and ice.
      */
-    private void slimeStalactite() {
-        getVariantBuilder(ModBlocks.SLIME_STALACTITE.get()).forAllStatesExcept(state -> {
+    private void stalactite(StalactiteBlock block) {
+        String blockName = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        getVariantBuilder(block).forAllStatesExcept(state -> {
             String direction = state.getValue(StalactiteBlock.TIP_DIRECTION).getSerializedName();
             String thickness = state.getValue(StalactiteBlock.THICKNESS).getSerializedName();
-            String name = "slime_stalactite_" + direction + "_" + thickness;
+            String name = blockName + "_" + direction + "_" + thickness;
             ModelFile model = models().withExistingParent(name, mcLoc("block/pointed_dripstone"))
                     .texture("cross", modLoc("block/" + name)).renderType("cutout");
             return ConfiguredModel.builder().modelFile(model).build();
@@ -206,7 +363,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
     /**
      * A crystal on any face, like vanilla's amethyst cluster: one cutout cross model, rotated per {@code facing} exactly
      * as vanilla's blockstate (the same model when waterlogged), and a flat item with the block texture on vanilla's
-     * amethyst bud transforms. Shared by every crystal block (salt crystal, the dew crystal stages). An {@code emissive}
+     * amethyst bud transforms. Shared by every crystal block (salt crystal, the dew and fire crystal stages). An {@code emissive}
      * crystal glows evenly in the dark (NeoForge {@code neoforge_data}, rendering only); that needs its own elements, a
      * copy of vanilla's {@code block/cross}, because the vanilla parent allows no extra data on its elements.
      */
@@ -299,7 +456,11 @@ final class ModBlockStateProvider extends BlockStateProvider {
     /** Cross model like vanilla plants; cutout, so the texture only has alpha 0 or 255. */
     private void cross(Block block) {
         String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
-        simpleBlock(block, models().cross(name, blockTexture(block)).renderType("cutout"));
+        simpleBlock(block, crossModel(name, blockTexture(block)));
+    }
+
+    private ModelFile crossModel(String name, ResourceLocation texture) {
+        return models().cross(name, texture).renderType("cutout");
     }
 
     /** One box with the same bounds as {@code BarrelCactusBlock.SHAPE} (3–13 px wide, 10 px high). */
@@ -352,8 +513,14 @@ final class ModBlockStateProvider extends BlockStateProvider {
      */
     private void oreWithOverlay(Block block, ResourceLocation particle, CubeTextures base, CubeTextures overlay,
                                 boolean emissive) {
+        overlayCube(block, particle, base, overlay, emissive, "cutout");
+    }
+
+    /** {@link #oreWithOverlay} with a chosen render type (leaves: {@code cutout_mipped}). */
+    private void overlayCube(Block block, ResourceLocation particle, CubeTextures base, CubeTextures overlay,
+                             boolean emissive, String renderType) {
         BlockModelBuilder model = models().withExistingParent(BuiltInRegistries.BLOCK.getKey(block).getPath(), mcLoc("block/block"))
-                .renderType("cutout")
+                .renderType(renderType)
                 .texture("particle", particle);
         base.apply(model, "base");
         overlay.apply(model, "overlay");

@@ -46,7 +46,13 @@ final class ModDataMapProvider extends DataMapProvider {
                 // Like nether wart blocks, shroomlight and glow lichen.
                 .add(ModBlocks.DRIPSHROOM_CAP.getId(), new Compostable(0.85F), false)
                 .add(ModBlocks.DRIPSHROOM_LAMP.getId(), new Compostable(0.65F), false)
-                .add(ModBlocks.GLOW_MOLD.getId(), new Compostable(0.5F), false);
+                .add(ModBlocks.GLOW_MOLD.getId(), new Compostable(0.5F), false)
+                // Ring 3: like leaves and short grass (0.3) and flowers (0.65).
+                .add(ModBlocks.EMBER_LEAVES.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.ASH_SPROUTS.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.FIRE_BLOOM.getId(), new Compostable(0.65F), false)
+                // Nether ring 3: like the nether wart block.
+                .add(ModBlocks.RIMESHROOM_CAP.getId(), new Compostable(0.85F), false);
     }
 
     @SafeVarargs

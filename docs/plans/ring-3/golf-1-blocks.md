@@ -28,7 +28,7 @@ Bron: `fase-1-wereld.md` Ring 3 "Unieke blokken" + "Uitwerking sparring ring 3";
   - Modder: vertraagt als honing of poedersneeuw (keuze agent).
   - Geiser: block entity of scheduled tick; periodieke duw omhoog op entities erboven, server-side, met de interval in een constante.
   - Hittebronnen via de tag.
-- **51 — Nether-3-blokken.** Koudlava-set (als basalt), `nether_ice`/`packed_nether_ice` (glad als ijs, smelt niet: eigen `IceBlock`-variant zonder smelten), `rime_netherrack` (als netherrack), rijpzwam-houtset (Nether-hout, niet brandbaar), `rimeshroom_cap` (wratblok), `ice_stalactite` (`StalactiteBlock`), `glowing_fissure` (licht, warmtebron).
+- **51 — Nether-3-blokken.** Koudlava-set (als basalt), `nether_ice`/`packed_nether_ice` (opaak/solid, glad als ijs, smelt niet: gewone `Block` als kopie van `packed_ice`, besluit 2026-10-06), `rime_netherrack` (als netherrack), rijpzwam-houtset (Nether-hout, niet brandbaar), `rimeshroom_cap` (wratblok), `ice_stalactite` (`StalactiteBlock`), `glowing_fissure` (licht 7, warmtebron).
 - **52 — oerijs** `primordial_ice`: loot alleen met Silk Touch, anders niets.
 
 ## Tags (inhoud)
@@ -53,3 +53,192 @@ Gedrag server-side (instorten, geiser-duw, Silk Touch). Particles via `animateTi
 
 ## Bij afronding
 Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onderaan dit bestand; rapport aan main.
+
+## CODEBASE-delta
+
+**Mappenstructuur / Belangrijke classes**
+- `block/ModWoodTypes.java`: + `CHARRED_SET` (geregistreerd, `corruptedadventure:charred`) en `CHARRED` (niet geregistreerd); Nether-hout-sets via de helpers `netherWoodSet`/`netherWood` (crimson-geluiden; `DRIPSHROOM_*` gebruikt ze nu ook).
+- `datagen/ModBlockStateProvider.java`: + `ring3()`, `ashLayer(full)` (lagen 1–7 = vanilla `snow_height2..14` als parent met de as-texture, 8 = het asblok-model), `glowingCube(block)` = twee lagen: basis `<naam>` + emissive cutout-overlay `<naam>_glow` (via `oreWithOverlay`).
+- `datagen/ModBlockLootProvider.java`: + `ring3()`, `createAshLayerTable` (aantal = lagen).
+- `datagen/lang/Ring3BlockNames.java`: namen (en + nl) van alle ring 3-/Nether-3-blokken en -items.
+- 38b: `block/EmberLeavesBlock.java` (`LeavesBlock` die nooit vervalt: geen random ticks, `decaying` false), `block/AshPlantSoil.java` (`supports(ground)`: `#ash_plant_soil`, een aslaag telt alleen vol (8)), `block/FireBloomBlock.java` (`FlowerBlock`, grond `AshPlantSoil`), `block/AshSproutsBlock.java` (`BushBlock`, korte-gras-omtrek met offset, grond `AshPlantSoil`), `block/EmberBerryBushBlock.java` (`SweetBerryBushBlock`, grond `AshPlantSoil` of `moss_block`, pick-block = de struik). `block/LooseSandTrigger.java` leest nu de tag `collapsing_blocks` (los zand, askorst) i.p.v. `loose_sand`. `ModFlowerPots` + `potted_fire_bloom`. `ModDataMapProvider` compost: `ember_leaves`/`ash_sprouts` 0,3, `fire_bloom` 0,65. `ModBlockStateProvider`: `overlayCube(…, renderType)` (basis van `oreWithOverlay`), `glowingCube(block, renderType)`. `ModBlockLootProvider`: `createBerryBushTable` (vanilla-tabel bes-struik, `sweet_berries`).
+- Tests 38b: `block/AshPlantSoilTest.java` (tag met de hand gebonden: as, grove aarde, volle aslaag ja; aslaag 1/7, steen, gras, aarde, askorst nee; bes-struik ook op mos), `LooseSandTriggerTest` (tag gebonden; askorst stort in, asblok niet), `ModBlocksTest` (volgorde, smeulblad tikt/vervalt nooit en geeft geen licht, smeulende as licht 2, flora niet `ignitedByLava`, bes-struik tikt wel).
+- 40/40b: `registry/ModBlocks`: `oreIn(vanillaOre)` (kopie + `destroyTime` + `RING_3_ORE_EXTRA_HARDNESS` 0,5), `oreInBasalt(vanillaOre)`, `crystalStage(vanillaStage, color)` (vervangt `dewCrystal`; dauw- en vuurkristalstadia = amethist-gedrag en -licht 1/2/4/5 in eigen kaartkleur). `ModBlockStateProvider.ring3Ores()` (basis vanilla `stone`, `deepslate`+`_top`, `basalt_side`+`_top`); `crystalCluster` nu ook voor de vuurkristalstadia. `ModBlockLootProvider.createCrystalClusterTable(block, crystal)` (amethist-clustertabel, gedeeld door dauw- en vuurkristal; de dauwtabel is niet meer inline). Tests: `ModBlocksTest` (ertsen XP/licht/hardheid/blastweerstand, losse items na `dew_crystal`, vuurkristal licht 1/2/4/5, wand zonder licht).
+- Tests: `block/AshLayerTest.java` (vormen = vanilla-sneeuwlaag per laag, alleen `layers`, nooit random ticks, volle stapel blokkeert zicht); `ModWoodTypesTest` + charred; `ModBlocksTest` + ring 3-volgorde (direct na `dew_crystal_cluster`), smeulsteen licht 7 zonder `emissiveRendering`, verkoold hout niet `ignitedByLava`, asblok valt niet.
+- 46: `block/FumaroleBlock.java` (alleen `animateTick`: vanilla `CAMPFIRE_COSY_SMOKE`/`CLOUD` via gewone `addParticle` (de particle-instelling van de client telt) + zacht `LAVA_EXTINGUISH` zolang `GeyserBlock.ventOpen`), `block/BoilingMudBlock.java` (`MudBlock`: 14 px botsing; traagheid via properties `speedFactor` 0,4 / `jumpFactor` 0,5 = honing; bubbels `BUBBLE_POP` client-side), `block/GeyserBlock.java` (scheduled tick elke `INTERVAL_TICKS` 100; `onPlace` start de cyclus, een random tick start hem voor worldgen-geisers zonder geplande tick; uitbarsting alleen als `ventOpen(level, pos)` (geen botsvorm op de opening; dezelfde regel voor de rook van geiser en fumarole): entities in `column(pos)` (`REACH` 4 blokken boven de geiser) met hun middelpunt boven de geiser (`overVent`), geen spectators/vliegende spelers, krijgen `launched()` = verticaal max(y, `LAUNCH_SPEED` 0,9), `hurtMarked`, valafstand 0; `CLOUD` via `sendParticles` + `GENERIC_EXTINGUISH_FIRE`; `fallOn` zonder valschade; `animateTick` witte rook). `ModBlockStateProvider.vent(block)` (`cubeBottomTop`: `<naam>_side` zijkant en onder, `<naam>_top` boven). `ModBlockTagsProvider.sulfurAndSteam()`. Tests: `block/GeyserBlockTest.java` (kolom, duw, alleen gecentreerde entities), `ModBlocksTest` (volgorde na `fire_crystal_cluster`; alleen de geiser tikt; modder = honing-snelheid/-sprong in modder-botsvorm; niets valt of geeft licht).
+- 51: `block/ModWoodTypes.java` + `RIMESHROOM_SET` (geregistreerd, `corruptedadventure:rimeshroom`) en `RIMESHROOM` (niet geregistreerd), via `netherWoodSet`/`netherWood`. `registry/ModBlocks`: helpers `coldLava()` (kopie `basalt`), `rimeshroom(vanilla)` (`COLOR_LIGHT_BLUE`), `rimeshroomBark(vanilla)` (`TERRACOTTA_CYAN`). `ModBlockStateProvider.netherRing3()`; `slimeStalactite()` is nu `stalactite(StalactiteBlock)` (texture `<naam>_<richting>_<dikte>`, voor slijm en ijs). `ModItemModelProvider.netherRing3()`, `ModBlockLootProvider.netherRing3()`, `ModBlockTagsProvider.netherRing3()`. `ModItemTagsProvider`: `rimeshroom_stems` (kopie) in `#logs`, rijpzwam-items in `#non_flammable_wood`. `ModDataMapProvider` compost `rimeshroom_cap` 0,85 (als netherwratblok). Tests: `ModWoodTypesTest` + rimeshroom; `ModBlocksTest` (volgorde direct na `geyser`; Nether-ijs opaak, glad als ijs, geen random ticks; rijpzwamhout niet `ignitedByLava`; scheur licht 7 zonder `emissiveRendering`; ijspegel glasgeluid en `CHIME`, tikt niet; elk rijpzwam-hout-item staat in de gegenereerde `#non_flammable_wood`).
+- 52: `primordial_ice` in `ModBlocks` (na `glowing_fissure`), states/items/loot/tags/lang in de `netherRing3()`-helpers. Tests: `ModBlocksTest` (volgorde; de ijstest loopt nu over alle drie de ijsblokken met hun vanilla-bron: `packed_ice` voor Nether-ijs, `blue_ice` voor oerijs (hardheid, gladheid, opaak, tikt niet, geen licht); blastweerstand oerijs = obsidiaan). S: TNT ernaast laat oerijs staan, pak-Netherijs niet. De oerijs-loot (alleen Silk Touch) is getest in S, niet als unit test (loottabellen bestaan pas met een server).
+
+**Registries — Blocks (ring 3, volgorde = creative tab, direct na Nether-ring 2)**
+| Registry-naam | Ring | Class | Opmerking |
+|---|---|---|---|
+| `ash_block` | 3 | `Block` | kopie `sand` (valt niet) + `COLOR_GRAY`; dropt zichzelf; `#mineable/shovel`, `#overworld_carver_replaceables`, `ring_3_stones`, `#goats_spawnable_on`; `cube_all` |
+| `ash_layer` | 3 | `SnowLayerBlock` (vanilla) | eigen properties = vanilla-sneeuwlaag zonder `randomTicks` (smelt dus nooit), `COLOR_GRAY`, `SoundType.SAND`, shovel nodig voor drop; loot = `ash_layer` × lagen; `#replaceable`, `#inside_step_sound_blocks`, `#mineable/shovel`; **geen** sneeuwtag; smoort gras eronder (ook bij 1 laag); models `ash_layer_height2..14` (parent vanilla `snow_height*`), 8 lagen = `ash_block` |
+| `ash_crust` | 3 | `ColoredFallingBlock` (vanilla) | kopie `sand` + `COLOR_GRAY`, stofkleur `8A8580`; stort in onder spelers (`collapsing_blocks`, `LooseSandTrigger`); loot `ash_block` (Silk Touch → zichzelf); `#mineable/shovel`, `#overworld_carver_replaceables`; geen plantgrond |
+| `smoldering_ash` | 3 | `Block` | kopie `sand` (valt niet) + `COLOR_BLACK` + licht 2; dropt zichzelf; `#mineable/shovel`; `glowingCube` (`smoldering_ash` + `smoldering_ash_glow`); materiaal van de gloeiende afgietsels (49) |
+| `pumice`, `polished_pumice`, `pumice_bricks` (+ `_stairs`, `_slab`, `_wall`; bakstenen: `pumice_brick_*`) | 3 | vanilla-classes | kopie tuff-familie (geluiden tuff/polished tuff/tuff bricks) + `COLOR_LIGHT_GRAY`; dropt zichzelf; `#mineable/pickaxe`, `#stairs`/`#slabs`/`#walls`; `pumice` ook `#overworld_carver_replaceables`, `ring_3_stones`, `#goats_spawnable_on` |
+| `smoldering_stone` | 3 | `Block` | kopie `blackstone` + licht 7; geen schade; `heat_sources`, `warmth_sources`, `#mineable/pickaxe`, `#overworld_carver_replaceables`; model `glowingCube` (basis `smoldering_stone` + emissive `smoldering_stone_glow`) |
+| `charred_log`, `charred_wood` (+ `stripped_*`), `charred_planks`, `_stairs`, `_slab`, `_fence`, `_fence_gate`, `_door`, `_trapdoor`, `_pressure_plate`, `_button` | 3 | `StrippableLogBlock` / vanilla-classes | kopie crimson-set + `COLOR_BLACK`; **niet brandbaar** (geen vuurkansen, niet `ignitedByLava`, items in `#non_flammable_wood` = geen brandstof); `BlockSetType` `corruptedadventure:charred` (nether-hout-geluiden), knop 30 ticks; `charred_logs` (in `#logs`, niet `#logs_that_burn`), `#planks`, `#wooden_*`, `c:stripped_*`, `c:fence_gates/wooden`; deur/valluik cutout |
+| `ember_leaves` | 3 | `EmberLeavesBlock` | eigen properties (eikenblad zonder `randomTicks`/`ignitedByLava`, niets spawnt erop) + `TERRACOTTA_RED`; **geen bloklicht** (V3 = A), vervalt nooit; loot als mangrovebladeren (schaar/Silk Touch → zichzelf, anders soms stokken); `#leaves`, `#mineable/hoe`; `glowingCube` `cutout_mipped` (`ember_leaves` + `ember_leaves_glow`); compost 0,3 |
+| `fire_bloom` | 3 | `FireBloomBlock` | kopie `poppy` + `COLOR_ORANGE`, stew Fire Resistance 4 s; grond `AshPlantSoil`; `#small_flowers`; kruismodel cutout, plat item; niet brandbaar; compost 0,65 |
+| `potted_fire_bloom` | 3 | `FlowerPotBlock` (NeoForge-constructor) | **geen item**; `ModFlowerPots`; `flower_pot_cross`; `#flower_pots` |
+| `ash_sprouts` | 3 | `AshSproutsBlock` | kopie `nether_sprouts` + `COLOR_GRAY`, offset XYZ; grond `AshPlantSoil`; alleen met schaar; `#replaceable`, `#replaceable_by_trees`, `#sword_efficient`; kruismodel, plat item; compost 0,3 |
+| `ember_berry_bush` | 3 | `EmberBerryBushBlock` | kopie `sweet_berry_bush` + `COLOR_ORANGE` (random ticks: groeit terug na plukken, doornen); grond `AshPlantSoil` of `moss_block`; plukken/loot = vanilla `sweet_berries` (eigen voedsel fase 2); `#sword_efficient`, `#fall_damage_resetting`; per leeftijd kruismodel `ember_berry_bush_stage0..3`, item plat op `stage3` |
+| `volcanite_ore`, `deepslate_volcanite_ore`, `basalt_volcanite_ore` | 3 | `DropExperienceBlock` (XP 3–6) | kopie `iron_ore` / `deepslate_iron_ore` (basalt: `iron_ore` + `COLOR_BLACK` + `SoundType.BASALT`), hardheid vanilla + 0,5 (`RING_3_ORE_EXTRA_HARDNESS`); loot `createOreDrop` → `raw_volcanite`; `c:ores/volcanite` (in `c:ores`), `#mineable/pickaxe`, `#needs_iron_tool`, `c:ore_rates/singular`, `c:ores_in_ground/stone`/`/deepslate` (basalt: geen conventietag); model `oreWithOverlay` (vanilla `stone` / `deepslate`+`_top` / `basalt_side`+`_top` + `volcanite_ore_overlay`, mat) |
+| `sulfur_ore`, `basalt_sulfur_ore` | 3 | `DropExperienceBlock` (XP 1–3) | kopie `coal_ore` (basalt als hierboven) + 0,5; loot 2–4 `sulfur` (Fortune, zoals koper; Silk Touch → zichzelf); `c:ores/sulfur`, `#needs_stone_tool`, `c:ore_rates/dense`; overlay `sulfur_ore_overlay` mat |
+| `fire_ruby_ore`, `deepslate_fire_ruby_ore`, `basalt_fire_ruby_ore` | 3 | `DropExperienceBlock` (XP 4–8) | kopie `iron_ore` / `deepslate_iron_ore` (basalt als hierboven) + 0,5 + **licht 3**; **contract §3 bijwerken:** vuurrobijn krijgt ook een basaltvariant (besluit gebruiker 2026-10-07; magmakamerwanden), zelfde overlay, dus geen nieuwe texture voor T; loot → `fire_ruby`; `c:ores/fire_ruby`, `#needs_iron_tool`, `c:ore_rates/singular`; overlay `fire_ruby_ore_overlay` **emissive** |
+| `fire_crystal_block` | 3 | `AmethystBlock` (vanilla) | kopie `amethyst_block` + `COLOR_ORANGE`; geen licht, niet emissive (wand van de geode); dropt zichzelf; `#mineable/pickaxe`, `#crystal_sound_blocks`; `cube_all` |
+| `small_`/`medium_`/`large_fire_crystal_bud`, `fire_crystal_cluster` | 3 | `AmethystClusterBlock` (vanilla; 3/4, 4/3, 5/3, 7/3) | kopie van de amethist-stadia + `COLOR_ORANGE`, licht 1/2/4/5; geen groei (alleen worldgen, 41b); loot: knoppen alleen Silk Touch, cluster Silk Touch → cluster, pickaxe → 4 `fire_crystal` (Fortune), anders 2 (`createCrystalClusterTable`, gedeeld met dauw); `#mineable/pickaxe`, `c:buds` / `c:clusters`; emissive kruis via `crystalCluster(…, true)`, plat item |
+| `sulfur_crust` | 3 | `Block` | kopie `sand` (valt niet, zoals `salt_crust`) + `COLOR_YELLOW`; dropt zichzelf (geen zwavel: die komt uit de ertsen; V1, gebruiker); `#mineable/shovel`, `#overworld_carver_replaceables`; `cube_all` |
+| `fumarole` | 3 | `FumaroleBlock` | kopie `basalt` + `TERRACOTTA_YELLOW`; stoompuf client-side (`animateTick`, vanilla-particles tot A `steam_puff` levert); `heat_sources`; dropt zichzelf; `#mineable/pickaxe`; model `vent` (`fumarole_top` / `fumarole_side`) |
+| `boiling_mud` | 3 | `BoilingMudBlock` | kopie `mud` + `TERRACOTTA_BROWN`, `speedFactor` 0,4, `jumpFactor` 0,5 (honing); `heat_sources`; dropt zichzelf; `#mineable/shovel`, `#overworld_carver_replaceables`, **niet** `#dirt`; `cube_all` |
+| `geyser` | 3 | `GeyserBlock` | kopie `basalt` + `TERRACOTTA_LIGHT_GRAY` + random ticks (start van de cyclus); duw elke 100 ticks server-side, ~4,9 blokken hoog; landen erop geeft geen valschade; **niet** in `heat_sources` (contract); loot alleen met Silk Touch, anders niets (V2, gebruiker); `#mineable/pickaxe`; model `vent` (`geyser_top` / `geyser_side`) |
+| `cold_lava`, `polished_cold_lava`, `cold_lava_bricks` (+ `_stairs`, `_slab`, `_wall`; bakstenen: `cold_lava_brick_*`) | N3 | vanilla-classes | kopie `basalt` (sterkte, geluid, kaartkleur); muren `forceSolidOn`; dropt zichzelf (platen ×2 dubbel); `#mineable/pickaxe`, `#stairs`/`#slabs`/`#walls`; `cold_lava` ook `#base_stone_nether` (Nether-carvers snijden erdoor); `stoneFamily` |
+| `nether_ice`, `packed_nether_ice` | N3 | `Block` | kopie `packed_ice` (opaak/solid, glad als ijs, geen random ticks = smelt nooit; mobs spawnen erop); `packed_nether_ice` `COLOR_LIGHT_BLUE`; loot alleen Silk Touch (als vanilla-ijs); alle ijstags van `packed_ice` (`#ice`, `#snow_layer_cannot_survive_on`, `#geode_invalid_blocks`, `#snaps_goat_horn`) + `#mineable/pickaxe`, `#nether_carver_replaceables`; `cube_all` solid |
+| `rime_netherrack` | N3 | `Block` | kopie `netherrack` + `TERRACOTTA_LIGHT_BLUE`; **niet** in `#infiniburn_*` (vuur dooft op bevroren grond); geen `NetherrackBlock`, dus beendermeel verspreidt er geen nylium op, en niet in `#nylium`; dropt zichzelf; `#base_stone_nether`, `c:netherracks`, `#mineable/pickaxe`; `cube_all` |
+| `rimeshroom_stem`, `_hyphae` (+ `stripped_*`), `rimeshroom_planks`, `_stairs`, `_slab`, `_fence`, `_fence_gate`, `_door`, `_trapdoor`, `_pressure_plate`, `_button` | N3 | `StrippableLogBlock` / vanilla-classes | kopie crimson-set; steel/hyfen `TERRACOTTA_CYAN`, rest `COLOR_LIGHT_BLUE`; Nether-hout (niet brandbaar, items in `#non_flammable_wood`); `BlockSetType` `corruptedadventure:rimeshroom`, knop 30 ticks; `rimeshroom_stems` (in `#logs`, niet `#logs_that_burn`; ook in `fungal_growths`), `#planks`, `#wooden_*`, `c:stripped_*`, `c:fence_gates/wooden`; deur/valluik cutout; item deur plat |
+| `rimeshroom_cap` | N3 | `Block` | kopie `nether_wart_block` + `MapColor.ICE`; dropt zichzelf; `#wart_blocks`, `#mineable/hoe`, `fungal_growths`; compost 0,85; `cube_all` |
+| `ice_stalactite` | N3 | `StalactiteBlock` | properties van `slime_stalactite` + `MapColor.ICE` + `SoundType.GLASS` + nootblok `CHIME` (hangt of staat, valt zonder steun, groeit niet); dropt zichzelf; `#mineable/pickaxe`, `fungal_growths`; 10 modellen `ice_stalactite_{up,down}_{tip,tip_merge,frustum,middle,base}`, item plat op `item/ice_stalactite` |
+| `glowing_fissure` | N3 | `Block` | kopie `netherrack` + `COLOR_ORANGE` + licht 7 (gebruiker); geen schade; `heat_sources`, `warmth_sources`, `#mineable/pickaxe`; `glowingCube` (`glowing_fissure` + emissive `glowing_fissure_glow`) |
+| `primordial_ice` | N3 | `Block` | kopie `blue_ice` (hardheid 2,8, glad als blauw ijs, opaak, geen random ticks = smelt nooit) + blastweerstand van obsidiaan (1200; gebruiker), geen licht; loot alleen Silk Touch, anders niets (contract); tagset van `blue_ice`: `#mineable/pickaxe`, `#ice`, `#geode_invalid_blocks`; **niet** `#nether_carver_replaceables` (grotten eten de pilaarkernen niet op) en niet `fungal_growths` (terrein); `cube_all` |
+
+**Registries — Items (ring 3, losse items na `dew_crystal`)**
+| Registry-naam | Ring | Class | Opmerking |
+|---|---|---|---|
+| `raw_volcanite` | 3 | `Item` | **placeholder** (zoals `raw_sunstone`); drop vulkaniet-ertsen; `c:raw_materials/volcanite` (in `c:raw_materials`) |
+| `sulfur` | 3 | `Item` | **placeholder**; drop zwavelertsen (2–4); `c:dusts/sulfur` (in `c:dusts`) |
+| `fire_ruby` | 3 | `Item` | **placeholder**; drop vuurrobijn-ertsen; `c:gems/fire_ruby` (in `c:gems`) |
+| `fire_crystal` | 3 | `Item` | **placeholder**, nut in fase 2; drop `fire_crystal_cluster`; `c:gems/fire_crystal` (in `c:gems`) |
+
+**Registries — overige**
+| `corruptedadventure:charred` | `BlockSetType` + niet-geregistreerde `WoodType`, nether-hout-geluiden | `ModWoodTypes` |
+
+**Tags (inhoud, B)**
+- `heat_sources`: `lava`, `magma_block`, `fire`, `campfire`, `smoldering_stone` (+ latere pakketten). `warmth_sources`: `lava`, `fire`, `soul_fire`, `campfire`, `soul_campfire`, `magma_block`, `smoldering_stone` (+ later).
+- `ring_3_stones`: `basalt`, `blackstone`, `pumice`, `ash_block`.
+- `minecraft:goats_spawnable_on` + `basalt`, `smooth_basalt`, `blackstone`, `ash_block`, `pumice` (op verzoek van W-biomes via main: de piek-bovenlaag van 39b en 39c; contract §3 noemde alleen basalt/blackstone/as).
+- 40: `c:ores/volcanite`, `c:ores/sulfur`, `c:ores/fire_ruby` (alle gastgesteenten; in `c:ores`), `#needs_iron_tool` (vulkaniet, vuurrobijn), `#needs_stone_tool` (zwavel), `c:ore_rates/singular` (vulkaniet, vuurrobijn) / `dense` (zwavel), `c:ores_in_ground/stone` en `/deepslate`; items `c:raw_materials/volcanite`, `c:dusts/sulfur`, `c:gems/fire_ruby`.
+- 40b: `#crystal_sound_blocks` + `fire_crystal_block`; `c:buds` + drie vuurkristalknoppen, `c:clusters` + `fire_crystal_cluster`; item `c:gems/fire_crystal`.
+- 46: `heat_sources` + `fumarole`, `boiling_mud`; `#mineable/shovel` + `sulfur_crust`, `boiling_mud`; `#mineable/pickaxe` + `fumarole`, `geyser`; `#overworld_carver_replaceables` + `sulfur_crust`, `boiling_mud`.
+- 51: `heat_sources` + `glowing_fissure` en `warmth_sources` + `glowing_fissure` (beide tags nu compleet volgens contract §3); `#base_stone_nether` + `cold_lava`, `rime_netherrack`; `c:netherracks` + `rime_netherrack`; `#ice`, `#snow_layer_cannot_survive_on`, `#geode_invalid_blocks`, `#snaps_goat_horn` en `#nether_carver_replaceables` + beide Nether-ijsblokken; `fungal_growths` + `rimeshroom_stems`, `rimeshroom_cap`, `ice_stalactite` (groei, geen terrein voor `FungalTerrainScan` in 53b); `rimeshroom_stems` (blok en item, in `#logs`); `#wart_blocks` + `#mineable/hoe` + `rimeshroom_cap`; houtset-tags zoals verkoold hout.
+- **Nieuw (38b, akkoord main; contract bijwerken):** `corruptedadventure:ash_plant_soil` (`ash_block`, `coarse_dirt`, `ash_layer`) en `corruptedadventure:collapsing_blocks` (`loose_sand`, `ash_crust`; alleen vallende blokken).
+
+**Valkuilen**
+- Gloed in twee lagen (besluit gebruiker 2026-10-06): blokken met gloeiende delen krijgen `<naam>` + emissive cutout-overlay `<naam>_glow` (`glowingCube`), niet `emissiveRendering` (dat maakt het hele blok fullbright).
+- Een vanilla-`SnowLayerBlock` smelt alleen via een random tick: properties zonder `randomTicks()` = nooit smelten, geen eigen class nodig.
+
+## Beslissingen
+- 2026-10-06 · blocks · Gloed van smeulsteen, smeulende as, smeulblad en gloeiende scheur in twee lagen (`<naam>` + emissive `<naam>_glow`) · besluit gebruiker via main.
+- 2026-10-06 · blocks · Verkoold hout als Nether-hout (crimson-sjabloon, nether-hout-geluiden, geen brandstof) · gevolg van "niet brandbaar" (gebruiker).
+- 2026-10-06 · blocks · `goats_spawnable_on` ook `smooth_basalt` en `pumice` · piek-bovenlaag van 39b/39c (W-biomes via main).
+- 2026-10-06 · blocks · Baksteen-vormen heten `pumice_brick_*` / `cold_lava_brick_*` (vanilla-/ring 2-patroon) · akkoord main.
+- 2026-10-06 · blocks · `ash_layer` = vanilla `SnowLayerBlock` zonder random ticks; dropt zichzelf × lagen (shovel); smoort gras eronder · implementatiekeuze.
+- 2026-10-06 · blocks · Smeulblad en vuurflora ook niet brandbaar (geen vuurkansen, niet `ignitedByLava`) · zelfde reden als verkoold hout: geen branden naast lava.
+- 2026-10-06 · blocks · Vuurflora staat alleen op een volle aslaag (anders zweeft de plant); `ember_berry_bush` = vanilla bes-struik incl. doornen en terugroei, plukt vanilla `sweet_berries` · implementatiekeuze.
+- 2026-10-06 · blocks · Smeulende as licht 2 (plan: 0–3) · implementatiekeuze.
+- 2026-10-07 · blocks · Ertsen ring 3 "één stap boven ring 2": hardheid vanilla-erts van het gastgesteente + 0,5; XP vulkaniet 3–6, zwavel 1–3, vuurrobijn 4–8; zwavel 2–4 per erts (zoals koper); vuurrobijn licht 3 (zoals zonnesteen); gastgesteenten = contractset (geen blackstone, gebruiker) · implementatiekeuze + gebruiker.
+- 2026-10-06 · blocks · Vuurkristalblok (geodewand) zonder licht en niet emissive, als het amethistblok; alleen de stadia gloeien (emissive kruis, licht 1/2/4/5) · akkoord gebruiker via main (afstemming texturepaden 2026-10-06).
+- 2026-10-07 · blocks · `basalt_fire_ruby_ore` erbij (vuurrobijn in de basaltwanden van magmakamers; contract §3 krijgt een basaltvariant voor vuurrobijn) · besluit gebruiker (B) via main.
+- 2026-10-07 · blocks · Askorst stort alleen in van onderen (`loose_sand`-mechanisme); instorten-van-bovenaf blijft een idee in de backlog, beslissen na teststop 4b · besluit gebruiker (A) via main.
+- 2026-10-07 · blocks · Zwavelkorst dropt zichzelf, geen zwavel (zwavel komt alleen uit de ertsen; anders maakt de korst het erts overbodig) · besluit gebruiker (V1) via main.
+- 2026-10-07 · blocks · Geiser dropt alleen met Silk Touch, anders niets · besluit gebruiker (V2) via main.
+- 2026-10-07 · blocks · Nether-3: koudlava = basalt-eigenschappen; Nether-ijs = `packed_ice`-eigenschappen (opaak, smelt niet, alleen Silk Touch); rijpzwam = Nether-hout (crimson-sjabloon); rijpzwamhoed = wratblok; ijspegel = slijmpegel-gedrag met glasgeluid en nootblok `CHIME` · implementatiekeuze.
+- 2026-10-07 · blocks · Gloeiende scheur licht 7 (niet 10) · besluit gebruiker via main (review 51).
+- 2026-10-07 · blocks · Berijpt netherrack is bevroren grond: niet `infiniburn` (vuur dooft) en geen nylium-verspreiding/beendermeel · besluit gebruiker via main (review 51).
+- 2026-10-07 · blocks · Oerijs = hardheid en gladheid van `blue_ice` (opaak, smelt niet) maar blastweerstand van obsidiaan (1200), zodat ghast-vuurballen en creepers het niet zonder drop vernietigen; winnen alleen met Silk Touch · besluit gebruiker via main (review 52).
+- 2026-10-07 · blocks · Oerijs: tagset van `blue_ice` (geen `#snow_layer_cannot_survive_on`/`#snaps_goat_horn`), geen licht, niet carver-vervangbaar zodat de pilaarkernen heel blijven, geen `fungal_growths` (terrein) · implementatiekeuze, tags volgens review 52.
+- 2026-10-07 · blocks · Kokende modder = vorm van vanilla-modder (je zakt 2 px weg) met de traagheid van honing (snelheid 0,4, sprong 0,5) via de blokproperties, zodat server en client hetzelfde voorspellen · implementatiekeuze (plan: honing of poedersneeuw).
+- 2026-10-07 · blocks · Geiser met scheduled ticks (geen block entity): elke 100 ticks, 4 blokken bereik, duw 0,9 omhoog (~4,9 blokken); een bedekte opening (botsvorm) blokkeert; worldgen-geisers starten bij hun eerste random tick · implementatiekeuze.
+- 2026-10-07 · blocks · Fumarole en geiser: basalt-eigenschappen (houweel, basaltgeluid) · implementatiekeuze.
+- 2026-10-07 · blocks · Landen op een geiser geeft geen valschade, en alleen wie met zijn middelpunt boven de geiser staat wordt gelanceerd · review 46 (anders verliest wie erop staat elke 5 s ~1 hart, en wordt de buurman meegegooid).
+
+## Backlog
+- `items` · Placeholder-items ring 3 `raw_volcanite`, `sulfur`, `fire_ruby` (pakket 40) en `fire_crystal` (40b): smelten, producten, recipes en balans in fase 2 (zoals `raw_sunstone`).
+- `blocks` · `ash_crust` stort alleen in als een speler eronder loopt (het `loose_sand`-mechanisme van het contract); wie erover loopt (dak van een lavabuis) zakt er niet door. Instorten-van-bovenaf: beslissen na teststop 4b (gebruiker, 2026-10-07).
+- `items` · `ember_berry_bush` is in survival niet te verkrijgen/verplanten (plukken geeft vanilla `sweet_berries`, die een vanilla-struik planten); eigen bes-item dat de struik plant in fase 2.
+- `worldgen` · `ember_berry_bush` groeit alleen terug bij licht ≥ 9 boven de struik (vanilla); onder een dicht smeulblad-dak (geen bloklicht, V3) groeit hij niet. 47c: struiken in open plekken zetten (placement `would_survive` + open lucht), of afstemmen in 4b.
+- `worldgen` · De grondregel van de bes-struik is `ash_plant_soil` **of** `moss_block` (hard in `EmberBerryBushBlock`); features moeten op `would_survive` filteren, niet op de tag.
+- `blocks` · Geiser: interval (100 ticks) en duw (0,9 ≈ 4,9 blokken) afstemmen na teststop 4a/4b.
+- `worldgen` · 48 (`steam_fens`): de feature die geisers plaatst moet `WorldGenLevel.scheduleTick(pos, GEYSER, GeyserBlock.INTERVAL_TICKS)` doen (de proto-chunk bewaart die tick, zoals bij vanilla-bronnen). Zonder dat start een worldgen-geiser pas bij zijn eerste random tick (gemiddeld ~68 s, nooit bij `randomTickSpeed` 0); de random tick blijft alleen als vangnet.
+- `blocks` · Houtset-boilerplate is nu vijf keer gekopieerd (dood, palm, druipzwam, verkoold, rijpzwam) in `ModBlocks`, states, items, loot en tags: een `WoodSet`-record met helpers per provider (review 51; niet in golf 1 refactoren).
+- `blocks` · 46-rest (golf 2): eigen geluiden `block.fumarole.puff`, `block.geyser.burst`, `block.boiling_mud.bubble` en particle `steam_puff` van A aan fumarole/geiser/modder koppelen (nu vanilla).
+
+## Voortgang
+Voortgang: 2026-10-06 20:51 38 B groen (429 tests)
+Voortgang: 2026-10-06 21:41 38 B+D groen (gloed als twee lagen _glow na afstemming)
+Voortgang: 2026-10-06 21:44 38 S groen (loot, tags, aslaag-steun via RCON)
+Voortgang: 2026-10-06 22:01 38 review verwerkt (AshLayerBlock geschrapt, inside_step_sound, gedeeld model, tagcommentaar); B/D/S opnieuw groen
+
+## Status bij onderbreking (2026-10-06 22:05)
+- **Gecommit:** 38 = `2a2810e` (B/D/S groen, review verwerkt).
+- **Ongecommit op schijf (worktree `ring3/blocks-g1`), pakket 38b, nog NIET gebouwd/getest/gereviewd:** `EmberLeavesBlock`, `AshPlantSoil`, `FireBloomBlock`, `AshSproutsBlock`, `EmberBerryBushBlock`; `ModBlocks` (`ash_crust`, `smoldering_ash` na `ash_layer`; `ember_leaves`, `fire_bloom` + pot, `ash_sprouts`, `ember_berry_bush` na de verkoolde set); `ModTags` (`ash_plant_soil`, `collapsing_blocks`); `LooseSandTrigger` leest `collapsing_blocks`; `ModFlowerPots`, `ModDataMapProvider` (compost); providers (states/models incl. `overlayCube`/`glowingCube(block, renderType)`, items, loot incl. `createBerryBushTable`, tags); `Ring3BlockNames`; tests `AshPlantSoilTest`, `LooseSandTriggerTest` (tag gebonden + askorst), `ModBlocksTest` (volgorde, bladeren, flora).
+- **Ontbreekt voor 38b:** B (`build`), D (`runData`), S (`stest.py` 38b-checks nog toevoegen: loot askorst/flora/bes, tags, vallende korst, grondregel), `/code-review medium blocks-g1 38b`, commit. Daarna 40, 40b, 46, 51, 52 (concepten voor `GeyserBlock`, `FumaroleBlock`, `BoilingMudBlock` en snippets staan in `C:/Temp/ca-blocks-g1/draft/`, buiten de repo).
+- **Hulpmiddelen (buiten de repo):** `C:/Temp/ca-blocks-g1/` (`gradle-slot.ps1`, `scycle.ps1`, `stest.py`, `rcon.py`, `placeholders.ps1`). Tijdelijke placeholder-PNG's onder `textures/` (lijst `placeholders.txt`) zijn untracked en worden **nooit** gecommit.
+- Geen eigen servers of JVM-slots actief; RCON in `run/server.properties` uit.
+- Afstemming main verwerkt: gloed als `<naam>` + emissive `<naam>_glow` (38: smeulsteen; 38b: smeulende as, smeulblad; 51: gloeiende scheur), `nether_ice` opaak/solid, `fumarole_top`/`_side` en `geyser_top`/`_side`, geen blackstone-erts.
+
+Voortgang: 2026-10-07 08:14 hervat na herstart; 38b afmaken
+Voortgang: 2026-10-07 08:47 38b B/D/S groen (434 tests)
+Voortgang: 2026-10-07 09:14 38b review verwerkt (FallingBlock-check in trigger, crossModel; rest in Backlog/Beslissingen); B/D/S opnieuw groen
+Voortgang: 2026-10-07 09:16 40 code klaar, B/D/S gestart
+Voortgang: 2026-10-07 09:22 40 B/D/S groen; review gestart
+Voortgang: 2026-10-07 09:35 40 review verwerkt + basalt_fire_ruby_ore (besluit gebruiker); B/D/S opnieuw gestart
+Voortgang: 2026-10-07 09:37 40 B/D/S groen na review + basaltvariant; commit
+Voortgang: 2026-10-07 09:39 40b code klaar, B/D/S gestart
+Voortgang: 2026-10-07 09:48 40b B/D/S groen; review gestart
+Voortgang: 2026-10-07 09:50 40b review verwerkt (crystalStage, javadoc, delta, besluit wand); herbouw
+Voortgang: 2026-10-07 10:10 40b B/D/S groen na review; commit
+
+## Overdracht na 40b (2026-10-07)
+
+**Stand.** Branch `ring3/blocks-g1` in worktree `.claude/worktrees/agent-a336bc6c9f306650c` (basis 8e0c637). Gecommit, elk met B/D/S groen en review verwerkt: 38 `2a2810e`, 38b `dbd8553`, 40 `8e9a1db`, 40b `538011e`. Nog te doen, in deze volgorde, één commit per pakket na review: **46, 51, 52**. De sectie "Status bij onderbreking" hierboven is achterhaald.
+
+**Besluiten van de gebruiker (al verwerkt of voor 46/51/52):**
+- Gloed in twee lagen: basis-texture `<naam>` + emissive cutout-overlay `<naam>_glow` via `glowingCube(block)` / `glowingCube(block, "cutout_mipped")` in `ModBlockStateProvider`; nooit `emissiveRendering` op het blok. Geldt nog voor **`glowing_fissure`** (51).
+- **`nether_ice` opaak**, render solid zoals `packed_ice` (gewone `cube_all`, géén translucent, géén `HalfTransparentBlock` nodig). Smelt niet (gewone `Block` zonder random ticks). Voorstel: beide Nether-ijsblokken kopie `packed_ice` (+ eigen kaartkleur), loot alleen Silk Touch zoals vanilla-ijs; mobs mogen erop spawnen (Nether-3-vloer).
+- Ertsen: geen blackstone-variant; wel `basalt_fire_ruby_ore` (contract §3 krijgt een basaltvariant; staat in de delta).
+- Askorst: alleen instorten van onderen (A); van bovenaf = backlog, beslissen na teststop 4b.
+- T's texturenamen: `fumarole_top` + `fumarole_side`, `geyser_top` + `geyser_side` (model `cubeBottomTop`: zijkant = `_side`, onder = `_side`, boven = `_top`). Overige paden: zie het bericht aan main van 2026-10-06 (o.a. `sulfur_crust`, `boiling_mud`, `cold_lava`, `polished_cold_lava`, `cold_lava_bricks`, `nether_ice`, `packed_nether_ice`, `rime_netherrack`, `rimeshroom_stem(_top)`, `stripped_rimeshroom_stem(_top)`, `rimeshroom_planks`, `rimeshroom_door_top/_bottom`, `rimeshroom_trapdoor`, `rimeshroom_cap`, `ice_stalactite_{down,up}_{tip,tip_merge,frustum,middle,base}`, `glowing_fissure` + `glowing_fissure_glow`, `primordial_ice`; items `rimeshroom_door`, `ice_stalactite`).
+- Akkoord: tags `ash_plant_soil`, `collapsing_blocks`; namen `pumice_brick_*`, `cold_lava_brick_*` (dus `cold_lava_stairs`, `polished_cold_lava_stairs`, `cold_lava_brick_stairs` enz.).
+
+**Concepten (buiten de repo, `C:/Temp/ca-blocks-g1/draft/`):**
+- `GeyserBlock.java`: scheduled tick elke `INTERVAL_TICKS` (100), `onPlace` start de cyclus, `randomTick` start hem voor worldgen-geisers (properties dus mét `randomTicks()`), duw `launched()` = max(y, `LAUNCH_SPEED` 0,9) op entities in `REACH` (4) blokken boven de vent (`column()`), niet bij spectators/vliegende spelers, `hurtMarked` + `resetFallDistance`; deeltjes via `sendParticles`, geluid `GENERIC_EXTINGUISH_FIRE`; `animateTick` witte rook. Unit test: `launched`, `column`, interval.
+- `FumaroleBlock.java`: alleen `animateTick` (`CAMPFIRE_COSY_SMOKE`, `CLOUD`, zacht `LAVA_EXTINGUISH`), tot A `steam_puff` levert. In `heat_sources`.
+- `BoilingMudBlock.java`: `MudBlock` (14 px botsing) + properties `speedFactor(0.4F).jumpFactor(0.5F)` (honing-traagheid), bubbels `BUBBLE_POP`. In `heat_sources`.
+- `modblocks-51.txt` is maar een begin. Voor 51 verder: rijpzwam-set naar het druipzwam-/verkoold-patroon (`ModWoodTypes.netherWoodSet("rimeshroom")`/`netherWood`, `rimeshroom_stems`-tag in `#logs` niet `#logs_that_burn`, items in `#non_flammable_wood`), `rimeshroom_cap` als wratblok (`#wart_blocks`, `#mineable/hoe`), `ice_stalactite` = `StalactiteBlock` met de properties van `slime_stalactite` maar `SoundType.GLASS`/`MapColor.ICE` (10 modellen zoals `slimeStalactite()` in `ModBlockStateProvider`, item plat op `item/ice_stalactite`), `glowing_fissure` licht 7 (besluit gebruiker; voorstel was 10) + `heat_sources` + `warmth_sources` + `glowingCube`, `rime_netherrack` als netherrack (`#base_stone_nether`, `c:netherracks`), koudlava-set kopie basalt (`#nether_carver_replaceables`).
+- 46: `sulfur_crust` = kopie `sand` (valt niet, zoals `salt_crust`) + `COLOR_YELLOW`; `heat_sources` + `fumarole`, `boiling_mud` (nog niet in de tag!); de S-test moet de geiser-duw meten met een armor stand (positie meerdere keren uitlezen binnen ~6 s).
+- 52: `primordial_ice` loot `dropWhenSilkTouch` (anders niets); S: `loot … mine` met en zonder Silk Touch.
+
+**Hulpscripts (`C:/Temp/ca-blocks-g1/`, buiten de repo):**
+- `gradle-slot.ps1 <gradle-args>`: neemt atomisch een JVM-slot `C:/Temp/ca-jvm-slot-{1,2,3}` (owner-bestand), draait `./gradlew`, geeft het slot vrij. Gebruik: `powershell -NoProfile -ExecutionPolicy Bypass -File C:/Temp/ca-blocks-g1/gradle-slot.ps1 build runData --console=plain *> <log>`. Slots zijn vaak urenlang bezet door andere stromen: draai dit op de achtergrond.
+- `scycle.ps1 -Package 46 -Level <verse-naam>`: slot → `runServer` (eigen `run/`, poort 25570, RCON 25580, wachtwoord `blocksg1`, PID in `build/blocks-g1.pids`) → `stest.py <pakket(ten), komma-gescheiden>` → RCON `stop` → slot vrij. Zet eerst `enable-rcon=true` in `run/server.properties` (staat na deze sessie op false).
+- `stest.py`: helpers `loot(state, tool, verwacht)`, `tag(state, tag, verwacht)`, `check`, `block_at`; per pakket een functie in `PACKAGES` (38, 38b, 40, 40b staan erin; 46/51/52 toevoegen). Steun voor vuur/planten op `2 199 0` (steen; zielvuur → zielgrond).
+- `rcon.py <port> <pw> <cmd…>`, `placeholders.ps1` (legt ontbrekende placeholder-PNG's neer, lijst in `placeholders.txt`).
+
+**Nooit committen:** de **74 untracked placeholder-PNG's** onder `src/main/resources/assets/corruptedadventure/textures/` (kopieën van ring 2-textures onder ring 3-namen, lijst `C:/Temp/ca-blocks-g1/placeholders.txt`); `docs/prompts/`, `DewGeodeShapeTest.java`. Stagen per pad: `git add src/main/java src/test/java src/generated docs/plans/ring-3/golf-1-blocks.md`.
+
+**Valkuilen die ik tegenkwam:**
+- PowerShell 5.1 `Get-Content`/`Set-Content` zonder encoding kan UTF-8 (–, ·, é) beschadigen en `` `n `` in enkele quotes wordt letterlijk: Java/MD-bestanden alleen met de Edit-tool aanpassen, of met `[IO.File]::ReadAllText` + `WriteAllText` (UTF-8 zonder BOM).
+- `getCloneItemStack(LevelReader, …)` is niet unit-testbaar met `EmptyBlockGetter` (geen `LevelReader`).
+- Tags bestaan niet in unit tests: met de hand binden (`BuiltInRegistries.BLOCK.bindTags`, na de test `resetTags`), zoals `AshPlantSoilTest` en `LooseSandTriggerTest`.
+- RCON `setblock` van vuur/planten/kristallen zonder steun valt meteen weg: eerst een steunblok zetten.
+- `MapCodec` van een subclass van een vanilla-blok moet het type van de vanilla-`codec()` houden (bijv. `MapCodec<SnowLayerBlock>`, `MapCodec<MudBlock>`).
+- Ertsen: `Properties.destroyTime(...)` gebruiken, niet `strength(h, 3.0F)` (dat overschrijft de blastweerstand).
+- Random ticks (bes-struik, geiser-start) testen niet via RCON zonder speler: W-checklist.
+
+**W-checklist tot nu toe (in-game, met T's textures):** creative tab compleet en in volgorde; `_glow`-gloed van smeulsteen/smeulende as/smeulblad in het donker; vuurrobijn-overlay en vuurkristalstadia gloeien, vuurkristalblok niet; verkoold hout en smeulblad vatten geen vlam naast lava; askorst stort in onder een speler (niet erbovenop); bes-struik groeit terug na plukken (licht ≥ 9 nodig); aslaag-geluid bij lopen. 46: fumarole puft stoom (niet als er iets op staat); kokende modder vertraagt lopen en springen en bubbelt; geiser gooit een speler ~5 blokken omhoog (ook in multiplayer zichtbaar voor anderen), niet als er een blok op ligt en niet in creatief vliegen; een met de hand geplaatste geiser start meteen, een worldgen-geiser binnen ~1 min. 51: Nether-ijs opaak en glad, smelt niet naast een fakkel/lava; koudlava-set, rijpzwam-set (deur/valluik cutout) en ijspegels (hangend en staand, vallen zonder steun, CHIME op een nootblok) zien er goed uit; rijpzwamhout is geen brandstof en vat geen vlam; vuur op berijpt netherrack dooft, beendermeel verspreidt er geen nylium op; `_glow`-gloed van de gloeiende scheur in het donker (licht 7). 52: oerijs alleen met Silk Touch, overleeft een ghast-vuurbal/creeper.
+
+## Voortgang vervolgagent (46, 51, 52)
+Voortgang: 2026-10-07 10:15 46 code klaar (hervat door vervolgagent), B/D gestart
+Voortgang: 2026-10-07 10:16 46 B/D groen (442 tests); S gestart
+Voortgang: 2026-10-07 10:22 46 S groen (geiser-duw 201 -> 205,9; bedekt blijft staan; loot/tags); review gestart
+Voortgang: 2026-10-07 10:26 46 review verwerkt (valschade, gecentreerd, ventOpen, addParticle, S-cyclus x2); V1/V2 (drops) bij main; herbouw
+Voortgang: 2026-10-07 10:37 46 B/D/S opnieuw groen na review (442 tests; 2 uitbarstingen, buurman blijft staan); wacht op V1/V2 van main
+Voortgang: 2026-10-07 11:18 46 wacht nog op V1/V2 (main herinnerd); 51 als patchscript klaar buiten de repo
+Voortgang: 2026-10-07 11:40 46 V1/V2 binnen (korst dropt zichzelf, geiser alleen Silk Touch); B/D/S gestart (derde agent)
+Voortgang: 2026-10-07 11:43 46 B/D/S groen met V1/V2 (442 tests; geiser zonder Silk Touch niets, met Silk Touch zichzelf; korst beide zichzelf); commit
+Voortgang: 2026-10-07 11:48 51 code toegepast + tests; B/D groen (446 tests); S groen (55 checks, na fix eigenschapnaam `vertical_direction` in stest); review gestart
+Voortgang: 2026-10-07 12:00 51 review verwerkt (scheur licht 7, ijstags, fungal_growths, CHIME, test non_flammable_wood, plan r.31, backlog WoodSet); herbouw
+Voortgang: 2026-10-07 12:02 51 B/D/S groen na review (447 tests; S 67 checks); commit
+Voortgang: 2026-10-07 12:04 52 code klaar; B/D groen (448 tests); S groen (51+52, 77 checks); review gestart
+Voortgang: 2026-10-07 12:28 52 review verwerkt (blastweerstand obsidiaan, blue_ice-tags, tagregels samengevoegd, ijstest over drie blokken, javadoc); B/D/S groen (448 tests; S 51+52 79 checks); commit

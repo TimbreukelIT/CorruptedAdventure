@@ -2,6 +2,9 @@
   "values": [
     "#c:ores/soul_crystal",
     "#c:ores/sunstone",
-    "#c:ores/turquoise"
+    "#c:ores/turquoise",
+    "#c:ores/volcanite",
+    "#c:ores/sulfur",
+    "#c:ores/fire_ruby"
   ]
 }
