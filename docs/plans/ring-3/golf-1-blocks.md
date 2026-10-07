@@ -156,3 +156,42 @@ Voortgang: 2026-10-07 09:39 40b code klaar, B/D/S gestart
 Voortgang: 2026-10-07 09:48 40b B/D/S groen; review gestart
 Voortgang: 2026-10-07 09:50 40b review verwerkt (crystalStage, javadoc, delta, besluit wand); herbouw
 Voortgang: 2026-10-07 10:10 40b B/D/S groen na review; commit
+
+## Overdracht na 40b (2026-10-07)
+
+**Stand.** Branch `ring3/blocks-g1` in worktree `.claude/worktrees/agent-a336bc6c9f306650c` (basis 8e0c637). Gecommit, elk met B/D/S groen en review verwerkt: 38 `2a2810e`, 38b `dbd8553`, 40 `8e9a1db`, 40b `538011e`. Nog te doen, in deze volgorde, één commit per pakket na review: **46, 51, 52**. De sectie "Status bij onderbreking" hierboven is achterhaald.
+
+**Besluiten van de gebruiker (al verwerkt of voor 46/51/52):**
+- Gloed in twee lagen: basis-texture `<naam>` + emissive cutout-overlay `<naam>_glow` via `glowingCube(block)` / `glowingCube(block, "cutout_mipped")` in `ModBlockStateProvider`; nooit `emissiveRendering` op het blok. Geldt nog voor **`glowing_fissure`** (51).
+- **`nether_ice` opaak**, render solid zoals `packed_ice` (gewone `cube_all`, géén translucent, géén `HalfTransparentBlock` nodig). Smelt niet (gewone `Block` zonder random ticks). Voorstel: beide Nether-ijsblokken kopie `packed_ice` (+ eigen kaartkleur), loot alleen Silk Touch zoals vanilla-ijs; mobs mogen erop spawnen (Nether-3-vloer).
+- Ertsen: geen blackstone-variant; wel `basalt_fire_ruby_ore` (contract §3 krijgt een basaltvariant; staat in de delta).
+- Askorst: alleen instorten van onderen (A); van bovenaf = backlog, beslissen na teststop 4b.
+- T's texturenamen: `fumarole_top` + `fumarole_side`, `geyser_top` + `geyser_side` (model `cubeBottomTop`: zijkant = `_side`, onder = `_side`, boven = `_top`). Overige paden: zie het bericht aan main van 2026-10-06 (o.a. `sulfur_crust`, `boiling_mud`, `cold_lava`, `polished_cold_lava`, `cold_lava_bricks`, `nether_ice`, `packed_nether_ice`, `rime_netherrack`, `rimeshroom_stem(_top)`, `stripped_rimeshroom_stem(_top)`, `rimeshroom_planks`, `rimeshroom_door_top/_bottom`, `rimeshroom_trapdoor`, `rimeshroom_cap`, `ice_stalactite_{down,up}_{tip,tip_merge,frustum,middle,base}`, `glowing_fissure` + `glowing_fissure_glow`, `primordial_ice`; items `rimeshroom_door`, `ice_stalactite`).
+- Akkoord: tags `ash_plant_soil`, `collapsing_blocks`; namen `pumice_brick_*`, `cold_lava_brick_*` (dus `cold_lava_stairs`, `polished_cold_lava_stairs`, `cold_lava_brick_stairs` enz.).
+
+**Concepten (buiten de repo, `C:/Temp/ca-blocks-g1/draft/`):**
+- `GeyserBlock.java`: scheduled tick elke `INTERVAL_TICKS` (100), `onPlace` start de cyclus, `randomTick` start hem voor worldgen-geisers (properties dus mét `randomTicks()`), duw `launched()` = max(y, `LAUNCH_SPEED` 0,9) op entities in `REACH` (4) blokken boven de vent (`column()`), niet bij spectators/vliegende spelers, `hurtMarked` + `resetFallDistance`; deeltjes via `sendParticles`, geluid `GENERIC_EXTINGUISH_FIRE`; `animateTick` witte rook. Unit test: `launched`, `column`, interval.
+- `FumaroleBlock.java`: alleen `animateTick` (`CAMPFIRE_COSY_SMOKE`, `CLOUD`, zacht `LAVA_EXTINGUISH`), tot A `steam_puff` levert. In `heat_sources`.
+- `BoilingMudBlock.java`: `MudBlock` (14 px botsing) + properties `speedFactor(0.4F).jumpFactor(0.5F)` (honing-traagheid), bubbels `BUBBLE_POP`. In `heat_sources`.
+- `modblocks-51.txt` is maar een begin. Voor 51 verder: rijpzwam-set naar het druipzwam-/verkoold-patroon (`ModWoodTypes.netherWoodSet("rimeshroom")`/`netherWood`, `rimeshroom_stems`-tag in `#logs` niet `#logs_that_burn`, items in `#non_flammable_wood`), `rimeshroom_cap` als wratblok (`#wart_blocks`, `#mineable/hoe`), `ice_stalactite` = `StalactiteBlock` met de properties van `slime_stalactite` maar `SoundType.GLASS`/`MapColor.ICE` (10 modellen zoals `slimeStalactite()` in `ModBlockStateProvider`, item plat op `item/ice_stalactite`), `glowing_fissure` licht 10 (voorstel) + `heat_sources` + `warmth_sources` + `glowingCube`, `rime_netherrack` als netherrack (`#base_stone_nether`, `c:netherracks`), koudlava-set kopie basalt (`#nether_carver_replaceables`).
+- 46: `sulfur_crust` = kopie `sand` (valt niet, zoals `salt_crust`) + `COLOR_YELLOW`; `heat_sources` + `fumarole`, `boiling_mud` (nog niet in de tag!); de S-test moet de geiser-duw meten met een armor stand (positie meerdere keren uitlezen binnen ~6 s).
+- 52: `primordial_ice` loot `dropWhenSilkTouch` (anders niets); S: `loot … mine` met en zonder Silk Touch.
+
+**Hulpscripts (`C:/Temp/ca-blocks-g1/`, buiten de repo):**
+- `gradle-slot.ps1 <gradle-args>`: neemt atomisch een JVM-slot `C:/Temp/ca-jvm-slot-{1,2,3}` (owner-bestand), draait `./gradlew`, geeft het slot vrij. Gebruik: `powershell -NoProfile -ExecutionPolicy Bypass -File C:/Temp/ca-blocks-g1/gradle-slot.ps1 build runData --console=plain *> <log>`. Slots zijn vaak urenlang bezet door andere stromen: draai dit op de achtergrond.
+- `scycle.ps1 -Package 46 -Level <verse-naam>`: slot → `runServer` (eigen `run/`, poort 25570, RCON 25580, wachtwoord `blocksg1`, PID in `build/blocks-g1.pids`) → `stest.py <pakket(ten), komma-gescheiden>` → RCON `stop` → slot vrij. Zet eerst `enable-rcon=true` in `run/server.properties` (staat na deze sessie op false).
+- `stest.py`: helpers `loot(state, tool, verwacht)`, `tag(state, tag, verwacht)`, `check`, `block_at`; per pakket een functie in `PACKAGES` (38, 38b, 40, 40b staan erin; 46/51/52 toevoegen). Steun voor vuur/planten op `2 199 0` (steen; zielvuur → zielgrond).
+- `rcon.py <port> <pw> <cmd…>`, `placeholders.ps1` (legt ontbrekende placeholder-PNG's neer, lijst in `placeholders.txt`).
+
+**Nooit committen:** de **74 untracked placeholder-PNG's** onder `src/main/resources/assets/corruptedadventure/textures/` (kopieën van ring 2-textures onder ring 3-namen, lijst `C:/Temp/ca-blocks-g1/placeholders.txt`); `docs/prompts/`, `DewGeodeShapeTest.java`. Stagen per pad: `git add src/main/java src/test/java src/generated docs/plans/ring-3/golf-1-blocks.md`.
+
+**Valkuilen die ik tegenkwam:**
+- PowerShell 5.1 `Get-Content`/`Set-Content` zonder encoding kan UTF-8 (–, ·, é) beschadigen en `` `n `` in enkele quotes wordt letterlijk: Java/MD-bestanden alleen met de Edit-tool aanpassen, of met `[IO.File]::ReadAllText` + `WriteAllText` (UTF-8 zonder BOM).
+- `getCloneItemStack(LevelReader, …)` is niet unit-testbaar met `EmptyBlockGetter` (geen `LevelReader`).
+- Tags bestaan niet in unit tests: met de hand binden (`BuiltInRegistries.BLOCK.bindTags`, na de test `resetTags`), zoals `AshPlantSoilTest` en `LooseSandTriggerTest`.
+- RCON `setblock` van vuur/planten/kristallen zonder steun valt meteen weg: eerst een steunblok zetten.
+- `MapCodec` van een subclass van een vanilla-blok moet het type van de vanilla-`codec()` houden (bijv. `MapCodec<SnowLayerBlock>`, `MapCodec<MudBlock>`).
+- Ertsen: `Properties.destroyTime(...)` gebruiken, niet `strength(h, 3.0F)` (dat overschrijft de blastweerstand).
+- Random ticks (bes-struik, geiser-start) testen niet via RCON zonder speler: W-checklist.
+
+**W-checklist tot nu toe (in-game, met T's textures):** creative tab compleet en in volgorde; `_glow`-gloed van smeulsteen/smeulende as/smeulblad in het donker; vuurrobijn-overlay en vuurkristalstadia gloeien, vuurkristalblok niet; verkoold hout en smeulblad vatten geen vlam naast lava; askorst stort in onder een speler (niet erbovenop); bes-struik groeit terug na plukken (licht ≥ 9 nodig); aslaag-geluid bij lopen.
