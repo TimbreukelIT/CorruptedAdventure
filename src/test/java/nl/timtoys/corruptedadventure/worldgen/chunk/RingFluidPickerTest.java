@@ -90,4 +90,16 @@ class RingFluidPickerTest {
             assertTrue(picker.computeFluid(new RingPosition(Ring.RING_5, Ring.VOID, 0.7), 0, y, 0).at(y).isAir());
         }
     }
+
+    @Test
+    void ring3LevelMovesTheSeaButKeepsTheLavaLayer() {
+        Aquifer.FluidStatus lavaLayer = new Aquifer.FluidStatus(-54, Blocks.LAVA.defaultBlockState());
+        RingFluidPicker picker = new RingFluidPicker(Level.OVERWORLD, (x, y, z) -> y < -54 ? lavaLayer : SEA, Map.of(Ring.RING_3, -1));
+        RingPosition ring3 = RingPosition.within(Ring.RING_3);
+        assertTrue(picker.computeFluid(ring3, 0, 0, 0).at(0).isAir(), "no sea at Y 0");
+        assertSame(Blocks.WATER.defaultBlockState(), picker.computeFluid(ring3, 0, -1, 0).at(-1));
+        // Below the lava layer's top the vanilla status (lava up to -55), not lava up to -1.
+        assertSame(lavaLayer, picker.computeFluid(ring3, 0, -60, 0));
+        assertSame(SEA, picker.computeFluid(RingPosition.within(Ring.RING_2), 0, 40, 0));
+    }
 }

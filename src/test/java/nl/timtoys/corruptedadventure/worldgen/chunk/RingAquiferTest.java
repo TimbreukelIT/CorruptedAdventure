@@ -7,6 +7,8 @@ import net.minecraft.world.level.levelgen.Aquifer;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicFieldTest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -136,7 +138,9 @@ class RingAquiferTest {
         assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(new RingPosition(Ring.RING_1, Ring.RING_2, 0.49), at(-20), -0.5));
         assertSame(Blocks.WATER.defaultBlockState(), still.computeSubstance(new RingPosition(Ring.RING_1, Ring.RING_2, 0.51), at(-20), -0.5));
         assertSame(Blocks.WATER.defaultBlockState(), still.computeSubstance(new RingPosition(Ring.RING_2, Ring.RING_3, 0.49), at(-20), -0.5));
-        assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(new RingPosition(Ring.RING_2, Ring.RING_3, 0.51), at(-20), -0.5));
+        // The ring 3 half of the zone 2→3 is sealed below ring 2's sea level (no water wall at the middle line).
+        assertNull(still.computeSubstance(new RingPosition(Ring.RING_2, Ring.RING_3, 0.51), at(-20), -0.5));
+        assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(RingPosition.within(Ring.RING_3), at(-20), -0.5));
     }
 
     @Test
@@ -156,5 +160,88 @@ class RingAquiferTest {
         assertNull(aquifer.computeSubstance(RingPosition.within(Ring.VOID), DEEP, 0.5));
         assertSame(Blocks.LAVA.defaultBlockState(), aquifer.computeSubstance(RingPosition.within(Ring.RING_5), DEEP, -0.5));
         assertTrue(aquifer.shouldScheduleFluidUpdate());
+    }
+
+    // ---------------------------------------------------------------- overworld ring 3 (volcanic field)
+
+    private static final VolcanicField FIELD = VolcanicFieldTest.field();
+
+    /** A lava column of the field in the given area whose 4 neighbours hold the same lava top (inside a lake or bed). */
+    private static int[] innerLavaColumn(int x0, int z0, int x1, int z1) {
+        for (int x = x0; x <= x1; x += 2) {
+            for (int z = z0; z <= z1; z += 2) {
+                int top = FIELD.column(x, z).lavaTop();
+                if (top != Integer.MIN_VALUE && FIELD.column(x, z).height() < top - 1
+                        && FIELD.column(x + 1, z).lavaTop() == top && FIELD.column(x - 1, z).lavaTop() == top
+                        && FIELD.column(x, z + 1).lavaTop() == top && FIELD.column(x, z - 1).lavaTop() == top) {
+                    return new int[]{x, top, z};
+                }
+            }
+        }
+        throw new AssertionError("no lava in the area");
+    }
+
+    @Test
+    void ring3LakesAndChannelsHoldStillLava() {
+        RingAquifer ring3 = new RingAquifer(Level.OVERWORLD, DRY, FIELD);
+        int[] lava = innerLavaColumn(-5200, -2700, -4400, -2000);
+        RingPosition inRing3 = RingPosition.within(Ring.RING_3);
+        assertSame(Blocks.LAVA.defaultBlockState(),
+                ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(lava[0], lava[1] - 1, lava[2]), -0.5));
+        assertFalse(ring3.shouldScheduleFluidUpdate(), "still lava");
+        // Rock stays rock, the air above the lava stays vanilla's, and the rule is ring 3's alone.
+        assertNull(ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(lava[0], lava[1] - 1, lava[2]), 0.5));
+        assertSame(Blocks.AIR.defaultBlockState(),
+                ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(lava[0], lava[1], lava[2]), -0.5));
+        assertSame(Blocks.AIR.defaultBlockState(), ring3.computeSubstance(RingPosition.within(Ring.RING_4),
+                new DensityFunction.SinglePointContext(lava[0], lava[1] - 1, lava[2]), -0.5));
+    }
+
+    @Test
+    void ring3LavaBesideOpenAirBecomesCrust() {
+        RingAquifer ring3 = new RingAquifer(Level.OVERWORLD, DRY, FIELD);
+        RingPosition inRing3 = RingPosition.within(Ring.RING_3);
+        int crusts = 0;
+        for (int x = -5200; x <= -4400 && crusts == 0; x++) {
+            for (int z = -2700; z <= -2000 && crusts == 0; z += 3) {
+                VolcanicField.Column c = FIELD.column(x, z);
+                if (c.lavaTop() == Integer.MIN_VALUE) {
+                    continue;
+                }
+                int y = c.lavaTop() - 1;
+                VolcanicField.Column side = FIELD.column(x + 1, z);
+                if (!side.lavaAt(y) && side.height() < y + 1.0) {
+                    assertNull(ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(x, y, z), -0.5), x + "," + z);
+                    assertFalse(ring3.shouldScheduleFluidUpdate());
+                    crusts++;
+                }
+            }
+        }
+        assertTrue(crusts > 0, "no lava step in the channel sample");
+    }
+
+    @Test
+    void ring3HasNoWaterFromYZeroUp() {
+        RingAquifer ring3 = new RingAquifer(Level.OVERWORLD, WATER_WITH_UPDATE, FIELD);
+        assertSame(Blocks.AIR.defaultBlockState(), ring3.computeSubstance(RingPosition.within(Ring.RING_3), at(40), -0.5));
+        assertFalse(ring3.shouldScheduleFluidUpdate());
+        assertSame(Blocks.AIR.defaultBlockState(), ring3.computeSubstance(RingPosition.within(Ring.RING_3), at(0), -0.5));
+        // Deep aquifers keep their water, and ring 2 keeps all of it.
+        assertSame(Blocks.WATER.defaultBlockState(), ring3.computeSubstance(RingPosition.within(Ring.RING_3), at(-1), -0.5));
+        assertSame(Blocks.WATER.defaultBlockState(), ring3.computeSubstance(RingPosition.within(Ring.RING_2), at(40), -0.5));
+        assertTrue(ring3.shouldScheduleFluidUpdate());
+    }
+
+    @Test
+    void ring3HalvesOfItsZonesAreSealedBelowTheSeaLevel() {
+        RingAquifer ring3 = new RingAquifer(Level.OVERWORLD, WATER_WITH_UPDATE, FIELD);
+        RingPosition ring3Half = new RingPosition(Ring.RING_2, Ring.RING_3, 0.6);
+        assertNull(ring3.computeSubstance(ring3Half, at(62), -0.5));
+        assertFalse(ring3.shouldScheduleFluidUpdate());
+        assertSame(Blocks.AIR.defaultBlockState(), ring3.computeSubstance(ring3Half, at(63), -0.5));
+        assertSame(Blocks.WATER.defaultBlockState(), ring3.computeSubstance(new RingPosition(Ring.RING_2, Ring.RING_3, 0.4), at(62), -0.5));
+        // The same at the zone 3→4 (ring 4 keeps the sea), on ring 3's side only.
+        assertNull(ring3.computeSubstance(new RingPosition(Ring.RING_3, Ring.RING_4, 0.3), at(-5), -0.5));
+        assertSame(Blocks.WATER.defaultBlockState(), ring3.computeSubstance(new RingPosition(Ring.RING_3, Ring.RING_4, 0.7), at(-5), -0.5));
     }
 }

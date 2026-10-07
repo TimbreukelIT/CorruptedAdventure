@@ -1,1 +1,8 @@
-0.0
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "corruptedadventure:volcanic_output",
+    "field": "corruptedadventure:ring_3/overworld/field",
+    "output": "caldera_mask"
+  }
+}

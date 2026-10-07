@@ -16,6 +16,8 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingEdge;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingGate;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RockPillars;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VoidEdge;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicOutput;
 
 public final class ModDensityFunctionTypes {
     private static final DeferredRegister<MapCodec<? extends DensityFunction>> DENSITY_FUNCTION_TYPES =
@@ -56,6 +58,16 @@ public final class ModDensityFunctionTypes {
     /** {@code corruptedadventure:canyon_details} */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<CanyonDetails>> CANYON_DETAILS =
             DENSITY_FUNCTION_TYPES.register("canyon_details", () -> CanyonDetails.MAP_CODEC);
+
+    // ring 3 — W-terrein
+
+    /** {@code corruptedadventure:volcanic_field} (ring 3 terrain) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<VolcanicField>> VOLCANIC_FIELD =
+            DENSITY_FUNCTION_TYPES.register("volcanic_field", () -> VolcanicField.MAP_CODEC);
+
+    /** {@code corruptedadventure:volcanic_output} (one output of a volcanic field) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<VolcanicOutput>> VOLCANIC_OUTPUT =
+            DENSITY_FUNCTION_TYPES.register("volcanic_output", () -> VolcanicOutput.MAP_CODEC);
 
     private ModDensityFunctionTypes() {
     }
