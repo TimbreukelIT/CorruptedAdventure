@@ -58,10 +58,11 @@ class RingWeatherCycleTest {
     }
 
     @Test
-    void bothTypesOfARingComeUpWithEqualWeights() {
+    void everyTypeOfARingComesUpWithEqualWeights() {
         Set<RingWeatherType> seen = EnumSet.noneOf(RingWeatherType.class);
         run(SHORT, 7L, 200).forEach(state -> seen.add(state.type()));
-        assertEquals(EnumSet.of(RingWeatherType.CLEAR, RingWeatherType.ASH_RAIN, RingWeatherType.ERUPTION), seen);
+        assertEquals(EnumSet.of(RingWeatherType.CLEAR, RingWeatherType.ASH_RAIN, RingWeatherType.ERUPTION,
+                RingWeatherType.ASH_CLOUD), seen);
     }
 
     @Test
@@ -128,6 +129,27 @@ class RingWeatherCycleTest {
             assertBetween(RingWeatherCycle.start(RingWeatherType.CLEAR, VANILLA, random).durationTicks(), 12_000, 180_000);
             assertBetween(RingWeatherCycle.start(RingWeatherType.SANDSTORM, VANILLA, random).durationTicks(), 12_000, 24_000);
         }
+    }
+
+    @Test
+    void aTypeWithItsOwnRangeLastsThatLong() {
+        Map<RingWeatherType, Integer> weights = Map.of(RingWeatherType.ASH_RAIN, 45, RingWeatherType.ERUPTION, 40,
+                RingWeatherType.ASH_CLOUD, 15);
+        RingWeatherSettings settings = RingWeatherSettings.ofSeconds(5, 10, 600, 1200, weights,
+                Map.of(RingWeatherType.ASH_CLOUD, new RingWeatherSettings.Range(120, 240)));
+        List<RingWeatherState> weathers = run(settings, 45L, 400).stream()
+                .filter(state -> state.type() != RingWeatherType.CLEAR).toList();
+        assertTrue(weathers.stream().anyMatch(state -> state.type() == RingWeatherType.ASH_CLOUD));
+        for (RingWeatherState state : weathers) {
+            if (state.type() == RingWeatherType.ASH_CLOUD) {
+                assertBetween(state.durationTicks(), 2_400, 4_800);
+            } else {
+                assertBetween(state.durationTicks(), 12_000, 24_000);
+            }
+        }
+        // The rare one stays rare: 15 of 100.
+        long clouds = weathers.stream().filter(state -> state.type() == RingWeatherType.ASH_CLOUD).count();
+        assertTrue(clouds > weathers.size() * 0.05 && clouds < weathers.size() * 0.3, clouds + " of " + weathers.size());
     }
 
     /** Every new state (the moment the weather changes) over {@code changes} changes, starting with a clear spell. */

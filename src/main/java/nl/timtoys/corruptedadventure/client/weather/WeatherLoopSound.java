@@ -2,22 +2,22 @@ package nl.timtoys.corruptedadventure.client.weather;
 
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 
 /**
- * The sandstorm's wind loop around the listener (weather volume slider). {@link SandstormRenderer} feeds the wanted
- * volume every tick while the storm is felt; without a feed the volume glides to 0 and the loop stops, so leaving the
- * storm (indoors, out of the ring, end of the weather) never cuts it off.
+ * A weather loop around the listener (weather volume slider): the sandstorm's wind, ash rain, the ash cloud's roar.
+ * {@link WeatherLoop} feeds the wanted volume every tick while the weather is felt; without a feed the volume glides to
+ * 0 and the loop stops, so leaving the weather (indoors, out of the ring, end of the weather) never cuts it off.
  */
-final class SandstormSound extends AbstractTickableSoundInstance {
+final class WeatherLoopSound extends AbstractTickableSoundInstance {
     /** Largest volume change per tick (one second from silent to full). */
     private static final float STEP_PER_TICK = 1.0F / 20.0F;
 
     private float wanted;
 
-    SandstormSound() {
-        super(ModSoundEvents.RING_2_SANDSTORM.get(), SoundSource.WEATHER, SoundInstance.createUnseededRandom());
+    WeatherLoopSound(SoundEvent event) {
+        super(event, SoundSource.WEATHER, SoundInstance.createUnseededRandom());
         this.looping = true;
         this.delay = 0;
         this.volume = 0.0F;

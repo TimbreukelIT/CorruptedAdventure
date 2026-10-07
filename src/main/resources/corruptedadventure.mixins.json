@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "nl.timtoys.corruptedadventure.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [],
+  "client": [
+    "ClientLevelSkyColorMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

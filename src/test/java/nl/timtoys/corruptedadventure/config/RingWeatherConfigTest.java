@@ -23,8 +23,50 @@ class RingWeatherConfigTest {
             assertEquals(600, config.weatherMinSeconds.getDefault());
             assertEquals(1200, config.weatherMaxSeconds.getDefault());
             assertEquals(RingWeatherType.typesFor(Level.OVERWORLD, ring), config.weights.keySet().stream().toList());
-            config.weights.values().forEach(weight -> assertEquals(1, weight.getDefault()));
+            if (ring != Ring.RING_3) {
+                config.weights.values().forEach(weight -> assertEquals(1, weight.getDefault()));
+            }
         }
+    }
+
+    @Test
+    void ring3WeightsMakeTheAshCloudRare() {
+        Map<RingWeatherType, ?> weights = section(Ring.RING_3).weights;
+        assertEquals(java.util.List.of(RingWeatherType.ASH_RAIN, RingWeatherType.ERUPTION, RingWeatherType.ASH_CLOUD),
+                weights.keySet().stream().toList());
+        assertEquals(45, section(Ring.RING_3).weights.get(RingWeatherType.ASH_RAIN).getDefault());
+        assertEquals(40, section(Ring.RING_3).weights.get(RingWeatherType.ERUPTION).getDefault());
+        assertEquals(15, section(Ring.RING_3).weights.get(RingWeatherType.ASH_CLOUD).getDefault());
+        assertEquals("ashCloudWeight", ServerConfig.RingWeather.weightKey(RingWeatherType.ASH_CLOUD));
+    }
+
+    @Test
+    void ring3EffectsLiveInTheRing3Section() {
+        ServerConfig.Ring3WeatherEffects effects = ServerConfig.RING_3_WEATHER;
+        assertSame(section(Ring.RING_3).ring3Effects, effects);
+        assertSame(null, section(Ring.RING_2).ring3Effects);
+        assertEquals(java.util.List.of("weather", "ring3", "ashCloudMinSeconds"), effects.ashCloudMinSeconds.getPath());
+        assertEquals(java.util.List.of("weather", "ring3", "ashRainHeatMultiplier"), effects.ashRainHeatMultiplier.getPath());
+        assertEquals(java.util.List.of("weather", "ring3", "lavaBombsPerMinute"), effects.lavaBombsPerMinute.getPath());
+        assertEquals(java.util.List.of("weather", "ring3", "lavaBombRadius"), effects.lavaBombRadius.getPath());
+        assertEquals(java.util.List.of("weather", "ring3", "lavaBombPeakFactor"), effects.lavaBombPeakFactor.getPath());
+        assertEquals(120, effects.ashCloudMinSeconds.getDefault());
+        assertEquals(240, effects.ashCloudMaxSeconds.getDefault());
+        assertEquals(1.5, effects.ashRainHeatMultiplier.getDefault());
+        assertEquals(2.0, effects.eruptionHeatMultiplier.getDefault());
+        assertEquals(3.0, effects.ashCloudHeatMultiplier.getDefault());
+    }
+
+    @Test
+    void theAshCloudHasItsOwnDuration() {
+        Map<RingWeatherType, Integer> weights = Map.of(RingWeatherType.ASH_RAIN, 1, RingWeatherType.ASH_CLOUD, 1);
+        RingWeatherSettings settings = RingWeatherSettings.ofSeconds(600, 9000, 600, 1200, weights,
+                Map.of(RingWeatherType.ASH_CLOUD, new RingWeatherSettings.Range(120, 240)));
+        assertEquals(new RingWeatherSettings.Range(2_400, 4_800), settings.weatherRange(RingWeatherType.ASH_CLOUD));
+        assertEquals(new RingWeatherSettings.Range(12_000, 24_000), settings.weatherRange(RingWeatherType.ASH_RAIN));
+        assertThrows(IllegalArgumentException.class, () -> new RingWeatherSettings.Range(5, 4));
+        assertThrows(IllegalArgumentException.class, () -> RingWeatherSettings.ofSeconds(1, 1, 1, 1, weights,
+                Map.of(RingWeatherType.CLEAR, new RingWeatherSettings.Range(1, 2))));
     }
 
     @Test

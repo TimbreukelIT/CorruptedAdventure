@@ -24,7 +24,7 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
         add(ModSoundEvents.RING_1_STRANGE_CAVE, SoundDefinition.definition()
                 .subtitle("subtitles.corruptedadventure.ambient.ring_1.strange_cave")
                 .with(caveSound(0.5F), caveSound(0.6F), caveSound(0.7F)));
-        // Sandstorm wind loop: vanilla's elytra wind, lower. Volume follows the storm on the client (SandstormSound).
+        // Sandstorm wind loop: vanilla's elytra wind, lower. Volume follows the storm on the client (WeatherLoopSound).
         add(ModSoundEvents.RING_2_SANDSTORM, SoundDefinition.definition()
                 .subtitle("subtitles.corruptedadventure.weather.ring_2.sandstorm")
                 .with(sound(SoundEvents.ELYTRA_FLYING.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.7F)));
@@ -44,6 +44,20 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                                 .weight(3).pitch(0.85F).volume(0.75F),
                         sound(SoundEvents.POINTED_DRIPSTONE_DRIP_WATER_INTO_CAULDRON.getLocation(), SoundDefinition.SoundType.EVENT)
                                 .weight(1).pitch(0.75F).volume(0.75F)));
+        // Ring 3 weather (package 45): vanilla references until our own synthesis in wave 2 (Ring3Sounds.java).
+        // Ash rain: the basalt deltas' crackling loop; the volume follows the weather on the client.
+        add(ModSoundEvents.RING_3_ASH_RAIN, SoundDefinition.definition()
+                .subtitle("subtitles.corruptedadventure.weather.ring_3.ash_rain")
+                .with(sound(SoundEvents.AMBIENT_BASALT_DELTAS_LOOP.value().getLocation(), SoundDefinition.SoundType.EVENT)));
+        // Eruption rumble: thunder, an octave down, as distant one-shots.
+        add(ModSoundEvents.RING_3_ERUPTION, SoundDefinition.definition()
+                .subtitle("subtitles.corruptedadventure.weather.ring_3.eruption")
+                .with(sound(SoundEvents.LIGHTNING_BOLT_THUNDER.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.5F),
+                        sound(SoundEvents.LIGHTNING_BOLT_THUNDER.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.6F)));
+        // Ash cloud: the sandstorm's wind at the lowest pitch the engine plays (0.5): a roar.
+        add(ModSoundEvents.RING_3_ASH_CLOUD, SoundDefinition.definition()
+                .subtitle("subtitles.corruptedadventure.weather.ring_3.ash_cloud")
+                .with(sound(SoundEvents.ELYTRA_FLYING.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.5F)));
     }
 
     private static SoundDefinition.Sound netherFile(String name) {

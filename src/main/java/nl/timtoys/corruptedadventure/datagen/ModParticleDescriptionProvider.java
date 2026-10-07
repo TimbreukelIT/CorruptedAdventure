@@ -17,5 +17,8 @@ final class ModParticleDescriptionProvider extends ParticleDescriptionProvider {
     protected void addDescriptions() {
         // Own grains (change 37): light grey sprites sand_gust_0 … sand_gust_3 (small to large), tinted sand by the particle.
         spriteSet(ModParticleTypes.SAND_GUST.get(), ResourceLocation.fromNamespaceAndPath(CorruptedAdventure.MOD_ID, "sand_gust"), 4, false);
+        // Ring 3 weather (package 45): light grey sprites from stream T (ash_flake_0..3, ember_0..3), tinted by the particle.
+        spriteSet(ModParticleTypes.ASH_FLAKE.get(), CorruptedAdventure.id("ash_flake"), 4, false);
+        spriteSet(ModParticleTypes.EMBER.get(), CorruptedAdventure.id("ember"), 4, false);
     }
 }

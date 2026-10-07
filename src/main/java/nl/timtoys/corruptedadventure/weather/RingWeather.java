@@ -38,6 +38,8 @@ public final class RingWeather {
         // The gameplay effects of the weather (change 28; later 45, 66, 85 the same way).
         SandstormWind.register(gameBus);
         ConditionDefinitions.addModifier(new HeatWaveDehydrationModifier());
+        // Ring 3 (package 45): the eruption's lava bombs. Its heat modifiers belong to the conditions (stream C).
+        LavaBombs.register(gameBus);
         gameBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> sendTo(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, event -> sendTo(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerRespawnEvent.class, event -> sendTo(event.getEntity()));
