@@ -118,3 +118,10 @@ Bron: `fase-1-wereld.md` §1.6 (weermodel, client-hook), Ring 3 "Weer" + sparrin
 - **Niet gecommit (bewust):** de tijdelijke particle-sprites `textures/particle/ash_flake_0..3.png` en `ember_0..3.png` (kopieën van `sand_gust_*`, alleen voor `runData`; T levert de echte).
 - **Ontbreekt nog:** test S met twee clients (W-checklist hierboven: beide clients dezelfde bommen, `mobGriefing false`, dak, grenzen 2→3/3→4, Particles Minimal, FPS). Kan in de eigen worktree of bij integratie 1; `run/server.properties` staat klaar (RCON uit gezet, weer aanzetten: `enable-rcon=true`, poort 25585).
 - Geen wachtende review; geen draaiende processen, slots of locks van A.
+
+## Hervat 2026-10-07 — test S (optie B van main)
+- Server (25575, wereld `ring3-atmosphere-a`) startte opnieuw zonder fouten. Via RCON gaf `/ca weather 3 eruption 60` `Set ring_3: eruption, 60 s …`; `/ca weather` toont ring 3 met de nieuwe types; `stop` werkte netjes.
+- De client lukte niet. Hij laadde volledig zonder crash: de mixin-config werd geladen, de resources en particle-atlas ook (met de tijdelijke sprites). Daarna bleef hij in de frame-loop staan zonder verbinding: in een verse `run/` toont 1.21.1 eerst het onboarding-scherm voor toegankelijkheid, en quick-play wacht daarachter (onopgemerkt; gisteren gebeurde hetzelfde). Fix voor wie verder test: `run/options.txt` met `onboardAccessibility:false` en `skipMultiplayerWarning:true` (staat nu klaar in deze worktree). De tweede poging kreeg geen JVM-slot meer; daarna afgebroken op verzoek van main (lock niet langer vasthouden).
+- **Nog open, naar de integratie-S (waves.md §6.5):** de in-game W-checklist met 2 clients (zelfde bommen, `mobGriefing`, dak, grenzen, Particles Minimal, FPS) en de visuele check van de mixin (rode lucht).
+- Les voor het protocol: neem eerst het lock en pas dan de slots, en wacht nooit met het lock vast op meer slots. Een server + 2 clients vraagt alle 3 slots, dus dat lukt alleen als main de machine reserveert.
+- Voortgang: 09:15 S (server) afgerond, client naar INT; lock/slot vrij, RCON uit.
