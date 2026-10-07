@@ -99,16 +99,24 @@ class RingGateTest {
     }
 
     @Test
-    void onlyInterpolatedMarkersAreGatedAndNeverTwice() {
+    void interpolatedMarkersGetAGateFlatCachesAFillGateNeverTwice() {
         DensityFunction inner = DensityFunctions.constant(1.0);
-        DensityFunction once = RingGate.gateInterpolated(Level.OVERWORLD, Ring.RING_2, DensityFunctions.interpolated(inner));
-        RingGate gate = assertInstanceOf(RingGate.class, ((DensityFunctions.MarkerOrMarked) once).wrapped());
+        DensityFunction interpolated = RingGate.gateCacheMarker(Level.OVERWORLD, Ring.RING_2, DensityFunctions.interpolated(inner));
+        RingGate gate = assertInstanceOf(RingGate.class, ((DensityFunctions.MarkerOrMarked) interpolated).wrapped());
         assertEquals(Ring.RING_2, gate.ring());
         assertSame(inner, gate.argument());
-        assertSame(once, RingGate.gateInterpolated(Level.OVERWORLD, Ring.RING_2, once));
+        assertSame(interpolated, RingGate.gateCacheMarker(Level.OVERWORLD, Ring.RING_2, interpolated));
 
         DensityFunction flat = DensityFunctions.flatCache(inner);
-        assertSame(flat, RingGate.gateInterpolated(Level.OVERWORLD, Ring.RING_2, flat));
-        assertSame(inner, RingGate.gateInterpolated(Level.OVERWORLD, Ring.RING_2, inner));
+        DensityFunction gatedFlat = RingGate.gateCacheMarker(Level.OVERWORLD, Ring.RING_2, flat);
+        assertSame(((DensityFunctions.MarkerOrMarked) flat).codec(), ((DensityFunctions.MarkerOrMarked) gatedFlat).codec());
+        RingFillGate fillGate = assertInstanceOf(RingFillGate.class, ((DensityFunctions.MarkerOrMarked) gatedFlat).wrapped());
+        assertEquals(Ring.RING_2, fillGate.ring());
+        assertSame(inner, fillGate.argument());
+        assertSame(gatedFlat, RingGate.gateCacheMarker(Level.OVERWORLD, Ring.RING_2, gatedFlat));
+
+        DensityFunction cache2d = DensityFunctions.cache2d(inner);
+        assertSame(cache2d, RingGate.gateCacheMarker(Level.OVERWORLD, Ring.RING_2, cache2d));
+        assertSame(inner, RingGate.gateCacheMarker(Level.OVERWORLD, Ring.RING_2, inner));
     }
 }

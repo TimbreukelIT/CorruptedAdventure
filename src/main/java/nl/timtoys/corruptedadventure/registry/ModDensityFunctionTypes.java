@@ -13,6 +13,7 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.DewGeodes;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RadialFalloff;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingBlend;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingEdge;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingFillGate;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingGate;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RockPillars;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VoidEdge;
@@ -68,6 +69,11 @@ public final class ModDensityFunctionTypes {
     /** {@code corruptedadventure:volcanic_output} (one output of a volcanic field) */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<VolcanicOutput>> VOLCANIC_OUTPUT =
             DENSITY_FUNCTION_TYPES.register("volcanic_output", () -> VolcanicOutput.MAP_CODEC);
+
+    // 39e — worldgen performance
+    /** {@code corruptedadventure:ring_fill_gate} (only set by {@code RingBlend.mapAll}, not in JSON) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<RingFillGate>> RING_FILL_GATE =
+            DENSITY_FUNCTION_TYPES.register("ring_fill_gate", () -> RingFillGate.MAP_CODEC);
 
     private ModDensityFunctionTypes() {
     }

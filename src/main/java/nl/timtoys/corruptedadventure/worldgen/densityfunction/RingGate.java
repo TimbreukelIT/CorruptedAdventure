@@ -18,10 +18,12 @@ import java.util.Arrays;
  * <p>
  * {@link RingBlend#mapAll} puts one inside every {@code interpolated} marker of each ring input. The noise chunk fills
  * every interpolator in every chunk, also of rings far away; behind the gate those cost one column lookup instead
- * of the ring's 3D terrain. {@code flat_cache} markers are not gated: the noise chunk fills them eagerly (5 × 5 per
- * chunk), which is cheap. The margin keeps every cell corner (4 blocks apart) of a cell where the ring has weight
- * computed for real; it is 16 rather than 4 because the effective distance can locally run steeper than one block
- * per block, and grows with a stronger boundary noise ({@link nl.timtoys.corruptedadventure.ring.RingLayout#reachMargin}).
+ * of the ring's 3D terrain. {@code flat_cache} markers get a {@link RingFillGate} instead (change 39e), which only acts
+ * while the noise chunk fills them. The margin keeps every cell corner (4 blocks apart) of a cell where the ring has
+ * weight computed for real; it is 16 rather than 4 because the effective distance can locally run steeper than one
+ * block per block, and grows with a stronger boundary noise
+ * ({@link nl.timtoys.corruptedadventure.ring.RingLayout#reachMargin}). Nothing that resolves a density function through
+ * its markers (such as {@code CellEdges#resolve}) may sit directly under a gated marker.
  */
 public record RingGate(ResourceKey<Level> dimension, Ring ring, DensityFunction argument) implements DensityFunction {
     /** Blocks of the dimension, so cells of 4 blocks with room to spare. */
@@ -35,20 +37,27 @@ public record RingGate(ResourceKey<Level> dimension, Ring ring, DensityFunction 
 
     public static final KeyDispatchDataCodec<RingGate> CODEC = KeyDispatchDataCodec.of(MAP_CODEC);
 
-    // Vanilla's marker types are not public; every interpolated marker (also the noise chunk's interpolator) shares
-    // this codec instance.
+    // Vanilla's marker types are not public; every marker of a type (also the noise chunk's own interpolator and flat
+    // cache) shares its type's codec instance.
     private static final KeyDispatchDataCodec<? extends DensityFunction> INTERPOLATED =
             DensityFunctions.interpolated(DensityFunctions.zero()).codec();
+    private static final KeyDispatchDataCodec<? extends DensityFunction> FLAT_CACHE =
+            DensityFunctions.flatCache(DensityFunctions.zero()).codec();
 
     /**
-     * {@code function} itself, or, if it is an {@code interpolated} marker whose argument is not gated yet, the same
-     * marker around a gate. Idempotent: {@code mapAll} runs both when the random state wires the noises and again in
-     * every noise chunk.
+     * {@code function} itself, or, if it is an {@code interpolated} marker (a gate) or a {@code flat_cache} marker (a
+     * {@link RingFillGate}) whose argument is not gated yet, the same marker around its gate. Idempotent: {@code mapAll}
+     * runs both when the random state wires the noises and again in every noise chunk.
      */
-    static DensityFunction gateInterpolated(ResourceKey<Level> dimension, Ring ring, DensityFunction function) {
-        if (function instanceof DensityFunctions.MarkerOrMarked marker && marker.codec() == INTERPOLATED
-                && !(marker.wrapped() instanceof RingGate)) {
-            return DensityFunctions.interpolated(new RingGate(dimension, ring, marker.wrapped()));
+    static DensityFunction gateCacheMarker(ResourceKey<Level> dimension, Ring ring, DensityFunction function) {
+        if (function instanceof DensityFunctions.MarkerOrMarked marker
+                && !(marker.wrapped() instanceof RingGate || marker.wrapped() instanceof RingFillGate)) {
+            if (marker.codec() == INTERPOLATED) {
+                return DensityFunctions.interpolated(new RingGate(dimension, ring, marker.wrapped()));
+            }
+            if (marker.codec() == FLAT_CACHE) {
+                return DensityFunctions.flatCache(new RingFillGate(dimension, ring, marker.wrapped()));
+            }
         }
         return function;
     }

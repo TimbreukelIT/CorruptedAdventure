@@ -15,14 +15,14 @@ import javax.annotation.Nullable;
 /**
  * Applies the fluid rules of {@link RingFluidPicker} to the local fluids of vanilla's noise-based aquifer, which the
  * global picker does not cover. Void zone: open space stays empty (below Y -10 the aquifer would hang lava sheets under
- * the floating islands). Overworld ring 2: local lava becomes water ({@link RingFluidPicker#waterOnly}), with vanilla's
+ * the floating islands). Overworld ring 2: local lava becomes water ({@link RingFluidPicker#waterOnlyFrom}), with vanilla's
  * fluid update flag (set near cell borders, where the fluid may flow; inside a pool a tick would do nothing). Right
  * above vanilla's lava layer (Y −54) any aquifer fluid stays solid instead: one block of stone between the water and
  * the lava below, like vanilla's barriers (vanilla itself lets water cells touch the layer, and the contact turns into
  * an obsidian crust). Overworld ring 3: lava in the lava lakes and channels of the {@link VolcanicField}
- * ({@link RingFluidPicker#ring3Lava}, no fluid update: still lava), no water from Y 0 up
- * ({@link RingFluidPicker#ring3Dry}), and rock below ring 2's sea level in its half of the zone 2→3
- * ({@link RingFluidPicker#ring3Seal}). Carvers fill their caves through this aquifer too.
+ * ({@link RingFluidPicker#ring3LavaColumn}, no fluid update: still lava), no water from Y 0 up
+ * ({@link RingFluidPicker#ring3DryFrom}), and rock below ring 2's sea level in its half of the zone 2→3
+ * ({@link RingFluidPicker#ring3SealBelow}). Carvers fill their caves through this aquifer too.
  * <p>
  * One instance per noise chunk, so the per-call state below is single-threaded like vanilla's.
  */
@@ -45,6 +45,21 @@ final class RingAquifer implements Aquifer {
     private boolean suppressed;
     private boolean lid;
 
+    // The rules per column of the chunk (RingFluidPicker's per-column bounds), so the per-block path only compares Y
+    // and never branches on the ring itself (one ring check per block made C2 deoptimize there over and over, change
+    // 39e). Direct-mapped on the low 4 bits of x and z: the noise chunk changes column with every block (y → x → z
+    // inside a cell), and the carvers stay inside the chunk too. The last slot is for the tests' explicit positions.
+    private static final int COLUMNS = 16 * 16;
+    private final boolean[] known = new boolean[COLUMNS + 1];
+    private final int[] keyX = new int[COLUMNS + 1];
+    private final int[] keyZ = new int[COLUMNS + 1];
+    private final boolean[] noFluid = new boolean[COLUMNS + 1];
+    private final int[] sealBelow = new int[COLUMNS + 1];
+    // The column's lava top when its lava counts, else Integer.MIN_VALUE (no lava at any Y).
+    private final int[] lavaTop = new int[COLUMNS + 1];
+    private final int[] dryFrom = new int[COLUMNS + 1];
+    private final int[] waterOnlyFrom = new int[COLUMNS + 1];
+
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla) {
         this(dimension, vanilla, null);
     }
@@ -59,34 +74,86 @@ final class RingAquifer implements Aquifer {
     @Nullable
     @Override
     public BlockState computeSubstance(DensityFunction.FunctionContext context, double substance) {
-        return computeSubstance(RingColumnCache.ringAt(dimension, context.blockX(), context.blockZ()), context, substance);
+        return compute(-1, context, substance);
     }
 
+    /** The same with the ring given, for tests: the column is not remembered. */
     @Nullable
     BlockState computeSubstance(RingPosition position, DensityFunction.FunctionContext context, double substance) {
-        suppressed = substance <= 0.0 && RingFluidPicker.noFluid(position);
+        load(COLUMNS, position, context.blockX(), context.blockZ());
+        return compute(COLUMNS, context, substance);
+    }
+
+    /** @param slot the column's slot, or −1 to look it up only when a rule needs it */
+    @Nullable
+    private BlockState compute(int slot, DensityFunction.FunctionContext context, double substance) {
+        if (substance > 0.0) {
+            // Rock, most blocks: no rule applies before vanilla, which places nothing there, so the ring is not needed.
+            BlockState state = vanilla.computeSubstance(context, substance);
+            suppressed = false;
+            lid = false;
+            return state == null ? null : afterVanilla(slot(slot, context), context.blockY(), state);
+        }
+        return openSpace(slot(slot, context), context, substance);
+    }
+
+    private int slot(int slot, DensityFunction.FunctionContext context) {
+        return slot >= 0 ? slot : column(context.blockX(), context.blockZ());
+    }
+
+    /** The slot of a column, filled on first use. */
+    private int column(int x, int z) {
+        int i = (x & 15) | (z & 15) << 4;
+        if (!known[i] || keyX[i] != x || keyZ[i] != z) {
+            load(i, RingColumnCache.ringAt(dimension, x, z), x, z);
+            known[i] = true;
+            keyX[i] = x;
+            keyZ[i] = z;
+        }
+        return i;
+    }
+
+    private void load(int i, RingPosition position, int x, int z) {
+        noFluid[i] = RingFluidPicker.noFluid(position);
+        sealBelow[i] = RingFluidPicker.ring3SealBelow(dimension, position);
+        lavaTop[i] = RingFluidPicker.ring3LavaColumn(dimension, position, volcanic)
+                ? volcanic.column(x, z).lavaTop() : Integer.MIN_VALUE;
+        dryFrom[i] = RingFluidPicker.ring3DryFrom(dimension, position);
+        waterOnlyFrom[i] = RingFluidPicker.waterOnlyFrom(dimension, position);
+    }
+
+    /** Open space ({@code substance <= 0}): the rules of {@link RingFluidPicker} in their order. */
+    @Nullable
+    private BlockState openSpace(int i, DensityFunction.FunctionContext context, double substance) {
+        int y = context.blockY();
+        suppressed = true;
         lid = false;
-        if (suppressed) {
+        if (noFluid[i]) {
             return AIR;
         }
-        if (substance <= 0.0 && RingFluidPicker.ring3Seal(dimension, position, context.blockY())) {
-            suppressed = true;
+        if (y < sealBelow[i]) {
             return null;
         }
-        if (substance <= 0.0 && RingFluidPicker.ring3Lava(dimension, position, volcanic, context.blockX(), context.blockY(), context.blockZ())) {
-            suppressed = true;
-            return exposed(context.blockX(), context.blockY(), context.blockZ()) ? null : LAVA;
+        // lavaAt is y < lavaTop && y >= the lava's bottom. The column is looked up again rather than kept: its object
+        // belongs to the field's table, which may refill it for another column in between.
+        if (y < lavaTop[i] && volcanic.column(context.blockX(), context.blockZ()).lavaAt(y)) {
+            return exposed(context.blockX(), y, context.blockZ()) ? null : LAVA;
         }
+        suppressed = false;
         BlockState state = vanilla.computeSubstance(context, substance);
-        if (state != null && state.is(Blocks.WATER) && RingFluidPicker.ring3Dry(dimension, position, context.blockY())) {
+        return state == null ? null : afterVanilla(i, y, state);
+    }
+
+    /** The rules on vanilla's state: ring 3 stays dry, ring 2 has water instead of lava. */
+    private BlockState afterVanilla(int i, int y, BlockState state) {
+        if (y >= dryFrom[i] && state.is(Blocks.WATER)) {
             suppressed = true;
             return AIR;
         }
-        if (state == null || !(state.is(Blocks.LAVA) || state.is(Blocks.WATER))
-                || !RingFluidPicker.waterOnly(dimension, position, context.blockY())) {
+        if (y < waterOnlyFrom[i] || !(state.is(Blocks.LAVA) || state.is(Blocks.WATER))) {
             return state;
         }
-        if (context.blockY() == RingFluidPicker.LAVA_LAYER_TOP) {
+        if (y == RingFluidPicker.LAVA_LAYER_TOP) {
             lid = true;
             return null;
         }

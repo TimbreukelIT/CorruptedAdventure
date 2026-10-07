@@ -25,6 +25,7 @@ import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingFillGate;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
 import javax.annotation.Nullable;
@@ -76,8 +77,10 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
 
     private NoiseChunk createNoiseChunk(ChunkAccess chunk, StructureManager structureManager, Blender blender, RandomState random) {
         return chunk.getOrCreateNoiseChunk(access -> {
-            NoiseChunk noiseChunk = NoiseChunk.forChunk(access, random, Beardifier.forStructuresInChunk(structureManager, access.getPos()),
-                    generatorSettings().value(), globalFluidPicker.get(), blender);
+            // In fill mode the flat caches of rings that cannot reach this chunk stay 0 (RingFillGate).
+            NoiseChunk noiseChunk = RingFillGate.duringFill(access.getPos().getMinBlockX(), access.getPos().getMinBlockZ(),
+                    () -> NoiseChunk.forChunk(access, random, Beardifier.forStructuresInChunk(structureManager, access.getPos()),
+                            generatorSettings().value(), globalFluidPicker.get(), blender));
             VolcanicField volcanic = volcanicField(random);
             // The noise chunk's memo returns its own instance of the (equal) field: one column cache for terrain and lava.
             noiseChunk.aquifer = new RingAquifer(dimension, noiseChunk.aquifer,

@@ -13569,1702 +13569,1718 @@
       {
         "type": "minecraft:condition",
         "if_true": {
-          "type": "minecraft:biome",
-          "biome_is": [
-            "corruptedadventure:canyonlands",
-            "corruptedadventure:hoodoo_fields",
-            "corruptedadventure:dry_riverbeds"
-          ]
+          "type": "corruptedadventure:ring_reach",
+          "dimension": "minecraft:overworld",
+          "ring": "ring_2"
         },
         "then_run": {
           "type": "minecraft:condition",
           "if_true": {
-            "type": "minecraft:y_above",
-            "anchor": {
-              "absolute": 8
-            },
-            "surface_depth_multiplier": 0,
-            "add_stone_depth": false
+            "type": "minecraft:biome",
+            "biome_is": [
+              "corruptedadventure:canyonlands",
+              "corruptedadventure:hoodoo_fields",
+              "corruptedadventure:dry_riverbeds"
+            ]
           },
           "then_run": {
-            "type": "minecraft:sequence",
-            "sequence": [
-              {
-                "type": "minecraft:condition",
-                "if_true": {
-                  "type": "minecraft:y_above",
-                  "anchor": {
-                    "absolute": 152
-                  },
-                  "surface_depth_multiplier": 1,
-                  "add_stone_depth": false
-                },
-                "then_run": {
-                  "type": "minecraft:sequence",
-                  "sequence": [
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 196
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 192
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 186
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 183
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 178
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 175
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 171
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 167
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 164
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 160
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 157
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  ]
-                }
+            "type": "minecraft:condition",
+            "if_true": {
+              "type": "minecraft:y_above",
+              "anchor": {
+                "absolute": 8
               },
-              {
-                "type": "minecraft:condition",
-                "if_true": {
-                  "type": "minecraft:y_above",
-                  "anchor": {
-                    "absolute": 104
+              "surface_depth_multiplier": 0,
+              "add_stone_depth": false
+            },
+            "then_run": {
+              "type": "minecraft:sequence",
+              "sequence": [
+                {
+                  "type": "minecraft:condition",
+                  "if_true": {
+                    "type": "minecraft:y_above",
+                    "anchor": {
+                      "absolute": 152
+                    },
+                    "surface_depth_multiplier": 1,
+                    "add_stone_depth": false
                   },
-                  "surface_depth_multiplier": 1,
-                  "add_stone_depth": false
-                },
-                "then_run": {
-                  "type": "minecraft:sequence",
-                  "sequence": [
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 148
+                  "then_run": {
+                    "type": "minecraft:sequence",
+                    "sequence": [
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 196
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
                         },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
                         }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 144
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
                       },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 192
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
                         }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 138
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
                       },
-                      "then_run": {
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 186
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 183
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 178
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 175
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 171
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 167
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 164
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 160
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 157
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
                         "type": "minecraft:block",
                         "result_state": {
                           "Name": "corruptedadventure:red_canyon_stone"
                         }
                       }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 135
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 130
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 127
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 123
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 119
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 116
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 112
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 109
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "minecraft:condition",
-                "if_true": {
-                  "type": "minecraft:y_above",
-                  "anchor": {
-                    "absolute": 56
-                  },
-                  "surface_depth_multiplier": 1,
-                  "add_stone_depth": false
-                },
-                "then_run": {
-                  "type": "minecraft:sequence",
-                  "sequence": [
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 100
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 96
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 90
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 87
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 82
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 79
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 75
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 71
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 68
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 64
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 61
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "minecraft:sequence",
-                "sequence": [
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 52
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:cream_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 48
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:orange_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 42
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 39
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:cream_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 34
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:orange_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 31
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 27
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:cream_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 23
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 20
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:orange_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 16
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 13
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:cream_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:block",
-                    "result_state": {
-                      "Name": "corruptedadventure:red_canyon_stone"
-                    }
+                    ]
                   }
-                ]
-              }
-            ]
+                },
+                {
+                  "type": "minecraft:condition",
+                  "if_true": {
+                    "type": "minecraft:y_above",
+                    "anchor": {
+                      "absolute": 104
+                    },
+                    "surface_depth_multiplier": 1,
+                    "add_stone_depth": false
+                  },
+                  "then_run": {
+                    "type": "minecraft:sequence",
+                    "sequence": [
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 148
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 144
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 138
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 135
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 130
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 127
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 123
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 119
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 116
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 112
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 109
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "minecraft:condition",
+                  "if_true": {
+                    "type": "minecraft:y_above",
+                    "anchor": {
+                      "absolute": 56
+                    },
+                    "surface_depth_multiplier": 1,
+                    "add_stone_depth": false
+                  },
+                  "then_run": {
+                    "type": "minecraft:sequence",
+                    "sequence": [
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 100
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 96
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 90
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 87
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 82
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 79
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 75
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 71
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 68
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 64
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 61
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "minecraft:sequence",
+                  "sequence": [
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 52
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:cream_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 48
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:orange_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 42
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 39
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:cream_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 34
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:orange_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 31
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 27
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:cream_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 23
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 20
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:orange_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 16
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 13
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:cream_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "corruptedadventure:red_canyon_stone"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
           }
         }
       },
       {
         "type": "minecraft:condition",
         "if_true": {
-          "type": "minecraft:biome",
-          "biome_is": [
-            "corruptedadventure:oasis_flats"
-          ]
+          "type": "corruptedadventure:ring_reach",
+          "dimension": "minecraft:overworld",
+          "ring": "ring_2"
         },
         "then_run": {
           "type": "minecraft:condition",
           "if_true": {
-            "type": "minecraft:y_above",
-            "anchor": {
-              "absolute": 74
-            },
-            "surface_depth_multiplier": 1,
-            "add_stone_depth": false
+            "type": "minecraft:biome",
+            "biome_is": [
+              "corruptedadventure:oasis_flats"
+            ]
           },
           "then_run": {
-            "type": "minecraft:sequence",
-            "sequence": [
-              {
-                "type": "minecraft:condition",
-                "if_true": {
-                  "type": "minecraft:y_above",
-                  "anchor": {
-                    "absolute": 152
-                  },
-                  "surface_depth_multiplier": 1,
-                  "add_stone_depth": false
-                },
-                "then_run": {
-                  "type": "minecraft:sequence",
-                  "sequence": [
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 196
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 192
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 186
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 183
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 178
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 175
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 171
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 167
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 164
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 160
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 157
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  ]
-                }
+            "type": "minecraft:condition",
+            "if_true": {
+              "type": "minecraft:y_above",
+              "anchor": {
+                "absolute": 74
               },
-              {
-                "type": "minecraft:condition",
-                "if_true": {
-                  "type": "minecraft:y_above",
-                  "anchor": {
-                    "absolute": 104
+              "surface_depth_multiplier": 1,
+              "add_stone_depth": false
+            },
+            "then_run": {
+              "type": "minecraft:sequence",
+              "sequence": [
+                {
+                  "type": "minecraft:condition",
+                  "if_true": {
+                    "type": "minecraft:y_above",
+                    "anchor": {
+                      "absolute": 152
+                    },
+                    "surface_depth_multiplier": 1,
+                    "add_stone_depth": false
                   },
-                  "surface_depth_multiplier": 1,
-                  "add_stone_depth": false
-                },
-                "then_run": {
-                  "type": "minecraft:sequence",
-                  "sequence": [
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 148
+                  "then_run": {
+                    "type": "minecraft:sequence",
+                    "sequence": [
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 196
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
                         },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
                         }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 144
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
                       },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 192
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
                         }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 138
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
                       },
-                      "then_run": {
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 186
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 183
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 178
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 175
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 171
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 167
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 164
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 160
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 157
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
                         "type": "minecraft:block",
                         "result_state": {
                           "Name": "corruptedadventure:red_canyon_stone"
                         }
                       }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 135
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 130
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 127
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 123
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 119
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 116
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 112
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 109
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "minecraft:condition",
-                "if_true": {
-                  "type": "minecraft:y_above",
-                  "anchor": {
-                    "absolute": 56
-                  },
-                  "surface_depth_multiplier": 1,
-                  "add_stone_depth": false
-                },
-                "then_run": {
-                  "type": "minecraft:sequence",
-                  "sequence": [
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 100
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 96
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 90
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 87
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 82
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 79
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 75
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 71
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 68
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:orange_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 64
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:red_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:condition",
-                      "if_true": {
-                        "type": "minecraft:y_above",
-                        "anchor": {
-                          "absolute": 61
-                        },
-                        "surface_depth_multiplier": 1,
-                        "add_stone_depth": false
-                      },
-                      "then_run": {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "corruptedadventure:cream_canyon_stone"
-                        }
-                      }
-                    },
-                    {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "minecraft:sequence",
-                "sequence": [
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 52
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:cream_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 48
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:orange_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 42
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 39
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:cream_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 34
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:orange_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 31
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 27
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:cream_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 23
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 20
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:orange_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 16
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:red_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:y_above",
-                      "anchor": {
-                        "absolute": 13
-                      },
-                      "surface_depth_multiplier": 1,
-                      "add_stone_depth": false
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:cream_canyon_stone"
-                      }
-                    }
-                  },
-                  {
-                    "type": "minecraft:block",
-                    "result_state": {
-                      "Name": "corruptedadventure:red_canyon_stone"
-                    }
+                    ]
                   }
-                ]
-              }
-            ]
+                },
+                {
+                  "type": "minecraft:condition",
+                  "if_true": {
+                    "type": "minecraft:y_above",
+                    "anchor": {
+                      "absolute": 104
+                    },
+                    "surface_depth_multiplier": 1,
+                    "add_stone_depth": false
+                  },
+                  "then_run": {
+                    "type": "minecraft:sequence",
+                    "sequence": [
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 148
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 144
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 138
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 135
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 130
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 127
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 123
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 119
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 116
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 112
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 109
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "minecraft:condition",
+                  "if_true": {
+                    "type": "minecraft:y_above",
+                    "anchor": {
+                      "absolute": 56
+                    },
+                    "surface_depth_multiplier": 1,
+                    "add_stone_depth": false
+                  },
+                  "then_run": {
+                    "type": "minecraft:sequence",
+                    "sequence": [
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 100
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 96
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 90
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 87
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 82
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 79
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 75
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 71
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 68
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:orange_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 64
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:red_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 61
+                          },
+                          "surface_depth_multiplier": 1,
+                          "add_stone_depth": false
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:cream_canyon_stone"
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "minecraft:sequence",
+                  "sequence": [
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 52
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:cream_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 48
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:orange_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 42
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 39
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:cream_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 34
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:orange_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 31
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 27
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:cream_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 23
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 20
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:orange_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 16
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:red_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:y_above",
+                        "anchor": {
+                          "absolute": 13
+                        },
+                        "surface_depth_multiplier": 1,
+                        "add_stone_depth": false
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "corruptedadventure:cream_canyon_stone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "corruptedadventure:red_canyon_stone"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
           }
         }
       },

@@ -86,7 +86,7 @@ class RingBlendTest {
     }
 
     @Test
-    void mapAllGatesEveryInterpolatedMarkerWithItsOwnRingOnce() {
+    void mapAllGatesEveryCacheMarkerWithItsOwnRingOnce() {
         Map<Ring, DensityFunction> rings = new EnumMap<>(Ring.class);
         for (Ring ring : Ring.values()) {
             rings.put(ring, DensityFunctions.add(
@@ -101,11 +101,14 @@ class RingBlendTest {
             return function;
         });
         List<RingGate> gates = seen.stream().filter(RingGate.class::isInstance).map(RingGate.class::cast).toList();
-        // One per ring: the flat caches are left alone, nothing is gated twice.
+        List<RingFillGate> fillGates = seen.stream().filter(RingFillGate.class::isInstance).map(RingFillGate.class::cast).toList();
+        // One gate (the interpolator) and one fill gate (the flat cache) per ring, nothing is gated twice.
         assertEquals(Ring.values().length, gates.size());
+        assertEquals(Ring.values().length, fillGates.size());
         for (Ring ring : Ring.values()) {
-            assertEquals(1, gates.stream().filter(gate -> gate.ring() == ring
-                    && gate.argument().equals(DensityFunctions.constant(ring.ordinal()))).count(), ring.toString());
+            DensityFunction argument = DensityFunctions.constant(ring.ordinal());
+            assertEquals(1, gates.stream().filter(gate -> gate.ring() == ring && gate.argument().equals(argument)).count(), ring.toString());
+            assertEquals(1, fillGates.stream().filter(gate -> gate.ring() == ring && gate.argument().equals(argument)).count(), ring.toString());
         }
     }
 

@@ -33,8 +33,8 @@ import java.util.Set;
  * instead of a mix with the neighbour's.
  * <p>
  * Only the one or two inputs a position needs are computed. Interpolation markers inside the inputs still work
- * because {@link #mapAll} passes the visitor on; the noise chunk then fills those interpolators in every chunk,
- * whether or not the ring is nearby, so {@link #mapAll} puts a {@link RingGate} inside each of them first.
+ * because {@link #mapAll} passes the visitor on; the noise chunk then fills those interpolators and flat caches in
+ * every chunk, whether or not the ring is nearby, so {@link #mapAll} puts a {@link RingGate} inside each of them first.
  */
 public final class RingBlend implements DensityFunction {
     private static final Codec<Map<Ring, DensityFunction>> RINGS_CODEC =
@@ -58,7 +58,9 @@ public final class RingBlend implements DensityFunction {
     private final ResourceKey<Level> dimension;
     // Indexed by Ring ordinal.
     private final DensityFunction[] rings;
+    // For the codec; the per-block path reads switches, derived from it in the constructor.
     private final Set<Ring> switchAt;
+    private final boolean[] switches;
 
     public RingBlend(ResourceKey<Level> dimension, Map<Ring, DensityFunction> rings) {
         this(dimension, rings, Set.of());
@@ -73,6 +75,10 @@ public final class RingBlend implements DensityFunction {
         this.dimension = dimension;
         this.rings = rings;
         this.switchAt = switchAt.isEmpty() ? Set.of() : Collections.unmodifiableSet(EnumSet.copyOf(switchAt));
+        this.switches = new boolean[Ring.values().length];
+        for (Ring ring : this.switchAt) {
+            switches[ring.ordinal()] = true;
+        }
     }
 
     static DataResult<Map<Ring, DensityFunction>> validateRings(Map<Ring, DensityFunction> rings) {
@@ -107,17 +113,49 @@ public final class RingBlend implements DensityFunction {
     }
 
     double compute(FunctionContext context, RingPosition position) {
-        if (!position.inTransition() || switchAt.contains(position.inner())) {
-            return rings[position.ring().ordinal()].compute(context);
+        Ring single = single(position);
+        if (single != null) {
+            return rings[single.ordinal()].compute(context);
         }
         double inner = rings[position.inner().ordinal()].compute(context);
         double outer = rings[position.outer().ordinal()].compute(context);
         return Mth.lerp(smoothstep(position.blend()), inner, outer);
     }
 
+    /** The one ring whose input gives the value at {@code position}, or null where two are mixed. */
+    private Ring single(RingPosition position) {
+        return !position.inTransition() || switches[position.inner().ordinal()] ? position.ring() : null;
+    }
+
+    /**
+     * Usually all points of an array (a slice of cell corners or the blocks of a cell) take one ring's input; then that
+     * input fills the array itself, which lets its caches and interpolators work per array instead of per point.
+     */
     @Override
     public void fillArray(double[] array, ContextProvider contextProvider) {
-        contextProvider.fillAllDirectly(array, this);
+        Ring common = null;
+        int lastX = 0;
+        int lastZ = 0;
+        for (int i = 0; i < array.length; i++) {
+            FunctionContext context = contextProvider.forIndex(i);
+            int x = context.blockX();
+            int z = context.blockZ();
+            // A slice of cell corners runs along Y first: one ring lookup per column.
+            if (common != null && x == lastX && z == lastZ) {
+                continue;
+            }
+            Ring single = single(RingColumnCache.ringAt(dimension, x, z));
+            if (single == null || (common != null && single != common)) {
+                contextProvider.fillAllDirectly(array, this);
+                return;
+            }
+            common = single;
+            lastX = x;
+            lastZ = z;
+        }
+        if (common != null) {
+            rings[common.ordinal()].fillArray(array, contextProvider);
+        }
     }
 
     @Override
@@ -129,12 +167,12 @@ public final class RingBlend implements DensityFunction {
         return visitor.apply(new RingBlend(dimension, mapped, switchAt));
     }
 
-    /** {@code visitor}, but every interpolated marker of the input of {@code ring} gets a {@link RingGate} first. */
+    /** {@code visitor}, but every interpolated and flat-cache marker of the input of {@code ring} gets a {@link RingGate} first. */
     private Visitor gating(Ring ring, Visitor visitor) {
         return new Visitor() {
             @Override
             public DensityFunction apply(DensityFunction function) {
-                return visitor.apply(RingGate.gateInterpolated(dimension, ring, function));
+                return visitor.apply(RingGate.gateCacheMarker(dimension, ring, function));
             }
 
             @Override

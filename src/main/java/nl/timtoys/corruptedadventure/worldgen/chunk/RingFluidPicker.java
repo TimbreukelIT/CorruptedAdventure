@@ -19,8 +19,10 @@ import java.util.Map;
  * at the zone instead of at the boundary keeps the terrain that dips towards the edge dry, so no water or lava wall
  * stands at the edge of the world. Local aquifer fluids are handled by {@link RingAquifer}.
  * <p>
- * The one place for the fluid rules per ring: {@link #noFluid} (void edge), {@link #waterOnly} (ring 2),
- * {@link #ring3Lava}, {@link #ring3Dry} and {@link #ring3Seal} (overworld ring 3) and the fluid levels per ring ({@code levels}, from the
+ * The one place for the fluid rules per ring: {@link #noFluid} (void edge), {@link #waterOnlyFrom} (ring 2),
+ * {@link #ring3LavaColumn}, {@link #ring3DryFrom} and {@link #ring3SealBelow} (overworld ring 3), each per column (a Y
+ * bound), so that {@link RingAquifer}'s per-block path only compares Y (change 39e), and the fluid levels per ring
+ * ({@code levels}, from the
  * generator's {@code fluid_levels}: the default fluid fills open space up to and including that Y instead of up to the
  * dimension's sea level; Nether ring 2 and 3 have a lower lava sea, overworld ring 3 has no sea above Y 0).
  */
@@ -47,42 +49,45 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
     }
 
     /**
-     * Whether local aquifer lava turns into water here: in overworld ring 2 above vanilla's lava layer ("the water
-     * under the ground"). The lava layer itself stays. Switches hard on {@link RingPosition#ring()}, so a lava cell
-     * across the 1↔2 boundary is water on the ring 2 side.
+     * Local aquifer lava turns into water in overworld ring 2 from this Y up: above vanilla's lava layer ("the water
+     * under the ground"); the lava layer itself stays. {@link Integer#MAX_VALUE} (never) elsewhere. Switches hard on
+     * {@link RingPosition#ring()}, so a lava cell across the 1↔2 boundary is water on the ring 2 side.
      */
-    static boolean waterOnly(ResourceKey<Level> dimension, RingPosition position, int y) {
-        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_2 && y >= LAVA_LAYER_TOP;
+    static int waterOnlyFrom(ResourceKey<Level> dimension, RingPosition position) {
+        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_2 ? LAVA_LAYER_TOP : Integer.MAX_VALUE;
     }
 
     /**
-     * Whether open space is lava in overworld ring 3: the lava lakes of active craters and the lava channels, up to the
-     * column's lava top ({@link VolcanicField.Column#lavaAt}). Switches hard on {@link RingPosition#ring()}, like the
-     * other rules. The lava is placed by {@link RingAquifer}, not by this picker: a picker fluid also spreads through
-     * vanilla's aquifer sampling into neighbouring open space (lava sheets beside a crater).
+     * Whether open space in this column is lava where the column's lava is ({@link VolcanicField.Column#lavaAt}): the
+     * lava lakes of active craters and the lava channels, in overworld ring 3. Switches hard on
+     * {@link RingPosition#ring()}, like the other rules. The lava is placed by {@link RingAquifer}, not by this picker: a
+     * picker fluid also spreads through vanilla's aquifer sampling into neighbouring open space (lava sheets beside a
+     * crater).
      */
-    static boolean ring3Lava(ResourceKey<Level> dimension, RingPosition position, @Nullable VolcanicField field, int x, int y, int z) {
-        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_3 && field != null && field.column(x, z).lavaAt(y);
+    static boolean ring3LavaColumn(ResourceKey<Level> dimension, RingPosition position, @Nullable VolcanicField field) {
+        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_3 && field != null;
     }
 
     /**
-     * Whether water turns into air in overworld ring 3: from Y 0 up ("the water was stolen"; deep aquifers below stay).
-     * The sea itself is already below Y 0 there ({@code fluid_levels.ring_3} of the preset); this also dries the local
-     * aquifer pockets in caves.
+     * Water turns into air in overworld ring 3 from this Y up: from Y 0 ("the water was stolen"; deep aquifers below
+     * stay). {@link Integer#MAX_VALUE} (never) elsewhere. The sea itself is already below Y 0 there
+     * ({@code fluid_levels.ring_3} of the preset); this also dries the local aquifer pockets in caves.
      */
-    static boolean ring3Dry(ResourceKey<Level> dimension, RingPosition position, int y) {
-        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_3 && y >= RING_3_DRY_FROM;
+    static int ring3DryFrom(ResourceKey<Level> dimension, RingPosition position) {
+        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_3 ? RING_3_DRY_FROM : Integer.MAX_VALUE;
     }
 
     /**
-     * Whether open space stays rock instead: below the sea level in ring 3's half of its transition zones (2→3 and
-     * 3→4). The neighbours keep their sea (Y 63) and aquifer water up to the middle of the zone and ring 3 is dry;
-     * without a seal, water on their side would stand against air on ring 3's side and pour over on the first update.
-     * The surface of the zone 2→3 lies above Y 66 (ring 2's beds stop there), so there only caves and carvers are
-     * closed; in the zone 3→4 also a surface dip below Y 63 is filled (ring 4 is still placeholder terrain).
+     * Open space stays rock below this Y: below the sea level in ring 3's half of its transition zones (2→3 and 3→4);
+     * {@link Integer#MIN_VALUE} (never) elsewhere. The neighbours keep their sea (Y 63) and aquifer water up to the
+     * middle of the zone and ring 3 is dry; without a seal, water on their side would stand against air on ring 3's
+     * side and pour over on the first update. The surface of the zone 2→3 lies above Y 66 (ring 2's beds stop there),
+     * so there only caves and carvers are closed; in the zone 3→4 also a surface dip below Y 63 is filled (ring 4 is
+     * still placeholder terrain).
      */
-    static boolean ring3Seal(ResourceKey<Level> dimension, RingPosition position, int y) {
-        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_3 && position.inTransition() && y < SEA_LEVEL;
+    static int ring3SealBelow(ResourceKey<Level> dimension, RingPosition position) {
+        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_3 && position.inTransition()
+                ? SEA_LEVEL : Integer.MIN_VALUE;
     }
 
     @Override
