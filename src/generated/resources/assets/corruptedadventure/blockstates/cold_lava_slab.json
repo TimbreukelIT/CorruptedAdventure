@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "corruptedadventure:block/cold_lava_slab"
+    },
+    "type=double": {
+      "model": "corruptedadventure:block/cold_lava"
+    },
+    "type=top": {
+      "model": "corruptedadventure:block/cold_lava_slab_top"
+    }
+  }
+}

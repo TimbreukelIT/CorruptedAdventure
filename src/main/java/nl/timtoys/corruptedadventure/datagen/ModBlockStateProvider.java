@@ -68,6 +68,43 @@ final class ModBlockStateProvider extends BlockStateProvider {
 
         ring2();
         ring3();
+        netherRing3();
+    }
+
+    /** Nether ring 3: cold lava, Nether ice, rime netherrack, the rimeshroom set (laid out like the dripshroom set). */
+    private void netherRing3() {
+        stoneFamily(ModBlocks.COLD_LAVA.get(), ModBlocks.COLD_LAVA_STAIRS.get(), ModBlocks.COLD_LAVA_SLAB.get(),
+                ModBlocks.COLD_LAVA_WALL.get());
+        stoneFamily(ModBlocks.POLISHED_COLD_LAVA.get(), ModBlocks.POLISHED_COLD_LAVA_STAIRS.get(),
+                ModBlocks.POLISHED_COLD_LAVA_SLAB.get(), ModBlocks.POLISHED_COLD_LAVA_WALL.get());
+        stoneFamily(ModBlocks.COLD_LAVA_BRICKS.get(), ModBlocks.COLD_LAVA_BRICK_STAIRS.get(),
+                ModBlocks.COLD_LAVA_BRICK_SLAB.get(), ModBlocks.COLD_LAVA_BRICK_WALL.get());
+        // Opaque, solid render type (decision 2026-10-06), unlike vanilla's translucent ice.
+        simpleBlock(ModBlocks.NETHER_ICE.get());
+        simpleBlock(ModBlocks.PACKED_NETHER_ICE.get());
+        simpleBlock(ModBlocks.RIME_NETHERRACK.get());
+
+        logBlock(ModBlocks.RIMESHROOM_STEM.get());
+        axisBlock(ModBlocks.RIMESHROOM_HYPHAE.get(),
+                blockTexture(ModBlocks.RIMESHROOM_STEM.get()), blockTexture(ModBlocks.RIMESHROOM_STEM.get()));
+        logBlock(ModBlocks.STRIPPED_RIMESHROOM_STEM.get());
+        axisBlock(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get(),
+                blockTexture(ModBlocks.STRIPPED_RIMESHROOM_STEM.get()), blockTexture(ModBlocks.STRIPPED_RIMESHROOM_STEM.get()));
+        ResourceLocation planks = blockTexture(ModBlocks.RIMESHROOM_PLANKS.get());
+        simpleBlock(ModBlocks.RIMESHROOM_PLANKS.get());
+        stairsBlock(ModBlocks.RIMESHROOM_STAIRS.get(), planks);
+        slabBlock(ModBlocks.RIMESHROOM_SLAB.get(), planks, planks);
+        fenceBlock(ModBlocks.RIMESHROOM_FENCE.get(), planks);
+        fenceGateBlock(ModBlocks.RIMESHROOM_FENCE_GATE.get(), planks);
+        doorBlockWithRenderType(ModBlocks.RIMESHROOM_DOOR.get(),
+                modLoc("block/rimeshroom_door_bottom"), modLoc("block/rimeshroom_door_top"), "cutout");
+        trapdoorBlockWithRenderType(ModBlocks.RIMESHROOM_TRAPDOOR.get(), modLoc("block/rimeshroom_trapdoor"), true, "cutout");
+        pressurePlateBlock(ModBlocks.RIMESHROOM_PRESSURE_PLATE.get(), planks);
+        buttonBlock(ModBlocks.RIMESHROOM_BUTTON.get(), planks);
+        simpleBlock(ModBlocks.RIMESHROOM_CAP.get());
+
+        stalactite(ModBlocks.ICE_STALACTITE.get());
+        glowingCube(ModBlocks.GLOWING_FISSURE.get());
     }
 
     /** Ring 3: ash, pumice, smouldering stone and the charred set (laid out like the dripshroom set). */
@@ -259,7 +296,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
         simpleBlock(ModBlocks.DRIPSHROOM_CAP.get());
         simpleBlock(ModBlocks.DRIPSHROOM_LAMP.get());
         glowMold();
-        slimeStalactite();
+        stalactite(ModBlocks.SLIME_STALACTITE.get());
         cross(ModBlocks.SPORE_SPROUTS.get());
         simpleBlock(ModBlocks.DEW_SOURCE.get());
         crystalCluster(ModBlocks.SMALL_DEW_CRYSTAL_BUD.get(), true);
@@ -294,13 +331,14 @@ final class ModBlockStateProvider extends BlockStateProvider {
 
     /**
      * Ten cutout models like vanilla's pointed dripstone (one per direction and thickness, same parent), each on its own
-     * texture; the waterlogged property does not change the model.
+     * texture {@code <name>_<direction>_<thickness>}; the waterlogged property does not change the model. Slime and ice.
      */
-    private void slimeStalactite() {
-        getVariantBuilder(ModBlocks.SLIME_STALACTITE.get()).forAllStatesExcept(state -> {
+    private void stalactite(StalactiteBlock block) {
+        String blockName = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        getVariantBuilder(block).forAllStatesExcept(state -> {
             String direction = state.getValue(StalactiteBlock.TIP_DIRECTION).getSerializedName();
             String thickness = state.getValue(StalactiteBlock.THICKNESS).getSerializedName();
-            String name = "slime_stalactite_" + direction + "_" + thickness;
+            String name = blockName + "_" + direction + "_" + thickness;
             ModelFile model = models().withExistingParent(name, mcLoc("block/pointed_dripstone"))
                     .texture("cross", modLoc("block/" + name)).renderType("cutout");
             return ConfiguredModel.builder().modelFile(model).build();

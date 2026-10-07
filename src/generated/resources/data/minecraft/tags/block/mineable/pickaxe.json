@@ -59,6 +59,23 @@
     "corruptedadventure:large_fire_crystal_bud",
     "corruptedadventure:fire_crystal_cluster",
     "corruptedadventure:fumarole",
-    "corruptedadventure:geyser"
+    "corruptedadventure:geyser",
+    "corruptedadventure:cold_lava",
+    "corruptedadventure:cold_lava_stairs",
+    "corruptedadventure:cold_lava_slab",
+    "corruptedadventure:cold_lava_wall",
+    "corruptedadventure:polished_cold_lava",
+    "corruptedadventure:polished_cold_lava_stairs",
+    "corruptedadventure:polished_cold_lava_slab",
+    "corruptedadventure:polished_cold_lava_wall",
+    "corruptedadventure:cold_lava_bricks",
+    "corruptedadventure:cold_lava_brick_stairs",
+    "corruptedadventure:cold_lava_brick_slab",
+    "corruptedadventure:cold_lava_brick_wall",
+    "corruptedadventure:nether_ice",
+    "corruptedadventure:packed_nether_ice",
+    "corruptedadventure:rime_netherrack",
+    "corruptedadventure:ice_stalactite",
+    "corruptedadventure:glowing_fissure"
   ]
 }

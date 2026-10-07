@@ -198,6 +198,46 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.FUMAROLE);
         blockItem(ModBlocks.BOILING_MUD);
         blockItem(ModBlocks.GEYSER);
+
+        netherRing3();
+    }
+
+    private void netherRing3() {
+        blockItem(ModBlocks.COLD_LAVA);
+        blockItem(ModBlocks.COLD_LAVA_STAIRS);
+        blockItem(ModBlocks.COLD_LAVA_SLAB);
+        wallInventory(ModBlocks.COLD_LAVA_WALL.getId().getPath(), modLoc("block/cold_lava"));
+        blockItem(ModBlocks.POLISHED_COLD_LAVA);
+        blockItem(ModBlocks.POLISHED_COLD_LAVA_STAIRS);
+        blockItem(ModBlocks.POLISHED_COLD_LAVA_SLAB);
+        wallInventory(ModBlocks.POLISHED_COLD_LAVA_WALL.getId().getPath(), modLoc("block/polished_cold_lava"));
+        blockItem(ModBlocks.COLD_LAVA_BRICKS);
+        blockItem(ModBlocks.COLD_LAVA_BRICK_STAIRS);
+        blockItem(ModBlocks.COLD_LAVA_BRICK_SLAB);
+        wallInventory(ModBlocks.COLD_LAVA_BRICK_WALL.getId().getPath(), modLoc("block/cold_lava_bricks"));
+        blockItem(ModBlocks.NETHER_ICE);
+        blockItem(ModBlocks.PACKED_NETHER_ICE);
+        blockItem(ModBlocks.RIME_NETHERRACK);
+
+        ResourceLocation planks = modLoc("block/rimeshroom_planks");
+        blockItem(ModBlocks.RIMESHROOM_STEM);
+        blockItem(ModBlocks.RIMESHROOM_HYPHAE);
+        blockItem(ModBlocks.STRIPPED_RIMESHROOM_STEM);
+        blockItem(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE);
+        blockItem(ModBlocks.RIMESHROOM_PLANKS);
+        blockItem(ModBlocks.RIMESHROOM_STAIRS);
+        blockItem(ModBlocks.RIMESHROOM_SLAB);
+        fenceInventory(ModBlocks.RIMESHROOM_FENCE.getId().getPath(), planks);
+        blockItem(ModBlocks.RIMESHROOM_FENCE_GATE);
+        basicItem(ModBlocks.RIMESHROOM_DOOR.asItem());
+        withExistingParent(ModBlocks.RIMESHROOM_TRAPDOOR.getId().getPath(), modLoc("block/rimeshroom_trapdoor_bottom"));
+        blockItem(ModBlocks.RIMESHROOM_PRESSURE_PLATE);
+        buttonInventory(ModBlocks.RIMESHROOM_BUTTON.getId().getPath(), planks);
+        blockItem(ModBlocks.RIMESHROOM_CAP);
+        // Flat on its own texture, like the slime stalactite.
+        withExistingParent(ModBlocks.ICE_STALACTITE.getId().getPath(), mcLoc("item/generated"))
+                .texture("layer0", modLoc("item/ice_stalactite"));
+        blockItem(ModBlocks.GLOWING_FISSURE);
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

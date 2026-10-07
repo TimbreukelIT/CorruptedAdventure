@@ -9,6 +9,9 @@
     "corruptedadventure:small_dew_crystal_bud",
     "corruptedadventure:medium_dew_crystal_bud",
     "corruptedadventure:large_dew_crystal_bud",
-    "corruptedadventure:dew_crystal_cluster"
+    "corruptedadventure:dew_crystal_cluster",
+    "#corruptedadventure:rimeshroom_stems",
+    "corruptedadventure:rimeshroom_cap",
+    "corruptedadventure:ice_stalactite"
   ]
 }

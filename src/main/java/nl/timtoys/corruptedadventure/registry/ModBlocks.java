@@ -514,6 +514,89 @@ public final class ModBlocks {
     public static final DeferredBlock<GeyserBlock> GEYSER = register("geyser",
             () -> new GeyserBlock(Properties.ofFullCopy(Blocks.BASALT).mapColor(MapColor.TERRACOTTA_LIGHT_GRAY).randomTicks()));
 
+    // ---- Nether ring 3 ----
+    // Frozen Nether: cold lava with its shapes, Nether ice, rime netherrack, the rimeshroom wood set and cap, ice
+    // stalactites and the warm glowing fissures. Rimeshroom is Nether wood: no fire odds, no furnace fuel.
+    // Cold lava: basalt's behaviour and sound in three building variants with their shapes (like the pumice set).
+    public static final DeferredBlock<Block> COLD_LAVA = register("cold_lava", () -> new Block(coldLava()));
+    public static final DeferredBlock<StairBlock> COLD_LAVA_STAIRS = register("cold_lava_stairs",
+            () -> new StairBlock(COLD_LAVA.get().defaultBlockState(), coldLava()));
+    public static final DeferredBlock<SlabBlock> COLD_LAVA_SLAB = register("cold_lava_slab", () -> new SlabBlock(coldLava()));
+    /** Solid for support like vanilla walls ({@code forceSolidOn}), which a copy of a full block does not carry. */
+    public static final DeferredBlock<WallBlock> COLD_LAVA_WALL = register("cold_lava_wall",
+            () -> new WallBlock(coldLava().forceSolidOn()));
+    public static final DeferredBlock<Block> POLISHED_COLD_LAVA = register("polished_cold_lava", () -> new Block(coldLava()));
+    public static final DeferredBlock<StairBlock> POLISHED_COLD_LAVA_STAIRS = register("polished_cold_lava_stairs",
+            () -> new StairBlock(POLISHED_COLD_LAVA.get().defaultBlockState(), coldLava()));
+    public static final DeferredBlock<SlabBlock> POLISHED_COLD_LAVA_SLAB = register("polished_cold_lava_slab",
+            () -> new SlabBlock(coldLava()));
+    public static final DeferredBlock<WallBlock> POLISHED_COLD_LAVA_WALL = register("polished_cold_lava_wall",
+            () -> new WallBlock(coldLava().forceSolidOn()));
+    public static final DeferredBlock<Block> COLD_LAVA_BRICKS = register("cold_lava_bricks", () -> new Block(coldLava()));
+    public static final DeferredBlock<StairBlock> COLD_LAVA_BRICK_STAIRS = register("cold_lava_brick_stairs",
+            () -> new StairBlock(COLD_LAVA_BRICKS.get().defaultBlockState(), coldLava()));
+    public static final DeferredBlock<SlabBlock> COLD_LAVA_BRICK_SLAB = register("cold_lava_brick_slab",
+            () -> new SlabBlock(coldLava()));
+    public static final DeferredBlock<WallBlock> COLD_LAVA_BRICK_WALL = register("cold_lava_brick_wall",
+            () -> new WallBlock(coldLava().forceSolidOn()));
+
+    /**
+     * Packed ice's properties: opaque and solid (decision 2026-10-06), as slippery as ice, and no random ticks, so it
+     * never melts. Mobs spawn on it (the Nether floor). Only Silk Touch takes it along, like vanilla ice.
+     */
+    public static final DeferredBlock<Block> NETHER_ICE = register("nether_ice",
+            () -> new Block(Properties.ofFullCopy(Blocks.PACKED_ICE)));
+    public static final DeferredBlock<Block> PACKED_NETHER_ICE = register("packed_nether_ice",
+            () -> new Block(Properties.ofFullCopy(Blocks.PACKED_ICE).mapColor(MapColor.COLOR_LIGHT_BLUE)));
+    /**
+     * Frosted netherrack: netherrack's strength and sound, but frozen ground (decision 2026-10-07): fire does not burn on it
+     * forever (not in the infiniburn tags), and as a plain {@code Block} (not a {@code NetherrackBlock}) bone meal does not
+     * spread nylium onto it.
+     */
+    public static final DeferredBlock<Block> RIME_NETHERRACK = register("rime_netherrack",
+            () -> new Block(Properties.ofFullCopy(Blocks.NETHERRACK).mapColor(MapColor.TERRACOTTA_LIGHT_BLUE)));
+
+    public static final DeferredBlock<StrippableLogBlock> RIMESHROOM_STEM = register("rimeshroom_stem",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_RIMESHROOM_STEM, rimeshroomBark(Blocks.CRIMSON_STEM)));
+    public static final DeferredBlock<StrippableLogBlock> RIMESHROOM_HYPHAE = register("rimeshroom_hyphae",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE, rimeshroomBark(Blocks.CRIMSON_HYPHAE)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_RIMESHROOM_STEM = register("stripped_rimeshroom_stem",
+            () -> new RotatedPillarBlock(rimeshroom(Blocks.STRIPPED_CRIMSON_STEM)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_RIMESHROOM_HYPHAE = register("stripped_rimeshroom_hyphae",
+            () -> new RotatedPillarBlock(rimeshroom(Blocks.STRIPPED_CRIMSON_HYPHAE)));
+    public static final DeferredBlock<Block> RIMESHROOM_PLANKS = register("rimeshroom_planks",
+            () -> new Block(rimeshroom(Blocks.CRIMSON_PLANKS)));
+    public static final DeferredBlock<StairBlock> RIMESHROOM_STAIRS = register("rimeshroom_stairs",
+            () -> new StairBlock(RIMESHROOM_PLANKS.get().defaultBlockState(), rimeshroom(Blocks.CRIMSON_STAIRS)));
+    public static final DeferredBlock<SlabBlock> RIMESHROOM_SLAB = register("rimeshroom_slab",
+            () -> new SlabBlock(rimeshroom(Blocks.CRIMSON_SLAB)));
+    public static final DeferredBlock<FenceBlock> RIMESHROOM_FENCE = register("rimeshroom_fence",
+            () -> new FenceBlock(rimeshroom(Blocks.CRIMSON_FENCE)));
+    public static final DeferredBlock<FenceGateBlock> RIMESHROOM_FENCE_GATE = register("rimeshroom_fence_gate",
+            () -> new FenceGateBlock(ModWoodTypes.RIMESHROOM, rimeshroom(Blocks.CRIMSON_FENCE_GATE)));
+    public static final DeferredBlock<DoorBlock> RIMESHROOM_DOOR = registerDoor("rimeshroom_door",
+            () -> new DoorBlock(ModWoodTypes.RIMESHROOM_SET, rimeshroom(Blocks.CRIMSON_DOOR)));
+    public static final DeferredBlock<TrapDoorBlock> RIMESHROOM_TRAPDOOR = register("rimeshroom_trapdoor",
+            () -> new TrapDoorBlock(ModWoodTypes.RIMESHROOM_SET, rimeshroom(Blocks.CRIMSON_TRAPDOOR)));
+    public static final DeferredBlock<PressurePlateBlock> RIMESHROOM_PRESSURE_PLATE = register("rimeshroom_pressure_plate",
+            () -> new PressurePlateBlock(ModWoodTypes.RIMESHROOM_SET, rimeshroom(Blocks.CRIMSON_PRESSURE_PLATE)));
+    public static final DeferredBlock<ButtonBlock> RIMESHROOM_BUTTON = register("rimeshroom_button",
+            () -> new ButtonBlock(ModWoodTypes.RIMESHROOM_SET, 30, rimeshroom(Blocks.CRIMSON_BUTTON)));
+    /** The frozen fungus' cap: a wart block (hoe, drops itself). */
+    public static final DeferredBlock<Block> RIMESHROOM_CAP = register("rimeshroom_cap",
+            () -> new Block(Properties.ofFullCopy(Blocks.NETHER_WART_BLOCK).mapColor(MapColor.ICE)));
+
+    /** The slime stalactite's behaviour (hangs or stands, falls without support, never grows) in ice: glass sounds, chime. */
+    public static final DeferredBlock<StalactiteBlock> ICE_STALACTITE = register("ice_stalactite",
+            () -> new StalactiteBlock(Properties.ofFullCopy(SLIME_STALACTITE.get()).mapColor(MapColor.ICE).sound(SoundType.GLASS)
+                    .instrument(NoteBlockInstrument.CHIME)));
+    /**
+     * A warm crack in the frozen ground: light 7 (decision 2026-10-07; only the glowing crack shines in the dark, through the emissive overlay
+     * of its model) and a warmth and heat source for the conditions. No damage of its own.
+     */
+    public static final DeferredBlock<Block> GLOWING_FISSURE = register("glowing_fissure",
+            () -> new Block(Properties.ofFullCopy(Blocks.NETHERRACK).mapColor(MapColor.COLOR_ORANGE).lightLevel(state -> 7)));
+
     private ModBlocks() {
     }
 
@@ -585,6 +668,21 @@ public final class ModBlocks {
     /** Charred wood (all shapes): crimson's behaviour and sounds, black on the map. */
     private static Properties charred(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.COLOR_BLACK);
+    }
+
+    /** Cold lava (all shapes and variants): basalt's strength and sound. */
+    private static Properties coldLava() {
+        return Properties.ofFullCopy(Blocks.BASALT);
+    }
+
+    /** Rimeshroom wood (planks family, stripped): crimson's behaviour in a pale ice blue on the map. */
+    private static Properties rimeshroom(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.COLOR_LIGHT_BLUE);
+    }
+
+    /** Rimeshroom stem and hyphae (frosted bark outside): dark cyan on the map. */
+    private static Properties rimeshroomBark(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_CYAN);
     }
 
     private static <B extends Block> DeferredBlock<B> register(String name, Supplier<B> block) {

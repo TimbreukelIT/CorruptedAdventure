@@ -7,6 +7,9 @@
     "corruptedadventure:polished_salt_stairs",
     "corruptedadventure:pumice_stairs",
     "corruptedadventure:polished_pumice_stairs",
-    "corruptedadventure:pumice_brick_stairs"
+    "corruptedadventure:pumice_brick_stairs",
+    "corruptedadventure:cold_lava_stairs",
+    "corruptedadventure:polished_cold_lava_stairs",
+    "corruptedadventure:cold_lava_brick_stairs"
   ]
 }

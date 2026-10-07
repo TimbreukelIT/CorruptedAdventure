@@ -25,6 +25,19 @@
     "corruptedadventure:charred_door",
     "corruptedadventure:charred_trapdoor",
     "corruptedadventure:charred_button",
-    "corruptedadventure:charred_pressure_plate"
+    "corruptedadventure:charred_pressure_plate",
+    "corruptedadventure:rimeshroom_stem",
+    "corruptedadventure:rimeshroom_hyphae",
+    "corruptedadventure:stripped_rimeshroom_stem",
+    "corruptedadventure:stripped_rimeshroom_hyphae",
+    "corruptedadventure:rimeshroom_planks",
+    "corruptedadventure:rimeshroom_stairs",
+    "corruptedadventure:rimeshroom_slab",
+    "corruptedadventure:rimeshroom_fence",
+    "corruptedadventure:rimeshroom_fence_gate",
+    "corruptedadventure:rimeshroom_door",
+    "corruptedadventure:rimeshroom_trapdoor",
+    "corruptedadventure:rimeshroom_button",
+    "corruptedadventure:rimeshroom_pressure_plate"
   ]
 }

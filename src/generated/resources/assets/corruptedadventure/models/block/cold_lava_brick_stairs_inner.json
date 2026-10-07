@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "corruptedadventure:block/cold_lava_bricks",
+    "side": "corruptedadventure:block/cold_lava_bricks",
+    "top": "corruptedadventure:block/cold_lava_bricks"
+  }
+}

@@ -33,6 +33,11 @@ public final class ModWoodTypes {
     /** Not registered, for the same reason as {@link #DEAD}. */
     public static final WoodType CHARRED = netherWood("charred", CHARRED_SET);
 
+    /** {@code corruptedadventure:rimeshroom}: the frozen giant fungus of Nether ring 3, Nether wood like {@link #DRIPSHROOM_SET}. */
+    public static final BlockSetType RIMESHROOM_SET = BlockSetType.register(netherWoodSet("rimeshroom"));
+    /** Not registered, for the same reason as {@link #DEAD}. */
+    public static final WoodType RIMESHROOM = netherWood("rimeshroom", RIMESHROOM_SET);
+
     private ModWoodTypes() {
     }
 

@@ -45,6 +45,14 @@ final class ModItemTagsProvider extends ItemTagsProvider {
                 ModBlocks.CHARRED_FENCE.asItem(), ModBlocks.CHARRED_FENCE_GATE.asItem(), ModBlocks.CHARRED_DOOR.asItem(),
                 ModBlocks.CHARRED_TRAPDOOR.asItem(), ModBlocks.CHARRED_BUTTON.asItem(),
                 ModBlocks.CHARRED_PRESSURE_PLATE.asItem());
+        copy(ModTags.Blocks.RIMESHROOM_STEMS, ModTags.Items.RIMESHROOM_STEMS);
+        tag(ItemTags.LOGS).addTag(ModTags.Items.RIMESHROOM_STEMS);
+        tag(ItemTags.NON_FLAMMABLE_WOOD).add(ModBlocks.RIMESHROOM_STEM.asItem(), ModBlocks.RIMESHROOM_HYPHAE.asItem(),
+                ModBlocks.STRIPPED_RIMESHROOM_STEM.asItem(), ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.asItem(),
+                ModBlocks.RIMESHROOM_PLANKS.asItem(), ModBlocks.RIMESHROOM_STAIRS.asItem(), ModBlocks.RIMESHROOM_SLAB.asItem(),
+                ModBlocks.RIMESHROOM_FENCE.asItem(), ModBlocks.RIMESHROOM_FENCE_GATE.asItem(), ModBlocks.RIMESHROOM_DOOR.asItem(),
+                ModBlocks.RIMESHROOM_TRAPDOOR.asItem(), ModBlocks.RIMESHROOM_BUTTON.asItem(),
+                ModBlocks.RIMESHROOM_PRESSURE_PLATE.asItem());
         copy(BlockTags.LEAVES, ItemTags.LEAVES);
         copy(BlockTags.SAPLINGS, ItemTags.SAPLINGS);
         copy(BlockTags.LOGS_THAT_BURN, ItemTags.LOGS_THAT_BURN);

@@ -68,6 +68,37 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.FUMAROLE, "Fumarole");
         lang.addBlock(ModBlocks.BOILING_MUD, "Boiling Mud");
         lang.addBlock(ModBlocks.GEYSER, "Geyser");
+        lang.addBlock(ModBlocks.COLD_LAVA, "Cold Lava");
+        lang.addBlock(ModBlocks.COLD_LAVA_STAIRS, "Cold Lava Stairs");
+        lang.addBlock(ModBlocks.COLD_LAVA_SLAB, "Cold Lava Slab");
+        lang.addBlock(ModBlocks.COLD_LAVA_WALL, "Cold Lava Wall");
+        lang.addBlock(ModBlocks.POLISHED_COLD_LAVA, "Polished Cold Lava");
+        lang.addBlock(ModBlocks.POLISHED_COLD_LAVA_STAIRS, "Polished Cold Lava Stairs");
+        lang.addBlock(ModBlocks.POLISHED_COLD_LAVA_SLAB, "Polished Cold Lava Slab");
+        lang.addBlock(ModBlocks.POLISHED_COLD_LAVA_WALL, "Polished Cold Lava Wall");
+        lang.addBlock(ModBlocks.COLD_LAVA_BRICKS, "Cold Lava Bricks");
+        lang.addBlock(ModBlocks.COLD_LAVA_BRICK_STAIRS, "Cold Lava Brick Stairs");
+        lang.addBlock(ModBlocks.COLD_LAVA_BRICK_SLAB, "Cold Lava Brick Slab");
+        lang.addBlock(ModBlocks.COLD_LAVA_BRICK_WALL, "Cold Lava Brick Wall");
+        lang.addBlock(ModBlocks.NETHER_ICE, "Nether Ice");
+        lang.addBlock(ModBlocks.PACKED_NETHER_ICE, "Packed Nether Ice");
+        lang.addBlock(ModBlocks.RIME_NETHERRACK, "Rime Netherrack");
+        lang.addBlock(ModBlocks.RIMESHROOM_STEM, "Rimeshroom Stem");
+        lang.addBlock(ModBlocks.RIMESHROOM_HYPHAE, "Rimeshroom Hyphae");
+        lang.addBlock(ModBlocks.STRIPPED_RIMESHROOM_STEM, "Stripped Rimeshroom Stem");
+        lang.addBlock(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE, "Stripped Rimeshroom Hyphae");
+        lang.addBlock(ModBlocks.RIMESHROOM_PLANKS, "Rimeshroom Planks");
+        lang.addBlock(ModBlocks.RIMESHROOM_STAIRS, "Rimeshroom Stairs");
+        lang.addBlock(ModBlocks.RIMESHROOM_SLAB, "Rimeshroom Slab");
+        lang.addBlock(ModBlocks.RIMESHROOM_FENCE, "Rimeshroom Fence");
+        lang.addBlock(ModBlocks.RIMESHROOM_FENCE_GATE, "Rimeshroom Fence Gate");
+        lang.addBlock(ModBlocks.RIMESHROOM_DOOR, "Rimeshroom Door");
+        lang.addBlock(ModBlocks.RIMESHROOM_TRAPDOOR, "Rimeshroom Trapdoor");
+        lang.addBlock(ModBlocks.RIMESHROOM_PRESSURE_PLATE, "Rimeshroom Pressure Plate");
+        lang.addBlock(ModBlocks.RIMESHROOM_BUTTON, "Rimeshroom Button");
+        lang.addBlock(ModBlocks.RIMESHROOM_CAP, "Rimeshroom Cap");
+        lang.addBlock(ModBlocks.ICE_STALACTITE, "Ice Stalactite");
+        lang.addBlock(ModBlocks.GLOWING_FISSURE, "Glowing Fissure");
     }
 
     /** Vanilla nl_nl patterns: "Tufsteen", "Gepolijste tufsteentrap", "Tufstenen blokstenen", "Karmozijnrode trap". */
@@ -129,5 +160,36 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.FUMAROLE, "Fumarole");
         lang.addBlock(ModBlocks.BOILING_MUD, "Kokende modder");
         lang.addBlock(ModBlocks.GEYSER, "Geiser");
+        lang.addBlock(ModBlocks.COLD_LAVA, "Koudlava");
+        lang.addBlock(ModBlocks.COLD_LAVA_STAIRS, "Koudlavatrap");
+        lang.addBlock(ModBlocks.COLD_LAVA_SLAB, "Koudlavaplaat");
+        lang.addBlock(ModBlocks.COLD_LAVA_WALL, "Koudlavamuur");
+        lang.addBlock(ModBlocks.POLISHED_COLD_LAVA, "Gepolijste koudlava");
+        lang.addBlock(ModBlocks.POLISHED_COLD_LAVA_STAIRS, "Gepolijste koudlavatrap");
+        lang.addBlock(ModBlocks.POLISHED_COLD_LAVA_SLAB, "Gepolijste koudlavaplaat");
+        lang.addBlock(ModBlocks.POLISHED_COLD_LAVA_WALL, "Gepolijste koudlavamuur");
+        lang.addBlock(ModBlocks.COLD_LAVA_BRICKS, "Koudlavablokstenen");
+        lang.addBlock(ModBlocks.COLD_LAVA_BRICK_STAIRS, "Koudlavabloksteentrap");
+        lang.addBlock(ModBlocks.COLD_LAVA_BRICK_SLAB, "Koudlavabloksteenplaat");
+        lang.addBlock(ModBlocks.COLD_LAVA_BRICK_WALL, "Koudlavabloksteenmuur");
+        lang.addBlock(ModBlocks.NETHER_ICE, "Netherijs");
+        lang.addBlock(ModBlocks.PACKED_NETHER_ICE, "Netherpakijs");
+        lang.addBlock(ModBlocks.RIME_NETHERRACK, "Berijpt netherrack");
+        lang.addBlock(ModBlocks.RIMESHROOM_STEM, "Rijpzwamsteel");
+        lang.addBlock(ModBlocks.RIMESHROOM_HYPHAE, "Rijpzwamhyfen");
+        lang.addBlock(ModBlocks.STRIPPED_RIMESHROOM_STEM, "Gestripte rijpzwamsteel");
+        lang.addBlock(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE, "Gestripte rijpzwamhyfen");
+        lang.addBlock(ModBlocks.RIMESHROOM_PLANKS, "Rijpzwamplanken");
+        lang.addBlock(ModBlocks.RIMESHROOM_STAIRS, "Rijpzwamtrap");
+        lang.addBlock(ModBlocks.RIMESHROOM_SLAB, "Rijpzwamplaat");
+        lang.addBlock(ModBlocks.RIMESHROOM_FENCE, "Rijpzwamhek");
+        lang.addBlock(ModBlocks.RIMESHROOM_FENCE_GATE, "Rijpzwampoort");
+        lang.addBlock(ModBlocks.RIMESHROOM_DOOR, "Rijpzwamdeur");
+        lang.addBlock(ModBlocks.RIMESHROOM_TRAPDOOR, "Rijpzwamvalluik");
+        lang.addBlock(ModBlocks.RIMESHROOM_PRESSURE_PLATE, "Rijpzwamdrukplaat");
+        lang.addBlock(ModBlocks.RIMESHROOM_BUTTON, "Rijpzwamknop");
+        lang.addBlock(ModBlocks.RIMESHROOM_CAP, "Rijpzwamhoed");
+        lang.addBlock(ModBlocks.ICE_STALACTITE, "IJsstalactiet");
+        lang.addBlock(ModBlocks.GLOWING_FISSURE, "Gloeiende scheur");
     }
 }

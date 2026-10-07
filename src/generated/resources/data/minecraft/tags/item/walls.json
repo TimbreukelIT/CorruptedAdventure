@@ -6,6 +6,9 @@
     "corruptedadventure:polished_salt_wall",
     "corruptedadventure:pumice_wall",
     "corruptedadventure:polished_pumice_wall",
-    "corruptedadventure:pumice_brick_wall"
+    "corruptedadventure:pumice_brick_wall",
+    "corruptedadventure:cold_lava_wall",
+    "corruptedadventure:polished_cold_lava_wall",
+    "corruptedadventure:cold_lava_brick_wall"
   ]
 }

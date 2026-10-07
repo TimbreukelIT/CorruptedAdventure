@@ -24,14 +24,19 @@ import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -349,6 +354,70 @@ class ModBlocksTest {
         assertEquals(Blocks.HONEY_BLOCK.getJumpFactor(), ModBlocks.BOILING_MUD.get().getJumpFactor());
         assertEquals(Blocks.MUD.defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO),
                 ModBlocks.BOILING_MUD.get().defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+    }
+
+    /** Nether ring 3 follows ring 3 directly (contract §3), in this order. */
+    @Test
+    void netherRing3FollowsRing3InOrder() {
+        List<Item> shown = blockItems();
+        int geyser = shown.indexOf(ModBlocks.GEYSER.asItem());
+        List<Item> netherRing3 = Stream.of(ModBlocks.COLD_LAVA, ModBlocks.COLD_LAVA_STAIRS, ModBlocks.COLD_LAVA_SLAB,
+                ModBlocks.COLD_LAVA_WALL, ModBlocks.POLISHED_COLD_LAVA, ModBlocks.POLISHED_COLD_LAVA_STAIRS,
+                ModBlocks.POLISHED_COLD_LAVA_SLAB, ModBlocks.POLISHED_COLD_LAVA_WALL, ModBlocks.COLD_LAVA_BRICKS,
+                ModBlocks.COLD_LAVA_BRICK_STAIRS, ModBlocks.COLD_LAVA_BRICK_SLAB, ModBlocks.COLD_LAVA_BRICK_WALL,
+                ModBlocks.NETHER_ICE, ModBlocks.PACKED_NETHER_ICE, ModBlocks.RIME_NETHERRACK,
+                ModBlocks.RIMESHROOM_STEM, ModBlocks.RIMESHROOM_HYPHAE, ModBlocks.STRIPPED_RIMESHROOM_STEM,
+                ModBlocks.STRIPPED_RIMESHROOM_HYPHAE, ModBlocks.RIMESHROOM_PLANKS, ModBlocks.RIMESHROOM_STAIRS,
+                ModBlocks.RIMESHROOM_SLAB, ModBlocks.RIMESHROOM_FENCE, ModBlocks.RIMESHROOM_FENCE_GATE,
+                ModBlocks.RIMESHROOM_DOOR, ModBlocks.RIMESHROOM_TRAPDOOR, ModBlocks.RIMESHROOM_PRESSURE_PLATE,
+                ModBlocks.RIMESHROOM_BUTTON, ModBlocks.RIMESHROOM_CAP, ModBlocks.ICE_STALACTITE,
+                ModBlocks.GLOWING_FISSURE).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(netherRing3, shown.subList(geyser + 1, geyser + 1 + netherRing3.size()));
+    }
+
+    /** Decision 2026-10-06: Nether ice is opaque and solid, slippery like ice, and never melts (no random ticks). */
+    @Test
+    void netherIceIsOpaqueSlipperyAndNeverMelts() {
+        for (DeferredBlock<?> ice : List.of(ModBlocks.NETHER_ICE, ModBlocks.PACKED_NETHER_ICE)) {
+            BlockState state = ice.get().defaultBlockState();
+            assertTrue(state.canOcclude(), ice.getId().toString());
+            assertFalse(state.isRandomlyTicking(), ice.getId().toString());
+            assertEquals(Blocks.ICE.getFriction(), ice.get().getFriction(), ice.getId().toString());
+        }
+    }
+
+    @Test
+    void netherRing3WoodDoesNotBurnAndTheFissureGlowsAtSevenOnlyThroughItsOverlay() {
+        for (DeferredBlock<?> block : List.of(ModBlocks.RIMESHROOM_STEM, ModBlocks.RIMESHROOM_HYPHAE,
+                ModBlocks.STRIPPED_RIMESHROOM_STEM, ModBlocks.STRIPPED_RIMESHROOM_HYPHAE, ModBlocks.RIMESHROOM_PLANKS,
+                ModBlocks.RIMESHROOM_STAIRS, ModBlocks.RIMESHROOM_SLAB, ModBlocks.RIMESHROOM_FENCE,
+                ModBlocks.RIMESHROOM_FENCE_GATE, ModBlocks.RIMESHROOM_DOOR, ModBlocks.RIMESHROOM_TRAPDOOR,
+                ModBlocks.RIMESHROOM_PRESSURE_PLATE, ModBlocks.RIMESHROOM_BUTTON)) {
+            assertFalse(block.get().defaultBlockState().ignitedByLava(), block.getId().toString());
+        }
+        BlockState fissure = ModBlocks.GLOWING_FISSURE.get().defaultBlockState();
+        assertEquals(7, fissure.getLightEmission());
+        assertFalse(fissure.emissiveRendering(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+        assertFalse(ModBlocks.ICE_STALACTITE.get().defaultBlockState().isRandomlyTicking());
+        assertEquals(SoundType.GLASS, ModBlocks.ICE_STALACTITE.get().defaultBlockState().getSoundType());
+        assertEquals(NoteBlockInstrument.CHIME, ModBlocks.ICE_STALACTITE.get().defaultBlockState().instrument());
+    }
+
+    /** Nether wood is no furnace fuel: every rimeshroom item is in the generated {@code #non_flammable_wood}. */
+    @Test
+    void everyRimeshroomItemIsNonFlammableWood() {
+        String relative = "src/generated/resources/data/minecraft/tags/item/non_flammable_wood.json";
+        Path dir = Path.of("").toAbsolutePath();
+        while (!Files.exists(dir.resolve(relative))) {
+            dir = dir.getParent();
+        }
+        Set<String> values = new HashSet<>();
+        WorldgenData.read(dir.resolve(relative)).getAsJsonArray("values").forEach(value -> values.add(value.getAsString()));
+        List<String> rimeshroomWood = ModBlocks.entries().stream()
+                .filter(block -> block.get().asItem() != Items.AIR && !block.getId().equals(ModBlocks.RIMESHROOM_CAP.getId()))
+                .map(block -> block.getId().toString()).filter(id -> id.contains("rimeshroom")).toList();
+        assertEquals(13, rimeshroomWood.size());
+        rimeshroomWood.forEach(id -> assertTrue(values.contains(id), id));
     }
 
     private static List<Item> blockItems() {

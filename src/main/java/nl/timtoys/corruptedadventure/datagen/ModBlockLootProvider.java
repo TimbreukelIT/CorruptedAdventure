@@ -145,6 +145,39 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
 
         netherRing2();
         ring3();
+        netherRing3();
+    }
+
+    private void netherRing3() {
+        for (Block block : List.of(ModBlocks.COLD_LAVA.get(), ModBlocks.COLD_LAVA_STAIRS.get(), ModBlocks.COLD_LAVA_WALL.get(),
+                ModBlocks.POLISHED_COLD_LAVA.get(), ModBlocks.POLISHED_COLD_LAVA_STAIRS.get(), ModBlocks.POLISHED_COLD_LAVA_WALL.get(),
+                ModBlocks.COLD_LAVA_BRICKS.get(), ModBlocks.COLD_LAVA_BRICK_STAIRS.get(), ModBlocks.COLD_LAVA_BRICK_WALL.get())) {
+            dropSelf(block);
+        }
+        for (Block slab : List.of(ModBlocks.COLD_LAVA_SLAB.get(), ModBlocks.POLISHED_COLD_LAVA_SLAB.get(), ModBlocks.COLD_LAVA_BRICK_SLAB.get())) {
+            add(slab, this::createSlabItemTable);
+        }
+        // Like vanilla ice: only Silk Touch takes it along.
+        dropWhenSilkTouch(ModBlocks.NETHER_ICE.get());
+        dropWhenSilkTouch(ModBlocks.PACKED_NETHER_ICE.get());
+        dropSelf(ModBlocks.RIME_NETHERRACK.get());
+
+        dropSelf(ModBlocks.RIMESHROOM_STEM.get());
+        dropSelf(ModBlocks.RIMESHROOM_HYPHAE.get());
+        dropSelf(ModBlocks.STRIPPED_RIMESHROOM_STEM.get());
+        dropSelf(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get());
+        dropSelf(ModBlocks.RIMESHROOM_PLANKS.get());
+        dropSelf(ModBlocks.RIMESHROOM_STAIRS.get());
+        add(ModBlocks.RIMESHROOM_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.RIMESHROOM_FENCE.get());
+        dropSelf(ModBlocks.RIMESHROOM_FENCE_GATE.get());
+        add(ModBlocks.RIMESHROOM_DOOR.get(), this::createDoorTable);
+        dropSelf(ModBlocks.RIMESHROOM_TRAPDOOR.get());
+        dropSelf(ModBlocks.RIMESHROOM_PRESSURE_PLATE.get());
+        dropSelf(ModBlocks.RIMESHROOM_BUTTON.get());
+        dropSelf(ModBlocks.RIMESHROOM_CAP.get());
+        dropSelf(ModBlocks.ICE_STALACTITE.get());
+        dropSelf(ModBlocks.GLOWING_FISSURE.get());
     }
 
     private void ring3() {

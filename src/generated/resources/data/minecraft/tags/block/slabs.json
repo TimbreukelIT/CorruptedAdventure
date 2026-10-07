@@ -8,6 +8,9 @@
     "corruptedadventure:polished_salt_slab",
     "corruptedadventure:pumice_slab",
     "corruptedadventure:polished_pumice_slab",
-    "corruptedadventure:pumice_brick_slab"
+    "corruptedadventure:pumice_brick_slab",
+    "corruptedadventure:cold_lava_slab",
+    "corruptedadventure:polished_cold_lava_slab",
+    "corruptedadventure:cold_lava_brick_slab"
   ]
 }

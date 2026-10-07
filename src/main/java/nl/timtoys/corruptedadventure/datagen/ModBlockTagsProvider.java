@@ -3,6 +3,8 @@ package nl.timtoys.corruptedadventure.datagen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
@@ -11,6 +13,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -58,6 +61,62 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         ring2();
         netherRing2();
         ring3();
+        netherRing3();
+    }
+
+    /**
+     * Nether ring 3. Cold lava and rime netherrack are Nether ground like basalt and netherrack ({@code #base_stone_nether},
+     * so Nether carvers cut through them); rime netherrack is not in the {@code #infiniburn_*} tags (fire dies on frozen
+     * ground) nor in {@code #nylium}. The Nether ice is in every ice tag of packed ice, and carvers cut through it. The rimeshroom set is Nether wood: in
+     * {@code #logs} (via its own tag) but not in {@code #logs_that_burn}.
+     */
+    private void netherRing3() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.COLD_LAVA.get(), ModBlocks.COLD_LAVA_STAIRS.get(),
+                ModBlocks.COLD_LAVA_SLAB.get(), ModBlocks.COLD_LAVA_WALL.get(), ModBlocks.POLISHED_COLD_LAVA.get(),
+                ModBlocks.POLISHED_COLD_LAVA_STAIRS.get(), ModBlocks.POLISHED_COLD_LAVA_SLAB.get(),
+                ModBlocks.POLISHED_COLD_LAVA_WALL.get(), ModBlocks.COLD_LAVA_BRICKS.get(), ModBlocks.COLD_LAVA_BRICK_STAIRS.get(),
+                ModBlocks.COLD_LAVA_BRICK_SLAB.get(), ModBlocks.COLD_LAVA_BRICK_WALL.get(), ModBlocks.NETHER_ICE.get(),
+                ModBlocks.PACKED_NETHER_ICE.get(), ModBlocks.RIME_NETHERRACK.get(), ModBlocks.ICE_STALACTITE.get(),
+                ModBlocks.GLOWING_FISSURE.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.COLD_LAVA_STAIRS.get(), ModBlocks.POLISHED_COLD_LAVA_STAIRS.get(),
+                ModBlocks.COLD_LAVA_BRICK_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.COLD_LAVA_SLAB.get(), ModBlocks.POLISHED_COLD_LAVA_SLAB.get(),
+                ModBlocks.COLD_LAVA_BRICK_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.COLD_LAVA_WALL.get(), ModBlocks.POLISHED_COLD_LAVA_WALL.get(),
+                ModBlocks.COLD_LAVA_BRICK_WALL.get());
+        tag(BlockTags.BASE_STONE_NETHER).add(ModBlocks.COLD_LAVA.get(), ModBlocks.RIME_NETHERRACK.get());
+        tag(Tags.Blocks.NETHERRACKS).add(ModBlocks.RIME_NETHERRACK.get());
+        // Every ice tag vanilla puts packed ice in.
+        for (TagKey<Block> ice : List.of(BlockTags.ICE, BlockTags.SNOW_LAYER_CANNOT_SURVIVE_ON, BlockTags.GEODE_INVALID_BLOCKS,
+                BlockTags.SNAPS_GOAT_HORN, BlockTags.NETHER_CARVER_REPLACEABLES)) {
+            tag(ice).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get());
+        }
+
+        tag(ModTags.Blocks.RIMESHROOM_STEMS).add(ModBlocks.RIMESHROOM_STEM.get(), ModBlocks.RIMESHROOM_HYPHAE.get(),
+                ModBlocks.STRIPPED_RIMESHROOM_STEM.get(), ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get());
+        tag(BlockTags.LOGS).addTag(ModTags.Blocks.RIMESHROOM_STEMS);
+        tag(BlockTags.PLANKS).add(ModBlocks.RIMESHROOM_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.RIMESHROOM_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.RIMESHROOM_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.RIMESHROOM_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.RIMESHROOM_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.RIMESHROOM_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.RIMESHROOM_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.RIMESHROOM_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.RIMESHROOM_BUTTON.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_RIMESHROOM_STEM.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.RIMESHROOM_FENCE_GATE.get());
+        // Vanilla lists its wart blocks in #mineable/hoe one by one, so the cap goes in by hand.
+        tag(BlockTags.WART_BLOCKS).add(ModBlocks.RIMESHROOM_CAP.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.RIMESHROOM_CAP.get());
+        // Growths, not terrain, for the Nether features' determinism rule (FungalTerrainScan), like the dripshroom set.
+        tag(ModTags.Blocks.FUNGAL_GROWTHS).addTag(ModTags.Blocks.RIMESHROOM_STEMS).add(ModBlocks.RIMESHROOM_CAP.get(),
+                ModBlocks.ICE_STALACTITE.get());
+
+        // The glowing fissure warms against the Nether cold and heats like the ring 3 heat sources (contract §3).
+        tag(ModTags.Blocks.HEAT_SOURCES).add(ModBlocks.GLOWING_FISSURE.get());
+        tag(ModTags.Blocks.WARMTH_SOURCES).add(ModBlocks.GLOWING_FISSURE.get());
     }
 
     /**

@@ -53,6 +53,15 @@ class ModWoodTypesTest {
         assertNetherWoodType(ModWoodTypes.CHARRED, ModWoodTypes.CHARRED_SET);
     }
 
+    @Test
+    void rimeshroomSetIsNetherWoodUnderItsNamespacedName() {
+        JsonElement json = BlockSetType.CODEC.encodeStart(JsonOps.INSTANCE, ModWoodTypes.RIMESHROOM_SET).getOrThrow();
+        assertEquals("corruptedadventure:rimeshroom", json.getAsString());
+        assertSame(ModWoodTypes.RIMESHROOM_SET, BlockSetType.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(BlockSetType.CRIMSON.soundType(), ModWoodTypes.RIMESHROOM_SET.soundType());
+        assertNetherWoodType(ModWoodTypes.RIMESHROOM, ModWoodTypes.RIMESHROOM_SET);
+    }
+
     private static void assertNetherWoodType(WoodType wood, BlockSetType set) {
         assertSame(set, wood.setType());
         assertEquals(WoodType.CRIMSON.fenceGateClose(), wood.fenceGateClose());

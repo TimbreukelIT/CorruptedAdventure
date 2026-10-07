@@ -50,7 +50,9 @@ final class ModDataMapProvider extends DataMapProvider {
                 // Ring 3: like leaves and short grass (0.3) and flowers (0.65).
                 .add(ModBlocks.EMBER_LEAVES.getId(), new Compostable(0.3F), false)
                 .add(ModBlocks.ASH_SPROUTS.getId(), new Compostable(0.3F), false)
-                .add(ModBlocks.FIRE_BLOOM.getId(), new Compostable(0.65F), false);
+                .add(ModBlocks.FIRE_BLOOM.getId(), new Compostable(0.65F), false)
+                // Nether ring 3: like the nether wart block.
+                .add(ModBlocks.RIMESHROOM_CAP.getId(), new Compostable(0.85F), false);
     }
 
     @SafeVarargs

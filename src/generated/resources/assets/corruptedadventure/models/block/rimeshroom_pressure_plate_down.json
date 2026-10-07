@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/pressure_plate_down",
+  "textures": {
+    "texture": "corruptedadventure:block/rimeshroom_planks"
+  }
+}

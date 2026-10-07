@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "corruptedadventure:block/cold_lava",
+    "side": "corruptedadventure:block/cold_lava",
+    "top": "corruptedadventure:block/cold_lava"
+  }
+}
