@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:mul",
+    "argument1": {
+      "type": "minecraft:mul",
+      "argument1": {
+        "type": "minecraft:clamp",
+        "input": {
+          "type": "minecraft:mul",
+          "argument1": {
+            "type": "minecraft:add",
+            "argument1": {
+              "type": "minecraft:noise",
+              "noise": "corruptedadventure:nether_ring_3_crack_patches",
+              "xz_scale": 1.0,
+              "y_scale": 0.0
+            },
+            "argument2": -0.3
+          },
+          "argument2": 5.0
+        },
+        "min": 0.0,
+        "max": 1.0
+      },
+      "argument2": "corruptedadventure:ring_3/nether/sea_weight"
+    },
+    "argument2": "corruptedadventure:ring_3/nether/core"
+  }
+}

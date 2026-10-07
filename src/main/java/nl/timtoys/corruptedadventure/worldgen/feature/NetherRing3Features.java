@@ -10,6 +10,15 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
  * untouched.
  */
 public final class NetherRing3Features {
+    /**
+     * Region noise ({@code ring_3/nether/region}) from which the rime forest's halls start; the frozen lava sea lies
+     * between {@link #RIFTS_THRESHOLD} and this, the glacier rifts below. The terrain's region weights turn over here, and
+     * so do the surface rule and (53b) the preset's {@code multi_noise}; {@code NetherRing3JsonTest} compares them.
+     */
+    public static final double RIME_THRESHOLD = 0.18;
+    /** Region noise below which the glacier rifts lie. */
+    public static final double RIFTS_THRESHOLD = -0.18;
+
     private NetherRing3Features() {
     }
 

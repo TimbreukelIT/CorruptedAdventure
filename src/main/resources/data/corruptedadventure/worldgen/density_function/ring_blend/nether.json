@@ -4,7 +4,7 @@
   "rings": {
     "ring_1": "corruptedadventure:ring_1/nether",
     "ring_2": "corruptedadventure:ring_2/nether",
-    "ring_3": "corruptedadventure:ring_3/nether",
+    "ring_3": "corruptedadventure:ring_3/nether/terrain",
     "ring_4": "corruptedadventure:ring_4/nether",
     "ring_5": "corruptedadventure:ring_5/nether",
     "void": "corruptedadventure:void/nether"
