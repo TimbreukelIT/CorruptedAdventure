@@ -26,6 +26,8 @@ public final class ServerConfig {
     public static final ModConfigSpec SPEC;
     public static final DebugCondition DEBUG;
     public static final DehydrationCondition DEHYDRATION;
+    /** {@code [conditions.heat]}: ring 3 (change 43). */
+    public static final HeatCondition HEAT;
     /** {@code [weather.ring2]}: the effects of sandstorm and heat wave (change 28). */
     public static final Ring2WeatherEffects RING_2_WEATHER;
 
@@ -39,6 +41,7 @@ public final class ServerConfig {
                 .push("conditions");
         DEBUG = new DebugCondition(builder);
         DEHYDRATION = new DehydrationCondition(builder);
+        HEAT = new HeatCondition(builder);
         builder.pop();
         builder.comment("Ring weather: a cycle per ring (clear, then a weather of that ring, then clear again).",
                 "Durations in seconds, drawn uniformly between min and max; edits apply from the next change of weather.")
@@ -49,7 +52,7 @@ public final class ServerConfig {
         builder.pop();
         RING_2_WEATHER = RING_WEATHER.get(Ring.RING_2).ring2Effects;
         SPEC = builder.build();
-        ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds);
+        ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds);
     }
 
     private ServerConfig() {
@@ -155,6 +158,69 @@ public final class ServerConfig {
                     .defineInRange("damage", 1.0, 0.0, 100.0);
             damageInterval = builder.comment("Seconds between two hits at threshold4 (vanilla starving: 4).")
                     .defineInRange("damageInterval", 4, 1, 600);
+            builder.pop();
+        }
+    }
+
+    /** {@code [conditions.heat]}: ring 3 (change 43); start values from {@code docs/plans/ring-3/contract.md} §5. */
+    public static final class HeatCondition {
+        public final ModConfigSpec.DoubleValue sunRisePerSecond;
+        public final ModConfigSpec.DoubleValue sourceMultiplier;
+        public final ModConfigSpec.IntValue sourceRadius;
+        public final ModConfigSpec.DoubleValue peakMultiplier;
+        public final ModConfigSpec.DoubleValue nightFall;
+        public final ModConfigSpec.DoubleValue shadeFall;
+        public final ModConfigSpec.DoubleValue undergroundFall;
+        public final ModConfigSpec.DoubleValue waterFall;
+        public final ModConfigSpec.DoubleValue refugeFall;
+        public final ModConfigSpec.DoubleValue outsideFall;
+        public final ModConfigSpec.DoubleValue fireResistanceFactor;
+        public final ThresholdLevels thresholds;
+        public final ModConfigSpec.IntValue effect1Amplifier;
+        public final ModConfigSpec.IntValue effect2Amplifier;
+        public final ModConfigSpec.IntValue effect3Amplifier;
+
+        private HeatCondition(ModConfigSpec.Builder builder) {
+            builder.comment("Heat in ring 3 of the overworld. Rises in direct sunlight by day (full sky light at eye height)",
+                            "and near a heat source (block tag corruptedadventure:heat_sources; also at night and underground).",
+                            "The strongest factor wins (source or peak), they do not stack. Every other case falls; water and",
+                            "the refuge biomes cool even in the sun or next to a source; the strongest fall rate wins.")
+                    .push("heat");
+            sunRisePerSecond = builder.comment("Points per second in direct sunlight by day in ring 3 (0.55: 0 -> 100 in ~3 min).")
+                    .defineInRange("sunRisePerSecond", 0.55, 0.0, 100.0);
+            sourceMultiplier = builder.comment("Factor on the rise within sourceRadius of a heat source.")
+                    .defineInRange("sourceMultiplier", 1.5, 1.0, 10.0);
+            sourceRadius = builder.comment("Blocks around the player (a box, from feet and head) searched for heat sources.")
+                    .defineInRange("sourceRadius", 4, 1, 8);
+            peakMultiplier = builder.comment("Factor on the rise in the peak biomes (biome tag corruptedadventure:heat_peaks).")
+                    .defineInRange("peakMultiplier", 2.0, 1.0, 10.0);
+            nightFall = builder.comment("Points per second while the sun is down, in ring 3, away from heat sources.")
+                    .defineInRange("nightFall", 0.5, 0.0, 100.0);
+            shadeFall = builder.comment("Points per second by day without full sky light but with no solid block above",
+                            "(leaves); deliberately low: shade alone never really cools.")
+                    .defineInRange("shadeFall", 0.25, 0.0, 100.0);
+            undergroundFall = builder.comment("Points per second underground or under a roof (any solid block above the head),",
+                            "away from heat sources.")
+                    .defineInRange("undergroundFall", 0.5, 0.0, 100.0);
+            waterFall = builder.comment("Points per second when submerged above the waist (swimming counts), anywhere.")
+                    .defineInRange("waterFall", 2.0, 0.0, 100.0);
+            refugeFall = builder.comment("Points per second in the refuge biomes (biome tag corruptedadventure:heat_refuges),",
+                            "also in full sun.")
+                    .defineInRange("refugeFall", 2.0, 0.0, 100.0);
+            outsideFall = builder.comment("Points per second outside ring 3 (other rings, the void, the Nether).")
+                    .defineInRange("outsideFall", 0.5, 0.0, 100.0);
+            fireResistanceFactor = builder.comment("Factor on a rising heat rate while the player has fire resistance.")
+                    .defineInRange("fireResistanceFactor", 0.5, 0.0, 1.0);
+            thresholds = ThresholdLevels.define(builder, "conditions.heat", new int[]{25, 50, 75, 100},
+                    "Slowness from here.", "Weakness from here.", "Mining fatigue from here.",
+                    "Burning from here: on fire and heat damage every second (own death message);"
+                            + " not in water, rain or powder snow.");
+            effect1Amplifier = builder.comment("Slowness amplifier (0 = level I).")
+                    .defineInRange("effect1Amplifier", 0, 0, 9);
+            effect2Amplifier = builder.comment("Weakness amplifier (0 = level I).")
+                    .defineInRange("effect2Amplifier", 0, 0, 9);
+            effect3Amplifier = builder.comment("Mining fatigue amplifier (0 = level I).")
+                    .defineInRange("effect3Amplifier", 0, 0, 9);
             builder.pop();
         }
     }

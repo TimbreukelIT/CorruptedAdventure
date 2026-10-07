@@ -7,7 +7,6 @@ import nl.timtoys.corruptedadventure.registry.ModDamageTypes;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Per condition its rule and thresholds, plus the shared rate modifiers. Numbers come from {@link ServerConfig} (read
@@ -15,7 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * (the HUD reads the synced config).
  */
 public final class ConditionDefinitions {
-    private static final List<RateModifier> MODIFIERS = new CopyOnWriteArrayList<>();
+    private static final RateModifierPipeline MODIFIERS = new RateModifierPipeline();
 
     private ConditionDefinitions() {
     }
@@ -25,6 +24,7 @@ public final class ConditionDefinitions {
             case DEBUG -> DebugConditionDriver.rule(
                     ServerConfig.DEBUG.riseRate.get().floatValue(), ServerConfig.DEBUG.fallRate.get().floatValue());
             case DEHYDRATION -> DehydrationRule.fromConfig();
+            case HEAT -> HeatRule.fromConfig();
         };
     }
 
@@ -33,6 +33,7 @@ public final class ConditionDefinitions {
         return switch (condition) {
             case DEBUG -> ServerConfig.DEBUG.thresholds.get();
             case DEHYDRATION -> ServerConfig.DEHYDRATION.thresholds.get();
+            case HEAT -> ServerConfig.HEAT.thresholds.get();
         };
     }
 
@@ -64,15 +65,32 @@ public final class ConditionDefinitions {
                         new DamageThreshold(ModDamageTypes.DEHYDRATION, config.damage.get().floatValue(),
                                 config.damageInterval.get(), DifficultyFloor.VANILLA_STARVATION));
             }
+            case HEAT -> {
+                ServerConfig.HeatCondition config = ServerConfig.HEAT;
+                yield List.of(
+                        new MobEffectThreshold(MobEffects.MOVEMENT_SLOWDOWN, config.effect1Amplifier.get()),
+                        new MobEffectThreshold(MobEffects.WEAKNESS, config.effect2Amplifier.get()),
+                        new MobEffectThreshold(MobEffects.DIG_SLOWDOWN, config.effect3Amplifier.get()),
+                        HeatBurn.IGNITE);
+            }
         };
     }
 
-    /** Adds a modifier to the pipeline of every condition (e.g. from {@code weather/}); call during mod setup. */
+    /** Adds a ring weather modifier ({@link RateModifier.Stage#WEATHER}); call during mod setup. */
     public static void addModifier(RateModifier modifier) {
-        MODIFIERS.add(modifier);
+        addModifier(RateModifier.Stage.WEATHER, modifier);
     }
 
+    /**
+     * Adds a modifier to the pipeline of every condition, in its stage (weather → gear → fire resistance → purifying;
+     * within a stage in registration order); call during mod setup.
+     */
+    public static void addModifier(RateModifier.Stage stage, RateModifier modifier) {
+        MODIFIERS.add(stage, modifier);
+    }
+
+    /** All modifiers in pipeline order. */
     public static List<RateModifier> modifiers() {
-        return MODIFIERS;
+        return MODIFIERS.ordered();
     }
 }

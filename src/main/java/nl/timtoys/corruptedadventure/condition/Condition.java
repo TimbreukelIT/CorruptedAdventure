@@ -12,7 +12,12 @@ public enum Condition implements StringRepresentable {
     /** Test condition: only rises while {@code /ca condition debug <player> rise} is set. */
     DEBUG("debug", 0xFFB040FF),
     /** Ring 2: rises in direct sunlight by day, falls in shade, water, the oasis, at night and outside ring 2. */
-    DEHYDRATION("dehydration", 0xFFD9A441);
+    DEHYDRATION("dehydration", 0xFFD9A441),
+    /**
+     * Ring 3: rises in direct sun by day and near heat sources (also at night and underground), faster on the peaks;
+     * falls at night, under a roof, a little in shade, fast in water and in the dormant caldera, and outside ring 3.
+     */
+    HEAT("heat", 0xFFE8501E);
 
     public static final Codec<Condition> CODEC = StringRepresentable.fromEnum(Condition::values);
 
