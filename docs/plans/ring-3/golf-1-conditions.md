@@ -52,9 +52,10 @@ Alles server-side; meter-sync via de bestaande `condition_sync` (geen nieuwe pay
 - Voortgang: 22:06 S 44 gedaan; bronscan met palette-voorcheck; tijdelijke meetcode verwijderd; laatste `build` groen (incl. unit tests, ClientIsolationTest). Afronden op verzoek van main.
 - Voortgang: 08:14 (2026-10-07) hervat; gebruikersbesluit generatoren vastgelegd; 44-sanity op de definitieve build (open lucht verdampt, lava blijft lava); dak + water vlak na elkaar bleef één keer niet staan (lichtengine liep achter) → verdamping vraagt nu ook de heightmap.
 - Voortgang: 09:00 review 43 binnen, bevindingen verwerkt (zie "Review 43").
-- Voortgang: 10:20 build + `runData` groen met de fixes; laatste S: bron op 4 blokken wel/op 5 niet (palette-voorcheck), lava boven het hoofd telt; branden bij 100: vlam blijft op 9 vuurticks, ~1 schade/s, dood → "Dev succumbed to the heat", onder 100 dooft de vlam; 44: vers dak houdt water (heightmap), open lucht verdampt, slab droogt, bladeren houden water. Stroom uit een overdekte bron die de open lucht in loopt, blijft staan (alleen bronnen verdampen). Commit 43.
+- Voortgang: 10:20 build + `runData` groen met de fixes; laatste S: bron op 4 blokken wel/op 5 niet (palette-voorcheck), lava boven het hoofd telt; branden bij 100: vlam blijft op 9 vuurticks, ~1 schade/s, dood → "Dev succumbed to the heat", onder 100 dooft de vlam; 44: vers dak houdt water (heightmap), open lucht verdampt, slab droogt, bladeren houden water. Stroom uit een overdekte bron die de open lucht in loopt, blijft staan (alleen bronnen verdampen). Commit 43 (7f1aca5).
+- Voortgang: 10:35 review 44 binnen, fixes verwerkt (zie "Review 44"); build + `runData` groen; S 44: gat tussen twee overdekte bronnen blijft stromend water (geen bronvorming, geen sis-lus), open lucht verdampt, slab droogt, dispenser houdt een lege emmer. Commit 44.
 
-## Status bij onderbreking (2026-10-06 22:10)
+## Status bij onderbreking (2026-10-06 22:10) — afgehandeld op 2026-10-07
 - **Gecommit:** niets (geen pakket gereviewd). Branch `ring3/conditions-g1` staat op 8e0c637.
 - **Ongecommit op schijf, klaar voor review:** 43 (hitte) en 44 (water verdampt) samen in de werkmap; beide gebouwd en getest (zie hieronder). `runData`-output (lang, damage type `heat`, damage-type-tags) staat ongecommit in `src/generated/`.
 - **Ontbreekt nog:**
@@ -94,7 +95,7 @@ Alles server-side; meter-sync via de bestaande `condition_sync` (geen nieuwe pay
 - `condition.Ring3DamageTypes.HEAT` (key + bootstrap); tags in `datagen.tags.Ring3DamageTypeTags` (`is_fire`, `bypasses_armor`, `no_knockback`, `c:is_environment`); lang `death.attack.corruptedadventure.heat(.player)` via `Ring3ConditionText` (en + nl).
 - `RateModifier.Stage` (WEATHER → GEAR → FIRE_RESISTANCE → PURIFYING) + `RateModifierPipeline`; `ConditionDefinitions.addModifier(Stage, …)`; de oude `addModifier(modifier)` = WEATHER.
 - `condition.HeatWeatherModifier` (asregen ×1,5, uitbarsting ×2, met fade). **Constanten tot A gemerged is**; INT: `multiplier(type)` → `(float) ServerConfig.RING_3_WEATHER.heatMultiplier(type)` (dan doet ASH_CLOUD ×3 automatisch mee; dat stond voor golf 2). `condition.FireResistanceHeatModifier`.
-- `condition.WaterEvaporation` (44): `BlockEvent.NeighborNotifyEvent`; droogt een nieuwe waterbron of een nieuw waterlogged blok in ring 3 onder open lucht (geen vast blok/vloeistof erboven volgens de heightmap `MOTION_BLOCKING_NO_LEAVES` én `canSeeSky(pos.above())`) met vanilla-rook en -sis. Bewust synchroon in de notificatie (anders wordt lava eerst obsidiaan).
+- `condition.WaterEvaporation` (44): `BlockEvent.NeighborNotifyEvent` (+ `CreateFluidSourceEvent`: een bron telt niet mee voor een nieuwe bron naast een verdampende cel, anders droogt en herstelt een gat tussen twee overdekte bronnen zich eindeloos); droogt een nieuwe waterbron of een nieuw waterlogged blok in ring 3 onder open lucht (geen vast blok/vloeistof erboven volgens de heightmap `MOTION_BLOCKING_NO_LEAVES` én `canSeeSky(pos.above())`) met vanilla-rook en -sis. Bewust synchroon in de notificatie (anders wordt lava eerst obsidiaan).
 - `condition.Ring3Conditions.register` (modifiers, burn, verdamping), aangeroepen uit `ConditionTicker.register` zodat `CorruptedAdventure` niet geraakt wordt (INT mag het naar de entrypoint verplaatsen).
 - `ServerConfig.HEAT` `[conditions.heat]`: `sunRisePerSecond`, `sourceMultiplier`, `sourceRadius` (1–8), `peakMultiplier`, `nightFall`, `shadeFall`, `undergroundFall`, `waterFall`, `refugeFall`, `outsideFall` (0,5; contract "daarbuiten ↓ 0,5"), `fireResistanceFactor`, `threshold1–4`, `effect1–3Amplifier`.
 
@@ -116,6 +117,16 @@ Alles server-side; meter-sync via de bestaande `condition_sync` (geen nieuwe pay
 - 43-diff bevat 44 en de `heat_sources`-tag is leeg → 44 komt in een eigen commit (registratie pas in de 44-commit); de lege tag is contract (B vult hem), test met testdatapack.
 - Dubbele guard in de modifiers → **opgelost**: één `HeatRule.isRisingHeat`.
 - Lock in `HeatSources.offsets` en geen kortsluiting in de palette-check → **opgelost** (`AtomicReferenceArray`, kortsluiting).
+
+## Review 44 (2026-10-07, `/code-review medium`)
+- Eindeloze lus: een open gat tussen twee overdekte bronnen werd steeds opnieuw een bron, verdampte, enz. → **opgelost** met `CreateFluidSourceEvent` (S: het gat blijft stromend water).
+- `NeighborNotifyEvent` vuurt ook als een buur (redstone, observer) de positie van bestaand water bijwerkt; later blootgesteld water verdampt dan alsnog → **bewust zo gelaten en gedocumenteerd**: water onder open lucht in ring 3 verdampt zodra het "aangeraakt" wordt; natuurlijk water uit worldgen vormt geen nieuwe bronnen meer naast open lucht (zelfde fix als de lus), en stromend water verdampt nooit.
+- Verouderde staat in de buitenste update → **bewust** (zie review 43; gebruikersbesluit geen obsidiaan).
+- Dure ringmeting vóór de goedkope checks → **opgelost** (heightmap en hemellicht eerst).
+- Zone dubbel gedefinieerd → **opgelost**: `HeatRule.inZone`.
+- Geen unit test voor `dried`/`isWaterSource` → **niet gedaan**: blockstates vragen een Minecraft-bootstrap die de unit tests van dit project niet hebben; de routes zijn in S getest (setblock, dispenser, slab, ijs smelten, lava, dak, bladeren, ring 2, lus).
+- Lichtvertraging na het weghakken van een dak (water blijft dan) → **bewust**: enkele ticks, staat bij de bekende grenzen in de javadoc.
+- `CODEBASE.md`/backlog niet bijgewerkt → **bewust**: `waves.md` §4.8 (delta's in dit plan, INT voegt samen).
 
 ## Backlog
 - `conditions`: ijs smelt in ring 3 alleen door bloklicht (vanilla), niet door zon/hitte — nog te beslissen.
