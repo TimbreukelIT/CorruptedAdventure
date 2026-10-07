@@ -28,7 +28,7 @@ class Ring3JsonTest {
     private static final long SEED = 20260930L;
     private static final String[] SHARED = {"ring_3/overworld/region_heat", "ring_3/overworld/region_ground",
             "ring_3/overworld/height", "ring_3/overworld/caldera_mask", "ring_3/overworld/caldera_dormant",
-            "ring_3/overworld/lava_channel", "ring_3/overworld/island_mask", "ring_3/nether/region"};
+            "ring_3/overworld/lava_channel", "ring_3/overworld/island_mask", "ring_3/nether/region", "ring_3/nether/terrain"};
     private static JsonObject blend(String file) {
         JsonObject json = WorldgenData.read("density_function/ring_blend/" + file + ".json");
         assertEquals("corruptedadventure:ring_blend", json.get("type").getAsString(), file);
@@ -55,8 +55,7 @@ class Ring3JsonTest {
         for (String name : SHARED) {
             assertTrue(Files.exists(WorldgenData.root().resolve("density_function/" + name + ".json")), name);
         }
-        // ring_3/nether/terrain stays the placeholder ring_3/nether.json until W-nether moves it (change 53).
-        assertTrue(Files.exists(WorldgenData.root().resolve("density_function/ring_3/nether.json")));
+        assertEquals("corruptedadventure:ring_3/nether/terrain", rings("nether").get("ring_3").getAsString());
     }
 
     @Test
@@ -168,9 +167,8 @@ class Ring3JsonTest {
     /**
      * No lava sea in Nether-3, and no lava wall where the fluid level steps at a midline ({@code RingFluidPicker}
      * switches hard on {@code RingPosition.ring()}): at every boundary between two levels, the ring with the lower one
-     * must be solid up to the higher one near the boundary, or open space there would hold a wall of lava. Ring 2 has
-     * its dam (change 35); ring 3 is the placeholder, solid up to Y 39. When change 53 replaces ring 3's terrain this
-     * test fails on purpose: guard step 3|4 again (contract §4). In the world: {@code tools/nether-lava-walls.py}.
+     * must be solid up to the higher one near the boundary, or open space there would hold a wall of lava. Ring 2 and
+     * ring 3 each have their dam ({@code ring_edge}, change 35 / 53). In the world: {@code tools/nether-lava-walls.py}.
      */
     @Test
     void everyNetherLavaStepIsCoveredBySolidGround() {
@@ -197,33 +195,87 @@ class Ring3JsonTest {
                 // The dam: 2.5 × edge × a gradient that is positive below to_y; edge = 1 on and beyond both of ring 2's boundaries.
                 case "ring_2" -> assertTrue(find(WorldgenData.read("density_function/ring_2/nether/dam.json"), "minecraft:y_clamped_gradient")
                         .get("to_y").getAsInt() > top, boundary + ": ring 2's dam must reach above Y " + top);
-                case "ring_3" -> assertPlaceholderSolidUpTo("ring_3/nether.json", top, boundary);
+                case "ring_3" -> assertRing3DamSolidUpTo(top, boundary);
                 default -> throw new AssertionError(boundary + ": lava step from Y " + top + " with nothing guarding the " + low + " side");
             }
         }
         assertEquals(2, steps, "steps 1|2 (32/22) and 3|4 (22/32)");
     }
 
-    /** The placeholder's floor (gradient 1 below from_y, plus k × the placeholder noise) is solid at Y {@code top}, sampled. */
-    private static void assertPlaceholderSolidUpTo(String file, int top, String boundary) {
-        JsonObject terrain = WorldgenData.read("density_function/" + file);
-        assertTrue(terrain.toString().contains("corruptedadventure:placeholder_terrain"),
-                boundary + ": " + file + " is no longer the placeholder; guard the lava step here (contract §4)");
-        JsonObject floor = terrain.getAsJsonObject("argument").getAsJsonObject("argument1");
-        JsonObject gradient = floor.getAsJsonObject("argument1");
-        double k = floor.getAsJsonObject("argument2").get("argument1").getAsDouble();
-        double fromY = gradient.get("from_y").getAsDouble(), toY = gradient.get("to_y").getAsDouble();
-        double at = top <= fromY ? gradient.get("from_value").getAsDouble()
-                : gradient.get("from_value").getAsDouble() + (top - fromY) / (toY - fromY)
-                * (gradient.get("to_value").getAsDouble() - gradient.get("from_value").getAsDouble());
-        NormalNoise noise = netherNoise("placeholder_terrain");
-        double lowest = Double.MAX_VALUE;
-        for (int x = -2000; x < 2000; x += 8) {
-            for (int z = -2000; z < 2000; z += 8) {
-                lowest = Math.min(lowest, noise.getValue(x, 0, z));
+    /**
+     * Ring 3's dam ({@code k × (edge × gradient) + c}, a term of the shape's {@code max}) keeps its full strength up to
+     * Y {@code top} and stays solid there against the lowest roughness the shape adds; the cracks (cut outside the
+     * interpolation) never open where the edge is 1. The roughness ({@code (a + b × w) × noise + bias}, {@code w} in
+     * [0, 1]) is sampled with the real (legacy-seeded) noise, with a margin over the sampled peak.
+     */
+    private static void assertRing3DamSolidUpTo(int top, String boundary) {
+        JsonObject dam = WorldgenData.read("density_function/ring_3/nether/dam.json");
+        JsonObject scaled = dam.getAsJsonObject("argument1");
+        double k = scaled.get("argument1").getAsDouble();
+        double c = dam.get("argument2").getAsDouble();
+        JsonObject product = scaled.getAsJsonObject("argument2");
+        assertEquals("corruptedadventure:ring_3/nether/edge", product.get("argument1").getAsString());
+        JsonObject gradient = product.getAsJsonObject("argument2");
+        assertEquals("minecraft:y_clamped_gradient", gradient.get("type").getAsString());
+        assertTrue(gradient.get("from_y").getAsInt() > top, boundary + ": ring 3's dam weakens at or below Y " + top);
+        // edge = a flat cache of ring 3's ring_edge (1 on both boundaries)
+        JsonObject edge = WorldgenData.read("density_function/ring_3/nether/edge.json");
+        assertEquals("minecraft:flat_cache", edge.get("type").getAsString());
+        edge = edge.getAsJsonObject("argument");
+        assertEquals("corruptedadventure:ring_edge", edge.get("type").getAsString());
+        assertEquals("ring_3", edge.get("ring").getAsString());
+        assertEquals("minecraft:the_nether", edge.get("dimension").getAsString());
+        double strength = k * gradient.get("from_value").getAsDouble() + c;
+        assertShapeTermHolds("dam", strength, boundary + ": ring 3's dam can open at Y " + top);
+
+        String mask = WorldgenData.read("density_function/ring_3/nether/crack_mask.json").toString();
+        assertTrue(mask.contains("\"corruptedadventure:ring_3/nether/core\""), "crack mask × core");
+        JsonObject core = WorldgenData.read("density_function/ring_3/nether/core.json").getAsJsonObject("argument");
+        assertEquals(1.0, core.get("argument1").getAsDouble(), "core = 1 − edge");
+        assertEquals(-1.0, core.getAsJsonObject("argument2").get("argument1").getAsDouble(), "core = 1 − edge");
+        assertEquals("corruptedadventure:ring_3/nether/edge", core.getAsJsonObject("argument2").get("argument2").getAsString());
+    }
+
+    /**
+     * No lava pools in Nether-3 outside the warm cracks: the shape's {@code lid} holds full strength up to the ring's
+     * lava level, so no open space reaches Y 22 even where a low hall floor meets the strongest roughness.
+     */
+    @Test
+    void nether3IsSolidUpToItsLavaLevelOutsideTheCracks() {
+        int level = generator("minecraft:the_nether").getAsJsonObject("fluid_levels").get("ring_3").getAsInt();
+        JsonObject lid = WorldgenData.read("density_function/ring_3/nether/lid.json");
+        assertEquals("minecraft:y_clamped_gradient", lid.get("type").getAsString());
+        assertTrue(lid.get("from_y").getAsInt() > level, "the lid weakens at or below the lava level");
+        assertShapeTermHolds("lid", lid.get("from_value").getAsDouble(), "Nether-3 can open at the lava level Y " + level);
+    }
+
+    /**
+     * {@code term} is a term of the shape's {@code max} and, at {@code strength}, stays solid against the lowest
+     * roughness the shape adds ({@code (a + b × w) × noise + bias}, {@code w} in [0, 1]), sampled with the real
+     * (legacy-seeded) noise, with a 25 % margin over the sampled peak.
+     */
+    private static void assertShapeTermHolds(String term, double strength, String message) {
+        JsonObject shape = WorldgenData.read("density_function/ring_3/nether/shape.json");
+        assertEquals("minecraft:add", shape.get("type").getAsString());
+        assertTrue(shape.getAsJsonObject("argument1").toString().contains("\"corruptedadventure:ring_3/nether/" + term + "\""), term + " is a term of the max");
+        assertEquals("corruptedadventure:ring_3/nether/rough", shape.get("argument2").getAsString());
+        JsonObject rough = WorldgenData.read("density_function/ring_3/nether/rough.json");
+        JsonObject amplitude = rough.getAsJsonObject("argument1").getAsJsonObject("argument1");
+        double a = amplitude.get("argument1").getAsDouble();
+        double b = amplitude.getAsJsonObject("argument2").get("argument1").getAsDouble();
+        double bias = rough.get("argument2").getAsDouble();
+        JsonObject roughNoise = rough.getAsJsonObject("argument1").getAsJsonObject("argument2");
+        assertEquals("corruptedadventure:nether_ring_3_rough", roughNoise.get("noise").getAsString());
+        NormalNoise noise = netherNoise("nether_ring_3_rough");
+        double yScale = roughNoise.get("y_scale").getAsDouble();
+        double highest = 0.0;
+        for (int x = -1600; x < 1600; x += 7) {
+            for (int z = -1600; z < 1600; z += 7) {
+                highest = Math.max(highest, Math.abs(noise.getValue(x, ((x * 31 + z) & 127) * yScale, z)));
             }
         }
-        assertTrue(at + k * lowest > 0.0, boundary + ": " + file + " opens below Y " + top + " (lowest density " + (at + k * lowest) + ")");
+        double lowest = strength - (a + Math.max(b, 0.0)) * highest * 1.25 + bias;
+        assertTrue(lowest > 0.0, message + " (lowest density " + lowest + ")");
     }
 
     /** The first object of {@code type} in a JSON tree (depth first). */
