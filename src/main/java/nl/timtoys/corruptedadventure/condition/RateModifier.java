@@ -15,7 +15,7 @@ public interface RateModifier {
      * exposure itself; then what the player wears and drinks; a purifying zone last, so it can override everything.
      */
     enum Stage {
-        /** Ring weather (heat wave, ash rain, eruption, later ash cloud). */
+        /** Ring weather (heat wave, ash rain, eruption, ash cloud). */
         WEATHER,
         /** Gear (phase 2). */
         GEAR,

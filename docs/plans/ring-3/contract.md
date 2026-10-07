@@ -52,21 +52,21 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 
 **38 — as, puimsteen, smeulsteen, verkoold hout**
 - `ash_block` (valt niet, schop), `ash_layer` (gedrag als sneeuwlaag: 1–8 lagen; geen smelten).
-- Puimsteen: `pumice`, `polished_pumice`, `pumice_bricks`, elk met `_stairs`, `_slab`, `_wall` (patroon kloofsteen-set).
+- Puimsteen: `pumice`, `polished_pumice`, `pumice_bricks`, elk met `_stairs`, `_slab`, `_wall` (patroon kloofsteen-set). Bij de stenen heet de set enkelvoud: `pumice_brick_stairs`, `pumice_brick_slab`, `pumice_brick_wall` (vanilla-patroon `stone_brick_*`; integratie 1).
 - `smoldering_stone`: licht (waarde in plan 38), in `#corruptedadventure:heat_sources`.
 - Verkoold hout (houtset §2 Ring 2): `charred_log`, `charred_wood`, `stripped_charred_log`, `stripped_charred_wood`, `charred_planks`, `charred_stairs`, `charred_slab`, `charred_fence`, `charred_fence_gate`, `charred_door`, `charred_trapdoor`, `charred_pressure_plate`, `charred_button`. **Niet brandbaar** (besluit gebruiker 2026-10-06; Nether-hout-patroon zoals `dripshroom`; voorkomt bosbranden naast lava). `BlockSetType`/`WoodType` `corruptedadventure:charred`.
 
 **38b — smeulwoud, vuurflora, askorst, gloeiende afgietsels**
 - `ember_leaves` (smeulblad: bladeren aan verkoolde stammen, gloeiende texture; **geen bloklicht**, alleen emissive texture *[V3: A]*; vervalt niet als vanilla-bladeren, want de stam is dood: `persistent`-gedrag in plan 38b).
-- `fire_bloom` (vuurbloem, `#small_flowers`) + `potted_fire_bloom`; `ash_sprouts` (askruid, kruismodel).
+- `fire_bloom` (vuurbloem, `#small_flowers`) + `potted_fire_bloom`; `ash_sprouts` (askruid, kruismodel). Grondregel van de vuurflora: tag `#corruptedadventure:ash_plant_soil` (integratie 1).
 - `ember_berry_bush` (voorlopig; eetbare vuurflora) *[V7: A]*: zeldzaam, alleen in `ember_woods` en `dormant_caldera`; drop voorlopig vanilla `sweet_berries`, eigen voedsel in fase 2.
-- `ash_crust`: instortende askorst boven holtes en lavabuizen; hergebruikt het `loose_sand`-mechanisme (`LooseSandTrigger`), dropt `ash_block`.
+- `ash_crust`: instortende askorst boven holtes en lavabuizen; hergebruikt het `loose_sand`-mechanisme (`LooseSandTrigger`, nu via de tag `#corruptedadventure:collapsing_blocks`), dropt `ash_block`.
 - `smoldering_ash`: as met gloeiende scheuren (emissive, licht 0–3), materiaal van de gloeiende as-afgietsels.
 
 **40 — ertsen**
 - Vulkaniet: `volcanite_ore`, `deepslate_volcanite_ore`, `basalt_volcanite_ore` (voorlopig: welke gastgesteenten precies, in plan 40 met W-biomes afgestemd via main).
 - Zwavel: `sulfur_ore`, `basalt_sulfur_ore`.
-- Vuurrobijn: `fire_ruby_ore`, `deepslate_fire_ruby_ore`.
+- Vuurrobijn: `fire_ruby_ore`, `deepslate_fire_ruby_ore`, `basalt_fire_ruby_ore` (basaltvariant voor de magmakamerwanden; besluit gebruiker 2026-10-07, integratie 1).
 - Items: `raw_volcanite`, `sulfur`, `fire_ruby` (placeholder-items zonder recipes, zoals `raw_sunstone`).
 - Ertstags `c:ores/volcanite`, `c:ores/sulfur`, `c:ores/fire_ruby`.
 
@@ -79,7 +79,7 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 - Golf 1: registratie + basisgedrag. Eigen geluiden volgen in golf 2 via A (§6); tot dan vanilla-`SoundEvents`.
 
 **51 — Nether-3**
-- Koudlava-set: `cold_lava`, `polished_cold_lava`, `cold_lava_bricks`, elk met `_stairs`, `_slab`, `_wall`.
+- Koudlava-set: `cold_lava`, `polished_cold_lava`, `cold_lava_bricks`, elk met `_stairs`, `_slab`, `_wall`. Bij de stenen enkelvoud: `cold_lava_brick_stairs`, `cold_lava_brick_slab`, `cold_lava_brick_wall` (integratie 1).
 - `nether_ice` (smelt niet, glad), `packed_nether_ice`, `rime_netherrack`.
 - Rijpzwam-houtset: `rimeshroom_stem`, `rimeshroom_hyphae`, `stripped_rimeshroom_stem`, `stripped_rimeshroom_hyphae`, `rimeshroom_planks` + houtset (stairs, slab, fence, fence_gate, door, trapdoor, pressure_plate, button), `rimeshroom_cap`.
 - `ice_stalactite` (hergebruik `StalactiteBlock`).
@@ -89,11 +89,13 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 - `primordial_ice`: alleen met Silk Touch te winnen, anders breekt het zonder drop.
 
 **Blok-tags** (namen in `ModTags` via 37c, inhoud door B):
-- `corruptedadventure:heat_sources` (hitte ↑ binnen ~4 blokken): `minecraft:lava`, `minecraft:magma_block`, `minecraft:fire`, `minecraft:campfire`, `smoldering_stone`, `fumarole`, `boiling_mud`, `glowing_fissure`. **Zielvuur hoort er niet in** *[V2: A]*.
+- `corruptedadventure:heat_sources` (hitte ↑ binnen ~4 blokken): `minecraft:lava`, `minecraft:magma_block`, `minecraft:fire`, `minecraft:campfire`, `smoldering_stone`, `fumarole`, `boiling_mud`, `glowing_fissure`. **Zielvuur (`soul_fire`, `soul_campfire`) hoort er niet in** *[V2: A]*; `geyser` ook niet. Zo gebouwd (integratie 1).
 - `corruptedadventure:warmth_sources` (kou ↓ in Nether-3): `lava`, `fire`, `soul_fire`, `campfire`, `soul_campfire`, `magma_block`, `glowing_fissure`, `smoldering_stone`.
 - `corruptedadventure:ring_3_stones` (ertsdoelen ring 3): basalt, blackstone, `pumice`, `ash_block` *(voorlopig)*.
 - `corruptedadventure:charred_logs` (in `#logs`, niet in `#logs_that_burn`); `corruptedadventure:rimeshroom_stems`.
-- `minecraft:goats_spawnable_on` + basalt, blackstone, `ash_block` *[V7: A]*. Let op: die tag is globaal, maar geiten spawnen alleen waar een biome ze noemt.
+- `corruptedadventure:ash_plant_soil` (grond van `fire_bloom`, `ash_sprouts`, `ember_berry_bush`): `ash_block`, `coarse_dirt`, `ash_layer` (alleen een volle laag telt, `AshPlantSoil`). De bes-struik groeit daarnaast op `moss_block` (hard in de klasse). Nieuw in golf 1 (integratie 1).
+- `corruptedadventure:collapsing_blocks` (instorten onder spelers, `LooseSandTrigger`; alleen vallende blokken): `loose_sand`, `ash_crust`. Nieuw in golf 1 (integratie 1).
+- `minecraft:goats_spawnable_on` + basalt, `smooth_basalt`, blackstone, `ash_block`, `pumice` *[V7: A]* (`smooth_basalt` en `pumice` op verzoek van W-biomes via main: de piek-bovenlaag). Let op: die tag is globaal, maar geiten spawnen alleen waar een biome ze noemt.
 
 **Vanilla-blokken die ring 3 gebruikt** (geen eigen variant): `basalt`, `smooth_basalt`, `blackstone`, `magma_block`, `obsidian`, `bone_block` (skeletten), `soul_soil` + `soul_fire` (zielvuur), dood koraal (zeekom), `coarse_dirt`/`moss_block`/varens (slapende krater, voorlopig).
 
@@ -145,7 +147,7 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 | water verdampt (44) | geen config; alle plaatsingsroutes (emmer, dispenser, ijs smelten/breken) in ring 3 onder open lucht |
 
 - "Schaduw" overdag remt hitte niet volledig (alleen dak of ondergronds). De exacte regel staat in plan 43.
-- **Ringweer-modifiers op de hitte** (`ASH_RAIN` ×1,5, `ERUPTION` ×2, `ASH_CLOUD` ×3) horen in ring 3 bij **C** (afwijking van het ring 2-patroon, waar 28 de hittegolf-modifier bouwde). Zo hangt C in golf 1 niet van A af. C leest `RingWeather.state` en de factoren uit `[weather.ring3]` (A). `ASH_CLOUD` bestaat pas na de merge van A; C koppelt die modifier in golf 2. De volgorde van de modifiers (backlog r. 95) legt C vast in 43.
+- **Ringweer-modifiers op de hitte** (`ASH_RAIN` ×1,5, `ERUPTION` ×2, `ASH_CLOUD` ×3) horen in ring 3 bij **C** (afwijking van het ring 2-patroon, waar 28 de hittegolf-modifier bouwde). Zo hangt C in golf 1 niet van A af. C leest `RingWeather.state` en de factoren uit `[weather.ring3]` (A). Sinds integratie 1 leest `HeatWeatherModifier` de factoren uit de config (`Ring3WeatherEffects.heatMultiplier`), dus `ASH_CLOUD` ×3 is actief. Twee regels (besluit gebruiker 2026-10-07): de weerfactor geldt **alleen onder open lucht** (`ConditionContext.canSeeSky()`, dezelfde regel als de lavabommen; in grotten en onder een dak geen weerfactor), en tijdens de waarschuwing van de aswolk (de fade-in van 400 ticks, ~20 s) blijft de factor 1, daarna direct ×3 (de fade-out volgt de intensiteit zoals bij elk weer). De volgorde van de modifiers (backlog r. 95) legt C vast in 43.
 
 ## 6. Weer, geluid, particles (eigenaar A)
 
@@ -169,7 +171,7 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 
 ## 8. Lang
 
-- Helpers per stroom (37c): `datagen/lang/Ring3BlockNames` (B), `Ring3BiomeNames` (W-biomes), `NetherRing3BiomeNames` (W-nether), `Ring3ConditionText` (C: meter, doodsbericht), `Ring3WeatherText` (A: ondertitels).
+- Helpers per stroom (37c): `datagen/lang/Ring3BlockNames` (B), `Ring3BiomeNames` (W-biomes), `NetherRing3BiomeNames` (W-nether; na golf 1 nog leeg: de Nether-3-biomes bestaan pas vanaf 53b, tot dan `placeholder_nether_ring_3`), `Ring3ConditionText` (C: meter, doodsbericht), `Ring3WeatherText` (A: ondertitels).
 - Engels verplicht, Nederlands erbij.
 - Elke helper heeft één methode voor en en één voor nl; de providers roepen ze aan (37c zet de aanroepen klaar).
 - Andere haken per stroom (37c, lege klassen die `DataGenerators` en de providers al aanroepen; overzicht in `CODEBASE.md` "Ring 3-haken per stroom"):

@@ -13,6 +13,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.ToDoubleFunction;
 
 /**
  * Server config ({@code config/corruptedadventure-server.toml}; a copy in {@code <world>/serverconfig/} overrides it
@@ -288,10 +289,15 @@ public final class ServerConfig {
 
         /** The heat factor of a full {@code type} (ash rain, eruption, ash cloud); 1 for every other type. */
         public double heatMultiplier(RingWeatherType type) {
+            return heatMultiplier(type, ModConfigSpec.DoubleValue::get);
+        }
+
+        /** {@link #heatMultiplier(RingWeatherType)} with its own read of the values (a unit test reads the defaults). */
+        public double heatMultiplier(RingWeatherType type, ToDoubleFunction<ModConfigSpec.DoubleValue> value) {
             return switch (type) {
-                case ASH_RAIN -> ashRainHeatMultiplier.get();
-                case ERUPTION -> eruptionHeatMultiplier.get();
-                case ASH_CLOUD -> ashCloudHeatMultiplier.get();
+                case ASH_RAIN -> value.applyAsDouble(ashRainHeatMultiplier);
+                case ERUPTION -> value.applyAsDouble(eruptionHeatMultiplier);
+                case ASH_CLOUD -> value.applyAsDouble(ashCloudHeatMultiplier);
                 default -> 1.0;
             };
         }

@@ -1,5 +1,7 @@
 package nl.timtoys.corruptedadventure.condition;
 
+import net.neoforged.neoforge.common.ModConfigSpec;
+import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.weather.RingWeatherState;
 import nl.timtoys.corruptedadventure.weather.RingWeatherType;
 import org.junit.jupiter.api.Test;
@@ -14,19 +16,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The heat modifiers (ring 3 weather, fire resistance) and the order of the modifier pipeline. */
 class HeatModifiersTest {
     private static final int DURATION = 6000;
-    private static final float ASH = HeatWeatherModifier.ASH_RAIN_MULTIPLIER;
-    private static final float ERUPTION = HeatWeatherModifier.ERUPTION_MULTIPLIER;
 
     /** A weather at {@code intensity} (fade-in part of a long weather). */
     private static RingWeatherState weather(RingWeatherType type, float intensity) {
-        int elapsed = Math.round(intensity * RingWeatherState.FADE_TICKS);
+        int elapsed = Math.round(intensity * type.fadeTicks());
         return new RingWeatherState(type, DURATION - elapsed, DURATION, 7);
+    }
+
+    /** A weather at {@code intensity} in its fade-out. */
+    private static RingWeatherState fadingOut(RingWeatherType type, float intensity) {
+        return new RingWeatherState(type, Math.round(intensity * type.fadeTicks()), DURATION, 7);
     }
 
     @Test
     void contractStartValues() {
-        assertEquals(1.5F, ASH);
-        assertEquals(2.0F, ERUPTION);
+        assertEquals(1.5F, defaultMultiplier(RingWeatherType.ASH_RAIN));
+        assertEquals(2.0F, defaultMultiplier(RingWeatherType.ERUPTION));
+        assertEquals(3.0F, defaultMultiplier(RingWeatherType.ASH_CLOUD));
     }
 
     @Test
@@ -36,12 +42,40 @@ class HeatModifiersTest {
         assertEquals(1.5F, factor(RingWeatherType.ASH_RAIN, 1.0F), 1.0E-6F);
         assertEquals(1.5F, factor(RingWeatherType.ERUPTION, 0.5F), 1.0E-6F);
         assertEquals(2.0F, factor(RingWeatherType.ERUPTION, 1.0F), 1.0E-6F);
+        assertEquals(1.25F, HeatWeatherModifier.factor(fadingOut(RingWeatherType.ASH_RAIN, 0.5F),
+                defaultMultiplier(RingWeatherType.ASH_RAIN)), 1.0E-6F);
+    }
+
+    @Test
+    void ashCloudAddsNoHeatDuringItsWarning() {
+        assertEquals(400, RingWeatherType.ASH_CLOUD.fadeTicks());
+        assertEquals(1.0F, factor(RingWeatherType.ASH_CLOUD, 0.0F), 1.0E-6F);
+        assertEquals(1.0F, factor(RingWeatherType.ASH_CLOUD, 0.5F), 1.0E-6F);
+        assertEquals(1.0F, factor(RingWeatherType.ASH_CLOUD, 399.0F / 400.0F), 1.0E-6F);
+        assertEquals(3.0F, factor(RingWeatherType.ASH_CLOUD, 1.0F), 1.0E-6F);
+        assertEquals(3.0F, HeatWeatherModifier.factor(new RingWeatherState(RingWeatherType.ASH_CLOUD, DURATION / 2,
+                DURATION, 7), defaultMultiplier(RingWeatherType.ASH_CLOUD)), 1.0E-6F);
+        // The fade-out is no warning: the heat follows the fade like every other weather.
+        assertEquals(2.0F, HeatWeatherModifier.factor(fadingOut(RingWeatherType.ASH_CLOUD, 0.5F),
+                defaultMultiplier(RingWeatherType.ASH_CLOUD)), 1.0E-6F);
+    }
+
+    @Test
+    void weatherOnlyCountsUnderOpenSky() {
+        RingWeatherState eruption = weather(RingWeatherType.ERUPTION, 1.0F);
+        float multiplier = defaultMultiplier(RingWeatherType.ERUPTION);
+        assertEquals(1.1F, HeatWeatherModifier.weathered(0.55F, true, eruption, multiplier), 1.0E-6F);
+        assertEquals(0.55F, HeatWeatherModifier.weathered(0.55F, false, eruption, multiplier), 1.0E-6F);
+        RingWeatherState cloud = weather(RingWeatherType.ASH_CLOUD, 1.0F);
+        assertEquals(0.55F, HeatWeatherModifier.weathered(0.55F, false, cloud,
+                defaultMultiplier(RingWeatherType.ASH_CLOUD)), 1.0E-6F);
     }
 
     @Test
     void otherWeatherDoesNothing() {
         for (RingWeatherType type : RingWeatherType.values()) {
-            if (type != RingWeatherType.ASH_RAIN && type != RingWeatherType.ERUPTION) {
+            if (type != RingWeatherType.ASH_RAIN && type != RingWeatherType.ERUPTION
+                    && type != RingWeatherType.ASH_CLOUD) {
                 assertEquals(1.0F, HeatWeatherModifier.multiplier(type), type.name());
                 assertEquals(1.0F, factor(type, 1.0F), type.name());
             }
@@ -82,7 +116,15 @@ class HeatModifiersTest {
     }
 
     private static float factor(RingWeatherType type, float intensity) {
-        return HeatWeatherModifier.factor(weather(type, intensity), HeatWeatherModifier.multiplier(type));
+        return HeatWeatherModifier.factor(weather(type, intensity), defaultMultiplier(type));
+    }
+
+    /**
+     * The production mapping (type → config value) with the config at its defaults: {@link HeatWeatherModifier#multiplier}
+     * reads the loaded server config, which a unit test does not have.
+     */
+    private static float defaultMultiplier(RingWeatherType type) {
+        return (float) ServerConfig.RING_3_WEATHER.heatMultiplier(type, ModConfigSpec.DoubleValue::getDefault);
     }
 
     private static RateModifier tracer(List<String> calls, String name) {
