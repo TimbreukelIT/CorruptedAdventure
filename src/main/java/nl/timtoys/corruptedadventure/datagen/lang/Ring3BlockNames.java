@@ -13,6 +13,8 @@ public final class Ring3BlockNames {
     public static void addEnglish(LangOutput lang) {
         lang.addBlock(ModBlocks.ASH_BLOCK, "Ash Block");
         lang.addBlock(ModBlocks.ASH_LAYER, "Ash Layer");
+        lang.addBlock(ModBlocks.ASH_CRUST, "Ash Crust");
+        lang.addBlock(ModBlocks.SMOLDERING_ASH, "Smoldering Ash");
         lang.addBlock(ModBlocks.PUMICE, "Pumice");
         lang.addBlock(ModBlocks.PUMICE_STAIRS, "Pumice Stairs");
         lang.addBlock(ModBlocks.PUMICE_SLAB, "Pumice Slab");
@@ -39,12 +41,19 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.CHARRED_TRAPDOOR, "Charred Trapdoor");
         lang.addBlock(ModBlocks.CHARRED_PRESSURE_PLATE, "Charred Pressure Plate");
         lang.addBlock(ModBlocks.CHARRED_BUTTON, "Charred Button");
+        lang.addBlock(ModBlocks.EMBER_LEAVES, "Ember Leaves");
+        lang.addBlock(ModBlocks.FIRE_BLOOM, "Fire Bloom");
+        lang.addBlock(ModBlocks.POTTED_FIRE_BLOOM, "Potted Fire Bloom");
+        lang.addBlock(ModBlocks.ASH_SPROUTS, "Ash Sprouts");
+        lang.addBlock(ModBlocks.EMBER_BERRY_BUSH, "Ember Berry Bush");
     }
 
     /** Vanilla nl_nl patterns: "Tufsteen", "Gepolijste tufsteentrap", "Tufstenen blokstenen", "Karmozijnrode trap". */
     public static void addDutch(LangOutput lang) {
         lang.addBlock(ModBlocks.ASH_BLOCK, "Asblok");
         lang.addBlock(ModBlocks.ASH_LAYER, "Aslaag");
+        lang.addBlock(ModBlocks.ASH_CRUST, "Askorst");
+        lang.addBlock(ModBlocks.SMOLDERING_ASH, "Smeulende as");
         lang.addBlock(ModBlocks.PUMICE, "Puimsteen");
         lang.addBlock(ModBlocks.PUMICE_STAIRS, "Puimstenen trap");
         lang.addBlock(ModBlocks.PUMICE_SLAB, "Puimstenen plaat");
@@ -71,5 +80,10 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.CHARRED_TRAPDOOR, "Verkoold valluik");
         lang.addBlock(ModBlocks.CHARRED_PRESSURE_PLATE, "Verkoolde drukplaat");
         lang.addBlock(ModBlocks.CHARRED_BUTTON, "Verkoolde knop");
+        lang.addBlock(ModBlocks.EMBER_LEAVES, "Smeulbladeren");
+        lang.addBlock(ModBlocks.FIRE_BLOOM, "Vuurbloem");
+        lang.addBlock(ModBlocks.POTTED_FIRE_BLOOM, "Opgepotte vuurbloem");
+        lang.addBlock(ModBlocks.ASH_SPROUTS, "Askruid");
+        lang.addBlock(ModBlocks.EMBER_BERRY_BUSH, "Gloeibesstruik");
     }
 }

@@ -6,6 +6,8 @@
     "corruptedadventure:loose_sand",
     "corruptedadventure:salt_crust",
     "corruptedadventure:ash_block",
-    "corruptedadventure:ash_layer"
+    "corruptedadventure:ash_layer",
+    "corruptedadventure:ash_crust",
+    "corruptedadventure:smoldering_ash"
   ]
 }

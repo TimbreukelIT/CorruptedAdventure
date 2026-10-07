@@ -60,6 +60,7 @@ class ModBlocksTest {
         assertSame(ModBlocks.BARREL_CACTUS.get(), ModBlocks.POTTED_BARREL_CACTUS.get().getPotted());
         assertSame(ModBlocks.DESERT_FLOWER.get(), ModBlocks.POTTED_DESERT_FLOWER.get().getPotted());
         assertSame(ModBlocks.PALM_SAPLING.get(), ModBlocks.POTTED_PALM_SAPLING.get().getPotted());
+        assertSame(ModBlocks.FIRE_BLOOM.get(), ModBlocks.POTTED_FIRE_BLOOM.get().getPotted());
     }
 
     @Test
@@ -219,7 +220,7 @@ class ModBlocksTest {
     void ring3FollowsTheDewBlocksInOrder() {
         List<Item> shown = blockItems();
         int cluster = shown.indexOf(ModBlocks.DEW_CRYSTAL_CLUSTER.asItem());
-        List<Item> ring3 = Stream.of(ModBlocks.ASH_BLOCK, ModBlocks.ASH_LAYER,
+        List<Item> ring3 = Stream.of(ModBlocks.ASH_BLOCK, ModBlocks.ASH_LAYER, ModBlocks.ASH_CRUST, ModBlocks.SMOLDERING_ASH,
                 ModBlocks.PUMICE, ModBlocks.PUMICE_STAIRS, ModBlocks.PUMICE_SLAB, ModBlocks.PUMICE_WALL,
                 ModBlocks.POLISHED_PUMICE, ModBlocks.POLISHED_PUMICE_STAIRS, ModBlocks.POLISHED_PUMICE_SLAB,
                 ModBlocks.POLISHED_PUMICE_WALL, ModBlocks.PUMICE_BRICKS, ModBlocks.PUMICE_BRICK_STAIRS,
@@ -227,7 +228,8 @@ class ModBlocksTest {
                 ModBlocks.CHARRED_LOG, ModBlocks.CHARRED_WOOD, ModBlocks.STRIPPED_CHARRED_LOG, ModBlocks.STRIPPED_CHARRED_WOOD,
                 ModBlocks.CHARRED_PLANKS, ModBlocks.CHARRED_STAIRS, ModBlocks.CHARRED_SLAB, ModBlocks.CHARRED_FENCE,
                 ModBlocks.CHARRED_FENCE_GATE, ModBlocks.CHARRED_DOOR, ModBlocks.CHARRED_TRAPDOOR,
-                ModBlocks.CHARRED_PRESSURE_PLATE, ModBlocks.CHARRED_BUTTON).<Item>map(DeferredBlock::asItem).toList();
+                ModBlocks.CHARRED_PRESSURE_PLATE, ModBlocks.CHARRED_BUTTON,
+                ModBlocks.EMBER_LEAVES, ModBlocks.FIRE_BLOOM, ModBlocks.ASH_SPROUTS, ModBlocks.EMBER_BERRY_BUSH).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(ring3, shown.subList(cluster + 1, cluster + 1 + ring3.size()));
     }
 
@@ -253,8 +255,28 @@ class ModBlocksTest {
     }
 
     @Test
-    void ashBlockDoesNotFall() {
+    void ashBlockDoesNotFallButTheCrustDoes() {
         assertFalse(ModBlocks.ASH_BLOCK.get() instanceof FallingBlock);
+        assertInstanceOf(FallingBlock.class, ModBlocks.ASH_CRUST.get());
+    }
+
+    /** V3 = A: the ember leaves only glow in their texture; the smouldering ash glows faintly (light 2). */
+    @Test
+    void emberLeavesNeverTickOrDecayAndGiveNoLight() {
+        for (BlockState state : ModBlocks.EMBER_LEAVES.get().getStateDefinition().getPossibleStates()) {
+            assertFalse(state.isRandomlyTicking(), state.toString());
+            assertEquals(0, state.getLightEmission(), state.toString());
+            assertFalse(state.ignitedByLava(), state.toString());
+        }
+        assertEquals(2, ModBlocks.SMOLDERING_ASH.get().defaultBlockState().getLightEmission());
+    }
+
+    @Test
+    void fireFloraDoesNotBurnButTheBerryBushStillGrows() {
+        for (DeferredBlock<?> plant : List.of(ModBlocks.FIRE_BLOOM, ModBlocks.ASH_SPROUTS, ModBlocks.EMBER_BERRY_BUSH)) {
+            assertFalse(plant.get().defaultBlockState().ignitedByLava(), plant.getId().toString());
+        }
+        assertTrue(ModBlocks.EMBER_BERRY_BUSH.get().defaultBlockState().isRandomlyTicking());
     }
 
     private static List<Item> blockItems() {

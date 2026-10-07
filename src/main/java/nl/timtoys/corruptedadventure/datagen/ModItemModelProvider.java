@@ -141,6 +141,8 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.ASH_BLOCK);
         // Like vanilla's snow item: the one-layer model.
         withExistingParent(ModBlocks.ASH_LAYER.getId().getPath(), modLoc("block/ash_layer_height2"));
+        blockItem(ModBlocks.ASH_CRUST);
+        blockItem(ModBlocks.SMOLDERING_ASH);
         blockItem(ModBlocks.PUMICE);
         blockItem(ModBlocks.PUMICE_STAIRS);
         blockItem(ModBlocks.PUMICE_SLAB);
@@ -169,6 +171,13 @@ final class ModItemModelProvider extends ItemModelProvider {
         withExistingParent(ModBlocks.CHARRED_TRAPDOOR.getId().getPath(), modLoc("block/charred_trapdoor_bottom"));
         blockItem(ModBlocks.CHARRED_PRESSURE_PLATE);
         buttonInventory(ModBlocks.CHARRED_BUTTON.getId().getPath(), planks);
+
+        blockItem(ModBlocks.EMBER_LEAVES);
+        flatBlockItem(ModBlocks.FIRE_BLOOM);
+        flatBlockItem(ModBlocks.ASH_SPROUTS);
+        // A flat bush with berries (vanilla's bush has no item of its own: its item is the berries).
+        withExistingParent(ModBlocks.EMBER_BERRY_BUSH.getId().getPath(), mcLoc("item/generated"))
+                .texture("layer0", modLoc("block/ember_berry_bush_stage3"));
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

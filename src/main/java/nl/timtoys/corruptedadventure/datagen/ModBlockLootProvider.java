@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.datagen;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.world.level.block.SnowLayerBlock;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
@@ -148,6 +149,9 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
     private void ring3() {
         dropSelf(ModBlocks.ASH_BLOCK.get());
         add(ModBlocks.ASH_LAYER.get(), this::createAshLayerTable);
+        // Like loose sand: plain ash without Silk Touch, no ready-made trap material.
+        add(ModBlocks.ASH_CRUST.get(), block -> createSingleItemTableWithSilkTouch(block, ModBlocks.ASH_BLOCK.get()));
+        dropSelf(ModBlocks.SMOLDERING_ASH.get());
         for (Block block : List.of(ModBlocks.PUMICE.get(), ModBlocks.PUMICE_STAIRS.get(), ModBlocks.PUMICE_WALL.get(),
                 ModBlocks.POLISHED_PUMICE.get(), ModBlocks.POLISHED_PUMICE_STAIRS.get(), ModBlocks.POLISHED_PUMICE_WALL.get(),
                 ModBlocks.PUMICE_BRICKS.get(), ModBlocks.PUMICE_BRICK_STAIRS.get(), ModBlocks.PUMICE_BRICK_WALL.get())) {
@@ -171,6 +175,36 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.CHARRED_TRAPDOOR.get());
         dropSelf(ModBlocks.CHARRED_PRESSURE_PLATE.get());
         dropSelf(ModBlocks.CHARRED_BUTTON.get());
+
+        // No sapling: like mangrove leaves, shears/Silk Touch -> the leaves, otherwise sticks now and then.
+        add(ModBlocks.EMBER_LEAVES.get(), this::createMangroveLeavesDrops);
+        dropSelf(ModBlocks.FIRE_BLOOM.get());
+        dropPottedContents(ModBlocks.POTTED_FIRE_BLOOM.get());
+        // Like nether sprouts: only with shears.
+        add(ModBlocks.ASH_SPROUTS.get(), BlockLootSubProvider::createShearsOnlyDrop);
+        add(ModBlocks.EMBER_BERRY_BUSH.get(), this::createBerryBushTable);
+    }
+
+    /**
+     * Vanilla's sweet berry bush table on the ember berry bush: a ripe bush (age 3) drops 2–3 sweet berries, age 2 drops
+     * 1–2 (Fortune adds); younger bushes drop nothing. Vanilla sweet berries until the bush gets its own food (phase 2).
+     */
+    private LootTable.Builder createBerryBushTable(Block block) {
+        var fortune = registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.FORTUNE);
+        return applyExplosionDecay(block, LootTable.lootTable()
+                .withPool(LootPool.lootPool().when(age(block, SweetBerryBushBlock.MAX_AGE))
+                        .add(LootItem.lootTableItem(Items.SWEET_BERRIES))
+                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 3.0F)))
+                        .apply(ApplyBonusCount.addUniformBonusCount(fortune)))
+                .withPool(LootPool.lootPool().when(age(block, 2))
+                        .add(LootItem.lootTableItem(Items.SWEET_BERRIES))
+                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F)))
+                        .apply(ApplyBonusCount.addUniformBonusCount(fortune))));
+    }
+
+    private static LootItemBlockStatePropertyCondition.Builder age(Block block, int age) {
+        return LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SweetBerryBushBlock.AGE, age));
     }
 
     /**

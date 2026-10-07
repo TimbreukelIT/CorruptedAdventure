@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SnowyDirtBlock;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
@@ -74,6 +75,8 @@ final class ModBlockStateProvider extends BlockStateProvider {
         ModelFile ash = cubeAll(ModBlocks.ASH_BLOCK.get());
         simpleBlock(ModBlocks.ASH_BLOCK.get(), ash);
         ashLayer(ash);
+        simpleBlock(ModBlocks.ASH_CRUST.get());
+        glowingCube(ModBlocks.SMOLDERING_ASH.get());
         stoneFamily(ModBlocks.PUMICE.get(), ModBlocks.PUMICE_STAIRS.get(), ModBlocks.PUMICE_SLAB.get(), ModBlocks.PUMICE_WALL.get());
         stoneFamily(ModBlocks.POLISHED_PUMICE.get(), ModBlocks.POLISHED_PUMICE_STAIRS.get(),
                 ModBlocks.POLISHED_PUMICE_SLAB.get(), ModBlocks.POLISHED_PUMICE_WALL.get());
@@ -97,6 +100,18 @@ final class ModBlockStateProvider extends BlockStateProvider {
         trapdoorBlockWithRenderType(ModBlocks.CHARRED_TRAPDOOR.get(), modLoc("block/charred_trapdoor"), true, "cutout");
         pressurePlateBlock(ModBlocks.CHARRED_PRESSURE_PLATE.get(), planks);
         buttonBlock(ModBlocks.CHARRED_BUTTON.get(), planks);
+
+        // Fixed colour (no tint); the glowing specks are the emissive overlay.
+        glowingCube(ModBlocks.EMBER_LEAVES.get(), "cutout_mipped");
+        cross(ModBlocks.FIRE_BLOOM.get());
+        simpleBlock(ModBlocks.POTTED_FIRE_BLOOM.get(), models().flowerPotCross("potted_fire_bloom",
+                blockTexture(ModBlocks.FIRE_BLOOM.get())).renderType("cutout"));
+        cross(ModBlocks.ASH_SPROUTS.get());
+        // Like vanilla's sweet berry bush: one cross model per age.
+        getVariantBuilder(ModBlocks.EMBER_BERRY_BUSH.get()).forAllStates(state -> {
+            String name = "ember_berry_bush_stage" + state.getValue(SweetBerryBushBlock.AGE);
+            return ConfiguredModel.builder().modelFile(crossModel(name, modLoc("block/" + name))).build();
+        });
     }
 
     /**
@@ -104,8 +119,12 @@ final class ModBlockStateProvider extends BlockStateProvider {
      * lit normally, with the emissive cutout overlay {@code <name>_glow} (only the glowing pixels) on top, the ore model.
      */
     private void glowingCube(Block block) {
+        glowingCube(block, "cutout");
+    }
+
+    private void glowingCube(Block block, String renderType) {
         ResourceLocation base = blockTexture(block);
-        oreWithOverlay(block, base, CubeTextures.all(base), CubeTextures.all(base.withSuffix("_glow")), true);
+        overlayCube(block, base, CubeTextures.all(base), CubeTextures.all(base.withSuffix("_glow")), true, renderType);
     }
 
     /**
@@ -355,7 +374,11 @@ final class ModBlockStateProvider extends BlockStateProvider {
     /** Cross model like vanilla plants; cutout, so the texture only has alpha 0 or 255. */
     private void cross(Block block) {
         String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
-        simpleBlock(block, models().cross(name, blockTexture(block)).renderType("cutout"));
+        simpleBlock(block, crossModel(name, blockTexture(block)));
+    }
+
+    private ModelFile crossModel(String name, ResourceLocation texture) {
+        return models().cross(name, texture).renderType("cutout");
     }
 
     /** One box with the same bounds as {@code BarrelCactusBlock.SHAPE} (3–13 px wide, 10 px high). */
@@ -408,8 +431,14 @@ final class ModBlockStateProvider extends BlockStateProvider {
      */
     private void oreWithOverlay(Block block, ResourceLocation particle, CubeTextures base, CubeTextures overlay,
                                 boolean emissive) {
+        overlayCube(block, particle, base, overlay, emissive, "cutout");
+    }
+
+    /** {@link #oreWithOverlay} with a chosen render type (leaves: {@code cutout_mipped}). */
+    private void overlayCube(Block block, ResourceLocation particle, CubeTextures base, CubeTextures overlay,
+                             boolean emissive, String renderType) {
         BlockModelBuilder model = models().withExistingParent(BuiltInRegistries.BLOCK.getKey(block).getPath(), mcLoc("block/block"))
-                .renderType("cutout")
+                .renderType(renderType)
                 .texture("particle", particle);
         base.apply(model, "base");
         overlay.apply(model, "overlay");

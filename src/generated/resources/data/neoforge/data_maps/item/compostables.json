@@ -1,9 +1,18 @@
 {
   "values": {
+    "corruptedadventure:ash_sprouts": {
+      "chance": 0.3
+    },
     "corruptedadventure:dripshroom_cap": {
       "chance": 0.85
     },
     "corruptedadventure:dripshroom_lamp": {
+      "chance": 0.65
+    },
+    "corruptedadventure:ember_leaves": {
+      "chance": 0.3
+    },
+    "corruptedadventure:fire_bloom": {
       "chance": 0.65
     },
     "corruptedadventure:glow_mold": {

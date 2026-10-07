@@ -109,6 +109,23 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_CHARRED_LOG.get());
         tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_CHARRED_WOOD.get());
         tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.CHARRED_FENCE_GATE.get());
+
+        // Ash crust caves in like loose sand; the smouldering ash is cast material (features), no natural ground.
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.ASH_CRUST.get(), ModBlocks.SMOLDERING_ASH.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.ASH_CRUST.get());
+        tag(ModTags.Blocks.COLLAPSING_BLOCKS).add(ModBlocks.LOOSE_SAND.get(), ModBlocks.ASH_CRUST.get());
+
+        // Ember woods and fire flora. One ground rule for the fire flora (a partial ash layer does not count: AshPlantSoil).
+        tag(ModTags.Blocks.ASH_PLANT_SOIL).add(ModBlocks.ASH_BLOCK.get(), Blocks.COARSE_DIRT, ModBlocks.ASH_LAYER.get());
+        tag(BlockTags.LEAVES).add(ModBlocks.EMBER_LEAVES.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.EMBER_LEAVES.get());
+        tag(BlockTags.SMALL_FLOWERS).add(ModBlocks.FIRE_BLOOM.get());
+        tag(BlockTags.FLOWER_POTS).add(ModBlocks.POTTED_FIRE_BLOOM.get());
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.ASH_SPROUTS.get());
+        tag(BlockTags.REPLACEABLE_BY_TREES).add(ModBlocks.ASH_SPROUTS.get());
+        tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.ASH_SPROUTS.get(), ModBlocks.EMBER_BERRY_BUSH.get());
+        // Like the sweet berry bush: landing in it breaks the fall.
+        tag(BlockTags.FALL_DAMAGE_RESETTING).add(ModBlocks.EMBER_BERRY_BUSH.get());
     }
 
     /**

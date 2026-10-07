@@ -35,7 +35,11 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.block.AshSproutsBlock;
 import nl.timtoys.corruptedadventure.block.BarrelCactusBlock;
+import nl.timtoys.corruptedadventure.block.EmberBerryBushBlock;
+import nl.timtoys.corruptedadventure.block.EmberLeavesBlock;
+import nl.timtoys.corruptedadventure.block.FireBloomBlock;
 import nl.timtoys.corruptedadventure.block.DeadGrassBlock;
 import nl.timtoys.corruptedadventure.block.DesertFlowerBlock;
 import nl.timtoys.corruptedadventure.block.DewSourceBlock;
@@ -64,6 +68,8 @@ public final class ModBlocks {
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(CorruptedAdventure.MOD_ID);
     /** Vanilla sand's falling dust colour. */
     private static final int SAND_DUST_COLOR = 0xDBD3A0;
+    /** Falling dust colour of the ash crust: warm ash grey. */
+    private static final int ASH_DUST_COLOR = 0x8A8580;
 
     // ---- Ring 1 ----
     public static final DeferredBlock<DeadGrassBlock> DEAD_GRASS_BLOCK = register("dead_grass_block",
@@ -354,6 +360,15 @@ public final class ModBlocks {
                     .strength(0.1F).requiresCorrectToolForDrops().sound(SoundType.SAND)
                     .isViewBlocking((state, level, pos) -> state.getValue(SnowLayerBlock.LAYERS) >= SnowLayerBlock.MAX_HEIGHT)
                     .pushReaction(PushReaction.DESTROY)));
+    /**
+     * A crust of ash over caves and lava tubes: falls like sand and caves in when a player walks under it (the
+     * {@code collapsing_blocks} tag, {@link LooseSandTrigger}). Breaks into plain ash.
+     */
+    public static final DeferredBlock<ColoredFallingBlock> ASH_CRUST = register("ash_crust",
+            () -> new ColoredFallingBlock(new ColorRGBA(ASH_DUST_COLOR), Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_GRAY)));
+    /** Ash with glowing cracks, the material of the glowing ash casts: light 2 and an emissive glow overlay. */
+    public static final DeferredBlock<Block> SMOLDERING_ASH = register("smoldering_ash",
+            () -> new Block(Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_BLACK).lightLevel(state -> 2)));
 
     // Pumice: the tuff family's shapes and sounds in a light porous stone.
     public static final DeferredBlock<Block> PUMICE = register("pumice", () -> new Block(pumice(Blocks.TUFF)));
@@ -415,6 +430,29 @@ public final class ModBlocks {
             () -> new PressurePlateBlock(ModWoodTypes.CHARRED_SET, charred(Blocks.CRIMSON_PRESSURE_PLATE)));
     public static final DeferredBlock<ButtonBlock> CHARRED_BUTTON = register("charred_button",
             () -> new ButtonBlock(ModWoodTypes.CHARRED_SET, 30, charred(Blocks.CRIMSON_BUTTON)));
+
+    // Ember woods and fire flora: smouldering leaves on the charred trunks, flora on ash ground. Like the charred wood
+    // none of it burns (no fire odds, not ignited by lava): no fires next to the lava.
+    /**
+     * Never decays (the trunk is dead); no light of its own, only the emissive glow overlay of its model (V3 = A).
+     * Nothing spawns on it.
+     */
+    public static final DeferredBlock<EmberLeavesBlock> EMBER_LEAVES = register("ember_leaves",
+            () -> new EmberLeavesBlock(Properties.of().mapColor(MapColor.TERRACOTTA_RED).strength(0.2F).sound(SoundType.GRASS)
+                    .noOcclusion().isValidSpawn((state, level, pos, type) -> false)
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false)
+                    .pushReaction(PushReaction.DESTROY).isRedstoneConductor((state, level, pos) -> false)));
+    /** Poppy's properties on ash ground; Fire Resistance in suspicious stew, like the desert flower. */
+    public static final DeferredBlock<FireBloomBlock> FIRE_BLOOM = register("fire_bloom",
+            () -> new FireBloomBlock(MobEffects.FIRE_RESISTANCE, 4.0F, Properties.ofFullCopy(Blocks.POPPY).mapColor(MapColor.COLOR_ORANGE)));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_FIRE_BLOOM = registerPot("potted_fire_bloom", FIRE_BLOOM);
+    /** Nether sprouts' behaviour (replaceable, instant, shears) in short grass' outline, on ash ground. */
+    public static final DeferredBlock<AshSproutsBlock> ASH_SPROUTS = register("ash_sprouts",
+            () -> new AshSproutsBlock(Properties.ofFullCopy(Blocks.NETHER_SPROUTS).mapColor(MapColor.COLOR_GRAY)
+                    .offsetType(BlockBehaviour.OffsetType.XYZ)));
+    /** Sweet berry bush properties (random ticks: it grows back after picking); rare, ember woods and dormant calderas. */
+    public static final DeferredBlock<EmberBerryBushBlock> EMBER_BERRY_BUSH = register("ember_berry_bush",
+            () -> new EmberBerryBushBlock(Properties.ofFullCopy(Blocks.SWEET_BERRY_BUSH).mapColor(MapColor.COLOR_ORANGE)));
 
     private ModBlocks() {
     }
