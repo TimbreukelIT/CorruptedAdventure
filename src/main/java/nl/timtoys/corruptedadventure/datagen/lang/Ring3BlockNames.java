@@ -58,6 +58,12 @@ public final class Ring3BlockNames {
         lang.addItem(ModItems.RAW_VOLCANITE, "Raw Volcanite");
         lang.addItem(ModItems.SULFUR, "Sulfur");
         lang.addItem(ModItems.FIRE_RUBY, "Fire Ruby");
+        lang.addBlock(ModBlocks.FIRE_CRYSTAL_BLOCK, "Block of Fire Crystal");
+        lang.addBlock(ModBlocks.SMALL_FIRE_CRYSTAL_BUD, "Small Fire Crystal Bud");
+        lang.addBlock(ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD, "Medium Fire Crystal Bud");
+        lang.addBlock(ModBlocks.LARGE_FIRE_CRYSTAL_BUD, "Large Fire Crystal Bud");
+        lang.addBlock(ModBlocks.FIRE_CRYSTAL_CLUSTER, "Fire Crystal Cluster");
+        lang.addItem(ModItems.FIRE_CRYSTAL, "Fire Crystal");
     }
 
     /** Vanilla nl_nl patterns: "Tufsteen", "Gepolijste tufsteentrap", "Tufstenen blokstenen", "Karmozijnrode trap". */
@@ -109,5 +115,11 @@ public final class Ring3BlockNames {
         lang.addItem(ModItems.RAW_VOLCANITE, "Ruw vulkaniet");
         lang.addItem(ModItems.SULFUR, "Zwavel");
         lang.addItem(ModItems.FIRE_RUBY, "Vuurrobijn");
+        lang.addBlock(ModBlocks.FIRE_CRYSTAL_BLOCK, "Vuurkristalblok");
+        lang.addBlock(ModBlocks.SMALL_FIRE_CRYSTAL_BUD, "Kleine vuurkristalknop");
+        lang.addBlock(ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD, "Middelgrote vuurkristalknop");
+        lang.addBlock(ModBlocks.LARGE_FIRE_CRYSTAL_BUD, "Grote vuurkristalknop");
+        lang.addBlock(ModBlocks.FIRE_CRYSTAL_CLUSTER, "Vuurkristalcluster");
+        lang.addItem(ModItems.FIRE_CRYSTAL, "Vuurkristal");
     }
 }

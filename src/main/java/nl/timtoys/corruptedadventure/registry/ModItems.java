@@ -40,6 +40,8 @@ public final class ModItems {
     public static final DeferredItem<Item> SULFUR = ITEMS.registerSimpleItem("sulfur");
     /** Drop of the fire ruby ores. */
     public static final DeferredItem<Item> FIRE_RUBY = ITEMS.registerSimpleItem("fire_ruby");
+    /** Drop of the grown fire crystal cluster. */
+    public static final DeferredItem<Item> FIRE_CRYSTAL = ITEMS.registerSimpleItem("fire_crystal");
 
     private ModItems() {
     }

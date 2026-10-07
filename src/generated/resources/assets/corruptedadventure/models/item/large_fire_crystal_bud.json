@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/amethyst_bud",
+  "textures": {
+    "layer0": "corruptedadventure:block/large_fire_crystal_bud"
+  }
+}

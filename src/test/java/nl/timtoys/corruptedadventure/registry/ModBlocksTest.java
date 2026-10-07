@@ -233,7 +233,9 @@ class ModBlocksTest {
                 ModBlocks.EMBER_LEAVES, ModBlocks.FIRE_BLOOM, ModBlocks.ASH_SPROUTS, ModBlocks.EMBER_BERRY_BUSH,
                 ModBlocks.VOLCANITE_ORE, ModBlocks.DEEPSLATE_VOLCANITE_ORE, ModBlocks.BASALT_VOLCANITE_ORE,
                 ModBlocks.SULFUR_ORE, ModBlocks.BASALT_SULFUR_ORE, ModBlocks.FIRE_RUBY_ORE,
-                ModBlocks.DEEPSLATE_FIRE_RUBY_ORE, ModBlocks.BASALT_FIRE_RUBY_ORE).<Item>map(DeferredBlock::asItem).toList();
+                ModBlocks.DEEPSLATE_FIRE_RUBY_ORE, ModBlocks.BASALT_FIRE_RUBY_ORE,
+                ModBlocks.FIRE_CRYSTAL_BLOCK, ModBlocks.SMALL_FIRE_CRYSTAL_BUD, ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD,
+                ModBlocks.LARGE_FIRE_CRYSTAL_BUD, ModBlocks.FIRE_CRYSTAL_CLUSTER).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(ring3, shown.subList(cluster + 1, cluster + 1 + ring3.size()));
     }
 
@@ -310,8 +312,25 @@ class ModBlocksTest {
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem)).toList();
         int dew = standalone.indexOf(ModItems.DEW_CRYSTAL.get());
-        assertEquals(List.of(ModItems.RAW_VOLCANITE.get(), ModItems.SULFUR.get(), ModItems.FIRE_RUBY.get()),
-                standalone.subList(dew + 1, dew + 4));
+        assertEquals(List.of(ModItems.RAW_VOLCANITE.get(), ModItems.SULFUR.get(), ModItems.FIRE_RUBY.get(), ModItems.FIRE_CRYSTAL.get()),
+                standalone.subList(dew + 1, dew + 5));
+    }
+
+    /** Like the dew crystal stages: light 1, 2, 4, 5, facing up and dry by default; the wall gives no light and never ticks. */
+    @Test
+    void fireCrystalStagesGlowAndTheWallDoesNot() {
+        List<DeferredBlock<AmethystClusterBlock>> stages = List.of(ModBlocks.SMALL_FIRE_CRYSTAL_BUD, ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD,
+                ModBlocks.LARGE_FIRE_CRYSTAL_BUD, ModBlocks.FIRE_CRYSTAL_CLUSTER);
+        int[] light = {1, 2, 4, 5};
+        for (int i = 0; i < stages.size(); i++) {
+            BlockState stage = stages.get(i).get().defaultBlockState();
+            assertEquals(light[i], stage.getLightEmission(), stages.get(i).getId().toString());
+            assertEquals(Direction.UP, stage.getValue(AmethystClusterBlock.FACING));
+            assertFalse(stage.getValue(AmethystClusterBlock.WATERLOGGED));
+            assertFalse(stage.isRandomlyTicking());
+        }
+        assertEquals(0, ModBlocks.FIRE_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
+        assertFalse(ModBlocks.FIRE_CRYSTAL_BLOCK.get().defaultBlockState().isRandomlyTicking());
     }
 
     private static List<Item> blockItems() {

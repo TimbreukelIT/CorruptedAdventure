@@ -15,6 +15,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -199,6 +200,13 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
                             .apply(ApplyBonusCount.addOreBonusCount(registries.lookupOrThrow(Registries.ENCHANTMENT)
                                     .getOrThrow(Enchantments.FORTUNE))))));
         }
+
+        // Fire crystal like amethyst: the wall drops itself, buds only with Silk Touch, the cluster gives crystals.
+        dropSelf(ModBlocks.FIRE_CRYSTAL_BLOCK.get());
+        dropWhenSilkTouch(ModBlocks.SMALL_FIRE_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get());
+        add(ModBlocks.FIRE_CRYSTAL_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.FIRE_CRYSTAL.get()));
     }
 
     /**
@@ -268,14 +276,19 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropWhenSilkTouch(ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.get());
         dropWhenSilkTouch(ModBlocks.LARGE_DEW_CRYSTAL_BUD.get());
         // Like the amethyst cluster: Silk Touch -> the cluster; a pickaxe -> 4 crystals (Fortune), anything else 2.
-        add(ModBlocks.DEW_CRYSTAL_CLUSTER.get(), block -> createSilkTouchDispatchTable(block,
-                LootItem.lootTableItem(ModItems.DEW_CRYSTAL.get())
+        add(ModBlocks.DEW_CRYSTAL_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.DEW_CRYSTAL.get()));
+    }
+
+    /** Like the amethyst cluster: Silk Touch -> the cluster; a pickaxe -> 4 crystals (Fortune), anything else 2. */
+    private LootTable.Builder createCrystalClusterTable(Block block, Item crystal) {
+        return createSilkTouchDispatchTable(block,
+                LootItem.lootTableItem(crystal)
                         .apply(SetItemCountFunction.setCount(ConstantValue.exactly(4.0F)))
                         .apply(ApplyBonusCount.addOreBonusCount(registries.lookupOrThrow(Registries.ENCHANTMENT)
                                 .getOrThrow(Enchantments.FORTUNE)))
                         .when(MatchTool.toolMatches(ItemPredicate.Builder.item().of(ItemTags.CLUSTER_MAX_HARVESTABLES)))
-                        .otherwise(applyExplosionDecay(block, LootItem.lootTableItem(ModItems.DEW_CRYSTAL.get())
-                                .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))))));
+                        .otherwise(applyExplosionDecay(block, LootItem.lootTableItem(crystal)
+                                .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F))))));
     }
 
     @Override

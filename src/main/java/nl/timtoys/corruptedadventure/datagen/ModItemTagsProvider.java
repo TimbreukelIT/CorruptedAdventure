@@ -89,6 +89,8 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         tag(Tags.Items.DUSTS).addTag(ModTags.Items.DUSTS_SULFUR);
         tag(ModTags.Items.GEMS_FIRE_RUBY).add(ModItems.FIRE_RUBY.get());
         tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_FIRE_RUBY);
+        tag(ModTags.Items.GEMS_FIRE_CRYSTAL).add(ModItems.FIRE_CRYSTAL.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_FIRE_CRYSTAL);
         copy(Tags.Blocks.BUDDING_BLOCKS, Tags.Items.BUDDING_BLOCKS);
         copy(Tags.Blocks.BUDS, Tags.Items.BUDS);
         copy(Tags.Blocks.CLUSTERS, Tags.Items.CLUSTERS);

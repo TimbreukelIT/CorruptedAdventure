@@ -52,6 +52,11 @@
     "corruptedadventure:smoldering_stone",
     "#c:ores/volcanite",
     "#c:ores/sulfur",
-    "#c:ores/fire_ruby"
+    "#c:ores/fire_ruby",
+    "corruptedadventure:fire_crystal_block",
+    "corruptedadventure:small_fire_crystal_bud",
+    "corruptedadventure:medium_fire_crystal_bud",
+    "corruptedadventure:large_fire_crystal_bud",
+    "corruptedadventure:fire_crystal_cluster"
   ]
 }

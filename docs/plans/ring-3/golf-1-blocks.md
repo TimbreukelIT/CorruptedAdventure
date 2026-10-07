@@ -63,6 +63,7 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 - `datagen/lang/Ring3BlockNames.java`: namen (en + nl) van alle ring 3-/Nether-3-blokken en -items.
 - 38b: `block/EmberLeavesBlock.java` (`LeavesBlock` die nooit vervalt: geen random ticks, `decaying` false), `block/AshPlantSoil.java` (`supports(ground)`: `#ash_plant_soil`, een aslaag telt alleen vol (8)), `block/FireBloomBlock.java` (`FlowerBlock`, grond `AshPlantSoil`), `block/AshSproutsBlock.java` (`BushBlock`, korte-gras-omtrek met offset, grond `AshPlantSoil`), `block/EmberBerryBushBlock.java` (`SweetBerryBushBlock`, grond `AshPlantSoil` of `moss_block`, pick-block = de struik). `block/LooseSandTrigger.java` leest nu de tag `collapsing_blocks` (los zand, askorst) i.p.v. `loose_sand`. `ModFlowerPots` + `potted_fire_bloom`. `ModDataMapProvider` compost: `ember_leaves`/`ash_sprouts` 0,3, `fire_bloom` 0,65. `ModBlockStateProvider`: `overlayCube(…, renderType)` (basis van `oreWithOverlay`), `glowingCube(block, renderType)`. `ModBlockLootProvider`: `createBerryBushTable` (vanilla-tabel bes-struik, `sweet_berries`).
 - Tests 38b: `block/AshPlantSoilTest.java` (tag met de hand gebonden: as, grove aarde, volle aslaag ja; aslaag 1/7, steen, gras, aarde, askorst nee; bes-struik ook op mos), `LooseSandTriggerTest` (tag gebonden; askorst stort in, asblok niet), `ModBlocksTest` (volgorde, smeulblad tikt/vervalt nooit en geeft geen licht, smeulende as licht 2, flora niet `ignitedByLava`, bes-struik tikt wel).
+- 40/40b: `registry/ModBlocks`: `oreIn(vanillaOre)` (kopie + `destroyTime` + `RING_3_ORE_EXTRA_HARDNESS` 0,5), `oreInBasalt(vanillaOre)`, `crystalStage(vanillaStage, color)` (vervangt `dewCrystal`; dauw- en vuurkristalstadia = amethist-gedrag en -licht 1/2/4/5 in eigen kaartkleur). `ModBlockStateProvider.ring3Ores()` (basis vanilla `stone`, `deepslate`+`_top`, `basalt_side`+`_top`); `crystalCluster` nu ook voor de vuurkristalstadia. `ModBlockLootProvider.createCrystalClusterTable(block, crystal)` (amethist-clustertabel, gedeeld door dauw- en vuurkristal; de dauwtabel is niet meer inline). Tests: `ModBlocksTest` (ertsen XP/licht/hardheid/blastweerstand, losse items na `dew_crystal`, vuurkristal licht 1/2/4/5, wand zonder licht).
 - Tests: `block/AshLayerTest.java` (vormen = vanilla-sneeuwlaag per laag, alleen `layers`, nooit random ticks, volle stapel blokkeert zicht); `ModWoodTypesTest` + charred; `ModBlocksTest` + ring 3-volgorde (direct na `dew_crystal_cluster`), smeulsteen licht 7 zonder `emissiveRendering`, verkoold hout niet `ignitedByLava`, asblok valt niet.
 
 **Registries — Blocks (ring 3, volgorde = creative tab, direct na Nether-ring 2)**
@@ -83,11 +84,16 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 | `volcanite_ore`, `deepslate_volcanite_ore`, `basalt_volcanite_ore` | 3 | `DropExperienceBlock` (XP 3–6) | kopie `iron_ore` / `deepslate_iron_ore` (basalt: `iron_ore` + `COLOR_BLACK` + `SoundType.BASALT`), hardheid vanilla + 0,5 (`RING_3_ORE_EXTRA_HARDNESS`); loot `createOreDrop` → `raw_volcanite`; `c:ores/volcanite` (in `c:ores`), `#mineable/pickaxe`, `#needs_iron_tool`, `c:ore_rates/singular`, `c:ores_in_ground/stone`/`/deepslate` (basalt: geen conventietag); model `oreWithOverlay` (vanilla `stone` / `deepslate`+`_top` / `basalt_side`+`_top` + `volcanite_ore_overlay`, mat) |
 | `sulfur_ore`, `basalt_sulfur_ore` | 3 | `DropExperienceBlock` (XP 1–3) | kopie `coal_ore` (basalt als hierboven) + 0,5; loot 2–4 `sulfur` (Fortune, zoals koper; Silk Touch → zichzelf); `c:ores/sulfur`, `#needs_stone_tool`, `c:ore_rates/dense`; overlay `sulfur_ore_overlay` mat |
 | `fire_ruby_ore`, `deepslate_fire_ruby_ore`, `basalt_fire_ruby_ore` | 3 | `DropExperienceBlock` (XP 4–8) | kopie `iron_ore` / `deepslate_iron_ore` (basalt als hierboven) + 0,5 + **licht 3**; **contract §3 bijwerken:** vuurrobijn krijgt ook een basaltvariant (besluit gebruiker 2026-10-07; magmakamerwanden), zelfde overlay, dus geen nieuwe texture voor T; loot → `fire_ruby`; `c:ores/fire_ruby`, `#needs_iron_tool`, `c:ore_rates/singular`; overlay `fire_ruby_ore_overlay` **emissive** |
+| `fire_crystal_block` | 3 | `AmethystBlock` (vanilla) | kopie `amethyst_block` + `COLOR_ORANGE`; geen licht, niet emissive (wand van de geode); dropt zichzelf; `#mineable/pickaxe`, `#crystal_sound_blocks`; `cube_all` |
+| `small_`/`medium_`/`large_fire_crystal_bud`, `fire_crystal_cluster` | 3 | `AmethystClusterBlock` (vanilla; 3/4, 4/3, 5/3, 7/3) | kopie van de amethist-stadia + `COLOR_ORANGE`, licht 1/2/4/5; geen groei (alleen worldgen, 41b); loot: knoppen alleen Silk Touch, cluster Silk Touch → cluster, pickaxe → 4 `fire_crystal` (Fortune), anders 2 (`createCrystalClusterTable`, gedeeld met dauw); `#mineable/pickaxe`, `c:buds` / `c:clusters`; emissive kruis via `crystalCluster(…, true)`, plat item |
 
 **Registries — Items (ring 3, losse items na `dew_crystal`)**
+| Registry-naam | Ring | Class | Opmerking |
+|---|---|---|---|
 | `raw_volcanite` | 3 | `Item` | **placeholder** (zoals `raw_sunstone`); drop vulkaniet-ertsen; `c:raw_materials/volcanite` (in `c:raw_materials`) |
 | `sulfur` | 3 | `Item` | **placeholder**; drop zwavelertsen (2–4); `c:dusts/sulfur` (in `c:dusts`) |
 | `fire_ruby` | 3 | `Item` | **placeholder**; drop vuurrobijn-ertsen; `c:gems/fire_ruby` (in `c:gems`) |
+| `fire_crystal` | 3 | `Item` | **placeholder**, nut in fase 2; drop `fire_crystal_cluster`; `c:gems/fire_crystal` (in `c:gems`) |
 
 **Registries — overige**
 | `corruptedadventure:charred` | `BlockSetType` + niet-geregistreerde `WoodType`, nether-hout-geluiden | `ModWoodTypes` |
@@ -96,6 +102,8 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 - `heat_sources`: `lava`, `magma_block`, `fire`, `campfire`, `smoldering_stone` (+ latere pakketten). `warmth_sources`: `lava`, `fire`, `soul_fire`, `campfire`, `soul_campfire`, `magma_block`, `smoldering_stone` (+ later).
 - `ring_3_stones`: `basalt`, `blackstone`, `pumice`, `ash_block`.
 - `minecraft:goats_spawnable_on` + `basalt`, `smooth_basalt`, `blackstone`, `ash_block`, `pumice` (op verzoek van W-biomes via main: de piek-bovenlaag van 39b en 39c; contract §3 noemde alleen basalt/blackstone/as).
+- 40: `c:ores/volcanite`, `c:ores/sulfur`, `c:ores/fire_ruby` (alle gastgesteenten; in `c:ores`), `#needs_iron_tool` (vulkaniet, vuurrobijn), `#needs_stone_tool` (zwavel), `c:ore_rates/singular` (vulkaniet, vuurrobijn) / `dense` (zwavel), `c:ores_in_ground/stone` en `/deepslate`; items `c:raw_materials/volcanite`, `c:dusts/sulfur`, `c:gems/fire_ruby`.
+- 40b: `#crystal_sound_blocks` + `fire_crystal_block`; `c:buds` + drie vuurkristalknoppen, `c:clusters` + `fire_crystal_cluster`; item `c:gems/fire_crystal`.
 - **Nieuw (38b, akkoord main; contract bijwerken):** `corruptedadventure:ash_plant_soil` (`ash_block`, `coarse_dirt`, `ash_layer`) en `corruptedadventure:collapsing_blocks` (`loose_sand`, `ash_crust`; alleen vallende blokken).
 
 **Valkuilen**
@@ -112,11 +120,12 @@ Volgens `waves.md` §4: secties "CODEBASE-delta", "Beslissingen", "Backlog" onde
 - 2026-10-06 · blocks · Vuurflora staat alleen op een volle aslaag (anders zweeft de plant); `ember_berry_bush` = vanilla bes-struik incl. doornen en terugroei, plukt vanilla `sweet_berries` · implementatiekeuze.
 - 2026-10-06 · blocks · Smeulende as licht 2 (plan: 0–3) · implementatiekeuze.
 - 2026-10-07 · blocks · Ertsen ring 3 "één stap boven ring 2": hardheid vanilla-erts van het gastgesteente + 0,5; XP vulkaniet 3–6, zwavel 1–3, vuurrobijn 4–8; zwavel 2–4 per erts (zoals koper); vuurrobijn licht 3 (zoals zonnesteen); gastgesteenten = contractset (geen blackstone, gebruiker) · implementatiekeuze + gebruiker.
+- 2026-10-06 · blocks · Vuurkristalblok (geodewand) zonder licht en niet emissive, als het amethistblok; alleen de stadia gloeien (emissive kruis, licht 1/2/4/5) · akkoord gebruiker via main (afstemming texturepaden 2026-10-06).
 - 2026-10-07 · blocks · `basalt_fire_ruby_ore` erbij (vuurrobijn in de basaltwanden van magmakamers; contract §3 krijgt een basaltvariant voor vuurrobijn) · besluit gebruiker (B) via main.
 - 2026-10-07 · blocks · Askorst stort alleen in van onderen (`loose_sand`-mechanisme); instorten-van-bovenaf blijft een idee in de backlog, beslissen na teststop 4b · besluit gebruiker (A) via main.
 
 ## Backlog
-- `items` · Placeholder-items ring 3 `raw_volcanite`, `sulfur`, `fire_ruby` (pakket 40): smelten, producten, recipes en balans in fase 2 (zoals `raw_sunstone`).
+- `items` · Placeholder-items ring 3 `raw_volcanite`, `sulfur`, `fire_ruby` (pakket 40) en `fire_crystal` (40b): smelten, producten, recipes en balans in fase 2 (zoals `raw_sunstone`).
 - `blocks` · `ash_crust` stort alleen in als een speler eronder loopt (het `loose_sand`-mechanisme van het contract); wie erover loopt (dak van een lavabuis) zakt er niet door. Instorten-van-bovenaf: beslissen na teststop 4b (gebruiker, 2026-10-07).
 - `items` · `ember_berry_bush` is in survival niet te verkrijgen/verplanten (plukken geeft vanilla `sweet_berries`, die een vanilla-struik planten); eigen bes-item dat de struik plant in fase 2.
 - `worldgen` · `ember_berry_bush` groeit alleen terug bij licht ≥ 9 boven de struik (vanilla); onder een dicht smeulblad-dak (geen bloklicht, V3) groeit hij niet. 47c: struiken in open plekken zetten (placement `would_survive` + open lucht), of afstemmen in 4b.
@@ -143,3 +152,7 @@ Voortgang: 2026-10-07 09:16 40 code klaar, B/D/S gestart
 Voortgang: 2026-10-07 09:22 40 B/D/S groen; review gestart
 Voortgang: 2026-10-07 09:35 40 review verwerkt + basalt_fire_ruby_ore (besluit gebruiker); B/D/S opnieuw gestart
 Voortgang: 2026-10-07 09:37 40 B/D/S groen na review + basaltvariant; commit
+Voortgang: 2026-10-07 09:39 40b code klaar, B/D/S gestart
+Voortgang: 2026-10-07 09:48 40b B/D/S groen; review gestart
+Voortgang: 2026-10-07 09:50 40b review verwerkt (crystalStage, javadoc, delta, besluit wand); herbouw
+Voortgang: 2026-10-07 10:10 40b B/D/S groen na review; commit

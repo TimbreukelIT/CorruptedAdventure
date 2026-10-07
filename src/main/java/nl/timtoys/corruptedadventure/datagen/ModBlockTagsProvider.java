@@ -152,6 +152,14 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(Tags.Blocks.ORES_IN_GROUND_STONE).add(ModBlocks.VOLCANITE_ORE.get(), ModBlocks.SULFUR_ORE.get(),
                 ModBlocks.FIRE_RUBY_ORE.get());
         tag(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE).add(ModBlocks.DEEPSLATE_VOLCANITE_ORE.get(), ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get());
+
+        // Fire crystal: amethyst's tags (the wall chimes underfoot like an amethyst block); no budding block, no growth.
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.FIRE_CRYSTAL_BLOCK.get(), ModBlocks.SMALL_FIRE_CRYSTAL_BUD.get(),
+                ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get(), ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get(), ModBlocks.FIRE_CRYSTAL_CLUSTER.get());
+        tag(BlockTags.CRYSTAL_SOUND_BLOCKS).add(ModBlocks.FIRE_CRYSTAL_BLOCK.get());
+        tag(Tags.Blocks.BUDS).add(ModBlocks.SMALL_FIRE_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get(),
+                ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get());
+        tag(Tags.Blocks.CLUSTERS).add(ModBlocks.FIRE_CRYSTAL_CLUSTER.get());
     }
 
     /**

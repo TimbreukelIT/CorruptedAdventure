@@ -5,6 +5,7 @@ import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.DoubleHighBlockItem;
+import net.minecraft.world.level.block.AmethystBlock;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -338,14 +339,14 @@ public final class ModBlocks {
             () -> new DewSourceBlock(Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).mapColor(MapColor.WATER).randomTicks()));
     /** The dew crystal stages are vanilla's amethyst bud behaviour and shapes, with the same light levels (1, 2, 4, 5). */
     public static final DeferredBlock<AmethystClusterBlock> SMALL_DEW_CRYSTAL_BUD = register("small_dew_crystal_bud",
-            () -> new AmethystClusterBlock(3.0F, 4.0F, dewCrystal(Blocks.SMALL_AMETHYST_BUD, 1)));
+            () -> new AmethystClusterBlock(3.0F, 4.0F, crystalStage(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
     public static final DeferredBlock<AmethystClusterBlock> MEDIUM_DEW_CRYSTAL_BUD = register("medium_dew_crystal_bud",
-            () -> new AmethystClusterBlock(4.0F, 3.0F, dewCrystal(Blocks.MEDIUM_AMETHYST_BUD, 2)));
+            () -> new AmethystClusterBlock(4.0F, 3.0F, crystalStage(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
     public static final DeferredBlock<AmethystClusterBlock> LARGE_DEW_CRYSTAL_BUD = register("large_dew_crystal_bud",
-            () -> new AmethystClusterBlock(5.0F, 3.0F, dewCrystal(Blocks.LARGE_AMETHYST_BUD, 4)));
+            () -> new AmethystClusterBlock(5.0F, 3.0F, crystalStage(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
     /** Full-grown stage; the default state faces up. */
     public static final DeferredBlock<AmethystClusterBlock> DEW_CRYSTAL_CLUSTER = register("dew_crystal_cluster",
-            () -> new AmethystClusterBlock(7.0F, 3.0F, dewCrystal(Blocks.AMETHYST_CLUSTER, 5)));
+            () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_LIGHT_BLUE)));
 
     // ---- Ring 3 ----
     // Volcanic ring: ash ground, pumice, smouldering stone and the charred wood set.
@@ -479,6 +480,21 @@ public final class ModBlocks {
     public static final DeferredBlock<DropExperienceBlock> BASALT_FIRE_RUBY_ORE = register("basalt_fire_ruby_ore",
             () -> new DropExperienceBlock(UniformInt.of(4, 8), oreInBasalt(Blocks.IRON_ORE).lightLevel(state -> 3)));
 
+    // Fire crystal: the geode wall and four stages, like amethyst. No growth (only worldgen places them); use in phase 2.
+    /** The geode wall: amethyst block behaviour (chime when hit), no light and no glow. */
+    public static final DeferredBlock<AmethystBlock> FIRE_CRYSTAL_BLOCK = register("fire_crystal_block",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.COLOR_ORANGE)));
+    /** The stages are vanilla's amethyst bud behaviour, shapes and light levels (1, 2, 4, 5), like the dew crystal. */
+    public static final DeferredBlock<AmethystClusterBlock> SMALL_FIRE_CRYSTAL_BUD = register("small_fire_crystal_bud",
+            () -> new AmethystClusterBlock(3.0F, 4.0F, crystalStage(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
+    public static final DeferredBlock<AmethystClusterBlock> MEDIUM_FIRE_CRYSTAL_BUD = register("medium_fire_crystal_bud",
+            () -> new AmethystClusterBlock(4.0F, 3.0F, crystalStage(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
+    public static final DeferredBlock<AmethystClusterBlock> LARGE_FIRE_CRYSTAL_BUD = register("large_fire_crystal_bud",
+            () -> new AmethystClusterBlock(5.0F, 3.0F, crystalStage(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
+    /** Full-grown stage; the default state faces up. */
+    public static final DeferredBlock<AmethystClusterBlock> FIRE_CRYSTAL_CLUSTER = register("fire_crystal_cluster",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_ORANGE)));
+
     private ModBlocks() {
     }
 
@@ -516,9 +532,12 @@ public final class ModBlocks {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_LIGHT_GREEN);
     }
 
-    /** A dew crystal stage: the amethyst stage's behaviour and sounds, light level given per stage, light blue on the map. */
-    private static Properties dewCrystal(Block vanilla, int light) {
-        return Properties.ofFullCopy(vanilla).mapColor(MapColor.COLOR_LIGHT_BLUE).lightLevel(state -> light);
+    /**
+     * A crystal stage (dew, fire): the amethyst stage's behaviour, sounds and light level (1, 2, 4, 5), in its own map
+     * colour.
+     */
+    private static Properties crystalStage(Block vanillaStage, MapColor color) {
+        return Properties.ofFullCopy(vanillaStage).mapColor(color);
     }
 
     /** Dripshroom stem and hyphae (bark outside): dark grey-green on the map. */

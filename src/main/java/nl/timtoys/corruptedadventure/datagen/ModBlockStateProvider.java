@@ -135,6 +135,13 @@ final class ModBlockStateProvider extends BlockStateProvider {
         oreWithOverlay(ModBlocks.FIRE_RUBY_ORE.get(), stone.side(), stone, fireRuby, true);
         oreWithOverlay(ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get(), deepslate.side(), deepslate, fireRuby, true);
         oreWithOverlay(ModBlocks.BASALT_FIRE_RUBY_ORE.get(), basalt.side(), basalt, fireRuby, true);
+
+        // Fire crystal: the wall is a plain cube; the stages glow like the dew crystal stages.
+        simpleBlock(ModBlocks.FIRE_CRYSTAL_BLOCK.get());
+        crystalCluster(ModBlocks.SMALL_FIRE_CRYSTAL_BUD.get(), true);
+        crystalCluster(ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get(), true);
+        crystalCluster(ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get(), true);
+        crystalCluster(ModBlocks.FIRE_CRYSTAL_CLUSTER.get(), true);
     }
 
     /**
@@ -304,7 +311,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
     /**
      * A crystal on any face, like vanilla's amethyst cluster: one cutout cross model, rotated per {@code facing} exactly
      * as vanilla's blockstate (the same model when waterlogged), and a flat item with the block texture on vanilla's
-     * amethyst bud transforms. Shared by every crystal block (salt crystal, the dew crystal stages). An {@code emissive}
+     * amethyst bud transforms. Shared by every crystal block (salt crystal, the dew and fire crystal stages). An {@code emissive}
      * crystal glows evenly in the dark (NeoForge {@code neoforge_data}, rendering only); that needs its own elements, a
      * copy of vanilla's {@code block/cross}, because the vanilla parent allows no extra data on its elements.
      */
