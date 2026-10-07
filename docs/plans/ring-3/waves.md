@@ -71,7 +71,7 @@ Scope: ring 3 + Nether-ring 3 (bouwplan blok E). Werkwijze besloten in de sparri
 | W-terrein | 42 | lavabuizen + magmakamers (floodedness/erosion ring 3, backlog r. 89), geode-holtes als DF (sjabloon dauwgeodes) |
 | W-nether | 53b, 54 | Nether-3-biomes en aankleding (oerijs-pilaren, bevroren lavavallen, ijspegels, rijpzwammen, warme scheuren), `glacier_rifts` + ruimte-check |
 | B | 46 (rest) | eigen geluiden aan fumarole/geiser/modder koppelen (sound ids van A), afstemming na 4a |
-| C | 55 + afstemming | kou Nether-3; aswolk-modifier (×3); hitte afstemmen na 4a (refuge, schaduwregel) |
+| C | 55 + afstemming | kou Nether-3; hitte afstemmen na 4a (refuge, schaduwregel); de aswolk-modifier (×3, geen factor tijdens de waarschuwing) is al gebouwd in integratie 1 |
 | A | 50, 56 | sfeer ring 3 en Nether-3 (kleuren, particles, ambient, camera-shake, gerommel), `Ring3Sounds.java`, blokgeluiden |
 | T | 57a-rondes | textures bijsturen na 4a; nieuwe blokken uit golf 2 |
 
