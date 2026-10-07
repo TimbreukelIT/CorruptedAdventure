@@ -596,6 +596,13 @@ public final class ModBlocks {
      */
     public static final DeferredBlock<Block> GLOWING_FISSURE = register("glowing_fissure",
             () -> new Block(Properties.ofFullCopy(Blocks.NETHERRACK).mapColor(MapColor.COLOR_ORANGE).lightLevel(state -> 7)));
+    /**
+     * The key material of Nether ring 3, the core of the ice pillars: blue ice's hardness and slipperiness (opaque, never
+     * melts), but obsidian's blast resistance (decision 2026-10-07), so ghast fireballs and creepers cannot destroy it
+     * without a drop. Only Silk Touch takes it along; otherwise it breaks without a drop.
+     */
+    public static final DeferredBlock<Block> PRIMORDIAL_ICE = register("primordial_ice",
+            () -> new Block(Properties.ofFullCopy(Blocks.BLUE_ICE).explosionResistance(Blocks.OBSIDIAN.getExplosionResistance())));
 
     private ModBlocks() {
     }

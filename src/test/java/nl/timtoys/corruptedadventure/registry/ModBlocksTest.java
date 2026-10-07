@@ -371,19 +371,32 @@ class ModBlocksTest {
                 ModBlocks.RIMESHROOM_SLAB, ModBlocks.RIMESHROOM_FENCE, ModBlocks.RIMESHROOM_FENCE_GATE,
                 ModBlocks.RIMESHROOM_DOOR, ModBlocks.RIMESHROOM_TRAPDOOR, ModBlocks.RIMESHROOM_PRESSURE_PLATE,
                 ModBlocks.RIMESHROOM_BUTTON, ModBlocks.RIMESHROOM_CAP, ModBlocks.ICE_STALACTITE,
-                ModBlocks.GLOWING_FISSURE).<Item>map(DeferredBlock::asItem).toList();
+                ModBlocks.GLOWING_FISSURE, ModBlocks.PRIMORDIAL_ICE).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(netherRing3, shown.subList(geyser + 1, geyser + 1 + netherRing3.size()));
     }
 
-    /** Decision 2026-10-06: Nether ice is opaque and solid, slippery like ice, and never melts (no random ticks). */
+    /**
+     * Decision 2026-10-06: Nether ice is opaque and solid and never melts (no random ticks), with the hardness and
+     * slipperiness of its vanilla source: packed ice for the Nether ice, blue ice for primordial ice. No light.
+     */
     @Test
-    void netherIceIsOpaqueSlipperyAndNeverMelts() {
-        for (DeferredBlock<?> ice : List.of(ModBlocks.NETHER_ICE, ModBlocks.PACKED_NETHER_ICE)) {
+    void netherIceIsOpaqueAndNeverMeltsWithItsSourcesHardnessAndSlipperiness() {
+        Map<DeferredBlock<Block>, Block> sources = Map.of(ModBlocks.NETHER_ICE, Blocks.PACKED_ICE,
+                ModBlocks.PACKED_NETHER_ICE, Blocks.PACKED_ICE, ModBlocks.PRIMORDIAL_ICE, Blocks.BLUE_ICE);
+        sources.forEach((ice, source) -> {
             BlockState state = ice.get().defaultBlockState();
             assertTrue(state.canOcclude(), ice.getId().toString());
             assertFalse(state.isRandomlyTicking(), ice.getId().toString());
-            assertEquals(Blocks.ICE.getFriction(), ice.get().getFriction(), ice.getId().toString());
-        }
+            assertEquals(0, state.getLightEmission(), ice.getId().toString());
+            assertEquals(source.getFriction(), ice.get().getFriction(), ice.getId().toString());
+            assertEquals(source.defaultDestroyTime(), ice.get().defaultDestroyTime(), ice.getId().toString());
+        });
+    }
+
+    /** Decision 2026-10-07: ghast fireballs and creepers cannot blow the pillar cores away (obsidian's resistance). */
+    @Test
+    void primordialIceResistsExplosionsLikeObsidian() {
+        assertEquals(Blocks.OBSIDIAN.getExplosionResistance(), ModBlocks.PRIMORDIAL_ICE.get().getExplosionResistance());
     }
 
     @Test

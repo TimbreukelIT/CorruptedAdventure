@@ -105,6 +105,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
 
         stalactite(ModBlocks.ICE_STALACTITE.get());
         glowingCube(ModBlocks.GLOWING_FISSURE.get());
+        simpleBlock(ModBlocks.PRIMORDIAL_ICE.get());
     }
 
     /** Ring 3: ash, pumice, smouldering stone and the charred set (laid out like the dripshroom set). */

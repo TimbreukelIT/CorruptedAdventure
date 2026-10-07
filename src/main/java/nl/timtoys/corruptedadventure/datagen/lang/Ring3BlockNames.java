@@ -99,6 +99,7 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.RIMESHROOM_CAP, "Rimeshroom Cap");
         lang.addBlock(ModBlocks.ICE_STALACTITE, "Ice Stalactite");
         lang.addBlock(ModBlocks.GLOWING_FISSURE, "Glowing Fissure");
+        lang.addBlock(ModBlocks.PRIMORDIAL_ICE, "Primordial Ice");
     }
 
     /** Vanilla nl_nl patterns: "Tufsteen", "Gepolijste tufsteentrap", "Tufstenen blokstenen", "Karmozijnrode trap". */
@@ -191,5 +192,6 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.RIMESHROOM_CAP, "Rijpzwamhoed");
         lang.addBlock(ModBlocks.ICE_STALACTITE, "IJsstalactiet");
         lang.addBlock(ModBlocks.GLOWING_FISSURE, "Gloeiende scheur");
+        lang.addBlock(ModBlocks.PRIMORDIAL_ICE, "Oerijs");
     }
 }

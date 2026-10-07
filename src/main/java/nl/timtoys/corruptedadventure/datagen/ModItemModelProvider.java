@@ -238,6 +238,7 @@ final class ModItemModelProvider extends ItemModelProvider {
         withExistingParent(ModBlocks.ICE_STALACTITE.getId().getPath(), mcLoc("item/generated"))
                 .texture("layer0", modLoc("item/ice_stalactite"));
         blockItem(ModBlocks.GLOWING_FISSURE);
+        blockItem(ModBlocks.PRIMORDIAL_ICE);
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

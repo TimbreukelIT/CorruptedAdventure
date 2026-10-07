@@ -3,8 +3,6 @@ package nl.timtoys.corruptedadventure.datagen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
@@ -13,7 +11,6 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -67,8 +64,10 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
     /**
      * Nether ring 3. Cold lava and rime netherrack are Nether ground like basalt and netherrack ({@code #base_stone_nether},
      * so Nether carvers cut through them); rime netherrack is not in the {@code #infiniburn_*} tags (fire dies on frozen
-     * ground) nor in {@code #nylium}. The Nether ice is in every ice tag of packed ice, and carvers cut through it. The rimeshroom set is Nether wood: in
-     * {@code #logs} (via its own tag) but not in {@code #logs_that_burn}.
+     * ground) nor in {@code #nylium}. The Nether ice is in every ice tag of packed ice, and carvers cut through it;
+     * primordial ice gets blue ice's tags and is deliberately not carver-replaceable, so caves never eat the pillar cores
+     * (nor a growth: it is terrain for {@code FungalTerrainScan}). The rimeshroom set is Nether wood: in {@code #logs} (via
+     * its own tag) but not in {@code #logs_that_burn}.
      */
     private void netherRing3() {
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.COLD_LAVA.get(), ModBlocks.COLD_LAVA_STAIRS.get(),
@@ -77,7 +76,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.POLISHED_COLD_LAVA_WALL.get(), ModBlocks.COLD_LAVA_BRICKS.get(), ModBlocks.COLD_LAVA_BRICK_STAIRS.get(),
                 ModBlocks.COLD_LAVA_BRICK_SLAB.get(), ModBlocks.COLD_LAVA_BRICK_WALL.get(), ModBlocks.NETHER_ICE.get(),
                 ModBlocks.PACKED_NETHER_ICE.get(), ModBlocks.RIME_NETHERRACK.get(), ModBlocks.ICE_STALACTITE.get(),
-                ModBlocks.GLOWING_FISSURE.get());
+                ModBlocks.GLOWING_FISSURE.get(), ModBlocks.PRIMORDIAL_ICE.get());
         tag(BlockTags.STAIRS).add(ModBlocks.COLD_LAVA_STAIRS.get(), ModBlocks.POLISHED_COLD_LAVA_STAIRS.get(),
                 ModBlocks.COLD_LAVA_BRICK_STAIRS.get());
         tag(BlockTags.SLABS).add(ModBlocks.COLD_LAVA_SLAB.get(), ModBlocks.POLISHED_COLD_LAVA_SLAB.get(),
@@ -86,11 +85,13 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.COLD_LAVA_BRICK_WALL.get());
         tag(BlockTags.BASE_STONE_NETHER).add(ModBlocks.COLD_LAVA.get(), ModBlocks.RIME_NETHERRACK.get());
         tag(Tags.Blocks.NETHERRACKS).add(ModBlocks.RIME_NETHERRACK.get());
-        // Every ice tag vanilla puts packed ice in.
-        for (TagKey<Block> ice : List.of(BlockTags.ICE, BlockTags.SNOW_LAYER_CANNOT_SURVIVE_ON, BlockTags.GEODE_INVALID_BLOCKS,
-                BlockTags.SNAPS_GOAT_HORN, BlockTags.NETHER_CARVER_REPLACEABLES)) {
-            tag(ice).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get());
-        }
+        // The ice tags of packed ice (Nether ice) and blue ice (primordial ice).
+        tag(BlockTags.ICE).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get(), ModBlocks.PRIMORDIAL_ICE.get());
+        tag(BlockTags.GEODE_INVALID_BLOCKS).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get(),
+                ModBlocks.PRIMORDIAL_ICE.get());
+        tag(BlockTags.SNOW_LAYER_CANNOT_SURVIVE_ON).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get());
+        tag(BlockTags.SNAPS_GOAT_HORN).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get());
+        tag(BlockTags.NETHER_CARVER_REPLACEABLES).add(ModBlocks.NETHER_ICE.get(), ModBlocks.PACKED_NETHER_ICE.get());
 
         tag(ModTags.Blocks.RIMESHROOM_STEMS).add(ModBlocks.RIMESHROOM_STEM.get(), ModBlocks.RIMESHROOM_HYPHAE.get(),
                 ModBlocks.STRIPPED_RIMESHROOM_STEM.get(), ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get());

@@ -178,6 +178,7 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.RIMESHROOM_CAP.get());
         dropSelf(ModBlocks.ICE_STALACTITE.get());
         dropSelf(ModBlocks.GLOWING_FISSURE.get());
+        dropWhenSilkTouch(ModBlocks.PRIMORDIAL_ICE.get());
     }
 
     private void ring3() {
