@@ -227,7 +227,8 @@ public final class Ring2Biomes {
         return Stream.concat(first.stream(), then.stream()).toList();
     }
 
-    private static Biome biome(BiomeAmbience.Palette colours, float downfall, int grass, int foliage, Optional<AmbientAdditionsSettings> additions, MobSpawnSettings spawns, BiomeGenerationSettings.Builder generation) {
+    /** A hot, dry biome without rain (temperature 2.0, legacy cave mood); ring 3 builds its biomes here too. */
+    static Biome biome(BiomeAmbience.Palette colours, float downfall, int grass, int foliage, Optional<AmbientAdditionsSettings> additions, MobSpawnSettings spawns, BiomeGenerationSettings.Builder generation) {
         BiomeSpecialEffects.Builder effects = new BiomeSpecialEffects.Builder()
                 .skyColor(colours.sky())
                 .fogColor(colours.fog())

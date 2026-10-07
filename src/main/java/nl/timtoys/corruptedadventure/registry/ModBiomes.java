@@ -20,7 +20,7 @@ public final class ModBiomes {
     public static final ResourceKey<Biome> DRIPSHROOM_FOREST = key("dripshroom_forest");
     public static final ResourceKey<Biome> SPORE_CAVES = key("spore_caves");
 
-    // Ring 3 (Ring3Biomes; docs/plans/ring-3/contract.md §2). Keys only until the biomes are registered.
+    // Ring 3 (Ring3Biomes; Ring3Biomes.ALL lists every biome with ring 3 worldgen; docs/plans/ring-3/contract.md §2).
     public static final ResourceKey<Biome> ASHEN_WASTES = key("ashen_wastes");
     public static final ResourceKey<Biome> VOLCANIC_PEAKS = key("volcanic_peaks");
     public static final ResourceKey<Biome> EMBER_WOODS = key("ember_woods");
@@ -40,7 +40,6 @@ public final class ModBiomes {
 
     // Temporary: one per ring until the ring's real biomes exist. Ring 1's copies (overworld and Nether):
     // VanillaBiomeCopies.copyOf.
-    public static final ResourceKey<Biome> PLACEHOLDER_RING_3 = key("placeholder_ring_3");
     public static final ResourceKey<Biome> PLACEHOLDER_RING_4 = key("placeholder_ring_4");
     public static final ResourceKey<Biome> PLACEHOLDER_RING_5 = key("placeholder_ring_5");
     public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_3 = key("placeholder_nether_ring_3");
