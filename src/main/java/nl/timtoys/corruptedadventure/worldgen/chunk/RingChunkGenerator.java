@@ -52,6 +52,9 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
                     .forGetter(generator -> generator.fluidLevels)
     ).apply(instance, instance.stable(RingChunkGenerator::new)));
 
+    // The surface pass runs synchronously inside buildSurface, so a thread-local hands the rules their chunk's terrain.
+    private static final ThreadLocal<VolcanicField> SURFACE_FIELD = new ThreadLocal<>();
+
     private final ResourceKey<Level> dimension;
     private final Map<Ring, Integer> fluidLevels;
     // One random state per level in practice; remembered so the router is searched once.
@@ -71,8 +74,8 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
         this.globalFluidPicker = Suppliers.memoize(() -> new RingFluidPicker(dimension, vanilla.get(), this.fluidLevels));
     }
 
-    private void createNoiseChunk(ChunkAccess chunk, StructureManager structureManager, Blender blender, RandomState random) {
-        chunk.getOrCreateNoiseChunk(access -> {
+    private NoiseChunk createNoiseChunk(ChunkAccess chunk, StructureManager structureManager, Blender blender, RandomState random) {
+        return chunk.getOrCreateNoiseChunk(access -> {
             NoiseChunk noiseChunk = NoiseChunk.forChunk(access, random, Beardifier.forStructuresInChunk(structureManager, access.getPos()),
                     generatorSettings().value(), globalFluidPicker.get(), blender);
             VolcanicField volcanic = volcanicField(random);
@@ -97,6 +100,16 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
     private record VolcanicFieldLookup(RandomState random, @Nullable VolcanicField field) {
     }
 
+    /**
+     * The ring 3 terrain of the chunk whose surface (or carvers) this thread is building (the noise chunk's own
+     * instance, which its density and aquifer use, with their column cache), or null: no such pass of a ring generator
+     * with ring 3 terrain on this thread. Read by the surface rule condition {@code volcanic_threshold}.
+     */
+    @Nullable
+    public static VolcanicField surfaceVolcanicField() {
+        return SURFACE_FIELD.get();
+    }
+
     @Override
     public CompletableFuture<ChunkAccess> createBiomes(RandomState randomState, Blender blender, StructureManager structureManager, ChunkAccess chunk) {
         createNoiseChunk(chunk, structureManager, blender, randomState);
@@ -112,15 +125,27 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
     @Override
     public void buildSurface(ChunkAccess chunk, WorldGenerationContext context, RandomState random, StructureManager structureManager,
                              BiomeManager biomeManager, Registry<Biome> biomes, Blender blender) {
-        createNoiseChunk(chunk, structureManager, blender, random);
-        super.buildSurface(chunk, context, random, structureManager, biomeManager, biomes, blender);
+        NoiseChunk noiseChunk = createNoiseChunk(chunk, structureManager, blender, random);
+        withSurfaceField(noiseChunk, random, () -> super.buildSurface(chunk, context, random, structureManager, biomeManager, biomes, blender));
     }
 
     @Override
     public void applyCarvers(WorldGenRegion level, long seed, RandomState random, BiomeManager biomeManager,
                              StructureManager structureManager, ChunkAccess chunk, GenerationStep.Carving step) {
-        createNoiseChunk(chunk, structureManager, Blender.of(level), random);
-        super.applyCarvers(level, seed, random, biomeManager, structureManager, chunk, step);
+        NoiseChunk noiseChunk = createNoiseChunk(chunk, structureManager, Blender.of(level), random);
+        // Carvers ask the surface rules for the top material where they cut through grass.
+        withSurfaceField(noiseChunk, random, () -> super.applyCarvers(level, seed, random, biomeManager, structureManager, chunk, step));
+    }
+
+    /** Runs a pass that evaluates surface rules, with this chunk's ring 3 terrain for {@link #surfaceVolcanicField}. */
+    private void withSurfaceField(NoiseChunk noiseChunk, RandomState random, Runnable pass) {
+        VolcanicField volcanic = volcanicField(random);
+        SURFACE_FIELD.set(volcanic == null ? null : (VolcanicField) noiseChunk.wrap(volcanic));
+        try {
+            pass.run();
+        } finally {
+            SURFACE_FIELD.remove();
+        }
     }
 
     @Override

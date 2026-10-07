@@ -616,6 +616,7 @@ public final class VolcanicField implements DensityFunction {
         }
         double preHeight = plain + raise + sink;
         c.preHeight = preHeight;
+        c.rise = raise;
 
         // Lava channels: a noise network in the warm bands, away from volcanoes, the seabed and the titan fields.
         double along = Math.abs(noise(channel, px, pz)) / settings.channelWidth();
@@ -634,6 +635,10 @@ public final class VolcanicField implements DensityFunction {
         double cut = depth * profile * Math.max(0.0, preHeight - bed);
         c.channel = depth * profile;
         c.height = preHeight - cut;
+        // The surface's lava banks: the stretch where the channel holds lava (the rule below), up to its edge at 1.3.
+        if (depth >= 0.85 && preHeight >= level + 2.0) {
+            c.lavaBank = Mth.clamp(1.0 - along / 1.3, 0.0, 1.0);
+        }
         if (depth >= 0.85 && along < 1.3 && preHeight >= level + 2.0 && !c.hasLava()) {
             c.lavaTop = level;
             c.lavaBottom = level - (int) CHANNEL_DEPTH - 3;
@@ -695,6 +700,10 @@ public final class VolcanicField implements DensityFunction {
         double dormant;
         double channel;
         double islandMask;
+        /** Height of the volcanoes above the plain (before the craters sink in), in blocks. */
+        double rise;
+        /** 0..1: a lava channel that holds lava, 1 in the middle, 0 from 1.3 half widths out (the banks). */
+        double lavaBank;
         /** Lava fills open space from {@link #lavaBottom} up to, not including, {@link #lavaTop}. */
         int lavaTop;
         int lavaBottom;
@@ -712,6 +721,8 @@ public final class VolcanicField implements DensityFunction {
             dormant = 0.0;
             channel = 0.0;
             islandMask = 0.0;
+            rise = 0.0;
+            lavaBank = 0.0;
             lavaTop = Integer.MIN_VALUE;
             lavaBottom = Integer.MIN_VALUE;
             guardBottom = Integer.MAX_VALUE;

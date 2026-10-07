@@ -6,6 +6,9 @@ import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.levelgen.DensityFunction;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
  * {@code corruptedadventure:volcanic_output}: one output of a {@code volcanic_field} ({@code field}, usually a
  * reference to {@code ring_3/overworld/field}). All outputs of one field share its column cache: the noise chunk's
@@ -32,6 +35,10 @@ public final class VolcanicOutput implements DensityFunction {
         ISLAND_MASK("island_mask", 0.0, 1.0),
         /** 0..1: steepness of volcano flanks and crater walls, for crags. */
         ROUGHNESS("roughness", 0.0, 1.0),
+        /** Height of the volcanoes above the plain, in blocks (the surface's volcano flanks). */
+        VOLCANO_RISE("volcano_rise", 0.0, 320.0),
+        /** 0..1: a lava channel that holds lava, out to its banks (the surface's scorched banks). */
+        LAVA_BANK("lava_bank", 0.0, 1.0),
         /** 3D: +1 where caves stay out (around lava lakes and channels), −1 elsewhere. */
         GUARD("guard", -1.0, 1.0),
         /** 3D: density of the floating islands. */
@@ -53,7 +60,15 @@ public final class VolcanicOutput implements DensityFunction {
         public String getSerializedName() {
             return name;
         }
+
+        /** Whether this output is one value per column, stored in {@link VolcanicField.Column}. */
+        public boolean perColumn() {
+            return PER_COLUMN.contains(this);
+        }
     }
+
+    private static final Set<Output> PER_COLUMN = EnumSet.of(Output.CALDERA_MASK, Output.CALDERA_DORMANT,
+            Output.LAVA_CHANNEL, Output.ISLAND_MASK, Output.ROUGHNESS, Output.VOLCANO_RISE, Output.LAVA_BANK);
 
     private final DensityFunction field;
     private final Output output;
@@ -94,13 +109,23 @@ public final class VolcanicOutput implements DensityFunction {
         int z = context.blockZ();
         return switch (output) {
             case INITIAL_HEIGHT -> f.initialHeight(x, z);
-            case CALDERA_MASK -> f.column(x, z).calderaMask;
-            case CALDERA_DORMANT -> f.column(x, z).dormant;
-            case LAVA_CHANNEL -> f.column(x, z).channel;
-            case ISLAND_MASK -> f.column(x, z).islandMask;
-            case ROUGHNESS -> f.column(x, z).roughness;
             case GUARD -> f.guard(x, context.blockY(), z);
             case ISLANDS -> f.islands(x, context.blockY(), z);
+            default -> columnValue(f.column(x, z), output);
+        };
+    }
+
+    /** {@code output} of one column; only for the per-column outputs ({@link Output#perColumn()}). */
+    public static double columnValue(VolcanicField.Column column, Output output) {
+        return switch (output) {
+            case CALDERA_MASK -> column.calderaMask;
+            case CALDERA_DORMANT -> column.dormant;
+            case LAVA_CHANNEL -> column.channel;
+            case ISLAND_MASK -> column.islandMask;
+            case ROUGHNESS -> column.roughness;
+            case VOLCANO_RISE -> column.rise;
+            case LAVA_BANK -> column.lavaBank;
+            case INITIAL_HEIGHT, GUARD, ISLANDS -> throw new IllegalArgumentException(output + " is not a column value");
         };
     }
 

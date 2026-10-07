@@ -8,6 +8,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.surface.PolygonEdgeCondition;
+import nl.timtoys.corruptedadventure.worldgen.surface.VolcanicThresholdCondition;
 
 /** Surface rule condition types (the {@code if_true} of a surface rule); the rules themselves are hand-written JSON. */
 public final class ModSurfaceConditions {
@@ -17,6 +18,11 @@ public final class ModSurfaceConditions {
     /** {@code corruptedadventure:polygon_edge} */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<PolygonEdgeCondition>> POLYGON_EDGE =
             CONDITIONS.register("polygon_edge", () -> PolygonEdgeCondition.MAP_CODEC);
+
+    // ring 3 — W-biomes
+    /** {@code corruptedadventure:volcanic_threshold} */
+    public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<VolcanicThresholdCondition>> VOLCANIC_THRESHOLD =
+            CONDITIONS.register("volcanic_threshold", () -> VolcanicThresholdCondition.MAP_CODEC);
 
     private ModSurfaceConditions() {
     }

@@ -24,11 +24,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Ring3BiomesTest {
@@ -115,14 +117,26 @@ class Ring3BiomesTest {
         JsonArray rules = WorldgenData.read("noise_settings/overworld.json").getAsJsonObject("surface_rule")
                 .getAsJsonArray("sequence").get(1).getAsJsonObject().getAsJsonObject("then_run").getAsJsonArray("sequence");
         Map<String, JsonObject> branches = new LinkedHashMap<>();
+        Set<String> ring3 = Ring3Biomes.ALL.stream().map(key -> key.location().toString()).collect(Collectors.toSet());
+        Set<String> sharedPlaces = new HashSet<>();
         int firstVanilla = -1;
         for (int i = 0; i < rules.size(); i++) {
             JsonObject condition = rules.get(i).getAsJsonObject().getAsJsonObject("if_true");
             if (condition.get("type").getAsString().equals("minecraft:biome")) {
                 JsonArray biomes = condition.getAsJsonArray("biome_is");
                 if (biomes.size() == 1 && biomes.get(0).getAsString().startsWith("corruptedadventure:")) {
-                    branches.put(biomes.get(0).getAsString(), rules.get(i).getAsJsonObject().getAsJsonObject("then_run"));
+                    assertNull(branches.put(biomes.get(0).getAsString(), rules.get(i).getAsJsonObject().getAsJsonObject("then_run")),
+                            "two branches for " + biomes.get(0).getAsString());
                     assertTrue(firstVanilla < 0, biomes.get(0).getAsString() + " after vanilla's rules");
+                    continue;
+                }
+                // Shared ring 3 branches (craters, cones, lava banks before the biome branches; the ground below after
+                // them, change 39c): only ring 3 biomes, at most one before and one after the biome branches (a
+                // generator run must not add a second copy), never vanilla's grass or dirt.
+                if (biomes.size() > 1 && biomes.asList().stream().allMatch(b -> ring3.contains(b.getAsString()))) {
+                    assertTrue(firstVanilla < 0, "shared ring 3 branch after vanilla's rules");
+                    assertTrue(sharedPlaces.add(branches.keySet().stream().noneMatch(ring3::contains) ? "before" : "after"), "second shared ring 3 branch: " + biomes);
+                    assertNoVanillaSoil(rules.get(i).toString(), "shared ring 3 branch " + biomes);
                     continue;
                 }
             }
@@ -133,10 +147,7 @@ class Ring3BiomesTest {
         for (ResourceKey<Biome> biome : Ring3Biomes.ALL) {
             JsonObject branch = branches.get(biome.location().toString());
             assertNotNull(branch, biome.toString());
-            String text = branch.toString();
-            for (String vanilla : new String[]{"minecraft:grass_block", "minecraft:dirt\"", "minecraft:podzol", "minecraft:mycelium"}) {
-                assertFalse(text.contains(vanilla), biome + " uses " + vanilla);
-            }
+            assertNoVanillaSoil(branch.toString(), biome.toString());
             boolean top = false;
             boolean layer = false;
             for (JsonElement element : branch.getAsJsonArray("sequence")) {
@@ -155,6 +166,12 @@ class Ring3BiomesTest {
             }
             assertTrue(top, biome + ": no unconditional top block");
             assertTrue(layer, biome + ": no unconditional block for the surface depth");
+        }
+    }
+
+    private static void assertNoVanillaSoil(String rule, String where) {
+        for (String vanilla : new String[]{"minecraft:grass_block", "minecraft:dirt\"", "minecraft:podzol", "minecraft:mycelium"}) {
+            assertFalse(rule.contains(vanilla), where + " uses " + vanilla);
         }
     }
 
