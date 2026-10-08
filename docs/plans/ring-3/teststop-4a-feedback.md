@@ -51,3 +51,16 @@ Bij `teststop-4a.md`. Terreinfeedback uit de eerste in-game sessie (2026-10-07) 
     - ze eindigen in een lavapoel in een laagte;
     - deterministisch per seed, per wereld gecachet en thread-safe, onafhankelijk van de laadvolgorde;
     - de tracing-tijd wordt gemeten.
+
+## Hertest na 39d (2026-10-08)
+Stand: main `66628d3` (39e + 39d). Oordeel gebruiker: "stukken beter, in principe al aardig goed".
+
+**Teststop 4a: akkoord met fixes.** Golf 2 start nu. De resterende terreinpunten gaan naar change **39f** (`worldgen`, parallel aan golf 2; W-terrein 42 pas ná 39f):
+1. Archipel (bv. 2622, −2738): basaltpilaren zijn kaarsrechte vierkante kolommen; lavavallen zijn korte statische platen die niet tot de grond of het kratermeer vallen; de eilanden hangen in de wolkenlaag (Y ~192); de kleine hangende kegel onder het hoofdeiland.
+2. Rechthoekige, asgerichte put met rechte wanden en hoeken van 90°, lichtgrijze verticale banden op de wanden en een strakke laag (grove) aarde langs de rand.
+3. Vlakte: traplijnen van 1 blok nog duidelijk zichtbaar.
+4. Losse vlekken grove aarde/zand en de gestreepte naald ogen "half".
+5. Open punten 39d: kruinen van ribben/bogen krijgen de biome-surface; maar 3 bogen over rifts; surface-stap ring 3 1,5–2,8×.
+6. Open punten 39e (laag): gedeelde gate-interface, verouderde Javadoc, Fill-cache op (dimensie, ring), `RingBlend.fillArray` per unieke kolom, `iterateNoiseColumn` in `duringFill`, officiële 39e-meting + client-smoke.
+
+Screenshots: `run/screenshots/2026-10-08_13.20.26.png` (archipel) en `2026-10-08_13.21.50.png` (put, vlakte, naald).
