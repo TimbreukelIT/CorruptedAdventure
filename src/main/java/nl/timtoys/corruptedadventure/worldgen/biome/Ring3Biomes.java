@@ -16,9 +16,6 @@ import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Datagen bootstrap for the ring 3 overworld biomes ({@code docs/plans/ring-3/contract.md} §2): seven sub-biomes and the
@@ -30,8 +27,9 @@ import java.util.Optional;
  * {@code volcanic_peaks} (mineral) and {@code basalt_flows}, the middle one {@code sulfur_fields} (mineral) and
  * {@code ember_woods}, the coolest {@code dried_seabed} (mineral), {@code ashen_wastes} and {@code titan_fields} (strange).
  * <p>
- * All dry and hot, with their own sky and fog so the sky turns at the ring boundary. The colours are provisional: the
- * ring 3 atmosphere (stream A) replaces them. No features yet (wave 2); no water lakes, no vanilla trees or grass.
+ * All dry and hot, with their own sky and fog so the sky turns at the ring boundary. Every effect (colours, grass,
+ * particles, sounds) comes from {@link BiomeAmbience#ring3} (stream A). No features yet (wave 2); no water lakes, no
+ * vanilla trees or grass.
  */
 public final class Ring3Biomes {
     /**
@@ -42,25 +40,6 @@ public final class Ring3Biomes {
     public static final List<ResourceKey<Biome>> ALL = List.of(ModBiomes.ASHEN_WASTES, ModBiomes.VOLCANIC_PEAKS,
             ModBiomes.EMBER_WOODS, ModBiomes.BASALT_FLOWS, ModBiomes.SULFUR_FIELDS, ModBiomes.DRIED_SEABED,
             ModBiomes.TITAN_FIELDS, ModBiomes.DORMANT_CALDERA);
-
-    /** Provisional ash-red base of the ring (sky, fog, water, water fog); each biome a nuance of it. */
-    static final BiomeAmbience.Palette RING_3 = new BiomeAmbience.Palette(0xA8705C, 0x8A6A5A, 0x5E6A66, 0x1E2422);
-    /** Provisional palette per biome, until stream A sets the ring 3 atmosphere. */
-    static final Map<ResourceKey<Biome>, BiomeAmbience.Palette> PALETTES = Map.of(
-            ModBiomes.ASHEN_WASTES, RING_3.withSky(0x9A8C86).withFog(0x7E7470),
-            ModBiomes.VOLCANIC_PEAKS, RING_3.withSky(0xB4553C).withFog(0x8C4A3A),
-            ModBiomes.EMBER_WOODS, RING_3.withSky(0xA8644A).withFog(0x7A4636),
-            ModBiomes.BASALT_FLOWS, RING_3.withSky(0x8E6A60).withFog(0x5E4C48),
-            ModBiomes.SULFUR_FIELDS, RING_3.withSky(0xB4A060).withFog(0xA89A62),
-            ModBiomes.DRIED_SEABED, RING_3.withSky(0xB89A84).withFog(0xA89484),
-            ModBiomes.TITAN_FIELDS, RING_3.withSky(0x8C7A90).withFog(0x6E6478),
-            ModBiomes.DORMANT_CALDERA, RING_3.withSky(0x9CB0A0).withFog(0xA4B49C));
-
-    /** Grass and foliage of the ash: grey olive; the dormant caldera is green. */
-    private static final int ASH_GRASS = 0x8A8060;
-    private static final int ASH_FOLIAGE = 0x7A7050;
-    private static final int CALDERA_GRASS = 0x6FA040;
-    private static final int CALDERA_FOLIAGE = 0x5E9032;
 
     /**
      * Goats only on the peaks (contract §4, V7 = A): low weight, groups of 1–3, only on {@code #minecraft:goats_spawnable_on}
@@ -83,12 +62,10 @@ public final class Ring3Biomes {
         HolderGetter<PlacedFeature> features = context.lookup(Registries.PLACED_FEATURE);
         HolderGetter<ConfiguredWorldCarver<?>> carvers = context.lookup(Registries.CONFIGURED_CARVER);
         for (ResourceKey<Biome> key : ALL) {
-            boolean caldera = key.equals(ModBiomes.DORMANT_CALDERA);
-            BiomeAmbience.Palette palette = Objects.requireNonNull(PALETTES.get(key), () -> "no palette for " + key.location());
-            // Ring 2's hot, dry builder: one place for the ring-wide biome defaults.
-            context.register(key, Ring2Biomes.biome(palette, caldera ? 0.4F : 0.0F, caldera ? CALDERA_GRASS : ASH_GRASS,
-                    caldera ? CALDERA_FOLIAGE : ASH_FOLIAGE, Optional.empty(), spawns(key.equals(ModBiomes.VOLCANIC_PEAKS)),
-                    generation(features, carvers)));
+            // Ring 2's hot, dry builder: one place for the ring-wide biome defaults. Every effect (colours, particles,
+            // sounds) comes from stream A's hook.
+            context.register(key, Ring2Biomes.biome(BiomeAmbience.ring3(key), key.equals(ModBiomes.DORMANT_CALDERA) ? 0.4F : 0.0F,
+                    spawns(key.equals(ModBiomes.VOLCANIC_PEAKS)), generation(features, carvers)));
         }
     }
 

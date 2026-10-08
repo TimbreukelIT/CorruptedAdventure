@@ -145,9 +145,20 @@ Aanbevolen optie eerst. **C** = complexiteit, **MP** = multiplayer, **S** = spee
 - [ ] Particles: Minimal en FPS acceptabel.
 
 ## Voortgang
+Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-afb7325c2a1a62d1d`, branch `ring3/atmosphere-g2` (vanaf main `dbb1cb9`).
+
+Voortgang: 2026-10-08 start 50-0 (haken `BiomeAmbience`, sound events, particle types)
+Voortgang: 2026-10-08 14:30 50-0 gebouwd en getest (B groen incl. `ClientIsolationTest`; D: geen biome-diff; S: server start, ids bekend); klaar voor review
+Voortgang: 2026-10-08 50-0 review (medium, 9 bevindingen) verwerkt: 1–7 opgelost, 8 vastgelegd (delta), 9 bewust (waves §4.8); B/D opnieuw groen, geen biome-diff
 
 ## CODEBASE-delta
+- **50-0:** `BiomeAmbience.ring3(ResourceKey<Biome>)` / `netherRing3(...)` → `BiomeSpecialEffects.Builder`: de haken waar de biome-bootstraps alle effecten vandaan halen; ze delegeren naar `worldgen.biome.Ring3Atmosphere` (per biome een `Look`: palet + gras + blad; 39b-kleuren ongewijzigd, + voorlopig `steam_fens`; mood `LEGACY_CAVE_SETTINGS`) en `NetherRing3Atmosphere` (voorlopig blauwwit palet voor `frozen_lava_sea`, `rime_forest`, `glacier_rifts`; mood idem). Onbekende biome → `IllegalArgumentException`. `BiomeAmbience.colours(palette)` (package-private). Alleen effecten: klimaat, spawns en generation blijven in de bootstrap.
+- **50-0:** `Ring3Biomes` zonder `PALETTES`/kleurconstanten, roept `BiomeAmbience.ring3` aan via de nieuwe overload `Ring2Biomes.biome(effects, downfall, spawns, generation)` (heet en droog: temperatuur 2,0, geen neerslag). **`steam_fens` (48) is een natte overgang: W-biomes bouwt die met een eigen klimaat en neemt alleen de effecten uit `BiomeAmbience.ring3`.** W-nether (53b): hun `biome()` zet alleen `backgroundMusic` op `BiomeAmbience.netherRing3(key)`.
+- **50-0:** sound events `ambient.ring_3.{rumble,embers,lava,titan_hum,caldera}`, `ambient.nether_ring_3.{wind,ice_creak}`, `block.{fumarole.puff,geyser.burst,boiling_mud.bubble}` (vanilla-verwijzingen in `sounds.json` tot de eigen audio van 50/56: rumble = `ambient.basalt_deltas.mood` pitch 0,6; embers = `ambient.basalt_deltas.loop` pitch 1,3; lava = `block.lava.ambient`; titan_hum = `block.beacon.ambient` 0,5; caldera = `item.elytra.flying` 1,2 / 0,15; wind = `ambient.soul_sand_valley.loop` 0,8; ice_creak = `block.powder_snow.break` 0,5; blokgeluiden = precies wat B nu speelt). Ondertitels (en + nl) voor de one-shots in de nieuwe lang-helper `datagen.lang.Ring3AmbienceText` (aangeroepen door beide lang-providers; `Ring3WeatherText` houdt alleen het weer).
+- **50-0:** particle types `steam_puff`, `ice_glint` (`client/particle/SteamPuffParticle`: stijgt ook zonder snelheid, zwelt, botst; `IceGlintParticle`: zweeft, fonkelt, `LightTexture.FULL_BRIGHT`; sprites van T). `EmberParticle` gebruikt nu ook `LightTexture.FULL_BRIGHT`.
 
 ## Beslissingen
+- 2026-10-08, atmosphere: loops (embers, titan_hum, caldera, wind) zonder ondertitel, zoals vanilla-loops; one-shots met ondertitel.
+- 2026-10-08, atmosphere: de sfeer van ring 3 en Nether-3 staat in eigen klassen (`Ring3Atmosphere`, `NetherRing3Atmosphere`) achter de haken in `BiomeAmbience` (review 50-0: niet alles in één bestand).
 
 ## Backlog

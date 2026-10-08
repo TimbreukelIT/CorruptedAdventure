@@ -8,6 +8,7 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.datagen.lang.LangOutput;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing3BiomeNames;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring3AmbienceText;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3BlockNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3ConditionText;
@@ -234,6 +235,7 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         NetherRing3BiomeNames.addDutch(this);
         Ring3ConditionText.addDutch(this);
         Ring3WeatherText.addDutch(this);
+        Ring3AmbienceText.addDutch(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s is uitgedroogd");

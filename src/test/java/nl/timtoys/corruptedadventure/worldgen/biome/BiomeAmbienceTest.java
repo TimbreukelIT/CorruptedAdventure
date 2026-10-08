@@ -18,15 +18,19 @@ import net.minecraft.world.level.biome.Biomes;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BiomeAmbienceTest {
@@ -83,6 +87,49 @@ class BiomeAmbienceTest {
         assertEquals(0.02, caves.getAmbientAdditionsSettings().orElseThrow().getTickChance());
         assertEquals(ParticleTypes.SPORE_BLOSSOM_AIR, forest.getAmbientParticleSettings().orElseThrow().getOptions());
         assertEquals(ParticleTypes.GLOW, caves.getAmbientParticleSettings().orElseThrow().getOptions());
+    }
+
+    @Test
+    void ring3HookGivesEveryRing3BiomeItsOwnColoursAndTheCaveMood() {
+        List<ResourceKey<Biome>> biomes = new ArrayList<>(Ring3Biomes.ALL);
+        biomes.add(ModBiomes.STEAM_FENS);
+        Set<Integer> skies = new HashSet<>();
+        for (ResourceKey<Biome> biome : biomes) {
+            BiomeSpecialEffects effects = BiomeAmbience.ring3(biome).build();
+            BiomeAmbience.Palette palette = Ring3Atmosphere.look(biome).colours();
+            assertEquals(palette.sky(), effects.getSkyColor(), biome.toString());
+            assertEquals(palette.fog(), effects.getFogColor(), biome.toString());
+            assertEquals(palette.water(), effects.getWaterColor(), biome.toString());
+            assertEquals(palette.waterFog(), effects.getWaterFogColor(), biome.toString());
+            assertTrue(effects.getGrassColorOverride().isPresent(), biome.toString());
+            assertTrue(effects.getFoliageColorOverride().isPresent(), biome.toString());
+            assertEquals(Optional.of(AmbientMoodSettings.LEGACY_CAVE_SETTINGS), effects.getAmbientMoodSettings(), biome.toString());
+            skies.add(palette.sky());
+        }
+        assertEquals(biomes.size(), skies.size(), "every sky differs");
+        // Package 50-0 moved the colours of change 39b unchanged.
+        assertEquals(0xB4553C, Ring3Atmosphere.look(ModBiomes.VOLCANIC_PEAKS).colours().sky());
+        assertEquals(0xA4B49C, Ring3Atmosphere.look(ModBiomes.DORMANT_CALDERA).colours().fog());
+        assertEquals(0x6FA040, BiomeAmbience.ring3(ModBiomes.DORMANT_CALDERA).build().getGrassColorOverride().orElseThrow());
+        assertEquals(0x8A8060, BiomeAmbience.ring3(ModBiomes.ASHEN_WASTES).build().getGrassColorOverride().orElseThrow());
+        assertThrows(IllegalArgumentException.class, () -> BiomeAmbience.ring3(ModBiomes.CANYONLANDS));
+    }
+
+    @Test
+    void netherRing3HookIsBlueWhiteAndDistinctPerBiome() {
+        List<ResourceKey<Biome>> biomes = List.of(ModBiomes.FROZEN_LAVA_SEA, ModBiomes.RIME_FOREST, ModBiomes.GLACIER_RIFTS);
+        Set<Integer> fogs = new HashSet<>();
+        for (ResourceKey<Biome> biome : biomes) {
+            BiomeSpecialEffects effects = BiomeAmbience.netherRing3(biome).build();
+            assertEquals(0x000000, effects.getSkyColor(), biome.toString());
+            int fog = effects.getFogColor();
+            assertTrue((fog & 0xFF) > (fog >> 16 & 0xFF), biome + " fog is bluer than red");
+            assertEquals(Optional.of(AmbientMoodSettings.LEGACY_CAVE_SETTINGS), effects.getAmbientMoodSettings(), biome.toString());
+            assertEquals(Optional.empty(), effects.getBackgroundMusic(), biome.toString());
+            fogs.add(fog);
+        }
+        assertEquals(biomes.size(), fogs.size(), "every fog differs");
+        assertThrows(IllegalArgumentException.class, () -> BiomeAmbience.netherRing3(ModBiomes.DRIPSHROOM_FOREST));
     }
 
     @Test
