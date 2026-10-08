@@ -44,6 +44,7 @@ Scope: ring 3 + Nether-ring 3 (bouwplan blok E, `fase-1-wereld.md` §3). Opgeste
 - `corruptedadventure:is_nether_ring_3`.
 - `corruptedadventure:heat_peaks`: `volcanic_peaks` (hitte ×2, lees C).
 - `corruptedadventure:heat_refuges`: `dormant_caldera` (hitte ↓ 2,0/s, lees C) *[V8: A]*.
+- `corruptedadventure:cold_exposed`: `frozen_lava_sea` (kou ×1,5 in de open vlakte, lees C; inhoud vult W-nether in 53b; TagKey `ModTags.Biomes.COLD_EXPOSED` door C) *[golf 2, G2-C1: A]*.
 - `c:is_hot/overworld`, `c:is_dry/overworld` (ring 3) en `c:is_cold/nether` (Nether-3). Geen `minecraft:has_structure/*` (fase 3).
 
 ## 3. Blokken en items (eigenaar B-blokken)
