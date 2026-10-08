@@ -20,5 +20,8 @@ final class ModParticleDescriptionProvider extends ParticleDescriptionProvider {
         // Ring 3 weather (package 45): light grey sprites from stream T (ash_flake_0..3, ember_0..3), tinted by the particle.
         spriteSet(ModParticleTypes.ASH_FLAKE.get(), CorruptedAdventure.id("ash_flake"), 4, false);
         spriteSet(ModParticleTypes.EMBER.get(), CorruptedAdventure.id("ember"), 4, false);
+        // Package 50-0: steam and ice crystals, light sprites from stream T (57a), tinted by the particle.
+        spriteSet(ModParticleTypes.STEAM_PUFF.get(), CorruptedAdventure.id("steam_puff"), 4, false);
+        spriteSet(ModParticleTypes.ICE_GLINT.get(), CorruptedAdventure.id("ice_glint"), 4, false);
     }
 }

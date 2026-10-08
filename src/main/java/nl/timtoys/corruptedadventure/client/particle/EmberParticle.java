@@ -6,6 +6,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
@@ -14,9 +15,6 @@ import net.minecraft.util.Mth;
  * red while it shrinks and fades, flickering a little. No gravity of its own: it drifts at the speed it was given.
  */
 public final class EmberParticle extends TextureSheetParticle {
-    /** Full block and sky light: glows in the dark. */
-    private static final int FULL_BRIGHT = 0xF000F0;
-
     private final float startSize;
 
     private EmberParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
@@ -54,7 +52,8 @@ public final class EmberParticle extends TextureSheetParticle {
 
     @Override
     protected int getLightColor(float partialTick) {
-        return FULL_BRIGHT;
+        // Full block and sky light: glows in the dark.
+        return LightTexture.FULL_BRIGHT;
     }
 
     @Override

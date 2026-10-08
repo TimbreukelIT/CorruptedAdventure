@@ -15,7 +15,9 @@ import nl.timtoys.corruptedadventure.client.network.RingWeatherHandler;
 import nl.timtoys.corruptedadventure.client.network.WindGustHandler;
 import nl.timtoys.corruptedadventure.client.particle.AshFlakeParticle;
 import nl.timtoys.corruptedadventure.client.particle.EmberParticle;
+import nl.timtoys.corruptedadventure.client.particle.IceGlintParticle;
 import nl.timtoys.corruptedadventure.client.particle.SandGustParticle;
+import nl.timtoys.corruptedadventure.client.particle.SteamPuffParticle;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
 import nl.timtoys.corruptedadventure.network.ClientboundHandlers;
 import nl.timtoys.corruptedadventure.network.ConditionSyncPayload;
@@ -52,5 +54,7 @@ public final class CorruptedAdventureClient {
         event.registerSpriteSet(ModParticleTypes.SAND_GUST.get(), SandGustParticle.Provider::new);
         event.registerSpriteSet(ModParticleTypes.ASH_FLAKE.get(), AshFlakeParticle.Provider::new);
         event.registerSpriteSet(ModParticleTypes.EMBER.get(), EmberParticle.Provider::new);
+        event.registerSpriteSet(ModParticleTypes.STEAM_PUFF.get(), SteamPuffParticle.Provider::new);
+        event.registerSpriteSet(ModParticleTypes.ICE_GLINT.get(), IceGlintParticle.Provider::new);
     }
 }

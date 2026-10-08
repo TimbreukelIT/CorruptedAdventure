@@ -26,6 +26,13 @@ public final class ModParticleTypes {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> EMBER =
             PARTICLE_TYPES.register("ember", () -> new SimpleParticleType(false));
 
+    /** Puff of steam (package 50-0): fumaroles, {@code sulfur_fields}, {@code steam_fens}; sprites {@code steam_puff_0..3} from stream T. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> STEAM_PUFF =
+            PARTICLE_TYPES.register("steam_puff", () -> new SimpleParticleType(false));
+    /** Drifting ice crystal of Nether ring 3 (package 50-0); sprites {@code ice_glint_0..3} from stream T. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ICE_GLINT =
+            PARTICLE_TYPES.register("ice_glint", () -> new SimpleParticleType(false));
+
     private ModParticleTypes() {
     }
 

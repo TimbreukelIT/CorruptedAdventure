@@ -36,6 +36,27 @@ public final class ModSoundEvents {
     /** Roaring loop inside an ash cloud (package 45). */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_3_ASH_CLOUD = register("weather.ring_3.ash_cloud");
 
+    /** Deep rumble of the volcanoes outside the weather (package 50), played by the client at random intervals. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_3_RUMBLE = register("ambient.ring_3.rumble");
+    /** Crackling of the smouldering wood (package 50), the ambient loop of {@code ember_woods}. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_3_EMBERS = register("ambient.ring_3.embers");
+    /** Bubbling lava (package 50), the additions sound of the peaks and flows. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_3_LAVA = register("ambient.ring_3.lava");
+    /** Low choir-like hum of the titan fields (package 50), their ambient loop. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_3_TITAN_HUM = register("ambient.ring_3.titan_hum");
+    /** Quiet of the dormant crater (package 50): soft wind, a single insect; the ambient loop of {@code dormant_caldera}. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_3_CALDERA = register("ambient.ring_3.caldera");
+    /** Cold wind through the ice halls of Nether ring 3 (package 56), their ambient loop. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_3_WIND = register("ambient.nether_ring_3.wind");
+    /** Creaking ice (package 56), the additions sound of Nether ring 3. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_3_ICE_CREAK = register("ambient.nether_ring_3.ice_creak");
+    /** Steam puff of a fumarole (stream B plays it, package 46). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FUMAROLE_PUFF = register("block.fumarole.puff");
+    /** Eruption of a geyser (stream B plays it, package 46). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEYSER_BURST = register("block.geyser.burst");
+    /** Bubble of boiling mud (stream B plays it, package 46). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOILING_MUD_BUBBLE = register("block.boiling_mud.bubble");
+
     private ModSoundEvents() {
     }
 

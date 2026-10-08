@@ -50,7 +50,7 @@ class Ring3BiomesTest {
             Biome biome = entry.getValue();
             assertFalse(biome.hasPrecipitation(), entry.getKey().toString());
             assertEquals(2.0F, biome.getBaseTemperature(), entry.getKey().toString());
-            BiomeAmbience.Palette palette = Ring3Biomes.PALETTES.get(entry.getKey());
+            BiomeAmbience.Palette palette = Ring3Atmosphere.look(entry.getKey()).colours();
             assertEquals(palette.sky(), biome.getSkyColor(), entry.getKey().toString());
             assertEquals(palette.fog(), biome.getFogColor(), entry.getKey().toString());
             skies.add(biome.getSkyColor());

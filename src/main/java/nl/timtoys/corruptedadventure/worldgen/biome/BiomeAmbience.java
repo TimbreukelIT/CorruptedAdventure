@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.worldgen.biome;
 
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.AmbientAdditionsSettings;
 import net.minecraft.world.level.biome.AmbientMoodSettings;
 import net.minecraft.world.level.biome.AmbientParticleSettings;
@@ -54,6 +55,40 @@ public final class BiomeAmbience {
                 .ambientLoopSound(ModSoundEvents.NETHER_RING_2_DRIP_LOOP)
                 .ambientAdditionsSound(new AmbientAdditionsSettings(ModSoundEvents.NETHER_RING_2_DRIPS, dropChance))
                 .ambientParticle(new AmbientParticleSettings(particle, probability));
+    }
+
+    // Ring 3 and Nether ring 3 (stream A, packages 50 and 56): the biome bootstraps take every effect from these hooks,
+    // so the atmosphere changes in Ring3Atmosphere / NetherRing3Atmosphere without touching the biome classes.
+
+    /**
+     * Effects of a ring 3 overworld biome ({@code Ring3Biomes.ALL} and the transition {@code steam_fens}): sky, fog,
+     * water, grass and foliage and the cave mood; particles and sounds follow in package 50. Only effects: the biome
+     * bootstrap sets climate (a wet {@code steam_fens} its own), spawns and generation.
+     *
+     * @throws IllegalArgumentException for a biome without ring 3 atmosphere
+     */
+    public static BiomeSpecialEffects.Builder ring3(ResourceKey<Biome> biome) {
+        return Ring3Atmosphere.effects(biome);
+    }
+
+    /**
+     * Effects of a Nether ring 3 biome ({@code frozen_lava_sea}, {@code rime_forest}, {@code glacier_rifts}): fog and
+     * water colours and the cave mood; particles and sounds follow in package 56. The biome bootstrap only adds the
+     * music. Fog distance is not biome data.
+     *
+     * @throws IllegalArgumentException for a biome without Nether ring 3 atmosphere
+     */
+    public static BiomeSpecialEffects.Builder netherRing3(ResourceKey<Biome> biome) {
+        return NetherRing3Atmosphere.effects(biome);
+    }
+
+    /** A builder with only the four colours of {@code palette}. */
+    static BiomeSpecialEffects.Builder colours(Palette palette) {
+        return new BiomeSpecialEffects.Builder()
+                .skyColor(palette.sky())
+                .fogColor(palette.fog())
+                .waterColor(palette.water())
+                .waterFogColor(palette.waterFog());
     }
 
     /** The same biome with only its mood sound replaced: climate, generation, spawns and every other effect are kept. */

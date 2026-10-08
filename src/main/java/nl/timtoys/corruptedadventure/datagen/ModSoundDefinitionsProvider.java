@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.datagen;
 
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.common.data.SoundDefinition;
@@ -58,6 +59,46 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
         add(ModSoundEvents.RING_3_ASH_CLOUD, SoundDefinition.definition()
                 .subtitle("subtitles.corruptedadventure.weather.ring_3.ash_cloud")
                 .with(sound(SoundEvents.ELYTRA_FLYING.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.5F)));
+        // Ring 3 and Nether ring 3 ambience and the ring 3 block sounds (package 50-0): vanilla references, so every id
+        // works at once; our own audio replaces them in packages 50 and 56. Loops (embers, titan hum, caldera, wind)
+        // carry no subtitle, like vanilla's loops.
+        // The distant rumble differs from the eruption's thunder: the basalt deltas' low mood sound, lower still.
+        add(ModSoundEvents.RING_3_RUMBLE, SoundDefinition.definition()
+                .subtitle(subtitle("ambient.ring_3.rumble"))
+                .with(vanilla(SoundEvents.AMBIENT_BASALT_DELTAS_MOOD.value().getLocation()).pitch(0.6F)));
+        // A loop needs a long sample (a short one repeats like a machine gun): the basalt deltas' crackling bed, higher.
+        add(ModSoundEvents.RING_3_EMBERS, SoundDefinition.definition()
+                .with(vanilla(SoundEvents.AMBIENT_BASALT_DELTAS_LOOP.value().getLocation()).pitch(1.3F).volume(0.6F)));
+        add(ModSoundEvents.RING_3_LAVA, SoundDefinition.definition()
+                .subtitle(subtitle("ambient.ring_3.lava"))
+                .with(vanilla(SoundEvents.LAVA_AMBIENT.getLocation())));
+        add(ModSoundEvents.RING_3_TITAN_HUM, SoundDefinition.definition()
+                .with(vanilla(SoundEvents.BEACON_AMBIENT.getLocation()).pitch(0.5F)));
+        add(ModSoundEvents.RING_3_CALDERA, SoundDefinition.definition()
+                .with(vanilla(SoundEvents.ELYTRA_FLYING.getLocation()).pitch(1.2F).volume(0.15F)));
+        add(ModSoundEvents.NETHER_RING_3_WIND, SoundDefinition.definition()
+                .with(vanilla(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_LOOP.value().getLocation()).pitch(0.8F)));
+        add(ModSoundEvents.NETHER_RING_3_ICE_CREAK, SoundDefinition.definition()
+                .subtitle(subtitle("ambient.nether_ring_3.ice_creak"))
+                .with(vanilla(SoundEvents.POWDER_SNOW_BREAK.getLocation()).pitch(0.5F)));
+        // The block sounds point at what stream B plays now (package 46), so switching to the ids changes nothing yet.
+        add(ModSoundEvents.FUMAROLE_PUFF, SoundDefinition.definition()
+                .subtitle(subtitle("block.fumarole.puff"))
+                .with(vanilla(SoundEvents.LAVA_EXTINGUISH.getLocation())));
+        add(ModSoundEvents.GEYSER_BURST, SoundDefinition.definition()
+                .subtitle(subtitle("block.geyser.burst"))
+                .with(vanilla(SoundEvents.GENERIC_EXTINGUISH_FIRE.getLocation())));
+        add(ModSoundEvents.BOILING_MUD_BUBBLE, SoundDefinition.definition()
+                .subtitle(subtitle("block.boiling_mud.bubble"))
+                .with(vanilla(SoundEvents.BUBBLE_COLUMN_BUBBLE_POP.getLocation())));
+    }
+
+    private static String subtitle(String event) {
+        return "subtitles.corruptedadventure." + event;
+    }
+
+    private static SoundDefinition.Sound vanilla(ResourceLocation event) {
+        return sound(event, SoundDefinition.SoundType.EVENT);
     }
 
     private static SoundDefinition.Sound netherFile(String name) {
