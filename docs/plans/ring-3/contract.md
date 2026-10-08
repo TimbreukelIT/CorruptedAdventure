@@ -159,7 +159,7 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
   - weer: `weather.ring_3.ash_rain`, `weather.ring_3.eruption`, `weather.ring_3.ash_cloud`;
   - ambient: `ambient.ring_3.rumble`, `ambient.ring_3.embers`, `ambient.ring_3.lava`, `ambient.ring_3.titan_hum` (voorlopig), `ambient.ring_3.caldera` (slapende krater), `ambient.nether_ring_3.wind`, `ambient.nether_ring_3.ice_creak`;
   - blokken: `block.fumarole.puff`, `block.geyser.burst`, `block.boiling_mud.bubble` (golf 2).
-- **Particle types** (`ModParticleTypes` + `ModParticleDescriptionProvider`; sprites van T): `ash_flake`, `ember`, `steam_puff`, `ice_glint`.
+- **Particle types** (`ModParticleTypes` + `ModParticleDescriptionProvider`; sprites van T): `ash_flake`, `ember`, `steam_puff`, `ice_glint`; sinds golf 2 (pakket 50) ook de ambient-varianten van de biomes `drifting_ash`, `rising_ember`, `sulfur_steam` (zelfde sprites, eigen beweging/tint).
 - **Payloads:** geen nieuwe gepland in golf 1. Is er toch een nodig, dan main melden; de integratie verhoogt `ModNetwork.PROTOCOL_VERSION` één keer per golf.
 - **Lucht-/fogkleur bij een uitbarsting:** eigen client-aanpak (mixin of `DimensionSpecialEffects`) in `client/`; A kiest en legt het vast in plan 45.
 
