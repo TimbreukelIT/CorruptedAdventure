@@ -64,3 +64,12 @@ Stand: main `66628d3` (39e + 39d). Oordeel gebruiker: "stukken beter, in princip
 6. Open punten 39e (laag): gedeelde gate-interface, verouderde Javadoc, Fill-cache op (dimensie, ring), `RingBlend.fillArray` per unieke kolom, `iterateNoiseColumn` in `duringFill`, officiële 39e-meting + client-smoke.
 
 Screenshots: `run/screenshots/2026-10-08_13.20.26.png` (archipel) en `2026-10-08_13.21.50.png` (put, vlakte, naald).
+
+## Beslissingen 39f (2026-10-08)
+1. **Wolken:** de archipel-eilanden zakken onder de wolkenlaag (Y ~150–185, kortere pilaren). In golf 2 (pakket 50, `atmosphere`) krijgen de wolken in ring 3 een donkere askleur.
+2. **Traplijnen:** 39f maakt het 2D-microreliëf grilliger (geen extra 3D-ruwheid). In golf 2 (pakket 47) legt `ash_layer` laagjes (1–7) op de treden, zoals sneeuw.
+3. **Riftbogen:** ~1 boog per riftdal (grofweg 20–40 in de ring).
+4. **Kruinen van ribben en bogen:** biome-surface overal (kruin én flanken), zodat de rib in het landschap opgaat; geen donkere rib met bleke voet meer.
+5. **Vlakke vlekken:** grove aarde/zand op de vlakte worden ring 3-blokken (as/puimsteen/tuf-varianten) met grillige randen die het reliëf volgen; vanilla-accenten alleen nog klein.
+6. **Obsidiaannaald:** vooral obsidiaan met verspreide gloei-aders (crying obsidian/magma), geen rechte banden.
+7. **Rechthoekige put:** wordt een grillig zinkgat/instorting (ronde of grillige omtrek, getrapte en overhangende wanden, puin op de bodem, geen strakke aardelaag langs de rand).
