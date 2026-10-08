@@ -14,6 +14,7 @@ import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring3Features;
 
 import java.util.List;
 
@@ -28,8 +29,8 @@ import java.util.List;
  * {@code ember_woods}, the coolest {@code dried_seabed} (mineral), {@code ashen_wastes} and {@code titan_fields} (strange).
  * <p>
  * All dry and hot, with their own sky and fog so the sky turns at the ring boundary. Every effect (colours, grass,
- * particles, sounds) comes from {@link BiomeAmbience#ring3} (stream A). No features yet (wave 2); no water lakes, no
- * vanilla trees or grass.
+ * particles, sounds) comes from {@link BiomeAmbience#ring3} (stream A). Their features follow one global order
+ * ({@link Ring3Features}); no water lakes, no vanilla trees or grass.
  */
 public final class Ring3Biomes {
     /**
@@ -65,19 +66,26 @@ public final class Ring3Biomes {
             // Ring 2's hot, dry builder: one place for the ring-wide biome defaults. Every effect (colours, particles,
             // sounds) comes from stream A's hook.
             context.register(key, Ring2Biomes.biome(BiomeAmbience.ring3(key), key.equals(ModBiomes.DORMANT_CALDERA) ? 0.4F : 0.0F,
-                    spawns(key.equals(ModBiomes.VOLCANIC_PEAKS)), generation(features, carvers)));
+                    spawns(key.equals(ModBiomes.VOLCANIC_PEAKS)), generation(features, carvers, key)));
         }
     }
 
     /**
-     * The shared base of every ring 3 biome, the one place for ring 3-wide generation: only carvers for now, vanilla's
-     * carvers capped deep as in ring 2 ({@link Ring2Carvers}; near the surface they would leave sand and gravel hanging,
-     * and ring 3's own cave work is change 42). No features: the ores (change 41) and the dressing come in wave 2.
+     * The generation of a ring 3 biome, the one place for ring 3-wide generation: vanilla's carvers capped deep as in
+     * ring 2 ({@link Ring2Carvers}; near the surface they would leave sand and gravel hanging, and ring 3's own cave work
+     * is change 42), then the biome's own features in the global ring 3 order ({@link Ring3Features#ORDER}). The ores
+     * come through the biome modifier {@code add_ring_3_ores} ({@link Ring3BiomeModifiers}), never vanilla's own.
      */
-    static BiomeGenerationSettings.Builder generation(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+    static BiomeGenerationSettings.Builder generation(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers,
+                                                      ResourceKey<Biome> biome) {
         BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(features, carvers);
         for (ResourceKey<ConfiguredWorldCarver<?>> carver : Ring2Carvers.COPIES.keySet()) {
             generation.addCarver(GenerationStep.Carving.AIR, carver);
+        }
+        for (GenerationStep.Decoration step : GenerationStep.Decoration.values()) {
+            for (ResourceKey<PlacedFeature> feature : Ring3Features.features(biome, step)) {
+                generation.addFeature(step, feature);
+            }
         }
         return generation;
     }

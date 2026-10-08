@@ -11,6 +11,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.JitteredGridPlacement;
 import nl.timtoys.corruptedadventure.worldgen.feature.NoiseBandFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.RingChanceFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.SlopeFilter;
+import nl.timtoys.corruptedadventure.worldgen.feature.TerrainHeightPlacement;
+import nl.timtoys.corruptedadventure.worldgen.feature.TerrainLavaFilter;
 
 public final class ModPlacementModifierTypes {
     private static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_MODIFIER_TYPES =
@@ -31,6 +33,14 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:height_band} */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<HeightBandFilter>> HEIGHT_BAND =
             PLACEMENT_MODIFIER_TYPES.register("height_band", () -> () -> HeightBandFilter.CODEC);
+
+    // ring 3 — W-biomes g2
+    /** {@code corruptedadventure:terrain_lava} (change 41) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<TerrainLavaFilter>> TERRAIN_LAVA =
+            PLACEMENT_MODIFIER_TYPES.register("terrain_lava", () -> () -> TerrainLavaFilter.CODEC);
+    /** {@code corruptedadventure:terrain_height} (change 41) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<TerrainHeightPlacement>> TERRAIN_HEIGHT =
+            PLACEMENT_MODIFIER_TYPES.register("terrain_height", () -> () -> TerrainHeightPlacement.CODEC);
 
     private ModPlacementModifierTypes() {
     }

@@ -1,0 +1,34 @@
+{
+  "feature": "minecraft:ore_redstone",
+  "placement": [
+    {
+      "type": "minecraft:count",
+      "count": 8
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "type": "minecraft:trapezoid",
+        "max_inclusive": {
+          "above_bottom": 32
+        },
+        "min_inclusive": {
+          "above_bottom": -32
+        }
+      }
+    },
+    {
+      "type": "corruptedadventure:ring_chance",
+      "from_chance": 0.3,
+      "ring": "ring_3",
+      "signal": "progress",
+      "to_chance": 0.3
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

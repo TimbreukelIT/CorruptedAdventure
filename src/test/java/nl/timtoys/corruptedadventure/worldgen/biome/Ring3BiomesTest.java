@@ -14,9 +14,13 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraft.core.HolderSet;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring3Features;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring3OreFeatures;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -97,15 +101,25 @@ class Ring3BiomesTest {
     }
 
     @Test
-    void onlyDeepCarversAndNoFeaturesYet() {
+    void onlyDeepCarversAndTheOwnFeaturesInTheGlobalOrder() {
         for (Map.Entry<ResourceKey<Biome>, Biome> entry : bootstrap().entrySet()) {
             Biome biome = entry.getValue();
             assertEquals(List.copyOf(Ring2Carvers.COPIES.keySet()),
                     StreamSupport.stream(biome.getGenerationSettings().getCarvers(GenerationStep.Carving.AIR).spliterator(), false)
                             .map(holder -> holder.unwrapKey().orElseThrow()).toList(), entry.getKey().toString());
-            // Wave 1 adds no feature, so the global feature order of rings 1 and 2 stays as it was.
-            assertTrue(biome.getGenerationSettings().features().stream().allMatch(step -> step.size() == 0), entry.getKey().toString());
+            for (GenerationStep.Decoration step : GenerationStep.Decoration.values()) {
+                assertEquals(Ring3Features.features(entry.getKey(), step), keys(biome, step), entry.getKey() + " " + step);
+            }
         }
+        assertEquals(List.of(Ring3OreFeatures.SULFUR_ORE_RICH),
+                keys(bootstrap().get(ModBiomes.SULFUR_FIELDS), GenerationStep.Decoration.UNDERGROUND_ORES));
+    }
+
+    private static List<ResourceKey<PlacedFeature>> keys(Biome biome, GenerationStep.Decoration step) {
+        List<HolderSet<PlacedFeature>> steps = biome.getGenerationSettings().features();
+        return step.ordinal() < steps.size()
+                ? steps.get(step.ordinal()).stream().map(holder -> holder.unwrapKey().orElseThrow()).toList()
+                : List.of();
     }
 
     /**

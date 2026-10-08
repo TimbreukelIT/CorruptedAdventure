@@ -1,0 +1,33 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": {
+    "type": "neoforge:or",
+    "values": [
+      "#corruptedadventure:is_ring_3",
+      "corruptedadventure:dry_riverbeds"
+    ]
+  },
+  "features": [
+    "corruptedadventure:ring_3/ore_coal_upper",
+    "corruptedadventure:ring_3/ore_coal_lower",
+    "corruptedadventure:ring_3/ore_iron_upper",
+    "corruptedadventure:ring_3/ore_iron_middle",
+    "corruptedadventure:ring_3/ore_iron_small",
+    "corruptedadventure:ring_3/ore_gold",
+    "corruptedadventure:ring_3/ore_gold_lower",
+    "corruptedadventure:ring_3/ore_redstone",
+    "corruptedadventure:ring_3/ore_redstone_lower",
+    "corruptedadventure:ring_3/ore_diamond",
+    "corruptedadventure:ring_3/ore_diamond_medium",
+    "corruptedadventure:ring_3/ore_diamond_large",
+    "corruptedadventure:ring_3/ore_diamond_buried",
+    "corruptedadventure:ring_3/ore_lapis",
+    "corruptedadventure:ring_3/ore_lapis_buried",
+    "corruptedadventure:ring_3/ore_copper",
+    "corruptedadventure:ring_3/volcanite_ore",
+    "corruptedadventure:ring_3/volcanite_ore_near_lava",
+    "corruptedadventure:ring_3/sulfur_ore",
+    "corruptedadventure:ring_3/fire_ruby_ore"
+  ],
+  "step": "underground_ores"
+}

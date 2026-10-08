@@ -295,9 +295,53 @@ Biomepunten uit 39b (de regio-assen zijn niet veranderd): ashen (5.262, 480), pe
 - [ ] Algemeen: geen features op naalden, bogen, ribkruinen, brugdekken of lavaoevers; geen zwevende brokken boven Y 140; levendigheid: 2 min lopen per biome, en elk biome heeft iets eigens.
 
 ## Voortgang
+Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26041cd066434c4c`, branch `ring3/biomes-g2` (vanaf `dbb1cb9`).
+- Voortgang: 2026-10-08 14:00 start; 41 code (ertsen, `add_ring_3_ores` incl. `dry_riverbeds`) geschreven; build wachtte ~20 min op een JVM-slot.
+- Voortgang: 2026-10-08 14:30 41: B groen (559 tests), D groen; S + determinisme gedaan (zie hieronder). Klaar voor review.
+- **41 — testresultaten** (seed 20260930, 8×8 chunks per gebied, telling uit de regiobestanden):
+  - smeulwoud (4.750, 0): vulkaniet 36,6/chunk (steen 11,8 Y 0…40, deepslate 24,8 Y −60…0; basalt 0: basalt ligt alleen in het oppervlaktepakket boven Y 40, dat komt met de magmakamers van 42), zwavel 11,4/chunk (diepte onder het oppervlak mediaan 24 in steen / 11 in basalt, 5–95 % 9…31), vuurrobijn 2,6/chunk (Y −60…30, licht 3).
+  - zwavelvelden (4.270, 480): zwavel 26,5/chunk (×2,3 t.o.v. de rest; 3× zoveel pogingen, de klodders vullen minder).
+  - vanilla t.o.v. ring 2 (2.500, 0): ijzer 27 vs 46/chunk (×0,58 = 0,35/0,6), diamant 2,1 vs 6,0 (×0,35 ≈ 0,1/0,25), kolen hoger dan ×0,58 in hoog terrein (meer volume voor `ore_coal_upper`).
+  - `dry_riverbeds` (strook x 3.392…3.631, 8 rijen): ring 3-ertsen pas vanaf de (ruisende) middellijn, per rij een schone grens; in de ring 2-helft geen ring 3-erts. Zonnesteen/turkoois (ring 2, zonder `ring_chance`, gebonden aan kloofsteen) liggen ook in de ring 3-helft waar kloofsteen doorloopt: zie Backlog.
+  - `/place feature` van de drie ertsen: OK. Geen "far chunk", geen "Feature order cycle".
+  - Determinisme (wereld B omgekeerd geladen): sulfur 64/64, ashen 62/64 en strip 119/120 identiek (verschil alleen water/lava), ring2 alleen vanilla-klodders; ember 63/64: de ene chunk met mijn `/place feature`-tests.
+- Voortgang: 2026-10-08 14:45 review 41 (main, `/code-review medium`, 9 bevindingen) verwerkt:
+  1–2, 8. "nabij lava" las wereldblokken in de eigen chunk (`near_blocks`): buurchunks schrijven tijdens hun decoratie ook in deze chunk, dus volgorde-afhankelijk, en de clip op de chunk gaf randen. Vervangen door `terrain_lava` (`TerrainLavaFilter`): de eigen lava van het terrein per kolom (`VolcanicField.Column` lavaTop/lavaBottom/springY via `Ring3Terrain`), puur. `near_blocks` en de sectiescan zijn weg (geen dubbel met `HeatSources` meer).
+  3. De lavascan staat nu ná `ring_chance` en de biome-filter.
+  4. Javadoc `Ring3BiomeModifiers` gecorrigeerd (zonnesteen/turkoois lopen door in de ring 3-helft, backlog).
+  5–6. Nieuwe `FeatureOrderTest`: de echte biomelijsten uit de gegenereerde biome-JSON + de gegenereerde modifiers (op naam, met tags en `neoforge:or`), per dimensie, topologische sortering (vindt ook n-cycli; eigen test met een 3-cyclus). De synthetische test in `Ring3BiomesTest` is weg.
+  7. Zwavel hangt nu aan de terreinhoogte zelf (`terrain_height`, `TerrainHeightPlacement`), niet aan `WORLD_SURFACE_WG` (eilanden, bogen, naalden, lava).
+  9. CODEBASE/beslissingenlog: via de delta-secties hieronder (waves §4.8).
+- Voortgang: 2026-10-08 14:55 hertest 41: B groen, D groen; S: ember/sulfur/abyss/strip (8×8, strook 15×8) zonder far-chunk/cycle; afgrond (4.531, −413) nu basalt-vulkaniet 3,8/chunk en basalt-vuurrobijn in de afgrondwanden (nabij de lavazee). Determinisme: ember, sulfur, abyss 64/64 identiek; strip 113/120 met alleen vanilla-klodders (dioriet/andesiet), water, en 3 blokken `deepslate_volcanite_ore`: een `minecraft:ore`-klodder die over een chunkgrens schrijft, hetzelfde verschil als bij vanilla-ertsen (plan §6: "vanilla-ertsklodders").
 
 ## CODEBASE-delta
+- **41:**
+  - `worldgen/feature/Ring3OreFeatures`: ertsen ring 3 (keys `ring_3/volcanite_ore`, `…_near_lava`, `sulfur_ore`, `sulfur_ore_rich`, `fire_ruby_ore`; configured `ring_3/volcanite_ore|sulfur_ore|fire_ruby_ore`), `RING_3_FACTORS` (0,35/0,3/0,1), `OWN`; elk eigen erts met `ring_chance` progress ring 3 = 1 vóór de biome-filter.
+  - `worldgen/feature/Ring3Terrain`: het pure ring 3-terrein voor features (`field(level)`: `VolcanicField.find(randomState.router().finalDensity())`, per RandomState onthouden, null buiten ring 3-terrein).
+  - `worldgen/feature/TerrainLavaFilter` (`corruptedadventure:terrain_lava`, `ModPlacementModifierTypes.TERRAIN_LAVA`): eigen lava van het terrein binnen een straal (per kolom, puur).
+  - `worldgen/feature/TerrainHeightPlacement` (`corruptedadventure:terrain_height`, `TERRAIN_HEIGHT`): positie naar de terreinhoogte van de kolom (nooit op eilanden, bogen, naalden of lava).
+  - `worldgen/feature/Ring3Features`: `ORDER` (één globale featurevolgorde per stap, `Entry(feature, step, biomes)`), `features(biome, step)`; roept de sub-bootstraps aan.
+  - `worldgen/biome/Ring3Biomes.generation(features, carvers, biome)`: carvers + de eigen features in `ORDER`-volgorde.
+  - `worldgen/biome/Ring3BiomeModifiers.ADD_RING_3_ORES` (`add_ring_3_ores`): `neoforge:or` van `#is_ring_3` en `dry_riverbeds`, `UNDERGROUND_ORES`; `ores()`.
+  - Tests: `Ring3OreFeaturesTest`, `Ring3BiomesTest` (eigen features in globale volgorde), `worldgen/FeatureOrderTest` (geen featurevolgorde-cyclus per dimensie, uit de gegenereerde biome-JSON + modifiers).
+  - Valkuil: features die "nabij X" of "op de grond" moeten weten, lezen het pure terrein (`Ring3Terrain`), geen wereldblokken buiten wat de eigen chunk zelf al schreef: buurchunks schrijven tijdens hun decoratie in deze chunk.
 
 ## Beslissingen
+- 2026-10-08 · worldgen · 41: vulkaniet aders 9, 6 pogingen (Y −48…40, trapezium) + 10 pogingen "nabij lava" (de eigen lava van het terrein binnen 4 blokken, puur per kolom; review 41); zwavel aders 7, 3 pogingen ringbreed + 6 in `sulfur_fields`, 4–30 onder de terreinhoogte zelf (twee verticale offsets: vanilla staat max. ±16 per modifier toe); vuurrobijn aders 4, 1–2 pogingen Y −40…30; blootliggende ertsen blijven (geen air-discard). Startwaarden, afstemmen in 4b.
+- 2026-10-08 · worldgen · 41: ring 3-ertsen in `dry_riverbeds` via één modifier op `neoforge:or(#is_ring_3, dry_riverbeds)` met `ring_chance` progress ring 3 op elk eigen erts (implementatiekeuze; geen aparte modifier).
 
 ## Backlog
+- [worldgen] `sunstone_ore`/`turquoise_ore` (Ring2Features) hebben geen `ring_chance`: in `dry_riverbeds` liggen ze ook in de ring 3-helft, waar kloofsteen doorloopt (gemeten 41: tot ~80 blokken voorbij de middellijn). Een `ring_chance` progress ring 2 erbij verschuift de ring 2-decoratie niet. (bron: 41)
+
+## Status bij onderbreking
+(2026-10-08, na de commit van 41 en de rebase op main b30963e; een verse agent neemt 47/47b/49 over in deze worktree.)
+- **Klaar:** 41 gecommit op `ring3/biomes-g2` (review verwerkt, zie Voortgang). Rebase op b30963e (50-0 van A: `Ring3Biomes` gebruikt nu `BiomeAmbience.ring3(key)`, geen `PALETTES` meer). Na de rebase opnieuw `build` + `runData` draaien.
+- **Kladversies 47/47b/49** in `build/draft47/` (niet gecommit, buiten de diff; nog niet gecompileerd in de mod):
+  - `feature/`: `VolcanicFilter` (`volcanic_filter`, met `Builder.ground()` = plan §0.1–0.4), `VolcanicNearFilter` (`volcanic_near`), `AshDriftFeature`+config (per chunk, per kolom de biome; lee/geul/treden-ramp 6/4/2), `GroundPatchFeature` (lavatongen, modder, koraalriffen, `dry_riverbeds`-as), `GroundVentFeature` (fumarole + kraag + zwavelerts eronder; smeulventjes), `HornitoFeature`, `ImpactCraterFeature`, `AshCastFeature` (afgietsels), `AshFootprintsFeature` + `FootprintPath` (pure sporen per cel), `TitanRockFeature` (puur per cel: elke chunk schrijft zijn eigen deel, geen rangregel nodig), `Ring3DressingFeatures` (configured + placed van 47, keys `ring_3/*`), en een uitgebreide `Ring3Terrain` (met `facing`/`towards`, nu nog willekeurige rotatie).
+  - `Ring3Templates.java` → hoort in `tools/worldgen/`; schrijft 25 `.nbt` (zeemonsters 47, titanen 47b, afgietsels 49) naar `src/main/resources/data/corruptedadventure/structure/ring_3/`; twee runs byte-identiek (getest in `build/tplrun`). Per pakket alleen de eigen vormen meenemen.
+  - `patch_riverbeds.py`: `dry_riverbeds`-vlekken naar `ground_patch` met as + aslagen (backlog r. 122); stronken komen via een modifier `add_ring_3_riverbed_stumps` (placed `ring_3/dry_riverbeds_charred_stumps`, al in `Ring3DressingFeatures`).
+  - `test/`: `Ring3DressingShapesTest`, `Ring3TemplatesTest` (pure delen, sjablonen).
+  - Nog te doen bij integratie: registraties in `ModFeatures` (append-blok `// ring 3 — W-biomes g2`: `ash_drift`, `ground_patch`, `ground_vent`, `hornito`, `impact_crater`, `ash_cast`, `ash_footprints`, `titan_rock`) en `ModPlacementModifierTypes` (`volcanic_filter`, `volcanic_near`); `Ring3Features.ORDER` vullen (LOCAL_MODIFICATIONS: sulfur fumaroles, mud; basalt tongues, hornitos, vents, boulders; seabed reefs, kelp, fossils; ashen pumice, dead trees; peaks craters, rocks; dan casts; dan `ash_drifts` (alle ring 3-biomes); dan footprints en titan rocks (alle ring 3-biomes, ze beslissen zelf per cel); VEGETAL: seabed dead coral, dead bushes); noise `worldgen/noise/ring_3_ash_drift.json` (bv. firstOctave −5, amplitudes [1, 1]).
+  - **Let op uit de review van 41:** lees nooit wereldblokken buiten wat de eigen chunk zelf schreef om iets te beslissen; gebruik het pure terrein (`Ring3Terrain`) of `WORLD_SURFACE_WG` (bevroren tijdens features). `GroundVentFeature`/`GroundPatchFeature`/`AshDrift` lezen alleen eigen-chunkblokken; `AshFootprintsFeature` leest de live `WORLD_SURFACE`-heightmap van de eigen chunk.
+- **Wacht op 39f-accessors** (signaturen van main: `VolcanicField.moundAt`, `sinkholeAt`, `collapseAt`, `ribcageNear`, `nearestVolcano`/`volcanoesWithin`): fumarolen op de heuveltoppen, modder in de zinkgatbodems (nu heuristiek `wallFoot`), zielvuur in de ribbenkasten (nu `volcanic_near` op `solid_kind` 1), afgietsels naar de vulkaan (nu willekeurig), voetsporen die bij een kraterrand eindigen (nu `RIM` → niets). Pas na de rebase op de 39f-merge.
+- **Open:** striders (G2-WB11) staan in geen pakket; logisch bij 47c (spawns in `Ring3Biomes.spawns`).

@@ -21,7 +21,17 @@
     "water_color": 6187622,
     "water_fog_color": 1975330
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/sulfur_ore_rich"
+    ]
+  ],
   "has_precipitation": false,
   "spawn_costs": {},
   "spawners": {
