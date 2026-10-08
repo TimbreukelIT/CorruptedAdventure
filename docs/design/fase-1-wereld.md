@@ -516,7 +516,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - lavarivieren met spaarzame lavavallen;
   - zeldzame zwevende basalteilanden (boven calderameren en lavarivieren);
   - caldera's, deels slapend en groen.
-  - **Basaltzuilvelden zijn geen signatuur** (niet gekozen); `basalt_flows` blijft "gestolde stromen met gloeiende scheuren".
+  - **Basaltzuilvelden zijn geen signatuur** (niet gekozen); `basalt_flows` blijft "gestolde stromen met gloeiende scheuren". *Herzien na teststop 4a (39d): zuilenkliffen op de treden van de basaltplateaus, zie "Reliëf en vorm per biome (39d)".*
 - **Oase = slapende kraters:** een koele, groene caldera als rustpunt (de rol van `oasis_flats` in ring 2). Uitgewerkt in V8 hieronder.
 - **Overlevingskern: hitte-ritme + schaarste.**
   - Hitte stijgt in de zon overdag van **0 naar 100 in ~3 min** (uitdroging ~4 min), **×1,5–2** bij hittebronnen en in de pieken. Ze daalt 's nachts, ondergronds, in water en in een slapende krater.
@@ -533,7 +533,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **V2 — zielvuur:** vanilla zielvuur op zielgrond rond de skeletten: blijvend, licht 10, brandschade bij aanraking, **geen** hittebron.
   - **V3 — smeulwoud:** verkoolde stammen met `ember_leaves`: emissive texture, **geen bloklicht**; bomen 6–12 hoog, dicht genoeg voor een woud.
   - **V4 — zwevende eilanden:** Y 150–210, alleen boven calderameren en lavarivieren, ~1 cluster van 1–4 eilanden (8–30 breed) per ~3 caldera's, met lavavalletjes eraf.
-  - **V5 — horizon-vulkanen:** de grootste kegels Y 230–260 (boven de wolken, ruimte voor de pluim tot de bouwlimiet), gewone kegels Y 140–200.
+  - **V5 — horizon-vulkanen:** de grootste kegels Y 230–260 (boven de wolken, ruimte voor de pluim tot de bouwlimiet), gewone kegels Y 140–200. *Herzien in 39d: reuzen Y 250–285, middelgrote kegels 80–140 boven de vlakte.*
   - **V6 — aswolk:** gewichten asregen 45 / uitbarsting 40 / aswolk 15; aswolk 120–240 s, met ~20 s waarschuwing (gerommel, verdonkering).
   - **V7 — voedsel:** geiten alleen in `volcanic_peaks` (lage weight, groepjes 1–3, op basalt/blackstone/as); één zeldzame eetbare plant (`ember_berry_bush`), alleen in `ember_woods` en de slapende krater.
   - **V8 — slapende krater:** een eigen micro-biome **`dormant_caldera`** (8e biome naast de 7 sub-biomes; hitte ↓ 2,0/s zoals `oasis_flats`, groen, eigen kleuren en geluid), **zonder natuurlijk water**. Water in ring 3 alleen diep ondergronds (aquifers onder Y ~0). Gekozen via een derde router-as: `weirdness` = `ring_3/overworld/caldera_dormant` (`ring_blend/overworld_weirdness`; ring 1 blijft vanilla).
@@ -563,6 +563,33 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **zone 2→3:** ring 3's hoogte mengt met w² naar ring 2 (helling max. ~0,75–1,3); de beddingen van `dry_riverbeds` lopen uit vóór ring 3;
   - **zegel (`ring3Seal`):** in ring 3's helft van de zones 2→3 en 3→4 blijft open ruimte onder Y 63 rots, zodat geen water tegen lucht staat (grotten en carvers verdwijnen in die strook onder Y 63);
   - zwevende eilanden (V4): clusters boven **actieve** (niet-slapende) kraters met een rand ≤ 174 (`island_max_y` − 36; lage caldera's én lage kegelkraters), plus aparte clusters boven lavakanalen (`channelCluster`, cel 960, kans × 0,6); alleen met ≥ 10 blokken vrij boven het terrein.
+- **Reliëf en vorm per biome (39d, na teststop 4a; feedback en besluiten in `docs/plans/ring-3/teststop-4a-feedback.md`):**
+  - **"Ruig":** tussen de vulkanen Y ~70–150 (gemiddeld ~113), brede hooglanden en laagtes (−15…+45 op ~1–1,5 km), deining ±16, golving ±7, heuvels tot 40, kliffen en plateaus 15–40. Op de vlakte een fijn 2D-microreliëf (±2 blokken, ~16–32 breed) tegen rechte traplijnen; 3D-crags alleen op steile wanden, kliffen en kegels (prestatie). Het reliëf groeit over 240 blokken achter zone 2→3 (geen klif in de w²-overgang).
+  - **Vorm per biome:** elke vorm loopt uit naar 0 op de biomegrens, zodat vormen nooit in een muur eindigen.
+
+    | Biome | Vorm |
+    |---|---|
+    | `ashen_wastes` | duinzee: asduinen 10–25 in één windrichting met steile lijzijde; daartussen geulen met hoodoos 5–15 |
+    | `ember_woods` | glooiend laagland (−6), zachte heuvels; het bos (47) doet de rest |
+    | `sulfur_fields` | laag bekken (−14) met zwavelterrassen (treden van 3 met randje), fumarole-heuveltjes en zinkgaten |
+    | `basalt_flows` | getrapte lavaplateaus (3 treden van 12) met zeshoekige zuilenkliffen en lavabuizen (ingestorte sleuven en tunnels); karakter van 39 behouden |
+    | `titan_fields` | stenen ribben als bogen uit de grond (20–60) en zeldzaam een ribbenkast met wervels; de lage ribben van 39 blijven |
+    | `volcanic_peaks` | bergketen (+35): kegels verbonden door kammen en graten, het hoogste deel van de ring (Y 150–250); karakter van 39 behouden |
+    | `dried_seabed` | kustterrassen (39), rifruggen en zeepilaren 15–40 |
+
+  - **Overal:** riftdalen (20–40 diep, getrapte flanken, niet in zeekom/titanenveld/zwavelbekken), velden van slakkenkegels (10–40 met minikrater, niet bij vulkanen, rivieren of rifts).
+  - **Vulkanen overal zichtbaar:** kans in as/smeulwoud/zwavel ~3× (≈ 1 per 500–600 blokken), middelgrote kegels 80–140 boven de vlakte (onder de reuzen), reuzen Y 250–285. Eilanden per oppervlak ongeveer gelijk.
+  - **Getraceerde lavarivieren:** per actieve vulkaan 1–2 vanaf de voet bergaf, om vulkanen heen (nooit een krater in) en in riftdalen en afgronden.
+    - Het niveau daalt stroomafwaarts nooit; elke daling van 1 blok is een klein lavavalletje (geen korst over de rivier). Korst alleen op losse randblokken.
+    - Breedte 6 → 16, ondiep (lava 2 onder de oevers, zichtbaar van ver). Einde in een lavapoel.
+    - Oevers 3 blokken breed, weinig magma.
+    - Deterministisch, één keer per wereld getraceerd en gedeeld.
+  - **Fantasy (alle drie de groepen):**
+    - zwevende archipels boven lage actieve caldera's (hoofdeiland 60–100 breed, 2–5 kleinere, lavavallen via bronnen met een fluid-update, basaltpilaren naar de grond);
+    - een zeldzame **zwevende vulkaan** (Y ~200–255) met kratermeer en lava die over de rand naar beneden stort;
+    - basaltbogen over rivieren en riftdalen, zuilenkliffen, obsidiaannaalden 60–120;
+    - **afgronden** tot Y ~2 met een lavazee (Y 9) en smalle natuurlijke bruggen.
+    - Kleine vormen elke paar honderd blokken, grote landmarks enkele per ring.
 - **Surface (39c):** vulkaankegels hebben in elk biome dezelfde stijl (basalt met as, kap van puimsteen boven Y ~196); actieve kraters blackstone met magma en smeulsteen; lavaoevers blackstone met magma. **Ondergrond (V1 = A):** onder de surface een vulkanisch pakket van ~8–14 blokken dat het oppervlak volgt (tuf/smooth basalt → basalt met blackstone-aders), daaronder steen/deepslate. Askorst alleen op daken van één blok boven een holte; askorst boven carver-grotten, aslagen (47) en geblakerde vlekken in `dry_riverbeds` (47*) volgen in golf 2.
 - Het gestolen water is overal zichtbaar: geen natuurlijk water, een lege zeekom, en geplaatst water verdampt bovengronds.
 

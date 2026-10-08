@@ -29,20 +29,29 @@ public final class VolcanicOutput implements DensityFunction {
         CALDERA_MASK("caldera_mask", 0.0, 1.0),
         /** 0..1: inside a dormant crater, 1 on the floor. */
         CALDERA_DORMANT("caldera_dormant", 0.0, 1.0),
-        /** 0..1: lava channel bed, 1 in the middle. */
+        /** 0..1: lava river bed, 1 in the middle. */
         LAVA_CHANNEL("lava_channel", 0.0, 1.0),
         /** 0..1: a floating island above the column. */
         ISLAND_MASK("island_mask", 0.0, 1.0),
-        /** 0..1: steepness of volcano flanks and crater walls, for crags. */
+        /** 0..1: crags: steep volcano flanks and crater walls, cliffs, and a little on the plain (39d). */
         ROUGHNESS("roughness", 0.0, 1.0),
         /** Height of the volcanoes above the plain, in blocks (the surface's volcano flanks). */
         VOLCANO_RISE("volcano_rise", 0.0, 320.0),
-        /** 0..1: a lava channel that holds lava, out to its banks (the surface's scorched banks). */
+        /** 0..1: a lava river, 1 over the lava, falling to 0 a few blocks beside it (the surface's scorched banks). */
         LAVA_BANK("lava_bank", 0.0, 1.0),
+        /** 0..1: a cliff or steep wall of a landform (plateau risers, rift flanks, gully walls; 39d), rock in the surface. */
+        CLIFF("cliff", 0.0, 1.0),
+        /** The kind of thin solid standing in the column (39d): 0 none, 1 titan bone, 2 obsidian needle, 3 basalt (arches, pillars). */
+        SOLID_KIND("solid_kind", 0.0, 3.0),
         /** 3D: +1 where caves stay out (around lava lakes and channels), −1 elsewhere. */
         GUARD("guard", -1.0, 1.0),
         /** 3D: density of the floating islands. */
-        ISLANDS("islands", -1.0, 1.0);
+        ISLANDS("islands", -1.0, 1.0),
+        /**
+         * 3D (39d): the thin shapes, not interpolated: +1 inside a thin solid (hoodoos, ribs, prisms, needles, arches),
+         * −1 inside a carved opening (lava tube tunnels), 0 elsewhere.
+         */
+        THIN("thin", -1.0, 1.0);
 
         public static final StringRepresentable.EnumCodec<Output> CODEC = StringRepresentable.fromEnum(Output::values);
 
@@ -68,7 +77,8 @@ public final class VolcanicOutput implements DensityFunction {
     }
 
     private static final Set<Output> PER_COLUMN = EnumSet.of(Output.CALDERA_MASK, Output.CALDERA_DORMANT,
-            Output.LAVA_CHANNEL, Output.ISLAND_MASK, Output.ROUGHNESS, Output.VOLCANO_RISE, Output.LAVA_BANK);
+            Output.LAVA_CHANNEL, Output.ISLAND_MASK, Output.ROUGHNESS, Output.VOLCANO_RISE, Output.LAVA_BANK, Output.CLIFF,
+            Output.SOLID_KIND);
 
     private final DensityFunction field;
     private final Output output;
@@ -111,6 +121,7 @@ public final class VolcanicOutput implements DensityFunction {
             case INITIAL_HEIGHT -> f.initialHeight(x, z);
             case GUARD -> f.guard(x, context.blockY(), z);
             case ISLANDS -> f.islands(x, context.blockY(), z);
+            case THIN -> f.thin(x, context.blockY(), z);
             default -> columnValue(f.column(x, z), output);
         };
     }
@@ -125,7 +136,9 @@ public final class VolcanicOutput implements DensityFunction {
             case ROUGHNESS -> column.roughness;
             case VOLCANO_RISE -> column.rise;
             case LAVA_BANK -> column.lavaBank;
-            case INITIAL_HEIGHT, GUARD, ISLANDS -> throw new IllegalArgumentException(output + " is not a column value");
+            case CLIFF -> column.cliff;
+            case SOLID_KIND -> column.solidKind;
+            case INITIAL_HEIGHT, GUARD, ISLANDS, THIN -> throw new IllegalArgumentException(output + " is not a column value");
         };
     }
 

@@ -202,22 +202,53 @@ class RingAquiferTest {
         RingAquifer ring3 = new RingAquifer(Level.OVERWORLD, DRY, FIELD);
         RingPosition inRing3 = RingPosition.within(Ring.RING_3);
         int crusts = 0;
-        for (int x = -5200; x <= -4400 && crusts == 0; x++) {
-            for (int z = -2700; z <= -2000 && crusts == 0; z += 3) {
+        for (int x = -6000; x <= 6000 && crusts == 0; x++) {
+            for (int z = -6000; z <= 6000 && crusts == 0; z += 89) {
                 VolcanicField.Column c = FIELD.column(x, z);
                 if (c.lavaTop() == Integer.MIN_VALUE) {
                     continue;
                 }
                 int y = c.lavaTop() - 1;
                 VolcanicField.Column side = FIELD.column(x + 1, z);
-                if (!side.lavaAt(y) && side.height() < y + 1.0) {
+                // The rule of RingAquifer.open: the field's height less the interpolation and crag margins.
+                if (side.lavaTop() == Integer.MIN_VALUE && side.height() - 1.5 - 4.0 * side.roughness() < y + 1.0) {
                     assertNull(ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(x, y, z), -0.5), x + "," + z);
                     assertFalse(ring3.shouldScheduleFluidUpdate());
                     crusts++;
                 }
             }
         }
-        assertTrue(crusts > 0, "no lava step in the channel sample");
+        assertTrue(crusts > 0, "no lava edge in the sample");
+    }
+
+    @Test
+    void ring3RiverStepsStayLavaFalls() {
+        // 39d: lava beside a neighbour that holds lower lava itself (one step down a river) stays lava: a small lava fall,
+        // no lip of crust across the river.
+        RingAquifer ring3 = new RingAquifer(Level.OVERWORLD, DRY, FIELD);
+        RingPosition inRing3 = RingPosition.within(Ring.RING_3);
+        int steps = 0;
+        for (int x = -6000; x <= 6000 && steps < 3; x += 2) {
+            for (int z = -6000; z <= 6000 && steps < 3; z += 97) {
+                VolcanicField.Column c = FIELD.column(x, z);
+                if (c.lavaTop() == Integer.MIN_VALUE) {
+                    continue;
+                }
+                int y = c.lavaTop() - 1;
+                VolcanicField.Column side = FIELD.column(x + 1, z);
+                VolcanicField.Column[] others = {FIELD.column(x - 1, z), FIELD.column(x, z + 1), FIELD.column(x, z - 1)};
+                boolean othersClosed = true;
+                for (VolcanicField.Column o : others) {
+                    othersClosed &= o.lavaAt(y) || o.height() - 1.5 - 4.0 * o.roughness() >= y + 1.0;
+                }
+                if (side.lavaTop() == c.lavaTop() - 1 && othersClosed && c.height() < y) {
+                    assertSame(Blocks.LAVA.defaultBlockState(),
+                            ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(x, y, z), -0.5), x + "," + z);
+                    steps++;
+                }
+            }
+        }
+        assertTrue(steps > 0, "no river step in the sample");
     }
 
     @Test

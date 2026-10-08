@@ -44,6 +44,7 @@ final class RingAquifer implements Aquifer {
     private final VolcanicField volcanic;
     private boolean suppressed;
     private boolean lid;
+    private boolean spring;
 
     // The rules per column of the chunk (RingFluidPicker's per-column bounds), so the per-block path only compares Y
     // and never branches on the ring itself (one ring check per block made C2 deoptimize there over and over, change
@@ -55,8 +56,11 @@ final class RingAquifer implements Aquifer {
     private final int[] keyZ = new int[COLUMNS + 1];
     private final boolean[] noFluid = new boolean[COLUMNS + 1];
     private final int[] sealBelow = new int[COLUMNS + 1];
-    // The column's lava top when its lava counts, else Integer.MIN_VALUE (no lava at any Y).
+    // The column's lava range [lavaBottom, lavaTop) when its lava counts, else lavaTop = Integer.MIN_VALUE (no lava at
+    // any Y); springY = the Y of its lava spring (39d), else Integer.MIN_VALUE.
     private final int[] lavaTop = new int[COLUMNS + 1];
+    private final int[] lavaBottom = new int[COLUMNS + 1];
+    private final int[] springY = new int[COLUMNS + 1];
     private final int[] dryFrom = new int[COLUMNS + 1];
     private final int[] waterOnlyFrom = new int[COLUMNS + 1];
 
@@ -92,6 +96,7 @@ final class RingAquifer implements Aquifer {
             BlockState state = vanilla.computeSubstance(context, substance);
             suppressed = false;
             lid = false;
+            spring = false;
             return state == null ? null : afterVanilla(slot(slot, context), context.blockY(), state);
         }
         return openSpace(slot(slot, context), context, substance);
@@ -116,8 +121,11 @@ final class RingAquifer implements Aquifer {
     private void load(int i, RingPosition position, int x, int z) {
         noFluid[i] = RingFluidPicker.noFluid(position);
         sealBelow[i] = RingFluidPicker.ring3SealBelow(dimension, position);
-        lavaTop[i] = RingFluidPicker.ring3LavaColumn(dimension, position, volcanic)
-                ? volcanic.column(x, z).lavaTop() : Integer.MIN_VALUE;
+        boolean lava = RingFluidPicker.ring3LavaColumn(dimension, position, volcanic);
+        VolcanicField.Column column = lava ? volcanic.column(x, z) : null;
+        lavaTop[i] = lava ? column.lavaTop() : Integer.MIN_VALUE;
+        lavaBottom[i] = lava ? column.lavaBottom() : Integer.MIN_VALUE;
+        springY[i] = lava ? column.springY() : Integer.MIN_VALUE;
         dryFrom[i] = RingFluidPicker.ring3DryFrom(dimension, position);
         waterOnlyFrom[i] = RingFluidPicker.waterOnlyFrom(dimension, position);
     }
@@ -128,15 +136,20 @@ final class RingAquifer implements Aquifer {
         int y = context.blockY();
         suppressed = true;
         lid = false;
+        spring = false;
         if (noFluid[i]) {
             return AIR;
         }
         if (y < sealBelow[i]) {
             return null;
         }
-        // lavaAt is y < lavaTop && y >= the lava's bottom. The column is looked up again rather than kept: its object
-        // belongs to the field's table, which may refill it for another column in between.
-        if (y < lavaTop[i] && volcanic.column(context.blockX(), context.blockZ()).lavaAt(y)) {
+        if (y == springY[i]) {
+            // A lava spring on a floating island or volcano (39d): scheduled to flow, it pours off the edge.
+            suppressed = false;
+            spring = true;
+            return LAVA;
+        }
+        if (VolcanicField.Column.lavaAt(y, lavaTop[i], lavaBottom[i], Integer.MIN_VALUE)) {
             return exposed(context.blockX(), y, context.blockZ()) ? null : LAVA;
         }
         suppressed = false;
@@ -172,11 +185,16 @@ final class RingAquifer implements Aquifer {
 
     private boolean open(int x, int y, int z) {
         VolcanicField.Column neighbour = volcanic.column(x, z);
-        return !neighbour.lavaAt(y) && neighbour.height() - SURFACE_MARGIN - CRAG_MARGIN * neighbour.roughness() < y + 1.0;
+        // A neighbour whose lava lies at most one block lower (the next step down a river, 39d) is no edge: the step
+        // stays a small lava fall instead of a lip of crust across the river. Lower lava (rivers crossing at different
+        // heights) still gets a crust.
+        return (neighbour.lavaTop() < y || y < neighbour.lavaBottom())
+                && neighbour.height() - SURFACE_MARGIN - CRAG_MARGIN * neighbour.roughness() < y + 1.0
+                && !neighbour.islandAt(y);
     }
 
     @Override
     public boolean shouldScheduleFluidUpdate() {
-        return !suppressed && !lid && vanilla.shouldScheduleFluidUpdate();
+        return spring || !suppressed && !lid && vanilla.shouldScheduleFluidUpdate();
     }
 }

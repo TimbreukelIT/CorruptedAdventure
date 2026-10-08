@@ -31,10 +31,12 @@ import java.util.List;
  * @param gullyDepth   their depth as a fraction of the flank height
  * @param warp         amplitude (blocks) of the domain warp of the outline
  * @param islands      floating islands above the crater, possibly none
+ * @param pillars      basalt pillars from the ground up to the islands of an archipelago (39d), possibly none
  */
 record Volcano(double x, double z, Kind kind, double plain, double rim, double radius, double crest, double floorRadius,
                double floor, double p, double q, boolean dormant, double lake, double rimA2, double rimPhase2, double rimA3,
-               double rimPhase3, int gullies, double gullyPhase, double gullyDepth, double warp, List<Island> islands) {
+               double rimPhase3, int gullies, double gullyPhase, double gullyDepth, double warp, List<Island> islands,
+               List<Pillar> pillars) {
 
     enum Kind {
         GREAT, CONE, CALDERA
@@ -110,11 +112,17 @@ record Volcano(double x, double z, Kind kind, double plain, double rim, double r
         return 1.0 - VolcanicMath.smoothstep(floorRadius, crest, r);
     }
 
+    /** A basalt pillar under an archipelago: from the ground up to {@code top} (absolute Y). */
+    record Pillar(double x, double z, double radius, double top) {
+    }
+
     /**
      * A floating island: an ellipse (half axes {@code a}, {@code a · stretch}, turned by {@code angle}) with a flat,
-     * slightly domed top and an underside that tapers to a point below the centre.
+     * slightly domed top and an underside that tapers to a point below the centre. {@code springs} lava springs (39d)
+     * sit on its top near the edge, from {@code springAngle} on, and pour off it as lava falls.
      */
-    record Island(double x, double z, double a, double stretch, double angle, double top, double thickness) {
+    record Island(double x, double z, double a, double stretch, double angle, double top, double thickness, int springs,
+                  double springAngle) {
         /** Normalised distance from the centre: below 1 inside. {@code warp} distorts the outline (in units of a). */
         double distance(double px, double pz, double warp) {
             double dx = px - x;
@@ -138,6 +146,21 @@ record Volcano(double x, double z, Kind kind, double plain, double rim, double r
 
         double reach() {
             return a * stretch + 4.0;
+        }
+
+        /** Whether the block column (bx, bz) holds spring {@code k}'s source (on the top, near the edge). */
+        boolean springAt(int bx, int bz) {
+            for (int k = 0; k < springs; k++) {
+                double t = springAngle + k * Math.PI * 2.0 / springs;
+                double along = a * stretch * 0.8 * Math.cos(t);
+                double across = a * 0.8 * Math.sin(t);
+                double cos = Math.cos(angle);
+                double sin = Math.sin(angle);
+                if ((int) Math.floor(x + along * cos - across * sin) == bx && (int) Math.floor(z + along * sin + across * cos) == bz) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

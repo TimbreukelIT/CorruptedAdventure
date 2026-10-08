@@ -9373,6 +9373,229 @@
                               "type": "minecraft:condition",
                               "if_true": {
                                 "type": "corruptedadventure:volcanic_threshold",
+                                "output": "solid_kind",
+                                "min": 0.5,
+                                "max": 1.5
+                              },
+                              "then_run": {
+                                "type": "minecraft:sequence",
+                                "sequence": [
+                                  {
+                                    "type": "minecraft:condition",
+                                    "if_true": {
+                                      "type": "minecraft:stone_depth",
+                                      "offset": 0,
+                                      "add_surface_depth": false,
+                                      "secondary_depth_range": 0,
+                                      "surface_type": "floor"
+                                    },
+                                    "then_run": {
+                                      "type": "minecraft:sequence",
+                                      "sequence": [
+                                        {
+                                          "type": "minecraft:condition",
+                                          "if_true": {
+                                            "type": "minecraft:noise_threshold",
+                                            "noise": "corruptedadventure:ring_3_surface_grain",
+                                            "min_threshold": 0.55,
+                                            "max_threshold": 1.7976931348623157e+308
+                                          },
+                                          "then_run": {
+                                            "type": "minecraft:block",
+                                            "result_state": {
+                                              "Name": "minecraft:bone_block"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "minecraft:block",
+                                          "result_state": {
+                                            "Name": "minecraft:calcite"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "type": "minecraft:condition",
+                                    "if_true": {
+                                      "type": "minecraft:stone_depth",
+                                      "offset": 0,
+                                      "add_surface_depth": true,
+                                      "secondary_depth_range": 0,
+                                      "surface_type": "floor"
+                                    },
+                                    "then_run": {
+                                      "type": "minecraft:sequence",
+                                      "sequence": [
+                                        {
+                                          "type": "minecraft:condition",
+                                          "if_true": {
+                                            "type": "minecraft:noise_threshold",
+                                            "noise": "corruptedadventure:ring_3_surface_grain",
+                                            "min_threshold": 0.4,
+                                            "max_threshold": 1.7976931348623157e+308
+                                          },
+                                          "then_run": {
+                                            "type": "minecraft:block",
+                                            "result_state": {
+                                              "Name": "minecraft:bone_block"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "minecraft:block",
+                                          "result_state": {
+                                            "Name": "minecraft:calcite"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "minecraft:condition",
+                              "if_true": {
+                                "type": "corruptedadventure:volcanic_threshold",
+                                "output": "solid_kind",
+                                "min": 1.5,
+                                "max": 2.5
+                              },
+                              "then_run": {
+                                "type": "minecraft:sequence",
+                                "sequence": [
+                                  {
+                                    "type": "minecraft:condition",
+                                    "if_true": {
+                                      "type": "minecraft:stone_depth",
+                                      "offset": 0,
+                                      "add_surface_depth": false,
+                                      "secondary_depth_range": 0,
+                                      "surface_type": "floor"
+                                    },
+                                    "then_run": {
+                                      "type": "minecraft:sequence",
+                                      "sequence": [
+                                        {
+                                          "type": "minecraft:condition",
+                                          "if_true": {
+                                            "type": "minecraft:noise_threshold",
+                                            "noise": "corruptedadventure:ring_3_surface_grain",
+                                            "min_threshold": 0.6,
+                                            "max_threshold": 1.7976931348623157e+308
+                                          },
+                                          "then_run": {
+                                            "type": "minecraft:block",
+                                            "result_state": {
+                                              "Name": "minecraft:crying_obsidian"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "minecraft:block",
+                                          "result_state": {
+                                            "Name": "minecraft:obsidian"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "type": "minecraft:condition",
+                                    "if_true": {
+                                      "type": "minecraft:stone_depth",
+                                      "offset": 0,
+                                      "add_surface_depth": true,
+                                      "secondary_depth_range": 0,
+                                      "surface_type": "floor"
+                                    },
+                                    "then_run": {
+                                      "type": "minecraft:block",
+                                      "result_state": {
+                                        "Name": "minecraft:obsidian"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "minecraft:condition",
+                              "if_true": {
+                                "type": "corruptedadventure:volcanic_threshold",
+                                "output": "solid_kind",
+                                "min": 2.5,
+                                "max": 3.5
+                              },
+                              "then_run": {
+                                "type": "minecraft:sequence",
+                                "sequence": [
+                                  {
+                                    "type": "minecraft:condition",
+                                    "if_true": {
+                                      "type": "minecraft:stone_depth",
+                                      "offset": 0,
+                                      "add_surface_depth": false,
+                                      "secondary_depth_range": 0,
+                                      "surface_type": "floor"
+                                    },
+                                    "then_run": {
+                                      "type": "minecraft:sequence",
+                                      "sequence": [
+                                        {
+                                          "type": "minecraft:condition",
+                                          "if_true": {
+                                            "type": "minecraft:noise_threshold",
+                                            "noise": "corruptedadventure:ring_3_surface_detail",
+                                            "min_threshold": 0.3,
+                                            "max_threshold": 1.7976931348623157e+308
+                                          },
+                                          "then_run": {
+                                            "type": "minecraft:block",
+                                            "result_state": {
+                                              "Name": "minecraft:smooth_basalt"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "minecraft:block",
+                                          "result_state": {
+                                            "Name": "minecraft:basalt"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "type": "minecraft:condition",
+                                    "if_true": {
+                                      "type": "minecraft:stone_depth",
+                                      "offset": 0,
+                                      "add_surface_depth": true,
+                                      "secondary_depth_range": 0,
+                                      "surface_type": "floor"
+                                    },
+                                    "then_run": {
+                                      "type": "minecraft:block",
+                                      "result_state": {
+                                        "Name": "minecraft:basalt"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "minecraft:sequence",
+                          "sequence": [
+                            {
+                              "type": "minecraft:condition",
+                              "if_true": {
+                                "type": "corruptedadventure:volcanic_threshold",
                                 "output": "volcano_rise",
                                 "min": 24.0,
                                 "max": 1000.0
@@ -9878,7 +10101,7 @@
                                       "if_true": {
                                         "type": "corruptedadventure:volcanic_threshold",
                                         "output": "lava_bank",
-                                        "min": 0.15,
+                                        "min": 0.5,
                                         "max": 2.0
                                       },
                                       "then_run": {
@@ -9886,7 +10109,7 @@
                                         "if_true": {
                                           "type": "minecraft:noise_threshold",
                                           "noise": "corruptedadventure:ring_3_surface_grain",
-                                          "min_threshold": 0.3,
+                                          "min_threshold": 0.45,
                                           "max_threshold": 1.7976931348623157e+308
                                         },
                                         "then_run": {
@@ -9902,7 +10125,7 @@
                                       "if_true": {
                                         "type": "minecraft:noise_threshold",
                                         "noise": "corruptedadventure:ring_3_surface_grain",
-                                        "min_threshold": 0.6,
+                                        "min_threshold": 0.75,
                                         "max_threshold": 1.7976931348623157e+308
                                       },
                                       "then_run": {
@@ -9949,6 +10172,87 @@
                                   "type": "minecraft:block",
                                   "result_state": {
                                     "Name": "minecraft:blackstone"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "corruptedadventure:volcanic_threshold",
+                            "output": "cliff",
+                            "min": 0.45,
+                            "max": 2.0
+                          },
+                          "then_run": {
+                            "type": "minecraft:sequence",
+                            "sequence": [
+                              {
+                                "type": "minecraft:condition",
+                                "if_true": {
+                                  "type": "minecraft:stone_depth",
+                                  "offset": 0,
+                                  "add_surface_depth": false,
+                                  "secondary_depth_range": 0,
+                                  "surface_type": "floor"
+                                },
+                                "then_run": {
+                                  "type": "minecraft:sequence",
+                                  "sequence": [
+                                    {
+                                      "type": "minecraft:condition",
+                                      "if_true": {
+                                        "type": "minecraft:noise_threshold",
+                                        "noise": "corruptedadventure:ring_3_surface_patches",
+                                        "min_threshold": -1.7976931348623157e+308,
+                                        "max_threshold": -0.25
+                                      },
+                                      "then_run": {
+                                        "type": "minecraft:block",
+                                        "result_state": {
+                                          "Name": "minecraft:blackstone"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "minecraft:condition",
+                                      "if_true": {
+                                        "type": "minecraft:noise_threshold",
+                                        "noise": "corruptedadventure:ring_3_surface_detail",
+                                        "min_threshold": 0.35,
+                                        "max_threshold": 1.7976931348623157e+308
+                                      },
+                                      "then_run": {
+                                        "type": "minecraft:block",
+                                        "result_state": {
+                                          "Name": "minecraft:tuff"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "minecraft:block",
+                                      "result_state": {
+                                        "Name": "minecraft:basalt"
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "minecraft:condition",
+                                "if_true": {
+                                  "type": "minecraft:stone_depth",
+                                  "offset": 0,
+                                  "add_surface_depth": true,
+                                  "secondary_depth_range": 0,
+                                  "surface_type": "floor"
+                                },
+                                "then_run": {
+                                  "type": "minecraft:block",
+                                  "result_state": {
+                                    "Name": "minecraft:basalt"
                                   }
                                 }
                               }

@@ -27,7 +27,7 @@ class Ring3TerrainJsonTest {
             assertEquals(FIELD, output.get("field").getAsString(), name);
             assertEquals(name, output.get("output").getAsString());
         }
-        for (String name : List.of("guard", "islands")) {
+        for (String name : List.of("guard", "islands", "thin")) {
             JsonObject json = WorldgenData.read(DF + "ring_3/overworld/" + name + ".json");
             assertEquals(FIELD, json.get("field").getAsString(), name);
             assertEquals(name, json.get("output").getAsString());
@@ -38,8 +38,13 @@ class Ring3TerrainJsonTest {
     @Test
     void fieldNamesExistingNoisesAndTheBiomeThresholds() throws Exception {
         JsonObject field = WorldgenData.read(DF + "ring_3/overworld/field.json");
-        for (String key : List.of("hash", "plains", "rolling", "flows", "heat", "ground", "channel", "ridge", "warp")) {
+        for (String key : List.of("hash", "plains", "rolling", "flows", "heat", "ground", "ridge", "warp")) {
             String noise = field.get(key).getAsString().replace("corruptedadventure:", "");
+            assertTrue(Files.exists(WorldgenData.root().resolve("noise/" + noise + ".json")), noise);
+        }
+        JsonObject relief = field.getAsJsonObject("relief");
+        for (String key : List.of("highlands", "shapes", "detail", "rifts")) {
+            String noise = relief.get(key).getAsString().replace("corruptedadventure:", "");
             assertTrue(Files.exists(WorldgenData.root().resolve("noise/" + noise + ".json")), noise);
         }
         // The region axes are the router's (39a); the thresholds are the biome rectangles of ring 3.
@@ -61,11 +66,16 @@ class Ring3TerrainJsonTest {
         assertFalse(text.contains("\"from_y\":240"));
         assertTrue(text.contains("\"from_y\":300") && text.contains("\"to_y\":316"));
         JsonObject root = WorldgenData.read(DF + "ring_3/overworld.json");
-        assertEquals("minecraft:max", root.get("type").getAsString());
-        JsonObject islands = root.getAsJsonObject("argument2");
+        // 39d: range_choice on the thin shapes (per block, not interpolated): ±1 there, else max(stack, interpolated(islands)).
+        assertEquals("minecraft:range_choice", root.get("type").getAsString());
+        assertEquals("corruptedadventure:ring_3/overworld/thin", root.get("input").getAsString());
+        assertEquals("corruptedadventure:ring_3/overworld/thin", root.get("when_out_of_range").getAsString());
+        JsonObject terrain = root.getAsJsonObject("when_in_range");
+        assertEquals("minecraft:max", terrain.get("type").getAsString());
+        JsonObject islands = terrain.getAsJsonObject("argument2");
         assertEquals("minecraft:interpolated", islands.get("type").getAsString());
         assertEquals("corruptedadventure:ring_3/overworld/islands", islands.get("argument").getAsString());
-        JsonObject stack = root.getAsJsonObject("argument1");
+        JsonObject stack = terrain.getAsJsonObject("argument1");
         JsonObject noodle = stack.getAsJsonObject("argument2");
         assertEquals("corruptedadventure:ring_3/overworld/guard", noodle.get("argument2").getAsString());
         assertEquals(2, count(root, "corruptedadventure:ring_3/overworld/guard"), "guard keeps out both cheese/spaghetti and noodles");

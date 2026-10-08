@@ -6,25 +6,29 @@
   "flows": "corruptedadventure:ring_3_flows",
   "heat": "corruptedadventure:ring_3_heat",
   "ground": "corruptedadventure:ring_3_ground",
-  "channel": "corruptedadventure:ring_3_lava_channel",
   "ridge": "corruptedadventure:ring_3_titan_ridges",
   "warp": "corruptedadventure:ring_3_warp",
+  "relief": {
+    "highlands": "corruptedadventure:ring_3_highlands",
+    "shapes": "corruptedadventure:ring_3_shapes",
+    "detail": "corruptedadventure:ring_3_detail",
+    "rifts": "corruptedadventure:ring_3_rifts"
+  },
   "settings": {
     "plain_y": 89.0,
-    "plain_amplitude": 8.0,
-    "rolling_amplitude": 4.0,
+    "plain_amplitude": 16.0,
+    "rolling_amplitude": 7.0,
     "hot": 0.166,
     "cool": -0.051,
     "seabed_ground": -0.122,
     "titan_ground": 0.122,
     "cell_size": 320,
-    "great_min_y": 230.0,
-    "great_max_y": 260.0,
-    "cone_min_y": 140.0,
-    "cone_max_y": 200.0,
+    "great_min_y": 250.0,
+    "great_max_y": 285.0,
+    "cone_min_rise": 80.0,
+    "cone_max_rise": 140.0,
     "island_min_y": 150.0,
     "island_max_y": 210.0,
-    "island_chance": 0.85,
-    "channel_width": 0.03
+    "island_chance": 0.85
   }
 }

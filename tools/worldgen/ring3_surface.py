@@ -144,23 +144,50 @@ def cone_body():
 
 
 def lava_banks():
-    """Banks of the lava channels that hold lava (out to 1.3 half widths): scorched blackstone with magma."""
+    """Banks of the lava rivers (the bed and ~3 blocks beside the lava, whatever the river's width; 39d): scorched
+    blackstone with a little magma right at the edge."""
     return cond(volc("lava_bank", 0.001, 2.0), seq(
         cond(TOP, seq(
-            all_of([volc("lava_bank", 0.15, 2.0), noise(G, 0.3)], block("magma_block")),
-            cond(noise(G, 0.6), block("magma_block")),
+            all_of([volc("lava_bank", 0.5, 2.0), noise(G, 0.45)], block("magma_block")),
+            cond(noise(G, 0.75), block("magma_block")),
             cond(noise(D, 0.2), block("basalt")),
             block("blackstone"))),
         cond(DEPTH, block("blackstone"))))
 
 
+def cliffs():
+    """Cliffs and steep walls of the landforms (39d: plateau risers with their column prisms, rift flanks, gully walls,
+    sea stacks): bare rock instead of ash, in every ring 3 biome."""
+    return cond(volc("cliff", 0.45, 2.0), seq(
+        cond(TOP, seq(
+            cond(noise(P, -INF, -0.25), block("blackstone")),
+            cond(noise(D, 0.35), block("tuff")),
+            block("basalt"))),
+        cond(DEPTH, block("basalt"))))
+
+
+def thin_solids():
+    """The thin solids of the landforms (39d, output solid_kind): titan bones (pale stone with bone), obsidian needles,
+    basalt arches and pillars."""
+    return seq(
+        cond(volc("solid_kind", 0.5, 1.5), seq(
+            cond(TOP, seq(cond(noise(G, 0.55), block("bone_block")), block("calcite"))),
+            cond(DEPTH, seq(cond(noise(G, 0.4), block("bone_block")), block("calcite"))))),
+        cond(volc("solid_kind", 1.5, 2.5), seq(
+            cond(TOP, seq(cond(noise(G, 0.6), block("crying_obsidian")), block("obsidian"))),
+            cond(DEPTH, block("obsidian")))),
+        cond(volc("solid_kind", 2.5, 3.5), seq(
+            cond(TOP, seq(cond(noise(D, 0.3), block("smooth_basalt")), block("basalt"))),
+            cond(DEPTH, block("basalt")))))
+
+
 def shared_volcanic():
-    """Before the biome branches: craters, cones and lava banks look the same in every ring 3 biome. The floor of a
-    dormant crater (caldera_dormant >= 0.3) keeps its biome's own surface (green in dormant_caldera)."""
+    """Before the biome branches: craters, cones, lava banks, cliffs and bones look the same in every ring 3 biome.
+    The floor of a dormant crater (caldera_dormant >= 0.3) keeps its biome's own surface (green in dormant_caldera)."""
     return cond(biome(*RING_3), seq(
         crater_interior(),
         dormant_walls(),
-        cond(NOT(volc("caldera_dormant", 0.3, 2.0)), seq(cone_body(), lava_banks()))))
+        cond(NOT(volc("caldera_dormant", 0.3, 2.0)), seq(thin_solids(), cone_body(), lava_banks(), cliffs()))))
 
 
 def shared_ground():

@@ -6,63 +6,70 @@ import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.CellMemo;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.CinderNeighbourhood;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.Decisions;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.Neighbourhood;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.RiverTile;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
- * {@code corruptedadventure:volcanic_field}: the ring 3 overworld terrain as 2D shapes plus two thin 3D layers. As a
+ * {@code corruptedadventure:volcanic_field}: the ring 3 overworld terrain as 2D shapes plus thin 3D layers. As a
  * density function it is the surface height of the ring 3 core (without the blend into the zone 2→3, which the JSON
- * does); {@link VolcanicOutput} reads its other outputs (masks, lava, islands, cave guard).
+ * does); {@link VolcanicOutput} reads its other outputs (masks, lava, islands, cave guard, solids and voids).
  * <p>
  * Shapes, from the bottom up:
  * <ul>
- *   <li>the ash plain: broad swells and rolling waves around {@code plain_y}; flatter in the sulfur band, stepped flow
- *   lobes in {@code basalt_flows}, low parallel ridges in the titan fields, a terraced bowl in the seabed;</li>
+ *   <li>the plain (39d): highlands and lowlands ({@link Ring3Relief}), swells, rolling waves and hills, with a landform
+ *   per biome: ash dunes with gullies and hoodoos, gentle ember lowland, sulfur terraces with mounds and sinkholes,
+ *   stepped basalt plateaus with columnar cliffs and lava tubes, a peak range with arêtes, titan bones, a terraced
+ *   seabed with reef ridges and sea stacks; rift valleys and cinder cone fields across the ring;</li>
  *   <li>volcanoes on a jittered grid ({@link Volcano}): great horizon volcanoes, ordinary cones and low calderas, each
  *   with a crater that is active (lava lake) or dormant (flat floor, no lava). Most stand where the region axes give
  *   {@code volcanic_peaks}; a band of mostly great ones stands just behind the zone 2→3, visible from {@code dry_riverbeds};</li>
- *   <li>lava channels: a noise network cut into the plain, faded out on volcano flanks, in the seabed and titan fields;</li>
- *   <li>floating islands in clusters above low active craters and above channels.</li>
+ *   <li>lava rivers ({@link LavaRivers}): traced downhill from the active volcanoes;</li>
+ *   <li>floating islands in clusters above low active craters and above rivers.</li>
  * </ul>
  * Lava lies in the open space below a column's lava top ({@link Column#lavaTop}, filled by the aquifer of
- * {@code RingChunkGenerator}); a cave guard band keeps caves out of the rock around lakes and channels.
+ * {@code RingChunkGenerator}); a cave guard band keeps caves out of the rock around lakes and rivers.
  * <p>
  * Pure: a function of the seed (through the noises), the ring layout and x, z. The caches only remember results.
  * Decisions per volcano read the noises at exact positions, never a {@code flat_cache} (whose value inside a noise
  * chunk is the 4-block grid value), so every chunk sees the same volcanoes.
  */
 public final class VolcanicField implements DensityFunction {
-    private static final long CELL_SALT = 31;
-    private static final long ISLAND_CELL_SALT = 37;
-    private static final int CELL_MARGIN = 16;
-    /** Largest foot radius as a share of the cell: 0.8 leaves room for the warp of the outline (0.08 * radius * noise). */
-    private static final double MAX_RADIUS_SHARE = 0.8;
-    private static final double MIN_CONE_LIFT = 40.0;
-    private static final double MIN_FLANK = 30.0;
-    /** Islands above channels: cell of their grid (a cell carries at most one cluster). */
-    private static final int ISLAND_CELL = 960;
-    private static final int ISLAND_CANDIDATES = 24;
+    private static final long WORLD_SALT = 991;
     private static final double CORE_FADE = 160.0;
+    /** The relief (highlands, landforms) grows over this many blocks behind the zone 2→3, so the zone needs no cliff. */
+    private static final double RELIEF_FADE = 240.0;
     private static final double WARP_OFFSET = 5000.5;
-    /** Effective distance behind the zone 2→3 where the horizon band of great volcanoes stands. */
-    private static final double BAND_START = 60.0;
-    private static final double BAND_END = 480.0;
-    /** Depth of a lava channel's bed below its lava level, and the least height of the plain above that level. */
-    private static final double CHANNEL_DEPTH = 3.0;
-    private static final double CHANNEL_BANK = 3.0;
-    private static final double HILL_HEIGHT = 24.0;
+    /** Depth of a lava river's bed below its lava level. */
+    private static final int CHANNEL_DEPTH = 2;
+    /** Height of a river's banks above its lava (levees fill lower ground beside it). */
+    private static final double CHANNEL_BANK = 2.5;
+    /** Width (blocks) of the scorched bank beside the lava, whatever the river's width. */
+    private static final double BANK_BLOCKS = 3.0;
+    private static final double HILL_HEIGHT = 40.0;
+    private static final double PEAK_RIDGE_HEIGHT = 55.0;
+    /** Amplitude (blocks) of the micro relief on the plain. */
+    private static final double MICRO_RELIEF = 2.0;
+    /** Below this the crags would barely show; the column gets none (and skips their 3D noise). */
+    private static final double MIN_ROUGHNESS = 0.15;
+    private static final double PLAIN_SOFT_CAP = 190.0;
     private static final double RIB_COS = Math.cos(0.6);
     private static final double RIB_SIN = Math.sin(0.6);
     private static final double RIDGE_HEIGHT = 5.0;
     private static final int MAX_ISLANDS = 6;
+    private static final int MAX_SOLIDS = 4;
+    /** Highest top of a thin shape (below the top slide of the ring 3 stack). */
+    static final double THIN_TOP = 296.0;
     private static final double ISLAND_CLEARANCE = 10.0;
     private static final double[] INITIAL_RADII = {6.0, 12.0, 18.0};
 
@@ -73,9 +80,9 @@ public final class VolcanicField implements DensityFunction {
             NoiseHolder.CODEC.fieldOf("flows").forGetter(f -> f.flows),
             NoiseHolder.CODEC.fieldOf("heat").forGetter(f -> f.heat),
             NoiseHolder.CODEC.fieldOf("ground").forGetter(f -> f.ground),
-            NoiseHolder.CODEC.fieldOf("channel").forGetter(f -> f.channel),
             NoiseHolder.CODEC.fieldOf("ridge").forGetter(f -> f.ridge),
             NoiseHolder.CODEC.fieldOf("warp").forGetter(f -> f.warp),
+            Ring3Relief.MAP_CODEC.fieldOf("relief").forGetter(f -> f.relief),
             VolcanicSettings.CODEC.optionalFieldOf("settings", VolcanicSettings.DEFAULT).forGetter(f -> f.settings)
     ).apply(instance, VolcanicField::new));
 
@@ -87,9 +94,9 @@ public final class VolcanicField implements DensityFunction {
     private final NoiseHolder flows;
     private final NoiseHolder heat;
     private final NoiseHolder ground;
-    private final NoiseHolder channel;
     private final NoiseHolder ridge;
     private final NoiseHolder warp;
+    private final Ring3Relief relief;
     private final VolcanicSettings settings;
     private final Supplier<RingLayout> layout;
     private final ColumnTable<Column> columns = new ColumnTable<>(Column::new);
@@ -97,20 +104,31 @@ public final class VolcanicField implements DensityFunction {
     // The 3 x 3 cells around the last column, per thread: every column of a cell needs the same ones.
     private final ThreadOwned<Neighbourhood> neighbourhood = new ThreadOwned<>(Neighbourhood::new);
     private final ThreadOwned<Neighbourhood> channelNeighbourhood = new ThreadOwned<>(Neighbourhood::new);
+    private final ThreadOwned<CinderNeighbourhood> cinderNeighbourhood = new ThreadOwned<>(CinderNeighbourhood::new);
+    private final ThreadOwned<RiverTile> riverTile = new ThreadOwned<>(RiverTile::new);
+    // Scratch columns of the uncached fills (core heights, island probes); one per use, so they never nest.
+    private final ThreadOwned<Column> heightScratch = new ThreadOwned<>(Column::new);
+    private final ThreadOwned<Column> probeScratch = new ThreadOwned<>(Column::new);
+    private final ThreadOwned<CellMemo<Landmarks.Needle>> needleMemo = new ThreadOwned<>(CellMemo::new);
+    private final ThreadOwned<CellMemo<Landmarks.Arch>> riftArchMemo = new ThreadOwned<>(CellMemo::new);
+    private final ThreadOwned<CellMemo<Landmarks.FloatingVolcano>> floatingMemo = new ThreadOwned<>(CellMemo::new);
+    private final ThreadOwned<CellMemo<Landmarks.Abyss>> abyssMemo = new ThreadOwned<>(CellMemo::new);
+    private final ThreadOwned<CellMemo<TitanBones.Rib>> ribMemo = new ThreadOwned<>(CellMemo::new);
+    private final ThreadOwned<CellMemo<TitanBones.Cage>> cageMemo = new ThreadOwned<>(CellMemo::new);
 
     public VolcanicField(NoiseHolder hash, NoiseHolder plains, NoiseHolder rolling, NoiseHolder flows, NoiseHolder heat,
-                         NoiseHolder ground, NoiseHolder channel, NoiseHolder ridge, NoiseHolder warp, VolcanicSettings settings) {
-        this(hash, plains, rolling, flows, heat, ground, channel, ridge, warp, settings, RingLayout::current, new Decisions());
+                         NoiseHolder ground, NoiseHolder ridge, NoiseHolder warp, Ring3Relief relief, VolcanicSettings settings) {
+        this(hash, plains, rolling, flows, heat, ground, ridge, warp, relief, settings, RingLayout::current, new Decisions());
     }
 
     VolcanicField(NoiseHolder hash, NoiseHolder plains, NoiseHolder rolling, NoiseHolder flows, NoiseHolder heat,
-                  NoiseHolder ground, NoiseHolder channel, NoiseHolder ridge, NoiseHolder warp, VolcanicSettings settings,
+                  NoiseHolder ground, NoiseHolder ridge, NoiseHolder warp, Ring3Relief relief, VolcanicSettings settings,
                   Supplier<RingLayout> layout) {
-        this(hash, plains, rolling, flows, heat, ground, channel, ridge, warp, settings, layout, new Decisions());
+        this(hash, plains, rolling, flows, heat, ground, ridge, warp, relief, settings, layout, new Decisions());
     }
 
     private VolcanicField(NoiseHolder hash, NoiseHolder plains, NoiseHolder rolling, NoiseHolder flows, NoiseHolder heat,
-                          NoiseHolder ground, NoiseHolder channel, NoiseHolder ridge, NoiseHolder warp, VolcanicSettings settings,
+                          NoiseHolder ground, NoiseHolder ridge, NoiseHolder warp, Ring3Relief relief, VolcanicSettings settings,
                           Supplier<RingLayout> layout, Decisions decisions) {
         this.hash = hash;
         this.plains = plains;
@@ -118,9 +136,9 @@ public final class VolcanicField implements DensityFunction {
         this.flows = flows;
         this.heat = heat;
         this.ground = ground;
-        this.channel = channel;
         this.ridge = ridge;
         this.warp = warp;
+        this.relief = relief;
         this.settings = settings;
         this.layout = layout;
         this.decisions = decisions;
@@ -128,6 +146,10 @@ public final class VolcanicField implements DensityFunction {
 
     VolcanicSettings settings() {
         return settings;
+    }
+
+    Ring3Relief relief() {
+        return relief;
     }
 
     // ---------------------------------------------------------------- density function
@@ -144,16 +166,17 @@ public final class VolcanicField implements DensityFunction {
 
     @Override
     public DensityFunction mapAll(Visitor visitor) {
-        NoiseHolder[] noises = {hash, plains, rolling, flows, heat, ground, channel, ridge, warp};
+        NoiseHolder[] noises = {hash, plains, rolling, flows, heat, ground, ridge, warp};
         NoiseHolder[] mapped = new NoiseHolder[noises.length];
         for (int i = 0; i < noises.length; i++) {
             mapped[i] = visitor.visitNoise(noises[i]);
         }
+        Ring3Relief mappedRelief = relief.map(visitor);
         // A noise chunk's copy keeps the per-cell decisions of the random state's instance (same noises, same results);
         // newly wired noises (another seed) start fresh.
-        Decisions shared = Arrays.equals(mapped, noises) ? decisions : new Decisions();
+        Decisions shared = Arrays.equals(mapped, noises) && mappedRelief.equals(relief) ? decisions : new Decisions();
         return visitor.apply(new VolcanicField(mapped[0], mapped[1], mapped[2], mapped[3], mapped[4], mapped[5], mapped[6], mapped[7],
-                mapped[8], settings, layout, shared));
+                mappedRelief, settings, layout, shared));
     }
 
     @Override
@@ -175,13 +198,13 @@ public final class VolcanicField implements DensityFunction {
     @Override
     public boolean equals(Object o) {
         return o instanceof VolcanicField f && hash.equals(f.hash) && plains.equals(f.plains) && rolling.equals(f.rolling)
-                && flows.equals(f.flows) && heat.equals(f.heat) && ground.equals(f.ground) && channel.equals(f.channel)
-                && ridge.equals(f.ridge) && warp.equals(f.warp) && settings.equals(f.settings);
+                && flows.equals(f.flows) && heat.equals(f.heat) && ground.equals(f.ground) && ridge.equals(f.ridge)
+                && warp.equals(f.warp) && relief.equals(f.relief) && settings.equals(f.settings);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(hash, plains, rolling, flows, heat, ground, channel, ridge, warp, settings);
+        return Objects.hash(hash, plains, rolling, flows, heat, ground, ridge, warp, relief, settings);
     }
 
     /** The first {@code volcanic_field} anywhere inside {@code root} (e.g. a random state's final density), or null. */
@@ -241,8 +264,9 @@ public final class VolcanicField implements DensityFunction {
     }
 
     /**
-     * A lower bound of the surface around a column (the lowest core height on rings of 6, 11 and 16 blocks, 8 points
-     * each, turned against each other, minus 2), for the preliminary
+     * A lower bound of the surface around a column (the lowest core height on rings of 6, 12 and 18 blocks around the
+     * quart's centre, 8 points each, turned against each other, minus 2; 39d: each sample also less the depth of the
+     * cuts that may lie between the samples, {@link Column#floorMargin}), for the preliminary
      * surface: vanilla interpolates that between chunk corners, so on cones and in craters the real surface would
      * otherwise drop below it and miss the surface rules.
      */
@@ -263,17 +287,24 @@ public final class VolcanicField implements DensityFunction {
     }
 
     private double lowestAround(int x, int z) {
-        double lowest = coreHeightUncached(x, z);
+        double lowest = coreFloorUncached(x, z);
         for (double radius : INITIAL_RADII) {
             for (int i = 0; i < 8; i++) {
                 double angle = (i + radius / 16.0) * Math.PI / 4.0;
-                lowest = Math.min(lowest, coreHeightUncached(x + radius * Math.cos(angle), z + radius * Math.sin(angle)));
+                lowest = Math.min(lowest, coreFloorUncached(x + radius * Math.cos(angle), z + radius * Math.sin(angle)));
             }
         }
         return lowest - 2.0;
     }
 
-    /** +1 where caves must stay out (rock around a lava lake or channel), −1 elsewhere. */
+    /** The core height of a column less the depth of the cuts that may lie near it ({@link Column#floorMargin}). */
+    private double coreFloorUncached(double x, double z) {
+        Column column = heightScratch.get();
+        fill(column, Mth.floor(x), Mth.floor(z), Mode.HEIGHT);
+        return column.height - column.floorMargin;
+    }
+
+    /** +1 where caves must stay out (rock around a lava lake or river), −1 elsewhere. */
     double guard(int x, int y, int z) {
         Column column = column(x, z);
         return y >= column.guardBottom && y <= column.guardTop ? 1.0 : -1.0;
@@ -290,6 +321,21 @@ public final class VolcanicField implements DensityFunction {
         return best;
     }
 
+    /**
+     * The thin shapes at a block, outside the terrain interpolation: +1 inside a thin solid (hoodoo, rib, column prism,
+     * sea stack, needle, arch, bridge, pillar), −1 inside a carved opening (a lava tube's tunnel), 0 elsewhere (the
+     * terrain decides). One column lookup per block for both.
+     */
+    double thin(int x, int y, int z) {
+        Column column = column(x, z);
+        for (int i = 0; i < column.solidCount; i++) {
+            if (y >= column.solidBottom[i] && y <= column.solidTop[i]) {
+                return 1.0;
+            }
+        }
+        return y >= column.voidBottom && y <= column.voidTop ? -1.0 : 0.0;
+    }
+
     // ---------------------------------------------------------------- regions
 
     private double noise(NoiseHolder noise, double x, double z) {
@@ -298,61 +344,109 @@ public final class VolcanicField implements DensityFunction {
 
     /** Region weights at a position, from the two region axes. */
     Regions regions(double x, double z) {
-        return Regions.of(settings, noise(heat, x, z), noise(ground, x, z), coreFade(x, z));
-    }
-
-    /** 1 in the ring 3 core, falling to 0 over {@link #CORE_FADE} blocks towards both transition zones. */
-    private double coreFade(double x, double z) {
         RingLayout ringLayout = layout.get();
         List<Integer> radii = ringLayout.settings().ringOuterRadii();
         double half = ringLayout.settings().transitionWidth() / 2.0;
         double distance = ringLayout.effectiveDistance(x, z);
-        return VolcanicMath.smoothstep(radii.get(1) + half, radii.get(1) + half + CORE_FADE, distance)
-                * (1.0 - VolcanicMath.smoothstep(radii.get(2) - half - CORE_FADE, radii.get(2) - half, distance));
+        double inner = radii.get(1) + half;
+        double outer = radii.get(2) - half;
+        double towardsOuter = 1.0 - VolcanicMath.smoothstep(outer - CORE_FADE, outer, distance);
+        double core = VolcanicMath.smoothstep(inner, inner + CORE_FADE, distance) * towardsOuter;
+        double fade = VolcanicMath.smoothstep(inner, inner + RELIEF_FADE, distance) * towardsOuter;
+        return Regions.of(settings, noise(heat, x, z), noise(ground, x, z), core, fade);
     }
 
     /**
-     * Region weights at a position. {@code core} fades the regional shapes (seabed, titan ridges, channels) out towards
-     * the transition zones, so they never end in a wall against the neighbouring ring.
+     * Region weights at a position. {@code core} fades the regional shapes (seabed, titan ridges, rivers) out towards
+     * the transition zones, so they never end in a wall against the neighbouring ring. The {@code …S} weights are the
+     * landform weights (39d): 0 on a biome's border and 1 a little inside it, so neighbouring landforms never meet; they
+     * include {@code fade} (the relief grows behind the zone 2→3). {@code riftOpen} keeps rifts out of the seabed, the
+     * titan fields and the sulfur basin, fading across those borders.
      */
     record Regions(double heat, double ground, double hot, double mid, double peaks, double flows, double sulfur, double ember,
-                   double seabed, double titan, double core) {
-        static Regions of(VolcanicSettings s, double h, double g, double core) {
+                   double ashen, double seabed, double titan, double core, double fade, double peaksS, double flowsS,
+                   double sulfurS, double emberS, double ashenS, double seabedS, double titanS, double riftOpen) {
+        /** Width (in region noise) of the ramp from a biome's border to its landform at full strength. */
+        private static final double RAMP = 0.07;
+
+        static Regions of(VolcanicSettings s, double h, double g, double core, double fade) {
             double hot = VolcanicMath.smoothstep(s.hot() - 0.02, s.hot() + 0.02, h);
             double warmish = VolcanicMath.smoothstep(s.cool() - 0.02, s.cool() + 0.02, h);
             double mid = warmish * (1.0 - hot);
             double mineral = 1.0 - VolcanicMath.smoothstep(-0.02, 0.02, g);
             // Seabed and titan shapes ramp up only inside their biome rectangles, so the slopes stay in the biome.
             double coolInside = 1.0 - VolcanicMath.smoothstep(s.cool() - 0.09, s.cool() - 0.01, h);
-            double seabed = coolInside * (1.0 - VolcanicMath.smoothstep(s.seabedGround() - 0.09, s.seabedGround() - 0.01, g));
-            double titan = coolInside * VolcanicMath.smoothstep(s.titanGround() + 0.01, s.titanGround() + 0.07, g);
+            double seabedRaw = coolInside * (1.0 - VolcanicMath.smoothstep(s.seabedGround() - 0.09, s.seabedGround() - 0.01, g));
+            double titanRaw = coolInside * VolcanicMath.smoothstep(s.titanGround() + 0.01, s.titanGround() + 0.07, g);
+            double cool = 1.0 - warmish;
+            double seabedBand = cool * (1.0 - VolcanicMath.smoothstep(s.seabedGround() - 0.02, s.seabedGround() + 0.02, g));
+            double titanBand = cool * VolcanicMath.smoothstep(s.titanGround() - 0.02, s.titanGround() + 0.02, g);
+            double ashen = Math.max(0.0, cool - seabedBand - titanBand);
+
+            double r = RAMP;
+            double inHot = VolcanicMath.smoothstep(s.hot(), s.hot() + r, h);
+            double inMid = VolcanicMath.smoothstep(s.cool(), s.cool() + r, h) * (1.0 - VolcanicMath.smoothstep(s.hot() - r, s.hot(), h));
+            double inCool = 1.0 - VolcanicMath.smoothstep(s.cool() - r, s.cool(), h);
+            double gMineral = 1.0 - VolcanicMath.smoothstep(-r, 0.0, g);
+            double gGrown = VolcanicMath.smoothstep(0.0, r, g);
+            double seabedS = inCool * (1.0 - VolcanicMath.smoothstep(s.seabedGround() - r, s.seabedGround(), g));
+            double titanS = inCool * VolcanicMath.smoothstep(s.titanGround(), s.titanGround() + r, g);
+            double ashenS = inCool * VolcanicMath.smoothstep(s.seabedGround(), s.seabedGround() + r, g)
+                    * (1.0 - VolcanicMath.smoothstep(s.titanGround() - r, s.titanGround(), g));
+            // Rifts stay out of the seabed, titan and sulfur rectangles, fading over a ramp on both sides of the border.
+            double coolWide = 1.0 - VolcanicMath.smoothstep(s.cool() - r, s.cool() + r, h);
+            double seabedWide = coolWide * (1.0 - VolcanicMath.smoothstep(s.seabedGround() - r, s.seabedGround() + r, g));
+            double titanWide = coolWide * VolcanicMath.smoothstep(s.titanGround() - r, s.titanGround() + r, g);
+            double sulfurWide = VolcanicMath.smoothstep(s.cool() - r, s.cool() + r, h) * (1.0 - VolcanicMath.smoothstep(s.hot() - r, s.hot() + r, h))
+                    * (1.0 - VolcanicMath.smoothstep(-r, r, g));
+            double riftOpen = (1.0 - Math.max(seabedWide, Math.max(titanWide, sulfurWide))) * fade;
             return new Regions(h, g, hot, mid, hot * mineral, hot * (1.0 - mineral), mid * mineral, mid * (1.0 - mineral),
-                    seabed * core, titan * core, core);
+                    ashen, seabedRaw * core, titanRaw * core, core, fade,
+                    inHot * gMineral * fade, inHot * gGrown * fade, inMid * gMineral * fade, inMid * gGrown * fade,
+                    ashenS * fade, seabedS * fade, titanS * fade, riftOpen);
         }
     }
 
     // ---------------------------------------------------------------- plain
 
-    /** Height of the plain (everything except volcanoes and channels). */
+    /**
+     * Height of the smooth plain (everything except volcanoes, rivers and the detail of the landforms): the ground the
+     * volcanoes stand on, so ridges and hills run up their flanks.
+     */
     double plain(double x, double z, Regions r) {
         double swell = noise(plains, x, z);
         double wave = noise(rolling, x, z);
-        double base = settings.plainY() + settings.plainAmp() * swell + settings.rollingAmp() * wave * (1.0 + 0.8 * r.ember());
-        // Low hills and long ash ridges, so the plain between the volcanoes is never bare-flat. Both are coarser samples
-        // of the existing noises (no extra noise to wire).
+        double offset = Ring3Relief.EDGE_OFFSET;
+        if (r.fade() > 0.0) {
+            double highAmp = 1.0 - 0.6 * r.sulfurS() - 0.4 * r.titanS();
+            offset += r.fade() * (relief.highlandOffset(x, z) - Ring3Relief.EDGE_OFFSET) * highAmp;
+        }
+        // Each biome sits at its own level: the peak range high, the sulfur basin and the ember lowland low.
+        offset += 35.0 * r.peaksS() + 10.0 * r.flowsS() - 6.0 * r.emberS() - 14.0 * r.sulfurS();
+        double base = settings.plainY() + settings.plainAmp() * swell + offset;
+        base += settings.rollingAmp() * wave * (1.0 - 0.5 * r.sulfurS() - 0.5 * r.ashenS());
         double hill = noise(rolling, x * 0.45 + 1733.3, z * 0.45 - 911.7);
-        base += HILL_HEIGHT * Math.pow(Math.max(0.0, hill), 1.4);
+        if (hill > 0.0) {
+            // Hills everywhere, strongest in the peak range, soft in the ember lowland, few between the dunes and terraces.
+            double share = 0.55 + 0.45 * r.peaksS() - 0.05 * r.emberS() - 0.3 * r.ashenS() - 0.4 * r.sulfurS()
+                    - 0.15 * r.flowsS() - 0.2 * r.titanS();
+            base += HILL_HEIGHT * share * Math.pow(hill, 1.4);
+        }
         double crest = 1.0 - Math.abs(noise(flows, x * 0.6 - 377.1, z * 0.6 + 2011.9));
-        base += RIDGE_HEIGHT * (1.0 - r.flows()) * Math.pow(Math.max(0.0, crest - 0.7) / 0.3, 2.0);
+        base += RIDGE_HEIGHT * (1.0 - r.flows()) * (1.0 - r.ashenS()) * Math.pow(Math.max(0.0, crest - 0.7) / 0.3, 2.0);
         if (r.flows() > 0.0) {
             // Stepped lobes of old flows with steep fronts.
             base += r.flows() * 5.0 * VolcanicMath.stair(0.5 + 0.9 * noise(flows, x, z), 3, 0.35);
         }
-        if (r.sulfur() > 0.0) {
-            base = Mth.lerp(0.7 * r.sulfur(), base, settings.plainY() - 1.0 + 0.35 * (base - settings.plainY()));
+        if (r.peaksS() > 0.0) {
+            base += PEAK_RIDGE_HEIGHT * r.peaksS() * relief.peakRidges(x, z);
+        }
+        if (base > PLAIN_SOFT_CAP) {
+            // The peak range tops out around Y 200–240, so the cones on it stay below the great volcanoes.
+            base = PLAIN_SOFT_CAP + 0.5 * (base - PLAIN_SOFT_CAP);
         }
         if (r.titan() > 0.0) {
-            double flat = settings.plainY() - 2.0 + 0.3 * (base - settings.plainY());
+            double flat = settings.plainY() + offset - 2.0 + 0.4 * (base - settings.plainY() - offset);
             // Long ribs: the ridge noise stretched along a turned axis (never along x or z) and bent by the warp.
             double along = x * RIB_COS + z * RIB_SIN;
             double across = -x * RIB_SIN + z * RIB_COS;
@@ -363,6 +457,9 @@ public final class VolcanicField implements DensityFunction {
         }
         if (r.seabed() > 0.0) {
             double floor = 38.0 + 3.0 * wave + 2.5 * noise(flows, x * 1.7, z * 1.7);
+            if (r.seabedS() > 0.0) {
+                floor += 6.0 * r.seabedS() * relief.reefRidges(x, z);
+            }
             base = Mth.lerp(VolcanicMath.stair(r.seabed(), 3, 0.4), base, floor);
         }
         return base;
@@ -370,198 +467,308 @@ public final class VolcanicField implements DensityFunction {
 
     // ---------------------------------------------------------------- volcanoes
 
-    /** The volcano of grid cell (i, j), or null. Pure. */
+    /** The volcano of grid cell (i, j), or null. Pure ({@link VolcanoPlacement}). */
     Volcano place(int i, int j) {
+        return VolcanoPlacement.place(this, i, j);
+    }
+
+    /** Island cluster above a lava river in island cell (i, j), or none. Pure. */
+    List<Volcano.Island> channelCluster(int i, int j) {
+        return VolcanoPlacement.channelCluster(this, i, j);
+    }
+
+    NoiseHolder hashNoise() {
+        return hash;
+    }
+
+    RingLayout ringLayout() {
+        return layout.get();
+    }
+
+    /** The scratch column of the island probes (one per thread). */
+    Column probeColumn() {
+        return probeScratch.get();
+    }
+
+    // ---------------------------------------------------------------- rivers and cinder cones (39d)
+
+    /** A pure per-world value for the hash grids ({@link CellShapes}), from the hash noise. */
+    long salt() {
+        Long known = decisions.salt;
+        if (known == null) {
+            // Pure: racing threads compute the same value; the boxed holder is never seen half-written.
+            known = SeededHash.hash(hash, 12345, -6789, WORLD_SALT);
+            decisions.salt = known;
+        }
+        return known;
+    }
+
+    double warpAt(double x, double z) {
+        return noise(warp, x, z);
+    }
+
+    /** The smooth plain at (x, z) (no volcanoes, landforms or rivers). */
+    double plainAt(double x, double z) {
+        return plain(x, z, regions(x, z));
+    }
+
+    /** The ground a river follows (everything except rivers and cinder cones). */
+    double traceGround(double x, double z) {
+        return traceColumn(x, z).preHeight;
+    }
+
+    /** The column without rivers and cinder cones (what a river is traced over). */
+    Column traceColumn(double x, double z) {
+        return traceColumn(x, z, new Column());
+    }
+
+    /** {@link #traceColumn(double, double)} into a reused column. */
+    Column traceColumn(double x, double z, Column into) {
+        fill(into, Mth.floor(x), Mth.floor(z), Mode.TRACE);
+        return into;
+    }
+
+    /** Whether a river may flow on at (x, z): not into the seabed or the titan fields, not into a transition zone. */
+    boolean riverMayFlow(double x, double z) {
+        Regions r = regions(x, z);
+        return r.core() > 0.6 && r.seabed() < 0.3 && r.titan() < 0.5;
+    }
+
+    /** The rivers of volcano cell (i, j), traced once per world. */
+    List<LavaRivers.River> riversOf(int i, int j) {
+        long key = (long) i << 32 | j & 0xFFFFFFFFL;
+        // A per-key future: the map only stores it (cheap, inside the map's lock), the tracing runs outside; a thread
+        // asking at the same time waits for the first one. Tracing reads only other maps (volcanoes, abysses).
+        return once(decisions.rivers, key, () -> LavaRivers.trace(this, i, j));
+    }
+
+    private LavaRivers.Tile riverTileAt(int ti, int tj) {
+        long key = (long) ti << 32 | tj & 0xFFFFFFFFL;
+        if (decisions.riverTiles.size() > Decisions.LIMIT) {
+            decisions.riverTiles.clear();
+        }
+        return once(decisions.riverTiles, key, () -> LavaRivers.tile(this, ti, tj));
+    }
+
+    /** The value of a per-key future, computed by the first thread that asks (outside the map's locks). */
+    private static <T> T once(Map<Long, java.util.concurrent.FutureTask<T>> map, long key, java.util.concurrent.Callable<T> work) {
+        java.util.concurrent.FutureTask<T> task = map.get(key);
+        if (task == null) {
+            task = map.computeIfAbsent(key, k -> new java.util.concurrent.FutureTask<>(work));
+        }
+        task.run();
+        try {
+            return task.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        } catch (java.util.concurrent.ExecutionException e) {
+            throw new IllegalStateException(e.getCause());
+        }
+    }
+
+    /** The nearest river around (x, z) ({@link LavaRivers#nearest}); false if none is near. */
+    boolean nearestRiver(double x, double z, double[] out) {
+        LavaRivers.Tile tile = tileFor(x, z);
+        return tile.segments().length > 0 && LavaRivers.nearest(tile, x, z, out);
+    }
+
+    /** The river tile around (x, z), remembered per thread. */
+    LavaRivers.Tile tileFor(double x, double z) {
+        int ti = Math.floorDiv(Mth.floor(x), LavaRivers.TILE);
+        int tj = Math.floorDiv(Mth.floor(z), LavaRivers.TILE);
+        RiverTile cached = riverTile.get();
+        if (!cached.filled || cached.ti != ti || cached.tj != tj) {
+            cached.tile = riverTileAt(ti, tj);
+            cached.ti = ti;
+            cached.tj = tj;
+            cached.filled = true;
+        }
+        return cached.tile;
+    }
+
+    /** 0..1: where cinder cone fields lie (clusters of a few kilometres). */
+    double cinderFieldAt(double x, double z) {
+        return VolcanicMath.smoothstep(0.08, 0.3, noise(warp, x * 0.3 + 7000.5, z * 0.3 - 7000.5));
+    }
+
+    /** Whether a cinder cone of foot radius {@code radius} may stand at (x, z): clear of volcanoes, rivers and rifts. */
+    boolean cinderMayStand(double x, double z, double radius) {
         int size = settings.cellSize();
-        long cell = SeededHash.hash(hash, i, j, CELL_SALT);
-        double cx = i * size + CELL_MARGIN + SeededHash.unit(cell, 0) * (size - 2.0 * CELL_MARGIN);
-        double cz = j * size + CELL_MARGIN + SeededHash.unit(cell, 1) * (size - 2.0 * CELL_MARGIN);
-        RingLayout ringLayout = layout.get();
-        List<Integer> radii = ringLayout.settings().ringOuterRadii();
-        double half = ringLayout.settings().transitionWidth() / 2.0;
-        double inner = radii.get(1) + half;
-        double outer = radii.get(2) - half;
-        double distance = ringLayout.effectiveDistance(cx, cz);
-        if (distance < inner || distance > outer) {
-            return null;
-        }
-        Regions r = regions(cx, cz);
-        double behindZone = distance - inner;
-        boolean band = behindZone >= BAND_START && behindZone <= BAND_END;
-        double open = 1.0 - Math.max(r.seabed(), r.titan());
-        double chance = (0.07 + 0.78 * r.peaks() + 0.2 * r.flows() + 0.08 * r.sulfur()) * open;
-        if (band) {
-            chance = Math.max(chance, 0.8 * (1.0 - r.seabed()));
-        }
-        if (SeededHash.unit(cell, 2) >= chance) {
-            return null;
-        }
-        double greatChance = band ? 0.5 : 0.03 + 0.3 * r.peaks();
-        double calderaChance = (1.0 - greatChance) * (0.22 + 0.3 * (1.0 - r.hot()));
-        double kindRoll = SeededHash.unit(cell, 3);
-        Volcano.Kind kind = kindRoll < greatChance ? Volcano.Kind.GREAT
-                : kindRoll < greatChance + calderaChance ? Volcano.Kind.CALDERA : Volcano.Kind.CONE;
-        double plainHere = plain(cx, cz, r);
-        double u4 = SeededHash.unit(cell, 4);
-        double u5 = SeededHash.unit(cell, 5);
-        double u6 = SeededHash.unit(cell, 6);
-        double u7 = SeededHash.unit(cell, 7);
-        double u8 = SeededHash.unit(cell, 8);
-        double u9 = SeededHash.unit(cell, 9);
-        double rim;
-        double radius;
-        double crest;
-        double floorRadius;
-        double floor;
-        double p;
-        double q;
-        boolean dormant;
-        switch (kind) {
-            case GREAT -> {
-                rim = settings.greatMinY() + u4 * (settings.greatMaxY() - settings.greatMinY());
-                radius = (rim - plainHere) * (1.25 + 0.3 * u5);
-                crest = 45.0 + 25.0 * u6;
-                floor = rim - (22.0 + 18.0 * u7);
-                p = 1.6 + 0.3 * u9;
-                q = 1.5 + 0.5 * u5;
-                floorRadius = wallFoot(crest, rim - floor, q);
-                dormant = false;
-            }
-            case CONE -> {
-                // Higher cones where it is hottest.
-                double lift = Math.min(1.0, u4 * (0.6 + 0.5 * r.peaks()));
-                rim = settings.coneMinY() + lift * (settings.coneMaxY() - settings.coneMinY());
-                // On a high plain (hills and ridges stack up) a cone still rises well above it.
-                rim = Math.max(rim, plainHere + MIN_CONE_LIFT);
-                radius = (rim - plainHere) * (1.35 + 0.45 * u5);
-                crest = 16.0 + 0.13 * radius + 8.0 * u6;
-                dormant = u8 < 0.3;
-                double depth = 20.0 + 12.0 * u7 + (dormant ? 10.0 : 0.0);
-                floor = rim - depth;
-                p = 1.5 + 0.5 * u9;
-                q = 1.4 + 0.6 * u5;
-                floorRadius = wallFoot(crest, depth, q);
-            }
-            default -> {
-                rim = plainHere + 22.0 + 22.0 * u4;
-                crest = 65.0 + 55.0 * u5;
-                radius = crest + 50.0 + 30.0 * u6;
-                dormant = u8 < 0.45;
-                floor = dormant ? plainHere - 10.0 + 4.0 * u7 : plainHere - 4.0 + 8.0 * u7;
-                floor = Math.min(floor, rim - 20.0);
-                p = 1.4 + 0.4 * u9;
-                q = 1.3 + 0.5 * u7;
-                floorRadius = wallFoot(crest, rim - floor, q);
+        int ci = Math.floorDiv(Mth.floor(x), size);
+        int cj = Math.floorDiv(Mth.floor(z), size);
+        for (int di = -1; di <= 1; di++) {
+            for (int dj = -1; dj <= 1; dj++) {
+                Volcano v = volcano(ci + di, cj + dj);
+                if (v != null) {
+                    double dx = x - v.x();
+                    double dz = z - v.z();
+                    if (Math.sqrt(dx * dx + dz * dz) < v.radius() + radius + 24.0) {
+                        return false;
+                    }
+                }
             }
         }
-        // A column only looks at the 3 x 3 cells around it: the foot (plus the warp of the outline) must stay inside.
-        // The flank needs some width outside the crest (surface() divides by radius - crest).
-        radius = Math.max(Math.min(radius, MAX_RADIUS_SHARE * size), crest + MIN_FLANK);
-        double allowance = kind == Volcano.Kind.GREAT ? 0.4 : 1.0;
-        if (behindZone < allowance * radius || outer - distance < 1.05 * radius) {
-            return null;
+        double[] river = new double[3];
+        for (int k = 0; k <= 8; k++) {
+            double px = k == 8 ? x : x + Math.cos(k * Math.PI / 4.0) * radius;
+            double pz = k == 8 ? z : z + Math.sin(k * Math.PI / 4.0) * radius;
+            if (nearestRiver(px, pz, river) && (river[0] - 1.0) * river[2] < 16.0) {
+                return false;
+            }
         }
-        double lift = rim - plainHere;
-        double rimA2 = 1.0 + 0.035 * lift;
-        double rimA3 = 0.5 + 0.025 * lift;
-        double rimLow = rim - rimA2 - rimA3;
-        double lake = Double.NaN;
-        if (!dormant) {
-            lake = Math.min(floor + Math.min(7.0, rim - floor - 13.0), rimLow - 6.0);
+        Ring3Relief.Detail detail = new Ring3Relief.Detail();
+        return relief.rift(x, z, 40.0 * noise(warp, x, z), detail) < 2.0;
+    }
+
+    /** Whether no volcano's foot comes within {@code distance} of (x, z) (beyond its radius). */
+    boolean clearOfVolcanoes(double x, double z, double distance) {
+        int size = settings.cellSize();
+        int ci = Math.floorDiv(Mth.floor(x), size);
+        int cj = Math.floorDiv(Mth.floor(z), size);
+        int reach = 1 + (int) Math.ceil(distance / size);
+        for (int di = -reach; di <= reach; di++) {
+            for (int dj = -reach; dj <= reach; dj++) {
+                Volcano v = volcano(ci + di, cj + dj);
+                if (v != null && Math.hypot(x - v.x(), z - v.z()) < v.radius() + distance) {
+                    return false;
+                }
+            }
         }
-        int gullies = 7 + (int) Math.round(radius / 30.0);
-        double gullyDepth = kind == Volcano.Kind.CALDERA ? 0.08 : 0.16 + 0.1 * u6;
-        long shape = SeededHash.hash(hash, i, j, CELL_SALT + 1);
-        List<Volcano.Island> islands = !dormant && rim <= settings.islandMaxY() - 36.0
-                && SeededHash.unit(shape, 0) < settings.islandChance()
-                ? cluster(shape, cx, cz, floorRadius, rim + 30.0) : List.of();
-        return new Volcano(cx, cz, kind, plainHere, rim, radius, crest, floorRadius, floor, p, q, dormant, lake,
-                rimA2, SeededHash.unit(shape, 1) * Math.PI * 2.0, rimA3, SeededHash.unit(shape, 2) * Math.PI * 2.0,
-                gullies, SeededHash.unit(shape, 3) * Math.PI * 2.0, gullyDepth, 0.08 * radius, islands);
+        return true;
+    }
+
+    /** Whether a shape of {@code radius} at (x, z) comes within 12 blocks of an abyss (in the 3 × 3 abyss cells around it). */
+    boolean nearAbyss(double x, double z, double radius) {
+        int ci = Math.floorDiv(Mth.floor(x), Landmarks.ABYSS_CELL);
+        int cj = Math.floorDiv(Mth.floor(z), Landmarks.ABYSS_CELL);
+        for (int di = -1; di <= 1; di++) {
+            for (int dj = -1; dj <= 1; dj++) {
+                Landmarks.Abyss a = abyss(ci + di, cj + dj);
+                if (a != null && Math.abs(a.along(x, z)) <= a.length() * 0.5 + radius + 12.0
+                        && Math.abs(a.normal(x, z)) <= a.width() + radius + 12.0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Whether a lava river's edge comes within {@code distance} of (x, z). */
+    boolean riverWithin(double x, double z, double distance) {
+        double[] river = new double[3];
+        return nearestRiver(x, z, river) && (river[0] - 1.0) * river[2] < distance;
+    }
+
+    /** The cut of a rift valley at (x, z) (blocks, already weighted by where rifts may lie). */
+    double riftCut(double x, double z, Ring3Relief.Detail detail) {
+        Regions r = regions(x, z);
+        if (r.riftOpen() <= 0.0) {
+            return 0.0;
+        }
+        return r.riftOpen() * relief.rift(x, z, 40.0 * noise(warp, x, z), detail);
+    }
+
+    /** A pure decision for one grid cell (a static method of the shape's class). */
+    @FunctionalInterface
+    interface CellDecision<T> {
+        @Nullable
+        T decide(VolcanicField field, int i, int j);
     }
 
     /**
-     * Radius of the crater floor: the wall of height {@code wall} gets the width for a slope of about 1.8 under the
-     * rim (steep, but never a knife edge), and the floor keeps at least a third of the crest radius.
+     * The decision of cell (i, j): from the per-thread memo of the last cell (most columns ask for the same one), else
+     * from the per-world map, else made now.
      */
-    private static double wallFoot(double crest, double wall, double q) {
-        return Math.max(crest / 3.0, crest - q * wall / 1.8);
+    @Nullable
+    private <T> T cell(ThreadOwned<CellMemo<T>> memo, Map<Long, Optional<T>> map, int i, int j, CellDecision<T> decision) {
+        CellMemo<T> last = memo.get();
+        if (last.filled && last.i == i && last.j == j) {
+            return last.value;
+        }
+        long key = (long) i << 32 | j & 0xFFFFFFFFL;
+        Optional<T> known = map.get(key);
+        if (known == null) {
+            known = Optional.ofNullable(decision.decide(this, i, j));
+            decisions.remember(map, key, known);
+        }
+        last.i = i;
+        last.j = j;
+        last.value = known.orElse(null);
+        last.filled = true;
+        return last.value;
     }
 
-    /** A cluster of 1–4 islands around (x, z) within {@code spread}, the main one with its top at or above {@code lowestTop}. */
-    private List<Volcano.Island> cluster(long seed, double x, double z, double spread, double lowestTop) {
-        double maxTop = settings.islandMaxY() - 6.0;
-        double minTop = Math.max(settings.islandMinY() + 4.0, lowestTop);
-        if (minTop > maxTop) {
-            return List.of();
-        }
-        double roll = SeededHash.unit(seed, 10);
-        int count = roll < 0.25 ? 1 : roll < 0.6 ? 2 : roll < 0.85 ? 3 : 4;
-        double baseTop = minTop + SeededHash.unit(seed, 11) * (maxTop - minTop);
-        double angle0 = SeededHash.unit(seed, 12) * Math.PI * 2.0;
-        double ox = x + Math.cos(angle0) * spread * 0.3 * SeededHash.unit(seed, 13);
-        double oz = z + Math.sin(angle0) * spread * 0.3 * SeededHash.unit(seed, 13);
-        List<Volcano.Island> islands = new ArrayList<>(count);
-        double mainA = 9.0 + 6.0 * SeededHash.unit(seed, 14);
-        for (int k = 0; k < count; k++) {
-            int b = 20 + 8 * k;
-            double a = k == 0 ? mainA : 5.0 + 5.0 * SeededHash.unit(seed, b);
-            double ix = ox;
-            double iz = oz;
-            double top = baseTop;
-            if (k > 0) {
-                double angle = SeededHash.unit(seed, b + 1) * Math.PI * 2.0;
-                double distance = mainA + 0.6 * a + 4.0 + 10.0 * SeededHash.unit(seed, b + 2);
-                ix += Math.cos(angle) * distance;
-                iz += Math.sin(angle) * distance;
-                top = Mth.clamp(baseTop - 9.0 + 18.0 * SeededHash.unit(seed, b + 3), settings.islandMinY() + 2.0, settings.islandMaxY());
-                top = Math.max(top, lowestTop - 6.0);
-            }
-            double stretch = 1.0 + 0.5 * SeededHash.unit(seed, b + 4);
-            double thickness = Math.min(28.0, a * (1.4 + 0.8 * SeededHash.unit(seed, b + 5)));
-            islands.add(new Volcano.Island(ix, iz, a, stretch, SeededHash.unit(seed, b + 6) * Math.PI, top, thickness));
-        }
-        return islands;
+    Landmarks.Needle needle(int i, int j) {
+        return cell(needleMemo, decisions.needles, i, j, Landmarks::needle);
     }
 
-    /** Island cluster above a lava channel in island cell (i, j), or none. Pure. */
-    List<Volcano.Island> channelCluster(int i, int j) {
-        long cell = SeededHash.hash(hash, i, j, ISLAND_CELL_SALT);
-        if (SeededHash.unit(cell, 0) >= settings.islandChance() * 0.6) {
-            return List.of();
+    Landmarks.Arch riftArch(int i, int j) {
+        return cell(riftArchMemo, decisions.riftArches, i, j, Landmarks::riftArch);
+    }
+
+    Landmarks.FloatingVolcano floating(int i, int j) {
+        return cell(floatingMemo, decisions.floating, i, j, Landmarks::floating);
+    }
+
+    private Landmarks.Abyss abyss(int i, int j) {
+        return cell(abyssMemo, decisions.abysses, i, j, Landmarks::abyss);
+    }
+
+    /** The floating volcano of cell (i, j), or null (for tests and the landmark list). */
+    Landmarks.FloatingVolcano floatingVolcano(int i, int j) {
+        return floating(i, j);
+    }
+
+    /** The abyss of cell (i, j), or null (for tests and the landmark list). */
+    Landmarks.Abyss abyssAt(int i, int j) {
+        return abyss(i, j);
+    }
+
+    CinderCones.Cone cinder(int i, int j) {
+        long key = (long) i << 32 | j & 0xFFFFFFFFL;
+        Optional<CinderCones.Cone> known = decisions.cinders.get(key);
+        if (known == null) {
+            known = Optional.ofNullable(CinderCones.place(this, i, j));
+            decisions.remember(decisions.cinders, key, known);
         }
-        for (int k = 0; k < ISLAND_CANDIDATES; k++) {
-            double x = i * ISLAND_CELL + 64.0 + SeededHash.unit(cell, 1 + 2 * k) * (ISLAND_CELL - 128.0);
-            double z = j * ISLAND_CELL + 64.0 + SeededHash.unit(cell, 2 + 2 * k) * (ISLAND_CELL - 128.0);
-            Column probe = new Column();
-            fill(probe, Mth.floor(x), Mth.floor(z), false);
-            if (probe.channel >= 0.6) {
-                return cluster(SeededHash.mix(cell + k), x, z, 10.0, probe.preHeight + 60.0);
-            }
-        }
-        return List.of();
+        return known.orElse(null);
+    }
+
+    TitanBones.Rib rib(int i, int j) {
+        return cell(ribMemo, decisions.ribs, i, j, TitanBones::rib);
+    }
+
+    TitanBones.Cage cage(int i, int j) {
+        return cell(cageMemo, decisions.cages, i, j, TitanBones::cage);
     }
 
     // ---------------------------------------------------------------- columns
 
+    /** What a column fill computes: everything, the height (no islands or thin shapes), or the ground a river follows. */
+    enum Mode {
+        FULL, HEIGHT, TRACE
+    }
+
     private double coreHeightUncached(double x, double z) {
-        Column column = new Column();
-        fill(column, Mth.floor(x), Mth.floor(z), false);
+        Column column = heightScratch.get();
+        fill(column, Mth.floor(x), Mth.floor(z), Mode.HEIGHT);
         return column.height;
     }
 
     private void fill(Column column, int x, int z) {
-        fill(column, x, z, true);
+        fill(column, x, z, Mode.FULL);
     }
 
-    /** Computes a column; {@code full} also gathers the islands (which need other columns' channels). */
-    void fill(Column c, int x, int z, boolean full) {
+    /** Computes a column (see {@link Mode}). */
+    void fill(Column c, int x, int z, Mode mode) {
         double px = x + 0.5;
         double pz = z + 0.5;
         Regions r = regions(px, pz);
         double plain = plain(px, pz, r);
 
         c.reset();
+        boolean full = mode == Mode.FULL;
         double warpX = noise(warp, px, pz);
         double warpZ = noise(warp, px + WARP_OFFSET, pz - WARP_OFFSET);
         double raise = 0.0;
@@ -588,7 +795,11 @@ public final class VolcanicField implements DensityFunction {
                     continue;
                 }
                 double angle = Math.atan2(dz, dx);
-                double delta = v.surface(dist, angle, plain, 3.5 * warpZ) - plain;
+                // Towards the crest the volcano stands on the plain at its centre, so the rim (and a lava lake) stays
+                // level whatever hills or ridges run under the flank.
+                double anchor = 1.0 - VolcanicMath.smoothstep(v.crest(), v.radius(), dist);
+                double footing = plain + anchor * (v.plain() - plain);
+                double delta = v.surface(dist, angle, footing, 3.5 * warpZ) - plain;
                 if (delta > 0.0) {
                     // Rounded where two flanks meet, but the rounding shrinks to nothing at a foot (delta -> 0), so a
                     // volcano's edge leaves no step.
@@ -614,45 +825,186 @@ public final class VolcanicField implements DensityFunction {
                 }
             }
         }
-        double preHeight = plain + raise + sink;
-        c.preHeight = preHeight;
-        c.rise = raise;
 
-        // Lava channels: a noise network in the warm bands, away from volcanoes, the seabed and the titan fields.
-        double along = Math.abs(noise(channel, px, pz)) / settings.channelWidth();
-        double mask = VolcanicMath.smoothstep(settings.cool() - 0.01, settings.cool() + 0.06, r.heat())
-                * (0.45 + 0.55 * VolcanicMath.smoothstep(-0.04, 0.04, r.ground()))
-                * (1.0 - VolcanicMath.smoothstep(0.0, 0.15, Math.max(r.seabed(), r.titan()))) * (1.0 - influence) * r.core();
-        // The lava level follows only the broad swell of the plain, so it steps down rarely; the bed is cut to below it,
-        // through hills as a gorge. The swell minus the largest dip of the waves keeps the banks above the lava.
-        int level = Mth.floor(settings.plainY() + settings.plainAmp() * noise(plains, px, pz)
-                - 1.8 * settings.rollingAmp() - CHANNEL_BANK);
-        double bed = level - CHANNEL_DEPTH;
-        // The bed reaches its full depth over a short stretch of the mask, so a lava river ends cleanly instead of in
-        // a fringe of one-block puddles.
-        double depth = VolcanicMath.smoothstep(0.25, 0.5, mask);
-        double profile = along >= 1.0 ? 0.0 : 1.0 - VolcanicMath.smoothstep(0.3, 1.0, along);
-        double cut = depth * profile * Math.max(0.0, preHeight - bed);
-        c.channel = depth * profile;
-        c.height = preHeight - cut;
-        // The surface's lava banks: the stretch where the channel holds lava (the rule below), up to its edge at 1.3.
-        if (depth >= 0.85 && preHeight >= level + 2.0) {
-            c.lavaBank = Mth.clamp(1.0 - along / 1.3, 0.0, 1.0);
+        // The landforms, faded out on volcano flanks.
+        double keep = 1.0 - influence;
+        double detail = 0.0;
+        double cliff = 0.0;
+        double gullyFloor = 0.0;
+        double riftStrength = 0.0;
+        double plateau = 0.0;
+        double tube = 0.0;
+        Ring3Relief.Detail d = c.scratch;
+        if (keep > 0.0 && r.fade() > 0.0) {
+            if (r.ashenS() > 0.0) {
+                relief.dunes(px, pz, d);
+                detail += r.ashenS() * d.height;
+                cliff = Math.max(cliff, 0.9 * r.ashenS() * d.cliff);
+                gullyFloor = r.ashenS() * d.floor;
+            }
+            if (r.sulfurS() > 0.0) {
+                long salt = salt();
+                detail += r.sulfurS() * (relief.terraces(px, pz) + CellShapes.mound(salt, px, pz) - CellShapes.sinkhole(salt, px, pz));
+            }
+            if (r.flowsS() > 0.0) {
+                double level = relief.plateauLevel(px, pz);
+                plateau = r.flowsS() * Ring3Relief.PLATEAU_STEP * level;
+                detail += plateau;
+                double f = level - Math.floor(level);
+                cliff = Math.max(cliff, r.flowsS() * VolcanicMath.smoothstep(0.0, 0.12, f) * (1.0 - VolcanicMath.smoothstep(0.88, 1.0, f)));
+                d.reset();
+                tube = r.flowsS() > 0.3 ? relief.lavaTube(px, pz, d) : 0.0;
+                if (tube > 0.0) {
+                    double wall = VolcanicMath.smoothstep(0.0, 0.45, tube);
+                    detail -= r.flowsS() * 12.0 * wall * d.floor;
+                    cliff = Math.max(cliff, d.floor * (1.0 - wall) * 2.0 * r.flowsS());
+                    if (d.floor >= 0.5) {
+                        tube = 0.0; // collapsed: a trench, no tunnel
+                    }
+                }
+            }
+            if (r.riftOpen() > 0.0) {
+                double cut = relief.rift(px, pz, 40.0 * warpX, d);
+                riftStrength = r.riftOpen() * d.floor;
+                if (cut > 0.0) {
+                    detail -= r.riftOpen() * cut;
+                    cliff = Math.max(cliff, r.riftOpen() * d.cliff);
+                }
+            }
         }
-        if (depth >= 0.85 && along < 1.3 && preHeight >= level + 2.0 && !c.hasLava()) {
-            c.lavaTop = level;
-            c.lavaBottom = level - (int) CHANNEL_DEPTH - 3;
+        double cinder = 0.0;
+        if (mode != Mode.TRACE && r.core() > 0.0) {
+            CinderCones.Cone[] cones = cinderNeighbourhood.get().around(this, Math.floorDiv(x, CinderCones.CELL),
+                    Math.floorDiv(z, CinderCones.CELL)).cones.clone();
+            for (CinderCones.Cone cone : cones) {
+                if (cone == null) {
+                    continue;
+                }
+                double dx = px - cone.x();
+                double dz = pz - cone.z();
+                if (Math.abs(dx) >= cone.reach() || Math.abs(dz) >= cone.reach()) {
+                    continue;
+                }
+                double h = cone.at(Math.sqrt(dx * dx + dz * dz));
+                if (h > cinder) {
+                    cinder = h;
+                }
+            }
+            cinder *= keep;
         }
-        if (depth > 0.0 && along < 1.8) {
-            c.guardBottom = Math.min(c.guardBottom, level - 12);
-            c.guardTop = Math.max(c.guardTop, level + 4);
+        // Micro relief (39d): a fine 2D wobble that breaks the straight one-block contour lines of smooth slopes, much
+        // cheaper than 3D crags on the whole plain.
+        double micro = r.fade() > 0.0 ? MICRO_RELIEF * r.fade() * keep * relief.microRelief(px, pz) : 0.0;
+        double preHeight = plain + raise + sink + keep * detail + cinder + micro;
+        c.rise = raise + cinder;
+        c.cliff = Math.min(1.0, keep * cliff);
+        Landmarks.Abyss abyss = r.core() > 0.0
+                ? abyss(Math.floorDiv(x, Landmarks.ABYSS_CELL), Math.floorDiv(z, Landmarks.ABYSS_CELL)) : null;
+        double chasm = abyss == null ? 2.0 : abyss.across(px, pz);
+        if (chasm < 1.0) {
+            // Stepped walls almost straight down to a lava sea near Y 0.
+            double wall = VolcanicMath.stair(VolcanicMath.smoothstep(0.55, 1.0, chasm), 4, 0.3);
+            preHeight = Math.min(preHeight, Landmarks.ABYSS_FLOOR + wall * (preHeight - Landmarks.ABYSS_FLOOR));
+            c.cliff = Math.max(c.cliff, chasm > 0.5 ? 1.0 : 0.0);
+            c.rise = 0.0;
         }
+        if (mode == Mode.TRACE) {
+            c.preHeight = preHeight;
+            c.height = preHeight;
+            return;
+        }
+
+        // The abyss's lava sea comes first; a river pouring into it ends there.
+        if (chasm < 1.0 && !c.hasLava()) {
+            c.lavaTop = Landmarks.ABYSS_LAVA;
+            c.lavaBottom = Landmarks.ABYSS_FLOOR - 12;
+        }
+
+        // Lava rivers.
+        double height = preHeight;
+        double riverNear = 0.0;
+        if (r.core() > 0.0) {
+            double[] river = c.river;
+            if (c.calderaMask <= 0.0 && nearestRiver(px, pz, river)) {
+                double along = river[0];
+                int level = Mth.floor(river[1]);
+                double half = river[2];
+                // Levees: lower ground beside a river is raised to its banks, so the lava never stands against air.
+                double levee = 1.0 - VolcanicMath.smoothstep(1.3, 3.0, along);
+                if (levee > 0.0 && preHeight < level + CHANNEL_BANK) {
+                    preHeight += levee * (level + CHANNEL_BANK - preHeight);
+                }
+                double profile = along >= 1.0 ? 0.0 : 1.0 - VolcanicMath.smoothstep(0.55, 1.0, along);
+                double bed = level - CHANNEL_DEPTH;
+                height = preHeight - profile * Math.max(0.0, preHeight - bed);
+                c.channel = profile;
+                riverNear = 1.0 - VolcanicMath.smoothstep(2.5, 4.0, along);
+                if (along < 1.0 + BANK_BLOCKS / half) {
+                    c.lavaBank = along < 1.0 ? 1.0 : Mth.clamp(1.0 - (along - 1.0) * half / BANK_BLOCKS, 0.0, 1.0);
+                }
+                if (along < 1.0 && !c.hasLava()) {
+                    c.lavaTop = level;
+                    c.lavaBottom = level - CHANNEL_DEPTH - 3;
+                }
+                if (along < 1.8) {
+                    c.guardBottom = Math.min(c.guardBottom, level - 12);
+                    c.guardTop = Math.max(c.guardTop, level + 4);
+                }
+            }
+        }
+        if (chasm < 1.3) {
+            c.guardBottom = Math.min(c.guardBottom, Landmarks.ABYSS_FLOOR - 14);
+            c.guardTop = Math.max(c.guardTop, Landmarks.ABYSS_LAVA + 6);
+        }
+        c.preHeight = preHeight;
+        c.height = height;
+        c.floorMargin = floorMargin(r, keep, riftStrength, chasm, height, riverNear);
+        c.roughness = Math.max(c.roughness, 0.9 * c.cliff);
+        if (cinder > 4.0) {
+            c.roughness = Math.max(c.roughness, 0.5 * (1.0 - riverNear));
+        }
+        if (c.roughness < MIN_ROUGHNESS) {
+            // The crags (a 3D noise per cell corner) are only worth their cost where they show: 0 skips them entirely.
+            c.roughness = 0.0;
+        }
+
         if (full) {
-            Neighbourhood islandCells = channelNeighbourhood.get().aroundIslands(this, Math.floorDiv(x, ISLAND_CELL), Math.floorDiv(z, ISLAND_CELL));
+            if (keep > 0.0 && r.fade() > 0.0) {
+                ThinShapes.thinShapes(this, c, px, pz, r, keep, gullyFloor, plateau, tube, height);
+            }
+            ThinShapes.landmarks(this, c, x, z, px, pz, r, height, around, abyss, chasm, warpX);
+            Neighbourhood islandCells = channelNeighbourhood.get().aroundIslands(this, Math.floorDiv(x, VolcanoPlacement.ISLAND_CELL), Math.floorDiv(z, VolcanoPlacement.ISLAND_CELL));
             for (List<Volcano.Island> cell : islandCells.islands) {
                 addIslands(c, cell, px, pz, warpX);
             }
         }
+    }
+
+    /**
+     * How far the surface may drop within ~18 blocks of a column through a cut narrower than the sampling of
+     * {@link #initialHeight}: the abyss down to its floor, rift valleys, sinkholes, lava tubes and plateau risers,
+     * gullies between the dunes, river beds.
+     */
+    private static double floorMargin(Regions r, double keep, double riftStrength, double chasm, double height, double riverNear) {
+        double margin = riverNear > 0.0 ? 4.0 : 0.0;
+        if (chasm < 1.6) {
+            margin = Math.max(margin, height - Landmarks.ABYSS_FLOOR + 2.0);
+        }
+        if (keep > 0.0) {
+            if (riftStrength > 0.0) {
+                margin = Math.max(margin, (20.0 + 20.0 * riftStrength) * riftStrength + 2.0);
+            }
+            if (r.sulfurS() > 0.0) {
+                margin = Math.max(margin, 17.0);
+            }
+            if (r.flowsS() > 0.0) {
+                margin = Math.max(margin, 14.0);
+            }
+            if (r.ashenS() > 0.0) {
+                margin = Math.max(margin, 14.0);
+            }
+        }
+        return margin;
     }
 
     private void addIslands(Column c, List<Volcano.Island> islands, double x, double z, double warpX) {
@@ -700,10 +1052,18 @@ public final class VolcanicField implements DensityFunction {
         double dormant;
         double channel;
         double islandMask;
-        /** Height of the volcanoes above the plain (before the craters sink in), in blocks. */
+        /** Height of the volcanoes (and cinder cones) above the plain (before the craters sink in), in blocks. */
         double rise;
-        /** 0..1: a lava channel that holds lava, 1 in the middle, 0 from 1.3 half widths out (the banks). */
+        /** 0..1: a lava river, 1 over the lava, falling to 0 over {@link #BANK_BLOCKS} beside it (the banks). */
         double lavaBank;
+        /** 0..1: a cliff or steep wall of a landform (plateau risers, rift flanks, gully walls, sea stacks). */
+        double cliff;
+        /** How far the surface may drop near this column through a narrow cut (for {@link #initialHeight}). */
+        double floorMargin;
+        /** The kind of thin solid standing in the column ({@link Landmarks#KIND_BONE} …), 0 for none. */
+        double solidKind;
+        /** A lava spring (a source that flows) at this Y, or {@link Integer#MIN_VALUE}. */
+        int springY;
         /** Lava fills open space from {@link #lavaBottom} up to, not including, {@link #lavaTop}. */
         int lavaTop;
         int lavaBottom;
@@ -712,6 +1072,16 @@ public final class VolcanicField implements DensityFunction {
         int islandCount;
         final double[] islandTop = new double[MAX_ISLANDS];
         final double[] islandBottom = new double[MAX_ISLANDS];
+        int solidCount;
+        final int[] solidTop = new int[MAX_SOLIDS];
+        final int[] solidBottom = new int[MAX_SOLIDS];
+        /** A carved opening (lava tube) from {@link #voidBottom} to {@link #voidTop}, inclusive. */
+        int voidBottom;
+        int voidTop;
+        // Scratch space of the fill (no allocation per column).
+        final Ring3Relief.Detail scratch = new Ring3Relief.Detail();
+        final double[] river = new double[3];
+        final double[] span = new double[3];
 
         void reset() {
             height = 0.0;
@@ -723,11 +1093,18 @@ public final class VolcanicField implements DensityFunction {
             islandMask = 0.0;
             rise = 0.0;
             lavaBank = 0.0;
+            cliff = 0.0;
+            solidKind = 0.0;
+            floorMargin = 0.0;
+            springY = Integer.MIN_VALUE;
             lavaTop = Integer.MIN_VALUE;
             lavaBottom = Integer.MIN_VALUE;
             guardBottom = Integer.MAX_VALUE;
             guardTop = Integer.MIN_VALUE;
             islandCount = 0;
+            solidCount = 0;
+            voidBottom = Integer.MAX_VALUE;
+            voidTop = Integer.MIN_VALUE;
         }
 
         void addIsland(Volcano.Island island, double x, double z, double warp) {
@@ -735,10 +1112,55 @@ public final class VolcanicField implements DensityFunction {
             if (d >= 1.0 || islandCount == MAX_ISLANDS) {
                 return;
             }
-            islandTop[islandCount] = island.topAt(d);
-            islandBottom[islandCount] = island.bottomAt(d);
+            addIslandInterval(island.topAt(d), island.bottomAt(d), d);
+            if (island.springs() > 0 && island.springAt(Mth.floor(x), Mth.floor(z))) {
+                // The source sits on the island's top; it is scheduled to flow (RingAquifer) and pours off the edge.
+                setSpring(Mth.floor(island.topAt(d)) + 1);
+            }
+        }
+
+        /**
+         * A lava spring at {@code y}: the islands are interpolated (their top may lie a block off the exact shape), so the
+         * spring stands on a thin solid of its own with a thin opening at its block, which the aquifer then fills.
+         */
+        void setSpring(int y) {
+            springY = y;
+            addSolid(y - 1, y - 1, 0);
+            voidBottom = y;
+            voidTop = y;
+        }
+
+        void addIslandInterval(double top, double bottom, double d) {
+            if (islandCount == MAX_ISLANDS) {
+                return;
+            }
+            islandTop[islandCount] = top;
+            islandBottom[islandCount] = bottom;
             islandCount++;
             islandMask = Math.max(islandMask, Mth.clamp((1.0 - d) * 4.0, 0.0, 1.0));
+        }
+
+        void addSolid(double bottom, double top) {
+            addSolid(bottom, top, 0);
+        }
+
+        /**
+         * A thin solid from {@code bottom} to {@code top}; {@code kind} (bone, obsidian, basalt) colours its surface, but
+         * only where it stands on the ground: the surface rules see the whole column, so under an arch the ground keeps
+         * its own surface.
+         */
+        void addSolid(double bottom, double top, int kind) {
+            // Thin shapes bypass the stack's top slide (300 → 316): keep them below it.
+            top = Math.min(top, THIN_TOP);
+            if (solidCount == MAX_SOLIDS || top < bottom) {
+                return;
+            }
+            solidBottom[solidCount] = Mth.floor(bottom);
+            solidTop[solidCount] = Mth.floor(top);
+            solidCount++;
+            if (bottom <= height + 1.0) {
+                solidKind = Math.max(solidKind, kind);
+            }
         }
 
         public double height() {
@@ -754,13 +1176,43 @@ public final class VolcanicField implements DensityFunction {
             return lavaTop;
         }
 
+        /** Bottom of the lava (inclusive), or {@link Integer#MIN_VALUE} without lava. */
+        public int lavaBottom() {
+            return lavaBottom;
+        }
+
+        /** The Y of the column's lava spring (a source that flows, 39d), or {@link Integer#MIN_VALUE}. */
+        public int springY() {
+            return springY;
+        }
+
         boolean hasLava() {
             return lavaTop != Integer.MIN_VALUE;
         }
 
-        /** Whether lava fills open space at {@code y} in this column. */
+        /** Whether a floating island (or the floating volcano) is solid at {@code y} in this column. */
+        public boolean islandAt(int y) {
+            for (int i = 0; i < islandCount; i++) {
+                if (y >= islandBottom[i] && y <= islandTop[i] - 1.0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /** Whether lava fills open space at {@code y} in this column (a lake, river, abyss sea, or a spring). */
         public boolean lavaAt(int y) {
-            return y < lavaTop && y >= lavaBottom;
+            return lavaAt(y, lavaTop, lavaBottom, springY);
+        }
+
+        /** The lava rule of a column from its bounds (shared with the aquifer's per-column table). */
+        public static boolean lavaAt(int y, int lavaTop, int lavaBottom, int springY) {
+            return y < lavaTop && y >= lavaBottom || y == springY;
+        }
+
+        /** Whether the lava at {@code y} is a spring: a source that is scheduled to flow (39d). */
+        public boolean springAt(int y) {
+            return y == springY;
         }
     }
 
@@ -775,7 +1227,7 @@ public final class VolcanicField implements DensityFunction {
         return known.orElse(null);
     }
 
-    private List<Volcano.Island> channelIslands(int i, int j) {
+    List<Volcano.Island> channelIslands(int i, int j) {
         long key = (long) i << 32 | j & 0xFFFFFFFFL;
         List<Volcano.Island> known = decisions.channelIslands.get(key);
         if (known == null) {
@@ -785,57 +1237,5 @@ public final class VolcanicField implements DensityFunction {
         return known;
     }
 
-    /**
-     * Per-cell decisions (volcanoes, island cells, island checks): pure functions of the seed and the cell, shared by
-     * all copies of one wired field (the noise chunk makes a copy per chunk), so they are made once per world, not once
-     * per chunk. Only a cache; cleared when it grows past {@link #LIMIT} entries.
-     */
-    static final class Decisions {
-        private static final int LIMIT = 100_000;
-        final Map<Long, Optional<Volcano>> volcanoes = new ConcurrentHashMap<>();
-        final Map<Long, List<Volcano.Island>> channelIslands = new ConcurrentHashMap<>();
-        final Map<Volcano.Island, Boolean> islands = new ConcurrentHashMap<>();
-        final Map<Long, Double> initialHeights = new ConcurrentHashMap<>();
 
-        <K, V> void remember(Map<K, V> map, K key, V value) {
-            if (map.size() > LIMIT) {
-                map.clear();
-            }
-            map.putIfAbsent(key, value);
-        }
-    }
-
-    /** The decisions of the 3 x 3 cells around one cell (volcano cells or island cells); only a cache. */
-    private static final class Neighbourhood {
-        private boolean filled;
-        private int ci;
-        private int cj;
-        final Volcano[] volcanoes = new Volcano[9];
-        @SuppressWarnings("unchecked")
-        final List<Volcano.Island>[] islands = new List[9];
-
-        Neighbourhood around(VolcanicField field, int i, int j) {
-            if (!filled || i != ci || j != cj) {
-                for (int k = 0; k < 9; k++) {
-                    volcanoes[k] = field.volcano(i + k / 3 - 1, j + k % 3 - 1);
-                }
-                ci = i;
-                cj = j;
-                filled = true;
-            }
-            return this;
-        }
-
-        Neighbourhood aroundIslands(VolcanicField field, int i, int j) {
-            if (!filled || i != ci || j != cj) {
-                for (int k = 0; k < 9; k++) {
-                    islands[k] = field.channelIslands(i + k / 3 - 1, j + k % 3 - 1);
-                }
-                ci = i;
-                cj = j;
-                filled = true;
-            }
-            return this;
-        }
-    }
 }

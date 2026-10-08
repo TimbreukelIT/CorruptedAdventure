@@ -41,9 +41,12 @@ public class VolcanicFieldTest {
         JsonObject json = WorldgenData.read("density_function/ring_3/overworld/field.json");
         VolcanicSettings settings = VolcanicSettings.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("settings"))
                 .getOrThrow();
+        JsonObject relief = json.getAsJsonObject("relief");
         return new VolcanicField(noise(key(json, "hash")), noise(key(json, "plains")), noise(key(json, "rolling")),
-                noise(key(json, "flows")), noise(key(json, "heat")), noise(key(json, "ground")), noise(key(json, "channel")),
-                noise(key(json, "ridge")), noise(key(json, "warp")), settings, () -> LAYOUT);
+                noise(key(json, "flows")), noise(key(json, "heat")), noise(key(json, "ground")),
+                noise(key(json, "ridge")), noise(key(json, "warp")),
+                new Ring3Relief(noise(key(relief, "highlands")), noise(key(relief, "shapes")), noise(key(relief, "detail")),
+                        noise(key(relief, "rifts"))), settings, () -> LAYOUT);
     }
 
     private static String key(JsonObject json, String field) {
@@ -72,7 +75,7 @@ public class VolcanicFieldTest {
             int x = -4200 + k * 7;
             int z = 1500 - k * 3;
             VolcanicField.Column fresh = new VolcanicField.Column();
-            other.fill(fresh, x, z, true);
+            other.fill(fresh, x, z, VolcanicField.Mode.FULL);
             VolcanicField.Column cached = field.column(x, z);
             assertEquals(fresh.height, cached.height, 0.0);
             assertEquals(fresh.lavaTop, cached.lavaTop);
@@ -98,9 +101,11 @@ public class VolcanicFieldTest {
             switch (v.kind()) {
                 case GREAT -> {
                     great++;
-                    assertTrue(v.rim() >= 230 && v.rim() <= 260, "great rim " + v.rim());
+                    assertTrue(v.rim() >= 250 && v.rim() <= 285, "great rim " + v.rim());
                 }
-                case CONE -> assertTrue(v.rim() >= 140 && v.rim() <= 200, "cone rim " + v.rim());
+                // Medium cones: 80–140 above the plain, below the great ones unless the plain itself is that high (39d).
+                case CONE -> assertTrue(v.rim() - v.plain() >= 40 && v.rim() - v.plain() <= 140
+                        && (v.rim() <= 240 || v.rim() - v.plain() <= 40.0 + 1e-9), "cone rim " + v);
                 case CALDERA -> assertTrue(v.rim() - v.plain() >= 22 && v.rim() - v.plain() <= 44, "caldera rim " + v);
             }
             double wall = v.rim() - v.floor();
@@ -130,8 +135,9 @@ public class VolcanicFieldTest {
                 peaks++;
             }
         }
-        // volcanic_peaks covers about a seventh of the ring; most volcanoes away from the band (well over twice its share) stand there.
-        assertTrue(peaks > 0.4 * ordinary, peaks + " of " + ordinary);
+        // volcanic_peaks covers about a seventh of the ring; it keeps well over twice its share of the volcanoes away from the
+        // band, also now that the ash plain, ember woods and sulfur fields have their own (39d).
+        assertTrue(peaks > 0.3 * ordinary, peaks + " of " + ordinary);
     }
 
     @Test
@@ -192,8 +198,9 @@ public class VolcanicFieldTest {
         for (List<Volcano.Island> cluster : clusters) {
             boolean any = false;
             for (Volcano.Island island : cluster) {
-                assertTrue(island.top() >= 150 && island.top() <= 210, "island top " + island.top());
-                assertTrue(island.a() >= 4 && island.a() * island.stretch() <= 15 * 1.5, "island size " + island);
+                // Ordinary islands Y 150–210 and up to ~30 wide; archipelagos (39d) up to Y ~235 and 100 wide.
+                assertTrue(island.top() >= 150 && island.top() <= 240, "island top " + island.top());
+                assertTrue(island.a() >= 4 && island.a() * island.stretch() <= 50 * 1.3 + 1e-9, "island size " + island);
                 if (!field.islandClear(island)) {
                     continue; // dropped: a neighbouring volcano rises under it
                 }
@@ -206,9 +213,9 @@ public class VolcanicFieldTest {
                 kept++;
             }
         }
-        // About one cluster per three craters (V4 = A).
-        long craters = volcanoes.size();
-        assertTrue(kept >= craters / 5 && kept <= craters / 2, kept + " clusters for " + craters + " craters");
+        // V4: about one cluster per three craters of change 39 (~100 craters then); 39d keeps the number per area about the
+        // same while the volcanoes became twice as many (most new ones are cones too high for islands).
+        assertTrue(kept >= 20 && kept <= 60, kept + " clusters for " + volcanoes.size() + " volcanoes");
         assertTrue(islands >= kept);
     }
 

@@ -24,18 +24,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
  * @param cellSize     cell of the jittered volcano grid (one volcano or caldera at most per cell)
  * @param greatMinY    lowest rim of a great (horizon) volcano
  * @param greatMaxY    highest rim of a great volcano
- * @param coneMinY     lowest rim of an ordinary cone
- * @param coneMaxY     highest rim of an ordinary cone
+ * @param coneMinRise  lowest rise of an ordinary cone's rim above the plain (39d: medium cones)
+ * @param coneMaxRise  highest rise of an ordinary cone's rim above the plain (capped 10 below {@code greatMinY})
  * @param islandMinY   lowest top of a floating island
  * @param islandMaxY   highest top of a floating island
- * @param islandChance chance that an active caldera with a low lake (or a lava channel cell) carries an island cluster
- * @param channelWidth half width of a lava channel in units of its noise
+ * @param islandChance chance that an active caldera with a low lake (or a lava river cell) carries an island cluster
  */
 public record VolcanicSettings(double plainY, double plainAmp, double rollingAmp, double hot, double cool, double seabedGround,
-                               double titanGround, int cellSize, double greatMinY, double greatMaxY, double coneMinY,
-                               double coneMaxY, double islandMinY, double islandMaxY, double islandChance, double channelWidth) {
-    public static final VolcanicSettings DEFAULT = new VolcanicSettings(89.0, 8.0, 4.0, 0.166, -0.051, -0.122, 0.122,
-            320, 230.0, 260.0, 140.0, 200.0, 150.0, 210.0, 0.85, 0.03);
+                               double titanGround, int cellSize, double greatMinY, double greatMaxY, double coneMinRise,
+                               double coneMaxRise, double islandMinY, double islandMaxY, double islandChance) {
+    public static final VolcanicSettings DEFAULT = new VolcanicSettings(89.0, 16.0, 7.0, 0.166, -0.051, -0.122, 0.122,
+            320, 250.0, 285.0, 80.0, 140.0, 150.0, 210.0, 0.85);
 
     public static final Codec<VolcanicSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.doubleRange(-64.0, 320.0).optionalFieldOf("plain_y", DEFAULT.plainY).forGetter(VolcanicSettings::plainY),
@@ -48,11 +47,10 @@ public record VolcanicSettings(double plainY, double plainAmp, double rollingAmp
             Codec.intRange(128, 1024).optionalFieldOf("cell_size", DEFAULT.cellSize).forGetter(VolcanicSettings::cellSize),
             Codec.doubleRange(-64.0, 300.0).optionalFieldOf("great_min_y", DEFAULT.greatMinY).forGetter(VolcanicSettings::greatMinY),
             Codec.doubleRange(-64.0, 300.0).optionalFieldOf("great_max_y", DEFAULT.greatMaxY).forGetter(VolcanicSettings::greatMaxY),
-            Codec.doubleRange(-64.0, 300.0).optionalFieldOf("cone_min_y", DEFAULT.coneMinY).forGetter(VolcanicSettings::coneMinY),
-            Codec.doubleRange(-64.0, 300.0).optionalFieldOf("cone_max_y", DEFAULT.coneMaxY).forGetter(VolcanicSettings::coneMaxY),
+            Codec.doubleRange(0.0, 300.0).optionalFieldOf("cone_min_rise", DEFAULT.coneMinRise).forGetter(VolcanicSettings::coneMinRise),
+            Codec.doubleRange(0.0, 300.0).optionalFieldOf("cone_max_rise", DEFAULT.coneMaxRise).forGetter(VolcanicSettings::coneMaxRise),
             Codec.doubleRange(-64.0, 300.0).optionalFieldOf("island_min_y", DEFAULT.islandMinY).forGetter(VolcanicSettings::islandMinY),
             Codec.doubleRange(-64.0, 300.0).optionalFieldOf("island_max_y", DEFAULT.islandMaxY).forGetter(VolcanicSettings::islandMaxY),
-            Codec.doubleRange(0.0, 1.0).optionalFieldOf("island_chance", DEFAULT.islandChance).forGetter(VolcanicSettings::islandChance),
-            Codec.doubleRange(0.001, 0.5).optionalFieldOf("channel_width", DEFAULT.channelWidth).forGetter(VolcanicSettings::channelWidth)
+            Codec.doubleRange(0.0, 1.0).optionalFieldOf("island_chance", DEFAULT.islandChance).forGetter(VolcanicSettings::islandChance)
     ).apply(instance, VolcanicSettings::new));
 }
