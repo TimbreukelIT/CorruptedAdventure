@@ -29,6 +29,8 @@ public final class ServerConfig {
     public static final DehydrationCondition DEHYDRATION;
     /** {@code [conditions.heat]}: ring 3 (change 43). */
     public static final HeatCondition HEAT;
+    /** {@code [conditions.cold]}: Nether ring 3 (package 55). */
+    public static final ColdCondition COLD;
     /** {@code [weather.ring2]}: the effects of sandstorm and heat wave (change 28). */
     public static final Ring2WeatherEffects RING_2_WEATHER;
     /** {@code [weather.ring3]}: ash cloud duration, heat factors and lava bombs (package 45). */
@@ -45,6 +47,7 @@ public final class ServerConfig {
         DEBUG = new DebugCondition(builder);
         DEHYDRATION = new DehydrationCondition(builder);
         HEAT = new HeatCondition(builder);
+        COLD = new ColdCondition(builder);
         builder.pop();
         builder.comment("Ring weather: a cycle per ring (clear, then a weather of that ring, then clear again).",
                 "Durations in seconds, drawn uniformly between min and max; edits apply from the next change of weather.")
@@ -56,7 +59,7 @@ public final class ServerConfig {
         RING_2_WEATHER = RING_WEATHER.get(Ring.RING_2).ring2Effects;
         RING_3_WEATHER = RING_WEATHER.get(Ring.RING_3).ring3Effects;
         SPEC = builder.build();
-        ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds);
+        ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds);
     }
 
     private ServerConfig() {
@@ -225,6 +228,62 @@ public final class ServerConfig {
                     .defineInRange("effect2Amplifier", 0, 0, 9);
             effect3Amplifier = builder.comment("Mining fatigue amplifier (0 = level I).")
                     .defineInRange("effect3Amplifier", 0, 0, 9);
+            builder.pop();
+        }
+    }
+
+    /**
+     * {@code [conditions.cold]}: Nether ring 3 (package 55); start values from the answers G2-C1..C3 in
+     * {@code docs/plans/ring-3/golf-2-conditions.md}.
+     */
+    public static final class ColdCondition {
+        public final ModConfigSpec.DoubleValue riseInZone;
+        public final ModConfigSpec.DoubleValue iceMultiplier;
+        public final ModConfigSpec.DoubleValue exposedMultiplier;
+        public final ModConfigSpec.IntValue warmthRadius;
+        public final ModConfigSpec.DoubleValue warmthFall;
+        public final ModConfigSpec.DoubleValue outsideFall;
+        public final ModConfigSpec.DoubleValue leatherReductionPerPiece;
+        public final ThresholdLevels thresholds;
+        public final ModConfigSpec.IntValue effect1Amplifier;
+        public final ModConfigSpec.IntValue effect2Amplifier;
+        public final ModConfigSpec.DoubleValue damage;
+        public final ModConfigSpec.IntValue damageInterval;
+
+        private ColdCondition(ModConfigSpec.Builder builder) {
+            builder.comment("Cold in ring 3 of the Nether. Rises everywhere in the zone, faster on ice (block tag minecraft:ice)",
+                            "and in the exposed biomes (biome tag corruptedadventure:cold_exposed); the strongest factor wins,",
+                            "they do not stack. Falls near a lit warmth source (block tag corruptedadventure:warmth_sources)",
+                            "and outside the zone. Fire resistance does nothing against the cold.")
+                    .push("cold");
+            riseInZone = builder.comment("Points per second in the zone, away from warmth (0.42: 0 -> 100 in ~4 min).")
+                    .defineInRange("riseInZone", 0.42, 0.0, 100.0);
+            iceMultiplier = builder.comment("Factor on the rise while standing on ice.")
+                    .defineInRange("iceMultiplier", 1.5, 1.0, 10.0);
+            exposedMultiplier = builder.comment("Factor on the rise in the exposed biomes (the open plain).")
+                    .defineInRange("exposedMultiplier", 1.5, 1.0, 10.0);
+            warmthRadius = builder.comment("Blocks around the player (a box, from feet and head) searched for warmth sources.")
+                    .defineInRange("warmthRadius", 4, 1, 8);
+            warmthFall = builder.comment("Points per second within warmthRadius of a lit warmth source, in the zone.")
+                    .defineInRange("warmthFall", 2.0, 0.0, 100.0);
+            outsideFall = builder.comment("Points per second outside Nether ring 3 (other rings, the overworld).")
+                    .defineInRange("outsideFall", 0.5, 0.0, 100.0);
+            leatherReductionPerPiece = builder.comment("Part of a rising cold rate taken off per worn leather piece",
+                            "(item tag minecraft:freeze_immune_wearables); 0.15: full leather 60 %. At most 0.2 (full leather",
+                            "80 %), so leather never makes immune.")
+                    .defineInRange("leatherReductionPerPiece", 0.15, 0.0, 0.2);
+            thresholds = ThresholdLevels.define(builder, "conditions.cold", new int[]{33, 66, 100},
+                    "Slowness from here.", "Mining fatigue from here.",
+                    "Freezing from here: vanilla frost (overlay, frozen hearts, powder snow slowness) and cold damage"
+                            + " every damageInterval seconds (own death message), also with leather; not while on fire.");
+            effect1Amplifier = builder.comment("Slowness amplifier (0 = level I).")
+                    .defineInRange("effect1Amplifier", 0, 0, 9);
+            effect2Amplifier = builder.comment("Mining fatigue amplifier (0 = level I).")
+                    .defineInRange("effect2Amplifier", 0, 0, 9);
+            damage = builder.comment("Cold damage per hit at the freezing threshold (1.0 = half a heart).")
+                    .defineInRange("damage", 1.0, 0.0, 100.0);
+            damageInterval = builder.comment("Seconds between hits at the freezing threshold.")
+                    .defineInRange("damageInterval", 2, 1, 60);
             builder.pop();
         }
     }

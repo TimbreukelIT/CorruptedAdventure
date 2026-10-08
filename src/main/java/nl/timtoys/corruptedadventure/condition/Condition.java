@@ -17,7 +17,12 @@ public enum Condition implements StringRepresentable {
      * Ring 3: rises in direct sun by day and near heat sources (also at night and underground), faster on the peaks;
      * falls at night, under a roof, a little in shade, fast in water and in the dormant caldera, and outside ring 3.
      */
-    HEAT("heat", 0xFFE8501E);
+    HEAT("heat", 0xFFE8501E),
+    /**
+     * Nether ring 3: rises everywhere in the zone, faster on ice and in the exposed biomes; falls near warmth and
+     * outside the zone. Leather slows it; at the top the player freezes (package 55).
+     */
+    COLD("cold", 0xFF7FC8F0);
 
     public static final Codec<Condition> CODEC = StringRepresentable.fromEnum(Condition::values);
 

@@ -263,6 +263,8 @@
   "block.corruptedadventure.sulfur_ore": "Sulfur Ore",
   "block.corruptedadventure.volcanite_ore": "Volcanite Ore",
   "block.corruptedadventure.withered_dirt": "Withered Dirt",
+  "death.attack.corruptedadventure.cold": "%1$s froze in the cold of the Nether",
+  "death.attack.corruptedadventure.cold.player": "%1$s froze in the cold of the Nether whilst fighting %2$s",
   "death.attack.corruptedadventure.dehydration": "%1$s dried out",
   "death.attack.corruptedadventure.dehydration.player": "%1$s dried out whilst fighting %2$s",
   "death.attack.corruptedadventure.heat": "%1$s succumbed to the heat",
