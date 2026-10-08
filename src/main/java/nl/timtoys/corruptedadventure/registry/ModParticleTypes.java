@@ -33,6 +33,18 @@ public final class ModParticleTypes {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ICE_GLINT =
             PARTICLE_TYPES.register("ice_glint", () -> new SimpleParticleType(false));
 
+    // Ambient variants for the ring 3 biomes (package 50): a biome's ambient particle comes without speed, so these move
+    // by themselves; same sprites as their base type.
+    /** Ash drifting down ({@code ash_flake} sprites). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> DRIFTING_ASH =
+            PARTICLE_TYPES.register("drifting_ash", () -> new SimpleParticleType(false));
+    /** Sparks rising ({@code ember} sprites). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> RISING_EMBER =
+            PARTICLE_TYPES.register("rising_ember", () -> new SimpleParticleType(false));
+    /** Yellow-green steam of the sulfur fields ({@code steam_puff} sprites). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SULFUR_STEAM =
+            PARTICLE_TYPES.register("sulfur_steam", () -> new SimpleParticleType(false));
+
     private ModParticleTypes() {
     }
 

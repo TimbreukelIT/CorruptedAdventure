@@ -18,6 +18,7 @@ import nl.timtoys.corruptedadventure.client.particle.EmberParticle;
 import nl.timtoys.corruptedadventure.client.particle.IceGlintParticle;
 import nl.timtoys.corruptedadventure.client.particle.SandGustParticle;
 import nl.timtoys.corruptedadventure.client.particle.SteamPuffParticle;
+import nl.timtoys.corruptedadventure.client.weather.Ring3Ambience;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
 import nl.timtoys.corruptedadventure.network.ClientboundHandlers;
 import nl.timtoys.corruptedadventure.network.ConditionSyncPayload;
@@ -48,13 +49,19 @@ public final class CorruptedAdventureClient {
         RingWeatherClientHooks.registerRing2(modEventBus, NeoForge.EVENT_BUS);
         RingWeatherClientHooks.registerRing3();
         RingWeatherClientHooks.register(NeoForge.EVENT_BUS);
+        // Ring 3 ambience outside the weather (package 50): rumble with camera shake, sparks on the peaks.
+        Ring3Ambience.register(NeoForge.EVENT_BUS);
     }
 
     private static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ModParticleTypes.SAND_GUST.get(), SandGustParticle.Provider::new);
-        event.registerSpriteSet(ModParticleTypes.ASH_FLAKE.get(), AshFlakeParticle.Provider::new);
-        event.registerSpriteSet(ModParticleTypes.EMBER.get(), EmberParticle.Provider::new);
-        event.registerSpriteSet(ModParticleTypes.STEAM_PUFF.get(), SteamPuffParticle.Provider::new);
+        event.registerSpriteSet(ModParticleTypes.ASH_FLAKE.get(), sprites -> new AshFlakeParticle.Provider(sprites, false));
+        event.registerSpriteSet(ModParticleTypes.EMBER.get(), sprites -> new EmberParticle.Provider(sprites, false));
+        event.registerSpriteSet(ModParticleTypes.STEAM_PUFF.get(), sprites -> new SteamPuffParticle.Provider(sprites, SteamPuffParticle.STEAM));
+        event.registerSpriteSet(ModParticleTypes.DRIFTING_ASH.get(), sprites -> new AshFlakeParticle.Provider(sprites, true));
+        event.registerSpriteSet(ModParticleTypes.RISING_EMBER.get(), sprites -> new EmberParticle.Provider(sprites, true));
+        event.registerSpriteSet(ModParticleTypes.SULFUR_STEAM.get(),
+                sprites -> new SteamPuffParticle.Provider(sprites, SteamPuffParticle.SULFUR_STEAM));
         event.registerSpriteSet(ModParticleTypes.ICE_GLINT.get(), IceGlintParticle.Provider::new);
     }
 }

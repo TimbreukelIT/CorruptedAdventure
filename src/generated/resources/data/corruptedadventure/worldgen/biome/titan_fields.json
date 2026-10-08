@@ -8,7 +8,8 @@
   },
   "downfall": 0.0,
   "effects": {
-    "fog_color": 7234680,
+    "ambient_sound": "corruptedadventure:ambient.ring_3.titan_hum",
+    "fog_color": 6972048,
     "foliage_color": 8024144,
     "grass_color": 9076832,
     "mood_sound": {
@@ -17,7 +18,13 @@
       "sound": "minecraft:ambient.cave",
       "tick_delay": 6000
     },
-    "sky_color": 9206416,
+    "particle": {
+      "options": {
+        "type": "minecraft:soul"
+      },
+      "probability": 0.0025
+    },
+    "sky_color": 9075880,
     "water_color": 6187622,
     "water_fog_color": 1975330
   },

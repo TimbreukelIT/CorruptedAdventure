@@ -12,7 +12,8 @@ import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 /**
  * {@code sounds.json}. Ring 1 and the sandstorm reuse vanilla's samples through {@code event} entries (pitch and volume
  * multiply those of the vanilla event); the ring 2 ambient sounds are our own {@code .ogg}s ({@code tools/sounds/Ring2Sounds.java}),
- * which must exist before datagen runs: the provider checks the files.
+ * which must exist before datagen runs: the provider checks the files. Ring 3 has its own as well
+ * ({@code tools/sounds/Ring3Sounds.java}, package 50).
  */
 final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
     ModSoundDefinitionsProvider(PackOutput output, ExistingFileHelper files) {
@@ -45,52 +46,59 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                                 .weight(3).pitch(0.85F).volume(0.75F),
                         sound(SoundEvents.POINTED_DRIPSTONE_DRIP_WATER_INTO_CAULDRON.getLocation(), SoundDefinition.SoundType.EVENT)
                                 .weight(1).pitch(0.75F).volume(0.75F)));
-        // Ring 3 weather (package 45): vanilla references until our own synthesis in wave 2 (Ring3Sounds.java).
-        // Ash rain: the basalt deltas' crackling loop; the volume follows the weather on the client.
+        // Ring 3 (package 50): our own audio (tools/sounds/Ring3Sounds.java). Loops are streamed and carry no subtitle,
+        // like vanilla's; one-shots are mono, so positional ones fade with distance.
+        // Weather (package 45): the loops' volume follows the weather on the client (WeatherLoopSound); the eruption's
+        // rumbles are played without attenuation (Rumble).
         add(ModSoundEvents.RING_3_ASH_RAIN, SoundDefinition.definition()
                 .subtitle("subtitles.corruptedadventure.weather.ring_3.ash_rain")
-                .with(sound(SoundEvents.AMBIENT_BASALT_DELTAS_LOOP.value().getLocation(), SoundDefinition.SoundType.EVENT)));
-        // Eruption rumble: thunder, an octave down, as distant one-shots.
+                .with(loop("weather/ring_3/ash_rain_loop_1"), loop("weather/ring_3/ash_rain_loop_2")));
         add(ModSoundEvents.RING_3_ERUPTION, SoundDefinition.definition()
                 .subtitle("subtitles.corruptedadventure.weather.ring_3.eruption")
-                .with(sound(SoundEvents.LIGHTNING_BOLT_THUNDER.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.5F),
-                        sound(SoundEvents.LIGHTNING_BOLT_THUNDER.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.6F)));
-        // Ash cloud: the sandstorm's wind at the lowest pitch the engine plays (0.5): a roar.
+                .with(file("weather/ring_3/eruption_1"), file("weather/ring_3/eruption_2"), file("weather/ring_3/eruption_3")));
         add(ModSoundEvents.RING_3_ASH_CLOUD, SoundDefinition.definition()
                 .subtitle("subtitles.corruptedadventure.weather.ring_3.ash_cloud")
-                .with(sound(SoundEvents.ELYTRA_FLYING.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.5F)));
-        // Ring 3 and Nether ring 3 ambience and the ring 3 block sounds (package 50-0): vanilla references, so every id
-        // works at once; our own audio replaces them in packages 50 and 56. Loops (embers, titan hum, caldera, wind)
-        // carry no subtitle, like vanilla's loops.
-        // The distant rumble differs from the eruption's thunder: the basalt deltas' low mood sound, lower still.
+                .with(loop("weather/ring_3/ash_cloud_loop_1")));
+        // Ambience: the distant rumble outside the weather (Ring3Ambience), lighter than an eruption's.
         add(ModSoundEvents.RING_3_RUMBLE, SoundDefinition.definition()
                 .subtitle(subtitle("ambient.ring_3.rumble"))
-                .with(vanilla(SoundEvents.AMBIENT_BASALT_DELTAS_MOOD.value().getLocation()).pitch(0.6F)));
-        // A loop needs a long sample (a short one repeats like a machine gun): the basalt deltas' crackling bed, higher.
+                .with(file("ambient/ring_3/rumble_1"), file("ambient/ring_3/rumble_2"), file("ambient/ring_3/rumble_3")));
         add(ModSoundEvents.RING_3_EMBERS, SoundDefinition.definition()
-                .with(vanilla(SoundEvents.AMBIENT_BASALT_DELTAS_LOOP.value().getLocation()).pitch(1.3F).volume(0.6F)));
+                .with(loop("ambient/ring_3/embers_loop_1"), loop("ambient/ring_3/embers_loop_2")));
         add(ModSoundEvents.RING_3_LAVA, SoundDefinition.definition()
                 .subtitle(subtitle("ambient.ring_3.lava"))
-                .with(vanilla(SoundEvents.LAVA_AMBIENT.getLocation())));
+                .with(file("ambient/ring_3/lava_1"), file("ambient/ring_3/lava_2"), file("ambient/ring_3/lava_3")));
         add(ModSoundEvents.RING_3_TITAN_HUM, SoundDefinition.definition()
-                .with(vanilla(SoundEvents.BEACON_AMBIENT.getLocation()).pitch(0.5F)));
+                .with(loop("ambient/ring_3/titan_hum_loop_1")));
         add(ModSoundEvents.RING_3_CALDERA, SoundDefinition.definition()
-                .with(vanilla(SoundEvents.ELYTRA_FLYING.getLocation()).pitch(1.2F).volume(0.15F)));
+                .with(loop("ambient/ring_3/caldera_loop_1")));
+        // Nether ring 3 (package 50-0): vanilla references until package 56.
         add(ModSoundEvents.NETHER_RING_3_WIND, SoundDefinition.definition()
                 .with(vanilla(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_LOOP.value().getLocation()).pitch(0.8F)));
         add(ModSoundEvents.NETHER_RING_3_ICE_CREAK, SoundDefinition.definition()
                 .subtitle(subtitle("ambient.nether_ring_3.ice_creak"))
                 .with(vanilla(SoundEvents.POWDER_SNOW_BREAK.getLocation()).pitch(0.5F)));
-        // The block sounds point at what stream B plays now (package 46), so switching to the ids changes nothing yet.
+        // Block sounds, played by stream B (package 46) at the block.
         add(ModSoundEvents.FUMAROLE_PUFF, SoundDefinition.definition()
                 .subtitle(subtitle("block.fumarole.puff"))
-                .with(vanilla(SoundEvents.LAVA_EXTINGUISH.getLocation())));
+                .with(file("block/ring_3/fumarole_puff_1"), file("block/ring_3/fumarole_puff_2")));
         add(ModSoundEvents.GEYSER_BURST, SoundDefinition.definition()
                 .subtitle(subtitle("block.geyser.burst"))
-                .with(vanilla(SoundEvents.GENERIC_EXTINGUISH_FIRE.getLocation())));
+                .with(file("block/ring_3/geyser_burst_1"), file("block/ring_3/geyser_burst_2")));
         add(ModSoundEvents.BOILING_MUD_BUBBLE, SoundDefinition.definition()
                 .subtitle(subtitle("block.boiling_mud.bubble"))
-                .with(vanilla(SoundEvents.BUBBLE_COLUMN_BUBBLE_POP.getLocation())));
+                .with(file("block/ring_3/boiling_mud_bubble_1"), file("block/ring_3/boiling_mud_bubble_2"),
+                        file("block/ring_3/boiling_mud_bubble_3")));
+    }
+
+    /** One of our own one-shots, {@code sounds/<path>.ogg}. */
+    private static SoundDefinition.Sound file(String path) {
+        return sound(CorruptedAdventure.id(path), SoundDefinition.SoundType.SOUND);
+    }
+
+    /** One of our own seamless loops, streamed. */
+    private static SoundDefinition.Sound loop(String path) {
+        return file(path).stream();
     }
 
     private static String subtitle(String event) {
@@ -102,12 +110,11 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
     }
 
     private static SoundDefinition.Sound netherFile(String name) {
-        return sound(CorruptedAdventure.id("ambient/nether_ring_2/" + name), SoundDefinition.SoundType.SOUND)
-                .stream();
+        return loop("ambient/nether_ring_2/" + name);
     }
 
     private static SoundDefinition.Sound ring2File(String name) {
-        return sound(CorruptedAdventure.id("ambient/ring_2/" + name), SoundDefinition.SoundType.SOUND)
+        return file("ambient/ring_2/" + name)
                 .volume(0.8F)
                 .attenuationDistance(24);
     }
