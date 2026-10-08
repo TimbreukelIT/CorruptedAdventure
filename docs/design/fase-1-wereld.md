@@ -684,6 +684,27 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **Leren armor remt** de opbouw (vanilla-tag `freeze_immune_wearables`).
   - Drempels: traagheid → mining fatigue → vanilla-bevriezing (`ticksFrozen`: frost-overlay en schade, door vanilla al gesynct).
 
+**Sparring golf 2 (2026-10-08, alle 33 vragen = aanbevolen; details in `docs/plans/ring-3/golf-2-*.md` §4)**
+- **Ertsen:** vanilla-ertsen in ring 3 ×0,35 (gewoon) / 0,3 (midden) / 0,1 (zeldzaam); vulkaniet is het hoofdmateriaal.
+- **Vuurkristal-geodes:** gesloten, diep (Y −50…20), ~1 per 12 chunks, straal 4–7; soms aangesneden door een lavabuis.
+- **Lavavallen (47c):** alleen waar de val in bestaande lava eindigt (kraterwand, rivierkloof, afgrondwand); ~1 per 2–4 vulkanen, max. 2 bronnen per chunk.
+- **Smeulwoud:** gemengd woud, ~6–8 bomen per chunk (smeulbomen 6–9, smeulreuzen 10–12, kale en omgevallen stammen), bessen en vuurbloemen in open plekken.
+- **Slapende krater:** mos, grove aarde, varens, azalea, glow lichen/hangende wortels langs de wand, zeldzaam een levende azalea als baken, `ember_berry_bush` aan de rand.
+- **Titanenveld:** schedels en losse botten, zielvuur op zielgrond rond de ribbenkasten, zeldzame titanen-rotsen (15–35); geen complete skeletten naast de 39d-ribben.
+- **Zeekom:** dode koraalriffen op de rifruggen, gedroogde kelpbalen en dode struikjes, zeemonsterfossielen op de kustterrassen.
+- **Zwavel/basalt:** modderpoeltjes in de zinkgatbodems; hornitos (spatkegeltjes 2–4) en gestolde lavatongen.
+- **Asvlakte/pieken:** `ash_drift`-laagjes (ook op de treden van de vlakte, besluit 39f), verkoolde dode bomen in geulen, puimsteenkeien; inslagkraters van lavabommen en lage blackstone-rotsen op de pieken.
+- **Horror:** afgietsels ~1 groepje (1–3) per 3–4 chunks in `ashen_wastes`, zeldzaam in smeulwoud/titanenveld, kijkend naar de dichtstbijzijnde vulkaan; voetsporen ~1 per 20 chunks (15–40 stappen) die eindigen bij een afgietsel, kraterrand of afgrond.
+- **Wezens:** zeldzame striders op lavarivieren en kratermeren (naast de geiten); Nether-3: strays, ghasts en skeletten, geen piglins/hoglins.
+- **`steam_fens`:** biome, surface en aankleding nu (modderpoelen, geisers, stoomkolommen, kookpoelen boven Y 63); terreinvorm volgt ring 4.
+- **Eilanden:** as en smeulende as op de toppen, 1–3 smeulbomen op grote eilanden, vuurkristalclusters aan de onderkant.
+- **Lavabuizen (42):** droge basalttunnels 5–9 breed, Y 20–80, open bij de 39d-sleuven en via daklichten; lava alleen in lagere zijtakken met korstrand. **Magmakamers** 30–60 breed, 15–30 hoog, Y −40…10, ~1 per 400×400, altijd verbonden met een buis. **Vanilla-grotten** blijven in de vlaktes, gedempt op kraterranden/kegelflanken, weg boven Y ~140.
+- **Nether-3:** bevroren reuzenzwammen 12–22 zonder lamp met ijspegels; bevroren lavavallen + ijsbruggen over de gletsjerkloven; warme kring van 4–6 blokken rond elke scheur; geen carvers.
+- **Sfeer:** rookpluim boven vulkanen tot ~256 blokken (server stuurt vulkaanposities binnen ~512 blokken; nieuwe payload); eigen tint per biome binnen één asrood ringpalet; particles subtiel tot middel (dichter in smeulwoud en `steam_fens`); gerommel elke 2–5 min, 1 op 3 met lichte schok (volgt "Screen Effects"); aswolken (besluit 39f); Nether-3: ademwolkjes, glinstering, wind, krakend ijs.
+- **Blokken:** geiser met eigen ritme per positie (80–200 ticks, deterministisch), 1 s waarschuwing, duw ~5; kokende modder blijft traag + hittebron.
+- **Kou:** 0 → 100 in ~4 min, ×1,5 op ijs en in `frozen_lava_sea`; 33 traagheid I · 66 mining fatigue I · 100 bevriezing; per leren stuk −15 % opbouw; warmte binnen 4 blokken −2/s. Zwaveldamp is alleen sfeer.
+- **Textures:** twee korte bijstuurrondes vóór 4b (r1 op het 39d-terrein, r2 na de aankleding); de grote ronde blijft 57.
+
 **Client/server-risico's**
 - Water verdampen, geiser-duw, lavabommen en de hitte- en kou-meters: allemaal server-side. De lavabommen zijn gewone server-entities, dus alle clients zien dezelfde.
 - Camera-shake, gerommel, as- en stoomparticles, uitbarstingslucht: alleen client (`client/` of biome-data). Fumarole-particles via `animateTick` (draait alleen op de client-level, geen client-class nodig).

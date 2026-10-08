@@ -1,0 +1,303 @@
+# Golf 2 — stroom W-biomes: 41, 47, 47b, 49, 47c, 48, 41b (inrichting ring 3)
+
+Scope: `worldgen` — één commit per pakket, branch `ring3/biomes-g2`, poort 2 (server 25572, RCON 25582). Opgesteld 2026-10-08 door de plan-agent; **nog niet gesparred** (zie "Open vragen").
+
+**Doel:** ring 3 wordt bewoonbaar en levendig. Na deze stroom heeft elk biome zijn eigen aankleding met wow, en is er wat te halen (ertsen, kristallen, voedsel). De horror-features staan er ook. Teststop 4b beoordeelt "de levendigheid per biome (2 min lopen per biome)", "zielvuur en skeletten, gloeiende afgietsels 's nachts" en "voedsel (geiten, flora)".
+
+**Bron:**
+- `fase-1-wereld.md` Ring 3 (sparring, V1–V8, "Reliëf en vorm per biome (39d)", Ores, Horror);
+- `contract.md` §2–§4 (feature-keys `corruptedadventure:ring_3/<naam>`, 3×3-regel, determinismeregels 23c);
+- `change-39d.md` (terreinstand en landmarks), `teststop-4a-feedback.md` (39f loopt parallel);
+- backlog r. 122/123, 159/160, 178, 184, 193/194;
+- sjablonen:
+  - `Ring2Features` / `RingVanillaOres` (ertsen);
+  - `DewGeodeFeature` (geodes);
+  - `SurfaceFossilFeature`/`FossilLayout` (sjablonen);
+  - `Ring2DressingFeatures`, `DryRiverbedsFeatures`, `JitteredGridPlacement`, `NoiseBandFilter`, `SlopeFilter`, `HeightBandFilter`;
+  - `SpringLayout` (water in eindtoestand), `PalmFoliagePlacer` (kronen over chunkgrenzen).
+
+## 0. Plaatsingsregels na 39d (gelden voor elk pakket)
+Het terrein van 39d heeft rifts (20–40 diep), afgronden (tot Y ~2, lavazee Y 9), getraceerde lavarivieren (6–16 breed, 84 km), kratermeren, zwevende eilanden en archipels, en dunne vormen. Die dunne vormen (uitgang `thin`) zijn hoodoos, ribben, zuilen, naalden 60–120, bogen, bruggen en pilaren; verder slakkenkegels, zinkgaten en lavabuis-sleuven. Een feature die "op de grond" staat, moet die plekken kennen.
+
+1. **Terreinfilter.** Nieuwe placement modifier `corruptedadventure:volcanic_filter` (in `ModPlacementModifierTypes`, blok `// ring 3 — W-biomes`). Hij leest de pure kolom van het ring 3-veld (`VolcanicField.column(x, z)`; dezelfde uitgangen als de surface-conditie `volcanic_threshold`: `lava_bank`, `cliff`, `solid_kind`, `volcano_rise`, `caldera_mask`, `caldera_dormant`, `island_mask`, `lava_channel`) met min/max per uitgang, plus een optie `ground_only`.
+   - `ground_only` laat alleen plaatsingen toe waar het gevonden oppervlak (`WORLD_SURFACE_WG`) binnen 3 blokken van `column.height()` ligt. Zo komt er niets op kruinen van naalden, bogen, ribben en pilaren, niet op eilanden en niet op brugdekken.
+   - **Implementatie, eerst nagaan:** het veld vind je via `ServerChunkCache.randomState()` → `RingChunkGenerator.volcanicField(random)`. Is `column()` buiten een noise chunk thread-safe (`ColumnTable`)? Zo niet, dan per chunk een eigen kopie via `mapAll` (patroon `withSurfaceField`). Nooit een `flat_cache` uitlezen.
+   - W-biomes **leest** W-terrein-klassen (`VolcanicField`, `CellShapes`, `TitanBones`, `Landmarks`) alleen. Is er een publieke accessor nodig, bijvoorbeeld voor de toppen van de fumarole-heuveltjes of de posities van de ribbenkasten: vraag die via main aan 39f of W-terrein. Niet zelf toevoegen.
+2. **Lava en rivieren.** Geen bomen, flora, aslagen of afgietsels op lavaoevers (`lava_bank` < 0,1) of binnen 2 blokken van een lavakolom. Boomkronen niet boven lava.
+3. **Kliffen en flanken.**
+   - Niet op steile wanden: `cliff` < 0,3 en/of `SlopeFilter`.
+   - Niet op vulkaanflanken (`volcano_rise` > ~20), behalve vulkaan-eigen features.
+   - Niet in actieve kraters (`caldera_mask` > 0 en `caldera_dormant` < 0,5).
+4. **Afgronden en rifts.** Niets in de afgrond of op de natuurlijke bruggen. Riftbodems mogen wel aankleding krijgen (ze hebben hun surface, `check_shot_rift_floor`).
+5. **Carvers.** Geen eigen ring 3-carvers die boven Y ~140 starten (backlog r. 184; anders zwevende brokken onder de eilanden Y 150–210). De diepe carvers van ring 2 blijven (`Ring2Carvers.COPIES`, start ≤ Y 40).
+6. **Vloeistoffen** (les 39/39d):
+   - nooit stilstaande vloeistof tegen lucht zonder korst;
+   - een bewuste val is een bron met een geplande update (`scheduleTick`), met een cap per chunk (besluit 16);
+   - water in features in vanilla's eindtoestand (`SpringLayout.settle`).
+7. **Determinisme** (regels 23c + 35):
+   - plaatsing begint in de eigen chunk;
+   - lees alleen `WORLD_SURFACE_WG`, geseede ruis, de placement-random en de pure veldkolom;
+   - geen `count_on_every_layer`, `random_patch`, `environment_scan`, vanilla `geode` of vanilla disks;
+   - schrijf alleen in de eigen chunk.
+   - Uitzonderingen alleen met een rangregel (`GrowthPriority`-patroon): boomkronen (sjabloon `PalmFoliagePlacer`) en sjablonen > 14 breed (titanen-rotsen). Ze worden per uitzondering in "Beslissingen" vastgelegd.
+   - Paden over chunkgrenzen (voetsporen) zijn een pure functie van seed + cel; elke chunk schrijft zijn eigen stuk.
+8. **Eén globale featurevolgorde.**
+   - Alle ring 3-features per generatiestap in één lijst (`Ring3Features`); elk biome krijgt een deelverzameling in dezelfde relatieve volgorde. Anders gooit vanilla "Feature order cycle found".
+   - Nieuwe ring 3-biomes gebruiken `Ring3Biomes.generation`.
+   - **Feature-indexverschuiving:** elke nieuwe placed feature verschuift de decoratie-seeds in ring 1/2 en ook binnen ring 3 (valkuilen change 30c/35). Coördinaten voor de W-checklist van decoratie pas opzoeken in een wereld met de eindcode van de golf. INT meet ring 1/2 op biomes en terreinvorm, niet op ertstellingen.
+9. **Slapend of actief:** aankleding in kraters volgt `caldera_dormant`. Slapende kraters krijgen het oase-pakket, actieve krijgen niets op de lava.
+
+## 1. Pakketten (volgorde; één commit per pakket)
+
+### 41 — Ertsen ring 3 (kan direct)
+- **Vulkaniet**: Y −48…40 (trapezium, piek ~Y 0), aders 6–9, ~6 pogingen per chunk; gastgesteenten steen, deepslate, basalt.
+  - Een tweede placed feature boven op de eerste: "nabij lava", met meer pogingen waar binnen 4 blokken lava zit. Dat is alleen een terreinscan op de lavalaag en de lava uit de aquifer, dus volgorde-onafhankelijk.
+- **Zwavel**: ondiep, 4–30 blokken onder `WORLD_SURFACE_WG` (relatief, want het terrein ligt op Y 70–250); gastgesteenten steen en basalt.
+  - Basis in heel ring 3, ~3× zoveel in `sulfur_fields`.
+  - In 47 ook onder de fumarolen.
+- **Vuurrobijn**: zeldzaam, Y −40…30, aders 3–5, 1–2 pogingen per chunk; gastgesteenten steen, deepslate, basalt.
+  - De basaltvariant komt vanzelf in de basaltwanden van de magmakamers van 42. Tot 42 gemerged is, valt hij daar dus niet op.
+  - Let op afgrondwanden onder Y 30: daar wordt vuurrobijn zichtbaar. Dat mag (risico = beloning boven de lavazee), maar noteer het.
+- **Vanilla afgebouwd:** `RingVanillaOres.placed(context, Ring.RING_3, RING_3_FACTORS)` + biome modifier `add_ring_3_ores` in `Ring3BiomeModifiers` (`#is_ring_3`). Factoren: G2-WB1.
+- **`dry_riverbeds`** (backlog r. 123): dezelfde ring 3-ertsset plus de afgebouwde vanilla-set van ring 3 via de biome modifier. `ring_chance` op ring 3 houdt ze in de ring 3-helft; de ring 2-set blijft in de ring 2-helft.
+- **Tests:**
+  - unit: keys, factoren per erts, doelblokken per gastgesteente, `ring_chance`;
+  - S: tellen per Y-band en gastgesteente via de regiobestanden (methode change 25/31), in smeulwoud (4.750, 0), zwavel (4.270, 480) en de ring 3-helft van `dry_riverbeds`; ring 2-helft zonder ring 3-ertsen.
+
+### 47 — Zwavelvelden, basaltstromen, zeekom, `ash_layer`, vlekken in `dry_riverbeds` (kan direct)
+- **`sulfur_fields`:**
+  - fumarolen op de toppen van de fumarole-heuveltjes van 39d (accessor via main, zie §0.1) en verspreid in de terraskommen;
+  - een kraag van `sulfur_crust` en een paar zwavelertsblokken eronder (dezelfde feature, chunk-lokaal);
+  - accenten: G2-WB8.
+- **`basalt_flows`:**
+  - smeulsteen-ventjes op de plateaus en basaltkeien;
+  - accenten: G2-WB8.
+  - De lavabuis-sleuven en -tunnels van 39d krijgen hier geen aankleding (42 doet de buizen).
+- **`dried_seabed`:** de aankleding van G2-WB7.
+- **`ash_layer` als feature** (backlog r. 193): eigen feature `ash_drift` legt 1–8 lagen op de grond, volgens een windruis (richting = de duinwind van 39d, 0,35 rad), dikker in de lijzijde en in geulen. **Besluit 39f (2026-10-08):** `ash_drift` legt ook laagjes (1–7) op de treden van de vlakte, zoals sneeuw in vanilla, zodat de traplijnen van 1 blok breken (39f maakt alleen het 2D-microreliëf grilliger).
+  - Waar: `ashen_wastes`, randen van `titan_fields`, vlakke delen van `volcanic_peaks` en de rand van de zeekom.
+  - `ember_woods` volgt in 47c, onder de bomen.
+  - Nooit op lavaoevers, dunne vormen of flora; staat in de volgorde vóór de vegetatie.
+- **Vlekken in `dry_riverbeds`** (backlog r. 122): `riverbed_scorched_patch` en `_speck` (`DryRiverbedsFeatures`, een ring 2-bestand dat in golf 2 alleen W-biomes raakt) van blackstone/basalt naar `ash_block`/`ash_layer`, met hier en daar een verkoolde stronk (`charred_log`, 1–2 hoog).
+- **Tests:**
+  - S: `/place feature` per feature;
+  - in het wild: per biome 16 × 16 chunks;
+  - determinisme (twee werelden, omgekeerd geladen).
+
+### 47b — `titan_fields` (kan direct)
+- **Inhoud volgens G2-WB6.** De 39d-ribben (20–60 hoog, bot-surface aan de voet) en de ribbenkasten zijn al terrein; 47b vult ze aan.
+- **Sjablonen** (V1: eigen `.nbt` uit een deterministisch script):
+  - script `tools/worldgen/Ring3Templates.java` (single-file, alleen JDK, vaste seed), sjablonen onder `data/corruptedadventure/structure/ring_3/`;
+  - `surface_fossil` krijgt een optionele bloklijst i.p.v. alleen `bone_block`, zodat basalt-titanen kunnen;
+  - sjablonen > 14 breed volgens de rangregel (§0.7).
+- **Zielvuur** (V2: vanilla, geen hittebron): `soul_soil` + `soul_fire` in en rond de ribbenkasten en bij schedels.
+  - Vuur alleen op `soul_soil` (blijvend).
+  - Nooit naast verkoold hout (niet brandbaar, dus veilig), maar wel ≥ 2 van de randen van de eigen chunk.
+
+### 49 — Horror: as-afgietsels en voetsporen (kan direct)
+- **As-afgietsels:** kleine sjablonen (menselijke houdingen: kruipend, knielend, staand met arm omhoog, liggend), materiaal `ash_block` + `smoldering_ash`. Die laatste gloeit 's nachts via de `_glow`-laag en geeft licht 2.
+  - Chunk-lokaal; ze kijken naar de dichtstbijzijnde vulkaan (rotatie uit de pure vulkaanbeslissing; implementatiekeuze).
+  - Frequentie en verspreiding: G2-WB10.
+- **Voetsporen:** een spoor van indrukken in aslagen (een laag 6–7 in een veld van 8, of een lege plek in een laag 2–3) dat abrupt stopt.
+  - Het eindigt bij een afgietsel, aan de rand van een krater of afgrond, of nergens.
+  - Pad = pure functie van seed + cel (sjabloon `LavaRivers`-index, maar klein); elke chunk schrijft zijn eigen deel; alleen op as-grond.
+
+### 47c — Smeulwoud, slapende krater, lavavallen, geiten, eilanden (na de 39f-merge voor de lavavallen)
+- **`ember_woods`:** bomen volgens G2-WB4.
+  - Vanilla `minecraft:tree` met `charred_log` + `ember_leaves`, eigen trunk- en foliage-varianten, `dirt_provider` = `coarse_dirt`.
+  - Het placed feature filtert zelf de grond (valkuil "boom zonder blad"); plaatsing via `jittered_grid`.
+  - Vuurflora (`fire_bloom`, `ash_sprouts`) als chunk-lokale vlekken (geen `random_patch`); aslagen onder de bomen.
+  - `ember_berry_bush` zeldzaam in open plekken: `would_survive` + open lucht, want hij groeit alleen terug bij licht ≥ 9 (backlog r. 159/160).
+- **`dormant_caldera`:** de oase volgens G2-WB5.
+- **Lavavallen:** volgens G2-WB3. Het mechanisme sluit aan op de eilandbronnen van 39d/39f: één regel, niet twee. Daarom bouw je dit pas op de 39f-stand.
+- **Geiten:** spawns staan sinds 39b. Controleer na 39d dat de piek-bovenlaag op `#goats_spawnable_on` staat (basalt, smooth basalt, blackstone, as, puimsteen); alleen bijstellen als ze niet spawnen.
+- **Zwevende eilanden en archipels:** aankleding volgens G2-WB13 (na 39f: de archipel verandert daar).
+
+### 48 — `steam_fens` (overgang 3→4; na de 39f-merge)
+- **Biome:** `steam_fens` in `Ring3Biomes.ALL`, `is_ring_3`, lang; voorlopige kleuren via de haak van A (zie Afhankelijkheden).
+- **Preset:** `transitions.ring_3` = `steam_fens`. Volgens de harde regel van het contract (§4) haalt dezelfde change `ring_3` uit `switch_at` van `ring_blend/overworld_temperature`, `_vegetation` en `_weirdness` (`Ring3JsonTest`).
+  - Die drie bestanden horen bij W-terrein (39a), maar het contract wijst deze edit aan de stroom die de overgangsbiome toevoegt. 42 raakt ze niet.
+- **Surface:** een eigen tak (controlelijst "Plekken die ring 3-biomes opsommen"), via `tools/worldgen/ring3_surface.py`. 39f raakt dat script ook; daarom pas ná de 39f-merge.
+- **Aankleding** volgens G2-WB12: kokende modderpoelen (`boiling_mud`), geisers en stoomkolommen (fumarolen/geisers met `steam_puff` van A).
+  - Geisers krijgen bij plaatsing `WorldGenLevel.scheduleTick(pos, GEYSER, GeyserBlock.INTERVAL_TICKS)` (backlog r. 178).
+- **Terreinstand:** ring 4 is placeholder. `ring3Seal` vult in de ring 3-helft van zone 3→4 open ruimte onder Y 63 met rots; water alleen in features in de eindtoestand en boven Y 63.
+  - Hitte geldt in de ring 3-helft (`HeatRule.inZone` hard op 0,5); geplaatst water verdampt daar ook.
+
+### 41b — Vuurkristal-geodes, bekleding (na de 42-merge)
+- **Holte:** de holte is een DF van W-terrein (42, sjabloon `DewGeodes`, pure vorm `FireGeodeShape`). 41b leest dezelfde pure vorm (alleen lezen) en bekleedt hem.
+- **Feature `fire_geode`** (sjabloon `DewGeodeFeature`), van buiten naar binnen:
+  - schil smooth basalt;
+  - blackstone;
+  - binnenwand `fire_crystal_block`;
+  - knoppen en clusters (licht 1/2/4/5, emissive).
+- Geheel binnen de eigen cel (3×3-regel van de dauwgeodes). Gesloten of aangesneden: G2-WB2.
+
+## 2. Bestanden (eigenaarschap golf 2)
+- **Eigen:**
+  - `Ring3Biomes`, `Ring3BiomeModifiers`, `Ring3Features` (+ sub-bootstraps per pakket, bijv. `Ring3OreFeatures`, `Ring3DressingFeatures`, `TitanFieldsFeatures`, `EmberWoodsFeatures`, `SteamFensFeatures`, `Ring3HorrorFeatures`), `Ring3Carvers` (blijft leeg), `Ring3BiomeTags`, `Ring3BiomeNames`;
+  - nieuwe feature-types en -configs in `worldgen/feature/` met ring 3-namen, `VolcanicFilter` (placement);
+  - `DryRiverbedsFeatures` (alleen de vlekken);
+  - `tools/worldgen/Ring3Templates.java` + `data/corruptedadventure/structure/ring_3/*.nbt`;
+  - preset: ring 3-overworld-source en `transitions.ring_3`;
+  - `noise_settings/overworld.json` (ring 3-takken) en `tools/worldgen/ring3_surface.py` (gedeeld met 39f en 42: zie Afhankelijkheden).
+- **Append-blokken** (waves §5), elk met kopcommentaar `// ring 3 — W-biomes` aan het eind: `ModFeatures`, `ModPlacementModifierTypes`, `ModConfiguredFeatures`/`ModPlacedFeatures` (als die gebruikt worden).
+- **Uitzondering contract §4 (48):** `switch_at` in de drie `ring_blend/overworld_*`-bestanden.
+- **Niet aanraken:**
+  - `VolcanicField` en familie, `density_function/**`, `RingAquifer`/`RingFluidPicker` (W-terrein/39f);
+  - `BiomeAmbience` en `ModSoundEvents`/`ModParticleTypes` (A);
+  - `ModBlocks`/`ModTags`-inhoud (B; nieuwe blokken of tags via main).
+
+## 3. Afhankelijkheden
+- **39f** (loopt parallel, raakt `VolcanicField`, `Landmarks`, `ring3_surface.py`):
+  - 41, 47, 47b en 49 kunnen ervóór, maar coördinaten en terreindetails kunnen na 39f verschuiven. Rebase op de 39f-merge vóór 47c, en meet de W-checklist pas op die stand.
+  - 47c (lavavallen, eilanden) en 48 (surface-script) pas ná de 39f-merge.
+- **42 (W-terrein, ná 39f):**
+  - 41b wacht op de geode-DF + `FireGeodeShape`;
+  - vuurrobijn in basaltwanden wordt pas zichtbaar na 42 (geen code-afhankelijkheid).
+  - 42 voegt eigen takken toe aan `ring3_surface.py` (wanden van buizen en kamers). Wie als tweede merget, draait het script opnieuw (idempotent, valkuil 39c); conflicten in `overworld.json` worden niet met de hand opgelost.
+- **A:**
+  - de definitieve biome-effecten (kleuren, particles, ambient) komen via `BiomeAmbience` (A, 50);
+  - `steam_puff` en de blokgeluiden zijn van A.
+  - Voorstel (zie `golf-2-atmosphere.md`, voorpakket 50-0): A zet vóór de golf de haken klaar (`BiomeAmbience.ring3(key)` met de huidige `PALETTES`, gedrag-neutraal), zodat W-biomes er vanaf de start mee bouwt.
+  - Zonder voorpakket: W-biomes houdt de voorlopige kleuren en de integratie zet de ene regel om.
+  - Tot `steam_puff` bestaat, gebruiken fumarolen en geisers de vanilla-particles van B (zit in de blokken, niet in de features).
+- **B:** alle contractblokken bestaan sinds golf 1. Nieuwe blokken (bijv. een eigen schedelblok) alleen via main.
+- **T:** geen; T stuurt bij op het in-game beeld van deze features.
+- **C:** leest `heat_refuges` (`dormant_caldera`) en `heat_sources`; geen nieuwe tags tenzij G2-C4 dat vraagt.
+
+## 3b. Afhankelijkheid 39f
+39f (worldgen, parallel) zet alle zwevende eilanden met hun top op ≤ Y 185 (archipel Y ~150–185, plaat van de zwevende vulkaan Y ~165–175), sluit vanilla-grotingangen in ring 3 ~8 onder het maaiveld af en maakt eigen zinkgaten (~1 per 250–350 blokken), vervangt de coarse_dirt-vlekken van `ember_woods` door ring 3-blokken en zet ~1 boog per riftdal. Features die op eilanden, zinkgaten of de `ember_woods`-surface leunen: pas definitief afstemmen na de merge van 39f (rebase).
+
+## 4. Open vragen (ontwerp; nog niet in design-docs, contract of beslissingenlog)
+Aanbevolen optie eerst. Consequenties: **C** = complexiteit, **MP** = multiplayer, **S** = speelgevoel, **P** = prestatie.
+
+**G2-WB1 — Hoe ver bouwen we vanilla-ertsen af in ring 3?** (ring 2 = 0,6 / 0,5 / 0,25 voor gewoon / midden / zeldzaam)
+- **A. 0,35 / 0,3 / 0,1 (aanbevolen).** C laag (één regel). S: ijzer en kolen voelbaar schaars, diamant bijna weg ("verder afgebouwd dan ring 2"); vulkaniet wordt het hoofdmateriaal. P geen.
+- **B. 0,5 / 0,4 / 0,15.** S mild; minder druk om vulkaniet te zoeken.
+- **C. 0,2 / 0,2 / 0,05.** S hard; zonder vulkaniet weinig voortgang. Kan frustreren vóór fase 2 (gear).
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB2 — Vuurkristal-geodes: hoe vind je ze?**
+- **A. Gesloten (wandtest zoals de dauwgeodes), diep (Y −50…20), ~1 per 12 chunks, straal 4–7; soms aangesneden door een lavabuis van 42 (aanbevolen).** C middel (sjabloon dauwgeodes + één snijregel met de buizen). S: echte vondst; de gloed in een buiswand lokt. P: DF-holte, binnen het budget (gemeten bij 42).
+- **B. Altijd gesloten, iets vaker (~1 per 8 chunks).** C laag. S: je vindt ze alleen al graven.
+- **C. Zeldzaam maar groot (straal 8–12, "kristalkathedraal", ~1 per 40 chunks).** C middel. S: wow-landmark ondergronds; veel spelers missen hem. P: grotere holte, iets duurder.
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB3 — Waar komen de "spaarzame lavavallen" (47c)?** 39d/39f hebben al vallen vanaf de eilandbronnen.
+- **A. Alleen waar de val in bestaande lava eindigt: kraterwanden boven het meer, rivierkloven, afgrondwanden boven de lavazee; ~1 per 2–4 vulkanen, cap 2 bronnen per chunk; mechanisme gedeeld met de eilandbronnen (aanbevolen).** C middel. MP: stromende lava is server-side en deterministisch na het uitzakken. S: een val wordt een landmark zonder over het land te lopen (geen branden, geen lavaplaten). P: weinig blokupdates.
+- **B. Ook van kliffen en plateaus op het land, met een poeltje aan de voet.** C middel. S: meer gevaar en spektakel. Risico: lava loopt over smeulwoud en paden; de poel moet een korst krijgen.
+- **C. Geen extra vallen; alleen die van de eilanden.** C geen. S: minder levendig bij de kraters.
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB4 — Smeulwoud (`ember_woods`): welk woud?** (V3: stam verkoold, `ember_leaves` emissive, 6–12 hoog, "dicht genoeg voor een woud")
+- **A. Gemengd woud, ~6–8 bomen per chunk met open plekken: smeulbomen 6–9 (bolle kroon), smeulreuzen 10–12 (getrapte kroon), kale verkoolde stammen en omgevallen stammen; bes-struiken en vuurbloemen in de open plekken (aanbevolen).** C middel (3 boomvormen + omgevallen stam). S: 's nachts een zee van gloeiende kronen met donkere gaten; voedsel in de open plekken; monsters spawnen onder het dak (spannend). P: features-stap hoger dan ring 2 (bomen); meten.
+- **B. Dicht, gelijkmatig woud (~10 per chunk), één boomvorm.** C laag. S: indrukwekkend maar eentonig; weinig licht, dus de bes-struik groeit nergens terug.
+- **C. Open, savanne-achtig (~3 per chunk).** C laag. S: rustig, minder "woud"; minder wow 's nachts.
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB5 — Slapende krater (`dormant_caldera`, de oase): wat staat erin?** (V8: groen, koel, geen natuurlijk water)
+- **A. Mos en grove aarde met varens, azalea-struiken en hangende wortels/glow lichen langs de kraterwand, zeldzaam een levende boom (azalea) als baken, `ember_berry_bush` aan de rand (aanbevolen).** C laag (vanilla-features, chunk-lokaal). S: duidelijk rustpunt, van boven herkenbaar groen. P laag.
+- **B. Alleen mos, grove aarde en varens.** C laag. S: sober, minder "beloning".
+- **C. Als A + een "verloren tuin": vuurbloem-weide en een kring van verkoolde stenen.** C middel. S: meer fantasy, iets drukker.
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB6 — Titanenveld: wat doet 47b nog naast de 39d-ribben (20–60, al met bot-surface)?** (V1 noemde skeletten van 20–40 als features)
+- **A. Aanvullen i.p.v. verdubbelen: schedels en losse wervels/botten als kleine sjablonen (chunk-lokaal), zielvuur op zielgrond in en rond de ribbenkasten, en zeldzame titanen-rotsen (15–35 hoog, ~1 per biomevlak; 3×3 met rangregel) (aanbevolen).** C middel. S: de ribben blijven het beeld; zielvuur en schedels geven het verhaal; titanen-rotsen worden het landmark. P laag.
+- **B. Zoals V1: ook complete botskeletten van 20–40 tussen de ribben.** C hoog (grote sjablonen over chunkgrenzen, rangregel). S: drukker; botst visueel met de ribben.
+- **C. Geen extra botten: alleen zielvuur en titanen-rotsen.** C laag. S: kaler, minder verhaal.
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB7 — Drooggevallen zeebodem: welke aankleding?**
+- **A. Dode koraalriffen (vanilla dood koraal: blokken, waaiers, planten) op de rifruggen, gedroogde kelpbalen en dode struikjes in de kom, en zeemonsterfossielen (bot, sjablonen) op de kustterrassen (aanbevolen).** C laag/middel. S: "hier was water" leest direct; fossielen geven wow. P laag.
+- **B. Alleen dode koraalriffen.** C laag. S: herkenbaar maar kaal.
+- **C. A + verdroogde zeeplanten in "zoutpannen" (ring 2-patroon).** C middel. S: rijker; het lijkt op ring 2's zoutvlakte.
+- Let op: scheepswrakken en havens zijn structures (fase 3, backlog).
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB8 — Zwavelvelden en basaltstromen: welke accenten naast de fumarolen?**
+- **A. Zwavel: modderpoeltjes (`boiling_mud`) in de zinkgatbodems. Basalt: hornitos (spatkegeltjes van 2–4 met een kap van magma en vonken), gestolde lava-"tongen" (blackstone) (aanbevolen).** C middel (twee kleine vormfeatures). S: beide biomes worden "actief" (bubbelen, gloeien) zonder vrije lava. P laag.
+- **B. Ook af en toe een geiser in de zwavelvelden.** C laag (blok bestaat). S: verrassing; geisers zijn dan niet meer exclusief voor `steam_fens`.
+- **C. Alleen fumarolen en smeulsteen-ventjes.** C laag. S: rustiger, minder levendig.
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB9 — Asvlakte en pieken: welke accenten?**
+- **A. Asvlakte: aslagen in de lijzijde, losse verkoolde dode bomen in de geulen, puimsteenkeien. Pieken: "inslagkraters" van oude lavabommen (kuiltje met obsidiaanscherven en een magmakern) en lage blackstone-rotsen (aanbevolen).** C laag/middel. S: de lavabommen van het weer krijgen een spoor in het landschap; de vlakte blijft open. P laag.
+- **B. Alleen aslagen en puimsteenkeien.** C laag. S: leeg, maar wel "woestenij".
+- **C. A + verkoolde "spookbossen" (groepjes kale bomen) op de asvlakte.** C laag. S: sfeervol, maar het lijkt op het smeulwoud.
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB10 — Horror: hoe vaak afgietsels en voetsporen, en waar?**
+- **A. Afgietsels ~1 groepje (1–3) per 3–4 chunks in `ashen_wastes` en zeldzaam in `ember_woods`/`titan_fields`; voetsporen ~1 per 20 chunks, 15–40 stappen, eindigend bij een afgietsel, kraterrand of afgrond; afgietsels kijken naar de dichtstbijzijnde vulkaan (aanbevolen).** C middel. S: geregeld een rilling, niet overal; 's nachts gloeiende figuren. P laag.
+- **B. Vaak (overal in ring 3, ~1 per chunk in de asvlakte).** C laag. S: sterk thema, maar het went snel.
+- **C. Heel zeldzaam (vondsten, ~1 per 10 chunks).** C laag. S: elk afgietsel is een schrik; veel spelers zien ze nauwelijks.
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB11 — Levende elementen: komen er extra vanilla-wezens in ring 3 (naast de geiten)?** (contract: geen vee behalve geiten; monsters = woestijnset tot fase 4)
+- **A. Striders op de lavarivieren en kratermeren (zeldzaam, alleen op lava) (aanbevolen).** C laag (spawns in biome-data). MP geen. S: de lava leeft; een rijdbaar "lavapaard" als beloning (met warped fungus on a stick uit de Nether). P verwaarloosbaar.
+- **B. A + magmakubussen 's nachts in `basalt_flows`.** C laag. S: meer gevaar; dat is eigenlijk `mobs` (fase 4).
+- **C. Niets extra tot fase 4.** C geen. S: ring 3 blijft stil buiten de geiten.
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB12 — `steam_fens` nu bouwen terwijl ring 4 nog placeholder is: hoe ver?**
+- **A. Biome, surface en aankleding nu (modderpoelen, geisers, stoomkolommen, kleine kookpoelen met water in kommen boven Y 63); de terreinvorm blijft de menging met de ring 4-placeholder tot ring 4 (aanbevolen).** C middel. MP: water in features in eindtoestand. S: de overgang 3→4 is af voor 4b; "het gestolen water kookt" is zichtbaar. Risico: bij ring 4 nog afstemmen (backlog `ring3Seal`).
+- **B. Biome en surface nu, aankleding samen met ring 4.** C laag. S: de grens 3→4 blijft kaal in 4b.
+- **C. Zoals A, maar zonder water (alleen modder en stoom) tot ring 4.** C laag/middel. S: minder verhaal; geen waterrandgevallen (verdamping).
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+**G2-WB13 — Zwevende eilanden en archipels: aankleden?** (contract §4 noemt "eilandaankleding"; 39f past de archipel aan)
+- **A. As en smeulende as op de toppen, 1–3 smeulbomen op grote eilanden, en vuurkristalclusters die aan de onderkant hangen (gloeien 's nachts, van onderaf zichtbaar) (aanbevolen).** C middel (onderkant: plaatsing aan een plafond). S: wow van onderaf, beloning voor wie erop klimt. P laag.
+- **B. Kaal basalt (contrast met de kraters).** C geen. S: strak, minder reden om erheen te gaan.
+- **C. "Hangende tuin": slapende-krater-groen op de grote eilanden.** C middel. S: fantasy-oase in de lucht; concurreert met `dormant_caldera`.
+- Antwoord: A (aanbevolen; gebruiker 2026-10-08, "alles aanbevolen")
+
+## 5. Client/server-impact
+Alleen worldgen-data en features (server). Geen netwerk en geen client-code. Biome-effecten zijn data; de client rendert ze. Geisers en stromende lava draaien server-side.
+
+## 6. Tests (per pakket)
+- **B:** `./gradlew build` groen (unit tests, `ClientIsolationTest`).
+  - Nieuwe unit tests: `VolcanicFilter` (grenzen per uitgang, `ground_only` op een naald/eiland/brug), ertsconfig, featurevolgorde (geen cyclus: alle ring 3-biomes in één `FeatureSorter`-run), sjabloongenerator (2× → identieke `.nbt`), voetspoorpad (puur, chunkstukken sluiten aan), `Ring3BiomesTest` + `Ring3RegionSharesTest` (+ `steam_fens` in 48), `Ring3JsonTest` (`switch_at` in 48).
+- **D:** `runData` groen; de output gecommit in de eigen branch.
+- **S:** server (poort 25572), RCON; `/place feature corruptedadventure:ring_3/<naam>` per feature; `/locate biome` per biome. Geen fouten "Detected setBlock in a far chunk" of "Feature order cycle".
+- **Determinisme:** twee verse werelden (seed `20260930`), de tweede omgekeerd geladen. Per biome 16 × 16 chunks + de landmarkgebieden A–E van 39d.
+  - Alle eigen blokken (features) identiek, na 60 s uitzakken.
+  - Verschillen alleen in vloeistofstroming en vanilla-ertsklodders.
+- **Feature-index:** ring 1/2 tegen main op biomes en terreinvorm (heightmap). Ertsen en decoratie mogen verschuiven: noteren, niet oplossen. De officiële meting doet INT.
+- **Prestatie:**
+  - W-biomes raakt de noise-stap niet; 48 raakt wel de biomes-stap (router-klimaat zone 3→4).
+  - Meet de **features-stap** en de **wandtijd** (16 × 16, warm-up over alle ringtypes, ≥ 3 rondes, JFR `minecraft.ChunkGeneration`) in smeulwoud, titanenveld, asvlakte en `steam_fens` tegen vanilla.
+  - Geen vast budget, maar stoppen en melden boven 2× vanilla in de features-stap of als de wandtijd per gebied > 10 % stijgt t.o.v. main.
+  - Noise-budget (≤ 1,75×, mediaan per gebied) alleen ter controle in 48.
+- **Review:** de agent meldt "klaar voor review-doorsturen: <pakket>" met een korte diff-samenvatting; main draait `/code-review medium` en stuurt de uitslag door. Pas daarna committen (opdracht 05; vervangt waves §4.9 voor golf 2).
+
+## 7. W-checklist (in-game, verse wereld seed `20260930`, na 39f; coördinaten x, z)
+Biomepunten uit 39b (de regio-assen zijn niet veranderd): ashen (5.262, 480), peaks (4.110, 672), ember (4.750, 0), basalt (4.814, −288), sulfur (4.270, 480), seabed (5.710, −32), titan (4.942, 160). Landmarks 39d: ribbenkasten (−1.493, 4.144) en (−1.161, 4.327), afgronden (4.531, −413) en (5.120, 2.354), archipels (2.622, −2.738), (4.993, −2.124), (5.494, 1.413), boog over een rivier (−5.168, 829). Coördinaten van decoratie pas na de eindcode opnieuw opzoeken (feature-index).
+- [ ] **41:**
+  - in een grot of rift onder smeulwoud (4.750, 0): vulkaniet in steen/basalt Y −40…40, meer bij lava;
+  - zwavel ondiep in de zwavelvelden (4.270, 480);
+  - vuurrobijn zeldzaam en gloeiend;
+  - ijzer en kolen zichtbaar schaarser dan in ring 2;
+  - `dry_riverbeds`: ring 3-ertsen alleen in de ring 3-helft (`/ca tpboundary 2`, ~50 oost).
+- [ ] **47:**
+  - fumarolen puffen op de heuveltjes van de zwavelvelden, met een zwavelkraag;
+  - koraalriffen en fossielen in de zeekom (5.710, −32);
+  - aslagen in de lijzijde van de duinen (5.262, 480), nooit op lavaoevers of naaldtoppen;
+  - vlekken in `dry_riverbeds` grijs as + verkoolde stronken.
+- [ ] **47b:** ribbenkasten (−1.493, 4.144): zielvuur, schedels/wervels; een titanen-rots in het titanenveld (4.942, 160). 's Nachts blauw zielvuur tegen de botten.
+- [ ] **49:** 's nachts gloeiende afgietsels in de asvlakte; een voetspoor dat abrupt stopt.
+- [ ] **47c:**
+  - smeulwoud (4.750, 0) dag en nacht (gloeiende kronen, open plekken met bessen en vuurbloemen);
+  - slapende krater (~−4.915, 560 of `/locate biome corruptedadventure:dormant_caldera`) groen;
+  - lavavallen bij de actieve caldera (~−3.870, −1.790) en de horizonreus (~−3.895, 65);
+  - geiten op de pieken (4.110, 672);
+  - archipel (2.622, −2.738) aangekleed.
+- [ ] **48:** `/ca tpboundary 3`: `steam_fens` met modderpoelen, geisers die spelers lanceren (ook direct na het genereren, want de tick is gepland), stoom; geen water tegen lucht; ring 4-kant ongewijzigd.
+- [ ] **41b:** een geode (coördinaten uit de pure vorm, door de agent opgezocht) met gloeiende clusters; niet door een afgrondwand of in lucht.
+- [ ] Algemeen: geen features op naalden, bogen, ribkruinen, brugdekken of lavaoevers; geen zwevende brokken boven Y 140; levendigheid: 2 min lopen per biome, en elk biome heeft iets eigens.
+
+## Voortgang
+
+## CODEBASE-delta
+
+## Beslissingen
+
+## Backlog
