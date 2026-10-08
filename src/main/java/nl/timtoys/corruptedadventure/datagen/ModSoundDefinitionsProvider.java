@@ -1,7 +1,6 @@
 package nl.timtoys.corruptedadventure.datagen;
 
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.common.data.SoundDefinition;
@@ -72,12 +71,13 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .with(loop("ambient/ring_3/titan_hum_loop_1")));
         add(ModSoundEvents.RING_3_CALDERA, SoundDefinition.definition()
                 .with(loop("ambient/ring_3/caldera_loop_1")));
-        // Nether ring 3 (package 50-0): vanilla references until package 56.
+        // Nether ring 3 (package 56): the cold wind (loop) and creaking ice (additions).
         add(ModSoundEvents.NETHER_RING_3_WIND, SoundDefinition.definition()
-                .with(vanilla(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_LOOP.value().getLocation()).pitch(0.8F)));
+                .with(loop("ambient/nether_ring_3/wind_loop_1"), loop("ambient/nether_ring_3/wind_loop_2")));
         add(ModSoundEvents.NETHER_RING_3_ICE_CREAK, SoundDefinition.definition()
                 .subtitle(subtitle("ambient.nether_ring_3.ice_creak"))
-                .with(vanilla(SoundEvents.POWDER_SNOW_BREAK.getLocation()).pitch(0.5F)));
+                .with(file("ambient/nether_ring_3/ice_creak_1"), file("ambient/nether_ring_3/ice_creak_2"),
+                        file("ambient/nether_ring_3/ice_creak_3")));
         // Block sounds, played by stream B (package 46) at the block.
         add(ModSoundEvents.FUMAROLE_PUFF, SoundDefinition.definition()
                 .subtitle(subtitle("block.fumarole.puff"))
@@ -103,10 +103,6 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
 
     private static String subtitle(String event) {
         return "subtitles.corruptedadventure." + event;
-    }
-
-    private static SoundDefinition.Sound vanilla(ResourceLocation event) {
-        return sound(event, SoundDefinition.SoundType.EVENT);
     }
 
     private static SoundDefinition.Sound netherFile(String name) {

@@ -18,6 +18,7 @@ import nl.timtoys.corruptedadventure.client.particle.EmberParticle;
 import nl.timtoys.corruptedadventure.client.particle.IceGlintParticle;
 import nl.timtoys.corruptedadventure.client.particle.SandGustParticle;
 import nl.timtoys.corruptedadventure.client.particle.SteamPuffParticle;
+import nl.timtoys.corruptedadventure.client.weather.ColdBreath;
 import nl.timtoys.corruptedadventure.client.weather.Ring3Ambience;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
 import nl.timtoys.corruptedadventure.network.ClientboundHandlers;
@@ -51,6 +52,8 @@ public final class CorruptedAdventureClient {
         RingWeatherClientHooks.register(NeoForge.EVENT_BUS);
         // Ring 3 ambience outside the weather (package 50): rumble with camera shake, sparks on the peaks.
         Ring3Ambience.register(NeoForge.EVENT_BUS);
+        // Breath in the cold of Nether ring 3 (package 56).
+        ColdBreath.register(NeoForge.EVENT_BUS);
     }
 
     private static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {

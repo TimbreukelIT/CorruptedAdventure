@@ -31,20 +31,21 @@
   },
   "ambient.nether_ring_3.ice_creak": {
     "sounds": [
-      {
-        "type": "event",
-        "name": "block.powder_snow.break",
-        "pitch": 0.5
-      }
+      "corruptedadventure:ambient/nether_ring_3/ice_creak_1",
+      "corruptedadventure:ambient/nether_ring_3/ice_creak_2",
+      "corruptedadventure:ambient/nether_ring_3/ice_creak_3"
     ],
     "subtitle": "subtitles.corruptedadventure.ambient.nether_ring_3.ice_creak"
   },
   "ambient.nether_ring_3.wind": {
     "sounds": [
       {
-        "type": "event",
-        "name": "ambient.soul_sand_valley.loop",
-        "pitch": 0.8
+        "name": "corruptedadventure:ambient/nether_ring_3/wind_loop_1",
+        "stream": true
+      },
+      {
+        "name": "corruptedadventure:ambient/nether_ring_3/wind_loop_2",
+        "stream": true
       }
     ]
   },

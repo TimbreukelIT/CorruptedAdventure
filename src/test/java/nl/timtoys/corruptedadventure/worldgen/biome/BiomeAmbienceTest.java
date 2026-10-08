@@ -156,11 +156,14 @@ class BiomeAmbienceTest {
         return BiomeAmbience.ring3(biome).build().getAmbientParticleSettings().orElseThrow(() -> new AssertionError(biome.toString()));
     }
 
-    /** The settings have no getter for it: read the atmosphere's own value (and check it reaches the effects). */
     private static float probability(ResourceKey<Biome> biome) {
-        Ring3Atmosphere.Particle particle = Ring3Atmosphere.look(biome).particle().orElseThrow(() -> new AssertionError(biome.toString()));
-        assertSame(particle.type().get(), particle(biome).getOptions(), biome.toString());
-        return particle.probability();
+        return probability(particle(biome));
+    }
+
+    /** The settings have no getter for it: read it from their own codec, as it goes into the biome JSON. */
+    private static float probability(AmbientParticleSettings settings) {
+        return AmbientParticleSettings.CODEC.encodeStart(JsonOps.INSTANCE, settings).getOrThrow()
+                .getAsJsonObject().get("probability").getAsFloat();
     }
 
     @Test
@@ -174,6 +177,15 @@ class BiomeAmbienceTest {
             assertTrue((fog & 0xFF) > (fog >> 16 & 0xFF), biome + " fog is bluer than red");
             assertEquals(Optional.of(AmbientMoodSettings.LEGACY_CAVE_SETTINGS), effects.getAmbientMoodSettings(), biome.toString());
             assertEquals(Optional.empty(), effects.getBackgroundMusic(), biome.toString());
+            // Package 56: ice crystals (subtle), the cold wind and creaking ice.
+            AmbientParticleSettings particle = effects.getAmbientParticleSettings().orElseThrow();
+            assertSame(ModParticleTypes.ICE_GLINT.get(), particle.getOptions());
+            float glints = probability(particle);
+            assertTrue(glints > 0.0F && glints <= 0.01F, biome + " " + glints);
+            assertSame(ModSoundEvents.NETHER_RING_3_WIND, effects.getAmbientLoopSoundEvent().orElseThrow());
+            AmbientAdditionsSettings creaks = effects.getAmbientAdditionsSettings().orElseThrow();
+            assertSame(ModSoundEvents.NETHER_RING_3_ICE_CREAK, creaks.getSoundEvent());
+            assertTrue(creaks.getTickChance() > 0.0 && creaks.getTickChance() < 0.0111, "rarer than the basalt deltas'");
             fogs.add(fog);
         }
         assertEquals(biomes.size(), fogs.size(), "every fog differs");
