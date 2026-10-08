@@ -117,6 +117,13 @@ Aanbevolen optie eerst. **C** = complexiteit, **MP** = multiplayer, **S** = spee
 - Voortgang: 15:30 55 naar main voor review (nog niet gecommit). 43-afstemming: eerste meting (320 punten, 20 gebieden ring 3, seed 20260930): 8,8 % van het oppervlak binnen 4 blokken van een hittebron, 0,0 % van lava; palette-voorcheck slaagt bij 19,1 %; scan mediaan 0,8 µs, p90 32 µs, max 159 µs; met kandidaat mediaan 32 µs, p90 131 µs. Grotere meting (1280) gaf OutOfMemory op de server (de probe genereerde te veel chunks in één tick); opnieuw in kleinere porties. Dak onder een eiland nog niet met een speler getest (kandidaat −3645 135 −4085, top 160).
 - Voortgang: 15:55 review 55 (main, 9 bevindingen) verwerkt: (1) protocolversie blijft voor INT; (2) geen bevriezing en geen koudeschade terwijl de speler brandt; (3) `leatherReductionPerPiece` max 0,2 (nooit immuun); (4) tick-churn van `ticksFrozen` vastgelegd, niet opgelost (zie `ColdFreeze`/Beslissingen); (5) `ColdFreeze.apply` bouwt geen `DamageThreshold` meer per aanroep (eigen schade vanwege de brandcheck); (6/7) hernoeming expliciet in de delta, backlogregel kampvuur staat; (8) `standsOn` kijkt in de lucht tot 2 blokken omlaag; (9) `&` in `HeatRule.inZone` volgt in 43.
 - Voortgang: 15:45 reviewfixes getest: B groen (11 + alle tests); S (server + Dev): 1,2 blok boven het ijs nog `ice`, 2,5 blok erboven `zone`; brandend (fire resistance, eeuwig vuur, `warmthFall` tijdelijk 0) bij kou 100 in 10 s geen schade en `TicksFrozen` 0; vuur uit → weer bevroren en schade; 0 ERROR in de serverlog.
+- Voortgang: 15:50 55 gecommit (`77c491d`).
+- Voortgang: 16:30 43-afstemming gemeten (wereld `c-g2-a`, seed 20260930, warm, alleen server tijdens de probe):
+  - **Aandeel binnen 4 blokken** (voeten op het oppervlak, `MOTION_BLOCKING_NO_LEAVES`): 120 losse chunks × 64 kolommen (7.680 kolommen): hittebron 6,8 % (13,3 % van de chunks raakt er één), lava 1,6 % (2,5 % van de chunks). Steekproef in 3 × 3-gebieden (1.040 punten, 65 gebieden, porties ≤ 320): hittebron 6,9 % (per portie 0–15 %), lava 0 %. "Bron ×1,5" geldt dus niet bijna overal; geen regelwijziging.
+  - **Bronscan** (`NearbyBlocks.near`, straal 4, warm, 5× herhaald): palette-voorcheck slaagt bij 6,7–34 % van de punten (gemiddeld ~17 %); zonder kandidaat mediaan 0,7–1,3 µs; met kandidaat (volle scan) mediaan 31–140 µs, p90 41–149 µs, max 254 µs. Met 2 spelers 2 scans/s: hoogstens ~0,5 ms per seconde servertijd.
+  - **Dak onder eilanden:** onder een eiland (−2410, 159, −2714; top Y 204) `heat −0,50/s roof`, erbovenop `sun`; onder een tweede eiland (−3645, 135, −4085; top Y 159) eerst `peak` door magma binnen 4 blokken, na het weghalen `roof`. De heightmap-regel werkt dus ook onder eilanden op Y 150–210.
+- Voortgang: 16:35 43: `HeatRule.inZone` met `&` (gedrag-neutraal; `HeatRuleTest` ongewijzigd groen); commentaar ook in `ColdRule.inZone`. Les: de probe genereerde in één tick 1.280 punten (720 chunks) → OutOfMemory op de testserver; porties ≤ 240 en zonder clients (die vallen anders uit op de time-out).
+- Voortgang: 16:45 review 43-afstemming (main, low): geen bevindingen; gecommit.
 
 ## CODEBASE-delta
 
@@ -137,6 +144,10 @@ Aanbevolen optie eerst. **C** = complexiteit, **MP** = multiplayer, **S** = spee
 - Gegenereerd: `data/corruptedadventure/damage_type/cold.json`, `data/minecraft/tags/damage_type/is_freezing.json` (+ `cold` in `bypasses_armor`, `no_knockback`, `neoforge:is_environment`), lang en + nl.
 - Tests: `condition/ColdRuleTest.java` (zone + grens 0,49/0,51 aan beide kanten, ~4 min, ijs/open vlakte ×1,5, sterkste factor zonder stapelen, warmte overal in de zone, buiten de zone, +0,0, alle 16 invoercombinaties, `isRisingCold`, leer per stuk en nooit < 0, `frozenTicks`); `ThresholdLevelsTest.coldHasThreeRisingThresholds`.
 
+**43-afstemming:**
+- `condition/HeatRule.java`: `inZone` met `&` in plaats van `&&` (geen vertakking die omslaat als de eerste spelers of waterupdates ring 3 bereiken; backlog r. 203); gedrag gelijk. `RingPosition.ring()` heeft zelf nog een vergelijking (`blend < 0.5`), niet van C.
+- Metingen (CODEBASE "Hitte"): ~7 % van het ring 3-oppervlak ligt binnen 4 blokken van een hittebron, ~1,6 % van lava; een volle bronscan kost warm 31–140 µs (mediaan), zonder palette-kandidaat ~1 µs.
+
 ## Beslissingen
 
 - 2026-10-08 · conditions · 55: kou in Nether-3 = G2-C1..C4 A (gebruiker 2026-10-08): 0 → 100 in ~4 min, ×1,5 op ijs en in de biome-tag `cold_exposed` (open vlakte `frozen_lava_sea`), drempels 33 traagheid I · 66 mining fatigue I · 100 bevriezing, −15 % per leren stuk, warmte binnen 4 blokken −2/s, zwaveldamp alleen sfeer.
@@ -147,7 +158,9 @@ Aanbevolen optie eerst. **C** = complexiteit, **MP** = multiplayer, **S** = spee
 - 2026-10-08 · conditions · 55 (review): de entity-data van een bevroren speler gaat elke tick mee (`aiStep` dooit 2, `ColdFreeze` zet 140 terug); geaccepteerd, want vanilla doet hetzelfde met de luchtvoorraad onder water. Vermijden vraagt een mixin in `LivingEntity.aiStep` en het onderdrukken van vanilla's vriesschade bij 140; niet gedaan.
 - 2026-10-08 · conditions · 55 (review): `leatherReductionPerPiece` hoogstens 0,2, zodat vol leer nooit immuun maakt; een brandende speler bevriest niet en krijgt geen koudeschade.
 - 2026-10-08 · conditions · 55 (implementatie): damage type `cold` heeft de tags van vanilla's `freeze` (`is_freezing`: vriesgeluid, gamerule `freezeDamage` geldt; door armor; geen knockback; environment). Branden ontdooit (vanilla) en houdt de bevriezing tegen.
+- 2026-10-08 · conditions · 43-afstemming: "bron ×1,5" geldt op ~7 % van het ring 3-oppervlak (lava ~1,6 %); geen aanpassing van de hitteregel, verdere afstemming na de feedback van 4b.
 
 ## Backlog
 
+- [worldgen] Bijwerken van de regel over JIT-deopts (r. 203): `HeatRule.inZone` is sinds 43-afstemming (golf 2) vertakkingsarm (`&`); het punt over `HeatRule.inZone` kan dicht.
 - [conditions] Hitte: een gedoofd kampvuur telt nog als hittebron (`#heat_sources` zonder `lit`-check); bij de kou wel gecheckt. Gelijktrekken als de gebruiker dat wil. (bron: 55)

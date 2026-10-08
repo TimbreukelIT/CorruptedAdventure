@@ -41,7 +41,7 @@ public record ColdRule(Rates rates, int warmthRadius) implements ConditionRule {
 
     /**
      * The zone: ring 3 of the Nether, switching at blend 0.5 like the biomes. Both tests always run ({@code &}, not
-     * {@code &&}): no branch whose profile flips when the first players reach ring 3 (backlog r. 203).
+     * {@code &&}), as in {@link HeatRule#inZone}: no branch whose profile flips when the first players reach ring 3.
      */
     static boolean inZone(ResourceKey<Level> dimension, RingPosition position) {
         return dimension == Level.NETHER & position.ring() == Ring.RING_3;
