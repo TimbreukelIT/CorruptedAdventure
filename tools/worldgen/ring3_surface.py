@@ -404,7 +404,9 @@ def ring_3_deep():
     (the ring 2 and vanilla branches test their biomes per block); stone is what they became anyway. 42b: except the
     walls of deep cuts, which get ring 3 rock."""
     return all_of([reach("ring_3"), NOT(reach("ring_2")), NOT(reach("ring_4")), NOT(GATE), NOT(THIN_ANY)], seq(
-        cond(volc("deep_wall", 0.5, 2.0), deep_wall_rock()),
+        # One test per column first (the surface condition remembers its column), so only columns beside a deep cut pay
+        # the per-block test.
+        all_of([volc("cut_depth", 8.0, 1000.0), volc("deep_wall", 0.5, 2.0)], deep_wall_rock()),
         block("stone")))
 
 

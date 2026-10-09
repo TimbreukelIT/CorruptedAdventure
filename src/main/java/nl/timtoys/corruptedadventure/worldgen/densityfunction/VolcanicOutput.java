@@ -70,6 +70,8 @@ public final class VolcanicOutput implements DensityFunction {
         VEIN("vein", 0.0, 1.0),
         /** 1 where the column holds walls of a lava tube, skylight or magma chamber (42), else 0. */
         CAVE_WALLS("cave_walls", 0.0, 1.0),
+        /** How deep (blocks) a cut near the column may reach below its ground (42b; {@code deep_wall} from 8 on). */
+        CUT_DEPTH("cut_depth", 0.0, 384.0),
         /**
          * 3D (42, for the surface): which wall of a lava tube, skylight or magma chamber a block belongs to: 0 none, 1 the
          * smooth inner skin, 2 the shell, 3 skin bordering lava (a crust).
@@ -113,7 +115,7 @@ public final class VolcanicOutput implements DensityFunction {
 
     private static final Set<Output> PER_COLUMN = EnumSet.of(Output.CALDERA_MASK, Output.CALDERA_DORMANT,
             Output.LAVA_CHANNEL, Output.ISLAND_MASK, Output.ROUGHNESS, Output.VOLCANO_RISE, Output.LAVA_BANK, Output.CLIFF,
-            Output.COLLAPSE, Output.CAVE_WALLS);
+            Output.COLLAPSE, Output.CAVE_WALLS, Output.CUT_DEPTH);
 
     private final DensityFunction field;
     private final Output output;
@@ -176,6 +178,7 @@ public final class VolcanicOutput implements DensityFunction {
             case CLIFF -> column.cliff;
             case COLLAPSE -> column.collapse;
             case CAVE_WALLS -> column.caveCount > 0 ? 1.0 : 0.0;
+            case CUT_DEPTH -> column.cutDepth;
             case INITIAL_HEIGHT, GUARD, CAVE_LIFT, THIN, THIN_KIND, TREAD, VEIN, CAVE_WALL, DEEP_WALL, FIRE_GEODES ->
                     throw new IllegalArgumentException(output + " is not a column value");
         };

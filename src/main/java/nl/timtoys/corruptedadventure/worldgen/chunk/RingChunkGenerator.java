@@ -142,8 +142,19 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
     public void applyCarvers(WorldGenRegion level, long seed, RandomState random, BiomeManager biomeManager,
                              StructureManager structureManager, ChunkAccess chunk, GenerationStep.Carving step) {
         NoiseChunk noiseChunk = createNoiseChunk(chunk, structureManager, Blender.of(level), random);
-        // Carvers ask the surface rules for the top material where they cut through grass.
-        withSurfaceField(noiseChunk, random, () -> super.applyCarvers(level, seed, random, biomeManager, structureManager, chunk, step));
+        // The aquifer keeps carvers out of the band around lava (42b); it must know that a carver asks.
+        RingAquifer aquifer = noiseChunk.aquifer instanceof RingAquifer ring ? ring : null;
+        if (aquifer != null) {
+            aquifer.carving(true);
+        }
+        try {
+            // Carvers ask the surface rules for the top material where they cut through grass.
+            withSurfaceField(noiseChunk, random, () -> super.applyCarvers(level, seed, random, biomeManager, structureManager, chunk, step));
+        } finally {
+            if (aquifer != null) {
+                aquifer.carving(false);
+            }
+        }
     }
 
     /** Runs a pass that evaluates surface rules, with this chunk's ring 3 terrain for {@link #surfaceVolcanicField}. */

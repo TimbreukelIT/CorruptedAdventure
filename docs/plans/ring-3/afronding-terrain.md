@@ -16,7 +16,7 @@ Scope: `worldgen`. Worktree `.claude/worktrees/terrain-g2`, branch `ring3/terrai
      - geen 39d-tunnel door de band rond lava;
      - carvers krijgen rots in de band rond lava (aquifer `null` bij substance 0);
      - vanilla-aquiferlava: geen lokale aquiferlava meer in ring 3 boven Y −54 (V2 = A); diep water onder Y 0 blijft.
-   - Treden apart (offline telling, `RingAquifer` op het testveld; open lavablokken / blokken die als val bij een riviertrede blijven / korstlipjes): B 5.503 / 81 / 173, C 7.939 / 30 / 39, D 20.194 / 66 / 166, caldera 18.691 / 42 / 33, basalt 1.754 / 17 / 21, geode 232 / 42 / 30, E (rivieren) 6.526 / 29 / 44. Overige lava naast lucht: 0 (test `ring3LavaNeverStandsAgainstOpenAir`).
+   - Treden apart (offline telling, `RingAquifer` op het testveld; open lavablokken / blokken die als val bij een riviertrede blijven / korstlipjes), na de review: B 5.497 / 75 / 179, C 7.936 / 27 / 42, D 20.171 / 43 / 189, caldera 18.668 / 19 / 56, basalt 1.754 / 17 / 21, geode 225 / 35 / 37, E (rivieren) 6.525 / 28 / 45. Overige lava naast lucht: 0 (test `ring3LavaNeverStandsAgainstOpenAir`, met het eigen besluit van de aquifer voor de lager gelegen buur).
    - Controle van de grondschatting tegen de INT2-wereld: 100.637 kolommen zonder lava/openingen/crags; de eerste open Y = ⌈bilineaire hoogte⌉ in 80 % (veldhoogte 73 %), afwijkingen vooral door de opgehoogde blokjes van het microreliëf (+1) en carver-gaten.
 2. **Wanden van diepe sneden** in ring 3-gesteente:
    - per kolom `cutDepth` = max(`floorMargin`, kloofdiepte van een rivier + 2) en per blok `deep_wall`;
@@ -39,23 +39,35 @@ Scope: `worldgen`. Worktree `.claude/worktrees/terrain-g2`, branch `ring3/terrai
 - [ ] Nether-3-kloven: 0 ijsblokken binnen 3 blokken van de open lavaspiegels onder Y 30.
 - [ ] Prestatie noise en surface (42b raakt beide).
 
+## Review (main, `/code-review medium`, 2026-10-09)
+1. De trede-uitzondering leunde op de veldlava van de buur op y−1, die de buur zelf tot korst kon maken: nu `becomesLava` (dezelfde beslissing als de aquifer daar neemt: lava, zeker open, niet `exposed`; recursie alleen omlaag). De offline tests gebruiken het aquifer-resultaat voor die buur.
+2. Carvers herkennen aan `substance == 0.0` was fragiel: `RingChunkGenerator.applyCarvers` zet nu een vlag op de `RingAquifer` (`carving(true)` … `false`); een echte dichtheid van 0 blijft gewoon open ruimte. Test `ring3CarversStayOutOfTheBandAroundLava`.
+3. `surfaceAt` nam aan dat elke celhoek de pure terreinterm geeft: de band rond rivieren reikt nu minstens 6 blokken voorbij de lavarand (`RIVER_GUARD`, meer dan een cel; kraters crest + 6, afgrond 0,3 · breedte). Instortingen (de `collapse`-term) blijven ≥ 12 blokken van rivieren en uit vulkanen en de afgrond.
+4. `mayBeOpen`/`surelyOpen` samengevoegd tot `open(…, crags)` met marge met teken; de vier hoekkolommen één keer per vraag (`groundAt`); `islandAt` weg (`thinSolidAt` dekt eilanden).
+5. `ring_3_deep` test eerst per kolom `cut_depth` ≥ 8 (nieuwe kolomuitgang, door de conditie per kolom onthouden), pas dan per blok `deep_wall`.
+6. `MAX_CAVES` 7: zes voor de buizen, daklichten en kamers van 42, één voor de schacht van een instorting (die komt eerst). Randkolommen van een schacht houden `cave_walls` = 1: ze hebben echt een schil om te verven (tot 3 onder het maaiveld; zonder schil telt een kolom niet).
+7. De guard rond lava wordt centraal gehandhaafd in `Column.addVoid` (dus ook voor `addCave`): een opening houdt haar grootste deel buiten de band. Test `noOpeningEntersTheBandAroundLavaWhateverShapeAsks`.
+Daarna `build --rerun-tasks` groen (674 tests), `runData` zonder diff, `ring3_surface.py` idempotent.
+
 ## Voortgang
 Voortgang: 2026-10-09 ~17:30 start; regels, 4b-besluiten, `int2.md` en de backlog gelezen; diagnose in de INT2-wereld (offline, Python op de regiobestanden); vragen V1–V3 naar main.
 Voortgang: ~19:30 randen via de exacte interpolatie, carvers uit de lavaband, 39d-tunnels niet onder lava, wanden van diepe sneden, schachtwanden, 54b; antwoorden V1–V3 (alle A) verwerkt (V2 aquiferlava → lucht, V3 `ash_block` op dunne daken).
 Voortgang: 20:10 `build --rerun-tasks` groen (673 tests), `runData` zonder diff, beide surface-scripts idempotent.
+Voortgang: 20:27 reviewpunten 1–7 opgelost; `build --rerun-tasks` groen (674 tests), `runData` zonder diff; offline tellingen opnieuw.
 
 ## CODEBASE-delta
 Kop: "Laatst bijgewerkt: 2026-10-09 — golf 2-afronding W-terrein (42b, 54b, `worldgen`): lava tegen lucht in ring 3 weg (exacte interpolatie in de aquifer, carvers uit de lavaband, geen 39d-tunnels onder lava, geen lokale aquiferlava), wanden van diepe sneden in ring 3-gesteente, dunne daken `ash_block` i.p.v. vallende askorst, ijsvrije warme kring in de Nether-3-kloven."
 
 Classes:
-- `worldgen/chunk/RingAquifer.java`: 42b — `exposed` kijkt naar de echte grond (`surfaceAt`: bilineaire hoogte van de celhoeken om de 4 blokken, plus crag-marge per hoekruwheid), naar openingen en dunne vaste vormen, ook eronder; een riviertrede blijft alleen een val als de lagere buur die laag zeker met lava vult; carvers (substance 0) krijgen rots in de band rond lava (`guardBottom`/`guardTop` per kolom); geen lokale aquiferlava in ring 3 boven Y −54 (lucht).
-- `worldgen/densityfunction/VolcanicField.java`: 42b — `Column.cutDepth` (max van `floorMargin` en de kloofdiepte van een rivier + 2), `deepWall(y)`, `thinSolidAt(y)`, `guardBottom()`/`guardTop()`; `deepWall(x, y, z)`.
-- `VolcanicOutput.java`: uitgang `deep_wall` (per blok, voor de surface).
+- `worldgen/chunk/RingAquifer.java`: 42b — `exposed` kijkt naar de echte grond (`groundAt`: bilineaire hoogte van de celhoeken om de 4 blokken, plus crag-marge per hoekruwheid), naar openingen en dunne vaste vormen, ook eronder; een riviertrede blijft alleen een val als de lagere buur die laag echt lava wordt (`becomesLava`, dezelfde beslissing); carvers krijgen rots in de band rond lava (`carving`-vlag, gezet door `RingChunkGenerator.applyCarvers`; `guardBottom`/`guardTop` per kolom); **geen lokale aquiferlava meer in ring 3** boven Y −54 (lucht; CODEBASE r. ~442 over aquiferlava in ring 3-grotten klopt dan niet meer).
+- `worldgen/chunk/RingChunkGenerator.java`: 42b — `applyCarvers` markeert de carver-pas op de `RingAquifer`.
+- `worldgen/densityfunction/VolcanicField.java`: 42b — `Column.cutDepth` (max van `floorMargin` en de kloofdiepte van een rivier + 2), `deepWall(y)`, nieuwe publieke accessors `thinSolidAt(y)`, `guardBottom()`/`guardTop()`; `addVoid` houdt elke opening buiten de band rond lava; de rivierband reikt ≥ `RIVER_GUARD` (6) voorbij de lavarand; `MAX_CAVES` 7 (6 voor 42, 1 voor een schacht); `deepWall(x, y, z)`.
+- `VolcanicOutput.java`: uitgangen `deep_wall` (per blok) en `cut_depth` (per kolom), voor de surface.
 - `ThinShapes.java`: 42b — geen 39d-tunnel door de band rond lava; schachten van instortingen met een schil (`addCave`).
 - `CellShapes.java`: `Collapse.shaftOutside`.
 
 Databestanden:
-- `noise_settings/overworld.json` (uit `ring3_surface.py`): de snelle weg verft `deep_wall`-blokken als gelaagd vulkanisch gesteente (tuf in banden, blackstone-aders, basalt); dunne daken in de korstbiomes `ash_block`.
+- `noise_settings/overworld.json` (uit `ring3_surface.py`): de snelle weg verft blokken met `cut_depth` ≥ 8 (per kolom) en `deep_wall` (per blok) als gelaagd vulkanisch gesteente (tuf in banden, blackstone-aders, basalt); dunne daken in de korstbiomes `ash_block`.
 - `noise_settings/nether.json` (uit `nether_ring3_surface.py`): kloofvloeren onder Y 30 koudlava/magma, geen ijs (`RIFT_WARM_BELOW`).
 - `tools/worldgen/ring3_surface.py`: `deep_wall_rock()`, `ring_3_deep()` met wanden; `tools/worldgen/nether_ring3_surface.py`: `RIFT_WARM_BELOW`.
 
@@ -63,7 +75,7 @@ Tests: `Ring3TerrainFixesTest` (nieuw); bijgewerkt: `RingAquiferTest` (randen vi
 
 Valkuilen:
 - **Grond naast lava (42b):** het terrein ligt op de bilineaire mix van de celhoeken (om de 4 blokken), niet op de veldhoogte van de kolom; waar hoogtes verspringen scheelt dat tot ~8 blokken. Elke voorspelling "is dit blok open" moet die mix gebruiken (`RingAquifer.surfaceAt`).
-- **Carvers en de aquifer:** carvers vragen de aquifer met substance 0; `null` = niet uithakken. Zo blijven ze uit de banden rond lava (en rond kamers, gootjes, geodes).
+- **Carvers en de aquifer:** de aquifer weet via de `carving`-vlag (gezet door `RingChunkGenerator.applyCarvers`) dat een carver vraagt; `null` = niet uithakken. Zo blijven ze uit de banden rond lava (en rond kamers, gootjes, geodes). Geen sentinel op de dichtheid: een echte dichtheid van 0 komt voor.
 
 ## Beslissingen
 - 2026-10-09 · worldgen · Riviertreden blijven een vastgelegde kleine lavaval, maar alleen als de lagere buurkolom die laag volgens de exacte interpolatie zeker met lava vult; anders een korstlip · overige lava tegen lucht moet weg (harde regel), de treden horen bij de rivieren van 39d (V1 = A, gebruiker)

@@ -50,6 +50,8 @@ final class RingAquifer implements Aquifer {
     @Nullable
     private final VolcanicField volcanic;
     private boolean suppressed;
+    /** Set while the chunk's carvers run ({@code RingChunkGenerator#applyCarvers}): their open space is a carved tunnel. */
+    private boolean carving;
     private boolean lid;
     private boolean spring;
 
@@ -96,6 +98,11 @@ final class RingAquifer implements Aquifer {
     @Override
     public BlockState computeSubstance(DensityFunction.FunctionContext context, double substance) {
         return compute(-1, context, substance);
+    }
+
+    /** Marks the carvers' pass: while it runs, open space asked for is a tunnel a carver wants to cut. */
+    void carving(boolean carving) {
+        this.carving = carving;
     }
 
     /** The same with the ring given, for tests: the column is not remembered. */
@@ -180,9 +187,8 @@ final class RingAquifer implements Aquifer {
             suppressed = !spring;
             return FALLING_LAVA;
         }
-        if (substance == 0.0 && y >= guardBottom[i] && y <= guardTop[i]) {
-            // A carver asks (it passes substance 0): it may not cut into the band around lava (42b); its tunnel would
-            // open the lava to the air beside it.
+        if (carving && y >= guardBottom[i] && y <= guardTop[i]) {
+            // A carver may not cut into the band around lava (42b): its tunnel would open the lava to the air beside it.
             return null;
         }
         if (VolcanicField.Column.lavaAt(y, lavaTop[i], lavaBottom[i], Integer.MIN_VALUE)) {
@@ -231,70 +237,85 @@ final class RingAquifer implements Aquifer {
     /**
      * Whether lava at this block may stand against open air: a neighbour (beside it, or right below it) that may be open
      * space without lava. Such a block becomes rock instead (a lip of cooled crust), so no lava flows when the chunk is
-     * first updated. 42b: the neighbour's ground is the terrain's real, interpolated surface ({@link #surfaceAt}), not the
+     * first updated. 42b: the neighbour's ground is the terrain's real, interpolated surface ({@link #groundAt}), not the
      * field's height, and its carved openings count as open.
      */
     boolean exposed(int x, int y, int z) {
         VolcanicField.Column own = volcanic.column(x, z);
-        return !holdsLava(own, y - 1) && mayBeOpen(own, x, y - 1, z)
-                || open(x + 1, y, z) || open(x - 1, y, z) || open(x, y, z + 1) || open(x, y, z - 1);
+        return !holdsLava(own, y - 1) && open(own, x, y - 1, z, -1.0)
+                || edge(x + 1, y, z) || edge(x - 1, y, z) || edge(x, y, z + 1) || edge(x, y, z - 1);
     }
 
-    private boolean open(int x, int y, int z) {
+    /** Whether the block beside lava may be open air: open, without lava, and no step of a river onto lava. */
+    private boolean edge(int x, int y, int z) {
         VolcanicField.Column neighbour = volcanic.column(x, z);
-        if (holdsLava(neighbour, y) || !mayBeOpen(neighbour, x, y, z)) {
+        if (holdsLava(neighbour, y) || !open(neighbour, x, y, z, -1.0)) {
             return false;
         }
-        // A step down a river (39d): the neighbour's lava lies one block lower and surely fills that block, so the step
-        // is a small lava fall onto lava. Where that block may be rock instead, the lava would spill: an edge.
-        return !(neighbour.lavaTop() == y && holdsLava(neighbour, y - 1) && surelyOpen(neighbour, x, y - 1, z));
+        // A step down a river (39d): the neighbour's lava lies one block lower, and that block really becomes lava (the
+        // same decision the aquifer takes there, its own crust check included), so the step is a small lava fall onto
+        // lava. Otherwise the lava would spill onto rock or crust: an edge.
+        return !(neighbour.lavaTop() == y && becomesLava(neighbour, x, y - 1, z));
+    }
+
+    /**
+     * Whether the aquifer fills this block with the terrain's lava: inside the column's lava, open for certain, not
+     * crusted (the terrain's lava lies only inside ring 3 proper, where the aquifer places it: rivers end where the core
+     * fades, craters and the abyss lie inside it). Recurses only downwards (each step one block lower), so it ends within
+     * a lava band.
+     */
+    private boolean becomesLava(VolcanicField.Column column, int x, int y, int z) {
+        return holdsLava(column, y) && open(column, x, y, z, 1.0) && !exposed(x, y, z);
     }
 
     private static boolean holdsLava(VolcanicField.Column column, int y) {
         return y < column.lavaTop() && y >= column.lavaBottom();
     }
 
-    /** Whether the block may be open space: a carved opening, or at or above the lowest the surface can lie. */
-    private boolean mayBeOpen(VolcanicField.Column column, int x, int y, int z) {
-        if (column.islandAt(y) || column.thinSolidAt(y)) {
+    /**
+     * Whether the block is open space: a carved opening, or above the terrain's surface ({@link #groundAt}) with the
+     * crags taken at their lowest ({@code crags} −1: may be open) or highest (+1: open for certain). A thin solid (or a
+     * floating island) is never open.
+     */
+    private boolean open(VolcanicField.Column column, int x, int y, int z, double crags) {
+        if (column.thinSolidAt(y)) {
             return false;
         }
-        return column.voidAt(y) || y >= surfaceAt(x, z) - CRAG_MARGIN * roughnessAt(x, z);
+        if (column.voidAt(y)) {
+            return true;
+        }
+        groundAt(x, z);
+        return y >= ground[0] + crags * CRAG_MARGIN * ground[1];
     }
 
-    /** Whether the block is open space for certain: a carved opening, or above the highest the surface can lie. */
-    private boolean surelyOpen(VolcanicField.Column column, int x, int y, int z) {
-        if (column.islandAt(y) || column.thinSolidAt(y)) {
-            return false;
-        }
-        return column.voidAt(y) || y >= surfaceAt(x, z) + CRAG_MARGIN * roughnessAt(x, z);
-    }
+    // The ground of the last column asked (groundAt): the interpolated surface and the largest corner roughness.
+    private final double[] ground = new double[2];
 
     /**
-     * The terrain's surface in a column, as the noise chunk builds it (42b): the ring 3 stack is linear in y near the
-     * surface (0.125 * (height - y), caves kept out around lava by the guard), and the noise chunk interpolates it between
-     * the corners of its cells (every 4 blocks in x and z), so a block is rock below the bilinear blend of the corner
-     * heights and open from it up (crags aside). The field's own height of the column can lie well above that blend
-     * where the heights jump (a channel's bed beside its bank, two rivers at different levels).
+     * The terrain's surface in a column as the noise chunk builds it, into {@link #ground} (42b): the ring 3 stack is
+     * linear in y near the surface (0.125 * (height - y); caves kept out around lava by the guard, at least a cell wide),
+     * and the noise chunk interpolates it between the corners of its cells (every 4 blocks in x and z), so a block is rock
+     * below the bilinear blend of the corner heights and open from it up; the crags (interpolated too) move that by up
+     * to {@link #CRAG_MARGIN} times the largest corner roughness. The field's own height of the column can lie well
+     * above the blend where the heights jump (a channel's bed beside its bank, two rivers at different levels).
      */
-    double surfaceAt(int x, int z) {
+    private void groundAt(int x, int z) {
         int x0 = Math.floorDiv(x, CELL) * CELL;
         int z0 = Math.floorDiv(z, CELL) * CELL;
         double fx = (x - x0) / (double) CELL;
         double fz = (z - z0) / (double) CELL;
-        double h00 = volcanic.column(x0, z0).height();
-        double h10 = volcanic.column(x0 + CELL, z0).height();
-        double h01 = volcanic.column(x0, z0 + CELL).height();
-        double h11 = volcanic.column(x0 + CELL, z0 + CELL).height();
-        return (h00 * (1.0 - fx) + h10 * fx) * (1.0 - fz) + (h01 * (1.0 - fx) + h11 * fx) * fz;
+        VolcanicField.Column c00 = volcanic.column(x0, z0);
+        VolcanicField.Column c10 = volcanic.column(x0 + CELL, z0);
+        VolcanicField.Column c01 = volcanic.column(x0, z0 + CELL);
+        VolcanicField.Column c11 = volcanic.column(x0 + CELL, z0 + CELL);
+        ground[0] = (c00.height() * (1.0 - fx) + c10.height() * fx) * (1.0 - fz) + (c01.height() * (1.0 - fx) + c11.height() * fx) * fz;
+        ground[1] = Math.max(Math.max(c00.roughness(), c10.roughness()), Math.max(c01.roughness(), c11.roughness()));
     }
 
-    /** The largest roughness of the column's cell corners (the crags are interpolated between them too). */
-    private double roughnessAt(int x, int z) {
-        int x0 = Math.floorDiv(x, CELL) * CELL;
-        int z0 = Math.floorDiv(z, CELL) * CELL;
-        return Math.max(Math.max(volcanic.column(x0, z0).roughness(), volcanic.column(x0 + CELL, z0).roughness()),
-                Math.max(volcanic.column(x0, z0 + CELL).roughness(), volcanic.column(x0 + CELL, z0 + CELL).roughness()));
+    /** The terrain's surface in a column ({@link #groundAt}), for the tests. */
+    double surfaceAt(int x, int z) {
+        groundAt(x, z);
+        return ground[0];
     }
 
     /** Whether an opening without lava lies beside or right below the block (42: lava there would flow). */

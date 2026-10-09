@@ -46,6 +46,28 @@ class Ring3TerrainFixesTest {
     }
 
     @Test
+    void noOpeningEntersTheBandAroundLavaWhateverShapeAsks() {
+        // 42b: Column.addVoid keeps every opening out of the band around lava (it keeps its larger part outside).
+        VolcanicField.Column c = new VolcanicField.Column();
+        c.reset(0, 0);
+        c.guardBottom = 10;
+        c.guardTop = 20;
+        c.addVoid(5, 15);
+        c.addVoid(18, 40);
+        c.addVoid(12, 18);
+        assertTrue(c.voidAt(5) && c.voidAt(9) && !c.voidAt(10) && !c.voidAt(15) && !c.voidAt(20) && c.voidAt(21) && c.voidAt(40));
+        // A collapse's shaft takes the one extra wall slot first; the six of the tubes and chambers stay free.
+        c.reset(0, 0);
+        c.height = 100.0;
+        c.addCave(new int[]{40, 90}, null, new int[]{37, 90}, Integer.MIN_VALUE);
+        for (int k = 0; k < 6; k++) {
+            c.addCave(new int[]{k * 5, k * 5 + 2}, new int[]{k * 5 - 1, k * 5 + 3}, new int[]{k * 5 - 1, k * 5 + 3}, Integer.MIN_VALUE);
+        }
+        assertEquals(7, c.caveCount);
+        assertEquals(1, c.caveWall(26));
+    }
+
+    @Test
     void theAbyssWallsAreRing3RockDownToTheFloor() {
         int walls = 0;
         int cells = 6200 / Landmarks.ABYSS_CELL + 1;

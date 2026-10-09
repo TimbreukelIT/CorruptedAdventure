@@ -226,15 +226,19 @@ class RingAquiferTest {
 
     @Test
     void ring3CarversStayOutOfTheBandAroundLava() {
-        // 42b: a carver asks with substance 0; in the band around a lava lake it gets rock (it cannot cut a tunnel there
-        // that would open the lava), while the noise's own open space above the lake stays air.
+        // 42b: while the carvers run (RingChunkGenerator marks their pass), the band around a lava lake gives rock (no
+        // tunnel there that would open the lava); the noise's own open space above the lake stays air, even at a density of
+        // exactly 0.
         RingAquifer ring3 = ring3();
         int[] lava = innerLavaColumn(-5200, -2700, -4400, -2000);
         RingPosition inRing3 = RingPosition.within(Ring.RING_3);
         DensityFunction.FunctionContext above = new DensityFunction.SinglePointContext(lava[0], lava[1] + 1, lava[2]);
         assertSame(Blocks.AIR.defaultBlockState(), ring3.computeSubstance(inRing3, above, -0.5));
+        assertSame(Blocks.AIR.defaultBlockState(), ring3.computeSubstance(inRing3, above, 0.0));
+        ring3.carving(true);
         assertNull(ring3.computeSubstance(inRing3, above, 0.0));
         assertNull(ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(lava[0], lava[1] - 8, lava[2]), 0.0));
+        ring3.carving(false);
     }
 
     @Test
@@ -284,7 +288,8 @@ class RingAquiferTest {
                     continue;
                 }
                 BlockState state = ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(x, y, z), -0.5);
-                if (y - 1 >= ring3.surfaceAt(x + 1, z)) {
+                if (y - 1 >= ring3.surfaceAt(x + 1, z) && ring3.computeSubstance(inRing3,
+                        new DensityFunction.SinglePointContext(x + 1, y - 1, z), -0.5) == Blocks.LAVA.defaultBlockState()) {
                     assertSame(Blocks.LAVA.defaultBlockState(), state, "a fall onto lava at " + x + "," + z);
                     falls++;
                 } else {
@@ -343,7 +348,10 @@ class RingAquiferTest {
         if (!open || lava) {
             return;
         }
-        boolean step = beside && n.lavaTop() == y && y - 1 >= n.lavaBottom() && (n.voidAt(y - 1) || y - 1 >= aquifer.surfaceAt(x, z) + 4.0 * n.roughness());
+        // A step down a river: the block below really becomes lava (the aquifer's own decision there, crust check included).
+        boolean step = beside && n.lavaTop() == y && (n.voidAt(y - 1) || y - 1 >= aquifer.surfaceAt(x, z) + 4.0 * n.roughness())
+                && aquifer.computeSubstance(RingPosition.within(Ring.RING_3), new DensityFunction.SinglePointContext(x, y - 1, z), -0.5)
+                == Blocks.LAVA.defaultBlockState();
         assertTrue(step, "open air beside lava at " + x + "," + y + "," + z);
     }
 

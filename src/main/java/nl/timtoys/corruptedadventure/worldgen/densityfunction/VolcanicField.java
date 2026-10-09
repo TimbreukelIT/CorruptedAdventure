@@ -72,8 +72,11 @@ public final class VolcanicField implements DensityFunction {
     private static final int MAX_SOLIDS = 8;
     private static final int MAX_VOIDS = 8;
     private static final int MAX_PILLARS = 2;
-    /** Lava tubes, skylights and magma chambers whose walls one column may hold (42). */
-    private static final int MAX_CAVES = 6;
+    /**
+     * Openings with walls one column may hold: six for the lava tubes, skylights and magma chambers (42), one for a
+     * collapse's shaft (42b), which comes first.
+     */
+    private static final int MAX_CAVES = 7;
     /** Vanilla caves are gone from here up (42: no cave mouths under the floating islands, Y ~150-210). */
     private static final double CAVE_CEILING = 146.0;
     /** Vanilla caves are gone in a volcano's body from this far above the plain it stands on (42). */
@@ -82,6 +85,8 @@ public final class VolcanicField implements DensityFunction {
     private static final double CAVE_FADE = 20.0;
     /** The lift that closes every vanilla cave (their densities stay above about −1.5). */
     private static final double CAVE_LIFT = 2.0;
+    /** The band around a lava river reaches at least this far (blocks) past the lava's edge (42b). */
+    private static final double RIVER_GUARD = 6.0;
     /** A cut at least this deep gets walls of ring 3 rock below the surface's own package (42b). */
     private static final double DEEP_CUT = 8.0;
     /** Separate lava ranges and guard bands one column may hold (42). */
@@ -1081,7 +1086,9 @@ public final class VolcanicField implements DensityFunction {
                     c.lavaTop = level;
                     c.lavaBottom = level - CHANNEL_DEPTH - 3;
                 }
-                if (along < 1.8) {
+                // 42b: at least RIVER_GUARD blocks past the lava's edge, more than a cell of the terrain's interpolation,
+                // so no cell corner near the lava interpolates a cave into it.
+                if (along < Math.max(1.8, 1.0 + RIVER_GUARD / half)) {
                     c.guardBottom = Math.min(c.guardBottom, level - 12);
                     c.guardTop = Math.max(c.guardTop, level + 4);
                 }
@@ -1641,8 +1648,18 @@ public final class VolcanicField implements DensityFunction {
             solidCount++;
         }
 
-        /** A carved opening from {@code bottom} to {@code top} (inclusive block Y). */
+        /**
+         * A carved opening from {@code bottom} to {@code top} (inclusive block Y). 42b: never inside the band around a
+         * lava lake, river or the abyss's lava sea (whatever shape asks): the opening keeps its larger part outside it.
+         */
         void addVoid(int bottom, int top) {
+            if (top >= guardBottom && bottom <= guardTop) {
+                if (top - guardTop >= guardBottom - bottom) {
+                    bottom = guardTop + 1;
+                } else {
+                    top = guardBottom - 1;
+                }
+            }
             if (voidCount == MAX_VOIDS || top < bottom) {
                 return;
             }
