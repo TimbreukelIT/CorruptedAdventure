@@ -1,0 +1,27 @@
+{
+  "feature": "corruptedadventure:ring_3/hanging_fire_crystals",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.5,
+      "margin": 3
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ranges": [
+        {
+          "min": 0.5,
+          "output": "island_mask"
+        }
+      ]
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

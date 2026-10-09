@@ -39,6 +39,7 @@ import nl.timtoys.corruptedadventure.registry.ModTrunkPlacerTypes;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.weather.RingWeather;
 import nl.timtoys.corruptedadventure.worldgen.biome.BiomeSpawnPlacements;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring3StriderSpawns;
 import nl.timtoys.corruptedadventure.worldgen.border.RingWorldBorder;
 import org.slf4j.Logger;
 
@@ -89,6 +90,7 @@ public final class CorruptedAdventure {
         WaterBottleDrink.register(NeoForge.EVENT_BUS);
         RingWeather.register(NeoForge.EVENT_BUS);
         LooseSandTrigger.register(NeoForge.EVENT_BUS);
+        Ring3StriderSpawns.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

@@ -32,7 +32,30 @@
     "water_color": 6187622,
     "water_fog_color": 1975330
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/volcanic_peaks_impact_craters",
+      "corruptedadventure:ring_3/volcanic_peaks_blackstone_rocks",
+      "corruptedadventure:ring_3/ash_drifts",
+      "corruptedadventure:ring_3/ash_footprint_trails",
+      "corruptedadventure:ring_3/lava_falls",
+      "corruptedadventure:ring_3/island_ember_patches",
+      "corruptedadventure:ring_3/island_hanging_crystals"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/fire_geodes"
+    ],
+    [],
+    [
+      "corruptedadventure:ring_3/island_ember_trees"
+    ]
+  ],
   "has_precipitation": false,
   "spawn_costs": {
     "minecraft:goat": {

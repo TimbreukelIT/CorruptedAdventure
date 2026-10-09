@@ -1,0 +1,49 @@
+{
+  "type": "corruptedadventure:surface_pool",
+  "config": {
+    "depth": 1,
+    "edge_jitter": 0.35,
+    "ground": [
+      "minecraft:mud",
+      "minecraft:packed_mud",
+      "minecraft:clay",
+      "minecraft:coarse_dirt",
+      "minecraft:gravel",
+      "minecraft:dirt",
+      "corruptedadventure:ash_block",
+      "corruptedadventure:sulfur_crust"
+    ],
+    "max_step": 1,
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 3.5,
+      "min_inclusive": 1.5
+    },
+    "rim": {
+      "state": {
+        "type": "minecraft:weighted_state_provider",
+        "entries": [
+          {
+            "data": {
+              "Name": "minecraft:packed_mud"
+            },
+            "weight": 2
+          },
+          {
+            "data": {
+              "Name": "corruptedadventure:sulfur_crust"
+            },
+            "weight": 1
+          },
+          {
+            "data": {
+              "Name": "minecraft:clay"
+            },
+            "weight": 1
+          }
+        ]
+      },
+      "width": 1
+    }
+  }
+}

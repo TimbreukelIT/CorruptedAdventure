@@ -11,6 +11,10 @@ import nl.timtoys.corruptedadventure.worldgen.feature.JitteredGridPlacement;
 import nl.timtoys.corruptedadventure.worldgen.feature.NoiseBandFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.RingChanceFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.SlopeFilter;
+import nl.timtoys.corruptedadventure.worldgen.feature.TerrainHeightPlacement;
+import nl.timtoys.corruptedadventure.worldgen.feature.TerrainLandmarkPlacement;
+import nl.timtoys.corruptedadventure.worldgen.feature.TerrainLavaFilter;
+import nl.timtoys.corruptedadventure.worldgen.feature.VolcanicFilter;
 
 public final class ModPlacementModifierTypes {
     private static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_MODIFIER_TYPES =
@@ -31,6 +35,20 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:height_band} */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<HeightBandFilter>> HEIGHT_BAND =
             PLACEMENT_MODIFIER_TYPES.register("height_band", () -> () -> HeightBandFilter.CODEC);
+
+    // ring 3 — W-biomes g2
+    /** {@code corruptedadventure:terrain_lava} (change 41) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<TerrainLavaFilter>> TERRAIN_LAVA =
+            PLACEMENT_MODIFIER_TYPES.register("terrain_lava", () -> () -> TerrainLavaFilter.CODEC);
+    /** {@code corruptedadventure:terrain_height} (change 41) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<TerrainHeightPlacement>> TERRAIN_HEIGHT =
+            PLACEMENT_MODIFIER_TYPES.register("terrain_height", () -> () -> TerrainHeightPlacement.CODEC);
+    /** {@code corruptedadventure:volcanic_filter} (change 47) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<VolcanicFilter>> VOLCANIC_FILTER =
+            PLACEMENT_MODIFIER_TYPES.register("volcanic_filter", () -> () -> VolcanicFilter.CODEC);
+    /** {@code corruptedadventure:terrain_landmark} (changes 47, 47b; the 39f accessors) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<TerrainLandmarkPlacement>> TERRAIN_LANDMARK =
+            PLACEMENT_MODIFIER_TYPES.register("terrain_landmark", () -> () -> TerrainLandmarkPlacement.CODEC);
 
     private ModPlacementModifierTypes() {
     }

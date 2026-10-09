@@ -7,9 +7,9 @@ Usage (from the repo root, Python 3, standard library only):  python tools/world
 The surface rules are hand-written JSON (CLAUDE.md §9); this script is their source for ring 3, because the shared
 pieces (craters, cones, lava banks) would otherwise be copied by hand. Edit the rules here, run the script, commit the
 script and the JSON together. It is idempotent:
-- overworld (39f): one ring 3 branch (all 8 biomes) where the ring 3 branches stood, and a fast path for the deep blocks
-  of the ring 3 core at the start of the rules above the preliminary surface; older layouts (one branch per biome plus
-  shared branches, 39c–39e) are recognised and replaced; (42) the walls of the lava tubes and magma chambers as the
+- overworld (39f): one ring 3 branch (all 8 biomes; 48: and the transition steam_fens) where the ring 3 branches
+  stood, and a fast path for the deep blocks of the ring 3 core at the start of the rules above the preliminary
+  surface; older layouts (one branch per biome plus shared branches, 39c–39e) are recognised and replaced; (42) the walls of the lava tubes and magma chambers as the
   second top-level rule (right after the bedrock floor), replaced if present;
 - everything else stays byte-identical (a json round trip with indent 2 and CRLF reproduces the files exactly).
 """
@@ -91,7 +91,7 @@ NOISES = {
 }
 
 RING_3 = ["ashen_wastes", "volcanic_peaks", "ember_woods", "basalt_flows", "sulfur_fields", "dried_seabed",
-          "titan_fields", "dormant_caldera"]
+          "titan_fields", "dormant_caldera", "steam_fens"]
 
 
 # ---------------------------------------------------------------- overworld, shared pieces
@@ -339,6 +339,20 @@ def dormant_caldera():
         cond(DEPTH, block("coarse_dirt"))]
 
 
+def steam_fens():
+    # 48: the transition 3->4, where the stolen water comes back and boils: mud and packed mud in patches, clay, gravel
+    # with ash towards the heat, sulfur crust along cracks, coarse dirt between (never vanilla's dirt or grass).
+    top = [
+        all_of([noise(K, -0.03, 0.03), noise(D, -0.2)], mod("sulfur_crust")),
+        cond(noise(P, 0.25), seq(cond(noise(D, 0.3), block("packed_mud")), block("mud"))),
+        cond(noise(P, -INF, -0.4), seq(cond(noise(D, 0.25), mod("ash_block")), block("gravel"))),
+        cond(noise(D, 0.45), block("clay")),
+        block("coarse_dirt")]
+    return top, [
+        cond(STEEP, cond(DEPTH, block("tuff"))),
+        cond(DEPTH, seq(cond(noise(P, 0.25), block("mud")), block("packed_mud")))]
+
+
 # Biomes whose top gets the one-block crust of ash over a thin roof.
 THIN_ROOF_CRUST = {"ashen_wastes", "volcanic_peaks", "ember_woods", "titan_fields"}
 
@@ -392,7 +406,7 @@ def cave_walls():
 
 
 BIOMES = {f.__name__: f for f in [ashen_wastes, volcanic_peaks, ember_woods, basalt_flows, sulfur_fields, dried_seabed,
-                                  titan_fields, dormant_caldera]}
+                                  titan_fields, dormant_caldera, steam_fens]}
 
 # ---------------------------------------------------------------- write
 def dump(path, data):

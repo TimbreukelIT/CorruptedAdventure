@@ -1,0 +1,25 @@
+{
+  "type": "corruptedadventure:surface_fossil",
+  "config": {
+    "buried": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 0.6,
+      "min_inclusive": 0.3
+    },
+    "ground": [
+      "minecraft:sand",
+      "minecraft:gravel",
+      "minecraft:clay",
+      "corruptedadventure:ash_block",
+      "corruptedadventure:pumice"
+    ],
+    "integrity": 0.85,
+    "templates": [
+      "corruptedadventure:ring_3/sea_serpent_1",
+      "corruptedadventure:ring_3/sea_serpent_2",
+      "corruptedadventure:ring_3/sea_serpent_3",
+      "corruptedadventure:ring_3/sea_skull_1",
+      "corruptedadventure:ring_3/sea_skull_2"
+    ]
+  }
+}

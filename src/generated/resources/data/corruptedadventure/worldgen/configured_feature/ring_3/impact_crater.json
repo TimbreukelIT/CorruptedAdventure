@@ -1,0 +1,58 @@
+{
+  "type": "corruptedadventure:impact_crater",
+  "config": {
+    "core": {
+      "Name": "minecraft:magma_block"
+    },
+    "floor": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:blackstone"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:basalt",
+            "Properties": {
+              "axis": "y"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "ground": [
+      "minecraft:basalt",
+      "minecraft:smooth_basalt",
+      "minecraft:blackstone",
+      "corruptedadventure:ash_block",
+      "corruptedadventure:pumice"
+    ],
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    },
+    "shard_chance": 0.3,
+    "shards": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:obsidian"
+          },
+          "weight": 4
+        },
+        {
+          "data": {
+            "Name": "minecraft:crying_obsidian"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

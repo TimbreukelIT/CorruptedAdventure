@@ -1,0 +1,39 @@
+{
+  "feature": "corruptedadventure:ring_3/sulfur_ore",
+  "placement": [
+    {
+      "type": "minecraft:count",
+      "count": 6
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "corruptedadventure:terrain_height"
+    },
+    {
+      "type": "minecraft:random_offset",
+      "xz_spread": 0,
+      "y_spread": -16
+    },
+    {
+      "type": "minecraft:random_offset",
+      "xz_spread": 0,
+      "y_spread": {
+        "type": "minecraft:uniform",
+        "max_inclusive": 12,
+        "min_inclusive": -14
+      }
+    },
+    {
+      "type": "corruptedadventure:ring_chance",
+      "from_chance": 1.0,
+      "ring": "ring_3",
+      "signal": "progress",
+      "to_chance": 1.0
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

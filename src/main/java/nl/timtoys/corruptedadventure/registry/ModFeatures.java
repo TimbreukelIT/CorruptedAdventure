@@ -12,6 +12,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.CanyonSpringConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.CanyonSpringFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.DewGeodeConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.DewGeodeFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantFungusConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantFungusFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MoldPatchConfiguration;
@@ -30,6 +32,26 @@ import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshCastConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshCastFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshDriftConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshDriftFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshFootprintsConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshFootprintsFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.GroundPatchConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.GroundPatchFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.GroundVentConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.GroundVentFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.HangingClusterConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.HangingClusterFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.HornitoConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.HornitoFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.ImpactCraterConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.ImpactCraterFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.LavaFallConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.LavaFallFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.TitanRockConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.TitanRockFeature;
 
 /** Feature types with their own code; the configured and placed features come from datagen. */
 public final class ModFeatures {
@@ -72,6 +94,41 @@ public final class ModFeatures {
     /** {@code corruptedadventure:dew_geode} (change 35) */
     public static final DeferredHolder<Feature<?>, Feature<DewGeodeConfiguration>> DEW_GEODE =
             FEATURES.register("dew_geode", () -> new DewGeodeFeature(DewGeodeConfiguration.CODEC));
+
+    // ring 3 — W-biomes g2
+    /** {@code corruptedadventure:ash_drift} (change 47) */
+    public static final DeferredHolder<Feature<?>, Feature<AshDriftConfiguration>> ASH_DRIFT =
+            FEATURES.register("ash_drift", () -> new AshDriftFeature(AshDriftConfiguration.CODEC));
+    /** {@code corruptedadventure:ground_patch} (change 47) */
+    public static final DeferredHolder<Feature<?>, Feature<GroundPatchConfiguration>> GROUND_PATCH =
+            FEATURES.register("ground_patch", () -> new GroundPatchFeature(GroundPatchConfiguration.CODEC));
+    /** {@code corruptedadventure:ground_vent} (change 47) */
+    public static final DeferredHolder<Feature<?>, Feature<GroundVentConfiguration>> GROUND_VENT =
+            FEATURES.register("ground_vent", () -> new GroundVentFeature(GroundVentConfiguration.CODEC));
+    /** {@code corruptedadventure:hornito} (change 47) */
+    public static final DeferredHolder<Feature<?>, Feature<HornitoConfiguration>> HORNITO =
+            FEATURES.register("hornito", () -> new HornitoFeature(HornitoConfiguration.CODEC));
+    /** {@code corruptedadventure:impact_crater} (change 47) */
+    public static final DeferredHolder<Feature<?>, Feature<ImpactCraterConfiguration>> IMPACT_CRATER =
+            FEATURES.register("impact_crater", () -> new ImpactCraterFeature(ImpactCraterConfiguration.CODEC));
+    /** {@code corruptedadventure:titan_rock} (change 47b) */
+    public static final DeferredHolder<Feature<?>, Feature<TitanRockConfiguration>> TITAN_ROCK =
+            FEATURES.register("titan_rock", () -> new TitanRockFeature(TitanRockConfiguration.CODEC));
+    /** {@code corruptedadventure:ash_cast} (change 49) */
+    public static final DeferredHolder<Feature<?>, Feature<AshCastConfiguration>> ASH_CAST =
+            FEATURES.register("ash_cast", () -> new AshCastFeature(AshCastConfiguration.CODEC));
+    /** {@code corruptedadventure:ash_footprints} (change 49) */
+    public static final DeferredHolder<Feature<?>, Feature<AshFootprintsConfiguration>> ASH_FOOTPRINTS =
+            FEATURES.register("ash_footprints", () -> new AshFootprintsFeature(AshFootprintsConfiguration.CODEC));
+    /** {@code corruptedadventure:lava_fall} (change 47c) */
+    public static final DeferredHolder<Feature<?>, Feature<LavaFallConfiguration>> LAVA_FALL =
+            FEATURES.register("lava_fall", () -> new LavaFallFeature(LavaFallConfiguration.CODEC));
+    /** {@code corruptedadventure:hanging_cluster} (change 47c) */
+    public static final DeferredHolder<Feature<?>, Feature<HangingClusterConfiguration>> HANGING_CLUSTER =
+            FEATURES.register("hanging_cluster", () -> new HangingClusterFeature(HangingClusterConfiguration.CODEC));
+    /** {@code corruptedadventure:fire_geode} (change 41b) */
+    public static final DeferredHolder<Feature<?>, Feature<FireGeodeConfiguration>> FIRE_GEODE =
+            FEATURES.register("fire_geode", () -> new FireGeodeFeature(FireGeodeConfiguration.CODEC));
 
     private ModFeatures() {
     }

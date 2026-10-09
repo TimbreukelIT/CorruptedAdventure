@@ -203,6 +203,10 @@
             "ring_2": {
               "type": "minecraft:fixed",
               "biome": "corruptedadventure:dry_riverbeds"
+            },
+            "ring_3": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:steam_fens"
             }
           }
         },

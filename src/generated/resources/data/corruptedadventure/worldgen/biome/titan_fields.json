@@ -28,9 +28,40 @@
     "water_color": 6187622,
     "water_fog_color": 1975330
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/titan_fields_skulls",
+      "corruptedadventure:ring_3/titan_fields_bones",
+      "corruptedadventure:ring_3/titan_fields_soul_fire",
+      "corruptedadventure:ring_3/titan_fields_rocks",
+      "corruptedadventure:ring_3/rare_ash_casts",
+      "corruptedadventure:ring_3/ash_drifts",
+      "corruptedadventure:ring_3/ash_footprint_trails",
+      "corruptedadventure:ring_3/lava_falls",
+      "corruptedadventure:ring_3/island_ember_patches",
+      "corruptedadventure:ring_3/island_hanging_crystals"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/fire_geodes"
+    ],
+    [],
+    [
+      "corruptedadventure:ring_3/island_ember_trees"
+    ]
+  ],
   "has_precipitation": false,
-  "spawn_costs": {},
+  "spawn_costs": {
+    "minecraft:strider": {
+      "charge": 1.0,
+      "energy_budget": 0.12
+    }
+  },
   "spawners": {
     "ambient": [
       {
@@ -41,7 +72,14 @@
       }
     ],
     "axolotls": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "minecraft:strider",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 1
+      }
+    ],
     "misc": [],
     "monster": [
       {

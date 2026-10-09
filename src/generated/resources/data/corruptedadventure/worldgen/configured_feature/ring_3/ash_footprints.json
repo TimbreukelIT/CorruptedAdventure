@@ -1,0 +1,39 @@
+{
+  "type": "corruptedadventure:ash_footprints",
+  "config": {
+    "biomes": [
+      "corruptedadventure:ashen_wastes",
+      "corruptedadventure:titan_fields",
+      "corruptedadventure:volcanic_peaks"
+    ],
+    "block": "corruptedadventure:ash_block",
+    "cast": {
+      "count": {
+        "type": "minecraft:uniform",
+        "max_inclusive": 3,
+        "min_inclusive": 1
+      },
+      "ground": [
+        "corruptedadventure:ash_block",
+        "corruptedadventure:pumice",
+        "minecraft:soul_soil",
+        "minecraft:gravel"
+      ],
+      "materials": [
+        "corruptedadventure:ash_block",
+        "corruptedadventure:smoldering_ash"
+      ],
+      "spread": 4,
+      "templates": [
+        "corruptedadventure:ring_3/ash_cast_crawling",
+        "corruptedadventure:ring_3/ash_cast_kneeling",
+        "corruptedadventure:ring_3/ash_cast_reaching",
+        "corruptedadventure:ring_3/ash_cast_lying",
+        "corruptedadventure:ring_3/ash_cast_curled"
+      ]
+    },
+    "cell": 72,
+    "chance": 0.9,
+    "layer": "corruptedadventure:ash_layer"
+  }
+}

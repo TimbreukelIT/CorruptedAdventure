@@ -3,7 +3,7 @@ package nl.timtoys.corruptedadventure.datagen.lang;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 
 /**
- * Names of the ring 3 overworld biomes ({@code steam_fens} follows in wave 2). Owned by stream W-biomes
+ * Names of the ring 3 overworld biomes and the transition {@code steam_fens} (change 48). Owned by stream W-biomes
  * ({@code docs/plans/ring-3/waves.md}); English is mandatory, Dutch welcome.
  */
 public final class Ring3BiomeNames {
@@ -19,6 +19,7 @@ public final class Ring3BiomeNames {
         lang.biome(ModBiomes.DRIED_SEABED, "Dried Seabed");
         lang.biome(ModBiomes.TITAN_FIELDS, "Titan Fields");
         lang.biome(ModBiomes.DORMANT_CALDERA, "Dormant Caldera");
+        lang.biome(ModBiomes.STEAM_FENS, "Steam Fens");
     }
 
     public static void addDutch(LangOutput lang) {
@@ -30,5 +31,6 @@ public final class Ring3BiomeNames {
         lang.biome(ModBiomes.DRIED_SEABED, "Drooggevallen zeebodem");
         lang.biome(ModBiomes.TITAN_FIELDS, "Titanenveld");
         lang.biome(ModBiomes.DORMANT_CALDERA, "Slapende krater");
+        lang.biome(ModBiomes.STEAM_FENS, "Stoomvenen");
     }
 }

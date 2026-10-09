@@ -1,0 +1,67 @@
+{
+  "type": "corruptedadventure:ground_patch",
+  "config": {
+    "depth": 1,
+    "material": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:smoldering_ash"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:ash_block"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 4,
+      "min_inclusive": 2
+    },
+    "raise": 1,
+    "raised": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:ash_layer",
+            "Properties": {
+              "layers": "1"
+            }
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:ash_layer",
+            "Properties": {
+              "layers": "2"
+            }
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:ash_layer",
+            "Properties": {
+              "layers": "3"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "replaceable": [
+      "corruptedadventure:ash_block",
+      "corruptedadventure:pumice",
+      "minecraft:basalt"
+    ],
+    "stretch": 1.3
+  }
+}

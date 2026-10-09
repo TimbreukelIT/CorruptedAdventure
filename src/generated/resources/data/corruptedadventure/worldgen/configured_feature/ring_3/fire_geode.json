@@ -1,0 +1,15 @@
+{
+  "type": "corruptedadventure:fire_geode",
+  "config": {
+    "bud_chance": 0.35,
+    "inner": {
+      "Name": "corruptedadventure:fire_crystal_block"
+    },
+    "middle": {
+      "Name": "minecraft:blackstone"
+    },
+    "outer": {
+      "Name": "minecraft:smooth_basalt"
+    }
+  }
+}

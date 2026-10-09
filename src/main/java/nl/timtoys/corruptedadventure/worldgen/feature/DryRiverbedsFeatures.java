@@ -11,22 +11,22 @@ import net.minecraft.data.worldgen.features.FeatureUtils;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformFloat;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.DiskConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.WeightedPlacedFeature;
 import net.minecraft.world.level.levelgen.feature.featuresize.TwoLayersFeatureSize;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedBlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.ForkingTrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.StraightTrunkPlacer;
@@ -64,7 +64,7 @@ import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.SHORT
  * Amounts are starting values, tuned in-game.
  * <p>
  * Same determinism rules as {@link Ring2Features}: {@link JitteredGridPlacement} instead of {@code count} +
- * {@code in_square}, everything in its own chunk (the disks of the scorched patches with a margin of their radius + 1),
+ * {@code in_square}, everything in its own chunk (the scorched ash patches with a margin of their radius + 1),
  * only {@code WORLD_SURFACE_WG} and seeded noise as input.
  */
 public final class DryRiverbedsFeatures {
@@ -87,10 +87,10 @@ public final class DryRiverbedsFeatures {
     }
 
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
-        // Scorched ground: blackstone and basalt (placeholders for the ash of ring 3, change 38/39), scorched sandstone
-        // where the disk would hang over air, like vanilla's sand disks. Only the ground of a riverbed turns black.
-        FeatureUtils.register(context, RIVERBED_SCORCHED_PATCH, Feature.DISK, scorchedDisk(UniformInt.of(3, PATCH_RADIUS)));
-        FeatureUtils.register(context, RIVERBED_SCORCHED_SPECK, Feature.DISK, scorchedDisk(UniformInt.of(1, SPECK_RADIUS)));
+        // Scorched ground (change 47, backlog r. 122): ragged patches of ring 3's ash, a few ash layers on their core.
+        // Only the ground of a riverbed turns grey; ash does not fall, so no rule for ground over air.
+        FeatureUtils.register(context, RIVERBED_SCORCHED_PATCH, ModFeatures.GROUND_PATCH.get(), ashPatch(UniformInt.of(3, PATCH_RADIUS)));
+        FeatureUtils.register(context, RIVERBED_SCORCHED_SPECK, ModFeatures.GROUND_PATCH.get(), ashPatch(UniformInt.of(1, SPECK_RADIUS)));
         // The fossil templates of the desert, on the ground of a riverbed.
         FeatureUtils.register(context, RIVERBED_FOSSIL, ModFeatures.SURFACE_FOSSIL.get(), new SurfaceFossilConfiguration(
                 Stream.of("spine", "skull").flatMap(kind -> IntStream.rangeClosed(1, 4)
@@ -188,19 +188,13 @@ public final class DryRiverbedsFeatures {
                 BiomeFilter.biome());
     }
 
-    private static DiskConfiguration scorchedDisk(UniformInt radius) {
-        return new DiskConfiguration(
-                new RuleBasedBlockStateProvider(
-                        new WeightedStateProvider(SimpleWeightedRandomList.<BlockState>builder()
-                                .add(Blocks.BLACKSTONE.defaultBlockState(), 3)
-                                .add(Blocks.BASALT.defaultBlockState(), 2)
-                                .add(ModBlocks.SCORCHED_SANDSTONE.get().defaultBlockState(), 2)),
-                        List.of(new RuleBasedBlockStateProvider.Rule(
-                                BlockPredicate.matchesBlocks(below(), Blocks.AIR),
-                                BlockStateProvider.simple(ModBlocks.SCORCHED_SANDSTONE.get())))),
-                BlockPredicate.matchesBlocks(ground()),
-                radius,
-                1);
+    private static GroundPatchConfiguration ashPatch(UniformInt radius) {
+        return new GroundPatchConfiguration(BlockStateProvider.simple(ModBlocks.ASH_BLOCK.get()),
+                HolderSet.direct(Block::builtInRegistryHolder, ground()), radius, 1.0F, ConstantInt.of(1), UniformInt.of(0, 1),
+                weighted(SimpleWeightedRandomList.<BlockState>builder()
+                        .add(ModBlocks.ASH_LAYER.get().defaultBlockState().setValue(SnowLayerBlock.LAYERS, 1), 2)
+                        .add(ModBlocks.ASH_LAYER.get().defaultBlockState().setValue(SnowLayerBlock.LAYERS, 2), 2)
+                        .add(ModBlocks.ASH_LAYER.get().defaultBlockState().setValue(SnowLayerBlock.LAYERS, 3), 1)));
     }
 
     private static BlockStateProvider weighted(SimpleWeightedRandomList.Builder<BlockState> states) {

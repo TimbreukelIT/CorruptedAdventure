@@ -1,0 +1,50 @@
+{
+  "type": "corruptedadventure:ground_patch",
+  "config": {
+    "depth": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "material": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:blackstone"
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    },
+    "raise": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 1,
+      "min_inclusive": 0
+    },
+    "raised": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:blackstone"
+          },
+          "weight": 4
+        },
+        {
+          "data": {
+            "Name": "minecraft:polished_blackstone"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "replaceable": [
+      "minecraft:basalt",
+      "minecraft:smooth_basalt",
+      "minecraft:blackstone",
+      "corruptedadventure:ash_block"
+    ],
+    "stretch": 2.5
+  }
+}

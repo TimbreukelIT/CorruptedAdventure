@@ -1,0 +1,32 @@
+{
+  "type": "corruptedadventure:ash_drift",
+  "config": {
+    "biomes": [
+      {
+        "amount": 0.35,
+        "biome": "corruptedadventure:ember_woods",
+        "steps": false
+      }
+    ],
+    "ground": [
+      "corruptedadventure:ash_block",
+      "corruptedadventure:pumice",
+      "corruptedadventure:sulfur_crust",
+      "corruptedadventure:smoldering_ash",
+      "minecraft:basalt",
+      "minecraft:smooth_basalt",
+      "minecraft:blackstone",
+      "minecraft:gravel",
+      "minecraft:sand",
+      "minecraft:clay",
+      "minecraft:calcite",
+      "minecraft:yellow_terracotta",
+      "minecraft:soul_soil",
+      "minecraft:tuff"
+    ],
+    "layer": "corruptedadventure:ash_layer",
+    "noise": "corruptedadventure:ring_3_ash_drift",
+    "noise_scale": 1.0,
+    "wind_angle": 0.35
+  }
+}

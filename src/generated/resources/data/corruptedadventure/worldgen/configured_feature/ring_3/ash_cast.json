@@ -1,0 +1,28 @@
+{
+  "type": "corruptedadventure:ash_cast",
+  "config": {
+    "count": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "ground": [
+      "corruptedadventure:ash_block",
+      "corruptedadventure:pumice",
+      "minecraft:soul_soil",
+      "minecraft:gravel"
+    ],
+    "materials": [
+      "corruptedadventure:ash_block",
+      "corruptedadventure:smoldering_ash"
+    ],
+    "spread": 4,
+    "templates": [
+      "corruptedadventure:ring_3/ash_cast_crawling",
+      "corruptedadventure:ring_3/ash_cast_kneeling",
+      "corruptedadventure:ring_3/ash_cast_reaching",
+      "corruptedadventure:ring_3/ash_cast_lying",
+      "corruptedadventure:ring_3/ash_cast_curled"
+    ]
+  }
+}
