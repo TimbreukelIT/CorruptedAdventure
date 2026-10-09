@@ -153,6 +153,7 @@ Voortgang: 13:35 main: 53b nu committen (review gedaan, fixes verwerkt), rebase 
 Voortgang: 13:40 53b gecommit (`1b90e6b`)
 Voortgang: 14:10 54 gebouwd: ijsbruggen en ijsvallen als DF (`bridges`/`bridge_*`, `icefalls`, `cracked`; `terrain` = max(`cracked`, `bridges`)), surface (ijsvallen-verf op de kloofwanden, gloeiende naden op de kloofbodem), blauw-ijsaders (ORE) en ijspegels in de kloven; tests bijgewerkt. B groen, D groen, beide surface-scripts byte-identiek. Ruimte-check en in-game punten naar INT2 (zie W-checklist)
 Voortgang: 14:20 reviewfixes 54 verwerkt (bruggen alleen bij volle gletsjer, terrain buiten de brugpoort = cracked, brugband per blok, ijsvallen-verf in de wandlaag, naden achter een vlekpoort, testnamen); B (--rerun-tasks) groen, D groen, beide surface-scripts byte-identiek
+Voortgang: 14:24 gerebased op main `91af98e` (39f + B): één conflict, alleen de docstring van `tools/worldgen/ring3_surface.py` (39f-tekst gehouden, de Nether-regel eruit; de code mergede vanzelf zonder Nether-blok). Beide surface-scripts en `runData` opnieuw: geen verschil. B (`--rerun-tasks`, 596 tests) groen, D groen. 53b = `2bc2174`, 54 = `44cd439`. Stroom W-nether klaar; in-game, ruimte-check, prestatie en determinisme in INT2
 
 ## CODEBASE-delta
 - **Klassen:**
@@ -193,9 +194,8 @@ Voortgang: 14:20 reviewfixes 54 verwerkt (bruggen alleen bij volle gletsjer, ter
 - `mobs` · Stray-spawnregel voor Nether-3 (`BiomeSpawnPlacements.checkNetherRing3Stray`, 53b) herzien in fase 4, als de ijs-strays/bevroren ghasts komen (eigen mobs met eigen spawnregels).
 - `worldgen` · INT: lokale `cold_exposed`-TagKey in `NetherRing3BiomeTags` samenvoegen met C's `ModTags.Biomes.COLD_EXPOSED`.
 
-## Status bij onderbreking (2026-10-09 14:40)
-- **Worktree/branch:** `.claude/worktrees/agent-a78930bee6d548506`, branch `ring3/nether-g2` vanaf main `f81d76a` (nog niet gerebased). Geen eigen processen actief; `run/server.properties` `enable-rcon=false`; lock en slots vrij.
-- **53b:** gecommit (`1b90e6b`), na review + reviewfixes. In-game punten van de fixes staan voor INT2 (W-checklist).
-- **54:** gebouwd, review (main, `/code-review medium`) verwerkt: bruggen alleen bij volle gletsjer, `terrain` buiten de brugpoort precies `cracked`, brugband per blok, ijsvallen-verf alleen in de wandlaag, naden achter een vlekpoort; testnamen. B (`--rerun-tasks`), D en surface-scripts groen; gecommit (zie git log). Ruimte-check, prestatie (54 raakt de noise-stap) en in-game: INT2.
-- **Volgende stap:** wachten op het rebase-signaal van main (39f eerst naar main) → `git rebase main`; bij een conflict in `tools/worldgen/ring3_surface.py` hun versie houden en daarin alleen het Nether-blok weghalen (functie `nether()`, de Nether-constanten en het nether.json-blok in `main()`) → beide surface-scripts + `runData` opnieuw (gegenereerde output nooit met de hand) → B + D → melden.
+## Status bij onderbreking (2026-10-09 14:25)
+- **Worktree/branch:** `.claude/worktrees/agent-a78930bee6d548506`, branch `ring3/nether-g2`, gerebased op main `91af98e`. Geen eigen processen actief; `run/server.properties` `enable-rcon=false`; lock en slots vrij.
+- **Commits:** 53b `2bc2174`, 54 `44cd439` (beide na review en reviewfixes), plus deze planregel. B (`--rerun-tasks`) en D groen na de rebase; beide surface-scripts reproduceren de JSON.
+- **Open voor INT2:** zie de W-checklist (in-game 53b-fixes en 54, ruimte-check, prestatie (54 raakt de noise-stap), determinisme, feature-index Nether-1/2 tegen main) en de delta-secties hierboven.
 - **Gereedschap (niet gecommit, `build/n3w/`):** `dfgen.py 53b|54` (schrijft de DF-JSON), `py/` (RCON, regiolezer, `nview.py`, `lava.py`, `det.py`/`detcmp.py`, `perf.py`, `shots.py`), `srv.sh`/`srvstop.sh`/`cli.sh`/`gradle.sh`/`slot.sh`/`win.ps1`, `perfpack/`, screenshots `shot_*.png`.
