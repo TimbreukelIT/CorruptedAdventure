@@ -508,11 +508,29 @@ public final class ModBlocks {
             () -> new FumaroleBlock(Properties.ofFullCopy(Blocks.BASALT).mapColor(MapColor.TERRACOTTA_YELLOW)));
     /** Mud's shape (you sink in a little) with honey's slowness: speed 0.4, jump 0.5. */
     public static final DeferredBlock<BoilingMudBlock> BOILING_MUD = register("boiling_mud",
-            () -> new BoilingMudBlock(Properties.ofFullCopy(Blocks.MUD).mapColor(MapColor.TERRACOTTA_BROWN)
-                    .speedFactor(0.4F).jumpFactor(0.5F)));
+            () -> new BoilingMudBlock(boilingMud(MapColor.TERRACOTTA_BROWN)));
     /** Throws what stands on it up now and then; random ticks only start the cycle of a worldgen geyser. */
     public static final DeferredBlock<GeyserBlock> GEYSER = register("geyser",
             () -> new GeyserBlock(Properties.ofFullCopy(Blocks.BASALT).mapColor(MapColor.TERRACOTTA_LIGHT_GRAY).randomTicks()));
+
+    // The coloured boiling pools and crystals of the sulfur fields (46b, decision 2 of teststop 4b): boiling mud with
+    // sulfur steam rising from it, and a sulfur crystal in the amethyst stages. No growth (only worldgen places them).
+    public static final DeferredBlock<BoilingMudBlock> YELLOW_SULFUR_MUD = register("yellow_sulfur_mud",
+            () -> new BoilingMudBlock(boilingMud(MapColor.TERRACOTTA_YELLOW), ModParticleTypes.SULFUR_STEAM));
+    public static final DeferredBlock<BoilingMudBlock> GREEN_SULFUR_MUD = register("green_sulfur_mud",
+            () -> new BoilingMudBlock(boilingMud(MapColor.TERRACOTTA_LIGHT_GREEN), ModParticleTypes.SULFUR_STEAM));
+    public static final DeferredBlock<BoilingMudBlock> ORANGE_SULFUR_MUD = register("orange_sulfur_mud",
+            () -> new BoilingMudBlock(boilingMud(MapColor.TERRACOTTA_ORANGE), ModParticleTypes.SULFUR_STEAM));
+    /** Vanilla's amethyst bud behaviour and shapes, with a faint glow like the salt crystal (1, 2, 2, 3). */
+    public static final DeferredBlock<AmethystClusterBlock> SMALL_SULFUR_CRYSTAL_BUD = register("small_sulfur_crystal_bud",
+            () -> new AmethystClusterBlock(3.0F, 4.0F, sulfurCrystal(Blocks.SMALL_AMETHYST_BUD, 1)));
+    public static final DeferredBlock<AmethystClusterBlock> MEDIUM_SULFUR_CRYSTAL_BUD = register("medium_sulfur_crystal_bud",
+            () -> new AmethystClusterBlock(4.0F, 3.0F, sulfurCrystal(Blocks.MEDIUM_AMETHYST_BUD, 2)));
+    public static final DeferredBlock<AmethystClusterBlock> LARGE_SULFUR_CRYSTAL_BUD = register("large_sulfur_crystal_bud",
+            () -> new AmethystClusterBlock(5.0F, 3.0F, sulfurCrystal(Blocks.LARGE_AMETHYST_BUD, 2)));
+    /** Full-grown stage; the default state faces up. */
+    public static final DeferredBlock<AmethystClusterBlock> SULFUR_CRYSTAL = register("sulfur_crystal",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, sulfurCrystal(Blocks.AMETHYST_CLUSTER, 3)));
 
     // ---- Nether ring 3 ----
     // Frozen Nether: cold lava with its shapes, Nether ice, rime netherrack, the rimeshroom wood set and cap, ice
@@ -647,6 +665,16 @@ public final class ModBlocks {
      */
     private static Properties crystalStage(Block vanillaStage, MapColor color) {
         return Properties.ofFullCopy(vanillaStage).mapColor(color);
+    }
+
+    /** A sulfur crystal stage: the amethyst stage's behaviour and sounds, yellow on the map, with its own faint light. */
+    private static Properties sulfurCrystal(Block vanillaStage, int light) {
+        return crystalStage(vanillaStage, MapColor.COLOR_YELLOW).lightLevel(state -> light);
+    }
+
+    /** Boiling mud: mud's shape (you sink in a little) with honey's slowness, speed 0.4 and jump 0.5. */
+    private static Properties boilingMud(MapColor color) {
+        return Properties.ofFullCopy(Blocks.MUD).mapColor(color).speedFactor(0.4F).jumpFactor(0.5F);
     }
 
     /** Dripshroom stem and hyphae (bark outside): dark grey-green on the map. */

@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import org.junit.jupiter.api.Test;
 
@@ -241,7 +242,10 @@ class ModBlocksTest {
                 ModBlocks.DEEPSLATE_FIRE_RUBY_ORE, ModBlocks.BASALT_FIRE_RUBY_ORE,
                 ModBlocks.FIRE_CRYSTAL_BLOCK, ModBlocks.SMALL_FIRE_CRYSTAL_BUD, ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD,
                 ModBlocks.LARGE_FIRE_CRYSTAL_BUD, ModBlocks.FIRE_CRYSTAL_CLUSTER,
-                ModBlocks.SULFUR_CRUST, ModBlocks.FUMAROLE, ModBlocks.BOILING_MUD, ModBlocks.GEYSER).<Item>map(DeferredBlock::asItem).toList();
+                ModBlocks.SULFUR_CRUST, ModBlocks.FUMAROLE, ModBlocks.BOILING_MUD, ModBlocks.GEYSER,
+                ModBlocks.YELLOW_SULFUR_MUD, ModBlocks.GREEN_SULFUR_MUD, ModBlocks.ORANGE_SULFUR_MUD,
+                ModBlocks.SMALL_SULFUR_CRYSTAL_BUD, ModBlocks.MEDIUM_SULFUR_CRYSTAL_BUD, ModBlocks.LARGE_SULFUR_CRYSTAL_BUD,
+                ModBlocks.SULFUR_CRYSTAL).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(ring3, shown.subList(cluster + 1, cluster + 1 + ring3.size()));
     }
 
@@ -356,11 +360,44 @@ class ModBlocksTest {
                 ModBlocks.BOILING_MUD.get().defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
     }
 
+    /** The coloured sulfur muds are boiling mud in another colour, with sulfur steam (46b). */
+    @Test
+    void sulfurMudsAreBoilingMud() {
+        for (DeferredBlock<BoilingMudBlock> mud : List.of(ModBlocks.YELLOW_SULFUR_MUD, ModBlocks.GREEN_SULFUR_MUD,
+                ModBlocks.ORANGE_SULFUR_MUD)) {
+            BlockState state = mud.get().defaultBlockState();
+            assertEquals(ModBlocks.BOILING_MUD.get().getSpeedFactor(), mud.get().getSpeedFactor(), mud.getId().toString());
+            assertEquals(ModBlocks.BOILING_MUD.get().getJumpFactor(), mud.get().getJumpFactor(), mud.getId().toString());
+            assertEquals(ModBlocks.BOILING_MUD.get().defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO),
+                    state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+            assertEquals(0, state.getLightEmission());
+            assertFalse(state.isRandomlyTicking());
+        }
+    }
+
+    /** Like the salt crystal, a faint glow (1, 2, 2, 3), facing up and dry by default, no growth. */
+    @Test
+    void sulfurCrystalStagesGlowFaintly() {
+        List<DeferredBlock<AmethystClusterBlock>> stages = List.of(ModBlocks.SMALL_SULFUR_CRYSTAL_BUD,
+                ModBlocks.MEDIUM_SULFUR_CRYSTAL_BUD, ModBlocks.LARGE_SULFUR_CRYSTAL_BUD, ModBlocks.SULFUR_CRYSTAL);
+        int[] light = {1, 2, 2, 3};
+        List<Block> vanilla = List.of(Blocks.SMALL_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD, Blocks.LARGE_AMETHYST_BUD,
+                Blocks.AMETHYST_CLUSTER);
+        for (int i = 0; i < stages.size(); i++) {
+            BlockState stage = stages.get(i).get().defaultBlockState();
+            assertEquals(light[i], stage.getLightEmission(), stages.get(i).getId().toString());
+            assertEquals(Direction.UP, stage.getValue(AmethystClusterBlock.FACING));
+            assertFalse(stage.getValue(AmethystClusterBlock.WATERLOGGED));
+            assertFalse(stage.isRandomlyTicking());
+            assertEquals(vanilla.get(i).defaultBlockState().getSoundType(), stage.getSoundType());
+        }
+    }
+
     /** Nether ring 3 follows ring 3 directly (contract §3), in this order. */
     @Test
     void netherRing3FollowsRing3InOrder() {
         List<Item> shown = blockItems();
-        int geyser = shown.indexOf(ModBlocks.GEYSER.asItem());
+        int lastRing3 = shown.indexOf(ModBlocks.SULFUR_CRYSTAL.asItem());
         List<Item> netherRing3 = Stream.of(ModBlocks.COLD_LAVA, ModBlocks.COLD_LAVA_STAIRS, ModBlocks.COLD_LAVA_SLAB,
                 ModBlocks.COLD_LAVA_WALL, ModBlocks.POLISHED_COLD_LAVA, ModBlocks.POLISHED_COLD_LAVA_STAIRS,
                 ModBlocks.POLISHED_COLD_LAVA_SLAB, ModBlocks.POLISHED_COLD_LAVA_WALL, ModBlocks.COLD_LAVA_BRICKS,
@@ -372,7 +409,7 @@ class ModBlocksTest {
                 ModBlocks.RIMESHROOM_DOOR, ModBlocks.RIMESHROOM_TRAPDOOR, ModBlocks.RIMESHROOM_PRESSURE_PLATE,
                 ModBlocks.RIMESHROOM_BUTTON, ModBlocks.RIMESHROOM_CAP, ModBlocks.ICE_STALACTITE,
                 ModBlocks.GLOWING_FISSURE, ModBlocks.PRIMORDIAL_ICE).<Item>map(DeferredBlock::asItem).toList();
-        assertEquals(netherRing3, shown.subList(geyser + 1, geyser + 1 + netherRing3.size()));
+        assertEquals(netherRing3, shown.subList(lastRing3 + 1, lastRing3 + 1 + netherRing3.size()));
     }
 
     /**

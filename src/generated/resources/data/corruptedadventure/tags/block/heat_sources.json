@@ -7,6 +7,9 @@
     "corruptedadventure:smoldering_stone",
     "corruptedadventure:fumarole",
     "corruptedadventure:boiling_mud",
+    "corruptedadventure:yellow_sulfur_mud",
+    "corruptedadventure:green_sulfur_mud",
+    "corruptedadventure:orange_sulfur_mud",
     "corruptedadventure:glowing_fissure"
   ]
 }

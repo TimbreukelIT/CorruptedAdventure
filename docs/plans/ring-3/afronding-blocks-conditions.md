@@ -14,21 +14,40 @@ Testen licht (`build/agent-rules-afronding.md`): per pakket B (`build --rerun-ta
 
 Voortgang: 2026-10-09 46b datagen + runData (2 blockstates, 2 nieuwe `_mirrored`-modellen) — B groen (667 tests, 0 fouten, incl. `ClientIsolationTest`), D: output meegecommit.
 
+## 46b-uitbreiding — `blocks`: blokken voor de zwavelvelden (verzoek W-biomes via main, teststop 4b beslissing 2)
+- `yellow_sulfur_mud`, `green_sulfur_mud`, `orange_sulfur_mud`: drie losse blokken (geen kleur-property), alle drie `BoilingMudBlock` met de eigenschappen van kokende modder (`ModBlocks.boilingMud(MapColor)`: modder-vorm, honing-traagheid). `BoilingMudBlock` kreeg een optionele parameter `steam` (supplier, want particle-types registreren na blokken; in de codec `steam` als optioneel veld): de zwavelmodders laten 1 op de 6 animate ticks `sulfur_steam` opstijgen, naast de bubbels en het begrensde borrelgeluid (gedeelde `AmbientSoundLimiter`). Gewone `boiling_mud` blijft zonder stoom (zijn stoom komt uit de biome).
+- `small_/medium_/large_sulfur_crystal_bud` + `sulfur_crystal`: `AmethystClusterBlock` met de vormen en klanken van de amethiststadia (`ModBlocks.sulfurCrystal(stage, light)`), kaartkleur geel, licht 1/2/2/3 (zoals het zoutkristal max. 3), niet emissief (zoals het zoutkristal), geen groei. Loot: cluster → `sulfur` zoals amethist (4 met een houweel uit `#cluster_max_harvestables` + Fortune, anders 2; Silk Touch: het cluster), knoppen alleen met Silk Touch.
+- Tags: modders `mineable/shovel`, `overworld_carver_replaceables`, `#heat_sources` (zoals kokende modder); kristallen `mineable/pickaxe`, `c:buds`/`c:clusters`. Lang en_us + nl_nl. Creatief menu: direct na de geiser (Nether-3 volgt nu op `sulfur_crystal`; `ModBlocksTest` bijgewerkt + twee tests).
+- **Placeholder-textures** (eigen pixels, getint): de modders uit `boiling_mud` (alle frames + `.mcmeta`), het kristal uit `salt_crystal`, de knoppen uit het eerste frame van de vuurkristalknoppen. Gemaakt met een los Python-scriptje (niet in de repo); T vervangt ze in golf 3 (57) via `Ring3Textures.java`.
+
+Voortgang: 2026-10-09 zwavelblokken + runData + B groen (672 tests, 0 fouten, incl. `ClientIsolationTest`); de 25 "missing BiomeFilter"-meldingen in runData bestonden al vóór deze change.
+
 ## 55b — `conditions`
-(volgt)
+- **Gedoofd kampvuur:** `ConditionContext.isHeatSource(state)` = in `#heat_sources` en niet `lit=false`, dezelfde regel als `isWarmthSource` (gedeeld via `isLitIn(state, tag)`); `HEAT_SOURCE`-predicaat gebruikt hem (ook in de palette-voorcheck van `NearbyBlocks`). Test `LitSourcesTest`.
+- **IJs smelt door hitte** en **natte spons droogt:** ontwerpvragen V1/V2 aan main (2026-10-09), wacht op antwoord.
+
+Voortgang: 2026-10-09 kampvuur-lit-check + `LitSourcesTest` (groen); V1/V2 gesteld, wacht idle.
 
 ## W-checklist voor INT
 - [ ] 46b: een vloervlek `glowing_fissure` en een vlak `smoldering_stone` (dag en nacht): geen tegelraster, gloeilaag valt in elke variant precies op de scheuren (geen verschoven gloei), geen z-fighting of ontbrekende vlakken bij x-rotaties, cullface klopt tegen buren.
 - [ ] 46b: break-particles en het item in de hand ongewijzigd.
+- [ ] 46b-zwavel: de drie zwavelmodders bubbelen met geelgroene stoom, vertragen als kokende modder; zwavelkristallen op elke zijde, vallen zonder steun, amethist-klank, zwak licht; drops (cluster → zwavel, knoppen alleen Silk Touch).
 
 ## CODEBASE-delta
+- `block/BoilingMudBlock`: optionele `steam`-particle (constructor `(Properties, Supplier<? extends SimpleParticleType>)`, codec-veld `steam`); de zwavelmodders gebruiken `sulfur_steam`.
+- `registry/ModBlocks`: `YELLOW_/GREEN_/ORANGE_SULFUR_MUD` (`BoilingMudBlock`), `SMALL_/MEDIUM_/LARGE_SULFUR_CRYSTAL_BUD`, `SULFUR_CRYSTAL` (`AmethystClusterBlock`, licht 1/2/2/3), na `GEYSER`; helpers `boilingMud(MapColor)`, `sulfurCrystal(stage, light)`.
+- Datagen: blockstates/modellen (modders `simpleBlock`, kristallen `crystalCluster(…, false)`), item-modellen, loot (cluster → `sulfur` via `createCrystalClusterTable`), tags, lang (`Ring3BlockNames`).
+- `textures/block/`: placeholders `yellow_/green_/orange_sulfur_mud.png` (+ `.mcmeta`), `sulfur_crystal.png`, `small_/medium_/large_sulfur_crystal_bud.png`.
 - `datagen/ModBlockStateProvider`: `rotatedGlowingCube(block)` (32 varianten: 16 x/y-rotaties × gewoon/gespiegeld model, 46b) voor `glowing_fissure` en `smoldering_stone`; `overlayModel(name, particle, base, overlay, emissive, renderType, mirrored)` (model van `overlayCube`, nu ook gespiegeld).
 - Gegenereerd: `models/block/glowing_fissure_mirrored.json`, `models/block/smoldering_stone_mirrored.json`; blockstates van beide blokken met 32 varianten.
 
 ## Beslissingen
 | Datum | Categorie | Beslissing | Reden |
 |---|---|---|---|
+| 2026-10-09 | blocks | 46b: zwavelvelden krijgen `yellow_/green_/orange_sulfur_mud` (kokende modder met `sulfur_steam`, drie losse blokken) en `sulfur_crystal` met drie knoppen (amethist-gedrag, licht 1/2/2/3, drop `sulfur`) | Teststop 4b beslissing 2; losse blokken zijn eenvoudiger voor models, loot en textures |
 | 2026-10-09 | blocks | 46b: `glowing_fissure` en `smoldering_stone` krijgen 32 willekeurige varianten (netherrack-rotaties × gespiegeld model); de scheuren lopen daardoor niet meer als doorgaande lijn over buren door | Teststop 4b, beslissing 4 (tegelraster breken); spiegelen alleen bleef streperig |
 
 ## Backlog
+- [textures] Placeholder-textures van de zwavelvelden-blokken (46b) vervangen in golf 3 (57) via `Ring3Textures.java`: `yellow_/green_/orange_sulfur_mud` (nu getinte kokende modder) en de vier zwavelkristalstadia (nu getint zoutkristal/vuurkristalknoppen). (bron: 46b)
+- [items] `sulfur_crystal` dropt het placeholder-item `sulfur` (4/2 zoals amethist); balans in fase 2. (bron: 46b)
 - [textures] `glowing_fissure` met 46b-rotaties: overwegen de randpunten symmetrisch te leggen (midden van elke rand, rij/kolom 7,5–8) zodat geroteerde buren weer aansluiten; nu een netwerk met kleine haarlijn-eindjes. Beoordelen in INT. (bron: 46b)

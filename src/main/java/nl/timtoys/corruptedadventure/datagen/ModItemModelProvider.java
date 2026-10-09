@@ -198,6 +198,10 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.FUMAROLE);
         blockItem(ModBlocks.BOILING_MUD);
         blockItem(ModBlocks.GEYSER);
+        blockItem(ModBlocks.YELLOW_SULFUR_MUD);
+        blockItem(ModBlocks.GREEN_SULFUR_MUD);
+        blockItem(ModBlocks.ORANGE_SULFUR_MUD);
+        // The sulfur crystal stages: ModBlockStateProvider.crystalCluster writes their item models.
 
         netherRing3();
     }

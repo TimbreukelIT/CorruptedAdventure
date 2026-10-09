@@ -160,6 +160,13 @@ final class ModBlockStateProvider extends BlockStateProvider {
         vent(ModBlocks.FUMAROLE.get());
         simpleBlock(ModBlocks.BOILING_MUD.get());
         vent(ModBlocks.GEYSER.get());
+        simpleBlock(ModBlocks.YELLOW_SULFUR_MUD.get());
+        simpleBlock(ModBlocks.GREEN_SULFUR_MUD.get());
+        simpleBlock(ModBlocks.ORANGE_SULFUR_MUD.get());
+        crystalCluster(ModBlocks.SMALL_SULFUR_CRYSTAL_BUD.get(), false);
+        crystalCluster(ModBlocks.MEDIUM_SULFUR_CRYSTAL_BUD.get(), false);
+        crystalCluster(ModBlocks.LARGE_SULFUR_CRYSTAL_BUD.get(), false);
+        crystalCluster(ModBlocks.SULFUR_CRYSTAL.get(), false);
     }
 
     /**

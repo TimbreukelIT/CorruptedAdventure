@@ -68,6 +68,13 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.FUMAROLE, "Fumarole");
         lang.addBlock(ModBlocks.BOILING_MUD, "Boiling Mud");
         lang.addBlock(ModBlocks.GEYSER, "Geyser");
+        lang.addBlock(ModBlocks.YELLOW_SULFUR_MUD, "Yellow Sulfur Mud");
+        lang.addBlock(ModBlocks.GREEN_SULFUR_MUD, "Green Sulfur Mud");
+        lang.addBlock(ModBlocks.ORANGE_SULFUR_MUD, "Orange Sulfur Mud");
+        lang.addBlock(ModBlocks.SMALL_SULFUR_CRYSTAL_BUD, "Small Sulfur Crystal Bud");
+        lang.addBlock(ModBlocks.MEDIUM_SULFUR_CRYSTAL_BUD, "Medium Sulfur Crystal Bud");
+        lang.addBlock(ModBlocks.LARGE_SULFUR_CRYSTAL_BUD, "Large Sulfur Crystal Bud");
+        lang.addBlock(ModBlocks.SULFUR_CRYSTAL, "Sulfur Crystal");
         lang.addBlock(ModBlocks.COLD_LAVA, "Cold Lava");
         lang.addBlock(ModBlocks.COLD_LAVA_STAIRS, "Cold Lava Stairs");
         lang.addBlock(ModBlocks.COLD_LAVA_SLAB, "Cold Lava Slab");
@@ -161,6 +168,13 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.FUMAROLE, "Fumarole");
         lang.addBlock(ModBlocks.BOILING_MUD, "Kokende modder");
         lang.addBlock(ModBlocks.GEYSER, "Geiser");
+        lang.addBlock(ModBlocks.YELLOW_SULFUR_MUD, "Gele zwavelmodder");
+        lang.addBlock(ModBlocks.GREEN_SULFUR_MUD, "Groene zwavelmodder");
+        lang.addBlock(ModBlocks.ORANGE_SULFUR_MUD, "Oranje zwavelmodder");
+        lang.addBlock(ModBlocks.SMALL_SULFUR_CRYSTAL_BUD, "Kleine zwavelkristalknop");
+        lang.addBlock(ModBlocks.MEDIUM_SULFUR_CRYSTAL_BUD, "Middelgrote zwavelkristalknop");
+        lang.addBlock(ModBlocks.LARGE_SULFUR_CRYSTAL_BUD, "Grote zwavelkristalknop");
+        lang.addBlock(ModBlocks.SULFUR_CRYSTAL, "Zwavelkristal");
         lang.addBlock(ModBlocks.COLD_LAVA, "Koudlava");
         lang.addBlock(ModBlocks.COLD_LAVA_STAIRS, "Koudlavatrap");
         lang.addBlock(ModBlocks.COLD_LAVA_SLAB, "Koudlavaplaat");
