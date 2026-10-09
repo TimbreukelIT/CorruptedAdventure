@@ -37,7 +37,9 @@
     [],
     [],
     [],
-    [],
+    [
+      "corruptedadventure:ring_3/fire_geodes"
+    ],
     [],
     [
       "corruptedadventure:ring_3/dried_seabed_dead_coral",

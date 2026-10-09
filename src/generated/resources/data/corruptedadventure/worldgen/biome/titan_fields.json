@@ -40,7 +40,9 @@
     [],
     [],
     [],
-    [],
+    [
+      "corruptedadventure:ring_3/fire_geodes"
+    ],
     [],
     [
       "corruptedadventure:ring_3/island_ember_trees"

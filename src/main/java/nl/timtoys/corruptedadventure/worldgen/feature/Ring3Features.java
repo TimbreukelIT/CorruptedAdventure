@@ -69,6 +69,8 @@ public final class Ring3Features {
             everywhere(Ring3IslandFeatures.ISLAND_EMBER_PATCHES, GenerationStep.Decoration.LOCAL_MODIFICATIONS),
             everywhere(Ring3IslandFeatures.ISLAND_HANGING_CRYSTALS, GenerationStep.Decoration.LOCAL_MODIFICATIONS),
             new Entry(Ring3OreFeatures.SULFUR_ORE_RICH, GenerationStep.Decoration.UNDERGROUND_ORES, Set.of(ModBiomes.SULFUR_FIELDS)),
+            // Change 41b: the lining of the fire geodes (after the ores, which never touch the lining).
+            new Entry(Ring3GeodeFeatures.FIRE_GEODES, GenerationStep.Decoration.UNDERGROUND_DECORATION, Set.copyOf(Ring3Biomes.ALL)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_CORAL, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_BUSHES, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
             // Change 47c: island trees, the ember woods (the ash last, around what stands), the dormant caldera.
@@ -117,6 +119,7 @@ public final class Ring3Features {
         Ring3IslandFeatures.configured(context);
         Ring3LavaFallFeatures.configured(context);
         SteamFensFeatures.configured(context);
+        Ring3GeodeFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
@@ -129,5 +132,6 @@ public final class Ring3Features {
         Ring3IslandFeatures.placed(context);
         Ring3LavaFallFeatures.placed(context);
         SteamFensFeatures.placed(context);
+        Ring3GeodeFeatures.placed(context);
     }
 }

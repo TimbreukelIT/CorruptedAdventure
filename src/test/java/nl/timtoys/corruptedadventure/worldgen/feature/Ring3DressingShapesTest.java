@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicOutput;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The pure parts of the ring 3 dressing (changes 47, 47c, 49): filters, landmark points, drifts, shapes, trails, falls. */
+/** The pure parts of the ring 3 dressing (41b, 47, 47c, 49): filters, landmarks, drifts, shapes, trails, falls, buds. */
 class Ring3DressingShapesTest {
     @Test
     void groundOnlyKeepsTheSurfaceOnTheTerrain() {
@@ -181,6 +182,18 @@ class Ring3DressingShapesTest {
             }
         }
         assertFalse(a.equals(b));
+    }
+
+    @Test
+    void fireGeodeBudsAreMostlySmallAndTheLiningFitsTheMargin() {
+        assertEquals(ModBlocks.SMALL_FIRE_CRYSTAL_BUD.get(), FireGeodeFeature.bud(0.1F).getBlock());
+        assertEquals(ModBlocks.MEDIUM_FIRE_CRYSTAL_BUD.get(), FireGeodeFeature.bud(0.5F).getBlock());
+        assertEquals(ModBlocks.LARGE_FIRE_CRYSTAL_BUD.get(), FireGeodeFeature.bud(0.8F).getBlock());
+        assertEquals(ModBlocks.FIRE_CRYSTAL_CLUSTER.get(), FireGeodeFeature.bud(0.95F).getBlock());
+        // The three lining layers of one block each make up the shape's lining, which stays inside the cell.
+        assertEquals(3.0, FireGeodeShape.LINING);
+        FireGeodeShape.Geode largest = new FireGeodeShape.Geode(0, 0, 0, FireGeodeShape.RADIUS_MAX, 1.15, 1.15, 1.15);
+        assertTrue(largest.reach() < FireGeodeShape.MARGIN, "reach " + largest.reach());
     }
 
     @Test

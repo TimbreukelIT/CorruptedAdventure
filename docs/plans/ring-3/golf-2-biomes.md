@@ -307,6 +307,7 @@ Biomepunten uit 39b (de regio-assen zijn niet veranderd): ashen (5.262, 480), pe
 - [ ] **48:** `/ca tpboundary 3`: `steam_fens` met modderpoelen, geisers die spelers lanceren (ook direct na het genereren, want de tick is gepland), stoom; geen water tegen lucht; ring 4-kant ongewijzigd.
   - (INT2) `/locate biome corruptedadventure:steam_fens` vindt de zone 3→4 (beide helften); klimaat wisselt niet meer hard op de middellijn van zone 3→4 (`switch_at`); geen gras/aarde van vanilla in de zone; kookpoelen alleen boven Y 63, niet gelekt; ring 3-ertsen in de ring 3-helft (via `is_ring_3`), ring 4-helft beoordelen.
 - [ ] **41b:** een geode (coördinaten uit de pure vorm, door de agent opgezocht) met gloeiende clusters; niet door een afgrondwand of in lucht.
+  - (INT2) een geode opzoeken via `VolcanicField.fireGeode` (cel 48, Y −50…20): drie lagen (kristal, blackstone, smooth basalt) heel over chunkgrenzen, knoppen alleen in de holte; een door een lavabuis aangesneden geode: lava blijft, geen bekleding in de buis; waar een dunne vorm de holte vulde geen losse bekleding; determinisme (omgekeerd geladen).
 - [ ] Algemeen: geen features op naalden, bogen, ribkruinen, brugdekken of lavaoevers; geen zwevende brokken boven Y 140; levendigheid: 2 min lopen per biome, en elk biome heeft iets eigens.
 
 ## Voortgang
@@ -347,7 +348,9 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
   5. `terrain_landmark`: behouden en verplaatsen per punt uit een hash van seed + punt + `salt` (i.p.v. de placement-random per chunk); elk behouden punt landt in precies één chunk. Salts: heuveltoppen 1, zinkgaten 2, schedels 3, zielvuur 4.
   6. `ash_drift` (ook `ember_woods_ash`) stopt vroeg als geen biomecel (4 × 4) van de chunk een drift-biome is.
   7. Striders zonder jockeys (besluit gebruiker): `Ring3StriderSpawns` (FinalizeSpawnEvent, overworld, NATURAL/CHUNK_GENERATION: `finalizeSpawn` overgeslagen).
-  D groen, B groen met `--rerun-tasks` (605 tests, 0 fouten).
+  D groen, B groen met `--rerun-tasks` (605 tests, 0 fouten). Gecommit `1850baa`.
+- Voortgang: 2026-10-09 18:00 rebase op main `6ef5a85` (42): conflict in `Ring3BiomesTest.everyBiomeHasItsOwnSurfaceBranchWithoutGrass` opgelost (42's zoeken op type `above_preliminary_surface` + `WITH_TRANSITION` van 48); `ring3_surface.py` automatisch samengevoegd (42's wanden van buizen/kamers + `steam_fens`), `overworld.json` opnieuw gegenereerd vanaf main met het script (gelijk aan de samengevoegde stand). D zonder diff, B `--rerun-tasks` groen (618 tests).
+- Voortgang: 2026-10-09 18:20 41b: `FireGeodeFeature` (bekleding), `Ring3GeodeFeatures`. D groen, B `--rerun-tasks` groen (619 tests, 0 fouten).
 
 ## CODEBASE-delta
 - **41:**
@@ -399,6 +402,10 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
   - `AshDriftFeature`: vroeg stoppen zonder drift-biome in de chunk.
   - `worldgen/biome/Ring3StriderSpawns` (game-bus, `CorruptedAdventure` registreert hem): striders in de overworld zonder jockeys.
   - Stand na W-biomes voor CODEBASE (INT2): `steam_fens` bestaat (biome, `transitions.ring_3`); `switch_at` van `ring_blend/overworld_temperature|_vegetation|_weirdness` = `[ring_4, ring_5]`; `VolcanicFilter.Builder.ground()` = `lava_bank` < 0,1, `cliff` < 0,3, `volcano_rise` < 20, `caldera_mask` < 0,001, `collapse` < 0,001, `ground_only` 3; `TitanRockFeature` (cel 256, kans 0,4, bereik ≤ 15); `GroundVentFeature` start geisers.
+- **41b:**
+  - `worldgen/feature/FireGeodeFeature`/`FireGeodeConfiguration` (`corruptedadventure:fire_geode`, `ModFeatures.FIRE_GEODE`): bekleedt de geode van de cel (`VolcanicField.fireGeode`, vorm `FireGeodeShape`): binnenwand `fire_crystal_block`, blackstone, schil smooth basalt (elk 1 dik, samen `LINING` 3), knoppen/clusters (35 % van de open holteblokken tegen de binnenwand). Alleen waar de holte net binnen de schil echt open is (lucht, vloeistof of al een knop); vervangt alleen terrein (geen lucht, vloeistof, bedrock).
+  - `worldgen/feature/Ring3GeodeFeatures`: `ring_3/fire_geode`, placed `ring_3/fire_geodes` (UNDERGROUND_DECORATION, `Ring3Biomes.ALL`, één keer per chunk, geen biome-filter).
+  - Test: `Ring3DressingShapesTest.fireGeodeBudsAreMostlySmallAndTheLiningFitsTheMargin`.
 - **49:**
   - `worldgen/feature/Ring3HorrorFeatures`: `ring_3/ash_cast`, `ring_3/ash_footprints`; placed `ring_3/ashen_wastes_ash_casts` (~1 groep per 3 chunks), `ring_3/rare_ash_casts` (`ember_woods`, `titan_fields`), `ring_3/ash_footprint_trails` (één keer per chunk, ná `ash_drifts`; `ashen_wastes`, `titan_fields`, `volcanic_peaks`).
   - `worldgen/feature/AshCastFeature`/`AshCastConfiguration` (`corruptedadventure:ash_cast`, `ModFeatures.ASH_CAST`): groepje van 1–3 figuren van `ash_block` + `smoldering_ash` op vlakke grond, binnen de eigen chunk.
@@ -423,6 +430,7 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
 - 2026-10-09 · worldgen · 48: `steam_fens` staat niet in `Ring3Biomes.ALL` maar in een eigen `TRANSITION` + `WITH_TRANSITION` (afwijking van plan §1 48): `ALL` is in tests (`Ring3RegionSharesTest`, de `BiomeAmbienceTest` van A) de lijst van de eigen `multi_noise`; zo hoeft geen test van een andere stroom te veranderen. Kookpoelen alleen boven Y 63 (water in eindtoestand, `surface_pool`); de aankleding van `steam_fens` leest geen pure terreinkolom (in de mengzone is die maar half het terrein). Hoeveelheden startwaarden.
 - 2026-10-09 · worldgen/mobs · striders ring 3 zonder jockeys (besluit gebruiker, review W-biomes): in de overworld slaat een natuurlijke of worldgen-strider zijn eigen `finalizeSpawn` over (`FinalizeSpawnEvent` geannuleerd), dus geen zombified piglin en geen baby-strider als ruiter; ook geen groepsbaby's bij het spawnen (baby's alleen door fokken). Spawn eggs, spawners en de Nether blijven vanilla. Bewuste uitzondering op "één categorie" (spawnen is `mobs`); herzien in fase 4.
 - 2026-10-09 · worldgen · review W-biomes: lavavallen alleen in de ring 3-kern met echte landing in lava; voetsporen op vlakke grond, per kolom in asvlakte/titanenveld/pieken, stoppen aan de biomerand; landmark-punten per punt deterministisch (hash + salt) i.p.v. per chunk.
+- 2026-10-09 · worldgen · 41b: elke chunk bekleedt zijn eigen deel van de geode van zijn cel (geen 3 × 3-schrijven vanuit de chunk van het middelpunt zoals de dauwgeodes): de beslissingen lezen alleen de pure vorm en of de holte open is (terrein, door geen feature gevuld), en de bekleding is geen doelblok van een erts. Een schilblok wordt bekleed als het holteblok net binnen hem (op de lijn naar het midden) open is: zo volgt de bekleding de echt gegraven holte ("alleen open blokken", `fireGeode`). Knoppen: 40 % klein, 30 % middel, 20 % groot, 10 % cluster; kans 0,35. Startwaarden.
 - 2026-10-09 · worldgen · 47b: zielvuur = vlekjes `soul_soil` (straal 1–3) met op ~1 op 4 kernblokken `soul_fire`, binnen 12 blokken van terreinbot (`volcanic_near` op `solid_kind` = bot), ≥ 2 van de chunkranden; schedels binnen 16 blokken van de ribben ("bij schedels" = schedels liggen tussen het zielvuur). Na 39f eventueel op `ribcageNear` (zie Status). Startwaarden, afstemmen in 4b.
 
 ## Backlog

@@ -12,6 +12,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.CanyonSpringConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.CanyonSpringFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.DewGeodeConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.DewGeodeFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantFungusConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantFungusFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MoldPatchConfiguration;
@@ -124,6 +126,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:hanging_cluster} (change 47c) */
     public static final DeferredHolder<Feature<?>, Feature<HangingClusterConfiguration>> HANGING_CLUSTER =
             FEATURES.register("hanging_cluster", () -> new HangingClusterFeature(HangingClusterConfiguration.CODEC));
+    /** {@code corruptedadventure:fire_geode} (change 41b) */
+    public static final DeferredHolder<Feature<?>, Feature<FireGeodeConfiguration>> FIRE_GEODE =
+            FEATURES.register("fire_geode", () -> new FireGeodeFeature(FireGeodeConfiguration.CODEC));
 
     private ModFeatures() {
     }
