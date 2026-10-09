@@ -70,11 +70,18 @@ public final class VolcanicOutput implements DensityFunction {
         VEIN("vein", 0.0, 1.0),
         /** 1 where the column holds walls of a lava tube, skylight or magma chamber (42), else 0. */
         CAVE_WALLS("cave_walls", 0.0, 1.0),
+        /** How deep (blocks) a cut near the column may reach below its ground (42b; {@code deep_wall} from 8 on). */
+        CUT_DEPTH("cut_depth", 0.0, 384.0),
         /**
          * 3D (42, for the surface): which wall of a lava tube, skylight or magma chamber a block belongs to: 0 none, 1 the
          * smooth inner skin, 2 the shell, 3 skin bordering lava (a crust).
          */
         CAVE_WALL("cave_wall", 0.0, 3.0),
+        /**
+         * 3D (42b, for the surface): 1 where a block may be part of the wall of a deep cut beside its column (the abyss, a
+         * rift, a river's gorge, a collapse), from the ground down to the cut's depth, else 0.
+         */
+        DEEP_WALL("deep_wall", 0.0, 1.0),
         /** 3D (42): −1 inside the cavity of a fire crystal geode, +10 elsewhere (neutral under {@code min}). */
         FIRE_GEODES("fire_geodes", -1.0, 10.0);
 
@@ -102,13 +109,13 @@ public final class VolcanicOutput implements DensityFunction {
 
         /** Whether the surface may read this output per block (39f): the per-column ones and the surface patterns. */
         public boolean forSurface() {
-            return perColumn() || this == THIN_KIND || this == TREAD || this == VEIN || this == CAVE_WALL;
+            return perColumn() || this == THIN_KIND || this == TREAD || this == VEIN || this == CAVE_WALL || this == DEEP_WALL;
         }
     }
 
     private static final Set<Output> PER_COLUMN = EnumSet.of(Output.CALDERA_MASK, Output.CALDERA_DORMANT,
             Output.LAVA_CHANNEL, Output.ISLAND_MASK, Output.ROUGHNESS, Output.VOLCANO_RISE, Output.LAVA_BANK, Output.CLIFF,
-            Output.COLLAPSE, Output.CAVE_WALLS);
+            Output.COLLAPSE, Output.CAVE_WALLS, Output.CUT_DEPTH);
 
     private final DensityFunction field;
     private final Output output;
@@ -152,7 +159,7 @@ public final class VolcanicOutput implements DensityFunction {
             case GUARD -> f.guard(x, context.blockY(), z);
             case CAVE_LIFT -> f.caveLift(x, context.blockY(), z);
             case THIN -> f.thin(x, context.blockY(), z);
-            case THIN_KIND, TREAD, VEIN, CAVE_WALL -> blockValue(f, output, x, context.blockY(), z);
+            case THIN_KIND, TREAD, VEIN, CAVE_WALL, DEEP_WALL -> blockValue(f, output, x, context.blockY(), z);
             case FIRE_GEODES -> f.fireGeodes(x, context.blockY(), z);
             default -> columnValue(f.column(x, z), output);
         };
@@ -171,14 +178,15 @@ public final class VolcanicOutput implements DensityFunction {
             case CLIFF -> column.cliff;
             case COLLAPSE -> column.collapse;
             case CAVE_WALLS -> column.caveCount > 0 ? 1.0 : 0.0;
-            case INITIAL_HEIGHT, GUARD, CAVE_LIFT, THIN, THIN_KIND, TREAD, VEIN, CAVE_WALL, FIRE_GEODES ->
+            case CUT_DEPTH -> column.cutDepth;
+            case INITIAL_HEIGHT, GUARD, CAVE_LIFT, THIN, THIN_KIND, TREAD, VEIN, CAVE_WALL, DEEP_WALL, FIRE_GEODES ->
                     throw new IllegalArgumentException(output + " is not a column value");
         };
     }
 
     /**
      * One of the per-block surface outputs ({@link Output#THIN_KIND}, {@link Output#TREAD}, {@link Output#VEIN},
-     * {@link Output#CAVE_WALL}) at a block.
+     * {@link Output#CAVE_WALL}, {@link Output#DEEP_WALL}) at a block.
      */
     public static double blockValue(VolcanicField field, Output output, int x, int y, int z) {
         return switch (output) {
@@ -186,6 +194,7 @@ public final class VolcanicOutput implements DensityFunction {
             case TREAD -> field.tread(x, y, z);
             case VEIN -> field.vein(x, y, z);
             case CAVE_WALL -> field.caveWall(x, y, z);
+            case DEEP_WALL -> field.deepWall(x, y, z);
             default -> throw new IllegalArgumentException(output + " is not a per-block surface value");
         };
     }

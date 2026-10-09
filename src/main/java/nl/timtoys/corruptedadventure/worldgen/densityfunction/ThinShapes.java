@@ -46,7 +46,12 @@ final class ThinShapes {
         if (tube > 0.0) {
             double half = 3.5 * Math.sqrt(tube);
             double centre = height - 10.0;
-            c.addVoid(Mth.floor(centre - half), Mth.floor(centre + half));
+            int bottom = Mth.floor(centre - half);
+            int top = Mth.floor(centre + half);
+            // 42b: never through the band around lava (a river over the tunnel would pour into it).
+            if (c.guardTop < bottom || c.guardBottom > top) {
+                c.addVoid(bottom, top);
+            }
         }
         if (r.seabedS() > 0.7) {
             double stack = CellShapes.seaStack(salt, px, pz);
@@ -84,9 +89,16 @@ final class ThinShapes {
                          double height) {
         int floor = Mth.floor(height);
         if (q < 1.0) {
-            if (collapse.inShaft(px, pz)) {
-                c.addVoid(Math.max(SHAFT_BOTTOM, floor - SHAFT_DEPTH), floor + 1);
+            double outside = collapse.shaftOutside(px, pz);
+            int bottom = Math.max(SHAFT_BOTTOM, floor - SHAFT_DEPTH);
+            // 42b: the shaft's walls of ring 3 rock (a shell, painted by the surface's cave walls), not vanilla stone.
+            int[] shell = {bottom - (int) LavaTubes.SHELL, floor + 1};
+            if (outside < 0.0) {
+                c.addCave(new int[]{bottom, floor + 1}, null, shell, Integer.MIN_VALUE);
                 return;
+            }
+            if (outside < LavaTubes.SHELL) {
+                c.addCave(null, null, shell, Integer.MIN_VALUE);
             }
             if (q < 0.55) {
                 // Rubble: blocks of 2 x 2 columns, most flat, some one to three blocks high.

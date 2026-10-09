@@ -219,14 +219,21 @@ final class CellShapes {
 
         /** Whether (px, pz) lies in the shaft (if the collapse has one). */
         boolean inShaft(double px, double pz) {
+            return shaftOutside(px, pz) < 0.0;
+        }
+
+        /**
+         * How far (blocks) (px, pz) lies outside the shaft's ragged rim, negative inside; {@link Double#MAX_VALUE} without a
+         * shaft (42b: for its walls).
+         */
+        double shaftOutside(double px, double pz) {
             if (!shaft) {
-                return false;
+                return Double.MAX_VALUE;
             }
             double dx = px - shaftX;
             double dz = pz - shaftZ;
-            double d2 = dx * dx + dz * dz;
             double r = shaftRadius * (1.0 + 0.25 * Math.cos(3.0 * Math.atan2(dz, dx) + p3));
-            return d2 < r * r;
+            return Math.sqrt(dx * dx + dz * dz) - r;
         }
     }
 

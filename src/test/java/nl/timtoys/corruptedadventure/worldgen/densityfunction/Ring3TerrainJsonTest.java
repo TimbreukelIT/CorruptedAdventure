@@ -167,6 +167,8 @@ class Ring3TerrainJsonTest {
         assertTrue(text.contains("\"output\":\"cave_wall\"") && text.contains("minecraft:smooth_basalt"));
         // The walls stop under the ground; a thin roof at a mouth keeps the biome's own rules (39c ash crust).
         assertFalse(text.contains("corruptedadventure:ash_crust"));
+        // 42b (V3 = A): a roof of one block over an opening is ash that does not fall; no falling ash_crust from worldgen.
+        assertFalse(WorldgenData.read("noise_settings/overworld.json").toString().contains("corruptedadventure:ash_crust"));
     }
 
     private static String text(String relative) {

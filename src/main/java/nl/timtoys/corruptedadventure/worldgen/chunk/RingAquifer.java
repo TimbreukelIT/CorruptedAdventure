@@ -37,18 +37,21 @@ final class RingAquifer implements Aquifer {
     /** Falling lava (a lava fall, 39f): level 8 is a falling flow, which stays put under lava and spreads where it lands. */
     private static final BlockState FALLING_LAVA = LAVA.setValue(LiquidBlock.LEVEL, 8);
     /**
-     * How far the real surface can lie below the field's exact height: the terrain is interpolated between 4-block grid
-     * values ({@link #SURFACE_MARGIN}), and the crags of ring 3 ({@code ring_3/overworld/terrain}: 0.3 * roughness * noise
-     * in density, 1/8 per block; the noise reaches about ±1.5) take off up to {@link #CRAG_MARGIN} * roughness more.
+     * How far the crags of ring 3 ({@code ring_3/overworld/terrain}: 0.3 * roughness * noise in density, 1/8 per block;
+     * the noise reaches about ±1.5) can move the surface, per unit of roughness (42b: on top of the exact interpolation,
+     * {@link #surfaceAt}).
      */
-    private static final double SURFACE_MARGIN = 1.5;
     private static final double CRAG_MARGIN = 4.0;
+    /** The terrain's cells: the density is interpolated between values on this grid (x, z). */
+    private static final int CELL = 4;
 
     private final ResourceKey<Level> dimension;
     private final Aquifer vanilla;
     @Nullable
     private final VolcanicField volcanic;
     private boolean suppressed;
+    /** Set while the chunk's carvers run ({@code RingChunkGenerator#applyCarvers}): their open space is a carved tunnel. */
+    private boolean carving;
     private boolean lid;
     private boolean spring;
 
@@ -75,6 +78,9 @@ final class RingAquifer implements Aquifer {
     // The range of the column's carved openings and guard bands (42), else caveBottom > caveTop.
     private final int[] caveBottom = new int[COLUMNS + 1];
     private final int[] caveTop = new int[COLUMNS + 1];
+    // The band around the column's lava lake, river or lava sea (42b: closed to carvers), else guardTop < guardBottom.
+    private final int[] guardBottom = new int[COLUMNS + 1];
+    private final int[] guardTop = new int[COLUMNS + 1];
     private final int[] waterOnlyFrom = new int[COLUMNS + 1];
 
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla) {
@@ -92,6 +98,11 @@ final class RingAquifer implements Aquifer {
     @Override
     public BlockState computeSubstance(DensityFunction.FunctionContext context, double substance) {
         return compute(-1, context, substance);
+    }
+
+    /** Marks the carvers' pass: while it runs, open space asked for is a tunnel a carver wants to cut. */
+    void carving(boolean carving) {
+        this.carving = carving;
     }
 
     /** The same with the ring given, for tests: the column is not remembered. */
@@ -144,6 +155,8 @@ final class RingAquifer implements Aquifer {
         fallFlow[i] = lava ? column.fallFlowBelow() : Integer.MIN_VALUE;
         caveBottom[i] = lava ? Math.min(column.voidMin(), column.deepGuardMin()) : Integer.MAX_VALUE;
         caveTop[i] = lava ? Math.max(column.voidMax(), column.deepGuardMax()) : Integer.MIN_VALUE;
+        guardBottom[i] = lava ? column.guardBottom() : Integer.MAX_VALUE;
+        guardTop[i] = lava ? column.guardTop() : Integer.MIN_VALUE;
         dryFrom[i] = RingFluidPicker.ring3DryFrom(dimension, position);
         waterOnlyFrom[i] = RingFluidPicker.waterOnlyFrom(dimension, position);
     }
@@ -174,6 +187,10 @@ final class RingAquifer implements Aquifer {
             suppressed = !spring;
             return FALLING_LAVA;
         }
+        if (carving && y >= guardBottom[i] && y <= guardTop[i]) {
+            // A carver may not cut into the band around lava (42b): its tunnel would open the lava to the air beside it.
+            return null;
+        }
         if (VolcanicField.Column.lavaAt(y, lavaTop[i], lavaBottom[i], Integer.MIN_VALUE)) {
             return exposed(context.blockX(), y, context.blockZ()) ? null : LAVA;
         }
@@ -201,6 +218,12 @@ final class RingAquifer implements Aquifer {
             suppressed = true;
             return AIR;
         }
+        if (dryFrom[i] != Integer.MAX_VALUE && y >= RingFluidPicker.LAVA_LAYER_TOP && state.is(Blocks.LAVA)) {
+            // 42b (V2 = A): no local aquifer lava in ring 3 (its pools stood against the air of their caves); lava lies
+            // only where the terrain puts it. Vanilla's lava layer below stays.
+            suppressed = true;
+            return AIR;
+        }
         if (y < waterOnlyFrom[i] || !(state.is(Blocks.LAVA) || state.is(Blocks.WATER))) {
             return state;
         }
@@ -212,23 +235,87 @@ final class RingAquifer implements Aquifer {
     }
 
     /**
-     * Whether lava at this block may stand against open air beside it: a neighbour column without lava at this height
-     * whose surface lies below it (the next, one block lower pool of a channel, or the shallow end of a channel). The
-     * surface is the field's height minus a margin for the crags on steep crater walls (up to ~3 blocks). Such a block
-     * becomes rock instead (a lip of cooled crust), so no lava flows when the chunk is first updated.
+     * Whether lava at this block may stand against open air: a neighbour (beside it, or right below it) that may be open
+     * space without lava. Such a block becomes rock instead (a lip of cooled crust), so no lava flows when the chunk is
+     * first updated. 42b: the neighbour's ground is the terrain's real, interpolated surface ({@link #groundAt}), not the
+     * field's height, and its carved openings count as open.
      */
-    private boolean exposed(int x, int y, int z) {
-        return open(x + 1, y, z) || open(x - 1, y, z) || open(x, y, z + 1) || open(x, y, z - 1);
+    boolean exposed(int x, int y, int z) {
+        VolcanicField.Column own = volcanic.column(x, z);
+        return !holdsLava(own, y - 1) && open(own, x, y - 1, z, -1.0)
+                || edge(x + 1, y, z) || edge(x - 1, y, z) || edge(x, y, z + 1) || edge(x, y, z - 1);
     }
 
-    private boolean open(int x, int y, int z) {
+    /** Whether the block beside lava may be open air: open, without lava, and no step of a river onto lava. */
+    private boolean edge(int x, int y, int z) {
         VolcanicField.Column neighbour = volcanic.column(x, z);
-        // A neighbour whose lava lies at most one block lower (the next step down a river, 39d) is no edge: the step
-        // stays a small lava fall instead of a lip of crust across the river. Lower lava (rivers crossing at different
-        // heights) still gets a crust.
-        return (neighbour.lavaTop() < y || y < neighbour.lavaBottom())
-                && neighbour.height() - SURFACE_MARGIN - CRAG_MARGIN * neighbour.roughness() < y + 1.0
-                && !neighbour.islandAt(y);
+        if (holdsLava(neighbour, y) || !open(neighbour, x, y, z, -1.0)) {
+            return false;
+        }
+        // A step down a river (39d): the neighbour's lava lies one block lower, and that block really becomes lava (the
+        // same decision the aquifer takes there, its own crust check included), so the step is a small lava fall onto
+        // lava. Otherwise the lava would spill onto rock or crust: an edge.
+        return !(neighbour.lavaTop() == y && becomesLava(neighbour, x, y - 1, z));
+    }
+
+    /**
+     * Whether the aquifer fills this block with the terrain's lava: inside the column's lava, open for certain, not
+     * crusted (the terrain's lava lies only inside ring 3 proper, where the aquifer places it: rivers end where the core
+     * fades, craters and the abyss lie inside it). Recurses only downwards (each step one block lower), so it ends within
+     * a lava band.
+     */
+    private boolean becomesLava(VolcanicField.Column column, int x, int y, int z) {
+        return holdsLava(column, y) && open(column, x, y, z, 1.0) && !exposed(x, y, z);
+    }
+
+    private static boolean holdsLava(VolcanicField.Column column, int y) {
+        return y < column.lavaTop() && y >= column.lavaBottom();
+    }
+
+    /**
+     * Whether the block is open space: a carved opening, or above the terrain's surface ({@link #groundAt}) with the
+     * crags taken at their lowest ({@code crags} −1: may be open) or highest (+1: open for certain). A thin solid (or a
+     * floating island) is never open.
+     */
+    private boolean open(VolcanicField.Column column, int x, int y, int z, double crags) {
+        if (column.thinSolidAt(y)) {
+            return false;
+        }
+        if (column.voidAt(y)) {
+            return true;
+        }
+        groundAt(x, z);
+        return y >= ground[0] + crags * CRAG_MARGIN * ground[1];
+    }
+
+    // The ground of the last column asked (groundAt): the interpolated surface and the largest corner roughness.
+    private final double[] ground = new double[2];
+
+    /**
+     * The terrain's surface in a column as the noise chunk builds it, into {@link #ground} (42b): the ring 3 stack is
+     * linear in y near the surface (0.125 * (height - y); caves kept out around lava by the guard, at least a cell wide),
+     * and the noise chunk interpolates it between the corners of its cells (every 4 blocks in x and z), so a block is rock
+     * below the bilinear blend of the corner heights and open from it up; the crags (interpolated too) move that by up
+     * to {@link #CRAG_MARGIN} times the largest corner roughness. The field's own height of the column can lie well
+     * above the blend where the heights jump (a channel's bed beside its bank, two rivers at different levels).
+     */
+    private void groundAt(int x, int z) {
+        int x0 = Math.floorDiv(x, CELL) * CELL;
+        int z0 = Math.floorDiv(z, CELL) * CELL;
+        double fx = (x - x0) / (double) CELL;
+        double fz = (z - z0) / (double) CELL;
+        VolcanicField.Column c00 = volcanic.column(x0, z0);
+        VolcanicField.Column c10 = volcanic.column(x0 + CELL, z0);
+        VolcanicField.Column c01 = volcanic.column(x0, z0 + CELL);
+        VolcanicField.Column c11 = volcanic.column(x0 + CELL, z0 + CELL);
+        ground[0] = (c00.height() * (1.0 - fx) + c10.height() * fx) * (1.0 - fz) + (c01.height() * (1.0 - fx) + c11.height() * fx) * fz;
+        ground[1] = Math.max(Math.max(c00.roughness(), c10.roughness()), Math.max(c01.roughness(), c11.roughness()));
+    }
+
+    /** The terrain's surface in a column ({@link #groundAt}), for the tests. */
+    double surfaceAt(int x, int z) {
+        groundAt(x, z);
+        return ground[0];
     }
 
     /** Whether an opening without lava lies beside or right below the block (42: lava there would flow). */

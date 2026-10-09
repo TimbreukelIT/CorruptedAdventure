@@ -1274,6 +1274,55 @@
                   {
                     "type": "minecraft:condition",
                     "if_true": {
+                      "type": "minecraft:noise_threshold",
+                      "noise": "corruptedadventure:nether_ring_3_region",
+                      "min_threshold": -10.0,
+                      "max_threshold": -0.18
+                    },
+                    "then_run": {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:not",
+                        "invert": {
+                          "type": "minecraft:y_above",
+                          "anchor": {
+                            "absolute": 30
+                          },
+                          "surface_depth_multiplier": 0,
+                          "add_stone_depth": false
+                        }
+                      },
+                      "then_run": {
+                        "type": "minecraft:sequence",
+                        "sequence": [
+                          {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:noise_threshold",
+                              "noise": "minecraft:nether_state_selector",
+                              "min_threshold": 0.55,
+                              "max_threshold": 10.0
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "minecraft:magma_block"
+                              }
+                            }
+                          },
+                          {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "corruptedadventure:cold_lava"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
                         "corruptedadventure:rime_forest"
