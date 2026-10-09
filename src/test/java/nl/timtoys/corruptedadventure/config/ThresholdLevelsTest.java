@@ -38,4 +38,10 @@ class ThresholdLevelsTest {
         assertArrayEquals(new int[]{25, 50, 75, 100}, defaults);
         assertTrue(ThresholdLevels.ascending(defaults));
     }
+
+    @Test
+    void coldHasThreeRisingThresholds() {
+        // ColdFreeze.THRESHOLD_COUNT: the freeze is the third.
+        assertArrayEquals(new int[]{33, 66, 100}, ServerConfig.COLD.thresholds.defaults());
+    }
 }

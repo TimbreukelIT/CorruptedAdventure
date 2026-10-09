@@ -131,6 +131,13 @@ public final class ModTags {
         /** Biomes where the heat meter falls ({@code dormant_caldera}). */
         public static final TagKey<Biome> HEAT_REFUGES = TagKey.create(Registries.BIOME, CorruptedAdventure.id("heat_refuges"));
 
+        // ring 3 — conditions g2
+        /**
+         * Nether ring 3 biomes where the cold rises faster: the open plain ({@code frozen_lava_sea}; contents by
+         * W-nether in 53b, empty until then).
+         */
+        public static final TagKey<Biome> COLD_EXPOSED = TagKey.create(Registries.BIOME, CorruptedAdventure.id("cold_exposed"));
+
         private Biomes() {
         }
     }

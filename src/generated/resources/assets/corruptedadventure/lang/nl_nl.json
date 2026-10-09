@@ -265,6 +265,8 @@
   "block.corruptedadventure.sulfur_ore": "Zwavelerts",
   "block.corruptedadventure.volcanite_ore": "Vulkanieterts",
   "block.corruptedadventure.withered_dirt": "Verdorde aarde",
+  "death.attack.corruptedadventure.cold": "%1$s bevroor in de kou van de Nether",
+  "death.attack.corruptedadventure.cold.player": "%1$s bevroor in de kou van de Nether tijdens het gevecht met %2$s",
   "death.attack.corruptedadventure.dehydration": "%1$s is uitgedroogd",
   "death.attack.corruptedadventure.dehydration.player": "%1$s droogde uit tijdens het gevecht met %2$s",
   "death.attack.corruptedadventure.heat": "%1$s bezweek aan de hitte",
