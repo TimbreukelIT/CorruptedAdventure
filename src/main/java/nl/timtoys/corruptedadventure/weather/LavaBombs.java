@@ -15,10 +15,12 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.registry.ModTags;
@@ -26,7 +28,9 @@ import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingWorld;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,8 +40,13 @@ import java.util.UUID;
  * every client sees the same bombs. They never explode; the fire on landing follows {@code mobGriefing} (a vanilla
  * small fireball without an owner would always set fire).
  * <p>
- * The count is an accumulator per player, checked once a second: {@code lavaBombsPerMinute} × fade × peak factor, so
- * one player never gets more than {@code lavaBombsPerMinute × lavaBombPeakFactor} bombs a minute.
+ * The count is an accumulator per player, checked once a second: {@code lavaBombsPerMinute} × fade × peak factor,
+ * shared with the other players who qualify within {@code lavaBombRadius} (package 50c), so a group gets about the
+ * bombs of one player instead of one share each; one player never gets more than {@code lavaBombsPerMinute ×
+ * lavaBombPeakFactor} bombs a minute.
+ * <p>
+ * A bomb lives at most {@link #MAX_AGE_TICKS}: one in a chunk that no longer ticks (its player went away) would hang
+ * still in the air, so the server removes it, and a bomb saved with its chunk does not come back when it is loaded.
  */
 public final class LavaBombs {
     /** Entity tag of our bombs (saved with the entity, so a reloaded bomb keeps following {@code mobGriefing}). */
@@ -50,9 +59,13 @@ public final class LavaBombs {
     private static final int MIN_FALL = 12;
     /** Largest horizontal offset of the start from the landing spot: the bombs come in at an angle. */
     private static final double MAX_SLANT = 16.0;
+    /** A falling bomb lands within a few seconds; one this old hangs in a chunk that does not tick and is removed. */
+    static final int MAX_AGE_TICKS = 200;
 
     /** Fractional bombs carried over per player (main server thread only). */
     private static final Map<UUID, Double> CARRY = new HashMap<>();
+    /** Our bombs in flight with the game time they were dropped (main server thread only). */
+    private static final List<Flight> FLIGHTS = new ArrayList<>();
 
     private LavaBombs() {
     }
@@ -60,13 +73,28 @@ public final class LavaBombs {
     public static void register(IEventBus gameBus) {
         gameBus.addListener(LavaBombs::onPlayerTick);
         gameBus.addListener(LavaBombs::onImpact);
+        gameBus.addListener(LavaBombs::onServerTick);
+        gameBus.addListener(LavaBombs::onJoinLevel);
         gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> CARRY.remove(event.getEntity().getUUID()));
-        gameBus.addListener(ServerStoppedEvent.class, event -> CARRY.clear());
+        gameBus.addListener(ServerStoppedEvent.class, event -> {
+            CARRY.clear();
+            FLIGHTS.clear();
+        });
     }
 
     /** Bombs per second around one player: per minute ÷ 60 × the eruption's fade × the peak factor in a peak. */
     static double perSecond(double perMinute, float intensity, boolean peak, double peakFactor) {
         return Math.max(0.0, perMinute / 60.0 * intensity * (peak ? peakFactor : 1.0));
+    }
+
+    /** A player's share of the bombs when {@code others} more players qualify within the bomb radius. */
+    static double shared(double perSecond, int others) {
+        return perSecond / (1 + Math.max(0, others));
+    }
+
+    /** Whether a bomb dropped at {@code born} is past its life at {@code now}. */
+    static boolean expired(long born, long now) {
+        return now - born >= MAX_AGE_TICKS;
     }
 
     /** One second of the accumulator: the whole bombs to drop now and the fraction carried to the next second. */
@@ -83,7 +111,7 @@ public final class LavaBombs {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.tickCount % CHECK_TICKS != 0) {
             return;
         }
-        double perSecond = eligible(player) ? rate(player) : 0.0;
+        double perSecond = eligible(player) ? shared(rate(player), othersNearby(player)) : 0.0;
         if (perSecond <= 0.0) {
             CARRY.remove(player.getUUID());
             return;
@@ -102,6 +130,19 @@ public final class LavaBombs {
                 && level.dimension() == Level.OVERWORLD && RingWorld.isActive(level.getServer())
                 && RingLayout.ringAt(level.dimension(), player.getX(), player.getZ()).ring() == Ring.RING_3
                 && level.canSeeSky(BlockPos.containing(player.getEyePosition()));
+    }
+
+    /** Other players who qualify for bombs within {@code lavaBombRadius} of this one (horizontally). */
+    private static int othersNearby(ServerPlayer player) {
+        double radius = ServerConfig.RING_3_WEATHER.lavaBombRadius.get();
+        int others = 0;
+        for (ServerPlayer other : player.serverLevel().players()) {
+            if (other != player && Mth.lengthSquared(other.getX() - player.getX(), other.getZ() - player.getZ()) <= radius * radius
+                    && eligible(other)) {
+                others++;
+            }
+        }
+        return others;
     }
 
     private static double rate(ServerPlayer player) {
@@ -140,8 +181,37 @@ public final class LavaBombs {
         Vec3 movement = new Vec3(x + 0.5 - startX, ground - startY, z + 0.5 - startZ);
         SmallFireball bomb = new SmallFireball(level, startX, startY, startZ, movement);
         bomb.addTag(TAG);
-        level.addFreshEntity(bomb);
+        if (level.addFreshEntity(bomb)) {
+            FLIGHTS.add(new Flight(bomb, level.getGameTime()));
+        }
         CorruptedAdventure.LOGGER.debug("[lava bomb] {}: lands near {} {} {}", player.getGameProfile().getName(), x, ground, z);
+    }
+
+    /** Once a second: forget the bombs that landed, remove those past their life (in a chunk that stopped ticking). */
+    private static void onServerTick(ServerTickEvent.Post event) {
+        if (FLIGHTS.isEmpty() || event.getServer().getTickCount() % CHECK_TICKS != 0) {
+            return;
+        }
+        FLIGHTS.removeIf(flight -> {
+            if (flight.bomb().isRemoved()) {
+                return true;
+            }
+            if (expired(flight.born(), flight.bomb().level().getGameTime())) {
+                flight.bomb().discard();
+                return true;
+            }
+            return false;
+        });
+    }
+
+    /** A bomb saved with its chunk is stale by the time the chunk loads again: it does not come back. */
+    private static void onJoinLevel(EntityJoinLevelEvent event) {
+        if (event.loadedFromDisk() && !event.getLevel().isClientSide() && event.getEntity().getTags().contains(TAG)) {
+            event.setCanceled(true);
+        }
+    }
+
+    private record Flight(SmallFireball bomb, long born) {
     }
 
     /** Landing on a block: a splash of lava for everyone; the fire is vanilla's, unless {@code mobGriefing} is off. */

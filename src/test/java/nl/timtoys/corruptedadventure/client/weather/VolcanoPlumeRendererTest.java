@@ -19,4 +19,12 @@ class VolcanoPlumeRendererTest {
             previous = far;
         }
     }
+
+    @Test
+    void hazeGrowsWithDistanceUpToItsShare() {
+        assertEquals(0.0F, VolcanoPlumeRenderer.haze(0.0));
+        assertEquals(0.45F, VolcanoPlumeRenderer.haze(VolcanoPlumeRenderer.DRAW_DISTANCE), 1e-6F);
+        assertEquals(0.45F, VolcanoPlumeRenderer.haze(2000.0), 1e-6F);
+        assertTrue(VolcanoPlumeRenderer.haze(256.0) > VolcanoPlumeRenderer.haze(128.0));
+    }
 }

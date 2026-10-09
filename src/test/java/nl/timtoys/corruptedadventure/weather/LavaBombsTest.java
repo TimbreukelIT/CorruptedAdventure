@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.weather;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LavaBombsTest {
@@ -37,5 +38,24 @@ class LavaBombsTest {
         LavaBombs.Release release = LavaBombs.release(0.5, LavaBombs.perSecond(60.0, 1.0F, true, 4.0));
         assertEquals(4, release.count());
         assertEquals(0.5, release.carry(), EPSILON);
+    }
+
+    @Test
+    void aGroupSharesTheBombsOfOnePlayer() {
+        double perSecond = LavaBombs.perSecond(12.0, 1.0F, false, 2.0);
+        assertEquals(perSecond, LavaBombs.shared(perSecond, 0), EPSILON);
+        for (int others = 1; others <= 5; others++) {
+            // Every player of the group gets one share: together the density of one player.
+            assertEquals(perSecond, LavaBombs.shared(perSecond, others) * (others + 1), EPSILON);
+        }
+        assertEquals(perSecond, LavaBombs.shared(perSecond, -1), EPSILON);
+    }
+
+    @Test
+    void bombsExpireAfterTenSeconds() {
+        assertFalse(LavaBombs.expired(1000L, 1000L));
+        assertFalse(LavaBombs.expired(1000L, 1000L + LavaBombs.MAX_AGE_TICKS - 1));
+        assertTrue(LavaBombs.expired(1000L, 1000L + LavaBombs.MAX_AGE_TICKS));
+        assertEquals(200, LavaBombs.MAX_AGE_TICKS);
     }
 }

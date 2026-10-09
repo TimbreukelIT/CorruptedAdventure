@@ -85,6 +85,9 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
         add(ModSoundEvents.GEYSER_BURST, SoundDefinition.definition()
                 .subtitle(subtitle("block.geyser.burst"))
                 .with(file("block/ring_3/geyser_burst_1"), file("block/ring_3/geyser_burst_2")));
+        add(ModSoundEvents.GEYSER_WARNING, SoundDefinition.definition()
+                .subtitle(subtitle("block.geyser.warning"))
+                .with(file("block/ring_3/geyser_warning_1"), file("block/ring_3/geyser_warning_2")));
         add(ModSoundEvents.BOILING_MUD_BUBBLE, SoundDefinition.definition()
                 .subtitle(subtitle("block.boiling_mud.bubble"))
                 .with(file("block/ring_3/boiling_mud_bubble_1"), file("block/ring_3/boiling_mud_bubble_2"),

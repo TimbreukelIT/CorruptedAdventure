@@ -178,6 +178,13 @@
     ],
     "subtitle": "subtitles.corruptedadventure.block.geyser.burst"
   },
+  "block.geyser.warning": {
+    "sounds": [
+      "corruptedadventure:block/ring_3/geyser_warning_1",
+      "corruptedadventure:block/ring_3/geyser_warning_2"
+    ],
+    "subtitle": "subtitles.corruptedadventure.block.geyser.warning"
+  },
   "weather.ring_2.sandstorm": {
     "sounds": [
       {
