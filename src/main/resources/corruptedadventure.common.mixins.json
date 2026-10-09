@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "nl.timtoys.corruptedadventure.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "IceBlockMeltMixin",
+    "WetSpongeBlockDryMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

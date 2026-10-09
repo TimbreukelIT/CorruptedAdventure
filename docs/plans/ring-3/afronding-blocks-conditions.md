@@ -23,17 +23,29 @@ Voortgang: 2026-10-09 46b datagen + runData (2 blockstates, 2 nieuwe `_mirrored`
 Voortgang: 2026-10-09 zwavelblokken + runData + B groen (672 tests, 0 fouten, incl. `ClientIsolationTest`); de 25 "missing BiomeFilter"-meldingen in runData bestonden al vóór deze change.
 
 ## 55b — `conditions`
-- **Gedoofd kampvuur:** `ConditionContext.isHeatSource(state)` = in `#heat_sources` en niet `lit=false`, dezelfde regel als `isWarmthSource` (gedeeld via `isLitIn(state, tag)`); `HEAT_SOURCE`-predicaat gebruikt hem (ook in de palette-voorcheck van `NearbyBlocks`). Test `LitSourcesTest`.
-- **IJs smelt door hitte** en **natte spons droogt:** ontwerpvragen V1/V2 aan main (2026-10-09), wacht op antwoord.
+- **Gedoofd kampvuur:** `ConditionContext.isHeatSource(state)` = in `#heat_sources` en niet `lit=false`, dezelfde regel als `isWarmthSource` (gedeeld via `isLitIn(state, tag)`); het `HEAT_SOURCE`-predicaat gebruikt hem (ook in de palette-voorcheck van `NearbyBlocks`). Configcommentaar `[conditions.heat]`: "lit heat source". Test `LitSourcesTest`.
+- **IJs smelt door hitte (V1 = A):** `condition/IceMelting.meltsByHeat(level, pos)`: in de hittezone (overworld, `RingWorld.isActive`, `HeatRule.inZone`) overdag onder open lucht (`Sun.isUp` + niets vasts boven het ijs volgens de heightmap + volle hemellicht erboven, zoals bij water), of binnen `[conditions.heat] sourceRadius` van een brandende hittebron (`NearbyBlocks.near` met `isHeatSource`, de doos rond het ijs en het blok erboven). Weer telt niet mee. Volgorde goedkoop → duur: dimensie, ring, zon/lucht, blokscan (bevroren oceanen in ring 1 tikken veel). Haak: de eerste **common mixin** `mixin/IceBlockMeltMixin` op `IceBlock#randomTick` (HEAD, cancellable; roept vanilla's `melt` aan), vóór vanilla's bloklichtregel, die blijft gelden. Smeltwater onder open lucht verdampt via `WaterEvaporation`. `FrostedIceBlock` heeft een eigen `randomTick` en blijft ongemoeid; `packed_ice`/`blue_ice` smelten nooit (vanilla). Tempo: een random tick per blok (gemiddeld ~68 s bij `randomTickSpeed` 3).
+- **Natte spons droogt (V2 = A, haak herzien):** `condition/SpongeDrying.dryIfExposed(level, pos)`: waar water verdampt (`WaterEvaporation.evaporatesAt`), meteen spons met het Nether-effect (`PARTICLES_WATER_EVAPORATING`, `WET_SPONGE_DRIES`). Haak: common mixin `mixin/WetSpongeBlockDryMixin` op `WetSpongeBlock#onPlace` (HEAD; daar droogt vanilla hem in de Nether). **Afwijking van "geen mixin":** `SpongeBlock.tryAbsorbWater` zet de natte spons met vlag 2 (geen buur-updates), dus `NeighborNotifyEvent` mist een spons die net water opzoog; `onPlace` vangt elke route (speler, dispenser, `/setblock`, opzuigen). Main/gebruiker koos A (2026-10-09).
+- **Mixin-config:** `corruptedadventure.common.mixins.json` (package `nl.timtoys.corruptedadventure.mixin`, alleen `"mixins"`, geen `client`), tweede `[[mixins]]` in `neoforge.mods.toml`. De client-config blijft alleen `"client"`. Test `CommonMixinsTest` (in de root-package: Mixin weigert andere classes uit het mixin-package): config-inhoud, en dat FML beide mixins toepast (de unit-tests draaien met de mod geladen; handler-methoden op `IceBlock`/`WetSpongeBlock`). `ClientIsolationTest` dekt `mixin/` (geen client-imports).
+- Tests: `LitSourcesTest` (3), `IceMeltingTest` (3: regel, geen lookups buiten de zone, zon slaat de blokscan over), `CommonMixinsTest` (2). `SpongeDrying`/`meltsByHeat` zelf vragen een `ServerLevel`: W-checklist.
 
-Voortgang: 2026-10-09 kampvuur-lit-check + `LitSourcesTest` (groen); V1/V2 gesteld, wacht idle.
+Voortgang: 2026-10-09 55b compleet — B groen (`build --rerun-tasks`, 677 tests, 0 fouten, incl. `ClientIsolationTest`), D: runData zonder wijzigingen; jar bevat beide `[[mixins]]` en de twee mixin-classes.
 
 ## W-checklist voor INT
 - [ ] 46b: een vloervlek `glowing_fissure` en een vlak `smoldering_stone` (dag en nacht): geen tegelraster, gloeilaag valt in elke variant precies op de scheuren (geen verschoven gloei), geen z-fighting of ontbrekende vlakken bij x-rotaties, cullface klopt tegen buren.
 - [ ] 46b: break-particles en het item in de hand ongewijzigd.
+- [ ] 55b (server **en** dedicated server): de server start met `corruptedadventure.common.mixins.json` zonder client-class-fouten; log zonder mixin-waarschuwingen.
+- [ ] 55b: gedoofd kampvuur naast een speler in ring 3 (nacht, ondergronds): hittemeter daalt; aangestoken: stijgt. Kou in Nether-3 ongewijzigd.
+- [ ] 55b: ijs in ring 3 onder open lucht overdag smelt binnen een paar minuten (en het water verdampt); 's nachts niet; ondergronds naast magma/smeulsteen wel (water blijft); ijs in ring 1/2 en buiten bereik ongewijzigd; `randomTickSpeed` hoger zetten versnelt de test.
+- [ ] 55b: natte spons onder open lucht in ring 3 neerzetten → droogt met rook en sis; ondergronds blijft nat; droge spons aan een overdekt bad onder open lucht → zuigt op en droogt meteen.
 - [ ] 46b-zwavel: de drie zwavelmodders bubbelen met geelgroene stoom, vertragen als kokende modder; zwavelkristallen op elke zijde, vallen zonder steun, amethist-klank, zwak licht; drops (cluster → zwavel, knoppen alleen Silk Touch).
 
 ## CODEBASE-delta
+- `condition/ConditionContext`: `isHeatSource(state)` (lit-check, 55b) naast `isWarmthSource`, gedeeld `isLitIn(state, tag)`; `isNearHeatSource` telt alleen brandende bronnen.
+- `condition/IceMelting` (55b): `meltsByHeat(level, pos)` (zone, zon onder open lucht of brandende hittebron binnen `sourceRadius`), pure `melts(inZone, inSun, nearSource)`.
+- `condition/SpongeDrying` (55b): `dryIfExposed(level, pos)` (waar water verdampt, Nether-effect).
+- `mixin/` (nieuw, common, 55b): `IceBlockMeltMixin` (`IceBlock#randomTick` HEAD → `IceMelting`), `WetSpongeBlockDryMixin` (`WetSpongeBlock#onPlace` HEAD → `SpongeDrying`). Config `corruptedadventure.common.mixins.json` (alleen `"mixins"`); `neoforge.mods.toml` tweede `[[mixins]]`. De regel "de enige mixin" bij `ClientLevelSkyColorMixin` en bij `corruptedadventure.mixins.json` in CODEBASE.md aanpassen: dat blijft de enige **client**-mixin.
+- Tests: `condition/LitSourcesTest`, `condition/IceMeltingTest`, `CommonMixinsTest` (root-package; een test in het mixin-package laadt Mixin niet).
 - `block/BoilingMudBlock`: optionele `steam`-particle (constructor `(Properties, Supplier<? extends SimpleParticleType>)`, codec-veld `steam`); de zwavelmodders gebruiken `sulfur_steam`.
 - `registry/ModBlocks`: `YELLOW_/GREEN_/ORANGE_SULFUR_MUD` (`BoilingMudBlock`), `SMALL_/MEDIUM_/LARGE_SULFUR_CRYSTAL_BUD`, `SULFUR_CRYSTAL` (`AmethystClusterBlock`, licht 1/2/2/3), na `GEYSER`; helpers `boilingMud(MapColor)`, `sulfurCrystal(stage, light)`.
 - Datagen: blockstates/modellen (modders `simpleBlock`, kristallen `crystalCluster(…, false)`), item-modellen, loot (cluster → `sulfur` via `createCrystalClusterTable`), tags, lang (`Ring3BlockNames`).
@@ -44,10 +56,15 @@ Voortgang: 2026-10-09 kampvuur-lit-check + `LitSourcesTest` (groen); V1/V2 geste
 ## Beslissingen
 | Datum | Categorie | Beslissing | Reden |
 |---|---|---|---|
+| 2026-10-09 | conditions | 55b: een gedoofd kampvuur telt niet als hittebron (`lit`-check, gelijk aan de warmtebronnen van de kou) | Teststop 4b beslissing 4; backlog 55 |
+| 2026-10-09 | conditions | 55b (V1 = A): ijs smelt in ring 3 geleidelijk op zijn random tick waar de hittemeter stijgt: overdag onder open lucht of binnen `sourceRadius` van een brandende hittebron; weer telt niet. Eerste common (server-side) mixin `IceBlock#randomTick` in een eigen config `corruptedadventure.common.mixins.json` | NeoForge 1.21.1 heeft geen random-tick-event; geleidelijk en "natuurlijk", binnen de bestaande hitteregel |
+| 2026-10-09 | conditions | 55b (V2 = A): een natte spons droogt meteen waar water verdampt (onder open lucht in ring 3), met het Nether-effect, via een mixin op `WetSpongeBlock#onPlace`; wijkt af van het eerdere "geen mixin, `NeighborNotifyEvent`" | Opzuigen zet de spons zonder buur-updates, dat event mist het; `onPlace` is waar vanilla hem in de Nether droogt, dus elke route telt; geen extra infra (zelfde config als het ijs) |
 | 2026-10-09 | blocks | 46b: zwavelvelden krijgen `yellow_/green_/orange_sulfur_mud` (kokende modder met `sulfur_steam`, drie losse blokken) en `sulfur_crystal` met drie knoppen (amethist-gedrag, licht 1/2/2/3, drop `sulfur`) | Teststop 4b beslissing 2; losse blokken zijn eenvoudiger voor models, loot en textures |
 | 2026-10-09 | blocks | 46b: `glowing_fissure` en `smoldering_stone` krijgen 32 willekeurige varianten (netherrack-rotaties × gespiegeld model); de scheuren lopen daardoor niet meer als doorgaande lijn over buren door | Teststop 4b, beslissing 4 (tegelraster breken); spiegelen alleen bleef streperig |
 
 ## Backlog
+- Afgehandeld (55b): backlog r. 198 (ijs smelt door ring 3-hitte), r. 199 (natte spons droogt in ring 3), r. 222 (gedoofd kampvuur geen hittebron); r. 219 (rotaties) in 46b.
+- [conditions] Ijs smelt door hitte alleen voor `Blocks.ICE` (en subklassen zonder eigen `randomTick`); `packed_ice`/`blue_ice` nooit, zoals vanilla. Als spelers die als koelblok misbruiken in ring 3: herzien. (bron: 55b)
 - [textures] Placeholder-textures van de zwavelvelden-blokken (46b) vervangen in golf 3 (57) via `Ring3Textures.java`: `yellow_/green_/orange_sulfur_mud` (nu getinte kokende modder) en de vier zwavelkristalstadia (nu getint zoutkristal/vuurkristalknoppen). (bron: 46b)
 - [items] `sulfur_crystal` dropt het placeholder-item `sulfur` (4/2 zoals amethist); balans in fase 2. (bron: 46b)
 - [textures] `glowing_fissure` met 46b-rotaties: overwegen de randpunten symmetrisch te leggen (midden van elke rand, rij/kolom 7,5–8) zodat geroteerde buren weer aansluiten; nu een netwerk met kleine haarlijn-eindjes. Beoordelen in INT. (bron: 46b)
