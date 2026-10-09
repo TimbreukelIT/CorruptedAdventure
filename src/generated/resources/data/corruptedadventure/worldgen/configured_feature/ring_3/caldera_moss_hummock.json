@@ -1,0 +1,36 @@
+{
+  "type": "corruptedadventure:ground_patch",
+  "config": {
+    "depth": 1,
+    "material": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:moss_block"
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    },
+    "raise": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "raised": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:moss_block"
+      }
+    },
+    "replaceable": [
+      "minecraft:moss_block",
+      "minecraft:coarse_dirt",
+      "corruptedadventure:ash_block",
+      "corruptedadventure:pumice",
+      "minecraft:basalt"
+    ],
+    "stretch": 1.3
+  }
+}

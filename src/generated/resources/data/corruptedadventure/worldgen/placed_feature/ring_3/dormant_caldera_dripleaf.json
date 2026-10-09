@@ -1,0 +1,65 @@
+{
+  "feature": "minecraft:dripleaf",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 2,
+      "chance": 0.35
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE"
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "measure": "rise",
+      "min": 2,
+      "radius": 4
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 1,
+      "radius": 1
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ground_only": true,
+      "ranges": [
+        {
+          "min": 0.5,
+          "output": "caldera_dormant"
+        },
+        {
+          "max": 0.1,
+          "output": "lava_bank"
+        }
+      ]
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:air"
+          },
+          {
+            "type": "minecraft:would_survive",
+            "state": {
+              "Name": "minecraft:big_dripleaf",
+              "Properties": {
+                "facing": "north",
+                "tilt": "none",
+                "waterlogged": "false"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

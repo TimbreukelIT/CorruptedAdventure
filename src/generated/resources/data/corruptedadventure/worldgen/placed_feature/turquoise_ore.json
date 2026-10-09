@@ -22,6 +22,11 @@
     },
     {
       "type": "minecraft:biome"
+    },
+    {
+      "type": "corruptedadventure:in_ring",
+      "biomes": "corruptedadventure:dry_riverbeds",
+      "ring": "ring_2"
     }
   ]
 }

@@ -2,18 +2,23 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderSet;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import net.neoforged.neoforge.common.Tags;
+import nl.timtoys.corruptedadventure.registry.ModTags;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
 import java.util.HashMap;
@@ -101,7 +106,7 @@ public final class AshDriftFeature extends Feature<AshDriftConfiguration> {
                     continue;
                 }
                 BlockState ground = level.getBlockState(pos.below());
-                if (!ground.is(config.ground())) {
+                if (!carries(ground, config.ground())) {
                     continue;
                 }
                 BlockState layer = config.layer().defaultBlockState().setValue(SnowLayerBlock.LAYERS, layers);
@@ -146,6 +151,17 @@ public final class AshDriftFeature extends Feature<AshDriftConfiguration> {
             }
         }
         return false;
+    }
+
+    /**
+     * Whether an ash layer may lie on {@code ground}: the listed ground, and all rock (47d, INT2). An ore blob from a
+     * neighbouring chunk may change the block below before or after this chunk decorates (tuff, basalt or stone into
+     * ore, stone into tuff, gravel or dirt); every block an ore feature takes or makes counts, so the answer is the same
+     * either way.
+     */
+    static boolean carries(BlockState ground, HolderSet<Block> listed) {
+        return ground.is(listed) || ground.is(BlockTags.BASE_STONE_OVERWORLD) || ground.is(Tags.Blocks.ORES)
+                || ground.is(ModTags.Blocks.RING_3_STONES) || ground.is(Blocks.GRAVEL) || ground.is(Blocks.DIRT);
     }
 
     /** Plain ground of the terrain (plan §0.2–0.3): no lava bank, cliff, flank, crater or thin solid, the surface on it. */

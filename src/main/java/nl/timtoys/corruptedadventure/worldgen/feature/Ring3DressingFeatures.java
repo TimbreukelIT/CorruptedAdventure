@@ -54,6 +54,7 @@ import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicOutput;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The dressing of the ring 3 biomes (change 47; G2-WB7–WB9 = A): fumaroles and mud in the sulfur fields, lava tongues,
@@ -129,7 +130,8 @@ public final class Ring3DressingFeatures {
 
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         HolderGetter<ConfiguredFeature<?, ?>> configured = context.lookup(Registries.CONFIGURED_FEATURE);
-        HolderSet<Block> sulfurGround = blocks(ModBlocks.SULFUR_CRUST.get(), Blocks.CALCITE, Blocks.YELLOW_TERRACOTTA, Blocks.SMOOTH_BASALT,
+        // Not calcite or terracotta: those are the travertine of the coloured pools (47d), which a vent or mud would mar.
+        HolderSet<Block> sulfurGround = blocks(ModBlocks.SULFUR_CRUST.get(), Blocks.SMOOTH_BASALT,
                 ModBlocks.ASH_BLOCK.get());
         HolderSet<Block> basaltGround = blocks(Blocks.BASALT, Blocks.SMOOTH_BASALT, Blocks.BLACKSTONE, ModBlocks.ASH_BLOCK.get());
 
@@ -141,7 +143,7 @@ public final class Ring3DressingFeatures {
                         OreConfiguration.target(new BlockMatchTest(Blocks.TUFF), ModBlocks.BASALT_SULFUR_ORE.get().defaultBlockState()),
                         OreConfiguration.target(new BlockMatchTest(Blocks.SMOOTH_BASALT), ModBlocks.BASALT_SULFUR_ORE.get().defaultBlockState()),
                         OreConfiguration.target(new BlockMatchTest(Blocks.BASALT), ModBlocks.BASALT_SULFUR_ORE.get().defaultBlockState())),
-                UniformInt.of(1, 3)));
+                UniformInt.of(1, 3), Optional.of(new GroundVentConfiguration.Accent(SulfurFieldsFeatures.crystals(), 0.35F))));
         FeatureUtils.register(context, MUD_POOL, ModFeatures.GROUND_PATCH.get(), new GroundPatchConfiguration(
                 BlockStateProvider.simple(ModBlocks.BOILING_MUD.get()), sulfurGround, UniformInt.of(1, 3), 1.3F, ConstantInt.of(1),
                 ConstantInt.ZERO, BlockStateProvider.simple(ModBlocks.BOILING_MUD.get())));

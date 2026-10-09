@@ -20,7 +20,7 @@
     {
       "type": "corruptedadventure:slope",
       "max": 0,
-      "radius": 3
+      "radius": 5
     },
     {
       "type": "corruptedadventure:volcanic_filter",

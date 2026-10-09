@@ -145,7 +145,7 @@ public final class EmberWoodsFeatures {
         // In the clearings: fallen logs (margin = longest log), berry bushes where the light lets them grow back.
         PlacementUtils.register(context, EMBER_WOODS_FALLEN_LOGS, features.getOrThrow(FALLEN_LOGS),
                 JitteredGridPlacement.of(16, 5, 0.3F), SURFACE, NoiseBandFilter.snapped(CLEARINGS, CLEARING, Double.MAX_VALUE, 16),
-                SlopeFilter.flat(3, 0), ground, BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE),
+                SlopeFilter.flat(5, 0), ground, BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE),
                 BiomeFilter.biome());
         // Fire flora in patches (a noise), on ash and coarse dirt.
         PlacementUtils.register(context, EMBER_WOODS_FIRE_FLORA, features.getOrThrow(FIRE_FLORA),

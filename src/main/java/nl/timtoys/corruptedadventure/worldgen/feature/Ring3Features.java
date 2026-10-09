@@ -34,6 +34,9 @@ public final class Ring3Features {
     /** Every biome-own ring 3 feature in the global order (within a step, list order = placement order). */
     public static final List<Entry> ORDER = List.of(
             // Change 47: the dressing on the ground, then the ash drifts around what stands (never on it).
+            // Change 47d: the coloured pools first (they shape the ground), the moss hummocks of the crater.
+            local(SulfurFieldsFeatures.SULFUR_FIELDS_TERRACE_POOLS, ModBiomes.SULFUR_FIELDS),
+            local(DormantCalderaFeatures.DORMANT_CALDERA_MOSS_HUMMOCKS, ModBiomes.DORMANT_CALDERA),
             local(Ring3DressingFeatures.SULFUR_FIELDS_MOUND_FUMAROLES, ModBiomes.SULFUR_FIELDS),
             local(Ring3DressingFeatures.SULFUR_FIELDS_FUMAROLES, ModBiomes.SULFUR_FIELDS),
             local(Ring3DressingFeatures.SULFUR_FIELDS_MUD_POOLS, ModBiomes.SULFUR_FIELDS),
@@ -52,6 +55,7 @@ public final class Ring3Features {
             local(TitanFieldsFeatures.TITAN_FIELDS_SKULLS, ModBiomes.TITAN_FIELDS),
             local(TitanFieldsFeatures.TITAN_FIELDS_BONES, ModBiomes.TITAN_FIELDS),
             local(TitanFieldsFeatures.TITAN_FIELDS_SOUL_FIRE, ModBiomes.TITAN_FIELDS),
+            local(TitanFieldsFeatures.TITAN_FIELDS_SOUL_FIRE_AROUND, ModBiomes.TITAN_FIELDS),
             local(TitanFieldsFeatures.TITAN_FIELDS_ROCKS, ModBiomes.TITAN_FIELDS),
             // Change 49: the casts stand before the drifts; the footprints dent them.
             local(Ring3HorrorFeatures.ASHEN_WASTES_ASH_CASTS, ModBiomes.ASHEN_WASTES),
@@ -73,6 +77,8 @@ public final class Ring3Features {
             new Entry(Ring3GeodeFeatures.FIRE_GEODES, GenerationStep.Decoration.UNDERGROUND_DECORATION, Set.copyOf(Ring3Biomes.ALL)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_CORAL, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_BUSHES, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
+            // Change 47d: sulfur crystals on the crusts.
+            vegetal(SulfurFieldsFeatures.SULFUR_FIELDS_CRUST_CRYSTALS, ModBiomes.SULFUR_FIELDS),
             // Change 47c: island trees, the ember woods (the ash last, around what stands), the dormant caldera.
             everywhere(Ring3IslandFeatures.ISLAND_EMBER_TREES, GenerationStep.Decoration.VEGETAL_DECORATION),
             vegetal(EmberWoodsFeatures.EMBER_WOODS_TREES, ModBiomes.EMBER_WOODS),
@@ -81,9 +87,14 @@ public final class Ring3Features {
             vegetal(EmberWoodsFeatures.EMBER_WOODS_BERRY_BUSHES, ModBiomes.EMBER_WOODS),
             vegetal(EmberWoodsFeatures.EMBER_WOODS_ASH, ModBiomes.EMBER_WOODS),
             vegetal(DormantCalderaFeatures.DORMANT_CALDERA_AZALEA_TREES, ModBiomes.DORMANT_CALDERA),
+            vegetal(DormantCalderaFeatures.DORMANT_CALDERA_AZALEA_SHRUBS, ModBiomes.DORMANT_CALDERA),
+            vegetal(DormantCalderaFeatures.DORMANT_CALDERA_FALLEN_LOGS, ModBiomes.DORMANT_CALDERA),
             vegetal(DormantCalderaFeatures.DORMANT_CALDERA_AZALEA_BUSHES, ModBiomes.DORMANT_CALDERA),
+            vegetal(DormantCalderaFeatures.DORMANT_CALDERA_DRIPLEAF, ModBiomes.DORMANT_CALDERA),
             vegetal(DormantCalderaFeatures.DORMANT_CALDERA_FERNS, ModBiomes.DORMANT_CALDERA),
             vegetal(DormantCalderaFeatures.DORMANT_CALDERA_BERRY_BUSHES, ModBiomes.DORMANT_CALDERA),
+            vegetal(DormantCalderaFeatures.DORMANT_CALDERA_MOSS_CARPETS, ModBiomes.DORMANT_CALDERA),
+            vegetal(DormantCalderaFeatures.DORMANT_CALDERA_WALL_DRAPES, ModBiomes.DORMANT_CALDERA),
             vegetal(DormantCalderaFeatures.DORMANT_CALDERA_GLOW_LICHEN, ModBiomes.DORMANT_CALDERA));
 
     private Ring3Features() {
@@ -120,6 +131,7 @@ public final class Ring3Features {
         Ring3LavaFallFeatures.configured(context);
         SteamFensFeatures.configured(context);
         Ring3GeodeFeatures.configured(context);
+        SulfurFieldsFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
@@ -133,5 +145,6 @@ public final class Ring3Features {
         Ring3LavaFallFeatures.placed(context);
         SteamFensFeatures.placed(context);
         Ring3GeodeFeatures.placed(context);
+        SulfurFieldsFeatures.placed(context);
     }
 }
