@@ -21,7 +21,7 @@ abstract class WetSpongeBlockDryMixin {
     private void corruptedadventure$dryInTheHeat(BlockState state, Level level, BlockPos pos, BlockState oldState,
                                                  boolean isMoving, CallbackInfo ci) {
         if (!level.dimensionType().ultraWarm() && level instanceof ServerLevel serverLevel
-                && SpongeDrying.dryIfExposed(serverLevel, pos)) {
+                && SpongeDrying.dryIfExposed(serverLevel, pos, oldState)) {
             ci.cancel();
         }
     }
