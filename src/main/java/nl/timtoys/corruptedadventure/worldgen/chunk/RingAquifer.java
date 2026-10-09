@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.worldgen.chunk;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Aquifer;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -30,6 +31,8 @@ final class RingAquifer implements Aquifer {
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     private static final BlockState WATER = Blocks.WATER.defaultBlockState();
     private static final BlockState LAVA = Blocks.LAVA.defaultBlockState();
+    /** Falling lava (a lava fall, 39f): level 8 is a falling flow, which stays put under lava and spreads where it lands. */
+    private static final BlockState FALLING_LAVA = LAVA.setValue(LiquidBlock.LEVEL, 8);
     /**
      * How far the real surface can lie below the field's exact height: the terrain is interpolated between 4-block grid
      * values ({@link #SURFACE_MARGIN}), and the crags of ring 3 ({@code ring_3/overworld/terrain}: 0.3 * roughness * noise
@@ -61,6 +64,10 @@ final class RingAquifer implements Aquifer {
     private final int[] lavaTop = new int[COLUMNS + 1];
     private final int[] lavaBottom = new int[COLUMNS + 1];
     private final int[] springY = new int[COLUMNS + 1];
+    // The column's lava fall (39f): falling lava in [fallBottom, fallTop], let flow at and below fallFlow.
+    private final int[] fallTop = new int[COLUMNS + 1];
+    private final int[] fallBottom = new int[COLUMNS + 1];
+    private final int[] fallFlow = new int[COLUMNS + 1];
     private final int[] dryFrom = new int[COLUMNS + 1];
     private final int[] waterOnlyFrom = new int[COLUMNS + 1];
 
@@ -126,6 +133,9 @@ final class RingAquifer implements Aquifer {
         lavaTop[i] = lava ? column.lavaTop() : Integer.MIN_VALUE;
         lavaBottom[i] = lava ? column.lavaBottom() : Integer.MIN_VALUE;
         springY[i] = lava ? column.springY() : Integer.MIN_VALUE;
+        fallTop[i] = lava ? column.fallTop() : Integer.MIN_VALUE;
+        fallBottom[i] = lava ? column.fallBottom() : Integer.MIN_VALUE;
+        fallFlow[i] = lava ? column.fallFlowBelow() : Integer.MIN_VALUE;
         dryFrom[i] = RingFluidPicker.ring3DryFrom(dimension, position);
         waterOnlyFrom[i] = RingFluidPicker.waterOnlyFrom(dimension, position);
     }
@@ -148,6 +158,13 @@ final class RingAquifer implements Aquifer {
             suppressed = false;
             spring = true;
             return LAVA;
+        }
+        if (y <= fallTop[i] && y >= fallBottom[i]) {
+            // A lava fall from a floating island (39f): falling lava from the spring down to where it lands; only its
+            // lowest blocks are let flow, so it spreads there. Lava against open air: the one allowed exception.
+            spring = y <= fallFlow[i];
+            suppressed = !spring;
+            return FALLING_LAVA;
         }
         if (VolcanicField.Column.lavaAt(y, lavaTop[i], lavaBottom[i], Integer.MIN_VALUE)) {
             return exposed(context.blockX(), y, context.blockZ()) ? null : LAVA;

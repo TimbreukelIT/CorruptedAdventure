@@ -99,6 +99,24 @@ public record Ring3Relief(DensityFunction.NoiseHolder highlands, DensityFunction
         return Math.max(-1.0, Math.min(1.0, 1.6 * sample(detail, x * 1.3 + 71.1, z * 1.3 - 19.7)));
     }
 
+    /**
+     * −1..1 (39f): a fine, clumpy pattern (~6–8 blocks) that decides which columns just below the next step of a smooth
+     * slope are raised by a block ({@code ThinShapes#microSteps}), so the step lines turn ragged.
+     */
+    double microSteps(double x, double z) {
+        return Math.max(-1.0, Math.min(1.0, 1.4 * sample(detail, x * 4.3 - 517.3, z * 4.3 + 231.9)));
+    }
+
+    /** A slowly varying phase (39f) for the per-block patterns of the ground that follow the steps of the relief. */
+    double treadPhase(double x, double z) {
+        return sample(detail, x * 0.45 + 1907.7, z * 0.45 - 3301.1);
+    }
+
+    /** A fast varying phase (39f) for the winding veins through the obsidian needles. */
+    double veinPhase(double x, double z) {
+        return sample(detail, x * 5.0 - 77.7, z * 5.0 + 4410.3);
+    }
+
     /** 0..1: low, long ridges of old reefs on the seabed floor. */
     double reefRidges(double x, double z) {
         double n = sample(shapes, x * 0.8 - 911.1, z * 0.8 + 433.3);

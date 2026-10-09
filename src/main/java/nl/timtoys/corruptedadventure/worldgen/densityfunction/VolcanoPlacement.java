@@ -24,9 +24,13 @@ final class VolcanoPlacement {
     /** Effective distance behind the zone 2→3 where the horizon band of great volcanoes stands. */
     private static final double BAND_START = 60.0;
     private static final double BAND_END = 480.0;
-    /** Archipelagos (39d): above active calderas with a rim up to this height, with this chance. */
-    private static final double ARCHIPELAGO_MAX_RIM = 165.0;
-    private static final double ARCHIPELAGO_CHANCE = 0.2;
+    /**
+     * Archipelagos (39d): above active calderas with a rim up to this height, with this chance. 39f: lower rims only, so
+     * the islands (at least {@link #ARCHIPELAGO_LIFT} above the rim) stay below the clouds.
+     */
+    private static final double ARCHIPELAGO_MAX_RIM = 150.0;
+    private static final double ARCHIPELAGO_CHANCE = 0.35;
+    private static final double ARCHIPELAGO_LIFT = 32.0;
     /** Salt of the pillars' own hash (the cluster hash's slots belong to the islands). */
     private static final long PILLAR_SALT = 0x5DEECE66DL;
     private static final double MIN_CONE_LIFT = 40.0;
@@ -140,8 +144,8 @@ final class VolcanoPlacement {
         List<Volcano.Island> islands = List.of();
         List<Volcano.Pillar> pillars = List.of();
         if (!dormant && kind == Volcano.Kind.CALDERA && rim <= ARCHIPELAGO_MAX_RIM && SeededHash.unit(shape, 5) < ARCHIPELAGO_CHANCE) {
-            islands = archipelago(shape, cx, cz, rim);
-            pillars = pillars(SeededHash.mix(shape + PILLAR_SALT), islands.get(0));
+            islands = archipelago(f, shape, cx, cz, rim);
+            pillars = pillars(f, SeededHash.mix(shape + PILLAR_SALT), islands.get(0), floor);
         } else if (!dormant && rim <= f.settings().islandMaxY() - 36.0 && SeededHash.unit(shape, 0) < f.settings().islandChance()) {
             islands = cluster(f, shape, cx, cz, floorRadius, rim + 30.0);
         }
@@ -189,49 +193,123 @@ final class VolcanoPlacement {
             }
             double stretch = 1.0 + 0.5 * SeededHash.unit(seed, b + 4);
             double thickness = Math.min(28.0, a * (1.4 + 0.8 * SeededHash.unit(seed, b + 5)));
-            islands.add(new Volcano.Island(ix, iz, a, stretch, SeededHash.unit(seed, b + 6) * Math.PI, top, thickness,
-                    SeededHash.unit(seed, b + 7) < 0.3 ? 1 : 0, SeededHash.unit(seed, b + 7) * 20.0));
+            islands.add(island(f, SeededHash.mix(seed + b), ix, iz, a, stretch, SeededHash.unit(seed, b + 6) * Math.PI, top,
+                    thickness, SeededHash.unit(seed, b + 7) < 0.3 ? 1 : 0, SeededHash.unit(seed, b + 7) * 20.0));
         }
         return islands;
     }
 
     /**
-     * An archipelago (39d) above a low active caldera: a main island 60–100 wide with lava springs on its edge, and
-     * 2–5 smaller ones around it, high above the crater (tops Y ~205–235).
+     * An archipelago (39d) above a low active caldera: a main island 60–100 wide with lava falls from its edge, and 2–5
+     * smaller ones around it. 39f: below the cloud layer (tops up to {@code island_max_y}), so the pillars are shorter.
      */
-    private static List<Volcano.Island> archipelago(long seed, double x, double z, double rim) {
+    private static List<Volcano.Island> archipelago(VolcanicField f, long seed, double x, double z, double rim) {
         int count = 3 + (int) (3.99 * SeededHash.unit(seed, 40));
         List<Volcano.Island> islands = new ArrayList<>(count);
+        double maxTop = f.settings().islandMaxY();
         double mainA = 30.0 + 20.0 * SeededHash.unit(seed, 41);
         double mainStretch = 1.0 + 0.3 * SeededHash.unit(seed, 42);
-        double mainTop = Math.max(rim + 55.0, 212.0 + 20.0 * SeededHash.unit(seed, 43));
-        islands.add(new Volcano.Island(x, z, mainA, mainStretch, SeededHash.unit(seed, 44) * Math.PI, mainTop,
-                Math.min(45.0, 0.9 * mainA), 2 + (int) (1.99 * SeededHash.unit(seed, 45)), SeededHash.unit(seed, 46) * 6.3));
+        double mainTop = Math.min(maxTop, Math.max(rim + ARCHIPELAGO_LIFT, 160.0 + 25.0 * SeededHash.unit(seed, 43)));
+        islands.add(island(f, SeededHash.mix(seed + 47), x, z, mainA, mainStretch, SeededHash.unit(seed, 44) * Math.PI, mainTop,
+                Math.min(34.0, 0.75 * mainA), 2 + (int) (1.99 * SeededHash.unit(seed, 45)), SeededHash.unit(seed, 46) * 6.3));
         for (int k = 1; k < count; k++) {
             int b = 50 + 8 * k;
             double a = 10.0 + 12.0 * SeededHash.unit(seed, b);
             double angle = SeededHash.unit(seed, b + 1) * Math.PI * 2.0;
             double distance = mainA * mainStretch + a + 6.0 + 14.0 * SeededHash.unit(seed, b + 2);
-            double top = Math.max(rim + 45.0, mainTop - 12.0 + 24.0 * SeededHash.unit(seed, b + 3));
-            islands.add(new Volcano.Island(x + Math.cos(angle) * distance, z + Math.sin(angle) * distance, a,
+            double top = Mth.clamp(mainTop - 12.0 + 24.0 * SeededHash.unit(seed, b + 3), rim + ARCHIPELAGO_LIFT - 8.0, maxTop);
+            islands.add(island(f, SeededHash.mix(seed + b), x + Math.cos(angle) * distance, z + Math.sin(angle) * distance, a,
                     1.0 + 0.4 * SeededHash.unit(seed, b + 4), SeededHash.unit(seed, b + 5) * Math.PI, top,
-                    Math.min(28.0, 1.2 * a), SeededHash.unit(seed, b + 6) < 0.4 ? 1 : 0, SeededHash.unit(seed, b + 7) * 6.3));
+                    Math.min(24.0, 1.1 * a), SeededHash.unit(seed, b + 6) < 0.4 ? 1 : 0, SeededHash.unit(seed, b + 7) * 6.3));
         }
         return islands;
     }
 
-    /** One or two basalt pillars from the ground up into the main island of an archipelago. */
-    private static List<Volcano.Pillar> pillars(long seed, Volcano.Island main) {
+    /** An island with its underside lobes (from {@code seed}) and its lava falls, traced over its real outline. */
+    private static Volcano.Island island(VolcanicField f, long seed, double x, double z, double a, double stretch, double angle,
+                                         double top, double thickness, int springs, double springAngle) {
+        int lobes = 2 + (int) (1.99 * SeededHash.unit(seed, 0));
+        double lobePhase = SeededHash.unit(seed, 1) * Math.PI * 2.0;
+        Volcano.Island shape = new Volcano.Island(x, z, a, stretch, angle, top, thickness, lobes, lobePhase, List.of());
+        if (springs == 0) {
+            return shape;
+        }
+        List<Volcano.LavaFall> falls = new ArrayList<>(springs);
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        for (int k = 0; k < springs; k++) {
+            double t = springAngle + k * Math.PI * 2.0 / springs;
+            // The outward direction of the ellipse at parameter t, in world axes.
+            double ex = a * stretch * Math.cos(t);
+            double ez = a * Math.sin(t);
+            double dx = ex * cos - ez * sin;
+            double dz = ex * sin + ez * cos;
+            double length = Math.hypot(dx, dz);
+            // The fall column (one past the last island column) must stay inside the island's reach, or no column would
+            // ever look at it.
+            double to = Math.min(1.6 * length, shape.reach() - 2.0);
+            Volcano.LavaFall fall = LavaFallTrace.trace(x, z, dx / length, dz / length, 0.6 * length, to,
+                    (bx, bz) -> shape.columnTop(bx + 0.5, bz + 0.5, f.warpAt(bx + 0.5, bz + 0.5)));
+            if (fall != null) {
+                falls.add(fall);
+            }
+        }
+        return new Volcano.Island(x, z, a, stretch, angle, top, thickness, lobes, lobePhase, List.copyOf(falls));
+    }
+
+    /**
+     * One or two basalt pillars (39f: columnar, leaning, with ledges) from the crater floor up into the main island of an
+     * archipelago.
+     */
+    private static List<Volcano.Pillar> pillars(VolcanicField f, long seed, Volcano.Island main, double floor) {
         int count = SeededHash.unit(seed, 0) < 0.5 ? 1 : 2;
         List<Volcano.Pillar> pillars = new ArrayList<>(count);
         for (int k = 0; k < count; k++) {
-            double angle = SeededHash.unit(seed, 1 + k) * Math.PI * 2.0;
-            double d = 0.25 + 0.2 * SeededHash.unit(seed, 3 + k);
+            int b = 40 * (k + 1);
+            double angle = SeededHash.unit(seed, b) * Math.PI * 2.0;
+            double d = 0.25 + 0.2 * SeededHash.unit(seed, b + 1);
             double px = main.x() + Math.cos(angle) * main.a() * d;
             double pz = main.z() + Math.sin(angle) * main.a() * d;
-            pillars.add(new Volcano.Pillar(px, pz, 3.0 + 2.5 * SeededHash.unit(seed, 5 + k), main.bottomAt(d * 1.2) + 4.0));
+            double radius = 2.6 + 1.6 * SeededHash.unit(seed, b + 5);
+            double lean = 3.0 + 5.0 * SeededHash.unit(seed, b + 2);
+            double leanAngle = SeededHash.unit(seed, b + 3) * Math.PI * 2.0;
+            double top = pillarTop(f, main, px + Math.cos(leanAngle) * lean, pz + Math.sin(leanAngle) * lean, radius);
+            int ledges = 1 + (int) (2.99 * SeededHash.unit(seed, b + 4));
+            double[] ledgeY = new double[ledges];
+            double[] ledgeAngle = new double[ledges];
+            double[] ledgeLength = new double[ledges];
+            for (int l = 0; l < ledges; l++) {
+                ledgeY[l] = floor + (top - floor) * (0.2 + 0.6 * SeededHash.unit(seed, b + 10 + 3 * l));
+                ledgeAngle[l] = SeededHash.unit(seed, b + 11 + 3 * l) * Math.PI * 2.0;
+                ledgeLength[l] = 2.0 + 3.0 * SeededHash.unit(seed, b + 12 + 3 * l);
+            }
+            pillars.add(new Volcano.Pillar(px, pz, radius, floor, top,
+                    Math.cos(leanAngle) * lean, Math.sin(leanAngle) * lean, SeededHash.unit(seed, b + 6) * 6.3,
+                    SeededHash.unit(seed, b + 7) * 6.3, ledgeY, ledgeAngle, ledgeLength));
         }
         return List.copyOf(pillars);
+    }
+
+    /**
+     * The top of a pillar whose (leaning) axis ends at (tx, tz): five blocks into the island above the highest point of
+     * its underside over the flared top (1.7 × the radius, plus the lobes), so it never ends below the island; kept two
+     * blocks under the island's top there.
+     */
+    private static double pillarTop(VolcanicField f, Volcano.Island main, double tx, double tz, double radius) {
+        double highestBottom = Double.NEGATIVE_INFINITY;
+        double lowestTop = Double.POSITIVE_INFINITY;
+        double spread = radius * 1.7 * 1.24;
+        for (int k = 0; k <= 8; k++) {
+            double sx = k == 8 ? tx : tx + spread * Math.cos(k * Math.PI / 4.0);
+            double sz = k == 8 ? tz : tz + spread * Math.sin(k * Math.PI / 4.0);
+            double d = main.distance(sx, sz, 0.18 * f.warpAt(sx, sz));
+            if (d >= 1.0) {
+                continue;
+            }
+            highestBottom = Math.max(highestBottom, main.bottomAt(d, main.theta(sx, sz)));
+            lowestTop = Math.min(lowestTop, main.topAt(d));
+        }
+        return Math.max(highestBottom + 1.0, Math.min(highestBottom + 5.0, lowestTop - 2.0));
     }
 
     /** Island cluster above a lava river in island cell (i, j), or none. Pure. */

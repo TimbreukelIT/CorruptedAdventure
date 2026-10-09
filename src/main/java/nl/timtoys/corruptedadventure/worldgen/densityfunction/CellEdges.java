@@ -6,7 +6,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.DensityFunction;
-import net.minecraft.world.level.levelgen.DensityFunctions;
 
 import java.util.Objects;
 
@@ -267,11 +266,8 @@ public final class CellEdges implements DensityFunction {
             if (current instanceof CellEdges edges) {
                 return edges;
             }
-            if (current instanceof DensityFunctions.HolderHolder holder) {
-                current = holder.function().value();
-            } else if (current instanceof DensityFunctions.MarkerOrMarked marker) {
-                current = marker.wrapped();
-            } else {
+            current = RingGated.unwrap(current);
+            if (current == null) {
                 break;
             }
         }

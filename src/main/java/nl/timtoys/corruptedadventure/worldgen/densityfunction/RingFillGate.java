@@ -9,23 +9,26 @@ import net.minecraft.world.level.levelgen.DensityFunction;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingColumnCache;
 
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 /**
  * {@code corruptedadventure:ring_fill_gate}: the gate inside every {@code flat_cache} marker of a ring input
  * ({@link RingBlend#mapAll}). The noise chunk fills each flat cache in advance (5 × 5 points per chunk), for every
  * ring in every chunk; that made the biome step several times vanilla's (change 39e). While a chunk's noise chunk is
- * being built ({@link #duringFill}), this gives 0 for the whole chunk unless {@code ring} reaches it; every other time
- * it is {@code argument} itself.
+ * being built ({@link #duringFill}; 39f: also while a base-height query iterates its column, which builds a one-cell
+ * noise chunk), this gives 0 for the whole chunk unless {@code ring} reaches it; every other time it is
+ * {@code argument} itself.
  * <p>
  * Unlike {@link RingGate} it never gates a single point: some ring terrain reads its flat-cached inputs at other
  * columns than its own (uphill heights of the canyon walls, the grid of the rock pillars, geode centres), up to a cell
  * away and outside the chunk. Those reads go past the chunk's cache to the argument and must keep the real value.
- * Inside the chunk the decision is all or nothing: if any terrain of the ring runs in the chunk (weight, or a gated
- * interpolator in reach), some flat-cache point of the chunk lies within 4 blocks of it and so in reach with the
- * {@link #MARGIN}, and the whole cache is real.
+ * Inside the chunk the decision is all or nothing: if any terrain of the ring runs in the chunk (weight at a block, or
+ * a gated interpolator in reach at a cell corner), it does so within at most 2 blocks per axis (2.83 diagonally) of a
+ * flat-cache point (the points lie every 4 blocks, edges included; the corners are such points), which is well inside
+ * {@link #MARGIN} even with {@link RingGate#MARGIN} on top (16 + 2.83 < 32), and the whole cache is real.
  */
-public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunction argument) implements DensityFunction {
+public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunction argument) implements DensityFunction, RingGated {
     /** Blocks of the dimension: twice {@link RingGate#MARGIN}, as the decision covers a whole chunk at once. */
     static final double MARGIN = 32.0;
 
@@ -66,7 +69,7 @@ public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunct
         if (fill == null || fill.reaches(dimension, ring)) {
             argument.fillArray(array, contextProvider);
         } else {
-            java.util.Arrays.fill(array, 0.0);
+            Arrays.fill(array, 0.0);
         }
     }
 
@@ -90,10 +93,15 @@ public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunct
         return CODEC;
     }
 
-    /** One chunk's fill: per ring (by ordinal) whether it reaches the chunk, decided once. */
+    /**
+     * One chunk's fill: per ring whether it reaches the chunk, decided once. A fill builds one noise chunk, so all its
+     * gates belong to one dimension: the first to ask (39f). A gate of another dimension (never seen) is decided
+     * without remembering, so it can never read a wrong decision.
+     */
     private static final class Fill {
         private final int minX;
         private final int minZ;
+        private ResourceKey<Level> dimension;
         private final byte[] reach = new byte[Ring.values().length];
 
         Fill(int minX, int minZ) {
@@ -102,6 +110,11 @@ public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunct
         }
 
         boolean reaches(ResourceKey<Level> dimension, Ring ring) {
+            if (this.dimension == null) {
+                this.dimension = dimension;
+            } else if (this.dimension != dimension) {
+                return anyPointReaches(dimension, ring);
+            }
             byte known = reach[ring.ordinal()];
             if (known == 0) {
                 known = anyPointReaches(dimension, ring) ? (byte) 1 : (byte) -1;

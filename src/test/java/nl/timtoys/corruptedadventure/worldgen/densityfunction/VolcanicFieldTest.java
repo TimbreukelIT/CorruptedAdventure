@@ -198,8 +198,8 @@ public class VolcanicFieldTest {
         for (List<Volcano.Island> cluster : clusters) {
             boolean any = false;
             for (Volcano.Island island : cluster) {
-                // Ordinary islands Y 150–210 and up to ~30 wide; archipelagos (39d) up to Y ~235 and 100 wide.
-                assertTrue(island.top() >= 150 && island.top() <= 240, "island top " + island.top());
+                // Islands Y 150–185, below the clouds (39f), up to ~30 wide; archipelagos (39d) up to 100 wide.
+                assertTrue(island.top() >= 150 && island.top() <= 185, "island top " + island.top());
                 assertTrue(island.a() >= 4 && island.a() * island.stretch() <= 50 * 1.3 + 1e-9, "island size " + island);
                 if (!field.islandClear(island)) {
                     continue; // dropped: a neighbouring volcano rises under it
@@ -207,7 +207,7 @@ public class VolcanicFieldTest {
                 any = true;
                 islands++;
                 VolcanicField.Column under = field.column((int) Math.floor(island.x()), (int) Math.floor(island.z()));
-                assertTrue(island.bottomAt(0.0) > under.height + 10.0, "island over " + under.height + ": " + island);
+                assertTrue(island.lowestAt(0.0) > under.height + 10.0, "island over " + under.height + ": " + island);
             }
             if (any) {
                 kept++;

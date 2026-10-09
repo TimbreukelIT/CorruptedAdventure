@@ -67,11 +67,15 @@ public final class VolcanicField implements DensityFunction {
     private static final double RIB_SIN = Math.sin(0.6);
     private static final double RIDGE_HEIGHT = 5.0;
     private static final int MAX_ISLANDS = 6;
-    private static final int MAX_SOLIDS = 4;
+    private static final int MAX_SOLIDS = 8;
+    private static final int MAX_VOIDS = 3;
+    private static final int MAX_PILLARS = 2;
     /** Highest top of a thin shape (below the top slide of the ring 3 stack). */
     static final double THIN_TOP = 296.0;
     private static final double ISLAND_CLEARANCE = 10.0;
     private static final double[] INITIAL_RADII = {6.0, 12.0, 18.0};
+    /** Warp (blocks) of a collapse's outline, from the column's warp noise. */
+    private static final double COLLAPSE_WARP = 3.0;
 
     public static final MapCodec<VolcanicField> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             NoiseHolder.CODEC.fieldOf("hash").forGetter(f -> f.hash),
@@ -112,6 +116,7 @@ public final class VolcanicField implements DensityFunction {
     private final ThreadOwned<CellMemo<Landmarks.Needle>> needleMemo = new ThreadOwned<>(CellMemo::new);
     private final ThreadOwned<CellMemo<Landmarks.Arch>> riftArchMemo = new ThreadOwned<>(CellMemo::new);
     private final ThreadOwned<CellMemo<Landmarks.FloatingVolcano>> floatingMemo = new ThreadOwned<>(CellMemo::new);
+    private final ThreadOwned<CellMemo<CellShapes.Collapse>> collapseMemo = new ThreadOwned<>(CellMemo::new);
     private final ThreadOwned<CellMemo<Landmarks.Abyss>> abyssMemo = new ThreadOwned<>(CellMemo::new);
     private final ThreadOwned<CellMemo<TitanBones.Rib>> ribMemo = new ThreadOwned<>(CellMemo::new);
     private final ThreadOwned<CellMemo<TitanBones.Cage>> cageMemo = new ThreadOwned<>(CellMemo::new);
@@ -238,20 +243,17 @@ public final class VolcanicField implements DensityFunction {
         }
     }
 
-    /** {@code function} as a {@code volcanic_field}, looking through holder references and markers; null if it is none. */
+    /**
+     * {@code function} as a {@code volcanic_field}, looking through holder references, markers and ring gates; null if it
+     * is none.
+     */
     static VolcanicField resolve(DensityFunction function) {
         DensityFunction current = function;
-        for (int depth = 0; depth < 16; depth++) {
+        for (int depth = 0; depth < 16 && current != null; depth++) {
             if (current instanceof VolcanicField field) {
                 return field;
             }
-            if (current instanceof net.minecraft.world.level.levelgen.DensityFunctions.HolderHolder holder) {
-                current = holder.function().value();
-            } else if (current instanceof net.minecraft.world.level.levelgen.DensityFunctions.MarkerOrMarked marker) {
-                current = marker.wrapped();
-            } else {
-                return null;
-            }
+            current = RingGated.unwrap(current);
         }
         return null;
     }
@@ -310,30 +312,42 @@ public final class VolcanicField implements DensityFunction {
         return y >= column.guardBottom && y <= column.guardTop ? 1.0 : -1.0;
     }
 
-    /** Density of the floating islands: positive inside, −1 away from them. */
-    double islands(int x, int y, int z) {
-        Column column = column(x, z);
-        double best = -1.0;
-        for (int i = 0; i < column.islandCount; i++) {
-            double d = Math.min(column.islandTop[i] - y, y - column.islandBottom[i]) / 3.0;
-            best = Math.max(best, Math.min(1.0, d));
-        }
-        return best;
+    /**
+     * The thin shapes at a block, outside the terrain interpolation: +1 inside a thin solid (hoodoo, rib, column prism,
+     * sea stack, needle, arch, bridge, pillar, rubble, the micro relief's raised blocks) or a floating island (39f: exact
+     * per block, no longer interpolated), −1 inside a carved opening (a lava tube's tunnel, a collapse's overhang or
+     * shaft), 0 elsewhere (the terrain decides). One column lookup per block.
+     */
+    double thin(int x, int y, int z) {
+        return column(x, z).thin(y);
+    }
+
+    /** The kind of thin solid at a block ({@link Landmarks#KIND_BIOME} …), or −1 outside one (39f, for the surface). */
+    double thinKind(int x, int y, int z) {
+        return column(x, z).thinKind(y);
     }
 
     /**
-     * The thin shapes at a block, outside the terrain interpolation: +1 inside a thin solid (hoodoo, rib, column prism,
-     * sea stack, needle, arch, bridge, pillar), −1 inside a carved opening (a lava tube's tunnel), 0 elsewhere (the
-     * terrain decides). One column lookup per block for both.
+     * 0..1 per block (39f): a pattern that changes with every block of height and slowly across the plain, so a threshold
+     * picks patches whose edges follow the steps of the relief (the ember woods' ground).
      */
-    double thin(int x, int y, int z) {
-        Column column = column(x, z);
-        for (int i = 0; i < column.solidCount; i++) {
-            if (y >= column.solidBottom[i] && y <= column.solidTop[i]) {
-                return 1.0;
-            }
+    double tread(int x, int y, int z) {
+        Column c = column(x, z);
+        if (Double.isNaN(c.treadPhase)) {
+            c.treadPhase = 1.3 * relief.treadPhase(x + 0.5, z + 0.5);
         }
-        return y >= column.voidBottom && y <= column.voidTop ? -1.0 : 0.0;
+        double v = 0.37 * y + c.treadPhase;
+        return v - Math.floor(v);
+    }
+
+    /** 0..1 per block (39f): thin, winding layers through the obsidian needles (their glowing veins below 0.07). */
+    double vein(int x, int y, int z) {
+        Column c = column(x, z);
+        if (Double.isNaN(c.veinPhase)) {
+            c.veinPhase = 2.5 * relief.veinPhase(x + 0.5, z + 0.5);
+        }
+        double v = y / 9.0 + c.veinPhase;
+        return v - Math.floor(v);
     }
 
     // ---------------------------------------------------------------- regions
@@ -703,8 +717,24 @@ public final class VolcanicField implements DensityFunction {
         return cell(needleMemo, decisions.needles, i, j, Landmarks::needle);
     }
 
+    /** The deepest rift floor of rift-arch cell (i, j) ({@link Landmarks#riftFloor}), remembered per world. */
+    double[] riftFloor(int i, int j) {
+        long key = (long) i << 32 | j & 0xFFFFFFFFL;
+        double[] known = decisions.riftFloors.get(key);
+        if (known == null) {
+            known = Landmarks.riftFloor(this, i, j);
+            decisions.remember(decisions.riftFloors, key, known);
+        }
+        return known;
+    }
+
     Landmarks.Arch riftArch(int i, int j) {
         return cell(riftArchMemo, decisions.riftArches, i, j, Landmarks::riftArch);
+    }
+
+    /** The collapse of cell (i, j) where the terrain uses it (39f), or null. */
+    CellShapes.Collapse collapse(int i, int j) {
+        return cell(collapseMemo, decisions.collapses, i, j, CellShapes::placeCollapse);
     }
 
     Landmarks.FloatingVolcano floating(int i, int j) {
@@ -767,7 +797,7 @@ public final class VolcanicField implements DensityFunction {
         Regions r = regions(px, pz);
         double plain = plain(px, pz, r);
 
-        c.reset();
+        c.reset(x, z);
         boolean full = mode == Mode.FULL;
         double warpX = noise(warp, px, pz);
         double warpZ = noise(warp, px + WARP_OFFSET, pz - WARP_OFFSET);
@@ -787,6 +817,7 @@ public final class VolcanicField implements DensityFunction {
                 }
                 if (full) {
                     addIslands(c, v.islands(), px, pz, warpX);
+                    addPillars(c, v, px, pz);
                 }
                 double dx = px + warpX * v.warp() - v.x();
                 double dz = pz + warpZ * v.warp() - v.z();
@@ -892,10 +923,28 @@ public final class VolcanicField implements DensityFunction {
             }
             cinder *= keep;
         }
+        // Collapses (39f): ragged sinkholes with stepped walls on the plains, the surface's openings to the caves. Not in
+        // the ground a river follows (a collapse keeps clear of rivers, so the two never ask each other).
+        CellShapes.Collapse collapse = null;
+        double collapseQ = 2.0;
+        double collapseCut = 0.0;
+        if (mode != Mode.TRACE && r.core() > 0.0 && keep > 0.0) {
+            collapse = collapse(Math.floorDiv(x, CellShapes.COLLAPSE_CELL), Math.floorDiv(z, CellShapes.COLLAPSE_CELL));
+            if (collapse != null && Math.abs(px - collapse.x()) < collapse.reach() && Math.abs(pz - collapse.z()) < collapse.reach()) {
+                collapseQ = collapse.q(px, pz, COLLAPSE_WARP * warpZ);
+                collapseCut = keep * collapse.cut(collapseQ);
+                if (collapseQ > 0.5 && collapseQ < 1.0) {
+                    cliff = Math.max(cliff, 1.0);
+                }
+                c.collapse = 1.0 - VolcanicMath.smoothstep(0.9, 1.25, collapseQ);
+            } else {
+                collapse = null;
+            }
+        }
         // Micro relief (39d): a fine 2D wobble that breaks the straight one-block contour lines of smooth slopes, much
         // cheaper than 3D crags on the whole plain.
         double micro = r.fade() > 0.0 ? MICRO_RELIEF * r.fade() * keep * relief.microRelief(px, pz) : 0.0;
-        double preHeight = plain + raise + sink + keep * detail + cinder + micro;
+        double preHeight = plain + raise + sink + keep * detail + cinder + micro - collapseCut;
         c.rise = raise + cinder;
         c.cliff = Math.min(1.0, keep * cliff);
         Landmarks.Abyss abyss = r.core() > 0.0
@@ -959,6 +1008,9 @@ public final class VolcanicField implements DensityFunction {
         c.preHeight = preHeight;
         c.height = height;
         c.floorMargin = floorMargin(r, keep, riftStrength, chasm, height, riverNear);
+        if (collapse != null && collapseQ < 1.0 + 18.0 / collapse.radius()) {
+            c.floorMargin = Math.max(c.floorMargin, collapse.depth() + 2.0);
+        }
         c.roughness = Math.max(c.roughness, 0.9 * c.cliff);
         if (cinder > 4.0) {
             c.roughness = Math.max(c.roughness, 0.5 * (1.0 - riverNear));
@@ -972,12 +1024,50 @@ public final class VolcanicField implements DensityFunction {
             if (keep > 0.0 && r.fade() > 0.0) {
                 ThinShapes.thinShapes(this, c, px, pz, r, keep, gullyFloor, plateau, tube, height);
             }
-            ThinShapes.landmarks(this, c, x, z, px, pz, r, height, around, abyss, chasm, warpX);
+            if (collapse != null) {
+                ThinShapes.collapse(this, c, collapse, collapseQ, px, pz, height);
+            }
+            ThinShapes.landmarks(this, c, x, z, px, pz, r, height, abyss, chasm, warpX);
             Neighbourhood islandCells = channelNeighbourhood.get().aroundIslands(this, Math.floorDiv(x, VolcanoPlacement.ISLAND_CELL), Math.floorDiv(z, VolcanoPlacement.ISLAND_CELL));
             for (List<Volcano.Island> cell : islandCells.islands) {
                 addIslands(c, cell, px, pz, warpX);
             }
+            if (keep > 0.98 && r.fade() > 0.5) {
+                ThinShapes.microSteps(this, c, px, pz, height);
+            }
+            landFall(c);
         }
+    }
+
+    /**
+     * Where a lava fall through this column lands (39f): on the ground, a lava lake, an island or a thin solid below its
+     * top; no fall if something solid stands at its top.
+     */
+    private static void landFall(Column c) {
+        if (c.fallTop == Integer.MIN_VALUE) {
+            return;
+        }
+        int land = Mth.floor(c.height) - 2;
+        if (c.hasLava() && c.lavaTop > land) {
+            land = c.lavaTop;
+        }
+        for (int i = 0; i < c.islandCount; i++) {
+            int top = Mth.floor(c.islandTop[i]);
+            if (top <= c.fallTop + 1) {
+                land = Math.max(land, top);
+            }
+        }
+        for (int i = 0; i < c.solidCount; i++) {
+            if (c.solidTop[i] < c.fallTop) {
+                land = Math.max(land, c.solidTop[i] + 1);
+            }
+        }
+        if (land > c.fallTop || c.thinKind(c.fallTop) >= 0) {
+            c.fallTop = Integer.MIN_VALUE;
+            return;
+        }
+        c.fallBottom = land;
+        c.fallFlowBelow = land + 4;
     }
 
     /**
@@ -1010,14 +1100,31 @@ public final class VolcanicField implements DensityFunction {
     private void addIslands(Column c, List<Volcano.Island> islands, double x, double z, double warpX) {
         for (Volcano.Island island : islands) {
             if (Math.abs(x - island.x()) <= island.reach() && Math.abs(z - island.z()) <= island.reach() && islandClear(island)) {
-                c.addIsland(island, x, z, warpX);
+                double d = island.distance(x, z, 0.18 * warpX);
+                if (d < 1.0) {
+                    c.addIslandInterval(island.topAt(d), island.bottomAt(d, island.theta(x, z)), d);
+                }
+                c.addFalls(island.falls());
+            }
+        }
+    }
+
+    /** The archipelago pillars of volcano {@code v} that may stand in this column (tested per block). */
+    private void addPillars(Column c, Volcano v, double px, double pz) {
+        if (v.pillars().isEmpty()) {
+            return;
+        }
+        for (Volcano.Pillar pillar : v.pillars()) {
+            if (Math.abs(px - pillar.x()) < pillar.reach() && Math.abs(pz - pillar.z()) < pillar.reach() && islandClear(v.islands().get(0))) {
+                c.addPillar(pillar);
             }
         }
     }
 
     /**
-     * Whether an island hangs free: at least {@link #ISLAND_CLEARANCE} blocks above the terrain under its centre and
-     * under eight points of its rim (a neighbouring volcano may rise under a cluster). Pure; remembered per thread.
+     * Whether an island hangs free: at least {@link #ISLAND_CLEARANCE} blocks above the terrain under its centre, under
+     * eight points below its hanging lobes and eight points of its rim (a neighbouring volcano may rise under a
+     * cluster). Pure; remembered per thread.
      */
     boolean islandClear(Volcano.Island island) {
         Boolean known = decisions.islands.get(island);
@@ -1029,18 +1136,196 @@ public final class VolcanicField implements DensityFunction {
     }
 
     private boolean checkIsland(Volcano.Island island) {
-        if (island.bottomAt(0.0) < coreHeightUncached(island.x(), island.z()) + ISLAND_CLEARANCE) {
+        if (island.lowestAt(0.0) < coreHeightUncached(island.x(), island.z()) + ISLAND_CLEARANCE) {
             return false;
         }
-        for (int k = 0; k < 8; k++) {
-            double angle = k * Math.PI / 4.0;
-            double r = island.a() * island.stretch();
-            if (island.bottomAt(0.7) < coreHeightUncached(island.x() + r * Math.cos(angle), island.z() + r * Math.sin(angle))
-                    + ISLAND_CLEARANCE) {
-                return false;
+        // Under the hanging lobes (their deepest point, about a third of the way out) and under the rim.
+        double outer = island.a() * island.stretch();
+        double[] radii = {Volcano.LOBE_D * outer, outer};
+        double[] lowest = {island.lowestAt(Volcano.LOBE_D), island.lowestAt(0.7)};
+        for (int n = 0; n < radii.length; n++) {
+            for (int k = 0; k < 8; k++) {
+                double angle = k * Math.PI / 4.0;
+                double r = radii[n];
+                if (lowest[n] < coreHeightUncached(island.x() + r * Math.cos(angle), island.z() + r * Math.sin(angle))
+                        + ISLAND_CLEARANCE) {
+                    return false;
+                }
             }
         }
         return true;
+    }
+
+    // ---------------------------------------------------------------- read-only accessors (39f, for features and atmosphere)
+
+    /**
+     * A volcano as other systems see it: centre, the Y of its crater rim ({@code craterY}, where a plume starts), the
+     * radius of the crater at its rim and of its foot, whether it is a great horizon volcano and whether it is dormant.
+     */
+    public record VolcanoInfo(int x, int z, int craterY, int craterRadius, int footRadius, boolean great, boolean dormant) {
+    }
+
+    /** A fumarole mound: centre, radius, height (already scaled by the sulfur fields' weight at its centre). */
+    public record Mound(double x, double z, double radius, double height) {
+    }
+
+    /**
+     * A sinkhole: centre, radius (for a collapse: the mean radius of its ragged rim), depth to its floor, and whether a
+     * shaft leads on down towards the caves.
+     */
+    public record Sinkhole(double x, double z, double radius, double depth, boolean shaft) {
+    }
+
+    /** A point on the ground plane. */
+    public record Point(double x, double z) {
+    }
+
+    /** A titan's ribcage: centre, reach, the vertebrae of its spine and the feet of its ribs. */
+    public record Ribcage(double x, double z, double reach, List<Point> vertebrae, List<Point> ribFeet) {
+    }
+
+    private static VolcanoInfo info(Volcano v) {
+        return new VolcanoInfo(Mth.floor(v.x()), Mth.floor(v.z()), Mth.floor(v.rim()), (int) Math.round(v.crest()),
+                (int) Math.round(v.radius()), v.kind() == Volcano.Kind.GREAT, v.dormant());
+    }
+
+    private static VolcanoInfo info(Landmarks.FloatingVolcano f) {
+        return new VolcanoInfo(Mth.floor(f.x()), Mth.floor(f.z()), Mth.floor(f.base() + f.cone()), (int) Math.round(f.crater()),
+                (int) Math.round(f.radius()), false, false);
+    }
+
+    /**
+     * Every volcano (great, cone, caldera, and the floating volcano) whose centre lies within {@code radius} blocks of
+     * (x, z). Pure placement decisions (no chunks), thread-safe.
+     */
+    public List<VolcanoInfo> volcanoesWithin(int x, int z, int radius) {
+        List<VolcanoInfo> found = new java.util.ArrayList<>();
+        long r2 = (long) radius * radius;
+        int size = settings.cellSize();
+        for (int i = Math.floorDiv(x - radius, size); i <= Math.floorDiv(x + radius, size); i++) {
+            for (int j = Math.floorDiv(z - radius, size); j <= Math.floorDiv(z + radius, size); j++) {
+                Volcano v = volcano(i, j);
+                if (v != null && sq(v.x() - x) + sq(v.z() - z) <= r2) {
+                    found.add(info(v));
+                }
+            }
+        }
+        int cell = Landmarks.FLOATING_CELL;
+        for (int i = Math.floorDiv(x - radius, cell); i <= Math.floorDiv(x + radius, cell); i++) {
+            for (int j = Math.floorDiv(z - radius, cell); j <= Math.floorDiv(z + radius, cell); j++) {
+                Landmarks.FloatingVolcano f = floatingDecision(i, j);
+                if (f != null && sq(f.x() - x) + sq(f.z() - z) <= r2) {
+                    found.add(info(f));
+                }
+            }
+        }
+        return found;
+    }
+
+    /** The nearest volcano (great, cone or caldera) in the 3 × 3 volcano cells around (x, z), or null. Thread-safe. */
+    @Nullable
+    public VolcanoInfo nearestVolcano(int x, int z) {
+        int size = settings.cellSize();
+        int ci = Math.floorDiv(x, size);
+        int cj = Math.floorDiv(z, size);
+        Volcano best = null;
+        double bestD = Double.MAX_VALUE;
+        for (int i = ci - 1; i <= ci + 1; i++) {
+            for (int j = cj - 1; j <= cj + 1; j++) {
+                Volcano v = volcano(i, j);
+                if (v != null && sq(v.x() - x) + sq(v.z() - z) < bestD) {
+                    best = v;
+                    bestD = sq(v.x() - x) + sq(v.z() - z);
+                }
+            }
+        }
+        return best == null ? null : info(best);
+    }
+
+    /** The fumarole mound of the mound cell of (x, z) where the sulfur fields shape it, or null. Thread-safe. */
+    @Nullable
+    public Mound moundAt(int x, int z) {
+        double[] m = CellShapes.moundShape(salt(), x + 0.5, z + 0.5);
+        if (m == null) {
+            return null;
+        }
+        double weight = regions(m[0], m[1]).sulfurS();
+        return weight <= 0.0 ? null : new Mound(m[0], m[1], m[2], m[3] * weight);
+    }
+
+    /** The sulfur sinkhole of the sinkhole cell of (x, z) where the sulfur fields shape it, or null. Thread-safe. */
+    @Nullable
+    public Sinkhole sinkholeAt(int x, int z) {
+        double[] s = CellShapes.sinkholeShape(salt(), x + 0.5, z + 0.5);
+        if (s == null) {
+            return null;
+        }
+        double weight = regions(s[0], s[1]).sulfurS();
+        return weight <= 0.0 ? null : new Sinkhole(s[0], s[1], s[2], s[3] * weight, false);
+    }
+
+    /** The collapse (39f) of the collapse cell of (x, z), or null. Thread-safe. */
+    @Nullable
+    public Sinkhole collapseAt(int x, int z) {
+        CellShapes.Collapse c = collapse(Math.floorDiv(x, CellShapes.COLLAPSE_CELL), Math.floorDiv(z, CellShapes.COLLAPSE_CELL));
+        return c == null ? null : new Sinkhole(c.x(), c.z(), c.radius(), c.depth(), c.shaft());
+    }
+
+    /** The ribcage in the 3 × 3 ribcage cells around (x, z) whose centre is nearest, or null. Thread-safe. */
+    @Nullable
+    public Ribcage ribcageNear(int x, int z) {
+        int ci = Math.floorDiv(x, TitanBones.CAGE_CELL);
+        int cj = Math.floorDiv(z, TitanBones.CAGE_CELL);
+        TitanBones.Cage best = null;
+        for (int i = ci - 1; i <= ci + 1; i++) {
+            for (int j = cj - 1; j <= cj + 1; j++) {
+                TitanBones.Cage cage = cageDecision(i, j);
+                if (cage != null && (best == null || sq(cage.x() - x) + sq(cage.z() - z) < sq(best.x() - x) + sq(best.z() - z))) {
+                    best = cage;
+                }
+            }
+        }
+        if (best == null) {
+            return null;
+        }
+        List<Point> vertebrae = new java.util.ArrayList<>(best.vx().length);
+        for (int k = 0; k < best.vx().length; k++) {
+            vertebrae.add(new Point(best.vx()[k], best.vz()[k]));
+        }
+        List<Point> feet = new java.util.ArrayList<>(best.ribs().size() * 2);
+        for (TitanBones.Rib rib : best.ribs()) {
+            for (double end : new double[]{rib.from(), rib.to()}) {
+                // A broken rib ends in the air at its stump; only the ends at ±1 of the span stand on the ground.
+                if (Math.abs(end) >= 1.0) {
+                    feet.add(new Point(rib.x() + rib.cos() * end * rib.span(), rib.z() + rib.sin() * end * rib.span()));
+                }
+            }
+        }
+        return new Ribcage(best.x(), best.z(), best.reach(), List.copyOf(vertebrae), List.copyOf(feet));
+    }
+
+    private static double sq(double v) {
+        return v * v;
+    }
+
+    /** The floating volcano of cell (i, j) from the per-world map only (no per-thread memo: any thread may ask). */
+    private Landmarks.FloatingVolcano floatingDecision(int i, int j) {
+        return decision(decisions.floating, i, j, Landmarks::floating);
+    }
+
+    private TitanBones.Cage cageDecision(int i, int j) {
+        return decision(decisions.cages, i, j, TitanBones::cage);
+    }
+
+    @Nullable
+    private <T> T decision(Map<Long, Optional<T>> map, int i, int j, CellDecision<T> decision) {
+        long key = (long) i << 32 | j & 0xFFFFFFFFL;
+        Optional<T> known = map.get(key);
+        if (known == null) {
+            known = Optional.ofNullable(decision.decide(this, i, j));
+            decisions.remember(map, key, known);
+        }
+        return known.orElse(null);
     }
 
     /** All 2D values of one column. Heights in blocks. */
@@ -1060,13 +1345,21 @@ public final class VolcanicField implements DensityFunction {
         double cliff;
         /** How far the surface may drop near this column through a narrow cut (for {@link #initialHeight}). */
         double floorMargin;
-        /** The kind of thin solid standing in the column ({@link Landmarks#KIND_BONE} …), 0 for none. */
-        double solidKind;
+        /** 0..1 (39f): a collapse's footprint, 1 inside its rim (where vanilla cave entrances may reach the surface). */
+        double collapse;
         /** A lava spring (a source that flows) at this Y, or {@link Integer#MIN_VALUE}. */
         int springY;
         /** Lava fills open space from {@link #lavaBottom} up to, not including, {@link #lavaTop}. */
         int lavaTop;
         int lavaBottom;
+        /**
+         * A lava fall (39f) through this column: falling lava in open space from {@link #fallBottom} up to and including
+         * {@link #fallTop} (both {@link Integer#MIN_VALUE} without one); the aquifer lets the lowest blocks flow
+         * ({@link #fallFlowBelow}) so the lava spreads where it lands.
+         */
+        int fallTop;
+        int fallBottom;
+        int fallFlowBelow;
         int guardBottom;
         int guardTop;
         int islandCount;
@@ -1075,15 +1368,28 @@ public final class VolcanicField implements DensityFunction {
         int solidCount;
         final int[] solidTop = new int[MAX_SOLIDS];
         final int[] solidBottom = new int[MAX_SOLIDS];
-        /** A carved opening (lava tube) from {@link #voidBottom} to {@link #voidTop}, inclusive. */
-        int voidBottom;
-        int voidTop;
+        final int[] solidKind = new int[MAX_SOLIDS];
+        /** Carved openings (lava tube, collapse overhang and shaft), {@code voidBottom[i]}..{@code voidTop[i]} inclusive. */
+        int voidCount;
+        final int[] voidTop = new int[MAX_VOIDS];
+        final int[] voidBottom = new int[MAX_VOIDS];
+        /** Archipelago pillars standing in this column (39f), tested per block from {@link #pillarFloor} up. */
+        int pillarCount;
+        final Volcano.Pillar[] pillars = new Volcano.Pillar[MAX_PILLARS];
+        int pillarFloor;
+        // Phases of the per-block surface patterns (39f), computed when the surface first asks (NaN until then).
+        double treadPhase;
+        double veinPhase;
+        int x;
+        int z;
         // Scratch space of the fill (no allocation per column).
         final Ring3Relief.Detail scratch = new Ring3Relief.Detail();
         final double[] river = new double[3];
         final double[] span = new double[3];
 
-        void reset() {
+        void reset(int x, int z) {
+            this.x = x;
+            this.z = z;
             height = 0.0;
             preHeight = 0.0;
             roughness = 0.0;
@@ -1094,44 +1400,28 @@ public final class VolcanicField implements DensityFunction {
             rise = 0.0;
             lavaBank = 0.0;
             cliff = 0.0;
-            solidKind = 0.0;
             floorMargin = 0.0;
+            collapse = 0.0;
             springY = Integer.MIN_VALUE;
             lavaTop = Integer.MIN_VALUE;
             lavaBottom = Integer.MIN_VALUE;
+            fallTop = Integer.MIN_VALUE;
+            fallBottom = Integer.MIN_VALUE;
+            fallFlowBelow = Integer.MIN_VALUE;
             guardBottom = Integer.MAX_VALUE;
             guardTop = Integer.MIN_VALUE;
             islandCount = 0;
             solidCount = 0;
-            voidBottom = Integer.MAX_VALUE;
-            voidTop = Integer.MIN_VALUE;
+            voidCount = 0;
+            pillarCount = 0;
+            pillarFloor = Integer.MAX_VALUE;
+            treadPhase = Double.NaN;
+            veinPhase = Double.NaN;
         }
 
-        void addIsland(Volcano.Island island, double x, double z, double warp) {
-            double d = island.distance(x, z, 0.18 * warp);
-            if (d >= 1.0 || islandCount == MAX_ISLANDS) {
-                return;
-            }
-            addIslandInterval(island.topAt(d), island.bottomAt(d), d);
-            if (island.springs() > 0 && island.springAt(Mth.floor(x), Mth.floor(z))) {
-                // The source sits on the island's top; it is scheduled to flow (RingAquifer) and pours off the edge.
-                setSpring(Mth.floor(island.topAt(d)) + 1);
-            }
-        }
-
-        /**
-         * A lava spring at {@code y}: the islands are interpolated (their top may lie a block off the exact shape), so the
-         * spring stands on a thin solid of its own with a thin opening at its block, which the aquifer then fills.
-         */
-        void setSpring(int y) {
-            springY = y;
-            addSolid(y - 1, y - 1, 0);
-            voidBottom = y;
-            voidTop = y;
-        }
-
+        /** An island (or the floating volcano) between {@code bottom} and {@code top} (exact, per block, 39f). */
         void addIslandInterval(double top, double bottom, double d) {
-            if (islandCount == MAX_ISLANDS) {
+            if (islandCount == MAX_ISLANDS || Math.floor(top - 1.0) < Math.ceil(bottom)) {
                 return;
             }
             islandTop[islandCount] = top;
@@ -1140,15 +1430,23 @@ public final class VolcanicField implements DensityFunction {
             islandMask = Math.max(islandMask, Mth.clamp((1.0 - d) * 4.0, 0.0, 1.0));
         }
 
-        void addSolid(double bottom, double top) {
-            addSolid(bottom, top, 0);
+        /** The spring and fall columns of an island's lava falls ({@link Volcano.LavaFall}). */
+        void addFalls(List<Volcano.LavaFall> falls) {
+            for (Volcano.LavaFall fall : falls) {
+                if (fall.springX() == x && fall.springZ() == z) {
+                    springY = fall.springY();
+                }
+                if (fall.fallX() == x && fall.fallZ() == z) {
+                    fallTop = Math.max(fallTop, fall.springY());
+                }
+            }
         }
 
-        /**
-         * A thin solid from {@code bottom} to {@code top}; {@code kind} (bone, obsidian, basalt) colours its surface, but
-         * only where it stands on the ground: the surface rules see the whole column, so under an arch the ground keeps
-         * its own surface.
-         */
+        void addSolid(double bottom, double top) {
+            addSolid(bottom, top, Landmarks.KIND_BIOME);
+        }
+
+        /** A thin solid from {@code bottom} to {@code top}; {@code kind} ({@link Landmarks#KIND_BIOME} …) picks its surface. */
         void addSolid(double bottom, double top, int kind) {
             // Thin shapes bypass the stack's top slide (300 → 316): keep them below it.
             top = Math.min(top, THIN_TOP);
@@ -1157,10 +1455,58 @@ public final class VolcanicField implements DensityFunction {
             }
             solidBottom[solidCount] = Mth.floor(bottom);
             solidTop[solidCount] = Mth.floor(top);
+            solidKind[solidCount] = kind;
             solidCount++;
-            if (bottom <= height + 1.0) {
-                solidKind = Math.max(solidKind, kind);
+        }
+
+        /** A carved opening from {@code bottom} to {@code top} (inclusive block Y). */
+        void addVoid(int bottom, int top) {
+            if (voidCount == MAX_VOIDS || top < bottom) {
+                return;
             }
+            voidBottom[voidCount] = bottom;
+            voidTop[voidCount] = top;
+            voidCount++;
+        }
+
+        void addPillar(Volcano.Pillar pillar) {
+            if (pillarCount < MAX_PILLARS) {
+                pillars[pillarCount++] = pillar;
+                pillarFloor = Math.min(pillarFloor, pillar.floorY());
+            }
+        }
+
+        /**
+         * The kind of thin solid at {@code y} ({@link Landmarks#KIND_BIOME} …, {@link Landmarks#KIND_ISLAND} for a
+         * floating island), or −1 if the block belongs to none (the terrain decides).
+         */
+        int thinKind(int y) {
+            for (int i = 0; i < solidCount; i++) {
+                if (y >= solidBottom[i] && y <= solidTop[i]) {
+                    return solidKind[i];
+                }
+            }
+            if (pillarCount > 0 && y >= pillarFloor) {
+                for (int i = 0; i < pillarCount; i++) {
+                    if (pillars[i].contains(x, y, z)) {
+                        return Landmarks.KIND_BASALT;
+                    }
+                }
+            }
+            return islandAt(y) ? Landmarks.KIND_ISLAND : -1;
+        }
+
+        /** +1 inside a thin solid or island, −1 inside a carved opening, 0 elsewhere (the terrain decides). */
+        double thin(int y) {
+            if (thinKind(y) >= 0) {
+                return 1.0;
+            }
+            for (int i = 0; i < voidCount; i++) {
+                if (y >= voidBottom[i] && y <= voidTop[i]) {
+                    return -1.0;
+                }
+            }
+            return 0.0;
         }
 
         public double height() {
@@ -1186,6 +1532,21 @@ public final class VolcanicField implements DensityFunction {
             return springY;
         }
 
+        /** The top of the column's lava fall (inclusive, 39f), or {@link Integer#MIN_VALUE}. */
+        public int fallTop() {
+            return fallTop;
+        }
+
+        /** The bottom of the column's lava fall (inclusive), or {@link Integer#MIN_VALUE}. */
+        public int fallBottom() {
+            return fallBottom;
+        }
+
+        /** Below this Y (inclusive) the fall's lava is let flow, where it lands; {@link Integer#MIN_VALUE} without a fall. */
+        public int fallFlowBelow() {
+            return fallFlowBelow;
+        }
+
         boolean hasLava() {
             return lavaTop != Integer.MIN_VALUE;
         }
@@ -1200,12 +1561,12 @@ public final class VolcanicField implements DensityFunction {
             return false;
         }
 
-        /** Whether lava fills open space at {@code y} in this column (a lake, river, abyss sea, or a spring). */
+        /** Whether lava fills open space at {@code y} in this column (a lake, river, abyss sea, spring or fall). */
         public boolean lavaAt(int y) {
-            return lavaAt(y, lavaTop, lavaBottom, springY);
+            return lavaAt(y, lavaTop, lavaBottom, springY) || y >= fallBottom && y <= fallTop;
         }
 
-        /** The lava rule of a column from its bounds (shared with the aquifer's per-column table). */
+        /** The lava rule of a column from its bounds (shared with the aquifer's per-column table; falls apart). */
         public static boolean lavaAt(int y, int lavaTop, int lavaBottom, int springY) {
             return y < lavaTop && y >= lavaBottom || y == springY;
         }

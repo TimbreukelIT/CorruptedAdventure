@@ -111,43 +111,49 @@ class Ring3BiomesTest {
     /**
      * Each ring 3 biome has its own branch in {@code above_preliminary_surface}, before vanilla's rules: a top block for
      * the surface and an unconditional block for the whole surface depth, so vanilla's grass and dirt never reach it.
+     * 39f: the biome branches sit inside one ring 3 branch (all eight biomes; thin solids first, then a depth gate); a
+     * fast path for the deep blocks of the ring 3 core (keyed on {@code ring_reach} ring 3) may come first.
      */
     @Test
     void everyBiomeHasItsOwnSurfaceBranchWithoutGrass() {
         JsonArray rules = WorldgenData.read("noise_settings/overworld.json").getAsJsonObject("surface_rule")
                 .getAsJsonArray("sequence").get(1).getAsJsonObject().getAsJsonObject("then_run").getAsJsonArray("sequence");
-        Map<String, JsonObject> branches = new LinkedHashMap<>();
         Set<String> ring3 = Ring3Biomes.ALL.stream().map(key -> key.location().toString()).collect(Collectors.toSet());
-        Set<String> sharedPlaces = new HashSet<>();
+        JsonObject ring3Branch = null;
         int firstVanilla = -1;
         for (int i = 0; i < rules.size(); i++) {
             JsonObject condition = rules.get(i).getAsJsonObject().getAsJsonObject("if_true");
-            if (condition.get("type").getAsString().equals("minecraft:biome")) {
+            String type = condition.get("type").getAsString();
+            if (type.equals("corruptedadventure:ring_reach") && condition.get("ring").getAsString().equals("ring_3")) {
+                assertEquals(0, i, "the deep fast path of ring 3 comes first");
+                assertNoVanillaSoil(rules.get(i).toString(), "ring 3 fast path");
+                continue;
+            }
+            if (type.equals("minecraft:biome")) {
                 JsonArray biomes = condition.getAsJsonArray("biome_is");
-                if (biomes.size() == 1 && biomes.get(0).getAsString().startsWith("corruptedadventure:")) {
-                    assertNull(branches.put(biomes.get(0).getAsString(), rules.get(i).getAsJsonObject().getAsJsonObject("then_run")),
-                            "two branches for " + biomes.get(0).getAsString());
-                    assertTrue(firstVanilla < 0, biomes.get(0).getAsString() + " after vanilla's rules");
+                if (biomes.asList().stream().anyMatch(b -> ring3.contains(b.getAsString()))) {
+                    assertEquals(ring3, biomes.asList().stream().map(JsonElement::getAsString).collect(Collectors.toSet()),
+                            "one ring 3 branch for all ring 3 biomes");
+                    assertNull(ring3Branch, "a second ring 3 branch");
+                    assertTrue(firstVanilla < 0, "ring 3 branch after vanilla's rules");
+                    assertNoVanillaSoil(rules.get(i).toString(), "ring 3 branch");
+                    ring3Branch = rules.get(i).getAsJsonObject().getAsJsonObject("then_run");
                     continue;
                 }
-                // Shared ring 3 branches (craters, cones, lava banks before the biome branches; the ground below after
-                // them, change 39c): only ring 3 biomes, at most one before and one after the biome branches (a
-                // generator run must not add a second copy), never vanilla's grass or dirt.
-                if (biomes.size() > 1 && biomes.asList().stream().allMatch(b -> ring3.contains(b.getAsString()))) {
-                    assertTrue(firstVanilla < 0, "shared ring 3 branch after vanilla's rules");
-                    assertTrue(sharedPlaces.add(branches.keySet().stream().noneMatch(ring3::contains) ? "before" : "after"), "second shared ring 3 branch: " + biomes);
-                    assertNoVanillaSoil(rules.get(i).toString(), "shared ring 3 branch " + biomes);
-                    continue;
+                if (biomes.size() == 1 && biomes.get(0).getAsString().startsWith("corruptedadventure:")) {
+                    continue; // a ring 2 branch
                 }
             }
             if (firstVanilla < 0) {
                 firstVanilla = i;
             }
         }
+        assertNotNull(ring3Branch, "ring 3 branch");
+        Map<String, JsonObject> branches = new LinkedHashMap<>();
+        collectBiomeBranches(ring3Branch, branches);
         for (ResourceKey<Biome> biome : Ring3Biomes.ALL) {
             JsonObject branch = branches.get(biome.location().toString());
             assertNotNull(branch, biome.toString());
-            assertNoVanillaSoil(branch.toString(), biome.toString());
             boolean top = false;
             boolean layer = false;
             for (JsonElement element : branch.getAsJsonArray("sequence")) {
@@ -158,15 +164,47 @@ class Ring3BiomesTest {
                 }
                 JsonObject then = rule.getAsJsonObject("then_run");
                 if (condition.get("add_surface_depth").getAsBoolean()) {
-                    layer |= then.get("type").getAsString().equals("minecraft:block");
+                    layer |= endsInBlock(then);
                 } else {
-                    JsonArray choices = then.getAsJsonArray("sequence");
-                    top |= choices.get(choices.size() - 1).getAsJsonObject().get("type").getAsString().equals("minecraft:block");
+                    top |= endsInBlock(then);
                 }
             }
             assertTrue(top, biome + ": no unconditional top block");
             assertTrue(layer, biome + ": no unconditional block for the surface depth");
         }
+    }
+
+    /** The surface branches of single biomes inside the ring 3 branch (the ones with a top rule, not the thin solids'). */
+    private static void collectBiomeBranches(JsonElement element, Map<String, JsonObject> into) {
+        if (element.isJsonArray()) {
+            element.getAsJsonArray().forEach(e -> collectBiomeBranches(e, into));
+            return;
+        }
+        if (!element.isJsonObject()) {
+            return;
+        }
+        JsonObject object = element.getAsJsonObject();
+        JsonObject condition = object.getAsJsonObject("if_true");
+        if (condition != null && condition.get("type").getAsString().equals("minecraft:biome")
+                && condition.getAsJsonArray("biome_is").size() == 1 && object.getAsJsonObject("then_run").toString().contains("stone_depth")) {
+            assertNull(into.put(condition.getAsJsonArray("biome_is").get(0).getAsString(), object.getAsJsonObject("then_run")),
+                    "two branches for " + condition);
+            return;
+        }
+        object.entrySet().forEach(e -> collectBiomeBranches(e.getValue(), into));
+    }
+
+    /** Whether a rule always gives a block: a block, or a sequence whose last rule always gives one. */
+    private static boolean endsInBlock(JsonObject rule) {
+        String type = rule.get("type").getAsString();
+        if (type.equals("minecraft:block")) {
+            return true;
+        }
+        if (!type.equals("minecraft:sequence")) {
+            return false;
+        }
+        JsonArray sequence = rule.getAsJsonArray("sequence");
+        return endsInBlock(sequence.get(sequence.size() - 1).getAsJsonObject());
     }
 
     private static void assertNoVanillaSoil(String rule, String where) {

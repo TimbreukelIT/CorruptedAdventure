@@ -19,7 +19,8 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicOutput;
  * Surface rule condition {@code corruptedadventure:volcanic_threshold}: true where a per-column output of the ring 3
  * terrain ({@code volcanic_field}) lies in {@code [min, max)}. The ring 3 surface uses it for what the noises cannot
  * know: the inside of active craters ({@code caldera_mask}, {@code caldera_dormant}), the volcano flanks
- * ({@code volcano_rise}) and the banks of the lava channels ({@code lava_bank}) (change 39c).
+ * ({@code volcano_rise}) and the banks of the lava channels ({@code lava_bank}) (change 39c). 39f: also the per-block
+ * outputs {@code thin_kind} (the thin solids, painted whole), {@code tread} and {@code vein} (patterns in Y).
  * <p>
  * Reads the noise chunk's own instance of the field, which {@link RingChunkGenerator} hands to its surface pass, so
  * the surface shares the column cache of the terrain and sees exactly its values. Without a field (another generator
@@ -40,8 +41,8 @@ public record VolcanicThresholdCondition(VolcanicOutput.Output output, double mi
     private static final Set<RandomState> WARNED = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     private static DataResult<VolcanicThresholdCondition> check(VolcanicThresholdCondition condition) {
-        if (!condition.output.perColumn()) {
-            return DataResult.error(() -> "volcanic_threshold needs a per-column output, got " + condition.output.getSerializedName());
+        if (!condition.output.forSurface()) {
+            return DataResult.error(() -> "volcanic_threshold needs a per-column or surface output, got " + condition.output.getSerializedName());
         }
         return condition.min < condition.max ? DataResult.success(condition)
                 : DataResult.error(() -> "volcanic_threshold needs min < max");
@@ -60,6 +61,13 @@ public record VolcanicThresholdCondition(VolcanicOutput.Output output, double mi
                 CorruptedAdventure.LOGGER.warn("volcanic_threshold used without ring 3 terrain in the noise chunk; the condition is false");
             }
             return () -> false;
+        }
+        if (!output.perColumn()) {
+            // Per block: the field's column table remembers the column, so only the block's own test remains.
+            return () -> {
+                double value = VolcanicOutput.blockValue(field, output, context.blockX, context.blockY, context.blockZ);
+                return value >= min && value < max;
+            };
         }
         return new SurfaceRules.Condition() {
             private boolean known;

@@ -13,16 +13,26 @@ final class Landmarks {
     static final int FLOATING_CELL = 2000;
     static final int ABYSS_CELL = 1600;
     static final int NEEDLE_CELL = 192;
-    static final int RIFT_ARCH_CELL = 384;
+    /** Rift arches (39f): one search per cell for its deepest rift floor (a grid of n × n candidates), about one per rift valley. */
+    static final int RIFT_ARCH_CELL = 320;
+    private static final int RIFT_ARCH_SEARCH = 10;
+    /** Two rift arches stand at least this far apart (the shallower floor of two nearby cells gets none). */
+    static final double RIFT_ARCH_SPACING = 220.0;
     private static final int FLOATING = 11;
     private static final int ABYSS = 12;
     private static final int NEEDLE = 13;
     private static final int RIFT_ARCH = 14;
 
-    /** Kinds of thin solids, for the surface ({@code solid_kind}). */
-    static final int KIND_BONE = 1;
+    /**
+     * Kinds of thin solids, for the surface (39f: per block, output {@code thin_kind}): the biome's own surface (bones,
+     * arches, hoodoos, the micro relief), obsidian (needles), basalt (prisms, pillars, bridges, sea stacks), a floating
+     * island, rubble (the floor of a collapse).
+     */
+    static final int KIND_BIOME = 0;
     static final int KIND_OBSIDIAN = 2;
     static final int KIND_BASALT = 3;
+    static final int KIND_ISLAND = 4;
+    static final int KIND_RUBBLE = 5;
 
     private Landmarks() {
     }
@@ -97,24 +107,64 @@ final class Landmarks {
 
     // ---------------------------------------------------------------- arches over rifts
 
-    static Arch riftArch(VolcanicField field, int i, int j) {
+    /**
+     * The deepest rift floor of cell (i, j) as {x, z, depth} (depth 0 if the cell has none), from a jittered grid of
+     * n × n candidates over the cell (39f). Pure.
+     */
+    static double[] riftFloor(VolcanicField field, int i, int j) {
         long h = CellShapes.cell(field.salt(), i, j, RIFT_ARCH);
-        if (CellShapes.unit(h, 0) >= 0.5) {
-            return null;
-        }
-        // Look for a rift floor in the middle of the cell (a few jittered candidates, the first one wins).
         Ring3Relief.Detail detail = new Ring3Relief.Detail();
-        double x = 0.0;
-        double z = 0.0;
-        double depth = 0.0;
-        for (int k = 0; k < 16 && depth < 15.0; k++) {
-            x = (i + 0.3 + 0.1 * (k % 4) + 0.1 * CellShapes.unit(h, 10 + k)) * RIFT_ARCH_CELL;
-            z = (j + 0.3 + 0.1 * (k / 4) + 0.1 * CellShapes.unit(h, 30 + k)) * RIFT_ARCH_CELL;
-            depth = field.regions(x, z).riftOpen() < 0.9 ? 0.0 : field.riftCut(x, z, detail);
+        double[] best = {0.0, 0.0, 0.0};
+        int n = RIFT_ARCH_SEARCH;
+        for (int k = 0; k < n * n; k++) {
+            double cx = (i + 0.12 + 0.76 * ((k % n) + CellShapes.unit(h, 10 + k)) / n) * RIFT_ARCH_CELL;
+            double cz = (j + 0.12 + 0.76 * ((k / n) + CellShapes.unit(h, 200 + k)) / n) * RIFT_ARCH_CELL;
+            double cut = field.regions(cx, cz).riftOpen() < 0.9 ? 0.0 : field.riftCut(cx, cz, detail);
+            if (cut > best[2]) {
+                best = new double[]{cx, cz, cut};
+            }
         }
-        if (depth < 15.0) {
+        return best;
+    }
+
+    /**
+     * 39f: the arch over the deepest rift floor of the cell, unless a neighbouring cell with a deeper floor nearby has an
+     * arch itself: about one arch per stretch of rift valley (39d looked only near the middle of a cell and found 3 in
+     * the ring). A cell only yields to a neighbour whose arch really stands; that neighbour is decided first (deeper
+     * floors first, ties by cell), so the choice is deterministic and does not depend on which column asks.
+     */
+    static Arch riftArch(VolcanicField field, int i, int j) {
+        double[] deepest = field.riftFloor(i, j);
+        Arch arch = riftArchCandidate(field, i, j, deepest);
+        if (arch == null) {
             return null;
         }
+        for (int di = -1; di <= 1; di++) {
+            for (int dj = -1; dj <= 1; dj++) {
+                if (di == 0 && dj == 0) {
+                    continue;
+                }
+                double[] other = field.riftFloor(i + di, j + dj);
+                boolean deeper = other[2] > deepest[2] || other[2] == deepest[2] && (di > 0 || di == 0 && dj > 0);
+                if (deeper && Math.hypot(other[0] - deepest[0], other[1] - deepest[1]) < RIFT_ARCH_SPACING
+                        && field.riftArch(i + di, j + dj) != null) {
+                    return null;
+                }
+            }
+        }
+        return arch;
+    }
+
+    /** The arch cell (i, j) would get over its deepest rift floor {@code deepest}, regardless of its neighbours. */
+    static Arch riftArchCandidate(VolcanicField field, int i, int j, double[] deepest) {
+        if (deepest[2] < 15.0) {
+            return null;
+        }
+        long h = CellShapes.cell(field.salt(), i, j, RIFT_ARCH);
+        Ring3Relief.Detail detail = new Ring3Relief.Detail();
+        double x = deepest[0];
+        double z = deepest[1];
+        double depth = deepest[2];
         // Across the rift: the direction (of eight) with the shortest way from rim to rim, marching both ways.
         double nx = 0.0;
         double nz = 0.0;
@@ -141,7 +191,10 @@ final class Landmarks {
         double cx = x + nx * shift;
         double cz = z + nz * shift;
         double span = (reachA + reachB) * 0.5 + 6.0;
-        if (span > 0.4 * RIFT_ARCH_CELL) {
+        // The arch (span + width) must stay inside its cell: a column only looks at its own cell.
+        double margin = span + 9.0;
+        if (span > 0.3 * RIFT_ARCH_CELL || cx - margin < i * RIFT_ARCH_CELL || cx + margin > (i + 1) * RIFT_ARCH_CELL
+                || cz - margin < j * RIFT_ARCH_CELL || cz + margin > (j + 1) * RIFT_ARCH_CELL) {
             return null;
         }
         double floor = field.traceGround(cx, cz);
@@ -193,10 +246,12 @@ final class Landmarks {
 
     /**
      * A floating volcano: an island of radius {@code radius} with its plateau at {@code base}, a cone rising
-     * {@code cone} to a crater with a lava lake, an underside hanging {@code depth} below; lava springs on the rim.
+     * {@code cone} to a crater with a lava lake, a rocky underside ({@link Volcano#underside}) hanging up to
+     * {@code depth} below. 39f: the plateau lies below the clouds and only the cone pierces them; its lava falls pour from
+     * the plateau's edge to the ground ({@code falls}).
      */
     record FloatingVolcano(double x, double z, double radius, double base, double cone, double depth, double crater,
-                           double lakeTop, double craterFloor, int[] springX, int[] springZ, int[] springY) {
+                           double lakeTop, double craterFloor, int lobes, double lobePhase, List<Volcano.LavaFall> falls) {
         /** Top of the island at normalised distance {@code d} (0..1). */
         double topAt(double d) {
             double rimD = crater / radius;
@@ -208,10 +263,38 @@ final class Landmarks {
             return base + cone * Math.pow(1.0 - u, 1.6) - 3.0 * Math.pow(d, 8.0);
         }
 
-        double bottomAt(double d) {
-            return base - 2.0 - depth * Math.pow(Math.max(0.0, 1.0 - d), 1.2);
+        double bottomAt(double d, double theta) {
+            return base - 2.0 - depth * Volcano.underside(d, theta, lobes, lobePhase) / 1.2;
+        }
+
+        /** The deepest the underside hangs at {@code d}, whatever the angle. */
+        double lowestAt(double d) {
+            return bottomAt(d, -lobePhase / lobes);
+        }
+
+        /** Normalised distance of a column from the centre ({@code warp}: the column's warp noise, as the terrain uses it). */
+        double distance(double px, double pz, double warp) {
+            return Volcano.ragged(Math.hypot(px - x, pz - z) / radius, Math.atan2(pz - z, px - x), lobePhase) + 0.05 * warp;
+        }
+
+        /** The island's top (first air above it) in a column, or NaN if the column holds none of it. */
+        double columnTop(double px, double pz, double warp) {
+            double d = distance(px, pz, warp);
+            if (d >= 1.0) {
+                return Double.NaN;
+            }
+            double top = topAt(d);
+            return Math.floor(top - 1.0) >= Math.ceil(bottomAt(d, Math.atan2(pz - z, px - x))) ? top : Double.NaN;
+        }
+
+        /** How far (blocks) the island and its falls reach from the centre. */
+        double reach() {
+            return radius * 1.25 + 4.0;
         }
     }
+
+    /** Placement tries per cell: the first spot that is clear of volcanoes and high enough above the ground wins. */
+    private static final int FLOATING_TRIES = 5;
 
     static FloatingVolcano floating(VolcanicField field, int i, int j) {
         long h = CellShapes.cell(field.salt(), i, j, FLOATING);
@@ -220,45 +303,62 @@ final class Landmarks {
         }
         double radius = 40.0 + 15.0 * CellShapes.unit(h, 1);
         double margin = radius + 40.0;
-        double x = i * FLOATING_CELL + margin + CellShapes.unit(h, 2) * (FLOATING_CELL - 2.0 * margin);
-        double z = j * FLOATING_CELL + margin + CellShapes.unit(h, 3) * (FLOATING_CELL - 2.0 * margin);
-        VolcanicField.Regions r = field.regions(x, z);
-        if (r.core() < 0.99 || r.seabed() > 0.1 || !field.clearOfVolcanoes(x, z, radius + 60.0)) {
-            return null;
-        }
-        double base = 200.0 + 12.0 * CellShapes.unit(h, 4);
+        // 39f: the plateau sits at Y ~165–175, below the clouds; the cone rises through them to a rim at ~205–225.
+        double base = 165.0 + 10.0 * CellShapes.unit(h, 4);
         double cone = 38.0 + 12.0 * CellShapes.unit(h, 5);
-        double depth = 55.0 + 15.0 * CellShapes.unit(h, 6);
-        // Clear of the ground under it, also where a hill rises.
-        for (int k = 0; k <= 8; k++) {
-            double a = k * Math.PI / 4.0;
-            double s = k == 8 ? 0.0 : radius * 0.6;
-            double g = field.traceGround(x + Math.cos(a) * s, z + Math.sin(a) * s);
-            if (base - 2.0 - depth * (k == 8 ? 1.0 : 0.4) < g + 15.0) {
-                return null;
-            }
-        }
+        double depth = 34.0 + 10.0 * CellShapes.unit(h, 6);
+        int lobes = 2 + (int) (1.99 * CellShapes.unit(h, 10));
+        double lobePhase = CellShapes.unit(h, 11) * Math.PI * 2.0;
         double crater = 10.0 + 4.0 * CellShapes.unit(h, 7);
         double rimTop = base + cone;
         double craterFloor = rimTop - 12.0;
         double lakeTop = craterFloor + 6.0;
-        int springs = 3 + (int) (2.0 * CellShapes.unit(h, 8));
-        int[] sx = new int[springs];
-        int[] sz = new int[springs];
-        int[] sy = new int[springs];
-        double angle0 = CellShapes.unit(h, 9) * Math.PI * 2.0;
-        FloatingVolcano shape = new FloatingVolcano(x, z, radius, base, cone, depth, crater, lakeTop, craterFloor, sx, sz, sy);
-        for (int k = 0; k < springs; k++) {
-            // Springs just outside the crater rim: the lava runs down the cone and off the island's edge.
-            double a = angle0 + k * Math.PI * 2.0 / springs;
-            double s = crater + 3.0;
-            sx[k] = (int) Math.floor(x + Math.cos(a) * s);
-            sz[k] = (int) Math.floor(z + Math.sin(a) * s);
-            double d = Math.sqrt(Math.pow(sx[k] + 0.5 - x, 2) + Math.pow(sz[k] + 0.5 - z, 2)) / radius
-                    + 0.05 * field.warpAt(sx[k] + 0.5, sz[k] + 0.5);
-            sy[k] = (int) Math.floor(shape.topAt(d));
+        for (int t = 0; t < FLOATING_TRIES; t++) {
+            double x = i * FLOATING_CELL + margin + CellShapes.unit(h, 2 + 20 * t) * (FLOATING_CELL - 2.0 * margin);
+            double z = j * FLOATING_CELL + margin + CellShapes.unit(h, 3 + 20 * t) * (FLOATING_CELL - 2.0 * margin);
+            FloatingVolcano shape = new FloatingVolcano(x, z, radius, base, cone, depth, crater, lakeTop, craterFloor, lobes,
+                    lobePhase, List.of());
+            if (floatsFree(field, shape)) {
+                return new FloatingVolcano(x, z, radius, base, cone, depth, crater, lakeTop, craterFloor, lobes, lobePhase,
+                        falls(field, shape, CellShapes.unit(h, 8), CellShapes.unit(h, 9)));
+            }
         }
-        return shape;
+        return null;
+    }
+
+    /** Whether a floating volcano stands in the core, clear of volcanoes, at least 15 blocks above the ground under it. */
+    private static boolean floatsFree(VolcanicField field, FloatingVolcano f) {
+        VolcanicField.Regions r = field.regions(f.x(), f.z());
+        if (r.core() < 0.99 || r.seabed() > 0.1 || !field.clearOfVolcanoes(f.x(), f.z(), f.radius() + 60.0)) {
+            return false;
+        }
+        for (int k = 0; k <= 16; k++) {
+            double a = k * Math.PI / 8.0;
+            double s = k == 16 ? 0.0 : f.radius() * (k % 2 == 0 ? 0.6 : 0.35);
+            double g = field.traceGround(f.x() + Math.cos(a) * s, f.z() + Math.sin(a) * s);
+            if (f.lowestAt(s / f.radius()) < g + 15.0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Three or four lava falls from the plateau's edge (39f; 39d had springs beside the crater that barely flowed). */
+    private static List<Volcano.LavaFall> falls(VolcanicField field, FloatingVolcano f, double countRoll, double angleRoll) {
+        int springs = 3 + (int) (2.0 * countRoll);
+        List<Volcano.LavaFall> falls = new ArrayList<>(springs);
+        double angle0 = angleRoll * Math.PI * 2.0;
+        for (int k = 0; k < springs; k++) {
+            double a = angle0 + k * Math.PI * 2.0 / springs;
+            // As for islands: the fall column stays inside the reach (VolcanoPlacement#island).
+            Volcano.LavaFall fall = LavaFallTrace.trace(f.x(), f.z(), Math.cos(a), Math.sin(a), 0.7 * f.radius(),
+                    Math.min(1.3 * f.radius(), f.reach() - 2.0),
+                    (bx, bz) -> f.columnTop(bx + 0.5, bz + 0.5, field.warpAt(bx + 0.5, bz + 0.5)));
+            if (fall != null) {
+                falls.add(fall);
+            }
+        }
+        return List.copyOf(falls);
     }
 
     // ---------------------------------------------------------------- abyss

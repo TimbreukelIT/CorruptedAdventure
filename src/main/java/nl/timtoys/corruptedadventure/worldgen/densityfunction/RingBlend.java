@@ -34,7 +34,8 @@ import java.util.Set;
  * <p>
  * Only the one or two inputs a position needs are computed. Interpolation markers inside the inputs still work
  * because {@link #mapAll} passes the visitor on; the noise chunk then fills those interpolators and flat caches in
- * every chunk, whether or not the ring is nearby, so {@link #mapAll} puts a {@link RingGate} inside each of them first.
+ * every chunk, whether or not the ring is nearby, so {@link #mapAll} puts a gate inside each of them first: a
+ * {@link RingGate} in an interpolator, a {@link RingFillGate} in a flat cache (39e).
  */
 public final class RingBlend implements DensityFunction {
     private static final Codec<Map<Ring, DensityFunction>> RINGS_CODEC =
@@ -134,14 +135,16 @@ public final class RingBlend implements DensityFunction {
     @Override
     public void fillArray(double[] array, ContextProvider contextProvider) {
         Ring common = null;
-        int lastX = 0;
-        int lastZ = 0;
+        // One ring lookup per distinct column (39f): a slice of cell corners runs along Y first, the blocks of a cell
+        // revisit their 16 columns for every Y. The columns seen so far, packed; past SEEN columns lookups repeat.
+        long[] seen = SEEN_COLUMNS.get();
+        int seenCount = 0;
         for (int i = 0; i < array.length; i++) {
             FunctionContext context = contextProvider.forIndex(i);
             int x = context.blockX();
             int z = context.blockZ();
-            // A slice of cell corners runs along Y first: one ring lookup per column.
-            if (common != null && x == lastX && z == lastZ) {
+            long key = (long) x << 32 | z & 0xFFFFFFFFL;
+            if (common != null && known(seen, seenCount, key)) {
                 continue;
             }
             Ring single = single(RingColumnCache.ringAt(dimension, x, z));
@@ -150,12 +153,27 @@ public final class RingBlend implements DensityFunction {
                 return;
             }
             common = single;
-            lastX = x;
-            lastZ = z;
+            if (seenCount < seen.length) {
+                seen[seenCount++] = key;
+            }
         }
         if (common != null) {
             rings[common.ordinal()].fillArray(array, contextProvider);
         }
+    }
+
+    /** Distinct columns remembered per {@link #fillArray} (a cell has 16, a slice of corners 25). */
+    private static final int SEEN = 32;
+    private static final ThreadLocal<long[]> SEEN_COLUMNS = ThreadLocal.withInitial(() -> new long[SEEN]);
+
+    private static boolean known(long[] seen, int count, long key) {
+        // Most often the column of the previous point: search from the end.
+        for (int k = count - 1; k >= 0; k--) {
+            if (seen[k] == key) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -167,7 +185,10 @@ public final class RingBlend implements DensityFunction {
         return visitor.apply(new RingBlend(dimension, mapped, switchAt));
     }
 
-    /** {@code visitor}, but every interpolated and flat-cache marker of the input of {@code ring} gets a {@link RingGate} first. */
+    /**
+     * {@code visitor}, but every interpolated marker of the input of {@code ring} gets a {@link RingGate} first and every
+     * flat-cache marker a {@link RingFillGate} ({@link RingGate#gateCacheMarker}).
+     */
     private Visitor gating(Ring ring, Visitor visitor) {
         return new Visitor() {
             @Override
