@@ -614,6 +614,18 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 - **Indeling (39b):** heet (pieken, stromen), midden (zwavel, smeulwoud), koel (zeekom, as, titanen) op de regio-assen; elk biome ~1/7; `dormant_caldera` via weirdness. **Spawns tot fase 4:** de woestijnmonsters van ring 2 (husks) en vleermuizen, geen dieren; alleen geiten in `volcanic_peaks` (zeldzaam, groepjes 1–3; besluit gebruiker).
 - Overgangsbiome 3→4: **stoomvenen** (`steam_fens`): hete modderpoelen, geisers en stoomkolommen. Hier komt het gestolen water terug en kookt het tegen de hitte. Stoom is biome-particles (data).
+- **Uitwerking aankleding (W-biomes 41–49, 2026-10-08/09; G2-WB1..WB13 = A, startwaarden, afstemmen in 4b):** alle ring 3-features staan in één globale volgorde en lezen alleen het pure terrein (lava, grond, landmarks), zodat ze deterministisch blijven en nooit op naalden, bogen, ribkruinen, brugdekken, lavaoevers, steile wanden, vulkaanflanken of in actieve kraters komen.
+  - **`sulfur_fields`:** een fumarole met zwavelkraag op (bijna) elke heuveltop en in de kommen, modderpoeltjes midden in de zinkgaten, niets in instortingen;
+  - **`basalt_flows`:** hornitos met gloeiende kap, blackstone-tongen en smeulventjes; **`volcanic_peaks`:** inslagkraters met obsidiaan en magmakern (nooit boven vloeistof), rotsen; **`ashen_wastes`:** verkoolde dode bomen in de geulen, puimsteenkeien; aslagen in de lijzijde en geulen (windruis), ook rond de smeulwoudstammen;
+  - **`dried_seabed`:** dode koraalriffen en zeemonsterfossielen (eigen sjablonen);
+  - **`titan_fields`:** schedels, wervels en botten (bot, half begraven), zielvuur op zielgrond rond de ribvoeten en onder de wervelkolom, **titanen-rotsen** (basaltreuzen 20–29 hoog: knielend, gebogen of als buste, per cel van 256 blokken, kans 0,4); geen complete skeletten;
+  - **`ember_woods`:** gemengd smeulwoud (smeulbomen 6–9, smeulreuzen 10–12 met spar-kroon, kale verkoolde stammen) met open plekken (omgevallen stammen, smeulbessen waar het licht ze laat teruggroeien, vuurflora) en aslaagjes rond de stammen;
+  - **`dormant_caldera`:** oase met varens/gras, azalea-struiken, af en toe een azaleaboom als baken, bessen aan de voet van de wand, glow lichen tegen de wand (geen hangende wortels);
+  - **lavavallen** (feature): een bron in een kraterwand, kloof- of afgrondwand met ≥ 10 val, alleen waar hij echt in bestaande terreinlava landt, max. 2 per chunk, alleen in de ring 3-kern; de eilandvallen van 39f blijven terrein;
+  - **eilanden:** smeulende as met aslagen boven, hangende vuurkristallen eronder (≥ 4 lucht eronder), soms een smeulboom op grote eilanden;
+  - **`dry_riverbeds`:** de geblakerde vlekken zijn as met aslagen en verkoolde stronken (ring 3-kant van de ring 2-overgang);
+  - **striders** (zeldzaam) op lavarivieren en kratermeren in alle ring 3-biomes behalve de pieken, **zonder ruiter** (gebruiker); geiten blijven op de pieken.
+- **`steam_fens` (48, 2026-10-09):** het overgangsbiome van zone 3→4 (`transitions.ring_3`; de klimaatassen mengen nu ook in 3→4, `switch_at` alleen nog 4→5 en 5→void): nat (downfall 0,9), kookpoelen alleen boven Y 63 (water in eindtoestand), modderpoelen, geisers die vanaf het genereren hun ritme lopen (`startCycle`) en stoomventen; surface modder, packed mud, klei, grind/as, zwavelkorst langs scheuren, tuf op steile wanden, nooit vanilla-gras. Het hoort bij de ring 3-lijsten met tags (`is_ring_3`, heet, nat), niet bij de eigen `multi_noise`.
 
 **Unieke blokken (placeholders eerst)**
 - Basis is vanilla basalt / blackstone / magma. Eigen blokken:
@@ -637,6 +649,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Zwavel**: veel en ondiep bij fumarolen en in `sulfur_fields`; nut in fase 2 (buskruit, vuur, brandstof).
 - **Vuurrobijn**: zeldzame edelsteen in de wanden van magmakamers.
 - Vanilla-ores verder afgebouwd dan in ring 2: ijzer en kolen schaars, diamant bijna afwezig.
+- **Uitwerking 41 (2026-10-08; G2-WB1 = A, startwaarden):** vanilla-ertsen ×0,35 (kolen/ijzer/koper) / ×0,3 (goud/redstone/lapis) / ×0,1 (diamant); vulkaniet aders 9 (Y −48…40) plus extra pogingen nabij de eigen terreinlava (binnen 4 blokken); zwavel aders 7, ondiep (4–30 onder de terreinhoogte), ringbreed en extra in `sulfur_fields`; vuurrobijn aders 4, Y −40…30, zeldzaam; blootliggende ertsen blijven. De ring 3-ertsen liggen ook in de ring 3-helft van `dry_riverbeds` en in `steam_fens` (via `is_ring_3`).
 - **Ertsblokken (40, 2026-10-07):** "één stap boven ring 2" (hardheid + 0,5; vulkaniet en vuurrobijn ijzeren houweel, zwavel stenen); gastgesteenten steen, deepslate en basalt (zwavel: steen en basalt), **geen blackstone** (gebruiker); **`basalt_fire_ruby_ore`** voor de basaltwanden van magmakamers (gebruiker); vuurrobijn licht 3 en gloeiend.
 
 **Grotten**
@@ -648,6 +661,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **vanilla-grotten** krimpen geleidelijk (over 20 blokken): weg boven Y 146 en in vulkaanlichamen; ze blijven in de vlaktes; geen carver of grot snijdt een kamer, gootje of geode aan;
   - **water** alleen diep (eigen floodedness: geen lokale aquifervloeistof boven Y ~−8); erosion ring 3 = 0 (geen deep dark);
   - **vuurkristal-geodes** als holte (cel 48, straal 4–7, Y −50…20, ~1 per 12 chunks; buizen mogen ze aansnijden); de bekleding volgt in 41b.
+- **Uitwerking 41b (2026-10-09; G2-WB2 = A):** de geode is gesloten en bekleed in drie lagen die de echt open holte volgen (vuurkristalblok, blackstone, smooth basalt); knoppen en clusters (40 % klein, 30 % middel, 20 % groot, 10 % cluster) op de binnenwand; een door een lavabuis aangesneden geode houdt zijn lava, en waar terrein de holte vulde komt geen losse bekleding. Elke chunk bekleedt zijn eigen deel (deterministisch); alleen rots wordt vervangen.
 
 **Water: verdampt bovengronds**
 - Geplaatst water (emmer, dispenser, gebroken/smeltend ijs) verdampt direct **op plekken waar de lucht zichtbaar is**, net als in de Nether. Ondergronds en onder een dak werkt water normaal.
@@ -673,6 +687,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 **Horror-elementen (fase 1)**
 - **As-afgietsels**: Pompeii-achtige figuren van asblokken in menselijke houdingen (kruipend, knielend). Deterministische feature.
 - **Voetsporen in de as**: een spoor van indrukken in aslagen dat abrupt stopt of in een krater eindigt. Feature.
+- **Uitwerking 49 (2026-10-09; G2-WB9/WB10 = A, startwaarden):** afgietsels (5 houdingen, as + smeulende as die 's nachts gloeit) in groepjes van 1–3, ~1 groep per 3 chunks in `ashen_wastes`, zeldzaam in smeulwoud en titanenveld, op vlakke grond en gekeerd naar de dichtstbijzijnde vulkaan; voetsporen als pure paden (~1 per 20 chunks, 15–40 stappen) over chunkgrenzen in asvlakte, titanenveld en pieken, alleen op vlakke as; een spoor stopt abrupt, eindigt bij een afgietsel of aan de rand van een instorting of krater, en stopt aan de biomerand.
 - **Gerommel en trillingen**: onregelmatig diep gerommel (biome-ambient) en een lichte camera-shake; client-only, per speler willekeurig en bewust niet gesynct.
   - **Uitwerking 50 (G2-A4 = A):** in de vlaktes elke 2–5 min (1 op 3 met een lichte schok), op de pieken elke 1–2,5 min (2 op 3, iets sterker); niet tijdens uitbarsting/aswolk; binnen en ondergronds zachter en zonder schok; "Screen Effects" schaalt de schok.
 
@@ -737,7 +752,8 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 **Besluiten tijdens golf 2 en integratie 2 (2026-10-08/09)** — details in de secties hierboven en in `02-beslissingenlog.md`:
 - **Werkwijze (infra):** lichte tests per pakket (build, `runData`, unit tests); in-game, determinisme en prestatie één keer in de integratie; review per stroom blijft (gebruiker). 39f, 46-rest en 42 gingen vooruit naar main; integratie 2 merget T → W-nether → C → A, W-biomes als laatste.
 - **Textures 57a-r1:** smeulsteen roder met minder gloed, smeulende as lichter, as/askorst rustiger, puimsteen donkerder en zachter, zwavelkorst warmer geel, gloeiende scheur smaller met de onderrand dicht; koudlava, Nether-ijs en rijp-netherrack ongewijzigd (gebruiker: "alles zoals voorgesteld").
-- **Wezens:** striders in ring 3 zonder jockeys (gebruiker).
+- **Wezens:** striders in ring 3 zonder jockeys en zonder groepsbaby's (gebruiker; `Ring3StriderSpawns`, herzien in fase 4).
+- **W-biomes (41–49, 41b):** `steam_fens` staat los van `Ring3Biomes.ALL` (eigen `TRANSITION`/`WITH_TRANSITION`), zodat de tests van andere stromen niet veranderen; per-chunk-features zonder biome-filter (de datagen-melding "missing BiomeFilter" is bewust); titanen-rotsen en de geodebekleding schrijven per chunk hun eigen deel van een pure vorm (uitzondering op "plaatsing begint in de eigen chunk").
 - **Prestatie:** koude uitschieters titanenveld/smeulwoud (39f) geaccepteerd als JIT-koude start (gebruiker); de officiële meting van integratie 2 kijkt opnieuw.
 
 **Client/server-risico's**
