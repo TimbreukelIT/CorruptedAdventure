@@ -615,12 +615,12 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Indeling (39b):** heet (pieken, stromen), midden (zwavel, smeulwoud), koel (zeekom, as, titanen) op de regio-assen; elk biome ~1/7; `dormant_caldera` via weirdness. **Spawns tot fase 4:** de woestijnmonsters van ring 2 (husks) en vleermuizen, geen dieren; alleen geiten in `volcanic_peaks` (zeldzaam, groepjes 1–3; besluit gebruiker).
 - Overgangsbiome 3→4: **stoomvenen** (`steam_fens`): hete modderpoelen, geisers en stoomkolommen. Hier komt het gestolen water terug en kookt het tegen de hitte. Stoom is biome-particles (data).
 - **Uitwerking aankleding (W-biomes 41–49, 2026-10-08/09; G2-WB1..WB13 = A, startwaarden, afstemmen in 4b):** alle ring 3-features staan in één globale volgorde en lezen alleen het pure terrein (lava, grond, landmarks), zodat ze deterministisch blijven en nooit op naalden, bogen, ribkruinen, brugdekken, lavaoevers, steile wanden, vulkaanflanken of in actieve kraters komen.
-  - **`sulfur_fields`:** een fumarole met zwavelkraag op (bijna) elke heuveltop en in de kommen, modderpoeltjes midden in de zinkgaten, niets in instortingen;
+  - **`sulfur_fields`:** een fumarole met zwavelkraag op (bijna) elke heuveltop en in de kommen, modderpoeltjes midden in de zinkgaten, niets in instortingen; **47d (teststop 4b, besluit 2):** gekleurde kookpoelen gelijk met de grond met een verhoogde calcietrand en terrassen van gele/oranje terracotta en calciet (travertijn), modder geel/groen/oranje (3 : 2 : 2, één kleur per poel) met `sulfur_steam`; zwavelkristallen op 35 % van de kraag van de zwavelfumarolen en in groepjes op de korst; fumarolen en modder niet op de travertijn;
   - **`basalt_flows`:** hornitos met gloeiende kap, blackstone-tongen en smeulventjes; **`volcanic_peaks`:** inslagkraters met obsidiaan en magmakern (nooit boven vloeistof), rotsen; **`ashen_wastes`:** verkoolde dode bomen in de geulen, puimsteenkeien; aslagen in de lijzijde en geulen (windruis), ook rond de smeulwoudstammen;
   - **`dried_seabed`:** dode koraalriffen en zeemonsterfossielen (eigen sjablonen);
-  - **`titan_fields`:** schedels, wervels en botten (bot, half begraven), zielvuur op zielgrond rond de ribvoeten en onder de wervelkolom, **titanen-rotsen** (basaltreuzen 20–29 hoog: knielend, gebogen of als buste, per cel van 256 blokken, kans 0,4); geen complete skeletten;
+  - **`titan_fields`:** schedels, wervels en botten (bot, half begraven), zielvuur op zielgrond rond de ribvoeten en onder de wervelkolom (47d, besluit 5 van 4b: twee vlekken per ribvoet/wervel, vuur op de helft van de kern), **titanen-rotsen** (basaltreuzen 20–29 hoog: knielend, gebogen of als buste, per cel van 256 blokken, kans 0,4); geen complete skeletten;
   - **`ember_woods`:** gemengd smeulwoud (smeulbomen 6–9, smeulreuzen 10–12 met spar-kroon, kale verkoolde stammen) met open plekken (omgevallen stammen, smeulbessen waar het licht ze laat teruggroeien, vuurflora) en aslaagjes rond de stammen;
-  - **`dormant_caldera`:** oase met varens/gras, azalea-struiken, af en toe een azaleaboom als baken, bessen aan de voet van de wand, glow lichen tegen de wand (geen hangende wortels);
+  - **`dormant_caldera`:** oase met varens/gras, azalea-struiken, af en toe een azaleaboom als baken, bessen aan de voet van de wand, glow lichen tegen de wand; **47d (teststop 4b, besluit 1): overwoekerde krater**: mosheuveltjes in de weides, mostapijt, azalea-bosjes (vanilla azaleaboom met struiken) waar de groeiruis hoog is, varens en gras, dripleaf in kommen, af en toe een omgevallen eikenstam, ranken en hangende wortels langs de wand; geen water (startwaarden in de beslissingenlog);
   - **lavavallen** (feature): een bron in een kraterwand, kloof- of afgrondwand met ≥ 10 val, alleen waar hij echt in bestaande terreinlava landt, max. 2 per chunk, alleen in de ring 3-kern; de eilandvallen van 39f blijven terrein;
   - **eilanden:** smeulende as met aslagen boven, hangende vuurkristallen eronder (≥ 4 lucht eronder), soms een smeulboom op grote eilanden;
   - **`dry_riverbeds`:** de geblakerde vlekken zijn as met aslagen en verkoolde stronken (ring 3-kant van de ring 2-overgang);
@@ -643,6 +643,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - kokende modder = de traagheid van honing; geiser duwt elke 5 s ~5 blokken omhoog, geen valschade bij landen, een bedekte opening blokkeert;
   - vuurkristalblok (geodewand) gloeit niet, alleen de kristalstadia.
 - **Uitwerking 46-rest (2026-10-08/09; G2-B1/B2 = A):** de geiser heeft een eigen ritme per positie (80–200 ticks, deterministisch per wereld en dimensie), 1 s waarschuwing (borrelen + kleine stoompuf, voor alle clients gelijk) en duwt ~5 blokken; een veld loopt niet in de maat. Fumarole en geiser stomen met `steam_puff`; eigen geluiden voor fumarole, geiser en kokende modder, per client begrensd zodat een veld niet dreunt. Kokende modder blijft traag + hittebron.
+- **Uitwerking afronding (46b, 50c; 2026-10-09, teststop 4b):** de geiser waarschuwt met een eigen geluid (`block.geyser.warning`, gegrom + bubbels, uitgestorven vóór de burst); `glowing_fissure` en `smoldering_stone` krijgen 32 willekeurige varianten (rotaties + spiegeling) tegen het tegelraster, de scheuren vormen dan een netwerk; nieuwe zwavelblokken: modder in geel/groen/oranje (kokende modder met `sulfur_steam`) en zwavelkristallen in vier stadia (amethist-gedrag, licht 1–3, cluster dropt zwavel).
 
 **Ores**
 - **Vulkaniet** (hoofdmateriaal, kandidaat ring 3-gear-tier): diep in basalt nabij lava. Risico is beloning.
@@ -674,6 +675,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Aswolk** (45): bijna zwart, fog ~16, vonken en as; hitte ×3. De opbouw van 20 s (gerommel, verdonkering) is de waarschuwing.
 - **Uitwerking 45 + integratie 1 (2026-10-06/07):** lavabommen per speler (cap per speler per minuut, dichter in `#heat_peaks`); de luchtkleur via één client-mixin. **De weerfactor op hitte geldt alleen onder open lucht** en **tijdens de waarschuwing van de aswolk nog niet** (pas daarna ×3) (beide besluit gebruiker).
 - **Uitwerking 50 (2026-10-08):** eigen geluiden voor asregen, uitbarsting en aswolk (`Ring3Sounds.java`); de wolken in ring 3 zijn donker asgrijs (besluit 39f), vloeiend over de grens.
+- **Uitwerking 50c (2026-10-09, teststop 4b):** lavabommen stapelen niet bij meerdere spelers (een plek in de schijven van k spelers wordt met kans 1/k gehouden, dus per oppervlak zoveel als bij één speler) en leven hooguit 10 s, ook niet terug uit een opgeslagen chunk; de lucht bij een uitbarsting wordt diep karmijn (`8A1A0C`, vol na de halve fade-in), 's nachts blijft een rode gloed.
 
 **Conditie: hitte**
 - Meter ↑ bovengronds overdag (langzaam); sneller binnen ~4 blokken van lava/magma/smeulsteen/fumarolen/kokende modder, in `volcanic_peaks` en tijdens ringweer (×1,5 / ×2).
@@ -681,6 +683,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Fire resistance halveert** de opbouw (maakt niet immuun).
 - Drempels (config): traagheid → zwakte → in brand vliegen.
 - **Uitwerking 43 (2026-10-06/07):** opbouw in de directe zon of binnen 4 blokken van een hittebron (een bron telt ook 's nachts en ondergronds); de sterkste factor wint (bron ×1,5, piek ×2), ze stapelen niet, en een piek alleen verwarmt nooit zonder zon of bron. Daling: 's nachts en onder een dak −0,5, in de schaduw van bladeren −0,25, water en `dormant_caldera` −2,0 (ook in de zon), buiten ring 3 −0,5. Ringweer (×1,5 / ×2 / ×3) alleen onder open lucht. Volgorde van de vermenigvuldigers: weer → gear → fire resistance → zuiverend. Bij 100: eigen hitteschade (1/s, eigen doodsbericht) met een vlam, niet in water, regen, bubbelzuil of poedersneeuw.
+- **Uitwerking 55b (2026-10-09, teststop 4b):** een gedoofd kampvuur is geen hittebron (zoals bij de kou); **ijs smelt** in ring 3 op zijn random tick waar de hittemeter zou stijgen (overdag onder open lucht of naast een brandende bron; niet in `dormant_caldera` of onder water; smeltwater onder open lucht verdampt) en een **natte spons droogt** waar water verdampt (met het Nether-effect; niet direct na het opzuigen, anders een pomp). Beide via een server-side mixin; `packed_ice`/`blue_ice` smelten nooit (vanilla).
 - **43-afstemming (2026-10-08):** ~7 % van het ring 3-oppervlak ligt binnen 4 blokken van een hittebron (lava ~1,6 %): "bron ×1,5" geldt dus niet bijna overal; de regel blijft. Onder zwevende eilanden telt het dak ("roof").
 - Tegenmaatregel in fase 2: hittebescherming op basis van dauwkristal (Nether-2).
 
@@ -693,6 +696,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 **Sfeer per biome en rookpluimen (50, 50b; 2026-10-08/09; G2-A1..A3 = A)**
 - Eigen tint per biome binnen het asrode ringpalet (as grijsbeige, pieken rood-oranje, smeulwoud amber, stromen roodbruin, zwavel geelgroen, zeekom bleek zandblauw, titanen koel violet, slapende krater groener); particles subtiel tot middel (as, opstijgende vonken, zwavelstoom, zielvonkjes, stof, pollen; `steam_fens` stoom); loops in smeulwoud (knisperen), titanenveld (laag koor) en slapende krater (rust); borrelende lava als additions op pieken en stromen.
+- **Rookpluimen zonder terreinmist (50c, teststop 4b):** de pluimen zijn een eigen client-render-pass: tot 512 blokken zichtbaar met een eigen waas naar de mistkleur (geen mistsilhouet meer); in een uitbarsting of aswolk staan ze ín de mist van het weer.
 - **Rookpluimen** boven de actieve vulkanen (slapende niet): de server stuurt per speler de actieve vulkanen binnen 512 blokken (nieuwe payload), de client tekent de 8 dichtstbijzijnde als kolom (~80–110 blokken die bovenin uitwaaiert), zichtbaar tot 512 blokken met minder, grotere wolken op afstand; bij een uitbarsting dikker en hoger met rode gloed. Voorbij de render distance is de pluim door vanilla's mist een silhouet in mistkleur (beoordelen in 4b).
 
 **Grensmuur 3→4** (fase 5): zwarte aswolk met vonken.
@@ -733,7 +737,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Vuurkristal-geodes:** gesloten, diep (Y −50…20), ~1 per 12 chunks, straal 4–7; soms aangesneden door een lavabuis.
 - **Lavavallen (47c):** alleen waar de val in bestaande lava eindigt (kraterwand, rivierkloof, afgrondwand); ~1 per 2–4 vulkanen, max. 2 bronnen per chunk.
 - **Smeulwoud:** gemengd woud, ~6–8 bomen per chunk (smeulbomen 6–9, smeulreuzen 10–12, kale en omgevallen stammen), bessen en vuurbloemen in open plekken.
-- **Slapende krater:** mos, grove aarde, varens, azalea, glow lichen/hangende wortels langs de wand, zeldzaam een levende azalea als baken, `ember_berry_bush` aan de rand.
+- **Slapende krater:** mos, grove aarde, varens, azalea, glow lichen/hangende wortels langs de wand, zeldzaam een levende azalea als baken, `ember_berry_bush` aan de rand. Na teststop 4b (47d) een **overwoekerde krater** (zie de aankleding per biome hierboven).
 - **Titanenveld:** schedels en losse botten, zielvuur op zielgrond rond de ribbenkasten, zeldzame titanen-rotsen (15–35); geen complete skeletten naast de 39d-ribben.
 - **Zeekom:** dode koraalriffen op de rifruggen, gedroogde kelpbalen en dode struikjes, zeemonsterfossielen op de kustterrassen.
 - **Zwavel/basalt:** modderpoeltjes in de zinkgatbodems; hornitos (spatkegeltjes 2–4) en gestolde lavatongen.
@@ -755,6 +759,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Wezens:** striders in ring 3 zonder jockeys en zonder groepsbaby's (gebruiker; `Ring3StriderSpawns`, herzien in fase 4).
 - **W-biomes (41–49, 41b):** `steam_fens` staat los van `Ring3Biomes.ALL` (eigen `TRANSITION`/`WITH_TRANSITION`), zodat de tests van andere stromen niet veranderen; per-chunk-features zonder biome-filter (de datagen-melding "missing BiomeFilter" is bewust); titanen-rotsen en de geodebekleding schrijven per chunk hun eigen deel van een pure vorm (uitzondering op "plaatsing begint in de eigen chunk").
 - **Prestatie:** koude uitschieters titanenveld/smeulwoud (39f) geaccepteerd als JIT-koude start (gebruiker); de officiële meting van integratie 2 kijkt opnieuw.
+- **Teststop 4b (2026-10-09):** akkoord met een golf 2-afronding: overwoekerde krater en zwavelkristallen/gekleurde kookpoelen (te kaal), lava tegen lucht en de terreinrestjes (W-terrein), meer zielvuur en een rodere uitbarstingslucht, eigen geiser-waarschuwing, lavabommen niet stapelen, verre pluimen zonder terreinmist, rotaties, kampvuur/ijs/spons; de rest van `teststop-4b.md` is goedgekeurd (o.a. mist Nether-3 zo laten, bevriezing, 21 riftbogen, lavavallen van 1 blok). Zie `docs/plans/ring-3/teststop-4b-feedback.md`.
 
 **Client/server-risico's**
 - Water verdampen, geiser-duw, lavabommen en de hitte- en kou-meters: allemaal server-side. De lavabommen zijn gewone server-entities, dus alle clients zien dezelfde.
