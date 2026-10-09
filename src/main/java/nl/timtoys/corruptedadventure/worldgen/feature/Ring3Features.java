@@ -77,6 +77,8 @@ public final class Ring3Features {
             new Entry(Ring3GeodeFeatures.FIRE_GEODES, GenerationStep.Decoration.UNDERGROUND_DECORATION, Set.copyOf(Ring3Biomes.ALL)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_CORAL, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_BUSHES, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
+            // Change 47d: sulfur crystals on the crusts.
+            vegetal(SulfurFieldsFeatures.SULFUR_FIELDS_CRUST_CRYSTALS, ModBiomes.SULFUR_FIELDS),
             // Change 47c: island trees, the ember woods (the ash last, around what stands), the dormant caldera.
             everywhere(Ring3IslandFeatures.ISLAND_EMBER_TREES, GenerationStep.Decoration.VEGETAL_DECORATION),
             vegetal(EmberWoodsFeatures.EMBER_WOODS_TREES, ModBiomes.EMBER_WOODS),

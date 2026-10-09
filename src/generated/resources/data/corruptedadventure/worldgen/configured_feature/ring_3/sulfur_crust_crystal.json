@@ -1,0 +1,50 @@
+{
+  "type": "minecraft:simple_block",
+  "config": {
+    "to_place": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:small_sulfur_crystal_bud",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:medium_sulfur_crystal_bud",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:large_sulfur_crystal_bud",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:sulfur_crystal",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        }
+      ]
+    }
+  }
+}

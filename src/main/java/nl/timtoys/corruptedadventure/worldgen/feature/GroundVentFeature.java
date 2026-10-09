@@ -60,6 +60,14 @@ public final class GroundVentFeature extends Feature<GroundVentConfiguration> {
                 pos.set(x, level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1, z);
                 if (Math.abs(pos.getY() - top) <= 1 && openGround(level, config, pos)) {
                     level.setBlock(pos, config.collar().getState(random, pos), Block.UPDATE_CLIENTS);
+                    if (config.accent().isPresent()) {
+                        // A draw per collar block with an accent (vents without one keep their random stream).
+                        GroundVentConfiguration.Accent accent = config.accent().get();
+                        if (random.nextFloat() < accent.chance()) {
+                            BlockPos above = pos.above();
+                            level.setBlock(above, accent.state().getState(random, above), Block.UPDATE_CLIENTS);
+                        }
+                    }
                 }
             }
         }

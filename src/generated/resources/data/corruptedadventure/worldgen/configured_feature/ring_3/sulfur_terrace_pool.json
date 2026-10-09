@@ -2,10 +2,27 @@
   "type": "corruptedadventure:terrace_pool",
   "config": {
     "fill": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "corruptedadventure:boiling_mud"
-      }
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:yellow_sulfur_mud"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:green_sulfur_mud"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:orange_sulfur_mud"
+          },
+          "weight": 2
+        }
+      ]
     },
     "ground": [
       "corruptedadventure:sulfur_crust",
