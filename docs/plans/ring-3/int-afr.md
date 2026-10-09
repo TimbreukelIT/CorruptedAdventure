@@ -14,3 +14,9 @@ Voortgang: 2026-10-09 21:20 W-terrein gemerged (`c637968`, geen conflicten), sur
 - **Feature-index** ring 1/2, zones, Nether-1/2 tegen INT2 (`int2-det-a`, code = main `c6cd90d`): biomes 100 % identiek; terrein ring 1 en Nether-1/2 0 verschil, ring 2/zones alleen op decoratieplekken (ring 2-zand-/kloofsteen-features verschuiven door de nieuwe features).
 - **S-smoke:** zie voortgang 20:41 (vóór W-terrein); W-terrein raakt alleen worldgen. Serverlogs van `afr-det-a`/`-b` (met W-terrein): geen ERROR, geen far chunk.
 - **Prestatie:** nog niet (na de go van main; 42b raakt noise en surface).
+Voortgang: 2026-10-09 21:25 review INT-afr (main) verwerkt; nachecks:
+- **IJs bij de warme scheuren (54b):** 6 losse blootliggende ijsblokken binnen 3 blokken van de 107 open lavakolommen in de kloven, vóór en na 54b dezelfde (de "29" van INT2 telde paren); zee/zuid/noord 0 → backlogregel blijft open.
+- **Wanden van diepe sneden (42b):** blootliggend vanilla-gesteente naast open lucht (tuf niet meegeteld): pit 4.053 → 146, B 646 → 87, archipel 30 → 9, C/D/E 0–1 → afgehandeld met een klein residu.
+- **`glowing_fissure`/`smoldering_stone` rotaties (46b):** in-game gezien (`build/afr-shots/c_glowing_fissure_rot*.png`, `c_smoldering_stone_rot_dev.png`).
+- **S-smoke na W-terrein** (verse wereld `afr-smoke2`, server + Dev): `tpring 1|2|3`, `tpring 1|2|3 nether`, `tpboundary 2|3`; portal Nether-3 (891, 36, 787) → ring 3 (3.566, 38, 3.146) en ring 3 (4.758, 99, 17) → Nether-3; log zonder ERROR/far chunk.
+- **Lek (4.409–4.412, Y 5–9, −510…−508):** besluit main A: backlog, fix in golf 3.
