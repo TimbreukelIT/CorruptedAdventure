@@ -67,7 +67,7 @@ class Ring3BiomesTest {
     }
 
     @Test
-    void noAnimalsButGoatsOnThePeaks() {
+    void noAnimalsButGoatsOnThePeaksAndStridersOnTheLava() {
         Map<ResourceKey<Biome>, Biome> biomes = bootstrap();
         MobSpawnSettings reference = biomes.get(ModBiomes.ASHEN_WASTES).getMobSettings();
         for (Map.Entry<ResourceKey<Biome>, Biome> entry : biomes.entrySet()) {
@@ -95,7 +95,14 @@ class Ring3BiomesTest {
                 assertEquals(Ring3Biomes.GOAT_CHARGE, cost.charge());
                 assertEquals(Ring3Biomes.GOAT_ENERGY_BUDGET, cost.energyBudget());
             } else {
-                assertTrue(creatures.isEmpty(), entry.getKey().toString());
+                assertEquals(1, creatures.size(), entry.getKey().toString());
+                MobSpawnSettings.SpawnerData striders = creatures.getFirst();
+                assertEquals(EntityType.STRIDER, striders.type);
+                assertEquals(Ring3Biomes.STRIDER_WEIGHT, striders.getWeight().asInt());
+                assertEquals(2, striders.maxCount);
+                MobSpawnSettings.MobSpawnCost cost = spawns.getMobSpawnCost(EntityType.STRIDER);
+                assertNotNull(cost);
+                assertEquals(Ring3Biomes.STRIDER_ENERGY_BUDGET, cost.energyBudget());
             }
         }
     }

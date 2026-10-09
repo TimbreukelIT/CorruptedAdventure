@@ -28,7 +28,10 @@
       "corruptedadventure:ring_3/dried_seabed_coral_reefs",
       "corruptedadventure:ring_3/dried_seabed_kelp_bales",
       "corruptedadventure:ring_3/dried_seabed_fossils",
-      "corruptedadventure:ring_3/ash_drifts"
+      "corruptedadventure:ring_3/ash_drifts",
+      "corruptedadventure:ring_3/lava_falls",
+      "corruptedadventure:ring_3/island_ember_patches",
+      "corruptedadventure:ring_3/island_hanging_crystals"
     ],
     [],
     [],
@@ -38,11 +41,17 @@
     [],
     [
       "corruptedadventure:ring_3/dried_seabed_dead_coral",
-      "corruptedadventure:ring_3/dried_seabed_dead_bushes"
+      "corruptedadventure:ring_3/dried_seabed_dead_bushes",
+      "corruptedadventure:ring_3/island_ember_trees"
     ]
   ],
   "has_precipitation": false,
-  "spawn_costs": {},
+  "spawn_costs": {
+    "minecraft:strider": {
+      "charge": 1.0,
+      "energy_budget": 0.12
+    }
+  },
   "spawners": {
     "ambient": [
       {
@@ -53,7 +62,14 @@
       }
     ],
     "axolotls": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "minecraft:strider",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 1
+      }
+    ],
     "misc": [],
     "monster": [
       {

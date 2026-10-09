@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The pure parts of the ring 3 dressing (changes 47, 49): filters, landmark points, drifts, shapes, trails and rotations. */
+/** The pure parts of the ring 3 dressing (changes 47, 47c, 49): filters, landmark points, drifts, shapes, trails, falls. */
 class Ring3DressingShapesTest {
     @Test
     void groundOnlyKeepsTheSurfaceOnTheTerrain() {
@@ -158,6 +158,19 @@ class Ring3DressingShapesTest {
         }
         assertEquals(List.of(), TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.MOUND, 0.0F, 0, 0)
                 .place(points, 0, 64, 0, RandomSource.create(1L)));
+    }
+
+    @Test
+    void lavaFallTriesArePureAndRare() {
+        int tries = 0;
+        for (int x = 0; x < 200; x++) {
+            for (int z = 0; z < 200; z++) {
+                boolean once = LavaFallFeature.tries(20260930L, x, z, 1.0F / 400.0F);
+                assertEquals(once, LavaFallFeature.tries(20260930L, x, z, 1.0F / 400.0F));
+                tries += once ? 1 : 0;
+            }
+        }
+        assertTrue(tries > 60 && tries < 140, "about 1 in 400 columns: " + tries);
     }
 
     @Test

@@ -40,10 +40,14 @@ import nl.timtoys.corruptedadventure.worldgen.feature.GroundPatchConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.GroundPatchFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.GroundVentConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.GroundVentFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.HangingClusterConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.HangingClusterFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.HornitoConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.HornitoFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.ImpactCraterConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.ImpactCraterFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.LavaFallConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.LavaFallFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TitanRockConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.TitanRockFeature;
 
@@ -114,6 +118,12 @@ public final class ModFeatures {
     /** {@code corruptedadventure:ash_footprints} (change 49) */
     public static final DeferredHolder<Feature<?>, Feature<AshFootprintsConfiguration>> ASH_FOOTPRINTS =
             FEATURES.register("ash_footprints", () -> new AshFootprintsFeature(AshFootprintsConfiguration.CODEC));
+    /** {@code corruptedadventure:lava_fall} (change 47c) */
+    public static final DeferredHolder<Feature<?>, Feature<LavaFallConfiguration>> LAVA_FALL =
+            FEATURES.register("lava_fall", () -> new LavaFallFeature(LavaFallConfiguration.CODEC));
+    /** {@code corruptedadventure:hanging_cluster} (change 47c) */
+    public static final DeferredHolder<Feature<?>, Feature<HangingClusterConfiguration>> HANGING_CLUSTER =
+            FEATURES.register("hanging_cluster", () -> new HangingClusterFeature(HangingClusterConfiguration.CODEC));
 
     private ModFeatures() {
     }

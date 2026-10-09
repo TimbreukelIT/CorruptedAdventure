@@ -7,6 +7,7 @@ import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring3Biomes;
 
 import java.util.List;
 import java.util.Set;
@@ -58,11 +59,37 @@ public final class Ring3Features {
             local(Ring3DressingFeatures.ASH_DRIFTS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS,
                     ModBiomes.DRIED_SEABED),
             local(Ring3HorrorFeatures.ASH_FOOTPRINT_TRAILS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS),
+            // Change 47c: lava falls and the floating islands, over every ring 3 biome.
+            everywhere(Ring3LavaFallFeatures.LAVA_FALLS, GenerationStep.Decoration.LOCAL_MODIFICATIONS),
+            everywhere(Ring3IslandFeatures.ISLAND_EMBER_PATCHES, GenerationStep.Decoration.LOCAL_MODIFICATIONS),
+            everywhere(Ring3IslandFeatures.ISLAND_HANGING_CRYSTALS, GenerationStep.Decoration.LOCAL_MODIFICATIONS),
             new Entry(Ring3OreFeatures.SULFUR_ORE_RICH, GenerationStep.Decoration.UNDERGROUND_ORES, Set.of(ModBiomes.SULFUR_FIELDS)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_CORAL, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
-            new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_BUSHES, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)));
+            new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_BUSHES, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
+            // Change 47c: island trees, the ember woods (the ash last, around what stands), the dormant caldera.
+            everywhere(Ring3IslandFeatures.ISLAND_EMBER_TREES, GenerationStep.Decoration.VEGETAL_DECORATION),
+            vegetal(EmberWoodsFeatures.EMBER_WOODS_TREES, ModBiomes.EMBER_WOODS),
+            vegetal(EmberWoodsFeatures.EMBER_WOODS_FALLEN_LOGS, ModBiomes.EMBER_WOODS),
+            vegetal(EmberWoodsFeatures.EMBER_WOODS_FIRE_FLORA, ModBiomes.EMBER_WOODS),
+            vegetal(EmberWoodsFeatures.EMBER_WOODS_BERRY_BUSHES, ModBiomes.EMBER_WOODS),
+            vegetal(EmberWoodsFeatures.EMBER_WOODS_ASH, ModBiomes.EMBER_WOODS),
+            vegetal(DormantCalderaFeatures.DORMANT_CALDERA_AZALEA_TREES, ModBiomes.DORMANT_CALDERA),
+            vegetal(DormantCalderaFeatures.DORMANT_CALDERA_AZALEA_BUSHES, ModBiomes.DORMANT_CALDERA),
+            vegetal(DormantCalderaFeatures.DORMANT_CALDERA_FERNS, ModBiomes.DORMANT_CALDERA),
+            vegetal(DormantCalderaFeatures.DORMANT_CALDERA_BERRY_BUSHES, ModBiomes.DORMANT_CALDERA),
+            vegetal(DormantCalderaFeatures.DORMANT_CALDERA_GLOW_LICHEN, ModBiomes.DORMANT_CALDERA));
 
     private Ring3Features() {
+    }
+
+    @SafeVarargs
+    private static Entry vegetal(ResourceKey<PlacedFeature> feature, ResourceKey<Biome>... biomes) {
+        return new Entry(feature, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(biomes));
+    }
+
+    /** In every ring 3 biome: it finds its places through the terrain, whatever the biome below. */
+    private static Entry everywhere(ResourceKey<PlacedFeature> feature, GenerationStep.Decoration step) {
+        return new Entry(feature, step, Set.copyOf(Ring3Biomes.ALL));
     }
 
     @SafeVarargs
@@ -80,6 +107,10 @@ public final class Ring3Features {
         Ring3DressingFeatures.configured(context);
         TitanFieldsFeatures.configured(context);
         Ring3HorrorFeatures.configured(context);
+        EmberWoodsFeatures.configured(context);
+        DormantCalderaFeatures.configured(context);
+        Ring3IslandFeatures.configured(context);
+        Ring3LavaFallFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
@@ -87,5 +118,9 @@ public final class Ring3Features {
         Ring3DressingFeatures.placed(context);
         TitanFieldsFeatures.placed(context);
         Ring3HorrorFeatures.placed(context);
+        EmberWoodsFeatures.placed(context);
+        DormantCalderaFeatures.placed(context);
+        Ring3IslandFeatures.placed(context);
+        Ring3LavaFallFeatures.placed(context);
     }
 }

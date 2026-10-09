@@ -1,0 +1,8 @@
+{
+  "type": "corruptedadventure:lava_fall",
+  "config": {
+    "chance": 0.0025,
+    "max_per_chunk": 2,
+    "min_drop": 10
+  }
+}

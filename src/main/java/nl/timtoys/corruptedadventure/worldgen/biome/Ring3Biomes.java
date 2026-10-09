@@ -55,6 +55,16 @@ public final class Ring3Biomes {
     static final float PEAKS_CREATURE_PROBABILITY = 0.03F;
     static final double GOAT_CHARGE = 1.0;
     static final double GOAT_ENERGY_BUDGET = 0.12;
+    /**
+     * Striders on the lava (G2-WB11 = A): vanilla's spawn rule puts them only on lava, so they live on the rivers and
+     * crater lakes of every ring 3 biome but the peaks (there they would take the goats' tries). Rare through the spawn
+     * cost, like the goats. Starting values, tuned at test stop 4b.
+     */
+    static final int STRIDER_WEIGHT = 1;
+    static final int STRIDER_MIN_GROUP = 1;
+    static final int STRIDER_MAX_GROUP = 2;
+    static final double STRIDER_CHARGE = 1.0;
+    static final double STRIDER_ENERGY_BUDGET = 0.12;
 
     private Ring3Biomes() {
     }
@@ -92,7 +102,7 @@ public final class Ring3Biomes {
 
     /**
      * Ring 2's desert monsters (husks, vanilla until phase 4) and bats, without animals (no cattle in ring 3); on the
-     * peaks the goats.
+     * peaks the goats, elsewhere the striders on the lava.
      */
     static MobSpawnSettings spawns(boolean goats) {
         MobSpawnSettings desert = Ring2Biomes.spawns(false);
@@ -107,6 +117,9 @@ public final class Ring3Biomes {
             builder.addMobCharge(EntityType.GOAT, GOAT_CHARGE, GOAT_ENERGY_BUDGET);
             builder.creatureGenerationProbability(PEAKS_CREATURE_PROBABILITY);
         } else {
+            builder.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.STRIDER, STRIDER_WEIGHT, STRIDER_MIN_GROUP,
+                    STRIDER_MAX_GROUP));
+            builder.addMobCharge(EntityType.STRIDER, STRIDER_CHARGE, STRIDER_ENERGY_BUDGET);
             builder.creatureGenerationProbability(desert.getCreatureProbability());
         }
         return builder.build();

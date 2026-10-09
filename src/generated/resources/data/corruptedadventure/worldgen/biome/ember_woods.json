@@ -25,11 +25,33 @@
     [],
     [],
     [
-      "corruptedadventure:ring_3/rare_ash_casts"
+      "corruptedadventure:ring_3/rare_ash_casts",
+      "corruptedadventure:ring_3/lava_falls",
+      "corruptedadventure:ring_3/island_ember_patches",
+      "corruptedadventure:ring_3/island_hanging_crystals"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/island_ember_trees",
+      "corruptedadventure:ring_3/ember_woods_trees",
+      "corruptedadventure:ring_3/ember_woods_fallen_logs",
+      "corruptedadventure:ring_3/ember_woods_fire_flora",
+      "corruptedadventure:ring_3/ember_woods_berry_bushes",
+      "corruptedadventure:ring_3/ember_woods_ash"
     ]
   ],
   "has_precipitation": false,
-  "spawn_costs": {},
+  "spawn_costs": {
+    "minecraft:strider": {
+      "charge": 1.0,
+      "energy_budget": 0.12
+    }
+  },
   "spawners": {
     "ambient": [
       {
@@ -40,7 +62,14 @@
       }
     ],
     "axolotls": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "minecraft:strider",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 1
+      }
+    ],
     "misc": [],
     "monster": [
       {

@@ -29,11 +29,28 @@
       "corruptedadventure:ring_3/ashen_wastes_dead_trees",
       "corruptedadventure:ring_3/ashen_wastes_ash_casts",
       "corruptedadventure:ring_3/ash_drifts",
-      "corruptedadventure:ring_3/ash_footprint_trails"
+      "corruptedadventure:ring_3/ash_footprint_trails",
+      "corruptedadventure:ring_3/lava_falls",
+      "corruptedadventure:ring_3/island_ember_patches",
+      "corruptedadventure:ring_3/island_hanging_crystals"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/island_ember_trees"
     ]
   ],
   "has_precipitation": false,
-  "spawn_costs": {},
+  "spawn_costs": {
+    "minecraft:strider": {
+      "charge": 1.0,
+      "energy_budget": 0.12
+    }
+  },
   "spawners": {
     "ambient": [
       {
@@ -44,7 +61,14 @@
       }
     ],
     "axolotls": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "minecraft:strider",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 1
+      }
+    ],
     "misc": [],
     "monster": [
       {

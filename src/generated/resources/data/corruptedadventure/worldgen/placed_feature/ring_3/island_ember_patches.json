@@ -1,0 +1,27 @@
+{
+  "feature": "corruptedadventure:ring_3/island_embers",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 16,
+      "chance": 0.6,
+      "margin": 7
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ranges": [
+        {
+          "min": 0.5,
+          "output": "island_mask"
+        }
+      ]
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}
