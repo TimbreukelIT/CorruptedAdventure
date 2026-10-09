@@ -42,6 +42,20 @@ public final class RingWeatherMix {
         return shares;
     }
 
+    /**
+     * The spatial share of {@code ring} alone at {@code position} (the {@code weight} of its {@link Share}, 0 if it has
+     * none), without building the list: for per-frame use such as the ash clouds of ring 3.
+     */
+    public static float weight(RingPosition position, Ring ring) {
+        Ring inner = RingWeather.weatherRing(position.inner());
+        Ring outer = RingWeather.weatherRing(position.outer());
+        if (inner == outer) {
+            return inner == ring ? 1.0F : 0.0F;
+        }
+        float outerWeight = smoothstep((float) position.blend());
+        return (inner == ring ? 1.0F - outerWeight : 0.0F) + (outer == ring ? outerWeight : 0.0F);
+    }
+
     private static void add(List<Share> shares, Ring ring, float weight, Function<Ring, RingWeatherState> states) {
         if (weight > 0.0F) {
             RingWeatherState state = states.apply(ring);

@@ -13,15 +13,16 @@ import net.minecraft.util.Mth;
 /**
  * A glowing spark ({@code corruptedadventure:ember}, eruption and ash cloud): full bright, from yellow-orange to dark
  * red while it shrinks and fades, flickering a little. No gravity of its own: it drifts at the speed it was given.
+ * As a biome's ambient particle ({@code rising_ember}, package 50; those come without speed) it rises by itself.
  */
 public final class EmberParticle extends TextureSheetParticle {
     private final float startSize;
 
-    private EmberParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
+    private EmberParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd, boolean rising) {
         super(level, x, y, z);
-        this.xd = xd;
-        this.yd = yd;
-        this.zd = zd;
+        this.xd = rising ? xd + (random.nextDouble() - 0.5) * 0.02 : xd;
+        this.yd = rising ? yd + 0.02 + random.nextDouble() * 0.04 : yd;
+        this.zd = rising ? zd + (random.nextDouble() - 0.5) * 0.02 : zd;
         this.gravity = 0.0F;
         this.friction = 0.98F;
         this.hasPhysics = true;
@@ -64,15 +65,18 @@ public final class EmberParticle extends TextureSheetParticle {
     /** Registered in {@code CorruptedAdventureClient} through {@code RegisterParticleProvidersEvent}. */
     public static final class Provider implements ParticleProvider<SimpleParticleType> {
         private final SpriteSet sprites;
+        private final boolean rising;
 
-        public Provider(SpriteSet sprites) {
+        /** @param rising {@code rising_ember}: rises by itself on top of the given speed */
+        public Provider(SpriteSet sprites, boolean rising) {
             this.sprites = sprites;
+            this.rising = rising;
         }
 
         @Override
         public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
                                        double xd, double yd, double zd) {
-            EmberParticle particle = new EmberParticle(level, x, y, z, xd, yd, zd);
+            EmberParticle particle = new EmberParticle(level, x, y, z, xd, yd, zd, rising);
             particle.pickSprite(sprites);
             return particle;
         }

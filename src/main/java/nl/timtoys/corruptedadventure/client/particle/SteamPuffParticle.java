@@ -11,15 +11,19 @@ import net.minecraft.util.Mth;
 
 /**
  * A puff of steam ({@code corruptedadventure:steam_puff}: fumaroles, sulfur fields, steam fens): rises slowly on top of
- * the speed it was given (biome particles get none), swells and fades. Light grey sprites, tinted near-white here.
+ * the speed it was given (biome particles get none), swells and fades. Light grey sprites, tinted by the type:
+ * near-white ({@code steam_puff}) or the yellow-green steam of the sulfur fields ({@code sulfur_steam}, package 50).
  */
 public final class SteamPuffParticle extends TextureSheetParticle {
     /** Own upward drift, so a puff spawned without speed still rises. */
     private static final double RISE = 0.015;
+    /** Near-white steam, and the yellow-green steam of the sulfur fields. */
+    public static final int STEAM = 0xE8E8E4;
+    public static final int SULFUR_STEAM = 0xDDE0B0;
 
     private final float startSize;
 
-    private SteamPuffParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
+    private SteamPuffParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd, int tint) {
         // The four-argument constructor: the seven-argument one adds vanilla's random spread to the speed.
         super(level, x, y, z);
         this.xd = xd;
@@ -33,7 +37,7 @@ public final class SteamPuffParticle extends TextureSheetParticle {
         this.quadSize *= 0.8F + random.nextFloat() * 0.6F;
         this.startSize = quadSize;
         float shade = 0.88F + random.nextFloat() * 0.12F;
-        setColor(0xE8 / 255.0F * shade, 0xE8 / 255.0F * shade, 0xE4 / 255.0F * shade);
+        setColor((tint >> 16 & 0xFF) / 255.0F * shade, (tint >> 8 & 0xFF) / 255.0F * shade, (tint & 0xFF) / 255.0F * shade);
         this.alpha = 0.0F;
     }
 
@@ -55,15 +59,18 @@ public final class SteamPuffParticle extends TextureSheetParticle {
     /** Registered in {@code CorruptedAdventureClient} through {@code RegisterParticleProvidersEvent}. */
     public static final class Provider implements ParticleProvider<SimpleParticleType> {
         private final SpriteSet sprites;
+        private final int tint;
 
-        public Provider(SpriteSet sprites) {
+        /** @param tint {@link #STEAM} or {@link #SULFUR_STEAM} */
+        public Provider(SpriteSet sprites, int tint) {
             this.sprites = sprites;
+            this.tint = tint;
         }
 
         @Override
         public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
                                        double xd, double yd, double zd) {
-            SteamPuffParticle particle = new SteamPuffParticle(level, x, y, z, xd, yd, zd);
+            SteamPuffParticle particle = new SteamPuffParticle(level, x, y, z, xd, yd, zd, tint);
             particle.pickSprite(sprites);
             return particle;
         }

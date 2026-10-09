@@ -6,12 +6,15 @@ import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.particles.ParticleTypes;
+import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.biome.BiomeData;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.biome.AmbientAdditionsSettings;
 import net.minecraft.world.level.biome.AmbientMoodSettings;
+import net.minecraft.world.level.biome.AmbientParticleSettings;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.Biomes;
@@ -28,6 +31,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -107,12 +111,59 @@ class BiomeAmbienceTest {
             skies.add(palette.sky());
         }
         assertEquals(biomes.size(), skies.size(), "every sky differs");
-        // Package 50-0 moved the colours of change 39b unchanged.
-        assertEquals(0xB4553C, Ring3Atmosphere.look(ModBiomes.VOLCANIC_PEAKS).colours().sky());
-        assertEquals(0xA4B49C, Ring3Atmosphere.look(ModBiomes.DORMANT_CALDERA).colours().fog());
+        // The sky still turns at the boundary: no ring 3 sky is that of the faded ring 2 transition.
+        assertFalse(skies.contains(BiomeAmbience.Palette.DRY_RIVERBEDS.sky()));
         assertEquals(0x6FA040, BiomeAmbience.ring3(ModBiomes.DORMANT_CALDERA).build().getGrassColorOverride().orElseThrow());
         assertEquals(0x8A8060, BiomeAmbience.ring3(ModBiomes.ASHEN_WASTES).build().getGrassColorOverride().orElseThrow());
         assertThrows(IllegalArgumentException.class, () -> BiomeAmbience.ring3(ModBiomes.CANYONLANDS));
+    }
+
+    /** G2-A3 = A: subtle to medium, densest in the ember woods and the steam fens; every biome has its own particle. */
+    @Test
+    void ring3ParticlesAreSubtleAndDensestInTheEmberWoodsAndSteamFens() {
+        List<ResourceKey<Biome>> biomes = new ArrayList<>(Ring3Biomes.ALL);
+        biomes.add(ModBiomes.STEAM_FENS);
+        float emberWoods = probability(ModBiomes.EMBER_WOODS);
+        float steamFens = probability(ModBiomes.STEAM_FENS);
+        for (ResourceKey<Biome> biome : biomes) {
+            float probability = probability(biome);
+            assertTrue(probability > 0.0F && probability <= 0.01F, biome + " " + probability);
+            if (!biome.equals(ModBiomes.EMBER_WOODS) && !biome.equals(ModBiomes.STEAM_FENS)) {
+                assertTrue(probability < Math.min(emberWoods, steamFens), biome.toString());
+            }
+        }
+        assertSame(ModParticleTypes.RISING_EMBER.get(), particle(ModBiomes.EMBER_WOODS).getOptions());
+        assertSame(ModParticleTypes.DRIFTING_ASH.get(), particle(ModBiomes.ASHEN_WASTES).getOptions());
+        assertSame(ModParticleTypes.SULFUR_STEAM.get(), particle(ModBiomes.SULFUR_FIELDS).getOptions());
+        assertSame(ModParticleTypes.STEAM_PUFF.get(), particle(ModBiomes.STEAM_FENS).getOptions());
+        assertSame(ParticleTypes.SOUL, particle(ModBiomes.TITAN_FIELDS).getOptions());
+    }
+
+    @Test
+    void ring3SoundsLoopWhereTheBiomeHasAVoiceAndLavaBubblesNearLava() {
+        assertSame(ModSoundEvents.RING_3_EMBERS, BiomeAmbience.ring3(ModBiomes.EMBER_WOODS).build().getAmbientLoopSoundEvent().orElseThrow());
+        assertSame(ModSoundEvents.RING_3_TITAN_HUM, BiomeAmbience.ring3(ModBiomes.TITAN_FIELDS).build().getAmbientLoopSoundEvent().orElseThrow());
+        assertSame(ModSoundEvents.RING_3_CALDERA, BiomeAmbience.ring3(ModBiomes.DORMANT_CALDERA).build().getAmbientLoopSoundEvent().orElseThrow());
+        for (ResourceKey<Biome> lava : List.of(ModBiomes.VOLCANIC_PEAKS, ModBiomes.BASALT_FLOWS)) {
+            AmbientAdditionsSettings additions = BiomeAmbience.ring3(lava).build().getAmbientAdditionsSettings().orElseThrow();
+            assertSame(ModSoundEvents.RING_3_LAVA, additions.getSoundEvent());
+            assertTrue(additions.getTickChance() > 0.0 && additions.getTickChance() < 0.0111, "rarer than the basalt deltas'");
+        }
+        assertEquals(Optional.empty(), BiomeAmbience.ring3(ModBiomes.ASHEN_WASTES).build().getAmbientLoopSoundEvent());
+    }
+
+    private static AmbientParticleSettings particle(ResourceKey<Biome> biome) {
+        return BiomeAmbience.ring3(biome).build().getAmbientParticleSettings().orElseThrow(() -> new AssertionError(biome.toString()));
+    }
+
+    private static float probability(ResourceKey<Biome> biome) {
+        return probability(particle(biome));
+    }
+
+    /** The settings have no getter for it: read it from their own codec, as it goes into the biome JSON. */
+    private static float probability(AmbientParticleSettings settings) {
+        return AmbientParticleSettings.CODEC.encodeStart(JsonOps.INSTANCE, settings).getOrThrow()
+                .getAsJsonObject().get("probability").getAsFloat();
     }
 
     @Test
@@ -126,6 +177,15 @@ class BiomeAmbienceTest {
             assertTrue((fog & 0xFF) > (fog >> 16 & 0xFF), biome + " fog is bluer than red");
             assertEquals(Optional.of(AmbientMoodSettings.LEGACY_CAVE_SETTINGS), effects.getAmbientMoodSettings(), biome.toString());
             assertEquals(Optional.empty(), effects.getBackgroundMusic(), biome.toString());
+            // Package 56: ice crystals (subtle), the cold wind and creaking ice.
+            AmbientParticleSettings particle = effects.getAmbientParticleSettings().orElseThrow();
+            assertSame(ModParticleTypes.ICE_GLINT.get(), particle.getOptions());
+            float glints = probability(particle);
+            assertTrue(glints > 0.0F && glints <= 0.01F, biome + " " + glints);
+            assertSame(ModSoundEvents.NETHER_RING_3_WIND, effects.getAmbientLoopSoundEvent().orElseThrow());
+            AmbientAdditionsSettings creaks = effects.getAmbientAdditionsSettings().orElseThrow();
+            assertSame(ModSoundEvents.NETHER_RING_3_ICE_CREAK, creaks.getSoundEvent());
+            assertTrue(creaks.getTickChance() > 0.0 && creaks.getTickChance() < 0.0111, "rarer than the basalt deltas'");
             fogs.add(fog);
         }
         assertEquals(biomes.size(), fogs.size(), "every fog differs");

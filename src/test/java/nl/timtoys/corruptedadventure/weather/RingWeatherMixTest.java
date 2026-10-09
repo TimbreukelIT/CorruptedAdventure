@@ -81,6 +81,20 @@ class RingWeatherMixTest {
         assertEquals(1.0F, zone.getFirst().weight(), EPSILON);
     }
 
+    /** {@code weight} is the share's weight from {@code at}, without the list (ash clouds, package 50). */
+    @Test
+    void weightMatchesTheSharesOfAt() {
+        for (RingPosition position : List.of(RingPosition.within(Ring.RING_3), RingPosition.within(Ring.RING_2),
+                new RingPosition(Ring.RING_2, Ring.RING_3, 0.3), new RingPosition(Ring.RING_3, Ring.RING_4, 0.8),
+                new RingPosition(Ring.RING_5, Ring.VOID, 0.7))) {
+            for (Ring ring : Ring.values()) {
+                float expected = (float) RingWeatherMix.at(position, STATES).stream()
+                        .filter(share -> share.ring() == ring).mapToDouble(RingWeatherMix.Share::weight).sum();
+                assertEquals(expected, RingWeatherMix.weight(position, ring), EPSILON, position + " " + ring);
+            }
+        }
+    }
+
     @Test
     void smoothstepEnds() {
         assertEquals(0.0F, RingWeatherMix.smoothstep(-1.0F));

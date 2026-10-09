@@ -23,5 +23,9 @@ final class ModParticleDescriptionProvider extends ParticleDescriptionProvider {
         // Package 50-0: steam and ice crystals, light sprites from stream T (57a), tinted by the particle.
         spriteSet(ModParticleTypes.STEAM_PUFF.get(), CorruptedAdventure.id("steam_puff"), 4, false);
         spriteSet(ModParticleTypes.ICE_GLINT.get(), CorruptedAdventure.id("ice_glint"), 4, false);
+        // Package 50: the ambient variants of the ring 3 biomes share their base type's sprites.
+        spriteSet(ModParticleTypes.DRIFTING_ASH.get(), CorruptedAdventure.id("ash_flake"), 4, false);
+        spriteSet(ModParticleTypes.RISING_EMBER.get(), CorruptedAdventure.id("ember"), 4, false);
+        spriteSet(ModParticleTypes.SULFUR_STEAM.get(), CorruptedAdventure.id("steam_puff"), 4, false);
     }
 }

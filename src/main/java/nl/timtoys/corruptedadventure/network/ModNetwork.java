@@ -37,5 +37,7 @@ public final class ModNetwork {
                 ClientboundHandlers.forward(RingWeatherPayload.TYPE));
         registrar.playToClient(WindGustPayload.TYPE, WindGustPayload.STREAM_CODEC,
                 ClientboundHandlers.forward(WindGustPayload.TYPE));
+        registrar.playToClient(VolcanoPlumesPayload.TYPE, VolcanoPlumesPayload.STREAM_CODEC,
+                ClientboundHandlers.forward(VolcanoPlumesPayload.TYPE));
     }
 }
