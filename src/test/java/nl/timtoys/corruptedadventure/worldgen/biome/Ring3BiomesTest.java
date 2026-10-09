@@ -116,8 +116,11 @@ class Ring3BiomesTest {
      */
     @Test
     void everyBiomeHasItsOwnSurfaceBranchWithoutGrass() {
-        JsonArray rules = WorldgenData.read("noise_settings/overworld.json").getAsJsonObject("surface_rule")
-                .getAsJsonArray("sequence").get(1).getAsJsonObject().getAsJsonObject("then_run").getAsJsonArray("sequence");
+        // The rules above the preliminary surface (42: the cave walls stand before them, right after the bedrock floor).
+        JsonArray sequence = WorldgenData.read("noise_settings/overworld.json").getAsJsonObject("surface_rule").getAsJsonArray("sequence");
+        JsonArray rules = sequence.asList().stream().map(JsonElement::getAsJsonObject)
+                .filter(rule -> rule.getAsJsonObject("if_true").get("type").getAsString().equals("minecraft:above_preliminary_surface"))
+                .findFirst().orElseThrow().getAsJsonObject("then_run").getAsJsonArray("sequence");
         Set<String> ring3 = Ring3Biomes.ALL.stream().map(key -> key.location().toString()).collect(Collectors.toSet());
         JsonObject ring3Branch = null;
         int firstVanilla = -1;

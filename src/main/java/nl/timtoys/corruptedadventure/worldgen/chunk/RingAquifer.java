@@ -23,7 +23,10 @@ import javax.annotation.Nullable;
  * an obsidian crust). Overworld ring 3: lava in the lava lakes and channels of the {@link VolcanicField}
  * ({@link RingFluidPicker#ring3LavaColumn}, no fluid update: still lava), no water from Y 0 up
  * ({@link RingFluidPicker#ring3DryFrom}), and rock below ring 2's sea level in its half of the zone 2→3
- * ({@link RingFluidPicker#ring3SealBelow}). Carvers fill their caves through this aquifer too.
+ * ({@link RingFluidPicker#ring3SealBelow}). 42: the openings of the lava tubes, magma chambers and fire geodes stay free
+ * of aquifer fluids (air, or lava in a gutter or a chamber's lake, crusted over where it would touch open air), and the
+ * rock of their guard bands stays rock. Carvers fill their caves through this aquifer too, so they cannot cut into a
+ * chamber, a gutter or a geode either.
  * <p>
  * One instance per noise chunk, so the per-call state below is single-threaded like vanilla's.
  */
@@ -69,6 +72,9 @@ final class RingAquifer implements Aquifer {
     private final int[] fallBottom = new int[COLUMNS + 1];
     private final int[] fallFlow = new int[COLUMNS + 1];
     private final int[] dryFrom = new int[COLUMNS + 1];
+    // The range of the column's carved openings and guard bands (42), else caveBottom > caveTop.
+    private final int[] caveBottom = new int[COLUMNS + 1];
+    private final int[] caveTop = new int[COLUMNS + 1];
     private final int[] waterOnlyFrom = new int[COLUMNS + 1];
 
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla) {
@@ -136,6 +142,8 @@ final class RingAquifer implements Aquifer {
         fallTop[i] = lava ? column.fallTop() : Integer.MIN_VALUE;
         fallBottom[i] = lava ? column.fallBottom() : Integer.MIN_VALUE;
         fallFlow[i] = lava ? column.fallFlowBelow() : Integer.MIN_VALUE;
+        caveBottom[i] = lava ? Math.min(column.voidMin(), column.deepGuardMin()) : Integer.MAX_VALUE;
+        caveTop[i] = lava ? Math.max(column.voidMax(), column.deepGuardMax()) : Integer.MIN_VALUE;
         dryFrom[i] = RingFluidPicker.ring3DryFrom(dimension, position);
         waterOnlyFrom[i] = RingFluidPicker.waterOnlyFrom(dimension, position);
     }
@@ -168,6 +176,19 @@ final class RingAquifer implements Aquifer {
         }
         if (VolcanicField.Column.lavaAt(y, lavaTop[i], lavaBottom[i], Integer.MIN_VALUE)) {
             return exposed(context.blockX(), y, context.blockZ()) ? null : LAVA;
+        }
+        if (y >= caveBottom[i] && y <= caveTop[i]) {
+            VolcanicField.Column column = volcanic.column(context.blockX(), context.blockZ());
+            if (column.voidAt(y)) {
+                if (!column.subLavaAt(y)) {
+                    return AIR;
+                }
+                // Lava in a gutter or a lake: a lip of crust where open air lies beside or below it (a gutter's steps).
+                return openBesideOrBelow(column, context.blockX(), y, context.blockZ()) ? null : LAVA;
+            }
+            if (column.deepGuardAt(y)) {
+                return null;
+            }
         }
         suppressed = false;
         BlockState state = vanilla.computeSubstance(context, substance);
@@ -208,6 +229,17 @@ final class RingAquifer implements Aquifer {
         return (neighbour.lavaTop() < y || y < neighbour.lavaBottom())
                 && neighbour.height() - SURFACE_MARGIN - CRAG_MARGIN * neighbour.roughness() < y + 1.0
                 && !neighbour.islandAt(y);
+    }
+
+    /** Whether an opening without lava lies beside or right below the block (42: lava there would flow). */
+    private boolean openBesideOrBelow(VolcanicField.Column column, int x, int y, int z) {
+        return column.voidAt(y - 1) && !column.subLavaAt(y - 1) || dryOpening(x + 1, y, z) || dryOpening(x - 1, y, z)
+                || dryOpening(x, y, z + 1) || dryOpening(x, y, z - 1);
+    }
+
+    private boolean dryOpening(int x, int y, int z) {
+        VolcanicField.Column neighbour = volcanic.column(x, z);
+        return neighbour.voidAt(y) && !neighbour.subLavaAt(y);
     }
 
     @Override

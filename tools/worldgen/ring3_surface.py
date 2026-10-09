@@ -8,7 +8,8 @@ pieces (craters, cones, lava banks) would otherwise be copied by hand. Edit the 
 script and the JSON together. It is idempotent:
 - overworld (39f): one ring 3 branch (all 8 biomes) where the ring 3 branches stood, and a fast path for the deep blocks
   of the ring 3 core at the start of the rules above the preliminary surface; older layouts (one branch per biome plus
-  shared branches, 39c–39e) are recognised and replaced;
+  shared branches, 39c–39e) are recognised and replaced; (42) the walls of the lava tubes and magma chambers as the
+  second top-level rule (right after the bedrock floor), replaced if present;
 - Nether: the branch of placeholder_nether_ring_3 is replaced;
 - everything else stays byte-identical (a json round trip with indent 2 and CRLF reproduces the files exactly).
 """
@@ -378,6 +379,18 @@ def ring_3_deep():
     return all_of([reach("ring_3"), NOT(reach("ring_2")), NOT(reach("ring_4")), NOT(GATE), NOT(THIN_ANY)], block("stone"))
 
 
+def cave_walls():
+    """42: the walls of the lava tubes, skylights and magma chambers, at any depth (most lie far below the preliminary
+    surface, where no other ring 3 rule runs): a smooth basalt skin, a basalt shell, winding blackstone veins, a crust
+    of blackstone and magma where the skin borders lava (a gutter, a chamber's lake). The walls stop three blocks under
+    the ground, so at a mouth or skylight the biome's own rules paint the rim (and the 39c ash crust a roof of one
+    block). Cheap tests first: the ring, then one per column, then the block."""
+    return all_of([reach("ring_3"), volc("cave_walls", 0.5, 2.0)], seq(
+        cond(volc("cave_wall", 2.5, 3.5), seq(cond(noise(G, 0.3), block("magma_block")), block("blackstone"))),
+        cond(volc("cave_wall", 0.5, 1.5), seq(cond(volc("vein", 0.0, 0.05), block("blackstone")), block("smooth_basalt"))),
+        cond(volc("cave_wall", 1.5, 2.5), seq(cond(volc("vein", 0.0, 0.08), block("blackstone")), block("basalt")))))
+
+
 BIOMES = {f.__name__: f for f in [ashen_wastes, volcanic_peaks, ember_woods, basalt_flows, sulfur_fields, dried_seabed,
                                   titan_fields, dormant_caldera]}
 
@@ -444,6 +457,12 @@ def is_ring_3(rule):
     return len(biomes) > 0 and all(b in [CA + n for n in RING_3] for b in biomes)
 
 
+def is_cave_walls(rule):
+    """The top-level rule of the cave walls (42)."""
+    conds = rule.get("if_true", {})
+    return conds == reach("ring_3") and rule.get("then_run", {}).get("if_true") == volc("cave_walls", 0.5, 2.0)
+
+
 def is_ring_3_deep(rule):
     c = rule.get("if_true", {})
     return c == reach("ring_3")
@@ -453,13 +472,17 @@ def main():
     path = os.path.join(ROOT, "noise_settings", "overworld.json")
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
-    rules = data["surface_rule"]["sequence"][1]["then_run"]["sequence"]
+    top = data["surface_rule"]["sequence"]
+    top[:] = [r for r in top if not is_cave_walls(r)]
+    rules = top[1]["then_run"]["sequence"]
     rules[:] = [r for r in rules if not is_ring_3_deep(r)]
     positions = [i for i, r in enumerate(rules) if is_ring_3(r)]
     assert positions == list(range(positions[0], positions[0] + len(positions))), positions
     first = positions[0]
     rules[first:first + len(positions)] = [ring_3_branch()]
     rules.insert(0, ring_3_deep())
+    assert top[0].get("if_true", {}).get("random_name") == "minecraft:bedrock_floor", top[0]
+    top.insert(1, cave_walls())
     dump(path, data)
 
     path = os.path.join(ROOT, "noise_settings", "nether.json")

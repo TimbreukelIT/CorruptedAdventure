@@ -151,6 +151,133 @@
       {
         "type": "minecraft:condition",
         "if_true": {
+          "type": "corruptedadventure:ring_reach",
+          "dimension": "minecraft:overworld",
+          "ring": "ring_3"
+        },
+        "then_run": {
+          "type": "minecraft:condition",
+          "if_true": {
+            "type": "corruptedadventure:volcanic_threshold",
+            "output": "cave_walls",
+            "min": 0.5,
+            "max": 2.0
+          },
+          "then_run": {
+            "type": "minecraft:sequence",
+            "sequence": [
+              {
+                "type": "minecraft:condition",
+                "if_true": {
+                  "type": "corruptedadventure:volcanic_threshold",
+                  "output": "cave_wall",
+                  "min": 2.5,
+                  "max": 3.5
+                },
+                "then_run": {
+                  "type": "minecraft:sequence",
+                  "sequence": [
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "minecraft:noise_threshold",
+                        "noise": "corruptedadventure:ring_3_surface_grain",
+                        "min_threshold": 0.3,
+                        "max_threshold": 1.7976931348623157e+308
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "minecraft:magma_block"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "minecraft:blackstone"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "minecraft:condition",
+                "if_true": {
+                  "type": "corruptedadventure:volcanic_threshold",
+                  "output": "cave_wall",
+                  "min": 0.5,
+                  "max": 1.5
+                },
+                "then_run": {
+                  "type": "minecraft:sequence",
+                  "sequence": [
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "corruptedadventure:volcanic_threshold",
+                        "output": "vein",
+                        "min": 0.0,
+                        "max": 0.05
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "minecraft:blackstone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "minecraft:smooth_basalt"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "minecraft:condition",
+                "if_true": {
+                  "type": "corruptedadventure:volcanic_threshold",
+                  "output": "cave_wall",
+                  "min": 1.5,
+                  "max": 2.5
+                },
+                "then_run": {
+                  "type": "minecraft:sequence",
+                  "sequence": [
+                    {
+                      "type": "minecraft:condition",
+                      "if_true": {
+                        "type": "corruptedadventure:volcanic_threshold",
+                        "output": "vein",
+                        "min": 0.0,
+                        "max": 0.08
+                      },
+                      "then_run": {
+                        "type": "minecraft:block",
+                        "result_state": {
+                          "Name": "minecraft:blackstone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "minecraft:basalt"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "minecraft:condition",
+        "if_true": {
           "type": "minecraft:above_preliminary_surface"
         },
         "then_run": {

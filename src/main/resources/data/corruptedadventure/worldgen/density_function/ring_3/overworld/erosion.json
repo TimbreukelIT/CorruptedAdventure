@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:range_choice",
+  "input": {
+    "type": "minecraft:flat_cache",
+    "argument": {
+      "type": "corruptedadventure:ring_blend",
+      "dimension": "minecraft:overworld",
+      "rings": {
+        "ring_1": 0.0,
+        "ring_2": 0.0,
+        "ring_3": 1.0,
+        "ring_4": 0.0,
+        "ring_5": 0.0,
+        "void": 0.0
+      }
+    }
+  },
+  "min_inclusive": 0.999,
+  "max_exclusive": 2.0,
+  "when_in_range": 0.0,
+  "when_out_of_range": "minecraft:overworld/erosion"
+}
