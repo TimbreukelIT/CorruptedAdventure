@@ -11,13 +11,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.block.CreateFluidSourceEvent;
-import nl.timtoys.corruptedadventure.ring.RingLayout;
-import nl.timtoys.corruptedadventure.ring.RingWorld;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -60,7 +57,7 @@ public final class WaterEvaporation {
         }
         BlockPos pos = event.getPos();
         BlockState dried = dried(state);
-        if (dried == null || !evaporatesAt(level, pos)) {
+        if (dried == null || !HeatZone.exposed(level, pos)) {
             return;
         }
         level.setBlock(pos, dried, Block.UPDATE_ALL);
@@ -78,7 +75,7 @@ public final class WaterEvaporation {
         }
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos neighbour = event.getPos().relative(direction);
-            if (!level.getFluidState(neighbour).isSource() && evaporatesAt(level, neighbour)) {
+            if (!level.getFluidState(neighbour).isSource() && HeatZone.exposed(level, neighbour)) {
                 event.setCanConvert(false);
                 return;
             }
@@ -101,18 +98,5 @@ public final class WaterEvaporation {
             return state.setValue(BlockStateProperties.WATERLOGGED, false);
         }
         return null;
-    }
-
-    /**
-     * Under the open sky in the heat zone ({@link HeatRule#inZone}): no solid block or other fluid above (the
-     * heightmap, exact at once, so a roof just built counts before the light engine catches up) and full sky light
-     * just above (so leaves keep the water too). The cheap block checks come first; the ring is sampled last.
-     */
-    static boolean evaporatesAt(ServerLevel level, BlockPos pos) {
-        return pos.getY() + 1 >= level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ())
-                && level.canSeeSky(pos.above())
-                && RingWorld.isActive(level.getServer())
-                && HeatRule.inZone(level.dimension(),
-                        RingLayout.ringAt(level.dimension(), pos.getX() + 0.5, pos.getZ() + 0.5));
     }
 }

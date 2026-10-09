@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/amethyst_bud",
+  "textures": {
+    "layer0": "corruptedadventure:block/medium_sulfur_crystal_bud"
+  }
+}

@@ -126,7 +126,7 @@ public record HeatRule(Rates rates, int sourceRadius) implements ConditionRule {
      * @param sunUp      the sun is above the horizon ({@link Sun})
      * @param directSun  full sky light at eye height while the sun is up
      * @param underRoof  without direct sun: a solid block somewhere above the head ({@link ConditionContext#isUnderRoof})
-     * @param nearSource a block in {@code #heat_sources} within {@code sourceRadius}
+     * @param nearSource a lit block in {@code #heat_sources} within {@code sourceRadius}
      * @param inPeak     the biome at the feet is in {@code #heat_peaks}
      * @param inWater    submerged above the waist
      * @param inRefuge   the biome at the feet is in {@code #heat_refuges}

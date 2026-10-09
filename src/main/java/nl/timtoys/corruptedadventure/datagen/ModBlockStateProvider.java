@@ -23,6 +23,8 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.block.StalactiteBlock;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -104,7 +106,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
         simpleBlock(ModBlocks.RIMESHROOM_CAP.get());
 
         stalactite(ModBlocks.ICE_STALACTITE.get());
-        glowingCube(ModBlocks.GLOWING_FISSURE.get());
+        rotatedGlowingCube(ModBlocks.GLOWING_FISSURE.get());
         simpleBlock(ModBlocks.PRIMORDIAL_ICE.get());
     }
 
@@ -120,7 +122,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
                 ModBlocks.POLISHED_PUMICE_SLAB.get(), ModBlocks.POLISHED_PUMICE_WALL.get());
         stoneFamily(ModBlocks.PUMICE_BRICKS.get(), ModBlocks.PUMICE_BRICK_STAIRS.get(),
                 ModBlocks.PUMICE_BRICK_SLAB.get(), ModBlocks.PUMICE_BRICK_WALL.get());
-        glowingCube(ModBlocks.SMOLDERING_STONE.get());
+        rotatedGlowingCube(ModBlocks.SMOLDERING_STONE.get());
 
         logBlock(ModBlocks.CHARRED_LOG.get());
         axisBlock(ModBlocks.CHARRED_WOOD.get(), blockTexture(ModBlocks.CHARRED_LOG.get()), blockTexture(ModBlocks.CHARRED_LOG.get()));
@@ -158,6 +160,13 @@ final class ModBlockStateProvider extends BlockStateProvider {
         vent(ModBlocks.FUMAROLE.get());
         simpleBlock(ModBlocks.BOILING_MUD.get());
         vent(ModBlocks.GEYSER.get());
+        simpleBlock(ModBlocks.YELLOW_SULFUR_MUD.get());
+        simpleBlock(ModBlocks.GREEN_SULFUR_MUD.get());
+        simpleBlock(ModBlocks.ORANGE_SULFUR_MUD.get());
+        crystalCluster(ModBlocks.SMALL_SULFUR_CRYSTAL_BUD.get(), false);
+        crystalCluster(ModBlocks.MEDIUM_SULFUR_CRYSTAL_BUD.get(), false);
+        crystalCluster(ModBlocks.LARGE_SULFUR_CRYSTAL_BUD.get(), false);
+        crystalCluster(ModBlocks.SULFUR_CRYSTAL.get(), false);
     }
 
     /**
@@ -206,6 +215,29 @@ final class ModBlockStateProvider extends BlockStateProvider {
     private void glowingCube(Block block, String renderType) {
         ResourceLocation base = blockTexture(block);
         overlayCube(block, base, CubeTextures.all(base), CubeTextures.all(base.withSuffix("_glow")), true, renderType);
+    }
+
+    /**
+     * {@link #glowingCube} in 32 orientations (package 46b): netherrack's 16 x/y rotations of the model and of a
+     * mirrored copy {@code <name>_mirrored} (like stone's {@code cube_mirrored_all}), so every face shows the texture in
+     * all 8 orientations and a floor patch shows no tile grid. A variant rotates the whole model, so the emissive layer
+     * stays on its pixels.
+     */
+    private void rotatedGlowingCube(Block block) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        ResourceLocation base = blockTexture(block);
+        CubeTextures glow = CubeTextures.all(base.withSuffix("_glow"));
+        List<ConfiguredModel> variants = new ArrayList<>();
+        for (ModelFile model : List.of(
+                overlayModel(name, base, CubeTextures.all(base), glow, true, "cutout", false),
+                overlayModel(name + "_mirrored", base, CubeTextures.all(base), glow, true, "cutout", true))) {
+            for (int x = 0; x < 360; x += 90) {
+                for (int y = 0; y < 360; y += 90) {
+                    variants.add(new ConfiguredModel(model, x, y, false));
+                }
+            }
+        }
+        simpleBlock(block, variants.toArray(ConfiguredModel[]::new));
     }
 
     /**
@@ -519,19 +551,35 @@ final class ModBlockStateProvider extends BlockStateProvider {
     /** {@link #oreWithOverlay} with a chosen render type (leaves: {@code cutout_mipped}). */
     private void overlayCube(Block block, ResourceLocation particle, CubeTextures base, CubeTextures overlay,
                              boolean emissive, String renderType) {
-        BlockModelBuilder model = models().withExistingParent(BuiltInRegistries.BLOCK.getKey(block).getPath(), mcLoc("block/block"))
+        simpleBlock(block, overlayModel(BuiltInRegistries.BLOCK.getKey(block).getPath(), particle, base, overlay, emissive,
+                renderType, false));
+    }
+
+    /** The model of {@link #overlayCube}; {@code mirrored} flips every face of both layers horizontally. */
+    private BlockModelBuilder overlayModel(String name, ResourceLocation particle, CubeTextures base, CubeTextures overlay,
+                                           boolean emissive, String renderType, boolean mirrored) {
+        BlockModelBuilder model = models().withExistingParent(name, mcLoc("block/block"))
                 .renderType(renderType)
                 .texture("particle", particle);
         base.apply(model, "base");
         overlay.apply(model, "overlay");
-        model.element().allFaces((direction, face) -> face.texture("#base_" + CubeTextures.face(direction)).cullface(direction)).end();
-        var overlayElement = model.element()
-                .allFaces((direction, face) -> face.texture("#overlay_" + CubeTextures.face(direction)).cullface(direction));
+        model.element().allFaces((direction, face) -> {
+            face.texture("#base_" + CubeTextures.face(direction)).cullface(direction);
+            if (mirrored) {
+                face.uvs(16, 0, 0, 16);
+            }
+        }).end();
+        var overlayElement = model.element().allFaces((direction, face) -> {
+            face.texture("#overlay_" + CubeTextures.face(direction)).cullface(direction);
+            if (mirrored) {
+                face.uvs(16, 0, 0, 16);
+            }
+        });
         if (emissive) {
             overlayElement.emissivity(15, 15).ao(false);
         }
         overlayElement.end();
-        simpleBlock(block, model);
+        return model;
     }
 
     /** Textures for the top, the four sides and the bottom of a cube. */
