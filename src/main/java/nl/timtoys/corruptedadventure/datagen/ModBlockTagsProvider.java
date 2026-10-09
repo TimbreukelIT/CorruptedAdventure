@@ -232,6 +232,18 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.FUMAROLE.get(), ModBlocks.GEYSER.get());
         tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.SULFUR_CRUST.get(), ModBlocks.BOILING_MUD.get());
         tag(ModTags.Blocks.HEAT_SOURCES).add(ModBlocks.FUMAROLE.get(), ModBlocks.BOILING_MUD.get());
+        // The coloured sulfur muds are boiling mud (46b); the sulfur crystal is a crystal like the fire crystal.
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.YELLOW_SULFUR_MUD.get(), ModBlocks.GREEN_SULFUR_MUD.get(),
+                ModBlocks.ORANGE_SULFUR_MUD.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.YELLOW_SULFUR_MUD.get(), ModBlocks.GREEN_SULFUR_MUD.get(),
+                ModBlocks.ORANGE_SULFUR_MUD.get());
+        tag(ModTags.Blocks.HEAT_SOURCES).add(ModBlocks.YELLOW_SULFUR_MUD.get(), ModBlocks.GREEN_SULFUR_MUD.get(),
+                ModBlocks.ORANGE_SULFUR_MUD.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SMALL_SULFUR_CRYSTAL_BUD.get(),
+                ModBlocks.MEDIUM_SULFUR_CRYSTAL_BUD.get(), ModBlocks.LARGE_SULFUR_CRYSTAL_BUD.get(), ModBlocks.SULFUR_CRYSTAL.get());
+        tag(Tags.Blocks.BUDS).add(ModBlocks.SMALL_SULFUR_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_SULFUR_CRYSTAL_BUD.get(),
+                ModBlocks.LARGE_SULFUR_CRYSTAL_BUD.get());
+        tag(Tags.Blocks.CLUSTERS).add(ModBlocks.SULFUR_CRYSTAL.get());
     }
 
     /**

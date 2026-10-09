@@ -247,6 +247,14 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.FUMAROLE.get());
         dropSelf(ModBlocks.BOILING_MUD.get());
         dropWhenSilkTouch(ModBlocks.GEYSER.get());
+        dropSelf(ModBlocks.YELLOW_SULFUR_MUD.get());
+        dropSelf(ModBlocks.GREEN_SULFUR_MUD.get());
+        dropSelf(ModBlocks.ORANGE_SULFUR_MUD.get());
+        // Like amethyst: the buds only with Silk Touch, the crystal drops sulfur (balance in phase 2).
+        dropWhenSilkTouch(ModBlocks.SMALL_SULFUR_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.MEDIUM_SULFUR_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.LARGE_SULFUR_CRYSTAL_BUD.get());
+        add(ModBlocks.SULFUR_CRYSTAL.get(), block -> createCrystalClusterTable(block, ModItems.SULFUR.get()));
     }
 
     /**

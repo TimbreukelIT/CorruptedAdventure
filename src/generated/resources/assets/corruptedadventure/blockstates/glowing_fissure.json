@@ -1,7 +1,150 @@
 {
   "variants": {
-    "": {
-      "model": "corruptedadventure:block/glowing_fissure"
-    }
+    "": [
+      {
+        "model": "corruptedadventure:block/glowing_fissure"
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 90
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 90,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 90,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 90,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 180
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 180,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 180,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 180,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 270
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 270,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 270,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure",
+        "x": 270,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored"
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 90
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 90,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 90,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 90,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 180
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 180,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 180,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 180,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 270
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 270,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 270,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glowing_fissure_mirrored",
+        "x": 270,
+        "y": 270
+      }
+    ]
   }
 }
