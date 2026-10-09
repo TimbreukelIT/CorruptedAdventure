@@ -38,7 +38,7 @@ Voortgang: 2026-10-09 (eerder) 50c gebouwd: geiser-waarschuwing (`Ring3Sounds` 2
 - **50c, uitbarsting (`client/weather/EruptionRenderer`):** lucht diep karmijn `8A1A0C` (was `B3361A`) met share 1,0 (was 0,85), waas `6E1C0E` (was `7A2A14`) met share 0,85 (was 0,7); beide via `colourAmount(strength)` = min(1, 2 × strength), dus volle kleur na de halve fade-in (15 s). Nachtgloed 0,45 en mistafstand 0,6 ongewijzigd.
 
 ## Beslissingen
-- 2026-10-09, atmosphere: lavabommen bij meerdere spelers: ieder zijn eigen schijf, een plek in k schijven wordt met kans 1/k gehouden, zodat de bommen per oppervlak overal die van één speler zijn (samen staan is niet veiliger of gevaarlijker); bommen leven hooguit 10 s en komen niet terug uit een opgeslagen chunk (50c + review; backlog 45/INT1).
+- 2026-10-09, atmosphere: lavabommen bij meerdere spelers: elke speler een eigen schijf, een plek in k schijven wordt met kans 1/k gehouden, zodat de bommen per oppervlak overal die van één speler zijn (samen staan is niet veiliger of gevaarlijker); bommen leven hooguit 10 s en komen niet terug uit een opgeslagen chunk (50c + review; backlog 45/INT1).
 - 2026-10-09, atmosphere: rookpluimen als eigen client-render-pass zonder terreinmist (Fast/Fancy na het weer, Fabulous in de particle-laag, zonder diepte-writes); de waas volgt de mist van het weer waar die korter is dan de render distance, anders een eigen waas tot 45 % mistkleur op 512 blokken; verre wolken naar binnen getrokken binnen het verre vlak (50c + review; 4b-besluit 4).
 - 2026-10-09, atmosphere: rode lucht bij een uitbarsting = diep karmijn `8A1A0C`, volle share, vol na de halve fade-in; waas `6E1C0E` 0,85 (50c; 4b-besluit 5: sterker kleuren).
 
