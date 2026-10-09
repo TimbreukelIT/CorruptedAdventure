@@ -2,6 +2,11 @@
   "carvers": {},
   "downfall": 0.0,
   "effects": {
+    "additions_sound": {
+      "sound": "corruptedadventure:ambient.nether_ring_3.ice_creak",
+      "tick_chance": 0.004
+    },
+    "ambient_sound": "corruptedadventure:ambient.nether_ring_3.wind",
     "fog_color": 10268868,
     "mood_sound": {
       "block_search_extent": 8,
@@ -14,6 +19,12 @@
       "min_delay": 12000,
       "replace_current_music": false,
       "sound": "minecraft:music.nether.nether_wastes"
+    },
+    "particle": {
+      "options": {
+        "type": "corruptedadventure:ice_glint"
+      },
+      "probability": 0.004
     },
     "sky_color": 0,
     "water_color": 4026012,

@@ -51,7 +51,7 @@ class NetherRing3BiomesTest {
     @Test
     void effectsComeFromTheAtmosphereHookAndOnlyTheMusicIsOurs() {
         for (Map.Entry<ResourceKey<Biome>, Biome> entry : BIOMES.entrySet()) {
-            BiomeAmbience.Palette palette = NetherRing3Atmosphere.palette(entry.getKey());
+            BiomeAmbience.Palette palette = NetherRing3Atmosphere.look(entry.getKey()).colours();
             assertEquals(palette.fog(), entry.getValue().getFogColor());
             assertEquals(palette.water(), entry.getValue().getWaterColor());
             assertEquals(0x000000, entry.getValue().getSkyColor());

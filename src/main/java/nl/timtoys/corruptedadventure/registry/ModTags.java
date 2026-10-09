@@ -134,7 +134,7 @@ public final class ModTags {
         // ring 3 — conditions g2
         /**
          * Nether ring 3 biomes where the cold rises faster: the open plain ({@code frozen_lava_sea}; contents by
-         * W-nether in 53b, empty until then).
+         * W-nether in {@code NetherRing3BiomeTags}).
          */
         public static final TagKey<Biome> COLD_EXPOSED = TagKey.create(Registries.BIOME, CorruptedAdventure.id("cold_exposed"));
 
