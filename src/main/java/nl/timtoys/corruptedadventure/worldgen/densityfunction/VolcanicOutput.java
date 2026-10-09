@@ -43,8 +43,16 @@ public final class VolcanicOutput implements DensityFunction {
         CLIFF("cliff", 0.0, 1.0),
         /** 0..1 (39f): a collapse's footprint, 1 inside its rim (vanilla cave entrances may reach the surface there). */
         COLLAPSE("collapse", 0.0, 1.0),
-        /** 3D: +1 where caves stay out (around lava lakes and channels), −1 elsewhere. */
+        /**
+         * 3D: +1 where caves stay out (around lava lakes and channels; 42: around magma chambers, lava gutters and fire
+         * geodes), −1 elsewhere.
+         */
         GUARD("guard", -1.0, 1.0),
+        /**
+         * 3D (42): added to the density of vanilla's caves, 0 where they run freely, up to 2 where they are gone (a
+         * volcano's body, above Y ~146); rising over 20 blocks, so the caves shrink and close gradually.
+         */
+        CAVE_LIFT("cave_lift", 0.0, 2.0),
         /**
          * 3D (39d): the thin shapes, not interpolated: +1 inside a thin solid (hoodoos, ribs, prisms, needles, arches;
          * 39f: also the floating islands, pillars, rubble and the micro relief), −1 inside a carved opening (lava tube
@@ -59,7 +67,16 @@ public final class VolcanicOutput implements DensityFunction {
         /** 3D (39f, for the surface): 0..1, changes with every block of height, slowly across the plain (patches that follow the steps). */
         TREAD("tread", 0.0, 1.0),
         /** 3D (39f, for the surface): 0..1, thin winding layers (the veins of the obsidian needles). */
-        VEIN("vein", 0.0, 1.0);
+        VEIN("vein", 0.0, 1.0),
+        /** 1 where the column holds walls of a lava tube, skylight or magma chamber (42), else 0. */
+        CAVE_WALLS("cave_walls", 0.0, 1.0),
+        /**
+         * 3D (42, for the surface): which wall of a lava tube, skylight or magma chamber a block belongs to: 0 none, 1 the
+         * smooth inner skin, 2 the shell, 3 skin bordering lava (a crust).
+         */
+        CAVE_WALL("cave_wall", 0.0, 3.0),
+        /** 3D (42): −1 inside the cavity of a fire crystal geode, +10 elsewhere (neutral under {@code min}). */
+        FIRE_GEODES("fire_geodes", -1.0, 10.0);
 
         public static final StringRepresentable.EnumCodec<Output> CODEC = StringRepresentable.fromEnum(Output::values);
 
@@ -85,13 +102,13 @@ public final class VolcanicOutput implements DensityFunction {
 
         /** Whether the surface may read this output per block (39f): the per-column ones and the surface patterns. */
         public boolean forSurface() {
-            return perColumn() || this == THIN_KIND || this == TREAD || this == VEIN;
+            return perColumn() || this == THIN_KIND || this == TREAD || this == VEIN || this == CAVE_WALL;
         }
     }
 
     private static final Set<Output> PER_COLUMN = EnumSet.of(Output.CALDERA_MASK, Output.CALDERA_DORMANT,
             Output.LAVA_CHANNEL, Output.ISLAND_MASK, Output.ROUGHNESS, Output.VOLCANO_RISE, Output.LAVA_BANK, Output.CLIFF,
-            Output.COLLAPSE);
+            Output.COLLAPSE, Output.CAVE_WALLS);
 
     private final DensityFunction field;
     private final Output output;
@@ -133,8 +150,10 @@ public final class VolcanicOutput implements DensityFunction {
         return switch (output) {
             case INITIAL_HEIGHT -> f.initialHeight(x, z);
             case GUARD -> f.guard(x, context.blockY(), z);
+            case CAVE_LIFT -> f.caveLift(x, context.blockY(), z);
             case THIN -> f.thin(x, context.blockY(), z);
-            case THIN_KIND, TREAD, VEIN -> blockValue(f, output, x, context.blockY(), z);
+            case THIN_KIND, TREAD, VEIN, CAVE_WALL -> blockValue(f, output, x, context.blockY(), z);
+            case FIRE_GEODES -> f.fireGeodes(x, context.blockY(), z);
             default -> columnValue(f.column(x, z), output);
         };
     }
@@ -151,16 +170,22 @@ public final class VolcanicOutput implements DensityFunction {
             case LAVA_BANK -> column.lavaBank;
             case CLIFF -> column.cliff;
             case COLLAPSE -> column.collapse;
-            case INITIAL_HEIGHT, GUARD, THIN, THIN_KIND, TREAD, VEIN -> throw new IllegalArgumentException(output + " is not a column value");
+            case CAVE_WALLS -> column.caveCount > 0 ? 1.0 : 0.0;
+            case INITIAL_HEIGHT, GUARD, CAVE_LIFT, THIN, THIN_KIND, TREAD, VEIN, CAVE_WALL, FIRE_GEODES ->
+                    throw new IllegalArgumentException(output + " is not a column value");
         };
     }
 
-    /** One of the per-block surface outputs ({@link Output#THIN_KIND}, {@link Output#TREAD}, {@link Output#VEIN}) at a block. */
+    /**
+     * One of the per-block surface outputs ({@link Output#THIN_KIND}, {@link Output#TREAD}, {@link Output#VEIN},
+     * {@link Output#CAVE_WALL}) at a block.
+     */
     public static double blockValue(VolcanicField field, Output output, int x, int y, int z) {
         return switch (output) {
             case THIN_KIND -> field.thinKind(x, y, z);
             case TREAD -> field.tread(x, y, z);
             case VEIN -> field.vein(x, y, z);
+            case CAVE_WALL -> field.caveWall(x, y, z);
             default -> throw new IllegalArgumentException(output + " is not a per-block surface value");
         };
     }

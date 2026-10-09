@@ -1,5 +1,7 @@
 package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 
+import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeShape;
+
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,9 @@ final class VolcanicCaches {
         final Map<Long, Optional<Landmarks.Abyss>> abysses = new ConcurrentHashMap<>();
         final Map<Long, Optional<CellShapes.Collapse>> collapses = new ConcurrentHashMap<>();
         final Map<Long, double[]> riftFloors = new ConcurrentHashMap<>();
+        final Map<Long, java.util.concurrent.FutureTask<LavaTubes.TubeSystem>> tubeSystems = new ConcurrentHashMap<>();
+        final Map<Long, java.util.concurrent.FutureTask<LavaTubes.Tile>> tubeTiles = new ConcurrentHashMap<>();
+        final Map<Long, Optional<FireGeodeShape.Geode>> geodes = new ConcurrentHashMap<>();
         volatile Long salt;
 
         <K, V> void remember(Map<K, V> map, K key, V value) {
@@ -104,6 +109,14 @@ final class VolcanicCaches {
         int j;
         @Nullable
         T value;
+    }
+
+    /** The lava tube tile of the last column (42); only a cache. */
+    static final class TubeTile {
+        boolean filled;
+        int ti;
+        int tj;
+        LavaTubes.Tile tile;
     }
 
     /** The river tile of the last column; only a cache. */

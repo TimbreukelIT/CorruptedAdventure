@@ -6,11 +6,13 @@ import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
+import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeShape;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.CellMemo;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.CinderNeighbourhood;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.Decisions;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.Neighbourhood;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.RiverTile;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.TubeTile;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -68,8 +70,20 @@ public final class VolcanicField implements DensityFunction {
     private static final double RIDGE_HEIGHT = 5.0;
     private static final int MAX_ISLANDS = 6;
     private static final int MAX_SOLIDS = 8;
-    private static final int MAX_VOIDS = 3;
+    private static final int MAX_VOIDS = 8;
     private static final int MAX_PILLARS = 2;
+    /** Lava tubes, skylights and magma chambers whose walls one column may hold (42). */
+    private static final int MAX_CAVES = 6;
+    /** Vanilla caves are gone from here up (42: no cave mouths under the floating islands, Y ~150-210). */
+    private static final double CAVE_CEILING = 146.0;
+    /** Vanilla caves are gone in a volcano's body from this far above the plain it stands on (42). */
+    private static final double CAVE_VOLCANO_HEIGHT = 4.0;
+    /** Over this many blocks below those heights the caves shrink to nothing (42). */
+    private static final double CAVE_FADE = 20.0;
+    /** The lift that closes every vanilla cave (their densities stay above about −1.5). */
+    private static final double CAVE_LIFT = 2.0;
+    /** Separate lava ranges and guard bands one column may hold (42). */
+    private static final int MAX_BANDS = 6;
     /** Highest top of a thin shape (below the top slide of the ring 3 stack). */
     static final double THIN_TOP = 296.0;
     private static final double ISLAND_CLEARANCE = 10.0;
@@ -110,6 +124,8 @@ public final class VolcanicField implements DensityFunction {
     private final ThreadOwned<Neighbourhood> channelNeighbourhood = new ThreadOwned<>(Neighbourhood::new);
     private final ThreadOwned<CinderNeighbourhood> cinderNeighbourhood = new ThreadOwned<>(CinderNeighbourhood::new);
     private final ThreadOwned<RiverTile> riverTile = new ThreadOwned<>(RiverTile::new);
+    private final ThreadOwned<TubeTile> tubeTile = new ThreadOwned<>(TubeTile::new);
+    private final ThreadOwned<CellMemo<FireGeodeShape.Geode>> geodeMemo = new ThreadOwned<>(CellMemo::new);
     // Scratch columns of the uncached fills (core heights, island probes); one per use, so they never nest.
     private final ThreadOwned<Column> heightScratch = new ThreadOwned<>(Column::new);
     private final ThreadOwned<Column> probeScratch = new ThreadOwned<>(Column::new);
@@ -306,10 +322,36 @@ public final class VolcanicField implements DensityFunction {
         return column.height - column.floorMargin;
     }
 
-    /** +1 where caves must stay out (rock around a lava lake or river), −1 elsewhere. */
+    /**
+     * +1 where caves must stay out (rock around a lava lake or river; 42: around magma chambers, lava gutters and fire
+     * geodes), −1 elsewhere.
+     */
     double guard(int x, int y, int z) {
-        Column column = column(x, z);
-        return y >= column.guardBottom && y <= column.guardTop ? 1.0 : -1.0;
+        return column(x, z).guard(y);
+    }
+
+    /**
+     * 42: what the stack adds to the density of vanilla's caves ({@link Column#caveLift}), 0 where they run freely, up
+     * to {@link #CAVE_LIFT} where they are gone: they shrink and close gradually towards a volcano's body and towards
+     * {@link #CAVE_CEILING}.
+     */
+    double caveLift(int x, int y, int z) {
+        return column(x, z).caveLift(y);
+    }
+
+    /** 42: which wall of a lava tube or magma chamber a block belongs to ({@link Column#caveWall}), for the surface. */
+    double caveWall(int x, int y, int z) {
+        return column(x, z).caveWall(y);
+    }
+
+    /**
+     * 42: −1 inside the cavity of a fire geode where the terrain really dug it, +10 elsewhere (output
+     * {@code fire_geodes}). The cavity can be missing where another shape takes the column (a thin solid, a full list of
+     * openings), so the lining of 41b lines the open blocks of {@link #fireGeode} only.
+     */
+    double fireGeodes(int x, int y, int z) {
+        FireGeodeShape.Geode geode = fireGeodeCell(Math.floorDiv(x, FireGeodeShape.CELL), Math.floorDiv(z, FireGeodeShape.CELL));
+        return geode != null && geode.inCavity(x, y, z) && thin(x, y, z) < 0.0 ? -1.0 : 10.0;
     }
 
     /**
@@ -599,6 +641,38 @@ public final class VolcanicField implements DensityFunction {
             cached.filled = true;
         }
         return cached.tile;
+    }
+
+    /** The lava tube system of tube cell (i, j) (42), traced once per world. */
+    LavaTubes.TubeSystem tubeSystem(int i, int j) {
+        long key = (long) i << 32 | j & 0xFFFFFFFFL;
+        if (decisions.tubeSystems.size() > Decisions.LIMIT) {
+            decisions.tubeSystems.clear();
+        }
+        return once(decisions.tubeSystems, key, () -> LavaTubes.trace(this, i, j));
+    }
+
+    /** The lava tube tile around (x, z) (42), remembered per thread. */
+    private LavaTubes.Tile tubeTileFor(int x, int z) {
+        int ti = Math.floorDiv(x, LavaTubes.TILE);
+        int tj = Math.floorDiv(z, LavaTubes.TILE);
+        TubeTile cached = tubeTile.get();
+        if (!cached.filled || cached.ti != ti || cached.tj != tj) {
+            long key = (long) ti << 32 | tj & 0xFFFFFFFFL;
+            if (decisions.tubeTiles.size() > Decisions.LIMIT) {
+                decisions.tubeTiles.clear();
+            }
+            cached.tile = once(decisions.tubeTiles, key, () -> LavaTubes.tile(this, ti, tj));
+            cached.ti = ti;
+            cached.tj = tj;
+            cached.filled = true;
+        }
+        return cached.tile;
+    }
+
+    /** The fire geode of geode cell (i, j) (42), or null. */
+    FireGeodeShape.Geode fireGeodeCell(int i, int j) {
+        return cell(geodeMemo, decisions.geodes, i, j, FireGeodes::place);
     }
 
     /** 0..1: where cinder cone fields lie (clusters of a few kilometres). */
@@ -1035,8 +1109,37 @@ public final class VolcanicField implements DensityFunction {
             if (keep > 0.98 && r.fade() > 0.5) {
                 ThinShapes.microSteps(this, c, px, pz, height);
             }
+            if (r.core() > 0.9) {
+                caves(c, x, z, px, pz);
+            }
             landFall(c);
         }
+        caveFade(c);
+    }
+
+    /** The lava tubes, skylights, magma chambers and fire geodes of a column (42). */
+    private void caves(Column c, int x, int z, double px, double pz) {
+        // The geode first: its cavity must not be crowded out of the column's openings by the tubes.
+        FireGeodeShape.Geode geode = fireGeodeCell(Math.floorDiv(x, FireGeodeShape.CELL), Math.floorDiv(z, FireGeodeShape.CELL));
+        // Its guard reaches one block past the lining, which still lies inside the cell (MARGIN).
+        if (geode != null && Math.abs(x - geode.x()) <= geode.reach() + 1 && Math.abs(z - geode.z()) <= geode.reach() + 1) {
+            int[] cavity = FireGeodes.cavity(geode, x, z);
+            if (cavity != null) {
+                c.addVoid(cavity[0], cavity[1]);
+            }
+            // Closed: no vanilla cave or carver opens it (a lava tube may).
+            c.addDeepGuard(geode.y() - geode.reach() - 2, geode.y() + geode.reach() + 2);
+        }
+        LavaTubes.addTo(c, tubeTileFor(x, z), px, pz);
+    }
+
+    /**
+     * Where vanilla caves close in this column (42, G2-WT3 = A): in a volcano's body (its cone and crater rim, from a
+     * little above the plain it stands on; weighted by how high it rises) and everywhere above {@link #CAVE_CEILING}.
+     */
+    private static void caveFade(Column c) {
+        c.caveFadeWeight = VolcanicMath.smoothstep(4.0, 16.0, c.rise);
+        c.caveFadeFrom = c.height - c.rise + CAVE_VOLCANO_HEIGHT;
     }
 
     /**
@@ -1271,6 +1374,18 @@ public final class VolcanicField implements DensityFunction {
         return c == null ? null : new Sinkhole(c.x(), c.z(), c.radius(), c.depth(), c.shaft());
     }
 
+    /**
+     * The fire crystal geode (42) of the geode cell of (x, z), or null: the cavity the terrain dug, which the lining of
+     * 41b fills ({@link FireGeodeShape}; the whole geode and its lining lie inside the cell, a chunk inside one cell).
+     * Where another shape takes a column (a thin solid, a full list of openings) a block of the shape's cavity may stay
+     * rock: line only the open blocks (output {@code fire_geodes} is −1 exactly there). Pure placement decisions (no
+     * chunks), thread-safe.
+     */
+    @Nullable
+    public FireGeodeShape.Geode fireGeode(int x, int z) {
+        return decision(decisions.geodes, Math.floorDiv(x, FireGeodeShape.CELL), Math.floorDiv(z, FireGeodeShape.CELL), FireGeodes::place);
+    }
+
     /** The ribcage in the 3 × 3 ribcage cells around (x, z) whose centre is nearest, or null. Thread-safe. */
     @Nullable
     public Ribcage ribcageNear(int x, int z) {
@@ -1369,10 +1484,47 @@ public final class VolcanicField implements DensityFunction {
         final int[] solidTop = new int[MAX_SOLIDS];
         final int[] solidBottom = new int[MAX_SOLIDS];
         final int[] solidKind = new int[MAX_SOLIDS];
-        /** Carved openings (lava tube, collapse overhang and shaft), {@code voidBottom[i]}..{@code voidTop[i]} inclusive. */
+        /**
+         * Carved openings (lava tube tunnel, collapse overhang and shaft; 42: lava tubes, skylights, magma chambers, fire
+         * geodes), {@code voidBottom[i]}..{@code voidTop[i]} inclusive. The aquifer keeps them free of water.
+         */
         int voidCount;
         final int[] voidTop = new int[MAX_VOIDS];
         final int[] voidBottom = new int[MAX_VOIDS];
+        /**
+         * The walls of the lava tubes, skylights and magma chambers in this column (42): a skin (the smooth inner wall)
+         * and a shell of rock around each opening, inclusive block ranges; skin blocks up to {@code crustTop} border lava
+         * (a gutter or a chamber's lake). {@link #wallMin}..{@link #wallMax} covers them all.
+         */
+        int caveCount;
+        final int[] skinBottom = new int[MAX_CAVES];
+        final int[] skinTop = new int[MAX_CAVES];
+        final int[] shellBottom = new int[MAX_CAVES];
+        final int[] shellTop = new int[MAX_CAVES];
+        final int[] crustTop = new int[MAX_CAVES];
+        int wallMin;
+        int wallMax;
+        /**
+         * Lava under the ground (42: a magma chamber's lake, a gutter), separate inclusive ranges, inside the openings only;
+         * {@link #subLavaMin}..{@link #subLavaMax} covers them.
+         */
+        int subLavaCount;
+        final int[] subLavaBottom = new int[MAX_BANDS];
+        final int[] subLavaTop = new int[MAX_BANDS];
+        int subLavaMin;
+        int subLavaMax;
+        /**
+         * Rock kept free of vanilla caves and carvers (42: chambers, gutters, geodes), separate inclusive bands, openings
+         * excepted; {@link #deepGuardMin}..{@link #deepGuardMax} covers them.
+         */
+        int deepGuardCount;
+        final int[] deepGuardBottom = new int[MAX_BANDS];
+        final int[] deepGuardTop = new int[MAX_BANDS];
+        int deepGuardMin;
+        int deepGuardMax;
+        /** Vanilla caves are gone from this Y up, with this weight (42: a volcano's body, {@link #caveFade}). */
+        double caveFadeFrom;
+        double caveFadeWeight;
         /** Archipelago pillars standing in this column (39f), tested per block from {@link #pillarFloor} up. */
         int pillarCount;
         final Volcano.Pillar[] pillars = new Volcano.Pillar[MAX_PILLARS];
@@ -1413,6 +1565,17 @@ public final class VolcanicField implements DensityFunction {
             islandCount = 0;
             solidCount = 0;
             voidCount = 0;
+            caveCount = 0;
+            wallMin = Integer.MAX_VALUE;
+            wallMax = Integer.MIN_VALUE;
+            subLavaCount = 0;
+            subLavaMin = Integer.MAX_VALUE;
+            subLavaMax = Integer.MIN_VALUE;
+            deepGuardCount = 0;
+            deepGuardMin = Integer.MAX_VALUE;
+            deepGuardMax = Integer.MIN_VALUE;
+            caveFadeFrom = Double.MAX_VALUE;
+            caveFadeWeight = 0.0;
             pillarCount = 0;
             pillarFloor = Integer.MAX_VALUE;
             treadPhase = Double.NaN;
@@ -1469,6 +1632,117 @@ public final class VolcanicField implements DensityFunction {
             voidCount++;
         }
 
+        /**
+         * A lava tube, skylight or chamber in this column (42): its opening (carved; null if the column only holds its
+         * walls), skin and shell (null if the column misses them), and the top of the skin that borders lava.
+         */
+        void addCave(@Nullable int[] opening, @Nullable int[] skin, @Nullable int[] shell, int crust) {
+            if (opening != null) {
+                addVoid(opening[0], opening[1]);
+            }
+            if (shell == null || caveCount == MAX_CAVES) {
+                return;
+            }
+            // The walls stay a few blocks under the ground (a mouth, a skylight): up there the biome paints the rim.
+            int wallTop = Mth.floor(height) - 3;
+            skinBottom[caveCount] = skin == null ? Integer.MAX_VALUE : skin[0];
+            skinTop[caveCount] = skin == null ? Integer.MIN_VALUE : Math.min(skin[1], wallTop);
+            shellBottom[caveCount] = shell[0];
+            shellTop[caveCount] = Math.min(shell[1], wallTop);
+            if (shellTop[caveCount] < shellBottom[caveCount]) {
+                return;
+            }
+            crustTop[caveCount] = crust;
+            wallMin = Math.min(wallMin, shell[0]);
+            wallMax = Math.max(wallMax, shell[1]);
+            caveCount++;
+        }
+
+        /** Lava under the ground from {@code bottom} to {@code top} (inclusive), a range of its own. */
+        void addSubLava(int bottom, int top) {
+            if (subLavaCount < MAX_BANDS) {
+                subLavaBottom[subLavaCount] = bottom;
+                subLavaTop[subLavaCount] = top;
+                subLavaCount++;
+                subLavaMin = Math.min(subLavaMin, bottom);
+                subLavaMax = Math.max(subLavaMax, top);
+            }
+        }
+
+        /** Rock kept free of vanilla caves and carvers from {@code bottom} to {@code top} (inclusive), a band of its own. */
+        void addDeepGuard(int bottom, int top) {
+            if (deepGuardCount < MAX_BANDS) {
+                deepGuardBottom[deepGuardCount] = bottom;
+                deepGuardTop[deepGuardCount] = top;
+                deepGuardCount++;
+                deepGuardMin = Math.min(deepGuardMin, bottom);
+                deepGuardMax = Math.max(deepGuardMax, top);
+            }
+        }
+
+        /** Whether {@code y} lies in one of the column's guard bands (42). */
+        public boolean deepGuardAt(int y) {
+            if (y < deepGuardMin || y > deepGuardMax) {
+                return false;
+            }
+            for (int i = 0; i < deepGuardCount; i++) {
+                if (y >= deepGuardBottom[i] && y <= deepGuardTop[i]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Which wall the (solid) block at {@code y} belongs to (42): 0 none, 1 the smooth skin of an opening, 2 its shell,
+         * 3 skin bordering lava (a crust).
+         */
+        int caveWall(int y) {
+            if (y < wallMin || y > wallMax) {
+                return 0;
+            }
+            for (int i = 0; i < caveCount; i++) {
+                if (y >= skinBottom[i] && y <= skinTop[i]) {
+                    return y <= crustTop[i] ? 3 : 1;
+                }
+            }
+            for (int i = 0; i < caveCount; i++) {
+                if (y >= shellBottom[i] && y <= shellTop[i]) {
+                    return 2;
+                }
+            }
+            return 0;
+        }
+
+        /** Whether {@code y} lies in a carved opening of this column. */
+        public boolean voidAt(int y) {
+            for (int i = 0; i < voidCount; i++) {
+                if (y >= voidBottom[i] && y <= voidTop[i]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /** +1 where caves stay out, −1 where they may run ({@link VolcanicField#guard}). */
+        double guard(int y) {
+            return y >= guardBottom && y <= guardTop || deepGuardAt(y) ? 1.0 : -1.0;
+        }
+
+        /**
+         * The lift of vanilla's cave densities at {@code y} ({@link VolcanicField#caveLift}): rising over
+         * {@link #CAVE_FADE} blocks to {@link #CAVE_LIFT} at {@link #CAVE_CEILING}, and in a volcano's body at
+         * {@link #caveFadeFrom} (times its weight). A rising lift shrinks the caves gradually, so they end in rounded
+         * tips instead of flat ceilings.
+         */
+        double caveLift(int y) {
+            double lift = Mth.clamp((y - CAVE_CEILING + CAVE_FADE) / CAVE_FADE, 0.0, 1.0);
+            if (caveFadeWeight > 0.0) {
+                lift = Math.max(lift, caveFadeWeight * Mth.clamp((y - caveFadeFrom + CAVE_FADE) / CAVE_FADE, 0.0, 1.0));
+            }
+            return CAVE_LIFT * lift;
+        }
+
         void addPillar(Volcano.Pillar pillar) {
             if (pillarCount < MAX_PILLARS) {
                 pillars[pillarCount++] = pillar;
@@ -1501,12 +1775,7 @@ public final class VolcanicField implements DensityFunction {
             if (thinKind(y) >= 0) {
                 return 1.0;
             }
-            for (int i = 0; i < voidCount; i++) {
-                if (y >= voidBottom[i] && y <= voidTop[i]) {
-                    return -1.0;
-                }
-            }
-            return 0.0;
+            return voidAt(y) ? -1.0 : 0.0;
         }
 
         public double height() {
@@ -1525,6 +1794,57 @@ public final class VolcanicField implements DensityFunction {
         /** Bottom of the lava (inclusive), or {@link Integer#MIN_VALUE} without lava. */
         public int lavaBottom() {
             return lavaBottom;
+        }
+
+        /** The lowest lava under the ground (42: a chamber's lake, a gutter; inclusive), or {@link Integer#MAX_VALUE}. */
+        public int subLavaMin() {
+            return subLavaMin;
+        }
+
+        /** The highest lava under the ground (inclusive), or {@link Integer#MIN_VALUE} without any. */
+        public int subLavaMax() {
+            return subLavaMax;
+        }
+
+        /** The bottom of the lowest band kept free of vanilla caves and carvers (42), or {@link Integer#MAX_VALUE}. */
+        public int deepGuardMin() {
+            return deepGuardMin;
+        }
+
+        /** The top of the highest such band, or {@link Integer#MIN_VALUE}. */
+        public int deepGuardMax() {
+            return deepGuardMax;
+        }
+
+        /** The lowest carved opening's bottom in this column, or {@link Integer#MAX_VALUE} without any. */
+        public int voidMin() {
+            int min = Integer.MAX_VALUE;
+            for (int i = 0; i < voidCount; i++) {
+                min = Math.min(min, voidBottom[i]);
+            }
+            return min;
+        }
+
+        /** The highest carved opening's top in this column, or {@link Integer#MIN_VALUE} without any. */
+        public int voidMax() {
+            int max = Integer.MIN_VALUE;
+            for (int i = 0; i < voidCount; i++) {
+                max = Math.max(max, voidTop[i]);
+            }
+            return max;
+        }
+
+        /** Whether lava under the ground (42) fills the opening at {@code y}. */
+        public boolean subLavaAt(int y) {
+            if (y < subLavaMin || y > subLavaMax || !voidAt(y)) {
+                return false;
+            }
+            for (int i = 0; i < subLavaCount; i++) {
+                if (y >= subLavaBottom[i] && y <= subLavaTop[i]) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /** The Y of the column's lava spring (a source that flows, 39d), or {@link Integer#MIN_VALUE}. */

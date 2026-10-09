@@ -176,6 +176,11 @@ public record Ring3Relief(DensityFunction.NoiseHolder highlands, DensityFunction
         return VolcanicMath.stair(t, PLATEAU_STEPS, PLATEAU_SHARPNESS) * PLATEAU_STEPS;
     }
 
+    /** The signed value whose zero line is the axis of the lava tubes (42: to find a trench by its sign change). */
+    double lavaTubeAxis(double x, double z) {
+        return sample(shapes, x * 0.7 + 4100.5, z * 0.7 - 2500.5);
+    }
+
     /**
      * A lava tube (basalt_flows): 0 outside, else the share across it (1 on its axis); {@code out.floor} = 1 where it has
      * collapsed into a trench, 0 where it is a tunnel.
@@ -185,7 +190,7 @@ public record Ring3Relief(DensityFunction.NoiseHolder highlands, DensityFunction
         if (where < 0.05) {
             return 0.0;
         }
-        double across = 1.0 - Math.abs(sample(shapes, x * 0.7 + 4100.5, z * 0.7 - 2500.5)) / TUBE_WIDTH;
+        double across = 1.0 - Math.abs(lavaTubeAxis(x, z)) / TUBE_WIDTH;
         if (across <= 0.0) {
             return 0.0;
         }

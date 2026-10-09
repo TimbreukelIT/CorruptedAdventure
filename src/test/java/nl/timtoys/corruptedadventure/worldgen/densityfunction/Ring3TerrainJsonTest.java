@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
@@ -79,6 +80,10 @@ class Ring3TerrainJsonTest {
         JsonObject noodle = stack.getAsJsonObject("argument2");
         assertEquals("corruptedadventure:ring_3/overworld/guard", noodle.get("argument2").getAsString());
         assertEquals(2, count(root, "corruptedadventure:ring_3/overworld/guard"), "guard keeps out both cheese/spaghetti and noodles");
+        // 42: the cave lift raises the caves (near the surface, deep, and the noodles), never the terrain itself.
+        assertEquals(3, count(root, "corruptedadventure:ring_3/overworld/cave_lift"));
+        JsonObject lift = WorldgenData.read(DF + "ring_3/overworld/cave_lift.json");
+        assertEquals("cave_lift", lift.get("output").getAsString());
     }
 
     @Test
@@ -107,6 +112,61 @@ class Ring3TerrainJsonTest {
         JsonObject generator = WorldgenData.read("world_preset/corrupted_world.json").getAsJsonObject("dimensions")
                 .getAsJsonObject("minecraft:overworld").getAsJsonObject("generator");
         assertEquals(-1, generator.getAsJsonObject("fluid_levels").get("ring_3").getAsInt());
+    }
+
+    @Test
+    void ringThreeAquifersStayDeepAndHaveNoDeepDark() {
+        // 42: ring 3's own floodedness: vanilla's below Y −24, then falling to −2 by Y −8 (no local aquifer fluid in the
+        // tubes, chambers or caves above, V8); a constant erosion (no deep-dark check of the aquifer, like ring 2).
+        JsonObject floodedness = WorldgenData.read(DF + "ring_blend/overworld_floodedness.json").getAsJsonObject("rings");
+        assertEquals("corruptedadventure:ring_3/overworld/floodedness", floodedness.get("ring_3").getAsString());
+        JsonObject own = WorldgenData.read(DF + "ring_3/overworld/floodedness.json");
+        assertEquals("minecraft:aquifer_fluid_level_floodedness", own.getAsJsonObject("argument1").get("noise").getAsString());
+        JsonObject gradient = own.getAsJsonObject("argument2");
+        assertEquals("minecraft:y_clamped_gradient", gradient.get("type").getAsString());
+        assertTrue(gradient.get("to_y").getAsInt() <= 0 && gradient.get("to_value").getAsDouble() <= -1.0);
+        assertEquals(0.0, gradient.get("from_value").getAsDouble());
+        // Erosion 0 only where ring 3 has all the weight: in the zones its own value is vanilla's, so the zones (and
+        // ring 4's half of 3→4) keep the erosion they had (review 42).
+        JsonObject erosion = WorldgenData.read(DF + "ring_blend/overworld_erosion.json").getAsJsonObject("rings");
+        assertEquals("corruptedadventure:ring_3/overworld/erosion", erosion.get("ring_3").getAsString());
+        JsonObject own3 = WorldgenData.read(DF + "ring_3/overworld/erosion.json");
+        assertEquals(0.0, own3.get("when_in_range").getAsDouble());
+        assertEquals("minecraft:overworld/erosion", own3.get("when_out_of_range").getAsString());
+        assertTrue(own3.get("min_inclusive").getAsDouble() > 0.99);
+        JsonObject weight = own3.getAsJsonObject("input").getAsJsonObject("argument").getAsJsonObject("rings");
+        for (String ring : List.of("ring_1", "ring_2", "ring_4", "ring_5", "void")) {
+            assertEquals(0.0, weight.get(ring).getAsDouble(), ring);
+        }
+        assertEquals(1.0, weight.get("ring_3").getAsDouble());
+        // The other rings keep theirs.
+        assertEquals("minecraft:overworld/erosion", erosion.get("ring_1").getAsString());
+    }
+
+    @Test
+    void fireGeodesAreAnOutputOfTheField() {
+        JsonObject json = WorldgenData.read(DF + "ring_3/overworld/fire_geodes.json");
+        assertEquals("corruptedadventure:volcanic_output", json.get("type").getAsString());
+        assertEquals(FIELD, json.get("field").getAsString());
+        assertEquals("fire_geodes", json.get("output").getAsString());
+    }
+
+    @Test
+    void caveWallsAreTheSecondTopLevelSurfaceRule() {
+        // 42: the walls lie far below the preliminary surface, so their rule stands outside that branch, right after
+        // the bedrock floor, guarded by the ring and a per-column test.
+        JsonArray rules = WorldgenData.read("noise_settings/overworld.json").getAsJsonObject("surface_rule")
+                .getAsJsonArray("sequence");
+        assertEquals("minecraft:bedrock_floor", rules.get(0).getAsJsonObject().getAsJsonObject("if_true").get("random_name").getAsString());
+        JsonObject walls = rules.get(1).getAsJsonObject();
+        assertEquals("corruptedadventure:ring_reach", walls.getAsJsonObject("if_true").get("type").getAsString());
+        assertEquals("ring_3", walls.getAsJsonObject("if_true").get("ring").getAsString());
+        JsonObject perColumn = walls.getAsJsonObject("then_run").getAsJsonObject("if_true");
+        assertEquals("cave_walls", perColumn.get("output").getAsString());
+        String text = walls.toString();
+        assertTrue(text.contains("\"output\":\"cave_wall\"") && text.contains("minecraft:smooth_basalt"));
+        // The walls stop under the ground; a thin roof at a mouth keeps the biome's own rules (39c ash crust).
+        assertFalse(text.contains("corruptedadventure:ash_crust"));
     }
 
     private static String text(String relative) {

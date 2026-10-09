@@ -9,9 +9,11 @@ import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicFieldTest;
+import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeShape;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -261,6 +263,53 @@ class RingAquiferTest {
         assertSame(Blocks.WATER.defaultBlockState(), ring3.computeSubstance(RingPosition.within(Ring.RING_3), at(-1), -0.5));
         assertSame(Blocks.WATER.defaultBlockState(), ring3.computeSubstance(RingPosition.within(Ring.RING_2), at(40), -0.5));
         assertTrue(ring3.shouldScheduleFluidUpdate());
+    }
+
+    @Test
+    void ring3CavesHoldNoAquiferFluidAndTheirGuardStaysRock() {
+        // 42: a fire geode below Y 0 (where vanilla's aquifer may hold water): its cavity is air, the rock of its guard band
+        // stays rock even where a carver asks (substance 0), so no cave or carver opens it.
+        RingAquifer ring3 = new RingAquifer(Level.OVERWORLD, WATER_WITH_UPDATE, FIELD);
+        RingPosition inRing3 = RingPosition.within(Ring.RING_3);
+        FireGeodeShape.Geode geode = null;
+        for (int x = -5000; x <= 5000 && geode == null; x += 48) {
+            FireGeodeShape.Geode g = FIELD.fireGeode(x, 1500);
+            if (g != null && g.y() < -10) {
+                geode = g;
+            }
+        }
+        assertNotNull(geode);
+        assertSame(Blocks.AIR.defaultBlockState(),
+                ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(geode.x(), geode.y(), geode.z()), -1.0));
+        assertFalse(ring3.shouldScheduleFluidUpdate());
+        int rim = geode.y() + geode.reach() + 1;
+        assertNull(ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(geode.x(), rim, geode.z()), 0.0));
+        // Outside the cave's band the rule is vanilla's again.
+        assertSame(Blocks.WATER.defaultBlockState(),
+                ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(geode.x(), geode.y() - geode.reach() - 4, geode.z()), -0.5));
+        // A magma chamber's lake: still lava under the open chamber, rock below it.
+        int[] lake = chamberLake();
+        assertSame(Blocks.LAVA.defaultBlockState(),
+                ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(lake[0], lake[1], lake[2]), -1.0));
+        assertFalse(ring3.shouldScheduleFluidUpdate());
+        assertSame(Blocks.AIR.defaultBlockState(),
+                ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(lake[0], lake[1] + 1, lake[2]), -1.0));
+    }
+
+    /** The top of a magma chamber's lake (x, y, z) inside it: a column whose lake and four neighbours' lakes reach as high. */
+    private static int[] chamberLake() {
+        for (int x = -5800; x <= -4000; x += 8) {
+            for (int z = -2000; z <= 2000; z += 8) {
+                VolcanicField.Column c = FIELD.column(x, z);
+                int top = c.subLavaMax();
+                if (top != Integer.MIN_VALUE && top - c.subLavaMin() >= 2 && c.subLavaAt(top) && c.voidAt(top + 1)
+                        && FIELD.column(x + 1, z).subLavaAt(top) && FIELD.column(x - 1, z).subLavaAt(top)
+                        && FIELD.column(x, z + 1).subLavaAt(top) && FIELD.column(x, z - 1).subLavaAt(top)) {
+                    return new int[]{x, top, z};
+                }
+            }
+        }
+        throw new AssertionError("no magma chamber in the area");
     }
 
     @Test
