@@ -19,7 +19,22 @@
     "water_color": 4026012,
     "water_fog_color": 663091
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:nether_ring_3/glacier_rifts_blue_ice_veins"
+    ],
+    [],
+    [
+      "corruptedadventure:nether_ring_3/glacier_rifts_stalactites"
+    ]
+  ],
   "has_precipitation": false,
   "spawn_costs": {},
   "spawners": {

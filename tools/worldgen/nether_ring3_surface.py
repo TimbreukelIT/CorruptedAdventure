@@ -90,6 +90,19 @@ DRAPE_PAINT_BAND = 0.09
 DRAPE_PAINT_PATCHES_FROM = 0.25
 DRAPE_DEPTH = 12
 FROST = "nether_ring_3_frost"
+ICEFALLS = "nether_ring_3_icefalls"  # density function ring_3/nether/icefalls (54): ribs on the rift walls from 0.25
+# The ice-fall paint starts a little later than the term (from 0.3 the rib stands out by about a block) and covers only
+# the wall layer: the rift edge lies at |RIFTS| = 0.05 + 0.07 * gradient(Y 34-96) (+- the wobble 0.015, - the rib up
+# to 0.025, see density_function ring_3/nether/glacier); per Y band the paint reaches 0.035 past the band's widest edge,
+# a layer of a few blocks. The glacier's inside keeps its packed Nether ice (the blue-ice veins match on it).
+ICEFALLS_FROM = 0.3
+RIFTS_NOISE = "nether_ring_3_rifts"
+ICEFALL_LAYERS = [(30, 50, 0.103), (50, 70, 0.126), (70, 90, 0.148), (90, 113, 0.155)]
+# Glowing seams on the rift floors (54): rare warm spots where the cracks noise crosses zero inside its strongest
+# patches, below RIFT_FLOOR_BELOW; mostly glowing fissure, the odd magma block.
+SEAM_BAND = 0.02
+SEAM_PATCHES_FROM = 0.4
+RIFT_FLOOR_BELOW = 40
 
 # The warm ring around a crack (G2-WN3 = A): no ice within ~4-6 blocks of a crack that is really open.
 WARM_PATCHES_FROM = 0.36
@@ -104,6 +117,12 @@ def outside_warm_ring(then):
 NOISES = {
     "nether_ring_3_frost": (-5, [1.0, 0.5]),
 }
+
+
+def ice_fall_layer(then):
+    """then, in the wall layer of a rift (per Y band: |RIFTS| below the band's paint limit)."""
+    return seq(*[all_of([y_above(lo), NOT(y_above(hi)), noise(RIFTS_NOISE, -limit, limit)], then)
+                 for lo, hi, limit in ICEFALL_LAYERS])
 
 
 def frozen_lava():
@@ -124,7 +143,17 @@ def nether():
             cond(noise(PILLARS, 0.62, 10.0), block("blue_ice")),
             cond(noise(PILLARS, -10.0, 0.38), mod("nether_ice")),
             block("packed_ice"))))),
-        # glacier masses of the rifts: smooth floors, packed Nether ice with vanilla veins
+        # glowing seams on the rift floors: small warm spots (54)
+        all_of([RIFTS, TOP, NOT(y_above(RIFT_FLOOR_BELOW)), noise(CRACK_PATCHES, SEAM_PATCHES_FROM),
+                noise(CRACKS, -SEAM_BAND, SEAM_BAND)], seq(
+            cond(noise(SEL, 0.7), block("magma_block")),
+            mod("glowing_fissure"))),
+        # ice falls down the rift walls (ribs of the icefalls term): the wall layer only, blue and packed ice (54)
+        all_of([RIFTS, noise(ICEFALLS, ICEFALLS_FROM), NOT(depth("floor", 0, True)), NOT(depth("ceiling", 0, True))],
+               ice_fall_layer(seq(
+                   cond(noise(SEL, 0.3), block("blue_ice")),
+                   block("packed_ice")))),
+        # glacier masses of the rifts (and the ice bridges, 54): smooth floors, packed Nether ice with vanilla veins
         cond(RIFTS, cond(y_above(30), cond(NOT(y_above(113)), seq(
             cond(TOP, mod("nether_ice")),
             cond(noise(SEL, 0.45, 10.0), block("blue_ice")),

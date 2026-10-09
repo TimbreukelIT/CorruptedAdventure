@@ -8,15 +8,19 @@ import net.minecraft.data.worldgen.features.FeatureUtils;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
 import net.minecraft.world.level.levelgen.placement.BiomeFilter;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.HeightRangePlacement;
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTest;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
@@ -30,8 +34,10 @@ import java.util.List;
  * The features follow the Nether determinism rule of {@link GrowthPriority} (change 35): they read terrain only (air and
  * the growths are see-through), write growths only (rimeshroom, ice stalactite) and never move aside; origins from
  * {@code count} → {@code in_square} → absolute Y → {@code biome}. Everything that is terrain — the Nether-ice plates,
- * the warm rings around the cracks, the frozen lavafalls and the ice falls — is surface rule or density function, so no
- * feature ever writes terrain that a feature of a neighbouring chunk could read.
+ * the warm rings around the cracks, the frozen lavafalls, the ice falls and the ice bridges — is surface rule or density
+ * function, so no feature ever writes terrain that a feature of a neighbouring chunk could read. The one exception, the
+ * blue-ice veins of the glacier (54), swaps one solid ice for another: no scan sees the difference, overlapping veins
+ * write the same block, and with no air-exposure discard a vein never reads the air the growths fill.
  */
 public final class NetherRing3Features {
     /**
@@ -51,18 +57,23 @@ public final class NetherRing3Features {
     public static final ResourceKey<ConfiguredFeature<?, ?>> RIMESHROOM = configuredKey("rimeshroom");
     public static final ResourceKey<ConfiguredFeature<?, ?>> SMALL_RIMESHROOM = configuredKey("small_rimeshroom");
     public static final ResourceKey<ConfiguredFeature<?, ?>> ICE_STALACTITE = configuredKey("ice_stalactite");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> BLUE_ICE_VEIN = configuredKey("blue_ice_vein");
 
     public static final ResourceKey<PlacedFeature> FROZEN_LAVA_SEA_STALACTITES = placedKey("frozen_lava_sea_stalactites");
     public static final ResourceKey<PlacedFeature> RIME_FOREST_RIMESHROOMS = placedKey("rime_forest_rimeshrooms");
     public static final ResourceKey<PlacedFeature> RIME_FOREST_SMALL_RIMESHROOMS = placedKey("rime_forest_small_rimeshrooms");
     public static final ResourceKey<PlacedFeature> RIME_FOREST_STALACTITES = placedKey("rime_forest_stalactites");
+    public static final ResourceKey<PlacedFeature> GLACIER_RIFTS_STALACTITES = placedKey("glacier_rifts_stalactites");
+    public static final ResourceKey<PlacedFeature> GLACIER_RIFTS_BLUE_ICE_VEINS = placedKey("glacier_rifts_blue_ice_veins");
 
     /**
      * Every vegetal feature of Nether ring 3 in its one fixed order; each biome takes its own in this order
      * ({@code NetherRing3Biomes}), so no feature order cycle can arise between them.
      */
     public static final List<ResourceKey<PlacedFeature>> VEGETATION = List.of(FROZEN_LAVA_SEA_STALACTITES,
-            RIME_FOREST_RIMESHROOMS, RIME_FOREST_SMALL_RIMESHROOMS, RIME_FOREST_STALACTITES);
+            RIME_FOREST_RIMESHROOMS, RIME_FOREST_SMALL_RIMESHROOMS, RIME_FOREST_STALACTITES, GLACIER_RIFTS_STALACTITES);
+    /** The underground decoration of Nether ring 3 in its one order (so far only the glacier's blue-ice veins). */
+    public static final List<ResourceKey<PlacedFeature>> ORES = List.of(GLACIER_RIFTS_BLUE_ICE_VEINS);
 
     private NetherRing3Features() {
     }
@@ -78,6 +89,8 @@ public final class NetherRing3Features {
                 new GiantFungusConfiguration(stem, cap, cap, stalactite, false, SMALL_RIMESHROOM_SIZE));
         FeatureUtils.register(context, ICE_STALACTITE, ModFeatures.SLIME_STALACTITE.get(),
                 new SlimeStalactiteConfiguration(stalactite, UniformInt.of(1, 6)));
+        FeatureUtils.register(context, BLUE_ICE_VEIN, Feature.ORE, new OreConfiguration(
+                new BlockMatchTest(ModBlocks.PACKED_NETHER_ICE.get()), Blocks.BLUE_ICE.defaultBlockState(), 24, 0.0F));
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
@@ -99,6 +112,13 @@ public final class NetherRing3Features {
                 CountPlacement.of(4), InSquarePlacement.spread(), uniformY(28, 70), BiomeFilter.biome());
         PlacementUtils.register(context, RIME_FOREST_STALACTITES, stalactite,
                 CountPlacement.of(5), InSquarePlacement.spread(), uniformY(50, 106), BiomeFilter.biome());
+
+        // The glacier rifts (54): icicles under the tunnel roofs, the ice bridges and the overhangs of the rift walls;
+        // blue-ice veins in the packed Nether ice of the mass.
+        PlacementUtils.register(context, GLACIER_RIFTS_STALACTITES, stalactite,
+                CountPlacement.of(8), InSquarePlacement.spread(), uniformY(36, 100), BiomeFilter.biome());
+        PlacementUtils.register(context, GLACIER_RIFTS_BLUE_ICE_VEINS, features.getOrThrow(BLUE_ICE_VEIN),
+                CountPlacement.of(6), InSquarePlacement.spread(), uniformY(30, 100), BiomeFilter.biome());
     }
 
     private static PlacementModifier uniformY(int min, int max) {

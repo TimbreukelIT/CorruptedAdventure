@@ -85,6 +85,17 @@ class NetherRing3BiomesTest {
                 .contains(NetherRing3Features.RIME_FOREST_RIMESHROOMS));
     }
 
+    /** The glacier's blue-ice veins (54) are its only underground decoration; the other biomes have none. */
+    @Test
+    void oresFollowTheOneFixedOrder() {
+        for (Map.Entry<ResourceKey<Biome>, Biome> entry : BIOMES.entrySet()) {
+            List<ResourceKey<PlacedFeature>> own = step(entry.getValue(), GenerationStep.Decoration.UNDERGROUND_DECORATION);
+            assertEquals(entry.getKey() == ModBiomes.GLACIER_RIFTS ? NetherRing3Features.ORES : List.of(), own, entry.getKey().location().toString());
+        }
+        assertTrue(step(BIOMES.get(ModBiomes.GLACIER_RIFTS), GenerationStep.Decoration.VEGETAL_DECORATION)
+                .contains(NetherRing3Features.GLACIER_RIFTS_STALACTITES));
+    }
+
     @Test
     void onlyOwnFeatures() {
         for (Biome biome : BIOMES.values()) {

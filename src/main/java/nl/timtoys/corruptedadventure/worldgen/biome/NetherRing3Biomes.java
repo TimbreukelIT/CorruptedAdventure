@@ -29,7 +29,7 @@ import java.util.Map;
  * <p>
  * Every effect comes from {@link BiomeAmbience#netherRing3} (stream A); this class only adds the music. No carvers
  * (G2-WN5 = A: the terrain has its halls, rifts and tunnels, and the dam of step 3|4 stays whole). Features come in the one
- * order of {@link NetherRing3Features#VEGETATION}, each biome its own.
+ * order of {@link NetherRing3Features#ORES} and {@link NetherRing3Features#VEGETATION}, each biome its own.
  */
 public final class NetherRing3Biomes {
     /** Every biome of Nether ring 3, the only Java list of them (tags {@code is_nether_ring_3}, {@code c:is_cold/nether}). */
@@ -40,7 +40,12 @@ public final class NetherRing3Biomes {
             ModBiomes.FROZEN_LAVA_SEA, List.of(NetherRing3Features.FROZEN_LAVA_SEA_STALACTITES),
             ModBiomes.RIME_FOREST, List.of(NetherRing3Features.RIME_FOREST_RIMESHROOMS,
                     NetherRing3Features.RIME_FOREST_SMALL_RIMESHROOMS, NetherRing3Features.RIME_FOREST_STALACTITES),
-            ModBiomes.GLACIER_RIFTS, List.of());
+            ModBiomes.GLACIER_RIFTS, List.of(NetherRing3Features.GLACIER_RIFTS_STALACTITES));
+    /** The underground decoration per biome, each a sub-list of {@link NetherRing3Features#ORES} in its order. */
+    static final Map<ResourceKey<Biome>, List<ResourceKey<PlacedFeature>>> ORES = Map.of(
+            ModBiomes.FROZEN_LAVA_SEA, List.of(),
+            ModBiomes.RIME_FOREST, List.of(),
+            ModBiomes.GLACIER_RIFTS, List.of(NetherRing3Features.GLACIER_RIFTS_BLUE_ICE_VEINS));
 
     /** Cold, no precipitation: only for the feel (water never exists in the Nether). */
     static final float TEMPERATURE = -0.5F;
@@ -61,14 +66,17 @@ public final class NetherRing3Biomes {
                             .backgroundMusic(Musics.createGameMusic(SoundEvents.MUSIC_BIOME_NETHER_WASTES))
                             .build())
                     .mobSpawnSettings(spawns())
-                    .generationSettings(generation(features, carvers, VEGETATION.get(key)).build())
+                    .generationSettings(generation(features, carvers, ORES.get(key), VEGETATION.get(key)).build())
                     .build());
         }
     }
 
     static BiomeGenerationSettings.Builder generation(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers,
-                                                      List<ResourceKey<PlacedFeature>> vegetation) {
+                                                      List<ResourceKey<PlacedFeature>> ores, List<ResourceKey<PlacedFeature>> vegetation) {
         BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(features, carvers);
+        for (ResourceKey<PlacedFeature> ore : ores) {
+            generation.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, ore);
+        }
         for (ResourceKey<PlacedFeature> feature : vegetation) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }

@@ -1,12 +1,12 @@
 {
   "type": "minecraft:range_choice",
-  "input": "corruptedadventure:ring_3/nether/crack_mask",
+  "input": "corruptedadventure:ring_3/nether/bridge_gate",
   "min_inclusive": 1e-06,
   "max_exclusive": 2.0,
   "when_in_range": {
-    "type": "minecraft:min",
-    "argument1": "corruptedadventure:ring_3/nether/interpolated_shape",
-    "argument2": "corruptedadventure:ring_3/nether/cracks"
+    "type": "minecraft:max",
+    "argument1": "corruptedadventure:ring_3/nether/cracked",
+    "argument2": "corruptedadventure:ring_3/nether/bridges"
   },
-  "when_out_of_range": "corruptedadventure:ring_3/nether/interpolated_shape"
+  "when_out_of_range": "corruptedadventure:ring_3/nether/cracked"
 }

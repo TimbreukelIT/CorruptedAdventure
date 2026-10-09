@@ -34,33 +34,37 @@
           "type": "minecraft:add",
           "argument1": {
             "type": "minecraft:add",
-            "argument1": "corruptedadventure:ring_3/nether/rift_noise",
-            "argument2": {
+            "argument1": {
               "type": "minecraft:add",
-              "argument1": -0.05,
+              "argument1": "corruptedadventure:ring_3/nether/rift_noise",
               "argument2": {
-                "type": "minecraft:mul",
-                "argument1": -0.07,
+                "type": "minecraft:add",
+                "argument1": -0.05,
                 "argument2": {
-                  "type": "minecraft:y_clamped_gradient",
-                  "from_y": 34,
-                  "to_y": 96,
-                  "from_value": 0.0,
-                  "to_value": 1.0
+                  "type": "minecraft:mul",
+                  "argument1": -0.07,
+                  "argument2": {
+                    "type": "minecraft:y_clamped_gradient",
+                    "from_y": 34,
+                    "to_y": 96,
+                    "from_value": 0.0,
+                    "to_value": 1.0
+                  }
                 }
+              }
+            },
+            "argument2": {
+              "type": "minecraft:mul",
+              "argument1": 0.015,
+              "argument2": {
+                "type": "minecraft:noise",
+                "noise": "corruptedadventure:nether_ring_3_rift_wobble",
+                "xz_scale": 1.0,
+                "y_scale": 0.5
               }
             }
           },
-          "argument2": {
-            "type": "minecraft:mul",
-            "argument1": 0.015,
-            "argument2": {
-              "type": "minecraft:noise",
-              "noise": "corruptedadventure:nether_ring_3_rift_wobble",
-              "xz_scale": 1.0,
-              "y_scale": 0.5
-            }
-          }
+          "argument2": "corruptedadventure:ring_3/nether/icefalls"
         },
         "argument2": 20.0
       },

@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:add",
+    "argument1": "corruptedadventure:ring_3/nether/glacier_top",
+    "argument2": -5.0
+  }
+}
