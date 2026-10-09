@@ -1,0 +1,140 @@
+{
+  "carvers": {
+    "air": [
+      "corruptedadventure:ring_2/cave",
+      "corruptedadventure:ring_2/cave_extra_underground",
+      "corruptedadventure:ring_2/canyon"
+    ]
+  },
+  "downfall": 0.9,
+  "effects": {
+    "fog_color": 10528930,
+    "foliage_color": 7109704,
+    "grass_color": 8162392,
+    "mood_sound": {
+      "block_search_extent": 8,
+      "offset": 2.0,
+      "sound": "minecraft:ambient.cave",
+      "tick_delay": 6000
+    },
+    "sky_color": 9740440,
+    "water_color": 5143152,
+    "water_fog_color": 1715754
+  },
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/steam_fens_boiling_pools",
+      "corruptedadventure:ring_3/steam_fens_mud_pools",
+      "corruptedadventure:ring_3/steam_fens_geysers",
+      "corruptedadventure:ring_3/steam_fens_steam_vents",
+      "corruptedadventure:ring_3/lava_falls",
+      "corruptedadventure:ring_3/island_ember_patches",
+      "corruptedadventure:ring_3/island_hanging_crystals"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/island_ember_trees"
+    ]
+  ],
+  "has_precipitation": false,
+  "spawn_costs": {
+    "minecraft:strider": {
+      "charge": 1.0,
+      "energy_budget": 0.12
+    }
+  },
+  "spawners": {
+    "ambient": [
+      {
+        "type": "minecraft:bat",
+        "maxCount": 8,
+        "minCount": 8,
+        "weight": 10
+      }
+    ],
+    "axolotls": [],
+    "creature": [
+      {
+        "type": "minecraft:strider",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 1
+      }
+    ],
+    "misc": [],
+    "monster": [
+      {
+        "type": "minecraft:spider",
+        "maxCount": 4,
+        "minCount": 4,
+        "weight": 100
+      },
+      {
+        "type": "minecraft:zombie",
+        "maxCount": 4,
+        "minCount": 4,
+        "weight": 19
+      },
+      {
+        "type": "minecraft:zombie_villager",
+        "maxCount": 1,
+        "minCount": 1,
+        "weight": 1
+      },
+      {
+        "type": "minecraft:skeleton",
+        "maxCount": 4,
+        "minCount": 4,
+        "weight": 100
+      },
+      {
+        "type": "minecraft:creeper",
+        "maxCount": 4,
+        "minCount": 4,
+        "weight": 100
+      },
+      {
+        "type": "minecraft:slime",
+        "maxCount": 4,
+        "minCount": 4,
+        "weight": 100
+      },
+      {
+        "type": "minecraft:enderman",
+        "maxCount": 4,
+        "minCount": 1,
+        "weight": 10
+      },
+      {
+        "type": "minecraft:witch",
+        "maxCount": 1,
+        "minCount": 1,
+        "weight": 5
+      },
+      {
+        "type": "minecraft:husk",
+        "maxCount": 4,
+        "minCount": 4,
+        "weight": 80
+      }
+    ],
+    "underground_water_creature": [
+      {
+        "type": "minecraft:glow_squid",
+        "maxCount": 6,
+        "minCount": 4,
+        "weight": 10
+      }
+    ],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "temperature": 2.0
+}

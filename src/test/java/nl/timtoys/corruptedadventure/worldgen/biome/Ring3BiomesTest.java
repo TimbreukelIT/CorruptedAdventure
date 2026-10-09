@@ -40,10 +40,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class Ring3BiomesTest {
     @Test
     void bootstrapRegistersExactlyTheRing3List() {
-        assertEquals(List.copyOf(Ring3Biomes.ALL), List.copyOf(bootstrap().keySet()));
+        assertEquals(Ring3Biomes.WITH_TRANSITION, List.copyOf(bootstrap().keySet()));
         assertEquals(Set.of(ModBiomes.ASHEN_WASTES, ModBiomes.VOLCANIC_PEAKS, ModBiomes.EMBER_WOODS, ModBiomes.BASALT_FLOWS,
                 ModBiomes.SULFUR_FIELDS, ModBiomes.DRIED_SEABED, ModBiomes.TITAN_FIELDS, ModBiomes.DORMANT_CALDERA), Set.copyOf(Ring3Biomes.ALL));
-        assertFalse(Ring3Biomes.ALL.contains(ModBiomes.STEAM_FENS), "steam_fens follows in wave 2");
+        assertFalse(Ring3Biomes.ALL.contains(ModBiomes.STEAM_FENS), "the transition is not in the ring's own source");
+        assertEquals(ModBiomes.STEAM_FENS, Ring3Biomes.TRANSITION);
+        assertEquals(Ring3Biomes.ALL.size() + 1, Set.copyOf(Ring3Biomes.WITH_TRANSITION).size());
     }
 
     @Test
@@ -60,8 +62,8 @@ class Ring3BiomesTest {
             skies.add(biome.getSkyColor());
             fogs.add(biome.getFogColor());
         }
-        assertEquals(Ring3Biomes.ALL.size(), skies.size(), "every sky differs");
-        assertEquals(Ring3Biomes.ALL.size(), fogs.size(), "every fog differs");
+        assertEquals(Ring3Biomes.WITH_TRANSITION.size(), skies.size(), "every sky differs");
+        assertEquals(Ring3Biomes.WITH_TRANSITION.size(), fogs.size(), "every fog differs");
         // The sky turns at the boundary: no ring 3 sky is that of the faded ring 2 transition.
         assertFalse(skies.contains(BiomeAmbience.Palette.DRY_RIVERBEDS.sky()));
     }
@@ -132,7 +134,7 @@ class Ring3BiomesTest {
     /**
      * Each ring 3 biome has its own branch in {@code above_preliminary_surface}, before vanilla's rules: a top block for
      * the surface and an unconditional block for the whole surface depth, so vanilla's grass and dirt never reach it.
-     * 39f: the biome branches sit inside one ring 3 branch (all eight biomes; thin solids first, then a depth gate); a
+     * 39f: the biome branches sit inside one ring 3 branch (all eight biomes and, since 48, the steam fens; thin solids first, then a depth gate); a
      * fast path for the deep blocks of the ring 3 core (keyed on {@code ring_reach} ring 3) may come first.
      */
     @Test
@@ -142,7 +144,7 @@ class Ring3BiomesTest {
         JsonArray rules = sequence.asList().stream().map(JsonElement::getAsJsonObject)
                 .filter(rule -> rule.getAsJsonObject("if_true").get("type").getAsString().equals("minecraft:above_preliminary_surface"))
                 .findFirst().orElseThrow().getAsJsonObject("then_run").getAsJsonArray("sequence");
-        Set<String> ring3 = Ring3Biomes.ALL.stream().map(key -> key.location().toString()).collect(Collectors.toSet());
+        Set<String> ring3 = Ring3Biomes.WITH_TRANSITION.stream().map(key -> key.location().toString()).collect(Collectors.toSet());
         JsonObject ring3Branch = null;
         int firstVanilla = -1;
         for (int i = 0; i < rules.size(); i++) {
@@ -175,7 +177,7 @@ class Ring3BiomesTest {
         assertNotNull(ring3Branch, "ring 3 branch");
         Map<String, JsonObject> branches = new LinkedHashMap<>();
         collectBiomeBranches(ring3Branch, branches);
-        for (ResourceKey<Biome> biome : Ring3Biomes.ALL) {
+        for (ResourceKey<Biome> biome : Ring3Biomes.WITH_TRANSITION) {
             JsonObject branch = branches.get(biome.location().toString());
             assertNotNull(branch, biome.toString());
             boolean top = false;

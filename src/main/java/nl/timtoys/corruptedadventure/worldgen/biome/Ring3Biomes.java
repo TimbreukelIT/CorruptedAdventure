@@ -17,10 +17,11 @@ import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring3Features;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Datagen bootstrap for the ring 3 overworld biomes ({@code docs/plans/ring-3/contract.md} §2): seven sub-biomes and the
- * micro-biome {@code dormant_caldera}; {@code steam_fens} (the transition 3→4) follows. Owned by stream W-biomes.
+ * micro-biome {@code dormant_caldera}, and the transition 3→4 {@code steam_fens} (change 48). Owned by stream W-biomes.
  * <p>
  * Which biome lies where is decided by the {@code multi_noise} source of ring 3 in the world preset, on the router's
  * {@code temperature} (= {@code ring_3/overworld/region_heat}) and {@code vegetation} (= {@code region_ground}); the
@@ -28,19 +29,30 @@ import java.util.List;
  * {@code volcanic_peaks} (mineral) and {@code basalt_flows}, the middle one {@code sulfur_fields} (mineral) and
  * {@code ember_woods}, the coolest {@code dried_seabed} (mineral), {@code ashen_wastes} and {@code titan_fields} (strange).
  * <p>
- * All dry and hot, with their own sky and fog so the sky turns at the ring boundary. Every effect (colours, grass,
+ * {@code steam_fens} is the preset's {@code transitions.ring_3} (a fixed biome over the zone 3→4), not in that source.
+ * <p>
+ * All hot (the steam fens wet, the rest dry), with their own sky and fog so the sky turns at the ring boundary. Every effect (colours, grass,
  * particles, sounds) comes from {@link BiomeAmbience#ring3} (stream A). Their features follow one global order
  * ({@link Ring3Features}); no water lakes, no vanilla trees or grass.
  */
 public final class Ring3Biomes {
     /**
-     * Every biome with ring 3 worldgen, the only Java list of them: the tags {@code is_ring_3}, {@code c:is_hot/overworld}
-     * and {@code c:is_dry/overworld} read it. Hand-written JSON that lists them is in {@code CODEBASE.md} ("Plekken die
-     * ring 3-biomes opsommen").
+     * The biomes of the ring itself, the only Java list of them (the preset's ring 3 {@code multi_noise} holds exactly
+     * these); {@link #WITH_TRANSITION} adds the transition. Hand-written JSON that lists them is in {@code CODEBASE.md}
+     * ("Plekken die ring 3-biomes opsommen").
      */
     public static final List<ResourceKey<Biome>> ALL = List.of(ModBiomes.ASHEN_WASTES, ModBiomes.VOLCANIC_PEAKS,
             ModBiomes.EMBER_WOODS, ModBiomes.BASALT_FLOWS, ModBiomes.SULFUR_FIELDS, ModBiomes.DRIED_SEABED,
             ModBiomes.TITAN_FIELDS, ModBiomes.DORMANT_CALDERA);
+    /** The transition 3→4 (change 48): the preset's {@code transitions.ring_3}. */
+    public static final ResourceKey<Biome> TRANSITION = ModBiomes.STEAM_FENS;
+    /**
+     * Every biome with ring 3 worldgen: {@link #ALL} and the transition. The bootstrap, the tags {@code is_ring_3} and
+     * {@code c:is_hot/overworld} and the ring 3 surface branch read it.
+     */
+    public static final List<ResourceKey<Biome>> WITH_TRANSITION = Stream.concat(ALL.stream(), Stream.of(TRANSITION)).toList();
+    /** The steam fens are wet: the stolen water comes back there (no rain, it is too hot). */
+    static final float STEAM_FENS_DOWNFALL = 0.9F;
 
     /**
      * Goats only on the peaks (contract §4, V7 = A): low weight, groups of 1–3, only on {@code #minecraft:goats_spawnable_on}
@@ -72,12 +84,19 @@ public final class Ring3Biomes {
     public static void bootstrap(BootstrapContext<Biome> context) {
         HolderGetter<PlacedFeature> features = context.lookup(Registries.PLACED_FEATURE);
         HolderGetter<ConfiguredWorldCarver<?>> carvers = context.lookup(Registries.CONFIGURED_CARVER);
-        for (ResourceKey<Biome> key : ALL) {
+        for (ResourceKey<Biome> key : WITH_TRANSITION) {
             // Ring 2's hot, dry builder: one place for the ring-wide biome defaults. Every effect (colours, particles,
             // sounds) comes from stream A's hook.
-            context.register(key, Ring2Biomes.biome(BiomeAmbience.ring3(key), key.equals(ModBiomes.DORMANT_CALDERA) ? 0.4F : 0.0F,
+            context.register(key, Ring2Biomes.biome(BiomeAmbience.ring3(key), downfall(key),
                     spawns(key.equals(ModBiomes.VOLCANIC_PEAKS)), generation(features, carvers, key)));
         }
+    }
+
+    private static float downfall(ResourceKey<Biome> key) {
+        if (key.equals(TRANSITION)) {
+            return STEAM_FENS_DOWNFALL;
+        }
+        return key.equals(ModBiomes.DORMANT_CALDERA) ? 0.4F : 0.0F;
     }
 
     /**

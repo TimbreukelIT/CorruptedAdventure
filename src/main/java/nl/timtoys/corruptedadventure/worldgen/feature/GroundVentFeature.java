@@ -10,13 +10,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
+import nl.timtoys.corruptedadventure.block.GeyserBlock;
 
 /**
  * {@code corruptedadventure:ground_vent} (change 47): a vent in the ground's top (a fumarole, a smouldering vent) with a
  * ragged collar around it (sulfur crust, scorched stone) and a few blocks under it that turn into what the vent
- * brought up (sulfur ore, magma). The vent needs open air above and replaceable ground; the collar replaces only
- * ground tops with air above. Reads the frozen {@code WORLD_SURFACE_WG} heightmap and its own chunk; writes only its own
- * chunk (columns outside it are left out).
+ * brought up (sulfur ore, magma). A geyser as the vent starts its cycle (change 48). The vent needs open air above
+ * and replaceable ground; the collar replaces only ground tops with air above. Reads the frozen
+ * {@code WORLD_SURFACE_WG} heightmap and its own chunk; writes only its own chunk (columns outside it are left out).
  */
 public final class GroundVentFeature extends Feature<GroundVentConfiguration> {
     public static final int MAX_COLLAR = 3;
@@ -39,6 +40,10 @@ public final class GroundVentFeature extends Feature<GroundVentConfiguration> {
             return false;
         }
         level.setBlock(vent, config.vent(), Block.UPDATE_CLIENTS);
+        if (config.vent().getBlock() instanceof GeyserBlock geyser) {
+            // Worldgen does not run onPlace: start the geyser's cycle here (backlog r. 178), the one place that does.
+            geyser.startCycle(level, vent);
+        }
 
         int radius = config.collarRadius().sample(random);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();

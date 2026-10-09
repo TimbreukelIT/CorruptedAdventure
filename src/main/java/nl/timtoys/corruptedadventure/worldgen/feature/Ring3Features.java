@@ -59,6 +59,11 @@ public final class Ring3Features {
             local(Ring3DressingFeatures.ASH_DRIFTS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS,
                     ModBiomes.DRIED_SEABED),
             local(Ring3HorrorFeatures.ASH_FOOTPRINT_TRAILS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS),
+            // Change 48: the steam fens, the pools first.
+            local(SteamFensFeatures.STEAM_FENS_BOILING_POOLS, ModBiomes.STEAM_FENS),
+            local(SteamFensFeatures.STEAM_FENS_MUD_POOLS, ModBiomes.STEAM_FENS),
+            local(SteamFensFeatures.STEAM_FENS_GEYSERS, ModBiomes.STEAM_FENS),
+            local(SteamFensFeatures.STEAM_FENS_STEAM_VENTS, ModBiomes.STEAM_FENS),
             // Change 47c: lava falls and the floating islands, over every ring 3 biome.
             everywhere(Ring3LavaFallFeatures.LAVA_FALLS, GenerationStep.Decoration.LOCAL_MODIFICATIONS),
             everywhere(Ring3IslandFeatures.ISLAND_EMBER_PATCHES, GenerationStep.Decoration.LOCAL_MODIFICATIONS),
@@ -87,9 +92,9 @@ public final class Ring3Features {
         return new Entry(feature, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(biomes));
     }
 
-    /** In every ring 3 biome: it finds its places through the terrain, whatever the biome below. */
+    /** In every ring 3 biome and the steam fens: it finds its places through the terrain, whatever the biome below. */
     private static Entry everywhere(ResourceKey<PlacedFeature> feature, GenerationStep.Decoration step) {
-        return new Entry(feature, step, Set.copyOf(Ring3Biomes.ALL));
+        return new Entry(feature, step, Set.copyOf(Ring3Biomes.WITH_TRANSITION));
     }
 
     @SafeVarargs
@@ -111,6 +116,7 @@ public final class Ring3Features {
         DormantCalderaFeatures.configured(context);
         Ring3IslandFeatures.configured(context);
         Ring3LavaFallFeatures.configured(context);
+        SteamFensFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
@@ -122,5 +128,6 @@ public final class Ring3Features {
         DormantCalderaFeatures.placed(context);
         Ring3IslandFeatures.placed(context);
         Ring3LavaFallFeatures.placed(context);
+        SteamFensFeatures.placed(context);
     }
 }

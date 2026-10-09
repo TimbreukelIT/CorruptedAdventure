@@ -1,0 +1,49 @@
+{
+  "type": "corruptedadventure:ground_vent",
+  "config": {
+    "below": [],
+    "below_count": 0,
+    "collar": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:packed_mud"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:sulfur_crust"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "minecraft:clay"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "collar_chance": 0.6,
+    "collar_radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 1,
+      "min_inclusive": 0
+    },
+    "ground": [
+      "minecraft:mud",
+      "minecraft:packed_mud",
+      "minecraft:clay",
+      "minecraft:coarse_dirt",
+      "minecraft:gravel",
+      "minecraft:dirt",
+      "corruptedadventure:ash_block",
+      "corruptedadventure:sulfur_crust"
+    ],
+    "vent": {
+      "Name": "corruptedadventure:fumarole"
+    }
+  }
+}
