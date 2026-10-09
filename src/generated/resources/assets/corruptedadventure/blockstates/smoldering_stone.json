@@ -1,7 +1,150 @@
 {
   "variants": {
-    "": {
-      "model": "corruptedadventure:block/smoldering_stone"
-    }
+    "": [
+      {
+        "model": "corruptedadventure:block/smoldering_stone"
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 90
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 90,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 90,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 90,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 180
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 180,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 180,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 180,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 270
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 270,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 270,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone",
+        "x": 270,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored"
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 90
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 90,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 90,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 90,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 180
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 180,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 180,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 180,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 270
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 270,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 270,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/smoldering_stone_mirrored",
+        "x": 270,
+        "y": 270
+      }
+    ]
   }
 }

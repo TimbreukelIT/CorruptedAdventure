@@ -1,0 +1,44 @@
+{
+  "feature": "corruptedadventure:ring_3/caldera_fallen_logs",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 16,
+      "chance": 0.2,
+      "margin": 5
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE"
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 0,
+      "radius": 5
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ground_only": true,
+      "ranges": [
+        {
+          "min": 0.5,
+          "output": "caldera_dormant"
+        },
+        {
+          "max": 0.1,
+          "output": "lava_bank"
+        }
+      ]
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:matching_blocks",
+        "blocks": "minecraft:air"
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

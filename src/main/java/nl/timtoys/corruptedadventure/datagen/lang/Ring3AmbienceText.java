@@ -17,6 +17,7 @@ public final class Ring3AmbienceText {
         lang.add(AMBIENT + "nether_ring_3.ice_creak", "Ice creaks");
         lang.add(BLOCK + "fumarole.puff", "Fumarole hisses");
         lang.add(BLOCK + "geyser.burst", "Geyser erupts");
+        lang.add(BLOCK + "geyser.warning", "Geyser gurgles");
         lang.add(BLOCK + "boiling_mud.bubble", "Mud bubbles");
     }
 
@@ -26,6 +27,7 @@ public final class Ring3AmbienceText {
         lang.add(AMBIENT + "nether_ring_3.ice_creak", "IJs kraakt");
         lang.add(BLOCK + "fumarole.puff", "Fumarole sist");
         lang.add(BLOCK + "geyser.burst", "Geiser spuit");
+        lang.add(BLOCK + "geyser.warning", "Geiser gorgelt");
         lang.add(BLOCK + "boiling_mud.bubble", "Modder borrelt");
     }
 }

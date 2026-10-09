@@ -46,6 +46,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTes
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.Fluids;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
@@ -259,6 +260,8 @@ public final class Ring2Features {
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
+        PlacementModifier riverbedsRing2 = InRingFilter.of(Ring.RING_2,
+                HolderSet.direct(context.lookup(Registries.BIOME).getOrThrow(ModBiomes.DRY_RIVERBEDS)));
         HolderGetter<ConfiguredFeature<?, ?>> features = context.lookup(Registries.CONFIGURED_FEATURE);
 
         // Ores (UNDERGROUND_ORES, through the biome modifier add_ring_2_ores): vanilla's, tapered, then our own. Only
@@ -278,13 +281,16 @@ public final class Ring2Features {
                 CountPlacement.of(14),
                 InSquarePlacement.spread(),
                 HeightRangePlacement.of(TrapezoidHeight.of(VerticalAnchor.absolute(95), VerticalAnchor.absolute(180), 60)),
-                BiomeFilter.biome());
+                BiomeFilter.biome(),
+                // Not in the ring 3 half of dry_riverbeds (47d), without a draw: the ores of ring 2 stay where they were.
+                riverbedsRing2);
         // The lowest layers of canyon stone (it starts at Y 8): about a quarter of ring 1's diamond per chunk.
         PlacementUtils.register(context, ModPlacedFeatures.TURQUOISE_ORE, features.getOrThrow(TURQUOISE_ORE),
                 CountPlacement.of(4),
                 InSquarePlacement.spread(),
                 HeightRangePlacement.uniform(VerticalAnchor.absolute(10), VerticalAnchor.absolute(40)),
-                BiomeFilter.biome());
+                BiomeFilter.biome(),
+                riverbedsRing2);
 
         // Canyonlands, LOCAL_MODIFICATIONS, in this order (the spring last, see CanyonSpringFeature).
         PlacementUtils.register(context, ModPlacedFeatures.CANYON_BOULDER_FIELDS, features.getOrThrow(CANYON_BOULDER),

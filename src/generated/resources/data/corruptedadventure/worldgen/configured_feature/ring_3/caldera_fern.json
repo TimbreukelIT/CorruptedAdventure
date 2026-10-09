@@ -14,6 +14,12 @@
           "data": {
             "Name": "minecraft:short_grass"
           },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:moss_carpet"
+          },
           "weight": 1
         }
       ]

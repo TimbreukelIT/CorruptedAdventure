@@ -107,6 +107,9 @@ RIFT_FLOOR_BELOW = 40
 # The warm ring around a crack (G2-WN3 = A): no ice within ~4-6 blocks of a crack that is really open.
 WARM_PATCHES_FROM = 0.36
 WARM_BAND = 0.15
+# The warm ring of the rifts (54b): their low floors dip to the open lava at Y 22 (the Nether-3 lava level); below this
+# Y a rift floor is cold lava with the odd magma block, no ice plates and no rime. The glacier masses start here too.
+RIFT_WARM_BELOW = 30
 
 
 def outside_warm_ring(then):
@@ -179,6 +182,9 @@ def nether():
         # floors: rime forest frosted netherrack with ice; the sea and the rifts' low floors cold lava with ice plates
         # and patches of frosted netherrack where the crust broke
         cond(depth("floor", 0, True), seq(
+            all_of([RIFTS, NOT(y_above(RIFT_WARM_BELOW))], seq(
+                cond(noise(SEL, 0.55, 10.0), block("magma_block")),
+                mod("cold_lava"))),
             cond(biome("rime_forest"), seq(
                 cond(noise(SEL, 0.45, 10.0), mod("nether_ice")),
                 cond(noise(SEL, 0.3, 10.0), mod("packed_nether_ice")),

@@ -125,10 +125,15 @@ class RingAquiferTest {
     @Test
     void otherRingsAndTheNetherKeepLava() {
         RingAquifer still = new RingAquifer(Level.OVERWORLD, STILL_LAVA);
-        for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_3, Ring.RING_4, Ring.RING_5}) {
+        for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_4, Ring.RING_5}) {
             assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(RingPosition.within(ring), at(-20), -0.5), ring.name());
             assertFalse(still.shouldScheduleFluidUpdate());
         }
+        // 42b (V2 = A): ring 3 has no local aquifer lava (its pools stood against the air of their caves); vanilla's lava
+        // layer below Y -54 stays.
+        assertSame(Blocks.AIR.defaultBlockState(), still.computeSubstance(RingPosition.within(Ring.RING_3), at(-20), -0.5));
+        assertFalse(still.shouldScheduleFluidUpdate());
+        assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(RingPosition.within(Ring.RING_3), at(-60), -0.5));
         RingAquifer nether = new RingAquifer(Level.NETHER, STILL_LAVA);
         assertSame(Blocks.LAVA.defaultBlockState(), nether.computeSubstance(RingPosition.within(Ring.RING_2), at(20), -0.5));
         assertFalse(nether.shouldScheduleFluidUpdate());
@@ -142,7 +147,8 @@ class RingAquiferTest {
         assertSame(Blocks.WATER.defaultBlockState(), still.computeSubstance(new RingPosition(Ring.RING_2, Ring.RING_3, 0.49), at(-20), -0.5));
         // The ring 3 half of the zone 2→3 is sealed below ring 2's sea level (no water wall at the middle line).
         assertNull(still.computeSubstance(new RingPosition(Ring.RING_2, Ring.RING_3, 0.51), at(-20), -0.5));
-        assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(RingPosition.within(Ring.RING_3), at(-20), -0.5));
+        // 42b: ring 3 itself has no local aquifer lava.
+        assertSame(Blocks.AIR.defaultBlockState(), still.computeSubstance(RingPosition.within(Ring.RING_3), at(-20), -0.5));
     }
 
     @Test
@@ -199,21 +205,58 @@ class RingAquiferTest {
                 new DensityFunction.SinglePointContext(lava[0], lava[1] - 1, lava[2]), -0.5));
     }
 
+    /** Ring 3's aquifer over the test field, with vanilla's aquifer dry (open space stays air). */
+    private static RingAquifer ring3() {
+        return new RingAquifer(Level.OVERWORLD, DRY, FIELD);
+    }
+
+    /** Whether lava at the block is closed in below and on the three sides other than +x (lava or surely rock there). */
+    private static boolean closedElsewhere(RingAquifer aquifer, int x, int y, int z) {
+        int[][] others = {{x, y - 1, z}, {x - 1, y, z}, {x, y, z + 1}, {x, y, z - 1}};
+        for (int[] o : others) {
+            VolcanicField.Column n = FIELD.column(o[0], o[2]);
+            boolean lava = o[1] < n.lavaTop() && o[1] >= n.lavaBottom();
+            boolean rock = !n.voidAt(o[1]) && o[1] < aquifer.surfaceAt(o[0], o[2]) - 4.0 * n.roughness();
+            if (!lava && !rock) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Test
+    void ring3CarversStayOutOfTheBandAroundLava() {
+        // 42b: while the carvers run (RingChunkGenerator marks their pass), the band around a lava lake gives rock (no
+        // tunnel there that would open the lava); the noise's own open space above the lake stays air, even at a density of
+        // exactly 0.
+        RingAquifer ring3 = ring3();
+        int[] lava = innerLavaColumn(-5200, -2700, -4400, -2000);
+        RingPosition inRing3 = RingPosition.within(Ring.RING_3);
+        DensityFunction.FunctionContext above = new DensityFunction.SinglePointContext(lava[0], lava[1] + 1, lava[2]);
+        assertSame(Blocks.AIR.defaultBlockState(), ring3.computeSubstance(inRing3, above, -0.5));
+        assertSame(Blocks.AIR.defaultBlockState(), ring3.computeSubstance(inRing3, above, 0.0));
+        ring3.carving(true);
+        assertNull(ring3.computeSubstance(inRing3, above, 0.0));
+        assertNull(ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(lava[0], lava[1] - 8, lava[2]), 0.0));
+        ring3.carving(false);
+    }
+
     @Test
     void ring3LavaBesideOpenAirBecomesCrust() {
-        RingAquifer ring3 = new RingAquifer(Level.OVERWORLD, DRY, FIELD);
+        RingAquifer ring3 = ring3();
         RingPosition inRing3 = RingPosition.within(Ring.RING_3);
         int crusts = 0;
-        for (int x = -6000; x <= 6000 && crusts == 0; x++) {
-            for (int z = -6000; z <= 6000 && crusts == 0; z += 89) {
+        for (int x = -6000; x <= 6000 && crusts < 5; x++) {
+            for (int z = -6000; z <= 6000 && crusts < 5; z += 89) {
                 VolcanicField.Column c = FIELD.column(x, z);
                 if (c.lavaTop() == Integer.MIN_VALUE) {
                     continue;
                 }
                 int y = c.lavaTop() - 1;
                 VolcanicField.Column side = FIELD.column(x + 1, z);
-                // The rule of RingAquifer.open: the field's height less the interpolation and crag margins.
-                if (side.lavaTop() == Integer.MIN_VALUE && side.height() - 1.5 - 4.0 * side.roughness() < y + 1.0) {
+                // 42b: a neighbour without lava at this height whose real (interpolated) surface lies at or below it.
+                if ((side.lavaTop() <= y - 1 || y < side.lavaBottom()) && !side.voidAt(y) && !side.thinSolidAt(y)
+                        && y >= ring3.surfaceAt(x + 1, z) + 0.5 && side.roughness() == 0.0) {
                     assertNull(ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(x, y, z), -0.5), x + "," + z);
                     assertFalse(ring3.shouldScheduleFluidUpdate());
                     crusts++;
@@ -224,33 +267,92 @@ class RingAquiferTest {
     }
 
     @Test
-    void ring3RiverStepsStayLavaFalls() {
-        // 39d: lava beside a neighbour that holds lower lava itself (one step down a river) stays lava: a small lava fall,
-        // no lip of crust across the river.
-        RingAquifer ring3 = new RingAquifer(Level.OVERWORLD, DRY, FIELD);
+    void ring3RiverStepsStayLavaFallsOnlyOntoLava() {
+        // 39d: lava beside a neighbour whose own lava lies one block lower and surely fills that block (one step down a
+        // river) stays lava: a small lava fall onto lava. 42b: where that lower block may be rock (the bed's interpolated
+        // surface lies higher than the field says), the lava would spill: a lip of crust.
+        RingAquifer ring3 = ring3();
         RingPosition inRing3 = RingPosition.within(Ring.RING_3);
-        int steps = 0;
-        for (int x = -6000; x <= 6000 && steps < 3; x += 2) {
-            for (int z = -6000; z <= 6000 && steps < 3; z += 97) {
+        int falls = 0;
+        int spills = 0;
+        for (int x = -6000; x <= 6000 && (falls < 3 || spills < 3); x += 2) {
+            for (int z = -6000; z <= 6000 && (falls < 3 || spills < 3); z += 97) {
                 VolcanicField.Column c = FIELD.column(x, z);
                 if (c.lavaTop() == Integer.MIN_VALUE) {
                     continue;
                 }
                 int y = c.lavaTop() - 1;
                 VolcanicField.Column side = FIELD.column(x + 1, z);
-                VolcanicField.Column[] others = {FIELD.column(x - 1, z), FIELD.column(x, z + 1), FIELD.column(x, z - 1)};
-                boolean othersClosed = true;
-                for (VolcanicField.Column o : others) {
-                    othersClosed &= o.lavaAt(y) || o.height() - 1.5 - 4.0 * o.roughness() >= y + 1.0;
+                if (side.lavaTop() != y || side.roughness() > 0.0 || c.roughness() > 0.0 || side.voidAt(y) || side.voidAt(y - 1)
+                        || y < ring3.surfaceAt(x + 1, z) + 0.5 || y < ring3.surfaceAt(x, z) + 0.5 || !closedElsewhere(ring3, x, y, z)) {
+                    continue;
                 }
-                if (side.lavaTop() == c.lavaTop() - 1 && othersClosed && c.height() < y) {
-                    assertSame(Blocks.LAVA.defaultBlockState(),
-                            ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(x, y, z), -0.5), x + "," + z);
-                    steps++;
+                BlockState state = ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(x, y, z), -0.5);
+                if (y - 1 >= ring3.surfaceAt(x + 1, z) && ring3.computeSubstance(inRing3,
+                        new DensityFunction.SinglePointContext(x + 1, y - 1, z), -0.5) == Blocks.LAVA.defaultBlockState()) {
+                    assertSame(Blocks.LAVA.defaultBlockState(), state, "a fall onto lava at " + x + "," + z);
+                    falls++;
+                } else {
+                    assertNull(state, "a spill onto rock at " + x + "," + z);
+                    spills++;
                 }
             }
         }
-        assertTrue(steps > 0, "no river step in the sample");
+        assertTrue(falls > 0 && spills > 0, "falls " + falls + ", spills " + spills);
+    }
+
+    @Test
+    void ring3LavaNeverStandsAgainstOpenAir() {
+        // 42b: everywhere in sample areas (lakes, rivers, the basalt flows, the abyss), a block the aquifer fills with lava
+        // has, on every side and below, rock, lava, or (a step down a river) the air over lava that surely fills the block
+        // below. "Open" uses the exact interpolated surface (the stack is linear in y; around lava the guard keeps caves
+        // out), the carved openings and the thin solids.
+        RingAquifer ring3 = ring3();
+        RingPosition inRing3 = RingPosition.within(Ring.RING_3);
+        int[][] areas = {{3936, -3600, 4319, -3233}, {-4000, -128, -3633, 255}, {-4080, -1984, -3697, -1601},
+                {4720, -576, 4975, -337}, {3920, 320, 4111, 511}};
+        int lava = 0;
+        for (int[] a : areas) {
+            for (int x = a[0]; x <= a[2]; x++) {
+                for (int z = a[1]; z <= a[3]; z++) {
+                    VolcanicField.Column c = FIELD.column(x, z);
+                    if (c.lavaTop() == Integer.MIN_VALUE || c.roughness() > 0.0) {
+                        continue;
+                    }
+                    for (int y = Math.max(c.lavaBottom(), (int) Math.ceil(ring3.surfaceAt(x, z))); y < c.lavaTop(); y++) {
+                        if (c.thinSolidAt(y) || c.islandAt(y)) {
+                            continue;
+                        }
+                        BlockState state = ring3.computeSubstance(inRing3, new DensityFunction.SinglePointContext(x, y, z), -0.5);
+                        if (state != Blocks.LAVA.defaultBlockState()) {
+                            continue;
+                        }
+                        lava++;
+                        assertHeld(ring3, x, y - 1, z, false);
+                        assertHeld(ring3, x + 1, y, z, true);
+                        assertHeld(ring3, x - 1, y, z, true);
+                        assertHeld(ring3, x, y, z + 1, true);
+                        assertHeld(ring3, x, y, z - 1, true);
+                    }
+                }
+            }
+        }
+        assertTrue(lava > 10_000, "lava blocks " + lava);
+    }
+
+    /** The block beside (or below) lava: rock for certain, lava, or (beside only) the air of a river step onto lava. */
+    private static void assertHeld(RingAquifer aquifer, int x, int y, int z, boolean beside) {
+        VolcanicField.Column n = FIELD.column(x, z);
+        boolean lava = y < n.lavaTop() && y >= n.lavaBottom();
+        boolean open = !n.islandAt(y) && !n.thinSolidAt(y) && (n.voidAt(y) || y >= aquifer.surfaceAt(x, z) - 4.0 * n.roughness());
+        if (!open || lava) {
+            return;
+        }
+        // A step down a river: the block below really becomes lava (the aquifer's own decision there, crust check included).
+        boolean step = beside && n.lavaTop() == y && (n.voidAt(y - 1) || y - 1 >= aquifer.surfaceAt(x, z) + 4.0 * n.roughness())
+                && aquifer.computeSubstance(RingPosition.within(Ring.RING_3), new DensityFunction.SinglePointContext(x, y - 1, z), -0.5)
+                == Blocks.LAVA.defaultBlockState();
+        assertTrue(step, "open air beside lava at " + x + "," + y + "," + z);
     }
 
     @Test

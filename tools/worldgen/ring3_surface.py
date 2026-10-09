@@ -353,13 +353,15 @@ def steam_fens():
         cond(DEPTH, seq(cond(noise(P, 0.25), block("mud")), block("packed_mud")))]
 
 
-# Biomes whose top gets the one-block crust of ash over a thin roof.
+# Biomes whose top gets a one-block roof of ash over an opening (39c: ash_crust; 42b: ash_block, which does not fall).
 THIN_ROOF_CRUST = {"ashen_wastes", "volcanic_peaks", "ember_woods", "titan_fields"}
 
 
 def biome_branch(name):
     top, rest = BIOMES[name]()
-    head = [cond(THIN_ROOF, mod("ash_crust"))] if name in THIN_ROOF_CRUST else []
+    # 42b (V3 = A): a roof of one block (air right below) gets ash that does not fall; a falling ash_crust there fell at the
+    # first neighbour update during generation, so the world depended on when that came.
+    head = [cond(THIN_ROOF, mod("ash_block"))] if name in THIN_ROOF_CRUST else []
     # The STEEP rules (before TOP) keep their place in front.
     steep = [r for r in rest if r.get("if_true") == STEEP]
     rest = [r for r in rest if r.get("if_true") != STEEP]
@@ -386,11 +388,26 @@ def reach(ring):
     return {"type": CA + "ring_reach", "dimension": "minecraft:overworld", "ring": ring}
 
 
+def deep_wall_rock():
+    """42b: the walls of deep cuts (the abyss, rifts, river gorges, collapses) below the ground package: layered volcanic
+    rock instead of vanilla stone. Per block patterns only (a 2D noise would run down a tall wall as vertical stripes):
+    tuff in bands by height (`tread`), winding blackstone veins (`vein`), basalt."""
+    return seq(
+        cond(volc("vein", 0.0, 0.07), block("blackstone")),
+        cond(volc("tread", 0.0, 0.16), block("tuff")),
+        block("basalt"))
+
+
 def ring_3_deep():
     """39f: the deep blocks of the ring 3 core (below GATE, no thin solid, neither ring 2 nor ring 4 within reach) stay
     stone at once. Without this every such block above the preliminary surface asked for its biome in each branch
-    (the ring 2 and vanilla branches test their biomes per block); stone is what they became anyway."""
-    return all_of([reach("ring_3"), NOT(reach("ring_2")), NOT(reach("ring_4")), NOT(GATE), NOT(THIN_ANY)], block("stone"))
+    (the ring 2 and vanilla branches test their biomes per block); stone is what they became anyway. 42b: except the
+    walls of deep cuts, which get ring 3 rock."""
+    return all_of([reach("ring_3"), NOT(reach("ring_2")), NOT(reach("ring_4")), NOT(GATE), NOT(THIN_ANY)], seq(
+        # One test per column first (the surface condition remembers its column), so only columns beside a deep cut pay
+        # the per-block test.
+        all_of([volc("cut_depth", 8.0, 1000.0), volc("deep_wall", 0.5, 2.0)], deep_wall_rock()),
+        block("stone")))
 
 
 def cave_walls():

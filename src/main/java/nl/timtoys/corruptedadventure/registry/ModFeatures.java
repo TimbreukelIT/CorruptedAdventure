@@ -30,8 +30,12 @@ import nl.timtoys.corruptedadventure.worldgen.feature.SurfaceFossilConfiguration
 import nl.timtoys.corruptedadventure.worldgen.feature.SurfaceFossilFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.TerracePoolConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.TerracePoolFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.WallDrapeConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.WallDrapeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.AshCastConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.AshCastFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.AshDriftConfiguration;
@@ -129,6 +133,12 @@ public final class ModFeatures {
     /** {@code corruptedadventure:fire_geode} (change 41b) */
     public static final DeferredHolder<Feature<?>, Feature<FireGeodeConfiguration>> FIRE_GEODE =
             FEATURES.register("fire_geode", () -> new FireGeodeFeature(FireGeodeConfiguration.CODEC));
+    /** {@code corruptedadventure:wall_drape} (change 47d) */
+    public static final DeferredHolder<Feature<?>, Feature<WallDrapeConfiguration>> WALL_DRAPE =
+            FEATURES.register("wall_drape", () -> new WallDrapeFeature(WallDrapeConfiguration.CODEC));
+    /** {@code corruptedadventure:terrace_pool} (change 47d) */
+    public static final DeferredHolder<Feature<?>, Feature<TerracePoolConfiguration>> TERRACE_POOL =
+            FEATURES.register("terrace_pool", () -> new TerracePoolFeature(TerracePoolConfiguration.CODEC));
 
     private ModFeatures() {
     }

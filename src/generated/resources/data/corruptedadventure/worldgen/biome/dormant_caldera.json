@@ -32,6 +32,7 @@
     [],
     [],
     [
+      "corruptedadventure:ring_3/dormant_caldera_moss_hummocks",
       "corruptedadventure:ring_3/lava_falls",
       "corruptedadventure:ring_3/island_ember_patches",
       "corruptedadventure:ring_3/island_hanging_crystals"
@@ -47,9 +48,14 @@
     [
       "corruptedadventure:ring_3/island_ember_trees",
       "corruptedadventure:ring_3/dormant_caldera_azalea_trees",
+      "corruptedadventure:ring_3/dormant_caldera_azalea_shrubs",
+      "corruptedadventure:ring_3/dormant_caldera_fallen_logs",
       "corruptedadventure:ring_3/dormant_caldera_azalea_bushes",
+      "corruptedadventure:ring_3/dormant_caldera_dripleaf",
       "corruptedadventure:ring_3/dormant_caldera_ferns",
       "corruptedadventure:ring_3/dormant_caldera_berry_bushes",
+      "corruptedadventure:ring_3/dormant_caldera_moss_carpets",
+      "corruptedadventure:ring_3/dormant_caldera_wall_drapes",
       "corruptedadventure:ring_3/dormant_caldera_glow_lichen"
     ]
   ],

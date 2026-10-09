@@ -32,7 +32,7 @@ public record ConditionContext(ServerPlayer player, ServerLevel level, RingPosit
     static final double SUBMERGED_WATER_HEIGHT = 1.0;
     /** Blocks below the feet searched for the ground while the player is in the air ({@link #standsOn}). */
     static final int AIRBORNE_LOOKDOWN = 2;
-    private static final Predicate<BlockState> HEAT_SOURCE = state -> state.is(ModTags.Blocks.HEAT_SOURCES);
+    private static final Predicate<BlockState> HEAT_SOURCE = ConditionContext::isHeatSource;
     private static final Predicate<BlockState> WARMTH_SOURCE = ConditionContext::isWarmthSource;
 
     public static ConditionContext of(ServerPlayer player) {
@@ -71,7 +71,7 @@ public record ConditionContext(ServerPlayer player, ServerLevel level, RingPosit
         return eye.getY() < level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, eye.getX(), eye.getZ());
     }
 
-    /** A block in {@code #corruptedadventure:heat_sources} within {@code radius} blocks of the feet or head. */
+    /** A lit block in {@code #corruptedadventure:heat_sources} within {@code radius} blocks of the feet or head. */
     public boolean isNearHeatSource(int radius) {
         return NearbyBlocks.near(level, player.blockPosition(), radius, HEAT_SOURCE);
     }
@@ -100,10 +100,19 @@ public record ConditionContext(ServerPlayer player, ServerLevel level, RingPosit
         return false;
     }
 
-    /** In the tag and not an unlit campfire (the tag lists blocks, a campfire can be put out). */
+    /** In {@code #heat_sources} and not an unlit campfire (package 55b, like the warmth sources). */
+    static boolean isHeatSource(BlockState state) {
+        return isLitIn(state, ModTags.Blocks.HEAT_SOURCES);
+    }
+
+    /** In {@code #warmth_sources} and not an unlit campfire. */
     static boolean isWarmthSource(BlockState state) {
-        return state.is(ModTags.Blocks.WARMTH_SOURCES)
-                && (!state.hasProperty(BlockStateProperties.LIT) || state.getValue(BlockStateProperties.LIT));
+        return isLitIn(state, ModTags.Blocks.WARMTH_SOURCES);
+    }
+
+    /** In the tag and not put out: the tags list blocks, but a campfire can be extinguished. */
+    private static boolean isLitIn(BlockState state, TagKey<Block> tag) {
+        return state.is(tag) && (!state.hasProperty(BlockStateProperties.LIT) || state.getValue(BlockStateProperties.LIT));
     }
 
     static boolean isSubmerged(double waterHeight) {

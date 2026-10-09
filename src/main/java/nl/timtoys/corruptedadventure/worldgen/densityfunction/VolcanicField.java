@@ -72,8 +72,11 @@ public final class VolcanicField implements DensityFunction {
     private static final int MAX_SOLIDS = 8;
     private static final int MAX_VOIDS = 8;
     private static final int MAX_PILLARS = 2;
-    /** Lava tubes, skylights and magma chambers whose walls one column may hold (42). */
-    private static final int MAX_CAVES = 6;
+    /**
+     * Openings with walls one column may hold: six for the lava tubes, skylights and magma chambers (42), one for a
+     * collapse's shaft (42b), which comes first.
+     */
+    private static final int MAX_CAVES = 7;
     /** Vanilla caves are gone from here up (42: no cave mouths under the floating islands, Y ~150-210). */
     private static final double CAVE_CEILING = 146.0;
     /** Vanilla caves are gone in a volcano's body from this far above the plain it stands on (42). */
@@ -82,6 +85,10 @@ public final class VolcanicField implements DensityFunction {
     private static final double CAVE_FADE = 20.0;
     /** The lift that closes every vanilla cave (their densities stay above about −1.5). */
     private static final double CAVE_LIFT = 2.0;
+    /** The band around a lava river reaches at least this far (blocks) past the lava's edge (42b). */
+    private static final double RIVER_GUARD = 6.0;
+    /** A cut at least this deep gets walls of ring 3 rock below the surface's own package (42b). */
+    private static final double DEEP_CUT = 8.0;
     /** Separate lava ranges and guard bands one column may hold (42). */
     private static final int MAX_BANDS = 6;
     /** Highest top of a thin shape (below the top slide of the ring 3 stack). */
@@ -337,6 +344,11 @@ public final class VolcanicField implements DensityFunction {
      */
     double caveLift(int x, int y, int z) {
         return column(x, z).caveLift(y);
+    }
+
+    /** 42b: 1 where a block may be part of the wall of a deep cut ({@link Column#deepWall}), else 0; for the surface. */
+    double deepWall(int x, int y, int z) {
+        return column(x, z).deepWall(y) ? 1.0 : 0.0;
     }
 
     /** 42: which wall of a lava tube or magma chamber a block belongs to ({@link Column#caveWall}), for the surface. */
@@ -1046,6 +1058,7 @@ public final class VolcanicField implements DensityFunction {
         // Lava rivers.
         double height = preHeight;
         double riverNear = 0.0;
+        double gorge = 0.0;
         if (r.core() > 0.0) {
             double[] river = c.river;
             if (c.calderaMask <= 0.0 && nearestRiver(px, pz, river)) {
@@ -1062,6 +1075,10 @@ public final class VolcanicField implements DensityFunction {
                 height = preHeight - profile * Math.max(0.0, preHeight - bed);
                 c.channel = profile;
                 riverNear = 1.0 - VolcanicMath.smoothstep(2.5, 4.0, along);
+                if (riverNear > 0.0) {
+                    // 42b: how deep the river's gorge lies below this column's ground (its walls, for the surface).
+                    gorge = Math.max(0.0, preHeight - (level - CHANNEL_DEPTH));
+                }
                 if (along < 1.0 + BANK_BLOCKS / half) {
                     c.lavaBank = along < 1.0 ? 1.0 : Mth.clamp(1.0 - (along - 1.0) * half / BANK_BLOCKS, 0.0, 1.0);
                 }
@@ -1069,7 +1086,9 @@ public final class VolcanicField implements DensityFunction {
                     c.lavaTop = level;
                     c.lavaBottom = level - CHANNEL_DEPTH - 3;
                 }
-                if (along < 1.8) {
+                // 42b: at least RIVER_GUARD blocks past the lava's edge, more than a cell of the terrain's interpolation,
+                // so no cell corner near the lava interpolates a cave into it.
+                if (along < Math.max(1.8, 1.0 + RIVER_GUARD / half)) {
                     c.guardBottom = Math.min(c.guardBottom, level - 12);
                     c.guardTop = Math.max(c.guardTop, level + 4);
                 }
@@ -1085,6 +1104,7 @@ public final class VolcanicField implements DensityFunction {
         if (collapse != null && collapseQ < 1.0 + 18.0 / collapse.radius()) {
             c.floorMargin = Math.max(c.floorMargin, collapse.depth() + 2.0);
         }
+        c.cutDepth = Math.max(c.floorMargin, gorge + 2.0);
         c.roughness = Math.max(c.roughness, 0.9 * c.cliff);
         if (cinder > 4.0) {
             c.roughness = Math.max(c.roughness, 0.5 * (1.0 - riverNear));
@@ -1462,6 +1482,11 @@ public final class VolcanicField implements DensityFunction {
         double floorMargin;
         /** 0..1 (39f): a collapse's footprint, 1 inside its rim (where vanilla cave entrances may reach the surface). */
         double collapse;
+        /**
+         * 42b: how deep a cut near this column may reach below its ground (the abyss, a rift, a river's gorge, a collapse,
+         * the landforms' risers): its blocks down to there may form the wall of the cut.
+         */
+        double cutDepth;
         /** A lava spring (a source that flows) at this Y, or {@link Integer#MIN_VALUE}. */
         int springY;
         /** Lava fills open space from {@link #lavaBottom} up to, not including, {@link #lavaTop}. */
@@ -1554,6 +1579,7 @@ public final class VolcanicField implements DensityFunction {
             cliff = 0.0;
             floorMargin = 0.0;
             collapse = 0.0;
+            cutDepth = 0.0;
             springY = Integer.MIN_VALUE;
             lavaTop = Integer.MIN_VALUE;
             lavaBottom = Integer.MIN_VALUE;
@@ -1622,8 +1648,18 @@ public final class VolcanicField implements DensityFunction {
             solidCount++;
         }
 
-        /** A carved opening from {@code bottom} to {@code top} (inclusive block Y). */
+        /**
+         * A carved opening from {@code bottom} to {@code top} (inclusive block Y). 42b: never inside the band around a
+         * lava lake, river or the abyss's lava sea (whatever shape asks): the opening keeps its larger part outside it.
+         */
         void addVoid(int bottom, int top) {
+            if (top >= guardBottom && bottom <= guardTop) {
+                if (top - guardTop >= guardBottom - bottom) {
+                    bottom = guardTop + 1;
+                } else {
+                    top = guardBottom - 1;
+                }
+            }
             if (voidCount == MAX_VOIDS || top < bottom) {
                 return;
             }
@@ -1712,6 +1748,29 @@ public final class VolcanicField implements DensityFunction {
                 }
             }
             return 0;
+        }
+
+        /**
+         * 42b: whether the block at {@code y} may be part of the wall of a deep cut beside the column (from its ground down
+         * to {@link #cutDepth} and two more; only for cuts of {@link #DEEP_CUT} blocks or more).
+         */
+        boolean deepWall(int y) {
+            return cutDepth >= DEEP_CUT && y < height && y >= height - cutDepth - 2.0;
+        }
+
+        /** Whether a thin solid (or a floating island) fills {@code y} in this column, whatever the terrain. */
+        public boolean thinSolidAt(int y) {
+            return thinKind(y) >= 0;
+        }
+
+        /** Bottom of the band around a lava lake, river or the abyss's lava sea kept free of caves (inclusive). */
+        public int guardBottom() {
+            return guardBottom;
+        }
+
+        /** Top of that band (inclusive), or {@link Integer#MIN_VALUE} without one. */
+        public int guardTop() {
+            return guardTop;
         }
 
         /** Whether {@code y} lies in a carved opening of this column. */

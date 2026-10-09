@@ -50,11 +50,12 @@ public final class TitanFieldsFeatures {
     public static final ResourceKey<PlacedFeature> TITAN_FIELDS_SKULLS = placed("titan_fields_skulls");
     public static final ResourceKey<PlacedFeature> TITAN_FIELDS_BONES = placed("titan_fields_bones");
     public static final ResourceKey<PlacedFeature> TITAN_FIELDS_SOUL_FIRE = placed("titan_fields_soul_fire");
+    public static final ResourceKey<PlacedFeature> TITAN_FIELDS_SOUL_FIRE_AROUND = placed("titan_fields_soul_fire_around");
     public static final ResourceKey<PlacedFeature> TITAN_FIELDS_ROCKS = placed("titan_fields_rocks");
 
     /** The grid of the titan rocks (blocks): at most one rock per cell. */
     static final int ROCK_CELL = 256;
-    /** A soul patch reaches radius + 1 (stretch 1); the margin keeps it whole and its fire at least 2 from the chunk's edges. */
+    /** A soul patch reaches radius + 1 (stretch 1); near a chunk edge it is cut there (it writes only its own chunk). */
     private static final int SOUL_PATCH_RADIUS = 2;
 
     private static final PlacementModifier SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
@@ -73,7 +74,7 @@ public final class TitanFieldsFeatures {
         FeatureUtils.register(context, SOUL_FIRE_PATCH, ModFeatures.GROUND_PATCH.get(), new GroundPatchConfiguration(
                 BlockStateProvider.simple(Blocks.SOUL_SOIL), ground, UniformInt.of(1, SOUL_PATCH_RADIUS), 1.0F, ConstantInt.of(1),
                 ConstantInt.of(1), new WeightedStateProvider(SimpleWeightedRandomList.<BlockState>builder()
-                        .add(Blocks.AIR.defaultBlockState(), 3)
+                        .add(Blocks.AIR.defaultBlockState(), 1)
                         .add(Blocks.SOUL_FIRE.defaultBlockState(), 1))));
         FeatureUtils.register(context, TITAN_ROCK, ModFeatures.TITAN_ROCK.get(), new TitanRockConfiguration(
                 List.of(template("titan_rock_kneeling"), template("titan_rock_hunched"), template("titan_rock_bust")), ROCK_CELL, 0.4F,
@@ -91,9 +92,13 @@ public final class TitanFieldsFeatures {
                 BiomeFilter.biome());
         PlacementUtils.register(context, TITAN_FIELDS_BONES, features.getOrThrow(TITAN_BONES),
                 JitteredGridPlacement.of(16, 1, 0.15F), SURFACE, SlopeFilter.flat(3, 2), ground, BiomeFilter.biome());
-        // Soul patches at the feet of the ribs and under the spine.
+        // Soul patches around the feet of the ribs and the spine (47d: twice per point, moved off the bone itself, where
+        // the ground filter finds no plain ground, and down to 1 from the chunk edge; INT2 found only two).
         PlacementUtils.register(context, TITAN_FIELDS_SOUL_FIRE, features.getOrThrow(SOUL_FIRE_PATCH),
-                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 1.0F, 3, SOUL_PATCH_RADIUS + 2, 4), SURFACE, ground,
+                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 1.0F, 5, 1, 4), SURFACE, ground,
+                BiomeFilter.biome());
+        PlacementUtils.register(context, TITAN_FIELDS_SOUL_FIRE_AROUND, features.getOrThrow(SOUL_FIRE_PATCH),
+                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 1.0F, 9, 1, 5), SURFACE, ground,
                 BiomeFilter.biome());
         // Once per chunk without a biome filter: a rock is a function of its cell, and every chunk it covers writes its
         // part (the rock's centre must lie in the titan fields, TitanRockFeature checks that).

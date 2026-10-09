@@ -256,6 +256,44 @@ class NetherRing3JsonTest {
         assertEquals(4, found);
     }
 
+    /**
+     * 54b: the rifts' low floors (below Y 30, where they dip to the open lava at Y 22) are the warm ring: cold lava and
+     * magma, no ice. The floor rule starts with that branch, before the ice plates, and the glacier masses (ice) start at
+     * the same Y.
+     */
+    @Test
+    void theRiftsWarmRingAroundTheirLavaHasNoIce() {
+        JsonArray sequence = WorldgenData.read("noise_settings/nether.json").getAsJsonObject("surface_rule").getAsJsonArray("sequence");
+        JsonObject branch = null;
+        for (JsonElement rule : sequence) {
+            JsonElement biomes = rule.getAsJsonObject().has("if_true") ? rule.getAsJsonObject().getAsJsonObject("if_true").get("biome_is") : null;
+            if (biomes != null && biomes.toString().equals(RING_3_BIOMES)) {
+                branch = rule.getAsJsonObject();
+            }
+        }
+        assertTrue(branch != null);
+        JsonObject floors = null;
+        for (JsonElement rule : branch.getAsJsonObject("then_run").getAsJsonArray("sequence")) {
+            JsonObject condition = rule.getAsJsonObject().getAsJsonObject("if_true");
+            if (condition != null && "minecraft:stone_depth".equals(condition.get("type").getAsString())
+                    && condition.get("offset").getAsInt() == 0 && condition.get("add_surface_depth").getAsBoolean()
+                    && "floor".equals(condition.get("surface_type").getAsString())) {
+                floors = rule.getAsJsonObject();
+                break;
+            }
+        }
+        assertTrue(floors != null, "the floor rule");
+        JsonObject warm = floors.getAsJsonObject("then_run").getAsJsonArray("sequence").get(0).getAsJsonObject();
+        JsonObject rifts = warm.getAsJsonObject("if_true");
+        assertEquals("corruptedadventure:nether_ring_3_region", rifts.get("noise").getAsString());
+        assertTrue(rifts.get("max_threshold").getAsDouble() <= -0.18);
+        JsonObject below = warm.getAsJsonObject("then_run").getAsJsonObject("if_true");
+        assertEquals("minecraft:not", below.get("type").getAsString());
+        assertEquals(30, below.getAsJsonObject("invert").getAsJsonObject("anchor").get("absolute").getAsInt());
+        assertFalse(warm.toString().contains("ice"), "no ice in the rifts' warm ring");
+        assertTrue(branch.toString().contains("{\"type\":\"minecraft:y_above\",\"anchor\":{\"absolute\":30}"));
+    }
+
     /** {@code c} of the first {@code add(noise(name), c)} in the tree. */
     private static double offsetOf(JsonElement tree, String noise) {
         List<JsonObject> adds = new ArrayList<>();

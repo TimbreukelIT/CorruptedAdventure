@@ -189,7 +189,7 @@ public final class ServerConfig {
 
         private HeatCondition(ModConfigSpec.Builder builder) {
             builder.comment("Heat in ring 3 of the overworld. Rises in direct sunlight by day (full sky light at eye height)",
-                            "and near a heat source (block tag corruptedadventure:heat_sources; also at night and underground).",
+                            "and near a lit heat source (block tag corruptedadventure:heat_sources; also at night and underground).",
                             "The strongest factor wins (source or peak), they do not stack. Every other case falls; water and",
                             "the refuge biomes cool even in the sun or next to a source; the strongest fall rate wins.")
                     .push("heat");

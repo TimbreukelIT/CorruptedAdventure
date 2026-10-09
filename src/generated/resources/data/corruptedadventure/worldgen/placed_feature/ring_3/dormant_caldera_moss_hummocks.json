@@ -1,0 +1,37 @@
+{
+  "feature": "corruptedadventure:ring_3/caldera_moss_hummock",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 16,
+      "chance": 0.8,
+      "margin": 5
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "max": 0.15,
+      "noise": "corruptedadventure:ring_3_caldera_growth"
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ground_only": true,
+      "ranges": [
+        {
+          "min": 0.5,
+          "output": "caldera_dormant"
+        },
+        {
+          "max": 0.1,
+          "output": "lava_bank"
+        }
+      ]
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}
