@@ -2,17 +2,23 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SnowLayerBlock;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicOutput;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The pure parts of the ring 3 dressing (change 47): filters, drifts and shapes. */
+/** The pure parts of the ring 3 dressing (changes 47, 49): filters, drifts, shapes, footprint trails and rotations. */
 class Ring3DressingShapesTest {
     @Test
     void groundOnlyKeepsTheSurfaceOnTheTerrain() {
@@ -99,5 +105,49 @@ class Ring3DressingShapesTest {
         assertEquals(2, ImpactCraterFeature.depth(0, 0, 3));
         assertEquals(1, ImpactCraterFeature.depth(2, 1, 3));
         assertEquals(0, ImpactCraterFeature.depth(4, 0, 3));
+    }
+
+    @Test
+    void footprintTrailsArePureAndStopAbruptly() {
+        Map<String, Integer> ends = new HashMap<>();
+        int trails = 0;
+        for (int i = -20; i < 20; i++) {
+            for (int j = -20; j < 20; j++) {
+                FootprintPath.Trail trail = FootprintPath.trail(20260930L, i, j, 72, 0.9F);
+                FootprintPath.Trail again = FootprintPath.trail(20260930L, i, j, 72, 0.9F);
+                assertEquals(trail, again);
+                if (trail == null) {
+                    continue;
+                }
+                trails++;
+                ends.merge(trail.end().name(), 1, Integer::sum);
+                assertTrue(trail.steps().size() >= FootprintPath.MIN_STEPS && trail.steps().size() <= FootprintPath.MAX_STEPS);
+                for (int k = 1; k < trail.steps().size(); k++) {
+                    FootprintPath.Step a = trail.steps().get(k - 1);
+                    FootprintPath.Step b = trail.steps().get(k);
+                    assertTrue(Math.abs(a.x() - b.x()) <= 3 && Math.abs(a.z() - b.z()) <= 3, "steps follow each other");
+                    assertTrue(a.left() != b.left(), "the feet alternate");
+                }
+                for (FootprintPath.Step step : trail.steps()) {
+                    assertTrue(step.x() >= i * 72 - FootprintPath.MAX_LENGTH && step.x() < (i + 1) * 72 + FootprintPath.MAX_LENGTH);
+                    assertTrue(step.z() >= j * 72 - FootprintPath.MAX_LENGTH && step.z() < (j + 1) * 72 + FootprintPath.MAX_LENGTH);
+                }
+            }
+        }
+        assertTrue(trails > 1200 && trails < 1700, "about 9 in 10 cells: " + trails);
+        assertEquals(3, ends.size(), "every ending occurs: " + ends);
+        // Another seed, other trails.
+        assertFalse(FootprintPath.trail(1L, 0, 0, 72, 1.0F).equals(FootprintPath.trail(2L, 0, 0, 72, 1.0F)));
+    }
+
+    @Test
+    void rotationsTurnPlusXTowardsADirection() {
+        assertEquals(Rotation.NONE, Ring3Terrain.towards(5, 1));
+        assertEquals(Rotation.CLOCKWISE_180, Ring3Terrain.towards(-5, 1));
+        assertEquals(Rotation.CLOCKWISE_90, Ring3Terrain.towards(1, 5));
+        assertEquals(Rotation.COUNTERCLOCKWISE_90, Ring3Terrain.towards(1, -5));
+        // Clockwise 90 turns +x into +z, as the template transform does.
+        BlockPos turned = StructureTemplate.transform(new BlockPos(1, 0, 0), Mirror.NONE, Rotation.CLOCKWISE_90, BlockPos.ZERO);
+        assertEquals(new BlockPos(0, 0, 1), turned);
     }
 }

@@ -13,22 +13,24 @@ import java.util.TreeMap;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Generates the ring 3 structure templates (worldgen features, wave 2: 47, 47b) as {@code .nbt} files under
+ * Generates the ring 3 structure templates (worldgen features, wave 2: 47, 47b, 49) as {@code .nbt} files under
  * {@code src/main/resources/data/corruptedadventure/structure/ring_3/}. Only the JDK; every shape comes from a fixed seed,
  * so two runs write identical bytes (gzip header without a time stamp). Run from the repository root:
  * {@code java tools/worldgen/Ring3Templates.java}.
  * <p>
- * The features ({@code surface_fossil}, {@code titan_rock}) keep only the blocks of their own list from a template, so
- * the templates hold only those blocks: no air, no structure voids.
+ * The features ({@code surface_fossil}, {@code titan_rock}, {@code ash_cast}) keep only the blocks of their own list
+ * from a template, so the templates hold only those blocks: no air, no structure voids.
  */
 public final class Ring3Templates {
     /** Minecraft 1.21.1. */
     private static final int DATA_VERSION = 3955;
     private static final Path OUT = Path.of("src/main/resources/data/corruptedadventure/structure/ring_3");
     private static final String BONE = "minecraft:bone_block";
+    private static final String ASH = "corruptedadventure:ash_block";
     private static final String BASALT = "minecraft:basalt";
     private static final String SMOOTH_BASALT = "minecraft:smooth_basalt";
     private static final String BLACKSTONE = "minecraft:blackstone";
+    private static final String SMOLDERING_ASH = "corruptedadventure:smoldering_ash";
 
     private Ring3Templates() {
     }
@@ -56,6 +58,17 @@ public final class Ring3Templates {
         shapes.put("titan_rock_kneeling", titanKneeling(new Random(4751L)));
         shapes.put("titan_rock_hunched", titanHunched(new Random(4752L)));
         shapes.put("titan_rock_bust", titanBust(new Random(4753L)));
+        // 49: casts of ash in human poses, facing +x (the feature turns them to the nearest volcano).
+        shapes.put("ash_cast_crawling", cast(new Random(4901L), new int[][]{
+                {0, 0, 0}, {1, 0, 0}, {2, 0, 0}, {3, 0, 0}, {2, 1, 0}, {3, 0, -1}, {4, 0, -1}}));
+        shapes.put("ash_cast_kneeling", cast(new Random(4902L), new int[][]{
+                {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {2, 1, 0}}));
+        shapes.put("ash_cast_reaching", cast(new Random(4903L), new int[][]{
+                {0, 0, 0}, {0, 1, 0}, {0, 2, 0}, {0, 2, 1}, {0, 3, 1}}));
+        shapes.put("ash_cast_lying", cast(new Random(4904L), new int[][]{
+                {0, 0, 0}, {1, 0, 0}, {2, 0, 0}, {3, 0, 0}, {2, 0, 1}}));
+        shapes.put("ash_cast_curled", cast(new Random(4905L), new int[][]{
+                {0, 0, 0}, {1, 0, 0}, {0, 0, 1}, {1, 0, 1}, {0, 1, 0}}));
         for (Map.Entry<String, Shape> entry : shapes.entrySet()) {
             Path file = OUT.resolve(entry.getKey() + ".nbt");
             Files.write(file, entry.getValue().nbt());
@@ -305,6 +318,21 @@ public final class Ring3Templates {
             }
             return out.normalised();
         }
+    }
+
+    /**
+     * A figure of ash: the given blocks (x forward, y up, z to the side), about a quarter of them glowing
+     * {@code smoldering_ash} (the cracks), at least one.
+     */
+    static Shape cast(Random random, int[][] blocks) {
+        Shape shape = new Shape();
+        int glowing = 0;
+        for (int i = 0; i < blocks.length; i++) {
+            boolean glow = random.nextFloat() < 0.25F || i == blocks.length - 1 && glowing == 0;
+            glowing += glow ? 1 : 0;
+            shape.put(blocks[i][0], blocks[i][1], blocks[i][2], glow ? SMOLDERING_ASH : ASH);
+        }
+        return shape.normalised();
     }
 
     // ---------------------------------------------------------------- template writing

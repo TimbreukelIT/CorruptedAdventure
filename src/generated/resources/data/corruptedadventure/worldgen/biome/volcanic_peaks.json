@@ -28,7 +28,8 @@
     [
       "corruptedadventure:ring_3/volcanic_peaks_impact_craters",
       "corruptedadventure:ring_3/volcanic_peaks_blackstone_rocks",
-      "corruptedadventure:ring_3/ash_drifts"
+      "corruptedadventure:ring_3/ash_drifts",
+      "corruptedadventure:ring_3/ash_footprint_trails"
     ]
   ],
   "has_precipitation": false,

@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -25,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The ring 3 templates of {@code tools/worldgen/Ring3Templates.java} (changes 47, 47b), as committed: each holds only
- * the blocks its feature places, and fits where its feature puts it (a fossil in one chunk, a titan rock within its
- * reach). The script itself writes identical bytes on every run (checked when it is run, see the plan).
+ * The ring 3 templates of {@code tools/worldgen/Ring3Templates.java} (changes 47, 47b, 49), as committed: each holds
+ * only the blocks its feature places, and fits where its feature puts it (a fossil or cast in one chunk, a titan rock
+ * within its reach). The script itself writes identical bytes on every run (checked when it is run, see the plan).
  */
 class Ring3TemplatesTest {
     private static final String DIR = "src/main/resources/data/corruptedadventure/structure/ring_3";
@@ -56,9 +57,20 @@ class Ring3TemplatesTest {
     }
 
     @Test
+    void castsAreAshWithAGlowAndSmall() throws IOException {
+        for (String name : List.of("ash_cast_crawling", "ash_cast_kneeling", "ash_cast_reaching", "ash_cast_lying", "ash_cast_curled")) {
+            StructureTemplate template = load(name);
+            Set<Block> blocks = blocks(template);
+            assertTrue(Set.of(ModBlocks.ASH_BLOCK.get(), ModBlocks.SMOLDERING_ASH.get()).containsAll(blocks), name);
+            assertTrue(blocks.contains(ModBlocks.SMOLDERING_ASH.get()), name + " glows somewhere");
+            assertTrue(template.getSize().getX() <= 6 && template.getSize().getZ() <= 6 && template.getSize().getY() <= 4, name);
+        }
+    }
+
+    @Test
     void everyTemplateFileIsTested() throws IOException {
         try (Stream<Path> files = Files.list(root())) {
-            assertEquals(15, files.filter(file -> file.toString().endsWith(".nbt")).count());
+            assertEquals(20, files.filter(file -> file.toString().endsWith(".nbt")).count());
         }
     }
 

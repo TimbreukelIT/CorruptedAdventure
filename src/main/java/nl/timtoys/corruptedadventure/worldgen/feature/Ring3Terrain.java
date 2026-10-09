@@ -1,6 +1,8 @@
 package nl.timtoys.corruptedadventure.worldgen.feature;
 
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.RandomState;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
@@ -30,5 +32,22 @@ public final class Ring3Terrain {
     public static VolcanicField field(WorldGenLevel level) {
         RandomState random = level.getLevel().getChunkSource().randomState();
         return FIELDS.computeIfAbsent(random, state -> Optional.ofNullable(VolcanicField.find(state.router().finalDensity()))).orElse(null);
+    }
+
+    /**
+     * The rotation that turns a template facing +x towards the nearest volcano from (x, z). Until the terrain exposes
+     * its volcanoes ({@code VolcanicField.nearestVolcano}, change 39f) a rotation drawn from {@code random}.
+     */
+    public static Rotation facing(WorldGenLevel level, int x, int z, RandomSource random) {
+        return Rotation.getRandom(random);
+    }
+
+    /** The rotation turning +x towards the direction (dx, dz): the nearest of the four. */
+    static Rotation towards(double dx, double dz) {
+        if (Math.abs(dx) >= Math.abs(dz)) {
+            return dx >= 0.0 ? Rotation.NONE : Rotation.CLOCKWISE_180;
+        }
+        // Clockwise 90 turns +x into +z (StructureTemplate.transform).
+        return dz >= 0.0 ? Rotation.CLOCKWISE_90 : Rotation.COUNTERCLOCKWISE_90;
     }
 }

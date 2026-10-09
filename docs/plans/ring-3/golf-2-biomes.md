@@ -290,6 +290,8 @@ Biomepunten uit 39b (de regio-assen zijn niet veranderd): ashen (5.262, 480), pe
   - (INT2) titanen-rots heel over chunkgrenzen (geen afgesneden stukken, ook omgekeerd geladen), niet zwevend, niet op een rib of in lava; `/place feature corruptedadventure:ring_3/titan_rock` in een titanenveld;
   - (INT2) zielvuur alleen op zielgrond, nooit aan een chunkrand; geen vuur dat zich verspreidt.
 - [ ] **49:** 's nachts gloeiende afgietsels in de asvlakte; een voetspoor dat abrupt stopt.
+  - (INT2) een voetspoor loopt ononderbroken over chunkgrenzen (ook omgekeerd geladen), alleen in as; afgietsels staan vlak, nooit half over een chunkrand of in een aslaag;
+  - (INT2) na de 39f-rebase: afgietsels kijken naar de dichtstbijzijnde vulkaan (als die stap gedaan is, zie Status).
 - [ ] **47c:**
   - smeulwoud (4.750, 0) dag en nacht (gloeiende kronen, open plekken met bessen en vuurbloemen);
   - slapende krater (~−4.915, 560 of `/locate biome corruptedadventure:dormant_caldera`) groen;
@@ -324,7 +326,8 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
 - Voortgang: 2026-10-08 17:35 47 in de werkmap (niet gecommit); `compileJava` groen, `compileTestJava` faalde op een typfout in `Ring3TemplatesTest` (hersteld, nog niet opnieuw gebouwd). Gestopt op verzoek van main (einde dag).
 - Voortgang: 2026-10-09 14:00 derde agent neemt over (zelfde worktree/branch). **Nieuwe testafspraak (gebruiker 2026-10-09):** per pakket alleen B + D, commit per pakket; in-game checks (S, determinisme, prestatie, W-checklist) doet INT2 één keer; review één keer per stroom.
 - Voortgang: 2026-10-09 14:10 47: D groen (`runData`; datagen meldt "`ring_3/ash_drifts` … is missing BiomeFilter.biome()" — bewust, zie Beslissingen), B groen (571 tests, 0 fouten). Gecommit `d0a9264`.
-- Voortgang: 2026-10-09 14:20 47b: sjablonen (titanen) in het script, twee runs byte-identiek; `TitanFieldsFeatures`, `TitanRock*`, `VolcanicNearFilter`. D groen (ook "missing BiomeFilter" voor `titan_fields_rocks`, bewust), B groen (573 tests, 0 fouten).
+- Voortgang: 2026-10-09 14:20 47b: sjablonen (titanen) in het script, twee runs byte-identiek; `TitanFieldsFeatures`, `TitanRock*`, `VolcanicNearFilter`. D groen (ook "missing BiomeFilter" voor `titan_fields_rocks`, bewust), B groen (573 tests, 0 fouten). Gecommit `f18db9a`.
+- Voortgang: 2026-10-09 14:20 49: afgietsels (5 sjablonen, script twee runs byte-identiek, 47/47b-sjablonen onveranderd), voetsporen (`FootprintPath`), `Ring3HorrorFeatures`, `Ring3Terrain.facing/towards` (nog willekeurige rotatie tot 39f). D groen ("missing BiomeFilter" ook voor `ash_footprint_trails`, bewust), B groen (576 tests, 0 fouten).
 
 ## CODEBASE-delta
 - **41:**
@@ -350,6 +353,13 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
   - `worldgen/feature/VolcanicNearFilter` (`corruptedadventure:volcanic_near`, `ModPlacementModifierTypes.VOLCANIC_NEAR`): een kolom van het pure terrein binnen een straal (schijf, elke `step` blokken) met de uitgang in het bereik (bijv. `solid_kind` = bot).
   - Sjablonen: `titan_skull_1–2`, `titan_vertebra_1–3`, `titan_bone_1–2` (bot, `surface_fossil`), `titan_rock_kneeling|hunched|bust` (basalt/smooth basalt/blackstone).
   - Tests: `TitanRockFeatureTest`, `Ring3TemplatesTest` (titanen).
+- **49:**
+  - `worldgen/feature/Ring3HorrorFeatures`: `ring_3/ash_cast`, `ring_3/ash_footprints`; placed `ring_3/ashen_wastes_ash_casts` (~1 groep per 3 chunks), `ring_3/rare_ash_casts` (`ember_woods`, `titan_fields`), `ring_3/ash_footprint_trails` (één keer per chunk, ná `ash_drifts`; `ashen_wastes`, `titan_fields`, `volcanic_peaks`).
+  - `worldgen/feature/AshCastFeature`/`AshCastConfiguration` (`corruptedadventure:ash_cast`, `ModFeatures.ASH_CAST`): groepje van 1–3 figuren van `ash_block` + `smoldering_ash` op vlakke grond, binnen de eigen chunk.
+  - `worldgen/feature/AshFootprintsFeature`/`AshFootprintsConfiguration` (`corruptedadventure:ash_footprints`, `ModFeatures.ASH_FOOTPRINTS`) + `FootprintPath` (puur spoor per cel 72, 15–40 stappen; einde NOTHING/CAST/RIM): elke chunk schrijft zijn eigen indrukken (laag 6–7 in volle as, −2 lagen in een dikke laag, leeg in een dunne).
+  - `Ring3Terrain.facing(level, x, z, random)` (nu willekeurig; na 39f naar `nearestVolcano`) en `towards(dx, dz)`.
+  - Sjablonen: `ash_cast_crawling|kneeling|reaching|lying|curled`.
+  - Tests: `Ring3DressingShapesTest` (voetspoorpaden puur, rotaties), `Ring3TemplatesTest` (afgietsels).
 
 ## Beslissingen
 - 2026-10-08 · worldgen · 41: vulkaniet aders 9, 6 pogingen (Y −48…40, trapezium) + 10 pogingen "nabij lava" (de eigen lava van het terrein binnen 4 blokken, puur per kolom; review 41); zwavel aders 7, 3 pogingen ringbreed + 6 in `sulfur_fields`, 4–30 onder de terreinhoogte zelf (twee verticale offsets: vanilla staat max. ±16 per modifier toe); vuurrobijn aders 4, 1–2 pogingen Y −40…30; blootliggende ertsen blijven (geen air-discard). Startwaarden, afstemmen in 4b.
@@ -358,6 +368,7 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
 - 2026-10-09 · worldgen · 47: sjablonen (zeemonsterfossielen) als eigen `.nbt` uit een deterministisch JDK-script (`tools/worldgen/Ring3Templates.java`), V1.
 - 2026-10-09 · worldgen · 47b: titanen-rotsen (> 14 breed) zonder rangregel: elke rots is een pure functie van seed + cel (256 blokken, kans 0,4) en elke chunk die hij raakt schrijft zijn eigen deel; uitzondering op "plaatsing begint in de eigen chunk" (plan §0.7), volgorde-onafhankelijk. Placed zonder `BiomeFilter` (de feature toetst de biome op het middelpunt); datagen logt "missing BiomeFilter", bewust.
 - 2026-10-09 · worldgen · 47b: `surface_fossil` krijgt géén bloklijst (plan §1 47b): de basalt-titanen hebben een eigen feature `titan_rock` met `materials`; schedels/wervels/botten zijn bot.
+- 2026-10-09 · worldgen · 49: voetsporen als pure functie van seed + cel (72 blokken, kans 0,9 ≈ 1 per 20 chunks), één keer per chunk zonder `BiomeFilter` (datagen-melding bewust); niet in `ember_woods` (boomkronen van 47c zouden de live heightmap volgorde-afhankelijk maken). Een afgietsel aan het eind van een spoor valt weg als daar al een aslaag ligt. Afgietsels ~1 groep (1–3) per 3 chunks in `ashen_wastes`, kans 0,05 per chunk in `ember_woods`/`titan_fields`. Startwaarden, afstemmen in 4b.
 - 2026-10-09 · worldgen · 47b: zielvuur = vlekjes `soul_soil` (straal 1–3) met op ~1 op 4 kernblokken `soul_fire`, binnen 12 blokken van terreinbot (`volcanic_near` op `solid_kind` = bot), ≥ 2 van de chunkranden; schedels binnen 16 blokken van de ribben ("bij schedels" = schedels liggen tussen het zielvuur). Na 39f eventueel op `ribcageNear` (zie Status). Startwaarden, afstemmen in 4b.
 
 ## Backlog

@@ -14,7 +14,8 @@ import java.util.Set;
 /**
  * Datagen bootstraps (configured + placed features) of ring 3 and its one global feature order. Owned by stream
  * W-biomes; the feature classes per package ({@link Ring3OreFeatures}, {@link Ring3DressingFeatures},
- * {@link TitanFieldsFeatures}, …) are called from here, so {@code DataGenerators} stays untouched.
+ * {@link TitanFieldsFeatures}, {@link Ring3HorrorFeatures}, …) are called from here, so {@code DataGenerators} stays
+ * untouched.
  * <p>
  * {@link #ORDER} lists every biome-own ring 3 feature per generation step in one order; each biome gets the subset that
  * names it, in that order ({@code Ring3Biomes.generation}). One list keeps vanilla's feature sorter free of cycles
@@ -50,8 +51,12 @@ public final class Ring3Features {
             local(TitanFieldsFeatures.TITAN_FIELDS_BONES, ModBiomes.TITAN_FIELDS),
             local(TitanFieldsFeatures.TITAN_FIELDS_SOUL_FIRE, ModBiomes.TITAN_FIELDS),
             local(TitanFieldsFeatures.TITAN_FIELDS_ROCKS, ModBiomes.TITAN_FIELDS),
+            // Change 49: the casts stand before the drifts; the footprints dent them.
+            local(Ring3HorrorFeatures.ASHEN_WASTES_ASH_CASTS, ModBiomes.ASHEN_WASTES),
+            local(Ring3HorrorFeatures.RARE_ASH_CASTS, ModBiomes.EMBER_WOODS, ModBiomes.TITAN_FIELDS),
             local(Ring3DressingFeatures.ASH_DRIFTS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS,
                     ModBiomes.DRIED_SEABED),
+            local(Ring3HorrorFeatures.ASH_FOOTPRINT_TRAILS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS),
             new Entry(Ring3OreFeatures.SULFUR_ORE_RICH, GenerationStep.Decoration.UNDERGROUND_ORES, Set.of(ModBiomes.SULFUR_FIELDS)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_CORAL, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_BUSHES, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)));
@@ -73,11 +78,13 @@ public final class Ring3Features {
         Ring3OreFeatures.configured(context);
         Ring3DressingFeatures.configured(context);
         TitanFieldsFeatures.configured(context);
+        Ring3HorrorFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
         Ring3OreFeatures.placed(context);
         Ring3DressingFeatures.placed(context);
         TitanFieldsFeatures.placed(context);
+        Ring3HorrorFeatures.placed(context);
     }
 }

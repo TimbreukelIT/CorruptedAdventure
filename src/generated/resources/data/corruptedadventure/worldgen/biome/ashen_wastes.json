@@ -27,7 +27,9 @@
     [
       "corruptedadventure:ring_3/ashen_wastes_pumice_boulders",
       "corruptedadventure:ring_3/ashen_wastes_dead_trees",
-      "corruptedadventure:ring_3/ash_drifts"
+      "corruptedadventure:ring_3/ashen_wastes_ash_casts",
+      "corruptedadventure:ring_3/ash_drifts",
+      "corruptedadventure:ring_3/ash_footprint_trails"
     ]
   ],
   "has_precipitation": false,

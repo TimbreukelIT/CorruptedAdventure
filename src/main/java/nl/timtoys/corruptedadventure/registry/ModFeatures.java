@@ -30,8 +30,12 @@ import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshCastConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshCastFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.AshDriftConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.AshDriftFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshFootprintsConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshFootprintsFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.GroundPatchConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.GroundPatchFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.GroundVentConfiguration;
@@ -104,6 +108,12 @@ public final class ModFeatures {
     /** {@code corruptedadventure:titan_rock} (change 47b) */
     public static final DeferredHolder<Feature<?>, Feature<TitanRockConfiguration>> TITAN_ROCK =
             FEATURES.register("titan_rock", () -> new TitanRockFeature(TitanRockConfiguration.CODEC));
+    /** {@code corruptedadventure:ash_cast} (change 49) */
+    public static final DeferredHolder<Feature<?>, Feature<AshCastConfiguration>> ASH_CAST =
+            FEATURES.register("ash_cast", () -> new AshCastFeature(AshCastConfiguration.CODEC));
+    /** {@code corruptedadventure:ash_footprints} (change 49) */
+    public static final DeferredHolder<Feature<?>, Feature<AshFootprintsConfiguration>> ASH_FOOTPRINTS =
+            FEATURES.register("ash_footprints", () -> new AshFootprintsFeature(AshFootprintsConfiguration.CODEC));
 
     private ModFeatures() {
     }
