@@ -1,6 +1,10 @@
 package nl.timtoys.corruptedadventure.weather;
 
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -41,14 +45,48 @@ class LavaBombsTest {
     }
 
     @Test
-    void aGroupSharesTheBombsOfOnePlayer() {
-        double perSecond = LavaBombs.perSecond(12.0, 1.0F, false, 2.0);
-        assertEquals(perSecond, LavaBombs.shared(perSecond, 0), EPSILON);
-        for (int others = 1; others <= 5; others++) {
-            // Every player of the group gets one share: together the density of one player.
-            assertEquals(perSecond, LavaBombs.shared(perSecond, others) * (others + 1), EPSILON);
+    void aSpotIsKeptWithChanceOneOverTheDiscsCoveringIt() {
+        List<Vec3> two = List.of(new Vec3(0.0, 64.0, 0.0), new Vec3(30.0, 64.0, 0.0));
+        assertEquals(2, LavaBombs.covering(15.0, 0.0, 32.0, two));
+        assertEquals(1, LavaBombs.covering(-20.0, 0.0, 32.0, two));
+        assertEquals(0, LavaBombs.covering(100.0, 0.0, 32.0, two));
+        assertTrue(LavaBombs.kept(1, 0.99));
+        assertTrue(LavaBombs.kept(2, 0.49));
+        assertFalse(LavaBombs.kept(2, 0.5));
+        assertTrue(LavaBombs.kept(0, 0.99));
+    }
+
+    @Test
+    void theBombsPerAreaStayThoseOfOnePlayerWhereverDiscsOverlap() {
+        double radius = 32.0;
+        List<Vec3> players = List.of(new Vec3(0.0, 64.0, 0.0), new Vec3(radius, 64.0, 0.0), new Vec3(16.0, 64.0, 24.0));
+        Random random = new Random(20260930L);
+        int perPlayer = 400_000;
+        int inOverlap = 0;
+        int inSingle = 0;
+        // Two probe squares of 8 x 8: one covered by all three discs, one by the first player only.
+        for (Vec3 player : players) {
+            for (int i = 0; i < perPlayer; i++) {
+                double distance = radius * Math.sqrt(random.nextDouble());
+                double angle = random.nextDouble() * 2.0 * Math.PI;
+                double x = player.x + Math.cos(angle) * distance;
+                double z = player.z + Math.sin(angle) * distance;
+                if (!LavaBombs.kept(LavaBombs.covering(x, z, radius, players), random.nextDouble())) {
+                    continue;
+                }
+                if (x >= 12.0 && x < 20.0 && z >= 4.0 && z < 12.0) {
+                    inOverlap++;
+                } else if (x >= -28.0 && x < -20.0 && z >= -4.0 && z < 4.0) {
+                    inSingle++;
+                }
+            }
         }
-        assertEquals(perSecond, LavaBombs.shared(perSecond, -1), EPSILON);
+        assertEquals(3, LavaBombs.covering(16.0, 8.0, radius, players));
+        assertEquals(1, LavaBombs.covering(-24.0, 0.0, radius, players));
+        // One player's density: perPlayer / (pi r^2) per block, times 64 blocks per square (~7.960).
+        double expected = perPlayer / (Math.PI * radius * radius) * 64.0;
+        assertEquals(expected, inOverlap, expected * 0.05, "overlap of three discs");
+        assertEquals(expected, inSingle, expected * 0.05, "one disc only");
     }
 
     @Test

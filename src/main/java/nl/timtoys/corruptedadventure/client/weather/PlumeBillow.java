@@ -1,9 +1,11 @@
 package nl.timtoys.corruptedadventure.client.weather;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -44,6 +46,13 @@ final class PlumeBillow {
     private double zd;
     private int age;
     private float size;
+    // Prepared once per frame by prepare(): position relative to the camera (pulled in), quad size, sort key, fog distance.
+    private float rx;
+    private float ry;
+    private float rz;
+    private float quad;
+    private double depth;
+    private double fogDistance;
 
     /**
      * @param size  start size in blocks, half the quad's width (it swells to about three times that)
@@ -101,10 +110,6 @@ final class PlumeBillow {
         }
     }
 
-    double distanceSquared(Vec3 camera) {
-        return Mth.lengthSquared(x - camera.x, y - camera.y, z - camera.z);
-    }
-
     double horizontalDistance(Vec3 camera) {
         return Math.sqrt(Mth.lengthSquared(x - camera.x, z - camera.z));
     }
@@ -131,28 +136,53 @@ final class PlumeBillow {
     }
 
     /**
-     * One camera-facing quad. Beyond {@code reach} (the projection's far plane would cut it off) the billow is drawn
-     * pulled in along the line of sight, at the same angle and apparent size. Lit by {@code daylight} (the glowing
-     * foot by itself), and towards the fog colour by {@code haze}.
+     * Readies this billow for one frame and says whether it is in view. Beyond {@code reach} (the projection's far plane
+     * would cut it off) the billow is placed pulled in along the line of sight, at the same angle and apparent size.
      */
-    void render(VertexConsumer buffer, Vec3 camera, Quaternionf rotation, Vector3f scratch, float partialTick, double reach,
-                float daylight, float haze, float[] fog) {
-        float life = Math.min(1.0F, (age + partialTick) / lifetime);
-        float alpha = alphaAt(life);
-        if (alpha <= 0.0F) {
-            return;
-        }
+    boolean prepare(Vec3 camera, float partialTick, double reach, Frustum frustum) {
         double px = Mth.lerp(partialTick, xo, x) - camera.x;
         double py = Mth.lerp(partialTick, yo, y) - camera.y;
         double pz = Mth.lerp(partialTick, zo, z) - camera.z;
-        float quad = size;
         double distance = Math.sqrt(px * px + py * py + pz * pz);
+        // Vanilla's terrain fog is cylindrical: the larger of the horizontal and the vertical distance.
+        fogDistance = Math.max(Math.sqrt(px * px + pz * pz), Math.abs(py));
+        depth = distance;
+        float half = size;
         if (distance > reach) {
             double scale = reach / distance;
             px *= scale;
             py *= scale;
             pz *= scale;
-            quad *= (float) scale;
+            half *= (float) scale;
+        }
+        rx = (float) px;
+        ry = (float) py;
+        rz = (float) pz;
+        quad = half;
+        return frustum.isVisible(new AABB(camera.x + px - half, camera.y + py - half, camera.z + pz - half,
+                camera.x + px + half, camera.y + py + half, camera.z + pz + half));
+    }
+
+    /** Distance to the camera of the last {@link #prepare}, for sorting back to front. */
+    double depth() {
+        return depth;
+    }
+
+    /** Fog distance of the last {@link #prepare} (cylindrical, as vanilla's terrain fog). */
+    double fogDistance() {
+        return fogDistance;
+    }
+
+    /**
+     * One camera-facing quad at the place of the last {@link #prepare}. Lit by {@code daylight} (the glowing foot by
+     * itself), and towards the fog colour by {@code haze}.
+     */
+    void render(VertexConsumer buffer, Quaternionf rotation, Vector3f scratch, float partialTick, float daylight, float haze,
+                float[] fog) {
+        float life = Math.min(1.0F, (age + partialTick) / lifetime);
+        float alpha = alphaAt(life);
+        if (alpha <= 0.0F) {
+            return;
         }
         // Dark ash grey at the crater (#3A3634) to a lighter grey (#6E6864) high up; red at the foot in an eruption.
         float heat = glowAt(life);
@@ -163,15 +193,15 @@ final class PlumeBillow {
         red = Mth.lerp(haze, red, fog[0]);
         green = Mth.lerp(haze, green, fog[1]);
         blue = Mth.lerp(haze, blue, fog[2]);
-        vertex(buffer, rotation, scratch, px, py, pz, quad, 1.0F, -1.0F, sprite.getU1(), sprite.getV1(), red, green, blue, alpha);
-        vertex(buffer, rotation, scratch, px, py, pz, quad, 1.0F, 1.0F, sprite.getU1(), sprite.getV0(), red, green, blue, alpha);
-        vertex(buffer, rotation, scratch, px, py, pz, quad, -1.0F, 1.0F, sprite.getU0(), sprite.getV0(), red, green, blue, alpha);
-        vertex(buffer, rotation, scratch, px, py, pz, quad, -1.0F, -1.0F, sprite.getU0(), sprite.getV1(), red, green, blue, alpha);
+        vertex(buffer, rotation, scratch, 1.0F, -1.0F, sprite.getU1(), sprite.getV1(), red, green, blue, alpha);
+        vertex(buffer, rotation, scratch, 1.0F, 1.0F, sprite.getU1(), sprite.getV0(), red, green, blue, alpha);
+        vertex(buffer, rotation, scratch, -1.0F, 1.0F, sprite.getU0(), sprite.getV0(), red, green, blue, alpha);
+        vertex(buffer, rotation, scratch, -1.0F, -1.0F, sprite.getU0(), sprite.getV1(), red, green, blue, alpha);
     }
 
-    private static void vertex(VertexConsumer buffer, Quaternionf rotation, Vector3f scratch, double px, double py, double pz,
-                               float quad, float dx, float dy, float u, float v, float red, float green, float blue, float alpha) {
-        scratch.set(dx, dy, 0.0F).rotate(rotation).mul(quad).add((float) px, (float) py, (float) pz);
+    private void vertex(VertexConsumer buffer, Quaternionf rotation, Vector3f scratch, float dx, float dy, float u, float v,
+                        float red, float green, float blue, float alpha) {
+        scratch.set(dx, dy, 0.0F).rotate(rotation).mul(quad).add(rx, ry, rz);
         buffer.addVertex(scratch.x(), scratch.y(), scratch.z()).setUv(u, v).setColor(red, green, blue, alpha);
     }
 }

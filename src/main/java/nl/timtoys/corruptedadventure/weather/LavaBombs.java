@@ -30,8 +30,10 @@ import nl.timtoys.corruptedadventure.ring.RingWorld;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -40,10 +42,13 @@ import java.util.UUID;
  * every client sees the same bombs. They never explode; the fire on landing follows {@code mobGriefing} (a vanilla
  * small fireball without an owner would always set fire).
  * <p>
- * The count is an accumulator per player, checked once a second: {@code lavaBombsPerMinute} × fade × peak factor,
- * shared with the other players who qualify within {@code lavaBombRadius} (package 50c), so a group gets about the
- * bombs of one player instead of one share each; one player never gets more than {@code lavaBombsPerMinute ×
- * lavaBombPeakFactor} bombs a minute.
+ * The count is an accumulator per player, checked once a second: {@code lavaBombsPerMinute} × fade × peak factor, so
+ * one player never gets more than {@code lavaBombsPerMinute × lavaBombPeakFactor} bombs a minute.
+ * <p>
+ * Several players (package 50c): every player keeps their own disc, but a spot that lies in the discs of {@code k}
+ * qualifying players is kept with chance 1/k. Each of the k players offers it, so the bombs per area stay those of one
+ * player everywhere: where discs overlap, and in the parts that do not. Standing together is not safer, nor more
+ * dangerous. Who qualifies is worked out once a second for all players ({@link #onServerTick}).
  * <p>
  * A bomb lives at most {@link #MAX_AGE_TICKS}: one in a chunk that no longer ticks (its player went away) would hang
  * still in the air, so the server removes it, and a bomb saved with its chunk does not come back when it is loaded.
@@ -66,6 +71,8 @@ public final class LavaBombs {
     private static final Map<UUID, Double> CARRY = new HashMap<>();
     /** Our bombs in flight with the game time they were dropped (main server thread only). */
     private static final List<Flight> FLIGHTS = new ArrayList<>();
+    /** The players who qualify for bombs, refreshed once a second (main server thread only). */
+    private static final Set<ServerPlayer> ELIGIBLE = new HashSet<>();
 
     private LavaBombs() {
     }
@@ -75,10 +82,14 @@ public final class LavaBombs {
         gameBus.addListener(LavaBombs::onImpact);
         gameBus.addListener(LavaBombs::onServerTick);
         gameBus.addListener(LavaBombs::onJoinLevel);
-        gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> CARRY.remove(event.getEntity().getUUID()));
+        gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> {
+            CARRY.remove(event.getEntity().getUUID());
+            ELIGIBLE.remove(event.getEntity());
+        });
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             CARRY.clear();
             FLIGHTS.clear();
+            ELIGIBLE.clear();
         });
     }
 
@@ -87,9 +98,20 @@ public final class LavaBombs {
         return Math.max(0.0, perMinute / 60.0 * intensity * (peak ? peakFactor : 1.0));
     }
 
-    /** A player's share of the bombs when {@code others} more players qualify within the bomb radius. */
-    static double shared(double perSecond, int others) {
-        return perSecond / (1 + Math.max(0, others));
+    /** How many of {@code centres} (qualifying players) have the spot (x, z) in their disc of {@code radius}. */
+    static int covering(double x, double z, double radius, List<Vec3> centres) {
+        int count = 0;
+        for (Vec3 centre : centres) {
+            if (Mth.lengthSquared(centre.x - x, centre.z - z) <= radius * radius) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /** Whether a spot in {@code covering} discs is kept, for a {@code roll} uniform in [0, 1): chance 1/covering. */
+    static boolean kept(int covering, double roll) {
+        return roll * Math.max(1, covering) < 1.0;
     }
 
     /** Whether a bomb dropped at {@code born} is past its life at {@code now}. */
@@ -111,7 +133,7 @@ public final class LavaBombs {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.tickCount % CHECK_TICKS != 0) {
             return;
         }
-        double perSecond = eligible(player) ? shared(rate(player), othersNearby(player)) : 0.0;
+        double perSecond = ELIGIBLE.contains(player) ? rate(player) : 0.0;
         if (perSecond <= 0.0) {
             CARRY.remove(player.getUUID());
             return;
@@ -132,19 +154,6 @@ public final class LavaBombs {
                 && level.canSeeSky(BlockPos.containing(player.getEyePosition()));
     }
 
-    /** Other players who qualify for bombs within {@code lavaBombRadius} of this one (horizontally). */
-    private static int othersNearby(ServerPlayer player) {
-        double radius = ServerConfig.RING_3_WEATHER.lavaBombRadius.get();
-        int others = 0;
-        for (ServerPlayer other : player.serverLevel().players()) {
-            if (other != player && Mth.lengthSquared(other.getX() - player.getX(), other.getZ() - player.getZ()) <= radius * radius
-                    && eligible(other)) {
-                others++;
-            }
-        }
-        return others;
-    }
-
     private static double rate(ServerPlayer player) {
         RingWeatherState state = RingWeather.state(player.serverLevel(), Ring.RING_3);
         if (state.type() != RingWeatherType.ERUPTION) {
@@ -158,14 +167,20 @@ public final class LavaBombs {
     /**
      * One bomb: a spot uniform in the disc of {@code lavaBombRadius} around the player, in ring 3 and loaded; it starts
      * 40–60 blocks above the ground there, up to 16 blocks to the side, and flies straight at it (a small fireball has
-     * no gravity). A spot that does not qualify is skipped, not retried.
+     * no gravity). A spot that does not qualify, or that another player's disc covers and is not kept ({@link #kept}),
+     * is skipped, not retried.
      */
     private static void drop(ServerLevel level, ServerPlayer player, RandomSource random) {
-        double distance = ServerConfig.RING_3_WEATHER.lavaBombRadius.get() * Math.sqrt(random.nextDouble());
+        double radius = ServerConfig.RING_3_WEATHER.lavaBombRadius.get();
+        double distance = radius * Math.sqrt(random.nextDouble());
         double angle = random.nextDouble() * Mth.TWO_PI;
-        int x = Mth.floor(player.getX() + Math.cos(angle) * distance);
-        int z = Mth.floor(player.getZ() + Math.sin(angle) * distance);
-        if (!level.hasChunkAt(new BlockPos(x, level.getMinBuildHeight(), z))
+        double spotX = player.getX() + Math.cos(angle) * distance;
+        double spotZ = player.getZ() + Math.sin(angle) * distance;
+        int x = Mth.floor(spotX);
+        int z = Mth.floor(spotZ);
+        List<Vec3> centres = ELIGIBLE.stream().filter(other -> other.serverLevel() == level).map(ServerPlayer::position).toList();
+        if (!kept(covering(spotX, spotZ, radius, centres), random.nextDouble())
+                || !level.hasChunkAt(new BlockPos(x, level.getMinBuildHeight(), z))
                 || RingLayout.ringAt(level.dimension(), x + 0.5, z + 0.5).ring() != Ring.RING_3) {
             return;
         }
@@ -187,10 +202,19 @@ public final class LavaBombs {
         CorruptedAdventure.LOGGER.debug("[lava bomb] {}: lands near {} {} {}", player.getGameProfile().getName(), x, ground, z);
     }
 
-    /** Once a second: forget the bombs that landed, remove those past their life (in a chunk that stopped ticking). */
+    /**
+     * Once a second: who qualifies for bombs (one pass over all players), forget the bombs that landed, and remove
+     * those past their life (in a chunk that stopped ticking).
+     */
     private static void onServerTick(ServerTickEvent.Post event) {
-        if (FLIGHTS.isEmpty() || event.getServer().getTickCount() % CHECK_TICKS != 0) {
+        if (event.getServer().getTickCount() % CHECK_TICKS != 0) {
             return;
+        }
+        ELIGIBLE.clear();
+        for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
+            if (eligible(player)) {
+                ELIGIBLE.add(player);
+            }
         }
         FLIGHTS.removeIf(flight -> {
             if (flight.bomb().isRemoved()) {

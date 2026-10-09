@@ -347,11 +347,12 @@ public final class Ring3Sounds {
     }
 
     /**
-     * Geyser warning, 1.1-1.3 s: a low groan from deep in the vent (a slowly rising 50-80 Hz tone with overtones under
-     * dark noise) and bubbles that come faster and higher towards the end, the pressure building up to the burst.
+     * Geyser warning, 0.7-0.95 s (shorter than the 1 s warning, so it has died out when the burst comes): a low groan
+     * from deep in the vent (a slowly rising 50-80 Hz tone with overtones under dark noise) and bubbles that come faster
+     * and higher towards the end, the pressure building up to the burst.
      */
     private static double[] gurgle(Random random, int index) {
-        double seconds = 0.9 + index * 0.2 + random.nextDouble() * 0.2;
+        double seconds = 0.6 + index * 0.12 + random.nextDouble() * 0.1;
         int length = (int) (seconds * RATE);
         double[] out = new double[length];
         double base = 50 + random.nextDouble() * 12;
