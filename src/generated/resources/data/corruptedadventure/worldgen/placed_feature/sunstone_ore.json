@@ -22,6 +22,10 @@
       }
     },
     {
+      "type": "corruptedadventure:in_ring",
+      "ring": "ring_2"
+    },
+    {
       "type": "minecraft:biome"
     }
   ]

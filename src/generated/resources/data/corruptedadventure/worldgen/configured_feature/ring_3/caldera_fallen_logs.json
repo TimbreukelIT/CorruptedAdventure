@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": {
+      "feature": "corruptedadventure:ring_3/caldera_fallen_log_x",
+      "placement": []
+    },
+    "features": [
+      {
+        "chance": 0.5,
+        "feature": {
+          "feature": "corruptedadventure:ring_3/caldera_fallen_log_z",
+          "placement": []
+        }
+      }
+    ]
+  }
+}

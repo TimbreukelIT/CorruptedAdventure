@@ -14,6 +14,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import net.neoforged.neoforge.common.Tags;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
 import java.util.HashMap;
@@ -100,8 +101,10 @@ public final class AshDriftFeature extends Feature<AshDriftConfiguration> {
                 if (layers <= 0 || !level.getBlockState(pos).isAir()) {
                     continue;
                 }
+                // An ore blob from a neighbouring chunk may turn the ground (tuff, basalt) into ore before or after this
+                // chunk decorates: ore counts as ground, so the layer is the same either way (47d, INT2).
                 BlockState ground = level.getBlockState(pos.below());
-                if (!ground.is(config.ground())) {
+                if (!ground.is(config.ground()) && !ground.is(Tags.Blocks.ORES)) {
                     continue;
                 }
                 BlockState layer = config.layer().defaultBlockState().setValue(SnowLayerBlock.LAYERS, layers);

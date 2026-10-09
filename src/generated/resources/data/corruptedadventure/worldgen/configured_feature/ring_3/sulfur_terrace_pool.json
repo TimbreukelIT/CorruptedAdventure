@@ -1,0 +1,59 @@
+{
+  "type": "corruptedadventure:terrace_pool",
+  "config": {
+    "fill": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:boiling_mud"
+      }
+    },
+    "ground": [
+      "corruptedadventure:sulfur_crust",
+      "minecraft:calcite",
+      "minecraft:yellow_terracotta",
+      "minecraft:smooth_basalt",
+      "corruptedadventure:ash_block",
+      "minecraft:tuff"
+    ],
+    "lip": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:calcite"
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "terrace": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:yellow_terracotta"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:orange_terracotta"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:calcite"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:sulfur_crust"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

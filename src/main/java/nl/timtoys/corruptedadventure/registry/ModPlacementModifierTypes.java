@@ -7,6 +7,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.feature.HeightBandFilter;
+import nl.timtoys.corruptedadventure.worldgen.feature.InRingFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.JitteredGridPlacement;
 import nl.timtoys.corruptedadventure.worldgen.feature.NoiseBandFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.RingChanceFilter;
@@ -49,6 +50,9 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:terrain_landmark} (changes 47, 47b; the 39f accessors) */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<TerrainLandmarkPlacement>> TERRAIN_LANDMARK =
             PLACEMENT_MODIFIER_TYPES.register("terrain_landmark", () -> () -> TerrainLandmarkPlacement.CODEC);
+    /** {@code corruptedadventure:in_ring} (change 47d) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<InRingFilter>> IN_RING =
+            PLACEMENT_MODIFIER_TYPES.register("in_ring", () -> () -> InRingFilter.CODEC);
 
     private ModPlacementModifierTypes() {
     }

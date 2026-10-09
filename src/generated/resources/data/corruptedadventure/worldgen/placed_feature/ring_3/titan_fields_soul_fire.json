@@ -4,9 +4,9 @@
     {
       "type": "corruptedadventure:terrain_landmark",
       "landmark": "ribcage",
-      "margin": 4,
+      "margin": 1,
       "salt": 4,
-      "spread": 3
+      "spread": 5
     },
     {
       "type": "minecraft:heightmap",

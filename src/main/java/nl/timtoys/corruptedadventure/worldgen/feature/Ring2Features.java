@@ -278,12 +278,15 @@ public final class Ring2Features {
                 CountPlacement.of(14),
                 InSquarePlacement.spread(),
                 HeightRangePlacement.of(TrapezoidHeight.of(VerticalAnchor.absolute(95), VerticalAnchor.absolute(180), 60)),
+                // Not in the ring 3 half of dry_riverbeds (47d), without a draw: the ores of ring 2 stay where they were.
+                InRingFilter.of(Ring.RING_2),
                 BiomeFilter.biome());
         // The lowest layers of canyon stone (it starts at Y 8): about a quarter of ring 1's diamond per chunk.
         PlacementUtils.register(context, ModPlacedFeatures.TURQUOISE_ORE, features.getOrThrow(TURQUOISE_ORE),
                 CountPlacement.of(4),
                 InSquarePlacement.spread(),
                 HeightRangePlacement.uniform(VerticalAnchor.absolute(10), VerticalAnchor.absolute(40)),
+                InRingFilter.of(Ring.RING_2),
                 BiomeFilter.biome());
 
         // Canyonlands, LOCAL_MODIFICATIONS, in this order (the spring last, see CanyonSpringFeature).
