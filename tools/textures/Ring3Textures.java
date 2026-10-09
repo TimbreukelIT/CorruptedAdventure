@@ -50,10 +50,9 @@ public final class Ring3Textures {
     // Ash: warm grey powder, darker than gravel (0.50), lighter than basalt (0.29), so an ash plain reads grey-black.
     private static final int[] ASH = {0x3A3538, 0x4B4546, 0x5D5655, 0x6F6763, 0x827973, 0x968C84};
     private static final int ASH_CHAR = 0x252124;
-    private static final int ASH_PALE = 0xB0A79C;
-    // Pumice: light, porous, warm.
-    private static final int[] PUMICE = {0x77716A, 0x8C857B, 0xA19A8F, 0xB5AFA3, 0xC9C3B7, 0xDCD7CC};
-    private static final int[] PUMICE_PORE = {0x4B4643, 0x615B55};
+    // Pumice: light, porous, warm grey; 57a-r1: a step darker and softer (caps read as snow/diorite at 0.63).
+    private static final int[] PUMICE = {0x6F6962, 0x817A71, 0x938C82, 0xA49D92, 0xB5AEA2, 0xC5BFB3};
+    private static final int[] PUMICE_PORE = {0x5A544E, 0x6A635C};
     // Smouldering stone: near-black rock (blackstone-dark) with ember cracks.
     private static final int[] SMOLDER_ROCK = {0x151214, 0x1E191B, 0x282223, 0x332B2B, 0x403533, 0x50423D};
     private static final int[] SMOLDER_HALO = {0x3A1F1C, 0x4E261E, 0x63301F};
@@ -61,10 +60,15 @@ public final class Ring3Textures {
     private static final int[] EMBER = {0x701808, 0xA82C0C, 0xDC5414, 0xFA8828, 0xFFC25A, 0xFFF0BC};
     private static final int EMBER_GLOW = 0xFFE4A0;
     private static final int EMBER_DIM = EMBER[0];
-    /** Share of the smouldering stone's crack network that glows (the rest is a cold black crack). */
-    private static final double SMOLDER_HOT_SHARE = 0.4;
-    // Smouldering ash: the ash of the glowing casts, darker and burnt, with thin dim cracks.
-    private static final int[] SMOLDER_ASH = {0x221E20, 0x2D2829, 0x393233, 0x463E3D, 0x554A47, 0x655852};
+    /**
+     * Share of the smouldering stone's crack network that glows (the rest is a cold black crack); 57a-r1: 0.4 → 0.25,
+     * because the glow layer is full-bright and read as confetti in daylight.
+     */
+    private static final double SMOLDER_HOT_SHARE = 0.25;
+    // Smouldering ash: the ash of the glowing casts, burnt but close to ash (57a-r1: lighter, it read as holes in the ash).
+    private static final int[] SMOLDER_ASH = {0x2E292A, 0x3B3536, 0x494243, 0x58504F, 0x685F5C, 0x7A6F6A};
+    /** Warmed ash beside a hot crack: reddish grey at the ash's mean brightness (the stone's dark halo read as a hole). */
+    private static final int SMOLDER_ASH_HALO = 0x6A4438;
     // Charred wood: charcoal bark with a cool silver sheen, the wood under it dark grey-brown.
     private static final int[] CHAR = {0x110F11, 0x1A1618, 0x241F21, 0x2F2929, 0x3B3433, 0x4A423F};
     private static final int[] CHAR_SHEEN = {0x56525C, 0x726E7A};
@@ -94,7 +98,8 @@ public final class Ring3Textures {
     private static final int FIRE_CRYSTAL_GLOW = 0xFFF2C0;
     private static final int FIRE_CRYSTAL_DIM = FIRE_CRYSTAL[1];
     // Sulfur fields, steam fens.
-    private static final int[] SULFUR_CRUST = {0x584A1E, 0x736629, 0x8E8235, 0xA99D44, 0xC1B558, 0xD6CB78};
+    // 57a-r1: warmer sulfur yellow (it read olive-green from above) on a narrower ladder.
+    private static final int[] SULFUR_CRUST = {0x6E5A22, 0x85702A, 0x9C8733, 0xB29D3F, 0xC6B24E, 0xD8C566};
     private static final int[] SULFUR_STAIN = {0x80542A, 0xA07238};
     private static final int SULFUR_SPARKLE = 0xF8F0B0;
     private static final int[] FUMAROLE_ROCK = {0x282423, 0x35302D, 0x443D39, 0x544B45, 0x655B53, 0x776B61};
@@ -134,6 +139,8 @@ public final class Ring3Textures {
      * instead of a bright lava stump, while neighbouring fissure blocks still join.
      */
     private static final double FISSURE_EDGE_WIDTH = 0.3;
+    /** Lowest row of the crack's inner nodes (57a-r1): with its width and halo the crack then ends above the bottom row. */
+    private static final double FISSURE_LOWEST_NODE = 11.5;
     private static final int[] FISSURE_HALO = {0x3E2A2A, 0x55302A};
     private static final int[] PRIMORDIAL_ICE = {0x88B6DA, 0xA2C8E6, 0xBAD8F0, 0xD0E6F8, 0xE4F1FC, 0xF6FBFF};
     private static final int PRIMORDIAL_DEEP = 0x6A9AC6;
@@ -506,30 +513,29 @@ public final class Ring3Textures {
 
     /**
      * Ash (38): fine warm-grey powder with soft drifts (broad, tileable noise), small lumps lit from the top left
-     * (a light pixel with a shadow pixel below right), a few charcoal flecks and pale cinders.
+     * (a light pixel with a shadow pixel below right). 57a-r1: calmer up close: a weaker drift (one blotch per tile) and
+     * no off-ladder charcoal/cinder flecks (they made a grid on a plain); layout picked by {@link #bestOf}.
      */
     private static void ashBlock(BufferedImage image, Random random) {
+        bestOf(image, random, Ring3Textures::ashBlockLayout);
+    }
+
+    private static void ashBlockLayout(BufferedImage image, Random random) {
         double[][] broad = valueNoise(random, 8, 8);
         double[][] mid = valueNoise(random, 4, 4);
         double[][] fine = valueNoise(random, 2, 2);
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                double t = 0.5 + 0.45 * (broad[x][y] - 0.5) + 0.3 * (mid[x][y] - 0.5) + 0.22 * (fine[x][y] - 0.5)
-                        + 0.16 * (random.nextDouble() - 0.5);
+                double t = 0.5 + 0.25 * (broad[x][y] - 0.5) + 0.35 * (mid[x][y] - 0.5) + 0.3 * (fine[x][y] - 0.5)
+                        + 0.26 * (random.nextDouble() - 0.5);
                 set(image, x, y, shade(ASH, t));
             }
         }
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 4; i++) {
             int x = random.nextInt(SIZE);
             int y = random.nextInt(SIZE);
-            setWrapped(image, x, y, ASH[5]);
-            setWrapped(image, x + 1, y + 1, ASH[1]);
-        }
-        for (int i = 0; i < 4; i++) {
-            setWrapped(image, random.nextInt(SIZE), random.nextInt(SIZE), ASH_CHAR);
-        }
-        for (int i = 0; i < 3; i++) {
-            setWrapped(image, random.nextInt(SIZE), random.nextInt(SIZE), ASH_PALE);
+            setWrapped(image, x, y, ASH[4]);
+            setWrapped(image, x + 1, y + 1, ASH[2]);
         }
     }
 
@@ -546,7 +552,7 @@ public final class Ring3Textures {
         Cells cells = Cells.random(random, 7);
         double[] base = new double[cells.count()];
         for (int i = 0; i < base.length; i++) {
-            base[i] = 0.45 + 0.25 * random.nextDouble();
+            base[i] = 0.46 + 0.22 * random.nextDouble();
         }
         double[][] mid = valueNoise(random, 4, 4);
         for (int y = 0; y < SIZE; y++) {
@@ -558,9 +564,9 @@ public final class Ring3Textures {
                     set(image, x, y, nearest.secondDistance() < 1.6 ? ASH_CHAR : ASH[0]);
                     continue;
                 }
-                double light = base[nearest.index()] + 0.25 * (mid[x][y] - 0.5) + 0.22 * (random.nextDouble() - 0.5);
+                double light = base[nearest.index()] + 0.26 * (mid[x][y] - 0.5) + 0.24 * (random.nextDouble() - 0.5);
                 if (gap < 1.1) {
-                    light += slope < 0 ? 0.17 : -0.13;
+                    light += slope < 0 ? 0.14 : -0.11;
                 }
                 set(image, x, y, shade(ASH, light));
             }
@@ -568,8 +574,9 @@ public final class Ring3Textures {
     }
 
     /**
-     * Smouldering ash (38b, the glowing ash casts): darker, burnt ash with thin cracks of which about half glow dimly
-     * (deep red and orange, rarely a brighter spot), so a cast glows faintly at night.
+     * Smouldering ash (38b, the glowing ash casts): burnt ash close to plain ash (57a-r1: lighter, it read as holes in the
+     * ash) with thin cracks of which about half glow dimly (deep red and orange, rarely a brighter spot), the ash beside a
+     * hot crack warmed to a reddish grey, so a cast glows faintly at night.
      */
     private static void smolderingAsh(BufferedImage image, Random random) {
         Cells cells = Cells.random(random, 8);
@@ -588,8 +595,8 @@ public final class Ring3Textures {
                     }
                     continue;
                 }
-                double light = 0.5 + 0.3 * (mid[x][y] - 0.5) - 0.25 * (nearest.dx() + nearest.dy()) + 0.24 * (random.nextDouble() - 0.5);
-                set(image, x, y, gap < 0.75 && h > 0.68 ? SMOLDER_HALO[0] : shade(SMOLDER_ASH, light));
+                double light = 0.55 + 0.3 * (mid[x][y] - 0.5) - 0.25 * (nearest.dx() + nearest.dy()) + 0.24 * (random.nextDouble() - 0.5);
+                set(image, x, y, gap < 0.75 && h > 0.68 ? SMOLDER_ASH_HALO : shade(SMOLDER_ASH, light));
             }
         }
     }
@@ -598,16 +605,21 @@ public final class Ring3Textures {
 
     /**
      * Pumice (38): light, warm, porous stone: mottled grain and many vesicles (round and stretched holes). Light from
-     * the top left falls into each hole onto its lower right wall; the upper left lip catches it.
+     * the top left falls into each hole onto its lower right wall; the upper left lip catches it. 57a-r1: fewer, softer
+     * pores and less grain (the pores made a grid on a volcano cap), layout picked by {@link #bestOf}.
      */
     private static void pumice(BufferedImage image, Random random) {
+        bestOf(image, random, Ring3Textures::pumiceLayout);
+    }
+
+    private static void pumiceLayout(BufferedImage image, Random random) {
         double[][] noise = valueNoise(random, 4, 4);
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                set(image, x, y, shade(PUMICE, 0.52 + 0.35 * (noise[x][y] - 0.5) + 0.3 * (random.nextDouble() - 0.5)));
+                set(image, x, y, shade(PUMICE, 0.48 + 0.3 * (noise[x][y] - 0.5) + 0.2 * (random.nextDouble() - 0.5)));
             }
         }
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 10; i++) {
             double cx = random.nextDouble() * SIZE;
             double cy = random.nextDouble() * SIZE;
             double rx = 0.6 + 0.9 * random.nextDouble();
@@ -616,7 +628,7 @@ public final class Ring3Textures {
         }
     }
 
-    /** One vesicle: dark inside, its lower right inner wall lit, the upper left lip just outside lit. */
+    /** One vesicle: dark inside, its lower right inner wall lit, the upper left lip just outside lit (one tone below the top). */
     private static void pore(BufferedImage image, double cx, double cy, double rx, double ry, int[] rock, int[] hole) {
         for (int dy = -3; dy <= 3; dy++) {
             for (int dx = -3; dx <= 3; dx++) {
@@ -628,7 +640,7 @@ public final class Ring3Textures {
                 if (d < 1) {
                     setWrapped(image, x, y, ex + ey > 0.45 ? rock[1] : hole[d < 0.4 ? 0 : 1]);
                 } else if (d < 2.2 && ex + ey < -0.6) {
-                    setWrapped(image, x, y, rock[rock.length - 1]);
+                    setWrapped(image, x, y, rock[rock.length - 2]);
                 }
             }
         }
@@ -710,22 +722,27 @@ public final class Ring3Textures {
     // ---- Smouldering stone --------------------------------------------------------------------------------------
 
     /**
-     * Smouldering stone (38): near-black lumpy rock (lit from the top left) split by a network of cracks; where a broad
-     * heat field is high a crack glows (dark ember edge, orange body, yellow core, white-hot in the hottest spot) and
-     * warms the rock beside it, elsewhere it is a cold black crack. The glow layer takes the ember pixels.
+     * Smouldering stone (38): near-black lumpy rock (lit from the top left) split by a network of cracks; where a heat
+     * field is high ({@link #SMOLDER_HOT_SHARE} of the tile) a crack glows (red-orange, deep orange in the hottest part,
+     * which also gets a dark red rim) and warms the rock beside it, elsewhere it is a cold black crack. The glow layer
+     * takes the ember pixels. 57a-r1: fewer and thinner cracks, a smaller hot share and no yellow or white-hot tones, so a
+     * hot crack reads as a thin glowing line instead of sparks.
      */
     private static void smolderingStone(BufferedImage image, Random random) {
         bestOf(image, random, Ring3Textures::smolderingStoneLayout);
     }
 
     private static void smolderingStoneLayout(BufferedImage image, Random random) {
-        Cells cells = Cells.random(random, 12);
+        Cells cells = Cells.random(random, 9);
         double[] base = new double[cells.count()];
         for (int i = 0; i < base.length; i++) {
             base[i] = 0.35 + 0.35 * random.nextDouble();
         }
-        double[][] heat = ranked(blend(valueNoise(random, 4, 4), valueNoise(random, 2, 2), 0.75));
+        // 57a-r1: a mid-sized heat field, so the hot share falls on a few runs of the crack network, not scattered sparks.
+        double[][] heat = ranked(blend(valueNoise(random, 4, 4), valueNoise(random, 2, 2), 0.35));
         double[][] broad = valueNoise(random, 4, 4);
+        // the hottest ~55 % of the hot share: deep orange crack with a dark red rim
+        double core = 1 - 0.55 * SMOLDER_HOT_SHARE;
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 Cells.Nearest nearest = cells.nearest(x, y);
@@ -733,16 +750,16 @@ public final class Ring3Textures {
                 double slope = nearest.dx() + nearest.dy();
                 double h = heat[x][y];
                 boolean hot = h > 1 - SMOLDER_HOT_SHARE;
-                if (gap < 0.45) {
+                if (gap < 0.38) {
                     if (hot) {
-                        glow(image, x, y, gap < 0.2 && h > 0.97 ? EMBER[5] : h > 0.88 ? EMBER[4] : EMBER[3]);
+                        glow(image, x, y, h > core ? EMBER[3] : EMBER[2]);
                     } else {
                         set(image, x, y, SMOLDER_ROCK[0]);
                     }
                     continue;
                 }
-                if (gap < 0.85 && hot) {
-                    glow(image, x, y, h > 0.75 ? EMBER[2] : EMBER[1]);
+                if (gap < 0.7 && h > core) {
+                    glow(image, x, y, EMBER[1]);
                     continue;
                 }
                 double light = base[nearest.index()] - 0.4 * slope + 0.2 * (broad[x][y] - 0.5) + 0.1 * random.nextDouble();
@@ -1688,7 +1705,8 @@ public final class Ring3Textures {
 
     /**
      * Sulfur crust (46): nodular yellow crust (wrapping cells lit from the top left) with ochre crevices, orange-brown
-     * stains in broad patches and a few pale crystal sparkles on the lit sides of the nodules.
+     * stains in broad patches and a few pale crystal sparkles on the lit sides of the nodules. 57a-r1: calmer (softer
+     * nodule light, shallower crevices, fewer stains), the scaly plates and brown crescents repeated on a terrace.
      */
     private static void sulfurCrust(BufferedImage image, Random random) {
         bestOf(image, random, Ring3Textures::sulfurCrustLayout);
@@ -1698,7 +1716,7 @@ public final class Ring3Textures {
         Cells cells = Cells.random(random, 14);
         double[] base = new double[cells.count()];
         for (int i = 0; i < base.length; i++) {
-            base[i] = 0.4 + 0.25 * random.nextDouble();
+            base[i] = 0.45 + 0.18 * random.nextDouble();
         }
         double[][] stain = valueNoise(random, 4, 4);
         for (int y = 0; y < SIZE; y++) {
@@ -1706,16 +1724,16 @@ public final class Ring3Textures {
                 Cells.Nearest nearest = cells.nearest(x, y);
                 double gap = nearest.secondDistance() - nearest.distance();
                 double slope = nearest.dx() + nearest.dy();
-                if (gap < 0.42) {
+                if (gap < 0.34) {
                     set(image, x, y, SULFUR_CRUST[0]);
                     continue;
                 }
-                double light = base[nearest.index()] - 0.4 * slope + 0.12 * (random.nextDouble() - 0.5);
+                double light = base[nearest.index()] - 0.22 * slope + 0.12 * (random.nextDouble() - 0.5);
                 if (gap < 1.1 && slope > 0.1) {
-                    light -= 0.18;
+                    light -= 0.1;
                 }
                 int color = shade(SULFUR_CRUST, light);
-                if (stain[x][y] > 0.72 && random.nextInt(3) != 0) {
+                if (stain[x][y] > 0.84 && random.nextInt(3) != 0) {
                     color = SULFUR_STAIN[light > 0.5 ? 1 : 0];
                 }
                 if (slope < -0.3 && gap > 1.2 && random.nextInt(14) == 0) {
@@ -2245,9 +2263,11 @@ public final class Ring3Textures {
     }
 
     /**
-     * Glowing fissure (51): dark cold-lava crust split by an irregular fissure of live lava (white-yellow core where it is
-     * wide, orange body, dark red edge) with branches and a hairline crack ({@link #fissureSegments}); the crust beside it
-     * is warmed (non-glowing), the crust far from it carries a little rime. The glow layer takes the lava pixels.
+     * Glowing fissure (51): dark cold-lava crust split by an irregular fissure of live lava (a small yellow core where it
+     * is widest, orange body, red edge) with a spur from the top edge and one branch ({@link #fissureSegments}); the crust
+     * beside it is warmed (non-glowing), the crust far from it carries a little rime. The glow layer takes the lava
+     * pixels. 57a-r1: three of the four edge points (the bottom edge stays closed), narrower and a step darker (no
+     * white-hot tone), so a patch of fissure blocks no longer reads as a bright honeycomb.
      */
     private static void glowingFissure(BufferedImage image, Random random) {
         bestOf(image, random, Ring3Textures::glowingFissureLayout);
@@ -2266,22 +2286,21 @@ public final class Ring3Textures {
                 double d = near[0];
                 double width = near[1];
                 double v = d / width;
-                if (v < 0.35 && width > 0.9) {
-                    glow(image, x, y, LAVA[5]);
-                } else if (v < 0.6) {
+                // a small bright core only where the main crack is widest (its middle width is 0.45-0.8)
+                if (v < 0.45 && width > 0.5) {
                     glow(image, x, y, LAVA[4]);
-                } else if (v < 1.0) {
+                } else if (v < 0.6) {
                     glow(image, x, y, LAVA[3]);
-                } else if (d < width + 0.6) {
+                } else if (v < 1.0) {
                     glow(image, x, y, LAVA[2]);
-                } else if (d < width + 1.2) {
+                } else if (d < width + 0.5) {
                     glow(image, x, y, LAVA[1]);
                 } else {
                     Cells.Nearest nearest = cells.nearest(x, y);
                     double gap = nearest.secondDistance() - nearest.distance();
                     double light = gap < 0.42 ? 0.0 : base[nearest.index()] - 0.35 * (nearest.dx() + nearest.dy()) + 0.1 * random.nextDouble();
                     int color = shade(COLD_LAVA, light);
-                    if (d < width + 2.4) {
+                    if (d < width + 1.8) {
                         color = FISSURE_HALO[light > 0.4 ? 1 : 0];
                     } else if (light > 0.55 && random.nextInt(7) == 0) {
                         color = RIME[1];
@@ -2293,37 +2312,54 @@ public final class Ring3Textures {
     }
 
     /**
-     * The fissure as segments {x1, y1, x2, y2, width1, width2}: a wide crack from the left edge to the right edge and a
-     * narrower one from the top edge to the bottom edge, each meandering freely inside the tile but meeting the edges at
-     * a fixed point as a thin hairline (row {@link #FISSURE_ROW}, column {@link #FISSURE_COLUMN}, width
-     * {@link #FISSURE_EDGE_WIDTH}), so fissure blocks laid next to each other in any direction join into one crack and a
-     * lone block shows no lava cut off at its edge; plus one or two branches that kink off and thin out inside the tile,
-     * and one loose hairline crack.
+     * The fissure as segments {x1, y1, x2, y2, width1, width2}: a crack from the left edge to the right edge and a
+     * narrower spur from the top edge down into it, each meandering freely inside the tile but meeting the edges at a
+     * fixed point as a thin hairline (row {@link #FISSURE_ROW}, column {@link #FISSURE_COLUMN}, width
+     * {@link #FISSURE_EDGE_WIDTH}), so fissure blocks laid next to each other join into one crack and a lone block shows
+     * no lava cut off at its edge; plus one branch that kinks off and thins out inside the tile. 57a-r1: the bottom edge
+     * stays closed (only three of the four edge points), so a patch of fissure blocks no longer reads as a honeycomb.
      */
     private static List<double[]> fissureSegments(Random random) {
         List<double[]> segments = new ArrayList<>();
-        crackPath(segments, random, true, FISSURE_EDGE_WIDTH, 0.8 + 0.6 * random.nextDouble());
-        crackPath(segments, random, false, FISSURE_EDGE_WIDTH, 0.5 + 0.4 * random.nextDouble());
-        int branches = 1 + random.nextInt(2);
-        for (int b = 0; b < branches; b++) {
-            double[] from = segments.get(1 + random.nextInt(3));
-            double turn = random.nextDouble() * 2 * Math.PI;
-            double x1 = from[2];
-            double y1 = from[3];
-            double reach = 2.5 + 2 * random.nextDouble();
-            double x2 = inside(x1 + reach * Math.cos(turn));
-            double y2 = inside(y1 + reach * Math.sin(turn));
-            double kink = turn + 0.9 * (random.nextDouble() - 0.5);
-            double x3 = inside(x2 + (1.5 + 1.5 * random.nextDouble()) * Math.cos(kink));
-            double y3 = inside(y2 + (1.5 + 1.5 * random.nextDouble()) * Math.sin(kink));
-            double w = 0.35 + 0.3 * from[5];
-            segments.add(new double[] {x1, y1, x2, y2, w, 0.4 * w + 0.12});
-            segments.add(new double[] {x2, y2, x3, y3, 0.4 * w + 0.12, 0.1});
-        }
-        double hx = 3 + random.nextDouble() * (SIZE - 6);
-        double hy = 3 + random.nextDouble() * (SIZE - 8);
-        segments.add(new double[] {hx, hy, hx + 3 * (random.nextDouble() - 0.5), hy + 2 + 2 * random.nextDouble(), 0.25, 0.1});
+        crackPath(segments, random, FISSURE_EDGE_WIDTH, 0.45 + 0.35 * random.nextDouble());
+        spur(segments, random, FISSURE_EDGE_WIDTH, 0.25 + 0.2 * random.nextDouble());
+        double[] from = segments.get(1 + random.nextInt(3));
+        // The branch leaves the crack upwards (the kink can bend its tip down by at most ~8°); downwards it could reach
+        // the closed bottom edge, because inside() only keeps points 2 px from the edge, not clear of the halo.
+        double turn = -Math.PI * (0.1 + 0.8 * random.nextDouble());
+        double x1 = from[2];
+        double y1 = from[3];
+        double reach = 2.5 + 2 * random.nextDouble();
+        double x2 = inside(x1 + reach * Math.cos(turn));
+        double y2 = inside(y1 + reach * Math.sin(turn));
+        double kink = turn + 0.9 * (random.nextDouble() - 0.5);
+        double x3 = inside(x2 + (1.5 + 1.5 * random.nextDouble()) * Math.cos(kink));
+        double y3 = inside(y2 + (1.5 + 1.5 * random.nextDouble()) * Math.sin(kink));
+        double w = 0.35 + 0.3 * from[5];
+        segments.add(new double[] {x1, y1, x2, y2, w, 0.4 * w + 0.12});
+        segments.add(new double[] {x2, y2, x3, y3, 0.4 * w + 0.12, 0.1});
         return segments;
+    }
+
+    /**
+     * A crack from the top edge (column {@link #FISSURE_COLUMN}, width {@code edgeWidth}) down into the horizontal crack
+     * already in {@code segments}, ending where that crack crosses the column, in three segments that wander up to 2 px
+     * sideways and widen to {@code middleWidth}.
+     */
+    private static void spur(List<double[]> segments, Random random, double edgeWidth, double middleWidth) {
+        double endY = FISSURE_ROW;
+        for (double[] s : segments) {
+            if (Math.min(s[0], s[2]) <= FISSURE_COLUMN && FISSURE_COLUMN <= Math.max(s[0], s[2]) && s[0] != s[2]) {
+                endY = lerp(s[1], s[3], (FISSURE_COLUMN - s[0]) / (s[2] - s[0]));
+                break;
+            }
+        }
+        double[] xs = {FISSURE_COLUMN, FISSURE_COLUMN + 4 * (random.nextDouble() - 0.5), FISSURE_COLUMN + 4 * (random.nextDouble() - 0.5), FISSURE_COLUMN};
+        double[] ys = {0, endY * (0.3 + 0.1 * random.nextDouble()), endY * (0.62 + 0.1 * random.nextDouble()), endY};
+        double[] ws = {edgeWidth, lerp(edgeWidth, middleWidth, 0.6 + 0.4 * random.nextDouble()), middleWidth, middleWidth};
+        for (int i = 0; i < 3; i++) {
+            segments.add(new double[] {xs[i], ys[i], xs[i + 1], ys[i + 1], ws[i], ws[i + 1]});
+        }
     }
 
     /** Keeps a branch point two pixels inside the tile, so branches never run over a block edge. */
@@ -2332,33 +2368,35 @@ public final class Ring3Textures {
     }
 
     /**
-     * One crack across the tile in five segments: from the edge point to the opposite edge point (horizontal: row
-     * {@link #FISSURE_ROW}; vertical: column {@link #FISSURE_COLUMN}), the inner nodes pushed sideways by up to 3 px, the
-     * width {@code edgeWidth} at both edges and up to {@code middleWidth} inside.
+     * One crack across the tile from the left edge to the right edge in five segments, meeting both edges at row
+     * {@link #FISSURE_ROW} with width {@code edgeWidth}; the inner nodes are pushed up or down by up to 3 px (but kept at
+     * most {@link #FISSURE_LOWEST_NODE}, so the crack, its glow and its halo stay clear of the closed bottom edge) and
+     * widen to up to {@code middleWidth}.
      */
-    private static void crackPath(List<double[]> segments, Random random, boolean horizontal, double edgeWidth, double middleWidth) {
+    private static void crackPath(List<double[]> segments, Random random, double edgeWidth, double middleWidth) {
         int nodes = 6;
         double[] along = new double[nodes];
         double[] across = new double[nodes];
         double[] widths = new double[nodes];
-        double fixed = horizontal ? FISSURE_ROW : FISSURE_COLUMN;
         for (int i = 0; i < nodes; i++) {
             along[i] = SIZE * i / (double) (nodes - 1);
             boolean edge = i == 0 || i == nodes - 1;
             if (!edge) {
                 along[i] += 1.6 * (random.nextDouble() - 0.5);
             }
-            across[i] = fixed + (edge ? 0 : 6.0 * (random.nextDouble() - 0.5));
+            across[i] = edge ? FISSURE_ROW : Math.min(FISSURE_LOWEST_NODE, FISSURE_ROW + 6.0 * (random.nextDouble() - 0.5));
             widths[i] = edge ? edgeWidth : lerp(edgeWidth, middleWidth, 0.4 + 0.6 * random.nextDouble());
         }
         for (int i = 0; i < nodes - 1; i++) {
-            segments.add(horizontal
-                    ? new double[] {along[i], across[i], along[i + 1], across[i + 1], widths[i], widths[i + 1]}
-                    : new double[] {across[i], along[i], across[i + 1], along[i + 1], widths[i], widths[i + 1]});
+            segments.add(new double[] {along[i], across[i], along[i + 1], across[i + 1], widths[i], widths[i + 1]});
         }
     }
 
-    /** {distance, width there} to the segment nearest relative to its width, measured across the tile edges. */
+    /**
+     * {distance, width there} to the segment nearest relative to its width, wrapping across the left and right tile
+     * edges only (the crack runs on into the neighbour there); not across the top and bottom edges, so the spur that
+     * starts at the top edge does not light the closed bottom edge.
+     */
     private static double[] nearestSegment(List<double[]> segments, double px, double py) {
         double best = Double.MAX_VALUE;
         double bestWidth = 0.1;
@@ -2367,17 +2405,15 @@ public final class Ring3Textures {
             double dx = segment[2] - segment[0];
             double dy = segment[3] - segment[1];
             for (int ox = -1; ox <= 1; ox++) {
-                for (int oy = -1; oy <= 1; oy++) {
-                    double qx = px + ox * SIZE - segment[0];
-                    double qy = py + oy * SIZE - segment[1];
-                    double t = Math.max(0, Math.min(1, (qx * dx + qy * dy) / (dx * dx + dy * dy)));
-                    double distance = Math.hypot(qx - t * dx, qy - t * dy);
-                    double width = lerp(segment[4], segment[5], t);
-                    if (distance / width < bestScore) {
-                        bestScore = distance / width;
-                        best = distance;
-                        bestWidth = width;
-                    }
+                double qx = px + ox * SIZE - segment[0];
+                double qy = py - segment[1];
+                double t = Math.max(0, Math.min(1, (qx * dx + qy * dy) / (dx * dx + dy * dy)));
+                double distance = Math.hypot(qx - t * dx, qy - t * dy);
+                double width = lerp(segment[4], segment[5], t);
+                if (distance / width < bestScore) {
+                    bestScore = distance / width;
+                    best = distance;
+                    bestWidth = width;
                 }
             }
         }
