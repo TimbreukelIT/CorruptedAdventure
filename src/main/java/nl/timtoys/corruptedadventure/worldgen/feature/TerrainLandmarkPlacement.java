@@ -25,9 +25,9 @@ import java.util.stream.Stream;
  * vertebrae of a titan's ribcage. Each point is kept with {@code chance}, moved up to {@code spread} blocks, and only
  * placed when it then lies at least {@code margin} blocks inside the chunk.
  * <p>
- * The landmarks are pure functions of the seed ({@link VolcanicField} accessors) and the draws come from the placement
- * random, so the result does not depend on generation order. Without spread every point is placed by exactly the chunk
- * it lies in; with spread each chunk around it draws its own move and keeps the ones landing in itself.
+ * The landmarks are pure functions of the seed ({@link VolcanicField} accessors), and so are the keep and the move of a
+ * point (a hash of the seed, the point and {@code salt}; features on the same landmark use different salts). So every
+ * kept point lands in exactly one chunk, which places it, whatever the order of generation.
  */
 public final class TerrainLandmarkPlacement extends PlacementModifier {
     /** The landmarks the terrain exposes. */
@@ -59,26 +59,30 @@ public final class TerrainLandmarkPlacement extends PlacementModifier {
             Landmark.CODEC.fieldOf("landmark").forGetter(placement -> placement.landmark),
             Codec.floatRange(0.0F, 1.0F).optionalFieldOf("chance", 1.0F).forGetter(placement -> placement.chance),
             Codec.intRange(0, 16).optionalFieldOf("spread", 0).forGetter(placement -> placement.spread),
-            Codec.intRange(0, 7).optionalFieldOf("margin", 0).forGetter(placement -> placement.margin)
+            Codec.intRange(0, 7).optionalFieldOf("margin", 0).forGetter(placement -> placement.margin),
+            Codec.INT.optionalFieldOf("salt", 0).forGetter(placement -> placement.salt)
     ).apply(instance, TerrainLandmarkPlacement::new));
 
     /** Corners of the chunk: every landmark cell (≥ 36 blocks) overlapping the chunk contains one of them. */
     private static final int[][] CORNERS = {{0, 0}, {15, 0}, {0, 15}, {15, 15}};
+    private static final long SALT = 0x4F1BBCDCBFA53E0BL;
 
     private final Landmark landmark;
     private final float chance;
     private final int spread;
     private final int margin;
+    private final int salt;
 
-    public TerrainLandmarkPlacement(Landmark landmark, float chance, int spread, int margin) {
+    public TerrainLandmarkPlacement(Landmark landmark, float chance, int spread, int margin, int salt) {
         this.landmark = landmark;
         this.chance = chance;
         this.spread = spread;
         this.margin = margin;
+        this.salt = salt;
     }
 
-    public static TerrainLandmarkPlacement of(Landmark landmark, float chance, int spread, int margin) {
-        return new TerrainLandmarkPlacement(landmark, chance, spread, margin);
+    public static TerrainLandmarkPlacement of(Landmark landmark, float chance, int spread, int margin, int salt) {
+        return new TerrainLandmarkPlacement(landmark, chance, spread, margin, salt);
     }
 
     @Override
@@ -89,17 +93,19 @@ public final class TerrainLandmarkPlacement extends PlacementModifier {
         }
         int minX = pos.getX() & ~15;
         int minZ = pos.getZ() & ~15;
-        return place(points(field, landmark, minX, minZ), minX, pos.getY(), minZ, random).stream();
+        return place(points(field, landmark, minX, minZ), minX, pos.getY(), minZ, context.getLevel().getSeed()).stream();
     }
 
     /** The kept points of {@code points} that land at least {@code margin} inside the chunk at {@code minX, minZ}. */
-    List<BlockPos> place(List<VolcanicField.Point> points, int minX, int y, int minZ, RandomSource random) {
+    List<BlockPos> place(List<VolcanicField.Point> points, int minX, int y, int minZ, long seed) {
         List<BlockPos> positions = new ArrayList<>();
         for (VolcanicField.Point point : points) {
-            // Always draw all three, so a point's move does not depend on whether earlier points were kept.
-            boolean kept = random.nextFloat() < chance;
-            int x = Mth.floor(point.x()) + random.nextInt(2 * spread + 1) - spread;
-            int z = Mth.floor(point.z()) + random.nextInt(2 * spread + 1) - spread;
+            int px = Mth.floor(point.x());
+            int pz = Mth.floor(point.z());
+            long h = mix(seed ^ SALT ^ mix(salt * 0xD1B54A32D192ED03L + px * 0x9E3779B97F4A7C15L + pz * 0xC2B2AE3D27D4EB4FL));
+            boolean kept = unit(h, 0) < chance;
+            int x = px + (int) (unit(h, 1) * (2 * spread + 1)) - spread;
+            int z = pz + (int) (unit(h, 2) * (2 * spread + 1)) - spread;
             if (kept && x >= minX + margin && x < minX + 16 - margin && z >= minZ + margin && z < minZ + 16 - margin) {
                 positions.add(new BlockPos(x, y, z));
             }
@@ -142,6 +148,16 @@ public final class TerrainLandmarkPlacement extends PlacementModifier {
             }
         }
         return List.copyOf(points);
+    }
+
+    private static long mix(long z) {
+        z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
+        z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
+        return z ^ (z >>> 31);
+    }
+
+    private static double unit(long hash, int n) {
+        return (mix(hash + n * 0x632BE59BD9B4E019L) >>> 11) * 0x1.0p-53;
     }
 
     @Override

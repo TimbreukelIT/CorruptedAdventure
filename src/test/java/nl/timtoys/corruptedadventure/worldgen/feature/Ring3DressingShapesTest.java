@@ -3,7 +3,6 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SnowLayerBlock;
@@ -148,16 +147,40 @@ class Ring3DressingShapesTest {
         List<VolcanicField.Point> points = List.of(new VolcanicField.Point(8.3, 8.7), new VolcanicField.Point(1.0, 1.0),
                 new VolcanicField.Point(20.0, 8.0));
         assertEquals(List.of(new BlockPos(8, 64, 8)),
-                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.MOUND, 1.0F, 0, 2).place(points, 0, 64, 0, RandomSource.create(1L)));
-        TerrainLandmarkPlacement spread = TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 1.0F, 3, 0);
-        for (long seed = 0; seed < 50; seed++) {
-            for (BlockPos pos : spread.place(points, 0, 64, 0, RandomSource.create(seed))) {
-                assertTrue(pos.getX() >= 0 && pos.getX() < 16 && pos.getZ() >= 0 && pos.getZ() < 16, pos.toString());
-                assertTrue(points.stream().anyMatch(p -> Math.abs(pos.getX() - Math.floor(p.x())) <= 3 && Math.abs(pos.getZ() - Math.floor(p.z())) <= 3));
+                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.MOUND, 1.0F, 0, 2, 0).place(points, 0, 64, 0, 1L));
+        assertEquals(List.of(), TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.MOUND, 0.0F, 0, 0, 0)
+                .place(points, 0, 64, 0, 1L));
+    }
+
+    @Test
+    void aMovedLandmarkPointLandsInExactlyOneChunk() {
+        TerrainLandmarkPlacement spread = TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 1.0F, 12, 0, 3);
+        for (int k = 0; k < 200; k++) {
+            List<VolcanicField.Point> point = List.of(new VolcanicField.Point(k * 7.3 - 500.0, k * 3.1 - 200.0));
+            int placed = 0;
+            int px = (int) Math.floor(point.getFirst().x());
+            int pz = (int) Math.floor(point.getFirst().z());
+            for (int cx = Math.floorDiv(px - 13, 16); cx <= Math.floorDiv(px + 13, 16); cx++) {
+                for (int cz = Math.floorDiv(pz - 13, 16); cz <= Math.floorDiv(pz + 13, 16); cz++) {
+                    for (BlockPos pos : spread.place(point, cx * 16, 64, cz * 16, 20260930L)) {
+                        placed++;
+                        assertTrue(Math.abs(pos.getX() - Math.floor(point.getFirst().x())) <= 12, pos.toString());
+                    }
+                }
+            }
+            assertEquals(1, placed, "point " + k);
+        }
+        // Another salt moves the same point elsewhere (two features on one landmark do not stack).
+        List<VolcanicField.Point> one = List.of(new VolcanicField.Point(100.0, 100.0));
+        List<BlockPos> a = new java.util.ArrayList<>();
+        List<BlockPos> b = new java.util.ArrayList<>();
+        for (int cx = 4; cx <= 8; cx++) {
+            for (int cz = 4; cz <= 8; cz++) {
+                a.addAll(spread.place(one, cx * 16, 64, cz * 16, 1L));
+                b.addAll(TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 1.0F, 12, 0, 4).place(one, cx * 16, 64, cz * 16, 1L));
             }
         }
-        assertEquals(List.of(), TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.MOUND, 0.0F, 0, 0)
-                .place(points, 0, 64, 0, RandomSource.create(1L)));
+        assertFalse(a.equals(b));
     }
 
     @Test

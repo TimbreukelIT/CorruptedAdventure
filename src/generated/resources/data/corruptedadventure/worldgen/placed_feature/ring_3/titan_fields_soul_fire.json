@@ -5,6 +5,7 @@
       "type": "corruptedadventure:terrain_landmark",
       "landmark": "ribcage",
       "margin": 4,
+      "salt": 4,
       "spread": 3
     },
     {

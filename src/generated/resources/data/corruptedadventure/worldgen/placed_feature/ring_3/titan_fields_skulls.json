@@ -6,6 +6,7 @@
       "chance": 0.1,
       "landmark": "ribcage",
       "margin": 1,
+      "salt": 3,
       "spread": 12
     },
     {

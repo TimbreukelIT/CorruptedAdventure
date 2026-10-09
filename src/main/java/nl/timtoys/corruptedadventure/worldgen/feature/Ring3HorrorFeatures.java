@@ -9,6 +9,7 @@ import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.levelgen.placement.HeightmapPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
 
@@ -43,6 +45,8 @@ public final class Ring3HorrorFeatures {
     /** After the ash drifts: a print dents the drift. */
     public static final ResourceKey<PlacedFeature> ASH_FOOTPRINT_TRAILS = placed("ash_footprint_trails");
 
+    /** Where the trails run (and the biomes that place them): they stop for good at the first step outside. */
+    public static final List<ResourceKey<Biome>> TRAIL_BIOMES = List.of(ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS);
     /** The grid of the trails (blocks): with a chance of 0.9 about one trail per 20 chunks. */
     static final int TRAIL_CELL = 72;
     /** The others of a group stand up to this far from the first. */
@@ -64,8 +68,10 @@ public final class Ring3HorrorFeatures {
 
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         FeatureUtils.register(context, ASH_CAST, ModFeatures.ASH_CAST.get(), cast());
+        HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
         FeatureUtils.register(context, ASH_FOOTPRINTS, ModFeatures.ASH_FOOTPRINTS.get(), new AshFootprintsConfiguration(
-                TRAIL_CELL, 0.9F, ModBlocks.ASH_BLOCK.get(), ModBlocks.ASH_LAYER.get(), cast()));
+                TRAIL_CELL, 0.9F, ModBlocks.ASH_BLOCK.get(), ModBlocks.ASH_LAYER.get(), cast(),
+                HolderSet.direct(TRAIL_BIOMES.stream().map(biomes::getOrThrow).toList())));
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {

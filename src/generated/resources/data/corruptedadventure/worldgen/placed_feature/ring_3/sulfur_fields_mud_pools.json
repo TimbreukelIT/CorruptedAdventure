@@ -5,6 +5,7 @@
       "type": "corruptedadventure:terrain_landmark",
       "landmark": "sinkhole",
       "margin": 3,
+      "salt": 2,
       "spread": 1
     },
     {

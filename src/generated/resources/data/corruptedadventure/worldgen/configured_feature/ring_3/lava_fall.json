@@ -1,6 +1,16 @@
 {
   "type": "corruptedadventure:lava_fall",
   "config": {
+    "biomes": [
+      "corruptedadventure:ashen_wastes",
+      "corruptedadventure:volcanic_peaks",
+      "corruptedadventure:ember_woods",
+      "corruptedadventure:basalt_flows",
+      "corruptedadventure:sulfur_fields",
+      "corruptedadventure:dried_seabed",
+      "corruptedadventure:titan_fields",
+      "corruptedadventure:dormant_caldera"
+    ],
     "chance": 0.0025,
     "max_per_chunk": 2,
     "min_drop": 10

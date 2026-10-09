@@ -87,13 +87,13 @@ public final class TitanFieldsFeatures {
         // Skulls lie around the ribcages (up to 12 from a rib foot or vertebra), where the soul fire burns too; loose
         // bones anywhere on level ground.
         PlacementUtils.register(context, TITAN_FIELDS_SKULLS, features.getOrThrow(TITAN_SKULL),
-                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 0.1F, 12, 1), SURFACE, SlopeFilter.flat(3, 2), ground,
+                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 0.1F, 12, 1, 3), SURFACE, SlopeFilter.flat(3, 2), ground,
                 BiomeFilter.biome());
         PlacementUtils.register(context, TITAN_FIELDS_BONES, features.getOrThrow(TITAN_BONES),
                 JitteredGridPlacement.of(16, 1, 0.15F), SURFACE, SlopeFilter.flat(3, 2), ground, BiomeFilter.biome());
         // Soul patches at the feet of the ribs and under the spine.
         PlacementUtils.register(context, TITAN_FIELDS_SOUL_FIRE, features.getOrThrow(SOUL_FIRE_PATCH),
-                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 1.0F, 3, SOUL_PATCH_RADIUS + 2), SURFACE, ground,
+                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 1.0F, 3, SOUL_PATCH_RADIUS + 2, 4), SURFACE, ground,
                 BiomeFilter.biome());
         // Once per chunk without a biome filter: a rock is a function of its cell, and every chunk it covers writes its
         // part (the rock's centre must lie in the titan fields, TitanRockFeature checks that).

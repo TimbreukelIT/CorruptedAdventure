@@ -58,14 +58,14 @@ public final class Ring3Features {
             local(Ring3HorrorFeatures.RARE_ASH_CASTS, ModBiomes.EMBER_WOODS, ModBiomes.TITAN_FIELDS),
             local(Ring3DressingFeatures.ASH_DRIFTS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS,
                     ModBiomes.DRIED_SEABED),
-            local(Ring3HorrorFeatures.ASH_FOOTPRINT_TRAILS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS),
+            new Entry(Ring3HorrorFeatures.ASH_FOOTPRINT_TRAILS, GenerationStep.Decoration.LOCAL_MODIFICATIONS, Set.copyOf(Ring3HorrorFeatures.TRAIL_BIOMES)),
             // Change 48: the steam fens, the pools first.
             local(SteamFensFeatures.STEAM_FENS_BOILING_POOLS, ModBiomes.STEAM_FENS),
             local(SteamFensFeatures.STEAM_FENS_MUD_POOLS, ModBiomes.STEAM_FENS),
             local(SteamFensFeatures.STEAM_FENS_GEYSERS, ModBiomes.STEAM_FENS),
             local(SteamFensFeatures.STEAM_FENS_STEAM_VENTS, ModBiomes.STEAM_FENS),
-            // Change 47c: lava falls and the floating islands, over every ring 3 biome.
-            everywhere(Ring3LavaFallFeatures.LAVA_FALLS, GenerationStep.Decoration.LOCAL_MODIFICATIONS),
+            // Change 47c: lava falls (the ring 3 core only) and the floating islands (over every ring 3 biome).
+            new Entry(Ring3LavaFallFeatures.LAVA_FALLS, GenerationStep.Decoration.LOCAL_MODIFICATIONS, Set.copyOf(Ring3Biomes.ALL)),
             everywhere(Ring3IslandFeatures.ISLAND_EMBER_PATCHES, GenerationStep.Decoration.LOCAL_MODIFICATIONS),
             everywhere(Ring3IslandFeatures.ISLAND_HANGING_CRYSTALS, GenerationStep.Decoration.LOCAL_MODIFICATIONS),
             new Entry(Ring3OreFeatures.SULFUR_ORE_RICH, GenerationStep.Decoration.UNDERGROUND_ORES, Set.of(ModBiomes.SULFUR_FIELDS)),

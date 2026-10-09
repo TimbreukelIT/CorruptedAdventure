@@ -1,6 +1,11 @@
 {
   "type": "corruptedadventure:ash_footprints",
   "config": {
+    "biomes": [
+      "corruptedadventure:ashen_wastes",
+      "corruptedadventure:titan_fields",
+      "corruptedadventure:volcanic_peaks"
+    ],
     "block": "corruptedadventure:ash_block",
     "cast": {
       "count": {

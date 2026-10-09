@@ -53,6 +53,12 @@ public final class AshDriftFeature extends Feature<AshDriftConfiguration> {
         ChunkPos chunk = new ChunkPos(context.origin());
         int minX = chunk.getMinBlockX();
         int minZ = chunk.getMinBlockZ();
+        Map<ResourceKey<Biome>, AshDriftConfiguration.BiomeAmount> amounts = new HashMap<>();
+        config.biomes().forEach(amount -> amounts.put(amount.biome(), amount));
+        // Placed in every chunk next to a drift biome: stop before the windows when none of its columns has one.
+        if (!anyDriftBiome(level, minX, minZ, amounts)) {
+            return false;
+        }
         int[] heights = new int[SIDE * SIDE];
         for (int dz = 0; dz < SIDE; dz++) {
             for (int dx = 0; dx < SIDE; dx++) {
@@ -61,8 +67,6 @@ public final class AshDriftFeature extends Feature<AshDriftConfiguration> {
         }
         Heights at = (x, z) -> heights[(x - minX + REACH) + (z - minZ + REACH) * SIDE];
         NormalNoise noise = level.getLevel().getChunkSource().randomState().getOrCreateNoise(config.noise());
-        Map<ResourceKey<Biome>, AshDriftConfiguration.BiomeAmount> amounts = new HashMap<>();
-        config.biomes().forEach(amount -> amounts.put(amount.biome(), amount));
         double windX = Math.cos(config.windAngle());
         double windZ = Math.sin(config.windAngle());
 
@@ -108,6 +112,22 @@ public final class AshDriftFeature extends Feature<AshDriftConfiguration> {
             }
         }
         return placed;
+    }
+
+    /** Whether a biome cell (4 × 4 columns, the biome's resolution) of the chunk at its surface is one of the drift biomes. */
+    private static boolean anyDriftBiome(WorldGenLevel level, int minX, int minZ, Map<ResourceKey<Biome>, AshDriftConfiguration.BiomeAmount> amounts) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int dz = 2; dz < 16; dz += 4) {
+            for (int dx = 2; dx < 16; dx += 4) {
+                int x = minX + dx;
+                int z = minZ + dz;
+                pos.set(x, level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z), z);
+                if (level.getBiome(pos).unwrapKey().map(amounts::containsKey).orElse(false)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

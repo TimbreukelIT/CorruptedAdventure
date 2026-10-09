@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
@@ -22,9 +23,11 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
  * deliberate exception to "no lava against air").
  * <p>
  * Placed once per chunk. A column tries with {@code chance} (a hash of the seed and the column, so nothing depends on
- * the order of generation); it qualifies where it holds no lava itself and a neighbouring column has lava at least
- * {@code min_drop} below the source (the pure terrain). Only columns one block inside the chunk try, so the source,
- * the wall around it and the open side are all the chunk's own blocks; at most {@code max_per_chunk} sources.
+ * the order of generation); it qualifies where it holds no lava itself, a neighbouring column has lava at least
+ * {@code min_drop} below the source (the pure terrain), both lie in one of {@code biomes} (the ring 3 core: in the
+ * transitions the real surface is a blend, the pure terrain only half of it) and the fall really lands in lava (the
+ * first block below the open side). Only columns one block inside the chunk try, so the source, the wall around it
+ * and the fall's column are all the chunk's own blocks; at most {@code max_per_chunk} sources.
  */
 public final class LavaFallFeature extends Feature<LavaFallConfiguration> {
     /** How far below the wall's top the source sits, so the lava does not spill over the rim. */
@@ -58,7 +61,8 @@ public final class LavaFallFeature extends Feature<LavaFallConfiguration> {
                 }
                 int y = Mth.floor(wall.height()) - SOURCE_DEPTH;
                 for (Direction side : Direction.Plane.HORIZONTAL) {
-                    if (opensOnto(field, x + side.getStepX(), z + side.getStepZ(), y, config.minDrop()) && enclosed(level, pos.set(x, y, z), side)) {
+                    if (opensOnto(field, x + side.getStepX(), z + side.getStepZ(), y, config.minDrop()) && enclosed(level, pos.set(x, y, z), side)
+                            && config.biomes().contains(level.getBiome(pos)) && landsInLava(level, pos.relative(side), config)) {
                         level.setBlock(pos, Blocks.LAVA.defaultBlockState(), Block.UPDATE_CLIENTS);
                         level.scheduleTick(pos, Fluids.LAVA, Fluids.LAVA.getTickDelay(level));
                         sources++;
@@ -86,17 +90,29 @@ public final class LavaFallFeature extends Feature<LavaFallConfiguration> {
         return top != Integer.MIN_VALUE && y - top >= minDrop && below.height() <= top + 1 && !below.islandAt(y);
     }
 
-    /** The source block and all its neighbours but the open side are solid (blocks of this chunk), the open side air. */
+    /** The source block and all its neighbours but the open side (above too) are solid (this chunk's), the open side air. */
     private static boolean enclosed(WorldGenLevel level, BlockPos source, Direction open) {
         if (!solid(level.getBlockState(source)) || !level.getBlockState(source.relative(open)).isAir()) {
             return false;
         }
         for (Direction direction : Direction.values()) {
-            if (direction != open && direction != Direction.UP && !solid(level.getBlockState(source.relative(direction)))) {
+            if (direction != open && !solid(level.getBlockState(source.relative(direction)))) {
                 return false;
             }
         }
         return true;
+    }
+
+    /** Whether the fall from {@code top} (air) goes down through air into lava, in one of the configured biomes. */
+    private static boolean landsInLava(WorldGenLevel level, BlockPos top, LavaFallConfiguration config) {
+        if (!config.biomes().contains(level.getBiome(top))) {
+            return false;
+        }
+        BlockPos.MutableBlockPos pos = top.mutable();
+        while (pos.getY() > level.getMinBuildHeight() && level.getBlockState(pos).isAir()) {
+            pos.move(Direction.DOWN);
+        }
+        return level.getFluidState(pos).is(FluidTags.LAVA);
     }
 
     private static boolean solid(BlockState state) {
