@@ -62,7 +62,7 @@ public final class BiomeAmbience {
 
     /**
      * Effects of a ring 3 overworld biome ({@code Ring3Biomes.ALL} and the transition {@code steam_fens}): sky, fog,
-     * water, grass and foliage and the cave mood; particles and sounds follow in package 50. Only effects: the biome
+     * water, grass and foliage, ambient particle, loop and additions sounds and the cave mood. Only effects: the biome
      * bootstrap sets climate (a wet {@code steam_fens} its own), spawns and generation.
      *
      * @throws IllegalArgumentException for a biome without ring 3 atmosphere
@@ -73,7 +73,7 @@ public final class BiomeAmbience {
 
     /**
      * Effects of a Nether ring 3 biome ({@code frozen_lava_sea}, {@code rime_forest}, {@code glacier_rifts}): fog and
-     * water colours and the cave mood; particles and sounds follow in package 56. The biome bootstrap only adds the
+     * water colours, ice crystals, wind and creaking ice, and the cave mood. The biome bootstrap only adds the
      * music. Fog distance is not biome data.
      *
      * @throws IllegalArgumentException for a biome without Nether ring 3 atmosphere

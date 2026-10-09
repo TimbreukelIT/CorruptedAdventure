@@ -1,0 +1,70 @@
+{
+  "type": "corruptedadventure:ground_vent",
+  "config": {
+    "below": [
+      {
+        "state": {
+          "Name": "corruptedadventure:sulfur_ore"
+        },
+        "target": {
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:stone_ore_replaceables"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:basalt_sulfur_ore"
+        },
+        "target": {
+          "block": "minecraft:tuff",
+          "predicate_type": "minecraft:block_match"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:basalt_sulfur_ore"
+        },
+        "target": {
+          "block": "minecraft:smooth_basalt",
+          "predicate_type": "minecraft:block_match"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:basalt_sulfur_ore"
+        },
+        "target": {
+          "block": "minecraft:basalt",
+          "predicate_type": "minecraft:block_match"
+        }
+      }
+    ],
+    "below_count": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "collar": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:sulfur_crust"
+      }
+    },
+    "collar_chance": 0.8,
+    "collar_radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "ground": [
+      "corruptedadventure:sulfur_crust",
+      "minecraft:calcite",
+      "minecraft:yellow_terracotta",
+      "minecraft:smooth_basalt",
+      "corruptedadventure:ash_block"
+    ],
+    "vent": {
+      "Name": "corruptedadventure:fumarole"
+    }
+  }
+}

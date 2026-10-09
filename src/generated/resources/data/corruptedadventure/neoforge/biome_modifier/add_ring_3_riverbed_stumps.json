@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "corruptedadventure:dry_riverbeds",
+  "features": "corruptedadventure:ring_3/dry_riverbeds_charred_stumps",
+  "step": "vegetal_decoration"
+}

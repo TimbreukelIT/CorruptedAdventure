@@ -8,7 +8,7 @@
   },
   "downfall": 0.0,
   "effects": {
-    "fog_color": 11048068,
+    "fog_color": 11840150,
     "foliage_color": 8024144,
     "grass_color": 9076832,
     "mood_sound": {
@@ -17,13 +17,49 @@
       "sound": "minecraft:ambient.cave",
       "tick_delay": 6000
     },
-    "sky_color": 12098180,
+    "particle": {
+      "options": {
+        "type": "minecraft:white_ash"
+      },
+      "probability": 0.004
+    },
+    "sky_color": 10924730,
     "water_color": 6187622,
     "water_fog_color": 1975330
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/dried_seabed_coral_reefs",
+      "corruptedadventure:ring_3/dried_seabed_kelp_bales",
+      "corruptedadventure:ring_3/dried_seabed_fossils",
+      "corruptedadventure:ring_3/ash_drifts",
+      "corruptedadventure:ring_3/lava_falls",
+      "corruptedadventure:ring_3/island_ember_patches",
+      "corruptedadventure:ring_3/island_hanging_crystals"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/fire_geodes"
+    ],
+    [],
+    [
+      "corruptedadventure:ring_3/dried_seabed_dead_coral",
+      "corruptedadventure:ring_3/dried_seabed_dead_bushes",
+      "corruptedadventure:ring_3/island_ember_trees"
+    ]
+  ],
   "has_precipitation": false,
-  "spawn_costs": {},
+  "spawn_costs": {
+    "minecraft:strider": {
+      "charge": 1.0,
+      "energy_budget": 0.12
+    }
+  },
   "spawners": {
     "ambient": [
       {
@@ -34,7 +70,14 @@
       }
     ],
     "axolotls": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "minecraft:strider",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 1
+      }
+    ],
     "misc": [],
     "monster": [
       {

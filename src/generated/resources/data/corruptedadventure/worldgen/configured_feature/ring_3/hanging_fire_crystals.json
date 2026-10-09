@@ -1,0 +1,44 @@
+{
+  "type": "corruptedadventure:hanging_cluster",
+  "config": {
+    "chance": 0.3,
+    "max_depth": 40,
+    "min_drop": 4,
+    "radius": 2,
+    "state": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:fire_crystal_cluster",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:large_fire_crystal_bud",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:medium_fire_crystal_bud",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

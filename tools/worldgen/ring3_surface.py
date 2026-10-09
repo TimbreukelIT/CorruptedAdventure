@@ -1,16 +1,16 @@
-"""Ring 3 surface rules (change 39c): writes the ring 3 branches of noise_settings/overworld.json, the Nether ring 3
-branch of noise_settings/nether.json and the surface noises noise/ring_3_surface_*.json.
+"""Ring 3 surface rules (change 39c): writes the ring 3 branches of noise_settings/overworld.json and the surface noises
+noise/ring_3_surface_*.json. The Nether ring 3 branch of noise_settings/nether.json has its own script since 53b
+(nether_ring3_surface.py, stream W-nether).
 
 Usage (from the repo root, Python 3, standard library only):  python tools/worldgen/ring3_surface.py
 
 The surface rules are hand-written JSON (CLAUDE.md §9); this script is their source for ring 3, because the shared
 pieces (craters, cones, lava banks) would otherwise be copied by hand. Edit the rules here, run the script, commit the
 script and the JSON together. It is idempotent:
-- overworld (39f): one ring 3 branch (all 8 biomes) where the ring 3 branches stood, and a fast path for the deep blocks
-  of the ring 3 core at the start of the rules above the preliminary surface; older layouts (one branch per biome plus
-  shared branches, 39c–39e) are recognised and replaced; (42) the walls of the lava tubes and magma chambers as the
+- overworld (39f): one ring 3 branch (all 8 biomes; 48: and the transition steam_fens) where the ring 3 branches
+  stood, and a fast path for the deep blocks of the ring 3 core at the start of the rules above the preliminary
+  surface; older layouts (one branch per biome plus shared branches, 39c–39e) are recognised and replaced; (42) the walls of the lava tubes and magma chambers as the
   second top-level rule (right after the bedrock floor), replaced if present;
-- Nether: the branch of placeholder_nether_ring_3 is replaced;
 - everything else stays byte-identical (a json round trip with indent 2 and CRLF reproduces the files exactly).
 """
 import json
@@ -91,7 +91,7 @@ NOISES = {
 }
 
 RING_3 = ["ashen_wastes", "volcanic_peaks", "ember_woods", "basalt_flows", "sulfur_fields", "dried_seabed",
-          "titan_fields", "dormant_caldera"]
+          "titan_fields", "dormant_caldera", "steam_fens"]
 
 
 # ---------------------------------------------------------------- overworld, shared pieces
@@ -339,6 +339,20 @@ def dormant_caldera():
         cond(DEPTH, block("coarse_dirt"))]
 
 
+def steam_fens():
+    # 48: the transition 3->4, where the stolen water comes back and boils: mud and packed mud in patches, clay, gravel
+    # with ash towards the heat, sulfur crust along cracks, coarse dirt between (never vanilla's dirt or grass).
+    top = [
+        all_of([noise(K, -0.03, 0.03), noise(D, -0.2)], mod("sulfur_crust")),
+        cond(noise(P, 0.25), seq(cond(noise(D, 0.3), block("packed_mud")), block("mud"))),
+        cond(noise(P, -INF, -0.4), seq(cond(noise(D, 0.25), mod("ash_block")), block("gravel"))),
+        cond(noise(D, 0.45), block("clay")),
+        block("coarse_dirt")]
+    return top, [
+        cond(STEEP, cond(DEPTH, block("tuff"))),
+        cond(DEPTH, seq(cond(noise(P, 0.25), block("mud")), block("packed_mud")))]
+
+
 # Biomes whose top gets the one-block crust of ash over a thin roof.
 THIN_ROOF_CRUST = {"ashen_wastes", "volcanic_peaks", "ember_woods", "titan_fields"}
 
@@ -392,57 +406,7 @@ def cave_walls():
 
 
 BIOMES = {f.__name__: f for f in [ashen_wastes, volcanic_peaks, ember_woods, basalt_flows, sulfur_fields, dried_seabed,
-                                  titan_fields, dormant_caldera]}
-
-# ---------------------------------------------------------------- Nether ring 3
-R = "nether_ring_3_region"           # thresholds = NetherRing3Features.RIME_THRESHOLD / RIFTS_THRESHOLD
-SEA = noise(R, -0.18, 0.18)
-RIME = noise(R, 0.18, 10.0)
-RIFTS = noise(R, -10.0, -0.18)
-SEL = "minecraft:nether_state_selector"
-PILLARS = "nether_ring_3_pillars"
-
-
-def nether():
-    return cond({"type": "minecraft:biome", "biome_is": [CA + "placeholder_nether_ring_3"]}, seq(
-        # ice pillars of the frozen sea: frosty skin, packed body, blue core, primordial heart in the strongest pillars
-        cond(SEA, cond(noise(PILLARS, 0.3, 10.0), cond(y_above(30), seq(
-            all_of([noise(PILLARS, 0.66, 10.0), y_above(45), NOT(y_above(96))], mod("primordial_ice")),
-            cond(noise(PILLARS, 0.62, 10.0), block("blue_ice")),
-            cond(noise(PILLARS, -10.0, 0.38), mod("nether_ice")),
-            block("packed_ice"))))),
-        # glacier masses of the rifts: smooth floors, packed Nether ice with vanilla veins
-        cond(RIFTS, cond(y_above(30), cond(NOT(y_above(113)), seq(
-            cond(TOP, mod("nether_ice")),
-            cond(noise(SEL, 0.45, 10.0), block("blue_ice")),
-            cond(noise(SEL, -10.0, -0.3), block("packed_ice")),
-            mod("packed_nether_ice"))))),
-        # warm cracks: glowing fissure in the walls (visible only inside the crack), a glowing seam on the floor
-        cond(SEA, cond(noise("nether_ring_3_crack_patches", 0.32, 10.0), cond(noise("nether_ring_3_cracks", -0.05, 0.05),
-             cond(y_above(14), cond(NOT(y_above(30)), seq(
-                 cond(noise(SEL, 0.5, 10.0), block("magma_block")),
-                 mod("glowing_fissure"))))))),
-        all_of([SEA, noise("nether_ring_3_crack_patches", 0.4, 10.0), noise("nether_ring_3_cracks", -0.06, 0.06),
-                y_above(30), TOP], mod("glowing_fissure")),
-        # floors
-        cond(depth("floor", 0, True), seq(
-            cond(RIME, seq(
-                cond(noise(SEL, 0.45, 10.0), mod("nether_ice")),
-                cond(noise(SEL, 0.3, 10.0), mod("packed_nether_ice")),
-                mod("rime_netherrack"))),
-            cond(noise(SEL, 0.25, 10.0), mod("nether_ice")),
-            cond(noise(SEL, 0.1, 10.0), mod("packed_nether_ice")),
-            mod("cold_lava"))),
-        # the frozen sea is solidified lava below its floor
-        cond(SEA, cond(depth("floor", 0, True, 6), mod("cold_lava"))),
-        # icy ceilings
-        cond(RIME, cond(y_above(30), cond(depth("ceiling", 0, True), seq(
-            cond(noise(SEL, 0.0, 10.0), block("packed_ice")),
-            mod("nether_ice"))))),
-        cond(SEA, cond(y_above(60), cond(depth("ceiling", 1, True), mod("rime_netherrack")))),
-        cond(RIME, mod("rime_netherrack")),
-        block("netherrack")))
-
+                                  titan_fields, dormant_caldera, steam_fens]}
 
 # ---------------------------------------------------------------- write
 def dump(path, data):
@@ -483,15 +447,6 @@ def main():
     rules.insert(0, ring_3_deep())
     assert top[0].get("if_true", {}).get("random_name") == "minecraft:bedrock_floor", top[0]
     top.insert(1, cave_walls())
-    dump(path, data)
-
-    path = os.path.join(ROOT, "noise_settings", "nether.json")
-    with open(path, encoding="utf-8") as f:
-        data = json.load(f)
-    rules = data["surface_rule"]["sequence"]
-    index = [i for i, r in enumerate(rules) if r.get("if_true", {}).get("biome_is") == [CA + "placeholder_nether_ring_3"]]
-    assert len(index) == 1, index
-    rules[index[0]] = nether()
     dump(path, data)
 
     for name, (first, amplitudes) in NOISES.items():

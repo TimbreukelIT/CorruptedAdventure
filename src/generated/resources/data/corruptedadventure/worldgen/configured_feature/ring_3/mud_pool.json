@@ -1,0 +1,31 @@
+{
+  "type": "corruptedadventure:ground_patch",
+  "config": {
+    "depth": 1,
+    "material": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:boiling_mud"
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "raised": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:boiling_mud"
+      }
+    },
+    "replaceable": [
+      "corruptedadventure:sulfur_crust",
+      "minecraft:calcite",
+      "minecraft:yellow_terracotta",
+      "minecraft:smooth_basalt",
+      "corruptedadventure:ash_block"
+    ],
+    "stretch": 1.3
+  }
+}

@@ -15,10 +15,6 @@ import java.util.function.Supplier;
  * away in about two seconds. Per client and not synced: the rumble and the shake may differ between players.
  */
 final class Rumble {
-    /** Shake left after one tick. */
-    private static final float DECAY = 0.93F;
-    /** Shake smaller than this is not applied. */
-    private static final float NO_SHAKE = 0.01F;
     /** Volume and shake of a rumble at the very start of the weather; full at full strength. */
     private static final float MIN_LOUDNESS = 0.5F;
     /** A pause longer than this in the ticks means the weather was not felt in between. */
@@ -29,7 +25,7 @@ final class Rumble {
     private final int maxInterval;
     private final float maxDegrees;
     private int untilNext = -1;
-    private float shake;
+    private final CameraShake shake = new CameraShake();
     private long lastTick = Long.MIN_VALUE / 2;
 
     /**
@@ -49,10 +45,10 @@ final class Rumble {
         if (gameTime - lastTick > FELT_AGAIN_TICKS || gameTime < lastTick) {
             // Felt again after a while (a new weather, back outside the zone): start over.
             untilNext = -1;
-            shake = 0.0F;
+            shake.clear();
         }
         lastTick = gameTime;
-        shake *= DECAY;
+        shake.tick();
         if (untilNext < 0) {
             // The first rumble of a weather comes soon: it is the warning.
             untilNext = random.nextInt(minInterval / 2 + 1);
@@ -63,20 +59,13 @@ final class Rumble {
         untilNext = minInterval + random.nextInt(maxInterval - minInterval + 1);
         // A rumble is loud from the start, so the first ones (the warning, early in the fade-in) are heard.
         float loudness = MIN_LOUDNESS + (1.0F - MIN_LOUDNESS) * volume;
-        shake = Math.max(shake, loudness);
+        shake.kick(loudness * maxDegrees);
         minecraft.getSoundManager().play(new SimpleSoundInstance(event.get().getLocation(), SoundSource.WEATHER, loudness,
                 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true));
     }
 
     /** Adds the shake to the camera (× vanilla's "Screen Effects" option, 0 = none). */
     void shakeCamera(ViewportEvent.ComputeCameraAngles event) {
-        float amount = shake * Minecraft.getInstance().options.screenEffectScale().get().floatValue();
-        if (amount < NO_SHAKE) {
-            return;
-        }
-        double time = event.getCamera().getEntity().tickCount + event.getPartialTick();
-        float degrees = amount * maxDegrees;
-        event.setPitch(event.getPitch() + (float) Math.sin(time * 2.3) * degrees);
-        event.setRoll(event.getRoll() + (float) Math.sin(time * 1.7 + 1.3) * degrees * 0.6F);
+        shake.apply(event);
     }
 }

@@ -42,9 +42,14 @@ public record HeatRule(Rates rates, int sourceRadius) implements ConditionRule {
         return condition == Condition.HEAT && rate > 0.0F;
     }
 
-    /** The zone: ring 3 of the overworld, switching at blend 0.5 like the biomes and the ring weather. */
+    /**
+     * The zone: ring 3 of the overworld, switching at blend 0.5 like the biomes and the ring weather. Both tests always
+     * run ({@code &}, not {@code &&}): no branch whose profile flips once the first players or water updates reach
+     * ring 3 after the JIT compiled this on rings 1 and 2 (backlog r. 203, deopts seen in integration 1). The ring is
+     * looked up once per player per second ({@link ConditionContext}) or once per water update, never per block.
+     */
     static boolean inZone(ResourceKey<Level> dimension, RingPosition position) {
-        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_3;
+        return dimension == Level.OVERWORLD & position.ring() == Ring.RING_3;
     }
 
     static Input input(ConditionContext context, int sourceRadius) {

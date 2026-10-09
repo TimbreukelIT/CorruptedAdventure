@@ -1,0 +1,38 @@
+{
+  "feature": "corruptedadventure:ring_3/fire_ruby_ore",
+  "placement": [
+    {
+      "type": "minecraft:count",
+      "count": {
+        "type": "minecraft:uniform",
+        "max_inclusive": 2,
+        "min_inclusive": 1
+      }
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "type": "minecraft:uniform",
+        "max_inclusive": {
+          "absolute": 30
+        },
+        "min_inclusive": {
+          "absolute": -40
+        }
+      }
+    },
+    {
+      "type": "corruptedadventure:ring_chance",
+      "from_chance": 1.0,
+      "ring": "ring_3",
+      "signal": "progress",
+      "to_chance": 1.0
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

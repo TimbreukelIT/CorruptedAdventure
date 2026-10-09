@@ -25,6 +25,7 @@ public final class ConditionDefinitions {
                     ServerConfig.DEBUG.riseRate.get().floatValue(), ServerConfig.DEBUG.fallRate.get().floatValue());
             case DEHYDRATION -> DehydrationRule.fromConfig();
             case HEAT -> HeatRule.fromConfig();
+            case COLD -> ColdRule.fromConfig();
         };
     }
 
@@ -34,6 +35,7 @@ public final class ConditionDefinitions {
             case DEBUG -> ServerConfig.DEBUG.thresholds.get();
             case DEHYDRATION -> ServerConfig.DEHYDRATION.thresholds.get();
             case HEAT -> ServerConfig.HEAT.thresholds.get();
+            case COLD -> ServerConfig.COLD.thresholds.get();
         };
     }
 
@@ -72,6 +74,13 @@ public final class ConditionDefinitions {
                         new MobEffectThreshold(MobEffects.WEAKNESS, config.effect2Amplifier.get()),
                         new MobEffectThreshold(MobEffects.DIG_SLOWDOWN, config.effect3Amplifier.get()),
                         HeatBurn.IGNITE);
+            }
+            case COLD -> {
+                ServerConfig.ColdCondition config = ServerConfig.COLD;
+                yield List.of(
+                        new MobEffectThreshold(MobEffects.MOVEMENT_SLOWDOWN, config.effect1Amplifier.get()),
+                        new MobEffectThreshold(MobEffects.DIG_SLOWDOWN, config.effect2Amplifier.get()),
+                        ColdFreeze.FREEZE);
             }
         };
     }

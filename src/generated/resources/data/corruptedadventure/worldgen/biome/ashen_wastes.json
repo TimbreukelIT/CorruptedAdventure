@@ -8,7 +8,7 @@
   },
   "downfall": 0.0,
   "effects": {
-    "fog_color": 8287344,
+    "fog_color": 8682100,
     "foliage_color": 8024144,
     "grass_color": 9076832,
     "mood_sound": {
@@ -17,13 +17,48 @@
       "sound": "minecraft:ambient.cave",
       "tick_delay": 6000
     },
-    "sky_color": 10128518,
+    "particle": {
+      "options": {
+        "type": "corruptedadventure:drifting_ash"
+      },
+      "probability": 0.006
+    },
+    "sky_color": 10129032,
     "water_color": 6187622,
     "water_fog_color": 1975330
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/ashen_wastes_pumice_boulders",
+      "corruptedadventure:ring_3/ashen_wastes_dead_trees",
+      "corruptedadventure:ring_3/ashen_wastes_ash_casts",
+      "corruptedadventure:ring_3/ash_drifts",
+      "corruptedadventure:ring_3/ash_footprint_trails",
+      "corruptedadventure:ring_3/lava_falls",
+      "corruptedadventure:ring_3/island_ember_patches",
+      "corruptedadventure:ring_3/island_hanging_crystals"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/fire_geodes"
+    ],
+    [],
+    [
+      "corruptedadventure:ring_3/island_ember_trees"
+    ]
+  ],
   "has_precipitation": false,
-  "spawn_costs": {},
+  "spawn_costs": {
+    "minecraft:strider": {
+      "charge": 1.0,
+      "energy_budget": 0.12
+    }
+  },
   "spawners": {
     "ambient": [
       {
@@ -34,7 +69,14 @@
       }
     ],
     "axolotls": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "minecraft:strider",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 1
+      }
+    ],
     "misc": [],
     "monster": [
       {

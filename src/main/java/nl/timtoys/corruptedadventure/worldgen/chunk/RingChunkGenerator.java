@@ -92,9 +92,12 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
         });
     }
 
-    /** The ring 3 terrain inside this generator's final density (wired by {@code random}), or null if it has none. */
+    /**
+     * The ring 3 terrain inside this generator's final density (wired by {@code random}), or null if it has none.
+     * Thread-safe; also read outside generation (the volcano plumes, package 50b).
+     */
     @Nullable
-    private VolcanicField volcanicField(RandomState random) {
+    public VolcanicField volcanicField(RandomState random) {
         VolcanicFieldLookup lookup = volcanicLookup;
         if (lookup == null || lookup.random() != random) {
             lookup = new VolcanicFieldLookup(random, VolcanicField.find(random.router().finalDensity()));

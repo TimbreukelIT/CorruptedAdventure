@@ -1,0 +1,57 @@
+{
+  "feature": "corruptedadventure:ring_3/ember_tree",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 16,
+      "chance": 0.25,
+      "margin": 3
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ranges": [
+        {
+          "min": 0.9,
+          "output": "island_mask"
+        }
+      ]
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 1,
+      "radius": 3
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:air"
+          },
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": [
+              "corruptedadventure:ash_block",
+              "corruptedadventure:smoldering_ash",
+              "corruptedadventure:pumice"
+            ],
+            "offset": [
+              0,
+              -1,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

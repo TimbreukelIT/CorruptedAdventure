@@ -1,5 +1,8 @@
 package nl.timtoys.corruptedadventure.worldgen.feature;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.properties.DripstoneThickness;
 
@@ -15,7 +18,7 @@ import java.util.List;
  *       drooping rims, a collar of cap against the ceiling, lamps scattered in the cap, and short stalactites under
  *       the discs;</li>
  *   <li>a <b>free-standing</b> fungus: a stem of 8–20 blocks with a dome-shaped cap (radius 3–6), lamps and short
- *       stalactites under the rim.</li>
+ *       stalactites under the rim; another {@link FreeSize} gives other heights and caps (Nether ring 3).</li>
  * </ul>
  * Reads the terrain only through {@link Ground}; every part lies within {@link #MAX_REACH} blocks (horizontally) of the
  * origin, so the whole fungus stays within the 3 × 3 chunks around the origin's chunk.
@@ -27,7 +30,7 @@ public final class GiantFungusShape {
     public static final int MIN_PILLAR_GAP = 20;
     /** How far down the stem of a pillar reaches below the centre's floor on an uneven floor. */
     public static final int ROOT_DEPTH = 5;
-    /** A free-standing fungus needs at least this much room (a dew geode's cavity is lower). */
+    /** The room a {@link FreeSize#DEFAULT} fungus needs (a dew geode's cavity is lower). */
     public static final int MIN_FREE_GAP = 18;
     public static final double LAMP_CHANCE = 0.08;
 
@@ -38,6 +41,62 @@ public final class GiantFungusShape {
 
     public enum Kind {
         STEM, CAP, LAMP, STALACTITE
+    }
+
+    /**
+     * The size range of a free-standing fungus: stem height and cap radius (both inclusive) and the room it needs between
+     * floor and ceiling. {@link #DEFAULT} draws exactly as before the range existed (Nether ring 2 unchanged);
+     * {@link #of} derives the room from the largest fungus, so no cap reaches into the ceiling.
+     */
+    public record FreeSize(int minHeight, int maxHeight, int minCapRadius, int maxCapRadius, int minGap) {
+        /** The cap must stay within {@link #MAX_REACH} with its stalactites. */
+        public static final int MAX_CAP_RADIUS = 6;
+        /** Nether ring 2's dripshrooms, with their old room {@link #MIN_FREE_GAP} (the tallest caps may touch the ceiling). */
+        public static final FreeSize DEFAULT = new FreeSize(8, 20, 3, 6, MIN_FREE_GAP);
+
+        /** Decodes the fields first, so the constructor's checks become decode errors instead of exceptions. */
+        public static final Codec<FreeSize> CODEC = Fields.CODEC.flatXmap(Fields::size,
+                size -> DataResult.success(new Fields(size.minHeight, size.maxHeight, size.minCapRadius, size.maxCapRadius, size.minGap)));
+
+        public FreeSize {
+            if (minHeight < 1 || minHeight > maxHeight || maxHeight > 32) {
+                throw new IllegalArgumentException("free fungus height range " + minHeight + ".." + maxHeight);
+            }
+            if (minCapRadius < 2 || minCapRadius > maxCapRadius || maxCapRadius > MAX_CAP_RADIUS) {
+                throw new IllegalArgumentException("free fungus cap radius range " + minCapRadius + ".." + maxCapRadius);
+            }
+            if (minGap < minHeight + minCapRadius + 1) {
+                throw new IllegalArgumentException("free fungus room " + minGap + " below its smallest fungus");
+            }
+        }
+
+        /** A size whose room fits its largest fungus: the cap's top lies {@code height + cap radius} above the floor. */
+        public static FreeSize of(int minHeight, int maxHeight, int minCapRadius, int maxCapRadius) {
+            return new FreeSize(minHeight, maxHeight, minCapRadius, maxCapRadius, maxHeight + maxCapRadius + 1);
+        }
+
+        /** A 3-wide stem only under caps of radius 3 or more: under a smaller cap it would fill the cap and hide the stalactites. */
+        boolean thickStem() {
+            return minCapRadius >= 3;
+        }
+
+        private record Fields(int minHeight, int maxHeight, int minCapRadius, int maxCapRadius, int minGap) {
+            static final Codec<Fields> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                    Codec.INT.fieldOf("min_height").forGetter(Fields::minHeight),
+                    Codec.INT.fieldOf("max_height").forGetter(Fields::maxHeight),
+                    Codec.INT.fieldOf("min_cap_radius").forGetter(Fields::minCapRadius),
+                    Codec.INT.fieldOf("max_cap_radius").forGetter(Fields::maxCapRadius),
+                    Codec.INT.fieldOf("min_gap").forGetter(Fields::minGap)
+            ).apply(instance, Fields::new));
+
+            DataResult<FreeSize> size() {
+                try {
+                    return DataResult.success(new FreeSize(minHeight, maxHeight, minCapRadius, maxCapRadius, minGap));
+                } catch (IllegalArgumentException e) {
+                    return DataResult.error(e::getMessage);
+                }
+            }
+        }
     }
 
     /** One block of the fungus; {@code thickness} only for stalactites. */
@@ -59,6 +118,11 @@ public final class GiantFungusShape {
      * enough (and {@code pillars} is set), else a free-standing fungus; empty if there is no floor (or lava) to stand on.
      */
     public static List<Part> build(RandomSource random, int x, int y, int z, Ground ground, boolean pillars) {
+        return build(random, x, y, z, ground, pillars, FreeSize.DEFAULT);
+    }
+
+    /** As {@link #build(RandomSource, int, int, int, Ground, boolean)}, with the free-standing form in {@code size}. */
+    public static List<Part> build(RandomSource random, int x, int y, int z, Ground ground, boolean pillars, FreeSize size) {
         int floor = ground.floor(x, y, z);
         if (floor == FungalTerrainScan.NONE || ground.lava(x, floor, z)) {
             return List.of();
@@ -68,8 +132,8 @@ public final class GiantFungusShape {
         if (pillars && ceiling != FungalTerrainScan.NONE && ceiling - floor >= MIN_PILLAR_GAP) {
             return pillar(random, x, z, floor, ceiling, ground);
         }
-        if (ceiling == FungalTerrainScan.NONE || ceiling - floor >= MIN_FREE_GAP) {
-            return freeStanding(random, x, z, floor, ground);
+        if (ceiling == FungalTerrainScan.NONE || ceiling - floor >= size.minGap()) {
+            return freeStanding(random, x, z, floor, ground, size);
         }
         return List.of();
     }
@@ -171,10 +235,11 @@ public final class GiantFungusShape {
         }
     }
 
-    static List<Part> freeStanding(RandomSource random, int x, int z, int floor, Ground ground) {
+    static List<Part> freeStanding(RandomSource random, int x, int z, int floor, Ground ground, FreeSize size) {
         List<Part> parts = new ArrayList<>();
-        int height = 8 + random.nextInt(13);
-        double radius = random.nextBoolean() ? 0.5 : 1.5;
+        int height = size.minHeight() + random.nextInt(size.maxHeight() - size.minHeight() + 1);
+        // Always draw (DEFAULT keeps its random sequence); a small cap gets the thin stem regardless.
+        double radius = random.nextBoolean() || !size.thickStem() ? 0.5 : 1.5;
         int reach = (int) Math.ceil(radius);
         for (int dx = -reach; dx <= reach; dx++) {
             for (int dz = -reach; dz <= reach; dz++) {
@@ -190,7 +255,7 @@ public final class GiantFungusShape {
                 }
             }
         }
-        int domeRadius = 3 + random.nextInt(4);
+        int domeRadius = size.minCapRadius() + random.nextInt(size.maxCapRadius() - size.minCapRadius() + 1);
         int top = floor + height;
         // A dome: the upper part of a shell two blocks thick, with its centre one block below the stem's top.
         for (int dx = -domeRadius; dx <= domeRadius; dx++) {
@@ -203,6 +268,7 @@ public final class GiantFungusShape {
                 }
             }
         }
+        // Under the rim, one block inside it: clear of the stem (thick stems only under caps of radius 3 or more).
         int count = 1 + random.nextInt(2);
         for (int i = 0; i < count; i++) {
             double angle = random.nextDouble() * Math.PI * 2.0;

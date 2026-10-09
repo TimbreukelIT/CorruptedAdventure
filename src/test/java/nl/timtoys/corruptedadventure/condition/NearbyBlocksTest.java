@@ -12,12 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class HeatSourcesTest {
+class NearbyBlocksTest {
     private static final BlockPos FEET = new BlockPos(4750, 90, -12);
 
     @Test
     void theBoxCoversFeetAndHeadPlusTheRadiusOnce() {
-        int[] offsets = HeatSources.offsets(4);
+        int[] offsets = NearbyBlocks.offsets(4);
         assertEquals(9 * 10 * 9 * 3, offsets.length);
         Set<Long> seen = new HashSet<>();
         for (int i = 0; i < offsets.length; i += 3) {
@@ -29,7 +29,7 @@ class HeatSourcesTest {
 
     @Test
     void nearestFirst() {
-        int[] offsets = HeatSources.offsets(4);
+        int[] offsets = NearbyBlocks.offsets(4);
         // The feet and head blocks first, the far corners last.
         Set<Integer> firstTwoDy = Set.of(offsets[1], offsets[4]);
         assertEquals(Set.of(0, 1), firstTwoDy);
@@ -42,30 +42,30 @@ class HeatSourcesTest {
 
     @Test
     void findsASourceAtTheEdgeOfTheBoxButNotBeyond() {
-        assertTrue(HeatSources.scan(FEET, 4, pos -> pos.equals(FEET.offset(4, 5, -4))));
-        assertTrue(HeatSources.scan(FEET, 4, pos -> pos.equals(FEET.offset(-4, -4, 4))));
-        assertFalse(HeatSources.scan(FEET, 4, pos -> pos.equals(FEET.offset(5, 0, 0))));
-        assertFalse(HeatSources.scan(FEET, 4, pos -> pos.equals(FEET.offset(0, 6, 0))));
-        assertFalse(HeatSources.scan(FEET, 4, pos -> pos.equals(FEET.offset(0, -5, 0))));
+        assertTrue(NearbyBlocks.scan(FEET, 4, pos -> pos.equals(FEET.offset(4, 5, -4))));
+        assertTrue(NearbyBlocks.scan(FEET, 4, pos -> pos.equals(FEET.offset(-4, -4, 4))));
+        assertFalse(NearbyBlocks.scan(FEET, 4, pos -> pos.equals(FEET.offset(5, 0, 0))));
+        assertFalse(NearbyBlocks.scan(FEET, 4, pos -> pos.equals(FEET.offset(0, 6, 0))));
+        assertFalse(NearbyBlocks.scan(FEET, 4, pos -> pos.equals(FEET.offset(0, -5, 0))));
     }
 
     @Test
     void stopsAtTheFirstHit() {
         AtomicInteger lookups = new AtomicInteger();
-        assertTrue(HeatSources.scan(FEET, 4, pos -> {
+        assertTrue(NearbyBlocks.scan(FEET, 4, pos -> {
             lookups.incrementAndGet();
             return pos.equals(FEET.below());
         }));
         assertTrue(lookups.get() <= 10, "lava under the feet is found within the first blocks, not after " + lookups.get());
         lookups.set(0);
-        assertFalse(HeatSources.scan(FEET, 4, pos -> lookups.incrementAndGet() < 0));
+        assertFalse(NearbyBlocks.scan(FEET, 4, pos -> lookups.incrementAndGet() < 0));
         assertEquals(810, lookups.get());
     }
 
     @Test
     void radiusOutsideTheConfigRangeIsRejected() {
-        assertThrows(IllegalArgumentException.class, () -> HeatSources.offsets(0));
-        assertThrows(IllegalArgumentException.class, () -> HeatSources.offsets(9));
-        assertEquals(17 * 18 * 17 * 3, HeatSources.offsets(8).length);
+        assertThrows(IllegalArgumentException.class, () -> NearbyBlocks.offsets(0));
+        assertThrows(IllegalArgumentException.class, () -> NearbyBlocks.offsets(9));
+        assertEquals(17 * 18 * 17 * 3, NearbyBlocks.offsets(8).length);
     }
 }

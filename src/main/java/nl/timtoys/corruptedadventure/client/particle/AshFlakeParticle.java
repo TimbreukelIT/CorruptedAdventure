@@ -11,17 +11,18 @@ import net.minecraft.util.Mth;
 
 /**
  * A flake of falling ash ({@code corruptedadventure:ash_flake}, ring 3 weather): falls slowly at the speed it was given,
- * sways a little, grey-tinted, and is gone once it lands.
+ * sways a little, grey-tinted, and is gone once it lands. As a biome's ambient particle ({@code drifting_ash},
+ * package 50; those come without speed) it drifts down slowly by itself.
  */
 public final class AshFlakeParticle extends TextureSheetParticle {
     private final float swayPhase;
 
-    private AshFlakeParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
+    private AshFlakeParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd, boolean drifting) {
         // The four-argument constructor: the seven-argument one adds vanilla's random spread to the speed.
         super(level, x, y, z);
-        this.xd = xd;
-        this.yd = yd;
-        this.zd = zd;
+        this.xd = drifting ? xd + (random.nextDouble() - 0.5) * 0.01 : xd;
+        this.yd = drifting ? yd - 0.015 - random.nextDouble() * 0.02 : yd;
+        this.zd = drifting ? zd + (random.nextDouble() - 0.5) * 0.01 : zd;
         this.gravity = 0.0F;
         this.friction = 1.0F;
         this.hasPhysics = true;
@@ -52,15 +53,18 @@ public final class AshFlakeParticle extends TextureSheetParticle {
     /** Registered in {@code CorruptedAdventureClient} through {@code RegisterParticleProvidersEvent}. */
     public static final class Provider implements ParticleProvider<SimpleParticleType> {
         private final SpriteSet sprites;
+        private final boolean drifting;
 
-        public Provider(SpriteSet sprites) {
+        /** @param drifting {@code drifting_ash}: falls by itself on top of the given speed */
+        public Provider(SpriteSet sprites, boolean drifting) {
             this.sprites = sprites;
+            this.drifting = drifting;
         }
 
         @Override
         public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
                                        double xd, double yd, double zd) {
-            AshFlakeParticle particle = new AshFlakeParticle(level, x, y, z, xd, yd, zd);
+            AshFlakeParticle particle = new AshFlakeParticle(level, x, y, z, xd, yd, zd, drifting);
             particle.pickSprite(sprites);
             return particle;
         }

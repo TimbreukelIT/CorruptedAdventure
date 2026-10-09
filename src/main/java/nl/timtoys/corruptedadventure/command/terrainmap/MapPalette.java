@@ -60,7 +60,6 @@ final class MapPalette {
             Map.entry("corruptedadventure:placeholder_ring_3", 0x7A4A3A),
             Map.entry("corruptedadventure:placeholder_ring_4", 0x4A6A3A),
             Map.entry("corruptedadventure:placeholder_ring_5", 0x5A3A6A),
-            Map.entry("corruptedadventure:placeholder_nether_ring_3", 0x5A3A2A),
             Map.entry("corruptedadventure:placeholder_nether_ring_4", 0x3A4A2A),
             Map.entry("corruptedadventure:placeholder_nether_ring_5", 0x3A2A4A),
             Map.entry("corruptedadventure:void_edge", 0x101010),

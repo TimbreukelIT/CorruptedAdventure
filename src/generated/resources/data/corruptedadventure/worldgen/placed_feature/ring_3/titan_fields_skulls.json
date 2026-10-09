@@ -1,0 +1,51 @@
+{
+  "feature": "corruptedadventure:ring_3/titan_skull",
+  "placement": [
+    {
+      "type": "corruptedadventure:terrain_landmark",
+      "chance": 0.1,
+      "landmark": "ribcage",
+      "margin": 1,
+      "salt": 3,
+      "spread": 12
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 2,
+      "radius": 3
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ground_only": true,
+      "ranges": [
+        {
+          "max": 0.1,
+          "output": "lava_bank"
+        },
+        {
+          "max": 0.3,
+          "output": "cliff"
+        },
+        {
+          "max": 20.0,
+          "output": "volcano_rise"
+        },
+        {
+          "max": 0.001,
+          "output": "caldera_mask"
+        },
+        {
+          "max": 0.001,
+          "output": "collapse"
+        }
+      ]
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

@@ -33,7 +33,7 @@ public final class ModBiomes {
     /** Transition biome of boundary 3 (ring 3 | ring 4). */
     public static final ResourceKey<Biome> STEAM_FENS = key("steam_fens");
 
-    // Nether ring 3 (NetherRing3Biomes). Keys only until the biomes are registered.
+    // Nether ring 3 (NetherRing3Biomes, 53b).
     public static final ResourceKey<Biome> FROZEN_LAVA_SEA = key("frozen_lava_sea");
     public static final ResourceKey<Biome> RIME_FOREST = key("rime_forest");
     public static final ResourceKey<Biome> GLACIER_RIFTS = key("glacier_rifts");
@@ -42,7 +42,6 @@ public final class ModBiomes {
     // VanillaBiomeCopies.copyOf.
     public static final ResourceKey<Biome> PLACEHOLDER_RING_4 = key("placeholder_ring_4");
     public static final ResourceKey<Biome> PLACEHOLDER_RING_5 = key("placeholder_ring_5");
-    public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_3 = key("placeholder_nether_ring_3");
     public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_4 = key("placeholder_nether_ring_4");
     public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_5 = key("placeholder_nether_ring_5");
 

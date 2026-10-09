@@ -151,6 +151,19 @@ class GrowthPriorityTest {
         assertEquals(GrowthPriority.NONE, GrowthPriority.rank(Blocks.STONE.defaultBlockState()));
     }
 
+    /** Nether ring 3's growths (53b) take the ranks of their Nether ring 2 counterparts, so scans see through them. */
+    @Test
+    void netherRing3GrowthsRankLikeTheirCounterparts() {
+        assertEquals(GrowthPriority.STEM, GrowthPriority.rank(ModBlocks.RIMESHROOM_STEM.get().defaultBlockState()));
+        assertEquals(GrowthPriority.STEM, GrowthPriority.rank(ModBlocks.RIMESHROOM_HYPHAE.get().defaultBlockState()));
+        assertEquals(GrowthPriority.STEM, GrowthPriority.rank(ModBlocks.STRIPPED_RIMESHROOM_STEM.get().defaultBlockState()));
+        assertEquals(GrowthPriority.STEM, GrowthPriority.rank(ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get().defaultBlockState()));
+        assertEquals(GrowthPriority.CAP, GrowthPriority.rank(ModBlocks.RIMESHROOM_CAP.get().defaultBlockState()));
+        assertEquals(GrowthPriority.STALACTITE, GrowthPriority.rank(ModBlocks.ICE_STALACTITE.get().defaultBlockState()));
+        assertTrue(FungalTerrainScan.isTerrain(ModBlocks.COLD_LAVA.get().defaultBlockState()));
+        assertTrue(FungalTerrainScan.isTerrain(ModBlocks.NETHER_ICE.get().defaultBlockState()));
+    }
+
     private static List<List<Integer>> permutations(int n) {
         List<List<Integer>> result = new ArrayList<>();
         permute(new ArrayList<>(), new boolean[n], n, result);

@@ -8,7 +8,8 @@
   },
   "downfall": 0.4,
   "effects": {
-    "fog_color": 10794140,
+    "ambient_sound": "corruptedadventure:ambient.ring_3.caldera",
+    "fog_color": 11191970,
     "foliage_color": 6197298,
     "grass_color": 7315520,
     "mood_sound": {
@@ -17,13 +18,48 @@
       "sound": "minecraft:ambient.cave",
       "tick_delay": 6000
     },
-    "sky_color": 10268832,
+    "particle": {
+      "options": {
+        "type": "minecraft:spore_blossom_air"
+      },
+      "probability": 0.002
+    },
+    "sky_color": 10010794,
     "water_color": 6187622,
     "water_fog_color": 1975330
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/lava_falls",
+      "corruptedadventure:ring_3/island_ember_patches",
+      "corruptedadventure:ring_3/island_hanging_crystals"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/fire_geodes"
+    ],
+    [],
+    [
+      "corruptedadventure:ring_3/island_ember_trees",
+      "corruptedadventure:ring_3/dormant_caldera_azalea_trees",
+      "corruptedadventure:ring_3/dormant_caldera_azalea_bushes",
+      "corruptedadventure:ring_3/dormant_caldera_ferns",
+      "corruptedadventure:ring_3/dormant_caldera_berry_bushes",
+      "corruptedadventure:ring_3/dormant_caldera_glow_lichen"
+    ]
+  ],
   "has_precipitation": false,
-  "spawn_costs": {},
+  "spawn_costs": {
+    "minecraft:strider": {
+      "charge": 1.0,
+      "energy_budget": 0.12
+    }
+  },
   "spawners": {
     "ambient": [
       {
@@ -34,7 +70,14 @@
       }
     ],
     "axolotls": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "minecraft:strider",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 1
+      }
+    ],
     "misc": [],
     "monster": [
       {

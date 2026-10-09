@@ -4,7 +4,21 @@
     "type": "minecraft:mul",
     "argument1": {
       "type": "minecraft:add",
-      "argument1": "corruptedadventure:ring_3/nether/pillar_noise",
+      "argument1": {
+        "type": "minecraft:add",
+        "argument1": "corruptedadventure:ring_3/nether/pillar_noise",
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": "corruptedadventure:ring_3/nether/falls",
+          "argument2": {
+            "type": "minecraft:y_clamped_gradient",
+            "from_y": 50,
+            "to_y": 100,
+            "from_value": 1.0,
+            "to_value": 0.6
+          }
+        }
+      },
       "argument2": {
         "type": "minecraft:add",
         "argument1": -0.52,

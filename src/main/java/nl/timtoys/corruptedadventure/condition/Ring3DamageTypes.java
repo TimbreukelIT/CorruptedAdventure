@@ -16,6 +16,9 @@ public final class Ring3DamageTypes {
     /** Burning at the top of the heat meter ({@link HeatBurn}); tagged like vanilla's {@code on_fire}. */
     public static final ResourceKey<DamageType> HEAT =
             ResourceKey.create(Registries.DAMAGE_TYPE, CorruptedAdventure.id("heat"));
+    /** Freezing at the top of the cold meter ({@link ColdFreeze}); tagged like vanilla's {@code freeze}. */
+    public static final ResourceKey<DamageType> COLD =
+            ResourceKey.create(Registries.DAMAGE_TYPE, CorruptedAdventure.id("cold"));
 
     private Ring3DamageTypes() {
     }
@@ -23,5 +26,7 @@ public final class Ring3DamageTypes {
     public static void bootstrap(BootstrapContext<DamageType> context) {
         // As vanilla's on_fire: no exhaustion, default scaling, burning sound.
         context.register(HEAT, new DamageType("corruptedadventure.heat", 0.0f, DamageEffects.BURNING));
+        // As vanilla's freeze: no exhaustion, default scaling, freezing sound.
+        context.register(COLD, new DamageType("corruptedadventure.cold", 0.0f, DamageEffects.FREEZING));
     }
 }

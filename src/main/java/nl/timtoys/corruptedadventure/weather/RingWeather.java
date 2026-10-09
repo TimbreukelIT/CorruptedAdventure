@@ -40,6 +40,8 @@ public final class RingWeather {
         ConditionDefinitions.addModifier(new HeatWaveDehydrationModifier());
         // Ring 3 (package 45): the eruption's lava bombs. Its heat modifiers belong to the conditions (stream C).
         LavaBombs.register(gameBus);
+        // Ring 3 (package 50b): the volcanoes near each player, for the smoke plumes the client draws.
+        VolcanoPlumes.register(gameBus);
         gameBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> sendTo(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, event -> sendTo(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerRespawnEvent.class, event -> sendTo(event.getEntity()));

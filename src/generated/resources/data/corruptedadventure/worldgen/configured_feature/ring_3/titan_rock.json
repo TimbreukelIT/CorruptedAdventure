@@ -1,0 +1,19 @@
+{
+  "type": "corruptedadventure:titan_rock",
+  "config": {
+    "biome": "corruptedadventure:titan_fields",
+    "cell": 256,
+    "chance": 0.4,
+    "materials": [
+      "minecraft:basalt",
+      "minecraft:smooth_basalt",
+      "minecraft:blackstone"
+    ],
+    "sink": 2,
+    "templates": [
+      "corruptedadventure:ring_3/titan_rock_kneeling",
+      "corruptedadventure:ring_3/titan_rock_hunched",
+      "corruptedadventure:ring_3/titan_rock_bust"
+    ]
+  }
+}

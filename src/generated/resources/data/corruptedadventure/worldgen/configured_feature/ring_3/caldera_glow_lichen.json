@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:multiface_growth",
+  "config": {
+    "block": "minecraft:glow_lichen",
+    "can_be_placed_on": [
+      "corruptedadventure:pumice",
+      "corruptedadventure:ash_block",
+      "minecraft:basalt",
+      "minecraft:smooth_basalt",
+      "minecraft:tuff",
+      "minecraft:blackstone"
+    ],
+    "can_place_on_ceiling": false,
+    "can_place_on_floor": false,
+    "can_place_on_wall": true,
+    "chance_of_spreading": 0.5,
+    "search_range": 1
+  }
+}

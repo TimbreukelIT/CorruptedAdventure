@@ -156,7 +156,7 @@ Scope: ring 3 + Nether-ring 3 (bouwplan blok E). Werkwijze besloten in de sparri
    - `src/generated/**` → neem een van beide kanten en regenereer;
    - append-blokken (§5) → beide houden;
    - al het andere → terug naar de stroom (vraag via main), niet zelf ontwerpen.
-4. `./gradlew build` (inclusief unit tests en `ClientIsolationTest`), `runData` en de geregenereerde output committen (`infra: integrate ring 3 wave <n>`).
+4. `./gradlew build` (inclusief unit tests en `ClientIsolationTest`), `runData` en de geregenereerde output committen (`infra: integrate ring 3 wave <n>`). Vangnet: na elke merge `runData`, daarna `git diff --exit-code src/generated`; dat moet leeg zijn. Is het niet leeg, dan de output regenereren en committen, en de oorzaak bij de stroom melden (integratie 2: twee stromen hadden output van vóór een andere merge).
 5. **S:** server + 2 clients (quick-play), verse wereld `ring3-wave<n>`. **W-smoke:** `/ca tpring 3`, `tpring 3 nether`, `tpboundary 2|3`, portal ring 3 ↔ Nether-3.
 6. **Determinisme:** twee verse werelden, de tweede omgekeerd geladen; eigen blokken identiek (methode change 35). **Feature-index:** ring 1/2 vergelijken op biomes en terreinvorm (valkuil `CODEBASE.md`).
 7. **Prestatie:** JFR `minecraft.ChunkGeneration`, stap `noise`, 16×16 chunks, 5 rondes; meetpunten in elke ring 3-biome en in Nether-3; tegen vanilla en tegen de vorige integratie. Budget ≤ 1,75×.

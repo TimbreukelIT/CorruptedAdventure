@@ -8,7 +8,8 @@
   },
   "downfall": 0.0,
   "effects": {
-    "fog_color": 8013366,
+    "ambient_sound": "corruptedadventure:ambient.ring_3.embers",
+    "fog_color": 8671790,
     "foliage_color": 8024144,
     "grass_color": 9076832,
     "mood_sound": {
@@ -17,13 +18,49 @@
       "sound": "minecraft:ambient.cave",
       "tick_delay": 6000
     },
-    "sky_color": 11035722,
+    "particle": {
+      "options": {
+        "type": "corruptedadventure:rising_ember"
+      },
+      "probability": 0.008
+    },
+    "sky_color": 11564096,
     "water_color": 6187622,
     "water_fog_color": 1975330
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/rare_ash_casts",
+      "corruptedadventure:ring_3/lava_falls",
+      "corruptedadventure:ring_3/island_ember_patches",
+      "corruptedadventure:ring_3/island_hanging_crystals"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/fire_geodes"
+    ],
+    [],
+    [
+      "corruptedadventure:ring_3/island_ember_trees",
+      "corruptedadventure:ring_3/ember_woods_trees",
+      "corruptedadventure:ring_3/ember_woods_fallen_logs",
+      "corruptedadventure:ring_3/ember_woods_fire_flora",
+      "corruptedadventure:ring_3/ember_woods_berry_bushes",
+      "corruptedadventure:ring_3/ember_woods_ash"
+    ]
+  ],
   "has_precipitation": false,
-  "spawn_costs": {},
+  "spawn_costs": {
+    "minecraft:strider": {
+      "charge": 1.0,
+      "energy_budget": 0.12
+    }
+  },
   "spawners": {
     "ambient": [
       {
@@ -34,7 +71,14 @@
       }
     ],
     "axolotls": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "minecraft:strider",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 1
+      }
+    ],
     "misc": [],
     "monster": [
       {

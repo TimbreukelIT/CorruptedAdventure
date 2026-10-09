@@ -1,0 +1,26 @@
+{
+  "type": "corruptedadventure:surface_fossil",
+  "config": {
+    "buried": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 0.5,
+      "min_inclusive": 0.2
+    },
+    "ground": [
+      "corruptedadventure:ash_block",
+      "minecraft:soul_soil",
+      "minecraft:basalt",
+      "minecraft:smooth_basalt",
+      "corruptedadventure:pumice",
+      "minecraft:blackstone"
+    ],
+    "integrity": 0.85,
+    "templates": [
+      "corruptedadventure:ring_3/titan_vertebra_1",
+      "corruptedadventure:ring_3/titan_vertebra_2",
+      "corruptedadventure:ring_3/titan_vertebra_3",
+      "corruptedadventure:ring_3/titan_bone_1",
+      "corruptedadventure:ring_3/titan_bone_2"
+    ]
+  }
+}

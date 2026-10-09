@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
-import nl.timtoys.corruptedadventure.registry.ModTags;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,21 +14,23 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Predicate;
 
 /**
- * Whether a heat source ({@code #corruptedadventure:heat_sources}) is near a player: a box of {@code radius} blocks
- * around the feet and head blocks ({@code (2r+1)² × (2r+2)} blocks, 810 for radius 4), searched nearest first, so it
- * stops at the first hit; the condition tick asks this once per second per exposed player in ring 3. First the
- * palettes of the few chunk sections the box touches are checked, so without a source nearby no block is read.
- * Never loads a chunk: right after a teleport the neighbouring chunks may not be there yet, and loading them here
- * would generate them on the server thread; a block in a missing chunk is no source.
+ * Whether a matching block is near a player: a box of {@code radius} blocks around the feet and head blocks
+ * ({@code (2r+1)² × (2r+2)} blocks, 810 for radius 4), searched nearest first, so it stops at the first hit. Shared by
+ * the heat sources ({@code #corruptedadventure:heat_sources}, change 43) and the warmth sources of the cold
+ * ({@code #corruptedadventure:warmth_sources}, package 55); the condition tick asks this once per second per exposed
+ * player in the zone. First the palettes of the few chunk sections the box touches are checked, so without a match
+ * nearby no block is read. Never loads a chunk: right after a teleport the neighbouring chunks may not be there yet,
+ * and loading them here would generate them on the server thread; a block in a missing chunk never matches.
  */
-final class HeatSources {
+final class NearbyBlocks {
     /** One offset table per radius (1–8 in the config); built on first use (a race only builds a table twice). */
     private static final AtomicReferenceArray<int[]> OFFSETS = new AtomicReferenceArray<>(9);
 
-    private HeatSources() {
+    private NearbyBlocks() {
     }
 
-    static boolean near(ServerLevel level, BlockPos feet, int radius) {
+    /** {@code matches} must be a pure test of the state (it also runs on palette entries that may no longer be placed). */
+    static boolean near(ServerLevel level, BlockPos feet, int radius, Predicate<BlockState> matches) {
         // The box is at most 17 blocks wide (radius ≤ 8), so it touches at most 2 × 2 chunks.
         int minChunkX = SectionPos.blockToSectionCoord(feet.getX() - radius);
         int minChunkZ = SectionPos.blockToSectionCoord(feet.getZ() - radius);
@@ -42,47 +43,43 @@ final class HeatSources {
                 LevelChunk chunk = level.getChunkSource().getChunkNow(chunkX, chunkZ);
                 chunks[(chunkX - minChunkX) * 2 + chunkZ - minChunkZ] = chunk;
                 if (!candidate && chunk != null) {
-                    candidate = mayContainSource(chunk, feet.getY() - radius, feet.getY() + radius + 1);
+                    candidate = mayContain(chunk, feet.getY() - radius, feet.getY() + radius + 1, matches);
                 }
             }
         }
         if (!candidate) {
-            return false; // the usual case: no source in the palettes of the sections the box touches
+            return false; // the usual case: no match in the palettes of the sections the box touches
         }
         return scan(feet, radius, pos -> {
             LevelChunk chunk = chunks[(SectionPos.blockToSectionCoord(pos.getX()) - minChunkX) * 2
                     + SectionPos.blockToSectionCoord(pos.getZ()) - minChunkZ];
-            return chunk != null && isSource(chunk.getBlockState(pos));
+            return chunk != null && matches.test(chunk.getBlockState(pos));
         });
     }
 
     /**
-     * Whether a section between {@code minY} and {@code maxY} may hold a source: its palette lists one (a palette can
+     * Whether a section between {@code minY} and {@code maxY} may hold a match: its palette lists one (a palette can
      * list states that are gone, and a full global palette always says yes; then the block scan decides).
      */
-    private static boolean mayContainSource(LevelChunk chunk, int minY, int maxY) {
+    private static boolean mayContain(LevelChunk chunk, int minY, int maxY, Predicate<BlockState> matches) {
         int from = SectionPos.blockToSectionCoord(Math.max(minY, chunk.getMinBuildHeight()));
         int to = SectionPos.blockToSectionCoord(Math.min(maxY, chunk.getMaxBuildHeight() - 1));
         for (int sectionY = from; sectionY <= to; sectionY++) {
             LevelChunkSection section = chunk.getSection(chunk.getSectionIndexFromSectionY(sectionY));
-            if (!section.hasOnlyAir() && section.maybeHas(HeatSources::isSource)) {
+            if (!section.hasOnlyAir() && section.maybeHas(matches)) {
                 return true;
             }
         }
         return false;
     }
 
-    private static boolean isSource(BlockState state) {
-        return state.is(ModTags.Blocks.HEAT_SOURCES);
-    }
-
-    /** Nearest first; {@code isSource} gets a reused mutable position (do not keep it). */
-    static boolean scan(BlockPos feet, int radius, Predicate<BlockPos> isSource) {
+    /** Nearest first; {@code matches} gets a reused mutable position (do not keep it). */
+    static boolean scan(BlockPos feet, int radius, Predicate<BlockPos> matches) {
         int[] offsets = offsets(radius);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int i = 0; i < offsets.length; i += 3) {
             pos.set(feet.getX() + offsets[i], feet.getY() + offsets[i + 1], feet.getZ() + offsets[i + 2]);
-            if (isSource.test(pos)) {
+            if (matches.test(pos)) {
                 return true;
             }
         }
@@ -95,7 +92,7 @@ final class HeatSources {
      */
     static int[] offsets(int radius) {
         if (radius < 1 || radius >= OFFSETS.length()) {
-            throw new IllegalArgumentException("Heat source radius out of range: " + radius);
+            throw new IllegalArgumentException("Scan radius out of range: " + radius);
         }
         int[] offsets = OFFSETS.get(radius);
         if (offsets == null) {
@@ -114,7 +111,7 @@ final class HeatSources {
                 }
             }
         }
-        offsets.sort(Comparator.comparingInt(HeatSources::distanceSquared));
+        offsets.sort(Comparator.comparingInt(NearbyBlocks::distanceSquared));
         int[] packed = new int[offsets.size() * 3];
         for (int i = 0; i < offsets.size(); i++) {
             System.arraycopy(offsets.get(i), 0, packed, i * 3, 3);
