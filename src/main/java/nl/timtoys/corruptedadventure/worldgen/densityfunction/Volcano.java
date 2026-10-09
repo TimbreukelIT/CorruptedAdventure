@@ -112,17 +112,133 @@ record Volcano(double x, double z, Kind kind, double plain, double rim, double r
         return 1.0 - VolcanicMath.smoothstep(floorRadius, crest, r);
     }
 
-    /** A basalt pillar under an archipelago: from the ground up to {@code top} (absolute Y). */
-    record Pillar(double x, double z, double radius, double top) {
+    /**
+     * A basalt pillar under an archipelago (39f): from the crater floor ({@code base}, absolute Y) up into the main island
+     * ({@code top}). Columnar rather than a cylinder: it flares at its foot and where it meets the island, leans and bends
+     * a little, has a lobed, twisting outline and a few ledges sticking out. Pure; tested per block ({@link #contains}).
+     * Its lowest block is {@link #floorY} (sunk one block into the crater floor). Equality is identity: it holds arrays.
+     */
+    static final class Pillar {
+        private final double x;
+        private final double z;
+        private final double radius;
+        private final double base;
+        private final double top;
+        private final double leanX;
+        private final double leanZ;
+        private final double phase3;
+        private final double phase5;
+        private final double[] ledgeY;
+        private final double[] ledgeAngle;
+        private final double[] ledgeLength;
+        private final double reach;
+
+        Pillar(double x, double z, double radius, double base, double top, double leanX, double leanZ, double phase3,
+               double phase5, double[] ledgeY, double[] ledgeAngle, double[] ledgeLength) {
+            this.x = x;
+            this.z = z;
+            this.radius = radius;
+            this.base = base;
+            this.top = top;
+            this.leanX = leanX;
+            this.leanZ = leanZ;
+            this.phase3 = phase3;
+            this.phase5 = phase5;
+            this.ledgeY = ledgeY;
+            this.ledgeAngle = ledgeAngle;
+            this.ledgeLength = ledgeLength;
+            double ledge = 0.0;
+            for (double l : ledgeLength) {
+                ledge = Math.max(ledge, l);
+            }
+            this.reach = radius * 2.0 * 1.24 + Math.hypot(leanX, leanZ) + ledge + 1.0;
+        }
+
+        double x() {
+            return x;
+        }
+
+        double z() {
+            return z;
+        }
+
+        double base() {
+            return base;
+        }
+
+        double top() {
+            return top;
+        }
+
+        double leanX() {
+            return leanX;
+        }
+
+        double leanZ() {
+            return leanZ;
+        }
+
+        double[] ledgeY() {
+            return ledgeY;
+        }
+
+        /** How far (blocks) the pillar may reach from its axis at the foot, so a column knows whether to test it. */
+        double reach() {
+            return reach;
+        }
+
+        /** The lowest block of the pillar: one below the crater floor it stands on, so no seam shows at its foot. */
+        int floorY() {
+            return (int) Math.floor(base) - 1;
+        }
+
+        /** Whether the block at (bx, y, bz) belongs to the pillar (block centre). */
+        boolean contains(int bx, int y, int bz) {
+            if (y < floorY() || y > top) {
+                return false;
+            }
+            double s = Math.max(0.0, Math.min(1.0, (y + 0.5 - base) / (top - base)));
+            double bend = Math.pow(s, 1.5);
+            double dx = bx + 0.5 - (x + leanX * bend);
+            double dz = bz + 0.5 - (z + leanZ * bend);
+            double d2 = dx * dx + dz * dz;
+            if (d2 > reach * reach) {
+                return false;
+            }
+            double theta = Math.atan2(dz, dx);
+            double foot = 1.0 - s;
+            double r = radius * (1.0 + 1.0 * foot * foot * foot * foot + 0.7 * Math.pow(s, 6.0))
+                    * (1.0 + 0.16 * Math.cos(3.0 * theta + phase3 + 2.5 * s) + 0.08 * Math.cos(5.0 * theta + phase5 - 4.0 * s));
+            for (int k = 0; k < ledgeY.length; k++) {
+                double dy = Math.abs(y + 0.5 - ledgeY[k]);
+                if (dy <= 1.5) {
+                    double off = Math.abs(Math.IEEEremainder(theta - ledgeAngle[k], Math.PI * 2.0));
+                    if (off < 0.6) {
+                        r += ledgeLength[k] * (1.0 - off / 0.6) * (1.0 - dy / 3.0);
+                    }
+                }
+            }
+            return d2 <= r * r;
+        }
+    }
+
+    /**
+     * A lava fall (39f): a spring (a source that flows, at {@code springY}, the first air above the edge column
+     * ({@code springX}, {@code springZ}) of an island) and the falling lava right beside it, in the first column outside
+     * the island ({@code fallX}, {@code fallZ}), from {@code springY} down to whatever lies below (the terrain decides
+     * where it lands). Lava against open air is allowed here, and only here: the fall itself.
+     */
+    record LavaFall(int springX, int springZ, int springY, int fallX, int fallZ) {
     }
 
     /**
      * A floating island: an ellipse (half axes {@code a}, {@code a · stretch}, turned by {@code angle}) with a flat,
-     * slightly domed top and an underside that tapers to a point below the centre. {@code springs} lava springs (39d)
-     * sit on its top near the edge, from {@code springAngle} on, and pour off it as lava falls.
+     * slightly domed top and a rocky underside (39f: a bowl with two or three hanging lobes of rock, {@code lobes}
+     * around from {@code lobePhase}, instead of a single cone). {@code falls}: its lava falls (39f: springs on the edge
+     * whose lava falls to the ground).
      */
-    record Island(double x, double z, double a, double stretch, double angle, double top, double thickness, int springs,
-                  double springAngle) {
+    record Island(double x, double z, double a, double stretch, double angle, double top, double thickness, int lobes,
+                  double lobePhase, List<LavaFall> falls) {
         /** Normalised distance from the centre: below 1 inside. {@code warp} distorts the outline (in units of a). */
         double distance(double px, double pz, double warp) {
             double dx = px - x;
@@ -131,36 +247,77 @@ record Volcano(double x, double z, Kind kind, double plain, double rim, double r
             double sin = Math.sin(angle);
             double along = (dx * cos + dz * sin) / (a * stretch);
             double across = (-dx * sin + dz * cos) / a;
-            return Math.sqrt(along * along + across * across) + warp;
+            return ragged(Math.sqrt(along * along + across * across), Math.atan2(across, along), lobePhase) + warp;
+        }
+
+        /** The angle around the centre in the island's own frame (for the lobes of the underside). */
+        double theta(double px, double pz) {
+            double dx = px - x;
+            double dz = pz - z;
+            double cos = Math.cos(angle);
+            double sin = Math.sin(angle);
+            return Math.atan2((-dx * sin + dz * cos) / a, (dx * cos + dz * sin) / (a * stretch));
         }
 
         double topAt(double d) {
             return top + 1.5 * (1.0 - d * d) - 3.0 * Math.pow(d, 6.0);
         }
 
-        /** The underside hangs like an inverted cone with a rounded tip. */
-        double bottomAt(double d) {
-            double rounded = Math.pow(Math.max(0.0, 1.0 - d * d), 0.5);
-            return top - 1.0 - thickness * Math.min(rounded, Math.pow(Math.max(0.0, 1.0 - d), 1.15));
+        /** The underside at normalised distance {@code d} and angle {@code theta}. */
+        double bottomAt(double d, double theta) {
+            return top - 1.0 - thickness * underside(d, theta, lobes, lobePhase);
         }
 
-        double reach() {
-            return a * stretch + 4.0;
+        /** The deepest the underside hangs at {@code d}, whatever the angle (for clearance checks). */
+        double lowestAt(double d) {
+            return top - 1.0 - thickness * underside(d, lobePhase / -lobes, lobes, lobePhase);
         }
 
-        /** Whether the block column (bx, bz) holds spring {@code k}'s source (on the top, near the edge). */
-        boolean springAt(int bx, int bz) {
-            for (int k = 0; k < springs; k++) {
-                double t = springAngle + k * Math.PI * 2.0 / springs;
-                double along = a * stretch * 0.8 * Math.cos(t);
-                double across = a * 0.8 * Math.sin(t);
-                double cos = Math.cos(angle);
-                double sin = Math.sin(angle);
-                if ((int) Math.floor(x + along * cos - across * sin) == bx && (int) Math.floor(z + along * sin + across * cos) == bz) {
-                    return true;
-                }
+        /**
+         * The island's top (first air above it) in a column, or NaN if the column holds none of it; {@code warp} is the
+         * column's warp noise (as the terrain uses it).
+         */
+        double columnTop(double px, double pz, double warp) {
+            double d = distance(px, pz, 0.18 * warp);
+            if (d >= 1.0) {
+                return Double.NaN;
             }
-            return false;
+            double topY = topAt(d);
+            return Math.floor(topY - 1.0) >= Math.ceil(bottomAt(d, theta(px, pz))) ? topY : Double.NaN;
         }
+
+        /** How far (blocks) the island and its lava falls reach from the centre along either axis. */
+        double reach() {
+            return a * stretch * 1.4 + 4.0;
+        }
+    }
+
+    /**
+     * A ragged outline (39f): the normalised distance {@code d} at angle {@code theta}, stretched by a few harmonics near
+     * the edge only (up to about a sixth), so islands are no clean ellipses while their middle stays as it is. Rising in
+     * {@code d}: inside the ellipse {@code d / (1 + h·d⁴)} with {@code |h| ≤ 0.16} (slope ≥ 1 − 3|h| > 0); outside it
+     * the distance grows one for one from its value at the edge, so it passes 1 by {@code d ≈ 1.14} and stays there.
+     */
+    static double ragged(double d, double theta, double phase) {
+        double h = 0.1 * Math.cos(3.0 * theta + phase) + 0.06 * Math.cos(5.0 * theta + 1.7 * phase);
+        if (d <= 1.0) {
+            return d / (1.0 + h * d * d * d * d);
+        }
+        return 1.0 / (1.0 + h) + (d - 1.0);
+    }
+
+    /** Normalised distance of the lowest point of an island's hanging lobes (the deepest of its underside). */
+    static final double LOBE_D = 0.38;
+
+    /**
+     * Depth of a floating island's underside as a share of its thickness: a rounded bowl with {@code lobes} lobes of rock
+     * hanging lower about a third of the way out, so it reads as a broken-off mass rather than a cone with a tip.
+     */
+    static double underside(double d, double theta, int lobes, double phase) {
+        double bowl = Math.pow(Math.max(0.0, 1.0 - d * d), 0.8);
+        double lobe = 0.5 + 0.5 * Math.cos(lobes * theta + phase);
+        double u = (d - LOBE_D) / 0.26;
+        double pendant = Math.exp(-u * u) * lobe * lobe;
+        return 0.62 * bowl + 0.55 * pendant * Math.max(0.0, 1.0 - d);
     }
 }

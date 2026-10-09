@@ -28,7 +28,7 @@
     "cone_min_rise": 80.0,
     "cone_max_rise": 140.0,
     "island_min_y": 150.0,
-    "island_max_y": 210.0,
+    "island_max_y": 185.0,
     "island_chance": 0.85
   }
 }

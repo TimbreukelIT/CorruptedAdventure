@@ -22,10 +22,10 @@ import java.util.Arrays;
  * while the noise chunk fills them. The margin keeps every cell corner (4 blocks apart) of a cell where the ring has
  * weight computed for real; it is 16 rather than 4 because the effective distance can locally run steeper than one
  * block per block, and grows with a stronger boundary noise
- * ({@link nl.timtoys.corruptedadventure.ring.RingLayout#reachMargin}). Nothing that resolves a density function through
- * its markers (such as {@code CellEdges#resolve}) may sit directly under a gated marker.
+ * ({@link nl.timtoys.corruptedadventure.ring.RingLayout#reachMargin}). Code that resolves a density function through its
+ * markers (such as {@code CellEdges#resolve}) looks through the gate as well ({@link RingGated#unwrap}, 39f).
  */
-public record RingGate(ResourceKey<Level> dimension, Ring ring, DensityFunction argument) implements DensityFunction {
+public record RingGate(ResourceKey<Level> dimension, Ring ring, DensityFunction argument) implements DensityFunction, RingGated {
     /** Blocks of the dimension, so cells of 4 blocks with room to spare. */
     static final double MARGIN = 16.0;
 

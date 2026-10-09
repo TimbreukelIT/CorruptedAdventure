@@ -25,7 +25,13 @@ class VolcanicThresholdConditionTest {
 
     @Test
     void codecRejectsPerBlockOutputsAndEmptyRanges() {
-        for (String output : new String[]{"guard", "islands", "initial_height"}) {
+        // 39f: the per-block surface outputs (thin_kind, tread, vein) are allowed, the terrain's own 3D outputs not.
+        for (String output : new String[]{"thin_kind", "tread", "vein"}) {
+            assertTrue(VolcanicThresholdCondition.MAP_CODEC.codec()
+                    .parse(JsonOps.INSTANCE, JsonParser.parseString("{\"output\": \"" + output + "\", \"min\": 0, \"max\": 1}"))
+                    .result().isPresent(), output);
+        }
+        for (String output : new String[]{"guard", "thin", "initial_height"}) {
             assertTrue(VolcanicThresholdCondition.MAP_CODEC.codec()
                     .parse(JsonOps.INSTANCE, JsonParser.parseString("{\"output\": \"" + output + "\", \"min\": 0, \"max\": 1}"))
                     .error().isPresent(), output);

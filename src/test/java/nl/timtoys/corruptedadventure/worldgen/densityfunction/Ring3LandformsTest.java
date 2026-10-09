@@ -246,12 +246,18 @@ class Ring3LandformsTest {
                 Landmarks.FloatingVolcano f = field.floatingVolcano(i, j);
                 if (f != null) {
                     floating.add(f);
-                    assertTrue(f.bottomAt(0.0) > field.traceGround(f.x(), f.z()) + 15.0, "floating volcano too low");
+                    assertTrue(f.lowestAt(0.0) > field.traceGround(f.x(), f.z()) + 15.0, "floating volcano too low");
                     assertTrue(f.lakeTop() < f.topAt(f.crater() / f.radius()), "crater lake below the rim");
-                    assertTrue(f.springX().length >= 3);
-                    // A spring sits on the cone just outside the crater, one block above its top.
-                    VolcanicField.Column spring = field.column(f.springX()[0], f.springZ()[0]);
-                    assertTrue(spring.springAt(f.springY()[0] + 1) && spring.lavaAt(f.springY()[0] + 1), "spring");
+                    // 39f: the plateau below the clouds (Y 192–196), only the cone pierces them.
+                    assertTrue(f.base() + 3.0 < 192.0 && f.base() + f.cone() > 200.0, "floating volcano plateau " + f.base());
+                    assertTrue(f.falls().size() >= 3, "lava falls " + f.falls());
+                    // A spring sits on the plateau's edge; its lava falls in the column beside it down to the ground.
+                    Volcano.LavaFall fall = f.falls().get(0);
+                    VolcanicField.Column spring = field.column(fall.springX(), fall.springZ());
+                    assertTrue(spring.springAt(fall.springY()) && spring.islandAt(fall.springY() - 1), "spring on the edge");
+                    VolcanicField.Column falling = field.column(fall.fallX(), fall.fallZ());
+                    assertTrue(falling.fallTop() == fall.springY() && falling.fallBottom() <= falling.height() + 2.0,
+                            "fall to the ground: " + falling.fallBottom() + " over " + falling.height());
                 }
             }
         }

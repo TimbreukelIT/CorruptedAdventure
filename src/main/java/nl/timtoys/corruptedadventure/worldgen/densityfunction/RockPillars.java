@@ -221,11 +221,8 @@ public final class RockPillars implements DensityFunction {
             if (current instanceof RockPillars pillars) {
                 return pillars;
             }
-            if (current instanceof net.minecraft.world.level.levelgen.DensityFunctions.HolderHolder holder) {
-                current = holder.function().value();
-            } else if (current instanceof net.minecraft.world.level.levelgen.DensityFunctions.MarkerOrMarked marker) {
-                current = marker.wrapped();
-            } else {
+            current = RingGated.unwrap(current);
+            if (current == null) {
                 break;
             }
         }

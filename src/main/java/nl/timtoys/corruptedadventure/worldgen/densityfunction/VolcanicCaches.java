@@ -31,6 +31,8 @@ final class VolcanicCaches {
         final Map<Long, Optional<Landmarks.Arch>> riftArches = new ConcurrentHashMap<>();
         final Map<Long, Optional<Landmarks.FloatingVolcano>> floating = new ConcurrentHashMap<>();
         final Map<Long, Optional<Landmarks.Abyss>> abysses = new ConcurrentHashMap<>();
+        final Map<Long, Optional<CellShapes.Collapse>> collapses = new ConcurrentHashMap<>();
+        final Map<Long, double[]> riftFloors = new ConcurrentHashMap<>();
         volatile Long salt;
 
         <K, V> void remember(Map<K, V> map, K key, V value) {

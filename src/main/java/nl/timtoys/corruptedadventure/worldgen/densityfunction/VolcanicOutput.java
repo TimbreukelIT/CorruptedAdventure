@@ -41,17 +41,25 @@ public final class VolcanicOutput implements DensityFunction {
         LAVA_BANK("lava_bank", 0.0, 1.0),
         /** 0..1: a cliff or steep wall of a landform (plateau risers, rift flanks, gully walls; 39d), rock in the surface. */
         CLIFF("cliff", 0.0, 1.0),
-        /** The kind of thin solid standing in the column (39d): 0 none, 1 titan bone, 2 obsidian needle, 3 basalt (arches, pillars). */
-        SOLID_KIND("solid_kind", 0.0, 3.0),
+        /** 0..1 (39f): a collapse's footprint, 1 inside its rim (vanilla cave entrances may reach the surface there). */
+        COLLAPSE("collapse", 0.0, 1.0),
         /** 3D: +1 where caves stay out (around lava lakes and channels), −1 elsewhere. */
         GUARD("guard", -1.0, 1.0),
-        /** 3D: density of the floating islands. */
-        ISLANDS("islands", -1.0, 1.0),
         /**
-         * 3D (39d): the thin shapes, not interpolated: +1 inside a thin solid (hoodoos, ribs, prisms, needles, arches),
-         * −1 inside a carved opening (lava tube tunnels), 0 elsewhere.
+         * 3D (39d): the thin shapes, not interpolated: +1 inside a thin solid (hoodoos, ribs, prisms, needles, arches;
+         * 39f: also the floating islands, pillars, rubble and the micro relief), −1 inside a carved opening (lava tube
+         * tunnels; 39f: a collapse's overhang and shaft), 0 elsewhere.
          */
-        THIN("thin", -1.0, 1.0);
+        THIN("thin", -1.0, 1.0),
+        /**
+         * 3D (39f, for the surface): the kind of thin solid at a block, −1 outside one (0 biome surface, 2 obsidian,
+         * 3 basalt, 4 floating island, 5 rubble; {@link Landmarks}).
+         */
+        THIN_KIND("thin_kind", -1.0, 5.0),
+        /** 3D (39f, for the surface): 0..1, changes with every block of height, slowly across the plain (patches that follow the steps). */
+        TREAD("tread", 0.0, 1.0),
+        /** 3D (39f, for the surface): 0..1, thin winding layers (the veins of the obsidian needles). */
+        VEIN("vein", 0.0, 1.0);
 
         public static final StringRepresentable.EnumCodec<Output> CODEC = StringRepresentable.fromEnum(Output::values);
 
@@ -74,11 +82,16 @@ public final class VolcanicOutput implements DensityFunction {
         public boolean perColumn() {
             return PER_COLUMN.contains(this);
         }
+
+        /** Whether the surface may read this output per block (39f): the per-column ones and the surface patterns. */
+        public boolean forSurface() {
+            return perColumn() || this == THIN_KIND || this == TREAD || this == VEIN;
+        }
     }
 
     private static final Set<Output> PER_COLUMN = EnumSet.of(Output.CALDERA_MASK, Output.CALDERA_DORMANT,
             Output.LAVA_CHANNEL, Output.ISLAND_MASK, Output.ROUGHNESS, Output.VOLCANO_RISE, Output.LAVA_BANK, Output.CLIFF,
-            Output.SOLID_KIND);
+            Output.COLLAPSE);
 
     private final DensityFunction field;
     private final Output output;
@@ -120,8 +133,8 @@ public final class VolcanicOutput implements DensityFunction {
         return switch (output) {
             case INITIAL_HEIGHT -> f.initialHeight(x, z);
             case GUARD -> f.guard(x, context.blockY(), z);
-            case ISLANDS -> f.islands(x, context.blockY(), z);
             case THIN -> f.thin(x, context.blockY(), z);
+            case THIN_KIND, TREAD, VEIN -> blockValue(f, output, x, context.blockY(), z);
             default -> columnValue(f.column(x, z), output);
         };
     }
@@ -137,8 +150,18 @@ public final class VolcanicOutput implements DensityFunction {
             case VOLCANO_RISE -> column.rise;
             case LAVA_BANK -> column.lavaBank;
             case CLIFF -> column.cliff;
-            case SOLID_KIND -> column.solidKind;
-            case INITIAL_HEIGHT, GUARD, ISLANDS, THIN -> throw new IllegalArgumentException(output + " is not a column value");
+            case COLLAPSE -> column.collapse;
+            case INITIAL_HEIGHT, GUARD, THIN, THIN_KIND, TREAD, VEIN -> throw new IllegalArgumentException(output + " is not a column value");
+        };
+    }
+
+    /** One of the per-block surface outputs ({@link Output#THIN_KIND}, {@link Output#TREAD}, {@link Output#VEIN}) at a block. */
+    public static double blockValue(VolcanicField field, Output output, int x, int y, int z) {
+        return switch (output) {
+            case THIN_KIND -> field.thinKind(x, y, z);
+            case TREAD -> field.tread(x, y, z);
+            case VEIN -> field.vein(x, y, z);
+            default -> throw new IllegalArgumentException(output + " is not a per-block surface value");
         };
     }
 

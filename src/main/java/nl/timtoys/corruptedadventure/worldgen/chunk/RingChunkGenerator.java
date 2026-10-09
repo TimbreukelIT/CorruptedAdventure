@@ -9,6 +9,8 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Aquifer;
 import net.minecraft.world.level.levelgen.Beardifier;
 import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseChunk;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
@@ -149,6 +152,26 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
         } finally {
             SURFACE_FIELD.remove();
         }
+    }
+
+    /**
+     * Base heights (structure placement, spawn) run vanilla's column iteration, which builds a one-cell noise chunk of
+     * its own; in fill mode its flat caches skip the rings that cannot reach the column (39f, as for a chunk). The
+     * decision covers the 16 blocks from the cell's corner, a superset of the cell's own cache points.
+     */
+    @Override
+    public int getBaseHeight(int x, int z, Heightmap.Types type, LevelHeightAccessor level, RandomState random) {
+        return RingFillGate.duringFill(cellCorner(x), cellCorner(z), () -> super.getBaseHeight(x, z, type, level, random));
+    }
+
+    @Override
+    public NoiseColumn getBaseColumn(int x, int z, LevelHeightAccessor height, RandomState random) {
+        return RingFillGate.duringFill(cellCorner(x), cellCorner(z), () -> super.getBaseColumn(x, z, height, random));
+    }
+
+    private int cellCorner(int block) {
+        int width = generatorSettings().value().noiseSettings().getCellWidth();
+        return Math.floorDiv(block, width) * width;
     }
 
     @Override
