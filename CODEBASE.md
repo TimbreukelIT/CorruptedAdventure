@@ -939,7 +939,7 @@ Java leest `Ring3Biomes.ALL` (de 8 van de eigen `multi_noise`; tag `c:is_dry/ove
 Nieuwe ring 3-biomes gebruiken ook `Ring3Biomes.generation` (één globale featurevolgorde, `Ring3Features.ORDER`; `FeatureOrderTest`); features voor alle ring 3-biomes via `Ring3Features.everywhere`.
 
 ### Plekken die Nether-3-biomes opsommen (53b)
-Java leest `NetherRing3Biomes.ALL` (tags `is_nether_ring_3`, `c:is_nether`, `c:is_cold/nether`; `NetherRing3BiomesTest`). Een nieuwe Nether-3-biome moet ook in: preset `rings.ring_3` (de `multi_noise` op `temperature`, drempels `NetherRing3Features.RIME_THRESHOLD`/`RIFTS_THRESHOLD`); `nether_ring3_surface.py` (`BIOMES` en de `biome(...)`-regels, dan het script draaien); `NetherRing3Biomes.VEGETATION`/`ORES`; `NetherRing3BiomeNames` (en + nl); `NetherRing3BiomeTags` (`cold_exposed` als het een open vlakte is); `MapPalette` (kaartkleur).
+Java leest `NetherRing3Biomes.ALL` (tags `is_nether_ring_3`, `c:is_nether`, `c:is_cold/nether`; `NetherRing3BiomesTest`). Een nieuwe Nether-3-biome moet ook in: preset `rings.ring_3` (de `multi_noise` op `temperature`, drempels `NetherRing3Features.RIME_THRESHOLD`/`RIFTS_THRESHOLD`); `nether_ring3_surface.py` (`BIOMES` en de `biome(...)`-regels, dan het script draaien); `NetherRing3Features.VEGETATION`/`ORES`; `NetherRing3BiomeNames` (en + nl); `NetherRing3BiomeTags` (`cold_exposed` als het een open vlakte is); `MapPalette` (kaartkleur).
 
 ---
 

@@ -15,7 +15,7 @@ Antwoorden op de afstemvragen komen in `docs/plans/ring-3/teststop-4b-feedback.m
 - **Server:** `./gradlew runServer` (eigen `run/server.properties`, `online-mode=false`).
 - **Clients:** `./gradlew runClient -PquickPlay=localhost:<poort>` (Dev) en `./gradlew runClient2 -PquickPlay=localhost:<poort>` (Dev2, eigen map `run/client2`). In elke `options.txt`: `onboardAccessibility:false` en `skipMultiplayerWarning:true`. Beide kanten draaien protocolversie 6.
 - **Tijd en weer:** `/gamerule doDaylightCycle false`, `/time set noon` of `/time set midnight` waar gevraagd; `/ca weather 3 clear 6000` tenzij een weertype getest wordt.
-- **Hulpcommando's:** `/ca ring`, `/ca condition get @s` (meter + stijgsnelheid + oorzaak: `sun`, `roof`, `source`, `peak`, `exposed`, `ice`, `warmth`, `outside`), `/ca tpring 3`, `/ca tpring 3 nether`, `/ca tpboundary 2|3`.
+- **Hulpcommando's:** `/ca ring`, `/ca condition get @s` (meter + stijgsnelheid + oorzaak; hitte: `sun`, `source`, `peak`, `water`, `refuge`, `night`, `roof`, `shade`, `outside`; kou: `zone`, `ice`, `exposed`, `warmth`, `outside`; dorst: `sun`, `water`, `oasis`, `night`, `shade`, `outside`), `/ca tpring 3`, `/ca tpring 3 nether`, `/ca tpboundary 2|3`.
 - **Screenshots van de agent:** `build/teststop-4b/` in de INT2-worktree (niet in git; 94 stuks, `<onderwerp>_dev.png` / `_dev2.png`, `c_*` = close-ups voor de textures, `w_*` = weer, `p_*` = pluimen, `n3_*` = Nether-3).
 
 ## A. Hitte en water (sessie 1, survival)
@@ -53,7 +53,7 @@ Antwoorden op de afstemvragen komen in `docs/plans/ring-3/teststop-4b-feedback.m
 
 **Afstemvragen C**
 5. Bevriezing halveert ook de loopsnelheid. **A. zo laten: bevroren = echt traag (aanbevolen)** · B. alleen de schade, loopsnelheid via traagheid I (vraagt een mixin in `aiStep`).
-6. Mist in Nether-3 (~40 blokken): **A. iets lichter, ~64 blokken (aanbevolen)** · B. zo laten (benauwd, sfeervol) · C. veel lichter (vanilla-Nether).
+6. Mist in Nether-3 (~40 blokken): dat is de vanilla-Nethermist (in alle Nether-ringen), geen biome-data; 56 besloot de fog-afstand niet aan te raken (G2-A5). **A. zo laten: benauwd en sfeervol, geen werk (aanbevolen)** · B. lichter maken, ~64 blokken: nieuwe client-only fogcode per Nether-ring (een fog-event in `client/`), draait G2-A5 terug, complexiteit middel, geen multiplayer-impact (de client rendert alleen).
 7. Kou-tempo (0 → 100 in ~4 min, ×1,5 in de open vlakte): **A. zo laten (aanbevolen)** · B. trager (~6 min).
 
 ## D. Lavabuizen en magmakamers (sessie 1)
