@@ -118,3 +118,5 @@ OK = gecontroleerd en in orde; **afwijking** = gemeld/backlog; *4b* = alleen de 
 
 ## Status
 Stand 2026-10-09 19:10: alles behalve warme ronde 5, de koude ronde en de review is gedaan. Geen JVM tot de go van main (de gebruiker test in deze worktree).
+Voortgang: 2026-10-09 19:30 review INT2 (main): docsfixes 1, 2a, 3–7 gecommit (`476110c`); 2b `Ring3GeneratedEffectsTest` geschreven (gegenereerde biome-effecten = hook, ring 3 + `steam_fens` + Nether-3), nog niet gedraaid: geen JVM tot de go van main
+Voortgang: 2026-10-09 19:08 go van main; build `--rerun-tasks` groen (667 tests, incl. `Ring3GeneratedEffectsTest` 2/2 en `ClientIsolationTest`), `runData` + `git diff --exit-code src/generated` leeg
