@@ -8,8 +8,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 
 /**
- * The write rule of the Nether ring 2 features (change 35, the determinism rule). Growths (stem, cap, lamp, stalactite,
- * dew crystal, mould, sprouts) have a fixed rank, high to low. A feature writes a growth only into air or into a growth
+ * The write rule of the Nether ring 2 and 3 features (change 35, the determinism rule). Growths (stem, cap, lamp,
+ * stalactite, dew crystal, mould, sprouts) have a fixed rank, high to low; Nether ring 3's rimeshroom stem and cap and the
+ * ice stalactite (53b) take the ranks of their dripshroom counterparts (the sets never meet, so Nether ring 2 is unchanged). A feature writes a growth only into air or into a growth
  * of lower rank, never into terrain and never somewhere else when the place is taken. So the final block at a position is
  * the highest-ranked growth any feature wanted there, whatever the order in which chunks were decorated: stronger
  * growths win, equal ones merge by a fixed total order (mould faces add up, otherwise the larger block state id wins).
@@ -31,16 +32,18 @@ public final class GrowthPriority {
     public static int rank(BlockState state) {
         Block block = state.getBlock();
         if (block == ModBlocks.DRIPSHROOM_STEM.get() || block == ModBlocks.DRIPSHROOM_HYPHAE.get()
-                || block == ModBlocks.STRIPPED_DRIPSHROOM_STEM.get() || block == ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE.get()) {
+                || block == ModBlocks.STRIPPED_DRIPSHROOM_STEM.get() || block == ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE.get()
+                || block == ModBlocks.RIMESHROOM_STEM.get() || block == ModBlocks.RIMESHROOM_HYPHAE.get()
+                || block == ModBlocks.STRIPPED_RIMESHROOM_STEM.get() || block == ModBlocks.STRIPPED_RIMESHROOM_HYPHAE.get()) {
             return STEM;
         }
-        if (block == ModBlocks.DRIPSHROOM_CAP.get()) {
+        if (block == ModBlocks.DRIPSHROOM_CAP.get() || block == ModBlocks.RIMESHROOM_CAP.get()) {
             return CAP;
         }
         if (block == ModBlocks.DRIPSHROOM_LAMP.get()) {
             return LAMP;
         }
-        if (block == ModBlocks.SLIME_STALACTITE.get()) {
+        if (block == ModBlocks.SLIME_STALACTITE.get() || block == ModBlocks.ICE_STALACTITE.get()) {
             return STALACTITE;
         }
         if (block == ModBlocks.SMALL_DEW_CRYSTAL_BUD.get() || block == ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.get()

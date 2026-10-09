@@ -1,0 +1,33 @@
+{
+  "type": "corruptedadventure:giant_fungus",
+  "config": {
+    "cap": {
+      "Name": "corruptedadventure:rimeshroom_cap"
+    },
+    "free_size": {
+      "max_cap_radius": 6,
+      "max_height": 22,
+      "min_cap_radius": 4,
+      "min_gap": 29,
+      "min_height": 12
+    },
+    "lamp": {
+      "Name": "corruptedadventure:rimeshroom_cap"
+    },
+    "pillars": false,
+    "stalactite": {
+      "Name": "corruptedadventure:ice_stalactite",
+      "Properties": {
+        "thickness": "tip",
+        "vertical_direction": "up",
+        "waterlogged": "false"
+      }
+    },
+    "stem": {
+      "Name": "corruptedadventure:rimeshroom_stem",
+      "Properties": {
+        "axis": "y"
+      }
+    }
+  }
+}
