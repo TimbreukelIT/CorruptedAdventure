@@ -13,8 +13,8 @@ import java.util.Set;
 
 /**
  * Datagen bootstraps (configured + placed features) of ring 3 and its one global feature order. Owned by stream
- * W-biomes; the feature classes per package ({@link Ring3OreFeatures}, {@link Ring3DressingFeatures}, …) are called
- * from here, so {@code DataGenerators} stays untouched.
+ * W-biomes; the feature classes per package ({@link Ring3OreFeatures}, {@link Ring3DressingFeatures},
+ * {@link TitanFieldsFeatures}, …) are called from here, so {@code DataGenerators} stays untouched.
  * <p>
  * {@link #ORDER} lists every biome-own ring 3 feature per generation step in one order; each biome gets the subset that
  * names it, in that order ({@code Ring3Biomes.generation}). One list keeps vanilla's feature sorter free of cycles
@@ -45,6 +45,11 @@ public final class Ring3Features {
             local(Ring3DressingFeatures.ASHEN_WASTES_DEAD_TREES, ModBiomes.ASHEN_WASTES),
             local(Ring3DressingFeatures.VOLCANIC_PEAKS_IMPACT_CRATERS, ModBiomes.VOLCANIC_PEAKS),
             local(Ring3DressingFeatures.VOLCANIC_PEAKS_BLACKSTONE_ROCKS, ModBiomes.VOLCANIC_PEAKS),
+            // Change 47b: the titan fields (the rocks before the drifts, which then lie around their feet).
+            local(TitanFieldsFeatures.TITAN_FIELDS_SKULLS, ModBiomes.TITAN_FIELDS),
+            local(TitanFieldsFeatures.TITAN_FIELDS_BONES, ModBiomes.TITAN_FIELDS),
+            local(TitanFieldsFeatures.TITAN_FIELDS_SOUL_FIRE, ModBiomes.TITAN_FIELDS),
+            local(TitanFieldsFeatures.TITAN_FIELDS_ROCKS, ModBiomes.TITAN_FIELDS),
             local(Ring3DressingFeatures.ASH_DRIFTS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS,
                     ModBiomes.DRIED_SEABED),
             new Entry(Ring3OreFeatures.SULFUR_ORE_RICH, GenerationStep.Decoration.UNDERGROUND_ORES, Set.of(ModBiomes.SULFUR_FIELDS)),
@@ -67,10 +72,12 @@ public final class Ring3Features {
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         Ring3OreFeatures.configured(context);
         Ring3DressingFeatures.configured(context);
+        TitanFieldsFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
         Ring3OreFeatures.placed(context);
         Ring3DressingFeatures.placed(context);
+        TitanFieldsFeatures.placed(context);
     }
 }

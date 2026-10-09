@@ -25,16 +25,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The ring 3 templates of {@code tools/worldgen/Ring3Templates.java} (change 47), as committed: each holds only the
- * blocks its feature places, and fits where its feature puts it (a fossil in one chunk). The script itself writes
- * identical bytes on every run (checked when it is run, see the plan).
+ * The ring 3 templates of {@code tools/worldgen/Ring3Templates.java} (changes 47, 47b), as committed: each holds only
+ * the blocks its feature places, and fits where its feature puts it (a fossil in one chunk, a titan rock within its
+ * reach). The script itself writes identical bytes on every run (checked when it is run, see the plan).
  */
 class Ring3TemplatesTest {
     private static final String DIR = "src/main/resources/data/corruptedadventure/structure/ring_3";
 
     @Test
     void fossilsAreOnlyBonesAndFitInAChunkInEveryRotation() throws IOException {
-        for (String name : List.of("sea_serpent_1", "sea_serpent_2", "sea_serpent_3", "sea_skull_1", "sea_skull_2")) {
+        for (String name : List.of("sea_serpent_1", "sea_serpent_2", "sea_serpent_3", "sea_skull_1", "sea_skull_2",
+                "titan_skull_1", "titan_skull_2", "titan_vertebra_1", "titan_vertebra_2", "titan_vertebra_3", "titan_bone_1", "titan_bone_2")) {
             StructureTemplate template = load(name);
             assertEquals(Set.of(Blocks.BONE_BLOCK), blocks(template), name);
             for (Rotation rotation : Rotation.values()) {
@@ -44,9 +45,20 @@ class Ring3TemplatesTest {
     }
 
     @Test
+    void titanRocksAreBasaltWithinTheReach() throws IOException {
+        for (String name : List.of("titan_rock_kneeling", "titan_rock_hunched", "titan_rock_bust")) {
+            StructureTemplate template = load(name);
+            assertTrue(Set.of(Blocks.BASALT, Blocks.SMOOTH_BASALT, Blocks.BLACKSTONE).containsAll(blocks(template)), name);
+            assertTrue(template.getSize().getX() <= 2 * TitanRockFeature.MAX_REACH + 1, name);
+            assertTrue(template.getSize().getZ() <= 2 * TitanRockFeature.MAX_REACH + 1, name);
+            assertTrue(template.getSize().getY() >= 15 && template.getSize().getY() <= 35, name + " is 15-35 high");
+        }
+    }
+
+    @Test
     void everyTemplateFileIsTested() throws IOException {
         try (Stream<Path> files = Files.list(root())) {
-            assertEquals(5, files.filter(file -> file.toString().endsWith(".nbt")).count());
+            assertEquals(15, files.filter(file -> file.toString().endsWith(".nbt")).count());
         }
     }
 

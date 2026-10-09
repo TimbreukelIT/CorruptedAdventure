@@ -40,6 +40,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.HornitoConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.HornitoFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.ImpactCraterConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.ImpactCraterFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.TitanRockConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.TitanRockFeature;
 
 /** Feature types with their own code; the configured and placed features come from datagen. */
 public final class ModFeatures {
@@ -99,6 +101,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:impact_crater} (change 47) */
     public static final DeferredHolder<Feature<?>, Feature<ImpactCraterConfiguration>> IMPACT_CRATER =
             FEATURES.register("impact_crater", () -> new ImpactCraterFeature(ImpactCraterConfiguration.CODEC));
+    /** {@code corruptedadventure:titan_rock} (change 47b) */
+    public static final DeferredHolder<Feature<?>, Feature<TitanRockConfiguration>> TITAN_ROCK =
+            FEATURES.register("titan_rock", () -> new TitanRockFeature(TitanRockConfiguration.CODEC));
 
     private ModFeatures() {
     }

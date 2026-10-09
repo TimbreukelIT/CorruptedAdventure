@@ -1,0 +1,43 @@
+{
+  "type": "corruptedadventure:ground_patch",
+  "config": {
+    "depth": 1,
+    "material": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:soul_soil"
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "raise": 1,
+    "raised": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:air"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:soul_fire"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "replaceable": [
+      "corruptedadventure:ash_block",
+      "minecraft:soul_soil",
+      "minecraft:basalt",
+      "minecraft:smooth_basalt",
+      "corruptedadventure:pumice",
+      "minecraft:blackstone"
+    ]
+  }
+}

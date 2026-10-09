@@ -287,6 +287,8 @@ Biomepunten uit 39b (de regio-assen zijn niet veranderd): ashen (5.262, 480), pe
   - (INT2) aslagen lopen door over chunkgrenzen en stoppen netjes op biomegrenzen (geen rechte chunknaden); modderpoelen alleen op zinkgatbodems;
   - (INT2) `/place feature corruptedadventure:ring_3/<naam>` per feature; geen "far chunk"/"Feature order cycle"; determinisme (omgekeerd geladen).
 - [ ] **47b:** ribbenkasten (−1.493, 4.144): zielvuur, schedels/wervels; een titanen-rots in het titanenveld (4.942, 160). 's Nachts blauw zielvuur tegen de botten.
+  - (INT2) titanen-rots heel over chunkgrenzen (geen afgesneden stukken, ook omgekeerd geladen), niet zwevend, niet op een rib of in lava; `/place feature corruptedadventure:ring_3/titan_rock` in een titanenveld;
+  - (INT2) zielvuur alleen op zielgrond, nooit aan een chunkrand; geen vuur dat zich verspreidt.
 - [ ] **49:** 's nachts gloeiende afgietsels in de asvlakte; een voetspoor dat abrupt stopt.
 - [ ] **47c:**
   - smeulwoud (4.750, 0) dag en nacht (gloeiende kronen, open plekken met bessen en vuurbloemen);
@@ -321,7 +323,8 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
 - Voortgang: 2026-10-08 15:30 verse agent neemt 47/47b/49 over (zelfde worktree en branch, HEAD a389396); start 47 vanuit `build/draft47/`.
 - Voortgang: 2026-10-08 17:35 47 in de werkmap (niet gecommit); `compileJava` groen, `compileTestJava` faalde op een typfout in `Ring3TemplatesTest` (hersteld, nog niet opnieuw gebouwd). Gestopt op verzoek van main (einde dag).
 - Voortgang: 2026-10-09 14:00 derde agent neemt over (zelfde worktree/branch). **Nieuwe testafspraak (gebruiker 2026-10-09):** per pakket alleen B + D, commit per pakket; in-game checks (S, determinisme, prestatie, W-checklist) doet INT2 één keer; review één keer per stroom.
-- Voortgang: 2026-10-09 14:10 47: D groen (`runData`; datagen meldt "`ring_3/ash_drifts` … is missing BiomeFilter.biome()" — bewust, zie Beslissingen), B groen (571 tests, 0 fouten).
+- Voortgang: 2026-10-09 14:10 47: D groen (`runData`; datagen meldt "`ring_3/ash_drifts` … is missing BiomeFilter.biome()" — bewust, zie Beslissingen), B groen (571 tests, 0 fouten). Gecommit `d0a9264`.
+- Voortgang: 2026-10-09 14:20 47b: sjablonen (titanen) in het script, twee runs byte-identiek; `TitanFieldsFeatures`, `TitanRock*`, `VolcanicNearFilter`. D groen (ook "missing BiomeFilter" voor `titan_fields_rocks`, bewust), B groen (573 tests, 0 fouten).
 
 ## CODEBASE-delta
 - **41:**
@@ -341,12 +344,21 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
   - `Ring3BiomeModifiers.ADD_RING_3_RIVERBED_STUMPS` (`add_ring_3_riverbed_stumps`, VEGETAL, alleen `dry_riverbeds`); `DryRiverbedsFeatures`: `riverbed_scorched_patch`/`_speck` via `ground_patch` naar as + aslagen.
   - Sjablonen: `tools/worldgen/Ring3Templates.java` (single-file, alleen JDK, vaste seeds; draaien vanuit de repo-root) → `data/corruptedadventure/structure/ring_3/*.nbt` (47: `sea_serpent_1–3`, `sea_skull_1–2`).
   - Tests: `Ring3DressingShapesTest`, `Ring3TemplatesTest`.
+- **47b:**
+  - `worldgen/feature/TitanFieldsFeatures`: configured + placed van het titanenveld (`ring_3/titan_skull`, `titan_bones`, `soul_fire_patch`, `titan_rock`; placed `ring_3/titan_fields_skulls|_bones|_soul_fire|_rocks`), via `Ring3Features`.
+  - `worldgen/feature/TitanRockFeature`/`TitanRockConfiguration` (`corruptedadventure:titan_rock`, `ModFeatures.TITAN_ROCK`): basaltreuzen 20–29 hoog, tot 29 breed; per cel (256) een pure functie van seed + cel, elke chunk schrijft zijn eigen deel (alleen in lucht/vervangbare planten), bereik ≤ 15 = 3 × 3 chunks; middelpunt op vlakke grond van de biome (pure kolom + `BiomeSource`).
+  - `worldgen/feature/VolcanicNearFilter` (`corruptedadventure:volcanic_near`, `ModPlacementModifierTypes.VOLCANIC_NEAR`): een kolom van het pure terrein binnen een straal (schijf, elke `step` blokken) met de uitgang in het bereik (bijv. `solid_kind` = bot).
+  - Sjablonen: `titan_skull_1–2`, `titan_vertebra_1–3`, `titan_bone_1–2` (bot, `surface_fossil`), `titan_rock_kneeling|hunched|bust` (basalt/smooth basalt/blackstone).
+  - Tests: `TitanRockFeatureTest`, `Ring3TemplatesTest` (titanen).
 
 ## Beslissingen
 - 2026-10-08 · worldgen · 41: vulkaniet aders 9, 6 pogingen (Y −48…40, trapezium) + 10 pogingen "nabij lava" (de eigen lava van het terrein binnen 4 blokken, puur per kolom; review 41); zwavel aders 7, 3 pogingen ringbreed + 6 in `sulfur_fields`, 4–30 onder de terreinhoogte zelf (twee verticale offsets: vanilla staat max. ±16 per modifier toe); vuurrobijn aders 4, 1–2 pogingen Y −40…30; blootliggende ertsen blijven (geen air-discard). Startwaarden, afstemmen in 4b.
 - 2026-10-08 · worldgen · 41: ring 3-ertsen in `dry_riverbeds` via één modifier op `neoforge:or(#is_ring_3, dry_riverbeds)` met `ring_chance` progress ring 3 op elk eigen erts (implementatiekeuze; geen aparte modifier).
 - 2026-10-09 · worldgen · 47: `ring_3/ash_drifts` draait één keer per chunk zonder `BiomeFilter`: de feature bedekt de chunk en kiest per kolom op de eigen biome (een biome-filter test de chunkhoek onderin de wereld en gaf naden op chunkgrenzen). Datagen logt daarom "missing BiomeFilter.biome()" (alleen de validatie van `VanillaRegistries`, geen runtime-effect). Hoeveelheden van alle 47-features zijn startwaarden, afstemmen in 4b.
 - 2026-10-09 · worldgen · 47: sjablonen (zeemonsterfossielen) als eigen `.nbt` uit een deterministisch JDK-script (`tools/worldgen/Ring3Templates.java`), V1.
+- 2026-10-09 · worldgen · 47b: titanen-rotsen (> 14 breed) zonder rangregel: elke rots is een pure functie van seed + cel (256 blokken, kans 0,4) en elke chunk die hij raakt schrijft zijn eigen deel; uitzondering op "plaatsing begint in de eigen chunk" (plan §0.7), volgorde-onafhankelijk. Placed zonder `BiomeFilter` (de feature toetst de biome op het middelpunt); datagen logt "missing BiomeFilter", bewust.
+- 2026-10-09 · worldgen · 47b: `surface_fossil` krijgt géén bloklijst (plan §1 47b): de basalt-titanen hebben een eigen feature `titan_rock` met `materials`; schedels/wervels/botten zijn bot.
+- 2026-10-09 · worldgen · 47b: zielvuur = vlekjes `soul_soil` (straal 1–3) met op ~1 op 4 kernblokken `soul_fire`, binnen 12 blokken van terreinbot (`volcanic_near` op `solid_kind` = bot), ≥ 2 van de chunkranden; schedels binnen 16 blokken van de ribben ("bij schedels" = schedels liggen tussen het zielvuur). Na 39f eventueel op `ribcageNear` (zie Status). Startwaarden, afstemmen in 4b.
 
 ## Backlog
 - [worldgen] `sunstone_ore`/`turquoise_ore` (Ring2Features) hebben geen `ring_chance`: in `dry_riverbeds` liggen ze ook in de ring 3-helft, waar kloofsteen doorloopt (gemeten 41: tot ~80 blokken voorbij de middellijn). Een `ring_chance` progress ring 2 erbij verschuift de ring 2-decoratie niet. (bron: 41)
