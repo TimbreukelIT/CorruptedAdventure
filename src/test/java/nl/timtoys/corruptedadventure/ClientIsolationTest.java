@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -30,8 +31,26 @@ class ClientIsolationTest {
     void commonCodeNeverNamesAClientPackage() throws IOException {
         Path root = findSourceRoot();
         List<String> violations = new ArrayList<>();
+        int checked = check(root, root, violations);
+        assertTrue(checked > 50, "only " + checked + " common source files found under " + root);
+        assertTrue(violations.isEmpty(), "Common code names a client package:\n" + String.join("\n", violations));
+    }
+
+    /** The common mixins (55b) are applied on a dedicated server too: their package must be checked, never exempt. */
+    @Test
+    void theCommonMixinPackageIsChecked() throws IOException {
+        Path root = findSourceRoot();
+        assertFalse(EXEMPT.contains("mixin"));
+        List<String> violations = new ArrayList<>();
+        int checked = check(root, root.resolve("mixin"), violations);
+        assertTrue(checked >= 2, "only " + checked + " common mixin files found");
+        assertTrue(violations.isEmpty(), "A common mixin names a client package:\n" + String.join("\n", violations));
+    }
+
+    /** Checks every non-exempt source file under {@code dir} and returns how many it checked. */
+    private static int check(Path root, Path dir, List<String> violations) throws IOException {
         int checked = 0;
-        try (Stream<Path> files = Files.walk(root)) {
+        try (Stream<Path> files = Files.walk(dir)) {
             for (Path file : files.filter(path -> path.toString().endsWith(".java")).toList()) {
                 if (EXEMPT.contains(root.relativize(file).getName(0).toString())) {
                     continue;
@@ -51,8 +70,7 @@ class ClientIsolationTest {
                 }
             }
         }
-        assertTrue(checked > 50, "only " + checked + " common source files found under " + root);
-        assertTrue(violations.isEmpty(), "Common code names a client package:\n" + String.join("\n", violations));
+        return checked;
     }
 
     /** Unit tests may run from the project or a sub-directory; walk up until the sources are found. */
