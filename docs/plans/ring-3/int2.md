@@ -35,7 +35,7 @@ Verder (`c93d5ab`): `ModNetwork.PROTOCOL_VERSION` 5 → 6 (`ConditionSyncPayload
   - Nether-3 (zee, rijpwoud, zuid, noord, kloven) 1.280/1.280 chunks identiek; strook N1|N2|N3 346/400 (alleen vanilla-featureruis in N1/N2).
   - Ring 3: 8.080/8.614 identiek. Verschillen: vloeistof (water/lava/lucht), vanilla-ertsklodders en mod-ertsklodders over chunkgrenzen (bekend sinds 41), obsidiaan (lava raakt water), 4 `ash_layer` op een vanilla-ijzerklodder (pit, lavarivieren) en 5 `ash_crust` (valblok boven een lavabuis bij (4.858, 73, 75), door een buurupdate wel of niet gevallen). `steam_fens`, zeekom, ribbenkast en geode 100 % identiek.
 - **Feature-index** (ring 1/2, zones, Nether-1/2 tegen main `6ef5a85` in `.claude/worktrees/int2-ref`): biomes 100 % identiek; terreinvorm gelijk (`terrain_shape.py`, decoratie genegeerd); de resterende verschillen liggen alleen op decoratieplekken (ring 2: zand-/kloofsteen-features, ring 1: grinddisks). Decoratie (bomen, ertsen, dripstone) verschuift, zoals verwacht.
-- **Prestatie** (JFR `minecraft.ChunkGeneration`, mod tegen vanilla-datapackdimensies in één server, 16 × 16 chunks per gebied, warm-up over alle ringtypes, verse wereld per ronde, volgorde per gebied wisselend). 4 geldige warme rondes; ronde 5 en de koude ronde zijn onderbroken (main, 18:39: de gebruiker ging testen) en volgen na de go van main. Mod/vanilla, mediaan over de rondes:
+- **Prestatie** (JFR `minecraft.ChunkGeneration`, mod tegen vanilla-datapackdimensies in één server, 16 × 16 chunks per gebied, warm-up over alle ringtypes, verse wereld per ronde, volgorde per gebied wisselend). 4 geldige warme rondes (de officiële meting; ronde 5 vervalt, main) en één koude ronde na de test van de gebruiker. Mod/vanilla, mediaan over de rondes:
 
 | Gebied | noise mediaan (4 warm) | min–max | surface | features | noise INT1 (mediaan) |
 |---|---|---|---|---|---|
@@ -64,7 +64,7 @@ Verder (`c93d5ab`): `ModNetwork.PROTOCOL_VERSION` 5 → 6 (`ConditionSyncPayload
 | Nether-3 kloven (bruggen) | 1,35 | 1,12–1,67 | 0,95 | 0,27 | – |
 - Noise: alle gebieden ≤ 1,36 (budget 1,75); hoogste losse ronde horizonreus 1,76 (ronde 1), daarna 1,18–1,19. Lager dan integratie 1 (1,14–1,55) en 39f (1,18–1,58): de rondes 2–4 waren snel (JIT-spreiding ±30 %, valkuil "Prestatie meten met JFR").
 - Surface ring 3 1,7–2,6× (39f: 1,6–2,5×); ring 2 2,85× (niet geraakt). Features ring 3 0,26–1,28× vanilla.
-- **Koud** (titanenveld, smeulwoud): nog te doen na de go van main.
+- **Koud:** Koude ronde (verse JVM, geen warm-up, 2026-10-09 19:08; gebieden in deze volgorde), mod/vanilla noise · surface · features: ring 2 1,57 · 2,60 · 0,80; horizonreus 1,66 · 2,53 · 0,43; caldera 1,52 · 2,22 · 0,51; **titanenveld 1,44** · 1,95 · 0,91; **smeulwoud 1,47** · 2,05 · 0,91. Alles ≤ 1,75; de koude uitschieters van 39f (titanenveld 2,00, smeulwoud 1,89) komen niet terug.
 
 ## W-checklist (INT2-punten uit de plannen)
 OK = gecontroleerd en in orde; **afwijking** = gemeld/backlog; *4b* = alleen de gebruiker kan het beoordelen (geluid, gevoel). Shots in `build/teststop-4b/` (worktree, niet in git).
@@ -109,7 +109,7 @@ OK = gecontroleerd en in orde; **afwijking** = gemeld/backlog; *4b* = alleen de 
 
 ## Beslissingen
 - 2026-10-09 · infra · Integratie 2 mergede T → W-nether → C → A en W-biomes als laatste (afwijking van waves §6, akkoord main: W-biomes bouwde nog).
-- 2026-10-09 · infra · De prestatiemeting van integratie 2 telt voorlopig met 4 warme rondes; warme ronde 5 en de koude ronde (titanenveld/smeulwoud) volgen na de test van de gebruiker (main).
+- 2026-10-09 · infra · De prestatiemeting van integratie 2 telt met 4 warme rondes (ronde 5 vervalt) plus één koude ronde na de test van de gebruiker (main).
 
 ## Backlog
 - [worldgen] Lava tegen lucht in ring 3 buiten de bewuste vallen (al op main `6ef5a85`): randen van lavaplassen op hun eigen niveau naast een open plek, een luchtgeul door een lavameer (4.134, 94, −3.458), diepe aquifer-lava in grotten, een diagonale wand van 5 hoog langs buiswanden (4.874, 90–94, −538). Fix-pakket in golf 3 (aquiferkorst langs lavaranden; optie A, main 2026-10-09). (bron: INT2)
@@ -117,6 +117,7 @@ OK = gecontroleerd en in orde; **afwijking** = gemeld/backlog; *4b* = alleen de 
 - [worldgen] Nether-3-kloven: enkele blootliggende ijsblokjes binnen 3 blokken van de open lavaspiegels (29 blokken bij 14 van 107 kolommen). (bron: INT2)
 
 ## Status
-Stand 2026-10-09 19:10: alles behalve warme ronde 5, de koude ronde en de review is gedaan. Geen JVM tot de go van main (de gebruiker test in deze worktree).
+Stand 2026-10-09 19:15: integratie 2 af. Review verwerkt (`476110c`, `cae53e4`), koude ronde gedaan, geen eigen processen, lock en slots vrij, `enable-rcon=false`. Feedback van de gebruiker op teststop 4b: `docs/plans/ring-3/teststop-4b-feedback.md` (main).
 Voortgang: 2026-10-09 19:30 review INT2 (main): docsfixes 1, 2a, 3–7 gecommit (`476110c`); 2b `Ring3GeneratedEffectsTest` geschreven (gegenereerde biome-effecten = hook, ring 3 + `steam_fens` + Nether-3), nog niet gedraaid: geen JVM tot de go van main
 Voortgang: 2026-10-09 19:08 go van main; build `--rerun-tasks` groen (667 tests, incl. `Ring3GeneratedEffectsTest` 2/2 en `ClientIsolationTest`), `runData` + `git diff --exit-code src/generated` leeg
+Voortgang: 2026-10-09 19:13 koude ronde (titanenveld 1,44, smeulwoud 1,47, horizonreus 1,66, ring 2 1,57, caldera 1,52 noise); meetwereld en JFR opgeruimd, lock en slots vrij

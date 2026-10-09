@@ -117,7 +117,7 @@ Coördinaten (x, z): asvlakte (5.262, 480), pieken (4.110, 672), smeulwoud (4.75
 - [ ] Per biome 1 min staan: eigen lucht/fog, particles en geluid (smeulwoud knisperen, titanenveld zoem, slapende krater rust; Nether-3 wind en krakend ijs, adem-wolkjes).
 - [ ] **Fumarolenveld / modderveld niet dreunend** (begrenzer: één fumarole-puf per 10 ticks, één modderbubbel per 5 ticks per client). **Geiserwaarschuwing** speelt nu het modderbubbelgeluid (toonhoogte 0,7): duidelijk genoeg? (De agents konden niet luisteren.)
 - [ ] **Particles: Minimal** en **FPS**: smeulwoud 's nachts, `steam_fens`, pieken met 8 pluimen.
-- [ ] **Koude prestatie** titanenveld/smeulwoud: een verse server, direct daarheen (eerste chunks kunnen haperen). 39f mat koud 2,00× en 1,89× (geaccepteerd); INT2 meet koud opnieuw na deze test.
+- [ ] **Koude prestatie** titanenveld/smeulwoud: een verse server, direct daarheen (eerste chunks kunnen haperen). 39f mat koud 2,00× en 1,89× (geaccepteerd); INT2 koud: 1,44× en 1,47×.
 
 **Afstemvragen H**
 18. Geiserwaarschuwing: **A. eigen waarschuwingsgeluid (`block.geyser.warning`) maken (aanbevolen)** · B. modderbubbel houden.
@@ -161,7 +161,7 @@ Zie `docs/plans/ring-3/int2.md` voor de details en bewijzen.
 - **S:** dedicated server + 2 clients (protocol 6), W-smoke, portal, geiser, striders, hitte/kou: zie A–E.
 - **Determinisme** (twee werelden, de tweede omgekeerd geladen): Nether-3 1.280/1.280 chunks identiek; ring 3 8.080/8.614, verschillen alleen vloeistof, ertsklodders over chunkgrenzen, obsidiaan, 4 aslagen op een vanilla-ertsklodder en 5 askorstblokken (valblok) boven een buis.
 - **Feature-index** ring 1/2 en Nether-1/2 tegen main `6ef5a85`: biomes 100 % identiek, terreinvorm gelijk; decoratie verschuift (verwacht).
-- **Prestatie** (JFR, mod/vanilla in één server, 16 × 16 chunks per gebied, warm-up, 4 warme rondes; budget noise ≤ 1,75×). Warme ronde 5 en de koude ronde (titanenveld/smeulwoud) volgen na deze test:
+- **Prestatie** (JFR, mod/vanilla in één server, 16 × 16 chunks per gebied, warm-up, 4 warme rondes; budget noise ≤ 1,75×). Koud (verse JVM, geen warm-up): titanenveld 1,44, smeulwoud 1,47, horizonreus 1,66 (noise; 39f koud: 2,00 en 1,89).
 
 | Gebied | noise mediaan (4 warm) | min–max | surface | features | noise INT1 (mediaan) |
 |---|---|---|---|---|---|
