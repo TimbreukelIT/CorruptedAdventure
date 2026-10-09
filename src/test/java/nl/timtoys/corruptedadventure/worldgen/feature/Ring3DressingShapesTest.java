@@ -197,6 +197,55 @@ class Ring3DressingShapesTest {
     }
 
     @Test
+    void everyFireGeodeLayerFollowsTheOpenCavityAlsoOnASquashedAxis() {
+        for (int radius = FireGeodeShape.RADIUS_MIN; radius <= FireGeodeShape.RADIUS_MAX; radius++) {
+            FireGeodeShape.Geode geode = new FireGeodeShape.Geode(0, 0, 0, radius, 0.85, 0.85, 1.15);
+            int half = radius + 6;
+            int n = 2 * half + 1;
+            byte[] kind = new byte[n * n * n];
+            for (int x = 0; x < n; x++) {
+                for (int y = 0; y < n; y++) {
+                    for (int z = 0; z < n; z++) {
+                        kind[(x * n + y) * n + z] = geode.inCavity(x - half, y - half, z - half) ? FireGeodeFeature.OPEN : FireGeodeFeature.ROCK;
+                    }
+                }
+            }
+            byte[] layer = FireGeodeFeature.layers(kind, n, n, n);
+            // Along each axis out of the centre: the cavity, then the crystal wall, blackstone and basalt, one block each.
+            for (int[] axis : new int[][]{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}) {
+                int step = 0;
+                while (kind[index(half, n, axis, step)] == FireGeodeFeature.OPEN) {
+                    step++;
+                }
+                for (int k = 1; k <= FireGeodeFeature.LAYERS; k++) {
+                    assertEquals(k, layer[index(half, n, axis, step + k - 1)], "radius " + radius + " axis " + java.util.Arrays.toString(axis));
+                }
+                assertEquals(0, layer[index(half, n, axis, step + FireGeodeFeature.LAYERS)]);
+            }
+            // Every open block with a face on rock faces the crystal wall there.
+            for (int x = 1; x < n - 1; x++) {
+                for (int y = 1; y < n - 1; y++) {
+                    for (int z = 1; z < n - 1; z++) {
+                        if (kind[(x * n + y) * n + z] != FireGeodeFeature.OPEN) {
+                            continue;
+                        }
+                        for (int[] d : new int[][]{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}) {
+                            int j = ((x + d[0]) * n + y + d[1]) * n + z + d[2];
+                            if (kind[j] == FireGeodeFeature.ROCK) {
+                                assertEquals(1, layer[j]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static int index(int half, int n, int[] axis, int step) {
+        return ((half + axis[0] * step) * n + half + axis[1] * step) * n + half + axis[2] * step;
+    }
+
+    @Test
     void lavaFallTriesArePureAndRare() {
         int tries = 0;
         for (int x = 0; x < 200; x++) {
