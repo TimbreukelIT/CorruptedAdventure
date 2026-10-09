@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class NetherRing3JsonTest {
     private static final Path RING_3 = WorldgenData.root().resolve("density_function/ring_3/nether");
     private static final String REGION_NOISE = "corruptedadventure:nether_ring_3_region";
+    private static final String RING_3_BIOMES =
+            "[\"corruptedadventure:frozen_lava_sea\",\"corruptedadventure:rime_forest\",\"corruptedadventure:glacier_rifts\"]";
 
     /** The weight of a region at {@code r}: the files are {@code flat_cache(clamp(region × k + c, 0, 1))}. */
     private static double weight(String file, double r) {
@@ -109,7 +111,7 @@ class NetherRing3JsonTest {
         for (int i = 0; i < sequence.size(); i++) {
             JsonObject rule = sequence.get(i).getAsJsonObject();
             JsonElement biomes = rule.has("if_true") ? rule.getAsJsonObject("if_true").get("biome_is") : null;
-            if (biomes != null && biomes.toString().equals("[\"corruptedadventure:placeholder_nether_ring_3\"]")) {
+            if (biomes != null && biomes.toString().equals(RING_3_BIOMES)) {
                 index = i;
             }
             if (hole < 0 && rule.toString().contains("minecraft:hole")) {
@@ -137,12 +139,13 @@ class NetherRing3JsonTest {
             }
         }
         assertTrue(regionChecks >= 3);
-        // Same noises as the terrain: the region axis, the pillars and the cracks.
+        // Same noises as the terrain: the region axis, the pillars, the cracks, the falls and the drapes.
         assertEquals(REGION_NOISE, WorldgenData.read("density_function/ring_3/nether/region.json").getAsJsonObject("argument").get("noise").getAsString());
         String branchText = branch.toString();
-        for (String file : new String[]{"pillar_noise", "cracks", "crack_mask"}) {
+        for (String file : new String[]{"pillar_noise", "cracks", "crack_mask", "falls", "drapes"}) {
             String json = WorldgenData.read("density_function/ring_3/nether/" + file + ".json").toString();
-            for (String noise : new String[]{"nether_ring_3_pillars", "nether_ring_3_cracks", "nether_ring_3_crack_patches"}) {
+            for (String noise : new String[]{"nether_ring_3_pillars", "nether_ring_3_cracks", "nether_ring_3_crack_patches",
+                    "nether_ring_3_falls", "nether_ring_3_drapes", "nether_ring_3_drape_patches"}) {
                 if (json.contains("\"corruptedadventure:" + noise + "\"")) {
                     assertTrue(branchText.contains("\"corruptedadventure:" + noise + "\""), noise);
                 }
@@ -174,6 +177,77 @@ class NetherRing3JsonTest {
             JsonElement carvers = json.get("carvers");
             assertTrue(carvers.isJsonObject() ? carvers.getAsJsonObject().isEmpty() : carvers.getAsJsonArray().isEmpty(), biome + " has carvers");
         }
+    }
+
+    /**
+     * The surface paints the frozen falls and drapes where the terrain grows them (53b): the falls from the start of the
+     * {@code falls} ramp, the drapes only inside the {@code drapes} band and its patches (where the curtain is a few
+     * blocks long, so no paint lands on a flat ceiling).
+     */
+    @Test
+    void surfacePaintsTheFrozenFallsWhereTheTerrainGrowsThem() {
+        JsonArray sequence = WorldgenData.read("noise_settings/nether.json").getAsJsonObject("surface_rule").getAsJsonArray("sequence");
+        JsonObject branch = null;
+        for (JsonElement rule : sequence) {
+            JsonElement biomes = rule.getAsJsonObject().has("if_true") ? rule.getAsJsonObject().getAsJsonObject("if_true").get("biome_is") : null;
+            if (biomes != null && biomes.toString().equals(RING_3_BIOMES)) {
+                branch = rule.getAsJsonObject();
+            }
+        }
+        assertTrue(branch != null);
+        List<JsonObject> thresholds = new ArrayList<>();
+        collect(branch, "minecraft:noise_threshold", thresholds);
+        double fallsStart = -offsetOf(WorldgenData.read("density_function/ring_3/nether/falls.json"), "corruptedadventure:nether_ring_3_falls");
+        double patchesStart = -offsetOf(WorldgenData.read("density_function/ring_3/nether/drapes.json"), "corruptedadventure:nether_ring_3_drape_patches");
+        double band = bandOf(WorldgenData.read("density_function/ring_3/nether/drapes.json"));
+        int found = 0;
+        for (JsonObject threshold : thresholds) {
+            String noise = threshold.get("noise").getAsString();
+            double min = threshold.get("min_threshold").getAsDouble(), max = threshold.get("max_threshold").getAsDouble();
+            switch (noise) {
+                case "corruptedadventure:nether_ring_3_falls" -> {
+                    assertEquals(fallsStart, min, 1e-9);
+                    found++;
+                }
+                case "corruptedadventure:nether_ring_3_drape_patches" -> {
+                    assertTrue(min > patchesStart, "drape paint starts inside the patches: " + min);
+                    found++;
+                }
+                case "corruptedadventure:nether_ring_3_drapes" -> {
+                    assertEquals(-max, min, 1e-9);
+                    assertTrue(max > 0 && max < band, "drape paint lies inside the band: " + max);
+                    found++;
+                }
+                default -> {
+                }
+            }
+        }
+        assertEquals(3, found);
+    }
+
+    /** {@code c} of the first {@code add(noise(name), c)} in the tree. */
+    private static double offsetOf(JsonElement tree, String noise) {
+        List<JsonObject> adds = new ArrayList<>();
+        collect(tree, "minecraft:add", adds);
+        for (JsonObject add : adds) {
+            JsonElement first = add.get("argument1");
+            if (first.isJsonObject() && first.getAsJsonObject().has("noise") && first.getAsJsonObject().get("noise").getAsString().equals(noise)) {
+                return add.get("argument2").getAsDouble();
+            }
+        }
+        throw new AssertionError("no add(" + noise + ", c)");
+    }
+
+    /** {@code w} of {@code add(w, -|noise|)}: the half width of the drapes' band. */
+    private static double bandOf(JsonElement tree) {
+        List<JsonObject> adds = new ArrayList<>();
+        collect(tree, "minecraft:add", adds);
+        for (JsonObject add : adds) {
+            if (add.get("argument1").isJsonPrimitive() && add.get("argument2").toString().contains("minecraft:abs")) {
+                return add.get("argument1").getAsDouble();
+            }
+        }
+        throw new AssertionError("no band");
     }
 
     private static void collect(JsonElement tree, String type, List<JsonObject> out) {

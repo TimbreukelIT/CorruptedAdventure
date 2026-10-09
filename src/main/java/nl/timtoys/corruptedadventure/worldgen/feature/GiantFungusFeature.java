@@ -30,7 +30,7 @@ public final class GiantFungusFeature extends Feature<GiantFungusConfiguration> 
         FungalWorld world = FungalWorld.of(level);
         BlockPos origin = context.origin();
         List<GiantFungusShape.Part> parts = GiantFungusShape.build(context.random(), origin.getX(), origin.getY(), origin.getZ(),
-                ground(world), config.pillars());
+                ground(world), config.pillars(), config.freeSize());
         if (parts.isEmpty()) {
             return false;
         }
