@@ -128,15 +128,15 @@ public final class VolcanicFilter extends PlacementFilter {
         }
 
         /**
-         * Plain ground (plan §0.2–0.3): no lava bank, no cliff, no volcano flank, not on a thin solid, not in a crater;
-         * the found surface on the terrain itself.
+         * Plain ground (plan §0.2–0.3): no lava bank, no cliff, no volcano flank, not in a crater or a collapse (39f);
+         * the found surface on the terrain itself, so not on a thin solid either.
          */
         public Builder ground() {
             return below(VolcanicOutput.Output.LAVA_BANK, 0.1)
                     .below(VolcanicOutput.Output.CLIFF, 0.3)
                     .below(VolcanicOutput.Output.VOLCANO_RISE, 20.0)
-                    .below(VolcanicOutput.Output.SOLID_KIND, 0.5)
                     .below(VolcanicOutput.Output.CALDERA_MASK, 0.001)
+                    .below(VolcanicOutput.Output.COLLAPSE, 0.001)
                     .groundOnly(DEFAULT_TOLERANCE);
         }
 

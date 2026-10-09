@@ -3,22 +3,25 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicOutput;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The pure parts of the ring 3 dressing (changes 47, 49): filters, drifts, shapes, footprint trails and rotations. */
+/** The pure parts of the ring 3 dressing (changes 47, 49): filters, landmark points, drifts, shapes, trails and rotations. */
 class Ring3DressingShapesTest {
     @Test
     void groundOnlyKeepsTheSurfaceOnTheTerrain() {
@@ -40,7 +43,7 @@ class Ring3DressingShapesTest {
         VolcanicFilter ground = VolcanicFilter.builder().ground().build();
         String json = VolcanicFilter.CODEC.codec().encodeStart(JsonOps.INSTANCE, ground).getOrThrow().toString();
         for (VolcanicOutput.Output output : new VolcanicOutput.Output[]{VolcanicOutput.Output.LAVA_BANK, VolcanicOutput.Output.CLIFF,
-                VolcanicOutput.Output.VOLCANO_RISE, VolcanicOutput.Output.SOLID_KIND, VolcanicOutput.Output.CALDERA_MASK}) {
+                VolcanicOutput.Output.VOLCANO_RISE, VolcanicOutput.Output.CALDERA_MASK, VolcanicOutput.Output.COLLAPSE}) {
             assertTrue(json.contains(output.getSerializedName()), json);
         }
         assertTrue(json.contains("\"ground_only\":true"), json);
@@ -113,8 +116,8 @@ class Ring3DressingShapesTest {
         int trails = 0;
         for (int i = -20; i < 20; i++) {
             for (int j = -20; j < 20; j++) {
-                FootprintPath.Trail trail = FootprintPath.trail(20260930L, i, j, 72, 0.9F);
-                FootprintPath.Trail again = FootprintPath.trail(20260930L, i, j, 72, 0.9F);
+                FootprintPath.Trail trail = FootprintPath.trail(20260930L, i, j, 72, 0.9F, FootprintPath.Rims.NONE);
+                FootprintPath.Trail again = FootprintPath.trail(20260930L, i, j, 72, 0.9F, FootprintPath.Rims.NONE);
                 assertEquals(trail, again);
                 if (trail == null) {
                     continue;
@@ -135,9 +138,47 @@ class Ring3DressingShapesTest {
             }
         }
         assertTrue(trails > 1200 && trails < 1700, "about 9 in 10 cells: " + trails);
-        assertEquals(3, ends.size(), "every ending occurs: " + ends);
+        assertEquals(2, ends.size(), "without a rim a rim trail ends in nothing: " + ends);
         // Another seed, other trails.
-        assertFalse(FootprintPath.trail(1L, 0, 0, 72, 1.0F).equals(FootprintPath.trail(2L, 0, 0, 72, 1.0F)));
+        assertFalse(FootprintPath.trail(1L, 0, 0, 72, 1.0F, FootprintPath.Rims.NONE).equals(FootprintPath.trail(2L, 0, 0, 72, 1.0F, FootprintPath.Rims.NONE)));
+    }
+
+    @Test
+    void landmarkPointsArePlacedInsideTheChunkMargin() {
+        List<VolcanicField.Point> points = List.of(new VolcanicField.Point(8.3, 8.7), new VolcanicField.Point(1.0, 1.0),
+                new VolcanicField.Point(20.0, 8.0));
+        assertEquals(List.of(new BlockPos(8, 64, 8)),
+                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.MOUND, 1.0F, 0, 2).place(points, 0, 64, 0, RandomSource.create(1L)));
+        TerrainLandmarkPlacement spread = TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 1.0F, 3, 0);
+        for (long seed = 0; seed < 50; seed++) {
+            for (BlockPos pos : spread.place(points, 0, 64, 0, RandomSource.create(seed))) {
+                assertTrue(pos.getX() >= 0 && pos.getX() < 16 && pos.getZ() >= 0 && pos.getZ() < 16, pos.toString());
+                assertTrue(points.stream().anyMatch(p -> Math.abs(pos.getX() - Math.floor(p.x())) <= 3 && Math.abs(pos.getZ() - Math.floor(p.z())) <= 3));
+            }
+        }
+        assertEquals(List.of(), TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.MOUND, 0.0F, 0, 0)
+                .place(points, 0, 64, 0, RandomSource.create(1L)));
+    }
+
+    @Test
+    void rimTrailsEndAtTheRimWalkingIn() {
+        // A rim right where the trail would start, the hole to the east.
+        FootprintPath.Rims rims = (x, z) -> new FootprintPath.Rim(x, z, 0.0);
+        int rimTrails = 0;
+        for (int i = -10; i < 10; i++) {
+            for (int j = -10; j < 10; j++) {
+                FootprintPath.Trail trail = FootprintPath.trail(20260930L, i, j, 72, 1.0F, rims);
+                if (trail.end() != FootprintPath.End.RIM) {
+                    continue;
+                }
+                rimTrails++;
+                FootprintPath.Step last = trail.steps().get(trail.steps().size() - 1);
+                assertTrue(Math.hypot(last.x() + 0.5 - trail.endX(), last.z() + 0.5 - trail.endZ()) <= FootprintPath.STRIDE + 1.5, "last step at the rim");
+                assertEquals(0.0, trail.heading(), 1.0E-9);
+                assertEquals(trail, FootprintPath.trail(20260930L, i, j, 72, 1.0F, rims));
+            }
+        }
+        assertTrue(rimTrails > 80, "about a third of the cells: " + rimTrails);
     }
 
     @Test

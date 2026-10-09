@@ -13,10 +13,13 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
+
+import javax.annotation.Nullable;
 
 /**
  * {@code corruptedadventure:ash_footprints} (change 49): trails of footprints in the ash that stop abruptly, at a cast of
- * ash, at a crater rim or nowhere ({@link FootprintPath}). Placed once per chunk; the chunk writes the prints of every
+ * ash, at the rim of a collapse or crater (39f accessors) or nowhere ({@link FootprintPath}). Placed once per chunk; the chunk writes the prints of every
  * trail that crosses it, so a trail is whole however the chunks generate. A print is a dent: a layer of 6–7 in full ash,
  * two layers less in a deep drift, or an empty spot in a thin one (2–3 layers); other ground keeps no print.
  * <p>
@@ -24,6 +27,9 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
  * writes only its own chunk. Runs after the ash drifts.
  */
 public final class AshFootprintsFeature extends Feature<AshFootprintsConfiguration> {
+    /** A trail stops this far outside a hole's (mean) rim. */
+    private static final double RIM_GAP = 2.0;
+
     public AshFootprintsFeature(Codec<AshFootprintsConfiguration> codec) {
         super(codec);
     }
@@ -40,11 +46,13 @@ public final class AshFootprintsFeature extends Feature<AshFootprintsConfigurati
         int toI = Math.floorDiv(minX + 15 + reach, config.cell());
         int fromJ = Math.floorDiv(minZ - reach, config.cell());
         int toJ = Math.floorDiv(minZ + 15 + reach, config.cell());
+        VolcanicField field = Ring3Terrain.field(level);
+        FootprintPath.Rims rims = field == null ? FootprintPath.Rims.NONE : (x, z) -> rim(field, x, z);
         boolean placed = false;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int i = fromI; i <= toI; i++) {
             for (int j = fromJ; j <= toJ; j++) {
-                FootprintPath.Trail trail = FootprintPath.trail(level.getSeed(), i, j, config.cell(), config.chance());
+                FootprintPath.Trail trail = FootprintPath.trail(level.getSeed(), i, j, config.cell(), config.chance(), rims);
                 if (trail == null) {
                     continue;
                 }
@@ -65,6 +73,34 @@ public final class AshFootprintsFeature extends Feature<AshFootprintsConfigurati
             }
         }
         return placed;
+    }
+
+    /** The nearer of the rims of the collapse and of the nearest volcano's crater, seen from (x, z); pure. */
+    @Nullable
+    static FootprintPath.Rim rim(VolcanicField field, double x, double z) {
+        FootprintPath.Rim best = null;
+        VolcanicField.Sinkhole collapse = field.collapseAt(Mth.floor(x), Mth.floor(z));
+        if (collapse != null) {
+            best = rimOf(collapse.x(), collapse.z(), collapse.radius() + RIM_GAP, x, z);
+        }
+        VolcanicField.VolcanoInfo volcano = field.nearestVolcano(Mth.floor(x), Mth.floor(z));
+        if (volcano != null) {
+            FootprintPath.Rim crater = rimOf(volcano.x() + 0.5, volcano.z() + 0.5, volcano.craterRadius() + RIM_GAP, x, z);
+            if (best == null || distanceSq(crater, x, z) < distanceSq(best, x, z)) {
+                best = crater;
+            }
+        }
+        return best;
+    }
+
+    /** The spot {@code radius} from (cx, cz) towards (x, z), heading back into the hole. */
+    private static FootprintPath.Rim rimOf(double cx, double cz, double radius, double x, double z) {
+        double angle = Math.atan2(z - cz, x - cx);
+        return new FootprintPath.Rim(cx + Math.cos(angle) * radius, cz + Math.sin(angle) * radius, angle + Math.PI);
+    }
+
+    private static double distanceSq(FootprintPath.Rim rim, double x, double z) {
+        return (rim.x() - x) * (rim.x() - x) + (rim.z() - z) * (rim.z() - z);
     }
 
     /** Dents the ash at {@code top} (the top block of the column); false where it is no ash. */

@@ -2,14 +2,15 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 
 import net.minecraft.util.Mth;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * The pure core of {@code corruptedadventure:ash_footprints} (change 49): at most one trail of footprints per grid cell,
- * a function of the world seed and the cell only, so every chunk computes the same trail and writes its own part of
- * it. A trail starts inside its cell, wanders a little, and stops abruptly after 15–40 steps; it may reach up to
- * {@link #MAX_LENGTH} blocks beyond its cell.
+ * a function of the world seed, the cell and the pure terrain ({@link Rims}) only, so every chunk computes the same
+ * trail and writes its own part of it. A trail starts inside its cell, wanders a little, and stops abruptly after 15–40
+ * steps; it may reach up to {@link #MAX_LENGTH} blocks beyond its cell.
  */
 final class FootprintPath {
     /** How a trail ends. */
@@ -18,7 +19,7 @@ final class FootprintPath {
         NOTHING,
         /** At a cast of ash, standing where the next step would be. */
         CAST,
-        /** Heading for the nearest crater rim (or an abyss), where the ground drops away. */
+        /** At the rim of a collapse or a crater, walking in; without a rim in the cell, nothing. */
         RIM
     }
 
@@ -28,6 +29,19 @@ final class FootprintPath {
 
     /** A trail: its steps, how it ends, and its heading at the end (radians). */
     record Trail(List<Step> steps, End end, double heading, double endX, double endZ) {
+    }
+
+    /** Where a trail heading for a rim stops: the last spot before the drop, and the heading into the hole there. */
+    record Rim(double x, double z, double heading) {
+    }
+
+    /** The rim nearest to a point, from the pure terrain; null where there is none. */
+    @FunctionalInterface
+    interface Rims {
+        Rims NONE = (x, z) -> null;
+
+        @Nullable
+        Rim near(double x, double z);
     }
 
     static final double STRIDE = 1.6;
@@ -40,7 +54,7 @@ final class FootprintPath {
     }
 
     /** The trail of cell (i, j), or null: a cell has one with {@code chance}. */
-    static Trail trail(long seed, int i, int j, int cell, float chance) {
+    static Trail trail(long seed, int i, int j, int cell, float chance, Rims rims) {
         long h = mix(seed ^ SALT ^ mix(i * 0x9E3779B97F4A7C15L + j * 0xC2B2AE3D27D4EB4FL));
         if (unit(h, 0) >= chance) {
             return null;
@@ -51,17 +65,53 @@ final class FootprintPath {
         int count = MIN_STEPS + (int) (unit(h, 4) * (MAX_STEPS - MIN_STEPS + 1));
         double turn = (unit(h, 5) - 0.5) * 0.12;
         End end = End.values()[(int) (unit(h, 6) * End.values().length)];
-        List<Step> steps = new ArrayList<>(count);
+        if (end == End.RIM) {
+            Rim rim = rims.near(x, z);
+            if (rim != null && inCell(rim.x(), i, cell) && inCell(rim.z(), j, cell)) {
+                // Walked backwards from the rim, away from the hole, then turned round: the trail ends at the rim.
+                double[][] line = line(h, rim.x(), rim.z(), rim.heading() + Math.PI, turn, count);
+                double[][] forward = new double[count][];
+                for (int k = 0; k < count; k++) {
+                    double[] back = line[count - 1 - k];
+                    forward[k] = new double[]{back[0], back[1], back[2] + Math.PI};
+                }
+                return new Trail(feet(forward), end, rim.heading(), rim.x(), rim.z());
+            }
+            end = End.NOTHING;
+        }
+        double[][] line = line(h, x, z, heading, turn, count);
+        double last = line[count - 1][2];
+        double lastX = line[count - 1][0];
+        double lastZ = line[count - 1][1];
+        return new Trail(feet(line), end, last, lastX + Math.cos(last) * STRIDE * 1.5, lastZ + Math.sin(last) * STRIDE * 1.5);
+    }
+
+    /** {@code count} points of a wandering line from (x, z), each one stride on: x, z and the heading taken to it. */
+    private static double[][] line(long h, double x, double z, double heading, double turn, int count) {
+        double[][] line = new double[count][];
         for (int k = 0; k < count; k++) {
             heading += turn + (unit(h, 10 + k) - 0.5) * 0.25;
             x += Math.cos(heading) * STRIDE;
             z += Math.sin(heading) * STRIDE;
-            boolean left = k % 2 == 0;
-            // The feet stand half a block either side of the line.
-            double side = left ? 0.5 : -0.5;
-            steps.add(new Step(Mth.floor(x - Math.sin(heading) * side), Mth.floor(z + Math.cos(heading) * side), left));
+            line[k] = new double[]{x, z, heading};
         }
-        return new Trail(List.copyOf(steps), end, heading, x + Math.cos(heading) * STRIDE * 1.5, z + Math.sin(heading) * STRIDE * 1.5);
+        return line;
+    }
+
+    /** The feet along a line, alternating half a block either side of it. */
+    private static List<Step> feet(double[][] line) {
+        List<Step> steps = new ArrayList<>(line.length);
+        for (int k = 0; k < line.length; k++) {
+            boolean left = k % 2 == 0;
+            double side = left ? 0.5 : -0.5;
+            double heading = line[k][2];
+            steps.add(new Step(Mth.floor(line[k][0] - Math.sin(heading) * side), Mth.floor(line[k][1] + Math.cos(heading) * side), left));
+        }
+        return List.copyOf(steps);
+    }
+
+    private static boolean inCell(double v, int index, int cell) {
+        return v >= (double) index * cell && v < (double) (index + 1) * cell;
     }
 
     private static long mix(long z) {

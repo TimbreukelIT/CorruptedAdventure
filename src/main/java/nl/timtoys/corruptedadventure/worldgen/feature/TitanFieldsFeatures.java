@@ -27,7 +27,6 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
-import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicOutput;
 
 import java.util.List;
 
@@ -36,9 +35,9 @@ import java.util.List;
  * adds titan skulls near them, loose vertebrae and limb bones, soul fire on soul soil in and around the rib cages, and
  * the rare titan rocks (basalt giants, {@link TitanRockFeature}). Amounts are starting values, tuned at test stop 4b.
  * <p>
- * Determinism as in {@link Ring3DressingFeatures}: everything but the titan rocks lies in its own chunk
- * ({@link JitteredGridPlacement} margin ≥ reach); "near the bones" is the pure terrain ({@link VolcanicNearFilter} on
- * {@code solid_kind} = bone). The titan rocks are a pure function of seed and cell, each chunk writing its own part.
+ * Determinism as in {@link Ring3DressingFeatures}: everything but the titan rocks lies in its own chunk (placement
+ * margin ≥ reach); the ribcages are the pure terrain's ({@link TerrainLandmarkPlacement}, 39f accessor
+ * {@code ribcageNear}). The titan rocks are a pure function of seed and cell, each chunk writing its own part.
  */
 public final class TitanFieldsFeatures {
     // Configured.
@@ -55,8 +54,8 @@ public final class TitanFieldsFeatures {
 
     /** The grid of the titan rocks (blocks): at most one rock per cell. */
     static final int ROCK_CELL = 256;
-    /** A soul patch reaches radius + 1 (stretch 1); the margin keeps its fire at least 2 from the chunk's edges. */
-    private static final int SOUL_PATCH_RADIUS = 3;
+    /** A soul patch reaches radius + 1 (stretch 1); the margin keeps it whole and its fire at least 2 from the chunk's edges. */
+    private static final int SOUL_PATCH_RADIUS = 2;
 
     private static final PlacementModifier SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
 
@@ -84,16 +83,17 @@ public final class TitanFieldsFeatures {
     public static void placed(BootstrapContext<PlacedFeature> context) {
         HolderGetter<ConfiguredFeature<?, ?>> features = context.lookup(Registries.CONFIGURED_FEATURE);
         PlacementModifier ground = VolcanicFilter.builder().ground().build();
-        VolcanicFilter.Range bone = new VolcanicFilter.Range(VolcanicOutput.Output.SOLID_KIND, 0.5, 1.5);
 
-        // Skulls lie near the ribs, where the soul fire burns too; loose bones anywhere on level ground.
+        // Skulls lie around the ribcages (up to 12 from a rib foot or vertebra), where the soul fire burns too; loose
+        // bones anywhere on level ground.
         PlacementUtils.register(context, TITAN_FIELDS_SKULLS, features.getOrThrow(TITAN_SKULL),
-                JitteredGridPlacement.of(16, 1, 0.25F), SURFACE, SlopeFilter.flat(3, 2), ground, new VolcanicNearFilter(bone, 16, 3),
+                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 0.1F, 12, 1), SURFACE, SlopeFilter.flat(3, 2), ground,
                 BiomeFilter.biome());
         PlacementUtils.register(context, TITAN_FIELDS_BONES, features.getOrThrow(TITAN_BONES),
                 JitteredGridPlacement.of(16, 1, 0.15F), SURFACE, SlopeFilter.flat(3, 2), ground, BiomeFilter.biome());
+        // Soul patches at the feet of the ribs and under the spine.
         PlacementUtils.register(context, TITAN_FIELDS_SOUL_FIRE, features.getOrThrow(SOUL_FIRE_PATCH),
-                JitteredGridPlacement.of(16, SOUL_PATCH_RADIUS + 3, 0.6F), SURFACE, ground, new VolcanicNearFilter(bone, 12, 3),
+                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 1.0F, 3, SOUL_PATCH_RADIUS + 2), SURFACE, ground,
                 BiomeFilter.biome());
         // Once per chunk without a biome filter: a rock is a function of its cell, and every chunk it covers writes its
         // part (the rock's centre must lie in the titan fields, TitanRockFeature checks that).

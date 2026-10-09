@@ -2,10 +2,10 @@
   "feature": "corruptedadventure:ring_3/soul_fire_patch",
   "placement": [
     {
-      "type": "corruptedadventure:jittered_grid",
-      "cell_size": 16,
-      "chance": 0.6,
-      "margin": 6
+      "type": "corruptedadventure:terrain_landmark",
+      "landmark": "ribcage",
+      "margin": 4,
+      "spread": 3
     },
     {
       "type": "minecraft:heightmap",
@@ -28,24 +28,14 @@
           "output": "volcano_rise"
         },
         {
-          "max": 0.5,
-          "output": "solid_kind"
+          "max": 0.001,
+          "output": "caldera_mask"
         },
         {
           "max": 0.001,
-          "output": "caldera_mask"
+          "output": "collapse"
         }
       ]
-    },
-    {
-      "type": "corruptedadventure:volcanic_near",
-      "radius": 12,
-      "range": {
-        "max": 1.5,
-        "min": 0.5,
-        "output": "solid_kind"
-      },
-      "step": 3
     },
     {
       "type": "minecraft:biome"

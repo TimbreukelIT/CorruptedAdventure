@@ -2,10 +2,11 @@
   "feature": "corruptedadventure:ring_3/titan_skull",
   "placement": [
     {
-      "type": "corruptedadventure:jittered_grid",
-      "cell_size": 16,
-      "chance": 0.25,
-      "margin": 1
+      "type": "corruptedadventure:terrain_landmark",
+      "chance": 0.1,
+      "landmark": "ribcage",
+      "margin": 1,
+      "spread": 12
     },
     {
       "type": "minecraft:heightmap",
@@ -33,24 +34,14 @@
           "output": "volcano_rise"
         },
         {
-          "max": 0.5,
-          "output": "solid_kind"
+          "max": 0.001,
+          "output": "caldera_mask"
         },
         {
           "max": 0.001,
-          "output": "caldera_mask"
+          "output": "collapse"
         }
       ]
-    },
-    {
-      "type": "corruptedadventure:volcanic_near",
-      "radius": 16,
-      "range": {
-        "max": 1.5,
-        "min": 0.5,
-        "output": "solid_kind"
-      },
-      "step": 3
     },
     {
       "type": "minecraft:biome"

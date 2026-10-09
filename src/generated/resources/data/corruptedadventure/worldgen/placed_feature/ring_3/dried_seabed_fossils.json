@@ -33,12 +33,12 @@
           "output": "volcano_rise"
         },
         {
-          "max": 0.5,
-          "output": "solid_kind"
+          "max": 0.001,
+          "output": "caldera_mask"
         },
         {
           "max": 0.001,
-          "output": "caldera_mask"
+          "output": "collapse"
         }
       ]
     },

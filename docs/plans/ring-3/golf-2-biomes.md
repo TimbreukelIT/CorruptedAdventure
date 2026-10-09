@@ -284,14 +284,15 @@ Biomepunten uit 39b (de regio-assen zijn niet veranderd): ashen (5.262, 480), pe
   - aslagen in de lijzijde van de duinen (5.262, 480), nooit op lavaoevers of naaldtoppen;
   - vlekken in `dry_riverbeds` grijs as + verkoolde stronken.
   - (INT2) basaltstromen: hornitos met gloeiende kap, blackstone-tongen, smeulventjes; pieken: inslagkraters met obsidiaan en magmakern, niet boven vloeistof; asvlakte: verkoolde dode bomen in de geulen, puimsteenkeien;
+  - (INT2) een fumarole op (bijna) elke heuveltop van de zwavelvelden, modder midden in de zinkgaten, niets in instortingen;
   - (INT2) aslagen lopen door over chunkgrenzen en stoppen netjes op biomegrenzen (geen rechte chunknaden); modderpoelen alleen op zinkgatbodems;
   - (INT2) `/place feature corruptedadventure:ring_3/<naam>` per feature; geen "far chunk"/"Feature order cycle"; determinisme (omgekeerd geladen).
 - [ ] **47b:** ribbenkasten (−1.493, 4.144): zielvuur, schedels/wervels; een titanen-rots in het titanenveld (4.942, 160). 's Nachts blauw zielvuur tegen de botten.
   - (INT2) titanen-rots heel over chunkgrenzen (geen afgesneden stukken, ook omgekeerd geladen), niet zwevend, niet op een rib of in lava; `/place feature corruptedadventure:ring_3/titan_rock` in een titanenveld;
-  - (INT2) zielvuur alleen op zielgrond, nooit aan een chunkrand; geen vuur dat zich verspreidt.
+  - (INT2) zielvuur alleen op zielgrond rond de ribvoeten en onder de wervelkolom, nooit aan een chunkrand; schedels in de buurt van de ribbenkasten.
 - [ ] **49:** 's nachts gloeiende afgietsels in de asvlakte; een voetspoor dat abrupt stopt.
   - (INT2) een voetspoor loopt ononderbroken over chunkgrenzen (ook omgekeerd geladen), alleen in as; afgietsels staan vlak, nooit half over een chunkrand of in een aslaag;
-  - (INT2) na de 39f-rebase: afgietsels kijken naar de dichtstbijzijnde vulkaan (als die stap gedaan is, zie Status).
+  - (INT2) afgietsels kijken (op 90° na) naar de dichtstbijzijnde vulkaan; een deel van de sporen stopt aan de rand van een instorting of krater.
 - [ ] **47c:**
   - smeulwoud (4.750, 0) dag en nacht (gloeiende kronen, open plekken met bessen en vuurbloemen);
   - slapende krater (~−4.915, 560 of `/locate biome corruptedadventure:dormant_caldera`) groen;
@@ -327,7 +328,9 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
 - Voortgang: 2026-10-09 14:00 derde agent neemt over (zelfde worktree/branch). **Nieuwe testafspraak (gebruiker 2026-10-09):** per pakket alleen B + D, commit per pakket; in-game checks (S, determinisme, prestatie, W-checklist) doet INT2 één keer; review één keer per stroom.
 - Voortgang: 2026-10-09 14:10 47: D groen (`runData`; datagen meldt "`ring_3/ash_drifts` … is missing BiomeFilter.biome()" — bewust, zie Beslissingen), B groen (571 tests, 0 fouten). Gecommit `d0a9264`.
 - Voortgang: 2026-10-09 14:20 47b: sjablonen (titanen) in het script, twee runs byte-identiek; `TitanFieldsFeatures`, `TitanRock*`, `VolcanicNearFilter`. D groen (ook "missing BiomeFilter" voor `titan_fields_rocks`, bewust), B groen (573 tests, 0 fouten). Gecommit `f18db9a`.
-- Voortgang: 2026-10-09 14:20 49: afgietsels (5 sjablonen, script twee runs byte-identiek, 47/47b-sjablonen onveranderd), voetsporen (`FootprintPath`), `Ring3HorrorFeatures`, `Ring3Terrain.facing/towards` (nog willekeurige rotatie tot 39f). D groen ("missing BiomeFilter" ook voor `ash_footprint_trails`, bewust), B groen (576 tests, 0 fouten).
+- Voortgang: 2026-10-09 14:20 49: afgietsels (5 sjablonen, script twee runs byte-identiek, 47/47b-sjablonen onveranderd), voetsporen (`FootprintPath`), `Ring3HorrorFeatures`, `Ring3Terrain.facing/towards` (nog willekeurige rotatie tot 39f). D groen ("missing BiomeFilter" ook voor `ash_footprint_trails`, bewust), B groen (576 tests, 0 fouten). Gecommit `058fa34`.
+- Voortgang: 2026-10-09 14:30 afspraak main over 48: B (`c31a8c5`, `GeyserBlock.startCycle`) merget naar main direct na 39f; de rebase op main brengt beide mee. 48 roept `startCycle` op één plek aan. Wacht op het rebase-signaal.
+- Voortgang: 2026-10-09 15:00 rebase op main `91af98e` (39f + B) zonder conflicten (`Ring3BiomesTest`, `VolcanicThresholdConditionTest`, `Ring3TerrainJsonTest` automatisch samengevoegd, groen). 39f haalde de kolomuitgang `solid_kind` weg: 47/47b compileerden niet meer. Omgezet naar de 39f-accessors in één extra commit (de herschreven commits 47/47b compileren los dus niet op main; de branch-tip wel): `TerrainLandmarkPlacement` (fumarolen op elke heuveltop, modder midden in de zinkgaten, zielvuur en schedels rond de ribbenkasten), `ground()` met `collapse` i.p.v. `solid_kind`, afgietsels naar de dichtstbijzijnde vulkaan, voetsporen die aan een instortings- of kraterrand eindigen. `VolcanicNearFilter` weg (geen gebruikers meer). D groen, B groen met `--rerun-tasks` (603 tests, 0 fouten).
 
 ## CODEBASE-delta
 - **41:**
@@ -353,6 +356,12 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
   - `worldgen/feature/VolcanicNearFilter` (`corruptedadventure:volcanic_near`, `ModPlacementModifierTypes.VOLCANIC_NEAR`): een kolom van het pure terrein binnen een straal (schijf, elke `step` blokken) met de uitgang in het bereik (bijv. `solid_kind` = bot).
   - Sjablonen: `titan_skull_1–2`, `titan_vertebra_1–3`, `titan_bone_1–2` (bot, `surface_fossil`), `titan_rock_kneeling|hunched|bust` (basalt/smooth basalt/blackstone).
   - Tests: `TitanRockFeatureTest`, `Ring3TemplatesTest` (titanen).
+- **Na 39f (accessors):**
+  - `worldgen/feature/TerrainLandmarkPlacement` (`corruptedadventure:terrain_landmark`, `ModPlacementModifierTypes.TERRAIN_LANDMARK`): de sleutelpunten van een landmark van het pure terrein in deze chunk (`mound` top, `sinkhole` bodem, `collapse` midden, `ribcage` ribvoeten + wervels; via `VolcanicField.moundAt/sinkholeAt/collapseAt/ribcageNear`), met `chance`, `spread`, `margin`.
+  - `VolcanicNearFilter`/`volcanic_near` (47b) vervallen.
+  - `VolcanicFilter.Builder.ground()`: `collapse` < 0,001 i.p.v. `solid_kind` (bestaat niet meer); dunne vormen vallen af via `ground_only`.
+  - `Ring3DressingFeatures.SULFUR_FIELDS_MOUND_FUMAROLES` (nieuw, `ring_3/sulfur_fields_mound_fumaroles`).
+  - `Ring3Terrain.facing` via `nearestVolcano`; `FootprintPath.Rims`/`Rim` + `AshFootprintsFeature.rim` (instorting via `collapseAt`, krater via `nearestVolcano`).
 - **49:**
   - `worldgen/feature/Ring3HorrorFeatures`: `ring_3/ash_cast`, `ring_3/ash_footprints`; placed `ring_3/ashen_wastes_ash_casts` (~1 groep per 3 chunks), `ring_3/rare_ash_casts` (`ember_woods`, `titan_fields`), `ring_3/ash_footprint_trails` (één keer per chunk, ná `ash_drifts`; `ashen_wastes`, `titan_fields`, `volcanic_peaks`).
   - `worldgen/feature/AshCastFeature`/`AshCastConfiguration` (`corruptedadventure:ash_cast`, `ModFeatures.ASH_CAST`): groepje van 1–3 figuren van `ash_block` + `smoldering_ash` op vlakke grond, binnen de eigen chunk.
@@ -369,6 +378,7 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
 - 2026-10-09 · worldgen · 47b: titanen-rotsen (> 14 breed) zonder rangregel: elke rots is een pure functie van seed + cel (256 blokken, kans 0,4) en elke chunk die hij raakt schrijft zijn eigen deel; uitzondering op "plaatsing begint in de eigen chunk" (plan §0.7), volgorde-onafhankelijk. Placed zonder `BiomeFilter` (de feature toetst de biome op het middelpunt); datagen logt "missing BiomeFilter", bewust.
 - 2026-10-09 · worldgen · 47b: `surface_fossil` krijgt géén bloklijst (plan §1 47b): de basalt-titanen hebben een eigen feature `titan_rock` met `materials`; schedels/wervels/botten zijn bot.
 - 2026-10-09 · worldgen · 49: voetsporen als pure functie van seed + cel (72 blokken, kans 0,9 ≈ 1 per 20 chunks), één keer per chunk zonder `BiomeFilter` (datagen-melding bewust); niet in `ember_woods` (boomkronen van 47c zouden de live heightmap volgorde-afhankelijk maken). Een afgietsel aan het eind van een spoor valt weg als daar al een aslaag ligt. Afgietsels ~1 groep (1–3) per 3 chunks in `ashen_wastes`, kans 0,05 per chunk in `ember_woods`/`titan_fields`. Startwaarden, afstemmen in 4b.
+- 2026-10-09 · worldgen · 47/47b/49 na 39f: fumarolen op elke heuveltop waarvan de kraag in de chunk past (marge 2) plus de bestaande op de kommen; modder midden in elk zinkgat; niets op instortingen (`collapse`); zielvuur (straal 1–2) rond ribvoeten en wervels (spreiding 3, marge 4); schedels kans 0,1 per ribvoet/wervel, tot 12 blokken ervandaan; afgietsels kijken naar de dichtstbijzijnde vulkaan (geen vulkaan in 3 × 3 cellen: willekeurig); RIM-sporen eindigen 2 blokken buiten de rand van de dichtstbijzijnde instorting of krater als dat punt in hun cel ligt, anders "nergens". Startwaarden.
 - 2026-10-09 · worldgen · 47b: zielvuur = vlekjes `soul_soil` (straal 1–3) met op ~1 op 4 kernblokken `soul_fire`, binnen 12 blokken van terreinbot (`volcanic_near` op `solid_kind` = bot), ≥ 2 van de chunkranden; schedels binnen 16 blokken van de ribben ("bij schedels" = schedels liggen tussen het zielvuur). Na 39f eventueel op `ribcageNear` (zie Status). Startwaarden, afstemmen in 4b.
 
 ## Backlog
@@ -384,7 +394,7 @@ Worktree: `P:/Projecten/Java/The Corrupted Adventure/.claude/worktrees/agent-a26
   - `test/`: `Ring3DressingShapesTest`, `Ring3TemplatesTest` (pure delen, sjablonen).
   - Nog te doen bij integratie: registraties in `ModFeatures` (append-blok `// ring 3 — W-biomes g2`: `ash_drift`, `ground_patch`, `ground_vent`, `hornito`, `impact_crater`, `ash_cast`, `ash_footprints`, `titan_rock`) en `ModPlacementModifierTypes` (`volcanic_filter`, `volcanic_near`); `Ring3Features.ORDER` vullen (LOCAL_MODIFICATIONS: sulfur fumaroles, mud; basalt tongues, hornitos, vents, boulders; seabed reefs, kelp, fossils; ashen pumice, dead trees; peaks craters, rocks; dan casts; dan `ash_drifts` (alle ring 3-biomes); dan footprints en titan rocks (alle ring 3-biomes, ze beslissen zelf per cel); VEGETAL: seabed dead coral, dead bushes); noise `worldgen/noise/ring_3_ash_drift.json` (bv. firstOctave −5, amplitudes [1, 1]).
   - **Let op uit de review van 41:** lees nooit wereldblokken buiten wat de eigen chunk zelf schreef om iets te beslissen; gebruik het pure terrein (`Ring3Terrain`) of `WORLD_SURFACE_WG` (bevroren tijdens features). `GroundVentFeature`/`GroundPatchFeature`/`AshDrift` lezen alleen eigen-chunkblokken; `AshFootprintsFeature` leest de live `WORLD_SURFACE`-heightmap van de eigen chunk.
-- **Wacht op 39f-accessors** (signaturen van main: `VolcanicField.moundAt`, `sinkholeAt`, `collapseAt`, `ribcageNear`, `nearestVolcano`/`volcanoesWithin`): fumarolen op de heuveltoppen, modder in de zinkgatbodems (nu heuristiek `wallFoot`), zielvuur in de ribbenkasten (nu `volcanic_near` op `solid_kind` 1), afgietsels naar de vulkaan (nu willekeurig), voetsporen die bij een kraterrand eindigen (nu `RIM` → niets). Pas na de rebase op de 39f-merge.
+- **Gedaan 2026-10-09 (na de rebase):** de punten hieronder zijn omgezet naar de 39f-accessors (zie Voortgang 15:00). ~~**Wacht op 39f-accessors** (signaturen van main: `VolcanicField.moundAt`, `sinkholeAt`, `collapseAt`, `ribcageNear`, `nearestVolcano`/`volcanoesWithin`): fumarolen op de heuveltoppen, modder in de zinkgatbodems (nu heuristiek `wallFoot`), zielvuur in de ribbenkasten (nu `volcanic_near` op `solid_kind` 1), afgietsels naar de vulkaan (nu willekeurig), voetsporen die bij een kraterrand eindigen (nu `RIM` → niets). Pas na de rebase op de 39f-merge.~~
 - **Open:** striders (G2-WB11) staan in geen pakket; logisch bij 47c (spawns in `Ring3Biomes.spawns`).
 
 ### Update 2026-10-08 17:35 (tweede agent, gestopt op verzoek van main)

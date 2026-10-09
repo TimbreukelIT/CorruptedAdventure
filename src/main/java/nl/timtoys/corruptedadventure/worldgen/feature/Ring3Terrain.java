@@ -35,11 +35,16 @@ public final class Ring3Terrain {
     }
 
     /**
-     * The rotation that turns a template facing +x towards the nearest volcano from (x, z). Until the terrain exposes
-     * its volcanoes ({@code VolcanicField.nearestVolcano}, change 39f) a rotation drawn from {@code random}.
+     * The rotation that turns a template facing +x towards the nearest volcano from (x, z) (pure, 39f accessor); a
+     * rotation drawn from {@code random} where no volcano is near or there is no ring 3 terrain.
      */
     public static Rotation facing(WorldGenLevel level, int x, int z, RandomSource random) {
-        return Rotation.getRandom(random);
+        VolcanicField terrain = field(level);
+        VolcanicField.VolcanoInfo volcano = terrain == null ? null : terrain.nearestVolcano(x, z);
+        if (volcano == null) {
+            return Rotation.getRandom(random);
+        }
+        return towards(volcano.x() - x, volcano.z() - z);
     }
 
     /** The rotation turning +x towards the direction (dx, dz): the nearest of the four. */

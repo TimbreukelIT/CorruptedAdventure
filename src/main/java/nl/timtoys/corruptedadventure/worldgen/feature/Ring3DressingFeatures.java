@@ -89,6 +89,7 @@ public final class Ring3DressingFeatures {
     static final ResourceKey<ConfiguredFeature<?, ?>> CHARRED_STUMP = configured("charred_stump");
 
     // Placed, in the global order of their step (Ring3Features.ORDER).
+    public static final ResourceKey<PlacedFeature> SULFUR_FIELDS_MOUND_FUMAROLES = placed("sulfur_fields_mound_fumaroles");
     public static final ResourceKey<PlacedFeature> SULFUR_FIELDS_FUMAROLES = placed("sulfur_fields_fumaroles");
     public static final ResourceKey<PlacedFeature> SULFUR_FIELDS_MUD_POOLS = placed("sulfur_fields_mud_pools");
     public static final ResourceKey<PlacedFeature> BASALT_FLOWS_LAVA_TONGUES = placed("basalt_flows_lava_tongues");
@@ -228,13 +229,17 @@ public final class Ring3DressingFeatures {
         PlacementModifier ground = VolcanicFilter.builder().ground().build();
 
         // LOCAL_MODIFICATIONS.
-        // Sulfur fields: about one fumarole per 3 chunks on the level floors of the terrace bowls.
+        // Sulfur fields: a fumarole on the top of every fumarole mound (39f accessor) whose collar fits in the chunk ...
+        PlacementUtils.register(context, SULFUR_FIELDS_MOUND_FUMAROLES, features.getOrThrow(FUMAROLE),
+                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.MOUND, 1.0F, 0, 2), SURFACE, ground, BiomeFilter.biome());
+        // ... and about one per 3 chunks on the level floors of the terrace bowls.
         PlacementUtils.register(context, SULFUR_FIELDS_FUMAROLES, features.getOrThrow(FUMAROLE),
                 JitteredGridPlacement.of(8, 2, 0.08F), SURFACE, SlopeFilter.flat(2, 1), ground, BiomeFilter.biome());
-        // Mud on the floor of the sinkholes (8–16 deep, steep walls).
+        // Mud on the floor of the sinkholes (8–16 deep, steep walls; 39f accessor), in the middle.
         PlacementUtils.register(context, SULFUR_FIELDS_MUD_POOLS, features.getOrThrow(MUD_POOL),
-                JitteredGridPlacement.of(8, 3, 0.6F), SURFACE, SlopeFilter.wallFoot(5, 6), SlopeFilter.flat(1, 1),
-                VolcanicFilter.builder().below(VolcanicOutput.Output.LAVA_BANK, 0.1).below(VolcanicOutput.Output.SOLID_KIND, 0.5).build(), BiomeFilter.biome());
+                TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.SINKHOLE, 1.0F, 1, 3), SURFACE,
+                VolcanicFilter.builder().below(VolcanicOutput.Output.LAVA_BANK, 0.1).groundOnly(VolcanicFilter.DEFAULT_TOLERANCE).build(),
+                BiomeFilter.biome());
         // Basalt flows.
         PlacementUtils.register(context, BASALT_FLOWS_LAVA_TONGUES, features.getOrThrow(LAVA_TONGUE),
                 JitteredGridPlacement.of(16, 6, 0.3F), SURFACE, ground, BiomeFilter.biome());

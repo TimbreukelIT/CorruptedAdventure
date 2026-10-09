@@ -33,6 +33,7 @@ public final class Ring3Features {
     /** Every biome-own ring 3 feature in the global order (within a step, list order = placement order). */
     public static final List<Entry> ORDER = List.of(
             // Change 47: the dressing on the ground, then the ash drifts around what stands (never on it).
+            local(Ring3DressingFeatures.SULFUR_FIELDS_MOUND_FUMAROLES, ModBiomes.SULFUR_FIELDS),
             local(Ring3DressingFeatures.SULFUR_FIELDS_FUMAROLES, ModBiomes.SULFUR_FIELDS),
             local(Ring3DressingFeatures.SULFUR_FIELDS_MUD_POOLS, ModBiomes.SULFUR_FIELDS),
             local(Ring3DressingFeatures.BASALT_FLOWS_LAVA_TONGUES, ModBiomes.BASALT_FLOWS),

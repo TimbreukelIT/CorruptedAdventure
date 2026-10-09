@@ -12,9 +12,9 @@ import nl.timtoys.corruptedadventure.worldgen.feature.NoiseBandFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.RingChanceFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.SlopeFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerrainHeightPlacement;
+import nl.timtoys.corruptedadventure.worldgen.feature.TerrainLandmarkPlacement;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerrainLavaFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.VolcanicFilter;
-import nl.timtoys.corruptedadventure.worldgen.feature.VolcanicNearFilter;
 
 public final class ModPlacementModifierTypes {
     private static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_MODIFIER_TYPES =
@@ -46,9 +46,9 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:volcanic_filter} (change 47) */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<VolcanicFilter>> VOLCANIC_FILTER =
             PLACEMENT_MODIFIER_TYPES.register("volcanic_filter", () -> () -> VolcanicFilter.CODEC);
-    /** {@code corruptedadventure:volcanic_near} (change 47b) */
-    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<VolcanicNearFilter>> VOLCANIC_NEAR =
-            PLACEMENT_MODIFIER_TYPES.register("volcanic_near", () -> () -> VolcanicNearFilter.CODEC);
+    /** {@code corruptedadventure:terrain_landmark} (changes 47, 47b; the 39f accessors) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<TerrainLandmarkPlacement>> TERRAIN_LANDMARK =
+            PLACEMENT_MODIFIER_TYPES.register("terrain_landmark", () -> () -> TerrainLandmarkPlacement.CODEC);
 
     private ModPlacementModifierTypes() {
     }
