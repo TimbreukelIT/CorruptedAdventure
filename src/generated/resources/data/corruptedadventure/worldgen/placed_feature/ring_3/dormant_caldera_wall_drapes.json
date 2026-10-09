@@ -9,7 +9,7 @@
     },
     {
       "type": "minecraft:heightmap",
-      "heightmap": "WORLD_SURFACE_WG"
+      "heightmap": "WORLD_SURFACE"
     },
     {
       "type": "corruptedadventure:slope",

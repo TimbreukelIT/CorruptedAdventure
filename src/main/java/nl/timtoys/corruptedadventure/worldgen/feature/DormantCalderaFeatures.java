@@ -94,13 +94,15 @@ public final class DormantCalderaFeatures {
     static final double GROVE = 0.15;
     /** Vanilla's azalea tree reaches 5 from its trunk (a bend of 2, a crown of 3). */
     private static final int AZALEA_TREE_REACH = 5;
+    /** A fallen trunk is up to this long: the ground must be level that far. */
+    private static final int FALLEN_LOG_LENGTH = 5;
     /** A moss hummock reaches 3 · 1.3 + 1 = 5. */
     private static final int HUMMOCK_REACH = 5;
 
     private static final PlacementModifier SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
     /**
-     * The own chunk's live surface, for what grows on the hummocks and not under a crown: in the crater every feature
-     * writes only its own chunk, so this heightmap holds only this chunk's own work, in a fixed order.
+     * The own chunk's live surface, for everything that grows (also on the hummocks, not under a crown): in the crater
+     * every feature writes only its own chunk, so this heightmap holds only this chunk's own work, in a fixed order.
      */
     private static final PlacementModifier LIVE_SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE);
 
@@ -150,20 +152,21 @@ public final class DormantCalderaFeatures {
                 .below(VolcanicOutput.Output.LAVA_BANK, 0.1).groundOnly(VolcanicFilter.DEFAULT_TOLERANCE).build();
         PlacementModifier grove = NoiseBandFilter.between(GROWTH, GROVE, Double.MAX_VALUE);
 
-        // LOCAL_MODIFICATIONS: hummocks all over the floor, denser in the meadows.
+        // LOCAL_MODIFICATIONS: hummocks in the open moss meadows (the groves keep their floor for the trees).
         PlacementUtils.register(context, DORMANT_CALDERA_MOSS_HUMMOCKS, features.getOrThrow(MOSS_HUMMOCK),
-                JitteredGridPlacement.of(16, HUMMOCK_REACH, 0.8F), SURFACE, floor, BiomeFilter.biome());
+                JitteredGridPlacement.of(16, HUMMOCK_REACH, 0.8F), SURFACE, NoiseBandFilter.between(GROWTH, -Double.MAX_VALUE, GROVE), floor,
+                BiomeFilter.biome());
 
         // VEGETAL_DECORATION. Groves: living azaleas (the beacons) with small azalea bushes around them.
         PlacementUtils.register(context, DORMANT_CALDERA_AZALEA_TREES, features.getOrThrow(TreeFeatures.AZALEA_TREE),
-                JitteredGridPlacement.of(16, AZALEA_TREE_REACH + 1, 0.6F), SURFACE, grove, floor, survives(Blocks.AZALEA),
+                JitteredGridPlacement.of(16, AZALEA_TREE_REACH + 1, 0.6F), LIVE_SURFACE, grove, floor, survives(Blocks.AZALEA),
                 BiomeFilter.biome());
         // Bush crowns reach 2: margin 3 (cell 8).
         PlacementUtils.register(context, DORMANT_CALDERA_AZALEA_SHRUBS, features.getOrThrow(AZALEA_SHRUB),
-                JitteredGridPlacement.of(8, 3, 0.6F), SURFACE, NoiseBandFilter.between(GROWTH, GROVE - 0.25, Double.MAX_VALUE), floor,
+                JitteredGridPlacement.of(8, 3, 0.6F), LIVE_SURFACE, NoiseBandFilter.between(GROWTH, GROVE - 0.25, Double.MAX_VALUE), floor,
                 survives(Blocks.AZALEA), BiomeFilter.biome());
         PlacementUtils.register(context, DORMANT_CALDERA_FALLEN_LOGS, features.getOrThrow(FALLEN_LOGS),
-                JitteredGridPlacement.of(16, 5, 0.2F), SURFACE, SlopeFilter.flat(3, 0), floor,
+                JitteredGridPlacement.of(16, 5, 0.2F), LIVE_SURFACE, SlopeFilter.flat(FALLEN_LOG_LENGTH, 0), floor,
                 BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE), BiomeFilter.biome());
         PlacementUtils.register(context, DORMANT_CALDERA_AZALEA_BUSHES, features.getOrThrow(AZALEA_BUSH),
                 JitteredGridPlacement.of(4, 0, 0.3F), LIVE_SURFACE, floor, survives(Blocks.AZALEA), BiomeFilter.biome());
@@ -175,7 +178,7 @@ public final class DormantCalderaFeatures {
                 JitteredGridPlacement.of(2, 0, 0.3F), LIVE_SURFACE, floor, survives(Blocks.FERN), BiomeFilter.biome());
         // Berry bushes at the foot of the crater wall.
         PlacementUtils.register(context, DORMANT_CALDERA_BERRY_BUSHES, features.getOrThrow(EmberWoodsFeatures.EMBER_BERRY_BUSH),
-                JitteredGridPlacement.of(8, 0, 0.3F), SURFACE, SlopeFilter.wallFoot(4, 4), survives(ModBlocks.EMBER_BERRY_BUSH.get()),
+                JitteredGridPlacement.of(8, 0, 0.3F), LIVE_SURFACE, SlopeFilter.wallFoot(4, 4), survives(ModBlocks.EMBER_BERRY_BUSH.get()),
                 BiomeFilter.biome());
         // A carpet on most of the moss that is still bare.
         PlacementUtils.register(context, DORMANT_CALDERA_MOSS_CARPETS, features.getOrThrow(MOSS_CARPET),
@@ -185,10 +188,10 @@ public final class DormantCalderaFeatures {
                 BiomeFilter.biome());
         // Vines and hanging roots up the wall from its foot (the drape reads its column's four neighbours: margin 1).
         PlacementUtils.register(context, DORMANT_CALDERA_WALL_DRAPES, features.getOrThrow(WALL_DRAPE),
-                JitteredGridPlacement.of(4, 1, 0.7F), SURFACE, SlopeFilter.wallFoot(1, 3), BiomeFilter.biome());
+                JitteredGridPlacement.of(4, 1, 0.7F), LIVE_SURFACE, SlopeFilter.wallFoot(1, 3), BiomeFilter.biome());
         // Glow lichen next to the wall, up to 2 above its foot (the multiface feature reads 2 around: margin 3).
         PlacementUtils.register(context, DORMANT_CALDERA_GLOW_LICHEN, features.getOrThrow(GLOW_LICHEN),
-                JitteredGridPlacement.of(8, 3, 0.6F), SURFACE, SlopeFilter.wallFoot(1, 3), RandomOffsetPlacement.vertical(UniformInt.of(0, 2)),
+                JitteredGridPlacement.of(8, 3, 0.6F), LIVE_SURFACE, SlopeFilter.wallFoot(1, 3), RandomOffsetPlacement.vertical(UniformInt.of(0, 2)),
                 BiomeFilter.biome());
     }
 
@@ -201,7 +204,7 @@ public final class DormantCalderaFeatures {
     /** A fallen azalea trunk of 3–5 along x or z, only through air. */
     private static BlockColumnConfiguration fallenLog(Direction direction) {
         BlockState log = Blocks.OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, direction.getAxis());
-        return new BlockColumnConfiguration(List.of(BlockColumnConfiguration.layer(UniformInt.of(3, 5), BlockStateProvider.simple(log))),
+        return new BlockColumnConfiguration(List.of(BlockColumnConfiguration.layer(UniformInt.of(3, FALLEN_LOG_LENGTH), BlockStateProvider.simple(log))),
                 direction, BlockPredicate.ONLY_IN_AIR_PREDICATE, false);
     }
 

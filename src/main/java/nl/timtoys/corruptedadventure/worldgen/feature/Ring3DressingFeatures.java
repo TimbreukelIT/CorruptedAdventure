@@ -130,7 +130,8 @@ public final class Ring3DressingFeatures {
 
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         HolderGetter<ConfiguredFeature<?, ?>> configured = context.lookup(Registries.CONFIGURED_FEATURE);
-        HolderSet<Block> sulfurGround = blocks(ModBlocks.SULFUR_CRUST.get(), Blocks.CALCITE, Blocks.YELLOW_TERRACOTTA, Blocks.SMOOTH_BASALT,
+        // Not calcite or terracotta: those are the travertine of the coloured pools (47d), which a vent or mud would mar.
+        HolderSet<Block> sulfurGround = blocks(ModBlocks.SULFUR_CRUST.get(), Blocks.SMOOTH_BASALT,
                 ModBlocks.ASH_BLOCK.get());
         HolderSet<Block> basaltGround = blocks(Blocks.BASALT, Blocks.SMOOTH_BASALT, Blocks.BLACKSTONE, ModBlocks.ASH_BLOCK.get());
 

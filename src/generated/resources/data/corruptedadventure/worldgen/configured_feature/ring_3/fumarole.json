@@ -106,8 +106,6 @@
     },
     "ground": [
       "corruptedadventure:sulfur_crust",
-      "minecraft:calcite",
-      "minecraft:yellow_terracotta",
       "minecraft:smooth_basalt",
       "corruptedadventure:ash_block"
     ],

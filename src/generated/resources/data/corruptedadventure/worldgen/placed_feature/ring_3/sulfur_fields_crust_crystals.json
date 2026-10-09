@@ -13,7 +13,7 @@
     {
       "type": "corruptedadventure:noise_band",
       "min": 0.3,
-      "noise": "corruptedadventure:ring_3_fire_flora"
+      "noise": "corruptedadventure:ring_3_sulfur_crystals"
     },
     {
       "type": "minecraft:block_predicate_filter",
