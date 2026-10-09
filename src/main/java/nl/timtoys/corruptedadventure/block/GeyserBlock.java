@@ -158,7 +158,7 @@ public class GeyserBlock extends Block {
         double z = pos.getZ() + 0.5;
         level.sendParticles(ParticleTypes.BUBBLE_POP, x, pos.getY() + 1.05, z, 8, 0.2, 0.0, 0.2, 0.02);
         level.sendParticles(ModParticleTypes.STEAM_PUFF.get(), x, pos.getY() + 1.1, z, 4, 0.15, 0.1, 0.15, 0.02);
-        level.playSound(null, pos.above(), ModSoundEvents.BOILING_MUD_BUBBLE.get(), SoundSource.BLOCKS, 0.7F, 0.7F);
+        level.playSound(null, pos.above(), ModSoundEvents.GEYSER_WARNING.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
     }
 
     private static void erupt(ServerLevel level, BlockPos pos) {

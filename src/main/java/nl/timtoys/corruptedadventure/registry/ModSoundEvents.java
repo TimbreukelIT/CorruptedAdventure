@@ -54,6 +54,8 @@ public final class ModSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> FUMAROLE_PUFF = register("block.fumarole.puff");
     /** Eruption of a geyser (stream B plays it, package 46). */
     public static final DeferredHolder<SoundEvent, SoundEvent> GEYSER_BURST = register("block.geyser.burst");
+    /** Gurgling and groaning of a geyser a second before it erupts (package 50c; stream B plays it). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEYSER_WARNING = register("block.geyser.warning");
     /** Bubble of boiling mud (stream B plays it, package 46). */
     public static final DeferredHolder<SoundEvent, SoundEvent> BOILING_MUD_BUBBLE = register("block.boiling_mud.bubble");
 

@@ -70,6 +70,9 @@ public final class Ring3Sounds {
             new Sound("block/ring_3/fumarole_puff_2", "hiss", 2),
             new Sound("block/ring_3/geyser_burst_1", "geyser", 1),
             new Sound("block/ring_3/geyser_burst_2", "geyser", 2),
+            // The geyser's warning (package 50c): a second of gurgling and a low groan before the burst.
+            new Sound("block/ring_3/geyser_warning_1", "gurgle", 1),
+            new Sound("block/ring_3/geyser_warning_2", "gurgle", 2),
             new Sound("block/ring_3/boiling_mud_bubble_1", "bloop", 1),
             new Sound("block/ring_3/boiling_mud_bubble_2", "bloop", 2),
             new Sound("block/ring_3/boiling_mud_bubble_3", "bloop", 3));
@@ -100,6 +103,7 @@ public final class Ring3Sounds {
                 case "ice_creak" -> iceCreak(random, sound.index());
                 case "hiss" -> hiss(random, sound.index());
                 case "geyser" -> geyser(random, sound.index());
+                case "gurgle" -> gurgle(random, sound.index());
                 case "bloop" -> bloop(random, sound.index());
                 default -> throw new IllegalStateException(sound.variant());
             };
@@ -340,6 +344,40 @@ public final class Ring3Sounds {
         }
         fadeEnds(out, 0.02);
         return normalise(out, 0.7);
+    }
+
+    /**
+     * Geyser warning, 0.7-0.95 s (shorter than the 1 s warning, so it has died out when the burst comes): a low groan
+     * from deep in the vent (a slowly rising 50-80 Hz tone with overtones under dark noise) and bubbles that come faster
+     * and higher towards the end, the pressure building up to the burst.
+     */
+    private static double[] gurgle(Random random, int index) {
+        double seconds = 0.6 + index * 0.12 + random.nextDouble() * 0.1;
+        int length = (int) (seconds * RATE);
+        double[] out = new double[length];
+        double base = 50 + random.nextDouble() * 12;
+        double phase = 0;
+        double low = 0;
+        double lower = 0;
+        for (int i = 0; i < length; i++) {
+            double t = i / (double) RATE;
+            double progress = t / seconds;
+            phase += 2 * Math.PI * base * (1 + 0.5 * progress * progress) / RATE;
+            double tone = StrictMath.sin(phase) + 0.5 * StrictMath.sin(2 * phase) + 0.25 * StrictMath.sin(3 * phase + 0.6);
+            low += 0.02 * ((random.nextDouble() * 2 - 1) - low);
+            lower += 0.2 * (low - lower);
+            // Groaning: the pressure swells, wavers and is cut off where the burst takes over.
+            double waver = 0.75 + 0.25 * StrictMath.sin(2 * Math.PI * (5 + index) * t);
+            out[i] = (0.35 * tone + 12 * lower) * waver * swell(t, seconds, 0.35, 0.12);
+        }
+        double t = 0.05;
+        while (t < seconds - 0.2) {
+            double progress = t / seconds;
+            bubble(out, t, 110 + 140 * progress + random.nextDouble() * 60, 0.35 + 0.4 * progress, 0.07 + random.nextDouble() * 0.05);
+            t += (0.16 - 0.11 * progress) * (0.7 + random.nextDouble() * 0.6);
+        }
+        fadeEnds(out, 0.02);
+        return normalise(out, 0.6);
     }
 
     /** Boiling mud, 0.4-0.7 s: one thick, low bloop. */
