@@ -30,6 +30,16 @@ import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshDriftConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.AshDriftFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.GroundPatchConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.GroundPatchFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.GroundVentConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.GroundVentFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.HornitoConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.HornitoFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.ImpactCraterConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.ImpactCraterFeature;
 
 /** Feature types with their own code; the configured and placed features come from datagen. */
 public final class ModFeatures {
@@ -72,6 +82,23 @@ public final class ModFeatures {
     /** {@code corruptedadventure:dew_geode} (change 35) */
     public static final DeferredHolder<Feature<?>, Feature<DewGeodeConfiguration>> DEW_GEODE =
             FEATURES.register("dew_geode", () -> new DewGeodeFeature(DewGeodeConfiguration.CODEC));
+
+    // ring 3 — W-biomes g2
+    /** {@code corruptedadventure:ash_drift} (change 47) */
+    public static final DeferredHolder<Feature<?>, Feature<AshDriftConfiguration>> ASH_DRIFT =
+            FEATURES.register("ash_drift", () -> new AshDriftFeature(AshDriftConfiguration.CODEC));
+    /** {@code corruptedadventure:ground_patch} (change 47) */
+    public static final DeferredHolder<Feature<?>, Feature<GroundPatchConfiguration>> GROUND_PATCH =
+            FEATURES.register("ground_patch", () -> new GroundPatchFeature(GroundPatchConfiguration.CODEC));
+    /** {@code corruptedadventure:ground_vent} (change 47) */
+    public static final DeferredHolder<Feature<?>, Feature<GroundVentConfiguration>> GROUND_VENT =
+            FEATURES.register("ground_vent", () -> new GroundVentFeature(GroundVentConfiguration.CODEC));
+    /** {@code corruptedadventure:hornito} (change 47) */
+    public static final DeferredHolder<Feature<?>, Feature<HornitoConfiguration>> HORNITO =
+            FEATURES.register("hornito", () -> new HornitoFeature(HornitoConfiguration.CODEC));
+    /** {@code corruptedadventure:impact_crater} (change 47) */
+    public static final DeferredHolder<Feature<?>, Feature<ImpactCraterConfiguration>> IMPACT_CRATER =
+            FEATURES.register("impact_crater", () -> new ImpactCraterFeature(ImpactCraterConfiguration.CODEC));
 
     private ModFeatures() {
     }

@@ -1,0 +1,53 @@
+{
+  "type": "corruptedadventure:hornito",
+  "config": {
+    "body": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:basalt",
+            "Properties": {
+              "axis": "y"
+            }
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:blackstone"
+          },
+          "weight": 2
+        }
+      ]
+    },
+    "cap": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:magma_block"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:smoldering_stone"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "ground": [
+      "minecraft:basalt",
+      "minecraft:smooth_basalt",
+      "minecraft:blackstone",
+      "corruptedadventure:ash_block"
+    ],
+    "height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 4,
+      "min_inclusive": 2
+    }
+  }
+}

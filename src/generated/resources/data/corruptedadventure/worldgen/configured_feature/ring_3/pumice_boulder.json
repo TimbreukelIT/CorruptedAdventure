@@ -1,0 +1,27 @@
+{
+  "type": "corruptedadventure:rubble",
+  "config": {
+    "size": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "state_provider": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:pumice"
+          },
+          "weight": 4
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:polished_pumice"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

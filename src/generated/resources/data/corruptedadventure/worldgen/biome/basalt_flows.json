@@ -21,7 +21,16 @@
     "water_color": 6187622,
     "water_fog_color": 1975330
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/basalt_flows_lava_tongues",
+      "corruptedadventure:ring_3/basalt_flows_hornitos",
+      "corruptedadventure:ring_3/basalt_flows_vents",
+      "corruptedadventure:ring_3/basalt_flows_boulders"
+    ]
+  ],
   "has_precipitation": false,
   "spawn_costs": {},
   "spawners": {

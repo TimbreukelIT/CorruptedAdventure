@@ -21,7 +21,26 @@
     "water_color": 6187622,
     "water_fog_color": 1975330
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/dried_seabed_coral_reefs",
+      "corruptedadventure:ring_3/dried_seabed_kelp_bales",
+      "corruptedadventure:ring_3/dried_seabed_fossils",
+      "corruptedadventure:ring_3/ash_drifts"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_3/dried_seabed_dead_coral",
+      "corruptedadventure:ring_3/dried_seabed_dead_bushes"
+    ]
+  ],
   "has_precipitation": false,
   "spawn_costs": {},
   "spawners": {

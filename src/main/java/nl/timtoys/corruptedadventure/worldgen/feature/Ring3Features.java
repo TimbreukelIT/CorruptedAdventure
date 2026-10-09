@@ -13,8 +13,8 @@ import java.util.Set;
 
 /**
  * Datagen bootstraps (configured + placed features) of ring 3 and its one global feature order. Owned by stream
- * W-biomes; the feature classes per package ({@link Ring3OreFeatures}, …) are called from here, so
- * {@code DataGenerators} stays untouched.
+ * W-biomes; the feature classes per package ({@link Ring3OreFeatures}, {@link Ring3DressingFeatures}, …) are called
+ * from here, so {@code DataGenerators} stays untouched.
  * <p>
  * {@link #ORDER} lists every biome-own ring 3 feature per generation step in one order; each biome gets the subset that
  * names it, in that order ({@code Ring3Biomes.generation}). One list keeps vanilla's feature sorter free of cycles
@@ -31,9 +31,32 @@ public final class Ring3Features {
 
     /** Every biome-own ring 3 feature in the global order (within a step, list order = placement order). */
     public static final List<Entry> ORDER = List.of(
-            new Entry(Ring3OreFeatures.SULFUR_ORE_RICH, GenerationStep.Decoration.UNDERGROUND_ORES, Set.of(ModBiomes.SULFUR_FIELDS)));
+            // Change 47: the dressing on the ground, then the ash drifts around what stands (never on it).
+            local(Ring3DressingFeatures.SULFUR_FIELDS_FUMAROLES, ModBiomes.SULFUR_FIELDS),
+            local(Ring3DressingFeatures.SULFUR_FIELDS_MUD_POOLS, ModBiomes.SULFUR_FIELDS),
+            local(Ring3DressingFeatures.BASALT_FLOWS_LAVA_TONGUES, ModBiomes.BASALT_FLOWS),
+            local(Ring3DressingFeatures.BASALT_FLOWS_HORNITOS, ModBiomes.BASALT_FLOWS),
+            local(Ring3DressingFeatures.BASALT_FLOWS_VENTS, ModBiomes.BASALT_FLOWS),
+            local(Ring3DressingFeatures.BASALT_FLOWS_BOULDERS, ModBiomes.BASALT_FLOWS),
+            local(Ring3DressingFeatures.DRIED_SEABED_CORAL_REEFS, ModBiomes.DRIED_SEABED),
+            local(Ring3DressingFeatures.DRIED_SEABED_KELP_BALES, ModBiomes.DRIED_SEABED),
+            local(Ring3DressingFeatures.DRIED_SEABED_FOSSILS, ModBiomes.DRIED_SEABED),
+            local(Ring3DressingFeatures.ASHEN_WASTES_PUMICE_BOULDERS, ModBiomes.ASHEN_WASTES),
+            local(Ring3DressingFeatures.ASHEN_WASTES_DEAD_TREES, ModBiomes.ASHEN_WASTES),
+            local(Ring3DressingFeatures.VOLCANIC_PEAKS_IMPACT_CRATERS, ModBiomes.VOLCANIC_PEAKS),
+            local(Ring3DressingFeatures.VOLCANIC_PEAKS_BLACKSTONE_ROCKS, ModBiomes.VOLCANIC_PEAKS),
+            local(Ring3DressingFeatures.ASH_DRIFTS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS,
+                    ModBiomes.DRIED_SEABED),
+            new Entry(Ring3OreFeatures.SULFUR_ORE_RICH, GenerationStep.Decoration.UNDERGROUND_ORES, Set.of(ModBiomes.SULFUR_FIELDS)),
+            new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_CORAL, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
+            new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_BUSHES, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)));
 
     private Ring3Features() {
+    }
+
+    @SafeVarargs
+    private static Entry local(ResourceKey<PlacedFeature> feature, ResourceKey<Biome>... biomes) {
+        return new Entry(feature, GenerationStep.Decoration.LOCAL_MODIFICATIONS, Set.of(biomes));
     }
 
     /** The biome-own features of {@code biome} in {@code step}, in the global order. */
@@ -43,9 +66,11 @@ public final class Ring3Features {
 
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         Ring3OreFeatures.configured(context);
+        Ring3DressingFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
         Ring3OreFeatures.placed(context);
+        Ring3DressingFeatures.placed(context);
     }
 }

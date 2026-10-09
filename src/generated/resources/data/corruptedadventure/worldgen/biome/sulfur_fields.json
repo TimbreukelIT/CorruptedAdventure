@@ -24,7 +24,10 @@
   "features": [
     [],
     [],
-    [],
+    [
+      "corruptedadventure:ring_3/sulfur_fields_fumaroles",
+      "corruptedadventure:ring_3/sulfur_fields_mud_pools"
+    ],
     [],
     [],
     [],
