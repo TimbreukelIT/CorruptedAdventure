@@ -763,6 +763,14 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Prestatie:** koude uitschieters titanenveld/smeulwoud (39f) geaccepteerd als JIT-koude start (gebruiker); de officiële meting van integratie 2 kijkt opnieuw.
 - **Teststop 4b (2026-10-09):** akkoord met een golf 2-afronding: overwoekerde krater en zwavelkristallen/gekleurde kookpoelen (te kaal), lava tegen lucht en de terreinrestjes (W-terrein), meer zielvuur en een rodere uitbarstingslucht, eigen geiser-waarschuwing, lavabommen niet stapelen, verre pluimen zonder terreinmist, rotaties, kampvuur/ijs/spons; de rest van `teststop-4b.md` is goedgekeurd (o.a. mist Nether-3 zo laten, bevriezing, 21 riftbogen, lavavallen van 1 blok). Zie `docs/plans/ring-3/teststop-4b-feedback.md`.
 
+**Sparring golf 3 (2026-10-10)** — plan in `docs/plans/ring-3/golf-3.md`:
+- **Mee in golf 3:** het laatste lavalek in de afgrond (schacht naast de lavaband dichten) en de 6 blootliggende ijsblokjes bij de warme scheuren in Nether-3 (al besloten), plus:
+  - **askorst die alleen instort als er een speler onder staat** (eigen blok, niet door buurupdates); worldgen legt hem op de dunne daken boven buizen en daklichten (nu `ash_block`) **én op een stuk dun dak vóór elke buismond** (meer valkuilen; bewust ruimer dan "daken zo laten" uit 4b);
+  - **lavaoevers smaller én minder magma:** de oever schaalt niet meer mee met brede rivieren (plafond in blokken), magma alleen direct langs de lava;
+  - **determinisme archipelvallen:** geen aslaag in het stroomgebied van een val, en vallen eindigen niet waar ze water raken.
+- **Textures 57:** de randpunten van `glowing_fissure` symmetrisch (midden van elke rand), zodat geroteerde buren aansluiten; de Sodium/Iris-check van de gloeilagen als losse test-instance, maximaal ~30 min, anders terug naar de backlog.
+- **Naar later:** prestatie (noise-overhead ringraamwerk, surface ring 3) en de opruimrefactors (`VolcanicField`-cachehelper, `Ring3Conditions.register`, `WoodSet`, texturescripts) in een eigen `infra`-ronde na ring 3.
+
 **Client/server-risico's**
 - Water verdampen, geiser-duw, lavabommen en de hitte- en kou-meters: allemaal server-side. De lavabommen zijn gewone server-entities, dus alle clients zien dezelfde.
 - Camera-shake, gerommel, as- en stoomparticles, uitbarstingslucht: alleen client (`client/` of biome-data). Fumarole-particles via `animateTick` (draait alleen op de client-level, geen client-class nodig).

@@ -92,6 +92,7 @@ Scope: ring 3 + Nether-ring 3 (bouwplan blok E). Werkwijze besloten in de sparri
 - Fix-ronde op de feedback van 4b, per categorie (nieuwe lettercodes als het nodig is, bijv. 39d, 47d).
 - **57**: definitieve texture-ronde.
 - Backlog-opruiming ring 3.
+- Uitwerking (2026-10-10): `docs/plans/ring-3/golf-3.md` (stromen I, T, B, W; T0 testtooling eerst).
 
 **Teststop 4c — eindcheck** ring 3 + Nether-3, alle W-lijsten van de pakketten, standaard-W (elke ring en grens, portal per ring, ook overworld ring 3 → Nether-3), prestatie en determinisme.
 
@@ -135,6 +136,14 @@ Scope: ring 3 + Nether-ring 3 (bouwplan blok E). Werkwijze besloten in de sparri
 11. **Vragen:** een nieuwe ontwerpkeuze → stop dat deel en stuur de vraag naar main (2–4 opties, aanbevolen eerst). Implementatiedetails beslist de stroom zelf en noteert ze. Contractwijzigingen alleen via main.
 12. **Eindrapport aan main:** branch, laatste hash, pakketten, testresultaten (B/D/S + metingen), review-uitkomst, afwijkingen, W-checklist (kort), en de delta-secties.
 
+**Golf 3 — sneller testen (besluit gebruiker 2026-10-10):**
+- **Testtooling in git** (`tools/test/`, pakket T0, vóór de andere stromen): lock/slots in één script, server start/stop met eigen poort en PID, RCON, client met screenshots alleen via de eigen PID, offline scans (lava tegen lucht trede/val/lek, determinisme, feature-index), prestatie. Elke agent gebruikt die tools in plaats van eigen scripts.
+- **Licht per pakket, zwaar één keer:** per pakket B + D + unit tests; één review per stroom; de integratie doet S, determinisme en de offline scans.
+- **De gebruiker speelt = de machine is van de gebruiker:** zolang `C:/Temp/ca-user-test.lock` bestaat (main legt het neer als de gebruiker gaat testen of er een `runClient` vanuit de hoofdwerkmap draait) starten agents geen JVM's. Main haalt het weg als de gebruiker klaar is.
+- **Nooit wachten op een melding:** agents controleren zelf (log, PID, uitvoerbestand) of een achtergrondtaak klaar is; main kijkt bij ~10 min stilte zelf (mtimes, `Voortgang:`-regels, locks) en spreekt de agent aan. Lock en slots alleen tijdens de handeling zelf.
+- **Main merget vooruit** als een stroom van een andere afhangt, of laat de afhankelijke stroom die branch zelf mergen.
+- **Tijden** altijd volgens de echte klok (`date`).
+
 ## 5. Eigenaarschap van bestanden die meerdere stromen raken
 
 | Bestand | Regel |
@@ -167,6 +176,8 @@ Scope: ring 3 + Nether-ring 3 (bouwplan blok E). Werkwijze besloten in de sparri
 9. `/code-review` (medium) op de integratiediff (conflictoplossingen, geregenereerde output en docs; de stroom-diffs zijn al gereviewd). Bevindingen oplossen, dan committen.
 10. Teststop-checklist samenstellen uit de W-lijsten van de stromen (gegroepeerd per onderwerp, 1–2 sessies, met afstemvragen) in `docs/plans/ring-3/teststop-4<x>.md`.
 11. Worktrees opruimen (`git worktree remove`) als de branch gemerged is. Branches blijven tot de teststop akkoord is.
+
+**Golf 3 — snel protocol:** stappen 2–6 en 9, dan **direct mergen naar main** zodra B/D, de S-smoke (server + 1 client), de offline checks (lavascan trede/val/lek, determinisme omgekeerd geladen, feature-index) en de review groen/verwerkt zijn; de gebruiker test vanuit de hoofdwerkmap. Stap 7 (prestatie) daarna en alleen als een pakket noise of surface raakt: 3 warme rondes + 1 koude, op een moment dat de gebruiker niet speelt, onbewaakt met een harde stop na ~45 min. Docs (stap 8) en de teststop-checklist (stap 10) mogen na de merge.
 
 ## 7. Lessen uit 35/36/37, hier verwerkt
 
