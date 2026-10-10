@@ -36,7 +36,7 @@ final class SandstormRenderer implements RingWeatherRenderer {
     private static final double SPAWN_RADIUS = 16.0;
     /** Particle speed along the wind, blocks per tick. */
     private static final double WIND_SPEED = 0.6;
-    /** Volume of the wind loop in a full storm in the open; kept below the other sounds (teststop 4c). */
+    /** Volume of the wind loop in a full storm in the open; a background sound (teststop 4c: ambience softer). */
     private static final float MAX_VOLUME = 0.45F;
 
     private final WeatherLoop wind = new WeatherLoop(ModSoundEvents.RING_2_SANDSTORM, MAX_VOLUME);
