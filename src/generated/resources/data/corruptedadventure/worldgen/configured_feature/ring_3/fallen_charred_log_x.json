@@ -2,8 +2,17 @@
   "type": "minecraft:block_column",
   "config": {
     "allowed_placement": {
-      "type": "minecraft:matching_blocks",
-      "blocks": "minecraft:air"
+      "type": "minecraft:any_of",
+      "predicates": [
+        {
+          "type": "minecraft:matching_blocks",
+          "blocks": "minecraft:air"
+        },
+        {
+          "type": "minecraft:matching_blocks",
+          "blocks": "corruptedadventure:ember_leaves"
+        }
+      ]
     },
     "direction": "east",
     "layers": [
