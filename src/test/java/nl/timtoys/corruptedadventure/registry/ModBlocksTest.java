@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import nl.timtoys.corruptedadventure.block.AshCrustBlock;
 import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import org.junit.jupiter.api.Test;
@@ -274,6 +275,8 @@ class ModBlocksTest {
     void ashBlockDoesNotFallButTheCrustDoes() {
         assertFalse(ModBlocks.ASH_BLOCK.get() instanceof FallingBlock);
         assertInstanceOf(FallingBlock.class, ModBlocks.ASH_CRUST.get());
+        // 38c: the crust only falls when a player walks under it.
+        assertInstanceOf(AshCrustBlock.class, ModBlocks.ASH_CRUST.get());
     }
 
     /** V3 = A: the ember leaves only glow in their texture; the smouldering ash glows faintly (light 2). */

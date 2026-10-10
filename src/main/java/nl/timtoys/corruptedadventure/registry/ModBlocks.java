@@ -36,6 +36,8 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.block.AshCrustBlock;
+import nl.timtoys.corruptedadventure.block.AshCrustCollapse;
 import nl.timtoys.corruptedadventure.block.AshSproutsBlock;
 import nl.timtoys.corruptedadventure.block.BarrelCactusBlock;
 import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
@@ -367,11 +369,12 @@ public final class ModBlocks {
                     .isViewBlocking((state, level, pos) -> state.getValue(SnowLayerBlock.LAYERS) >= SnowLayerBlock.MAX_HEIGHT)
                     .pushReaction(PushReaction.DESTROY)));
     /**
-     * A crust of ash over caves and lava tubes: falls like sand and caves in when a player walks under it (the
-     * {@code collapsing_blocks} tag, {@link LooseSandTrigger}). Breaks into plain ash.
+     * A crust of ash over caves and lava tubes: hangs (no fall from updates) until a player walks under it, then the
+     * connected hanging crust caves in (38c; the {@code collapsing_blocks} tag, {@link LooseSandTrigger},
+     * {@link AshCrustCollapse}). Breaks into plain ash.
      */
-    public static final DeferredBlock<ColoredFallingBlock> ASH_CRUST = register("ash_crust",
-            () -> new ColoredFallingBlock(new ColorRGBA(ASH_DUST_COLOR), Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_GRAY)));
+    public static final DeferredBlock<AshCrustBlock> ASH_CRUST = register("ash_crust",
+            () -> new AshCrustBlock(new ColorRGBA(ASH_DUST_COLOR), Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_GRAY)));
     /** Ash with glowing cracks, the material of the glowing ash casts: light 2 and an emissive glow overlay. */
     public static final DeferredBlock<Block> SMOLDERING_ASH = register("smoldering_ash",
             () -> new Block(Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_BLACK).lightLevel(state -> 2)));
