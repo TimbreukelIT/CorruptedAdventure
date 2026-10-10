@@ -55,6 +55,9 @@ import java.util.List;
  * (the one exception, as ring 2's palms): trunks stand at least 3 apart, so a trunk's free-space check never meets
  * another trunk, a leaf never replaces a log and a log replaces a leaf, so overlapping crowns end the same whatever the
  * order (only the leaves' {@code distance} may differ until their first update). Ground features stay below the crowns.
+ * 47e (INT3): a crown on higher ground can reach the ground level of a neighbouring chunk; there a trunk or a fallen log
+ * may still start in its leaves ({@link #airOrCrown}), and the ash layer and the fire flora are replaceable by trees
+ * (block tag), so the crown takes them whichever chunk decorated first.
  */
 public final class EmberWoodsFeatures {
     // Configured.
@@ -84,6 +87,14 @@ public final class EmberWoodsFeatures {
     private static final int TREE_CELL = 4;
 
     private static final PlacementModifier SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
+    /**
+     * 47e (INT3): a trunk or a fallen log may start in the crown of a tree of the neighbouring chunk (a log replaces a
+     * leaf, a leaf never a log), so whether that crown was there first does not matter. Air or ember leaves.
+     */
+    static BlockPredicate airOrCrown() {
+        return BlockPredicate.anyOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
+                BlockPredicate.matchesBlocks(ModBlocks.EMBER_LEAVES.get()));
+    }
 
     private EmberWoodsFeatures() {
     }
@@ -138,14 +149,14 @@ public final class EmberWoodsFeatures {
         // About 7 trunks per chunk of wood (16 cells, chance 0.45), none in the clearings.
         PlacementUtils.register(context, EMBER_WOODS_TREES, features.getOrThrow(EMBER_WOOD_TREES),
                 JitteredGridPlacement.of(TREE_CELL, 1, 0.45F), SURFACE, wood, ground,
-                BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
+                BlockPredicateFilter.forPredicate(BlockPredicate.allOf(airOrCrown(),
                         BlockPredicate.matchesBlocks(BlockPos.ZERO.below(), ModBlocks.ASH_BLOCK.get(), ModBlocks.SMOLDERING_ASH.get(),
                                 Blocks.COARSE_DIRT, Blocks.TUFF, ModBlocks.PUMICE.get(), Blocks.SMOOTH_BASALT))),
                 BiomeFilter.biome());
         // In the clearings: fallen logs (margin = longest log), berry bushes where the light lets them grow back.
         PlacementUtils.register(context, EMBER_WOODS_FALLEN_LOGS, features.getOrThrow(FALLEN_LOGS),
                 JitteredGridPlacement.of(16, 5, 0.3F), SURFACE, NoiseBandFilter.snapped(CLEARINGS, CLEARING, Double.MAX_VALUE, 16),
-                SlopeFilter.flat(5, 0), ground, BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE),
+                SlopeFilter.flat(5, 0), ground, BlockPredicateFilter.forPredicate(airOrCrown()),
                 BiomeFilter.biome());
         // Fire flora in patches (a noise), on ash and coarse dirt.
         PlacementUtils.register(context, EMBER_WOODS_FIRE_FLORA, features.getOrThrow(FIRE_FLORA),
@@ -165,7 +176,7 @@ public final class EmberWoodsFeatures {
     private static BlockColumnConfiguration fallenLog(Direction direction) {
         BlockState log = ModBlocks.CHARRED_LOG.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, direction.getAxis());
         return new BlockColumnConfiguration(List.of(BlockColumnConfiguration.layer(UniformInt.of(3, 5), BlockStateProvider.simple(log))),
-                direction, BlockPredicate.ONLY_IN_AIR_PREDICATE, false);
+                direction, airOrCrown(), false);
     }
 
     /** Ember berry bushes at every age but the youngest. */

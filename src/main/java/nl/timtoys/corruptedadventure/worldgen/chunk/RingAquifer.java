@@ -223,6 +223,13 @@ final class RingAquifer implements Aquifer {
 
     /** The rules on vanilla's state: ring 3 stays dry, ring 2 has water instead of lava. */
     private BlockState afterVanilla(int i, int y, BlockState state) {
+        if (dryFrom[i] != Integer.MAX_VALUE && y == RingFluidPicker.LAVA_LAYER_TOP) {
+            // 47e (B, INT3): a closed floor of rock over vanilla's lava layer in ring 3, whatever vanilla puts on it: deep
+            // water placed right on it, or flowing down into a cave from higher up, met the lava and crusted over when it
+            // first flowed, a moment that depends on the loading order. The layer stays lava below.
+            lid = true;
+            return null;
+        }
         if (y >= dryFrom[i] && state.is(Blocks.WATER)) {
             suppressed = true;
             return AIR;
@@ -232,12 +239,6 @@ final class RingAquifer implements Aquifer {
             // only where the terrain puts it. Vanilla's lava layer below stays.
             suppressed = true;
             return AIR;
-        }
-        if (dryFrom[i] != Integer.MAX_VALUE && y == RingFluidPicker.LAVA_LAYER_TOP && state.is(Blocks.WATER)) {
-            // 47e (B): as in ring 2, rock between deep aquifer water and vanilla's lava layer; the contact crusted over
-            // when the water first flowed, a moment that depends on the loading order.
-            lid = true;
-            return null;
         }
         if (y < waterOnlyFrom[i] || !(state.is(Blocks.LAVA) || state.is(Blocks.WATER))) {
             return state;

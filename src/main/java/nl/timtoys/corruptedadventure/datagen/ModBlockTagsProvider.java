@@ -183,6 +183,10 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.FLOWER_POTS).add(ModBlocks.POTTED_FIRE_BLOOM.get());
         tag(BlockTags.REPLACEABLE).add(ModBlocks.ASH_SPROUTS.get());
         tag(BlockTags.REPLACEABLE_BY_TREES).add(ModBlocks.ASH_SPROUTS.get());
+        // 47e (INT3): a crown reaching over a chunk border takes the ash layer and the fire flora of the neighbouring
+        // chunk, whichever chunk decorated first (they keep out of leaves already there), so the world does not depend
+        // on that order.
+        tag(BlockTags.REPLACEABLE_BY_TREES).add(ModBlocks.ASH_LAYER.get(), ModBlocks.FIRE_BLOOM.get(), ModBlocks.EMBER_BERRY_BUSH.get());
         tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.ASH_SPROUTS.get(), ModBlocks.EMBER_BERRY_BUSH.get());
         // Like the sweet berry bush: landing in it breaks the fall.
         tag(BlockTags.FALL_DAMAGE_RESETTING).add(ModBlocks.EMBER_BERRY_BUSH.get());
