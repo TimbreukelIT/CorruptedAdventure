@@ -1,0 +1,3 @@
+# Tiny areas for a smoke test of the tools (a few chunks): ring 3 smoldering woods with a river, Nether-3.
+ember 296 -2 298 0
+n3e 72 -2 73 -1 nether

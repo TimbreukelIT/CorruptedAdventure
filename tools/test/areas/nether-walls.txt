@@ -1,0 +1,18 @@
+# Nether ring boundaries 2|3 (r 875) and 3|4 (r 1500): 3 x 3 chunks on the boundary in 8 directions (the offline
+# successor of tools/nether-lava-walls.py). lavascan: no lava beside air expected.
+w875_0 53 4 55 6 nether
+w875_1 33 41 35 43 nether
+w875_2 -7 53 -5 55 nether
+w875_3 -44 33 -42 35 nether
+w875_4 -56 -7 -54 -5 nether
+w875_5 -36 -44 -34 -42 nether
+w875_6 4 -56 6 -54 nether
+w875_7 41 -36 43 -34 nether
+w1500_0 92 8 94 10 nether
+w1500_1 58 71 60 73 nether
+w1500_2 -11 92 -9 94 nether
+w1500_3 -74 58 -72 60 nether
+w1500_4 -95 -11 -93 -9 nether
+w1500_5 -61 -74 -59 -72 nether
+w1500_6 8 -95 10 -93 nether
+w1500_7 71 -61 73 -59 nether
