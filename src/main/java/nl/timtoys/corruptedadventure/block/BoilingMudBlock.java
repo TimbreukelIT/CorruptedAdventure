@@ -36,6 +36,8 @@ public class BoilingMudBlock extends MudBlock {
             new BoilingMudBlock(properties, steam.<Supplier<SimpleParticleType>>map(type -> () -> type).orElse(null))));
     /** One bubble sound per this many ticks per client, nearer blocks first: a mud pool has hundreds of blocks (tuning value). */
     private static final AmbientSoundLimiter BUBBLE_SOUND = new AmbientSoundLimiter(5);
+    /** Volume of a bubble: a background sound, the pool bubbles in turn. */
+    private static final float BUBBLE_VOLUME = 0.3F;
     /** One in this many animate ticks puffs steam: a pool has hundreds of blocks, the client's particle setting thins it. */
     private static final int STEAM_CHANCE = 6;
 
@@ -75,7 +77,7 @@ public class BoilingMudBlock extends MudBlock {
         }
         if (random.nextInt(60) == 0 && BUBBLE_SOUND.tryAcquire(level, pos)) {
             level.playLocalSound(pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, ModSoundEvents.BOILING_MUD_BUBBLE.get(),
-                    SoundSource.BLOCKS, 0.4F, 0.9F + random.nextFloat() * 0.2F, false);
+                    SoundSource.BLOCKS, BUBBLE_VOLUME, 0.9F + random.nextFloat() * 0.2F, false);
         }
     }
 }

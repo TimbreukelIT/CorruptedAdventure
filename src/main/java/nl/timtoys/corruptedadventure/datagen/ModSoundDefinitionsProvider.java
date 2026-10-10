@@ -15,6 +15,20 @@ import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
  * ({@code tools/sounds/Ring3Sounds.java}, package 50).
  */
 final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
+    // Ambient volumes (teststop 4c: all ambience somewhat softer). Only sounds the game plays at a fixed volume are set
+    // here (biome loops, additions and moods, the ring 2 one-shots); weather loops, rumbles and block sounds get their
+    // volume in code (MAX_VOLUME in the weather renderers, Rumble, Ring3Ambience, the blocks).
+    /** Biome loops and additions of our own: 30 % under the file's level. */
+    private static final float AMBIENT_VOLUME = 0.7F;
+    /** Ember woods loop: softer still, it runs through the whole forest and grew tiresome. */
+    private static final float EMBER_WOODS_VOLUME = 0.6F;
+    /** Ring 2 one-shots (singing sand, oasis birds). */
+    private static final float RING_2_VOLUME = 0.6F;
+    /** Nether ring 2 single drops. */
+    private static final float DRIPS_VOLUME = 0.55F;
+    /** The distorted cave sound (ring 1 mood). */
+    private static final float STRANGE_CAVE_VOLUME = 0.6F;
+
     ModSoundDefinitionsProvider(PackOutput output, ExistingFileHelper files) {
         super(output, CorruptedAdventure.MOD_ID, files);
     }
@@ -42,9 +56,9 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
         add(ModSoundEvents.NETHER_RING_2_DRIPS, SoundDefinition.definition()
                 .subtitle("subtitles.corruptedadventure.ambient.nether_ring_2.drips")
                 .with(sound(SoundEvents.POINTED_DRIPSTONE_DRIP_WATER.getLocation(), SoundDefinition.SoundType.EVENT)
-                                .weight(3).pitch(0.85F).volume(0.75F),
+                                .weight(3).pitch(0.85F).volume(DRIPS_VOLUME),
                         sound(SoundEvents.POINTED_DRIPSTONE_DRIP_WATER_INTO_CAULDRON.getLocation(), SoundDefinition.SoundType.EVENT)
-                                .weight(1).pitch(0.75F).volume(0.75F)));
+                                .weight(1).pitch(0.75F).volume(DRIPS_VOLUME)));
         // Ring 3 (package 50): our own audio (tools/sounds/Ring3Sounds.java). Loops are streamed and carry no subtitle,
         // like vanilla's; one-shots are mono, so positional ones fade with distance.
         // Weather (package 45): the loops' volume follows the weather on the client (WeatherLoopSound); the eruption's
@@ -63,21 +77,22 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .subtitle(subtitle("ambient.ring_3.rumble"))
                 .with(file("ambient/ring_3/rumble_1"), file("ambient/ring_3/rumble_2"), file("ambient/ring_3/rumble_3")));
         add(ModSoundEvents.RING_3_EMBERS, SoundDefinition.definition()
-                .with(loop("ambient/ring_3/embers_loop_1"), loop("ambient/ring_3/embers_loop_2")));
+                .with(loop("ambient/ring_3/embers_loop_1").volume(EMBER_WOODS_VOLUME),
+                        loop("ambient/ring_3/embers_loop_2").volume(EMBER_WOODS_VOLUME)));
         add(ModSoundEvents.RING_3_LAVA, SoundDefinition.definition()
                 .subtitle(subtitle("ambient.ring_3.lava"))
-                .with(file("ambient/ring_3/lava_1"), file("ambient/ring_3/lava_2"), file("ambient/ring_3/lava_3")));
+                .with(ambient("ambient/ring_3/lava_1"), ambient("ambient/ring_3/lava_2"), ambient("ambient/ring_3/lava_3")));
         add(ModSoundEvents.RING_3_TITAN_HUM, SoundDefinition.definition()
-                .with(loop("ambient/ring_3/titan_hum_loop_1")));
+                .with(ambientLoop("ambient/ring_3/titan_hum_loop_1")));
         add(ModSoundEvents.RING_3_CALDERA, SoundDefinition.definition()
-                .with(loop("ambient/ring_3/caldera_loop_1")));
+                .with(ambientLoop("ambient/ring_3/caldera_loop_1")));
         // Nether ring 3 (package 56): the cold wind (loop) and creaking ice (additions).
         add(ModSoundEvents.NETHER_RING_3_WIND, SoundDefinition.definition()
-                .with(loop("ambient/nether_ring_3/wind_loop_1"), loop("ambient/nether_ring_3/wind_loop_2")));
+                .with(ambientLoop("ambient/nether_ring_3/wind_loop_1"), ambientLoop("ambient/nether_ring_3/wind_loop_2")));
         add(ModSoundEvents.NETHER_RING_3_ICE_CREAK, SoundDefinition.definition()
                 .subtitle(subtitle("ambient.nether_ring_3.ice_creak"))
-                .with(file("ambient/nether_ring_3/ice_creak_1"), file("ambient/nether_ring_3/ice_creak_2"),
-                        file("ambient/nether_ring_3/ice_creak_3")));
+                .with(ambient("ambient/nether_ring_3/ice_creak_1"), ambient("ambient/nether_ring_3/ice_creak_2"),
+                        ambient("ambient/nether_ring_3/ice_creak_3")));
         // Block sounds, played by stream B (package 46) at the block.
         add(ModSoundEvents.FUMAROLE_PUFF, SoundDefinition.definition()
                 .subtitle(subtitle("block.fumarole.puff"))
@@ -104,23 +119,33 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
         return file(path).stream();
     }
 
+    /** A biome addition of our own at {@link #AMBIENT_VOLUME}. */
+    private static SoundDefinition.Sound ambient(String path) {
+        return file(path).volume(AMBIENT_VOLUME);
+    }
+
+    /** A biome loop of our own at {@link #AMBIENT_VOLUME}. */
+    private static SoundDefinition.Sound ambientLoop(String path) {
+        return loop(path).volume(AMBIENT_VOLUME);
+    }
+
     private static String subtitle(String event) {
         return "subtitles.corruptedadventure." + event;
     }
 
     private static SoundDefinition.Sound netherFile(String name) {
-        return loop("ambient/nether_ring_2/" + name);
+        return ambientLoop("ambient/nether_ring_2/" + name);
     }
 
     private static SoundDefinition.Sound ring2File(String name) {
         return file("ambient/ring_2/" + name)
-                .volume(0.8F)
+                .volume(RING_2_VOLUME)
                 .attenuationDistance(24);
     }
 
     private static SoundDefinition.Sound caveSound(float pitch) {
         return sound(SoundEvents.AMBIENT_CAVE.value().getLocation(), SoundDefinition.SoundType.EVENT)
                 .pitch(pitch)
-                .volume(0.8F);
+                .volume(STRANGE_CAVE_VOLUME);
     }
 }

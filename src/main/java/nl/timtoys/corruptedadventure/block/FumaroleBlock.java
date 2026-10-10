@@ -18,6 +18,8 @@ public class FumaroleBlock extends Block {
     public static final MapCodec<FumaroleBlock> CODEC = simpleCodec(FumaroleBlock::new);
     /** One puff sound per this many ticks per client, nearer vents first, however many fumaroles are near (tuning value). */
     private static final AmbientSoundLimiter PUFF_SOUND = new AmbientSoundLimiter(10);
+    /** Volume of the hiss: a background sound, many vents hiss in turn. */
+    private static final float PUFF_VOLUME = 0.22F;
 
     public FumaroleBlock(Properties properties) {
         super(properties);
@@ -45,7 +47,7 @@ public class FumaroleBlock extends Block {
         }
         if (random.nextInt(30) == 0 && PUFF_SOUND.tryAcquire(level, pos)) {
             level.playLocalSound(pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, ModSoundEvents.FUMAROLE_PUFF.get(),
-                    SoundSource.BLOCKS, 0.3F, 0.9F + random.nextFloat() * 0.2F, false);
+                    SoundSource.BLOCKS, PUFF_VOLUME, 0.9F + random.nextFloat() * 0.2F, false);
         }
     }
 }

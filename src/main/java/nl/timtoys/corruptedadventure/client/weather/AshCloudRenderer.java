@@ -28,7 +28,8 @@ final class AshCloudRenderer implements RingWeatherRenderer {
     private static final float FLAKES_PER_TICK = 25.0F;
     /** Embers and ash whirl rather than fall. */
     private static final Vec3 WHIRL = new Vec3(0.0, -0.01, 0.0);
-    private static final float MAX_VOLUME = 0.7F;
+    /** Volume of the roar loop in a full ash cloud in the open; kept below the other sounds (teststop 4c). */
+    private static final float MAX_VOLUME = 0.5F;
     private static final float INDOOR_RUMBLE = 0.6F;
 
     private final WeatherLoop roar = new WeatherLoop(ModSoundEvents.RING_3_ASH_CLOUD, MAX_VOLUME);

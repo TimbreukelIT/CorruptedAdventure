@@ -24,7 +24,8 @@ final class AshRainRenderer implements RingWeatherRenderer {
     private static final float FLAKES_PER_TICK = 30.0F;
     /** Falling speed of a flake, blocks per tick. */
     private static final Vec3 FALL = new Vec3(0.0, -0.06, 0.0);
-    private static final float MAX_VOLUME = 0.5F;
+    /** Volume of the crackle loop in full ash rain in the open; kept below the other sounds (teststop 4c). */
+    private static final float MAX_VOLUME = 0.35F;
 
     private final WeatherLoop crackle = new WeatherLoop(ModSoundEvents.RING_3_ASH_RAIN, MAX_VOLUME);
 

@@ -223,7 +223,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Stille zones**: plekken waar ambient geluid wegvalt of vreemde cave sounds vaker klinken, vaker richting de rand (client-side ambient).
 - **Uitwerking (change 13):** puur data, via de vanilla-`mood_sound` per biome (de client speelt die alleen in het donker zonder hemellicht, dus in de praktijk alleen ondergronds). Biomes zijn 3D en gaan met de chunk mee, dus de zones zijn voor alle spelers gelijk; wanneer een geluid klinkt verschilt per speler (vanilla-toeval).
   - **Stil** (geen `mood_sound`): de kopieën van dark forest, old growth pine taiga, old growth spruce taiga en dripstone caves (`VanillaBiomeCopies.MOODS`).
-  - **Vreemd**: `withered_expanse`, de hele kolom, dus ook in de grotten onder de grens. Eigen sound event `corruptedadventure:ambient.ring_1.strange_cave` (`tick_delay` 1800 ≈ 1,5 min in het donker, `block_search_extent` 12, `offset` 3). Klinkt als vanilla's `ambient.cave` met pitch 0,5/0,6/0,7 en volume 0,8 (`sounds.json`, type `event`, geen eigen audio). Ondertitel "Something stirs in the dark" / "Er beweegt iets in het donker".
+  - **Vreemd**: `withered_expanse`, de hele kolom, dus ook in de grotten onder de grens. Eigen sound event `corruptedadventure:ambient.ring_1.strange_cave` (`tick_delay` 1800 ≈ 1,5 min in het donker, `block_search_extent` 12, `offset` 3). Klinkt als vanilla's `ambient.cave` met pitch 0,5/0,6/0,7 en volume 0,6 (`sounds.json`, type `event`, geen eigen audio). Ondertitel "Something stirs in the dark" / "Er beweegt iets in het donker".
   - Alle andere kopieën (ook deep dark en lush caves) houden vanilla's grotgeluid. Muziek blijft overal vanilla.
   - Onnatuurlijke tunnels (change 12) krijgen geen eigen stille zone: ze erven het grotgeluid van hun biome (stil, vreemd of vanilla).
   - Bekend: stilte valt pas op na lang verblijf (vanilla speelt zelf al maar ~1× per 5 min); onderwater speelt nooit een mood-geluid.
@@ -421,7 +421,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **Zandstorm in beeld:** fog naar ~24 blokken (terrein én lucht), kleur naar zand `#C9A46B` (× daglicht), ~40 particles `sand_gust` per tick in een kader van ±16 rond de camera, alleen boven de `MOTION_BLOCKING`-heightmap, met de wind mee; vanilla's instelling "Particles" telt mee. In water/lava/poedersneeuw en met blindness/darkness blijft vanilla-fog staan.
   - **Hittegolf in beeld:** post-shader `heat_haze` (zacht golvend beeld, sterkst onderin, hand en GUI niet), sterkte × "Distortion Effects"; lichte warme waas (fog-afstand × 0,85, kleur 30 % naar `#F2DDAA`).
   - **Uitdroging ×2:** factor `1 + (heatWaveDehydrationMultiplier (2,0) − 1) × intensiteit` op een positieve rate (alleen de zon), hard op de ringgrens; schaduw, water en oase blijven gelijk. Gemeten: `+0.80/s, sun` bij volle intensiteit, `+0.52/s` bij 0,30.
-  - **Geluid:** wind-loop `weather.ring_2.sandstorm` (verwijzing naar vanilla `item.elytra.flying`, pitch 0,7; volume 0,6 × sterkte × blootstelling, weer-schuif); de hittegolf is stil. Keuze van het vanilla-geluid valt in de W-achteraf.
+  - **Geluid:** wind-loop `weather.ring_2.sandstorm` (verwijzing naar vanilla `item.elytra.flying`, pitch 0,7; volume 0,45 × sterkte × blootstelling, weer-schuif); de hittegolf is stil. Keuze van het vanilla-geluid valt in de W-achteraf.
 
 **Conditie: uitdroging**
 - Meter ↑ overdag in direct zonlicht (hemel zichtbaar); 2× in een hittegolf.

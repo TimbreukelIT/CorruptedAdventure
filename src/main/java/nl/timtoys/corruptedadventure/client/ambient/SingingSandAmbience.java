@@ -50,7 +50,7 @@ public final class SingingSandAmbience {
         double x = player.getX() + Math.cos(angle) * distance;
         double y = player.getEyeY() + random.nextInt(5) - 2;
         double z = player.getZ() + Math.sin(angle) * distance;
-        // Pitch and volume come from sounds.json (volume 0.8) and this small spread: the files differ already.
+        // Pitch and volume come from sounds.json (volume 0.6) and this small spread: the files differ already.
         minecraft.getSoundManager().play(new SimpleSoundInstance(ModSoundEvents.RING_2_SINGING_SAND.get(), SoundSource.AMBIENT,
                 0.9F + random.nextFloat() * 0.2F, 0.9F + random.nextFloat() * 0.2F, random, x, y, z));
         cooldown = SingingSandTiming.COOLDOWN_TICKS;

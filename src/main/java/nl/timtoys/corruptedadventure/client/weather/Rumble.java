@@ -17,6 +17,8 @@ import java.util.function.Supplier;
 final class Rumble {
     /** Volume and shake of a rumble at the very start of the weather; full at full strength. */
     private static final float MIN_LOUDNESS = 0.5F;
+    /** Sound volume of a full-strength rumble; the shake keeps the full loudness (teststop 4c: ambience softer). */
+    private static final float MAX_VOLUME = 0.75F;
     /** A pause longer than this in the ticks means the weather was not felt in between. */
     private static final long FELT_AGAIN_TICKS = 20L;
 
@@ -60,8 +62,8 @@ final class Rumble {
         // A rumble is loud from the start, so the first ones (the warning, early in the fade-in) are heard.
         float loudness = MIN_LOUDNESS + (1.0F - MIN_LOUDNESS) * volume;
         shake.kick(loudness * maxDegrees);
-        minecraft.getSoundManager().play(new SimpleSoundInstance(event.get().getLocation(), SoundSource.WEATHER, loudness,
-                1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true));
+        minecraft.getSoundManager().play(new SimpleSoundInstance(event.get().getLocation(), SoundSource.WEATHER,
+                loudness * MAX_VOLUME, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true));
     }
 
     /** Adds the shake to the camera (× vanilla's "Screen Effects" option, 0 = none). */

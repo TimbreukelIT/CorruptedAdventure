@@ -44,9 +44,9 @@ public final class Ring3Ambience {
     static final float PEAKS_SHAKE_CHANCE = 2.0F / 3.0F;
     static final float PLAINS_SHAKE_DEGREES = 0.35F;
     static final float PEAKS_SHAKE_DEGREES = 0.6F;
-    /** Volume of a rumble in the open: softer than an eruption's on the plains. */
-    private static final float PLAINS_VOLUME = 0.65F;
-    private static final float PEAKS_VOLUME = 0.9F;
+    /** Volume of a rumble in the open: softer than an eruption's on the plains; ambience stays in the background (teststop 4c). */
+    private static final float PLAINS_VOLUME = 0.48F;
+    private static final float PEAKS_VOLUME = 0.65F;
     /** Volume without any sky, as a share of the volume in the open. */
     private static final float INDOOR_VOLUME = 0.5F;
     /** Sparks per tick on the peaks, around the camera. */
