@@ -145,13 +145,16 @@ def cone_body():
         all_of([volc("volcano_rise", 12.0, 1000.0), noise(P, 0.0)], cone()))
 
 
+# 39g: the shore runs 3 blocks from the lava's edge (lava_shore 1 -> 0); magma only in the first block beside the lava.
+SHORE_MAGMA_FROM = 1.0 - 1.0 / 3.0
+
+
 def lava_banks():
-    """Banks of the lava rivers (the bed and ~3 blocks beside the lava, whatever the river's width; 39d): scorched
-    blackstone with a little magma right at the edge."""
-    return cond(volc("lava_bank", 0.001, 2.0), seq(
+    """Banks of the lava rivers (the bed and 3 blocks from the lava's edge, whatever the river's width; 39g: no longer
+    the dry slope of a wide channel): scorched blackstone, magma only right beside the lava."""
+    return cond(volc("lava_shore", 0.001, 2.0), seq(
         cond(TOP, seq(
-            all_of([volc("lava_bank", 0.5, 2.0), noise(G, 0.45)], block("magma_block")),
-            cond(noise(G, 0.75), block("magma_block")),
+            all_of([volc("lava_shore", SHORE_MAGMA_FROM, 2.0), noise(G, 0.45)], block("magma_block")),
             cond(noise(D, 0.2), block("basalt")),
             block("blackstone"))),
         cond(DEPTH, block("blackstone"))))

@@ -37,8 +37,13 @@ public final class VolcanicOutput implements DensityFunction {
         ROUGHNESS("roughness", 0.0, 1.0),
         /** Height of the volcanoes above the plain, in blocks (the surface's volcano flanks). */
         VOLCANO_RISE("volcano_rise", 0.0, 320.0),
-        /** 0..1: a lava river, 1 over the lava, falling to 0 a few blocks beside it (the surface's scorched banks). */
+        /** 0..1: a lava river's channel, 1 over it, falling to 0 a few blocks beside it (features keep clear of it). */
         LAVA_BANK("lava_bank", 0.0, 1.0),
+        /**
+         * 0..1 (39g): a lava river's scorched shore, 1 over the lava, falling to 0 over three blocks from the lava's edge
+         * whatever the river's width (the surface's banks).
+         */
+        LAVA_SHORE("lava_shore", 0.0, 1.0),
         /** 0..1: a cliff or steep wall of a landform (plateau risers, rift flanks, gully walls; 39d), rock in the surface. */
         CLIFF("cliff", 0.0, 1.0),
         /** 0..1 (39f): a collapse's footprint, 1 inside its rim (vanilla cave entrances may reach the surface there). */
@@ -114,8 +119,8 @@ public final class VolcanicOutput implements DensityFunction {
     }
 
     private static final Set<Output> PER_COLUMN = EnumSet.of(Output.CALDERA_MASK, Output.CALDERA_DORMANT,
-            Output.LAVA_CHANNEL, Output.ISLAND_MASK, Output.ROUGHNESS, Output.VOLCANO_RISE, Output.LAVA_BANK, Output.CLIFF,
-            Output.COLLAPSE, Output.CAVE_WALLS, Output.CUT_DEPTH);
+            Output.LAVA_CHANNEL, Output.ISLAND_MASK, Output.ROUGHNESS, Output.VOLCANO_RISE, Output.LAVA_BANK, Output.LAVA_SHORE,
+            Output.CLIFF, Output.COLLAPSE, Output.CAVE_WALLS, Output.CUT_DEPTH);
 
     private final DensityFunction field;
     private final Output output;
@@ -175,6 +180,7 @@ public final class VolcanicOutput implements DensityFunction {
             case ROUGHNESS -> column.roughness;
             case VOLCANO_RISE -> column.rise;
             case LAVA_BANK -> column.lavaBank;
+            case LAVA_SHORE -> column.lavaShore;
             case CLIFF -> column.cliff;
             case COLLAPSE -> column.collapse;
             case CAVE_WALLS -> column.caveCount > 0 ? 1.0 : 0.0;

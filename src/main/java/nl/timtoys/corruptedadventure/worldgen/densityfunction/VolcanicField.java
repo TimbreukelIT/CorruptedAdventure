@@ -56,8 +56,16 @@ public final class VolcanicField implements DensityFunction {
     private static final int CHANNEL_DEPTH = 2;
     /** Height of a river's banks above its lava (levees fill lower ground beside it). */
     private static final double CHANNEL_BANK = 2.5;
-    /** Width (blocks) of the scorched bank beside the lava, whatever the river's width. */
+    /**
+     * Width (blocks) beside a river's channel that features keep clear of ({@link Column#lavaBank}; the channel itself,
+     * as wide as the river, comes on top).
+     */
     private static final double BANK_BLOCKS = 3.0;
+    /**
+     * Width (blocks) of the scorched shore of the surface from the lava's edge, whatever the river's width (39g; the
+     * dry slope of a wide channel used to be shore too).
+     */
+    private static final double SHORE_BLOCKS = 3.0;
     private static final double HILL_HEIGHT = 40.0;
     private static final double PEAK_RIDGE_HEIGHT = 55.0;
     /** Amplitude (blocks) of the micro relief on the plain. */
@@ -1088,6 +1096,10 @@ public final class VolcanicField implements DensityFunction {
                 if (along < 1.0 + BANK_BLOCKS / half) {
                     c.lavaBank = along < 1.0 ? 1.0 : Mth.clamp(1.0 - (along - 1.0) * half / BANK_BLOCKS, 0.0, 1.0);
                 }
+                double shore = (along - lavaEdge(preHeight, level)) * half;
+                if (shore < SHORE_BLOCKS) {
+                    c.lavaShore = shore <= 0.0 ? 1.0 : 1.0 - shore / SHORE_BLOCKS;
+                }
                 if (along < 1.0 && !c.hasLava()) {
                     c.lavaTop = level;
                     c.lavaBottom = level - CHANNEL_DEPTH - 3;
@@ -1168,6 +1180,22 @@ public final class VolcanicField implements DensityFunction {
     private static void caveFade(Column c) {
         c.caveFadeWeight = VolcanicMath.smoothstep(4.0, 16.0, c.rise);
         c.caveFadeFrom = c.height - c.rise + CAVE_VOLCANO_HEIGHT;
+    }
+
+    /**
+     * Where the lava of a river ends across its channel (39g), in half widths: the channel's profile
+     * ({@code 1 - smoothstep(0.55, 1, along)}) lowers the ground {@code preHeight} towards the bed two blocks below the
+     * lava, and the lava lies where the ground drops below its level. The column's own ground stands for its
+     * neighbours' (the shore is a few blocks wide; the terrain's interpolation moves it by a block or so).
+     */
+    static double lavaEdge(double preHeight, int level) {
+        double above = preHeight - level;
+        if (above <= 0.0) {
+            return 1.0;
+        }
+        // The profile at the edge is above / (above + CHANNEL_DEPTH); smoothstep's inverse is 0.5 - sin(asin(1 - 2s) / 3).
+        double s = 1.0 - above / (above + CHANNEL_DEPTH);
+        return 0.55 + 0.45 * (0.5 - Math.sin(Math.asin(1.0 - 2.0 * s) / 3.0));
     }
 
     /**
@@ -1482,8 +1510,16 @@ public final class VolcanicField implements DensityFunction {
         double islandMask;
         /** Height of the volcanoes (and cinder cones) above the plain (before the craters sink in), in blocks. */
         double rise;
-        /** 0..1: a lava river, 1 over the lava, falling to 0 over {@link #BANK_BLOCKS} beside it (the banks). */
+        /**
+         * 0..1: a lava river's channel and banks, 1 over the channel, falling to 0 over {@link #BANK_BLOCKS} beside it
+         * (features keep clear of it).
+         */
         double lavaBank;
+        /**
+         * 0..1 (39g): a lava river's scorched shore for the surface, 1 over the lava, falling to 0 over
+         * {@link #SHORE_BLOCKS} from the lava's edge ({@link #lavaEdge}), whatever the river's width.
+         */
+        double lavaShore;
         /** 0..1: a cliff or steep wall of a landform (plateau risers, rift flanks, gully walls, sea stacks). */
         double cliff;
         /** How far the surface may drop near this column through a narrow cut (for {@link #initialHeight}). */
@@ -1584,6 +1620,7 @@ public final class VolcanicField implements DensityFunction {
             islandMask = 0.0;
             rise = 0.0;
             lavaBank = 0.0;
+            lavaShore = 0.0;
             cliff = 0.0;
             floorMargin = 0.0;
             collapse = 0.0;

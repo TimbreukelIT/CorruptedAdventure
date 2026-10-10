@@ -6,9 +6,13 @@ import org.junit.jupiter.api.Test;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Ring 3 wave 3 terrain fixes on the test seed: 42c (the band around the abyss's lava sea reaches its tapered ends). */
+/**
+ * Ring 3 wave 3 terrain fixes on the test seed: 42c (the band around the abyss's lava sea reaches its tapered ends), 39g
+ * (the scorched shore of a lava river lies within a few blocks of its lava's edge, whatever its width).
+ */
 class Ring3TerrainWave3Test {
     /** The terrain's cells: caves are interpolated between their corners (every 4 blocks in x and z). */
     private static final int CELL = 4;
@@ -75,5 +79,67 @@ class Ring3TerrainWave3Test {
                 assertTrue(corner.guardBottom() <= 5 && corner.guardTop() >= 9, "corner " + cx + "," + cz);
             }
         }
+    }
+
+    @Test
+    void theLavaEdgeIsWhereTheChannelDropsBelowTheLava() {
+        // The channel's profile lowers the ground towards the bed two blocks below the lava (VolcanicField.fill).
+        for (double above = 0.25; above < 40.0; above *= 1.5) {
+            int level = 60;
+            double pre = level + above;
+            double edge = VolcanicField.lavaEdge(pre, level);
+            double t = (edge - 0.55) / 0.45;
+            double profile = 1.0 - t * t * (3.0 - 2.0 * t);
+            assertEquals(level, pre - profile * (pre - (level - 2)), 1e-9, "edge at " + above + " above the lava");
+            assertTrue(edge > 0.55 && edge < 1.0);
+        }
+        assertEquals(1.0, VolcanicField.lavaEdge(59.0, 60), 0.0, "ground below the lava: the whole channel holds lava");
+    }
+
+    @Test
+    void theScorchedShoreHugsTheLavaWhateverTheRiversWidth() {
+        // 39g: the shore (and its magma) lies within a few blocks of lava that shows (the field's ground below its lava);
+        // before, the dry slope of a wide channel was shore too, up to ~0.45 half widths plus 3 blocks from the lava.
+        int[][] areas = {{3936, -3600, 4319, -3233}, {-4000, -128, -3633, 255}, {-4080, -1984, -3697, -1601},
+                {4720, -576, 4975, -337}, {3920, 320, 4111, 511}};
+        int shore = 0;
+        int magma = 0;
+        int oldBankFar = 0;
+        for (int[] a : areas) {
+            for (int x = a[0]; x <= a[2]; x++) {
+                for (int z = a[1]; z <= a[3]; z++) {
+                    VolcanicField.Column c = field.column(x, z);
+                    if (c.lavaBank > 0.0 && c.lavaShore == 0.0 && lavaWithin(x, z, 4) == 0) {
+                        oldBankFar++;
+                    }
+                    if (c.lavaShore <= 0.0 || c.lavaShore >= 1.0) {
+                        continue;
+                    }
+                    shore++;
+                    // The edge comes from the column's own ground; the terrain's interpolation moves it by a block or so.
+                    assertTrue(lavaWithin(x, z, 4) > 0, "shore far from lava at " + x + "," + z);
+                    if (c.lavaShore >= 2.0 / 3.0) {
+                        magma++;
+                        assertTrue(lavaWithin(x, z, 2) > 0, "magma shore far from lava at " + x + "," + z);
+                    }
+                }
+            }
+        }
+        assertTrue(shore > 1000 && magma > 100, "shore " + shore + ", magma " + magma);
+        System.out.println("39g: shore columns " + shore + ", magma columns " + magma + ", old bank columns > 4 from lava " + oldBankFar);
+    }
+
+    /** The number of columns within {@code r} (square) of (x, z) where lava shows (the field's ground below its lava). */
+    private static int lavaWithin(int x, int z, int r) {
+        int n = 0;
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
+                VolcanicField.Column c = field.column(x + dx, z + dz);
+                if (c.lavaTop() != Integer.MIN_VALUE && c.height() < c.lavaTop()) {
+                    n++;
+                }
+            }
+        }
+        return n;
     }
 }

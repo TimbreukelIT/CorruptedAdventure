@@ -11427,7 +11427,7 @@
                                     "type": "minecraft:condition",
                                     "if_true": {
                                       "type": "corruptedadventure:volcanic_threshold",
-                                      "output": "lava_bank",
+                                      "output": "lava_shore",
                                       "min": 0.001,
                                       "max": 2.0
                                     },
@@ -11450,8 +11450,8 @@
                                                 "type": "minecraft:condition",
                                                 "if_true": {
                                                   "type": "corruptedadventure:volcanic_threshold",
-                                                  "output": "lava_bank",
-                                                  "min": 0.5,
+                                                  "output": "lava_shore",
+                                                  "min": 0.6666666666666667,
                                                   "max": 2.0
                                                 },
                                                 "then_run": {
@@ -11467,21 +11467,6 @@
                                                     "result_state": {
                                                       "Name": "minecraft:magma_block"
                                                     }
-                                                  }
-                                                }
-                                              },
-                                              {
-                                                "type": "minecraft:condition",
-                                                "if_true": {
-                                                  "type": "minecraft:noise_threshold",
-                                                  "noise": "corruptedadventure:ring_3_surface_grain",
-                                                  "min_threshold": 0.75,
-                                                  "max_threshold": 1.7976931348623157e+308
-                                                },
-                                                "then_run": {
-                                                  "type": "minecraft:block",
-                                                  "result_state": {
-                                                    "Name": "minecraft:magma_block"
                                                   }
                                                 }
                                               },
