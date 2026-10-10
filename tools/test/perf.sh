@@ -31,8 +31,10 @@ while [ $# -gt 0 ]; do
 done
 ca_user_check
 out="$CA_OUT/$name"; mkdir -p "$out"
-start=$(date +%s); deadline=$((start + max_min * 60))
+# Holder PID of the lock and slots = this script (the caller of slots.sh), alive for the whole run.
 bash "$CA_TOOLS/slots.sh" take -n 3 --lock --task perf --wait "$wait" || exit $?
+# The measuring budget starts once everything is held (waiting for the slots does not count).
+start=$(date +%s); deadline=$((start + max_min * 60))
 watchdog=""
 cleanup() {
     [ -n "$watchdog" ] && kill "$watchdog" 2>/dev/null

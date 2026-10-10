@@ -77,6 +77,17 @@ ca_stop_pid() {
     powershell -NoProfile -Command "Stop-Process -Id $1 -Force -ErrorAction SilentlyContinue" >/dev/null 2>&1
 }
 
+# Stop a background Gradle job we started ourselves (Git Bash job PID): the Windows process behind it (the gradlew
+# java wrapper and, with --no-daemon, the build JVM under it) as a tree. Only for our own `$!`.
+ca_stop_job() {
+    local job="$1" wp
+    [ -n "$job" ] || return 0
+    wp="$(cat "/proc/$job/winpid" 2>/dev/null)"
+    kill "$job" 2>/dev/null
+    [ -n "$wp" ] && taskkill //PID "$wp" //T //F >/dev/null 2>&1
+    return 0
+}
+
 ca_record_pid() { echo "$1 $2 $(ca_now)" >> "$CA_PIDS"; }
 
 # key=value in a .properties / options file: replace the line or append it.

@@ -61,7 +61,8 @@ start() {
     rm -f "$log"
     ca_log "starting runServer in $wt on level $level (port $CA_SERVER_PORT, RCON $CA_RCON_PORT)"
     # All of the background job's descriptors go to the log first, so it never holds the caller's stdout (a pipe).
-    (exec > "$log" 2>&1 < /dev/null; cd "$wt" && JAVA_TOOL_OPTIONS="-Xmx$xmx" exec nohup ./gradlew runServer --console=plain) &
+    (exec > "$log" 2>&1 < /dev/null; cd "$wt" && JAVA_TOOL_OPTIONS="-Xmx$xmx" exec nohup ./gradlew runServer --no-daemon --console=plain) &
+    local job=$!
     t0=$(date +%s); pid=""
     while true; do
         if [ -z "$pid" ]; then
@@ -75,6 +76,7 @@ start() {
             echo "server did not start (see $log):" >&2
             grep -E "Exception|BUILD FAILED|Failed to start|FAILURE" "$log" | head -5 >&2
             [ -n "$pid" ] && ca_is_own_java "$pid" "$wt" server && ca_stop_pid "$pid"
+            ca_stop_job "$job"
             ca_setprop "$props" enable-rcon false
             [ $slot = 1 ] && bash "$CA_TOOLS/slots.sh" release --task server >/dev/null
             exit 1
@@ -85,6 +87,8 @@ start() {
         # Without a PID we cannot prove it is ours later: stop it now via RCON and give up.
         echo "server is up but its JVM PID was not found; stopping it via RCON" >&2
         RCON_PORT=$CA_RCON_PORT RCON_PASSWORD="$password" $CA_PY "$CA_TOOLS/py/rcon.py" stop >&2
+        sleep 20
+        ca_stop_job "$job"
         ca_setprop "$props" enable-rcon false
         [ $slot = 1 ] && bash "$CA_TOOLS/slots.sh" release --task server >/dev/null
         exit 1

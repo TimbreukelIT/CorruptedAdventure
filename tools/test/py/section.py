@@ -26,8 +26,11 @@ def colour(n, cache={}):
     return cache[n]
 
 
-def block(world, d, x, y, z):
-    r = region.chunk_blocks(world, x >> 4, z >> 4, d)
+def block(world, d, x, y, z, cache={}):
+    key = (world, d.key, x >> 4, z >> 4)
+    if key not in cache:  # decode every chunk once
+        cache[key] = region.chunk_blocks(world, x >> 4, z >> 4, d)
+    r = cache[key]
     if r is None or not (d.min_y <= y < d.min_y + d.height):
         return None
     return r[0][r[1][y - d.min_y, z & 15, x & 15]]

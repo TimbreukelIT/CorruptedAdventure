@@ -2,13 +2,14 @@
 # Determinism (waves.md §6): two fresh worlds of the same seed, the second loaded in the reverse order (the Nether
 # first), compared block by block on the mod's own blocks.
 #
-#   det.sh [--areas FILE] [--name det] [--all] [--settle 30] [--compare-only]
+#   det.sh [--areas FILE] [--name det] [--all] [--settle 0] [--compare-only]
 #
 # Makes run/<name>-a (areas forward) and run/<name>-b (everything reversed) with world.sh, then
 # py/detcmp.py -> build/test/<name>.txt (+ .json). --compare-only skips the worlds (they exist already).
-# Default areas: tools/test/areas/int.txt. Exit code of detcmp: 1 when an own block differs.
+# Default areas: tools/test/areas/int.txt. Exit code of detcmp: 1 own block differs or chunks missing, 2 only `other`
+# differences (explain them), 0 clean.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-areas="$CA_TOOLS/areas/int.txt"; name=det; all=(); settle=30; make=1
+areas="$CA_TOOLS/areas/int.txt"; name=det; all=(); settle=0; make=1
 while [ $# -gt 0 ]; do
     case "$1" in
         --areas) areas="$2"; shift 2 ;;

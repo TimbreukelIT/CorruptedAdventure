@@ -18,19 +18,24 @@ Port n (waves.md §4): server 25570+n, RCON 25580+n (RCON on 127.0.0.1 and only 
 
 - `C:/Temp/ca-user-test.lock` exists = the user is playing: every script that would start a JVM exits with code 3.
   Start nothing, tell main, wait idle. Only main places/removes that lock.
-- Max. 3 JVMs: every build/runData/server/client holds a slot; machine-wide things (client quick play, JFR) also hold
-  the lock, taken first. Nothing waits while holding something.
+- Max. 3 JVMs: every build/runData/server/client holds a slot; machine-wide things (the quick-play start of a client,
+  JFR) also hold the lock, taken first. Nothing waits while holding something.
+- Gradle always with `--no-daemon` (the tools do this themselves): a daemon would stay behind outside the slot count.
+  Never `./gradlew --stop` (it also stops the user's daemons).
 
 ```bash
-bash tools/test/slots.sh run -- ./gradlew build --rerun-tasks      # slot for the duration, always released (trap)
-bash tools/test/slots.sh run -- ./gradlew runData
-bash tools/test/slots.sh run -n 1 --lock --task ffmpeg -- ffmpeg ...  # lock + slot
+bash tools/test/slots.sh run -- ./gradlew build --rerun-tasks --no-daemon   # slot for the duration, always released
+bash tools/test/slots.sh run -- ./gradlew runData --no-daemon
+bash tools/test/slots.sh run -n 1 --lock --task ffmpeg -- ffmpeg ...           # lock + slot
 bash tools/test/slots.sh status | clean | release
 ```
 
-`take` waits only with `--wait <s>` (retry every 20 s, holding nothing). `clean` removes entries whose owner is
-older than 60 min and whose PID is dead (also done before every `take`). Owner file:
-`stream=<s> pid=<windows pid> time=<iso> task=<t> root=<checkout>`. Test the protocol with `CA_LOCK_DIR=<scratch dir>`.
+Owner file: `stream=<s> pid=<windows pid of the holder> time=<iso> task=<label> token=<id> root=<checkout>`. `run`
+holds with its own PID and a unique token per run (parallel runs in one checkout never free each other's slots).
+A bare `take` registers its caller as holder (`--pid` for another one; server/client hand over to their JVM with
+`adopt`), so use it only from a script that lives as long as the hold. `take` waits only with `--wait <s>` (retry
+every 20 s, holding nothing). `clean` removes entries older than 60 min whose holder PID is dead (also before every
+`take`). Test the protocol with `CA_LOCK_DIR=<scratch dir>`.
 
 ## Server, RCON, client
 
@@ -38,13 +43,15 @@ older than 60 min and whose PID is dead (also done before every `take`). Owner f
 bash tools/test/server.sh start <level> [--fresh] [--perf] [--worktree DIR]   # slot, runServer, waits for "Done"
 python tools/test/py/rcon.py "list" "/ca tpring 3"                          # RCON of the running server
 bash tools/test/server.sh stop                                               # RCON stop, PID gone, RCON off, slot free
-bash tools/test/client.sh start [1|2]          # lock + slot, quick play to the own server, waits until joined
+bash tools/test/client.sh start [1|2]          # lock + slot, quick play (127.0.0.1), waits until joined, then frees the lock
 bash tools/test/client.sh shot build/test/shots/x.png [1|2]
 bash tools/test/client.sh key F1 [1|2]         # F1 F2 F3 ESC T ENTER
 bash tools/test/client.sh stop [1|2]
 ```
 
 - Seed 20260930, `level-type=corruptedadventure:corrupted_world`, `online-mode=false`, `max-tick-time=-1`.
+- On a failed start the tools stop their own background Gradle job (and the JVM if it was found), free the slot
+  and turn RCON off.
 - The server/client PID is found by its command line (`<checkout>\build\moddev\<kind>RunVmArgs`, exact checkout) and
   checked again before every stop or screenshot. Screenshots (`win.ps1`, PrintWindow) only ever touch the windows of
   that one PID — never a window found by title (golf 2: a script once photographed the user's client).
@@ -61,7 +68,7 @@ Area files (`areas/*.txt`): `name cx0 cz0 cx1 cz1 [ow|nether]` in chunks, inclus
 `python tools/test/py/areas.py around <name> <x> <z> <r> [nether]` prints a line around a block position.
 
 ```bash
-bash tools/test/world.sh <level> tools/test/areas/int.txt [--reverse] [--worktree DIR]   # fresh world, load, flush, stop
+bash tools/test/world.sh <level> tools/test/areas/int.txt [--reverse] [--settle S] [--worktree DIR]   # fresh world, load, stop
 W=run/<level>
 python tools/test/py/lavascan.py $W tools/test/areas/int.txt [--json out.json] [--strict]
 python tools/test/py/inventory.py $W tools/test/areas/int.txt build/test/inv.json --grep ice
@@ -84,11 +91,16 @@ exposed block is classified (heuristic; the original scripts of terrain-g2 were 
 Neighbours outside the area or in unsaved chunks count as not air. The sub-label of a fall is approximate; the check
 is `lek` = 0 (or explained). `--strict` exits 1 on any leak.
 
+`gen.py` (used by `world.sh`) forceloads tiles of 15 x 15 chunks block by block (3 x 3 chunks, the next block only
+when the previous one is loaded, time-out 600 s per block); `--reverse` reverses areas, tiles, blocks and the corner
+order. `--settle S` keeps each tile forceloaded S more seconds (fluids tick); use the same value for compared worlds.
+
 ### Determinism and feature index
 
 - `det.sh` makes `run/<name>-a` (areas forward) and `run/<name>-b` (everything reversed, the Nether first) and runs
-  `detcmp.py`: per area identical chunks, `own` differences (a mod block on either side — must be 0), `other`
-  (vanilla, not known noise) and `noise` (ore blobs, springs, stone variants). `--all` lists every kind.
+  `detcmp.py`: per area identical chunks, `own` differences (a mod block on either side), `other` (terrain, fluids,
+  air, vanilla features: explain them) and `noise` (only vanilla ore/stone blobs against their host rock). Exit 1 on
+  an `own` difference or a missing chunk, 2 when only `other` differs, 0 clean. `--all` lists every kind.
 - Feature index: make a world with the same areas from the reference checkout (`world.sh ref-fi tools/test/areas/fi.txt
   --worktree <main checkout or worktree on main>`; that checkout's `run/`), then `featidx.py` compares biomes (must be
   identical) and terrain shape (top block that is not air/fluid/decoration).
@@ -104,7 +116,8 @@ bash tools/test/perf.sh --ref build/test/perf-<earlier>                    # add
 JFR `minecraft.ChunkGeneration` (via RCON `jfr start/stop`, `jfr.exe` next to the server's java), the mod's
 dimension against the vanilla datapack dimension (`perfpack/`: `perftest:vanilla`, `perftest:vanilla_nether`) at the
 same chunks in one server, order alternating per area and round, a fresh world per round, warm-up over every ring
-type (not in the cold round). Holds the lock + all 3 slots for the whole run. Table: per area the median of
+type (middle of rings 1-3 and the boundaries, from the ring radii in `run/config`; not in the cold round). Holds the
+lock + all 3 slots for the whole run; the hard-stop clock starts once they are held. Table: per area the median of
 mod/vanilla over the warm rounds for noise (with min–max), surface and features, plus the cold round. Budget noise
 ≤ 1,75. Only when the user is not playing; the JFR files and round worlds are deleted after each round.
 

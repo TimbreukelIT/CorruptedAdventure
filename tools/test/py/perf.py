@@ -5,8 +5,8 @@ The order mod/vanilla alternates per area and round.
     python perf.py <round> <out.json> --run <server run dir> --jfr <jfr.exe> [--areas file] [--only name ...]
                    [--nowarm] [--deadline <epoch seconds>]
 
-Warm-up (unless --nowarm, the cold round): 8 x 8 chunks at every ring type in every dimension, so the JIT has seen
-rings 1-3 and the zones before timing. Per area and step (noise, surface, features) the median duration in ms is
+Warm-up (unless --nowarm, the cold round): 8 x 8 chunks in the middle of rings 1-3 and on the boundaries 1|2, 2|3,
+3|4 in every dimension (radii from the server's config), so the JIT has seen the rings and zones before timing. Per area and step (noise, surface, features) the median duration in ms is
 written to out.json ("summary": {"area|dimension|step": {"n", "median"}}). Past --deadline no new area starts; the
 recording is still stopped and parsed, and the result is marked "aborted".
 """
@@ -14,6 +14,7 @@ import argparse
 import collections
 import glob
 import json
+import math
 import os
 import statistics
 import subprocess
@@ -26,9 +27,32 @@ from rcon import Rcon  # noqa: E402
 
 VANILLA = {"ow": "perftest:vanilla", "nether": "perftest:vanilla_nether"}
 STEPS = ("noise", "surface", "features")
-# Block positions (x, z) of every ring type for the warm-up (seed 20260930, default radii 1500/3500/6000/7800/9500).
-WARM = {"ow": [(400, -600), (640, -2560), (2470, 2470), (-4600, 2000), (3000, -3200)],
-        "nether": [(100, -200), (-400, -500), (-1150, 500), (900, 900)]}
+DEFAULT_RADII = [1500, 3500, 6000, 7800]  # ring 1-4 outer radius, overworld blocks (37c defaults)
+
+
+def warm_spots(run):
+    """Warm-up positions (x, z) per dimension: the middle of rings 1-3 and the boundaries 1|2, 2|3, 3|4, from the ring
+    radii in <run>/config/corruptedadventure-common.toml (the Nether uses them divided by 4)."""
+    radii = list(DEFAULT_RADII)
+    cfg = os.path.join(run, "config", "corruptedadventure-common.toml")
+    if os.path.exists(cfg):
+        for line in open(cfg, encoding="utf-8"):
+            k, _, v = line.partition("=")
+            k = k.strip()
+            if k.startswith("ring") and k.endswith("OuterRadius") and k[4:-11].isdigit() and int(k[4:-11]) <= len(radii):
+                radii[int(k[4:-11]) - 1] = int(float(v))
+    r = [0] + radii
+    dists = [(r[0] + r[1]) / 2, r[1], (r[1] + r[2]) / 2, r[2], (r[2] + r[3]) / 2, r[3]]
+    out = {}
+    for key, scale in (("ow", 1), ("nether", 4)):
+        spots = []
+        for i, d in enumerate(dists):
+            ang = math.radians(37 + 67 * i)  # spread over the compass, away from the axes
+            spots.append((int(d / scale * math.cos(ang)) - 64, int(d / scale * math.sin(ang)) - 64))
+        out[key] = spots
+    return out
+
+
 TOOLS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -68,7 +92,7 @@ def main():
     todo = areas.load(a.areas, None, a.only)
     r = Rcon(timeout=1800)
     if not a.nowarm:
-        for key, spots in WARM.items():
+        for key, spots in warm_spots(a.run).items():
             for dim in (areas.dim(key).id, VANILLA[key]):
                 for (x, z) in spots:
                     forceload(r, dim, x, z, 128)

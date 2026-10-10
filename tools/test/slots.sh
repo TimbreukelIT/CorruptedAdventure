@@ -1,19 +1,22 @@
 #!/bin/bash
 # Machine lock + JVM slots (waves.md §4, agent-rules-golf3). At most 3 Gradle/Minecraft JVMs on the machine: every
-# build, runData, runServer and runClient holds a slot `<lockdir>/ca-jvm-slot-{1,2,3}`; machine-wide things (runClient
-# with quick play, JFR, ffmpeg) also hold the lock `<lockdir>/ca-test.lock`, taken FIRST. Both are taken with an atomic
-# mkdir and carry an `owner` file (stream, Windows PID, time, task, checkout).
+# build, runData, runServer and runClient holds a slot `<lockdir>/ca-jvm-slot-{1,2,3}`; machine-wide things (the
+# quick-play start of a client, JFR, ffmpeg) also hold the lock `<lockdir>/ca-test.lock`, taken FIRST. Both are taken
+# with an atomic mkdir and carry an `owner` file:
+#     stream=<s> pid=<windows pid of the real holder> time=<iso> task=<label> token=<id> root=<checkout>
 #
-#   slots.sh take [-n N] [--lock] [--task TEXT] [--wait SEC]
+#   slots.sh run [-n N] [--lock] [--task LABEL] [--wait SEC] -- <command...>
+#       take, run the command, and always release (trap on EXIT/INT/TERM); exit code of the command. The holder PID is
+#       this script (alive while the command runs); a unique token per run, so parallel runs never free each other.
+#   slots.sh take [-n N] [--lock] [--task LABEL] [--token ID] [--pid WINPID] [--wait SEC]
 #       N slots (default 1), the lock first with --lock, all or nothing. If not everything is free, frees what it got and
 #       retries every 20 s for up to SEC seconds (default 0: one try; -1: no limit) - never waits holding anything.
-#       Exit 0 held, 2 busy, 3 the user is playing.
-#   slots.sh release [--task TEXT]   free what this stream holds (only entries of that task with --task)
-#   slots.sh run [-n N] [--lock] [--task TEXT] [--wait SEC] -- <command...>
-#       take, run the command, and always release (trap on EXIT/INT/TERM); exit code of the command
-#   slots.sh adopt <winpid> [--task TEXT]   make <winpid> the owner PID (a long-running server/client JVM)
+#       --pid: the process that holds them (default: the caller, i.e. the parent of this script) - it must live as
+#       long as the hold, or `adopt` a longer-lived one. Exit 0 held, 2 busy, 3 the user is playing.
+#   slots.sh release [--task LABEL] [--token ID] [--lock-only]   free this stream's entries (of that task/token)
+#   slots.sh adopt <winpid> [--task LABEL] [--token ID]          make <winpid> the holder (a server/client JVM)
 #   slots.sh status                  lock, slots and the play lock with owner and age
-#   slots.sh clean                   remove stale entries: owner older than 60 min AND its PID dead
+#   slots.sh clean                   remove stale entries: owner older than 60 min AND its holder PID dead
 #
 # Refuses everything while `<lockdir>/ca-user-test.lock` exists (main puts it there while the user plays).
 # Test the protocol in a scratch directory with CA_LOCK_DIR=<dir> (never touch the real play lock).
@@ -24,14 +27,18 @@ mkdir -p "$CA_LOCK_DIR" 2>/dev/null
 
 ENTRIES=("$CA_MACHINE_LOCK" "$CA_LOCK_DIR/ca-jvm-slot-1" "$CA_LOCK_DIR/ca-jvm-slot-2" "$CA_LOCK_DIR/ca-jvm-slot-3")
 
-owner_line() { echo "stream=$CA_STREAM pid=${OWNER_PID:-$(ca_winpid)} time=$(ca_now) task=${TASK:-manual} root=$(ca_winpath "$CA_ROOT")"; }
+owner_line() {
+    echo "stream=$CA_STREAM pid=$OWNER_PID time=$(ca_now) task=${TASK:-manual} token=${TOKEN:-${TASK:-manual}} root=$(ca_winpath "$CA_ROOT")"
+}
 
-# Ours = same stream and same checkout (and the same task with --task).
+field() { sed -n "s/.* $2=\([^ ]*\).*/\1/p; s/^$2=\([^ ]*\).*/\1/p" "$1/owner" 2>/dev/null | head -1; }
+
+# Ours = same stream and same checkout (and the same task/token when filtered).
 is_ours() {
-    local f="$1/owner"
-    [ -f "$f" ] || return 1
-    grep -q "stream=$CA_STREAM " "$f" && grep -qF "root=$(ca_winpath "$CA_ROOT")" "$f" || return 1
-    [ -z "$TASK_FILTER" ] || grep -qF "task=$TASK_FILTER root=" "$f"
+    [ -f "$1/owner" ] || return 1
+    [ "$(field "$1" stream)" = "$CA_STREAM" ] && grep -qF "root=$(ca_winpath "$CA_ROOT")" "$1/owner" || return 1
+    [ -z "$TASK_FILTER" ] || [ "$(field "$1" task)" = "$TASK_FILTER" ] || return 1
+    [ -z "$TOKEN_FILTER" ] || [ "$(field "$1" token)" = "$TOKEN_FILTER" ]
 }
 
 age_min() {
@@ -44,7 +51,7 @@ clean() {
     for e in "${ENTRIES[@]}"; do
         [ -d "$e" ] || continue
         [ "$(age_min "$e")" -gt "$STALE_MIN" ] || continue
-        pid="$(sed -n 's/.*pid=\([0-9]*\).*/\1/p' "$e/owner" 2>/dev/null)"
+        pid="$(field "$e" pid)"
         if [ -n "$pid" ] && ca_pid_alive "$pid"; then continue; fi
         echo "stale (> $STALE_MIN min, pid ${pid:-?} dead): $e — $(cat "$e/owner" 2>/dev/null)"
         rm -rf "$e"
@@ -54,6 +61,7 @@ clean() {
 release() {
     local e
     for e in "${ENTRIES[@]}"; do
+        [ "$LOCK_ONLY" = 1 ] && [ "$e" != "$CA_MACHINE_LOCK" ] && continue
         if is_ours "$e"; then rm -rf "$e"; echo "released $(basename "$e")"; fi
     done
 }
@@ -77,7 +85,7 @@ attempt() {
         [ "$USE_LOCK" = 1 ] && rm -rf "$CA_MACHINE_LOCK"
         return 2
     fi
-    echo "held: slots ${got[*]}$([ "$USE_LOCK" = 1 ] && echo ' + lock') (stream $CA_STREAM, task ${TASK:-manual}) at $(date +%T)"
+    echo "held: slots ${got[*]}$([ "$USE_LOCK" = 1 ] && echo ' + lock') (stream $CA_STREAM, task ${TASK:-manual}, holder pid $OWNER_PID) at $(date +%T)"
 }
 
 take() {
@@ -108,12 +116,15 @@ status() {
 }
 
 cmd="$1"; shift
-N=1; USE_LOCK=0; TASK=""; WAIT=0; TASK_FILTER=""; OWNER_PID=""
+N=1; USE_LOCK=0; TASK=""; TOKEN=""; WAIT=0; TASK_FILTER=""; TOKEN_FILTER=""; OWNER_PID=""; LOCK_ONLY=0
 while [ $# -gt 0 ]; do
     case "$1" in
         -n) N="$2"; shift 2 ;;
         --lock) USE_LOCK=1; shift ;;
-        --task) TASK="$2"; TASK_FILTER="$2"; shift 2 ;;
+        --lock-only) LOCK_ONLY=1; shift ;;
+        --task) TASK="${2// /_}"; TASK_FILTER="$TASK"; shift 2 ;;
+        --token) TOKEN="${2// /_}"; TOKEN_FILTER="$TOKEN"; shift 2 ;;
+        --pid) OWNER_PID="$2"; shift 2 ;;
         --wait) WAIT="$2"; shift 2 ;;
         --) shift; break ;;
         *) if [ "$cmd" = adopt ] && [ -z "$OWNER_PID" ]; then OWNER_PID="$1"; shift; else ca_die "unknown argument $1"; fi ;;
@@ -122,7 +133,10 @@ done
 [ "$N" -ge 1 ] && [ "$N" -le 3 ] || ca_die "-n must be 1..3"
 
 case "$cmd" in
-    take) take ;;
+    take)
+        # The caller holds the entries (this script ends right away).
+        OWNER_PID="${OWNER_PID:-$(cat "/proc/$PPID/winpid" 2>/dev/null || echo "$PPID")}"
+        take ;;
     release) release ;;
     clean) clean ;;
     status) status ;;
@@ -130,17 +144,18 @@ case "$cmd" in
         [ -n "$OWNER_PID" ] || ca_die "adopt needs a Windows PID"
         for e in "${ENTRIES[@]}"; do
             if is_ours "$e"; then
-                t="$(sed -n 's/.* task=\(.*\) root=.*/\1/p' "$e/owner")"
-                TASK="$t" owner_line > "$e/owner"; echo "adopted $(basename "$e") by pid $OWNER_PID"
+                TASK="$(field "$e" task)" TOKEN="$(field "$e" token)" owner_line > "$e/owner"
+                echo "adopted $(basename "$e") by pid $OWNER_PID"
             fi
         done ;;
     run)
         [ $# -gt 0 ] || ca_die "run needs -- <command>"
-        TASK="${TASK:-$1}"; TASK_FILTER="$TASK"
+        OWNER_PID="$(ca_winpid)"
+        TASK="${TASK:-$(basename "$1")}"; TOKEN="run-$OWNER_PID-$RANDOM"; TOKEN_FILTER="$TOKEN"; TASK_FILTER=""
         take || exit $?
         trap 'release >/dev/null' EXIT
         trap 'exit 130' INT TERM
         "$@"
         exit $? ;;
-    *) sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+    *) sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

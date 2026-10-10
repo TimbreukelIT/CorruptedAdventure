@@ -3,10 +3,13 @@
     python detcmp.py <worldA> <worldB> <areas> [--dim ow|nether] [--only name ...] [--all] [--list 5] [--json out]
 
 Per area: chunks identical in every block, and the differences split into
-  own    positions where either side is a mod block (corruptedadventure:*) - must be 0;
-  other  vanilla blocks outside the known noise (lava/water/air shifts that are not noise, obsidian, ...);
-  noise  vanilla features known to depend on the load order (ore blobs, springs, stone variants; NOISY below).
---all lists the most common differing pairs of every kind, not only own/other. Exit code 1 when any own block differs.
+  own    a mod block (corruptedadventure:*) on either side - an error;
+  other  any other difference: terrain, fluids, air, vanilla features outside the known noise - a warning to explain;
+  noise  only the known load-order noise of vanilla ore/stone blobs: a blob block (ores, andesite/diorite/granite/tuff,
+         gravel, dirt, clay, magma, soul sand, blackstone) against its host rock or another blob block. Air, water and
+         lava are never noise.
+--all lists the most common differing pairs of every kind. Exit code: 1 when an own block differs or a chunk is
+missing in either world (or nothing was compared), 2 when only `other` differences exist, 0 when clean.
 """
 import argparse
 import json
@@ -21,21 +24,21 @@ import areas  # noqa: E402
 import region  # noqa: E402
 
 MOD = "corruptedadventure:"
-# Vanilla feature blocks known to depend on thread/load order (ore blobs, water/lava springs, stone variants).
-NOISY = {"minecraft:andesite", "minecraft:diorite", "minecraft:granite", "minecraft:tuff", "minecraft:gravel", "minecraft:dirt",
-         "minecraft:coal_ore", "minecraft:iron_ore", "minecraft:copper_ore", "minecraft:deepslate_coal_ore",
-         "minecraft:deepslate_iron_ore", "minecraft:deepslate_copper_ore", "minecraft:gold_ore", "minecraft:deepslate_gold_ore",
-         "minecraft:redstone_ore", "minecraft:deepslate_redstone_ore", "minecraft:lapis_ore", "minecraft:deepslate_lapis_ore",
-         "minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:emerald_ore", "minecraft:deepslate_emerald_ore",
-         "minecraft:clay", "minecraft:water", "minecraft:lava", "minecraft:air", "minecraft:cave_air", "minecraft:stone",
-         "minecraft:deepslate", "minecraft:nether_gold_ore", "minecraft:nether_quartz_ore", "minecraft:magma_block",
-         "minecraft:soul_sand", "minecraft:blackstone", "minecraft:netherrack"}
+# Vanilla blob blocks whose placement depends on the load order (features across chunk borders), and their host rocks.
+BLOBS = {"minecraft:andesite", "minecraft:diorite", "minecraft:granite", "minecraft:tuff", "minecraft:gravel", "minecraft:dirt",
+         "minecraft:clay", "minecraft:magma_block", "minecraft:soul_sand", "minecraft:blackstone",
+         "minecraft:coal_ore", "minecraft:iron_ore", "minecraft:copper_ore", "minecraft:gold_ore", "minecraft:redstone_ore",
+         "minecraft:lapis_ore", "minecraft:diamond_ore", "minecraft:emerald_ore", "minecraft:deepslate_coal_ore",
+         "minecraft:deepslate_iron_ore", "minecraft:deepslate_copper_ore", "minecraft:deepslate_gold_ore",
+         "minecraft:deepslate_redstone_ore", "minecraft:deepslate_lapis_ore", "minecraft:deepslate_diamond_ore",
+         "minecraft:deepslate_emerald_ore", "minecraft:nether_gold_ore", "minecraft:nether_quartz_ore", "minecraft:ancient_debris"}
+HOSTS = {"minecraft:stone", "minecraft:deepslate", "minecraft:netherrack", "minecraft:basalt"}
 
 
 def kind(a, b):
     if a.startswith(MOD) or b.startswith(MOD):
         return "own"
-    if a in NOISY and b in NOISY:
+    if (a in BLOBS or b in BLOBS) and a in BLOBS | HOSTS and b in BLOBS | HOSTS:
         return "noise"
     return "other"
 
@@ -101,7 +104,12 @@ def main():
     if a.json:
         with open(a.json, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=1)
-    sys.exit(1 if tot["own"] else 0)
+    missing = sum(r["missing"] for r in results)
+    if tot["own"] or missing or not tot["chunks"]:
+        if missing or not tot["chunks"]:
+            print("FAIL: %d chunk(s) missing in one of the worlds, %d compared" % (missing, tot["chunks"]))
+        sys.exit(1)
+    sys.exit(2 if tot["other"] else 0)
 
 
 if __name__ == "__main__":

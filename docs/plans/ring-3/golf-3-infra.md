@@ -36,7 +36,20 @@ De scripts van `terrain-g2/build/afr/py/` zijn verloren; de indeling is opnieuw 
 - Voortgang: 2026-10-10 13:11 eerste clienttest faalde: quick play naar `localhost` gaat naar ::1, de server luistert op 127.0.0.1 → `client.sh` gebruikt 127.0.0.1; het foutpad stopte de eigen client en gaf lock + slot vrij.
 - Voortgang: 2026-10-10 13:16 perf-droogrun (`--warm 1 --cold 1 --only ring1 --max-min 6`): 5 min, tabel ring1 noise 0,83 (koud 0,98), surface 1,43, features 0,94; lock + 3 slots vrijgegeven; JFR-rapporten worden nu ook opgeruimd.
 - Voortgang: 2026-10-10 13:18 client joint (Dev, eigen PID), `client.sh list/shot/key F1/shot/stop` OK (venster van de eigen PID, HUD weg op shot 2); harde stop (`--max-min 1`): ronde 1 "deadline reached, 0 of 1 areas", `aborted`, ronde 2 niet gestart, tabel met "Onvolledig (harde stop)".
-- Voortgang: 2026-10-10 13:23 B (`./gradlew build --rerun-tasks`) groen.
+- Voortgang: 2026-10-10 13:23 B (`./gradlew build --rerun-tasks`) groen; commit `cad37a5`, review aangevraagd.
+- Voortgang: 2026-10-10 13:50 reviewfixes (10 bevindingen + 3 lager), extra commit:
+  1. `client.sh`: lock alleen tot de client gejoind is (`release --lock-only`), slot per client → client 2 naast client 1 (getest: Dev + Dev2 tegelijk, `list` 2 spelers, shots van beide eigen PID's).
+  2. `slots.sh`: owner-PID = de echte houder (`take` registreert de aanroeper, `--pid`, `run` zichzelf; server/client `adopt` hun JVM); `clean` alleen bij leeftijd > 60 min én dode houder (getest: levende houder van 120 min blijft staan).
+  3. `slots.sh run`: uniek `token` per run; vrijgeven op token (getest: twee parallelle runs, de eerste die klaar is laat het slot van de tweede staan).
+  4. `perf.sh`: klok/harde stop start pas als lock + slots binnen zijn.
+  5. `server.sh`/`client.sh`: bij fout of time-out ook de eigen Gradle-job stoppen (`ca_stop_job`, Windows-PID van `$!` als boom) (getest: start met time-out 5 s → geen eigen JVM over, slot vrij).
+  6. `detcmp.py`: `noise` alleen nog vanilla-erts-/steenklodders tegen hun gastgesteente; lucht/water/lava/terrein = `other` (exit 2 = waarschuwing).
+  7. `detcmp.py`: ontbrekende chunks of niets vergeleken → exit 1.
+  8. `gen.py`: laden per blok van 3 × 3 chunks na elkaar (omgekeerd: gebieden, tegels, blokken en hoekvolgorde), time-out per blok.
+  9. `world.sh --settle`: de tegel blijft geforceload tijdens de settle (in `gen.py`), standaard 0, gelijk voor A en B.
+  10. Gradle in de tools met `--no-daemon`; README: nooit `./gradlew --stop`, eigen aanroepen ook `--no-daemon`.
+  Lager: `rcon.py` leest antwoorden van meer pakketten (getest: `help` 4.110 tekens compleet, volgende opdracht OK; een tweede "eindmarker"-verzoek kan niet, vanilla verwerkt één pakket per read); `perf.py` warm-upposities uit de ringradii in `run/config`; `section.py probe` decodeert elke chunk één keer.
+  Rooktests: slots in testmap, mislukte start, `det.sh` op smoke (13/13 identiek, exit 0, nieuwe `gen.py`, settle 3), twee clients, lange RCON-uitvoer. Perf niet opnieuw gedraaid (alleen klokstart en warm-upposities gewijzigd; posities offline gecontroleerd). B groen (13:49, `--no-daemon`).
 
 ## W-checklist (INT3)
 - Na de merge naar main: `bash tools/test/setup.sh <stroom> <n>` per worktree; INT gebruikt `world.sh`/`det.sh`/`lavascan.py`/`featidx.py` en (na de go) `perf.sh`.

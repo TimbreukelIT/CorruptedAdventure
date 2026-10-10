@@ -12,7 +12,8 @@ import socket
 import struct
 import sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+MAX_FRAGMENT = 4096  # characters per response packet (vanilla RconClient)
+ROOT =os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 
 def _kv(path, sep="="):
@@ -66,8 +67,31 @@ class Rcon:
         return rid, kind, data[8:-2].decode("utf-8", "replace")
 
     def cmd(self, command):
+        """The full response. The server splits a long one into packets of 4096 characters, sent back to back; a full
+        packet means more may follow, read until a short one or a short silence. (The vanilla server reads one packet
+        per read and drops the rest of the buffer, so a second "end marker" request cannot be used.)"""
         self._send(2, command)
-        return self._recv()[2]
+        want = self.rid
+        parts = []
+        try:
+            rid, _, body = self._recv()
+        except (EOFError, ConnectionError):  # e.g. after `stop`
+            return ""
+        if rid == want:
+            parts.append(body)
+        timeout = self.s.gettimeout()
+        try:
+            while len(body) >= MAX_FRAGMENT:
+                self.s.settimeout(0.5)
+                try:
+                    rid, _, body = self._recv()
+                except (socket.timeout, EOFError, ConnectionError):
+                    break
+                if rid == want:
+                    parts.append(body)
+        finally:
+            self.s.settimeout(timeout)
+        return "".join(parts)
 
     def close(self):
         self.s.close()
