@@ -9,15 +9,15 @@ Avontuur-, horror- en survivalmod rond Herobrine. De speler reist van een vertro
 | 1 | Vanilla-ring | Vertrouwd Minecraft, rust vóór de storm | 0 – 1.500 | 0 – 375 |
 | 2 | Droge ring | Canyons en oases met villagers | 1.500 – 3.500 | 375 – 875 |
 | 3 | Vulkanische ring | Vulkanen, lavarivieren en zwevende eilanden; het water is "gestolen"; de langste overleving | 3.500 – 6.000 | 875 – 1.500 |
-| 4 | Moerasring | Gestolen water, gif, enge beesten boven en onder de grond | 6.000 – 7.800 | 1.500 – 1.950 |
-| 5 | Corrupted ring | Wastezone, void, glitches; Herobrines kastelen | 7.800 – 9.500 | 1.950 – 2.375 |
-| — | Buitenrand | Afbrokkelend terrein en void; world border op 10.000 | 9.500 – 10.000 | 2.375 – 2.500 |
+| 4 | Mythische waterring | Water in elke biome, uit de grond gerukte zwevende eilanden, tunnels van mythische wezens; naar buiten bedorven en giftig, aan de rand valt de wereld uit elkaar | 6.000 – 8.000 | 1.500 – 2.000 |
+| 5 | Corrupted ring | Wastezone, void, glitches; Herobrines kastelen | 8.000 – 9.700 | 2.000 – 2.425 |
+| — | Buitenrand | Afbrokkelend terrein en void; world border op de void-rand (~10.200) | 9.700 – ~10.200 | 2.425 – ~2.550 |
 
-Ring 3 is sinds de sparring van 2026-10-06 de breedste ring (2.500 blokken): de "midden"-ring is de langste en zwaarste overleving. Grenzen hebben ruis (±96 blokken) en overgangszones (~128 blokken). Alle waarden staan centraal in config (standaard-buitenradii 1.500 / 3.500 / 6.000 / 7.800 / 9.500; een wijziging geldt alleen voor nieuwe werelden), zodat ze te balanceren zijn. Elke grens krijgt een eigen soort muur (mist, as, …) die de ring erachter vaag houdt tot de bewaker verslagen is. Uitwerking: `fase-1-wereld.md`.
+Ring 3 is sinds de sparring van 2026-10-06 de breedste ring (2.500 blokken): de "midden"-ring is de langste en zwaarste overleving. Sinds de sparring van 2026-10-10 is ring 4 2.000 breed (6.000 – 8.000) en schuift ring 5 op naar 8.000 – 9.700. Grenzen hebben ruis (±96 blokken) en overgangszones (~128 blokken). Alle waarden staan centraal in config (standaard-buitenradii 1.500 / 3.500 / 6.000 / 8.000 / 9.700, void-rand ~10.200; een wijziging geldt alleen voor nieuwe werelden), zodat ze te balanceren zijn. Elke grens krijgt een eigen soort muur (mist, as, …) die de ring erachter vaag houdt tot de bewaker verslagen is. Uitwerking: `fase-1-wereld.md`.
 
 Omgevingscondities per ring: 1 geen · 2 uitdroging · 3 hitte · 4 gif · 5 void/glitches. In de Nether: kou in Nether-3, stilte in Nether-5; Nether-4 is zuiverend (meters zakken er snel).
 
-Verhaallijn: het water uit ring 3 is gestolen en naar ring 4 gestroomd. Dit is een aanknopingspunt voor quests en lore.
+Verhaallijn: het water uit ring 3 is gestolen en naar ring 4 gestroomd, waar het over een klif naar beneden stort. De corruptie van ring 5 trekt de wereld uit elkaar: hoe dichter bij ring 5, hoe sterker (in ring 4 worden eilanden uit de grond gerukt; aan de grens 4→5 valt de grond uiteen). Dit is een aanknopingspunt voor quests en lore.
 
 ## De Nether als tussenwereld
 - De Nether volgt dezelfde ringindeling, met **coördinatenschaal 4**. Elke Nether-ring is de **tegenpool** van de bijbehorende overworld-ring: 1 vanilla-Nether · 2 doorweekte schimmel-Nether · 3 bevroren Nether · 4 droge kristal-/bottenwoestijn · 5 'zuivere' witte, stille Nether. Het sleutelmateriaal van Nether-ring N is thematisch een tegengif voor ring N+1: zielkristal → dauwkristal (hitte) → oerijs (gif) → hemelglas (void/glitches) → witte kern (Herobrine).
@@ -81,7 +81,7 @@ Werkcategorieën (één per change): `worldgen`, `blocks`, `textures`, `atmosphe
 ## Vastgelegde beslissingen
 - Minecraft 1.21.1, NeoForge; modnaam The Corrupted Adventure
 - Eigen world preset; multiplayer en dedicated servers zijn een must
-- Ringbreedtes zoals in de tabel (startwaarden; ring 3 verbreed naar 3.500–6.000 op 2026-10-06)
+- Ringbreedtes zoals in de tabel (startwaarden; ring 3 verbreed naar 3.500–6.000 op 2026-10-06; ring 4 naar 6.000–8.000 en ring 5 naar 8.000–9.700 op 2026-10-10)
 - 4 bewakersstructures per grens, 4 kastelen in ring 5
 - Progressie deels per speler, deels per server
 - Final battle één keer per server, één groep tegelijk
