@@ -79,7 +79,7 @@ public final class VolcanicField implements DensityFunction {
     private static final double RIB_SIN = Math.sin(0.6);
     private static final double RIDGE_HEIGHT = 5.0;
     private static final int MAX_ISLANDS = 6;
-    private static final int MAX_SOLIDS = 8;
+    static final int MAX_SOLIDS = 8;
     private static final int MAX_VOIDS = 8;
     private static final int MAX_PILLARS = 2;
     /**
@@ -967,6 +967,22 @@ public final class VolcanicField implements DensityFunction {
         FULL, HEIGHT, TRACE
     }
 
+    /**
+     * The terrain's surface in a column as the noise chunk builds it (42d): the bilinear blend of the heights of its
+     * cell's corners (every 4 blocks), below which the ring 3 stack is rock (it is linear in y; crags not counted).
+     */
+    double interpolatedSurface(int x, int z) {
+        int x0 = Math.floorDiv(x, 4) * 4;
+        int z0 = Math.floorDiv(z, 4) * 4;
+        double fx = (x - x0) / 4.0;
+        double fz = (z - z0) / 4.0;
+        double h00 = coreHeightUncached(x0, z0);
+        double h10 = coreHeightUncached(x0 + 4, z0);
+        double h01 = coreHeightUncached(x0, z0 + 4);
+        double h11 = coreHeightUncached(x0 + 4, z0 + 4);
+        return Mth.lerp(fz, Mth.lerp(fx, h00, h10), Mth.lerp(fx, h01, h11));
+    }
+
     private double coreHeightUncached(double x, double z) {
         Column column = heightScratch.get();
         fill(column, Mth.floor(x), Mth.floor(z), Mode.HEIGHT);
@@ -1260,7 +1276,7 @@ public final class VolcanicField implements DensityFunction {
             // Closed: no vanilla cave or carver opens it (a lava tube may).
             c.addDeepGuard(geode.y() - geode.reach() - 2, geode.y() + geode.reach() + 2);
         }
-        LavaTubes.addTo(c, tubeTileFor(x, z), px, pz);
+        LavaTubes.addTo(this, c, tubeTileFor(x, z), x, z, px, pz);
     }
 
     /**
@@ -1634,6 +1650,8 @@ public final class VolcanicField implements DensityFunction {
         int fallTop;
         int fallBottom;
         int fallFlowBelow;
+        /** 42d: whether the roof in front of a mouth lies in this column, or why not (LavaTubes.LID_NONE ...). */
+        int lidSkip;
         /** 47e: the fall whose spring is {@link #springY}, and the fall through this column ({@link #fallTop}), or null. */
         @Nullable
         Volcano.LavaFall springFall;
@@ -1726,6 +1744,7 @@ public final class VolcanicField implements DensityFunction {
             fallTop = Integer.MIN_VALUE;
             fallBottom = Integer.MIN_VALUE;
             fallFlowBelow = Integer.MIN_VALUE;
+            lidSkip = LavaTubes.LID_NONE;
             springFall = null;
             fall = null;
             guardBottom = Integer.MAX_VALUE;

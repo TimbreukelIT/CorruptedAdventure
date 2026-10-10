@@ -36,6 +36,17 @@ Testzaad opnieuw: 38 vallen, 37 met stroming, 0 nat, 0 afgekapt. B (709 tests) e
 
 Voortgang: Sat Oct 10 15:17 WEDT 2026 42d: main gemerged (38c, `678a7e4`). Dunne daken van één blok boven een opening in de korstbiomes (`ashen_wastes`, `volcanic_peaks`, `ember_woods`, `titan_fields`) zijn weer `ash_crust` (i.p.v. `ash_block`); vóór elke buismond een stuk dun dak: waar de mondhelling van een droge buis door de grond breekt en minstens `LID_DROP` (3) diep ligt, wordt het bovenste grondblok een dun vast blok van een eigen soort (`KIND_CRUST`, 6) en eindigt de opening eronder; de surface verft het `ash_crust`, in elk biome. Het ondiepe begin van de geul blijft open, dus de mond blijft zichtbaar. Testzaad: 484 monden, 466 met een korstdak (de rest: helling te kort/ondiep), 10.029 korstkolommen. Determinisme: de korst hangt na het laden (38c), de vorm is puur. B (`slots.sh run`, 721 tests) en D groen, geen diff, `ring3_surface.py` idempotent. **Perf hermeten in INT (surface).**
 
+Voortgang: Sat Oct 10 15:29 WEDT 2026 reviewfixes 42d (main, 10 punten):
+1. het dak is het bovenste blok van de echte grond: `VolcanicField.interpolatedSurface` (bilineaire mix van de hoeken van de cel) i.p.v. de veldhoogte van de kolom;
+2. alleen boven die ene opening: geen dak als de kolom nog een opening heeft (daklicht, tweede buis, kamer, schacht), lava (meer, rivier, goot, val, bron), crags of een dun vast blok op of net boven het dak;
+3. eerst alle controles (ook `MAX_SOLIDS`), dan pas de opening inkorten;
+4. alleen als de opening echt onder het dak doorloopt (onderkant ≤ dak − 1);
+5. een ander dun blok op het dak → geen dak (reden `thin solid`), zodat het deksel altijd `KIND_CRUST` is;
+6./7. test per mond met een reden voor elke mond zonder dak, alle buizen (ook zijbuizen), alleen de kolommen langs de laatste `LID_REACH` blokken van elk uiteinde (visited-set), monden via `column()` en het geïnterpoleerde oppervlak;
+8. CODEBASE-delta aangevuld;
+10. alleen binnen `LID_REACH` (24) blokken langs de buis vanaf een uiteinde (vóór een mond), niet onder geulen/rifts/instortingen verderop.
+De beslissing wordt nu ná alle openingen van de kolom genomen (`LavaTubes.addTo` → `lid`), met een diagnosecode per kolom (`Column.lidSkip`). Testzaad: 513 monden, 463 met een korstdak (9.283 korstkolommen); zonder: andere opening 33, crags 5, dun vast blok 11, te ondiep 1, lava 0, geen plek 0. B (721 tests) en D groen, geen diff, `ring3_surface.py` idempotent.
+
 ## W-checklist (INT3)
 - [ ] **42c** lavascan (trede/val/lek): afgrond (pit) lek 0; de oude plek (4.409–4.412, Y 5–9, −510…−508) dicht.
 - [ ] **54c** Nether-3-kloven (n3rifts, chunks 68…83 × −30…−15): 0 blootliggende ijsblokken onder Y 30 binnen 3 blokken (horizontaal) van een open lavakolom; scheuren aan de rand van `rime_forest` met gloeiende scheur/magma-wanden.
@@ -64,7 +75,9 @@ Voortgang: Sat Oct 10 15:17 WEDT 2026 42d: main gemerged (38c, `678a7e4`). Dunne
 - `worldgen/feature/AshDriftFeature.java`: 47e — geen aslaag waar de lava van een val kan stromen (`inFallFlow`).
 - Tests: `Ring3LavaFallFlowTest` (nieuw): elke gemaakte val heeft een stroomgebied, niet afgekapt; de aslaag van INT-afr ligt erin; puur (twee threads, omgekeerde volgorde).
 - Valkuil: **vloeiende lava en water in worldgen** — wat de lava van een val (of een bron) bereikt, verandert op het moment dat ze stroomt (losse blokken weg, obsidiaan bij water); features die losse blokken leggen blijven uit `VolcanicField.fallFlowsNear`, en vallen die water kunnen raken worden niet gemaakt. Vraag je vanuit code die een kolom van het venster vasthoudt naar andere kolommen, gebruik dan een eigen cache (de `ColumnTable` hergebruikt de kolomobjecten bij het verschuiven).
-- `worldgen/densityfunction/LavaTubes.java`: 42d — `LID_DROP`; een droge buis die minstens 3 diep door de grond breekt krijgt daar een dak van één blok (`addSolid(roof, roof, KIND_CRUST)`), de opening eindigt eronder.
+- `worldgen/densityfunction/LavaTubes.java`: 42d — `LID_DROP` (3), `LID_REACH` (24), `LID_*`-redenen; `addTo(field, column, tile, x, z, px, pz)` beslist ná alle openingen van de kolom over het dak vóór een mond (`lid`): binnen `LID_REACH` van een uiteinde van een droge buis, waar de geul minstens 3 diep door de echte grond breekt, alleen boven die ene opening (geen andere opening, lava, crags of dun blok); het bovenste grondblok wordt een dun vast blok `KIND_CRUST`, de opening eindigt eronder.
+- `VolcanicField.java`: 42d — `interpolatedSurface(x, z)` (de grond zoals de noise chunk hem bouwt: bilineair tussen de celhoeken, zonder crags); `Column.lidSkip` (diagnose); `MAX_SOLIDS` pakketzichtbaar.
+- `CODEBASE.md`: de 42b-regels "worldgen legt geen `ash_crust` (meer)" / "dunne daken `ash_block`" vervallen (r. ~488, ~693 en ~1210): dunne daken in de korstbiomes en het dak vóór elke buismond zijn `ash_crust` (38c).
 - `Landmarks.java`: 42d — `KIND_CRUST` (6); `VolcanicOutput.THIN_KIND` tot 6.
 - `noise_settings/overworld.json` (uit `ring3_surface.py`): 42d — `THIN_ROOF` in de korstbiomes → `ash_crust`; dunne vaste blokken van soort 6 → `ash_crust` (elk biome); `THIN_ANY` tot 7. CODEBASE-regel over "worldgen plaatst geen `ash_crust` meer" (42b) vervalt.
 - Tests: `Ring3TerrainJsonTest` (korst in de ring 3-tak, niet in de wandregel), `Ring3TerrainWave3Test.everyTubeMouthHasAPieceOfAshCrustRoofInFrontOfIt`.

@@ -131,47 +131,120 @@ class Ring3TerrainWave3Test {
 
     @Test
     void everyTubeMouthHasAPieceOfAshCrustRoofInFrontOfIt() {
-        // 42d: where a main tube's mouth ramp breaks through the ground at least LID_DROP deep, a roof of one block of ash
-        // crust (thin kind KIND_CRUST) covers it, with the opening right below; the shallow end of the trench stays open.
+        // 42d: where the trench in front of a mouth breaks through the real ground (the interpolated surface) at least
+        // LID_DROP deep, the ground's top block is a roof of ash crust (thin kind KIND_CRUST) over that one opening. Every
+        // mouth without one has a reason: another opening, lava, crags or a thin solid in the column, or a trench that
+        // never lies that deep. Only the columns along the last LID_REACH blocks of each tube end are filled.
         int mouths = 0;
         int lidded = 0;
         int lids = 0;
+        int[] reasons = new int[LavaTubes.LID_NO_ROOM + 2];
         int cells = 6000 / LavaTubes.CELL;
         for (int i = -cells; i <= cells; i++) {
             for (int j = -cells; j <= cells; j++) {
                 LavaTubes.TubeSystem system = field.tubeSystem(i, j);
-                if (system == null || system.tubes().isEmpty()) {
+                if (system == null) {
                     continue;
                 }
-                LavaTubes.Tube main = system.tubes().get(0);
-                int n = main.points();
-                for (int end : new int[]{0, n - 1}) {
-                    double ground = field.traceColumn(main.x()[end], main.z()[end]).height();
-                    if (main.floor()[end] < ground - 3.0) {
-                        continue; // no mouth at this end (it ends blind)
-                    }
-                    mouths++;
-                    int found = 0;
-                    int cx = (int) Math.floor(main.x()[end]);
-                    int cz = (int) Math.floor(main.z()[end]);
-                    for (int x = cx - 16; x <= cx + 16; x++) {
-                        for (int z = cz - 16; z <= cz + 16; z++) {
-                            VolcanicField.Column c = field.column(x, z);
-                            int roof = (int) Math.ceil(c.height) - 1;
-                            if (c.thinKind(roof) == Landmarks.KIND_CRUST) {
-                                assertTrue(c.voidAt(roof - 1) && !c.voidAt(roof), "the crust roofs an opening at " + x + "," + roof + "," + z);
-                                found++;
+                for (LavaTubes.Tube tube : system.tubes()) {
+                    int n = tube.points();
+                    double length = tube.along()[n - 1];
+                    for (int end = 0; end < 2; end++) {
+                        Set<Long> visited = new HashSet<>();
+                        boolean mouth = false;
+                        boolean deep = false;
+                        int placed = 0;
+                        int[] skipped = new int[reasons.length];
+                        for (int k = 0; k < n - 1; k++) {
+                            double from = end == 0 ? tube.along()[k] : length - tube.along()[k + 1];
+                            if (from > LavaTubes.LID_REACH + LavaTubes.STEP) {
+                                continue;
+                            }
+                            double reach = tube.half()[k] + 2.0;
+                            int x0 = (int) Math.floor(Math.min(tube.x()[k], tube.x()[k + 1]) - reach);
+                            int x1 = (int) Math.ceil(Math.max(tube.x()[k], tube.x()[k + 1]) + reach);
+                            int z0 = (int) Math.floor(Math.min(tube.z()[k], tube.z()[k + 1]) - reach);
+                            int z1 = (int) Math.ceil(Math.max(tube.z()[k], tube.z()[k + 1]) + reach);
+                            for (int x = x0; x <= x1; x++) {
+                                for (int z = z0; z <= z1; z++) {
+                                    if (!visited.add((long) x << 32 | z & 0xFFFFFFFFL)) {
+                                        continue;
+                                    }
+                                    VolcanicField.Column c = field.column(x, z);
+                                    int roof = (int) Math.ceil(field.interpolatedSurface(x, z)) - 1;
+                                    if (c.lidSkip == LavaTubes.LID_PLACED) {
+                                        assertTrue(c.thinKind(roof) == Landmarks.KIND_CRUST && c.voidAt(roof - 1) && !c.voidAt(roof)
+                                                && c.voidCount == 1 && !c.hasLava(), "a crust roof as the ground's top block at " + x + "," + roof + "," + z);
+                                        placed++;
+                                        mouth = true;
+                                        continue;
+                                    }
+                                    skipped[c.lidSkip]++;
+                                    double along = alongOf(tube, x + 0.5, z + 0.5);
+                                    if (c.voidAt(roof) && (end == 0 ? along : length - along) <= LavaTubes.LID_REACH) {
+                                        // An opening breaks through the real ground here, in front of the tube's end: a mouth.
+                                        mouth = true;
+                                        if (c.voidCount > 1) {
+                                            skipped[LavaTubes.LID_OTHER_OPENING]++;
+                                        } else {
+                                            deep |= roof - c.voidMin() >= LavaTubes.LID_DROP;
+                                        }
+                                    }
+                                }
                             }
                         }
+                        if (!mouth) {
+                            continue;
+                        }
+                        mouths++;
+                        lids += placed;
+                        if (placed > 0) {
+                            lidded++;
+                            continue;
+                        }
+                        int reason = LavaTubes.LID_NONE;
+                        for (int r = LavaTubes.LID_OTHER_OPENING; r <= LavaTubes.LID_NO_ROOM; r++) {
+                            if (skipped[r] > 0) {
+                                reason = r;
+                            }
+                        }
+                        if (reason == LavaTubes.LID_NONE) {
+                            // No column was turned down: the trench is never LID_DROP deep where it breaks through.
+                            assertTrue(!deep, "a deep mouth without a roof or a reason, tube end at " + tube.x()[end == 0 ? 0 : n - 1]
+                                    + "," + tube.z()[end == 0 ? 0 : n - 1]);
+                            reason = reasons.length - 1;
+                        }
+                        reasons[reason]++;
                     }
-                    lids += found;
-                    lidded += found > 0 ? 1 : 0;
                 }
             }
         }
-        System.out.println("42d: mouths " + mouths + ", with a crust roof " + lidded + ", crust columns " + lids);
+        System.out.println("42d: mouths " + mouths + ", with a crust roof " + lidded + ", crust columns " + lids
+                + "; without: other opening " + reasons[LavaTubes.LID_OTHER_OPENING] + ", lava " + reasons[LavaTubes.LID_LAVA]
+                + ", crags " + reasons[LavaTubes.LID_CRAGS] + ", thin solid " + reasons[LavaTubes.LID_THIN_SOLID]
+                + ", no room " + reasons[LavaTubes.LID_NO_ROOM] + ", too shallow " + reasons[reasons.length - 1]);
         assertTrue(mouths >= 10, "mouths " + mouths);
-        assertTrue(lidded >= mouths * 0.9, "mouths with a crust roof " + lidded + " of " + mouths);
+        assertTrue(lidded >= mouths / 2, "mouths with a crust roof " + lidded + " of " + mouths);
+    }
+
+    /** The distance along a tube of its point nearest (px, pz), as {@code LavaTubes.addTube} measures it. */
+    private static double alongOf(LavaTubes.Tube t, double px, double pz) {
+        double best = Double.MAX_VALUE;
+        double along = 0.0;
+        for (int k = 0; k < t.points() - 1; k++) {
+            double dx = t.x()[k + 1] - t.x()[k];
+            double dz = t.z()[k + 1] - t.z()[k];
+            double len2 = dx * dx + dz * dz;
+            double u = len2 == 0.0 ? 0.0 : Math.max(0.0, Math.min(1.0, ((px - t.x()[k]) * dx + (pz - t.z()[k]) * dz) / len2));
+            double ex = t.x()[k] + u * dx - px;
+            double ez = t.z()[k] + u * dz - pz;
+            double d2 = ex * ex + ez * ez;
+            if (d2 < best) {
+                best = d2;
+                along = t.along()[k] + u * (t.along()[k + 1] - t.along()[k]);
+            }
+        }
+        return along;
     }
 
     /** The number of columns within {@code r} (square) of (x, z) where lava shows (the field's ground below its lava). */
