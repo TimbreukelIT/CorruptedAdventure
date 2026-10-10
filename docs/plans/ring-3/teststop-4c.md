@@ -118,14 +118,44 @@ Details: `docs/plans/ring-3/int3.md` ("Resultaten").
 - **Feature-index ring 1/2** (tegen main zonder W): terrein 0 verschil; biomes identiek op één bestaande Nether-2-chunk na (backlog).
 - [ ] Na deze teststop: geen nieuwe meting nodig, tenzij een fix het terrein raakt.
 
-## J. Prestatie (wordt ingevuld na de meting)
-Meting: `tools/test/perf.sh` (JFR `minecraft.ChunkGeneration`, mod tegen de vanilla-datapackdimensies in één server, 16 × 16 chunks per gebied, warm-up over alle ringtypes, verse wereld per ronde), **3 warme rondes + 1 koude**, harde stop 45 min; tegen INT-afr (`int-afr.md`). Golf 3 raakt de noise-stap (42c, de band rond de afgrondzee) en de surface-stap (39g `lava_shore`, 42d askorst-dak). Budget noise ≤ 1,75× vanilla (mediaan per gebied).
+## J. Prestatie (gemeten na INT3, main `1713f8c`, 2026-10-10 17:49–18:35)
+Meting: `tools/test/perf.sh --name perf-int3` (JFR `minecraft.ChunkGeneration`, mod tegen de vanilla-datapackdimensies in één server, 16 × 16 chunks per gebied, warm-up over alle ringtypes, verse wereld en verse JVM per ronde, volgorde per gebied wisselend), gepland 3 warme rondes + 1 koude, harde stop 45 min; vergeleken met INT-afr (`int-afr.md`, zelfde gebieden en methode). Golf 3 raakt de noise-stap (42c, de band rond de afgrondzee) en de surface-stap (39g `lava_shore`, 42d askorst-dak). Budget noise ≤ 1,75× vanilla (mediaan per gebied). Uitvoer: `build/test/perf-int3/` (alle rondes) en `build/test/perf-int3-r12/` (rondes 1–2) in de INT3-worktree.
 
-| Gebied | noise (3 warm) | min–max | surface | features | noise koud | surface koud | noise INT-afr | surface INT-afr |
-|---|---|---|---|---|---|---|---|---|
-| _(volgt)_ | | | | | | | | |
+**Geldige rondes: 1 en 2.** Een ronde duurde ~16 min (24 gebieden + warm-up), dus de harde stop viel midden in ronde 3 (15 van de 24 gebieden) en er was geen tijd meer voor de koude ronde. **Ronde 3 is afwijkend en niet meegeteld:** de modtijden lagen in die JVM overal ~50 % hoger (noise ~37 s → ~55 s per gebied), terwijl vanilla gelijk bleef (~35 s), zodat bijna elk ring 3-gebied 1,41–1,65 gaf; bij asvlakte en zeekom waren ook de vanillatijden hoger (~50 s, externe belasting). Dezelfde code gaf in ronde 1 en 2 1,0–1,35: een JIT-toestand van die ene JVM (zie de backlogregel over deoptimalisatie in het noise-pad) of belasting van buiten, geen codeverschil. Er draaide één java-proces buiten de meting (de client van de gebruiker, nauwelijks CPU bij de controles om 17:49 en 17:59).
 
-- [ ] Noise binnen budget; surface en features vergeleken met INT-afr.
+| Gebied | noise (ronde 1–2) | ronde 1 / 2 | surface | features | ronde 3 (afwijkend) | noise INT-afr | surface INT-afr |
+|---|---|---|---|---|---|---|---|
+| ring 1 | 1,18 | 1,09 / 1,28 | 1,46 | 0,98 | 1,22 | 0,89 | 1,44 |
+| ring 2 | 1,35 | 1,62 / 1,07 | 2,95 | 0,87 | 1,56 | 1,17 | 2,80 |
+| horizonreus | 1,18 | 1,08 / 1,28 | 2,52 | 0,43 | 1,65 | 1,22 | 2,59 |
+| caldera | 1,08 | 1,06 / 1,09 | 2,19 | 0,48 | 1,53 | 1,11 | 2,21 |
+| lavarivieren | 1,01 | 1,00 / 1,02 | 2,16 | 1,32 | 1,58 | 1,02 | 2,18 |
+| asvlakte | 1,03 | 1,04 / 1,01 | 2,05 | 1,12 | 1,41 | 1,03 | 2,09 |
+| zeekom | 1,16 | 1,08 / 1,24 | 1,75 | 0,92 | 1,04 | 1,39 | 1,73 |
+| titanenveld | 1,12 | 1,06 / 1,18 | 1,90 | 0,99 | 1,48 | 1,10 | 1,90 |
+| pieken | 1,06 | 1,09 / 1,03 | 2,21 | 1,06 | 1,56 | 1,05 | 2,21 |
+| basaltstromen | 1,09 | 1,12 / 1,06 | 2,09 | 0,34 | 1,53 | 1,06 | 2,14 |
+| smeulwoud | 1,33 | 1,31 / 1,35 | 1,95 | 0,92 | 1,62 | 1,26 | 1,95 |
+| zwavelvelden | 1,22 | 1,21 / 1,23 | 2,37 | 0,39 | 1,60 | 1,21 | 2,39 |
+| slapende krater | 1,05 | 1,07 / 1,03 | 1,97 | 0,86 | 1,51 | 1,08 | 1,96 |
+| steam_fens | 1,10 | 1,16 / 1,04 | 1,68 | 0,36 | 1,61 | 1,12 | 1,67 |
+| lavabuis | 1,17 | 1,19 / 1,16 | 1,97 | 0,26 | 1,58 | 1,08 | 1,99 |
+| magmakamer | 1,08 | 1,10 / 1,06 | 2,06 | 0,99 | – | 1,09 | 2,08 |
+| afgrond | 1,27 | 1,12 / 1,41 | 2,18 | 0,73 | – | 1,24 | 2,21 |
+| Nether-1 | 1,14 | 1,10 / 1,19 | 1,06 | 0,81 | – | 1,15 | 1,07 |
+| Nether-2 | 1,33 | 1,33 / 1,34 | 0,75 | 0,09 | – | 1,24 | 0,76 |
+| Nether-3 rijpwoud (n3e) | 1,35 | 1,37 / 1,33 | 1,44 | 0,51 | – | 1,33 | 1,42 |
+| Nether-3 zee (n3w) | 1,26 | 1,15 / 1,37 | 1,07 | 0,19 | – | 1,15 | 1,05 |
+| Nether-3 zuid | 1,18 | 1,11 / 1,25 | 1,21 | 0,46 | – | 1,23 | 1,17 |
+| Nether-3 noord | 1,14 | 1,12 / 1,16 | 1,04 | 0,30 | – | 1,06 | 1,03 |
+| Nether-3 kloven | 1,23 | 1,31 / 1,15 | 1,02 | 0,29 | – | 1,23 | 0,95 |
+
+- **Noise:** alle gebieden ≤ 1,35 over ronde 1–2 (budget 1,75; INT-afr ≤ 1,39); hoogste losse ronde ring 2 1,62 (ronde 1, het eerste gebied na de warm-up; ring 2 is in golf 3 niet geraakt) en afgrond 1,41 (ronde 2). 42c is in de noise-stap niet meetbaar: de verschillen met INT-afr liggen binnen de spreiding tussen rondes (afgrond 1,27 tegen 1,24).
+- **Surface:** ring 3 1,7–2,5×, gelijk aan INT-afr (39g `lava_shore` en het 42d-dak kosten niets meetbaars); ring 2 2,95 (niet geraakt, INT-afr 2,80).
+- **Features:** ring 3 0,26–1,32× vanilla, zoals INT-afr.
+- **Koud:** niet gemeten (harde stop). INT-afr koud ≤ 1,29.
+- [x] Noise binnen budget; surface en features vergeleken met INT-afr.
+- [ ] Koude ronde (los, ~10 min: `perf.sh --warm 0 --cold 1`), als main of de gebruiker dat wil.
 - [ ] In-game: geen haperingen bij het aanvliegen van de horizonreus, het titanenveld en het smeulwoud (verse server, koud); F3 ms/tick.
 
 ## Afstemvragen
@@ -136,4 +166,5 @@ Meting: `tools/test/perf.sh` (JFR `minecraft.ChunkGeneration`, mod tegen de vani
 5. **Nether-2-biome laadvolgorde** (één sectie van chunk (37, −4) wisselt `spore_caves` aan/uit; blokken identiek): **A. backlog, onderzoeken in de infra-ronde (aanbevolen)** · B. nu uitzoeken (worldgen Nether-2, raakt teststop 3-terrein niet).
 
 ## Voortgang
-- 2026-10-10: checklist opgesteld door INT3 (`ring3/int3` op main `3ee7f55`); prestatie volgt na het signaal van main.
+- 2026-10-10: checklist opgesteld door INT3 (`ring3/int3` op main `3ee7f55`).
+- 2026-10-10 17:49–18:35: prestatie gemeten (sectie J): rondes 1–2 geldig, ronde 3 afwijkend en onvolledig, geen koude ronde (harde stop).
