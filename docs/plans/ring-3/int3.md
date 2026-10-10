@@ -15,3 +15,5 @@ Voortgang: Sat Oct 10 15:20 WEDT 2026 worktree `P:/Projecten/Java/The Corrupted 
 Voortgang: Sat Oct 10 15:22 WEDT 2026 T gemerged (`5887a74`, tip `840d3fa`, geen conflicten).
 Voortgang: Sat Oct 10 15:24 WEDT 2026 na T: B `--rerun-tasks` groen (711 tests, 0 fouten), D groen, `git diff src/generated` leeg.
 Voortgang: Sat Oct 10 15:26 WEDT 2026 docs-delta's I (T0), B (38c), T (57 r1) samengevoegd in `CODEBASE.md`, `02-beslissingenlog.md`, `fase-1-wereld.md`, `docs/backlog.md` (incl. de backlog-uitkomst van `golf-3.md`: infra-ronde / fase 2–4 / ring 4 / blijft staan). W-deel na de W-merge.
+Voortgang: Sat Oct 10 15:31 WEDT 2026 W gemerged (`71123b6`, tip `68d7f98`, geen conflicten).
+Voortgang: Sat Oct 10 15:36 WEDT 2026 na W: B `--rerun-tasks` groen (721 tests, 0 fouten), D groen, `git diff src/generated` leeg; `ring3_surface.py` en `nether_ring3_surface.py` idempotent; docs-delta W samengevoegd (CODEBASE incl. kop/status, beslissingenlog, fase-1, backlog).
