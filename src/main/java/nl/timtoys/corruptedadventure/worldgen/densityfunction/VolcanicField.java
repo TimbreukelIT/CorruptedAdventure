@@ -632,6 +632,97 @@ public final class VolcanicField implements DensityFunction {
         return once(decisions.riverTiles, key, () -> LavaRivers.tile(this, ti, tj));
     }
 
+    /**
+     * Where the lava of a fall may flow on the ground it lands on (47e, {@link LavaFallFlow}), traced once per world;
+     * keyed by the fall's column (one fall per column). The trace fills its own columns, so a caller may hold a column
+     * of the thread's window across this call.
+     */
+    LavaFallFlow.Flow fallFlow(Volcano.LavaFall fall) {
+        long key = (long) fall.fallX() << 32 | fall.fallZ() & 0xFFFFFFFFL;
+        if (decisions.fallFlows.size() > Decisions.LIMIT) {
+            decisions.fallFlows.clear();
+        }
+        return once(decisions.fallFlows, key, () -> LavaFallFlow.trace(this, fall));
+    }
+
+    /**
+     * 47e: whether a lava fall is made at all: not where its lava may reach water (below Y 0, or out of ring 3 into a
+     * transition zone, where the neighbouring ring keeps its water). Lava meeting water turns to obsidian or stone at
+     * the moment it flows, so the world would depend on when the chunks were loaded.
+     */
+    public boolean fallStaysDry(Column column) {
+        return column.fall == null || !fallFlow(column.fall).wet();
+    }
+
+    /** {@link #fallStaysDry} for the fall whose spring the column holds. */
+    public boolean springStaysDry(Column column) {
+        return column.springFall == null || !fallFlow(column.springFall).wet();
+    }
+
+    /**
+     * The flows of the lava falls that are made and may reach columns from (minX, minZ) to (maxX, maxZ) inclusive (47e,
+     * for features).
+     */
+    public List<LavaFallFlow.Flow> fallFlowsNear(int minX, int minZ, int maxX, int maxZ) {
+        List<LavaFallFlow.Flow> flows = new java.util.ArrayList<>();
+        int reach = LavaFallFlow.REACH + 1;
+        java.util.Set<Long> seen = new java.util.HashSet<>();
+        for (int i = Math.floorDiv(minX - reach - VolcanoPlacement.ISLAND_CELL / 2, VolcanoPlacement.ISLAND_CELL);
+             i <= Math.floorDiv(maxX + reach + VolcanoPlacement.ISLAND_CELL / 2, VolcanoPlacement.ISLAND_CELL); i++) {
+            for (int j = Math.floorDiv(minZ - reach - VolcanoPlacement.ISLAND_CELL / 2, VolcanoPlacement.ISLAND_CELL);
+                 j <= Math.floorDiv(maxZ + reach + VolcanoPlacement.ISLAND_CELL / 2, VolcanoPlacement.ISLAND_CELL); j++) {
+                for (Volcano.Island island : channelIslands(i, j)) {
+                    addFlows(island.falls(), minX, minZ, maxX, maxZ, reach, seen, flows);
+                }
+            }
+        }
+        // The archipelagos and island clusters of the volcanoes (3 x 3 cells, as the columns read them).
+        int size = settings.cellSize();
+        for (int i = Math.floorDiv(minX - reach, size) - 1; i <= Math.floorDiv(maxX + reach, size) + 1; i++) {
+            for (int j = Math.floorDiv(minZ - reach, size) - 1; j <= Math.floorDiv(maxZ + reach, size) + 1; j++) {
+                Volcano v = volcano(i, j);
+                if (v != null) {
+                    for (Volcano.Island island : v.islands()) {
+                        addFlows(island.falls(), minX, minZ, maxX, maxZ, reach, seen, flows);
+                    }
+                }
+            }
+        }
+        for (int i = Math.floorDiv(minX - reach, Landmarks.FLOATING_CELL); i <= Math.floorDiv(maxX + reach, Landmarks.FLOATING_CELL); i++) {
+            for (int j = Math.floorDiv(minZ - reach, Landmarks.FLOATING_CELL); j <= Math.floorDiv(maxZ + reach, Landmarks.FLOATING_CELL); j++) {
+                Landmarks.FloatingVolcano fv = floating(i, j);
+                if (fv != null) {
+                    addFlows(fv.falls(), minX, minZ, maxX, maxZ, reach, seen, flows);
+                }
+            }
+        }
+        return flows;
+    }
+
+    private void addFlows(List<Volcano.LavaFall> falls, int minX, int minZ, int maxX, int maxZ, int reach, java.util.Set<Long> seen,
+                          List<LavaFallFlow.Flow> out) {
+        for (Volcano.LavaFall fall : falls) {
+            if (fall.fallX() < minX - reach || fall.fallX() > maxX + reach || fall.fallZ() < minZ - reach || fall.fallZ() > maxZ + reach
+                    || !seen.add((long) fall.fallX() << 32 | fall.fallZ() & 0xFFFFFFFFL)) {
+                continue;
+            }
+            LavaFallFlow.Flow flow = fallFlow(fall);
+            // A wet fall is not made (fallStaysDry).
+            if (!flow.isEmpty() && !flow.wet()) {
+                out.add(flow);
+            }
+        }
+    }
+
+    /** Whether (x, z) lies in ring 3 proper, past both transition zones (no neighbouring ring's water there; 47e). */
+    boolean ring3Proper(double x, double z) {
+        RingLayout ringLayout = layout.get();
+        List<Integer> radii = ringLayout.settings().ringOuterRadii();
+        double half = ringLayout.settings().transitionWidth() / 2.0;
+        double distance = ringLayout.effectiveDistance(x, z);
+        return distance > radii.get(1) + half && distance < radii.get(2) - half;
+    }
+
     /** The value of a per-key future, computed by the first thread that asks (outside the map's locks). */
     private static <T> T once(Map<Long, java.util.concurrent.FutureTask<T>> map, long key, java.util.concurrent.Callable<T> work) {
         java.util.concurrent.FutureTask<T> task = map.get(key);
@@ -1544,6 +1635,11 @@ public final class VolcanicField implements DensityFunction {
         int fallTop;
         int fallBottom;
         int fallFlowBelow;
+        /** 47e: the fall whose spring is {@link #springY}, and the fall through this column ({@link #fallTop}), or null. */
+        @Nullable
+        Volcano.LavaFall springFall;
+        @Nullable
+        Volcano.LavaFall fall;
         int guardBottom;
         int guardTop;
         int islandCount;
@@ -1631,6 +1727,8 @@ public final class VolcanicField implements DensityFunction {
             fallTop = Integer.MIN_VALUE;
             fallBottom = Integer.MIN_VALUE;
             fallFlowBelow = Integer.MIN_VALUE;
+            springFall = null;
+            fall = null;
             guardBottom = Integer.MAX_VALUE;
             guardTop = Integer.MIN_VALUE;
             islandCount = 0;
@@ -1669,9 +1767,11 @@ public final class VolcanicField implements DensityFunction {
             for (Volcano.LavaFall fall : falls) {
                 if (fall.springX() == x && fall.springZ() == z) {
                     springY = fall.springY();
+                    springFall = fall;
                 }
-                if (fall.fallX() == x && fall.fallZ() == z) {
-                    fallTop = Math.max(fallTop, fall.springY());
+                if (fall.fallX() == x && fall.fallZ() == z && fall.springY() > fallTop) {
+                    fallTop = fall.springY();
+                    this.fall = fall;
                 }
             }
         }
@@ -1967,6 +2067,18 @@ public final class VolcanicField implements DensityFunction {
         }
 
         /** Below this Y (inclusive) the fall's lava is let flow, where it lands; {@link Integer#MIN_VALUE} without a fall. */
+        /** 47e: the lava fall whose spring this column holds ({@link #springY}), or null. */
+        @Nullable
+        Volcano.LavaFall springFall() {
+            return springFall;
+        }
+
+        /** 47e: the lava fall through this column ({@link #fallTop}), or null. */
+        @Nullable
+        Volcano.LavaFall fall() {
+            return fall;
+        }
+
         public int fallFlowBelow() {
             return fallFlowBelow;
         }

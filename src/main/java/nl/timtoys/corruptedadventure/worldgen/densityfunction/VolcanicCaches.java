@@ -38,6 +38,7 @@ final class VolcanicCaches {
         final Map<Long, java.util.concurrent.FutureTask<LavaTubes.TubeSystem>> tubeSystems = new ConcurrentHashMap<>();
         final Map<Long, java.util.concurrent.FutureTask<LavaTubes.Tile>> tubeTiles = new ConcurrentHashMap<>();
         final Map<Long, Optional<FireGeodeShape.Geode>> geodes = new ConcurrentHashMap<>();
+        final Map<Long, java.util.concurrent.FutureTask<LavaFallFlow.Flow>> fallFlows = new ConcurrentHashMap<>();
         volatile Long salt;
 
         <K, V> void remember(Map<K, V> map, K key, V value) {

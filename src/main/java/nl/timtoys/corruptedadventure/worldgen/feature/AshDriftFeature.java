@@ -19,9 +19,11 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.neoforged.neoforge.common.Tags;
 import nl.timtoys.corruptedadventure.registry.ModTags;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.LavaFallFlow;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,8 +33,9 @@ import java.util.Map;
  * stair lines break (decision 39f). Placed once per chunk; the column's own biome decides whether and how thick.
  * <p>
  * Never on lava banks, cliffs, volcano flanks, craters, thin solids (needles, ribs, arches, islands: the found surface
- * must lie on the terrain height) or within 2 blocks of lava, never on flora or features (the block above the ground
- * must be air). Reads the frozen {@code WORLD_SURFACE_WG} heightmap (up to 4 blocks into the neighbours), the pure
+ * must lie on the terrain height), within 2 blocks of lava or where the lava of a fall may flow (47e: flowing lava would
+ * take the layer at a moment that depends on the loading order; {@link LavaFallFlow}), never on flora or features (the
+ * block above the ground must be air). Reads the frozen {@code WORLD_SURFACE_WG} heightmap (up to 4 blocks into the neighbours), the pure
  * terrain columns ({@link Ring3Terrain}), a seeded noise and its own chunk's blocks; writes only its own chunk.
  */
 public final class AshDriftFeature extends Feature<AshDriftConfiguration> {
@@ -87,6 +90,8 @@ public final class AshDriftFeature extends Feature<AshDriftConfiguration> {
             }
         }
 
+        List<LavaFallFlow.Flow> falls = field.fallFlowsNear(minX, minZ, minX + 15, minZ + 15);
+
         boolean placed = false;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int z = minZ; z < minZ + 16; z++) {
@@ -94,7 +99,8 @@ public final class AshDriftFeature extends Feature<AshDriftConfiguration> {
                 int surface = at.height(x, z);
                 pos.set(x, surface, z);
                 AshDriftConfiguration.BiomeAmount amount = level.getBiome(pos).unwrapKey().map(amounts::get).orElse(null);
-                if (amount == null || !GROUND.test(field.column(x, z), surface) || lavaNear(lava, x - minX, z - minZ, surface)) {
+                if (amount == null || !GROUND.test(field.column(x, z), surface) || lavaNear(lava, x - minX, z - minZ, surface)
+                        || inFallFlow(falls, x, z)) {
                     continue;
                 }
                 if (amount.flatOnly() && SlopeFilter.measure(SlopeFilter.Measure.RELIEF, 2, x, z, at::height) > 2) {
@@ -148,6 +154,16 @@ public final class AshDriftFeature extends Feature<AshDriftConfiguration> {
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    /** Whether the lava of one of {@code falls} may flow over column (x, z) (47e). */
+    static boolean inFallFlow(List<LavaFallFlow.Flow> falls, int x, int z) {
+        for (LavaFallFlow.Flow flow : falls) {
+            if (flow.contains(x, z)) {
+                return true;
             }
         }
         return false;
