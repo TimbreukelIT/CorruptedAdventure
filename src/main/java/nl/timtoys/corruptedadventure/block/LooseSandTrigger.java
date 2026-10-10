@@ -23,8 +23,9 @@ import java.util.List;
  * Collapsing blocks ({@code #corruptedadventure:collapsing_blocks}: loose sand, ash crust) cave in when a player walks
  * under them: a hanging one (left by worldgen, which places blocks without updates) just above a player gets a short
  * warning (dust, a creak) and then a scheduled tick, after which vanilla's falling-block logic drops it and lets the
- * neighbours follow. Only real players trigger it, never mobs. Only falling blocks in the tag count (a block that does
- * not fall would be warned about forever). Server-side only; particles and sound reach the clients through vanilla
+ * neighbours follow. A {@link CollapsingBlock} starts its own collapse instead (ash crust ignores updates and plans
+ * its chain, {@link AshCrustCollapse}; this is the only way it ever falls). Only real players trigger it, never
+ * mobs. Only falling blocks in the tag count (a block that does not fall would be warned about forever). Server-side only; particles and sound reach the clients through vanilla
  * packets. The name stays from ring 2 (the class is registered from the mod entry point).
  */
 public final class LooseSandTrigger {
@@ -62,7 +63,7 @@ public final class LooseSandTrigger {
                     level.getBlockTicks().hasScheduledTick(pos, state.getBlock()))) {
                 warn(level, pos, state, !warned);
                 warned = true;
-                level.scheduleTick(pos, state.getBlock(), WARNING_TICKS);
+                CollapsingBlock.start(level, pos, state, WARNING_TICKS);
             }
         }
     }
