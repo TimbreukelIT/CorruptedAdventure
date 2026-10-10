@@ -22,8 +22,10 @@ import javax.annotation.Nullable;
  * the lava below, like vanilla's barriers (vanilla itself lets water cells touch the layer, and the contact turns into
  * an obsidian crust). Overworld ring 3: lava in the lava lakes and channels of the {@link VolcanicField}
  * ({@link RingFluidPicker#ring3LavaColumn}, no fluid update: still lava), no water from Y 0 up
- * ({@link RingFluidPicker#ring3DryFrom}), and rock below ring 2's sea level in its half of the zone 2→3
- * ({@link RingFluidPicker#ring3SealBelow}). 42: the openings of the lava tubes, magma chambers and fire geodes stay free
+ * ({@link RingFluidPicker#ring3DryFrom}), rock below ring 2's sea level in its half of the zone 2→3
+ * ({@link RingFluidPicker#ring3SealBelow}), and a closed rock floor right above vanilla's lava layer: open space at
+ * Y −54 (air, water or lava, also for carvers) is always rock, so no water, not even water flowing down from higher up,
+ * can reach the lava layer and turn it into obsidian depending on the load order (47e, decision B, INT3). 42: the openings of the lava tubes, magma chambers and fire geodes stay free
  * of aquifer fluids (air, or lava in a gutter or a chamber's lake, crusted over where it would touch open air), and the
  * rock of their guard bands stays rock. Carvers fill their caves through this aquifer too, so they cannot cut into a
  * chamber, a gutter or a geode either.
