@@ -47,6 +47,8 @@ Voortgang: Sat Oct 10 15:29 WEDT 2026 reviewfixes 42d (main, 10 punten):
 10. alleen binnen `LID_REACH` (24) blokken langs de buis vanaf een uiteinde (vóór een mond), niet onder geulen/rifts/instortingen verderop.
 De beslissing wordt nu ná alle openingen van de kolom genomen (`LavaTubes.addTo` → `lid`), met een diagnosecode per kolom (`Column.lidSkip`). Testzaad: 513 monden, 463 met een korstdak (9.283 korstkolommen); zonder: andere opening 33, crags 5, dun vast blok 11, te ondiep 1, lava 0, geen plek 0. B (721 tests) en D groen, geen diff, `ring3_surface.py` idempotent.
 
+Voortgang: Sat Oct 10 15:35 WEDT 2026 controle-review 5ad7d25 (re-entrancy `heightScratch`): onmogelijk. `heightScratch` wordt alleen door hoogte-vullingen gebruikt (`coreHeightUncached`, `coreFloorUncached`, `Mode.HEIGHT`); `LavaTubes.addTo` → `lid` → `interpolatedSurface` loopt alleen via `caves()`, en dat staat in `fill` binnen `if (full)` (alleen `Mode.FULL`, op kolommen uit de `ColumnTable` of eigen `new Column()`, nooit op `heightScratch`). Een hoogte-vulling bereikt `lid` dus nooit, en de vulling die `lid` aanroept is nooit de scratchkolom. Geen codewijziging.
+
 ## W-checklist (INT3)
 - [ ] **42c** lavascan (trede/val/lek): afgrond (pit) lek 0; de oude plek (4.409–4.412, Y 5–9, −510…−508) dicht.
 - [ ] **54c** Nether-3-kloven (n3rifts, chunks 68…83 × −30…−15): 0 blootliggende ijsblokken onder Y 30 binnen 3 blokken (horizontaal) van een open lavakolom; scheuren aan de rand van `rime_forest` met gloeiende scheur/magma-wanden.
