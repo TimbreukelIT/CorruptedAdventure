@@ -20,11 +20,13 @@ Voortgang: Sat Oct 10 13:48 WEDT 2026 39g: de oever was het hele kanaal (`lava_b
 
 Voortgang: Sat Oct 10 14:00 WEDT 2026 47e: diagnose (offline diff `afr-det-a` ↔ `afr-det-b`, gebied arch): de aslaag (2.628, 116, −2.654) is een `ash_drift`-laag in `ember_woods` op de helling onder een archipelval, door de vloeiende lava wel/niet weggenomen; het obsidiaan van INT-afr ligt op Y −55 (2.574–2.593, −2.825…−2.815): vanilla-aquiferwater op vanilla's lavalaag, niet van de vallen (vraag aan main, zie Beslissingen). Fix: `LavaFallFlow` volgt per val waar de lava kan stromen (vanilla-regel ruim genomen: naar alle kanten, 2 minder per blok, opnieuw 8 na een val; grond 1 lager dan het geïnterpoleerde oppervlak; eigen kolomcache), één keer per wereld (`VolcanicField.fallFlow`); `AshDriftFeature` legt niets in een stroomgebied; een val die water kan raken (stroming onder Y 0 of buiten ring 3 zelf) wordt niet gemaakt (bron en val; besluit in de aquifer, `fallStaysDry`/`springStaysDry`). Testzaad: 38 vallen, 37 gemaakt, 0 nat, 0 afgekapt, grootste stroomgebied 412 kolommen; de aslaag van INT-afr ligt in een stroomgebied; puur (twee threads, omgekeerde volgorde, verse velden). B `--rerun-tasks` groen (707 tests), D zonder diff.
 
+Voortgang: Sat Oct 10 14:55 WEDT 2026 main gemerged (`tools/test/`); besluit B (obsidiaan Y −55): ring 3 houdt één blok rots tussen aquiferwater en de lavalaag. B (`slots.sh run`, 708 tests) en D groen, geen diff.
+
 ## W-checklist (INT3)
 - [ ] **42c** lavascan (trede/val/lek): afgrond (pit) lek 0; de oude plek (4.409–4.412, Y 5–9, −510…−508) dicht.
 - [ ] **54c** Nether-3-kloven (n3rifts, chunks 68…83 × −30…−15): 0 blootliggende ijsblokken onder Y 30 binnen 3 blokken (horizontaal) van een open lavakolom; scheuren aan de rand van `rime_forest` met gloeiende scheur/magma-wanden.
 - [ ] **39g** lavarivieren (ook brede en eindpoelen, gebied E/rivieren en B): smalle zwarte oever (~3 blokken vanaf de lava), magma alleen direct langs de lava; features langs de rivieren als vóór 39g.
-- [ ] **47e** determinisme omgekeerd geladen, gebied arch/archipel: geen `ash_layer`-verschil onder de vallen; overige verschillen daar alleen vloeiende lava (lucht ↔ lava) en het diepe obsidiaan op Y −55 (vanilla, tenzij besluit B); geen val die in water eindigt.
+- [ ] **47e** determinisme omgekeerd geladen, gebied arch/archipel: geen `ash_layer`-verschil onder de vallen; overige verschillen daar alleen vloeiende lava (lucht ↔ lava) en geen obsidiaan meer op Y −55 (besluit B); geen val die in water eindigt.
 - [ ] Prestatie: surface (39g) en noise (42c) hermeten na INT3.
 
 ## CODEBASE-delta
@@ -43,6 +45,7 @@ Voortgang: Sat Oct 10 14:00 WEDT 2026 47e: diagnose (offline diff `afr-det-a` �
 - `VolcanicField.java`: 47e — `fallFlow(fall)` (één keer per wereld, `Decisions.fallFlows`), `fallStaysDry(column)`/`springStaysDry(column)`, `fallFlowsNear(minX, minZ, maxX, maxZ)` (voor features; natte vallen niet), `ring3Proper(x, z)`; `Column.springFall()`/`fall()` (de val achter `springY`/`fallTop`).
 - `VolcanicCaches.Decisions`: `fallFlows`.
 - `worldgen/chunk/RingAquifer.java`: 47e — een val die water kan raken (stroming onder Y 0 of buiten ring 3 zelf) wordt niet gemaakt: geen bron, geen vallende lava.
+- `worldgen/chunk/RingAquifer.java`: 47e (besluit B) — in ring 3 wordt aquiferwater op Y −54 rots (zoals in ring 2), dus geen contact met vanilla's lavalaag; test `ring3LeavesStoneBetweenAquiferWaterAndTheLavaLayer`.
 - `worldgen/feature/AshDriftFeature.java`: 47e — geen aslaag waar de lava van een val kan stromen (`inFallFlow`).
 - Tests: `Ring3LavaFallFlowTest` (nieuw): elke gemaakte val heeft een stroomgebied, niet afgekapt; de aslaag van INT-afr ligt erin; puur (twee threads, omgekeerde volgorde).
 - Valkuil: **vloeiende lava en water in worldgen** — wat de lava van een val (of een bron) bereikt, verandert op het moment dat ze stroomt (losse blokken weg, obsidiaan bij water); features die losse blokken leggen blijven uit `VolcanicField.fallFlowsNear`, en vallen die water kunnen raken worden niet gemaakt. Vraag je vanuit code die een kolom van het venster vasthoudt naar andere kolommen, gebruik dan een eigen cache (de `ColumnTable` hergebruikt de kolomobjecten bij het verschuiven).
@@ -50,8 +53,7 @@ Voortgang: Sat Oct 10 14:00 WEDT 2026 47e: diagnose (offline diff `afr-det-a` �
 ## Beslissingen
 - 2026-10-10 · worldgen · Lavaoever (39g): 3 blokken vanaf de lavarand (zelfde breedte als de oude oever náást het kanaal), magma alleen in het eerste blok met de bestaande vlekruis; features houden de oude afstand (`lava_bank`) · uitvoering van het besluit "smaller, plafond in blokken, magma alleen direct langs de lava" (gebruiker 2026-10-10); de features ongewijzigd laten houdt de decoratie langs rivieren gelijk
 - 2026-10-10 · worldgen · Archipelvallen (47e): het stroomgebied is een ruime schatting van de vanilla-stroming over het terrein (naar alle kanten, grond 1 lager); "water raken" = stroming onder Y 0 (aquiferwater in ring 3) of buiten ring 3 zelf; zo'n val wordt helemaal niet gemaakt (bron + val) · uitvoering van het besluit "geen aslaag in het stroomgebied, vallen eindigen niet in water" (gebruiker 2026-10-10)
-- (open, vraag aan main 13:55) Obsidiaan op Y −55 onder de archipel (vanilla-aquiferwater op vanilla's lavalaag, ook in ring 1): A zo laten (aanbevolen) / B ring 3 krijgt de ring 2-regel (één blok steen tussen aquiferwater en de lavalaag) / C B voor alle ringen.
+- 2026-10-10 · worldgen · Ring 3 krijgt de ring 2-regel: één blok steen tussen diep aquiferwater en vanilla's lavalaag (Y −54); ring 1 blijft vanilla · het contact werd obsidiaan op het moment dat het water stroomde, afhankelijk van de laadvolgorde (INT-afr, Y −55 onder de archipel; besluit gebruiker B)
 
 ## Backlog
-- `worldgen` | (info) Determinisme ring 3: het obsidiaan dat INT-afr aan de archipelvallen toeschreef ligt op Y −55 (2.574–2.593, −2.825…−2.815): vanilla-aquiferwater raakt vanilla's lavalaag, zoals in ring 1; vloeistofgedrag, geen featurefout (zie besluit A/B hierboven). (bron: 47e)
 - `worldgen` | Vloeiende lava van vallen onder smeulbomen (`ember_woods`): lava kan smeulblad aansteken (vuur verspreidt op een moment dat van het laden afhangt). Alleen bekijken als het in een determinismescan opduikt. (bron: 47e)

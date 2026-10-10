@@ -233,6 +233,12 @@ final class RingAquifer implements Aquifer {
             suppressed = true;
             return AIR;
         }
+        if (dryFrom[i] != Integer.MAX_VALUE && y == RingFluidPicker.LAVA_LAYER_TOP && state.is(Blocks.WATER)) {
+            // 47e (B): as in ring 2, rock between deep aquifer water and vanilla's lava layer; the contact crusted over
+            // when the water first flowed, a moment that depends on the loading order.
+            lid = true;
+            return null;
+        }
         if (y < waterOnlyFrom[i] || !(state.is(Blocks.LAVA) || state.is(Blocks.WATER))) {
             return state;
         }

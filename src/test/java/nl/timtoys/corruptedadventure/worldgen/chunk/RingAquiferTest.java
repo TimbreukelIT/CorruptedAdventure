@@ -368,6 +368,19 @@ class RingAquiferTest {
     }
 
     @Test
+    void ring3LeavesStoneBetweenAquiferWaterAndTheLavaLayer() {
+        // 47e (B): deep water right above vanilla's lava layer touched it and crusted over at a moment that depends on the
+        // loading order (INT-afr, Y -55 under the archipelago); like ring 2, one block of rock stays between them.
+        RingAquifer ring3 = new RingAquifer(Level.OVERWORLD, WATER_WITH_UPDATE, FIELD);
+        assertNull(ring3.computeSubstance(RingPosition.within(Ring.RING_3), at(RingFluidPicker.LAVA_LAYER_TOP), -0.5));
+        assertFalse(ring3.shouldScheduleFluidUpdate());
+        assertSame(Blocks.WATER.defaultBlockState(), ring3.computeSubstance(RingPosition.within(Ring.RING_3), at(-53), -0.5));
+        // The lava layer itself stays.
+        RingAquifer still = new RingAquifer(Level.OVERWORLD, STILL_LAVA, FIELD);
+        assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(RingPosition.within(Ring.RING_3), at(-55), -0.5));
+    }
+
+    @Test
     void ring3CavesHoldNoAquiferFluidAndTheirGuardStaysRock() {
         // 42: a fire geode below Y 0 (where vanilla's aquifer may hold water): its cavity is air, the rock of its guard band
         // stays rock even where a carver asks (substance 0), so no cave or carver opens it.
