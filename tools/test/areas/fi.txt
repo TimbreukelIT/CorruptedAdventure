@@ -1,0 +1,17 @@
+# Feature index (ring 1/2 must not change): rings 1 and 2, the zones 1->2 and 2->3, Nether rings 1 and 2.
+# Compare a world of the branch with one of the reference (main) on biomes and terrain shape (featidx.py).
+r1a -33 -45 -30 -42
+r1b 18 18 21 21
+r1c 56 56 59 59
+z12 92 -2 95 1
+r2a 150 75 153 78
+r2b -158 -2 -155 1
+r2c -2 162 1 165
+z23a 217 -2 220 1
+z23b -2 -221 1 -218
+z23c -156 153 -153 156
+ring1 20 20 35 35
+ring2 148 -8 163 7
+n1 -8 -8 7 7 nether
+n2 31 -8 46 7 nether
+strip12 0 -2 60 1 nether
