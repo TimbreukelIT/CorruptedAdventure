@@ -637,7 +637,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Stoomvenen**: kokende modder (vertraagt, hitte ↑) en geiser (duwt periodiek omhoog, server-side).
 - **Uitwerking 38–46 (2026-10-06/07):**
   - **gloed in twee lagen** (besluit gebruiker): smeulsteen (licht 7), smeulende as (licht 2), smeulblad (geen bloklicht, V3) en de gloeiende scheur hebben een gewone texture + een emissive overlay met alleen de gloeipixels; nooit het hele blok fullbright;
-  - aslaag als sneeuwlaag die nooit smelt; **askorst stort alleen in van onderen** (zoals los zand; van bovenaf: beslissen na teststop 4b);
+  - aslaag als sneeuwlaag die nooit smelt; **askorst stort alleen in van onderen** (zoals los zand; sinds 38c alleen als een speler eronder loopt, nooit door buurupdates; dan valt de aaneengesloten hangende korst als ketting mee, max. 64 blokken);
   - verkoold hout, smeulblad en vuurflora zijn **niet brandbaar** (Nether-hout-patroon, geen brandstof);
   - **zwavelkorst dropt zichzelf** (zwavel komt alleen uit de ertsen); **geiser alleen met Silk Touch**;
   - kokende modder = de traagheid van honing; geiser duwt elke 5 s ~5 blokken omhoog, geen valschade bij landen, een bedekte opening blokkeert;
@@ -770,6 +770,11 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **determinisme archipelvallen:** geen aslaag in het stroomgebied van een val, en vallen eindigen niet waar ze water raken.
 - **Textures 57:** de randpunten van `glowing_fissure` symmetrisch (midden van elke rand), zodat geroteerde buren aansluiten; de Sodium/Iris-check van de gloeilagen als losse test-instance, maximaal ~30 min, anders terug naar de backlog.
 - **Naar later:** prestatie (noise-overhead ringraamwerk, surface ring 3) en de opruimrefactors (`VolcanicField`-cachehelper, `Ring3Conditions.register`, `WoodSet`, texturescripts) in een eigen `infra`-ronde na ring 3.
+
+**Besluiten tijdens golf 3 en integratie 3 (2026-10-10)** — details in `02-beslissingenlog.md`:
+- **Testtooling (T0):** `tools/test/` in git, één set voor alle stromen en de integratie; de lavascan deelt blootliggende lava in als trede / val / lek (heuristiek); RCON van de testserver alleen op 127.0.0.1 en alleen tijdens de test.
+- **Askorst (38c):** het bestaande `ash_crust` hangt tot een speler eronder loopt (ook als een speler hem zelf plaatst) en stort dan in als ketting over de aaneengesloten vrijhangende korst (~2 ticks per stap, max. 64; gestapelde korst valt altijd mee; nooit een zwevend restant); onder hangende korst af en toe een stofje (1 op 160).
+- **Textures 57 r1 (definitief, door de gebruiker in zijn geheel goedgekeurd, geen r2):** `glowing_fissure` met randpunten in het midden van elke rand en een afgekoelde naad tussen scheurblokken; `smoldering_stone` gloeit niet aan de blokranden; zwavelkristallen mat en still; zwavelmodders citroengeel / olijfgroen / roestoranje. Gloeilagen werken onder Sodium + Iris (ook met een shaderpack).
 
 **Client/server-risico's**
 - Water verdampen, geiser-duw, lavabommen en de hitte- en kou-meters: allemaal server-side. De lavabommen zijn gewone server-entities, dus alle clients zien dezelfde.
