@@ -87,6 +87,12 @@ public final class VolcanicField implements DensityFunction {
     private static final double CAVE_LIFT = 2.0;
     /** The band around a lava river reaches at least this far (blocks) past the lava's edge (42b). */
     private static final double RIVER_GUARD = 6.0;
+    /**
+     * The band around the abyss's lava sea reaches at least this far past its edge (42c): the block beside the lava plus
+     * the diagonal of a cell of the terrain's interpolation (5.7), so every cell corner a cave beside the lava is
+     * interpolated from lies in the band.
+     */
+    private static final double ABYSS_GUARD = 8.0;
     /** A cut at least this deep gets walls of ring 3 rock below the surface's own package (42b). */
     private static final double DEEP_CUT = 8.0;
     /** Separate lava ranges and guard bands one column may hold (42). */
@@ -1094,7 +1100,9 @@ public final class VolcanicField implements DensityFunction {
                 }
             }
         }
-        if (chasm < 1.3) {
+        // 42c: also ABYSS_GUARD blocks past the sea's edge where the abyss tapers to its ends (a band of 0.3 half widths was
+        // a block or less there, and a cave interpolated from the unguarded cell corners opened beside the lava).
+        if (chasm < 1.3 || abyss != null && abyss.near(px, pz, ABYSS_GUARD)) {
             c.guardBottom = Math.min(c.guardBottom, Landmarks.ABYSS_FLOOR - 14);
             c.guardTop = Math.max(c.guardTop, Landmarks.ABYSS_LAVA + 6);
         }
