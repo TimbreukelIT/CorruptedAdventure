@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 
 import net.minecraft.util.Mth;
+import nl.timtoys.corruptedadventure.worldgen.chunk.RingFluidPicker;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -23,32 +24,35 @@ import java.util.TreeSet;
  */
 public final class LavaFallFlow {
     /** How far (blocks, per axis) a flow is followed from its fall; a flow is cut off there. */
-    static final int REACH = 96;
-    /** Ring 3 keeps no water from this Y up (vanilla's aquifer water stays below it). */
-    static final int DRY_FROM = 0;
-    private static final int MAX_NODES = 40_000;
+    static final int REACH = 64;
+    private static final int MAX_NODES = 8_000;
     /** The amount of a falling block, and how much less each block of spreading leaves (lava in the overworld). */
     private static final int FALLING = 8;
     private static final int DROP_OFF = 2;
     private static final int CELL = 4;
     private static final int[][] SIDES = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-    static final Flow EMPTY = new Flow(new long[0], false, false, 0, 0, -1, -1);
+    static final Flow EMPTY = new Flow(new long[0], false, false, 0, 0, 0, -1, -1);
 
     private LavaFallFlow() {
     }
 
     /**
      * The columns a fall's lava may reach (sorted keys {@code x << 32 | z}), whether it may reach water ({@code wet}:
-     * below {@link #DRY_FROM}, or out of ring 3 proper into a transition zone), whether the trace was cut off at
-     * {@link #REACH}, and the bounds of its columns.
+     * below {@link RingFluidPicker#RING_3_DRY_FROM}, or out of ring 3 proper into a transition zone), whether the trace
+     * was cut off ({@link #REACH}, {@link #MAX_NODES}), how many states it visited, and the bounds of its columns.
      */
-    public record Flow(long[] columns, boolean wet, boolean cut, int minX, int minZ, int maxX, int maxZ) {
+    public record Flow(long[] columns, boolean wet, boolean cut, int nodes, int minX, int minZ, int maxX, int maxZ) {
         public boolean contains(int x, int z) {
             return x >= minX && x <= maxX && z >= minZ && z <= maxZ && Arrays.binarySearch(columns, key(x, z)) >= 0;
         }
 
         public boolean isEmpty() {
             return columns.length == 0;
+        }
+
+        /** Whether the fall is made: its lava surely stays dry (a cut-off trace may reach water past its end). */
+        public boolean made() {
+            return !wet && !cut;
         }
     }
 
@@ -85,7 +89,7 @@ public final class LavaFallFlow {
         int nodes = 0;
         while (!queue.isEmpty()) {
             int[] n = queue.poll();
-            wet |= n[1] < DRY_FROM || !field.ring3Proper(n[0] + 0.5, n[2] + 0.5);
+            wet |= n[1] < RingFluidPicker.RING_3_DRY_FROM || !field.ring3Proper(n[0] + 0.5, n[2] + 0.5);
             if (++nodes > MAX_NODES) {
                 cut = true;
                 break;
@@ -131,13 +135,14 @@ public final class LavaFallFlow {
             minZ = Math.min(minZ, z);
             maxZ = Math.max(maxZ, z);
         }
-        return new Flow(columns, wet, cut, minX, minZ, maxX, maxZ);
+        return new Flow(columns, wet, cut, nodes, minX, minZ, maxX, maxZ);
     }
 
     /** Open space as the terrain makes it, generously: the ground one block lower than its interpolated surface. */
     private static final class Ground {
         private final VolcanicField field;
         private final Map<Long, VolcanicField.Column> columns = new HashMap<>();
+        private final Map<Long, Double> surfaces = new HashMap<>();
 
         Ground(VolcanicField field) {
             this.field = field;
@@ -174,6 +179,10 @@ public final class LavaFallFlow {
 
         /** The terrain's surface: the blend of its cell corners (the noise chunk interpolates every 4 blocks). */
         private double surface(int x, int z) {
+            return surfaces.computeIfAbsent(key(x, z), k -> blend(x, z));
+        }
+
+        private double blend(int x, int z) {
             int x0 = Math.floorDiv(x, CELL) * CELL;
             int z0 = Math.floorDiv(z, CELL) * CELL;
             double fx = (x - x0) / (double) CELL;

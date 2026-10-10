@@ -326,14 +326,36 @@ class NetherRing3JsonTest {
         JsonObject branch = ring3Branch();
         double zone = crackZone();
         JsonObject warm = null;
-        for (JsonElement rule : branch.getAsJsonObject("then_run").getAsJsonArray("sequence")) {
-            JsonObject condition = rule.getAsJsonObject().getAsJsonObject("if_true");
-            if (condition != null && REGION_NOISE.equals(condition.has("noise") ? condition.get("noise").getAsString() : null)
-                    && rule.toString().contains("{\"type\":\"minecraft:y_above\",\"anchor\":{\"absolute\":14}")) {
-                warm = rule.getAsJsonObject();
+        JsonObject upperWalls = null;
+        int warmAt = -1, upperWallsAt = -1, firstIce = -1;
+        JsonArray rules = branch.getAsJsonObject("then_run").getAsJsonArray("sequence");
+        for (int i = 0; i < rules.size(); i++) {
+            JsonObject rule = rules.get(i).getAsJsonObject();
+            String text = rule.toString();
+            if (firstIce < 0 && text.contains("_ice\"")) {
+                firstIce = i;
+            }
+            JsonObject condition = rule.getAsJsonObject("if_true");
+            if (condition == null || !REGION_NOISE.equals(condition.has("noise") ? condition.get("noise").getAsString() : null)
+                    || Math.abs(condition.get("min_threshold").getAsDouble() + zone) > 1e-9) {
+                continue;
+            }
+            if (text.contains("{\"type\":\"minecraft:y_above\",\"anchor\":{\"absolute\":14}")) {
+                warm = rule;
+                warmAt = i;
+            } else if (text.contains("{\"type\":\"minecraft:y_above\",\"anchor\":{\"absolute\":44}")) {
+                upperWalls = rule;
+                upperWallsAt = i;
             }
         }
         assertTrue(warm != null, "the warm cracks' rule");
+        // Review 54c: the crack zone overlaps the rifts' edge (their glacier and ice falls from Y 30), and the pillars and
+        // frozen falls of the sea start at Y 30 too: the warm cracks come before every rule with ice, and above Y 30 the
+        // crack's walls up to its top (cut up to Y 43) are bare rock.
+        assertTrue(upperWalls != null && firstIce > 0, "the crack walls above Y 30, and the ice rules");
+        assertTrue(warmAt < firstIce && upperWallsAt < firstIce, "the warm cracks come before the ice");
+        assertFalse(upperWalls.toString().contains("_ice\""));
+        assertTrue(upperWalls.toString().contains("{\"type\":\"minecraft:y_above\",\"anchor\":{\"absolute\":30}"), "from Y 30");
         JsonObject region = warm.getAsJsonObject("if_true");
         assertEquals(-zone, region.get("min_threshold").getAsDouble(), 1e-9);
         assertEquals(zone, region.get("max_threshold").getAsDouble(), 1e-9);

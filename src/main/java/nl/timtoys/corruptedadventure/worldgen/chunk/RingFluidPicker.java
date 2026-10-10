@@ -31,7 +31,7 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
     /** Vanilla's global picker fills open space below this Y with lava (the overworld's lava layer). */
     static final int LAVA_LAYER_TOP = -54;
     /** Overworld ring 3 has no water at or above this Y. */
-    static final int RING_3_DRY_FROM = 0;
+    public static final int RING_3_DRY_FROM = 0;
     /** The overworld's sea level (noise settings), which ring 3's neighbours keep. */
     static final int SEA_LEVEL = 63;
 

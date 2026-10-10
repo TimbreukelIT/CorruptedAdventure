@@ -60,8 +60,19 @@ class Ring3LavaFallFlowTest {
         int wet = 0;
         int cut = 0;
         int largest = 0;
+        int nodes = 0;
+        int extent = 0;
+        long slowest = 0;
+        long total = 0;
+        VolcanicField fresh = VolcanicFieldTest.field();
         for (Volcano.LavaFall fall : falls) {
-            LavaFallFlow.Flow flow = field.fallFlow(fall);
+            long start = System.nanoTime();
+            LavaFallFlow.Flow flow = fresh.fallFlow(fall);
+            long took = System.nanoTime() - start;
+            slowest = Math.max(slowest, took);
+            total += took;
+            nodes = Math.max(nodes, flow.nodes());
+            extent = flow.isEmpty() ? extent : Math.max(extent, Math.max(Math.max(fall.fallX() - flow.minX(), flow.maxX() - fall.fallX()), Math.max(fall.fallZ() - flow.minZ(), flow.maxZ() - fall.fallZ())));
             if (flow.isEmpty()) {
                 continue;
             }
@@ -71,9 +82,19 @@ class Ring3LavaFallFlowTest {
             cut += flow.cut() ? 1 : 0;
             largest = Math.max(largest, flow.columns().length);
         }
-        System.out.println("47e: falls " + falls.size() + ", made " + made + ", wet " + wet + ", cut " + cut + ", largest flow " + largest);
+        System.out.println("47e: falls " + falls.size() + ", made " + made + ", wet " + wet + ", cut " + cut + ", largest flow " + largest
+                + " columns, most states " + nodes + ", widest reach " + extent + ", trace ms slowest " + slowest / 1_000_000 + " total " + total / 1_000_000);
         assertTrue(made > 20, "falls made " + made);
         assertEquals(0, cut, "a flow reaches past LavaFallFlow.REACH");
+    }
+
+    @Test
+    void aCutOffOrWetFlowIsNotMade() {
+        // Review 47e: a trace cut off at its reach or node limit may reach water past its end: the fall is not made.
+        long[] one = {LavaFallFlow.key(0, 0)};
+        assertTrue(new LavaFallFlow.Flow(one, false, false, 1, 0, 0, 0, 0).made());
+        assertFalse(new LavaFallFlow.Flow(one, false, true, 1, 0, 0, 0, 0).made());
+        assertFalse(new LavaFallFlow.Flow(one, true, false, 1, 0, 0, 0, 0).made());
     }
 
     @Test

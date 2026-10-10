@@ -22,6 +22,18 @@ Voortgang: Sat Oct 10 14:00 WEDT 2026 47e: diagnose (offline diff `afr-det-a` �
 
 Voortgang: Sat Oct 10 14:55 WEDT 2026 main gemerged (`tools/test/`); besluit B (obsidiaan Y −55): ring 3 houdt één blok rots tussen aquiferwater en de lavalaag. B (`slots.sh run`, 708 tests) en D groen, geen diff.
 
+Voortgang: Sat Oct 10 15:08 WEDT 2026 reviewfixes 42c–47e (main, `/code-review medium`, 9 punten):
+1. een afgekapte stroming telt als nat: de val wordt niet gemaakt en features zien hem niet (`Flow.made()`); test `aCutOffOrWetFlowIsNotMade`;
+2. Nether-3: de warme scheurregels staan nu vóór alle ijsregels (pillaren, bevroren vallen, rift-gletsjer en -ijsvallen), en boven Y 30 zijn de scheurwanden tot de top van de scheur (Y 43) kale netherrack met magma; offline nageteld op `afr-det-a` (n3rifts, 580 blootliggende ijsblokken binnen 3 blokken van open lava): onder Y 30 16 → 0 over; boven Y 30 op een scheurwand 294 → 0 over; de overige 195 boven Y 30 liggen niet aan een scheur (gletsjer en pillaren, vanaf Y 30 zoals ontworpen);
+3. javadoc `fallFlowBelow()` hersteld;
+4. `ring3Proper` via `RingLayout.sampleOverworld` (één ringfunctie);
+5. `RingFluidPicker.RING_3_DRY_FROM` (publiek) i.p.v. een eigen constante;
+6. trace goedkoper begrensd: `REACH` 96 → 64, `MAX_NODES` 40.000 → 8.000 (testzaad: verste stroming 20 blokken, hoogstens 982 toestanden); de `fallFlows`-map wordt nooit geleegd (ring 3 is eindig, ~40 vallen), dus geen herberekening in het hete pad; indicatief (verse velden, testzaad): traagste trace 59–61 ms, alle 38 samen ~0,4 s, één keer per val per wereld;
+7. oppervlak per kolom gecachet in de trace;
+8. eerst de goedkope grens `along < 1 + SHORE_BLOCKS / half`, dan pas `lavaEdge`;
+9. kolomsleutels overal via `LavaFallFlow.key`.
+Testzaad opnieuw: 38 vallen, 37 met stroming, 0 nat, 0 afgekapt. B (709 tests) en D groen, geen diff, script idempotent.
+
 ## W-checklist (INT3)
 - [ ] **42c** lavascan (trede/val/lek): afgrond (pit) lek 0; de oude plek (4.409–4.412, Y 5–9, −510…−508) dicht.
 - [ ] **54c** Nether-3-kloven (n3rifts, chunks 68…83 × −30…−15): 0 blootliggende ijsblokken onder Y 30 binnen 3 blokken (horizontaal) van een open lavakolom; scheuren aan de rand van `rime_forest` met gloeiende scheur/magma-wanden.
@@ -34,15 +46,15 @@ Voortgang: Sat Oct 10 14:55 WEDT 2026 main gemerged (`tools/test/`); besluit B (
 - `worldgen/densityfunction/VolcanicField.java`: 42c — de band rond de lavazee van de afgrond (`guardBottom`/`guardTop`) reikt ook `ABYSS_GUARD` (8) blokken voorbij de zee, eindes inbegrepen.
 - Tests: `Ring3TerrainWave3Test` (nieuw): elke cellhoek naast de afgrondzee ligt in de band.
 - Valkuil (aanvulling op "Grond naast lava (42b)"): de band rond lava moet minstens een cel-diagonaal plus één blok voorbij de lava reiken, **ook waar een vorm spits uitloopt**; een band in eenheden van de breedte (0,3 halve breedte) wordt aan de eindes bijna nul.
-- `noise_settings/nether.json` (uit `nether_ring3_surface.py`): 54c — de warme scheurregels (wanden Y 14–30, gloeiende scheur bovenop, warme kring) gelden in de hele scheurzone (|regio| < 0,22, ook de randen van `rime_forest` en `glacier_rifts`) en vanaf scheurpatches 0,3; `tools/worldgen/nether_ring3_surface.py`: `CRACK_ZONE`, `CRACKS_FROM`.
-- Tests: `NetherRing3JsonTest` — `theWarmCracksLineEveryOpenCrackBelowTheGlacierLevel` (nieuw: elke open scheur onder Y 30 heeft warme wanden, bemonsterd op het testzaad), de regioband ±0,22 toegestaan.
+- `noise_settings/nether.json` (uit `nether_ring3_surface.py`): 54c — de warme scheurregels (wanden Y 14–30, gloeiende scheur bovenop, warme kring, en boven Y 30 tot de top van de scheur kale netherrack met magma) gelden in de hele scheurzone (|regio| < 0,22, ook de randen van `rime_forest` en `glacier_rifts`), vanaf scheurpatches 0,3, en staan vóór alle ijsregels; `tools/worldgen/nether_ring3_surface.py`: `CRACK_ZONE`, `CRACKS_FROM`, `CRACKS_TOP`, `crack_wall()`.
+- Tests: `NetherRing3JsonTest` — `theWarmCracksLineEveryOpenCrackBelowTheGlacierLevel` (nieuw: elke open scheur onder Y 30 heeft warme wanden, bemonsterd op het testzaad; de warme regels staan vóór alle ijsregels), de regioband ±0,22 toegestaan.
 - Valkuil: de Nether-3-scheuren lopen door tot het gewicht van de ijszee 0 is (|regio| < 0,22), verder dan de biome-drempel 0,18; regels voor scheuren gebruiken die zone, niet `SEA`.
 - `worldgen/densityfunction/VolcanicField.java`: 39g — `Column.lavaShore` (oever voor de surface, 3 blokken vanaf de lavarand, `SHORE_BLOCKS`) en `lavaEdge(preHeight, level)` (de lavarand over het kanaal in halve breedtes); `lavaBank` blijft de afstand die features van een rivier houden.
 - `VolcanicOutput.java`: 39g — uitgang `lava_shore` (per kolom); `lava_bank` nu beschreven als "features blijven eruit".
 - `noise_settings/overworld.json` (uit `ring3_surface.py`): 39g — `lava_banks()` leest `lava_shore`; magma alleen bij `lava_shore` ≥ 2/3 (eerste blok langs de lava), geen losse magma meer in de oever.
 - Tests: `Ring3TerrainWave3Test` — `theLavaEdgeIsWhereTheChannelDropsBelowTheLava`, `theScorchedShoreHugsTheLavaWhateverTheRiversWidth`.
 - `worldgen/densityfunction/LavaFallFlow.java` (nieuw, 47e): waar de lava van een val (39f) kan stromen, puur (ruime vanilla-stromingsregel over het geïnterpoleerde terrein, eigen kolomcache, `REACH` 96); `Flow` (kolommen, `wet`, `cut`, grenzen).
-- `VolcanicField.java`: 47e — `fallFlow(fall)` (één keer per wereld, `Decisions.fallFlows`), `fallStaysDry(column)`/`springStaysDry(column)`, `fallFlowsNear(minX, minZ, maxX, maxZ)` (voor features; natte vallen niet), `ring3Proper(x, z)`; `Column.springFall()`/`fall()` (de val achter `springY`/`fallTop`).
+- `VolcanicField.java`: 47e — `fallFlow(fall)` (één keer per wereld, `Decisions.fallFlows`, nooit geleegd), `fallStaysDry(column)`/`springStaysDry(column)`, `fallFlowsNear(minX, minZ, maxX, maxZ)` (voor features; natte vallen niet), `ring3Proper(x, z)` (via `RingLayout.sampleOverworld`); `Column.springFall()`/`fall()` (de val achter `springY`/`fallTop`).
 - `VolcanicCaches.Decisions`: `fallFlows`.
 - `worldgen/chunk/RingAquifer.java`: 47e — een val die water kan raken (stroming onder Y 0 of buiten ring 3 zelf) wordt niet gemaakt: geen bron, geen vallende lava.
 - `worldgen/chunk/RingAquifer.java`: 47e (besluit B) — in ring 3 wordt aquiferwater op Y −54 rots (zoals in ring 2), dus geen contact met vanilla's lavalaag; test `ring3LeavesStoneBetweenAquiferWaterAndTheLavaLayer`.
@@ -52,7 +64,7 @@ Voortgang: Sat Oct 10 14:55 WEDT 2026 main gemerged (`tools/test/`); besluit B (
 
 ## Beslissingen
 - 2026-10-10 · worldgen · Lavaoever (39g): 3 blokken vanaf de lavarand (zelfde breedte als de oude oever náást het kanaal), magma alleen in het eerste blok met de bestaande vlekruis; features houden de oude afstand (`lava_bank`) · uitvoering van het besluit "smaller, plafond in blokken, magma alleen direct langs de lava" (gebruiker 2026-10-10); de features ongewijzigd laten houdt de decoratie langs rivieren gelijk
-- 2026-10-10 · worldgen · Archipelvallen (47e): het stroomgebied is een ruime schatting van de vanilla-stroming over het terrein (naar alle kanten, grond 1 lager); "water raken" = stroming onder Y 0 (aquiferwater in ring 3) of buiten ring 3 zelf; zo'n val wordt helemaal niet gemaakt (bron + val) · uitvoering van het besluit "geen aslaag in het stroomgebied, vallen eindigen niet in water" (gebruiker 2026-10-10)
+- 2026-10-10 · worldgen · Archipelvallen (47e): het stroomgebied is een ruime schatting van de vanilla-stroming over het terrein (naar alle kanten, grond 1 lager); "water raken" = stroming onder Y 0 (aquiferwater in ring 3) of buiten ring 3 zelf; net als een val waarvan de stroming afgekapt is; zo'n val wordt helemaal niet gemaakt (bron + val) · uitvoering van het besluit "geen aslaag in het stroomgebied, vallen eindigen niet in water" (gebruiker 2026-10-10)
 - 2026-10-10 · worldgen · Ring 3 krijgt de ring 2-regel: één blok steen tussen diep aquiferwater en vanilla's lavalaag (Y −54); ring 1 blijft vanilla · het contact werd obsidiaan op het moment dat het water stroomde, afhankelijk van de laadvolgorde (INT-afr, Y −55 onder de archipel; besluit gebruiker B)
 
 ## Backlog

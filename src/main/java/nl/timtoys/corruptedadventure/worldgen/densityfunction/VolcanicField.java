@@ -5,7 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
+import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
+import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeShape;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.CellMemo;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.CinderNeighbourhood;
@@ -638,25 +640,23 @@ public final class VolcanicField implements DensityFunction {
      * of the thread's window across this call.
      */
     LavaFallFlow.Flow fallFlow(Volcano.LavaFall fall) {
-        long key = (long) fall.fallX() << 32 | fall.fallZ() & 0xFFFFFFFFL;
-        if (decisions.fallFlows.size() > Decisions.LIMIT) {
-            decisions.fallFlows.clear();
-        }
-        return once(decisions.fallFlows, key, () -> LavaFallFlow.trace(this, fall));
+        // Never cleared: ring 3 is finite and holds a few dozen falls, so no world grows this map past that.
+        return once(decisions.fallFlows, LavaFallFlow.key(fall.fallX(), fall.fallZ()), () -> LavaFallFlow.trace(this, fall));
     }
 
     /**
      * 47e: whether a lava fall is made at all: not where its lava may reach water (below Y 0, or out of ring 3 into a
-     * transition zone, where the neighbouring ring keeps its water). Lava meeting water turns to obsidian or stone at
-     * the moment it flows, so the world would depend on when the chunks were loaded.
+     * transition zone, where the neighbouring ring keeps its water), nor where its trace was cut off (its end unknown).
+     * Lava meeting water turns to obsidian or stone at the moment it flows, so the world would depend on when the chunks
+     * were loaded.
      */
     public boolean fallStaysDry(Column column) {
-        return column.fall == null || !fallFlow(column.fall).wet();
+        return column.fall == null || fallFlow(column.fall).made();
     }
 
     /** {@link #fallStaysDry} for the fall whose spring the column holds. */
     public boolean springStaysDry(Column column) {
-        return column.springFall == null || !fallFlow(column.springFall).wet();
+        return column.springFall == null || fallFlow(column.springFall).made();
     }
 
     /**
@@ -703,12 +703,11 @@ public final class VolcanicField implements DensityFunction {
                           List<LavaFallFlow.Flow> out) {
         for (Volcano.LavaFall fall : falls) {
             if (fall.fallX() < minX - reach || fall.fallX() > maxX + reach || fall.fallZ() < minZ - reach || fall.fallZ() > maxZ + reach
-                    || !seen.add((long) fall.fallX() << 32 | fall.fallZ() & 0xFFFFFFFFL)) {
+                    || !seen.add(LavaFallFlow.key(fall.fallX(), fall.fallZ()))) {
                 continue;
             }
             LavaFallFlow.Flow flow = fallFlow(fall);
-            // A wet fall is not made (fallStaysDry).
-            if (!flow.isEmpty() && !flow.wet()) {
+            if (!flow.isEmpty() && flow.made()) {
                 out.add(flow);
             }
         }
@@ -716,11 +715,8 @@ public final class VolcanicField implements DensityFunction {
 
     /** Whether (x, z) lies in ring 3 proper, past both transition zones (no neighbouring ring's water there; 47e). */
     boolean ring3Proper(double x, double z) {
-        RingLayout ringLayout = layout.get();
-        List<Integer> radii = ringLayout.settings().ringOuterRadii();
-        double half = ringLayout.settings().transitionWidth() / 2.0;
-        double distance = ringLayout.effectiveDistance(x, z);
-        return distance > radii.get(1) + half && distance < radii.get(2) - half;
+        RingPosition position = layout.get().sampleOverworld(x, z);
+        return position.ring() == Ring.RING_3 && !position.inTransition();
     }
 
     /** The value of a per-key future, computed by the first thread that asks (outside the map's locks). */
@@ -1187,9 +1183,12 @@ public final class VolcanicField implements DensityFunction {
                 if (along < 1.0 + BANK_BLOCKS / half) {
                     c.lavaBank = along < 1.0 ? 1.0 : Mth.clamp(1.0 - (along - 1.0) * half / BANK_BLOCKS, 0.0, 1.0);
                 }
-                double shore = (along - lavaEdge(preHeight, level)) * half;
-                if (shore < SHORE_BLOCKS) {
-                    c.lavaShore = shore <= 0.0 ? 1.0 : 1.0 - shore / SHORE_BLOCKS;
+                // The edge lies inside the channel (along < 1): the shore cannot reach further than SHORE_BLOCKS past it.
+                if (along < 1.0 + SHORE_BLOCKS / half) {
+                    double shore = (along - lavaEdge(preHeight, level)) * half;
+                    if (shore < SHORE_BLOCKS) {
+                        c.lavaShore = shore <= 0.0 ? 1.0 : 1.0 - shore / SHORE_BLOCKS;
+                    }
                 }
                 if (along < 1.0 && !c.hasLava()) {
                     c.lavaTop = level;
@@ -2067,6 +2066,10 @@ public final class VolcanicField implements DensityFunction {
         }
 
         /** Below this Y (inclusive) the fall's lava is let flow, where it lands; {@link Integer#MIN_VALUE} without a fall. */
+        public int fallFlowBelow() {
+            return fallFlowBelow;
+        }
+
         /** 47e: the lava fall whose spring this column holds ({@link #springY}), or null. */
         @Nullable
         Volcano.LavaFall springFall() {
@@ -2077,10 +2080,6 @@ public final class VolcanicField implements DensityFunction {
         @Nullable
         Volcano.LavaFall fall() {
             return fall;
-        }
-
-        public int fallFlowBelow() {
-            return fallFlowBelow;
         }
 
         boolean hasLava() {
