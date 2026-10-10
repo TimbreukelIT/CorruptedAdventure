@@ -159,6 +159,15 @@ final class RingAquifer implements Aquifer {
         guardTop[i] = lava ? column.guardTop() : Integer.MIN_VALUE;
         dryFrom[i] = RingFluidPicker.ring3DryFrom(dimension, position);
         waterOnlyFrom[i] = RingFluidPicker.waterOnlyFrom(dimension, position);
+        // 47e: no lava fall (spring and falling lava) whose lava may reach water (last: the check reads other columns).
+        if (lava && !volcanic.springStaysDry(column)) {
+            springY[i] = Integer.MIN_VALUE;
+        }
+        if (lava && !volcanic.fallStaysDry(column)) {
+            fallTop[i] = Integer.MIN_VALUE;
+            fallBottom[i] = Integer.MIN_VALUE;
+            fallFlow[i] = Integer.MIN_VALUE;
+        }
     }
 
     /** Open space ({@code substance <= 0}): the rules of {@link RingFluidPicker} in their order. */
@@ -223,6 +232,12 @@ final class RingAquifer implements Aquifer {
             // only where the terrain puts it. Vanilla's lava layer below stays.
             suppressed = true;
             return AIR;
+        }
+        if (dryFrom[i] != Integer.MAX_VALUE && y == RingFluidPicker.LAVA_LAYER_TOP && state.is(Blocks.WATER)) {
+            // 47e (B): as in ring 2, rock between deep aquifer water and vanilla's lava layer; the contact crusted over
+            // when the water first flowed, a moment that depends on the loading order.
+            lid = true;
+            return null;
         }
         if (y < waterOnlyFrom[i] || !(state.is(Blocks.LAVA) || state.is(Blocks.WATER))) {
             return state;

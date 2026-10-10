@@ -26,13 +26,15 @@ final class Landmarks {
     /**
      * Kinds of thin solids, for the surface (39f: per block, output {@code thin_kind}): the biome's own surface (bones,
      * arches, hoodoos, the micro relief), obsidian (needles), basalt (prisms, pillars, bridges, sea stacks), a floating
-     * island, rubble (the floor of a collapse).
+     * island, rubble (the floor of a collapse); 42d: an ash crust (a thin roof over a lava tube's mouth that falls in
+     * under a player).
      */
     static final int KIND_BIOME = 0;
     static final int KIND_OBSIDIAN = 2;
     static final int KIND_BASALT = 3;
     static final int KIND_ISLAND = 4;
     static final int KIND_RUBBLE = 5;
+    static final int KIND_CRUST = 6;
 
     private Landmarks() {
     }
@@ -380,6 +382,25 @@ final class Landmarks {
             double normal = -dx * sin + dz * cos;
             double w = width * Math.sqrt(1.0 - along * along) * (0.85 + 0.15 * Math.cos(along * 7.0));
             return Math.abs(normal) / Math.max(1.0, w);
+        }
+
+        /**
+         * Whether a position may lie within {@code reach} blocks of the lava sea ({@link #across} &lt; 1), the tapered ends
+         * included (42c): the half width is bounded from above by its value at the along-position within reach that lies
+         * nearest the middle (the wobble at most 1), so no position that near is missed. Near the ends {@code across}
+         * grows fast and jumps to 2 past them; a band in units of the half width left the ends almost bare.
+         */
+        boolean near(double px, double pz, double reach) {
+            double dx = px - x;
+            double dz = pz - z;
+            double half = length * 0.5;
+            double along = dx * cos + dz * sin;
+            if (Math.abs(along) >= half + reach) {
+                return false;
+            }
+            double nearest = Math.max(0.0, Math.abs(along) - reach) / half;
+            double w = nearest >= 1.0 ? 1.0 : Math.max(1.0, width * Math.sqrt(1.0 - nearest * nearest));
+            return Math.abs(-dx * sin + dz * cos) < w + reach;
         }
 
         double along(double px, double pz) {

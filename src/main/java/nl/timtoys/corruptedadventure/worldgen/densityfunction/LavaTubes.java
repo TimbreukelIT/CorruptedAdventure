@@ -44,6 +44,22 @@ final class LavaTubes {
     static final double MOUTH_SLOPE = 0.45;
     /** Rock kept above a tube (except at its mouths and skylights). */
     static final double ROOF = 8.0;
+    /**
+     * 42d: where the trench in front of a mouth breaks through the ground and lies at least this far below it, a roof
+     * of one block of ash crust covers it: a piece of thin roof in front of every mouth that falls in under a player.
+     * The shallow end of the trench stays open, so the mouth still shows.
+     */
+    static final int LID_DROP = 3;
+    /** 42d: the roof lies only within this far (blocks along the tube) of a tube's ends, in front of its mouths. */
+    static final double LID_REACH = 24.0;
+    /** 42d: whether a column in front of a mouth got its roof, or why not (diagnostics, Column#lidSkip). */
+    static final int LID_NONE = 0;
+    static final int LID_PLACED = 1;
+    static final int LID_OTHER_OPENING = 2;
+    static final int LID_LAVA = 3;
+    static final int LID_CRAGS = 4;
+    static final int LID_THIN_SOLID = 5;
+    static final int LID_NO_ROOM = 6;
     /** The smooth inner wall and the shell of rock around every opening, in blocks. */
     static final double SKIN = 1.3;
     static final double SHELL = 3.0;
@@ -616,10 +632,19 @@ final class LavaTubes {
 
     // ---------------------------------------------------------------- columns
 
-    /** The openings, walls, lava and guard bands of every tube, skylight and chamber of {@code tile} in column (px, pz). */
-    static void addTo(VolcanicField.Column c, Tile tile, double px, double pz) {
+    /**
+     * The openings, walls, lava and guard bands of every tube, skylight and chamber of {@code tile} in column (x, z),
+     * and (42d) the roof of ash crust in front of a mouth, once all openings are known.
+     */
+    static void addTo(VolcanicField f, VolcanicField.Column c, Tile tile, int x, int z, double px, double pz) {
+        int[] lid = null;
+        int candidates = 0;
         for (int k = 0; k < tile.tubes().length; k++) {
-            addTube(c, tile.tubes()[k], tile.segments()[k], px, pz);
+            int[] candidate = addTube(c, tile.tubes()[k], tile.segments()[k], px, pz);
+            if (candidate != null) {
+                lid = candidate;
+                candidates++;
+            }
         }
         for (Skylight s : tile.skylights()) {
             addSkylight(c, s, px, pz);
@@ -627,10 +652,49 @@ final class LavaTubes {
         for (Chamber ch : tile.chambers()) {
             addChamber(c, ch, px, pz);
         }
+        if (lid != null) {
+            c.lidSkip = candidates > 1 ? LID_OTHER_OPENING : lid(f, c, lid, x, z);
+        }
     }
 
-    /** The section of one tube through the column, from its nearest segment there. */
-    private static void addTube(VolcanicField.Column c, Tube t, int[] segments, double px, double pz) {
+    /**
+     * 42d: a roof of one block of ash crust over the trench in front of a mouth, as the top block of the real ground
+     * (the terrain's interpolated surface, {@link VolcanicField#interpolatedSurface}): only where the trench (opening
+     * from {@code lid[0]} to {@code lid[1]}, floor {@code lid[2]}) breaks through it at least {@link #LID_DROP} deep, and
+     * only over that one opening (no other opening, lava, crags or thin solid in the column). Returns what happened.
+     */
+    private static int lid(VolcanicField f, VolcanicField.Column c, int[] lid, int x, int z) {
+        int roof = Mth.ceil(f.interpolatedSurface(x, z)) - 1;
+        if (lid[1] < roof || lid[0] > roof - 1 || roof - lid[2] < LID_DROP) {
+            return LID_NONE;
+        }
+        if (c.voidCount != 1) {
+            return LID_OTHER_OPENING;
+        }
+        if (c.hasLava() || c.subLavaCount > 0 || c.fallTop != Integer.MIN_VALUE || c.springY != Integer.MIN_VALUE) {
+            return LID_LAVA;
+        }
+        if (c.roughness > 0.0) {
+            return LID_CRAGS;
+        }
+        if (c.thinKind(roof) >= 0 || c.thinKind(roof + 1) >= 0) {
+            return LID_THIN_SOLID;
+        }
+        if (c.solidCount == VolcanicField.MAX_SOLIDS) {
+            return LID_NO_ROOM;
+        }
+        c.voidTop[0] = roof - 1;
+        c.addSolid(roof, roof, Landmarks.KIND_CRUST);
+        return LID_PLACED;
+    }
+
+    /**
+     * The section of one tube through the column, from its nearest segment there. Returns (42d) a candidate for the roof
+     * in front of a mouth (its opening's bottom and top and its floor), or null: a dry tube within {@link #LID_REACH}
+     * of one of its ends.
+     */
+    @Nullable
+    private static int[] addTube(VolcanicField.Column c, Tube t, int[] segments, double px, double pz) {
         double best = Double.MAX_VALUE;
         int bestK = -1;
         double bestT = 0.0;
@@ -651,12 +715,12 @@ final class LavaTubes {
             }
         }
         if (bestK < 0) {
-            return;
+            return null;
         }
         double dist = Math.sqrt(best);
         double half = Mth.lerp(bestT, t.half()[bestK], t.half()[bestK + 1]);
         if (dist >= half + SHELL) {
-            return;
+            return null;
         }
         int floor = Mth.floor(Mth.lerp(bestT, t.floor()[bestK], t.floor()[bestK + 1]));
         double halfHeight = Tube.halfHeight(half);
@@ -665,6 +729,13 @@ final class LavaTubes {
         int[] skin = section(dist, half, halfHeight, centre, floor, SKIN);
         int[] shell = section(dist, half, halfHeight, centre, floor, SHELL);
         int crust = Integer.MIN_VALUE;
+        int[] lid = null;
+        if (!t.lava() && opening != null) {
+            double along = Mth.lerp(bestT, t.along()[bestK], t.along()[bestK + 1]);
+            if (along <= LID_REACH || t.along()[t.points() - 1] - along <= LID_REACH) {
+                lid = new int[]{opening[0], opening[1], floor};
+            }
+        }
         if (t.lava()) {
             double along = Mth.lerp(bestT, t.along()[bestK], t.along()[bestK + 1]);
             boolean gutter = along >= GUTTER_START;
@@ -680,6 +751,7 @@ final class LavaTubes {
             c.addDeepGuard(floor - 5, floor + 1);
         }
         c.addCave(opening, skin, shell, crust);
+        return lid;
     }
 
     /**

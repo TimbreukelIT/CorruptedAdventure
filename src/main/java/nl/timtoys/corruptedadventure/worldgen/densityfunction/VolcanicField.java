@@ -5,7 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
+import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
+import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeShape;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.CellMemo;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicCaches.CinderNeighbourhood;
@@ -56,8 +58,16 @@ public final class VolcanicField implements DensityFunction {
     private static final int CHANNEL_DEPTH = 2;
     /** Height of a river's banks above its lava (levees fill lower ground beside it). */
     private static final double CHANNEL_BANK = 2.5;
-    /** Width (blocks) of the scorched bank beside the lava, whatever the river's width. */
+    /**
+     * Width (blocks) beside a river's channel that features keep clear of ({@link Column#lavaBank}; the channel itself,
+     * as wide as the river, comes on top).
+     */
     private static final double BANK_BLOCKS = 3.0;
+    /**
+     * Width (blocks) of the scorched shore of the surface from the lava's edge, whatever the river's width (39g; the
+     * dry slope of a wide channel used to be shore too).
+     */
+    private static final double SHORE_BLOCKS = 3.0;
     private static final double HILL_HEIGHT = 40.0;
     private static final double PEAK_RIDGE_HEIGHT = 55.0;
     /** Amplitude (blocks) of the micro relief on the plain. */
@@ -69,7 +79,7 @@ public final class VolcanicField implements DensityFunction {
     private static final double RIB_SIN = Math.sin(0.6);
     private static final double RIDGE_HEIGHT = 5.0;
     private static final int MAX_ISLANDS = 6;
-    private static final int MAX_SOLIDS = 8;
+    static final int MAX_SOLIDS = 8;
     private static final int MAX_VOIDS = 8;
     private static final int MAX_PILLARS = 2;
     /**
@@ -87,6 +97,12 @@ public final class VolcanicField implements DensityFunction {
     private static final double CAVE_LIFT = 2.0;
     /** The band around a lava river reaches at least this far (blocks) past the lava's edge (42b). */
     private static final double RIVER_GUARD = 6.0;
+    /**
+     * The band around the abyss's lava sea reaches at least this far past its edge (42c): the block beside the lava plus
+     * the diagonal of a cell of the terrain's interpolation (5.7), so every cell corner a cave beside the lava is
+     * interpolated from lies in the band.
+     */
+    private static final double ABYSS_GUARD = 8.0;
     /** A cut at least this deep gets walls of ring 3 rock below the surface's own package (42b). */
     private static final double DEEP_CUT = 8.0;
     /** Separate lava ranges and guard bands one column may hold (42). */
@@ -618,6 +634,91 @@ public final class VolcanicField implements DensityFunction {
         return once(decisions.riverTiles, key, () -> LavaRivers.tile(this, ti, tj));
     }
 
+    /**
+     * Where the lava of a fall may flow on the ground it lands on (47e, {@link LavaFallFlow}), traced once per world;
+     * keyed by the fall's column (one fall per column). The trace fills its own columns, so a caller may hold a column
+     * of the thread's window across this call.
+     */
+    LavaFallFlow.Flow fallFlow(Volcano.LavaFall fall) {
+        // Never cleared: ring 3 is finite and holds a few dozen falls, so no world grows this map past that.
+        return once(decisions.fallFlows, LavaFallFlow.key(fall.fallX(), fall.fallZ()), () -> LavaFallFlow.trace(this, fall));
+    }
+
+    /**
+     * 47e: whether a lava fall is made at all: not where its lava may reach water (below Y 0, or out of ring 3 into a
+     * transition zone, where the neighbouring ring keeps its water), nor where its trace was cut off (its end unknown).
+     * Lava meeting water turns to obsidian or stone at the moment it flows, so the world would depend on when the chunks
+     * were loaded.
+     */
+    public boolean fallStaysDry(Column column) {
+        return column.fall == null || fallFlow(column.fall).made();
+    }
+
+    /** {@link #fallStaysDry} for the fall whose spring the column holds. */
+    public boolean springStaysDry(Column column) {
+        return column.springFall == null || fallFlow(column.springFall).made();
+    }
+
+    /**
+     * The flows of the lava falls that are made and may reach columns from (minX, minZ) to (maxX, maxZ) inclusive (47e,
+     * for features).
+     */
+    public List<LavaFallFlow.Flow> fallFlowsNear(int minX, int minZ, int maxX, int maxZ) {
+        List<LavaFallFlow.Flow> flows = new java.util.ArrayList<>();
+        int reach = LavaFallFlow.REACH + 1;
+        java.util.Set<Long> seen = new java.util.HashSet<>();
+        for (int i = Math.floorDiv(minX - reach - VolcanoPlacement.ISLAND_CELL / 2, VolcanoPlacement.ISLAND_CELL);
+             i <= Math.floorDiv(maxX + reach + VolcanoPlacement.ISLAND_CELL / 2, VolcanoPlacement.ISLAND_CELL); i++) {
+            for (int j = Math.floorDiv(minZ - reach - VolcanoPlacement.ISLAND_CELL / 2, VolcanoPlacement.ISLAND_CELL);
+                 j <= Math.floorDiv(maxZ + reach + VolcanoPlacement.ISLAND_CELL / 2, VolcanoPlacement.ISLAND_CELL); j++) {
+                for (Volcano.Island island : channelIslands(i, j)) {
+                    addFlows(island.falls(), minX, minZ, maxX, maxZ, reach, seen, flows);
+                }
+            }
+        }
+        // The archipelagos and island clusters of the volcanoes (3 x 3 cells, as the columns read them).
+        int size = settings.cellSize();
+        for (int i = Math.floorDiv(minX - reach, size) - 1; i <= Math.floorDiv(maxX + reach, size) + 1; i++) {
+            for (int j = Math.floorDiv(minZ - reach, size) - 1; j <= Math.floorDiv(maxZ + reach, size) + 1; j++) {
+                Volcano v = volcano(i, j);
+                if (v != null) {
+                    for (Volcano.Island island : v.islands()) {
+                        addFlows(island.falls(), minX, minZ, maxX, maxZ, reach, seen, flows);
+                    }
+                }
+            }
+        }
+        for (int i = Math.floorDiv(minX - reach, Landmarks.FLOATING_CELL); i <= Math.floorDiv(maxX + reach, Landmarks.FLOATING_CELL); i++) {
+            for (int j = Math.floorDiv(minZ - reach, Landmarks.FLOATING_CELL); j <= Math.floorDiv(maxZ + reach, Landmarks.FLOATING_CELL); j++) {
+                Landmarks.FloatingVolcano fv = floating(i, j);
+                if (fv != null) {
+                    addFlows(fv.falls(), minX, minZ, maxX, maxZ, reach, seen, flows);
+                }
+            }
+        }
+        return flows;
+    }
+
+    private void addFlows(List<Volcano.LavaFall> falls, int minX, int minZ, int maxX, int maxZ, int reach, java.util.Set<Long> seen,
+                          List<LavaFallFlow.Flow> out) {
+        for (Volcano.LavaFall fall : falls) {
+            if (fall.fallX() < minX - reach || fall.fallX() > maxX + reach || fall.fallZ() < minZ - reach || fall.fallZ() > maxZ + reach
+                    || !seen.add(LavaFallFlow.key(fall.fallX(), fall.fallZ()))) {
+                continue;
+            }
+            LavaFallFlow.Flow flow = fallFlow(fall);
+            if (!flow.isEmpty() && flow.made()) {
+                out.add(flow);
+            }
+        }
+    }
+
+    /** Whether (x, z) lies in ring 3 proper, past both transition zones (no neighbouring ring's water there; 47e). */
+    boolean ring3Proper(double x, double z) {
+        RingPosition position = layout.get().sampleOverworld(x, z);
+        return position.ring() == Ring.RING_3 && !position.inTransition();
+    }
+
     /** The value of a per-key future, computed by the first thread that asks (outside the map's locks). */
     private static <T> T once(Map<Long, java.util.concurrent.FutureTask<T>> map, long key, java.util.concurrent.Callable<T> work) {
         java.util.concurrent.FutureTask<T> task = map.get(key);
@@ -866,6 +967,22 @@ public final class VolcanicField implements DensityFunction {
         FULL, HEIGHT, TRACE
     }
 
+    /**
+     * The terrain's surface in a column as the noise chunk builds it (42d): the bilinear blend of the heights of its
+     * cell's corners (every 4 blocks), below which the ring 3 stack is rock (it is linear in y; crags not counted).
+     */
+    double interpolatedSurface(int x, int z) {
+        int x0 = Math.floorDiv(x, 4) * 4;
+        int z0 = Math.floorDiv(z, 4) * 4;
+        double fx = (x - x0) / 4.0;
+        double fz = (z - z0) / 4.0;
+        double h00 = coreHeightUncached(x0, z0);
+        double h10 = coreHeightUncached(x0 + 4, z0);
+        double h01 = coreHeightUncached(x0, z0 + 4);
+        double h11 = coreHeightUncached(x0 + 4, z0 + 4);
+        return Mth.lerp(fz, Mth.lerp(fx, h00, h10), Mth.lerp(fx, h01, h11));
+    }
+
     private double coreHeightUncached(double x, double z) {
         Column column = heightScratch.get();
         fill(column, Mth.floor(x), Mth.floor(z), Mode.HEIGHT);
@@ -1082,6 +1199,13 @@ public final class VolcanicField implements DensityFunction {
                 if (along < 1.0 + BANK_BLOCKS / half) {
                     c.lavaBank = along < 1.0 ? 1.0 : Mth.clamp(1.0 - (along - 1.0) * half / BANK_BLOCKS, 0.0, 1.0);
                 }
+                // The edge lies inside the channel (along < 1): the shore cannot reach further than SHORE_BLOCKS past it.
+                if (along < 1.0 + SHORE_BLOCKS / half) {
+                    double shore = (along - lavaEdge(preHeight, level)) * half;
+                    if (shore < SHORE_BLOCKS) {
+                        c.lavaShore = shore <= 0.0 ? 1.0 : 1.0 - shore / SHORE_BLOCKS;
+                    }
+                }
                 if (along < 1.0 && !c.hasLava()) {
                     c.lavaTop = level;
                     c.lavaBottom = level - CHANNEL_DEPTH - 3;
@@ -1094,7 +1218,9 @@ public final class VolcanicField implements DensityFunction {
                 }
             }
         }
-        if (chasm < 1.3) {
+        // 42c: also ABYSS_GUARD blocks past the sea's edge where the abyss tapers to its ends (a band of 0.3 half widths was
+        // a block or less there, and a cave interpolated from the unguarded cell corners opened beside the lava).
+        if (chasm < 1.3 || abyss != null && abyss.near(px, pz, ABYSS_GUARD)) {
             c.guardBottom = Math.min(c.guardBottom, Landmarks.ABYSS_FLOOR - 14);
             c.guardTop = Math.max(c.guardTop, Landmarks.ABYSS_LAVA + 6);
         }
@@ -1150,7 +1276,7 @@ public final class VolcanicField implements DensityFunction {
             // Closed: no vanilla cave or carver opens it (a lava tube may).
             c.addDeepGuard(geode.y() - geode.reach() - 2, geode.y() + geode.reach() + 2);
         }
-        LavaTubes.addTo(c, tubeTileFor(x, z), px, pz);
+        LavaTubes.addTo(this, c, tubeTileFor(x, z), x, z, px, pz);
     }
 
     /**
@@ -1160,6 +1286,22 @@ public final class VolcanicField implements DensityFunction {
     private static void caveFade(Column c) {
         c.caveFadeWeight = VolcanicMath.smoothstep(4.0, 16.0, c.rise);
         c.caveFadeFrom = c.height - c.rise + CAVE_VOLCANO_HEIGHT;
+    }
+
+    /**
+     * Where the lava of a river ends across its channel (39g), in half widths: the channel's profile
+     * ({@code 1 - smoothstep(0.55, 1, along)}) lowers the ground {@code preHeight} towards the bed two blocks below the
+     * lava, and the lava lies where the ground drops below its level. The column's own ground stands for its
+     * neighbours' (the shore is a few blocks wide; the terrain's interpolation moves it by a block or so).
+     */
+    static double lavaEdge(double preHeight, int level) {
+        double above = preHeight - level;
+        if (above <= 0.0) {
+            return 1.0;
+        }
+        // The profile at the edge is above / (above + CHANNEL_DEPTH); smoothstep's inverse is 0.5 - sin(asin(1 - 2s) / 3).
+        double s = 1.0 - above / (above + CHANNEL_DEPTH);
+        return 0.55 + 0.45 * (0.5 - Math.sin(Math.asin(1.0 - 2.0 * s) / 3.0));
     }
 
     /**
@@ -1474,8 +1616,16 @@ public final class VolcanicField implements DensityFunction {
         double islandMask;
         /** Height of the volcanoes (and cinder cones) above the plain (before the craters sink in), in blocks. */
         double rise;
-        /** 0..1: a lava river, 1 over the lava, falling to 0 over {@link #BANK_BLOCKS} beside it (the banks). */
+        /**
+         * 0..1: a lava river's channel and banks, 1 over the channel, falling to 0 over {@link #BANK_BLOCKS} beside it
+         * (features keep clear of it).
+         */
         double lavaBank;
+        /**
+         * 0..1 (39g): a lava river's scorched shore for the surface, 1 over the lava, falling to 0 over
+         * {@link #SHORE_BLOCKS} from the lava's edge ({@link #lavaEdge}), whatever the river's width.
+         */
+        double lavaShore;
         /** 0..1: a cliff or steep wall of a landform (plateau risers, rift flanks, gully walls, sea stacks). */
         double cliff;
         /** How far the surface may drop near this column through a narrow cut (for {@link #initialHeight}). */
@@ -1500,6 +1650,13 @@ public final class VolcanicField implements DensityFunction {
         int fallTop;
         int fallBottom;
         int fallFlowBelow;
+        /** 42d: whether the roof in front of a mouth lies in this column, or why not (LavaTubes.LID_NONE ...). */
+        int lidSkip;
+        /** 47e: the fall whose spring is {@link #springY}, and the fall through this column ({@link #fallTop}), or null. */
+        @Nullable
+        Volcano.LavaFall springFall;
+        @Nullable
+        Volcano.LavaFall fall;
         int guardBottom;
         int guardTop;
         int islandCount;
@@ -1576,6 +1733,7 @@ public final class VolcanicField implements DensityFunction {
             islandMask = 0.0;
             rise = 0.0;
             lavaBank = 0.0;
+            lavaShore = 0.0;
             cliff = 0.0;
             floorMargin = 0.0;
             collapse = 0.0;
@@ -1586,6 +1744,9 @@ public final class VolcanicField implements DensityFunction {
             fallTop = Integer.MIN_VALUE;
             fallBottom = Integer.MIN_VALUE;
             fallFlowBelow = Integer.MIN_VALUE;
+            lidSkip = LavaTubes.LID_NONE;
+            springFall = null;
+            fall = null;
             guardBottom = Integer.MAX_VALUE;
             guardTop = Integer.MIN_VALUE;
             islandCount = 0;
@@ -1624,9 +1785,11 @@ public final class VolcanicField implements DensityFunction {
             for (Volcano.LavaFall fall : falls) {
                 if (fall.springX() == x && fall.springZ() == z) {
                     springY = fall.springY();
+                    springFall = fall;
                 }
-                if (fall.fallX() == x && fall.fallZ() == z) {
-                    fallTop = Math.max(fallTop, fall.springY());
+                if (fall.fallX() == x && fall.fallZ() == z && fall.springY() > fallTop) {
+                    fallTop = fall.springY();
+                    this.fall = fall;
                 }
             }
         }
@@ -1924,6 +2087,18 @@ public final class VolcanicField implements DensityFunction {
         /** Below this Y (inclusive) the fall's lava is let flow, where it lands; {@link Integer#MIN_VALUE} without a fall. */
         public int fallFlowBelow() {
             return fallFlowBelow;
+        }
+
+        /** 47e: the lava fall whose spring this column holds ({@link #springY}), or null. */
+        @Nullable
+        Volcano.LavaFall springFall() {
+            return springFall;
+        }
+
+        /** 47e: the lava fall through this column ({@link #fallTop}), or null. */
+        @Nullable
+        Volcano.LavaFall fall() {
+            return fall;
         }
 
         boolean hasLava() {

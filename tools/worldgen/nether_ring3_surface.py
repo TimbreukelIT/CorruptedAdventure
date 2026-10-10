@@ -73,10 +73,16 @@ TOP = depth()
 R = "nether_ring_3_region"           # thresholds = NetherRing3Features.RIME_THRESHOLD / RIFTS_THRESHOLD
 SEA = noise(R, -0.18, 0.18)
 RIFTS = noise(R, -10.0, -0.18)
+# 54c: the cracks reach as far as the frozen sea's weight (1 - rime_weight - rifts_weight > 0, density functions
+# ring_3/nether/*_weight: |region| < (1 + 1.75) / 12.5), past SEA into the edges of the rime forest and the rifts. Their
+# warm rules use this zone, not SEA, or a crack in an edge gets the ice of its biome.
+CRACK_ZONE = noise(R, -0.22, 0.22)
 SEL = "minecraft:nether_state_selector"
 PILLARS = "nether_ring_3_pillars"
 CRACK_PATCHES = "nether_ring_3_crack_patches"
 CRACKS = "nether_ring_3_cracks"
+CRACKS_FROM = 0.3                    # density function ring_3/nether/crack_mask: open from crack patches 0.3 (54c)
+CRACKS_TOP = 44                      # density function ring_3/nether/cracks: cut from Y 15 up to 43
 FALLS = "nether_ring_3_falls"        # density function ring_3/nether/falls: streaks where FALLS > FALLS_FROM
 FALLS_FROM = 0.25
 DRAPES = "nether_ring_3_drapes"      # density function ring_3/nether/drapes: curtains where |DRAPES| < DRAPE_BAND
@@ -128,6 +134,11 @@ def ice_fall_layer(then):
                  for lo, hi, limit in ICEFALL_LAYERS])
 
 
+def crack_wall():
+    """The wall of a warm crack: glowing fissure with the odd magma block."""
+    return seq(cond(noise(SEL, 0.5, 10.0), block("magma_block")), mod("glowing_fissure"))
+
+
 def frozen_lava():
     """Cold lava with a skin of Nether ice: vertical streaks (the surface noise is 2D) of lava showing through the ice."""
     return seq(cond(noise(SEL, 0.2), mod("cold_lava")), mod("nether_ice"))
@@ -136,6 +147,26 @@ def frozen_lava():
 def nether():
     return cond(biome(*BIOMES), seq(
         # ---- shape rules (noise, block for block with the terrain)
+        # the warm cracks first (54c), before the ice of the pillars, the frozen falls and the rifts (the crack zone
+        # overlaps the rifts' edge at -0.22...-0.18), wherever a crack is open (its whole zone and from the first crack
+        # patches), so no crack keeps an ice skin.
+        # warm cracks: glowing fissure in the walls (visible only inside the crack), a glowing seam on the floor
+        cond(CRACK_ZONE, cond(noise(CRACK_PATCHES, CRACKS_FROM, 10.0), cond(noise(CRACKS, -0.05, 0.05),
+             cond(y_above(14), cond(NOT(y_above(RIFT_WARM_BELOW)), crack_wall()))))),
+        all_of([CRACK_ZONE, noise(CRACK_PATCHES, 0.4, 10.0), noise(CRACKS, -0.06, 0.06), y_above(30), TOP], mod("glowing_fissure")),
+        # the warm ring: bare netherrack with magma and glowing seams, no ice and no rime
+        all_of([CRACK_ZONE, noise(CRACK_PATCHES, WARM_PATCHES_FROM), noise(CRACKS, -WARM_BAND, WARM_BAND), y_above(28)], seq(
+            cond(TOP, seq(
+                cond(noise(SEL, 0.45), block("magma_block")),
+                cond(noise(SEL, -10.0, -0.55), mod("glowing_fissure")),
+                block("netherrack"))),
+            cond(depth("floor", 0, True, 6), block("netherrack")))),
+        # the crack's walls above Y 30, up to its top (cut up to Y 43), where a pillar, a frozen fall or the rifts'
+        # glacier would put ice: bare netherrack with magma, like the warm ring
+        all_of([CRACK_ZONE, noise(CRACK_PATCHES, CRACKS_FROM, 10.0), noise(CRACKS, -0.05, 0.05), y_above(RIFT_WARM_BELOW),
+                NOT(y_above(CRACKS_TOP))], seq(
+            cond(noise(SEL, 0.45), block("magma_block")),
+            block("netherrack"))),
         # frozen lavafalls down the pillar flanks (ribs of the falls term, wider at the foot): walls only, so the floors
         # and ceilings of the same columns keep their dressing, and never in a warm ring
         all_of([SEA, noise(PILLARS, 0.2, 0.52), noise(FALLS, FALLS_FROM), y_above(30), NOT(depth("floor", 0, True)),
@@ -162,19 +193,6 @@ def nether():
             cond(noise(SEL, 0.45, 10.0), block("blue_ice")),
             cond(noise(SEL, -10.0, -0.3), block("packed_ice")),
             mod("packed_nether_ice"))))),
-        # warm cracks: glowing fissure in the walls (visible only inside the crack), a glowing seam on the floor
-        cond(SEA, cond(noise(CRACK_PATCHES, 0.32, 10.0), cond(noise(CRACKS, -0.05, 0.05),
-             cond(y_above(14), cond(NOT(y_above(30)), seq(
-                 cond(noise(SEL, 0.5, 10.0), block("magma_block")),
-                 mod("glowing_fissure"))))))),
-        all_of([SEA, noise(CRACK_PATCHES, 0.4, 10.0), noise(CRACKS, -0.06, 0.06), y_above(30), TOP], mod("glowing_fissure")),
-        # the warm ring: bare netherrack with magma and glowing seams, no ice and no rime
-        all_of([SEA, noise(CRACK_PATCHES, WARM_PATCHES_FROM), noise(CRACKS, -WARM_BAND, WARM_BAND), y_above(28)], seq(
-            cond(TOP, seq(
-                cond(noise(SEL, 0.45), block("magma_block")),
-                cond(noise(SEL, -10.0, -0.55), mod("glowing_fissure")),
-                block("netherrack"))),
-            cond(depth("floor", 0, True, 6), block("netherrack")))),
         # frozen lava curtains hanging from the sea's ceiling: the curtain itself, not the ceiling mass above it
         all_of([SEA, noise(DRAPE_PATCHES, DRAPE_PAINT_PATCHES_FROM), noise(DRAPES, -DRAPE_PAINT_BAND, DRAPE_PAINT_BAND),
                 y_above(80), depth("ceiling", DRAPE_DEPTH)], frozen_lava()),
