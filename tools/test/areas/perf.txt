@@ -1,0 +1,26 @@
+# Performance areas (16 x 16 chunks each, from integration 2): every ring 3 biome and landmark, Nether rings 1-3.
+# perf.py times the same chunks in the mod's dimension and in the vanilla datapack dimension (perfpack/).
+ring1 20 20 35 35
+ring2 148 -8 163 7
+great -250 -4 -235 11
+caldera -250 -120 -235 -105
+channel -305 -155 -290 -140
+ashen 328 28 343 43
+seabed -254 46 -239 61
+titan -322 -38 -307 -23
+peaks -53 -367 -38 -352
+basalt 295 -36 310 -21
+ember 289 -8 304 7
+sulfur 233 140 248 155
+dormant -109 223 -94 238
+steamfens 367 -8 382 7
+tube 290 -60 305 -45
+chamber -290 -26 -275 -11
+abyss 276 -34 291 -19
+n1 -8 -8 7 7 nether
+n2 31 -8 46 7 nether
+n3e 66 -8 81 7 nether
+n3w -82 -8 -67 7 nether
+n3s -8 66 7 81 nether
+n3n -8 -82 7 -67 nether
+n3rifts 68 -30 83 -15 nether
