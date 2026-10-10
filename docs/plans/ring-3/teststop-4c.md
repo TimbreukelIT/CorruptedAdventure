@@ -153,9 +153,21 @@ Meting: `tools/test/perf.sh --name perf-int3` (JFR `minecraft.ChunkGeneration`, 
 - **Noise:** alle gebieden ≤ 1,35 over ronde 1–2 (budget 1,75; INT-afr ≤ 1,39); hoogste losse ronde ring 2 1,62 (ronde 1, het eerste gebied na de warm-up; ring 2 is in golf 3 niet geraakt) en afgrond 1,41 (ronde 2). 42c is in de noise-stap niet meetbaar: de verschillen met INT-afr liggen binnen de spreiding tussen rondes (afgrond 1,27 tegen 1,24).
 - **Surface:** ring 3 1,7–2,5×, gelijk aan INT-afr (39g `lava_shore` en het 42d-dak kosten niets meetbaars); ring 2 2,95 (niet geraakt, INT-afr 2,80).
 - **Features:** ring 3 0,26–1,32× vanilla, zoals INT-afr.
-- **Koud:** niet gemeten (harde stop). INT-afr koud ≤ 1,29.
-- [x] Noise binnen budget; surface en features vergeleken met INT-afr.
-- [ ] Koude ronde (los, ~10 min: `perf.sh --warm 0 --cold 1`), als main of de gebruiker dat wil.
+- **Koud** (losse ronde na de merge, `perf.sh --warm 0 --cold 1 --max-min 15 --name perf-int3-cold`, main `000fcff`, 18:36–18:43; verse JVM zonder warm-up, de standaard-koudgebieden; uitvoer `build/test/perf-int3-cold/`):
+
+| Gebied | noise koud | surface koud | features koud | noise koud INT-afr | surface koud INT-afr |
+|---|---|---|---|---|---|
+| ring 2 | 1,39 | 2,53 | 0,72 | 1,04 | 2,86 |
+| horizonreus | 1,65 | 2,86 | 0,42 | 1,21 | 2,65 |
+| caldera | 1,55 | 2,01 | 0,47 | 1,11 | 2,21 |
+| titanenveld | 1,54 | 1,97 | 0,95 | 1,27 | 1,92 |
+| smeulwoud | 1,51 | 1,93 | 0,92 | 1,15 | 1,98 |
+| lavabuis | 1,56 | 2,22 | 0,28 | 1,29 | 2,02 |
+| **afgrond** | **2,15** | 2,60 | 0,90 | 1,06 | 2,22 |
+
+  - **Afgrond koud 2,15 ligt boven het budget (1,75)**; de andere gebieden 1,39–1,65 (binnen budget, maar ~0,3–0,4 hoger dan INT-afr koud). De modtijden lagen ook hier ~50 % boven ronde 1–2 (noise ~48–57 s, afgrond 71 s) bij normale vanillatijden (~31–35 s), hetzelfde patroon als de afwijkende warme ronde 3. Warm is de afgrond 1,27 (INT-afr 1,24). 42c raakt juist de band rond de afgrondzee (`Abyss.near`, `ABYSS_GUARD`). **Open: besluit main/gebruiker** (herhalen, onderzoeken of accepteren).
+- [x] Noise warm binnen budget; surface en features vergeleken met INT-afr.
+- [ ] Noise koud: afgrond 2,15 > 1,75 (zie hierboven).
 - [ ] In-game: geen haperingen bij het aanvliegen van de horizonreus, het titanenveld en het smeulwoud (verse server, koud); F3 ms/tick.
 
 ## Afstemvragen
@@ -168,3 +180,4 @@ Meting: `tools/test/perf.sh --name perf-int3` (JFR `minecraft.ChunkGeneration`, 
 ## Voortgang
 - 2026-10-10: checklist opgesteld door INT3 (`ring3/int3` op main `3ee7f55`).
 - 2026-10-10 17:49–18:35: prestatie gemeten (sectie J): rondes 1–2 geldig, ronde 3 afwijkend en onvolledig, geen koude ronde (harde stop).
+- 2026-10-10 18:36–18:43: losse koude ronde: afgrond 2,15 (boven budget), rest 1,39–1,65; besluit open.
