@@ -362,6 +362,9 @@ public final class Ring3Textures {
         if (!Files.isDirectory(Path.of("src/main/resources"))) {
             throw new IllegalStateException("Run from the repository root (src/main/resources not found)");
         }
+        // Checked before anything is written (rendering is pure), so a failed check leaves no broken texture behind.
+        checkGlowLayers();
+        checkFissureEdges();
         for (Map.Entry<String, Texture> entry : TEXTURES.entrySet()) {
             String name = entry.getKey();
             Path file = OUTPUT.resolve(name + ".png");
@@ -383,8 +386,6 @@ public final class Ring3Textures {
                 System.out.println("wrote " + meta);
             }
         }
-        checkGlowLayers();
-        checkFissureEdges();
         lint();
         writePreview();
     }
@@ -2459,16 +2460,15 @@ public final class Ring3Textures {
         segments.add(new double[] {left[0], left[1], middle[0], middle[1], leftWidth, main});
         segments.add(new double[] {middle[0], middle[1], right[0], right[1], main, rightWidth});
         segments.add(new double[] {right[0], right[1], SIZE - s, m, rightWidth, stubEnd});
-        // both arms join the same junction, each through one wandering node: arms to different junctions with the S of
-        // the main crack made a pinwheel that a patch repeated in every tile
-        double[] top = random.nextBoolean() ? left : right;
-        double[] bottom = top;
-        double[] topNode = {innerPoint(lerp(m, top[0], 0.5) + 2 * (random.nextDouble() - 0.5)), innerPoint(lerp(s, top[1], 0.5))};
-        double[] bottomNode = {innerPoint(lerp(m, bottom[0], 0.5) + 2 * (random.nextDouble() - 0.5)), innerPoint(lerp(SIZE - s, bottom[1], 0.5))};
+        // both arms join the same junction, each through one wandering node: arms to different junctions made a pinwheel
+        // (four bent arms around the middle) that a patch repeated in every tile
+        double[] junction = random.nextBoolean() ? left : right;
+        double[] topNode = {innerPoint(lerp(m, junction[0], 0.5) + 2 * (random.nextDouble() - 0.5)), innerPoint(lerp(s, junction[1], 0.5))};
+        double[] bottomNode = {innerPoint(lerp(m, junction[0], 0.5) + 2 * (random.nextDouble() - 0.5)), innerPoint(lerp(SIZE - s, junction[1], 0.5))};
         segments.add(new double[] {m, s, topNode[0], topNode[1], stubEnd, arm});
-        segments.add(new double[] {topNode[0], topNode[1], top[0], top[1], arm, arm});
+        segments.add(new double[] {topNode[0], topNode[1], junction[0], junction[1], arm, arm});
         segments.add(new double[] {m, SIZE - s, bottomNode[0], bottomNode[1], stubEnd, arm});
-        segments.add(new double[] {bottomNode[0], bottomNode[1], bottom[0], bottom[1], arm, arm});
+        segments.add(new double[] {bottomNode[0], bottomNode[1], junction[0], junction[1], arm, arm});
         // one branch off the main crack's middle, kinking and thinning out
         double turn = 2 * Math.PI * random.nextDouble();
         double reach = 2.5 + 2 * random.nextDouble();

@@ -30,7 +30,8 @@ Geen (assets). Geen modellen/blockstates gewijzigd tenzij expliciet vermeld.
 - Voortgang: Sat Oct 10 12:05–12:23 WEDT 2026 eigen server (25576/RCON 25586, wereld `t57-r1`, seed 20260930) + client (lock + slot); doelen gevonden via RCON-probe rond de INT2-posities (`build/57-r1/found.json`), shots dag/nacht in `build/57-r1/shots/`; geel modderpalet bijgesteld (viel weg tegen de korst), Nether-shots opnieuw met nachtzicht en een camera in de lucht.
 - Voortgang: Sat Oct 10 12:23–12:28 WEDT 2026 Sodium/Iris-check (timebox ~30 min, binnen 5 min klaar), zie Backlog.
 - Voortgang: Sat Oct 10 13:00 WEDT 2026 server/client gestopt (RCON uit), lock en slots vrij, `run/mods`/`run/shaderpacks` weg; D groen (`runData`, `src/generated` ongewijzigd); script 2× → md5 identiek; `.mcmeta`'s (alleen LF/CRLF) teruggezet. Contactbladen `build/57-r1/sheet-r1-1-sulfur.png`, `-2-ember.png`, `-3-nether.png`, `-4-sodium.png` + `build/texture-preview/ring3.png` aan main ("57 r1 klaar voor oordeel"). Nog niet gecommit: wacht op het oordeel van de gebruiker.
-- Voortgang: Sat Oct 10 2026 oordeel gebruiker: 57 r1 in zijn geheel goed (alle blokken "goed"), geen r2; zachtere stoomsprite naar de backlog. Commit.
+- Voortgang: Sat Oct 10 2026 oordeel gebruiker: 57 r1 in zijn geheel goed (alle blokken "goed"), geen r2; zachtere stoomsprite naar de backlog. Commit `20da5cf`.
+- Voortgang: Sat Oct 10 2026 review 57 r1 (`/code-review` medium, 10 bevindingen): 9 (controles vóór het wegschrijven) en 10 (alias `bottom` weg) opgelost, PNG's md5-identiek; 6 niet samengevoegd (Beslissingen); 1, 2, 5, 7, 8 bewust zo (Backlog); 3/4 via de delta-secties (waves §4.8).
 
 ## r1 — wijzigingen per blok
 | Blok | Wijziging |
@@ -44,7 +45,7 @@ Geen (assets). Geen modellen/blockstates gewijzigd tenzij expliciet vermeld.
 
 ## CODEBASE-delta
 - `tools/textures/Ring3Textures.java` (57 r1):
-  - `glowingFissure`: `fissureSegments` nieuw opgezet (vier randstompjes `FISSURE_STUB`, randpunt `FISSURE_EDGE_POINT` = midden, binnenknopen `FISSURE_MARGIN` via `innerPoint`, afgekoelde naad `FISSURE_CRUSTED`); `nearestSegment` zonder wrap; `spur`, `crackPath`, `inside`, `FISSURE_ROW`/`FISSURE_COLUMN`/`FISSURE_LOWEST_NODE` vervallen; nieuwe controle `checkFissureEdges` (randpatroon op alle vier randen gelijk en spiegelsymmetrisch).
+  - `glowingFissure`: de onderrand is niet meer dicht (57a-r1 had 3 van 4 randpunten): de scheur raakt nu alle vier randen in het midden. `fissureSegments` nieuw opgezet (vier randstompjes `FISSURE_STUB`, randpunt `FISSURE_EDGE_POINT` = midden, binnenknopen `FISSURE_MARGIN` via `innerPoint`, afgekoelde naad `FISSURE_CRUSTED`); `nearestSegment` zonder wrap; `spur`, `crackPath`, `inside`, `FISSURE_ROW`/`FISSURE_COLUMN`/`FISSURE_LOWEST_NODE` vervallen; nieuwe controle `checkFissureEdges` (randpatroon op alle vier randen gelijk en spiegelsymmetrisch); `checkGlowLayers` en `checkFissureEdges` draaien vóór het wegschrijven van de PNG's (review 57 r1).
   - `smolderingStone`: hitteveld via `awayFromEdges(field)` (0 aan de rand, vol vanaf 3 px).
   - `sulfurCrystal(image, random, stage)` + `sulfurPrism` (zwavelkristal, vier stadia); `boilingMud(image, random, phase, mud, sheen, spread)` met paletten `YELLOW_/GREEN_/ORANGE_MUD` (+ `_SHEEN`) en `SULFUR_MUD_SPREAD`.
   - Contactblad: muren van de vier modders, zwavelkristallen in de slotrij, `VARIANT_FLOORS` (8×8-vloer in willekeurige oriëntaties, dag/nacht, `drawVariantFloor`, `oriented`).
@@ -56,8 +57,16 @@ Geen (assets). Geen modellen/blockstates gewijzigd tenzij expliciet vermeld.
 | 2026-10-10 | textures | `glowing_fissure`: randpunten in het midden van elke rand met een symmetrisch randprofiel; de naad tussen scheurblokken is afgekoeld (niet-gloeiend) | Besluit gebruiker (sparring golf 3): aansluiten in alle 32 varianten; met gloeiende naden werd een vlak 's nachts een raster van felle lijnen |
 | 2026-10-10 | textures | `smoldering_stone`: gloed blijft van de blokranden weg | De 46b-rotaties sluiten de wrappende scheuren niet meer aan: afgeknipte gloeistukjes |
 | 2026-10-10 | textures | Zwavelkristal: matte, stille zwavelprisma's (geen emissive/puls); zwavelmodders citroengeel / olijfgroen / roestoranje | Zwavel is mat (erts, item); het zwakke licht komt van het lichtniveau van het blok; geel moest afsteken tegen de korst |
+| 2026-10-10 | textures | Review 57 r1: bevindingen 1, 2, 5, 7, 8 bewust niet gewijzigd (zie Backlog) | De gebruiker keurde het beeld van r1 goed; deze punten veranderen de PNG's |
+| 2026-10-10 | textures | Review 57 r1 (6): `sulfurPrism` niet samengevoegd met `flameSpike` | Ze verschillen in breedteverloop (prisma met piramidetip vs doorlopend taps), voettint, tonen per facet, palet en tipkleur; één helper zou vijf parameters nodig hebben om bit-identiek te blijven en is niet eenvoudiger |
 
 ## Backlog
 - `[textures]` **Afgehandeld (57 r1):** gloeilagen in Sodium/Iris. Sodium 0.6.13 + Iris 1.8.12 (NeoForge 1.21.1, Modrinth, sha512 gecontroleerd; in de dev-client van de worktree): smeulsteen, smeulende as, smeulblad, gloeiende scheur en vuurkristal gloeien 's nachts identiek aan de vanilla-renderer; met shaderpack Complementary Reimagined r5.9.3 gloeien smeulsteen, smeulende as, smeulblad en vuurkristal ook. Vuurrobijn en de scheur met shaderpack niet expliciet gezien. Bewijs: `build/57-r1/sheet-r1-4-sodium.png`, `build/57-r1/shots/shader_*.png`.
 - `[textures]` **Afgehandeld (57 r1):** placeholders zwavelvelden (46b) en randpunten `glowing_fissure` (46b-backlog).
+- `[textures]` Review 57 r1, bewust zo gelaten (beeld goedgekeurd door de gebruiker), alleen bij klachten oppakken:
+  - (1) `smoldering_stone`: `awayFromEdges` vóór `ranked()` concentreert het hete aandeel (64 px) in het midden: ~44 % van het binnenvlak gloeit i.p.v. 25 % van de tegel.
+  - (2) `glowing_fissure`: open scheurstompjes (afgekoelde haarlijn + halo) op alle vier randen, ook naast niet-scheurblokken; gevolg van het besluit "symmetrische randpunten".
+  - (5) `sulfurPrism`: de integer-deling `fromTop * halfWidth / tip` geeft bij `halfWidth` 1 een naaldtip i.p.v. een piramide; de rechterfacet-tak van de tip is voor die prisma's dode code.
+  - (7) `SULFUR_MUD_SPREAD` 1,4 clipt meer achtergrondpixels naar `mud[0]`/`mud[5]`, dezelfde tinten als de popring en de spetters.
+  - (8) `Math.round` op .5-middens schuift elk zwavelprisma een halve pixel naar rechts.
 - `[textures/atmosphere]` Stoomwolkjes (`steam_puff`/`sulfur_steam`) ogen grof en groot (8×8-sprite, `quadSize` × tot 2,5): later een zachtere sprite (textures) en/of kleinere wolkjes (particle-klasse, atmosphere). Niet in 57 (gebruiker 2026-10-10).
