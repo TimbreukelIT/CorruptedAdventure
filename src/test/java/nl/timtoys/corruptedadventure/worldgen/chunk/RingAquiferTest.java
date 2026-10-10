@@ -378,6 +378,15 @@ class RingAquiferTest {
         // The lava layer itself stays.
         RingAquifer still = new RingAquifer(Level.OVERWORLD, STILL_LAVA, FIELD);
         assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(RingPosition.within(Ring.RING_3), at(-55), -0.5));
+        // INT3: water also flowed down into a dry cave from higher up and met the layer there: the floor over the layer is
+        // rock whatever vanilla puts on it (air, lava), also where a carver asks; ring 1 keeps vanilla's open floor.
+        RingAquifer dry = new RingAquifer(Level.OVERWORLD, DRY, FIELD);
+        assertNull(dry.computeSubstance(RingPosition.within(Ring.RING_3), at(RingFluidPicker.LAVA_LAYER_TOP), -0.5));
+        assertFalse(dry.shouldScheduleFluidUpdate());
+        assertNull(dry.computeSubstance(RingPosition.within(Ring.RING_3), at(RingFluidPicker.LAVA_LAYER_TOP), 0.0));
+        assertNull(still.computeSubstance(RingPosition.within(Ring.RING_3), at(RingFluidPicker.LAVA_LAYER_TOP), -0.5));
+        assertSame(Blocks.AIR.defaultBlockState(), dry.computeSubstance(RingPosition.within(Ring.RING_3), at(-53), -0.5));
+        assertSame(Blocks.AIR.defaultBlockState(), dry.computeSubstance(RingPosition.within(Ring.RING_1), at(RingFluidPicker.LAVA_LAYER_TOP), -0.5));
     }
 
     @Test
