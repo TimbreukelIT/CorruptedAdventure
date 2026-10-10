@@ -42,5 +42,7 @@ class AshCrustBlockTest {
         BlockState state = ModBlocks.ASH_CRUST.get().defaultBlockState();
         assertFalse(state.isRandomlyTicking());
         assertEquals(0x8A8580, ModBlocks.ASH_CRUST.get().getDustColor(state, EmptyBlockGetter.INSTANCE, POS));
+        // 38c review (user): a speck of dust now and then, ten times rarer than sand (1 in 16).
+        assertEquals(160, AshCrustBlock.DUST_CHANCE);
     }
 }
