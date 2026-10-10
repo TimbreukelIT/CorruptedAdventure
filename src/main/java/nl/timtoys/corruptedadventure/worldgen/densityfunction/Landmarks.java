@@ -26,13 +26,15 @@ final class Landmarks {
     /**
      * Kinds of thin solids, for the surface (39f: per block, output {@code thin_kind}): the biome's own surface (bones,
      * arches, hoodoos, the micro relief), obsidian (needles), basalt (prisms, pillars, bridges, sea stacks), a floating
-     * island, rubble (the floor of a collapse).
+     * island, rubble (the floor of a collapse); 42d: an ash crust (a thin roof over a lava tube's mouth that falls in
+     * under a player).
      */
     static final int KIND_BIOME = 0;
     static final int KIND_OBSIDIAN = 2;
     static final int KIND_BASALT = 3;
     static final int KIND_ISLAND = 4;
     static final int KIND_RUBBLE = 5;
+    static final int KIND_CRUST = 6;
 
     private Landmarks() {
     }

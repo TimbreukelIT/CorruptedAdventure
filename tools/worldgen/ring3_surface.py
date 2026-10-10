@@ -172,11 +172,12 @@ def cliffs():
 
 
 def thin_kind(lo, hi):
-    """39f: the kind of thin solid at a block (per block): 0 biome surface, 2 obsidian, 3 basalt, 4 island, 5 rubble."""
+    """39f: the kind of thin solid at a block (per block): 0 biome surface, 2 obsidian, 3 basalt, 4 island, 5 rubble;
+    42d: 6 ash crust (the roof in front of a lava tube's mouth)."""
     return volc("thin_kind", lo, hi)
 
 
-THIN_ANY = thin_kind(-0.5, 6.0)
+THIN_ANY = thin_kind(-0.5, 7.0)
 THIN_BIOME = thin_kind(-0.5, 0.5)
 # The depth to which the ring 3 rules reach (the volcanic ground package below the surface); below it vanilla stone.
 GATE = depth("floor", 9, True, 6)
@@ -204,7 +205,8 @@ def thin_solids():
             cond(volc("vein", 0.0, 0.035), block("magma_block")),
             cond(noise(P, -INF, -0.3), block("blackstone")),
             block("basalt"))),
-        cond(thin_kind(4.5, 5.5), rubble()))
+        cond(thin_kind(4.5, 5.5), rubble()),
+        cond(thin_kind(5.5, 6.5), mod("ash_crust")))
 
 
 def rubble():
@@ -356,15 +358,17 @@ def steam_fens():
         cond(DEPTH, seq(cond(noise(P, 0.25), block("mud")), block("packed_mud")))]
 
 
-# Biomes whose top gets a one-block roof of ash over an opening (39c: ash_crust; 42b: ash_block, which does not fall).
+# Biomes whose top gets a one-block roof of ash over an opening (39c: ash_crust; 42b: ash_block; 42d: ash_crust again,
+# the crust of 38c, which falls in only under a player).
+# The thin roof in front of every lava tube's mouth is ash crust in every biome (a thin solid of kind 6, thin_solids).
 THIN_ROOF_CRUST = {"ashen_wastes", "volcanic_peaks", "ember_woods", "titan_fields"}
 
 
 def biome_branch(name):
     top, rest = BIOMES[name]()
-    # 42b (V3 = A): a roof of one block (air right below) gets ash that does not fall; a falling ash_crust there fell at the
-    # first neighbour update during generation, so the world depended on when that came.
-    head = [cond(THIN_ROOF, mod("ash_block"))] if name in THIN_ROOF_CRUST else []
+    # 42d: a roof of one block (air right below) gets the ash crust of 38c: it hangs whatever updates it gets during
+    # generation and falls in only under a player (42b had ash_block: the old crust fell at the first neighbour update).
+    head = [cond(THIN_ROOF, mod("ash_crust"))] if name in THIN_ROOF_CRUST else []
     # The STEEP rules (before TOP) keep their place in front.
     steep = [r for r in rest if r.get("if_true") == STEEP]
     rest = [r for r in rest if r.get("if_true") != STEEP]

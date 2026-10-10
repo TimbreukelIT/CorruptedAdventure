@@ -66,9 +66,9 @@ public final class VolcanicOutput implements DensityFunction {
         THIN("thin", -1.0, 1.0),
         /**
          * 3D (39f, for the surface): the kind of thin solid at a block, −1 outside one (0 biome surface, 2 obsidian,
-         * 3 basalt, 4 floating island, 5 rubble; {@link Landmarks}).
+         * 3 basalt, 4 floating island, 5 rubble, 6 ash crust; {@link Landmarks}).
          */
-        THIN_KIND("thin_kind", -1.0, 5.0),
+        THIN_KIND("thin_kind", -1.0, 6.0),
         /** 3D (39f, for the surface): 0..1, changes with every block of height, slowly across the plain (patches that follow the steps). */
         TREAD("tread", 0.0, 1.0),
         /** 3D (39f, for the surface): 0..1, thin winding layers (the veins of the obsidian needles). */

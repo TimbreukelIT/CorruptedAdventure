@@ -34,12 +34,15 @@ Voortgang: Sat Oct 10 15:08 WEDT 2026 reviewfixes 42c–47e (main, `/code-review
 9. kolomsleutels overal via `LavaFallFlow.key`.
 Testzaad opnieuw: 38 vallen, 37 met stroming, 0 nat, 0 afgekapt. B (709 tests) en D groen, geen diff, script idempotent.
 
+Voortgang: Sat Oct 10 15:17 WEDT 2026 42d: main gemerged (38c, `678a7e4`). Dunne daken van één blok boven een opening in de korstbiomes (`ashen_wastes`, `volcanic_peaks`, `ember_woods`, `titan_fields`) zijn weer `ash_crust` (i.p.v. `ash_block`); vóór elke buismond een stuk dun dak: waar de mondhelling van een droge buis door de grond breekt en minstens `LID_DROP` (3) diep ligt, wordt het bovenste grondblok een dun vast blok van een eigen soort (`KIND_CRUST`, 6) en eindigt de opening eronder; de surface verft het `ash_crust`, in elk biome. Het ondiepe begin van de geul blijft open, dus de mond blijft zichtbaar. Testzaad: 484 monden, 466 met een korstdak (de rest: helling te kort/ondiep), 10.029 korstkolommen. Determinisme: de korst hangt na het laden (38c), de vorm is puur. B (`slots.sh run`, 721 tests) en D groen, geen diff, `ring3_surface.py` idempotent. **Perf hermeten in INT (surface).**
+
 ## W-checklist (INT3)
 - [ ] **42c** lavascan (trede/val/lek): afgrond (pit) lek 0; de oude plek (4.409–4.412, Y 5–9, −510…−508) dicht.
 - [ ] **54c** Nether-3-kloven (n3rifts, chunks 68…83 × −30…−15): 0 blootliggende ijsblokken onder Y 30 binnen 3 blokken (horizontaal) van een open lavakolom; scheuren aan de rand van `rime_forest` met gloeiende scheur/magma-wanden.
 - [ ] **39g** lavarivieren (ook brede en eindpoelen, gebied E/rivieren en B): smalle zwarte oever (~3 blokken vanaf de lava), magma alleen direct langs de lava; features langs de rivieren als vóór 39g.
 - [ ] **47e** determinisme omgekeerd geladen, gebied arch/archipel: geen `ash_layer`-verschil onder de vallen; overige verschillen daar alleen vloeiende lava (lucht ↔ lava) en geen obsidiaan meer op Y −55 (besluit B); geen val die in water eindigt.
-- [ ] Prestatie: surface (39g) en noise (42c) hermeten na INT3.
+- [ ] **42d** buismonden (bijv. (4.858, 73–78, 75) en de monden in de basaltstromen): een stuk askorstdak vóór de mond, de mond zelf zichtbaar; dunne daken boven buizen/daklichten in de korstbiomes `ash_crust`; in twee werelden (omgekeerd geladen) gelijk, geen vallende blokken na het laden; een speler eronder laat het dak instorten.
+- [ ] Prestatie: surface (39g, 42d) en noise (42c) hermeten na INT3.
 
 ## CODEBASE-delta
 - `worldgen/densityfunction/Landmarks.java`: 42c — `Abyss.near(px, pz, reach)`: of een positie binnen `reach` blokken van de lavazee kan liggen, ook bij de spitse eindes (bovengrens van de halve breedte).
@@ -61,8 +64,13 @@ Testzaad opnieuw: 38 vallen, 37 met stroming, 0 nat, 0 afgekapt. B (709 tests) e
 - `worldgen/feature/AshDriftFeature.java`: 47e — geen aslaag waar de lava van een val kan stromen (`inFallFlow`).
 - Tests: `Ring3LavaFallFlowTest` (nieuw): elke gemaakte val heeft een stroomgebied, niet afgekapt; de aslaag van INT-afr ligt erin; puur (twee threads, omgekeerde volgorde).
 - Valkuil: **vloeiende lava en water in worldgen** — wat de lava van een val (of een bron) bereikt, verandert op het moment dat ze stroomt (losse blokken weg, obsidiaan bij water); features die losse blokken leggen blijven uit `VolcanicField.fallFlowsNear`, en vallen die water kunnen raken worden niet gemaakt. Vraag je vanuit code die een kolom van het venster vasthoudt naar andere kolommen, gebruik dan een eigen cache (de `ColumnTable` hergebruikt de kolomobjecten bij het verschuiven).
+- `worldgen/densityfunction/LavaTubes.java`: 42d — `LID_DROP`; een droge buis die minstens 3 diep door de grond breekt krijgt daar een dak van één blok (`addSolid(roof, roof, KIND_CRUST)`), de opening eindigt eronder.
+- `Landmarks.java`: 42d — `KIND_CRUST` (6); `VolcanicOutput.THIN_KIND` tot 6.
+- `noise_settings/overworld.json` (uit `ring3_surface.py`): 42d — `THIN_ROOF` in de korstbiomes → `ash_crust`; dunne vaste blokken van soort 6 → `ash_crust` (elk biome); `THIN_ANY` tot 7. CODEBASE-regel over "worldgen plaatst geen `ash_crust` meer" (42b) vervalt.
+- Tests: `Ring3TerrainJsonTest` (korst in de ring 3-tak, niet in de wandregel), `Ring3TerrainWave3Test.everyTubeMouthHasAPieceOfAshCrustRoofInFrontOfIt`.
 
 ## Beslissingen
+- 2026-10-10 · worldgen · 42d: het stuk dun dak vóór een buismond ligt waar de mondhelling door de grond breekt en minstens 3 blokken diep is (dus 3+ blokken val), in elk biome askorst; het ondiepe begin van de geul blijft open zodat de mond zichtbaar blijft; dunne daken boven buizen/daklichten alleen in de korstbiomes (zoals 39c/42b) · uitvoering van het besluit "askorst op dunne daken én een stuk dun dak vóór elke buismond" (gebruiker 2026-10-10)
 - 2026-10-10 · worldgen · Lavaoever (39g): 3 blokken vanaf de lavarand (zelfde breedte als de oude oever náást het kanaal), magma alleen in het eerste blok met de bestaande vlekruis; features houden de oude afstand (`lava_bank`) · uitvoering van het besluit "smaller, plafond in blokken, magma alleen direct langs de lava" (gebruiker 2026-10-10); de features ongewijzigd laten houdt de decoratie langs rivieren gelijk
 - 2026-10-10 · worldgen · Archipelvallen (47e): het stroomgebied is een ruime schatting van de vanilla-stroming over het terrein (naar alle kanten, grond 1 lager); "water raken" = stroming onder Y 0 (aquiferwater in ring 3) of buiten ring 3 zelf; net als een val waarvan de stroming afgekapt is; zo'n val wordt helemaal niet gemaakt (bron + val) · uitvoering van het besluit "geen aslaag in het stroomgebied, vallen eindigen niet in water" (gebruiker 2026-10-10)
 - 2026-10-10 · worldgen · Ring 3 krijgt de ring 2-regel: één blok steen tussen diep aquiferwater en vanilla's lavalaag (Y −54); ring 1 blijft vanilla · het contact werd obsidiaan op het moment dat het water stroomde, afhankelijk van de laadvolgorde (INT-afr, Y −55 onder de archipel; besluit gebruiker B)

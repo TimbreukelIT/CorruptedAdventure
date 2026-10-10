@@ -129,6 +129,51 @@ class Ring3TerrainWave3Test {
         System.out.println("39g: shore columns " + shore + ", magma columns " + magma + ", old bank columns > 4 from lava " + oldBankFar);
     }
 
+    @Test
+    void everyTubeMouthHasAPieceOfAshCrustRoofInFrontOfIt() {
+        // 42d: where a main tube's mouth ramp breaks through the ground at least LID_DROP deep, a roof of one block of ash
+        // crust (thin kind KIND_CRUST) covers it, with the opening right below; the shallow end of the trench stays open.
+        int mouths = 0;
+        int lidded = 0;
+        int lids = 0;
+        int cells = 6000 / LavaTubes.CELL;
+        for (int i = -cells; i <= cells; i++) {
+            for (int j = -cells; j <= cells; j++) {
+                LavaTubes.TubeSystem system = field.tubeSystem(i, j);
+                if (system == null || system.tubes().isEmpty()) {
+                    continue;
+                }
+                LavaTubes.Tube main = system.tubes().get(0);
+                int n = main.points();
+                for (int end : new int[]{0, n - 1}) {
+                    double ground = field.traceColumn(main.x()[end], main.z()[end]).height();
+                    if (main.floor()[end] < ground - 3.0) {
+                        continue; // no mouth at this end (it ends blind)
+                    }
+                    mouths++;
+                    int found = 0;
+                    int cx = (int) Math.floor(main.x()[end]);
+                    int cz = (int) Math.floor(main.z()[end]);
+                    for (int x = cx - 16; x <= cx + 16; x++) {
+                        for (int z = cz - 16; z <= cz + 16; z++) {
+                            VolcanicField.Column c = field.column(x, z);
+                            int roof = (int) Math.ceil(c.height) - 1;
+                            if (c.thinKind(roof) == Landmarks.KIND_CRUST) {
+                                assertTrue(c.voidAt(roof - 1) && !c.voidAt(roof), "the crust roofs an opening at " + x + "," + roof + "," + z);
+                                found++;
+                            }
+                        }
+                    }
+                    lids += found;
+                    lidded += found > 0 ? 1 : 0;
+                }
+            }
+        }
+        System.out.println("42d: mouths " + mouths + ", with a crust roof " + lidded + ", crust columns " + lids);
+        assertTrue(mouths >= 10, "mouths " + mouths);
+        assertTrue(lidded >= mouths * 0.9, "mouths with a crust roof " + lidded + " of " + mouths);
+    }
+
     /** The number of columns within {@code r} (square) of (x, z) where lava shows (the field's ground below its lava). */
     private static int lavaWithin(int x, int z, int r) {
         int n = 0;

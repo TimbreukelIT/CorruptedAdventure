@@ -44,6 +44,12 @@ final class LavaTubes {
     static final double MOUTH_SLOPE = 0.45;
     /** Rock kept above a tube (except at its mouths and skylights). */
     static final double ROOF = 8.0;
+    /**
+     * 42d: where a tube breaks through the ground (the trench in front of its mouth) and lies at least this far below
+     * it, a roof of one block of ash crust covers it: a piece of thin roof in front of every mouth that falls in under a
+     * player. The shallow end of the trench stays open, so the mouth still shows.
+     */
+    static final int LID_DROP = 3;
     /** The smooth inner wall and the shell of rock around every opening, in blocks. */
     static final double SKIN = 1.3;
     static final double SHELL = 3.0;
@@ -665,6 +671,13 @@ final class LavaTubes {
         int[] skin = section(dist, half, halfHeight, centre, floor, SKIN);
         int[] shell = section(dist, half, halfHeight, centre, floor, SHELL);
         int crust = Integer.MIN_VALUE;
+        // 42d: the ground's top block (rock lies below the column's height); a dry tube that would open through it this
+        // deep gets a roof of ash crust there instead (a thin solid, so the interpolated terrain cannot leave a hole).
+        int roof = Mth.ceil(c.height) - 1;
+        if (!t.lava() && opening != null && opening[1] >= roof && roof - floor >= LID_DROP) {
+            opening[1] = roof - 1;
+            c.addSolid(roof, roof, Landmarks.KIND_CRUST);
+        }
         if (t.lava()) {
             double along = Mth.lerp(bestT, t.along()[bestK], t.along()[bestK + 1]);
             boolean gutter = along >= GUTTER_START;

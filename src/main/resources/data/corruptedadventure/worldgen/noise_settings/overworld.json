@@ -330,7 +330,7 @@
                           "type": "corruptedadventure:volcanic_threshold",
                           "output": "thin_kind",
                           "min": -0.5,
-                          "max": 6.0
+                          "max": 7.0
                         }
                       },
                       "then_run": {
@@ -9372,7 +9372,7 @@
                       "type": "corruptedadventure:volcanic_threshold",
                       "output": "thin_kind",
                       "min": -0.5,
-                      "max": 6.0
+                      "max": 7.0
                     },
                     "then_run": {
                       "type": "minecraft:sequence",
@@ -9660,6 +9660,21 @@
                                     }
                                   }
                                 ]
+                              }
+                            },
+                            {
+                              "type": "minecraft:condition",
+                              "if_true": {
+                                "type": "corruptedadventure:volcanic_threshold",
+                                "output": "thin_kind",
+                                "min": 5.5,
+                                "max": 6.5
+                              },
+                              "then_run": {
+                                "type": "minecraft:block",
+                                "result_state": {
+                                  "Name": "corruptedadventure:ash_crust"
+                                }
                               }
                             }
                           ]
@@ -11709,7 +11724,7 @@
                                       "then_run": {
                                         "type": "minecraft:block",
                                         "result_state": {
-                                          "Name": "corruptedadventure:ash_block"
+                                          "Name": "corruptedadventure:ash_crust"
                                         }
                                       }
                                     },
@@ -11876,7 +11891,7 @@
                                       "then_run": {
                                         "type": "minecraft:block",
                                         "result_state": {
-                                          "Name": "corruptedadventure:ash_block"
+                                          "Name": "corruptedadventure:ash_crust"
                                         }
                                       }
                                     },
@@ -12032,7 +12047,7 @@
                                       "then_run": {
                                         "type": "minecraft:block",
                                         "result_state": {
-                                          "Name": "corruptedadventure:ash_block"
+                                          "Name": "corruptedadventure:ash_crust"
                                         }
                                       }
                                     },
@@ -12806,7 +12821,7 @@
                                       "then_run": {
                                         "type": "minecraft:block",
                                         "result_state": {
-                                          "Name": "corruptedadventure:ash_block"
+                                          "Name": "corruptedadventure:ash_crust"
                                         }
                                       }
                                     },
