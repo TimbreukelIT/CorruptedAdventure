@@ -948,15 +948,15 @@
               "if_true": {
                 "type": "minecraft:noise_threshold",
                 "noise": "corruptedadventure:nether_ring_3_region",
-                "min_threshold": -0.18,
-                "max_threshold": 0.18
+                "min_threshold": -0.22,
+                "max_threshold": 0.22
               },
               "then_run": {
                 "type": "minecraft:condition",
                 "if_true": {
                   "type": "minecraft:noise_threshold",
                   "noise": "corruptedadventure:nether_ring_3_crack_patches",
-                  "min_threshold": 0.32,
+                  "min_threshold": 0.3,
                   "max_threshold": 10.0
                 },
                 "then_run": {
@@ -1026,8 +1026,8 @@
               "if_true": {
                 "type": "minecraft:noise_threshold",
                 "noise": "corruptedadventure:nether_ring_3_region",
-                "min_threshold": -0.18,
-                "max_threshold": 0.18
+                "min_threshold": -0.22,
+                "max_threshold": 0.22
               },
               "then_run": {
                 "type": "minecraft:condition",
@@ -1080,8 +1080,8 @@
               "if_true": {
                 "type": "minecraft:noise_threshold",
                 "noise": "corruptedadventure:nether_ring_3_region",
-                "min_threshold": -0.18,
-                "max_threshold": 0.18
+                "min_threshold": -0.22,
+                "max_threshold": 0.22
               },
               "then_run": {
                 "type": "minecraft:condition",

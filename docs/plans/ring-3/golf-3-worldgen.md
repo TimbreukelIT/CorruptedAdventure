@@ -14,14 +14,20 @@ Voortgang: Sat Oct 10 13:24 WEDT 2026 start; worktree `P:/Projecten/Java/The Cor
 
 Voortgang: Sat Oct 10 13:35 WEDT 2026 42c: diagnose (offline, `afr-det-a` + testveld): de schacht ligt waar de afgrond naar zijn eind toe smaller wordt; daar was de band rond de lavazee (`chasm` < 1,3 = 0,3 halve breedte) een blok of minder, dus cellhoeken naast de lava lagen buiten de band en een grot werd ernaast geïnterpoleerd (en carvers mochten er in). Fix: band ook `ABYSS_GUARD` (8) blokken voorbij de zee, eindes inbegrepen (`Landmarks.Abyss.near`). B `--rerun-tasks` groen (701 tests), D zonder diff.
 
+Voortgang: Sat Oct 10 13:42 WEDT 2026 54c: diagnose (offline scan `afr-det-a`, n3rifts, + ruiswaarden op het testzaad): de blootliggende ijsblokken onder Y 30 binnen 3 blokken van een open lavakolom (16 met deze telling, horizontaal; de "6" van INT-afr in 3D) liggen (a) in scheuren aan de rand van `rime_forest` (regio 0,18–0,20: de scheuren lopen door tot het gewicht van de ijszee 0 is, |regio| < 0,22, maar de warme regels keken naar `SEA` = |regio| ≤ 0,18) en (b) bij scheurpatches 0,315 (masker open vanaf 0,3, warme wanden pas vanaf 0,32). Fix in `nether_ring3_surface.py`: `CRACK_ZONE` (|regio| < 0,22) en `CRACKS_FROM` (0,3) voor de warme scheurwanden, de gloeiende scheur bovenop en de warme kring. Alle 16 blokken vallen nu onder de warme scheurwanden (offline nagerekend). B `--rerun-tasks` groen, D zonder diff, script idempotent.
+
 ## W-checklist (INT3)
 - [ ] **42c** lavascan (trede/val/lek): afgrond (pit) lek 0; de oude plek (4.409–4.412, Y 5–9, −510…−508) dicht.
+- [ ] **54c** Nether-3-kloven (n3rifts, chunks 68…83 × −30…−15): 0 blootliggende ijsblokken onder Y 30 binnen 3 blokken (horizontaal) van een open lavakolom; scheuren aan de rand van `rime_forest` met gloeiende scheur/magma-wanden.
 
 ## CODEBASE-delta
 - `worldgen/densityfunction/Landmarks.java`: 42c — `Abyss.near(px, pz, reach)`: of een positie binnen `reach` blokken van de lavazee kan liggen, ook bij de spitse eindes (bovengrens van de halve breedte).
 - `worldgen/densityfunction/VolcanicField.java`: 42c — de band rond de lavazee van de afgrond (`guardBottom`/`guardTop`) reikt ook `ABYSS_GUARD` (8) blokken voorbij de zee, eindes inbegrepen.
 - Tests: `Ring3TerrainWave3Test` (nieuw): elke cellhoek naast de afgrondzee ligt in de band.
 - Valkuil (aanvulling op "Grond naast lava (42b)"): de band rond lava moet minstens een cel-diagonaal plus één blok voorbij de lava reiken, **ook waar een vorm spits uitloopt**; een band in eenheden van de breedte (0,3 halve breedte) wordt aan de eindes bijna nul.
+- `noise_settings/nether.json` (uit `nether_ring3_surface.py`): 54c — de warme scheurregels (wanden Y 14–30, gloeiende scheur bovenop, warme kring) gelden in de hele scheurzone (|regio| < 0,22, ook de randen van `rime_forest` en `glacier_rifts`) en vanaf scheurpatches 0,3; `tools/worldgen/nether_ring3_surface.py`: `CRACK_ZONE`, `CRACKS_FROM`.
+- Tests: `NetherRing3JsonTest` — `theWarmCracksLineEveryOpenCrackBelowTheGlacierLevel` (nieuw: elke open scheur onder Y 30 heeft warme wanden, bemonsterd op het testzaad), de regioband ±0,22 toegestaan.
+- Valkuil: de Nether-3-scheuren lopen door tot het gewicht van de ijszee 0 is (|regio| < 0,22), verder dan de biome-drempel 0,18; regels voor scheuren gebruiken die zone, niet `SEA`.
 
 ## Beslissingen
 

@@ -3,6 +3,9 @@ package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing3Features;
 import org.junit.jupiter.api.Test;
@@ -36,6 +39,20 @@ class NetherRing3JsonTest {
         assertEquals("corruptedadventure:ring_3/nether/region", scaled.get("argument1").getAsString(), file);
         double value = scaled.get("argument2").getAsDouble() * r + sum.get("argument2").getAsDouble();
         return Math.max(clamp.get("min").getAsDouble(), Math.min(clamp.get("max").getAsDouble(), value));
+    }
+
+    /** Where a region's weight reaches 1 (its {@code region × k + c} = 1). */
+    private static double fullAt(String file) {
+        JsonObject sum = WorldgenData.read("density_function/ring_3/nether/" + file + ".json").getAsJsonObject("argument")
+                .getAsJsonObject("input");
+        return (1.0 - sum.get("argument2").getAsDouble()) / sum.getAsJsonObject("argument1").get("argument2").getAsDouble();
+    }
+
+    /** 54c: the cracks reach as far as the frozen sea's weight, {@code |region| < crackZone()}. */
+    private static double crackZone() {
+        double zone = fullAt("rime_weight");
+        assertEquals(-zone, fullAt("rifts_weight"), 1e-9);
+        return zone;
     }
 
     @Test
@@ -154,13 +171,16 @@ class NetherRing3JsonTest {
         List<JsonObject> thresholds = new ArrayList<>();
         collect(branch, "minecraft:noise_threshold", thresholds);
         double rime = NetherRing3Features.RIME_THRESHOLD, rifts = NetherRing3Features.RIFTS_THRESHOLD;
+        double zone = crackZone();
         int regionChecks = 0;
         for (JsonObject threshold : thresholds) {
             String noise = threshold.get("noise").getAsString();
             double min = threshold.get("min_threshold").getAsDouble(), max = threshold.get("max_threshold").getAsDouble();
             if (noise.equals(REGION_NOISE)) {
                 regionChecks++;
-                assertTrue((min == rifts && max == rime) || (min == rime && max >= 2.0) || (max == rifts && min <= -2.0),
+                // The biome thresholds, or (54c) the zone the cracks reach.
+                assertTrue((min == rifts && max == rime) || (min == rime && max >= 2.0) || (max == rifts && min <= -2.0)
+                                || (Math.abs(min + zone) < 1e-9 && Math.abs(max - zone) < 1e-9),
                         "region band [" + min + ", " + max + "]");
             }
         }
@@ -292,6 +312,99 @@ class NetherRing3JsonTest {
         assertEquals(30, below.getAsJsonObject("invert").getAsJsonObject("anchor").get("absolute").getAsInt());
         assertFalse(warm.toString().contains("ice"), "no ice in the rifts' warm ring");
         assertTrue(branch.toString().contains("{\"type\":\"minecraft:y_above\",\"anchor\":{\"absolute\":30}"));
+    }
+
+    /**
+     * 54c: wherever a crack is open below Y 30 (above the lava at Y 22), the blocks beside it are the warm cracks' fissure
+     * and magma, whatever biome lies there: the cracks reach as far as the frozen sea's weight (into the edges of the rime
+     * forest and the rifts) and open from the first crack patches. INT-afr found exposed Nether ice there, in a crack of
+     * the rime forest's edge (1.211, 24–26, −284) and at crack patches 0.315 (1.236, 29, −304). Sampled on the test seed
+     * with the noises as the Nether's random state seeds them; the crack's opening follows {@code cracks.json}.
+     */
+    @Test
+    void theWarmCracksLineEveryOpenCrackBelowTheGlacierLevel() {
+        JsonObject branch = ring3Branch();
+        double zone = crackZone();
+        JsonObject warm = null;
+        for (JsonElement rule : branch.getAsJsonObject("then_run").getAsJsonArray("sequence")) {
+            JsonObject condition = rule.getAsJsonObject().getAsJsonObject("if_true");
+            if (condition != null && REGION_NOISE.equals(condition.has("noise") ? condition.get("noise").getAsString() : null)
+                    && rule.toString().contains("{\"type\":\"minecraft:y_above\",\"anchor\":{\"absolute\":14}")) {
+                warm = rule.getAsJsonObject();
+            }
+        }
+        assertTrue(warm != null, "the warm cracks' rule");
+        JsonObject region = warm.getAsJsonObject("if_true");
+        assertEquals(-zone, region.get("min_threshold").getAsDouble(), 1e-9);
+        assertEquals(zone, region.get("max_threshold").getAsDouble(), 1e-9);
+        List<JsonObject> thresholds = new ArrayList<>();
+        collect(warm, "minecraft:noise_threshold", thresholds);
+        double patchesFrom = Double.NaN, band = Double.NaN;
+        for (JsonObject t : thresholds) {
+            switch (t.get("noise").getAsString()) {
+                case "corruptedadventure:nether_ring_3_crack_patches" -> patchesFrom = t.get("min_threshold").getAsDouble();
+                case "corruptedadventure:nether_ring_3_cracks" -> band = t.get("max_threshold").getAsDouble();
+                default -> {
+                }
+            }
+        }
+        assertFalse(warm.toString().contains("ice"));
+        assertTrue(warm.toString().contains("{\"type\":\"minecraft:y_above\",\"anchor\":{\"absolute\":30}"), "up to Y 30");
+        // The crack mask opens from patches 0.3 (clamp((patches - 0.3) * 5) × sea weight), the opening is
+        // |cracks| < 0.035 × mask × gradient(Y 17-36: 0.35 → 1) − 0.002 (cracks.json).
+        String mask = WorldgenData.read("density_function/ring_3/nether/crack_mask.json").toString();
+        assertTrue(mask.contains("\"argument2\":-0.3") && mask.contains("\"argument2\":5.0"), "crack mask from patches 0.3");
+        String cracks = WorldgenData.read("density_function/ring_3/nether/cracks.json").toString();
+        assertTrue(cracks.contains("\"argument2\":0.035") && cracks.contains("\"argument2\":-0.002"), "crack opening");
+        assertTrue(patchesFrom <= 0.3, "warm from the first crack patches: " + patchesFrom);
+
+        NormalNoise regionNoise = netherNoise("nether_ring_3_region");
+        NormalNoise patchNoise = netherNoise("nether_ring_3_crack_patches");
+        NormalNoise crackNoise = netherNoise("nether_ring_3_cracks");
+        int open = 0;
+        for (int x = 1088; x < 1344; x++) {
+            for (int z = -480; z < -224; z++) {
+                double r = regionNoise.getValue(x, 0, z);
+                double sea = 1.0 - weight("rime_weight", r) - weight("rifts_weight", r);
+                double m = Math.max(0.0, Math.min(1.0, (patchNoise.getValue(x, 0, z) - 0.3) * 5.0)) * sea;
+                if (m <= 0.0) {
+                    continue;
+                }
+                double n = Math.abs(crackNoise.getValue(x, 0, z));
+                // The widest opening below Y 30 (gradient at Y 29).
+                double gradient = 0.35 + 0.65 * (29 - 17) / 19.0;
+                if (n >= 0.035 * m * gradient - 0.002) {
+                    continue;
+                }
+                open++;
+                int[][] beside = {{x + 1, z}, {x - 1, z}, {x, z + 1}, {x, z - 1}};
+                for (int[] b : beside) {
+                    double br = regionNoise.getValue(b[0], 0, b[1]);
+                    assertTrue(Math.abs(br) < zone && patchNoise.getValue(b[0], 0, b[1]) >= patchesFrom
+                                    && Math.abs(crackNoise.getValue(b[0], 0, b[1])) < band,
+                            "a crack wall outside the warm rule at " + b[0] + "," + b[1]);
+                }
+            }
+        }
+        assertTrue(open > 100, "open crack columns " + open);
+    }
+
+    private static JsonObject ring3Branch() {
+        JsonArray sequence = WorldgenData.read("noise_settings/nether.json").getAsJsonObject("surface_rule").getAsJsonArray("sequence");
+        for (JsonElement rule : sequence) {
+            JsonElement biomes = rule.getAsJsonObject().has("if_true") ? rule.getAsJsonObject().getAsJsonObject("if_true").get("biome_is") : null;
+            if (biomes != null && biomes.toString().equals(RING_3_BIOMES)) {
+                return rule.getAsJsonObject();
+            }
+        }
+        throw new AssertionError("no ring 3 branch");
+    }
+
+    /** The Nether's noise settings use {@code legacy_random_source}: the random state seeds its noises from that. */
+    private static NormalNoise netherNoise(String name) {
+        return NormalNoise.create(new LegacyRandomSource(
+                        VolcanicFieldTest.SEED).forkPositional().fromHashOf(ResourceLocation.parse("corruptedadventure:" + name)),
+                WorldgenData.noiseParameters(name));
     }
 
     /** {@code c} of the first {@code add(noise(name), c)} in the tree. */
