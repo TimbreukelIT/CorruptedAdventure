@@ -665,3 +665,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-13 | blocks | Sparring golf 1 ring 4: `giant_lily_pad` is een multiblok 2×2 (vier delen, `part`-property, breken van één breekt alle) | Gebruiker; echte grootte en beloopbaar |
 | 2026-10-13 | blocks | Sparring golf 1 ring 4: `bubble_spring` in 66 (alleen `animateTick`, vanilla bubble-particle tot de sprites van A er zijn) | Gebruiker; W-biomes kan hem in golf 2 meteen plaatsen |
 | 2026-10-13 | infra | Sparring golf 1 ring 4: alle zeven stromen starten tegelijk; teststop 5-pre na 61 (basisterrein + eilanden) | Gebruiker |
+| 2026-10-13 | conditions | De gifconditie van ring 4 heet `poison` (`Condition.POISON`, `[conditions.poison]`, damage type `corruptedadventure:poison`) | Gebruiker; zoals het contract, geen botsing met vanilla-sleutels |
