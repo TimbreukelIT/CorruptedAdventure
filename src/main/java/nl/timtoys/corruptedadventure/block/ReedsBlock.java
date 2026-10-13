@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
@@ -19,6 +20,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -94,6 +96,13 @@ public class ReedsBlock extends Block implements SimpleWaterloggedBlock {
             return soil.isTrue();
         }
         return below.is(BlockTags.DIRT) || below.is(BlockTags.SAND);
+    }
+
+    /** A bucket only floods the bottom block, and only in water one deep (the same rule as {@link #canSurvive}). */
+    @Override
+    public boolean canPlaceLiquid(@Nullable Player player, BlockGetter level, BlockPos pos, BlockState state, Fluid fluid) {
+        return SimpleWaterloggedBlock.super.canPlaceLiquid(player, level, pos, state, fluid)
+                && !level.getBlockState(pos.below()).is(this) && level.getFluidState(pos.above()).isEmpty();
     }
 
     /** Like sugar cane: a block that lost its footing breaks a tick later, so a column falls apart from the bottom up. */

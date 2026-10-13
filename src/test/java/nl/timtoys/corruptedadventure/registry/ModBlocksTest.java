@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.NetherrackBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import nl.timtoys.corruptedadventure.block.AshCrustBlock;
@@ -513,6 +514,9 @@ class ModBlocksTest {
                 ModBlocks.GLOWING_HANGING_ROOTS, ModBlocks.HANGING_SWAMP_MOSS, ModBlocks.BUBBLE_SPRING, ModBlocks.PEAT)) {
             assertFalse(block.get().defaultBlockState().isRandomlyTicking(), block.getId().toString());
         }
+        // Strands of hanging moss hang straight (no sideways offset like hanging roots).
+        assertEquals(Vec3.ZERO, ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState()
+                .getOffset(EmptyBlockGetter.INSTANCE, new BlockPos(5, 64, 7)));
         // The reeds grow like sugar cane; the bubble spring and tidestone are stone.
         assertTrue(ModBlocks.REEDS.get().defaultBlockState().isRandomlyTicking());
         assertEquals(Blocks.STONE.defaultDestroyTime(), ModBlocks.BUBBLE_SPRING.get().defaultDestroyTime());

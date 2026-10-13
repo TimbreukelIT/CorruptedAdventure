@@ -483,21 +483,21 @@ public final class ModBlocks {
     // harder than the vanilla ore of that host, more XP.
     /** Volcanite, ring 3's main metal: iron pickaxe, XP 3–6, matte; drops {@link ModItems#RAW_VOLCANITE}. */
     public static final DeferredBlock<DropExperienceBlock> VOLCANITE_ORE = register("volcanite_ore",
-            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.IRON_ORE)));
+            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.IRON_ORE, RING_3_ORE_EXTRA_HARDNESS)));
     public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_VOLCANITE_ORE = register("deepslate_volcanite_ore",
-            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.DEEPSLATE_IRON_ORE)));
+            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.DEEPSLATE_IRON_ORE, RING_3_ORE_EXTRA_HARDNESS)));
     public static final DeferredBlock<DropExperienceBlock> BASALT_VOLCANITE_ORE = register("basalt_volcanite_ore",
             () -> new DropExperienceBlock(UniformInt.of(3, 6), oreInBasalt(Blocks.IRON_ORE)));
     /** Sulfur: any stone pickaxe, XP 1–3, matte; drops several {@link ModItems#SULFUR}. */
     public static final DeferredBlock<DropExperienceBlock> SULFUR_ORE = register("sulfur_ore",
-            () -> new DropExperienceBlock(UniformInt.of(1, 3), oreIn(Blocks.COAL_ORE)));
+            () -> new DropExperienceBlock(UniformInt.of(1, 3), oreIn(Blocks.COAL_ORE, RING_3_ORE_EXTRA_HARDNESS)));
     public static final DeferredBlock<DropExperienceBlock> BASALT_SULFUR_ORE = register("basalt_sulfur_ore",
             () -> new DropExperienceBlock(UniformInt.of(1, 3), oreInBasalt(Blocks.COAL_ORE)));
     /** Fire ruby, a rare gem: iron pickaxe, XP 4–8, faint glow (light 3, emissive overlay); drops {@link ModItems#FIRE_RUBY}. */
     public static final DeferredBlock<DropExperienceBlock> FIRE_RUBY_ORE = register("fire_ruby_ore",
-            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.IRON_ORE).lightLevel(state -> 3)));
+            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.IRON_ORE, RING_3_ORE_EXTRA_HARDNESS).lightLevel(state -> 3)));
     public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_FIRE_RUBY_ORE = register("deepslate_fire_ruby_ore",
-            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.DEEPSLATE_IRON_ORE).lightLevel(state -> 3)));
+            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.DEEPSLATE_IRON_ORE, RING_3_ORE_EXTRA_HARDNESS).lightLevel(state -> 3)));
     /** In the basalt walls of magma chambers (decision 2026-10-07, beyond the contract's first set). */
     public static final DeferredBlock<DropExperienceBlock> BASALT_FIRE_RUBY_ORE = register("basalt_fire_ruby_ore",
             () -> new DropExperienceBlock(UniformInt.of(4, 8), oreInBasalt(Blocks.IRON_ORE).lightLevel(state -> 3)));
@@ -734,13 +734,14 @@ public final class ModBlocks {
     /** Marsh reeds, 2–3 high: a column like sugar cane that grows next to water (decision golf 1, V2 = B). */
     public static final DeferredBlock<ReedsBlock> REEDS = register("reeds",
             () -> new ReedsBlock(Properties.ofFullCopy(Blocks.SUGAR_CANE)));
-    /** The surface of the peat moors: dirt's behaviour (plants grow on it), burnable and a furnace fuel. */
+    /** The surface of the peat moors: dirt's behaviour (plants grow on it) and a furnace fuel, but no fire spreads on it. */
     public static final DeferredBlock<Block> PEAT = register("peat",
             () -> new Block(Properties.ofFullCopy(Blocks.DIRT).mapColor(MapColor.COLOR_BROWN).sound(SoundType.ROOTED_DIRT)));
     /** Hanging roots' behaviour, in strands under the swamp trees. Only shears take it along. */
+    /** Not offset sideways like hanging roots: a strand of several blocks hangs straight. */
     public static final DeferredBlock<HangingSwampMossBlock> HANGING_SWAMP_MOSS = register("hanging_swamp_moss",
             () -> new HangingSwampMossBlock(Properties.ofFullCopy(Blocks.HANGING_ROOTS).mapColor(MapColor.COLOR_GREEN)
-                    .sound(SoundType.MOSS_CARPET)));
+                    .sound(SoundType.MOSS_CARPET).offsetType(BlockBehaviour.OffsetType.NONE)));
     /** A 2 × 2 lily pad you can walk on (decision golf 1); the item places all four parts. */
     public static final DeferredBlock<GiantLilyPadBlock> GIANT_LILY_PAD = registerOnWater("giant_lily_pad",
             () -> new GiantLilyPadBlock(Properties.ofFullCopy(Blocks.LILY_PAD)));
@@ -771,19 +772,19 @@ public final class ModBlocks {
     // 1, V3 = B): a whole point harder than the vanilla ore of that host and a diamond pickaxe.
     /** Tidesilver, ring 4's mythical metal: XP 4–7, faint glow (light 3, emissive overlay); drops {@link ModItems#RAW_TIDESILVER}. */
     public static final DeferredBlock<DropExperienceBlock> TIDESILVER_ORE = register("tidesilver_ore",
-            () -> new DropExperienceBlock(UniformInt.of(4, 7), ring4Ore(Blocks.IRON_ORE).lightLevel(state -> 3)));
+            () -> new DropExperienceBlock(UniformInt.of(4, 7), oreIn(Blocks.IRON_ORE, RING_4_ORE_EXTRA_HARDNESS).lightLevel(state -> 3)));
     public static final DeferredBlock<DropExperienceBlock> TIDESTONE_TIDESILVER_ORE = register("tidestone_tidesilver_ore",
-            () -> new DropExperienceBlock(UniformInt.of(4, 7), ring4Ore(Blocks.IRON_ORE)
+            () -> new DropExperienceBlock(UniformInt.of(4, 7), oreIn(Blocks.IRON_ORE, RING_4_ORE_EXTRA_HARDNESS)
                     .mapColor(MapColor.TERRACOTTA_LIGHT_BLUE).lightLevel(state -> 3)));
     public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_TIDESILVER_ORE = register("deepslate_tidesilver_ore",
-            () -> new DropExperienceBlock(UniformInt.of(4, 7), ring4Ore(Blocks.DEEPSLATE_IRON_ORE).lightLevel(state -> 3)));
+            () -> new DropExperienceBlock(UniformInt.of(4, 7), oreIn(Blocks.DEEPSLATE_IRON_ORE, RING_4_ORE_EXTRA_HARDNESS).lightLevel(state -> 3)));
     /** Jade, a rare gem deep in the flooded tunnels: XP 5–9, matte; drops {@link ModItems#JADE}. */
     public static final DeferredBlock<DropExperienceBlock> JADE_ORE = register("jade_ore",
-            () -> new DropExperienceBlock(UniformInt.of(5, 9), ring4Ore(Blocks.DIAMOND_ORE)));
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DIAMOND_ORE, RING_4_ORE_EXTRA_HARDNESS)));
     public static final DeferredBlock<DropExperienceBlock> TIDESTONE_JADE_ORE = register("tidestone_jade_ore",
-            () -> new DropExperienceBlock(UniformInt.of(5, 9), ring4Ore(Blocks.DIAMOND_ORE).mapColor(MapColor.TERRACOTTA_LIGHT_BLUE)));
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DIAMOND_ORE, RING_4_ORE_EXTRA_HARDNESS).mapColor(MapColor.TERRACOTTA_LIGHT_BLUE)));
     public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_JADE_ORE = register("deepslate_jade_ore",
-            () -> new DropExperienceBlock(UniformInt.of(5, 9), ring4Ore(Blocks.DEEPSLATE_DIAMOND_ORE)));
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DEEPSLATE_DIAMOND_ORE, RING_4_ORE_EXTRA_HARDNESS)));
 
     // Toxic crystal and aquamarine in the amethyst pattern: wall, budding block (grows the stages on random ticks,
     // server-side) and four stages with amethyst's shapes and light (1, 2, 4, 5). Toxic crystal in the poison caves,
@@ -929,16 +930,16 @@ public final class ModBlocks {
     }
 
     /**
-     * A ring 3 ore in a vanilla host: that vanilla ore's look, sound and blast resistance, half a point harder. The tool
-     * tier comes from the {@code needs_*_tool} tags.
+     * A ring ore in a vanilla host: that vanilla ore's look, sound and blast resistance, {@code extraHardness} harder
+     * (ring 3 half a point, ring 4 a whole one). The tool tier comes from the {@code needs_*_tool} tags.
      */
-    private static Properties oreIn(Block vanillaOre) {
-        return Properties.ofFullCopy(vanillaOre).destroyTime(vanillaOre.defaultDestroyTime() + RING_3_ORE_EXTRA_HARDNESS);
+    private static Properties oreIn(Block vanillaOre, float extraHardness) {
+        return Properties.ofFullCopy(vanillaOre).destroyTime(vanillaOre.defaultDestroyTime() + extraHardness);
     }
 
-    /** {@link #oreIn} with basalt's colour and sound (the stone variant's ore as the template). */
+    /** A ring 3 {@link #oreIn} with basalt's colour and sound (the stone variant's ore as the template). */
     private static Properties oreInBasalt(Block vanillaOre) {
-        return oreIn(vanillaOre).mapColor(MapColor.COLOR_BLACK).sound(SoundType.BASALT);
+        return oreIn(vanillaOre, RING_3_ORE_EXTRA_HARDNESS).mapColor(MapColor.COLOR_BLACK).sound(SoundType.BASALT);
     }
 
     /** Pumice (all shapes): the tuff family's behaviour and sounds, light grey on the map. */
@@ -964,14 +965,6 @@ public final class ModBlocks {
     /** Rimeshroom stem and hyphae (frosted bark outside): dark cyan on the map. */
     private static Properties rimeshroomBark(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_CYAN);
-    }
-
-    /**
-     * A ring 4 ore in a vanilla host: that vanilla ore's look, sound and blast resistance, a whole point harder. The tool
-     * tier (diamond) comes from {@code #needs_diamond_tool}.
-     */
-    private static Properties ring4Ore(Block vanillaOre) {
-        return Properties.ofFullCopy(vanillaOre).destroyTime(vanillaOre.defaultDestroyTime() + RING_4_ORE_EXTRA_HARDNESS);
     }
 
     /** Tidestone (all shapes, and the bubble spring): the vanilla stone variant's behaviour, blue-grey on the map. */

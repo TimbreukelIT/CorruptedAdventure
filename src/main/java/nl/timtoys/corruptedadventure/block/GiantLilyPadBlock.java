@@ -18,6 +18,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.IceBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.WaterlilyBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -86,9 +88,12 @@ public class GiantLilyPadBlock extends BushBlock {
         BlockPos clicked = context.getClickedPos();
         BlockPos northWest = northWestCorner(clicked, facing);
         Level level = context.getLevel();
+        // The item checks the clicked spot itself (block and entities); the other three get the same checks here.
+        CollisionContext collision = context.getPlayer() == null ? CollisionContext.empty() : CollisionContext.of(context.getPlayer());
         for (Part part : Part.values()) {
             BlockPos pos = part.from(northWest);
-            if (!pos.equals(clicked) && !level.getBlockState(pos).canBeReplaced(context)) {
+            if (!pos.equals(clicked) && (!level.getBlockState(pos).canBeReplaced(context)
+                    || !level.isUnobstructed(defaultBlockState(), pos, collision))) {
                 return null;
             }
             if (!level.getWorldBorder().isWithinBounds(pos) || !mayPlaceOn(level.getBlockState(pos.below()), level, pos.below())) {
@@ -127,6 +132,17 @@ public class GiantLilyPadBlock extends BushBlock {
             return Blocks.AIR.defaultBlockState();
         }
         return super.updateShape(state, direction, neighbour, level, pos, neighbourPos);
+    }
+
+    /** A rotated pad (structures, commands) keeps its parts in place: each part turns with its position. */
+    @Override
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(PART, state.getValue(PART).rotate(rotation));
+    }
+
+    @Override
+    protected BlockState mirror(BlockState state, Mirror mirror) {
+        return state.setValue(PART, state.getValue(PART).mirror(mirror));
     }
 
     /** In creative nothing drops: the loot part is removed first without drops (like the head of a bed). */
@@ -168,6 +184,36 @@ public class GiantLilyPadBlock extends BushBlock {
         /** The north-west corner of the pad that has this part at {@code pos}. */
         public BlockPos northWest(BlockPos pos) {
             return pos.offset(-dx, 0, -dz);
+        }
+
+        /** The part in the corner {@code rotation} turns this one into (the pad turns around its centre). */
+        public Part rotate(Rotation rotation) {
+            return of(rotation.rotate(northSouth()), rotation.rotate(eastWest()));
+        }
+
+        /** The part in the corner {@code mirror} reflects this one into. */
+        public Part mirror(Mirror mirror) {
+            return of(mirror.mirror(northSouth()), mirror.mirror(eastWest()));
+        }
+
+        private Direction northSouth() {
+            return dz == 0 ? Direction.NORTH : Direction.SOUTH;
+        }
+
+        private Direction eastWest() {
+            return dx == 0 ? Direction.WEST : Direction.EAST;
+        }
+
+        /** The part in the corner of these two horizontal sides (one north/south, one east/west, in any order). */
+        private static Part of(Direction first, Direction second) {
+            boolean east = first == Direction.EAST || second == Direction.EAST;
+            boolean south = first == Direction.SOUTH || second == Direction.SOUTH;
+            for (Part part : values()) {
+                if ((part.dx == 1) == east && (part.dz == 1) == south) {
+                    return part;
+                }
+            }
+            throw new IllegalStateException();
         }
 
         static Part at(BlockPos northWest, BlockPos pos) {

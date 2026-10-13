@@ -3,6 +3,8 @@ package nl.timtoys.corruptedadventure.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 import nl.timtoys.corruptedadventure.block.GiantLilyPadBlock.Part;
@@ -85,6 +87,37 @@ class GiantLilyPadBlockTest {
         }
         assertTrue(part(Part.SOUTH_EAST).updateShape(Direction.NORTH, Blocks.AIR.defaultBlockState(), null,
                 ORIGIN, ORIGIN.north()).isAir());
+    }
+
+    /** Turning the pad clockwise moves each quarter one corner on; the parts stay a whole pad. */
+    @Test
+    void rotatingTurnsEachPartToTheNextCorner() {
+        assertEquals(part(Part.NORTH_EAST), part(Part.NORTH_WEST).rotate(Rotation.CLOCKWISE_90));
+        assertEquals(part(Part.SOUTH_EAST), part(Part.NORTH_EAST).rotate(Rotation.CLOCKWISE_90));
+        assertEquals(part(Part.SOUTH_WEST), part(Part.SOUTH_EAST).rotate(Rotation.CLOCKWISE_90));
+        assertEquals(part(Part.NORTH_WEST), part(Part.SOUTH_WEST).rotate(Rotation.CLOCKWISE_90));
+        for (Part part : Part.values()) {
+            assertSame(part, part.rotate(Rotation.NONE));
+            assertSame(part.rotate(Rotation.CLOCKWISE_180), part.rotate(Rotation.CLOCKWISE_90).rotate(Rotation.CLOCKWISE_90));
+            assertSame(part, part.rotate(Rotation.CLOCKWISE_90).rotate(Rotation.COUNTERCLOCKWISE_90));
+        }
+        Set<Part> turned = new HashSet<>();
+        for (Part part : Part.values()) {
+            turned.add(part.rotate(Rotation.CLOCKWISE_90));
+        }
+        assertEquals(Set.of(Part.values()), turned);
+    }
+
+    /** Left-right swaps north and south, front-back swaps east and west (vanilla's mirror of directions). */
+    @Test
+    void mirroringReflectsEachPart() {
+        assertEquals(part(Part.SOUTH_WEST), part(Part.NORTH_WEST).mirror(Mirror.LEFT_RIGHT));
+        assertEquals(part(Part.NORTH_EAST), part(Part.NORTH_WEST).mirror(Mirror.FRONT_BACK));
+        assertEquals(part(Part.NORTH_EAST), part(Part.SOUTH_EAST).mirror(Mirror.LEFT_RIGHT));
+        for (Part part : Part.values()) {
+            assertSame(part, part.mirror(Mirror.NONE));
+            assertSame(part, part.mirror(Mirror.LEFT_RIGHT).mirror(Mirror.LEFT_RIGHT));
+        }
     }
 
     @Test

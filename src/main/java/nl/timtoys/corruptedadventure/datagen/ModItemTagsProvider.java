@@ -131,6 +131,7 @@ final class ModItemTagsProvider extends ItemTagsProvider {
 
         copy(ModTags.Blocks.ORES_TIDESILVER, ModTags.Items.ORES_TIDESILVER);
         copy(ModTags.Blocks.ORES_JADE, ModTags.Items.ORES_JADE);
+        copy(ModTags.Blocks.ORES_IN_GROUND_TIDESTONE, ModTags.Items.ORES_IN_GROUND_TIDESTONE);
         tag(ModTags.Items.RAW_MATERIALS_TIDESILVER).add(ModItems.RAW_TIDESILVER.get());
         tag(Tags.Items.RAW_MATERIALS).addTag(ModTags.Items.RAW_MATERIALS_TIDESILVER);
         tag(ModTags.Items.GEMS_JADE).add(ModItems.JADE.get());

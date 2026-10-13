@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.block;
 
+import com.google.common.base.Suppliers;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -31,12 +32,12 @@ public class BuddingCrystalBlock extends AmethystBlock {
     /** A random tick grows a crystal with chance 1 in this many (vanilla budding amethyst's pace). */
     public static final int GROWTH_CHANCE = 5;
 
-    /** Resolved on first use: the stages register after this block. */
+    /** Resolved once, on first use: the stages register after this block. */
     private final Supplier<List<Block>> stages;
 
     public BuddingCrystalBlock(Supplier<List<Block>> stages, Properties properties) {
         super(properties);
-        this.stages = stages;
+        this.stages = Suppliers.memoize(stages::get);
     }
 
     @Override

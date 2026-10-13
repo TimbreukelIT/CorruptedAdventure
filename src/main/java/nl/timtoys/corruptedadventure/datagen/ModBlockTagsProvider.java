@@ -82,7 +82,8 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.POLISHED_TIDESTONE_WALL.get(), ModBlocks.TIDESTONE_BRICK_WALL.get());
         tag(Tags.Blocks.COBBLESTONES).add(ModBlocks.COBBLED_TIDESTONE.get());
         tag(ModTags.Blocks.RING_4_STONES).add(ModBlocks.TIDESTONE.get());
-        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.TIDESTONE.get(), ModBlocks.PEAT.get());
+        // Peat reaches the carvers through #dirt.
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.TIDESTONE.get());
 
         tag(ModTags.Blocks.MOONPETAL_LOGS).add(ModBlocks.MOONPETAL_LOG.get(), ModBlocks.MOONPETAL_WOOD.get(),
                 ModBlocks.STRIPPED_MOONPETAL_LOG.get(), ModBlocks.STRIPPED_MOONPETAL_WOOD.get());
@@ -123,7 +124,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
 
     /**
      * Ring 4 ores: a diamond pickaxe for both (decision V3 golf 1). Not carver-replaceable: ore features run after the
-     * carvers; {@code ores_in_ground} only for stone and deepslate (there is none for tidestone). The crystals carry
+     * carvers; {@code ores_in_ground} per host, with our own {@code c:ores_in_ground/tidestone}. The crystals carry
      * amethyst's tags; the budding blocks are growth, deliberately in no ground or carver tag.
      */
     private void ring4Ores() {
@@ -136,6 +137,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
         tag(Tags.Blocks.ORES_IN_GROUND_STONE).add(ModBlocks.TIDESILVER_ORE.get(), ModBlocks.JADE_ORE.get());
         tag(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE).add(ModBlocks.DEEPSLATE_TIDESILVER_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get());
+        tag(ModTags.Blocks.ORES_IN_GROUND_TIDESTONE).add(ModBlocks.TIDESTONE_TIDESILVER_ORE.get(), ModBlocks.TIDESTONE_JADE_ORE.get());
 
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.TOXIC_CRYSTAL_BLOCK.get(), ModBlocks.BUDDING_TOXIC_CRYSTAL.get(),
                 ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get(), ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get(),

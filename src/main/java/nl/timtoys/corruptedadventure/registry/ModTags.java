@@ -72,6 +72,8 @@ public final class ModTags {
         public static final TagKey<Block> WITHERED_MOONPETAL_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("withered_moonpetal_logs"));
         public static final TagKey<Block> ORES_TIDESILVER = TagKey.create(Registries.BLOCK, common("ores/tidesilver"));
         public static final TagKey<Block> ORES_JADE = TagKey.create(Registries.BLOCK, common("ores/jade"));
+        /** Convention tag {@code c:ores_in_ground/tidestone}: the ring 4 ores in tidestone. */
+        public static final TagKey<Block> ORES_IN_GROUND_TIDESTONE = TagKey.create(Registries.BLOCK, common("ores_in_ground/tidestone"));
 
         private Blocks() {
         }
@@ -116,6 +118,7 @@ public final class ModTags {
         public static final TagKey<Item> WITHERED_MOONPETAL_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("withered_moonpetal_logs"));
         public static final TagKey<Item> ORES_TIDESILVER = TagKey.create(Registries.ITEM, common("ores/tidesilver"));
         public static final TagKey<Item> ORES_JADE = TagKey.create(Registries.ITEM, common("ores/jade"));
+        public static final TagKey<Item> ORES_IN_GROUND_TIDESTONE = TagKey.create(Registries.ITEM, common("ores_in_ground/tidestone"));
         /** Convention tag {@code c:raw_materials/tidesilver}; part of {@code c:raw_materials}. */
         public static final TagKey<Item> RAW_MATERIALS_TIDESILVER = TagKey.create(Registries.ITEM, common("raw_materials/tidesilver"));
         /** Convention tag {@code c:gems/jade}; part of {@code c:gems}. */

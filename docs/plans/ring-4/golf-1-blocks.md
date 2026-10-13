@@ -23,7 +23,7 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
   - de sapling groeit via `ModTreeGrowers.MOONPETAL` naar `corruptedadventure:ring_4/moonpetal_tree` (key in `ModConfiguredFeatures`, blok `// ring 4 — B`); de feature komt in 75 (W-biomes), tot dan wordt bonemeal verbruikt zonder groei (zoals palm vóór 23);
   - vuurkansen als eik; compost als bladeren/saplings.
 - **`withered_moonpetal`**: alleen log, wood, stripped log, stripped wood (brandbaar, grijs).
-- **`peat`**: aarde-achtig (schep), in `#dirt` (planten groeien erop), brandbaar (vuurkans 5/5), brandstof 1.200 ticks (6 items; zwakker dan kolen, want het hele oppervlak van `peat_moors` is veen).
+- **`peat`**: aarde-achtig (schep), in `#dirt` (planten groeien erop), niet brandbaar in de wereld (besluit gebruiker na de review van 66), brandstof 1.200 ticks (6 items; zwakker dan kolen, want het hele oppervlak van `peat_moors` is veen).
 - **`hanging_swamp_moss`**: hangt onder een stevige onderkant of onder ander mos (stapelt naar beneden), loopbaar, vervangbaar, alleen met een schaar, brandbaar als ranken.
 - **`giant_lily_pad`**: multiblok 2×2 (besluit golf 1):
   - `part` = `north_west`/`north_east`/`south_west`/`south_east`; lelieblad-gedrag (op water, beloopbaar, boten breken hem);
@@ -84,6 +84,7 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
 - Voortgang: 20:03 66 klaar: B groen (incl. `GiantLilyPadBlockTest`, ring 4-tests in `ModBlocksTest`/`ModTreeGrowersTest`), D groen met 39 tijdelijke placeholder-PNG's (verwijderd, niet gecommit); `src/generated`: alleen ring 4-output.
 - Voortgang: 20:11 67 klaar: B groen (`BuddingCrystalBlockTest`, ertsen/kristallen in `ModBlocksTest`), D groen (tijdelijke textures uit T's 3283f6a, verwijderd); `src/generated`: alleen ring 4-output.
 - Voortgang: 20:16 68 klaar: B groen (Nether-4 in `ModBlocksTest`), D groen; `src/generated`: alleen Nether-4-output.
+- Voortgang: 20:23 reviews 66 + 67 verwerkt: B groen (rotate/mirror-tests), D groen; `src/generated`: carver-tag zonder veen, `c:ores_in_ground/tidestone`.
 
 ## CODEBASE-delta
 
@@ -95,7 +96,8 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
 - `block/BubbleSpringBlock.java` (nieuw): `animateTick` met vanilla `bubble_column_up` als er water boven staat; verder geen gedrag.
 - `block/ModWoodTypes.java`: + `MOONPETAL_SET` (geregistreerd, kersengeluiden) en `MOONPETAL` (niet geregistreerd).
 - `block/ModTreeGrowers.java`: + `MOONPETAL` → `ModConfiguredFeatures.MOONPETAL_TREE` (`corruptedadventure:ring_4/moonpetal_tree`; blok `// ring 4 — B`; de feature komt in 75).
-- `block/ModFlammables.java`: + moonpetal- en verdorde stammen, veen (5/5), planken-set (5/20), bladeren (30/60), hangend mos (15/100), gloeibloem (60/100).
+- `block/ModFlammables.java`: + moonpetal- en verdorde stammen (5/5), planken-set (5/20), bladeren (30/60), hangend mos (15/100), gloeiende hangwortels (30/60), gloeibloem (60/100); veen bewust niet.
+- Na de review van 66: `GiantLilyPadBlock` draait/spiegelt `PART` mee (`rotate`/`mirror`, `Part.rotate`/`mirror`) en weigert plaatsing als een van de vier vakken bezet is door een entity (`isUnobstructed`); `ReedsBlock.canPlaceLiquid` (alleen het onderste blok, water van 1 diep); `hanging_swamp_moss` zonder zijwaartse offset.
 - `block/ModFlowerPots.java`: + `potted_moonpetal_sapling`.
 - `registry/ModBlocks.java`: sectie Ring 4 na Nether-ring 3; helpers `tidestone`, `moonpetal`, `glowcap`, `registerOnWater` (`PlaceOnWaterBlockItem`).
 - `registry/ModTags.java`: + `Items.MOONPETAL_LOGS`, `Items.WITHERED_MOONPETAL_LOGS`.
@@ -109,7 +111,7 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
 
 **66 — Tags:**
 - `moonpetal_logs` en `withered_moonpetal_logs` (blok + item) → `#logs_that_burn`;
-- `ring_4_stones` = `tidestone`; `tidestone` en `peat` in `#overworld_carver_replaceables`; `peat` in `#dirt`;
+- `ring_4_stones` = `tidestone`; `tidestone` in `#overworld_carver_replaceables` (`peat` via `#dirt`); `peat` in `#dirt`;
 - `cobbled_tidestone` in `c:cobblestones` en in de stone-tool/crafting-materials.
 
 **67 — Belangrijke classes**
@@ -134,8 +136,26 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
 - 2026-10-13, `blocks`: de ring 4-ertsen `tidesilver` en `jade` hebben `needs_diamond_tool` nodig, hardheid vanilla-erts +1,0, XP 4–7 / 5–9; tidesilver zwakke gloed (licht 3), jade mat — V3 = B, een duidelijke tier-stap.
 - 2026-10-13, `blocks`: `purity_crystal_cluster` (kruis, geen groei, dropt `purity_crystal_shard` zoals amethist) + item `purity_crystal_shard` — de lezing van contract §3 "`purity_crystal_shard`/cluster", akkoord main.
 - 2026-10-13, `blocks` (implementatie B): lichtwaarden van de gloeiflora: `glowcap` 6, `glow_bloom` 7, `glowing_hanging_roots` 5, `blighted_glowcap` 3.
-- 2026-10-13, `blocks` (implementatie B): `moonpetal` met de geluiden van vanilla's kersenhout; `peat` is `#dirt`, brandbaar (5/5) en brandstof (1.200 ticks).
+- 2026-10-13, `blocks` (implementatie B): `moonpetal` met de geluiden van vanilla's kersenhout; `peat` is `#dirt` en brandstof (1.200 ticks).
+- 2026-10-13, `blocks`: `peat` is wel brandstof maar niet brandbaar in de wereld (besluit gebruiker na de review van 66) — geen vuur dat over de veenvlakten trekt.
+
+## Code-review
+- **66** (review main, verwerkt in de vervolgcommit):
+  - `GiantLilyPadBlock`: rotate/mirror, entity-check op de drie andere vakken;
+  - `ReedsBlock.canPlaceLiquid`;
+  - moss zonder offset; gloeiende hangwortels brandbaar 30/60; veen niet brandbaar; veen niet dubbel in de carver-tag.
+  - **Niet opgepakt:** het categorie-punt over models. Blok-datagen inclusief models is van B (`waves.md` §1), zoals bij ring 3.
+- **67** (verwerkt in dezelfde vervolgcommit):
+  - stages in `BuddingCrystalBlock` gememoiseerd;
+  - één `oreIn(vanillaOre, extraHardness)` voor ring 3 en 4 (ring 3-output byte-gelijk, runData-diff leeg voor ring 3);
+  - `c:ores_in_ground/tidestone`.
+  - **Niet opgepakt:**
+    - een gedeelde groeihelper met `DewSourceBlock`: ring 2 is vergrendeld, dus naar de backlog (INT);
+    - ontbrekende textures tot T gemerged is: INT merget alles vóór de smoke;
+    - `CODEBASE.md`: dat doet INT.
 
 ## Backlog
 - `atmosphere`: bloesem-particle (`blossom`) uit `moonpetal_leaves` (animateTick), golf 2 (A levert de sprite, B de koppeling).
 - `blocks`: potten voor `glow_bloom` en `lotus` (niet in het contract).
+- `blocks` (INT): één gedeelde groeihelper voor `DewSourceBlock` (ring 2) en `BuddingCrystalBlock` (review 67); ring 2 is nu vergrendeld.
+- `blocks` (72): `poison_gases` (TagKey van C) vullen met `swamp_gas`; let bij de merge op `ModTags`.
