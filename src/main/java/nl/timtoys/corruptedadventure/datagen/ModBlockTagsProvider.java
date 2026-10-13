@@ -156,8 +156,8 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
     }
 
     /**
-     * Nether ring 4. Bleached netherrack and fossil stone are Nether ground ({@code #base_stone_nether}, so Nether
-     * carvers cut through them); bleached netherrack is netherrack in every other way too, fire included
+     * Nether ring 4. Bleached netherrack is Nether ground ({@code #base_stone_nether}) and netherrack in every other way
+     * too, fire included
      * ({@code #infiniburn_overworld}, which the Nether's infiniburn tag contains). Bone sand is carver-replaceable ground,
      * but deliberately not {@code #sand} (no cactus or sugar cane in the Nether). The purity crystal carries amethyst's
      * tags.
@@ -178,7 +178,10 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.FOSSIL_STONE_BRICK_SLAB.get());
         tag(BlockTags.WALLS).add(ModBlocks.FOSSIL_STONE_WALL.get(), ModBlocks.POLISHED_FOSSIL_STONE_WALL.get(),
                 ModBlocks.FOSSIL_STONE_BRICK_WALL.get());
-        tag(BlockTags.BASE_STONE_NETHER).add(ModBlocks.BLEACHED_NETHERRACK.get(), ModBlocks.FOSSIL_STONE.get());
+        // Fossil stone stays out of #base_stone_nether (review 68): no vanilla Nether ore or debris blobs in the fossil
+        // terrain. The carvers still cut through it.
+        tag(BlockTags.BASE_STONE_NETHER).add(ModBlocks.BLEACHED_NETHERRACK.get());
+        tag(BlockTags.NETHER_CARVER_REPLACEABLES).add(ModBlocks.FOSSIL_STONE.get());
         tag(Tags.Blocks.NETHERRACKS).add(ModBlocks.BLEACHED_NETHERRACK.get());
         tag(BlockTags.INFINIBURN_OVERWORLD).add(ModBlocks.BLEACHED_NETHERRACK.get());
 

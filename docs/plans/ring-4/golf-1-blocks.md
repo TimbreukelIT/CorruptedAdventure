@@ -122,10 +122,10 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
 - Datagen: `ModBlockStateProvider.ring4Ores()` (overlay over stone/tidestone/deepslate; tidesilver emissive), loot (`createOreDrop`; kristallen zoals amethist), tags, lang.
 
 **68 — Nether-4**
-- `registry/ModBlocks.java`: sectie Nether ring 4 na de ring 4-kristallen: `bone_sand` (`ColoredFallingBlock`, `BONE_DUST_COLOR`), `bleached_netherrack` (gewone `Block`), fossielsteen-set (helper `fossilStone`), `purity_crystal_block`/`_cluster`/`_lamp` (licht 0/5/15).
+- `registry/ModBlocks.java`: sectie Nether ring 4 na de ring 4-kristallen: `bone_sand` (`ColoredFallingBlock`, `BONE_DUST_COLOR`), `bleached_netherrack` (gewone `Block`), fossielsteen-set (`recolored`, de hernoemde `crystalStage`), `purity_crystal_block`/`_cluster`/`_lamp` (licht 0/5/15).
 - `registry/ModItems.java`: `purity_crystal_shard` (laatste los item). `ModTags.Items.GEMS_PURITY_CRYSTAL`.
 - Datagen: `netherRing4()` in de blockstate-, item-model-, loot- en tag-providers; het cluster emissive (pulseert, T); lang.
-- Tags: `#base_stone_nether` (gebleekt netherrack, fossielsteen), `c:netherracks` en `#infiniburn_overworld` (gebleekt netherrack), `#nether_carver_replaceables` (bottenzand), `#crystal_sound_blocks` (blok, lamp), `c:clusters`, `c:gems/purity_crystal`.
+- Tags: `#base_stone_nether` (alleen gebleekt netherrack; fossielsteen in `#nether_carver_replaceables`, review 68), `c:netherracks` en `#infiniburn_overworld` (gebleekt netherrack), `#nether_carver_replaceables` (bottenzand), `#crystal_sound_blocks` (blok, lamp), `c:clusters`, `c:gems/purity_crystal`.
 - 17 blokken, 1 item.
 
 **67 — Registries:** 18 blokken, 4 items. **Tags:** `c:ores/tidesilver|jade`, `#needs_diamond_tool`, `c:ore_rates/singular`, `c:ores_in_ground/stone|deepslate`, `#crystal_sound_blocks`, `c:budding_blocks|buds|clusters`, `c:raw_materials/tidesilver`, `c:gems/jade|toxic_crystal|aquamarine`.
@@ -153,6 +153,15 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
     - een gedeelde groeihelper met `DewSourceBlock`: ring 2 is vergrendeld, dus naar de backlog (INT);
     - ontbrekende textures tot T gemerged is: INT merget alles vóór de smoke;
     - `CODEBASE.md`: dat doet INT.
+
+- **68** (verwerkt in de vervolgcommit):
+  - `#base_stone_nether` alleen `bleached_netherrack`; `fossil_stone` niet, zodat er geen vanilla Nether-ertsen/debris-vlekken in het fossielterrein komen. In plaats daarvan staat het in `#nether_carver_replaceables`, zodat grotten er nog door snijden.
+    - **Afwijking van ring 3:** daar staat de steenfamilie `cold_lava` wél in `#base_stone_nether`.
+  - `crystalStage` hernoemd naar de generieke `recolored(vanilla, color)`, die ook de fossielsteen-set bedient (geen aparte `fossilStone`-helper).
+  - **Niet opgepakt:**
+    - runData zonder T's textures: bekend protocol, INT merget T vóór runData/smoke;
+    - `bone_sand`-plafonds: W-nether (surface-plafondwacht);
+    - `CODEBASE.md`: INT.
 
 ## Backlog
 - `atmosphere`: bloesem-particle (`blossom`) uit `moonpetal_leaves` (animateTick), golf 2 (A levert de sprite, B de koppeling).
