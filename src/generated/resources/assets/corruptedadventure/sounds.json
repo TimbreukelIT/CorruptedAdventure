@@ -3,11 +3,13 @@
     "sounds": [
       {
         "name": "corruptedadventure:ambient/nether_ring_2/drip_loop_1",
-        "stream": true
+        "stream": true,
+        "volume": 0.7
       },
       {
         "name": "corruptedadventure:ambient/nether_ring_2/drip_loop_2",
-        "stream": true
+        "stream": true,
+        "volume": 0.7
       }
     ]
   },
@@ -17,23 +19,32 @@
         "type": "event",
         "name": "block.pointed_dripstone.drip_water",
         "pitch": 0.85,
-        "volume": 0.75,
+        "volume": 0.55,
         "weight": 3
       },
       {
         "type": "event",
         "name": "block.pointed_dripstone.drip_water_into_cauldron",
         "pitch": 0.75,
-        "volume": 0.75
+        "volume": 0.55
       }
     ],
     "subtitle": "subtitles.corruptedadventure.ambient.nether_ring_2.drips"
   },
   "ambient.nether_ring_3.ice_creak": {
     "sounds": [
-      "corruptedadventure:ambient/nether_ring_3/ice_creak_1",
-      "corruptedadventure:ambient/nether_ring_3/ice_creak_2",
-      "corruptedadventure:ambient/nether_ring_3/ice_creak_3"
+      {
+        "name": "corruptedadventure:ambient/nether_ring_3/ice_creak_1",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/nether_ring_3/ice_creak_2",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/nether_ring_3/ice_creak_3",
+        "volume": 0.7
+      }
     ],
     "subtitle": "subtitles.corruptedadventure.ambient.nether_ring_3.ice_creak"
   },
@@ -41,11 +52,13 @@
     "sounds": [
       {
         "name": "corruptedadventure:ambient/nether_ring_3/wind_loop_1",
-        "stream": true
+        "stream": true,
+        "volume": 0.7
       },
       {
         "name": "corruptedadventure:ambient/nether_ring_3/wind_loop_2",
-        "stream": true
+        "stream": true,
+        "volume": 0.7
       }
     ]
   },
@@ -55,19 +68,19 @@
         "type": "event",
         "name": "ambient.cave",
         "pitch": 0.5,
-        "volume": 0.8
+        "volume": 0.6
       },
       {
         "type": "event",
         "name": "ambient.cave",
         "pitch": 0.6,
-        "volume": 0.8
+        "volume": 0.6
       },
       {
         "type": "event",
         "name": "ambient.cave",
         "pitch": 0.7,
-        "volume": 0.8
+        "volume": 0.6
       }
     ],
     "subtitle": "subtitles.corruptedadventure.ambient.ring_1.strange_cave"
@@ -77,17 +90,17 @@
       {
         "attenuation_distance": 24,
         "name": "corruptedadventure:ambient/ring_2/oasis_1",
-        "volume": 0.8
+        "volume": 0.6
       },
       {
         "attenuation_distance": 24,
         "name": "corruptedadventure:ambient/ring_2/oasis_2",
-        "volume": 0.8
+        "volume": 0.6
       },
       {
         "attenuation_distance": 24,
         "name": "corruptedadventure:ambient/ring_2/oasis_3",
-        "volume": 0.8
+        "volume": 0.6
       }
     ],
     "subtitle": "subtitles.corruptedadventure.ambient.ring_2.oasis"
@@ -97,17 +110,17 @@
       {
         "attenuation_distance": 24,
         "name": "corruptedadventure:ambient/ring_2/singing_sand_1",
-        "volume": 0.8
+        "volume": 0.6
       },
       {
         "attenuation_distance": 24,
         "name": "corruptedadventure:ambient/ring_2/singing_sand_2",
-        "volume": 0.8
+        "volume": 0.6
       },
       {
         "attenuation_distance": 24,
         "name": "corruptedadventure:ambient/ring_2/singing_sand_3",
-        "volume": 0.8
+        "volume": 0.6
       }
     ],
     "subtitle": "subtitles.corruptedadventure.ambient.ring_2.singing_sand"
@@ -116,7 +129,8 @@
     "sounds": [
       {
         "name": "corruptedadventure:ambient/ring_3/caldera_loop_1",
-        "stream": true
+        "stream": true,
+        "volume": 0.7
       }
     ]
   },
@@ -124,19 +138,30 @@
     "sounds": [
       {
         "name": "corruptedadventure:ambient/ring_3/embers_loop_1",
-        "stream": true
+        "stream": true,
+        "volume": 0.6
       },
       {
         "name": "corruptedadventure:ambient/ring_3/embers_loop_2",
-        "stream": true
+        "stream": true,
+        "volume": 0.6
       }
     ]
   },
   "ambient.ring_3.lava": {
     "sounds": [
-      "corruptedadventure:ambient/ring_3/lava_1",
-      "corruptedadventure:ambient/ring_3/lava_2",
-      "corruptedadventure:ambient/ring_3/lava_3"
+      {
+        "name": "corruptedadventure:ambient/ring_3/lava_1",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/ring_3/lava_2",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/ring_3/lava_3",
+        "volume": 0.7
+      }
     ],
     "subtitle": "subtitles.corruptedadventure.ambient.ring_3.lava"
   },
@@ -152,7 +177,8 @@
     "sounds": [
       {
         "name": "corruptedadventure:ambient/ring_3/titan_hum_loop_1",
-        "stream": true
+        "stream": true,
+        "volume": 0.7
       }
     ]
   },
