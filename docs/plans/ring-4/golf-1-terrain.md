@@ -23,13 +23,17 @@ De publieke records (`Island`, `Lift`, `Waterfall`, `WorldTree`) en accessors va
 - Gemeten (testseed): surface 40–112, 6 % boven Y 85.
 
 ## Pakket 61 — eilanden
-- Plaatsing per cel (`cell_size` 128), puur per cel: aantal, grootte en hoogte nemen toe met de ringvoortgang (binnenrand af en toe, buitenrand archipels); maten Q4 (kluiten 5–15, middel 20–60, reuzen 80–150), straal ≤ `cell_size` (notitie #6); alleen waar het eiland met zijn reikwijdte in ring 4 ligt (zones: 62/63).
-- Vorm: rafelige omtrek, licht bolle top, omgekeerde kluit met lobben (hergebruik `Volcano.ragged`/`underside`); exact per blok via `thin`.
-- Gat = spiegelbeeld: zelfde omtrek (iets ruimer, afgebrokkeld), diepte ≈ kluitdikte, als aftrek in `surface`. Water tot zeeniveau; op hooglanden een eigen meerpeil (laagste rand − 1) met een dijkring en geen grotten eronder (`cave_lift`); de aquifer zet het meerwater (water-tak).
-- Watervallen 1–3 per middel/groot eiland: bron in de flank onder de top, vallend water in de kolom erbuiten tot het meer (water-tak, cap per chunk); `waterfallsWithin`.
-- Liften: ~1 op 4 middel/grote eilanden, kolom naast de rand van het meer tot net boven de top; `liftsWithin` (blokken: B/W-biomes in golf 2).
-- `IslandField` in de final density; haak: één eilandopzoeking per kolom (notitie #5).
-- Uitloop van gatmeren op land naar rivier/zee (Q3-A).
+Twee pure stappen (`IslandPlacement`):
+1. **Plaatsing per cel** (128): verwacht aantal 0,25 + 3,25 · p^1,5 per cel (p = ringvoortgang; max 5, overlap binnen een cel alleen gestapeld met 6 blokken ruimte). Soort: reus (alleen p > 0,3, kans 1,5 % + 6 % · p), middel (40 % + 20 % · p), anders kluit; diameters 5–15 / 20–60 / 80–150 (Q4 = A), uitrekking tot 1,4 (reuzen 1,15). Kluitdikte 0,7 / 0,55 / 0,45 × diameter. Onderkant minstens 15 boven de hoogste grond onder het eiland: binnen 15–40, buiten tot ~200 (top ≤ 290). Alleen in ring 4 zelf (eiland + gat + band volledig buiten de zones; 62/63 doen de zones). `groundReach` (gat, meerband, grottenband, uitloop) ≤ `cell_size` (notitie #6, getest).
+2. **Details per eiland** (lui, per wereld onthouden): meerpeil boven zee = laagste surface van het 4-blokraster in een band 2–14 blokken buiten de gatrand, −1 (dat raster is wat het terrein interpoleert, dus naast de meerband ligt nergens open ruimte onder het water); vallen (middel 1–2, reus 2–3) en ~1 op 4 een lift.
+- **Vorm** (`IslandShape`): rafelige ellips (`Volcano.ragged`), bijna vlakke top, onderkant = kluit met lobben (`Volcano.underside`) maar overal minstens de gescheurde rand (¼ dikte, max 5): een steile zijkant i.p.v. een scherpe wig. Exact per blok via `thin` (max 8 eilanden per kolom).
+- **Gat** = spiegelbeeld: omtrek ×1,12 met eigen rafeling, diepte = kluitdiepte vanaf de grond van het midden, bodem nooit onder Y 0; als aftrek in `surface`. Water: zee (≤ 63) of eigen meer (water-tak, stil water) met `cave_lift` 2 eronder en ernaast (vanilla-grotten dicht) en carvers die die band niet snijden.
+- **Uitloop** (Q3-A): laag gat (grond 63–75, water op zeeniveau) krijgt een geul (bed Y 59, 5 breed, oevers) naar het dichtstbijzijnde open water binnen 60 blokken (16 richtingen).
+- **Watervallen**: bron = blok onder de top van de buitenste eilandkolom in een windrichting (eiland erboven, eronder en aan drie kanten), val in de kolom ernaast tot het water (die moet onder water staan; geen ander eiland ertussen); de aquifer zet de bron als stromende bron, de val als vallend water (alleen de onderste 2 stromen); **max 3 vallen per chunk** (eerste op x, z — onafhankelijk van de volgorde). `waterfallsWithin`.
+- **Liften**: kolom 2 blokken buiten de rand, van het water tot 2 boven de top, vrij van eilanden, niet bij een val. `liftsWithin`.
+- `island_mask`, `island_hole` als `island_output`; de haak in `RingBiomeSource` onthoudt per thread de eilanden van de laatste kolom (notitie #5).
+- Gemeten (testseed, wig x 5.900–8.100, z ±1.400): 438 eilanden (binnenste derde 60, buitenste 243, 14 reuzen), hoogste top binnen 156 / buiten 259, 278 vallen, 56 liften, 20 meren boven zee.
+- Terrasvallen (Q3-A "vallen van terrasranden"): niet in 61 — het terrein is per 4 blokken geïnterpoleerd, dus een terrasrand is nooit verticaal; een val van een rand landt op de helling en stroomt uit (water tegen lucht). Komt in 62 samen met de klifvallen, die hetzelfde probleem hebben (exacte wand per blok).
 - Teststop 5-pre: `/ca terrainmap`-PNG van ring 4.
 
 ## Pakket 62 — klif 3→4
@@ -53,7 +57,8 @@ Q1 terrein ↔ biome-indeling op de assen; Q2 zone 4→5 volledig uit ring 4 (`R
 
 ## Voortgang
 - 2026-10-13 19:45: branch aangemaakt, plan geschreven, vragen Q1–Q4 verstuurd.
-- 2026-10-13 20:10: 60 gebouwd (build, runData groen; `src/generated` ongewijzigd).
+- 2026-10-13 20:10: 60 gebouwd (build, runData groen; `src/generated` ongewijzigd), commit c463272.
+- 2026-10-13 20:28: 61 gebouwd (build 776 tests, runData groen; `src/generated` ongewijzigd).
 
 ## CODEBASE-delta
 **60**
@@ -62,6 +67,14 @@ Q1 terrein ↔ biome-indeling op de assen; Q2 zone 4→5 volledig uit ring 4 (`R
 - Nieuw `worldgen/densityfunction/IslandOutput` (type `island_output`, `ModDensityFunctionTypes.ISLAND_OUTPUT` in het blok `// ring 4 — W-terrein`): uitgangen `height`, `surface`, `initial_height`, `island_mask`, `island_hole`, `river`, `fjord`, `thin`, `cave_lift`.
 - JSON `density_function/ring_4/overworld.json` (stapel als ring 3: `thin` per blok, daarna geïnterpoleerd `terrain` met vanilla-grotten + `cave_lift`); `ring_4/overworld/{islands, height, surface, terrain, thin, cave_lift, initial_height}.json`; noises `ring_4_{hills, detail, shoals, rivers, fjords, warp}`.
 - Tests: `Ring4ReliefTest` (nieuw), `IslandFieldTest` (testveld uit de JSON, `field()` publiek; determinisme), `Ring4JsonTest`, `RingAquiferTest` (testveld).
+
+**61**
+- Nieuw `worldgen/densityfunction/IslandShape` (eilandvorm + gat + uitloop) en `IslandPlacement` (plaatsing per cel, details per eiland: meer, vallen, lift).
+- `IslandField`: cellen houden `IslandShape`s (publiek nog steeds `Island`-views); `shapesNear` (3 × 3 cellen, per thread), `details`, `fallsOfChunk` (cap 3), `surfaceUncached`/`baseHeight`; `Column` + `springY`, `lakeTop`, `caveLiftFrom/To`, eilandintervallen; `thin`, `caveLift`, `liftsWithin`, `waterfallsWithin` echt; `initialHeight` telt gatbodems mee; records `Fall`, `Details`.
+- `RingAquifer`: water-tak met bron (stromend) en meer boven zee (stil water), carvers niet in de meerband.
+- `RingBiomeSource`: `LastColumn` (één eilandopzoeking per kolom per thread).
+- JSON `ring_4/overworld/island_mask.json`, `island_hole.json` → `island_output`.
+- Tests: `Ring4IslandsTest` (nieuw), `RingAquiferTest.ring4FallsSpringsAndLakesComeFromTheIslandField`, `IslandFieldTest`, `Ring4JsonTest`, `Ring4ReliefTest`.
 
 ## Beslissingen
 - 2026-10-13 | worldgen | Ring 4-terrein volgt de biome-drempels van W-biomes (region_water hoog = open water, region_growth hoog = begroeid, band < 0 mythisch; water ±0,125/0, growth −0,075/0); de mythische helft van de bandovergang (`mist_fjords`) krijgt een lage fjordplateau-rand | Q1 = B: één indeling voor biome en landvorm, eigenaar W-biomes.

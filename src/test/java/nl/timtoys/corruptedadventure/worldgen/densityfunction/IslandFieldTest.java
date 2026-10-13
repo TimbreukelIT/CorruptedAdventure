@@ -91,7 +91,8 @@ public class IslandFieldTest {
         List<double[]> forward = new ArrayList<>();
         for (int[] p : points) {
             IslandField.Column c = FIELD.column(p[0], p[1]);
-            forward.add(new double[]{c.surface(), c.height(), FIELD.initialHeight(p[0], p[1])});
+            forward.add(new double[]{c.surface(), c.height(), FIELD.initialHeight(p[0], p[1]), c.islandMask(), c.lakeTop(),
+                    c.fallTop(), FIELD.thin(p[0], 150, p[1])});
         }
         for (int k = points.size() - 1; k >= 0; k--) {
             int[] p = points.get(k);
@@ -100,23 +101,23 @@ public class IslandFieldTest {
             assertEquals(expected[0], c.surface(), p[0] + ", " + p[1]);
             assertEquals(expected[1], c.height());
             assertEquals(expected[2], other.initialHeight(p[0], p[1]));
+            assertEquals(expected[3], c.islandMask());
+            assertEquals(expected[4], c.lakeTop());
+            assertEquals(expected[5], c.fallTop());
+            assertEquals(expected[6], other.thin(p[0], 150, p[1]));
+        }
+        // The cell decisions too, asked in the other order.
+        for (int i = 70; i >= 40; i--) {
+            assertEquals(FIELD.cell(i, 3), other.cell(i, 3));
         }
     }
 
-    /** 60 places no islands yet. */
+    /** No islands (nor falls or lifts) outside ring 4 and its reach. */
     @Test
-    void noIslandsYet() {
-        for (int x = 6000; x <= 8000; x += 97) {
-            for (int z = -500; z <= 500; z += 89) {
-                assertNull(FIELD.islandAt(x, z));
-                IslandField.Column column = FIELD.column(x, z);
-                assertEquals(0.0, column.islandMask());
-                assertEquals(Integer.MIN_VALUE, column.fallTop());
-                assertEquals(0.0, FIELD.compute(new DensityFunction.SinglePointContext(x, 120, z)));
-            }
-        }
-        assertTrue(FIELD.liftsWithin(6000, -500, 8000, 500).isEmpty());
-        assertTrue(FIELD.waterfallsWithin(6000, -500, 8000, 500).isEmpty());
+    void noIslandsOutsideRing4() {
+        assertTrue(FIELD.islandsWithin(-3000, -3000, 3000, 3000).isEmpty());
+        assertTrue(FIELD.islandsWithin(9000, -500, 9500, 500).isEmpty());
+        assertTrue(FIELD.waterfallsWithin(-500, -500, 500, 500).isEmpty());
         assertTrue(FIELD.worldTrees(6000, -500, 8000, 500).isEmpty());
     }
 

@@ -33,7 +33,8 @@ import javax.annotation.Nullable;
  * ({@link RingFluidPicker#waterOnlyFrom}, also over the whole zone 4→5), the bottom below Y −54 is dry ({@link RingFluidPicker#ring4DryBelow}) with a
  * dam of rock over the zone 4→5 and ring 4's half of the zone 3→4 ({@link RingFluidPicker#ring4DamBelow}), carvers
  * place no lava there ({@link #carverLava}), and the recorded waterfalls of its
- * {@link IslandField} fall as water ({@link RingFluidPicker#ring4FallColumn}).
+ * {@link IslandField} fall as water ({@link RingFluidPicker#ring4FallColumn}); 61: their springs flow, and the lakes
+ * above the sea in the islands' holes hold still water, with a band carvers may not cut.
  * <p>
  * One instance per noise chunk, so the per-call state below is single-threaded like vanilla's.
  */
@@ -101,6 +102,12 @@ final class RingAquifer implements Aquifer {
     private final int[] waterFallTop = new int[COLUMNS + 1];
     private final int[] waterFallBottom = new int[COLUMNS + 1];
     private final int[] waterFallFlow = new int[COLUMNS + 1];
+    // Ring 4 (61): an island's spring (a water source that flows), the top (exclusive) of a lake above the sea, and the
+    // band around such a lake that carvers may not cut (from caveFrom to caveTo).
+    private final int[] waterSpringY = new int[COLUMNS + 1];
+    private final int[] lakeTop = new int[COLUMNS + 1];
+    private final int[] lakeGuardBottom = new int[COLUMNS + 1];
+    private final int[] lakeGuardTop = new int[COLUMNS + 1];
 
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla) {
         this(dimension, vanilla, null, null);
@@ -224,6 +231,10 @@ final class RingAquifer implements Aquifer {
         waterFallTop[i] = falls ? islandColumn.fallTop() : Integer.MIN_VALUE;
         waterFallBottom[i] = falls ? islandColumn.fallBottom() : Integer.MIN_VALUE;
         waterFallFlow[i] = falls ? islandColumn.fallFlowBelow() : Integer.MIN_VALUE;
+        waterSpringY[i] = falls ? islandColumn.springY() : Integer.MIN_VALUE;
+        lakeTop[i] = falls ? islandColumn.lakeTop() : Integer.MIN_VALUE;
+        lakeGuardBottom[i] = falls ? islandColumn.caveLiftFrom() : Integer.MAX_VALUE;
+        lakeGuardTop[i] = falls ? islandColumn.caveLiftTo() : Integer.MIN_VALUE;
         boolean lava = RingFluidPicker.ring3LavaColumn(dimension, position, volcanic);
         VolcanicField.Column column = lava ? volcanic.column(x, z) : null;
         lavaTop[i] = lava ? column.lavaTop() : Integer.MIN_VALUE;
@@ -283,6 +294,20 @@ final class RingAquifer implements Aquifer {
             spring = y <= waterFallFlow[i];
             suppressed = !spring;
             return FALLING_WATER;
+        }
+        if (y == waterSpringY[i]) {
+            // An island's spring (61): a source scheduled to flow, it pours into its fall beside it.
+            suppressed = false;
+            spring = true;
+            return WATER;
+        }
+        if (carving && y >= lakeGuardBottom[i] && y <= lakeGuardTop[i]) {
+            // A carver may not cut under, beside or into a lake above the sea (61): its tunnel would open the lake.
+            return null;
+        }
+        if (y < lakeTop[i] && y >= lakeGuardBottom[i]) {
+            // A lake above the sea in an island's hole (61): still water, walled in by its rim.
+            return WATER;
         }
         if (carving && y >= guardBottom[i] && y <= guardTop[i]) {
             // A carver may not cut into the band around lava (42b): its tunnel would open the lava to the air beside it.

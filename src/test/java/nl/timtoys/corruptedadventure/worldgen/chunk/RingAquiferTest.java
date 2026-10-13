@@ -5,6 +5,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Aquifer;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -17,6 +18,8 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicFieldTest;
 import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeShape;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -496,7 +499,7 @@ class RingAquiferTest {
         still.carving(false);
     }
 
-    /** The water branch reads the island field's recorded falls; the skeleton (59) records none, so vanilla's state stays. */
+    /** Where the island field records nothing, vanilla's state stays. */
     @Test
     void ring4WithoutRecordedFallsKeepsVanillasOpenSpace() {
         IslandField islands = IslandFieldTest.field();
@@ -504,6 +507,63 @@ class RingAquiferTest {
         for (int y : new int[]{63, 100, 200}) {
             assertSame(Blocks.AIR.defaultBlockState(), dry.computeSubstance(RingPosition.within(Ring.RING_4), at(y), -0.5), "y " + y);
         }
+    }
+
+    /**
+     * 61, the water branch with real falls: falling water from the spring down to the water (only its lowest blocks
+     * flow), the spring a source that flows, a lake above the sea still water, and carvers kept out of the band around
+     * such a lake.
+     */
+    @Test
+    void ring4FallsSpringsAndLakesComeFromTheIslandField() {
+        IslandField islands = IslandFieldTest.field();
+        RingAquifer aquifer = new RingAquifer(Level.OVERWORLD, DRY, null, islands);
+        RingPosition ring4 = RingPosition.within(Ring.RING_4);
+        List<IslandField.Waterfall> falls = islands.waterfallsWithin(7200, -600, 7800, 600);
+        assertFalse(falls.isEmpty());
+        int springs = 0;
+        for (IslandField.Waterfall fall : falls) {
+            BlockState top = aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(fall.x(), fall.top(), fall.z()), -0.5);
+            assertSame(Blocks.WATER, top.getBlock());
+            assertEquals(8, top.getValue(LiquidBlock.LEVEL), "falling water at the top of " + fall);
+            assertFalse(aquifer.shouldScheduleFluidUpdate(), "the fall's upper blocks stay put");
+            aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(fall.x(), fall.bottom(), fall.z()), -0.5);
+            assertTrue(aquifer.shouldScheduleFluidUpdate(), "its lowest block flows");
+            assertSame(Blocks.AIR.defaultBlockState(),
+                    aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(fall.x(), fall.top() + 1, fall.z()), -0.5));
+            for (int[] side : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                int springY = islands.column(fall.x() + side[0], fall.z() + side[1]).springY();
+                if (springY == fall.top()) {
+                    springs++;
+                    BlockState spring = aquifer.computeSubstance(ring4,
+                            new DensityFunction.SinglePointContext(fall.x() + side[0], springY, fall.z() + side[1]), -0.5);
+                    assertSame(Blocks.WATER.defaultBlockState(), spring);
+                    assertTrue(aquifer.shouldScheduleFluidUpdate(), "the spring flows");
+                }
+            }
+        }
+        assertEquals(falls.size(), springs, "one spring beside each fall");
+
+        int lakes = 0;
+        for (IslandField.Island island : islands.islandsWithin(6100, -1500, 7900, 1500)) {
+            IslandField.Column column = islands.column((int) Math.floor(island.x()), (int) Math.floor(island.z()));
+            if (column.lakeTop() == Integer.MIN_VALUE || column.surface() >= column.lakeTop() - 1) {
+                continue;
+            }
+            lakes++;
+            int x = (int) Math.floor(island.x());
+            int z = (int) Math.floor(island.z());
+            int y = column.lakeTop() - 1;
+            assertSame(Blocks.WATER.defaultBlockState(), aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(x, y, z), -0.5));
+            assertFalse(aquifer.shouldScheduleFluidUpdate(), "a lake is still");
+            assertSame(Blocks.AIR.defaultBlockState(),
+                    aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(x, column.lakeTop(), z), -0.5));
+            aquifer.carving(true);
+            assertNull(aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(x, column.caveLiftFrom(), z), -0.5),
+                    "carvers stay out under the lake");
+            aquifer.carving(false);
+        }
+        assertTrue(lakes > 0, "no lake above the sea found");
     }
 
     /**

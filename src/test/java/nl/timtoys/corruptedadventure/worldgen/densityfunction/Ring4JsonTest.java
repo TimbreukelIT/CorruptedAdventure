@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class Ring4JsonTest {
     private static final String DF = "density_function/";
-    private static final String[] STUBS = {"island_mask", "island_hole", "cliff", "sundered", "tunnels"};
+    private static final String[] STUBS = {"cliff", "sundered", "tunnels"};
     private static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
             CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), RingLayout.noiseSeed(20260930L));
 
@@ -142,6 +142,8 @@ class Ring4JsonTest {
         assertOutput(DF + "ring_4/overworld/height.json", "height");
         assertOutput(DF + "ring_4/overworld/surface.json", "surface");
         assertOutput(DF + "ring_4/overworld/thin.json", "thin");
+        assertOutput(DF + "ring_4/overworld/island_mask.json", "island_mask");
+        assertOutput(DF + "ring_4/overworld/island_hole.json", "island_hole");
         assertOutput(DF + "ring_4/overworld/cave_lift.json", "cave_lift");
         // The final stack: the exact per-block islands first, then the interpolated terrain with vanilla's caves.
         JsonObject overworld = WorldgenData.read(DF + "ring_4/overworld.json");

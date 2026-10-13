@@ -83,10 +83,38 @@ public final class RingBiomeSource extends BiomeSource {
         // EnumMap's copy constructor rejects an empty plain Map.
         this.transitions = transitions.isEmpty() ? Map.of() : new EnumMap<>(transitions);
         this.islandBiomes = islandBiomes;
-        this.currentIslands = (x, z) -> {
-            IslandField field = IslandFields.current(dimension);
-            return field == null ? List.of() : field.islandsAt(x, z);
-        };
+        this.currentIslands = new LastColumn(() -> IslandFields.current(dimension));
+    }
+
+    /**
+     * The running server's islands, one lookup per column (review 59 #5): the biome of a column is asked quart by quart
+     * up the column, so each thread remembers the islands of its last column and the field they came from.
+     */
+    static final class LastColumn implements IslandLookup {
+        private final java.util.function.Supplier<IslandField> field;
+        private final ThreadLocal<Remembered> last = new ThreadLocal<>();
+
+        LastColumn(java.util.function.Supplier<IslandField> field) {
+            this.field = field;
+        }
+
+        @Override
+        public List<IslandField.Island> islandsAt(int x, int z) {
+            IslandField current = field.get();
+            if (current == null) {
+                return List.of();
+            }
+            Remembered known = last.get();
+            if (known != null && known.x == x && known.z == z && known.field == current) {
+                return known.islands;
+            }
+            List<IslandField.Island> islands = List.copyOf(current.islandsAt(x, z));
+            last.set(new Remembered(x, z, current, islands));
+            return islands;
+        }
+
+        private record Remembered(int x, int z, IslandField field, List<IslandField.Island> islands) {
+        }
     }
 
     static DataResult<Map<Ring, BiomeSource>> validateRings(Map<Ring, BiomeSource> rings) {

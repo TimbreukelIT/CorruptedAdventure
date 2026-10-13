@@ -34,7 +34,7 @@ class Ring4ReliefTest {
                 }
                 IslandField.Column c = field.column(x, z);
                 COLUMNS.add(new double[]{x, z, c.surface(), relief.waterAxis(x, z), relief.growthAxis(x, z),
-                        band.value(x, z), c.river});
+                        band.value(x, z), c.river, c.height()});
             }
         }
     }
@@ -80,11 +80,15 @@ class Ring4ReliefTest {
         double min = Double.MAX_VALUE;
         double max = -Double.MAX_VALUE;
         int high = 0;
+        double holes = Double.MAX_VALUE;
         for (double[] c : COLUMNS) {
-            min = Math.min(min, c[2]);
-            max = Math.max(max, c[2]);
-            high += c[2] > 85.0 ? 1 : 0;
+            // The base terrain (the islands' holes come on top, 61).
+            min = Math.min(min, c[7]);
+            max = Math.max(max, c[7]);
+            high += c[7] > 85.0 ? 1 : 0;
+            holes = Math.min(holes, c[2]);
         }
+        assertTrue(holes >= IslandShape.HOLE_FLOOR_MIN, "deepest hole " + holes);
         System.out.printf("surface %.1f .. %.1f, above 85: %.3f%n", min, max, high / (double) COLUMNS.size());
         assertTrue(min > 30.0, "min " + min);
         assertTrue(max < 125.0 && max > 90.0, "max " + max);
