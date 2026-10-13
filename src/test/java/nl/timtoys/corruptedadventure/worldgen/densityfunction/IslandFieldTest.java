@@ -4,6 +4,11 @@ import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.DensityFunctions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -48,6 +53,22 @@ class IslandFieldTest {
         assertTrue(FIELD.liftsWithin(6000, -500, 8000, 500).isEmpty());
         assertTrue(FIELD.waterfallsWithin(6000, -500, 8000, 500).isEmpty());
         assertTrue(FIELD.worldTrees(6000, -500, 8000, 500).isEmpty());
+    }
+
+    /** Review 59 (2nd): one rule for overlapping islands, whatever the order: bottom, top, then the centre. */
+    @Test
+    void overlappingIslandsAreChosenByOneRuleWhateverTheOrder() {
+        IslandField.Island low = new IslandField.Island(7000.0, 0.0, 20.0, 100, 160);
+        IslandField.Island high = new IslandField.Island(7010.0, 0.0, 20.0, 130, 150);
+        IslandField.Island sameBottomHigherTop = new IslandField.Island(7005.0, 0.0, 20.0, 130, 170);
+        IslandField.Island twin = new IslandField.Island(7006.0, 0.0, 20.0, 130, 170);
+        List<IslandField.Island> islands = new ArrayList<>(List.of(low, high, sameBottomHigherTop, twin));
+        for (int i = 0; i < 8; i++) {
+            Collections.shuffle(islands, new Random(i));
+            assertEquals(twin, IslandField.uppermost(islands));
+        }
+        assertEquals(high, IslandField.uppermost(List.of(low, high)));
+        assertNull(IslandField.uppermost(List.of()));
     }
 
     @Test

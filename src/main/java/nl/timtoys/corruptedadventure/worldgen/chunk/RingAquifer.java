@@ -60,6 +60,7 @@ final class RingAquifer implements Aquifer {
     private final VolcanicField volcanic;
     @Nullable
     private final IslandField islands;
+    private final RingLookup rings;
     private boolean suppressed;
     /** Set while the chunk's carvers run ({@code RingChunkGenerator#applyCarvers}): their open space is a carved tunnel. */
     private boolean carving;
@@ -114,10 +115,23 @@ final class RingAquifer implements Aquifer {
      * @param islands  the ring 4 islands of this noise chunk (likewise), or null
      */
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla, @Nullable VolcanicField volcanic, @Nullable IslandField islands) {
+        this(dimension, vanilla, volcanic, islands, (x, z) -> RingColumnCache.ringAt(dimension, x, z));
+    }
+
+    /** @param rings the ring of a column: the running server's layout in worldgen, a fixed one in tests */
+    RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla, @Nullable VolcanicField volcanic, @Nullable IslandField islands,
+                RingLookup rings) {
         this.dimension = dimension;
         this.vanilla = vanilla;
         this.volcanic = volcanic;
         this.islands = islands;
+        this.rings = rings;
+    }
+
+    /** The ring of a column (block x, z). */
+    @FunctionalInterface
+    interface RingLookup {
+        RingPosition at(int x, int z);
     }
 
     @Nullable
@@ -132,7 +146,7 @@ final class RingAquifer implements Aquifer {
      * Elsewhere vanilla's lava stays.
      */
     boolean decidesCarverLava(int x, int z) {
-        return noLava[column(x, z)];
+        return noLava[peek(x, z)];
     }
 
     /**
@@ -141,20 +155,21 @@ final class RingAquifer implements Aquifer {
      */
     @Nullable
     BlockState carverLava(DensityFunction.FunctionContext context) {
-        return compute(column(context.blockX(), context.blockZ()), context, 0.0);
+        return compute(peek(context.blockX(), context.blockZ()), context, 0.0);
     }
 
-    /** {@link #decidesCarverLava} with the ring given, for tests: the column is not remembered. */
-    boolean decidesCarverLava(RingPosition position, int x, int z) {
-        load(COLUMNS, position, x, z);
-        return noLava[COLUMNS];
-    }
-
-    /** {@link #carverLava} with the ring given, for tests. */
-    @Nullable
-    BlockState carverLava(RingPosition position, DensityFunction.FunctionContext context) {
-        load(COLUMNS, position, context.blockX(), context.blockZ());
-        return compute(COLUMNS, context, 0.0);
+    /**
+     * The slot of a column for the carver-lava check without filling one (review 59): the column's own slot if it holds
+     * this column, else the spare slot, loaded for this call only, so a column of another chunk with the same low bits
+     * never pushes out the noise chunk's own.
+     */
+    private int peek(int x, int z) {
+        int i = (x & 15) | (z & 15) << 4;
+        if (known[i] && keyX[i] == x && keyZ[i] == z) {
+            return i;
+        }
+        load(COLUMNS, rings.at(x, z), x, z);
+        return COLUMNS;
     }
 
     /** Marks the carvers' pass: while it runs, open space asked for is a tunnel a carver wants to cut. */
@@ -191,7 +206,7 @@ final class RingAquifer implements Aquifer {
     private int column(int x, int z) {
         int i = (x & 15) | (z & 15) << 4;
         if (!known[i] || keyX[i] != x || keyZ[i] != z) {
-            load(i, RingColumnCache.ringAt(dimension, x, z), x, z);
+            load(i, rings.at(x, z), x, z);
             known[i] = true;
             keyX[i] = x;
             keyZ[i] = z;

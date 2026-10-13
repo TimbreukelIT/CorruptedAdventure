@@ -63,3 +63,15 @@ Doorgeschoven (notities voor latere pakketten):
 - **#10 (perfronde):** `Ring4BandFunction` rekent `effectiveDistance` opnieuw uit; hergebruik via `RingColumnCache` als de band in de profielen opvalt.
 - **#8 (62):** klifwatervallen vallen aan de ring 4-kant (`ring4FallColumn` vraagt `ring()` = ring 4); in 62 de val-kolomregel herzien als de klif de val in de ring 3-helft nodig heeft.
 - **#9 (backlog, INT):** een generieke `FieldLookup`/`find` voor `VolcanicField` en `IslandField` (nu twee kopieën); INT zet hem in `docs/backlog.md`.
+
+## Code-review 2 (eafd3aa..0cbe313)
+Opgepakt in de vervolgcommit:
+- **#1 haak:** eerst filteren op wat telt (Y ≥ onderkant − 4, top ≥ `min_top`, midden in ring 4), dan pas kiezen; een hoger eiland dat niet telt verbergt het lagere niet meer. Test met zo'n paar.
+- **#4/#5 één overlapregel:** `IslandField.uppermost` (hoogste onderkant, dan hoogste top, dan midden x/z); `islandAt` en de haak gebruiken hem, onafhankelijk van de volgorde (test met geschudde lijsten). Vastgelegd in contract §4.
+- **#7 carver-check:** `RingAquifer.decidesCarverLava`/`carverLava` vullen geen kolomslot meer: de eigen slot als die deze kolom al houdt, anders de reserveslot voor die ene vraag (`peek`). De ring-opzoeking is injecteerbaar (`RingLookup`, tests); test met een kolom van een andere chunk met dezelfde lage bits.
+- **#8 test:** de carver-test loopt weer langs het pad van de mixin (`CarverLava.decides` → anders vanilla-lava) en controleert dat de update-vlag buiten ring 4 en de dammen waar blijft (ring 3 ook in zijn helft van 3→4, ring 1, 2, 5, zone 5→void, Nether).
+
+Niet opgepakt:
+- **#2 naad aan de buitenrand van zone 4→5:** besluit van de gebruiker (review 1); ligt in ring 5, backlog ring 5 (81–99).
+- **#3 reikwijdte tot de bouwtop:** besluit Q7b (A).
+- **#6 prestatie van de haak:** al doorgeschoven naar 61 (#5 van review 1).

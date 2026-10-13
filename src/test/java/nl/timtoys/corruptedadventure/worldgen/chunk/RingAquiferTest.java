@@ -1,6 +1,8 @@
 package nl.timtoys.corruptedadventure.worldgen.chunk;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,6 +17,7 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicFieldTest;
 import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeShape;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -504,32 +507,76 @@ class RingAquiferTest {
     }
 
     /**
+     * What {@code WorldCarver.getCarveState} gives at or below the carver's lava level with {@code WorldCarverLavaMixin}:
+     * the ring aquifer's answer where it decides ({@link CarverLava}), else vanilla's lava.
+     */
+    private static BlockState carveBelowLavaLevel(Aquifer aquifer, BlockPos pos) {
+        return CarverLava.decides(aquifer, pos) ? CarverLava.at(aquifer, pos) : Blocks.LAVA.defaultBlockState();
+    }
+
+    /** An overworld aquifer whose columns all lie at {@code position}, except x = 100: ring 1. */
+    private static RingAquifer aquiferAt(ResourceKey<Level> dimension, Aquifer vanilla, RingPosition position) {
+        return new RingAquifer(dimension, vanilla, null, null, (x, z) -> x == 100 ? RingPosition.within(Ring.RING_1) : position);
+    }
+
+    /**
      * 59: carver lava (vanilla places it at and below Y −56 without asking the aquifer; {@code WorldCarverLavaMixin}
-     * steps in only where {@link RingAquifer#decidesCarverLava}). Ring 4's dry bottom stays air, the dams stay rock (not
-     * cut); ring 3 (also its half of the zone 3→4), ring 5 beyond the dam, the other rings and the Nether are not decided
-     * here, so vanilla's code runs on unchanged.
+     * steps in only where {@link CarverLava#decides}). Ring 4's dry bottom stays air, the dams stay rock (not cut);
+     * ring 3 (also its half of the zone 3→4), ring 5 beyond the dam, the other rings and the Nether get vanilla's lava,
+     * and the update flag of the aquifer's last answer stays as it was (review 59, 2nd).
      */
     @Test
     void carverLavaIsAirInRing4RockInItsDamsAndVanillasElsewhere() {
-        RingAquifer still = new RingAquifer(Level.OVERWORLD, STILL_LAVA);
-        still.carving(true);
-        RingPosition[] dams = {new RingPosition(Ring.RING_3, Ring.RING_4, 0.7), new RingPosition(Ring.RING_4, Ring.RING_5, 0.3),
-                new RingPosition(Ring.RING_4, Ring.RING_5, 0.7)};
-        assertTrue(still.decidesCarverLava(RingPosition.within(Ring.RING_4), 2500, 0));
-        for (RingPosition dam : dams) {
-            assertTrue(still.decidesCarverLava(dam, 2500, 0), dam.toString());
-        }
         for (int y : new int[]{-56, -60, -64}) {
-            assertSame(Blocks.AIR.defaultBlockState(), still.carverLava(RingPosition.within(Ring.RING_4), at(y)), "ring 4 at " + y);
-            for (RingPosition dam : dams) {
-                assertNull(still.carverLava(dam, at(y)), dam + " at " + y);
+            BlockPos pos = new BlockPos(2500, y, 0);
+            RingAquifer ring4 = aquiferAt(Level.OVERWORLD, STILL_LAVA, RingPosition.within(Ring.RING_4));
+            ring4.carving(true);
+            assertSame(Blocks.AIR.defaultBlockState(), carveBelowLavaLevel(ring4, pos), "ring 4 at " + y);
+            for (RingPosition dam : new RingPosition[]{new RingPosition(Ring.RING_3, Ring.RING_4, 0.7),
+                    new RingPosition(Ring.RING_4, Ring.RING_5, 0.3), new RingPosition(Ring.RING_4, Ring.RING_5, 0.7)}) {
+                RingAquifer aquifer = aquiferAt(Level.OVERWORLD, STILL_LAVA, dam);
+                aquifer.carving(true);
+                assertTrue(CarverLava.decides(aquifer, pos), dam.toString());
+                assertNull(carveBelowLavaLevel(aquifer, pos), dam + " at " + y);
             }
         }
+        BlockPos deep = new BlockPos(2500, -56, 0);
         for (RingPosition vanilla : new RingPosition[]{RingPosition.within(Ring.RING_3), new RingPosition(Ring.RING_3, Ring.RING_4, 0.3),
                 new RingPosition(Ring.RING_2, Ring.RING_3, 0.7), RingPosition.within(Ring.RING_5), RingPosition.within(Ring.RING_1),
                 RingPosition.within(Ring.RING_2), new RingPosition(Ring.RING_5, Ring.VOID, 0.3)}) {
-            assertFalse(still.decidesCarverLava(vanilla, 2500, 0), vanilla.toString());
+            RingAquifer aquifer = aquiferAt(Level.OVERWORLD, WATER_WITH_UPDATE, vanilla);
+            assertSame(Blocks.WATER.defaultBlockState(), aquifer.computeSubstance(new DensityFunction.SinglePointContext(100, 30, 0), -0.5));
+            assertTrue(aquifer.shouldScheduleFluidUpdate());
+            assertSame(Blocks.LAVA.defaultBlockState(), carveBelowLavaLevel(aquifer, deep), vanilla.toString());
+            assertTrue(aquifer.shouldScheduleFluidUpdate(), vanilla.toString());
         }
-        assertFalse(new RingAquifer(Level.NETHER, DRY).decidesCarverLava(RingPosition.within(Ring.RING_4), 500, 0));
+        RingAquifer nether = aquiferAt(Level.NETHER, WATER_WITH_UPDATE, RingPosition.within(Ring.RING_4));
+        assertSame(Blocks.WATER.defaultBlockState(), nether.computeSubstance(new DensityFunction.SinglePointContext(100, 30, 0), -0.5));
+        assertSame(Blocks.LAVA.defaultBlockState(), carveBelowLavaLevel(nether, new BlockPos(500, 20, 0)));
+        assertTrue(nether.shouldScheduleFluidUpdate());
+    }
+
+    /**
+     * Review 59 (2nd): the carver-lava check never pushes a column of the noise chunk out of its slot, also not for a
+     * column of another chunk with the same low bits (it is looked up for that call only).
+     */
+    @Test
+    void carverLavaCheckNeverPushesOutAColumnOfTheNoiseChunk() {
+        int[] lookups = new int[1];
+        RingAquifer aquifer = new RingAquifer(Level.OVERWORLD, STILL_LAVA, null, null, (x, z) -> {
+            if (x == 5 && z == 5) {
+                lookups[0]++;
+            }
+            return x < 16 ? RingPosition.within(Ring.RING_1) : RingPosition.within(Ring.RING_4);
+        });
+        DensityFunction.FunctionContext own = new DensityFunction.SinglePointContext(5, -20, 5);
+        assertSame(Blocks.LAVA.defaultBlockState(), aquifer.computeSubstance(own, -0.5));
+        assertEquals(1, lookups[0]);
+        BlockPos otherChunk = new BlockPos(21, -60, 5);
+        assertTrue(CarverLava.decides(aquifer, otherChunk));
+        assertSame(Blocks.AIR.defaultBlockState(), CarverLava.at(aquifer, otherChunk));
+        assertFalse(CarverLava.decides(aquifer, new BlockPos(5, -60, 5)));
+        assertSame(Blocks.LAVA.defaultBlockState(), aquifer.computeSubstance(own, -0.5));
+        assertEquals(1, lookups[0], "the noise chunk's own column was pushed out");
     }
 }

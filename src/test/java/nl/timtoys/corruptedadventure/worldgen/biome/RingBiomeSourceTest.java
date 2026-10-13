@@ -250,6 +250,26 @@ class RingBiomeSourceTest {
         assertEquals(biomes.get(Ring.RING_4), hooked.getNoiseBiome(LAYOUT, islands, qx, QuartPos.fromBlock(100), qz, Climate.empty()));
     }
 
+    /**
+     * Review 59 (2nd): only islands that count are chosen from. A higher island that does not count (its top under
+     * {@code min_top}) does not hide the lower one that does.
+     */
+    @Test
+    void aHigherIslandThatDoesNotCountLeavesTheLowerOne() {
+        Holder<Biome> mythic = Holder.direct(biome());
+        Holder<Biome> blighted = Holder.direct(biome());
+        Map<Ring, BiomeSource> sources = new EnumMap<>(Ring.class);
+        biomes.forEach((ring, biome) -> sources.put(ring, new FixedBiomeSource(biome)));
+        RingBiomeSource hooked = new RingBiomeSource(Level.OVERWORLD, sources, Map.of(), new IslandBiomes(mythic, blighted, 140));
+        Ring4Band band = Ring4Band.of(LAYOUT);
+        int[] centre = centre(band, false);
+        IslandField.Island counts = new IslandField.Island(centre[0], centre[1], 24.0, 100, 150);
+        IslandField.Island tooLow = new IslandField.Island(centre[0] + 8, centre[1], 24.0, 125, 135);
+        RingBiomeSource.IslandLookup islands = (x, z) -> List.of(tooLow, counts);
+        assertEquals(mythic, hooked.getNoiseBiome(LAYOUT, islands, QuartPos.fromBlock(centre[0]), QuartPos.fromBlock(130),
+                QuartPos.fromBlock(centre[1]), Climate.empty()));
+    }
+
     /** A quart corner in ring 4 proper whose band differs from the one 40 blocks east (both also in ring 4 proper). */
     private static int[] acrossTheLine(Ring4Band band) {
         for (int z = -4000; z <= 4000; z += 52) {

@@ -8,6 +8,8 @@ import net.minecraft.world.level.levelgen.DensityFunction;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,6 +35,10 @@ public final class IslandField implements DensityFunction {
     ).apply(instance, IslandField::new));
 
     public static final KeyDispatchDataCodec<IslandField> CODEC = KeyDispatchDataCodec.of(MAP_CODEC);
+
+    /** The order of overlapping islands ({@link #uppermost}): bottom, top, then the centre as a fixed key. */
+    private static final Comparator<Island> OVERLAP = Comparator.comparingInt(Island::bottom).thenComparingInt(Island::top)
+            .thenComparingDouble(Island::x).thenComparingDouble(Island::z);
 
     private final NoiseHolder hash;
     private final Settings settings;
@@ -129,16 +135,19 @@ public final class IslandField implements DensityFunction {
         return found;
     }
 
-    /** The island whose footprint covers the column, or null; the highest top where islands overlap. */
+    /** The island of the column where islands overlap ({@link #uppermost}), or null. */
     @Nullable
     public Island islandAt(int x, int z) {
-        Island best = null;
-        for (Island island : islandsWithin(x, z, x, z)) {
-            if (island.covers(x, z) && (best == null || island.top() > best.top())) {
-                best = island;
-            }
-        }
-        return best;
+        return uppermost(islandsAt(x, z));
+    }
+
+    /**
+     * The one rule for overlapping islands (review 59): the island with the highest bottom, then the highest top, then
+     * the largest centre x and z, so the choice never depends on the order of the list. Null for none.
+     */
+    @Nullable
+    public static Island uppermost(Collection<Island> islands) {
+        return islands.stream().max(OVERLAP).orElse(null);
     }
 
     /** The islands whose footprint may reach into the box (block coordinates, inclusive). */

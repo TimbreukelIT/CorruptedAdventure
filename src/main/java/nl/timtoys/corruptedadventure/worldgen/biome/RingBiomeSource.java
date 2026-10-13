@@ -19,6 +19,7 @@ import nl.timtoys.corruptedadventure.worldgen.chunk.IslandFields;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
@@ -139,20 +140,22 @@ public final class RingBiomeSource extends BiomeSource {
     }
 
     /**
-     * The height biome at this block, or null: from the highest island of the column whose reach (from
-     * {@link #BELOW_ISLAND} under its bottom up) holds the block, so an island under a higher, overlapping one keeps its
-     * own; null if there is none, or it is too low or not centred in ring 4.
+     * The height biome at this block, or null. Of the column's islands only those count whose reach (from
+     * {@link #BELOW_ISLAND} under the bottom up) holds the block, whose top reaches {@link IslandBiomes#minTop} and whose
+     * centre lies in ring 4; of those, the one of {@link IslandField#uppermost}. So an island under a higher one keeps
+     * its own height biome, also when the higher one does not count.
      */
     @Nullable
     private Holder<Biome> heightBiome(RingLayout layout, IslandLookup islands, int x, int y, int z) {
-        IslandField.Island island = null;
-        for (IslandField.Island candidate : islands.islandsAt(x, z)) {
-            if (y >= candidate.bottom() - BELOW_ISLAND && (island == null || candidate.bottom() > island.bottom())) {
-                island = candidate;
+        List<IslandField.Island> counting = new ArrayList<>();
+        for (IslandField.Island island : islands.islandsAt(x, z)) {
+            if (y >= island.bottom() - BELOW_ISLAND && island.top() >= islandBiomes.minTop()
+                    && layout.sample(dimension, island.x(), island.z()).ring() == Ring.RING_4) {
+                counting.add(island);
             }
         }
-        if (island == null || island.top() < islandBiomes.minTop()
-                || layout.sample(dimension, island.x(), island.z()).ring() != Ring.RING_4) {
+        IslandField.Island island = IslandField.uppermost(counting);
+        if (island == null) {
             return null;
         }
         return Ring4Band.of(layout).blighted(island.x(), island.z()) ? islandBiomes.blighted() : islandBiomes.mythic();
