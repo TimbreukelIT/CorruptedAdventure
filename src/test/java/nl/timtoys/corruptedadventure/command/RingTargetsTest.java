@@ -12,7 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingTargetsTest {
-    private static final RingSettings DEFAULTS = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128);
+    private static final RingSettings DEFAULTS = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
+            CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES);
 
     private final RingLayout layout = new RingLayout(DEFAULTS, 12345L);
 
@@ -26,9 +27,9 @@ class RingTargetsTest {
     void middleRadiusIsTheMiddleOfTheNominalBand() {
         assertEquals(750, RingTargets.middleRadius(DEFAULTS, Ring.RING_1));
         assertEquals(4750, RingTargets.middleRadius(DEFAULTS, Ring.RING_3));
-        assertEquals(6900, RingTargets.middleRadius(DEFAULTS, Ring.RING_4));
-        assertEquals(8650, RingTargets.middleRadius(DEFAULTS, Ring.RING_5));
-        assertEquals(9750, RingTargets.middleRadius(DEFAULTS, Ring.VOID));
+        assertEquals(7000, RingTargets.middleRadius(DEFAULTS, Ring.RING_4));
+        assertEquals(8850, RingTargets.middleRadius(DEFAULTS, Ring.RING_5));
+        assertEquals(9950, RingTargets.middleRadius(DEFAULTS, Ring.VOID));
     }
 
     @Test

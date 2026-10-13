@@ -21,7 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingGateTest {
-    private static final RingSettings DEFAULTS = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128);
+    private static final RingSettings DEFAULTS = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
+            CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES);
     private static final RingLayout LAYOUT = new RingLayout(DEFAULTS, 20260930L);
     private static final DensityFunction.FunctionContext ANYWHERE = new DensityFunction.SinglePointContext(0, 64, 0);
 
@@ -50,7 +51,8 @@ class RingGateTest {
         // Wherever a ring has weight, the corners of its cell (up to 4 blocks away) must still be computed for real,
         // also with a much stronger boundary noise than the default.
         for (int noise : new int[]{96, 400, 1000}) {
-            RingLayout layout = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, noise, 128), 20260930L);
+            RingLayout layout = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, noise, 128,
+                    CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), 20260930L);
             double margin = layout.reachMargin(RingGate.MARGIN, 1);
             for (int x = 1000; x < 4000; x += 5) {
                 for (int z = -1200; z < 1200; z += 37) {

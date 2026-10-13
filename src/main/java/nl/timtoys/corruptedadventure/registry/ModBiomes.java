@@ -38,6 +38,29 @@ public final class ModBiomes {
     public static final ResourceKey<Biome> RIME_FOREST = key("rime_forest");
     public static final ResourceKey<Biome> GLACIER_RIFTS = key("glacier_rifts");
 
+    // Ring 4 (Ring4Biomes, 64; docs/plans/ring-4/contract.md §2). Keys only until then: no biome is registered yet.
+    // Mythical band.
+    public static final ResourceKey<Biome> CASCADE_VALE = key("cascade_vale");
+    public static final ResourceKey<Biome> CRYSTAL_LAGOON = key("crystal_lagoon");
+    public static final ResourceKey<Biome> LOTUS_SHALLOWS = key("lotus_shallows");
+    public static final ResourceKey<Biome> GLOWROOT_SWAMP = key("glowroot_swamp");
+    public static final ResourceKey<Biome> MIST_FJORDS = key("mist_fjords");
+    // Blighted band.
+    public static final ResourceKey<Biome> DROWNED_FOREST = key("drowned_forest");
+    public static final ResourceKey<Biome> PEAT_MOORS = key("peat_moors");
+    public static final ResourceKey<Biome> REED_MARSH = key("reed_marsh");
+    /** Height biome: islands topping out at Y 140 or higher above the mythical band. */
+    public static final ResourceKey<Biome> SKY_GARDENS = key("sky_gardens");
+    /** Height biome: islands topping out at Y 140 or higher above the blighted band. */
+    public static final ResourceKey<Biome> WITHERED_GARDENS = key("withered_gardens");
+    /** Transition biome of boundary 4 (ring 4 | ring 5). */
+    public static final ResourceKey<Biome> SUNDERED_REACH = key("sundered_reach");
+
+    // Nether ring 4 (NetherRing4Biomes, 65). Keys only until then.
+    public static final ResourceKey<Biome> BONE_DUNES = key("bone_dunes");
+    public static final ResourceKey<Biome> CRYSTAL_SPIRES = key("crystal_spires");
+    public static final ResourceKey<Biome> GEODE_HOLLOWS = key("geode_hollows");
+
     // Temporary: one per ring until the ring's real biomes exist. Ring 1's copies (overworld and Nether):
     // VanillaBiomeCopies.copyOf.
     public static final ResourceKey<Biome> PLACEHOLDER_RING_4 = key("placeholder_ring_4");

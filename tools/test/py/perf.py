@@ -27,7 +27,7 @@ from rcon import Rcon  # noqa: E402
 
 VANILLA = {"ow": "perftest:vanilla", "nether": "perftest:vanilla_nether"}
 STEPS = ("noise", "surface", "features")
-DEFAULT_RADII = [1500, 3500, 6000, 7800]  # ring 1-4 outer radius, overworld blocks (37c defaults)
+DEFAULT_RADII = [1500, 3500, 6000, 8000]  # ring 1-4 outer radius, overworld blocks (58 defaults)
 
 
 def warm_spots(run):

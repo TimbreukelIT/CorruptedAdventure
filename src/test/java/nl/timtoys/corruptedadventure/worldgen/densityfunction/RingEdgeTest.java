@@ -35,7 +35,8 @@ class RingEdgeTest {
 
     @Test
     void measuresToTheNearestOfBothBoundaries() {
-        RingLayout layout = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128), 1L);
+        RingLayout layout = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
+                CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), 1L);
         // Ring 2 runs from 1.500 to 3.500 (overworld blocks).
         assertEquals(100.0, layout.boundaryDepth(Ring.RING_2, 1600.0), 1e-9);
         assertEquals(100.0, layout.boundaryDepth(Ring.RING_2, 3400.0), 1e-9);

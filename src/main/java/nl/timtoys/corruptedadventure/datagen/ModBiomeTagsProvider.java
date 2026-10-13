@@ -15,7 +15,9 @@ import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.datagen.tags.NetherRing3BiomeTags;
+import nl.timtoys.corruptedadventure.datagen.tags.NetherRing4BiomeTags;
 import nl.timtoys.corruptedadventure.datagen.tags.Ring3BiomeTags;
+import nl.timtoys.corruptedadventure.datagen.tags.Ring4BiomeTags;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing2Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2Biomes;
@@ -129,6 +131,9 @@ final class ModBiomeTagsProvider extends BiomeTagsProvider {
         // Ring 3 and Nether ring 3: one helper per stream, so the streams never edit this file.
         Ring3BiomeTags.addTags(this::tag);
         NetherRing3BiomeTags.addTags(this::tag);
+        // Ring 4 and Nether ring 4: likewise.
+        Ring4BiomeTags.addTags(this::tag);
+        NetherRing4BiomeTags.addTags(this::tag);
 
         tag(ModTags.Biomes.HAS_BARE_PATCH).addAll(BARE_PATCH_BIOMES.stream().map(VanillaBiomeCopies::copyOf).toList());
         // Every copy, cave biomes included: the biome filter checks the biome at the tunnel's own height.

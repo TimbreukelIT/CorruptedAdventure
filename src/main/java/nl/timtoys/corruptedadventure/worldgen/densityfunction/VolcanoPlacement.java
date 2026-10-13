@@ -46,9 +46,8 @@ final class VolcanoPlacement {
         double cz = j * size + CELL_MARGIN + SeededHash.unit(cell, 1) * (size - 2.0 * CELL_MARGIN);
         RingLayout ringLayout = f.ringLayout();
         List<Integer> radii = ringLayout.settings().ringOuterRadii();
-        double half = ringLayout.settings().transitionWidth() / 2.0;
-        double inner = radii.get(1) + half;
-        double outer = radii.get(2) - half;
+        double inner = radii.get(1) + ringLayout.settings().transitionWidth(1) / 2.0;
+        double outer = radii.get(2) - ringLayout.settings().transitionWidth(2) / 2.0;
         double distance = ringLayout.effectiveDistance(cx, cz);
         if (distance < inner || distance > outer) {
             return null;

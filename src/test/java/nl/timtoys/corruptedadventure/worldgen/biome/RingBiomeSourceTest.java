@@ -34,8 +34,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingBiomeSourceTest {
     private static final List<Integer> RADII = CommonConfig.DEFAULT_OUTER_RADII;
-    private static final RingLayout LAYOUT = new RingLayout(new RingSettings(RADII, 10000, 96, 128), 12345L);
-    private static final int[] CENTRES = {750, 2500, 4750, 6900, 8650, 9750};
+    private static final RingLayout LAYOUT = new RingLayout(new RingSettings(RADII, 10200, 96, 128,
+            CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), 12345L);
+    private static final int[] CENTRES = {750, 2500, 4750, 7000, 8850, 9950};
     private static final int REACH = 96 + 64;
 
     private final Map<Ring, Holder<Biome>> biomes = new EnumMap<>(Ring.class);

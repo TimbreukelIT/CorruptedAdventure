@@ -16,7 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingLayoutPayloadTest {
     private static final List<Integer> RADII = CommonConfig.DEFAULT_OUTER_RADII;
-    private static final RingSettings SETTINGS = new RingSettings(RADII, 10000, 96, 128);
+    private static final RingSettings SETTINGS = new RingSettings(RADII, 10200, 96, 128,
+            CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES);
     private static final RingLayout SERVER = new RingLayout(SETTINGS, RingLayout.noiseSeed(20260930L));
 
     @Test
@@ -26,6 +27,16 @@ class RingLayoutPayloadTest {
         assertEquals(sent, received);
         assertEquals(SETTINGS, received.settings());
         assertEquals(SERVER.noiseSeed(), received.noiseSeed());
+    }
+
+    @Test
+    void roundTripKeepsEveryOverride() {
+        RingSettings custom = new RingSettings(RADII, 10200, 96, 128, List.of(0, 300, 0, 256, 4096));
+        RingLayoutPayload received = roundTrip(new RingLayoutPayload(custom, 7L));
+        assertEquals(custom, received.settings());
+        assertEquals(List.of(128, 300, 128, 256, 4096), List.of(received.settings().transitionWidth(0),
+                received.settings().transitionWidth(1), received.settings().transitionWidth(2),
+                received.settings().transitionWidth(3), received.settings().transitionWidth(4)));
     }
 
     @Test
@@ -40,12 +51,13 @@ class RingLayoutPayloadTest {
         RingLayoutPayload received = roundTrip(RingLayoutPayload.of(SERVER));
         RingLayout client = new RingLayout(received.settings(), received.noiseSeed());
         int transitions = 0;
-        // Every 5°, across each boundary zone (± noise and half the zone, so every zone is crossed) and out to the border.
+        // Every 5°, across each boundary zone (± noise and half the widest zone, 4|5, so every zone is crossed) and out to
+        // the border.
         for (int angle = 0; angle < 360; angle += 5) {
             double radians = Math.toRadians(angle);
             for (int boundary = 0; boundary <= RADII.size(); boundary++) {
                 int radius = boundary < RADII.size() ? RADII.get(boundary) : SETTINGS.voidOuterRadius();
-                for (int distance = radius - 170; distance <= radius + 170; distance += 2) {
+                for (int distance = radius - 230; distance <= radius + 230; distance += 2) {
                     double x = Math.cos(radians) * distance;
                     double z = Math.sin(radians) * distance;
                     RingPosition expected = SERVER.sample(Level.OVERWORLD, x, z);

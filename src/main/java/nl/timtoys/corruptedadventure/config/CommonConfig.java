@@ -13,15 +13,27 @@ import java.util.List;
  */
 public final class CommonConfig {
     public static final ModConfigSpec SPEC;
-    /** Outer radii of ring 1 to 5 in a fresh config (since change 37c). */
-    public static final List<Integer> DEFAULT_OUTER_RADII = List.of(1500, 3500, 6000, 7800, 9500);
-    /** The defaults before change 37c; a config that still holds exactly these is moved to the new defaults on load. */
-    static final List<Integer> PRE_37C_OUTER_RADII = List.of(1500, 3500, 5500, 7500, 9500);
+    /** Outer radii of ring 1 to 5 in a fresh config (since change 58). */
+    public static final List<Integer> DEFAULT_OUTER_RADII = List.of(1500, 3500, 6000, 8000, 9700);
+    /** Void edge in a fresh config (since change 58). */
+    public static final int DEFAULT_VOID_OUTER_RADIUS = 10200;
+    /** Per boundary 1|2, 2|3, 3|4, 4|5, 5|void in a fresh config: only the zone 4|5 is wider (since change 58). */
+    public static final List<Integer> DEFAULT_TRANSITION_WIDTH_OVERRIDES = List.of(0, 0, 0, 256, 0);
+
+    static final OuterBoundaries DEFAULT_BOUNDARIES = new OuterBoundaries(DEFAULT_OUTER_RADII, DEFAULT_VOID_OUTER_RADIUS);
+    /**
+     * Earlier defaults: before change 37c, and from 37c until 58. A config that still holds exactly one of these
+     * (radii and void edge) is moved to the new defaults on load.
+     */
+    static final List<OuterBoundaries> OLD_DEFAULT_BOUNDARIES = List.of(
+            new OuterBoundaries(List.of(1500, 3500, 5500, 7500, 9500), 10000),
+            new OuterBoundaries(List.of(1500, 3500, 6000, 7800, 9500), 10000));
 
     private static final List<ModConfigSpec.IntValue> RING_OUTER_RADII = new ArrayList<>();
     private static final ModConfigSpec.IntValue VOID_OUTER_RADIUS;
     private static final ModConfigSpec.IntValue BOUNDARY_NOISE;
     private static final ModConfigSpec.IntValue TRANSITION_WIDTH;
+    private static final ModConfigSpec.ConfigValue<List<? extends Integer>> TRANSITION_WIDTH_OVERRIDES;
 
     static {
         int maxRadius = 29_999_984;
@@ -39,13 +51,19 @@ public final class CommonConfig {
         }
         VOID_OUTER_RADIUS = builder
                 .comment("Outer radius of the void edge; the world border is placed here.")
-                .defineInRange("voidOuterRadius", 10000, 1, maxRadius);
+                .defineInRange("voidOuterRadius", DEFAULT_VOID_OUTER_RADIUS, 1, maxRadius);
         BOUNDARY_NOISE = builder
                 .comment("Maximum seeded offset of each boundary, in either direction.")
                 .defineInRange("boundaryNoise", 96, 0, 4096);
         TRANSITION_WIDTH = builder
-                .comment("Width of the blend zone centred on each boundary.")
+                .comment("Width of the blend zone centred on each boundary without an override in transitionWidthOverrides.")
                 .defineInRange("transitionWidth", 128, 0, 4096);
+        TRANSITION_WIDTH_OVERRIDES = builder
+                .comment("Width of the blend zone per boundary, in the order 1|2, 2|3, 3|4, 4|5, 5|void;",
+                        "0 uses transitionWidth. Exactly " + RingSettings.BOUNDARY_COUNT + " values.")
+                .defineList(List.of("transitionWidthOverrides"), () -> DEFAULT_TRANSITION_WIDTH_OVERRIDES, () -> 0,
+                        value -> value instanceof Number width && width.longValue() >= 0 && width.longValue() <= 4096,
+                        ModConfigSpec.Range.of(RingSettings.BOUNDARY_COUNT, RingSettings.BOUNDARY_COUNT));
         builder.pop();
         SPEC = builder.build();
     }
@@ -62,28 +80,36 @@ public final class CommonConfig {
     }
 
     /**
-     * A config file keeps its values when the defaults change, so an untouched pre-37c file would give every new world the
-     * old, narrower ring 3. Moves exactly the old defaults to the new ones; other values are the user's choice and stay.
+     * A config file keeps its values when the defaults change, so an untouched older file would give every new world the
+     * old ring layout. Moves exactly the old defaults to the new ones; other values are the user's choice and stay.
      */
     private static void migrate() {
-        List<Integer> radii = radii();
-        List<Integer> migrated = migrated(radii);
-        if (!migrated.equals(radii)) {
+        OuterBoundaries current = new OuterBoundaries(radii(), VOID_OUTER_RADIUS.get());
+        OuterBoundaries migrated = migrated(current);
+        if (!migrated.equals(current)) {
             for (int i = 0; i < RingSettings.RING_COUNT; i++) {
-                RING_OUTER_RADII.get(i).set(migrated.get(i));
+                RING_OUTER_RADII.get(i).set(migrated.ringOuterRadii().get(i));
             }
+            VOID_OUTER_RADIUS.set(migrated.voidOuterRadius());
             SPEC.save();
             CorruptedAdventure.LOGGER.info("Moved the ring radii in the common config from the old defaults {} to {}",
-                    radii, migrated);
-        } else if (!radii.equals(DEFAULT_OUTER_RADII)) {
+                    current, migrated);
+        } else if (!current.equals(DEFAULT_BOUNDARIES)) {
             CorruptedAdventure.LOGGER.warn("The common config sets ring radii {} instead of the defaults {}; new worlds use them",
-                    radii, DEFAULT_OUTER_RADII);
+                    current, DEFAULT_BOUNDARIES);
         }
     }
 
-    /** The radii a config should hold: the new defaults for the old ones, anything else unchanged. */
-    static List<Integer> migrated(List<Integer> radii) {
-        return radii.equals(PRE_37C_OUTER_RADII) ? DEFAULT_OUTER_RADII : radii;
+    /** The boundaries a config should hold: the new defaults for one of the old defaults, anything else unchanged. */
+    static OuterBoundaries migrated(OuterBoundaries current) {
+        return OLD_DEFAULT_BOUNDARIES.contains(current) ? DEFAULT_BOUNDARIES : current;
+    }
+
+    /** Ring outer radii and the void edge, the values {@link #migrate} compares as one set. */
+    record OuterBoundaries(List<Integer> ringOuterRadii, int voidOuterRadius) {
+        OuterBoundaries {
+            ringOuterRadii = List.copyOf(ringOuterRadii);
+        }
     }
 
     private static List<Integer> radii() {
@@ -92,6 +118,8 @@ public final class CommonConfig {
 
     /** Current config values; only {@link RingSettingsSnapshot} should call this, when a new world is created. */
     static RingSettings ringSettings() {
-        return new RingSettings(radii(), VOID_OUTER_RADIUS.get(), BOUNDARY_NOISE.get(), TRANSITION_WIDTH.get());
+        // Map through Number: the config only promises the element validator held, not the boxed type.
+        List<Integer> overrides = TRANSITION_WIDTH_OVERRIDES.get().stream().map(value -> ((Number) value).intValue()).toList();
+        return new RingSettings(radii(), VOID_OUTER_RADIUS.get(), BOUNDARY_NOISE.get(), TRANSITION_WIDTH.get(), overrides);
     }
 }

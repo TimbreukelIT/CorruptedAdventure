@@ -61,6 +61,16 @@ public final class ModTags {
          */
         public static final TagKey<Block> COLLAPSING_BLOCKS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("collapsing_blocks"));
 
+        // Ring 4 and Nether ring 4 (docs/plans/ring-4/contract.md §3); contents from stream B.
+        /** Blocks that raise the poison meter of players nearby (the toxic pool); swamp gas counts separately. */
+        public static final TagKey<Block> POISON_SOURCES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("poison_sources"));
+        /** Host rocks of the ring 4 ores. */
+        public static final TagKey<Block> RING_4_STONES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("ring_4_stones"));
+        /** Moonpetal log, wood and their stripped variants. */
+        public static final TagKey<Block> MOONPETAL_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("moonpetal_logs"));
+        /** Withered moonpetal log, wood and their stripped variants. */
+        public static final TagKey<Block> WITHERED_MOONPETAL_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("withered_moonpetal_logs"));
+
         private Blocks() {
         }
     }
@@ -137,6 +147,16 @@ public final class ModTags {
          * W-nether in {@code NetherRing3BiomeTags}).
          */
         public static final TagKey<Biome> COLD_EXPOSED = TagKey.create(Registries.BIOME, CorruptedAdventure.id("cold_exposed"));
+
+        // Ring 4 and Nether ring 4 (docs/plans/ring-4/contract.md §2); contents from the worldgen streams.
+        /** Every biome with ring 4 worldgen, the transition biome {@code sundered_reach} included. */
+        public static final TagKey<Biome> IS_RING_4 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_ring_4"));
+        /** The biomes of Nether ring 4. */
+        public static final TagKey<Biome> IS_NETHER_RING_4 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_nether_ring_4"));
+        /** The blighted band of ring 4 and {@code withered_gardens} (poison sources, poison rain). */
+        public static final TagKey<Biome> RING_4_BLIGHTED = TagKey.create(Registries.BIOME, CorruptedAdventure.id("ring_4_blighted"));
+        /** Biomes that purify (lower the poison meter): the Nether ring 4 biomes. */
+        public static final TagKey<Biome> PURIFYING = TagKey.create(Registries.BIOME, CorruptedAdventure.id("purifying"));
 
         private Biomes() {
         }

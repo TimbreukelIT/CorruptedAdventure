@@ -16,7 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VolcanoPlumesTest {
     /** The default layout: ring 3 from 3500 to 6000, boundaries moved at most 96 blocks by the noise. */
-    private static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128),
+    private static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
+            CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES),
             RingLayout.noiseSeed(20260930L));
 
     @Test

@@ -19,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingChanceFilterTest {
     private static final List<Integer> RADII = CommonConfig.DEFAULT_OUTER_RADII;
-    private static final RingLayout LAYOUT = new RingLayout(new RingSettings(RADII, 10000, 96, 128), 12345L);
+    private static final RingLayout LAYOUT = new RingLayout(new RingSettings(RADII, 10200, 96, 128,
+            CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), 12345L);
     private static final int REACH = 96 + 64;
     private static final double EPSILON = 1e-9;
 

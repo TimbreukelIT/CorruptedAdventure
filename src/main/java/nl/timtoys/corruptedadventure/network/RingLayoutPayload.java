@@ -23,9 +23,10 @@ public record RingLayoutPayload(RingSettings settings, long noiseSeed) implement
             ByteBufCodecs.VAR_INT, p -> p.settings().voidOuterRadius(),
             ByteBufCodecs.VAR_INT, p -> p.settings().boundaryNoise(),
             ByteBufCodecs.VAR_INT, p -> p.settings().transitionWidth(),
+            ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list(RingSettings.BOUNDARY_COUNT)), p -> p.settings().transitionWidthOverrides(),
             LONG, RingLayoutPayload::noiseSeed,
-            (radii, voidOuterRadius, boundaryNoise, transitionWidth, noiseSeed) -> new RingLayoutPayload(
-                    new RingSettings(radii, voidOuterRadius, boundaryNoise, transitionWidth), noiseSeed));
+            (radii, voidOuterRadius, boundaryNoise, transitionWidth, overrides, noiseSeed) -> new RingLayoutPayload(
+                    new RingSettings(radii, voidOuterRadius, boundaryNoise, transitionWidth, overrides), noiseSeed));
 
     public static RingLayoutPayload of(RingLayout layout) {
         return new RingLayoutPayload(layout.settings(), layout.noiseSeed());

@@ -430,10 +430,9 @@ public final class VolcanicField implements DensityFunction {
     Regions regions(double x, double z) {
         RingLayout ringLayout = layout.get();
         List<Integer> radii = ringLayout.settings().ringOuterRadii();
-        double half = ringLayout.settings().transitionWidth() / 2.0;
         double distance = ringLayout.effectiveDistance(x, z);
-        double inner = radii.get(1) + half;
-        double outer = radii.get(2) - half;
+        double inner = radii.get(1) + ringLayout.settings().transitionWidth(1) / 2.0;
+        double outer = radii.get(2) - ringLayout.settings().transitionWidth(2) / 2.0;
         double towardsOuter = 1.0 - VolcanicMath.smoothstep(outer - CORE_FADE, outer, distance);
         double core = VolcanicMath.smoothstep(inner, inner + CORE_FADE, distance) * towardsOuter;
         double fade = VolcanicMath.smoothstep(inner, inner + RELIEF_FADE, distance) * towardsOuter;

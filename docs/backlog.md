@@ -248,5 +248,8 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 
 ## Uit sparring ring 4 (2026-10-10)
 - [progression] Hemelglaslens (fase 2 maakt het item, zie de Nether-4-regel hierboven): rol in het grenssysteem en de bewaker 4→5 en het zichtbaar maken van glitches in ring 5 (fase 5). (bron: sparring ring 4)
-- [infra] Pakket 58: de nieuwe standaard-radii (ring 4 8.000, ring 5 9.700, void-rand ~10.200) gelden alleen voor nieuwe werelden; bestaande testwerelden (ook die van teststop 4c) houden hun snapshot. Open in het 58-plan: of de config-standaard migreert zoals in 37c (alleen de exacte oude standaard verplaatsen) en de exacte void-rand. (bron: sparring ring 4)
+- [infra] Pakket 58: de nieuwe standaard-radii (ring 4 8.000, ring 5 9.700, void-rand ~10.200) gelden alleen voor nieuwe werelden; bestaande testwerelden (ook die van teststop 4c) houden hun snapshot. Open in het 58-plan: of de config-standaard migreert zoals in 37c (alleen de exacte oude standaard verplaatsen) en de exacte void-rand. (bron: sparring ring 4) — **Afgehandeld in 58 (2026-10-13):** void-rand 10.200; beide oude standaardsets (pre-37c en 37c, radii + void) migreren, andere waarden blijven.
 - [corruption] Lore "de corruptie van ring 5 trekt de wereld uit elkaar" (eilanden uit de grond gerukt, uiteenvallen bij 4→5) in quests en teksten (fase 5). (bron: sparring ring 4)
+
+## Uit pakket 58 (golf 0 ring 4, 2026-10-13)
+- [atmosphere] `src/generated/resources/assets/corruptedadventure/sounds.json` is na 8753843 ("sounds.json needs runData") nog niet geregenereerd: `runData` levert de zachtere volumes (alleen dat bestand). Niet in 58 gecommit (andere categorie); committen bij de integratie. (bron: 58)

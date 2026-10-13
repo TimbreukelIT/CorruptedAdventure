@@ -50,7 +50,8 @@ public final class RingLayout {
     private final List<Integer> radii;
     private final int voidOuterRadius;
     private final int boundaryNoise;
-    private final double halfTransition;
+    /** Half the transition width per boundary (index 0 = 1|2); each zone is centred on its boundary. */
+    private final double[] halfTransitions;
     private final SimplexNoise waves;
     private final SimplexNoise ripples;
 
@@ -61,7 +62,10 @@ public final class RingLayout {
         this.radii = settings.ringOuterRadii();
         this.voidOuterRadius = settings.voidOuterRadius();
         this.boundaryNoise = settings.boundaryNoise();
-        this.halfTransition = settings.transitionWidth() / 2.0;
+        this.halfTransitions = new double[radii.size()];
+        for (int boundary = 0; boundary < halfTransitions.length; boundary++) {
+            halfTransitions[boundary] = settings.transitionWidth(boundary) / 2.0;
+        }
         RandomSource random = new XoroshiroRandomSource(noiseSeed).forkPositional().fromHashOf(CorruptedAdventure.id("ring_boundary"));
         this.waves = new SimplexNoise(random);
         this.ripples = new SimplexNoise(random);
@@ -125,6 +129,7 @@ public final class RingLayout {
     /** The ring position at an {@link #effectiveDistance}. */
     RingPosition positionAt(double distance) {
         for (int i = 0; i < radii.size(); i++) {
+            double halfTransition = halfTransitions[i];
             double zoneStart = radii.get(i) - halfTransition;
             if (distance < zoneStart) {
                 return RingPosition.within(Ring.byIndex(i));
@@ -167,8 +172,8 @@ public final class RingLayout {
      */
     public boolean reaches(Ring ring, double distance, double margin) {
         int index = ring.ordinal();
-        double lower = index == 0 ? Double.NEGATIVE_INFINITY : radii.get(index - 1) - halfTransition - margin;
-        double upper = index >= radii.size() ? Double.POSITIVE_INFINITY : radii.get(index) + halfTransition + margin;
+        double lower = index == 0 ? Double.NEGATIVE_INFINITY : radii.get(index - 1) - halfTransitions[index - 1] - margin;
+        double upper = index >= radii.size() ? Double.POSITIVE_INFINITY : radii.get(index) + halfTransitions[index] + margin;
         return distance > lower && distance < upper;
     }
 

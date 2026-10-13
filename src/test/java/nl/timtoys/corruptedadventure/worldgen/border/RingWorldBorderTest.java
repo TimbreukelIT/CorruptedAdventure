@@ -42,8 +42,9 @@ class RingWorldBorderTest {
 
     @Test
     void initialSizeIsTheVoidEdgeDiameter() {
-        RingSettings settings = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128);
-        assertEquals(20000.0, RingWorldBorder.initialSize(settings));
+        RingSettings settings = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
+                CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES);
+        assertEquals(20400.0, RingWorldBorder.initialSize(settings));
     }
 
     @Test

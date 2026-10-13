@@ -24,7 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The ring 3 terrain model on the test seed, with the noises seeded as the overworld's random state seeds them. */
 public class VolcanicFieldTest {
     static final long SEED = 20260930L;
-    static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10000, 96, 128),
+    static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
+            CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES),
             RingLayout.noiseSeed(SEED));
 
     private static VolcanicField field;
@@ -38,6 +39,10 @@ public class VolcanicFieldTest {
 
     /** The field as {@code ring_3/overworld/field.json} configures it (noise keys and settings read from the file). */
     public static VolcanicField field() {
+        return field(LAYOUT);
+    }
+
+    private static VolcanicField field(RingLayout layout) {
         JsonObject json = WorldgenData.read("density_function/ring_3/overworld/field.json");
         VolcanicSettings settings = VolcanicSettings.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("settings"))
                 .getOrThrow();
@@ -46,7 +51,7 @@ public class VolcanicFieldTest {
                 noise(key(json, "flows")), noise(key(json, "heat")), noise(key(json, "ground")),
                 noise(key(json, "ridge")), noise(key(json, "warp")),
                 new Ring3Relief(noise(key(relief, "highlands")), noise(key(relief, "shapes")), noise(key(relief, "detail")),
-                        noise(key(relief, "rifts"))), settings, () -> LAYOUT);
+                        noise(key(relief, "rifts"))), settings, () -> layout);
     }
 
     private static String key(JsonObject json, String field) {
@@ -66,6 +71,33 @@ public class VolcanicFieldTest {
                 }
             }
         }
+    }
+
+    @Test
+    void ring3ReadsOnlyTheWidthsOfItsOwnBoundaries() {
+        // Before change 58 the regions and the placement read the single transitionWidth for 2|3 and 3|4. Without
+        // overrides on those boundaries they must compute exactly the same, whatever the 4|5 override.
+        VolcanicField uniform = field(new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128),
+                RingLayout.noiseSeed(SEED)));
+        for (int k = 0; k < 4000; k++) {
+            double angle = k * 0.618 * 2.0 * Math.PI;
+            double radius = 3200.0 + (k % 400) * 8.0;
+            double x = Math.cos(angle) * radius;
+            double z = Math.sin(angle) * radius;
+            assertEquals(uniform.regions(x, z), field.regions(x, z), "at " + x + ", " + z);
+        }
+        int size = field.settings().cellSize();
+        for (int i = -6200 / size - 1; i <= 6200 / size; i++) {
+            for (int j = -6200 / size - 1; j <= 6200 / size; j++) {
+                assertEquals(signature(uniform.place(i, j)), signature(field.place(i, j)), "cell " + i + ", " + j);
+            }
+        }
+    }
+
+    /** What a volcano's placement decides; its pillars have no value equality, so only their number counts. */
+    private static List<Object> signature(Volcano v) {
+        return v == null ? null : List.of(v.x(), v.z(), v.kind(), v.plain(), v.rim(), v.radius(), v.crest(), v.floor(),
+                v.dormant(), v.lake(), v.islands(), v.pillars().size());
     }
 
     @Test

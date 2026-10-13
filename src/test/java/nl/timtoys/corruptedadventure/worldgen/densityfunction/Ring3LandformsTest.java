@@ -67,7 +67,7 @@ class Ring3LandformsTest {
     void theReliefFadesOutTowardsTheZoneTwoThree() {
         // Just behind the zone 2→3 the landforms and highlands are 0, so the w² blend needs no cliff.
         double inner = VolcanicFieldTest.LAYOUT.settings().ringOuterRadii().get(1)
-                + VolcanicFieldTest.LAYOUT.settings().transitionWidth() / 2.0;
+                + VolcanicFieldTest.LAYOUT.settings().transitionWidth(1) / 2.0;
         for (int k = 0; k < 64; k++) {
             double angle = k * Math.PI / 32.0;
             for (double radius = inner - 300.0; radius < inner + 300.0; radius += 1.0) {

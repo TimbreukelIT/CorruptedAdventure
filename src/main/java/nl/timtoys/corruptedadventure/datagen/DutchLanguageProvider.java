@@ -8,11 +8,16 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.datagen.lang.LangOutput;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing3BiomeNames;
+import nl.timtoys.corruptedadventure.datagen.lang.NetherRing4BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3AmbienceText;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3BlockNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3ConditionText;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3WeatherText;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring4BiomeNames;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring4BlockNames;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring4ConditionText;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring4WeatherText;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
@@ -235,6 +240,13 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         Ring3ConditionText.addDutch(this);
         Ring3WeatherText.addDutch(this);
         Ring3AmbienceText.addDutch(this);
+
+        // Ring 4 and Nether ring 4: likewise, one helper per stream.
+        Ring4BlockNames.addDutch(this);
+        Ring4BiomeNames.addDutch(this);
+        NetherRing4BiomeNames.addDutch(this);
+        Ring4ConditionText.addDutch(this);
+        Ring4WeatherText.addDutch(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s is uitgedroogd");
