@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.worldgen.chunk;
 
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -106,6 +107,7 @@ final class RingAquifer implements Aquifer {
     // band around such a lake that carvers may not cut (from caveFrom to caveTo).
     private final int[] waterSpringY = new int[COLUMNS + 1];
     private final int[] lakeTop = new int[COLUMNS + 1];
+    private final int[] lakeFloor = new int[COLUMNS + 1];
     private final int[] lakeGuardBottom = new int[COLUMNS + 1];
     private final int[] lakeGuardTop = new int[COLUMNS + 1];
 
@@ -233,6 +235,9 @@ final class RingAquifer implements Aquifer {
         waterFallFlow[i] = falls ? islandColumn.fallFlowBelow() : Integer.MIN_VALUE;
         waterSpringY[i] = falls ? islandColumn.springY() : Integer.MIN_VALUE;
         lakeTop[i] = falls ? islandColumn.lakeTop() : Integer.MIN_VALUE;
+        // Review 61 #2: the lake fills its bowl only, from just under the terrain's interpolated surface up; open space
+        // further down (a cave the lift missed) stays vanilla's, never floating lake water.
+        lakeFloor[i] = lakeTop[i] == Integer.MIN_VALUE ? Integer.MAX_VALUE : Mth.floor(lakeSurface(x, z)) - 1;
         lakeGuardBottom[i] = falls ? islandColumn.caveLiftFrom() : Integer.MAX_VALUE;
         lakeGuardTop[i] = falls ? islandColumn.caveLiftTo() : Integer.MIN_VALUE;
         boolean lava = RingFluidPicker.ring3LavaColumn(dimension, position, volcanic);
@@ -305,7 +310,7 @@ final class RingAquifer implements Aquifer {
             // A carver may not cut under, beside or into a lake above the sea (61): its tunnel would open the lake.
             return null;
         }
-        if (y < lakeTop[i] && y >= lakeGuardBottom[i]) {
+        if (y < lakeTop[i] && y >= lakeFloor[i]) {
             // A lake above the sea in an island's hole (61): still water, walled in by its rim.
             return WATER;
         }
@@ -439,6 +444,22 @@ final class RingAquifer implements Aquifer {
         VolcanicField.Column c11 = volcanic.column(x0 + CELL, z0 + CELL);
         ground[0] = (c00.height() * (1.0 - fx) + c10.height() * fx) * (1.0 - fz) + (c01.height() * (1.0 - fx) + c11.height() * fx) * fz;
         ground[1] = Math.max(Math.max(c00.roughness(), c10.roughness()), Math.max(c01.roughness(), c11.roughness()));
+    }
+
+    /**
+     * The ring 4 terrain's surface in a column as the noise chunk builds it: the bilinear blend of its cell corners'
+     * surfaces (with the islands' holes), like {@link #groundAt} for ring 3.
+     */
+    private double lakeSurface(int x, int z) {
+        int x0 = Math.floorDiv(x, CELL) * CELL;
+        int z0 = Math.floorDiv(z, CELL) * CELL;
+        double fx = (x - x0) / (double) CELL;
+        double fz = (z - z0) / (double) CELL;
+        double s00 = islands.column(x0, z0).surface();
+        double s10 = islands.column(x0 + CELL, z0).surface();
+        double s01 = islands.column(x0, z0 + CELL).surface();
+        double s11 = islands.column(x0 + CELL, z0 + CELL).surface();
+        return (s00 * (1.0 - fx) + s10 * fx) * (1.0 - fz) + (s01 * (1.0 - fx) + s11 * fx) * fz;
     }
 
     /** The terrain's surface in a column ({@link #groundAt}), for the tests. */

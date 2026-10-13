@@ -53,6 +53,15 @@ Twee pure stappen (`IslandPlacement`):
 8. (61) `island_mask`/`island_hole` aangesloten.
 Gemeten na de fixes: water 54 % (mythisch 49, bedorven 63). Niet opgepakt: dedup `IslandOutput`/`VolcanicOutput` (backlog INT).
 
+## Code-review 61 (7414ec5), verwerkt
+1. Zee off-by-one: het hoogste zeewaterblok is Y 62; zee-vallen beginnen op 63 (`Fall.bottom`), liften op 62; alleen het onderste valblok stroomt (`fallFlowBelow = bottom`); een eigen meer alleen als zijn water boven 62 komt (`lakeTop` ≥ 64). Test: elke zeeval heeft bottom 63 en landt in water.
+2. Meerwater alleen in de kom: `RingAquifer` vult van net onder het geïnterpoleerde oppervlak (4 celhoeken, zoals `groundAt` van ring 3) tot `lakeTop`; open ruimte dieper (een grot) blijft vanilla. Test: 6 onder de bodem geen meerwater.
+3. Meer per kolom: in een gat het meer van dat gat (de laagste bij overlap; een zee-gat heeft er geen), alleen in meerbanden het laagste meer; de rand van een meer wordt gemeten vanaf de gatrand (incl. andere gaten) en onder zinkgatbodems in de buurt. Vallen/liften niet in het gat van een ander eiland. Test: geen kolom in een gat met een hoger meer dan dat gat.
+4. Overlap over cellen: per cel eerst kandidaten (`candidates`), dan valt een kandidaat weg als hij een kandidaat van een buurcel raakt die zwaarder weegt (`OUTRANK`: soort, grootte, midden); puur. Test: geen enkel paar eilanden groeit in elkaar.
+5. `RingBiomeSource.LastColumn`: geen `ThreadLocal` meer; een kleine lock-vrije cache (`KeyedSlots`), opnieuw per veld.
+6. `IslandField`: `Neighbourhood`/`reliefScratch` via `ThreadOwned` weg; buurtlijsten in `KeyedSlots` (lock-vrij, gedeeld), relief-samples per aanroep.
+Gemeten na de fixes: 414 eilanden (binnen 58 / buiten 230, 13 reuzen), 224 vallen, 42 liften, 28 meren boven zee.
+
 ## Client/server-impact
 Alles worldgen op de server; geen client-class, geen payload, geen `PROTOCOL_VERSION`. Nieuwe DF-types worden alleen in `ModDensityFunctionTypes` (blok `// ring 4 — W-terrein`) toegevoegd.
 

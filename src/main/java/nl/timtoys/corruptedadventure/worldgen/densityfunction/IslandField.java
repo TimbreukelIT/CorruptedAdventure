@@ -63,9 +63,8 @@ public final class IslandField implements DensityFunction {
     private final Supplier<RingLayout> layout;
     private final ColumnTable<Column> columns = new ColumnTable<>(Column::new);
     private final Decisions decisions;
-    private final ThreadOwned<Ring4Relief.Sample> reliefScratch = new ThreadOwned<>(Ring4Relief.Sample::new);
-    // The islands of the 3 x 3 cells around the last cell asked for, per thread.
-    private final ThreadOwned<Neighbourhood> neighbourhood = new ThreadOwned<>(Neighbourhood::new);
+    // The islands of the 3 x 3 cells around a cell, for recent cells (review 61 #6: lock-free, shared by threads).
+    private final KeyedSlots<List<IslandShape>> neighbourhoods = new KeyedSlots<>();
 
     public IslandField(NoiseHolder hash, Ring4Relief relief, Settings settings) {
         this(hash, relief, settings, RingLayout::current, new Decisions());
@@ -316,7 +315,11 @@ public final class IslandField implements DensityFunction {
      * cell's centre may lie in a trough or a fjord, which must not pull the surface down under dry land.
      */
     private double sinkholeFloorNear(int x, int z) {
-        double ring = INITIAL_RADII[INITIAL_RADII.length - 1];
+        return sinkholeFloorWithin(x, z, INITIAL_RADII[INITIAL_RADII.length - 1]);
+    }
+
+    /** The deepest floor of a peat sinkhole (that the peat really cuts) whose bowl comes within {@code ring} of (x, z). */
+    double sinkholeFloorWithin(double x, double z, double ring) {
         double reach = ring + Ring4Relief.SINKHOLE_MAX_RADIUS;
         int cell = Ring4Relief.SINKHOLE_CELL;
         double floor = Double.POSITIVE_INFINITY;
@@ -327,7 +330,7 @@ public final class IslandField implements DensityFunction {
                     continue;
                 }
                 // The sinkhole is deepest at its centre.
-                Ring4Relief.Sample s = reliefScratch.get();
+                Ring4Relief.Sample s = new Ring4Relief.Sample();
                 relief.sample(hole[0], hole[1], band(hole[0], hole[1]), s, salt());
                 if (!Double.isNaN(s.sinkholeFloor)) {
                     floor = Math.min(floor, s.sinkholeFloor);
@@ -353,7 +356,7 @@ public final class IslandField implements DensityFunction {
 
     /** The base terrain's surface at a position (no holes), exact. */
     double baseHeight(double x, double z) {
-        Ring4Relief.Sample s = reliefScratch.get();
+        Ring4Relief.Sample s = new Ring4Relief.Sample();
         relief.sample(x, z, band(x, z), s, salt());
         return s.height;
     }
@@ -431,6 +434,17 @@ public final class IslandField implements DensityFunction {
         return Ring4Band.of(layout.get()).value(x, z);
     }
 
+    /** The candidates of a grid cell, decided once per world ({@link IslandPlacement#candidates}). */
+    List<IslandShape> candidates(int i, int j) {
+        long key = (long) i << 32 | j & 0xFFFFFFFFL;
+        List<IslandShape> known = decisions.candidates.get(key);
+        if (known == null) {
+            known = IslandPlacement.candidates(this, i, j);
+            decisions.remember(decisions.candidates, key, known);
+        }
+        return known;
+    }
+
     /** The islands of a grid cell, decided once per world ({@link IslandPlacement#place}). */
     List<IslandShape> cell(int i, int j) {
         long key = (long) i << 32 | j & 0xFFFFFFFFL;
@@ -445,7 +459,17 @@ public final class IslandField implements DensityFunction {
     /** The islands of the 3 x 3 cells around the cell of (x, z): all that can reach the column (review 59 #6). */
     List<IslandShape> shapesNear(int x, int z) {
         int cell = settings.cellSize();
-        return neighbourhood.get().around(this, Math.floorDiv(x, cell), Math.floorDiv(z, cell));
+        int i = Math.floorDiv(x, cell);
+        int j = Math.floorDiv(z, cell);
+        return neighbourhoods.get(KeyedSlots.key(i, j), key -> {
+            List<IslandShape> all = new ArrayList<>();
+            for (int di = -1; di <= 1; di++) {
+                for (int dj = -1; dj <= 1; dj++) {
+                    all.addAll(cell(i + di, j + dj));
+                }
+            }
+            return List.copyOf(all);
+        });
     }
 
     /** The islands of the cells that can reach into the box. */
@@ -507,9 +531,8 @@ public final class IslandField implements DensityFunction {
         if (c.surfaceFilled) {
             return;
         }
-        Ring4Relief.Sample s = reliefScratch.get();
+        Ring4Relief.Sample s = new Ring4Relief.Sample();
         relief.sample(c.x, c.z, band(c.x, c.z), s, salt());
-        // Read the scratch sample before the islands are looked up: placing a cell samples the relief again.
         c.height = s.height;
         c.river = s.river;
         c.fjord = s.fjord;
@@ -534,6 +557,12 @@ public final class IslandField implements DensityFunction {
         c.sinkholeDisc = sinkhole != null && Math.hypot(c.x - sinkhole[0], c.z - sinkhole[1]) < sinkhole[2];
         double px = c.x + 0.5;
         double pz = c.z + 0.5;
+        // Review 61 #3: a column inside a hole takes that hole's lake (the lowest, where holes overlap; a hole the sea
+        // fills has none), a column only in lake bands the lowest of those lakes, so a higher lake never stands in a
+        // lower hole.
+        boolean inHole = false;
+        int holeLake = Integer.MAX_VALUE;
+        int bandLake = Integer.MAX_VALUE;
         for (IslandShape shape : shapesNear(c.x, c.z)) {
             double reach = shape.groundReach();
             if (Math.abs(px - shape.x()) > reach || Math.abs(pz - shape.z()) > reach) {
@@ -554,10 +583,13 @@ public final class IslandField implements DensityFunction {
                 continue;
             }
             Details details = details(shape);
+            if (dh < 1.0) {
+                inHole = true;
+                holeLake = Math.min(holeLake, details.lakeTop());
+            } else if (details.lakeTop() != Integer.MIN_VALUE && dh < 1.0 + IslandShape.LAKE_BAND / radius) {
+                bandLake = Math.min(bandLake, details.lakeTop());
+            }
             if (details.lakeTop() != Integer.MIN_VALUE) {
-                if (dh < 1.0 + IslandShape.LAKE_BAND / radius) {
-                    c.lakeTop = Math.max(c.lakeTop, details.lakeTop());
-                }
                 c.caveLiftFrom = Math.min(c.caveLiftFrom, details.lakeBottom() - CAVE_FLOOR_MARGIN);
                 c.caveLiftTo = Math.max(c.caveLiftTo, details.lakeTop() + 2);
             }
@@ -567,11 +599,14 @@ public final class IslandField implements DensityFunction {
                 }
             }
         }
+        int lake = inHole ? holeLake : bandLake;
+        c.lakeTop = lake == Integer.MAX_VALUE ? Integer.MIN_VALUE : lake;
         for (Fall fall : fallsOfChunk(c.x >> 4, c.z >> 4)) {
             if (fall.fallX() == c.x && fall.fallZ() == c.z && fall.springY() > c.fallTop) {
                 c.fallTop = fall.springY();
                 c.fallBottom = fall.bottom();
-                c.fallFlowBelow = fall.bottom() + 1;
+                // Only the block right above the water flows (review 61 #1).
+                c.fallFlowBelow = fall.bottom();
             }
         }
     }
@@ -768,30 +803,6 @@ public final class IslandField implements DensityFunction {
         }
     }
 
-    /** The islands of the 3 x 3 cells around one cell, per thread; only a cache. A new list per move, never changed. */
-    static final class Neighbourhood {
-        private boolean filled;
-        private int ci;
-        private int cj;
-        private List<IslandShape> shapes = List.of();
-
-        List<IslandShape> around(IslandField field, int i, int j) {
-            if (!filled || i != ci || j != cj) {
-                List<IslandShape> all = new ArrayList<>();
-                for (int di = -1; di <= 1; di++) {
-                    for (int dj = -1; dj <= 1; dj++) {
-                        all.addAll(field.cell(i + di, j + dj));
-                    }
-                }
-                shapes = List.copyOf(all);
-                ci = i;
-                cj = j;
-                filled = true;
-            }
-            return shapes;
-        }
-    }
-
     /**
      * Per-world decisions and remembered results: pure functions of the seed and the cell, shared by all copies of one
      * wired field (the noise chunk makes a copy per chunk), so they are made once per world. Only a cache; a map is
@@ -799,6 +810,7 @@ public final class IslandField implements DensityFunction {
      */
     static final class Decisions {
         static final int LIMIT = 100_000;
+        final Map<Long, List<IslandShape>> candidates = new ConcurrentHashMap<>();
         final Map<Long, List<IslandShape>> cells = new ConcurrentHashMap<>();
         final Map<IslandShape, Details> details = new ConcurrentHashMap<>();
         final Map<Long, List<Fall>> chunkFalls = new ConcurrentHashMap<>();

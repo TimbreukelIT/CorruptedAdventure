@@ -130,13 +130,13 @@ class Ring4IslandsTest {
                 continue;
             }
             lakes++;
-            assertTrue(details.lakeTop() > 64);
+            assertTrue(details.lakeTop() > 63, "a lake above the sea rises above Y 62");
             double radius = s.holeRadius();
             double reach = s.reach() * IslandShape.HOLE_SCALE + 20.0;
             for (int x = (int) Math.floor((s.x() - reach) / 4) * 4; x <= s.x() + reach; x += 4) {
                 for (int z = (int) Math.floor((s.z() - reach) / 4) * 4; z <= s.z() + reach; z += 4) {
                     double dh = s.holeDistance(x, z);
-                    if (dh >= 1.0 + 2.0 / radius && dh <= 1.0 + 14.0 / radius) {
+                    if (dh >= 1.0 && dh <= 1.0 + 14.0 / radius) {
                         assertTrue(field.surfaceUncached(x, z) >= details.lakeTop(), "rim " + x + ", " + z);
                     }
                 }
@@ -185,6 +185,55 @@ class Ring4IslandsTest {
         assertTrue(falls > 10, "falls " + falls);
         assertTrue(lifts > 2, "lifts " + lifts);
         perChunk.values().forEach(n -> assertTrue(n <= IslandField.FALLS_PER_CHUNK));
+    }
+
+    /** Review 61 #4: no two islands grow into each other, also across cells (apart, or stacked 6 blocks apart). */
+    @Test
+    void noIslandsGrowIntoEachOther() {
+        for (int a = 0; a < SHAPES.size(); a++) {
+            for (int b = a + 1; b < SHAPES.size(); b++) {
+                IslandShape s = SHAPES.get(a);
+                IslandShape t = SHAPES.get(b);
+                boolean apart = Math.hypot(s.x() - t.x(), s.z() - t.z()) > s.reach() + t.reach();
+                boolean stacked = s.lowest() > t.highest() + 6 || t.lowest() > s.highest() + 6;
+                assertTrue(apart || stacked, s + " / " + t);
+            }
+        }
+    }
+
+    /**
+     * Review 61 #1 and #3: a fall into the sea starts right above its top block (Y 62, the fall's bottom 63), and no
+     * column inside a hole holds a lake higher than that hole's own.
+     */
+    @Test
+    void seaFallsStartRightAboveTheSeaAndLakesStayInTheirOwnHole() {
+        int seaFalls = 0;
+        int checked = 0;
+        for (IslandShape s : SHAPES) {
+            IslandField.Details details = field.details(s);
+            for (IslandField.Fall fall : details.falls()) {
+                if (field.islandColumn(fall.fallX(), fall.fallZ()).lakeTop() == Integer.MIN_VALUE) {
+                    seaFalls++;
+                    assertEquals(63, fall.bottom(), fall.toString());
+                }
+            }
+            double reach = s.reach() * IslandShape.HOLE_SCALE;
+            for (int x = (int) Math.floor(s.x() - reach); x <= s.x() + reach; x += 3) {
+                for (int z = (int) Math.floor(s.z() - reach); z <= s.z() + reach; z += 3) {
+                    if (s.holeDistance(x, z) < 1.0) {
+                        int lake = field.islandColumn(x, z).lakeTop();
+                        checked++;
+                        assertTrue(details.lakeTop() == Integer.MIN_VALUE ? lake == Integer.MIN_VALUE || lake <= 64 + 200
+                                : lake <= details.lakeTop(), x + ", " + z + ": " + lake + " in a hole of " + details.lakeTop());
+                        if (details.lakeTop() == Integer.MIN_VALUE) {
+                            assertEquals(Integer.MIN_VALUE, lake, "a hole the sea fills has no lake: " + x + ", " + z);
+                        }
+                    }
+                }
+            }
+        }
+        assertTrue(seaFalls > 10, "sea falls " + seaFalls);
+        assertTrue(checked > 1000);
     }
 
     /** The public view: a footprint covering the island, its lowest and highest block. */

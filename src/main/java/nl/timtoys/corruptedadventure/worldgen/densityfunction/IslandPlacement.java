@@ -41,8 +41,45 @@ final class IslandPlacement {
     private IslandPlacement() {
     }
 
-    /** The islands of grid cell (i, j). Pure. */
+    /**
+     * The islands of grid cell (i, j): the cell's candidates ({@link #candidates}) without those that grow into a
+     * candidate of a neighbouring cell that outranks them (review 61 #4; {@link #OUTRANK}: the bigger kind, then the
+     * bigger island, then the centre). Pure: it reads the neighbours' candidates, never their final islands.
+     */
     static List<IslandShape> place(IslandField field, int i, int j) {
+        List<IslandShape> own = field.candidates(i, j);
+        if (own.isEmpty()) {
+            return own;
+        }
+        List<IslandShape> kept = new ArrayList<>();
+        for (IslandShape shape : own) {
+            boolean beaten = false;
+            for (int di = -1; di <= 1 && !beaten; di++) {
+                for (int dj = -1; dj <= 1 && !beaten; dj++) {
+                    if (di == 0 && dj == 0) {
+                        continue;
+                    }
+                    for (IslandShape other : field.candidates(i + di, j + dj)) {
+                        if (!clearOf(shape, List.of(other)) && OUTRANK.compare(other, shape) > 0) {
+                            beaten = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!beaten) {
+                kept.add(shape);
+            }
+        }
+        return List.copyOf(kept);
+    }
+
+    /** Which of two overlapping islands of neighbouring cells stays. */
+    static final java.util.Comparator<IslandShape> OUTRANK = java.util.Comparator.comparingInt(IslandShape::kind)
+            .thenComparingDouble(IslandShape::a).thenComparingDouble(IslandShape::x).thenComparingDouble(IslandShape::z);
+
+    /** The candidates of grid cell (i, j): placed from the cell alone, clear of each other. Pure. */
+    static List<IslandShape> candidates(IslandField field, int i, int j) {
         int cell = field.settings().cellSize();
         RingLayout layout = field.ringLayout();
         List<Integer> radii = layout.settings().ringOuterRadii();
@@ -180,13 +217,13 @@ final class IslandPlacement {
 
     /**
      * The lake, falls and lift of an island (stage 2). The lake's top (exclusive) lies one block under the lowest
-     * surface of the 4-block grid in a band 2–14 blocks past the hole's edge: that grid is what the terrain interpolates,
-     * so no open space beside the lake's band ({@link IslandShape#LAKE_BAND}) lies below its water. A lake at or below
-     * the sea needs none of its own (the sea fills it).
+     * surface of the 4-block grid in a band from the hole's edge to 14 blocks past it (with the other islands' holes
+     * cut in, review 61 #3) and under the floor of any peat sinkhole near that band: that grid is what the terrain
+     * interpolates, so no open space beside the lake's band ({@link IslandShape#LAKE_BAND}) lies below its water. A lake
+     * whose water would not rise above the sea's top block (Y 62) needs none of its own: the sea fills it.
      */
     static IslandField.Details details(IslandField field, IslandShape shape) {
         double radius = shape.holeRadius();
-        double from = 1.0 + 2.0 / radius;
         double to = 1.0 + 14.0 / radius;
         double reach = shape.reach() * IslandShape.HOLE_SCALE + 15.0;
         int minX = Mth.floor((shape.x() - reach) / 4.0) * 4;
@@ -195,17 +232,18 @@ final class IslandPlacement {
         for (int cx = minX; cx <= shape.x() + reach; cx += 4) {
             for (int cz = minZ; cz <= shape.z() + reach; cz += 4) {
                 double dh = shape.holeDistance(cx, cz);
-                if (dh >= from && dh <= to) {
+                if (dh >= 1.0 && dh <= to) {
                     rim = Math.min(rim, field.surfaceUncached(cx, cz));
                 }
             }
         }
+        rim = Math.min(rim, field.sinkholeFloorWithin(shape.x(), shape.z(), reach));
         int lakeTop = Mth.floor(rim) - 1;
-        if (lakeTop <= IslandShape.SEA_LEVEL + 1) {
+        if (lakeTop <= IslandShape.SEA_LEVEL) {
             lakeTop = Integer.MIN_VALUE;
         }
-        // The highest block of water under the island: the lake's or the sea's.
-        int waterTop = lakeTop == Integer.MIN_VALUE ? (int) IslandShape.SEA_LEVEL : lakeTop - 1;
+        // The highest block of water under the island: the lake's or the sea's (whose top block is Y 62).
+        int waterTop = lakeTop == Integer.MIN_VALUE ? (int) IslandShape.SEA_LEVEL - 1 : lakeTop - 1;
         int lakeBottom = Mth.floor(shape.deepestFloor());
         long h = SeededHash.hash(field.hashNoise(), Mth.floor(shape.x()), Mth.floor(shape.z()), CELL_SALT + 1);
         List<IslandField.Fall> falls = new ArrayList<>();
@@ -237,6 +275,12 @@ final class IslandPlacement {
         // Columns are sampled on block positions, like the terrain's cell corners.
         if (lakeTop != Integer.MIN_VALUE && shape.holeDistance(x, z) >= 1.0 + IslandShape.LAKE_BAND / shape.holeRadius()) {
             return false;
+        }
+        // Another island's hole holds its own water (review 61 #3: a column takes the lake of the hole it lies in).
+        for (IslandShape other : field.shapesNear(x, z)) {
+            if (!other.equals(shape) && other.holeDistance(x, z) < 1.0) {
+                return false;
+            }
         }
         // One block of margin for the terrain's interpolation.
         return field.surfaceUncached(x, z) <= waterTop - 1.0;

@@ -17,6 +17,7 @@ import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.chunk.IslandFields;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.KeyedSlots;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -88,11 +89,12 @@ public final class RingBiomeSource extends BiomeSource {
 
     /**
      * The running server's islands, one lookup per column (review 59 #5): the biome of a column is asked quart by quart
-     * up the column, so each thread remembers the islands of its last column and the field they came from.
+     * up the column, so the islands of recent columns are remembered in a small lock-free cache (review 61 #5: no
+     * thread-local on the worker threads), started afresh for another field (another level or server).
      */
     static final class LastColumn implements IslandLookup {
         private final java.util.function.Supplier<IslandField> field;
-        private final ThreadLocal<Remembered> last = new ThreadLocal<>();
+        private volatile Cache cache;
 
         LastColumn(java.util.function.Supplier<IslandField> field) {
             this.field = field;
@@ -104,16 +106,15 @@ public final class RingBiomeSource extends BiomeSource {
             if (current == null) {
                 return List.of();
             }
-            Remembered known = last.get();
-            if (known != null && known.x == x && known.z == z && known.field == current) {
-                return known.islands;
+            Cache known = cache;
+            if (known == null || known.field != current) {
+                known = new Cache(current, new KeyedSlots<>());
+                cache = known;
             }
-            List<IslandField.Island> islands = List.copyOf(current.islandsAt(x, z));
-            last.set(new Remembered(x, z, current, islands));
-            return islands;
+            return known.columns.get(KeyedSlots.key(x, z), key -> List.copyOf(current.islandsAt(x, z)));
         }
 
-        private record Remembered(int x, int z, IslandField field, List<IslandField.Island> islands) {
+        private record Cache(IslandField field, KeyedSlots<List<IslandField.Island>> columns) {
         }
     }
 
