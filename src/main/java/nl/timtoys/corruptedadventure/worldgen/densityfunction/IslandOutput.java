@@ -97,6 +97,7 @@ public final class IslandOutput implements DensityFunction {
             case INITIAL_HEIGHT -> f.initialHeight(x, z);
             case THIN -> f.thin(x, context.blockY(), z);
             case CAVE_LIFT -> f.caveLift(x, context.blockY(), z);
+            case ISLAND_MASK -> f.islandColumn(x, z).islandMask;
             default -> columnValue(f.column(x, z), output);
         };
     }

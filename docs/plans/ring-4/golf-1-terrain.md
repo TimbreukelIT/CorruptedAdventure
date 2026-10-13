@@ -42,6 +42,17 @@ Twee pure stappen (`IslandPlacement`):
 ## Pakket 63 — `sundered_reach`
 - Zone 4→5 (256): de grond breekt op in brokken boven een afgrond met een stilstaande zee op Y 0; landbruggen om de ~500–800 blokken; alleen vastgelegde vallen; `sundered` 0..1. Afhankelijk van Q2.
 
+## Code-review 60 (c463272), verwerkt
+1. Rivieren en fjorden als dal i.p.v. sleuf: de lijnruis wordt een afstand in blokken (mediaanhelling 0,0018/blok, gemeten en getest); rivier: bed 5,5 breed per kant, dan hellingen 0,6 (het dal verbreedt met de hoogte van het land; mediaan +6,9 op 17,5 blokken van het midden); fjord: bodem 12 per kant, wanden 2,0.
+2. `sinkholeFloorNear`: alleen zinkgaten die het veen echt snijdt (`peat > 0`) en waarvan de kom binnen de ringen (12) valt.
+3. `overworld.json`: grotingangen mogen het oppervlak breken zoals vanilla: `min(terrain, 5 · entrances + cave_lift)` (de ring 3-sluiting eruit).
+4. Kleine vormen: zinkgaten exact per blok (`thin` −1 in de kom, niet meer in de 2D-`surface`; `initial_height` telt ze via `sinkholeFloorNear`); terrastreden 8 hoog, 80 % trede (breed genoeg voor het 4-blokraster; waar het land steiler is dan één trede per 4 blokken wordt het een helling).
+5. `IslandField.islandColumn` (alleen eilandwaarden) voor de aquifer en `island_mask`; `column` blijft alles.
+6. Warp één keer per kolom.
+7. `thin.json`, `cave_lift.json` in `cache_once`.
+8. (61) `island_mask`/`island_hole` aangesloten.
+Gemeten na de fixes: water 54 % (mythisch 49, bedorven 63). Niet opgepakt: dedup `IslandOutput`/`VolcanicOutput` (backlog INT).
+
 ## Client/server-impact
 Alles worldgen op de server; geen client-class, geen payload, geen `PROTOCOL_VERSION`. Nieuwe DF-types worden alleen in `ModDensityFunctionTypes` (blok `// ring 4 — W-terrein`) toegevoegd.
 
@@ -83,4 +94,5 @@ Q1 terrein ↔ biome-indeling op de assen; Q2 zone 4→5 volledig uit ring 4 (`R
 - 2026-10-13 | worldgen | Eilandmaten (kluiten 5–15, middel 20–60, reuzen 80–150) zijn diameters | Q4 = A.
 
 ## Backlog
+- [infra] `IslandOutput`/`IslandField.resolve` dupliceren het patroon van `VolcanicOutput`/`VolcanicField.resolve` (review 60; ring 3 is vergrendeld) → samen met de generieke `FieldLookup` (review 59 #9).
 - [worldgen] Zone 4→5: de buitenkant van de afgrond mengt tot ring 5 met de placeholder-grond van ring 5 (Q2 = B); ring 5 (81–99) stemt zijn invoer af op `sundered_reach`.

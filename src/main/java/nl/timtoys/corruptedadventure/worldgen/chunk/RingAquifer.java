@@ -227,7 +227,7 @@ final class RingAquifer implements Aquifer {
         dryBelow[i] = RingFluidPicker.ring4DryBelow(dimension, position);
         noLava[i] = RingFluidPicker.ring4NoLava(dimension, position);
         boolean falls = RingFluidPicker.ring4FallColumn(dimension, position, islands);
-        IslandField.Column islandColumn = falls ? islands.column(x, z) : null;
+        IslandField.Column islandColumn = falls ? islands.islandColumn(x, z) : null;
         waterFallTop[i] = falls ? islandColumn.fallTop() : Integer.MIN_VALUE;
         waterFallBottom[i] = falls ? islandColumn.fallBottom() : Integer.MIN_VALUE;
         waterFallFlow[i] = falls ? islandColumn.fallFlowBelow() : Integer.MIN_VALUE;

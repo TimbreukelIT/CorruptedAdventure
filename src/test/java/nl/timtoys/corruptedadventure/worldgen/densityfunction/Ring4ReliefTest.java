@@ -151,14 +151,78 @@ class Ring4ReliefTest {
         assertTrue(rivers > 20, "rivers " + rivers);
     }
 
+    /**
+     * The constants that turn the river and fjord lines into blocks are the lines' median slope near their middle:
+     * then a valley's width in blocks is what the code says.
+     */
+    @Test
+    void lineGradientsMatchTheirConstants() {
+        Ring4Relief relief = field.relief();
+        List<Double> rivers = new ArrayList<>();
+        List<Double> fjords = new ArrayList<>();
+        for (double[] c : COLUMNS) {
+            double x = c[0];
+            double z = c[1];
+            double r = relief.riverLineAt(x, z);
+            if (r < 0.15) {
+                rivers.add(Math.hypot(relief.riverLineAt(x + 1, z) - r, relief.riverLineAt(x, z + 1) - r));
+            }
+            double f = relief.fjordLineAt(x, z);
+            if (f < 0.15) {
+                fjords.add(Math.hypot(relief.fjordLineAt(x + 1, z) - f, relief.fjordLineAt(x, z + 1) - f));
+            }
+        }
+        double river = median(rivers);
+        double fjord = median(fjords);
+        System.out.printf("median line slope: rivers %.5f (%d), fjords %.5f (%d)%n", river, rivers.size(), fjord, fjords.size());
+        assertEquals(Ring4Relief.RIVER_GRADIENT, river, 0.25 * river);
+        assertEquals(Ring4Relief.FJORD_GRADIENT, fjord, 0.25 * fjord);
+    }
+
+    private static double median(List<Double> values) {
+        List<Double> sorted = new ArrayList<>(values);
+        sorted.sort(Double::compare);
+        return sorted.get(sorted.size() / 2);
+    }
+
+    /**
+     * Review 60 #1: rivers through high land run in valleys that widen with the land's height, not in slots: 12 blocks
+     * from the bed's edge the ground has risen at most a valley side's worth.
+     */
+    @Test
+    void riversRunInValleysNotSlots() {
+        List<Double> rises = new ArrayList<>();
+        double far = Ring4Relief.RIVER_HALF + 12.0;
+        for (double[] c : COLUMNS) {
+            if (c[6] < 0.999) {
+                continue;
+            }
+            double highest = -Double.MAX_VALUE;
+            for (int k = 0; k < 8; k++) {
+                double t = k * Math.PI / 4.0;
+                highest = Math.max(highest,
+                        field.column((int) Math.round(c[0] + far * Math.cos(t)), (int) Math.round(c[1] + far * Math.sin(t))).height());
+            }
+            rises.add(highest - Ring4Relief.RIVER_BED);
+        }
+        assertTrue(rises.size() > 20, "beds " + rises.size());
+        // The line's slope varies around its median: the typical bed sees a valley side, never a slot's wall.
+        double rise = median(rises);
+        System.out.printf("median rise %.1f blocks at %.1f from the bed's middle%n", rise, far);
+        assertTrue(rise <= 1.6 * 12.0 * Ring4Relief.RIVER_SLOPE + 4.0, "median rise " + rise);
+    }
+
     @Test
     void terracesHaveFlatTreadsAndSteepRisers() {
+        double step = Ring4Relief.TERRACE_STEP;
+        double tread = Ring4Relief.TERRACE_TREAD * step;
         assertEquals(0.0, Ring4Relief.terrace(0.0));
-        assertEquals(6.0, Ring4Relief.terrace(6.0), 1e-9);
-        assertEquals(6.0, Ring4Relief.terrace(9.0), 1e-9);
-        assertEquals(12.0, Ring4Relief.terrace(12.0), 1e-9);
-        assertEquals(6.0, Ring4Relief.terrace(10.5), 1e-9);
-        assertTrue(Ring4Relief.terrace(11.0) > 6.0 && Ring4Relief.terrace(11.0) < 12.0);
+        assertEquals(step, Ring4Relief.terrace(step), 1e-9);
+        assertEquals(step, Ring4Relief.terrace(step + tread * 0.5), 1e-9);
+        assertEquals(step, Ring4Relief.terrace(step + tread), 1e-9);
+        assertEquals(2.0 * step, Ring4Relief.terrace(2.0 * step), 1e-9);
+        double riser = Ring4Relief.terrace(step + tread + 0.5 * (step - tread));
+        assertTrue(riser > step && riser < 2.0 * step);
         for (double v = 0.0; v < 60.0; v += 0.25) {
             assertTrue(Ring4Relief.terrace(v + 0.25) >= Ring4Relief.terrace(v));
         }
@@ -193,7 +257,8 @@ class Ring4ReliefTest {
             double initial = field.initialHeight(qx, qz);
             for (int dx = 0; dx < 4; dx++) {
                 for (int dz = 0; dz < 4; dz++) {
-                    double surface = field.column(qx + dx, qz + dz).surface();
+                    IslandField.Column column = field.column(qx + dx, qz + dz);
+                    double surface = Double.isNaN(column.sinkholeFloor()) ? column.surface() : Math.min(column.surface(), column.sinkholeFloor());
                     assertTrue(initial <= surface, (qx + dx) + ", " + (qz + dz) + ": " + initial + " > " + surface);
                     checked++;
                 }

@@ -197,6 +197,16 @@ public final class IslandField implements DensityFunction {
         return column;
     }
 
+    /**
+     * The island values of a column only (review 60 #5): its islands, spring, lake and fall, without the base terrain's
+     * noise; the surface values ({@link Column#height}, {@link Column#surface}, …) are not filled by this call.
+     */
+    public Column islandColumn(int x, int z) {
+        Column column = columns.get(x, z, IslandField::reset);
+        ensureIslands(column);
+        return column;
+    }
+
     /** All islands whose footprint covers the column. */
     public List<Island> islandsAt(int x, int z) {
         List<Island> found = islandsWithin(x, z, x, z);
@@ -300,17 +310,27 @@ public final class IslandField implements DensityFunction {
         return lowest - INITIAL_MARGIN;
     }
 
-    /** The deepest floor of a peat sinkhole that may reach within 12 blocks of (x, z), or +infinity. */
+    /**
+     * The deepest floor of a peat sinkhole whose bowl comes within 12 blocks of (x, z) (the rings of
+     * {@link #lowestAround}), or +infinity. Only sinkholes the peat really cuts count (review 60 #2): elsewhere the
+     * cell's centre may lie in a trough or a fjord, which must not pull the surface down under dry land.
+     */
     private double sinkholeFloorNear(int x, int z) {
-        double reach = INITIAL_RADII[INITIAL_RADII.length - 1] + Ring4Relief.SINKHOLE_MAX_RADIUS;
+        double ring = INITIAL_RADII[INITIAL_RADII.length - 1];
+        double reach = ring + Ring4Relief.SINKHOLE_MAX_RADIUS;
         int cell = Ring4Relief.SINKHOLE_CELL;
         double floor = Double.POSITIVE_INFINITY;
         for (int i = Math.floorDiv((int) (x - reach), cell); i <= Math.floorDiv((int) (x + reach), cell); i++) {
             for (int j = Math.floorDiv((int) (z - reach), cell); j <= Math.floorDiv((int) (z + reach), cell); j++) {
                 double[] hole = Ring4Relief.sinkhole(i, j, salt());
-                if (hole != null && Math.abs(hole[0] - x) < reach && Math.abs(hole[1] - z) < reach) {
-                    // The sinkhole is deepest at its centre.
-                    floor = Math.min(floor, surfaceUncached(hole[0], hole[1]));
+                if (hole == null || Math.hypot(hole[0] - x, hole[1] - z) - hole[2] > ring) {
+                    continue;
+                }
+                // The sinkhole is deepest at its centre.
+                Ring4Relief.Sample s = reliefScratch.get();
+                relief.sample(hole[0], hole[1], band(hole[0], hole[1]), s, salt());
+                if (!Double.isNaN(s.sinkholeFloor)) {
+                    floor = Math.min(floor, s.sinkholeFloor);
                 }
             }
         }
@@ -366,11 +386,21 @@ public final class IslandField implements DensityFunction {
         return surface;
     }
 
-    /** Per block: +1 inside an island, −1 in a carved opening (a spring), 0 elsewhere (the terrain decides). */
+    /**
+     * Per block: +1 inside an island, −1 in a carved opening (a spring, a peat sinkhole's bowl), 0 elsewhere (the
+     * terrain decides). The base terrain is only computed for columns inside a sinkhole's disc.
+     */
     double thin(int x, int y, int z) {
         Column c = columns.get(x, z, IslandField::reset);
         ensureIslands(c);
-        return c.thin(y);
+        double thin = c.thin(y);
+        if (thin == 0.0 && c.sinkholeDisc) {
+            ensureSurface(c);
+            if (!Double.isNaN(c.sinkholeFloor) && y >= Mth.ceil(c.sinkholeFloor) && y <= c.height + 2.0) {
+                return -1.0;
+            }
+        }
+        return thin;
     }
 
     /** Per block: what the stack adds to the density of vanilla's caves: closed under and beside a lake above the sea. */
@@ -483,6 +513,7 @@ public final class IslandField implements DensityFunction {
         c.height = s.height;
         c.river = s.river;
         c.fjord = s.fjord;
+        c.sinkholeFloor = s.sinkholeFloor;
         double[] hole = {0.0};
         c.surface = withHoles(c.height, c.x, c.z, shapesNear(c.x, c.z), hole);
         c.islandHole = hole[0];
@@ -498,6 +529,9 @@ public final class IslandField implements DensityFunction {
             return;
         }
         c.islandsFilled = true;
+        double[] sinkhole = Ring4Relief.sinkhole(Math.floorDiv(c.x, Ring4Relief.SINKHOLE_CELL),
+                Math.floorDiv(c.z, Ring4Relief.SINKHOLE_CELL), salt());
+        c.sinkholeDisc = sinkhole != null && Math.hypot(c.x - sinkhole[0], c.z - sinkhole[1]) < sinkhole[2];
         double px = c.x + 0.5;
         double pz = c.z + 0.5;
         for (IslandShape shape : shapesNear(c.x, c.z)) {
@@ -615,6 +649,10 @@ public final class IslandField implements DensityFunction {
         double islandMask;
         /** 0..1: an island's mirror lake (1 well inside the hole). */
         double islandHole;
+        /** Whether the column lies in the disc of a peat sinkhole's cell (then the base terrain decides its floor). */
+        boolean sinkholeDisc;
+        /** The floor of a peat sinkhole, cut per block ({@link #thin}); NaN outside one. */
+        double sinkholeFloor;
         /** The islands' solid blocks: {@link #islandCount} ranges [{@code islandLo}, {@code islandHi}] (inclusive). */
         int islandCount;
         final int[] islandLo = new int[MAX_ISLANDS];
@@ -648,6 +686,8 @@ public final class IslandField implements DensityFunction {
             fjord = 0.0;
             islandMask = 0.0;
             islandHole = 0.0;
+            sinkholeDisc = false;
+            sinkholeFloor = Double.NaN;
             islandCount = 0;
             springY = Integer.MIN_VALUE;
             lakeTop = Integer.MIN_VALUE;
@@ -693,6 +733,10 @@ public final class IslandField implements DensityFunction {
 
         public double islandHole() {
             return islandHole;
+        }
+
+        public double sinkholeFloor() {
+            return sinkholeFloor;
         }
 
         public int springY() {

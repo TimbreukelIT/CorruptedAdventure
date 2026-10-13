@@ -1,5 +1,8 @@
 {
-  "type": "corruptedadventure:island_output",
-  "field": "corruptedadventure:ring_4/overworld/islands",
-  "output": "cave_lift"
+  "type": "minecraft:cache_once",
+  "argument": {
+    "type": "corruptedadventure:island_output",
+    "field": "corruptedadventure:ring_4/overworld/islands",
+    "output": "cave_lift"
+  }
 }

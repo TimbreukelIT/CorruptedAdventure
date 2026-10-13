@@ -68,20 +68,27 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
     static final double TROUGH_Y = 42.0;
     private static final double LAGOON_RISE = 21.5;
     private static final double LOTUS_Y = 59.5;
-    // Cascades: treads of TERRACE_STEP blocks, the riser in the last quarter of each step.
-    static final double TERRACE_STEP = 6.0;
-    private static final double TERRACE_TREAD = 0.75;
+    // Cascades: treads of TERRACE_STEP blocks, the riser in the last fifth of each step (wide enough for the 4-block grid).
+    static final double TERRACE_STEP = 8.0;
+    static final double TERRACE_TREAD = 0.8;
     private static final double CASCADE_RISE = 45.0;
     // Fjords: a plateau, the channels' floor far below the sea.
     private static final double FJORD_PLATEAU = 8.0;
     private static final double FJORD_RISE = 32.0;
     static final double FJORD_FLOOR = 40.0;
-    private static final double FJORD_BED = 0.05;
-    private static final double FJORD_BANK = 0.085;
-    // Rivers: a bed below the sea level, banks rising to the land.
+    /** Half width of a fjord's floor and how steep its walls rise (blocks up per block across). */
+    static final double FJORD_HALF = 12.0;
+    static final double FJORD_SLOPE = 2.0;
+    // Rivers: a bed below the sea level, valley sides rising to the land.
     static final double RIVER_BED = 57.0;
-    private static final double RIVER_WIDTH = 0.02;
-    private static final double RIVER_BANK = 0.05;
+    static final double RIVER_HALF = 5.5;
+    static final double RIVER_SLOPE = 0.6;
+    /**
+     * How fast the river and fjord lines grow per block across them (the median, measured on the test seed): turns
+     * their noise into a distance in blocks.
+     */
+    static final double RIVER_GRADIENT = 0.0018;
+    static final double FJORD_GRADIENT = 0.0018;
     private static final double WARP_BLOCKS = 40.0;
     private static final double WARP_OFFSET = 3131.5;
     // Blighted band.
@@ -144,6 +151,13 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         double open = Mth.lerp(blighted, lagoonW + lotusW, drownedW);
         double shoal = open > 0.0 ? smooth(sample(shoals, x, z), -0.5, 0.5) : 0.0;
 
+        // The warped position of the rivers and fjords, once per column (review 60 #6).
+        double wx = Double.NaN;
+        double wz = Double.NaN;
+        if (open < 1.0 || fjordW > 0.0 && blighted < 1.0) {
+            wx = warpX(x, z);
+            wz = warpZ(x, z);
+        }
         double mythicH = 0.0;
         double fjord = 0.0;
         if (blighted < 1.0) {
@@ -163,9 +177,11 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
             if (fjordW > 0.0) {
                 double inland = smooth(-w, 0.0, 0.3) * (1.0 - rim);
                 double plateau = SEA + FJORD_PLATEAU + FJORD_RISE * inland * (0.55 + 0.45 * hill01) + 2.0 * d;
-                double channel = fjordChannel(x, z);
-                fjord = fjordW * channel * (1.0 - blighted);
-                mythicH += fjordW * Mth.lerp(channel, plateau, Math.min(plateau, FJORD_FLOOR));
+                double distance = fjordLine(wx, wz) / FJORD_GRADIENT;
+                // A floor FJORD_HALF wide each side, then steep walls up to the plateau (a fjord, not a slot).
+                double cut = FJORD_FLOOR + Math.max(0.0, distance - FJORD_HALF) * FJORD_SLOPE;
+                fjord = fjordW * (1.0 - smooth(distance, FJORD_HALF, FJORD_HALF + 4.0)) * (1.0 - blighted);
+                mythicH += fjordW * Math.min(plateau, cut);
             }
         }
         double blightedH = 0.0;
@@ -176,20 +192,23 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
             blightedH = drownedW * drowned + reedW * reed + peatW * peatY;
         }
         double h = Mth.lerp(blighted, mythicH, blightedH);
-        double peat = peatW * blighted;
-        if (peat > 0.0) {
-            h -= peat * sinkholeDepth(x, z, salt);
-        }
         double river = 0.0;
         if (open < 1.0) {
-            river = riverChannel(x, z) * (1.0 - open);
-            h = Mth.lerp(river, h, Math.min(h, RIVER_BED));
+            // A valley (review 60 #1): a bed RIVER_HALF wide each side, then slopes of RIVER_SLOPE up to the land, so
+            // the valley widens with the height of the land around it.
+            double distance = riverLine(wx, wz) / RIVER_GRADIENT;
+            double cut = RIVER_BED + Math.max(0.0, distance - RIVER_HALF) * RIVER_SLOPE;
+            h = Mth.lerp(1.0 - open, h, Math.min(h, cut));
+            river = (1.0 - smooth(distance, RIVER_HALF, RIVER_HALF + 4.0)) * (1.0 - open);
         }
+        double peat = peatW * blighted;
         s.height = h;
         s.water = w;
         s.growth = g;
         s.river = river;
         s.fjord = fjord;
+        s.peat = peat;
+        s.sinkholeFloor = peat > 0.0 ? sinkholeFloor(x, z, h, peat, salt) : Double.NaN;
     }
 
     /** 0 below the threshold, 1 above it, blended over ±{@link #BLEND}. */
@@ -222,33 +241,43 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         return z + WARP_BLOCKS * sample(warp, z + WARP_OFFSET, x - WARP_OFFSET);
     }
 
-    /** 0..1: a river's channel, 1 on its bed. */
-    double riverChannel(double x, double z) {
-        double r = Math.abs(sample(rivers, warpX(x, z), warpZ(x, z)));
-        return 1.0 - smooth(r, RIVER_WIDTH, RIVER_BANK);
+    /** The river line's value at a warped position: 0 on the line, rising about {@link #RIVER_GRADIENT} per block. */
+    double riverLine(double wx, double wz) {
+        return Math.abs(sample(rivers, wx, wz));
     }
 
-    /** 0..1: a fjord's channel, 1 on its floor. */
-    double fjordChannel(double x, double z) {
-        double f = Math.abs(sample(fjords, warpZ(x, z), warpX(x, z)));
-        return 1.0 - smooth(f, FJORD_BED, FJORD_BANK);
+    /** The fjord line's value at a warped position (axes swapped: another pattern from the same warp). */
+    double fjordLine(double wx, double wz) {
+        return Math.abs(sample(fjords, wz, wx));
+    }
+
+    /** The river line at a column (for tests). */
+    double riverLineAt(double x, double z) {
+        return riverLine(warpX(x, z), warpZ(x, z));
+    }
+
+    /** The fjord line at a column (for tests). */
+    double fjordLineAt(double x, double z) {
+        return fjordLine(warpX(x, z), warpZ(x, z));
     }
 
     /**
-     * How deep the peat sinkholes cut the column (blocks): a bowl in its cell, if the cell has one. One cell of
-     * {@link #SINKHOLE_CELL} blocks holds at most one, kept inside the cell.
+     * The floor of a peat sinkhole in this column (a bowl in its cell, cut {@code peat} deep of its full depth below
+     * {@code height}), or NaN outside one. One cell of {@link #SINKHOLE_CELL} blocks holds at most one, kept inside the
+     * cell. The terrain cuts it exactly per block (review 60 #4: the 4-block grid would smooth a small bowl away).
      */
-    double sinkholeDepth(double x, double z, long salt) {
+    double sinkholeFloor(double x, double z, double height, double peat, long salt) {
         int i = Math.floorDiv(Mth.floor(x), SINKHOLE_CELL);
         int j = Math.floorDiv(Mth.floor(z), SINKHOLE_CELL);
         double[] hole = sinkhole(i, j, salt);
         if (hole == null) {
-            return 0.0;
+            return Double.NaN;
         }
         double dx = x - hole[0];
         double dz = z - hole[1];
         double q = (dx * dx + dz * dz) / (hole[2] * hole[2]);
-        return q >= 1.0 ? 0.0 : hole[3] * Math.pow(1.0 - q, 0.6);
+        double depth = q >= 1.0 ? 0.0 : peat * hole[3] * Math.pow(1.0 - q, 0.6);
+        return depth < 1.0 ? Double.NaN : height - depth;
     }
 
     /** The sinkhole of a cell as {x, z, radius, depth}, or null. Pure. */
@@ -273,6 +302,10 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         double growth;
         /** 0..1: a river's channel. */
         double river;
+        /** 0..1: how much of the peat landform the column has (where its sinkholes cut). */
+        double peat;
+        /** The floor of a peat sinkhole in the column, NaN outside one (cut per block, not part of {@link #height}). */
+        double sinkholeFloor;
         /** 0..1: a fjord's channel (weighted by the fjord landform). */
         double fjord;
     }

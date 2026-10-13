@@ -171,7 +171,7 @@ class Ring4IslandsTest {
                 assertEquals(1.0, field.thin(fall.springX(), fall.springY() - 1, fall.springZ()));
                 assertEquals(1.0, field.thin(fall.springX(), fall.springY() + 1, fall.springZ()));
                 for (int y = fall.bottom(); y <= fall.springY(); y++) {
-                    assertEquals(0.0, field.thin(fall.fallX(), y, fall.fallZ()), "fall column " + fall + " at " + y);
+                    assertTrue(field.thin(fall.fallX(), y, fall.fallZ()) <= 0.0, "fall column " + fall + " at " + y);
                 }
                 IslandField.Column column = field.column(fall.fallX(), fall.fallZ());
                 assertEquals(fall.springY(), column.fallTop());
