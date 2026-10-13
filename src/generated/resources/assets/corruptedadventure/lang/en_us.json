@@ -304,5 +304,8 @@
   "subtitles.corruptedadventure.weather.ring_2.sandstorm": "Sandstorm howls",
   "subtitles.corruptedadventure.weather.ring_3.ash_cloud": "Ash cloud roars",
   "subtitles.corruptedadventure.weather.ring_3.ash_rain": "Ash rain crackles",
-  "subtitles.corruptedadventure.weather.ring_3.eruption": "Volcano rumbles"
+  "subtitles.corruptedadventure.weather.ring_3.eruption": "Volcano rumbles",
+  "subtitles.corruptedadventure.weather.ring_4.dense_fog": "Fog muffles the world",
+  "subtitles.corruptedadventure.weather.ring_4.storm_wind": "Storm wind howls",
+  "subtitles.corruptedadventure.weather.ring_4.toxic_rain": "Toxic rain hisses"
 }

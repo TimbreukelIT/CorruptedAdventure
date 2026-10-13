@@ -13,6 +13,7 @@ import nl.timtoys.corruptedadventure.condition.ConditionDefinitions;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.network.RingWeatherPayload;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.ring.Ring4Band;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingWorld;
 
@@ -42,6 +43,8 @@ public final class RingWeather {
         LavaBombs.register(gameBus);
         // Ring 3 (package 50b): the volcanoes near each player, for the smoke plumes the client draws.
         VolcanoPlumes.register(gameBus);
+        // Ring 4 (package 70): the storm's push high up. The toxic rain's poison modifier belongs to the conditions (C).
+        StormWind.register(gameBus);
         gameBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> sendTo(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, event -> sendTo(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerRespawnEvent.class, event -> sendTo(event.getEntity()));
@@ -65,14 +68,37 @@ public final class RingWeather {
 
     /**
      * The weather at a position: the ring of {@code ringAt(…).ring()} (hard switch at 0.5, like the biome); the void
-     * follows ring 5. For gameplay; rendering blends over the transition zone instead (client).
+     * follows ring 5. In ring 4 the band rule applies too ({@link Ring4WeatherBands#felt}): a weather of the other band
+     * is {@code clear} here. For gameplay; rendering blends over the transition zones instead (client).
      */
     public static RingWeatherState stateAt(ServerLevel level, double x, double z) {
         Optional<RingWeatherData> data = data(level);
         if (data.isEmpty()) {
             return RingWeatherState.STILL;
         }
-        return data.get().get(weatherRing(RingLayout.ringAt(level.dimension(), x, z).ring()));
+        RingLayout layout = RingLayout.current();
+        Ring ring = weatherRing(layout.sample(level.dimension(), x, z).ring());
+        RingWeatherState state = data.get().get(ring);
+        if (ring != Ring.RING_4 || Ring4WeatherBands.bandOf(state.type()) == Ring4WeatherBands.Band.ANY) {
+            return state;
+        }
+        // Ring 4 weather exists only in the overworld, so x, z are overworld positions here.
+        return Ring4WeatherBands.felt(ring, state, Ring4Band.of(layout).blighted(x, z));
+    }
+
+    /**
+     * Hook for phase 4 (mobs that come out in the fog): the strength 0–1 of dense fog at a position, after the ring and
+     * band rule of {@link #stateAt} (0 outside ring 4's mythical band, without fog, outside ring worlds). Follows the
+     * fade in time; the caller picks its own threshold.
+     */
+    public static float denseFogAt(ServerLevel level, double x, double z) {
+        RingWeatherState state = stateAt(level, x, z);
+        return state.type() == RingWeatherType.DENSE_FOG ? state.intensity() : 0.0F;
+    }
+
+    /** Whether there is dense fog at a position right now ({@link #denseFogAt} above 0, also while it fades). */
+    public static boolean isDenseFogAt(ServerLevel level, double x, double z) {
+        return denseFogAt(level, x, z) > 0.0F;
     }
 
     /** The ring whose weather applies: the void has none of its own and follows ring 5. */

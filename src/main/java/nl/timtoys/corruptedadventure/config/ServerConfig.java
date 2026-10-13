@@ -35,6 +35,8 @@ public final class ServerConfig {
     public static final Ring2WeatherEffects RING_2_WEATHER;
     /** {@code [weather.ring3]}: ash cloud duration, heat factors and lava bombs (package 45). */
     public static final Ring3WeatherEffects RING_3_WEATHER;
+    /** {@code [weather.ring4]}: the toxic rain's poison factor and the storm's push (package 70). */
+    public static final Ring4WeatherEffects RING_4_WEATHER;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
     /** Per ring with weather types; package-private for tests. */
@@ -58,6 +60,7 @@ public final class ServerConfig {
         builder.pop();
         RING_2_WEATHER = RING_WEATHER.get(Ring.RING_2).ring2Effects;
         RING_3_WEATHER = RING_WEATHER.get(Ring.RING_3).ring3Effects;
+        RING_4_WEATHER = RING_WEATHER.get(Ring.RING_4).ring4Effects;
         SPEC = builder.build();
         ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds);
     }
@@ -370,6 +373,28 @@ public final class ServerConfig {
         }
     }
 
+    /**
+     * The extras of the ring 4 weather, in {@code [weather.ring4]} next to its cycle (package 70): the toxic rain's
+     * poison factor (read by the poison modifier of stream C) and the storm's push high up.
+     */
+    public static final class Ring4WeatherEffects {
+        public final ModConfigSpec.DoubleValue toxicRainPoisonMultiplier;
+        public final ModConfigSpec.DoubleValue stormPushStrength;
+        public final ModConfigSpec.IntValue stormPushMinY;
+
+        private Ring4WeatherEffects(ModConfigSpec.Builder builder) {
+            toxicRainPoisonMultiplier = builder.comment("Factor on the poison that toxic rain adds under the open sky (applied by the",
+                            "poison rule; 1 = the rate in [conditions.poison]). Toxic rain falls only in ring 4's blighted band.")
+                    .defineInRange("toxicRainPoisonMultiplier", 1.0, 0.0, 10.0);
+            stormPushStrength = builder.comment("Wind push per gust (every 10 ticks) during a full storm, in blocks per tick, for",
+                            "players in ring 4's mythical band at or above stormPushMinY who see the sky. 0 = no push.")
+                    .defineInRange("stormPushStrength", 0.05, 0.0, 0.5);
+            stormPushMinY = builder.comment("The storm pushes only at or above this height (feet), on and between the islands;",
+                            "lower down it is only atmosphere.")
+                    .defineInRange("stormPushMinY", 120, -64, 320);
+        }
+    }
+
     /** {@code [weather.ringN]}: the cycle of one ring with weather types. */
     static final class RingWeather {
         static final int DEFAULT_CLEAR_MIN = 600;
@@ -389,6 +414,8 @@ public final class ServerConfig {
         final Ring2WeatherEffects ring2Effects;
         /** Only in {@code [weather.ring3]}; null for the other rings. */
         final Ring3WeatherEffects ring3Effects;
+        /** Only in {@code [weather.ring4]}; null for the other rings. */
+        final Ring4WeatherEffects ring4Effects;
 
         private RingWeather(ModConfigSpec.Builder builder, Ring ring) {
             String name = "ring" + ring.number();
@@ -409,6 +436,7 @@ public final class ServerConfig {
             }
             ring2Effects = ring == Ring.RING_2 ? new Ring2WeatherEffects(builder) : null;
             ring3Effects = ring == Ring.RING_3 ? new Ring3WeatherEffects(builder) : null;
+            ring4Effects = ring == Ring.RING_4 ? new Ring4WeatherEffects(builder) : null;
             builder.pop();
         }
 

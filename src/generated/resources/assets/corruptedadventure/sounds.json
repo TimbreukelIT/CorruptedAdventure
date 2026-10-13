@@ -250,5 +250,35 @@
       "corruptedadventure:weather/ring_3/eruption_3"
     ],
     "subtitle": "subtitles.corruptedadventure.weather.ring_3.eruption"
+  },
+  "weather.ring_4.dense_fog": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "ambient.underwater.loop",
+        "pitch": 0.6
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.weather.ring_4.dense_fog"
+  },
+  "weather.ring_4.storm_wind": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "item.elytra.flying",
+        "pitch": 0.5
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.weather.ring_4.storm_wind"
+  },
+  "weather.ring_4.toxic_rain": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "weather.rain",
+        "pitch": 0.8
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.weather.ring_4.toxic_rain"
   }
 }

@@ -304,5 +304,8 @@
   "subtitles.corruptedadventure.weather.ring_2.sandstorm": "Zandstorm raast",
   "subtitles.corruptedadventure.weather.ring_3.ash_cloud": "Aswolk raast",
   "subtitles.corruptedadventure.weather.ring_3.ash_rain": "Asregen knispert",
-  "subtitles.corruptedadventure.weather.ring_3.eruption": "Vulkaan rommelt"
+  "subtitles.corruptedadventure.weather.ring_3.eruption": "Vulkaan rommelt",
+  "subtitles.corruptedadventure.weather.ring_4.dense_fog": "Mist dempt de wereld",
+  "subtitles.corruptedadventure.weather.ring_4.storm_wind": "Stormwind huilt",
+  "subtitles.corruptedadventure.weather.ring_4.toxic_rain": "Gifregen sist"
 }

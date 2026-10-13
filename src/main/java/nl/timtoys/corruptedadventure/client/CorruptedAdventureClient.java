@@ -53,6 +53,7 @@ public final class CorruptedAdventureClient {
         // Weather renderers (changes 28, 45, 66, 85): RingWeatherRenderers.register(type, renderer) here.
         RingWeatherClientHooks.registerRing2(modEventBus, NeoForge.EVENT_BUS);
         RingWeatherClientHooks.registerRing3();
+        RingWeatherClientHooks.registerRing4();
         RingWeatherClientHooks.register(NeoForge.EVENT_BUS);
         // Ring 3 ambience outside the weather (package 50): rumble with camera shake, sparks on the peaks.
         Ring3Ambience.register(NeoForge.EVENT_BUS);
