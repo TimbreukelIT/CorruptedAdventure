@@ -53,38 +53,53 @@ def biome(*names):
     return {"type": "minecraft:biome", "biome_is": [CA + n for n in names]}
 
 
+def noise(name, lo):
+    return {"type": "minecraft:noise_threshold", "noise": name, "min_threshold": lo, "max_threshold": 1.7976931348623157e+308}
+
+
 STEEP = {"type": "minecraft:steep"}
 TOP = depth()                       # the surface block
 DEPTH = depth(add=True)             # the surface depth (3-6 blocks)
 CEILING = depth("ceiling")          # the block right above air: sand or gravel there would fall
 DRY_TOP = water(-1, 0, False)       # at most one block under the water level: land and the shore
 DRY_DEPTH = water(-6, -1, True)     # vanilla's test for the layer under land
+# Each falling block with its own solid stand-in where it would hang.
 FALLING = {"sand": "sandstone", "gravel": "stone"}
+# Clay patches (~60 blocks, vanilla's surface noise) in the swamp's lake beds: axolotls spawn only on clay.
+CLAY_PATCHES = noise("minecraft:surface", 0.12)
+
+
+def put(name):
+    """A block; a falling one (sand, gravel) becomes its stand-in where the surface reaches a ceiling (a thin island, a
+    lake bed over a cave), as in vanilla."""
+    if isinstance(name, dict):
+        return name
+    if name in FALLING:
+        return seq(cond(CEILING, block(FALLING[name])), block(name))
+    return block(name)
 
 
 def surface(land_top, land_under, wet_top, wet_under, steep=None):
-    """A biome's surface: a top block and a layer of the surface depth, each on land and under water; optionally stone
-    on steep slopes. Every path ends in a block, so vanilla's grass and dirt never reach a ring 4 biome."""
+    """A biome's surface: a top block and a layer of the surface depth, each on land and under water; optionally its
+    own top on steep slopes with stone below. Every path ends in a block, so vanilla's grass and dirt never reach a
+    ring 4 biome."""
     rules = []
-    hanging = sorted({FALLING[b] for b in (land_top, land_under, wet_top, wet_under) if b in FALLING})
-    if hanging:
-        # One guard for the whole branch: a ceiling block in a sand biome is sandstone, in a gravel one stone.
-        rules.append(cond(CEILING, block(hanging[0])))
     if steep:
-        rules.append(cond(STEEP, cond(DEPTH, block(steep))))
-    rules.append(cond(TOP, seq(cond(DRY_TOP, block(land_top)), block(wet_top))))
-    rules.append(cond(DEPTH, seq(cond(DRY_DEPTH, block(land_under)), block(wet_under))))
+        rules.append(cond(STEEP, seq(cond(TOP, seq(cond(DRY_TOP, put(steep)), put(wet_top))), cond(DEPTH, block("stone")))))
+    rules.append(cond(TOP, seq(cond(DRY_TOP, put(land_top)), put(wet_top))))
+    rules.append(cond(DEPTH, seq(cond(DRY_DEPTH, put(land_under)), put(wet_under))))
     return seq(*rules)
 
 
-# Vanilla blocks per biome (first version): land top, land under, wet top, wet under [, steep].
+# Vanilla blocks per biome (first version): land top, land under, wet top, wet under [, steep top].
 SURFACES = {
-    # Mythical band: green and clear; clear lake beds of sand, the swamp on mud.
+    # Mythical band: green and clear; clear lake beds of sand, the swamp on mud with clay patches.
     "cascade_vale": ("grass_block", "dirt", "sand", "sand"),
     "crystal_lagoon": ("sand", "sand", "sand", "sand"),
     "lotus_shallows": ("grass_block", "dirt", "clay", "dirt"),
-    "glowroot_swamp": ("grass_block", "dirt", "mud", "mud"),
-    "mist_fjords": ("moss_block", "dirt", "gravel", "gravel", "stone"),
+    "glowroot_swamp": ("grass_block", "dirt", seq(cond(CLAY_PATCHES, block("clay")), block("mud")), "mud"),
+    # Grass on the flat tops (rabbits spawn there), moss and stone on the cliffs.
+    "mist_fjords": ("grass_block", "dirt", "gravel", "gravel", "moss_block"),
     # Blighted band: dead soil and mud.
     "drowned_forest": ("coarse_dirt", "dirt", "mud", "mud"),
     "peat_moors": ("podzol", "mud", "mud", "mud"),

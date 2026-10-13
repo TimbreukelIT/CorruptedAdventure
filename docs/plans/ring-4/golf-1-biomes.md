@@ -35,9 +35,9 @@ V1 mistrand `mist_fjords`; V2 indeling/aandelen; V3 kleuren + klimaat; V4 spawns
 ## Kleuren, klimaat, spawns, tags (zoals gebouwd)
 - Kleuren (sky / fog / water / waterFog / gras / blad): `cascade_vale` 72D2E3/EAF4F2/8FD8F0/2C6E86/6FCB6A/7FD66E; `crystal_lagoon` 6CD6E8/E4F6F4/2FD3C8/0F5A66/7ED67A/6CCB64; `lotus_shallows` 78D4E4/F0F2EE/9ADFF2/356F82/86D47A/7AC96C; `glowroot_swamp` 6FC9D6/DCEBE2/4CC08A/16503A/5FAE5A/4E9E4C; `mist_fjords` 9FB8C4/C8D0D4/2F5A7A/0E2234/4F8F4A/3F7A44; `drowned_forest` 8FAE8A/A9BB98/3E8A3A/0E2A10/7A8A5A/6A7A4A; `peat_moors` 9CB08A/B4BE98/6FC23A/1E3A12/8A8E5A/7A7E4E; `reed_marsh` 96B28E/AEC09C/5DB03A/1A3614/8E9A5C/7C8A50; `sky_gardens` 66D0EE/F2F8F8/8FE0F4/2E7890/7CDA74/88E07A; `withered_gardens` A2B496/BCC4A8/6FA048/22381A/9A9466/8A8458; `sundered_reach` 8C9096/9A9CA0/5A6670/1A1E22/8A8C84/7C7E78. Cave mood: vanilla (legacy).
 - Klimaat: temperatuur 0,8 (geen sneeuw, ook niet op Y 250); neerslag aan voor de 10 ring 4-biomes, uit voor `sundered_reach`; downfall 0,9 (water/moeras: lagune, lotus, glowroot, fjorden, bedorven band), 0,6 (land: cascade, de tuinen, `sundered_reach`).
-- Spawns: overal `BiomeDefaultFeatures.commonSpawns` (monsters, vleermuizen, glow squids in grotten). Dieren: lagune tropische vis 25/8–8, kogelvis 15/1–3, dolfijn 2/1–2, schildpad 5/2–5; glowroot kikker 10/2–5, axolotl 10/4–6, tropische vis 25/8–8; cascade vos 8/2–4, konijn 4/2–3, zalm 5/1–5; lotus kikker 6/2–4, zalm 5/1–5; fjorden kabeljauw 15/3–6, zalm 15/1–5, inktvis 3/1–4, konijn 2/1–2; `sky_gardens` konijn 4/2–3; bedorven band, `withered_gardens` en `sundered_reach` geen dieren.
+- Spawns: overal `BiomeDefaultFeatures.commonSpawns` (monsters, vleermuizen, glow squids in grotten). Dieren: lagune tropische vis 25/8–8, kogelvis 15/1–3, dolfijn 2/1–2, schildpad 5/2–5; glowroot kikker 10/2–5, axolotl 10/4–6 (categorie `AXOLOTLS`, zoals lush caves; spawnen alleen op klei), tropische vis 25/8–8; cascade vos 8/2–4, konijn 4/2–3, zalm 5/1–5; lotus kikker 6/2–4, zalm 5/1–5; fjorden kabeljauw 15/3–6, zalm 15/1–5, inktvis 3/1–4, konijn 2/1–2; `sky_gardens` konijn 4/2–3; bedorven band, `withered_gardens` en `sundered_reach` geen dieren.
 - Tags: `is_ring_4` (11), `ring_4_blighted` (bedorven band + `withered_gardens`); `c:is_temperate/overworld` alle 11; `c:is_wet/overworld` 8 grond + `sky_gardens`; `c:is_swamp` glowroot, drowned, peat, reed; `c:is_forest` cascade; `c:is_aquatic` lagune, lotus; `c:is_magical` 5 mythisch + `sky_gardens`; `c:is_lush` cascade, glowroot, `sky_gardens`; `c:is_floral` lotus, `sky_gardens`; `c:is_spooky` 3 bedorven + `withered_gardens` + `sundered_reach`; `c:is_dead` drowned, `withered_gardens`; `c:is_wasteland` `sundered_reach`. Geen `minecraft:`-tags.
-- Surface (vanilla, voorlopig; land-top / land-onder / nat-top / nat-onder): cascade gras/aarde/zand/zand; lagune zand ×4; lotus gras/aarde/klei/aarde; glowroot gras/aarde/modder/modder; fjorden mosblok/aarde/grind/grind, steil steen; drowned grove aarde/aarde/modder/modder; peat podzol/modder/modder/modder; reed gras/aarde/modder/modder; `sky_gardens` gras/aarde/klei/aarde; `withered_gardens` grove aarde/aarde/grove aarde/aarde; `sundered_reach` grove aarde/steen/steen/steen. Plafondwacht: zand → zandsteen, grind → steen.
+- Surface (vanilla, voorlopig; land-top / land-onder / nat-top / nat-onder): cascade gras/aarde/zand/zand; lagune zand ×4; lotus gras/aarde/klei/aarde; glowroot gras/aarde/modder met kleiplekken (vanilla-ruis `minecraft:surface` ≥ 0,12)/modder; fjorden gras/aarde/grind/grind, steil mosblok met steen eronder; drowned grove aarde/aarde/modder/modder; peat podzol/modder/modder/modder; reed gras/aarde/modder/modder; `sky_gardens` gras/aarde/klei/aarde; `withered_gardens` grove aarde/aarde/grove aarde/aarde; `sundered_reach` grove aarde/steen/steen/steen. Plafondwacht per vallend blok, direct ervoor genest: zand → zandsteen, grind → steen.
 
 ## Tests (uitgevoerd)
 - `./gradlew build` groen (770 tests); `./gradlew runData` groen.
@@ -50,8 +50,22 @@ V1 mistrand `mist_fjords`; V2 indeling/aandelen; V3 kleuren + klimaat; V4 spawns
 - 2026-10-13: branch aangemaakt, kwantielen gemeten, vragen verstuurd.
 - 2026-10-13 20:03: besluiten V1–V5 verwerkt (mistrand), afspraak met W-terrein; build + runData groen.
 
+## Code-review (ace3b12)
+Opgepakt in de vervolgcommit:
+- **#1 axolotls:** categorie `AXOLOTLS` i.p.v. `UNDERGROUND_WATER_CREATURE`; `glowroot_swamp` krijgt kleiplekken in de waterbodem (`#axolotls_spawnable_on`). Test: klei onder water in de glowroot-tak.
+- **#2 konijnen in de fjorden:** vlakke fjordtoppen `grass_block` (konijnen spawnen daar), steile hellingen mosblok met steen eronder. Test op de tak.
+- **#3 plafondwacht:** genest direct vóór elk vallend blok, met een eigen standin per blok (zand → zandsteen, grind → steen) i.p.v. één wacht per tak. Test: elk zand-/grindblok staat achter zijn eigen wacht.
+- **#4 spawns:** `Ring4Biomes.ANIMALS` (map met elke ring 4-biome, ook de lege), `spawns` gooit voor een andere biome, zoals `look`.
+- **#5 testpad:** `tagValues` zoekt `src/generated` omhoog vanaf de werkmap i.p.v. 6× `getParent()`.
+
+Niet opgepakt (backlog, INT):
+- `Look` naast `BiomeAmbience.Palette`: A verhuist de ring 4-kleuren in 80 naar een haak.
+- Een gedeelde `addDeepCarvers`-helper voor ring 2/3/4: raakt de vergrendelde ring 2/3-klassen.
+
+Drempels ongewijzigd (geen bericht aan W-terrein nodig). `runData`: alleen `glowroot_swamp.json` (axolotl-categorie) verandert; `build` groen (770 tests).
+
 ## CODEBASE-delta
-- `worldgen/biome/Ring4Biomes` (64): lijsten `MYTHIC`, `BLIGHTED`, `GROUND` (= de ring 4-`multi_noise`), `HEIGHT` (`island_biomes`), `ALL`, `TRANSITION` (`sundered_reach`), `WITH_TRANSITION`, `BLIGHTED_TAG`; record `Look` (kleuren, downfall, neerslag) per biome, `look(key)`; `generation` (diepe `Ring2Carvers`-kopieën, geen features); `spawns(key)`.
+- `worldgen/biome/Ring4Biomes` (64): lijsten `MYTHIC`, `BLIGHTED`, `GROUND` (= de ring 4-`multi_noise`), `HEIGHT` (`island_biomes`), `ALL`, `TRANSITION` (`sundered_reach`), `WITH_TRANSITION`, `BLIGHTED_TAG`; record `Look` (kleuren, downfall, neerslag) per biome, `look(key)`; `generation` (diepe `Ring2Carvers`-kopieën, geen features); `ANIMALS` + `spawns(key)` (gooit voor een andere biome).
 - `datagen/tags/Ring4BiomeTags`: `is_ring_4`, `ring_4_blighted`, `CONVENTION` (`c:`-tags).
 - `datagen/lang/Ring4BiomeNames`: en + nl voor de 11 biomes.
 - Preset `corrupted_world.json`: `rings.ring_4` = `multi_noise` (8 grondbiomes + mistrandvak), `transitions.ring_4` = `sundered_reach`, `island_biomes` = `sky_gardens`/`withered_gardens`.
@@ -74,3 +88,4 @@ V1 mistrand `mist_fjords`; V2 indeling/aandelen; V3 kleuren + klimaat; V4 spawns
 - [atmosphere] ring 4-kleuren uit `Ring4Biomes` naar een `BiomeAmbience.ring4`-haak (A, 80), zoals ring 3.
 - [worldgen] prestatie: ring 4 heeft geen diep snelpad in de surface (zoals `ring_3_deep`); alleen bouwen als de perfronde het vraagt.
 - [worldgen] na INT1: de echte ring 4-blokken in `ring4_surface.py` (tidestone, peat, …).
+- [worldgen] gedeelde `addDeepCarvers`-helper voor `Ring2Biomes`/`Ring3Biomes`/`Ring4Biomes` (review 64; ring 2/3 vergrendeld) → INT.

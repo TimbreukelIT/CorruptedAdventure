@@ -33,7 +33,14 @@
         "weight": 10
       }
     ],
-    "axolotls": [],
+    "axolotls": [
+      {
+        "type": "minecraft:axolotl",
+        "maxCount": 6,
+        "minCount": 4,
+        "weight": 10
+      }
+    ],
     "creature": [
       {
         "type": "minecraft:frog",
@@ -96,12 +103,6 @@
     "underground_water_creature": [
       {
         "type": "minecraft:glow_squid",
-        "maxCount": 6,
-        "minCount": 4,
-        "weight": 10
-      },
-      {
-        "type": "minecraft:axolotl",
         "maxCount": 6,
         "minCount": 4,
         "weight": 10

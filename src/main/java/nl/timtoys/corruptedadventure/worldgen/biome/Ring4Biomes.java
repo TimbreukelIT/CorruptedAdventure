@@ -133,38 +133,55 @@ public final class Ring4Biomes {
     }
 
     /**
-     * Vanilla's monsters and bats everywhere (until phase 4); the animals per biome (contract §4): the lagoon tropical
-     * fish, turtles and dolphins, the swamp frogs and axolotls, the cascades foxes and rabbits. The blighted band, the
-     * withered islands and {@code sundered_reach} have no animals.
+     * The animals per biome (contract §4, V4 = A): the lagoon tropical fish, turtles and dolphins, the swamp frogs and
+     * axolotls (on the clay patches of its lake beds), the cascades foxes and rabbits. The blighted band, the withered
+     * islands and {@code sundered_reach} have none. Every ring 4 biome has an entry, so a missing one fails loudly.
      */
+    private static final Map<ResourceKey<Biome>, List<Spawn>> ANIMALS = Map.ofEntries(
+            Map.entry(ModBiomes.CASCADE_VALE, List.of(
+                    new Spawn(MobCategory.CREATURE, EntityType.FOX, 8, 2, 4),
+                    new Spawn(MobCategory.CREATURE, EntityType.RABBIT, 4, 2, 3),
+                    new Spawn(MobCategory.WATER_AMBIENT, EntityType.SALMON, 5, 1, 5))),
+            Map.entry(ModBiomes.CRYSTAL_LAGOON, List.of(
+                    new Spawn(MobCategory.WATER_AMBIENT, EntityType.TROPICAL_FISH, 25, 8, 8),
+                    new Spawn(MobCategory.WATER_AMBIENT, EntityType.PUFFERFISH, 15, 1, 3),
+                    new Spawn(MobCategory.WATER_CREATURE, EntityType.DOLPHIN, 2, 1, 2),
+                    new Spawn(MobCategory.CREATURE, EntityType.TURTLE, 5, 2, 5))),
+            Map.entry(ModBiomes.LOTUS_SHALLOWS, List.of(
+                    new Spawn(MobCategory.CREATURE, EntityType.FROG, 6, 2, 4),
+                    new Spawn(MobCategory.WATER_AMBIENT, EntityType.SALMON, 5, 1, 5))),
+            Map.entry(ModBiomes.GLOWROOT_SWAMP, List.of(
+                    new Spawn(MobCategory.CREATURE, EntityType.FROG, 10, 2, 5),
+                    new Spawn(MobCategory.AXOLOTLS, EntityType.AXOLOTL, 10, 4, 6),
+                    new Spawn(MobCategory.WATER_AMBIENT, EntityType.TROPICAL_FISH, 25, 8, 8))),
+            Map.entry(ModBiomes.MIST_FJORDS, List.of(
+                    new Spawn(MobCategory.WATER_AMBIENT, EntityType.COD, 15, 3, 6),
+                    new Spawn(MobCategory.WATER_AMBIENT, EntityType.SALMON, 15, 1, 5),
+                    new Spawn(MobCategory.WATER_CREATURE, EntityType.SQUID, 3, 1, 4),
+                    new Spawn(MobCategory.CREATURE, EntityType.RABBIT, 2, 1, 2))),
+            Map.entry(ModBiomes.DROWNED_FOREST, List.of()),
+            Map.entry(ModBiomes.PEAT_MOORS, List.of()),
+            Map.entry(ModBiomes.REED_MARSH, List.of()),
+            Map.entry(ModBiomes.SKY_GARDENS, List.of(new Spawn(MobCategory.CREATURE, EntityType.RABBIT, 4, 2, 3))),
+            Map.entry(ModBiomes.WITHERED_GARDENS, List.of()),
+            Map.entry(ModBiomes.SUNDERED_REACH, List.of()));
+
+    /** Vanilla's monsters and bats everywhere (until phase 4), plus the biome's {@link #ANIMALS}; throws for any other biome. */
     static MobSpawnSettings spawns(ResourceKey<Biome> biome) {
+        List<Spawn> animals = ANIMALS.get(biome);
+        if (animals == null) {
+            throw new IllegalArgumentException("no ring 4 spawns for " + biome);
+        }
         MobSpawnSettings.Builder spawns = new MobSpawnSettings.Builder();
         BiomeDefaultFeatures.commonSpawns(spawns);
-        if (biome.equals(ModBiomes.CRYSTAL_LAGOON)) {
-            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
-            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.PUFFERFISH, 15, 1, 3));
-            spawns.addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 2, 1, 2));
-            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.TURTLE, 5, 2, 5));
-        } else if (biome.equals(ModBiomes.GLOWROOT_SWAMP)) {
-            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
-            spawns.addSpawn(MobCategory.UNDERGROUND_WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.AXOLOTL, 10, 4, 6));
-            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
-        } else if (biome.equals(ModBiomes.CASCADE_VALE)) {
-            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FOX, 8, 2, 4));
-            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
-            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 5, 1, 5));
-        } else if (biome.equals(ModBiomes.LOTUS_SHALLOWS)) {
-            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 6, 2, 4));
-            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 5, 1, 5));
-        } else if (biome.equals(ModBiomes.MIST_FJORDS)) {
-            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.COD, 15, 3, 6));
-            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 15, 1, 5));
-            spawns.addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.SQUID, 3, 1, 4));
-            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 2, 1, 2));
-        } else if (biome.equals(ModBiomes.SKY_GARDENS)) {
-            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
+        for (Spawn spawn : animals) {
+            spawns.addSpawn(spawn.category(), new MobSpawnSettings.SpawnerData(spawn.type(), spawn.weight(), spawn.min(), spawn.max()));
         }
         return spawns.build();
+    }
+
+    /** One animal spawn: category, type, weight and group size. */
+    private record Spawn(MobCategory category, EntityType<?> type, int weight, int min, int max) {
     }
 
     /** Sky, fog, water and water fog, grass and foliage, the downfall and whether it rains (snow never: too warm). */
