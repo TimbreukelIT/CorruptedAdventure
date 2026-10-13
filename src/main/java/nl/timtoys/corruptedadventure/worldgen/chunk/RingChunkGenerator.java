@@ -28,6 +28,7 @@ import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingFillGate;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
@@ -63,6 +64,7 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
     private final Map<Ring, Integer> fluidLevels;
     // One random state per level in practice; remembered so the router is searched once.
     private volatile VolcanicFieldLookup volcanicLookup;
+    private volatile IslandFieldLookup islandLookup;
 
     public RingChunkGenerator(BiomeSource biomeSource, Holder<NoiseGeneratorSettings> settings, ResourceKey<Level> dimension) {
         this(biomeSource, settings, dimension, Map.of());
@@ -85,9 +87,11 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
                     () -> NoiseChunk.forChunk(access, random, Beardifier.forStructuresInChunk(structureManager, access.getPos()),
                             generatorSettings().value(), globalFluidPicker.get(), blender));
             VolcanicField volcanic = volcanicField(random);
-            // The noise chunk's memo returns its own instance of the (equal) field: one column cache for terrain and lava.
+            IslandField islands = islandField(random);
+            // The noise chunk's memo returns its own instance of the (equal) field: one column cache for terrain and fluid.
             noiseChunk.aquifer = new RingAquifer(dimension, noiseChunk.aquifer,
-                    volcanic == null ? null : (VolcanicField) noiseChunk.wrap(volcanic));
+                    volcanic == null ? null : (VolcanicField) noiseChunk.wrap(volcanic),
+                    islands == null ? null : (IslandField) noiseChunk.wrap(islands));
             return noiseChunk;
         });
     }
@@ -107,6 +111,23 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
     }
 
     private record VolcanicFieldLookup(RandomState random, @Nullable VolcanicField field) {
+    }
+
+    /**
+     * The ring 4 islands inside this generator's final density (wired by {@code random}), or null if it has none.
+     * Thread-safe; also read outside generation ({@link IslandFields}, the biome source's height hook).
+     */
+    @Nullable
+    public IslandField islandField(RandomState random) {
+        IslandFieldLookup lookup = islandLookup;
+        if (lookup == null || lookup.random() != random) {
+            lookup = new IslandFieldLookup(random, IslandField.find(random.router().finalDensity()));
+            islandLookup = lookup;
+        }
+        return lookup.field();
+    }
+
+    private record IslandFieldLookup(RandomState random, @Nullable IslandField field) {
     }
 
     /**

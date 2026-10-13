@@ -208,6 +208,11 @@
               "type": "minecraft:fixed",
               "biome": "corruptedadventure:steam_fens"
             }
+          },
+          "island_biomes": {
+            "mythic": "corruptedadventure:placeholder_ring_4",
+            "blighted": "corruptedadventure:placeholder_ring_4",
+            "min_top": 140
           }
         },
         "fluid_levels": {

@@ -69,8 +69,9 @@ class Ring3JsonTest {
         assertEquals("minecraft:vegetation", vegetation.getAsJsonObject("ring_1").get("noise").getAsString());
         assertEquals("corruptedadventure:ring_2/overworld/relief", temperature.get("ring_2").getAsString());
         assertEquals("corruptedadventure:ring_2/overworld/moisture", vegetation.get("ring_2").getAsString());
+        // Ring 4's axes: Ring4JsonTest (59).
         for (JsonObject blend : new JsonObject[]{temperature, vegetation}) {
-            for (String ring : new String[]{"ring_4", "ring_5", "void"}) {
+            for (String ring : new String[]{"ring_5", "void"}) {
                 assertEquals(0.0, blend.get(ring).getAsDouble(), ring);
             }
         }
@@ -117,13 +118,14 @@ class Ring3JsonTest {
         assertEquals(1.0, temperature.getAsJsonObject("ring_1").get("xz_scale").getAsDouble());
         assertEquals("corruptedadventure:ring_2/nether/region", temperature.get("ring_2").getAsString());
         assertEquals("corruptedadventure:ring_3/nether/region", temperature.get("ring_3").getAsString());
-        for (String ring : new String[]{"ring_4", "ring_5", "void"}) {
+        assertEquals("corruptedadventure:ring_4/nether/region", temperature.get("ring_4").getAsString());
+        for (String ring : new String[]{"ring_5", "void"}) {
             assertEquals(0.0, temperature.get(ring).getAsDouble(), ring);
         }
     }
 
     /**
-     * Weirdness is 0 outside rings 1 and 3. Safe for ring 2: every ring 2 biome takes all weirdness, and the zones 1→2
+     * Weirdness is 0 outside rings 1, 3 and 4. Safe for ring 2: every ring 2 biome takes all weirdness, and the zones 1→2
      * and 2→3 have fixed transition biomes, so ring 1's vanilla climate is only read where the blend is vanilla's.
      */
     @Test
@@ -134,7 +136,8 @@ class Ring3JsonTest {
         // Vanilla 1.21.1's router value, literally: ring 1's biomes (rivers, peaks, plateaus) must not move.
         assertEquals("minecraft:overworld/ridges", weirdness.get("ring_1").getAsString());
         assertEquals("corruptedadventure:ring_3/overworld/caldera_dormant", weirdness.get("ring_3").getAsString());
-        for (String ring : new String[]{"ring_2", "ring_4", "ring_5", "void"}) {
+        // Ring 4: its band axis (Ring4JsonTest, 59).
+        for (String ring : new String[]{"ring_2", "ring_5", "void"}) {
             assertEquals(0.0, weirdness.get(ring).getAsDouble(), ring);
         }
         for (JsonElement biome : multiNoise("minecraft:overworld", "ring_2")) {

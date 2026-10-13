@@ -8,6 +8,7 @@ import net.minecraft.world.level.levelgen.Aquifer;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingColumnCache;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
 import javax.annotation.Nullable;
@@ -19,9 +20,11 @@ import java.util.Map;
  * at the zone instead of at the boundary keeps the terrain that dips towards the edge dry, so no water or lava wall
  * stands at the edge of the world. Local aquifer fluids are handled by {@link RingAquifer}.
  * <p>
- * The one place for the fluid rules per ring: {@link #noFluid} (void edge), {@link #waterOnlyFrom} (ring 2),
- * {@link #ring3LavaColumn}, {@link #ring3DryFrom} and {@link #ring3SealBelow} (overworld ring 3), each per column (a Y
- * bound), so that {@link RingAquifer}'s per-block path only compares Y (change 39e), and the fluid levels per ring
+ * The one place for the fluid rules per ring: {@link #noFluid} (void edge), {@link #waterOnlyFrom} (rings 2 and 4),
+ * {@link #ring3LavaColumn}, {@link #ring3DryFrom} and {@link #ring3SealBelow} (overworld ring 3),
+ * {@link #ring4DryBelow}, {@link #ring4DamBelow}, {@link #ring4NoLava} and {@link #ring4FallColumn} (overworld ring 4,
+ * package 59), each per
+ * column (a Y bound), so that {@link RingAquifer}'s per-block path only compares Y (change 39e), and the fluid levels per ring
  * ({@code levels}, from the
  * generator's {@code fluid_levels}: the default fluid fills open space up to and including that Y instead of up to the
  * dimension's sea level; Nether ring 2 and 3 have a lower lava sea, overworld ring 3 has no sea above Y 0).
@@ -49,12 +52,14 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
     }
 
     /**
-     * Local aquifer lava turns into water in overworld ring 2 from this Y up: above vanilla's lava layer ("the water
-     * under the ground"); the lava layer itself stays. {@link Integer#MAX_VALUE} (never) elsewhere. Switches hard on
-     * {@link RingPosition#ring()}, so a lava cell across the 1↔2 boundary is water on the ring 2 side.
+     * Local aquifer lava turns into water in overworld rings 2 and 4 from this Y up: above vanilla's lava layer ("the
+     * water under the ground"; ring 4 has no lava at all, 59). In ring 2 the lava layer itself stays; ring 4 has none
+     * ({@link #ring4DryBelow}). {@link Integer#MAX_VALUE} (never) elsewhere. Switches hard on {@link RingPosition#ring()},
+     * so a lava cell across the 1↔2 boundary is water on the ring 2 side.
      */
     static int waterOnlyFrom(ResourceKey<Level> dimension, RingPosition position) {
-        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_2 ? LAVA_LAYER_TOP : Integer.MAX_VALUE;
+        return dimension == Level.OVERWORLD && (position.ring() == Ring.RING_2 || position.ring() == Ring.RING_4)
+                ? LAVA_LAYER_TOP : Integer.MAX_VALUE;
     }
 
     /**
@@ -88,6 +93,48 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
     static int ring3SealBelow(ResourceKey<Level> dimension, RingPosition position) {
         return dimension == Level.OVERWORLD && position.ring() == Ring.RING_3 && position.inTransition()
                 ? SEA_LEVEL : Integer.MIN_VALUE;
+    }
+
+    /**
+     * Open space is air below this Y in overworld ring 4 (59, decision of the user: dry, no lava): vanilla's lava layer
+     * (and any aquifer fluid) below Y −54 stays empty. Not in its dams ({@link #ring4DamBelow}), which hold rock there;
+     * {@link Integer#MIN_VALUE} (never) elsewhere. Switches hard on {@link RingPosition#ring()}.
+     */
+    static int ring4DryBelow(ResourceKey<Level> dimension, RingPosition position) {
+        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_4 && !ring4Dam(position)
+                ? LAVA_LAYER_TOP : Integer.MIN_VALUE;
+    }
+
+    /**
+     * Open space stays rock below this Y in the dams around ring 4's dry bottom ({@link #ring4DryBelow}), 59: the whole
+     * zone 4→5 (both halves), so the lava layer of ring 5 starts only beyond it, and ring 4's half of the zone 3→4, so
+     * the carver lava in ring 3's half (sealed below Y 63 by {@link #ring3SealBelow}) is walled in as well.
+     * {@link Integer#MIN_VALUE} (never) elsewhere.
+     */
+    static int ring4DamBelow(ResourceKey<Level> dimension, RingPosition position) {
+        return dimension == Level.OVERWORLD && ring4Dam(position) ? LAVA_LAYER_TOP : Integer.MIN_VALUE;
+    }
+
+    private static boolean ring4Dam(RingPosition position) {
+        return position.inTransition() && (position.inner() == Ring.RING_4
+                || position.outer() == Ring.RING_4 && position.ring() == Ring.RING_4);
+    }
+
+    /**
+     * Whether no carver may place lava in this column (59): overworld ring 4 and its dams. Vanilla carvers put lava at
+     * and below their lava level (Y −56) without asking the aquifer; there {@link RingAquifer#carverLava} answers
+     * instead (a dry bottom stays air, a dam is not cut). Elsewhere carvers keep vanilla's lava.
+     */
+    static boolean ring4NoLava(ResourceKey<Level> dimension, RingPosition position) {
+        return dimension == Level.OVERWORLD && (position.ring() == Ring.RING_4 || ring4Dam(position));
+    }
+
+    /**
+     * Whether the column may hold one of ring 4's recorded waterfalls ({@link IslandField.Column#fallTop}), placed by
+     * {@link RingAquifer}: in overworld ring 4 with its islands present.
+     */
+    static boolean ring4FallColumn(ResourceKey<Level> dimension, RingPosition position, @Nullable IslandField islands) {
+        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_4 && islands != null;
     }
 
     @Override

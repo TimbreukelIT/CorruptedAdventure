@@ -17,8 +17,10 @@ import net.minecraft.world.level.biome.MobSpawnSettings;
 import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.ring.Ring4Band;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -174,6 +176,65 @@ class RingBiomeSourceTest {
         Map<Ring, BiomeSource> complete = new EnumMap<>(Ring.class);
         biomes.forEach((ring, biome) -> complete.put(ring, new FixedBiomeSource(biome)));
         assertTrue(RingBiomeSource.validateRings(complete).isSuccess());
+    }
+
+    /**
+     * 59: the height hook. An island of ring 4 with its top at Y 140 or higher gets the height biome of the band at its
+     * centre, as a whole and from 4 blocks under its bottom up; lower islands, the ground and other rings keep theirs.
+     */
+    @Test
+    void highRing4IslandsGetTheHeightBiomeOfTheBandAtTheirCentre() {
+        Holder<Biome> mythic = Holder.direct(biome());
+        Holder<Biome> blighted = Holder.direct(biome());
+        Map<Ring, BiomeSource> sources = new EnumMap<>(Ring.class);
+        biomes.forEach((ring, biome) -> sources.put(ring, new FixedBiomeSource(biome)));
+        RingBiomeSource hooked = new RingBiomeSource(Level.OVERWORLD, sources, Map.of(), new IslandBiomes(mythic, blighted, 140));
+        Ring4Band band = Ring4Band.of(LAYOUT);
+        int[] mythicCentre = centre(band, false);
+        int[] blightedCentre = centre(band, true);
+        for (int[] centre : new int[][]{mythicCentre, blightedCentre}) {
+            Holder<Biome> expected = band.blighted(centre[0], centre[1]) ? blighted : mythic;
+            IslandField.Island high = new IslandField.Island(centre[0], centre[1], 24.0, 120, 140);
+            RingBiomeSource.IslandLookup islands = (x, z) -> high.covers(x, z) ? high : null;
+            int qx = QuartPos.fromBlock(centre[0]);
+            int qz = QuartPos.fromBlock(centre[1]);
+            // From the quart whose middle lies 4 blocks under the bottom (Y 116) up; the ground below keeps its biome.
+            assertEquals(expected, hooked.getNoiseBiome(LAYOUT, islands, qx, QuartPos.fromBlock(116), qz, Climate.empty()));
+            assertEquals(expected, hooked.getNoiseBiome(LAYOUT, islands, qx, QuartPos.fromBlock(300), qz, Climate.empty()));
+            assertEquals(biomes.get(Ring.RING_4), hooked.getNoiseBiome(LAYOUT, islands, qx, QuartPos.fromBlock(112), qz, Climate.empty()));
+            // Within the footprint only.
+            assertEquals(biomes.get(Ring.RING_4), hooked.getNoiseBiome(LAYOUT, islands, QuartPos.fromBlock(centre[0] + 40), QuartPos.fromBlock(130), qz, Climate.empty()));
+            assertEquals(expected, hooked.getNoiseBiome(LAYOUT, islands, QuartPos.fromBlock(centre[0] + 16), QuartPos.fromBlock(130), qz, Climate.empty()));
+            // A top below 140 keeps the ground biome.
+            IslandField.Island low = new IslandField.Island(centre[0], centre[1], 24.0, 100, 139);
+            assertEquals(biomes.get(Ring.RING_4), hooked.getNoiseBiome(LAYOUT, (x, z) -> low.covers(x, z) ? low : null,
+                    qx, QuartPos.fromBlock(130), qz, Climate.empty()));
+        }
+        assertTrue(hooked.possibleBiomes().containsAll(Set.of(mythic, blighted)));
+        // Other rings never ask, even with an island over them; nor does a source without the hook.
+        IslandField.Island elsewhere = new IslandField.Island(CENTRES[2], 0, 24.0, 120, 200);
+        assertEquals(biomes.get(Ring.RING_3), hooked.getNoiseBiome(LAYOUT, (x, z) -> elsewhere, QuartPos.fromBlock(CENTRES[2]), QuartPos.fromBlock(150),
+                0, Climate.empty()));
+        IslandField.Island ring4 = new IslandField.Island(mythicCentre[0], mythicCentre[1], 24.0, 120, 200);
+        assertEquals(biomes.get(Ring.RING_4), overworld.getNoiseBiome(LAYOUT, (x, z) -> ring4, QuartPos.fromBlock(mythicCentre[0]),
+                QuartPos.fromBlock(150), QuartPos.fromBlock(mythicCentre[1]), Climate.empty()));
+        assertTrue(decode(", \"island_biomes\": {\"mythic\": \"test:sky\", \"blighted\": \"test:withered\"}").isSuccess());
+    }
+
+    /** An island centre in ring 4 proper (a quart corner) well inside the given band. */
+    private static int[] centre(Ring4Band band, boolean blighted) {
+        for (int angle = 0; angle < 360; angle += 7) {
+            for (int distance = 6200; distance <= 7900; distance += 20) {
+                int x = (int) Math.round(distance * Math.cos(Math.toRadians(angle))) & ~3;
+                int z = (int) Math.round(distance * Math.sin(Math.toRadians(angle))) & ~3;
+                RingPosition position = LAYOUT.sample(Level.OVERWORLD, x, z);
+                if (!position.inTransition() && position.ring() == Ring.RING_4 && band.blighted(x, z) == blighted
+                        && band.blighted(x + 40, z) == blighted && band.blighted(x - 40, z) == blighted) {
+                    return new int[]{x, z};
+                }
+            }
+        }
+        throw new AssertionError("no island centre on the " + (blighted ? "blighted" : "mythical") + " side");
     }
 
     /** Away from the boundary's zone nothing changes; inside it the biome follows the side of blend 0.5. */

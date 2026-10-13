@@ -41,11 +41,15 @@ class RingFluidPickerTest {
     }
 
     @Test
-    void waterOnlyInOverworldRing2AboveTheLavaLayer() {
+    void waterOnlyInOverworldRings2And4AboveTheLavaLayer() {
         RingPosition ring2 = RingPosition.within(Ring.RING_2);
         assertEquals(-54, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, ring2));
         assertEquals(Integer.MAX_VALUE, RingFluidPicker.waterOnlyFrom(Level.NETHER, ring2));
-        for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_3, Ring.RING_4, Ring.RING_5, Ring.VOID}) {
+        assertEquals(-54, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, RingPosition.within(Ring.RING_4)));
+        assertEquals(-54, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, new RingPosition(Ring.RING_4, Ring.RING_5, 0.4)));
+        assertEquals(Integer.MAX_VALUE, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, new RingPosition(Ring.RING_4, Ring.RING_5, 0.6)));
+        assertEquals(Integer.MAX_VALUE, RingFluidPicker.waterOnlyFrom(Level.NETHER, RingPosition.within(Ring.RING_4)));
+        for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_3, Ring.RING_5, Ring.VOID}) {
             assertEquals(Integer.MAX_VALUE, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, RingPosition.within(ring)), ring.name());
         }
         assertEquals(-54, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, new RingPosition(Ring.RING_1, Ring.RING_2, 0.5)));
@@ -117,5 +121,40 @@ class RingFluidPickerTest {
         // Below the lava layer's top the vanilla status (lava up to -55), not lava up to -1.
         assertSame(lavaLayer, picker.computeFluid(ring3, 0, -60, 0));
         assertSame(SEA, picker.computeFluid(RingPosition.within(Ring.RING_2), 0, 40, 0));
+    }
+
+    /**
+     * 59: ring 4 dry below the lava layer; dams of rock over the whole zone 4→5 (both halves) and over ring 4's half of
+     * the zone 3→4 (ring 3's half has its own seal); no carver lava in ring 4 and the dams.
+     */
+    @Test
+    void ring4IsDryBelowTheLavaLayerWithADamOverTheZone4To5() {
+        RingPosition ring4 = RingPosition.within(Ring.RING_4);
+        assertEquals(-54, RingFluidPicker.ring4DryBelow(Level.OVERWORLD, ring4));
+        assertEquals(Integer.MIN_VALUE, RingFluidPicker.ring4DamBelow(Level.OVERWORLD, ring4));
+        assertTrue(RingFluidPicker.ring4NoLava(Level.OVERWORLD, ring4));
+        RingPosition ring4Half = new RingPosition(Ring.RING_3, Ring.RING_4, 0.7);
+        assertEquals(Integer.MIN_VALUE, RingFluidPicker.ring4DryBelow(Level.OVERWORLD, ring4Half));
+        assertEquals(-54, RingFluidPicker.ring4DamBelow(Level.OVERWORLD, ring4Half));
+        assertTrue(RingFluidPicker.ring4NoLava(Level.OVERWORLD, ring4Half));
+        RingPosition ring3Half = new RingPosition(Ring.RING_3, Ring.RING_4, 0.3);
+        assertEquals(Integer.MIN_VALUE, RingFluidPicker.ring4DamBelow(Level.OVERWORLD, ring3Half));
+        assertFalse(RingFluidPicker.ring4NoLava(Level.OVERWORLD, ring3Half));
+        for (double blend : new double[]{0.01, 0.4, 0.6, 0.99}) {
+            RingPosition zone = new RingPosition(Ring.RING_4, Ring.RING_5, blend);
+            assertEquals(Integer.MIN_VALUE, RingFluidPicker.ring4DryBelow(Level.OVERWORLD, zone), "blend " + blend);
+            assertEquals(-54, RingFluidPicker.ring4DamBelow(Level.OVERWORLD, zone), "blend " + blend);
+            assertTrue(RingFluidPicker.ring4NoLava(Level.OVERWORLD, zone), "blend " + blend);
+        }
+        for (RingPosition other : new RingPosition[]{RingPosition.within(Ring.RING_3), RingPosition.within(Ring.RING_5),
+                new RingPosition(Ring.RING_5, Ring.VOID, 0.3)}) {
+            assertEquals(Integer.MIN_VALUE, RingFluidPicker.ring4DryBelow(Level.OVERWORLD, other), other.toString());
+            assertEquals(Integer.MIN_VALUE, RingFluidPicker.ring4DamBelow(Level.OVERWORLD, other), other.toString());
+            assertFalse(RingFluidPicker.ring4NoLava(Level.OVERWORLD, other), other.toString());
+        }
+        assertFalse(RingFluidPicker.ring4NoLava(Level.NETHER, ring4));
+        assertEquals(Integer.MIN_VALUE, RingFluidPicker.ring4DryBelow(Level.NETHER, ring4));
+        assertEquals(Integer.MIN_VALUE, RingFluidPicker.ring4DamBelow(Level.NETHER, new RingPosition(Ring.RING_4, Ring.RING_5, 0.5)));
+        assertFalse(RingFluidPicker.ring4FallColumn(Level.OVERWORLD, ring4, null));
     }
 }

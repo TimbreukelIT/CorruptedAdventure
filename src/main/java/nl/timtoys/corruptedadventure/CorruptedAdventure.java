@@ -41,6 +41,7 @@ import nl.timtoys.corruptedadventure.weather.RingWeather;
 import nl.timtoys.corruptedadventure.worldgen.biome.BiomeSpawnPlacements;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring3StriderSpawns;
 import nl.timtoys.corruptedadventure.worldgen.border.RingWorldBorder;
+import nl.timtoys.corruptedadventure.worldgen.chunk.IslandFields;
 import org.slf4j.Logger;
 
 /**
@@ -81,6 +82,7 @@ public final class CorruptedAdventure {
         ModNetwork.register(modEventBus);
         RingSettingsSnapshot.register(NeoForge.EVENT_BUS);
         RingLayout.register(NeoForge.EVENT_BUS);
+        IslandFields.register(NeoForge.EVENT_BUS);
         RingWorldBorder.register(NeoForge.EVENT_BUS);
         RingLayoutSync.register(NeoForge.EVENT_BUS);
         CaCommand.register(NeoForge.EVENT_BUS);

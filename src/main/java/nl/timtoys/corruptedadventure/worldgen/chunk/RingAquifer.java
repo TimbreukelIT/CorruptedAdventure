@@ -9,6 +9,7 @@ import net.minecraft.world.level.levelgen.Aquifer;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import nl.timtoys.corruptedadventure.ring.RingColumnCache;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
 import javax.annotation.Nullable;
@@ -28,7 +29,11 @@ import javax.annotation.Nullable;
  * can reach the lava layer and turn it into obsidian depending on the load order (47e, decision B, INT3). 42: the openings of the lava tubes, magma chambers and fire geodes stay free
  * of aquifer fluids (air, or lava in a gutter or a chamber's lake, crusted over where it would touch open air), and the
  * rock of their guard bands stays rock. Carvers fill their caves through this aquifer too, so they cannot cut into a
- * chamber, a gutter or a geode either.
+ * chamber, a gutter or a geode either. Overworld ring 4 (59): no lava at all, local lava becomes water like in ring 2
+ * ({@link RingFluidPicker#waterOnlyFrom}), the bottom below Y −54 is dry ({@link RingFluidPicker#ring4DryBelow}) with a
+ * dam of rock over the zone 4→5 and ring 4's half of the zone 3→4 ({@link RingFluidPicker#ring4DamBelow}), carvers
+ * place no lava there ({@link #carverLava}), and the recorded waterfalls of its
+ * {@link IslandField} fall as water ({@link RingFluidPicker#ring4FallColumn}).
  * <p>
  * One instance per noise chunk, so the per-call state below is single-threaded like vanilla's.
  */
@@ -38,6 +43,8 @@ final class RingAquifer implements Aquifer {
     private static final BlockState LAVA = Blocks.LAVA.defaultBlockState();
     /** Falling lava (a lava fall, 39f): level 8 is a falling flow, which stays put under lava and spreads where it lands. */
     private static final BlockState FALLING_LAVA = LAVA.setValue(LiquidBlock.LEVEL, 8);
+    /** Falling water (a recorded waterfall of ring 4, 59), like {@link #FALLING_LAVA}. */
+    private static final BlockState FALLING_WATER = WATER.setValue(LiquidBlock.LEVEL, 8);
     /**
      * How far the crags of ring 3 ({@code ring_3/overworld/terrain}: 0.3 * roughness * noise in density, 1/8 per block;
      * the noise reaches about ±1.5) can move the surface, per unit of roughness (42b: on top of the exact interpolation,
@@ -51,6 +58,8 @@ final class RingAquifer implements Aquifer {
     private final Aquifer vanilla;
     @Nullable
     private final VolcanicField volcanic;
+    @Nullable
+    private final IslandField islands;
     private boolean suppressed;
     /** Set while the chunk's carvers run ({@code RingChunkGenerator#applyCarvers}): their open space is a carved tunnel. */
     private boolean carving;
@@ -84,22 +93,56 @@ final class RingAquifer implements Aquifer {
     private final int[] guardBottom = new int[COLUMNS + 1];
     private final int[] guardTop = new int[COLUMNS + 1];
     private final int[] waterOnlyFrom = new int[COLUMNS + 1];
+    private final int[] dryBelow = new int[COLUMNS + 1];
+    private final boolean[] noLava = new boolean[COLUMNS + 1];
+    // The column's recorded waterfall (ring 4, 59): falling water in [waterFallBottom, waterFallTop], let flow at and
+    // below waterFallFlow.
+    private final int[] waterFallTop = new int[COLUMNS + 1];
+    private final int[] waterFallBottom = new int[COLUMNS + 1];
+    private final int[] waterFallFlow = new int[COLUMNS + 1];
 
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla) {
-        this(dimension, vanilla, null);
+        this(dimension, vanilla, null, null);
     }
 
-    /** @param volcanic the ring 3 terrain of this noise chunk (the same instance its density uses), or null */
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla, @Nullable VolcanicField volcanic) {
+        this(dimension, vanilla, volcanic, null);
+    }
+
+    /**
+     * @param volcanic the ring 3 terrain of this noise chunk (the same instance its density uses), or null
+     * @param islands  the ring 4 islands of this noise chunk (likewise), or null
+     */
+    RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla, @Nullable VolcanicField volcanic, @Nullable IslandField islands) {
         this.dimension = dimension;
         this.vanilla = vanilla;
         this.volcanic = volcanic;
+        this.islands = islands;
     }
 
     @Nullable
     @Override
     public BlockState computeSubstance(DensityFunction.FunctionContext context, double substance) {
         return compute(-1, context, substance);
+    }
+
+    /**
+     * What a carver places at or below its lava level, where vanilla puts lava without asking the aquifer (through
+     * {@link CarverLava}): in ring 4 and its dams ({@link RingFluidPicker#ring4NoLava}) the aquifer's own answer for the
+     * open space (air on the dry bottom, null in a dam: not cut), elsewhere lava as in vanilla, without touching the
+     * update flags.
+     */
+    @Nullable
+    BlockState carverLava(DensityFunction.FunctionContext context) {
+        int i = column(context.blockX(), context.blockZ());
+        return noLava[i] ? compute(i, context, 0.0) : LAVA;
+    }
+
+    /** The same with the ring given, for tests: the column is not remembered. */
+    @Nullable
+    BlockState carverLava(RingPosition position, DensityFunction.FunctionContext context) {
+        load(COLUMNS, position, context.blockX(), context.blockZ());
+        return noLava[COLUMNS] ? compute(COLUMNS, context, 0.0) : LAVA;
     }
 
     /** Marks the carvers' pass: while it runs, open space asked for is a tunnel a carver wants to cut. */
@@ -146,7 +189,14 @@ final class RingAquifer implements Aquifer {
 
     private void load(int i, RingPosition position, int x, int z) {
         noFluid[i] = RingFluidPicker.noFluid(position);
-        sealBelow[i] = RingFluidPicker.ring3SealBelow(dimension, position);
+        sealBelow[i] = Math.max(RingFluidPicker.ring3SealBelow(dimension, position), RingFluidPicker.ring4DamBelow(dimension, position));
+        dryBelow[i] = RingFluidPicker.ring4DryBelow(dimension, position);
+        noLava[i] = RingFluidPicker.ring4NoLava(dimension, position);
+        boolean falls = RingFluidPicker.ring4FallColumn(dimension, position, islands);
+        IslandField.Column islandColumn = falls ? islands.column(x, z) : null;
+        waterFallTop[i] = falls ? islandColumn.fallTop() : Integer.MIN_VALUE;
+        waterFallBottom[i] = falls ? islandColumn.fallBottom() : Integer.MIN_VALUE;
+        waterFallFlow[i] = falls ? islandColumn.fallFlowBelow() : Integer.MIN_VALUE;
         boolean lava = RingFluidPicker.ring3LavaColumn(dimension, position, volcanic);
         VolcanicField.Column column = lava ? volcanic.column(x, z) : null;
         lavaTop[i] = lava ? column.lavaTop() : Integer.MIN_VALUE;
@@ -185,6 +235,9 @@ final class RingAquifer implements Aquifer {
         if (y < sealBelow[i]) {
             return null;
         }
+        if (y < dryBelow[i]) {
+            return AIR;
+        }
         if (y == springY[i]) {
             // A lava spring on a floating island or volcano (39d): scheduled to flow, it pours off the edge.
             suppressed = false;
@@ -197,6 +250,12 @@ final class RingAquifer implements Aquifer {
             spring = y <= fallFlow[i];
             suppressed = !spring;
             return FALLING_LAVA;
+        }
+        if (y <= waterFallTop[i] && y >= waterFallBottom[i]) {
+            // A recorded waterfall of ring 4 (59): falling water down to where it lands, only its lowest blocks let flow.
+            spring = y <= waterFallFlow[i];
+            suppressed = !spring;
+            return FALLING_WATER;
         }
         if (carving && y >= guardBottom[i] && y <= guardTop[i]) {
             // A carver may not cut into the band around lava (42b): its tunnel would open the lava to the air beside it.
@@ -223,7 +282,7 @@ final class RingAquifer implements Aquifer {
         return state == null ? null : afterVanilla(i, y, state);
     }
 
-    /** The rules on vanilla's state: ring 3 stays dry, ring 2 has water instead of lava. */
+    /** The rules on vanilla's state: ring 3 stays dry, rings 2 and 4 have water instead of lava. */
     private BlockState afterVanilla(int i, int y, BlockState state) {
         if (dryFrom[i] != Integer.MAX_VALUE && y == RingFluidPicker.LAVA_LAYER_TOP) {
             // 47e (B, INT3): a closed floor of rock over vanilla's lava layer in ring 3, whatever vanilla puts on it: deep

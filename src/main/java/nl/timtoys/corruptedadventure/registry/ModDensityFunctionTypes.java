@@ -10,7 +10,9 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.CanyonDetails;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.CellEdges;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.DewGeodes;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RadialFalloff;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring4BandFunction;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingBlend;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingEdge;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingFillGate;
@@ -74,6 +76,16 @@ public final class ModDensityFunctionTypes {
     /** {@code corruptedadventure:ring_fill_gate} (only set by {@code RingBlend.mapAll}, not in JSON) */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<RingFillGate>> RING_FILL_GATE =
             DENSITY_FUNCTION_TYPES.register("ring_fill_gate", () -> RingFillGate.MAP_CODEC);
+
+    // ring 4 — W-terrein
+
+    /** {@code corruptedadventure:ring_4_band} (the band axis of ring 4, package 59) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<Ring4BandFunction>> RING_4_BAND =
+            DENSITY_FUNCTION_TYPES.register("ring_4_band", () -> Ring4BandFunction.MAP_CODEC);
+
+    /** {@code corruptedadventure:island_field} (the floating islands of ring 4, package 59) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<IslandField>> ISLAND_FIELD =
+            DENSITY_FUNCTION_TYPES.register("island_field", () -> IslandField.MAP_CODEC);
 
     private ModDensityFunctionTypes() {
     }

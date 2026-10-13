@@ -1,12 +1,15 @@
 package nl.timtoys.corruptedadventure.worldgen.chunk;
 
+import net.minecraft.core.Holder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Aquifer;
 import net.minecraft.world.level.levelgen.DensityFunction;
+import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicFieldTest;
 import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeShape;
@@ -125,7 +128,8 @@ class RingAquiferTest {
     @Test
     void otherRingsAndTheNetherKeepLava() {
         RingAquifer still = new RingAquifer(Level.OVERWORLD, STILL_LAVA);
-        for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_4, Ring.RING_5}) {
+        // Ring 4 has none (59): ring4HasNoLavaAndADryBottom.
+        for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_5}) {
             assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(RingPosition.within(ring), at(-20), -0.5), ring.name());
             assertFalse(still.shouldScheduleFluidUpdate());
         }
@@ -447,5 +451,84 @@ class RingAquiferTest {
         // The same at the zone 3→4 (ring 4 keeps the sea), on ring 3's side only.
         assertNull(ring3.computeSubstance(new RingPosition(Ring.RING_3, Ring.RING_4, 0.3), at(-5), -0.5));
         assertSame(Blocks.WATER.defaultBlockState(), ring3.computeSubstance(new RingPosition(Ring.RING_3, Ring.RING_4, 0.7), at(-5), -0.5));
+    }
+
+    /**
+     * 59: no lava in ring 4. Local lava becomes water above the lava layer (a stone lid on it, as in ring 2), the bottom
+     * below Y −54 is dry, and the zone 4→5 is rock there over its whole width; ring 5 beyond keeps its lava.
+     */
+    @Test
+    void ring4HasNoLavaAndADryBottom() {
+        RingAquifer still = new RingAquifer(Level.OVERWORLD, STILL_LAVA);
+        RingPosition ring4 = RingPosition.within(Ring.RING_4);
+        for (int y : new int[]{-53, -20, 30}) {
+            assertSame(Blocks.WATER.defaultBlockState(), still.computeSubstance(ring4, at(y), -0.5), "y " + y);
+            assertFalse(still.shouldScheduleFluidUpdate());
+        }
+        assertNull(still.computeSubstance(ring4, at(RingFluidPicker.LAVA_LAYER_TOP), -0.5));
+        for (int y : new int[]{-55, -60, -64}) {
+            assertSame(Blocks.AIR.defaultBlockState(), still.computeSubstance(ring4, at(y), -0.5), "y " + y);
+            assertFalse(still.shouldScheduleFluidUpdate());
+            assertNull(still.computeSubstance(ring4, at(y), 0.5), "rock stays rock at y " + y);
+        }
+        for (double blend : new double[]{0.1, 0.4, 0.6, 0.9}) {
+            RingPosition zone = new RingPosition(Ring.RING_4, Ring.RING_5, blend);
+            for (int y : new int[]{-55, -64}) {
+                assertNull(still.computeSubstance(zone, at(y), -0.5), "dam at blend " + blend + ", y " + y);
+            }
+        }
+        // Ring 4's half of the zone 3→4 is a dam too; ring 3's half keeps its own seal (rock below Y 63).
+        assertNull(still.computeSubstance(new RingPosition(Ring.RING_3, Ring.RING_4, 0.7), at(-60), -0.5));
+        assertNull(still.computeSubstance(new RingPosition(Ring.RING_3, Ring.RING_4, 0.3), at(-60), -0.5));
+        // Above the dam each half has its own rule: water on ring 4's side, vanilla's lava on ring 5's.
+        assertSame(Blocks.WATER.defaultBlockState(), still.computeSubstance(new RingPosition(Ring.RING_4, Ring.RING_5, 0.4), at(-20), -0.5));
+        assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(new RingPosition(Ring.RING_4, Ring.RING_5, 0.6), at(-20), -0.5));
+        assertSame(Blocks.LAVA.defaultBlockState(), still.computeSubstance(RingPosition.within(Ring.RING_5), at(-60), -0.5));
+        // Carvers get the same answers (they fill their tunnels through the aquifer above their lava level).
+        still.carving(true);
+        assertNull(still.computeSubstance(new RingPosition(Ring.RING_4, Ring.RING_5, 0.5), at(-55), -0.5));
+        assertSame(Blocks.AIR.defaultBlockState(), still.computeSubstance(ring4, at(-55), -0.5));
+        still.carving(false);
+    }
+
+    /** The water branch reads the island field's recorded falls; the skeleton (59) records none, so vanilla's state stays. */
+    @Test
+    void ring4WithoutRecordedFallsKeepsVanillasOpenSpace() {
+        IslandField islands = new IslandField(new DensityFunction.NoiseHolder(Holder.direct(new NormalNoise.NoiseParameters(0, 1.0))),
+                IslandField.Settings.DEFAULT);
+        RingAquifer dry = new RingAquifer(Level.OVERWORLD, DRY, null, islands);
+        for (int y : new int[]{63, 100, 200}) {
+            assertSame(Blocks.AIR.defaultBlockState(), dry.computeSubstance(RingPosition.within(Ring.RING_4), at(y), -0.5), "y " + y);
+        }
+    }
+
+    /**
+     * 59: carver lava (vanilla places it at and below Y −56 without asking the aquifer; {@code WorldCarverLavaMixin}
+     * asks {@link RingAquifer#carverLava} instead). Ring 4's dry bottom stays air, the dams stay rock (not cut), and
+     * everywhere else it is vanilla's lava, without touching the update flags, so ring 3 and the others stay as they were.
+     */
+    @Test
+    void carverLavaIsAirInRing4RockInItsDamsAndLavaElsewhere() {
+        RingAquifer still = new RingAquifer(Level.OVERWORLD, STILL_LAVA);
+        still.carving(true);
+        for (int y : new int[]{-56, -60, -64}) {
+            assertSame(Blocks.AIR.defaultBlockState(), still.carverLava(RingPosition.within(Ring.RING_4), at(y)), "ring 4 at " + y);
+            for (RingPosition dam : new RingPosition[]{new RingPosition(Ring.RING_3, Ring.RING_4, 0.7),
+                    new RingPosition(Ring.RING_4, Ring.RING_5, 0.3), new RingPosition(Ring.RING_4, Ring.RING_5, 0.7)}) {
+                assertNull(still.carverLava(dam, at(y)), dam + " at " + y);
+            }
+        }
+        // Ring 3 (also its half of the zone 3→4, sealed rock around it), ring 5 beyond the dam and the others: vanilla's
+        // lava, and the update flag of the last real answer stays as it was.
+        RingAquifer border = new RingAquifer(Level.OVERWORLD, WATER_WITH_UPDATE);
+        assertSame(Blocks.WATER.defaultBlockState(), border.computeSubstance(RingPosition.within(Ring.RING_1), at(30), -0.5));
+        assertTrue(border.shouldScheduleFluidUpdate());
+        for (RingPosition lava : new RingPosition[]{RingPosition.within(Ring.RING_3), new RingPosition(Ring.RING_3, Ring.RING_4, 0.3),
+                new RingPosition(Ring.RING_2, Ring.RING_3, 0.7), RingPosition.within(Ring.RING_5), RingPosition.within(Ring.RING_1),
+                RingPosition.within(Ring.RING_2)}) {
+            assertSame(Blocks.LAVA.defaultBlockState(), border.carverLava(lava, at(-56)), lava.toString());
+            assertTrue(border.shouldScheduleFluidUpdate(), lava.toString());
+        }
+        assertSame(Blocks.LAVA.defaultBlockState(), new RingAquifer(Level.NETHER, DRY).carverLava(RingPosition.within(Ring.RING_4), at(20)));
     }
 }

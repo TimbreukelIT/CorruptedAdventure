@@ -888,6 +888,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - Vuur, fakkel of lava ernaast geeft een **ketting-ontploffing** door het verbonden gas: scheduled ticks met een cap per tick (geen server-lag), blokschade volgt `mobGriefing`.
   - Hoofd in gas: gif ↑.
 - **Vloeistof:** alleen water, nooit lava (ook niet diep of onder eilanden); een eigen aquiferregel voor ring 4 (contract).
+- **Pakket 59 (2026-10-13):** ring 4 is **droog onder Y −54** (geen lavalaag; lokale lava erboven wordt water); een **dam van gesteente onder −54** over de hele zone 4→5 en de ring 4-helft van zone 3→4, zodat de lava van ring 3 en 5 nergens tegen de droge grotten staat; carvers zetten in ring 4 geen lava (de ring-aquifer beslist, mixin).
 
 **Water**
 - Gewoon vanilla water met een kleur per biome; ook het gifgroene water van de bedorven band is **veilig**. Emmers, farms en waterliften werken.
