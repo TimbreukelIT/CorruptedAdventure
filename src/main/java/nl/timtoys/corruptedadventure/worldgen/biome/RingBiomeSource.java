@@ -104,6 +104,8 @@ public final class RingBiomeSource extends BiomeSource {
         public List<IslandField.Island> islandsAt(int x, int z) {
             IslandField current = field.get();
             if (current == null) {
+                // No server (or no islands): drop the islands of the last one (review 61b #8).
+                cache = null;
                 return List.of();
             }
             Cache known = cache;

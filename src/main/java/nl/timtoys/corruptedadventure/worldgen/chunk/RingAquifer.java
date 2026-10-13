@@ -235,11 +235,12 @@ final class RingAquifer implements Aquifer {
         waterFallFlow[i] = falls ? islandColumn.fallFlowBelow() : Integer.MIN_VALUE;
         waterSpringY[i] = falls ? islandColumn.springY() : Integer.MIN_VALUE;
         lakeTop[i] = falls ? islandColumn.lakeTop() : Integer.MIN_VALUE;
-        // Review 61 #2: the lake fills its bowl only, from just under the terrain's interpolated surface up; open space
-        // further down (a cave the lift missed) stays vanilla's, never floating lake water.
-        lakeFloor[i] = lakeTop[i] == Integer.MIN_VALUE ? Integer.MAX_VALUE : Mth.floor(lakeSurface(x, z)) - 1;
         lakeGuardBottom[i] = falls ? islandColumn.caveLiftFrom() : Integer.MAX_VALUE;
         lakeGuardTop[i] = falls ? islandColumn.caveLiftTo() : Integer.MIN_VALUE;
+        // Review 61b #2, #7 (last: it reads other columns, which may reuse the island column read above): in the band
+        // around a lake above the sea the ground starts just under the terrain's interpolated surface; open space below
+        // it (a cave the lift missed, a sinkhole the surface does not know) stays rock, the lake fills its bowl above.
+        lakeFloor[i] = lakeGuardBottom[i] == Integer.MAX_VALUE ? Integer.MAX_VALUE : Mth.floor(lakeSurface(x, z)) - 1;
         boolean lava = RingFluidPicker.ring3LavaColumn(dimension, position, volcanic);
         VolcanicField.Column column = lava ? volcanic.column(x, z) : null;
         lavaTop[i] = lava ? column.lavaTop() : Integer.MIN_VALUE;
@@ -308,6 +309,10 @@ final class RingAquifer implements Aquifer {
         }
         if (carving && y >= lakeGuardBottom[i] && y <= lakeGuardTop[i]) {
             // A carver may not cut under, beside or into a lake above the sea (61): its tunnel would open the lake.
+            return null;
+        }
+        if (y >= lakeGuardBottom[i] && y <= lakeGuardTop[i] && y < lakeFloor[i]) {
+            // Under the ground around a lake above the sea: rock, so no water there ever stands on air (review 61b #2).
             return null;
         }
         if (y < lakeTop[i] && y >= lakeFloor[i]) {

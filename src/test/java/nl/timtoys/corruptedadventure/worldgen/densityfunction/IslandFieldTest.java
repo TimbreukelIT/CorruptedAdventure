@@ -30,26 +30,28 @@ public class IslandFieldTest {
             CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), RingLayout.noiseSeed(SEED));
     private static final IslandField FIELD = field();
 
-    /** A noise as the overworld's random state wires {@code corruptedadventure:<name>} on the test seed. */
-    static DensityFunction.NoiseHolder noise(String name) {
+    /** A noise as the overworld's random state wires {@code corruptedadventure:<name>} on {@code seed}. */
+    static DensityFunction.NoiseHolder noise(String name, long seed) {
         NormalNoise.NoiseParameters parameters = WorldgenData.noiseParameters(name);
         return new DensityFunction.NoiseHolder(Holder.direct(parameters), NormalNoise.create(
-                new XoroshiroRandomSource(SEED).forkPositional().fromHashOf(ResourceLocation.parse("corruptedadventure:" + name)), parameters));
+                new XoroshiroRandomSource(seed).forkPositional().fromHashOf(ResourceLocation.parse("corruptedadventure:" + name)), parameters));
     }
 
     /** The field as {@code ring_4/overworld/islands.json} configures it, on the test seed and layout. */
     public static IslandField field() {
-        return field(LAYOUT);
+        return field(SEED);
     }
 
-    static IslandField field(RingLayout layout) {
+    /** The same on another seed (its own layout noise too). */
+    static IslandField field(long seed) {
+        RingLayout layout = seed == SEED ? LAYOUT : new RingLayout(LAYOUT.settings(), RingLayout.noiseSeed(seed));
         JsonObject json = WorldgenData.read("density_function/ring_4/overworld/islands.json");
         JsonObject r = json.getAsJsonObject("relief");
-        Ring4Relief relief = new Ring4Relief(noise(key(r, "water")), noise(key(r, "growth")), noise(key(r, "hills")),
-                noise(key(r, "detail")), noise(key(r, "shoals")), noise(key(r, "rivers")), noise(key(r, "fjords")),
-                noise(key(r, "warp")));
+        Ring4Relief relief = new Ring4Relief(noise(key(r, "water"), seed), noise(key(r, "growth"), seed),
+                noise(key(r, "hills"), seed), noise(key(r, "detail"), seed), noise(key(r, "shoals"), seed),
+                noise(key(r, "rivers"), seed), noise(key(r, "fjords"), seed), noise(key(r, "warp"), seed));
         IslandField.Settings settings = IslandField.Settings.CODEC.parse(JsonOps.INSTANCE, json.get("settings")).getOrThrow();
-        return new IslandField(noise(key(json, "hash")), relief, settings, () -> layout);
+        return new IslandField(noise(key(json, "hash"), seed), relief, settings, () -> layout);
     }
 
     private static String key(JsonObject json, String field) {

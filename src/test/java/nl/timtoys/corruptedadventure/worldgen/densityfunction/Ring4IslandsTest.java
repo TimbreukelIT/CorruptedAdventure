@@ -190,15 +190,50 @@ class Ring4IslandsTest {
     /** Review 61 #4: no two islands grow into each other, also across cells (apart, or stacked 6 blocks apart). */
     @Test
     void noIslandsGrowIntoEachOther() {
-        for (int a = 0; a < SHAPES.size(); a++) {
-            for (int b = a + 1; b < SHAPES.size(); b++) {
-                IslandShape s = SHAPES.get(a);
-                IslandShape t = SHAPES.get(b);
+        assertNoOverlap(SHAPES);
+        // Review 61b #4: on other seeds too (the outer band, where giants and archipelagos meet across cells).
+        for (long seed : new long[]{1L, 42L, 987654321L}) {
+            IslandField other = IslandFieldTest.field(seed);
+            List<IslandShape> shapes = new ArrayList<>();
+            for (int i = 7200 / cellSize; i <= 8000 / cellSize; i++) {
+                for (int j = -1000 / cellSize; j <= 1000 / cellSize; j++) {
+                    shapes.addAll(other.cell(i, j));
+                }
+            }
+            assertTrue(shapes.size() > 50, "seed " + seed + ": " + shapes.size());
+            assertNoOverlap(shapes);
+        }
+    }
+
+    private static void assertNoOverlap(List<IslandShape> shapes) {
+        for (int a = 0; a < shapes.size(); a++) {
+            for (int b = a + 1; b < shapes.size(); b++) {
+                IslandShape s = shapes.get(a);
+                IslandShape t = shapes.get(b);
                 boolean apart = Math.hypot(s.x() - t.x(), s.z() - t.z()) > s.reach() + t.reach();
                 boolean stacked = s.lowest() > t.highest() + 6 || t.lowest() > s.highest() + 6;
                 assertTrue(apart || stacked, s + " / " + t);
             }
         }
+    }
+
+    /** Review 61b #3: a lake above the sea only in a hole no other island's hole comes near (no lake over a sea hole). */
+    @Test
+    void lakesAboveTheSeaLieAlone() {
+        int lakes = 0;
+        for (IslandShape s : SHAPES) {
+            if (field.details(s).lakeTop() == Integer.MIN_VALUE) {
+                continue;
+            }
+            lakes++;
+            double own = s.reach() * IslandShape.HOLE_SCALE + IslandShape.CAVE_BAND;
+            for (IslandShape t : SHAPES) {
+                if (!t.equals(s)) {
+                    assertTrue(Math.hypot(t.x() - s.x(), t.z() - s.z()) >= own + t.reach() * IslandShape.HOLE_SCALE + 2.0, s + " / " + t);
+                }
+            }
+        }
+        assertTrue(lakes > 0, "no lake above the sea");
     }
 
     /**

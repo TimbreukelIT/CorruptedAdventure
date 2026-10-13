@@ -165,8 +165,10 @@ class Ring4JsonTest {
         assertTrue(text.contains("corruptedadventure:ring_4/overworld/terrain"));
         assertTrue(text.contains("corruptedadventure:ring_4/overworld/cave_lift"));
         assertTrue(!text.contains("ring_3"), "no ring 3 key in the ring 4 stack");
-        // Review 60 #3: vanilla's cave entrances may break the surface (min(terrain, 5 × entrances + cave_lift)).
-        assertTrue(text.contains("{\"type\":\"minecraft:mul\",\"argument1\":5.0,\"argument2\":\"minecraft:overworld/caves/entrances\"},\"argument2\":\"corruptedadventure:ring_4/overworld/cave_lift\""), text);
+        // Review 60 #3: vanilla's cave entrances may break the surface (min(terrain, 5 × entrances + 4 × cave_lift)),
+        // except around a lake above the sea (review 61b #1: the lift of 2 there closes them, 4 × 2 > 5 × their depth).
+        assertTrue(text.contains("{\"type\":\"minecraft:mul\",\"argument1\":5.0,\"argument2\":\"minecraft:overworld/caves/entrances\"},"
+                + "\"argument2\":{\"type\":\"minecraft:mul\",\"argument1\":4.0,\"argument2\":\"corruptedadventure:ring_4/overworld/cave_lift\"}"), text);
         for (String perBlock : new String[]{"thin", "cave_lift"}) {
             assertEquals("minecraft:cache_once", WorldgenData.read(DF + "ring_4/overworld/" + perBlock + ".json").get("type").getAsString());
         }

@@ -62,6 +62,17 @@ Gemeten na de fixes: water 54 % (mythisch 49, bedorven 63). Niet opgepakt: dedup
 6. `IslandField`: `Neighbourhood`/`reliefScratch` via `ThreadOwned` weg; buurtlijsten in `KeyedSlots` (lock-vrij, gedeeld), relief-samples per aanroep.
 Gemeten na de fixes: 414 eilanden (binnen 58 / buiten 230, 13 reuzen), 224 vallen, 42 liften, 28 meren boven zee.
 
+## Code-review 61b (fixes 7414ec5..129557f), verwerkt
+1. Grotingangen: `min(terrain, 5 · entrances + 4 · cave_lift)` — buiten meren open zoals vanilla, in de band rond een meer boven zee (lift 2 → +8) dicht.
+2. Geen lucht onder meerwater: in de band rond een meer boven zee (`caveLiftFrom..To`) is alle open ruimte onder het geïnterpoleerde oppervlak (−1) gesteente (aquifer → null); het meer vult de kom erboven. Test: onder de bodem en op de bandbodem gesteente.
+3. Gestapelde gaten: een eigen meer boven zee alleen als geen ander gat in de buurt van zijn gat + grottenband komt (`alone`); per kolom dus hooguit één meer, nooit naast een lager gat. Test: elk meer ligt alleen.
+4. Plaatsing over cellen op afstand 2 (een eiland reikt ≤ ~97, twee ≤ 2 cellen); test over 4 seeds.
+5. Greedy op rang: een kandidaat valt alleen weg voor een zwaardere kandidaat die zelf blijft (`kept`, recursie stijgt in rang; per wereld onthouden).
+6. Zinkgaten voor lezers: `surfaceUncached` (meerrand, onder-water-check, `initial_height`) en `Column.lowestSurface()` nemen de zinkgatbodem mee; de terreinstapel (`surface`) niet (die snijdt ze per blok).
+7. `RingAquifer.load` leest alle eilandkolomvelden vóór `lakeSurface`.
+8. `LastColumn` leegt zijn cache zonder veld.
+9. `KeyedSlots.key` in `IslandField`; `Decisions.once` voor alle memo's.
+
 ## Client/server-impact
 Alles worldgen op de server; geen client-class, geen payload, geen `PROTOCOL_VERSION`. Nieuwe DF-types worden alleen in `ModDensityFunctionTypes` (blok `// ring 4 — W-terrein`) toegevoegd.
 
@@ -101,6 +112,7 @@ Q1 terrein ↔ biome-indeling op de assen; Q2 zone 4→5 volledig uit ring 4 (`R
 - 2026-10-13 | worldgen | Zone 4→5: de menging ring 4 ↔ ring 5 blijft (geen `RingBlend`-wijziging); ring 4 bouwt de hele zone, ring 5 stemt zijn invoer af | Q2 = B.
 - 2026-10-13 | worldgen | Rivieren op zeeniveau (bevaarbaar); vallen van terrasranden via de water-tak; gatmeren met uitloop | Q3 = A.
 - 2026-10-13 | worldgen | Eilandmaten (kluiten 5–15, middel 20–60, reuzen 80–150) zijn diameters | Q4 = A.
+- 2026-10-13 | worldgen | Geen terrasvallen in het terrein; W-biomes zet in 75 eventueel kleine bronnen/watervalletjes op terrasranden als feature (de waterscan telt ze apart); terreinvallen blijven eilanden (61) en klif 3→4 (62) | Besluit gebruiker (A): een val van een geïnterpoleerde terrasrand landt droog en stroomt uit.
 
 ## Backlog
 - [infra] `IslandOutput`/`IslandField.resolve` dupliceren het patroon van `VolcanicOutput`/`VolcanicField.resolve` (review 60; ring 3 is vergrendeld) → samen met de generieke `FieldLookup` (review 59 #9).

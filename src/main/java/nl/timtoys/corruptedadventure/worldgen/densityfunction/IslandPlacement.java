@@ -42,36 +42,42 @@ final class IslandPlacement {
     }
 
     /**
-     * The islands of grid cell (i, j): the cell's candidates ({@link #candidates}) without those that grow into a
-     * candidate of a neighbouring cell that outranks them (review 61 #4; {@link #OUTRANK}: the bigger kind, then the
-     * bigger island, then the centre). Pure: it reads the neighbours' candidates, never their final islands.
+     * The islands of grid cell (i, j): the cell's candidates ({@link #candidates}) that are kept ({@link #kept}). Pure:
+     * it reads candidates and the same greedy rule everywhere, so every cell agrees with its neighbours.
      */
     static List<IslandShape> place(IslandField field, int i, int j) {
-        List<IslandShape> own = field.candidates(i, j);
-        if (own.isEmpty()) {
-            return own;
-        }
         List<IslandShape> kept = new ArrayList<>();
-        for (IslandShape shape : own) {
-            boolean beaten = false;
-            for (int di = -1; di <= 1 && !beaten; di++) {
-                for (int dj = -1; dj <= 1 && !beaten; dj++) {
-                    if (di == 0 && dj == 0) {
-                        continue;
-                    }
-                    for (IslandShape other : field.candidates(i + di, j + dj)) {
-                        if (!clearOf(shape, List.of(other)) && OUTRANK.compare(other, shape) > 0) {
-                            beaten = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (!beaten) {
+        for (IslandShape shape : field.candidates(i, j)) {
+            if (field.kept(shape)) {
                 kept.add(shape);
             }
         }
         return List.copyOf(kept);
+    }
+
+    /** How many cells away a candidate may reach another: an island's reach (≤ ~107) twice is below 2 cells. */
+    private static final int NEIGHBOUR_CELLS = 2;
+
+    /**
+     * Greedy by rank (review 61 #4, #5): a candidate stays unless it grows into a candidate of the cells within
+     * {@link #NEIGHBOUR_CELLS} that outranks it ({@link #OUTRANK}) and itself stays. The recursion only climbs in rank,
+     * so it ends; the answer depends on nothing but the candidates.
+     */
+    static boolean kept(IslandField field, IslandShape shape) {
+        int cell = field.settings().cellSize();
+        int ci = Math.floorDiv(Mth.floor(shape.x()), cell);
+        int cj = Math.floorDiv(Mth.floor(shape.z()), cell);
+        for (int di = -NEIGHBOUR_CELLS; di <= NEIGHBOUR_CELLS; di++) {
+            for (int dj = -NEIGHBOUR_CELLS; dj <= NEIGHBOUR_CELLS; dj++) {
+                for (IslandShape other : field.candidates(ci + di, cj + dj)) {
+                    if (!other.equals(shape) && !clearOf(shape, List.of(other)) && OUTRANK.compare(other, shape) > 0
+                            && field.kept(other)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /** Which of two overlapping islands of neighbouring cells stays. */
@@ -239,7 +245,7 @@ final class IslandPlacement {
         }
         rim = Math.min(rim, field.sinkholeFloorWithin(shape.x(), shape.z(), reach));
         int lakeTop = Mth.floor(rim) - 1;
-        if (lakeTop <= IslandShape.SEA_LEVEL) {
+        if (lakeTop <= IslandShape.SEA_LEVEL || !alone(field, shape)) {
             lakeTop = Integer.MIN_VALUE;
         }
         // The highest block of water under the island: the lake's or the sea's (whose top block is Y 62).
@@ -268,6 +274,23 @@ final class IslandPlacement {
             }
         }
         return new IslandField.Details(lakeTop, lakeBottom, List.copyOf(falls), lift);
+    }
+
+    /**
+     * Whether no other island's hole comes near this hole's lake and the band kept free of caves around it (review 61
+     * #3): only such a hole gets a lake above the sea, so a column never lies under two lakes, nor beside a lower hole.
+     */
+    private static boolean alone(IslandField field, IslandShape shape) {
+        double own = shape.reach() * IslandShape.HOLE_SCALE + IslandShape.CAVE_BAND;
+        double reach = own + 2.0 * IslandField.MAX_REACH;
+        for (IslandShape other : field.shapesWithin(Mth.floor(shape.x() - reach), Mth.floor(shape.z() - reach),
+                Mth.floor(shape.x() + reach), Mth.floor(shape.z() + reach))) {
+            if (!other.equals(shape)
+                    && Math.hypot(other.x() - shape.x(), other.z() - shape.z()) < own + other.reach() * IslandShape.HOLE_SCALE + 2.0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Whether the column holds the island's water up to {@code waterTop} (inside its lake, or the sea). */

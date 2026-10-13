@@ -558,9 +558,9 @@ class RingAquiferTest {
             assertFalse(aquifer.shouldScheduleFluidUpdate(), "a lake is still");
             assertSame(Blocks.AIR.defaultBlockState(),
                     aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(x, column.lakeTop(), z), -0.5));
-            // Review 61 #2: open space well under the lake's floor (a cave) is no lake water.
-            assertSame(Blocks.AIR.defaultBlockState(),
-                    aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(x, (int) Math.floor(column.surface()) - 6, z), -0.5));
+            // Review 61b #2: open space under the lake's floor (a cave) is rock: no lake water on air, no air under it.
+            assertNull(aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(x, (int) Math.floor(column.surface()) - 6, z), -0.5));
+            assertNull(aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(x, column.caveLiftFrom(), z), -0.5));
             aquifer.carving(true);
             assertNull(aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(x, column.caveLiftFrom(), z), -0.5),
                     "carvers stay out under the lake");

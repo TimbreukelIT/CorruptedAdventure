@@ -50,6 +50,8 @@ public final class IslandField implements DensityFunction {
     private static final double INITIAL_MARGIN = 2.0;
     /** Islands one column may hold (overlapping footprints at different heights; more are dropped). */
     static final int MAX_ISLANDS = 8;
+    /** An island reaches at most this far from its centre (a giant: 150 across, stretched 1.15, ragged). */
+    static final double MAX_REACH = 110.0;
     /** Recorded waterfalls per chunk at most (the cap of the water branch). */
     static final int FALLS_PER_CHUNK = 3;
     /** What the stack adds to vanilla's caves around a lake above the sea (closes them). */
@@ -287,7 +289,7 @@ public final class IslandField implements DensityFunction {
     double initialHeight(int x, int z) {
         int qx = x & ~3;
         int qz = z & ~3;
-        long key = (long) qx << 32 | qz & 0xFFFFFFFFL;
+        long key = KeyedSlots.key(qx, qz);
         Double known = decisions.initialHeights.get(key);
         if (known == null) {
             known = lowestAround(qx + 2, qz + 2);
@@ -361,9 +363,15 @@ public final class IslandField implements DensityFunction {
         return s.height;
     }
 
-    /** The surface at a position with the islands' holes and outlets, exact and not cached. */
+    /**
+     * The lowest open ground at a position: the surface with the islands' holes and outlets, and a peat sinkhole's floor
+     * (which the terrain cuts per block, review 61 #6); exact and not cached.
+     */
     double surfaceUncached(double x, double z) {
-        return withHoles(baseHeight(x, z), x, z, shapesNear(Mth.floor(x), Mth.floor(z)), null);
+        Ring4Relief.Sample s = new Ring4Relief.Sample();
+        relief.sample(x, z, band(x, z), s, salt());
+        double surface = withHoles(s.height, x, z, shapesNear(Mth.floor(x), Mth.floor(z)), null);
+        return Double.isNaN(s.sinkholeFloor) ? surface : Math.min(surface, s.sinkholeFloor);
     }
 
     /**
@@ -436,24 +444,17 @@ public final class IslandField implements DensityFunction {
 
     /** The candidates of a grid cell, decided once per world ({@link IslandPlacement#candidates}). */
     List<IslandShape> candidates(int i, int j) {
-        long key = (long) i << 32 | j & 0xFFFFFFFFL;
-        List<IslandShape> known = decisions.candidates.get(key);
-        if (known == null) {
-            known = IslandPlacement.candidates(this, i, j);
-            decisions.remember(decisions.candidates, key, known);
-        }
-        return known;
+        return decisions.once(decisions.candidates, KeyedSlots.key(i, j), () -> IslandPlacement.candidates(this, i, j));
     }
 
     /** The islands of a grid cell, decided once per world ({@link IslandPlacement#place}). */
     List<IslandShape> cell(int i, int j) {
-        long key = (long) i << 32 | j & 0xFFFFFFFFL;
-        List<IslandShape> known = decisions.cells.get(key);
-        if (known == null) {
-            known = IslandPlacement.place(this, i, j);
-            decisions.remember(decisions.cells, key, known);
-        }
-        return known;
+        return decisions.once(decisions.cells, KeyedSlots.key(i, j), () -> IslandPlacement.place(this, i, j));
+    }
+
+    /** Whether a candidate stays ({@link IslandPlacement#kept}), decided once per world. */
+    boolean kept(IslandShape shape) {
+        return decisions.once(decisions.kept, shape, () -> IslandPlacement.kept(this, shape));
     }
 
     /** The islands of the 3 x 3 cells around the cell of (x, z): all that can reach the column (review 59 #6). */
@@ -473,7 +474,7 @@ public final class IslandField implements DensityFunction {
     }
 
     /** The islands of the cells that can reach into the box. */
-    private List<IslandShape> shapesWithin(int minX, int minZ, int maxX, int maxZ) {
+    List<IslandShape> shapesWithin(int minX, int minZ, int maxX, int maxZ) {
         int cell = settings.cellSize();
         List<IslandShape> found = new ArrayList<>();
         for (int i = Math.floorDiv(minX, cell) - 1; i <= Math.floorDiv(maxX, cell) + 1; i++) {
@@ -486,12 +487,7 @@ public final class IslandField implements DensityFunction {
 
     /** The lake, falls and lift of an island, decided once per world ({@link IslandPlacement#details}). */
     Details details(IslandShape shape) {
-        Details known = decisions.details.get(shape);
-        if (known == null) {
-            known = IslandPlacement.details(this, shape);
-            decisions.remember(decisions.details, shape, known);
-        }
-        return known;
+        return decisions.once(decisions.details, shape, () -> IslandPlacement.details(this, shape));
     }
 
     /**
@@ -499,7 +495,7 @@ public final class IslandField implements DensityFunction {
      * then z, so the cap does not depend on the order chunks are made in.
      */
     List<Fall> fallsOfChunk(int cx, int cz) {
-        long key = (long) cx << 32 | cz & 0xFFFFFFFFL;
+        long key = KeyedSlots.key(cx, cz);
         List<Fall> known = decisions.chunkFalls.get(key);
         if (known == null) {
             int minX = cx << 4;
@@ -774,6 +770,11 @@ public final class IslandField implements DensityFunction {
             return sinkholeFloor;
         }
 
+        /** The lowest open ground of the column: {@link #surface}, or a peat sinkhole's floor below it. */
+        public double lowestSurface() {
+            return Double.isNaN(sinkholeFloor) ? surface : Math.min(surface, sinkholeFloor);
+        }
+
         public int springY() {
             return springY;
         }
@@ -811,6 +812,7 @@ public final class IslandField implements DensityFunction {
     static final class Decisions {
         static final int LIMIT = 100_000;
         final Map<Long, List<IslandShape>> candidates = new ConcurrentHashMap<>();
+        final Map<IslandShape, Boolean> kept = new ConcurrentHashMap<>();
         final Map<Long, List<IslandShape>> cells = new ConcurrentHashMap<>();
         final Map<IslandShape, Details> details = new ConcurrentHashMap<>();
         final Map<Long, List<Fall>> chunkFalls = new ConcurrentHashMap<>();
@@ -822,6 +824,19 @@ public final class IslandField implements DensityFunction {
                 map.clear();
             }
             map.putIfAbsent(key, value);
+        }
+
+        /**
+         * The remembered value of {@code key}, or {@code decide}'s (pure) value, remembered. Not {@code computeIfAbsent}:
+         * a decision may ask other decisions of the same map.
+         */
+        <K, V> V once(Map<K, V> map, K key, java.util.function.Supplier<V> decide) {
+            V known = map.get(key);
+            if (known == null) {
+                known = decide.get();
+                remember(map, key, known);
+            }
+            return known;
         }
     }
 }
