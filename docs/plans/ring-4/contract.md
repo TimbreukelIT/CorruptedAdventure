@@ -85,6 +85,7 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 
 **Blok-tags** (namen in `ModTags` via 58, inhoud door B):
 - `corruptedadventure:poison_sources` (voorlopig): gifpoel (lees C); moerasgas apart (hoofd in gas).
+- `corruptedadventure:poison_gases` (golf 1, 69, 2026-10-13): hoofd in een blok uit deze tag = +2/s gif (lees C); B vult hem in 72 met `swamp_gas`. TagKey in `ModTags` door C (69).
 - `corruptedadventure:ring_4_stones` (ertsdoelen ring 4): `tidestone` + te bepalen.
 - `corruptedadventure:moonpetal_logs`, `withered_moonpetal_logs` (voorlopig).
 - Vanilla-tags waar het past (`#logs`, `#leaves`, `#small_flowers`, …).
