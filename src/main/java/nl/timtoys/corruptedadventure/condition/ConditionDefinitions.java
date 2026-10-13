@@ -26,6 +26,7 @@ public final class ConditionDefinitions {
             case DEHYDRATION -> DehydrationRule.fromConfig();
             case HEAT -> HeatRule.fromConfig();
             case COLD -> ColdRule.fromConfig();
+            case POISON -> PoisonRule.fromConfig();
         };
     }
 
@@ -36,6 +37,7 @@ public final class ConditionDefinitions {
             case DEHYDRATION -> ServerConfig.DEHYDRATION.thresholds.get();
             case HEAT -> ServerConfig.HEAT.thresholds.get();
             case COLD -> ServerConfig.COLD.thresholds.get();
+            case POISON -> ServerConfig.POISON.thresholds.get();
         };
     }
 
@@ -81,6 +83,13 @@ public final class ConditionDefinitions {
                         new MobEffectThreshold(MobEffects.MOVEMENT_SLOWDOWN, config.effect1Amplifier.get()),
                         new MobEffectThreshold(MobEffects.DIG_SLOWDOWN, config.effect2Amplifier.get()),
                         ColdFreeze.FREEZE);
+            }
+            case POISON -> {
+                ServerConfig.PoisonCondition config = ServerConfig.POISON;
+                yield List.of(
+                        new MobEffectThreshold(MobEffects.CONFUSION, config.effect1Amplifier.get()),
+                        new MobEffectThreshold(MobEffects.POISON, config.effect2Amplifier.get()),
+                        PoisonWither.WITHER);
             }
         };
     }

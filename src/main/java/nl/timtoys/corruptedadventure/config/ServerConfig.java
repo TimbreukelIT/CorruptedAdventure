@@ -31,6 +31,8 @@ public final class ServerConfig {
     public static final HeatCondition HEAT;
     /** {@code [conditions.cold]}: Nether ring 3 (package 55). */
     public static final ColdCondition COLD;
+    /** {@code [conditions.poison]}: ring 4 (package 69). */
+    public static final PoisonCondition POISON;
     /** {@code [weather.ring2]}: the effects of sandstorm and heat wave (change 28). */
     public static final Ring2WeatherEffects RING_2_WEATHER;
     /** {@code [weather.ring3]}: ash cloud duration, heat factors and lava bombs (package 45). */
@@ -48,6 +50,7 @@ public final class ServerConfig {
         DEHYDRATION = new DehydrationCondition(builder);
         HEAT = new HeatCondition(builder);
         COLD = new ColdCondition(builder);
+        POISON = new PoisonCondition(builder);
         builder.pop();
         builder.comment("Ring weather: a cycle per ring (clear, then a weather of that ring, then clear again).",
                 "Durations in seconds, drawn uniformly between min and max; edits apply from the next change of weather.")
@@ -59,7 +62,8 @@ public final class ServerConfig {
         RING_2_WEATHER = RING_WEATHER.get(Ring.RING_2).ring2Effects;
         RING_3_WEATHER = RING_WEATHER.get(Ring.RING_3).ring3Effects;
         SPEC = builder.build();
-        ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds);
+        ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds,
+                POISON.thresholds);
     }
 
     private ServerConfig() {
@@ -283,6 +287,68 @@ public final class ServerConfig {
             damage = builder.comment("Cold damage per hit at the freezing threshold (1.0 = half a heart).")
                     .defineInRange("damage", 1.0, 0.0, 100.0);
             damageInterval = builder.comment("Seconds between hits at the freezing threshold.")
+                    .defineInRange("damageInterval", 2, 1, 60);
+            builder.pop();
+        }
+    }
+
+    /**
+     * {@code [conditions.poison]}: ring 4 (package 69); start values from {@code docs/plans/ring-4/contract.md} §5, to be
+     * tuned in teststop 5b.
+     */
+    public static final class PoisonCondition {
+        public final ModConfigSpec.DoubleValue poolRise;
+        public final ModConfigSpec.IntValue poolRadius;
+        public final ModConfigSpec.DoubleValue gasRise;
+        public final ModConfigSpec.DoubleValue rainRise;
+        public final ModConfigSpec.DoubleValue fall;
+        public final ModConfigSpec.DoubleValue outsideFall;
+        public final ModConfigSpec.DoubleValue milkAmount;
+        public final ModConfigSpec.DoubleValue honeyAmount;
+        public final ThresholdLevels thresholds;
+        public final ModConfigSpec.IntValue effect1Amplifier;
+        public final ModConfigSpec.IntValue effect2Amplifier;
+        public final ModConfigSpec.IntValue effect3Amplifier;
+        public final ModConfigSpec.DoubleValue damage;
+        public final ModConfigSpec.IntValue damageInterval;
+
+        private PoisonCondition(ModConfigSpec.Builder builder) {
+            builder.comment("Poison in ring 4 of the overworld. Rises only at a source: in or next to a toxic pool (block tag",
+                            "corruptedadventure:poison_sources), head in swamp gas (block tag corruptedadventure:poison_gases),",
+                            "toxic rain under the open sky in the blighted band. The strongest source wins, they do not stack.",
+                            "Water and the blighted glowcaps are no source. Everywhere else the meter falls.")
+                    .push("poison");
+            poolRise = builder.comment("Points per second in or next to a toxic pool (3.0: 0 -> 100 in ~35 s).")
+                    .defineInRange("poolRise", 3.0, 0.0, 100.0);
+            poolRadius = builder.comment("Blocks around the player (a box, from feet and head) that count as next to a pool.")
+                    .defineInRange("poolRadius", 1, 1, 4);
+            gasRise = builder.comment("Points per second with the head (eye height) in swamp gas (2.0: 0 -> 100 in ~50 s).")
+                    .defineInRange("gasRise", 2.0, 0.0, 100.0);
+            rainRise = builder.comment("Points per second in full toxic rain under the open sky in the blighted band (0.5:",
+                            "0 -> 100 in ~3.5 min); follows the fade of the weather and [weather.ring4] toxicRainPoisonMultiplier.")
+                    .defineInRange("rainRise", 0.5, 0.0, 100.0);
+            fall = builder.comment("Points per second in ring 4 away from every source.")
+                    .defineInRange("fall", 1.0, 0.0, 100.0);
+            outsideFall = builder.comment("Points per second outside ring 4 (other rings, the void, the Nether), also next to a",
+                            "poison source.")
+                    .defineInRange("outsideFall", 1.0, 0.0, 100.0);
+            milkAmount = builder.comment("Points removed per milk bucket drunk (anywhere, no cooldown).")
+                    .defineInRange("milkAmount", 40.0, 0.0, 100.0);
+            honeyAmount = builder.comment("Points removed per honey bottle drunk (anywhere, no cooldown).")
+                    .defineInRange("honeyAmount", 20.0, 0.0, 100.0);
+            thresholds = ThresholdLevels.define(builder, "conditions.poison", new int[]{30, 60, 90},
+                    "Nausea from here.", "Vanilla poison from here (never kills: it stops at 1 health).",
+                    "Wither from here: black hearts and poison damage every damageInterval seconds (own death message);"
+                            + " can kill.");
+            effect1Amplifier = builder.comment("Nausea amplifier (0 = level I).")
+                    .defineInRange("effect1Amplifier", 0, 0, 9);
+            effect2Amplifier = builder.comment("Poison amplifier (0 = level I).")
+                    .defineInRange("effect2Amplifier", 0, 0, 9);
+            effect3Amplifier = builder.comment("Wither amplifier (0 = level I); only the black hearts, the damage is below.")
+                    .defineInRange("effect3Amplifier", 0, 0, 9);
+            damage = builder.comment("Poison damage per hit at threshold3 (1.0 = half a heart; vanilla wither I: 1.0 every 2 s).")
+                    .defineInRange("damage", 1.0, 0.0, 100.0);
+            damageInterval = builder.comment("Seconds between hits at threshold3.")
                     .defineInRange("damageInterval", 2, 1, 60);
             builder.pop();
         }

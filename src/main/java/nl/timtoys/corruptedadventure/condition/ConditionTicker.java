@@ -24,6 +24,7 @@ public final class ConditionTicker {
     public static void register(IEventBus gameBus) {
         gameBus.addListener(PlayerTickEvent.Post.class, ConditionTicker::onPlayerTick);
         Ring3Conditions.register(gameBus);
+        Ring4Conditions.register(gameBus);
     }
 
     private static void onPlayerTick(PlayerTickEvent.Post event) {
