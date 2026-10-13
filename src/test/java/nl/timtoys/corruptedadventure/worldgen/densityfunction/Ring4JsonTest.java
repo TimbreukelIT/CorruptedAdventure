@@ -43,6 +43,17 @@ class Ring4JsonTest {
     }
 
     @Test
+    void everyDensityFunctionFileIsANumberOrAnObject() throws IOException {
+        try (var files = Files.walk(WorldgenData.root().resolve(DF))) {
+            for (var file : files.filter(path -> path.toString().endsWith(".json")).toList()) {
+                JsonElement json = JsonParser.parseString(Files.readString(file));
+                assertTrue(json.isJsonObject() || json.isJsonPrimitive() && json.getAsJsonPrimitive().isNumber(),
+                        file + " must be a number or an object");
+            }
+        }
+    }
+
+    @Test
     void routerClimateOfRing4IsTheBandAndTheRegionAxes() {
         assertEquals("corruptedadventure:ring_4/overworld/region_water", rings("overworld_temperature").get("ring_4").getAsString());
         assertEquals("corruptedadventure:ring_4/overworld/region_growth", rings("overworld_vegetation").get("ring_4").getAsString());
@@ -135,7 +146,11 @@ class Ring4JsonTest {
     void netherRing4HasItsRegionAndATerrainStubOnThePlaceholder() {
         assertEquals("corruptedadventure:ring_4/nether/region", rings("nether_temperature").get("ring_4").getAsString());
         assertEquals("corruptedadventure:ring_4/nether/terrain", rings("nether").get("ring_4").getAsString());
-        assertEquals("corruptedadventure:ring_4/nether", element(DF + "ring_4/nether/terrain.json").getAsString());
+        // A density function file must be a number or an object; a bare reference fails to load the registries.
+        JsonObject terrain = WorldgenData.read(DF + "ring_4/nether/terrain.json");
+        assertEquals("minecraft:add", terrain.get("type").getAsString());
+        assertEquals(0.0, terrain.get("argument1").getAsDouble());
+        assertEquals("corruptedadventure:ring_4/nether", terrain.get("argument2").getAsString());
         JsonObject region = WorldgenData.read(DF + "ring_4/nether/region.json");
         assertEquals("minecraft:flat_cache", region.get("type").getAsString());
         assertEquals("corruptedadventure:nether_ring_4_region", region.getAsJsonObject("argument").get("noise").getAsString());
