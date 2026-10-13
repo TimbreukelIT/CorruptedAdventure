@@ -175,6 +175,13 @@ public final class Ring4Textures {
     private static final Map<String, Set<Integer>> GLOW_TONES = new LinkedHashMap<>();
     private static final Map<BufferedImage, boolean[][]> GLOW_MASKS = new IdentityHashMap<>();
 
+    /**
+     * Tones that stay still in a pulsing texture although they are lighter than its dim tone: the fossil stone frame of
+     * the purity crystal lamp (its light bevel would otherwise pulse with the panes).
+     */
+    private static final Map<String, Set<Integer>> STILL_TONES = Map.of(
+            "block/purity_crystal_lamp", toneSet(FOSSIL_STONE));
+
     /** First texture of the Nether ring 4 and the particle sections of the contact sheet. */
     private static final String NETHER_FIRST = "block/bone_sand";
     private static final String PARTICLES_FIRST = "particle/will_o_wisp_0";
@@ -353,6 +360,7 @@ public final class Ring4Textures {
         // Checked before anything is written (rendering is pure), so a failed check leaves no broken texture behind.
         checkGlowLayers();
         checkSideRules();
+        checkSlimeTrailEdges();
         Map<String, BufferedImage> outputs = new LinkedHashMap<>();
         for (Map.Entry<String, Texture> entry : TEXTURES.entrySet()) {
             String name = entry.getKey();
@@ -361,7 +369,7 @@ public final class Ring4Textures {
             }
             Animation animation = entry.getValue().animation();
             BufferedImage output = animation.cycling() ? cyclingStrip(name, animation)
-                    : animation.animated() ? pulseStrip(render(name), animation) : render(name);
+                    : animation.animated() ? pulseStrip(render(name), animation, STILL_TONES.getOrDefault(name, Set.of())) : render(name);
             check(name, output, animation);
             outputs.put(name, output);
         }
@@ -554,6 +562,19 @@ public final class Ring4Textures {
         }
     }
 
+    /**
+     * Throws unless the slime trail's left and right edge columns are identical (71a review), so a trail runs on
+     * seamlessly into a neighbouring trail block.
+     */
+    private static void checkSlimeTrailEdges() throws IOException {
+        BufferedImage image = render("block/slime_trail");
+        for (int y = 0; y < SIZE; y++) {
+            if (image.getRGB(0, y) != image.getRGB(SIZE - 1, y)) {
+                throw new IllegalStateException("slime_trail: edge columns differ at row " + y + ", the trail would not join");
+            }
+        }
+    }
+
     // ---- Tidestone ----------------------------------------------------------------------------------------------
 
     /**
@@ -645,11 +666,12 @@ public final class Ring4Textures {
     /**
      * Clawed tidestone (72, a creature trace): the tidestone pixels with three parallel claw gouges slashing down to the
      * left: a dark groove, its upper left wall in shadow and its lower right wall lit (light from the top left), the
-     * ends shallow.
+     * ends shallow. The marks stay inside the tile (71a review: no wrap, so no stray claw pixels on the far edge): a claw
+     * slants at most 6 px to the left, the third starts 6 px right of the first, so {@code start} 7–8 keeps x in 0–15.
      */
     private static void clawedTidestone(BufferedImage image, Random random) {
         copy(renderUnchecked("block/tidestone"), image);
-        int start = 9 + random.nextInt(2);
+        int start = 7 + random.nextInt(2);
         for (int claw = 0; claw < 3; claw++) {
             int length = 9 + random.nextInt(3) - (claw == 2 ? 2 : 0);
             int y0 = 2 + random.nextInt(2) + (claw == 2 ? 1 : 0);
@@ -657,10 +679,10 @@ public final class Ring4Textures {
                 int x = start + 3 * claw - (int) Math.round(j * 0.55);
                 int y = y0 + j;
                 boolean end = j == 0 || j == length - 1;
-                setWrapped(image, x, y, end ? TIDESTONE[1] : TIDESTONE[0]);
-                setWrapped(image, x + 1, y, end ? TIDESTONE[3] : TIDESTONE[6]);
+                set(image, x, y, end ? TIDESTONE[1] : TIDESTONE[0]);
+                set(image, x + 1, y, end ? TIDESTONE[3] : TIDESTONE[6]);
                 if (!end) {
-                    setWrapped(image, x - 1, y, TIDESTONE[1]);
+                    set(image, x - 1, y, TIDESTONE[1]);
                 }
             }
         }
@@ -943,17 +965,17 @@ public final class Ring4Textures {
     /**
      * Strands hanging from the top edge: about every second column a strand of 5–16 rows that sways a pixel, its tone
      * falling from {@code topLight} towards the tip; {@code thick} strands are two pixels wide (roots), lit on the left.
-     * Returns the strands as {x, length, sway} so a caller can add nodes.
+     * Returns the strands, so a caller can put nodes exactly on them ({@link Strand#x}).
      */
-    private static List<int[]> hangingStrands(BufferedImage image, Random random, int[] palette, double topLight, boolean thick) {
-        List<int[]> strands = new ArrayList<>();
+    private static List<Strand> hangingStrands(BufferedImage image, Random random, int[] palette, double topLight, boolean thick) {
+        List<Strand> strands = new ArrayList<>();
         int x0 = random.nextInt(2);
         while (x0 < SIZE) {
-            int length = 5 + random.nextInt(12);
-            double sway = random.nextDouble() * 2 * Math.PI;
+            Strand strand = new Strand(x0, 5 + random.nextInt(12), random.nextDouble() * 2 * Math.PI);
+            int length = strand.length();
             boolean wide = thick && random.nextInt(3) == 0 && x0 < SIZE - 1;
             for (int y = 0; y < length; y++) {
-                int x = x0 + (int) Math.round(0.7 * Math.sin(y * 0.6 + sway));
+                int x = strand.x(y);
                 double t = topLight - 0.45 * y / 16.0 + 0.18 * (random.nextDouble() - 0.5);
                 if (x >= 0 && x < SIZE) {
                     set(image, x, y, shade(palette, t));
@@ -968,10 +990,18 @@ public final class Ring4Textures {
                     }
                 }
             }
-            strands.add(new int[] {x0, length, (int) Math.round(sway * 1000)});
+            strands.add(strand);
             x0 += (wide ? 3 : 2) + random.nextInt(2);
         }
         return strands;
+    }
+
+    /** One hanging strand: from column {@code x0} at the top edge, {@code length} rows, swaying a pixel by {@code sway}. */
+    private record Strand(int x0, int length, double sway) {
+        /** The strand's column on row {@code y}: the exact pixel the strand was painted on. */
+        int x(int y) {
+            return x0 + (int) Math.round(0.7 * Math.sin(y * 0.6 + sway));
+        }
     }
 
     // ---- Giant lily pad -----------------------------------------------------------------------------------------
@@ -1208,16 +1238,15 @@ public final class Ring4Textures {
      * along them and glowing tips, as the light of the island undersides.
      */
     private static void glowingHangingRoots(BufferedImage image, Random random) {
-        List<int[]> strands = hangingStrands(image, random, ROOT, 0.75, true);
-        for (int[] strand : strands) {
-            int length = strand[1];
-            double sway = strand[2] / 1000.0;
+        List<Strand> strands = hangingStrands(image, random, ROOT, 0.75, true);
+        for (Strand strand : strands) {
+            int length = strand.length();
             int tipY = length - 1;
-            int tipX = strand[0] + (int) Math.round(0.7 * Math.sin(tipY * 0.6 + sway));
+            int tipX = strand.x(tipY);
             if (tipX >= 0 && tipX < SIZE && random.nextInt(3) != 0) {
                 glow(image, tipX, tipY, GLOW[random.nextInt(3) == 0 ? 5 : 4]);
                 if (tipY > 0) {
-                    int aboveX = strand[0] + (int) Math.round(0.7 * Math.sin((tipY - 1) * 0.6 + sway));
+                    int aboveX = strand.x(tipY - 1);
                     if (aboveX >= 0 && aboveX < SIZE) {
                         glow(image, aboveX, tipY - 1, GLOW[2]);
                     }
@@ -1225,7 +1254,7 @@ public final class Ring4Textures {
             }
             if (length > 8 && random.nextBoolean()) {
                 int ny = 3 + random.nextInt(length - 6);
-                int nx = strand[0] + (int) Math.round(0.7 * Math.sin(ny * 0.6 + sway));
+                int nx = strand.x(ny);
                 if (nx >= 0 && nx < SIZE) {
                     glow(image, nx, ny, GLOW[3]);
                 }
@@ -1484,10 +1513,13 @@ public final class Ring4Textures {
         }
     }
 
-    /** A shard: one leaning crystal (a piece broken off a cluster), lifted one pixel so the outline closes underneath. */
+    /**
+     * A shard: one leaning crystal (a piece broken off a cluster), 14 rows tall and lifted one pixel, so it spans rows
+     * 1–14 and the selective outline closes both under the foot and above the tip.
+     */
     private static void crystalShard(BufferedImage image, Crystal crystal) {
         BufferedImage spike = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
-        crystalSpike(spike, crystal.palette(), crystal.prism(), 6.0, 2, 15, 4);
+        crystalSpike(spike, crystal.palette(), crystal.prism(), 6.0, 2, 14, 4);
         for (int y = 1; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 image.setRGB(x, y - 1, spike.getRGB(x, y));
@@ -1498,17 +1530,22 @@ public final class Ring4Textures {
 
     /**
      * Purity crystal lamp (68): four crystal panes (milky white with gold sheen, lit on their upper left, a glint each)
-     * in a frame of polished fossil stone: a bevelled 2-px border and a 2-px cross; the whole texture pulses (B makes it
-     * emissive), the stone stays because it is darker than the dim tone.
+     * in a frame of polished fossil stone: 2-px bars (border and cross), each bar lit on its own first row/column and
+     * shaded on its second, the junctions lit, shaded or mid by both; the panes pulse (B makes the lamp emissive), the
+     * stone frame stays still ({@link #STILL_TONES}).
      */
     private static void purityCrystalLamp(BufferedImage image, Random random) {
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                boolean frame = x < 2 || y < 2 || x > 13 || y > 13 || x == 7 || x == 8 || y == 7 || y == 8;
-                if (frame) {
-                    boolean lit = x == 0 || y == 0 || x == 9 || y == 9;
-                    boolean dark = x == SIZE - 1 || y == SIZE - 1 || x == 6 || y == 6;
-                    set(image, x, y, lit ? FOSSIL_STONE[5] : dark ? FOSSIL_STONE[0] : shade(FOSSIL_STONE, 0.4 + 0.3 * random.nextDouble()));
+                int column = LAMP_BARS.indexOf(x);
+                int row = LAMP_BARS.indexOf(y);
+                if (column >= 0 || row >= 0) {
+                    // per bar: 0 = its first (lit) line, 1 = its second (shaded) line; -1 = not in a bar this way
+                    int vertical = column < 0 ? -1 : column % 2;
+                    int horizontal = row < 0 ? -1 : row % 2;
+                    boolean lit = (vertical == 0 || horizontal == 0) && vertical != 1 && horizontal != 1;
+                    boolean shaded = (vertical == 1 || horizontal == 1) && vertical != 0 && horizontal != 0;
+                    set(image, x, y, lit ? FOSSIL_STONE[5] : shaded ? FOSSIL_STONE[1] : FOSSIL_STONE[3]);
                     continue;
                 }
                 int px = x < 7 ? x - 2 : x - 9;
@@ -1522,6 +1559,9 @@ public final class Ring4Textures {
             set(image, pane[0] + 4, pane[1] + 4, PURITY[1]);
         }
     }
+
+    /** Columns and rows of the lamp's 2-px frame bars (border and cross), in pairs: first line lit, second shaded. */
+    private static final List<Integer> LAMP_BARS = List.of(0, 1, 7, 8, 14, 15);
 
     // ---- Gameplay blocks (72) -----------------------------------------------------------------------------------
 
@@ -1704,16 +1744,23 @@ public final class Ring4Textures {
      * its lower edge, a few glints and two droplets beside it.
      */
     private static void slimeTrail(BufferedImage image, Random random) {
-        double amplitude = 1.6 + random.nextDouble();
+        // 71a review: the path and width are mirror-symmetric about the tile's middle column (odd multiples of π over
+        // the tile), so columns 0 and 15 cover the same rows and the trail joins its neighbours seamlessly
+        double bend = (1.6 + random.nextDouble()) * (random.nextBoolean() ? 1 : -1);
+        double wiggle = 0.5 + 0.4 * random.nextDouble();
         for (int x = 0; x < SIZE; x++) {
-            double path = SIZE / 2.0 + amplitude * Math.sin(2 * Math.PI * (x + 0.5) / SIZE);
-            double width = 1.4 + 1.0 * Math.pow(Math.sin(Math.PI * (x + 0.5) / SIZE), 2);
+            // the mirrored column gives bit-identical values on both halves (sin(π - a) is not exact in floating point)
+            double u = (Math.min(x, SIZE - 1 - x) + 0.5) / SIZE;
+            double path = SIZE / 2.0 + bend * Math.sin(Math.PI * u) - wiggle * bend / Math.abs(bend) * Math.sin(3 * Math.PI * u);
+            double width = 1.4 + 1.0 * Math.pow(Math.sin(Math.PI * u), 2);
+            boolean edge = x == 0 || x == SIZE - 1;
             for (int y = 0; y < SIZE; y++) {
                 double v = y + 0.5 - path;
                 if (Math.abs(v) > width) {
                     continue;
                 }
-                int tone = v < -width + 0.9 ? 4 : v > width - 0.9 ? 0 : 2 + (random.nextInt(4) == 0 ? (random.nextBoolean() ? 1 : -1) : 0);
+                int grain = edge || random.nextInt(4) != 0 ? 0 : random.nextBoolean() ? 1 : -1;
+                int tone = v < -width + 0.9 ? 4 : v > width - 0.9 ? 0 : 2 + grain;
                 set(image, x, y, SLIME[tone]);
             }
         }
@@ -1970,7 +2017,7 @@ public final class Ring4Textures {
     }
 
     private static BufferedImage animationStrip(String name, BufferedImage rest, Animation animation) {
-        return animation.cycling() ? cyclingStrip(name, animation) : pulseStrip(rest, animation);
+        return animation.cycling() ? cyclingStrip(name, animation) : pulseStrip(rest, animation, STILL_TONES.getOrDefault(name, Set.of()));
     }
 
     // ---- Preview ------------------------------------------------------------------------------------------------
@@ -2244,6 +2291,14 @@ public final class Ring4Textures {
         return noise;
     }
 
+    private static Set<Integer> toneSet(int[] palette) {
+        Set<Integer> tones = new HashSet<>();
+        for (int tone : palette) {
+            tones.add(tone);
+        }
+        return tones;
+    }
+
     private static double frac(double value) {
         return value - Math.floor(value);
     }
@@ -2265,7 +2320,7 @@ public final class Ring4Textures {
         set(image, Math.floorMod(x, SIZE), Math.floorMod(y, SIZE), rgb);
     }
 
-    // ---- Copied from Ring4Textures.java (below) -----------------------------------------------------------------
+    // ---- Copied from Ring3Textures.java (below) -----------------------------------------------------------------
     /** Vanilla's polished bevel: top row and left column lit, bottom row and right column dark, a softer second ring. */
     private static void bevel(BufferedImage image, int[] palette) {
         int last = palette.length - 1;
@@ -2674,12 +2729,13 @@ public final class Ring4Textures {
             }
         }
     }
+
     /**
      * The animation strip: the frames under each other, each the rest frame leaning towards the material's dim tone or
-     * its glow colour along a cosine. Only tones lighter than the dim tone move; outline and shadows stay (37b). Only
-     * colours change; the alpha mask stays identical.
+     * its glow colour along a cosine. Only tones lighter than the dim tone move; outline and shadows stay (37b), and so do
+     * the {@code still} tones (71a review: the lamp's stone frame). Only colours change; the alpha mask stays identical.
      */
-    private static BufferedImage pulseStrip(BufferedImage frame, Animation animation) {
+    private static BufferedImage pulseStrip(BufferedImage frame, Animation animation, Set<Integer> still) {
         int size = frame.getWidth();
         BufferedImage strip = new BufferedImage(size, size * animation.frames(), BufferedImage.TYPE_INT_ARGB);
         for (int i = 0; i < animation.frames(); i++) {
@@ -2691,7 +2747,7 @@ public final class Ring4Textures {
                         strip.setRGB(x, i * size + y, TRANSPARENT);
                     } else {
                         int rgb = argb & 0xFFFFFF;
-                        if (luminance(rgb) > luminance(animation.dim())) {
+                        if (luminance(rgb) > luminance(animation.dim()) && !still.contains(rgb)) {
                             rgb = mix(mix(rgb, animation.dim(), 0.12 * (1 - glow)), animation.glow(), 0.3 * glow);
                         }
                         set(strip, x, i * size + y, rgb);
