@@ -52,13 +52,15 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
     }
 
     /**
-     * Local aquifer lava turns into water in overworld rings 2 and 4 from this Y up: above vanilla's lava layer ("the
-     * water under the ground"; ring 4 has no lava at all, 59). In ring 2 the lava layer itself stays; ring 4 has none
-     * ({@link #ring4DryBelow}). {@link Integer#MAX_VALUE} (never) elsewhere. Switches hard on {@link RingPosition#ring()},
-     * so a lava cell across the 1↔2 boundary is water on the ring 2 side.
+     * Local aquifer lava turns into water in overworld ring 2, ring 4 and its dams from this Y up: above vanilla's lava
+     * layer ("the water under the ground"; ring 4 has no lava at all, 59). In ring 2 the lava layer itself stays; ring 4
+     * has none ({@link #ring4DryBelow}). {@link Integer#MAX_VALUE} (never) elsewhere. Switches hard on
+     * {@link RingPosition#ring()}, so a lava cell across the 1↔2 boundary is water on the ring 2 side; ring 4's rule
+     * covers the whole zone 4→5 (59, decision of the user), so no water meets lava at the 4|5 midline: the seam lies at
+     * the zone's outer edge, inside ring 5, whose own rule settles it (81–99).
      */
     static int waterOnlyFrom(ResourceKey<Level> dimension, RingPosition position) {
-        return dimension == Level.OVERWORLD && (position.ring() == Ring.RING_2 || position.ring() == Ring.RING_4)
+        return dimension == Level.OVERWORLD && (position.ring() == Ring.RING_2 || ring4NoLava(dimension, position))
                 ? LAVA_LAYER_TOP : Integer.MAX_VALUE;
     }
 

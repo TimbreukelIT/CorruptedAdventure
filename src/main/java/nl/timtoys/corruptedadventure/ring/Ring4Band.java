@@ -41,16 +41,14 @@ public final class Ring4Band {
     private static final double WAVE_WEIGHT = 0.7;
     private static final double RIPPLE_WEIGHT = 0.3;
 
-    // The band of the last layout asked for; a server and a client each have one layout at a time.
-    private static volatile Ring4Band last;
-
     private final RingLayout layout;
     private final double line;
     private final double amplitude;
     private final SimplexNoise waves;
     private final SimplexNoise ripples;
 
-    private Ring4Band(RingLayout layout) {
+    /** Built once per layout ({@link #of}). */
+    Ring4Band(RingLayout layout) {
         this.layout = layout;
         List<Integer> radii = layout.settings().ringOuterRadii();
         double inner = radii.get(Ring.RING_3.ordinal());
@@ -62,14 +60,9 @@ public final class Ring4Band {
         this.ripples = new SimplexNoise(random);
     }
 
-    /** The band of {@code layout}. */
+    /** The band of {@code layout}, kept with the layout (a server's and a client's layout in one JVM each have their own). */
     public static Ring4Band of(RingLayout layout) {
-        Ring4Band band = last;
-        if (band == null || band.layout != layout) {
-            band = new Ring4Band(layout);
-            last = band;
-        }
-        return band;
+        return layout.ring4Band();
     }
 
     /**

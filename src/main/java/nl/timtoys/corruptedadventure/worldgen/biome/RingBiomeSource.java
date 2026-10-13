@@ -21,6 +21,7 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -83,7 +84,7 @@ public final class RingBiomeSource extends BiomeSource {
         this.islandBiomes = islandBiomes;
         this.currentIslands = (x, z) -> {
             IslandField field = IslandFields.current(dimension);
-            return field == null ? null : field.islandAt(x, z);
+            return field == null ? List.of() : field.islandsAt(x, z);
         };
     }
 
@@ -137,21 +138,29 @@ public final class RingBiomeSource extends BiomeSource {
         return source.getNoiseBiome(x, y, z, sampler);
     }
 
-    /** The height biome of the island over this block, or null (no island, too low, outside ring 4, below it). */
+    /**
+     * The height biome at this block, or null: from the highest island of the column whose reach (from
+     * {@link #BELOW_ISLAND} under its bottom up) holds the block, so an island under a higher, overlapping one keeps its
+     * own; null if there is none, or it is too low or not centred in ring 4.
+     */
     @Nullable
     private Holder<Biome> heightBiome(RingLayout layout, IslandLookup islands, int x, int y, int z) {
-        IslandField.Island island = islands.islandAt(x, z);
-        if (island == null || island.top() < islandBiomes.minTop() || y < island.bottom() - BELOW_ISLAND
+        IslandField.Island island = null;
+        for (IslandField.Island candidate : islands.islandsAt(x, z)) {
+            if (y >= candidate.bottom() - BELOW_ISLAND && (island == null || candidate.bottom() > island.bottom())) {
+                island = candidate;
+            }
+        }
+        if (island == null || island.top() < islandBiomes.minTop()
                 || layout.sample(dimension, island.x(), island.z()).ring() != Ring.RING_4) {
             return null;
         }
         return Ring4Band.of(layout).blighted(island.x(), island.z()) ? islandBiomes.blighted() : islandBiomes.mythic();
     }
 
-    /** The ring 4 island covering a column (block x, z), or null. */
+    /** The ring 4 islands covering a column (block x, z). */
     @FunctionalInterface
     interface IslandLookup {
-        @Nullable
-        IslandField.Island islandAt(int x, int z);
+        List<IslandField.Island> islandsAt(int x, int z);
     }
 }

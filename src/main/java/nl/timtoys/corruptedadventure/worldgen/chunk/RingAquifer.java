@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
  * of aquifer fluids (air, or lava in a gutter or a chamber's lake, crusted over where it would touch open air), and the
  * rock of their guard bands stays rock. Carvers fill their caves through this aquifer too, so they cannot cut into a
  * chamber, a gutter or a geode either. Overworld ring 4 (59): no lava at all, local lava becomes water like in ring 2
- * ({@link RingFluidPicker#waterOnlyFrom}), the bottom below Y −54 is dry ({@link RingFluidPicker#ring4DryBelow}) with a
+ * ({@link RingFluidPicker#waterOnlyFrom}, also over the whole zone 4→5), the bottom below Y −54 is dry ({@link RingFluidPicker#ring4DryBelow}) with a
  * dam of rock over the zone 4→5 and ring 4's half of the zone 3→4 ({@link RingFluidPicker#ring4DamBelow}), carvers
  * place no lava there ({@link #carverLava}), and the recorded waterfalls of its
  * {@link IslandField} fall as water ({@link RingFluidPicker#ring4FallColumn}).
@@ -127,22 +127,34 @@ final class RingAquifer implements Aquifer {
     }
 
     /**
-     * What a carver places at or below its lava level, where vanilla puts lava without asking the aquifer (through
-     * {@link CarverLava}): in ring 4 and its dams ({@link RingFluidPicker#ring4NoLava}) the aquifer's own answer for the
-     * open space (air on the dry bottom, null in a dam: not cut), elsewhere lava as in vanilla, without touching the
-     * update flags.
+     * Whether this aquifer decides what a carver places at or below its lava level in the column, where vanilla puts
+     * lava without asking (through {@link CarverLava}): in ring 4 and its dams ({@link RingFluidPicker#ring4NoLava}).
+     * Elsewhere vanilla's lava stays.
+     */
+    boolean decidesCarverLava(int x, int z) {
+        return noLava[column(x, z)];
+    }
+
+    /**
+     * What a carver places instead of lava where {@link #decidesCarverLava}: the aquifer's own answer for the open
+     * space (air on the dry bottom, null in a dam: not cut).
      */
     @Nullable
     BlockState carverLava(DensityFunction.FunctionContext context) {
-        int i = column(context.blockX(), context.blockZ());
-        return noLava[i] ? compute(i, context, 0.0) : LAVA;
+        return compute(column(context.blockX(), context.blockZ()), context, 0.0);
     }
 
-    /** The same with the ring given, for tests: the column is not remembered. */
+    /** {@link #decidesCarverLava} with the ring given, for tests: the column is not remembered. */
+    boolean decidesCarverLava(RingPosition position, int x, int z) {
+        load(COLUMNS, position, x, z);
+        return noLava[COLUMNS];
+    }
+
+    /** {@link #carverLava} with the ring given, for tests. */
     @Nullable
     BlockState carverLava(RingPosition position, DensityFunction.FunctionContext context) {
         load(COLUMNS, position, context.blockX(), context.blockZ());
-        return noLava[COLUMNS] ? compute(COLUMNS, context, 0.0) : LAVA;
+        return compute(COLUMNS, context, 0.0);
     }
 
     /** Marks the carvers' pass: while it runs, open space asked for is a tunnel a carver wants to cut. */

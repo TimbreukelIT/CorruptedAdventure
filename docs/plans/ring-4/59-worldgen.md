@@ -12,13 +12,13 @@ Scope: `worldgen` — pakket 59, in de hoofdwerkmap op `main` (`waves.md` §2 go
 3. **`initial_terrain`** zoals ring 3: `0,125 · cache_2d(initial_height) + gradiënt (−64 → 8, 320 → −40)`, nul op Y = hoogte. `initial_height` = nu precies het placeholder-oppervlak `64 + 8 · noise(placeholder_terrain)`; 60 laat het naar de echte hoogte wijzen.
 4. **`IslandField`-skelet** (`worldgen/densityfunction/IslandField`, type `island_field`, JSON `ring_4/overworld/islands.json` met hash-noise `ring_4_island_cells`): eigen raster (`Settings.cellSize`, standaard 128), eigen `Column` (eilandmasker, watervalbereik), `ColumnTable` + eigen `Decisions` (per cel een lijst eilanden, eenmaal per wereld), `find(root)`; accessors `islandAt`, `islandsWithin`, `liftsWithin`, `waterfallsWithin`, `worldTrees` (records `Island`, `Lift`, `Waterfall`, `WorldTree`). Plaatsing (`placeCell`) nog leeg; **nog niet in de final density** (61), dus `find` geeft nu null.
 5. **Vinden via de router:** `RingChunkGenerator.islandField(random)` (zoals `volcanicField`); `worldgen/chunk/IslandFields` bewaart per dimensie het veld van de level, gevuld bij `LevelEvent.Load` (vóór de spawnchunks) en geleegd bij `ServerStopped`.
-6. **Hoogte-biomehaak** in `RingBiomeSource`: optioneel codec-veld `island_biomes` (`IslandBiomes`: `mythic`, `blighted`, `min_top` 140). Alleen voor quarts die ring 4 raken (`inner` of `outer` = ring 4); eiland via `IslandField.islandAt` op het midden van de quart; per eiland: midden in ring 4 (`ring()`), top ≥ 140, blok-Y ≥ onderkant − 4 → band op het midden (`Ring4Band.blighted`) kiest. Ook boven overgangszones. In de preset beide op `placeholder_ring_4` tot 64.
+6. **Hoogte-biomehaak** in `RingBiomeSource`: optioneel codec-veld `island_biomes` (`IslandBiomes`: `mythic`, `blighted`, `min_top` 140). Alleen voor quarts die ring 4 raken (`inner` of `outer` = ring 4); op het midden van de quart het hoogste eiland van de kolom (`IslandField.islandsAt`) waar het blok niet onder ligt (Y ≥ onderkant − 4; review); per eiland: midden in ring 4 (`ring()`), top ≥ 140, blok-Y ≥ onderkant − 4 → band op het midden (`Ring4Band.blighted`) kiest. Ook boven overgangszones. In de preset beide op `placeholder_ring_4` tot 64.
 7. **Vloeistofregel ring 4** (`RingFluidPicker`, `RingAquifer`):
    - zee-water Y 63 vanilla (geen `fluid_levels.ring_4`);
-   - `waterOnlyFrom` ook voor ring 4: lokale aquiferlava wordt water boven Y −54, met de stenen lid op −54 zoals ring 2;
+   - `waterOnlyFrom` ook voor ring 4 en de hele zone 4→5 (review: ook de ring 5-helft): lokale aquiferlava wordt water boven Y −54, met de stenen lid op −54 zoals ring 2;
    - `ring4DryBelow`: open ruimte onder Y −54 is lucht in ring 4 (droog, geen lavalaag);
    - `ring4DamBelow`: dam van gesteente onder Y −54 over de hele zone 4→5 (beide helften; ring 5 houdt zijn lavalaag pas daarbuiten) en over de ring 4-helft van zone 3→4 (de ring 3-helft is al dicht onder Y 63 door `ring3Seal`);
-   - **carver-lava**: vanilla carvers zetten lava op Y ≤ −56 zonder de aquifer te vragen (`steam_fens` gebruikt de ring 2-carvers, met tunnels tot ~112 blokken ring 4 in). Mixin `WorldCarverLavaMixin` (common, op `WorldCarver.getCarveState`) laat in een ringwereld `RingAquifer.carverLava` beslissen via `CarverLava`: in ring 4 en de dammen (`ring4NoLava`) het antwoord van de aquifer (droge bodem lucht, dam null = niet snijden), elders vanilla's lava zonder de update-vlaggen te raken (ring 3 bitgelijk);
+   - **carver-lava**: vanilla carvers zetten lava op Y ≤ −56 zonder de aquifer te vragen (`steam_fens` gebruikt de ring 2-carvers, met tunnels tot ~112 blokken ring 4 in). Mixin `WorldCarverLavaMixin` (common, op `WorldCarver.getCarveState`) laat in een ringwereld `RingAquifer.carverLava` beslissen via `CarverLava`: in ring 4 en de dammen (`ring4NoLava`, `RingAquifer.decidesCarverLava`) het antwoord van de aquifer (droge bodem lucht, dam null = niet snijden); elders grijpt de mixin niet in (review: geen eigen lava-return) en loopt vanilla door (ring 3 bitgelijk);
    - water-tak: `RingAquifer` leest per kolom `IslandField.Column.fallTop/fallBottom/fallFlowBelow` en zet vallend water (level 8), onderaan stromend; nu leeg;
    - afgrondzee Y 0: in 63.
 
@@ -48,4 +48,18 @@ Q1 A (amplitude 22,5 % ≈ 450, 2 octaven ~700/~180, overgang ~64); Q2 A (`Ring4
 Implementatiekeuzes (niet door de gebruiker besloten): `IslandField.Settings.cellSize` 128 voorlopig (61); de haak kijkt alleen in quarts die ring 4 raken (een eiland dat verder dan de zone over ring 3 of 5 hangt, verliest daar zijn hoogte-biome).
 
 ## Backlog
-- [worldgen] Naad op de middellijn 4|5 tussen Y −54 en −10: lokale aquiferlava van ring 5 naast water van ring 4 (zoals nu bij 1|2); op te lossen met de vloeistofregel van ring 5.
+- [worldgen] Naad water/lava aan de buitenrand van zone 4→5 (lokale aquiferlava van ring 5 naast het water van de zone) → ring 5 (81–99).
+
+## Code-review (035c7f5)
+Opgepakt in de vervolgcommit:
+- **#1 haak bij overlappende eilanden:** niet meer het eiland met de hoogste top, maar het hoogste eiland van de kolom waar het blok niet onder ligt (Y ≥ onderkant − 4, reikwijdte tot de bouwtop blijft, Q7b-A); `IslandField.islandsAt`, `IslandLookup` geeft een lijst. Test met twee overlappende eilanden in verschillende banden.
+- **#4 band-cache:** geen statische `last` meer; `RingLayout` houdt zijn eigen `Ring4Band` (lazy veld), dus een server- en een clientlayout in één JVM werpen elkaar niet uit de cache. Test: afwisselend twee layouts → steeds dezelfde instantie.
+- **#7 mixin:** grijpt alleen in waar `RingAquifer.decidesCarverLava` (ring 4 en de dammen); elders loopt vanilla door, zonder eigen lava-return.
+- **#3 naad 4|5 (besluit gebruiker):** de hele zone 4→5 (ook de ring 5-helft) heeft water in plaats van lokale lava; de naad ligt nu aan de buitenrand van de zone, binnen ring 5 (81–99). De test die de naad bevestigde is aangepast.
+
+Doorgeschoven (notities voor latere pakketten):
+- **#5 (61):** de haak zoekt per quart opnieuw de eilanden van de kolom; één opzoeking per kolom (bijv. per x, z onthouden over de Y-quarts) zodra er echte eilanden zijn.
+- **#6 (61):** `islandsWithin` scant één cel rond de cel van het midden; de plaatsing moet de eilandstraal ≤ `cellSize` afdwingen, of de scan verbreden.
+- **#10 (perfronde):** `Ring4BandFunction` rekent `effectiveDistance` opnieuw uit; hergebruik via `RingColumnCache` als de band in de profielen opvalt.
+- **#8 (62):** klifwatervallen vallen aan de ring 4-kant (`ring4FallColumn` vraagt `ring()` = ring 4); in 62 de val-kolomregel herzien als de klif de val in de ring 3-helft nodig heeft.
+- **#9 (backlog, INT):** een generieke `FieldLookup`/`find` voor `VolcanicField` en `IslandField` (nu twee kopieën); INT zet hem in `docs/backlog.md`.

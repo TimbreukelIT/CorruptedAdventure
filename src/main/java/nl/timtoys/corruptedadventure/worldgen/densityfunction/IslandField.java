@@ -122,6 +122,13 @@ public final class IslandField implements DensityFunction {
         return columns.get(x, z, this::fill);
     }
 
+    /** All islands whose footprint covers the column. */
+    public List<Island> islandsAt(int x, int z) {
+        List<Island> found = islandsWithin(x, z, x, z);
+        found.removeIf(island -> !island.covers(x, z));
+        return found;
+    }
+
     /** The island whose footprint covers the column, or null; the highest top where islands overlap. */
     @Nullable
     public Island islandAt(int x, int z) {

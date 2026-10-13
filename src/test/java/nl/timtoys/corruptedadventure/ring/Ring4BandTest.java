@@ -11,6 +11,7 @@ import java.util.OptionalDouble;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Ring4BandTest {
@@ -109,6 +110,17 @@ class Ring4BandTest {
             differs |= BAND.value(x, z) != other.value(x, z);
         }
         assertTrue(differs);
+    }
+
+    /** Review 59 (#4): kept per layout, so a server's and a client's layout in one JVM do not push each other out. */
+    @Test
+    void eachLayoutKeepsItsOwnBand() {
+        RingLayout other = layout(SEED + 7);
+        Ring4Band otherBand = Ring4Band.of(other);
+        for (int i = 0; i < 4; i++) {
+            assertSame(BAND, Ring4Band.of(LAYOUT));
+            assertSame(otherBand, Ring4Band.of(other));
+        }
     }
 
     @Test

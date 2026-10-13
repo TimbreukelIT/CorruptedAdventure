@@ -195,7 +195,7 @@ class RingBiomeSourceTest {
         for (int[] centre : new int[][]{mythicCentre, blightedCentre}) {
             Holder<Biome> expected = band.blighted(centre[0], centre[1]) ? blighted : mythic;
             IslandField.Island high = new IslandField.Island(centre[0], centre[1], 24.0, 120, 140);
-            RingBiomeSource.IslandLookup islands = (x, z) -> high.covers(x, z) ? high : null;
+            RingBiomeSource.IslandLookup islands = (x, z) -> high.covers(x, z) ? List.of(high) : List.of();
             int qx = QuartPos.fromBlock(centre[0]);
             int qz = QuartPos.fromBlock(centre[1]);
             // From the quart whose middle lies 4 blocks under the bottom (Y 116) up; the ground below keeps its biome.
@@ -207,18 +207,62 @@ class RingBiomeSourceTest {
             assertEquals(expected, hooked.getNoiseBiome(LAYOUT, islands, QuartPos.fromBlock(centre[0] + 16), QuartPos.fromBlock(130), qz, Climate.empty()));
             // A top below 140 keeps the ground biome.
             IslandField.Island low = new IslandField.Island(centre[0], centre[1], 24.0, 100, 139);
-            assertEquals(biomes.get(Ring.RING_4), hooked.getNoiseBiome(LAYOUT, (x, z) -> low.covers(x, z) ? low : null,
+            assertEquals(biomes.get(Ring.RING_4), hooked.getNoiseBiome(LAYOUT, (x, z) -> low.covers(x, z) ? List.of(low) : List.of(),
                     qx, QuartPos.fromBlock(130), qz, Climate.empty()));
         }
         assertTrue(hooked.possibleBiomes().containsAll(Set.of(mythic, blighted)));
         // Other rings never ask, even with an island over them; nor does a source without the hook.
         IslandField.Island elsewhere = new IslandField.Island(CENTRES[2], 0, 24.0, 120, 200);
-        assertEquals(biomes.get(Ring.RING_3), hooked.getNoiseBiome(LAYOUT, (x, z) -> elsewhere, QuartPos.fromBlock(CENTRES[2]), QuartPos.fromBlock(150),
+        assertEquals(biomes.get(Ring.RING_3), hooked.getNoiseBiome(LAYOUT, (x, z) -> List.of(elsewhere), QuartPos.fromBlock(CENTRES[2]), QuartPos.fromBlock(150),
                 0, Climate.empty()));
         IslandField.Island ring4 = new IslandField.Island(mythicCentre[0], mythicCentre[1], 24.0, 120, 200);
-        assertEquals(biomes.get(Ring.RING_4), overworld.getNoiseBiome(LAYOUT, (x, z) -> ring4, QuartPos.fromBlock(mythicCentre[0]),
+        assertEquals(biomes.get(Ring.RING_4), overworld.getNoiseBiome(LAYOUT, (x, z) -> List.of(ring4), QuartPos.fromBlock(mythicCentre[0]),
                 QuartPos.fromBlock(150), QuartPos.fromBlock(mythicCentre[1]), Climate.empty()));
         assertTrue(decode(", \"island_biomes\": {\"mythic\": \"test:sky\", \"blighted\": \"test:withered\"}").isSuccess());
+    }
+
+    /**
+     * Review 59 (#1): where two islands overlap, each block takes the highest island it is not below (from 4 under its
+     * bottom up), so the lower island keeps its own height biome under the higher one. Their centres lie in different
+     * bands here, so the biome tells which island was taken.
+     */
+    @Test
+    void underAnOverlappingHigherIslandTheLowerKeepsItsOwnHeightBiome() {
+        Holder<Biome> mythic = Holder.direct(biome());
+        Holder<Biome> blighted = Holder.direct(biome());
+        Map<Ring, BiomeSource> sources = new EnumMap<>(Ring.class);
+        biomes.forEach((ring, biome) -> sources.put(ring, new FixedBiomeSource(biome)));
+        RingBiomeSource hooked = new RingBiomeSource(Level.OVERWORLD, sources, Map.of(), new IslandBiomes(mythic, blighted, 140));
+        Ring4Band band = Ring4Band.of(LAYOUT);
+        int[] pair = acrossTheLine(band);
+        IslandField.Island lower = new IslandField.Island(pair[0], pair[1], 30.0, 110, 150);
+        IslandField.Island higher = new IslandField.Island(pair[0] + 40, pair[1], 30.0, 190, 240);
+        Holder<Biome> lowerBiome = band.blighted(lower.x(), lower.z()) ? blighted : mythic;
+        Holder<Biome> higherBiome = band.blighted(higher.x(), higher.z()) ? blighted : mythic;
+        RingBiomeSource.IslandLookup islands = (x, z) -> List.of(lower, higher).stream().filter(island -> island.covers(x, z)).toList();
+        // A quart in the overlap, its middle 22 blocks from both centres.
+        int qx = QuartPos.fromBlock(pair[0] + 18);
+        int qz = QuartPos.fromBlock(pair[1]);
+        assertEquals(lowerBiome, hooked.getNoiseBiome(LAYOUT, islands, qx, QuartPos.fromBlock(130), qz, Climate.empty()));
+        assertEquals(lowerBiome, hooked.getNoiseBiome(LAYOUT, islands, qx, QuartPos.fromBlock(180), qz, Climate.empty()));
+        assertEquals(higherBiome, hooked.getNoiseBiome(LAYOUT, islands, qx, QuartPos.fromBlock(188), qz, Climate.empty()));
+        assertEquals(higherBiome, hooked.getNoiseBiome(LAYOUT, islands, qx, QuartPos.fromBlock(260), qz, Climate.empty()));
+        assertEquals(biomes.get(Ring.RING_4), hooked.getNoiseBiome(LAYOUT, islands, qx, QuartPos.fromBlock(100), qz, Climate.empty()));
+    }
+
+    /** A quart corner in ring 4 proper whose band differs from the one 40 blocks east (both also in ring 4 proper). */
+    private static int[] acrossTheLine(Ring4Band band) {
+        for (int z = -4000; z <= 4000; z += 52) {
+            for (int x = 5600; x <= 7900; x += 4) {
+                RingPosition here = LAYOUT.sample(Level.OVERWORLD, x, z);
+                RingPosition east = LAYOUT.sample(Level.OVERWORLD, x + 40, z);
+                if (!here.inTransition() && here.ring() == Ring.RING_4 && !east.inTransition() && east.ring() == Ring.RING_4
+                        && band.blighted(x, z) != band.blighted(x + 40, z)) {
+                    return new int[]{x, z};
+                }
+            }
+        }
+        throw new AssertionError("no band line crossed");
     }
 
     /** An island centre in ring 4 proper (a quart corner) well inside the given band. */

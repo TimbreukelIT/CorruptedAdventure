@@ -47,7 +47,9 @@ class RingFluidPickerTest {
         assertEquals(Integer.MAX_VALUE, RingFluidPicker.waterOnlyFrom(Level.NETHER, ring2));
         assertEquals(-54, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, RingPosition.within(Ring.RING_4)));
         assertEquals(-54, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, new RingPosition(Ring.RING_4, Ring.RING_5, 0.4)));
-        assertEquals(Integer.MAX_VALUE, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, new RingPosition(Ring.RING_4, Ring.RING_5, 0.6)));
+        // Review 59 (#3): the whole zone 4→5, also ring 5's half (no water against lava at the 4|5 midline).
+        assertEquals(-54, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, new RingPosition(Ring.RING_4, Ring.RING_5, 0.6)));
+        assertEquals(Integer.MAX_VALUE, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, new RingPosition(Ring.RING_5, Ring.VOID, 0.2)));
         assertEquals(Integer.MAX_VALUE, RingFluidPicker.waterOnlyFrom(Level.NETHER, RingPosition.within(Ring.RING_4)));
         for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_3, Ring.RING_5, Ring.VOID}) {
             assertEquals(Integer.MAX_VALUE, RingFluidPicker.waterOnlyFrom(Level.OVERWORLD, RingPosition.within(ring)), ring.name());
