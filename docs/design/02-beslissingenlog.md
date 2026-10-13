@@ -661,3 +661,7 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-13 | worldgen | Pakket 59: hoogte-biome per eiland, beoordeeld op het midden (ring 4, top ≥ 140), ook over overgangszones | Gebruiker; nooit twee biomes op één eiland |
 | 2026-10-13 | worldgen | Review 59: in de hele zone 4→5 (ook de ring 5-helft, zo breed als de carver-dam) wordt lokale aquiferlava water; de naad water/lava ligt aan de buitenrand van de zone, binnen ring 5 (81–99) | Gebruiker; determinisme, geen water tegen lava op de middellijn (zoals 47e bij ring 3) |
 | 2026-10-13 | worldgen | Pakket 59: `Ring4Band` (ring-package) op de `RingLayout`-noiseSeed; de client kan meerekenen | Gebruiker; één bron voor terrein, biomes, weer en gif, zonder payload |
+| 2026-10-13 | infra | Sparring golf 1 ring 4: alle "(voorlopig)"-namen in `docs/plans/ring-4/contract.md` staan vast (ook sound events, particles, config-sleutels) | Gebruiker; zeven stromen werken tegelijk met dezelfde namen |
+| 2026-10-13 | blocks | Sparring golf 1 ring 4: `giant_lily_pad` is een multiblok 2×2 (vier delen, `part`-property, breken van één breekt alle) | Gebruiker; echte grootte en beloopbaar |
+| 2026-10-13 | blocks | Sparring golf 1 ring 4: `bubble_spring` in 66 (alleen `animateTick`, vanilla bubble-particle tot de sprites van A er zijn) | Gebruiker; W-biomes kan hem in golf 2 meteen plaatsen |
+| 2026-10-13 | infra | Sparring golf 1 ring 4: alle zeven stromen starten tegelijk; teststop 5-pre na 61 (basisterrein + eilanden) | Gebruiker |

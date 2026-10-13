@@ -4,7 +4,7 @@ Scope: ring 4 + Nether-ring 4 (bouwplan blok F, `fase-1-wereld.md` §3). Opgeste
 
 **Regels**
 - Alles in dit bestand is **vast** zodra golf 0 gecommit is. Tot dan kan het golf 0-plan het aanvullen; de open punten (§9) worden daar met de gebruiker beslist. Daarna: een stroom die iets anders of extra nodig heeft, stuurt de vraag naar main; main beslist (of vraagt de gebruiker), past dit bestand aan en meldt het aan alle stromen. Nooit zelf in andermans bestand werken.
-- Namen zijn registry-namen onder `corruptedadventure:` (Engels, snake_case, ring-thema herkenbaar). De werktitels uit de sparring (`tidestone`, `moonpetal`, `withered_moonpetal`, `tidesilver`, de biomenamen) staan vast. "(voorlopig)" = een voorstel dat het golf 0-plan nog mag veranderen.
+- Namen zijn registry-namen onder `corruptedadventure:` (Engels, snake_case, ring-thema herkenbaar). De werktitels uit de sparring (`tidestone`, `moonpetal`, `withered_moonpetal`, `tidesilver`, de biomenamen) staan vast. "(voorlopig)" = een voorstel dat het golf 0-plan nog mag veranderen. **Sinds de sparring golf 1 (2026-10-13) staan alle "(voorlopig)"-namen in dit contract vast** (ook sound events, particles en config-sleutels); een wijziging gaat via main.
 - **Te bepalen in het golf 0-plan** = nog niet besloten; niet zelf kiezen.
 
 ---
@@ -61,9 +61,9 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 **66 — natuurblokken**
 - `tidestone`-set: `tidestone`, `cobbled_tidestone` (voorlopig), `polished_tidestone`, `tidestone_bricks`, elk met `_stairs`, `_slab`, `_wall` (bij de stenen enkelvoud: `tidestone_brick_*`, patroon `pumice`).
 - `moonpetal`-houtset (houtset §2 Ring 2): `moonpetal_log`, `moonpetal_wood`, `stripped_moonpetal_log`, `stripped_moonpetal_wood`, `moonpetal_planks` + stairs, slab, fence, fence_gate, door, trapdoor, pressure_plate, button; `moonpetal_leaves` (bloesem). Verdorde variant `withered_moonpetal_*`. Beslist (golf 0-plan 2026-10-13): **`moonpetal_sapling`** (+ potted) groeit tot een gewone cascadeboom (niet de wereldboom) via de configured feature `corruptedadventure:ring_4/moonpetal_tree` (voorlopig; key van W-biomes, 75; tot dan groeit de sapling niet of met een placeholder); **`withered_moonpetal`** krijgt alleen `withered_moonpetal_log`, `_wood`, `stripped_withered_moonpetal_log`, `_wood` (geen bladeren, geen planken-set); al het hout brandbaar zoals vanilla-hout.
-- `reeds` (voorlopig; 2–3 hoog), `peat` (brandstof), `hanging_swamp_moss` (voorlopig), `giant_lily_pad` (voorlopig; 2×2/3×3, beloopbaar: blok of multiblok te bepalen in 66), `lotus` (roze/wit).
+- `reeds` (voorlopig; 2–3 hoog), `peat` (brandstof), `hanging_swamp_moss` (voorlopig), `giant_lily_pad` (beloopbaar; **multiblok 2×2**, sparring golf 1 2026-10-13: vier delen met een `part`-property, breken van één breekt alle, worldgen plaatst het geheel), `lotus` (roze/wit).
 - Gloeiflora: `glowcap` (voorlopig; gloeizwam blauw/paars), `glow_bloom` (voorlopig; lichtgevende bloem), `glowing_hanging_roots` (voorlopig). De gifzwammen van `reed_marsh` zijn de **bedorven variant van de gloeizwam** (golf 0-plan 2026-10-13): zelfde vorm en blokklasse als `glowcap`, eigen naam `blighted_glowcap` (voorlopig), ziekelijk groen/grijs met een zwakke gloed; geen gifbron. Lichtwaarden: B (66).
-- `bubble_spring` (voorlopig; bellenbron, `animateTick`, geen stroming) — in 72 als het gedrag nodig heeft, anders 66.
+- `bubble_spring` (bellenbron, alleen `animateTick`, geen stroming) — **in 66** (sparring golf 1 2026-10-13): vanilla bubble-particle tot A zijn sprites levert; geluid `block.bubble_spring.bubble` koppelt A in golf 2.
 
 **67 — ertsen**
 - `tidesilver_ore` + gastgesteente-varianten (voorlopig: `tidestone_tidesilver_ore`, `deepslate_tidesilver_ore`); item `raw_tidesilver`.
