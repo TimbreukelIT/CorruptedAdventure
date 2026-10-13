@@ -1659,61 +1659,6 @@
             {
               "type": "minecraft:condition",
               "if_true": {
-                "type": "minecraft:noise_threshold",
-                "noise": "corruptedadventure:nether_ring_4_region",
-                "min_threshold": 0.14,
-                "max_threshold": 10.0
-              },
-              "then_run": {
-                "type": "minecraft:condition",
-                "if_true": {
-                  "type": "minecraft:noise_threshold",
-                  "noise": "corruptedadventure:nether_ring_4_pillars",
-                  "min_threshold": 0.25,
-                  "max_threshold": 10.0
-                },
-                "then_run": {
-                  "type": "minecraft:condition",
-                  "if_true": {
-                    "type": "minecraft:y_above",
-                    "anchor": {
-                      "absolute": 4
-                    },
-                    "surface_depth_multiplier": 0,
-                    "add_stone_depth": false
-                  },
-                  "then_run": {
-                    "type": "minecraft:sequence",
-                    "sequence": [
-                      {
-                        "type": "minecraft:condition",
-                        "if_true": {
-                          "type": "minecraft:noise_threshold",
-                          "noise": "corruptedadventure:nether_ring_4_pillars",
-                          "min_threshold": 0.55,
-                          "max_threshold": 10.0
-                        },
-                        "then_run": {
-                          "type": "minecraft:block",
-                          "result_state": {
-                            "Name": "minecraft:quartz_block"
-                          }
-                        }
-                      },
-                      {
-                        "type": "minecraft:block",
-                        "result_state": {
-                          "Name": "minecraft:calcite"
-                        }
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            {
-              "type": "minecraft:condition",
-              "if_true": {
                 "type": "minecraft:stone_depth",
                 "offset": 0,
                 "add_surface_depth": true,
@@ -1764,19 +1709,138 @@
                     }
                   },
                   {
-                    "type": "minecraft:condition",
-                    "if_true": {
-                      "type": "minecraft:biome",
-                      "biome_is": [
-                        "corruptedadventure:crystal_spires"
-                      ]
-                    },
-                    "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "minecraft:bone_block"
+                    "type": "minecraft:sequence",
+                    "sequence": [
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:noise_threshold",
+                          "noise": "corruptedadventure:nether_ring_4_region",
+                          "min_threshold": 0.14,
+                          "max_threshold": 10.0
+                        },
+                        "then_run": {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:not",
+                            "invert": {
+                              "type": "minecraft:y_above",
+                              "anchor": {
+                                "absolute": 44
+                              },
+                              "surface_depth_multiplier": 0,
+                              "add_stone_depth": false
+                            }
+                          },
+                          "then_run": {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:noise_threshold",
+                              "noise": "corruptedadventure:nether_ring_4_bridges_a",
+                              "min_threshold": -0.08,
+                              "max_threshold": 0.08
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "minecraft:bone_block"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:noise_threshold",
+                          "noise": "corruptedadventure:nether_ring_4_region",
+                          "min_threshold": 0.14,
+                          "max_threshold": 10.0
+                        },
+                        "then_run": {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:not",
+                            "invert": {
+                              "type": "minecraft:y_above",
+                              "anchor": {
+                                "absolute": 44
+                              },
+                              "surface_depth_multiplier": 0,
+                              "add_stone_depth": false
+                            }
+                          },
+                          "then_run": {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:noise_threshold",
+                              "noise": "corruptedadventure:nether_ring_4_bridges_b",
+                              "min_threshold": -0.08,
+                              "max_threshold": 0.08
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "minecraft:bone_block"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:noise_threshold",
+                          "noise": "corruptedadventure:nether_ring_4_region",
+                          "min_threshold": 0.14,
+                          "max_threshold": 10.0
+                        },
+                        "then_run": {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:not",
+                            "invert": {
+                              "type": "minecraft:y_above",
+                              "anchor": {
+                                "absolute": 44
+                              },
+                              "surface_depth_multiplier": 0,
+                              "add_stone_depth": false
+                            }
+                          },
+                          "then_run": {
+                            "type": "minecraft:condition",
+                            "if_true": {
+                              "type": "minecraft:noise_threshold",
+                              "noise": "corruptedadventure:nether_ring_4_pillars",
+                              "min_threshold": 0.25,
+                              "max_threshold": 10.0
+                            },
+                            "then_run": {
+                              "type": "minecraft:block",
+                              "result_state": {
+                                "Name": "minecraft:bone_block"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "minecraft:condition",
+                        "if_true": {
+                          "type": "minecraft:biome",
+                          "biome_is": [
+                            "corruptedadventure:crystal_spires"
+                          ]
+                        },
+                        "then_run": {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "minecraft:bone_block"
+                          }
+                        }
                       }
-                    }
+                    ]
                   },
                   {
                     "type": "minecraft:condition",
@@ -1801,6 +1865,70 @@
                     }
                   }
                 ]
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "if_true": {
+                "type": "minecraft:noise_threshold",
+                "noise": "corruptedadventure:nether_ring_4_region",
+                "min_threshold": 0.2,
+                "max_threshold": 10.0
+              },
+              "then_run": {
+                "type": "minecraft:condition",
+                "if_true": {
+                  "type": "minecraft:noise_threshold",
+                  "noise": "corruptedadventure:nether_ring_4_pillars",
+                  "min_threshold": 0.25,
+                  "max_threshold": 10.0
+                },
+                "then_run": {
+                  "type": "minecraft:condition",
+                  "if_true": {
+                    "type": "minecraft:y_above",
+                    "anchor": {
+                      "absolute": 4
+                    },
+                    "surface_depth_multiplier": 0,
+                    "add_stone_depth": false
+                  },
+                  "then_run": {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "corruptedadventure:ring_depth",
+                      "dimension": "minecraft:the_nether",
+                      "ring": "ring_4",
+                      "min_depth": 32.0
+                    },
+                    "then_run": {
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:noise_threshold",
+                            "noise": "corruptedadventure:nether_ring_4_pillars",
+                            "min_threshold": 0.55,
+                            "max_threshold": 10.0
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "minecraft:quartz_block"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "minecraft:calcite"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
               }
             },
             {

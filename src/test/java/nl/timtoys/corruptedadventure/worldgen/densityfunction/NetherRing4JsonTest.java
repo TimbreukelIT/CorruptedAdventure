@@ -148,6 +148,79 @@ class NetherRing4JsonTest {
         assertTrue(fallingBlocksAreGuarded(rules.get(own)) > 0, "the branch paints bone sand");
     }
 
+    /**
+     * Floors first (bone walkways, bone sand), then the crystal of the columns, and that only where the terrain has its
+     * columns at strength: past the spires threshold on the region axis and deep enough inside the ring
+     * ({@code ring_depth}), not in the bands where the sea fades out.
+     */
+    @Test
+    void crystalOnlyOnTheColumnsAndNeverOnAFloor() {
+        JsonArray branch = ownBranch();
+        int floor = -1, crystal = -1;
+        for (int i = 0; i < branch.size(); i++) {
+            String rule = branch.get(i).toString();
+            JsonObject test = branch.get(i).getAsJsonObject().getAsJsonObject("if_true");
+            if (floor < 0 && test != null && "floor".equals(test.has("surface_type") ? test.get("surface_type").getAsString() : null)) {
+                floor = i;
+            }
+            if (crystal < 0 && rule.contains("\"minecraft:calcite\"")) {
+                crystal = i;
+                assertTrue(rule.contains("\"corruptedadventure:ring_depth\""), "crystal follows core");
+                JsonObject depth = find(branch.get(i), "corruptedadventure:ring_depth");
+                assertTrue(depth.get("min_depth").getAsDouble() >= 24.0, "core >= 0.5 at least");
+                JsonObject region = branch.get(i).getAsJsonObject().getAsJsonObject("if_true");
+                assertEquals("corruptedadventure:nether_ring_4_region", region.get("noise").getAsString());
+                assertTrue(region.get("min_threshold").getAsDouble() >= NetherRing4Features.SPIRES_THRESHOLD, "spires weight >= 0.5");
+            }
+        }
+        assertTrue(floor >= 0 && crystal > floor, "floors before the crystal");
+        assertFalse(branch.get(floor).toString().contains("\"minecraft:calcite\""), "no crystal on a floor");
+    }
+
+    /** The roughness is only in the hollows (a = 0): the dunes, bridges and ledges stay smooth, no holes in the bridges. */
+    @Test
+    void roughOnlyInTheHollows() {
+        JsonObject rough = WorldgenData.read(DIR + "rough.json");
+        JsonObject amplitude = rough.getAsJsonObject("argument1").getAsJsonObject("argument1");
+        assertEquals(0.0, amplitude.get("argument1").getAsDouble());
+        assertEquals(REF + "hollows_weight", amplitude.getAsJsonObject("argument2").get("argument2").getAsString());
+    }
+
+    private static JsonArray ownBranch() {
+        JsonArray rules = WorldgenData.read("noise_settings/nether.json").getAsJsonObject("surface_rule").getAsJsonArray("sequence");
+        for (JsonElement rule : rules) {
+            JsonObject test = rule.getAsJsonObject().getAsJsonObject("if_true");
+            if (test != null && test.has("biome_is") && test.get("biome_is").toString().equals(RING_4_BIOMES)) {
+                return rule.getAsJsonObject().getAsJsonObject("then_run").getAsJsonArray("sequence");
+            }
+        }
+        throw new AssertionError("no Nether ring 4 branch");
+    }
+
+    /** The first object of {@code type} in a JSON tree (depth first). */
+    private static JsonObject find(JsonElement tree, String type) {
+        if (tree.isJsonObject()) {
+            JsonObject object = tree.getAsJsonObject();
+            if (object.has("type") && object.get("type").getAsString().equals(type)) {
+                return object;
+            }
+            for (var entry : object.entrySet()) {
+                JsonObject found = find(entry.getValue(), type);
+                if (found != null) {
+                    return found;
+                }
+            }
+        } else if (tree.isJsonArray()) {
+            for (JsonElement element : tree.getAsJsonArray()) {
+                JsonObject found = find(element, type);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
     /** Blocks that fall: bone sand and its placeholder. */
     private static final List<String> FALLING = List.of("corruptedadventure:bone_sand", "minecraft:white_concrete_powder", "minecraft:sand");
 

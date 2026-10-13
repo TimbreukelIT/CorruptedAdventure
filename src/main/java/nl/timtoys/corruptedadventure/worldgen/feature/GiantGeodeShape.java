@@ -25,6 +25,8 @@ public final class GiantGeodeShape {
     public static final int ATTEMPTS = 24;
     /** How many directions a geode tries for its doorways. */
     public static final int DOOR_DIRECTIONS = 8;
+    /** How many points {@link Geode#domeTestPoints} gives. */
+    public static final int DOME_POINTS = 65;
 
     private GiantGeodeShape() {
     }
@@ -42,14 +44,16 @@ public final class GiantGeodeShape {
     }
 
     /**
-     * @param regionMax  the geode's centre must lie at or below this region value (inside the geode hollows)
-     * @param floorMin   lowest Y of the flat floor
-     * @param shell      solid rock wanted above the dome
-     * @param doorLength how far a doorway may run past the wall to reach open terrain
-     * @param doorsMax   at most this many doorways (at least one, or the attempt is no geode)
+     * @param regionMax      the geode's centre must lie at or below this region value (deep inside the geode hollows)
+     * @param regionReachMax the whole geode, doorways included, must lie at or below this region value (where the
+     *                       hollows have weight in the terrain: no geode cut in half by the mass's edge)
+     * @param floorMin       lowest Y of the flat floor
+     * @param shell          solid rock wanted above the dome
+     * @param doorLength     how far a doorway may run past the wall to reach open terrain
+     * @param doorsMax       at most this many doorways (at least one, or the attempt is no geode)
      */
     public record Settings(int cellSize, double chance, int radiusMin, int radiusMax, int floorMin, int floorMax, double regionMax,
-                           int shell, int doorWidth, int doorHeight, int doorLength, int doorsMax) {
+                           double regionReachMax, int shell, int doorWidth, int doorHeight, int doorLength, int doorsMax) {
         public static final Codec<Settings> CODEC = RecordCodecBuilder.<Settings>create(instance -> instance.group(
                 Codec.intRange(32, 512).fieldOf("cell_size").forGetter(Settings::cellSize),
                 Codec.doubleRange(0.0, 1.0).fieldOf("chance").forGetter(Settings::chance),
@@ -58,6 +62,7 @@ public final class GiantGeodeShape {
                 Codec.INT.fieldOf("floor_min").forGetter(Settings::floorMin),
                 Codec.INT.fieldOf("floor_max").forGetter(Settings::floorMax),
                 Codec.DOUBLE.fieldOf("region_max").forGetter(Settings::regionMax),
+                Codec.DOUBLE.fieldOf("region_reach_max").forGetter(Settings::regionReachMax),
                 Codec.intRange(0, 16).fieldOf("shell").forGetter(Settings::shell),
                 Codec.intRange(1, 16).fieldOf("door_width").forGetter(Settings::doorWidth),
                 Codec.intRange(1, 16).fieldOf("door_height").forGetter(Settings::doorHeight),
@@ -155,18 +160,23 @@ public final class GiantGeodeShape {
         }
 
         /**
-         * The 9 points of the upper half of the direction cube (straight up, 4 edges, 4 corners, normalised) at the distance
-         * where the dome plus {@code shell} blocks of rock must still be solid. The sides are not tested: they may open.
+         * The {@link #DOME_POINTS} points over the dome: straight up and 16 directions round at 4 heights (15°, 35°, 55°,
+         * 75° above the horizon), {@code shell} blocks out from the stretched wall, where the rock must still be solid. The
+         * sides below 15° are not tested: they may open.
          */
         public List<int[]> domeTestPoints(int shell) {
-            double distance = radius * Math.max(stretchX, Math.max(stretchY, stretchZ)) + shell;
-            List<int[]> points = new ArrayList<>(9);
-            for (int dx = -1; dx <= 1; dx++) {
-                for (int dz = -1; dz <= 1; dz++) {
-                    double length = Math.sqrt(dx * dx + 1 + dz * dz);
-                    points.add(new int[]{x + (int) Math.round(dx / length * distance),
-                            y + (int) Math.round(1 / length * distance),
-                            z + (int) Math.round(dz / length * distance)});
+            List<int[]> points = new ArrayList<>(DOME_POINTS);
+            points.add(new int[]{x, y + (int) Math.round(radius * stretchY + shell), z});
+            for (double elevation : new double[]{15.0, 35.0, 55.0, 75.0}) {
+                double up = Math.sin(Math.toRadians(elevation));
+                double out = Math.cos(Math.toRadians(elevation));
+                for (int i = 0; i < 16; i++) {
+                    double angle = i * Math.PI / 8.0;
+                    double dx = out * Math.cos(angle);
+                    double dz = out * Math.sin(angle);
+                    points.add(new int[]{x + (int) Math.round(dx * (radius * stretchX + shell)),
+                            y + (int) Math.round(up * (radius * stretchY + shell)),
+                            z + (int) Math.round(dz * (radius * stretchZ + shell))});
                 }
             }
             return points;
@@ -209,6 +219,11 @@ public final class GiantGeodeShape {
      * so it always leads somewhere. Directions within 60 degrees of an earlier doorway are skipped. Pure.
      */
     public static List<Door> doors(Settings settings, Geode geode, long attemptHash, OpenAt open) {
+        return doors(settings, geode, attemptHash, open, door -> true);
+    }
+
+    /** {@link #doors(Settings, Geode, long, OpenAt)}, keeping only the doorways {@code accept} takes (a refused one leaves its place to the next direction). */
+    public static List<Door> doors(Settings settings, Geode geode, long attemptHash, OpenAt open, java.util.function.Predicate<Door> accept) {
         List<Door> doors = new ArrayList<>(settings.doorsMax());
         double start = SeededHash.unit(attemptHash, 8) * Math.PI * 2.0;
         int y = geode.floor() + 2;
@@ -224,7 +239,10 @@ public final class GiantGeodeShape {
             }
             for (double t = Math.ceil(geode.wall()) + 1.0; t <= last; t += 1.0) {
                 if (open.open(geode.x() + (int) Math.round(dirX * t), y, geode.z() + (int) Math.round(dirZ * t))) {
-                    doors.add(new Door(dirX, dirZ, Math.min(t + 2.0, last)));
+                    Door door = new Door(dirX, dirZ, Math.min(t + 2.0, last));
+                    if (accept.test(door)) {
+                        doors.add(door);
+                    }
                     break;
                 }
             }

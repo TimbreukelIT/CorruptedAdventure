@@ -12,6 +12,7 @@
     "floor_min": 42,
     "floor_max": 48,
     "region_max": -0.22,
+    "region_reach_max": -0.145,
     "shell": 3,
     "door_width": 6,
     "door_height": 6,

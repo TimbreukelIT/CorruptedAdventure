@@ -43,7 +43,7 @@ MASS_TOP, MASS_AMPLITUDE = 88.0, 6.0
 TUNNEL_Y, TUNNEL_Y_AMPLITUDE = 50.0, 6.0
 GEODES = {                  # GiantGeodeShape.Settings: hollows of diameter 20-40 with a flat floor and 1-3 doorways
     "cell_size": 128, "chance": 0.85, "radius_min": 10, "radius_max": 20, "floor_min": 42, "floor_max": 48,
-    "region_max": HOLLOWS_THRESHOLD - RAMP, "shell": 3, "door_width": 6, "door_height": 6, "door_length": 24, "doors_max": 3,
+    "region_max": HOLLOWS_THRESHOLD - RAMP, "region_reach_max": round(HOLLOWS_THRESHOLD + RAMP - 0.005, 6), "shell": 3, "door_width": 6, "door_height": 6, "door_length": 24, "doors_max": 3,
 }
 
 NOISES = {
@@ -171,7 +171,7 @@ def files():
                          -2.5, 2.5)),
         "dam": add(mul(5.0, mul(ref("edge"), grad(DAM_TOP, DAM_TOP + 4, 1.0, 0.0))), -2.5),
         # rough rock in the hollows; the dunes and the spires (thin bridges and ledges) stay smooth
-        "rough": add(mul(add(0.25, mul(0.45, ref("hollows_weight"))), noise("nether_ring_4_rough", 0.8)), -0.05),
+        "rough": add(mul(add(0.0, mul(0.7, ref("hollows_weight"))), noise("nether_ring_4_rough", 0.8)), -0.05),
     }
     out["shape"] = add(
         mx(mx(below(ref("floor_height")), above(ref("ceiling_height"))),

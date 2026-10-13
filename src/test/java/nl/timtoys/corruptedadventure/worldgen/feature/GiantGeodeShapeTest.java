@@ -26,6 +26,8 @@ class GiantGeodeShapeTest {
         assertEquals(10, SETTINGS.radiusMin(), "diameter 20");
         assertEquals(20, SETTINGS.radiusMax(), "diameter 40");
         assertEquals(3, SETTINGS.doorsMax(), "1-3 entrances");
+        assertTrue(SETTINGS.regionMax() < SETTINGS.regionReachMax() && SETTINGS.regionReachMax() < -0.14,
+                "centre deep in the hollows, the whole geode where they have weight (region below -0.14)");
         assertTrue(SETTINGS.floorMin() >= 40, "the floor lies on the mass (Y 40), above the dam");
     }
 
@@ -61,6 +63,21 @@ class GiantGeodeShapeTest {
         }
     }
 
+    /** A doorway the density function refuses (out of the hollows, near a border) leaves its place to the next direction. */
+    @Test
+    void aRefusedDoorwayLeavesItsPlaceToTheNext() {
+        GiantGeodeShape.Geode bare = new GiantGeodeShape.Geode(0, 50, 0, 12, 1.0, 1.0, 1.0, 46, List.of(), 6, 6);
+        GiantGeodeShape.OpenAt everywhere = (x, y, z) -> Math.hypot(x, z) >= 20;
+        List<GiantGeodeShape.Door> all = GiantGeodeShape.doors(SETTINGS, bare, 3L, everywhere);
+        assertEquals(3, all.size());
+        List<GiantGeodeShape.Door> withoutFirst = GiantGeodeShape.doors(SETTINGS, bare, 3L, everywhere, door -> !door.equals(all.get(0)));
+        assertEquals(3, withoutFirst.size(), "another direction takes its place");
+        assertFalse(withoutFirst.contains(all.get(0)));
+        for (int[] point : bare.domeTestPoints(3)) {
+            assertTrue(bare.distance(point[0], point[1], point[2]) > bare.radius() + 2, "dome points lie in the shell, outside the hollow");
+        }
+    }
+
     @Test
     void hollowAboveAFlatFloorWithADoorwayThatEndsInTheOpening() {
         GiantGeodeShape.Geode bare = new GiantGeodeShape.Geode(0, 50, 0, 12, 1.0, 1.0, 1.0, 46, List.of(), 6, 6);
@@ -82,7 +99,7 @@ class GiantGeodeShapeTest {
         assertTrue(geode.hollow(mid, 47, midZ), "in the doorway past the wall");
         assertFalse(geode.hollow(mid, 53, midZ), "above the doorway's arch");
         assertFalse(geode.hollow(mid + (int) Math.round(-door.dirZ() * 5), 47, midZ + (int) Math.round(door.dirX() * 5)), "beside the doorway");
-        assertEquals(9, geode.domeTestPoints(4).size());
+        assertEquals(GiantGeodeShape.DOME_POINTS, geode.domeTestPoints(4).size());
         for (int[] point : geode.domeTestPoints(4)) {
             assertTrue(point[1] > geode.y(), "dome points lie above the centre");
         }

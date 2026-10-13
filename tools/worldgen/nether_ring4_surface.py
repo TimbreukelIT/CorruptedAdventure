@@ -74,35 +74,58 @@ def biome(*names):
 
 
 R = "nether_ring_4_region"            # thresholds = NetherRing4Features.SPIRES_THRESHOLD / HOLLOWS_THRESHOLD
-SPIRES = noise(R, 0.14, 10.0)         # where the spires weight starts (terrain: threshold - ramp)
+SPIRES_ZONE = noise(R, 0.14, 10.0)    # where the spires weight (and with it the bridges) starts: threshold - ramp
 SEL = "minecraft:nether_state_selector"
 PILLARS = "nether_ring_4_pillars"
 PILLAR_SKIN_FROM = 0.25               # pillars ring_4/nether/pillars: solid from 0.40 (ledge 0.28, head 0.25)
 PILLAR_CORE_FROM = 0.55
+# The terrain has its columns where sea = spires weight x core > 0.5 (core = 1 - ring_edge, 48 wide); the crystal is
+# only painted where both are at least ~0.75: region >= 0.20 and 32 blocks inside the ring, so no column skin lands on
+# the walls of the slopes where the sea fades out.
+COLUMNS_REGION_FROM = 0.20
+COLUMNS_DEPTH_FROM = 32.0
+BRIDGES = ["nether_ring_4_bridges_a", "nether_ring_4_bridges_b"]
+BRIDGE_PAINT_BAND = 0.08              # bridges ring_4/nether/bridges: min(|a|, |b|) < 0.07
+WALKWAY_BELOW = 44                    # bridge and ledge tops lie at Y 42 (the dunes from Y 40 up)
 LAVA_SHORE_BELOW = 13                 # floors this low lie in the lava sea (fluid_levels.ring_4 = 10)
 FOSSIL_BAND = (22, 30)                # a band of fossil stone in the walls of the spires' sea
 CEILING_GUARD = depth("ceiling")      # the block right above air
 
 
+def ring_depth(minimum):
+    return {"type": CA + "ring_depth", "dimension": "minecraft:the_nether", "ring": "ring_4", "min_depth": minimum}
+
+
+def walkway(then):
+    """then, on a bone walkway: a bridge line or a column's ledge, anywhere the spires zone starts (also in the band
+    where the biome is still bone_dunes), or any floor of the crystal_spires biome (a sequence acts as an OR)."""
+    zone = [SPIRES_ZONE, NOT(y_above(WALKWAY_BELOW))]
+    return seq(*[all_of(zone + [noise(b, -BRIDGE_PAINT_BAND, BRIDGE_PAINT_BAND)], then) for b in BRIDGES],
+               all_of(zone + [noise(PILLARS, PILLAR_SKIN_FROM, 10.0)], then),
+               cond(biome("crystal_spires"), then))
+
+
 def nether():
     floor = depth("floor", 0, True)
     return cond(biome(*BIOMES), seq(
-        # crystal columns (shape rule: the pillar noise of the terrain, from the lava sea up)
-        all_of([SPIRES, noise(PILLARS, PILLAR_SKIN_FROM, 10.0), y_above(4)], seq(
-            cond(noise(PILLARS, PILLAR_CORE_FROM, 10.0), block(PURITY_CRYSTAL_CORE)),
-            block(PURITY_CRYSTAL))),
+        # floors first: no crystal and no falling block on a floor that is not the column's own
         cond(floor, seq(
             # the bed of the lava sea
             cond(NOT(y_above(LAVA_SHORE_BELOW)), seq(
                 cond(noise(SEL, 0.3, 10.0), block("magma_block")),
                 block(SCORCHED))),
-            # bone bridges and ledges in the spires: not a falling block, they are thin
-            cond(biome("crystal_spires"), block(FOSSIL_STONE)),
+            # bone bridges and ledges: fossil stone, never a falling block (they are thin)
+            walkway(block(FOSSIL_STONE)),
             # floors of the dunes and hollows (the surface depth, ~3-5 deep); bone sand falls, so a block of it that
             # would hang right above air (a thin floor over a tunnel, a geode or a doorway) is bleached netherrack
             # (the ceiling guard, like sandstone under the sand of a desert)
             cond(CEILING_GUARD, block(BLEACHED_NETHERRACK)),
             block(BONE_SAND))),
+        # crystal columns (shape rule: the pillar noise of the terrain, from the lava sea up, where the terrain has them)
+        all_of([noise(R, COLUMNS_REGION_FROM, 10.0), noise(PILLARS, PILLAR_SKIN_FROM, 10.0), y_above(4),
+                ring_depth(COLUMNS_DEPTH_FROM)], seq(
+            cond(noise(PILLARS, PILLAR_CORE_FROM, 10.0), block(PURITY_CRYSTAL_CORE)),
+            block(PURITY_CRYSTAL))),
         # a band of fossil stone in the walls of the spires' sea
         all_of([biome("crystal_spires"), y_above(FOSSIL_BAND[0]), NOT(y_above(FOSSIL_BAND[1])), noise(SEL, -0.2, 10.0)],
                block(FOSSIL_STONE)),

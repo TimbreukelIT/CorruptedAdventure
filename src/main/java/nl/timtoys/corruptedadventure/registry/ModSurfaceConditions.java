@@ -8,6 +8,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.surface.PolygonEdgeCondition;
+import nl.timtoys.corruptedadventure.worldgen.surface.RingDepthCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.RingReachCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.VolcanicThresholdCondition;
 
@@ -29,6 +30,11 @@ public final class ModSurfaceConditions {
     /** {@code corruptedadventure:ring_reach} */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<RingReachCondition>> RING_REACH =
             CONDITIONS.register("ring_reach", () -> RingReachCondition.MAP_CODEC);
+
+    // ring 4 — W-nether
+    /** {@code corruptedadventure:ring_depth} (65: the crystal columns of Nether ring 4 only where the terrain has them) */
+    public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<RingDepthCondition>> RING_DEPTH =
+            CONDITIONS.register("ring_depth", () -> RingDepthCondition.MAP_CODEC);
 
     private ModSurfaceConditions() {
     }
