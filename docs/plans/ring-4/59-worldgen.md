@@ -43,7 +43,9 @@ Alles worldgen, server-side; geen client-class, geen payload, geen `PROTOCOL_VER
 ## Beslissingen (gebruiker, 2026-10-13; `02-beslissingenlog.md`)
 Q1 A (amplitude 22,5 % ≈ 450, 2 octaven ~700/~180, overgang ~64); Q2 A (`Ring4Band` op de layout-noiseSeed + DF-type); Q3 A (band → weirdness, `region_water` → temperature, `region_growth` → vegetation, −10); Q4 A; Q5 afwijkend: ring 4 droog onder −54, dam over de hele zone 4→5; vervolg carver-lava A: mixin + dam in de ring 4-helft van zone 3→4; Q6 A (erosion 0, floodedness in 73); Q7 A/A/A (register per dimensie, vanaf onderkant − 4, preset nu met placeholders); Q8 A (per eiland op het midden, ook over overgangszones); Q9 A/A (eigen `Column`, nog niet aangesloten); Q10 A (afgrondzee in 63).
 
-Implementatiekeuzes (niet door de gebruiker besloten): `SLOPE` 2,5 in `Ring4Band` om de overgang op ~64 te krijgen bij de goedgekeurde ruis (daardoor puur mythisch tot ~33 % en puur bedorven vanaf ~87 %, i.p.v. ~36/~84 % in het plan); `IslandField.Settings.cellSize` 128 voorlopig (61); de haak kijkt alleen in quarts die ring 4 raken (een eiland dat verder dan de zone over ring 3 of 5 hangt, verliest daar zijn hoogte-biome).
+`SLOPE` 2,5 in `Ring4Band` om de overgang op ~64 te krijgen bij de goedgekeurde ruis (daardoor puur mythisch tot ~33 % en puur bedorven vanaf ~87 %, i.p.v. ~36/~84 % in het plan; gemiddeld 60/40): akkoord gebruiker 2026-10-13.
+
+Implementatiekeuzes (niet door de gebruiker besloten): `IslandField.Settings.cellSize` 128 voorlopig (61); de haak kijkt alleen in quarts die ring 4 raken (een eiland dat verder dan de zone over ring 3 of 5 hangt, verliest daar zijn hoogte-biome).
 
 ## Backlog
 - [worldgen] Naad op de middellijn 4|5 tussen Y −54 en −10: lokale aquiferlava van ring 5 naast water van ring 4 (zoals nu bij 1|2); op te lossen met de vloeistofregel van ring 5.
