@@ -23,7 +23,7 @@ Scope: ring 4 + Nether-ring 4 (bouwplan blok F, `fase-1-wereld.md` §3). Ontwerp
 ### Golf 0 — fundament (sequentieel, in de hoofdwerkmap)
 1. **Golf 0-plan** met de open punten uit `contract.md` §9 aan de gebruiker voorleggen (sparring-check); antwoorden in het contract verwerken. Daarna staat het contract vast.
 2. **58** (`infra`):
-   - standaard-ringradii 1.500 / 3.500 / 6.000 / 8.000 / 9.700, void-rand ~10.200 in `CommonConfig` (alleen nieuwe werelden; Nether ÷4);
+   - standaard-ringradii 1.500 / 3.500 / 6.000 / 8.000 / 9.700, void-rand 10.200 in `CommonConfig` (alleen nieuwe werelden; Nether ÷4);
    - zo nodig de bredere zone 4→5 (`contract.md` §1, open);
    - contract-sleutels als constanten (`ModBiomes`-keys, `ModTags`-TagKeys);
    - lang-raamwerk met lege helpers per stroom en de aanroepen in de providers; lege bootstrap-klassen per stroom.

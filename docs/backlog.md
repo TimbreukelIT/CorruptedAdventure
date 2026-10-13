@@ -35,7 +35,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [mobs] Ring 5: glitchwezens, schaduwen die alleen bewegen als je niet kijkt. Nether-5: vrijwel geen mobs (stilte), misschien één stille wachter. (bron: sparring fase 1 sessie 2)
 - [corruption] Ring 5-events: gefluister bij hoge stilte/void-meter, Herobrine achter je in `false_meadow`, blokken die veranderen als je wegkijkt. (bron: sparring fase 1 sessie 2)
 - [worldgen] Onmogelijke objecten in ring 5 (gras op plafonds, stilstaand water in de lucht) viel af voor fase 1; eventueel later als extra horror-feature. (bron: sparring fase 1 sessie 2)
-- [items] Placeholder-items uit fase 1-blockchanges: glitchscherf (drop van glitchblok, change 78) en zuiverkristal-scherf (change 71; sinds de sparring ring 4 pakket 68) worden als minimaal basis-item geregistreerd; nut, recipes en balans in fase 2. (bron: sparring fase 1 sessie 2)
+- [items] Placeholder-items uit fase 1-blockchanges: glitchscherf (drop van glitchblok, change 82, was 78) en zuiverkristal-scherf (change 71; sinds de sparring ring 4 pakket 68) worden als minimaal basis-item geregistreerd; nut, recipes en balans in fase 2. (bron: sparring fase 1 sessie 2)
 
 ## Uit bouw fase 1
 - [infra] Access transformer `META-INF/accesstransformer.cfg` is als minimale placeholder in een worldgen-change gekomen (twee regels: `NoiseBasedChunkGenerator.globalFluidPicker`, `NoiseChunk.aquifer`); bij een volgende infra-change nagaan of dit de gewenste plek/vorm is en het in `01-techniek.md` onder de stack vastleggen. (bron: change 6)

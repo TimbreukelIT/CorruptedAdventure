@@ -18,14 +18,14 @@ Scope: ring 4 + Nether-ring 4 (bouwplan blok F, `fase-1-wereld.md` §3). Opgeste
 | `ring3OuterRadius` | 6000 | 6000 |
 | `ring4OuterRadius` | 7800 | **8000** |
 | `ring5OuterRadius` | 9500 | **9700** |
-| `voidOuterRadius` | 10000 | **~10200** (exacte waarde: te bepalen in het golf 0-plan) |
-| `boundaryNoise`, `transitionWidth` | 96, 128 | ongewijzigd; de bredere zone 4→5 (~256): zie hieronder |
+| `voidOuterRadius` | 10000 | **10200** |
+| `boundaryNoise`, `transitionWidth` | 96, 128 | ongewijzigd; de bredere zone 4→5 (256): zie hieronder |
 
-- Nether ÷4: Nether-4 1.500 – 2.000, Nether-5 2.000 – 2.425, void-rand ~2.550. World border = void-rand (overworld ~10.200, Nether ~2.550).
+- Nether ÷4: Nether-4 1.500 – 2.000, Nether-5 2.000 – 2.425, void-rand ~2.550. World border = void-rand (overworld 10.200, Nether ~2.550).
 - `/ca tpring` (snapshot): midden ring 4 = 7.000, ring 5 = 8.850, void ~9.950 (Nether ÷4).
 - Geldt alleen voor **nieuwe** werelden. Alle ring 4-tests gebruiken een verse wereld (seed `20260930`, preset `corrupted_world`).
-- **Zone 4→5 ~256 breed** (besluit). *Te bepalen in het golf 0-plan:* een overgangsbreedte per grens in de config (nieuwe sleutel, ook in de snapshot en de sync) of een zonevorm binnen de ringinvoeren met de gewone zone van 128; de Nether-breedte (÷4 ≈ 64).
-- *Te bepalen in het golf 0-plan:* migratie van de config-standaard zoals 37c (alleen de exacte oude standaard verplaatsen).
+- **Zone 4→5 256 breed** (besluit) via een **overgangsbreedte per grens in de config** (golf 0-plan 2026-10-13): nieuwe sleutel naast `transitionWidth` (standaard 128 voor de andere grenzen, 256 voor 4→5), ook in de snapshot en de layout-sync; `ringAt` kent de echte zone, dus biome, condities, kompas en weer zien dezelfde grens. Oude werelden/snapshots zonder de sleutel: elke grens `transitionWidth`. **Nether ÷4** zoals de radii: zone 4→5 in de Nether 64 breed. Exacte sleutelnaam en vorm: 58.
+- **Migratie** zoals 37c (golf 0-plan 2026-10-13): alleen de exacte oude standaard (1.500 / 3.500 / 6.000 / 7.800 / 9.500, void 10.000) wordt verplaatst naar de nieuwe + opslaan + INFO-log; andere afwijkende waarden blijven (WARN-log).
 
 ## 2. Biomes
 
@@ -47,7 +47,7 @@ Scope: ring 4 + Nether-ring 4 (bouwplan blok F, `fase-1-wereld.md` §3). Opgeste
 - Samen 10 ring 4-biomes + `sundered_reach` (overworld) en 3 Nether-4-biomes. `steam_fens` (zone 3→4) blijft van ring 3.
 
 **Biome-tags** (namen in `ModTags` via 58; inhoud door de eigenaar van de biomes, via datagen):
-- `corruptedadventure:is_ring_4`: alle ring 4-overworld-biomes. *Te bepalen in het golf 0-plan:* of `sundered_reach` erin hoort (zoals `steam_fens` in `is_ring_3`).
+- `corruptedadventure:is_ring_4`: alle ring 4-overworld-biomes, **inclusief `sundered_reach`** (golf 0-plan 2026-10-13; zoals `steam_fens` in `is_ring_3`).
 - `corruptedadventure:is_nether_ring_4`.
 - `corruptedadventure:ring_4_blighted` (voorlopig): de bedorven band + `withered_gardens` (lezers: C voor de gifbronnen, A voor gifregen en kleur).
 - `corruptedadventure:purifying` (voorlopig): de Nether-4-biomes (zuiverend, lees C).
@@ -59,14 +59,17 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 
 **66 — natuurblokken**
 - `tidestone`-set: `tidestone`, `cobbled_tidestone` (voorlopig), `polished_tidestone`, `tidestone_bricks`, elk met `_stairs`, `_slab`, `_wall` (bij de stenen enkelvoud: `tidestone_brick_*`, patroon `pumice`).
-- `moonpetal`-houtset (houtset §2 Ring 2): `moonpetal_log`, `moonpetal_wood`, `stripped_moonpetal_log`, `stripped_moonpetal_wood`, `moonpetal_planks` + stairs, slab, fence, fence_gate, door, trapdoor, pressure_plate, button; `moonpetal_leaves` (bloesem). Verdorde variant `withered_moonpetal_*`. *Te bepalen in het golf 0-plan:* sapling, welke delen de verdorde variant krijgt, brandbaarheid.
+- `moonpetal`-houtset (houtset §2 Ring 2): `moonpetal_log`, `moonpetal_wood`, `stripped_moonpetal_log`, `stripped_moonpetal_wood`, `moonpetal_planks` + stairs, slab, fence, fence_gate, door, trapdoor, pressure_plate, button; `moonpetal_leaves` (bloesem). Verdorde variant `withered_moonpetal_*`. Beslist (golf 0-plan 2026-10-13): **`moonpetal_sapling`** (+ potted) groeit tot een gewone cascadeboom (niet de wereldboom) via de configured feature `corruptedadventure:ring_4/moonpetal_tree` (voorlopig; key van W-biomes, 75; tot dan groeit de sapling niet of met een placeholder); **`withered_moonpetal`** krijgt alleen `withered_moonpetal_log`, `_wood`, `stripped_withered_moonpetal_log`, `_wood` (geen bladeren, geen planken-set); al het hout brandbaar zoals vanilla-hout.
 - `reeds` (voorlopig; 2–3 hoog), `peat` (brandstof), `hanging_swamp_moss` (voorlopig), `giant_lily_pad` (voorlopig; 2×2/3×3, beloopbaar: blok of multiblok te bepalen in 66), `lotus` (roze/wit).
-- Gloeiflora: `glowcap` (voorlopig; gloeizwam blauw/paars), `glow_bloom` (voorlopig; lichtgevende bloem), `glowing_hanging_roots` (voorlopig). *Te bepalen in het golf 0-plan:* de gifzwammen van `reed_marsh` als eigen blok of als bedorven variant van de gloeizwam; lichtwaarden.
+- Gloeiflora: `glowcap` (voorlopig; gloeizwam blauw/paars), `glow_bloom` (voorlopig; lichtgevende bloem), `glowing_hanging_roots` (voorlopig). De gifzwammen van `reed_marsh` zijn de **bedorven variant van de gloeizwam** (golf 0-plan 2026-10-13): zelfde vorm en blokklasse als `glowcap`, eigen naam `blighted_glowcap` (voorlopig), ziekelijk groen/grijs met een zwakke gloed; geen gifbron. Lichtwaarden: B (66).
 - `bubble_spring` (voorlopig; bellenbron, `animateTick`, geen stroming) — in 72 als het gedrag nodig heeft, anders 66.
 
 **67 — ertsen**
 - `tidesilver_ore` + gastgesteente-varianten (voorlopig: `tidestone_tidesilver_ore`, `deepslate_tidesilver_ore`); item `raw_tidesilver`.
-- Gifkristal, jade, aquamarijn: erts of kristal/geode (amethist-patroon)? *Te bepalen in het golf 0-plan* per materiaal (aquamarijn ligt in geodes onder water, gifkristal "groeit" in gifgrotten). Items als placeholder zonder recipes (zoals `raw_sunstone`).
+- Beslist (golf 0-plan 2026-10-13):
+  - **jade** als erts: `jade_ore` + gastgesteente-varianten zoals `tidesilver` (voorlopig: `tidestone_jade_ore`, `deepslate_jade_ore`); item `jade`;
+  - **gifkristal** en **aquamarijn** volgens het **amethist-patroon**: kristalblok, budding-blok (groeit via random ticks), 4 groeistadia (small/medium/large bud, cluster) en een scherf. Namen voorlopig: `toxic_crystal_block`, `budding_toxic_crystal`, `small_toxic_crystal_bud`, …, `toxic_crystal_cluster`, `toxic_crystal_shard`; idem `aquamarine_*`. Aquamarijn in geodes onder water, gifkristal in de gifgrotten.
+- Items als placeholder zonder recipes (zoals `raw_sunstone`).
 - Ertstags `c:ores/<materiaal>`.
 
 **68 — Nether-4**
@@ -75,7 +78,7 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 **72 — gameplayblokken**
 - `swamp_gas` (onzichtbaar, niet-solide, vervangbaar; ketting-ontploffing via scheduled ticks, cap per tick, blokschade volgt `mobGriefing`).
 - `sucking_mud` (voorlopig; wegzakken zoals poedersneeuw, server-side).
-- `toxic_pool` (voorlopig; gifpoel, herkenbaar anders dan water). *Te bepalen in het golf 0-plan:* een blok (zoals kokende modder) of een eigen vloeistof.
+- `toxic_pool` (voorlopig; gifpoel, herkenbaar anders dan water) als **eigen vloeistof** (golf 0-plan 2026-10-13): `FluidType` + bron/stromend + `LiquidBlock`; client-rendering (`IClientFluidTypeExtensions`) alleen in `client/`. Gedrag (golf 0-plan 2026-10-13): stroomt **traag en kort** zoals lava in de overworld (~3 blokken), zwemmen trager dan in water; emmer `toxic_pool_bucket` (voorlopig, placeholder-item, nut in fase 2); **menging** via NeoForge's `FluidInteractionRegistry`: gif tegen water → `mud`, gif tegen lava → `stone` (water blijft altijd veilig). Worldgen: alleen bronblokken in gesloten kommen, nooit tegen water (geen menging tijdens generatie); de offline scan telt gif tegen lucht en tegen water. Eigenaar B, ook de client-extensie in `client/`; T levert de vloeistoftextures (`toxic_pool_still`, `toxic_pool_flow`, voorlopig); de blok-tag `poison_sources` bevat het `LiquidBlock`.
 - `updraft` (voorlopig; opwaartse stroom: niet-solide, doorzichtig, duwt spelers en items omhoog, server-side beweging).
 - Sporen: `clawed_tidestone` (voorlopig), `slime_trail` (voorlopig), `creature_nest` (voorlopig).
 
@@ -93,17 +96,18 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 
 | DF (`corruptedadventure:…`) | Betekenis / bereik | Eigenaar | Lezers |
 |---|---|---|---|
-| `ring_4/overworld/band` | 2D band-as: mythisch ↔ bedorven (binnenste ~60 % / buitenste ~40 %), oplopend naar ring 5 | 59 (W-terrein) | router (klimaat), W-biomes, W-terrein (eilanddichtheid) |
+| `ring_4/overworld/band` | 2D band-as: mythisch ↔ bedorven (binnenste ~60 % / buitenste ~40 %), oplopend naar ring 5. **Eigen as** (golf 0-plan 2026-10-13): geseede 2D-ruis op een radiaal verloop, zodat bedorven tongen de mythische band in steken en er mythische eilandjes in de bedorven band liggen; het verloop houdt de binnenrand mythisch en de buitenrand bedorven | 59 (W-terrein) | router (klimaat), W-biomes, W-terrein (eilanddichtheid), A en C via de Java-tegenhanger (zie onder) |
 | `ring_4/overworld/region_*` | 2D klimaatassen voor de biomes binnen een band (aantal en namen: 59) | 59 (W-terrein) | router `temperature`/`vegetation`, W-biomes |
 | `ring_4/overworld/height` | 2D oppervlaktehoogte (zonder gaten en grotten) | W-terrein | W-biomes (features, surface) |
 | `ring_4/overworld/island_mask` | 0..1: eiland in de kolom | W-terrein | W-biomes (aankleding), hoogte-biomehaak |
 | `ring_4/overworld/island_hole` | 0..1: gatmeer onder een eiland (1 = bodem) | W-terrein | W-biomes |
-| `ring_4/overworld/cliff` | 0..1: klif 3→4 | W-terrein (62) | W-biomes (`steam_fens`, surface) |
+| `ring_4/overworld/cliff` | 0..1: klif 3→4. **Klif aan de buitenrand van zone 3→4** (golf 0-plan 2026-10-13): `steam_fens` is een plateau op ring 3-hoogte over de hele zone, de klif valt aan de ring 4-kant (~6.064 + grensruis), de voet is echte ring 4 | W-terrein (62) | W-biomes (`steam_fens`, surface) |
 | `ring_4/overworld/sundered` | 0..1: uiteenvallen in zone 4→5 | W-terrein (63) | W-biomes, A (sfeer) |
 | `ring_4/overworld/tunnels` | per blok: holte van het tunnelnet (overstroomd/droog) | W-terrein (73) | W-biomes (sporen, ertsen) |
 | `ring_4/nether/region` | 2D regio-as Nether-4 | 59 (W-nether) | Nether-router `temperature` |
 | `ring_4/nether/terrain` | terreinvorm Nether-4 (als ring 4 in `ring_blend/nether`) | W-nether | — |
 
+- **Band in Java** (golf 0-plan 2026-10-13, gevolg van de eigen as): weer (A) en gif (C) moeten server-side weten in welke band een positie ligt. 59 levert naast de DF een pure, geseede Java-functie die exact dezelfde waarde geeft (één bron, test: DF = Java op een raster); naam en plek: 59. **Overgang tussen de banden ~64 blokken** (golf 0-plan 2026-10-13): in die strook mengen de randbiomes; weer en gif nemen het midden van de strook als grens.
 - **Router:** de ring 4-sleutels in `ring_blend/overworld_temperature`, `_vegetation` en (zo nodig) `_weirdness` wijzen naar de assen van 59. Zone 4→5 krijgt een overgangsbiome (`transitions.ring_4` = `sundered_reach`), dus `ring_4` gaat in dezelfde change uit `switch_at` (harde regel uit `docs/plans/ring-3/contract.md` §4; de test vergelijkt met `transitions`). Zone 3→4 heeft al `steam_fens`.
 - **`IslandField`** (Java, W-terrein): eigen veldklasse die `Column`/`ColumnTable`/`VolcanicCaches` van ring 3 hergebruikt, met een eigen raster (dichte eilanden botsen met de kolom-caps van ring 3: max. 6 eilanden / 8 solids per kolom), plaatsing zonder `flat_cache`, het gat als aftrek in de 2D-hoogte (zoals `sinkholeAt`). Accessors (alleen lezen; voorlopig): `islandsWithin`, `islandAt`, `liftsWithin`, `waterfallsWithin`, `worldTrees`; lezers W-biomes (75–77), B/A waar nodig. Gevonden via de router zoals `VolcanicField.find`.
 - **Vloeistofregel ring 4** (W-terrein, `RingFluidPicker`/`RingAquifer`):
@@ -113,9 +117,10 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
   - gatmeren tot zeeniveau of tot de rand op hooglanden; overstroomde tunnels via een eigen floodedness (en erosion: geen deep dark, zoals ring 3);
   - een echte `initial_terrain` (valkuil Y 55: overstroomde grotten);
   - `ring3Seal` blijft in ring 3's helft van zone 3→4;
-  - *te bepalen in het golf 0-plan:* het waterniveau in de afgrond van `sundered_reach` en of water daar tegen lucht mag staan (de afgrond is open).
-- **Hoogte-biomehaak** (59, W-terrein, in `RingBiomeSource`): boven een drempelhoogte op een eiland kiest ring 4 `sky_gardens` (mythische band) of `withered_gardens` (bedorven band); lage eilanden en de grond houden het grondbiome. Een biome-source krijgt alleen de klimaatsampler (`fase-1-wereld.md` §1.2): *te bepalen in het golf 0-plan* via welk routerveld of welke eigen DF de haak het eiland en de hoogte ziet, en de drempel.
-- **Nether-4 lavaniveau** (`fluid_levels.ring_4`, W-nether): de lavazee is "diep weggezakt". *Te bepalen in het golf 0-plan:* het niveau. De trede 3|4 (Nether-3 Y 22) moet afgedekt zijn volgens de dam-regel van `docs/plans/ring-3/contract.md` §4 (test met `tools/nether-lava-walls.py` op r 1.500 en r 2.000).
+  - afgrond van `sundered_reach` (golf 0-plan 2026-10-13): een stilstaande **afgrondzee op Y 0**; water dat de diepte in stort zijn **alleen vastgelegde vallen** (water-tak, cap per chunk); verder nergens vrij water tegen lucht (de waterscan van `waves.md` §4 telt dit, buiten de vastgelegde vallen).
+- **Hoogte-biomehaak** (59, W-terrein, in `RingBiomeSource`): boven een drempelhoogte op een eiland kiest ring 4 `sky_gardens` (mythische band) of `withered_gardens` (bedorven band); lage eilanden en de grond houden het grondbiome. Beslist (golf 0-plan 2026-10-13): **per eiland**, het hele eiland krijgt het hoogte-biome als de **top op Y 140 of hoger** ligt (nooit twee biomes boven elkaar op één eiland); welk van de twee volgt uit de band op het midden van het eiland. De haak ziet het eiland **via `IslandField`**, gevonden via de router zoals `VolcanicField.find` (één bron voor de eilandvorm, geen klimaat-as).
+- **Nether-4 lavaniveau** (`fluid_levels.ring_4`, W-nether): de lavazee is "diep weggezakt": **Y 10** (golf 0-plan 2026-10-13; 12 onder Nether-3). De trede 3|4 (Nether-3 Y 22) moet afgedekt zijn volgens de dam-regel van `docs/plans/ring-3/contract.md` §4 (test met `tools/nether-lava-walls.py` op r 1.500 en r 2.000).
+- **Vanilla-ertsen** (77, golf 0-plan 2026-10-13): gewoon (kolen, ijzer, koper) ×0,2, middengroep (goud, redstone, lapis) **×0,15**, zeldzaam (diamant, smaragd) ×0,1.
 - **Features:** keys `corruptedadventure:ring_4/<naam>` en `corruptedadventure:nether_ring_4/<naam>`. De determinismeregels van 23c (overworld) en 35 (Nether) gelden. Grote vormen (eilanden, gaten, wereldboom, landbruggen, klif) zijn terrein (DF/veld), geen features.
 - **Hoogtes (besluiten):** basisterrein rond Y 63 met terrassen en kliffen; klif 3→4 ~40–80; eilanden binnen Y ~90–130 (15–40 boven het gat), naar buiten tot Y ~250; kluiten 5–15, middel 20–60, reuzen 80–150; wereldboom 80–140 hoog, stam 8–12; tunnels 5–12 breed.
 - **Spawns:** vanilla-dieren per biome (lagune tropische vissen/schildpadden/dolfijnen, moeras kikkers/axolotls, cascades vossen/konijnen; bedorven band vrijwel leeg). Monsters vanilla tot fase 4.
@@ -129,16 +134,17 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 | zone | overworld, ring 4 (hard op 0,5 zoals hitte); daarbuiten ↓ |
 | bronnen | gifpoel (in of naast, snel; blok-tag `poison_sources`), moerasgas (hoofd in gas), gifregen (onder open lucht; modifier door C, factor in `[weather.ring4]`) |
 | geen bron | water (ook gifgroen), gifzwammen |
-| drempels | misselijkheid → vanilla-gif (doodt niet) → wither (kan doden); waarden te bepalen in het golf 0-plan |
+| drempels | misselijkheid → vanilla-gif (doodt niet) → wither (kan doden); startwaarden (golf 0-plan 2026-10-13) **30 / 60 / 90** |
 | noodmiddelen | melk −40, honingfles −20 |
-| `[conditions.poison]` | snelheden per bron en de daling: startwaarden te bepalen in het golf 0-plan, afstemmen in 5b |
-| zuiverend (79) | `RateModifier.Stage` zuiverend (bestaat): in Nether-4 (`purifying`) zakken alle meters extra snel; factor in de config (te bepalen) |
+| `[conditions.poison]` | startwaarden (golf 0-plan 2026-10-13, afstemmen in 5b): gifpoel in/naast **+3/s** (~35 s tot 100), moerasgas hoofd in gas **+2/s** (~50 s), gifregen onder open lucht **+0,5/s** (~3,5 min, zoals hitte); daling buiten de bronnen **−1/s** |
+| zuiverend (79) | `RateModifier.Stage` zuiverend (bestaat): in Nether-4 (`purifying`) zakken alle meters extra snel; factor in de config, startwaarde **×3** op de daling (golf 0-plan 2026-10-13) |
 
 ## 6. Weer, geluid, particles (eigenaar A)
 
 - **Weertypes** (`RingWeatherType`): `DENSE_FOG`, `TOXIC_RAIN` (bestaan al, ring 4), **`STORM_WIND`** (nieuw, voorlopig).
   - Mythische band: dikke mist + stormwind. Bedorven band: gifregen (alleen daar).
-  - *Te bepalen in het golf 0-plan:* hoe de band-regel werkt (de weerstaat is per ring: één cyclus met een ruimtelijke beperking per band, of twee cycli) en of mist/storm ook in de bedorven band komen.
+  - Band-regel (golf 0-plan 2026-10-13): **één cyclus voor ring 4**; het type bepaalt de band: mist en storm gelden alleen in de mythische band, gifregen alleen in de bedorven band (via de Java-bandfunctie van 59, §4; grens = midden van de overgangsstrook). Geen wijziging aan `RingWeatherData` of de payload. De banden hebben dus nooit tegelijk weer.
+  - **Geen mist of storm in de bedorven band** (golf 0-plan 2026-10-13): daar alleen gifregen.
 - **Config `[weather.ring4]`** (voorlopig): `clearMinSeconds`, `clearMaxSeconds`, `weatherMinSeconds`, `weatherMaxSeconds`, `denseFogWeight`, `stormWindWeight`, `toxicRainWeight`, `toxicRainPoisonMultiplier`, `stormPushStrength`, `stormPushMinY` (120).
 - **Stormduw:** server-side, alleen boven Y ~120 op en tussen de eilanden (patroon zandstorm, change 28); de richting uit de `seed` van de weerstaat.
 - **Mist-hook voor fase 4:** server-side vraag "is het nu mist op deze plek" via `RingWeather.stateAt` (geen client-logica); vorm te bepalen in 70.
@@ -162,16 +168,16 @@ Alle blokken krijgen een blockitem met dezelfde naam, tenzij vermeld. Volgorde =
 
 ## 9. Open punten — te bepalen in het golf 0-plan
 
-1. **Void-rand:** exacte standaardwaarde (~10.200) en migratie van de config-standaard (§1).
-2. **Zone 4→5 (~256):** een overgangsbreedte per grens in de config of een zonevorm in de ringinvoeren; Nether-breedte (§1).
-3. **Bandgrens mythisch/bedorven:** vaste radius met ruis of een eigen as; breedte van de overgang tussen de banden (§4).
-4. **Hoogte-biomes:** drempelhoogte en hoe de haak eiland en hoogte ziet (§4).
-5. **Klif 3→4:** waar in de zone de klif ligt en hoe `steam_fens` zich tot de klifvoet verhoudt (62).
-6. **Afgrond `sundered_reach`:** waterniveau onderin en water tegen lucht (§4).
-7. **Nether-4 lavaniveau** en de trede 3|4 (§4).
-8. **Ringweer per band:** mechanisme en of mist/storm ook in de bedorven band komen (§6).
-9. **Gif:** snelheden per bron, daling en drempelwaarden (§5).
-10. **Blokken:** gifzwam (eigen blok of variant van de gloeizwam), gifpoel (blok of vloeistof), `moonpetal`-sapling en de delen van de verdorde variant, gifkristal/jade/aquamarijn als erts of kristal (§3).
-11. **Vanilla-ertsen:** de factor voor de middengroep (goud/redstone/lapis); startwaarden gewoon ×0,2, zeldzaam ×0,1.
-12. **`is_ring_4`:** hoort `sundered_reach` erbij (§2).
-13. **Bouwplannummers:** 77–80 overlappen met blok G (ring 5); hernummering van G.
+1. ~~**Void-rand**~~ — beslist 2026-10-13: 10.200, migratie zoals 37c (§1).
+2. ~~**Zone 4→5**~~ — beslist 2026-10-13: overgangsbreedte per grens in de config (4→5 = 256), Nether ÷4 = 64 (§1).
+3. ~~**Bandgrens mythisch/bedorven**~~ — beslist 2026-10-13: eigen as, overgang ~64 (§4).
+4. ~~**Hoogte-biomes**~~ — beslist 2026-10-13: per eiland, top ≥ Y 140, via `IslandField` (§4).
+5. ~~**Klif 3→4**~~ — beslist 2026-10-13: aan de buitenrand van de zone, `steam_fens` als plateau erboven (§4).
+6. ~~**Afgrond `sundered_reach`**~~ — beslist 2026-10-13: afgrondzee Y 0, alleen vastgelegde vallen (§4).
+7. ~~**Nether-4 lavaniveau**~~ — beslist 2026-10-13: Y 10; trede 3|4 met de dam-regel (§4).
+8. ~~**Ringweer per band**~~ — beslist 2026-10-13: één cyclus, type bepaalt de band; bedorven band alleen gifregen (§6).
+9. ~~**Gif**~~ — beslist 2026-10-13: "midden" (§5).
+10. ~~**Blokken**~~ — beslist 2026-10-13: gifzwam = bedorven variant van de gloeizwam, gifpoel = eigen vloeistof (traag en kort, emmer, water → modder, lava → steen), `moonpetal`-sapling ja en verdord alleen stam, jade erts, gifkristal en aquamarijn kristal (§3).
+11. ~~**Vanilla-ertsen**~~ — beslist 2026-10-13: middengroep ×0,15 (§4).
+12. ~~**`is_ring_4`**~~ — beslist 2026-10-13: `sundered_reach` hoort erbij (§2).
+13. ~~**Bouwplannummers**~~ — beslist 2026-10-13: blok G (ring 5) hernummerd naar 81–99, H naar 100 (`fase-1-wereld.md` §3).
