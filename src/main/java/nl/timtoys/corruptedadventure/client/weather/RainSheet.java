@@ -44,7 +44,7 @@ final class RainSheet {
     /**
      * Draws the sheet at {@code AFTER_WEATHER} (vanilla's own weather pass, also the weather target under "Fabulous!").
      *
-     * @param amount 0–1, the alpha of the sheet (strength; the roof check is per column)
+     * @param amount 0–1, the alpha of the sheet (strength × sky exposure; the streaks also stop at every roof per column)
      * @param slant  horizontal blocks the streak moves per block of fall, towards the direction the wind blows
      */
     void render(RenderLevelStageEvent event, float amount, Vec3 slant) {
@@ -114,9 +114,11 @@ final class RainSheet {
         if (mesh != null) {
             BufferUploader.drawWithShader(mesh);
         }
-        // Vanilla's end state of its own weather pass (the depth mask stays as vanilla's weather pass sets it).
+        // Vanilla's end state of its weather pass; vanilla only touches the depth mask while its own rain falls, so set it
+        // back to the default here (the world border and the rest of the frame set their own).
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
+        RenderSystem.depthMask(true);
         lightTexture.turnOffLightLayer();
     }
 }

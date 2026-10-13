@@ -41,6 +41,8 @@ final class StormWindRenderer implements RingWeatherRenderer {
     private static final int RAIN_COLOUR = 0xC8D4E0;
     /** Horizontal blocks per block of fall in a full storm: the rain slants clearly with the wind. */
     static final float SLANT = 0.6F;
+    /** Water further than this above or below the camera gets no foam (it would not be seen). */
+    private static final int FOAM_MAX_HEIGHT = 32;
     /** Foam particles per tick on open water in a full storm (before vanilla's "Particles" setting). */
     private static final float FOAM_PER_TICK = 12.0F;
     private static final double FOAM_RADIUS = 16.0;
@@ -81,10 +83,13 @@ final class StormWindRenderer implements RingWeatherRenderer {
 
     @Override
     public void renderLevel(RenderLevelStageEvent event, float strength) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) {
+            return;
+        }
         Vec3 camera = event.getCamera().getPosition();
         Level level = event.getCamera().getEntity().level();
         RingWeatherClientHooks.felt(level, camera.x, camera.z, RingWeatherType.STORM_WIND)
-                .ifPresent(share -> rain.render(event, strength, slant(share.state(), strength)));
+                .ifPresent(share -> rain.render(event, strength * SkyExposure.get(), slant(share.state(), strength)));
     }
 
     /** The slant of the rain: along the wind, steeper as the storm fades. */
@@ -109,7 +114,7 @@ final class StormWindRenderer implements RingWeatherRenderer {
             int x = (int) Math.floor(camera.x + (random.nextDouble() * 2.0 - 1.0) * FOAM_RADIUS);
             int z = (int) Math.floor(camera.z + (random.nextDouble() * 2.0 - 1.0) * FOAM_RADIUS);
             int surface = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
-            if (!level.getFluidState(pos.set(x, surface - 1, z)).is(FluidTags.WATER)) {
+            if (Math.abs(surface - camera.y) > FOAM_MAX_HEIGHT || !level.getFluidState(pos.set(x, surface - 1, z)).is(FluidTags.WATER)) {
                 continue;
             }
             double speed = FOAM_SPEED * (0.5 + random.nextDouble());

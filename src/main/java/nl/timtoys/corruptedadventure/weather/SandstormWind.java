@@ -40,6 +40,14 @@ public final class SandstormWind {
         return Math.floorMod(mix(state.seed()), 360);
     }
 
+    /**
+     * Whether a weather type has a wind from its seed (the direction of {@link #direction}): the sandstorm and ring 4's
+     * storm wind (package 70). For F3, {@code /ca weather} and the client debug log.
+     */
+    public static boolean hasWind(RingWeatherType type) {
+        return type == RingWeatherType.SANDSTORM || type == RingWeatherType.STORM_WIND;
+    }
+
     /** Horizontal unit vector the wind blows towards. */
     public static Vec3 direction(RingWeatherState state) {
         return direction(fromDegrees(state));

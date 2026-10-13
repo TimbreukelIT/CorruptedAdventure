@@ -24,7 +24,7 @@ Scope: `atmosphere`. Branch `ring4/atmosphere-g1` (poort n = 5), basis `main` 7f
 - `DenseFogRenderer`: fog naar ~32 blokken (terrein en lucht), witgrijs `#D9DFE4`, lucht 80 % naar de mistkleur, zachte hum-loop.
 - `StormWindRenderer`: grijze lucht `#5F6A73` (85 %), terreinfog ×0,6, schuine bleekblauwe regen (`#C8D4E0`, scheefstand 0,6 × sterkte met de wind mee), schuim (vanilla `splash`) van open water met de wind mee, wind-loop; F3-regel `CA wind` toont ook de storm.
 - `ToxicRainRenderer`: rechte gifgroene regen `#7FD13B`, groenige waas `#6F8A3C` (terreinfog ×0,7, 60 %), lucht 35 % groenig, regen-loop.
-- Alles × `SkyExposure` (behalve lucht en regen: de regen stopt per kolom zelf onder een dak). In water/lava/blindheid blijft vanilla-fog.
+- Alles × `SkyExposure` behalve de lucht (de regen stopt bovendien per kolom zelf onder een dak). In water/lava/blindheid blijft vanilla-fog.
 
 **Geluid en lang**: sound events `weather.ring_4.dense_fog`, `weather.ring_4.storm_wind`, `weather.ring_4.toxic_rain` in `ModSoundEvents`; `sounds.json` met **vanilla-placeholders** (mist: `ambient.underwater.loop` pitch 0,6; storm: `item.elytra.flying` pitch 0,5; gifregen: `weather.rain` pitch 0,8); de echte audio komt uit het ring 4-geluidsscript in 80. Ondertitels in `Ring4WeatherText` (en + nl). Geen nieuwe particle types in 70 (de contractnamen zijn voor 80; schuim gebruikt vanilla `splash`).
 
@@ -39,7 +39,21 @@ Scope: `atmosphere`. Branch `ring4/atmosphere-g1` (poort n = 5), basis `main` 7f
 - Voor INT/5b (niet nu): `/ca weather 4 dense_fog|storm_wind|toxic_rain` in beide banden; stormduw op een eiland > Y 120 en niet eronder; F3 `CA weather`/`CA wind`; twee clients zien dezelfde stormrichting.
 
 ## Voortgang
-- 2026-10-13: plan, vragen Q1–Q4 aan main; antwoorden alle A (zie Beslissingen). Code, tests.
+- 2026-10-13: plan, vragen Q1–Q4 aan main; antwoorden alle A (zie Beslissingen). Code, tests. Commit 00de6ea.
+- 2026-10-13: code-review verwerkt (zie "Code-review"), vervolgcommit.
+
+## Code-review (00de6ea)
+Opgelost:
+1. `RainSheet` zet de depth mask na het tekenen terug op `true` (vanilla zet hem alleen als zijn eigen regen valt).
+2. `StormWindRenderer.renderLevel` kijkt eerst naar de stage (`AFTER_WEATHER`), pas dan `felt()`; `ToxicRainRenderer` doet geen `felt()` (de stage-check zit in `RainSheet`), `DenseFogRenderer` heeft geen `renderLevel`.
+3. Storm- en gifregen volgen `SkyExposure` (sterkte × blootstelling), zoals waas en geluid.
+4. Windrichting van `storm_wind` in `RingWeatherDebugLog` en in `/ca weather` via `SandstormWind.hasWind(type)` (zandstorm en storm). **Afwijking:** `command/RingWeatherCommand` is van I (`waves.md` §5); in golf 1 is er geen I-stroom, main gaf toestemming voor deze minimale uitbreiding (één regel).
+5. `spawnFoam` slaat water over dat meer dan 32 blokken boven of onder de camera ligt.
+6. `RingWeatherClientHooks.shares` gebruikt `ClientRingLayout.ringAt` en checkt expliciet de overworld vóór `Ring4Band`.
+
+Niet opgepakt (besluit main):
+- De band-regel zit alleen in `stateAt` (niet in `state(level, ring)`): C leest gifregen via `stateAt` én een eigen `Ring4Band`-check; INT1 controleert de samenhang.
+- `CODEBASE.md`: volgens het worktree-protocol werkt INT het bij (delta hieronder).
 
 ## CODEBASE-delta
 - `weather/RingWeatherType`: `STORM_WIND` (ring 4, achteraan, wire-indices ongewijzigd).
@@ -51,9 +65,10 @@ Scope: `atmosphere`. Branch `ring4/atmosphere-g1` (poort n = 5), basis `main` 7f
 - `datagen/ModSoundDefinitionsProvider`: de drie ring 4-weerloops (vanilla-placeholders); `datagen/lang/Ring4WeatherText`: ondertitels en + nl.
 - `client/weather/RingWeatherClientHooks`: `registerRing4()`; `shares` schaalt ring 4-weer met de band (`Ring4Band` op `ClientRingLayout`); `describeWind` ook voor de storm. `client/CorruptedAdventureClient`: roept `registerRing4()` aan.
 - `client/weather/RainSheet` (nieuw): getinte, schuine vanilla-regenstrepen op `AFTER_WEATHER`.
+- `weather/SandstormWind.hasWind(type)`: zandstorm en storm hebben een wind uit de seed; gebruikt door `client/weather/RingWeatherDebugLog` en `command/RingWeatherCommand` (`/ca weather` toont nu ook de stormrichting).
 - `client/weather/DenseFogRenderer`, `StormWindRenderer`, `ToxicRainRenderer` (nieuw).
 - Gegenereerd: `assets/corruptedadventure/sounds.json` (3 events), `lang/en_us.json`, `lang/nl_nl.json` (3 ondertitels).
-- Tests: `weather/Ring4WeatherTest`, `config/Ring4WeatherConfigTest`, `client/weather/Ring4WeatherRenderTest`.
+- Tests: `weather/Ring4WeatherTest`, `config/Ring4WeatherConfigTest`, `client/weather/Ring4WeatherRenderTest`, `command/RingWeatherCommandWindTest`.
 
 ## Beslissingen
 - 2026-10-13 | atmosphere | Ring 4-cyclus: standaard van change 20 (helder 600–9000 s, weer 600–1200 s), gewichten dikke mist 1 / stormwind 1 / gifregen 1 | gebruiker Q1 A: consistent met de andere ringen.
@@ -67,6 +82,5 @@ Scope: `atmosphere`. Branch `ring4/atmosphere-g1` (poort n = 5), basis `main` 7f
 - 2026-10-13 | atmosphere | Placeholder-audio ring 4-weer: vanilla-events (mist `ambient.underwater.loop` 0,6; storm `item.elytra.flying` 0,5; gifregen `weather.rain` 0,8) tot het geluidsscript van 80 | akkoord main.
 
 ## Backlog
-- `atmosphere`/`infra`: `/ca weather` toont de windrichting alleen voor de zandstorm (`RingWeatherCommand.describe`); voor `storm_wind` ook tonen (bestand van I, `command/*`). F3 toont hem al.
 - `atmosphere` (80): echte audio voor de drie ring 4-weerloops uit het ring 4-geluidsscript; krakende eilanden in de storm; eventueel eigen schuim-particle i.p.v. vanilla `splash`.
 - `atmosphere` (5b): kleuren, fog-afstanden en volumes van het ring 4-weer in-game afstemmen; scheefstand en dichtheid van de regen bekijken bij "Fast" (straal 5) en "Fancy" (10).

@@ -10,8 +10,8 @@ import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 
 /**
  * Toxic rain (ring 4, blighted band, package 70): straight poison-green rain streaks, a sickly green haze on the
- * terrain, a slightly green sky and a rain loop. Haze and sound follow {@link SkyExposure}; the rain stops at every
- * roof by itself (the streaks start at the top of each column). Visual values are constants on purpose. The poison it
+ * terrain, a slightly green sky and a rain loop. Haze, rain and sound follow {@link SkyExposure} (and the streaks
+ * stop at every roof by themselves: they start at the top of each column); the sky follows the strength only. Visual values are constants on purpose. The poison it
  * causes is server-side (stream C, {@code toxicRainPoisonMultiplier}).
  */
 final class ToxicRainRenderer implements RingWeatherRenderer {
@@ -54,6 +54,6 @@ final class ToxicRainRenderer implements RingWeatherRenderer {
 
     @Override
     public void renderLevel(RenderLevelStageEvent event, float strength) {
-        rain.render(event, strength, Vec3.ZERO);
+        rain.render(event, strength * SkyExposure.get(), Vec3.ZERO);
     }
 }

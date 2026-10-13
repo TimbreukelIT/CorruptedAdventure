@@ -100,18 +100,21 @@ public final class RingWeatherClientHooks {
      * weather is also scaled by its band ({@link Ring4WeatherBands#renderShare}, the band of the synced layout).
      */
     public static List<RingWeatherMix.Share> shares(Level level, double x, double z) {
-        Optional<RingLayout> layout = ClientRingLayout.get();
+        Optional<RingPosition> position = ClientRingLayout.ringAt(level.dimension(), x, z);
         Optional<Map<Ring, RingWeatherState>> states = ClientRingWeather.states(level);
-        if (layout.isEmpty() || states.isEmpty()) {
+        Optional<RingLayout> layout = ClientRingLayout.get();
+        if (position.isEmpty() || states.isEmpty() || layout.isEmpty()) {
             return List.of();
         }
         Map<Ring, RingWeatherState> known = states.get();
-        RingPosition position = layout.get().sample(level.dimension(), x, z);
-        List<RingWeatherMix.Share> shares = RingWeatherMix.at(position, ring -> known.getOrDefault(ring, RingWeatherState.STILL));
+        List<RingWeatherMix.Share> shares = RingWeatherMix.at(position.get(), ring -> known.getOrDefault(ring, RingWeatherState.STILL));
+        // The band is an overworld axis (Ring4Band takes overworld x, z); ring 4 weather exists only there.
+        if (!Level.OVERWORLD.equals(level.dimension())) {
+            return shares;
+        }
         for (int i = 0; i < shares.size(); i++) {
             RingWeatherMix.Share share = shares.get(i);
             if (share.ring() == Ring.RING_4 && Ring4WeatherBands.bandOf(share.state().type()) != Ring4WeatherBands.Band.ANY) {
-                // Ring weather is overworld-only, so x, z are overworld positions.
                 float band = Ring4WeatherBands.renderShare(share.state().type(), Ring4Band.of(layout.get()).value(x, z));
                 shares.set(i, new RingWeatherMix.Share(share.ring(), share.state(), share.weight(), share.strength() * band));
             }
