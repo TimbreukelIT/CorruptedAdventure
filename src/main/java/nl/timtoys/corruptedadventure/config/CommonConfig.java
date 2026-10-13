@@ -62,7 +62,9 @@ public final class CommonConfig {
                 .comment("Width of the blend zone per boundary, in the order 1|2, 2|3, 3|4, 4|5, 5|void;",
                         "0 uses transitionWidth. Exactly " + RingSettings.BOUNDARY_COUNT + " values.")
                 .defineList(List.of("transitionWidthOverrides"), () -> DEFAULT_TRANSITION_WIDTH_OVERRIDES, () -> 0,
-                        value -> value instanceof Number width && width.longValue() >= 0 && width.longValue() <= 4096,
+                        // Integer only: NeoForge's correction drops a fraction such as 0.5 instead of truncating it, and
+                        // RingSettings.validate() then refuses the shorter list when a new world is created.
+                        value -> value instanceof Integer width && width >= 0 && width <= 4096,
                         ModConfigSpec.Range.of(RingSettings.BOUNDARY_COUNT, RingSettings.BOUNDARY_COUNT));
         builder.pop();
         SPEC = builder.build();
@@ -118,8 +120,7 @@ public final class CommonConfig {
 
     /** Current config values; only {@link RingSettingsSnapshot} should call this, when a new world is created. */
     static RingSettings ringSettings() {
-        // Map through Number: the config only promises the element validator held, not the boxed type.
-        List<Integer> overrides = TRANSITION_WIDTH_OVERRIDES.get().stream().map(value -> ((Number) value).intValue()).toList();
+        List<Integer> overrides = List.copyOf(TRANSITION_WIDTH_OVERRIDES.get());
         return new RingSettings(radii(), VOID_OUTER_RADIUS.get(), BOUNDARY_NOISE.get(), TRANSITION_WIDTH.get(), overrides);
     }
 }

@@ -253,3 +253,4 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 
 ## Uit pakket 58 (golf 0 ring 4, 2026-10-13)
 - [atmosphere] `src/generated/resources/assets/corruptedadventure/sounds.json` is na 8753843 ("sounds.json needs runData") nog niet geregenereerd: `runData` levert de zachtere volumes (alleen dat bestand). Niet in 58 gecommit (andere categorie); committen bij de integratie. (bron: 58)
+- [worldgen] Opruiming: `VolcanicField.regions` en `VolcanoPlacement.place` rekenen de binnen- en buitenrand van ring 3 (`radii.get(i) ± transitionWidth(i) / 2`) elk zelf uit; één helper `RingLayout.halfTransition(boundary)` (of een rand-accessor) maakt dat één bron. (bron: code-review 58)

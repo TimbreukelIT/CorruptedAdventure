@@ -18,28 +18,29 @@ import java.util.Optional;
  * @param ringOuterRadii           outer radius of ring 1 to 5; the last one is where the void edge starts
  * @param voidOuterRadius          outer radius of the void edge (world border)
  * @param boundaryNoise            maximum seeded offset of a boundary, in either direction
- * @param transitionWidth          width of the blend zone centred on each boundary without an override
- * @param transitionWidthOverrides per boundary a zone width that replaces {@code transitionWidth}; 0 = no override
+ * @param defaultTransitionWidth   width of the blend zone centred on each boundary without an override (snapshot key
+ *                                 {@code transition_width}); read widths through {@link #transitionWidth(int)}
+ * @param transitionWidthOverrides per boundary a zone width that replaces {@code defaultTransitionWidth}; 0 = no override
  */
-public record RingSettings(List<Integer> ringOuterRadii, int voidOuterRadius, int boundaryNoise, int transitionWidth,
+public record RingSettings(List<Integer> ringOuterRadii, int voidOuterRadius, int boundaryNoise, int defaultTransitionWidth,
                            List<Integer> transitionWidthOverrides) {
     public static final int RING_COUNT = 5;
     /** 1|2, 2|3, 3|4, 4|5 and 5|void. */
     public static final int BOUNDARY_COUNT = RING_COUNT;
-    /** Every boundary at {@code transitionWidth}; what a snapshot from before change 58 means. */
+    /** Every boundary at {@code defaultTransitionWidth}; what a snapshot from before change 58 means. */
     public static final List<Integer> NO_OVERRIDES = Collections.nCopies(BOUNDARY_COUNT, 0);
 
     public static final Codec<RingSettings> CODEC = RecordCodecBuilder.<RingSettings>create(instance -> instance.group(
             Codec.INT.listOf().fieldOf("ring_outer_radii").forGetter(RingSettings::ringOuterRadii),
             Codec.INT.fieldOf("void_outer_radius").forGetter(RingSettings::voidOuterRadius),
             Codec.INT.fieldOf("boundary_noise").forGetter(RingSettings::boundaryNoise),
-            Codec.INT.fieldOf("transition_width").forGetter(RingSettings::transitionWidth),
+            Codec.INT.fieldOf("transition_width").forGetter(RingSettings::defaultTransitionWidth),
             // Optional for snapshots written before change 58, but always written: optionalFieldOf with a default
             // would leave it out whenever it equals that default.
             Codec.INT.listOf().optionalFieldOf("transition_width_overrides")
                     .forGetter(settings -> Optional.of(settings.transitionWidthOverrides()))
-    ).apply(instance, (radii, voidOuterRadius, boundaryNoise, transitionWidth, overrides) -> new RingSettings(
-            radii, voidOuterRadius, boundaryNoise, transitionWidth, overrides.orElse(NO_OVERRIDES))))
+    ).apply(instance, (radii, voidOuterRadius, boundaryNoise, defaultWidth, overrides) -> new RingSettings(
+            radii, voidOuterRadius, boundaryNoise, defaultWidth, overrides.orElse(NO_OVERRIDES))))
             .validate(RingSettings::validate);
 
     public RingSettings {
@@ -47,15 +48,15 @@ public record RingSettings(List<Integer> ringOuterRadii, int voidOuterRadius, in
         transitionWidthOverrides = List.copyOf(transitionWidthOverrides);
     }
 
-    /** Settings without overrides: every boundary is {@code transitionWidth} wide. */
-    public RingSettings(List<Integer> ringOuterRadii, int voidOuterRadius, int boundaryNoise, int transitionWidth) {
-        this(ringOuterRadii, voidOuterRadius, boundaryNoise, transitionWidth, NO_OVERRIDES);
+    /** Settings without overrides: every boundary is {@code defaultTransitionWidth} wide. */
+    public RingSettings(List<Integer> ringOuterRadii, int voidOuterRadius, int boundaryNoise, int defaultTransitionWidth) {
+        this(ringOuterRadii, voidOuterRadius, boundaryNoise, defaultTransitionWidth, NO_OVERRIDES);
     }
 
-    /** Width of the blend zone centred on {@code boundary} (0 = 1|2 … 4 = 5|void): its override, else {@code transitionWidth}. */
+    /** Width of the blend zone centred on {@code boundary} (0 = 1|2 … 4 = 5|void): its override, else {@code defaultTransitionWidth}. */
     public int transitionWidth(int boundary) {
         int override = transitionWidthOverrides.get(boundary);
-        return override > 0 ? override : transitionWidth;
+        return override > 0 ? override : defaultTransitionWidth;
     }
 
     /**
@@ -70,7 +71,7 @@ public record RingSettings(List<Integer> ringOuterRadii, int voidOuterRadius, in
             return DataResult.error(() -> "Expected " + BOUNDARY_COUNT + " transition_width_overrides, got "
                     + transitionWidthOverrides.size());
         }
-        if (boundaryNoise < 0 || transitionWidth < 0 || transitionWidthOverrides.stream().anyMatch(width -> width < 0)) {
+        if (boundaryNoise < 0 || defaultTransitionWidth < 0 || transitionWidthOverrides.stream().anyMatch(width -> width < 0)) {
             return DataResult.error(() -> "boundary_noise, transition_width and transition_width_overrides must be >= 0");
         }
         int inner = 0;

@@ -31,3 +31,13 @@ Implementatiekeuzes (niet door de gebruiker besloten): snapshot-sleutel `transit
 
 ## Backlog
 - [atmosphere] `sounds.json` niet geregenereerd na 8753843; committen bij de integratie.
+
+## Code-review (d031b85)
+Opgepakt in de vervolgcommit: record-component `transitionWidth` heet nu `defaultTransitionWidth` (alleen `transitionWidth(int boundary)` blijft; JSON-sleutel `transition_width` ongewijzigd); de validator van `transitionWidthOverrides` neemt alleen `Integer` (een breuk wordt door NeoForge verwijderd, de kortere lijst weigert `validate()`, niets wordt stil afgekapt); `RingLayout.halfTransitions` heeft lengte `RingSettings.BOUNDARY_COUNT`.
+
+Bewust niet opgepakt:
+- **Categorie en stubs** (keys, tags, lege haken in een `infra`-commit): het contractraamwerk van golf 0 volgens `waves.md` §2b, zoals 37c.
+- **Migratie alleen op de volledige set radii + void:** besluit van de gebruiker (2026-10-13); een gedeeltelijke match is een eigen keuze en blijft (WARN).
+- **256 op 4|5 in een oude config met eigen radii:** past de band niet, dan noemt de validatiefout bij het maken van een wereld de breedtes al; de gebruiker kan de override op 0 zetten.
+- **Dubbele grensberekening in `VolcanicField`/`VolcanoPlacement`:** opruiming naar een `RingLayout.halfTransition(boundary)`-helper staat in `docs/backlog.md` (worldgen).
+- **Payload met een te korte lijst:** de client-handler (`RingLayoutHandler`) valideert de `RingSettings` vóór gebruik.

@@ -62,7 +62,7 @@ public final class RingLayout {
         this.radii = settings.ringOuterRadii();
         this.voidOuterRadius = settings.voidOuterRadius();
         this.boundaryNoise = settings.boundaryNoise();
-        this.halfTransitions = new double[radii.size()];
+        this.halfTransitions = new double[RingSettings.BOUNDARY_COUNT];
         for (int boundary = 0; boundary < halfTransitions.length; boundary++) {
             halfTransitions[boundary] = settings.transitionWidth(boundary) / 2.0;
         }
