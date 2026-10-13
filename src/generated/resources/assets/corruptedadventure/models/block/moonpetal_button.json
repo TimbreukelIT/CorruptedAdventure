@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/button",
+  "textures": {
+    "texture": "corruptedadventure:block/moonpetal_planks"
+  }
+}

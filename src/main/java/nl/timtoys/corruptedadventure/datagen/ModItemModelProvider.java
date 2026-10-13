@@ -243,6 +243,63 @@ final class ModItemModelProvider extends ItemModelProvider {
                 .texture("layer0", modLoc("item/ice_stalactite"));
         blockItem(ModBlocks.GLOWING_FISSURE);
         blockItem(ModBlocks.PRIMORDIAL_ICE);
+
+        ring4();
+    }
+
+    private void ring4() {
+        blockItem(ModBlocks.TIDESTONE);
+        blockItem(ModBlocks.TIDESTONE_STAIRS);
+        blockItem(ModBlocks.TIDESTONE_SLAB);
+        wallInventory(ModBlocks.TIDESTONE_WALL.getId().getPath(), modLoc("block/tidestone"));
+        blockItem(ModBlocks.COBBLED_TIDESTONE);
+        blockItem(ModBlocks.COBBLED_TIDESTONE_STAIRS);
+        blockItem(ModBlocks.COBBLED_TIDESTONE_SLAB);
+        wallInventory(ModBlocks.COBBLED_TIDESTONE_WALL.getId().getPath(), modLoc("block/cobbled_tidestone"));
+        blockItem(ModBlocks.POLISHED_TIDESTONE);
+        blockItem(ModBlocks.POLISHED_TIDESTONE_STAIRS);
+        blockItem(ModBlocks.POLISHED_TIDESTONE_SLAB);
+        wallInventory(ModBlocks.POLISHED_TIDESTONE_WALL.getId().getPath(), modLoc("block/polished_tidestone"));
+        blockItem(ModBlocks.TIDESTONE_BRICKS);
+        blockItem(ModBlocks.TIDESTONE_BRICK_STAIRS);
+        blockItem(ModBlocks.TIDESTONE_BRICK_SLAB);
+        wallInventory(ModBlocks.TIDESTONE_BRICK_WALL.getId().getPath(), modLoc("block/tidestone_bricks"));
+
+        ResourceLocation planks = modLoc("block/moonpetal_planks");
+        blockItem(ModBlocks.MOONPETAL_LOG);
+        blockItem(ModBlocks.MOONPETAL_WOOD);
+        blockItem(ModBlocks.STRIPPED_MOONPETAL_LOG);
+        blockItem(ModBlocks.STRIPPED_MOONPETAL_WOOD);
+        blockItem(ModBlocks.MOONPETAL_PLANKS);
+        blockItem(ModBlocks.MOONPETAL_STAIRS);
+        blockItem(ModBlocks.MOONPETAL_SLAB);
+        fenceInventory(ModBlocks.MOONPETAL_FENCE.getId().getPath(), planks);
+        blockItem(ModBlocks.MOONPETAL_FENCE_GATE);
+        basicItem(ModBlocks.MOONPETAL_DOOR.asItem());
+        withExistingParent(ModBlocks.MOONPETAL_TRAPDOOR.getId().getPath(), modLoc("block/moonpetal_trapdoor_bottom"));
+        blockItem(ModBlocks.MOONPETAL_PRESSURE_PLATE);
+        buttonInventory(ModBlocks.MOONPETAL_BUTTON.getId().getPath(), planks);
+        blockItem(ModBlocks.MOONPETAL_LEAVES);
+        flatBlockItem(ModBlocks.MOONPETAL_SAPLING);
+        blockItem(ModBlocks.WITHERED_MOONPETAL_LOG);
+        blockItem(ModBlocks.WITHERED_MOONPETAL_WOOD);
+        blockItem(ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG);
+        blockItem(ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD);
+
+        // The reed item shows the plume, like vanilla's sugar cane item shows the plant.
+        withExistingParent(ModBlocks.REEDS.getId().getPath(), mcLoc("item/generated"))
+                .texture("layer0", modLoc("block/reeds_top"));
+        blockItem(ModBlocks.PEAT);
+        flatBlockItem(ModBlocks.HANGING_SWAMP_MOSS);
+        // The whole pad as one flat item (the block only has quarter textures).
+        withExistingParent(ModBlocks.GIANT_LILY_PAD.getId().getPath(), mcLoc("item/generated"))
+                .texture("layer0", modLoc("item/giant_lily_pad"));
+        flatBlockItem(ModBlocks.LOTUS);
+        flatBlockItem(ModBlocks.GLOWCAP);
+        flatBlockItem(ModBlocks.GLOW_BLOOM);
+        flatBlockItem(ModBlocks.GLOWING_HANGING_ROOTS);
+        flatBlockItem(ModBlocks.BLIGHTED_GLOWCAP);
+        blockItem(ModBlocks.BUBBLE_SPRING);
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

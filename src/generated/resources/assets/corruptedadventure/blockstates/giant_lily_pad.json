@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "part=north_east": {
+      "model": "corruptedadventure:block/giant_lily_pad_north_east"
+    },
+    "part=north_west": {
+      "model": "corruptedadventure:block/giant_lily_pad_north_west"
+    },
+    "part=south_east": {
+      "model": "corruptedadventure:block/giant_lily_pad_south_east"
+    },
+    "part=south_west": {
+      "model": "corruptedadventure:block/giant_lily_pad_south_west"
+    }
+  }
+}

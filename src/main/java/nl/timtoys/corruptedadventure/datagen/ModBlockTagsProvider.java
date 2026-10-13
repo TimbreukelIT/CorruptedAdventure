@@ -59,6 +59,64 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         netherRing2();
         ring3();
         netherRing3();
+        ring4();
+    }
+
+    /**
+     * Ring 4. Tidestone is natural ground that carvers cut through, and the host rock of the ring 4 ores
+     * ({@code ring_4_stones}); like pumice deliberately not in {@code #base_stone_overworld}. The moonpetal set and its
+     * withered trunk burn ({@code #logs_that_burn}), tagged like the palm set. Peat is {@code #dirt}: plants grow on it.
+     */
+    private void ring4() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.TIDESTONE.get(), ModBlocks.TIDESTONE_STAIRS.get(),
+                ModBlocks.TIDESTONE_SLAB.get(), ModBlocks.TIDESTONE_WALL.get(), ModBlocks.COBBLED_TIDESTONE.get(),
+                ModBlocks.COBBLED_TIDESTONE_STAIRS.get(), ModBlocks.COBBLED_TIDESTONE_SLAB.get(), ModBlocks.COBBLED_TIDESTONE_WALL.get(),
+                ModBlocks.POLISHED_TIDESTONE.get(), ModBlocks.POLISHED_TIDESTONE_STAIRS.get(), ModBlocks.POLISHED_TIDESTONE_SLAB.get(),
+                ModBlocks.POLISHED_TIDESTONE_WALL.get(), ModBlocks.TIDESTONE_BRICKS.get(), ModBlocks.TIDESTONE_BRICK_STAIRS.get(),
+                ModBlocks.TIDESTONE_BRICK_SLAB.get(), ModBlocks.TIDESTONE_BRICK_WALL.get(), ModBlocks.BUBBLE_SPRING.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.TIDESTONE_STAIRS.get(), ModBlocks.COBBLED_TIDESTONE_STAIRS.get(),
+                ModBlocks.POLISHED_TIDESTONE_STAIRS.get(), ModBlocks.TIDESTONE_BRICK_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.TIDESTONE_SLAB.get(), ModBlocks.COBBLED_TIDESTONE_SLAB.get(),
+                ModBlocks.POLISHED_TIDESTONE_SLAB.get(), ModBlocks.TIDESTONE_BRICK_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.TIDESTONE_WALL.get(), ModBlocks.COBBLED_TIDESTONE_WALL.get(),
+                ModBlocks.POLISHED_TIDESTONE_WALL.get(), ModBlocks.TIDESTONE_BRICK_WALL.get());
+        tag(Tags.Blocks.COBBLESTONES).add(ModBlocks.COBBLED_TIDESTONE.get());
+        tag(ModTags.Blocks.RING_4_STONES).add(ModBlocks.TIDESTONE.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.TIDESTONE.get(), ModBlocks.PEAT.get());
+
+        tag(ModTags.Blocks.MOONPETAL_LOGS).add(ModBlocks.MOONPETAL_LOG.get(), ModBlocks.MOONPETAL_WOOD.get(),
+                ModBlocks.STRIPPED_MOONPETAL_LOG.get(), ModBlocks.STRIPPED_MOONPETAL_WOOD.get());
+        tag(ModTags.Blocks.WITHERED_MOONPETAL_LOGS).add(ModBlocks.WITHERED_MOONPETAL_LOG.get(), ModBlocks.WITHERED_MOONPETAL_WOOD.get(),
+                ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG.get(), ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD.get());
+        tag(BlockTags.LOGS_THAT_BURN).addTag(ModTags.Blocks.MOONPETAL_LOGS).addTag(ModTags.Blocks.WITHERED_MOONPETAL_LOGS);
+        tag(BlockTags.PLANKS).add(ModBlocks.MOONPETAL_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.MOONPETAL_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.MOONPETAL_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.MOONPETAL_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.MOONPETAL_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.MOONPETAL_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.MOONPETAL_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.MOONPETAL_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.MOONPETAL_BUTTON.get());
+        tag(BlockTags.LEAVES).add(ModBlocks.MOONPETAL_LEAVES.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.MOONPETAL_LEAVES.get());
+        tag(BlockTags.SAPLINGS).add(ModBlocks.MOONPETAL_SAPLING.get());
+        tag(BlockTags.FLOWER_POTS).add(ModBlocks.POTTED_MOONPETAL_SAPLING.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_MOONPETAL_LOG.get(), ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_MOONPETAL_WOOD.get(), ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.MOONPETAL_FENCE_GATE.get());
+
+        tag(BlockTags.DIRT).add(ModBlocks.PEAT.get());
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.PEAT.get());
+
+        // The hanging moss and roots copy vanilla hanging roots' tags; the glowing flora is plants and fungi.
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.HANGING_SWAMP_MOSS.get(), ModBlocks.GLOWING_HANGING_ROOTS.get());
+        tag(BlockTags.REPLACEABLE_BY_TREES).add(ModBlocks.HANGING_SWAMP_MOSS.get(), ModBlocks.GLOWING_HANGING_ROOTS.get());
+        tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.HANGING_SWAMP_MOSS.get(), ModBlocks.GLOWING_HANGING_ROOTS.get(),
+                ModBlocks.GLOWCAP.get(), ModBlocks.BLIGHTED_GLOWCAP.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.HANGING_SWAMP_MOSS.get());
+        tag(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.GLOWING_HANGING_ROOTS.get());
+        tag(BlockTags.SMALL_FLOWERS).add(ModBlocks.GLOW_BLOOM.get());
     }
 
     /**

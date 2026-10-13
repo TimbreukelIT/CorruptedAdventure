@@ -18,6 +18,13 @@ public final class ModTreeGrowers {
     public static final TreeGrower PALM = new TreeGrower(CorruptedAdventure.id("palm").toString(),
             Optional.empty(), Optional.of(ModConfiguredFeatures.PALM_TREE), Optional.empty());
 
+    /**
+     * Grows {@link ModConfiguredFeatures#MOONPETAL_TREE}, an ordinary cascade tree (not the world tree). Until the
+     * feature exists (75) the sapling stays, like the palm before change 23.
+     */
+    public static final TreeGrower MOONPETAL = new TreeGrower(CorruptedAdventure.id("moonpetal").toString(),
+            Optional.empty(), Optional.of(ModConfiguredFeatures.MOONPETAL_TREE), Optional.empty());
+
     private ModTreeGrowers() {
     }
 }

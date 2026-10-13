@@ -9,6 +9,10 @@
     "corruptedadventure:pumice_brick_wall",
     "corruptedadventure:cold_lava_wall",
     "corruptedadventure:polished_cold_lava_wall",
-    "corruptedadventure:cold_lava_brick_wall"
+    "corruptedadventure:cold_lava_brick_wall",
+    "corruptedadventure:tidestone_wall",
+    "corruptedadventure:cobbled_tidestone_wall",
+    "corruptedadventure:polished_tidestone_wall",
+    "corruptedadventure:tidestone_brick_wall"
   ]
 }

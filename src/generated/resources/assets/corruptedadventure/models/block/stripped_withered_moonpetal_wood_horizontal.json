@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column_horizontal",
+  "textures": {
+    "end": "corruptedadventure:block/stripped_withered_moonpetal_log",
+    "side": "corruptedadventure:block/stripped_withered_moonpetal_log"
+  }
+}

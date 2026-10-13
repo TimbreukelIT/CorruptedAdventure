@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "corruptedadventure:block/cobbled_tidestone_slab"
+    },
+    "type=double": {
+      "model": "corruptedadventure:block/cobbled_tidestone"
+    },
+    "type=top": {
+      "model": "corruptedadventure:block/cobbled_tidestone_slab_top"
+    }
+  }
+}

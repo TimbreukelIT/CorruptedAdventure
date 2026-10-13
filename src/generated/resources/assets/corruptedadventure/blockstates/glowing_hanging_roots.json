@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=false": {
+      "model": "corruptedadventure:block/glowing_hanging_roots"
+    },
+    "waterlogged=true": {
+      "model": "corruptedadventure:block/glowing_hanging_roots"
+    }
+  }
+}

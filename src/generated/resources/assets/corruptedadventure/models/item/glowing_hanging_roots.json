@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "corruptedadventure:block/glowing_hanging_roots"
+  }
+}

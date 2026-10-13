@@ -15,6 +15,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.PlaceOnWaterBlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
@@ -471,6 +472,59 @@ class ModBlocksTest {
                 .map(block -> block.getId().toString()).filter(id -> id.contains("rimeshroom")).toList();
         assertEquals(13, rimeshroomWood.size());
         rimeshroomWood.forEach(id -> assertTrue(values.contains(id), id));
+    }
+
+    /** Ring 4 follows Nether ring 3 directly (contract ring 4 §3), in this order (the potted sapling has no item). */
+    @Test
+    void ring4NaturalBlocksFollowNetherRing3InOrder() {
+        List<Item> shown = blockItems();
+        int lastNetherRing3 = shown.indexOf(ModBlocks.PRIMORDIAL_ICE.asItem());
+        List<Item> ring4 = Stream.of(ModBlocks.TIDESTONE, ModBlocks.TIDESTONE_STAIRS, ModBlocks.TIDESTONE_SLAB,
+                ModBlocks.TIDESTONE_WALL, ModBlocks.COBBLED_TIDESTONE, ModBlocks.COBBLED_TIDESTONE_STAIRS,
+                ModBlocks.COBBLED_TIDESTONE_SLAB, ModBlocks.COBBLED_TIDESTONE_WALL, ModBlocks.POLISHED_TIDESTONE,
+                ModBlocks.POLISHED_TIDESTONE_STAIRS, ModBlocks.POLISHED_TIDESTONE_SLAB, ModBlocks.POLISHED_TIDESTONE_WALL,
+                ModBlocks.TIDESTONE_BRICKS, ModBlocks.TIDESTONE_BRICK_STAIRS, ModBlocks.TIDESTONE_BRICK_SLAB,
+                ModBlocks.TIDESTONE_BRICK_WALL, ModBlocks.MOONPETAL_LOG, ModBlocks.MOONPETAL_WOOD,
+                ModBlocks.STRIPPED_MOONPETAL_LOG, ModBlocks.STRIPPED_MOONPETAL_WOOD, ModBlocks.MOONPETAL_PLANKS,
+                ModBlocks.MOONPETAL_STAIRS, ModBlocks.MOONPETAL_SLAB, ModBlocks.MOONPETAL_FENCE, ModBlocks.MOONPETAL_FENCE_GATE,
+                ModBlocks.MOONPETAL_DOOR, ModBlocks.MOONPETAL_TRAPDOOR, ModBlocks.MOONPETAL_PRESSURE_PLATE,
+                ModBlocks.MOONPETAL_BUTTON, ModBlocks.MOONPETAL_LEAVES, ModBlocks.MOONPETAL_SAPLING,
+                ModBlocks.WITHERED_MOONPETAL_LOG, ModBlocks.WITHERED_MOONPETAL_WOOD, ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG,
+                ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD, ModBlocks.REEDS, ModBlocks.PEAT, ModBlocks.HANGING_SWAMP_MOSS,
+                ModBlocks.GIANT_LILY_PAD, ModBlocks.LOTUS, ModBlocks.GLOWCAP, ModBlocks.GLOW_BLOOM,
+                ModBlocks.GLOWING_HANGING_ROOTS, ModBlocks.BLIGHTED_GLOWCAP, ModBlocks.BUBBLE_SPRING)
+                .<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(ring4, shown.subList(lastNetherRing3 + 1, lastNetherRing3 + 1 + ring4.size()));
+        assertSame(ModBlocks.MOONPETAL_SAPLING.get(), ModBlocks.POTTED_MOONPETAL_SAPLING.get().getPotted());
+        // Water plants are placed on the water surface, like the lily pad.
+        assertInstanceOf(PlaceOnWaterBlockItem.class, ModBlocks.GIANT_LILY_PAD.asItem());
+        assertInstanceOf(PlaceOnWaterBlockItem.class, ModBlocks.LOTUS.asItem());
+    }
+
+    /** Glowing flora: the light levels stream B chose (plan golf 1); the glowcaps never tick (no spreading). */
+    @Test
+    void ring4GlowingFloraGlowsSubtlyAndNeverTicks() {
+        assertEquals(6, ModBlocks.GLOWCAP.get().defaultBlockState().getLightEmission());
+        assertEquals(7, ModBlocks.GLOW_BLOOM.get().defaultBlockState().getLightEmission());
+        assertEquals(5, ModBlocks.GLOWING_HANGING_ROOTS.get().defaultBlockState().getLightEmission());
+        assertEquals(3, ModBlocks.BLIGHTED_GLOWCAP.get().defaultBlockState().getLightEmission());
+        for (DeferredBlock<?> block : List.of(ModBlocks.GLOWCAP, ModBlocks.BLIGHTED_GLOWCAP, ModBlocks.GLOW_BLOOM,
+                ModBlocks.GLOWING_HANGING_ROOTS, ModBlocks.HANGING_SWAMP_MOSS, ModBlocks.BUBBLE_SPRING, ModBlocks.PEAT)) {
+            assertFalse(block.get().defaultBlockState().isRandomlyTicking(), block.getId().toString());
+        }
+        // The reeds grow like sugar cane; the bubble spring and tidestone are stone.
+        assertTrue(ModBlocks.REEDS.get().defaultBlockState().isRandomlyTicking());
+        assertEquals(Blocks.STONE.defaultDestroyTime(), ModBlocks.BUBBLE_SPRING.get().defaultDestroyTime());
+        assertEquals(Blocks.STONE.defaultDestroyTime(), ModBlocks.TIDESTONE.get().defaultDestroyTime());
+    }
+
+    /** All ring 4 wood burns like vanilla wood (contract §3), unlike the Nether and charred sets. */
+    @Test
+    void ring4WoodIsIgnitedByLava() {
+        for (DeferredBlock<?> block : List.of(ModBlocks.MOONPETAL_LOG, ModBlocks.MOONPETAL_PLANKS, ModBlocks.MOONPETAL_LEAVES,
+                ModBlocks.WITHERED_MOONPETAL_LOG, ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD)) {
+            assertTrue(block.get().defaultBlockState().ignitedByLava(), block.getId().toString());
+        }
     }
 
     private static List<Item> blockItems() {

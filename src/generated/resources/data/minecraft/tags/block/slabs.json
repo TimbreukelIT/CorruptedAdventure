@@ -11,6 +11,10 @@
     "corruptedadventure:pumice_brick_slab",
     "corruptedadventure:cold_lava_slab",
     "corruptedadventure:polished_cold_lava_slab",
-    "corruptedadventure:cold_lava_brick_slab"
+    "corruptedadventure:cold_lava_brick_slab",
+    "corruptedadventure:tidestone_slab",
+    "corruptedadventure:cobbled_tidestone_slab",
+    "corruptedadventure:polished_tidestone_slab",
+    "corruptedadventure:tidestone_brick_slab"
   ]
 }

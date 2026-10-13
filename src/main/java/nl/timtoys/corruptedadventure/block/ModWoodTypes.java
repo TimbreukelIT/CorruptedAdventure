@@ -38,6 +38,21 @@ public final class ModWoodTypes {
     /** Not registered, for the same reason as {@link #DEAD}. */
     public static final WoodType RIMESHROOM = netherWood("rimeshroom", RIMESHROOM_SET);
 
+    /**
+     * {@code corruptedadventure:moonpetal}: the blossom tree of ring 4, burnable like vanilla wood, with the sounds and
+     * behaviour of vanilla's cherry set (the other blossom tree).
+     */
+    public static final BlockSetType MOONPETAL_SET = BlockSetType.register(new BlockSetType(CorruptedAdventure.id("moonpetal").toString(),
+            true, true, true, BlockSetType.PressurePlateSensitivity.EVERYTHING, SoundType.CHERRY_WOOD,
+            SoundEvents.CHERRY_WOOD_DOOR_CLOSE, SoundEvents.CHERRY_WOOD_DOOR_OPEN,
+            SoundEvents.CHERRY_WOOD_TRAPDOOR_CLOSE, SoundEvents.CHERRY_WOOD_TRAPDOOR_OPEN,
+            SoundEvents.CHERRY_WOOD_PRESSURE_PLATE_CLICK_OFF, SoundEvents.CHERRY_WOOD_PRESSURE_PLATE_CLICK_ON,
+            SoundEvents.CHERRY_WOOD_BUTTON_CLICK_OFF, SoundEvents.CHERRY_WOOD_BUTTON_CLICK_ON));
+    /** Not registered, for the same reason as {@link #DEAD}; the fence gate takes cherry's sounds from here. */
+    public static final WoodType MOONPETAL = new WoodType(CorruptedAdventure.id("moonpetal").toString(), MOONPETAL_SET,
+            SoundType.CHERRY_WOOD, SoundType.CHERRY_WOOD_HANGING_SIGN,
+            SoundEvents.CHERRY_WOOD_FENCE_GATE_CLOSE, SoundEvents.CHERRY_WOOD_FENCE_GATE_OPEN);
+
     private ModWoodTypes() {
     }
 

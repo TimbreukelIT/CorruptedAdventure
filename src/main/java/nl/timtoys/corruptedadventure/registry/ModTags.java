@@ -109,6 +109,10 @@ public final class ModTags {
         /** Convention tag {@code c:gems/fire_crystal}; part of {@code c:gems}. */
         public static final TagKey<Item> GEMS_FIRE_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/fire_crystal"));
 
+        // Ring 4 and Nether ring 4 (docs/plans/ring-4/contract.md §3); contents from stream B.
+        public static final TagKey<Item> MOONPETAL_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("moonpetal_logs"));
+        public static final TagKey<Item> WITHERED_MOONPETAL_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("withered_moonpetal_logs"));
+
         private Items() {
         }
     }

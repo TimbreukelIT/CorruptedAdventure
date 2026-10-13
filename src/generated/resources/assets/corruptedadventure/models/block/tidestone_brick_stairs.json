@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "corruptedadventure:block/tidestone_bricks",
+    "side": "corruptedadventure:block/tidestone_bricks",
+    "top": "corruptedadventure:block/tidestone_bricks"
+  }
+}

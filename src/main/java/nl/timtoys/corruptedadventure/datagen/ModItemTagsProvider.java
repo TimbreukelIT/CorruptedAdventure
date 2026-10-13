@@ -117,5 +117,16 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         // Canyon cobblestone makes stone tools, furnaces and the other cobblestone recipes, like vanilla cobblestone.
         tag(ItemTags.STONE_TOOL_MATERIALS).add(ModBlocks.CANYON_COBBLESTONE.asItem());
         tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.CANYON_COBBLESTONE.asItem());
+
+        ring4();
+    }
+
+    /** Ring 4: the burnable wood sets reach #logs_that_burn through the block tag copy above. */
+    private void ring4() {
+        copy(ModTags.Blocks.MOONPETAL_LOGS, ModTags.Items.MOONPETAL_LOGS);
+        copy(ModTags.Blocks.WITHERED_MOONPETAL_LOGS, ModTags.Items.WITHERED_MOONPETAL_LOGS);
+        // Cobbled tidestone makes stone tools and the cobblestone recipes, like canyon cobblestone.
+        tag(ItemTags.STONE_TOOL_MATERIALS).add(ModBlocks.COBBLED_TIDESTONE.asItem());
+        tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.COBBLED_TIDESTONE.asItem());
     }
 }

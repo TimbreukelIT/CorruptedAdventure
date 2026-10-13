@@ -5,6 +5,7 @@ import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.DoubleHighBlockItem;
+import net.minecraft.world.item.PlaceOnWaterBlockItem;
 import net.minecraft.world.level.block.AmethystBlock;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
@@ -15,17 +16,21 @@ import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
+import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.GlowLichenBlock;
+import net.minecraft.world.level.block.HangingRootsBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.WaterlilyBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
@@ -41,6 +46,10 @@ import nl.timtoys.corruptedadventure.block.AshCrustCollapse;
 import nl.timtoys.corruptedadventure.block.AshSproutsBlock;
 import nl.timtoys.corruptedadventure.block.BarrelCactusBlock;
 import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
+import nl.timtoys.corruptedadventure.block.BubbleSpringBlock;
+import nl.timtoys.corruptedadventure.block.GiantLilyPadBlock;
+import nl.timtoys.corruptedadventure.block.GlowcapBlock;
+import nl.timtoys.corruptedadventure.block.HangingSwampMossBlock;
 import nl.timtoys.corruptedadventure.block.EmberBerryBushBlock;
 import nl.timtoys.corruptedadventure.block.EmberLeavesBlock;
 import nl.timtoys.corruptedadventure.block.FireBloomBlock;
@@ -56,6 +65,7 @@ import nl.timtoys.corruptedadventure.block.ModFlowerPots;
 import nl.timtoys.corruptedadventure.block.ModTreeGrowers;
 import nl.timtoys.corruptedadventure.block.ModWoodTypes;
 import nl.timtoys.corruptedadventure.block.PalmSaplingBlock;
+import nl.timtoys.corruptedadventure.block.ReedsBlock;
 import nl.timtoys.corruptedadventure.block.SoakedNetherrackBlock;
 import nl.timtoys.corruptedadventure.block.SporeMossBlock;
 import nl.timtoys.corruptedadventure.block.SporeSproutsBlock;
@@ -625,6 +635,132 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> PRIMORDIAL_ICE = register("primordial_ice",
             () -> new Block(Properties.ofFullCopy(Blocks.BLUE_ICE).explosionResistance(Blocks.OBSIDIAN.getExplosionResistance())));
 
+    // ---- Ring 4 ----
+    // Mythical water ring (contract ring 4 §3, package 66): tidestone, the moonpetal wood set and its withered trunk,
+    // the swamp and water flora, the glowing flora and the bubble spring.
+    // Tidestone: the stone family's shapes and behaviour in a blue-grey layered rock; it breaks into cobbled tidestone.
+    public static final DeferredBlock<Block> TIDESTONE = register("tidestone", () -> new Block(tidestone(Blocks.STONE)));
+    public static final DeferredBlock<StairBlock> TIDESTONE_STAIRS = register("tidestone_stairs",
+            () -> new StairBlock(TIDESTONE.get().defaultBlockState(), tidestone(Blocks.STONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> TIDESTONE_SLAB = register("tidestone_slab",
+            () -> new SlabBlock(tidestone(Blocks.STONE_SLAB)));
+    /** Solid for support like vanilla walls ({@code forceSolidOn}); vanilla has no plain stone wall to copy. */
+    public static final DeferredBlock<WallBlock> TIDESTONE_WALL = register("tidestone_wall",
+            () -> new WallBlock(tidestone(Blocks.STONE).forceSolidOn()));
+    public static final DeferredBlock<Block> COBBLED_TIDESTONE = register("cobbled_tidestone",
+            () -> new Block(tidestone(Blocks.COBBLESTONE)));
+    public static final DeferredBlock<StairBlock> COBBLED_TIDESTONE_STAIRS = register("cobbled_tidestone_stairs",
+            () -> new StairBlock(COBBLED_TIDESTONE.get().defaultBlockState(), tidestone(Blocks.COBBLESTONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> COBBLED_TIDESTONE_SLAB = register("cobbled_tidestone_slab",
+            () -> new SlabBlock(tidestone(Blocks.COBBLESTONE_SLAB)));
+    public static final DeferredBlock<WallBlock> COBBLED_TIDESTONE_WALL = register("cobbled_tidestone_wall",
+            () -> new WallBlock(tidestone(Blocks.COBBLESTONE_WALL)));
+    public static final DeferredBlock<Block> POLISHED_TIDESTONE = register("polished_tidestone",
+            () -> new Block(tidestone(Blocks.POLISHED_ANDESITE)));
+    public static final DeferredBlock<StairBlock> POLISHED_TIDESTONE_STAIRS = register("polished_tidestone_stairs",
+            () -> new StairBlock(POLISHED_TIDESTONE.get().defaultBlockState(), tidestone(Blocks.POLISHED_ANDESITE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> POLISHED_TIDESTONE_SLAB = register("polished_tidestone_slab",
+            () -> new SlabBlock(tidestone(Blocks.POLISHED_ANDESITE_SLAB)));
+    public static final DeferredBlock<WallBlock> POLISHED_TIDESTONE_WALL = register("polished_tidestone_wall",
+            () -> new WallBlock(tidestone(Blocks.POLISHED_ANDESITE).forceSolidOn()));
+    public static final DeferredBlock<Block> TIDESTONE_BRICKS = register("tidestone_bricks",
+            () -> new Block(tidestone(Blocks.STONE_BRICKS)));
+    public static final DeferredBlock<StairBlock> TIDESTONE_BRICK_STAIRS = register("tidestone_brick_stairs",
+            () -> new StairBlock(TIDESTONE_BRICKS.get().defaultBlockState(), tidestone(Blocks.STONE_BRICK_STAIRS)));
+    public static final DeferredBlock<SlabBlock> TIDESTONE_BRICK_SLAB = register("tidestone_brick_slab",
+            () -> new SlabBlock(tidestone(Blocks.STONE_BRICK_SLAB)));
+    public static final DeferredBlock<WallBlock> TIDESTONE_BRICK_WALL = register("tidestone_brick_wall",
+            () -> new WallBlock(tidestone(Blocks.STONE_BRICK_WALL)));
+
+    // Moonpetal: the blossom tree of the cascades, white-silver bark around pale wood. Burnable like vanilla wood, with
+    // the cherry set's sounds.
+    public static final DeferredBlock<StrippableLogBlock> MOONPETAL_LOG = register("moonpetal_log",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_MOONPETAL_LOG, Properties.ofFullCopy(Blocks.CHERRY_LOG)
+                    .mapColor(state -> state.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y
+                            ? MapColor.TERRACOTTA_WHITE : MapColor.QUARTZ)));
+    public static final DeferredBlock<StrippableLogBlock> MOONPETAL_WOOD = register("moonpetal_wood",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_MOONPETAL_WOOD, Properties.ofFullCopy(Blocks.CHERRY_WOOD)
+                    .mapColor(MapColor.QUARTZ)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_MOONPETAL_LOG = register("stripped_moonpetal_log",
+            () -> new RotatedPillarBlock(moonpetal(Blocks.STRIPPED_CHERRY_LOG)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_MOONPETAL_WOOD = register("stripped_moonpetal_wood",
+            () -> new RotatedPillarBlock(moonpetal(Blocks.STRIPPED_CHERRY_WOOD)));
+    public static final DeferredBlock<Block> MOONPETAL_PLANKS = register("moonpetal_planks",
+            () -> new Block(moonpetal(Blocks.CHERRY_PLANKS)));
+    public static final DeferredBlock<StairBlock> MOONPETAL_STAIRS = register("moonpetal_stairs",
+            () -> new StairBlock(MOONPETAL_PLANKS.get().defaultBlockState(), moonpetal(Blocks.CHERRY_STAIRS)));
+    public static final DeferredBlock<SlabBlock> MOONPETAL_SLAB = register("moonpetal_slab",
+            () -> new SlabBlock(moonpetal(Blocks.CHERRY_SLAB)));
+    public static final DeferredBlock<FenceBlock> MOONPETAL_FENCE = register("moonpetal_fence",
+            () -> new FenceBlock(moonpetal(Blocks.CHERRY_FENCE)));
+    public static final DeferredBlock<FenceGateBlock> MOONPETAL_FENCE_GATE = register("moonpetal_fence_gate",
+            () -> new FenceGateBlock(ModWoodTypes.MOONPETAL, moonpetal(Blocks.CHERRY_FENCE_GATE)));
+    public static final DeferredBlock<DoorBlock> MOONPETAL_DOOR = registerDoor("moonpetal_door",
+            () -> new DoorBlock(ModWoodTypes.MOONPETAL_SET, moonpetal(Blocks.CHERRY_DOOR)));
+    public static final DeferredBlock<TrapDoorBlock> MOONPETAL_TRAPDOOR = register("moonpetal_trapdoor",
+            () -> new TrapDoorBlock(ModWoodTypes.MOONPETAL_SET, moonpetal(Blocks.CHERRY_TRAPDOOR)));
+    public static final DeferredBlock<PressurePlateBlock> MOONPETAL_PRESSURE_PLATE = register("moonpetal_pressure_plate",
+            () -> new PressurePlateBlock(ModWoodTypes.MOONPETAL_SET, moonpetal(Blocks.CHERRY_PRESSURE_PLATE)));
+    public static final DeferredBlock<ButtonBlock> MOONPETAL_BUTTON = register("moonpetal_button",
+            () -> new ButtonBlock(ModWoodTypes.MOONPETAL_SET, 30, moonpetal(Blocks.CHERRY_BUTTON)));
+    /** The pink-lilac blossom crown: cherry leaves' properties as plain leaves (no vanilla petal particles). */
+    public static final DeferredBlock<LeavesBlock> MOONPETAL_LEAVES = register("moonpetal_leaves",
+            () -> new LeavesBlock(Properties.ofFullCopy(Blocks.CHERRY_LEAVES)));
+    /** Grows into {@code corruptedadventure:ring_4/moonpetal_tree} (75); until then bonemeal is used up without growth. */
+    public static final DeferredBlock<SaplingBlock> MOONPETAL_SAPLING = register("moonpetal_sapling",
+            () -> new SaplingBlock(ModTreeGrowers.MOONPETAL, Properties.ofFullCopy(Blocks.CHERRY_SAPLING)));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_MOONPETAL_SAPLING = registerPot("potted_moonpetal_sapling", MOONPETAL_SAPLING);
+
+    // Withered moonpetal: only the dead trunk of the drowned forest (no leaves, no planks set); still burnable.
+    public static final DeferredBlock<StrippableLogBlock> WITHERED_MOONPETAL_LOG = register("withered_moonpetal_log",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG, Properties.ofFullCopy(Blocks.OAK_LOG)
+                    .mapColor(state -> state.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y
+                            ? MapColor.COLOR_LIGHT_GRAY : MapColor.COLOR_GRAY)));
+    public static final DeferredBlock<StrippableLogBlock> WITHERED_MOONPETAL_WOOD = register("withered_moonpetal_wood",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD, Properties.ofFullCopy(Blocks.OAK_WOOD)
+                    .mapColor(MapColor.COLOR_GRAY)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_WITHERED_MOONPETAL_LOG = register("stripped_withered_moonpetal_log",
+            () -> new RotatedPillarBlock(Properties.ofFullCopy(Blocks.STRIPPED_OAK_LOG).mapColor(MapColor.COLOR_LIGHT_GRAY)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_WITHERED_MOONPETAL_WOOD = register("stripped_withered_moonpetal_wood",
+            () -> new RotatedPillarBlock(Properties.ofFullCopy(Blocks.STRIPPED_OAK_WOOD).mapColor(MapColor.COLOR_LIGHT_GRAY)));
+
+    // Swamp and water flora.
+    /** Marsh reeds, 2–3 high: a column like sugar cane that grows next to water (decision golf 1, V2 = B). */
+    public static final DeferredBlock<ReedsBlock> REEDS = register("reeds",
+            () -> new ReedsBlock(Properties.ofFullCopy(Blocks.SUGAR_CANE)));
+    /** The surface of the peat moors: dirt's behaviour (plants grow on it), burnable and a furnace fuel. */
+    public static final DeferredBlock<Block> PEAT = register("peat",
+            () -> new Block(Properties.ofFullCopy(Blocks.DIRT).mapColor(MapColor.COLOR_BROWN).sound(SoundType.ROOTED_DIRT)));
+    /** Hanging roots' behaviour, in strands under the swamp trees. Only shears take it along. */
+    public static final DeferredBlock<HangingSwampMossBlock> HANGING_SWAMP_MOSS = register("hanging_swamp_moss",
+            () -> new HangingSwampMossBlock(Properties.ofFullCopy(Blocks.HANGING_ROOTS).mapColor(MapColor.COLOR_GREEN)
+                    .sound(SoundType.MOSS_CARPET)));
+    /** A 2 × 2 lily pad you can walk on (decision golf 1); the item places all four parts. */
+    public static final DeferredBlock<GiantLilyPadBlock> GIANT_LILY_PAD = registerOnWater("giant_lily_pad",
+            () -> new GiantLilyPadBlock(Properties.ofFullCopy(Blocks.LILY_PAD)));
+    /** A pink-white lotus floating flat on the water: vanilla's lily pad behaviour (decision golf 1, V1 = A). */
+    public static final DeferredBlock<WaterlilyBlock> LOTUS = registerOnWater("lotus",
+            () -> new WaterlilyBlock(Properties.ofFullCopy(Blocks.LILY_PAD).mapColor(MapColor.COLOR_PINK)));
+
+    // Glowing flora (subtle; light levels chosen by stream B): the glow sits in an emissive layer of the model.
+    /** A blue-purple glowing mushroom, light 6. */
+    public static final DeferredBlock<GlowcapBlock> GLOWCAP = register("glowcap",
+            () -> new GlowcapBlock(glowcap(MapColor.COLOR_LIGHT_BLUE, 6)));
+    /** A glowing flower by the lakes, light 7; Night Vision in suspicious stew, like the torchflower. */
+    public static final DeferredBlock<FlowerBlock> GLOW_BLOOM = register("glow_bloom",
+            () -> new FlowerBlock(MobEffects.NIGHT_VISION, 5.0F, Properties.ofFullCopy(Blocks.POPPY)
+                    .mapColor(MapColor.COLOR_LIGHT_BLUE).lightLevel(state -> 7)));
+    /** Vanilla's hanging roots under the islands and root arches, light 5. */
+    public static final DeferredBlock<HangingRootsBlock> GLOWING_HANGING_ROOTS = register("glowing_hanging_roots",
+            () -> new HangingRootsBlock(Properties.ofFullCopy(Blocks.HANGING_ROOTS).lightLevel(state -> 5)));
+    /** The glowcap's sickly variant in the reed marsh: same shape and class, a weak glow (light 3), no poison source. */
+    public static final DeferredBlock<GlowcapBlock> BLIGHTED_GLOWCAP = register("blighted_glowcap",
+            () -> new GlowcapBlock(glowcap(MapColor.COLOR_LIGHT_GREEN, 3)));
+
+    /** A spring on the pool floor that bubbles while water stands on it (looks only); tidestone's strength. */
+    public static final DeferredBlock<BubbleSpringBlock> BUBBLE_SPRING = register("bubble_spring",
+            () -> new BubbleSpringBlock(tidestone(Blocks.STONE)));
+
     private ModBlocks() {
     }
 
@@ -723,6 +859,25 @@ public final class ModBlocks {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_CYAN);
     }
 
+    /** Tidestone (all shapes, and the bubble spring): the vanilla stone variant's behaviour, blue-grey on the map. */
+    private static Properties tidestone(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_LIGHT_BLUE);
+    }
+
+    /** Moonpetal wood without bark (planks family, stripped): cherry's behaviour and sounds, pale on the map. */
+    private static Properties moonpetal(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_WHITE);
+    }
+
+    /**
+     * A glowcap: a mushroom's feel (walk-through, instant, fungus sounds, destroyed by pistons) with its own light, and
+     * without the random ticks of vanilla mushrooms (it never spreads).
+     */
+    private static Properties glowcap(MapColor color, int light) {
+        return Properties.of().mapColor(color).noCollission().instabreak().sound(SoundType.FUNGUS)
+                .lightLevel(state -> light).pushReaction(PushReaction.DESTROY);
+    }
+
     private static <B extends Block> DeferredBlock<B> register(String name, Supplier<B> block) {
         DeferredBlock<B> holder = BLOCKS.register(name, block);
         ModItems.ITEMS.registerSimpleBlockItem(holder);
@@ -744,6 +899,13 @@ public final class ModBlocks {
     private static <B extends DoorBlock> DeferredBlock<B> registerDoor(String name, Supplier<B> block) {
         DeferredBlock<B> holder = BLOCKS.register(name, block);
         ModItems.ITEMS.registerItem(name, properties -> new DoubleHighBlockItem(holder.get(), properties));
+        return holder;
+    }
+
+    /** Water plants need a {@link PlaceOnWaterBlockItem}, which places them on the water surface like a lily pad. */
+    private static <B extends Block> DeferredBlock<B> registerOnWater(String name, Supplier<B> block) {
+        DeferredBlock<B> holder = BLOCKS.register(name, block);
+        ModItems.ITEMS.registerItem(name, properties -> new PlaceOnWaterBlockItem(holder.get(), properties));
         return holder;
     }
 }

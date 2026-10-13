@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.SnowyDirtBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
@@ -20,6 +21,8 @@ import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.client.model.generators.MultiPartBlockStateBuilder;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.block.GiantLilyPadBlock;
+import nl.timtoys.corruptedadventure.block.ReedsBlock;
 import nl.timtoys.corruptedadventure.block.StalactiteBlock;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 
@@ -71,6 +74,104 @@ final class ModBlockStateProvider extends BlockStateProvider {
         ring2();
         ring3();
         netherRing3();
+        ring4();
+    }
+
+    /** Ring 4: tidestone, the moonpetal set (laid out like the palm set), the swamp and water flora, the glowing flora. */
+    private void ring4() {
+        stoneFamily(ModBlocks.TIDESTONE.get(), ModBlocks.TIDESTONE_STAIRS.get(), ModBlocks.TIDESTONE_SLAB.get(),
+                ModBlocks.TIDESTONE_WALL.get());
+        stoneFamily(ModBlocks.COBBLED_TIDESTONE.get(), ModBlocks.COBBLED_TIDESTONE_STAIRS.get(),
+                ModBlocks.COBBLED_TIDESTONE_SLAB.get(), ModBlocks.COBBLED_TIDESTONE_WALL.get());
+        stoneFamily(ModBlocks.POLISHED_TIDESTONE.get(), ModBlocks.POLISHED_TIDESTONE_STAIRS.get(),
+                ModBlocks.POLISHED_TIDESTONE_SLAB.get(), ModBlocks.POLISHED_TIDESTONE_WALL.get());
+        stoneFamily(ModBlocks.TIDESTONE_BRICKS.get(), ModBlocks.TIDESTONE_BRICK_STAIRS.get(),
+                ModBlocks.TIDESTONE_BRICK_SLAB.get(), ModBlocks.TIDESTONE_BRICK_WALL.get());
+
+        logBlock(ModBlocks.MOONPETAL_LOG.get());
+        axisBlock(ModBlocks.MOONPETAL_WOOD.get(), blockTexture(ModBlocks.MOONPETAL_LOG.get()), blockTexture(ModBlocks.MOONPETAL_LOG.get()));
+        logBlock(ModBlocks.STRIPPED_MOONPETAL_LOG.get());
+        axisBlock(ModBlocks.STRIPPED_MOONPETAL_WOOD.get(),
+                blockTexture(ModBlocks.STRIPPED_MOONPETAL_LOG.get()), blockTexture(ModBlocks.STRIPPED_MOONPETAL_LOG.get()));
+        ResourceLocation planks = blockTexture(ModBlocks.MOONPETAL_PLANKS.get());
+        simpleBlock(ModBlocks.MOONPETAL_PLANKS.get());
+        stairsBlock(ModBlocks.MOONPETAL_STAIRS.get(), planks);
+        slabBlock(ModBlocks.MOONPETAL_SLAB.get(), planks, planks);
+        fenceBlock(ModBlocks.MOONPETAL_FENCE.get(), planks);
+        fenceGateBlock(ModBlocks.MOONPETAL_FENCE_GATE.get(), planks);
+        doorBlockWithRenderType(ModBlocks.MOONPETAL_DOOR.get(),
+                modLoc("block/moonpetal_door_bottom"), modLoc("block/moonpetal_door_top"), "cutout");
+        trapdoorBlockWithRenderType(ModBlocks.MOONPETAL_TRAPDOOR.get(), modLoc("block/moonpetal_trapdoor"), true, "cutout");
+        pressurePlateBlock(ModBlocks.MOONPETAL_PRESSURE_PLATE.get(), planks);
+        buttonBlock(ModBlocks.MOONPETAL_BUTTON.get(), planks);
+        // Fixed blossom colour in the texture (no tint), like the palm leaves.
+        simpleBlock(ModBlocks.MOONPETAL_LEAVES.get(), models().cubeAll("moonpetal_leaves",
+                blockTexture(ModBlocks.MOONPETAL_LEAVES.get())).renderType("cutout_mipped"));
+        cross(ModBlocks.MOONPETAL_SAPLING.get());
+        simpleBlock(ModBlocks.POTTED_MOONPETAL_SAPLING.get(), models().flowerPotCross("potted_moonpetal_sapling",
+                blockTexture(ModBlocks.MOONPETAL_SAPLING.get())).renderType("cutout"));
+
+        logBlock(ModBlocks.WITHERED_MOONPETAL_LOG.get());
+        axisBlock(ModBlocks.WITHERED_MOONPETAL_WOOD.get(),
+                blockTexture(ModBlocks.WITHERED_MOONPETAL_LOG.get()), blockTexture(ModBlocks.WITHERED_MOONPETAL_LOG.get()));
+        logBlock(ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG.get());
+        axisBlock(ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD.get(), blockTexture(ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG.get()),
+                blockTexture(ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG.get()));
+
+        // The stem on every block, the plume on the top one; age and water do not change the model.
+        ModelFile reedStem = crossModel("reeds", blockTexture(ModBlocks.REEDS.get()));
+        ModelFile reedTop = crossModel("reeds_top", modLoc("block/reeds_top"));
+        getVariantBuilder(ModBlocks.REEDS.get()).forAllStatesExcept(state -> ConfiguredModel.builder()
+                .modelFile(state.getValue(ReedsBlock.TOP) ? reedTop : reedStem).build(), ReedsBlock.AGE, ReedsBlock.WATERLOGGED);
+        randomlyRotated(ModBlocks.PEAT.get());
+        // The waterlogged property does not change the model.
+        getVariantBuilder(ModBlocks.HANGING_SWAMP_MOSS.get()).forAllStatesExcept(state -> ConfiguredModel.builder()
+                .modelFile(crossModel("hanging_swamp_moss", blockTexture(ModBlocks.HANGING_SWAMP_MOSS.get()))).build(),
+                BlockStateProperties.WATERLOGGED);
+        giantLilyPad();
+        simpleBlock(ModBlocks.LOTUS.get(), flatPad("lotus", blockTexture(ModBlocks.LOTUS.get())));
+
+        glowingCross(ModBlocks.GLOWCAP.get());
+        glowingCross(ModBlocks.GLOW_BLOOM.get());
+        glowingCross(ModBlocks.GLOWING_HANGING_ROOTS.get());
+        glowingCross(ModBlocks.BLIGHTED_GLOWCAP.get());
+        vent(ModBlocks.BUBBLE_SPRING.get());
+    }
+
+    /**
+     * One flat model per part on its own quarter texture {@code giant_lily_pad_<part>} (seen from above, north up), at
+     * vanilla's lily pad height. Fixed colour in the texture, no tint.
+     */
+    private void giantLilyPad() {
+        getVariantBuilder(ModBlocks.GIANT_LILY_PAD.get()).forAllStates(state -> {
+            String name = "giant_lily_pad_" + state.getValue(GiantLilyPadBlock.PART).getSerializedName();
+            return ConfiguredModel.builder().modelFile(flatPad(name, modLoc("block/" + name))).build();
+        });
+    }
+
+    /** A flat cutout plane on the water like vanilla's lily pad (same height and UVs), fixed colour, no tint. */
+    private ModelFile flatPad(String name, ResourceLocation texture) {
+        BlockModelBuilder model = models().getBuilder(name).renderType("cutout").ao(false)
+                .texture("particle", texture).texture("texture", texture);
+        model.element().from(0, 0.25f, 0).to(16, 0.25f, 16)
+                .face(Direction.UP).uvs(0, 0, 16, 16).texture("#texture").end()
+                .face(Direction.DOWN).uvs(0, 16, 16, 0).texture("#texture").end().end();
+        return model;
+    }
+
+    /**
+     * A plant that glows in the dark (contract §7: two layers): vanilla's cross with the texture {@code <name>}, lit
+     * normally, plus the same two planes with the emissive cutout overlay {@code <name>_glow}. Properties such as
+     * waterlogged do not change the model.
+     */
+    private void glowingCross(Block block) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        ResourceLocation base = blockTexture(block);
+        BlockModelBuilder model = models().getBuilder(name).renderType("cutout").ao(false)
+                .texture("particle", base).texture("cross", base).texture("glow", base.withSuffix("_glow"));
+        crossPlanes(model, "#cross", false);
+        crossPlanes(model, "#glow", true);
+        getVariantBuilder(block).forAllStates(state -> ConfiguredModel.builder().modelFile(model).build());
     }
 
     /** Nether ring 3: cold lava, Nether ice, rime netherrack, the rimeshroom set (laid out like the dripshroom set). */
@@ -410,17 +511,26 @@ final class ModBlockStateProvider extends BlockStateProvider {
     private BlockModelBuilder emissiveCross(String name, ResourceLocation texture) {
         BlockModelBuilder model = models().getBuilder(name).renderType("cutout").ao(false)
                 .texture("particle", texture).texture("cross", texture);
-        model.element().from(0.8f, 0, 8).to(15.2f, 16, 8)
-                .rotation().origin(8, 8, 8).axis(Direction.Axis.Y).angle(45).rescale(true).end().shade(false)
-                .emissivity(15, 15).ao(false)
-                .face(Direction.NORTH).uvs(0, 0, 16, 16).texture("#cross").end()
-                .face(Direction.SOUTH).uvs(0, 0, 16, 16).texture("#cross").end().end();
-        model.element().from(8, 0, 0.8f).to(8, 16, 15.2f)
-                .rotation().origin(8, 8, 8).axis(Direction.Axis.Y).angle(45).rescale(true).end().shade(false)
-                .emissivity(15, 15).ao(false)
-                .face(Direction.WEST).uvs(0, 0, 16, 16).texture("#cross").end()
-                .face(Direction.EAST).uvs(0, 0, 16, 16).texture("#cross").end().end();
+        crossPlanes(model, "#cross", true);
         return model;
+    }
+
+    /** Adds vanilla's two diagonal cross planes on {@code texture}; {@code emissive} planes are full-bright. */
+    private static void crossPlanes(BlockModelBuilder model, String texture, boolean emissive) {
+        var first = model.element().from(0.8f, 0, 8).to(15.2f, 16, 8)
+                .rotation().origin(8, 8, 8).axis(Direction.Axis.Y).angle(45).rescale(true).end().shade(false);
+        if (emissive) {
+            first.emissivity(15, 15).ao(false);
+        }
+        first.face(Direction.NORTH).uvs(0, 0, 16, 16).texture(texture).end()
+                .face(Direction.SOUTH).uvs(0, 0, 16, 16).texture(texture).end().end();
+        var second = model.element().from(8, 0, 0.8f).to(8, 16, 15.2f)
+                .rotation().origin(8, 8, 8).axis(Direction.Axis.Y).angle(45).rescale(true).end().shade(false);
+        if (emissive) {
+            second.emissivity(15, 15).ao(false);
+        }
+        second.face(Direction.WEST).uvs(0, 0, 16, 16).texture(texture).end()
+                .face(Direction.EAST).uvs(0, 0, 16, 16).texture(texture).end().end();
     }
 
     /**

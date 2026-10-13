@@ -81,6 +81,23 @@
     "corruptedadventure:rime_netherrack",
     "corruptedadventure:ice_stalactite",
     "corruptedadventure:glowing_fissure",
-    "corruptedadventure:primordial_ice"
+    "corruptedadventure:primordial_ice",
+    "corruptedadventure:tidestone",
+    "corruptedadventure:tidestone_stairs",
+    "corruptedadventure:tidestone_slab",
+    "corruptedadventure:tidestone_wall",
+    "corruptedadventure:cobbled_tidestone",
+    "corruptedadventure:cobbled_tidestone_stairs",
+    "corruptedadventure:cobbled_tidestone_slab",
+    "corruptedadventure:cobbled_tidestone_wall",
+    "corruptedadventure:polished_tidestone",
+    "corruptedadventure:polished_tidestone_stairs",
+    "corruptedadventure:polished_tidestone_slab",
+    "corruptedadventure:polished_tidestone_wall",
+    "corruptedadventure:tidestone_bricks",
+    "corruptedadventure:tidestone_brick_stairs",
+    "corruptedadventure:tidestone_brick_slab",
+    "corruptedadventure:tidestone_brick_wall",
+    "corruptedadventure:bubble_spring"
   ]
 }
