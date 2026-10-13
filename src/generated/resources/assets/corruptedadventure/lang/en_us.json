@@ -273,7 +273,6 @@
   "block.corruptedadventure.volcanite_ore": "Volcanite Ore",
   "block.corruptedadventure.withered_dirt": "Withered Dirt",
   "block.corruptedadventure.yellow_sulfur_mud": "Yellow Sulfur Mud",
-  "condition.corruptedadventure.poison": "Poison",
   "death.attack.corruptedadventure.cold": "%1$s froze in the cold of the Nether",
   "death.attack.corruptedadventure.cold.player": "%1$s froze in the cold of the Nether whilst fighting %2$s",
   "death.attack.corruptedadventure.dehydration": "%1$s dried out",

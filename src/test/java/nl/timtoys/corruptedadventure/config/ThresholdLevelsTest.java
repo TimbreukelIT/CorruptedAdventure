@@ -47,7 +47,7 @@ class ThresholdLevelsTest {
 
     @Test
     void poisonHasTheContractThresholds() {
-        // Ring 4 contract §5: nausea 30, poison 60, wither 90 (PoisonWither.THRESHOLD_COUNT: the third).
+        // Ring 4 contract §5: nausea 30, poison 60, wither 90 (PoisonWither is the third effect).
         assertArrayEquals(new int[]{30, 60, 90}, ServerConfig.POISON.thresholds.defaults());
     }
 }

@@ -325,7 +325,8 @@ public final class ServerConfig {
             gasRise = builder.comment("Points per second with the head (eye height) in swamp gas (2.0: 0 -> 100 in ~50 s).")
                     .defineInRange("gasRise", 2.0, 0.0, 100.0);
             rainRise = builder.comment("Points per second in full toxic rain under the open sky in the blighted band (0.5:",
-                            "0 -> 100 in ~3.5 min); follows the fade of the weather and [weather.ring4] toxicRainPoisonMultiplier.")
+                            "0 -> 100 in ~3.5 min); follows the fade of the weather. A factor from the ring 4 weather config",
+                            "will be applied on top of it (linked in integration 1).")
                     .defineInRange("rainRise", 0.5, 0.0, 100.0);
             fall = builder.comment("Points per second in ring 4 away from every source.")
                     .defineInRange("fall", 1.0, 0.0, 100.0);
@@ -339,14 +340,15 @@ public final class ServerConfig {
             thresholds = ThresholdLevels.define(builder, "conditions.poison", new int[]{30, 60, 90},
                     "Nausea from here.", "Vanilla poison from here (never kills: it stops at 1 health).",
                     "Wither from here: black hearts and poison damage every damageInterval seconds (own death message);"
-                            + " can kill.");
+                            + " can kill on normal and hard.");
             effect1Amplifier = builder.comment("Nausea amplifier (0 = level I).")
                     .defineInRange("effect1Amplifier", 0, 0, 9);
             effect2Amplifier = builder.comment("Poison amplifier (0 = level I).")
                     .defineInRange("effect2Amplifier", 0, 0, 9);
             effect3Amplifier = builder.comment("Wither amplifier (0 = level I); only the black hearts, the damage is below.")
                     .defineInRange("effect3Amplifier", 0, 0, 9);
-            damage = builder.comment("Poison damage per hit at threshold3 (1.0 = half a heart; vanilla wither I: 1.0 every 2 s).")
+            damage = builder.comment("Poison damage per hit at threshold3 (1.0 = half a heart; vanilla wither I: 1.0 every 2 s);",
+                            "through armour. None on peaceful, down to 10 health on easy, lethal on normal and hard.")
                     .defineInRange("damage", 1.0, 0.0, 100.0);
             damageInterval = builder.comment("Seconds between hits at threshold3.")
                     .defineInRange("damageInterval", 2, 1, 60);

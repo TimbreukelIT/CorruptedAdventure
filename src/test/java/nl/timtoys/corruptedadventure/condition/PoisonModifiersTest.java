@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.condition;
 
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
@@ -106,13 +107,44 @@ class PoisonModifiersTest {
     }
 
     @Test
-    void witherDamageIsCancelledOnlyForOurAmbientWither() {
-        MobEffectInstance ours = new MobEffectInstance(MobEffects.WITHER, 240, 0, true, false, true);
-        MobEffectInstance rose = new MobEffectInstance(MobEffects.WITHER, 40, 1);
-        assertTrue(PoisonWither.isOurs(ours, true));
-        assertFalse(PoisonWither.isOurs(ours, false), "threshold no longer reached");
-        assertFalse(PoisonWither.isOurs(rose, true), "a wither rose deals its vanilla damage");
-        assertFalse(PoisonWither.isOurs(null, true));
+    void ourWitherIsRecognisedByAllItsFlags() {
+        assertTrue(PoisonWither.isOurs(PoisonWither.ours(0)));
+        assertTrue(PoisonWither.isOurs(PoisonWither.ours(2)));
+        assertFalse(PoisonWither.isOurs(null));
+        // Ambient alone is not enough: a beacon-like or merged instance with particles or an icon is foreign.
+        assertFalse(PoisonWither.isOurs(new MobEffectInstance(MobEffects.WITHER, 40, 0, true, true, false)));
+        assertFalse(PoisonWither.isOurs(new MobEffectInstance(MobEffects.WITHER, 40, 0, true, false, true)));
+        assertFalse(PoisonWither.isOurs(new MobEffectInstance(MobEffects.WITHER, 40, 0)), "a wither rose");
+    }
+
+    @Test
+    void aForeignWitherMergedIntoOursIsNoLongerOurs() {
+        // Wither rose (amplifier 0, 40 ticks) and wither skeleton (amplifier 0, 200 ticks) on top of ours.
+        MobEffectInstance rose = PoisonWither.ours(0);
+        rose.update(new MobEffectInstance(MobEffects.WITHER, 40, 0));
+        assertFalse(PoisonWither.isOurs(rose));
+        MobEffectInstance skeleton = PoisonWither.ours(0);
+        skeleton.update(new MobEffectInstance(MobEffects.WITHER, 200, 0));
+        assertFalse(PoisonWither.isOurs(skeleton));
+        MobEffectInstance stronger = PoisonWither.ours(0);
+        stronger.update(new MobEffectInstance(MobEffects.WITHER, 100, 1));
+        assertFalse(PoisonWither.isOurs(stronger));
+        // Our own refresh keeps it ours.
+        MobEffectInstance refreshed = PoisonWither.ours(0);
+        refreshed.update(PoisonWither.ours(0));
+        assertTrue(PoisonWither.isOurs(refreshed));
+        // A merge keeps at most our short duration.
+        assertTrue(PoisonWither.DURATION_TICKS <= 40 && PoisonWither.DURATION_TICKS > ConditionTicker.INTERVAL_TICKS);
+    }
+
+    @Test
+    void theWitherCanKillOnlyFromNormal() {
+        DifficultyFloor floor = DifficultyFloor.LETHAL_FROM_NORMAL;
+        assertEquals(0.0F, floor.damage(1.0F, 20.0F, Difficulty.PEACEFUL));
+        assertEquals(1.0F, floor.damage(1.0F, 11.0F, Difficulty.EASY));
+        assertEquals(0.0F, floor.damage(1.0F, 10.0F, Difficulty.EASY));
+        assertEquals(1.0F, floor.damage(1.0F, 1.0F, Difficulty.NORMAL));
+        assertEquals(1.0F, floor.damage(1.0F, 1.0F, Difficulty.HARD));
     }
 
     @Test

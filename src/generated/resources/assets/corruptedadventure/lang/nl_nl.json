@@ -273,7 +273,6 @@
   "block.corruptedadventure.volcanite_ore": "Vulkanieterts",
   "block.corruptedadventure.withered_dirt": "Verdorde aarde",
   "block.corruptedadventure.yellow_sulfur_mud": "Gele zwavelmodder",
-  "condition.corruptedadventure.poison": "Gif",
   "death.attack.corruptedadventure.cold": "%1$s bevroor in de kou van de Nether",
   "death.attack.corruptedadventure.cold.player": "%1$s bevroor in de kou van de Nether tijdens het gevecht met %2$s",
   "death.attack.corruptedadventure.dehydration": "%1$s is uitgedroogd",
