@@ -1,17 +1,173 @@
 package nl.timtoys.corruptedadventure.worldgen.biome;
 
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.data.worldgen.BiomeDefaultFeatures;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.biome.AmbientMoodSettings;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeGenerationSettings;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
+import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import nl.timtoys.corruptedadventure.registry.ModBiomes;
+import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
- * Datagen bootstrap for the ring 4 overworld biomes, {@code sundered_reach} included ({@code docs/plans/ring-4/contract.md} §2).
- * Owned by stream W-biomes; empty until change 64. More classes of this ring are called from here, so
- * {@code DataGenerators} stays untouched.
+ * Datagen bootstrap for the ring 4 overworld biomes ({@code docs/plans/ring-4/contract.md} §2, change 64): eight ground
+ * biomes, two height biomes and the transition 4→5 {@code sundered_reach}. Owned by stream W-biomes.
+ * <p>
+ * Where the ground biomes lie is decided by the {@code multi_noise} source of ring 4 in the world preset: the router's
+ * {@code weirdness} (= {@code ring_4/overworld/band}) splits the mythical band (below 0) from the blighted one (0 and
+ * above, as {@code Ring4Band.blighted}); within a band {@code temperature} (= {@code region_water}, high = open water)
+ * and {@code humidity} (= {@code region_growth}, high = overgrown) pick the biome, each an even share of its band.
+ * The mythical half of the band's transition (−1 &lt; band &lt; 0, about 32 blocks) is always {@code mist_fjords}: the
+ * last mythical biome before the blighted band ("into the mist"). The height biomes are not in that
+ * source: the preset's {@code island_biomes} hook gives them to whole high islands. {@code sundered_reach} is the
+ * preset's {@code transitions.ring_4}, a fixed biome over the zone 4→5.
+ * <p>
+ * The colours here are a first version: the atmosphere (stream A, change 80) moves them into a {@code BiomeAmbience}
+ * hook. No features yet (changes 75–77) and no ores (77).
  */
 public final class Ring4Biomes {
+    /** The mythical band (inner ~60 %), in the order of the preset. */
+    public static final List<ResourceKey<Biome>> MYTHIC = List.of(ModBiomes.CASCADE_VALE, ModBiomes.CRYSTAL_LAGOON,
+            ModBiomes.LOTUS_SHALLOWS, ModBiomes.GLOWROOT_SWAMP, ModBiomes.MIST_FJORDS);
+    /** The blighted band (outer ~40 %). */
+    public static final List<ResourceKey<Biome>> BLIGHTED = List.of(ModBiomes.DROWNED_FOREST, ModBiomes.PEAT_MOORS, ModBiomes.REED_MARSH);
+    /** The ground biomes: exactly the preset's ring 4 {@code multi_noise}. */
+    public static final List<ResourceKey<Biome>> GROUND = Stream.concat(MYTHIC.stream(), BLIGHTED.stream()).toList();
+    /** The height biomes of the preset's {@code island_biomes} hook: mythic, then blighted. */
+    public static final List<ResourceKey<Biome>> HEIGHT = List.of(ModBiomes.SKY_GARDENS, ModBiomes.WITHERED_GARDENS);
+    /** The biomes of the ring itself: ground and height. */
+    public static final List<ResourceKey<Biome>> ALL = Stream.concat(GROUND.stream(), HEIGHT.stream()).toList();
+    /** The transition 4→5: the preset's {@code transitions.ring_4}. */
+    public static final ResourceKey<Biome> TRANSITION = ModBiomes.SUNDERED_REACH;
+    /** Every biome with ring 4 worldgen: {@link #ALL} and the transition (the bootstrap, {@code is_ring_4}, the surface branch). */
+    public static final List<ResourceKey<Biome>> WITH_TRANSITION = Stream.concat(ALL.stream(), Stream.of(TRANSITION)).toList();
+    /** The tag {@code ring_4_blighted}: the blighted band and the islands above it (read by poison and weather). */
+    public static final List<ResourceKey<Biome>> BLIGHTED_TAG = Stream.concat(BLIGHTED.stream(), Stream.of(ModBiomes.WITHERED_GARDENS)).toList();
+
+    /** Mild and rainy everywhere: the ring weather picks the kind; high enough that nothing snows, even at Y 250. */
+    static final float TEMPERATURE = 0.8F;
+    static final float WET = 0.9F;
+    static final float LAND = 0.6F;
+
+    /**
+     * First colours per biome (sky, fog, water, water fog, grass, foliage): mythical clear turquoise with soft white fog,
+     * {@code mist_fjords} grey-white with dark steel-blue water; the blighted band poison green with a greenish sky;
+     * {@code sundered_reach} drained to grey.
+     */
+    private static final Map<ResourceKey<Biome>, Look> LOOKS = Map.ofEntries(
+            Map.entry(ModBiomes.CASCADE_VALE, new Look(0x72D2E3, 0xEAF4F2, 0x8FD8F0, 0x2C6E86, 0x6FCB6A, 0x7FD66E, LAND, true)),
+            Map.entry(ModBiomes.CRYSTAL_LAGOON, new Look(0x6CD6E8, 0xE4F6F4, 0x2FD3C8, 0x0F5A66, 0x7ED67A, 0x6CCB64, WET, true)),
+            Map.entry(ModBiomes.LOTUS_SHALLOWS, new Look(0x78D4E4, 0xF0F2EE, 0x9ADFF2, 0x356F82, 0x86D47A, 0x7AC96C, WET, true)),
+            Map.entry(ModBiomes.GLOWROOT_SWAMP, new Look(0x6FC9D6, 0xDCEBE2, 0x4CC08A, 0x16503A, 0x5FAE5A, 0x4E9E4C, WET, true)),
+            Map.entry(ModBiomes.MIST_FJORDS, new Look(0x9FB8C4, 0xC8D0D4, 0x2F5A7A, 0x0E2234, 0x4F8F4A, 0x3F7A44, WET, true)),
+            Map.entry(ModBiomes.DROWNED_FOREST, new Look(0x8FAE8A, 0xA9BB98, 0x3E8A3A, 0x0E2A10, 0x7A8A5A, 0x6A7A4A, WET, true)),
+            Map.entry(ModBiomes.PEAT_MOORS, new Look(0x9CB08A, 0xB4BE98, 0x6FC23A, 0x1E3A12, 0x8A8E5A, 0x7A7E4E, WET, true)),
+            Map.entry(ModBiomes.REED_MARSH, new Look(0x96B28E, 0xAEC09C, 0x5DB03A, 0x1A3614, 0x8E9A5C, 0x7C8A50, WET, true)),
+            Map.entry(ModBiomes.SKY_GARDENS, new Look(0x66D0EE, 0xF2F8F8, 0x8FE0F4, 0x2E7890, 0x7CDA74, 0x88E07A, LAND, true)),
+            Map.entry(ModBiomes.WITHERED_GARDENS, new Look(0xA2B496, 0xBCC4A8, 0x6FA048, 0x22381A, 0x9A9466, 0x8A8458, LAND, true)),
+            Map.entry(ModBiomes.SUNDERED_REACH, new Look(0x8C9096, 0x9A9CA0, 0x5A6670, 0x1A1E22, 0x8A8C84, 0x7C7E78, LAND, false)));
+
     private Ring4Biomes() {
     }
 
     public static void bootstrap(BootstrapContext<Biome> context) {
+        HolderGetter<PlacedFeature> features = context.lookup(Registries.PLACED_FEATURE);
+        HolderGetter<ConfiguredWorldCarver<?>> carvers = context.lookup(Registries.CONFIGURED_CARVER);
+        for (ResourceKey<Biome> key : WITH_TRANSITION) {
+            Look look = look(key);
+            context.register(key, new Biome.BiomeBuilder()
+                    .hasPrecipitation(look.precipitation())
+                    .temperature(TEMPERATURE)
+                    .downfall(look.downfall())
+                    .specialEffects(effects(look).build())
+                    .mobSpawnSettings(spawns(key))
+                    .generationSettings(generation(features, carvers).build())
+                    .build());
+        }
+    }
+
+    /** The look of a ring 4 biome; throws for any other biome. */
+    static Look look(ResourceKey<Biome> biome) {
+        Look look = LOOKS.get(biome);
+        if (look == null) {
+            throw new IllegalArgumentException("no ring 4 look for " + biome);
+        }
+        return look;
+    }
+
+    private static BiomeSpecialEffects.Builder effects(Look look) {
+        return new BiomeSpecialEffects.Builder()
+                .skyColor(look.sky())
+                .fogColor(look.fog())
+                .waterColor(look.water())
+                .waterFogColor(look.waterFog())
+                .grassColorOverride(look.grass())
+                .foliageColorOverride(look.foliage())
+                .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS);
+    }
+
+    /**
+     * The generation of a ring 4 biome, the one place for ring 4-wide generation: vanilla's carvers capped deep as in
+     * ring 2 and 3 ({@link Ring2Carvers}: near the surface they leave sand hanging and cut through lake floors; their
+     * lava is already decided by the ring aquifer in ring 4, change 59). No features yet (changes 75–77).
+     */
+    static BiomeGenerationSettings.Builder generation(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+        BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(features, carvers);
+        for (ResourceKey<ConfiguredWorldCarver<?>> carver : Ring2Carvers.COPIES.keySet()) {
+            generation.addCarver(GenerationStep.Carving.AIR, carver);
+        }
+        return generation;
+    }
+
+    /**
+     * Vanilla's monsters and bats everywhere (until phase 4); the animals per biome (contract §4): the lagoon tropical
+     * fish, turtles and dolphins, the swamp frogs and axolotls, the cascades foxes and rabbits. The blighted band, the
+     * withered islands and {@code sundered_reach} have no animals.
+     */
+    static MobSpawnSettings spawns(ResourceKey<Biome> biome) {
+        MobSpawnSettings.Builder spawns = new MobSpawnSettings.Builder();
+        BiomeDefaultFeatures.commonSpawns(spawns);
+        if (biome.equals(ModBiomes.CRYSTAL_LAGOON)) {
+            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
+            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.PUFFERFISH, 15, 1, 3));
+            spawns.addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 2, 1, 2));
+            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.TURTLE, 5, 2, 5));
+        } else if (biome.equals(ModBiomes.GLOWROOT_SWAMP)) {
+            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
+            spawns.addSpawn(MobCategory.UNDERGROUND_WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.AXOLOTL, 10, 4, 6));
+            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
+        } else if (biome.equals(ModBiomes.CASCADE_VALE)) {
+            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FOX, 8, 2, 4));
+            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
+            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 5, 1, 5));
+        } else if (biome.equals(ModBiomes.LOTUS_SHALLOWS)) {
+            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 6, 2, 4));
+            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 5, 1, 5));
+        } else if (biome.equals(ModBiomes.MIST_FJORDS)) {
+            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.COD, 15, 3, 6));
+            spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 15, 1, 5));
+            spawns.addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.SQUID, 3, 1, 4));
+            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 2, 1, 2));
+        } else if (biome.equals(ModBiomes.SKY_GARDENS)) {
+            spawns.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
+        }
+        return spawns.build();
+    }
+
+    /** Sky, fog, water and water fog, grass and foliage, the downfall and whether it rains (snow never: too warm). */
+    record Look(int sky, int fog, int water, int waterFog, int grass, int foliage, float downfall, boolean precipitation) {
     }
 }

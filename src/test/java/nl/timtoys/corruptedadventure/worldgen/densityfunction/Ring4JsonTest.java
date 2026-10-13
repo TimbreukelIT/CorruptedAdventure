@@ -143,12 +143,13 @@ class Ring4JsonTest {
     }
 
     @Test
-    void presetHasTheHeightHookOnPlaceholdersUntil64() {
+    void presetHasTheHeightHookOnTheHeightBiomes() {
         JsonObject hook = WorldgenData.read("world_preset/corrupted_world.json").getAsJsonObject("dimensions")
                 .getAsJsonObject("minecraft:overworld").getAsJsonObject("generator").getAsJsonObject("biome_source")
                 .getAsJsonObject("island_biomes");
         assertEquals(140, hook.get("min_top").getAsInt());
-        assertEquals("corruptedadventure:placeholder_ring_4", hook.get("mythic").getAsString());
-        assertEquals("corruptedadventure:placeholder_ring_4", hook.get("blighted").getAsString());
+        // Since 64 the height biomes (placeholders until then).
+        assertEquals("corruptedadventure:sky_gardens", hook.get("mythic").getAsString());
+        assertEquals("corruptedadventure:withered_gardens", hook.get("blighted").getAsString());
     }
 }
