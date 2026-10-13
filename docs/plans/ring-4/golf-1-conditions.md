@@ -42,7 +42,7 @@ Opgelost in de vervolgcommit:
 1. **Hurt-cooldown:** `corruptedadventure:poison` staat in `minecraft:bypasses_cooldown`. De vanilla-gif (1,0 per 25 ticks) tikt vaak een paar ticks eerder, en binnen de cooldown slikt vanilla een even grote hit in. Test: `PoisonDamageTypeTagsTest` op de gegenereerde tags.
 2. **Vreemde Wither:** onze Wither wordt herkend aan ambient én geen particles én geen icoon, en is kort (40 ticks). Semantiek: zie §1.4. Test: samenvoegen met witherroos, witherskelet en een sterkere Wither via `MobEffectInstance.update`.
 3. **Na het inloggen:** de annulering hangt niet meer af van `appliedThresholds` (UNKNOWN na het laden), alleen van de vlaggen van de actieve instantie. Een opgeslagen Wither van ons doet dus ook in de eerste seconde geen vanilla-schade; de eerste tick ruimt hem op als de meter onder 90 staat.
-4. **Moeilijkheid:** nieuwe vloer `DifficultyFloor.LETHAL_FROM_NORMAL` (peaceful niets, easy tot 10 HP zoals honger, normal en hard dodelijk). `VANILLA_STARVATION` zou op normal bij 1 HP stoppen, en dat botst met "kan doden" in contract §5. **Graag bevestigen**; omzetten naar `VANILLA_STARVATION` kost één regel.
+4. **Moeilijkheid:** nieuwe vloer `DifficultyFloor.LETHAL_FROM_NORMAL` (peaceful niets, easy tot 10 HP zoals honger, normal en hard dodelijk). `VANILLA_STARVATION` zou op normal bij 1 HP stoppen, en dat botst met "kan doden" in contract §5. Bevestigd door de gebruiker (2026-10-13).
 5. De ongebruikte lang-key `condition.corruptedadventure.poison` is weg; de doodsbericht-keys blijven.
 
 Bewust niet opgepakt:
@@ -102,7 +102,7 @@ Bewust niet opgepakt:
 - 2026-10-13, conditions: nieuwe blok-tag `corruptedadventure:poison_gases` voor het moerasgas (hoofd in gas = +2/s), TagKey in `ModTags`; B vult hem in 72. Besluit van de gebruiker (V3 a); main past het contract aan.
 - 2026-10-13, conditions: "naast" de gifpoel = binnen 1 blok rond voeten en hoofd (`poolRadius`); gifregen telt niet met het oog onder water; aparte daling `fall` (in ring 4 zonder bron) en `outsideFall` (buiten ring 4), allebei 1,0/s. Implementatiekeuzes, akkoord van de gebruiker.
 
-- 2026-10-13, conditions (review 69, implementatie, **te bevestigen**): de gifschade van de wither volgt `DifficultyFloor.LETHAL_FROM_NORMAL` (peaceful niets, easy tot 10 HP, normal en hard dodelijk), omdat "kan doden" uit contract §5 anders alleen op hard zou gelden. Onze Wither = kort, ambient, zonder particles en zonder icoon; een vreemde Wither wordt gerespecteerd.
+- 2026-10-13, conditions (review 69, besluit van de gebruiker): de gifschade van de wither volgt `DifficultyFloor.LETHAL_FROM_NORMAL` (peaceful niets, easy tot 10 HP, normal en hard dodelijk), omdat "kan doden" uit contract §5 anders alleen op hard zou gelden. Bevestigd door de gebruiker. Onze Wither = kort, ambient, zonder particles en zonder icoon; een vreemde Wither wordt gerespecteerd.
 
 ## Backlog
 - conditions: na INT1 `ToxicRainPoisonModifier.rainMultiplier()` aan `[weather.ring4] toxicRainPoisonMultiplier` koppelen en `DEFAULT_RAIN_MULTIPLIER` weghalen (INT1).
