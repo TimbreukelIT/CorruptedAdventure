@@ -666,3 +666,6 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-13 | blocks | Sparring golf 1 ring 4: `bubble_spring` in 66 (alleen `animateTick`, vanilla bubble-particle tot de sprites van A er zijn) | Gebruiker; W-biomes kan hem in golf 2 meteen plaatsen |
 | 2026-10-13 | infra | Sparring golf 1 ring 4: alle zeven stromen starten tegelijk; teststop 5-pre na 61 (basisterrein + eilanden) | Gebruiker |
 | 2026-10-13 | conditions | De gifconditie van ring 4 heet `poison` (`Condition.POISON`, `[conditions.poison]`, damage type `corruptedadventure:poison`) | Gebruiker; zoals het contract, geen botsing met vanilla-sleutels |
+| 2026-10-13 | atmosphere | Pakket 70: weercyclus ring 4 helder 600–9000 s, weer 600–1200 s, gewichten mist 1 / storm 1 / gifregen 1 | Gebruiker; consistent met ring 2/3, rustig door lange heldere perioden |
+| 2026-10-13 | atmosphere | Pakket 70: `stormPushStrength` 0,05 (lichter dan de zandstorm); zicht in volle dikke mist ~32 blokken | Gebruiker; boven Y 120 is van een eiland vallen vaak dodelijk; mist moet navigeerbaar blijven |
+| 2026-10-13 | atmosphere | Pakket 70: stormwind en gifregen als getinte regenstrepen via één gedeelde renderer (storm schuin bleekblauw, gifregen recht gifgroen); geen nieuwe particle-namen | Gebruiker |
