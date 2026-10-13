@@ -254,3 +254,8 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 ## Uit pakket 58 (golf 0 ring 4, 2026-10-13)
 - [atmosphere] `src/generated/resources/assets/corruptedadventure/sounds.json` is na 8753843 ("sounds.json needs runData") nog niet geregenereerd: `runData` levert de zachtere volumes (alleen dat bestand). Niet in 58 gecommit (andere categorie); committen bij de integratie. (bron: 58)
 - [worldgen] Opruiming: `VolcanicField.regions` en `VolcanoPlacement.place` rekenen de binnen- en buitenrand van ring 3 (`radii.get(i) ± transitionWidth(i) / 2`) elk zelf uit; één helper `RingLayout.halfTransition(boundary)` (of een rand-accessor) maakt dat één bron. (bron: code-review 58)
+
+## Uit pakket 59 (golf 0 ring 4, 2026-10-13)
+- [worldgen] Ring 5 (81–99): in de hele zone 4→5 wordt lokale aquiferlava water (besluit 59); de naad water ↔ lokale lava ligt daardoor aan de buitenrand van zone 4→5, binnen ring 5. Ring 5 lost die op met een eigen vloeistofregel of dam (determinisme, zoals 47e bij ring 3). (bron: code-review 59)
+- [worldgen] Opruiming: `RingChunkGenerator.islandField`/`IslandFieldLookup` en `IslandField.find` kopiëren `volcanicField`/`VolcanicFieldLookup`/`VolcanicField.find`; een generieke `FieldLookup<T>` + `find(root, Class<T>)` maakt dat één bron. (bron: code-review 59)
+- [worldgen] Doorgeschoven review-notities 59 (zie `docs/plans/ring-4/59-worldgen.md`): haak één eilandopzoeking per kolom en eilandstraal ≤ `cell_size` (61), `effectiveDistance` hergebruiken in `Ring4BandFunction` (prestatieronde), klifwatervallen en de val-kolomregel (62). (bron: code-review 59)
