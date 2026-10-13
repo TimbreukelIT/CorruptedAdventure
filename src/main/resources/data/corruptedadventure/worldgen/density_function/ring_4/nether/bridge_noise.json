@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:min",
+    "argument1": {
+      "type": "minecraft:abs",
+      "argument": {
+        "type": "minecraft:noise",
+        "noise": "corruptedadventure:nether_ring_4_bridges_a",
+        "xz_scale": 1.0,
+        "y_scale": 0.0
+      }
+    },
+    "argument2": {
+      "type": "minecraft:abs",
+      "argument": {
+        "type": "minecraft:noise",
+        "noise": "corruptedadventure:nether_ring_4_bridges_b",
+        "xz_scale": 1.0,
+        "y_scale": 0.0
+      }
+    }
+  }
+}

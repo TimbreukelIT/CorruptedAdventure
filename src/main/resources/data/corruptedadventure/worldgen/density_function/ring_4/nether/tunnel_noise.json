@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:abs",
+    "argument": {
+      "type": "minecraft:noise",
+      "noise": "corruptedadventure:nether_ring_4_tunnels",
+      "xz_scale": 1.0,
+      "y_scale": 0.0
+    }
+  }
+}

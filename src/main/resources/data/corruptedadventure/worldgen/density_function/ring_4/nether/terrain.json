@@ -1,1 +1,12 @@
-"corruptedadventure:ring_4/nether"
+{
+  "type": "minecraft:range_choice",
+  "input": "corruptedadventure:ring_4/nether/hollows_weight",
+  "min_inclusive": 1e-06,
+  "max_exclusive": 2.0,
+  "when_in_range": {
+    "type": "minecraft:min",
+    "argument1": "corruptedadventure:ring_4/nether/interpolated_shape",
+    "argument2": "corruptedadventure:ring_4/nether/geodes"
+  },
+  "when_out_of_range": "corruptedadventure:ring_4/nether/interpolated_shape"
+}

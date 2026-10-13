@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:clamp",
+    "input": {
+      "type": "minecraft:add",
+      "argument1": 112.0,
+      "argument2": {
+        "type": "minecraft:mul",
+        "argument1": 6.0,
+        "argument2": {
+          "type": "minecraft:noise",
+          "noise": "corruptedadventure:nether_ring_4_ceiling",
+          "xz_scale": 1.0,
+          "y_scale": 0.0
+        }
+      }
+    },
+    "min": 104.0,
+    "max": 120.0
+  }
+}
