@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.datagen.lang;
 
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModItems;
 
 /**
  * Names of the ring 4 and Nether ring 4 blocks and items. Owned by stream B
@@ -57,6 +58,28 @@ public final class Ring4BlockNames {
         lang.addBlock(ModBlocks.GLOWING_HANGING_ROOTS, "Glowing Hanging Roots");
         lang.addBlock(ModBlocks.BLIGHTED_GLOWCAP, "Blighted Glowcap");
         lang.addBlock(ModBlocks.BUBBLE_SPRING, "Bubble Spring");
+        lang.addBlock(ModBlocks.TIDESILVER_ORE, "Tidesilver Ore");
+        lang.addBlock(ModBlocks.TIDESTONE_TIDESILVER_ORE, "Tidestone Tidesilver Ore");
+        lang.addBlock(ModBlocks.DEEPSLATE_TIDESILVER_ORE, "Deepslate Tidesilver Ore");
+        lang.addBlock(ModBlocks.JADE_ORE, "Jade Ore");
+        lang.addBlock(ModBlocks.TIDESTONE_JADE_ORE, "Tidestone Jade Ore");
+        lang.addBlock(ModBlocks.DEEPSLATE_JADE_ORE, "Deepslate Jade Ore");
+        lang.addItem(ModItems.RAW_TIDESILVER, "Raw Tidesilver");
+        lang.addItem(ModItems.JADE, "Jade");
+        lang.addBlock(ModBlocks.TOXIC_CRYSTAL_BLOCK, "Block of Toxic Crystal");
+        lang.addBlock(ModBlocks.BUDDING_TOXIC_CRYSTAL, "Budding Toxic Crystal");
+        lang.addBlock(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD, "Small Toxic Crystal Bud");
+        lang.addBlock(ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD, "Medium Toxic Crystal Bud");
+        lang.addBlock(ModBlocks.LARGE_TOXIC_CRYSTAL_BUD, "Large Toxic Crystal Bud");
+        lang.addBlock(ModBlocks.TOXIC_CRYSTAL_CLUSTER, "Toxic Crystal Cluster");
+        lang.addItem(ModItems.TOXIC_CRYSTAL_SHARD, "Toxic Crystal Shard");
+        lang.addBlock(ModBlocks.AQUAMARINE_BLOCK, "Block of Aquamarine");
+        lang.addBlock(ModBlocks.BUDDING_AQUAMARINE, "Budding Aquamarine");
+        lang.addBlock(ModBlocks.SMALL_AQUAMARINE_BUD, "Small Aquamarine Bud");
+        lang.addBlock(ModBlocks.MEDIUM_AQUAMARINE_BUD, "Medium Aquamarine Bud");
+        lang.addBlock(ModBlocks.LARGE_AQUAMARINE_BUD, "Large Aquamarine Bud");
+        lang.addBlock(ModBlocks.AQUAMARINE_CLUSTER, "Aquamarine Cluster");
+        lang.addItem(ModItems.AQUAMARINE_SHARD, "Aquamarine Shard");
     }
 
     /** Vanilla nl_nl patterns: "Kersenhouten trap", "Gestripte kersenstam", "Bebladerde kers", "Hangende wortels". */
@@ -107,5 +130,28 @@ public final class Ring4BlockNames {
         lang.addBlock(ModBlocks.GLOWING_HANGING_ROOTS, "Gloeiende hangwortels");
         lang.addBlock(ModBlocks.BLIGHTED_GLOWCAP, "Bedorven gloeizwam");
         lang.addBlock(ModBlocks.BUBBLE_SPRING, "Bellenbron");
+        // Vanilla pattern: "Diepleisteen-diamanterts", "Ruw ijzer", "Amethistblok", "Kiemende amethist", "Amethistscherf".
+        lang.addBlock(ModBlocks.TIDESILVER_ORE, "Getijdezilvererts");
+        lang.addBlock(ModBlocks.TIDESTONE_TIDESILVER_ORE, "Getijdesteen-getijdezilvererts");
+        lang.addBlock(ModBlocks.DEEPSLATE_TIDESILVER_ORE, "Diepleisteen-getijdezilvererts");
+        lang.addBlock(ModBlocks.JADE_ORE, "Jade-erts");
+        lang.addBlock(ModBlocks.TIDESTONE_JADE_ORE, "Getijdesteen-jade-erts");
+        lang.addBlock(ModBlocks.DEEPSLATE_JADE_ORE, "Diepleisteen-jade-erts");
+        lang.addItem(ModItems.RAW_TIDESILVER, "Ruw getijdezilver");
+        lang.addItem(ModItems.JADE, "Jade");
+        lang.addBlock(ModBlocks.TOXIC_CRYSTAL_BLOCK, "Gifkristalblok");
+        lang.addBlock(ModBlocks.BUDDING_TOXIC_CRYSTAL, "Kiemend gifkristal");
+        lang.addBlock(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD, "Kleine gifkristalknop");
+        lang.addBlock(ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD, "Middelgrote gifkristalknop");
+        lang.addBlock(ModBlocks.LARGE_TOXIC_CRYSTAL_BUD, "Grote gifkristalknop");
+        lang.addBlock(ModBlocks.TOXIC_CRYSTAL_CLUSTER, "Gifkristalcluster");
+        lang.addItem(ModItems.TOXIC_CRYSTAL_SHARD, "Gifkristalscherf");
+        lang.addBlock(ModBlocks.AQUAMARINE_BLOCK, "Aquamarijnblok");
+        lang.addBlock(ModBlocks.BUDDING_AQUAMARINE, "Kiemende aquamarijn");
+        lang.addBlock(ModBlocks.SMALL_AQUAMARINE_BUD, "Kleine aquamarijnknop");
+        lang.addBlock(ModBlocks.MEDIUM_AQUAMARINE_BUD, "Middelgrote aquamarijnknop");
+        lang.addBlock(ModBlocks.LARGE_AQUAMARINE_BUD, "Grote aquamarijnknop");
+        lang.addBlock(ModBlocks.AQUAMARINE_CLUSTER, "Aquamarijncluster");
+        lang.addItem(ModItems.AQUAMARINE_SHARD, "Aquamarijnscherf");
     }
 }

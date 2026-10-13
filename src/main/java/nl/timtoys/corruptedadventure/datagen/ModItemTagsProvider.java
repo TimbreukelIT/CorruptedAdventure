@@ -128,5 +128,15 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         // Cobbled tidestone makes stone tools and the cobblestone recipes, like canyon cobblestone.
         tag(ItemTags.STONE_TOOL_MATERIALS).add(ModBlocks.COBBLED_TIDESTONE.asItem());
         tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.COBBLED_TIDESTONE.asItem());
+
+        copy(ModTags.Blocks.ORES_TIDESILVER, ModTags.Items.ORES_TIDESILVER);
+        copy(ModTags.Blocks.ORES_JADE, ModTags.Items.ORES_JADE);
+        tag(ModTags.Items.RAW_MATERIALS_TIDESILVER).add(ModItems.RAW_TIDESILVER.get());
+        tag(Tags.Items.RAW_MATERIALS).addTag(ModTags.Items.RAW_MATERIALS_TIDESILVER);
+        tag(ModTags.Items.GEMS_JADE).add(ModItems.JADE.get());
+        tag(ModTags.Items.GEMS_TOXIC_CRYSTAL).add(ModItems.TOXIC_CRYSTAL_SHARD.get());
+        tag(ModTags.Items.GEMS_AQUAMARINE).add(ModItems.AQUAMARINE_SHARD.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_JADE).addTag(ModTags.Items.GEMS_TOXIC_CRYSTAL)
+                .addTag(ModTags.Items.GEMS_AQUAMARINE);
     }
 }

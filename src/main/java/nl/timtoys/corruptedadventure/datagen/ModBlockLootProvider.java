@@ -191,6 +191,29 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         add(ModBlocks.GLOWING_HANGING_ROOTS.get(), BlockLootSubProvider::createShearsOnlyDrop);
         dropSelf(ModBlocks.BLIGHTED_GLOWCAP.get());
         dropSelf(ModBlocks.BUBBLE_SPRING.get());
+
+        // Like diamond ore -> diamond: one item (Fortune), Silk Touch -> the ore itself.
+        for (Block ore : List.of(ModBlocks.TIDESILVER_ORE.get(), ModBlocks.TIDESTONE_TIDESILVER_ORE.get(),
+                ModBlocks.DEEPSLATE_TIDESILVER_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.RAW_TIDESILVER.get()));
+        }
+        for (Block ore : List.of(ModBlocks.JADE_ORE.get(), ModBlocks.TIDESTONE_JADE_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.JADE.get()));
+        }
+        // Like amethyst: the wall drops itself, the budding block nothing (not even with Silk Touch), buds only with
+        // Silk Touch, the cluster gives shards.
+        dropSelf(ModBlocks.TOXIC_CRYSTAL_BLOCK.get());
+        add(ModBlocks.BUDDING_TOXIC_CRYSTAL.get(), noDrop());
+        dropWhenSilkTouch(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get());
+        add(ModBlocks.TOXIC_CRYSTAL_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.TOXIC_CRYSTAL_SHARD.get()));
+        dropSelf(ModBlocks.AQUAMARINE_BLOCK.get());
+        add(ModBlocks.BUDDING_AQUAMARINE.get(), noDrop());
+        dropWhenSilkTouch(ModBlocks.SMALL_AQUAMARINE_BUD.get());
+        dropWhenSilkTouch(ModBlocks.MEDIUM_AQUAMARINE_BUD.get());
+        dropWhenSilkTouch(ModBlocks.LARGE_AQUAMARINE_BUD.get());
+        add(ModBlocks.AQUAMARINE_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.AQUAMARINE_SHARD.get()));
     }
 
     private void netherRing3() {

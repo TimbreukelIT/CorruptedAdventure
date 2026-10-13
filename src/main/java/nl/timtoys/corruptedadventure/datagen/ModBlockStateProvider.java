@@ -136,6 +136,40 @@ final class ModBlockStateProvider extends BlockStateProvider {
         glowingCross(ModBlocks.GLOWING_HANGING_ROOTS.get());
         glowingCross(ModBlocks.BLIGHTED_GLOWCAP.get());
         vent(ModBlocks.BUBBLE_SPRING.get());
+
+        ring4Ores();
+    }
+
+    /**
+     * Ring 4 ores over stone, tidestone and deepslate (column texture), one overlay per ore shared by all hosts; only
+     * tidesilver glows. The crystals in the amethyst pattern: wall and budding block as cubes, the stages glowing.
+     */
+    private void ring4Ores() {
+        CubeTextures stone = CubeTextures.all(mcLoc("block/stone"));
+        CubeTextures tidestone = CubeTextures.all(blockTexture(ModBlocks.TIDESTONE.get()));
+        CubeTextures deepslate = new CubeTextures(mcLoc("block/deepslate_top"), mcLoc("block/deepslate"), mcLoc("block/deepslate_top"));
+        CubeTextures tidesilver = CubeTextures.all(modLoc("block/tidesilver_ore_overlay"));
+        CubeTextures jade = CubeTextures.all(modLoc("block/jade_ore_overlay"));
+        oreWithOverlay(ModBlocks.TIDESILVER_ORE.get(), stone.side(), stone, tidesilver, true);
+        oreWithOverlay(ModBlocks.TIDESTONE_TIDESILVER_ORE.get(), tidestone.side(), tidestone, tidesilver, true);
+        oreWithOverlay(ModBlocks.DEEPSLATE_TIDESILVER_ORE.get(), deepslate.side(), deepslate, tidesilver, true);
+        oreWithOverlay(ModBlocks.JADE_ORE.get(), stone.side(), stone, jade, false);
+        oreWithOverlay(ModBlocks.TIDESTONE_JADE_ORE.get(), tidestone.side(), tidestone, jade, false);
+        oreWithOverlay(ModBlocks.DEEPSLATE_JADE_ORE.get(), deepslate.side(), deepslate, jade, false);
+
+        for (Block block : List.of(ModBlocks.TOXIC_CRYSTAL_BLOCK.get(), ModBlocks.BUDDING_TOXIC_CRYSTAL.get(),
+                ModBlocks.AQUAMARINE_BLOCK.get(), ModBlocks.BUDDING_AQUAMARINE.get())) {
+            simpleBlock(block);
+        }
+        // The toxic crystal pulses and glows evenly (like the fire crystal); aquamarine is a still, matte gem (T, 71a).
+        for (Block stage : List.of(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get(),
+                ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get(), ModBlocks.TOXIC_CRYSTAL_CLUSTER.get())) {
+            crystalCluster(stage, true);
+        }
+        for (Block stage : List.of(ModBlocks.SMALL_AQUAMARINE_BUD.get(), ModBlocks.MEDIUM_AQUAMARINE_BUD.get(),
+                ModBlocks.LARGE_AQUAMARINE_BUD.get(), ModBlocks.AQUAMARINE_CLUSTER.get())) {
+            crystalCluster(stage, false);
+        }
     }
 
     /**

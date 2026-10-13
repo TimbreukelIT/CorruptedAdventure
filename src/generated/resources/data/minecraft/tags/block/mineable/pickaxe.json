@@ -98,6 +98,20 @@
     "corruptedadventure:tidestone_brick_stairs",
     "corruptedadventure:tidestone_brick_slab",
     "corruptedadventure:tidestone_brick_wall",
-    "corruptedadventure:bubble_spring"
+    "corruptedadventure:bubble_spring",
+    "#c:ores/tidesilver",
+    "#c:ores/jade",
+    "corruptedadventure:toxic_crystal_block",
+    "corruptedadventure:budding_toxic_crystal",
+    "corruptedadventure:small_toxic_crystal_bud",
+    "corruptedadventure:medium_toxic_crystal_bud",
+    "corruptedadventure:large_toxic_crystal_bud",
+    "corruptedadventure:toxic_crystal_cluster",
+    "corruptedadventure:aquamarine_block",
+    "corruptedadventure:budding_aquamarine",
+    "corruptedadventure:small_aquamarine_bud",
+    "corruptedadventure:medium_aquamarine_bud",
+    "corruptedadventure:large_aquamarine_bud",
+    "corruptedadventure:aquamarine_cluster"
   ]
 }

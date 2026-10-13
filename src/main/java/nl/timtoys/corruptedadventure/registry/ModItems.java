@@ -43,6 +43,17 @@ public final class ModItems {
     /** Drop of the grown fire crystal cluster. */
     public static final DeferredItem<Item> FIRE_CRYSTAL = ITEMS.registerSimpleItem("fire_crystal");
 
+    // ---- Ring 4 ----
+    // Placeholders like raw_sunstone: smelting, products, recipes and balance follow in phase 2.
+    /** Drop of the tidesilver ores (ring 4's main metal). */
+    public static final DeferredItem<Item> RAW_TIDESILVER = ITEMS.registerSimpleItem("raw_tidesilver");
+    /** Drop of the jade ores. */
+    public static final DeferredItem<Item> JADE = ITEMS.registerSimpleItem("jade");
+    /** Drop of the grown toxic crystal cluster. */
+    public static final DeferredItem<Item> TOXIC_CRYSTAL_SHARD = ITEMS.registerSimpleItem("toxic_crystal_shard");
+    /** Drop of the grown aquamarine cluster. */
+    public static final DeferredItem<Item> AQUAMARINE_SHARD = ITEMS.registerSimpleItem("aquamarine_shard");
+
     private ModItems() {
     }
 

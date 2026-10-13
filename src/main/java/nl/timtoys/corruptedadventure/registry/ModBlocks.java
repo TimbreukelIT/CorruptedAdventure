@@ -47,6 +47,7 @@ import nl.timtoys.corruptedadventure.block.AshSproutsBlock;
 import nl.timtoys.corruptedadventure.block.BarrelCactusBlock;
 import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
 import nl.timtoys.corruptedadventure.block.BubbleSpringBlock;
+import nl.timtoys.corruptedadventure.block.BuddingCrystalBlock;
 import nl.timtoys.corruptedadventure.block.GiantLilyPadBlock;
 import nl.timtoys.corruptedadventure.block.GlowcapBlock;
 import nl.timtoys.corruptedadventure.block.HangingSwampMossBlock;
@@ -74,6 +75,7 @@ import nl.timtoys.corruptedadventure.block.StrippableLogBlock;
 import nl.timtoys.corruptedadventure.block.WitheredDirtBlock;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -88,6 +90,8 @@ public final class ModBlocks {
     private static final int ASH_DUST_COLOR = 0x8A8580;
     /** Ring 3 ores are this much harder than the vanilla ore of their host ("one step above ring 2"). */
     static final float RING_3_ORE_EXTRA_HARDNESS = 0.5F;
+    /** Ring 4 ores are this much harder than the vanilla ore of their host (a step above ring 3; decision V3 golf 1). */
+    static final float RING_4_ORE_EXTRA_HARDNESS = 1.0F;
 
     // ---- Ring 1 ----
     public static final DeferredBlock<DeadGrassBlock> DEAD_GRASS_BLOCK = register("dead_grass_block",
@@ -761,6 +765,59 @@ public final class ModBlocks {
     public static final DeferredBlock<BubbleSpringBlock> BUBBLE_SPRING = register("bubble_spring",
             () -> new BubbleSpringBlock(tidestone(Blocks.STONE)));
 
+    // Ores (package 67): one block per host rock (stone, tidestone, deepslate). A clear step above ring 3 (decision golf
+    // 1, V3 = B): a whole point harder than the vanilla ore of that host and a diamond pickaxe.
+    /** Tidesilver, ring 4's mythical metal: XP 4–7, faint glow (light 3, emissive overlay); drops {@link ModItems#RAW_TIDESILVER}. */
+    public static final DeferredBlock<DropExperienceBlock> TIDESILVER_ORE = register("tidesilver_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 7), ring4Ore(Blocks.IRON_ORE).lightLevel(state -> 3)));
+    public static final DeferredBlock<DropExperienceBlock> TIDESTONE_TIDESILVER_ORE = register("tidestone_tidesilver_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 7), ring4Ore(Blocks.IRON_ORE)
+                    .mapColor(MapColor.TERRACOTTA_LIGHT_BLUE).lightLevel(state -> 3)));
+    public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_TIDESILVER_ORE = register("deepslate_tidesilver_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 7), ring4Ore(Blocks.DEEPSLATE_IRON_ORE).lightLevel(state -> 3)));
+    /** Jade, a rare gem deep in the flooded tunnels: XP 5–9, matte; drops {@link ModItems#JADE}. */
+    public static final DeferredBlock<DropExperienceBlock> JADE_ORE = register("jade_ore",
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), ring4Ore(Blocks.DIAMOND_ORE)));
+    public static final DeferredBlock<DropExperienceBlock> TIDESTONE_JADE_ORE = register("tidestone_jade_ore",
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), ring4Ore(Blocks.DIAMOND_ORE).mapColor(MapColor.TERRACOTTA_LIGHT_BLUE)));
+    public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_JADE_ORE = register("deepslate_jade_ore",
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), ring4Ore(Blocks.DEEPSLATE_DIAMOND_ORE)));
+
+    // Toxic crystal and aquamarine in the amethyst pattern: wall, budding block (grows the stages on random ticks,
+    // server-side) and four stages with amethyst's shapes and light (1, 2, 4, 5). Toxic crystal in the poison caves,
+    // aquamarine in geodes under water (its buds grow waterlogged).
+    public static final DeferredBlock<AmethystBlock> TOXIC_CRYSTAL_BLOCK = register("toxic_crystal_block",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.COLOR_LIGHT_GREEN)));
+    /** Budding amethyst's properties (hard, pushed away, no drop) with random ticks, set explicitly: it grows. */
+    public static final DeferredBlock<BuddingCrystalBlock> BUDDING_TOXIC_CRYSTAL = register("budding_toxic_crystal",
+            () -> new BuddingCrystalBlock(() -> List.of(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get(),
+                    ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get(), ModBlocks.TOXIC_CRYSTAL_CLUSTER.get()),
+                    Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).mapColor(MapColor.COLOR_LIGHT_GREEN).randomTicks()));
+    public static final DeferredBlock<AmethystClusterBlock> SMALL_TOXIC_CRYSTAL_BUD = register("small_toxic_crystal_bud",
+            () -> new AmethystClusterBlock(3.0F, 4.0F, crystalStage(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_LIGHT_GREEN)));
+    public static final DeferredBlock<AmethystClusterBlock> MEDIUM_TOXIC_CRYSTAL_BUD = register("medium_toxic_crystal_bud",
+            () -> new AmethystClusterBlock(4.0F, 3.0F, crystalStage(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_LIGHT_GREEN)));
+    public static final DeferredBlock<AmethystClusterBlock> LARGE_TOXIC_CRYSTAL_BUD = register("large_toxic_crystal_bud",
+            () -> new AmethystClusterBlock(5.0F, 3.0F, crystalStage(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_LIGHT_GREEN)));
+    /** Full-grown stage; the default state faces up. */
+    public static final DeferredBlock<AmethystClusterBlock> TOXIC_CRYSTAL_CLUSTER = register("toxic_crystal_cluster",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_LIGHT_GREEN)));
+    public static final DeferredBlock<AmethystBlock> AQUAMARINE_BLOCK = register("aquamarine_block",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.COLOR_CYAN)));
+    public static final DeferredBlock<BuddingCrystalBlock> BUDDING_AQUAMARINE = register("budding_aquamarine",
+            () -> new BuddingCrystalBlock(() -> List.of(ModBlocks.SMALL_AQUAMARINE_BUD.get(), ModBlocks.MEDIUM_AQUAMARINE_BUD.get(),
+                    ModBlocks.LARGE_AQUAMARINE_BUD.get(), ModBlocks.AQUAMARINE_CLUSTER.get()),
+                    Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).mapColor(MapColor.COLOR_CYAN).randomTicks()));
+    public static final DeferredBlock<AmethystClusterBlock> SMALL_AQUAMARINE_BUD = register("small_aquamarine_bud",
+            () -> new AmethystClusterBlock(3.0F, 4.0F, crystalStage(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_CYAN)));
+    public static final DeferredBlock<AmethystClusterBlock> MEDIUM_AQUAMARINE_BUD = register("medium_aquamarine_bud",
+            () -> new AmethystClusterBlock(4.0F, 3.0F, crystalStage(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_CYAN)));
+    public static final DeferredBlock<AmethystClusterBlock> LARGE_AQUAMARINE_BUD = register("large_aquamarine_bud",
+            () -> new AmethystClusterBlock(5.0F, 3.0F, crystalStage(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_CYAN)));
+    /** Full-grown stage; the default state faces up. */
+    public static final DeferredBlock<AmethystClusterBlock> AQUAMARINE_CLUSTER = register("aquamarine_cluster",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_CYAN)));
+
     private ModBlocks() {
     }
 
@@ -857,6 +914,14 @@ public final class ModBlocks {
     /** Rimeshroom stem and hyphae (frosted bark outside): dark cyan on the map. */
     private static Properties rimeshroomBark(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_CYAN);
+    }
+
+    /**
+     * A ring 4 ore in a vanilla host: that vanilla ore's look, sound and blast resistance, a whole point harder. The tool
+     * tier (diamond) comes from {@code #needs_diamond_tool}.
+     */
+    private static Properties ring4Ore(Block vanillaOre) {
+        return Properties.ofFullCopy(vanillaOre).destroyTime(vanillaOre.defaultDestroyTime() + RING_4_ORE_EXTRA_HARDNESS);
     }
 
     /** Tidestone (all shapes, and the bubble spring): the vanilla stone variant's behaviour, blue-grey on the map. */

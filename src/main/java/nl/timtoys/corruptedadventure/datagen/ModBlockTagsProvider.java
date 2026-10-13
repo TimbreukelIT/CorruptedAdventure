@@ -117,6 +117,38 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.HANGING_SWAMP_MOSS.get());
         tag(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.GLOWING_HANGING_ROOTS.get());
         tag(BlockTags.SMALL_FLOWERS).add(ModBlocks.GLOW_BLOOM.get());
+
+        ring4Ores();
+    }
+
+    /**
+     * Ring 4 ores: a diamond pickaxe for both (decision V3 golf 1). Not carver-replaceable: ore features run after the
+     * carvers; {@code ores_in_ground} only for stone and deepslate (there is none for tidestone). The crystals carry
+     * amethyst's tags; the budding blocks are growth, deliberately in no ground or carver tag.
+     */
+    private void ring4Ores() {
+        tag(ModTags.Blocks.ORES_TIDESILVER).add(ModBlocks.TIDESILVER_ORE.get(), ModBlocks.TIDESTONE_TIDESILVER_ORE.get(),
+                ModBlocks.DEEPSLATE_TIDESILVER_ORE.get());
+        tag(ModTags.Blocks.ORES_JADE).add(ModBlocks.JADE_ORE.get(), ModBlocks.TIDESTONE_JADE_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get());
+        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
+        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
+        tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
+        tag(Tags.Blocks.ORES_IN_GROUND_STONE).add(ModBlocks.TIDESILVER_ORE.get(), ModBlocks.JADE_ORE.get());
+        tag(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE).add(ModBlocks.DEEPSLATE_TIDESILVER_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get());
+
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.TOXIC_CRYSTAL_BLOCK.get(), ModBlocks.BUDDING_TOXIC_CRYSTAL.get(),
+                ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get(), ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get(),
+                ModBlocks.TOXIC_CRYSTAL_CLUSTER.get(), ModBlocks.AQUAMARINE_BLOCK.get(), ModBlocks.BUDDING_AQUAMARINE.get(),
+                ModBlocks.SMALL_AQUAMARINE_BUD.get(), ModBlocks.MEDIUM_AQUAMARINE_BUD.get(), ModBlocks.LARGE_AQUAMARINE_BUD.get(),
+                ModBlocks.AQUAMARINE_CLUSTER.get());
+        tag(BlockTags.CRYSTAL_SOUND_BLOCKS).add(ModBlocks.TOXIC_CRYSTAL_BLOCK.get(), ModBlocks.BUDDING_TOXIC_CRYSTAL.get(),
+                ModBlocks.AQUAMARINE_BLOCK.get(), ModBlocks.BUDDING_AQUAMARINE.get());
+        tag(Tags.Blocks.BUDDING_BLOCKS).add(ModBlocks.BUDDING_TOXIC_CRYSTAL.get(), ModBlocks.BUDDING_AQUAMARINE.get());
+        tag(Tags.Blocks.BUDS).add(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get(),
+                ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get(), ModBlocks.SMALL_AQUAMARINE_BUD.get(), ModBlocks.MEDIUM_AQUAMARINE_BUD.get(),
+                ModBlocks.LARGE_AQUAMARINE_BUD.get());
+        tag(Tags.Blocks.CLUSTERS).add(ModBlocks.TOXIC_CRYSTAL_CLUSTER.get(), ModBlocks.AQUAMARINE_CLUSTER.get());
     }
 
     /**

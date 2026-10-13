@@ -70,6 +70,8 @@ public final class ModTags {
         public static final TagKey<Block> MOONPETAL_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("moonpetal_logs"));
         /** Withered moonpetal log, wood and their stripped variants. */
         public static final TagKey<Block> WITHERED_MOONPETAL_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("withered_moonpetal_logs"));
+        public static final TagKey<Block> ORES_TIDESILVER = TagKey.create(Registries.BLOCK, common("ores/tidesilver"));
+        public static final TagKey<Block> ORES_JADE = TagKey.create(Registries.BLOCK, common("ores/jade"));
 
         private Blocks() {
         }
@@ -112,6 +114,16 @@ public final class ModTags {
         // Ring 4 and Nether ring 4 (docs/plans/ring-4/contract.md §3); contents from stream B.
         public static final TagKey<Item> MOONPETAL_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("moonpetal_logs"));
         public static final TagKey<Item> WITHERED_MOONPETAL_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("withered_moonpetal_logs"));
+        public static final TagKey<Item> ORES_TIDESILVER = TagKey.create(Registries.ITEM, common("ores/tidesilver"));
+        public static final TagKey<Item> ORES_JADE = TagKey.create(Registries.ITEM, common("ores/jade"));
+        /** Convention tag {@code c:raw_materials/tidesilver}; part of {@code c:raw_materials}. */
+        public static final TagKey<Item> RAW_MATERIALS_TIDESILVER = TagKey.create(Registries.ITEM, common("raw_materials/tidesilver"));
+        /** Convention tag {@code c:gems/jade}; part of {@code c:gems}. */
+        public static final TagKey<Item> GEMS_JADE = TagKey.create(Registries.ITEM, common("gems/jade"));
+        /** Convention tag {@code c:gems/toxic_crystal}; part of {@code c:gems}. */
+        public static final TagKey<Item> GEMS_TOXIC_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/toxic_crystal"));
+        /** Convention tag {@code c:gems/aquamarine}; part of {@code c:gems}. */
+        public static final TagKey<Item> GEMS_AQUAMARINE = TagKey.create(Registries.ITEM, common("gems/aquamarine"));
 
         private Items() {
         }

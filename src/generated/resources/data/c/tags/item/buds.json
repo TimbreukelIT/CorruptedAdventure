@@ -8,6 +8,12 @@
     "corruptedadventure:large_fire_crystal_bud",
     "corruptedadventure:small_sulfur_crystal_bud",
     "corruptedadventure:medium_sulfur_crystal_bud",
-    "corruptedadventure:large_sulfur_crystal_bud"
+    "corruptedadventure:large_sulfur_crystal_bud",
+    "corruptedadventure:small_toxic_crystal_bud",
+    "corruptedadventure:medium_toxic_crystal_bud",
+    "corruptedadventure:large_toxic_crystal_bud",
+    "corruptedadventure:small_aquamarine_bud",
+    "corruptedadventure:medium_aquamarine_bud",
+    "corruptedadventure:large_aquamarine_bud"
   ]
 }

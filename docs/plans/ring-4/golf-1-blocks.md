@@ -50,7 +50,7 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
   - `toxic_crystal_block`, `budding_toxic_crystal`, `small_/medium_/large_toxic_crystal_bud`, `toxic_crystal_cluster`, item `toxic_crystal_shard`; idem `aquamarine_*`;
   - de budding-blokken groeien via random ticks, server-side (nieuwe generieke `BuddingCrystalBlock`, stadia als parameter; ook in waterbronnen: aquamarijn onder water);
   - drop als amethist (budding niets, knoppen alleen Silk Touch, cluster 4 scherven met houweel);
-  - stadia met licht 1/2/4/5 en emissive (zoals dauw/vuur).
+  - stadia met licht 1/2/4/5 (amethist); gifkristal-stadia emissive (pulseren, zoals vuurkristal), aquamarijn mat en stil (T, 71a).
 - Items zijn placeholders zonder recipes. Tags: `c:ores/tidesilver`, `c:ores/jade`, `c:raw_materials/tidesilver`, `c:gems/jade|toxic_crystal|aquamarine`, `c:budding_blocks`, `c:buds`, `c:clusters`.
 
 ### 68 — Nether-4
@@ -82,6 +82,7 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
 ## Voortgang
 - 2026-10-13: plan; vragen V1–V3 naar main; texturepaden met T afgestemd.
 - Voortgang: 20:03 66 klaar: B groen (incl. `GiantLilyPadBlockTest`, ring 4-tests in `ModBlocksTest`/`ModTreeGrowersTest`), D groen met 39 tijdelijke placeholder-PNG's (verwijderd, niet gecommit); `src/generated`: alleen ring 4-output.
+- Voortgang: 20:11 67 klaar: B groen (`BuddingCrystalBlockTest`, ertsen/kristallen in `ModBlocksTest`), D groen (tijdelijke textures uit T's 3283f6a, verwijderd); `src/generated`: alleen ring 4-output.
 
 ## CODEBASE-delta
 
@@ -109,6 +110,15 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
 - `moonpetal_logs` en `withered_moonpetal_logs` (blok + item) → `#logs_that_burn`;
 - `ring_4_stones` = `tidestone`; `tidestone` en `peat` in `#overworld_carver_replaceables`; `peat` in `#dirt`;
 - `cobbled_tidestone` in `c:cobblestones` en in de stone-tool/crafting-materials.
+
+**67 — Belangrijke classes**
+- `block/BuddingCrystalBlock.java` (nieuw): generiek budding-blok (amethistpatroon) met de stadia als parameter (`stages()`, codec met `stages`); random tick 1 op `GROWTH_CHANCE` 5, `grownState` (lucht → kleine knop, waterbron → waterlogged knop, stadium → volgend stadium in dezelfde richting). Gebruikt door `budding_toxic_crystal` en `budding_aquamarine`.
+- `registry/ModBlocks.java`: ertsen (`ring4Ore`: vanilla-erts + `RING_4_ORE_EXTRA_HARDNESS` 1,0) en kristallen na `bubble_spring`.
+- `registry/ModItems.java`: `raw_tidesilver`, `jade`, `toxic_crystal_shard`, `aquamarine_shard` (placeholders, na `fire_crystal`).
+- `registry/ModTags.java`: + `Blocks/Items.ORES_TIDESILVER`, `ORES_JADE`; `Items.RAW_MATERIALS_TIDESILVER`, `GEMS_JADE`, `GEMS_TOXIC_CRYSTAL`, `GEMS_AQUAMARINE`.
+- Datagen: `ModBlockStateProvider.ring4Ores()` (overlay over stone/tidestone/deepslate; tidesilver emissive), loot (`createOreDrop`; kristallen zoals amethist), tags, lang.
+
+**67 — Registries:** 18 blokken, 4 items. **Tags:** `c:ores/tidesilver|jade`, `#needs_diamond_tool`, `c:ore_rates/singular`, `c:ores_in_ground/stone|deepslate`, `#crystal_sound_blocks`, `c:budding_blocks|buds|clusters`, `c:raw_materials/tidesilver`, `c:gems/jade|toxic_crystal|aquamarine`.
 
 ## Beslissingen
 - 2026-10-13, `blocks`: `lotus` drijft plat op het water als een lelieblad (blad + bloem in één model, lily-pad-item) — V1 = A, simpel en bruikbaar op elke diepte.

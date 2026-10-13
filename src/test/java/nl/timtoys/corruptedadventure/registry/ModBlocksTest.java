@@ -527,6 +527,61 @@ class ModBlocksTest {
         }
     }
 
+    /** The ores and crystals follow the bubble spring; their loose items follow the fire crystal. */
+    @Test
+    void ring4OresAndCrystalsFollowTheNaturalBlocksInOrder() {
+        List<Item> shown = blockItems();
+        int spring = shown.indexOf(ModBlocks.BUBBLE_SPRING.asItem());
+        List<Item> ores = Stream.of(ModBlocks.TIDESILVER_ORE, ModBlocks.TIDESTONE_TIDESILVER_ORE, ModBlocks.DEEPSLATE_TIDESILVER_ORE,
+                ModBlocks.JADE_ORE, ModBlocks.TIDESTONE_JADE_ORE, ModBlocks.DEEPSLATE_JADE_ORE, ModBlocks.TOXIC_CRYSTAL_BLOCK,
+                ModBlocks.BUDDING_TOXIC_CRYSTAL, ModBlocks.SMALL_TOXIC_CRYSTAL_BUD, ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD,
+                ModBlocks.LARGE_TOXIC_CRYSTAL_BUD, ModBlocks.TOXIC_CRYSTAL_CLUSTER, ModBlocks.AQUAMARINE_BLOCK,
+                ModBlocks.BUDDING_AQUAMARINE, ModBlocks.SMALL_AQUAMARINE_BUD, ModBlocks.MEDIUM_AQUAMARINE_BUD,
+                ModBlocks.LARGE_AQUAMARINE_BUD, ModBlocks.AQUAMARINE_CLUSTER).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(ores, shown.subList(spring + 1, spring + 1 + ores.size()));
+        List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
+                .filter(item -> !(item instanceof BlockItem)).toList();
+        int fireCrystal = standalone.indexOf(ModItems.FIRE_CRYSTAL.get());
+        assertEquals(List.of(ModItems.RAW_TIDESILVER.get(), ModItems.JADE.get(), ModItems.TOXIC_CRYSTAL_SHARD.get(),
+                ModItems.AQUAMARINE_SHARD.get()), standalone.subList(fireCrystal + 1, fireCrystal + 5));
+    }
+
+    /** Decision V3 golf 1: a whole point harder than the vanilla host ore, XP 4–7 / 5–9, only tidesilver glows. */
+    @Test
+    void ring4OresHaveTheirXpLightAndHardness() {
+        Map<DeferredBlock<DropExperienceBlock>, Block> hosts = Map.of(ModBlocks.TIDESILVER_ORE, Blocks.IRON_ORE,
+                ModBlocks.TIDESTONE_TIDESILVER_ORE, Blocks.IRON_ORE, ModBlocks.DEEPSLATE_TIDESILVER_ORE, Blocks.DEEPSLATE_IRON_ORE,
+                ModBlocks.JADE_ORE, Blocks.DIAMOND_ORE, ModBlocks.TIDESTONE_JADE_ORE, Blocks.DIAMOND_ORE,
+                ModBlocks.DEEPSLATE_JADE_ORE, Blocks.DEEPSLATE_DIAMOND_ORE);
+        hosts.forEach((ore, vanilla) -> {
+            assertEquals(vanilla.defaultDestroyTime() + 1.0F, ore.get().defaultDestroyTime(), ore.getId().toString());
+            boolean tidesilver = ore.getId().getPath().contains("tidesilver");
+            assertEquals(tidesilver ? UniformInt.of(4, 7).toString() : UniformInt.of(5, 9).toString(), experience(ore.get()));
+            assertEquals(tidesilver ? 3 : 0, ore.get().defaultBlockState().getLightEmission(), ore.getId().toString());
+        });
+    }
+
+    /** Like amethyst: the stages give light 1, 2, 4, 5 and face up dry by default; the walls give no light. */
+    @Test
+    void ring4CrystalStagesGlowLikeAmethyst() {
+        List<Block> vanilla = List.of(Blocks.SMALL_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD, Blocks.LARGE_AMETHYST_BUD,
+                Blocks.AMETHYST_CLUSTER);
+        for (List<DeferredBlock<AmethystClusterBlock>> stages : List.of(
+                List.of(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD, ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD, ModBlocks.LARGE_TOXIC_CRYSTAL_BUD,
+                        ModBlocks.TOXIC_CRYSTAL_CLUSTER),
+                List.of(ModBlocks.SMALL_AQUAMARINE_BUD, ModBlocks.MEDIUM_AQUAMARINE_BUD, ModBlocks.LARGE_AQUAMARINE_BUD,
+                        ModBlocks.AQUAMARINE_CLUSTER))) {
+            for (int i = 0; i < stages.size(); i++) {
+                BlockState stage = stages.get(i).get().defaultBlockState();
+                assertEquals(vanilla.get(i).defaultBlockState().getLightEmission(), stage.getLightEmission());
+                assertEquals(Direction.UP, stage.getValue(AmethystClusterBlock.FACING));
+                assertFalse(stage.getValue(AmethystClusterBlock.WATERLOGGED));
+            }
+        }
+        assertEquals(0, ModBlocks.TOXIC_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
+        assertEquals(0, ModBlocks.AQUAMARINE_BLOCK.get().defaultBlockState().getLightEmission());
+    }
+
     private static List<Item> blockItems() {
         List<Item> shown = new ArrayList<>();
         ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).forEach(shown::add);

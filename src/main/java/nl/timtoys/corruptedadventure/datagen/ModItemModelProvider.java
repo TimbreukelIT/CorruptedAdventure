@@ -300,6 +300,22 @@ final class ModItemModelProvider extends ItemModelProvider {
         flatBlockItem(ModBlocks.GLOWING_HANGING_ROOTS);
         flatBlockItem(ModBlocks.BLIGHTED_GLOWCAP);
         blockItem(ModBlocks.BUBBLE_SPRING);
+
+        blockItem(ModBlocks.TIDESILVER_ORE);
+        blockItem(ModBlocks.TIDESTONE_TIDESILVER_ORE);
+        blockItem(ModBlocks.DEEPSLATE_TIDESILVER_ORE);
+        blockItem(ModBlocks.JADE_ORE);
+        blockItem(ModBlocks.TIDESTONE_JADE_ORE);
+        blockItem(ModBlocks.DEEPSLATE_JADE_ORE);
+        blockItem(ModBlocks.TOXIC_CRYSTAL_BLOCK);
+        blockItem(ModBlocks.BUDDING_TOXIC_CRYSTAL);
+        blockItem(ModBlocks.AQUAMARINE_BLOCK);
+        blockItem(ModBlocks.BUDDING_AQUAMARINE);
+        // The crystal stages: ModBlockStateProvider.crystalCluster writes their item models.
+        basicItem(ModItems.RAW_TIDESILVER.get());
+        basicItem(ModItems.JADE.get());
+        basicItem(ModItems.TOXIC_CRYSTAL_SHARD.get());
+        basicItem(ModItems.AQUAMARINE_SHARD.get());
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */
