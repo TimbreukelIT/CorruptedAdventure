@@ -1,7 +1,17 @@
 package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.DensityFunctions;
+import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
+import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import nl.timtoys.corruptedadventure.config.CommonConfig;
+import nl.timtoys.corruptedadventure.config.RingSettings;
+import nl.timtoys.corruptedadventure.ring.RingLayout;
+import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -13,9 +23,38 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The skeleton of ring 4's island field (59): found through the router, read access in place, no islands yet. */
-class IslandFieldTest {
-    private static final IslandField FIELD = new IslandField(TestFunctions.noise(20260930L, 0, 1.0), IslandField.Settings.DEFAULT);
+/** Ring 4's terrain field: found through the router, read access, determinism (59, 60). */
+public class IslandFieldTest {
+    public static final long SEED = 20260930L;
+    public static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
+            CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), RingLayout.noiseSeed(SEED));
+    private static final IslandField FIELD = field();
+
+    /** A noise as the overworld's random state wires {@code corruptedadventure:<name>} on the test seed. */
+    static DensityFunction.NoiseHolder noise(String name) {
+        NormalNoise.NoiseParameters parameters = WorldgenData.noiseParameters(name);
+        return new DensityFunction.NoiseHolder(Holder.direct(parameters), NormalNoise.create(
+                new XoroshiroRandomSource(SEED).forkPositional().fromHashOf(ResourceLocation.parse("corruptedadventure:" + name)), parameters));
+    }
+
+    /** The field as {@code ring_4/overworld/islands.json} configures it, on the test seed and layout. */
+    public static IslandField field() {
+        return field(LAYOUT);
+    }
+
+    static IslandField field(RingLayout layout) {
+        JsonObject json = WorldgenData.read("density_function/ring_4/overworld/islands.json");
+        JsonObject r = json.getAsJsonObject("relief");
+        Ring4Relief relief = new Ring4Relief(noise(key(r, "water")), noise(key(r, "growth")), noise(key(r, "hills")),
+                noise(key(r, "detail")), noise(key(r, "shoals")), noise(key(r, "rivers")), noise(key(r, "fjords")),
+                noise(key(r, "warp")));
+        IslandField.Settings settings = IslandField.Settings.CODEC.parse(JsonOps.INSTANCE, json.get("settings")).getOrThrow();
+        return new IslandField(noise(key(json, "hash")), relief, settings, () -> layout);
+    }
+
+    private static String key(JsonObject json, String field) {
+        return ResourceLocation.parse(json.get(field).getAsString()).getPath();
+    }
 
     @Test
     void foundInsideARouterTree() {
@@ -23,6 +62,7 @@ class IslandFieldTest {
                 DensityFunctions.max(DensityFunctions.zero(), DensityFunctions.flatCache(FIELD)));
         // mapAll rebuilds the tree, so the field found is an equal copy.
         assertEquals(FIELD, IslandField.find(root));
+        assertEquals(FIELD, IslandField.find(new IslandOutput(FIELD, IslandOutput.Output.THIN)));
         assertNull(IslandField.find(DensityFunctions.add(DensityFunctions.constant(1.0), DensityFunctions.zero())));
     }
 
@@ -38,8 +78,34 @@ class IslandFieldTest {
         assertEquals(FIELD.hashCode(), copy.hashCode());
     }
 
+    /** Determinism: two fields built apart, asked in opposite orders, give the same columns (no state in the values). */
     @Test
-    void skeletonHasNoIslandsAndEmptyColumns() {
+    void columnsArePureWhateverTheOrder() {
+        IslandField other = field();
+        List<int[]> points = new ArrayList<>();
+        for (int x = 6100; x <= 7900; x += 173) {
+            for (int z = -900; z <= 900; z += 157) {
+                points.add(new int[]{x, z});
+            }
+        }
+        List<double[]> forward = new ArrayList<>();
+        for (int[] p : points) {
+            IslandField.Column c = FIELD.column(p[0], p[1]);
+            forward.add(new double[]{c.surface(), c.height(), FIELD.initialHeight(p[0], p[1])});
+        }
+        for (int k = points.size() - 1; k >= 0; k--) {
+            int[] p = points.get(k);
+            IslandField.Column c = other.column(p[0], p[1]);
+            double[] expected = forward.get(k);
+            assertEquals(expected[0], c.surface(), p[0] + ", " + p[1]);
+            assertEquals(expected[1], c.height());
+            assertEquals(expected[2], other.initialHeight(p[0], p[1]));
+        }
+    }
+
+    /** 60 places no islands yet. */
+    @Test
+    void noIslandsYet() {
         for (int x = 6000; x <= 8000; x += 97) {
             for (int z = -500; z <= 500; z += 89) {
                 assertNull(FIELD.islandAt(x, z));
@@ -49,7 +115,6 @@ class IslandFieldTest {
                 assertEquals(0.0, FIELD.compute(new DensityFunction.SinglePointContext(x, 120, z)));
             }
         }
-        assertTrue(FIELD.islandsWithin(6000, -500, 8000, 500).isEmpty());
         assertTrue(FIELD.liftsWithin(6000, -500, 8000, 500).isEmpty());
         assertTrue(FIELD.waterfallsWithin(6000, -500, 8000, 500).isEmpty());
         assertTrue(FIELD.worldTrees(6000, -500, 8000, 500).isEmpty());

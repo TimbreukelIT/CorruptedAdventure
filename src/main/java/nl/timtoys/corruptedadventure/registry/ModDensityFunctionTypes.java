@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.CanyonDetails;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.CellEdges;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.DewGeodes;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandOutput;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RadialFalloff;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring4BandFunction;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingBlend;
@@ -86,6 +87,10 @@ public final class ModDensityFunctionTypes {
     /** {@code corruptedadventure:island_field} (the floating islands of ring 4, package 59) */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<IslandField>> ISLAND_FIELD =
             DENSITY_FUNCTION_TYPES.register("island_field", () -> IslandField.MAP_CODEC);
+
+    /** {@code corruptedadventure:island_output} (one output of the ring 4 terrain field, golf 1) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<IslandOutput>> ISLAND_OUTPUT =
+            DENSITY_FUNCTION_TYPES.register("island_output", () -> IslandOutput.MAP_CODEC);
 
     private ModDensityFunctionTypes() {
     }

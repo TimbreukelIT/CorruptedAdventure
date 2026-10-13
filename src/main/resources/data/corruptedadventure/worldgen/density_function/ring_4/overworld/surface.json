@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "corruptedadventure:island_output",
+    "field": "corruptedadventure:ring_4/overworld/islands",
+    "output": "surface"
+  }
+}

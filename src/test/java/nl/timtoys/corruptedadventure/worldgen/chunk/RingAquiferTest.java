@@ -12,6 +12,7 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandFieldTest;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicFieldTest;
 import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeShape;
@@ -498,8 +499,7 @@ class RingAquiferTest {
     /** The water branch reads the island field's recorded falls; the skeleton (59) records none, so vanilla's state stays. */
     @Test
     void ring4WithoutRecordedFallsKeepsVanillasOpenSpace() {
-        IslandField islands = new IslandField(new DensityFunction.NoiseHolder(Holder.direct(new NormalNoise.NoiseParameters(0, 1.0))),
-                IslandField.Settings.DEFAULT);
+        IslandField islands = IslandFieldTest.field();
         RingAquifer dry = new RingAquifer(Level.OVERWORLD, DRY, null, islands);
         for (int y : new int[]{63, 100, 200}) {
             assertSame(Blocks.AIR.defaultBlockState(), dry.computeSubstance(RingPosition.within(Ring.RING_4), at(y), -0.5), "y " + y);
