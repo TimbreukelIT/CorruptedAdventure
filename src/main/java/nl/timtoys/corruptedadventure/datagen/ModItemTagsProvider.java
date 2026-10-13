@@ -138,5 +138,8 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         tag(ModTags.Items.GEMS_AQUAMARINE).add(ModItems.AQUAMARINE_SHARD.get());
         tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_JADE).addTag(ModTags.Items.GEMS_TOXIC_CRYSTAL)
                 .addTag(ModTags.Items.GEMS_AQUAMARINE);
+        // Nether ring 4.
+        tag(ModTags.Items.GEMS_PURITY_CRYSTAL).add(ModItems.PURITY_CRYSTAL_SHARD.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_PURITY_CRYSTAL);
     }
 }

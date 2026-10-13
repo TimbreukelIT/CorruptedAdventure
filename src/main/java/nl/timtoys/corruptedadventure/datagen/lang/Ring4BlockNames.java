@@ -80,6 +80,24 @@ public final class Ring4BlockNames {
         lang.addBlock(ModBlocks.LARGE_AQUAMARINE_BUD, "Large Aquamarine Bud");
         lang.addBlock(ModBlocks.AQUAMARINE_CLUSTER, "Aquamarine Cluster");
         lang.addItem(ModItems.AQUAMARINE_SHARD, "Aquamarine Shard");
+        lang.addBlock(ModBlocks.BONE_SAND, "Bone Sand");
+        lang.addBlock(ModBlocks.BLEACHED_NETHERRACK, "Bleached Netherrack");
+        lang.addBlock(ModBlocks.FOSSIL_STONE, "Fossil Stone");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_STAIRS, "Fossil Stone Stairs");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_SLAB, "Fossil Stone Slab");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_WALL, "Fossil Stone Wall");
+        lang.addBlock(ModBlocks.POLISHED_FOSSIL_STONE, "Polished Fossil Stone");
+        lang.addBlock(ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, "Polished Fossil Stone Stairs");
+        lang.addBlock(ModBlocks.POLISHED_FOSSIL_STONE_SLAB, "Polished Fossil Stone Slab");
+        lang.addBlock(ModBlocks.POLISHED_FOSSIL_STONE_WALL, "Polished Fossil Stone Wall");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_BRICKS, "Fossil Stone Bricks");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_BRICK_STAIRS, "Fossil Stone Brick Stairs");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_BRICK_SLAB, "Fossil Stone Brick Slab");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_BRICK_WALL, "Fossil Stone Brick Wall");
+        lang.addBlock(ModBlocks.PURITY_CRYSTAL_BLOCK, "Block of Purity Crystal");
+        lang.addBlock(ModBlocks.PURITY_CRYSTAL_CLUSTER, "Purity Crystal Cluster");
+        lang.addBlock(ModBlocks.PURITY_CRYSTAL_LAMP, "Purity Crystal Lamp");
+        lang.addItem(ModItems.PURITY_CRYSTAL_SHARD, "Purity Crystal Shard");
     }
 
     /** Vanilla nl_nl patterns: "Kersenhouten trap", "Gestripte kersenstam", "Bebladerde kers", "Hangende wortels". */
@@ -153,5 +171,23 @@ public final class Ring4BlockNames {
         lang.addBlock(ModBlocks.LARGE_AQUAMARINE_BUD, "Grote aquamarijnknop");
         lang.addBlock(ModBlocks.AQUAMARINE_CLUSTER, "Aquamarijncluster");
         lang.addItem(ModItems.AQUAMARINE_SHARD, "Aquamarijnscherf");
+        lang.addBlock(ModBlocks.BONE_SAND, "Bottenzand");
+        lang.addBlock(ModBlocks.BLEACHED_NETHERRACK, "Gebleekt netherrack");
+        lang.addBlock(ModBlocks.FOSSIL_STONE, "Fossielsteen");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_STAIRS, "Fossielstenen trap");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_SLAB, "Fossielstenen plaat");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_WALL, "Fossielstenen muur");
+        lang.addBlock(ModBlocks.POLISHED_FOSSIL_STONE, "Gepolijste fossielsteen");
+        lang.addBlock(ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, "Gepolijste fossielstenen trap");
+        lang.addBlock(ModBlocks.POLISHED_FOSSIL_STONE_SLAB, "Gepolijste fossielstenen plaat");
+        lang.addBlock(ModBlocks.POLISHED_FOSSIL_STONE_WALL, "Gepolijste fossielstenen muur");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_BRICKS, "Fossielstenen blokstenen");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_BRICK_STAIRS, "Fossielstenen bloksteentrap");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_BRICK_SLAB, "Fossielstenen bloksteenplaat");
+        lang.addBlock(ModBlocks.FOSSIL_STONE_BRICK_WALL, "Fossielstenen bloksteenmuur");
+        lang.addBlock(ModBlocks.PURITY_CRYSTAL_BLOCK, "Zuiverkristalblok");
+        lang.addBlock(ModBlocks.PURITY_CRYSTAL_CLUSTER, "Zuiverkristalcluster");
+        lang.addBlock(ModBlocks.PURITY_CRYSTAL_LAMP, "Zuiverkristallamp");
+        lang.addItem(ModItems.PURITY_CRYSTAL_SHARD, "Zuiverkristalscherf");
     }
 }

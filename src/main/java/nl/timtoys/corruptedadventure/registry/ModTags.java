@@ -124,6 +124,8 @@ public final class ModTags {
         public static final TagKey<Item> GEMS_TOXIC_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/toxic_crystal"));
         /** Convention tag {@code c:gems/aquamarine}; part of {@code c:gems}. */
         public static final TagKey<Item> GEMS_AQUAMARINE = TagKey.create(Registries.ITEM, common("gems/aquamarine"));
+        /** Convention tag {@code c:gems/purity_crystal}; part of {@code c:gems}. */
+        public static final TagKey<Item> GEMS_PURITY_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/purity_crystal"));
 
         private Items() {
         }

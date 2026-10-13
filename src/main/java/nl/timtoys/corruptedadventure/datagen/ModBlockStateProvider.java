@@ -75,6 +75,23 @@ final class ModBlockStateProvider extends BlockStateProvider {
         ring3();
         netherRing3();
         ring4();
+        netherRing4();
+    }
+
+    /** Nether ring 4: bone sand, bleached netherrack, the fossil stone set (like tidestone) and the purity crystal. */
+    private void netherRing4() {
+        simpleBlock(ModBlocks.BONE_SAND.get());
+        simpleBlock(ModBlocks.BLEACHED_NETHERRACK.get());
+        stoneFamily(ModBlocks.FOSSIL_STONE.get(), ModBlocks.FOSSIL_STONE_STAIRS.get(), ModBlocks.FOSSIL_STONE_SLAB.get(),
+                ModBlocks.FOSSIL_STONE_WALL.get());
+        stoneFamily(ModBlocks.POLISHED_FOSSIL_STONE.get(), ModBlocks.POLISHED_FOSSIL_STONE_STAIRS.get(),
+                ModBlocks.POLISHED_FOSSIL_STONE_SLAB.get(), ModBlocks.POLISHED_FOSSIL_STONE_WALL.get());
+        stoneFamily(ModBlocks.FOSSIL_STONE_BRICKS.get(), ModBlocks.FOSSIL_STONE_BRICK_STAIRS.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_SLAB.get(), ModBlocks.FOSSIL_STONE_BRICK_WALL.get());
+        simpleBlock(ModBlocks.PURITY_CRYSTAL_BLOCK.get());
+        // The cluster pulses and glows evenly like the fire crystal stages (T, 71a).
+        crystalCluster(ModBlocks.PURITY_CRYSTAL_CLUSTER.get(), true);
+        simpleBlock(ModBlocks.PURITY_CRYSTAL_LAMP.get());
     }
 
     /** Ring 4: tidestone, the moonpetal set (laid out like the palm set), the swamp and water flora, the glowing flora. */

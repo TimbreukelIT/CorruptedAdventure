@@ -88,6 +88,8 @@ public final class ModBlocks {
     private static final int SAND_DUST_COLOR = 0xDBD3A0;
     /** Falling dust colour of the ash crust: warm ash grey. */
     private static final int ASH_DUST_COLOR = 0x8A8580;
+    /** Falling dust colour of the bone sand: pale bone white. */
+    private static final int BONE_DUST_COLOR = 0xE3DCC6;
     /** Ring 3 ores are this much harder than the vanilla ore of their host ("one step above ring 2"). */
     static final float RING_3_ORE_EXTRA_HARDNESS = 0.5F;
     /** Ring 4 ores are this much harder than the vanilla ore of their host (a step above ring 3; decision V3 golf 1). */
@@ -818,6 +820,54 @@ public final class ModBlocks {
     public static final DeferredBlock<AmethystClusterBlock> AQUAMARINE_CLUSTER = register("aquamarine_cluster",
             () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_CYAN)));
 
+    // ---- Nether ring 4 ----
+    // Dry crystal and bone desert (contract ring 4 §3, package 68): bone sand, bleached netherrack, the fossil stone set
+    // and the purity crystal. The ribcages of the sea creatures are vanilla bone blocks.
+    /** Falls like sand, with a pale bone dust. */
+    public static final DeferredBlock<ColoredFallingBlock> BONE_SAND = register("bone_sand",
+            () -> new ColoredFallingBlock(new ColorRGBA(BONE_DUST_COLOR), Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.SAND)));
+    /**
+     * Netherrack's strength and sound in a beige, bleached rock. A plain {@code Block} like rime netherrack: bone meal
+     * does not spread nylium onto it.
+     */
+    public static final DeferredBlock<Block> BLEACHED_NETHERRACK = register("bleached_netherrack",
+            () -> new Block(Properties.ofFullCopy(Blocks.NETHERRACK).mapColor(MapColor.TERRACOTTA_WHITE)));
+    // Fossil stone: the stone family's shapes and behaviour in a bone-white rock with fossils (like the tidestone set).
+    public static final DeferredBlock<Block> FOSSIL_STONE = register("fossil_stone", () -> new Block(fossilStone(Blocks.STONE)));
+    public static final DeferredBlock<StairBlock> FOSSIL_STONE_STAIRS = register("fossil_stone_stairs",
+            () -> new StairBlock(FOSSIL_STONE.get().defaultBlockState(), fossilStone(Blocks.STONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> FOSSIL_STONE_SLAB = register("fossil_stone_slab",
+            () -> new SlabBlock(fossilStone(Blocks.STONE_SLAB)));
+    /** Solid for support like vanilla walls ({@code forceSolidOn}); vanilla has no plain stone wall to copy. */
+    public static final DeferredBlock<WallBlock> FOSSIL_STONE_WALL = register("fossil_stone_wall",
+            () -> new WallBlock(fossilStone(Blocks.STONE).forceSolidOn()));
+    public static final DeferredBlock<Block> POLISHED_FOSSIL_STONE = register("polished_fossil_stone",
+            () -> new Block(fossilStone(Blocks.POLISHED_ANDESITE)));
+    public static final DeferredBlock<StairBlock> POLISHED_FOSSIL_STONE_STAIRS = register("polished_fossil_stone_stairs",
+            () -> new StairBlock(POLISHED_FOSSIL_STONE.get().defaultBlockState(), fossilStone(Blocks.POLISHED_ANDESITE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> POLISHED_FOSSIL_STONE_SLAB = register("polished_fossil_stone_slab",
+            () -> new SlabBlock(fossilStone(Blocks.POLISHED_ANDESITE_SLAB)));
+    public static final DeferredBlock<WallBlock> POLISHED_FOSSIL_STONE_WALL = register("polished_fossil_stone_wall",
+            () -> new WallBlock(fossilStone(Blocks.POLISHED_ANDESITE).forceSolidOn()));
+    public static final DeferredBlock<Block> FOSSIL_STONE_BRICKS = register("fossil_stone_bricks",
+            () -> new Block(fossilStone(Blocks.STONE_BRICKS)));
+    public static final DeferredBlock<StairBlock> FOSSIL_STONE_BRICK_STAIRS = register("fossil_stone_brick_stairs",
+            () -> new StairBlock(FOSSIL_STONE_BRICKS.get().defaultBlockState(), fossilStone(Blocks.STONE_BRICK_STAIRS)));
+    public static final DeferredBlock<SlabBlock> FOSSIL_STONE_BRICK_SLAB = register("fossil_stone_brick_slab",
+            () -> new SlabBlock(fossilStone(Blocks.STONE_BRICK_SLAB)));
+    public static final DeferredBlock<WallBlock> FOSSIL_STONE_BRICK_WALL = register("fossil_stone_brick_wall",
+            () -> new WallBlock(fossilStone(Blocks.STONE_BRICK_WALL)));
+    // Purity crystal: the crystal of the spires. No budding block and no growth (only worldgen places it).
+    /** The crystal wall: amethyst block behaviour (chime when hit), no light. */
+    public static final DeferredBlock<AmethystBlock> PURITY_CRYSTAL_BLOCK = register("purity_crystal_block",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.SNOW)));
+    /** The amethyst cluster's behaviour, shape and light (5); drops {@link ModItems#PURITY_CRYSTAL_SHARD}. Faces up by default. */
+    public static final DeferredBlock<AmethystClusterBlock> PURITY_CRYSTAL_CLUSTER = register("purity_crystal_cluster",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.SNOW)));
+    /** A crystal lamp: the crystal wall's behaviour with light 15. */
+    public static final DeferredBlock<AmethystBlock> PURITY_CRYSTAL_LAMP = register("purity_crystal_lamp",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.SNOW).lightLevel(state -> 15)));
+
     private ModBlocks() {
     }
 
@@ -927,6 +977,11 @@ public final class ModBlocks {
     /** Tidestone (all shapes, and the bubble spring): the vanilla stone variant's behaviour, blue-grey on the map. */
     private static Properties tidestone(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_LIGHT_BLUE);
+    }
+
+    /** Fossil stone (all shapes): the vanilla stone variant's behaviour, bone white on the map. */
+    private static Properties fossilStone(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.QUARTZ);
     }
 
     /** Moonpetal wood without bark (planks family, stripped): cherry's behaviour and sounds, pale on the map. */

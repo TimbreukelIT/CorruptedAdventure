@@ -15,6 +15,9 @@
     "corruptedadventure:tidestone_slab",
     "corruptedadventure:cobbled_tidestone_slab",
     "corruptedadventure:polished_tidestone_slab",
-    "corruptedadventure:tidestone_brick_slab"
+    "corruptedadventure:tidestone_brick_slab",
+    "corruptedadventure:fossil_stone_slab",
+    "corruptedadventure:polished_fossil_stone_slab",
+    "corruptedadventure:fossil_stone_brick_slab"
   ]
 }

@@ -149,6 +149,39 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get(), ModBlocks.SMALL_AQUAMARINE_BUD.get(), ModBlocks.MEDIUM_AQUAMARINE_BUD.get(),
                 ModBlocks.LARGE_AQUAMARINE_BUD.get());
         tag(Tags.Blocks.CLUSTERS).add(ModBlocks.TOXIC_CRYSTAL_CLUSTER.get(), ModBlocks.AQUAMARINE_CLUSTER.get());
+
+        netherRing4();
+    }
+
+    /**
+     * Nether ring 4. Bleached netherrack and fossil stone are Nether ground ({@code #base_stone_nether}, so Nether
+     * carvers cut through them); bleached netherrack is netherrack in every other way too, fire included
+     * ({@code #infiniburn_overworld}, which the Nether's infiniburn tag contains). Bone sand is carver-replaceable ground,
+     * but deliberately not {@code #sand} (no cactus or sugar cane in the Nether). The purity crystal carries amethyst's
+     * tags.
+     */
+    private void netherRing4() {
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.BONE_SAND.get());
+        tag(BlockTags.NETHER_CARVER_REPLACEABLES).add(ModBlocks.BONE_SAND.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.BLEACHED_NETHERRACK.get(), ModBlocks.FOSSIL_STONE.get(),
+                ModBlocks.FOSSIL_STONE_STAIRS.get(), ModBlocks.FOSSIL_STONE_SLAB.get(), ModBlocks.FOSSIL_STONE_WALL.get(),
+                ModBlocks.POLISHED_FOSSIL_STONE.get(), ModBlocks.POLISHED_FOSSIL_STONE_STAIRS.get(),
+                ModBlocks.POLISHED_FOSSIL_STONE_SLAB.get(), ModBlocks.POLISHED_FOSSIL_STONE_WALL.get(),
+                ModBlocks.FOSSIL_STONE_BRICKS.get(), ModBlocks.FOSSIL_STONE_BRICK_STAIRS.get(), ModBlocks.FOSSIL_STONE_BRICK_SLAB.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_WALL.get(), ModBlocks.PURITY_CRYSTAL_BLOCK.get(), ModBlocks.PURITY_CRYSTAL_CLUSTER.get(),
+                ModBlocks.PURITY_CRYSTAL_LAMP.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.FOSSIL_STONE_STAIRS.get(), ModBlocks.POLISHED_FOSSIL_STONE_STAIRS.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.FOSSIL_STONE_SLAB.get(), ModBlocks.POLISHED_FOSSIL_STONE_SLAB.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.FOSSIL_STONE_WALL.get(), ModBlocks.POLISHED_FOSSIL_STONE_WALL.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_WALL.get());
+        tag(BlockTags.BASE_STONE_NETHER).add(ModBlocks.BLEACHED_NETHERRACK.get(), ModBlocks.FOSSIL_STONE.get());
+        tag(Tags.Blocks.NETHERRACKS).add(ModBlocks.BLEACHED_NETHERRACK.get());
+        tag(BlockTags.INFINIBURN_OVERWORLD).add(ModBlocks.BLEACHED_NETHERRACK.get());
+
+        tag(BlockTags.CRYSTAL_SOUND_BLOCKS).add(ModBlocks.PURITY_CRYSTAL_BLOCK.get(), ModBlocks.PURITY_CRYSTAL_LAMP.get());
+        tag(Tags.Blocks.CLUSTERS).add(ModBlocks.PURITY_CRYSTAL_CLUSTER.get());
     }
 
     /**

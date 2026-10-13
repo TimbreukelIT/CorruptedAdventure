@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.world.level.block.NetherrackBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
@@ -580,6 +581,31 @@ class ModBlocksTest {
         }
         assertEquals(0, ModBlocks.TOXIC_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
         assertEquals(0, ModBlocks.AQUAMARINE_BLOCK.get().defaultBlockState().getLightEmission());
+    }
+
+    /** Nether ring 4 follows ring 4 directly and ends the blocks (contract ring 4 §3); its shard ends the loose items. */
+    @Test
+    void netherRing4FollowsRing4InOrderAndBehavesAsPlanned() {
+        List<Item> shown = blockItems();
+        int lastRing4 = shown.indexOf(ModBlocks.AQUAMARINE_CLUSTER.asItem());
+        List<Item> netherRing4 = Stream.of(ModBlocks.BONE_SAND, ModBlocks.BLEACHED_NETHERRACK, ModBlocks.FOSSIL_STONE,
+                ModBlocks.FOSSIL_STONE_STAIRS, ModBlocks.FOSSIL_STONE_SLAB, ModBlocks.FOSSIL_STONE_WALL,
+                ModBlocks.POLISHED_FOSSIL_STONE, ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, ModBlocks.POLISHED_FOSSIL_STONE_SLAB,
+                ModBlocks.POLISHED_FOSSIL_STONE_WALL, ModBlocks.FOSSIL_STONE_BRICKS, ModBlocks.FOSSIL_STONE_BRICK_STAIRS,
+                ModBlocks.FOSSIL_STONE_BRICK_SLAB, ModBlocks.FOSSIL_STONE_BRICK_WALL, ModBlocks.PURITY_CRYSTAL_BLOCK,
+                ModBlocks.PURITY_CRYSTAL_CLUSTER, ModBlocks.PURITY_CRYSTAL_LAMP).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(netherRing4, shown.subList(lastRing4 + 1, shown.size()));
+        List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
+                .filter(item -> !(item instanceof BlockItem)).toList();
+        assertEquals(ModItems.PURITY_CRYSTAL_SHARD.get(), standalone.getLast());
+
+        assertInstanceOf(FallingBlock.class, ModBlocks.BONE_SAND.get());
+        assertFalse(ModBlocks.BLEACHED_NETHERRACK.get() instanceof NetherrackBlock);
+        assertEquals(Blocks.NETHERRACK.defaultDestroyTime(), ModBlocks.BLEACHED_NETHERRACK.get().defaultDestroyTime());
+        assertEquals(15, ModBlocks.PURITY_CRYSTAL_LAMP.get().defaultBlockState().getLightEmission());
+        assertEquals(5, ModBlocks.PURITY_CRYSTAL_CLUSTER.get().defaultBlockState().getLightEmission());
+        assertEquals(0, ModBlocks.PURITY_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
+        assertFalse(ModBlocks.PURITY_CRYSTAL_CLUSTER.get().defaultBlockState().isRandomlyTicking());
     }
 
     private static List<Item> blockItems() {

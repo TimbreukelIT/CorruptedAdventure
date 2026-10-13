@@ -316,6 +316,29 @@ final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.JADE.get());
         basicItem(ModItems.TOXIC_CRYSTAL_SHARD.get());
         basicItem(ModItems.AQUAMARINE_SHARD.get());
+
+        netherRing4();
+    }
+
+    private void netherRing4() {
+        blockItem(ModBlocks.BONE_SAND);
+        blockItem(ModBlocks.BLEACHED_NETHERRACK);
+        blockItem(ModBlocks.FOSSIL_STONE);
+        blockItem(ModBlocks.FOSSIL_STONE_STAIRS);
+        blockItem(ModBlocks.FOSSIL_STONE_SLAB);
+        wallInventory(ModBlocks.FOSSIL_STONE_WALL.getId().getPath(), modLoc("block/fossil_stone"));
+        blockItem(ModBlocks.POLISHED_FOSSIL_STONE);
+        blockItem(ModBlocks.POLISHED_FOSSIL_STONE_STAIRS);
+        blockItem(ModBlocks.POLISHED_FOSSIL_STONE_SLAB);
+        wallInventory(ModBlocks.POLISHED_FOSSIL_STONE_WALL.getId().getPath(), modLoc("block/polished_fossil_stone"));
+        blockItem(ModBlocks.FOSSIL_STONE_BRICKS);
+        blockItem(ModBlocks.FOSSIL_STONE_BRICK_STAIRS);
+        blockItem(ModBlocks.FOSSIL_STONE_BRICK_SLAB);
+        wallInventory(ModBlocks.FOSSIL_STONE_BRICK_WALL.getId().getPath(), modLoc("block/fossil_stone_bricks"));
+        blockItem(ModBlocks.PURITY_CRYSTAL_BLOCK);
+        // purity_crystal_cluster: ModBlockStateProvider.crystalCluster writes its item model.
+        blockItem(ModBlocks.PURITY_CRYSTAL_LAMP);
+        basicItem(ModItems.PURITY_CRYSTAL_SHARD.get());
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

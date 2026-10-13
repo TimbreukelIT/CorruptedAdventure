@@ -214,6 +214,24 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropWhenSilkTouch(ModBlocks.MEDIUM_AQUAMARINE_BUD.get());
         dropWhenSilkTouch(ModBlocks.LARGE_AQUAMARINE_BUD.get());
         add(ModBlocks.AQUAMARINE_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.AQUAMARINE_SHARD.get()));
+
+        netherRing4();
+    }
+
+    private void netherRing4() {
+        for (Block block : List.of(ModBlocks.BONE_SAND.get(), ModBlocks.BLEACHED_NETHERRACK.get(),
+                ModBlocks.FOSSIL_STONE.get(), ModBlocks.FOSSIL_STONE_STAIRS.get(), ModBlocks.FOSSIL_STONE_WALL.get(),
+                ModBlocks.POLISHED_FOSSIL_STONE.get(), ModBlocks.POLISHED_FOSSIL_STONE_STAIRS.get(), ModBlocks.POLISHED_FOSSIL_STONE_WALL.get(),
+                ModBlocks.FOSSIL_STONE_BRICKS.get(), ModBlocks.FOSSIL_STONE_BRICK_STAIRS.get(), ModBlocks.FOSSIL_STONE_BRICK_WALL.get(),
+                ModBlocks.PURITY_CRYSTAL_BLOCK.get(), ModBlocks.PURITY_CRYSTAL_LAMP.get())) {
+            dropSelf(block);
+        }
+        for (Block slab : List.of(ModBlocks.FOSSIL_STONE_SLAB.get(), ModBlocks.POLISHED_FOSSIL_STONE_SLAB.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_SLAB.get())) {
+            add(slab, this::createSlabItemTable);
+        }
+        // Like the amethyst cluster: Silk Touch -> the cluster, a pickaxe -> 4 shards (Fortune), anything else 2.
+        add(ModBlocks.PURITY_CRYSTAL_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.PURITY_CRYSTAL_SHARD.get()));
     }
 
     private void netherRing3() {

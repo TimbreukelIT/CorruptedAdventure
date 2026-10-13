@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "corruptedadventure:block/fossil_stone_brick_slab"
+    },
+    "type=double": {
+      "model": "corruptedadventure:block/fossil_stone_bricks"
+    },
+    "type=top": {
+      "model": "corruptedadventure:block/fossil_stone_brick_slab_top"
+    }
+  }
+}

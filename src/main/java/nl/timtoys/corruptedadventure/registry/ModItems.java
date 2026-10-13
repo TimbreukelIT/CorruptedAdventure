@@ -54,6 +54,10 @@ public final class ModItems {
     /** Drop of the grown aquamarine cluster. */
     public static final DeferredItem<Item> AQUAMARINE_SHARD = ITEMS.registerSimpleItem("aquamarine_shard");
 
+    // ---- Nether ring 4 ----
+    /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */
+    public static final DeferredItem<Item> PURITY_CRYSTAL_SHARD = ITEMS.registerSimpleItem("purity_crystal_shard");
+
     private ModItems() {
     }
 

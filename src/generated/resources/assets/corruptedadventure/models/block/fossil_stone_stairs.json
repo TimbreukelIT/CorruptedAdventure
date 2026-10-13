@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "corruptedadventure:block/fossil_stone",
+    "side": "corruptedadventure:block/fossil_stone",
+    "top": "corruptedadventure:block/fossil_stone"
+  }
+}

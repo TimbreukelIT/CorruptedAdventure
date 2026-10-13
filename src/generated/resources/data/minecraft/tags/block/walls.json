@@ -13,6 +13,9 @@
     "corruptedadventure:tidestone_wall",
     "corruptedadventure:cobbled_tidestone_wall",
     "corruptedadventure:polished_tidestone_wall",
-    "corruptedadventure:tidestone_brick_wall"
+    "corruptedadventure:tidestone_brick_wall",
+    "corruptedadventure:fossil_stone_wall",
+    "corruptedadventure:polished_fossil_stone_wall",
+    "corruptedadventure:fossil_stone_brick_wall"
   ]
 }

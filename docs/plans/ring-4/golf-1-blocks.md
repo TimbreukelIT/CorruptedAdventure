@@ -83,6 +83,7 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
 - 2026-10-13: plan; vragen V1–V3 naar main; texturepaden met T afgestemd.
 - Voortgang: 20:03 66 klaar: B groen (incl. `GiantLilyPadBlockTest`, ring 4-tests in `ModBlocksTest`/`ModTreeGrowersTest`), D groen met 39 tijdelijke placeholder-PNG's (verwijderd, niet gecommit); `src/generated`: alleen ring 4-output.
 - Voortgang: 20:11 67 klaar: B groen (`BuddingCrystalBlockTest`, ertsen/kristallen in `ModBlocksTest`), D groen (tijdelijke textures uit T's 3283f6a, verwijderd); `src/generated`: alleen ring 4-output.
+- Voortgang: 20:16 68 klaar: B groen (Nether-4 in `ModBlocksTest`), D groen; `src/generated`: alleen Nether-4-output.
 
 ## CODEBASE-delta
 
@@ -117,6 +118,13 @@ Sjablonen: pumice-/koudlava-set (steenfamilie), palm-set (brandbare houtset), da
 - `registry/ModItems.java`: `raw_tidesilver`, `jade`, `toxic_crystal_shard`, `aquamarine_shard` (placeholders, na `fire_crystal`).
 - `registry/ModTags.java`: + `Blocks/Items.ORES_TIDESILVER`, `ORES_JADE`; `Items.RAW_MATERIALS_TIDESILVER`, `GEMS_JADE`, `GEMS_TOXIC_CRYSTAL`, `GEMS_AQUAMARINE`.
 - Datagen: `ModBlockStateProvider.ring4Ores()` (overlay over stone/tidestone/deepslate; tidesilver emissive), loot (`createOreDrop`; kristallen zoals amethist), tags, lang.
+
+**68 — Nether-4**
+- `registry/ModBlocks.java`: sectie Nether ring 4 na de ring 4-kristallen: `bone_sand` (`ColoredFallingBlock`, `BONE_DUST_COLOR`), `bleached_netherrack` (gewone `Block`), fossielsteen-set (helper `fossilStone`), `purity_crystal_block`/`_cluster`/`_lamp` (licht 0/5/15).
+- `registry/ModItems.java`: `purity_crystal_shard` (laatste los item). `ModTags.Items.GEMS_PURITY_CRYSTAL`.
+- Datagen: `netherRing4()` in de blockstate-, item-model-, loot- en tag-providers; het cluster emissive (pulseert, T); lang.
+- Tags: `#base_stone_nether` (gebleekt netherrack, fossielsteen), `c:netherracks` en `#infiniburn_overworld` (gebleekt netherrack), `#nether_carver_replaceables` (bottenzand), `#crystal_sound_blocks` (blok, lamp), `c:clusters`, `c:gems/purity_crystal`.
+- 17 blokken, 1 item.
 
 **67 — Registries:** 18 blokken, 4 items. **Tags:** `c:ores/tidesilver|jade`, `#needs_diamond_tool`, `c:ore_rates/singular`, `c:ores_in_ground/stone|deepslate`, `#crystal_sound_blocks`, `c:budding_blocks|buds|clusters`, `c:raw_materials/tidesilver`, `c:gems/jade|toxic_crystal|aquamarine`.
 
