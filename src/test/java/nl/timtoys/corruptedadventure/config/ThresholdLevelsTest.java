@@ -44,4 +44,10 @@ class ThresholdLevelsTest {
         // ColdFreeze.THRESHOLD_COUNT: the freeze is the third.
         assertArrayEquals(new int[]{33, 66, 100}, ServerConfig.COLD.thresholds.defaults());
     }
+
+    @Test
+    void poisonHasTheContractThresholds() {
+        // Ring 4 contract §5: nausea 30, poison 60, wither 90 (PoisonWither is the third effect).
+        assertArrayEquals(new int[]{30, 60, 90}, ServerConfig.POISON.thresholds.defaults());
+    }
 }

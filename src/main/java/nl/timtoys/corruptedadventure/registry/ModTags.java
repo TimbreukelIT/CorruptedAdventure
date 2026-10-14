@@ -64,6 +64,8 @@ public final class ModTags {
         // Ring 4 and Nether ring 4 (docs/plans/ring-4/contract.md §3); contents from stream B.
         /** Blocks that raise the poison meter of players nearby (the toxic pool); swamp gas counts separately. */
         public static final TagKey<Block> POISON_SOURCES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("poison_sources"));
+        /** Blocks that raise the poison meter while the head (eye height) is in them: swamp gas (package 72). */
+        public static final TagKey<Block> POISON_GASES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("poison_gases"));
         /** Host rocks of the ring 4 ores. */
         public static final TagKey<Block> RING_4_STONES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("ring_4_stones"));
         /** Moonpetal log, wood and their stripped variants. */

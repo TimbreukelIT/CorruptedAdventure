@@ -2,6 +2,7 @@
   "values": [
     "corruptedadventure:dehydration",
     "corruptedadventure:heat",
-    "corruptedadventure:cold"
+    "corruptedadventure:cold",
+    "corruptedadventure:poison"
   ]
 }

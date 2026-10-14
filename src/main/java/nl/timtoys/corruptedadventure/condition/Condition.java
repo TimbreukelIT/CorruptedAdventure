@@ -22,7 +22,12 @@ public enum Condition implements StringRepresentable {
      * Nether ring 3: rises everywhere in the zone, faster on ice and in the exposed biomes; falls near warmth and
      * outside the zone. Leather slows it; at the top the player freezes (package 55).
      */
-    COLD("cold", 0xFF7FC8F0);
+    COLD("cold", 0xFF7FC8F0),
+    /**
+     * Ring 4 (package 69): rises only at a source — in or next to a toxic pool, head in swamp gas, toxic rain under the
+     * open sky in the blighted band; falls everywhere else (water and the blighted glowcaps are no source).
+     */
+    POISON("poison", 0xFF7BC832);
 
     public static final Codec<Condition> CODEC = StringRepresentable.fromEnum(Condition::values);
 
