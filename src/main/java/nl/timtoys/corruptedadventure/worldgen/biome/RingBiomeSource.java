@@ -17,6 +17,7 @@ import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.chunk.IslandFields;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.KeyedSlots;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -83,10 +84,40 @@ public final class RingBiomeSource extends BiomeSource {
         // EnumMap's copy constructor rejects an empty plain Map.
         this.transitions = transitions.isEmpty() ? Map.of() : new EnumMap<>(transitions);
         this.islandBiomes = islandBiomes;
-        this.currentIslands = (x, z) -> {
-            IslandField field = IslandFields.current(dimension);
-            return field == null ? List.of() : field.islandsAt(x, z);
-        };
+        this.currentIslands = new LastColumn(() -> IslandFields.current(dimension));
+    }
+
+    /**
+     * The running server's islands, one lookup per column (review 59 #5): the biome of a column is asked quart by quart
+     * up the column, so the islands of recent columns are remembered in a small lock-free cache (review 61 #5: no
+     * thread-local on the worker threads), started afresh for another field (another level or server).
+     */
+    static final class LastColumn implements IslandLookup {
+        private final java.util.function.Supplier<IslandField> field;
+        private volatile Cache cache;
+
+        LastColumn(java.util.function.Supplier<IslandField> field) {
+            this.field = field;
+        }
+
+        @Override
+        public List<IslandField.Island> islandsAt(int x, int z) {
+            IslandField current = field.get();
+            if (current == null) {
+                // No server (or no islands): drop the islands of the last one (review 61b #8).
+                cache = null;
+                return List.of();
+            }
+            Cache known = cache;
+            if (known == null || known.field != current) {
+                known = new Cache(current, new KeyedSlots<>());
+                cache = known;
+            }
+            return known.columns.get(KeyedSlots.key(x, z), key -> List.copyOf(current.islandsAt(x, z)));
+        }
+
+        private record Cache(IslandField field, KeyedSlots<List<IslandField.Island>> columns) {
+        }
     }
 
     static DataResult<Map<Ring, BiomeSource>> validateRings(Map<Ring, BiomeSource> rings) {

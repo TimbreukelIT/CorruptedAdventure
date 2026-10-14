@@ -1,4 +1,18 @@
 {
   "type": "corruptedadventure:island_field",
-  "hash": "corruptedadventure:ring_4_island_cells"
+  "hash": "corruptedadventure:ring_4_island_cells",
+  "relief": {
+    "water": "corruptedadventure:ring_4_water",
+    "growth": "corruptedadventure:ring_4_growth",
+    "hills": "corruptedadventure:ring_4_hills",
+    "detail": "corruptedadventure:ring_4_detail",
+    "shoals": "corruptedadventure:ring_4_shoals",
+    "rivers": "corruptedadventure:ring_4_rivers",
+    "fjords": "corruptedadventure:ring_4_fjords",
+    "warp": "corruptedadventure:ring_4_warp"
+  },
+  "settings": {
+    "cell_size": 128
+  },
+  "plateau": "corruptedadventure:ring_3/overworld/field"
 }

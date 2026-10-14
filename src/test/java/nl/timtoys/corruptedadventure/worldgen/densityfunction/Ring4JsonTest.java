@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class Ring4JsonTest {
     private static final String DF = "density_function/";
-    private static final String[] STUBS = {"height", "island_mask", "island_hole", "cliff", "sundered", "tunnels"};
+    private static final String[] STUBS = {"tunnels"};
     private static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
             CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), RingLayout.noiseSeed(20260930L));
 
@@ -104,7 +106,7 @@ class Ring4JsonTest {
      * surface of the placeholder terrain ({@code ring_4/overworld}: gradient 1 → −1 over Y 0–128 plus 0.125 × noise).
      */
     @Test
-    void initialTerrainFollowsThePlaceholderSurface() {
+    void initialTerrainFollowsTheRealSurface() {
         assertEquals("corruptedadventure:ring_4/overworld/initial_terrain",
                 rings("overworld_initial").getAsJsonObject("ring_4").get("argument2").getAsString());
         JsonObject terrain = WorldgenData.read(DF + "ring_4/overworld/initial_terrain.json");
@@ -116,30 +118,64 @@ class Ring4JsonTest {
                 / (gradient.get("to_y").getAsInt() - gradient.get("from_y").getAsInt());
         assertEquals(-0.125, slope, 1e-12);
         assertEquals(0.0, gradient.get("from_value").getAsDouble() + slope * (0 - gradient.get("from_y").getAsInt()), 1e-12);
-
-        JsonObject placeholder = WorldgenData.read(DF + "ring_4/overworld.json").getAsJsonObject("argument");
-        JsonObject placeholderGradient = placeholder.getAsJsonObject("argument1");
-        JsonObject placeholderNoise = placeholder.getAsJsonObject("argument2");
-        double fromY = placeholderGradient.get("from_y").getAsInt();
-        double toY = placeholderGradient.get("to_y").getAsInt();
-        double from = placeholderGradient.get("from_value").getAsDouble();
-        double to = placeholderGradient.get("to_value").getAsDouble();
-        double surface = fromY + from / (from - to) * (toY - fromY);
-        double noiseBlocks = placeholderNoise.get("argument1").getAsDouble() * (toY - fromY) / (from - to);
-        JsonObject height = WorldgenData.read(DF + "ring_4/overworld/initial_height.json");
-        assertEquals(surface, height.get("argument1").getAsDouble());
-        assertEquals(noiseBlocks, height.getAsJsonObject("argument2").get("argument1").getAsDouble());
-        assertEquals(placeholderNoise.getAsJsonObject("argument2"), height.getAsJsonObject("argument2").getAsJsonObject("argument2"));
+        // 60: the height is the terrain field's lower bound of the real surface.
+        assertOutput(DF + "ring_4/overworld/initial_height.json", "initial_height");
+        // The terrain's stack is the same gradient on the surface with the holes.
+        JsonObject stack = WorldgenData.read(DF + "ring_4/overworld/terrain.json").getAsJsonObject("argument");
+        assertEquals("corruptedadventure:ring_4/overworld/surface", stack.getAsJsonObject("argument1").get("argument2").getAsString());
+        assertEquals(gradient, stack.getAsJsonObject("argument2"));
     }
 
+    private static void assertOutput(String file, String output) {
+        JsonObject json = WorldgenData.read(file);
+        String type = json.get("type").getAsString();
+        if (type.equals("minecraft:flat_cache") || type.equals("minecraft:cache_once")) {
+            json = json.getAsJsonObject("argument");
+        }
+        assertEquals("corruptedadventure:island_output", json.get("type").getAsString(), file);
+        assertEquals("corruptedadventure:ring_4/overworld/islands", json.get("field").getAsString(), file);
+        assertEquals(output, json.get("output").getAsString(), file);
+    }
+
+    /** 60: the field is the ring 4 terrain; its relief reads the router's region noises; every noise exists. */
     @Test
-    void islandFieldExistsButIsNotInTheTerrainYet() {
+    void ring4TerrainIsTheIslandField() {
         JsonObject islands = WorldgenData.read(DF + "ring_4/overworld/islands.json");
         assertEquals("corruptedadventure:island_field", islands.get("type").getAsString());
-        String hash = islands.get("hash").getAsString();
-        assertTrue(Files.exists(WorldgenData.root().resolve("noise/" + hash.substring(hash.indexOf(':') + 1) + ".json")), hash);
-        // 61 wires it into the final density; until then the height hook and the water branch find nothing.
+        List<String> noises = new ArrayList<>(List.of(islands.get("hash").getAsString()));
+        JsonObject relief = islands.getAsJsonObject("relief");
+        assertEquals("corruptedadventure:ring_4_water", relief.get("water").getAsString());
+        assertEquals("corruptedadventure:ring_4_growth", relief.get("growth").getAsString());
+        relief.entrySet().forEach(e -> noises.add(e.getValue().getAsString()));
+        for (String noise : noises) {
+            assertTrue(Files.exists(WorldgenData.root().resolve("noise/" + noise.substring(noise.indexOf(':') + 1) + ".json")), noise);
+        }
         assertEquals("corruptedadventure:ring_4/overworld", rings("overworld").get("ring_4").getAsString());
+        assertOutput(DF + "ring_4/overworld/height.json", "height");
+        assertOutput(DF + "ring_4/overworld/surface.json", "surface");
+        assertOutput(DF + "ring_4/overworld/thin.json", "thin");
+        assertOutput(DF + "ring_4/overworld/island_mask.json", "island_mask");
+        assertOutput(DF + "ring_4/overworld/island_hole.json", "island_hole");
+        assertOutput(DF + "ring_4/overworld/cliff.json", "cliff");
+        assertOutput(DF + "ring_4/overworld/sundered.json", "sundered");
+        // 62: the plateau above the cliff 3→4 follows ring 3's terrain.
+        assertEquals("corruptedadventure:ring_3/overworld/field", islands.get("plateau").getAsString());
+        assertOutput(DF + "ring_4/overworld/cave_lift.json", "cave_lift");
+        // The final stack: the exact per-block islands first, then the interpolated terrain with vanilla's caves.
+        JsonObject overworld = WorldgenData.read(DF + "ring_4/overworld.json");
+        assertEquals("minecraft:range_choice", overworld.get("type").getAsString());
+        assertEquals("corruptedadventure:ring_4/overworld/thin", overworld.get("input").getAsString());
+        String text = overworld.toString();
+        assertTrue(text.contains("corruptedadventure:ring_4/overworld/terrain"));
+        assertTrue(text.contains("corruptedadventure:ring_4/overworld/cave_lift"));
+        assertTrue(!text.contains("ring_3"), "no ring 3 key in the ring 4 stack");
+        // Review 60 #3: vanilla's cave entrances may break the surface (min(terrain, 5 × entrances + 4 × cave_lift)),
+        // except around a lake above the sea (review 61b #1: the lift of 2 there closes them, 4 × 2 > 5 × their depth).
+        assertTrue(text.contains("{\"type\":\"minecraft:mul\",\"argument1\":5.0,\"argument2\":\"minecraft:overworld/caves/entrances\"},"
+                + "\"argument2\":{\"type\":\"minecraft:mul\",\"argument1\":4.0,\"argument2\":\"corruptedadventure:ring_4/overworld/cave_lift\"}"), text);
+        for (String perBlock : new String[]{"thin", "cave_lift"}) {
+            assertEquals("minecraft:cache_once", WorldgenData.read(DF + "ring_4/overworld/" + perBlock + ".json").get("type").getAsString());
+        }
     }
 
     @Test
