@@ -452,7 +452,7 @@ public final class ServerConfig {
 
         private Ring4WeatherEffects(ModConfigSpec.Builder builder) {
             toxicRainPoisonMultiplier = builder.comment("Factor on the poison that toxic rain adds under the open sky (applied by the",
-                            "poison rule; 1 = the rate in [conditions.poison]). Toxic rain falls only in ring 4's blighted band.")
+                            "ToxicRainPoisonModifier at the weather stage; 1 = the rate in [conditions.poison]). Toxic rain falls only in ring 4's blighted band.")
                     .defineInRange("toxicRainPoisonMultiplier", 1.0, 0.0, 10.0);
             stormPushStrength = builder.comment("Wind push per gust (every 10 ticks) during a full storm, in blocks per tick, for",
                             "players in ring 4's mythical band at or above stormPushMinY who see the sky. 0 = no push.")
