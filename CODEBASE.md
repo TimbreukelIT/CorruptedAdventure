@@ -42,6 +42,7 @@ src/main/java/nl/timtoys/corruptedadventure/
     RingColumnCache.java       ✅ per-thread kolomcache van `RingLayout` voor worldgen (ring, effectieve afstand, void-voortgang per x,z; `reaches` voor de ring gate); `boundaryDepth` (afstand tot de dichtstbijzijnde grens, change 35)
     Ring4Band.java             ✅ (59) de band-as van ring 4: `of(layout).value(x, z)` ∈ [−1, 1] (−1 mythisch, 1 bedorven, overgang ~64) en `blighted(x, z)` (≥ 0); getekende afstand `effectiveDistance − (r3 + 0,6 · breedte) + 0,225 · breedte · ruis` (2 simplex-octaven ~700/~180 op `layout.noiseSeed()`, hash `ring_4_band`), gedeeld door `SLOPE` 2,5 · 32; puur, de enige bron (DF, haak, straks weer en gif; client kan meerekenen); één instantie per layout (`RingLayout.ring4Band()`, lazy)
   command/                     ✅ debugcommando's `/ca …` (OP-only, server-side; vaste Engelse tekst)
+    FallListCommand.java       ✅ `/ca falls x0 z0 x1 z1`: geplande watervallen via `IslandField.waterfallsWithin` naar `<wereld>/ca_falls/<box>.tsv` (`x z top bottom`), voor `tools/test/waterscan.sh`
     CaCommand.java             ✅ `/ca`-root, registratie via `RegisterCommandsEvent`; commando-tabel `terrainmap`: `/ca terrainmap <x z> <radius> [scale]` → `top_<dim>_<x>_<z>_r<radius>_s<scale>_height.png` en `_biome.png`; `/ca terrainmap section <x1 z1> <x2 z2>` → `section_<dim>_<x1>_<z1>_<x2>_<z2>.png`; `/ca terrainmap cancel`
     RingInfoCommand.java       ✅ `/ca ring`
     RingTeleportCommand.java   ✅ `/ca tpring <1–6> [nether]`, `/ca tpboundary <1–5> [nether]` + veilige landingshoogte

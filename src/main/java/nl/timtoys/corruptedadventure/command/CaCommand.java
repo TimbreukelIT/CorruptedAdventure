@@ -27,6 +27,7 @@ public final class CaCommand {
                 .then(BorderInfoCommand.build())
                 .then(ConditionCommand.build())
                 .then(RingWeatherCommand.build())
-                .then(TerrainMapCommand.build()));
+                .then(TerrainMapCommand.build())
+                .then(FallListCommand.build()));
     }
 }

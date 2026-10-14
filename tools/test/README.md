@@ -95,6 +95,22 @@ is `lek` = 0 (or explained). `--strict` exits 1 on any leak.
 when the previous one is loaded, time-out 600 s per block); `--reverse` reverses areas, tiles, blocks and the corner
 order. `--settle S` keeps each tile forceloaded S more seconds (fluids tick); use the same value for compared worlds.
 
+### Waterscan (ring 4)
+
+Water against air outside the planned falls (contract §4). `waterscan.sh` makes a fresh world of the areas (`--keep`),
+asks the server for the planned falls per overworld area box (`/ca falls x0 z0 x1 z1`: `IslandField.waterfallsWithin`,
+the same call as the terrain; `<world>/ca_falls/<box>.tsv`), stops the server, and runs `py/waterscan.py`:
+
+```bash
+bash tools/test/waterscan.sh <level> tools/test/areas/ring4.txt      # -> build/test/waterscan-<level>.txt (+ .json)
+python tools/test/py/waterscan.py <world> <areas> <world>/ca_falls [--strict]   # offline, when the falls are there
+```
+
+Exposed water (horizontal or below neighbour is air; air above is a surface) is an overtreding unless exempt: the sea
+plane Y 63 and the abyss sea Y 0; the falling column of a fall (Y bottom..top) and the four neighbours of its top (the
+spring); the plunge pool of a cliff fall that lands on Y 63 (horizontal radius 6, Y 56..63). Missing fall lists are an
+error. Areas: `areas/ring4.txt` (interior 4 at r 7000, boundaries 3|4 at r 6000 and 4|5 at r 8000).
+
 ### Determinism and feature index
 
 - `det.sh` makes `run/<name>-a` (areas forward) and `run/<name>-b` (everything reversed, the Nether first) and runs
@@ -129,7 +145,7 @@ mod/vanilla over the warm rounds for noise (with min–max), surface and feature
 | `setup.sh` | one-time setup of a checkout |
 | `slots.sh` | lock + JVM slots |
 | `server.sh`, `client.sh`, `win.ps1` | server, client, window helper (own PID only) |
-| `world.sh`, `det.sh`, `perf.sh` | fresh world + areas, determinism, performance |
+| `world.sh`, `det.sh`, `perf.sh`, `waterscan.sh` | fresh world + areas, determinism, performance, ring 4 waterscan |
 | `perfpack/` | datapack with the vanilla dimensions for perf |
 | `areas/` | area files |
 | `py/rcon.py` | RCON client (script + module) |
