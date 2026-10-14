@@ -163,6 +163,7 @@ class Ring4CliffTest {
     void theWallIsRoughButBounded() {
         int checked = 0;
         int rough = 0;
+        int crumbled = 0;
         long salt = FIELD.salt();
         double period = Ring4Cliff.perimeter(LAYOUT);
         double reach = Ring4Cliff.ROUGHNESS + 0.6;
@@ -195,6 +196,10 @@ class Ring4CliffTest {
             int rock = 0;
             int open = 0;
             int lineTop = (int) Math.ceil(on.plateauY) - 1;
+            // The top crumbles on the line, by at most CRUMBLE blocks.
+            int crumble = lineTop - FIELD.wallTop(line[0], line[1]);
+            assertTrue(crumble >= 0 && crumble <= Ring4Cliff.CRUMBLE, "crumble " + crumble + " at " + angle);
+            crumbled += crumble > 0 ? 1 : 0;
             for (int y = lineTop - 30; y <= lineTop; y++) {
                 double t = FIELD.thin(line[0], y, line[1]);
                 rock += t > 0.0 ? 1 : 0;
@@ -202,9 +207,49 @@ class Ring4CliffTest {
             }
             rough += rock > 0 && open > 0 ? 1 : 0;
         }
-        System.out.printf("wall columns checked %d, rough on the line %d%n", checked, rough);
+        System.out.printf("wall columns checked %d, rough on the line %d, crumbled %d%n", checked, rough, crumbled);
         assertTrue(checked > 40, "checked " + checked);
         assertTrue(rough > checked / 4, "rough columns " + rough + " of " + checked);
+        assertTrue(crumbled > 0, "crumbled columns " + crumbled);
+    }
+
+    /**
+     * Beside a fall the wall stays smooth (5a): within {@link Ring4Cliff#FALL_CLEARANCE} of its spring and fall column
+     * no roughness and no crumbling, rock up to the plateau's top inside the line and open from the ground up outside.
+     */
+    @Test
+    void theWallStaysSmoothBesideAFall() {
+        int perimeter = Ring4Cliff.cellCount(Ring4Cliff.perimeter(LAYOUT), Ring4Cliff.FALL_CELL);
+        int checked = 0;
+        for (int k = 0; k < perimeter; k++) {
+            IslandField.Fall fall = FIELD.cliffFall(k);
+            if (fall == null) {
+                continue;
+            }
+            for (int dx = -Ring4Cliff.FALL_CLEARANCE; dx <= Ring4Cliff.FALL_CLEARANCE; dx++) {
+                for (int dz = -Ring4Cliff.FALL_CLEARANCE; dz <= Ring4Cliff.FALL_CLEARANCE; dz++) {
+                    int x = fall.springX() + dx;
+                    int z = fall.springZ() + dz;
+                    IslandField.Column c = FIELD.column(x, z);
+                    // The spring and the fall's own column are carved and filled by the aquifer; islands and sinkholes
+                    // have their own rules.
+                    if (!c.nearFall || !c.wallExact || Math.abs(c.wallDistance) >= Ring4Cliff.WALL_BAND || c.islandCount > 0
+                            || c.sinkholeDisc || x == fall.springX() && z == fall.springZ() || x == fall.fallX() && z == fall.fallZ()) {
+                        continue;
+                    }
+                    int plateauTop = (int) Math.ceil(c.plateauY) - 1;
+                    assertEquals(plateauTop, FIELD.wallTop(x, z), "no crumbling beside a fall at " + x + " " + z);
+                    double floor = c.wallDistance < 0.0 ? Math.min(c.footY, c.plateauY - Ring4Cliff.MIN_HEIGHT) : c.surface;
+                    for (int y = (int) Math.floor(floor) - 2; y <= plateauTop + 2; y++) {
+                        double expected = c.wallDistance < 0.0 ? (y <= plateauTop ? 1.0 : 0.0) : (y >= Math.ceil(floor) ? -1.0 : 0.0);
+                        assertEquals(expected, FIELD.thin(x, y, z), "smooth wall beside a fall at " + x + " " + y + " " + z);
+                    }
+                    checked++;
+                }
+            }
+        }
+        System.out.println("wall columns beside falls checked: " + checked);
+        assertTrue(checked > 40, "checked " + checked);
     }
 
     /** Steaming falls: a spring walled in by the plateau, the fall beside it open down to its plunge pool. */
