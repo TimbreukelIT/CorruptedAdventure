@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class Ring4JsonTest {
     private static final String DF = "density_function/";
-    private static final String[] STUBS = {"sundered", "tunnels"};
+    private static final String[] STUBS = {"tunnels"};
     private static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
             CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), RingLayout.noiseSeed(20260930L));
 
@@ -157,6 +157,7 @@ class Ring4JsonTest {
         assertOutput(DF + "ring_4/overworld/island_mask.json", "island_mask");
         assertOutput(DF + "ring_4/overworld/island_hole.json", "island_hole");
         assertOutput(DF + "ring_4/overworld/cliff.json", "cliff");
+        assertOutput(DF + "ring_4/overworld/sundered.json", "sundered");
         // 62: the plateau above the cliff 3→4 follows ring 3's terrain.
         assertEquals("corruptedadventure:ring_3/overworld/field", islands.get("plateau").getAsString());
         assertOutput(DF + "ring_4/overworld/cave_lift.json", "cave_lift");

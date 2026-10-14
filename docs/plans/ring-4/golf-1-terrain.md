@@ -45,6 +45,9 @@ Twee pure stappen (`IslandPlacement`):
 
 ## Pakket 63 — `sundered_reach`
 - Zone 4→5 (256): de grond breekt op in brokken boven een afgrond met een stilstaande zee op Y 0; landbruggen om de ~500–800 blokken; alleen vastgelegde vallen; `sundered` 0..1. Afhankelijk van Q2.
+- **Gebouwd:** `Ring4Sundered` (zone-sterkte 0 aan de binnenrand, vol vanaf 55 % van de zone; chunks van 36 blokken met scheuren die breder worden (half 0,5 → 9); losse chunks vanaf 25–95 % sterkte, zwevend op een offset en dikte 8–30; landbruggen om de ~650 blokken, ±100, 8–12 breed). Koppeling: scheur-kolommen krijgen de bodem op Y −20 (`ABYSS_FLOOR`), losse chunks een vaste solid-interval boven hun bodem; `Column.abyssSeaTop()` = Y 0 voor afgrondkolommen, en de aquifer vult daar open ruimte tot Y 0 met stilstaand water (geen flow) en lucht erboven; `sundered` als `island_output`.
+- **Afwijkingen (eerste versie):** geen aparte rand (`RIM`) bij de binnenkant (de zone begint met sterkte 0, dus geen bruuske afgrond); de afgrondkolommen zijn in het buitenste deel van de zone ruim 75 % (test: 0,77) — te veel, mogelijk bijstellen (chunkgrootte of schaal van de scheuren); de losse chunks zijn blokkig (vlakke bodem van de chunk); geen vallen in de afgrond (de water-tak van 61 vult alleen de eilanden); waterscan en terreinkaart bij integratie.
+- Tests: `Ring4SunderedTest` (sterkte over de zone, bruggen 450–850, afgrondaandeel en zee op Y 0, niets buiten de zone, losse solids).
 
 ## Code-review 60 (c463272), verwerkt
 1. Rivieren en fjorden als dal i.p.v. sleuf: de lijnruis wordt een afstand in blokken (mediaanhelling 0,0018/blok, gemeten en getest); rivier: bed 5,5 breed per kant, dan hellingen 0,6 (het dal verbreedt met de hoogte van het land; mediaan +6,9 op 17,5 blokken van het midden); fjord: bodem 12 per kant, wanden 2,0.
@@ -121,6 +124,7 @@ Q1 terrein ↔ biome-indeling op de assen; Q2 zone 4→5 volledig uit ring 4 (`R
 - Waterscan (water tegen lucht buiten de vastgelegde vallen) en een terreinkaart van de klif: na integratie (server-test, niet nu).
 
 ## Beslissingen
+- 2026-10-14 | worldgen | Afgrondzee op Y 0 alleen in de zone 4→5 (per kolom, aquifer); geen vrij water tegen lucht buiten de vastgelegde vallen, de zee-oppervlakte is de enige plas | Contract §4 (63); zee-oppervlak op één hoogte is het stilstaande water, geen val.
 - 2026-10-13 | worldgen | Ring 4-terrein volgt de biome-drempels van W-biomes (region_water hoog = open water, region_growth hoog = begroeid, band < 0 mythisch; water ±0,125/0, growth −0,075/0); de mythische helft van de bandovergang (`mist_fjords`) krijgt een lage fjordplateau-rand | Q1 = B: één indeling voor biome en landvorm, eigenaar W-biomes.
 - 2026-10-13 | worldgen | Zone 4→5: de menging ring 4 ↔ ring 5 blijft (geen `RingBlend`-wijziging); ring 4 bouwt de hele zone, ring 5 stemt zijn invoer af | Q2 = B.
 - 2026-10-13 | worldgen | Rivieren op zeeniveau (bevaarbaar); vallen van terrasranden via de water-tak; gatmeren met uitloop | Q3 = A.

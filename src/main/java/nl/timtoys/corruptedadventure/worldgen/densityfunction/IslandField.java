@@ -417,6 +417,10 @@ public final class IslandField implements DensityFunction {
         Ring4Relief.Sample s = new Ring4Relief.Sample();
         relief.sample(x, z, band(x, z), s, salt());
         double surface = withHoles(cliffed(x, z, s.height, null), x, z, shapesNear(Mth.floor(x), Mth.floor(z)), null);
+        Sunder sunder = sunder(x, z);
+        if (sunder.kind() != Sunder.NONE) {
+            surface = Math.min(surface, Ring4Sundered.ABYSS_FLOOR);
+        }
         return Double.isNaN(s.sinkholeFloor) ? surface : Math.min(surface, s.sinkholeFloor);
     }
 
@@ -767,7 +771,55 @@ public final class IslandField implements DensityFunction {
         double[] hole = {0.0};
         c.surface = withHoles(c.height, c.x, c.z, shapesNear(c.x, c.z), hole);
         c.islandHole = hole[0];
+        // The sundered zone 4→5 (63): cracks drop the ground into the abyss, loose chunks float above it.
+        Sunder sunder = sunder(c.x, c.z);
+        c.sundered = sunder.strength();
+        c.sunderKind = sunder.kind();
+        if (sunder.kind() == Sunder.CRACK) {
+            c.surface = Math.min(c.surface, Ring4Sundered.ABYSS_FLOOR);
+        } else if (sunder.kind() == Sunder.LOOSE) {
+            // A loose chunk: no ground under it, its own thickness floats at its offset above the ground it was.
+            double top = c.surface + sunder.offset();
+            c.addIsland((int) Math.ceil(top - sunder.thickness()), (int) Math.floor(top));
+            c.surface = Math.min(c.surface, Ring4Sundered.ABYSS_FLOOR);
+        }
         c.surfaceFilled = true;
+    }
+
+    /** How a column lies in the sundered zone (63): its kind, the loose chunk's offset and thickness, the strength. */
+    private record Sunder(int kind, double offset, double thickness, double strength) {
+        static final int NONE = 0;
+        static final int CRACK = 1;
+        static final int LOOSE = 2;
+    }
+
+    /** The sundering of a column (63); {@link Sunder#NONE} outside the zone 4→5, on a bridge, and in ground. */
+    private Sunder sunder(double x, double z) {
+        RingLayout ringLayout = layout.get();
+        double effective = ringLayout.effectiveDistance(x, z);
+        if (effective < Ring4Sundered.zoneStart(ringLayout) || effective > Ring4Sundered.zoneEnd(ringLayout)) {
+            return new Sunder(Sunder.NONE, 0.0, 0.0, 0.0);
+        }
+        double strength = Ring4Sundered.strength(ringLayout, effective);
+        if (strength <= 0.0) {
+            return new Sunder(Sunder.NONE, 0.0, 0.0, 0.0);
+        }
+        long salt = salt();
+        double along = Math.atan2(z, x) * (Ring4Sundered.zoneStart(ringLayout) + Ring4Sundered.zoneEnd(ringLayout)) / 2.0;
+        if (Ring4Sundered.onBridge(salt, along)) {
+            return new Sunder(Sunder.NONE, 0.0, 0.0, strength);
+        }
+        double[] chunk = Ring4Sundered.chunk(salt, x, z);
+        int i = (int) chunk[0];
+        int j = (int) chunk[1];
+        double[] loose = Ring4Sundered.loose(salt, i, j, strength);
+        if (loose != null) {
+            return new Sunder(Sunder.LOOSE, loose[0], loose[1], strength);
+        }
+        if (chunk[2] < Ring4Sundered.crack(strength)) {
+            return new Sunder(Sunder.CRACK, 0.0, 0.0, strength);
+        }
+        return new Sunder(Sunder.NONE, 0.0, 0.0, strength);
     }
 
     /**
@@ -778,6 +830,8 @@ public final class IslandField implements DensityFunction {
         if (c.islandsFilled) {
             return;
         }
+        // The loose chunks' solids come with the surface, so they are added before the islands' own.
+        ensureSurface(c);
         c.islandsFilled = true;
         double[] sinkhole = Ring4Relief.sinkhole(Math.floorDiv(c.x, Ring4Relief.SINKHOLE_CELL),
                 Math.floorDiv(c.z, Ring4Relief.SINKHOLE_CELL), salt());
@@ -919,6 +973,10 @@ public final class IslandField implements DensityFunction {
         double fjord;
         /** 0..1: an island in this column. */
         double islandMask;
+        /** 0..1: how far the ground is sundered here (63; 0 outside the zone 4→5). */
+        double sundered;
+        /** {@link Ring4Sundered} kind of the column: {@code Sunder.NONE}, {@code CRACK} or {@code LOOSE}. */
+        int sunderKind;
         /** 0..1: an island's mirror lake (1 well inside the hole). */
         double islandHole;
         /** Whether the column lies in the disc of a peat sinkhole's cell (then the base terrain decides its floor). */
@@ -971,6 +1029,8 @@ public final class IslandField implements DensityFunction {
             islandHole = 0.0;
             sinkholeDisc = false;
             sinkholeFloor = Double.NaN;
+            sundered = 0.0;
+            sunderKind = Sunder.NONE;
             cliff = 0.0;
             wallNear = false;
             wallDistance = Double.POSITIVE_INFINITY;
@@ -1035,6 +1095,15 @@ public final class IslandField implements DensityFunction {
 
         public double cliff() {
             return cliff;
+        }
+
+        public double sundered() {
+            return sundered;
+        }
+
+        /** The top (exclusive) of the still sea of the abyss in this column (Y 0), else {@link Integer#MIN_VALUE}. */
+        public int abyssSeaTop() {
+            return sunderKind == Sunder.NONE ? Integer.MIN_VALUE : Ring4Sundered.SEA_TOP + 1;
         }
 
         public int springY() {

@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Aquifer;
 import net.minecraft.world.level.levelgen.DensityFunction;
+import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingColumnCache;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
@@ -108,6 +109,8 @@ final class RingAquifer implements Aquifer {
     private final int[] waterSpringY = new int[COLUMNS + 1];
     private final int[] lakeTop = new int[COLUMNS + 1];
     private final int[] lakeFloor = new int[COLUMNS + 1];
+    // The top (exclusive) of the still sea of the abyss in the zone 4→5 (63), else Integer.MIN_VALUE.
+    private final int[] abyssTop = new int[COLUMNS + 1];
     private final int[] lakeGuardBottom = new int[COLUMNS + 1];
     private final int[] lakeGuardTop = new int[COLUMNS + 1];
 
@@ -229,7 +232,10 @@ final class RingAquifer implements Aquifer {
         dryBelow[i] = RingFluidPicker.ring4DryBelow(dimension, position);
         noLava[i] = RingFluidPicker.ring4NoLava(dimension, position);
         boolean falls = RingFluidPicker.ring4FallColumn(dimension, position, islands);
-        IslandField.Column islandColumn = falls ? islands.islandColumn(x, z) : null;
+        // The zone 4→5 (both halves) has the abyss's still sea (63), read from the island field's column.
+        boolean sundered = islands != null && position.inTransition() && position.inner() == Ring.RING_4 && position.outer() == Ring.RING_5;
+        IslandField.Column islandColumn = falls || sundered ? islands.islandColumn(x, z) : null;
+        abyssTop[i] = sundered ? islandColumn.abyssSeaTop() : Integer.MIN_VALUE;
         waterFallTop[i] = falls ? islandColumn.fallTop() : Integer.MIN_VALUE;
         waterFallBottom[i] = falls ? islandColumn.fallBottom() : Integer.MIN_VALUE;
         waterFallFlow[i] = falls ? islandColumn.fallFlowBelow() : Integer.MIN_VALUE;
@@ -278,6 +284,11 @@ final class RingAquifer implements Aquifer {
         }
         if (y < sealBelow[i]) {
             return null;
+        }
+        if (abyssTop[i] != Integer.MIN_VALUE) {
+            // The still sea of the abyss in the zone 4→5 (63): water up to its top, air above, never scheduled to flow.
+            suppressed = true;
+            return y < abyssTop[i] ? WATER : AIR;
         }
         if (y < dryBelow[i]) {
             return AIR;
