@@ -37,7 +37,11 @@ Twee pure stappen (`IslandPlacement`):
 - Teststop 5-pre: `/ca terrainmap`-PNG van ring 4.
 
 ## Pakket 62 — klif 3→4
-- Klif 40–80 aan de buitenrand van zone 3→4 (ring 4-kant): de ring 4-invoer volgt in de zone de ring 3-hoogte (plateau `steam_fens`) en valt bij blend ~0,9 naar het ring 4-terrein; kloven en puinhellingen om de paar honderd blokken (langs de hoek), dampende watervallen van de rand (water-tak; ring 4-helft, dus `ring4FallColumn` blijft geldig, notitie #8). `ring3Seal` ongemoeid. `cliff` 0..1.
+- **Lijn** op blend 0,9 van zone 3→4 (effectieve afstand 6.051; ring 4-helft), ±3 blokken gerafeld met de detailruis. De ring 4-invoer volgt in de zone tot de lijn een plateau op ring 3-hoogte (`plateau`: het `VolcanicField` van ring 3 via het nieuwe optionele codecveld `plateau` van `island_field`), 40–80 boven de voet geklemd, en valt daar naar het ring 4-terrein; `ring_blend` weegt ring 4 op de lijn 97 %, dus het plateau is ring 3-terrein (`steam_fens`) en de voet echte ring 4.
+- **Exacte wand**: binnen 6 blokken van de lijn per blok via `thin` (binnen gesteente tot de plateautop, buiten open vanaf de voet), zodat de klif verticaal staat ondanks het 4-blokraster.
+- **Gaten** (`Ring4Cliff.GAP_CELL` 280, kans 0,8): half **kloof** (10–14 breed, bodem van het plateau 48 blokken binnen de lijn naar de voet) en half **puinhelling** (30–50 breed, helling van 30 binnen tot 12 buiten de lijn); daar geen exacte wand.
+- **Dampende watervallen** (`FALL_CELL` 160, kans 0,6): bron één blok onder de plateautop in de kolom vóór de lijn (plateau eromheen), val in de kolom erbuiten tot Y 63 in een **plonsbekken** (straal 6, bed Y 56, zee); via de water-tak en `fallsOfChunk` (cap 3/chunk samen met de eilandvallen). Ring 4-helft, dus `ring4FallColumn` geldt (notitie #8: geen herziening nodig). Stoom/deeltjes: A/W-biomes.
+- `cliff` 0..1 (wand en puinhelling) als `island_output`. `ring3Seal` ongemoeid. Geen terrasvallen (besluit A).
 
 ## Pakket 63 — `sundered_reach`
 - Zone 4→5 (256): de grond breekt op in brokken boven een afgrond met een stilstaande zee op Y 0; landbruggen om de ~500–800 blokken; alleen vastgelegde vallen; `sundered` 0..1. Afhankelijk van Q2.
@@ -106,6 +110,13 @@ Q1 terrein ↔ biome-indeling op de assen; Q2 zone 4→5 volledig uit ring 4 (`R
 - `RingBiomeSource`: `LastColumn` (één eilandopzoeking per kolom per thread).
 - JSON `ring_4/overworld/island_mask.json`, `island_hole.json` → `island_output`.
 - Tests: `Ring4IslandsTest` (nieuw), `RingAquiferTest.ring4FallsSpringsAndLakesComeFromTheIslandField`, `IslandFieldTest`, `Ring4JsonTest`, `Ring4ReliefTest`.
+
+**62**
+- Nieuw `worldgen/densityfunction/Ring4Cliff` (lijn, plateau, gaten, valcellen, oppervlak over de lijn).
+- `IslandField`: optioneel codecveld `plateau` (DF-verwijzing, `ring_3/overworld/field`); `cliffed` in de surface, exacte wand in `thin`, klifvallen (`cliffFall`, per wereld) in `fallsOfChunk` en de bronkolommen, plonsbekkens ook in `initial_height`; `Column.cliff()`.
+- `IslandOutput.CLIFF`; JSON `ring_4/overworld/cliff.json` → `island_output cliff`; `islands.json` + `"plateau"`.
+- `Ring4Relief.detailAt`.
+- Tests: `Ring4CliffTest` (nieuw), `Ring4JsonTest`, `IslandFieldTest` (testveld met ring 3-plateau).
 
 ## Beslissingen
 - 2026-10-13 | worldgen | Ring 4-terrein volgt de biome-drempels van W-biomes (region_water hoog = open water, region_growth hoog = begroeid, band < 0 mythisch; water ±0,125/0, growth −0,075/0); de mythische helft van de bandovergang (`mist_fjords`) krijgt een lage fjordplateau-rand | Q1 = B: één indeling voor biome en landvorm, eigenaar W-biomes.

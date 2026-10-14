@@ -176,7 +176,8 @@ class Ring4IslandsTest {
                 IslandField.Column column = field.column(fall.fallX(), fall.fallZ());
                 assertEquals(fall.springY(), column.fallTop());
                 assertEquals(fall.bottom(), column.fallBottom());
-                assertTrue(column.surface() <= fall.bottom() - 2.0, "lands in water: " + column.surface() + " " + fall);
+                // The fall lands in the water: the ground lies under the water's top block (fall.bottom() − 1).
+                assertTrue(column.surface() < fall.bottom() - 1.0, "lands in water: " + column.surface() + " " + fall);
                 List<IslandField.Waterfall> listed = field.waterfallsWithin(fall.fallX(), fall.fallZ(), fall.fallX(), fall.fallZ());
                 assertEquals(1, listed.size());
             }
