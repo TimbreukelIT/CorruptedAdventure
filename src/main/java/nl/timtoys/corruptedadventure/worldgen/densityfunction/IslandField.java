@@ -640,26 +640,42 @@ public final class IslandField implements DensityFunction {
      */
     private double wall(Column c, int x, int y, int z) {
         int plateauTop = Mth.ceil(c.plateauY) - 1;
-        if (y > plateauTop + 2) {
+        double floor = c.wallDistance < 0.0 ? Math.min(c.footY, c.plateauY - Ring4Cliff.MIN_HEIGHT) : c.surface;
+        if (y > plateauTop + 2 || y < Mth.floor(floor) - 2) {
+            // Above the plateau and under the foot the terrain decides on both sides of the face: no noise needed.
             return 0.0;
         }
         double face = c.wallDistance;
-        int top = plateauTop;
         if (!c.nearFall) {
             face += Mth.clamp(Ring4Cliff.ROUGHNESS * relief.rough(x, y, z), -Ring4Cliff.ROUGHNESS, Ring4Cliff.ROUGHNESS);
-            // The top crumbles where the edge is: fully at the line, not at all from 4 blocks inside.
-            double edge = 1.0 - Ring4Relief.smooth(-c.wallDistance, 1.0, 4.0);
-            top -= (int) Math.round(Ring4Cliff.CRUMBLE * edge * Math.max(0.0, relief.crumble(x, z)));
         }
-        double floor = c.wallDistance < 0.0 ? Math.min(c.footY, c.plateauY - Ring4Cliff.MIN_HEIGHT) : c.surface;
         if (face < 0.0) {
             // Rock, up to the (crumbled) top; above it open up to the plateau's own top.
-            if (y <= top) {
-                return y >= Mth.floor(floor) - 2 ? 1.0 : 0.0;
-            }
-            return -1.0;
+            return y <= wallTop(c) ? 1.0 : -1.0;
         }
         return y >= Mth.ceil(floor) ? -1.0 : 0.0;
+    }
+
+    /**
+     * The top of the wall's rock in a column of its band, once per column: the plateau's top, crumbled down near the
+     * line (fully at the line, not at all from 4 blocks inside, by at most {@link Ring4Cliff#CRUMBLE}); beside a fall
+     * the plateau's top itself.
+     */
+    private int wallTop(Column c) {
+        if (c.wallTop == Integer.MIN_VALUE) {
+            int top = Mth.ceil(c.plateauY) - 1;
+            if (!c.nearFall) {
+                double edge = 1.0 - Ring4Relief.smooth(-c.wallDistance, 1.0, 4.0);
+                top -= (int) Math.round(Ring4Cliff.CRUMBLE * edge * Math.max(0.0, relief.crumble(c.x, c.z)));
+            }
+            c.wallTop = top;
+        }
+        return c.wallTop;
+    }
+
+    /** The same for a column by position, for tests. */
+    int wallTop(int x, int z) {
+        return wallTop(column(x, z));
     }
 
     /** Per block: what the stack adds to the density of vanilla's caves: closed under and beside a lake above the sea. */
@@ -1056,6 +1072,8 @@ public final class IslandField implements DensityFunction {
         boolean wallExact;
         /** Whether a cliff fall's spring or fall column lies within {@link Ring4Cliff#FALL_CLEARANCE} (the wall stays smooth). */
         boolean nearFall;
+        /** The wall's crumbled top ({@link #wallTop(Column)}), {@link Integer#MIN_VALUE} until first asked. */
+        int wallTop;
         /** The floor of a peat sinkhole, cut per block ({@link #thin}); NaN outside one. */
         double sinkholeFloor;
         /** The islands' solid blocks: {@link #islandCount} ranges [{@code islandLo}, {@code islandHi}] (inclusive). */
@@ -1110,6 +1128,7 @@ public final class IslandField implements DensityFunction {
             fallTop = Integer.MIN_VALUE;
             fallBottom = Integer.MIN_VALUE;
             fallFlowBelow = Integer.MIN_VALUE;
+            wallTop = Integer.MIN_VALUE;
         }
 
         void addIsland(int lo, int hi) {
