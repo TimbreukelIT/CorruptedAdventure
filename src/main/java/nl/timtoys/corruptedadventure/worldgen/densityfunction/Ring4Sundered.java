@@ -112,20 +112,34 @@ final class Ring4Sundered {
         return new double[]{offset, thickness};
     }
 
-    /** The land bridge of bridge cell {@code k}: {position along the zone (blocks), half width}. */
-    static double[] bridge(long salt, int k) {
-        long h = CellShapes.cell(salt, k, 0, BRIDGE_SALT);
-        double along = (k + 0.5) * BRIDGE_CELL + (CellShapes.unit(h, 0) - 0.5) * 2.0 * BRIDGE_JITTER;
+    /** The loop round the zone (blocks): the seam of the angle lies on it, and the bridge cells wrap round it. */
+    static double perimeter(RingLayout layout) {
+        return 2.0 * Math.PI * (zoneStart(layout) + zoneEnd(layout)) / 2.0;
+    }
+
+    /** The position along the zone (blocks), in [0, perimeter): continuous across the seam of the angle. */
+    static double along(RingLayout layout, double x, double z) {
+        return Ring4Cliff.wrap(Math.atan2(z, x) * (zoneStart(layout) + zoneEnd(layout)) / 2.0, perimeter(layout));
+    }
+
+    /** The land bridge of bridge cell {@code k} (taken modulo the count round the loop): {position (blocks), half width}. */
+    static double[] bridge(long salt, int k, double period) {
+        int count = Ring4Cliff.cellCount(period, BRIDGE_CELL);
+        double cellSize = period / count;
+        int kk = Math.floorMod(k, count);
+        long h = CellShapes.cell(salt, kk, 0, BRIDGE_SALT);
+        double along = (kk + 0.5) * cellSize + (CellShapes.unit(h, 0) - 0.5) * 2.0 * BRIDGE_JITTER;
         double half = BRIDGE_HALF_MIN + (BRIDGE_HALF_MAX - BRIDGE_HALF_MIN) * CellShapes.unit(h, 1);
         return new double[]{along, half};
     }
 
-    /** Whether a position along the zone (blocks) lies on a land bridge, which crosses the zone whole. */
-    static boolean onBridge(long salt, double along) {
-        int k = Mth.floor(along / BRIDGE_CELL);
+    /** Whether a position along the zone (blocks) lies on a land bridge, which crosses the zone whole (round the seam too). */
+    static boolean onBridge(long salt, double along, double period) {
+        int count = Ring4Cliff.cellCount(period, BRIDGE_CELL);
+        int k = (int) Math.floor(along / (period / count));
         for (int dk = -1; dk <= 1; dk++) {
-            double[] bridge = bridge(salt, k + dk);
-            if (Math.abs(along - bridge[0]) <= bridge[1]) {
+            double[] bridge = bridge(salt, k + dk, period);
+            if (Ring4Cliff.loopDistance(along, bridge[0], period) <= bridge[1]) {
                 return true;
             }
         }

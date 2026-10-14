@@ -446,13 +446,14 @@ public final class IslandField implements DensityFunction {
         }
         double distance = effective - line + Ring4Cliff.JITTER * relief.detailAt(x, z);
         double arc = Ring4Cliff.arc(ringLayout, x, z);
-        Ring4Cliff.Gap gap = Ring4Cliff.gapAt(salt(), arc);
+        Ring4Cliff.Gap gap = Ring4Cliff.gapAt(salt(), arc, Ring4Cliff.perimeter(layout.get()));
         double plateau = plateauAt(x, z, base);
         // The foot beside the wall stays at least MIN_HEIGHT under the plateau: ring 4's own rise beyond the line (hills,
         // cascades) must not turn the wall into a slope, so the ground blends down to a foot next to it.
         double outside = base;
         if (distance >= 0.0) {
-            double w = 1.0 - Ring4Relief.smooth(distance, 0.0, 2.0 * Ring4Cliff.WALL_BAND);
+            // Held at the wall's value out to 4 blocks (the wall is measured there), then blended back to the terrain.
+            double w = 1.0 - Ring4Relief.smooth(distance, 4.0, 2.0 * Ring4Cliff.WALL_BAND);
             outside = Mth.lerp(w, base, Math.min(base, plateau - Ring4Cliff.MIN_HEIGHT));
         }
         double foot = outside;
@@ -484,9 +485,13 @@ public final class IslandField implements DensityFunction {
         // ground of ring 4 beside the line varies by more than the wall's 40 blocks in a few blocks).
         RingLayout ringLayout = layout.get();
         double line = Ring4Cliff.lineRadius(ringLayout);
+        // Ring 3's height is read at the line too: the plateau is one height along the ray (a wall of 6 blocks has one top).
         double angle = Math.atan2(z, x);
-        double foot = baseHeight(line * Math.cos(angle), line * Math.sin(angle));
-        double ring3Height = volcanic == null ? foot + NO_PLATEAU : volcanic.column(Mth.floor(x), Mth.floor(z)).height();
+        double lineX = line * Math.cos(angle);
+        double lineZ = line * Math.sin(angle);
+        double foot = baseHeight(lineX, lineZ);
+        double ring3Height = volcanic == null ? foot + NO_PLATEAU
+                : volcanic.column(Mth.floor(lineX), Mth.floor(lineZ)).height();
         return Ring4Cliff.plateau(ring3Height, foot);
     }
 
@@ -497,7 +502,7 @@ public final class IslandField implements DensityFunction {
 
     /** The cliff's falls of the fall cells around a position along the line. */
     private List<Fall> cliffFallsNear(double arc) {
-        int k = Mth.floor(arc / Ring4Cliff.FALL_CELL);
+        int k = Ring4Cliff.fallCellOf(arc, Ring4Cliff.perimeter(layout.get()));
         List<Fall> found = new ArrayList<>(3);
         for (int dk = -1; dk <= 1; dk++) {
             Fall fall = cliffFall(k + dk);
@@ -526,7 +531,7 @@ public final class IslandField implements DensityFunction {
      */
     @Nullable
     private Fall placeCliffFall(int k) {
-        double arc = Ring4Cliff.fallArc(salt(), k);
+        double arc = Ring4Cliff.fallArc(salt(), k, Ring4Cliff.perimeter(layout.get()));
         if (Double.isNaN(arc)) {
             return null;
         }
@@ -549,8 +554,8 @@ public final class IslandField implements DensityFunction {
             if (cliffDistance(fx, fz) < 0.0 || cliffDistance(sx, sz) >= 0.0) {
                 continue;
             }
-            if (Ring4Cliff.gapAt(salt(), Ring4Cliff.arc(ringLayout, fx, fz)) != null
-                    || Ring4Cliff.gapAt(salt(), Ring4Cliff.arc(ringLayout, sx, sz)) != null
+            if (Ring4Cliff.gapAt(salt(), Ring4Cliff.arc(ringLayout, fx, fz), Ring4Cliff.perimeter(ringLayout)) != null
+                    || Ring4Cliff.gapAt(salt(), Ring4Cliff.arc(ringLayout, sx, sz), Ring4Cliff.perimeter(ringLayout)) != null
                     || ringLayout.sampleOverworld(fx, fz).ring() != nl.timtoys.corruptedadventure.ring.Ring.RING_4) {
                 return null;
             }
@@ -728,7 +733,7 @@ public final class IslandField implements DensityFunction {
                 java.util.Set<Integer> cells = new java.util.TreeSet<>();
                 for (int corner = 0; corner < 4; corner++) {
                     double arc = Ring4Cliff.arc(ringLayout, minX + 16 * (corner & 1), minZ + 16 * (corner >> 1));
-                    int k = Mth.floor(arc / Ring4Cliff.FALL_CELL);
+                    int k = Ring4Cliff.fallCellOf(arc, Ring4Cliff.perimeter(ringLayout));
                     cells.add(k - 1);
                     cells.add(k);
                     cells.add(k + 1);
@@ -808,8 +813,8 @@ public final class IslandField implements DensityFunction {
             return new Sunder(Sunder.NONE, 0.0, 0.0, 0.0);
         }
         long salt = salt();
-        double along = Math.atan2(z, x) * (Ring4Sundered.zoneStart(ringLayout) + Ring4Sundered.zoneEnd(ringLayout)) / 2.0;
-        if (Ring4Sundered.onBridge(salt, along)) {
+        double along = Ring4Sundered.along(ringLayout, x, z);
+        if (Ring4Sundered.onBridge(salt, along, Ring4Sundered.perimeter(ringLayout))) {
             return new Sunder(Sunder.NONE, 0.0, 0.0, strength);
         }
         double[] chunk = Ring4Sundered.chunk(salt, x, z);

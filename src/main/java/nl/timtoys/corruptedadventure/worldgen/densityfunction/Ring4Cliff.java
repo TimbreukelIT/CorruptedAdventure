@@ -60,9 +60,31 @@ final class Ring4Cliff {
         return r3 - layout.settings().transitionWidth(Ring.RING_3.ordinal()) / 2.0;
     }
 
-    /** The position along the line (blocks). */
+    /** The line's perimeter (blocks): the seam of the angle lies on it, and the gap, fall and bridge cells wrap round it. */
+    static double perimeter(RingLayout layout) {
+        return 2.0 * Math.PI * lineRadius(layout);
+    }
+
+    /** {@code value} in [0, period). */
+    static double wrap(double value, double period) {
+        double m = value % period;
+        return m < 0.0 ? m + period : m;
+    }
+
+    /** The distance between two positions on a loop of the given period (the shorter way round). */
+    static double loopDistance(double a, double b, double period) {
+        double d = wrap(a - b, period);
+        return Math.min(d, period - d);
+    }
+
+    /** The number of cells of about {@code cell} blocks around a loop of {@code period}; each is period / count long. */
+    static int cellCount(double period, double cell) {
+        return Math.max(1, (int) Math.round(period / cell));
+    }
+
+    /** The position along the line (blocks), in [0, perimeter): continuous across the seam of the angle. */
     static double arc(RingLayout layout, double x, double z) {
-        return Math.atan2(z, x) * lineRadius(layout);
+        return wrap(Math.atan2(z, x) * lineRadius(layout), perimeter(layout));
     }
 
     /** The plateau's height above the foot: ring 3's height, kept {@link #MIN_HEIGHT}–{@link #MAX_HEIGHT} above it. */
@@ -70,35 +92,40 @@ final class Ring4Cliff {
         return Mth.clamp(ring3, foot + MIN_HEIGHT, foot + MAX_HEIGHT);
     }
 
-    /** A gap of the line: centre along it, half width, and whether it is a ravine (else a scree slope). */
-    record Gap(double centre, double halfWidth, boolean ravine) {
+    /** A gap of the line: centre along it, half width, whether it is a ravine (else a scree slope), the loop's period. */
+    record Gap(double centre, double halfWidth, boolean ravine, double period) {
         /** 0..1: how much of the gap a position along the line has (its edges blend over 4 blocks). */
         double weight(double arc) {
-            return 1.0 - Ring4Relief.smooth(Math.abs(arc - centre), halfWidth, halfWidth + 4.0);
+            return 1.0 - Ring4Relief.smooth(loopDistance(arc, centre, period), halfWidth, halfWidth + 4.0);
         }
     }
 
-    /** The gap of gap cell {@code k}, or null. */
+    /** The gap of gap cell {@code k} (already in [0, count)) of cells {@code cellSize} long, or null. */
     @Nullable
-    static Gap gap(long salt, int k) {
+    static Gap gap(long salt, int k, double cellSize, double period) {
         long h = CellShapes.cell(salt, k, 0, GAP_SALT);
         if (CellShapes.unit(h, 0) >= GAP_CHANCE) {
             return null;
         }
         boolean ravine = CellShapes.unit(h, 1) < 0.5;
         double halfWidth = ravine ? 5.0 + 2.0 * CellShapes.unit(h, 2) : 15.0 + 10.0 * CellShapes.unit(h, 2);
-        double centre = (k + 0.2 + 0.6 * CellShapes.unit(h, 3)) * GAP_CELL;
-        return new Gap(centre, halfWidth, ravine);
+        double centre = (k + 0.2 + 0.6 * CellShapes.unit(h, 3)) * cellSize;
+        return new Gap(centre, halfWidth, ravine, period);
     }
 
-    /** The gap a position along the line lies in (the strongest of its cell and the two beside), or null. */
+    /**
+     * The gap a position along the line lies in (the strongest of its cell and the two beside, round the seam too), or
+     * null.
+     */
     @Nullable
-    static Gap gapAt(long salt, double arc) {
-        int k = Mth.floor(arc / GAP_CELL);
+    static Gap gapAt(long salt, double arc, double period) {
+        int count = cellCount(period, GAP_CELL);
+        double cellSize = period / count;
+        int k = Math.floorMod((int) Math.floor(arc / cellSize), count);
         Gap best = null;
         double weight = 0.0;
         for (int dk = -1; dk <= 1; dk++) {
-            Gap gap = gap(salt, k + dk);
+            Gap gap = gap(salt, Math.floorMod(k + dk, count), cellSize, period);
             if (gap != null && gap.weight(arc) > weight) {
                 weight = gap.weight(arc);
                 best = gap;
@@ -127,12 +154,20 @@ final class Ring4Cliff {
         return Mth.lerp(gap.weight(arc), wall, ramp);
     }
 
-    /** The fall of fall cell {@code k}: its position along the line, or NaN without one. */
-    static double fallArc(long salt, int k) {
-        long h = CellShapes.cell(salt, k, 0, FALL_SALT);
+    /** The fall cell of an arc (not wrapped: {@code cliffFall} takes it modulo the count). */
+    static int fallCellOf(double arc, double period) {
+        return (int) Math.floor(arc / (period / cellCount(period, FALL_CELL)));
+    }
+
+    /** The fall of fall cell {@code k} (taken modulo the count round the loop): its position along the line, or NaN. */
+    static double fallArc(long salt, int k, double period) {
+        int count = cellCount(period, FALL_CELL);
+        double cellSize = period / count;
+        int kk = Math.floorMod(k, count);
+        long h = CellShapes.cell(salt, kk, 0, FALL_SALT);
         if (CellShapes.unit(h, 0) >= FALL_CHANCE) {
             return Double.NaN;
         }
-        return (k + 0.15 + 0.7 * CellShapes.unit(h, 1)) * FALL_CELL;
+        return (kk + 0.15 + 0.7 * CellShapes.unit(h, 1)) * cellSize;
     }
 }

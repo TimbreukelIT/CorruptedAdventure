@@ -31,15 +31,20 @@ class Ring4SunderedTest {
     void landBridgesStandAboutEveryFiveHundredToEightHundredBlocks() {
         long salt = FIELD.salt();
         List<Double> along = new ArrayList<>();
-        for (int k = -3; k <= 12; k++) {
-            double[] bridge = Ring4Sundered.bridge(salt, k);
+        double period = Ring4Sundered.perimeter(LAYOUT);
+        int count = Ring4Cliff.cellCount(period, Ring4Sundered.BRIDGE_CELL);
+        for (int k = 0; k < count; k++) {
+            double[] bridge = Ring4Sundered.bridge(salt, k, period);
             along.add(bridge[0]);
-            assertTrue(Ring4Sundered.onBridge(salt, bridge[0]), "the centre of bridge " + k);
+            assertTrue(Ring4Sundered.onBridge(salt, bridge[0], period), "the centre of bridge " + k);
         }
         for (int k = 1; k < along.size(); k++) {
             double gap = along.get(k) - along.get(k - 1);
             assertTrue(gap >= 450.0 && gap <= 850.0, "gap " + gap);
         }
+        // Round the loop too: the last bridge to the first, across the seam.
+        double wrapGap = period - along.get(along.size() - 1) + along.get(0);
+        assertTrue(wrapGap >= 450.0 && wrapGap <= 850.0, "gap across the seam " + wrapGap);
     }
 
     /** The whole zone 4→5: the share of abyss (cracks or loose chunks) is at most 40 % (decision of the user). */
