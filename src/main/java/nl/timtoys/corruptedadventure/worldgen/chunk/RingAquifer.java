@@ -112,6 +112,7 @@ final class RingAquifer implements Aquifer {
     // The top (exclusive) of the still sea of the abyss in the zone 4→5 (63), else Integer.MIN_VALUE.
     private final int[] abyssTop = new int[COLUMNS + 1];
     private final int[] abyssFloor = new int[COLUMNS + 1];
+    private final boolean[] zone45 = new boolean[COLUMNS + 1];
     private final int[] lakeGuardBottom = new int[COLUMNS + 1];
     private final int[] lakeGuardTop = new int[COLUMNS + 1];
 
@@ -236,6 +237,7 @@ final class RingAquifer implements Aquifer {
         // The zone 4→5 (both halves) has the abyss's still sea (63), read from the island field's column.
         boolean sundered = islands != null && position.inTransition() && position.inner() == Ring.RING_4 && position.outer() == Ring.RING_5;
         IslandField.Column islandColumn = falls || sundered ? islands.islandColumn(x, z) : null;
+        zone45[i] = sundered;
         abyssTop[i] = sundered ? islandColumn.abyssSeaTop() : Integer.MIN_VALUE;
         abyssFloor[i] = sundered ? islandColumn.abyssFloor() : Integer.MAX_VALUE;
         waterFallTop[i] = falls ? islandColumn.fallTop() : Integer.MIN_VALUE;
@@ -289,10 +291,14 @@ final class RingAquifer implements Aquifer {
         }
         if (abyssTop[i] != Integer.MIN_VALUE && y >= abyssFloor[i]) {
             // The open abyss in the zone 4→5 (63), from its floor up: the still sea up to its top, air above, never
-            // scheduled to flow; the same level as the rest of the zone (RingFluidPicker.sunderedZone), so it never stands
-            // beside air. Caves under its floor follow the ordinary rules.
+            // scheduled to flow; the same level as the rest of the zone (RingFluidPicker.sunderedZone).
             suppressed = true;
             return y < abyssTop[i] ? WATER : AIR;
+        }
+        if (zone45[i] && y <= RingFluidPicker.SUNDERED_SEA_TOP) {
+            // 5a: every other open space of the zone at or below its sea (a cave, the ground the 4-block grid opens beside
+            // a crack, space under the abyss's floor) stays rock, so the abyss's water never stands beside air there.
+            return null;
         }
         if (y < dryBelow[i]) {
             return AIR;

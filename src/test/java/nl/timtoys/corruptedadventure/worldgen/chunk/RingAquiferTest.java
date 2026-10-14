@@ -684,11 +684,17 @@ class RingAquiferTest {
             }
             cracks++;
             for (int[] side : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
-                for (int y = 1; y <= 62; y++) {
+                // Both ways and both levels: above the abyss's sea (Y 1..62: the ground's water beside the crack's air) and
+                // below it (Y −20..0: the crack's water beside open ground or a cave, 5a).
+                for (int y = -20; y <= 62; y++) {
                     BlockState crack = aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, y, z), -0.5);
                     BlockState beside = aquifer.computeSubstance(new DensityFunction.SinglePointContext(x + side[0], y, z + side[1]), -0.5);
-                    assertFalse(crack != null && crack.isAir() && beside != null && beside.is(Blocks.WATER),
-                            "water beside the air of a crack at " + (x + side[0]) + " " + y + " " + (z + side[1]));
+                    boolean crackAir = crack != null && crack.isAir();
+                    boolean crackWater = crack != null && crack.is(Blocks.WATER);
+                    boolean besideAir = beside != null && beside.isAir();
+                    boolean besideWater = beside != null && beside.is(Blocks.WATER);
+                    assertFalse(crackAir && besideWater || crackWater && besideAir,
+                            "water beside air at a crack: " + x + " " + y + " " + z + " / " + (x + side[0]) + " " + (z + side[1]));
                 }
             }
             // The abyss's sea itself: water at Y 0, air at Y 1.
