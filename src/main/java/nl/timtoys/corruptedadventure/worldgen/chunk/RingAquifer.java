@@ -385,6 +385,13 @@ final class RingAquifer implements Aquifer {
             suppressed = true;
             return AIR;
         }
+        if (zone45[i] && y > RingFluidPicker.SUNDERED_SEA_TOP && (state.is(Blocks.WATER) || state.is(Blocks.LAVA))) {
+            // Review 5a: vanilla fills a cave from its nearest aquifer cells, whose centres may lie in ring 4 (sea Y 62)
+            // while the cave is in the zone; above the zone's sea its open space is dry, so no pocket of water stands
+            // against the air of a crack.
+            suppressed = true;
+            return AIR;
+        }
         if (y < waterOnlyFrom[i] || !(state.is(Blocks.LAVA) || state.is(Blocks.WATER))) {
             return state;
         }

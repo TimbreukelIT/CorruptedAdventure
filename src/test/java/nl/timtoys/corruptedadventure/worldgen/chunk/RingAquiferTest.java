@@ -709,6 +709,57 @@ class RingAquiferTest {
     }
 
     /**
+     * Review 5a: vanilla's aquifer fills a cave from its nearest aquifer cells, whose centres may lie in ring 4 (sea
+     * Y 62) while the cave lies in the zone 4→5. Even then the zone's open space above its sea (Y 0) is dry, and its abyss
+     * keeps its own sea; ring 4 proper keeps vanilla's water.
+     */
+    @Test
+    void zone45IsDryAboveItsSeaWhateverVanillaFillsIn() {
+        IslandField islands = IslandFieldTest.field();
+        var layout = IslandFieldTest.LAYOUT;
+        // Vanilla as it answers when its nearest cell lies in ring 4: water in all open space.
+        Aquifer global = new Aquifer() {
+            @Override
+            public BlockState computeSubstance(DensityFunction.FunctionContext context, double substance) {
+                return substance > 0.0 ? null : Blocks.WATER.defaultBlockState();
+            }
+
+            @Override
+            public boolean shouldScheduleFluidUpdate() {
+                return false;
+            }
+        };
+        RingAquifer aquifer = new RingAquifer(Level.OVERWORLD, global, null, islands, layout::sampleOverworld);
+        int ground = 0;
+        int cracks = 0;
+        for (double angle = 0.0; angle < 2.0 * Math.PI; angle += 0.0137) {
+            int x = (int) Math.floor(7930.0 * Math.cos(angle));
+            int z = (int) Math.floor(7930.0 * Math.sin(angle));
+            RingPosition position = layout.sampleOverworld(x, z);
+            if (!RingFluidPicker.sunderedZone(Level.OVERWORLD, position) || position.blend() < IslandField.SUNDERED_CALM_SHARE) {
+                continue;
+            }
+            boolean crack = islands.islandColumn(x, z).abyssSeaTop() != Integer.MIN_VALUE;
+            if (crack) {
+                cracks++;
+            } else {
+                ground++;
+            }
+            for (int y = RingFluidPicker.SUNDERED_SEA_TOP + 1; y <= 62; y++) {
+                BlockState state = aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, y, z), -0.5);
+                assertTrue(state == null || state.isAir(), "water above the zone's sea at " + x + " " + y + " " + z);
+            }
+            if (crack) {
+                assertSame(Blocks.WATER.defaultBlockState(),
+                        aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, RingFluidPicker.SUNDERED_SEA_TOP, z), -0.5));
+            }
+        }
+        assertTrue(ground > 10 && cracks > 10, "ground " + ground + ", cracks " + cracks);
+        assertSame(Blocks.WATER.defaultBlockState(), aquifer.computeSubstance(RingPosition.within(Ring.RING_4),
+                new DensityFunction.SinglePointContext(7000, 30, 0), -0.5));
+    }
+
+    /**
      * Review 5a: the inner edge of the zone 4→5 with the terrain as the noise chunk builds it (the bilinear blend of the
      * cell corners' surfaces): a ring 4 column (sea Y 62) beside a zone column (sea Y 0) never holds water beside air.
      */
