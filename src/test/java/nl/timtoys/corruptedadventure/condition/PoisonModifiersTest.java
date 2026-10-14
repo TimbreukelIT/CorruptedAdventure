@@ -38,8 +38,7 @@ class PoisonModifiersTest {
     }
 
     private static float rained(float rate, RingWeatherState state, BooleanSupplier openSky, BooleanSupplier blighted) {
-        return ToxicRainPoisonModifier.rained(rate, state, openSky, blighted, RAIN_RISE,
-                ToxicRainPoisonModifier.DEFAULT_RAIN_MULTIPLIER);
+        return ToxicRainPoisonModifier.rained(rate, state, openSky, blighted, RAIN_RISE, 1.0F);
     }
 
     @Test
@@ -56,7 +55,6 @@ class PoisonModifiersTest {
         assertEquals(0.125F, rained(-1.0F, fadingOut, YES, YES), 1.0E-6F);
         assertEquals(1.0F, ToxicRainPoisonModifier.rained(-1.0F, weather(RingWeatherType.TOXIC_RAIN, 1.0F), YES, YES,
                 RAIN_RISE, 2.0F), 1.0E-6F);
-        assertEquals(1.0F, ToxicRainPoisonModifier.DEFAULT_RAIN_MULTIPLIER);
     }
 
     @Test

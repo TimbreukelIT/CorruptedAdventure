@@ -19,12 +19,6 @@ import java.util.function.BooleanSupplier;
  * {@code [weather.ring4]} (stream A).
  */
 final class ToxicRainPoisonModifier implements RateModifier {
-    /**
-     * Stands in for {@code [weather.ring4] toxicRainPoisonMultiplier} (stream A, default 1.0) until integration 1 links
-     * {@link #rainMultiplier} to it; the weather config does not exist in this branch yet.
-     */
-    static final float DEFAULT_RAIN_MULTIPLIER = 1.0F;
-
     @Override
     public float modify(Condition condition, ConditionContext context, float rate) {
         if (condition != Condition.POISON) {
@@ -32,8 +26,8 @@ final class ToxicRainPoisonModifier implements RateModifier {
         }
         double x = context.player().getX();
         double z = context.player().getZ();
-        // stateAt: the weather of the ring at the player's position (stream A makes it band-aware in ring 4); the
-        // explicit band check keeps this right before and after that change.
+        // stateAt: the weather of the ring at the player's position, with the ring 4 band rule applied; the explicit
+        // band check below is the same rule, kept here so the modifier reads on its own.
         return rained(rate, RingWeather.stateAt(context.level(), x, z),
                 () -> context.canSeeSky() && !context.player().isUnderWater(),
                 () -> Ring4Band.of(RingLayout.current()).blighted(x, z),
@@ -54,8 +48,8 @@ final class ToxicRainPoisonModifier implements RateModifier {
         return Math.max(rate, rainRise * multiplier * state.intensity());
     }
 
-    /** {@code [weather.ring4] toxicRainPoisonMultiplier}; until integration 1 the default. */
+    /** {@code [weather.ring4] toxicRainPoisonMultiplier}. */
     static float rainMultiplier() {
-        return DEFAULT_RAIN_MULTIPLIER;
+        return ServerConfig.RING_4_WEATHER.toxicRainPoisonMultiplier.get().floatValue();
     }
 }

@@ -12,7 +12,8 @@ import java.util.stream.Collectors;
 
 /**
  * DEBUG line whenever the weather felt at the camera changes: the types, their strength in steps of 0.25 and the
- * wind of the sandstorm and of ring 4's storm. Two clients at the same spot log the same lines, which is how test S compares them without eyes.
+ * wind of the sandstorm and of ring 4's storm. Two clients at the same spot log the same lines, which is how test S
+ * compares them without eyes.
  */
 final class RingWeatherDebugLog {
     private static String last = "";

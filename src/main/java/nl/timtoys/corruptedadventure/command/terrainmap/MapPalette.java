@@ -56,11 +56,9 @@ final class MapPalette {
             Map.entry("corruptedadventure:frozen_lava_sea", 0x9FD3FF),
             Map.entry("corruptedadventure:rime_forest", 0x5F8FB8),
             Map.entry("corruptedadventure:glacier_rifts", 0x2F4D8A),
-            // placeholders and the edge
+            // placeholders and the edge (ring 4 has its real biomes since golf 1; those take a stable hash colour)
             Map.entry("corruptedadventure:placeholder_ring_3", 0x7A4A3A),
-            Map.entry("corruptedadventure:placeholder_ring_4", 0x4A6A3A),
             Map.entry("corruptedadventure:placeholder_ring_5", 0x5A3A6A),
-            Map.entry("corruptedadventure:placeholder_nether_ring_4", 0x3A4A2A),
             Map.entry("corruptedadventure:placeholder_nether_ring_5", 0x3A2A4A),
             Map.entry("corruptedadventure:void_edge", 0x101010),
             Map.entry("corruptedadventure:nether_void_edge", 0x280A0A));
