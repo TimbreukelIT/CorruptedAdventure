@@ -34,6 +34,8 @@ public final class IslandOutput implements DensityFunction {
         RIVER("river", 0.0, 1.0),
         /** 0..1: a fjord's channel, 1 on its floor. */
         FJORD("fjord", 0.0, 1.0),
+        /** 0..1: the cliff 3→4's wall (1 on it) or scree slope (62). */
+        CLIFF("cliff", 0.0, 1.0),
         /** 3D, not interpolated: +1 inside an island, −1 in a carved opening, 0 elsewhere (the terrain decides). */
         THIN("thin", -1.0, 1.0),
         /** 3D: added to the density of vanilla's caves, 0 where they run freely, up to 2 where they are gone. */
@@ -111,6 +113,7 @@ public final class IslandOutput implements DensityFunction {
             case ISLAND_HOLE -> column.islandHole;
             case RIVER -> column.river;
             case FJORD -> column.fjord;
+            case CLIFF -> column.cliff;
             case INITIAL_HEIGHT, THIN, CAVE_LIFT -> throw new IllegalArgumentException(output + " is not a column value");
         };
     }

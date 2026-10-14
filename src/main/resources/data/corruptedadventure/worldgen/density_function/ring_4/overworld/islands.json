@@ -13,5 +13,6 @@
   },
   "settings": {
     "cell_size": 128
-  }
+  },
+  "plateau": "corruptedadventure:ring_3/overworld/field"
 }

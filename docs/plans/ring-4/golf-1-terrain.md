@@ -36,7 +36,7 @@ Twee pure stappen (`IslandPlacement`):
 - Terrasvallen (Q3-A "vallen van terrasranden"): niet in 61 — het terrein is per 4 blokken geïnterpoleerd, dus een terrasrand is nooit verticaal; een val van een rand landt op de helling en stroomt uit (water tegen lucht). Komt in 62 samen met de klifvallen, die hetzelfde probleem hebben (exacte wand per blok).
 - Teststop 5-pre: `/ca terrainmap`-PNG van ring 4.
 
-## Pakket 62 — klif 3→4
+## Pakket 62 — klif 3→4 (gebouwd; test en waterscan bij integratie)
 - **Lijn** op blend 0,9 van zone 3→4 (effectieve afstand 6.051; ring 4-helft), ±3 blokken gerafeld met de detailruis. De ring 4-invoer volgt in de zone tot de lijn een plateau op ring 3-hoogte (`plateau`: het `VolcanicField` van ring 3 via het nieuwe optionele codecveld `plateau` van `island_field`), 40–80 boven de voet geklemd, en valt daar naar het ring 4-terrein; `ring_blend` weegt ring 4 op de lijn 97 %, dus het plateau is ring 3-terrein (`steam_fens`) en de voet echte ring 4.
 - **Exacte wand**: binnen 6 blokken van de lijn per blok via `thin` (binnen gesteente tot de plateautop, buiten open vanaf de voet), zodat de klif verticaal staat ondanks het 4-blokraster.
 - **Gaten** (`Ring4Cliff.GAP_CELL` 280, kans 0,8): half **kloof** (10–14 breed, bodem van het plateau 48 blokken binnen de lijn naar de voet) en half **puinhelling** (30–50 breed, helling van 30 binnen tot 12 buiten de lijn); daar geen exacte wand.
@@ -117,6 +117,8 @@ Q1 terrein ↔ biome-indeling op de assen; Q2 zone 4→5 volledig uit ring 4 (`R
 - `IslandOutput.CLIFF`; JSON `ring_4/overworld/cliff.json` → `island_output cliff`; `islands.json` + `"plateau"`.
 - `Ring4Relief.detailAt`.
 - Tests: `Ring4CliffTest` (nieuw), `Ring4JsonTest`, `IslandFieldTest` (testveld met ring 3-plateau).
+- Plateau per ray: de voet wordt gemeten op de lijn op dezelfde straal (`plateauAt`); de voet naast de wand loopt over 12 blokken terug naar plateau − 40 (ring 4-heuvels verder weg mogen de wand niet tot helling maken).
+- Waterscan (water tegen lucht buiten de vastgelegde vallen) en een terreinkaart van de klif: na integratie (server-test, niet nu).
 
 ## Beslissingen
 - 2026-10-13 | worldgen | Ring 4-terrein volgt de biome-drempels van W-biomes (region_water hoog = open water, region_growth hoog = begroeid, band < 0 mythisch; water ±0,125/0, growth −0,075/0); de mythische helft van de bandovergang (`mist_fjords`) krijgt een lage fjordplateau-rand | Q1 = B: één indeling voor biome en landvorm, eigenaar W-biomes.

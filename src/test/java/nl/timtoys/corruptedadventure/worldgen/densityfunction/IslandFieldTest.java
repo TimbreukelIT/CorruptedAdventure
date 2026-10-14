@@ -51,7 +51,9 @@ public class IslandFieldTest {
                 noise(key(r, "hills"), seed), noise(key(r, "detail"), seed), noise(key(r, "shoals"), seed),
                 noise(key(r, "rivers"), seed), noise(key(r, "fjords"), seed), noise(key(r, "warp"), seed));
         IslandField.Settings settings = IslandField.Settings.CODEC.parse(JsonOps.INSTANCE, json.get("settings")).getOrThrow();
-        return new IslandField(noise(key(json, "hash"), seed), relief, settings, () -> layout);
+        // The plateau above the cliff 3→4: ring 3's field on the test seed (its layout is the same); none on other seeds.
+        return new IslandField(noise(key(json, "hash"), seed), relief, settings, seed == SEED ? VolcanicFieldTest.field() : null,
+                () -> layout);
     }
 
     private static String key(JsonObject json, String field) {

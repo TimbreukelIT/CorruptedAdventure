@@ -117,6 +117,11 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         return t * t * (3.0 - 2.0 * t);
     }
 
+    /** The detail noise at a position (−1..1 about), for small wanderings of lines. */
+    double detailAt(double x, double z) {
+        return sample(detail, x, z);
+    }
+
     /** The water axis at a position (as the router reads it, without its cache). */
     double waterAxis(double x, double z) {
         return sample(water, x, z);
