@@ -139,6 +139,20 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
         return dimension == Level.OVERWORLD && position.ring() == Ring.RING_4 && islands != null;
     }
 
+    /** The top block of the still sea in the zone 4→5 ({@code sundered_reach}, 63): the abyss's sea, Y 0. */
+    static final int SUNDERED_SEA_TOP = 0;
+
+    /**
+     * Whether a position lies in the overworld zone 4→5, both halves (63): its whole sea stands at
+     * {@link #SUNDERED_SEA_TOP}, the abyss's. With the sea at Y 62 on the ground between the cracks, water stood
+     * sideways against the air of the cracks (5a). Ring 4's own sea stops against the rim of ground that the terrain
+     * keeps at the zone's inner edge.
+     */
+    static boolean sunderedZone(ResourceKey<Level> dimension, RingPosition position) {
+        return dimension == Level.OVERWORLD && position.inTransition() && position.inner() == Ring.RING_4
+                && position.outer() == Ring.RING_5;
+    }
+
     @Override
     public Aquifer.FluidStatus computeFluid(int x, int y, int z) {
         return computeFluid(RingColumnCache.ringAt(dimension, x, z), x, y, z);
@@ -149,7 +163,8 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
             return NO_FLUID;
         }
         Aquifer.FluidStatus status = vanilla.computeFluid(x, y, z);
-        Integer level = levels.get(position.ring());
+        // Boxed on both sides: an int here would unbox the map's null for rings without a level.
+        Integer level = sunderedZone(dimension, position) ? Integer.valueOf(SUNDERED_SEA_TOP) : levels.get(position.ring());
         if (level != null && dimension == Level.OVERWORLD && y < LAVA_LAYER_TOP) {
             // The overworld's lava layer stays vanilla's; a ring's level only moves the sea above it.
             return status;

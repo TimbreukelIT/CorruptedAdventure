@@ -417,6 +417,7 @@ public final class IslandField implements DensityFunction {
         Ring4Relief.Sample s = new Ring4Relief.Sample();
         relief.sample(x, z, band(x, z), s, salt());
         double surface = withHoles(cliffed(x, z, s.height, null), x, z, shapesNear(Mth.floor(x), Mth.floor(z)), null);
+        surface = rimmed(x, z, surface);
         Sunder sunder = sunder(x, z);
         if (sunder.kind() != Sunder.NONE) {
             surface = Math.min(surface, Ring4Sundered.ABYSS_FLOOR);
@@ -777,6 +778,7 @@ public final class IslandField implements DensityFunction {
         c.surface = withHoles(c.height, c.x, c.z, shapesNear(c.x, c.z), hole);
         c.islandHole = hole[0];
         // The sundered zone 4→5 (63): cracks drop the ground into the abyss, loose chunks float above it.
+        c.surface = rimmed(c.x, c.z, c.surface);
         Sunder sunder = sunder(c.x, c.z);
         c.sundered = sunder.strength();
         c.sunderKind = sunder.kind();
@@ -792,6 +794,12 @@ public final class IslandField implements DensityFunction {
             c.surface = Math.min(c.surface, Ring4Sundered.ABYSS_FLOOR);
         }
         c.surfaceFilled = true;
+    }
+
+    /** The ground at least {@link Ring4Sundered#RIM_TOP} in the zone 4→5 and the rim before it (5a), else unchanged. */
+    private double rimmed(double x, double z, double surface) {
+        RingLayout ringLayout = layout.get();
+        return Ring4Sundered.inRim(ringLayout, ringLayout.effectiveDistance(x, z)) ? Math.max(surface, Ring4Sundered.RIM_TOP) : surface;
     }
 
     /** How a column lies in the sundered zone (63): its kind, the loose chunk's offset and thickness, the strength. */
@@ -1112,6 +1120,11 @@ public final class IslandField implements DensityFunction {
         /** The top (exclusive) of the still sea of the abyss in this column (Y 0), else {@link Integer#MIN_VALUE}. */
         public int abyssSeaTop() {
             return sunderKind == Sunder.NONE ? Integer.MIN_VALUE : Ring4Sundered.SEA_TOP + 1;
+        }
+
+        /** The lowest block of the open abyss in this column (its floor), else {@link Integer#MAX_VALUE}. */
+        public int abyssFloor() {
+            return sunderKind == Sunder.NONE ? Integer.MAX_VALUE : (int) Math.floor(Ring4Sundered.ABYSS_FLOOR);
         }
 
         public int springY() {

@@ -23,7 +23,13 @@ class RingFluidPickerTest {
         for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_4, Ring.RING_5}) {
             assertSame(SEA, PICKER.computeFluid(RingPosition.within(ring), 0, 40, 0));
         }
-        assertSame(SEA, PICKER.computeFluid(new RingPosition(Ring.RING_4, Ring.RING_5, 0.9), 0, 40, 0));
+        // 5a: the zone 4→5 (both halves) has the abyss's still sea at Y 0, not the sea up to Y 62.
+        for (double blend : new double[]{0.1, 0.9}) {
+            RingPosition zone = new RingPosition(Ring.RING_4, Ring.RING_5, blend);
+            assertTrue(PICKER.computeFluid(zone, 0, 40, 0).at(40).isAir(), "zone 4→5 at " + blend);
+            assertTrue(PICKER.computeFluid(zone, 0, 1, 0).at(1).isAir());
+            assertSame(SEA.at(0), PICKER.computeFluid(zone, 0, 0, 0).at(0));
+        }
     }
 
     @Test

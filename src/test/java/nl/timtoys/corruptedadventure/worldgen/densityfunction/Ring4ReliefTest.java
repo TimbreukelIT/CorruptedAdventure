@@ -29,7 +29,9 @@ class Ring4ReliefTest {
                 int x = (int) Math.round(r * cos);
                 int z = (int) Math.round(r * sin);
                 var position = IslandFieldTest.LAYOUT.sampleOverworld(x, z);
-                if (position.inTransition() || position.ring() != Ring.RING_4) {
+                if (position.inTransition() || position.ring() != Ring.RING_4
+                        || Ring4Sundered.inRim(IslandFieldTest.LAYOUT, IslandFieldTest.LAYOUT.effectiveDistance(x, z))) {
+                    // Not the rim before the zone 4→5 either (5a): its ground is raised to stop the sea.
                     continue;
                 }
                 IslandField.Column c = field.column(x, z);

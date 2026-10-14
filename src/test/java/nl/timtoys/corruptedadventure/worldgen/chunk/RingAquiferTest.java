@@ -642,4 +642,63 @@ class RingAquiferTest {
         assertSame(Blocks.LAVA.defaultBlockState(), aquifer.computeSubstance(own, -0.5));
         assertEquals(1, lookups[0], "the noise chunk's own column was pushed out");
     }
+
+    /**
+     * 5a: in the zone 4→5 no water stands sideways against the air of a crack. The zone's sea (picker) and the abyss's
+     * (aquifer) are one level, Y 0: open space beside a crack is never water where the crack is air (Y 1..62), and ring
+     * 4 proper keeps its sea at Y 62.
+     */
+    @Test
+    void zone45HasNoWaterBesideTheAirOfItsCracks() {
+        IslandField islands = IslandFieldTest.field();
+        var layout = IslandFieldTest.LAYOUT;
+        // The overworld's global sea: water up to Y 62, lava below −54.
+        Aquifer.FluidPicker sea = (x, y, z) -> y < RingFluidPicker.LAVA_LAYER_TOP
+                ? new Aquifer.FluidStatus(RingFluidPicker.LAVA_LAYER_TOP, Blocks.LAVA.defaultBlockState())
+                : new Aquifer.FluidStatus(RingFluidPicker.SEA_LEVEL, Blocks.WATER.defaultBlockState());
+        RingFluidPicker picker = new RingFluidPicker(Level.OVERWORLD, sea);
+        // Open space filled from the ring picker, as vanilla's aquifer does above the preliminary surface.
+        Aquifer global = new Aquifer() {
+            @Override
+            public BlockState computeSubstance(DensityFunction.FunctionContext context, double substance) {
+                if (substance > 0.0) {
+                    return null;
+                }
+                RingPosition position = layout.sampleOverworld(context.blockX(), context.blockZ());
+                return picker.computeFluid(position, context.blockX(), context.blockY(), context.blockZ()).at(context.blockY());
+            }
+
+            @Override
+            public boolean shouldScheduleFluidUpdate() {
+                return false;
+            }
+        };
+        RingAquifer aquifer = new RingAquifer(Level.OVERWORLD, global, null, islands, layout::sampleOverworld);
+        int cracks = 0;
+        for (double angle = 0.0; angle < 2.0 * Math.PI && cracks < 60; angle += 0.0137) {
+            int x = (int) Math.floor(8050.0 * Math.cos(angle));
+            int z = (int) Math.floor(8050.0 * Math.sin(angle));
+            if (!RingFluidPicker.sunderedZone(Level.OVERWORLD, layout.sampleOverworld(x, z))
+                    || islands.islandColumn(x, z).abyssSeaTop() == Integer.MIN_VALUE) {
+                continue;
+            }
+            cracks++;
+            for (int[] side : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                for (int y = 1; y <= 62; y++) {
+                    BlockState crack = aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, y, z), -0.5);
+                    BlockState beside = aquifer.computeSubstance(new DensityFunction.SinglePointContext(x + side[0], y, z + side[1]), -0.5);
+                    assertFalse(crack != null && crack.isAir() && beside != null && beside.is(Blocks.WATER),
+                            "water beside the air of a crack at " + (x + side[0]) + " " + y + " " + (z + side[1]));
+                }
+            }
+            // The abyss's sea itself: water at Y 0, air at Y 1.
+            assertSame(Blocks.WATER.defaultBlockState(), aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, 0, z), -0.5));
+            assertSame(Blocks.AIR.defaultBlockState(), aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, 1, z), -0.5));
+        }
+        assertTrue(cracks > 10, "cracks " + cracks);
+        // Ring 4 proper keeps its sea at Y 62.
+        RingPosition ring4 = RingPosition.within(Ring.RING_4);
+        assertSame(Blocks.WATER, picker.computeFluid(ring4, 7000, 30, 0).at(30).getBlock());
+        assertTrue(picker.computeFluid(new RingPosition(Ring.RING_4, Ring.RING_5, 0.5), 8000, 30, 0).at(30).isAir());
+    }
 }

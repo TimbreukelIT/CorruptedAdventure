@@ -15,6 +15,13 @@ final class Ring4Sundered {
     /** The abyss's floor, and the top block of its still sea. */
     static final double ABYSS_FLOOR = -20.0;
     static final int SEA_TOP = 0;
+    /**
+     * The ground of the zone (and of a band {@link #RIM_BEFORE} blocks before it in ring 4) never lies below this (5a):
+     * the zone's sea stands at {@link #SEA_TOP}, so ground there under Y 63 would be dry pits beside the cracks, and ring
+     * 4's sea (Y 62) stops against this rim instead of standing beside the zone's air.
+     */
+    static final double RIM_TOP = 64.0;
+    static final double RIM_BEFORE = 12.0;
     /** From this share of the zone on the ground is fully broken. */
     static final double FULL_AT = 0.55;
     /** The ground breaks into chunks around the points of a jittered grid of this size. */
@@ -35,6 +42,11 @@ final class Ring4Sundered {
     static double zoneStart(RingLayout layout) {
         double r4 = layout.settings().ringOuterRadii().get(Ring.RING_4.ordinal());
         return r4 - layout.settings().transitionWidth(Ring.RING_4.ordinal()) / 2.0;
+    }
+
+    /** Whether an effective distance lies in the rim and the zone, where the ground is at least {@link #RIM_TOP}. */
+    static boolean inRim(RingLayout layout, double effective) {
+        return effective >= zoneStart(layout) - RIM_BEFORE && effective <= zoneEnd(layout);
     }
 
     /** The outer edge of the zone 4→5 (effective distance). */
