@@ -87,6 +87,13 @@ public final class ModConfiguredFeatures {
     public static final ResourceKey<ConfiguredFeature<?, ?>> NETHER_RING_2_ORE_DEBRIS_SMALL = key("nether_ring_2_ore_debris_small");
     public static final ResourceKey<ConfiguredFeature<?, ?>> NETHER_RING_2_ORE_MAGMA = key("nether_ring_2_ore_magma");
 
+    // ring 4 — B
+    /**
+     * The cascade tree the moonpetal sapling grows (ModTreeGrowers.MOONPETAL; contract ring 4 §3). The feature itself
+     * comes from the biome stream (75); until then the sapling does not grow.
+     */
+    public static final ResourceKey<ConfiguredFeature<?, ?>> MOONPETAL_TREE = key("ring_4/moonpetal_tree");
+
     private ModConfiguredFeatures() {
     }
 

@@ -59,6 +59,134 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         netherRing2();
         ring3();
         netherRing3();
+        ring4();
+    }
+
+    /**
+     * Ring 4. Tidestone is natural ground that carvers cut through, and the host rock of the ring 4 ores
+     * ({@code ring_4_stones}); like pumice deliberately not in {@code #base_stone_overworld}. The moonpetal set and its
+     * withered trunk burn ({@code #logs_that_burn}), tagged like the palm set. Peat is {@code #dirt}: plants grow on it.
+     */
+    private void ring4() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.TIDESTONE.get(), ModBlocks.TIDESTONE_STAIRS.get(),
+                ModBlocks.TIDESTONE_SLAB.get(), ModBlocks.TIDESTONE_WALL.get(), ModBlocks.COBBLED_TIDESTONE.get(),
+                ModBlocks.COBBLED_TIDESTONE_STAIRS.get(), ModBlocks.COBBLED_TIDESTONE_SLAB.get(), ModBlocks.COBBLED_TIDESTONE_WALL.get(),
+                ModBlocks.POLISHED_TIDESTONE.get(), ModBlocks.POLISHED_TIDESTONE_STAIRS.get(), ModBlocks.POLISHED_TIDESTONE_SLAB.get(),
+                ModBlocks.POLISHED_TIDESTONE_WALL.get(), ModBlocks.TIDESTONE_BRICKS.get(), ModBlocks.TIDESTONE_BRICK_STAIRS.get(),
+                ModBlocks.TIDESTONE_BRICK_SLAB.get(), ModBlocks.TIDESTONE_BRICK_WALL.get(), ModBlocks.BUBBLE_SPRING.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.TIDESTONE_STAIRS.get(), ModBlocks.COBBLED_TIDESTONE_STAIRS.get(),
+                ModBlocks.POLISHED_TIDESTONE_STAIRS.get(), ModBlocks.TIDESTONE_BRICK_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.TIDESTONE_SLAB.get(), ModBlocks.COBBLED_TIDESTONE_SLAB.get(),
+                ModBlocks.POLISHED_TIDESTONE_SLAB.get(), ModBlocks.TIDESTONE_BRICK_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.TIDESTONE_WALL.get(), ModBlocks.COBBLED_TIDESTONE_WALL.get(),
+                ModBlocks.POLISHED_TIDESTONE_WALL.get(), ModBlocks.TIDESTONE_BRICK_WALL.get());
+        tag(Tags.Blocks.COBBLESTONES).add(ModBlocks.COBBLED_TIDESTONE.get());
+        tag(ModTags.Blocks.RING_4_STONES).add(ModBlocks.TIDESTONE.get());
+        // Peat reaches the carvers through #dirt.
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.TIDESTONE.get());
+
+        tag(ModTags.Blocks.MOONPETAL_LOGS).add(ModBlocks.MOONPETAL_LOG.get(), ModBlocks.MOONPETAL_WOOD.get(),
+                ModBlocks.STRIPPED_MOONPETAL_LOG.get(), ModBlocks.STRIPPED_MOONPETAL_WOOD.get());
+        tag(ModTags.Blocks.WITHERED_MOONPETAL_LOGS).add(ModBlocks.WITHERED_MOONPETAL_LOG.get(), ModBlocks.WITHERED_MOONPETAL_WOOD.get(),
+                ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG.get(), ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD.get());
+        tag(BlockTags.LOGS_THAT_BURN).addTag(ModTags.Blocks.MOONPETAL_LOGS).addTag(ModTags.Blocks.WITHERED_MOONPETAL_LOGS);
+        tag(BlockTags.PLANKS).add(ModBlocks.MOONPETAL_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.MOONPETAL_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.MOONPETAL_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.MOONPETAL_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.MOONPETAL_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.MOONPETAL_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.MOONPETAL_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.MOONPETAL_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.MOONPETAL_BUTTON.get());
+        tag(BlockTags.LEAVES).add(ModBlocks.MOONPETAL_LEAVES.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.MOONPETAL_LEAVES.get());
+        tag(BlockTags.SAPLINGS).add(ModBlocks.MOONPETAL_SAPLING.get());
+        tag(BlockTags.FLOWER_POTS).add(ModBlocks.POTTED_MOONPETAL_SAPLING.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_MOONPETAL_LOG.get(), ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_MOONPETAL_WOOD.get(), ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.MOONPETAL_FENCE_GATE.get());
+
+        tag(BlockTags.DIRT).add(ModBlocks.PEAT.get());
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.PEAT.get());
+
+        // The hanging moss and roots copy vanilla hanging roots' tags; the glowing flora is plants and fungi.
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.HANGING_SWAMP_MOSS.get(), ModBlocks.GLOWING_HANGING_ROOTS.get());
+        tag(BlockTags.REPLACEABLE_BY_TREES).add(ModBlocks.HANGING_SWAMP_MOSS.get(), ModBlocks.GLOWING_HANGING_ROOTS.get());
+        tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.HANGING_SWAMP_MOSS.get(), ModBlocks.GLOWING_HANGING_ROOTS.get(),
+                ModBlocks.GLOWCAP.get(), ModBlocks.BLIGHTED_GLOWCAP.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.HANGING_SWAMP_MOSS.get());
+        tag(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.GLOWING_HANGING_ROOTS.get());
+        tag(BlockTags.SMALL_FLOWERS).add(ModBlocks.GLOW_BLOOM.get());
+
+        ring4Ores();
+    }
+
+    /**
+     * Ring 4 ores: a diamond pickaxe for both (decision V3 golf 1). Not carver-replaceable: ore features run after the
+     * carvers; {@code ores_in_ground} per host, with our own {@code c:ores_in_ground/tidestone}. The crystals carry
+     * amethyst's tags; the budding blocks are growth, deliberately in no ground or carver tag.
+     */
+    private void ring4Ores() {
+        tag(ModTags.Blocks.ORES_TIDESILVER).add(ModBlocks.TIDESILVER_ORE.get(), ModBlocks.TIDESTONE_TIDESILVER_ORE.get(),
+                ModBlocks.DEEPSLATE_TIDESILVER_ORE.get());
+        tag(ModTags.Blocks.ORES_JADE).add(ModBlocks.JADE_ORE.get(), ModBlocks.TIDESTONE_JADE_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get());
+        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
+        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
+        tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
+        tag(Tags.Blocks.ORES_IN_GROUND_STONE).add(ModBlocks.TIDESILVER_ORE.get(), ModBlocks.JADE_ORE.get());
+        tag(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE).add(ModBlocks.DEEPSLATE_TIDESILVER_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get());
+        tag(ModTags.Blocks.ORES_IN_GROUND_TIDESTONE).add(ModBlocks.TIDESTONE_TIDESILVER_ORE.get(), ModBlocks.TIDESTONE_JADE_ORE.get());
+
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.TOXIC_CRYSTAL_BLOCK.get(), ModBlocks.BUDDING_TOXIC_CRYSTAL.get(),
+                ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get(), ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get(),
+                ModBlocks.TOXIC_CRYSTAL_CLUSTER.get(), ModBlocks.AQUAMARINE_BLOCK.get(), ModBlocks.BUDDING_AQUAMARINE.get(),
+                ModBlocks.SMALL_AQUAMARINE_BUD.get(), ModBlocks.MEDIUM_AQUAMARINE_BUD.get(), ModBlocks.LARGE_AQUAMARINE_BUD.get(),
+                ModBlocks.AQUAMARINE_CLUSTER.get());
+        tag(BlockTags.CRYSTAL_SOUND_BLOCKS).add(ModBlocks.TOXIC_CRYSTAL_BLOCK.get(), ModBlocks.BUDDING_TOXIC_CRYSTAL.get(),
+                ModBlocks.AQUAMARINE_BLOCK.get(), ModBlocks.BUDDING_AQUAMARINE.get());
+        tag(Tags.Blocks.BUDDING_BLOCKS).add(ModBlocks.BUDDING_TOXIC_CRYSTAL.get(), ModBlocks.BUDDING_AQUAMARINE.get());
+        tag(Tags.Blocks.BUDS).add(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get(),
+                ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get(), ModBlocks.SMALL_AQUAMARINE_BUD.get(), ModBlocks.MEDIUM_AQUAMARINE_BUD.get(),
+                ModBlocks.LARGE_AQUAMARINE_BUD.get());
+        tag(Tags.Blocks.CLUSTERS).add(ModBlocks.TOXIC_CRYSTAL_CLUSTER.get(), ModBlocks.AQUAMARINE_CLUSTER.get());
+
+        netherRing4();
+    }
+
+    /**
+     * Nether ring 4. Bleached netherrack is Nether ground ({@code #base_stone_nether}) and netherrack in every other way
+     * too, fire included
+     * ({@code #infiniburn_overworld}, which the Nether's infiniburn tag contains). Bone sand is carver-replaceable ground,
+     * but deliberately not {@code #sand} (no cactus or sugar cane in the Nether). The purity crystal carries amethyst's
+     * tags.
+     */
+    private void netherRing4() {
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.BONE_SAND.get());
+        tag(BlockTags.NETHER_CARVER_REPLACEABLES).add(ModBlocks.BONE_SAND.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.BLEACHED_NETHERRACK.get(), ModBlocks.FOSSIL_STONE.get(),
+                ModBlocks.FOSSIL_STONE_STAIRS.get(), ModBlocks.FOSSIL_STONE_SLAB.get(), ModBlocks.FOSSIL_STONE_WALL.get(),
+                ModBlocks.POLISHED_FOSSIL_STONE.get(), ModBlocks.POLISHED_FOSSIL_STONE_STAIRS.get(),
+                ModBlocks.POLISHED_FOSSIL_STONE_SLAB.get(), ModBlocks.POLISHED_FOSSIL_STONE_WALL.get(),
+                ModBlocks.FOSSIL_STONE_BRICKS.get(), ModBlocks.FOSSIL_STONE_BRICK_STAIRS.get(), ModBlocks.FOSSIL_STONE_BRICK_SLAB.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_WALL.get(), ModBlocks.PURITY_CRYSTAL_BLOCK.get(), ModBlocks.PURITY_CRYSTAL_CLUSTER.get(),
+                ModBlocks.PURITY_CRYSTAL_LAMP.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.FOSSIL_STONE_STAIRS.get(), ModBlocks.POLISHED_FOSSIL_STONE_STAIRS.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.FOSSIL_STONE_SLAB.get(), ModBlocks.POLISHED_FOSSIL_STONE_SLAB.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.FOSSIL_STONE_WALL.get(), ModBlocks.POLISHED_FOSSIL_STONE_WALL.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_WALL.get());
+        // Fossil stone stays out of #base_stone_nether (review 68): no vanilla Nether ore or debris blobs in the fossil
+        // terrain. The carvers still cut through it.
+        tag(BlockTags.BASE_STONE_NETHER).add(ModBlocks.BLEACHED_NETHERRACK.get());
+        tag(BlockTags.NETHER_CARVER_REPLACEABLES).add(ModBlocks.FOSSIL_STONE.get());
+        tag(Tags.Blocks.NETHERRACKS).add(ModBlocks.BLEACHED_NETHERRACK.get());
+        tag(BlockTags.INFINIBURN_OVERWORLD).add(ModBlocks.BLEACHED_NETHERRACK.get());
+
+        tag(BlockTags.CRYSTAL_SOUND_BLOCKS).add(ModBlocks.PURITY_CRYSTAL_BLOCK.get(), ModBlocks.PURITY_CRYSTAL_LAMP.get());
+        tag(Tags.Blocks.CLUSTERS).add(ModBlocks.PURITY_CRYSTAL_CLUSTER.get());
     }
 
     /**

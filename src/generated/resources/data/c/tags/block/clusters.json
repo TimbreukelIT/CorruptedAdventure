@@ -2,6 +2,9 @@
   "values": [
     "corruptedadventure:dew_crystal_cluster",
     "corruptedadventure:fire_crystal_cluster",
-    "corruptedadventure:sulfur_crystal"
+    "corruptedadventure:sulfur_crystal",
+    "corruptedadventure:toxic_crystal_cluster",
+    "corruptedadventure:aquamarine_cluster",
+    "corruptedadventure:purity_crystal_cluster"
   ]
 }

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "top=false": {
+      "model": "corruptedadventure:block/reeds"
+    },
+    "top=true": {
+      "model": "corruptedadventure:block/reeds_top"
+    }
+  }
+}

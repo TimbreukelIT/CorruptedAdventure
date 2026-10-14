@@ -5,6 +5,7 @@ import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.DoubleHighBlockItem;
+import net.minecraft.world.item.PlaceOnWaterBlockItem;
 import net.minecraft.world.level.block.AmethystBlock;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
@@ -15,17 +16,21 @@ import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
+import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.GlowLichenBlock;
+import net.minecraft.world.level.block.HangingRootsBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.WaterlilyBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
@@ -41,6 +46,11 @@ import nl.timtoys.corruptedadventure.block.AshCrustCollapse;
 import nl.timtoys.corruptedadventure.block.AshSproutsBlock;
 import nl.timtoys.corruptedadventure.block.BarrelCactusBlock;
 import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
+import nl.timtoys.corruptedadventure.block.BubbleSpringBlock;
+import nl.timtoys.corruptedadventure.block.BuddingCrystalBlock;
+import nl.timtoys.corruptedadventure.block.GiantLilyPadBlock;
+import nl.timtoys.corruptedadventure.block.GlowcapBlock;
+import nl.timtoys.corruptedadventure.block.HangingSwampMossBlock;
 import nl.timtoys.corruptedadventure.block.EmberBerryBushBlock;
 import nl.timtoys.corruptedadventure.block.EmberLeavesBlock;
 import nl.timtoys.corruptedadventure.block.FireBloomBlock;
@@ -56,6 +66,7 @@ import nl.timtoys.corruptedadventure.block.ModFlowerPots;
 import nl.timtoys.corruptedadventure.block.ModTreeGrowers;
 import nl.timtoys.corruptedadventure.block.ModWoodTypes;
 import nl.timtoys.corruptedadventure.block.PalmSaplingBlock;
+import nl.timtoys.corruptedadventure.block.ReedsBlock;
 import nl.timtoys.corruptedadventure.block.SoakedNetherrackBlock;
 import nl.timtoys.corruptedadventure.block.SporeMossBlock;
 import nl.timtoys.corruptedadventure.block.SporeSproutsBlock;
@@ -64,6 +75,7 @@ import nl.timtoys.corruptedadventure.block.StrippableLogBlock;
 import nl.timtoys.corruptedadventure.block.WitheredDirtBlock;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -76,8 +88,12 @@ public final class ModBlocks {
     private static final int SAND_DUST_COLOR = 0xDBD3A0;
     /** Falling dust colour of the ash crust: warm ash grey. */
     private static final int ASH_DUST_COLOR = 0x8A8580;
+    /** Falling dust colour of the bone sand: pale bone white. */
+    private static final int BONE_DUST_COLOR = 0xE3DCC6;
     /** Ring 3 ores are this much harder than the vanilla ore of their host ("one step above ring 2"). */
     static final float RING_3_ORE_EXTRA_HARDNESS = 0.5F;
+    /** Ring 4 ores are this much harder than the vanilla ore of their host (a step above ring 3; decision V3 golf 1). */
+    static final float RING_4_ORE_EXTRA_HARDNESS = 1.0F;
 
     // ---- Ring 1 ----
     public static final DeferredBlock<DeadGrassBlock> DEAD_GRASS_BLOCK = register("dead_grass_block",
@@ -344,14 +360,14 @@ public final class ModBlocks {
             () -> new DewSourceBlock(Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).mapColor(MapColor.WATER).randomTicks()));
     /** The dew crystal stages are vanilla's amethyst bud behaviour and shapes, with the same light levels (1, 2, 4, 5). */
     public static final DeferredBlock<AmethystClusterBlock> SMALL_DEW_CRYSTAL_BUD = register("small_dew_crystal_bud",
-            () -> new AmethystClusterBlock(3.0F, 4.0F, crystalStage(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
+            () -> new AmethystClusterBlock(3.0F, 4.0F, recolored(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
     public static final DeferredBlock<AmethystClusterBlock> MEDIUM_DEW_CRYSTAL_BUD = register("medium_dew_crystal_bud",
-            () -> new AmethystClusterBlock(4.0F, 3.0F, crystalStage(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
+            () -> new AmethystClusterBlock(4.0F, 3.0F, recolored(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
     public static final DeferredBlock<AmethystClusterBlock> LARGE_DEW_CRYSTAL_BUD = register("large_dew_crystal_bud",
-            () -> new AmethystClusterBlock(5.0F, 3.0F, crystalStage(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
+            () -> new AmethystClusterBlock(5.0F, 3.0F, recolored(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_LIGHT_BLUE)));
     /** Full-grown stage; the default state faces up. */
     public static final DeferredBlock<AmethystClusterBlock> DEW_CRYSTAL_CLUSTER = register("dew_crystal_cluster",
-            () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_LIGHT_BLUE)));
+            () -> new AmethystClusterBlock(7.0F, 3.0F, recolored(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_LIGHT_BLUE)));
 
     // ---- Ring 3 ----
     // Volcanic ring: ash ground, pumice, smouldering stone and the charred wood set.
@@ -467,21 +483,21 @@ public final class ModBlocks {
     // harder than the vanilla ore of that host, more XP.
     /** Volcanite, ring 3's main metal: iron pickaxe, XP 3–6, matte; drops {@link ModItems#RAW_VOLCANITE}. */
     public static final DeferredBlock<DropExperienceBlock> VOLCANITE_ORE = register("volcanite_ore",
-            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.IRON_ORE)));
+            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.IRON_ORE, RING_3_ORE_EXTRA_HARDNESS)));
     public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_VOLCANITE_ORE = register("deepslate_volcanite_ore",
-            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.DEEPSLATE_IRON_ORE)));
+            () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.DEEPSLATE_IRON_ORE, RING_3_ORE_EXTRA_HARDNESS)));
     public static final DeferredBlock<DropExperienceBlock> BASALT_VOLCANITE_ORE = register("basalt_volcanite_ore",
             () -> new DropExperienceBlock(UniformInt.of(3, 6), oreInBasalt(Blocks.IRON_ORE)));
     /** Sulfur: any stone pickaxe, XP 1–3, matte; drops several {@link ModItems#SULFUR}. */
     public static final DeferredBlock<DropExperienceBlock> SULFUR_ORE = register("sulfur_ore",
-            () -> new DropExperienceBlock(UniformInt.of(1, 3), oreIn(Blocks.COAL_ORE)));
+            () -> new DropExperienceBlock(UniformInt.of(1, 3), oreIn(Blocks.COAL_ORE, RING_3_ORE_EXTRA_HARDNESS)));
     public static final DeferredBlock<DropExperienceBlock> BASALT_SULFUR_ORE = register("basalt_sulfur_ore",
             () -> new DropExperienceBlock(UniformInt.of(1, 3), oreInBasalt(Blocks.COAL_ORE)));
     /** Fire ruby, a rare gem: iron pickaxe, XP 4–8, faint glow (light 3, emissive overlay); drops {@link ModItems#FIRE_RUBY}. */
     public static final DeferredBlock<DropExperienceBlock> FIRE_RUBY_ORE = register("fire_ruby_ore",
-            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.IRON_ORE).lightLevel(state -> 3)));
+            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.IRON_ORE, RING_3_ORE_EXTRA_HARDNESS).lightLevel(state -> 3)));
     public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_FIRE_RUBY_ORE = register("deepslate_fire_ruby_ore",
-            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.DEEPSLATE_IRON_ORE).lightLevel(state -> 3)));
+            () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.DEEPSLATE_IRON_ORE, RING_3_ORE_EXTRA_HARDNESS).lightLevel(state -> 3)));
     /** In the basalt walls of magma chambers (decision 2026-10-07, beyond the contract's first set). */
     public static final DeferredBlock<DropExperienceBlock> BASALT_FIRE_RUBY_ORE = register("basalt_fire_ruby_ore",
             () -> new DropExperienceBlock(UniformInt.of(4, 8), oreInBasalt(Blocks.IRON_ORE).lightLevel(state -> 3)));
@@ -492,14 +508,14 @@ public final class ModBlocks {
             () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.COLOR_ORANGE)));
     /** The stages are vanilla's amethyst bud behaviour, shapes and light levels (1, 2, 4, 5), like the dew crystal. */
     public static final DeferredBlock<AmethystClusterBlock> SMALL_FIRE_CRYSTAL_BUD = register("small_fire_crystal_bud",
-            () -> new AmethystClusterBlock(3.0F, 4.0F, crystalStage(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
+            () -> new AmethystClusterBlock(3.0F, 4.0F, recolored(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
     public static final DeferredBlock<AmethystClusterBlock> MEDIUM_FIRE_CRYSTAL_BUD = register("medium_fire_crystal_bud",
-            () -> new AmethystClusterBlock(4.0F, 3.0F, crystalStage(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
+            () -> new AmethystClusterBlock(4.0F, 3.0F, recolored(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
     public static final DeferredBlock<AmethystClusterBlock> LARGE_FIRE_CRYSTAL_BUD = register("large_fire_crystal_bud",
-            () -> new AmethystClusterBlock(5.0F, 3.0F, crystalStage(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
+            () -> new AmethystClusterBlock(5.0F, 3.0F, recolored(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_ORANGE)));
     /** Full-grown stage; the default state faces up. */
     public static final DeferredBlock<AmethystClusterBlock> FIRE_CRYSTAL_CLUSTER = register("fire_crystal_cluster",
-            () -> new AmethystClusterBlock(7.0F, 3.0F, crystalStage(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_ORANGE)));
+            () -> new AmethystClusterBlock(7.0F, 3.0F, recolored(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_ORANGE)));
 
     // Sulfur fields and steam fens: the crust, the vents and the mud. Their heat comes from the conditions
     // (#heat_sources); vanilla particles and sounds until atmosphere delivers its own (wave 2).
@@ -625,6 +641,235 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> PRIMORDIAL_ICE = register("primordial_ice",
             () -> new Block(Properties.ofFullCopy(Blocks.BLUE_ICE).explosionResistance(Blocks.OBSIDIAN.getExplosionResistance())));
 
+    // ---- Ring 4 ----
+    // Mythical water ring (contract ring 4 §3, package 66): tidestone, the moonpetal wood set and its withered trunk,
+    // the swamp and water flora, the glowing flora and the bubble spring.
+    // Tidestone: the stone family's shapes and behaviour in a blue-grey layered rock; it breaks into cobbled tidestone.
+    public static final DeferredBlock<Block> TIDESTONE = register("tidestone", () -> new Block(tidestone(Blocks.STONE)));
+    public static final DeferredBlock<StairBlock> TIDESTONE_STAIRS = register("tidestone_stairs",
+            () -> new StairBlock(TIDESTONE.get().defaultBlockState(), tidestone(Blocks.STONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> TIDESTONE_SLAB = register("tidestone_slab",
+            () -> new SlabBlock(tidestone(Blocks.STONE_SLAB)));
+    /** Solid for support like vanilla walls ({@code forceSolidOn}); vanilla has no plain stone wall to copy. */
+    public static final DeferredBlock<WallBlock> TIDESTONE_WALL = register("tidestone_wall",
+            () -> new WallBlock(tidestone(Blocks.STONE).forceSolidOn()));
+    public static final DeferredBlock<Block> COBBLED_TIDESTONE = register("cobbled_tidestone",
+            () -> new Block(tidestone(Blocks.COBBLESTONE)));
+    public static final DeferredBlock<StairBlock> COBBLED_TIDESTONE_STAIRS = register("cobbled_tidestone_stairs",
+            () -> new StairBlock(COBBLED_TIDESTONE.get().defaultBlockState(), tidestone(Blocks.COBBLESTONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> COBBLED_TIDESTONE_SLAB = register("cobbled_tidestone_slab",
+            () -> new SlabBlock(tidestone(Blocks.COBBLESTONE_SLAB)));
+    public static final DeferredBlock<WallBlock> COBBLED_TIDESTONE_WALL = register("cobbled_tidestone_wall",
+            () -> new WallBlock(tidestone(Blocks.COBBLESTONE_WALL)));
+    public static final DeferredBlock<Block> POLISHED_TIDESTONE = register("polished_tidestone",
+            () -> new Block(tidestone(Blocks.POLISHED_ANDESITE)));
+    public static final DeferredBlock<StairBlock> POLISHED_TIDESTONE_STAIRS = register("polished_tidestone_stairs",
+            () -> new StairBlock(POLISHED_TIDESTONE.get().defaultBlockState(), tidestone(Blocks.POLISHED_ANDESITE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> POLISHED_TIDESTONE_SLAB = register("polished_tidestone_slab",
+            () -> new SlabBlock(tidestone(Blocks.POLISHED_ANDESITE_SLAB)));
+    public static final DeferredBlock<WallBlock> POLISHED_TIDESTONE_WALL = register("polished_tidestone_wall",
+            () -> new WallBlock(tidestone(Blocks.POLISHED_ANDESITE).forceSolidOn()));
+    public static final DeferredBlock<Block> TIDESTONE_BRICKS = register("tidestone_bricks",
+            () -> new Block(tidestone(Blocks.STONE_BRICKS)));
+    public static final DeferredBlock<StairBlock> TIDESTONE_BRICK_STAIRS = register("tidestone_brick_stairs",
+            () -> new StairBlock(TIDESTONE_BRICKS.get().defaultBlockState(), tidestone(Blocks.STONE_BRICK_STAIRS)));
+    public static final DeferredBlock<SlabBlock> TIDESTONE_BRICK_SLAB = register("tidestone_brick_slab",
+            () -> new SlabBlock(tidestone(Blocks.STONE_BRICK_SLAB)));
+    public static final DeferredBlock<WallBlock> TIDESTONE_BRICK_WALL = register("tidestone_brick_wall",
+            () -> new WallBlock(tidestone(Blocks.STONE_BRICK_WALL)));
+
+    // Moonpetal: the blossom tree of the cascades, white-silver bark around pale wood. Burnable like vanilla wood, with
+    // the cherry set's sounds.
+    public static final DeferredBlock<StrippableLogBlock> MOONPETAL_LOG = register("moonpetal_log",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_MOONPETAL_LOG, Properties.ofFullCopy(Blocks.CHERRY_LOG)
+                    .mapColor(state -> state.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y
+                            ? MapColor.TERRACOTTA_WHITE : MapColor.QUARTZ)));
+    public static final DeferredBlock<StrippableLogBlock> MOONPETAL_WOOD = register("moonpetal_wood",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_MOONPETAL_WOOD, Properties.ofFullCopy(Blocks.CHERRY_WOOD)
+                    .mapColor(MapColor.QUARTZ)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_MOONPETAL_LOG = register("stripped_moonpetal_log",
+            () -> new RotatedPillarBlock(moonpetal(Blocks.STRIPPED_CHERRY_LOG)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_MOONPETAL_WOOD = register("stripped_moonpetal_wood",
+            () -> new RotatedPillarBlock(moonpetal(Blocks.STRIPPED_CHERRY_WOOD)));
+    public static final DeferredBlock<Block> MOONPETAL_PLANKS = register("moonpetal_planks",
+            () -> new Block(moonpetal(Blocks.CHERRY_PLANKS)));
+    public static final DeferredBlock<StairBlock> MOONPETAL_STAIRS = register("moonpetal_stairs",
+            () -> new StairBlock(MOONPETAL_PLANKS.get().defaultBlockState(), moonpetal(Blocks.CHERRY_STAIRS)));
+    public static final DeferredBlock<SlabBlock> MOONPETAL_SLAB = register("moonpetal_slab",
+            () -> new SlabBlock(moonpetal(Blocks.CHERRY_SLAB)));
+    public static final DeferredBlock<FenceBlock> MOONPETAL_FENCE = register("moonpetal_fence",
+            () -> new FenceBlock(moonpetal(Blocks.CHERRY_FENCE)));
+    public static final DeferredBlock<FenceGateBlock> MOONPETAL_FENCE_GATE = register("moonpetal_fence_gate",
+            () -> new FenceGateBlock(ModWoodTypes.MOONPETAL, moonpetal(Blocks.CHERRY_FENCE_GATE)));
+    public static final DeferredBlock<DoorBlock> MOONPETAL_DOOR = registerDoor("moonpetal_door",
+            () -> new DoorBlock(ModWoodTypes.MOONPETAL_SET, moonpetal(Blocks.CHERRY_DOOR)));
+    public static final DeferredBlock<TrapDoorBlock> MOONPETAL_TRAPDOOR = register("moonpetal_trapdoor",
+            () -> new TrapDoorBlock(ModWoodTypes.MOONPETAL_SET, moonpetal(Blocks.CHERRY_TRAPDOOR)));
+    public static final DeferredBlock<PressurePlateBlock> MOONPETAL_PRESSURE_PLATE = register("moonpetal_pressure_plate",
+            () -> new PressurePlateBlock(ModWoodTypes.MOONPETAL_SET, moonpetal(Blocks.CHERRY_PRESSURE_PLATE)));
+    public static final DeferredBlock<ButtonBlock> MOONPETAL_BUTTON = register("moonpetal_button",
+            () -> new ButtonBlock(ModWoodTypes.MOONPETAL_SET, 30, moonpetal(Blocks.CHERRY_BUTTON)));
+    /** The pink-lilac blossom crown: cherry leaves' properties as plain leaves (no vanilla petal particles). */
+    public static final DeferredBlock<LeavesBlock> MOONPETAL_LEAVES = register("moonpetal_leaves",
+            () -> new LeavesBlock(Properties.ofFullCopy(Blocks.CHERRY_LEAVES)));
+    /** Grows into {@code corruptedadventure:ring_4/moonpetal_tree} (75); until then bonemeal is used up without growth. */
+    public static final DeferredBlock<SaplingBlock> MOONPETAL_SAPLING = register("moonpetal_sapling",
+            () -> new SaplingBlock(ModTreeGrowers.MOONPETAL, Properties.ofFullCopy(Blocks.CHERRY_SAPLING)));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_MOONPETAL_SAPLING = registerPot("potted_moonpetal_sapling", MOONPETAL_SAPLING);
+
+    // Withered moonpetal: only the dead trunk of the drowned forest (no leaves, no planks set); still burnable.
+    public static final DeferredBlock<StrippableLogBlock> WITHERED_MOONPETAL_LOG = register("withered_moonpetal_log",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG, Properties.ofFullCopy(Blocks.OAK_LOG)
+                    .mapColor(state -> state.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y
+                            ? MapColor.COLOR_LIGHT_GRAY : MapColor.COLOR_GRAY)));
+    public static final DeferredBlock<StrippableLogBlock> WITHERED_MOONPETAL_WOOD = register("withered_moonpetal_wood",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD, Properties.ofFullCopy(Blocks.OAK_WOOD)
+                    .mapColor(MapColor.COLOR_GRAY)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_WITHERED_MOONPETAL_LOG = register("stripped_withered_moonpetal_log",
+            () -> new RotatedPillarBlock(Properties.ofFullCopy(Blocks.STRIPPED_OAK_LOG).mapColor(MapColor.COLOR_LIGHT_GRAY)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_WITHERED_MOONPETAL_WOOD = register("stripped_withered_moonpetal_wood",
+            () -> new RotatedPillarBlock(Properties.ofFullCopy(Blocks.STRIPPED_OAK_WOOD).mapColor(MapColor.COLOR_LIGHT_GRAY)));
+
+    // Swamp and water flora.
+    /** Marsh reeds, 2–3 high: a column like sugar cane that grows next to water (decision golf 1, V2 = B). */
+    public static final DeferredBlock<ReedsBlock> REEDS = register("reeds",
+            () -> new ReedsBlock(Properties.ofFullCopy(Blocks.SUGAR_CANE)));
+    /** The surface of the peat moors: dirt's behaviour (plants grow on it) and a furnace fuel, but no fire spreads on it. */
+    public static final DeferredBlock<Block> PEAT = register("peat",
+            () -> new Block(Properties.ofFullCopy(Blocks.DIRT).mapColor(MapColor.COLOR_BROWN).sound(SoundType.ROOTED_DIRT)));
+    /** Hanging roots' behaviour, in strands under the swamp trees. Only shears take it along. */
+    /** Not offset sideways like hanging roots: a strand of several blocks hangs straight. */
+    public static final DeferredBlock<HangingSwampMossBlock> HANGING_SWAMP_MOSS = register("hanging_swamp_moss",
+            () -> new HangingSwampMossBlock(Properties.ofFullCopy(Blocks.HANGING_ROOTS).mapColor(MapColor.COLOR_GREEN)
+                    .sound(SoundType.MOSS_CARPET).offsetType(BlockBehaviour.OffsetType.NONE)));
+    /** A 2 × 2 lily pad you can walk on (decision golf 1); the item places all four parts. */
+    public static final DeferredBlock<GiantLilyPadBlock> GIANT_LILY_PAD = registerOnWater("giant_lily_pad",
+            () -> new GiantLilyPadBlock(Properties.ofFullCopy(Blocks.LILY_PAD)));
+    /** A pink-white lotus floating flat on the water: vanilla's lily pad behaviour (decision golf 1, V1 = A). */
+    public static final DeferredBlock<WaterlilyBlock> LOTUS = registerOnWater("lotus",
+            () -> new WaterlilyBlock(Properties.ofFullCopy(Blocks.LILY_PAD).mapColor(MapColor.COLOR_PINK)));
+
+    // Glowing flora (subtle; light levels chosen by stream B): the glow sits in an emissive layer of the model.
+    /** A blue-purple glowing mushroom, light 6. */
+    public static final DeferredBlock<GlowcapBlock> GLOWCAP = register("glowcap",
+            () -> new GlowcapBlock(glowcap(MapColor.COLOR_LIGHT_BLUE, 6)));
+    /** A glowing flower by the lakes, light 7; Night Vision in suspicious stew, like the torchflower. */
+    public static final DeferredBlock<FlowerBlock> GLOW_BLOOM = register("glow_bloom",
+            () -> new FlowerBlock(MobEffects.NIGHT_VISION, 5.0F, Properties.ofFullCopy(Blocks.POPPY)
+                    .mapColor(MapColor.COLOR_LIGHT_BLUE).lightLevel(state -> 7)));
+    /** Vanilla's hanging roots under the islands and root arches, light 5. */
+    public static final DeferredBlock<HangingRootsBlock> GLOWING_HANGING_ROOTS = register("glowing_hanging_roots",
+            () -> new HangingRootsBlock(Properties.ofFullCopy(Blocks.HANGING_ROOTS).lightLevel(state -> 5)));
+    /** The glowcap's sickly variant in the reed marsh: same shape and class, a weak glow (light 3), no poison source. */
+    public static final DeferredBlock<GlowcapBlock> BLIGHTED_GLOWCAP = register("blighted_glowcap",
+            () -> new GlowcapBlock(glowcap(MapColor.COLOR_LIGHT_GREEN, 3)));
+
+    /** A spring on the pool floor that bubbles while water stands on it (looks only); tidestone's strength. */
+    public static final DeferredBlock<BubbleSpringBlock> BUBBLE_SPRING = register("bubble_spring",
+            () -> new BubbleSpringBlock(tidestone(Blocks.STONE)));
+
+    // Ores (package 67): one block per host rock (stone, tidestone, deepslate). A clear step above ring 3 (decision golf
+    // 1, V3 = B): a whole point harder than the vanilla ore of that host and a diamond pickaxe.
+    /** Tidesilver, ring 4's mythical metal: XP 4–7, faint glow (light 3, emissive overlay); drops {@link ModItems#RAW_TIDESILVER}. */
+    public static final DeferredBlock<DropExperienceBlock> TIDESILVER_ORE = register("tidesilver_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 7), oreIn(Blocks.IRON_ORE, RING_4_ORE_EXTRA_HARDNESS).lightLevel(state -> 3)));
+    public static final DeferredBlock<DropExperienceBlock> TIDESTONE_TIDESILVER_ORE = register("tidestone_tidesilver_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 7), oreIn(Blocks.IRON_ORE, RING_4_ORE_EXTRA_HARDNESS)
+                    .mapColor(MapColor.TERRACOTTA_LIGHT_BLUE).lightLevel(state -> 3)));
+    public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_TIDESILVER_ORE = register("deepslate_tidesilver_ore",
+            () -> new DropExperienceBlock(UniformInt.of(4, 7), oreIn(Blocks.DEEPSLATE_IRON_ORE, RING_4_ORE_EXTRA_HARDNESS).lightLevel(state -> 3)));
+    /** Jade, a rare gem deep in the flooded tunnels: XP 5–9, matte; drops {@link ModItems#JADE}. */
+    public static final DeferredBlock<DropExperienceBlock> JADE_ORE = register("jade_ore",
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DIAMOND_ORE, RING_4_ORE_EXTRA_HARDNESS)));
+    public static final DeferredBlock<DropExperienceBlock> TIDESTONE_JADE_ORE = register("tidestone_jade_ore",
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DIAMOND_ORE, RING_4_ORE_EXTRA_HARDNESS).mapColor(MapColor.TERRACOTTA_LIGHT_BLUE)));
+    public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_JADE_ORE = register("deepslate_jade_ore",
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DEEPSLATE_DIAMOND_ORE, RING_4_ORE_EXTRA_HARDNESS)));
+
+    // Toxic crystal and aquamarine in the amethyst pattern: wall, budding block (grows the stages on random ticks,
+    // server-side) and four stages with amethyst's shapes and light (1, 2, 4, 5). Toxic crystal in the poison caves,
+    // aquamarine in geodes under water (its buds grow waterlogged).
+    public static final DeferredBlock<AmethystBlock> TOXIC_CRYSTAL_BLOCK = register("toxic_crystal_block",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.COLOR_LIGHT_GREEN)));
+    /** Budding amethyst's properties (hard, pushed away, no drop) with random ticks, set explicitly: it grows. */
+    public static final DeferredBlock<BuddingCrystalBlock> BUDDING_TOXIC_CRYSTAL = register("budding_toxic_crystal",
+            () -> new BuddingCrystalBlock(() -> List.of(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get(), ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get(),
+                    ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get(), ModBlocks.TOXIC_CRYSTAL_CLUSTER.get()),
+                    Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).mapColor(MapColor.COLOR_LIGHT_GREEN).randomTicks()));
+    public static final DeferredBlock<AmethystClusterBlock> SMALL_TOXIC_CRYSTAL_BUD = register("small_toxic_crystal_bud",
+            () -> new AmethystClusterBlock(3.0F, 4.0F, recolored(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_LIGHT_GREEN)));
+    public static final DeferredBlock<AmethystClusterBlock> MEDIUM_TOXIC_CRYSTAL_BUD = register("medium_toxic_crystal_bud",
+            () -> new AmethystClusterBlock(4.0F, 3.0F, recolored(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_LIGHT_GREEN)));
+    public static final DeferredBlock<AmethystClusterBlock> LARGE_TOXIC_CRYSTAL_BUD = register("large_toxic_crystal_bud",
+            () -> new AmethystClusterBlock(5.0F, 3.0F, recolored(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_LIGHT_GREEN)));
+    /** Full-grown stage; the default state faces up. */
+    public static final DeferredBlock<AmethystClusterBlock> TOXIC_CRYSTAL_CLUSTER = register("toxic_crystal_cluster",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, recolored(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_LIGHT_GREEN)));
+    public static final DeferredBlock<AmethystBlock> AQUAMARINE_BLOCK = register("aquamarine_block",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.COLOR_CYAN)));
+    public static final DeferredBlock<BuddingCrystalBlock> BUDDING_AQUAMARINE = register("budding_aquamarine",
+            () -> new BuddingCrystalBlock(() -> List.of(ModBlocks.SMALL_AQUAMARINE_BUD.get(), ModBlocks.MEDIUM_AQUAMARINE_BUD.get(),
+                    ModBlocks.LARGE_AQUAMARINE_BUD.get(), ModBlocks.AQUAMARINE_CLUSTER.get()),
+                    Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).mapColor(MapColor.COLOR_CYAN).randomTicks()));
+    public static final DeferredBlock<AmethystClusterBlock> SMALL_AQUAMARINE_BUD = register("small_aquamarine_bud",
+            () -> new AmethystClusterBlock(3.0F, 4.0F, recolored(Blocks.SMALL_AMETHYST_BUD, MapColor.COLOR_CYAN)));
+    public static final DeferredBlock<AmethystClusterBlock> MEDIUM_AQUAMARINE_BUD = register("medium_aquamarine_bud",
+            () -> new AmethystClusterBlock(4.0F, 3.0F, recolored(Blocks.MEDIUM_AMETHYST_BUD, MapColor.COLOR_CYAN)));
+    public static final DeferredBlock<AmethystClusterBlock> LARGE_AQUAMARINE_BUD = register("large_aquamarine_bud",
+            () -> new AmethystClusterBlock(5.0F, 3.0F, recolored(Blocks.LARGE_AMETHYST_BUD, MapColor.COLOR_CYAN)));
+    /** Full-grown stage; the default state faces up. */
+    public static final DeferredBlock<AmethystClusterBlock> AQUAMARINE_CLUSTER = register("aquamarine_cluster",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, recolored(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_CYAN)));
+
+    // ---- Nether ring 4 ----
+    // Dry crystal and bone desert (contract ring 4 §3, package 68): bone sand, bleached netherrack, the fossil stone set
+    // and the purity crystal. The ribcages of the sea creatures are vanilla bone blocks.
+    /** Falls like sand, with a pale bone dust. */
+    public static final DeferredBlock<ColoredFallingBlock> BONE_SAND = register("bone_sand",
+            () -> new ColoredFallingBlock(new ColorRGBA(BONE_DUST_COLOR), Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.SAND)));
+    /**
+     * Netherrack's strength and sound in a beige, bleached rock. A plain {@code Block} like rime netherrack: bone meal
+     * does not spread nylium onto it.
+     */
+    public static final DeferredBlock<Block> BLEACHED_NETHERRACK = register("bleached_netherrack",
+            () -> new Block(Properties.ofFullCopy(Blocks.NETHERRACK).mapColor(MapColor.TERRACOTTA_WHITE)));
+    // Fossil stone: the stone family's shapes and behaviour in a bone-white rock with fossils (like the tidestone set).
+    private static final MapColor FOSSIL_STONE_COLOR = MapColor.QUARTZ;
+    public static final DeferredBlock<Block> FOSSIL_STONE = register("fossil_stone", () -> new Block(recolored(Blocks.STONE, FOSSIL_STONE_COLOR)));
+    public static final DeferredBlock<StairBlock> FOSSIL_STONE_STAIRS = register("fossil_stone_stairs",
+            () -> new StairBlock(FOSSIL_STONE.get().defaultBlockState(), recolored(Blocks.STONE_STAIRS, FOSSIL_STONE_COLOR)));
+    public static final DeferredBlock<SlabBlock> FOSSIL_STONE_SLAB = register("fossil_stone_slab",
+            () -> new SlabBlock(recolored(Blocks.STONE_SLAB, FOSSIL_STONE_COLOR)));
+    /** Solid for support like vanilla walls ({@code forceSolidOn}); vanilla has no plain stone wall to copy. */
+    public static final DeferredBlock<WallBlock> FOSSIL_STONE_WALL = register("fossil_stone_wall",
+            () -> new WallBlock(recolored(Blocks.STONE, FOSSIL_STONE_COLOR).forceSolidOn()));
+    public static final DeferredBlock<Block> POLISHED_FOSSIL_STONE = register("polished_fossil_stone",
+            () -> new Block(recolored(Blocks.POLISHED_ANDESITE, FOSSIL_STONE_COLOR)));
+    public static final DeferredBlock<StairBlock> POLISHED_FOSSIL_STONE_STAIRS = register("polished_fossil_stone_stairs",
+            () -> new StairBlock(POLISHED_FOSSIL_STONE.get().defaultBlockState(), recolored(Blocks.POLISHED_ANDESITE_STAIRS, FOSSIL_STONE_COLOR)));
+    public static final DeferredBlock<SlabBlock> POLISHED_FOSSIL_STONE_SLAB = register("polished_fossil_stone_slab",
+            () -> new SlabBlock(recolored(Blocks.POLISHED_ANDESITE_SLAB, FOSSIL_STONE_COLOR)));
+    public static final DeferredBlock<WallBlock> POLISHED_FOSSIL_STONE_WALL = register("polished_fossil_stone_wall",
+            () -> new WallBlock(recolored(Blocks.POLISHED_ANDESITE, FOSSIL_STONE_COLOR).forceSolidOn()));
+    public static final DeferredBlock<Block> FOSSIL_STONE_BRICKS = register("fossil_stone_bricks",
+            () -> new Block(recolored(Blocks.STONE_BRICKS, FOSSIL_STONE_COLOR)));
+    public static final DeferredBlock<StairBlock> FOSSIL_STONE_BRICK_STAIRS = register("fossil_stone_brick_stairs",
+            () -> new StairBlock(FOSSIL_STONE_BRICKS.get().defaultBlockState(), recolored(Blocks.STONE_BRICK_STAIRS, FOSSIL_STONE_COLOR)));
+    public static final DeferredBlock<SlabBlock> FOSSIL_STONE_BRICK_SLAB = register("fossil_stone_brick_slab",
+            () -> new SlabBlock(recolored(Blocks.STONE_BRICK_SLAB, FOSSIL_STONE_COLOR)));
+    public static final DeferredBlock<WallBlock> FOSSIL_STONE_BRICK_WALL = register("fossil_stone_brick_wall",
+            () -> new WallBlock(recolored(Blocks.STONE_BRICK_WALL, FOSSIL_STONE_COLOR)));
+    // Purity crystal: the crystal of the spires. No budding block and no growth (only worldgen places it).
+    /** The crystal wall: amethyst block behaviour (chime when hit), no light. */
+    public static final DeferredBlock<AmethystBlock> PURITY_CRYSTAL_BLOCK = register("purity_crystal_block",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.SNOW)));
+    /** The amethyst cluster's behaviour, shape and light (5); drops {@link ModItems#PURITY_CRYSTAL_SHARD}. Faces up by default. */
+    public static final DeferredBlock<AmethystClusterBlock> PURITY_CRYSTAL_CLUSTER = register("purity_crystal_cluster",
+            () -> new AmethystClusterBlock(7.0F, 3.0F, recolored(Blocks.AMETHYST_CLUSTER, MapColor.SNOW)));
+    /** A crystal lamp: the crystal wall's behaviour with light 15. */
+    public static final DeferredBlock<AmethystBlock> PURITY_CRYSTAL_LAMP = register("purity_crystal_lamp",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.SNOW).lightLevel(state -> 15)));
+
     private ModBlocks() {
     }
 
@@ -663,16 +908,16 @@ public final class ModBlocks {
     }
 
     /**
-     * A crystal stage (dew, fire): the amethyst stage's behaviour, sounds and light level (1, 2, 4, 5), in its own map
-     * colour.
+     * A vanilla block's behaviour, sounds and light in our own map colour: the crystal stages (amethyst's light 1, 2, 4,
+     * 5) and the fossil stone set.
      */
-    private static Properties crystalStage(Block vanillaStage, MapColor color) {
-        return Properties.ofFullCopy(vanillaStage).mapColor(color);
+    private static Properties recolored(Block vanilla, MapColor color) {
+        return Properties.ofFullCopy(vanilla).mapColor(color);
     }
 
     /** A sulfur crystal stage: the amethyst stage's behaviour and sounds, yellow on the map, with its own faint light. */
     private static Properties sulfurCrystal(Block vanillaStage, int light) {
-        return crystalStage(vanillaStage, MapColor.COLOR_YELLOW).lightLevel(state -> light);
+        return recolored(vanillaStage, MapColor.COLOR_YELLOW).lightLevel(state -> light);
     }
 
     /** Boiling mud: mud's shape (you sink in a little) with honey's slowness, speed 0.4 and jump 0.5. */
@@ -686,16 +931,16 @@ public final class ModBlocks {
     }
 
     /**
-     * A ring 3 ore in a vanilla host: that vanilla ore's look, sound and blast resistance, half a point harder. The tool
-     * tier comes from the {@code needs_*_tool} tags.
+     * A ring ore in a vanilla host: that vanilla ore's look, sound and blast resistance, {@code extraHardness} harder
+     * (ring 3 half a point, ring 4 a whole one). The tool tier comes from the {@code needs_*_tool} tags.
      */
-    private static Properties oreIn(Block vanillaOre) {
-        return Properties.ofFullCopy(vanillaOre).destroyTime(vanillaOre.defaultDestroyTime() + RING_3_ORE_EXTRA_HARDNESS);
+    private static Properties oreIn(Block vanillaOre, float extraHardness) {
+        return Properties.ofFullCopy(vanillaOre).destroyTime(vanillaOre.defaultDestroyTime() + extraHardness);
     }
 
-    /** {@link #oreIn} with basalt's colour and sound (the stone variant's ore as the template). */
+    /** A ring 3 {@link #oreIn} with basalt's colour and sound (the stone variant's ore as the template). */
     private static Properties oreInBasalt(Block vanillaOre) {
-        return oreIn(vanillaOre).mapColor(MapColor.COLOR_BLACK).sound(SoundType.BASALT);
+        return oreIn(vanillaOre, RING_3_ORE_EXTRA_HARDNESS).mapColor(MapColor.COLOR_BLACK).sound(SoundType.BASALT);
     }
 
     /** Pumice (all shapes): the tuff family's behaviour and sounds, light grey on the map. */
@@ -723,6 +968,25 @@ public final class ModBlocks {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_CYAN);
     }
 
+    /** Tidestone (all shapes, and the bubble spring): the vanilla stone variant's behaviour, blue-grey on the map. */
+    private static Properties tidestone(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_LIGHT_BLUE);
+    }
+
+    /** Moonpetal wood without bark (planks family, stripped): cherry's behaviour and sounds, pale on the map. */
+    private static Properties moonpetal(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_WHITE);
+    }
+
+    /**
+     * A glowcap: a mushroom's feel (walk-through, instant, fungus sounds, destroyed by pistons) with its own light, and
+     * without the random ticks of vanilla mushrooms (it never spreads).
+     */
+    private static Properties glowcap(MapColor color, int light) {
+        return Properties.of().mapColor(color).noCollission().instabreak().sound(SoundType.FUNGUS)
+                .lightLevel(state -> light).pushReaction(PushReaction.DESTROY);
+    }
+
     private static <B extends Block> DeferredBlock<B> register(String name, Supplier<B> block) {
         DeferredBlock<B> holder = BLOCKS.register(name, block);
         ModItems.ITEMS.registerSimpleBlockItem(holder);
@@ -744,6 +1008,13 @@ public final class ModBlocks {
     private static <B extends DoorBlock> DeferredBlock<B> registerDoor(String name, Supplier<B> block) {
         DeferredBlock<B> holder = BLOCKS.register(name, block);
         ModItems.ITEMS.registerItem(name, properties -> new DoubleHighBlockItem(holder.get(), properties));
+        return holder;
+    }
+
+    /** Water plants need a {@link PlaceOnWaterBlockItem}, which places them on the water surface like a lily pad. */
+    private static <B extends Block> DeferredBlock<B> registerOnWater(String name, Supplier<B> block) {
+        DeferredBlock<B> holder = BLOCKS.register(name, block);
+        ModItems.ITEMS.registerItem(name, properties -> new PlaceOnWaterBlockItem(holder.get(), properties));
         return holder;
     }
 }

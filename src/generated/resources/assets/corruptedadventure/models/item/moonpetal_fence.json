@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/fence_inventory",
+  "textures": {
+    "texture": "corruptedadventure:block/moonpetal_planks"
+  }
+}

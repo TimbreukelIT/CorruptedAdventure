@@ -9,6 +9,7 @@ import net.minecraft.world.level.biome.Biomes;
 import net.neoforged.neoforge.common.data.DataMapProvider;
 import net.neoforged.neoforge.registries.datamaps.builtin.BiomeVillagerType;
 import net.neoforged.neoforge.registries.datamaps.builtin.Compostable;
+import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
@@ -52,8 +53,26 @@ final class ModDataMapProvider extends DataMapProvider {
                 .add(ModBlocks.ASH_SPROUTS.getId(), new Compostable(0.3F), false)
                 .add(ModBlocks.FIRE_BLOOM.getId(), new Compostable(0.65F), false)
                 // Nether ring 3: like the nether wart block.
-                .add(ModBlocks.RIMESHROOM_CAP.getId(), new Compostable(0.85F), false);
+                .add(ModBlocks.RIMESHROOM_CAP.getId(), new Compostable(0.85F), false)
+                // Ring 4: leaves and saplings 0.3, mushrooms and flowers 0.65, hanging roots 0.3 (vanilla's values).
+                .add(ModBlocks.MOONPETAL_LEAVES.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.MOONPETAL_SAPLING.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.HANGING_SWAMP_MOSS.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.GLOWING_HANGING_ROOTS.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.GLOWCAP.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.BLIGHTED_GLOWCAP.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.GLOW_BLOOM.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.GIANT_LILY_PAD.getId(), new Compostable(0.65F), false)
+                // Like sugar cane and the lily pad.
+                .add(ModBlocks.REEDS.getId(), new Compostable(0.5F), false)
+                .add(ModBlocks.LOTUS.getId(), new Compostable(0.65F), false);
+
+        // Peat: a weak fuel (6 items per block, coal does 8), because the whole surface of the peat moors is peat.
+        builder(NeoForgeDataMaps.FURNACE_FUELS).add(ModBlocks.PEAT.getId(), new FurnaceFuel(PEAT_BURN_TIME), false);
     }
+
+    /** Ticks of furnace fuel per peat block. */
+    static final int PEAT_BURN_TIME = 1200;
 
     @SafeVarargs
     private static void villager(Builder<BiomeVillagerType, Biome> builder, VillagerType type, ResourceKey<Biome>... vanilla) {

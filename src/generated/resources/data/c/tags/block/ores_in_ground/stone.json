@@ -2,6 +2,8 @@
   "values": [
     "corruptedadventure:volcanite_ore",
     "corruptedadventure:sulfur_ore",
-    "corruptedadventure:fire_ruby_ore"
+    "corruptedadventure:fire_ruby_ore",
+    "corruptedadventure:tidesilver_ore",
+    "corruptedadventure:jade_ore"
   ]
 }

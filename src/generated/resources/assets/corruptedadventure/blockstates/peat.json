@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "corruptedadventure:block/peat"
+      },
+      {
+        "model": "corruptedadventure:block/peat",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/peat",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/peat",
+        "y": 270
+      }
+    ]
+  }
+}

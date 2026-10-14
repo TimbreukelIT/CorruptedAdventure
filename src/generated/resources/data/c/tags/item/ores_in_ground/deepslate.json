@@ -1,6 +1,8 @@
 {
   "values": [
     "corruptedadventure:deepslate_volcanite_ore",
-    "corruptedadventure:deepslate_fire_ruby_ore"
+    "corruptedadventure:deepslate_fire_ruby_ore",
+    "corruptedadventure:deepslate_tidesilver_ore",
+    "corruptedadventure:deepslate_jade_ore"
   ]
 }

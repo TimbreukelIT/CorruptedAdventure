@@ -15,6 +15,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.PlaceOnWaterBlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
@@ -22,9 +23,11 @@ import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.world.level.block.NetherrackBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import nl.timtoys.corruptedadventure.block.AshCrustBlock;
@@ -471,6 +474,142 @@ class ModBlocksTest {
                 .map(block -> block.getId().toString()).filter(id -> id.contains("rimeshroom")).toList();
         assertEquals(13, rimeshroomWood.size());
         rimeshroomWood.forEach(id -> assertTrue(values.contains(id), id));
+    }
+
+    /** Ring 4 follows Nether ring 3 directly (contract ring 4 §3), in this order (the potted sapling has no item). */
+    @Test
+    void ring4NaturalBlocksFollowNetherRing3InOrder() {
+        List<Item> shown = blockItems();
+        int lastNetherRing3 = shown.indexOf(ModBlocks.PRIMORDIAL_ICE.asItem());
+        List<Item> ring4 = Stream.of(ModBlocks.TIDESTONE, ModBlocks.TIDESTONE_STAIRS, ModBlocks.TIDESTONE_SLAB,
+                ModBlocks.TIDESTONE_WALL, ModBlocks.COBBLED_TIDESTONE, ModBlocks.COBBLED_TIDESTONE_STAIRS,
+                ModBlocks.COBBLED_TIDESTONE_SLAB, ModBlocks.COBBLED_TIDESTONE_WALL, ModBlocks.POLISHED_TIDESTONE,
+                ModBlocks.POLISHED_TIDESTONE_STAIRS, ModBlocks.POLISHED_TIDESTONE_SLAB, ModBlocks.POLISHED_TIDESTONE_WALL,
+                ModBlocks.TIDESTONE_BRICKS, ModBlocks.TIDESTONE_BRICK_STAIRS, ModBlocks.TIDESTONE_BRICK_SLAB,
+                ModBlocks.TIDESTONE_BRICK_WALL, ModBlocks.MOONPETAL_LOG, ModBlocks.MOONPETAL_WOOD,
+                ModBlocks.STRIPPED_MOONPETAL_LOG, ModBlocks.STRIPPED_MOONPETAL_WOOD, ModBlocks.MOONPETAL_PLANKS,
+                ModBlocks.MOONPETAL_STAIRS, ModBlocks.MOONPETAL_SLAB, ModBlocks.MOONPETAL_FENCE, ModBlocks.MOONPETAL_FENCE_GATE,
+                ModBlocks.MOONPETAL_DOOR, ModBlocks.MOONPETAL_TRAPDOOR, ModBlocks.MOONPETAL_PRESSURE_PLATE,
+                ModBlocks.MOONPETAL_BUTTON, ModBlocks.MOONPETAL_LEAVES, ModBlocks.MOONPETAL_SAPLING,
+                ModBlocks.WITHERED_MOONPETAL_LOG, ModBlocks.WITHERED_MOONPETAL_WOOD, ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG,
+                ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD, ModBlocks.REEDS, ModBlocks.PEAT, ModBlocks.HANGING_SWAMP_MOSS,
+                ModBlocks.GIANT_LILY_PAD, ModBlocks.LOTUS, ModBlocks.GLOWCAP, ModBlocks.GLOW_BLOOM,
+                ModBlocks.GLOWING_HANGING_ROOTS, ModBlocks.BLIGHTED_GLOWCAP, ModBlocks.BUBBLE_SPRING)
+                .<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(ring4, shown.subList(lastNetherRing3 + 1, lastNetherRing3 + 1 + ring4.size()));
+        assertSame(ModBlocks.MOONPETAL_SAPLING.get(), ModBlocks.POTTED_MOONPETAL_SAPLING.get().getPotted());
+        // Water plants are placed on the water surface, like the lily pad.
+        assertInstanceOf(PlaceOnWaterBlockItem.class, ModBlocks.GIANT_LILY_PAD.asItem());
+        assertInstanceOf(PlaceOnWaterBlockItem.class, ModBlocks.LOTUS.asItem());
+    }
+
+    /** Glowing flora: the light levels stream B chose (plan golf 1); the glowcaps never tick (no spreading). */
+    @Test
+    void ring4GlowingFloraGlowsSubtlyAndNeverTicks() {
+        assertEquals(6, ModBlocks.GLOWCAP.get().defaultBlockState().getLightEmission());
+        assertEquals(7, ModBlocks.GLOW_BLOOM.get().defaultBlockState().getLightEmission());
+        assertEquals(5, ModBlocks.GLOWING_HANGING_ROOTS.get().defaultBlockState().getLightEmission());
+        assertEquals(3, ModBlocks.BLIGHTED_GLOWCAP.get().defaultBlockState().getLightEmission());
+        for (DeferredBlock<?> block : List.of(ModBlocks.GLOWCAP, ModBlocks.BLIGHTED_GLOWCAP, ModBlocks.GLOW_BLOOM,
+                ModBlocks.GLOWING_HANGING_ROOTS, ModBlocks.HANGING_SWAMP_MOSS, ModBlocks.BUBBLE_SPRING, ModBlocks.PEAT)) {
+            assertFalse(block.get().defaultBlockState().isRandomlyTicking(), block.getId().toString());
+        }
+        // Strands of hanging moss hang straight (no sideways offset like hanging roots).
+        assertEquals(Vec3.ZERO, ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState()
+                .getOffset(EmptyBlockGetter.INSTANCE, new BlockPos(5, 64, 7)));
+        // The reeds grow like sugar cane; the bubble spring and tidestone are stone.
+        assertTrue(ModBlocks.REEDS.get().defaultBlockState().isRandomlyTicking());
+        assertEquals(Blocks.STONE.defaultDestroyTime(), ModBlocks.BUBBLE_SPRING.get().defaultDestroyTime());
+        assertEquals(Blocks.STONE.defaultDestroyTime(), ModBlocks.TIDESTONE.get().defaultDestroyTime());
+    }
+
+    /** All ring 4 wood burns like vanilla wood (contract §3), unlike the Nether and charred sets. */
+    @Test
+    void ring4WoodIsIgnitedByLava() {
+        for (DeferredBlock<?> block : List.of(ModBlocks.MOONPETAL_LOG, ModBlocks.MOONPETAL_PLANKS, ModBlocks.MOONPETAL_LEAVES,
+                ModBlocks.WITHERED_MOONPETAL_LOG, ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD)) {
+            assertTrue(block.get().defaultBlockState().ignitedByLava(), block.getId().toString());
+        }
+    }
+
+    /** The ores and crystals follow the bubble spring; their loose items follow the fire crystal. */
+    @Test
+    void ring4OresAndCrystalsFollowTheNaturalBlocksInOrder() {
+        List<Item> shown = blockItems();
+        int spring = shown.indexOf(ModBlocks.BUBBLE_SPRING.asItem());
+        List<Item> ores = Stream.of(ModBlocks.TIDESILVER_ORE, ModBlocks.TIDESTONE_TIDESILVER_ORE, ModBlocks.DEEPSLATE_TIDESILVER_ORE,
+                ModBlocks.JADE_ORE, ModBlocks.TIDESTONE_JADE_ORE, ModBlocks.DEEPSLATE_JADE_ORE, ModBlocks.TOXIC_CRYSTAL_BLOCK,
+                ModBlocks.BUDDING_TOXIC_CRYSTAL, ModBlocks.SMALL_TOXIC_CRYSTAL_BUD, ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD,
+                ModBlocks.LARGE_TOXIC_CRYSTAL_BUD, ModBlocks.TOXIC_CRYSTAL_CLUSTER, ModBlocks.AQUAMARINE_BLOCK,
+                ModBlocks.BUDDING_AQUAMARINE, ModBlocks.SMALL_AQUAMARINE_BUD, ModBlocks.MEDIUM_AQUAMARINE_BUD,
+                ModBlocks.LARGE_AQUAMARINE_BUD, ModBlocks.AQUAMARINE_CLUSTER).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(ores, shown.subList(spring + 1, spring + 1 + ores.size()));
+        List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
+                .filter(item -> !(item instanceof BlockItem)).toList();
+        int fireCrystal = standalone.indexOf(ModItems.FIRE_CRYSTAL.get());
+        assertEquals(List.of(ModItems.RAW_TIDESILVER.get(), ModItems.JADE.get(), ModItems.TOXIC_CRYSTAL_SHARD.get(),
+                ModItems.AQUAMARINE_SHARD.get()), standalone.subList(fireCrystal + 1, fireCrystal + 5));
+    }
+
+    /** Decision V3 golf 1: a whole point harder than the vanilla host ore, XP 4–7 / 5–9, only tidesilver glows. */
+    @Test
+    void ring4OresHaveTheirXpLightAndHardness() {
+        Map<DeferredBlock<DropExperienceBlock>, Block> hosts = Map.of(ModBlocks.TIDESILVER_ORE, Blocks.IRON_ORE,
+                ModBlocks.TIDESTONE_TIDESILVER_ORE, Blocks.IRON_ORE, ModBlocks.DEEPSLATE_TIDESILVER_ORE, Blocks.DEEPSLATE_IRON_ORE,
+                ModBlocks.JADE_ORE, Blocks.DIAMOND_ORE, ModBlocks.TIDESTONE_JADE_ORE, Blocks.DIAMOND_ORE,
+                ModBlocks.DEEPSLATE_JADE_ORE, Blocks.DEEPSLATE_DIAMOND_ORE);
+        hosts.forEach((ore, vanilla) -> {
+            assertEquals(vanilla.defaultDestroyTime() + 1.0F, ore.get().defaultDestroyTime(), ore.getId().toString());
+            boolean tidesilver = ore.getId().getPath().contains("tidesilver");
+            assertEquals(tidesilver ? UniformInt.of(4, 7).toString() : UniformInt.of(5, 9).toString(), experience(ore.get()));
+            assertEquals(tidesilver ? 3 : 0, ore.get().defaultBlockState().getLightEmission(), ore.getId().toString());
+        });
+    }
+
+    /** Like amethyst: the stages give light 1, 2, 4, 5 and face up dry by default; the walls give no light. */
+    @Test
+    void ring4CrystalStagesGlowLikeAmethyst() {
+        List<Block> vanilla = List.of(Blocks.SMALL_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD, Blocks.LARGE_AMETHYST_BUD,
+                Blocks.AMETHYST_CLUSTER);
+        for (List<DeferredBlock<AmethystClusterBlock>> stages : List.of(
+                List.of(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD, ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD, ModBlocks.LARGE_TOXIC_CRYSTAL_BUD,
+                        ModBlocks.TOXIC_CRYSTAL_CLUSTER),
+                List.of(ModBlocks.SMALL_AQUAMARINE_BUD, ModBlocks.MEDIUM_AQUAMARINE_BUD, ModBlocks.LARGE_AQUAMARINE_BUD,
+                        ModBlocks.AQUAMARINE_CLUSTER))) {
+            for (int i = 0; i < stages.size(); i++) {
+                BlockState stage = stages.get(i).get().defaultBlockState();
+                assertEquals(vanilla.get(i).defaultBlockState().getLightEmission(), stage.getLightEmission());
+                assertEquals(Direction.UP, stage.getValue(AmethystClusterBlock.FACING));
+                assertFalse(stage.getValue(AmethystClusterBlock.WATERLOGGED));
+            }
+        }
+        assertEquals(0, ModBlocks.TOXIC_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
+        assertEquals(0, ModBlocks.AQUAMARINE_BLOCK.get().defaultBlockState().getLightEmission());
+    }
+
+    /** Nether ring 4 follows ring 4 directly and ends the blocks (contract ring 4 §3); its shard ends the loose items. */
+    @Test
+    void netherRing4FollowsRing4InOrderAndBehavesAsPlanned() {
+        List<Item> shown = blockItems();
+        int lastRing4 = shown.indexOf(ModBlocks.AQUAMARINE_CLUSTER.asItem());
+        List<Item> netherRing4 = Stream.of(ModBlocks.BONE_SAND, ModBlocks.BLEACHED_NETHERRACK, ModBlocks.FOSSIL_STONE,
+                ModBlocks.FOSSIL_STONE_STAIRS, ModBlocks.FOSSIL_STONE_SLAB, ModBlocks.FOSSIL_STONE_WALL,
+                ModBlocks.POLISHED_FOSSIL_STONE, ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, ModBlocks.POLISHED_FOSSIL_STONE_SLAB,
+                ModBlocks.POLISHED_FOSSIL_STONE_WALL, ModBlocks.FOSSIL_STONE_BRICKS, ModBlocks.FOSSIL_STONE_BRICK_STAIRS,
+                ModBlocks.FOSSIL_STONE_BRICK_SLAB, ModBlocks.FOSSIL_STONE_BRICK_WALL, ModBlocks.PURITY_CRYSTAL_BLOCK,
+                ModBlocks.PURITY_CRYSTAL_CLUSTER, ModBlocks.PURITY_CRYSTAL_LAMP).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(netherRing4, shown.subList(lastRing4 + 1, shown.size()));
+        List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
+                .filter(item -> !(item instanceof BlockItem)).toList();
+        assertEquals(ModItems.PURITY_CRYSTAL_SHARD.get(), standalone.getLast());
+
+        assertInstanceOf(FallingBlock.class, ModBlocks.BONE_SAND.get());
+        assertFalse(ModBlocks.BLEACHED_NETHERRACK.get() instanceof NetherrackBlock);
+        assertEquals(Blocks.NETHERRACK.defaultDestroyTime(), ModBlocks.BLEACHED_NETHERRACK.get().defaultDestroyTime());
+        assertEquals(15, ModBlocks.PURITY_CRYSTAL_LAMP.get().defaultBlockState().getLightEmission());
+        assertEquals(5, ModBlocks.PURITY_CRYSTAL_CLUSTER.get().defaultBlockState().getLightEmission());
+        assertEquals(0, ModBlocks.PURITY_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
+        assertFalse(ModBlocks.PURITY_CRYSTAL_CLUSTER.get().defaultBlockState().isRandomlyTicking());
     }
 
     private static List<Item> blockItems() {

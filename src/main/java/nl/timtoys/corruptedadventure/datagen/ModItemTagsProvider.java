@@ -117,5 +117,30 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         // Canyon cobblestone makes stone tools, furnaces and the other cobblestone recipes, like vanilla cobblestone.
         tag(ItemTags.STONE_TOOL_MATERIALS).add(ModBlocks.CANYON_COBBLESTONE.asItem());
         tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.CANYON_COBBLESTONE.asItem());
+
+        ring4();
+    }
+
+    /** Ring 4: the burnable wood sets reach #logs_that_burn through the block tag copy above. */
+    private void ring4() {
+        copy(ModTags.Blocks.MOONPETAL_LOGS, ModTags.Items.MOONPETAL_LOGS);
+        copy(ModTags.Blocks.WITHERED_MOONPETAL_LOGS, ModTags.Items.WITHERED_MOONPETAL_LOGS);
+        // Cobbled tidestone makes stone tools and the cobblestone recipes, like canyon cobblestone.
+        tag(ItemTags.STONE_TOOL_MATERIALS).add(ModBlocks.COBBLED_TIDESTONE.asItem());
+        tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.COBBLED_TIDESTONE.asItem());
+
+        copy(ModTags.Blocks.ORES_TIDESILVER, ModTags.Items.ORES_TIDESILVER);
+        copy(ModTags.Blocks.ORES_JADE, ModTags.Items.ORES_JADE);
+        copy(ModTags.Blocks.ORES_IN_GROUND_TIDESTONE, ModTags.Items.ORES_IN_GROUND_TIDESTONE);
+        tag(ModTags.Items.RAW_MATERIALS_TIDESILVER).add(ModItems.RAW_TIDESILVER.get());
+        tag(Tags.Items.RAW_MATERIALS).addTag(ModTags.Items.RAW_MATERIALS_TIDESILVER);
+        tag(ModTags.Items.GEMS_JADE).add(ModItems.JADE.get());
+        tag(ModTags.Items.GEMS_TOXIC_CRYSTAL).add(ModItems.TOXIC_CRYSTAL_SHARD.get());
+        tag(ModTags.Items.GEMS_AQUAMARINE).add(ModItems.AQUAMARINE_SHARD.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_JADE).addTag(ModTags.Items.GEMS_TOXIC_CRYSTAL)
+                .addTag(ModTags.Items.GEMS_AQUAMARINE);
+        // Nether ring 4.
+        tag(ModTags.Items.GEMS_PURITY_CRYSTAL).add(ModItems.PURITY_CRYSTAL_SHARD.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_PURITY_CRYSTAL);
     }
 }

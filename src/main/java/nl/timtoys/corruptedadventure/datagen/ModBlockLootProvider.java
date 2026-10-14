@@ -26,6 +26,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import nl.timtoys.corruptedadventure.block.GiantLilyPadBlock;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 
@@ -146,6 +147,91 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         netherRing2();
         ring3();
         netherRing3();
+        ring4();
+    }
+
+    private void ring4() {
+        // Tidestone breaks into cobbled tidestone, like stone into cobblestone.
+        add(ModBlocks.TIDESTONE.get(), block -> createSingleItemTableWithSilkTouch(block, ModBlocks.COBBLED_TIDESTONE.get()));
+        for (Block block : List.of(ModBlocks.TIDESTONE_STAIRS.get(), ModBlocks.TIDESTONE_WALL.get(),
+                ModBlocks.COBBLED_TIDESTONE.get(), ModBlocks.COBBLED_TIDESTONE_STAIRS.get(), ModBlocks.COBBLED_TIDESTONE_WALL.get(),
+                ModBlocks.POLISHED_TIDESTONE.get(), ModBlocks.POLISHED_TIDESTONE_STAIRS.get(), ModBlocks.POLISHED_TIDESTONE_WALL.get(),
+                ModBlocks.TIDESTONE_BRICKS.get(), ModBlocks.TIDESTONE_BRICK_STAIRS.get(), ModBlocks.TIDESTONE_BRICK_WALL.get())) {
+            dropSelf(block);
+        }
+        for (Block slab : List.of(ModBlocks.TIDESTONE_SLAB.get(), ModBlocks.COBBLED_TIDESTONE_SLAB.get(),
+                ModBlocks.POLISHED_TIDESTONE_SLAB.get(), ModBlocks.TIDESTONE_BRICK_SLAB.get())) {
+            add(slab, this::createSlabItemTable);
+        }
+
+        for (Block block : List.of(ModBlocks.MOONPETAL_LOG.get(), ModBlocks.MOONPETAL_WOOD.get(),
+                ModBlocks.STRIPPED_MOONPETAL_LOG.get(), ModBlocks.STRIPPED_MOONPETAL_WOOD.get(), ModBlocks.MOONPETAL_PLANKS.get(),
+                ModBlocks.MOONPETAL_STAIRS.get(), ModBlocks.MOONPETAL_FENCE.get(), ModBlocks.MOONPETAL_FENCE_GATE.get(),
+                ModBlocks.MOONPETAL_TRAPDOOR.get(), ModBlocks.MOONPETAL_PRESSURE_PLATE.get(), ModBlocks.MOONPETAL_BUTTON.get(),
+                ModBlocks.MOONPETAL_SAPLING.get(), ModBlocks.WITHERED_MOONPETAL_LOG.get(), ModBlocks.WITHERED_MOONPETAL_WOOD.get(),
+                ModBlocks.STRIPPED_WITHERED_MOONPETAL_LOG.get(), ModBlocks.STRIPPED_WITHERED_MOONPETAL_WOOD.get())) {
+            dropSelf(block);
+        }
+        add(ModBlocks.MOONPETAL_SLAB.get(), this::createSlabItemTable);
+        add(ModBlocks.MOONPETAL_DOOR.get(), this::createDoorTable);
+        // Like oak leaves: shears/Silk Touch -> the leaves; otherwise sapling 1/20 (Fortune more) and sticks 1/50.
+        add(ModBlocks.MOONPETAL_LEAVES.get(), block -> createLeavesDrops(block, ModBlocks.MOONPETAL_SAPLING.get(), NORMAL_LEAVES_SAPLING_CHANCES));
+        dropPottedContents(ModBlocks.POTTED_MOONPETAL_SAPLING.get());
+
+        dropSelf(ModBlocks.REEDS.get());
+        dropSelf(ModBlocks.PEAT.get());
+        dropSelf(ModBlocks.LOTUS.get());
+        // Like vines and hanging roots: only with shears.
+        add(ModBlocks.HANGING_SWAMP_MOSS.get(), BlockLootSubProvider::createShearsOnlyDrop);
+        // One item per pad: only the north-west part drops (the others vanish with it, like the foot of a bed).
+        add(ModBlocks.GIANT_LILY_PAD.get(), block -> createSinglePropConditionTable(block, GiantLilyPadBlock.PART,
+                GiantLilyPadBlock.Part.NORTH_WEST));
+        dropSelf(ModBlocks.GLOWCAP.get());
+        dropSelf(ModBlocks.GLOW_BLOOM.get());
+        add(ModBlocks.GLOWING_HANGING_ROOTS.get(), BlockLootSubProvider::createShearsOnlyDrop);
+        dropSelf(ModBlocks.BLIGHTED_GLOWCAP.get());
+        dropSelf(ModBlocks.BUBBLE_SPRING.get());
+
+        // Like diamond ore -> diamond: one item (Fortune), Silk Touch -> the ore itself.
+        for (Block ore : List.of(ModBlocks.TIDESILVER_ORE.get(), ModBlocks.TIDESTONE_TIDESILVER_ORE.get(),
+                ModBlocks.DEEPSLATE_TIDESILVER_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.RAW_TIDESILVER.get()));
+        }
+        for (Block ore : List.of(ModBlocks.JADE_ORE.get(), ModBlocks.TIDESTONE_JADE_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.JADE.get()));
+        }
+        // Like amethyst: the wall drops itself, the budding block nothing (not even with Silk Touch), buds only with
+        // Silk Touch, the cluster gives shards.
+        dropSelf(ModBlocks.TOXIC_CRYSTAL_BLOCK.get());
+        add(ModBlocks.BUDDING_TOXIC_CRYSTAL.get(), noDrop());
+        dropWhenSilkTouch(ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get());
+        dropWhenSilkTouch(ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get());
+        add(ModBlocks.TOXIC_CRYSTAL_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.TOXIC_CRYSTAL_SHARD.get()));
+        dropSelf(ModBlocks.AQUAMARINE_BLOCK.get());
+        add(ModBlocks.BUDDING_AQUAMARINE.get(), noDrop());
+        dropWhenSilkTouch(ModBlocks.SMALL_AQUAMARINE_BUD.get());
+        dropWhenSilkTouch(ModBlocks.MEDIUM_AQUAMARINE_BUD.get());
+        dropWhenSilkTouch(ModBlocks.LARGE_AQUAMARINE_BUD.get());
+        add(ModBlocks.AQUAMARINE_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.AQUAMARINE_SHARD.get()));
+
+        netherRing4();
+    }
+
+    private void netherRing4() {
+        for (Block block : List.of(ModBlocks.BONE_SAND.get(), ModBlocks.BLEACHED_NETHERRACK.get(),
+                ModBlocks.FOSSIL_STONE.get(), ModBlocks.FOSSIL_STONE_STAIRS.get(), ModBlocks.FOSSIL_STONE_WALL.get(),
+                ModBlocks.POLISHED_FOSSIL_STONE.get(), ModBlocks.POLISHED_FOSSIL_STONE_STAIRS.get(), ModBlocks.POLISHED_FOSSIL_STONE_WALL.get(),
+                ModBlocks.FOSSIL_STONE_BRICKS.get(), ModBlocks.FOSSIL_STONE_BRICK_STAIRS.get(), ModBlocks.FOSSIL_STONE_BRICK_WALL.get(),
+                ModBlocks.PURITY_CRYSTAL_BLOCK.get(), ModBlocks.PURITY_CRYSTAL_LAMP.get())) {
+            dropSelf(block);
+        }
+        for (Block slab : List.of(ModBlocks.FOSSIL_STONE_SLAB.get(), ModBlocks.POLISHED_FOSSIL_STONE_SLAB.get(),
+                ModBlocks.FOSSIL_STONE_BRICK_SLAB.get())) {
+            add(slab, this::createSlabItemTable);
+        }
+        // Like the amethyst cluster: Silk Touch -> the cluster, a pickaxe -> 4 shards (Fortune), anything else 2.
+        add(ModBlocks.PURITY_CRYSTAL_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.PURITY_CRYSTAL_SHARD.get()));
     }
 
     private void netherRing3() {
