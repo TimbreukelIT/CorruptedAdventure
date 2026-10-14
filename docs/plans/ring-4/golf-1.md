@@ -42,3 +42,17 @@ Merge B → T → W-terrein → W-biomes → W-nether → C → A; B/D + vangnet
 
 ## Voortgang
 - 2026-10-13: plan opgesteld; besluiten van de gebruiker vastgelegd. Start na de laatste review-fix van 59.
+- 2026-10-14: **INT1 uitgevoerd** op `ring4/integration-1` (vanaf `main` 4477c25), in eigen worktree. Merges in volgorde, elk met `./gradlew build` groen:
+  - B `ring4/blocks-g1` (0bca589): merge-commit, zonder conflicten.
+  - T `ring4/textures-g1` (67991e1): schoon; build groen.
+  - W-terrein `ring4/terrain-g1` (e36d1c8): schoon; build groen.
+  - W-biomes `ring4/biomes-g1` (9d43b64): schoon; build groen.
+  - W-nether `ring4/nether-g1` (73a2c0c): conflicten in `ModDensityFunctionTypes` (beide blokken behouden), `ring_4/nether/terrain.json` (stream-versie gekozen: de golf-0-stub is vervangen), `Ring4JsonTest` (stream-test gekozen, de stub-assert vervallen), lang-bestanden (`src/generated`, opnieuw gegenereerd met `runData`). Build en `runData` groen.
+  - C `ring4/conditions-g1` (52c70e4): schoon; build groen.
+  - A `ring4/atmosphere-g1` (df7f286): schoon; build groen.
+  - Integratie-commit `125abe0`: (a) `ToxicRainPoisonModifier.rainMultiplier()` leest `ServerConfig.RING_4_WEATHER.toxicRainPoisonMultiplier` (de placeholder-konstante en de test-assert zijn weg); (b) `ModNetwork.PROTOCOL_VERSION` 7 → 8 (C: `condition_sync` 1 byte langer door `POISON`); (c) `MapPalette`: de twee ring 4-placeholderkleuren weg (de echte biomes krijgen een hash-kleur, zie backlog); (d) `RingWeatherDebugLog`-commentaar herwrapped.
+- Koppelingen gecontroleerd: A's gifregen-factor is de enige bron van de C-regenfactor; geen tweede gifregen-schade (A doet geen schade); `sounds.json` (`weather.ring_4.{dense_fog,storm_wind,toxic_rain}`) parsed zonder dubbele keys; `/ca weather` en de debuglog gebruiken `SandstormWind.hasWind` (zandstorm en storm); `Ring3JsonTest` ongewijzigd nodig (ring 4-tak in de Nether-dam-test staat in `NetherRing4JsonTest`/`Ring3JsonTest`, groen); dubbele keys in `ModConfiguredFeatures`, `ModPlacedFeatures`, `ModFeatures` en de biome-keys: geen gevonden; `IslandField` heeft geen dubbele methoden (dedup-punt van `IslandOutput` naar backlog).
+- Placeholders: de ring 4-biome-placeholders worden niet meer in worldgen gebruikt; weghalen staat in de backlog (na teststop 5a).
+- Testuitslagen: `./gradlew build --no-daemon` groen (na elke merge en na de integratie-fixes); `./gradlew runData --no-daemon` groen, daarna geen wijzigingen in `src/generated` (vangnet); unit tests onderdeel van build; `runServer` (`server.sh start ring4-wave1 --fresh`, poort 25577, RCON 25587): server up na 11 s, geen exceptions of class-load-fouten in `run/logs/latest.log`, daarna gestopt. Geen client-join, geen W-smoke (`tpring` vereist een speler), geen waterscan en geen determinisme/prestatie (later).
+- Merge-commits: B `3831b38`, T `339d2a5`, W-terrein `60b67b8`, W-biomes `9dd8055`, W-nether `a430729`, C `a646998`, A `0d8d8a3`; integratie-fixes `125abe0`; docs en CODEBASE-delta in de commit daarna.
+- Gevonden ontwerpvragen (niet zelf gekozen): geen harde vraag; wel de vraag of `placeholder_ring_4`/`placeholder_nether_ring_4` in INT of na teststop 5a verwijderd worden (nu: na teststop, zie backlog).
