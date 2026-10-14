@@ -83,6 +83,11 @@ Gemeten na de fixes: 414 eilanden (binnen 58 / buiten 230, 13 reuzen), 224 valle
 8. `LastColumn` leegt zijn cache zonder veld.
 9. `KeyedSlots.key` in `IslandField`; `Decisions.once` voor alle memo's.
 
+## Teststop 5a (branch `ring4/terrain-5a`, vanaf `ring4/waterscan-tool` 9ed1999)
+1. **Bug: water zijwaarts tegen lucht bij de 4|5-grens** (waterscan ~143.000 in b45, Y 1..62). Oorzaak: de afgrond had zijn zee op Y 0 alleen in de afgrondkolommen (`RingAquifer`), maar de grondkolommen van de zone hielden de gewone zee tot Y 62 uit de picker; dat water stond naast de lucht van de scheuren. Reparatie: de hele zone 4→5 (beide helften) heeft één zee op Y 0 (`RingFluidPicker.sunderedZone`); de grond van de zone en een rand van 12 blokken ervoor in ring 4 ligt minstens op Y 64 (`Ring4Sundered.RIM_TOP`), zodat de zee van ring 4 (Y 62) tegen gesteente stopt; de afgrondtak van de aquifer geldt alleen vanaf de afgrondbodem (grotten eronder volgen de gewone regels). Besluiten blijven: afgrondzee stil op Y 0 met lucht erboven, water de afgrond in alleen via vastgelegde vallen, geen lokale lava in zone 4→5. Test `RingAquiferTest.zone45HasNoWaterBesideTheAirOfItsCracks`. De andere meldingen (r 7000: 6939 58 −6, −6972 6 46; b34: 6075 14 32, −5998 101 53) zijn hiermee niet verklaard: na de nieuwe waterscan beoordelen.
+2. **Klif 3→4 ruw** (gebruikersbesluit): de exacte wand beweegt per blok in en uit met een 3D-ruwheid (`Ring4Relief.rough`: lagen ~3 hoog als richels en overhangen, knobbels ~5 als uitsprongen en spleten; ±4 blokken, binnen de wandband van 6); de bovenrand brokkelt tot 3 blokken af bij de lijn (`crumble`). Binnen 3 blokken van een val blijft de wand glad (bron en valkolom). Hoogte 40–80, gaten, vallen en plonsbekkens ongewijzigd. Test `theWallIsRoughButBounded`.
+3. **Sundered organisch** (gebruikersbesluit): het chunkraster wordt vóór het zoeken vervormd (±10 blokken, ~40 per golf), dus scheuren lopen gebogen; een losse brok heeft een grillige omtrek 0–5 blokken binnen zijn cel (de rest is afgrond) en is rond: dun aan de rand, vol na 8 blokken, de top zakt naar de rand. Afgrond ≤ 40 % blijft (test).
+
 ## Client/server-impact
 Alles worldgen op de server; geen client-class, geen payload, geen `PROTOCOL_VERSION`. Nieuwe DF-types worden alleen in `ModDensityFunctionTypes` (blok `// ring 4 — W-terrein`) toegevoegd.
 

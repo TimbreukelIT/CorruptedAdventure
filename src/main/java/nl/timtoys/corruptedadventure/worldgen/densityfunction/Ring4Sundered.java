@@ -24,6 +24,21 @@ final class Ring4Sundered {
     static final double RIM_BEFORE = 12.0;
     /** From this share of the zone on the ground is fully broken. */
     static final double FULL_AT = 0.55;
+    /**
+     * How far (blocks) the grid is bent before the chunks are found (5a): the cracks run along curved edges, not
+     * axis-aligned ones.
+     */
+    static final double WARP = 10.0;
+    /** The scale of the bending (×3 the warp noise's: ~40 blocks per wiggle). */
+    static final double WARP_SCALE = 3.0;
+    /**
+     * A loose chunk's outline lies this far (blocks) inside its cell's edge, more or less ({@link #RAG}): ragged and
+     * rounded instead of the cell's straight edges; between them the abyss.
+     */
+    static final double LOOSE_MARGIN = 2.5;
+    static final double RAG = 2.5;
+    /** Over this many blocks from its outline a loose chunk grows to its full thickness (a rounded rim). */
+    static final double LOOSE_TAPER = 8.0;
     /** The ground breaks into chunks around the points of a jittered grid of this size. */
     static final int CHUNK_CELL = 36;
     /** A land bridge every ~{@link #BRIDGE_CELL} blocks along the zone (jittered by {@link #BRIDGE_JITTER}). */

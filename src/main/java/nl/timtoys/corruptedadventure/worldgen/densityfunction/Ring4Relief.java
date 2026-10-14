@@ -125,6 +125,11 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         return 0.6 * detail.getValue(x * 3.5, y * 10.0, z * 3.5) + 0.4 * detail.getValue(x * 6.0 + 917.0, y * 6.0, z * 6.0 - 431.0);
     }
 
+    /** The warp noise at a position (−1..1 about, ~128 blocks at scale 1), for bending grids. */
+    double warpAt(double x, double z) {
+        return sample(warp, x, z);
+    }
+
     /** 2D noise (−1..1 about, ~6 blocks) for where a wall's top edge crumbles (5a). */
     double crumble(double x, double z) {
         return detail.getValue(x * 5.0 - 211.0, 0.0, z * 5.0 + 377.0);

@@ -819,8 +819,11 @@ public final class IslandField implements DensityFunction {
             // A loose chunk: no ground under it, its own thickness floats at its offset above the ground it was.
             // Not flat: the detail noise lifts the top a few blocks and thickens or thins the slab (review 63: blocky).
             double detail = relief.detailAt(c.x, c.z);
-            double top = c.surface + sunder.offset() + 3.0 * detail;
-            double thickness = sunder.thickness() * (1.0 + 0.4 * detail);
+            // 5a: rounded, not a slab: thin at its outline, full thickness LOOSE_TAPER blocks in, the top dipping a little
+            // towards the rim.
+            double taper = Ring4Relief.smooth(sunder.inside(), 0.0, Ring4Sundered.LOOSE_TAPER);
+            double top = c.surface + sunder.offset() + 3.0 * detail - 2.0 * (1.0 - taper);
+            double thickness = sunder.thickness() * (1.0 + 0.4 * detail) * (0.3 + 0.7 * Math.sqrt(taper));
             c.addIsland((int) Math.ceil(top - thickness), (int) Math.floor(top));
             c.surface = Math.min(c.surface, Ring4Sundered.ABYSS_FLOOR);
         }
@@ -834,7 +837,7 @@ public final class IslandField implements DensityFunction {
     }
 
     /** How a column lies in the sundered zone (63): its kind, the loose chunk's offset and thickness, the strength. */
-    private record Sunder(int kind, double offset, double thickness, double strength) {
+    private record Sunder(int kind, double offset, double thickness, double strength, double inside) {
         static final int NONE = 0;
         static final int CRACK = 1;
         static final int LOOSE = 2;
@@ -845,28 +848,38 @@ public final class IslandField implements DensityFunction {
         RingLayout ringLayout = layout.get();
         double effective = ringLayout.effectiveDistance(x, z);
         if (effective < Ring4Sundered.zoneStart(ringLayout) || effective > Ring4Sundered.zoneEnd(ringLayout)) {
-            return new Sunder(Sunder.NONE, 0.0, 0.0, 0.0);
+            return new Sunder(Sunder.NONE, 0.0, 0.0, 0.0, 0.0);
         }
         double strength = Ring4Sundered.strength(ringLayout, effective);
         if (strength <= 0.0) {
-            return new Sunder(Sunder.NONE, 0.0, 0.0, 0.0);
+            return new Sunder(Sunder.NONE, 0.0, 0.0, 0.0, 0.0);
         }
         long salt = salt();
         double along = Ring4Sundered.along(ringLayout, x, z);
         if (Ring4Sundered.onBridge(salt, along, Ring4Sundered.perimeter(ringLayout))) {
-            return new Sunder(Sunder.NONE, 0.0, 0.0, strength);
+            return new Sunder(Sunder.NONE, 0.0, 0.0, strength, 0.0);
         }
-        double[] chunk = Ring4Sundered.chunk(salt, x, z);
+        // 5a: the grid is bent first, so the cracks curve.
+        double s = Ring4Sundered.WARP_SCALE;
+        double wx = x + Ring4Sundered.WARP * relief.warpAt(x * s, z * s);
+        double wz = z + Ring4Sundered.WARP * relief.warpAt(z * s + 5000.5, x * s - 5000.5);
+        double[] chunk = Ring4Sundered.chunk(salt, wx, wz);
         int i = (int) chunk[0];
         int j = (int) chunk[1];
+        double crack = Ring4Sundered.crack(strength);
         double[] loose = Ring4Sundered.loose(salt, i, j, strength);
         if (loose != null) {
-            return new Sunder(Sunder.LOOSE, loose[0], loose[1], strength);
+            // A loose chunk with a ragged, rounded outline inside its cell; the rest of the cell is abyss.
+            double outline = crack + Ring4Sundered.LOOSE_MARGIN + Ring4Sundered.RAG * relief.crumble(wx * 0.5, wz * 0.5);
+            if (chunk[2] < outline) {
+                return new Sunder(Sunder.CRACK, 0.0, 0.0, strength, 0.0);
+            }
+            return new Sunder(Sunder.LOOSE, loose[0], loose[1], strength, chunk[2] - outline);
         }
-        if (chunk[2] < Ring4Sundered.crack(strength)) {
-            return new Sunder(Sunder.CRACK, 0.0, 0.0, strength);
+        if (chunk[2] < crack) {
+            return new Sunder(Sunder.CRACK, 0.0, 0.0, strength, 0.0);
         }
-        return new Sunder(Sunder.NONE, 0.0, 0.0, strength);
+        return new Sunder(Sunder.NONE, 0.0, 0.0, strength, 0.0);
     }
 
     /**
