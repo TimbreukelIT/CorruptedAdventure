@@ -183,8 +183,117 @@
               ]
             },
             "ring_4": {
-              "type": "minecraft:fixed",
-              "biome": "corruptedadventure:placeholder_ring_4"
+              "type": "minecraft:multi_noise",
+              "biomes": [
+                {
+                  "biome": "corruptedadventure:cascade_vale",
+                  "parameters": {
+                    "temperature": [-2.0, -0.125],
+                    "humidity": [-0.075, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, -0.999],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:crystal_lagoon",
+                  "parameters": {
+                    "temperature": [0.0, 2.0],
+                    "humidity": [-2.0, -0.075],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, -0.999],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:lotus_shallows",
+                  "parameters": {
+                    "temperature": [0.125, 2.0],
+                    "humidity": [-0.075, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, -0.999],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:glowroot_swamp",
+                  "parameters": {
+                    "temperature": [-0.125, 0.125],
+                    "humidity": [-0.075, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, -0.999],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:mist_fjords",
+                  "parameters": {
+                    "temperature": [-2.0, 0.0],
+                    "humidity": [-2.0, -0.075],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, -0.999],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:drowned_forest",
+                  "parameters": {
+                    "temperature": [0.125, 2.0],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [0.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:peat_moors",
+                  "parameters": {
+                    "temperature": [-2.0, 0.125],
+                    "humidity": [-2.0, 0.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [0.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:reed_marsh",
+                  "parameters": {
+                    "temperature": [-2.0, 0.125],
+                    "humidity": [0.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [0.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:mist_fjords",
+                  "parameters": {
+                    "temperature": [-2.0, 2.0],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-0.999, -0.0001],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                }
+              ]
             },
             "ring_5": {
               "type": "minecraft:fixed",
@@ -207,11 +316,15 @@
             "ring_3": {
               "type": "minecraft:fixed",
               "biome": "corruptedadventure:steam_fens"
+            },
+            "ring_4": {
+              "type": "minecraft:fixed",
+              "biome": "corruptedadventure:sundered_reach"
             }
           },
           "island_biomes": {
-            "mythic": "corruptedadventure:placeholder_ring_4",
-            "blighted": "corruptedadventure:placeholder_ring_4",
+            "mythic": "corruptedadventure:sky_gardens",
+            "blighted": "corruptedadventure:withered_gardens",
             "min_top": 140
           }
         },

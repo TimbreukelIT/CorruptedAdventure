@@ -38,7 +38,7 @@ public final class ModBiomes {
     public static final ResourceKey<Biome> RIME_FOREST = key("rime_forest");
     public static final ResourceKey<Biome> GLACIER_RIFTS = key("glacier_rifts");
 
-    // Ring 4 (Ring4Biomes, 64; docs/plans/ring-4/contract.md §2). Keys only until then: no biome is registered yet.
+    // Ring 4 (Ring4Biomes, 64; docs/plans/ring-4/contract.md §2).
     // Mythical band.
     public static final ResourceKey<Biome> CASCADE_VALE = key("cascade_vale");
     public static final ResourceKey<Biome> CRYSTAL_LAGOON = key("crystal_lagoon");
