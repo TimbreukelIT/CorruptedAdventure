@@ -154,30 +154,54 @@ class Ring4CliffTest {
         }
     }
 
-    /** Where the wall stands exact: rock up to the plateau just inside, open from the foot up just beyond. */
+    /**
+     * The wall is exact per block but rough (5a): just past the roughness inside the line it is plateau rock up to the
+     * top, just past it outside it is open; between, the face moves in and out with the height (ledges, overhangs,
+     * clefts), so many columns change between rock and open within their height.
+     */
     @Test
-    void theWallIsExactPerBlock() {
+    void theWallIsRoughButBounded() {
         int checked = 0;
+        int rough = 0;
         long salt = FIELD.salt();
-        for (double angle = 0.0; angle < 2.0 * Math.PI; angle += 0.05) {
-            int[] inside = at(angle, -2.0);
-            int[] outside = at(angle, 2.0);
-            if (Ring4Cliff.gapAt(salt, Ring4Cliff.arc(LAYOUT, inside[0], inside[1]), Ring4Cliff.perimeter(LAYOUT)) != null) {
+        double period = Ring4Cliff.perimeter(LAYOUT);
+        double reach = Ring4Cliff.ROUGHNESS + 0.6;
+        for (double angle = 0.0; angle < 2.0 * Math.PI; angle += 0.02) {
+            int[] inside = at(angle, -reach - 0.5);
+            int[] outside = at(angle, reach + 0.5);
+            if (Ring4Cliff.gapAt(salt, Ring4Cliff.arc(LAYOUT, inside[0], inside[1]), period) != null
+                    || Ring4Cliff.gapAt(salt, Ring4Cliff.arc(LAYOUT, outside[0], outside[1]), period) != null) {
                 continue;
             }
             IslandField.Column in = FIELD.column(inside[0], inside[1]);
             IslandField.Column out = FIELD.column(outside[0], outside[1]);
-            if (in.wallDistance >= 0.0 || out.wallDistance < 0.0 || !in.wallExact || !out.wallExact) {
+            if (in.wallDistance > -reach || in.wallDistance <= -Ring4Cliff.WALL_BAND || out.wallDistance < reach
+                    || out.wallDistance >= Ring4Cliff.WALL_BAND || !in.wallExact || !out.wallExact || in.nearFall || out.nearFall) {
                 continue;
             }
             int top = (int) Math.ceil(in.plateauY) - 1;
-            assertEquals(1.0, FIELD.thin(inside[0], top, inside[1]), "rock at the top inside");
-            assertEquals(1.0, FIELD.thin(inside[0], (int) Math.floor(in.footY), inside[1]));
-            assertEquals(-1.0, FIELD.thin(outside[0], top, outside[1]), "open beyond");
-            assertEquals(-1.0, FIELD.thin(outside[0], (int) Math.ceil(out.surface) + 1, outside[1]));
+            assertEquals(1.0, FIELD.thin(inside[0], top, inside[1]), "plateau rock at the top inside at " + angle);
+            assertEquals(-1.0, FIELD.thin(outside[0], (int) Math.ceil(out.plateauY) - 1, outside[1]), "open beyond at " + angle);
             checked++;
+            // On the line itself: does the face move with the height?
+            int[] line = at(angle, 0.0);
+            IslandField.Column on = FIELD.column(line[0], line[1]);
+            if (on.nearFall || !on.wallExact) {
+                continue;
+            }
+            int rock = 0;
+            int open = 0;
+            int lineTop = (int) Math.ceil(on.plateauY) - 1;
+            for (int y = lineTop - 30; y <= lineTop; y++) {
+                double t = FIELD.thin(line[0], y, line[1]);
+                rock += t > 0.0 ? 1 : 0;
+                open += t < 0.0 ? 1 : 0;
+            }
+            rough += rock > 0 && open > 0 ? 1 : 0;
         }
+        System.out.printf("wall columns checked %d, rough on the line %d%n", checked, rough);
         assertTrue(checked > 40, "checked " + checked);
+        assertTrue(rough > checked / 4, "rough columns " + rough + " of " + checked);
     }
 
     /** Steaming falls: a spring walled in by the plateau, the fall beside it open down to its plunge pool. */

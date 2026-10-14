@@ -117,6 +117,19 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         return t * t * (3.0 - 2.0 * t);
     }
 
+    /**
+     * 3D roughness of an exact wall (−1..1 about, 5a): strata (stretched flat, ~3 blocks high, ~9 across) for ledges and
+     * overhangs, and knobs (~5 blocks) for bulges and clefts. From the detail noise at other scales.
+     */
+    double rough(double x, double y, double z) {
+        return 0.6 * detail.getValue(x * 3.5, y * 10.0, z * 3.5) + 0.4 * detail.getValue(x * 6.0 + 917.0, y * 6.0, z * 6.0 - 431.0);
+    }
+
+    /** 2D noise (−1..1 about, ~6 blocks) for where a wall's top edge crumbles (5a). */
+    double crumble(double x, double z) {
+        return detail.getValue(x * 5.0 - 211.0, 0.0, z * 5.0 + 377.0);
+    }
+
     /** The detail noise at a position (−1..1 about), for small wanderings of lines. */
     double detailAt(double x, double z) {
         return sample(detail, x, z);

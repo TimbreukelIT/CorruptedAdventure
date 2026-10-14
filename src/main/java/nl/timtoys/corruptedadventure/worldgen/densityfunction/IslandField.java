@@ -440,6 +440,7 @@ public final class IslandField implements DensityFunction {
             out[0] = 0.0;
             out[1] = Double.POSITIVE_INFINITY;
             out[4] = 0.0;
+            out[5] = 0.0;
         }
         if (effective > line + Ring4Cliff.SCREE_OUT + Ring4Cliff.POOL_RADIUS + 2.0 * Ring4Cliff.JITTER
                 || effective < Ring4Cliff.zoneStart(ringLayout) - 16.0) {
@@ -458,7 +459,10 @@ public final class IslandField implements DensityFunction {
             outside = Mth.lerp(w, base, Math.min(base, plateau - Ring4Cliff.MIN_HEIGHT));
         }
         double foot = outside;
+        boolean nearFall = false;
         for (Fall fall : cliffFallsNear(arc)) {
+            nearFall |= Math.max(Math.abs(x - fall.springX()), Math.abs(z - fall.springZ())) <= Ring4Cliff.FALL_CLEARANCE
+                    || Math.max(Math.abs(x - fall.fallX()), Math.abs(z - fall.fallZ())) <= Ring4Cliff.FALL_CLEARANCE;
             double d = Math.hypot(x - (fall.fallX() + 0.5), z - (fall.fallZ() + 0.5)) / Ring4Cliff.POOL_RADIUS;
             if (d < 1.0) {
                 // A plunge pool: a bowl below the sea, so the fall lands in water.
@@ -475,6 +479,7 @@ public final class IslandField implements DensityFunction {
             out[2] = plateau;
             out[3] = foot;
             out[4] = gapWeight == 0.0 ? 1.0 : 0.0;
+            out[5] = nearFall ? 1.0 : 0.0;
         }
         return surface;
     }
@@ -618,16 +623,41 @@ public final class IslandField implements DensityFunction {
         if (thin == 0.0 && c.wallNear) {
             ensureSurface(c);
             if (c.wallExact && Math.abs(c.wallDistance) < Ring4Cliff.WALL_BAND) {
-                // The cliff 3→4 (62), exact per block: rock up to the plateau inside the line, open from the foot up
-                // beyond it, so the wall stands vertical whatever the 4-block grid blends.
-                int top = Mth.ceil(c.plateauY) - 1;
-                if (c.wallDistance < 0.0) {
-                    return y <= top && y >= Mth.floor(c.footY) - 2 ? 1.0 : 0.0;
-                }
-                return y >= Mth.ceil(c.surface) && y <= top + 2 ? -1.0 : 0.0;
+                return wall(c, x, y, z);
             }
         }
         return thin;
+    }
+
+    /**
+     * The cliff 3→4 (62), exact per block within {@link Ring4Cliff#WALL_BAND} of its line, whatever the 4-block grid
+     * blends: rock up to the plateau on the inside, open from the foot up on the outside. 5a: not a straight, flat wall:
+     * the face moves in and out with a 3D roughness (strata as ledges and overhangs, knobs and clefts; at most
+     * {@link Ring4Cliff#ROUGHNESS}, so the band's edges stay the plateau and the foot), and the top edge crumbles down
+     * near the line. Beside a fall it stays smooth: the spring needs its walls.
+     */
+    private double wall(Column c, int x, int y, int z) {
+        int plateauTop = Mth.ceil(c.plateauY) - 1;
+        if (y > plateauTop + 2) {
+            return 0.0;
+        }
+        double face = c.wallDistance;
+        int top = plateauTop;
+        if (!c.nearFall) {
+            face += Mth.clamp(Ring4Cliff.ROUGHNESS * relief.rough(x, y, z), -Ring4Cliff.ROUGHNESS, Ring4Cliff.ROUGHNESS);
+            // The top crumbles where the edge is: fully at the line, not at all from 4 blocks inside.
+            double edge = 1.0 - Ring4Relief.smooth(-c.wallDistance, 1.0, 4.0);
+            top -= (int) Math.round(Ring4Cliff.CRUMBLE * edge * Math.max(0.0, relief.crumble(x, z)));
+        }
+        double floor = c.wallDistance < 0.0 ? Math.min(c.footY, c.plateauY - Ring4Cliff.MIN_HEIGHT) : c.surface;
+        if (face < 0.0) {
+            // Rock, up to the (crumbled) top; above it open up to the plateau's own top.
+            if (y <= top) {
+                return y >= Mth.floor(floor) - 2 ? 1.0 : 0.0;
+            }
+            return -1.0;
+        }
+        return y >= Mth.ceil(floor) ? -1.0 : 0.0;
     }
 
     /** Per block: what the stack adds to the density of vanilla's caves: closed under and beside a lake above the sea. */
@@ -764,13 +794,14 @@ public final class IslandField implements DensityFunction {
         }
         Ring4Relief.Sample s = new Ring4Relief.Sample();
         relief.sample(c.x, c.z, band(c.x, c.z), s, salt());
-        double[] cliff = new double[5];
+        double[] cliff = new double[6];
         c.height = cliffed(c.x, c.z, s.height, cliff);
         c.cliff = cliff[0];
         c.wallDistance = cliff[1];
         c.plateauY = cliff[2];
         c.footY = cliff[3];
         c.wallExact = cliff[4] > 0.0;
+        c.nearFall = cliff[5] > 0.0;
         c.river = s.river;
         c.fjord = s.fjord;
         c.sinkholeFloor = s.sinkholeFloor;
@@ -1008,6 +1039,8 @@ public final class IslandField implements DensityFunction {
         double footY;
         /** Whether the wall stands exact here (no ravine or scree slope). */
         boolean wallExact;
+        /** Whether a cliff fall's spring or fall column lies within {@link Ring4Cliff#FALL_CLEARANCE} (the wall stays smooth). */
+        boolean nearFall;
         /** The floor of a peat sinkhole, cut per block ({@link #thin}); NaN outside one. */
         double sinkholeFloor;
         /** The islands' solid blocks: {@link #islandCount} ranges [{@code islandLo}, {@code islandHi}] (inclusive). */
@@ -1053,6 +1086,7 @@ public final class IslandField implements DensityFunction {
             plateauY = 0.0;
             footY = 0.0;
             wallExact = false;
+            nearFall = false;
             islandCount = 0;
             springY = Integer.MIN_VALUE;
             lakeTop = Integer.MIN_VALUE;

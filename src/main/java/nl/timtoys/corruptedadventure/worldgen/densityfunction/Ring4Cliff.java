@@ -25,6 +25,12 @@ final class Ring4Cliff {
     static final double MAX_HEIGHT = 80.0;
     /** The wall is exact per block within this many blocks of the line, either side. */
     static final double WALL_BAND = 6.0;
+    /** How far (blocks) the wall's face moves in and out per block with its 3D roughness (5a); below {@link #WALL_BAND}. */
+    static final double ROUGHNESS = 4.0;
+    /** How far (blocks) the top edge crumbles down near the line (5a). */
+    static final double CRUMBLE = 3.0;
+    /** Within this many blocks of a fall's spring or fall column the wall stays smooth (the spring needs its walls). */
+    static final int FALL_CLEARANCE = 3;
     /** How far the line wanders (blocks) with the detail noise. */
     static final double JITTER = 3.0;
     /** One gap (ravine or scree slope) at most per this many blocks along the line. */
