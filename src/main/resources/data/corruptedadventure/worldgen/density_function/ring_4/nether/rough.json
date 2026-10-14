@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:add",
+  "argument1": {
+    "type": "minecraft:mul",
+    "argument1": {
+      "type": "minecraft:add",
+      "argument1": 0.0,
+      "argument2": {
+        "type": "minecraft:mul",
+        "argument1": 0.7,
+        "argument2": "corruptedadventure:ring_4/nether/hollows_weight"
+      }
+    },
+    "argument2": {
+      "type": "minecraft:noise",
+      "noise": "corruptedadventure:nether_ring_4_rough",
+      "xz_scale": 1.0,
+      "y_scale": 0.8
+    }
+  },
+  "argument2": -0.05
+}

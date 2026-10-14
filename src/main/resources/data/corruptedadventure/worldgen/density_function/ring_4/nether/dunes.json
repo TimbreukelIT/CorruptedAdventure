@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:add",
+    "argument1": 1.0,
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": -2.0,
+      "argument2": {
+        "type": "minecraft:abs",
+        "argument": {
+          "type": "minecraft:noise",
+          "noise": "corruptedadventure:nether_ring_4_dunes",
+          "xz_scale": 1.0,
+          "y_scale": 0.0
+        }
+      }
+    }
+  }
+}

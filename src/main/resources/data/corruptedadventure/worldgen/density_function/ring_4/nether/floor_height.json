@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:add",
+    "argument1": {
+      "type": "minecraft:add",
+      "argument1": 43.0,
+      "argument2": {
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "minecraft:mul",
+          "argument1": -39.0,
+          "argument2": "corruptedadventure:ring_4/nether/sea"
+        },
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": -3.0,
+          "argument2": "corruptedadventure:ring_4/nether/hollows_weight"
+        }
+      }
+    },
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": "corruptedadventure:ring_4/nether/dunes",
+      "argument2": {
+        "type": "minecraft:mul",
+        "argument1": 3.0,
+        "argument2": "corruptedadventure:ring_4/nether/dunes_weight"
+      }
+    }
+  }
+}

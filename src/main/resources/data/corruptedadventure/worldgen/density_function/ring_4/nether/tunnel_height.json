@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:add",
+    "argument1": 50.0,
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": 6.0,
+      "argument2": {
+        "type": "minecraft:noise",
+        "noise": "corruptedadventure:nether_ring_4_tunnel_height",
+        "xz_scale": 1.0,
+        "y_scale": 0.0
+      }
+    }
+  }
+}

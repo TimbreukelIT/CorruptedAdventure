@@ -1,0 +1,22 @@
+{
+  "type": "corruptedadventure:giant_geodes",
+  "shape": "corruptedadventure:ring_4/nether/shape",
+  "edge": "corruptedadventure:ring_4/nether/edge",
+  "region": "corruptedadventure:ring_4/nether/region",
+  "noise": "corruptedadventure:nether_ring_4_geode_cells",
+  "settings": {
+    "cell_size": 128,
+    "chance": 0.85,
+    "radius_min": 10,
+    "radius_max": 20,
+    "floor_min": 42,
+    "floor_max": 48,
+    "region_max": -0.22,
+    "region_reach_max": -0.145,
+    "shell": 3,
+    "door_width": 6,
+    "door_height": 6,
+    "door_length": 24,
+    "doors_max": 3
+  }
+}

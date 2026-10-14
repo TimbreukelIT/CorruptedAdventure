@@ -1,0 +1,52 @@
+{
+  "type": "minecraft:clamp",
+  "input": {
+    "type": "minecraft:mul",
+    "argument1": {
+      "type": "minecraft:add",
+      "argument1": "corruptedadventure:ring_4/nether/pillar_noise",
+      "argument2": {
+        "type": "minecraft:add",
+        "argument1": -0.4,
+        "argument2": {
+          "type": "minecraft:add",
+          "argument1": {
+            "type": "minecraft:mul",
+            "argument1": 0.12,
+            "argument2": {
+              "type": "minecraft:min",
+              "argument1": {
+                "type": "minecraft:y_clamped_gradient",
+                "from_y": 32,
+                "to_y": 34,
+                "from_value": 0.0,
+                "to_value": 1.0
+              },
+              "argument2": {
+                "type": "minecraft:y_clamped_gradient",
+                "from_y": 42,
+                "to_y": 43,
+                "from_value": 1.0,
+                "to_value": 0.0
+              }
+            }
+          },
+          "argument2": {
+            "type": "minecraft:mul",
+            "argument1": 0.15,
+            "argument2": {
+              "type": "minecraft:y_clamped_gradient",
+              "from_y": 94,
+              "to_y": 112,
+              "from_value": 0.0,
+              "to_value": 1.0
+            }
+          }
+        }
+      }
+    },
+    "argument2": 4.0
+  },
+  "min": -2.5,
+  "max": 2.5
+}

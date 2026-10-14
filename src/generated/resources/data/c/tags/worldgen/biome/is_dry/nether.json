@@ -2,6 +2,9 @@
   "values": [
     "corruptedadventure:crimson_forest",
     "corruptedadventure:nether_wastes",
-    "corruptedadventure:warped_forest"
+    "corruptedadventure:warped_forest",
+    "corruptedadventure:bone_dunes",
+    "corruptedadventure:crystal_spires",
+    "corruptedadventure:geode_hollows"
   ]
 }

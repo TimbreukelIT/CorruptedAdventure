@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:min",
+    "argument1": {
+      "type": "minecraft:add",
+      "argument1": {
+        "type": "minecraft:add",
+        "argument1": 88.0,
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": 6.0,
+          "argument2": {
+            "type": "minecraft:noise",
+            "noise": "corruptedadventure:nether_ring_4_mass",
+            "xz_scale": 1.0,
+            "y_scale": 0.0
+          }
+        }
+      },
+      "argument2": {
+        "type": "minecraft:mul",
+        "argument1": -60.0,
+        "argument2": "corruptedadventure:ring_4/nether/edge"
+      }
+    },
+    "argument2": {
+      "type": "minecraft:add",
+      "argument1": "corruptedadventure:ring_4/nether/ceiling_height",
+      "argument2": -10.0
+    }
+  }
+}

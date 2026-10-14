@@ -422,8 +422,45 @@
               ]
             },
             "ring_4": {
-              "type": "minecraft:fixed",
-              "biome": "corruptedadventure:placeholder_nether_ring_4"
+              "type": "minecraft:multi_noise",
+              "biomes": [
+                {
+                  "biome": "corruptedadventure:bone_dunes",
+                  "parameters": {
+                    "temperature": [-0.18, 0.18],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:crystal_spires",
+                  "parameters": {
+                    "temperature": [0.18, 2.0],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:geode_hollows",
+                  "parameters": {
+                    "temperature": [-2.0, -0.18],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                }
+              ]
             },
             "ring_5": {
               "type": "minecraft:fixed",
@@ -437,7 +474,8 @@
         },
         "fluid_levels": {
           "ring_2": 22,
-          "ring_3": 22
+          "ring_3": 22,
+          "ring_4": 10
         },
         "settings": "corruptedadventure:nether"
       }

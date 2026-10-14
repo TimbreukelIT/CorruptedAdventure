@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:mul",
+    "argument1": "corruptedadventure:ring_4/nether/spires_weight",
+    "argument2": "corruptedadventure:ring_4/nether/core"
+  }
+}

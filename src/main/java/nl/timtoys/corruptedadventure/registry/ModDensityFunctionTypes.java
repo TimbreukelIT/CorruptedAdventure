@@ -10,6 +10,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.CanyonDetails;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.CellEdges;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.DewGeodes;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.GiantGeodes;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandOutput;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RadialFalloff;
@@ -88,9 +89,17 @@ public final class ModDensityFunctionTypes {
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<IslandField>> ISLAND_FIELD =
             DENSITY_FUNCTION_TYPES.register("island_field", () -> IslandField.MAP_CODEC);
 
+    // ring 4 — W-terrein
+
     /** {@code corruptedadventure:island_output} (one output of the ring 4 terrain field, golf 1) */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<IslandOutput>> ISLAND_OUTPUT =
             DENSITY_FUNCTION_TYPES.register("island_output", () -> IslandOutput.MAP_CODEC);
+
+    // ring 4 — W-nether
+
+    /** {@code corruptedadventure:giant_geodes} (the giant geodes of Nether ring 4's geode hollows, package 65) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<GiantGeodes>> GIANT_GEODES =
+            DENSITY_FUNCTION_TYPES.register("giant_geodes", () -> GiantGeodes.MAP_CODEC);
 
     private ModDensityFunctionTypes() {
     }

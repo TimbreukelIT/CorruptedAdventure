@@ -199,10 +199,12 @@ class Ring3JsonTest {
                 case "ring_2" -> assertTrue(find(WorldgenData.read("density_function/ring_2/nether/dam.json"), "minecraft:y_clamped_gradient")
                         .get("to_y").getAsInt() > top, boundary + ": ring 2's dam must reach above Y " + top);
                 case "ring_3" -> assertRing3DamSolidUpTo(top, boundary);
+                // Nether ring 4 (65): the lava sea sunk to Y 10, so it is the low side of 3|4 and 4|5; same dam as ring 3.
+                case "ring_4" -> NetherRing4JsonTest.assertDamSolidUpTo(top, boundary);
                 default -> throw new AssertionError(boundary + ": lava step from Y " + top + " with nothing guarding the " + low + " side");
             }
         }
-        assertEquals(2, steps, "steps 1|2 (32/22) and 3|4 (22/32)");
+        assertEquals(3, steps, "steps 1|2 (32/22), 3|4 (22/10) and 4|5 (10/32)");
     }
 
     /**

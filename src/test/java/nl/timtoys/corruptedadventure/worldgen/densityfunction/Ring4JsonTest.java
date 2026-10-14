@@ -179,14 +179,10 @@ class Ring4JsonTest {
     }
 
     @Test
-    void netherRing4HasItsRegionAndATerrainStubOnThePlaceholder() {
+    void netherRing4HasItsRegionAndTerrain() {
         assertEquals("corruptedadventure:ring_4/nether/region", rings("nether_temperature").get("ring_4").getAsString());
         assertEquals("corruptedadventure:ring_4/nether/terrain", rings("nether").get("ring_4").getAsString());
-        // A density function file must be a number or an object; a bare reference fails to load the registries.
-        JsonObject terrain = WorldgenData.read(DF + "ring_4/nether/terrain.json");
-        assertEquals("minecraft:add", terrain.get("type").getAsString());
-        assertEquals(0.0, terrain.get("argument1").getAsDouble());
-        assertEquals("corruptedadventure:ring_4/nether", terrain.get("argument2").getAsString());
+        // The terrain itself (65): NetherRing4JsonTest.
         JsonObject region = WorldgenData.read(DF + "ring_4/nether/region.json");
         assertEquals("minecraft:flat_cache", region.get("type").getAsString());
         assertEquals("corruptedadventure:nether_ring_4_region", region.getAsJsonObject("argument").get("noise").getAsString());
