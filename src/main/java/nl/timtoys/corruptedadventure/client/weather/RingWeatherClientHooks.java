@@ -10,7 +10,10 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import nl.timtoys.corruptedadventure.client.ClientRingLayout;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.ring.Ring4Band;
+import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
+import nl.timtoys.corruptedadventure.weather.Ring4WeatherBands;
 import nl.timtoys.corruptedadventure.weather.RingWeatherMix;
 import nl.timtoys.corruptedadventure.weather.RingWeatherState;
 import nl.timtoys.corruptedadventure.weather.RingWeatherType;
@@ -62,6 +65,16 @@ public final class RingWeatherClientHooks {
     }
 
     /**
+     * Ring 4 (package 70): dense fog and storm wind (mythical band), toxic rain (blighted band). {@link #shares} scales
+     * them by their band, so each is only drawn in its own band.
+     */
+    public static void registerRing4() {
+        RingWeatherRenderers.register(RingWeatherType.DENSE_FOG, new DenseFogRenderer());
+        RingWeatherRenderers.register(RingWeatherType.STORM_WIND, new StormWindRenderer());
+        RingWeatherRenderers.register(RingWeatherType.TOXIC_RAIN, new ToxicRainRenderer());
+    }
+
+    /**
      * The sky colour at {@code position} (the camera) after every weather felt there; {@code colour} itself (same
      * instance) when nothing changes it. Called by the mixin on {@code ClientLevel#getSkyColor}, render thread.
      */
@@ -74,20 +87,39 @@ public final class RingWeatherClientHooks {
         return result[0];
     }
 
-    /** F3: the sandstorm wind felt at x, z ({@code 225° (from SW), strength 0.83, exposure 0.85}) or {@code —}. */
+    /**
+     * F3: the wind felt at x, z, the sandstorm's ({@code 225° (from SW), strength 0.83, exposure 0.85}) or ring 4's
+     * storm ({@code storm 225° (from SW), …}), or {@code —}.
+     */
     public static String describeWind(Level level, double x, double z) {
-        return SandstormRenderer.describeWind(level, x, z);
+        return StormWindRenderer.describeWind(level, x, z).orElseGet(() -> SandstormRenderer.describeWind(level, x, z));
     }
 
-    /** The rings felt at x, z in {@code level}; empty without a layout or without ring weather in that dimension. */
+    /**
+     * The rings felt at x, z in {@code level}; empty without a layout or without ring weather in that dimension. A ring 4
+     * weather is also scaled by its band ({@link Ring4WeatherBands#renderShare}, the band of the synced layout).
+     */
     public static List<RingWeatherMix.Share> shares(Level level, double x, double z) {
         Optional<RingPosition> position = ClientRingLayout.ringAt(level.dimension(), x, z);
         Optional<Map<Ring, RingWeatherState>> states = ClientRingWeather.states(level);
-        if (position.isEmpty() || states.isEmpty()) {
+        Optional<RingLayout> layout = ClientRingLayout.get();
+        if (position.isEmpty() || states.isEmpty() || layout.isEmpty()) {
             return List.of();
         }
         Map<Ring, RingWeatherState> known = states.get();
-        return RingWeatherMix.at(position.get(), ring -> known.getOrDefault(ring, RingWeatherState.STILL));
+        List<RingWeatherMix.Share> shares = RingWeatherMix.at(position.get(), ring -> known.getOrDefault(ring, RingWeatherState.STILL));
+        // The band is an overworld axis (Ring4Band takes overworld x, z); ring 4 weather exists only there.
+        if (!Level.OVERWORLD.equals(level.dimension())) {
+            return shares;
+        }
+        for (int i = 0; i < shares.size(); i++) {
+            RingWeatherMix.Share share = shares.get(i);
+            if (share.ring() == Ring.RING_4 && Ring4WeatherBands.bandOf(share.state().type()) != Ring4WeatherBands.Band.ANY) {
+                float band = Ring4WeatherBands.renderShare(share.state().type(), Ring4Band.of(layout.get()).value(x, z));
+                shares.set(i, new RingWeatherMix.Share(share.ring(), share.state(), share.weight(), share.strength() * band));
+            }
+        }
+        return shares;
     }
 
     /** The share of {@code type} felt at x, z (strength > 0); empty if that weather is not felt there. */

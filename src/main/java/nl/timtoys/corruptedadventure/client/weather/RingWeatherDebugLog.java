@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 /**
  * DEBUG line whenever the weather felt at the camera changes: the types, their strength in steps of 0.25 and the
- * sandstorm wind. Two clients at the same spot log the same lines, which is how test S compares them without eyes.
+ * wind of the sandstorm and of ring 4's storm. Two clients at the same spot log the same lines, which is how test S compares them without eyes.
  */
 final class RingWeatherDebugLog {
     private static String last = "";
@@ -35,7 +35,7 @@ final class RingWeatherDebugLog {
                 .map(share -> {
                     String line = String.format(Locale.ROOT, "%s %s strength %.2f", share.ring().getSerializedName(),
                             share.state().type().getSerializedName(), Math.floor(share.strength() * 4.0F) / 4.0F);
-                    return share.state().type() == RingWeatherType.SANDSTORM
+                    return SandstormWind.hasWind(share.state().type())
                             ? line + " wind " + SandstormWind.describe(share.state()) : line;
                 })
                 .collect(Collectors.joining(" | "));

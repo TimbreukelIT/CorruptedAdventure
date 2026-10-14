@@ -93,6 +93,17 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .subtitle(subtitle("ambient.nether_ring_3.ice_creak"))
                 .with(ambient("ambient/nether_ring_3/ice_creak_1"), ambient("ambient/nether_ring_3/ice_creak_2"),
                         ambient("ambient/nether_ring_3/ice_creak_3")));
+        // Ring 4 weather (package 70): vanilla placeholders until the ring 4 sound script (80). The loops' volume follows
+        // the weather on the client (WeatherLoopSound).
+        add(ModSoundEvents.RING_4_DENSE_FOG, SoundDefinition.definition()
+                .subtitle(subtitle("weather.ring_4.dense_fog"))
+                .with(sound(SoundEvents.AMBIENT_UNDERWATER_LOOP.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.6F)));
+        add(ModSoundEvents.RING_4_STORM_WIND, SoundDefinition.definition()
+                .subtitle(subtitle("weather.ring_4.storm_wind"))
+                .with(sound(SoundEvents.ELYTRA_FLYING.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.5F)));
+        add(ModSoundEvents.RING_4_TOXIC_RAIN, SoundDefinition.definition()
+                .subtitle(subtitle("weather.ring_4.toxic_rain"))
+                .with(sound(SoundEvents.WEATHER_RAIN.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.8F)));
         // Block sounds, played by stream B (package 46) at the block.
         add(ModSoundEvents.FUMAROLE_PUFF, SoundDefinition.definition()
                 .subtitle(subtitle("block.fumarole.puff"))

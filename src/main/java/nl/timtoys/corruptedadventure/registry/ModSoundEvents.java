@@ -59,6 +59,14 @@ public final class ModSoundEvents {
     /** Bubble of boiling mud (stream B plays it, package 46). */
     public static final DeferredHolder<SoundEvent, SoundEvent> BOILING_MUD_BUBBLE = register("block.boiling_mud.bubble");
 
+    // Ring 4 weather (package 70): loops the client plays while the weather is felt; vanilla placeholders until 80.
+    /** Soft, muffled hum in dense fog (mythical band). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_DENSE_FOG = register("weather.ring_4.dense_fog");
+    /** Hard wind of the storm (mythical band). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_STORM_WIND = register("weather.ring_4.storm_wind");
+    /** Rain of toxic rain (blighted band). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_TOXIC_RAIN = register("weather.ring_4.toxic_rain");
+
     private ModSoundEvents() {
     }
 

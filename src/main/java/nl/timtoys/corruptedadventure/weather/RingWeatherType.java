@@ -30,7 +30,9 @@ public enum RingWeatherType implements StringRepresentable {
     DENSE_FOG(Ring.RING_4, Level.OVERWORLD),
     TOXIC_RAIN(Ring.RING_4, Level.OVERWORLD),
     GLITCH_STORM(Ring.RING_5, Level.OVERWORLD),
-    REVERSE_RAIN(Ring.RING_5, Level.OVERWORLD);
+    REVERSE_RAIN(Ring.RING_5, Level.OVERWORLD),
+    /** Storm wind of ring 4's mythical band (package 70). Last, so the wire indices of the older types stay the same. */
+    STORM_WIND(Ring.RING_4, Level.OVERWORLD);
 
     /** {@code clear}, {@code sandstorm}, {@code heat_wave}, … */
     public static final Codec<RingWeatherType> CODEC = StringRepresentable.fromEnum(RingWeatherType::values);
