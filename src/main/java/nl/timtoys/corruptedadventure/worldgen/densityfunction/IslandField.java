@@ -779,8 +779,11 @@ public final class IslandField implements DensityFunction {
             c.surface = Math.min(c.surface, Ring4Sundered.ABYSS_FLOOR);
         } else if (sunder.kind() == Sunder.LOOSE) {
             // A loose chunk: no ground under it, its own thickness floats at its offset above the ground it was.
-            double top = c.surface + sunder.offset();
-            c.addIsland((int) Math.ceil(top - sunder.thickness()), (int) Math.floor(top));
+            // Not flat: the detail noise lifts the top a few blocks and thickens or thins the slab (review 63: blocky).
+            double detail = relief.detailAt(c.x, c.z);
+            double top = c.surface + sunder.offset() + 3.0 * detail;
+            double thickness = sunder.thickness() * (1.0 + 0.4 * detail);
+            c.addIsland((int) Math.ceil(top - thickness), (int) Math.floor(top));
             c.surface = Math.min(c.surface, Ring4Sundered.ABYSS_FLOOR);
         }
         c.surfaceFilled = true;

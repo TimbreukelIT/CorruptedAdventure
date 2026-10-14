@@ -82,18 +82,27 @@ final class Ring4Sundered {
         return new double[]{bi, bj, (second - best) / 2.0};
     }
 
-    /** The half width (blocks) of the cracks at a strength: none at 0, about 9 at 1. */
+    /** The extra half width of a crack at full strength (blocks, on top of 0.5). */
+    static final double CRACK_EXTRA = 2.5;
+    /** The share of chunks that come loose at full strength. */
+    static final double LOOSE_CHANCE = 0.25;
+
+    /** The half width (blocks) of the cracks at a strength: none at 0, 0.5 + {@link #CRACK_EXTRA} at 1. */
     static double crack(double strength) {
-        return strength <= 0.0 ? 0.0 : 0.5 + 8.5 * strength;
+        return strength <= 0.0 ? 0.0 : 0.5 + CRACK_EXTRA * strength;
     }
 
     /**
      * A loose chunk at a strength: {offset of its top above the ground, thickness}, or null while it holds. A chunk comes
-     * loose once the strength passes its own threshold (0.25–0.95); loose chunks float higher or lower, more so outwards.
+     * loose once the strength passes its own threshold (0.3–0.9); loose chunks float higher or lower, more so outwards.
      */
     static double[] loose(long salt, int i, int j, double strength) {
         long h = CellShapes.cell(salt, i, j, LOOSE_SALT);
-        double threshold = 0.25 + 0.7 * CellShapes.unit(h, 0);
+        // Only about one chunk in four comes loose at all (the rest stay ground, so the abyss keeps to its share).
+        if (CellShapes.unit(h, 3) >= LOOSE_CHANCE) {
+            return null;
+        }
+        double threshold = 0.3 + 0.6 * CellShapes.unit(h, 0);
         if (strength < threshold) {
             return null;
         }

@@ -682,3 +682,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-13 | blocks | Pakket 66: veen (`peat`) is brandstof maar niet brandbaar (vuur brandt de veenmoeren niet weg) | Gebruiker; zoals vanilla-aarde, geen gaten in het terrein door bliksem |
 | 2026-10-13 | conditions | Pakket 69: gifschade bij drempel 90 volgt `DifficultyFloor.LETHAL_FROM_NORMAL`: peaceful geen schade, easy tot 10 HP, normal en hard dodelijk | Gebruiker; past bij "wither kan doden" |
 | 2026-10-13 | worldgen | Pakket 64: `c:`-tags ring 4 volgens het voorstel van W-biomes (o.a. `c:is_swamp`, `c:is_magical`, `c:is_spooky`, `c:is_wasteland`; geen `minecraft:`-tags) | Main, aanbeveling W-biomes; gebruiker kan bijsturen |
+| 2026-10-14 | worldgen | Pakket 63: het afgrondaandeel van `sundered_reach` is hooguit 40 % over de hele zone 4→5 (gemeten 35–38 % op drie seeds; 77 % vóór het bijstellen) | Gebruikersbesluit (aanbevolen optie); kleinere scheuren en minder losse brokken

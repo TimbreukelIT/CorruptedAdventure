@@ -42,32 +42,36 @@ class Ring4SunderedTest {
         }
     }
 
-    /** The zone at full strength: a share of its columns is abyss (cracks or loose chunks), the rest ground. */
+    /** The whole zone 4→5: the share of abyss (cracks or loose chunks) is at most 40 % (decision of the user). */
     @Test
-    void aShareOfTheZoneIsAbyssWithAStillSeaAtY0() {
-        double start = Ring4Sundered.zoneStart(LAYOUT);
-        double end = Ring4Sundered.zoneEnd(LAYOUT);
-        int full = 0;
-        int abyss = 0;
-        for (double angle = 0.0; angle < 2.0 * Math.PI; angle += 0.01) {
-            for (double r = start + 0.7 * (end - start); r <= end; r += 9.0) {
-                int x = (int) Math.floor(r * Math.cos(angle));
-                int z = (int) Math.floor(r * Math.sin(angle));
-                if (LAYOUT.effectiveDistance(x, z) < start + 0.7 * (end - start)) {
-                    continue;
-                }
-                full++;
-                IslandField.Column c = FIELD.column(x, z);
-                if (c.abyssSeaTop() != Integer.MIN_VALUE) {
-                    abyss++;
-                    assertEquals(Ring4Sundered.SEA_TOP + 1, c.abyssSeaTop());
-                    assertTrue(c.surface() <= Ring4Sundered.ABYSS_FLOOR + 1e-9, "abyss floor at " + x + ", " + z + ": " + c.surface());
+    void theAbyssIsAtMostFortyPercentOfTheZone() {
+        for (long seed : new long[]{IslandFieldTest.SEED, 42L, 987654321L}) {
+            IslandField field = IslandFieldTest.field(seed);
+            double start = Ring4Sundered.zoneStart(LAYOUT);
+            double end = Ring4Sundered.zoneEnd(LAYOUT);
+            int all = 0;
+            int abyss = 0;
+            for (double angle = 0.0; angle < 2.0 * Math.PI; angle += 0.01) {
+                for (double r = start; r <= end; r += 9.0) {
+                    int x = (int) Math.floor(r * Math.cos(angle));
+                    int z = (int) Math.floor(r * Math.sin(angle));
+                    double effective = LAYOUT.effectiveDistance(x, z);
+                    if (effective < start || effective > end) {
+                        continue;
+                    }
+                    all++;
+                    IslandField.Column c = field.column(x, z);
+                    if (c.abyssSeaTop() != Integer.MIN_VALUE) {
+                        abyss++;
+                        assertEquals(Ring4Sundered.SEA_TOP + 1, c.abyssSeaTop());
+                        assertTrue(c.surface() <= Ring4Sundered.ABYSS_FLOOR + 1e-9, "abyss floor at " + x + ", " + z + ": " + c.surface());
+                    }
                 }
             }
+            double share = abyss / (double) all;
+            System.out.printf("sundered seed %d: %d of %d columns over the whole zone are abyss (%.3f)%n", seed, abyss, all, share);
+            assertTrue(share > 0.05 && share <= 0.40, "seed " + seed + ": abyss share " + share);
         }
-        double share = abyss / (double) full;
-        System.out.printf("sundered: %d of %d columns in the outer zone are abyss (%.2f)%n", abyss, full, share);
-        assertTrue(share > 0.2 && share < 0.9, "abyss share " + share);
     }
 
     /** Inside ring 4 and ring 5 proper there is no abyss, and nothing is sundered. */
@@ -88,6 +92,7 @@ class Ring4SunderedTest {
         double start = Ring4Sundered.zoneStart(LAYOUT);
         double end = Ring4Sundered.zoneEnd(LAYOUT);
         int loose = 0;
+        java.util.Set<Integer> tops = new java.util.TreeSet<>();
         for (double angle = 0.0; angle < 2.0 * Math.PI; angle += 0.01) {
             for (double r = start + 0.8 * (end - start); r <= end; r += 9.0) {
                 int x = (int) Math.floor(r * Math.cos(angle));
@@ -97,16 +102,23 @@ class Ring4SunderedTest {
                     continue;
                 }
                 boolean solid = false;
-                for (int y = -20; y <= 300 && !solid; y++) {
-                    solid = FIELD.thin(x, y, z) > 0.0;
+                int top = Integer.MIN_VALUE;
+                for (int y = -20; y <= 300; y++) {
+                    if (FIELD.thin(x, y, z) > 0.0) {
+                        solid = true;
+                        top = y;
+                    }
                 }
                 if (solid) {
                     loose++;
+                    tops.add(top);
                     assertTrue(c.surface() <= Ring4Sundered.ABYSS_FLOOR + 1e-9);
                 }
             }
         }
         System.out.println("loose columns with a floating solid: " + loose);
         assertTrue(loose > 0, "no loose chunk found");
+        // Not flat (review 63): the slabs' tops differ from column to column.
+        assertTrue(tops.size() >= 4, "distinct tops " + tops.size());
     }
 }
