@@ -25,6 +25,18 @@ final class Ring4Sundered {
     /** From this share of the zone on the ground is fully broken. */
     static final double FULL_AT = 0.55;
     /**
+     * The zone's first share stays whole (review 5a: 16 of 256 blocks, more than a cell of the 4-block grid with room
+     * for the boundary noise's slope): no cracks and no loose chunks there, so no crack's corner pulls ring 4's columns
+     * of the same cell under its sea, and the aquifer seals the band ({@code RingFluidPicker.sunderedSealBelow}).
+     */
+    static final double CALM_SHARE = 0.0625;
+
+    /** Whether an effective distance lies in the zone's calm first share. */
+    static boolean calm(RingLayout layout, double effective) {
+        double start = zoneStart(layout);
+        return effective < start + CALM_SHARE * (zoneEnd(layout) - start);
+    }
+    /**
      * How far (blocks) the grid is bent before the chunks are found (5a): the cracks run along curved edges, not
      * axis-aligned ones.
      */

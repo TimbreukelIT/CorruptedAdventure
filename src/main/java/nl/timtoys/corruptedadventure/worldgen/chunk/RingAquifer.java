@@ -230,7 +230,8 @@ final class RingAquifer implements Aquifer {
 
     private void load(int i, RingPosition position, int x, int z) {
         noFluid[i] = RingFluidPicker.noFluid(position);
-        sealBelow[i] = Math.max(RingFluidPicker.ring3SealBelow(dimension, position), RingFluidPicker.ring4DamBelow(dimension, position));
+        sealBelow[i] = Math.max(Math.max(RingFluidPicker.ring3SealBelow(dimension, position), RingFluidPicker.ring4DamBelow(dimension, position)),
+                RingFluidPicker.sunderedSealBelow(dimension, position));
         dryBelow[i] = RingFluidPicker.ring4DryBelow(dimension, position);
         noLava[i] = RingFluidPicker.ring4NoLava(dimension, position);
         boolean falls = RingFluidPicker.ring4FallColumn(dimension, position, islands);

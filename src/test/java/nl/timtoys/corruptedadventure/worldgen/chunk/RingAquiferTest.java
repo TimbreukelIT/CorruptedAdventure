@@ -707,4 +707,82 @@ class RingAquiferTest {
         assertSame(Blocks.WATER, picker.computeFluid(ring4, 7000, 30, 0).at(30).getBlock());
         assertTrue(picker.computeFluid(new RingPosition(Ring.RING_4, Ring.RING_5, 0.5), 8000, 30, 0).at(30).isAir());
     }
+
+    /**
+     * Review 5a: the inner edge of the zone 4→5 with the terrain as the noise chunk builds it (the bilinear blend of the
+     * cell corners' surfaces): a ring 4 column (sea Y 62) beside a zone column (sea Y 0) never holds water beside air.
+     */
+    @Test
+    void zone45InnerEdgeHasNoWaterBesideAir() {
+        IslandField islands = IslandFieldTest.field();
+        var layout = IslandFieldTest.LAYOUT;
+        Aquifer.FluidPicker sea = (x, y, z) -> y < RingFluidPicker.LAVA_LAYER_TOP
+                ? new Aquifer.FluidStatus(RingFluidPicker.LAVA_LAYER_TOP, Blocks.LAVA.defaultBlockState())
+                : new Aquifer.FluidStatus(RingFluidPicker.SEA_LEVEL, Blocks.WATER.defaultBlockState());
+        RingFluidPicker picker = new RingFluidPicker(Level.OVERWORLD, sea);
+        Aquifer global = new Aquifer() {
+            @Override
+            public BlockState computeSubstance(DensityFunction.FunctionContext context, double substance) {
+                if (substance > 0.0) {
+                    return null;
+                }
+                RingPosition position = layout.sampleOverworld(context.blockX(), context.blockZ());
+                return picker.computeFluid(position, context.blockX(), context.blockY(), context.blockZ()).at(context.blockY());
+            }
+
+            @Override
+            public boolean shouldScheduleFluidUpdate() {
+                return false;
+            }
+        };
+        RingAquifer aquifer = new RingAquifer(Level.OVERWORLD, global, null, islands, layout::sampleOverworld);
+        double zoneStart = 8000.0 - 128.0;
+        int pairs = 0;
+        for (double angle = 0.0; angle < 2.0 * Math.PI; angle += 0.011) {
+            for (double r = zoneStart - 110.0; r <= zoneStart + 110.0; r += 1.0) {
+                int x = (int) Math.floor(r * Math.cos(angle));
+                int z = (int) Math.floor(r * Math.sin(angle));
+                double effective = layout.effectiveDistance(x, z);
+                if (effective < zoneStart - 14.0 || effective > zoneStart + 20.0) {
+                    continue;
+                }
+                for (int[] side : new int[][]{{1, 0}, {0, 1}}) {
+                    int nx = x + side[0];
+                    int nz = z + side[1];
+                    boolean zoneHere = RingFluidPicker.sunderedZone(Level.OVERWORLD, layout.sampleOverworld(x, z));
+                    boolean zoneThere = RingFluidPicker.sunderedZone(Level.OVERWORLD, layout.sampleOverworld(nx, nz));
+                    if (zoneHere == zoneThere) {
+                        continue;
+                    }
+                    pairs++;
+                    double here = interpolatedSurface(islands, x, z);
+                    double there = interpolatedSurface(islands, nx, nz);
+                    for (int y = 1; y <= 62; y++) {
+                        BlockState a = aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, y, z), y >= here ? -0.5 : 0.5);
+                        BlockState b = aquifer.computeSubstance(new DensityFunction.SinglePointContext(nx, y, nz), y >= there ? -0.5 : 0.5);
+                        boolean aWater = a != null && a.is(Blocks.WATER);
+                        boolean bWater = b != null && b.is(Blocks.WATER);
+                        boolean aAir = a != null && a.isAir();
+                        boolean bAir = b != null && b.isAir();
+                        assertFalse(aWater && bAir || aAir && bWater,
+                                "water beside air across the inner edge at " + x + " " + y + " " + z + " / " + nx + " " + nz);
+                    }
+                }
+            }
+        }
+        assertTrue(pairs > 100, "pairs across the inner edge " + pairs);
+    }
+
+    /** The terrain's surface as the noise chunk interpolates it: the bilinear blend of its 4-block cell's corners. */
+    private static double interpolatedSurface(IslandField islands, int x, int z) {
+        int x0 = Math.floorDiv(x, 4) * 4;
+        int z0 = Math.floorDiv(z, 4) * 4;
+        double fx = (x - x0) / 4.0;
+        double fz = (z - z0) / 4.0;
+        double s00 = islands.column(x0, z0).surface();
+        double s10 = islands.column(x0 + 4, z0).surface();
+        double s01 = islands.column(x0, z0 + 4).surface();
+        double s11 = islands.column(x0 + 4, z0 + 4).surface();
+        return (s00 * (1.0 - fx) + s10 * fx) * (1.0 - fz) + (s01 * (1.0 - fx) + s11 * fx) * fz;
+    }
 }

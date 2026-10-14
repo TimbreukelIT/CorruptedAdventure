@@ -54,6 +54,8 @@ public final class IslandField implements DensityFunction {
     static final int MAX_ISLANDS = 8;
     /** An island reaches at most this far from its centre (a giant: 150 across, stretched 1.15, ragged). */
     static final double MAX_REACH = 110.0;
+    /** The calm first share of the zone 4→5 (no cracks; sealed under the sea by the aquifer), for the fluid rules. */
+    public static final double SUNDERED_CALM_SHARE = Ring4Sundered.CALM_SHARE;
     /** Recorded waterfalls per chunk at most (the cap of the water branch). */
     static final int FALLS_PER_CHUNK = 3;
     /** What the stack adds to vanilla's caves around a lake above the sea (closes them). */
@@ -851,8 +853,8 @@ public final class IslandField implements DensityFunction {
             return new Sunder(Sunder.NONE, 0.0, 0.0, 0.0, 0.0);
         }
         double strength = Ring4Sundered.strength(ringLayout, effective);
-        if (strength <= 0.0) {
-            return new Sunder(Sunder.NONE, 0.0, 0.0, 0.0, 0.0);
+        if (strength <= 0.0 || Ring4Sundered.calm(ringLayout, effective)) {
+            return new Sunder(Sunder.NONE, 0.0, 0.0, strength, 0.0);
         }
         long salt = salt();
         double along = Ring4Sundered.along(ringLayout, x, z);

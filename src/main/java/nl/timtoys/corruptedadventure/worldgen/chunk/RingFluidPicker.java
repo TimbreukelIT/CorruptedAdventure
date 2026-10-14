@@ -153,6 +153,15 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
                 && position.outer() == Ring.RING_5;
     }
 
+    /**
+     * Open space stays rock below the sea level in the calm first share of the zone 4→5 (review 5a,
+     * {@link IslandField#SUNDERED_CALM_SHARE}): the zone's sea stands at Y 0, ring 4's beside it at Y 62, so a cave
+     * across the inner edge would hold water on one side and air on the other. {@link Integer#MIN_VALUE} elsewhere.
+     */
+    static int sunderedSealBelow(ResourceKey<Level> dimension, RingPosition position) {
+        return sunderedZone(dimension, position) && position.blend() < IslandField.SUNDERED_CALM_SHARE ? SEA_LEVEL : Integer.MIN_VALUE;
+    }
+
     @Override
     public Aquifer.FluidStatus computeFluid(int x, int y, int z) {
         return computeFluid(RingColumnCache.ringAt(dimension, x, z), x, y, z);
