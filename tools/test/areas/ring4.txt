@@ -15,3 +15,9 @@ b45e 496 -4 504 4
 b45n -4 496 4 504
 b45w -504 -4 -496 4
 b45s -4 -504 4 -496
+# b45i*: inner edge of the zone 4→5 (radius 7872 = 8000 - 128, chunk 492), 13 chunks across it for the boundary
+# noise (±96), 9 along it.
+b45ie 486 -4 498 4
+b45in -4 486 4 498
+b45iw -498 -4 -486 4
+b45is -4 -498 4 -486
