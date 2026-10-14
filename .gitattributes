@@ -6,3 +6,5 @@ src/generated/**/*.json text eol=lf
 # Shell scripts must keep LF, also on Windows checkouts
 *.sh text eol=lf
 gradlew text eol=lf
+# Test area lists are read by the shell scripts
+tools/test/areas/*.txt text eol=lf
