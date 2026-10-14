@@ -650,8 +650,8 @@ public final class IslandField implements DensityFunction {
             face += Mth.clamp(Ring4Cliff.ROUGHNESS * relief.rough(x, y, z), -Ring4Cliff.ROUGHNESS, Ring4Cliff.ROUGHNESS);
         }
         if (face < 0.0) {
-            // Rock, up to the (crumbled) top; above it open up to the plateau's own top.
-            return y <= wallTop(c) ? 1.0 : -1.0;
+            // Rock up to the (crumbled) top; open above it only where the top crumbled, higher the terrain decides.
+            return y <= wallTop(c) ? 1.0 : y <= plateauTop ? -1.0 : 0.0;
         }
         return y >= Mth.ceil(floor) ? -1.0 : 0.0;
     }

@@ -181,6 +181,9 @@ class Ring4CliffTest {
             }
             int top = (int) Math.ceil(in.plateauY) - 1;
             assertEquals(1.0, FIELD.thin(inside[0], top, inside[1]), "plateau rock at the top inside at " + angle);
+            // Review 5a #4: above the plateau's top the terrain decides inside (no forced opening where nothing crumbled).
+            assertEquals(0.0, FIELD.thin(inside[0], top + 1, inside[1]), "terrain above the top inside at " + angle);
+            assertEquals(0.0, FIELD.thin(inside[0], top + 2, inside[1]), "terrain above the top inside at " + angle);
             assertEquals(-1.0, FIELD.thin(outside[0], (int) Math.ceil(out.plateauY) - 1, outside[1]), "open beyond at " + angle);
             checked++;
             // On the line itself: does the face move with the height?
