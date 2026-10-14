@@ -71,7 +71,7 @@ Scope: ring 4 + Nether-ring 4 (bouwplan blok F, `fase-1-wereld.md` §3). Ontwerp
 |---|---|---|
 | B | 72 | moerasgas (ketting-ontploffing, cap per tick), zuigmodder, bellenbron, opwaartse stroom, gifpoel, klauwkras/slijmspoor/nest |
 | W-terrein | 73, 74 | tunnelnet (deels overstroomd, luchtkamers, ingangen via gatmeren en zinkgaten) + gaskamers en gifpoelen ondergronds; wereldboom |
-| W-biomes | 75, 76, 77 | aankleding mythische band + `sky_gardens`; aankleding bedorven band + `withered_gardens` + gifpoelen; ertsen, sporen van wezens, dieren |
+| W-biomes | 75, 76, 77 | aankleding mythische band + `sky_gardens` + gloed op de grond onder eilanden (besluit teststop 5a); aankleding bedorven band + `withered_gardens` + gifpoelen; ertsen, sporen van wezens, dieren |
 | W-nether | 78 | zeewezen-fossielen, kristalzuilen, geodes |
 | C | 79 | zuiverend Nether-4 + gif-koppelingen (blokken van 72) |
 | A | 80 | sfeer ring 4, zone 4→5 en Nether-4 (kleuren, particles, geluid, spanning, pulserende fog) |
