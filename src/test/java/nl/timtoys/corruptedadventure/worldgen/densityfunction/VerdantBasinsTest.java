@@ -266,14 +266,20 @@ class VerdantBasinsTest {
             assertEquals(last.high() - VerdantDescent.perimeter(LAYOUT), first.low(), 1e-6, "the ranges meet across the seam");
         }
         int streams = 0;
+        int free = 0;
         for (int k = 0; k < count; k++) {
             VerdantBasins.Stream stream = BASINS.stream(k);
+            // Part 2: a cell whose water could reach into a horseshoe gorge has no stream (the gorge has its own water).
+            boolean clear = FIELD.gorges().clear((k - 1) * BASINS.cellSize(), (k + 2) * BASINS.cellSize());
+            free += clear ? 1 : 0;
             if (stream != null) {
-                streams++;
+                streams += clear ? 1 : 0;
                 assertNotNull(stream);
                 assertTrue(stream.at() >= k * BASINS.cellSize() && stream.at() < (k + 1) * BASINS.cellSize(), "stream " + k + " in its cell");
             }
         }
-        assertTrue(streams > count * 0.8, "streams " + streams + " of " + count);
+        System.out.printf("streams %d in %d cells clear of the gorges (of %d)%n", streams, free, count);
+        assertTrue(streams > free * 0.8, "streams " + streams + " of " + free);
+        assertTrue(free > count * 0.45, "basins and gorges alternate: cells clear of gorges " + free + " of " + count);
     }
 }

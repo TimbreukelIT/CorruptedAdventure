@@ -5,7 +5,9 @@ import nl.timtoys.corruptedadventure.ring.RingLayout;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -62,13 +64,34 @@ final class VerdantBasins {
     private static final double TOP_MARGIN = 4.0;
     private static final int STREAM_SALT = 6306;
     private static final int SEGMENT_SALT = 6302;
+    /** Part 2: niches behind falls (the plan's salt for niches) and rock bridges over brooks (a salt of their own). */
+    private static final int NICHE_SALT = 6304;
+    private static final int BRIDGE_SALT = 6308;
+    /**
+     * One in four falls with a lip of at least NICHE_LIP gets a niche, one in three of those a tunnel up (plan §2.4):
+     * about 45 % of the tries fit (rock over it, no water near), so a fall tries with NICHE_CHANCE; every niche tries a
+     * tunnel first (about 30 % fit).
+     */
+    private static final double NICHE_CHANCE = 0.55;
+    private static final double TUNNEL_CHANCE = 1.0;
+    private static final int NICHE_LIP = 6;
+    /** A niche: 3 wide, 3 high, NICHE_DEPTH + 0…2 deep; with a tunnel TUNNEL_NICHE deep (the tunnel runs 6 from the edge). */
+    private static final int NICHE_DEPTH = 4;
+    private static final int TUNNEL_NICHE = 7;
+    private static final int NICHE_HEIGHT = 3;
+    /** The longest tunnel (blocks along the tread); it rises 1 in 2. */
+    private static final int TUNNEL_MAX = 30;
+    /** One in five brooks gets a rock bridge (span 4–8, 2–3 thick); about 47 % of the tries fit, so a brook tries with this. */
+    private static final double BRIDGE_CHANCE = 0.43;
 
     private final IslandField field;
     private final VerdantDescent descent;
+    private final VerdantGorges gorges;
 
-    VerdantBasins(IslandField field, VerdantDescent descent) {
+    VerdantBasins(IslandField field, VerdantDescent descent, VerdantGorges gorges) {
         this.field = field;
         this.descent = descent;
+        this.gorges = gorges;
     }
 
     // ---------------------------------------------------------------- streams and segments
@@ -126,6 +149,10 @@ final class VerdantBasins {
         double next = nominal(Math.floorMod(kk + 1, count)) + (kk == count - 1 ? period : 0.0);
         double low = 0.5 * (at + previous);
         double high = 0.5 * (at + next);
+        // Part 2: a stream whose water would reach into a gorge's reach is left out (the gorge has its own water).
+        if (!gorges.clear(Math.min(low, at - 22.0) - 4.0, Math.max(high, at + 22.0) + 4.0)) {
+            return null;
+        }
         double rim = Double.POSITIVE_INFINITY;
         for (double ds = -30.0; ds <= 30.0; ds += 15.0) {
             rim = Math.min(rim, descent.profile(at + ds).rim());
@@ -179,6 +206,8 @@ final class VerdantBasins {
     /** The basins' effect on one column ({@link #shape}). */
     static final class Water {
         double height;
+        /** The tread (body) the column's water belongs to. */
+        int body;
         /** The top (exclusive) of the still water above the sea in the column, {@link Integer#MIN_VALUE} for none. */
         int lakeTop;
         /** 0..1: a travertine rim (threshold edge, fall lip) and an exact steep wall (a cove's side). */
@@ -196,6 +225,7 @@ final class VerdantBasins {
         out.lakeTop = Integer.MIN_VALUE;
         out.rim = 0.0;
         out.cliff = 0.0;
+        out.body = p.body;
         int b = p.body;
         if (p.kind != VerdantDescent.Point.DESCENT || b < 0 || b >= MAX_BODY
                 || p.u < p.profile.descentStart(p.rimAt) + TOP_MARGIN || p.u > p.profile.river()) {
@@ -551,6 +581,302 @@ final class VerdantBasins {
             }
         }
         return falls;
+    }
+
+    // ---------------------------------------------------------------- niches, tunnels, bridges (part 2, plan §2.4)
+
+    /**
+     * A niche behind a fall: rows 0…depth − 1 behind the spring (away from the fall), 3 wide, from {@code bottom} (the
+     * first block above the water the fall lands in) 3 high; with a tunnel ({@code side} ±1 along the spring's sides,
+     * 0 for none) from its back row {@code length} blocks along the tread, rising 1 in 2 to the tread's surface.
+     */
+    record Niche(int depth, int bottom, int side, int length) {
+        /** The open blocks [lo, hi] of the niche or its tunnel in column (x, z), or null. */
+        @Nullable
+        int[] range(Fall fall, int x, int z) {
+            IslandField.Fall f = fall.fall();
+            int dx = x - f.springX();
+            int dz = z - f.springZ();
+            int k = -(dx * fall.stepX() + dz * fall.stepZ());
+            int j = -dx * fall.stepZ() + dz * fall.stepX();
+            if (k >= 0 && k < depth && Math.abs(j) <= 1) {
+                return new int[]{bottom, bottom + NICHE_HEIGHT - 1};
+            }
+            int back = depth - 1;
+            if (side != 0 && Math.abs(k - back) <= 1) {
+                int run = side * j;
+                if (run >= 0 && run <= length) {
+                    int floor = bottom + run / 2;
+                    return new int[]{floor, floor + NICHE_HEIGHT - 1};
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * A rock bridge over a brook: at the ramp value {@code ramp} (blocks across the tread at gradient {@code grad}),
+     * centred on the gully at {@code centre} along the loop, {@code span} long, {@code thickness} thick; its underside
+     * from the tread's top block at the ends up to two blocks over the tread's top in the middle.
+     */
+    record Bridge(double centre, double ramp, double grad, double span, int thickness, int level) {
+        /** The rock [lo, hi] of the arch in a column at ramp value r and loop position s, or null. */
+        @Nullable
+        int[] range(double r, double s, double period) {
+            double along = (r - ramp) / grad;
+            double d = RingArc.loopDelta(s, centre, period);
+            if (Math.abs(along) > 1.5 || Math.abs(d) > 0.5 * span) {
+                return null;
+            }
+            double q = 2.0 * d / span;
+            int lo = Mth.ceil(level - 1.0 + 2.0 * (1.0 - q * q));
+            return new int[]{lo, lo + thickness - 1};
+        }
+    }
+
+    /**
+     * The niches, tunnels and rock bridges reaching a column of tread {@code p.body} into the column: open
+     * ({@code carveLo…carveHi}) and rock ({@code solidLo…solidHi}). A niche counts only behind a kept fall.
+     */
+    void features(int x, int z, VerdantDescent.Point p, IslandField.Column c) {
+        int b = p.body;
+        if (p.kind != VerdantDescent.Point.DESCENT || b < 0 || b >= MAX_BODY || p.u > p.profile.river()) {
+            return;
+        }
+        double period = VerdantDescent.perimeter(field.ringLayout());
+        int k = (int) Math.floor(p.s / cellSize());
+        for (int dk = -1; dk <= 1; dk++) {
+            Stream stream = stream(k + dk);
+            if (stream == null || RingArc.loopDistance(p.s, stream.at(), period) > REACH + TUNNEL_MAX) {
+                continue;
+            }
+            // The niches of the falls leaving this tread and the one above (a niche reaches over a slanting edge).
+            for (int fb = b; fb <= b + 1; fb++) {
+                for (boolean spur : new boolean[]{false, true}) {
+                    Fall fall = fall(stream, fb, spur);
+                    Niche niche = fall == null ? null : niche(stream, fb, spur, fall);
+                    int[] range = niche == null ? null : niche.range(fall, x, z);
+                    if (range != null && field.fallsOfChunk(fall.fall().fallX() >> 4, fall.fall().fallZ() >> 4).contains(fall.fall())) {
+                        c.carveLo = Math.min(c.carveLo, range[0]);
+                        c.carveHi = Math.max(c.carveHi, range[1]);
+                    }
+                }
+            }
+            if (b >= 1 && b <= stream.top()) {
+                Bridge bridge = bridge(stream, b);
+                int[] range = bridge == null ? null : bridge.range(p.ramp, p.s, period);
+                if (range != null) {
+                    c.solidLo = Math.min(c.solidLo, range[0]);
+                    c.solidHi = Math.max(c.solidHi, range[1]);
+                }
+            }
+        }
+    }
+
+    /** The niche behind the fall of stream {@code stream} off tread b (or its spur), decided once per world, or null. */
+    @Nullable
+    Niche niche(Stream stream, int b, boolean spur, Fall fall) {
+        long key = ((long) stream.index() * MAX_BODY + b) * 2 + (spur ? 1 : 0);
+        return field.decisions().once(field.decisions().verdantNiches, key, () -> Optional.ofNullable(placeNiche(key, b, fall)))
+                .orElse(null);
+    }
+
+    @Nullable
+    private Niche placeNiche(long key, int b, Fall fall) {
+        long h = CellShapes.cell(field.salt(), key, 0, NICHE_SALT);
+        if (CellShapes.unit(h, 0) >= NICHE_CHANCE) {
+            return null;
+        }
+        IslandField.Fall f = fall.fall();
+        int bottom = f.bottom();
+        if (VerdantDescent.level(b) - bottom < NICHE_LIP) {
+            return null;
+        }
+        Map<Long, Water> memo = new HashMap<>();
+        boolean tunnel = CellShapes.unit(h, 1) < TUNNEL_CHANCE;
+        if (tunnel && nicheFits(fall, bottom, TUNNEL_NICHE, memo)) {
+            boolean first = CellShapes.unit(h, 2) < 0.5;
+            for (int side : first ? new int[]{1, -1} : new int[]{-1, 1}) {
+                int length = tunnelFits(fall, b, bottom, side, memo);
+                if (length > 0) {
+                    return new Niche(TUNNEL_NICHE, bottom, side, length);
+                }
+            }
+        }
+        int depth = NICHE_DEPTH + (int) Math.floor(3.0 * CellShapes.unit(h, 3) * 0.999);
+        return nicheFits(fall, bottom, depth, memo) ? new Niche(depth, bottom, 0, 0) : null;
+    }
+
+    /** The column's water and ground as the field makes it (with the falls' cuts), remembered for one decision. */
+    private Water waterAt(int x, int z, Map<Long, Water> memo) {
+        return memo.computeIfAbsent(KeyedSlots.key(x, z), key -> {
+            Water w = new Water();
+            VerdantDescent.Point p = descent.locate(x, z, new VerdantDescent.Point());
+            if (p.kind != VerdantDescent.Point.DESCENT) {
+                w.height = Double.NaN;
+                w.body = -1;
+                w.lakeTop = Integer.MIN_VALUE;
+                return w;
+            }
+            shape(x, z, p, true, w);
+            return w;
+        });
+    }
+
+    /**
+     * Whether the niche fits: at least two blocks of rock over every cell up to the ground or the water, and no water
+     * within two columns of it unless two blocks of rock lie between (at the mouth the water the fall lands in lies
+     * below the niche's floor, which is rock up to that water's top).
+     */
+    private boolean nicheFits(Fall fall, int bottom, int depth, Map<Long, Water> memo) {
+        IslandField.Fall f = fall.fall();
+        int top = bottom + NICHE_HEIGHT - 1;
+        for (int k = 0; k < depth + 2; k++) {
+            for (int j = -3; j <= 3; j++) {
+                int x = f.springX() - k * fall.stepX() - j * fall.stepZ();
+                int z = f.springZ() - k * fall.stepZ() + j * fall.stepX();
+                Water w = waterAt(x, z, memo);
+                if (Double.isNaN(w.height)) {
+                    return false;
+                }
+                boolean cell = k < depth && Math.abs(j) <= 1;
+                if ((cell || w.lakeTop != Integer.MIN_VALUE) && Mth.ceil(w.height) < top + 3) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The length of a tunnel from the niche's back row along {@code side}, rising 1 in 2 to the tread's surface, or 0
+     * where it does not fit: every cell on tread b, two blocks of rock between it and any water, the exit at least 6
+     * blocks from the tread's edge.
+     */
+    private int tunnelFits(Fall fall, int b, int bottom, int side, Map<Long, Water> memo) {
+        IslandField.Fall f = fall.fall();
+        int back = TUNNEL_NICHE - 1;
+        for (int run = 2; run <= TUNNEL_MAX; run++) {
+            int floor = bottom + run / 2;
+            boolean open = false;
+            for (int k = back - 1; k <= back + 1; k++) {
+                int j = side * run;
+                int x = f.springX() - k * fall.stepX() - j * fall.stepZ();
+                int z = f.springZ() - k * fall.stepZ() + j * fall.stepX();
+                double r = descent.rampAt(x, z);
+                if (Double.isNaN(r) || r < VerdantDescent.level(b) || r >= VerdantDescent.level(b + 1)) {
+                    return 0;
+                }
+                Water w = waterAt(x, z, memo);
+                if (w.lakeTop != Integer.MIN_VALUE) {
+                    return 0;
+                }
+                if (k == back && floor >= w.height - 1.0) {
+                    open = true;
+                }
+                // No water within two columns unless two blocks of rock lie between it and the tunnel's roof.
+                for (int dk = -2; dk <= 2; dk++) {
+                    for (int dj = -2; dj <= 2; dj++) {
+                        int nx = x - dk * fall.stepX() - dj * fall.stepZ();
+                        int nz = z - dk * fall.stepZ() + dj * fall.stepX();
+                        Water n = waterAt(nx, nz, memo);
+                        if (n.lakeTop != Integer.MIN_VALUE && Mth.ceil(n.height) < floor + NICHE_HEIGHT + 2) {
+                            return 0;
+                        }
+                    }
+                }
+            }
+            if (open) {
+                // The exit: on the tread, at least 6 from its edge (the back row lies TUNNEL_NICHE − 1 behind the spring).
+                return run;
+            }
+        }
+        return 0;
+    }
+
+    /** The rock bridge over stream {@code stream}'s brook on tread b, decided once per world, or null. */
+    @Nullable
+    Bridge bridge(Stream stream, int b) {
+        long key = (long) stream.index() * MAX_BODY + b;
+        return field.decisions().once(field.decisions().verdantBridges, key, () -> Optional.ofNullable(placeBridge(stream, b)))
+                .orElse(null);
+    }
+
+    @Nullable
+    private Bridge placeBridge(Stream stream, int b) {
+        long h = CellShapes.cell(field.salt(), stream.index(), b, BRIDGE_SALT);
+        if (CellShapes.unit(h, 0) >= BRIDGE_CHANCE || b < 1 || b > stream.top()) {
+            return null;
+        }
+        Segment seg = segment(stream, b);
+        double entry = entry(stream, b, seg);
+        double period = VerdantDescent.perimeter(field.ringLayout());
+        RingLayout layout = field.ringLayout();
+        double r = VerdantDescent.midRadius(layout);
+        double level = VerdantDescent.level(b);
+        // The gradient half way across the tread, on the ray of the stream.
+        double[] mid = rampPoint(stream.at() / r, level + 0.5 * VerdantDescent.STEP * VerdantDescent.TREAD);
+        if (mid == null) {
+            return null;
+        }
+        double gx = descent.rampAt(mid[0] + 1.0, mid[1]) - descent.rampAt(mid[0] - 1.0, mid[1]);
+        double gz = descent.rampAt(mid[0], mid[1] + 1.0) - descent.rampAt(mid[0], mid[1] - 1.0);
+        double grad = 0.5 * Math.hypot(gx, gz);
+        if (Double.isNaN(grad) || grad < 0.05) {
+            return null;
+        }
+        double flat = VerdantDescent.STEP * VerdantDescent.TREAD / grad;
+        if (flat < 9.0) {
+            return null;
+        }
+        double toEdge = 4.0 + (flat - 8.0) * CellShapes.unit(h, 1);
+        double ramp = level + toEdge * grad;
+        double t = Mth.clamp((VerdantDescent.level(b + 1) - ramp) / VerdantDescent.STEP, 0.0, 1.0);
+        double run = RingArc.loopDelta(seg.exit(), entry, period);
+        double centre = RingArc.wrap(entry + run * Ring4Relief.smooth(t, 0.0, 1.0) + seg.meander() * Math.sin(Math.PI * t), period);
+        double span = 4.0 + 4.0 * CellShapes.unit(h, 2);
+        int thickness = CellShapes.unit(h, 3) < 0.5 ? 2 : 3;
+        // The brook under it, dry tread at both ends (not a lake, a pool or a spring).
+        Water w = new Water();
+        double[] c = rampPoint(centre / r, ramp);
+        if (c == null || !(shapeAt(Mth.floor(c[0]), Mth.floor(c[1]), w) < VerdantDescent.waterTop(b) - 1.0) || w.lakeTop == Integer.MIN_VALUE) {
+            return null;
+        }
+        for (int end = -1; end <= 1; end += 2) {
+            double[] e = rampPoint((centre + end * (0.5 * span + 0.5)) / r, ramp);
+            if (e == null || shapeAt(Mth.floor(e[0]), Mth.floor(e[1]), w) < level - 0.5 || w.lakeTop != Integer.MIN_VALUE) {
+                return null;
+            }
+        }
+        return new Bridge(centre, ramp, grad, span, thickness, (int) level);
+    }
+
+    /** The point on the ray at {@code angle} where the ramp falls through {@code value} (bisection), or null. */
+    @Nullable
+    private double[] rampPoint(double angle, double value) {
+        RingLayout layout = field.ringLayout();
+        double start = VerdantDescent.zoneStart(layout);
+        VerdantDescent.Profile profile = descent.profile(angle * VerdantDescent.midRadius(layout));
+        double[] inner = VerdantDescent.onRay(layout, angle, start + profile.descentStart(VerdantDescent.rimAt(layout)));
+        double[] outer = VerdantDescent.onRay(layout, angle, start + profile.bankTop());
+        double lo = Math.hypot(inner[0], inner[1]);
+        double hi = Math.hypot(outer[0], outer[1]);
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double rampLo = descent.rampAt(lo * cos, lo * sin);
+        double rampHi = descent.rampAt(hi * cos, hi * sin);
+        if (Double.isNaN(rampLo) || Double.isNaN(rampHi) || rampLo < value || rampHi >= value) {
+            return null;
+        }
+        for (int n = 0; n < 30; n++) {
+            double m = 0.5 * (lo + hi);
+            if (descent.rampAt(m * cos, m * sin) >= value) {
+                lo = m;
+            } else {
+                hi = m;
+            }
+        }
+        return new double[]{0.5 * (lo + hi) * cos, 0.5 * (lo + hi) * sin};
     }
 
     /** A lower bound of the floors of the water near a column (for the preliminary surface), or +infinity. */
