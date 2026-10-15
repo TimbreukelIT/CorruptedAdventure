@@ -3,8 +3,8 @@ package nl.timtoys.corruptedadventure.datagen.lang;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 
 /**
- * Names of the ring 4 overworld biomes, {@code sundered_reach} included (change 64). Owned by stream W-biomes
- * ({@code docs/plans/ring-4/waves.md}); English is mandatory, Dutch welcome.
+ * Names of the ring 4 overworld biomes, the transitions {@code sundered_reach} (change 64) and {@code verdant_falls}
+ * included. Owned by stream W-biomes ({@code docs/plans/ring-4/waves.md}); English is mandatory, Dutch welcome.
  */
 public final class Ring4BiomeNames {
     private Ring4BiomeNames() {
@@ -22,6 +22,7 @@ public final class Ring4BiomeNames {
         lang.biome(ModBiomes.SKY_GARDENS, "Sky Gardens");
         lang.biome(ModBiomes.WITHERED_GARDENS, "Withered Gardens");
         lang.biome(ModBiomes.SUNDERED_REACH, "Sundered Reach");
+        lang.biome(ModBiomes.VERDANT_FALLS, "Verdant Falls");
     }
 
     public static void addDutch(LangOutput lang) {
@@ -36,5 +37,6 @@ public final class Ring4BiomeNames {
         lang.biome(ModBiomes.SKY_GARDENS, "Hemeltuinen");
         lang.biome(ModBiomes.WITHERED_GARDENS, "Verdorde tuinen");
         lang.biome(ModBiomes.SUNDERED_REACH, "Verscheurde rand");
+        lang.biome(ModBiomes.VERDANT_FALLS, "Smaragdvallen");
     }
 }

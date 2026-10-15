@@ -11,6 +11,12 @@ stays byte-identical (a json round trip with indent 2 and CRLF reproduces the fi
 Golf 1 (64) uses vanilla blocks only, a first version; the real ring 4 blocks of stream B follow after integration 1.
 Sand and gravel never hang: where the surface reaches a ceiling (a thin island, a lake floor over a cave) they become
 sandstone or stone, as in vanilla.
+
+verdant_falls (the descent of the zone 3->4) reads the terrain through the condition corruptedadventure:ring4_threshold
+(Q7 = A): calcite (travertine) on the rims of the basins and the lips of the falls (density function
+ring_4/overworld/rim, a stub of 0 until the verdant terrain fills it), stone on the exact walls (ring_4/overworld/cliff)
+and on steep slopes, grass with moss patches on the treads, sand banks along the foot river (turtles spawn on sand
+only, below Y 67) and lake and brook beds of sand, clay and gravel.
 """
 import json
 import os
@@ -21,7 +27,8 @@ CA = "corruptedadventure:"
 
 # The order of Ring4Biomes.WITH_TRANSITION.
 RING_4 = ["cascade_vale", "crystal_lagoon", "lotus_shallows", "glowroot_swamp", "mist_fjords",
-          "drowned_forest", "peat_moors", "reed_marsh", "sky_gardens", "withered_gardens", "sundered_reach"]
+          "drowned_forest", "peat_moors", "reed_marsh", "sky_gardens", "withered_gardens", "sundered_reach",
+          "verdant_falls"]
 RING_3 = ["ashen_wastes", "volcanic_peaks", "ember_woods", "basalt_flows", "sulfur_fields", "dried_seabed",
           "titan_fields", "dormant_caldera", "steam_fens"]
 
@@ -57,6 +64,17 @@ def noise(name, lo):
     return {"type": "minecraft:noise_threshold", "noise": name, "min_threshold": lo, "max_threshold": 1.7976931348623157e+308}
 
 
+def island(key, lo, hi=1.7976931348623157e+308):
+    """True where the 2D ring 4 terrain value behind the density function ring_4/overworld/<key> lies in [lo, hi)."""
+    return {"type": CA + "ring4_threshold", "density_function": CA + "ring_4/overworld/" + key, "min": lo, "max": hi}
+
+
+def below(y):
+    """Blocks below Y y."""
+    return {"type": "minecraft:not", "invert": {"type": "minecraft:y_above", "anchor": {"absolute": y},
+                                                "surface_depth_multiplier": 0, "add_stone_depth": False}}
+
+
 STEEP = {"type": "minecraft:steep"}
 TOP = depth()                       # the surface block
 DEPTH = depth(add=True)             # the surface depth (3-6 blocks)
@@ -67,6 +85,16 @@ DRY_DEPTH = water(-6, -1, True)     # vanilla's test for the layer under land
 FALLING = {"sand": "sandstone", "gravel": "stone"}
 # Clay patches (~60 blocks, vanilla's surface noise) in the swamp's lake beds: axolotls spawn only on clay.
 CLAY_PATCHES = noise("minecraft:surface", 0.12)
+# verdant_falls: the travertine rims and fall lips, the exact walls (both 0..1 from the terrain).
+RIM = island("rim", 0.5)
+CLIFF = island("cliff", 0.5)
+# Down a lip's face to the water below: the step between two treads is 8 blocks.
+RIM_DEPTH = depth(offset=7)
+# The banks of the foot river: turtles spawn on sand below Y 67 (sea level + 4).
+SHORE = below(66)
+MOSS_PATCHES = noise("minecraft:surface", 0.25)
+MOSSY_STONE = noise("minecraft:surface_secondary", 0.2)
+GRAVEL_PATCHES = noise("minecraft:patch", 0.2)
 
 
 def put(name):
@@ -112,8 +140,30 @@ SURFACES = {
 }
 
 
+def verdant_falls():
+    """The descent of the zone 3->4 (Q7 = A): calcite on the rims and lips (down the lip's face), stone with mossy
+    cobblestone on the exact walls and steep slopes, sand banks along the foot river, grass with moss on the treads; the
+    beds of lakes, brooks and splash pools sand with clay and gravel patches."""
+    calcite = block("calcite")
+    bed = seq(cond(CLAY_PATCHES, block("clay")), cond(GRAVEL_PATCHES, put("gravel")), put("sand"))
+    wall_top = seq(cond(MOSSY_STONE, block("mossy_cobblestone")), block("stone"))
+    wall = seq(cond(TOP, seq(cond(DRY_TOP, wall_top), bed)), cond(DEPTH, block("stone")))
+    return seq(
+        cond(RIM, seq(cond(TOP, cond(DRY_TOP, calcite)), cond(RIM_DEPTH, cond(DRY_DEPTH, calcite)))),
+        cond(CLIFF, wall),
+        cond(STEEP, wall),
+        cond(SHORE, seq(cond(TOP, cond(DRY_TOP, put("sand"))), cond(DEPTH, cond(DRY_DEPTH, put("sand"))))),
+        # The treads' unconditional top and layer, flat in this branch like every other biome's.
+        *surface(seq(cond(MOSS_PATCHES, block("moss_block")), block("grass_block")), "dirt", bed, "dirt")["sequence"])
+
+
+# Biomes with a surface of their own shape (not the five-block pattern of SURFACES).
+SPECIAL = {"verdant_falls": verdant_falls}
+
+
 def ring_4_branch():
-    return cond(biome(*RING_4), seq(*[cond(biome(name), surface(*SURFACES[name])) for name in RING_4]))
+    return cond(biome(*RING_4), seq(*[cond(biome(name), SPECIAL[name]() if name in SPECIAL else surface(*SURFACES[name]))
+                                      for name in RING_4]))
 
 
 # ---------------------------------------------------------------- write
@@ -138,7 +188,7 @@ def is_ring_3(rule):
 
 
 def main():
-    assert sorted(SURFACES) == sorted(RING_4)
+    assert sorted(list(SURFACES) + list(SPECIAL)) == sorted(RING_4)
     path = os.path.join(ROOT, "noise_settings", "overworld.json")
     with open(path, encoding="utf-8") as f:
         data = json.load(f)

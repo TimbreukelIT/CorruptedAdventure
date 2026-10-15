@@ -20,6 +20,8 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring4Features;
+import nl.timtoys.corruptedadventure.worldgen.feature.VerdantFallsFeatures;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -45,13 +47,15 @@ class Ring4BiomesTest {
     @Test
     void bootstrapRegistersExactlyTheRing4List() {
         assertEquals(Ring4Biomes.WITH_TRANSITION, List.copyOf(bootstrap().keySet()));
-        assertEquals(11, Set.copyOf(Ring4Biomes.WITH_TRANSITION).size());
+        assertEquals(12, Set.copyOf(Ring4Biomes.WITH_TRANSITION).size());
         assertEquals(Set.of(ModBiomes.CASCADE_VALE, ModBiomes.CRYSTAL_LAGOON, ModBiomes.LOTUS_SHALLOWS, ModBiomes.GLOWROOT_SWAMP,
                 ModBiomes.MIST_FJORDS), Set.copyOf(Ring4Biomes.MYTHIC));
         assertEquals(Set.of(ModBiomes.DROWNED_FOREST, ModBiomes.PEAT_MOORS, ModBiomes.REED_MARSH), Set.copyOf(Ring4Biomes.BLIGHTED));
         assertEquals(List.of(ModBiomes.SKY_GARDENS, ModBiomes.WITHERED_GARDENS), Ring4Biomes.HEIGHT);
-        assertEquals(ModBiomes.SUNDERED_REACH, Ring4Biomes.TRANSITION);
-        assertFalse(Ring4Biomes.ALL.contains(ModBiomes.SUNDERED_REACH), "the transition is not in the ring's own source");
+        assertEquals(List.of(ModBiomes.SUNDERED_REACH, ModBiomes.VERDANT_FALLS), Ring4Biomes.TRANSITIONS);
+        for (ResourceKey<Biome> transition : Ring4Biomes.TRANSITIONS) {
+            assertFalse(Ring4Biomes.ALL.contains(transition), transition + ": a transition is not in the ring's own source");
+        }
         assertEquals(Set.of(ModBiomes.DROWNED_FOREST, ModBiomes.PEAT_MOORS, ModBiomes.REED_MARSH, ModBiomes.WITHERED_GARDENS),
                 Set.copyOf(Ring4Biomes.BLIGHTED_TAG));
         assertThrows(IllegalArgumentException.class, () -> Ring4Biomes.look(ModBiomes.STEAM_FENS));
@@ -103,6 +107,15 @@ class Ring4BiomesTest {
         assertTrue(animals(biomes.get(ModBiomes.MIST_FJORDS).getMobSettings()).contains(EntityType.RABBIT));
         assertThrows(IllegalArgumentException.class, () -> Ring4Biomes.spawns(ModBiomes.STEAM_FENS));
         assertTrue(animals(biomes.get(ModBiomes.CASCADE_VALE).getMobSettings()).containsAll(Set.of(EntityType.FOX, EntityType.RABBIT)));
+        // Q9 = A: frogs and turtles by the lakes of the descent, no parrots until the own trees.
+        assertEquals(Set.of(EntityType.FROG, EntityType.TURTLE), animals(biomes.get(ModBiomes.VERDANT_FALLS).getMobSettings()));
+    }
+
+    /** verdant_falls: the plan's first colours (verdant-falls.md §4), wet and rainy. */
+    @Test
+    void verdantFallsLooksTropical() {
+        Ring4Biomes.Look look = Ring4Biomes.look(ModBiomes.VERDANT_FALLS);
+        assertEquals(new Ring4Biomes.Look(0x86D6E0, 0xD2F0E4, 0x3FD0C0, 0x0F4F4A, 0x6CC24A, 0x55B03A, 0.95F, true), look);
     }
 
     /** The animals a biome adds to vanilla's common spawns (those bring the cave fauna, glow squids, everywhere). */
@@ -119,16 +132,26 @@ class Ring4BiomesTest {
         return animals;
     }
 
+    /** Deep carvers everywhere; features only from {@link Ring4Features#ORDER} (so far only in verdant_falls). */
     @Test
-    void onlyDeepCarversAndNoFeaturesYet() {
+    void deepCarversAndOnlyTheOrderedFeatures() {
         for (Map.Entry<ResourceKey<Biome>, Biome> entry : bootstrap().entrySet()) {
             Biome biome = entry.getValue();
             assertEquals(List.copyOf(Ring2Carvers.COPIES.keySet()),
                     StreamSupport.stream(biome.getGenerationSettings().getCarvers(GenerationStep.Carving.AIR).spliterator(), false)
                             .map(holder -> holder.unwrapKey().orElseThrow()).toList(), entry.getKey().toString());
-            for (HolderSet<PlacedFeature> step : biome.getGenerationSettings().features()) {
-                assertEquals(0, step.size(), entry.getKey().toString());
+            List<HolderSet<PlacedFeature>> steps = biome.getGenerationSettings().features();
+            for (GenerationStep.Decoration step : GenerationStep.Decoration.values()) {
+                List<ResourceKey<PlacedFeature>> placed = step.ordinal() < steps.size()
+                        ? steps.get(step.ordinal()).stream().map(holder -> holder.unwrapKey().orElseThrow()).toList() : List.of();
+                assertEquals(Ring4Features.features(entry.getKey(), step), placed, entry.getKey() + " " + step);
             }
+        }
+        // verdant_falls: bare (no trees, no vines), only moss carpets and the climbing strands.
+        assertEquals(List.of(VerdantFallsFeatures.VERDANT_FALLS_MOSS_CARPETS, VerdantFallsFeatures.VERDANT_FALLS_LEDGE_STRANDS),
+                Ring4Features.features(ModBiomes.VERDANT_FALLS, GenerationStep.Decoration.VEGETAL_DECORATION));
+        for (Ring4Features.Entry entry : Ring4Features.ORDER) {
+            assertEquals(Set.of(ModBiomes.VERDANT_FALLS), entry.biomes(), entry.feature().toString());
         }
     }
 
@@ -139,7 +162,7 @@ class Ring4BiomesTest {
                 .getAsJsonObject("minecraft:overworld").getAsJsonObject("generator").getAsJsonObject("biome_source");
         JsonObject transition = source.getAsJsonObject("transitions").getAsJsonObject("ring_4");
         assertEquals("minecraft:fixed", transition.get("type").getAsString());
-        assertEquals(id(Ring4Biomes.TRANSITION), transition.get("biome").getAsString());
+        assertEquals(id(ModBiomes.SUNDERED_REACH), transition.get("biome").getAsString());
         JsonObject hook = source.getAsJsonObject("island_biomes");
         assertEquals(id(ModBiomes.SKY_GARDENS), hook.get("mythic").getAsString());
         assertEquals(id(ModBiomes.WITHERED_GARDENS), hook.get("blighted").getAsString());
@@ -151,6 +174,9 @@ class Ring4BiomesTest {
     void generatedTagsHoldTheRing4Lists() {
         assertEquals(Set.copyOf(ids(Ring4Biomes.WITH_TRANSITION)), tagValues("is_ring_4"));
         assertEquals(Set.copyOf(ids(Ring4Biomes.BLIGHTED_TAG)), tagValues("ring_4_blighted"));
+        // Q2 = A and its follow-up: verdant_falls cools (heat refuge, with the dormant caldera) and keeps placed water.
+        assertEquals(Set.of(id(ModBiomes.DORMANT_CALDERA), id(ModBiomes.VERDANT_FALLS)), tagValues("heat_refuges"));
+        assertEquals(Set.of(id(ModBiomes.VERDANT_FALLS)), tagValues("evaporation_refuges"));
     }
 
     private static Set<String> tagValues(String tag) {
@@ -237,6 +263,16 @@ class Ring4BiomesTest {
         assertEquals("minecraft:grass_block", flatTop.getAsJsonObject("result_state").get("Name").getAsString());
         assertEquals("minecraft:steep", fjords.getAsJsonArray("sequence").get(0).getAsJsonObject().getAsJsonObject("if_true").get("type").getAsString());
         assertTrue(fjords.getAsJsonArray("sequence").get(0).toString().contains("\"minecraft:moss_block\""), "moss on the cliffs");
+        // verdant_falls (Q7 = A): calcite on the rims and lips first, then stone on the exact walls (both from the terrain).
+        JsonArray falls = branches.get(id(ModBiomes.VERDANT_FALLS)).getAsJsonArray("sequence");
+        JsonObject rim = falls.get(0).getAsJsonObject();
+        assertEquals("corruptedadventure:ring4_threshold", rim.getAsJsonObject("if_true").get("type").getAsString());
+        assertEquals("corruptedadventure:ring_4/overworld/rim", rim.getAsJsonObject("if_true").get("density_function").getAsString());
+        assertTrue(rim.toString().contains("\"minecraft:calcite\""), "calcite on the rims");
+        JsonObject cliff = falls.get(1).getAsJsonObject();
+        assertEquals("corruptedadventure:ring_4/overworld/cliff", cliff.getAsJsonObject("if_true").get("density_function").getAsString());
+        assertTrue(cliff.toString().contains("\"minecraft:stone\""), "stone on the walls");
+        assertTrue(floorRule(branches.get(id(ModBiomes.VERDANT_FALLS)), false).toString().contains("\"minecraft:moss_block\""), "moss on the treads");
     }
 
     /** The then-rule of a branch's own (not steep) floor rule: the top ({@code depth} false) or the surface depth. */

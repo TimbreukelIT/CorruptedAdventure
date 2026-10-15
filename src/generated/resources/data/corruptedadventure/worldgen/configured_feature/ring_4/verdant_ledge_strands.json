@@ -1,0 +1,22 @@
+{
+  "type": "corruptedadventure:ledge_strand",
+  "config": {
+    "accent": {
+      "Name": "corruptedadventure:glowing_hanging_roots",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "accent_chance": 0.2,
+    "max_gap": 24,
+    "min_gap": 3,
+    "reach": 4,
+    "strand": {
+      "Name": "corruptedadventure:hanging_swamp_moss",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "strand_chance": 0.5
+  }
+}
