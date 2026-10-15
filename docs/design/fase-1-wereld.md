@@ -669,6 +669,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - Geplaatst water (emmer, dispenser, gebroken/smeltend ijs) verdampt direct **op plekken waar de lucht zichtbaar is**, net als in de Nether. Ondergronds en onder een dak werkt water normaal.
 - Server-side check met `ringAt` + lucht zichtbaar bij plaatsing.
 - **Uitwerking 44 (2026-10-07):** alleen nieuwe waterbronnen en nieuw waterlogged blokken verdampen (stromend water niet), via één hook voor alle routes. Water verdampt ook als **obsidiaan- en cobble-generatoren** daardoor onder open lucht onmogelijk worden, zoals in de Nether; ondergronds of onder een dak werken ze wel (besluit gebruiker).
+- **Uitzondering `evaporation_refuges` (2026-10-15, besluit gebruiker):** in biomes met de tag `corruptedadventure:evaporation_refuges` verdampt geplaatst water niet en droogt een natte spons niet (`HeatZone.exposed`). Daar staat alleen het ring 3-deel van `verdant_falls` in (vult W-biomes). Bewust een eigen tag, los van `heat_refuges`: de **slapende krater** (`dormant_caldera`) blijft ongewijzigd, je koelt er af en ijs smelt er niet, maar geplaatst water verdampt er wel; de krater blijft droog.
 
 **Weer (ringweer)**
 - **Asregen**: zicht omlaag, as-particles (client); hitte ×1,5 (server).
@@ -861,7 +862,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - `ring3Seal` en de dammen onder Y 63/−54 blijven gelden in de nieuwe zonebreedte.
 - **Uitwerking (planronde 2026-10-15, `docs/plans/ring-4/verdant-falls.md` §6a):**
   - **voetrivier** op Y 63 rondom aan de buitenrand van de zone; alle vallen en kloven monden erin uit, ring 4-rivieren sluiten aan, bevaarbaar rond de ring; afdaling ~28–45;
-  - het ring 3-deel van `verdant_falls` is een **afkoelplek** (`heat_refuges`); geplaatst water verdampt daar niet;
+  - het ring 3-deel van `verdant_falls` is een **afkoelplek** (`heat_refuges`); geplaatst water verdampt daar niet (eigen tag `evaporation_refuges`, alleen `verdant_falls`; de slapende krater blijft droog);
   - **klimroutes:** de ring 4-wortels en het hangmos worden klimbaar (heel ring 4); het terrein maakt op kloofwanden en naast vallen korte overhangende richels, met wortels eronder tot de volgende richel;
   - eigen cap van **6 vallen per chunk**; **calciet** (travertijn) op drempelranden en vallippen, mos op de treden;
   - sfeer: biome-particle `waterfall_mist`, eigen ambient-loop van verre watervallen, tropische vogels/kikkers; dieren: kikkers en schildpadden.

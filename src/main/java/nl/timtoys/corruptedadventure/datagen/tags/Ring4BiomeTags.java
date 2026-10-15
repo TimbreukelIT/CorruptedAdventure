@@ -45,6 +45,8 @@ public final class Ring4BiomeTags {
         tag.apply(ModTags.Biomes.IS_RING_4).addAll(Ring4Biomes.WITH_TRANSITION);
         // Read by poison (C) and the weather (A): the blighted band and the islands above it.
         tag.apply(ModTags.Biomes.RING_4_BLIGHTED).addAll(Ring4Biomes.BLIGHTED_TAG);
+        // Read by the heat zone (C): no evaporation there. Written empty until W-biomes adds verdant_falls.
+        tag.apply(ModTags.Biomes.EVAPORATION_REFUGES);
         CONVENTION.forEach((key, biomes) -> tag.apply(key).addAll(biomes));
     }
 }
