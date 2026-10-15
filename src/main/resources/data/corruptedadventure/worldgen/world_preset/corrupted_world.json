@@ -322,6 +322,15 @@
               "biome": "corruptedadventure:sundered_reach"
             }
           },
+          "transition_splits": {
+            "ring_3": {
+              "at": 0.234375,
+              "outer": {
+                "type": "minecraft:fixed",
+                "biome": "corruptedadventure:verdant_falls"
+              }
+            }
+          },
           "island_biomes": {
             "mythic": "corruptedadventure:sky_gardens",
             "blighted": "corruptedadventure:withered_gardens",
