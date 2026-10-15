@@ -68,17 +68,35 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
     static final double TROUGH_Y = 42.0;
     private static final double LAGOON_RISE = 21.5;
     private static final double LOTUS_Y = 59.5;
-    // Cascades: treads of TERRACE_STEP blocks, the riser in the last fifth of each step (wide enough for the 4-block grid).
+    // Cascades (heuvelfix 2b, Q5): treads of TERRACE_STEP blocks, level for TERRACE_TREAD of each step, then a riser
+    // rounded at its edge and its foot over the other 40 %: wide enough for the 4-block grid to show it smoothly.
     static final double TERRACE_STEP = 8.0;
-    static final double TERRACE_TREAD = 0.8;
+    static final double TERRACE_TREAD = 0.6;
     private static final double CASCADE_RISE = 45.0;
+    /** How far (blocks of rise) the warp noise moves the stair lines, and its scale (~100 blocks). */
+    private static final double TERRACE_WAVE = 0.35 * TERRACE_STEP;
+    private static final double TERRACE_WAVE_SCALE = 1.3;
+    /** The detail noise on the risers only (blocks), so the treads stay level. */
+    private static final double RISER_DETAIL = 0.6;
     // Fjords: a plateau, the channels' floor far below the sea.
     private static final double FJORD_PLATEAU = 8.0;
     private static final double FJORD_RISE = 32.0;
+    private static final double FJORD_DETAIL = 1.0;
     static final double FJORD_FLOOR = 40.0;
     /** Half width of a fjord's floor and how steep its walls rise (blocks up per block across). */
     static final double FJORD_HALF = 12.0;
     static final double FJORD_SLOPE = 2.0;
+    /** The smooth minimum's width at the rim (Q6: k = 4, rounded by at most a block). */
+    static final double FJORD_ROUND = 4.0;
+    /**
+     * The fjord's exact band ({@link Sample#fjordEdge}, Q6), where the fjord landform has more than
+     * {@link #FJORD_EDGE_WEIGHT} weight: the walls from {@link #FJORD_EDGE_FLOOR} blocks before the floor ends, up to
+     * {@link #FJORD_EDGE_RIM} of cut above the plateau (6 blocks past the rim at the wall's slope): a cell's corner up to
+     * 4 blocks away (5.7 diagonally) may lie on the wall, so the grid sags that far behind the rim.
+     */
+    static final double FJORD_EDGE_FLOOR = 6.0;
+    static final double FJORD_EDGE_RIM = 12.0;
+    private static final double FJORD_EDGE_WEIGHT = 0.05;
     // Rivers: a bed below the sea level, valley sides rising to the land.
     static final double RIVER_BED = 57.0;
     static final double RIVER_HALF = 5.5;
@@ -183,6 +201,8 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         }
         double mythicH = 0.0;
         double fjord = 0.0;
+        double fjordRim = Double.NaN;
+        boolean fjordEdge = false;
         if (blighted < 1.0) {
             if (lagoonW > 0.0) {
                 mythicH += lagoonW * (TROUGH_Y + LAGOON_RISE * Math.sqrt(shoal) + 1.2 * d);
@@ -194,17 +214,31 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
                 mythicH += swampW * swamp(hillsV, d);
             }
             if (cascadeW > 0.0) {
+                // Not stepped yet (the steps come after the mix, below), and without the detail noise, so the treads are
+                // level. The stair lines wander with the warp noise: else they follow the hills' long, straight iso-lines.
                 double inland = smooth(-w, WATER_SPLIT, WATER_SPLIT + 0.33);
-                mythicH += cascadeW * (SEA + 1.0 + terrace((5.0 + CASCADE_RISE * hill01) * inland + 1.5 * d));
+                double wave = TERRACE_WAVE * sample(warp, TERRACE_WAVE_SCALE * x + 777.0, TERRACE_WAVE_SCALE * z - 333.0);
+                mythicH += cascadeW * (SEA + 1.0 + Math.max(0.0, (5.0 + CASCADE_RISE * hill01) * inland + wave));
             }
             if (fjordW > 0.0) {
                 double inland = smooth(-w, 0.0, 0.3) * (1.0 - rim);
-                double plateau = SEA + FJORD_PLATEAU + FJORD_RISE * inland * (0.55 + 0.45 * hill01) + 2.0 * d;
+                // Only the detail's coarse scale, and less of it: the plateaus read as flat land, still alive.
+                double coarse = sample(detail, 0.5 * x, 0.5 * z);
+                double plateau = SEA + FJORD_PLATEAU + FJORD_RISE * inland * (0.55 + 0.45 * hill01) + FJORD_DETAIL * coarse;
                 double distance = fjordLine(wx, wz) / FJORD_GRADIENT;
                 // A floor FJORD_HALF wide each side, then steep walls up to the plateau (a fjord, not a slot).
                 double cut = FJORD_FLOOR + Math.max(0.0, distance - FJORD_HALF) * FJORD_SLOPE;
                 fjord = fjordW * (1.0 - smooth(distance, FJORD_HALF, FJORD_HALF + 4.0)) * (1.0 - blighted);
-                mythicH += fjordW * Math.min(plateau, cut);
+                // The rim rounded over a few blocks; the 4-block grid cannot show it, so the band is cut per block.
+                mythicH += fjordW * VolcanicMath.smoothMin(plateau, cut, FJORD_ROUND);
+                fjordRim = cut - plateau;
+                fjordEdge = fjordW * (1.0 - blighted) > FJORD_EDGE_WEIGHT && distance > FJORD_HALF - FJORD_EDGE_FLOOR
+                        && fjordRim < FJORD_EDGE_RIM;
+            }
+            // The steps after the mix (H4): blended landforms keep their treads level instead of tilting them.
+            double stepped = smooth(cascadeW, 0.2, 0.6);
+            if (stepped > 0.0) {
+                mythicH = Mth.lerp(stepped, mythicH, SEA + 1.0 + steps(mythicH - SEA - 1.0, d));
             }
         }
         double blightedH = 0.0;
@@ -216,15 +250,23 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         }
         double h = Mth.lerp(blighted, mythicH, blightedH);
         double river = 0.0;
+        double riverDepth = 0.0;
         if (open < 1.0) {
             // A valley (review 60 #1): a bed RIVER_HALF wide each side, then slopes of RIVER_SLOPE up to the land, so
             // the valley widens with the height of the land around it.
             double distance = riverLine(wx, wz) / RIVER_GRADIENT;
             double cut = RIVER_BED + Math.max(0.0, distance - RIVER_HALF) * RIVER_SLOPE;
-            h = Mth.lerp(1.0 - open, h, Math.min(h, cut));
+            double valley = Mth.lerp(1.0 - open, h, Math.min(h, cut));
+            riverDepth = h - valley;
+            h = valley;
             river = (1.0 - smooth(distance, RIVER_HALF, RIVER_HALF + 4.0)) * (1.0 - open);
         }
         double peat = peatW * blighted;
+        s.cascade = cascadeW * (1.0 - blighted);
+        s.fjordLand = fjordW * (1.0 - blighted);
+        s.fjordRim = fjordRim;
+        s.fjordEdge = fjordEdge;
+        s.riverDepth = riverDepth;
         s.height = h;
         s.water = w;
         s.growth = g;
@@ -247,14 +289,36 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         return SEA + 0.3 + 2.5 * hillsV + 1.5 * d;
     }
 
-    /** Treads of {@link #TERRACE_STEP} blocks: flat for most of each step, a steep riser in its last part. */
+    /**
+     * Treads of {@link #TERRACE_STEP} blocks: level for {@link #TERRACE_TREAD} of each step, then a riser with a
+     * smootherstep (6t⁵ − 15t⁴ + 10t³): flat in slope and curvature at both ends, so the tread's edge and the riser's
+     * foot are round, and the 4-block grid follows it within half a block.
+     */
     static double terrace(double rise) {
         double k = Math.max(0.0, rise) / TERRACE_STEP;
         double n = Math.floor(k);
-        double f = k - n;
-        double riser = Mth.clamp((f - TERRACE_TREAD) / (1.0 - TERRACE_TREAD), 0.0, 1.0);
-        return TERRACE_STEP * (n + riser * riser * (3.0 - 2.0 * riser));
+        double t = riser(k - n);
+        return TERRACE_STEP * (n + t * t * t * (t * (6.0 * t - 15.0) + 10.0));
     }
+
+    /** How far through the riser a step's fraction {@code f} lies: 0 on the tread, 0..1 up the riser. */
+    private static double riser(double f) {
+        return Mth.clamp((f - TERRACE_TREAD) / (1.0 - TERRACE_TREAD), 0.0, 1.0);
+    }
+
+    /** 0 on the treads, 1 halfway up a riser, smooth at both ends: where the riser carries detail. */
+    static double riserBump(double rise) {
+        double k = Math.max(0.0, rise) / TERRACE_STEP;
+        double t = riser(k - Math.floor(k));
+        double b = 4.0 * t * (1.0 - t);
+        return b * b;
+    }
+
+    /** {@link #terrace} with the detail noise on the risers only; a rise at or below 0 stays as it is. */
+    private static double steps(double rise, double d) {
+        return rise <= 0.0 ? rise : terrace(rise) + RISER_DETAIL * d * riserBump(rise);
+    }
+
 
     private double warpX(double x, double z) {
         return x + WARP_BLOCKS * sample(warp, x, z);
@@ -331,5 +395,17 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         double sinkholeFloor;
         /** 0..1: a fjord's channel (weighted by the fjord landform). */
         double fjord;
+        /** 0..1: the weight of the cascades' terraces and of the fjord landform. */
+        double cascade;
+        double fjordLand;
+        /** The fjord's cut less its plateau (negative on the walls and the floor), NaN without the fjord landform. */
+        double fjordRim;
+        /**
+         * Whether the column lies on a fjord's wall or rim, where the height kinks within one cell of the 4-block grid:
+         * {@link IslandField#thin} cuts the surface there per block (Q6).
+         */
+        boolean fjordEdge;
+        /** How far a river's valley lowered the column (0 outside one). */
+        double riverDepth;
     }
 }

@@ -224,10 +224,324 @@ class Ring4ReliefTest {
         assertEquals(step, Ring4Relief.terrace(step + tread), 1e-9);
         assertEquals(2.0 * step, Ring4Relief.terrace(2.0 * step), 1e-9);
         double riser = Ring4Relief.terrace(step + tread + 0.5 * (step - tread));
-        assertTrue(riser > step && riser < 2.0 * step);
+        assertEquals(1.5 * step, riser, 1e-9, "a riser's middle lies halfway up");
         for (double v = 0.0; v < 60.0; v += 0.25) {
             assertTrue(Ring4Relief.terrace(v + 0.25) >= Ring4Relief.terrace(v));
         }
+        // Q5: tread 60 %, riser 40 %, rounded at its edge and its foot (flat slope at both ends of the riser).
+        assertEquals(0.6, Ring4Relief.TERRACE_TREAD);
+        double e = 0.01;
+        assertEquals(step, Ring4Relief.terrace(step + tread + e), 1e-4, "round edge");
+        assertEquals(2.0 * step, Ring4Relief.terrace(2.0 * step - e), 1e-4, "round foot");
+        // Detail only on the risers: none on a tread.
+        assertEquals(0.0, Ring4Relief.riserBump(step + 0.5 * tread));
+        assertEquals(1.0, Ring4Relief.riserBump(step + tread + 0.5 * (step - tread)), 1e-12);
+    }
+
+    // ---------------------------------------------------------------- the 4-block grid (heuvelfix, 2b)
+
+    /**
+     * The terrain as the stack renders it against the exact relief, over windows across ring 4 proper: the surface
+     * between the corners of the 4-block grid is the bilinear blend of the corners' values (the {@code interpolated}
+     * stack), except where {@code thin} decides per block. The measurement of the plan (verdant-falls.md §1.2) as a
+     * lasting check.
+     */
+    static final class GridSurvey {
+        static final int WINDOWS = 400;
+        static final int SIZE = 48;
+        /** Cascade core (weight > 0.9, no river): |exact − bilinear| and the top block's difference. */
+        final List<Double> coreError = new ArrayList<>();
+        final List<Integer> coreTop = new ArrayList<>();
+        /**
+         * The same where the whole cell lies in the core: the terraces themselves, without the seams where the growth
+         * axis runs so steep that the cascades meet another landform within a few blocks (a slope the grid smooths).
+         */
+        final List<Double> cellError = new ArrayList<>();
+        final List<Integer> cellTop = new ArrayList<>();
+        /** Cascade area (weight > 0.1, no river): the exact slope. */
+        final List<Double> cascadeSlope = new ArrayList<>();
+        /** The same for the cascade core (weight > 0.9) and the blend (0.1..0.9). */
+        final List<Double> coreSlope = new ArrayList<>();
+        final List<Double> blendSlope = new ArrayList<>();
+        /** Cascade core columns whose exact height lies exactly on a tread's level. */
+        int coreLevel;
+        /** Fjord rim (fjord weight > 0.9, |cut − plateau| ≤ 4, no river or hole): the rendered top's difference. */
+        final List<Integer> rimTop = new ArrayList<>();
+        final List<Integer> wallTop = new ArrayList<>();
+        /** The plateau just behind the rim (cut 4..12 above it): where a cell's corner may still lie on the wall. */
+        final List<Integer> behindTop = new ArrayList<>();
+        final List<Double> plateauBumps = new ArrayList<>();
+
+        static GridSurvey run() {
+            GridSurvey survey = new GridSurvey();
+            Ring4Relief relief = field.relief();
+            Ring4Band band = Ring4Band.of(IslandFieldTest.LAYOUT);
+            java.util.Random random = new java.util.Random(4402);
+            int windows = 0;
+            while (windows < WINDOWS) {
+                double angle = random.nextDouble() * 2.0 * Math.PI;
+                double r = 6150.0 + random.nextDouble() * 1650.0;
+                int x0 = (int) Math.round(r * Math.cos(angle)) & ~3;
+                int z0 = (int) Math.round(r * Math.sin(angle)) & ~3;
+                if (!ring4Proper(x0, z0) || !ring4Proper(x0 + SIZE, z0 + SIZE) || !ring4Proper(x0, z0 + SIZE) || !ring4Proper(x0 + SIZE, z0)) {
+                    continue;
+                }
+                windows++;
+                survey.window(relief, band, x0, z0);
+            }
+            return survey;
+        }
+
+        private static boolean ring4Proper(int x, int z) {
+            var position = IslandFieldTest.LAYOUT.sampleOverworld(x, z);
+            return !position.inTransition() && position.ring() == Ring.RING_4
+                    && !Ring4Sundered.inRim(IslandFieldTest.LAYOUT, IslandFieldTest.LAYOUT.effectiveDistance(x, z));
+        }
+
+        private void window(Ring4Relief relief, Ring4Band band, int x0, int z0) {
+            int n = SIZE + 1;
+            Ring4Relief.Sample[][] samples = new Ring4Relief.Sample[n][n];
+            double[][] h = new double[n][n];
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    Ring4Relief.Sample s = new Ring4Relief.Sample();
+                    relief.sample(x0 + i, z0 + j, band.value(x0 + i, z0 + j), s, field.salt());
+                    samples[i][j] = s;
+                    h[i][j] = s.height;
+                }
+            }
+            for (int i = 1; i < SIZE; i++) {
+                for (int j = 1; j < SIZE; j++) {
+                    Ring4Relief.Sample s = samples[i][j];
+                    int ci = i & ~3;
+                    int cj = j & ~3;
+                    boolean riverFree = s.riverDepth == 0.0;
+                    for (int[] c : new int[][]{{ci, cj}, {ci + 4, cj}, {ci, cj + 4}, {ci + 4, cj + 4}, {i - 1, j}, {i + 1, j}, {i, j - 1}, {i, j + 1}}) {
+                        riverFree &= samples[c[0]][c[1]].riverDepth == 0.0;
+                    }
+                    if (!riverFree) {
+                        continue;
+                    }
+                    double bilinear = bilinear(h, i, j);
+                    if (s.cascade > 0.9) {
+                        double error = Math.abs(h[i][j] - bilinear);
+                        int topOff = Math.abs(top(h[i][j]) - top(bilinear));
+                        coreError.add(error);
+                        coreTop.add(topOff);
+                        if (samples[ci][cj].cascade > 0.9 && samples[ci + 4][cj].cascade > 0.9 && samples[ci][cj + 4].cascade > 0.9
+                                && samples[ci + 4][cj + 4].cascade > 0.9) {
+                            cellError.add(error);
+                            cellTop.add(topOff);
+                        }
+                        double rise = h[i][j] - Ring4Relief.SEA - 1.0;
+                        coreLevel += Math.abs(rise - Ring4Relief.TERRACE_STEP * Math.round(rise / Ring4Relief.TERRACE_STEP)) < 1e-9 ? 1 : 0;
+                    }
+                    if (s.cascade > 0.1) {
+                        double slope = Math.hypot(h[i + 1][j] - h[i - 1][j], h[i][j + 1] - h[i][j - 1]) / 2.0;
+                        cascadeSlope.add(slope);
+                        (s.cascade > 0.9 ? coreSlope : blendSlope).add(slope);
+                    }
+                    if (s.fjordLand > 0.9 && !Double.isNaN(s.fjordRim)) {
+                        if (i % 8 == 0 && j % 8 == 0 && i >= 8 && j >= 8 && i <= SIZE - 8 && j <= SIZE - 8 && plateau(samples, i, j)) {
+                            plateauBumps.add(spread(h, i, j));
+                        }
+                        Integer rendered = renderedTopDifference(x0 + i, z0 + j);
+                        if (rendered != null) {
+                            if (Math.abs(s.fjordRim) <= 4.0) {
+                                rimTop.add(rendered);
+                            } else if (s.fjordRim < -4.0) {
+                                wallTop.add(rendered);
+                            } else if (s.fjordRim <= 12.0) {
+                                behindTop.add(rendered);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /** Whether the 16 x 16 blocks around (i, j) are all fjord plateau (away from the cut and from rivers). */
+        private static boolean plateau(Ring4Relief.Sample[][] samples, int i, int j) {
+            for (int di = -8; di <= 8; di += 2) {
+                for (int dj = -8; dj <= 8; dj += 2) {
+                    Ring4Relief.Sample s = samples[i + di][j + dj];
+                    if (s.fjordLand < 0.99 || !(s.fjordRim > 6.0) || s.riverDepth != 0.0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /**
+         * The bumps of the exact height over the 16 x 16 blocks around (i, j) (every second block): the standard
+         * deviation around the best-fitting plane, so the plateau's slope does not count.
+         */
+        private static double spread(double[][] h, int i, int j) {
+            // The offsets are symmetric about 0: the plane's coefficients separate.
+            double sum = 0.0;
+            double sx = 0.0;
+            double sz = 0.0;
+            double xx = 0.0;
+            int count = 0;
+            for (int di = -8; di <= 8; di += 2) {
+                for (int dj = -8; dj <= 8; dj += 2) {
+                    double v = h[i + di][j + dj];
+                    sum += v;
+                    sx += di * v;
+                    sz += dj * v;
+                    xx += di * di;
+                    count++;
+                }
+            }
+            double mean = sum / count;
+            double ax = sx / xx;
+            double az = sz / xx;
+            double sq = 0.0;
+            for (int di = -8; di <= 8; di += 2) {
+                for (int dj = -8; dj <= 8; dj += 2) {
+                    double r = h[i + di][j + dj] - mean - ax * di - az * dj;
+                    sq += r * r;
+                }
+            }
+            return Math.sqrt(sq / count);
+        }
+
+        private static double bilinear(double[][] h, int i, int j) {
+            int ci = i & ~3;
+            int cj = j & ~3;
+            double tx = (i - ci) / 4.0;
+            double tz = (j - cj) / 4.0;
+            double a = h[ci][cj] + tx * (h[ci + 4][cj] - h[ci][cj]);
+            double b = h[ci][cj + 4] + tx * (h[ci + 4][cj + 4] - h[ci][cj + 4]);
+            return a + tz * (b - a);
+        }
+
+        /** The top solid block of a surface height (the stack's density is 0.125 · (surface − y)). */
+        static int top(double surface) {
+            return (int) Math.ceil(surface) - 1;
+        }
+
+        /**
+         * |rendered top − exact top| of a column as the stack builds it (the grid's bilinear surface, unless
+         * {@code thin} decides per block), or null for a column with an island, a hole, a lake or a spring.
+         */
+        static Integer renderedTopDifference(int x, int z) {
+            IslandField.Column c = field.column(x, z);
+            if (c.islandMask() > 0.0 || c.islandHole() > 0.0 || c.surface() != c.height() || c.lakeTop() != Integer.MIN_VALUE
+                    || c.springY() != Integer.MIN_VALUE || c.caveLiftFrom() <= c.caveLiftTo() || !Double.isNaN(c.sinkholeFloor())) {
+                return null;
+            }
+            return Math.abs(renderedTop(field, x, z) - top(c.surface()));
+        }
+
+        /** The top solid block of a column as the stack builds it (caves aside): {@code thin}, else the grid's surface. */
+        static int renderedTop(IslandField field, int x, int z) {
+            double exact = field.column(x, z).surface();
+            double bilinear = field.gridSurface(x, z);
+            int from = (int) Math.ceil(Math.max(exact, bilinear)) + 3;
+            int to = (int) Math.floor(Math.min(exact, bilinear)) - 3;
+            for (int y = from; y >= to; y--) {
+                double thin = field.thin(x, y, z);
+                if (thin >= 0.5 || thin >= -0.5 && y < bilinear) {
+                    return y;
+                }
+            }
+            return to - 1;
+        }
+    }
+
+    private static GridSurvey survey;
+
+    private static synchronized GridSurvey survey() {
+        if (survey == null) {
+            survey = GridSurvey.run();
+            GridSurvey g = survey;
+            System.out.printf("cascade core %d columns: |error| mean %.3f p99 %.3f max %.3f, top off >=1 %.4f >=2 %.4f; whole cells %d: p99 %.3f max %.3f >=2 %.4f; on a level %.3f%n",
+                    g.coreError.size(), mean(g.coreError), quantile(g.coreError, 0.99), quantile(g.coreError, 1.0), share(g.coreTop, 1),
+                    share(g.coreTop, 2), g.cellError.size(), quantile(g.cellError, 0.99), quantile(g.cellError, 1.0), share(g.cellTop, 2),
+                    g.coreLevel / (double) g.coreError.size());
+            System.out.printf("level (slope < 0.05): cascade area %.3f (%d), core %.3f, blend %.3f; steep (>= 0.6) %.3f%n", flat(g.cascadeSlope),
+                    g.cascadeSlope.size(), flat(g.coreSlope), flat(g.blendSlope),
+                    g.cascadeSlope.stream().filter(v -> v >= 0.6).count() / (double) g.cascadeSlope.size());
+            System.out.printf("fjord rim %d columns: top off >=1 %.4f >=2 %.4f; wall %d: >=1 %.4f >=2 %.4f; behind the rim %d: >=1 %.4f >=2 %.4f; plateau bumps %d: median %.3f p90 %.3f%n",
+                    g.rimTop.size(), share(g.rimTop, 1), share(g.rimTop, 2), g.wallTop.size(), share(g.wallTop, 1), share(g.wallTop, 2),
+                    g.behindTop.size(), share(g.behindTop, 1), share(g.behindTop, 2),
+                    g.plateauBumps.size(), quantile(g.plateauBumps, 0.5), quantile(g.plateauBumps, 0.9));
+        }
+        return survey;
+    }
+
+    private static double flat(List<Double> slopes) {
+        return slopes.stream().filter(v -> v < 0.05).count() / (double) slopes.size();
+    }
+
+    private static double mean(List<Double> values) {
+        return values.stream().mapToDouble(v -> v).average().orElse(Double.NaN);
+    }
+
+    private static double quantile(List<Double> values, double q) {
+        List<Double> sorted = new ArrayList<>(values);
+        sorted.sort(Double::compare);
+        return sorted.get((int) Math.min(sorted.size() - 1, Math.floor(q * sorted.size())));
+    }
+
+    private static double share(List<Integer> values, int atLeast) {
+        return values.stream().filter(v -> v >= atLeast).count() / (double) values.size();
+    }
+
+    /**
+     * Q5: the risers are wide and round enough for the grid: inside the terraces it misses the exact height by at most
+     * half a block for 99 % of the columns and practically never puts the top block 2 off (before: p99 0.98, max 2.6).
+     */
+    @Test
+    void terracesFollowTheGrid() {
+        GridSurvey g = survey();
+        assertTrue(g.cellError.size() > 20_000, "cells " + g.cellError.size());
+        assertTrue(quantile(g.cellError, 0.99) <= 0.6, "p99 " + quantile(g.cellError, 0.99));
+        assertTrue(quantile(g.cellError, 1.0) <= 1.5, "max " + quantile(g.cellError, 1.0));
+        // An error over 1 can still put the top block 2 off where it straddles two whole blocks: once in ~66,000.
+        assertTrue(share(g.cellTop, 2) <= 0.0001, "top block 2 off " + share(g.cellTop, 2));
+        // The whole core, with the steep seams to other landforms: rare.
+        assertTrue(quantile(g.coreError, 0.99) <= 0.6, "core p99 " + quantile(g.coreError, 0.99));
+        assertTrue(share(g.coreTop, 2) <= 0.002, "core top 2 off " + share(g.coreTop, 2));
+    }
+
+    /**
+     * H2/H4: treads are level (the detail noise only on the risers, the steps after the mix): most of the core lies
+     * exactly on a tread's level, and the blends with other landforms are far more level than before (0.41); the
+     * narrower treads of Q5 cost some of the core's level ground (before 0.85).
+     */
+    @Test
+    void treadsAreLevel() {
+        GridSurvey g = survey();
+        assertTrue(g.coreLevel / (double) g.coreError.size() > 0.6, "on a level " + g.coreLevel / (double) g.coreError.size());
+        assertTrue(flat(g.coreSlope) > 0.72, "core " + flat(g.coreSlope));
+        assertTrue(flat(g.blendSlope) > 0.5, "blend " + flat(g.blendSlope));
+        assertTrue(flat(g.cascadeSlope) > 0.66, "cascade area " + flat(g.cascadeSlope));
+    }
+
+    /**
+     * Q6: a fjord's rim and wall are cut per block ({@code thin}), so the stack shows them exactly, no sawtooth on the
+     * grid (before: 38 % of the rim's columns 2 or more blocks off, up to 6).
+     */
+    @Test
+    void fjordRimsAreExactPerBlock() {
+        GridSurvey g = survey();
+        assertTrue(g.rimTop.size() > 500 && g.wallTop.size() > 5000, "rim " + g.rimTop.size() + ", wall " + g.wallTop.size());
+        assertTrue(share(g.rimTop, 1) <= 0.01, "rim off " + share(g.rimTop, 1));
+        assertEquals(0.0, share(g.rimTop, 2), "rim 2 off");
+        assertTrue(share(g.wallTop, 2) <= 0.002, "wall 2 off " + share(g.wallTop, 2));
+        assertTrue(share(g.behindTop, 1) <= 0.01, "behind the rim off " + share(g.behindTop, 1));
+    }
+
+    /** H6: the fjord plateaus read as flat land: their bumps around the plane are small (before: median 0.13). */
+    @Test
+    void fjordPlateausAreCalm() {
+        GridSurvey g = survey();
+        assertTrue(g.plateauBumps.size() > 50, "plateau samples " + g.plateauBumps.size());
+        assertTrue(quantile(g.plateauBumps, 0.5) < 0.07, "median " + quantile(g.plateauBumps, 0.5));
+        assertTrue(quantile(g.plateauBumps, 0.9) < 0.15, "p90 " + quantile(g.plateauBumps, 0.9));
     }
 
     @Test

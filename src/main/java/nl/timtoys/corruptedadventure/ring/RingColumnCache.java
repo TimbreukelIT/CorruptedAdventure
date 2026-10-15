@@ -38,9 +38,14 @@ public final class RingColumnCache {
      * ({@link RingLayout#reachMargin}) of a block column of the running server's world.
      */
     public static boolean reaches(ResourceKey<Level> dimension, Ring ring, int x, int z, double margin) {
+        return reaches(dimension, ring, x, z, margin, 1.0);
+    }
+
+    /** The same with the mix share of the ring's outer boundary ({@link RingLayout#reaches(Ring, double, double, double)}). */
+    public static boolean reaches(ResourceKey<Level> dimension, Ring ring, int x, int z, double margin, double outerMix) {
         RingLayout layout = RingLayout.current();
         int scale = RingLayout.scale(dimension);
-        return layout.reaches(ring, PER_THREAD.get().effectiveDistance(layout, scale, x, z), layout.reachMargin(margin, scale));
+        return layout.reaches(ring, PER_THREAD.get().effectiveDistance(layout, scale, x, z), layout.reachMargin(margin, scale), outerMix);
     }
 
     /**

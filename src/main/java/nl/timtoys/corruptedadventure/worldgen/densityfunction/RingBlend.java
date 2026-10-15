@@ -236,13 +236,15 @@ public final class RingBlend implements DensityFunction {
 
     /**
      * {@code visitor}, but every interpolated marker of the input of {@code ring} gets a {@link RingGate} first and every
-     * flat-cache marker a {@link RingFillGate} ({@link RingGate#gateCacheMarker}).
+     * flat-cache marker a {@link RingFillGate} ({@link RingGate#gateCacheMarker}), both knowing how far into its outer
+     * zone the ring mixes ({@code mix}): the ring's input is not computed where it has no weight.
      */
     private Visitor gating(Ring ring, Visitor visitor) {
+        double share = mix[ring.ordinal()];
         return new Visitor() {
             @Override
             public DensityFunction apply(DensityFunction function) {
-                return visitor.apply(RingGate.gateCacheMarker(dimension, ring, function));
+                return visitor.apply(RingGate.gateCacheMarker(dimension, ring, share, function));
             }
 
             @Override

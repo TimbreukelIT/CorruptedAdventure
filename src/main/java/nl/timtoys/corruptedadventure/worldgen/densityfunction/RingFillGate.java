@@ -26,21 +26,28 @@ import java.util.function.Supplier;
  * Inside the chunk the decision is all or nothing: if any terrain of the ring runs in the chunk (weight at a block, or
  * a gated interpolator in reach at a cell corner), it does so within at most 2 blocks per axis (2.83 diagonally) of a
  * flat-cache point (the points lie every 4 blocks, edges included; the corners are such points), which is well inside
- * {@link #MARGIN} even with {@link RingGate#MARGIN} on top (16 + 2.83 < 32), and the whole cache is real.
+ * {@link #MARGIN} even with {@link RingGate#MARGIN} on top (16 + 2.83 < 32), and the whole cache is real. {@code mix}
+ * ends the ring's reach early in its outer zone, as for {@link RingGate}.
  */
-public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunction argument) implements DensityFunction, RingGated {
+public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunction argument, double mix) implements DensityFunction, RingGated {
     /** Blocks of the dimension: twice {@link RingGate#MARGIN}, as the decision covers a whole chunk at once. */
     static final double MARGIN = 32.0;
 
     public static final MapCodec<RingFillGate> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(RingFillGate::dimension),
             Ring.CODEC.fieldOf("ring").forGetter(RingFillGate::ring),
-            DensityFunction.HOLDER_HELPER_CODEC.fieldOf("argument").forGetter(RingFillGate::argument)
+            DensityFunction.HOLDER_HELPER_CODEC.fieldOf("argument").forGetter(RingFillGate::argument),
+            RingGate.MIX_CODEC.optionalFieldOf("mix", 1.0).forGetter(RingFillGate::mix)
     ).apply(instance, RingFillGate::new));
 
     public static final KeyDispatchDataCodec<RingFillGate> CODEC = KeyDispatchDataCodec.of(MAP_CODEC);
 
     private static final ThreadLocal<Fill> FILL = new ThreadLocal<>();
+
+    /** A gate over the ring's whole outer zone. */
+    public RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunction argument) {
+        this(dimension, ring, argument, 1.0);
+    }
 
     /** Runs {@code build} (creating the noise chunk of the chunk at block {@code minX}, {@code minZ}) in fill mode. */
     public static <T> T duringFill(int minX, int minZ, Supplier<T> build) {
@@ -60,13 +67,13 @@ public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunct
     @Override
     public double compute(FunctionContext context) {
         Fill fill = FILL.get();
-        return fill == null || fill.reaches(dimension, ring) ? argument.compute(context) : 0.0;
+        return fill == null || fill.reaches(dimension, ring, mix) ? argument.compute(context) : 0.0;
     }
 
     @Override
     public void fillArray(double[] array, ContextProvider contextProvider) {
         Fill fill = FILL.get();
-        if (fill == null || fill.reaches(dimension, ring)) {
+        if (fill == null || fill.reaches(dimension, ring, mix)) {
             argument.fillArray(array, contextProvider);
         } else {
             Arrays.fill(array, 0.0);
@@ -75,7 +82,7 @@ public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunct
 
     @Override
     public DensityFunction mapAll(Visitor visitor) {
-        return visitor.apply(new RingFillGate(dimension, ring, argument.mapAll(visitor)));
+        return visitor.apply(new RingFillGate(dimension, ring, argument.mapAll(visitor), mix));
     }
 
     @Override
@@ -96,38 +103,43 @@ public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunct
     /**
      * One chunk's fill: per ring whether it reaches the chunk, decided once. A fill builds one noise chunk, so all its
      * gates belong to one dimension: the first to ask (39f). A gate of another dimension (never seen) is decided
-     * without remembering, so it can never read a wrong decision.
+     * without remembering, so it can never read a wrong decision. Likewise one mix share per ring (all blends of a
+     * dimension mix a boundary alike): the first asked is remembered, another one is decided without remembering.
      */
     private static final class Fill {
         private final int minX;
         private final int minZ;
         private ResourceKey<Level> dimension;
         private final byte[] reach = new byte[Ring.values().length];
+        private final double[] shares = new double[Ring.values().length];
 
         Fill(int minX, int minZ) {
             this.minX = minX;
             this.minZ = minZ;
         }
 
-        boolean reaches(ResourceKey<Level> dimension, Ring ring) {
+        boolean reaches(ResourceKey<Level> dimension, Ring ring, double mix) {
             if (this.dimension == null) {
                 this.dimension = dimension;
             } else if (this.dimension != dimension) {
-                return anyPointReaches(dimension, ring);
+                return anyPointReaches(dimension, ring, mix);
             }
             byte known = reach[ring.ordinal()];
             if (known == 0) {
-                known = anyPointReaches(dimension, ring) ? (byte) 1 : (byte) -1;
+                known = anyPointReaches(dimension, ring, mix) ? (byte) 1 : (byte) -1;
                 reach[ring.ordinal()] = known;
+                shares[ring.ordinal()] = mix;
+            } else if (shares[ring.ordinal()] != mix) {
+                return anyPointReaches(dimension, ring, mix);
             }
             return known > 0;
         }
 
         /** The flat-cache points of the chunk: every 4 blocks, including the far edge (5 × 5). */
-        private boolean anyPointReaches(ResourceKey<Level> dimension, Ring ring) {
+        private boolean anyPointReaches(ResourceKey<Level> dimension, Ring ring, double mix) {
             for (int i = 0; i <= 16; i += 4) {
                 for (int j = 0; j <= 16; j += 4) {
-                    if (RingColumnCache.reaches(dimension, ring, minX + i, minZ + j, MARGIN)) {
+                    if (RingColumnCache.reaches(dimension, ring, minX + i, minZ + j, MARGIN, mix)) {
                         return true;
                     }
                 }

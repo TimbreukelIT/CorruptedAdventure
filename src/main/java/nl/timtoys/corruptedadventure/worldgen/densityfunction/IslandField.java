@@ -616,8 +616,8 @@ public final class IslandField implements DensityFunction {
     }
 
     /**
-     * Per block: +1 inside an island, −1 in a carved opening (a spring, a peat sinkhole's bowl), 0 elsewhere (the
-     * terrain decides). The base terrain is only computed for columns inside a sinkhole's disc.
+     * Per block: +1 inside an island, −1 in a carved opening (a spring, a peat sinkhole's bowl), the exact surface in
+     * the bands of the cliff 3→4 and of the fjords' walls ({@link #withFjordBand}), 0 elsewhere (the terrain decides).
      */
     double thin(int x, int y, int z) {
         Column c = columns.get(x, z, IslandField::reset);
@@ -635,7 +635,61 @@ public final class IslandField implements DensityFunction {
                 return wall(c, x, y, z);
             }
         }
+        if (thin == 0.0 && c.fjordEdge) {
+            if (c.bandLo == Integer.MIN_VALUE) {
+                c = withFjordBand(x, z);
+            }
+            if (y >= c.bandLo && y <= c.bandHi) {
+                return y < c.surface ? 1.0 : -1.0;
+            }
+        }
         return thin;
+    }
+
+    /**
+     * A fjord's wall and rim per block (heuvelfix 2b, Q6): the height kinks there within one cell, so the 4-block grid's
+     * bilinear surface misses it by up to 7 blocks in a sawtooth. From a block under the lower of the exact and the
+     * bilinear surface to a block over the higher one, the exact surface decides; around it the stack agrees. Not
+     * where a hole, a lake or its cave band lies (their rims are measured on the grid), nor where another ring's density
+     * mixes in (a transition zone, but not the zone 3→4 beyond {@link #VERDANT_EDGE_SHARE}: pure ring 4 there). Returns
+     * the column with its band ({@code bandLo > bandHi}: none).
+     */
+    private Column withFjordBand(int x, int z) {
+        Column c = columns.get(x, z, IslandField::reset);
+        ensureIslands(c);
+        double exact = c.surface;
+        boolean banded = c.lakeTop == Integer.MIN_VALUE && c.caveLiftFrom > c.caveLiftTo && c.islandHole == 0.0
+                && pureRing4(layout.get().sampleOverworld(x, z));
+        double bilinear = banded ? gridSurface(x, z) : exact;
+        // The corners may have moved the table's window: the same column again (recomputed if so).
+        c = columns.get(x, z, IslandField::reset);
+        ensureIslands(c);
+        c.bandLo = banded ? Mth.floor(Math.min(exact, bilinear)) - 1 : Integer.MAX_VALUE;
+        c.bandHi = banded ? Mth.ceil(Math.max(exact, bilinear)) + 1 : Integer.MIN_VALUE;
+        return c;
+    }
+
+    /** Whether ring 4's density stands alone at a position (ring 4 itself, or the zone 3→4 past ring 3's mix share). */
+    private static boolean pureRing4(nl.timtoys.corruptedadventure.ring.RingPosition position) {
+        if (!position.inTransition()) {
+            return position.ring() == nl.timtoys.corruptedadventure.ring.Ring.RING_4;
+        }
+        return position.inner() == nl.timtoys.corruptedadventure.ring.Ring.RING_3 && position.blend() >= VERDANT_EDGE_SHARE;
+    }
+
+    /** The surface as the stack's interpolation shows it: the bilinear blend of the 4-block grid's corners around (x, z). */
+    double gridSurface(int x, int z) {
+        int cx = x & ~3;
+        int cz = z & ~3;
+        double tx = (x - cx) / 4.0;
+        double tz = (z - cz) / 4.0;
+        double s00 = column(cx, cz).surface;
+        double s10 = column(cx + 4, cz).surface;
+        double s01 = column(cx, cz + 4).surface;
+        double s11 = column(cx + 4, cz + 4).surface;
+        double near = s00 + tx * (s10 - s00);
+        double far = s01 + tx * (s11 - s01);
+        return near + tz * (far - near);
     }
 
     /**
@@ -852,6 +906,8 @@ public final class IslandField implements DensityFunction {
             c.addIsland((int) Math.ceil(top - thickness), (int) Math.floor(top));
             c.surface = Math.min(c.surface, Ring4Sundered.ABYSS_FLOOR);
         }
+        // Only the relief's own fjord: not where the cliff, a hole, the rim or the sundering changed the surface.
+        c.fjordEdge = s.fjordEdge && c.height == s.height && c.surface == c.height;
         c.surfaceFilled = true;
     }
 
@@ -1083,6 +1139,14 @@ public final class IslandField implements DensityFunction {
         int wallTop;
         /** The floor of a peat sinkhole, cut per block ({@link #thin}); NaN outside one. */
         double sinkholeFloor;
+        /** On a fjord's wall or rim ({@link Ring4Relief.Sample#fjordEdge}): {@link #thin} may cut the surface per block. */
+        boolean fjordEdge;
+        /**
+         * The blocks where the exact surface decides ({@link #withFjordBand}); {@code bandLo} {@link Integer#MIN_VALUE}
+         * until first asked, {@code bandLo > bandHi} for none.
+         */
+        int bandLo;
+        int bandHi;
         /** The islands' solid blocks: {@link #islandCount} ranges [{@code islandLo}, {@code islandHi}] (inclusive). */
         int islandCount;
         final int[] islandLo = new int[MAX_ISLANDS];
@@ -1118,6 +1182,9 @@ public final class IslandField implements DensityFunction {
             islandHole = 0.0;
             sinkholeDisc = false;
             sinkholeFloor = Double.NaN;
+            fjordEdge = false;
+            bandLo = Integer.MIN_VALUE;
+            bandHi = Integer.MIN_VALUE;
             sundered = 0.0;
             sunderKind = Sunder.NONE;
             cliff = 0.0;
