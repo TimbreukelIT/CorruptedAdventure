@@ -75,21 +75,26 @@ public class VolcanicFieldTest {
 
     @Test
     void ring3ReadsOnlyTheWidthsOfItsOwnBoundaries() {
-        // Before change 58 the regions and the placement read the single transitionWidth for 2|3 and 3|4. Without
-        // overrides on those boundaries they must compute exactly the same, whatever the 4|5 override.
-        VolcanicField uniform = field(new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128),
-                RingLayout.noiseSeed(SEED)));
+        // The regions and the placement read the widths of 2|3 and 3|4 only: with the same widths there they must
+        // compute exactly the same, whatever the 4|5 width. Compared with the defaults with only 4|5 changed (0 = the
+        // default 128 instead of 256), since the default 3|4 is itself an override.
+        List<Integer> other45 = new ArrayList<>(CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES);
+        other45.set(3, other45.get(3) == 0 ? 256 : 0);
+        RingSettings settings = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128, other45);
+        assertTrue(settings.validate().isSuccess());
+        assertTrue(settings.transitionWidth(3) != LAYOUT.settings().transitionWidth(3));
+        VolcanicField other = field(new RingLayout(settings, RingLayout.noiseSeed(SEED)));
         for (int k = 0; k < 4000; k++) {
             double angle = k * 0.618 * 2.0 * Math.PI;
             double radius = 3200.0 + (k % 400) * 8.0;
             double x = Math.cos(angle) * radius;
             double z = Math.sin(angle) * radius;
-            assertEquals(uniform.regions(x, z), field.regions(x, z), "at " + x + ", " + z);
+            assertEquals(other.regions(x, z), field.regions(x, z), "at " + x + ", " + z);
         }
         int size = field.settings().cellSize();
         for (int i = -6200 / size - 1; i <= 6200 / size; i++) {
             for (int j = -6200 / size - 1; j <= 6200 / size; j++) {
-                assertEquals(signature(uniform.place(i, j)), signature(field.place(i, j)), "cell " + i + ", " + j);
+                assertEquals(signature(other.place(i, j)), signature(field.place(i, j)), "cell " + i + ", " + j);
             }
         }
     }

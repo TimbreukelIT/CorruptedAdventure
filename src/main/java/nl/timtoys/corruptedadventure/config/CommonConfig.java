@@ -17,8 +17,13 @@ public final class CommonConfig {
     public static final List<Integer> DEFAULT_OUTER_RADII = List.of(1500, 3500, 6000, 8000, 9700);
     /** Void edge in a fresh config (since change 58). */
     public static final int DEFAULT_VOID_OUTER_RADIUS = 10200;
-    /** Per boundary 1|2, 2|3, 3|4, 4|5, 5|void in a fresh config: only the zone 4|5 is wider (since change 58). */
-    public static final List<Integer> DEFAULT_TRANSITION_WIDTH_OVERRIDES = List.of(0, 0, 0, 256, 0);
+    /**
+     * Per boundary 1|2, 2|3, 3|4, 4|5, 5|void in a fresh config: the zones 3|4 ({@code steam_fens} plus the
+     * {@code verdant_falls} descent, since verdant_falls) and 4|5 (since change 58) are 256 wide.
+     */
+    public static final List<Integer> DEFAULT_TRANSITION_WIDTH_OVERRIDES = List.of(0, 0, 256, 256, 0);
+    /** Default of {@code transitionWidthOverrides} from change 58 until verdant_falls; moved to the new one on load. */
+    static final List<Integer> OLD_DEFAULT_TRANSITION_WIDTH_OVERRIDES = List.of(0, 0, 0, 256, 0);
 
     static final OuterBoundaries DEFAULT_BOUNDARIES = new OuterBoundaries(DEFAULT_OUTER_RADII, DEFAULT_VOID_OUTER_RADIUS);
     /**
@@ -86,6 +91,15 @@ public final class CommonConfig {
      * old ring layout. Moves exactly the old defaults to the new ones; other values are the user's choice and stay.
      */
     private static void migrate() {
+        boolean changed = migrateBoundaries();
+        // After the radii, so the validity check in migratedOverrides sees the radii new worlds will get.
+        changed |= migrateTransitionWidthOverrides();
+        if (changed) {
+            SPEC.save();
+        }
+    }
+
+    private static boolean migrateBoundaries() {
         OuterBoundaries current = new OuterBoundaries(radii(), VOID_OUTER_RADIUS.get());
         OuterBoundaries migrated = migrated(current);
         if (!migrated.equals(current)) {
@@ -93,18 +107,55 @@ public final class CommonConfig {
                 RING_OUTER_RADII.get(i).set(migrated.ringOuterRadii().get(i));
             }
             VOID_OUTER_RADIUS.set(migrated.voidOuterRadius());
-            SPEC.save();
             CorruptedAdventure.LOGGER.info("Moved the ring radii in the common config from the old defaults {} to {}",
                     current, migrated);
-        } else if (!current.equals(DEFAULT_BOUNDARIES)) {
+            return true;
+        }
+        if (!current.equals(DEFAULT_BOUNDARIES)) {
             CorruptedAdventure.LOGGER.warn("The common config sets ring radii {} instead of the defaults {}; new worlds use them",
                     current, DEFAULT_BOUNDARIES);
         }
+        return false;
+    }
+
+    private static boolean migrateTransitionWidthOverrides() {
+        RingSettings current = ringSettings();
+        RingSettings migrated = migratedOverrides(current);
+        if (migrated != current) {
+            // A mutable copy, like the list NightConfig itself reads from the file.
+            TRANSITION_WIDTH_OVERRIDES.set(new ArrayList<>(migrated.transitionWidthOverrides()));
+            CorruptedAdventure.LOGGER.info("Moved transitionWidthOverrides in the common config from the old default {} to {}",
+                    current.transitionWidthOverrides(), migrated.transitionWidthOverrides());
+            return true;
+        }
+        if (current.transitionWidthOverrides().equals(OLD_DEFAULT_TRANSITION_WIDTH_OVERRIDES)) {
+            CorruptedAdventure.LOGGER.warn("Kept the old default transitionWidthOverrides {} in the common config: the "
+                    + "default {} does not fit the configured ring radii", current.transitionWidthOverrides(),
+                    DEFAULT_TRANSITION_WIDTH_OVERRIDES);
+        } else if (!current.transitionWidthOverrides().equals(DEFAULT_TRANSITION_WIDTH_OVERRIDES)) {
+            CorruptedAdventure.LOGGER.warn("The common config sets transitionWidthOverrides {} instead of the default {}; "
+                    + "new worlds use them", current.transitionWidthOverrides(), DEFAULT_TRANSITION_WIDTH_OVERRIDES);
+        }
+        return false;
     }
 
     /** The boundaries a config should hold: the new defaults for one of the old defaults, anything else unchanged. */
     static OuterBoundaries migrated(OuterBoundaries current) {
         return OLD_DEFAULT_BOUNDARIES.contains(current) ? DEFAULT_BOUNDARIES : current;
+    }
+
+    /**
+     * {@code current} with the new default overrides when it holds exactly the old default list, otherwise
+     * {@code current} itself. Also unchanged when the wider zone 3|4 would make the other values invalid (rings the user
+     * narrowed): a config that worked keeps working.
+     */
+    static RingSettings migratedOverrides(RingSettings current) {
+        if (!OLD_DEFAULT_TRANSITION_WIDTH_OVERRIDES.equals(current.transitionWidthOverrides())) {
+            return current;
+        }
+        RingSettings migrated = new RingSettings(current.ringOuterRadii(), current.voidOuterRadius(),
+                current.boundaryNoise(), current.defaultTransitionWidth(), DEFAULT_TRANSITION_WIDTH_OVERRIDES);
+        return migrated.validate().isSuccess() ? migrated : current;
     }
 
     /** Ring outer radii and the void edge, the values {@link #migrate} compares as one set. */

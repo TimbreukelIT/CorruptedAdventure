@@ -1,16 +1,17 @@
 # Ring 4 (overworld) for waterscan.sh: radii 6000-8000 from DEFAULT_OUTER_RADII (CommonConfig: 1500, 3500, 6000,
 # 8000, 9700). Chunk coordinates, inclusive; seed 20260930, default ring radii.
 # r4*: interior of ring 4 at radius 7000 (chunk 437), one area per direction, 9 x 9 chunks.
-# b34*: boundary 3|4 at radius 6000 (chunk 375), 9 x 9 chunks centred on the line.
+# b34*: boundary 3|4 at radius 6000 (chunk 375): the whole 256-wide zone (steam_fens + verdant_falls) plus the
+# boundary noise (±96), radius 5776-6224 = chunks 361-389 across (29), 9 along.
 # b45*: boundary 4|5 at radius 8000 (chunk 500), 9 x 9 chunks centred on the line.
 r4e 433 -4 441 4
 r4n -4 433 4 441
 r4w -441 -4 -433 4
 r4s -4 -441 4 -433
-b34e 371 -4 379 4
-b34n -4 371 4 379
-b34w -379 -4 -371 4
-b34s -4 -379 4 -371
+b34e 361 -4 389 4
+b34n -4 361 4 389
+b34w -389 -4 -361 4
+b34s -4 -389 4 -361
 b45e 496 -4 504 4
 b45n -4 496 4 504
 b45w -504 -4 -496 4

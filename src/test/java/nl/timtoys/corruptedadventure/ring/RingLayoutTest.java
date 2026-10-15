@@ -190,22 +190,23 @@ class RingLayoutTest {
     }
 
     @Test
-    void zoneFourFiveIs256WideInTheOverworldAndTheOthers128() {
+    void zonesThreeFourAndFourFiveAre256WideInTheOverworldAndTheOthers128() {
         // Measured on the effective distance, where each zone is exactly its width wide.
         for (int boundary = 0; boundary < RADII.size(); boundary++) {
             int radius = RADII.get(boundary);
-            int half = boundary == 3 ? 128 : 64;
+            int half = boundary == 2 || boundary == 3 ? 128 : 64;
             assertFalse(layout.positionAt(radius - half - 0.01).inTransition(), "boundary " + boundary);
             assertEquals(0.0, layout.positionAt(radius - half).blend(), 1e-9, "boundary " + boundary);
             assertEquals(0.5, layout.positionAt(radius).blend(), 1e-9, "boundary " + boundary);
             assertTrue(layout.positionAt(radius + half - 0.01).inTransition(), "boundary " + boundary);
             assertFalse(layout.positionAt(radius + half).inTransition(), "boundary " + boundary);
         }
+        assertEquals(256, DEFAULTS.transitionWidth(2));
         assertEquals(256, DEFAULTS.transitionWidth(3));
     }
 
     @Test
-    void zoneFourFiveIs64WideInTheNether() {
+    void zonesThreeFourAndFourFiveAre64WideInTheNether() {
         // Without boundary noise the effective distance is the plain radius, so the zone can be measured along a ray.
         RingLayout flat = new RingLayout(new RingSettings(RADII, 10200, 0, 128, DEFAULTS.transitionWidthOverrides()), SEED);
         double centre = 8000 / 4.0;
@@ -213,11 +214,16 @@ class RingLayoutTest {
         assertTrue(flat.sample(Level.NETHER, centre - 32, 0).inTransition());
         assertTrue(flat.sample(Level.NETHER, centre + 31.99, 0).inTransition());
         assertFalse(flat.sample(Level.NETHER, centre + 32, 0).inTransition());
-        // Boundary 3|4 stays 128 / 4 = 32 wide.
+        // Boundary 3|4 is 256 / 4 = 64 wide as well; 2|3 stays 128 / 4 = 32.
         double three = 6000 / 4.0;
-        assertFalse(flat.sample(Level.NETHER, three - 16.01, 0).inTransition());
-        assertTrue(flat.sample(Level.NETHER, three - 16, 0).inTransition());
-        assertFalse(flat.sample(Level.NETHER, three + 16, 0).inTransition());
+        assertFalse(flat.sample(Level.NETHER, three - 32.01, 0).inTransition());
+        assertTrue(flat.sample(Level.NETHER, three - 32, 0).inTransition());
+        assertTrue(flat.sample(Level.NETHER, three + 31.99, 0).inTransition());
+        assertFalse(flat.sample(Level.NETHER, three + 32, 0).inTransition());
+        double two = 3500 / 4.0;
+        assertFalse(flat.sample(Level.NETHER, two - 16.01, 0).inTransition());
+        assertTrue(flat.sample(Level.NETHER, two - 16, 0).inTransition());
+        assertFalse(flat.sample(Level.NETHER, two + 16, 0).inTransition());
     }
 
     @Test
@@ -227,8 +233,9 @@ class RingLayoutTest {
         double half = 64.0;
         for (double distance = 0; distance < 11_000; distance += 0.25) {
             RingPosition expected = oldPositionAt(distance, half);
+            boolean nearThreeFour = distance >= 6000 - 128 && distance < 6000 + 128;
             boolean nearFourFive = distance >= 8000 - 128 && distance < 8000 + 128;
-            if (!nearFourFive) {
+            if (!nearThreeFour && !nearFourFive) {
                 assertEquals(expected, layout.positionAt(distance), "at " + distance);
             }
             assertEquals(expected, uniform.positionAt(distance), "at " + distance);
@@ -237,13 +244,18 @@ class RingLayoutTest {
             for (double distance = 0; distance < 11_000; distance += 7.5) {
                 boolean old = oldReaches(ring, distance, 20.0, half);
                 assertEquals(old, uniform.reaches(ring, distance, 20.0), ring + " at " + distance);
-                boolean touchesFourFive = ring == Ring.RING_4 || ring == Ring.RING_5;
-                if (!touchesFourFive) {
+                boolean touchesWideZone = ring == Ring.RING_3 || ring == Ring.RING_4 || ring == Ring.RING_5;
+                if (!touchesWideZone) {
                     assertEquals(old, layout.reaches(ring, distance, 20.0), ring + " at " + distance);
                 }
             }
         }
-        // 4|5 reaches further: ring 4 up to 8000 + 128 + margin, ring 5 down to 8000 - 128 - margin.
+        // 3|4 and 4|5 reach further: ring 3 up to 6000 + 128 + margin, ring 4 down to 6000 - 128 - margin and up to
+        // 8000 + 128 + margin, ring 5 down to 8000 - 128 - margin.
+        assertTrue(layout.reaches(Ring.RING_3, 6000 + 128 + 19.0, 20.0));
+        assertFalse(uniform.reaches(Ring.RING_3, 6000 + 128 + 19.0, 20.0));
+        assertTrue(layout.reaches(Ring.RING_4, 6000 - 128 - 19.0, 20.0));
+        assertFalse(uniform.reaches(Ring.RING_4, 6000 - 128 - 19.0, 20.0));
         assertTrue(layout.reaches(Ring.RING_4, 8000 + 128 + 19.0, 20.0));
         assertFalse(uniform.reaches(Ring.RING_4, 8000 + 128 + 19.0, 20.0));
         assertTrue(layout.reaches(Ring.RING_5, 8000 - 128 - 19.0, 20.0));

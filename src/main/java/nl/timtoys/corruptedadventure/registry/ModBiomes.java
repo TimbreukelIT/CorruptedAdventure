@@ -55,6 +55,11 @@ public final class ModBiomes {
     public static final ResourceKey<Biome> WITHERED_GARDENS = key("withered_gardens");
     /** Transition biome of boundary 4 (ring 4 | ring 5). */
     public static final ResourceKey<Biome> SUNDERED_REACH = key("sundered_reach");
+    /**
+     * Second transition biome of boundary 3 (ring 3 | ring 4): the descent outside the {@code steam_fens} strip
+     * ({@code transition_splits.ring_3}; docs/plans/ring-4/verdant-falls.md). Key only until W-biomes adds the biome.
+     */
+    public static final ResourceKey<Biome> VERDANT_FALLS = key("verdant_falls");
 
     // Nether ring 4 (NetherRing4Biomes, 65). Keys only until then.
     public static final ResourceKey<Biome> BONE_DUNES = key("bone_dunes");

@@ -36,8 +36,9 @@ class Ring4CliffTest {
     @Test
     void theLineStandsAtTheOuterEdgeOfTheZoneOnRing4sSide() {
         double line = Ring4Cliff.lineRadius(LAYOUT);
-        assertEquals(6000.0 + 64.0 * 0.8, line, 1e-9);
-        assertEquals(6000.0 - 64.0, Ring4Cliff.zoneStart(LAYOUT), 1e-9);
+        // Zone 3|4 is 256 wide by default (verdant_falls), so its half is 128.
+        assertEquals(6000.0 + 128.0 * 0.8, line, 1e-9);
+        assertEquals(6000.0 - 128.0, Ring4Cliff.zoneStart(LAYOUT), 1e-9);
         for (double angle = 0.0; angle < 2.0 * Math.PI; angle += 0.3) {
             int[] p = at(angle, 0.0);
             assertEquals(Ring.RING_4, LAYOUT.sampleOverworld(p[0], p[1]).ring(), "the wall lies in ring 4's half");

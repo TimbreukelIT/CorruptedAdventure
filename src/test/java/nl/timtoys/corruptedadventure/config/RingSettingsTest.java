@@ -32,10 +32,10 @@ class RingSettingsTest {
     @Test
     void roundTripWritesAndKeepsTheOverrides() {
         JsonElement json = RingSettings.CODEC.encodeStart(JsonOps.INSTANCE, DEFAULTS).getOrThrow();
-        assertEquals(JsonParser.parseString("[0, 0, 0, 256, 0]"), json.getAsJsonObject().get("transition_width_overrides"));
+        assertEquals(JsonParser.parseString("[0, 0, 256, 256, 0]"), json.getAsJsonObject().get("transition_width_overrides"));
         RingSettings decoded = RingSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
         assertEquals(DEFAULTS, decoded);
-        assertEquals(List.of(128, 128, 128, 256, 128),
+        assertEquals(List.of(128, 128, 256, 256, 128),
                 List.of(decoded.transitionWidth(0), decoded.transitionWidth(1), decoded.transitionWidth(2),
                         decoded.transitionWidth(3), decoded.transitionWidth(4)));
     }
