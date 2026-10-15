@@ -40,6 +40,11 @@ final class VerdantBasins {
     private static final double LAKE_SWING = 0.3;
     private static final double REGION_SCALE = 0.12;
     private static final double SPUR_CHANCE = 0.5;
+    /**
+     * A lake this long (half length, blocks) or longer may have a spur. A lake stays in its stream's own range (~±24),
+     * so its half length is at most ~20.
+     */
+    private static final double SPUR_HALF = 16.0;
     /** How far (blocks along s) a column looks for streams: the widest lake reaches 35 from its stream. */
     private static final double REACH = 46.0;
     /** The banks of pools and gullies rise this many blocks per block (rounded, steeper than the risers). */
@@ -150,11 +155,13 @@ final class VerdantBasins {
         double threshold = 6.0 + 4.0 * CellShapes.unit(h, 9);
         double lakeDepth = 2.0 + 3.0 * CellShapes.unit(h, 10);
         double spur = Double.NaN;
-        if (lake && half >= 22.0 && CellShapes.unit(h, 11) < SPUR_CHANCE) {
-            double side = CellShapes.unit(h, 12) < 0.5 ? -1.0 : 1.0;
-            double at = centre + side * (half - 8.0);
+        if (lake && half >= SPUR_HALF && CellShapes.unit(h, 11) < SPUR_CHANCE) {
+            // At the lake's far end from the main outlet (a coin where the outlet is at the middle).
             double period = VerdantDescent.perimeter(field.ringLayout());
-            if (RingArc.loopDistance(at, exit, period) >= 12.0) {
+            double offset = RingArc.loopDelta(centre, exit, period);
+            double side = Math.abs(offset) > 1.0 ? Math.signum(offset) : CellShapes.unit(h, 12) < 0.5 ? -1.0 : 1.0;
+            double at = centre + side * (half - 5.0);
+            if (RingArc.loopDistance(at, exit, period) >= 10.0) {
                 spur = at;
             }
         }
