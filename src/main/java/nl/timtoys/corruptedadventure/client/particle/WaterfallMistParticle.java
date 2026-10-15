@@ -12,15 +12,20 @@ import net.minecraft.util.Mth;
 
 /**
  * Fine spray hanging in the air of {@code verdant_falls} ({@code corruptedadventure:waterfall_mist}, its biome particle):
- * a tiny, faint droplet cloud that drifts sideways, sinks a little, swells slightly and fades. Light sprites
- * ({@code waterfall_mist_0..3}, stream T) tinted white with a light blue hint. A biome particle comes without speed, so the drift is its own.
+ * a tiny, faint droplet cloud that starts small, drifts sideways, rises slowly, swells a little and fades. Soft sprites
+ * ({@code waterfall_mist_0..3}: round blobs with an alpha fall-off, white with a light blue rim) on the translucent sheet,
+ * so the edge blends instead of showing pixels. A biome particle comes without speed, so the drift is its own.
  */
 public final class WaterfallMistParticle extends TextureSheetParticle {
-    /** White with a light blue hint (V-T4 A: the sprites are untinted light grey/white). */
-    private static final int MIST = 0xEAF4FF;
-    /** Sideways drift per tick, and the slow sink. */
+    /** Near white: the sprites carry the light blue themselves (polish round "mist"). */
+    private static final int MIST = 0xF2F8FF;
+    /** Sideways drift per tick, and the start of the slow rise. */
     private static final double DRIFT = 0.006;
-    private static final double SINK = 0.002;
+    private static final double RISE = 0.002;
+    /** Negative gravity: a steady lift of 0.00016 a tick, which friction 0.98 caps at ~0.008 a tick (0.16 blocks/s). */
+    private static final float LIFT = -0.004F;
+    /** Never more than this opaque; the sprite's own fall-off thins the rim further. */
+    private static final float MAX_ALPHA = 0.6F;
 
     private final float startSize;
 
@@ -28,13 +33,14 @@ public final class WaterfallMistParticle extends TextureSheetParticle {
         // The four-argument constructor: the seven-argument one adds vanilla's random spread to the speed.
         super(level, x, y, z);
         this.xd = xd + (random.nextDouble() - 0.5) * 2 * DRIFT;
-        this.yd = yd - SINK;
+        this.yd = yd + RISE;
         this.zd = zd + (random.nextDouble() - 0.5) * 2 * DRIFT;
-        this.gravity = 0.0F;
+        this.gravity = LIFT;
         this.friction = 0.98F;
         this.hasPhysics = true;
-        this.lifetime = 50 + random.nextInt(51);
-        this.quadSize *= 0.35F + random.nextFloat() * 0.35F;
+        this.lifetime = 40 + random.nextInt(41);
+        // Small: vanilla's 0.1..0.2 half-size times 0.2..0.4, so 0.04..0.16 of a block across at the start.
+        this.quadSize *= 0.2F + random.nextFloat() * 0.2F;
         this.startSize = quadSize;
         float shade = 0.92F + random.nextFloat() * 0.08F;
         setColor((MIST >> 16 & 0xFF) / 255.0F * shade, (MIST >> 8 & 0xFF) / 255.0F * shade, (MIST & 0xFF) / 255.0F * shade);
@@ -49,9 +55,9 @@ public final class WaterfallMistParticle extends TextureSheetParticle {
             return;
         }
         float life = age / (float) lifetime;
-        quadSize = startSize * (1.0F + life * 0.6F);
-        // Faint: fades in, hangs, thins out; never more than half opaque.
-        alpha = Mth.clamp(Math.min(life * 4.0F, (1.0F - life) * 2.0F), 0.0F, 0.45F);
+        quadSize = startSize * (1.0F + life * 0.4F);
+        // Faint: fades in quickly, then thins out over the larger part of its life.
+        alpha = MAX_ALPHA * Mth.clamp(Math.min(life * 6.0F, (1.0F - life) * 1.6F), 0.0F, 1.0F);
     }
 
     @Override
