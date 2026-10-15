@@ -189,26 +189,33 @@ class VerdantDescentTest {
         assertTrue(p10 >= 24.0 && p90 <= 50.0 && median >= 28.0 && median <= 45.0, "drop p10 " + p10 + ", median " + median + ", p90 " + p90);
     }
 
-    /** Across the seam of the angle (x < 0, z = 0) the descent runs on: same profile, ground without a step. */
+    /**
+     * Across the seam of the angle (x < 0, z = 0) and across the arc's own seam, where s wraps from the perimeter to 0
+     * (x > 0, z = 0), the descent runs on: same profile, ground without a step.
+     */
     @Test
     void theDescentRunsOnAcrossTheSeam() {
-        for (double u = 64.0; u < 250.0; u += 3.0) {
-            double[] p = VerdantDescent.onRay(LAYOUT, Math.PI, VerdantDescent.zoneStart(LAYOUT) + u);
-            int x = (int) Math.floor(p[0]);
-            // The treads (without the basins, which may lie on one side only): across the seam they change no more than
-            // over the same distance on either side of it.
-            double[] h = new double[4];
-            for (int i = 0; i < 4; i++) {
-                h[i] = DESCENT.locate(x, -3 + 2 * i, new VerdantDescent.Point()).treads;
+        for (double angle : new double[]{Math.PI, 0.0}) {
+            for (double u = 64.0; u < 250.0; u += 3.0) {
+                double[] p = VerdantDescent.onRay(LAYOUT, angle, VerdantDescent.zoneStart(LAYOUT) + u);
+                int x = (int) Math.floor(p[0]);
+                // The treads (without the basins, which may lie on one side only): across the seam they change no more
+                // than over the same distance on either side of it.
+                double[] h = new double[4];
+                for (int i = 0; i < 4; i++) {
+                    h[i] = DESCENT.locate(x, -3 + 2 * i, new VerdantDescent.Point()).treads;
+                }
+                double across = Math.abs(h[2] - h[1]);
+                assertTrue(across <= Math.max(Math.abs(h[1] - h[0]), Math.abs(h[3] - h[2])) + 0.75,
+                        "ground across the seam at x " + x + ": " + java.util.Arrays.toString(h));
             }
-            double across = Math.abs(h[2] - h[1]);
-            assertTrue(across <= Math.max(Math.abs(h[1] - h[0]), Math.abs(h[3] - h[2])) + 0.75,
-                    "ground across the seam at x " + x + ": " + java.util.Arrays.toString(h));
         }
         double period = VerdantDescent.perimeter(LAYOUT);
-        double s1 = RingArc.arc(-6100.0, 0.5, VerdantDescent.midRadius(LAYOUT));
-        double s2 = RingArc.arc(-6100.0, -0.5, VerdantDescent.midRadius(LAYOUT));
-        assertTrue(RingArc.loopDistance(s1, s2, period) < 1.0, "s " + s1 + " / " + s2);
+        double radius = VerdantDescent.midRadius(LAYOUT);
+        assertTrue(RingArc.loopDistance(RingArc.arc(-6100.0, 0.5, radius), RingArc.arc(-6100.0, -0.5, radius), period) < 1.0);
+        double s1 = RingArc.arc(6100.0, 0.5, radius);
+        double s2 = RingArc.arc(6100.0, -0.5, radius);
+        assertTrue(s1 < 1.0 && s2 > period - 1.0 && RingArc.loopDistance(s1, s2, period) < 1.0, "s " + s1 + " / " + s2);
     }
 
     @Test

@@ -18,7 +18,7 @@ import nl.timtoys.corruptedadventure.ring.RingLayout;
  *   sampled every {@link #GRID} blocks along s, smoothed, clamped to {@link #RIM_MIN}–{@link #RIM_MAX}, remembered per
  *   world);</li>
  *   <li>the descent: a ramp {@code R} from {@code T} down to {@link #BANK_TOP} (narrow steps above, wide below:
- *   v · (1 + c (1 − v)), c about 0.3), its stair lines bent by a slow wave, stepped by {@link Ring4Relief#terrace} (treads of 8
+ *   v · (1 + c (1 − v)), c about 0.25), its stair lines bent by a slow wave, stepped by {@link Ring4Relief#terrace} (treads of 8
  *   on the levels 64 + 8k, 60 % tread / 40 % riser with a rounded edge and foot, Q5);</li>
  *   <li>the foot river: bed at {@link #RIVER_BED}, banks of {@link #RIVER_SLOPE} like ring 4's rivers, meandering along
  *   s; beyond it the ground blends to ring 4's own terrain ({@link Ring4Relief}) at the zone's outer edge, so ring 4's

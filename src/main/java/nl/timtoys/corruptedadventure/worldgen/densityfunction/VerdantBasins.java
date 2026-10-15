@@ -70,8 +70,8 @@ final class VerdantBasins {
 
     /**
      * A stream: its index (in [0, count)), position along the loop, the range of the loop it owns (half way to the
-     * next cells' nominal positions; its lakes stay inside, 8 blocks apart at least), its top body (the highest tread
-     * with a full riser above it everywhere near) and its stretch's chance of a lake per tread.
+     * next cells' nominal positions; its lakes stay inside, 8 blocks apart less their shores' wobble), its top body (the
+     * highest tread with a full riser above it everywhere near) and its stretch's chance of a lake per tread.
      */
     record Stream(int index, double at, double low, double high, int top, double lakeChance) {
     }
