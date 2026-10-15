@@ -177,9 +177,11 @@ def verdant_falls():
     bed = seq(cond(CLAY_PATCHES, block("clay")), cond(GRAVEL_PATCHES, put("gravel")), put("sand"))
     wall_top = seq(cond(MOSS_PATCHES, block("moss_block")), cond(MOSSY_STONE, block("mossy_cobblestone")), block("stone"))
     wall = seq(cond(TOP, seq(cond(DRY_TOP, wall_top), bed)), cond(DEPTH, block("stone")))
-    # The exact walls of the gorges: every block of the face (not only under a floor), speckled into patches.
+    # The exact walls of the gorges: every block of the face (not only under a floor), speckled into patches; the rest
+    # of the surface depth stone (else it would fall through to the treads' dirt where the slope stays under SLOPE_ROCK).
     wall_face = seq(cond(MOSSY_WALL, cond(speckle("a"), cond(speckle("b"), block("mossy_cobblestone")))),
-                    cond(ANDESITE_WALL, cond(speckle("c"), cond(speckle("d"), block("andesite")))))
+                    cond(ANDESITE_WALL, cond(speckle("c"), cond(speckle("d"), block("andesite")))),
+                    cond(DEPTH, block("stone")))
     return seq(
         cond(RIM, seq(cond(TOP, seq(cond(DRY_TOP, calcite), cond(RIM_WET, calcite))),
                       cond(RIM_DEPTH, cond(DRY_DEPTH, face)))),

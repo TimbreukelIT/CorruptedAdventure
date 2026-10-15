@@ -272,6 +272,13 @@ class Ring4BiomesTest {
         JsonObject cliff = falls.get(1).getAsJsonObject();
         assertEquals("corruptedadventure:ring_4/overworld/cliff", cliff.getAsJsonObject("if_true").get("density_function").getAsString());
         assertTrue(cliff.toString().contains("\"minecraft:stone\""), "stone on the walls");
+        // The wall's surface depth ends in stone (else a wall where the slope stays under the slope rules got the treads' dirt).
+        JsonArray cliffRules = cliff.getAsJsonObject("then_run").getAsJsonArray("sequence");
+        JsonArray face = cliffRules.get(cliffRules.size() - 1).getAsJsonObject().getAsJsonArray("sequence");
+        JsonObject faceDepth = face.get(face.size() - 1).getAsJsonObject();
+        assertEquals("minecraft:stone_depth", faceDepth.getAsJsonObject("if_true").get("type").getAsString());
+        assertTrue(faceDepth.getAsJsonObject("if_true").get("add_surface_depth").getAsBoolean(), "the wall's surface depth");
+        assertEquals("minecraft:stone", blockName(faceDepth.getAsJsonObject("then_run")), "stone through the wall's surface depth");
         assertTrue(floorRule(branches.get(id(ModBiomes.VERDANT_FALLS)), false).toString().contains("\"minecraft:moss_block\""), "moss on the treads");
     }
 
