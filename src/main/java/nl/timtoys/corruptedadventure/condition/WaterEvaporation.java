@@ -19,7 +19,9 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Change 44: water placed in ring 3 of the overworld under the open sky evaporates at once, with vanilla's Nether
- * effect (fizz and large smoke). Underground and under a roof water behaves normally; outside ring 3 nothing changes.
+ * effect (fizz and large smoke). Underground and under a roof water behaves normally; outside ring 3 nothing changes,
+ * and neither does it in an evaporation refuge ({@code #evaporation_refuges}, the ring 3 part of {@code verdant_falls};
+ * {@link HeatZone#exposed}).
  * <p>
  * One hook for every route: NeoForge's {@link BlockEvent.NeighborNotifyEvent}, which fires on the server whenever a
  * block is set with neighbour updates. A new water source or a newly waterlogged block there is dried before its

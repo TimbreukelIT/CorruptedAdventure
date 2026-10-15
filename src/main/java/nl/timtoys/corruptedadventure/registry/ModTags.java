@@ -163,6 +163,12 @@ public final class ModTags {
         public static final TagKey<Biome> HEAT_PEAKS = TagKey.create(Registries.BIOME, CorruptedAdventure.id("heat_peaks"));
         /** Biomes where the heat meter falls ({@code dormant_caldera}). */
         public static final TagKey<Biome> HEAT_REFUGES = TagKey.create(Registries.BIOME, CorruptedAdventure.id("heat_refuges"));
+        /**
+         * Biomes in the heat zone where placed water does not evaporate and a wet sponge does not dry ({@code HeatZone};
+         * the ring 3 part of {@code verdant_falls}, filled by W-biomes). Separate from {@link #HEAT_REFUGES}: the dormant
+         * caldera cools but stays dry (user decision 2026-10-15).
+         */
+        public static final TagKey<Biome> EVAPORATION_REFUGES = TagKey.create(Registries.BIOME, CorruptedAdventure.id("evaporation_refuges"));
 
         // ring 3 — conditions g2
         /**

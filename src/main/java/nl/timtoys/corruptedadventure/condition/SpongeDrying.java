@@ -10,7 +10,8 @@ import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Package 55b: a wet sponge placed where water evaporates (under the open sky in ring 3, {@link HeatZone#exposed})
+ * Package 55b: a wet sponge placed where water evaporates (under the open sky in ring 3, outside the evaporation
+ * refuges, {@link HeatZone#exposed})
  * dries at once, with the Nether's effect. Asked by {@code WetSpongeBlockDryMixin} from {@code WetSpongeBlock#onPlace},
  * the method vanilla dries it in for the Nether, so every route of placing counts: a player, a dispenser,
  * {@code /setblock}.

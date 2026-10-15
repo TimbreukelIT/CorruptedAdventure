@@ -1,9 +1,12 @@
 package nl.timtoys.corruptedadventure.condition;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
+import nl.timtoys.corruptedadventure.registry.ModTags;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingWorld;
 
@@ -16,11 +19,20 @@ final class HeatZone {
     }
 
     /**
-     * Under the open sky in the zone: where water evaporates and a wet sponge dries. The cheap block checks come
-     * first; the ring is sampled last.
+     * Under the open sky in the zone and not in an evaporation refuge: where water evaporates and a wet sponge dries.
+     * The cheap block checks come first, then the ring, the biome last (only for water that would evaporate).
      */
     static boolean exposed(ServerLevel level, BlockPos pos) {
-        return underOpenSky(level, pos) && contains(level, pos);
+        return underOpenSky(level, pos) && contains(level, pos) && !isEvaporationRefuge(level.getBiome(pos));
+    }
+
+    /**
+     * {@code #evaporation_refuges} (the ring 3 part of {@code verdant_falls}): placed water stays. Not
+     * {@code #heat_refuges}: the dormant caldera cools the player and keeps ice, but water still evaporates there
+     * (user decision 2026-10-15).
+     */
+    static boolean isEvaporationRefuge(Holder<Biome> biome) {
+        return biome.is(ModTags.Biomes.EVAPORATION_REFUGES);
     }
 
     /**
