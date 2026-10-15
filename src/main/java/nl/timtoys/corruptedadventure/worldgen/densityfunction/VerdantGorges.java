@@ -563,12 +563,9 @@ final class VerdantGorges {
             arcs[i] = arcs[i - 1] + Math.hypot(radius * Math.cos(mid), depth * Math.sin(mid)) * dphi;
         }
         double[] lobes = lobes(k, arcs[ARC_STEPS]);
-        // The reach along the loop: the widest wall line with its collar, at the zone's outer radius.
-        double alcoves = 0.0;
-        for (int i = 0; i < lobes.length; i += 3) {
-            alcoves += Math.max(0.0, lobes[i + 1]);
-        }
-        double reach = (radius + 0.07 * radius + 3.0 + Math.min(alcoves, ALCOVE_MIN + ALCOVE_SPAN) + FLAT + BLEND + 6.0) * 1.06;
+        // The reach along the loop: the widest wall line with its collar, at the zone's outer radius. The lobes fade out
+        // towards the arc's ends, so across the axis an alcove stays within the wobble's margin.
+        double reach = (radius + 0.07 * radius + 3.0 + FLAT + BLEND + 6.0) * 1.06;
         // The outlet gully: the arms pinch over 3/4 of their narrowing, ending before the foot river where there is room.
         double cx = b[0] + depth * ox;
         double cz = b[1] + depth * oz;
@@ -812,8 +809,13 @@ final class VerdantGorges {
         // to the chord between the two foot points (a steep wall seen across stays far along the axis).
         double across = g.bowl(wb) + g.wobble(t) - rho;
         double along = g.bowlAt(rho - g.wobble(t)) - wb;
-        double bowl = Double.isInfinite(along) ? across
-                : Math.abs(across) * Math.abs(along) / Math.max(1e-9, Math.hypot(across, along)) * Math.signum(across);
+        double bowl;
+        if (!Double.isInfinite(along)) {
+            bowl = Math.abs(across) * Math.abs(along) / Math.max(1e-9, Math.hypot(across, along)) * Math.signum(across);
+        } else {
+            // Beyond the bowl's half width: the arm's wall, or past where the bowl begins the distance to that point.
+            bowl = wb <= g.pinchFrom() ? across : -Math.hypot(rho - g.wobble(t) - g.radius(), wb - g.pinchFrom());
+        }
         double gully = (g.gullyHalf() + GULLY_WOBBLE * g.wobble(t) - rho) / g.gullyLean(w);
         double d = bowl - gully;
         return 0.5 * (bowl + gully + Math.sqrt(d * d + MOUTH_ROUND * MOUTH_ROUND));
