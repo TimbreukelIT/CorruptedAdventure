@@ -253,7 +253,10 @@ final class RingAquifer implements Aquifer {
         // Review 61b #2, #7 (last: it reads other columns, which may reuse the island column read above): in the band
         // around a lake above the sea the ground starts just under the terrain's interpolated surface; open space below
         // it (a cave the lift missed, a sinkhole the surface does not know) stays rock, the lake fills its bowl above.
-        lakeFloor[i] = lakeGuardBottom[i] == Integer.MAX_VALUE ? Integer.MAX_VALUE : Mth.floor(lakeSurface(x, z)) - 1;
+        // verdant_falls (2c): the descent is exact per block, so its own floor counts (the grid would fill a gully in).
+        double exactFloor = falls ? islandColumn.exactFloor() : Double.NaN;
+        lakeFloor[i] = lakeGuardBottom[i] == Integer.MAX_VALUE ? Integer.MAX_VALUE
+                : Mth.floor(Double.isNaN(exactFloor) ? lakeSurface(x, z) : exactFloor) - 1;
         boolean lava = RingFluidPicker.ring3LavaColumn(dimension, position, volcanic);
         VolcanicField.Column column = lava ? volcanic.column(x, z) : null;
         lavaTop[i] = lava ? column.lavaTop() : Integer.MIN_VALUE;

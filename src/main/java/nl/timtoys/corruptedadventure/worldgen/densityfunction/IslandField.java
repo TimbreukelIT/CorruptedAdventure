@@ -63,8 +63,12 @@ public final class IslandField implements DensityFunction {
      * ring 3's half ({@code RingFluidPicker.verdantWater}); the JSON is tested against it.
      */
     public static final double VERDANT_EDGE_SHARE = 60.0 / 256.0;
-    /** Recorded waterfalls per chunk at most (the cap of the water branch). */
+    /** Recorded waterfalls of the islands per chunk at most (the cap of the water branch). */
     static final int FALLS_PER_CHUNK = 3;
+    /** Recorded waterfalls of {@code verdant_falls} per chunk at most (Q4 = A: a cap of their own, besides the islands'). */
+    static final int VERDANT_FALLS_PER_CHUNK = 6;
+    /** How far (blocks) under the ground of {@code verdant_falls} the caves stay closed (no cave mouths on the descent). */
+    private static final int VERDANT_CAVE_DEPTH = 24;
     /** What the stack adds to vanilla's caves around a lake above the sea (closes them). */
     private static final double CAVE_LIFT = 2.0;
     /** How far (blocks) under a lake's deepest floor the caves stay closed. */
@@ -74,8 +78,9 @@ public final class IslandField implements DensityFunction {
     private final Ring4Relief relief;
     private final Settings settings;
     /**
-     * Ring 3's terrain ({@code ring_3/overworld/field}, a {@link VolcanicField}): the height of the plateau above the
-     * cliff 3→4 ({@link Ring4Cliff}). Null: the plateau stands {@link #NO_PLATEAU} above the foot.
+     * Ring 3's terrain ({@code ring_3/overworld/field}, a {@link VolcanicField}; the JSON key {@code plateau} is
+     * historical): the rim height of {@code verdant_falls} and ring 4's input in the {@code steam_fens} strip
+     * ({@link VerdantDescent}). Null: the rim stands at {@link VerdantDescent#NO_RING_3}.
      */
     @Nullable
     private final DensityFunction plateau;
@@ -85,15 +90,16 @@ public final class IslandField implements DensityFunction {
     private final Decisions decisions;
     // The islands of the 3 x 3 cells around a cell, for recent cells (review 61 #6: lock-free, shared by threads).
     private final KeyedSlots<List<IslandShape>> neighbourhoods = new KeyedSlots<>();
-    /** Without ring 3's terrain the plateau stands this far above the foot. */
-    private static final double NO_PLATEAU = 60.0;
+    /** The descent of the zone 3→4 and its basins (W-terrein 2c). */
+    private final VerdantDescent descent;
+    private final VerdantBasins basins;
 
     public IslandField(NoiseHolder hash, Ring4Relief relief, Settings settings) {
         this(hash, relief, settings, null, RingLayout::current, new Decisions());
     }
 
     /**
-     * @param plateau ring 3's terrain for the cliff 3→4, or null
+     * @param plateau ring 3's terrain for the rim of {@code verdant_falls}, or null
      * @param layout  the ring layout (the running server's; tests give their own)
      */
     IslandField(NoiseHolder hash, Ring4Relief relief, Settings settings, @Nullable DensityFunction plateau, Supplier<RingLayout> layout) {
@@ -109,11 +115,13 @@ public final class IslandField implements DensityFunction {
         this.ring3 = plateau == null ? null : VolcanicField.resolveIfBound(plateau);
         this.layout = layout;
         this.decisions = decisions;
+        this.descent = new VerdantDescent(this);
+        this.basins = new VerdantBasins(this, descent);
     }
 
-    /** Ring 3's terrain for the plateau, or null. */
+    /** Ring 3's terrain for the rim of {@code verdant_falls}, or null. */
     @Nullable
-    private VolcanicField ring3() {
+    VolcanicField ring3() {
         VolcanicField f = ring3;
         if (f == null && plateau != null) {
             f = VolcanicField.resolve(plateau);
@@ -132,6 +140,18 @@ public final class IslandField implements DensityFunction {
 
     RingLayout ringLayout() {
         return layout.get();
+    }
+
+    Decisions decisions() {
+        return decisions;
+    }
+
+    VerdantDescent descent() {
+        return descent;
+    }
+
+    VerdantBasins basins() {
+        return basins;
     }
 
     // ---------------------------------------------------------------- density function
@@ -294,8 +314,9 @@ public final class IslandField implements DensityFunction {
     }
 
     /**
-     * The waterfalls in the box (off islands; the cliff 3→4 and the world trees follow in 62 and 74), as the terrain
-     * places them: at most {@link #FALLS_PER_CHUNK} per chunk.
+     * The waterfalls in the box (off islands and down the descent of {@code verdant_falls}; the world trees follow in
+     * 74), as the terrain places them: at most {@link #FALLS_PER_CHUNK} of the islands' and
+     * {@link #VERDANT_FALLS_PER_CHUNK} of the descent's per chunk.
      */
     public List<Waterfall> waterfallsWithin(int minX, int minZ, int maxX, int maxZ) {
         List<Waterfall> found = new ArrayList<>();
@@ -347,23 +368,25 @@ public final class IslandField implements DensityFunction {
         }
         lowest = Math.min(lowest, sinkholeFloorNear(x, z));
         lowest = Math.min(lowest, holeFloorNear(x, z));
-        lowest = Math.min(lowest, poolFloorNear(x, z));
+        lowest = Math.min(lowest, verdantFloorNear(x, z));
         return lowest - INITIAL_MARGIN;
     }
 
-    /** The bed of a cliff fall's plunge pool within 12 blocks of (x, z) (62), or +infinity. */
-    private double poolFloorNear(int x, int z) {
-        RingLayout ringLayout = layout.get();
-        if (Math.abs(ringLayout.effectiveDistance(x, z) - Ring4Cliff.lineRadius(ringLayout)) > 40.0) {
+    /**
+     * A lower bound of the floors of the water of {@code verdant_falls} within 12 blocks of (x, z): its pools, gullies
+     * and lakes (narrower than the rings of {@link #lowestAround} may see) and the foot river's bed; +infinity elsewhere.
+     */
+    private double verdantFloorNear(int x, int z) {
+        VerdantDescent.Point p = descent.locate(x, z, new VerdantDescent.Point());
+        if (p.kind != VerdantDescent.Point.DESCENT) {
             return Double.POSITIVE_INFINITY;
         }
-        double reach = INITIAL_RADII[INITIAL_RADII.length - 1] + Ring4Cliff.POOL_RADIUS;
-        for (Fall fall : cliffFallsNear(Ring4Cliff.arc(ringLayout, x, z))) {
-            if (Math.hypot(fall.fallX() + 0.5 - x, fall.fallZ() + 0.5 - z) < reach) {
-                return Ring4Cliff.POOL_BED;
-            }
+        double reach = INITIAL_RADII[INITIAL_RADII.length - 1];
+        double floor = basins.floorNear(p, reach);
+        if (Math.abs(p.u - p.profile.river()) < p.profile.bedHalf() + reach + 12.0) {
+            floor = Math.min(floor, VerdantDescent.RIVER_BED);
         }
-        return Double.POSITIVE_INFINITY;
+        return floor;
     }
 
     /**
@@ -419,177 +442,68 @@ public final class IslandField implements DensityFunction {
     }
 
     /**
-     * The lowest open ground at a position: the surface with the cliff 3→4, the islands' holes and outlets, and a peat
-     * sinkhole's floor (which the terrain cuts per block, review 61 #6); exact and not cached.
+     * The lowest open ground at a position: the surface with the descent of {@code verdant_falls}, the islands' holes
+     * and outlets, and a peat sinkhole's floor (which the terrain cuts per block, review 61 #6); exact and not cached. On
+     * the descent the ground of the block column the position lies in.
      */
     double surfaceUncached(double x, double z) {
-        Ring4Relief.Sample s = new Ring4Relief.Sample();
-        relief.sample(x, z, band(x, z), s, salt());
-        double surface = withHoles(cliffed(x, z, s.height, null), x, z, shapesNear(Mth.floor(x), Mth.floor(z)), null);
+        int bx = Mth.floor(x);
+        int bz = Mth.floor(z);
+        VerdantDescent.Point p = descent.locate(x, z, new VerdantDescent.Point());
+        if (p.kind != VerdantDescent.Point.OUTSIDE) {
+            descent.locate(bx, bz, p);
+        }
+        Ring4Relief.Sample s = null;
+        if (p.kind == VerdantDescent.Point.OUTSIDE || VerdantDescent.needsRelief(p)) {
+            s = new Ring4Relief.Sample();
+            relief.sample(x, z, band(x, z), s, salt());
+        }
+        boolean outside = p.kind == VerdantDescent.Point.OUTSIDE;
+        double height = outside ? s.height : verdantGround(bx, bz, p, s, new VerdantBasins.Water());
+        double surface = withHoles(height, x, z, shapesNear(bx, bz), null);
         surface = rimmed(x, z, surface);
         Sunder sunder = sunder(x, z);
         if (sunder.kind() != Sunder.NONE) {
             surface = Math.min(surface, Ring4Sundered.ABYSS_FLOOR);
         }
-        return Double.isNaN(s.sinkholeFloor) ? surface : Math.min(surface, s.sinkholeFloor);
+        return !outside || Double.isNaN(s.sinkholeFloor) ? surface : Math.min(surface, s.sinkholeFloor);
     }
 
-    // ---------------------------------------------------------------- the cliff 3→4 (62)
+    // ---------------------------------------------------------------- verdant_falls (W-terrein 2c)
 
     /**
-     * The surface of ring 4's input with the cliff 3→4 ({@link Ring4Cliff}) from the base terrain {@code base} (the
-     * foot); unchanged away from the zone 3→4. {@code out} (if given) gets {cliff mask 0..1, distance beyond the line,
-     * plateau, foot with its plunge pools, 1 where the wall is exact here (no gap) else 0}.
+     * The ground of a column of the zone 3→4 ({@link VerdantDescent}): ring 4's input in the {@code steam_fens} strip,
+     * else the treads with the basins ({@link VerdantBasins}, the cuts behind the falls' springs included) and the foot
+     * river; beyond the river's middle ring 4's own terrain {@code s} blends in (needed only there,
+     * {@link VerdantDescent#needsRelief}). {@code w} gets the basins' values.
      */
-    private double cliffed(double x, double z, double base, @Nullable double[] out) {
-        RingLayout ringLayout = layout.get();
-        double line = Ring4Cliff.lineRadius(ringLayout);
-        double effective = ringLayout.effectiveDistance(x, z);
-        if (out != null) {
-            out[0] = 0.0;
-            out[1] = Double.POSITIVE_INFINITY;
-            out[4] = 0.0;
-            out[5] = 0.0;
+    private double verdantGround(int x, int z, VerdantDescent.Point p, @Nullable Ring4Relief.Sample s, VerdantBasins.Water w) {
+        if (p.kind == VerdantDescent.Point.STRIP) {
+            w.height = p.treads;
+            w.lakeTop = Integer.MIN_VALUE;
+            w.rim = 0.0;
+            w.cliff = 0.0;
+            return p.treads;
         }
-        if (effective > line + Ring4Cliff.SCREE_OUT + Ring4Cliff.POOL_RADIUS + 2.0 * Ring4Cliff.JITTER
-                || effective < Ring4Cliff.zoneStart(ringLayout) - 16.0) {
-            return base;
-        }
-        double distance = effective - line + Ring4Cliff.JITTER * relief.detailAt(x, z);
-        double arc = Ring4Cliff.arc(ringLayout, x, z);
-        Ring4Cliff.Gap gap = Ring4Cliff.gapAt(salt(), arc, Ring4Cliff.perimeter(layout.get()));
-        double plateau = plateauAt(x, z, base);
-        // The foot beside the wall stays at least MIN_HEIGHT under the plateau: ring 4's own rise beyond the line (hills,
-        // cascades) must not turn the wall into a slope, so the ground blends down to a foot next to it.
-        double outside = base;
-        if (distance >= 0.0) {
-            // Held at the wall's value out to 4 blocks (the wall is measured there), then blended back to the terrain.
-            double w = 1.0 - Ring4Relief.smooth(distance, 4.0, 2.0 * Ring4Cliff.WALL_BAND);
-            outside = Mth.lerp(w, base, Math.min(base, plateau - Ring4Cliff.MIN_HEIGHT));
-        }
-        double foot = outside;
-        boolean nearFall = false;
-        for (Fall fall : cliffFallsNear(arc)) {
-            nearFall |= Math.max(Math.abs(x - fall.springX()), Math.abs(z - fall.springZ())) <= Ring4Cliff.FALL_CLEARANCE
-                    || Math.max(Math.abs(x - fall.fallX()), Math.abs(z - fall.fallZ())) <= Ring4Cliff.FALL_CLEARANCE;
-            double d = Math.hypot(x - (fall.fallX() + 0.5), z - (fall.fallZ() + 0.5)) / Ring4Cliff.POOL_RADIUS;
-            if (d < 1.0) {
-                // A plunge pool: a bowl below the sea, so the fall lands in water.
-                foot = Math.min(foot, Ring4Cliff.POOL_BED + d * d * (Math.max(base, IslandShape.SEA_LEVEL) - Ring4Cliff.POOL_BED));
-            }
-        }
-        double surface = Ring4Cliff.surface(distance, plateau, distance < 0.0 ? base : foot, gap, arc);
-        if (out != null) {
-            double gapWeight = gap == null ? 0.0 : gap.weight(arc);
-            double wall = 1.0 - Ring4Relief.smooth(Math.abs(distance), 2.0, 5.0);
-            double scree = gap != null && !gap.ravine() && distance > -Ring4Cliff.SCREE_IN && distance < Ring4Cliff.SCREE_OUT ? 1.0 : 0.0;
-            out[0] = Math.max(wall * (1.0 - gapWeight), gapWeight * scree);
-            out[1] = distance;
-            out[2] = plateau;
-            out[3] = foot;
-            out[4] = gapWeight == 0.0 ? 1.0 : 0.0;
-            out[5] = nearFall ? 1.0 : 0.0;
-        }
-        return surface;
-    }
-
-    /** The plateau's height above the cliff at a column: ring 3's height, kept 40–80 above the foot {@code base}. */
-    private double plateauAt(double x, double z, double base) {
-        VolcanicField volcanic = ring3();
-        // The foot is referred to the line on the same ray, so the plateau above a wall is one height along it (the
-        // ground of ring 4 beside the line varies by more than the wall's 40 blocks in a few blocks).
-        RingLayout ringLayout = layout.get();
-        double line = Ring4Cliff.lineRadius(ringLayout);
-        // Ring 3's height is read at the line too: the plateau is one height along the ray (a wall of 6 blocks has one top).
-        double angle = Math.atan2(z, x);
-        double lineX = line * Math.cos(angle);
-        double lineZ = line * Math.sin(angle);
-        double foot = baseHeight(lineX, lineZ);
-        double ring3Height = volcanic == null ? foot + NO_PLATEAU
-                : volcanic.column(Mth.floor(lineX), Mth.floor(lineZ)).height();
-        return Ring4Cliff.plateau(ring3Height, foot);
-    }
-
-    /** The line's distance at a block column (with its wandering), for the falls. */
-    private double cliffDistance(int x, int z) {
-        return layout.get().effectiveDistance(x, z) - Ring4Cliff.lineRadius(layout.get()) + Ring4Cliff.JITTER * relief.detailAt(x, z);
-    }
-
-    /** The cliff's falls of the fall cells around a position along the line. */
-    private List<Fall> cliffFallsNear(double arc) {
-        int k = Ring4Cliff.fallCellOf(arc, Ring4Cliff.perimeter(layout.get()));
-        List<Fall> found = new ArrayList<>(3);
-        for (int dk = -1; dk <= 1; dk++) {
-            Fall fall = cliffFall(k + dk);
-            if (fall != null) {
-                found.add(fall);
-            }
-        }
-        return found;
-    }
-
-    /** The fall of fall cell {@code k} of the cliff, decided once per world, or null. */
-    @Nullable
-    Fall cliffFall(int k) {
-        java.util.Optional<Fall> known = decisions.cliffFalls.get(k);
-        if (known == null) {
-            known = java.util.Optional.ofNullable(placeCliffFall(k));
-            decisions.remember(decisions.cliffFalls, k, known);
-        }
-        return known.orElse(null);
+        basins.shape(x, z, p, true, w);
+        return VerdantDescent.withRiver(p, w.height, s == null ? Double.NaN : s.height);
     }
 
     /**
-     * A steaming fall from the top of the cliff (62): at the cell's position along the line, the first column beyond the
-     * line is the fall, the one inward beside it the spring (one block under the plateau's top, walled in by the
-     * plateau on its other three sides); not in a gap, the fall in ring 4. It lands in its plunge pool (the sea).
+     * The exact ground of a column of the zone 3→4 (for tests): the same as the column's {@link Column#height}, without
+     * the column cache.
      */
-    @Nullable
-    private Fall placeCliffFall(int k) {
-        double arc = Ring4Cliff.fallArc(salt(), k, Ring4Cliff.perimeter(layout.get()));
-        if (Double.isNaN(arc)) {
-            return null;
+    double verdantHeight(int x, int z) {
+        VerdantDescent.Point p = descent.locate(x, z, new VerdantDescent.Point());
+        if (p.kind == VerdantDescent.Point.OUTSIDE) {
+            return baseHeight(x, z);
         }
-        RingLayout ringLayout = layout.get();
-        double line = Ring4Cliff.lineRadius(ringLayout);
-        double angle = arc / line;
-        double cos = Math.cos(angle);
-        double sin = Math.sin(angle);
-        int[] step = Math.abs(cos) >= Math.abs(sin) ? new int[]{cos > 0 ? 1 : -1, 0} : new int[]{0, sin > 0 ? 1 : -1};
-        // The radius on the ray where the effective distance reaches the line (the boundary noise shifts it).
-        double r = line;
-        for (int n = 0; n < 4; n++) {
-            r += line - ringLayout.effectiveDistance(r * cos, r * sin);
+        Ring4Relief.Sample s = null;
+        if (VerdantDescent.needsRelief(p)) {
+            s = new Ring4Relief.Sample();
+            relief.sample(x, z, band(x, z), s, salt());
         }
-        for (int out = -12; out <= 12; out++) {
-            int fx = Mth.floor((r + out) * cos);
-            int fz = Mth.floor((r + out) * sin);
-            int sx = fx - step[0];
-            int sz = fz - step[1];
-            if (cliffDistance(fx, fz) < 0.0 || cliffDistance(sx, sz) >= 0.0) {
-                continue;
-            }
-            if (Ring4Cliff.gapAt(salt(), Ring4Cliff.arc(ringLayout, fx, fz), Ring4Cliff.perimeter(ringLayout)) != null
-                    || Ring4Cliff.gapAt(salt(), Ring4Cliff.arc(ringLayout, sx, sz), Ring4Cliff.perimeter(ringLayout)) != null
-                    || ringLayout.sampleOverworld(fx, fz).ring() != nl.timtoys.corruptedadventure.ring.Ring.RING_4) {
-                return null;
-            }
-            double plateau = plateauAt(sx, sz, baseHeight(sx, sz));
-            int springY = Mth.ceil(plateau) - 2;
-            int[][] walls = {{-step[0], -step[1]}, {step[1], step[0]}, {-step[1], -step[0]}};
-            for (int[] wall : walls) {
-                int wx = sx + wall[0];
-                int wz = sz + wall[1];
-                if (cliffDistance(wx, wz) >= 0.0 || Mth.ceil(plateauAt(wx, wz, baseHeight(wx, wz))) - 1 < springY) {
-                    return null;
-                }
-            }
-            if (springY <= (int) IslandShape.SEA_LEVEL + 8) {
-                return null;
-            }
-            return new Fall(sx, sz, springY, fx, fz, (int) IslandShape.SEA_LEVEL);
-        }
-        return null;
+        return verdantGround(x, z, p, s, new VerdantBasins.Water());
     }
 
     /**
@@ -617,7 +531,8 @@ public final class IslandField implements DensityFunction {
 
     /**
      * Per block: +1 inside an island, −1 in a carved opening (a spring, a peat sinkhole's bowl), the exact surface in
-     * the bands of the cliff 3→4 and of the fjords' walls ({@link #withFjordBand}), 0 elsewhere (the terrain decides).
+     * the bands of the fjords' walls and over the descent of {@code verdant_falls} ({@link #withExactBand}), 0
+     * elsewhere (the terrain decides).
      */
     double thin(int x, int y, int z) {
         Column c = columns.get(x, z, IslandField::reset);
@@ -629,15 +544,9 @@ public final class IslandField implements DensityFunction {
                 return -1.0;
             }
         }
-        if (thin == 0.0 && c.wallNear) {
-            ensureSurface(c);
-            if (c.wallExact && Math.abs(c.wallDistance) < Ring4Cliff.WALL_BAND) {
-                return wall(c, x, y, z);
-            }
-        }
-        if (thin == 0.0 && c.fjordEdge) {
+        if (thin == 0.0 && (c.fjordEdge || c.verdant)) {
             if (c.bandLo == Integer.MIN_VALUE) {
-                c = withFjordBand(x, z);
+                c = withExactBand(x, z);
             }
             if (y >= c.bandLo && y <= c.bandHi) {
                 return y < c.surface ? 1.0 : -1.0;
@@ -647,18 +556,20 @@ public final class IslandField implements DensityFunction {
     }
 
     /**
-     * A fjord's wall and rim per block (heuvelfix 2b, Q6): the height kinks there within one cell, so the 4-block grid's
-     * bilinear surface misses it by up to 7 blocks in a sawtooth. From a block under the lower of the exact and the
-     * bilinear surface to a block over the higher one, the exact surface decides; around it the stack agrees. Not
-     * where a hole, a lake or its cave band lies (their rims are measured on the grid), nor where another ring's density
-     * mixes in (a transition zone, but not the zone 3→4 beyond {@link #VERDANT_EDGE_SHARE}: pure ring 4 there). Returns
-     * the column with its band ({@code bandLo > bandHi}: none).
+     * The exact surface per block where the 4-block grid cannot show it: a fjord's wall and rim (heuvelfix 2b, Q6: the
+     * height kinks there within one cell, so the grid's bilinear surface misses it by up to 7 blocks in a sawtooth), and
+     * the whole descent of {@code verdant_falls} (2c: its treads, coves, gullies, lakes and lips are cut per block, so
+     * its water is walled in exactly). From a block under the lower of the exact and the bilinear surface to a block
+     * over the higher one, the exact surface decides; around it the stack agrees. For the fjords not where a hole, a lake
+     * or its cave band lies (their rims are measured on the grid); never where another ring's density mixes in (a
+     * transition zone, but not the zone 3→4 beyond {@link #VERDANT_EDGE_SHARE}: pure ring 4 there), nor in an island's
+     * hole. Returns the column with its band ({@code bandLo > bandHi}: none).
      */
-    private Column withFjordBand(int x, int z) {
+    private Column withExactBand(int x, int z) {
         Column c = columns.get(x, z, IslandField::reset);
         ensureIslands(c);
         double exact = c.surface;
-        boolean banded = c.lakeTop == Integer.MIN_VALUE && c.caveLiftFrom > c.caveLiftTo && c.islandHole == 0.0
+        boolean banded = (c.verdant || c.lakeTop == Integer.MIN_VALUE && c.caveLiftFrom > c.caveLiftTo) && c.islandHole == 0.0
                 && pureRing4(layout.get().sampleOverworld(x, z));
         double bilinear = banded ? gridSurface(x, z) : exact;
         // The corners may have moved the table's window: the same column again (recomputed if so).
@@ -690,53 +601,6 @@ public final class IslandField implements DensityFunction {
         double near = s00 + tx * (s10 - s00);
         double far = s01 + tx * (s11 - s01);
         return near + tz * (far - near);
-    }
-
-    /**
-     * The cliff 3→4 (62), exact per block within {@link Ring4Cliff#WALL_BAND} of its line, whatever the 4-block grid
-     * blends: rock up to the plateau on the inside, open from the foot up on the outside. 5a: not a straight, flat wall:
-     * the face moves in and out with a 3D roughness (strata as ledges and overhangs, knobs and clefts; at most
-     * {@link Ring4Cliff#ROUGHNESS}, so the band's edges stay the plateau and the foot), and the top edge crumbles down
-     * near the line. Beside a fall it stays smooth: the spring needs its walls.
-     */
-    private double wall(Column c, int x, int y, int z) {
-        int plateauTop = Mth.ceil(c.plateauY) - 1;
-        double floor = c.wallDistance < 0.0 ? Math.min(c.footY, c.plateauY - Ring4Cliff.MIN_HEIGHT) : c.surface;
-        if (y > plateauTop + 2 || y < Mth.floor(floor) - 2) {
-            // Above the plateau and under the foot the terrain decides on both sides of the face: no noise needed.
-            return 0.0;
-        }
-        double face = c.wallDistance;
-        if (!c.nearFall) {
-            face += Mth.clamp(Ring4Cliff.ROUGHNESS * relief.rough(x, y, z), -Ring4Cliff.ROUGHNESS, Ring4Cliff.ROUGHNESS);
-        }
-        if (face < 0.0) {
-            // Rock up to the (crumbled) top; open above it only where the top crumbled, higher the terrain decides.
-            return y <= wallTop(c) ? 1.0 : y <= plateauTop ? -1.0 : 0.0;
-        }
-        return y >= Mth.ceil(floor) ? -1.0 : 0.0;
-    }
-
-    /**
-     * The top of the wall's rock in a column of its band, once per column: the plateau's top, crumbled down near the
-     * line (fully at the line, not at all from 4 blocks inside, by at most {@link Ring4Cliff#CRUMBLE}); beside a fall
-     * the plateau's top itself.
-     */
-    private int wallTop(Column c) {
-        if (c.wallTop == Integer.MIN_VALUE) {
-            int top = Mth.ceil(c.plateauY) - 1;
-            if (!c.nearFall) {
-                double edge = 1.0 - Ring4Relief.smooth(-c.wallDistance, 1.0, 4.0);
-                top -= (int) Math.round(Ring4Cliff.CRUMBLE * edge * Math.max(0.0, relief.crumble(c.x, c.z)));
-            }
-            c.wallTop = top;
-        }
-        return c.wallTop;
-    }
-
-    /** The same for a column by position, for tests. */
-    int wallTop(int x, int z) {
-        return wallTop(column(x, z));
     }
 
     /** Per block: what the stack adds to the density of vanilla's caves: closed under and beside a lake above the sea. */
@@ -816,8 +680,9 @@ public final class IslandField implements DensityFunction {
     }
 
     /**
-     * The falls whose falling column lies in chunk (cx, cz), at most {@link #FALLS_PER_CHUNK}: the first ones by x,
-     * then z, so the cap does not depend on the order chunks are made in.
+     * The falls whose falling column lies in chunk (cx, cz): the islands' at most {@link #FALLS_PER_CHUNK} and those of
+     * {@code verdant_falls} at most {@link #VERDANT_FALLS_PER_CHUNK} (each the first ones by x, then z, then the
+     * spring's height, so the cap does not depend on the order chunks are made in), together in that order.
      */
     List<Fall> fallsOfChunk(int cx, int cz) {
         long key = KeyedSlots.key(cx, cz);
@@ -836,30 +701,32 @@ public final class IslandField implements DensityFunction {
                     }
                 }
             }
-            // The cliff 3→4 (62): the falls of the fall cells along the chunk, where the chunk lies near the line.
+            List<Fall> kept = new ArrayList<>(capped(falls, FALLS_PER_CHUNK));
+            // verdant_falls (2c): the falls of the streams along the chunk, where the chunk lies on the descent.
             RingLayout ringLayout = layout.get();
-            if (Math.abs(ringLayout.effectiveDistance(minX + 8, minZ + 8) - Ring4Cliff.lineRadius(ringLayout)) < 40.0) {
-                // The fall cells around each corner (also across the seam of the angle, −π | π).
-                java.util.Set<Integer> cells = new java.util.TreeSet<>();
-                for (int corner = 0; corner < 4; corner++) {
-                    double arc = Ring4Cliff.arc(ringLayout, minX + 16 * (corner & 1), minZ + 16 * (corner >> 1));
-                    int k = Ring4Cliff.fallCellOf(arc, Ring4Cliff.perimeter(ringLayout));
-                    cells.add(k - 1);
-                    cells.add(k);
-                    cells.add(k + 1);
-                }
-                for (int k : cells) {
-                    Fall fall = cliffFall(k);
-                    if (fall != null && fall.fallX() >> 4 == cx && fall.fallZ() >> 4 == cz) {
-                        falls.add(fall);
+            double u = ringLayout.effectiveDistance(minX + 8, minZ + 8) - VerdantDescent.zoneStart(ringLayout);
+            if (u > -16.0 && u < VerdantDescent.width(ringLayout) + 16.0) {
+                List<Fall> verdant = new ArrayList<>();
+                double s = RingArc.arc(minX + 8, minZ + 8, VerdantDescent.midRadius(ringLayout));
+                for (VerdantBasins.Fall fall : basins.fallsNear(s, 16.0)) {
+                    Fall f = fall.fall();
+                    if (f.fallX() >> 4 == cx && f.fallZ() >> 4 == cz && !verdant.contains(f)) {
+                        verdant.add(f);
                     }
                 }
+                kept.addAll(capped(verdant, VERDANT_FALLS_PER_CHUNK));
             }
-            falls.sort(Comparator.comparingInt(Fall::fallX).thenComparingInt(Fall::fallZ).thenComparingInt(Fall::springY));
-            known = List.copyOf(falls.subList(0, Math.min(FALLS_PER_CHUNK, falls.size())));
+            known = List.copyOf(kept);
             decisions.remember(decisions.chunkFalls, key, known);
         }
         return known;
+    }
+
+    /** The first {@code cap} falls by x, then z, then the spring's height. */
+    private static List<Fall> capped(List<Fall> falls, int cap) {
+        falls.sort(Comparator.comparingInt(Fall::fallX).thenComparingInt(Fall::fallZ).thenComparingInt(Fall::springY)
+                .thenComparingInt(Fall::springX).thenComparingInt(Fall::springZ));
+        return falls.subList(0, Math.min(cap, falls.size()));
     }
 
     private static void reset(Column column, int x, int z) {
@@ -871,19 +738,32 @@ public final class IslandField implements DensityFunction {
         if (c.surfaceFilled) {
             return;
         }
-        Ring4Relief.Sample s = new Ring4Relief.Sample();
-        relief.sample(c.x, c.z, band(c.x, c.z), s, salt());
-        double[] cliff = new double[6];
-        c.height = cliffed(c.x, c.z, s.height, cliff);
-        c.cliff = cliff[0];
-        c.wallDistance = cliff[1];
-        c.plateauY = cliff[2];
-        c.footY = cliff[3];
-        c.wallExact = cliff[4] > 0.0;
-        c.nearFall = cliff[5] > 0.0;
-        c.river = s.river;
-        c.fjord = s.fjord;
-        c.sinkholeFloor = s.sinkholeFloor;
+        VerdantDescent.Point p = descent.locate(c.x, c.z, new VerdantDescent.Point());
+        boolean outside = p.kind == VerdantDescent.Point.OUTSIDE;
+        Ring4Relief.Sample s = null;
+        if (outside || VerdantDescent.needsRelief(p)) {
+            s = new Ring4Relief.Sample();
+            relief.sample(c.x, c.z, band(c.x, c.z), s, salt());
+        }
+        if (outside) {
+            c.height = s.height;
+            c.river = s.river;
+            c.fjord = s.fjord;
+            c.sinkholeFloor = s.sinkholeFloor;
+        } else {
+            // The zone 3→4 (2c): steam_fens' strip, the descent of verdant_falls with its basins and the foot river.
+            VerdantBasins.Water w = new VerdantBasins.Water();
+            c.height = verdantGround(c.x, c.z, p, s, w);
+            c.verdant = p.kind == VerdantDescent.Point.DESCENT;
+            c.arc = p.s;
+            c.body = p.body;
+            c.verdantLakeTop = w.lakeTop;
+            c.rim = w.rim;
+            c.cliff = w.cliff;
+            double beyond = s == null ? 0.0 : Ring4Relief.smooth(p.u, p.profile.river(), p.width);
+            c.river = Math.max(VerdantDescent.river(p), s == null ? 0.0 : beyond * s.river);
+            c.fjord = s == null ? 0.0 : beyond * s.fjord;
+        }
         double[] hole = {0.0};
         c.surface = withHoles(c.height, c.x, c.z, shapesNear(c.x, c.z), hole);
         c.islandHole = hole[0];
@@ -906,8 +786,10 @@ public final class IslandField implements DensityFunction {
             c.addIsland((int) Math.ceil(top - thickness), (int) Math.floor(top));
             c.surface = Math.min(c.surface, Ring4Sundered.ABYSS_FLOOR);
         }
-        // Only the relief's own fjord: not where the cliff, a hole, the rim or the sundering changed the surface.
-        c.fjordEdge = s.fjordEdge && c.height == s.height && c.surface == c.height;
+        // The descent's ground is exact per block: the aquifer takes its floor, not the grid's.
+        c.exactFloor = c.verdant && c.surface == c.height ? c.surface : Double.NaN;
+        // Only the relief's own fjord: not where the descent, a hole, the rim or the sundering changed the surface.
+        c.fjordEdge = outside && s.fjordEdge && c.surface == c.height;
         c.surfaceFilled = true;
     }
 
@@ -977,16 +859,6 @@ public final class IslandField implements DensityFunction {
         double[] sinkhole = Ring4Relief.sinkhole(Math.floorDiv(c.x, Ring4Relief.SINKHOLE_CELL),
                 Math.floorDiv(c.z, Ring4Relief.SINKHOLE_CELL), salt());
         c.sinkholeDisc = sinkhole != null && Math.hypot(c.x - sinkhole[0], c.z - sinkhole[1]) < sinkhole[2];
-        RingLayout ringLayout = layout.get();
-        double line = Ring4Cliff.lineRadius(ringLayout);
-        c.wallNear = Math.abs(ringLayout.effectiveDistance(c.x, c.z) - line) < Ring4Cliff.WALL_BAND + Ring4Cliff.JITTER + 2.0;
-        if (c.wallNear) {
-            for (Fall fall : cliffFallsNear(Ring4Cliff.arc(ringLayout, c.x, c.z))) {
-                if (fall.springX() == c.x && fall.springZ() == c.z && fallsOfChunk(fall.fallX() >> 4, fall.fallZ() >> 4).contains(fall)) {
-                    c.springY = fall.springY();
-                }
-            }
-        }
         double px = c.x + 0.5;
         double pz = c.z + 0.5;
         // Review 61 #3: a column inside a hole takes that hole's lake (the lowest, where holes overlap; a hole the sea
@@ -1033,12 +905,35 @@ public final class IslandField implements DensityFunction {
         }
         int lake = inHole ? holeLake : bandLake;
         c.lakeTop = lake == Integer.MAX_VALUE ? Integer.MIN_VALUE : lake;
+        if (c.verdant && c.lakeTop == Integer.MIN_VALUE && c.caveLiftFrom > c.caveLiftTo && c.islandHole == 0.0) {
+            verdantWater(c);
+        }
         for (Fall fall : fallsOfChunk(c.x >> 4, c.z >> 4)) {
             if (fall.fallX() == c.x && fall.fallZ() == c.z && fall.springY() > c.fallTop) {
                 c.fallTop = fall.springY();
                 c.fallBottom = fall.bottom();
                 // Only the block right above the water flows (review 61 #1).
                 c.fallFlowBelow = fall.bottom();
+            }
+        }
+    }
+
+    /**
+     * The water of a column of {@code verdant_falls} (2c): its body's still water ({@link VerdantBasins}), a spring if a
+     * kept fall leaves from it, and the band kept free of caves: no cave mouths on the descent, so nothing opens a pool,
+     * a gully or a lake from below or beside (the aquifer keeps that band rock under the exact floor).
+     */
+    private void verdantWater(Column c) {
+        c.lakeTop = c.verdantLakeTop;
+        int top = Math.max(Mth.ceil(c.surface), c.lakeTop) + 2;
+        c.caveLiftFrom = Mth.floor(c.surface) - VERDANT_CAVE_DEPTH;
+        c.caveLiftTo = top;
+        if (c.body >= 1) {
+            for (VerdantBasins.Fall fall : basins.fallsOfBody(c.arc, c.body)) {
+                Fall f = fall.fall();
+                if (f.springX() == c.x && f.springZ() == c.z && fallsOfChunk(f.fallX() >> 4, f.fallZ() >> 4).contains(f)) {
+                    c.springY = f.springY();
+                }
             }
         }
     }
@@ -1122,27 +1017,30 @@ public final class IslandField implements DensityFunction {
         double islandHole;
         /** Whether the column lies in the disc of a peat sinkhole's cell (then the base terrain decides its floor). */
         boolean sinkholeDisc;
-        /** 0..1: the cliff 3→4's wall or scree slope (62). */
+        /** 0..1: an exact steep wall of {@code verdant_falls} (a cove's side under a fall; 2c). */
         double cliff;
-        /** Near the cliff's line (then {@link #wallDistance} and the rest are filled with the surface). */
-        boolean wallNear;
-        /** Blocks beyond the cliff's line (inside negative), +infinity away from it. */
-        double wallDistance;
-        /** The plateau's top above the cliff and the foot under it (with its plunge pools). */
-        double plateauY;
-        double footY;
-        /** Whether the wall stands exact here (no ravine or scree slope). */
-        boolean wallExact;
-        /** Whether a cliff fall's spring or fall column lies within {@link Ring4Cliff#FALL_CLEARANCE} (the wall stays smooth). */
-        boolean nearFall;
-        /** The wall's crumbled top ({@link #wallTop(Column)}), {@link Integer#MIN_VALUE} until first asked. */
-        int wallTop;
+        /** 0..1: a travertine rim of {@code verdant_falls} (a lake's threshold, a fall's lip; 2c). */
+        double rim;
+        /**
+         * On the descent of {@code verdant_falls} (2c; past the steam_fens strip, up to the zone's outer edge): the
+         * ground is exact per block ({@link #thin}). Part 2 (gorges, ledges, niches, arches) adds its per-block shapes
+         * to these columns.
+         */
+        boolean verdant;
+        /** The column's position along the zone 3→4 (blocks of arc on its middle line), for the descent. */
+        double arc;
+        /** The descent's body (tread index, level 64 + 8 · body) the column lies on, −1 off the descent. */
+        int body;
+        /** The top (exclusive) of the basins' still water in the column ({@link VerdantBasins}), else MIN_VALUE. */
+        int verdantLakeTop;
+        /** The exact ground the aquifer takes as the floor of the water (the descent), NaN where the grid's counts. */
+        double exactFloor;
         /** The floor of a peat sinkhole, cut per block ({@link #thin}); NaN outside one. */
         double sinkholeFloor;
         /** On a fjord's wall or rim ({@link Ring4Relief.Sample#fjordEdge}): {@link #thin} may cut the surface per block. */
         boolean fjordEdge;
         /**
-         * The blocks where the exact surface decides ({@link #withFjordBand}); {@code bandLo} {@link Integer#MIN_VALUE}
+         * The blocks where the exact surface decides ({@link #withExactBand}); {@code bandLo} {@link Integer#MIN_VALUE}
          * until first asked, {@code bandLo > bandHi} for none.
          */
         int bandLo;
@@ -1188,12 +1086,12 @@ public final class IslandField implements DensityFunction {
             sundered = 0.0;
             sunderKind = Sunder.NONE;
             cliff = 0.0;
-            wallNear = false;
-            wallDistance = Double.POSITIVE_INFINITY;
-            plateauY = 0.0;
-            footY = 0.0;
-            wallExact = false;
-            nearFall = false;
+            rim = 0.0;
+            verdant = false;
+            arc = 0.0;
+            body = -1;
+            verdantLakeTop = Integer.MIN_VALUE;
+            exactFloor = Double.NaN;
             islandCount = 0;
             springY = Integer.MIN_VALUE;
             lakeTop = Integer.MIN_VALUE;
@@ -1202,7 +1100,6 @@ public final class IslandField implements DensityFunction {
             fallTop = Integer.MIN_VALUE;
             fallBottom = Integer.MIN_VALUE;
             fallFlowBelow = Integer.MIN_VALUE;
-            wallTop = Integer.MIN_VALUE;
         }
 
         void addIsland(int lo, int hi) {
@@ -1253,6 +1150,15 @@ public final class IslandField implements DensityFunction {
 
         public double cliff() {
             return cliff;
+        }
+
+        public double rim() {
+            return rim;
+        }
+
+        /** The exact floor under the column's water (the descent of {@code verdant_falls}), NaN where the grid's counts. */
+        public double exactFloor() {
+            return exactFloor;
         }
 
         public double sundered() {
@@ -1307,7 +1213,10 @@ public final class IslandField implements DensityFunction {
         static final int LIMIT = 100_000;
         final Map<Long, List<IslandShape>> candidates = new ConcurrentHashMap<>();
         final Map<IslandShape, Boolean> kept = new ConcurrentHashMap<>();
-        final Map<Integer, java.util.Optional<Fall>> cliffFalls = new ConcurrentHashMap<>();
+        final Map<Integer, VerdantDescent.Profile> verdantProfiles = new ConcurrentHashMap<>();
+        final Map<Integer, Double> verdantRims = new ConcurrentHashMap<>();
+        final Map<Integer, java.util.Optional<VerdantBasins.Stream>> verdantStreams = new ConcurrentHashMap<>();
+        final Map<Long, java.util.Optional<VerdantBasins.Fall>> verdantFalls = new ConcurrentHashMap<>();
         final Map<Long, List<IslandShape>> cells = new ConcurrentHashMap<>();
         final Map<IslandShape, Details> details = new ConcurrentHashMap<>();
         final Map<Long, List<Fall>> chunkFalls = new ConcurrentHashMap<>();

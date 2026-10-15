@@ -612,6 +612,37 @@ class RingAquiferTest {
     }
 
     /**
+     * verdant_falls (2c): the descent is exact per block, so the water of its pools, gullies and lakes stands on its own
+     * floor ({@code Column.exactFloor}), not on the grid's (which would fill a gully two blocks wide); under that floor,
+     * in the band kept free of caves, open space stays rock.
+     */
+    @Test
+    void verdantWaterStandsOnItsExactFloor() {
+        IslandField islands = IslandFieldTest.field();
+        RingAquifer aquifer = new RingAquifer(Level.OVERWORLD, DRY, null, islands, IslandFieldTest.LAYOUT::sampleOverworld);
+        int checked = 0;
+        for (int x = 5990; x <= 6110 && checked < 200; x++) {
+            for (int z = -300; z <= 300 && checked < 200; z++) {
+                IslandField.Column column = islands.column(x, z);
+                int lakeTop = column.lakeTop();
+                double floor = column.exactFloor();
+                if (lakeTop == Integer.MIN_VALUE || Double.isNaN(floor) || Math.ceil(floor) >= lakeTop
+                        || column.fallTop() != Integer.MIN_VALUE || column.springY() != Integer.MIN_VALUE) {
+                    continue;
+                }
+                int lowest = (int) Math.ceil(floor);
+                BlockState water = aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, lowest, z), -0.5);
+                assertSame(Blocks.WATER, water == null ? null : water.getBlock(), "water on the exact floor at " + x + " " + lowest + " " + z);
+                assertSame(Blocks.WATER, aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, lakeTop - 1, z), -0.5).getBlock());
+                assertSame(Blocks.AIR.defaultBlockState(), aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, lakeTop, z), -0.5));
+                assertNull(aquifer.computeSubstance(new DensityFunction.SinglePointContext(x, lowest - 3, z), -0.5), "rock under the floor");
+                checked++;
+            }
+        }
+        assertTrue(checked > 50, "verdant water columns " + checked);
+    }
+
+    /**
      * What {@code WorldCarver.getCarveState} gives at or below the carver's lava level with {@code WorldCarverLavaMixin}:
      * the ring aquifer's answer where it decides ({@link CarverLava}), else vanilla's lava.
      */

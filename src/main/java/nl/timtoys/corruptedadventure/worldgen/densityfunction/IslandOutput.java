@@ -34,8 +34,10 @@ public final class IslandOutput implements DensityFunction {
         RIVER("river", 0.0, 1.0),
         /** 0..1: a fjord's channel, 1 on its floor. */
         FJORD("fjord", 0.0, 1.0),
-        /** 0..1: the cliff 3→4's wall (1 on it) or scree slope (62). */
+        /** 0..1: an exact steep wall of {@code verdant_falls} (1 on it: the sides of the coves under its falls; 2c). */
         CLIFF("cliff", 0.0, 1.0),
+        /** 0..1: a travertine rim of {@code verdant_falls} (1 on a lake's threshold edge and a fall's lip; 2c, Q7). */
+        RIM("rim", 0.0, 1.0),
         /** 0..1: how far the ground is sundered here (63; the cracks and loose chunks of the zone 4→5). */
         SUNDERED("sundered", 0.0, 1.0),
         /** 3D, not interpolated: +1 inside an island, −1 in a carved opening, 0 elsewhere (the terrain decides). */
@@ -116,6 +118,7 @@ public final class IslandOutput implements DensityFunction {
             case RIVER -> column.river;
             case FJORD -> column.fjord;
             case CLIFF -> column.cliff;
+            case RIM -> column.rim;
             case SUNDERED -> column.sundered;
             case INITIAL_HEIGHT, THIN, CAVE_LIFT -> throw new IllegalArgumentException(output + " is not a column value");
         };

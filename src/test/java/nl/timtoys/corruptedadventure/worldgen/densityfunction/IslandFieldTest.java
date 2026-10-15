@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -114,6 +115,47 @@ public class IslandFieldTest {
         for (int i = 70; i >= 40; i--) {
             assertEquals(FIELD.cell(i, 3), other.cell(i, 3));
         }
+    }
+
+    /**
+     * verdant_falls (2c): the descent, its basins, springs and falls are pure: a field built apart, asked in the opposite
+     * order (columns and chunks), gives the same values, also across the seam of the angle (x < 0, z = 0).
+     */
+    @Test
+    void theDescentIsPureWhateverTheOrder() {
+        IslandField first = field();
+        IslandField other = field();
+        List<int[]> points = new ArrayList<>();
+        for (double angle : new double[]{0.0, 1.3, 2.6, Math.PI - 0.004, Math.PI, -Math.PI + 0.004, 4.4}) {
+            for (double u = 52.0; u < 256.0; u += 7.3) {
+                for (double ds = -24.0; ds <= 24.0; ds += 6.1) {
+                    double[] p = VerdantDescent.onRay(LAYOUT, angle + ds / VerdantDescent.midRadius(LAYOUT),
+                            VerdantDescent.zoneStart(LAYOUT) + u);
+                    points.add(new int[]{(int) Math.floor(p[0]), (int) Math.floor(p[1])});
+                }
+            }
+        }
+        List<double[]> forward = new ArrayList<>();
+        for (int[] p : points) {
+            IslandField.Column c = first.column(p[0], p[1]);
+            double[] values = {c.surface(), c.lakeTop(), c.rim(), c.cliff(), c.springY(), c.fallTop(), c.caveLiftFrom(),
+                    first.initialHeight(p[0], p[1]), 0.0, 0.0};
+            values[8] = first.thin(p[0], (int) Math.floor(values[0]), p[1]);
+            values[9] = first.fallsOfChunk(p[0] >> 4, p[1] >> 4).size();
+            forward.add(values);
+        }
+        int lakes = 0;
+        for (int k = points.size() - 1; k >= 0; k--) {
+            int[] p = points.get(k);
+            double fallCount = other.fallsOfChunk(p[0] >> 4, p[1] >> 4).size();
+            IslandField.Column c = other.column(p[0], p[1]);
+            double[] values = {c.surface(), c.lakeTop(), c.rim(), c.cliff(), c.springY(), c.fallTop(), c.caveLiftFrom(),
+                    other.initialHeight(p[0], p[1]), 0.0, fallCount};
+            values[8] = other.thin(p[0], (int) Math.floor(values[0]), p[1]);
+            assertArrayEquals(forward.get(k), values, p[0] + ", " + p[1]);
+            lakes += c.lakeTop() != Integer.MIN_VALUE ? 1 : 0;
+        }
+        assertTrue(lakes > 0, "no water among the points");
     }
 
     /** No islands (nor falls or lifts) outside ring 4 and its reach. */
