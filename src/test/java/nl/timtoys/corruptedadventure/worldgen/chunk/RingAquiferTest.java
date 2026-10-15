@@ -570,6 +570,40 @@ class RingAquiferTest {
     }
 
     /**
+     * verdant_falls: the water branch also holds in the {@code verdant_falls} strip of ring 3's half of the zone 3→4
+     * (recorded falls and springs placed as in ring 4), but not on the {@code steam_fens} rim; ring 3's seal below Y 63
+     * and its dryness of vanilla's water from Y 0 up stay.
+     */
+    @Test
+    void verdantFallsStripOfRing3sHalfHasRing4sWaterBranch() {
+        IslandField islands = IslandFieldTest.field();
+        RingPosition verdant = new RingPosition(Ring.RING_3, Ring.RING_4, 0.3);
+        RingPosition rim = new RingPosition(Ring.RING_3, Ring.RING_4, IslandField.VERDANT_EDGE_SHARE / 2.0);
+        RingAquifer inVerdant = new RingAquifer(Level.OVERWORLD, DRY, null, islands, (x, z) -> verdant);
+        RingAquifer onRim = new RingAquifer(Level.OVERWORLD, DRY, null, islands, (x, z) -> rim);
+        List<IslandField.Waterfall> falls = islands.waterfallsWithin(7200, -600, 7800, 600);
+        assertFalse(falls.isEmpty());
+        int checked = 0;
+        for (IslandField.Waterfall fall : falls) {
+            if (fall.top() <= RingFluidPicker.SEA_LEVEL) {
+                continue;
+            }
+            checked++;
+            DensityFunction.FunctionContext top = new DensityFunction.SinglePointContext(fall.x(), fall.top(), fall.z());
+            BlockState water = inVerdant.computeSubstance(top, -0.5);
+            assertSame(Blocks.WATER, water.getBlock(), "falling water at the top of " + fall);
+            assertEquals(8, water.getValue(LiquidBlock.LEVEL));
+            assertSame(Blocks.AIR.defaultBlockState(), onRim.computeSubstance(top, -0.5), "no water branch on the rim");
+            // The seal stays: open space below Y 63 is rock, also under a fall.
+            assertNull(inVerdant.computeSubstance(new DensityFunction.SinglePointContext(fall.x(), RingFluidPicker.SEA_LEVEL - 1, fall.z()), -0.5));
+        }
+        assertTrue(checked > 0, "no fall above the sea");
+        // Vanilla's water stays dry from Y 0 up in ring 3's half, outside the recorded water.
+        RingAquifer vanillaWater = new RingAquifer(Level.OVERWORLD, WATER_WITH_UPDATE, null, islands, (x, z) -> verdant);
+        assertSame(Blocks.AIR.defaultBlockState(), vanillaWater.computeSubstance(at(200), -0.5));
+    }
+
+    /**
      * What {@code WorldCarver.getCarveState} gives at or below the carver's lava level with {@code WorldCarverLavaMixin}:
      * the ring aquifer's answer where it decides ({@link CarverLava}), else vanilla's lava.
      */

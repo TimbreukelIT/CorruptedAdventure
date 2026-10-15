@@ -32,6 +32,12 @@ import java.util.Set;
  * picks each side's source on that same rule, so each side reads its own region axis (the one its terrain follows)
  * instead of a mix with the neighbour's.
  * <p>
+ * Optional {@code mix}, keyed the same way, a share of the zone in (0, 1] (verdant_falls: {@code ring_3} =
+ * {@link IslandField#VERDANT_EDGE_SHARE}): the two rings mix only over that first share of the zone, with the smoothstep
+ * stretched over it, and from there on the outer ring's input stands alone. So the outer ring's terrain covers the rest
+ * of the zone by itself, and exact shapes there never mix with the inner ring's density. Without it the whole zone
+ * mixes; a boundary cannot both switch and mix.
+ * <p>
  * Only the one or two inputs a position needs are computed. Interpolation markers inside the inputs still work
  * because {@link #mapAll} passes the visitor on; the noise chunk then fills those interpolators and flat caches in
  * every chunk, whether or not the ring is nearby, so {@link #mapAll} puts a gate inside each of them first: a
@@ -48,11 +54,16 @@ public final class RingBlend implements DensityFunction {
             .<Set<Ring>>xmap(list -> list.isEmpty() ? Set.of() : EnumSet.copyOf(list), List::copyOf)
             .validate(RingBlend::validateSwitchAt);
 
-    public static final MapCodec<RingBlend> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+    private static final Codec<Map<Ring, Double>> MIX_CODEC =
+            Codec.unboundedMap(Ring.CODEC, Codec.DOUBLE).validate(RingBlend::validateMix);
+
+    public static final MapCodec<RingBlend> MAP_CODEC = RecordCodecBuilder.<RingBlend>mapCodec(instance -> instance.group(
             Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(blend -> blend.dimension),
             RINGS_CODEC.fieldOf("rings").forGetter(RingBlend::ringMap),
-            SWITCH_AT_CODEC.optionalFieldOf("switch_at", Set.of()).forGetter(blend -> blend.switchAt)
-    ).apply(instance, RingBlend::new));
+            SWITCH_AT_CODEC.optionalFieldOf("switch_at", Set.of()).forGetter(blend -> blend.switchAt),
+            MIX_CODEC.optionalFieldOf("mix", Map.of()).forGetter(blend -> blend.mixAt)
+    ).apply(instance, (dimension, rings, switchAt, mix) -> new RingBlend(dimension, inputs(rings), switchAt, mix)))
+            .validate(blend -> validateModes(blend.switchAt, blend.mixAt).map(valid -> blend));
 
     public static final KeyDispatchDataCodec<RingBlend> CODEC = KeyDispatchDataCodec.of(MAP_CODEC);
 
@@ -62,17 +73,27 @@ public final class RingBlend implements DensityFunction {
     // For the codec; the per-block path reads switches, derived from it in the constructor.
     private final Set<Ring> switchAt;
     private final boolean[] switches;
+    // For the codec; the per-block path reads mix (the share of each boundary's zone over which it mixes, indexed by the
+    // inner ring's ordinal; 1 = the whole zone), derived from it in the constructor.
+    private final Map<Ring, Double> mixAt;
+    private final double[] mix;
 
     public RingBlend(ResourceKey<Level> dimension, Map<Ring, DensityFunction> rings) {
         this(dimension, rings, Set.of());
     }
 
     public RingBlend(ResourceKey<Level> dimension, Map<Ring, DensityFunction> rings, Set<Ring> switchAt) {
-        this(dimension, Arrays.stream(Ring.values()).map(rings::get).toArray(DensityFunction[]::new),
-                validateRings(rings).flatMap(valid -> validateSwitchAt(switchAt)).getOrThrow(IllegalArgumentException::new));
+        this(dimension, rings, switchAt, Map.of());
     }
 
-    private RingBlend(ResourceKey<Level> dimension, DensityFunction[] rings, Set<Ring> switchAt) {
+    public RingBlend(ResourceKey<Level> dimension, Map<Ring, DensityFunction> rings, Set<Ring> switchAt, Map<Ring, Double> mix) {
+        this(dimension, inputs(rings),
+                validateRings(rings).flatMap(valid -> validateSwitchAt(switchAt)).flatMap(valid -> validateMix(mix))
+                        .flatMap(valid -> validateModes(switchAt, mix)).getOrThrow(IllegalArgumentException::new),
+                mix);
+    }
+
+    private RingBlend(ResourceKey<Level> dimension, DensityFunction[] rings, Set<Ring> switchAt, Map<Ring, Double> mix) {
         this.dimension = dimension;
         this.rings = rings;
         this.switchAt = switchAt.isEmpty() ? Set.of() : Collections.unmodifiableSet(EnumSet.copyOf(switchAt));
@@ -80,6 +101,14 @@ public final class RingBlend implements DensityFunction {
         for (Ring ring : this.switchAt) {
             switches[ring.ordinal()] = true;
         }
+        this.mixAt = mix.isEmpty() ? Map.of() : Collections.unmodifiableMap(new EnumMap<>(mix));
+        this.mix = new double[Ring.values().length];
+        Arrays.fill(this.mix, 1.0);
+        this.mixAt.forEach((ring, share) -> this.mix[ring.ordinal()] = share);
+    }
+
+    private static DensityFunction[] inputs(Map<Ring, DensityFunction> rings) {
+        return Arrays.stream(Ring.values()).map(rings::get).toArray(DensityFunction[]::new);
     }
 
     static DataResult<Map<Ring, DensityFunction>> validateRings(Map<Ring, DensityFunction> rings) {
@@ -92,6 +121,21 @@ public final class RingBlend implements DensityFunction {
     static DataResult<Set<Ring>> validateSwitchAt(Set<Ring> switchAt) {
         return switchAt.contains(Ring.VOID)
                 ? DataResult.error(() -> "Ring blend switches at void, but there is no boundary beyond the void")
+                : DataResult.success(switchAt);
+    }
+
+    static DataResult<Map<Ring, Double>> validateMix(Map<Ring, Double> mix) {
+        if (mix.containsKey(Ring.VOID)) {
+            return DataResult.error(() -> "Ring blend mixes at void, but there is no boundary beyond the void");
+        }
+        return mix.values().stream().allMatch(share -> share > 0.0 && share <= 1.0)
+                ? DataResult.success(mix)
+                : DataResult.error(() -> "Ring blend mix shares must lie in (0, 1]: " + mix);
+    }
+
+    static DataResult<Set<Ring>> validateModes(Set<Ring> switchAt, Map<Ring, Double> mix) {
+        return switchAt.stream().anyMatch(mix::containsKey)
+                ? DataResult.error(() -> "Ring blend both switches and mixes at one boundary: switch_at " + switchAt + ", mix " + mix.keySet())
                 : DataResult.success(switchAt);
     }
 
@@ -120,12 +164,17 @@ public final class RingBlend implements DensityFunction {
         }
         double inner = rings[position.inner().ordinal()].compute(context);
         double outer = rings[position.outer().ordinal()].compute(context);
-        return Mth.lerp(smoothstep(position.blend()), inner, outer);
+        return Mth.lerp(smoothstep(position.blend() / mix[position.inner().ordinal()]), inner, outer);
     }
 
     /** The one ring whose input gives the value at {@code position}, or null where two are mixed. */
     private Ring single(RingPosition position) {
-        return !position.inTransition() || switches[position.inner().ordinal()] ? position.ring() : null;
+        if (!position.inTransition() || switches[position.inner().ordinal()]) {
+            return position.ring();
+        }
+        // Only a share below 1 ends the mix early: with the whole zone mixing, its outer edge keeps the lerp it always had.
+        double share = mix[position.inner().ordinal()];
+        return share < 1.0 && position.blend() >= share ? position.outer() : null;
     }
 
     /**
@@ -182,7 +231,7 @@ public final class RingBlend implements DensityFunction {
         for (Ring ring : Ring.values()) {
             mapped[ring.ordinal()] = rings[ring.ordinal()].mapAll(gating(ring, visitor));
         }
-        return visitor.apply(new RingBlend(dimension, mapped, switchAt));
+        return visitor.apply(new RingBlend(dimension, mapped, switchAt, mixAt));
     }
 
     /**

@@ -40,6 +40,13 @@ import java.util.stream.Stream;
  * source fills the whole transition zone of the boundary, water included. Boundaries without one switch hard at
  * blend 0.5.
  * <p>
+ * Optional {@code transition_splits}, keyed the same way (verdant_falls): two biomes in one zone. From the share
+ * {@link TransitionSplit#at} of the zone outwards its {@link TransitionSplit#outer} source takes over from the
+ * boundary's transition source, which keeps the inner part (zone 3→4: {@code steam_fens} on ring 3's rim, then
+ * {@code verdant_falls} at {@link IslandField#VERDANT_EDGE_SHARE}, where the terrain's mix ends). The split lies on the
+ * zone's own axis ({@link RingPosition#blend}), so it follows the noisy boundary like the terrain does. A split needs a
+ * transition at its boundary.
+ * <p>
  * Optional {@code island_biomes} (overworld, package 59): the height hook of ring 4. An island of the ring 4
  * {@link IslandField} whose centre lies in ring 4 and whose top reaches {@link IslandBiomes#minTop} gets a height biome
  * as a whole, also where it hangs over a transition zone: from {@link #BELOW_ISLAND} blocks under its bottom up, within
@@ -54,13 +61,17 @@ public final class RingBiomeSource extends BiomeSource {
     private static final Codec<Map<Ring, BiomeSource>> TRANSITIONS_CODEC =
             Codec.unboundedMap(Ring.CODEC, BiomeSource.CODEC).validate(RingBiomeSource::validateTransitions);
 
-    public static final MapCodec<RingBiomeSource> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+    private static final Codec<Map<Ring, TransitionSplit>> SPLITS_CODEC = Codec.unboundedMap(Ring.CODEC, TransitionSplit.CODEC);
+
+    public static final MapCodec<RingBiomeSource> CODEC = RecordCodecBuilder.<RingBiomeSource>mapCodec(instance -> instance.group(
             Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(source -> source.dimension),
             RINGS_CODEC.fieldOf("rings").forGetter(source -> source.rings),
             TRANSITIONS_CODEC.optionalFieldOf("transitions", Map.of()).forGetter(source -> source.transitions),
-            IslandBiomes.CODEC.optionalFieldOf("island_biomes").forGetter(source -> Optional.ofNullable(source.islandBiomes))
-    ).apply(instance, (dimension, rings, transitions, islandBiomes) ->
-            new RingBiomeSource(dimension, rings, transitions, islandBiomes.orElse(null))));
+            IslandBiomes.CODEC.optionalFieldOf("island_biomes").forGetter(source -> Optional.ofNullable(source.islandBiomes)),
+            SPLITS_CODEC.optionalFieldOf("transition_splits", Map.of()).forGetter(source -> source.splits)
+    ).apply(instance, (dimension, rings, transitions, islandBiomes, splits) ->
+            new RingBiomeSource(dimension, rings, transitions, islandBiomes.orElse(null), splits)))
+            .validate(source -> validateSplits(source.transitions, source.splits).map(valid -> source));
 
     /** A height biome reaches this many blocks below its island's bottom. */
     static final int BELOW_ISLAND = 4;
@@ -70,6 +81,7 @@ public final class RingBiomeSource extends BiomeSource {
     private final Map<Ring, BiomeSource> transitions;
     @Nullable
     private final IslandBiomes islandBiomes;
+    private final Map<Ring, TransitionSplit> splits;
     // The islands of the running server's level, looked up when a quart needs them.
     private final IslandLookup currentIslands;
 
@@ -79,11 +91,17 @@ public final class RingBiomeSource extends BiomeSource {
 
     public RingBiomeSource(ResourceKey<Level> dimension, Map<Ring, BiomeSource> rings, Map<Ring, BiomeSource> transitions,
                            @Nullable IslandBiomes islandBiomes) {
+        this(dimension, rings, transitions, islandBiomes, Map.of());
+    }
+
+    public RingBiomeSource(ResourceKey<Level> dimension, Map<Ring, BiomeSource> rings, Map<Ring, BiomeSource> transitions,
+                           @Nullable IslandBiomes islandBiomes, Map<Ring, TransitionSplit> splits) {
         this.dimension = dimension;
         this.rings = new EnumMap<>(rings);
         // EnumMap's copy constructor rejects an empty plain Map.
         this.transitions = transitions.isEmpty() ? Map.of() : new EnumMap<>(transitions);
         this.islandBiomes = islandBiomes;
+        this.splits = splits.isEmpty() ? Map.of() : new EnumMap<>(splits);
         this.currentIslands = new LastColumn(() -> IslandFields.current(dimension));
     }
 
@@ -133,6 +151,26 @@ public final class RingBiomeSource extends BiomeSource {
                 : DataResult.success(transitions);
     }
 
+    static DataResult<Map<Ring, TransitionSplit>> validateSplits(Map<Ring, BiomeSource> transitions, Map<Ring, TransitionSplit> splits) {
+        return transitions.keySet().containsAll(splits.keySet())
+                ? DataResult.success(splits)
+                : DataResult.error(() -> "Ring biome source splits a zone without a transition: splits " + splits.keySet()
+                        + ", transitions " + transitions.keySet());
+    }
+
+    /**
+     * The outer part of a transition zone ({@code transition_splits}): from the share {@code at} of the zone (its blend,
+     * 0 at the inner edge) outwards {@code outer} picks the biome.
+     */
+    public record TransitionSplit(double at, BiomeSource outer) {
+        public static final Codec<TransitionSplit> CODEC = RecordCodecBuilder.<TransitionSplit>create(instance -> instance.group(
+                Codec.DOUBLE.fieldOf("at").forGetter(TransitionSplit::at),
+                BiomeSource.CODEC.fieldOf("outer").forGetter(TransitionSplit::outer)
+        ).apply(instance, TransitionSplit::new)).validate(split -> split.at() > 0.0 && split.at() < 1.0
+                ? DataResult.success(split)
+                : DataResult.error(() -> "A transition split must lie inside its zone, 0 < at < 1: " + split.at()));
+    }
+
     @Override
     protected MapCodec<? extends BiomeSource> codec() {
         return CODEC;
@@ -140,7 +178,9 @@ public final class RingBiomeSource extends BiomeSource {
 
     @Override
     protected Stream<Holder<Biome>> collectPossibleBiomes() {
-        Stream<Holder<Biome>> sources = Stream.concat(rings.values().stream(), transitions.values().stream())
+        Stream<Holder<Biome>> sources = Stream.of(rings.values().stream(), transitions.values().stream(),
+                        splits.values().stream().map(TransitionSplit::outer))
+                .flatMap(stream -> stream)
                 .flatMap(source -> source.possibleBiomes().stream());
         return islandBiomes == null ? sources : Stream.concat(sources, Stream.of(islandBiomes.mythic(), islandBiomes.blighted()));
     }
@@ -165,9 +205,16 @@ public final class RingBiomeSource extends BiomeSource {
                 return height;
             }
         }
-        BiomeSource transition = position.inTransition() ? transitions.get(position.inner()) : null;
+        BiomeSource transition = position.inTransition() ? transition(position) : null;
         BiomeSource source = transition != null ? transition : rings.get(position.ring());
         return source.getNoiseBiome(x, y, z, sampler);
+    }
+
+    /** The transition source of a position in a zone, or null: its split's outer part from the split on. */
+    @Nullable
+    private BiomeSource transition(RingPosition position) {
+        TransitionSplit split = splits.get(position.inner());
+        return split != null && position.blend() >= split.at() ? split.outer() : transitions.get(position.inner());
     }
 
     /**

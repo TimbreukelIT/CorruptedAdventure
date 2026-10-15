@@ -28,5 +28,8 @@
       "argument1": 0.390625,
       "argument2": "corruptedadventure:void/overworld"
     }
+  },
+  "mix": {
+    "ring_3": 0.234375
   }
 }

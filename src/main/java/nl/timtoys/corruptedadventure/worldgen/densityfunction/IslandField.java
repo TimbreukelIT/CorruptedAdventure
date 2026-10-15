@@ -56,6 +56,13 @@ public final class IslandField implements DensityFunction {
     static final double MAX_REACH = 110.0;
     /** The calm first share of the zone 4→5 (no cracks; sealed under the sea by the aquifer), for the fluid rules. */
     public static final double SUNDERED_CALM_SHARE = Ring4Sundered.CALM_SHARE;
+    /**
+     * The share of the zone 3→4 that is ring 3's {@code steam_fens} rim (60 of 256 blocks); from there on lies
+     * {@code verdant_falls}, ring 4's descent. The one value for the terrain mix ({@code ring_blend/overworld*}
+     * {@code mix.ring_3}), the biome split (the preset's {@code transition_splits.ring_3.at}) and the water branch in
+     * ring 3's half ({@code RingFluidPicker.verdantWater}); the JSON is tested against it.
+     */
+    public static final double VERDANT_EDGE_SHARE = 60.0 / 256.0;
     /** Recorded waterfalls per chunk at most (the cap of the water branch). */
     static final int FALLS_PER_CHUNK = 3;
     /** What the stack adds to vanilla's caves around a lake above the sea (closes them). */

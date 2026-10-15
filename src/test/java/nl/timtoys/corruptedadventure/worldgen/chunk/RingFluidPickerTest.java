@@ -5,6 +5,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Aquifer;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandFieldTest;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicFieldTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -163,6 +167,47 @@ class RingFluidPickerTest {
         assertFalse(RingFluidPicker.ring4NoLava(Level.NETHER, ring4));
         assertEquals(Integer.MIN_VALUE, RingFluidPicker.ring4DryBelow(Level.NETHER, ring4));
         assertEquals(Integer.MIN_VALUE, RingFluidPicker.ring4DamBelow(Level.NETHER, new RingPosition(Ring.RING_4, Ring.RING_5, 0.5)));
-        assertFalse(RingFluidPicker.ring4FallColumn(Level.OVERWORLD, ring4, null));
+        assertFalse(RingFluidPicker.ring4WaterColumn(Level.OVERWORLD, ring4, null));
+    }
+
+    /**
+     * verdant_falls: ring 4's water branch from {@link IslandField#VERDANT_EDGE_SHARE} of the zone 3→4 outwards, also in
+     * ring 3's half; no ring 3 terrain lava there. Ring 3's seal, its dryness from Y 0 and the dams stay.
+     */
+    @Test
+    void verdantFallsStripHasRing4sWaterBranchAndKeepsRing3sSeal() {
+        double share = IslandField.VERDANT_EDGE_SHARE;
+        IslandField islands = IslandFieldTest.field();
+        VolcanicField volcanic = VolcanicFieldTest.field();
+        for (double blend : new double[]{share, 0.3, 0.49, 0.5, 0.7, 0.99}) {
+            RingPosition verdant = new RingPosition(Ring.RING_3, Ring.RING_4, blend);
+            assertTrue(RingFluidPicker.verdantWater(Level.OVERWORLD, verdant), "blend " + blend);
+            assertTrue(RingFluidPicker.ring4WaterColumn(Level.OVERWORLD, verdant, islands), "blend " + blend);
+            assertFalse(RingFluidPicker.ring4WaterColumn(Level.OVERWORLD, verdant, null));
+            assertFalse(RingFluidPicker.ring3LavaColumn(Level.OVERWORLD, verdant, volcanic), "blend " + blend);
+            assertFalse(RingFluidPicker.verdantWater(Level.NETHER, verdant));
+            assertFalse(RingFluidPicker.ring4WaterColumn(Level.NETHER, verdant, islands));
+        }
+        for (double blend : new double[]{0.3, 0.49}) {
+            RingPosition ring3Half = new RingPosition(Ring.RING_3, Ring.RING_4, blend);
+            assertEquals(RingFluidPicker.SEA_LEVEL, RingFluidPicker.ring3SealBelow(Level.OVERWORLD, ring3Half), "the seal stays");
+            assertEquals(RingFluidPicker.RING_3_DRY_FROM, RingFluidPicker.ring3DryFrom(Level.OVERWORLD, ring3Half));
+        }
+        assertEquals(-54, RingFluidPicker.ring4DamBelow(Level.OVERWORLD, new RingPosition(Ring.RING_3, Ring.RING_4, 0.7)));
+        // The steam_fens rim is ring 3's.
+        for (double blend : new double[]{0.0, 0.1, share - 1e-9}) {
+            RingPosition rim = new RingPosition(Ring.RING_3, Ring.RING_4, blend);
+            assertFalse(RingFluidPicker.verdantWater(Level.OVERWORLD, rim), "blend " + blend);
+            assertFalse(RingFluidPicker.ring4WaterColumn(Level.OVERWORLD, rim, islands), "blend " + blend);
+            assertTrue(RingFluidPicker.ring3LavaColumn(Level.OVERWORLD, rim, volcanic), "blend " + blend);
+        }
+        // Other zones and rings: unchanged.
+        for (RingPosition other : new RingPosition[]{RingPosition.within(Ring.RING_3), new RingPosition(Ring.RING_2, Ring.RING_3, 0.9),
+                new RingPosition(Ring.RING_4, Ring.RING_5, 0.3)}) {
+            assertFalse(RingFluidPicker.verdantWater(Level.OVERWORLD, other), other.toString());
+        }
+        assertTrue(RingFluidPicker.ring3LavaColumn(Level.OVERWORLD, RingPosition.within(Ring.RING_3), volcanic));
+        assertTrue(RingFluidPicker.ring4WaterColumn(Level.OVERWORLD, RingPosition.within(Ring.RING_4), islands));
+        assertFalse(RingFluidPicker.ring4WaterColumn(Level.OVERWORLD, RingPosition.within(Ring.RING_3), islands));
     }
 }

@@ -35,8 +35,10 @@ import javax.annotation.Nullable;
  * ({@link RingFluidPicker#waterOnlyFrom}, also over the whole zone 4→5), the bottom below Y −54 is dry ({@link RingFluidPicker#ring4DryBelow}) with a
  * dam of rock over the zone 4→5 and ring 4's half of the zone 3→4 ({@link RingFluidPicker#ring4DamBelow}), carvers
  * place no lava there ({@link #carverLava}), and the recorded waterfalls of its
- * {@link IslandField} fall as water ({@link RingFluidPicker#ring4FallColumn}); 61: their springs flow, and the lakes
- * above the sea in the islands' holes hold still water, with a band carvers may not cut.
+ * {@link IslandField} fall as water ({@link RingFluidPicker#ring4WaterColumn}); 61: their springs flow, and the lakes
+ * above the sea in the islands' holes hold still water, with a band carvers may not cut. verdant_falls: that water
+ * branch also holds in the {@code verdant_falls} strip of ring 3's half of the zone 3→4
+ * ({@link RingFluidPicker#verdantWater}), without ring 3's terrain lava; its seal below Y 63 stays.
  * <p>
  * One instance per noise chunk, so the per-call state below is single-threaded like vanilla's.
  */
@@ -234,7 +236,7 @@ final class RingAquifer implements Aquifer {
                 RingFluidPicker.sunderedSealBelow(dimension, position));
         dryBelow[i] = RingFluidPicker.ring4DryBelow(dimension, position);
         noLava[i] = RingFluidPicker.ring4NoLava(dimension, position);
-        boolean falls = RingFluidPicker.ring4FallColumn(dimension, position, islands);
+        boolean falls = RingFluidPicker.ring4WaterColumn(dimension, position, islands);
         // The zone 4→5 (both halves) has the abyss's still sea (63), read from the island field's column.
         boolean sundered = islands != null && position.inTransition() && position.inner() == Ring.RING_4 && position.outer() == Ring.RING_5;
         IslandField.Column islandColumn = falls || sundered ? islands.islandColumn(x, z) : null;
