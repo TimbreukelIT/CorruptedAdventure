@@ -62,6 +62,8 @@ final class VerdantGorges {
     private static final double DEPTH_SHARE = 0.4;
     /** The rim steps down a tread where that makes the half ellipse at least this round (depth / half width). */
     private static final double DEPTH_ROUND = 0.65;
+    /** Places tried in a cell before it is left without a gorge. */
+    private static final int PLACE_TRIES = 6;
     /** The collar stays this far under the foot river's bank envelope, and the arms have this much room past the arc. */
     private static final double ENVELOPE_MARGIN = 3.0;
     private static final double ARM_ROOM = 6.0;
@@ -75,6 +77,8 @@ final class VerdantGorges {
     /** The rim lake lies this far back from the edge; it ends this far before the arc's ends. */
     static final double RIM_LAKE_IN = 5.0;
     private static final double RIM_LAKE_END = 4.0;
+    /** The rim lake keeps this far (blocks across the zone) past the rim: its neighbours lie on the exact descent. */
+    private static final double RIM_LAKE_PAST_RIM = 4.0;
     /** A gorge lake's threshold before its lip (blocks), and the banks' rise per block. */
     static final double THRESHOLD = 3.0;
     private static final double BANK = 2.0;
@@ -229,34 +233,45 @@ final class VerdantGorges {
     private Gorge placeGorge(int k) {
         RingLayout layout = field.ringLayout();
         long h = CellShapes.cell(field.salt(), k, 0, GORGE_SALT);
-        double s0 = (k + 0.25 + 0.5 * CellShapes.unit(h, 0)) * cellSize();
         double scale = VerdantDescent.width(layout) / VerdantDescent.REFERENCE_WIDTH;
-        VerdantDescent.Profile profile = descent.profile(s0);
         double rimAt = VerdantDescent.rimAt(layout);
-        double start = profile.descentStart(rimAt);
         double radius = (RADIUS_MIN + RADIUS_SPAN * CellShapes.unit(h, 1)) * scale;
-        double back = Math.max(rimAt + (BACK_MIN + BACK_SPAN * CellShapes.unit(h, 2)) * scale, start + BACK_PAST_TOP);
-        double angle = s0 / VerdantDescent.midRadius(layout);
-        double[] b = VerdantDescent.onRay(layout, angle, VerdantDescent.zoneStart(layout) + back);
-        double ox = Math.cos(angle);
-        double oz = Math.sin(angle);
-        if (Double.isNaN(descent.rampAt(b[0], b[1]))) {
-            return null;
-        }
-        // The collar holds the arc on the rim's tread (T rounded to its tread, up within RIM_UP of the next): the gorge
-        // is cut into the plateau's edge, its wall H = T − G. The arc's ends must stay under the foot river's bank
-        // envelope with the rim level; where the descent is too short for that, the rim steps down a tread.
-        int top = (int) Math.floor((profile.rim() - VerdantDescent.BANK_TOP + RIM_UP) / VerdantDescent.STEP);
+        // A few places in the middle half of the cell, the first where the gorge fits: the boundary noise bends the
+        // zone's coordinates by up to ±20 blocks across a gorge, so a level rim does not fit everywhere.
+        double s0 = 0.0;
+        double[] b = null;
+        double ox = 0.0;
+        double oz = 0.0;
+        int top = 0;
         double depth = 0.0;
-        for (; top >= 4; top--) {
-            double reachable = envelopeU(profile, VerdantDescent.level(top) + 0.3 * VerdantDescent.STEP + ENVELOPE_MARGIN) - ARM_ROOM;
-            depth = Math.min(radius, reachable - back);
-            // A rounded horseshoe where a tread lower allows it (the collar then lowers the land round the gorge a little).
-            boolean round = depth >= DEPTH_ROUND * radius;
-            boolean lower = top > 4 && Math.min(radius, envelopeU(profile, VerdantDescent.level(top - 1) + 0.3 * VerdantDescent.STEP
-                    + ENVELOPE_MARGIN) - ARM_ROOM - back) >= DEPTH_ROUND * radius;
-            if (round || !lower && depth >= Math.max(DEPTH_MIN, DEPTH_SHARE * radius)) {
-                break;
+        VerdantDescent.Profile profile = null;
+        for (int attempt = 0; attempt < PLACE_TRIES && b == null; attempt++) {
+            long ha = attempt == 0 ? h : CellShapes.cell(field.salt(), k, attempt, GORGE_SALT);
+            s0 = (k + 0.25 + 0.5 * CellShapes.unit(ha, 0)) * cellSize();
+            profile = descent.profile(s0);
+            double back = Math.max(rimAt + (BACK_MIN + BACK_SPAN * CellShapes.unit(h, 2)) * scale, profile.descentStart(rimAt) + BACK_PAST_TOP);
+            double angle = s0 / VerdantDescent.midRadius(layout);
+            double[] at = VerdantDescent.onRay(layout, angle, VerdantDescent.zoneStart(layout) + back);
+            ox = Math.cos(angle);
+            oz = Math.sin(angle);
+            if (Double.isNaN(descent.rampAt(at[0], at[1]))) {
+                continue;
+            }
+            // The collar holds the arc on the rim's tread (T rounded to its tread, up within RIM_UP of the next): the
+            // gorge is cut into the plateau's edge, its wall H = T − G. The arc must stay under the foot river's bank
+            // envelope with the rim level; where the descent is too short for that, the rim steps down a tread.
+            top = (int) Math.floor((profile.rim() - VerdantDescent.BANK_TOP + RIM_UP) / VerdantDescent.STEP);
+            for (; top >= 4; top--) {
+                depth = deepest(top, radius, at, ox, oz);
+                // A rounded horseshoe where a tread lower allows it (the collar then lowers the land round it a little).
+                boolean round = depth >= DEPTH_ROUND * radius;
+                boolean lower = top > 4 && deepest(top - 1, radius, at, ox, oz) >= DEPTH_ROUND * radius;
+                if (round || !lower && depth >= Math.max(DEPTH_MIN, DEPTH_SHARE * radius)) {
+                    break;
+                }
+            }
+            if (top >= 4 && depth >= Math.max(DEPTH_MIN, DEPTH_SHARE * radius)) {
+                b = at;
             }
         }
         // The wall 24 or 32 high (T − G ≥ 20): skipped where the descent is too low for a gorge lake above the sea.
@@ -265,7 +280,7 @@ final class VerdantGorges {
         if (floor < 1) {
             floor = top - 3;
         }
-        if (top < 4 || floor < 1 || depth < Math.max(DEPTH_MIN, DEPTH_SHARE * radius)) {
+        if (b == null || floor < 1) {
             return null;
         }
         double collar = VerdantDescent.level(top) + 0.3 * VerdantDescent.STEP;
@@ -296,6 +311,36 @@ final class VerdantGorges {
     /** Where (blocks across the zone) the foot river's inner bank envelope (its bank rising 0.6 per block) reaches y. */
     private static double envelopeU(VerdantDescent.Profile profile, double y) {
         return profile.river() - profile.bedHalf() - (y - VerdantDescent.RIVER_BED) / VerdantDescent.RIVER_SLOPE;
+    }
+
+    /**
+     * The deepest half ellipse (at most the half width, 0 if none) whose arc, with its collar on tread {@code top}, stays
+     * under the foot river's bank envelope with room for the arms, measured at points along the arc (the boundary noise
+     * bends the zone's coordinates, so not on the axis alone).
+     */
+    private double deepest(int top, double radius, double[] back, double ox, double oz) {
+        RingLayout layout = field.ringLayout();
+        // The rim lake (and the rim) need the envelope a block over the collar's tread out to the rim lake's far edge.
+        double y = VerdantDescent.level(top) + 1.0 + ENVELOPE_MARGIN;
+        double mid = VerdantDescent.midRadius(layout);
+        double period = VerdantDescent.perimeter(layout);
+        for (double depth = radius; depth >= DEPTH_MIN; depth -= 2.0) {
+            boolean fits = true;
+            for (double phi = -0.5 * Math.PI; phi <= 0.5 * Math.PI + 1e-9 && fits; phi += Math.PI / 12.0) {
+                // The arc's point (a = R sin φ, w = −D cos φ) about the centre at the back point + D outward, a little outside.
+                double a = (radius + RIM_LAKE_IN + 9.0) * Math.sin(phi);
+                double w = depth - depth * Math.cos(phi);
+                double x = back[0] - a * oz + w * ox;
+                double z = back[1] + a * ox + w * oz;
+                double u = layout.effectiveDistance(x, z) - VerdantDescent.zoneStart(layout);
+                VerdantDescent.Profile profile = descent.profile(RingArc.arc(x, z, mid));
+                fits = u <= envelopeU(profile, y);
+            }
+            if (fits) {
+                return depth;
+            }
+        }
+        return 0.0;
     }
 
     /** The foot river's bank envelope at u (the highest ground the river's bank allows there), less the margin. */
@@ -368,14 +413,32 @@ final class VerdantGorges {
         l.w = dx * g.ox() + dz * g.oz();
         l.side = l.a >= 0.0 ? 1 : -1;
         if (l.w < 0.0) {
-            // The half ellipse: f = 1 on it; the distance to it to first order (1 − f) / |∇f|.
-            double as = l.a / g.radius();
-            double ws = -l.w / g.depth();
-            double f = Math.hypot(as, ws);
-            l.phi = Math.atan2(as, ws);
+            // The half ellipse E(φ) = (R sin φ, −D cos φ): the foot point of the column on it (Newton from the scaled polar
+            // angle), so t is the wall's own arc length there and din the distance along its normal, plus the wobble.
+            double r = g.radius();
+            double d = g.depth();
+            double phi = Math.atan2(l.a / r, -l.w / d);
+            for (int n = 0; n < 4; n++) {
+                double sin = Math.sin(phi);
+                double cos = Math.cos(phi);
+                double ea = l.a - r * sin;
+                double ew = l.w + d * cos;
+                double f = ea * r * cos + ew * d * sin;
+                double df = -(r * r * cos * cos + d * d * sin * sin) - ea * r * sin + ew * d * cos;
+                if (df >= -1e-9) {
+                    break;
+                }
+                phi = Mth.clamp(phi - f / df, -0.5 * Math.PI, 0.5 * Math.PI);
+            }
+            double sin = Math.sin(phi);
+            double cos = Math.cos(phi);
+            double na = sin / r;
+            double nw = -cos / d;
+            double len = Math.hypot(na, nw);
+            l.phi = phi;
             l.rho = Math.hypot(l.a, l.w);
-            l.t = g.arcAt(l.phi);
-            l.din = (1.0 - f) / Math.hypot(Math.sin(l.phi) / g.radius(), Math.cos(l.phi) / g.depth()) + g.wobble(l.t);
+            l.t = g.arcAt(phi);
+            l.din = g.wobble(l.t) - ((l.a - r * sin) * na + (l.w + d * cos) * nw) / len;
         } else {
             l.rho = Math.abs(l.a);
             l.phi = l.side * 0.5 * Math.PI;
@@ -431,7 +494,7 @@ final class VerdantGorges {
         @Nullable
         Gorge blocks;
         Local local = new Local();
-        /** Blocks along the wall to the nearest arc fall. */
+        /** Blocks along the wall to the nearest arc fall (0 beside a notch or a climbing route: the wall stays smooth). */
         double nearFall;
         /** A spring's side beside the wall line (rock at springY ± 1), else MIN_VALUE. */
         int earY;
@@ -514,21 +577,31 @@ final class VerdantGorges {
                 }
             }
         }
+        // The wall stays smooth and whole (no roughness, no crumbling) near the falls, their notches and the climbing
+        // routes (the strands must hang free from ledge to ledge).
+        double calm = nearFall;
+        if (details != null) {
+            for (Route r : details.routes()) {
+                if (Math.abs(l.t - r.t()) <= r.half() + LEDGE_STAGGER + 2.0) {
+                    calm = 0.0;
+                }
+            }
+        }
         // Crumbling top edge (5a), where the wall stands, away from the falls.
         double wallHeight = outside - inside;
-        if (details != null && l.din > -4.0 && nearFall > CRUMBLE_CLEAR && !notched) {
+        if (details != null && l.din > -4.0 && calm > CRUMBLE_CLEAR && !notched) {
             double edge = (1.0 - Ring4Relief.smooth(-l.din, 1.0, 4.0)) * Ring4Relief.smooth(wallHeight, 2.0, 8.0);
             outside -= Math.round(CRUMBLE * edge * Math.max(0.0, field.relief().crumble(x, z)));
         }
         shape.outside = outside;
         shape.inside = inside;
-        shape.nearFall = nearFall;
+        shape.nearFall = calm;
         shape.earY = Integer.MIN_VALUE;
         shape.blocks = l.din >= -BLOCK_IN && l.din <= BLOCK_OUT ? g : null;
         shape.openLo = Integer.MAX_VALUE;
         shape.openHi = Integer.MIN_VALUE;
         if (shape.blocks != null && details != null && l.din <= 0.0) {
-            openRange(g, l, inside, outside, nearFall, shape);
+            openRange(g, l, inside, outside, calm, shape);
         }
         Local copy = shape.local;
         copy.a = l.a;
@@ -551,7 +624,7 @@ final class VerdantGorges {
         } else {
             out.height = outside;
             out.body = g.top();
-            if (outside < rimWater && (notched || envelope(p) >= g.collar() + 4.0 && rimLake(g, l) > 0.0)) {
+            if (outside < rimWater && (notched || rimLake(g, p, l) > 0.0)) {
                 out.lakeTop = rimWater;
             }
             if (nearFall <= 2.5 && -l.din <= 2.0) {
@@ -574,24 +647,32 @@ final class VerdantGorges {
     private double collarGround(Gorge g, VerdantDescent.Point p, Local l, int x, int z) {
         double dOut = -l.din;
         double start = p.profile.descentStart(p.rimAt);
-        double share = (1.0 - Ring4Relief.smooth(dOut, FLAT, FLAT + BLEND)) * Ring4Relief.smooth(p.u, start + 2.0, start + 8.0);
         double level = l.w <= 0.0 ? g.collar() : Mth.lerp(Ring4Relief.smooth(l.w, 0.0, ARM_FADE), g.collar(), p.ramp);
+        // Where the collar lowers the ground (behind the back wall) it lets go towards the top terrace, never lowering it.
+        double share = (1.0 - Ring4Relief.smooth(dOut, FLAT, FLAT + BLEND))
+                * (p.ramp <= level ? 1.0 : Ring4Relief.smooth(p.u, start + 2.0, start + 8.0));
         // Never above the foot river's bank envelope (the arms come down to the foot as the descent does).
         double envelope = envelope(p);
         level = Math.min(level, Math.max(envelope, p.ramp));
         double ground = VerdantDescent.treadHeight(Mth.lerp(share, p.ramp, level), p.detail);
         // The rim lake: a curved lake round the arc on the collar's tread (only where the collar holds it level).
-        double m = envelope >= g.collar() + 4.0 ? rimLake(g, l) : -1.0;
+        // On the collar's tread (or higher: its banks then rise); never where the ground lies under it.
+        double m = ground >= VerdantDescent.level(g.top()) - 0.01 ? rimLake(g, p, l) : -1.0;
         if (m > 0.0) {
             ground = Math.min(ground, VerdantDescent.level(g.top()) - (1.0 + g.rimDepth()) * Ring4Relief.smooth(m, 0.0, 1.5));
         }
         return ground;
     }
 
-    /** How far inside the rim lake's outline a column lies (blocks; ≤ 0 outside it). */
-    private static double rimLake(Gorge g, Local l) {
+    /**
+     * How far inside the rim lake's outline a column lies (blocks; ≤ 0 outside it). Only where the collar holds its
+     * tread level all round (under the river's envelope, clear of the top terrace and the steam_fens strip, whose
+     * ground the 4-block grid shows).
+     */
+    private static double rimLake(Gorge g, VerdantDescent.Point p, Local l) {
         double dOut = -l.din;
-        if (l.w >= 0.0 || dOut <= RIM_LAKE_IN - 1.0) {
+        if (l.w >= 0.0 || dOut <= RIM_LAKE_IN - 1.0 || envelope(p) < VerdantDescent.level(g.top()) + 1.0
+                || p.u < p.rimAt + RIM_LAKE_PAST_RIM) {
             return -1.0;
         }
         double width = g.rimWidth() * (0.75 + 0.35 * Math.cos(l.phi));
@@ -891,6 +972,14 @@ final class VerdantGorges {
             return null;
         }
         double niche = CellShapes.unit(hash, 2) < NICHE_CHANCE ? 5.0 + 3.0 * CellShapes.unit(hash, 3) : 0.0;
+        if (niche > 0.0) {
+            // Its far end on the exact descent (not in the steam_fens strip the 4-block grid shows).
+            double[] end = wallAt(g, t, -(PATH_DEPTH + niche + 1.0));
+            VerdantDescent.Point ep = descent.locate(end[0], end[1], new VerdantDescent.Point());
+            if (ep.kind != VerdantDescent.Point.DESCENT || ep.u < ep.rimAt + 2.0) {
+                niche = 0.0;
+            }
+        }
         IslandField.Fall fall = new IslandField.Fall(sx, sz, springY, fx, fz, bottom);
         return new GorgeFall(new VerdantBasins.Fall(fall, step[0], step[1]), true, g.top(), notch, t, phi, niche);
     }
@@ -1072,7 +1161,7 @@ final class VerdantGorges {
             if (count < 2) {
                 continue;
             }
-            routes.add(new Route(t, 2.0 + CellShapes.unit(hr, 1), firstY, spacing, count, g.pathY() - 3, g.pathY() + PATH_HEIGHT + 2));
+            routes.add(new Route(t, 2.5 + CellShapes.unit(hr, 1), firstY, spacing, count, g.pathY() - 3, g.pathY() + PATH_HEIGHT + 2));
         }
         return routes;
     }

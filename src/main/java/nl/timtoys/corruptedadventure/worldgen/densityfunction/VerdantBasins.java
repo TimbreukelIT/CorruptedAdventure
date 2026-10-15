@@ -81,6 +81,9 @@ final class VerdantBasins {
     private static final int NICHE_HEIGHT = 3;
     /** The longest tunnel (blocks along the tread); it rises 1 in 2. */
     private static final int TUNNEL_MAX = 30;
+    /** The tunnel's exit lies at least this far (blocks) from the tread's edge; the tunnel moves a row away every TUNNEL_DRIFT. */
+    private static final double TUNNEL_EXIT = 6.0;
+    private static final int TUNNEL_DRIFT = 3;
     /** One in five brooks gets a rock bridge (span 4–8, 2–3 thick); about 47 % of the tries fit, so a brook tries with this. */
     private static final double BRIDGE_CHANCE = 0.43;
 
@@ -602,15 +605,17 @@ final class VerdantBasins {
             if (k >= 0 && k < depth && Math.abs(j) <= 1) {
                 return new int[]{bottom, bottom + NICHE_HEIGHT - 1};
             }
-            int back = depth - 1;
-            if (side != 0 && Math.abs(k - back) <= 1) {
-                int run = side * j;
-                if (run >= 0 && run <= length) {
-                    int floor = bottom + run / 2;
-                    return new int[]{floor, floor + NICHE_HEIGHT - 1};
-                }
+            int run = side * j;
+            if (side != 0 && run >= 0 && run <= length && Math.abs(k - tunnelRow(depth, run)) <= 1) {
+                int floor = bottom + run / 2;
+                return new int[]{floor, floor + NICHE_HEIGHT - 1};
             }
             return null;
+        }
+
+        /** The middle row (blocks behind the spring) of a tunnel {@code run} blocks along: it drifts away from the edge. */
+        static int tunnelRow(int depth, int run) {
+            return depth - 1 + run / TUNNEL_DRIFT;
         }
     }
 
@@ -755,9 +760,9 @@ final class VerdantBasins {
      */
     private int tunnelFits(Fall fall, int b, int bottom, int side, Map<Long, Water> memo) {
         IslandField.Fall f = fall.fall();
-        int back = TUNNEL_NICHE - 1;
         for (int run = 2; run <= TUNNEL_MAX; run++) {
             int floor = bottom + run / 2;
+            int back = Niche.tunnelRow(TUNNEL_NICHE, run);
             boolean open = false;
             for (int k = back - 1; k <= back + 1; k++) {
                 int j = side * run;
@@ -772,6 +777,12 @@ final class VerdantBasins {
                     return 0;
                 }
                 if (k == back && floor >= w.height - 1.0) {
+                    // The exit: at least 6 blocks from the tread's edge (one less for the cell's corner).
+                    double gx = descent.rampAt(x + 1, z) - descent.rampAt(x - 1, z);
+                    double gz = descent.rampAt(x, z + 1) - descent.rampAt(x, z - 1);
+                    if ((r - VerdantDescent.level(b)) / Math.max(0.02, 0.5 * Math.hypot(gx, gz)) < TUNNEL_EXIT) {
+                        return 0;
+                    }
                     open = true;
                 }
                 // No water within two columns unless two blocks of rock lie between it and the tunnel's roof.
@@ -853,7 +864,7 @@ final class VerdantBasins {
 
     /** The point on the ray at {@code angle} where the ramp falls through {@code value} (bisection), or null. */
     @Nullable
-    private double[] rampPoint(double angle, double value) {
+    double[] rampPoint(double angle, double value) {
         RingLayout layout = field.ringLayout();
         double start = VerdantDescent.zoneStart(layout);
         VerdantDescent.Profile profile = descent.profile(angle * VerdantDescent.midRadius(layout));

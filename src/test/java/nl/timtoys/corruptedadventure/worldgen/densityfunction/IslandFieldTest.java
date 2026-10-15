@@ -126,7 +126,8 @@ public class IslandFieldTest {
         IslandField first = field();
         IslandField other = field();
         List<int[]> points = new ArrayList<>();
-        for (double angle : new double[]{0.0, 1.3, 2.6, Math.PI - 0.004, Math.PI, -Math.PI + 0.004, 4.4}) {
+        // 0.048 and 1.35: the middles of gorges 0 and 11 (part 2), with their walls, paths, niches and falls.
+        for (double angle : new double[]{0.0, 0.048, 1.3, 1.35, 2.6, Math.PI - 0.004, Math.PI, -Math.PI + 0.004, 4.4}) {
             for (double u = 52.0; u < 256.0; u += 7.3) {
                 for (double ds = -24.0; ds <= 24.0; ds += 6.1) {
                     double[] p = VerdantDescent.onRay(LAYOUT, angle + ds / VerdantDescent.midRadius(LAYOUT),
@@ -139,9 +140,12 @@ public class IslandFieldTest {
         for (int[] p : points) {
             IslandField.Column c = first.column(p[0], p[1]);
             double[] values = {c.surface(), c.lakeTop(), c.rim(), c.cliff(), c.springY(), c.fallTop(), c.caveLiftFrom(),
-                    first.initialHeight(p[0], p[1]), 0.0, 0.0};
+                    first.initialHeight(p[0], p[1]), 0.0, 0.0, c.openFrom(), c.openTo(), 0.0, 0.0, 0.0};
             values[8] = first.thin(p[0], (int) Math.floor(values[0]), p[1]);
             values[9] = first.fallsOfChunk(p[0] >> 4, p[1] >> 4).size();
+            for (int i = 0; i < 3; i++) {
+                values[12 + i] = first.thin(p[0], (int) Math.floor(values[0]) - 6 - 7 * i, p[1]);
+            }
             forward.add(values);
         }
         int lakes = 0;
@@ -150,8 +154,11 @@ public class IslandFieldTest {
             double fallCount = other.fallsOfChunk(p[0] >> 4, p[1] >> 4).size();
             IslandField.Column c = other.column(p[0], p[1]);
             double[] values = {c.surface(), c.lakeTop(), c.rim(), c.cliff(), c.springY(), c.fallTop(), c.caveLiftFrom(),
-                    other.initialHeight(p[0], p[1]), 0.0, fallCount};
+                    other.initialHeight(p[0], p[1]), 0.0, fallCount, c.openFrom(), c.openTo(), 0.0, 0.0, 0.0};
             values[8] = other.thin(p[0], (int) Math.floor(values[0]), p[1]);
+            for (int i = 0; i < 3; i++) {
+                values[12 + i] = other.thin(p[0], (int) Math.floor(values[0]) - 6 - 7 * i, p[1]);
+            }
             assertArrayEquals(forward.get(k), values, p[0] + ", " + p[1]);
             lakes += c.lakeTop() != Integer.MIN_VALUE ? 1 : 0;
         }
