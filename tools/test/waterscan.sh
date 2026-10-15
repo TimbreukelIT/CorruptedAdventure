@@ -6,7 +6,8 @@
 # Makes a fresh world of the areas with world.sh (--keep, so the server stays up), asks the server for the planned
 # falls of every overworld area box (`/ca falls`, the same IslandField.waterfallsWithin as the terrain; written to
 # <world>/ca_falls), stops the server, then runs py/waterscan.py on the saved regions and the fall lists.
-# Output: build/test/waterscan-<level>.txt (+ .json). Exit code of waterscan.py: 1 when an area has an overtreding.
+# Output: build/test/waterscan-<level>.txt (+ .json). Exit code of waterscan.py (run without --strict): 0 even with
+# overtredingen - read the "over" column; rerun py/waterscan.py --strict offline for a failing exit code.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 [ $# -ge 2 ] || { sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
 level="$1"; areas="$2"; shift 2

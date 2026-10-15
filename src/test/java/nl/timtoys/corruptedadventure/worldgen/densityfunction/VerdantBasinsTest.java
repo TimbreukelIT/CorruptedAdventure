@@ -344,6 +344,105 @@ class VerdantBasinsTest {
         assertTrue(tunnels > niches / 5 && tunnels < niches / 2, "tunnels " + tunnels + " of " + niches);
     }
 
+    /**
+     * Review 2c-2: every rock bridge is walked onto from the tread: at both ends the deck's top lies at most one block
+     * over the dry tread beyond it (a neighbour past the span, within the deck's width; each end has one), and along the deck a step to a
+     * neighbouring deck column is at most one block. All bridges round the ring.
+     */
+    @Test
+    void rockBridgesAreWalkedOntoFromTheTread() {
+        WaterScan scan = new WaterScan(FIELD, LAYOUT);
+        double r = VerdantDescent.midRadius(LAYOUT);
+        double period = VerdantDescent.perimeter(LAYOUT);
+        int bridges = 0;
+        int ends = 0;
+        int worstEnd = Integer.MIN_VALUE;
+        int worstAlong = 0;
+        int thinnest = Integer.MAX_VALUE;
+        int wet = 0;
+        for (int k = 0; k < BASINS.streamCount(); k++) {
+            VerdantBasins.Stream stream = BASINS.stream(k);
+            if (stream == null) {
+                continue;
+            }
+            for (int b = 1; b <= stream.top(); b++) {
+                VerdantBasins.Bridge bridge = BASINS.bridge(stream, b);
+                if (bridge == null) {
+                    continue;
+                }
+                bridges++;
+                double[] c = BASINS.rampPoint(bridge.centre() / r, bridge.ramp());
+                assertNotNull(c, "bridge " + bridge);
+                int cx = (int) Math.floor(c[0]);
+                int cz = (int) Math.floor(c[1]);
+                int reach = (int) Math.ceil(0.5 * bridge.span()) + 4;
+                String where = " (bridge at " + cx + " " + cz + ")";
+                boolean[] side = new boolean[2];
+                int middle = 0;
+                for (int x = cx - reach; x <= cx + reach; x++) {
+                    for (int z = cz - reach; z <= cz + reach; z++) {
+                        int[] deck = bridgeRock(bridge, x, z, period);
+                        if (deck == null) {
+                            continue;
+                        }
+                        middle = Math.max(middle, deck[1] - deck[0] + 1);
+                        int stand = stand(scan, x, z, b);
+                        assertEquals(deck[1] + 1, stand, "the deck's top" + where);
+                        for (int[] n : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                            int nx = x + n[0];
+                            int nz = z + n[1];
+                            if (bridgeRock(bridge, nx, nz, period) != null) {
+                                worstAlong = Math.max(worstAlong, Math.abs(stand(scan, nx, nz, b) - stand));
+                                continue;
+                            }
+                            double d = RingArc.loopDelta(FIELD.column(nx, nz).arc, bridge.centre(), period);
+                            double along = (FIELD.descent().rampAt(nx, nz) - bridge.ramp()) / bridge.grad();
+                            if (Math.abs(d) <= 0.5 * bridge.span() || Math.abs(along) > 1.5) {
+                                continue;
+                            }
+                            // An end: the tread past the span (a corner of the deck may reach over the brook there).
+                            int tread = stand(scan, nx, nz, b);
+                            if (scan.block(nx, tread, nz) == WaterScan.WATER) {
+                                wet++;
+                                continue;
+                            }
+                            int step = stand - tread;
+                            worstEnd = Math.max(worstEnd, step);
+                            assertTrue(step <= 1, "the deck " + step + " over the tread at its end" + where);
+                            side[d < 0.0 ? 0 : 1] = true;
+                            ends++;
+                        }
+                    }
+                }
+                assertTrue(side[0] && side[1], "both ends reached from dry tread" + where);
+                thinnest = Math.min(thinnest, middle);
+            }
+        }
+        System.out.printf("bridges %d, end steps %d (highest %d; %d over the brook), highest step along a deck %d, thinnest middle %d%n",
+                bridges, ends, worstEnd, wet, worstAlong, thinnest);
+        assertTrue(bridges > 150, "bridges " + bridges);
+        assertTrue(worstAlong <= 1, "a step of " + worstAlong + " along a deck");
+        assertTrue(thinnest >= 2, "a deck " + thinnest + " thick in its middle");
+    }
+
+    /** The rock of bridge {@code bridge} in column (x, z), or null. */
+    private static int[] bridgeRock(VerdantBasins.Bridge bridge, int x, int z, double period) {
+        IslandField.Column column = FIELD.column(x, z);
+        if (!column.verdant) {
+            return null;
+        }
+        return bridge.range(FIELD.descent().rampAt(x, z), column.arc, period);
+    }
+
+    /** The first open block over the ground or deck of a column on tread b (searched from 8 over the tread down). */
+    private static int stand(WaterScan scan, int x, int z, int b) {
+        int y = (int) VerdantDescent.level(b) + 8;
+        while (scan.block(x, y, z) != WaterScan.SOLID) {
+            y--;
+        }
+        return y + 1;
+    }
+
     /** One in five brooks has a rock bridge over it: span 4–8, 2–3 thick, air between the water and its underside. */
     @Test
     void rockBridgesSpanBrooks() {

@@ -86,6 +86,8 @@ final class VerdantBasins {
     private static final int TUNNEL_DRIFT = 3;
     /** One in five brooks gets a rock bridge (span 4–8, 2–3 thick); about 47 % of the tries fit, so a brook tries with this. */
     private static final double BRIDGE_CHANCE = 0.43;
+    /** Past each end of a rock bridge the tread is levelled this far (blocks along the loop, review 2c-2). */
+    private static final double LANDING = 1.5;
 
     private final IslandField field;
     private final VerdantDescent descent;
@@ -621,8 +623,13 @@ final class VerdantBasins {
 
     /**
      * A rock bridge over a brook: at the ramp value {@code ramp} (blocks across the tread at gradient {@code grad}),
-     * centred on the gully at {@code centre} along the loop, {@code span} long, {@code thickness} thick; its underside
-     * from the tread's top block at the ends up to two blocks over the tread's top in the middle.
+     * centred on the gully at {@code centre} along the loop, {@code span} long, up to {@code thickness} thick in the
+     * middle; its underside from the tread's top block at the ends up to two blocks over the tread's top in the middle.
+     * The deck thins towards its ends (review 2c-2: walkable): one block over the tread at an end, then a block higher per
+     * block inwards up to its full height, so it is walked onto and over with steps of one block; where a short span
+     * leaves no room for that the underside comes down to one block over the tread (at least 2 thick in the middle,
+     * always a block of air over the brook). Just past each end a dry dip of the tread is filled to the tread's top
+     * ({@link #landing}).
      */
     record Bridge(double centre, double ramp, double grad, double span, int thickness, int level) {
         /** The rock [lo, hi] of the arch in a column at ramp value r and loop position s, or null. */
@@ -634,8 +641,16 @@ final class VerdantBasins {
                 return null;
             }
             double q = 2.0 * d / span;
-            int lo = Mth.ceil(level - 1.0 + 2.0 * (1.0 - q * q));
-            return new int[]{lo, lo + thickness - 1};
+            int top = level + Math.min(thickness, (int) Math.floor(0.5 * span - Math.abs(d)));
+            // The arch's underside, held down where the thinned deck needs it (never into the block over the brook).
+            int under = Mth.ceil(level - 1.0 + 2.0 * (1.0 - q * q));
+            return new int[]{Math.min(under, Math.max(level, top - thickness + 1)), top};
+        }
+
+        /** Whether a column at ramp value r and loop position s lies just past an end, within the deck's width. */
+        boolean landing(double r, double s, double period) {
+            double d = Math.abs(RingArc.loopDelta(s, centre, period));
+            return Math.abs((r - ramp) / grad) <= 1.5 && d > 0.5 * span && d <= 0.5 * span + LANDING;
         }
     }
 
@@ -670,6 +685,15 @@ final class VerdantBasins {
             if (b >= 1 && b <= stream.top()) {
                 Bridge bridge = bridge(stream, b);
                 int[] range = bridge == null ? null : bridge.range(p.ramp, p.s, period);
+                if (range == null && bridge != null && bridge.landing(p.ramp, p.s, period) && c.height < bridge.level()) {
+                    // Past an end: a dip of the tread (its rounded edge, a gully's bank) is filled up to the tread's top
+                    // block where no water stands in it, so the step onto the deck stays one block.
+                    Water w = new Water();
+                    shape(x, z, p, true, w);
+                    if (w.lakeTop == Integer.MIN_VALUE || Mth.ceil(c.height) >= w.lakeTop) {
+                        range = new int[]{Mth.floor(c.height), bridge.level() - 1};
+                    }
+                }
                 if (range != null) {
                     c.solidLo = Math.min(c.solidLo, range[0]);
                     c.solidHi = Math.max(c.solidHi, range[1]);

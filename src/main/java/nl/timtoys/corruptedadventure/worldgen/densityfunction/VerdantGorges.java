@@ -151,7 +151,7 @@ final class VerdantGorges {
     private static final double GULLY_SHIFT = 4.0;
     private static final double GULLY_MEANDER = 3.0;
     /** The shore along the gully. */
-    static final double GULLY_OEVER = 2.0;
+    static final double GULLY_SHORE = 2.0;
     /** A rock arch over this share of the gullies; its deck this half wide (along the gully), 8–14 over the water. */
     private static final double ARCH_CHANCE = 0.9;
     static final double ARCH_HALF_DECK = 1.5;
@@ -187,7 +187,7 @@ final class VerdantGorges {
      */
     record Gorge(int index, double s0, double bx, double bz, double cx, double cz, double ox, double oz, double radius,
                  double depth, int top, int floor, double collar, int pathY, int downSide, double rimWidth, double rimDepth,
-                 double lakeDepth, double lowerDepth, double oever, double p1, double p2, double p3, double reach,
+                 double lakeDepth, double lowerDepth, double shore, double p1, double p2, double p3, double reach,
                  double[] arcs, double pinchFrom, double pinchLength, double gullyHalf, double gullyShift) {
         /** How far the arms have pinched into the gully at w (0 before, 1 in the gully). */
         double pinch(double w) {
@@ -224,9 +224,9 @@ final class VerdantGorges {
             return Math.sqrt(1.0 + slope * slope);
         }
 
-        /** The dry shore's width along the arms at w: narrowing to {@link #GULLY_OEVER} in the gully. */
-        double oeverAt(double w) {
-            return Mth.lerp(pinch(w), oever, GULLY_OEVER);
+        /** The dry shore's width along the arms at w: narrowing to {@link #GULLY_SHORE} in the gully. */
+        double shoreAt(double w) {
+            return Mth.lerp(pinch(w), shore, GULLY_SHORE);
         }
 
         /** How far the wall line lies outside the half ellipse at arc parameter t (blocks): it never runs straight. */
@@ -416,7 +416,7 @@ final class VerdantGorges {
         double rimDepth = 2.0 + CellShapes.unit(h, 6);
         double lakeDepth = 4.0 + 2.0 * CellShapes.unit(h, 7);
         double lowerDepth = 2.5 + 1.5 * CellShapes.unit(h, 8);
-        double oever = 4.0 + 2.0 * CellShapes.unit(h, 9);
+        double shore = 4.0 + 2.0 * CellShapes.unit(h, 9);
         double p1 = 2.0 * Math.PI * CellShapes.unit(h, 10);
         double p2 = 2.0 * Math.PI * CellShapes.unit(h, 11);
         double p3 = 2.0 * Math.PI * CellShapes.unit(h, 12);
@@ -437,7 +437,7 @@ final class VerdantGorges {
         double pinchLength = Math.max(PINCH_MIN, Math.min(PINCH_SHARE * (radius - gullyHalf), toRiver - RIVER_ROOM - pinchFrom));
         double gullyShift = GULLY_SHIFT * (2.0 * CellShapes.unit(h, 15) - 1.0);
         return new Gorge(k, s0, b[0], b[1], cx, cz, ox, oz, radius, depth, top, floor, collar, pathY, downSide, rimWidth, rimDepth,
-                lakeDepth, lowerDepth, oever, p1, p2, p3, reach, arcs, pinchFrom, pinchLength, gullyHalf, gullyShift);
+                lakeDepth, lowerDepth, shore, p1, p2, p3, reach, arcs, pinchFrom, pinchLength, gullyHalf, gullyShift);
     }
 
     /** How far out from (x, z) along (ox, oz) the descent reaches the foot river's middle. */
@@ -698,7 +698,7 @@ final class VerdantGorges {
         double level = VerdantDescent.level(b);
         double dry = b0 >= g.floor() ? VerdantDescent.level(g.floor()) : p.treads;
         double arm = Ring4Relief.smooth(l.w, 0.0, ARM_TURN);
-        double across = l.din - g.oeverAt(l.w) * arm + 4.0 * (1.0 - arm);
+        double across = l.din - g.shoreAt(l.w) * arm + 4.0 * (1.0 - arm);
         double toEdge = b >= 1 ? (p.ramp - level) / grad : Double.POSITIVE_INFINITY;
         double inset = Math.min(across, toEdge - THRESHOLD);
         double depth = b == g.floor() ? g.lakeDepth() : g.lowerDepth();
@@ -892,8 +892,8 @@ final class VerdantGorges {
     // ---------------------------------------------------------------- per block
 
     /**
-     * The per-block wall of a column {@link Shape#blocks} names: +1 rock, −1 open, 0 where the exact surface decides
-     * (outside the wall's own range). The ledge path, its ramps and the niches are cut into the wall; climbing ledges and
+     * The per-block wall of a column {@link Shape#blocks} names: +1 rock, −1 open (under the gorge floor rock, from the
+     * collar up open; the field asks it only within the column's exact band). The ledge path, its ramps and the niches are cut into the wall; climbing ledges and
      * a spring's sides stand out of it; between the gorge floor and the collar the face moves with the roughness.
      *
      * @param inside  the gorge floor's ground at the column
@@ -1163,7 +1163,7 @@ final class VerdantGorges {
             double along = lipAlong(g, 0.0, VerdantDescent.level(b));
             double w = Double.isNaN(along) ? 0.0 : Math.max(0.0, along);
             double middle = g.centre(w);
-            double span = Mth.lerp(g.pinch(w), g.radius(), g.gullyHalf()) - g.oeverAt(w) - 6.0 - 2.0 * (1.0 - g.pinch(w));
+            double span = Mth.lerp(g.pinch(w), g.radius(), g.gullyHalf()) - g.shoreAt(w) - 6.0 - 2.0 * (1.0 - g.pinch(w));
             count = Math.min(count, Math.max(1, (int) (2.0 * span / 5.0)));
             double jitter = Math.min(3.0, 0.5 * span / count);
             for (int j = 0; j < count; j++) {
@@ -1441,7 +1441,7 @@ final class VerdantGorges {
         Local l = new Local();
         // The spring, its sides and the notch lie inside the gorge, clear of the shore and the wall.
         local(g, sx, sz, l);
-        if (l.din < g.oeverAt(l.w) + 4.0) {
+        if (l.din < g.shoreAt(l.w) + 4.0) {
             return null;
         }
         if (!(groundAt(g, sx, sz, w, s) > springY + 1.0)) {
@@ -1498,8 +1498,8 @@ final class VerdantGorges {
     }
 
     /**
-     * The climbing routes (Q3): beside half the arc falls and along the walls every 20–28 blocks where the wall stands
-     * at least 10 high; each a stack of short ledges from just above the water or shore to near the rim.
+     * The climbing routes (Q3): beside a third of the arc falls and along the walls every 24–36 blocks where the wall stands
+     * at least 12 high; each a stack of short ledges from just above the water or shore to near the rim.
      */
     private List<Route> routes(Gorge g, List<GorgeFall> falls, @Nullable Arch arch) {
         List<Double> places = new ArrayList<>();

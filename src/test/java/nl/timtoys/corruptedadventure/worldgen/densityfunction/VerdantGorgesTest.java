@@ -679,9 +679,11 @@ class VerdantGorgesTest {
             assertEquals(first.gorges().details(g).routes(), other.gorges().details(again).routes());
             assertTrue(g.reach() < 0.25 * first.gorges().cellSize(), "the reach stays inside the cell");
         }
-        // Across the seam (x < 0, z = 0): columns on both sides of the angle −π | π, both fields.
+        // Across the seams: x < 0, z = 0 (the angle −π | π) and x > 0, z = 0 (where s wraps from the loop's length to 0 and
+        // the cells start again), columns on both sides, both fields.
         for (int z = -6; z <= 6; z++) {
-            for (int x = -6200; x <= -5850; x += 7) {
+            for (int x = 5850; x <= 6200; x += 7) {
+                assertArrayEquals(values(first, new int[]{-x, z}), values(other, new int[]{-x, z}), -x + " " + z);
                 assertArrayEquals(values(first, new int[]{x, z}), values(other, new int[]{x, z}), x + " " + z);
             }
         }

@@ -867,7 +867,8 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **uitloopgeul en rotsboog (2026-10-15):** na het amfitheater knijpen de armen van een kloof organisch samen tot een uitloopgeul van ~20–30 breed die getrapt naar de voetrivier loopt, en over ongeveer de helft van de geulen ligt een natuurlijke rotsboog (overspanning 14–30, 3–4 dik, dek 3 breed, 8–14 boven het water, afgeronde onderkant) die op beide geulwanden staat;
   - **klimstreng onder elke klimknop (2026-10-15):** `ledge_strand` hangt altijd een streng onder de klimknoppen van een kloofroute (een deterministische terreinvraag, geen extra blokken), losse richels houden kans 0,5, zodat elke route doorlopend beklimbaar is;
   - eigen cap van **6 vallen per chunk**; **calciet** (travertijn) op drempelranden en vallippen, mos op de treden;
-  - sfeer: biome-particle `waterfall_mist`, eigen ambient-loop van verre watervallen, tropische vogels/kikkers; dieren: kikkers en schildpadden.
+  - sfeer: biome-particle `waterfall_mist`, eigen ambient-loop van verre watervallen, tropische vogels/kikkers; dieren: kikkers en schildpadden;
+  - **rotsbruggen** over de beken zijn beloopbaar: het dek dunt naar de uiteinden uit tot 1 dik, zodat je er vanaf de trede met één blok op stapt (2026-10-15, reviewbevinding 2c-2).
 
 **Ring 4-heuvels (sparring 2026-10-15):** het karakter blijft (terrassen van `cascade_vale`, fjordkliffen), maar de randen worden zachter: afgeronde trederanden, golvende in plaats van rechte traplijnen, egalere treden. Eerst meten waar de blokkige hoeken vandaan komen. **Uitwerking (2026-10-15):** terrassen trede 60 % / stootbord 40 % met afgeronde rand en voet (ook voor de treden van `verdant_falls`); fjordrand en -wand per blok exact met smalle afronding, kliffen blijven 2:1. Diagnose: fjordranden knikten binnen één cel van het 4×4-raster (zaagtand), terrasstootborden te smal, detailruis op de treden.
 
