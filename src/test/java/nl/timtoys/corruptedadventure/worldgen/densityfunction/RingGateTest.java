@@ -265,6 +265,8 @@ class RingGateTest {
         RingGate mixed = new RingGate(Level.OVERWORLD, Ring.RING_3, DensityFunctions.constant(2.0), 0.25);
         JsonElement mixedJson = RingGate.MAP_CODEC.codec().encodeStart(JsonOps.INSTANCE, mixed).getOrThrow();
         assertEquals(0.25, RingGate.MAP_CODEC.codec().parse(JsonOps.INSTANCE, mixedJson).getOrThrow().mix());
+        mixedJson.getAsJsonObject().addProperty("mix", 0.0);
+        assertTrue(RingGate.MAP_CODEC.codec().parse(JsonOps.INSTANCE, mixedJson).isError(), "a share of 0, as RingBlend");
     }
 
     @Test

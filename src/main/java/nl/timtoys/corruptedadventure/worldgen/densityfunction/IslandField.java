@@ -650,15 +650,16 @@ public final class IslandField implements DensityFunction {
      * A fjord's wall and rim per block (heuvelfix 2b, Q6): the height kinks there within one cell, so the 4-block grid's
      * bilinear surface misses it by up to 7 blocks in a sawtooth. From a block under the lower of the exact and the
      * bilinear surface to a block over the higher one, the exact surface decides; around it the stack agrees. Not
-     * where a hole, a lake or its cave band lies (their rims are measured on the grid), nor in a transition zone (the
-     * other ring's density mixes in there). Returns the column with its band ({@code bandLo > bandHi}: none).
+     * where a hole, a lake or its cave band lies (their rims are measured on the grid), nor where another ring's density
+     * mixes in (a transition zone, but not the zone 3→4 beyond {@link #VERDANT_EDGE_SHARE}: pure ring 4 there). Returns
+     * the column with its band ({@code bandLo > bandHi}: none).
      */
     private Column withFjordBand(int x, int z) {
         Column c = columns.get(x, z, IslandField::reset);
         ensureIslands(c);
         double exact = c.surface;
         boolean banded = c.lakeTop == Integer.MIN_VALUE && c.caveLiftFrom > c.caveLiftTo && c.islandHole == 0.0
-                && !layout.get().sampleOverworld(x, z).inTransition();
+                && pureRing4(layout.get().sampleOverworld(x, z));
         double bilinear = banded ? gridSurface(x, z) : exact;
         // The corners may have moved the table's window: the same column again (recomputed if so).
         c = columns.get(x, z, IslandField::reset);
@@ -666,6 +667,14 @@ public final class IslandField implements DensityFunction {
         c.bandLo = banded ? Mth.floor(Math.min(exact, bilinear)) - 1 : Integer.MAX_VALUE;
         c.bandHi = banded ? Mth.ceil(Math.max(exact, bilinear)) + 1 : Integer.MIN_VALUE;
         return c;
+    }
+
+    /** Whether ring 4's density stands alone at a position (ring 4 itself, or the zone 3→4 past ring 3's mix share). */
+    private static boolean pureRing4(nl.timtoys.corruptedadventure.ring.RingPosition position) {
+        if (!position.inTransition()) {
+            return position.ring() == nl.timtoys.corruptedadventure.ring.Ring.RING_4;
+        }
+        return position.inner() == nl.timtoys.corruptedadventure.ring.Ring.RING_3 && position.blend() >= VERDANT_EDGE_SHARE;
     }
 
     /** The surface as the stack's interpolation shows it: the bilinear blend of the 4-block grid's corners around (x, z). */

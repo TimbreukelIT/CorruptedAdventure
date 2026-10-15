@@ -89,10 +89,13 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
     /** The smooth minimum's width at the rim (Q6: k = 4, rounded by at most a block). */
     static final double FJORD_ROUND = 4.0;
     /**
-     * The fjord's exact band ({@link Sample#fjordEdge}, Q6): the walls from {@link #FJORD_EDGE_MARGIN} before the floor
-     * ends up to that far past the rim, where the fjord landform has more than {@link #FJORD_EDGE_WEIGHT} weight.
+     * The fjord's exact band ({@link Sample#fjordEdge}, Q6), where the fjord landform has more than
+     * {@link #FJORD_EDGE_WEIGHT} weight: the walls from {@link #FJORD_EDGE_FLOOR} blocks before the floor ends, up to
+     * {@link #FJORD_EDGE_RIM} of cut above the plateau (6 blocks past the rim at the wall's slope): a cell's corner up to
+     * 4 blocks away (5.7 diagonally) may lie on the wall, so the grid sags that far behind the rim.
      */
-    static final double FJORD_EDGE_MARGIN = 6.0;
+    static final double FJORD_EDGE_FLOOR = 6.0;
+    static final double FJORD_EDGE_RIM = 12.0;
     private static final double FJORD_EDGE_WEIGHT = 0.05;
     // Rivers: a bed below the sea level, valley sides rising to the land.
     static final double RIVER_BED = 57.0;
@@ -227,10 +230,10 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
                 double cut = FJORD_FLOOR + Math.max(0.0, distance - FJORD_HALF) * FJORD_SLOPE;
                 fjord = fjordW * (1.0 - smooth(distance, FJORD_HALF, FJORD_HALF + 4.0)) * (1.0 - blighted);
                 // The rim rounded over a few blocks; the 4-block grid cannot show it, so the band is cut per block.
-                mythicH += fjordW * smoothMin(plateau, cut, FJORD_ROUND);
+                mythicH += fjordW * VolcanicMath.smoothMin(plateau, cut, FJORD_ROUND);
                 fjordRim = cut - plateau;
-                fjordEdge = fjordW * (1.0 - blighted) > FJORD_EDGE_WEIGHT && distance > FJORD_HALF - FJORD_EDGE_MARGIN
-                        && fjordRim < FJORD_EDGE_MARGIN;
+                fjordEdge = fjordW * (1.0 - blighted) > FJORD_EDGE_WEIGHT && distance > FJORD_HALF - FJORD_EDGE_FLOOR
+                        && fjordRim < FJORD_EDGE_RIM;
             }
             // The steps after the mix (H4): blended landforms keep their treads level instead of tilting them.
             double stepped = smooth(cascadeW, 0.2, 0.6);
@@ -316,11 +319,6 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         return rise <= 0.0 ? rise : terrace(rise) + RISER_DETAIL * d * riserBump(rise);
     }
 
-    /** min(a, b), rounded where they lie within {@code k} of each other (polynomial smooth minimum, at most k/4 lower). */
-    static double smoothMin(double a, double b, double k) {
-        double h = Mth.clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
-        return Mth.lerp(h, b, a) - k * h * (1.0 - h);
-    }
 
     private double warpX(double x, double z) {
         return x + WARP_BLOCKS * sample(warp, x, z);

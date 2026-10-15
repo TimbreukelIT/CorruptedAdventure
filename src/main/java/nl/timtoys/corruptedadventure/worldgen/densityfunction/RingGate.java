@@ -34,11 +34,16 @@ public record RingGate(ResourceKey<Level> dimension, Ring ring, DensityFunction 
     /** Blocks of the dimension, so cells of 4 blocks with room to spare. */
     static final double MARGIN = 16.0;
 
+    /** A mix share as {@link RingBlend} accepts it: in (0, 1]. Before the map codec, which builds right away. */
+    static final Codec<Double> MIX_CODEC = Codec.DOUBLE.validate(share -> share > 0.0 && share <= 1.0
+            ? com.mojang.serialization.DataResult.success(share)
+            : com.mojang.serialization.DataResult.error(() -> "Ring gate mix share must lie in (0, 1]: " + share));
+
     public static final MapCodec<RingGate> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(RingGate::dimension),
             Ring.CODEC.fieldOf("ring").forGetter(RingGate::ring),
             DensityFunction.HOLDER_HELPER_CODEC.fieldOf("argument").forGetter(RingGate::argument),
-            Codec.doubleRange(0.0, 1.0).optionalFieldOf("mix", 1.0).forGetter(RingGate::mix)
+            MIX_CODEC.optionalFieldOf("mix", 1.0).forGetter(RingGate::mix)
     ).apply(instance, RingGate::new));
 
     public static final KeyDispatchDataCodec<RingGate> CODEC = KeyDispatchDataCodec.of(MAP_CODEC);

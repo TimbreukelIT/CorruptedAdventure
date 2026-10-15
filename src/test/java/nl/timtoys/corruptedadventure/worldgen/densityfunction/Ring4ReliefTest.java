@@ -268,6 +268,8 @@ class Ring4ReliefTest {
         /** Fjord rim (fjord weight > 0.9, |cut − plateau| ≤ 4, no river or hole): the rendered top's difference. */
         final List<Integer> rimTop = new ArrayList<>();
         final List<Integer> wallTop = new ArrayList<>();
+        /** The plateau just behind the rim (cut 4..12 above it): where a cell's corner may still lie on the wall. */
+        final List<Integer> behindTop = new ArrayList<>();
         final List<Double> plateauBumps = new ArrayList<>();
 
         static GridSurvey run() {
@@ -349,6 +351,8 @@ class Ring4ReliefTest {
                                 rimTop.add(rendered);
                             } else if (s.fjordRim < -4.0) {
                                 wallTop.add(rendered);
+                            } else if (s.fjordRim <= 12.0) {
+                                behindTop.add(rendered);
                             }
                         }
                     }
@@ -460,8 +464,9 @@ class Ring4ReliefTest {
             System.out.printf("level (slope < 0.05): cascade area %.3f (%d), core %.3f, blend %.3f; steep (>= 0.6) %.3f%n", flat(g.cascadeSlope),
                     g.cascadeSlope.size(), flat(g.coreSlope), flat(g.blendSlope),
                     g.cascadeSlope.stream().filter(v -> v >= 0.6).count() / (double) g.cascadeSlope.size());
-            System.out.printf("fjord rim %d columns: top off >=1 %.4f >=2 %.4f; wall %d: >=1 %.4f >=2 %.4f; plateau bumps %d: median %.3f p90 %.3f%n",
+            System.out.printf("fjord rim %d columns: top off >=1 %.4f >=2 %.4f; wall %d: >=1 %.4f >=2 %.4f; behind the rim %d: >=1 %.4f >=2 %.4f; plateau bumps %d: median %.3f p90 %.3f%n",
                     g.rimTop.size(), share(g.rimTop, 1), share(g.rimTop, 2), g.wallTop.size(), share(g.wallTop, 1), share(g.wallTop, 2),
+                    g.behindTop.size(), share(g.behindTop, 1), share(g.behindTop, 2),
                     g.plateauBumps.size(), quantile(g.plateauBumps, 0.5), quantile(g.plateauBumps, 0.9));
         }
         return survey;
@@ -527,6 +532,7 @@ class Ring4ReliefTest {
         assertTrue(share(g.rimTop, 1) <= 0.01, "rim off " + share(g.rimTop, 1));
         assertEquals(0.0, share(g.rimTop, 2), "rim 2 off");
         assertTrue(share(g.wallTop, 2) <= 0.002, "wall 2 off " + share(g.wallTop, 2));
+        assertTrue(share(g.behindTop, 1) <= 0.01, "behind the rim off " + share(g.behindTop, 1));
     }
 
     /** H6: the fjord plateaus read as flat land: their bumps around the plane are small (before: median 0.13). */
@@ -536,17 +542,6 @@ class Ring4ReliefTest {
         assertTrue(g.plateauBumps.size() > 50, "plateau samples " + g.plateauBumps.size());
         assertTrue(quantile(g.plateauBumps, 0.5) < 0.07, "median " + quantile(g.plateauBumps, 0.5));
         assertTrue(quantile(g.plateauBumps, 0.9) < 0.15, "p90 " + quantile(g.plateauBumps, 0.9));
-    }
-
-    @Test
-    void smoothMinRoundsOnlyNearTheKink() {
-        assertEquals(10.0, Ring4Relief.smoothMin(10.0, 20.0, 4.0), 1e-12);
-        assertEquals(10.0, Ring4Relief.smoothMin(20.0, 10.0, 4.0), 1e-12);
-        for (double b = 0.0; b <= 20.0; b += 0.125) {
-            double m = Ring4Relief.smoothMin(10.0, b, 4.0);
-            assertTrue(m <= Math.min(10.0, b) + 1e-12 && m >= Math.min(10.0, b) - 1.0 - 1e-12, "b " + b + ": " + m);
-        }
-        assertEquals(9.0, Ring4Relief.smoothMin(10.0, 10.0, 4.0), 1e-12);
     }
 
     @Test

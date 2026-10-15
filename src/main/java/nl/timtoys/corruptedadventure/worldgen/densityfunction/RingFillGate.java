@@ -1,6 +1,5 @@
 package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceKey;
@@ -38,7 +37,7 @@ public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunct
             Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(RingFillGate::dimension),
             Ring.CODEC.fieldOf("ring").forGetter(RingFillGate::ring),
             DensityFunction.HOLDER_HELPER_CODEC.fieldOf("argument").forGetter(RingFillGate::argument),
-            Codec.doubleRange(0.0, 1.0).optionalFieldOf("mix", 1.0).forGetter(RingFillGate::mix)
+            RingGate.MIX_CODEC.optionalFieldOf("mix", 1.0).forGetter(RingFillGate::mix)
     ).apply(instance, RingFillGate::new));
 
     public static final KeyDispatchDataCodec<RingFillGate> CODEC = KeyDispatchDataCodec.of(MAP_CODEC);

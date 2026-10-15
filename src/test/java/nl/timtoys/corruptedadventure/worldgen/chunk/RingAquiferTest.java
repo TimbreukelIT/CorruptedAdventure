@@ -545,13 +545,17 @@ class RingAquiferTest {
         assertEquals(falls.size(), springs, "one spring beside each fall");
 
         int lakes = 0;
+        int buried = 0;
         for (IslandField.Island island : islands.islandsWithin(6100, -1500, 7900, 1500)) {
             int x = (int) Math.floor(island.x());
             int z = (int) Math.floor(island.z());
             IslandField.Column column = islands.column(x, z);
             // The lake's floor is the grid's surface (as the stack builds it): a hole too shallow there holds no water.
-            if (column.lakeTop() == Integer.MIN_VALUE || column.surface() >= column.lakeTop() - 1
-                    || Math.floor(interpolatedSurface(islands, x, z)) - 1 > column.lakeTop() - 1) {
+            if (column.lakeTop() == Integer.MIN_VALUE || column.surface() >= column.lakeTop() - 1) {
+                continue;
+            }
+            if (Math.floor(interpolatedSurface(islands, x, z)) - 1 > column.lakeTop() - 1) {
+                buried++;
                 continue;
             }
             lakes++;
@@ -569,6 +573,8 @@ class RingAquiferTest {
             aquifer.carving(false);
         }
         assertTrue(lakes > 0, "no lake above the sea found");
+        // Rare: a hole so shallow at its centre that the grid fills it there (the lake lies beside the centre).
+        assertTrue(buried <= Math.max(1, lakes / 5), buried + " lakes buried at their centre of " + (lakes + buried));
     }
 
     /**
