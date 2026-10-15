@@ -23,8 +23,9 @@ import java.util.Set;
  *   blocks, so the arms get lower where the treads beside them fall. The stair lines bend round the gorge.</li>
  *   <li><b>Rim lake:</b> on the collar tread a curved lake follows the arc, {@link #RIM_LAKE_IN} blocks back from the
  *   edge; a notch through the edge feeds each fall's spring.</li>
- *   <li><b>Falls:</b> along the arc every 10–14 blocks, from the spring at the wall line into the gorge lake; the
- *   falling column stands one block beyond the wall line.</li>
+ *   <li><b>Falls:</b> along the arc 1–4 columns wide, in clusters, at the usual 9–14 and with gaps, two main falls in
+ *   the deepest alcoves; from the spring at the wall line into the gorge lake, the falling column one block beyond
+ *   the wall line; at most {@link IslandField#VERDANT_FALLS_PER_CHUNK} per chunk ({@link #budget}).</li>
  *   <li><b>Floor:</b> the gorge lake on tread {@link Gorge#floor} (the wall 24 or 32 high); downstream the floor
  *   steps down with the descent's stair lines, a lake per tread behind a threshold with 2–4 falls over each lip, to
  *   the sea level and the foot river. Along the arms a dry shore of 4–6.</li>
@@ -37,8 +38,9 @@ import java.util.Set;
  *   beside falls, each with a knob over its end whose strand ({@code ledge_strand}) leads from the ledge below onto
  *   it, the last one into the ledge path. The feature always hangs a strand under a knob ({@link #knob}).</li>
  *   <li><b>Outlet gully</b> (decision 2026-10-15): past the amphitheatre the arms pinch organically into a gully 20–30
- *   wide that runs on to the foot river; the collar holds the land beside it up to the gully, then lets go. Over half
- *   the gullies a natural rock arch ({@link Arch}) stands on both walls, its deck flush with the rim.</li>
+ *   wide that runs on to the foot river; the collar holds the land beside it up to the gully, then lets go. Over the
+ *   gullies where one fits (about 4 in 10) a natural rock arch ({@link Arch}) stands on both walls, its deck flush
+ *   with the rim.</li>
  * </ul>
  * The basins' streams keep clear of a gorge's reach ({@link #clear}). Pure: hashes of the world salt
  * ({@link CellShapes#cell}), the descent and the relief's noises; gorges, their falls and ledges are decided once per
@@ -1008,8 +1010,9 @@ final class VerdantGorges {
         if (l.din > 0.0 && b >= 1) {
             // The foot river's bank cuts the ground down later (VerdantDescent.withRiver): where it cannot hold the lake's
             // water (and a block over it, so its neighbours hold it too) there is no lake, the ground follows the bank.
+            // The bank of the wobbling river (p.river()), as withRiver cuts it.
             double bank = VerdantDescent.RIVER_BED
-                    + Math.max(0.0, p.profile.river() - p.u - p.profile.bedHalf()) * VerdantDescent.RIVER_SLOPE;
+                    + Math.max(0.0, p.river() - p.u - p.profile.bedHalf()) * VerdantDescent.RIVER_SLOPE;
             if (bank < water + 1.0) {
                 inside = bank;
                 held = false;
@@ -1666,7 +1669,7 @@ final class VerdantGorges {
     }
 
     /**
-     * The rock arch over a gorge's gully (salt 6305, half the gorges): the first place from the gully's start where its
+     * The rock arch over a gorge's gully (salt 6305, wherever one fits): the first place from the gully's start where its
      * deck, 3–4 thick at the crown, lies flush with the lower of the two walls and 8–14 over one water surface (no lip
      * under it), clear of the ledge path's ramps. Null where none fits.
      */
