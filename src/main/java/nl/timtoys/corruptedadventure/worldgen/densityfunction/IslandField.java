@@ -76,6 +76,13 @@ public final class IslandField implements DensityFunction {
     private static final double CAVE_LIFT = 2.0;
     /** How far (blocks) under a lake's deepest floor the caves stay closed. */
     private static final int CAVE_FLOOR_MARGIN = 14;
+    /**
+     * The half window (blocks) of {@link #gradient}; with {@link #slope}'s neighbour well within {@link ColumnTable#MARGIN},
+     * so a chunk's edge reads the table's rim.
+     */
+    static final int SLOPE_REACH = 2;
+    /** Σ dx² over the gradient's window: (2r + 1) · 2 Σ k² for k = 1..r. */
+    private static final double SLOPE_MOMENT = (2 * SLOPE_REACH + 1) * SLOPE_REACH * (SLOPE_REACH + 1) * (2 * SLOPE_REACH + 1) / 3.0;
 
     private final NoiseHolder hash;
     private final Ring4Relief relief;
@@ -264,6 +271,49 @@ public final class IslandField implements DensityFunction {
         ensureSurface(column);
         ensureIslands(column);
         return column;
+    }
+
+    /**
+     * The steepness of the ground at a column (decision 2026-10-15, verdant_falls' stone on steep slopes; blocks of rise
+     * per block): the largest {@link #gradient} of the column and its eight neighbours. Unlike vanilla's
+     * {@code minecraft:steep} it does not depend on the slope's direction and is the same at a chunk's edge (the
+     * neighbours are columns of the field, not of the chunk). Taking the largest of the neighbours means that every
+     * column over a threshold has a neighbour over it too: the stone of a threshold lies in patches, never in loose
+     * columns.
+     */
+    public double slope(int x, int z) {
+        double steepest = 0.0;
+        for (int dz = -1; dz <= 1; dz++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                steepest = Math.max(steepest, gradient(x + dx, z + dz));
+            }
+        }
+        return steepest;
+    }
+
+    /**
+     * The length of the surface's gradient at a column: the slope of the least-squares plane through the
+     * {@link Column#surface} of the (2 {@link #SLOPE_REACH} + 1)² columns around it, so a single deep column nearby
+     * tilts it a little instead of marking a few loose columns. Remembered per column.
+     */
+    double gradient(int x, int z) {
+        double known = column(x, z).gradient;
+        if (!Double.isNaN(known)) {
+            return known;
+        }
+        double sx = 0.0;
+        double sz = 0.0;
+        for (int dz = -SLOPE_REACH; dz <= SLOPE_REACH; dz++) {
+            for (int dx = -SLOPE_REACH; dx <= SLOPE_REACH; dx++) {
+                double h = column(x + dx, z + dz).surface;
+                sx += dx * h;
+                sz += dz * h;
+            }
+        }
+        double gradient = Math.hypot(sx, sz) / SLOPE_MOMENT;
+        // Stored only now: the lookups above may have moved the table's window and refilled earlier column objects.
+        column(x, z).gradient = gradient;
+        return gradient;
     }
 
     /**
@@ -1137,6 +1187,8 @@ public final class IslandField implements DensityFunction {
         double cliff;
         /** 0..1: a travertine rim of {@code verdant_falls} (a lake's threshold, a fall's lip; 2c). */
         double rim;
+        /** The surface's gradient here ({@link IslandField#gradient}), NaN until asked for. */
+        double gradient;
         /**
          * On the descent of {@code verdant_falls} (2c; past the steam_fens strip, up to the zone's outer edge): the
          * ground is exact per block ({@link #thin}). Part 2 adds its per-block shapes to these columns: the gorges'
@@ -1225,6 +1277,7 @@ public final class IslandField implements DensityFunction {
             sunderKind = Sunder.NONE;
             cliff = 0.0;
             rim = 0.0;
+            gradient = Double.NaN;
             verdant = false;
             arc = 0.0;
             body = -1;

@@ -704,3 +704,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-15 | worldgen | rotsbruggen in de bassins zijn beloopbaar: dek dunt naar de uiteinden uit tot 1 dik | reviewbevinding 2c-2 |
 | 2026-10-15 | worldgen | `verdant_falls`-kloven: armen knijpen samen tot een uitloopgeul van ~20–30 breed; over ~50 % van de geulen een natuurlijke rotsboog (14–30 overspanning, 3–4 dik, dek 3, 8–14 boven water) | Gebruikersbesluit (rotsboog paste niet over de volle kloofbreedte) |
 | 2026-10-15 | worldgen | `ledge_strand` hangt altijd een streng onder een klimknop (terreinvraag `IslandField.climbKnob`), losse richels kans 0,5 | Gebruikersbesluit: 100 % van de klimroutes beklimbaar |
+| 2026-10-15 | worldgen | steen op steile hellingen in verdant_falls via eigen richtingsonafhankelijke hellingsmaat i.p.v. vanilla steep (geen losse kolommen) | in-game validatie |
