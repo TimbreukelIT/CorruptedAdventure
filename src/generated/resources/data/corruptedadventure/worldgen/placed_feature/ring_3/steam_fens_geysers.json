@@ -25,6 +25,12 @@
     },
     {
       "type": "minecraft:biome"
+    },
+    {
+      "type": "corruptedadventure:before_split",
+      "at": 0.234375,
+      "reach": 3,
+      "ring": "ring_3"
     }
   ]
 }
