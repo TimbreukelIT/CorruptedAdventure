@@ -1207,14 +1207,9 @@ final class VerdantGorges {
             if (water == Integer.MIN_VALUE || nearLip(g, falls, at)) {
                 continue;
             }
-            // The deck flush with the lower wall: the top block of the lowest wall column beside it, a little into the wall.
-            int deck = Integer.MAX_VALUE;
-            for (int side = -1; side <= 1; side += 2) {
-                for (double dw = -ARCH_HALF_DECK - 1.0; dw <= ARCH_HALF_DECK + 1.0; dw += 0.5) {
-                    double[] q = point(g, side, at + dw, -2.5);
-                    double ground = groundAt(g, Mth.floor(q[0]), Mth.floor(q[1]), w, s);
-                    deck = Double.isNaN(ground) ? Integer.MIN_VALUE : Math.min(deck, Mth.ceil(ground) - 1);
-                }
+            int deck = archDeck(g, at, w, s);
+            if (deck == Integer.MIN_VALUE) {
+                continue;
             }
             // Flush with the lower rim where that is at most 14 over the water, else lower in the walls.
             int crown = Math.min(deck - thick + 1, water + ARCH_CLEAR_MAX);
@@ -1224,6 +1219,25 @@ final class VerdantGorges {
             return new Arch(at, crown + thick - 1, crown, water);
         }
         return null;
+    }
+
+    /**
+     * The deck flush with the lower wall at w: the top block of the lowest wall column beside it, a little into the
+     * wall; MIN_VALUE where a wall column lies off the descent (no ground to stand on).
+     */
+    private int archDeck(Gorge g, double at, VerdantBasins.Water w, Shape s) {
+        int deck = Integer.MAX_VALUE;
+        for (int side = -1; side <= 1; side += 2) {
+            for (double dw = -ARCH_HALF_DECK - 1.0; dw <= ARCH_HALF_DECK + 1.0; dw += 0.5) {
+                double[] q = point(g, side, at + dw, -2.5);
+                double ground = groundAt(g, Mth.floor(q[0]), Mth.floor(q[1]), w, s);
+                if (Double.isNaN(ground)) {
+                    return Integer.MIN_VALUE;
+                }
+                deck = Math.min(deck, Mth.ceil(ground) - 1);
+            }
+        }
+        return deck;
     }
 
     /** A point {@code into} blocks from the wall line of an arm on {@code side} at w (negative: into the wall): {x, z}. */
