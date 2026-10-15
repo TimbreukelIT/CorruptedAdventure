@@ -117,6 +117,8 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.GLOWCAP.get(), ModBlocks.BLIGHTED_GLOWCAP.get());
         tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.HANGING_SWAMP_MOSS.get());
         tag(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.GLOWING_HANGING_ROOTS.get());
+        // Climbing aid in all of ring 4 (verdant_falls Q3 = B): both are walk-through, so they climb like weeping vines.
+        tag(BlockTags.CLIMBABLE).add(ModBlocks.HANGING_SWAMP_MOSS.get(), ModBlocks.GLOWING_HANGING_ROOTS.get());
         tag(BlockTags.SMALL_FLOWERS).add(ModBlocks.GLOW_BLOOM.get());
 
         ring4Ores();

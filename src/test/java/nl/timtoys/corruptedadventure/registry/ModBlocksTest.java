@@ -476,6 +476,26 @@ class ModBlocksTest {
         rimeshroomWood.forEach(id -> assertTrue(values.contains(id), id));
     }
 
+    /**
+     * The hanging moss and glowing roots are ring 4's climbing aid (verdant_falls Q3 = B): in the generated
+     * {@code #climbable}, and walk-through, so a player stands in them like in weeping vines.
+     */
+    @Test
+    void ring4HangingMossAndRootsAreClimbable() {
+        String relative = "src/generated/resources/data/minecraft/tags/block/climbable.json";
+        Path dir = Path.of("").toAbsolutePath();
+        while (!Files.exists(dir.resolve(relative))) {
+            dir = dir.getParent();
+        }
+        Set<String> values = new HashSet<>();
+        WorldgenData.read(dir.resolve(relative)).getAsJsonArray("values").forEach(value -> values.add(value.getAsString()));
+        for (DeferredBlock<?> block : List.of(ModBlocks.HANGING_SWAMP_MOSS, ModBlocks.GLOWING_HANGING_ROOTS)) {
+            assertTrue(values.contains(block.getId().toString()), block.getId().toString());
+            assertTrue(block.get().defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).isEmpty(),
+                    block.getId() + " is walk-through");
+        }
+    }
+
     /** Ring 4 follows Nether ring 3 directly (contract ring 4 §3), in this order (the potted sapling has no item). */
     @Test
     void ring4NaturalBlocksFollowNetherRing3InOrder() {
