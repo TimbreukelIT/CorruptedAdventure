@@ -33,7 +33,10 @@ import java.util.Optional;
  *   <li><b>Niches:</b> behind one in three arc falls a niche off the ledge path (3 wide, 4 high, 5–8 deep).</li>
  *   <li><b>Climbing ledges</b> (Q3): short overhanging ledges stacked a climbing distance apart on the walls and
  *   beside falls, each with a knob over its end whose strand ({@code ledge_strand}) leads from the ledge below onto
- *   it, the last one into the ledge path.</li>
+ *   it, the last one into the ledge path. The feature always hangs a strand under a knob ({@link #knob}).</li>
+ *   <li><b>Outlet gully</b> (decision 2026-10-15): past the amphitheatre the arms pinch organically into a gully 20–30
+ *   wide that runs on to the foot river; the collar holds the land beside it up to the gully, then lets go. Over half
+ *   the gullies a natural rock arch ({@link Arch}) stands on both walls, its deck flush with the rim.</li>
  * </ul>
  * The basins' streams keep clear of a gorge's reach ({@link #clear}). Pure: hashes of the world salt
  * ({@link CellShapes#cell}), the descent and the relief's noises; gorges, their falls and ledges are decided once per
@@ -80,6 +83,12 @@ final class VerdantGorges {
     private static final double RIM_LAKE_END = 4.0;
     /** The rim lake keeps this far (blocks across the zone) past the rim: its neighbours lie on the exact descent. */
     private static final double RIM_LAKE_PAST_RIM = 4.0;
+    /**
+     * Every neighbour of a rim lake column lies this far past the rim, where steam_fens ends: out of reach of its pool
+     * features (boiling pool r ≤ 3.5 × 1.35 + a rim of 1; mud pool 3 × 1.4), which dug a rim lake's bank down in game
+     * (pre-INT waterscan, gorge 53). The boundary noise bends u by up to ~2.5 per block, so the neighbours are checked.
+     */
+    static final double STEAM_FENS_REACH = 6.0;
     /** A gorge lake's threshold before its lip (blocks), and the banks' rise per block. */
     static final double THRESHOLD = 3.0;
     private static final double BANK = 2.0;
@@ -108,7 +117,10 @@ final class VerdantGorges {
     /** Climbing ledges: protrude this far, two blocks thick, a gap of 4–5 between them. */
     static final double LEDGE_OUT = 2.0;
     private static final double LEDGE_STAGGER = 1.0;
-    /** A ledge's knob: this far over the ledge's underside, this far out from the wall, past this share of its half length. */
+    /**
+     * A ledge's knob: this far over the ledge's underside, this far out from the wall, past this share of its half
+     * length; only in columns clear of its own ledge, so the strand under it never stops on that ledge.
+     */
     static final int KNOB_RISE = 4;
     static final double KNOB_OUT = 1.6;
     private static final double KNOB_PAST = 0.7;
@@ -117,10 +129,42 @@ final class VerdantGorges {
     /** Climbing routes beside this share of the arc falls, and along the walls every ROUTE_SPACING + 0…12 blocks. */
     private static final double BESIDE_FALLS = 1.0 / 3.0;
     private static final double ROUTE_SPACING = 24.0;
+    /** No climbing routes where the pinch's wall leans more than this (1 / cos of its angle to the axis). */
+    private static final double MAX_LEAN = 1.6;
     /** The wall line's own blocks of the per-block zone: from this far inside the wall to this far into the gorge. */
     private static final double BLOCK_IN = PATH_DEPTH + 9.0;
     private static final double BLOCK_OUT = WALL_BAND + 1.0;
 
+    private static final int ARCH_SALT = 6305;
+    /** The gully's half width: GULLY_HALF + 0…GULLY_HALF_SPAN (22–28 wide), its walls' wobble scaled by GULLY_WOBBLE. */
+    static final double GULLY_HALF = 11.0;
+    private static final double GULLY_HALF_SPAN = 3.0;
+    private static final double GULLY_WOBBLE = 0.15;
+    /** The pinch begins PINCH_FROM + 0…PINCH_FROM_SPAN past the arc's end and runs PINCH_SHARE of the narrowing. */
+    private static final double PINCH_FROM = 2.0;
+    private static final double PINCH_FROM_SPAN = 3.0;
+    private static final double PINCH_SHARE = 0.4;
+    /** ... but at least PINCH_MIN, and ends at least RIVER_ROOM before the foot river where it can. */
+    private static final double PINCH_MIN = 8.0;
+    private static final double RIVER_ROOM = 60.0;
+    /** The gully's middle: off the axis by up to ±GULLY_SHIFT, meandering ±GULLY_MEANDER. */
+    private static final double GULLY_SHIFT = 4.0;
+    private static final double GULLY_MEANDER = 3.0;
+    /** The shore along the gully. */
+    static final double GULLY_OEVER = 2.0;
+    /** A rock arch over this share of the gullies; its deck this half wide (along the gully), 8–14 over the water. */
+    private static final double ARCH_CHANCE = 0.9;
+    static final double ARCH_HALF_DECK = 1.5;
+    static final int ARCH_CLEAR_MIN = 8;
+    static final int ARCH_CLEAR_MAX = 14;
+    /** The arch's underside at the walls: this share of its clearance over the water (rounded towards the crown). */
+    private static final double ARCH_FOOT = 0.4;
+    /** The arch is looked for this far along the gully from its start. */
+    private static final double ARCH_SEARCH = 60.0;
+    /** The widest opening an arch spans. */
+    static final double ARCH_SPAN = 30.0;
+    /** An arch stands at least this far before the foot river's bed. */
+    private static final double ARCH_RIVER = 12.0;
     private final IslandField field;
     private final VerdantDescent descent;
 
@@ -137,13 +181,54 @@ final class VerdantGorges {
      * for a full half circle under a level rim), the collar's tread {@code top} (level 64 + 8 top), the gorge lake's
      * tread {@code floor}, the collar's ramp value, the ledge path's floor, the arm with the ramp down to the shore
      * (−1/+1 along the side axis), the rim lake's width and depth, the lakes' depths, the shore's width, the wall's
-     * three phases, the reach along the loop (blocks of s either side of {@code s0}) and the arc's length table
-     * ({@link #ARC_STEPS} + 1 values from the back to an end).
+     * three phases, the reach along the loop (blocks of s either side of {@code s0}), the arc's length table
+     * ({@link #ARC_STEPS} + 1 values from the back to an end) and the outlet gully: where the arms begin to pinch
+     * (w past the arc's end), over how long, the gully's half width and its middle's offset from the axis.
      */
     record Gorge(int index, double s0, double bx, double bz, double cx, double cz, double ox, double oz, double radius,
                  double depth, int top, int floor, double collar, int pathY, int downSide, double rimWidth, double rimDepth,
                  double lakeDepth, double lowerDepth, double oever, double p1, double p2, double p3, double reach,
-                 double[] arcs) {
+                 double[] arcs, double pinchFrom, double pinchLength, double gullyHalf, double gullyShift) {
+        /** How far the arms have pinched into the gully at w (0 before, 1 in the gully). */
+        double pinch(double w) {
+            return Ring4Relief.smooth(w, pinchFrom, pinchFrom + pinchLength);
+        }
+
+        /** Where the gully begins (w). */
+        double gullyFrom() {
+            return pinchFrom + pinchLength;
+        }
+
+        /** The middle between the arms (along the side axis) at w: the axis, then the gully's meandering middle. */
+        double centre(double w) {
+            double p = pinch(w);
+            return p == 0.0 ? 0.0 : p * (gullyShift + GULLY_MEANDER * Math.sin(w / 23.0 + p2));
+        }
+
+        /** An arm's wall line at arc parameter t (w = |t| − the arc's end): its distance from the middle. */
+        double line(double t, double w) {
+            double p = pinch(w);
+            return Mth.lerp(p, radius, gullyHalf) + Mth.lerp(p, 1.0, GULLY_WOBBLE) * wobble(t);
+        }
+
+        /**
+         * How much the wall on {@code side} leans across the axis at w (1 / cos of its angle, the wobble aside): the
+         * distance into the gorge across the axis divided by this is the distance from the wall.
+         */
+        double lean(int side, double w) {
+            double u = (w - pinchFrom) / pinchLength;
+            double dp = u <= 0.0 || u >= 1.0 ? 0.0 : 6.0 * u * (1.0 - u) / pinchLength;
+            double meander = GULLY_MEANDER * Math.sin(w / 23.0 + p2);
+            double slope = dp * (gullyShift + meander + side * (gullyHalf - radius))
+                    + pinch(w) * GULLY_MEANDER * Math.cos(w / 23.0 + p2) / 23.0;
+            return Math.sqrt(1.0 + slope * slope);
+        }
+
+        /** The dry shore's width along the arms at w: narrowing to {@link #GULLY_OEVER} in the gully. */
+        double oeverAt(double w) {
+            return Mth.lerp(pinch(w), oever, GULLY_OEVER);
+        }
+
         /** How far the wall line lies outside the half ellipse at arc parameter t (blocks): it never runs straight. */
         double wobble(double t) {
             return 0.07 * radius * Math.sin(1.3 * t / radius + p3) + 2.5 * Math.sin(t / 21.0 + p2 + p3) + 2.0 * Math.sin(t / 13.0 + p1)
@@ -233,8 +318,24 @@ final class VerdantGorges {
         }
     }
 
-    /** What a gorge has, decided once: its falls (arc falls sorted by t), its springs by column, its climbing routes. */
-    record Details(List<GorgeFall> falls, Map<Long, GorgeFall> springs, List<Route> routes) {
+    /**
+     * A rock arch over the gully at {@code w}: its deck's top block {@code deck} (flush with the lower rim), its
+     * underside at the crown {@code crown}, over the water's surface {@code water} (the first Y above the water).
+     */
+    record Arch(double w, int deck, int crown, int water) {
+        /** The underside at {@code q} (0 at the middle, 1 at the wall line): rounded down towards the walls. */
+        int under(double q) {
+            double clear = crown - water;
+            double r = Math.sqrt(Math.max(0.0, 1.0 - q * q));
+            return Mth.ceil(water + clear * (ARCH_FOOT + (1.0 - ARCH_FOOT) * r) - 1e-9);
+        }
+    }
+
+    /**
+     * What a gorge has, decided once: its falls (arc falls sorted by t), its springs by column, its climbing routes and
+     * its arch (or null).
+     */
+    record Details(List<GorgeFall> falls, Map<Long, GorgeFall> springs, List<Route> routes, @Nullable Arch arch) {
     }
 
     int gorgeCount() {
@@ -327,8 +428,30 @@ final class VerdantGorges {
             double mid = (i - 0.5) * dphi;
             arcs[i] = arcs[i - 1] + Math.hypot(radius * Math.cos(mid), depth * Math.sin(mid)) * dphi;
         }
-        return new Gorge(k, s0, b[0], b[1], b[0] + depth * ox, b[1] + depth * oz, ox, oz, radius, depth, top, floor, collar, pathY,
-                downSide, rimWidth, rimDepth, lakeDepth, lowerDepth, oever, p1, p2, p3, reach, arcs);
+        // The outlet gully: the arms pinch over 3/4 of their narrowing, ending before the foot river where there is room.
+        double cx = b[0] + depth * ox;
+        double cz = b[1] + depth * oz;
+        double gullyHalf = GULLY_HALF + GULLY_HALF_SPAN * CellShapes.unit(h, 14);
+        double pinchFrom = PINCH_FROM + PINCH_FROM_SPAN * CellShapes.unit(h, 13);
+        double toRiver = riverAlong(cx, cz, ox, oz);
+        double pinchLength = Math.max(PINCH_MIN, Math.min(PINCH_SHARE * (radius - gullyHalf), toRiver - RIVER_ROOM - pinchFrom));
+        double gullyShift = GULLY_SHIFT * (2.0 * CellShapes.unit(h, 15) - 1.0);
+        return new Gorge(k, s0, b[0], b[1], cx, cz, ox, oz, radius, depth, top, floor, collar, pathY, downSide, rimWidth, rimDepth,
+                lakeDepth, lowerDepth, oever, p1, p2, p3, reach, arcs, pinchFrom, pinchLength, gullyHalf, gullyShift);
+    }
+
+    /** How far out from (x, z) along (ox, oz) the descent reaches the foot river's middle. */
+    private double riverAlong(double x, double z, double ox, double oz) {
+        VerdantDescent.Point p = new VerdantDescent.Point();
+        double reached = 0.0;
+        for (double w = 0.0; w <= 300.0; w += 2.0) {
+            descent.locate(x + w * ox, z + w * oz, p);
+            if (p.kind != VerdantDescent.Point.DESCENT || p.u > p.profile.river()) {
+                break;
+            }
+            reached = w;
+        }
+        return reached;
     }
 
     /** Where (blocks across the zone) the foot river's inner bank envelope (its bank rising 0.6 per block) reaches y. */
@@ -385,7 +508,7 @@ final class VerdantGorges {
                 continue;
             }
             local(g, x, z, l);
-            if (l.din >= -(FLAT + BLEND + 1.0) && (l.w <= ARM_FADE + 4.0 || l.din > -BLOCK_IN)) {
+            if (l.din >= -(FLAT + BLEND + 1.0) && (l.w <= g.gullyFrom() + ARM_FADE + 4.0 || l.din > -BLOCK_IN)) {
                 return g;
             }
         }
@@ -416,7 +539,9 @@ final class VerdantGorges {
      * A column in a gorge's frame: {@code a} across (along the side axis) and {@code w} out from the centre (negative
      * in the amphitheatre), the polar angle {@code phi} (0 at the back) and distance {@code rho} there, the arc
      * parameter {@code t} (blocks along the wall line from the back, negative on the −a side; on the arms past the
-     * arc's end) and {@code din}: how far inside the gorge (negative: into the wall and the land beyond).
+     * arc's end) and {@code din}: how far inside the gorge (negative: into the wall and the land beyond). On the arms
+     * {@code rho} is the distance from the gully's middle ({@link Gorge#centre}) and din is measured square to the
+     * leaning wall of the pinch.
      */
     static final class Local {
         double a;
@@ -462,10 +587,12 @@ final class VerdantGorges {
             l.t = g.arcAt(phi);
             l.din = g.wobble(l.t) - ((l.a - r * sin) * na + (l.w + d * cos) * nw) / len;
         } else {
-            l.rho = Math.abs(l.a);
+            double across = l.a - g.centre(l.w);
+            l.side = across >= 0.0 ? 1 : -1;
+            l.rho = Math.abs(across);
             l.phi = l.side * 0.5 * Math.PI;
             l.t = l.side * (g.arcEnd() + l.w);
-            l.din = g.radius() + g.wobble(l.t) - l.rho;
+            l.din = (g.line(l.t, l.w) - l.rho) / g.lean(l.side, l.w);
         }
     }
 
@@ -494,7 +621,7 @@ final class VerdantGorges {
         } else {
             int side = t >= 0.0 ? 1 : -1;
             w = Math.abs(t) - g.arcEnd();
-            a = side * (g.radius() + g.wobble(t) - into);
+            a = g.centre(w) + side * (g.line(t, w) - into * g.lean(side, w));
             na = -side;
             nw = 0.0;
         }
@@ -523,6 +650,9 @@ final class VerdantGorges {
         /** The blocks the wall may open under the column's own ground (path, ramp, niche, rough hollows), else lo > hi. */
         int openLo;
         int openHi;
+        /** The rock of an arch over the column, else lo > hi. */
+        int solidLo;
+        int solidHi;
     }
 
     /**
@@ -568,7 +698,7 @@ final class VerdantGorges {
         double level = VerdantDescent.level(b);
         double dry = b0 >= g.floor() ? VerdantDescent.level(g.floor()) : p.treads;
         double arm = Ring4Relief.smooth(l.w, 0.0, ARM_TURN);
-        double across = l.din - g.oever() * arm + 4.0 * (1.0 - arm);
+        double across = l.din - g.oeverAt(l.w) * arm + 4.0 * (1.0 - arm);
         double toEdge = b >= 1 ? (p.ramp - level) / grad : Double.POSITIVE_INFINITY;
         double inset = Math.min(across, toEdge - THRESHOLD);
         double depth = b == g.floor() ? g.lakeDepth() : g.lowerDepth();
@@ -602,10 +732,22 @@ final class VerdantGorges {
         // The wall stays smooth and whole (no roughness, no crumbling) near the falls, their notches and the climbing
         // routes (the strands must hang free from ledge to ledge).
         double calm = nearFall;
+        shape.solidLo = Integer.MAX_VALUE;
+        shape.solidHi = Integer.MIN_VALUE;
         if (details != null) {
             for (Route r : details.routes()) {
                 if (Math.abs(l.t - r.t()) <= r.half() + LEDGE_STAGGER + 2.5) {
                     calm = 0.0;
+                }
+            }
+            Arch arch = details.arch();
+            if (arch != null && l.w >= 0.0 && Math.abs(l.w - arch.w()) <= ARCH_HALF_DECK + 3.0) {
+                // The arch's walls stay whole (no roughness, no crumbling): it stands on solid rock up to its deck. Its
+                // rock fills only the open gully, so a ramp of the ledge path cut into the wall passes behind its foot.
+                calm = 0.0;
+                if (Math.abs(l.w - arch.w()) <= ARCH_HALF_DECK && l.din > 0.0) {
+                    shape.solidLo = arch.under(Math.min(1.0, l.rho / g.line(l.t, l.w)));
+                    shape.solidHi = arch.deck();
                 }
             }
         }
@@ -646,7 +788,7 @@ final class VerdantGorges {
         } else {
             out.height = outside;
             out.body = g.top();
-            if (outside < rimWater && (notched || rimLake(g, p, l) > 0.0)) {
+            if (outside < rimWater && (notched || rimLake(g, p, l) > 0.0 && clearOfSteamFens(x, z, p))) {
                 out.lakeTop = rimWater;
             }
             if (nearFall <= 2.5 && -l.din <= 2.0) {
@@ -669,7 +811,9 @@ final class VerdantGorges {
     private double collarGround(Gorge g, VerdantDescent.Point p, Local l, int x, int z) {
         double dOut = -l.din;
         double start = p.profile.descentStart(p.rimAt);
-        double level = l.w <= 0.0 ? g.collar() : Mth.lerp(Ring4Relief.smooth(l.w, 0.0, ARM_FADE), g.collar(), p.ramp);
+        // Held along the pinch (the gully's walls stand full height at its start), then let go along the gully.
+        double fade = Ring4Relief.smooth(l.w, g.gullyFrom(), g.gullyFrom() + ARM_FADE);
+        double level = l.w <= 0.0 ? g.collar() : Mth.lerp(fade, g.collar(), p.ramp);
         // Where the collar lowers the ground (behind the back wall) it lets go towards the top terrace, never lowering it.
         double share = (1.0 - Ring4Relief.smooth(dOut, FLAT, FLAT + BLEND))
                 * (p.ramp <= level ? 1.0 : Ring4Relief.smooth(p.u, start + 2.0, start + 8.0));
@@ -680,6 +824,9 @@ final class VerdantGorges {
         // The rim lake: a curved lake round the arc on the collar's tread (only where the collar holds it level).
         // On the collar's tread (or higher: its banks then rise); never where the ground lies under it.
         double m = ground >= VerdantDescent.level(g.top()) - 0.01 ? rimLake(g, p, l) : -1.0;
+        if (m > 0.0 && !clearOfSteamFens(x, z, p)) {
+            m = -1.0;
+        }
         if (m > 0.0) {
             ground = Math.min(ground, VerdantDescent.level(g.top()) - (1.0 + g.rimDepth()) * Ring4Relief.smooth(m, 0.0, 1.5));
         }
@@ -699,6 +846,25 @@ final class VerdantGorges {
         }
         double width = g.rimWidth() * (0.75 + 0.35 * Math.cos(l.phi));
         return Math.min(Math.min(dOut - RIM_LAKE_IN, RIM_LAKE_IN + width - dOut), g.arcEnd() - RIM_LAKE_END - Math.abs(l.t));
+    }
+
+    /** Whether the column and its eight neighbours lie {@link #STEAM_FENS_REACH} past the rim (steam_fens' edge). */
+    private boolean clearOfSteamFens(int x, int z, VerdantDescent.Point p) {
+        double edge = p.rimAt + STEAM_FENS_REACH;
+        if (p.u >= edge + 4.0) {
+            // The boundary noise bends u by less than 4 between neighbours.
+            return true;
+        }
+        RingLayout layout = field.ringLayout();
+        double start = VerdantDescent.zoneStart(layout);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (layout.effectiveDistance(x + dx, z + dz) - start < edge) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static double nearestArcFall(Details details, double t) {
@@ -864,20 +1030,98 @@ final class VerdantGorges {
                     }
                 }
             }
-            int kk = y - KNOB_RISE - r.firstY();
-            if (kk >= 0 && kk % r.spacing() == 0 && kk / r.spacing() < r.count() && !r.skipped(y - KNOB_RISE)
-                    && Math.abs(lateral - knob(r, kk / r.spacing())) <= 0.75 && l.din <= KNOB_OUT) {
-                return true;
-            }
-            // Into the ledge path: a knob in front of its opening over the topmost ledge under it; from the strand's
-            // top a player steps into the path.
-            int below = r.belowPath();
-            if (y == g.pathY() + PATH_KNOB_RISE && below >= 0 && Math.abs(r.t()) < g.arcEnd() - 3.0 && l.din <= 1.0
-                    && Math.abs(lateral - stagger(below)) <= 0.75) {
+            if (knobOf(g, r, l, lateral, y)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** Whether a knob of route r stands at the block (a column {@code lateral} along the wall from the route's place). */
+    private static boolean knobOf(Gorge g, Route r, Local l, double lateral, int y) {
+        int kk = y - KNOB_RISE - r.firstY();
+        if (kk >= 0 && kk % r.spacing() == 0 && kk / r.spacing() < r.count() && !r.skipped(y - KNOB_RISE)
+                && Math.abs(lateral - knob(r, kk / r.spacing())) <= 0.75 && l.din <= KNOB_OUT) {
+            // Not over its own ledge (the strand would stop on it).
+            double across = (lateral - stagger(kk / r.spacing())) / r.half();
+            double out = l.din / LEDGE_OUT;
+            if (across * across + out * out > 1.0) {
+                return true;
+            }
+        }
+        // Into the ledge path: a knob in front of its opening over the topmost ledge under it; from the strand's top a
+        // player steps into the path.
+        int below = r.belowPath();
+        return y == g.pathY() + PATH_KNOB_RISE && below >= 0 && intoPath(g, r) && l.din <= KNOB_OUT
+                && Math.abs(lateral - stagger(below)) <= 0.75;
+    }
+
+    private static boolean intoPath(Gorge g, Route r) {
+        return Math.abs(r.t()) < g.arcEnd() - 3.0;
+    }
+
+    /**
+     * Whether the block of a column of gorge g's wall (its frame l, its gorge floor {@code inside}) is a climbing knob:
+     * the terrain query of {@code ledge_strand}, which always hangs a strand under a knob (decision 2026-10-15).
+     */
+    boolean knob(Gorge g, Local l, double inside, int y) {
+        if (l.din <= 0.0 || l.din > LEDGE_OUT + 0.5 || y < inside) {
+            return false;
+        }
+        for (Route r : details(g).routes()) {
+            double lateral = l.t - r.t();
+            if (Math.abs(lateral) <= r.half() + LEDGE_STAGGER + 2.5 && knobOf(g, r, l, lateral, y)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The blocks {x, y, z} round every knob of the gorges whose walls reach into the box (inclusive), a few columns
+     * round each knob's point: the field keeps those that are knobs ({@link #knob}).
+     */
+    List<int[]> knobCandidates(int minX, int minZ, int maxX, int maxZ) {
+        List<int[]> found = new ArrayList<>();
+        RingLayout layout = field.ringLayout();
+        double period = VerdantDescent.perimeter(layout);
+        double s = RingArc.arc(0.5 * (minX + maxX), 0.5 * (minZ + maxZ), VerdantDescent.midRadius(layout));
+        double half = 0.75 * Math.max(maxX - minX, maxZ - minZ) + 4.0;
+        int k = (int) Math.floor(RingArc.wrap(s, period) / cellSize());
+        for (int dk = -1; dk <= 1; dk++) {
+            Gorge g = gorge(k + dk);
+            if (g == null || RingArc.loopDistance(s, g.s0(), period) > g.reach() + half) {
+                continue;
+            }
+            for (Route r : details(g).routes()) {
+                for (int i = 0; i < r.count(); i++) {
+                    int under = r.firstY() + i * r.spacing();
+                    if (!r.skipped(under)) {
+                        knobCells(g, r.t() + knob(r, i), under + KNOB_RISE, minX, minZ, maxX, maxZ, found);
+                    }
+                }
+                int below = r.belowPath();
+                if (below >= 0 && intoPath(g, r)) {
+                    knobCells(g, r.t() + stagger(below), g.pathY() + PATH_KNOB_RISE, minX, minZ, maxX, maxZ, found);
+                }
+            }
+        }
+        return found;
+    }
+
+    private static void knobCells(Gorge g, double t, int y, int minX, int minZ, int maxX, int maxZ, List<int[]> found) {
+        double[] q = wallAt(g, t, 0.8);
+        int x0 = Mth.floor(q[0]);
+        int z0 = Mth.floor(q[1]);
+        Local l = new Local();
+        for (int x = Math.max(minX, x0 - 3); x <= Math.min(maxX, x0 + 3); x++) {
+            for (int z = Math.max(minZ, z0 - 3); z <= Math.min(maxZ, z0 + 3); z++) {
+                local(g, x, z, l);
+                if (l.din > 0.0 && l.din <= LEDGE_OUT + 0.5) {
+                    found.add(new int[]{x, y, z});
+                }
+            }
+        }
     }
 
     /** Ledge k's middle along the wall from its route's place: shifted ±{@link #LEDGE_STAGGER} by turns. */
@@ -912,13 +1156,18 @@ final class VerdantGorges {
             }
             t += FALL_SPACING + FALL_SPACING_SPAN * CellShapes.unit(hf, 1);
         }
-        // Over the lips of the floor: 2–4 per tread down from the gorge lake.
+        // Over the lips of the floor: 2–4 per tread down from the gorge lake, fewer where the lip crosses the gully.
         for (int b = g.floor(); b >= 1; b--) {
             long hl = CellShapes.cell(field.salt(), g.index(), 100 + b, FALL_SALT);
             int count = 2 + (int) Math.floor(3.0 * CellShapes.unit(hl, 0) * 0.999);
-            double span = g.radius() - g.oever() - 8.0;
+            double along = lipAlong(g, 0.0, VerdantDescent.level(b));
+            double w = Double.isNaN(along) ? 0.0 : Math.max(0.0, along);
+            double middle = g.centre(w);
+            double span = Mth.lerp(g.pinch(w), g.radius(), g.gullyHalf()) - g.oeverAt(w) - 6.0 - 2.0 * (1.0 - g.pinch(w));
+            count = Math.min(count, Math.max(1, (int) (2.0 * span / 5.0)));
+            double jitter = Math.min(3.0, 0.5 * span / count);
             for (int j = 0; j < count; j++) {
-                double a = -span + (j + 0.5) * (2.0 * span / count) + (2.0 * CellShapes.unit(hl, j + 1) - 1.0) * 3.0;
+                double a = middle - span + (j + 0.5) * (2.0 * span / count) + (2.0 * CellShapes.unit(hl, j + 1) - 1.0) * jitter;
                 GorgeFall fall = lipFall(g, b, a);
                 if (fall != null) {
                     falls.add(fall);
@@ -929,8 +1178,98 @@ final class VerdantGorges {
         for (GorgeFall f : falls) {
             springs.put(KeyedSlots.key(f.fall().fall().springX(), f.fall().fall().springZ()), f);
         }
-        List<Route> routes = routes(g, falls);
-        return new Details(List.copyOf(falls), Map.copyOf(springs), List.copyOf(routes));
+        Arch arch = arch(g, falls);
+        List<Route> routes = routes(g, falls, arch);
+        return new Details(List.copyOf(falls), Map.copyOf(springs), List.copyOf(routes), arch);
+    }
+
+    /**
+     * The rock arch over a gorge's gully (salt 6305, half the gorges): the first place from the gully's start where its
+     * deck, 3–4 thick at the crown, lies flush with the lower of the two walls and 8–14 over one water surface (no lip
+     * under it), clear of the ledge path's ramps. Null where none fits.
+     */
+    @Nullable
+    private Arch arch(Gorge g, List<GorgeFall> falls) {
+        long h = CellShapes.cell(field.salt(), g.index(), 0, ARCH_SALT);
+        if (CellShapes.unit(h, 0) >= ARCH_CHANCE) {
+            return null;
+        }
+        int thick = CellShapes.unit(h, 1) < 0.5 ? 3 : 4;
+        VerdantBasins.Water w = new VerdantBasins.Water();
+        Shape s = new Shape();
+        // From where the pinch is at most ARCH_SPAN wide (the walls stand highest there) outward.
+        double from = g.pinchFrom();
+        while (from < g.gullyFrom() && 2.0 * Mth.lerp(g.pinch(from), g.radius(), g.gullyHalf()) > ARCH_SPAN) {
+            from += 1.0;
+        }
+        for (double at = from; at <= g.gullyFrom() + ARCH_SEARCH; at += 1.0) {
+            int water = gullyWater(g, at, w, s);
+            if (water == Integer.MIN_VALUE || nearLip(g, falls, at)) {
+                continue;
+            }
+            // The deck flush with the lower wall: the top block of the lowest wall column beside it, a little into the wall.
+            int deck = Integer.MAX_VALUE;
+            for (int side = -1; side <= 1; side += 2) {
+                for (double dw = -ARCH_HALF_DECK - 1.0; dw <= ARCH_HALF_DECK + 1.0; dw += 0.5) {
+                    double[] q = point(g, side, at + dw, -2.5);
+                    double ground = groundAt(g, Mth.floor(q[0]), Mth.floor(q[1]), w, s);
+                    deck = Double.isNaN(ground) ? Integer.MIN_VALUE : Math.min(deck, Mth.ceil(ground) - 1);
+                }
+            }
+            // Flush with the lower rim where that is at most 14 over the water, else lower in the walls.
+            int crown = Math.min(deck - thick + 1, water + ARCH_CLEAR_MAX);
+            if (crown - water < ARCH_CLEAR_MIN) {
+                continue;
+            }
+            return new Arch(at, crown + thick - 1, crown, water);
+        }
+        return null;
+    }
+
+    /** A point {@code into} blocks from the wall line of an arm on {@code side} at w (negative: into the wall): {x, z}. */
+    private static double[] point(Gorge g, int side, double w, double into) {
+        double[] q = wallAt(g, side * (g.arcEnd() + w), into);
+        return new double[]{q[0], q[1]};
+    }
+
+    /**
+     * The water's surface (the first Y above it) in the gully's middle round w, the same from 4 before to 4 past it, or
+     * MIN_VALUE (dry, or a lip within reach).
+     */
+    private int gullyWater(Gorge g, double w, VerdantBasins.Water water, Shape s) {
+        int surface = Integer.MIN_VALUE;
+        for (double dw = -4.0; dw <= 4.0; dw += 1.0) {
+            double a = g.centre(w + dw);
+            double x = g.cx() - a * g.oz() + (w + dw) * g.ox();
+            double z = g.cz() + a * g.ox() + (w + dw) * g.oz();
+            VerdantDescent.Point p = descent.locate(x, z, new VerdantDescent.Point());
+            if (p.kind != VerdantDescent.Point.DESCENT || p.u > p.profile.river() - p.profile.bedHalf() - ARCH_RIVER) {
+                // Clear of the foot river and its bank.
+                return Integer.MIN_VALUE;
+            }
+            double ground = groundAt(g, Mth.floor(x), Mth.floor(z), water, s);
+            int top = water.lakeTop != Integer.MIN_VALUE ? water.lakeTop
+                    : ground < VerdantDescent.waterTop(0) ? VerdantDescent.waterTop(0) : Integer.MIN_VALUE;
+            if (Double.isNaN(ground) || top == Integer.MIN_VALUE || surface != Integer.MIN_VALUE && top != surface) {
+                return Integer.MIN_VALUE;
+            }
+            surface = top;
+        }
+        return surface;
+    }
+
+    /** Whether a lip fall lands within 6 blocks (along the gully) of w. */
+    private static boolean nearLip(Gorge g, List<GorgeFall> falls, double w) {
+        Local l = new Local();
+        for (GorgeFall f : falls) {
+            if (!f.arc()) {
+                local(g, f.fall().fall().fallX(), f.fall().fall().fallZ(), l);
+                if (Math.abs(l.w - w) <= 6.0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** The fall of the arc at t, fed from the rim lake, or null where a rule fails. */
@@ -1035,31 +1374,12 @@ final class VerdantGorges {
     @Nullable
     private GorgeFall lipFall(Gorge g, int b, double a) {
         double level = VerdantDescent.level(b);
-        // Along the line at a, out from the amphitheatre: where the ramp falls through the level.
-        double sx0 = g.cx() - a * g.oz();
-        double sz0 = g.cz() + a * g.ox();
-        double lo = -Math.sqrt(Math.max(0.0, g.radius() * g.radius() - a * a)) + 3.0;
-        double hi = lo + 260.0;
-        double rampLo = descent.rampAt(sx0 + lo * g.ox(), sz0 + lo * g.oz());
-        double rampHi = descent.rampAt(sx0 + hi * g.ox(), sz0 + hi * g.oz());
-        if (Double.isNaN(rampHi)) {
-            hi = lo + 120.0;
-            rampHi = descent.rampAt(sx0 + hi * g.ox(), sz0 + hi * g.oz());
-        }
-        if (Double.isNaN(rampLo) || Double.isNaN(rampHi) || rampLo < level || rampHi >= level) {
+        double along = lipAlong(g, a, level);
+        if (Double.isNaN(along)) {
             return null;
         }
-        for (int n = 0; n < 30; n++) {
-            double mid = 0.5 * (lo + hi);
-            double r = descent.rampAt(sx0 + mid * g.ox(), sz0 + mid * g.oz());
-            if (!Double.isNaN(r) && r >= level) {
-                lo = mid;
-            } else {
-                hi = mid;
-            }
-        }
-        double ex = sx0 + 0.5 * (lo + hi) * g.ox();
-        double ez = sz0 + 0.5 * (lo + hi) * g.oz();
+        double ex = g.cx() - a * g.oz() + along * g.ox();
+        double ez = g.cz() + a * g.ox() + along * g.oz();
         double gx = descent.rampAt(ex + 1.0, ez) - descent.rampAt(ex - 1.0, ez);
         double gz = descent.rampAt(ex, ez + 1.0) - descent.rampAt(ex, ez - 1.0);
         if (Double.isNaN(gx) || Double.isNaN(gz)) {
@@ -1079,6 +1399,33 @@ final class VerdantGorges {
         return null;
     }
 
+    /** Along the line at a, out from the amphitheatre: where (w) the ramp falls through the level, or NaN. */
+    private double lipAlong(Gorge g, double a, double level) {
+        double sx0 = g.cx() - a * g.oz();
+        double sz0 = g.cz() + a * g.ox();
+        double lo = -Math.sqrt(Math.max(0.0, g.radius() * g.radius() - a * a)) + 3.0;
+        double hi = lo + 260.0;
+        double rampLo = descent.rampAt(sx0 + lo * g.ox(), sz0 + lo * g.oz());
+        double rampHi = descent.rampAt(sx0 + hi * g.ox(), sz0 + hi * g.oz());
+        if (Double.isNaN(rampHi)) {
+            hi = lo + 120.0;
+            rampHi = descent.rampAt(sx0 + hi * g.ox(), sz0 + hi * g.oz());
+        }
+        if (Double.isNaN(rampLo) || Double.isNaN(rampHi) || rampLo < level || rampHi >= level) {
+            return Double.NaN;
+        }
+        for (int n = 0; n < 30; n++) {
+            double mid = 0.5 * (lo + hi);
+            double r = descent.rampAt(sx0 + mid * g.ox(), sz0 + mid * g.oz());
+            if (!Double.isNaN(r) && r >= level) {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        return 0.5 * (lo + hi);
+    }
+
     private boolean inside(int x, int z, double level) {
         double r = descent.rampAt(x, z);
         return !Double.isNaN(r) && r >= level;
@@ -1094,7 +1441,7 @@ final class VerdantGorges {
         Local l = new Local();
         // The spring, its sides and the notch lie inside the gorge, clear of the shore and the wall.
         local(g, sx, sz, l);
-        if (l.din < g.oever() + 4.0) {
+        if (l.din < g.oeverAt(l.w) + 4.0) {
             return null;
         }
         if (!(groundAt(g, sx, sz, w, s) > springY + 1.0)) {
@@ -1154,7 +1501,7 @@ final class VerdantGorges {
      * The climbing routes (Q3): beside half the arc falls and along the walls every 20–28 blocks where the wall stands
      * at least 10 high; each a stack of short ledges from just above the water or shore to near the rim.
      */
-    private List<Route> routes(Gorge g, List<GorgeFall> falls) {
+    private List<Route> routes(Gorge g, List<GorgeFall> falls, @Nullable Arch arch) {
         List<Double> places = new ArrayList<>();
         long h = CellShapes.cell(field.salt(), g.index(), 0, LEDGE_SALT);
         int n = 0;
@@ -1163,7 +1510,7 @@ final class VerdantGorges {
                 places.add(f.t() + (CellShapes.unit(h, n % 8) < 0.5 ? -6.0 : 6.0));
             }
         }
-        double far = g.arcEnd() + ARM_FADE;
+        double far = g.arcEnd() + g.gullyFrom() + ARM_FADE;
         for (double t = -far + 4.0 * CellShapes.unit(h, 9); t <= far; ) {
             long hr = CellShapes.cell(field.salt(), g.index(), 1000 + places.size() + (int) Math.round(t), LEDGE_SALT);
             places.add(t);
@@ -1175,6 +1522,13 @@ final class VerdantGorges {
         Shape s = new Shape();
         for (double t : places) {
             if (nearestArc(falls, t) < 5.5) {
+                continue;
+            }
+            // Not on the steep wall of the pinch (the ledges would stretch along it), nor under or beside the arch.
+            double along = Math.abs(t) - g.arcEnd();
+            int side = t >= 0.0 ? 1 : -1;
+            if (along > 0.0 && (g.lean(side, along) > MAX_LEAN
+                    || arch != null && Math.abs(along - arch.w()) < ARCH_HALF_DECK + 8.0)) {
                 continue;
             }
             boolean taken = false;
@@ -1198,7 +1552,20 @@ final class VerdantGorges {
             }
             double foot = w.lakeTop != Integer.MIN_VALUE ? w.lakeTop : Mth.ceil(s.inside);
             double top = s.outside;
-            if (top - foot < 12.0) {
+            // Over the route's whole width (its ledges and knobs) the highest water or shore, the lowest rim: the first
+            // ledge stands clear of the floor everywhere (a shore may rise along an arm).
+            for (double dt = -7.0; dt <= 7.0 && !Double.isNaN(foot); dt += 1.0) {
+                for (double into : new double[]{0.5, 1.5}) {
+                    double[] p = wallAt(g, t + dt, into);
+                    if (Double.isNaN(groundAt(g, Mth.floor(p[0]), Mth.floor(p[1]), w, s))) {
+                        foot = Double.NaN;
+                        break;
+                    }
+                    foot = Math.max(foot, w.lakeTop != Integer.MIN_VALUE ? w.lakeTop : Mth.ceil(s.inside));
+                    top = Math.min(top, s.outside);
+                }
+            }
+            if (Double.isNaN(foot) || top - foot < 12.0) {
                 continue;
             }
             long hr = CellShapes.cell(field.salt(), g.index(), 2000 + routes.size(), LEDGE_SALT);

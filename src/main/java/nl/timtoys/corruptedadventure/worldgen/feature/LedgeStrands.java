@@ -7,7 +7,7 @@ import java.util.function.IntPredicate;
 /**
  * The pure column scan of {@link LedgeStrandFeature}: the overhangs in one column, top down. An overhang is a block
  * with a sturdy underside and air right below it; its gap is the air below, down to the next block that is not air
- * (the next ledge, the floor or water).
+ * (the next ledge, the floor or water). And the pure choice of what hangs under one ({@link #hang}).
  */
 public final class LedgeStrands {
     /** {@link Overhang#floor} when the gap runs below the lowest Y scanned: no floor known. */
@@ -27,6 +27,25 @@ public final class LedgeStrands {
         public int gap() {
             return floor == NO_FLOOR ? 0 : underside - floor - 1;
         }
+    }
+
+    /** What hangs under an overhang. */
+    public enum Hang {
+        NONE, STRAND, ACCENT
+    }
+
+    /**
+     * What hangs under an overhang with {@code gap} air below it: under a climbing knob of the terrain always a strand
+     * where the gap allows one (decision 2026-10-15: every route stays climbable); under any other ledge a strand with
+     * {@code strandChance}, else an accent with {@code accentChance}, by {@code roll} (0..1). A strand needs a gap of
+     * {@code minGap}–{@code maxGap}.
+     */
+    public static Hang hang(int gap, boolean knob, float roll, float strandChance, float accentChance, int minGap, int maxGap) {
+        boolean fits = gap >= minGap && gap <= maxGap;
+        if (knob || roll < strandChance) {
+            return fits ? Hang.STRAND : Hang.NONE;
+        }
+        return roll < strandChance + accentChance ? Hang.ACCENT : Hang.NONE;
     }
 
     /**

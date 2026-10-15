@@ -62,7 +62,8 @@ class VerdantGorgesTest {
                 arc += f.arc() ? 1 : 0;
             }
             falls += arc;
-            assertTrue(arc >= 6, "falls along the arc of gorge " + g.index() + ": " + arc);
+            // At least 5 (one gorge near the rim has 5 since its rim lake keeps clear of steam_fens' pools, 2c part 2b).
+            assertTrue(arc >= 5, "falls along the arc of gorge " + g.index() + ": " + arc);
         }
         System.out.printf("gorges %d of %d, falls along the arcs %d (%.1f per gorge)%n", all.size(), GORGES.gorgeCount(), falls,
                 falls / (double) all.size());
@@ -285,78 +286,79 @@ class VerdantGorgesTest {
     }
 
     /**
-     * Q3, a real climbing route: each ledge has a knob over its end; the strand under the knob reaches down to the ledge
-     * below (or the water or shore), and at the strand's top a column beside it holds the ledge's top to step onto.
+     * Q3 + decision 2026-10-15, every route climbable: each ledge has a knob over its end, found by the terrain query of
+     * {@code ledge_strand} ({@link IslandField#climbKnobs} over the knob's chunk, which the feature walks on every
+     * placement); under it the feature always hangs a strand ({@link LedgeStrands#hang} for a knob, whatever the roll),
+     * which reaches down to the ledge below (or the water or shore), and at its top a column beside it holds the ledge's
+     * top to step onto. 100 % of the knobs, so 100 % of the routes.
      */
     @Test
-    void knobsLeadFromLedgeToLedge() {
+    void everyKnobGetsAStrandToTheLedgeBelow() {
         WaterScan scan = new WaterScan(FIELD, LAYOUT);
         int knobs = 0;
         int climbable = 0;
-        int[] reasons = new int[3];
-        for (VerdantGorges.Gorge g : sample(3)) {
+        int routes = 0;
+        int whole = 0;
+        int[] reasons = new int[4];
+        List<String> missing = new ArrayList<>();
+        for (VerdantGorges.Gorge g : sample(2)) {
             for (VerdantGorges.Route r : GORGES.details(g).routes()) {
+                routes++;
+                boolean all = true;
                 for (int k = 0; k < r.count(); k++) {
                     int under = r.firstY() + k * r.spacing();
                     if (r.skipped(under)) {
                         continue;
                     }
                     knobs++;
-                    double[] q = VerdantGorges.wallAt(g, r.t() + VerdantGorges.knob(r, k), 0.8);
                     int knob = under + VerdantGorges.KNOB_RISE;
-                    // Any of the knob's columns near the point (the block grid lies askew to the wall) with a strand the
-                    // feature would hang (a gap of 3–24 under it, open air near) and the ledge's top beside its top.
                     int best = 0;
-                    for (int dx = -1; dx <= 1; dx++) {
-                        for (int dz = -1; dz <= 1; dz++) {
-                            int x = (int) Math.floor(q[0]) + dx;
-                            int z = (int) Math.floor(q[1]) + dz;
-                            if (scan.block(x, knob, z) != WaterScan.SOLID || scan.block(x, knob - 1, z) != WaterScan.AIR
-                                    || scan.block(x, knob + 1, z) != WaterScan.AIR) {
-                                continue;
-                            }
-                            best = Math.max(best, 1);
-                            int floor = knob - 1;
-                            while (floor > 40 && scan.block(x, floor, z) == WaterScan.AIR) {
-                                floor--;
-                            }
-                            int gap = knob - floor - 1;
-                            if (gap < 3 || gap > 24 || !openAround(scan, x, z, knob)) {
-                                continue;
-                            }
-                            best = Math.max(best, 2);
-                            for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}) {
-                                if (scan.block(x + d[0], under + 1, z + d[1]) == WaterScan.SOLID
-                                        && scan.block(x + d[0], under + 2, z + d[1]) == WaterScan.AIR
-                                        && scan.block(x + d[0], under + 3, z + d[1]) == WaterScan.AIR) {
-                                    best = 3;
-                                }
+                    for (int[] c : knobColumns(g, r.t() + VerdantGorges.knob(r, k), knob)) {
+                        best = Math.max(best, 1);
+                        int floor = strandFloor(scan, c[0], knob, c[1]);
+                        if (floor == Integer.MIN_VALUE) {
+                            continue;
+                        }
+                        best = Math.max(best, 2);
+                        for (int[] d : AROUND) {
+                            if (scan.block(c[0] + d[0], under + 1, c[1] + d[1]) == WaterScan.SOLID
+                                    && scan.block(c[0] + d[0], under + 2, c[1] + d[1]) == WaterScan.AIR
+                                    && scan.block(c[0] + d[0], under + 3, c[1] + d[1]) == WaterScan.AIR) {
+                                best = 3;
                             }
                         }
                     }
                     climbable += best == 3 ? 1 : 0;
+                    all &= best == 3;
+                    reasons[best]++;
                     if (best < 3) {
-                        reasons[best]++;
+                        double[] q = VerdantGorges.wallAt(g, r.t() + VerdantGorges.knob(r, k), 0.8);
+                        missing.add("gorge " + g.index() + " t " + Math.round(r.t()) + " k " + k + " knob " + (int) Math.floor(q[0]) + " " + knob
+                                + " " + (int) Math.floor(q[1]) + " best " + best);
                     }
                 }
+                whole += all ? 1 : 0;
             }
         }
-        System.out.printf("knobs %d, with a strand down and a ledge to step onto %d (no knob %d, no strand %d, no step %d)%n", knobs,
-                climbable, reasons[0], reasons[1], reasons[2]);
-        assertTrue(knobs > 40, "knobs " + knobs);
-        assertTrue(climbable >= knobs * 0.8, "climbable " + climbable + " of " + knobs);
+        System.out.printf("knobs %d, with a strand down and a ledge to step onto %d (not found %d, no strand %d, no step %d); "
+                + "routes %d, climbable throughout %d%n", knobs, climbable, reasons[0], reasons[1], reasons[2], routes, whole);
+        assertTrue(knobs > 60, "knobs " + knobs);
+        assertEquals(knobs, climbable, "every knob climbable: " + missing);
+        assertEquals(routes, whole, "every route climbable");
     }
 
     /**
      * The last step of a route into the ledge path: over the topmost ledge under the path a knob stands in front of the
-     * path's opening; the strand under it reaches the ledge, and from its top a player steps into the path.
+     * path's opening (found by the terrain query, always a strand); the strand reaches the ledge, and from its top a
+     * player steps into the path.
      */
     @Test
     void routesClimbIntoTheLedgePath() {
         WaterScan scan = new WaterScan(FIELD, LAYOUT);
         int routes = 0;
         int reach = 0;
-        for (VerdantGorges.Gorge g : sample(3)) {
+        List<String> missing = new ArrayList<>();
+        for (VerdantGorges.Gorge g : sample(2)) {
             for (VerdantGorges.Route r : GORGES.details(g).routes()) {
                 int below = r.belowPath();
                 if (below < 0 || Math.abs(r.t()) >= g.arcEnd() - 3.0) {
@@ -365,38 +367,92 @@ class VerdantGorgesTest {
                 routes++;
                 int knob = g.pathY() + VerdantGorges.PATH_KNOB_RISE;
                 int under = r.firstY() + below * r.spacing();
-                double[] q = VerdantGorges.wallAt(g, r.t() + ((below & 1) == 0 ? -1.0 : 1.0), 0.5);
                 boolean ok = false;
-                for (int dx = -1; dx <= 1 && !ok; dx++) {
-                    for (int dz = -1; dz <= 1 && !ok; dz++) {
-                        int x = (int) Math.floor(q[0]) + dx;
-                        int z = (int) Math.floor(q[1]) + dz;
-                        if (scan.block(x, knob, z) != WaterScan.SOLID || scan.block(x, knob - 1, z) != WaterScan.AIR) {
-                            continue;
-                        }
-                        int floor = knob - 1;
-                        while (floor > 40 && scan.block(x, floor, z) == WaterScan.AIR) {
-                            floor--;
-                        }
-                        if (floor != under + 1 || knob - floor - 1 < 3) {
-                            continue;
-                        }
-                        // A path block beside the strand: its floor rock, open above.
-                        for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}) {
-                            ok |= scan.block(x + d[0], g.pathY() - 1, z + d[1]) == WaterScan.SOLID
-                                    && scan.block(x + d[0], g.pathY(), z + d[1]) == WaterScan.AIR
-                                    && scan.block(x + d[0], g.pathY() + 1, z + d[1]) == WaterScan.AIR
-                                    && FIELD.column(x + d[0], z + d[1]).gorgeLocal.din <= 0.0;
-                        }
+                for (int[] c : knobColumns(g, r.t() + ((below & 1) == 0 ? -1.0 : 1.0), knob)) {
+                    int x = c[0];
+                    int z = c[1];
+                    if (strandFloor(scan, x, knob, z) != under + 1) {
+                        continue;
+                    }
+                    // A path block beside the strand: its floor rock, open above.
+                    for (int[] d : AROUND) {
+                        ok |= scan.block(x + d[0], g.pathY() - 1, z + d[1]) == WaterScan.SOLID
+                                && scan.block(x + d[0], g.pathY(), z + d[1]) == WaterScan.AIR
+                                && scan.block(x + d[0], g.pathY() + 1, z + d[1]) == WaterScan.AIR
+                                && FIELD.column(x + d[0], z + d[1]).gorgeLocal.din <= 0.0;
                     }
                 }
                 reach += ok ? 1 : 0;
+                if (!ok) {
+                    missing.add("gorge " + g.index() + " route t " + Math.round(r.t()) + " below " + below + " under " + under);
+                }
             }
         }
         System.out.printf("routes up to the ledge path %d, climbable into it %d%n", routes, reach);
         assertTrue(routes > 10, "routes " + routes);
-        assertTrue(reach >= routes * 0.8, "into the path " + reach + " of " + routes);
+        assertEquals(routes, reach, "into the path: " + missing);
     }
+
+    private static final int[][] AROUND = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+
+    /**
+     * The knob blocks at y near the wall's point at t, as {@code ledge_strand} finds them: the terrain query over the
+     * chunk the feature decorates, each also a knob per column ({@link IslandField#climbKnob}).
+     */
+    private static List<int[]> knobColumns(VerdantGorges.Gorge g, double t, int y) {
+        double[] q = VerdantGorges.wallAt(g, t, 0.8);
+        int x0 = (int) Math.floor(q[0]);
+        int z0 = (int) Math.floor(q[1]);
+        List<int[]> found = new ArrayList<>();
+        for (net.minecraft.core.BlockPos p : FIELD.climbKnobs((x0 >> 4) << 4, (z0 >> 4) << 4, ((x0 >> 4) << 4) + 15, ((z0 >> 4) << 4) + 15)) {
+            if (p.getY() == y && Math.abs(p.getX() - x0) <= 3 && Math.abs(p.getZ() - z0) <= 3) {
+                assertTrue(FIELD.climbKnob(p.getX(), y, p.getZ()));
+                found.add(new int[]{p.getX(), p.getZ()});
+            }
+        }
+        // The knob's columns in the neighbouring chunks come with their own chunk's query.
+        for (int dx = -3; dx <= 3; dx++) {
+            for (int dz = -3; dz <= 3; dz++) {
+                int x = x0 + dx;
+                int z = z0 + dz;
+                if ((x >> 4 != x0 >> 4 || z >> 4 != z0 >> 4) && FIELD.climbKnob(x, y, z)) {
+                    int cx = (x >> 4) << 4;
+                    int cz = (z >> 4) << 4;
+                    assertTrue(FIELD.climbKnobs(cx, cz, cx + 15, cz + 15).contains(new net.minecraft.core.BlockPos(x, y, z)),
+                            "knob " + x + " " + y + " " + z + " found by its chunk's query");
+                    found.add(new int[]{x, z});
+                }
+            }
+        }
+        return found;
+    }
+
+    /**
+     * The floor the strand under a knob reaches, where the feature hangs one (the knob rock with air below, a gap the
+     * strand fills: {@link LedgeStrands#hang} for a knob gives a strand whatever the roll), else MIN_VALUE.
+     */
+    private static int strandFloor(WaterScan scan, int x, int knob, int z) {
+        if (scan.block(x, knob, z) != WaterScan.SOLID || scan.block(x, knob - 1, z) != WaterScan.AIR) {
+            return Integer.MIN_VALUE;
+        }
+        int floor = knob - 1;
+        while (floor > 40 && scan.block(x, floor, z) == WaterScan.AIR) {
+            floor--;
+        }
+        int gap = knob - floor - 1;
+        for (float roll : new float[]{0.0F, 0.6F, 0.99F}) {
+            if (LedgeStrands.hang(gap, true, roll, STRAND_CHANCE, ACCENT_CHANCE, MIN_GAP, MAX_GAP) != LedgeStrands.Hang.STRAND) {
+                return Integer.MIN_VALUE;
+            }
+        }
+        return floor;
+    }
+
+    /** {@code ring_4/verdant_ledge_strands} (VerdantFallsFeatures). */
+    private static final float STRAND_CHANCE = 0.5F;
+    private static final float ACCENT_CHANCE = 0.2F;
+    private static final int MIN_GAP = 3;
+    private static final int MAX_GAP = 24;
 
     /** The feature's rule: a column within 4 whose surface (the highest non-air block) lies at or under the ledge's underside. */
     private static boolean openAround(WaterScan scan, int x, int z, int underside) {
@@ -411,19 +467,176 @@ class VerdantGorgesTest {
         return false;
     }
 
-    /** The waterscan's rule round the gorges: no water of a rim lake, notch, gorge lake or shore against air. */
+    /**
+     * The waterscan's rule round the gorges and their gullies: no water of a rim lake, notch, gorge lake, gully or shore
+     * against air. Gorge 53 always (the pre-INT in-game leak at its rim lake), and every gorge with an arch.
+     */
     @Test
     void waterNeverStandsAgainstAirRoundTheGorges() {
         int water = 0;
-        for (VerdantGorges.Gorge g : sample(4)) {
-            int half = (int) (g.radius() + 40);
+        List<VerdantGorges.Gorge> scanned = new ArrayList<>(sample(4));
+        scanned.add(GORGES.gorge(53));
+        for (VerdantGorges.Gorge g : gorges()) {
+            if (GORGES.details(g).arch() != null && !scanned.contains(g)) {
+                scanned.add(g);
+            }
+        }
+        for (VerdantGorges.Gorge g : scanned) {
+            // Out along the axis: the gully runs on to the foot river.
+            int half = (int) (g.radius() + 45);
+            int mx = (int) (g.cx() + 30.0 * g.ox());
+            int mz = (int) (g.cz() + 30.0 * g.oz());
             WaterScan scan = new WaterScan(FIELD, LAYOUT);
-            List<String> over = scan.scan((int) g.cx() - half, (int) g.cz() - half, (int) g.cx() + half, (int) g.cz() + half);
+            List<String> over = scan.scan(mx - half, mz - half, mx + half, mz + half);
             assertTrue(over.isEmpty(), "water against air round gorge " + g.index() + ": " + over.subList(0, Math.min(10, over.size())));
             water += scan.water;
         }
-        System.out.println("water blocks scanned round the gorges: " + water);
-        assertTrue(water > 100_000, "water " + water);
+        System.out.println("gorges scanned " + scanned.size() + ", water blocks " + water);
+        assertTrue(water > 200_000, "water " + water);
+    }
+
+    /**
+     * The pre-INT in-game leak (world ring4-vf, gorge 53's rim lake at Y 110): its bank lay 64–66 blocks into the zone,
+     * in reach of steam_fens' pools at the biome edge (60), which dug it down to Y 109 (the offline scan knows no
+     * features). Every rim lake now keeps its water and every neighbour of it beyond that reach, and the reported blocks
+     * are rock or walled-in water.
+     */
+    @Test
+    void rimLakesKeepClearOfSteamFensPools() {
+        // steam_fens ends (and its pools are placed up to) the biome split at VERDANT_EDGE_SHARE of the zone.
+        double width = VerdantDescent.width(LAYOUT);
+        double edge = IslandField.VERDANT_EDGE_SHARE * width + VerdantGorges.STEAM_FENS_REACH;
+        int columns = 0;
+        for (VerdantGorges.Gorge g : gorges()) {
+            for (double t = -g.arcEnd(); t <= g.arcEnd(); t += 1.0) {
+                for (double into = -VerdantGorges.RIM_LAKE_IN; into >= -VerdantGorges.RIM_LAKE_IN - 9.0; into -= 0.5) {
+                    double[] q = VerdantGorges.wallAt(g, t, into);
+                    int x = (int) Math.floor(q[0]);
+                    int z = (int) Math.floor(q[1]);
+                    if (FIELD.column(x, z).lakeTop() != g.rimWater() || FIELD.column(x, z).gorgeLocal.din >= 0.0) {
+                        continue;
+                    }
+                    columns++;
+                    for (int[] d : AROUND) {
+                        double u = LAYOUT.sampleOverworld(x + d[0], z + d[1]).blend() * width;
+                        assertTrue(u >= edge, "rim lake of gorge " + g.index() + " at " + x + " " + z + ": neighbour at u " + u);
+                    }
+                }
+            }
+        }
+        System.out.println("rim lake columns checked: " + columns);
+        assertTrue(columns > 1000, "columns " + columns);
+        WaterScan scan = new WaterScan(FIELD, LAYOUT);
+        for (int[] p : new int[][]{{5883, -247}, {5883, -246}, {5884, -247}, {5895, -279}, {5895, -280}, {5896, -280}}) {
+            int block = scan.block(p[0], 110, p[1]);
+            assertTrue(block == WaterScan.SOLID || block == WaterScan.WATER, "at " + p[0] + " 110 " + p[1]);
+            if (block == WaterScan.WATER) {
+                for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                    assertTrue(scan.block(p[0] + d[0], 110, p[1] + d[1]) != WaterScan.AIR, "beside " + p[0] + " 110 " + p[1]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Decision 2026-10-15: past the amphitheatre the arms pinch into an outlet gully about 20–30 wide (measured across
+     * its middle, every 4 blocks along its first 40), never straight.
+     */
+    @Test
+    void theArmsPinchIntoAGullyTwentyToThirtyWide() {
+        List<Integer> widths = new ArrayList<>();
+        for (VerdantGorges.Gorge g : gorges()) {
+            for (double w = g.gullyFrom(); w <= g.gullyFrom() + 40.0; w += 4.0) {
+                int width = gullyWidth(g, w);
+                if (width < 0) {
+                    break;
+                }
+                widths.add(width);
+            }
+        }
+        java.util.Collections.sort(widths);
+        System.out.printf("gully widths %d: min %d, p50 %d, max %d%n", widths.size(), widths.get(0), widths.get(widths.size() / 2),
+                widths.get(widths.size() - 1));
+        assertTrue(widths.size() > 200, "widths " + widths.size());
+        assertTrue(widths.get(0) >= 20 && widths.get(widths.size() - 1) <= 30, "widths " + widths.get(0) + "–" + widths.get(widths.size() - 1));
+    }
+
+    /** The gully's open width at w: columns across its middle inside the gorge (din > 0), or −1 where the gorge ends. */
+    private static int gullyWidth(VerdantGorges.Gorge g, double w) {
+        double middle = g.centre(w);
+        int n = 0;
+        for (double a = middle - 40.0; a <= middle + 40.0; a += 1.0) {
+            IslandField.Column c = FIELD.column((int) Math.floor(g.cx() - a * g.oz() + w * g.ox()), (int) Math.floor(g.cz() + a * g.ox() + w * g.oz()));
+            if (c.gorgeZone == null) {
+                return -1;
+            }
+            n += c.gorgeLocal.din > 0.0 ? 1 : 0;
+        }
+        return n;
+    }
+
+    /**
+     * Decision 2026-10-15: a natural rock arch over about half the gullies: span 14–30, 3–4 thick at the crown, its
+     * underside 8–14 over the water and rounded down to the walls, its deck 3 wide and solid from wall to wall, standing
+     * on rock on both sides; open water and air under it.
+     */
+    @Test
+    void halfTheGullieshaveARockArch() {
+        WaterScan scan = new WaterScan(FIELD, LAYOUT);
+        List<VerdantGorges.Gorge> all = gorges();
+        int arches = 0;
+        for (VerdantGorges.Gorge g : all) {
+            VerdantGorges.Arch arch = GORGES.details(g).arch();
+            if (arch == null) {
+                continue;
+            }
+            arches++;
+            String where = " (gorge " + g.index() + ", w " + arch.w() + ")";
+            int clear = arch.crown() - arch.water();
+            int thick = arch.deck() - arch.crown() + 1;
+            assertTrue(clear >= 8 && clear <= 14, "clearance " + clear + where);
+            assertTrue(thick == 3 || thick == 4, "thickness " + thick + where);
+            int span = gullyWidth(g, arch.w());
+            assertTrue(span >= 14 && span <= 31, "span " + span + where);
+            // Across the middle row: the deck solid from wall to wall and into the rock on both sides; air under the
+            // crown down to the water.
+            double middle = g.centre(arch.w());
+            int lo = Integer.MAX_VALUE;
+            for (double a = middle - 40.0; a <= middle + 40.0; a += 0.5) {
+                int x = (int) Math.floor(g.cx() - a * g.oz() + arch.w() * g.ox());
+                int z = (int) Math.floor(g.cz() + a * g.ox() + arch.w() * g.oz());
+                if (FIELD.column(x, z).gorgeLocal.din > 0.0) {
+                    assertEquals(WaterScan.SOLID, scan.block(x, arch.deck(), z), "deck at " + x + " " + arch.deck() + " " + z + where);
+                    lo = Math.min(lo, FIELD.column(x, z).solidLo);
+                }
+            }
+            // Rounded: lowest at its ends on the walls.
+            assertTrue(lo < arch.crown() - 2, "the underside comes down to the walls" + where);
+            for (int side = -1; side <= 1; side += 2) {
+                // The wall it stands on: rock at the deck's height and below, behind the ledge path's ramps.
+                double[] q = VerdantGorges.wallAt(g, side * (g.arcEnd() + arch.w()), -6.0);
+                for (int y = arch.under(1.0); y <= arch.deck(); y++) {
+                    assertEquals(WaterScan.SOLID, scan.block((int) Math.floor(q[0]), y, (int) Math.floor(q[1])), "wall under the arch's end at "
+                            + (int) Math.floor(q[0]) + " " + y + " " + (int) Math.floor(q[1]) + " din " + FIELD.column((int) Math.floor(q[0]), (int) Math.floor(q[1])).gorgeLocal.din
+                            + " out " + FIELD.column((int) Math.floor(q[0]), (int) Math.floor(q[1])).gorgeOutside + where);
+                }
+            }
+            int cx = (int) Math.floor(g.cx() - middle * g.oz() + arch.w() * g.ox());
+            int cz = (int) Math.floor(g.cz() + middle * g.ox() + arch.w() * g.oz());
+            assertEquals(WaterScan.WATER, scan.block(cx, arch.water() - 1, cz), "water under the arch" + where);
+            for (int y = arch.water(); y < arch.crown(); y++) {
+                assertEquals(WaterScan.AIR, scan.block(cx, y, cz), "open under the arch at " + y + where);
+            }
+            assertEquals(WaterScan.SOLID, scan.block(cx, arch.crown(), cz), "the crown" + where);
+            // 3 wide along the gully: open over the water 3 blocks before and after the deck's middle.
+            for (int dw = -3; dw <= 3; dw += 6) {
+                int x = (int) Math.floor(g.cx() - middle * g.oz() + (arch.w() + dw) * g.ox());
+                int z = (int) Math.floor(g.cz() + middle * g.ox() + (arch.w() + dw) * g.oz());
+                assertEquals(WaterScan.AIR, scan.block(x, arch.deck(), z), "beside the deck" + where);
+            }
+        }
+        System.out.printf("arches %d of %d gorges%n", arches, all.size());
+        assertTrue(arches >= all.size() * 0.35 && arches <= all.size() * 0.65, "arches " + arches + " of " + all.size());
     }
 
     /**

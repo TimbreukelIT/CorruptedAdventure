@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -13,9 +14,11 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -271,6 +274,29 @@ public final class IslandField implements DensityFunction {
         Column column = columns.get(x, z, IslandField::reset);
         ensureIslands(column);
         return column;
+    }
+
+    /**
+     * Whether the block is a climbing knob on a gorge's wall in {@code verdant_falls} (decision 2026-10-15): the knob
+     * over a climbing ledge's end, or in front of the ledge path's opening. {@code ledge_strand} always hangs a strand
+     * under one, so every climbing route goes on from ledge to ledge.
+     */
+    public boolean climbKnob(int x, int y, int z) {
+        Column c = column(x, z);
+        return c.gorgeBlocks != null && gorges.knob(c.gorgeBlocks, c.gorgeLocal, c.gorgeInside, y);
+    }
+
+    /** The climbing knobs ({@link #climbKnob}) in a box (block coordinates, inclusive), each block once. */
+    public List<BlockPos> climbKnobs(int minX, int minZ, int maxX, int maxZ) {
+        List<BlockPos> found = new ArrayList<>();
+        Set<Long> seen = new HashSet<>();
+        for (int[] b : gorges.knobCandidates(minX, minZ, maxX, maxZ)) {
+            BlockPos pos = new BlockPos(b[0], b[1], b[2]);
+            if (seen.add(pos.asLong()) && climbKnob(b[0], b[1], b[2])) {
+                found.add(pos);
+            }
+        }
+        return found;
     }
 
     /** All islands whose footprint covers the column. */
@@ -821,6 +847,9 @@ public final class IslandField implements DensityFunction {
                 c.gorgeEarY = gorge.earY;
                 c.gorgeOpenLo = gorge.openLo;
                 c.gorgeOpenHi = gorge.openHi;
+                // A rock arch over the gully.
+                c.solidLo = gorge.solidLo;
+                c.solidHi = gorge.solidHi;
             } else if (c.verdant) {
                 basins.features(c.x, c.z, p, c);
             }
