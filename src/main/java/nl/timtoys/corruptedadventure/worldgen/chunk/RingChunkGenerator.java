@@ -59,6 +59,7 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
 
     // The surface pass runs synchronously inside buildSurface, so a thread-local hands the rules their chunk's terrain.
     private static final ThreadLocal<VolcanicField> SURFACE_FIELD = new ThreadLocal<>();
+    private static final ThreadLocal<IslandField> SURFACE_ISLANDS = new ThreadLocal<>();
 
     private final ResourceKey<Level> dimension;
     private final Map<Ring, Integer> fluidLevels;
@@ -140,6 +141,16 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
         return SURFACE_FIELD.get();
     }
 
+    /**
+     * The ring 4 terrain of the chunk whose surface (or carvers) this thread is building (the noise chunk's own instance,
+     * with its column cache), or null: no such pass of a ring generator with ring 4 terrain on this thread. Read by the
+     * surface rule condition {@code ring4_threshold}.
+     */
+    @Nullable
+    public static IslandField surfaceIslandField() {
+        return SURFACE_ISLANDS.get();
+    }
+
     @Override
     public CompletableFuture<ChunkAccess> createBiomes(RandomState randomState, Blender blender, StructureManager structureManager, ChunkAccess chunk) {
         createNoiseChunk(chunk, structureManager, blender, randomState);
@@ -178,14 +189,20 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
         }
     }
 
-    /** Runs a pass that evaluates surface rules, with this chunk's ring 3 terrain for {@link #surfaceVolcanicField}. */
+    /**
+     * Runs a pass that evaluates surface rules, with this chunk's ring 3 terrain for {@link #surfaceVolcanicField} and
+     * its ring 4 terrain for {@link #surfaceIslandField}.
+     */
     private void withSurfaceField(NoiseChunk noiseChunk, RandomState random, Runnable pass) {
         VolcanicField volcanic = volcanicField(random);
+        IslandField islands = islandField(random);
         SURFACE_FIELD.set(volcanic == null ? null : (VolcanicField) noiseChunk.wrap(volcanic));
+        SURFACE_ISLANDS.set(islands == null ? null : (IslandField) noiseChunk.wrap(islands));
         try {
             pass.run();
         } finally {
             SURFACE_FIELD.remove();
+            SURFACE_ISLANDS.remove();
         }
     }
 

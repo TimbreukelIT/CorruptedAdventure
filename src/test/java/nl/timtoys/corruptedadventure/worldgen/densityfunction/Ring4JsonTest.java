@@ -28,7 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class Ring4JsonTest {
     private static final String DF = "density_function/";
-    private static final String[] STUBS = {"tunnels"};
+    // rim (verdant_falls): read by the surface (ring4_threshold), filled by the verdant terrain (W-terrein 2c).
+    private static final String[] STUBS = {"tunnels", "rim"};
     private static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
             CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), RingLayout.noiseSeed(20260930L));
 

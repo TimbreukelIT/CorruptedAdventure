@@ -17,6 +17,7 @@ import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring4Features;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,8 @@ import java.util.stream.Stream;
 
 /**
  * Datagen bootstrap for the ring 4 overworld biomes ({@code docs/plans/ring-4/contract.md} §2, change 64): eight ground
- * biomes, two height biomes and the transition 4→5 {@code sundered_reach}. Owned by stream W-biomes.
+ * biomes, two height biomes and the two transition biomes: {@code verdant_falls} on the descent of the zone 3→4
+ * (its inner strip is ring 3's {@code steam_fens}) and {@code sundered_reach} over the zone 4→5. Owned by stream W-biomes.
  * <p>
  * Where the ground biomes lie is decided by the {@code multi_noise} source of ring 4 in the world preset: the router's
  * {@code weirdness} (= {@code ring_4/overworld/band}) splits the mythical band (below 0) from the blighted one (0 and
@@ -33,10 +35,11 @@ import java.util.stream.Stream;
  * The mythical half of the band's transition (−1 &lt; band &lt; 0, about 32 blocks) is always {@code mist_fjords}: the
  * last mythical biome before the blighted band ("into the mist"). The height biomes are not in that
  * source: the preset's {@code island_biomes} hook gives them to whole high islands. {@code sundered_reach} is the
- * preset's {@code transitions.ring_4}, a fixed biome over the zone 4→5.
+ * preset's {@code transitions.ring_4}, a fixed biome over the zone 4→5; {@code verdant_falls} is the outer part of the
+ * zone 3→4 ({@code transition_splits.ring_3}, after the steam fens' strip).
  * <p>
  * The colours here are a first version: the atmosphere (stream A, change 80) moves them into a {@code BiomeAmbience}
- * hook. No features yet (changes 75–77) and no ores (77).
+ * hook. Features only in {@code verdant_falls} so far ({@link Ring4Features#ORDER}); no ores yet (77).
  */
 public final class Ring4Biomes {
     /** The mythical band (inner ~60 %), in the order of the preset. */
@@ -50,10 +53,13 @@ public final class Ring4Biomes {
     public static final List<ResourceKey<Biome>> HEIGHT = List.of(ModBiomes.SKY_GARDENS, ModBiomes.WITHERED_GARDENS);
     /** The biomes of the ring itself: ground and height. */
     public static final List<ResourceKey<Biome>> ALL = Stream.concat(GROUND.stream(), HEIGHT.stream()).toList();
-    /** The transition 4→5: the preset's {@code transitions.ring_4}. */
-    public static final ResourceKey<Biome> TRANSITION = ModBiomes.SUNDERED_REACH;
-    /** Every biome with ring 4 worldgen: {@link #ALL} and the transition (the bootstrap, {@code is_ring_4}, the surface branch). */
-    public static final List<ResourceKey<Biome>> WITH_TRANSITION = Stream.concat(ALL.stream(), Stream.of(TRANSITION)).toList();
+    /**
+     * The transition biomes of ring 4: {@code sundered_reach} over the zone 4→5 (the preset's {@code transitions.ring_4})
+     * and {@code verdant_falls} on the descent of the zone 3→4 (the preset's {@code transition_splits.ring_3}).
+     */
+    public static final List<ResourceKey<Biome>> TRANSITIONS = List.of(ModBiomes.SUNDERED_REACH, ModBiomes.VERDANT_FALLS);
+    /** Every biome with ring 4 worldgen: {@link #ALL} and the transitions (the bootstrap, {@code is_ring_4}, the surface branch). */
+    public static final List<ResourceKey<Biome>> WITH_TRANSITION = Stream.concat(ALL.stream(), TRANSITIONS.stream()).toList();
     /** The tag {@code ring_4_blighted}: the blighted band and the islands above it (read by poison and weather). */
     public static final List<ResourceKey<Biome>> BLIGHTED_TAG = Stream.concat(BLIGHTED.stream(), Stream.of(ModBiomes.WITHERED_GARDENS)).toList();
 
@@ -61,11 +67,14 @@ public final class Ring4Biomes {
     static final float TEMPERATURE = 0.8F;
     static final float WET = 0.9F;
     static final float LAND = 0.6F;
+    /** The waterfalls' descent: the wettest of the ring. */
+    static final float FALLS = 0.95F;
 
     /**
      * First colours per biome (sky, fog, water, water fog, grass, foliage): mythical clear turquoise with soft white fog,
      * {@code mist_fjords} grey-white with dark steel-blue water; the blighted band poison green with a greenish sky;
-     * {@code sundered_reach} drained to grey.
+     * {@code sundered_reach} drained to grey; {@code verdant_falls} tropical: clear turquoise water and sky, a soft
+     * white-green fog of spray, lush green.
      */
     private static final Map<ResourceKey<Biome>, Look> LOOKS = Map.ofEntries(
             Map.entry(ModBiomes.CASCADE_VALE, new Look(0x72D2E3, 0xEAF4F2, 0x8FD8F0, 0x2C6E86, 0x6FCB6A, 0x7FD66E, LAND, true)),
@@ -78,7 +87,8 @@ public final class Ring4Biomes {
             Map.entry(ModBiomes.REED_MARSH, new Look(0x96B28E, 0xAEC09C, 0x5DB03A, 0x1A3614, 0x8E9A5C, 0x7C8A50, WET, true)),
             Map.entry(ModBiomes.SKY_GARDENS, new Look(0x66D0EE, 0xF2F8F8, 0x8FE0F4, 0x2E7890, 0x7CDA74, 0x88E07A, LAND, true)),
             Map.entry(ModBiomes.WITHERED_GARDENS, new Look(0xA2B496, 0xBCC4A8, 0x6FA048, 0x22381A, 0x9A9466, 0x8A8458, LAND, true)),
-            Map.entry(ModBiomes.SUNDERED_REACH, new Look(0x8C9096, 0x9A9CA0, 0x5A6670, 0x1A1E22, 0x8A8C84, 0x7C7E78, LAND, false)));
+            Map.entry(ModBiomes.SUNDERED_REACH, new Look(0x8C9096, 0x9A9CA0, 0x5A6670, 0x1A1E22, 0x8A8C84, 0x7C7E78, LAND, false)),
+            Map.entry(ModBiomes.VERDANT_FALLS, new Look(0x86D6E0, 0xD2F0E4, 0x3FD0C0, 0x0F4F4A, 0x6CC24A, 0x55B03A, FALLS, true)));
 
     private Ring4Biomes() {
     }
@@ -94,7 +104,7 @@ public final class Ring4Biomes {
                     .downfall(look.downfall())
                     .specialEffects(effects(look).build())
                     .mobSpawnSettings(spawns(key))
-                    .generationSettings(generation(features, carvers).build())
+                    .generationSettings(generation(features, carvers, key).build())
                     .build());
         }
     }
@@ -122,20 +132,28 @@ public final class Ring4Biomes {
     /**
      * The generation of a ring 4 biome, the one place for ring 4-wide generation: vanilla's carvers capped deep as in
      * ring 2 and 3 ({@link Ring2Carvers}: near the surface they leave sand hanging and cut through lake floors; their
-     * lava is already decided by the ring aquifer in ring 4, change 59). No features yet (changes 75–77).
+     * lava is already decided by the ring aquifer in ring 4, change 59), then the biome's own features in the global
+     * order of {@link Ring4Features#ORDER}.
      */
-    static BiomeGenerationSettings.Builder generation(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+    static BiomeGenerationSettings.Builder generation(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers,
+                                                      ResourceKey<Biome> biome) {
         BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(features, carvers);
         for (ResourceKey<ConfiguredWorldCarver<?>> carver : Ring2Carvers.COPIES.keySet()) {
             generation.addCarver(GenerationStep.Carving.AIR, carver);
+        }
+        for (GenerationStep.Decoration step : GenerationStep.Decoration.values()) {
+            for (ResourceKey<PlacedFeature> feature : Ring4Features.features(biome, step)) {
+                generation.addFeature(step, feature);
+            }
         }
         return generation;
     }
 
     /**
      * The animals per biome (contract §4, V4 = A): the lagoon tropical fish, turtles and dolphins, the swamp frogs and
-     * axolotls (on the clay patches of its lake beds), the cascades foxes and rabbits. The blighted band, the withered
-     * islands and {@code sundered_reach} have none. Every ring 4 biome has an entry, so a missing one fails loudly.
+     * axolotls (on the clay patches of its lake beds), the cascades foxes and rabbits; {@code verdant_falls} frogs on
+     * its grass and turtles on the sand banks of its foot river (Q9 = A: no parrots until the own trees). The blighted
+     * band, the withered islands and {@code sundered_reach} have none. Every ring 4 biome has an entry, so a missing one fails loudly.
      */
     private static final Map<ResourceKey<Biome>, List<Spawn>> ANIMALS = Map.ofEntries(
             Map.entry(ModBiomes.CASCADE_VALE, List.of(
@@ -164,7 +182,10 @@ public final class Ring4Biomes {
             Map.entry(ModBiomes.REED_MARSH, List.of()),
             Map.entry(ModBiomes.SKY_GARDENS, List.of(new Spawn(MobCategory.CREATURE, EntityType.RABBIT, 4, 2, 3))),
             Map.entry(ModBiomes.WITHERED_GARDENS, List.of()),
-            Map.entry(ModBiomes.SUNDERED_REACH, List.of()));
+            Map.entry(ModBiomes.SUNDERED_REACH, List.of()),
+            Map.entry(ModBiomes.VERDANT_FALLS, List.of(
+                    new Spawn(MobCategory.CREATURE, EntityType.FROG, 10, 2, 5),
+                    new Spawn(MobCategory.CREATURE, EntityType.TURTLE, 5, 2, 5))));
 
     /** Vanilla's monsters and bats everywhere (until phase 4), plus the biome's {@link #ANIMALS}; throws for any other biome. */
     static MobSpawnSettings spawns(ResourceKey<Biome> biome) {

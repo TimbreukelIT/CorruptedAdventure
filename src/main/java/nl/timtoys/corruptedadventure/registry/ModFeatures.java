@@ -54,6 +54,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.ImpactCraterConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.ImpactCraterFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.LavaFallConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.LavaFallFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.LedgeStrandConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.LedgeStrandFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TitanRockConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.TitanRockFeature;
 
@@ -139,6 +141,11 @@ public final class ModFeatures {
     /** {@code corruptedadventure:terrace_pool} (change 47d) */
     public static final DeferredHolder<Feature<?>, Feature<TerracePoolConfiguration>> TERRACE_POOL =
             FEATURES.register("terrace_pool", () -> new TerracePoolFeature(TerracePoolConfiguration.CODEC));
+
+    // ring 4 — W-biomes (verdant_falls)
+    /** {@code corruptedadventure:ledge_strand} (verdant_falls: climbing strands under the ledges) */
+    public static final DeferredHolder<Feature<?>, Feature<LedgeStrandConfiguration>> LEDGE_STRAND =
+            FEATURES.register("ledge_strand", () -> new LedgeStrandFeature(LedgeStrandConfiguration.CODEC));
 
     private ModFeatures() {
     }

@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.worldgen.biome;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.DataResult;
 import net.minecraft.core.Holder;
@@ -20,6 +21,7 @@ import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.Ring4Band;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
+import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import org.junit.jupiter.api.Test;
 
@@ -207,6 +209,24 @@ class RingBiomeSourceTest {
         for (String at : new String[]{"0.0", "1.0", "-0.2", "1.3"}) {
             assertTrue(decode(transitions + ", \"transition_splits\": {\"ring_3\": {\"at\": " + at + ", \"outer\": " + fixed("b") + "}}").isError(), at);
         }
+    }
+
+    /**
+     * The preset (W-biomes): zone 3→4 is {@code steam_fens} up to {@link IslandField#VERDANT_EDGE_SHARE} and
+     * {@code verdant_falls} from there, so the biome boundary is the terrain's edge (one Java constant); no other splits.
+     */
+    @Test
+    void presetSplitsZone3To4AtTheVerdantEdge() {
+        JsonObject source = WorldgenData.read("world_preset/corrupted_world.json").getAsJsonObject("dimensions")
+                .getAsJsonObject("minecraft:overworld").getAsJsonObject("generator").getAsJsonObject("biome_source");
+        JsonObject splits = source.getAsJsonObject("transition_splits");
+        assertEquals(Set.of("ring_3"), splits.keySet());
+        JsonObject split = splits.getAsJsonObject("ring_3");
+        assertEquals(IslandField.VERDANT_EDGE_SHARE, split.get("at").getAsDouble());
+        assertEquals("minecraft:fixed", split.getAsJsonObject("outer").get("type").getAsString());
+        assertEquals("corruptedadventure:verdant_falls", split.getAsJsonObject("outer").get("biome").getAsString());
+        JsonObject rim = source.getAsJsonObject("transitions").getAsJsonObject("ring_3");
+        assertEquals("corruptedadventure:steam_fens", rim.get("biome").getAsString());
     }
 
     @Test
