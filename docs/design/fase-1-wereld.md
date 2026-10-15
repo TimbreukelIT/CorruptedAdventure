@@ -839,13 +839,28 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Banden:** mythisch ~6.000 – 7.200, bedorven ~7.200 – 8.000 (60/40 van de ringbreedte). Gif en verval worden dichter richting ring 5. **Golf 0-plan (2026-10-13):** de bandgrens is een eigen as (geseede 2D-ruis op een radiaal verloop: bedorven tongen in de mythische band, mythische eilandjes in de bedorven band), met een Java-tegenhanger voor weer en gif; overgang ~64 blokken.
 - **Waterkleur per biome:** lagune turquoise; cascades en lotus kristalhelder lichtblauw; moeras helder groen; fjorden donker staalblauw; de bedorven band gifgroen, naar zwartgroen richting ring 5.
 - **Vanilla-dieren:** lagune tropische vissen, schildpadden, dolfijnen; moeras kikkers, axolotls; cascades vossen, konijnen; de bedorven band vrijwel leeg. Monsters vanilla tot fase 4.
-- **Overgangsbiomes:** 3→4 blijft `steam_fens` (ring 3, nu op de klif); 4→5 `sundered_reach`.
+- **Overgangsbiomes:** 3→4 `steam_fens` (smalle bovenrand, ring 3) + `verdant_falls` (afdaling, ring 4) sinds 2026-10-15; 4→5 `sundered_reach`.
 
-**Grens 3→4: de klif (vulkaanwand → waterval)**
+**Grens 3→4: de klif (vulkaanwand → waterval)** — *vervangen 2026-10-15, zie "Grens 3→4: `verdant_falls`" hieronder; deze tekst blijft als geschiedenis.*
 - Abrupt: ring 3 eindigt in een klif van ~40–80 hoog. **`steam_fens` ligt erbovenop** (ring 3-kant); het water van de hete bronnen stort als **dampende watervallen** naar ring 4.
 - Om de paar honderd blokken **kloven of puinhellingen** om af te dalen, vaak met een waterval ernaast.
 - `ring3Seal` blijft nodig in ring 3's helft van zone 3→4; het terrein van `steam_fens` volgt ring 4 (backlog).
 - **Golf 0-plan (2026-10-13):** de klif ligt aan de buitenrand van de zone (ring 4-kant, ~6.064 + grensruis); `steam_fens` is een plateau op ring 3-hoogte over de hele zone, de voet is echte ring 4.
+
+**Grens 3→4: `verdant_falls` — het water keert terug (sparring 2026-10-15, vervangt de klif)**
+- **Concept:** een mythisch, tropisch watervalgebied. Bovenaan welt het hete water van ring 3 op in `steam_fens`, op de afdaling koelt het af en keert het terug als levend water. De speler daalt er spectaculair door af naar ring 4. Geen rechte klifwand meer rondom.
+- **Zone 3→4 256 breed** (was 128), via `transitionWidthOverrides` = [0, 0, **256**, 256, 0]; Nether ÷4 zoals altijd (64). Biome, condities, kompas en weer volgen dezelfde grens.
+- **Twee biomes in de zone:** `steam_fens` blijft als smalle bovenrand aan de ring 3-kant (~60 blokken, hete bronnen, geisers, kookpoelen); de afdaling is het nieuwe ring 4-overgangsbiome **`verdant_falls`**.
+- **Terreinvorm:** een mix die per stuk langs de ring wisselt, met overal afgeronde randen:
+  - **getrapte bassins** (zoals Plitvice): meren en bassins op treden, het water valt van bassin naar bassin;
+  - **hoefijzerkloven** (zoals Iguazu): grote halfronde kloven waar veel vallen tegelijk in storten, **om de ~700 blokken** (~50 rondom).
+- **Water:** kronkelende **beken in geulen** door de helling, die over treden en wanden **vallen** en in poelen eindigen. Vallen blijven vastgelegd (waterscan-regel: alleen vallen uit de codelijst).
+- **Afdalen:** natuurlijke **richels, rotsbruggen en paden** langs en achter de vallen (altijd te voet, zonder te bouwen); **grotten achter watervallen**, soms als korte route naar een lagere trede; **lianen en wortels** langs de wanden om te klimmen (aankleding, biome-features).
+- **Begroeiing:** **volledig eigen tropische flora** (eigen bomen en planten met textures). Tot die er is, blijft `verdant_falls` **kaal** (gras/mos, geen vanilla-jungle als placeholder).
+- **Planning:** alles in één keer vóór de volgende teststop: terrein, biome (`verdant_falls` met surface en placeholder-aankleding zonder flora), sfeer; de heuvelfix van ring 4 erbij.
+- `ring3Seal` en de dammen onder Y 63/−54 blijven gelden in de nieuwe zonebreedte.
+
+**Ring 4-heuvels (sparring 2026-10-15):** het karakter blijft (terrassen van `cascade_vale`, fjordkliffen), maar de randen worden zachter: afgeronde trederanden, golvende in plaats van rechte traplijnen, egalere treden. Eerst meten waar de blokkige hoeken vandaan komen.
 
 **Grens 4→5: `sundered_reach` — de wereld valt uit elkaar**
 - De grond breekt op in steeds meer **zwevende brokken boven een diepe leegte**; eilanden worden de enige grond, water stort de diepte in, kleuren vallen weg, de eerste glitchplekken. Vervangt `blighted_mire` als concept.
