@@ -1215,6 +1215,8 @@ public final class IslandField implements DensityFunction {
         final Map<IslandShape, Boolean> kept = new ConcurrentHashMap<>();
         final Map<Integer, VerdantDescent.Profile> verdantProfiles = new ConcurrentHashMap<>();
         final Map<Integer, Double> verdantRims = new ConcurrentHashMap<>();
+        final Map<Integer, Double> verdantOuter = new ConcurrentHashMap<>();
+        final Map<Integer, Double> verdantOuterMax = new ConcurrentHashMap<>();
         final Map<Integer, java.util.Optional<VerdantBasins.Stream>> verdantStreams = new ConcurrentHashMap<>();
         final Map<Long, java.util.Optional<VerdantBasins.Fall>> verdantFalls = new ConcurrentHashMap<>();
         final Map<Long, List<IslandShape>> cells = new ConcurrentHashMap<>();

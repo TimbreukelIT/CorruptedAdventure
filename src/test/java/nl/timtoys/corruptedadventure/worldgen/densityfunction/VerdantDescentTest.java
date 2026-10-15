@@ -56,7 +56,7 @@ class VerdantDescentTest {
             assertTrue(p.rim() >= VerdantDescent.RIM_MIN && p.rim() <= VerdantDescent.RIM_MAX, "rim " + p.rim());
             assertTrue(p.topWidth() >= 6.0 && p.topWidth() <= 14.0, "top terrace " + p.topWidth());
             assertTrue(p.bedHalf() >= 5.0 && p.bedHalf() <= 9.0, "bed " + p.bedHalf());
-            assertTrue(p.river() > VerdantDescent.width(LAYOUT) / 2.0 + 40.0 && p.river() + p.bedHalf() < VerdantDescent.width(LAYOUT) - 10.0,
+            assertTrue(p.river() >= 150.0 && p.river() + p.bedHalf() < VerdantDescent.width(LAYOUT) - 10.0,
                     "river " + p.river());
             steepest = Math.max(steepest, Math.abs(p.rim() - previous));
             previous = p.rim();
@@ -226,5 +226,60 @@ class VerdantDescentTest {
         assertEquals(2.0, RingArc.loopDelta(1.0, 9.0, 10.0), 1e-12);
         assertEquals(-2.0, RingArc.loopDelta(9.0, 1.0, 10.0), 1e-12);
         assertEquals(785, RingArc.cellCount(2.0 * Math.PI * 6000.0, 48.0));
+    }
+    /**
+     * The foot river's outer bank (decision 2026-10-15, "river inwards"): from the river's bed out to the zone's edge and
+     * 16 blocks into ring 4, along every ray of the test seed, the ground never jumps by more than 2 per block, except
+     * where ring 4's own terrain jumps as much at the same place (its fjord walls are 2:1 by design, Q6, and its risers
+     * peak at ~1.9 times their slope): those steps belong to ring 4, not to the bank, and count with half a block of slack.
+     */
+    @Test
+    void theRiversOuterBankIsNoWall() {
+        List<Double> jumps = new ArrayList<>();
+        double worst = 0.0;
+        String where = "";
+        int rays = 0;
+        for (int n = 0; n < 3142; n++) {
+            double angle = n * 2.0 * Math.PI / 3142.0;
+            VerdantDescent.Profile profile = DESCENT.profile(RingArc.wrap(angle * VerdantDescent.midRadius(LAYOUT), VerdantDescent.perimeter(LAYOUT)));
+            double[] start = VerdantDescent.onRay(LAYOUT, angle, VerdantDescent.zoneStart(LAYOUT) + profile.river() + profile.bedHalf());
+            double[] end = VerdantDescent.onRay(LAYOUT, angle, VerdantDescent.zoneStart(LAYOUT) + VerdantDescent.width(LAYOUT) + 16.0);
+            double r0 = Math.hypot(start[0], start[1]);
+            double r1 = Math.hypot(end[0], end[1]);
+            int px = Integer.MIN_VALUE;
+            int pz = 0;
+            double ph = 0.0;
+            double pr = 0.0;
+            for (double r = r0; r <= r1; r += 1.0) {
+                int x = (int) Math.floor(r * Math.cos(angle));
+                int z = (int) Math.floor(r * Math.sin(angle));
+                if (x == px && z == pz) {
+                    continue;
+                }
+                double h = FIELD.verdantHeight(x, z);
+                double own = FIELD.baseHeight(x, z);
+                if (px != Integer.MIN_VALUE) {
+                    double d = Math.hypot(x - px, z - pz);
+                    double jump = Math.abs(h - ph) / d;
+                    double ring4 = Math.abs(own - pr) / d;
+                    double added = jump > ring4 + 0.5 ? jump : Math.min(jump, 2.0);
+                    jumps.add(added);
+                    if (added > worst) {
+                        worst = added;
+                        where = x + " " + z + ": " + ph + " -> " + h;
+                    }
+                }
+                px = x;
+                pz = z;
+                ph = h;
+                pr = own;
+            }
+            rays++;
+        }
+        Collections.sort(jumps);
+        double p90 = jumps.get(jumps.size() * 9 / 10);
+        double p99 = jumps.get(jumps.size() * 99 / 100);
+        System.out.printf("outer bank: rays %d, steps %d, p90 %.2f, p99 %.2f, max %.2f at %s%n", rays, jumps.size(), p90, p99, worst, where);
+        assertTrue(worst <= 2.0, "outer bank jumps " + worst + " per block at " + where);
     }
 }

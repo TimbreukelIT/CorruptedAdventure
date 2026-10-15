@@ -21,8 +21,9 @@ import nl.timtoys.corruptedadventure.ring.RingLayout;
  *   v · (1 + c (1 − v)), c about 0.25), its stair lines bent by a slow wave, stepped by {@link Ring4Relief#terrace} (treads of 8
  *   on the levels 64 + 8k, 60 % tread / 40 % riser with a rounded edge and foot, Q5);</li>
  *   <li>the foot river: bed at {@link #RIVER_BED}, banks of {@link #RIVER_SLOPE} like ring 4's rivers, meandering along
- *   s; beyond it the ground blends to ring 4's own terrain ({@link Ring4Relief}) at the zone's outer edge, so ring 4's
- *   rivers open into the foot river.</li>
+ *   s; beyond it a bank of at most {@link #OUTER_SLOPE} up to ring 4's own terrain ({@link Ring4Relief}), so ring 4's
+ *   rivers open into the foot river. Where ring 4 stands high at the zone's outer edge the river lies further in, so
+ *   that bank is a slope, never a wall (decision 2026-10-15).</li>
  * </ul>
  * Distances along u are shares of the zone (for a zone of 256, the numbers in the constants), so an older world with a
  * zone of 128 gets the same descent, steeper. The basins on the treads are {@link VerdantBasins}.
@@ -71,8 +72,23 @@ final class VerdantDescent {
     private static final double STEEPEST = 0.3;
     /** How far the wave bends the stair lines: this share of the drop as rise (≈ ±12 blocks across). */
     private static final double WAVE = 0.07;
-    /** Beyond the river the outer bank steepens towards the zone's edge, so the ground there is ring 4's own. */
-    private static final double OUTER_LIFT = 200.0;
+    /**
+     * Beyond the river's beach (the bank of {@link #RIVER_SLOPE} up to {@link #BANK_TOP}) the outer bank rises at most
+     * this much per block up to ring 4's own terrain (decision 2026-10-15, "river inwards": a slope, never a wall).
+     */
+    static final double OUTER_SLOPE = 0.8;
+    /** The river moves inwards (blocks) until its outer bank reaches ring 4's height this far before the zone's edge. */
+    private static final double OUTER_MARGIN = 3.0;
+    /** But never further in than this (blocks across a zone of 256): it stays well inside ring 4's half. */
+    private static final double RIVER_INNERMOST = 150.0;
+    /**
+     * Ring 4's height at the zone's edge, per profile sample: the highest of a few points across the edge, the highest
+     * of those within ±OUTER_REACH samples (±32 blocks), averaged over ±OUTER_SMOOTH (never under the sample's own).
+     */
+    private static final int OUTER_REACH = 8;
+    private static final int OUTER_SMOOTH = 8;
+    /** How softly the river's position takes the lower of its own and the edge's limit (blocks). */
+    private static final double RIVER_SOFTNESS = 8.0;
     /** The ramp's noise and the profile's noises: scale and offsets of the warp noise (≈ 250 / 430 blocks). */
     private static final double WAVE_SCALE = 0.5;
     private static final double PROFILE_SCALE = 0.3;
@@ -174,8 +190,21 @@ final class VerdantDescent {
         Ring4Relief relief = field.relief();
         double scale = scale(layout);
         double top = (TOP_WIDTH + TOP_SWING * unit(relief.warpAt(mx + 811.0, mz - 211.0))) * scale;
-        double river = (RIVER_AT + RIVER_SWING * unit(relief.warpAt(mx - 1717.0, mz + 909.0))) * scale;
         double bed = (BED_HALF + BED_SWING * unit(relief.warpAt(mx + 2903.0, mz + 3301.0))) * scale;
+        // The river moves inwards where ring 4 stands high at the zone's edge, so its outer bank rises to it at
+        // OUTER_SLOPE: the lower (softly) of its own meander and that limit, never past RIVER_INNERMOST.
+        double outer = 0.0;
+        double outerWeights = 0.0;
+        for (int i = -OUTER_SMOOTH; i <= OUTER_SMOOTH; i++) {
+            double w = OUTER_SMOOTH + 1 - Math.abs(i);
+            outer += w * outerMax(Math.floorMod(j + i, count));
+            outerWeights += w;
+        }
+        outer /= outerWeights;
+        double own = (RIVER_AT + RIVER_SWING * unit(relief.warpAt(mx - 1717.0, mz + 909.0))) * scale;
+        double limit = width(layout) - OUTER_MARGIN - bed - (BANK_TOP - RIVER_BED) / RIVER_SLOPE
+                - Math.max(0.0, outer - BANK_TOP) / OUTER_SLOPE;
+        double river = Math.max(RIVER_INNERMOST * scale, VolcanicMath.smoothMin(own, limit, RIVER_SOFTNESS * scale));
         double rim = Mth.clamp(sum / weights, RIM_MIN, RIM_MAX);
         double curve = CURVE + CURVE_SWING * unit(relief.warpAt(mx - 4111.0, mz - 2707.0));
         // Not steeper at the top than STEEPEST where the drop over the descent allows it (else as even as it can be).
@@ -183,6 +212,32 @@ final class VerdantDescent {
         double length = flat.bankTop() - flat.descentStart(rimAt(layout));
         double room = STEEPEST * length / Math.max(1.0, rim - BANK_TOP) - 1.0;
         return new Profile(rim, top, river, bed, Mth.clamp(Math.min(curve, room), 0.0, 0.6));
+    }
+
+    /** The highest of {@link #rawOuter} within ±{@link #OUTER_REACH} samples, remembered per world. */
+    private double outerMax(int j) {
+        return field.decisions().once(field.decisions().verdantOuterMax, j, () -> {
+            int count = gridCount();
+            double highest = Double.NEGATIVE_INFINITY;
+            for (int i = -OUTER_REACH; i <= OUTER_REACH; i++) {
+                highest = Math.max(highest, rawOuter(Math.floorMod(j + i, count)));
+            }
+            return highest;
+        });
+    }
+
+    /** Ring 4's own height across the zone's outer edge on the ray of sample {@code j} (the highest of 4 points). */
+    private double rawOuter(int j) {
+        return field.decisions().once(field.decisions().verdantOuter, j, () -> {
+            RingLayout layout = field.ringLayout();
+            double angle = j * (perimeter(layout) / gridCount()) / midRadius(layout);
+            double highest = Double.NEGATIVE_INFINITY;
+            for (double du = -8.0; du <= 16.0; du += 8.0) {
+                double[] p = onRay(layout, angle, zoneStart(layout) + width(layout) + du);
+                highest = Math.max(highest, field.baseHeight(p[0], p[1]));
+            }
+            return highest;
+        });
     }
 
     /** A noise value held to −1..1. */
@@ -328,21 +383,21 @@ final class VerdantDescent {
 
     /**
      * The ground with the foot river: {@code inner} (the treads with their basins; the lowest tread beyond the bank's
-     * top) up to the river's middle, beyond it a blend from the lowest tread to ring 4's own terrain {@code relief} at
-     * the zone's edge; the river cut into it (its outer bank steepening near the edge, so ring 4's terrain stands alone
-     * there).
+     * top) up to the river's middle with the river cut into it; beyond it the outer bank (the beach up to
+     * {@link #BANK_TOP}, then {@link #OUTER_SLOPE}) up to ring 4's own terrain {@code relief}, wherever that is lower
+     * (its rivers and lagoons open into the foot river). The river lies far enough in that the bank meets ring 4's
+     * height before the zone's edge; the last blocks blend to ring 4 in case a spot still stands higher.
      */
     static double withRiver(Point p, double inner, double relief) {
         Profile profile = p.profile;
-        double land = p.u <= profile.river() ? inner
-                : Mth.lerp(Ring4Relief.smooth(p.u, profile.river(), p.width), BANK_TOP, relief);
-        double across = Math.abs(p.u - profile.river()) - profile.bedHalf();
-        double cut = RIVER_BED + Math.max(0.0, across) * RIVER_SLOPE;
-        if (p.u > profile.river()) {
-            double from = Math.min(profile.river() + profile.bedHalf() + 6.0, p.width - 2.0);
-            cut += OUTER_LIFT * Ring4Relief.smooth(p.u, from, p.width);
+        if (p.u <= profile.river()) {
+            double across = profile.river() - p.u - profile.bedHalf();
+            return Math.min(inner, RIVER_BED + Math.max(0.0, across) * RIVER_SLOPE);
         }
-        return Math.min(land, cut);
+        double d = p.u - profile.river() - profile.bedHalf();
+        double beach = (BANK_TOP - RIVER_BED) / RIVER_SLOPE;
+        double bank = d <= 0.0 ? RIVER_BED : d <= beach ? RIVER_BED + d * RIVER_SLOPE : BANK_TOP + (d - beach) * OUTER_SLOPE;
+        return Mth.lerp(Ring4Relief.smooth(p.u, p.width - 4.0, p.width), Math.min(bank, relief), relief);
     }
 
     /** Whether the ground at a point needs ring 4's own terrain (beyond the river's middle). */
