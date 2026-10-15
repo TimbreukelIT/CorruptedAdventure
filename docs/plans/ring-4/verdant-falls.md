@@ -324,6 +324,7 @@ INT vult na de bouw de exacte coördinaten in (kloven uit `VerdantGorgesTest`, d
 ## Contract-delta (INT verwerkt in `contract.md`)
 - §1: standaard `transitionWidthOverrides` [0, 0, 256, 256, 0]; migratie van [0, 0, 0, 256, 0].
 - §2: `verdant_falls` (overworld, overgang 3→4 buitenste deel, `transition_splits.ring_3`, eigenaar W-biomes; terrein W-terrein), in `is_ring_4`.
+- §2/§5: nieuwe biome-tag `evaporation_refuges` (sleutel C, inhoud W-biomes: alleen `verdant_falls`): geen verdamping en geen sponsdroging (`HeatZone.exposed`); `verdant_falls` ook in `heat_refuges`.
 - §4: DF `cliff` → "exacte steile wand van `verdant_falls`"; vloeistofregel: water-tak ook in de verdant-strook van de ring 3-helft; `RingBlend.mix.ring_3`; de klif 3→4 vervalt (golf 0-plan 2026-10-13 wordt historie).
 
 ## Backlog (buiten deze ronde)
