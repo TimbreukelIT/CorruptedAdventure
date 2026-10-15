@@ -8,5 +8,8 @@
     "ring_4": "corruptedadventure:ring_4/overworld",
     "ring_5": "corruptedadventure:ring_5/overworld",
     "void": "corruptedadventure:void/overworld"
+  },
+  "mix": {
+    "ring_3": 0.234375
   }
 }

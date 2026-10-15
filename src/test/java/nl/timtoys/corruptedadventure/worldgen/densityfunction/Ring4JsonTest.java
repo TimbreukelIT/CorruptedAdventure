@@ -179,6 +179,31 @@ class Ring4JsonTest {
         }
     }
 
+    /**
+     * verdant_falls: every overworld {@code ring_blend} mixes ring 3 ↔ 4 only over the {@code steam_fens} rim, with the
+     * one Java share ({@link IslandField#VERDANT_EDGE_SHARE}); the Nether's blends mix over their whole zones.
+     */
+    @Test
+    void overworldBlendsMixRing3And4OnlyOverTheSteamFensRim() throws IOException {
+        int overworld = 0;
+        try (var files = Files.list(WorldgenData.root().resolve(DF + "ring_blend"))) {
+            for (var file : files.filter(path -> path.toString().endsWith(".json")).toList()) {
+                String name = file.getFileName().toString();
+                JsonObject json = JsonParser.parseString(Files.readString(file)).getAsJsonObject();
+                if (name.startsWith("overworld")) {
+                    overworld++;
+                    JsonObject mix = json.getAsJsonObject("mix");
+                    assertEquals(1, mix.size(), name);
+                    assertEquals(IslandField.VERDANT_EDGE_SHARE, mix.get("ring_3").getAsDouble(), 0.0, name);
+                } else {
+                    assertTrue(!json.has("mix"), name);
+                }
+            }
+        }
+        assertEquals(8, overworld);
+        assertEquals(60.0, IslandField.VERDANT_EDGE_SHARE * 256.0, 0.0, "60 of the zone's 256 blocks");
+    }
+
     @Test
     void netherRing4HasItsRegionAndTerrain() {
         assertEquals("corruptedadventure:ring_4/nether/region", rings("nether_temperature").get("ring_4").getAsString());

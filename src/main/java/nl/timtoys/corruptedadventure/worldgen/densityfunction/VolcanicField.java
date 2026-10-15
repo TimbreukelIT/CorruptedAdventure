@@ -1254,17 +1254,20 @@ public final class VolcanicField implements DensityFunction {
             if (keep > 0.98 && r.fade() > 0.5) {
                 ThinShapes.microSteps(this, c, px, pz, height);
             }
+            // The geode first: its cavity must not be crowded out of the column's openings by the tubes. Not behind the
+            // core gate of the tubes: a geode's centre lies deep in the core, but its rim may reach columns where the core
+            // has faded below 0.9 (a wide zone 3|4), and it must be dug and closed there too.
+            fireGeodeColumn(c, x, z);
             if (r.core() > 0.9) {
-                caves(c, x, z, px, pz);
+                LavaTubes.addTo(this, c, tubeTileFor(x, z), x, z, px, pz);
             }
             landFall(c);
         }
         caveFade(c);
     }
 
-    /** The lava tubes, skylights, magma chambers and fire geodes of a column (42). */
-    private void caves(Column c, int x, int z, double px, double pz) {
-        // The geode first: its cavity must not be crowded out of the column's openings by the tubes.
+    /** The cavity and guard of the fire geode (42) whose cell holds this column, wherever the geode reaches. */
+    private void fireGeodeColumn(Column c, int x, int z) {
         FireGeodeShape.Geode geode = fireGeodeCell(Math.floorDiv(x, FireGeodeShape.CELL), Math.floorDiv(z, FireGeodeShape.CELL));
         // Its guard reaches one block past the lining, which still lies inside the cell (MARGIN).
         if (geode != null && Math.abs(x - geode.x()) <= geode.reach() + 1 && Math.abs(z - geode.z()) <= geode.reach() + 1) {
@@ -1275,7 +1278,6 @@ public final class VolcanicField implements DensityFunction {
             // Closed: no vanilla cave or carver opens it (a lava tube may).
             c.addDeepGuard(geode.y() - geode.reach() - 2, geode.y() + geode.reach() + 2);
         }
-        LavaTubes.addTo(this, c, tubeTileFor(x, z), x, z, px, pz);
     }
 
     /**

@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.DensityFunctions;
@@ -144,6 +145,62 @@ class RingBlendTest {
         // mapAll keeps the mode.
         DensityFunction mapped = switching.mapAll(function -> function);
         assertEquals(20.0, ((RingBlend) mapped).compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, 0.4)));
+    }
+
+    /**
+     * verdant_falls: with {@code mix} a boundary mixes only over the first share of its zone (the smoothstep stretched
+     * over it), then the outer ring's input stands alone; other boundaries still mix over their whole zone.
+     */
+    @Test
+    void mixEndsTheBlendAtItsShareOfTheZone() {
+        double share = IslandField.VERDANT_EDGE_SHARE;
+        RingBlend mixing = new RingBlend(Level.OVERWORLD, constants(0, 10, 20, 30, 40, 50), Set.of(), Map.of(Ring.RING_3, share));
+        assertEquals(20.0, mixing.compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, 0.0)));
+        assertEquals(25.0, mixing.compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, share / 2.0)), 1e-9);
+        assertEquals(20.0 + 10.0 * RingBlend.smoothstep(0.25), mixing.compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, share / 4.0)), 1e-9);
+        for (double blend : new double[]{share, 0.3, 0.5, 0.9, 1.0}) {
+            assertEquals(30.0, mixing.compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, blend)), "blend " + blend);
+        }
+        // Continuous at the share (the smoothstep is flat there).
+        assertEquals(30.0, mixing.compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, share - 1e-6)), 1e-6);
+        assertEquals(15.0, mixing.compute(ANYWHERE, new RingPosition(Ring.RING_2, Ring.RING_3, 0.5)), 1e-9, "zone 2→3 still mixes");
+        assertEquals(40.0 + 10.0 * 0.84375, mixing.compute(ANYWHERE, new RingPosition(Ring.RING_5, Ring.VOID, 0.75)), 1e-9);
+        // mapAll keeps the share.
+        RingBlend mapped = (RingBlend) mixing.mapAll(function -> function);
+        assertEquals(30.0, mapped.compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, 0.4)));
+        assertEquals(25.0, mapped.compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, share / 2.0)), 1e-9);
+    }
+
+    /** Without {@code mix} nothing changes: the whole zone mixes, also at its very edges. */
+    @Test
+    void withoutMixTheWholeZoneMixesAsBefore() {
+        RingBlend plain = new RingBlend(Level.OVERWORLD, constants(0, 10, 20, 30.3, 40, 50), Set.of(), Map.of());
+        for (double blend = 0.0; blend <= 1.0; blend += 0.0625) {
+            assertEquals(Mth.lerp(RingBlend.smoothstep(blend), 20.0, 30.3),
+                    plain.compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, blend)), 0.0, "blend " + blend);
+        }
+    }
+
+    @Test
+    void codecReadsMixAndRejectsBadShares() {
+        String rings = "\"rings\": {\"ring_1\": 0.0, \"ring_2\": 10.0, \"ring_3\": 20.0, \"ring_4\": 30.0, \"ring_5\": 40.0, \"void\": 50.0}";
+        String head = "{\"dimension\": \"minecraft:overworld\", " + rings;
+        RingBlend mixing = decode(head + ", \"mix\": {\"ring_3\": 0.25}}").getOrThrow();
+        assertEquals(30.0, mixing.compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, 0.25)));
+        assertEquals(25.0, mixing.compute(ANYWHERE, new RingPosition(Ring.RING_3, Ring.RING_4, 0.125)), 1e-9);
+        // Written back as read.
+        assertEquals(0.25, RingBlend.MAP_CODEC.codec().encodeStart(JsonOps.INSTANCE, mixing).getOrThrow().getAsJsonObject()
+                .getAsJsonObject("mix").get("ring_3").getAsDouble());
+        assertTrue(decode(head + ", \"mix\": {\"ring_3\": 1.0}}").isSuccess());
+        assertTrue(decode(head + ", \"mix\": {\"void\": 0.5}}").isError(), "no boundary beyond the void");
+        assertTrue(decode(head + ", \"mix\": {\"ring_3\": 0.0}}").isError());
+        assertTrue(decode(head + ", \"mix\": {\"ring_3\": 1.5}}").isError());
+        assertTrue(decode(head + ", \"switch_at\": [\"ring_3\"], \"mix\": {\"ring_3\": 0.5}}").isError(), "switch and mix at one boundary");
+        assertTrue(decode(head + ", \"switch_at\": [\"ring_5\"], \"mix\": {\"ring_3\": 0.5}}").isSuccess());
+        assertThrows(IllegalArgumentException.class,
+                () -> new RingBlend(Level.OVERWORLD, constants(0, 0, 0, 0, 0, 0), Set.of(Ring.RING_3), Map.of(Ring.RING_3, 0.5)));
+        assertThrows(IllegalArgumentException.class,
+                () -> new RingBlend(Level.OVERWORLD, constants(0, 0, 0, 0, 0, 0), Set.of(), Map.of(Ring.RING_3, -0.1)));
     }
 
     /**

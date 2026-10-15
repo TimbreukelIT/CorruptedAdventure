@@ -8,5 +8,8 @@
     "ring_4": 0.0,
     "ring_5": "minecraft:overworld/erosion",
     "void": "minecraft:overworld/erosion"
+  },
+  "mix": {
+    "ring_3": 0.234375
   }
 }

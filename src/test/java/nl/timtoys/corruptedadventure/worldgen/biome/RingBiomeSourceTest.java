@@ -155,6 +155,60 @@ class RingBiomeSourceTest {
         assertEquals(expected, withTransition.possibleBiomes());
     }
 
+    /**
+     * verdant_falls: {@code transition_splits} puts two biomes in one zone. Zone 3→4 has its transition biome up to
+     * {@link IslandField#VERDANT_EDGE_SHARE} of the zone (the {@code steam_fens} rim) and the split's biome from there
+     * to the outer edge; the other zones and the rings are untouched.
+     */
+    @Test
+    void aTransitionSplitGivesTheOuterPartOfItsZoneItsOwnBiome() {
+        Map<Ring, BiomeSource> sources = new EnumMap<>(Ring.class);
+        biomes.forEach((ring, biome) -> sources.put(ring, new FixedBiomeSource(biome)));
+        Holder<Biome> rim = Holder.direct(biome());
+        Holder<Biome> descent = Holder.direct(biome());
+        double at = IslandField.VERDANT_EDGE_SHARE;
+        RingBiomeSource split = new RingBiomeSource(Level.OVERWORLD, sources,
+                Map.of(Ring.RING_1, new FixedBiomeSource(transitionBiome), Ring.RING_3, new FixedBiomeSource(rim)), null,
+                Map.of(Ring.RING_3, new RingBiomeSource.TransitionSplit(at, new FixedBiomeSource(descent))));
+        int reach = LAYOUT.settings().transitionWidth(2) / 2 + 96 + 8;
+        for (int angle = 0; angle < 360; angle += 15) {
+            boolean sawRim = false;
+            boolean sawDescent = false;
+            for (int distance = RADII.get(2) - reach; distance <= RADII.get(2) + reach; distance++) {
+                RingPosition position = positionAt(Level.OVERWORLD, distance, angle);
+                Holder<Biome> expected;
+                if (position.inTransition() && position.inner() == Ring.RING_3) {
+                    expected = position.blend() < at ? rim : descent;
+                    sawRim |= expected == rim;
+                    sawDescent |= expected == descent;
+                } else {
+                    expected = biomes.get(position.ring());
+                }
+                assertEquals(expected, biomeAt(split, distance, angle), "zone 3→4 at " + distance + ", angle " + angle);
+            }
+            assertTrue(sawRim && sawDescent, "zone 3→4 not crossed at angle " + angle);
+            assertHardSwitch(split, 2, angle);
+        }
+        Set<Holder<Biome>> expected = new HashSet<>(biomes.values());
+        expected.add(transitionBiome);
+        expected.add(rim);
+        expected.add(descent);
+        assertEquals(expected, split.possibleBiomes());
+    }
+
+    @Test
+    void transitionSplitsAreOptionalLieInsideTheZoneAndNeedATransition() {
+        String transitions = ", \"transitions\": {\"ring_3\": " + fixed("steam_fens") + "}";
+        assertTrue(decode(transitions + ", \"transition_splits\": {\"ring_3\": {\"at\": 0.234375, \"outer\": " + fixed("verdant_falls") + "}}").isSuccess());
+        assertTrue(decode(transitions).isSuccess(), "optional");
+        assertTrue(decode(", \"transition_splits\": {\"ring_3\": {\"at\": 0.5, \"outer\": " + fixed("b") + "}}").isError(), "no transition to split");
+        assertTrue(decode(transitions + ", \"transition_splits\": {\"ring_2\": {\"at\": 0.5, \"outer\": " + fixed("b") + "}}").isError(),
+                "the split's zone has no transition");
+        for (String at : new String[]{"0.0", "1.0", "-0.2", "1.3"}) {
+            assertTrue(decode(transitions + ", \"transition_splits\": {\"ring_3\": {\"at\": " + at + ", \"outer\": " + fixed("b") + "}}").isError(), at);
+        }
+    }
+
     @Test
     void transitionsAreOptionalButNeverForTheVoid() {
         assertTrue(decode("").isSuccess());

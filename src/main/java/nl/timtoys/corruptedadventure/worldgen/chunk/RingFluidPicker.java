@@ -22,8 +22,8 @@ import java.util.Map;
  * <p>
  * The one place for the fluid rules per ring: {@link #noFluid} (void edge), {@link #waterOnlyFrom} (rings 2 and 4),
  * {@link #ring3LavaColumn}, {@link #ring3DryFrom} and {@link #ring3SealBelow} (overworld ring 3),
- * {@link #ring4DryBelow}, {@link #ring4DamBelow}, {@link #ring4NoLava} and {@link #ring4FallColumn} (overworld ring 4,
- * package 59), each per
+ * {@link #ring4DryBelow}, {@link #ring4DamBelow}, {@link #ring4NoLava} and {@link #ring4WaterColumn} (overworld ring 4,
+ * package 59; {@link #verdantWater}: also the {@code verdant_falls} strip of ring 3's half of the zone 3→4), each per
  * column (a Y bound), so that {@link RingAquifer}'s per-block path only compares Y (change 39e), and the fluid levels per ring
  * ({@code levels}, from the
  * generator's {@code fluid_levels}: the default fluid fills open space up to and including that Y instead of up to the
@@ -72,7 +72,7 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
      * crater).
      */
     static boolean ring3LavaColumn(ResourceKey<Level> dimension, RingPosition position, @Nullable VolcanicField field) {
-        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_3 && field != null;
+        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_3 && !verdantWater(dimension, position) && field != null;
     }
 
     /**
@@ -132,11 +132,24 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
     }
 
     /**
-     * Whether the column may hold one of ring 4's recorded waterfalls ({@link IslandField.Column#fallTop}), placed by
-     * {@link RingAquifer}: in overworld ring 4 with its islands present.
+     * Whether the column may hold ring 4's recorded water ({@link IslandField.Column#fallTop}: waterfalls, springs, lakes
+     * above the sea), placed by {@link RingAquifer}: in overworld ring 4 and in the {@code verdant_falls} strip
+     * ({@link #verdantWater}), with the islands present.
      */
-    static boolean ring4FallColumn(ResourceKey<Level> dimension, RingPosition position, @Nullable IslandField islands) {
-        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_4 && islands != null;
+    static boolean ring4WaterColumn(ResourceKey<Level> dimension, RingPosition position, @Nullable IslandField islands) {
+        return dimension == Level.OVERWORLD && (position.ring() == Ring.RING_4 || verdantWater(dimension, position)) && islands != null;
+    }
+
+    /**
+     * Whether a position lies in the {@code verdant_falls} part of the overworld zone 3→4: from
+     * {@link IslandField#VERDANT_EDGE_SHARE} of the zone outwards, where the terrain is ring 4's alone
+     * ({@code ring_blend} {@code mix.ring_3}). Ring 4's water branch holds there too, also in ring 3's half (its lakes,
+     * springs and falls on the descent), and ring 3's terrain lava does not. Ring 3's seal below Y 63, the drying of
+     * vanilla's water from Y 0 up and the dams stay as they are.
+     */
+    static boolean verdantWater(ResourceKey<Level> dimension, RingPosition position) {
+        return dimension == Level.OVERWORLD && position.inTransition() && position.inner() == Ring.RING_3
+                && position.blend() >= IslandField.VERDANT_EDGE_SHARE;
     }
 
     /** The top block of the still sea in the zone 4→5 ({@code sundered_reach}, 63): the abyss's sea, Y 0. */
