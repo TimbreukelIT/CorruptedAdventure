@@ -25,12 +25,12 @@ import java.util.function.Supplier;
  * <p>
  * {@code verdant_falls} (Q8 = A, only biome data): clear turquoise sky and water under a soft white-green haze, fine
  * spray drifting everywhere ({@code waterfall_mist}), the roar of distant waterfalls as its loop and tropical birds and
- * frogs as its additions. A biome particle is tried at about 1,300 random spots around the player per tick, so 0.005
- * is some 6 a tick: a light haze, below the steam fens' 0.01.
+ * frogs as its additions. A biome particle is tried at about 1,300 random spots around the player per tick, so 0.002
+ * is some 2.6 a tick: a light haze, below the steam fens' 0.01 (0.005 hung everywhere in the air, polish round "mist").
  */
 final class Ring4Atmosphere {
     /** Probability of {@code waterfall_mist} per tried spot. */
-    static final float WATERFALL_MIST_PROBABILITY = 0.005F;
+    static final float WATERFALL_MIST_PROBABILITY = 0.002F;
     /** How often a bird or frog calls: every 8 s or so (the oasis birds of ring 2: 0.004). */
     static final double WILDLIFE_CHANCE = 0.006;
 
