@@ -230,6 +230,282 @@ class VerdantBasinsTest {
         assertTrue(most >= 2, "most " + most);
     }
 
+    /** Part 2: the kept falls with a niche, every k-th stream round the ring. */
+    private static List<Object[]> niches(int step) {
+        List<Object[]> found = new ArrayList<>();
+        for (int k = 0; k < BASINS.streamCount(); k += step) {
+            VerdantBasins.Stream stream = BASINS.stream(k);
+            if (stream == null) {
+                continue;
+            }
+            for (int b = 1; b <= stream.top(); b++) {
+                for (boolean spur : new boolean[]{false, true}) {
+                    VerdantBasins.Fall fall = BASINS.fall(stream, b, spur);
+                    if (fall == null || !FIELD.fallsOfChunk(fall.fall().fallX() >> 4, fall.fall().fallZ() >> 4).contains(fall.fall())) {
+                        continue;
+                    }
+                    VerdantBasins.Niche niche = BASINS.niche(stream, b, spur, fall);
+                    if (niche != null) {
+                        found.add(new Object[]{fall, niche, stream});
+                    }
+                }
+            }
+        }
+        return found;
+    }
+
+    /**
+     * Part 2 (plan §2.4): about one in four falls has a niche behind it at the water's height + 1, 3 wide and 3 high,
+     * its floor rock up to the water's top (so the water never stands beside air), the fall in front of its mouth.
+     */
+    @Test
+    void nichesOpenBehindTheFallsAboveTheWater() {
+        WaterScan scan = new WaterScan(FIELD, LAYOUT);
+        List<Object[]> niches = niches(1);
+        int falls = keptFalls(1).size();
+        for (Object[] n : niches) {
+            VerdantBasins.Fall f = (VerdantBasins.Fall) n[0];
+            VerdantBasins.Niche niche = (VerdantBasins.Niche) n[1];
+            IslandField.Fall fall = f.fall();
+            assertEquals(fall.bottom(), niche.bottom(), "the niche's floor at the water the fall lands in");
+            for (int k = 0; k < niche.depth(); k++) {
+                for (int j = -1; j <= 1; j++) {
+                    int x = fall.springX() - k * f.stepX() - j * f.stepZ();
+                    int z = fall.springZ() - k * f.stepZ() + j * f.stepX();
+                    String where = " at " + x + " " + z + " (spring " + fall.springX() + " " + fall.springY() + " " + fall.springZ() + ")";
+                    assertEquals(WaterScan.SOLID, scan.block(x, niche.bottom() - 1, z), "niche floor" + where);
+                    for (int y = niche.bottom(); y < niche.bottom() + 3; y++) {
+                        assertEquals(WaterScan.AIR, scan.block(x, y, z), "niche" + where + " y " + y);
+                    }
+                    assertEquals(WaterScan.SOLID, scan.block(x, niche.bottom() + 3, z), "niche roof" + where);
+                }
+            }
+            // The fall in front of the mouth, down to the water.
+            assertEquals(WaterScan.FALL, scan.block(fall.fallX(), niche.bottom(), fall.fallZ()), "the fall before the niche");
+        }
+        System.out.printf("kept falls %d, niches %d (%.0f %%)%n", falls, niches.size(), 100.0 * niches.size() / falls);
+        assertTrue(niches.size() > falls * 0.15 && niches.size() < falls * 0.35, "niches " + niches.size() + " of " + falls);
+    }
+
+    /**
+     * One in three niches has a short tunnel (3 x 3, rising 1 in 2) up to the tread above, its exit at least 6 from the
+     * tread's edge; no water within two blocks of any of its open blocks.
+     */
+    @Test
+    void tunnelsRiseToTheTreadAndKeepTwoBlocksFromWater() {
+        WaterScan scan = new WaterScan(FIELD, LAYOUT);
+        int tunnels = 0;
+        int niches = 0;
+        for (Object[] n : niches(1)) {
+            niches++;
+            VerdantBasins.Fall f = (VerdantBasins.Fall) n[0];
+            VerdantBasins.Niche niche = (VerdantBasins.Niche) n[1];
+            if (niche.side() == 0) {
+                continue;
+            }
+            tunnels++;
+            IslandField.Fall fall = f.fall();
+            int lastFloor = niche.bottom();
+            int back = niche.depth() - 1;
+            for (int run = 0; run <= niche.length(); run++) {
+                int floor = niche.bottom() + run / 2;
+                assertTrue(floor - lastFloor <= 1, "rises 1 in 2");
+                lastFloor = floor;
+                back = VerdantBasins.Niche.tunnelRow(niche.depth(), run);
+                for (int k = back - 1; k <= back + 1; k++) {
+                    int j = niche.side() * run;
+                    int x = fall.springX() - k * f.stepX() - j * f.stepZ();
+                    int z = fall.springZ() - k * f.stepZ() + j * f.stepX();
+                    for (int y = floor; y < floor + 3; y++) {
+                        String where = " at " + x + " " + y + " " + z;
+                        assertEquals(WaterScan.AIR, scan.block(x, y, z), "tunnel" + where);
+                        for (int dx = -2; dx <= 2; dx++) {
+                            for (int dz = -2; dz <= 2; dz++) {
+                                for (int dy = -2; dy <= 2; dy++) {
+                                    assertTrue(scan.block(x + dx, y + dy, z + dz) != WaterScan.WATER, "water near the tunnel" + where);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // The exit: open to the sky, on the tread at least 6 from its edge.
+            int j = niche.side() * niche.length();
+            int ex = fall.springX() - back * f.stepX() - j * f.stepZ();
+            int ez = fall.springZ() - back * f.stepZ() + j * f.stepX();
+            assertTrue(FIELD.column(ex, ez).surface() <= lastFloor + 1.0, "the tunnel opens at its end");
+            int b = (int) Math.round((fall.springY() + 2 - VerdantDescent.BANK_TOP) / VerdantDescent.STEP);
+            double ramp = FIELD.descent().rampAt(ex, ez);
+            double gx = FIELD.descent().rampAt(ex + 1, ez) - FIELD.descent().rampAt(ex - 1, ez);
+            double gz = FIELD.descent().rampAt(ex, ez + 1) - FIELD.descent().rampAt(ex, ez - 1);
+            assertTrue((ramp - VerdantDescent.level(b)) / (0.5 * Math.hypot(gx, gz)) >= 6.0, "exit 6 from the edge at " + ex + " " + ez);
+        }
+        System.out.printf("niches %d, tunnels %d%n", niches, tunnels);
+        assertTrue(tunnels > niches / 5 && tunnels < niches / 2, "tunnels " + tunnels + " of " + niches);
+    }
+
+    /**
+     * Review 2c-2: every rock bridge is walked onto from the tread: at both ends the deck's top lies at most one block
+     * over the dry tread beyond it (a neighbour past the span, within the deck's width; each end has one), and along the deck a step to a
+     * neighbouring deck column is at most one block. All bridges round the ring.
+     */
+    @Test
+    void rockBridgesAreWalkedOntoFromTheTread() {
+        WaterScan scan = new WaterScan(FIELD, LAYOUT);
+        double r = VerdantDescent.midRadius(LAYOUT);
+        double period = VerdantDescent.perimeter(LAYOUT);
+        int bridges = 0;
+        int ends = 0;
+        int worstEnd = Integer.MIN_VALUE;
+        int worstAlong = 0;
+        int thinnest = Integer.MAX_VALUE;
+        int wet = 0;
+        for (int k = 0; k < BASINS.streamCount(); k++) {
+            VerdantBasins.Stream stream = BASINS.stream(k);
+            if (stream == null) {
+                continue;
+            }
+            for (int b = 1; b <= stream.top(); b++) {
+                VerdantBasins.Bridge bridge = BASINS.bridge(stream, b);
+                if (bridge == null) {
+                    continue;
+                }
+                bridges++;
+                double[] c = BASINS.rampPoint(bridge.centre() / r, bridge.ramp());
+                assertNotNull(c, "bridge " + bridge);
+                int cx = (int) Math.floor(c[0]);
+                int cz = (int) Math.floor(c[1]);
+                int reach = (int) Math.ceil(0.5 * bridge.span()) + 4;
+                String where = " (bridge at " + cx + " " + cz + ")";
+                boolean[] side = new boolean[2];
+                int middle = 0;
+                for (int x = cx - reach; x <= cx + reach; x++) {
+                    for (int z = cz - reach; z <= cz + reach; z++) {
+                        int[] deck = bridgeRock(bridge, x, z, period);
+                        if (deck == null) {
+                            continue;
+                        }
+                        middle = Math.max(middle, deck[1] - deck[0] + 1);
+                        int stand = stand(scan, x, z, b);
+                        assertEquals(deck[1] + 1, stand, "the deck's top" + where);
+                        for (int[] n : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                            int nx = x + n[0];
+                            int nz = z + n[1];
+                            if (bridgeRock(bridge, nx, nz, period) != null) {
+                                worstAlong = Math.max(worstAlong, Math.abs(stand(scan, nx, nz, b) - stand));
+                                continue;
+                            }
+                            double d = RingArc.loopDelta(FIELD.column(nx, nz).arc, bridge.centre(), period);
+                            double along = (FIELD.descent().rampAt(nx, nz) - bridge.ramp()) / bridge.grad();
+                            if (Math.abs(d) <= 0.5 * bridge.span() || Math.abs(along) > 1.5) {
+                                continue;
+                            }
+                            // An end: the tread past the span (a corner of the deck may reach over the brook there).
+                            int tread = stand(scan, nx, nz, b);
+                            if (scan.block(nx, tread, nz) == WaterScan.WATER) {
+                                wet++;
+                                continue;
+                            }
+                            int step = stand - tread;
+                            worstEnd = Math.max(worstEnd, step);
+                            assertTrue(step <= 1, "the deck " + step + " over the tread at its end" + where);
+                            side[d < 0.0 ? 0 : 1] = true;
+                            ends++;
+                        }
+                    }
+                }
+                assertTrue(side[0] && side[1], "both ends reached from dry tread" + where);
+                thinnest = Math.min(thinnest, middle);
+            }
+        }
+        System.out.printf("bridges %d, end steps %d (highest %d; %d over the brook), highest step along a deck %d, thinnest middle %d%n",
+                bridges, ends, worstEnd, wet, worstAlong, thinnest);
+        assertTrue(bridges > 150, "bridges " + bridges);
+        assertTrue(worstAlong <= 1, "a step of " + worstAlong + " along a deck");
+        assertTrue(thinnest >= 2, "a deck " + thinnest + " thick in its middle");
+    }
+
+    /** The rock of bridge {@code bridge} in column (x, z), or null. */
+    private static int[] bridgeRock(VerdantBasins.Bridge bridge, int x, int z, double period) {
+        IslandField.Column column = FIELD.column(x, z);
+        if (!column.verdant) {
+            return null;
+        }
+        return bridge.range(FIELD.descent().rampAt(x, z), column.arc, period);
+    }
+
+    /** The first open block over the ground or deck of a column on tread b (searched from 8 over the tread down). */
+    private static int stand(WaterScan scan, int x, int z, int b) {
+        int y = (int) VerdantDescent.level(b) + 8;
+        while (scan.block(x, y, z) != WaterScan.SOLID) {
+            y--;
+        }
+        return y + 1;
+    }
+
+    /** One in five brooks has a rock bridge over it: span 4–8, 2–3 thick, air between the water and its underside. */
+    @Test
+    void rockBridgesSpanBrooks() {
+        WaterScan scan = new WaterScan(FIELD, LAYOUT);
+        int brooks = 0;
+        int bridges = 0;
+        double r = VerdantDescent.midRadius(LAYOUT);
+        for (int k = 0; k < BASINS.streamCount(); k++) {
+            VerdantBasins.Stream stream = BASINS.stream(k);
+            if (stream == null) {
+                continue;
+            }
+            for (int b = 1; b <= stream.top(); b++) {
+                brooks++;
+                VerdantBasins.Bridge bridge = BASINS.bridge(stream, b);
+                if (bridge == null) {
+                    continue;
+                }
+                bridges++;
+                assertTrue(bridge.span() >= 4.0 && bridge.span() <= 8.0 && bridge.thickness() >= 2 && bridge.thickness() <= 3, "size " + bridge);
+                if (bridges % 4 != 0) {
+                    continue;
+                }
+                // Over the brook's middle: water, then air, then the arch.
+                double[] c = BASINS.rampPoint(bridge.centre() / r, bridge.ramp());
+                assertTrue(c != null, "bridge " + bridge);
+                int x = (int) Math.floor(c[0]);
+                int z = (int) Math.floor(c[1]);
+                int water = VerdantDescent.waterTop(b);
+                String where = " at " + x + " " + z;
+                assertEquals(WaterScan.WATER, scan.block(x, water - 1, z), "the brook under the bridge" + where);
+                assertEquals(WaterScan.AIR, scan.block(x, water, z), "air over the water" + where);
+                int y = water;
+                while (y < water + 8 && scan.block(x, y, z) == WaterScan.AIR) {
+                    y++;
+                }
+                assertEquals(WaterScan.SOLID, scan.block(x, y, z), "the arch" + where);
+                assertTrue(y - water >= 1 && y <= VerdantDescent.level(b) + 2, "under the arch " + (y - water) + where);
+            }
+        }
+        System.out.printf("brooks %d, bridges %d%n", brooks, bridges);
+        assertTrue(bridges > brooks * 0.12 && bridges < brooks * 0.3, "bridges " + bridges + " of " + brooks);
+    }
+
+    /** No water against air round niches, tunnels and bridges. */
+    @Test
+    void waterNeverStandsAgainstAirRoundNichesAndBridges() {
+        int water = 0;
+        int boxes = 0;
+        for (Object[] n : niches(9)) {
+            int[] box = box((VerdantBasins.Stream) n[2], 30.0);
+            WaterScan scan = new WaterScan(FIELD, LAYOUT);
+            List<String> over = scan.scan(box[0], box[1], box[2], box[3]);
+            assertTrue(over.isEmpty(), "water against air: " + over.subList(0, Math.min(10, over.size())));
+            water += scan.water;
+            if (++boxes >= 8) {
+                break;
+            }
+        }
+        System.out.println("water blocks scanned round niches: " + water);
+        assertTrue(water > 10_000, "water " + water);
+    }
+
     /** Q1 = A: the foot river runs round the whole ring at the sea level in ring 4's half, its bed under the sea. */
     @Test
     void theFootRiverRunsRoundTheRing() {
@@ -266,14 +542,20 @@ class VerdantBasinsTest {
             assertEquals(last.high() - VerdantDescent.perimeter(LAYOUT), first.low(), 1e-6, "the ranges meet across the seam");
         }
         int streams = 0;
+        int free = 0;
         for (int k = 0; k < count; k++) {
             VerdantBasins.Stream stream = BASINS.stream(k);
+            // Part 2: a cell whose water could reach into a horseshoe gorge has no stream (the gorge has its own water).
+            boolean clear = FIELD.gorges().clear((k - 1) * BASINS.cellSize(), (k + 2) * BASINS.cellSize());
+            free += clear ? 1 : 0;
             if (stream != null) {
-                streams++;
+                streams += clear ? 1 : 0;
                 assertNotNull(stream);
                 assertTrue(stream.at() >= k * BASINS.cellSize() && stream.at() < (k + 1) * BASINS.cellSize(), "stream " + k + " in its cell");
             }
         }
-        assertTrue(streams > count * 0.8, "streams " + streams + " of " + count);
+        System.out.printf("streams %d in %d cells clear of the gorges (of %d)%n", streams, free, count);
+        assertTrue(streams > free * 0.8, "streams " + streams + " of " + free);
+        assertTrue(free > count * 0.45, "basins and gorges alternate: cells clear of gorges " + free + " of " + count);
     }
 }

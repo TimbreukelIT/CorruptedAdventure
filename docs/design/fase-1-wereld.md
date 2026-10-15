@@ -865,7 +865,8 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - het ring 3-deel van `verdant_falls` is een **afkoelplek** (`heat_refuges`); geplaatst water verdampt daar niet (eigen tag `evaporation_refuges`, alleen `verdant_falls`; de slapende krater blijft droog);
   - **klimroutes:** de ring 4-wortels en het hangmos worden klimbaar (heel ring 4); het terrein maakt op kloofwanden en naast vallen korte overhangende richels, met wortels eronder tot de volgende richel;
   - eigen cap van **6 vallen per chunk**; **calciet** (travertijn) op drempelranden en vallippen, mos op de treden;
-  - sfeer: biome-particle `waterfall_mist`, eigen ambient-loop van verre watervallen, tropische vogels/kikkers; dieren: kikkers en schildpadden.
+  - sfeer: biome-particle `waterfall_mist`, eigen ambient-loop van verre watervallen, tropische vogels/kikkers; dieren: kikkers en schildpadden;
+  - **rotsbruggen** over de beken zijn beloopbaar: het dek dunt naar de uiteinden uit tot 1 dik, zodat je er vanaf de trede met één blok op stapt (2026-10-15, reviewbevinding 2c-2).
 
 **Ring 4-heuvels (sparring 2026-10-15):** het karakter blijft (terrassen van `cascade_vale`, fjordkliffen), maar de randen worden zachter: afgeronde trederanden, golvende in plaats van rechte traplijnen, egalere treden. Eerst meten waar de blokkige hoeken vandaan komen. **Uitwerking (2026-10-15):** terrassen trede 60 % / stootbord 40 % met afgeronde rand en voet (ook voor de treden van `verdant_falls`); fjordrand en -wand per blok exact met smalle afronding, kliffen blijven 2:1. Diagnose: fjordranden knikten binnen één cel van het 4×4-raster (zaagtand), terrasstootborden te smal, detailruis op de treden.
 

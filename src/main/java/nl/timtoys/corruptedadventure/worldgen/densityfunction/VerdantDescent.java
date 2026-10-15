@@ -305,6 +305,8 @@ final class VerdantDescent {
         double treads;
         /** The body (tread) index: floor((ramp − BANK_TOP) / STEP), −1 off the descent. */
         int body;
+        /** The detail noise at the column (the risers' detail). */
+        double detail;
     }
 
     /** Fills {@code p} for the column at (x, z); {@link Point#OUTSIDE} outside the zone 3→4. */
@@ -325,6 +327,7 @@ final class VerdantDescent {
         p.kind = u < p.rimAt ? Point.STRIP : Point.DESCENT;
         p.ramp = ramp(x, z, u, p.rimAt, p.profile, p);
         double detail = field.relief().detailAt(x, z);
+        p.detail = detail;
         double top = treadHeight(p.profile.rim(), detail);
         if (p.kind == Point.STRIP) {
             VolcanicField ring3 = field.ring3();

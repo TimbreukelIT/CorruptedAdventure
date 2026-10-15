@@ -117,6 +117,10 @@ final class RingAquifer implements Aquifer {
     private final boolean[] zone45 = new boolean[COLUMNS + 1];
     private final int[] lakeGuardBottom = new int[COLUMNS + 1];
     private final int[] lakeGuardTop = new int[COLUMNS + 1];
+    // verdant_falls (2c part 2): open space the field carves under the ground (niches, tunnels, a gorge's ledge path
+    // and wall), left as air: [openFrom, openTo], else openFrom > openTo.
+    private final int[] openFrom = new int[COLUMNS + 1];
+    private final int[] openTo = new int[COLUMNS + 1];
 
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla) {
         this(dimension, vanilla, null, null);
@@ -250,6 +254,8 @@ final class RingAquifer implements Aquifer {
         lakeTop[i] = falls ? islandColumn.lakeTop() : Integer.MIN_VALUE;
         lakeGuardBottom[i] = falls ? islandColumn.caveLiftFrom() : Integer.MAX_VALUE;
         lakeGuardTop[i] = falls ? islandColumn.caveLiftTo() : Integer.MIN_VALUE;
+        openFrom[i] = falls ? islandColumn.openFrom() : Integer.MAX_VALUE;
+        openTo[i] = falls ? islandColumn.openTo() : Integer.MIN_VALUE;
         // Review 61b #2, #7 (last: it reads other columns, which may reuse the island column read above): in the band
         // around a lake above the sea the ground starts just under the terrain's interpolated surface; open space below
         // it (a cave the lift missed, a sinkhole the surface does not know) stays rock, the lake fills its bowl above.
@@ -337,6 +343,11 @@ final class RingAquifer implements Aquifer {
         if (carving && y >= lakeGuardBottom[i] && y <= lakeGuardTop[i]) {
             // A carver may not cut under, beside or into a lake above the sea (61): its tunnel would open the lake.
             return null;
+        }
+        if (y >= openFrom[i] && y <= openTo[i]) {
+            // A niche, a tunnel or a gorge's ledge path the terrain cut under the ground (2c part 2): air, never the
+            // guard's rock nor vanilla's water.
+            return AIR;
         }
         if (y >= lakeGuardBottom[i] && y <= lakeGuardTop[i] && y < lakeFloor[i]) {
             // Under the ground around a lake above the sea: rock, so no water there ever stands on air (review 61b #2).

@@ -701,3 +701,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-15 | worldgen | Heuvelfix: terrassen trede 60 % / stootbord 40 % afgerond; fjordranden per blok exact met smalle afronding | Gebruikersbesluit (aanbevolen), gemeten rasterfout p99 1,05 → 0,45 |
 | 2026-10-15 | atmosphere | `verdant_falls`: particle `waterfall_mist`, eigen ambient-loop, tropische vogels/kikkers; dieren kikkers en schildpadden | Gebruikersbesluit (aanbevolen) |
 | 2026-10-15 | worldgen | voetrivier schuift naar binnen waar ring 4 hoog ligt (beloopbare buitenoever i.p.v. wand) | reviewbevinding 2c-1 |
+| 2026-10-15 | worldgen | rotsbruggen in de bassins zijn beloopbaar: dek dunt naar de uiteinden uit tot 1 dik | reviewbevinding 2c-2 |

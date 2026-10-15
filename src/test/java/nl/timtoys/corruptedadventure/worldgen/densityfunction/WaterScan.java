@@ -47,6 +47,8 @@ final class WaterScan {
         int lakeTop = c.lakeTop();
         double exactFloor = c.exactFloor();
         int guard = c.caveLiftFrom();
+        int openFrom = c.openFrom();
+        int openTo = c.openTo();
         double thin = field.thin(x, y, z);
         boolean solid = thin > 0.0 || thin == 0.0 && y < surface;
         if (solid) {
@@ -62,6 +64,9 @@ final class WaterScan {
         }
         if (y == springY) {
             return WATER;
+        }
+        if (y >= openFrom && y <= openTo) {
+            return AIR;
         }
         if (lakeTop != Integer.MIN_VALUE) {
             int floor = (int) Math.floor(Double.isNaN(exactFloor) ? field.gridSurface(x, z) : exactFloor) - 1;

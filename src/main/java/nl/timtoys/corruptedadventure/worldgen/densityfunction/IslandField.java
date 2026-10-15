@@ -90,8 +90,9 @@ public final class IslandField implements DensityFunction {
     private final Decisions decisions;
     // The islands of the 3 x 3 cells around a cell, for recent cells (review 61 #6: lock-free, shared by threads).
     private final KeyedSlots<List<IslandShape>> neighbourhoods = new KeyedSlots<>();
-    /** The descent of the zone 3→4 and its basins (W-terrein 2c). */
+    /** The descent of the zone 3→4, its horseshoe gorges and its basins (W-terrein 2c). */
     private final VerdantDescent descent;
+    private final VerdantGorges gorges;
     private final VerdantBasins basins;
 
     public IslandField(NoiseHolder hash, Ring4Relief relief, Settings settings) {
@@ -116,7 +117,8 @@ public final class IslandField implements DensityFunction {
         this.layout = layout;
         this.decisions = decisions;
         this.descent = new VerdantDescent(this);
-        this.basins = new VerdantBasins(this, descent);
+        this.gorges = new VerdantGorges(this, descent);
+        this.basins = new VerdantBasins(this, descent, gorges);
     }
 
     /** Ring 3's terrain for the rim of {@code verdant_falls}, or null. */
@@ -152,6 +154,10 @@ public final class IslandField implements DensityFunction {
 
     VerdantBasins basins() {
         return basins;
+    }
+
+    VerdantGorges gorges() {
+        return gorges;
     }
 
     // ---------------------------------------------------------------- density function
@@ -383,6 +389,10 @@ public final class IslandField implements DensityFunction {
         }
         double reach = INITIAL_RADII[INITIAL_RADII.length - 1];
         double floor = basins.floorNear(p, reach);
+        VerdantGorges.Gorge gorge = gorges.at(x, z, p, new VerdantGorges.Local());
+        if (gorge != null) {
+            floor = Math.min(floor, VerdantGorges.floorNear(gorge, p));
+        }
         if (Math.abs(p.u - p.profile.river()) < p.profile.bedHalf() + reach + 12.0) {
             floor = Math.min(floor, VerdantDescent.RIVER_BED);
         }
@@ -459,7 +469,7 @@ public final class IslandField implements DensityFunction {
             relief.sample(x, z, band(x, z), s, salt());
         }
         boolean outside = p.kind == VerdantDescent.Point.OUTSIDE;
-        double height = outside ? s.height : verdantGround(bx, bz, p, s, new VerdantBasins.Water());
+        double height = outside ? s.height : verdantGround(bx, bz, p, s, new VerdantBasins.Water(), null);
         double surface = withHoles(height, x, z, shapesNear(bx, bz), null);
         surface = rimmed(x, z, surface);
         Sunder sunder = sunder(x, z);
@@ -477,15 +487,35 @@ public final class IslandField implements DensityFunction {
      * river; beyond the river's middle ring 4's own terrain {@code s} blends in (needed only there,
      * {@link VerdantDescent#needsRelief}). {@code w} gets the basins' values.
      */
-    private double verdantGround(int x, int z, VerdantDescent.Point p, @Nullable Ring4Relief.Sample s, VerdantBasins.Water w) {
+    private double verdantGround(int x, int z, VerdantDescent.Point p, @Nullable Ring4Relief.Sample s, VerdantBasins.Water w,
+                                 @Nullable VerdantGorges.Shape gorge) {
+        if (gorge != null) {
+            gorge.zone = null;
+            gorge.blocks = null;
+        }
         if (p.kind == VerdantDescent.Point.STRIP) {
             w.height = p.treads;
+            w.body = -1;
             w.lakeTop = Integer.MIN_VALUE;
             w.rim = 0.0;
             w.cliff = 0.0;
             return p.treads;
         }
-        basins.shape(x, z, p, true, w);
+        VerdantGorges.Local l = new VerdantGorges.Local();
+        VerdantGorges.Gorge g = gorges.at(x, z, p, l);
+        if (g != null) {
+            // Part 2: a horseshoe gorge instead of the basins.
+            gorges.shape(g, x, z, p, l, true, w, gorge == null ? new VerdantGorges.Shape() : gorge);
+            if (gorge != null) {
+                gorge.zone = g;
+                // The per-block wall stands on the same ground as the column: with the foot river cut in.
+                double relief = s == null ? Double.NaN : s.height;
+                gorge.inside = VerdantDescent.withRiver(p, gorge.inside, relief);
+                gorge.outside = VerdantDescent.withRiver(p, gorge.outside, relief);
+            }
+        } else {
+            basins.shape(x, z, p, true, w);
+        }
         return VerdantDescent.withRiver(p, w.height, s == null ? Double.NaN : s.height);
     }
 
@@ -503,7 +533,7 @@ public final class IslandField implements DensityFunction {
             s = new Ring4Relief.Sample();
             relief.sample(x, z, band(x, z), s, salt());
         }
-        return verdantGround(x, z, p, s, new VerdantBasins.Water());
+        return verdantGround(x, z, p, s, new VerdantBasins.Water(), null);
     }
 
     /**
@@ -544,11 +574,25 @@ public final class IslandField implements DensityFunction {
                 return -1.0;
             }
         }
+        if (thin == 0.0 && c.verdant) {
+            // Part 2: a niche or tunnel behind a basin fall (open), a rock bridge over a brook (rock).
+            if (y >= c.carveLo && y <= c.carveHi) {
+                return -1.0;
+            }
+            if (y >= c.solidLo && y <= c.solidHi) {
+                return 1.0;
+            }
+        }
         if (thin == 0.0 && (c.fjordEdge || c.verdant)) {
             if (c.bandLo == Integer.MIN_VALUE) {
                 c = withExactBand(x, z);
             }
             if (y >= c.bandLo && y <= c.bandHi) {
+                if (c.gorgeBlocks != null) {
+                    // A gorge's wall, its ledge path, niches and climbing ledges, per block.
+                    return gorges.block(c.gorgeBlocks, c.gorgeLocal, c.gorgeInside, c.gorgeOutside, c.gorgeNearFall, c.gorgeEarY,
+                            x, y, z);
+                }
                 return y < c.surface ? 1.0 : -1.0;
             }
         }
@@ -575,8 +619,15 @@ public final class IslandField implements DensityFunction {
         // The corners may have moved the table's window: the same column again (recomputed if so).
         c = columns.get(x, z, IslandField::reset);
         ensureIslands(c);
-        c.bandLo = banded ? Mth.floor(Math.min(exact, bilinear)) - 1 : Integer.MAX_VALUE;
-        c.bandHi = banded ? Mth.ceil(Math.max(exact, bilinear)) + 1 : Integer.MIN_VALUE;
+        double lo = Math.min(exact, bilinear);
+        double hi = Math.max(exact, bilinear);
+        if (c.gorgeBlocks != null) {
+            // The wall's own range: from the gorge floor to the collar.
+            lo = Math.min(lo, Math.min(c.gorgeInside, c.gorgeOutside));
+            hi = Math.max(hi, Math.max(c.gorgeInside, c.gorgeOutside));
+        }
+        c.bandLo = banded ? Mth.floor(lo) - 1 : Integer.MAX_VALUE;
+        c.bandHi = banded ? Mth.ceil(hi) + 1 : Integer.MIN_VALUE;
         return c;
     }
 
@@ -708,7 +759,9 @@ public final class IslandField implements DensityFunction {
             if (u > -16.0 && u < VerdantDescent.width(ringLayout) + 16.0) {
                 List<Fall> verdant = new ArrayList<>();
                 double s = RingArc.arc(minX + 8, minZ + 8, VerdantDescent.midRadius(ringLayout));
-                for (VerdantBasins.Fall fall : basins.fallsNear(s, 16.0)) {
+                List<VerdantBasins.Fall> near = new ArrayList<>(basins.fallsNear(s, 16.0));
+                near.addAll(gorges.fallsNear(s, 16.0));
+                for (VerdantBasins.Fall fall : near) {
                     Fall f = fall.fall();
                     if (f.fallX() >> 4 == cx && f.fallZ() >> 4 == cz && !verdant.contains(f)) {
                         verdant.add(f);
@@ -753,10 +806,24 @@ public final class IslandField implements DensityFunction {
         } else {
             // The zone 3→4 (2c): steam_fens' strip, the descent of verdant_falls with its basins and the foot river.
             VerdantBasins.Water w = new VerdantBasins.Water();
-            c.height = verdantGround(c.x, c.z, p, s, w);
+            VerdantGorges.Shape gorge = new VerdantGorges.Shape();
+            c.height = verdantGround(c.x, c.z, p, s, w, gorge);
             c.verdant = p.kind == VerdantDescent.Point.DESCENT;
             c.arc = p.s;
-            c.body = p.body;
+            c.body = w.body;
+            c.gorgeZone = gorge.zone;
+            if (gorge.zone != null) {
+                c.gorgeBlocks = gorge.blocks;
+                c.gorgeLocal = gorge.local;
+                c.gorgeInside = gorge.inside;
+                c.gorgeOutside = gorge.outside;
+                c.gorgeNearFall = gorge.nearFall;
+                c.gorgeEarY = gorge.earY;
+                c.gorgeOpenLo = gorge.openLo;
+                c.gorgeOpenHi = gorge.openHi;
+            } else if (c.verdant) {
+                basins.features(c.x, c.z, p, c);
+            }
             c.verdantLakeTop = w.lakeTop;
             c.rim = w.rim;
             c.cliff = w.cliff;
@@ -926,8 +993,28 @@ public final class IslandField implements DensityFunction {
     private void verdantWater(Column c) {
         c.lakeTop = c.verdantLakeTop;
         int top = Math.max(Mth.ceil(c.surface), c.lakeTop) + 2;
-        c.caveLiftFrom = Mth.floor(c.surface) - VERDANT_CAVE_DEPTH;
+        double low = c.gorgeZone != null ? Math.min(c.surface, c.gorgeInside) : c.surface;
+        c.caveLiftFrom = Mth.floor(low) - VERDANT_CAVE_DEPTH;
         c.caveLiftTo = top;
+        // Part 2: open space the field carves under the ground stays air (the aquifer would fill it with rock).
+        if (c.carveLo <= c.carveHi) {
+            c.openFrom = c.carveLo;
+            c.openTo = c.carveHi;
+        }
+        if (c.gorgeOpenLo <= c.gorgeOpenHi) {
+            c.openFrom = Math.min(c.openFrom, c.gorgeOpenLo);
+            c.openTo = Math.max(c.openTo, Math.min(c.gorgeOpenHi, Mth.floor(c.surface) - 2));
+        }
+        if (c.gorgeZone != null) {
+            VerdantGorges.GorgeFall fall = gorges.springAt(c.gorgeZone, c.x, c.z);
+            if (fall != null) {
+                Fall f = fall.fall().fall();
+                if (fallsOfChunk(f.fallX() >> 4, f.fallZ() >> 4).contains(f)) {
+                    c.springY = f.springY();
+                }
+            }
+            return;
+        }
         if (c.body >= 1) {
             for (VerdantBasins.Fall fall : basins.fallsOfBody(c.arc, c.body)) {
                 Fall f = fall.fall();
@@ -1023,8 +1110,8 @@ public final class IslandField implements DensityFunction {
         double rim;
         /**
          * On the descent of {@code verdant_falls} (2c; past the steam_fens strip, up to the zone's outer edge): the
-         * ground is exact per block ({@link #thin}). Part 2 (gorges, ledges, niches, arches) adds its per-block shapes
-         * to these columns.
+         * ground is exact per block ({@link #thin}). Part 2 adds its per-block shapes to these columns: the gorges'
+         * walls ({@link #gorgeBlocks}), niches and tunnels ({@link #carveLo}), rock bridges ({@link #solidLo}).
          */
         boolean verdant;
         /** The column's position along the zone 3→4 (blocks of arc on its middle line), for the descent. */
@@ -1035,6 +1122,28 @@ public final class IslandField implements DensityFunction {
         int verdantLakeTop;
         /** The exact ground the aquifer takes as the floor of the water (the descent), NaN where the grid's counts. */
         double exactFloor;
+        /** Part 2: the horseshoe gorge whose reach covers the column, else null. */
+        @Nullable
+        VerdantGorges.Gorge gorgeZone;
+        /** The gorge whose wall shapes the column per block ({@link VerdantGorges#block}), else null; its values. */
+        @Nullable
+        VerdantGorges.Gorge gorgeBlocks;
+        VerdantGorges.Local gorgeLocal;
+        double gorgeInside;
+        double gorgeOutside;
+        double gorgeNearFall;
+        int gorgeEarY;
+        int gorgeOpenLo;
+        int gorgeOpenHi;
+        /** Part 2: open blocks under the ground (a niche or tunnel behind a basin fall), else carveLo > carveHi. */
+        int carveLo;
+        int carveHi;
+        /** Part 2: rock above the ground (a rock bridge over a brook), else solidLo > solidHi. */
+        int solidLo;
+        int solidHi;
+        /** Open space the aquifer leaves as air (carved by the field under the ground), else openFrom > openTo. */
+        int openFrom;
+        int openTo;
         /** The floor of a peat sinkhole, cut per block ({@link #thin}); NaN outside one. */
         double sinkholeFloor;
         /** On a fjord's wall or rim ({@link Ring4Relief.Sample#fjordEdge}): {@link #thin} may cut the surface per block. */
@@ -1092,6 +1201,18 @@ public final class IslandField implements DensityFunction {
             body = -1;
             verdantLakeTop = Integer.MIN_VALUE;
             exactFloor = Double.NaN;
+            gorgeZone = null;
+            gorgeBlocks = null;
+            gorgeLocal = null;
+            gorgeEarY = Integer.MIN_VALUE;
+            gorgeOpenLo = Integer.MAX_VALUE;
+            gorgeOpenHi = Integer.MIN_VALUE;
+            carveLo = Integer.MAX_VALUE;
+            carveHi = Integer.MIN_VALUE;
+            solidLo = Integer.MAX_VALUE;
+            solidHi = Integer.MIN_VALUE;
+            openFrom = Integer.MAX_VALUE;
+            openTo = Integer.MIN_VALUE;
             islandCount = 0;
             springY = Integer.MIN_VALUE;
             lakeTop = Integer.MIN_VALUE;
@@ -1161,6 +1282,16 @@ public final class IslandField implements DensityFunction {
             return exactFloor;
         }
 
+        /** The lowest block the aquifer leaves as air where open (carved under the ground; 2c part 2), else MAX_VALUE. */
+        public int openFrom() {
+            return openFrom;
+        }
+
+        /** The highest such block, else MIN_VALUE. */
+        public int openTo() {
+            return openTo;
+        }
+
         public double sundered() {
             return sundered;
         }
@@ -1219,6 +1350,10 @@ public final class IslandField implements DensityFunction {
         final Map<Integer, Double> verdantOuterMax = new ConcurrentHashMap<>();
         final Map<Integer, java.util.Optional<VerdantBasins.Stream>> verdantStreams = new ConcurrentHashMap<>();
         final Map<Long, java.util.Optional<VerdantBasins.Fall>> verdantFalls = new ConcurrentHashMap<>();
+        final Map<Integer, java.util.Optional<VerdantGorges.Gorge>> verdantGorges = new ConcurrentHashMap<>();
+        final Map<Integer, VerdantGorges.Details> verdantGorgeDetails = new ConcurrentHashMap<>();
+        final Map<Long, java.util.Optional<VerdantBasins.Niche>> verdantNiches = new ConcurrentHashMap<>();
+        final Map<Long, java.util.Optional<VerdantBasins.Bridge>> verdantBridges = new ConcurrentHashMap<>();
         final Map<Long, List<IslandShape>> cells = new ConcurrentHashMap<>();
         final Map<IslandShape, Details> details = new ConcurrentHashMap<>();
         final Map<Long, List<Fall>> chunkFalls = new ConcurrentHashMap<>();
