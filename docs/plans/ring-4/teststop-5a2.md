@@ -285,3 +285,8 @@ Screenshot: ja/nee
 
 Tot slot: drie dingen die het meest moeten veranderen, en of `verdant_falls` "af" voelt voor fase 1.
 Het speel-lock blijft staan tot je de teststop afrondt.
+
+## 6. Uitkomst (2026-10-15)
+
+Teststop 5a2 goedgekeurd door de gebruiker: "dit ziet er top uit allemaal". Geen nieuwe feedbackpunten; de bekende open punten uit de teststop-beoordeling en de backlog blijven staan. Speel-lock verwijderd.
+Volgende stap: prestatiemeting `steam_fens`-zone op de eindstand (JFR, budget 1,75×), daarna golf 2 (`waves.md`).
