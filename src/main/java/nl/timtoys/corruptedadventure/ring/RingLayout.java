@@ -190,6 +190,20 @@ public final class RingLayout {
     }
 
     /**
+     * {@link #reaches}, where the blend of the ring's outer boundary mixes only over the first {@code outerMix} of that
+     * zone ({@code RingBlend}'s {@code mix}, in (0, 1]): beyond that share the ring has no weight, so its reach ends
+     * there (plus {@code margin}). 1 is {@link #reaches} itself.
+     */
+    public boolean reaches(Ring ring, double distance, double margin, double outerMix) {
+        int index = ring.ordinal();
+        if (outerMix >= 1.0 || index >= radii.size()) {
+            return reaches(ring, distance, margin);
+        }
+        double zoneStart = radii.get(index) - halfTransitions[index];
+        return reaches(ring, distance, margin) && distance < zoneStart + 2.0 * halfTransitions[index] * outerMix + margin;
+    }
+
+    /**
      * Margin for {@link #reaches} in effective distance: {@code blocks} of the dimension ({@code scale} overworld
      * blocks each), widened in proportion to the boundary noise above its default of 96. The effective distance runs
      * steeper than one block per block where the noise is strong; the margin must still cover a cell's corners.

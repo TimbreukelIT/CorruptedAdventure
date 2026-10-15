@@ -113,6 +113,31 @@ class RingBlendTest {
         }
     }
 
+    /** The gates of a ring that mixes over only part of its outer zone know that share; the other rings' the whole zone. */
+    @Test
+    void mapAllGivesEachGateItsRingsMixShare() {
+        Map<Ring, DensityFunction> rings = new EnumMap<>(Ring.class);
+        for (Ring ring : Ring.values()) {
+            rings.put(ring, DensityFunctions.add(
+                    DensityFunctions.interpolated(DensityFunctions.constant(ring.ordinal())),
+                    DensityFunctions.flatCache(DensityFunctions.constant(ring.ordinal()))));
+        }
+        double share = IslandField.VERDANT_EDGE_SHARE;
+        List<DensityFunction> seen = new ArrayList<>();
+        new RingBlend(Level.OVERWORLD, rings, Set.of(), Map.of(Ring.RING_3, share)).mapAll(function -> function).mapAll(function -> {
+            seen.add(function);
+            return function;
+        });
+        for (DensityFunction function : seen) {
+            if (function instanceof RingGate gate) {
+                assertEquals(gate.ring() == Ring.RING_3 ? share : 1.0, gate.mix(), gate.ring().toString());
+            } else if (function instanceof RingFillGate gate) {
+                assertEquals(gate.ring() == Ring.RING_3 ? share : 1.0, gate.mix(), gate.ring().toString());
+            }
+        }
+        assertEquals(2 * Ring.values().length, seen.stream().filter(RingGated.class::isInstance).count());
+    }
+
     @Test
     void missingRingIsRejected() {
         Map<Ring, DensityFunction> rings = new EnumMap<>(Ring.class);

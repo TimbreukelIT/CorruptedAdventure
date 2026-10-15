@@ -72,6 +72,169 @@ class RingGateTest {
         assertEquals(4 * RingGate.MARGIN, LAYOUT.reachMargin(RingGate.MARGIN, 4));
     }
 
+    /**
+     * verdant_falls: ring 3 mixes only over the first {@link IslandField#VERDANT_EDGE_SHARE} of the zone 3→4, so its
+     * reach ends there (plus the margin); its inner side and the other rings stay as they were.
+     */
+    @Test
+    void aMixShareEndsTheReachInTheOuterZone() {
+        double m = RingGate.MARGIN;
+        double share = IslandField.VERDANT_EDGE_SHARE;
+        // Zone 3→4: 6000 ± 128, so ring 3 has weight up to 5872 + 60.
+        assertTrue(LAYOUT.reaches(Ring.RING_3, 5932 + m - 0.5, m, share));
+        assertFalse(LAYOUT.reaches(Ring.RING_3, 5932 + m + 0.5, m, share));
+        assertTrue(LAYOUT.reaches(Ring.RING_3, 6128 + m - 0.5, m), "without the share: the whole zone");
+        for (double d = 0.0; d < 11000.0; d += 7.25) {
+            for (Ring ring : Ring.values()) {
+                assertEquals(LAYOUT.reaches(ring, d, m), LAYOUT.reaches(ring, d, m, 1.0), ring + " at " + d);
+                if (ring != Ring.RING_3 || d < 5900.0) {
+                    assertEquals(LAYOUT.reaches(ring, d, m), LAYOUT.reaches(ring, d, m, ring == Ring.RING_3 ? share : 1.0), ring + " at " + d);
+                }
+            }
+        }
+    }
+
+    /** With the share, every cell corner of a column where ring 3 still has weight stays in its reach (also with strong noise). */
+    @Test
+    void everyCellCornerOfAMixedColumnIsInReach() {
+        double share = IslandField.VERDANT_EDGE_SHARE;
+        for (int noise : new int[]{96, 400, 1000}) {
+            RingLayout layout = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, noise, 128,
+                    CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), 20260930L);
+            double margin = layout.reachMargin(RingGate.MARGIN, 1);
+            int weighted = 0;
+            for (int x = 4800; x < 7200; x += 3) {
+                for (int z = -1500; z < 1500; z += 41) {
+                    if (!ring3Weighted(layout.sampleOverworld(x, z), share)) {
+                        continue;
+                    }
+                    weighted++;
+                    for (int dx = -4; dx <= 4; dx += 4) {
+                        for (int dz = -4; dz <= 4; dz += 4) {
+                            assertTrue(layout.reaches(Ring.RING_3, layout.effectiveDistance(x + dx, z + dz), margin, share),
+                                    "ring 3 at " + (x + dx) + "," + (z + dz) + ", noise " + noise);
+                        }
+                    }
+                }
+            }
+            assertTrue(weighted > 1000, "weighted columns " + weighted);
+        }
+    }
+
+    /** Whether ring 3 has weight in {@link RingBlend} with {@code mix.ring_3} = {@code share} at a position. */
+    private static boolean ring3Weighted(RingPosition position, double share) {
+        if (!position.inTransition()) {
+            return position.ring() == Ring.RING_3;
+        }
+        if (position.outer() == Ring.RING_3) {
+            return position.blend() > 0.0;
+        }
+        return position.inner() == Ring.RING_3 && position.blend() < share;
+    }
+
+    /**
+     * Bit-equal: the terrain through the zone 3→4 is the same with the share in ring 3's gate as with a gate that never
+     * closes. Ring 3's input is read as the noise chunk reads an interpolator: the bilinear blend of its cell's corners,
+     * each corner gated (0 out of reach); only less of it is computed.
+     */
+    @Test
+    void theMixedGateLeavesTheDensityBitEqual() {
+        double share = IslandField.VERDANT_EDGE_SHARE;
+        double margin = LAYOUT.reachMargin(RingGate.MARGIN, 1);
+        DensityFunction terrain = new Wave();
+        RingGate gate = new RingGate(Level.OVERWORLD, Ring.RING_3, terrain, share);
+        int[] skipped = {0};
+        DensityFunction gated = new Cornered(gate, (x, z) -> {
+            boolean reaches = LAYOUT.reaches(Ring.RING_3, LAYOUT.effectiveDistance(x, z), margin, share);
+            skipped[0] += reaches ? 0 : 1;
+            return reaches;
+        });
+        DensityFunction open = new Cornered(gate, (x, z) -> true);
+        RingBlend withGate = blend(gated, share);
+        RingBlend without = blend(open, share);
+        int points = 0;
+        for (int x = 5700; x <= 6300; x += 1) {
+            for (int z = -900; z <= 900; z += 37) {
+                RingPosition position = LAYOUT.sampleOverworld(x, z);
+                DensityFunction.FunctionContext context = new DensityFunction.SinglePointContext(x, 70, z);
+                assertEquals(without.compute(context, position), withGate.compute(context, position), "at " + x + "," + z);
+                points++;
+            }
+        }
+        assertTrue(points > 20_000);
+        assertTrue(skipped[0] == 0, "the blend never asks ring 3 out of its reach: " + skipped[0]);
+        // Out there the gate would say 0: the noise chunk's interpolators of ring 3 stay empty beyond the share.
+        assertFalse(LAYOUT.reaches(Ring.RING_3, 6000.0, margin, share));
+    }
+
+    private static RingBlend blend(DensityFunction ring3, double share) {
+        java.util.Map<Ring, DensityFunction> rings = new java.util.EnumMap<>(Ring.class);
+        for (Ring ring : Ring.values()) {
+            rings.put(ring, DensityFunctions.constant(10.0 * ring.ordinal()));
+        }
+        rings.put(Ring.RING_3, ring3);
+        rings.put(Ring.RING_4, new Wave());
+        return new RingBlend(Level.OVERWORLD, rings, java.util.Set.of(), java.util.Map.of(Ring.RING_3, share));
+    }
+
+    /** A terrain that differs at every block. */
+    private record Wave() implements DensityFunction.SimpleFunction {
+        @Override
+        public double compute(FunctionContext context) {
+            return Math.sin(context.blockX() * 0.37) * 7.0 + Math.cos(context.blockZ() * 0.11) * 3.0 + context.blockY() * 0.01;
+        }
+
+        @Override
+        public double minValue() {
+            return -11.0;
+        }
+
+        @Override
+        public double maxValue() {
+            return 11.0;
+        }
+
+        @Override
+        public net.minecraft.util.KeyDispatchDataCodec<? extends DensityFunction> codec() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    /** {@code gate} as an interpolator gives it: bilinear between its 4-block cell's corners, each gated by {@code reach}. */
+    private record Cornered(RingGate gate, java.util.function.BiPredicate<Integer, Integer> reach) implements DensityFunction.SimpleFunction {
+        @Override
+        public double compute(FunctionContext context) {
+            int x0 = Math.floorDiv(context.blockX(), 4) * 4;
+            int z0 = Math.floorDiv(context.blockZ(), 4) * 4;
+            double fx = (context.blockX() - x0) / 4.0;
+            double fz = (context.blockZ() - z0) / 4.0;
+            double c00 = corner(x0, context.blockY(), z0);
+            double c10 = corner(x0 + 4, context.blockY(), z0);
+            double c01 = corner(x0, context.blockY(), z0 + 4);
+            double c11 = corner(x0 + 4, context.blockY(), z0 + 4);
+            return (c00 * (1.0 - fx) + c10 * fx) * (1.0 - fz) + (c01 * (1.0 - fx) + c11 * fx) * fz;
+        }
+
+        private double corner(int x, int y, int z) {
+            return gate.compute(new SinglePointContext(x, y, z), reach.test(x, z));
+        }
+
+        @Override
+        public double minValue() {
+            return gate.minValue();
+        }
+
+        @Override
+        public double maxValue() {
+            return gate.maxValue();
+        }
+
+        @Override
+        public net.minecraft.util.KeyDispatchDataCodec<? extends DensityFunction> codec() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     private static List<Ring> weighted(RingPosition position) {
         if (!position.inTransition()) {
             return List.of(position.inner());
@@ -98,6 +261,10 @@ class RingGateTest {
         assertEquals(2.0, parsed.argument().compute(ANYWHERE));
         assertEquals(json, RingGate.MAP_CODEC.codec().encodeStart(JsonOps.INSTANCE, parsed).getOrThrow());
         assertEquals("ring_3", json.getAsJsonObject().get("ring").getAsString());
+        assertEquals(1.0, parsed.mix());
+        RingGate mixed = new RingGate(Level.OVERWORLD, Ring.RING_3, DensityFunctions.constant(2.0), 0.25);
+        JsonElement mixedJson = RingGate.MAP_CODEC.codec().encodeStart(JsonOps.INSTANCE, mixed).getOrThrow();
+        assertEquals(0.25, RingGate.MAP_CODEC.codec().parse(JsonOps.INSTANCE, mixedJson).getOrThrow().mix());
     }
 
     @Test

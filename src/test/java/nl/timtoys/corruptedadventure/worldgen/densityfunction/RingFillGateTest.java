@@ -30,5 +30,9 @@ class RingFillGateTest {
         assertEquals(Level.NETHER, parsed.dimension());
         assertEquals(Ring.RING_2, parsed.ring());
         assertEquals(json, RingFillGate.MAP_CODEC.codec().encodeStart(JsonOps.INSTANCE, parsed).getOrThrow());
+        assertEquals(1.0, parsed.mix());
+        RingFillGate mixed = new RingFillGate(Level.OVERWORLD, Ring.RING_3, DensityFunctions.constant(2.0), 0.25);
+        JsonElement mixedJson = RingFillGate.MAP_CODEC.codec().encodeStart(JsonOps.INSTANCE, mixed).getOrThrow();
+        assertEquals(0.25, RingFillGate.MAP_CODEC.codec().parse(JsonOps.INSTANCE, mixedJson).getOrThrow().mix());
     }
 }
