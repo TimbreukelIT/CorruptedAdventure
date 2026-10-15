@@ -102,7 +102,7 @@ public final class Ring4Biomes {
                     .hasPrecipitation(look.precipitation())
                     .temperature(TEMPERATURE)
                     .downfall(look.downfall())
-                    .specialEffects(effects(look).build())
+                    .specialEffects(BiomeAmbience.ring4(key, effects(look)).build())
                     .mobSpawnSettings(spawns(key))
                     .generationSettings(generation(features, carvers, key).build())
                     .build());
