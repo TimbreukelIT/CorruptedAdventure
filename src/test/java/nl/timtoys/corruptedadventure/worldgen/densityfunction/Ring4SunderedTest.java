@@ -32,7 +32,7 @@ class Ring4SunderedTest {
         long salt = FIELD.salt();
         List<Double> along = new ArrayList<>();
         double period = Ring4Sundered.perimeter(LAYOUT);
-        int count = Ring4Cliff.cellCount(period, Ring4Sundered.BRIDGE_CELL);
+        int count = RingArc.cellCount(period, Ring4Sundered.BRIDGE_CELL);
         for (int k = 0; k < count; k++) {
             double[] bridge = Ring4Sundered.bridge(salt, k, period);
             along.add(bridge[0]);
