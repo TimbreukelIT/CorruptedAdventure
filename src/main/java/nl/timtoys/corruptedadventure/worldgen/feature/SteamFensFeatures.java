@@ -61,11 +61,16 @@ public final class SteamFensFeatures {
     /** Water stays above sea level: below it, ring3Seal fills the ring 3 half of the zone with rock (plan §1 48). */
     static final int POOLS_ABOVE = 64;
     /**
-     * How far (blocks) a pool reaches from its origin: a boiling pool's radius ≤ 3.5 and its rim of 1, a mud pool's
-     * 3 · 1.4 + 1 (as its grid margin). Every column within it stays on steam_fens' own ground ({@link BeforeSplitFilter}),
-     * so no pool digs into the descent of verdant_falls past the split (its top terrace, rim lakes, source pools).
+     * How far (blocks) a pool reaches from its origin. Every column within it stays on steam_fens' own ground
+     * ({@link BeforeSplitFilter}), so no pool digs into the descent of verdant_falls past the split (its top terrace, rim
+     * lakes, source pools). A mud pool: 3 · 1.4 + 1 (as its grid margin), cut off at its chunk.
      */
-    static final int POOL_REACH = 6;
+    static final int MUD_POOL_REACH = 6;
+    /**
+     * A boiling pool's radius ≤ 3.5 with its rim of 1 reaches 4.5 from its centre, but {@code PoolLayout} shifts the
+     * centre up to 4 blocks per axis into the chunk (its grid margin is 1): up to 10 from the origin.
+     */
+    static final int BOILING_POOL_REACH = 10;
 
     private static final PlacementModifier SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
 
@@ -102,15 +107,16 @@ public final class SteamFensFeatures {
         HolderGetter<ConfiguredFeature<?, ?>> features = context.lookup(Registries.CONFIGURED_FEATURE);
         PlacementModifier open = BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE);
         // Off the descent of verdant_falls: the BiomeFilter only sees the origin, these see the whole reach.
-        PlacementModifier poolsOwnGround = BeforeSplitFilter.of(Ring.RING_3, IslandField.VERDANT_EDGE_SHARE, POOL_REACH);
+        PlacementModifier boilingOwnGround = BeforeSplitFilter.of(Ring.RING_3, IslandField.VERDANT_EDGE_SHARE, BOILING_POOL_REACH);
+        PlacementModifier mudOwnGround = BeforeSplitFilter.of(Ring.RING_3, IslandField.VERDANT_EDGE_SHARE, MUD_POOL_REACH);
         PlacementModifier ventsOwnGround = BeforeSplitFilter.of(Ring.RING_3, IslandField.VERDANT_EDGE_SHARE, GroundVentFeature.MAX_COLLAR);
 
         PlacementUtils.register(context, STEAM_FENS_BOILING_POOLS, features.getOrThrow(BOILING_POOL),
                 JitteredGridPlacement.of(16, 1, 0.3F), SURFACE, HeightBandFilter.above(POOLS_ABOVE), open, BiomeFilter.biome(),
-                poolsOwnGround);
+                boilingOwnGround);
         // A mud pool reaches 3 · 1.4 + 1 = 6: margin 6 keeps it whole.
         PlacementUtils.register(context, STEAM_FENS_MUD_POOLS, features.getOrThrow(FENS_MUD_POOL),
-                JitteredGridPlacement.of(16, 6, 0.7F), SURFACE, SlopeFilter.flat(2, 1), open, BiomeFilter.biome(), poolsOwnGround);
+                JitteredGridPlacement.of(16, 6, 0.7F), SURFACE, SlopeFilter.flat(2, 1), open, BiomeFilter.biome(), mudOwnGround);
         PlacementUtils.register(context, STEAM_FENS_GEYSERS, features.getOrThrow(GEYSER),
                 JitteredGridPlacement.of(16, GroundVentFeature.MAX_COLLAR, 0.3F), SURFACE, SlopeFilter.flat(2, 1), open,
                 BiomeFilter.biome(), ventsOwnGround);

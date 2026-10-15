@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
@@ -9,6 +10,10 @@ import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandFieldTest;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class BeforeSplitFilterTest {
     private static final RingLayout LAYOUT = IslandFieldTest.LAYOUT;
-    private static final BeforeSplitFilter POOLS = BeforeSplitFilter.of(Ring.RING_3, IslandField.VERDANT_EDGE_SHARE, SteamFensFeatures.POOL_REACH);
+    private static final BeforeSplitFilter POOLS = BeforeSplitFilter.of(Ring.RING_3, IslandField.VERDANT_EDGE_SHARE, SteamFensFeatures.MUD_POOL_REACH);
 
     @Test
     void keepsOnlyWhatStaysBeforeTheSplit() {
@@ -57,6 +62,63 @@ class BeforeSplitFilterTest {
         assertEquals(samples, far, "kept well before it");
     }
 
+    /**
+     * Every block a boiling pool changes lies within {@link SteamFensFeatures#BOILING_POOL_REACH} of its origin, also
+     * where {@code PoolLayout} shifts the pool into its chunk (origins 1–14 into the chunk, grid margin 1), and more than
+     * a mud pool's reach away for some: the filter must look that far. Flat ground, the configured radius 1.5–3.5, edge
+     * jitter 0.35 and rim 1.
+     */
+    @Test
+    void aBoilingPoolStaysWithinItsReach() {
+        PoolLayout.Terrain flat = new PoolLayout.Terrain() {
+            @Override
+            public int surface(int x, int z) {
+                return 70;
+            }
+
+            @Override
+            public boolean ground(int x, int y, int z) {
+                return true;
+            }
+
+            @Override
+            public boolean solid(int x, int y, int z) {
+                return y <= 70;
+            }
+        };
+        Random random = new Random(4242L);
+        double farthest = 0.0;
+        int layouts = 0;
+        for (int trial = 0; trial < 12; trial++) {
+            float[] edge = new float[PoolLayout.EDGE_POINTS];
+            for (int i = 0; i < edge.length; i++) {
+                edge[i] = trial == 0 ? 1.0F : 1.0F - 0.35F * random.nextFloat();
+            }
+            for (float radius = 1.5F; radius <= 3.5F; radius += 0.5F) {
+                for (int oz = 1; oz <= 14; oz++) {
+                    for (int ox = 1; ox <= 14; ox++) {
+                        Optional<PoolLayout.Layout> layout = PoolLayout.build(flat, 0, 0, ox, oz,
+                                new PoolLayout.Params(radius, edge, 1, 1, 1));
+                        if (layout.isEmpty()) {
+                            continue;
+                        }
+                        layouts++;
+                        for (List<BlockPos> blocks : List.of(layout.get().carve(),
+                                layout.get().water(), layout.get().rim())) {
+                            for (BlockPos pos : blocks) {
+                                farthest = Math.max(farthest, Math.hypot(pos.getX() - ox, pos.getZ() - oz));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        System.out.printf("boiling pools: %d layouts, farthest block %.2f from the origin%n", layouts, farthest);
+        assertTrue(layouts > 1000, "layouts " + layouts);
+        assertTrue(farthest <= SteamFensFeatures.BOILING_POOL_REACH, "a boiling pool reaches " + farthest);
+        assertTrue(farthest > SteamFensFeatures.MUD_POOL_REACH, "a boiling pool reaches " + farthest);
+    }
+
     @Test
     void theCodecChecksTheSplit() {
         assertTrue(BeforeSplitFilter.CODEC.codec().parse(JsonOps.INSTANCE,
@@ -87,7 +149,7 @@ class BeforeSplitFilterTest {
 
     /** Every column within the reach before the split, without the shortcut. */
     private static boolean fullLook(int x, int z) {
-        int reach = SteamFensFeatures.POOL_REACH;
+        int reach = SteamFensFeatures.MUD_POOL_REACH;
         for (int dz = -reach; dz <= reach; dz++) {
             for (int dx = -reach; dx <= reach; dx++) {
                 if (dx * dx + dz * dz > reach * reach) {
