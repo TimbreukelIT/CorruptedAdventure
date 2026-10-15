@@ -15,8 +15,8 @@ sandstone or stone, as in vanilla.
 verdant_falls (the descent of the zone 3->4) reads the terrain through the condition corruptedadventure:ring4_threshold
 (Q7 = A): calcite (travertine) on the rims of the basins and the lips of the falls (density function
 ring_4/overworld/rim, the terrain's island_output rim since W-terrein 2c), stone on the exact walls (ring_4/overworld/cliff)
-and on steep slopes, grass with moss patches on the treads, sand banks along the foot river (turtles spawn on sand
-only, below Y 67) and lake and brook beds of sand, clay and gravel.
+and on steep slopes (ring_4/overworld/slope, decision 2026-10-15), grass with moss patches on the treads, sand banks
+along the foot river (turtles spawn on sand only, below Y 67) and lake and brook beds of sand, clay and gravel.
 """
 import json
 import os
@@ -101,6 +101,14 @@ FACE_STONE = noise("minecraft:patch", -0.05)
 SHORE = below(66)
 MOSS_PATCHES = noise("minecraft:surface", 0.25)
 MOSSY_STONE = noise("minecraft:surface_secondary", 0.2)
+# verdant_falls' steep slopes (decision 2026-10-15): the terrain's own slope (ring_4/overworld/slope, blocks of rise per
+# block, the steepest least-squares gradient over 5 x 5 columns of the column and its neighbours; the same in every
+# direction and at a chunk's edge), not vanilla's minecraft:steep (one direction per axis, a window of three columns,
+# clamped to the chunk: it marked loose columns on the treads). Stone from SLOPE_ROCK on, and from SLOPE_PATCHY on in
+# the patches of ROCK_PATCHES (~30 blocks), so the steeper risers turn to rock in stretches.
+SLOPE_ROCK = island("slope", 2.0)
+SLOPE_PATCHY = island("slope", 1.5)
+ROCK_PATCHES = noise(CA + "ring_4_rock_patches", 0.0)
 GRAVEL_PATCHES = noise("minecraft:patch", 0.2)
 
 
@@ -149,8 +157,8 @@ SURFACES = {
 
 def verdant_falls():
     """The descent of the zone 3->4 (Q7 = A): calcite on the rims and lips (down the lip's face), stone with mossy
-    cobblestone on the exact walls and steep slopes, sand banks along the foot river, grass with moss on the treads; the
-    beds of lakes, brooks and splash pools sand with clay and gravel patches."""
+    cobblestone on the exact walls and on steep slopes (the terrain's slope, in patches), sand banks along the foot
+    river, grass with moss on the treads; the beds of lakes, brooks and splash pools sand with clay and gravel patches."""
     calcite = block("calcite")
     face = seq(cond(RIM_CRUST, calcite), cond(FACE_MOSS, block("mossy_cobblestone")), cond(FACE_STONE, block("stone")), calcite)
     bed = seq(cond(CLAY_PATCHES, block("clay")), cond(GRAVEL_PATCHES, put("gravel")), put("sand"))
@@ -160,7 +168,8 @@ def verdant_falls():
         cond(RIM, seq(cond(TOP, seq(cond(DRY_TOP, calcite), cond(RIM_WET, calcite))),
                       cond(RIM_DEPTH, cond(DRY_DEPTH, face)))),
         cond(CLIFF, wall),
-        cond(STEEP, wall),
+        cond(SLOPE_ROCK, wall),
+        cond(SLOPE_PATCHY, cond(ROCK_PATCHES, wall)),
         cond(SHORE, seq(cond(TOP, cond(DRY_TOP, put("sand"))), cond(DEPTH, cond(DRY_DEPTH, put("sand"))))),
         # The treads' unconditional top and layer, flat in this branch like every other biome's.
         *surface(seq(cond(MOSS_PATCHES, block("moss_block")), block("grass_block")), "dirt", bed, "dirt")["sequence"])

@@ -6,6 +6,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.worldgen.feature.BeforeSplitFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.HeightBandFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.InRingFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.JitteredGridPlacement;
@@ -53,6 +54,9 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:in_ring} (change 47d) */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<InRingFilter>> IN_RING =
             PLACEMENT_MODIFIER_TYPES.register("in_ring", () -> () -> InRingFilter.CODEC);
+    /** {@code corruptedadventure:before_split} (verdant_falls polish: steam_fens' features off the descent) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<BeforeSplitFilter>> BEFORE_SPLIT =
+            PLACEMENT_MODIFIER_TYPES.register("before_split", () -> () -> BeforeSplitFilter.CODEC);
 
     private ModPlacementModifierTypes() {
     }

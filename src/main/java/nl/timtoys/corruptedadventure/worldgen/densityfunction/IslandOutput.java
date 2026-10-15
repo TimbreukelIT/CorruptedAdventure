@@ -41,6 +41,11 @@ public final class IslandOutput implements DensityFunction {
         CLIFF("cliff", 0.0, 1.0),
         /** 0..1: a travertine rim of {@code verdant_falls} (1 on a lake's threshold edge and a fall's lip; 2c, Q7). */
         RIM("rim", 0.0, 1.0),
+        /**
+         * The ground's steepness in blocks of rise per block, the same in every direction ({@link IslandField#slope};
+         * decision 2026-10-15: stone on the steep slopes of {@code verdant_falls}); read per column, not stored in it.
+         */
+        SLOPE("slope", 0.0, 96.0),
         /** 0..1: how far the ground is sundered here (63; the cracks and loose chunks of the zone 4→5). */
         SUNDERED("sundered", 0.0, 1.0),
         /** 3D, not interpolated: +1 inside an island, −1 in a carved opening, 0 elsewhere (the terrain decides). */
@@ -107,6 +112,7 @@ public final class IslandOutput implements DensityFunction {
             case THIN -> f.thin(x, context.blockY(), z);
             case CAVE_LIFT -> f.caveLift(x, context.blockY(), z);
             case ISLAND_MASK -> f.islandColumn(x, z).islandMask;
+            case SLOPE -> f.slope(x, z);
             default -> columnValue(f.column(x, z), output);
         };
     }
@@ -123,7 +129,7 @@ public final class IslandOutput implements DensityFunction {
             case CLIFF -> column.cliff;
             case RIM -> column.rim;
             case SUNDERED -> column.sundered;
-            case INITIAL_HEIGHT, THIN, CAVE_LIFT -> throw new IllegalArgumentException(output + " is not a column value");
+            case INITIAL_HEIGHT, THIN, CAVE_LIFT, SLOPE -> throw new IllegalArgumentException(output + " is not a column value");
         };
     }
 
