@@ -34,7 +34,10 @@ public final class IslandOutput implements DensityFunction {
         RIVER("river", 0.0, 1.0),
         /** 0..1: a fjord's channel, 1 on its floor. */
         FJORD("fjord", 0.0, 1.0),
-        /** 0..1: an exact steep wall of {@code verdant_falls} (1 on it: the sides of the coves under its falls; 2c). */
+        /**
+         * 0..1: an exact steep wall of {@code verdant_falls} (1 on it: the sides of the coves under its falls, 2c; the
+         * walls of its horseshoe gorges, 2c part 2).
+         */
         CLIFF("cliff", 0.0, 1.0),
         /** 0..1: a travertine rim of {@code verdant_falls} (1 on a lake's threshold edge and a fall's lip; 2c, Q7). */
         RIM("rim", 0.0, 1.0),

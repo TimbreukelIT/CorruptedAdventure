@@ -1110,8 +1110,8 @@ public final class IslandField implements DensityFunction {
         double rim;
         /**
          * On the descent of {@code verdant_falls} (2c; past the steam_fens strip, up to the zone's outer edge): the
-         * ground is exact per block ({@link #thin}). Part 2 (gorges, ledges, niches, arches) adds its per-block shapes
-         * to these columns.
+         * ground is exact per block ({@link #thin}). Part 2 adds its per-block shapes to these columns: the gorges'
+         * walls ({@link #gorgeBlocks}), niches and tunnels ({@link #carveLo}), rock bridges ({@link #solidLo}).
          */
         boolean verdant;
         /** The column's position along the zone 3→4 (blocks of arc on its middle line), for the descent. */

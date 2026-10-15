@@ -13,8 +13,8 @@ import java.util.Optional;
 /**
  * The horseshoe gorges of {@code verdant_falls} (W-terrein 2c part 2, plan §2.3, like Iguazu): one per arc cell of
  * ~{@link #CELL} blocks round the ring. A gorge is cut back into the descent ({@link VerdantDescent}): a rounded
- * amphitheatre (radius 45–75, its back wall 25–40 blocks past the rim) with two arms running out to the foot river,
- * the wall line bent organically (never straight).
+ * amphitheatre (half an ellipse: half width 45–75, as deep as the descent allows under a level rim; its back wall 25–40
+ * blocks past the rim) with two arms running out to the foot river, the wall line bent organically (never straight).
  * <ul>
  *   <li><b>Collar:</b> round the amphitheatre the descent is held on one tread ({@link Gorge#top}) for
  *   {@link #FLAT} blocks, so the whole arc stands at one height; along the arms it lets go over {@link #ARM_FADE}
@@ -32,7 +32,8 @@ import java.util.Optional;
  *   the falls; on one arm it ramps down to the shore, on the other up to the rim (1 in 2).</li>
  *   <li><b>Niches:</b> behind one in three arc falls a niche off the ledge path (3 wide, 4 high, 5–8 deep).</li>
  *   <li><b>Climbing ledges</b> (Q3): short overhanging ledges stacked a climbing distance apart on the walls and
- *   beside falls, for the {@code ledge_strand} feature to hang its strands under.</li>
+ *   beside falls, each with a knob over its end whose strand ({@code ledge_strand}) leads from the ledge below onto
+ *   it, the last one into the ledge path.</li>
  * </ul>
  * The basins' streams keep clear of a gorge's reach ({@link #clear}). Pure: hashes of the world salt
  * ({@link CellShapes#cell}), the descent and the relief's noises; gorges, their falls and ledges are decided once per
@@ -46,7 +47,7 @@ final class VerdantGorges {
     private static final int NICHE_SALT = 6304;
     /** The climbing ledges (Q3, not in the plan's list of salts). */
     private static final int LEDGE_SALT = 6307;
-    /** The amphitheatre's radius: RADIUS ± RADIUS_SPAN / 2 (45–75), for a zone of 256. */
+    /** The amphitheatre's half width: RADIUS_MIN + 0…RADIUS_SPAN (45–75), for a zone of 256. */
     private static final double RADIUS_MIN = 45.0;
     private static final double RADIUS_SPAN = 30.0;
     /** The back wall lies BACK_MIN–BACK_MIN + BACK_SPAN past the rim, and at least BACK_PAST_TOP past the top terrace. */
@@ -66,7 +67,7 @@ final class VerdantGorges {
     private static final int PLACE_TRIES = 6;
     /** The collar stays this far under the foot river's bank envelope, and the arms have this much room past the arc. */
     private static final double ENVELOPE_MARGIN = 3.0;
-    private static final double ARM_ROOM = 6.0;
+
     /** The collar: flat for FLAT blocks beyond the wall line, back to the descent over BLEND more. */
     static final double FLAT = 18.0;
     static final double BLEND = 24.0;
@@ -188,7 +189,7 @@ final class VerdantGorges {
      * the floor (from the lake of tread {@code body}, a notch through its threshold); its place along the wall
      * ({@code t}, arc falls) and whether a niche lies behind it (depth, 0 for none).
      */
-    record GorgeFall(VerdantBasins.Fall fall, boolean arc, int body, int notch, double t, double phi, double niche) {
+    record GorgeFall(VerdantBasins.Fall fall, boolean arc, int body, int notch, double t, double niche) {
         /** Whether (x, z) lies within {@code reach} (Chebyshev) of the spring, the fall's column or a notch column. */
         boolean nearNotch(int x, int z, int reach) {
             IslandField.Fall f = fall.fall();
@@ -345,7 +346,6 @@ final class VerdantGorges {
         // The rim lake (and the rim) need the envelope a block over the collar's tread out to the rim lake's far edge.
         double y = VerdantDescent.level(top) + 1.0 + ENVELOPE_MARGIN;
         double mid = VerdantDescent.midRadius(layout);
-        double period = VerdantDescent.perimeter(layout);
         for (double depth = radius; depth >= DEPTH_MIN; depth -= 2.0) {
             boolean fits = true;
             for (double phi = -0.5 * Math.PI; phi <= 0.5 * Math.PI + 1e-9 && fits; phi += Math.PI / 12.0) {
@@ -937,7 +937,6 @@ final class VerdantGorges {
     @Nullable
     private GorgeFall arcFall(Gorge g, double t, long hash) {
         double[] q = wallAt(g, t, 0.0);
-        double phi = g.phiAt(t);
         // Into the gorge: the wall's inward normal.
         double nx = q[2];
         double nz = q[3];
@@ -953,7 +952,7 @@ final class VerdantGorges {
             double springIn = l.din;
             local(g, sx + step[0], sz + step[1], l);
             if (springIn <= 0.0 && springIn > -1.6 && l.din > 0.0) {
-                GorgeFall fall = checkArc(g, t, phi, sx, sz, step, perp, hash);
+                GorgeFall fall = checkArc(g, t, sx, sz, step, perp, hash);
                 if (fall != null) {
                     return fall;
                 }
@@ -963,7 +962,7 @@ final class VerdantGorges {
     }
 
     @Nullable
-    private GorgeFall checkArc(Gorge g, double t, double phi, int sx, int sz, int[] step, int[] perp, long hash) {
+    private GorgeFall checkArc(Gorge g, double t, int sx, int sz, int[] step, int[] perp, long hash) {
         int springY = g.rimWater() - 1;
         VerdantBasins.Water w = new VerdantBasins.Water();
         Shape s = new Shape();
@@ -1029,7 +1028,7 @@ final class VerdantGorges {
             }
         }
         IslandField.Fall fall = new IslandField.Fall(sx, sz, springY, fx, fz, bottom);
-        return new GorgeFall(new VerdantBasins.Fall(fall, step[0], step[1]), true, g.top(), notch, t, phi, niche);
+        return new GorgeFall(new VerdantBasins.Fall(fall, step[0], step[1]), true, g.top(), notch, t, niche);
     }
 
     /** The fall over the lip of tread b's lake at a place across the gorge, or null where a rule fails. */
@@ -1148,7 +1147,7 @@ final class VerdantGorges {
             return null;
         }
         IslandField.Fall fall = new IslandField.Fall(sx, sz, springY, fx, fz, bottom);
-        return new GorgeFall(new VerdantBasins.Fall(fall, step[0], step[1]), false, b, notch - 1, Double.NaN, Double.NaN, 0.0);
+        return new GorgeFall(new VerdantBasins.Fall(fall, step[0], step[1]), false, b, notch - 1, Double.NaN, 0.0);
     }
 
     /**
