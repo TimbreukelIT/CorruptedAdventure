@@ -24,9 +24,11 @@ b45iw -498 -4 -486 4
 b45is -4 -498 4 -486
 # vf*: verdant_falls (W-terrein 2c): one stream with lakes per direction, +-40 blocks along the ring, u 56-236 (descent,
 # basins, coves, falls, foot river); boxes from VerdantBasinsTest.box on seed 20260930 (streams 8, 202, 401, 594).
-vfe 369 22 381 27
+# Since part 2 streams 8 and 401 give way to a gorge: vfe and vfw now hold the living streams 0 (lake near 6056 25)
+# and 394/395 (near -5928 -86), +-40 blocks along the ring round them.
+vfe 369 -2 382 4
 vfs -22 367 -16 380
-vfw -382 -31 -370 -25
+vfw -382 -8 -369 -3
 vfn 14 -382 19 -368
 # vg*: verdant_falls horseshoe gorges (W-terrein 2c part 2): the gorge nearest each direction, its amphitheatre, arms
 # and collar (centre +- R + 45 blocks); from VerdantGorgesTest's field on seed 20260930 (gorges 53, 14, 26, 40).
