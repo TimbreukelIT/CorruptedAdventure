@@ -859,8 +859,14 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Begroeiing:** **volledig eigen tropische flora** (eigen bomen en planten met textures). Tot die er is, blijft `verdant_falls` **kaal** (gras/mos, geen vanilla-jungle als placeholder).
 - **Planning:** alles in één keer vóór de volgende teststop: terrein, biome (`verdant_falls` met surface en placeholder-aankleding zonder flora), sfeer; de heuvelfix van ring 4 erbij.
 - `ring3Seal` en de dammen onder Y 63/−54 blijven gelden in de nieuwe zonebreedte.
+- **Uitwerking (planronde 2026-10-15, `docs/plans/ring-4/verdant-falls.md` §6a):**
+  - **voetrivier** op Y 63 rondom aan de buitenrand van de zone; alle vallen en kloven monden erin uit, ring 4-rivieren sluiten aan, bevaarbaar rond de ring; afdaling ~28–45;
+  - het ring 3-deel van `verdant_falls` is een **afkoelplek** (`heat_refuges`); geplaatst water verdampt daar niet;
+  - **klimroutes:** de ring 4-wortels en het hangmos worden klimbaar (heel ring 4); het terrein maakt op kloofwanden en naast vallen korte overhangende richels, met wortels eronder tot de volgende richel;
+  - eigen cap van **6 vallen per chunk**; **calciet** (travertijn) op drempelranden en vallippen, mos op de treden;
+  - sfeer: biome-particle `waterfall_mist`, eigen ambient-loop van verre watervallen, tropische vogels/kikkers; dieren: kikkers en schildpadden.
 
-**Ring 4-heuvels (sparring 2026-10-15):** het karakter blijft (terrassen van `cascade_vale`, fjordkliffen), maar de randen worden zachter: afgeronde trederanden, golvende in plaats van rechte traplijnen, egalere treden. Eerst meten waar de blokkige hoeken vandaan komen.
+**Ring 4-heuvels (sparring 2026-10-15):** het karakter blijft (terrassen van `cascade_vale`, fjordkliffen), maar de randen worden zachter: afgeronde trederanden, golvende in plaats van rechte traplijnen, egalere treden. Eerst meten waar de blokkige hoeken vandaan komen. **Uitwerking (2026-10-15):** terrassen trede 60 % / stootbord 40 % met afgeronde rand en voet (ook voor de treden van `verdant_falls`); fjordrand en -wand per blok exact met smalle afronding, kliffen blijven 2:1. Diagnose: fjordranden knikten binnen één cel van het 4×4-raster (zaagtand), terrasstootborden te smal, detailruis op de treden.
 
 **Grens 4→5: `sundered_reach` — de wereld valt uit elkaar**
 - De grond breekt op in steeds meer **zwevende brokken boven een diepe leegte**; eilanden worden de enige grond, water stort de diepte in, kleuren vallen weg, de eerste glitchplekken. Vervangt `blighted_mire` als concept.

@@ -693,3 +693,9 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-15 | blocks | `verdant_falls` krijgt volledig eigen tropische flora; tot die er is blijft het biome kaal (geen vanilla-jungle als placeholder) | Gebruikersbesluit; flora in backlog |
 | 2026-10-15 | worldgen | Planning: terrein, biome en sfeer van `verdant_falls` plus de heuvelfix in één ronde vóór de volgende teststop | Gebruikersbesluit |
 | 2026-10-15 | worldgen | Ring 4-heuvels: karakter houden (terrassen, fjordkliffen), randen zachter, traplijnen golvend, treden egaler; eerst meten waar de hoeken vandaan komen | Gebruikersbesluit (aanbevolen) na teststop 5a |
+| 2026-10-15 | worldgen | `verdant_falls`: voetrivier op Y 63 rondom aan de buitenrand van zone 3→4, alle vallen en kloven monden erin uit | Gebruikersbesluit (aanbevolen): het water keert zichtbaar terug, bevaarbaar |
+| 2026-10-15 | conditions | Het ring 3-deel van `verdant_falls` is een afkoelplek (`heat_refuges`); verdamping slaat schuilplekken over | Gebruikersbesluit (aanbevolen): geen hitte in een tropisch watervalgebied |
+| 2026-10-15 | blocks | Ring 4-wortels en hangmos worden klimbaar (heel ring 4); in `verdant_falls` maakt het terrein overhangende richels met wortels eronder als klimroute | Gebruikersbesluit; geen vanilla-vines |
+| 2026-10-15 | worldgen | `verdant_falls`: eigen cap van 6 vallen per chunk; calciet op drempelranden en vallippen | Gebruikersbesluit (aanbevolen) |
+| 2026-10-15 | worldgen | Heuvelfix: terrassen trede 60 % / stootbord 40 % afgerond; fjordranden per blok exact met smalle afronding | Gebruikersbesluit (aanbevolen), gemeten rasterfout p99 1,05 → 0,45 |
+| 2026-10-15 | atmosphere | `verdant_falls`: particle `waterfall_mist`, eigen ambient-loop, tropische vogels/kikkers; dieren kikkers en schildpadden | Gebruikersbesluit (aanbevolen) |
