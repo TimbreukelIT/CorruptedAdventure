@@ -284,6 +284,120 @@ class VerdantGorgesTest {
         assertTrue(found >= ledges * 0.8, "ledges found " + found + " of " + ledges);
     }
 
+    /**
+     * Q3, a real climbing route: each ledge has a knob over its end; the strand under the knob reaches down to the ledge
+     * below (or the water or shore), and at the strand's top a column beside it holds the ledge's top to step onto.
+     */
+    @Test
+    void knobsLeadFromLedgeToLedge() {
+        WaterScan scan = new WaterScan(FIELD, LAYOUT);
+        int knobs = 0;
+        int climbable = 0;
+        int[] reasons = new int[3];
+        for (VerdantGorges.Gorge g : sample(3)) {
+            for (VerdantGorges.Route r : GORGES.details(g).routes()) {
+                for (int k = 0; k < r.count(); k++) {
+                    int under = r.firstY() + k * r.spacing();
+                    if (r.skipped(under)) {
+                        continue;
+                    }
+                    knobs++;
+                    double[] q = VerdantGorges.wallAt(g, r.t() + VerdantGorges.knob(r, k), 0.8);
+                    int knob = under + VerdantGorges.KNOB_RISE;
+                    // Any of the knob's columns near the point (the block grid lies askew to the wall) with a strand the
+                    // feature would hang (a gap of 3–24 under it, open air near) and the ledge's top beside its top.
+                    int best = 0;
+                    for (int dx = -1; dx <= 1; dx++) {
+                        for (int dz = -1; dz <= 1; dz++) {
+                            int x = (int) Math.floor(q[0]) + dx;
+                            int z = (int) Math.floor(q[1]) + dz;
+                            if (scan.block(x, knob, z) != WaterScan.SOLID || scan.block(x, knob - 1, z) != WaterScan.AIR
+                                    || scan.block(x, knob + 1, z) != WaterScan.AIR) {
+                                continue;
+                            }
+                            best = Math.max(best, 1);
+                            int floor = knob - 1;
+                            while (floor > 40 && scan.block(x, floor, z) == WaterScan.AIR) {
+                                floor--;
+                            }
+                            int gap = knob - floor - 1;
+                            if (gap < 3 || gap > 24 || !openAround(scan, x, z, knob)) {
+                                continue;
+                            }
+                            best = Math.max(best, 2);
+                            for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}) {
+                                if (scan.block(x + d[0], under + 1, z + d[1]) == WaterScan.SOLID
+                                        && scan.block(x + d[0], under + 2, z + d[1]) == WaterScan.AIR
+                                        && scan.block(x + d[0], under + 3, z + d[1]) == WaterScan.AIR) {
+                                    best = 3;
+                                }
+                            }
+                        }
+                    }
+                    climbable += best == 3 ? 1 : 0;
+                    if (best < 3) {
+                        reasons[best]++;
+                    }
+                }
+            }
+        }
+        System.out.printf("knobs %d, with a strand down and a ledge to step onto %d (no knob %d, no strand %d, no step %d)%n", knobs,
+                climbable, reasons[0], reasons[1], reasons[2]);
+        assertTrue(knobs > 40, "knobs " + knobs);
+        assertTrue(climbable >= knobs * 0.8, "climbable " + climbable + " of " + knobs);
+    }
+
+    /**
+     * The last step of a route into the ledge path: over the topmost ledge under the path a knob stands in front of the
+     * path's opening; the strand under it reaches the ledge, and from its top a player steps into the path.
+     */
+    @Test
+    void routesClimbIntoTheLedgePath() {
+        WaterScan scan = new WaterScan(FIELD, LAYOUT);
+        int routes = 0;
+        int reach = 0;
+        for (VerdantGorges.Gorge g : sample(3)) {
+            for (VerdantGorges.Route r : GORGES.details(g).routes()) {
+                int below = r.belowPath();
+                if (below < 0 || Math.abs(r.t()) >= g.arcEnd() - 3.0) {
+                    continue;
+                }
+                routes++;
+                int knob = g.pathY() + VerdantGorges.PATH_KNOB_RISE;
+                int under = r.firstY() + below * r.spacing();
+                double[] q = VerdantGorges.wallAt(g, r.t() + ((below & 1) == 0 ? -1.0 : 1.0), 0.5);
+                boolean ok = false;
+                for (int dx = -1; dx <= 1 && !ok; dx++) {
+                    for (int dz = -1; dz <= 1 && !ok; dz++) {
+                        int x = (int) Math.floor(q[0]) + dx;
+                        int z = (int) Math.floor(q[1]) + dz;
+                        if (scan.block(x, knob, z) != WaterScan.SOLID || scan.block(x, knob - 1, z) != WaterScan.AIR) {
+                            continue;
+                        }
+                        int floor = knob - 1;
+                        while (floor > 40 && scan.block(x, floor, z) == WaterScan.AIR) {
+                            floor--;
+                        }
+                        if (floor != under + 1 || knob - floor - 1 < 3) {
+                            continue;
+                        }
+                        // A path block beside the strand: its floor rock, open above.
+                        for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}) {
+                            ok |= scan.block(x + d[0], g.pathY() - 1, z + d[1]) == WaterScan.SOLID
+                                    && scan.block(x + d[0], g.pathY(), z + d[1]) == WaterScan.AIR
+                                    && scan.block(x + d[0], g.pathY() + 1, z + d[1]) == WaterScan.AIR
+                                    && FIELD.column(x + d[0], z + d[1]).gorgeLocal.din <= 0.0;
+                        }
+                    }
+                }
+                reach += ok ? 1 : 0;
+            }
+        }
+        System.out.printf("routes up to the ledge path %d, climbable into it %d%n", routes, reach);
+        assertTrue(routes > 10, "routes " + routes);
+        assertTrue(reach >= routes * 0.8, "into the path " + reach + " of " + routes);
+    }
+
     /** The feature's rule: a column within 4 whose surface (the highest non-air block) lies at or under the ledge's underside. */
     private static boolean openAround(WaterScan scan, int x, int z, int underside) {
         for (int dx = -4; dx <= 4; dx++) {

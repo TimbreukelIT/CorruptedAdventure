@@ -86,6 +86,8 @@ final class VerdantGorges {
     static final double WALL_BAND = 6.0;
     /** How far the face moves in and out with the roughness (5a), and how far the top edge crumbles. */
     static final double ROUGHNESS = 3.0;
+    /** The roughness noise mostly stays within ±0.5: scaled by this, then held to ±ROUGHNESS. */
+    private static final double ROUGH_GAIN = 6.0;
     static final double CRUMBLE = 3.0;
     /** Within this many blocks (along the wall) of a fall the wall is smooth; the top does not crumble within CRUMBLE_CLEAR. */
     static final double FALL_CLEAR = 3.0;
@@ -105,6 +107,15 @@ final class VerdantGorges {
     /** Climbing ledges: protrude this far, two blocks thick, a gap of 4–5 between them. */
     static final double LEDGE_OUT = 2.0;
     private static final double LEDGE_STAGGER = 1.0;
+    /** A ledge's knob: this far over the ledge's underside, this far out from the wall, past this share of its half length. */
+    static final int KNOB_RISE = 4;
+    static final double KNOB_OUT = 1.6;
+    private static final double KNOB_PAST = 0.7;
+    /** The path's knob stands this far over the ledge path's floor. */
+    static final int PATH_KNOB_RISE = 2;
+    /** Climbing routes beside this share of the arc falls, and along the walls every ROUTE_SPACING + 0…12 blocks. */
+    private static final double BESIDE_FALLS = 1.0 / 3.0;
+    private static final double ROUTE_SPACING = 24.0;
     /** The wall line's own blocks of the per-block zone: from this far inside the wall to this far into the gorge. */
     private static final double BLOCK_IN = PATH_DEPTH + 9.0;
     private static final double BLOCK_OUT = WALL_BAND + 1.0;
@@ -207,6 +218,17 @@ final class VerdantGorges {
         /** Whether ledge k (its underside at firstY + k · spacing) is left out. */
         boolean skipped(int y) {
             return y + 1 >= skipLo && y <= skipHi;
+        }
+
+        /** The topmost ledge under the ledge path's band, or −1. */
+        int belowPath() {
+            int k = -1;
+            for (int i = 0; i < count; i++) {
+                if (firstY + i * spacing + 1 < skipLo) {
+                    k = i;
+                }
+            }
+            return k;
         }
     }
 
@@ -582,7 +604,7 @@ final class VerdantGorges {
         double calm = nearFall;
         if (details != null) {
             for (Route r : details.routes()) {
-                if (Math.abs(l.t - r.t()) <= r.half() + LEDGE_STAGGER + 2.0) {
+                if (Math.abs(l.t - r.t()) <= r.half() + LEDGE_STAGGER + 2.5) {
                     calm = 0.0;
                 }
             }
@@ -730,7 +752,7 @@ final class VerdantGorges {
         }
         double face = din;
         if (Math.abs(din) < ROUGHNESS + 0.5 && nearFall > FALL_CLEAR && outside - inside >= 3.0) {
-            double rough = Mth.clamp(ROUGHNESS * field.relief().rough(x, y, z), -ROUGHNESS, ROUGHNESS);
+            double rough = Mth.clamp(ROUGH_GAIN * field.relief().rough(x, y, z), -ROUGHNESS, ROUGHNESS);
             if (rough > 0.0 && (y < g.waterLimit() || nearPath(g, l, y))) {
                 // Never hollowed beside the gorge's water, nor under or into the ledge path.
                 rough = 0.0;
@@ -818,29 +840,55 @@ final class VerdantGorges {
         shape.openHi = Math.min(hi, Mth.floor(outside) - 2);
     }
 
-    /** Whether a climbing ledge stands at the block (a gorge column within LEDGE_OUT of the wall). */
+    /**
+     * Whether a climbing ledge or the knob over its end stands at the block (a gorge column within LEDGE_OUT of the
+     * wall). Ledge k: two blocks thick from its underside, its middle shifted ±1 along the wall by turns. Its knob: one
+     * block, {@link #KNOB_RISE} over the ledge's underside, just past the ledge's end on the side where the ledge below
+     * reaches further: the strand the feature hangs under the knob runs down to the ledge below, and from its top a
+     * player steps sideways onto the ledge (a strand under the ledge itself ends under its rock).
+     */
     private boolean ledge(Gorge g, Local l, int y) {
         for (Route r : details(g).routes()) {
             double lateral = l.t - r.t();
-            if (Math.abs(lateral) > r.half() + LEDGE_STAGGER + 0.5) {
+            if (Math.abs(lateral) > r.half() + LEDGE_STAGGER + 2.5) {
                 continue;
             }
             int k = Math.floorDiv(y - r.firstY(), r.spacing());
-            if (k < 0 || k >= r.count()) {
-                continue;
+            if (k >= 0 && k < r.count()) {
+                int under = r.firstY() + k * r.spacing();
+                if (y <= under + 1 && !r.skipped(under)) {
+                    double across = (lateral - stagger(k)) / r.half();
+                    double out = l.din / LEDGE_OUT;
+                    if (across * across + out * out <= 1.0) {
+                        return true;
+                    }
+                }
             }
-            int under = r.firstY() + k * r.spacing();
-            if (y > under + 1 || r.skipped(under)) {
-                continue;
+            int kk = y - KNOB_RISE - r.firstY();
+            if (kk >= 0 && kk % r.spacing() == 0 && kk / r.spacing() < r.count() && !r.skipped(y - KNOB_RISE)
+                    && Math.abs(lateral - knob(r, kk / r.spacing())) <= 0.75 && l.din <= KNOB_OUT) {
+                return true;
             }
-            double stagger = (k & 1) == 0 ? -LEDGE_STAGGER : LEDGE_STAGGER;
-            double across = (lateral - stagger) / r.half();
-            double out = l.din / LEDGE_OUT;
-            if (across * across + out * out <= 1.0) {
+            // Into the ledge path: a knob in front of its opening over the topmost ledge under it; from the strand's
+            // top a player steps into the path.
+            int below = r.belowPath();
+            if (y == g.pathY() + PATH_KNOB_RISE && below >= 0 && Math.abs(r.t()) < g.arcEnd() - 3.0 && l.din <= 1.0
+                    && Math.abs(lateral - stagger(below)) <= 0.75) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** Ledge k's middle along the wall from its route's place: shifted ±{@link #LEDGE_STAGGER} by turns. */
+    private static double stagger(int k) {
+        return (k & 1) == 0 ? -LEDGE_STAGGER : LEDGE_STAGGER;
+    }
+
+    /** The knob of ledge k along the wall from its route's place: just past the ledge's end, over the ledge below's end. */
+    static double knob(Route r, int k) {
+        double side = -Math.signum(stagger(k));
+        return stagger(k) + side * (KNOB_PAST * r.half() + 1.0);
     }
 
     // ---------------------------------------------------------------- falls and ledges
@@ -1112,7 +1160,7 @@ final class VerdantGorges {
         long h = CellShapes.cell(field.salt(), g.index(), 0, LEDGE_SALT);
         int n = 0;
         for (GorgeFall f : falls) {
-            if (f.arc() && CellShapes.unit(CellShapes.cell(field.salt(), g.index(), ++n, LEDGE_SALT), 0) < 0.5) {
+            if (f.arc() && CellShapes.unit(CellShapes.cell(field.salt(), g.index(), ++n, LEDGE_SALT), 0) < BESIDE_FALLS) {
                 places.add(f.t() + (CellShapes.unit(h, n % 8) < 0.5 ? -6.0 : 6.0));
             }
         }
@@ -1120,7 +1168,7 @@ final class VerdantGorges {
         for (double t = -far + 4.0 * CellShapes.unit(h, 9); t <= far; ) {
             long hr = CellShapes.cell(field.salt(), g.index(), 1000 + places.size() + (int) Math.round(t), LEDGE_SALT);
             places.add(t);
-            t += 20.0 + 8.0 * CellShapes.unit(hr, 0);
+            t += ROUTE_SPACING + 12.0 * CellShapes.unit(hr, 0);
         }
         List<Route> routes = new ArrayList<>();
         Local l = new Local();

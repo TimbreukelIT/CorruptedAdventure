@@ -28,3 +28,9 @@ vfe 369 22 381 27
 vfs -22 367 -16 380
 vfw -382 -31 -370 -25
 vfn 14 -382 19 -368
+# vg*: verdant_falls horseshoe gorges (W-terrein 2c part 2): the gorge nearest each direction, its amphitheatre, arms
+# and collar (centre +- R + 45 blocks); from VerdantGorgesTest's field on seed 20260930 (gorges 53, 14, 26, 40).
+vge 364 -22 378 -7
+vgs -46 368 -33 381
+vgw -382 20 -367 35
+vgn -1 -384 11 -371
