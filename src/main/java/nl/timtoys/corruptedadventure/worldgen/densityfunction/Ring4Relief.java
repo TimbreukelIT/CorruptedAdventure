@@ -148,6 +148,11 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         return sample(warp, x, z);
     }
 
+    /** The warp noise in 3D (−1..1 about, ~128 blocks at scale 1): a third axis for values that change with a level. */
+    double warpAt(double x, double y, double z) {
+        return warp.getValue(x, y, z);
+    }
+
     /** 2D noise (−1..1 about, ~6 blocks) for where a wall's top edge crumbles (5a). */
     double crumble(double x, double z) {
         return detail.getValue(x * 5.0 - 211.0, 0.0, z * 5.0 + 377.0);
@@ -314,9 +319,17 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         return b * b;
     }
 
-    /** {@link #terrace} with the detail noise on the risers only; a rise at or below 0 stays as it is. */
+    /**
+     * {@link #terrace} with the detail noise on the risers only; a rise at or below 0 stays as it is. Held within its own
+     * step: near a tread's edge the noise outgrows the riser's flat end, and a hair above the next level is a whole block
+     * on the tread's edge (polish round "afdaling": rows of loose blocks along the edges).
+     */
     static double steps(double rise, double d) {
-        return rise <= 0.0 ? rise : terrace(rise) + RISER_DETAIL * d * riserBump(rise);
+        if (rise <= 0.0) {
+            return rise;
+        }
+        double floor = TERRACE_STEP * Math.floor(rise / TERRACE_STEP);
+        return Mth.clamp(terrace(rise) + RISER_DETAIL * d * riserBump(rise), floor, floor + TERRACE_STEP);
     }
 
 

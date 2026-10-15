@@ -26,7 +26,7 @@
       "options": {
         "type": "corruptedadventure:waterfall_mist"
       },
-      "probability": 0.005
+      "probability": 0.002
     },
     "sky_color": 8836832,
     "water_color": 4182208,

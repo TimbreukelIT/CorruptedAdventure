@@ -48,6 +48,11 @@ public final class Ring4Textures {
     private static final Set<String> HAND_EDITED = Set.of();
     /** Textures on 32×32 frames. */
     private static final Set<String> LARGE = Set.of("block/toxic_pool_flow");
+    /**
+     * Sprites that may be half-transparent: particles drawn on the translucent particle sheet (blended, and the particle
+     * atlas has no mipmaps), so a soft alpha edge shows as intended instead of being cut.
+     */
+    private static final String SOFT_ALPHA = "particle/waterfall_mist_";
 
     // ---- Palettes, dark to light (RGB): cool shadows, warmer lights (hue shift) ---------------------------------
 
@@ -274,8 +279,8 @@ public final class Ring4Textures {
             still("particle/updraft_bubble_" + i, (image, random) -> particle(image, Ring4Textures.UPDRAFT_BUBBLES[n], Ring4Textures.GREYS));
             still("particle/glitch_speck_" + i, (image, random) -> particle(image, Ring4Textures.GLITCH_SPECKS[n], Ring4Textures.GLITCH));
             still("particle/bone_dust_" + i, (image, random) -> particle(image, Ring4Textures.BONE_DUST[n], Ring4Textures.GREYS));
-            // verdant_falls (Q8 A): waterfall spray, light greys tinted white-blue by A (V-T4 A).
-            still("particle/waterfall_mist_" + i, (image, random) -> particle(image, Ring4Textures.WATERFALL_MIST[n], Ring4Textures.GREYS));
+            // verdant_falls (Q8 A): waterfall spray, soft white-blue blobs with an alpha fall-off (polish round "mist").
+            still("particle/waterfall_mist_" + i, (image, random) -> softParticle(image, Ring4Textures.WATERFALL_MIST[n], Ring4Textures.MIST_CORE, Ring4Textures.MIST_EDGE));
         }
     }
 
@@ -495,7 +500,7 @@ public final class Ring4Textures {
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < width; x++) {
                 int alpha = image.getRGB(x, y) >>> 24;
-                if (alpha != 0 && alpha != 255) {
+                if (alpha != 0 && alpha != 255 && !name.startsWith(SOFT_ALPHA)) {
                     throw new IllegalStateException(name + ": alpha " + alpha + " at " + x + "," + y);
                 }
                 boolean opaque = alpha != 0;
@@ -2000,14 +2005,18 @@ public final class Ring4Textures {
             {"........", ".#o.....", "..x..#..", "........", "...#o...", "....x...", ".o......", "........"}};
 
     /**
-     * Waterfall mist: fine, soft spray, small to large. Mostly light tones with a checkered rim: cutout sprites can't be
-     * half-transparent, so the dither stands in for the soft edge; hardly any shadow, the mist must stay white.
+     * Waterfall mist: fine, soft spray, a droplet up to a thin wisp. The old checkered cutout sprites read as big blocky
+     * squares in game; these are round blobs whose alpha falls off to the rim (allowed: {@link #SOFT_ALPHA}). Each blob is
+     * {@code {x, y, radius, peak alpha}} in pixels; overlapping blobs add up like light.
      */
-    private static final String[][] WATERFALL_MIST = {
-            {"........", "........", "...o....", "..o#o.o.", "...o....", ".....o..", "........", "........"},
-            {"........", "....o...", "..o#o.o.", ".o###o..", "..o#o...", ".o..o.x.", "........", "........"},
-            {"...o.o..", "..o#o...", ".o###o.o", "o.###o..", ".o#o#o..", "..o.o.x.", "...x....", "........"},
-            {".o.o.o..", "o.o#o.o.", ".o####o.", "o.####.o", ".o###o#.", "o.o#o.o.", ".x.o.x..", "........"}};
+    private static final double[][][] WATERFALL_MIST = {
+            {{3.5, 3.5, 1.8, 1.00}},
+            {{3.5, 3.6, 2.7, 0.90}},
+            {{3.2, 3.9, 2.2, 0.90}, {5.7, 2.2, 1.3, 0.75}, {1.7, 1.9, 1.1, 0.65}},
+            {{3.5, 3.6, 3.4, 0.45}, {3.0, 4.0, 1.8, 0.75}, {5.8, 5.6, 1.1, 0.65}}};
+    /** White at the heart, a light blue hint towards the thin rim. */
+    private static final int MIST_CORE = 0xF8FCFF;
+    private static final int MIST_EDGE = 0xCFE6F7;
 
     // ---- Animation ----------------------------------------------------------------------------------------------
 
@@ -2728,6 +2737,44 @@ public final class Ring4Textures {
         }
         set(image, glintX + 1, glintY + 1, palette[5]);
     }
+    /**
+     * A soft sprite ({@link #SOFT_ALPHA} only) from round blobs {@code {x, y, radius, peak}}: each falls off as
+     * {@code (1 - (d/r)²)²}, sampled 4×4 per pixel so the rim is round; the colour runs from {@code edge} to {@code core}
+     * with the alpha.
+     */
+    private static void softParticle(BufferedImage image, double[][] blobs, int core, int edge) {
+        double brightest = 0.0;
+        for (double[] blob : blobs) {
+            brightest = Math.max(brightest, blob[3]);
+        }
+        for (int y = 0; y < PARTICLE_SIZE; y++) {
+            for (int x = 0; x < PARTICLE_SIZE; x++) {
+                double sum = 0.0;
+                for (int sy = 0; sy < 4; sy++) {
+                    for (int sx = 0; sx < 4; sx++) {
+                        double px = x + (sx + 0.5) / 4.0;
+                        double py = y + (sy + 0.5) / 4.0;
+                        double clear = 1.0;
+                        for (double[] blob : blobs) {
+                            double d = Math.hypot(px - blob[0], py - blob[1]) / blob[2];
+                            if (d < 1.0) {
+                                double falloff = (1.0 - d * d) * (1.0 - d * d);
+                                clear *= 1.0 - blob[3] * falloff;
+                            }
+                        }
+                        sum += 1.0 - clear;
+                    }
+                }
+                double alpha = sum / 16.0;
+                int a = (int) Math.round(alpha * 255.0);
+                if (a < 6) {
+                    continue;
+                }
+                image.setRGB(x, y, a << 24 | mix(edge, core, Math.min(1.0, alpha / brightest)));
+            }
+        }
+    }
+
     private static void particle(BufferedImage image, String[] rows, int[] tones) {
         for (int y = 0; y < PARTICLE_SIZE; y++) {
             for (int x = 0; x < PARTICLE_SIZE; x++) {
@@ -2947,8 +2994,12 @@ public final class Ring4Textures {
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 int argb = image.getRGB(x, y);
-                if (argb >>> 24 != 0) {
+                int alpha = argb >>> 24;
+                if (alpha == 255) {
                     graphics.setColor(new Color(argb & 0xFFFFFF));
+                } else if (alpha != 0) {
+                    // A soft sprite (SOFT_ALPHA): blended over the backdrop, or drawn with its alpha without one.
+                    graphics.setColor(backdrop >= 0 ? new Color(mix(backdrop, argb & 0xFFFFFF, alpha / 255.0)) : new Color(argb, true));
                 } else if (backdrop >= 0) {
                     graphics.setColor(new Color(backdrop));
                 } else {

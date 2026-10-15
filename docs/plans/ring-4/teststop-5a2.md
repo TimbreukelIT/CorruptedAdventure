@@ -6,6 +6,9 @@ Wat er beoordeeld wordt: `verdant-falls.md` §7. Dit document is alleen de uitvo
 
 Coördinaten: offline berekend uit het terreinveld op de testseed (`IslandFieldTest`-layout, standaardringen).
 INT controleert ze in `ring4-vf`. Wijkt een plek af, ga dan uit van wat je ter plaatse ziet en noteer de F3-coördinaat.
+In-game gecontroleerd op 8233e40 (wereld `ring4-val`, 2026-10-15): alle bronnen (3.3–3.5, 3.9), de padopeningen van
+kloof 14/26/40/53, de lipvallen en de voetrivier (6097 0, 2092 5755) staan waar beschreven; gecorrigeerd zijn de biomewissel
+(3.1), het meer op trede 72 (3.3) en de klimstrengen van kloof 53 (3.9).
 
 ## 1. Server starten
 
@@ -42,7 +45,7 @@ F3 toont het biome. Noteer bij elke bevinding de F3-coördinaat.
 
 ### 3.1 Bovenrand `steam_fens` → `verdant_falls`
 `/tp @s 5947 111 0` (oost, u 40, nog `steam_fens`)
-- **Wat je ziet:** de `steam_fens`-strook met geisers en kookpoelen. Na ~20 blokken naar oost volgt het vlakke boventerras op Y ~110, met de biomewissel rond 5967 0.
+- **Wat je ziet:** de `steam_fens`-strook met geisers en kookpoelen. Na ~20 blokken naar oost volgt het vlakke boventerras op Y ~110, met de biomewissel rond 5974 0 (in-game: 5972 nog `steam_fens`, 5976 `verdant_falls`; de trede valt bij 5980 naar 104).
 - **Let op:**
   - Wisselt het biome op de vlakke bovenste trede, en niet midden op een helling?
   - Loopt de strook (~60 breed) mooi over in het terras, zonder naad of richel?
@@ -64,7 +67,7 @@ F3 toont het biome. Noteer bij elke bevinding de F3-coördinaat.
 |---|---|---|
 | 88 (bovenste) | meer rond −294 86 5959 | meer met bronpoel; val bij bron −292 86 5975, tweede uitloop bij −310 86 5984 |
 | 80 | bron −292 78 6004 | plonspoel + beek in een geul; geen meer |
-| 72 | meer rond −303 70 6020 | meer; val bij bron −303 70 6036 naar de voetrivier (63) |
+| 72 | meer rond −299 70 6020 | smal meer (4–8 breed, slingert van −296 6002 naar −314 6028; op −303 6020 zelf ligt gras); val bij bron −303 70 6036 naar de voetrivier (63) |
 
 - **Wat je ziet:** treden van 8 met afgeronde stootborden, meren tegen het stootbord aan, calciet op de drempels en rond elke val, beken als stil water in geulen, en vallen die van meer naar meer storten.
 - **Let op:**
@@ -124,7 +127,7 @@ Andere afdalingen om te vergelijken:
 | 26 west | −5983 446 | 96 / 70 / 84 | `/tp @s -5946 84 443` |
 | 40 noord | 85 −6034 | 96 / 70 / 84 | `/tp @s 84 84 -5986` |
 
-Randmeren: 53 bij 5886 −223, 14 bij −625 5961. Verder ligt er om de ~700 blokken langs de rand een kloof.
+Randmeren: 53 bij 5886 −223 (water Y 110–111), 14 bij −625 5961 (water Y 94–95). Verder ligt er om de ~700 blokken langs de rand een kloof.
 
 **Kloof 53 in detail:**
 - **Richelpad achter de vallen:** start bij `/tp @s 5893 100 -223`. Loop het pad rond de hele boog; het water hangt vóór je.
@@ -136,6 +139,7 @@ Randmeren: 53 bij 5886 −223, 14 bij −625 5961. Verder ligt er om de ~700 blo
   - klim omhoog en stap opzij op de richel;
   - boven de richel hangt een knop vóór de padopening (Y 102); de streng daaronder leidt het pad in (Y 100);
   - tweede route: `/tp @s 5897 88 -213` (knop 5896 95 −210).
+  - In-game (`ring4-val`): onder beide knoppen (5895 95 −249 en 5896 95 −210) hangt **geen** streng; tot het water is het lucht (kans 0,5 per richel, backlog). Bij kloof 14 hangen wel strengen onder de knoppen.
 - **Getrapte uitloop:** de lipval bij bron 5940 86 −255 stort naar het meer op trede 80; daarna volgen meren tot de voetrivier.
 - **Hellingen langs de armen:** op de ene arm loopt het pad 1 op 2 omlaag naar de oever, op de andere 1 op 2 omhoog naar de rand.
 

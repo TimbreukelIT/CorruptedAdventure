@@ -732,8 +732,8 @@ class VerdantGorgesTest {
                     lo = Math.min(lo, FIELD.column(x, z).solidLo);
                 }
             }
-            // Rounded: lowest at its ends on the walls.
-            assertTrue(lo < arch.crown() - 2, "the underside comes down to the walls" + where);
+            // Rounded: lowest at its ends on the walls (over a dry shore its foot leaves head room).
+            assertTrue(arch.under(1.0) < arch.crown() - 2 && lo <= arch.deck(), "the underside comes down to the walls" + where);
             for (int side = -1; side <= 1; side += 2) {
                 // The wall it stands on: rock at the deck's height and below, behind the ledge path's ramps.
                 double[] q = VerdantGorges.wallAt(g, side * (g.arcEnd() + arch.w()), -5.0);

@@ -160,6 +160,8 @@ class Ring4JsonTest {
         assertOutput(DF + "ring_4/overworld/cliff.json", "cliff");
         // 2c: the travertine rims of verdant_falls (ring4_threshold reads it, Q7).
         assertOutput(DF + "ring_4/overworld/rim.json", "rim");
+        // 2026-10-15: the slope of verdant_falls' ground (stone on its steep slopes, instead of vanilla's steep).
+        assertOutput(DF + "ring_4/overworld/slope.json", "slope");
         assertOutput(DF + "ring_4/overworld/sundered.json", "sundered");
         // 2c: the rim of verdant_falls follows ring 3's terrain (the key is still called plateau).
         assertEquals("corruptedadventure:ring_3/overworld/field", islands.get("plateau").getAsString());

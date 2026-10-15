@@ -221,6 +221,8 @@ final class VerdantGorges {
     private static final double ARCH_FOOT = 0.4;
     /** The arch is looked for this far along the gully from its start. */
     private static final double ARCH_SEARCH = 60.0;
+    /** The arch stands this far (along the gully) from any lip: past the reach of its dam. */
+    private static final double ARCH_LIP_CLEAR = 7.0;
     /** The widest opening an arch spans. */
     static final double ARCH_SPAN = 30.0;
     /** An arch stands at least this far before the foot river's bed. */
@@ -1000,6 +1002,17 @@ final class VerdantGorges {
                 }
             }
         }
+        boolean held = true;
+        if (l.din > 0.0 && b >= 1) {
+            // The foot river's bank cuts the ground down later (VerdantDescent.withRiver): where it cannot hold the lake's
+            // water (and a block over it, so its neighbours hold it too) there is no lake, the ground follows the bank.
+            double bank = VerdantDescent.RIVER_BED
+                    + Math.max(0.0, p.profile.river() - p.u - p.profile.bedHalf()) * VerdantDescent.RIVER_SLOPE;
+            if (bank < water + 1.0) {
+                inside = bank;
+                held = false;
+            }
+        }
         // The wall stays smooth and whole (no roughness, no crumbling) near the falls, their notches and the climbing
         // routes (the strands must hang free from ledge to ledge).
         double calm = nearFall;
@@ -1022,7 +1035,8 @@ final class VerdantGorges {
                 double off = Math.abs(l.w - arch.w());
                 if (off <= half && l.din > 0.0) {
                     // Over a dry shore its foot leaves head room: the shore runs on under it.
-                    shape.solidLo = inside >= arch.water() ? Math.max(arch.under(q), Mth.ceil(inside) + (int) HEAD_ROOM) : arch.under(q);
+                    shape.solidLo = inside >= arch.water() ? Math.min(arch.deck(), Math.max(arch.under(q), Mth.ceil(inside) + (int) HEAD_ROOM))
+                            : arch.under(q);
                     shape.solidHi = arch.deck() - (half >= 2.0 && off > Math.max(half - 0.8, 1.5) ? 1 : 0);
                 } else if (off <= half && l.din <= -PATH_DEPTH && l.din >= -ABUTMENT && outside < arch.deck() + 1) {
                     // Its abutment: where the land behind its end lies lower than the deck, rock up to the deck (behind the
@@ -1059,7 +1073,7 @@ final class VerdantGorges {
         if (l.din > 0.0) {
             out.height = inside;
             out.body = b;
-            if (b >= 1 && inside < water) {
+            if (b >= 1 && inside < water && held) {
                 out.lakeTop = water;
             }
             // Travertine: an uneven crust on a lip's threshold and over its dam.
@@ -1673,17 +1687,10 @@ final class VerdantGorges {
             if (water == Integer.MIN_VALUE || nearLip(g, falls, at)) {
                 continue;
             }
-            // The deck flush with the lower wall: the top block of the lowest wall column beside it, a little into the wall.
-            int deck = Integer.MAX_VALUE;
-            for (int side = -1; side <= 1; side += 2) {
-                for (double dw = -ARCH_HALF_DECK - ARCH_FLARE - 1.0; dw <= ARCH_HALF_DECK + ARCH_FLARE + 1.0; dw += 0.5) {
-                    // A little into the wall and deeper (the winding gully's land may fall away from its wall).
-                    for (double into : new double[]{-2.5}) {
-                        double[] q = point(g, side, at + dw, into);
-                        double ground = groundAt(g, Mth.floor(q[0]), Mth.floor(q[1]), w, s);
-                        deck = Double.isNaN(ground) ? Integer.MIN_VALUE : Math.min(deck, Mth.ceil(ground) - 1);
-                    }
-                }
+            int deck = archDeck(g, at, w, s);
+            if (deck == Integer.MIN_VALUE || deck < shoreUnder(g, at, w, s) + HEAD_ROOM) {
+                // No ground to stand on, or too low over the shore (it runs on under the arch's feet).
+                continue;
             }
             // Flush with the lower rim where that is at most 14 over the water, else lower in the walls.
             int crown = Math.min(deck - thick + 1, water + ARCH_CLEAR_MAX);
@@ -1695,11 +1702,45 @@ final class VerdantGorges {
         return null;
     }
 
+    /** The highest shore (its first air block) along the gully's walls at w, or MIN_VALUE where none. */
+    private int shoreUnder(Gorge g, double at, VerdantBasins.Water w, Shape s) {
+        int top = Integer.MIN_VALUE;
+        for (int side = -1; side <= 1; side += 2) {
+            for (double into = 0.5; into <= 3.0; into += 1.0) {
+                double[] q = point(g, side, at, into);
+                double ground = groundAt(g, Mth.floor(q[0]), Mth.floor(q[1]), w, s);
+                if (!Double.isNaN(ground) && w.lakeTop == Integer.MIN_VALUE) {
+                    top = Math.max(top, Mth.ceil(ground));
+                }
+            }
+        }
+        return top;
+    }
+
     /** The open width between the arms' wall lines at w. */
     private static double opening(Gorge g, double w) {
         double[] a = point(g, -1, w, 0.0);
         double[] b = point(g, 1, w, 0.0);
         return Math.hypot(a[0] - b[0], a[1] - b[1]);
+    }
+
+    /**
+     * The deck flush with the lower wall at w: the top block of the lowest wall column beside it (over the deck's
+     * flared feet), a little into the wall; MIN_VALUE where a wall column lies off the descent (no ground to stand on).
+     */
+    private int archDeck(Gorge g, double at, VerdantBasins.Water w, Shape s) {
+        int deck = Integer.MAX_VALUE;
+        for (int side = -1; side <= 1; side += 2) {
+            for (double dw = -ARCH_HALF_DECK - ARCH_FLARE - 1.0; dw <= ARCH_HALF_DECK + ARCH_FLARE + 1.0; dw += 0.5) {
+                double[] q = point(g, side, at + dw, -2.5);
+                double ground = groundAt(g, Mth.floor(q[0]), Mth.floor(q[1]), w, s);
+                if (Double.isNaN(ground)) {
+                    return Integer.MIN_VALUE;
+                }
+                deck = Math.min(deck, Mth.ceil(ground) - 1);
+            }
+        }
+        return deck;
     }
 
     /** A point {@code into} blocks from the wall line of an arm on {@code side} at w (negative: into the wall): {x, z}. */
@@ -1709,12 +1750,13 @@ final class VerdantGorges {
     }
 
     /**
-     * The water's surface (the first Y above it) in the gully's middle round w, the same from 4 before to 4 past it, or
-     * MIN_VALUE (dry, or a lip within reach).
+     * The water's surface (the first Y above it) in the gully's middle round w, the same from ARCH_LIP_CLEAR before to
+     * ARCH_LIP_CLEAR past it, or MIN_VALUE (dry, or a lip within reach).
      */
     private int gullyWater(Gorge g, double w, VerdantBasins.Water water, Shape s) {
         int surface = Integer.MIN_VALUE;
-        for (double dw = -4.0; dw <= 4.0; dw += 1.0) {
+        // Clear of a lip by more than its dam's reach (the dams' chutes are only wide while the falls are decided).
+        for (double dw = -ARCH_LIP_CLEAR; dw <= ARCH_LIP_CLEAR; dw += 1.0) {
             double a = g.centre(w + dw);
             double x = g.cx() - a * g.oz() + (w + dw) * g.ox();
             double z = g.cz() + a * g.ox() + (w + dw) * g.oz();
