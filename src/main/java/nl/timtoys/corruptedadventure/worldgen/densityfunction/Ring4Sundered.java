@@ -158,12 +158,12 @@ final class Ring4Sundered {
 
     /** The position along the zone (blocks), in [0, perimeter): continuous across the seam of the angle. */
     static double along(RingLayout layout, double x, double z) {
-        return Ring4Cliff.wrap(Math.atan2(z, x) * (zoneStart(layout) + zoneEnd(layout)) / 2.0, perimeter(layout));
+        return RingArc.wrap(Math.atan2(z, x) * (zoneStart(layout) + zoneEnd(layout)) / 2.0, perimeter(layout));
     }
 
     /** The land bridge of bridge cell {@code k} (taken modulo the count round the loop): {position (blocks), half width}. */
     static double[] bridge(long salt, int k, double period) {
-        int count = Ring4Cliff.cellCount(period, BRIDGE_CELL);
+        int count = RingArc.cellCount(period, BRIDGE_CELL);
         double cellSize = period / count;
         int kk = Math.floorMod(k, count);
         long h = CellShapes.cell(salt, kk, 0, BRIDGE_SALT);
@@ -174,11 +174,11 @@ final class Ring4Sundered {
 
     /** Whether a position along the zone (blocks) lies on a land bridge, which crosses the zone whole (round the seam too). */
     static boolean onBridge(long salt, double along, double period) {
-        int count = Ring4Cliff.cellCount(period, BRIDGE_CELL);
+        int count = RingArc.cellCount(period, BRIDGE_CELL);
         int k = (int) Math.floor(along / (period / count));
         for (int dk = -1; dk <= 1; dk++) {
             double[] bridge = bridge(salt, k + dk, period);
-            if (Ring4Cliff.loopDistance(along, bridge[0], period) <= bridge[1]) {
+            if (RingArc.loopDistance(along, bridge[0], period) <= bridge[1]) {
                 return true;
             }
         }

@@ -208,6 +208,7 @@ Worktrees en poorten zoals `waves.md` §4 (branches `ring4/vf-<stroom>`). Licht 
 ## 6a. Antwoorden gebruiker (2026-10-15) — bindend
 
 - **Q1 = A:** voetrivier op zeeniveau (Y 63) rondom langs de buitenrand van de zone; alle vallen en kloven monden erin uit, ring 4-rivieren sluiten aan, bevaarbaar rond de ring; afdaling ~28–45.
+  - **Nabesluit (2026-10-15, reviewbevinding 2c-1): "rivier naar binnen".** Waar ring 4 aan de buitenrand van de zone hoog ligt, schuift de voetrivier glad naar binnen, zodat tussen rivier en zonerand een natuurlijke, beloopbare helling naar het ring 4-terrein ligt (geen wand); de zone blijft 256, de afdaling wordt daar korter/steiler binnen de bestaande regels.
 - **Q2 = A:** `verdant_falls` in `heat_refuges`; verdamping en `HeatZone.exposed` slaan schuilplekken over (stroom **C** doet mee). Weer en kompas houden de middellijn.
   - **Nabesluit (2026-10-15, stroom C):** verdamping slaat niet `heat_refuges` over maar een aparte biome-tag **`corruptedadventure:evaporation_refuges`** (`ModTags.Biomes.EVAPORATION_REFUGES`), zodat de slapende krater droog blijft. **Contract voor W-biomes:** zet `verdant_falls` in `Ring4BiomeTags` in **beide** tags, `heat_refuges` (afkoelen) én `evaporation_refuges` (geen verdamping); C schrijft `evaporation_refuges` tot dan leeg.
 - **Q3 = B + richels:** de ring 4-wortels en het hangmos (`glowing_hanging_roots`, `hanging_swamp_moss`, en wat er verder als hangende ring 4-wortel bestaat) krijgen `minecraft:climbable` (stroom **B** doet mee; geldt in heel ring 4). **Extra besluit:** op de kloofwanden en naast de vallen maakt het **terrein** (W-terrein 2c) korte **overhangende richels** op klimafstand onder elkaar; een **feature** (W-biomes) hangt de wortels eronder tot de volgende richel, zodat een echte klimroute van richel naar richel ontstaat. Geen vanilla `vine`.
@@ -322,6 +323,46 @@ INT vult na de bouw de exacte coördinaten in (kloven uit `VerdantGorgesTest`, d
 - Config-migratie van de oude standaardlijst; geen `PROTOCOL_VERSION`-bump.
 - W-biomes: zandoevers langs de voetrivier (land onder Y 66), omdat schildpadden (Q9) alleen op zand onder Y 67 spawnen; meer- en beekbodems zand met klei- en grindplekken; mostapijt op de mosplekken van de treden.
 - W-biomes: klimstrengen (`ledge_strand`) onder elke richel met open lucht binnen 4 blokken, kans 0,5 per richel (0,2 een los gloeiwortel-accent), alleen bij een gat van 3–24; de streng stopt 1 blok boven de volgende richel/vloer (springend te pakken). Startwaarden, bijstellen bij de teststop.
+
+### W-terrein 2c deel 1 (2026-10-15, `ring4/vf-terrain-2c`): afdaling, bassins, voetrivier
+Getallen binnen de besluiten; startwaarden, bijstellen bij teststop 5a2. Deel 2 (hoefijzerkloven, klimrichels Q3, nissen/tunnels achter vallen, rotsbruggen) volgt.
+- **Coördinaten:** u = effectieve afstand − binnenrand zone (0…Z), s = boog op de middellijn (straal r₃, `RingArc`, periodiek over de naad). Alle maten in blokken voor Z = 256, geschaald met Z/256 (een oude wereld met zone 128 krijgt dezelfde vorm, steiler).
+- **Randhoogte T:** ring 3-hoogte op u = 60 op de straal (punt per bisectie op de straal: de grensruis van ±96 verschuift het; een vaste-puntstap convergeerde niet), elke 4 blokken boog, per wereld onthouden. Ruwe waarden eerst begrensd op 80–128 (een vulkaan op de rand telt niet zwaarder), dan driehoekig gladgestreken over ±128 blokken en geklemd op 88–120. Reden: met ±12 zwiepten de traplijnen tot 45° weg van de ring (lakes en geulen stonden dan dwars). Gemeten: hoogstens 0,62 per 4 blokken; de `steam_fens`-strook van 60 blokken vangt het verschil met de echte ring 3-hoogte op.
+- **Ring 3-strook (u < 60):** ring 4-invoer = lerp(smooth(u, 0, 60), ring 3-hoogte van dezelfde kolom, boventerras).
+- **Profiel:** boventerras vlak op 64 + terrace(T − 64), 10 ± 4 breed; dan de helling R = T − (T − 64) · v · (1 + c (1 − v)) met c = 0,25 ± 0,15 langs de ring (bovenaan (1 + c)/(1 − c) zo steil als onderaan: smalle treden boven, brede onder), bovenaan nooit steiler dan 0,3 per blok waar de val dat toelaat. **Niet `v^0,8` uit §2.1:** die is bovenaan oneindig steil (stootborden van 2 blokken direct onder het boventerras). Golf: ± 0,07 · (T − 64) als hoogte (warp-ruis ~250 blokken) → traplijnen slingeren ±10–13 blokken. Treden: `Ring4Relief.steps` (terrace 60/40 met smootherstep + detail op de stootborden) op 64 + 8k. Gemeten (testseed): stootborden p10 10,0 / mediaan 11,5 / min 8,3 breed; val boventerras → zeeniveau p10 25, mediaan 33, p90 41; laagste grond in de ring 3-helft 67.
+- **Beloopbaar:** de smootherstep-vorm (Q5) is midden op een stootbord ~1,9× zo steil als gemiddeld; op ~6 % van de afdalingskolommen ligt een buur 2 blokken lager. Omlaag altijd te voet; omhoog soms schuin over het stootbord. Ter info voor de teststop.
+- **Voetrivier (Q1 = A):** midden op u = 226 ± 7 (traag langs de ring), bed Y 57, half 7 ± 2 (12–18 breed), oevers 0,6 (zoals de ring 4-rivieren), helemaal in de ring 4-helft (zee vult hem). De treden lopen uit op 64 tot de oever. Buitenoever (deel 1b, besluit "rivier naar binnen", zie §6a): strand van 0,6 tot 64, dan hoogstens 0,8 per blok omhoog tot het eigen ring 4-reliëf (min van oever en reliëf, dus ring 4-rivieren en -lagunes die de rand raken lopen in de voetrivier); de laatste 4 blokken mengen naar ring 4. Waar ring 4 aan de rand hoog ligt, schuift de rivier naar binnen tot de oever die hoogte 3 blokken vóór de rand haalt: ring 4-hoogte per profielmonster = hoogste van 4 punten over de rand (u = Z − 8 … Z + 16), daarvan het hoogste binnen ±32 blokken, gemiddeld over ±32 (nooit onder het eigen punt); rivier = zachte min (k = 8) van de eigen meander en die grens, nooit binnen u = 150. Eerst versteilde de oever aan de rand (+200 · smooth): een wand tot 14 per blok.
+- **Exact per blok:** de hele afdaling (u ≥ 60, pure ring 4) gebruikt de exacte band van de fjorden (`withExactBand`). Daardoor is insluiting **per blok exact** in plaats van "op het 4-raster" (§2.2): water staat alleen waar de exacte grond onder het waterniveau ligt, en de exacte grond eromheen staat erboven. Getest per blok (`WaterScan`), niet met de rasterregel van de eilandmeren.
+- **Bassins als stromen:** één stroom per cel van ~48 blokken langs de ring (kans 0,85, nooit twee lege cellen op rij). Per trede ("body" b, niveau 64 + 8b) één waterniveau W = 64 + 8b − 1 (bovenste waterblok één onder de grasrand):
+  - een **plonspoel** (straal 3–5, 2,5–4 diep) in een **inham** in het stootbord, 2,5 blokken onder de val van de trede erboven (de lip is vanzelf verticaal: de snede van een lagere trede raakt de hogere nooit);
+  - een **beek in een geul** (half 0,5–1, water 2–3 breed, 1,4–2,4 diep, slingert ±8) van de poel naar de buitenrand;
+  - met kans 0,55 ± 0,3 (traag langs de ring, ~1000 blokken: meren- en beekstukken) een **meer**: stadion, 18–32 lang, van 3 na de stootbordvoet tot een drempel van 6–10 voor de rand, 2–5 diep, oever ±1,2 met ruis; alleen waar ≥ 5 blokken ruimte is (bovenaan smalle treden: alleen beken). Meren blijven in het eigen bereik van hun stroom (≥ 8 droog tussen meren);
+  - lange meren (half ≥ 16, dus ≥ 32 lang) met kans 0,5 een **tweede uitloop** (spoor) aan het verre eind van de hoofduitloop, met een eigen val naar een eigen poel (zonder beek). Deel 1b: eerst half ≥ 22, wat binnen het eigen bereik van een stroom (~±24) vrijwel nooit kon (7 sporen op 1983 vallen); nu 301 sporen bij 611 lange meren;
+  - de bovenste trede van een stroom (de hoogste met een volledig stootbord erboven) heeft een bronpoel; het boventerras blijft droog;
+  - trede 64 (body 0) is zeewater: poel en beek zakken onder Y 63 en lopen door tot de voetrivier.
+- **Waterregel per kolom:** een kolom houdt alleen water als zijn vier buren op zijn trede of hoger liggen; anders vervalt de snede. Zo raakt alleen een bron de rand.
+- **Vallen:** per stroom en trede één (plus sporen), op de rand waar de helling het treedniveau kruist (bisectie op de straal), kardinale stap = steilste daling. Bron = laatste kolom op de trede (springY = W − 1, rots erboven), val = kolom erbuiten, landt in het water van de trede eronder (bottom = W van die trede; in de voetrivier/zee 63). Regels: de twee beekkolommen achter de bron en al hun buren op de trede (die twee worden tot de beekbodem uitgesneden), de twee zijkanten van de bron blijven rots (ook net over een schuine rand, `Fall.beside`). Valhoogte 7. Gemeten: 655 van 655 segmenten krijgen hun val, geen gekapt (hoogstens 2 per chunk).
+- **Cap:** `fallsOfChunk` = de eerste 3 eilandvallen + de eerste 6 verdant-vallen, elk gesorteerd op (x, z, springY, springX, springZ).
+- **Grotten:** over de hele afdaling geen grotmonden (cave lift van 24 onder de grond tot 2 boven grond/water; de aquifer houdt die band rots onder de exacte vloer, `Column.exactFloor`). Deel 2 (nissen, tunnels) opent die band gericht.
+- **`rim` (calciet):** 1 op de buitenste 2,5 blokken van een trede langs een meer (drempel) en ±4 rond elke val en spoor. **`cliff`:** 1 naast een poel- of geulsnede waar de trede ≥ 3 boven het water ligt (inhamwanden).
+- **`initial_height`:** ondergrens W(b − 1) − 7 waar een stroom binnen bereik ligt, en 57 bij de voetrivier.
+- **Zouten:** stroom 6306, segment 6302 (trede als tweede index); 6301, 6303–6305 vrij voor deel 2.
+
+#### Deel 1b (2026-10-15): buitenoever en sporen, gemeten (testseed, 3142 stralen van rivierbed tot zonerand + 16)
+| Meting | Vóór (2c-1) | Na (1b) |
+|---|---|---|
+| Sprong per blok buitenoever, p90 | 0,83 | 0,81 |
+| idem p99 | 3,33 | 1,36 |
+| idem max (sprongen die ring 4 zelf niet heeft) | 14,1 (60,6 → 80,9 bij 2102 5780 volgens de review) | ≤ 2,0 |
+| Stralen met een sprong > 4 / > 8 (alles, ook ring 4's eigen fjordwanden) | 22 % / ~10 % (review) | 9 / 0 van 3142 |
+| Rivier midden (u): binnenste / p10 / mediaan | 219–233 (226 ± 7) | 174 / 203,5 / 224,8; 2032 van 9425 monsters naar binnen |
+| Kleinste bedhelft (rivierbreedte) | 5,0 (bed 10, water ~22 breed op Y 62) | 5,0 (ongewijzigd) |
+| Val boventerras → zee p10 / mediaan / p90 | 25 / 33 / 41 | 25 / 33 / 41 |
+| Stootborden p10 / mediaan / min | 10,0 / 11,5 / 8,3 | 9,5 / 11,3 / 6,3 |
+| Laagste grond ring 3-helft | 67,0 | 66,3 |
+| Sporen (tweede uitlopen) | 7 op 1983 vallen | 301 op 1975 vallen |
+
+Kaartjes: `C:\Temp\vf2c\fix_map_2102_5780.png` (bovenaanzicht 240 × 240 rond het ergste punt van de review), `fix_section_2102_5780.png` (dwarsprofiel door dat punt: rivier op u 201, oever 0,8 omhoog naar ring 4 op ~90).
 
 ## Contract-delta (INT verwerkt in `contract.md`)
 - §1: standaard `transitionWidthOverrides` [0, 0, 256, 256, 0]; migratie van [0, 0, 0, 256, 0].

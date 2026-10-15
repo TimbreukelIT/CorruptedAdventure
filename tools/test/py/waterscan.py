@@ -9,8 +9,8 @@ Exempt (not an overtreding):
   sea     water on the sea plane Y 63 and the abyss sea Y 0 (contract §4, standing seas)
   fall    the falling column of a planned waterfall (x, z, Y bottom..top) and the four horizontal neighbours of its top
           block (the spring is one of them; the falls do not record it, so all four are exempt)
-  pool    water of a cliff plunge pool: a fall that lands on the sea plane (bottom == 64), horizontal distance <= 6 from
-          the column (Ring4Cliff.POOL_RADIUS), Y 56..63 (Ring4Cliff.POOL_BED .. sea plane)
+(The plunge pools of the cliff 3->4 had a rule of their own; the cliff gave way to verdant_falls in W-terrein 2c, whose
+falls land in walled pools.)
 Everything else that is exposed is an overtreding (`over`). Blocks are grouped 6-connected; the list shows the lowest
 block of each group. The fall lists come from `/ca falls x0 z0 x1 z1` (tools/test/waterscan.sh writes them, one file per
 area box: <x0>_<z0>_<x1>_<z1>.tsv in <world>/ca_falls); a missing list is an error, never an empty one.
@@ -33,8 +33,6 @@ from lavascan import N6, groups, shifted  # noqa: E402
 AIR = ("minecraft:air", "minecraft:cave_air")
 SEA_Y = 63
 ABYSS_Y = 0
-POOL_RADIUS = 6  # Ring4Cliff.POOL_RADIUS
-POOL_BED = 56  # Ring4Cliff.POOL_BED
 
 
 def fall_file(falls_dir, a):
@@ -80,7 +78,7 @@ def load(world, a):
 
 
 def exempt_mask(a, water, falls):
-    """Boolean mask of planned falls, their spring cells and cliff pools (array index space of the area)."""
+    """Boolean mask of planned falls and their spring cells (array index space of the area)."""
     d = a.dim
     ex = np.zeros_like(water)
     h, w = water.shape[1], water.shape[2]
@@ -100,12 +98,6 @@ def exempt_mask(a, water, falls):
         for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             if inside(top, z + dz, x + dx):
                 ex[idx(top, z + dz, x + dx)] = True
-        if bottom == SEA_Y + 1:
-            for y in range(POOL_BED, SEA_Y + 1):
-                for dz in range(-POOL_RADIUS, POOL_RADIUS + 1):
-                    for dx in range(-POOL_RADIUS, POOL_RADIUS + 1):
-                        if dx * dx + dz * dz <= POOL_RADIUS * POOL_RADIUS and inside(y, z + dz, x + dx):
-                            ex[idx(y, z + dz, x + dx)] = True
     return ex
 
 

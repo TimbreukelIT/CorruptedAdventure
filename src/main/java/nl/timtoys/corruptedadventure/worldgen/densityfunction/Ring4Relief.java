@@ -315,7 +315,7 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
     }
 
     /** {@link #terrace} with the detail noise on the risers only; a rise at or below 0 stays as it is. */
-    private static double steps(double rise, double d) {
+    static double steps(double rise, double d) {
         return rise <= 0.0 ? rise : terrace(rise) + RISER_DETAIL * d * riserBump(rise);
     }
 

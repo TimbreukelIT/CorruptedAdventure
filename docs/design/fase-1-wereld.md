@@ -861,7 +861,7 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Planning:** alles in één keer vóór de volgende teststop: terrein, biome (`verdant_falls` met surface en placeholder-aankleding zonder flora), sfeer; de heuvelfix van ring 4 erbij.
 - `ring3Seal` en de dammen onder Y 63/−54 blijven gelden in de nieuwe zonebreedte.
 - **Uitwerking (planronde 2026-10-15, `docs/plans/ring-4/verdant-falls.md` §6a):**
-  - **voetrivier** op Y 63 rondom aan de buitenrand van de zone; alle vallen en kloven monden erin uit, ring 4-rivieren sluiten aan, bevaarbaar rond de ring; afdaling ~28–45;
+  - **voetrivier** op Y 63 rondom aan de buitenrand van de zone; alle vallen en kloven monden erin uit, ring 4-rivieren sluiten aan, bevaarbaar rond de ring; afdaling ~28–45; waar ring 4 aan de buitenrand hoog ligt, schuift de rivier glad naar binnen, zodat een beloopbare helling (geen wand) naar het ring 4-terrein leidt (2026-10-15);
   - het ring 3-deel van `verdant_falls` is een **afkoelplek** (`heat_refuges`); geplaatst water verdampt daar niet (eigen tag `evaporation_refuges`, alleen `verdant_falls`; de slapende krater blijft droog);
   - **klimroutes:** de ring 4-wortels en het hangmos worden klimbaar (heel ring 4); het terrein maakt op kloofwanden en naast vallen korte overhangende richels, met wortels eronder tot de volgende richel;
   - eigen cap van **6 vallen per chunk**; **calciet** (travertijn) op drempelranden en vallippen, mos op de treden;

@@ -14,7 +14,7 @@ sandstone or stone, as in vanilla.
 
 verdant_falls (the descent of the zone 3->4) reads the terrain through the condition corruptedadventure:ring4_threshold
 (Q7 = A): calcite (travertine) on the rims of the basins and the lips of the falls (density function
-ring_4/overworld/rim, a stub of 0 until the verdant terrain fills it), stone on the exact walls (ring_4/overworld/cliff)
+ring_4/overworld/rim, the terrain's island_output rim since W-terrein 2c), stone on the exact walls (ring_4/overworld/cliff)
 and on steep slopes, grass with moss patches on the treads, sand banks along the foot river (turtles spawn on sand
 only, below Y 67) and lake and brook beds of sand, clay and gravel.
 """

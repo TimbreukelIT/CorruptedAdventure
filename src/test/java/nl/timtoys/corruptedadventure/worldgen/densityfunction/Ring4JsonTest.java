@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class Ring4JsonTest {
     private static final String DF = "density_function/";
     // rim (verdant_falls): read by the surface (ring4_threshold), filled by the verdant terrain (W-terrein 2c).
-    private static final String[] STUBS = {"tunnels", "rim"};
+    private static final String[] STUBS = {"tunnels"};
     private static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
             CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), RingLayout.noiseSeed(20260930L));
 
@@ -158,8 +158,10 @@ class Ring4JsonTest {
         assertOutput(DF + "ring_4/overworld/island_mask.json", "island_mask");
         assertOutput(DF + "ring_4/overworld/island_hole.json", "island_hole");
         assertOutput(DF + "ring_4/overworld/cliff.json", "cliff");
+        // 2c: the travertine rims of verdant_falls (ring4_threshold reads it, Q7).
+        assertOutput(DF + "ring_4/overworld/rim.json", "rim");
         assertOutput(DF + "ring_4/overworld/sundered.json", "sundered");
-        // 62: the plateau above the cliff 3→4 follows ring 3's terrain.
+        // 2c: the rim of verdant_falls follows ring 3's terrain (the key is still called plateau).
         assertEquals("corruptedadventure:ring_3/overworld/field", islands.get("plateau").getAsString());
         assertOutput(DF + "ring_4/overworld/cave_lift.json", "cave_lift");
         // The final stack: the exact per-block islands first, then the interpolated terrain with vanilla's caves.
