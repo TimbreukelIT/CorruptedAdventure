@@ -204,6 +204,72 @@ Hoogtes zonder eilanden gerekend: staat er een eiland op de plek, vlieg dan omho
 - **Waterscan en kaarten:** INT voegt hier de tabel (b34*, vf*, vg*) en de kaarten toe, zoals in 5a §3.
   - INT-noot: stroom 8 (`vfe`) en 401 (`vfw`) uit `tools/test/areas/ring4.txt` bestaan sinds deel 2 niet meer; ze wijken voor een kloof.
   - Vervangers met meren: oost stroom 0 (rond 6056 25) en west stroom 394/395 (rond −5928 −86).
+  - Sinds de INT staan `vfe` (369 −2 382 4) en `vfw` (−382 −8 −369 −3) op deze stromen.
+
+### 4a. Waterscan INT (2026-10-15)
+
+Bron: `build/test/waterscan-ring4-int.txt` (+ `build/test/int/ws-all.*`, alle groepen) in de worktree
+`agent-a68627d86bfdddba8`, branch `ring4/vf-int-final` (basis 584d3bc, de tip van `ring4/vf-integration`), verse
+wereld `run/ring4-int`, seed 20260930, preset `corrupted_world`. "Over" = water tegen lucht buiten de vastgelegde vallen.
+Indeling zoals de pre-INT: **grotwater** = ≥ 8 onder het oppervlak (pakket 73, backlog), **zee-naad** = ondiep, Y 57–62
+(backlog), **nieuw** = door `verdant_falls`.
+
+| Gebied | Vallen | Over | Grotwater | Zee-naad | Nieuw | Voorbeelden (x y z, blokken) |
+|---|---|---|---|---|---|---|
+| b34e | 16 | 150 | 87 | 63 | 0 | 6152 10 65 (28, grot); 6032 −38 64 (14, grot); 6171 60 74 (6, naad, r 6171) |
+| b34n | 8 | 48 | 35 | 13 | 0 | −31 11 6077 (12, grot); 39 61 6192 (3, naad) |
+| b34w | 8 | 43 | 0 | 43 | 0 | −6184 47 48 (30, naad Y 47–62, r 6184) |
+| b34s | 15 | 38 | 38 | 0 | 0 | −64 16 −6135 (13, grot) |
+| vfe | 14 | 37 | 37 | 0 | 0 | 6032 −38 64 (14, grot, 125 diep) |
+| vfs | 10 | 28 | 28 | 0 | 0 | −308 29 6055 (9, grot, 34 diep) |
+| vfw | 8 | 3 | 3 | 0 | 0 | −6102 −19 −125 (2, grot, 81 diep) |
+| vfn | 10 | 0 | 0 | 0 | 0 | — |
+| vge | 31 | 38 | 38 | 0 | 0 | 6029 20 −246 en 6030 20 −247 (2 × 19, grotval Y 20–38 onder oppervlak 72) |
+| vgs | 24 | 207 | 104 | 103 | 0 | −711 3 6007 (69, grot); −725 61 6078 (16, naad in `lotus_shallows`, r 6120–6145) |
+| vgw | 27 | 0 | 0 | 0 | 0 | — |
+| vgn | 33 | 41 | 41 | 0 | 0 | 115 15 −6116 (10, grot, 47 diep) |
+| **b34/vf/vg** | 204 | **633** | 411 | 222 | **0** | |
+
+Overige gebieden (ter info, ongewijzigd t.o.v. 5a/pre-INT): r4e 162 (grot 84, naad 78), r4w 353 (grot 307, naad 46),
+b45ie 473, b45in 159, b45iw 47 (alle grot), r4n/r4s/b45e/n/w/s/b45is 0. Totaal 1827.
+
+- **0 nieuwe overtredingen** in b34*, vf* en vg*. Alle groepen zijn grotwater (diep, stromend water uit een grotbron) of
+  de bekende zee-naad op Y 57–62 aan de buitenkant van de zone (r ≥ 6120, ring 4); vgs, vgn en b34 tonen dezelfde
+  groepen als de pre-INT (kleine verschillen in b34e/vgn zijn stromend grotwater).
+- **Randmeer kloof 53** (x 5870–5910, z −290..−235, Y 100–120): 399 water, waarvan 77 blootgesteld, allemaal in de 7
+  valkolommen (5896 −252, 5904 −267..−264, 5906 −281, 5907 −282); geen stilstaand water tegen lucht. De pre-INT-lek
+  (5883 110 −247, 5895 110 −280) is weg.
+- **`steam_fens`-poelen bij de rand:** geen enkele overtreding binnen r < 6031 (het hele `steam_fens`-deel van de b34*).
+- Serverlog (wereldgeneratie + `/ca falls`): geen ERROR, geen exceptions, geen client-class-fouten, geen
+  "Detected setBlock in a far chunk" of andere feature-waarschuwing (ook niet van `ledge_strand` of `before_split`).
+  Alleen de bekende WARN's: commando-ambiguïteit, offline mode, ocelot-categorie, "Can't keep up" en de vanilla
+  `LanServerPinger: Network is unreachable` (ook in eerdere serverlogs).
+
+### 4b. Determinisme INT (2026-10-15)
+
+`tools/test/det.sh --areas build/test/det-areas.txt --name det-vf`: b34e, b34w, vfe, vfs, vfw, vfn, vge, vgs, vgw, vgn
+(zelfde vakken als hierboven), wereld a vooruit, wereld b omgekeerd. Uitslag `build/test/det-vf.txt`.
+
+| Gebied | Chunks gelijk | own | other | noise |
+|---|---|---|---|---|
+| b34e | 250/261 | 0 | 142 | 6 |
+| b34w | 256/261 | 2 | 15 | 1 |
+| vfe | 96/98 | 0 | 3 | 1 |
+| vfs | 96/98 | 0 | 41 | 0 |
+| vfw | 82/84 | 1 | 7 | 0 |
+| vfn | 90/90 | 0 | 0 | 0 |
+| vge | 233/240 | 2 | 0 | 92 |
+| vgs | 181/196 | 0 | 228 | 252 |
+| vgw | 252/256 | 0 | 0 | 92 |
+| vgn | 173/182 | 4 | 88 | 91 |
+
+- **0 `own`-verschillen in ring 4 / `verdant_falls`.** Geen ontbrekende chunks.
+- Alle 9 `own` (8 unieke blokken; −5899 63 −33 zit in b34w én vfw) zijn de bekende **ertswissels in ring 3 op
+  chunkgrenzen** (lokale z 0 of 15), in `steam_fens`/`dried_seabed`: −5899 63 −33/−32 `sulfur_ore`↔`copper_ore`;
+  5892 75 −97 `sulfur_ore`↔`copper_ore`; 5827 −9 −177 `deepslate_iron_ore`↔`deepslate_volcanite_ore`;
+  142–143 79 −5937/−5936 `sulfur_ore`↔`coal_ore`.
+- Alle `other` (524) zijn water↔lucht met stromend water (niveau 1–8, geen enkele bron): timing, geen fout.
+- `noise` = vanilla-ertsblobs tegen hun gastgesteente.
 
 ## 5. Terugmelden
 
