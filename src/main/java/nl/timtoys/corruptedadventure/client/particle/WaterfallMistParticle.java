@@ -6,6 +6,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
@@ -43,7 +44,7 @@ public final class WaterfallMistParticle extends TextureSheetParticle {
     @Override
     public void tick() {
         super.tick();
-        if (onGround) {
+        if (onGround || inWater(level, x, y, z)) {
             remove();
             return;
         }
@@ -58,6 +59,11 @@ public final class WaterfallMistParticle extends TextureSheetParticle {
         return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
     }
 
+    /** Biome particles are also tried inside water, and the biome is mostly lakes: spray belongs above them. */
+    private static boolean inWater(ClientLevel level, double x, double y, double z) {
+        return !level.getFluidState(BlockPos.containing(x, y, z)).isEmpty();
+    }
+
     /** Registered in {@code CorruptedAdventureClient} through {@code RegisterParticleProvidersEvent}. */
     public static final class Provider implements ParticleProvider<SimpleParticleType> {
         private final SpriteSet sprites;
@@ -69,6 +75,9 @@ public final class WaterfallMistParticle extends TextureSheetParticle {
         @Override
         public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
                                        double xd, double yd, double zd) {
+            if (inWater(level, x, y, z)) {
+                return null;
+            }
             WaterfallMistParticle particle = new WaterfallMistParticle(level, x, y, z, xd, yd, zd);
             particle.pickSprite(sprites);
             return particle;
