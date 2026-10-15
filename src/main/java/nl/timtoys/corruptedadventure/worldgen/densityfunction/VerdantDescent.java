@@ -18,8 +18,10 @@ import nl.timtoys.corruptedadventure.ring.RingLayout;
  *   sampled every {@link #GRID} blocks along s, smoothed, clamped to {@link #RIM_MIN}–{@link #RIM_MAX}, remembered per
  *   world);</li>
  *   <li>the descent: a ramp {@code R} from {@code T} down to {@link #BANK_TOP} (narrow steps above, wide below:
- *   v · (1 + c (1 − v)), c about 0.25), its stair lines bent by a slow wave, stepped by {@link Ring4Relief#terrace} (treads of 8
- *   on the levels 64 + 8k, 60 % tread / 40 % riser with a rounded edge and foot, Q5);</li>
+ *   v · (1 + c (1 − v)), c about 0.25), its stair lines bent by a slow wave and, polish round "afdaling", by lobes,
+ *   small inlets and a drift per level (the column's u displaced, so the lines bend and wander apart or together), stepped
+ *   on the levels 64 + 8k ({@link #treadHeight}: 60 % tread / 40 % riser with a rounded edge and foot, Q5; here and there
+ *   a rocky knick, the riser's slope gathered in its middle);</li>
  *   <li>the foot river: bed at {@link #RIVER_BED}, banks of {@link #RIVER_SLOPE} like ring 4's rivers, meandering along
  *   s; beyond it a bank of at most {@link #OUTER_SLOPE} up to ring 4's own terrain ({@link Ring4Relief}), so ring 4's
  *   rivers open into the foot river. Where ring 4 stands high at the zone's outer edge the river lies further in, so
@@ -70,7 +72,7 @@ final class VerdantDescent {
     private static final double CURVE = 0.25;
     private static final double CURVE_SWING = 0.15;
     private static final double STEEPEST = 0.3;
-    /** How far the wave bends the stair lines: this share of the drop as rise (≈ ±12 blocks across). */
+    /** How far the slow wave bends the stair lines: this share of the drop as rise (≈ ±12 blocks across, ≈ 250 along). */
     private static final double WAVE = 0.07;
     /**
      * Beyond the river's beach (the bank of {@link #RIVER_SLOPE} up to {@link #BANK_TOP}) the outer bank rises at most
@@ -92,6 +94,41 @@ final class VerdantDescent {
     /** The ramp's noise and the profile's noises: scale and offsets of the warp noise (≈ 250 / 430 blocks). */
     private static final double WAVE_SCALE = 0.5;
     private static final double PROFILE_SCALE = 0.3;
+    // Polish round "afdaling" (2026-10-15): no rice fields. The stair lines (the ramp's contour lines) move across the
+    // zone by a displacement of the column's u, in blocks of the reference zone: lobes and inlets of the treads at a few
+    // tens of blocks, and a drift that changes with the level, so neighbouring lines wander apart (a wide, gentle tread)
+    // or together (a steep knick, two risers nearly one) instead of running in parallel.
+    /** The lobes and spurs: this many blocks (warp noise, ≈ 70 blocks along the ring, ≈ 160 across it). */
+    static final double LOBE = 12.0;
+    private static final double LOBE_SCALE = 1.8;
+    private static final double LOBE_ACROSS = 0.8;
+    /** Small inlets and tongues of the edges: this many blocks (≈ 25 blocks along the ring, ≈ 64 across). */
+    static final double CRINKLE = 3.0;
+    private static final double CRINKLE_SCALE = 5.0;
+    private static final double CRINKLE_ACROSS = 2.0;
+    /** The drift per level: this many blocks (≈ 64 blocks along the ring, one turn per DRIFT_LEVELS of ramp). */
+    static final double DRIFT = 10.0;
+    private static final double DRIFT_SCALE = 2.0;
+    private static final double DRIFT_LEVELS = 14.0;
+    /**
+     * The riser's profile varies with the detail noise d (≈ 32 blocks): where d is high its slope gathers in the middle,
+     * up to KNICK + 1 times steeper (a rocky knick: ≥ 2 per block on the steeper risers, where the surface's slope rule
+     * shows stone), elsewhere the smootherstep of Q5 as it was. The treads stay level and the step's ends exact (no hair
+     * above a level).
+     */
+    static final double KNICK = 0.8;
+    private static final double KNICK_FROM = 0.15;
+    private static final double KNICK_TO = 0.6;
+    /** The ramp's floor in ring 3's half (the edge of tread 72) and how far into ring 4's half it fades (blocks). */
+    private static final double GUARD_LEVEL = BANK_TOP + STEP * (1.0 + TREAD);
+    private static final double GUARD_FADE = 16.0;
+    /** Over this share of the descent (v) the risers' profile fades in from the top terrace. */
+    private static final double TERRACE_FADE = 0.1;
+    /** How far the foot river wobbles inwards (blocks, 0 … 2 BANK_WOBBLE) and the noise's scale (warp noise, ≈ 24 blocks). */
+    static final double BANK_WOBBLE = 1.0;
+    private static final double BANK_WOBBLE_SCALE = 5.3;
+    /** The top terrace's least width where the lobes eat into it (blocks). */
+    private static final double TOP_LEAST = 3.0;
 
     private final IslandField field;
 
@@ -305,8 +342,15 @@ final class VerdantDescent {
         double treads;
         /** The body (tread) index: floor((ramp − BANK_TOP) / STEP), −1 off the descent. */
         int body;
-        /** The detail noise at the column (the risers' detail). */
+        /** The detail noise at the column (the risers' profile, {@link #treadHeight}). */
         double detail;
+        /** How far the foot river lies inwards of its profile here (blocks, 0 … −2 {@link #BANK_WOBBLE}; 0 off the descent). */
+        double wobble;
+
+        /** The foot river's middle at this column. */
+        double river() {
+            return profile.river() + wobble;
+        }
     }
 
     /** Fills {@code p} for the column at (x, z); {@link Point#OUTSIDE} outside the zone 3→4. */
@@ -326,9 +370,11 @@ final class VerdantDescent {
         p.profile = profile(p.s);
         p.kind = u < p.rimAt ? Point.STRIP : Point.DESCENT;
         p.ramp = ramp(x, z, u, p.rimAt, p.profile, p);
-        double detail = field.relief().detailAt(x, z);
+        // The risers' profile: not on the top terrace, which may stand part way up a riser (the rim height), nearly level,
+        // where any noise would scatter loose blocks over the integer it hovers about.
+        double detail = Mth.lerp(Ring4Relief.smooth(p.v, 0.0, TERRACE_FADE), -1.0, field.relief().detailAt(x, z));
         p.detail = detail;
-        double top = treadHeight(p.profile.rim(), detail);
+        double top = treadHeight(p.profile.rim(), -1.0);
         if (p.kind == Point.STRIP) {
             VolcanicField ring3 = field.ring3();
             double own = ring3 == null ? top : ring3.column(Mth.floor(x), Mth.floor(z)).height();
@@ -336,6 +382,14 @@ final class VerdantDescent {
         } else {
             p.treads = treadHeight(p.ramp, detail);
             p.body = (int) Math.floor((p.ramp - BANK_TOP) / STEP);
+        }
+        // The foot river wobbles a little (both banks with it), so their shore lines do not draw a regular sawtooth
+        // across the block grid; inwards only, so the outer bank keeps its room to rise to ring 4 (decision "river
+        // inwards").
+        p.wobble = 0.0;
+        if (p.kind == Point.DESCENT) {
+            double noise = Mth.clamp(field.relief().warpAt(BANK_WOBBLE_SCALE * x + 523.5, BANK_WOBBLE_SCALE * z - 1789.5), -1.0, 1.0);
+            p.wobble = BANK_WOBBLE * scale(layout) * (noise - 1.0);
         }
         return p;
     }
@@ -357,19 +411,67 @@ final class VerdantDescent {
      */
     private double ramp(double x, double z, double u, double rimAt, Profile profile, Point out) {
         double start = profile.descentStart(rimAt);
-        double v = Mth.clamp((u - start) / Math.max(8.0, profile.bankTop() - start), 0.0, 1.0);
+        double length = Math.max(8.0, profile.bankTop() - start);
         double drop = profile.rim() - BANK_TOP;
-        double wave = field.relief().warpAt(WAVE_SCALE * x + 1234.5, WAVE_SCALE * z - 987.5);
+        Ring4Relief relief = field.relief();
+        // The level the column would have without the displacement: the drift's third axis.
+        double plain = profile.rim() - drop * fall(Mth.clamp((u - start) / length, 0.0, 1.0), profile.curve());
+        // The noises run on the column's projection onto the zone's middle line: they change along the ring at their own
+        // scale and across it only slowly (through u), so the lines bend without the risers being squeezed.
+        double r = Math.max(1.0, Math.hypot(x, z));
+        double mid = midRadius(field.ringLayout());
+        double px = x * mid / r;
+        double pz = z * mid / r;
+        double across = u / scale(field.ringLayout());
+        double shift = LOBE * relief.warpAt(LOBE_SCALE * px - 3713.5, LOBE_ACROSS * across, LOBE_SCALE * pz + 1931.5)
+                + CRINKLE * relief.warpAt(CRINKLE_SCALE * px + 811.5, CRINKLE_ACROSS * across + 97.0, CRINKLE_SCALE * pz - 2203.5)
+                + DRIFT * relief.warpAt(DRIFT_SCALE * px + 2417.5, plain * (128.0 / DRIFT_LEVELS), DRIFT_SCALE * pz - 4519.5);
+        // The top terrace may widen freely, but it narrows to no less than TOP_LEAST: the strip's blend at the rim still
+        // meets the top tread. (A fade over the terrace would fold the ramp: its slope times a large shift.)
+        shift = VolcanicMath.smoothMin(shift * scale(field.ringLayout()), profile.topWidth() - TOP_LEAST * scale(field.ringLayout()), 2.0);
+        double v = Mth.clamp((u + shift - start) / length, 0.0, 1.0);
+        double wave = WAVE * drop * relief.warpAt(WAVE_SCALE * x + 1234.5, WAVE_SCALE * z - 987.5);
         if (out != null) {
             out.v = v;
         }
-        double fall = v * (1.0 + profile.curve() * (1.0 - v));
-        return profile.rim() - drop * fall + WAVE * drop * wave * 4.0 * v * (1.0 - v);
+        double ramp = profile.rim() - drop * fall(v, profile.curve()) + wave * 4.0 * v * (1.0 - v);
+        // Ring 3's half stays above its seal (≥ 65): there the displacement never takes the ramp below the plain one's
+        // or below the edge of tread 72, whichever is lower; fading out over GUARD_FADE blocks into ring 4's half.
+        double half = 0.5 * width(field.ringLayout());
+        double guard = 1.0 - Ring4Relief.smooth(u, half, half + GUARD_FADE * scale(field.ringLayout()));
+        if (guard > 0.0) {
+            double v0 = Mth.clamp((u - start) / length, 0.0, 1.0);
+            double floor = Math.min(profile.rim() - drop * fall(v0, profile.curve()) + wave * 4.0 * v0 * (1.0 - v0), GUARD_LEVEL);
+            ramp = Mth.lerp(guard, ramp, VolcanicMath.smoothMax(ramp, floor, 2.0));
+        }
+        return ramp;
     }
 
-    /** The treads of a ramp value: {@link Ring4Relief#terrace} on BANK_TOP + 8k, detail on the risers only. */
+    /** The share of the drop fallen at v: narrow steps above, wide below. */
+    private static double fall(double v, double curve) {
+        return v * (1.0 + curve * (1.0 - v));
+    }
+
+    /**
+     * The treads of a ramp value: level on BANK_TOP + 8k for {@link #TREAD} of each step (Q5), then a riser whose profile
+     * follows the detail noise {@code detail}: the smootherstep of {@link Ring4Relief#terrace}, or where the detail is
+     * high a rocky knick, its slope gathered in the middle. Never past the step's own levels.
+     */
     static double treadHeight(double ramp, double detail) {
-        return BANK_TOP + Ring4Relief.steps(ramp - BANK_TOP, detail);
+        double rise = ramp - BANK_TOP;
+        if (rise <= 0.0) {
+            return ramp;
+        }
+        double k = rise / STEP;
+        double n = Math.floor(k);
+        double t = Mth.clamp((k - n - TREAD) / (1.0 - TREAD), 0.0, 1.0);
+        double g = Mth.clamp(0.5 + (t - 0.5) * knick(detail), 0.0, 1.0);
+        return BANK_TOP + STEP * (n + g * g * g * (g * (6.0 * g - 15.0) + 10.0));
+    }
+
+    /** How much steeper than the smootherstep a riser is in its middle (1: as Q5). */
+    static double knick(double detail) {
+        return 1.0 + KNICK * Ring4Relief.smooth(detail, KNICK_FROM, KNICK_TO);
     }
 
     /** The level of body {@code b}'s tread. */
@@ -393,11 +495,12 @@ final class VerdantDescent {
      */
     static double withRiver(Point p, double inner, double relief) {
         Profile profile = p.profile;
-        if (p.u <= profile.river()) {
-            double across = profile.river() - p.u - profile.bedHalf();
+        double river = p.river();
+        if (p.u <= river) {
+            double across = river - p.u - profile.bedHalf();
             return Math.min(inner, RIVER_BED + Math.max(0.0, across) * RIVER_SLOPE);
         }
-        double d = p.u - profile.river() - profile.bedHalf();
+        double d = p.u - river - profile.bedHalf();
         double beach = (BANK_TOP - RIVER_BED) / RIVER_SLOPE;
         double bank = d <= 0.0 ? RIVER_BED : d <= beach ? RIVER_BED + d * RIVER_SLOPE : BANK_TOP + (d - beach) * OUTER_SLOPE;
         return Mth.lerp(Ring4Relief.smooth(p.u, p.width - 4.0, p.width), Math.min(bank, relief), relief);
@@ -405,7 +508,7 @@ final class VerdantDescent {
 
     /** Whether the ground at a point needs ring 4's own terrain (beyond the river's middle). */
     static boolean needsRelief(Point p) {
-        return p.kind == Point.DESCENT && p.u > p.profile.river() - 1.0;
+        return p.kind == Point.DESCENT && p.u > p.river() - 1.0;
     }
 
     /** 0..1: the foot river's channel (1 on its bed). */
@@ -413,7 +516,7 @@ final class VerdantDescent {
         if (p.kind != Point.DESCENT) {
             return 0.0;
         }
-        double across = Math.abs(p.u - p.profile.river());
+        double across = Math.abs(p.u - p.river());
         return 1.0 - Ring4Relief.smooth(across, p.profile.bedHalf(), p.profile.bedHalf() + 4.0);
     }
 }

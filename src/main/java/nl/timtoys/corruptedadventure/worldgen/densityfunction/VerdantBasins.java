@@ -113,6 +113,8 @@ final class VerdantBasins {
     private static final double LANDING = 1.5;
     /** Polish: the height of a bridge's vault over the tread's top block in its middle. */
     private static final double ARCH_RISE = 3.0;
+    /** How much a bridge's deck rises per block of loop position (just under one: a step per block of ground). */
+    private static final double DECK_SLOPE = 0.97;
 
     private final IslandField field;
     private final VerdantDescent descent;
@@ -782,7 +784,11 @@ final class VerdantBasins {
             // Polish: a real arch. The deck rises a block per block from one over the tread at its ends up to
             // thickness + 1 over it; the underside is an elliptic vault ARCH_RISE over the tread's top block in the middle,
             // coming down to the tread at the ends, so there is air under it over the brook and beside it.
-            int top = level + Math.min(thickness + 1, (int) Math.floor(0.5 * span - Math.abs(d)));
+            // The loop position runs up to ~1.2 % faster than blocks on the inner part of the descent (s is measured on
+            // the middle line), so a block's step could rise 2 where floor() crosses two integers: the deck rises a little
+            // under one per block of loop position (DECK_SLOPE), every step along it at most one, its ends still one over
+            // the tread.
+            int top = level + Math.min(thickness + 1, (int) Math.floor(DECK_SLOPE * (0.5 * span - Math.abs(d))));
             int under = Mth.ceil(level - 1.0 + ARCH_RISE * Math.sqrt(Math.max(0.0, 1.0 - q * q)));
             // At least two thick in its middle half, one towards its ends; the vault wins over the thickness.
             return new int[]{Math.min(under, top - (Math.abs(q) < 0.5 ? 1 : 0)), top};
