@@ -58,7 +58,8 @@ public final class BiomeAmbience {
     }
 
     // Ring 3 and Nether ring 3 (stream A, packages 50 and 56): the biome bootstraps take every effect from these hooks,
-    // so the atmosphere changes in Ring3Atmosphere / NetherRing3Atmosphere without touching the biome classes.
+    // so the atmosphere changes in Ring3Atmosphere / NetherRing3Atmosphere without touching the biome classes. Ring 4
+    // (Ring4Atmosphere) layers on top of the bootstrap's effects until change 80 owns all its colours.
 
     /**
      * Effects of a ring 3 overworld biome ({@code Ring3Biomes.ALL} and the transition {@code steam_fens}): sky, fog,
@@ -80,6 +81,19 @@ public final class BiomeAmbience {
      */
     public static BiomeSpecialEffects.Builder netherRing3(ResourceKey<Biome> biome) {
         return NetherRing3Atmosphere.effects(biome);
+    }
+
+    /**
+     * The ring 4 atmosphere on top of a ring 4 biome's {@code effects} ({@code Ring4Biomes.WITH_TRANSITION} and
+     * {@code verdant_falls}): the bootstrap builds colours, grass and foliage, and passes them through here. Every ring 4
+     * biome gets the cave mood; {@code verdant_falls} also its own sky, fog and water colours, spray particles, waterfall
+     * loop and wildlife additions ({@code Ring4Atmosphere}). The rest of ring 4 follows in change 80.
+     *
+     * @return {@code effects}, changed
+     * @throws IllegalArgumentException for a biome without ring 4 atmosphere
+     */
+    public static BiomeSpecialEffects.Builder ring4(ResourceKey<Biome> biome, BiomeSpecialEffects.Builder effects) {
+        return Ring4Atmosphere.effects(biome, effects);
     }
 
     /** A builder with only the four colours of {@code palette}. */

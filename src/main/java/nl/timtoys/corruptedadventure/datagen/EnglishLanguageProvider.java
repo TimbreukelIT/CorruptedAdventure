@@ -14,6 +14,7 @@ import nl.timtoys.corruptedadventure.datagen.lang.Ring3BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3BlockNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3ConditionText;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3WeatherText;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring4AmbienceText;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring4BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring4BlockNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring4ConditionText;
@@ -247,6 +248,7 @@ final class EnglishLanguageProvider extends LanguageProvider implements LangOutp
         NetherRing4BiomeNames.addEnglish(this);
         Ring4ConditionText.addEnglish(this);
         Ring4WeatherText.addEnglish(this);
+        Ring4AmbienceText.addEnglish(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s dried out");

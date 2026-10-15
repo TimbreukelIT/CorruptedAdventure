@@ -27,5 +27,7 @@ final class ModParticleDescriptionProvider extends ParticleDescriptionProvider {
         spriteSet(ModParticleTypes.DRIFTING_ASH.get(), CorruptedAdventure.id("ash_flake"), 4, false);
         spriteSet(ModParticleTypes.RISING_EMBER.get(), CorruptedAdventure.id("ember"), 4, false);
         spriteSet(ModParticleTypes.SULFUR_STEAM.get(), CorruptedAdventure.id("steam_puff"), 4, false);
+        // verdant_falls (ring 4 stream A): light 8×8 sprites waterfall_mist_0..3 from stream T, tinted by the particle.
+        spriteSet(ModParticleTypes.WATERFALL_MIST.get(), CorruptedAdventure.id("waterfall_mist"), 4, false);
     }
 }

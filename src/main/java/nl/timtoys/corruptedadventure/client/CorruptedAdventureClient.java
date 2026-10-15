@@ -19,6 +19,7 @@ import nl.timtoys.corruptedadventure.client.particle.EmberParticle;
 import nl.timtoys.corruptedadventure.client.particle.IceGlintParticle;
 import nl.timtoys.corruptedadventure.client.particle.SandGustParticle;
 import nl.timtoys.corruptedadventure.client.particle.SteamPuffParticle;
+import nl.timtoys.corruptedadventure.client.particle.WaterfallMistParticle;
 import nl.timtoys.corruptedadventure.client.weather.ColdBreath;
 import nl.timtoys.corruptedadventure.client.weather.Ring3Ambience;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
@@ -77,5 +78,6 @@ public final class CorruptedAdventureClient {
         event.registerSpriteSet(ModParticleTypes.SULFUR_STEAM.get(),
                 sprites -> new SteamPuffParticle.Provider(sprites, SteamPuffParticle.SULFUR_STEAM));
         event.registerSpriteSet(ModParticleTypes.ICE_GLINT.get(), IceGlintParticle.Provider::new);
+        event.registerSpriteSet(ModParticleTypes.WATERFALL_MIST.get(), WaterfallMistParticle.Provider::new);
     }
 }
