@@ -69,6 +69,13 @@ def island(key, lo, hi=1.7976931348623157e+308):
     return {"type": CA + "ring4_threshold", "density_function": CA + "ring_4/overworld/" + key, "min": lo, "max": hi}
 
 
+def speckle(name):
+    """True for about half the blocks, at random per block (vanilla's vertical gradient over a span far wider than the
+    terrain: 0.56 at Y 70, 0.48 at Y 110)."""
+    return {"type": "minecraft:vertical_gradient", "random_name": CA + "verdant_wall_" + name,
+            "true_at_and_below": {"absolute": -160}, "false_at_and_above": {"absolute": 360}}
+
+
 def below(y):
     """Blocks below Y y."""
     return {"type": "minecraft:not", "invert": {"type": "minecraft:y_above", "anchor": {"absolute": y},
@@ -95,6 +102,11 @@ SHORE = below(66)
 MOSS_PATCHES = noise("minecraft:surface", 0.25)
 MOSSY_STONE = noise("minecraft:surface_secondary", 0.2)
 GRAVEL_PATCHES = noise("minecraft:patch", 0.2)
+# The gorges' walls (polish round): no stripes, but patches in the rock face. Mossy walls over about half the gorges'
+# length (vanilla's secondary surface noise, ~64 blocks), andesite patches (the patch noise), each speckled at random per
+# block (about a quarter of the blocks), so the patches have no straight edges or bands.
+MOSSY_WALL = noise("minecraft:surface_secondary", 0.0)
+ANDESITE_WALL = noise("minecraft:patch", 0.05)
 
 
 def put(name):
@@ -142,15 +154,18 @@ SURFACES = {
 
 def verdant_falls():
     """The descent of the zone 3->4 (Q7 = A): calcite on the rims and lips (down the lip's face), stone with mossy
-    cobblestone on the exact walls and steep slopes, sand banks along the foot river, grass with moss on the treads; the
+    cobblestone on the exact walls and steep slopes (on the gorges' faces patches of mossy cobblestone and andesite), sand banks along the foot river, grass with moss on the treads; the
     beds of lakes, brooks and splash pools sand with clay and gravel patches."""
     calcite = block("calcite")
     bed = seq(cond(CLAY_PATCHES, block("clay")), cond(GRAVEL_PATCHES, put("gravel")), put("sand"))
-    wall_top = seq(cond(MOSSY_STONE, block("mossy_cobblestone")), block("stone"))
+    wall_top = seq(cond(MOSS_PATCHES, block("moss_block")), cond(MOSSY_STONE, block("mossy_cobblestone")), block("stone"))
     wall = seq(cond(TOP, seq(cond(DRY_TOP, wall_top), bed)), cond(DEPTH, block("stone")))
+    # The exact walls of the gorges: every block of the face (not only under a floor), speckled into patches.
+    face = seq(cond(MOSSY_WALL, cond(speckle("a"), cond(speckle("b"), block("mossy_cobblestone")))),
+               cond(ANDESITE_WALL, cond(speckle("c"), cond(speckle("d"), block("andesite")))))
     return seq(
         cond(RIM, seq(cond(TOP, cond(DRY_TOP, calcite)), cond(RIM_DEPTH, cond(DRY_DEPTH, calcite)))),
-        cond(CLIFF, wall),
+        cond(CLIFF, seq(cond(TOP, seq(cond(DRY_TOP, wall_top), bed)), face)),
         cond(STEEP, wall),
         cond(SHORE, seq(cond(TOP, cond(DRY_TOP, put("sand"))), cond(DEPTH, cond(DRY_DEPTH, put("sand"))))),
         # The treads' unconditional top and layer, flat in this branch like every other biome's.
