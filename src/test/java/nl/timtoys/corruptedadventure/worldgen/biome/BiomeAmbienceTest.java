@@ -166,6 +166,57 @@ class BiomeAmbienceTest {
                 .getAsJsonObject().get("probability").getAsFloat();
     }
 
+    /** verdant-falls.md §4 and Q8 = A: plan colours, light spray, waterfall loop, birds and frogs, cave mood. */
+    @Test
+    void ring4HookGivesVerdantFallsItsColoursSprayAndSounds() {
+        BiomeSpecialEffects effects = BiomeAmbience.ring4(ModBiomes.VERDANT_FALLS, base()).build();
+        assertEquals(0x86D6E0, effects.getSkyColor());
+        assertEquals(0xD2F0E4, effects.getFogColor());
+        assertEquals(0x3FD0C0, effects.getWaterColor());
+        assertEquals(0x0F4F4A, effects.getWaterFogColor());
+        assertEquals(0x6CC24A, effects.getGrassColorOverride().orElseThrow(), "grass and foliage stay the bootstrap's");
+        AmbientParticleSettings particle = effects.getAmbientParticleSettings().orElseThrow();
+        assertSame(ModParticleTypes.WATERFALL_MIST.get(), particle.getOptions());
+        float probability = probability(particle);
+        assertTrue(probability > 0.0F && probability < probability(ModBiomes.STEAM_FENS), "a light haze, below the steam fens");
+        assertSame(ModSoundEvents.VERDANT_FALLS_FALLS, effects.getAmbientLoopSoundEvent().orElseThrow());
+        AmbientAdditionsSettings additions = effects.getAmbientAdditionsSettings().orElseThrow();
+        assertSame(ModSoundEvents.VERDANT_FALLS_WILDLIFE, additions.getSoundEvent());
+        assertTrue(additions.getTickChance() > 0.0 && additions.getTickChance() < 0.0111, "rarer than the basalt deltas'");
+        assertSame(AmbientMoodSettings.LEGACY_CAVE_SETTINGS, effects.getAmbientMoodSettings().orElseThrow());
+    }
+
+    /** Until change 80 the other ring 4 biomes keep their bootstrap's effects and only get the cave mood. */
+    @Test
+    void ring4HookLeavesTheRestOfRing4AloneAndRejectsOtherBiomes() {
+        for (ResourceKey<Biome> biome : Ring4Biomes.WITH_TRANSITION) {
+            if (Ring4Atmosphere.look(biome).isPresent()) {
+                continue;
+            }
+            BiomeSpecialEffects effects = BiomeAmbience.ring4(biome, base()).build();
+            BiomeSpecialEffects plain = base().build();
+            assertEquals(plain.getSkyColor(), effects.getSkyColor(), biome.toString());
+            assertEquals(plain.getWaterColor(), effects.getWaterColor(), biome.toString());
+            assertEquals(Optional.empty(), effects.getAmbientParticleSettings(), biome.toString());
+            assertEquals(Optional.empty(), effects.getAmbientLoopSoundEvent(), biome.toString());
+            assertEquals(Optional.empty(), effects.getAmbientAdditionsSettings(), biome.toString());
+            assertSame(AmbientMoodSettings.LEGACY_CAVE_SETTINGS, effects.getAmbientMoodSettings().orElseThrow(), biome.toString());
+        }
+        assertThrows(IllegalArgumentException.class, () -> BiomeAmbience.ring4(ModBiomes.CANYONLANDS, base()));
+        assertThrows(IllegalArgumentException.class, () -> BiomeAmbience.ring4(ModBiomes.STEAM_FENS, base()));
+    }
+
+    /** What a ring 4 bootstrap passes in: some colours, grass and foliage, nothing else. */
+    private static BiomeSpecialEffects.Builder base() {
+        return new BiomeSpecialEffects.Builder()
+                .skyColor(0x123456)
+                .fogColor(0x234567)
+                .waterColor(0x345678)
+                .waterFogColor(0x456789)
+                .grassColorOverride(0x6CC24A)
+                .foliageColorOverride(0x55B03A);
+    }
+
     @Test
     void netherRing3HookIsBlueWhiteAndDistinctPerBiome() {
         List<ResourceKey<Biome>> biomes = List.of(ModBiomes.FROZEN_LAVA_SEA, ModBiomes.RIME_FOREST, ModBiomes.GLACIER_RIFTS);

@@ -45,6 +45,10 @@ public final class ModParticleTypes {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SULFUR_STEAM =
             PARTICLE_TYPES.register("sulfur_steam", () -> new SimpleParticleType(false));
 
+    /** Fine white spray drifting through {@code verdant_falls} (its biome particle); sprites {@code waterfall_mist_0..3} from stream T. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> WATERFALL_MIST =
+            PARTICLE_TYPES.register("waterfall_mist", () -> new SimpleParticleType(false));
+
     private ModParticleTypes() {
     }
 

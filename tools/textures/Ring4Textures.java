@@ -274,6 +274,8 @@ public final class Ring4Textures {
             still("particle/updraft_bubble_" + i, (image, random) -> particle(image, Ring4Textures.UPDRAFT_BUBBLES[n], Ring4Textures.GREYS));
             still("particle/glitch_speck_" + i, (image, random) -> particle(image, Ring4Textures.GLITCH_SPECKS[n], Ring4Textures.GLITCH));
             still("particle/bone_dust_" + i, (image, random) -> particle(image, Ring4Textures.BONE_DUST[n], Ring4Textures.GREYS));
+            // verdant_falls (Q8 A): waterfall spray, light greys tinted white-blue by A (V-T4 A).
+            still("particle/waterfall_mist_" + i, (image, random) -> particle(image, Ring4Textures.WATERFALL_MIST[n], Ring4Textures.GREYS));
         }
     }
 
@@ -1996,6 +1998,16 @@ public final class Ring4Textures {
             {"........", "........", "...#o...", "....x...", "........", "........", "........", "........"},
             {"........", "..#.....", "...o....", "......#.", "....#o..", "........", "........", "........"},
             {"........", ".#o.....", "..x..#..", "........", "...#o...", "....x...", ".o......", "........"}};
+
+    /**
+     * Waterfall mist: fine, soft spray, small to large. Mostly light tones with a checkered rim: cutout sprites can't be
+     * half-transparent, so the dither stands in for the soft edge; hardly any shadow, the mist must stay white.
+     */
+    private static final String[][] WATERFALL_MIST = {
+            {"........", "........", "...o....", "..o#o.o.", "...o....", ".....o..", "........", "........"},
+            {"........", "....o...", "..o#o.o.", ".o###o..", "..o#o...", ".o..o.x.", "........", "........"},
+            {"...o.o..", "..o#o...", ".o###o.o", "o.###o..", ".o#o#o..", "..o.o.x.", "...x....", "........"},
+            {".o.o.o..", "o.o#o.o.", ".o####o.", "o.####.o", ".o###o#.", "o.o#o.o.", ".x.o.x..", "........"}};
 
     // ---- Animation ----------------------------------------------------------------------------------------------
 

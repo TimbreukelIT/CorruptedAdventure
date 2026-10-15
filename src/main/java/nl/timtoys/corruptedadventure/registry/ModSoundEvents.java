@@ -67,6 +67,12 @@ public final class ModSoundEvents {
     /** Rain of toxic rain (blighted band). */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_TOXIC_RAIN = register("weather.ring_4.toxic_rain");
 
+    // verdant_falls (transition 3→4, stream A): own audio from tools/sounds/Ring4Sounds.java.
+    /** Roar of distant waterfalls, the ambient loop of {@code verdant_falls}. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> VERDANT_FALLS_FALLS = register("ambient.verdant_falls.falls");
+    /** Tropical birds and frogs, the additions sound of {@code verdant_falls}. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> VERDANT_FALLS_WILDLIFE = register("ambient.verdant_falls.wildlife");
+
     private ModSoundEvents() {
     }
 

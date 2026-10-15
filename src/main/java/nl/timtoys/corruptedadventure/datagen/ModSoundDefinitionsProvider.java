@@ -12,7 +12,7 @@ import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
  * {@code sounds.json}. Ring 1 and the sandstorm reuse vanilla's samples through {@code event} entries (pitch and volume
  * multiply those of the vanilla event); the ring 2 ambient sounds are our own {@code .ogg}s ({@code tools/sounds/Ring2Sounds.java}),
  * which must exist before datagen runs: the provider checks the files. Ring 3 has its own as well
- * ({@code tools/sounds/Ring3Sounds.java}, package 50).
+ * ({@code tools/sounds/Ring3Sounds.java}, package 50), and so has {@code verdant_falls} ({@code tools/sounds/Ring4Sounds.java}).
  */
 final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
     // Ambient volumes (teststop 4c: all ambience somewhat softer). Only sounds the game plays at a fixed volume are set
@@ -104,6 +104,15 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
         add(ModSoundEvents.RING_4_TOXIC_RAIN, SoundDefinition.definition()
                 .subtitle(subtitle("weather.ring_4.toxic_rain"))
                 .with(sound(SoundEvents.WEATHER_RAIN.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.8F)));
+        // verdant_falls (ring 4 stream A): our own audio (tools/sounds/Ring4Sounds.java). The roar of distant falls as
+        // the biome loop, tropical birds (more often) and frogs as its additions.
+        add(ModSoundEvents.VERDANT_FALLS_FALLS, SoundDefinition.definition()
+                .with(ambientLoop("ambient/ring_4/falls_loop_1"), ambientLoop("ambient/ring_4/falls_loop_2")));
+        add(ModSoundEvents.VERDANT_FALLS_WILDLIFE, SoundDefinition.definition()
+                .subtitle(subtitle("ambient.verdant_falls.wildlife"))
+                .with(ambient("ambient/ring_4/tropical_bird_1"), ambient("ambient/ring_4/tropical_bird_2"),
+                        ambient("ambient/ring_4/tropical_bird_3"), ambient("ambient/ring_4/frog_1"),
+                        ambient("ambient/ring_4/frog_2")));
         // Block sounds, played by stream B (package 46) at the block.
         add(ModSoundEvents.FUMAROLE_PUFF, SoundDefinition.definition()
                 .subtitle(subtitle("block.fumarole.puff"))
