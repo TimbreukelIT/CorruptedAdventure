@@ -87,9 +87,16 @@ FALLING = {"sand": "sandstone", "gravel": "stone"}
 CLAY_PATCHES = noise("minecraft:surface", 0.12)
 # verdant_falls: the travertine rims and fall lips, the exact walls (both 0..1 from the terrain).
 RIM = island("rim", 0.5)
+# Polish: a rim value of 0.75 or more also crusts the wet side (a lake's threshold under the water).
+RIM_WET = island("rim", 0.75)
 CLIFF = island("cliff", 0.5)
 # Down a lip's face to the water below: the step between two treads is 8 blocks.
 RIM_DEPTH = depth(offset=7)
+# Polish: the lip's face is not all white: a calcite crust 1-5 deep (vanilla's secondary surface noise), below it
+# moss and stone in patches with some calcite.
+RIM_CRUST = depth(offset=1, secondary=4)
+FACE_MOSS = noise("minecraft:surface_secondary", 0.1)
+FACE_STONE = noise("minecraft:patch", -0.05)
 # The banks of the foot river: turtles spawn on sand below Y 67 (sea level + 4).
 SHORE = below(66)
 MOSS_PATCHES = noise("minecraft:surface", 0.25)
@@ -145,11 +152,13 @@ def verdant_falls():
     cobblestone on the exact walls and steep slopes, sand banks along the foot river, grass with moss on the treads; the
     beds of lakes, brooks and splash pools sand with clay and gravel patches."""
     calcite = block("calcite")
+    face = seq(cond(RIM_CRUST, calcite), cond(FACE_MOSS, block("mossy_cobblestone")), cond(FACE_STONE, block("stone")), calcite)
     bed = seq(cond(CLAY_PATCHES, block("clay")), cond(GRAVEL_PATCHES, put("gravel")), put("sand"))
     wall_top = seq(cond(MOSSY_STONE, block("mossy_cobblestone")), block("stone"))
     wall = seq(cond(TOP, seq(cond(DRY_TOP, wall_top), bed)), cond(DEPTH, block("stone")))
     return seq(
-        cond(RIM, seq(cond(TOP, cond(DRY_TOP, calcite)), cond(RIM_DEPTH, cond(DRY_DEPTH, calcite)))),
+        cond(RIM, seq(cond(TOP, seq(cond(DRY_TOP, calcite), cond(RIM_WET, calcite))),
+                      cond(RIM_DEPTH, cond(DRY_DEPTH, face)))),
         cond(CLIFF, wall),
         cond(STEEP, wall),
         cond(SHORE, seq(cond(TOP, cond(DRY_TOP, put("sand"))), cond(DEPTH, cond(DRY_DEPTH, put("sand"))))),

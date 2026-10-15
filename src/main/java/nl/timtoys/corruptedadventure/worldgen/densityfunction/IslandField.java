@@ -838,6 +838,9 @@ public final class IslandField implements DensityFunction {
             c.arc = p.s;
             c.body = w.body;
             c.gorgeZone = gorge.zone;
+            // Before the basins' features: a rock bridge marks its deck as rock (cliff).
+            c.rim = w.rim;
+            c.cliff = w.cliff;
             if (gorge.zone != null) {
                 c.gorgeBlocks = gorge.blocks;
                 c.gorgeLocal = gorge.local;
@@ -854,8 +857,6 @@ public final class IslandField implements DensityFunction {
                 basins.features(c.x, c.z, p, c);
             }
             c.verdantLakeTop = w.lakeTop;
-            c.rim = w.rim;
-            c.cliff = w.cliff;
             double beyond = s == null ? 0.0 : Ring4Relief.smooth(p.u, p.profile.river(), p.width);
             c.river = Math.max(VerdantDescent.river(p), s == null ? 0.0 : beyond * s.river);
             c.fjord = s == null ? 0.0 : beyond * s.fjord;

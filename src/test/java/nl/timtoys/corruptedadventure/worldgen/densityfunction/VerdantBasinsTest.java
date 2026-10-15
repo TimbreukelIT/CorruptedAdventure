@@ -487,6 +487,144 @@ class VerdantBasinsTest {
         assertTrue(bridges > brooks * 0.12 && bridges < brooks * 0.3, "bridges " + bridges + " of " + brooks);
     }
 
+    /**
+     * Polish: every rock bridge is a stone arch: its deck marked as rock for the surface (cliff), a vault over the
+     * brook with two or more blocks of air under its highest part (over the brook or its bank; mostly three), its underside higher in the middle than
+     * near its ends.
+     */
+    @Test
+    void rockBridgesAreStoneArches() {
+        WaterScan scan = new WaterScan(FIELD, LAYOUT);
+        double r = VerdantDescent.midRadius(LAYOUT);
+        double period = VerdantDescent.perimeter(LAYOUT);
+        int bridges = 0;
+        int lowestVault = Integer.MAX_VALUE;
+        Map<Integer, Integer> air = new HashMap<>();
+        for (int k = 0; k < BASINS.streamCount(); k++) {
+            VerdantBasins.Stream stream = BASINS.stream(k);
+            if (stream == null) {
+                continue;
+            }
+            for (int b = 1; b <= stream.top(); b++) {
+                VerdantBasins.Bridge bridge = BASINS.bridge(stream, b);
+                if (bridge == null) {
+                    continue;
+                }
+                bridges++;
+                double[] c = BASINS.rampPoint(bridge.centre() / r, bridge.ramp());
+                assertNotNull(c);
+                // The deck's column nearest the vault's middle.
+                int x = Integer.MIN_VALUE;
+                int z = 0;
+                double best = Double.POSITIVE_INFINITY;
+                for (int dx = -1; dx <= 2; dx++) {
+                    for (int dz = -1; dz <= 2; dz++) {
+                        int nx = (int) Math.floor(c[0]) + dx;
+                        int nz = (int) Math.floor(c[1]) + dz;
+                        double d = Math.abs(RingArc.loopDelta(FIELD.column(nx, nz).arc, bridge.centre(), period));
+                        if (bridgeRock(bridge, nx, nz, period) != null && d < best) {
+                            best = d;
+                            x = nx;
+                            z = nz;
+                        }
+                    }
+                }
+                assertTrue(x != Integer.MIN_VALUE, "a deck near " + c[0] + " " + c[1]);
+                String where = " at " + x + " " + z;
+                IslandField.Column column = FIELD.column(x, z);
+                assertTrue(column.cliff >= 0.5, "the deck is rock" + where);
+                // The most open blocks under the deck's rock (down to the ground or the brook's water) of its columns.
+                int open = 0;
+                for (int nx = x - 6; nx <= x + 6; nx++) {
+                    for (int nz = z - 6; nz <= z + 6; nz++) {
+                        int[] rock = bridgeRock(bridge, nx, nz, period);
+                        if (rock == null) {
+                            continue;
+                        }
+                        int y = rock[0] - 1;
+                        while (scan.block(nx, y, nz) == WaterScan.AIR) {
+                            y--;
+                        }
+                        open = Math.max(open, rock[0] - 1 - y);
+                    }
+                }
+                lowestVault = Math.min(lowestVault, open);
+                assertTrue(open >= 2, "air under the vault " + open + where);
+                air.merge(open, 1, Integer::sum);
+                int[] middle = bridge.range(bridge.ramp(), bridge.centre(), period);
+                int[] nearEnd = bridge.range(bridge.ramp(), bridge.centre() + 0.5 * bridge.span() - 0.4, period);
+                assertNotNull(middle);
+                assertNotNull(nearEnd);
+                assertTrue(middle[0] > nearEnd[0], "a vault, not a slab" + where);
+            }
+        }
+        System.out.printf("stone arches %d, most air under a deck %s%n", bridges, air);
+        assertTrue(air.getOrDefault(3, 0) + air.getOrDefault(4, 0) + air.getOrDefault(5, 0) > bridges / 2, "mostly three blocks of air " + air);
+        assertTrue(bridges > 150, "bridges " + bridges);
+    }
+
+    /**
+     * Polish: the travertine is a ragged crust, not a strip of one width along a straight line. Per lake threshold and
+     * fall lip (columns of a tread with calcite, binned by the block along the loop) the crust's width from the tread's
+     * edge varies: several widths, up to at least 3, and never the same width for 10 blocks along the edge in a row.
+     */
+    @Test
+    void travertineIsARaggedCrust() {
+        double period = VerdantDescent.perimeter(LAYOUT);
+        Map<Long, Integer> widths = new HashMap<>();
+        int rims = 0;
+        int dams = 0;
+        for (VerdantBasins.Stream stream : sampleStreams(8)) {
+            int[] box = box(stream, 30.0);
+            for (int x = box[0]; x <= box[2]; x++) {
+                for (int z = box[1]; z <= box[3]; z++) {
+                    IslandField.Column c = FIELD.column(x, z);
+                    if (!c.verdant || c.rim < 0.5 || c.body < 1) {
+                        continue;
+                    }
+                    VerdantDescent.Point p = FIELD.descent().locate(x, z, new VerdantDescent.Point());
+                    if (c.surface() > p.treads + 0.5) {
+                        // A dam's bulge over the riser below its lake.
+                        dams++;
+                        continue;
+                    }
+                    double ramp = FIELD.descent().rampAt(x, z);
+                    double gx = FIELD.descent().rampAt(x + 1, z) - FIELD.descent().rampAt(x - 1, z);
+                    double gz = FIELD.descent().rampAt(x, z + 1) - FIELD.descent().rampAt(x, z - 1);
+                    double toEdge = (ramp - VerdantDescent.level(c.body)) / Math.max(0.02, 0.5 * Math.hypot(gx, gz));
+                    if (ramp > VerdantDescent.level(c.body) + VerdantDescent.STEP * VerdantDescent.TREAD) {
+                        continue;
+                    }
+                    rims++;
+                    long bin = (long) Math.floor(RingArc.wrap(c.arc, period)) * 16 + c.body;
+                    widths.merge(bin, (int) Math.ceil(toEdge), Math::max);
+                }
+            }
+        }
+        List<Long> bins = new ArrayList<>(widths.keySet());
+        bins.sort(Long::compare);
+        int longestRun = 0;
+        int run = 0;
+        long previous = Long.MIN_VALUE;
+        int widest = 0;
+        java.util.Set<Integer> kinds = new java.util.HashSet<>();
+        for (long bin : bins) {
+            int w = widths.get(bin);
+            kinds.add(w);
+            widest = Math.max(widest, w);
+            boolean next = bin == previous + 16 && w == widths.get(previous);
+            run = next ? run + 1 : 1;
+            longestRun = Math.max(longestRun, run);
+            previous = bin;
+        }
+        System.out.printf("travertine columns %d (dams %d), widths %s, widest %d, longest run of one width %d%n",
+                rims, dams, kinds, widest, longestRun);
+        assertTrue(rims > 500, "travertine " + rims);
+        assertTrue(dams > 50, "dams " + dams);
+        assertTrue(kinds.size() >= 4 && widest >= 3, "widths " + kinds);
+        assertTrue(longestRun < 10, "one width for " + longestRun + " blocks along the edge");
+    }
+
     /** No water against air round niches, tunnels and bridges. */
     @Test
     void waterNeverStandsAgainstAirRoundNichesAndBridges() {

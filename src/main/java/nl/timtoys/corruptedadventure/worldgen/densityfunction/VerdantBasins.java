@@ -57,9 +57,32 @@ final class VerdantBasins {
      * there is no room otherwise.
      */
     private static final double LAKE_BACK = -4.0;
+    /**
+     * Polish: the back shore waves by this much more, mostly inwards (so it meets the riser above only at its points,
+     * not as a straight wall along the contour).
+     */
+    private static final double BACK_WAVE = 2.0;
     /** A plunge pool's centre lies this far below the lip; the spring pool of a stream's top tread this far from the riser's foot. */
     private static final double POOL_OUT = 2.5;
     private static final double SPRING_POOL_IN = 4.0;
+    /** Polish: how far (blocks) a plunge pool's shore wobbles with the detail noise. */
+    private static final double POOL_WOBBLE = 0.7;
+    /**
+     * Polish (Plitvice): a lake's threshold is a travertine dam that bulges its tread's edge out over the riser below by
+     * DAM_MIN…DAM_MAX blocks, waving along the edge; the lake's front shore follows DAM_SHARE of it, its shore waves by
+     * SHORE_WAVE, and stays MIN_THRESHOLD from the tread's own edge.
+     */
+    private static final double DAM_MIN = 0.5;
+    private static final double DAM_MAX = 3.5;
+    private static final double DAM_SHARE = 0.7;
+    private static final double SHORE_WAVE = 1.6;
+    private static final double MIN_THRESHOLD = 3.5;
+    /**
+     * The rim output: travertine on the dry surface (the surface rule's calcite), and on the wet side of a threshold
+     * too (≥ 0.75: a thin crust under the water).
+     */
+    static final double DRY_RIM = 0.6;
+    static final double WET_RIM = 0.9;
     /** The water begins this far past the top terrace (the steam_fens rim stays dry). */
     private static final double TOP_MARGIN = 4.0;
     private static final int STREAM_SALT = 6306;
@@ -88,6 +111,8 @@ final class VerdantBasins {
     private static final double BRIDGE_CHANCE = 0.43;
     /** Past each end of a rock bridge the tread is levelled this far (blocks along the loop, review 2c-2). */
     private static final double LANDING = 1.5;
+    /** Polish: the height of a bridge's vault over the tread's top block in its middle. */
+    private static final double ARCH_RISE = 3.0;
 
     private final IslandField field;
     private final VerdantDescent descent;
@@ -267,6 +292,24 @@ final class VerdantBasins {
         double t = Mth.clamp((VerdantDescent.level(b + 1) - ramp) / VerdantDescent.STEP, 0.0, 1.0);
         double cut = Double.POSITIVE_INFINITY;
         boolean wall = false;
+        // Polish: the travertine dam of a lake on the tread above bulges its edge out over this tread's riser (the
+        // riser keeps its rounded shape, moved out), so the threshold's line waves instead of following the contour.
+        double base = p.treads;
+        boolean dammed = false;
+        for (int n = 0; n < found; n++) {
+            if (b + 1 <= near[n].top()) {
+                double e = dam(p.s, b + 1, segment(near[n], b + 1), g, period);
+                if (e > 0.0) {
+                    double raised = VerdantDescent.treadHeight(Math.min(ramp + e * g, VerdantDescent.level(b + 1)), p.detail);
+                    if (raised > base + 0.5) {
+                        base = raised;
+                        dammed |= VerdantDescent.level(b + 1) - raised <= 2.0;
+                    }
+                }
+            }
+        }
+        double rim = dammed ? DRY_RIM : 0.0;
+        boolean wetRim = false;
         for (int n = 0; n < found; n++) {
             Stream stream = near[n];
             Segment seg = segment(stream, b);
@@ -288,7 +331,12 @@ final class VerdantBasins {
             }
             // The pool: in a cove under the fall from the tread above, or the top tread's spring pool.
             double along = RingArc.loopDelta(p.s, entry, period);
-            double pool = Math.hypot(along, top ? fromFoot - SPRING_POOL_IN : below - POOL_OUT) - seg.poolRadius();
+            // Polish: the plunge pool's centre lies further out the larger it is (it still reaches the lip by a block or
+            // more, so the fall lands in it), and its shore wobbles: the cove's lip is short and the pool round, not a
+            // straight wall along the contour.
+            double poolOut = Math.max(POOL_OUT, seg.poolRadius() - 1.6);
+            double pool = Math.hypot(along, top ? fromFoot - SPRING_POOL_IN : below - poolOut) - seg.poolRadius()
+                    - POOL_WOBBLE * norm(field.relief().detailAt(3.0 * x - 611.0, 3.0 * z + 157.0));
             cut = Math.min(cut, water - seg.poolDepth() + BANK * Math.max(0.0, pool));
             wall |= pool <= 2.0 && pool > 0.0;
             if (!top) {
@@ -301,29 +349,29 @@ final class VerdantBasins {
                 }
             }
             if (seg.lake()) {
-                cut = Math.min(cut, lake(x, z, p.s, ramp, g, level, seg, period));
+                double e = dam(p.s, b, seg, g, period);
+                double bowl = lake(x, z, p.s, ramp, g, level, seg, period, e);
+                cut = Math.min(cut, bowl);
                 if (!Double.isNaN(seg.spur()) && toEdge < lakeMiddle(seg, g)) {
                     double spurAcross = Math.abs(RingArc.loopDelta(p.s, seg.spur(), period)) - 0.6;
                     cut = Math.min(cut, water - seg.gullyDepth() + BANK * Math.max(0.0, spurAcross));
                 }
+                // A thin crust on the wet side of the threshold, in patches.
+                wetRim |= b >= 1 && bowl < water && toEdge < seg.threshold() + 2.0
+                        && norm(field.relief().detailAt(3.0 * x - 503.0, 3.0 * z + 71.0)) > 0.3;
             }
-            // Travertine on the threshold of a lake and the lip of each fall (rim faces down 7 blocks, the surface).
-            if (b >= 1 && toEdge <= 2.5) {
-                boolean threshold = seg.lake() && lakeFits(seg, g)
-                        && Math.abs(RingArc.loopDelta(p.s, seg.lakeCentre(), period)) <= seg.lakeHalf() - 2.0;
-                boolean lip = RingArc.loopDistance(p.s, seg.exit(), period) <= 4.0
-                        || !Double.isNaN(seg.spur()) && RingArc.loopDistance(p.s, seg.spur(), period) <= 4.0;
-                if (threshold || lip) {
-                    out.rim = 1.0;
-                }
+            // Travertine on the threshold of a lake and the lip of each fall (the rim's face down to the water below
+            // is the surface rule's).
+            if (b >= 1) {
+                rim = Math.max(rim, travertine(x, z, p.s, toEdge, b, seg, g, period));
             }
         }
-        double height = Math.min(p.treads, cut);
+        double height = Math.min(base, cut);
         if (height < water + 1.0) {
             if (b >= 1 && (east < level || west < level || south < level || north < level)) {
                 // Next to a lower body (the edge of the tread): no water here and the rock of the edge stays whole, so
                 // only a spring meets the edge, with rock over it.
-                height = p.treads;
+                height = base;
             } else if (b == 0 && p.u < p.width / 2.0 + 2.0) {
                 // Ring 3's half is sealed below the sea: the lowest tread stays dry there.
                 height = Math.max(height, VerdantDescent.BANK_TOP - 1.0);
@@ -342,7 +390,7 @@ final class VerdantBasins {
                     if (fall != null && fall.beside(x, z) || above != null && above.beside(x, z)) {
                         // A spring's sides are rock at its level, on the tread (not the gully) and just over a slanting
                         // edge (not the pool below).
-                        height = p.treads;
+                        height = base;
                     }
                 }
             }
@@ -350,14 +398,17 @@ final class VerdantBasins {
         out.height = height;
         if (b >= 1 && height < water) {
             out.lakeTop = water;
+            out.rim = wetRim ? WET_RIM : 0.0;
+        } else {
+            out.rim = rim;
         }
         if (wall && height >= water && p.treads - water >= 3.0) {
             out.cliff = 1.0;
         }
     }
 
-    /** The lake's bowl at a column (its height, +infinity outside the lake). */
-    private double lake(int x, int z, double s, double ramp, double g, double level, Segment seg, double period) {
+    /** The lake's bowl at a column (its height, +infinity outside the lake); {@code dam} the threshold's bulge there. */
+    private double lake(int x, int z, double s, double ramp, double g, double level, Segment seg, double period, double dam) {
         double lo = level + seg.threshold() * g;
         double hi = level + VerdantDescent.STEP * VerdantDescent.TREAD - LAKE_BACK * g;
         double halfWidth = (hi - lo) / (2.0 * g);
@@ -370,12 +421,99 @@ final class VerdantBasins {
         // A stadium (a rectangle with round ends), its outline wobbling with the detail noise.
         double outside = along <= 0.0 ? Math.abs(across) - halfWidth : Math.hypot(along, across) - halfWidth;
         double inside = -outside + 1.2 * field.relief().detailAt(2.0 * x + 77.0, 2.0 * z - 55.0);
+        // Polish: a slower wave along the shore (bays and points of a few blocks, least on the threshold's side), and
+        // the front shore following the dam out where it bulges, so the lake is wider there.
+        double front = Ring4Relief.smooth(-across, 0.0, halfWidth);
+        inside += SHORE_WAVE * (1.0 - 0.6 * front) * norm(field.relief().detailAt(1.7 * s + 401.0, 31.0 * level - 7.0))
+                + BACK_WAVE * Ring4Relief.smooth(across, 0.0, halfWidth) * (norm(field.relief().detailAt(2.9 * s - 263.0, 17.0 * level + 5.0)) - 0.6);
+        inside += DAM_SHARE * dam * front;
+        // Never nearer the edge than MIN_THRESHOLD: the threshold stays a dry rim of travertine.
+        inside = Math.min(inside, (ramp - level) / g - MIN_THRESHOLD);
         if (inside <= 0.0) {
             // Outside the outline a bank rising BANK per block: where the lake reaches into the riser above, its back
             // shore is that bank, not a wall (on the tread it stays at the tread's level).
             return inside < -8.0 ? Double.POSITIVE_INFINITY : level - BANK * inside;
         }
         return level - (1.0 + seg.lakeDepth()) * Ring4Relief.smooth(inside, 0.0, 4.0);
+    }
+
+    /**
+     * How far (blocks) the travertine dam of the lake of {@code seg} on body {@code b} bulges its tread's edge out over
+     * the riser below at loop position {@code s}: 0 off a lake and near its falls, else a wave of DAM_MIN…DAM_MAX
+     * along the edge that tapers out at the lake's ends.
+     */
+    private double dam(double s, int b, Segment seg, double g, double period) {
+        if (!seg.lake() || !lakeFits(seg, g)) {
+            return 0.0;
+        }
+        double fromCentre = Math.abs(RingArc.loopDelta(s, seg.lakeCentre(), period));
+        double taper = 1.0 - Ring4Relief.smooth(fromCentre, seg.lakeHalf() - 6.0, seg.lakeHalf() + 1.0);
+        if (taper <= 0.0) {
+            return 0.0;
+        }
+        double clear = Ring4Relief.smooth(RingArc.loopDistance(s, seg.exit(), period), 4.0, 8.0);
+        if (!Double.isNaN(seg.spur())) {
+            clear *= Ring4Relief.smooth(RingArc.loopDistance(s, seg.spur(), period), 4.0, 8.0);
+        }
+        double wave = unit(0.8 * field.relief().detailAt(2.2 * s + 811.0, 57.0 * b + 3.0)
+                + 0.4 * field.relief().detailAt(5.5 * s - 97.0, 57.0 * b + 41.0));
+        return taper * clear * (DAM_MIN + (DAM_MAX - DAM_MIN) * wave);
+    }
+
+    /**
+     * The travertine (calcite) of a column on tread {@code b}, {@code toEdge} blocks in from its edge: a crust along a
+     * lake's threshold 1–4 wide with a ragged inner line, patches reaching back over the threshold, and a ragged blob
+     * round each fall's lip. 0 or {@link #DRY_RIM}.
+     */
+    private double travertine(int x, int z, double s, double toEdge, int b, Segment seg, double g, double period) {
+        // The lips: an ellipse along the edge round each fall, its size and outline ragged.
+        double ragged = norm(field.relief().detailAt(6.0 * x - 733.0, 6.0 * z + 291.0));
+        for (double at : new double[]{seg.exit(), seg.spur()}) {
+            if (Double.isNaN(at)) {
+                continue;
+            }
+            double ds = RingArc.loopDelta(s, at, period);
+            if (Math.abs(ds) > 8.0 || toEdge > 6.0) {
+                continue;
+            }
+            double length = 3.0 + 2.0 * unit(field.relief().detailAt(1.3 * x + 59.0, 1.3 * z - 421.0));
+            double depth = 1.5 + 2.0 * unit(field.relief().detailAt(1.1 * x - 177.0, 1.1 * z + 383.0));
+            double e = (ds / length) * (ds / length) + (toEdge / depth) * (toEdge / depth);
+            if (e < 1.0 + 0.5 * ragged) {
+                return DRY_RIM;
+            }
+        }
+        if (!seg.lake() || !lakeFits(seg, g)) {
+            return 0.0;
+        }
+        double fromCentre = Math.abs(RingArc.loopDelta(s, seg.lakeCentre(), period));
+        double taper = 1.0 - Ring4Relief.smooth(fromCentre, seg.lakeHalf() - 5.0, seg.lakeHalf() + 1.0);
+        if (taper <= 0.05) {
+            return 0.0;
+        }
+        // The crust along the edge: 1–4 wide, waving along the edge, its inner line ragged.
+        double width = taper * (1.0 + 3.0 * unit(field.relief().detailAt(1.8 * s + 1517.0, 97.0 * b)));
+        if (toEdge < width + 0.9 * ragged) {
+            return DRY_RIM;
+        }
+        // Patches running back over the threshold, fewer further in.
+        double patch = norm(field.relief().detailAt(2.6 * x + 233.0, 2.6 * z - 919.0));
+        if (toEdge < seg.threshold() && taper > 0.3 && patch > 0.5 + 0.6 * toEdge / seg.threshold()) {
+            return DRY_RIM;
+        }
+        return 0.0;
+    }
+
+    /**
+     * The detail noise stretched to about −1..1 (its RMS is ~0.3: most of it lies within ±0.4), clamped to ±1.5.
+     */
+    private static double norm(double noise) {
+        return Mth.clamp(2.8 * noise, -1.5, 1.5);
+    }
+
+    /** The detail noise as 0..1 ({@link #norm}). */
+    private static double unit(double noise) {
+        return Mth.clamp(0.5 + 0.5 * norm(noise), 0.0, 1.0);
     }
 
     /** Whether a lake has room on its tread where the ramp rises {@code g} per block (at least 5 blocks across). */
@@ -641,10 +779,13 @@ final class VerdantBasins {
                 return null;
             }
             double q = 2.0 * d / span;
-            int top = level + Math.min(thickness, (int) Math.floor(0.5 * span - Math.abs(d)));
-            // The arch's underside, held down where the thinned deck needs it (never into the block over the brook).
-            int under = Mth.ceil(level - 1.0 + 2.0 * (1.0 - q * q));
-            return new int[]{Math.min(under, Math.max(level, top - thickness + 1)), top};
+            // Polish: a real arch. The deck rises a block per block from one over the tread at its ends up to
+            // thickness + 1 over it; the underside is an elliptic vault ARCH_RISE over the tread's top block in the middle,
+            // coming down to the tread at the ends, so there is air under it over the brook and beside it.
+            int top = level + Math.min(thickness + 1, (int) Math.floor(0.5 * span - Math.abs(d)));
+            int under = Mth.ceil(level - 1.0 + ARCH_RISE * Math.sqrt(Math.max(0.0, 1.0 - q * q)));
+            // At least two thick in its middle half, one towards its ends; the vault wins over the thickness.
+            return new int[]{Math.min(under, top - (Math.abs(q) < 0.5 ? 1 : 0)), top};
         }
 
         /** Whether a column at ramp value r and loop position s lies just past an end, within the deck's width. */
@@ -685,6 +826,10 @@ final class VerdantBasins {
             if (b >= 1 && b <= stream.top()) {
                 Bridge bridge = bridge(stream, b);
                 int[] range = bridge == null ? null : bridge.range(p.ramp, p.s, period);
+                if (range != null) {
+                    // Polish: a rock bridge, its deck bare stone (the surface rule's stone with moss patches).
+                    c.cliff = 1.0;
+                }
                 if (range == null && bridge != null && bridge.landing(p.ramp, p.s, period) && c.height < bridge.level()) {
                     // Past an end: a dip of the tread (its rounded edge, a gully's bank) is filled up to the tread's top
                     // block where no water stands in it, so the step onto the deck stays one block.
@@ -869,7 +1014,8 @@ final class VerdantBasins {
         double t = Mth.clamp((VerdantDescent.level(b + 1) - ramp) / VerdantDescent.STEP, 0.0, 1.0);
         double run = RingArc.loopDelta(seg.exit(), entry, period);
         double centre = RingArc.wrap(entry + run * Ring4Relief.smooth(t, 0.0, 1.0) + seg.meander() * Math.sin(Math.PI * t), period);
-        double span = 4.0 + 4.0 * CellShapes.unit(h, 2);
+        // Polish: at least 6 long, so the vault shows over the gully (2c: 4–8).
+        double span = 6.0 + 2.0 * CellShapes.unit(h, 2);
         int thickness = CellShapes.unit(h, 3) < 0.5 ? 2 : 3;
         // The brook under it, dry tread at both ends (not a lake, a pool or a spring).
         Water w = new Water();

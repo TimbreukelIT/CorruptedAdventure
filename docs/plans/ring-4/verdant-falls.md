@@ -405,6 +405,20 @@ Gemeten op de testseed (offline, `VerdantGorgesTest`).
 
 Kaartjes in `C:\Temp\vf2e\`: `gorge0_top.png` (bovenaanzicht kloof 0: amfitheater, hals, boog bruin, geul met lipvallen naar de voetrivier), `gorge0_section_arch.png` (doorsnede dwars over de boog bij 6023 87 288: geulwater, afgeronde opening, dek gelijk met de rand, rechts de padhelling achter de voet).
 
+### Polijstronde bassins (2026-10-15, `ring4/vf-polish-basins`): travertijn, dammen, oevers, bruggen
+Aanleiding: in-game validatie (screenshots `val-afdaling-*`, `val-brug-*`, `val-bassinnis-*`): calciet als rechte witte strepen, smalle hoekige meren, rechte verticale lippen, brug als bult gras en aarde, calcietwanden egaal wit. Binnen de besluiten (Q7 calciet, §2.2/§2.4); getallen zijn startwaarden.
+- **Bron van de strepen:** de `rim`-uitgang zelf: 1 op de buitenste 2,5 blokken van de trede langs een meer (afgekapt op meerhelft − 2) en ±4 langs `s` rond elke val. De trederand is een contourlijn van de helling (golf ~250 blokken), dus over 30–50 blokken recht: een strook van vaste breedte langs een rechte lijn met haakse uiteinden. De surface rule deed daarna alleen wat `rim` zei (calciet 0–7 diep).
+- **Travertijn (`VerdantBasins.travertine`):** langs een meerdrempel een korst van 1–4 breed (golvend langs de rand, golflengte ~25), binnenrand ±1,3 gerafeld (fijne ruis), dunt naar de meeruiteinden uit; vlekken lopen over de drempel naar binnen (minder verder van de rand); rond elke vallip een gerafelde ellips (3–5 langs de rand, 1,5–3,5 diep). Een smalle natte korst (`rim` 0,9) in vlekken in de meerkolommen tot 2 voorbij de drempel; droog `rim` 0,6. Gemeten (8 stromen): 3192 calcietkolommen, breedtes 1–12 blokken (incl. vlekken), langste stuk met gelijke breedte 5 blokken.
+- **Detailruis:** `Ring4Relief.detailAt` heeft een RMS van ~0,3 (gemeten); de nieuwe golvingen schalen hem met 2,8 (`norm`, begrensd op ±1,5).
+- **Travertijndam (`dam`, keuze):** onder een meer bolt de trederand 0,5–3,5 blokken golvend uit over het stootbord eronder (de afgeronde stootbordvorm schuift mee, dus een schuine, ronde buitenkant), niet binnen 4–8 van een val of spoor en aflopend naar de meeruiteinden; de kruin (≤ 2 onder de trede) is calciet. Het verhoogt alleen droge grond van de lagere trede; de sneden (poel, geul, meer) winnen nog. Gemeten: 361 damkolommen rond 8 stromen.
+- **Meren:** de voorkant van de oever volgt 0,7 van de dam (het meer is daar tot ~2,5 breder), nooit dichter dan 3,5 bij de eigen trederand; de oever golft ±2,4 (minder aan de drempelkant) en de achteroever trekt meestal 0–4 terug (raakt het stootbord erboven alleen op punten in plaats van als rechte wand). **Verbreden** kan verder niet binnen de treden: de meeste meren passen niet (`lakeFits`, ≥ 5 dwars) of liggen al tegen het stootbord erboven; zie backlog.
+- **Plonspoelen:** middelpunt `max(2,5, straal − 1,6)` uit de lip (de val landt er nog in, 412 van 412 vallen), oever ±1 met ruis: korte, ronde inham i.p.v. een rechte wand langs de contour.
+- **Rotsbruggen:** het dek is rots (`cliff` = 1, de surface rule geeft steen met mosvlekken); overspanning 6–8 (binnen 4–8); bovenkant 1 boven de trede aan de uiteinden en 1 per blok hoger tot dikte + 1; onderkant een elliptisch gewelf tot 3 boven het bovenste treeblok in het midden, minstens 2 dik in de middelste helft. Gemeten: 248 bruggen, alle beloopbaar (opstap 1, stap langs het dek 1, dunste midden 2); lucht onder het hoogste deel 3 bij 215, 2 bij 33.
+- **Surface rule (calciet):** `rim` ≥ 0,75 ook onder water (natte korst); de lipwand onder de kruin is calciet 1–5 diep (`stone_depth` met `secondary_depth_range` 4), daaronder vlekken mossy cobblestone (`surface_secondary` ≥ 0,1), steen (`patch` ≥ −0,05) en calciet. Steen op hellingen (`steep`) niet aangeraakt (andere stroom).
+- **Pilaar naast de val (bassinnis):** offline niet als losse geometrische kolom teruggevonden. Rond bronnen staan wel zijwanden van één kolom (`Fall.beside`) die een geul van de poel eronder scheiden; die zijn nodig voor de afsluiting (water nooit tegen lucht) en zijn niet veranderd. Losse grijze kolommen op de treden komen volgens de coördinator van de `steep`-regel (andere stroom, `slope`-uitgang).
+
+Kaartjes in `C:\Temp\vfpol-basins\`: `before_*`/`after_*` voor `afdaling_top` (−340 5900, 160²), `lake_zoom_top` (−320 5945, 70²), `brug_top`, `nis_top`, `brug_z_section`/`brug_x_section` (brug bij 6063 18), `extra_section` (dwars door meer, drempel en lip bij x −295); `dbg4_*` met kleuren per soort calciet (wit lip, geel band, oranje vlek, roze dam, cyaan nat).
+
 ## Contract-delta (INT verwerkt in `contract.md`)
 - §1: standaard `transitionWidthOverrides` [0, 0, 256, 256, 0]; migratie van [0, 0, 0, 256, 0].
 - §2: `verdant_falls` (overworld, overgang 3→4 buitenste deel, `transition_splits.ring_3`, eigenaar W-biomes; terrein W-terrein), in `is_ring_4`.
@@ -413,6 +427,7 @@ Kaartjes in `C:\Temp\vf2e\`: `gorge0_top.png` (bovenaanzicht kloof 0: amfitheate
 - §4: DF `cliff` → "exacte steile wand van `verdant_falls`"; vloeistofregel: water-tak ook in de verdant-strook van de ring 3-helft; `RingBlend.mix.ring_3`; de klif 3→4 vervalt (golf 0-plan 2026-10-13 wordt historie).
 
 ## Backlog (buiten deze ronde)
+- [worldgen] Meren blijven smal (5–8): de treden zijn te smal voor `lakeFits` en het meer ligt al tegen het stootbord erboven. Breder vraagt bredere treden (`VerdantDescent`) of een lagere drempel (6–10 is plan §2.2).
 - [blocks/textures] Eigen tropische flora voor `verdant_falls` (bomen, planten, liaan) — staat al in de backlog.
 - [worldgen] Waterscan b34 uit 5a (klifbron bij −5998 53) vervalt met de klif; opnieuw meten in de brede b34*.
 - [infra] Boog-helpers van `Ring4Sundered` (`along`, `perimeter`) naar `RingArc` (dedup).
