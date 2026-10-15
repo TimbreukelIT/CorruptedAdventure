@@ -701,3 +701,5 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-15 | worldgen | Heuvelfix: terrassen trede 60 % / stootbord 40 % afgerond; fjordranden per blok exact met smalle afronding | Gebruikersbesluit (aanbevolen), gemeten rasterfout p99 1,05 → 0,45 |
 | 2026-10-15 | atmosphere | `verdant_falls`: particle `waterfall_mist`, eigen ambient-loop, tropische vogels/kikkers; dieren kikkers en schildpadden | Gebruikersbesluit (aanbevolen) |
 | 2026-10-15 | worldgen | voetrivier schuift naar binnen waar ring 4 hoog ligt (beloopbare buitenoever i.p.v. wand) | reviewbevinding 2c-1 |
+| 2026-10-15 | worldgen | `verdant_falls`-kloven: armen knijpen samen tot een uitloopgeul van ~20–30 breed; over ~50 % van de geulen een natuurlijke rotsboog (14–30 overspanning, 3–4 dik, dek 3, 8–14 boven water) | Gebruikersbesluit (rotsboog paste niet over de volle kloofbreedte) |
+| 2026-10-15 | worldgen | `ledge_strand` hangt altijd een streng onder een klimknop (terreinvraag `IslandField.climbKnob`), losse richels kans 0,5 | Gebruikersbesluit: 100 % van de klimroutes beklimbaar |

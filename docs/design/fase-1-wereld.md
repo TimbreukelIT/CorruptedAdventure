@@ -864,6 +864,8 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
   - **voetrivier** op Y 63 rondom aan de buitenrand van de zone; alle vallen en kloven monden erin uit, ring 4-rivieren sluiten aan, bevaarbaar rond de ring; afdaling ~28–45; waar ring 4 aan de buitenrand hoog ligt, schuift de rivier glad naar binnen, zodat een beloopbare helling (geen wand) naar het ring 4-terrein leidt (2026-10-15);
   - het ring 3-deel van `verdant_falls` is een **afkoelplek** (`heat_refuges`); geplaatst water verdampt daar niet (eigen tag `evaporation_refuges`, alleen `verdant_falls`; de slapende krater blijft droog);
   - **klimroutes:** de ring 4-wortels en het hangmos worden klimbaar (heel ring 4); het terrein maakt op kloofwanden en naast vallen korte overhangende richels, met wortels eronder tot de volgende richel;
+  - **uitloopgeul en rotsboog (2026-10-15):** na het amfitheater knijpen de armen van een kloof organisch samen tot een uitloopgeul van ~20–30 breed die getrapt naar de voetrivier loopt, en over ongeveer de helft van de geulen ligt een natuurlijke rotsboog (overspanning 14–30, 3–4 dik, dek 3 breed, 8–14 boven het water, afgeronde onderkant) die op beide geulwanden staat;
+  - **klimstreng onder elke klimknop (2026-10-15):** `ledge_strand` hangt altijd een streng onder de klimknoppen van een kloofroute (een deterministische terreinvraag, geen extra blokken), losse richels houden kans 0,5, zodat elke route doorlopend beklimbaar is;
   - eigen cap van **6 vallen per chunk**; **calciet** (travertijn) op drempelranden en vallippen, mos op de treden;
   - sfeer: biome-particle `waterfall_mist`, eigen ambient-loop van verre watervallen, tropische vogels/kikkers; dieren: kikkers en schildpadden.
 
