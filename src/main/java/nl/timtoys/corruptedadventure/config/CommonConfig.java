@@ -129,9 +129,10 @@ public final class CommonConfig {
             return true;
         }
         if (current.transitionWidthOverrides().equals(OLD_DEFAULT_TRANSITION_WIDTH_OVERRIDES)) {
-            CorruptedAdventure.LOGGER.warn("Kept the old default transitionWidthOverrides {} in the common config: the "
-                    + "default {} does not fit the configured ring radii", current.transitionWidthOverrides(),
-                    DEFAULT_TRANSITION_WIDTH_OVERRIDES);
+            CorruptedAdventure.LOGGER.warn("Kept the old default transitionWidthOverrides {} in the common config: with "
+                    + "the default {} the configured rings do not validate ({})", current.transitionWidthOverrides(),
+                    DEFAULT_TRANSITION_WIDTH_OVERRIDES, withDefaultOverrides(current).validate().error()
+                            .map(error -> error.message()).orElse("?"));
         } else if (!current.transitionWidthOverrides().equals(DEFAULT_TRANSITION_WIDTH_OVERRIDES)) {
             CorruptedAdventure.LOGGER.warn("The common config sets transitionWidthOverrides {} instead of the default {}; "
                     + "new worlds use them", current.transitionWidthOverrides(), DEFAULT_TRANSITION_WIDTH_OVERRIDES);
@@ -153,9 +154,13 @@ public final class CommonConfig {
         if (!OLD_DEFAULT_TRANSITION_WIDTH_OVERRIDES.equals(current.transitionWidthOverrides())) {
             return current;
         }
-        RingSettings migrated = new RingSettings(current.ringOuterRadii(), current.voidOuterRadius(),
-                current.boundaryNoise(), current.defaultTransitionWidth(), DEFAULT_TRANSITION_WIDTH_OVERRIDES);
+        RingSettings migrated = withDefaultOverrides(current);
         return migrated.validate().isSuccess() ? migrated : current;
+    }
+
+    private static RingSettings withDefaultOverrides(RingSettings settings) {
+        return new RingSettings(settings.ringOuterRadii(), settings.voidOuterRadius(), settings.boundaryNoise(),
+                settings.defaultTransitionWidth(), DEFAULT_TRANSITION_WIDTH_OVERRIDES);
     }
 
     /** Ring outer radii and the void edge, the values {@link #migrate} compares as one set. */
