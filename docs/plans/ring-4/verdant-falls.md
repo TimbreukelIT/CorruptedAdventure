@@ -320,11 +320,14 @@ INT vult na de bouw de exacte coördinaten in (kloven uit `VerdantGorgesTest`, d
 - Geulen per blok gesneden met een exacte bodem voor de aquifer (`Column.exactFloor`).
 - De rand-T op een raster van 4 blokken boog per wereld onthouden (vervangt `plateauAt` per kolom).
 - Config-migratie van de oude standaardlijst; geen `PROTOCOL_VERSION`-bump.
+- W-biomes: zandoevers langs de voetrivier (land onder Y 66), omdat schildpadden (Q9) alleen op zand onder Y 67 spawnen; meer- en beekbodems zand met klei- en grindplekken; mostapijt op de mosplekken van de treden.
+- W-biomes: klimstrengen (`ledge_strand`) onder elke richel met open lucht binnen 4 blokken, kans 0,5 per richel (0,2 een los gloeiwortel-accent), alleen bij een gat van 3–24; de streng stopt 1 blok boven de volgende richel/vloer (springend te pakken). Startwaarden, bijstellen bij de teststop.
 
 ## Contract-delta (INT verwerkt in `contract.md`)
 - §1: standaard `transitionWidthOverrides` [0, 0, 256, 256, 0]; migratie van [0, 0, 0, 256, 0].
 - §2: `verdant_falls` (overworld, overgang 3→4 buitenste deel, `transition_splits.ring_3`, eigenaar W-biomes; terrein W-terrein), in `is_ring_4`.
 - §2/§5: nieuwe biome-tag `evaporation_refuges` (sleutel C, inhoud W-biomes: alleen `verdant_falls`): geen verdamping en geen sponsdroging (`HeatZone.exposed`); `verdant_falls` ook in `heat_refuges`.
+- §4 (W-biomes): nieuwe gedeelde DF `ring_4/overworld/rim` (0..1: travertijnrand, 1 op de drempelranden van de bassins en de vallippen; stub 0 tot W-terrein 2c er een `flat_cache` van één 2D-`island_output` van maakt). Lezer: surface-conditie `ring4_threshold` (calciet ≥ 0,5); die leest ook `cliff` (steen ≥ 0,5). Regel voor beide sleutels: een constante of één `island_output` achter referenties/caches (geen `add`/`max`-bomen, geen 3D-uitgangen).
 - §4: DF `cliff` → "exacte steile wand van `verdant_falls`"; vloeistofregel: water-tak ook in de verdant-strook van de ring 3-helft; `RingBlend.mix.ring_3`; de klif 3→4 vervalt (golf 0-plan 2026-10-13 wordt historie).
 
 ## Backlog (buiten deze ronde)
