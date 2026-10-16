@@ -7,6 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -31,15 +32,18 @@ final class Ring4Placements {
     static final PlacementModifier SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
     /** The first block above the solid ground, also under water (water plants, trees standing in water). */
     static final PlacementModifier FLOOR = HeightmapPlacement.onHeightmap(Heightmap.Types.OCEAN_FLOOR_WG);
-    /** Air here and dry ground below: land. */
+    /** Not on a log or leaves: decoration stays off the world tree (74) and the trees. */
+    static final BlockPredicate OFF_TREES = BlockPredicate.not(BlockPredicate.anyOf(
+            BlockPredicate.matchesTag(new Vec3i(0, -1, 0), BlockTags.LOGS), BlockPredicate.matchesTag(new Vec3i(0, -1, 0), BlockTags.LEAVES)));
+    /** Air here and dry ground below (not a tree): land. */
     static final BlockPredicate ON_LAND = BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
-            BlockPredicate.noFluid(new Vec3i(0, -1, 0)));
+            BlockPredicate.noFluid(new Vec3i(0, -1, 0)), OFF_TREES);
     /** Air here over a water source: the water's surface. */
     static final BlockPredicate ON_WATER = BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
             BlockPredicate.matchesFluids(new Vec3i(0, -1, 0), Fluids.WATER));
     /** Water here and right above: under water, at least two deep. */
     static final BlockPredicate UNDER_WATER = BlockPredicate.allOf(BlockPredicate.matchesFluids(Fluids.WATER),
-            BlockPredicate.matchesFluids(new Vec3i(0, 1, 0), Fluids.WATER));
+            BlockPredicate.matchesFluids(new Vec3i(0, 1, 0), Fluids.WATER), OFF_TREES);
 
     private Ring4Placements() {
     }
@@ -58,6 +62,7 @@ final class Ring4Placements {
         for (int dy = 0; dy < depth; dy++) {
             water.add(BlockPredicate.matchesFluids(new Vec3i(0, dy, 0), Fluids.WATER));
         }
+        water.add(OFF_TREES);
         return BlockPredicate.allOf(water);
     }
 

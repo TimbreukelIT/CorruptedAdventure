@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.AmethystClusterBlock;
@@ -88,7 +89,9 @@ public final class SunkenGeodeFeature extends Feature<SunkenGeodeConfiguration> 
                     if (part == null || y > floor) {
                         continue;
                     }
-                    if (level.getBlockState(pos.set(x, y, z)).isAir()) {
+                    BlockState target = level.getBlockState(pos.set(x, y, z));
+                    // Never into a cave (water against air) or the world tree's roots (74).
+                    if (target.isAir() || target.is(BlockTags.LOGS)) {
                         return false;
                     }
                     parts.put(new BlockPos(x, y, z), part);

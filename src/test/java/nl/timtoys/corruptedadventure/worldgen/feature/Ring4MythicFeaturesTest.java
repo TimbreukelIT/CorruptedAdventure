@@ -2,8 +2,10 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -73,6 +75,26 @@ class Ring4MythicFeaturesTest {
         assertFalse(LocalCoralFeature.inside(new BlockPos(15, 60, 5), 0, 0));
         assertFalse(LocalCoralFeature.inside(new BlockPos(5, 60, 16), 0, 0));
         assertTrue(LocalCoralFeature.inside(new BlockPos(-15, 60, -2), -1, -1));
+    }
+
+    /** A vine between two islands: from edge to edge, face to face (no gaps a player falls through), sagging between. */
+    @Test
+    void aVineRunsFaceToFaceFromEdgeToEdgeAndSags() {
+        IslandField.IslandPair pair = new IslandField.IslandPair(null, null, 10, 20, 120, 100, 34, 38, 112, 95, false);
+        for (int offset : new int[]{0, IslandVinesFeature.SECOND_OFFSET}) {
+            List<BlockPos> rope = IslandVinesFeature.rope(pair, 0.08F, offset);
+            assertEquals(rope.size(), Set.copyOf(rope).size(), "each block once");
+            for (int i = 1; i < rope.size(); i++) {
+                assertEquals(1, rope.get(i).distManhattan(rope.get(i - 1)), "face to face at " + rope.get(i));
+            }
+            int lowest = rope.stream().mapToInt(BlockPos::getY).min().orElseThrow();
+            int lowerEnd = Math.min(rope.get(0).getY(), rope.get(rope.size() - 1).getY());
+            assertTrue(lowest < lowerEnd, "it sags below both ends");
+        }
+        List<BlockPos> rope = IslandVinesFeature.rope(pair, 0.08F, 0);
+        assertEquals(new BlockPos(10, 118, 20), rope.get(0), "two under the first edge's top");
+        assertEquals(new BlockPos(34, 110, 38), rope.get(rope.size() - 1), "two under the second edge's top");
+        assertTrue(IslandVinesFeature.rope(new IslandField.IslandPair(null, null, 5, 5, 100, 90, 5, 5, 100, 90, false), 0.08F, 0).isEmpty());
     }
 
     @Test

@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -94,7 +95,8 @@ public final class IslandUndersideFeature extends Feature<IslandUndersideConfigu
                         y -> level.getBlockState(pos.set(x, y, z)).isAir(),
                         y -> level.getBlockState(pos.set(x, y, z)).isFaceSturdy(level, pos, Direction.DOWN))) {
                     int hang = length(kind, overhang.gap(), dangle, config.maxClimbGap());
-                    if (hang <= 0) {
+                    // Nothing hangs from the world tree (74: its wood is terrain, but no island's underside).
+                    if (hang <= 0 || level.getBlockState(pos.set(x, overhang.underside(), z)).is(BlockTags.LOGS)) {
                         continue;
                     }
                     if (kind == Kind.ACCENT) {

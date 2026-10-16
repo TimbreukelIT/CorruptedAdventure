@@ -58,6 +58,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.SunkenGeodeConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.SunkenGeodeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallDrapeConfiguration;
@@ -218,6 +220,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:wall_plant} (75b: orchids and wall bromeliads on the gorge walls of verdant_falls) */
     public static final DeferredHolder<Feature<?>, Feature<WallPlantConfiguration>> WALL_PLANT =
             FEATURES.register("wall_plant", () -> new WallPlantFeature(WallPlantConfiguration.CODEC));
+    /** {@code corruptedadventure:island_vines} (75: sagging root vines between the island pairs of 74) */
+    public static final DeferredHolder<Feature<?>, Feature<IslandVinesConfiguration>> ISLAND_VINES =
+            FEATURES.register("island_vines", () -> new IslandVinesFeature(IslandVinesConfiguration.CODEC));
 
     private ModFeatures() {
     }

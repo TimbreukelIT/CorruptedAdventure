@@ -34,6 +34,7 @@ public final class Ring4Features {
             // 75: under the islands of every ground biome, the glow on the ground first, then what hangs above it.
             ground(Ring4MythicFeatures.ISLAND_GLOW_GROUND),
             ground(Ring4MythicFeatures.ISLAND_UNDERSIDES),
+            ground(Ring4MythicFeatures.ISLAND_VINES),
             // verdant_falls: the moss carpets on the treads, the climbing strands under the ledges.
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_MOSS_CARPETS, ModBiomes.VERDANT_FALLS),
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_LEDGE_STRANDS, ModBiomes.VERDANT_FALLS),
@@ -76,6 +77,7 @@ public final class Ring4Features {
             vegetal(Ring4MythicFeatures.MIST_FJORDS_FERNS, ModBiomes.MIST_FJORDS),
             vegetal(Ring4MythicFeatures.MIST_FJORDS_MOSS, ModBiomes.MIST_FJORDS),
             vegetal(Ring4MythicFeatures.SKY_GARDENS_FLOWERS, ModBiomes.SKY_GARDENS),
+            vegetal(Ring4MythicFeatures.SKY_LAKE_BANK_FLOWERS, ModBiomes.SKY_GARDENS),
             // 76: the hazards shape the ground before anything grows on it.
             local(Ring4BlightedFeatures.PEAT_MOORS_GAS_POCKETS, ModBiomes.PEAT_MOORS),
             local(Ring4BlightedFeatures.PEAT_MOORS_SINKHOLE_GAS, ModBiomes.PEAT_MOORS),

@@ -20,7 +20,7 @@ Scope: `worldgen`. Branch `ring4/biomes-g2` (worktree, basis `main` d1a37f11: 72
 | `sky_gardens` | moonpetal-bomen, `glow_bloom` + bloemen, gras |
 | diepe poelen (lagune, lotus, moeras, fjorden) | `bubble_spring` als bodemblok onder ≥ 6 water |
 
-Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond de hemelmeren.
+**Na 74 (main 5c5f0594, in deze tak gemerged):** ranken tussen de eilandparen (`island_vines`, per chunk het eigen stuk van elke rank): voor elk paar zonder rotsboog (`IslandField.islandPairs`) een doorhangende rank van `mangrove_roots` (draagt zichzelf) van rand tot rand, 2 onder de top van elke rand, doorhang 1 + 0,08 · overspanning, vlak-aan-vlak (geen gaten), 40 % een tweede rank 2 ernaast; eronder op 20 % van de blokken 1–3 `hanging_swamp_moss`, op 6 % een `glowing_hanging_roots`. Een rank neemt alleen lucht en bladeren van featurebomen (niet persistent), dus nooit de wereldboom, water of terrein. Rond de hemelmeren: extra bloemen op de oever (`sky_lake_bank_flowers`, water binnen 1) naast de bestaande `glow_bloom` langs het water; niets in het meer. **Wereldboom vrij:** `ON_LAND`, `UNDER_WATER` en `waterAbove` eisen dat het blok eronder geen log of blad is; niets hangt onder wereldboomhout; geodes snijden geen wortels.
 
 ## 76 — bedorven band, `withered_gardens`
 | Waar | Wat |
@@ -70,6 +70,8 @@ Vrij (F4 = A): vallen en lippen (afstand tot de vastgelegde vallen, calciet draa
 
 **Registries:** 5 feature-types, 1 placement modifier; configured `ring_4/moonpetal_tree` (key van B) en 17 eigen; 22 placed.
 
+**75 na 74:** `IslandVinesFeature`/`…Configuration` (`island_vines`), `Ring4Placements.OFF_TREES`; placed `ring_4/island_vines`, `ring_4/sky_lake_bank_flowers`, configured `ring_4/island_vine`.
+
 **76 — nieuwe classes:** `SuckingMudPatchFeature`/`…Configuration` (`sucking_mud_patch`), `ToxicPoolFeature`/`…Configuration` (`toxic_pool`), `GasPocketFeature`/`…Configuration` (`gas_pocket`), `SinkholeGasFeature`/`…Configuration` (`sinkhole_gas`), `Ring4BlightedFeatures`. **Gewijzigd:** `ModFeatures` (blok `// ring 4 — W-biomes g2`), `Ring4Features.ORDER` (+ `local`), `tools/worldgen/ring4_surface.py` + `noise_settings/overworld.json` (`peat_moors` = veen). **Registries:** 4 feature-types; 11 configured, 12 placed.
 
 **77 — nieuwe classes:** `SunkenGeodeFeature`/`…Configuration` (`sunken_geode`), `Ring4OreFeatures`. **Gewijzigd:** `Ring4BiomeModifiers` (`ADD_RING_4_ORES`, `ores()`, `oreBiomes()`), `ModFeatures`, `Ring4Features.ORDER`. **Registries:** 1 feature-type, 1 biome modifier; 3 configured, 16 + 3 placed (`ring_4/ore_*` vanilla, tidesilver, jade, geodes).
@@ -89,13 +91,16 @@ Vrij (F4 = A): vallen en lippen (afstand tot de vastgelegde vallen, calciet draa
 - 2026-10-16, `worldgen` (implementatie, 75b): de liaan in `ledge_strand` 35 % bloeiend, gekozen op positie (zo kiezen de knoopstrengen en de losse strengen hetzelfde); accent onder de richels = `verdant_hanging_orchid` (§6b: hangorchideeën onder het richelpad en de klimrichels) i.p.v. de gloeiwortels.
 - 2026-10-16, `worldgen` (implementatie, 75b): emergente boom stam 14–22 (1 breed), 2–4 plankwortels, 8 takken, schermkroon straal 5–6; vruchtpeul 6 % en orchidee 5 % per zijvlak van de stam; boomvaren stam 4–7, kroon straal 2–3. Bomen ≥ 5 en boomvarens/wandplanten ≥ 3 van vallen en klimknoppen.
 
+- 2026-10-16, `worldgen` (implementatie, 75 na 74): de ranken tussen eilanden van `mangrove_roots` (contract §3: vanilla mangrovewortels horen bij ring 4; draagt zichzelf, beloopbaar) met mos en gloeiwortels eronder; op alle paren zonder boog, 40 % dubbel. Rond de hemelmeren alleen planten op de oever, niets in het water (aanwijzing main).
+
 ## Backlog
+- `worldgen`/INT: een rank van `mangrove_roots` die een stam van een featureboom in een buurchunk kruist, maakt die boom (zeldzaam) volgorde-afhankelijk (wortels zijn geen `replaceable_by_trees`); determinismecheck rond eilandranden.
 - `worldgen` (77, na 73 op main): gifkristal-budding in de droge bedorven tunnels en gaskamers, tidesilver in de tunnelwanden, jade en aquamarijn in de overstroomde tunnels, sporen van wezens; via de tunnel-accessor van 73.
-- `worldgen` (75, na 74 op main): ranken tussen de eilandparen (`IslandField`-accessor van 74), planten rond de hemelmeren.
 - `blocks`: `glow_bloom`, `glowcap`, `verdant_bromeliad`, `verdant_blossom_bush` niet in `#replaceable_by_trees`: een boomkruin uit een buurchunk die later komt, laat zo'n plant staan, een eerdere niet (zeldzaam: kruinen op grondhoogte). INT-determinisme let erop.
 
 ## Voortgang
 - 2026-10-16: 75 gebouwd; B (incl. `Ring4MythicFeaturesTest`, `Ring4BiomesTest`, `FeatureOrderTest`) en D (twee keer, tweede keer 0 geschreven) groen.
 - 2026-10-16: 76 gebouwd; B (incl. `Ring4BlightedFeaturesTest`) en D groen.
 - 2026-10-16: 75b gebouwd; B (incl. `VerdantFloraTest`: elk blad binnen afstand 6 van stam/tak, strengtip en bloeiaandeel) en D groen.
+- 2026-10-16: main (74) gemerged; ranken tussen eilandparen, oeverbloemen hemelmeren, wereldboom vrij; B en D groen.
 - 2026-10-16: 77 gebouwd (zonder de tunneldelen: 73 nog niet op main); B (incl. `Ring4OreFeaturesTest`) en D groen.
