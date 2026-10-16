@@ -104,6 +104,39 @@ class RingFluidPickerTest {
         assertSame(lava, picker.computeFluid(RingPosition.within(Ring.RING_3), 0, 25, 0));
     }
 
+    /**
+     * vf-perf2: a ring's status is remembered per vanilla status, so the per-block path reuses it; switching between
+     * vanilla's statuses, between rings and into the sundered zone (its own level) still gives each its own answer.
+     */
+    @Test
+    void rememberedStatusesFollowTheVanillaStatusAndTheRing() {
+        Aquifer.FluidStatus lava = new Aquifer.FluidStatus(32, Blocks.LAVA.defaultBlockState());
+        Aquifer.FluidStatus water = new Aquifer.FluidStatus(40, Blocks.WATER.defaultBlockState());
+        RingFluidPicker picker = new RingFluidPicker(Level.NETHER, (x, y, z) -> x < 0 ? lava : water,
+                Map.of(Ring.RING_2, 22, Ring.RING_3, 12));
+        RingPosition ring2 = RingPosition.within(Ring.RING_2);
+        RingPosition ring3 = RingPosition.within(Ring.RING_3);
+        for (int round = 0; round < 3; round++) {
+            Aquifer.FluidStatus a = picker.computeFluid(ring2, -1, 10, 0);
+            assertSame(Blocks.LAVA.defaultBlockState(), a.at(22));
+            assertTrue(a.at(23).isAir());
+            assertSame(a, picker.computeFluid(ring2, -5, 10, 0), "remembered");
+            Aquifer.FluidStatus b = picker.computeFluid(ring2, 1, 10, 0);
+            assertSame(Blocks.WATER.defaultBlockState(), b.at(22));
+            assertTrue(b.at(23).isAir());
+            Aquifer.FluidStatus c = picker.computeFluid(ring3, 1, 10, 0);
+            assertSame(Blocks.WATER.defaultBlockState(), c.at(12));
+            assertTrue(c.at(13).isAir());
+        }
+        RingFluidPicker overworld = new RingFluidPicker(Level.OVERWORLD, (x, y, z) -> SEA, Map.of(Ring.RING_4, 62));
+        RingPosition sundered = new RingPosition(Ring.RING_4, Ring.RING_5, 0.6);
+        int top = RingFluidPicker.SUNDERED_SEA_TOP;
+        assertTrue(overworld.computeFluid(sundered, 0, 10, 0).at(top + 1).isAir());
+        assertSame(Blocks.WATER.defaultBlockState(), overworld.computeFluid(RingPosition.within(Ring.RING_4), 0, 10, 0).at(top + 1));
+        assertSame(Blocks.WATER.defaultBlockState(), overworld.computeFluid(sundered, 0, 10, 0).at(top));
+        assertTrue(overworld.computeFluid(sundered, 0, 10, 0).at(top + 1).isAir());
+    }
+
     @Test
     void fluidLevelSwitchesAtHalfWeightLikeTheBiome() {
         Aquifer.FluidStatus lava = new Aquifer.FluidStatus(32, Blocks.LAVA.defaultBlockState());

@@ -51,8 +51,16 @@ public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunct
 
     /** Runs {@code build} (creating the noise chunk of the chunk at block {@code minX}, {@code minZ}) in fill mode. */
     public static <T> T duringFill(int minX, int minZ, Supplier<T> build) {
+        return duringFill(minX, minZ, false, build);
+    }
+
+    /**
+     * The same; with {@code prune} {@link RingBlend#mapAll} also leaves the inputs of rings that cannot reach the chunk
+     * unmapped ({@link #prunedDuringFill}). Only without blending: the noise chunk's blend markers depend on the chunk.
+     */
+    public static <T> T duringFill(int minX, int minZ, boolean prune, Supplier<T> build) {
         Fill outer = FILL.get();
-        FILL.set(new Fill(minX, minZ));
+        FILL.set(new Fill(minX, minZ, prune));
         try {
             return build.get();
         } finally {
@@ -62,6 +70,20 @@ public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunct
                 FILL.set(outer);
             }
         }
+    }
+
+    /** Whether a noise chunk is being built on this thread (fill mode): its density functions are its own copies. */
+    static boolean inFill() {
+        return FILL.get() != null;
+    }
+
+    /**
+     * Whether the noise chunk being built on this thread prunes (vf-perf2) and {@code ring} (mixing over {@code mix} of
+     * its outer zone) cannot have weight in it, decided like the gates' fill; false outside fill mode.
+     */
+    static boolean prunedDuringFill(ResourceKey<Level> dimension, Ring ring, double mix) {
+        Fill fill = FILL.get();
+        return fill != null && fill.prune && !fill.reaches(dimension, ring, mix);
     }
 
     @Override
@@ -113,9 +135,12 @@ public record RingFillGate(ResourceKey<Level> dimension, Ring ring, DensityFunct
         private final byte[] reach = new byte[Ring.values().length];
         private final double[] shares = new double[Ring.values().length];
 
-        Fill(int minX, int minZ) {
+        private final boolean prune;
+
+        Fill(int minX, int minZ, boolean prune) {
             this.minX = minX;
             this.minZ = minZ;
+            this.prune = prune;
         }
 
         boolean reaches(ResourceKey<Level> dimension, Ring ring, double mix) {

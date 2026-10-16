@@ -83,13 +83,17 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
 
     private NoiseChunk createNoiseChunk(ChunkAccess chunk, StructureManager structureManager, Blender blender, RandomState random) {
         return chunk.getOrCreateNoiseChunk(access -> {
-            // In fill mode the flat caches of rings that cannot reach this chunk stay 0 (RingFillGate).
+            Aquifer.FluidPicker picker = globalFluidPicker.get() instanceof RingFluidPicker ring ? ring.forNoiseChunk() : globalFluidPicker.get();
+            // In fill mode the flat caches of rings that cannot reach this chunk stay 0 (RingFillGate); without blending
+            // ring_blend also skips those rings' inputs (vf-perf2).
             NoiseChunk noiseChunk = RingFillGate.duringFill(access.getPos().getMinBlockX(), access.getPos().getMinBlockZ(),
-                    () -> NoiseChunk.forChunk(access, random, Beardifier.forStructuresInChunk(structureManager, access.getPos()),
-                            generatorSettings().value(), globalFluidPicker.get(), blender));
+                    blender == Blender.empty(), () -> NoiseChunk.forChunk(access, random, Beardifier.forStructuresInChunk(structureManager, access.getPos()),
+                            generatorSettings().value(), picker, blender));
             VolcanicField volcanic = volcanicField(random);
             IslandField islands = islandField(random);
             // The noise chunk's memo returns its own instance of the (equal) field: one column cache for terrain and fluid.
+            // vf-perf2: where ring_blend left the ring unmapped (it cannot reach the chunk) this is the random state's
+            // instance; the aquifer and the surface rules hardly read it there, and a copy would fill its flat caches.
             noiseChunk.aquifer = new RingAquifer(dimension, noiseChunk.aquifer,
                     volcanic == null ? null : (VolcanicField) noiseChunk.wrap(volcanic),
                     islands == null ? null : (IslandField) noiseChunk.wrap(islands));

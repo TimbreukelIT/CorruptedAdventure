@@ -12,15 +12,15 @@ import java.util.function.Supplier;
  * Safe for concurrent use: a thread only ever gets an object made for itself (the owner is a final field of the
  * holder), at worst a new one.
  */
-final class ThreadOwned<T> {
+public final class ThreadOwned<T> {
     private final Supplier<T> factory;
     private Holder<T> current;
 
-    ThreadOwned(Supplier<T> factory) {
+    public ThreadOwned(Supplier<T> factory) {
         this.factory = factory;
     }
 
-    T get() {
+    public T get() {
         Holder<T> holder = current;
         Thread thread = Thread.currentThread();
         if (holder == null || holder.thread != thread) {

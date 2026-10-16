@@ -13,6 +13,8 @@ import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingColumnCache;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 
+import javax.annotation.Nullable;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -62,7 +64,7 @@ public final class RingBlend implements DensityFunction {
             RINGS_CODEC.fieldOf("rings").forGetter(RingBlend::ringMap),
             SWITCH_AT_CODEC.optionalFieldOf("switch_at", Set.of()).forGetter(blend -> blend.switchAt),
             MIX_CODEC.optionalFieldOf("mix", Map.of()).forGetter(blend -> blend.mixAt)
-    ).apply(instance, (dimension, rings, switchAt, mix) -> new RingBlend(dimension, inputs(rings), switchAt, mix)))
+    ).apply(instance, (dimension, rings, switchAt, mix) -> new RingBlend(dimension, inputs(rings), switchAt, mix, false)))
             .validate(blend -> validateModes(blend.switchAt, blend.mixAt).map(valid -> blend));
 
     public static final KeyDispatchDataCodec<RingBlend> CODEC = KeyDispatchDataCodec.of(MAP_CODEC);
@@ -77,6 +79,11 @@ public final class RingBlend implements DensityFunction {
     // inner ring's ordinal; 1 = the whole zone), derived from it in the constructor.
     private final Map<Ring, Double> mixAt;
     private final double[] mix;
+    // The thread's ring cache and fillArray scratch (vf-perf2). A noise chunk's copy (made in fill mode) is used by one
+    // thread at a time and keeps them itself, without a ThreadLocal lookup per point; null for an instance shared by
+    // threads (the random state's), which takes them from SHARED.
+    @Nullable
+    private final ThreadOwned<Scratch> owned;
 
     public RingBlend(ResourceKey<Level> dimension, Map<Ring, DensityFunction> rings) {
         this(dimension, rings, Set.of());
@@ -90,10 +97,12 @@ public final class RingBlend implements DensityFunction {
         this(dimension, inputs(rings),
                 validateRings(rings).flatMap(valid -> validateSwitchAt(switchAt)).flatMap(valid -> validateMix(mix))
                         .flatMap(valid -> validateModes(switchAt, mix)).getOrThrow(IllegalArgumentException::new),
-                mix);
+                mix, false);
     }
 
-    private RingBlend(ResourceKey<Level> dimension, DensityFunction[] rings, Set<Ring> switchAt, Map<Ring, Double> mix) {
+    private RingBlend(ResourceKey<Level> dimension, DensityFunction[] rings, Set<Ring> switchAt, Map<Ring, Double> mix,
+                      boolean noiseChunkCopy) {
+        this.owned = noiseChunkCopy ? new ThreadOwned<>(Scratch::new) : null;
         this.dimension = dimension;
         this.rings = rings;
         this.switchAt = switchAt.isEmpty() ? Set.of() : Collections.unmodifiableSet(EnumSet.copyOf(switchAt));
@@ -154,7 +163,7 @@ public final class RingBlend implements DensityFunction {
 
     @Override
     public double compute(FunctionContext context) {
-        return compute(context, RingColumnCache.ringAt(dimension, context.blockX(), context.blockZ()));
+        return compute(context, scratch().columns.at(dimension, context.blockX(), context.blockZ()));
     }
 
     double compute(FunctionContext context, RingPosition position) {
@@ -186,23 +195,40 @@ public final class RingBlend implements DensityFunction {
         Ring common = null;
         // One ring lookup per distinct column (39f): a slice of cell corners runs along Y first, the blocks of a cell
         // revisit their 16 columns for every Y. The columns seen so far, packed; past SEEN columns lookups repeat.
-        long[] seen = SEEN_COLUMNS.get();
+        Scratch own = scratch();
+        long[] seen = own.seen;
         int seenCount = 0;
+        // Where the last known column was found: the next point's column is usually the one after it (a cell repeats
+        // its 16 columns in order) or the same one (a slice of corners runs along Y).
+        int last = 0;
         for (int i = 0; i < array.length; i++) {
             FunctionContext context = contextProvider.forIndex(i);
             int x = context.blockX();
             int z = context.blockZ();
-            long key = (long) x << 32 | z & 0xFFFFFFFFL;
-            if (common != null && known(seen, seenCount, key)) {
-                continue;
+            long key = KeyedSlots.key(x, z);
+            if (common != null) {
+                int next = last + 1 < seenCount ? last + 1 : 0;
+                if (seen[next] == key) {
+                    last = next;
+                    continue;
+                }
+                if (seen[last] == key) {
+                    continue;
+                }
+                int found = indexOf(seen, seenCount, key);
+                if (found >= 0) {
+                    last = found;
+                    continue;
+                }
             }
-            Ring single = single(RingColumnCache.ringAt(dimension, x, z));
+            Ring single = single(own.columns.at(dimension, x, z));
             if (single == null || (common != null && single != common)) {
                 contextProvider.fillAllDirectly(array, this);
                 return;
             }
             common = single;
             if (seenCount < seen.length) {
+                last = seenCount;
                 seen[seenCount++] = key;
             }
         }
@@ -213,25 +239,43 @@ public final class RingBlend implements DensityFunction {
 
     /** Distinct columns remembered per {@link #fillArray} (a cell has 16, a slice of corners 25). */
     private static final int SEEN = 32;
-    private static final ThreadLocal<long[]> SEEN_COLUMNS = ThreadLocal.withInitial(() -> new long[SEEN]);
 
-    private static boolean known(long[] seen, int count, long key) {
-        // Most often the column of the previous point: search from the end.
+    private static int indexOf(long[] seen, int count, long key) {
         for (int k = count - 1; k >= 0; k--) {
             if (seen[k] == key) {
-                return true;
+                return k;
             }
         }
-        return false;
+        return -1;
+    }
+
+    private static final ThreadLocal<Scratch> SHARED = ThreadLocal.withInitial(Scratch::new);
+
+    private Scratch scratch() {
+        return owned != null ? owned.get() : SHARED.get();
+    }
+
+    /** Per thread: its ring cache and the columns seen by {@link #fillArray}. */
+    private static final class Scratch {
+        final RingColumnCache columns = RingColumnCache.forThread();
+        final long[] seen = new long[SEEN];
     }
 
     @Override
     public DensityFunction mapAll(Visitor visitor) {
         DensityFunction[] mapped = new DensityFunction[rings.length];
         for (Ring ring : Ring.values()) {
-            mapped[ring.ordinal()] = rings[ring.ordinal()].mapAll(gating(ring, visitor));
+            DensityFunction input = rings[ring.ordinal()];
+            // vf-perf2: while a chunk's noise chunk is built without blending, a ring that cannot have weight in it
+            // (RingFillGate's decision) keeps its input as it is, so the noise chunk makes no interpolators or caches for
+            // it. The blend never reads it at a position in the chunk; elsewhere (an aquifer cell or a quart of the
+            // preliminary surface outside the chunk) the noise chunk's copy would compute the same: its caches only hold
+            // positions in the chunk, the beardifier is added outside the blend, and the blend markers only differ with
+            // blending.
+            mapped[ring.ordinal()] = RingFillGate.prunedDuringFill(dimension, ring, mix[ring.ordinal()])
+                    ? input : input.mapAll(gating(ring, visitor));
         }
-        return visitor.apply(new RingBlend(dimension, mapped, switchAt, mixAt));
+        return visitor.apply(new RingBlend(dimension, mapped, switchAt, mixAt, RingFillGate.inFill()));
     }
 
     /**

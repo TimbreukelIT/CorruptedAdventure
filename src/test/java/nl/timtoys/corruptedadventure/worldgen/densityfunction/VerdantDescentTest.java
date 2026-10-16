@@ -45,6 +45,61 @@ class VerdantDescentTest {
         assertEquals(VerdantDescent.Point.OUTSIDE, DESCENT.locate(inside[0], inside[1], new VerdantDescent.Point()).kind);
     }
 
+    /** vf-perf2: the cheap zone test answers exactly where locate does not say OUTSIDE, also off the block grid. */
+    @Test
+    void inZoneIsExactlyWhereLocateFindsTheZone() {
+        int inside = 0;
+        int outside = 0;
+        for (double angle = 0.05; angle < 2.0 * Math.PI; angle += 0.37) {
+            for (double u = -6.0; u <= VerdantDescent.width(LAYOUT) + 6.0; u += 0.73) {
+                double[] p = VerdantDescent.onRay(LAYOUT, angle, VerdantDescent.zoneStart(LAYOUT) + u);
+                for (double d : new double[]{0.0, 0.31, -0.62}) {
+                    double x = p[0] + d;
+                    double z = p[1] - d;
+                    boolean located = DESCENT.locate(x, z, new VerdantDescent.Point()).kind != VerdantDescent.Point.OUTSIDE;
+                    assertEquals(located, DESCENT.inZone(x, z), "at " + x + ", " + z);
+                    if (located) {
+                        inside++;
+                    } else {
+                        outside++;
+                    }
+                }
+            }
+        }
+        assertTrue(inside > 1000 && outside > 50, inside + " in, " + outside + " out");
+    }
+
+    /**
+     * vf-perf2: the preliminary surface remembers the ground per block column of the zone; what it remembers may not
+     * depend on which position in the column asked first. Two fresh fields, the same positions (several per block
+     * column, across the zone and past both edges) in opposite orders, give the same surfaces.
+     */
+    @Test
+    void theRememberedGroundDoesNotDependOnTheAskingOrder() {
+        List<double[]> positions = new ArrayList<>();
+        for (double angle = 0.2; angle < 2.0 * Math.PI; angle += 0.9) {
+            for (double u = -8.0; u <= VerdantDescent.width(LAYOUT) + 8.0; u += 1.7) {
+                double[] p = VerdantDescent.onRay(LAYOUT, angle, VerdantDescent.zoneStart(LAYOUT) + u);
+                double bx = Math.floor(p[0]);
+                double bz = Math.floor(p[1]);
+                for (double[] d : new double[][]{{0.1, 0.2}, {0.9, 0.5}, {0.5, 0.95}}) {
+                    positions.add(new double[]{bx + d[0], bz + d[1]});
+                }
+            }
+        }
+        IslandField forward = IslandFieldTest.field();
+        IslandField backward = IslandFieldTest.field();
+        double[] first = new double[positions.size()];
+        for (int i = 0; i < positions.size(); i++) {
+            first[i] = forward.surfaceUncached(positions.get(i)[0], positions.get(i)[1]);
+        }
+        for (int i = positions.size() - 1; i >= 0; i--) {
+            double[] p = positions.get(i);
+            assertEquals(first[i], backward.surfaceUncached(p[0], p[1]), "at " + p[0] + ", " + p[1]);
+            assertEquals(first[i], forward.surfaceUncached(p[0], p[1]), "again at " + p[0] + ", " + p[1]);
+        }
+    }
+
     /** The rim height: ring 3's at the rim, smoothed along the ring and kept 88–120; per world, periodic. */
     @Test
     void theRimProfileIsSmoothBoundedAndPeriodic() {
