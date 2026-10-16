@@ -377,6 +377,8 @@
   "death.attack.corruptedadventure.heat.player": "%1$s succumbed to the heat whilst fighting %2$s",
   "death.attack.corruptedadventure.poison": "%1$s succumbed to the poison of the blighted marsh",
   "death.attack.corruptedadventure.poison.player": "%1$s succumbed to the poison of the blighted marsh whilst fighting %2$s",
+  "death.attack.corruptedadventure.sucking_mud": "%1$s was swallowed by the sucking mud",
+  "death.attack.corruptedadventure.sucking_mud.player": "%1$s was swallowed by the sucking mud whilst fighting %2$s",
   "generator.corruptedadventure.corrupted_world": "Corrupted World",
   "item.corruptedadventure.aquamarine_shard": "Aquamarine Shard",
   "item.corruptedadventure.dew_crystal": "Dew Crystal",

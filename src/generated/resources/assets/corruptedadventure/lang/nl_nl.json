@@ -377,6 +377,8 @@
   "death.attack.corruptedadventure.heat.player": "%1$s bezweek aan de hitte tijdens het gevecht met %2$s",
   "death.attack.corruptedadventure.poison": "%1$s bezweek aan het gif van het bedorven moeras",
   "death.attack.corruptedadventure.poison.player": "%1$s bezweek aan het gif van het bedorven moeras tijdens het gevecht met %2$s",
+  "death.attack.corruptedadventure.sucking_mud": "%1$s werd opgeslokt door de zuigmodder",
+  "death.attack.corruptedadventure.sucking_mud.player": "%1$s werd opgeslokt door de zuigmodder tijdens het gevecht met %2$s",
   "generator.corruptedadventure.corrupted_world": "Corrupte wereld",
   "item.corruptedadventure.aquamarine_shard": "Aquamarijnscherf",
   "item.corruptedadventure.dew_crystal": "Dauwkristal",
