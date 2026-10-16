@@ -1,0 +1,13 @@
+{
+  "type": "corruptedadventure:sinkhole_gas",
+  "config": {
+    "deep_depth": 9,
+    "gas": {
+      "Name": "corruptedadventure:swamp_gas",
+      "Properties": {
+        "lit": "false"
+      }
+    },
+    "min_depth": 4
+  }
+}

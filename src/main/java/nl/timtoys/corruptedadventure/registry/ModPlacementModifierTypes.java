@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.worldgen.feature.HeightBandFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.InRingFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.JitteredGridPlacement;
 import nl.timtoys.corruptedadventure.worldgen.feature.NoiseBandFilter;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring4Filter;
 import nl.timtoys.corruptedadventure.worldgen.feature.RingChanceFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.SlopeFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerrainHeightPlacement;
@@ -57,6 +58,11 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:before_split} (verdant_falls polish: steam_fens' features off the descent) */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<BeforeSplitFilter>> BEFORE_SPLIT =
             PLACEMENT_MODIFIER_TYPES.register("before_split", () -> () -> BeforeSplitFilter.CODEC);
+
+    // ring 4 — W-biomes g2
+    /** {@code corruptedadventure:ring4_filter} (75: the pure ring 4 terrain per column, ground only, clear of falls and knobs) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<Ring4Filter>> RING4_FILTER =
+            PLACEMENT_MODIFIER_TYPES.register("ring4_filter", () -> () -> Ring4Filter.CODEC);
 
     private ModPlacementModifierTypes() {
     }

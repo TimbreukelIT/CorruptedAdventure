@@ -1,0 +1,27 @@
+{
+  "type": "corruptedadventure:island_vines",
+  "config": {
+    "accent": {
+      "Name": "corruptedadventure:glowing_hanging_roots",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "accent_chance": 0.06,
+    "rope": {
+      "Name": "minecraft:mangrove_roots",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "sag": 0.08,
+    "second_chance": 0.4,
+    "strand": {
+      "Name": "corruptedadventure:hanging_swamp_moss",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "strand_chance": 0.2
+  }
+}

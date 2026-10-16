@@ -22,7 +22,29 @@
     "water_color": 10149874,
     "water_fog_color": 3501954
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/island_glow_ground",
+      "corruptedadventure:ring_4/island_undersides",
+      "corruptedadventure:ring_4/island_vines",
+      "corruptedadventure:ring_4/deep_pool_bubble_springs",
+      "corruptedadventure:ring_4/shallows_seagrass",
+      "corruptedadventure:ring_4/lotus_shallows_giant_lily_pads",
+      "corruptedadventure:ring_4/lotus_shallows_lotus",
+      "corruptedadventure:ring_4/lotus_shallows_reeds",
+      "corruptedadventure:ring_4/mythic_grass",
+      "corruptedadventure:ring_4/lakeside_glow_blooms"
+    ]
+  ],
   "has_precipitation": true,
   "spawn_costs": {},
   "spawners": {

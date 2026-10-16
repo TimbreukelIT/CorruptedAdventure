@@ -48,6 +48,15 @@ public final class LedgeStrands {
         return roll < strandChance + accentChance ? Hang.ACCENT : Hang.NONE;
     }
 
+    /** Whether the strand under the ledge block (x, y, z) takes the variant: a hash of the position against {@code chance}. */
+    public static boolean inVariant(int x, int y, int z, float chance) {
+        if (chance <= 0.0F) {
+            return false;
+        }
+        long seed = net.minecraft.util.Mth.getSeed(x, y, z);
+        return ((seed >>> 16) & 0xFFFF) / 65536.0F < chance;
+    }
+
     /**
      * The overhangs of a column from {@code top} (a terrain block) down to {@code minY}.
      *

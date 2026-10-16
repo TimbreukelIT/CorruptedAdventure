@@ -1,0 +1,34 @@
+{
+  "feature": "corruptedadventure:ring_4/withered_moonpetal_trees",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.45,
+      "margin": 1
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "OCEAN_FLOOR_WG"
+    },
+    {
+      "type": "minecraft:surface_water_depth_filter",
+      "max_water_depth": 10
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:matching_block_tag",
+        "offset": [
+          0,
+          -1,
+          0
+        ],
+        "tag": "minecraft:dirt"
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

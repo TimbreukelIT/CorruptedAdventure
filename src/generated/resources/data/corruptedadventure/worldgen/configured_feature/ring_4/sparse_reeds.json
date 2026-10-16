@@ -1,0 +1,9 @@
+{
+  "type": "corruptedadventure:reed_clump",
+  "config": {
+    "density": 0.35,
+    "max_height": 3,
+    "min_height": 2,
+    "radius": 2
+  }
+}

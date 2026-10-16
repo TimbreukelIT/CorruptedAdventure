@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.registry;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -37,6 +38,28 @@ import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.SurfacePoolFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerracePoolConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerracePoolFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.GiantLilyPadFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandGlowConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandGlowFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandUndersideConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandUndersideFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.LocalCoralFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.ReedClumpConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.ReedClumpFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.GasPocketConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.GasPocketFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.SinkholeGasConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SinkholeGasFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.SuckingMudPatchConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SuckingMudPatchFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPoolConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPoolFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.SunkenGeodeConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SunkenGeodeFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallDrapeConfiguration;
@@ -162,6 +185,44 @@ public final class ModFeatures {
     /** {@code corruptedadventure:dune_rubble} (78: loose bones and boulders in the bone dunes, clear of the fossils) */
     public static final DeferredHolder<Feature<?>, Feature<RubbleConfiguration>> DUNE_RUBBLE =
             FEATURES.register("dune_rubble", () -> new DuneRubbleFeature(RubbleConfiguration.CODEC));
+
+    // ring 4 — W-biomes g2
+    /** {@code corruptedadventure:island_glow} (75: glowing ground cover in the shadow of the islands) */
+    public static final DeferredHolder<Feature<?>, Feature<IslandGlowConfiguration>> ISLAND_GLOW =
+            FEATURES.register("island_glow", () -> new IslandGlowFeature(IslandGlowConfiguration.CODEC));
+    /** {@code corruptedadventure:island_underside} (75: moss strands and glowing roots under the islands) */
+    public static final DeferredHolder<Feature<?>, Feature<IslandUndersideConfiguration>> ISLAND_UNDERSIDE =
+            FEATURES.register("island_underside", () -> new IslandUndersideFeature(IslandUndersideConfiguration.CODEC));
+    /** {@code corruptedadventure:giant_lily_pad} (75: the whole 2 × 2 pad on still water) */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> GIANT_LILY_PAD =
+            FEATURES.register("giant_lily_pad", () -> new GiantLilyPadFeature(NoneFeatureConfiguration.CODEC));
+    /** {@code corruptedadventure:reed_clump} (75, 76: reeds 2–3 high on banks and in shallow water) */
+    public static final DeferredHolder<Feature<?>, Feature<ReedClumpConfiguration>> REED_CLUMP =
+            FEATURES.register("reed_clump", () -> new ReedClumpFeature(ReedClumpConfiguration.CODEC));
+    /** {@code corruptedadventure:local_coral} (75: vanilla's warm-ocean coral kept in its chunk) */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> LOCAL_CORAL =
+            FEATURES.register("local_coral", () -> new LocalCoralFeature(NoneFeatureConfiguration.CODEC));
+    /** {@code corruptedadventure:sucking_mud_patch} (76: small patches of sucking mud on the blighted banks, G1 = A) */
+    public static final DeferredHolder<Feature<?>, Feature<SuckingMudPatchConfiguration>> SUCKING_MUD_PATCH =
+            FEATURES.register("sucking_mud_patch", () -> new SuckingMudPatchFeature(SuckingMudPatchConfiguration.CODEC));
+    /** {@code corruptedadventure:toxic_pool} (76: closed bowls of toxic sludge) */
+    public static final DeferredHolder<Feature<?>, Feature<ToxicPoolConfiguration>> TOXIC_POOL =
+            FEATURES.register("toxic_pool", () -> new ToxicPoolFeature(ToxicPoolConfiguration.CODEC));
+    /** {@code corruptedadventure:gas_pocket} (76: closed swamp gas bubbles under the peat crust, Q10 = A) */
+    public static final DeferredHolder<Feature<?>, Feature<GasPocketConfiguration>> GAS_POCKET =
+            FEATURES.register("gas_pocket", () -> new GasPocketFeature(GasPocketConfiguration.CODEC));
+    /** {@code corruptedadventure:sinkhole_gas} (76: layers of swamp gas on the floor of the peat sinkholes, Q10 = A) */
+    public static final DeferredHolder<Feature<?>, Feature<SinkholeGasConfiguration>> SINKHOLE_GAS =
+            FEATURES.register("sinkhole_gas", () -> new SinkholeGasFeature(SinkholeGasConfiguration.CODEC));
+    /** {@code corruptedadventure:sunken_geode} (77: aquamarine geodes half open in the floor under deep water, Q14 = A) */
+    public static final DeferredHolder<Feature<?>, Feature<SunkenGeodeConfiguration>> SUNKEN_GEODE =
+            FEATURES.register("sunken_geode", () -> new SunkenGeodeFeature(SunkenGeodeConfiguration.CODEC));
+    /** {@code corruptedadventure:wall_plant} (75b: orchids and wall bromeliads on the gorge walls of verdant_falls) */
+    public static final DeferredHolder<Feature<?>, Feature<WallPlantConfiguration>> WALL_PLANT =
+            FEATURES.register("wall_plant", () -> new WallPlantFeature(WallPlantConfiguration.CODEC));
+    /** {@code corruptedadventure:island_vines} (75: sagging root vines between the island pairs of 74) */
+    public static final DeferredHolder<Feature<?>, Feature<IslandVinesConfiguration>> ISLAND_VINES =
+            FEATURES.register("island_vines", () -> new IslandVinesFeature(IslandVinesConfiguration.CODEC));
 
     private ModFeatures() {
     }

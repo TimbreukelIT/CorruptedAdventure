@@ -1,0 +1,29 @@
+{
+  "type": "corruptedadventure:sucking_mud_patch",
+  "config": {
+    "biomes": [
+      "corruptedadventure:peat_moors",
+      "corruptedadventure:drowned_forest"
+    ],
+    "depth": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    },
+    "replaceable": [
+      "minecraft:mud",
+      "minecraft:dirt",
+      "minecraft:coarse_dirt",
+      "minecraft:podzol",
+      "minecraft:grass_block",
+      "minecraft:clay",
+      "minecraft:rooted_dirt",
+      "corruptedadventure:peat"
+    ],
+    "width": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 4,
+      "min_inclusive": 2
+    }
+  }
+}

@@ -2,7 +2,7 @@
   "type": "corruptedadventure:ledge_strand",
   "config": {
     "accent": {
-      "Name": "corruptedadventure:glowing_hanging_roots",
+      "Name": "corruptedadventure:verdant_hanging_orchid",
       "Properties": {
         "waterlogged": "false"
       }
@@ -12,11 +12,34 @@
     "min_gap": 3,
     "reach": 4,
     "strand": {
-      "Name": "corruptedadventure:hanging_swamp_moss",
+      "Name": "corruptedadventure:verdant_vine_plant",
       "Properties": {
-        "waterlogged": "false"
+        "flowering": "false"
       }
     },
-    "strand_chance": 0.5
+    "strand_chance": 0.5,
+    "tip": {
+      "Name": "corruptedadventure:verdant_vine",
+      "Properties": {
+        "age": "25",
+        "flowering": "false"
+      }
+    },
+    "variant": {
+      "strand": {
+        "Name": "corruptedadventure:verdant_vine_plant",
+        "Properties": {
+          "flowering": "true"
+        }
+      },
+      "tip": {
+        "Name": "corruptedadventure:verdant_vine",
+        "Properties": {
+          "age": "25",
+          "flowering": "true"
+        }
+      }
+    },
+    "variant_chance": 0.35
   }
 }

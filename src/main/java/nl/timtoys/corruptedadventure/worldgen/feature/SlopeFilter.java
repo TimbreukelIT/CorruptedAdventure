@@ -20,7 +20,8 @@ import java.util.Locale;
  * within {@code radius} (a disc) with the position's own column, and keeps the position if that measure lies in
  * [{@code min}, {@code max}]. {@code rise} = how much the highest column stands above this one (a high minimum finds
  * the foot of a wall, not its top edge); {@code relief} = the largest difference either way (a low maximum finds
- * flat ground, away from walls and edges).
+ * flat ground, away from walls and edges); {@code drop} = how far the lowest column lies below this one (a high
+ * minimum finds the top edge of a wall: ring 4's gorge rims, golf 2).
  * <p>
  * During the features step this heightmap shows the terrain alone, also in the neighbouring chunks, so the filter
  * does not depend on generation order. A radius up to 8 stays inside the 3 × 3 chunks a feature may read.
@@ -50,6 +51,11 @@ public final class SlopeFilter extends PlacementFilter {
         return new SlopeFilter(radius, Measure.RISE, minRise, Integer.MAX_VALUE);
     }
 
+    /** The top edge of a wall: some column within {@code radius} lies at least {@code minDrop} lower. */
+    public static SlopeFilter rimTop(int radius, int minDrop) {
+        return new SlopeFilter(radius, Measure.DROP, minDrop, Integer.MAX_VALUE);
+    }
+
     /** Flat ground: no column within {@code radius} differs by more than {@code maxRelief}. */
     public static SlopeFilter flat(int radius, int maxRelief) {
         return new SlopeFilter(radius, Measure.RELIEF, Integer.MIN_VALUE, maxRelief);
@@ -74,7 +80,11 @@ public final class SlopeFilter extends PlacementFilter {
             for (int dx = -radius; dx <= radius; dx++) {
                 if ((dx != 0 || dz != 0) && dx * dx + dz * dz <= radius * radius) {
                     int difference = heights.at(x + dx, z + dz) - own;
-                    value = Math.max(value, measure == Measure.RISE ? difference : Math.abs(difference));
+                    value = Math.max(value, switch (measure) {
+                        case RISE -> difference;
+                        case DROP -> -difference;
+                        case RELIEF -> Math.abs(difference);
+                    });
                 }
             }
         }
@@ -93,7 +103,8 @@ public final class SlopeFilter extends PlacementFilter {
 
     public enum Measure implements StringRepresentable {
         RISE,
-        RELIEF;
+        RELIEF,
+        DROP;
 
         public static final Codec<Measure> CODEC = StringRepresentable.fromEnum(Measure::values);
 
