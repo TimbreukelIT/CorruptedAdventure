@@ -1,0 +1,16 @@
+{
+  "type": "corruptedadventure:dune_rubble",
+  "config": {
+    "size": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    },
+    "state_provider": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:fossil_stone"
+      }
+    }
+  }
+}

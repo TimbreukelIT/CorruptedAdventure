@@ -1,0 +1,21 @@
+{
+  "type": "corruptedadventure:pillar_cladding",
+  "config": {
+    "cluster": {
+      "Name": "corruptedadventure:purity_crystal_cluster",
+      "Properties": {
+        "facing": "up",
+        "waterlogged": "false"
+      }
+    },
+    "cluster_chance": 0.18,
+    "crystal": {
+      "Name": "corruptedadventure:purity_crystal_block"
+    },
+    "lamp": {
+      "Name": "corruptedadventure:purity_crystal_lamp"
+    },
+    "lamp_chance": 0.006666667,
+    "region_min": 0.2
+  }
+}

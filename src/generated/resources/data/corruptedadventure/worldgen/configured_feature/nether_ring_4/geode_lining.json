@@ -1,0 +1,26 @@
+{
+  "type": "corruptedadventure:giant_geode_lining",
+  "config": {
+    "cluster": {
+      "Name": "corruptedadventure:purity_crystal_cluster",
+      "Properties": {
+        "facing": "up",
+        "waterlogged": "false"
+      }
+    },
+    "cluster_chance": 0.25,
+    "inner": {
+      "Name": "corruptedadventure:purity_crystal_block"
+    },
+    "lamp": {
+      "Name": "corruptedadventure:purity_crystal_lamp"
+    },
+    "lamp_chance": 0.02,
+    "middle": {
+      "Name": "minecraft:calcite"
+    },
+    "outer": {
+      "Name": "corruptedadventure:bleached_netherrack"
+    }
+  }
+}

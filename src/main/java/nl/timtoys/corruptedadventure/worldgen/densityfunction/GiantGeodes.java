@@ -90,6 +90,37 @@ public final class GiantGeodes implements DensityFunction {
         return geode != null && geode.hollow(context.blockX(), y, context.blockZ()) ? INSIDE : OUTSIDE;
     }
 
+    /**
+     * The geode of the cell that holds column (x, z), or null: for the lining (78), from the same map of decided cells
+     * as the terrain, so the lining lines exactly the hollow the terrain dug. Pure and safe from any thread.
+     */
+    @Nullable
+    public GiantGeodeShape.Geode geodeAt(int x, int z) {
+        int size = settings.cellSize();
+        return shared(Math.floorDiv(x, size), Math.floorDiv(z, size));
+    }
+
+    /** The first {@code giant_geodes} anywhere inside {@code root} (e.g. a random state's final density), or null. */
+    @Nullable
+    public static GiantGeodes find(DensityFunction root) {
+        GiantGeodes[] found = new GiantGeodes[1];
+        root.mapAll(new Visitor() {
+            @Override
+            public DensityFunction apply(DensityFunction function) {
+                if (found[0] == null && function instanceof GiantGeodes geodes) {
+                    found[0] = geodes;
+                }
+                return function;
+            }
+
+            @Override
+            public NoiseHolder visitNoise(NoiseHolder holder) {
+                return holder;
+            }
+        });
+        return found[0];
+    }
+
     /** The geode of a cell from the map shared by the copies of this wired function, deciding it the first time. */
     @Nullable
     private GiantGeodeShape.Geode shared(int cellX, int cellZ) {

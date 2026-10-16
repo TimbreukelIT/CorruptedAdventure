@@ -1,0 +1,21 @@
+{
+  "feature": "corruptedadventure:nether_ring_4/bone_rubble",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 2
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "absolute": 47
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

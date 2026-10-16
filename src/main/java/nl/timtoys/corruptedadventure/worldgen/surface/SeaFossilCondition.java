@@ -2,21 +2,17 @@ package nl.timtoys.corruptedadventure.worldgen.surface;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.util.KeyDispatchDataCodec;
-import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.SurfaceRules;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.SeaFossilShape;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.SeaFossils;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.WeakHashMap;
+import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing4Terrain;
 
 /**
  * Surface rule condition {@code corruptedadventure:sea_fossil} (78): true in the bones of the sea-creature fossils of
  * Nether ring 4 ({@link SeaFossilShape}), so the surface paints them {@code bone_block}. Reads the {@code sea_fossils}
- * density function of the world's noise router (found once per random state); its cells are decided once per world, in
- * the map the terrain shares. Without that function (another dimension) the condition is false.
+ * density function of the world's noise router ({@link NetherRing4Terrain}, found once per random state); its cells
+ * are decided once per world, in the map the terrain shares. Without that function (another dimension) the condition
+ * is false.
  * <p>
  * The surface pass asks per block, column by column: the condition remembers the cell (a chunk lies in one) and the bone
  * mask of its last column, so a block costs one bit test.
@@ -25,8 +21,6 @@ public final class SeaFossilCondition implements SurfaceRules.ConditionSource {
     public static final SeaFossilCondition INSTANCE = new SeaFossilCondition();
     public static final MapCodec<SeaFossilCondition> MAP_CODEC = MapCodec.unit(INSTANCE);
     public static final KeyDispatchDataCodec<SeaFossilCondition> CODEC = KeyDispatchDataCodec.of(MAP_CODEC);
-
-    private static final Map<RandomState, Optional<SeaFossils>> FOUND = Collections.synchronizedMap(new WeakHashMap<>());
 
     private SeaFossilCondition() {
     }
@@ -38,8 +32,7 @@ public final class SeaFossilCondition implements SurfaceRules.ConditionSource {
 
     @Override
     public SurfaceRules.Condition apply(SurfaceRules.Context context) {
-        SeaFossils fossils = FOUND.computeIfAbsent(context.randomState,
-                random -> Optional.ofNullable(SeaFossils.find(random.router().finalDensity()))).orElse(null);
+        SeaFossils fossils = NetherRing4Terrain.fossils(context.randomState);
         if (fossils == null) {
             return () -> false;
         }

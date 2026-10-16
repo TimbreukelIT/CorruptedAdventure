@@ -203,6 +203,7 @@ class NetherRing4JsonTest {
                 JsonObject region = branch.get(i).getAsJsonObject().getAsJsonObject("if_true");
                 assertEquals("corruptedadventure:nether_ring_4_region", region.get("noise").getAsString());
                 assertTrue(region.get("min_threshold").getAsDouble() >= NetherRing4Features.SPIRES_THRESHOLD, "spires weight >= 0.5");
+                assertEquals(NetherRing4Features.COLUMNS_REGION_FROM, region.get("min_threshold").getAsDouble(), "the cladding's columns");
             }
         }
         assertTrue(floor >= 0 && crystal > floor, "floors before the crystal");
