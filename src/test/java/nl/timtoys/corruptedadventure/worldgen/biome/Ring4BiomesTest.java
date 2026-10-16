@@ -103,8 +103,8 @@ class Ring4BiomesTest {
         assertTrue(animals(biomes.get(ModBiomes.MIST_FJORDS).getMobSettings()).contains(EntityType.RABBIT));
         assertThrows(IllegalArgumentException.class, () -> Ring4Biomes.spawns(ModBiomes.STEAM_FENS));
         assertTrue(animals(biomes.get(ModBiomes.CASCADE_VALE).getMobSettings()).containsAll(Set.of(EntityType.FOX, EntityType.RABBIT)));
-        // Q9 = A: frogs and turtles by the lakes of the descent, no parrots until the own trees.
-        assertEquals(Set.of(EntityType.FROG, EntityType.TURTLE), animals(biomes.get(ModBiomes.VERDANT_FALLS).getMobSettings()));
+        // Q9 = A: frogs and turtles by the lakes of the descent; F10 = A: parrots on the own trees (75b).
+        assertEquals(Set.of(EntityType.FROG, EntityType.TURTLE, EntityType.PARROT), animals(biomes.get(ModBiomes.VERDANT_FALLS).getMobSettings()));
     }
 
     /** verdant_falls: the wettest of the ring, and rainy. */

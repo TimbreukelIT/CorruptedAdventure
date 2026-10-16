@@ -56,6 +56,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPoolConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPoolFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.SunkenGeodeConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.SunkenGeodeFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallDrapeConfiguration;
@@ -213,6 +215,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:sunken_geode} (77: aquamarine geodes half open in the floor under deep water, Q14 = A) */
     public static final DeferredHolder<Feature<?>, Feature<SunkenGeodeConfiguration>> SUNKEN_GEODE =
             FEATURES.register("sunken_geode", () -> new SunkenGeodeFeature(SunkenGeodeConfiguration.CODEC));
+    /** {@code corruptedadventure:wall_plant} (75b: orchids and wall bromeliads on the gorge walls of verdant_falls) */
+    public static final DeferredHolder<Feature<?>, Feature<WallPlantConfiguration>> WALL_PLANT =
+            FEATURES.register("wall_plant", () -> new WallPlantFeature(WallPlantConfiguration.CODEC));
 
     private ModFeatures() {
     }

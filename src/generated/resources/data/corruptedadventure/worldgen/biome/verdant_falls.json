@@ -44,7 +44,20 @@
     [],
     [
       "corruptedadventure:ring_4/verdant_falls_moss_carpets",
-      "corruptedadventure:ring_4/verdant_falls_ledge_strands"
+      "corruptedadventure:ring_4/verdant_falls_ledge_strands",
+      "corruptedadventure:ring_4/verdant_falls_bank_trees",
+      "corruptedadventure:ring_4/verdant_falls_rim_trees",
+      "corruptedadventure:ring_4/verdant_falls_tread_tree_ferns",
+      "corruptedadventure:ring_4/verdant_falls_riser_tree_ferns",
+      "corruptedadventure:ring_4/verdant_falls_wall_plants",
+      "corruptedadventure:ring_4/verdant_falls_ferns",
+      "corruptedadventure:ring_4/verdant_falls_tall_ferns",
+      "corruptedadventure:ring_4/verdant_falls_giant_leaves",
+      "corruptedadventure:ring_4/verdant_falls_bank_giant_leaves",
+      "corruptedadventure:ring_4/verdant_falls_bromeliads",
+      "corruptedadventure:ring_4/verdant_falls_blossom_bushes",
+      "corruptedadventure:ring_4/verdant_falls_lotus",
+      "corruptedadventure:ring_4/verdant_falls_water_blooms"
     ]
   ],
   "has_precipitation": true,
@@ -71,6 +84,12 @@
         "maxCount": 5,
         "minCount": 2,
         "weight": 5
+      },
+      {
+        "type": "minecraft:parrot",
+        "maxCount": 2,
+        "minCount": 1,
+        "weight": 10
       }
     ],
     "misc": [],

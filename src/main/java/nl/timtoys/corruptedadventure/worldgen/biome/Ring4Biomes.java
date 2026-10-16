@@ -137,7 +137,7 @@ public final class Ring4Biomes {
     /**
      * The animals per biome (contract §4, V4 = A): the lagoon tropical fish, turtles and dolphins, the swamp frogs and
      * axolotls (on the clay patches of its lake beds), the cascades foxes and rabbits; {@code verdant_falls} frogs on
-     * its grass and turtles on the sand banks of its foot river (Q9 = A: no parrots until the own trees). The blighted
+     * its grass, turtles on the sand banks of its foot river (Q9 = A) and parrots on its own trees (F10 = A, 75b). The blighted
      * band, the withered islands and {@code sundered_reach} have none. Every ring 4 biome has an entry, so a missing one fails loudly.
      */
     private static final Map<ResourceKey<Biome>, List<Spawn>> ANIMALS = Map.ofEntries(
@@ -170,7 +170,8 @@ public final class Ring4Biomes {
             Map.entry(ModBiomes.SUNDERED_REACH, List.of()),
             Map.entry(ModBiomes.VERDANT_FALLS, List.of(
                     new Spawn(MobCategory.CREATURE, EntityType.FROG, 10, 2, 5),
-                    new Spawn(MobCategory.CREATURE, EntityType.TURTLE, 5, 2, 5))));
+                    new Spawn(MobCategory.CREATURE, EntityType.TURTLE, 5, 2, 5),
+                    new Spawn(MobCategory.CREATURE, EntityType.PARROT, 10, 1, 2))));
 
     /** Vanilla's monsters and bats everywhere (until phase 4), plus the biome's {@link #ANIMALS}; throws for any other biome. */
     static MobSpawnSettings spawns(ResourceKey<Biome> biome) {

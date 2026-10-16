@@ -44,6 +44,20 @@ Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond 
 - **Dieren:** gecontroleerd tegen V4 (geen wijziging); papegaaien in `verdant_falls` komen met 75b.
 - **Wacht op 73 (tunnelnet):** gifkristal (budding) in de wanden van de droge bedorven tunnels en gaskamers, tidesilver in de tunnelwanden, jade diep in de overstroomde tunnels, aquamarijn in overstroomde tunnels, sporen van wezens (klauwkras, slijmspoor, nesten, botresten met `bone_block`). Nu lopen tidesilver en jade als gewone ertsen door het gesteente.
 
+## 75b — tropische flora `verdant_falls` (§6b)
+| Deel | Wat |
+|---|---|
+| klimroutes (`ledge_strand`) | strengen `verdant_vine_plant` met de kop `verdant_vine` op leeftijd 25 (groeit niet door), 35 % bloeiend (per streng, op positie: knoppen en losse strengen kiezen gelijk); accent `verdant_hanging_orchid` onder richels en het richelpad; nooit in water. De strengen komen vóór alle andere flora, en wandplanten nemen alleen lucht: geen plant maakt een route korter (100 % blijft beklimbaar). |
+| meeroevers (stille meren, Y ≥ 65) en kloofranden | emergente boom (`ring_4/verdant_emergent_tree`): stam 14–22, 2–4 plankwortels (`verdant_wood`, trapsgewijs 3/2/1, tot op de grond), 8 takken onder een schermkroon (straal 5–6, koepel, afhangende rand), onder elke tak een liaan (1–4, deels bloeiend) of een hangorchidee; vruchtpeulen (6 % per zijvlak, stadium 0–2, `facing` naar de stam) en orchideeën (5 %) op de stam. Oevers: water binnen 4; randen: een kolom binnen 6 ligt ≥ 12 lager (`slope` `drop`, nieuw). Nooit op een wand (`cliff` < 0,5), ≥ 5 van elke val en klimknop, alleen op eigen grond. |
+| treden (helling < 0,4) en stootborden (0,4–1,5) | boomvarens (`ring_4/verdant_tree_fern`, ook de sapling): stam 4–7, acht bladarmen met afhangende punten; ≥ 3 van vallen en knoppen |
+| grond overal | `verdant_fern`; treden `verdant_tall_fern`, `verdant_giant_leaf`, `verdant_bromeliad` |
+| oevers en bassinranden | `verdant_giant_leaf` (water binnen 2), `verdant_blossom_bush` (water binnen 3); nooit op de calcietlippen en drempels (planten hebben aarde nodig) |
+| kloofwanden | `wall_plant`: vanaf de voet van een wand (`slope` `rise` ≥ 6 binnen 2) tot 28 omhoog `verdant_orchid` en `verdant_wall_bromeliad`, `facing` van de wand af; ≥ 3 van de vallen |
+| stille meren | een paar `lotus` en `verdant_water_bloom` (water 2 blokken in alle vier richtingen: geen beek; Y ≥ 65: niet op de voetrivier; ≥ 5 van de vallen, dus niet in plonspoelen) |
+| spawns | papegaaien (gewicht 10, 1–2) naast kikkers en schildpadden (F10 = A) |
+
+Vrij (F4 = A): vallen en lippen (afstand tot de vastgelegde vallen, calciet draagt geen planten), richelpad, klimroutes (afstand tot de knoppen, strengen eerst), brugdekken en rotsbogen (`ground_only`), nissen en tunnels (onder het oppervlak; nisjes liggen achter vallen), de voetrivier (Y ≥ 65 voor waterplanten en oeverbomen).
+
 ## CODEBASE-delta
 **Nieuwe classes (`worldgen.feature`)**
 - `Ring4Terrain`, `Ring4Filter` (+ `ModPlacementModifierTypes.RING4_FILTER`, blok `// ring 4 — W-biomes g2`), `Ring4Placements`.
@@ -60,6 +74,8 @@ Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond 
 
 **77 — nieuwe classes:** `SunkenGeodeFeature`/`…Configuration` (`sunken_geode`), `Ring4OreFeatures`. **Gewijzigd:** `Ring4BiomeModifiers` (`ADD_RING_4_ORES`, `ores()`, `oreBiomes()`), `ModFeatures`, `Ring4Features.ORDER`. **Registries:** 1 feature-type, 1 biome modifier; 3 configured, 16 + 3 placed (`ring_4/ore_*` vanilla, tidesilver, jade, geodes).
 
+**75b — nieuwe classes:** `VerdantTrunkPlacer` (`verdant_trunk_placer`, in `ModTrunkPlacerTypes`, blok `// ring 4 — W-biomes`), `VerdantFoliagePlacer` (`verdant_foliage_placer`, `Shape` UMBRELLA/FRONDS, in `ModFoliagePlacerTypes`), `WallPlantFeature`/`…Configuration` (`wall_plant`). **Gewijzigd:** `VerdantFallsFeatures` (flora; `ring_4/verdant_tree_fern` = key van B), `LedgeStrandConfiguration` (optioneel `tip`, `variant` + `variant_chance`; constructor met 7 argumenten blijft), `LedgeStrandFeature.strand` (tip + variant op positie), `LedgeStrands.inVariant`, `SlopeFilter` (meting `drop`, `rimTop`), `Ring4Biomes` (papegaaien in `verdant_falls`), `Ring4Features.ORDER`. **Registries:** 1 feature-type, 1 trunk- en 1 foliage-placer-type; 9 + 2 configured, 13 placed.
+
 ## Beslissingen
 - 2026-10-16, `worldgen` (implementatie W-biomes, 75): de gloed onder de eilanden als vast rooster (cellen van 4, bron 1–2 in de cel) i.p.v. een losse kans, zodat elk vlak blok in de schaduw licht ≥ 1 krijgt; de palet per kolom via de band (`Ring4Band.blighted`), niet per biome.
 - 2026-10-16, `worldgen` (implementatie, 75): moerasboom = vanilla's hoge mangrove een maat groter (stam 5–14, wortels 3–7) met `glowcap` en mostapijt op de wortels, zonder vanilla-vines (geen vanilla vine in ring 4) en zonder bijen. Fjordbomen: vanilla spar (default), den 40 %, donkere eik 10 %.
@@ -70,6 +86,9 @@ Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond 
 - 2026-10-16, `worldgen` (implementatie, 76): "dichter richting ring 5" = `ring_chance` over de voortgang door ring 4 (0,35 → 1) op gas, gifpoelen, zuigmodder en `blighted_glowcap`; riet en bomen niet.
 - 2026-10-16, `worldgen` (implementatie, 76): dode bomen = alleen de `withered_moonpetal`-stam (recht 7–13, of gevorkt 60 %), in `drowned_forest` op de bodem in water tot 10 diep.
 
+- 2026-10-16, `worldgen` (implementatie, 75b): de liaan in `ledge_strand` 35 % bloeiend, gekozen op positie (zo kiezen de knoopstrengen en de losse strengen hetzelfde); accent onder de richels = `verdant_hanging_orchid` (§6b: hangorchideeën onder het richelpad en de klimrichels) i.p.v. de gloeiwortels.
+- 2026-10-16, `worldgen` (implementatie, 75b): emergente boom stam 14–22 (1 breed), 2–4 plankwortels, 8 takken, schermkroon straal 5–6; vruchtpeul 6 % en orchidee 5 % per zijvlak van de stam; boomvaren stam 4–7, kroon straal 2–3. Bomen ≥ 5 en boomvarens/wandplanten ≥ 3 van vallen en klimknoppen.
+
 ## Backlog
 - `worldgen` (77, na 73 op main): gifkristal-budding in de droge bedorven tunnels en gaskamers, tidesilver in de tunnelwanden, jade en aquamarijn in de overstroomde tunnels, sporen van wezens; via de tunnel-accessor van 73.
 - `worldgen` (75, na 74 op main): ranken tussen de eilandparen (`IslandField`-accessor van 74), planten rond de hemelmeren.
@@ -78,4 +97,5 @@ Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond 
 ## Voortgang
 - 2026-10-16: 75 gebouwd; B (incl. `Ring4MythicFeaturesTest`, `Ring4BiomesTest`, `FeatureOrderTest`) en D (twee keer, tweede keer 0 geschreven) groen.
 - 2026-10-16: 76 gebouwd; B (incl. `Ring4BlightedFeaturesTest`) en D groen.
+- 2026-10-16: 75b gebouwd; B (incl. `VerdantFloraTest`: elk blad binnen afstand 6 van stam/tak, strengtip en bloeiaandeel) en D groen.
 - 2026-10-16: 77 gebouwd (zonder de tunneldelen: 73 nog niet op main); B (incl. `Ring4OreFeaturesTest`) en D groen.

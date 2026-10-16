@@ -37,6 +37,20 @@ public final class Ring4Features {
             // verdant_falls: the moss carpets on the treads, the climbing strands under the ledges.
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_MOSS_CARPETS, ModBiomes.VERDANT_FALLS),
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_LEDGE_STRANDS, ModBiomes.VERDANT_FALLS),
+            // 75b: the tropical flora (after the strands: no plant ever shortens a climbing route).
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_BANK_TREES, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_RIM_TREES, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_TREAD_TREE_FERNS, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_RISER_TREE_FERNS, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_WALL_PLANTS, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_FERNS, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_TALL_FERNS, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_GIANT_LEAVES, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_BANK_GIANT_LEAVES, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_BROMELIADS, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_BLOSSOM_BUSHES, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_LOTUS, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_WATER_BLOOMS, ModBiomes.VERDANT_FALLS),
             // 75: the trees of the mythical band and the sky gardens.
             vegetal(Ring4MythicFeatures.CASCADE_VALE_TREES, ModBiomes.CASCADE_VALE),
             vegetal(Ring4MythicFeatures.SKY_GARDENS_TREES, ModBiomes.SKY_GARDENS),

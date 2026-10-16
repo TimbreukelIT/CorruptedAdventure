@@ -105,11 +105,17 @@ public final class LedgeStrandFeature extends Feature<LedgeStrandConfiguration> 
                 y -> level.getBlockState(pos.set(x, y, z)).isFaceSturdy(level, pos, Direction.DOWN));
     }
 
-    /** Down to one block above the floor: the strand ends within a jump of the ledge below. */
+    /**
+     * Down to one block above the floor: the strand ends within a jump of the ledge below. Its lowest block is the
+     * configured tip (a vine's full-grown tip, so it never grows on); the variant (the flowering vine) is chosen by the
+     * strand's position, not by a draw, so the knobs' strands and the random ones agree whichever comes first.
+     */
     private static void strand(WorldGenLevel level, int x, int z, LedgeStrands.Overhang overhang, LedgeStrandConfiguration config,
                                BlockPos.MutableBlockPos pos) {
-        for (int y = overhang.underside() - 1; y > overhang.floor() + 1; y--) {
-            level.setBlock(pos.set(x, y, z), config.strand(), Block.UPDATE_CLIENTS);
+        int bottom = overhang.floor() + 2;
+        boolean variant = LedgeStrands.inVariant(x, overhang.underside(), z, config.variantChance());
+        for (int y = overhang.underside() - 1; y >= bottom; y--) {
+            level.setBlock(pos.set(x, y, z), config.strandAt(y, bottom, variant), Block.UPDATE_CLIENTS);
         }
     }
 
