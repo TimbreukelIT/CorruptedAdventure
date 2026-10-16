@@ -54,7 +54,14 @@ public final class Ring4Textures {
      * Sprites that may be half-transparent: particles drawn on the translucent particle sheet (blended, and the particle
      * atlas has no mipmaps), so a soft alpha edge shows as intended instead of being cut.
      */
-    private static final String SOFT_ALPHA = "particle/waterfall_mist_";
+    private static final List<String> SOFT_ALPHA = List.of("particle/waterfall_mist_", "particle/deep_silhouette");
+    /**
+     * The deep-water silhouette (A, change 80: client particle {@code DeepSilhouetteParticle}, ~12 blocks across): one
+     * large soft sprite, so its outline stays smooth at that size. It lands in the particle atlas without a particle type:
+     * vanilla's {@code atlases/particles.json} stitches every PNG under {@code textures/particle/}.
+     */
+    private static final String DEEP_SILHOUETTE = "particle/deep_silhouette";
+    private static final int SILHOUETTE_SIZE = 64;
 
     // ---- Palettes, dark to light (RGB): cool shadows, warmer lights (hue shift) ---------------------------------
 
@@ -339,6 +346,7 @@ public final class Ring4Textures {
             // verdant_falls (Q8 A): waterfall spray, soft white-blue blobs with an alpha fall-off (polish round "mist").
             still("particle/waterfall_mist_" + i, (image, random) -> softParticle(image, Ring4Textures.WATERFALL_MIST[n], Ring4Textures.MIST_CORE, Ring4Textures.MIST_EDGE));
         }
+        still(DEEP_SILHOUETTE, Ring4Textures::deepSilhouette);
     }
 
     private static void still(String name, Painter painter) {
@@ -541,7 +549,7 @@ public final class Ring4Textures {
     }
 
     private static int size(String name) {
-        return name.startsWith("particle/") ? PARTICLE_SIZE : LARGE.contains(name) ? FLOW_SIZE : SIZE;
+        return name.equals(DEEP_SILHOUETTE) ? SILHOUETTE_SIZE : name.startsWith("particle/") ? PARTICLE_SIZE : LARGE.contains(name) ? FLOW_SIZE : SIZE;
     }
 
     /**
@@ -558,7 +566,7 @@ public final class Ring4Textures {
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < width; x++) {
                 int alpha = image.getRGB(x, y) >>> 24;
-                if (alpha != 0 && alpha != 255 && !name.startsWith(SOFT_ALPHA)) {
+                if (alpha != 0 && alpha != 255 && SOFT_ALPHA.stream().noneMatch(name::startsWith)) {
                     throw new IllegalStateException(name + ": alpha " + alpha + " at " + x + "," + y);
                 }
                 boolean opaque = alpha != 0;
@@ -2759,6 +2767,87 @@ public final class Ring4Textures {
     // ---- Animation ----------------------------------------------------------------------------------------------
 
     /** The frames of a cycling texture under each other: the same painter and seed, only the phase moves. */
+    /** Near-black with a slight blue-green: the body, its faintly lighter back and a few darker mottles. */
+    private static final int[] SILHOUETTE = {0x050C0F, 0x08151A, 0x0C1E22, 0x12292C};
+
+    /**
+     * Deep silhouette (A, change 80, Q18 = A): an enormous sea creature seen from the side, far down in deep water, as one
+     * soft dark shape: a long, slim body (a leviathan, not a fish) with a long thin tail stock ending in a wide forked
+     * fluke on the left, a long head with a gaping jaw line on the right, a big pair of flippers sweeping back and a
+     * smaller hind pair, a low dorsal fin set back. The alpha falls off over ~3 px at every edge (soft, blended on the
+     * translucent particle sheet); colour near-black with a slight blue-green, the back a shade lighter. The particle
+     * tints it darker still and fades it in and out.
+     */
+    private static void deepSilhouette(BufferedImage image, Random random) {
+        int size = image.getWidth();
+        double[][] mottle = valueNoiseSized(random, size, 8, 8);
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                double px = x + 0.5;
+                double py = y + 0.5;
+                double depth = silhouetteDepth(px, py);
+                if (depth <= -1.5) {
+                    continue;
+                }
+                int a = (int) Math.round(255 * smoothstep(Math.min(1, (depth + 1.5) / 3.0)));
+                if (a == 0) {
+                    continue;
+                }
+                double back = spineY(px) - bodyHalf(px);
+                int tone = py < back + 2.0 && bodyHalf(px) > 0 ? 3 : mottle[x][y] < 0.3 ? 0 : mottle[x][y] > 0.75 ? 2 : 1;
+                image.setRGB(x, y, a << 24 | SILHOUETTE[tone]);
+            }
+        }
+    }
+
+    /** The body's centre line: a slow S-curve, the head (right) a little higher than the tail. */
+    private static double spineY(double x) {
+        return 32 - 0.05 * (x - 32) + 1.4 * Math.sin((x - 4) / 10.0);
+    }
+
+    /** Half the body's height: a long thin tail stock from x ~12, deepest a third behind the head, a long tapering snout. */
+    private static double bodyHalf(double x) {
+        double t = (x - 12) / 50.0;
+        if (t <= 0 || t >= 1) {
+            return 0;
+        }
+        return 0.9 + 6.4 * Math.pow(Math.sin(Math.PI * Math.pow(t, 1.25)), 1.1) * (t > 0.9 ? Math.sqrt((1 - t) / 0.1) : 1);
+    }
+
+    /** How deep (px) a point lies inside the creature: positive inside, negative outside; the union of its parts. */
+    private static double silhouetteDepth(double x, double y) {
+        double centre = spineY(x);
+        double half = bodyHalf(x);
+        double depth = half > 0 ? half - Math.abs(y - centre) : -99;
+        // the gaping jaw: a wedge cut into the head along its lower half, opening towards the snout
+        double jaw = centre + 1.6;
+        if (x > 47) {
+            double gape = 0.25 + 0.12 * (x - 47);
+            depth = Math.min(depth, Math.abs(y - jaw - 0.04 * (x - 47) * (x - 47) / 4) - gape + 0.4);
+        }
+        // tail stock to the fork, and a wide forked fluke
+        depth = Math.max(depth, taperedSegment(x, y, 14, spineY(14), 5, spineY(5), 1.4, 1.1));
+        depth = Math.max(depth, taperedSegment(x, y, 6, spineY(6), 2.0, spineY(6) - 11, 2.6, 0.6));
+        depth = Math.max(depth, taperedSegment(x, y, 6, spineY(6), 2.5, spineY(6) + 10, 2.4, 0.6));
+        // big flippers sweeping back and down, a smaller hind pair
+        depth = Math.max(depth, taperedSegment(x, y, 44, spineY(44) + 4, 30, spineY(44) + 17, 3.2, 0.9));
+        depth = Math.max(depth, taperedSegment(x, y, 41, spineY(41) + 4, 31, spineY(41) + 12, 2.2, 0.7));
+        depth = Math.max(depth, taperedSegment(x, y, 24, spineY(24) + 3, 15, spineY(24) + 10, 1.9, 0.6));
+        // a low dorsal fin, set back, leaning towards the tail
+        double base = spineY(26) - bodyHalf(26) + 1.5;
+        depth = Math.max(depth, taperedSegment(x, y, 28, base, 21, base - 6, 2.6, 0.5));
+        return depth;
+    }
+
+    /** Depth inside a segment from (x0, y0) to (x1, y1) whose radius tapers from {@code r0} to {@code r1}. */
+    private static double taperedSegment(double x, double y, double x0, double y0, double x1, double y1, double r0, double r1) {
+        double dx = x1 - x0;
+        double dy = y1 - y0;
+        double t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / (dx * dx + dy * dy)));
+        double distance = Math.hypot(x - (x0 + t * dx), y - (y0 + t * dy));
+        return lerp(r0, r1, t) - distance;
+    }
+
     private static BufferedImage cyclingStrip(String name, Animation animation) {
         int size = size(name);
         BufferedImage strip = new BufferedImage(size, size * animation.frames(), BufferedImage.TYPE_INT_ARGB);
@@ -2849,6 +2938,12 @@ public final class Ring4Textures {
                     + (HAND_EDITED.contains(name) ? " (hand)" : ""), left, cellTop + 12);
             int scale = 96 / frame.getWidth();
             draw(graphics, frame, left, cellTop + 16, scale);
+            if (frame.getWidth() > FLOW_SIZE) {
+                // too large to tile in a cell: once more at 2x over deep water instead
+                drawOn(graphics, frame, left + 104, cellTop + 16, 2, 0x0B2E3A);
+                index++;
+                continue;
+            }
             int tileScale = Math.max(1, 2 * SIZE / frame.getWidth());
             for (int ty = 0; ty < 3; ty++) {
                 for (int tx = 0; tx < 3; tx++) {
