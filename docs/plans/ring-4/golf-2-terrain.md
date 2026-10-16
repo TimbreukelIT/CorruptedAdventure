@@ -26,7 +26,7 @@ Scope: `worldgen`, branch `ring4/terrain-g2` (basis `main` d1a37f11, na `vf-perf
 **Uitgangen.**
 - `thin` opent de tunnelblokken exact per blok (−1); `cave_lift` sluit de grotten in de schil; de aquifer vult (`Ring4Tunnels.Span`): water/koepellucht, droge lucht, `swamp_gas`, `toxic_pool` (bron), droge zinkgatlucht; nooit laten stromen.
 - DF `ring_4/overworld/tunnels` (per blok, `island_output tunnels`): 0 niet in het net, 1 water, 2 lucht in het overstroomde net (koepel), 3 droge lucht, 4 gas, 5 gifpoel. Niet in de terreinstapel.
-- **Accessor voor W-biomes (77):** `IslandField.tunnelsWithin(box)` (middellijnen: punt, hoogte, halve breedte; vulling; halve hoogte), `tunnelRoomsWithin(box)` (hallen en koepels: vulling, hal of top, midden, straal, laagste/hoogste blok, niveau) en `tunnelFill(x, y, z)`.
+- **Accessor voor W-biomes (77)** (via `Ring4Terrain.field(level)`, puur, elke thread): `tunnelFill(x, y, z)` (wat een blok van het net vult: `NONE`, `WATER`, `DOME_AIR` = overstroomd net / mythisch; `DRY_AIR`, `GAS`, `POOL` = droog net / bedorven), `tunnelWall(x, y, z)` (voor een blok buiten het net: de vulling van het net ernaast — onder, boven, dan opzij — anders `NONE`; zo vindt 77 de wanden, vloeren en plafonds per soort: gifkristal (budding) aan `DRY_AIR`/`GAS`, aquamarijn/jade aan `WATER`, tidesilver aan elk; sporen op vloeren onder `DRY_AIR`), `tunnelsWithin(box)` (middellijnen: punt, hoogte, halve breedte; vulling; halve hoogte) en `tunnelRoomsWithin(box)` (hallen en koepels: vulling, hal of top, midden, straal, laagste/hoogste blok, niveau). Geen tags nodig.
 
 **Niet in 73 (golf-2.md):** aquamarijn-geodes en gifkristal in de wanden (77), oppervlaktegas onder de veenkorst en in zinkgatbodems (76), sporen en wortels (77/75).
 
@@ -36,12 +36,13 @@ Scope: `worldgen`, branch `ring4/terrain-g2` (basis `main` d1a37f11, na `vf-perf
 
 Alles worldgen op de server; geen client-class, geen payload, geen `PROTOCOL_VERSION`. Gas en gifpoel zijn de blokken van 72 (`ModBlocks.SWAMP_GAS`, `TOXIC_POOL`), opgezocht bij het eerste gebruik in de aquifer.
 
-## 3. Prestatie (verwacht; meten bij INT)
+## 3. Prestatie
 
 - Per blok in ring 4: in `thin` en `cave_lift` twee vergelijkingen tegen de omhullende van de kolom (een lege kolom: geen).
 - Per kolom: één `KeyedSlots`-opzoeking van de elementlijst van de chunk; bij een tunnel een gang over de middellijnstukken binnen het vak (~50 punten, met vakfilter).
-- Per wereld: per cel van 128 de beslissingen (gemeten: 460 cellen in ~0,75 s op één thread incl. JIT, ~1,6 ms per cel ≈ 25 µs per chunk). De oppervlakte langs een rand wordt op het 4-raster gelezen (met een lokale cache per beslissing).
-- De aquifer is in ring 4 goedkoper dan vanilla (geen ruis per open blok meer).
+- Per wereld: per cel van 128 de beslissingen, **één keer per wereld** (`Ring4Tunnels.memo`: per wereldsleutel salt + ruiszaad van de layout + ringinstellingen, niet in `IslandField.Decisions`) en **één keer over alle threads** (`Once`: de eerste thread beslist, de rest wacht). Een chunk leest de elementen van 3 × 3 eigenaarcellen (een rand blijft binnen de buurcellen van zijn eigenaar).
+- **Gevonden bij de indicatieve meting:** de kopie van het veld per noise chunk deelt `Decisions` in-game niet (vermoedelijk: haar ring 3-`plateau`-invoer krijgt eigen caches van de noise chunk, dus `equals` faalt en de kopie krijgt verse beslissingen; offline met een identiteitsbezoeker wél gedeeld, dus niet in een unit test te zien). De beslissingen van het net (een paar honderd cellen rond een chunk) werden daardoor per chunk opnieuw genomen: noise **3,73 / 4,03 / 3,29×** (cascade / fjord / peat), na alleen `Once` 2,67 / 4,64 / 2,37×. Met het geheugen per wereld: **0,59 / 0,61 / 0,64×** (1 warme ronde, `build/test/perf-73c`). Dat ring 4 nu onder vanilla zit komt ook door de vlakke zee: de aquifer slaat voor elk open blok (ook alle lucht boven het terrein) vanilla's zoektocht over 12 aquifercellen over. Surface 1,42 / 1,67 / 1,74 (ongewijzigd t.o.v. 74: 1,45). INT meet alle ring 4-gebieden opnieuw.
+- De rest van het veld (eilanden, `verdantGrounds`, …) zit wél in `Decisions` en wordt dus ook per noise chunk opnieuw beslist: zie backlog.
 
 ## 4. Tests (licht, 2026-10-16)
 
@@ -64,15 +65,28 @@ Alles worldgen op de server; geen client-class, geen payload, geen `PROTOCOL_VER
 5. **Bollen lui zonder veilige publicatie** (nit). **Opgelost:** in de constructor.
 Geen bevinding over recursie, regelvolgorde in de aquifer, vlakke niveaus, gifkommen, prop of kosten per blok.
 
+## Code-review 2 (prestatiefix + `tunnelWall`, 2026-10-16, medium, review-subagent)
+Geen blokkerende fout; deadlock uitgesloten (acyclische beslissingen, MC's eigen ForkJoinPool compenseert wachtende threads), 3 × 3-reductie correct. Verwerkt:
+1. `decideSink` las de eigenaars rond het midden (impliciete marge ~8): nu alle eigenaarcellen die het vak van de kom kunnen raken.
+2. `Once`: een thread die op zijn eigen onaffe beslissing zou wachten gooit nu (i.p.v. stil te hangen); keten in het commentaar gecorrigeerd; `CompletionException` uitgepakt.
+3. `WORLDS` een `ConcurrentHashMap` (lezen buiten het slot).
+4. Wereldsleutel + de instellingen en het reliëf van het veld (een andere `islands.json` deelt geen beslissingen).
+5. Doc van `Memo` bijgewerkt; geheugen blijft begrensd (≤ 4 werelden, een heropende wereld heeft nieuwe ruis = nieuwe sleutel). Niet gedaan: wissen bij `ServerStoppedEvent` (zou een eventhaak buiten `worldgen` vragen; begrensd, dus backlog).
+7. `tunnelWall` zegt niet dat het blok steen is (doc); richtingstabel statisch.
+Extra test `elementsStayWithinTheirOwnersNeighbours` (hal in eigen cel, randen/ingangen binnen de buurcellen).
+
 ## Merge 74 (main 5c5f0594)
 Main (74: wereldbomen, hemelmeren, rotsbogen) in de branch gemerged, beide kanten behouden: in `IslandField` eerst de boomblokken (+1), dan de openingen van het net; in `RingAquifer` de hemelmeerregels vóór de tunnelregels. De gatmeren van de wereldbomen zijn `TREE`-eilanden in de cellen: hun meer boven zee (aan de rand) houdt het net buiten zijn band (`underLake`/`ceilingLimit` via `details`), een gatmeer van een boom op zeeniveau mag een ingang krijgen; wortels zijn massief (kunnen alleen een tunnel dichten). Hemelmeren liggen op de eilanden, ver boven het net. Test `theNetStaysOutOfTheBandsOfLakesAboveTheSea`.
 
+## Merge W-biomes (main 1ea642a7)
+Schoon gemerged. 76 (`SinkholeGasFeature`) legt gas op de bodem van lucht in zinkgaten: werkt op de droge kommen van 73 (een natte kom blijft zoals hij is). 77 kan nu de tunneldelen bouwen met `tunnelWall`/`tunnelFill` (zie §1 Uitgangen).
+
 ## Voortgang
-- 2026-10-16: branch aangemaakt, 73 gebouwd (build en runData groen), review verwerkt, main (74) gemerged.
+- 2026-10-16: branch aangemaakt, 73 gebouwd (build en runData groen), review verwerkt, main (74) gemerged; prestatie: beslissingen per wereld en één keer (3,7× → 0,6×); main (W-biomes) gemerged; `tunnelWall` voor 77.
 
 ## CODEBASE-delta
-- Nieuw `worldgen/densityfunction/Ring4Tunnels` (73): het tunnelnet van ring 4 (knooppunten per cel van 128, randen met middellijn en profiel, hallen, topkoepels, gemengde randen met prop, ingangen naar zee-gatmeren en droge zinkgaten, droge zinkgaten, scheiding tussen de banden); per kolom `Span` (open intervallen met vulling, gesloten grotten); `Fill` (codes van de DF); beslissingen per wereld in `Memo` (`IslandField.Decisions.tunnels`), elementlijst per chunk in `KeyedSlots`.
-- `IslandField`: veld `tunnels`; `Column` + `tunnelsFilled`, `tunnelSpan`, `tunnelLo/Hi`, `tunnelLiftLo/Hi` (eigen blok "73" onderaan de velden en in `reset`); `thin` opent het net, `caveLift` sluit de grotten eromheen (`ensureTunnels`); publiek `tunnelSpan(x, z)`, `tunnelFill(x, y, z)`, `tunnelsWithin(box)`, `tunnelRoomsWithin(box)` met records `TunnelPath`, `TunnelPoint`, `TunnelRoom`; `CAVE_FLOOR_MARGIN` package-private.
+- Nieuw `worldgen/densityfunction/Ring4Tunnels` (73): het tunnelnet van ring 4 (knooppunten per cel van 128, randen met middellijn en profiel, hallen, topkoepels, gemengde randen met prop, ingangen naar zee-gatmeren en droge zinkgaten, droge zinkgaten, scheiding tussen de banden); per kolom `Span` (open intervallen met vulling, gesloten grotten); `Fill` (codes van de DF); beslissingen per wereld in `Memo` (statische kaart per wereldsleutel, niet in `IslandField.Decisions`; `Once`: één keer over alle threads; `forgetWorlds` voor tests), elementlijst per chunk in `KeyedSlots`.
+- `IslandField`: veld `tunnels`; `Column` + `tunnelsFilled`, `tunnelSpan`, `tunnelLo/Hi`, `tunnelLiftLo/Hi` (eigen blok "73" onderaan de velden en in `reset`); `thin` opent het net, `caveLift` sluit de grotten eromheen (`ensureTunnels`); publiek `tunnelSpan(x, z)`, `tunnelFill(x, y, z)`, `tunnelWall(x, y, z)`, `tunnelsWithin(box)`, `tunnelRoomsWithin(box)` met records `TunnelPath`, `TunnelPoint`, `TunnelRoom`; `CAVE_FLOOR_MARGIN` package-private.
 - `IslandOutput.Output.TUNNELS` (`tunnels`, per blok, 0..5); JSON `ring_4/overworld/tunnels.json` → `island_output tunnels` (was stub 0).
 - `RingFluidPicker.ring4Flooded` (ring 4 incl. de ring 4-helft van zone 3→4, niet zone 4→5); `RingAquifer`: per kolom `flooded` en `tunnels` (span), regels na het meer boven zee: carvers niet in de schil, de vulling van het net, dan water ≤ Y 62 / lucht erboven (steen op Y −54).
 - Tests: `Ring4TunnelsTest` (nieuw), `RingAquiferTest` (+2), `Ring4JsonTest` (stub weg).
@@ -84,5 +98,7 @@ Main (74: wereldbomen, hemelmeren, rotsbogen) in de branch gemerged, beide kante
 - 2026-10-16 | worldgen | Bandovergang: een rand tussen een overstroomd en een droog knooppunt wordt in het midden afgesloten met een prop van ≥ 6 steen; droge elementen dicht bij overstroomde vallen weg | Q5 = A ("gesloten overgangen").
 
 ## Backlog
+- [infra] `Ring4Tunnels.WORLDS` houdt tot 4 werelden aan beslissingen tot de JVM stopt (singleplayer: na het verlaten van een wereld); wissen bij `ServerStoppedEvent` zoals `RingLayout.onServerStopped`. (bron: review 73)
+- [worldgen] Prestatie: de kopie van `IslandField` per noise chunk deelt `Decisions` in-game vermoedelijk niet (`mapAll`: `Objects.equals(mappedPlateau, plateau)` faalt, de noise chunk geeft de ring 3-invoer eigen caches), dus eilandcellen, details, `verdantGrounds`/`verdantRamps` enz. worden per chunk opnieuw beslist. Het tunnelnet omzeilt het (geheugen per wereld); voor de rest: gelijkheid zonder de caches van de plateau-invoer, of `Decisions` per wereld zoals 73. Meten bij INT (kan ring 4 en `verdant_falls` verder versnellen). (bron: 73)
 - [worldgen] W-biomes (77): de wanden van het net vinden via `tunnelFill`/`tunnelsWithin`/`tunnelRoomsWithin`; ertsen en sporen mogen geen tunnel-, koepel- of komwand openen naar een ander medium (een erts dat de schil van een koepel vervangt is veilig, een lucht- of waterfeature niet). (bron: 73)
 - [worldgen] W-biomes (76): gaslagen in de bodems van droge zinkgaten: alleen in de kom (de aquifer houdt hem droog tot Y 62); de natte zinkgaten (zeewater) houden geen gas. (bron: 73)

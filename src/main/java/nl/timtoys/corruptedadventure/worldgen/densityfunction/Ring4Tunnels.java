@@ -165,9 +165,9 @@ public final class Ring4Tunnels {
     }
 
     /**
-     * The world's decisions. Kept per world here, not in the field's {@code Decisions}: a noise chunk's copy of the
-     * field gets fresh caches inside its ring 3 plateau input, so the copy is not {@code equals} and gets decisions of
-     * its own; the net's decisions reach some hundred cells around a chunk and must not be made again per chunk (perf,
+     * The world's decisions. Kept per world here, not in the field's {@code Decisions}: in-game a noise chunk's copy of
+     * the field does not share those (most likely its ring 3 plateau input gets fresh caches from the noise chunk, so
+     * the copy is not {@code equals} and gets decisions of its own); the net's decisions reach some hundred cells around a chunk and must not be made again per chunk (perf,
      * 2026-10-16). The key is everything they depend on: the seed (through the salt and the layout's noise seed) and
      * the ring settings.
      */
@@ -175,7 +175,7 @@ public final class Ring4Tunnels {
         Memo known = memo;
         if (known == null) {
             RingLayout layout = field.ringLayout();
-            WorldKey key = new WorldKey(field.salt(), layout.noiseSeed(), layout.settings());
+            WorldKey key = new WorldKey(field.salt(), layout.noiseSeed(), layout.settings(), field.settings(), field.relief());
             known = WORLDS.get(key);
             if (known == null) {
                 synchronized (WORLDS) {
@@ -195,11 +195,20 @@ public final class Ring4Tunnels {
         return known;
     }
 
-    private record WorldKey(long salt, long noiseSeed, nl.timtoys.corruptedadventure.config.RingSettings settings) {
+    /**
+     * What the decisions depend on: the seed (the hash noise's salt, the layout's noise seed), the ring settings, the
+     * field's settings and its relief (its noises: one world's instances). Not the ring 3 plateau's own settings (one
+     * {@code islands.json} per world, read only in the zones the net keeps away from).
+     */
+    private record WorldKey(long salt, long noiseSeed, nl.timtoys.corruptedadventure.config.RingSettings ringSettings,
+                            IslandField.Settings settings, Ring4Relief relief) {
     }
 
-    /** The decisions of the worlds generated in this JVM (a server has one overworld; tests make a few). */
-    private static final Map<WorldKey, Memo> WORLDS = new HashMap<>();
+    /**
+     * The decisions of the worlds generated in this JVM (a server has one overworld; tests make a few); at most
+     * {@link #MAX_WORLDS}, then forgotten (a reopened world has new noises: a new key).
+     */
+    private static final Map<WorldKey, Memo> WORLDS = new ConcurrentHashMap<>();
     private static final int MAX_WORLDS = 4;
     private volatile Memo memo;
 
@@ -841,10 +850,9 @@ public final class Ring4Tunnels {
             return null;
         }
         Sink sink = new Sink(si, sj, hole[0], hole[1], hole[2], floor);
-        int i0 = Math.floorDiv((int) hole[0], CELL);
-        int j0 = Math.floorDiv((int) hole[1], CELL);
-        for (int i = i0 - 1; i <= i0 + 1; i++) {
-            for (int j = j0 - 1; j <= j0 + 1; j++) {
+        // Every owner cell whose elements may reach the bowl's box (an element stays within its owner's neighbours).
+        for (int i = Math.floorDiv(Mth.floor(sink.minX), CELL) - 1; i <= Math.floorDiv(Mth.floor(sink.maxX), CELL) + 1; i++) {
+            for (int j = Math.floorDiv(Mth.floor(sink.minZ), CELL) - 1; j <= Math.floorDiv(Mth.floor(sink.maxZ), CELL) + 1; j++) {
                 for (Element e : floodedOf(i, j)) {
                     if (e.conflicts(sink)) {
                         return null;
@@ -1637,7 +1645,8 @@ public final class Ring4Tunnels {
     // ---------------------------------------------------------------- per world
 
     /**
-     * The decisions of the net, per world (shared by all copies of the world's field, {@link #memo}). Never cleared: {@link #finalCell}
+     * The decisions of the net, per world (shared by all copies of the world's field, {@link #memo}). Never cleared
+     * while the world is asked for (a {@link #WORLDS} entry may be dropped, a field keeps its memo): {@link #finalCell}
      * tells an element's own parts by identity, so a decision must not be made twice; the maps are bounded by the
      * ring's area (a few thousand cells, some ten thousand sinkhole cells).
      */
@@ -1662,29 +1671,42 @@ public final class Ring4Tunnels {
      * Decisions made exactly once per key: the first thread decides, the others wait for its result. At the start of an
      * area every worldgen thread needs the same decisions at the same moment (a chunk asks for some hundred cells);
      * deciding them all in every thread cost more than the noise itself (perf, 2026-10-16). Safe from deadlock: the
-     * decisions depend on each other without a cycle (node ← edge ← entrance ← sinkhole ← hall ← stage ← final).
+     * decisions depend on each other without a cycle (leaves {@code node} and {@code sinkFloor}; {@code edge} and
+     * {@code floodEntrance} on nodes; a flooded node's {@code hall} on those; {@code drySink} on flooded parts and
+     * halls; {@code dryEntrance} on sinks; a dry node's {@code hall} on its entrance; {@code stage}, {@code finalCell}
+     * on all). A cycle added later would make a thread wait for itself: that throws instead of hanging.
      */
     static final class Once<V> {
-        private final Map<Long, java.util.concurrent.CompletableFuture<V>> map = new ConcurrentHashMap<>();
+        private final Map<Long, Pending<V>> map = new ConcurrentHashMap<>();
+
+        private record Pending<V>(Thread owner, java.util.concurrent.CompletableFuture<V> future) {
+        }
 
         V get(long key, Supplier<V> decide) {
-            java.util.concurrent.CompletableFuture<V> known = map.get(key);
+            Pending<V> known = map.get(key);
             if (known == null) {
-                java.util.concurrent.CompletableFuture<V> mine = new java.util.concurrent.CompletableFuture<>();
+                Pending<V> mine = new Pending<>(Thread.currentThread(), new java.util.concurrent.CompletableFuture<>());
                 known = map.putIfAbsent(key, mine);
                 if (known == null) {
                     try {
                         V value = decide.get();
-                        mine.complete(value);
+                        mine.future().complete(value);
                         return value;
                     } catch (RuntimeException | Error e) {
                         map.remove(key, mine);
-                        mine.completeExceptionally(e);
+                        mine.future().completeExceptionally(e);
                         throw e;
                     }
                 }
             }
-            return known.join();
+            if (!known.future().isDone() && known.owner() == Thread.currentThread()) {
+                throw new IllegalStateException("tunnel net decision " + key + " depends on itself");
+            }
+            try {
+                return known.future().join();
+            } catch (java.util.concurrent.CompletionException e) {
+                throw e.getCause() instanceof RuntimeException cause ? cause : e;
+            }
         }
     }
 }

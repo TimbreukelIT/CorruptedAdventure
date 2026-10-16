@@ -842,6 +842,39 @@ public final class IslandField implements DensityFunction {
         return span == null ? Ring4Tunnels.Fill.NONE : span.netFillAt(y);
     }
 
+    /**
+     * The net's wall (77: ores, crystals and tracks in the tunnels' walls, floors and ceilings): for a block outside the
+     * net, what fills the net beside it (one of its six neighbours: below, above, then the sides), else
+     * {@link Ring4Tunnels.Fill#NONE}. {@code WATER}/{@code DOME_AIR}: a wall of the flooded net (mythical band);
+     * {@code DRY_AIR}/{@code GAS}/{@code POOL}: of the dry net (blighted band); never both (they keep 4 blocks of rock
+     * apart). Pure, like {@link #tunnelFill}. It does not say the block is rock: at an entrance's mouth, in a sinkhole's
+     * bowl or where a vanilla cave meets a flooded tunnel it may be water or air; check the block itself.
+     */
+    private static final int[][] SIDES = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    public Ring4Tunnels.Fill tunnelWall(int x, int y, int z) {
+        if (tunnelFill(x, y, z) != Ring4Tunnels.Fill.NONE) {
+            return Ring4Tunnels.Fill.NONE;
+        }
+        Ring4Tunnels.Span own = tunnelSpan(x, z);
+        if (own != null) {
+            Ring4Tunnels.Fill vertical = own.netFillAt(y - 1);
+            if (vertical == Ring4Tunnels.Fill.NONE) {
+                vertical = own.netFillAt(y + 1);
+            }
+            if (vertical != Ring4Tunnels.Fill.NONE) {
+                return vertical;
+            }
+        }
+        for (int[] d : SIDES) {
+            Ring4Tunnels.Fill side = tunnelFill(x + d[0], y, z + d[1]);
+            if (side != Ring4Tunnels.Fill.NONE) {
+                return side;
+            }
+        }
+        return Ring4Tunnels.Fill.NONE;
+    }
+
     /** The tunnels whose reach comes into the box (block coordinates, inclusive): centrelines with heights and widths. */
     public List<TunnelPath> tunnelsWithin(int minX, int minZ, int maxX, int maxZ) {
         return tunnels.pathsWithin(minX, minZ, maxX, maxZ);

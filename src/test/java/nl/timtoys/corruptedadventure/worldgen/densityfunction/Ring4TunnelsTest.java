@@ -296,6 +296,35 @@ class Ring4TunnelsTest {
         System.out.printf("lake bands checked in %d of %d columns%n", guarded, columns.size());
     }
 
+    /** The wall accessor (77): the floor under a tunnel's open block is a wall of the right kind; the open block is not. */
+    @Test
+    void wallsTellWhichNetTheyBorder() {
+        int walls = 0;
+        for (Ring4Tunnels.Element e : ELEMENTS) {
+            if (!(e instanceof Ring4Tunnels.Seg seg)) {
+                continue;
+            }
+            int p = (seg.from + seg.to) / 2;
+            int x = (int) Math.floor(seg.line.x[p]);
+            int z = (int) Math.floor(seg.line.z[p]);
+            Ring4Tunnels.Span span = field.tunnelSpan(x, z);
+            if (span == null || span.openLo() > span.openHi()) {
+                continue;
+            }
+            int floor = span.openLo() - 1;
+            Ring4Tunnels.Fill above = field.tunnelFill(x, floor + 1, z);
+            if (field.tunnelFill(x, floor, z) != Ring4Tunnels.Fill.NONE) {
+                continue;
+            }
+            walls++;
+            assertEquals(above, field.tunnelWall(x, floor, z), "floor at " + x + " " + floor + " " + z);
+            assertEquals(Ring4Tunnels.Fill.NONE, field.tunnelWall(x, floor + 1, z), "an open block is no wall");
+            boolean flooded = above == Ring4Tunnels.Fill.WATER || above == Ring4Tunnels.Fill.DOME_AIR;
+            assertEquals(seg.flooded(), flooded, "the floor's net at " + x + " " + z);
+        }
+        assertTrue(walls > 50, walls + " floors");
+    }
+
     /** Tunnels are 5–12 wide and 5–7 high. */
     @Test
     void tunnelsAreFiveToTwelveWide() {
@@ -341,6 +370,25 @@ class Ring4TunnelsTest {
             b.append(span.fillAt(y).code()).append(span.lifted(y) ? 'L' : '.');
         }
         return b.toString();
+    }
+
+    /**
+     * A hall with its closed caves stays inside its own cell (a node lies at least 28 inside it); edges and entrances are
+     * held to their owner's neighbour cells: so a chunk reads only the 3 x 3 owners around it.
+     */
+    @Test
+    void elementsStayWithinTheirOwnersNeighbours() {
+        for (int i = I0; i <= I1; i++) {
+            for (int j = J0; j <= J1; j++) {
+                for (Ring4Tunnels.Element e : tunnels.finalCell(i, j)) {
+                    int lo = e instanceof Ring4Tunnels.Room room && room.owner == null ? 0 : -1;
+                    int hi = lo == 0 ? 1 : 2;
+                    assertTrue(e.minX >= (i + lo) * Ring4Tunnels.CELL && e.maxX <= (i + hi) * Ring4Tunnels.CELL
+                            && e.minZ >= (j + lo) * Ring4Tunnels.CELL && e.maxZ <= (j + hi) * Ring4Tunnels.CELL,
+                            "element of cell " + i + ", " + j + " reaches " + e.minX + ".." + e.maxX + ", " + e.minZ + ".." + e.maxZ);
+                }
+            }
+        }
     }
 
     /** No net and no work outside ring 4. */
