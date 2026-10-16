@@ -89,4 +89,4 @@ Niet opgepakt: 6 (vier kopieën van `find`) en 7 (`RubbleFeature`-duplicaat) →
 ## Voortgang
 - 2026-10-16: branch `ring4/nether-g2` vanaf c5b7d11; ontwerpvragen N1–N4 naar main, antwoorden alle A.
 - 2026-10-16: 612dba1 fossielen als terrein + echte blokken in de surface; 8558fec bekleding, cladding, rubble; B en D groen.
-- 2026-10-16: code-review medium afgehandeld (zie boven); B en D opnieuw groen.
+- 2026-10-16: code-review medium afgehandeld (5dc4151); main (72, 80) ingemerged (637c296, A's haak `BiomeAmbience.netherRing4` behouden); B en D groen, `git diff --exit-code src/generated` schoon.
