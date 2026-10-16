@@ -14,6 +14,9 @@ import java.util.function.BooleanSupplier;
 final class PurifyingModifier implements RateModifier {
     @Override
     public float modify(Condition condition, ConditionContext context, float rate) {
+        if (rate >= 0.0F) {
+            return rate; // most calls: no closure, no config read
+        }
         return purified(rate, () -> context.biome().is(ModTags.Biomes.PURIFYING),
                 ServerConfig.PURIFYING.fallMultiplier.get().floatValue());
     }

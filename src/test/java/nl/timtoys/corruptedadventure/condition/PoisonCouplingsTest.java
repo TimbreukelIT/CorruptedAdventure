@@ -16,7 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * The couplings of the poison rule with the ring 4 blocks (package 79, {@code docs/plans/ring-4/contract.md} §3, §5),
  * on the generated block tags the rule reads. The toxic pool and the swamp gas must be sources once stream B registers
  * them (package 72); until then their check is skipped, and an empty tag (no JSON) is no error. Sucking mud, slime
- * trails, the glowcaps and the toxic crystal are never a source.
+ * trails, the glowcaps and the toxic crystal are never a source. The tags list blocks only (no nested tags), so the
+ * text checks see everything the rule reads.
  */
 class PoisonCouplingsTest {
     private static final String SOURCES = "corruptedadventure/tags/block/poison_sources.json";
@@ -43,6 +44,8 @@ class PoisonCouplingsTest {
                 assertFalse(values.contains(quoted(name)), tag + " must not hold " + name);
             }
             assertFalse(values.contains("\"minecraft:water\""), tag + " must not hold water");
+            // Only direct entries, so the checks above see everything the rule reads.
+            assertFalse(values.contains("\"#"), tag + " must list blocks, not other tags");
         }
     }
 

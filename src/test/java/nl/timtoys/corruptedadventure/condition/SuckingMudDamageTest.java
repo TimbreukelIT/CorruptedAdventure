@@ -19,10 +19,17 @@ class SuckingMudDamageTest {
     @Test
     void likeThePoisonNoneOnPeacefulDownToTenOnEasyLethalFromNormal() {
         assertEquals(0.0F, SuckingMudDamage.damage(2.0F, 20.0F, Difficulty.PEACEFUL));
-        assertEquals(2.0F, SuckingMudDamage.damage(2.0F, 11.0F, Difficulty.EASY));
+        assertEquals(2.0F, SuckingMudDamage.damage(2.0F, 12.0F, Difficulty.EASY));
         assertEquals(0.0F, SuckingMudDamage.damage(2.0F, 10.0F, Difficulty.EASY));
         assertEquals(2.0F, SuckingMudDamage.damage(2.0F, 1.0F, Difficulty.NORMAL));
         assertEquals(2.0F, SuckingMudDamage.damage(2.0F, 1.0F, Difficulty.HARD));
+    }
+
+    @Test
+    void onEasyOneLargeHitNeverGoesBelowTen() {
+        assertEquals(1.0F, SuckingMudDamage.damage(4.0F, 11.0F, Difficulty.EASY));
+        assertEquals(4.0F, SuckingMudDamage.damage(4.0F, 14.0F, Difficulty.EASY));
+        assertEquals(0.0F, SuckingMudDamage.damage(4.0F, 9.0F, Difficulty.EASY));
     }
 
     @Test
