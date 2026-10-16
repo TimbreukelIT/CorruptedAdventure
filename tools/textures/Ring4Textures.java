@@ -43,6 +43,8 @@ public final class Ring4Textures {
     private static final int TRANSPARENT = 0x00000000;
     private static final Path OUTPUT = Path.of("src/main/resources/assets/corruptedadventure/textures");
     private static final Path PREVIEW = Path.of("build/texture-preview/ring4.png");
+    /** The verdant flora beside moonpetal (71b contact sheet): walls, scenes by day and night, plants in a slot. */
+    private static final Path VERDANT_PREVIEW = Path.of("build/texture-preview/ring4-verdant.png");
 
     /** Retouched by hand after generation; the script skips these and the preview reads them from disk. */
     private static final Set<String> HAND_EDITED = Set.of();
@@ -111,6 +113,8 @@ public final class Ring4Textures {
     // Gameplay blocks (72).
     private static final int[] SUCKING_MUD = {0x1A1C14, 0x24271B, 0x2F3322, 0x3B402A, 0x484E33, 0x575E3E};
     private static final int SUCKING_SHEEN = 0x737C55;
+    /** Wet gloss on the sucking mud (G1 = A, 71b): the sheen, a lighter cool wet green and the brightest glint. */
+    private static final int[] SUCKING_GLOSS = {SUCKING_SHEEN, 0x98A47A, 0xC4CEA6};
     private static final int[] TOXIC_POOL = {0x2E5A0C, 0x3E7610, 0x509214, 0x66AE1C, 0x80C82A, 0xA2E040};
     private static final int TOXIC_SHEEN = 0xD4F870;
     private static final int[] BUCKET = {0x3A3E44, 0x5A6068, 0x7E868E, 0xA8B0B6, 0xD0D6DA};
@@ -119,6 +123,25 @@ public final class Ring4Textures {
     private static final int[] NEST = {0x1E1712, 0x2E241A, 0x423426, 0x584634, 0x705A44, 0x8A7256};
     private static final int[] NEST_MOSS = {0x4E6A3A, 0x6A8A4A};
     private static final int[] BONE = {0xA8A090, 0xDCD4BE, 0xF6F2E6};
+
+    // verdant_falls flora (72b, H4 = A, Q-T1..4 = A): mythical pastel, apart from moonpetal's silver trunk and pink crown.
+    // Trunk warm sand-beige; inner wood pale honey-cream (Q-T1 A).
+    private static final int[] VERDANT_BARK = {0x6A5D4C, 0x847259, 0x9C8766, 0xB39D78, 0xC8B38C, 0xDBC8A2};
+    private static final int[] VERDANT_WOOD = {0xA88A5E, 0xBEA070, 0xD0B485, 0xDEC69A, 0xEAD7B0, 0xF4E6C8};
+    // Crown pastel mint/sea-green (fixed colour, no tint); the undergrowth a step deeper (Q-T4 A, fixed, no tint).
+    private static final int[] VERDANT_LEAF = {0x2F6A5C, 0x3F8472, 0x55A08A, 0x72BAA2, 0x96D2BA, 0xBFE8D6};
+    private static final int[] VERDANT_PLANT = {0x1D4A3E, 0x2A6150, 0x3A7A64, 0x4F947A, 0x6AAE92, 0x8EC8AA};
+    // Flowers per species (Q-T2 A): orchids lilac, bromeliad apricot, blossom bush peach; fruit ripens apricot-orange.
+    private static final int[] LILAC = {0x6E5498, 0x8A6CB6, 0xA88ACE, 0xC4AADF, 0xDCCAEE, 0xF0E6F8};
+    private static final int[] APRICOT = {0xB0603A, 0xCC7A48, 0xE2965A, 0xF0B274, 0xF8CC96, 0xFDE4C0};
+    private static final int[] PEACH = {0xC06A62, 0xD8857A, 0xEAA092, 0xF4BAAA, 0xFAD2C4, 0xFEE8DE};
+    private static final int[] FRUIT = {0x8A4A26, 0xB0602E, 0xD07E3C, 0xE89C52, 0xF6BC74, 0xFDDCA4};
+    private static final int FRUIT_OUTLINE = 0x3E1E0E;
+    // Glow overlays in the flower's own colour, lighter (Q-T3 A); [0] is the dim tone a pulse leans towards.
+    private static final int[] LILAC_GLOW = {0x8C70C8, 0xC8B0FF, 0xE0D0FF, 0xF6F0FF};
+    private static final int LILAC_GLOW_COLOUR = 0xFAF6FF;
+    private static final int[] APRICOT_GLOW = {0xD08040, 0xFFC890, 0xFFDDB0, 0xFFF2DE};
+    private static final int APRICOT_GLOW_COLOUR = 0xFFF6EA;
 
     // Nether ring 4.
     private static final int[] BONE_SAND = {0x9C9078, 0xB0A48A, 0xC2B79C, 0xD2C8AE, 0xE0D8C0, 0xECE6D2};
@@ -256,6 +279,40 @@ public final class Ring4Textures {
         still("block/clawed_tidestone", Ring4Textures::clawedTidestone);
         still("block/slime_trail", Ring4Textures::slimeTrail);
         still("block/creature_nest", Ring4Textures::creatureNest);
+
+        // ---- verdant_falls flora (72b, golf-2.md §6b): wood set, plants, fruit ----
+        still("block/verdant_log", Ring4Textures::verdantLog);
+        still("block/verdant_log_top", (image, random) -> logTop(image, random, VERDANT_WOOD, VERDANT_BARK, false));
+        still("block/stripped_verdant_log", (image, random) -> strippedLog(image, random, VERDANT_WOOD));
+        still("block/stripped_verdant_log_top", (image, random) -> strippedLogTop(image, random, "block/verdant_log_top", VERDANT_WOOD, VERDANT_BARK));
+        still("block/verdant_planks", (image, random) -> planks(image, random, VERDANT_WOOD));
+        still("block/verdant_door_top", (image, random) -> doorTop(image, random, VERDANT_WOOD, VERDANT_BARK));
+        still("block/verdant_door_bottom", (image, random) -> doorBottom(image, random, VERDANT_WOOD, VERDANT_BARK));
+        still("block/verdant_trapdoor", (image, random) -> trapdoor(image, random, VERDANT_WOOD, VERDANT_BARK));
+        still("item/verdant_door", (image, random) -> doorItem(image, random, VERDANT_WOOD, VERDANT_BARK));
+        still("block/verdant_leaves", Ring4Textures::verdantLeaves);
+        still("block/verdant_sapling", Ring4Textures::verdantSapling);
+        still("block/verdant_giant_leaf_bottom", (image, random) -> tallHalf(image, "block/verdant_giant_leaf", Ring4Textures::giantLeaf, false));
+        still("block/verdant_giant_leaf_top", (image, random) -> tallHalf(image, "block/verdant_giant_leaf", Ring4Textures::giantLeaf, true));
+        still("block/verdant_fern", Ring4Textures::verdantFern);
+        still("block/verdant_tall_fern_bottom", (image, random) -> tallHalf(image, "block/verdant_tall_fern", Ring4Textures::tallFern, false));
+        still("block/verdant_tall_fern_top", (image, random) -> tallHalf(image, "block/verdant_tall_fern", Ring4Textures::tallFern, true));
+        still("block/verdant_bromeliad", Ring4Textures::bromeliad);
+        glowLayer("block/verdant_bromeliad", APRICOT_GLOW, APRICOT_GLOW_COLOUR, APRICOT_GLOW[0]);
+        still("block/verdant_orchid", Ring4Textures::orchid);
+        glowLayer("block/verdant_orchid", LILAC_GLOW, LILAC_GLOW_COLOUR, LILAC_GLOW[0]);
+        still("block/verdant_hanging_orchid", Ring4Textures::hangingOrchid);
+        still("block/verdant_blossom_bush", Ring4Textures::blossomBush);
+        still("block/verdant_vine", (image, random) -> vine(image, true, false));
+        still("block/verdant_vine_plant", (image, random) -> vine(image, false, false));
+        still("block/verdant_vine_flowering", (image, random) -> vine(image, true, true));
+        still("block/verdant_vine_plant_flowering", (image, random) -> vine(image, false, true));
+        still("block/verdant_water_bloom", Ring4Textures::waterBloom);
+        for (int stage = 0; stage < 3; stage++) {
+            int s = stage;
+            still("block/verdant_fruit_pod_stage" + stage, (image, random) -> fruitPod(image, random, s));
+        }
+        still("item/verdant_fruit", Ring4Textures::verdantFruit);
 
         // ---- Nether ring 4 (68) ----
         still("block/bone_sand", Ring4Textures::boneSand);
@@ -397,6 +454,7 @@ public final class Ring4Textures {
         System.out.println(outputs.size() + " textures");
         lint();
         writePreview();
+        writeVerdantPreview();
     }
 
     // ---- Checks -------------------------------------------------------------------------------------------------
@@ -1570,19 +1628,699 @@ public final class Ring4Textures {
     /** Columns and rows of the lamp's 2-px frame bars (border and cross), in pairs: first line lit, second shaded. */
     private static final List<Integer> LAMP_BARS = List.of(0, 1, 7, 8, 14, 15);
 
+    // ---- verdant_falls flora (72b) ------------------------------------------------------------------------------
+
+    /**
+     * Verdant log side (72b): smooth warm sand-beige bark of a tropical giant (kapok-like): soft vertical fibre, a few
+     * long shallow fissures (dark, lit on their left edge) and small knots with a lit pixel above. Wraps on all sides.
+     */
+    private static void verdantLog(BufferedImage image, Random random) {
+        double[][] fibre = valueNoise(random, 2, 8);
+        double[][] broad = valueNoise(random, 8, 8);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double t = 0.55 + 0.38 * (fibre[x][y] - 0.5) + 0.3 * (broad[x][y] - 0.5) + 0.12 * (random.nextDouble() - 0.5);
+                set(image, x, y, shade(VERDANT_BARK, t));
+            }
+        }
+        int x0 = random.nextInt(SIZE);
+        for (int i = 0; i < 3; i++) {
+            int x = x0 + i * 5 + random.nextInt(2);
+            int start = random.nextInt(SIZE);
+            int length = 6 + random.nextInt(8);
+            for (int j = 0; j < length; j++) {
+                int dx = j > length / 2 && random.nextInt(4) == 0 ? 1 : 0;
+                setWrapped(image, x + dx, start + j, VERDANT_BARK[j == 0 || j == length - 1 ? 1 : 0]);
+                setWrapped(image, x + dx - 1, start + j, VERDANT_BARK[4]);
+            }
+        }
+        for (int i = 0; i < 2; i++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            setWrapped(image, x, y, VERDANT_BARK[0]);
+            setWrapped(image, x + 1, y, VERDANT_BARK[1]);
+            setWrapped(image, x, y - 1, VERDANT_BARK[5]);
+            setWrapped(image, x, y + 1, VERDANT_BARK[2]);
+        }
+    }
+
+    /**
+     * Verdant leaves (72b): pastel mint/sea-green crown (fixed colour, no tint) of long pointed leaflets, as palm-like
+     * fronds of an umbrella crown: a darker depth with holes (cutout_mipped) and leaflets on top, each lit on its upper
+     * side with a pale midrib, shadowed below. Wraps on all sides.
+     */
+    private static void verdantLeaves(BufferedImage image, Random random) {
+        double[][] clumps = valueNoise(random, 4, 4);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                if (clumps[x][y] < 0.24 || random.nextInt(9) == 0) {
+                    continue;
+                }
+                set(image, x, y, shade(VERDANT_LEAF, 0.04 + 0.34 * clumps[x][y] + 0.1 * random.nextDouble()));
+            }
+        }
+        for (int i = 0; i < 16; i++) {
+            double cx = random.nextDouble() * SIZE;
+            double cy = random.nextDouble() * SIZE;
+            // mostly drooping diagonals, as fronds that hang out of an umbrella crown
+            double angle = (random.nextBoolean() ? 0.6 : Math.PI - 0.6) + 0.5 * (random.nextDouble() - 0.5);
+            double half = 2.6 + 0.8 * random.nextDouble();
+            double ax = Math.cos(angle);
+            double ay = Math.sin(angle);
+            for (int dy = -4; dy <= 4; dy++) {
+                for (int dx = -4; dx <= 4; dx++) {
+                    int x = (int) Math.floor(cx) + dx;
+                    int y = (int) Math.floor(cy) + dy;
+                    double ox = x + 0.5 - cx;
+                    double oy = y + 0.5 - cy;
+                    double u = ox * ax + oy * ay;
+                    double v = -ox * ay + oy * ax;
+                    double width = 1.15 * (1 - Math.pow(u / half, 2));
+                    if (Math.abs(u) > half || Math.abs(v) > width) {
+                        continue;
+                    }
+                    // the half whose normal points to the upper left (towards the light) is lit
+                    double up = Math.signum(v) * Math.signum(ay - ax);
+                    double light = 0.62 + 0.18 * up - 0.12 * u / half + 0.08 * (random.nextDouble() - 0.5);
+                    setWrapped(image, x, y, Math.abs(v) < 0.4 && Math.abs(u) < half - 0.8 ? VERDANT_LEAF[5] : shade(VERDANT_LEAF, light));
+                }
+            }
+        }
+    }
+
+    /** Verdant sapling (72b, cross): a young tree fern, a slim sand-beige stem with old frond stubs and a crown of arching fronds. */
+    private static void verdantSapling(BufferedImage image, Random random) {
+        sprite(image, new String[] {
+                "................",
+                "................",
+                "......4..4......",
+                "....354..453....",
+                "...35.5445.53...",
+                "..34..4554..43..",
+                ".23..34SS43..32.",
+                ".2..3..Ss..3..2.",
+                "....2..Ss..2....",
+                ".......Ss.......",
+                ".......Ss.......",
+                "......bSs.......",
+                ".......Ss.......",
+                ".......Ssb......",
+                ".......Ss.......",
+                "......sSSs......"}, Map.of(
+                '2', VERDANT_LEAF[1], '3', VERDANT_LEAF[2], '4', VERDANT_LEAF[3], '5', VERDANT_LEAF[4],
+                'S', VERDANT_BARK[4], 's', VERDANT_BARK[1], 'b', VERDANT_BARK[2]));
+    }
+
+    /** Two-block-tall plants are painted once on a 16×32 canvas, so the upper half always joins the lower one. */
+    private static final Map<String, BufferedImage> TALL_CANVASES = new HashMap<>();
+
+    /** The upper ({@code top}) or lower half of the 16×32 canvas of {@code key}, painted by {@code painter} with the key's seed. */
+    private static void tallHalf(BufferedImage image, String key, Painter painter, boolean top) {
+        BufferedImage canvas = TALL_CANVASES.computeIfAbsent(key, k -> {
+            BufferedImage tall = new BufferedImage(SIZE, 2 * SIZE, BufferedImage.TYPE_INT_ARGB);
+            painter.paint(tall, seeded(k));
+            return tall;
+        });
+        int offset = top ? 0 : SIZE;
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                image.setRGB(x, y, canvas.getRGB(x, y + offset));
+            }
+        }
+    }
+
+    /** A pixel at (x, y) rounded down, on an image of any size; outside the image nothing is drawn. */
+    private static void plot(BufferedImage image, double x, double y, int rgb) {
+        int px = (int) Math.floor(x);
+        int py = (int) Math.floor(y);
+        if (px >= 0 && py >= 0 && px < image.getWidth() && py < image.getHeight()) {
+            set(image, px, py, rgb);
+        }
+    }
+
+    /** A straight one-pixel line from (x0, y0) to (x1, y1), its tone from {@code palette} falling from {@code from} to {@code to}. */
+    private static void stalk(BufferedImage image, int[] palette, double x0, double y0, double x1, double y1, double from, double to) {
+        int steps = (int) Math.ceil(2 * Math.hypot(x1 - x0, y1 - y0)) + 1;
+        for (int i = 0; i <= steps; i++) {
+            double t = i / (double) steps;
+            plot(image, lerp(x0, x1, t), lerp(y0, y1, t), shade(palette, lerp(from, to, t)));
+        }
+    }
+
+    /**
+     * A broad leaf blade from its base (bx, by) along {@code angle} (y down): {@code length} to the pointed tip, half
+     * width up to {@code width}; {@code lobed}: two heart lobes reach back past the base with a notch between (elephant
+     * ear). Pale midrib and side veins, the half facing the light (top left) lit, a darker edge.
+     */
+    private static void blade(BufferedImage image, Random random, int[] palette, double bx, double by, double angle,
+            double length, double width, boolean lobed) {
+        double ax = Math.cos(angle);
+        double ay = Math.sin(angle);
+        double back = lobed ? 0.25 * length : 0;
+        // +v side is lit when its normal (-ay, ax) points to the upper left
+        double litSide = Math.signum(ay - ax);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                double ox = x + 0.5 - bx;
+                double oy = y + 0.5 - by;
+                double u = ox * ax + oy * ay;
+                double v = -ox * ay + oy * ax;
+                double s = (u + back) / (length + back);
+                if (s <= 0 || s >= 1) {
+                    continue;
+                }
+                double half = width * Math.pow(Math.sin(Math.PI * Math.pow(s, 0.75)), 0.9);
+                if (Math.abs(v) > half || (lobed && u < 0.3 && Math.abs(v) < 0.4 - 1.1 * u)) {
+                    continue;
+                }
+                double light = 0.5 + 0.2 * Math.signum(v) * litSide - 0.12 * s + 0.1 * (random.nextDouble() - 0.5);
+                boolean rib = Math.abs(v) < 0.5 && u > 0 && s < 0.92;
+                boolean vein = u > 0.5 && frac((u - 0.8 * Math.abs(v)) / 2.4) < 0.2 && Math.abs(v) < half - 0.8;
+                int colour;
+                if (Math.abs(v) > half - 0.85) {
+                    colour = palette[Math.signum(v) == litSide ? 2 : 0];
+                } else if (rib) {
+                    colour = palette[palette.length - 1];
+                } else if (vein) {
+                    colour = shade(palette, light + 0.22);
+                } else {
+                    colour = shade(palette, light);
+                }
+                set(image, x, y, colour);
+            }
+        }
+    }
+
+    /**
+     * A fern frond from (x0, y0) along {@code angle}, bending down by {@code droop}: a rachis with paired leaflets every 2 px
+     * (none near the base) that shorten towards the tip, the upper leaflets lit; works on any image size.
+     */
+    private static void frond(BufferedImage image, Random random, int[] palette, double x0, double y0, double angle,
+            double length, double droop, double leaflet) {
+        double dx = Math.cos(angle);
+        double dy = Math.sin(angle);
+        int steps = (int) Math.ceil(length * 2);
+        List<double[]> rachis = new ArrayList<>();
+        for (int i = 0; i <= steps; i++) {
+            double t = i / (double) steps;
+            double px = x0 + dx * t * length;
+            double py = y0 + dy * t * length + droop * t * t * length;
+            rachis.add(new double[] {px, py, t});
+            if (i % 4 != 2 || t < 0.25) {
+                continue;
+            }
+            double tx = dx;
+            double ty = dy + 2 * droop * t;
+            double norm = Math.hypot(tx, ty);
+            tx /= norm;
+            ty /= norm;
+            double len = leaflet * (1 - 0.65 * t) + 0.6;
+            for (int side = -1; side <= 1; side += 2) {
+                double nx = -ty * side;
+                double ny = tx * side;
+                boolean upper = ny < 0;
+                for (double k = 0.8; k <= len; k += 0.6) {
+                    double light = (upper ? 0.92 : 0.44) - 0.3 * k / len + 0.08 * (random.nextDouble() - 0.5);
+                    plot(image, px + nx * k + tx * k * 0.45, py + ny * k + ty * k * 0.45, shade(palette, light));
+                }
+            }
+        }
+        for (double[] point : rachis) {
+            plot(image, point[0], point[1], shade(palette, 0.4 - 0.15 * point[2]));
+        }
+    }
+
+    /**
+     * Verdant giant leaf (72b, double plant, 16×32 canvas): elephant-ear leaves on long stalks from one clump; two big
+     * lobed blades in the upper half, two smaller ones low down.
+     */
+    private static void giantLeaf(BufferedImage image, Random random) {
+        int base = 2 * SIZE;
+        double[][] leaves = {{5.0, 20.5, Math.toRadians(-165), 7.0, 2.8}, {11.0, 22.0, Math.toRadians(-18), 6.0, 2.5},
+                {6.0, 10.5, Math.toRadians(-112), 11.0, 4.4}, {10.5, 12.5, Math.toRadians(-58), 10.0, 4.0}};
+        for (double[] leaf : leaves) {
+            stalk(image, VERDANT_PLANT, 7.5 + 0.6 * Math.signum(leaf[0] - 7.5), base - 0.5, leaf[0], leaf[1], 0.3, 0.6);
+        }
+        for (double[] leaf : leaves) {
+            blade(image, random, VERDANT_PLANT, leaf[0], leaf[1], leaf[2], leaf[3], leaf[4], true);
+        }
+    }
+
+    /** Verdant fern (72b, cross): a low fern of five arching fronds from a short crown, spread so each frond reads on its own. */
+    private static void verdantFern(BufferedImage image, Random random) {
+        double[][] fronds = {{-170, 9.5, 0.06, 6.5}, {-128, 10.5, 0.05, 7}, {-92, 11, 0.02, 7.5}, {-52, 10.5, 0.05, 8}, {-10, 9.5, 0.06, 8.5}};
+        for (double[] f : fronds) {
+            frond(image, random, VERDANT_PLANT, f[3] + 0.5 * random.nextDouble(), SIZE - 0.5, Math.toRadians(f[0] + 6 * (random.nextDouble() - 0.5)), f[1], f[2], 2.2);
+        }
+    }
+
+    /** Verdant tall fern (72b, double plant, 16×32 canvas): two tall upright fronds and four arching side fronds. */
+    private static void tallFern(BufferedImage image, Random random) {
+        double base = 2 * SIZE - 0.5;
+        double[][] fronds = {{-160, 12, 0.07}, {-20, 12, 0.07}, {-130, 19, 0.035}, {-50, 19, 0.035}, {-97, 29, 0.012}, {-83, 28, 0.014}};
+        for (double[] f : fronds) {
+            frond(image, random, VERDANT_PLANT, 7.5 + random.nextDouble(), base, Math.toRadians(f[0] + 6 * (random.nextDouble() - 0.5)), f[1], f[2], 3.0);
+        }
+    }
+
+    /**
+     * Stamps {@code rows} at (x0, y0): {@code '.'} skipped, other characters from {@code legend}; characters in
+     * {@code glowing} are painted as glowing pixels (the glow layer reads them).
+     */
+    private static void stamp(BufferedImage image, int x0, int y0, String[] rows, Map<Character, Integer> legend, String glowing) {
+        for (int row = 0; row < rows.length; row++) {
+            for (int col = 0; col < rows[row].length(); col++) {
+                char c = rows[row].charAt(col);
+                if (c == '.') {
+                    continue;
+                }
+                Integer rgb = legend.get(c);
+                if (rgb == null) {
+                    throw new IllegalStateException("stamp row " + row + ": no colour for '" + c + "'");
+                }
+                if (glowing.indexOf(c) >= 0) {
+                    glow(image, x0 + col, y0 + row, rgb);
+                } else {
+                    set(image, x0 + col, y0 + row, rgb);
+                }
+            }
+        }
+    }
+
+    /** A stiff strap leaf from (x0, y0) along {@code angle}, bending down by {@code droop}: two pixels wide, then one, lit on top. */
+    private static void strap(BufferedImage image, double x0, double y0, double angle, double length, double droop) {
+        double dx = Math.cos(angle);
+        double dy = Math.sin(angle);
+        for (double d = 0; d <= length; d += 0.5) {
+            double t = d / length;
+            double x = x0 + dx * d;
+            double y = y0 + dy * d + droop * d * d;
+            plot(image, x, y, t > 0.85 ? VERDANT_PLANT[5] : shade(VERDANT_PLANT, 0.62 - 0.15 * t));
+            if (t < 0.7) {
+                plot(image, x, y + 1, shade(VERDANT_PLANT, 0.25 - 0.1 * t));
+            }
+        }
+    }
+
+    /** The apricot bract spike of the bromeliad (x 5–10, rows 1–11); g/G/W glow (F8, Q-T3 A). */
+    private static final String[] BROMELIAD_SPIKE = {
+            "..WG..",
+            "..45..",
+            ".G432.",
+            ".4543.",
+            "g3452g",
+            ".4543.",
+            "G3454g",
+            "454321",
+            "345432",
+            ".2432.",
+            ".1221."};
+
+    /**
+     * Verdant bromeliad (72b, cross; the wall bromeliad shares it): a rosette of stiff sea-green strap leaves around an
+     * upright spike of apricot bracts, lit on the left; the bract tips glow (emissive layer, no block light).
+     */
+    private static void bromeliad(BufferedImage image, Random random) {
+        double[][] back = {{-172, 7.5, 0.035}, {-150, 8, 0.03}, {-128, 7.5, 0.02}, {-52, 7.5, 0.02}, {-30, 8, 0.03}, {-8, 7.5, 0.035}};
+        for (double[] leaf : back) {
+            strap(image, 7.5, SIZE - 1.5, Math.toRadians(leaf[0] + 6 * (random.nextDouble() - 0.5)), leaf[1], leaf[2]);
+        }
+        stamp(image, 5, 1, BROMELIAD_SPIKE, Map.of('1', APRICOT[0], '2', APRICOT[1], '3', APRICOT[2], '4', APRICOT[3],
+                '5', APRICOT[4], 'g', APRICOT_GLOW[1], 'G', APRICOT_GLOW[2], 'W', APRICOT_GLOW[3]), "gGW");
+        double[][] front = {{-118, 5.5, 0.03}, {-64, 5.5, 0.03}};
+        for (double[] leaf : front) {
+            strap(image, 7.5, SIZE - 0.5, Math.toRadians(leaf[0]), leaf[1], leaf[2]);
+        }
+    }
+
+    /**
+     * Verdant orchid (72b, on trunks and walls, facing): seen from the front, upright: broad sea-green leaves at the base
+     * and an arching spray with two open lilac flowers and a bud; the lip and heart of each flower glow (Q-T3 A).
+     */
+    private static void orchid(BufferedImage image, Random random) {
+        stamp(image, 0, 0, new String[] {
+                "..........5.5...",
+                "...5.5...54345..",
+                "..54345..3gWg3..",
+                "..3gWg3...2G2...",
+                "...2G2.....s....",
+                "....s.....s.4...",
+                ".....s...s.43...",
+                "......s.s..s....",
+                ".......ss.s.....",
+                ".......Ss.......",
+                "..cd...Ss...ed..",
+                ".bcdd..Ss..ddcb.",
+                "abccdd.Ss.ddcbba",
+                ".abccddSsddccba.",
+                "..aabccSsccbaa..",
+                "....aabbbbaa...."}, Map.ofEntries(
+                Map.entry('2', LILAC[1]), Map.entry('3', LILAC[2]), Map.entry('4', LILAC[3]), Map.entry('5', LILAC[4]),
+                Map.entry('g', LILAC_GLOW[1]), Map.entry('G', LILAC_GLOW[2]), Map.entry('W', LILAC_GLOW[3]),
+                Map.entry('s', VERDANT_PLANT[1]), Map.entry('S', VERDANT_PLANT[3]),
+                Map.entry('a', VERDANT_PLANT[0]), Map.entry('b', VERDANT_PLANT[1]), Map.entry('c', VERDANT_PLANT[2]),
+                Map.entry('d', VERDANT_PLANT[4]), Map.entry('e', VERDANT_PLANT[5])), "gGW");
+    }
+
+    /**
+     * Verdant hanging orchid (72b, cross): hangs from the top edge under ledges and branches: two drooping leaves, an
+     * aerial root and a pendant spray with two lilac flowers (no glow).
+     */
+    private static void hangingOrchid(BufferedImage image, Random random) {
+        sprite(image, new String[] {
+                ".bcdc..Ss..cdcb.",
+                "..bcdc.Ss.cdcb..",
+                "...abc.Ss.cba...",
+                "..r.ab.s..ba....",
+                "..r....s........",
+                "...r..s.s.......",
+                "...r.5.5.s......",
+                "....54345.s.....",
+                "....34543..s....",
+                ".....234...s....",
+                "......2...s.....",
+                ".........s......",
+                "........5.5.....",
+                ".......54345....",
+                ".......34543....",
+                "........232....."}, Map.ofEntries(
+                Map.entry('2', LILAC[1]), Map.entry('3', LILAC[2]), Map.entry('4', LILAC[3]), Map.entry('5', LILAC[4]),
+                Map.entry('s', VERDANT_PLANT[1]), Map.entry('S', VERDANT_PLANT[3]), Map.entry('r', VERDANT_BARK[2]),
+                Map.entry('a', VERDANT_PLANT[0]), Map.entry('b', VERDANT_PLANT[1]), Map.entry('c', VERDANT_PLANT[3]),
+                Map.entry('d', VERDANT_PLANT[4])));
+    }
+
+    /**
+     * Verdant blossom bush (72b, cross): a rounded sea-green bush with a ragged, gappy edge, lit to the upper left, a few
+     * sand-beige twigs at the foot and peach florets with a cream heart.
+     */
+    private static void blossomBush(BufferedImage image, Random random) {
+        double[][] clumps = valueNoise(random, 4, 4);
+        for (int y = 2; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double e = Math.pow((x + 0.5 - 8) / 7.6, 2) + Math.pow((y + 0.5 - 9.2) / 6.9, 2);
+                if (e > 1 || (e > 0.72 && clumps[x][y] < 0.45) || random.nextInt(11) == 0) {
+                    continue;
+                }
+                double light = 0.5 + 0.35 * (clumps[x][y] - 0.5) - 0.3 * (x + y - 17) / 16.0 + 0.1 * (random.nextDouble() - 0.5);
+                set(image, x, y, shade(VERDANT_PLANT, light));
+            }
+        }
+        int[][] twigs = {{6, 15}, {7, 14}, {9, 15}, {9, 14}, {8, 13}};
+        for (int[] twig : twigs) {
+            set(image, twig[0], twig[1], VERDANT_BARK[twig[1] == 15 ? 1 : 3]);
+        }
+        int placed = 0;
+        for (int attempt = 0; attempt < 60 && placed < 9; attempt++) {
+            int x = 1 + random.nextInt(SIZE - 2);
+            int y = 3 + random.nextInt(11);
+            double e = Math.pow((x + 0.5 - 8) / 7.6, 2) + Math.pow((y + 0.5 - 9.2) / 6.9, 2);
+            if (e > 0.75 || floretNear(image, x, y)) {
+                continue;
+            }
+            floret(image, x, y, PEACH, 0.62 - 0.2 * (x + y - 17) / 16.0);
+            placed++;
+        }
+    }
+
+    /** The colours of a peach floret (petals and cream heart), to keep florets apart. */
+    private static final Set<Integer> FLORET_TONES = floretTones();
+
+    private static Set<Integer> floretTones() {
+        Set<Integer> tones = toneSet(PEACH);
+        tones.add(APRICOT[5]);
+        return tones;
+    }
+
+    /** Whether a peach floret already sits within two pixels of (x, y), so florets do not merge into blobs. */
+    private static boolean floretNear(BufferedImage image, int x, int y) {
+        for (int dy = -2; dy <= 2; dy++) {
+            for (int dx = -2; dx <= 2; dx++) {
+                if (isOpaque(image, x + dx, y + dy) && FLORET_TONES.contains(image.getRGB(x + dx, y + dy) & 0xFFFFFF)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A five-pixel floret centred at (x, y) (blossom bush, flowering vine): four petals from {@code palette} around
+     * {@code tone}, the upper-left ones lit and the lower-right ones shaded, and a cream heart; clipped at the tile edge.
+     */
+    private static void floret(BufferedImage image, int x, int y, int[] palette, double tone) {
+        int[][] petals = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
+        for (int[] petal : petals) {
+            double light = tone + (petal[0] + petal[1] < 0 ? 0.2 : petal[0] + petal[1] > 0 ? -0.24 : 0);
+            plot(image, x + petal[0], y + petal[1], shade(palette, light));
+        }
+        plot(image, x, y, APRICOT[5]);
+    }
+
+    /** One vine strand: column {@code x0}, swaying a pixel (periodic over the tile height, so stems join), its leaf beat. */
+    private record VineStrand(int x0, double sway, int nodeOffset, int end) {
+        int x(int y) {
+            return x0 + (int) Math.round(0.9 * Math.sin(2 * Math.PI * y / SIZE + sway));
+        }
+    }
+
+    /**
+     * Verdant vine (72b, cross, climbable, grows down like weeping vines): three woody green stems with small sea-green
+     * leaves every four rows on alternating sides. The stem part ({@code head} false) tiles vertically; the head is the
+     * lowest block, the same stems (shared seed) ending at different lengths in a pale curled bud. Leaves and florets
+     * only grow from nodes on rows 1–14, so none crosses the tile edge: a stem joins a stem, the head and a ledge alike
+     * (71b review). {@code flowering}: the same pixels plus peach florets (some lilac) at a few nodes (Q-T2 A).
+     */
+    private static void vine(BufferedImage image, boolean head, boolean flowering) {
+        Random shared = seeded("block/verdant_vine#strands");
+        Random random = seeded(head ? "block/verdant_vine" : "block/verdant_vine_plant");
+        List<VineStrand> strands = new ArrayList<>();
+        int[] columns = {3, 8, 12};
+        for (int column : columns) {
+            strands.add(new VineStrand(column + shared.nextInt(2) - 1 + (column == 12 ? 1 : 0), shared.nextDouble() * 2 * Math.PI,
+                    shared.nextInt(4), head ? 8 + random.nextInt(7) : SIZE));
+        }
+        List<int[]> nodes = new ArrayList<>();
+        for (VineStrand strand : strands) {
+            int last = strand.end() - 1;
+            for (int y = 0; y <= last; y++) {
+                boolean node = Math.floorMod(y + strand.nodeOffset(), 4) == 0;
+                int colour = head && y >= last - 1 ? VERDANT_PLANT[5] : node ? VERDANT_BARK[2] : VERDANT_PLANT[y % 2 == 0 ? 1 : 2];
+                plot(image, strand.x(y), y, colour);
+                if (node && y >= 1 && y <= SIZE - 2 && (!head || y < last - 2)) {
+                    int side = Math.floorMod((y + strand.nodeOffset()) / 4, 2) == 0 ? 1 : -1;
+                    leaflet(image, strand.x(y), y, side);
+                    nodes.add(new int[] {strand.x(y), y, -side});
+                }
+            }
+            if (head) {
+                // the curled bud at the tip
+                plot(image, strand.x(last) + 1, last, VERDANT_PLANT[4]);
+                plot(image, strand.x(last) + 1, last - 1, VERDANT_PLANT[3]);
+            }
+        }
+        if (flowering) {
+            Random flowers = seeded((head ? "block/verdant_vine" : "block/verdant_vine_plant") + "#flowers");
+            for (int[] node : nodes) {
+                int x = node[0] + 2 * node[2];
+                if (flowers.nextInt(5) < 2 || x < 1 || x > SIZE - 2) {
+                    continue;
+                }
+                floret(image, x, node[1], flowers.nextInt(3) == 0 ? LILAC : PEACH, 0.66);
+            }
+        }
+    }
+
+    /** A small two-row leaf leaving the stem at (x, y) to {@code side}: lit on top, darker at the hanging tip. */
+    private static void leaflet(BufferedImage image, int x, int y, int side) {
+        plot(image, x + side, y, VERDANT_PLANT[4]);
+        plot(image, x + 2 * side, y, VERDANT_PLANT[3]);
+        plot(image, x + side, y + 1, VERDANT_PLANT[3]);
+        plot(image, x + 2 * side, y + 1, VERDANT_PLANT[2]);
+        plot(image, x + 3 * side, y + 1, VERDANT_PLANT[1]);
+    }
+
+    /**
+     * Verdant water bloom (72b, flat on still water like a lily pad, fixed colour, H2 = A), seen from above: a rosette of
+     * six broad, ribbed pastel leaves (water lettuce) with darker creases between them and a raised rim lit on the far
+     * side, and a small pale peach-white flower in the middle. Clearly apart from the lotus (round pad, pink flower).
+     */
+    private static void waterBloom(BufferedImage image, Random random) {
+        double turn = random.nextDouble() * Math.PI / 3;
+        double sector = Math.PI / 3;
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double dx = x + 0.5 - 8;
+                double dy = y + 0.5 - 8;
+                double r = Math.hypot(dx, dy);
+                double angle = Math.atan2(dy, dx) - turn;
+                double a = angle - sector * Math.round(angle / sector);
+                double across = Math.abs(a) / (sector / 2);
+                double edge = 7.4 - 1.7 * across * across;
+                if (r > edge) {
+                    continue;
+                }
+                int colour;
+                if (r < 1.1) {
+                    colour = APRICOT[5];
+                } else if (r < 2.4 && Math.cos(5 * (angle + turn)) > 0.1) {
+                    colour = dx + dy < 0 ? PEACH[5] : PEACH[3];
+                } else if (r < 2.4) {
+                    colour = PEACH[4];
+                } else if (across > 0.86) {
+                    colour = VERDANT_LEAF[0];
+                } else if (r > edge - 0.9) {
+                    colour = dx + dy > 0 ? VERDANT_LEAF[5] : VERDANT_LEAF[1];
+                } else if (Math.abs(a) * r < 0.45) {
+                    colour = VERDANT_LEAF[4];
+                } else {
+                    double light = 0.55 - 0.1 * (dx + dy) / 7 + 0.1 * (random.nextDouble() - 0.5)
+                            + (frac(Math.abs(a) * r / 1.3) < 0.3 ? -0.18 : 0);
+                    colour = shade(VERDANT_LEAF, light);
+                }
+                set(image, x, y, colour);
+            }
+        }
+    }
+
+    /**
+     * Verdant fruit pod (72b, on the emergent trunk, stages like cocoa, H3 = A) in vanilla's cocoa UV layout, so B's
+     * model can use {@code minecraft:block/cocoa_stageN} with our texture: top/bottom face in the top-left square
+     * (4/6/8 px), the four sides at {@code [11,4,15,9]}, {@code [9,4,15,11]}, {@code [8,4,16,13]}, the stalk at
+     * {@code [12,0,16,4]}. Ribbed pod lit on the left; young mint green, half-ripe in between, ripe apricot-orange (Q-T2 A).
+     */
+    /** Vanilla's cocoa UV per stage (cocoa_stageN.json): the up/down square's size and the side face {x0, y0, x1, y1}. */
+    private static final int[] POD_TOP = {4, 6, 8};
+    private static final int[][] POD_SIDE = {{11, 4, 15, 9}, {9, 4, 15, 11}, {8, 4, 16, 13}};
+
+    private static void fruitPod(BufferedImage image, Random random, int stage) {
+        int[] palette = stage == 0 ? VERDANT_LEAF : stage == 2 ? FRUIT : new int[FRUIT.length];
+        if (stage == 1) {
+            for (int i = 0; i < FRUIT.length; i++) {
+                palette[i] = mix(VERDANT_LEAF[i], FRUIT[i], 0.55);
+            }
+        }
+        int top = POD_TOP[stage];
+        int sideX = POD_SIDE[stage][0];
+        int sideWidth = POD_SIDE[stage][2] - sideX;
+        int sideHeight = POD_SIDE[stage][3] - POD_SIDE[stage][1];
+        for (int y = 0; y < top; y++) {
+            for (int x = 0; x < top; x++) {
+                double dx = x + 0.5 - top / 2.0;
+                double dy = y + 0.5 - top / 2.0;
+                double r = Math.hypot(dx, dy);
+                double rib = Math.cos(Math.atan2(dy, dx) * (4 + stage)) > 0.4 ? 0.12 : -0.05;
+                double light = 0.6 - 0.18 * (dx + dy) / top - 0.25 * r / top + rib + 0.06 * (random.nextDouble() - 0.5);
+                set(image, x, y, r < 0.9 && stage > 0 ? VERDANT_BARK[1] : shade(palette, light));
+            }
+        }
+        for (int y = 0; y < sideHeight; y++) {
+            for (int x = 0; x < sideWidth; x++) {
+                double across = (x + 0.5) / sideWidth;
+                double along = (y + 0.5) / sideHeight;
+                double rib = x % 2 == 0 ? 0.1 : -0.06;
+                double light = 0.68 - 0.45 * across - 0.25 * Math.pow(2 * along - 1, 2) + rib + 0.06 * (random.nextDouble() - 0.5);
+                set(image, sideX + x, 4 + y, shade(palette, light));
+            }
+        }
+        set(image, sideX + 1, 5, palette[palette.length - 1]);
+        int[][] stalk = {{13, 3, 1}, {13, 2, 3}, {14, 2, 2}, {14, 1, 4}, {15, 1, 3}, {15, 0, 2}};
+        for (int[] pixel : stalk) {
+            set(image, pixel[0], pixel[1], VERDANT_BARK[pixel[2]]);
+        }
+    }
+
+    /**
+     * {@code verdant_fruit} (72b, placeholder item, H3 = A): a ribbed apricot-orange pod lying diagonally, lit on the
+     * upper left with a highlight, a short sand-beige stalk and a mint leaf at the upper end; selective outline.
+     */
+    private static void verdantFruit(BufferedImage image, Random random) {
+        double ax = Math.cos(-Math.PI / 4);
+        double ay = Math.sin(-Math.PI / 4);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double ox = x + 0.5 - 7.2;
+                double oy = y + 0.5 - 8.8;
+                double u = ox * ax + oy * ay;
+                double v = -ox * ay + oy * ax;
+                double e = Math.pow(u / 6.0, 2) + Math.pow(v / 3.5, 2);
+                if (e > 1) {
+                    continue;
+                }
+                double rib = frac((v + 3.5) / 1.75) < 0.3 ? -0.14 : 0;
+                double light = 0.62 - 0.2 * (ox + oy) / 6 - 0.2 * e + rib + 0.06 * (random.nextDouble() - 0.5);
+                set(image, x, y, shade(FRUIT, light));
+            }
+        }
+        set(image, 5, 7, FRUIT[5]);
+        set(image, 6, 6, FRUIT[5]);
+        set(image, 5, 8, FRUIT[4]);
+        int[][] stalk = {{12, 3, 3}, {13, 2, 4}, {12, 4, 1}};
+        for (int[] pixel : stalk) {
+            set(image, pixel[0], pixel[1], VERDANT_BARK[pixel[2]]);
+        }
+        int[][] leaf = {{14, 2, 4}, {14, 3, 3}, {15, 3, 2}, {13, 1, 4}, {14, 1, 5}};
+        for (int[] pixel : leaf) {
+            set(image, pixel[0], pixel[1], VERDANT_LEAF[pixel[2]]);
+        }
+        outlineSelective(image, FRUIT[0], FRUIT_OUTLINE);
+    }
+
     // ---- Gameplay blocks (72) -----------------------------------------------------------------------------------
 
     /**
-     * Sucking mud (72): wet green-black mud with a soft sheen; three slow dimples each on its own beat, a dark ring that
-     * draws in (the mud sucking down) with a lit lip, then a small bubble at the centre. Periodic in {@code phase}; opaque.
+     * Sucking mud (72): wet green-black mud; three slow dimples each on its own beat, a dark ring that draws in (the mud
+     * sucking down) with a lit lip, then a small bubble at the centre. Wet and glossy as the tell (G1 = A, 71b): every
+     * bulge facing the light (top left) carries a cool sheen, the low spots are dark wet hollows with a reflecting lower
+     * rim, and a few glints twinkle on their own beat. Periodic in {@code phase}; opaque.
      */
     private static void suckingMud(BufferedImage image, Random random, double phase) {
         double[][] broad = valueNoise(random, 8, 8);
         double[][] mid = valueNoise(random, 4, 4);
+        double[][] glints = valueNoise(random, 2, 2);
+        double[][] beats = valueNoise(random, 4, 4);
+        double[][] height = new double[SIZE][SIZE];
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                height[x][y] = broad[x][y] + 0.6 * mid[x][y];
+            }
+        }
+        // slope towards the light: higher here than one pixel down and right means this face catches the sky
+        double[][] slope = new double[SIZE][SIZE];
+        List<Double> slopes = new ArrayList<>();
+        List<Double> heights = new ArrayList<>();
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                slope[x][y] = height[x][y] - height[(x + 1) % SIZE][(y + 1) % SIZE];
+                slopes.add(slope[x][y]);
+                heights.add(height[x][y]);
+            }
+        }
+        slopes.sort(null);
+        heights.sort(null);
+        // by rank, so the share of gloss is the same for every seed: ~4 % bright sheen, ~9 % sheen, ~12 % wet hollow
+        double bright = slopes.get(SIZE * SIZE * 96 / 100);
+        double sheen = slopes.get(SIZE * SIZE * 87 / 100);
+        double rim = slopes.get(SIZE * SIZE * 6 / 100);
+        double hollow = heights.get(SIZE * SIZE * 12 / 100);
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 double t = 0.45 + 0.4 * (broad[x][y] - 0.5) + 0.3 * (mid[x][y] - 0.5) + 0.2 * (random.nextDouble() - 0.5);
-                set(image, x, y, t > 0.9 ? SUCKING_SHEEN : shade(SUCKING_MUD, t));
+                double twinkle = 0.05 * Math.sin(2 * Math.PI * (phase + beats[x][y] * 3));
+                int colour;
+                if (glints[x][y] > 0.9 + twinkle && slope[x][y] > 0.0) {
+                    colour = SUCKING_GLOSS[2];
+                } else if (slope[x][y] > bright) {
+                    colour = SUCKING_GLOSS[1];
+                } else if (slope[x][y] > sheen) {
+                    colour = SUCKING_GLOSS[0];
+                } else if (height[x][y] < hollow) {
+                    // a wet hollow: darkest mud, its far (lower right) rim reflecting
+                    colour = slope[x][y] < rim ? SUCKING_GLOSS[0] : SUCKING_MUD[0];
+                } else {
+                    colour = shade(SUCKING_MUD, t);
+                }
+                set(image, x, y, colour);
             }
         }
         for (int i = 0; i < 3; i++) {
@@ -2058,7 +2796,8 @@ public final class Ring4Textures {
 
     /** Drawn at night: the block darkened as by a dark sky, its glow layer (or the whole emissive crystal) at full brightness. */
     private static final String[] NIGHT = {"block/glowcap", "block/blighted_glowcap", "block/glow_bloom",
-            "block/glowing_hanging_roots", "block/toxic_crystal_cluster", "block/purity_crystal_lamp", "block/purity_crystal_cluster"};
+            "block/glowing_hanging_roots", "block/toxic_crystal_cluster", "block/purity_crystal_lamp", "block/purity_crystal_cluster",
+            "block/verdant_orchid", "block/verdant_bromeliad"};
 
     private static final String[] SLOT_SPRITES = {"item/raw_tidesilver", "item/jade", "item/toxic_crystal_shard",
             "item/aquamarine_shard", "item/purity_crystal_shard", "item/moonpetal_door", "item/giant_lily_pad",
@@ -2067,6 +2806,19 @@ public final class Ring4Textures {
             "block/large_toxic_crystal_bud", "block/medium_toxic_crystal_bud", "block/small_toxic_crystal_bud",
             "block/aquamarine_cluster", "block/large_aquamarine_bud", "block/medium_aquamarine_bud",
             "block/small_aquamarine_bud", "block/purity_crystal_cluster", "block/slime_trail"};
+
+    /** The verdant flora in a slot (71b): items, and the plants whose block texture is also their item. */
+    private static final String[] VERDANT_SLOTS = {"item/verdant_door", "item/verdant_fruit", "block/verdant_sapling",
+            "block/verdant_fern", "block/verdant_tall_fern_top", "block/verdant_giant_leaf_top", "block/verdant_bromeliad",
+            "block/verdant_orchid", "block/verdant_hanging_orchid", "block/verdant_blossom_bush", "block/verdant_vine",
+            "block/verdant_vine_flowering", "block/verdant_water_bloom", "block/lotus", "block/moonpetal_sapling", "item/moonpetal_door"};
+
+    /** Moonpetal (top row) beside verdant (bottom row), as 4×4 walls at 2×: same part of the wood set in each column. */
+    private static final String[][] WOOD_COMPARISON = {
+            {"block/moonpetal_log", "block/moonpetal_log_top", "block/stripped_moonpetal_log", "block/moonpetal_planks",
+                    "block/moonpetal_leaves", "block/moonpetal_door_top", "block/moonpetal_trapdoor"},
+            {"block/verdant_log", "block/verdant_log_top", "block/stripped_verdant_log", "block/verdant_planks",
+                    "block/verdant_leaves", "block/verdant_door_top", "block/verdant_trapdoor"}};
 
     /** Ores as B's two-layer model shows them: the overlay over its host (tidestone, and flat grey for stone/deepslate). */
     private static final String[] ORES = {"block/tidesilver_ore_overlay", "block/jade_ore_overlay"};
@@ -2219,6 +2971,145 @@ public final class Ring4Textures {
         return top;
     }
 
+    /** The 71b sheet on its own: the verdant section only. */
+    private static void writeVerdantPreview() throws IOException {
+        BufferedImage sheet = new BufferedImage(SHEET_WIDTH, 4000, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = sheet.createGraphics();
+        graphics.setColor(new Color(0x2B2B2B));
+        graphics.fillRect(0, 0, sheet.getWidth(), sheet.getHeight());
+        int bottom = drawVerdant(graphics, 10);
+        graphics.dispose();
+        if (bottom > sheet.getHeight()) {
+            throw new IllegalStateException("verdant sheet needs " + bottom + " px, has " + sheet.getHeight());
+        }
+        Files.createDirectories(VERDANT_PREVIEW.getParent());
+        ImageIO.write(sheet.getSubimage(0, 0, sheet.getWidth(), bottom), "png", VERDANT_PREVIEW.toFile());
+        System.out.println("wrote " + VERDANT_PREVIEW);
+    }
+
+    /**
+     * Verdant flora beside moonpetal (71b, H4 = A: verdant must stay distinct from cascade_vale): the wood sets as walls,
+     * cascade vale and verdant falls side by side by day (sky {@code 86D6E0}, grass {@code 6CC24A} as a stand-in block),
+     * verdant falls at night (orchid and bromeliad glow layers at full brightness), the fruit pod stages (texture in the
+     * cocoa UV layout and a front view) and the plants in a slot. Returns the new top.
+     */
+    private static int drawVerdant(Graphics2D graphics, int top) throws IOException {
+        graphics.setColor(new Color(0xFFC857));
+        graphics.drawString("== VERDANT FALLS FLORA (71b) beside MOONPETAL ==", 10, top + 12);
+        top += 20;
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("wood sets, 4x4 walls at 2x: top row moonpetal (cascade_vale), bottom row verdant", 10, top + 12);
+        top += 20;
+        int block = SIZE * 2;
+        for (String[] row : WOOD_COMPARISON) {
+            for (int i = 0; i < row.length; i++) {
+                int left = 10 + i * (4 * block + 24);
+                graphics.setColor(Color.LIGHT_GRAY);
+                graphics.drawString(row[i].replace("block/", ""), left, top + 10);
+                BufferedImage tile = render(row[i]);
+                for (int ty = 0; ty < 4; ty++) {
+                    for (int tx = 0; tx < 4; tx++) {
+                        drawOn(graphics, tile, left + tx * block, top + 14 + ty * block, 2, 0x3E5A66);
+                    }
+                }
+            }
+            top += 4 * block + 30;
+        }
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("cascade vale (moonpetal, day) | verdant falls (day; grass = stand-in in the biome colour 6CC24A) | verdant falls (night)", 10, top + 12);
+        top += 20;
+        drawScene(graphics, CASCADE, 10, top + (VERDANT.length - CASCADE.length) * SIZE * 4, 0x9FDCE6, false);
+        drawScene(graphics, VERDANT, 10 + 11 * SIZE * 4, top, 0x86D6E0, false);
+        drawScene(graphics, VERDANT, 10 + 22 * SIZE * 4, top, 0x0A0E14, true);
+        top += VERDANT.length * SIZE * 4 + 20;
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("fruit pod stage 0/1/2: texture (cocoa UV layout) and a side view on the trunk, 4x | water bloom and lotus on water (top view)", 10, top + 12);
+        top += 20;
+        BufferedImage trunk = render("block/verdant_log");
+        for (int stage = 0; stage < 3; stage++) {
+            int left = 10 + stage * (2 * SIZE * 4 + 24);
+            drawOn(graphics, render("block/verdant_fruit_pod_stage" + stage), left, top, 4, 0x3E5A66);
+            drawOn(graphics, trunk, left + SIZE * 4 + 8, top, 4, -1);
+            drawOn(graphics, podView(stage), left + SIZE * 4 + 8, top, 4, -1);
+        }
+        for (int i = 0; i < 2; i++) {
+            int left = 10 + 3 * (2 * SIZE * 4 + 24) + i * (SIZE * 4 + 8);
+            drawOn(graphics, render(i == 0 ? "block/verdant_water_bloom" : "block/lotus"), left, top, 4, 0x3FD0C0);
+        }
+        top += SIZE * 4 + 20;
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("verdant items and plants in a slot at 1x, 2x and 3x (inventory grey); last three: lotus, moonpetal sapling and door", 10, top + 12);
+        top += 20;
+        for (int i = 0; i < VERDANT_SLOTS.length; i++) {
+            int left = 10 + (i % 9) * 128;
+            int rowTop = top + (i / 9) * 64;
+            BufferedImage sprite = render(VERDANT_SLOTS[i]);
+            int x = left;
+            for (int scale = 1; scale <= 3; scale++) {
+                int size = SIZE * scale;
+                graphics.setColor(new Color(0xC6C6C6));
+                graphics.fillRect(x, rowTop, size + 4, size + 4);
+                graphics.setColor(new Color(0x8B8B8B));
+                graphics.fillRect(x + 2, rowTop + 2, size, size);
+                drawOn(graphics, sprite, x + 2, rowTop + 2, scale, -1);
+                x += size + 8;
+            }
+        }
+        top += ((VERDANT_SLOTS.length + 8) / 9) * 64 + 20;
+        return top;
+    }
+
+    /**
+     * The fruit pod hanging on a trunk, seen from the side (preview only): the side face of the cocoa layout centred where
+     * the model puts the box (from row 4 down), the stalk above it.
+     */
+    private static BufferedImage podView(int stage) throws IOException {
+        BufferedImage pod = render("block/verdant_fruit_pod_stage" + stage);
+        BufferedImage view = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+        int[] side = POD_SIDE[stage];
+        int width = side[2] - side[0];
+        int left = (SIZE - width) / 2;
+        for (int y = side[1]; y < side[3]; y++) {
+            for (int x = 0; x < width; x++) {
+                view.setRGB(left + x, y, pod.getRGB(side[0] + x, y));
+            }
+        }
+        for (int y = 0; y < 4; y++) {
+            for (int x = 0; x < 4; x++) {
+                if (isOpaque(pod, 12 + x, y)) {
+                    view.setRGB(6 + x, y, pod.getRGB(12 + x, y));
+                }
+            }
+        }
+        return view;
+    }
+
+    /** Preview-only stand-in for a grass block side in the verdant_falls grass colour (6CC24A) over dark soil. */
+    private static final String GRASS = "preview:grass";
+    /** Preview-only side view of the ripe fruit pod ({@link #podView}). */
+    private static final String POD = "preview:pod";
+
+    private static BufferedImage grassStandIn;
+
+    private static BufferedImage grassStandIn() {
+        if (grassStandIn == null) {
+            grassStandIn = paintGrassStandIn();
+        }
+        return grassStandIn;
+    }
+
+    private static BufferedImage paintGrassStandIn() {
+        BufferedImage image = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+        Random random = seeded(GRASS);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                boolean green = y < 3 + (Math.floorMod(x * 7, 3) == 0 ? 1 : 0);
+                set(image, x, y, mix(green ? 0x6CC24A : 0x6A4E36, 0x000000, 0.25 * random.nextDouble()));
+            }
+        }
+        return image;
+    }
+
     private static final String LE = "block/moonpetal_leaves";
     private static final String LO = "block/moonpetal_log";
     private static final String TS = "block/tidestone";
@@ -2265,6 +3156,20 @@ public final class Ring4Textures {
             {"block/reeds", "block/peat", "block/peat", "block/peat", "block/sucking_mud", "block/sucking_mud", "block/reeds", "block/peat", "block/peat", "block/reeds"},
             {"block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat"}};
 
+    private static final String VL = "block/verdant_log";
+    private static final String VE = "block/verdant_leaves";
+    /** verdant_falls (side view): an emergent tree with orchid, fruit pod and vines (some flowering), a tree fern, undergrowth. */
+    private static final String[][] VERDANT = {
+            {"", VE, VE, VE, VE, VE, "", "", "", ""},
+            {VE, VE, VE, VE, VE, VE, VE, "", "", ""},
+            {"block/verdant_vine_plant", "block/verdant_hanging_orchid", "", VL, "", "block/verdant_vine_plant_flowering", "", VE, VE, VE},
+            {"block/verdant_vine_plant_flowering", "", "block/verdant_orchid", VL, POD, "block/verdant_vine_plant", "", "", VL, ""},
+            {"block/verdant_vine", "", "", VL, "", "block/verdant_vine_flowering", "", "", VL, ""},
+            {"", "block/verdant_giant_leaf_top", "", VL, "", "", "block/verdant_tall_fern_top", "", VL, ""},
+            {"block/verdant_bromeliad", "block/verdant_giant_leaf_bottom", "block/verdant_fern", VL, "block/verdant_blossom_bush",
+                    "block/verdant_fern", "block/verdant_tall_fern_bottom", "block/verdant_bromeliad", VL, "block/verdant_sapling"},
+            {GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS}};
+
     /** Draws a grid of textures at 4x; at {@code night} blocks are darkened and glow layers drawn on top at full brightness. */
     private static void drawScene(Graphics2D graphics, String[][] scene, int left0, int top, int backdrop, boolean night) throws IOException {
         for (int ty = 0; ty < scene.length; ty++) {
@@ -2273,8 +3178,12 @@ public final class Ring4Textures {
                 int rowTop = top + ty * SIZE * 4;
                 graphics.setColor(new Color(backdrop));
                 graphics.fillRect(left, rowTop, SIZE * 4, SIZE * 4);
-                if (!scene[ty][tx].isEmpty()) {
-                    drawOn(graphics, night ? atNight(scene[ty][tx]) : render(scene[ty][tx]), left, rowTop, 4, -1);
+                String name = scene[ty][tx];
+                if (name.equals(GRASS) || name.equals(POD)) {
+                    BufferedImage image = name.equals(GRASS) ? grassStandIn() : podView(2);
+                    drawOn(graphics, night ? darkened(image) : image, left, rowTop, 4, -1);
+                } else if (!name.isEmpty()) {
+                    drawOn(graphics, night ? atNight(name) : render(name), left, rowTop, 4, -1);
                 }
             }
         }
@@ -2983,6 +3892,19 @@ public final class Ring4Textures {
                     night.setRGB(x, y, glow.getRGB(x, y));
                 } else if (isOpaque(base, x, y)) {
                     set(night, x, y, mix(base.getRGB(x, y) & 0xFFFFFF, 0x000000, 0.8));
+                }
+            }
+        }
+        return night;
+    }
+
+    /** A preview-only image as by a dark sky (no glow layer). */
+    private static BufferedImage darkened(BufferedImage image) {
+        BufferedImage night = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                if (isOpaque(image, x, y)) {
+                    set(night, x, y, mix(image.getRGB(x, y) & 0xFFFFFF, 0x000000, 0.8));
                 }
             }
         }
