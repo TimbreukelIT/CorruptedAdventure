@@ -8,5 +8,5 @@
     "argument1": "corruptedadventure:ring_4/nether/interpolated_shape",
     "argument2": "corruptedadventure:ring_4/nether/geodes"
   },
-  "when_out_of_range": "corruptedadventure:ring_4/nether/interpolated_shape"
+  "when_out_of_range": "corruptedadventure:ring_4/nether/fossils"
 }

@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.CanyonDetails;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.CellEdges;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.DewGeodes;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.GiantGeodes;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.SeaFossils;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandOutput;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RadialFalloff;
@@ -100,6 +101,10 @@ public final class ModDensityFunctionTypes {
     /** {@code corruptedadventure:giant_geodes} (the giant geodes of Nether ring 4's geode hollows, package 65) */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<GiantGeodes>> GIANT_GEODES =
             DENSITY_FUNCTION_TYPES.register("giant_geodes", () -> GiantGeodes.MAP_CODEC);
+
+    /** {@code corruptedadventure:sea_fossils} (the sea-creature fossils of Nether ring 4's bone dunes as terrain, package 78) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<SeaFossils>> SEA_FOSSILS =
+            DENSITY_FUNCTION_TYPES.register("sea_fossils", () -> SeaFossils.MAP_CODEC);
 
     private ModDensityFunctionTypes() {
     }
