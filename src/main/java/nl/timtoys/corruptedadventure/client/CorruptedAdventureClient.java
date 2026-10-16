@@ -27,8 +27,11 @@ import nl.timtoys.corruptedadventure.client.particle.SandGustParticle;
 import nl.timtoys.corruptedadventure.client.particle.SteamPuffParticle;
 import nl.timtoys.corruptedadventure.client.particle.WaterfallMistParticle;
 import nl.timtoys.corruptedadventure.client.weather.ColdBreath;
+import nl.timtoys.corruptedadventure.client.weather.NetherRing4Fog;
 import nl.timtoys.corruptedadventure.client.weather.Ring3Ambience;
+import nl.timtoys.corruptedadventure.client.weather.Ring4Ambience;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
+import nl.timtoys.corruptedadventure.client.weather.SunderedFade;
 import nl.timtoys.corruptedadventure.client.weather.VolcanoPlumeRenderer;
 import nl.timtoys.corruptedadventure.network.ClientboundHandlers;
 import nl.timtoys.corruptedadventure.network.ConditionSyncPayload;
@@ -69,6 +72,11 @@ public final class CorruptedAdventureClient {
         ColdBreath.register(NeoForge.EVENT_BUS);
         // Smoke plumes above the ring 3 volcanoes the server sends (package 50b).
         VolcanoPlumeRenderer.register(NeoForge.EVENT_BUS);
+        // Ring 4 (change 80): day and night, reeds, the silhouette, glitch specks; zone 4→5 to grey after the weather's
+        // fog colour; the pulsing fog of Nether ring 4.
+        Ring4Ambience.register(NeoForge.EVENT_BUS);
+        SunderedFade.register(NeoForge.EVENT_BUS);
+        NetherRing4Fog.register(NeoForge.EVENT_BUS);
     }
 
     private static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {

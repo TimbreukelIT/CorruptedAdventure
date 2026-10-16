@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
@@ -58,32 +59,26 @@ class Ring4BiomesTest {
         }
         assertEquals(Set.of(ModBiomes.DROWNED_FOREST, ModBiomes.PEAT_MOORS, ModBiomes.REED_MARSH, ModBiomes.WITHERED_GARDENS),
                 Set.copyOf(Ring4Biomes.BLIGHTED_TAG));
-        assertThrows(IllegalArgumentException.class, () -> Ring4Biomes.look(ModBiomes.STEAM_FENS));
+        assertThrows(IllegalArgumentException.class, () -> Ring4Biomes.climate(ModBiomes.STEAM_FENS));
     }
 
+    /** Mild and wet everywhere; every effect is the atmosphere's hook (change 80). */
     @Test
-    void mildWetAndEveryBiomeHasItsOwnColours() {
-        Set<Integer> skies = new HashSet<>();
-        Set<Integer> fogs = new HashSet<>();
-        Set<Integer> waters = new HashSet<>();
+    void mildWetAndEveryEffectFromTheAtmosphere() {
         for (Map.Entry<ResourceKey<Biome>, Biome> entry : bootstrap().entrySet()) {
             Biome biome = entry.getValue();
-            Ring4Biomes.Look look = Ring4Biomes.look(entry.getKey());
+            BiomeSpecialEffects hook = BiomeAmbience.ring4(entry.getKey()).build();
             assertEquals(Ring4Biomes.TEMPERATURE, biome.getBaseTemperature(), entry.getKey().toString());
             assertTrue(Ring4Biomes.TEMPERATURE - 0.3F > 0.15F, "no snow, even 240 blocks above Y 80");
             assertEquals(!entry.getKey().equals(ModBiomes.SUNDERED_REACH), biome.hasPrecipitation(), entry.getKey().toString());
-            assertEquals(look.sky(), biome.getSkyColor());
-            assertEquals(look.fog(), biome.getFogColor());
-            assertEquals(look.water(), biome.getWaterColor());
-            assertEquals(look.waterFog(), biome.getWaterFogColor());
-            skies.add(look.sky());
-            fogs.add(look.fog());
-            waters.add(look.water());
+            assertEquals(Ring4Biomes.climate(entry.getKey()).downfall(), biome.getModifiedClimateSettings().downfall());
+            assertEquals(hook.getSkyColor(), biome.getSkyColor());
+            assertEquals(hook.getFogColor(), biome.getFogColor());
+            assertEquals(hook.getWaterColor(), biome.getWaterColor());
+            assertEquals(hook.getWaterFogColor(), biome.getWaterFogColor());
+            assertEquals(hook.getGrassColorOverride(), biome.getSpecialEffects().getGrassColorOverride());
+            assertEquals(hook.getAmbientLoopSoundEvent(), biome.getSpecialEffects().getAmbientLoopSoundEvent());
         }
-        int size = Ring4Biomes.WITH_TRANSITION.size();
-        assertEquals(size, skies.size(), "every sky differs");
-        assertEquals(size, fogs.size(), "every fog differs");
-        assertEquals(size, waters.size(), "every water differs");
     }
 
     @Test
@@ -111,11 +106,10 @@ class Ring4BiomesTest {
         assertEquals(Set.of(EntityType.FROG, EntityType.TURTLE), animals(biomes.get(ModBiomes.VERDANT_FALLS).getMobSettings()));
     }
 
-    /** verdant_falls: the plan's first colours (verdant-falls.md §4), wet and rainy. */
+    /** verdant_falls: the wettest of the ring, and rainy. */
     @Test
-    void verdantFallsLooksTropical() {
-        Ring4Biomes.Look look = Ring4Biomes.look(ModBiomes.VERDANT_FALLS);
-        assertEquals(new Ring4Biomes.Look(0x86D6E0, 0xD2F0E4, 0x3FD0C0, 0x0F4F4A, 0x6CC24A, 0x55B03A, 0.95F, true), look);
+    void verdantFallsIsTheWettest() {
+        assertEquals(new Ring4Biomes.Climate(0.95F, true), Ring4Biomes.climate(ModBiomes.VERDANT_FALLS));
     }
 
     /** The animals a biome adds to vanilla's common spawns (those bring the cave fauna, glow squids, everywhere). */

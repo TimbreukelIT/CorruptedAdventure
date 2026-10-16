@@ -8,6 +8,7 @@
   },
   "downfall": 0.9,
   "effects": {
+    "ambient_sound": "corruptedadventure:ambient.ring_4.water",
     "fog_color": 14478306,
     "foliage_color": 5152332,
     "grass_color": 6270554,
