@@ -197,11 +197,20 @@ final class WorldTrees {
                 }
             }
         }
-        IslandField.Lift lift = plain.lift();
-        if (lift != null && !tree.clear(lift.x(), lift.z(), lift.bottom(), lift.top())) {
-            lift = null;
+        // Review 74 #2: where no root has a fall beside it, any edge of the island (golden-angle steps), as for any island.
+        double start = Math.atan2(tree.roots.get(0).pz()[0] - tree.z, tree.roots.get(0).px()[0] - tree.x);
+        for (int k = 0; k < 12 && falls.isEmpty(); k++) {
+            IslandField.Fall fall = IslandPlacement.fall(field, island, start + k * 2.399963, waterTop, lakeTop);
+            if (fall != null && free(tree, fall)) {
+                falls.add(fall);
+            }
         }
-        return new IslandField.Details(lakeTop, plain.lakeBottom(), List.copyOf(falls), lift);
+        IslandField.Lift plainLift = plain.lift();
+        // Review 74 #1: the lift was placed away from the plain falls only; keep it away from these too.
+        boolean keep = plainLift != null && tree.clear(plainLift.x(), plainLift.z(), plainLift.bottom(), plainLift.top())
+                && falls.stream().noneMatch(f -> Math.abs(f.fallX() - plainLift.x()) + Math.abs(f.fallZ() - plainLift.z()) < 6
+                        || Math.abs(f.springX() - plainLift.x()) + Math.abs(f.springZ() - plainLift.z()) < 6);
+        return new IslandField.Details(lakeTop, plain.lakeBottom(), List.copyOf(falls), keep ? plainLift : null);
     }
 
     /** Whether the tree leaves a fall's spring and its falling column free. */

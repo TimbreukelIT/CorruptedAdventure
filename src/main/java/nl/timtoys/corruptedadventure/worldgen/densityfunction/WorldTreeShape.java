@@ -377,10 +377,25 @@ final class WorldTreeShape {
             max = Math.max(max, to);
         }
 
+        /** Review 74 #6: the last block asked (the surface's three world_tree conditions ask the same block in turn). */
+        private int lastY = Integer.MIN_VALUE;
+        private WorldTreePart lastPart = WorldTreePart.NONE;
+
+        /** The part of block y of this column (x, z: the column's own position, for the shell's hash). */
         WorldTreePart part(int x, int y, int z) {
             if (y < min || y > max) {
                 return WorldTreePart.NONE;
             }
+            if (y == lastY) {
+                return lastPart;
+            }
+            WorldTreePart found = scan(x, y, z);
+            lastY = y;
+            lastPart = found;
+            return found;
+        }
+
+        private WorldTreePart scan(int x, int y, int z) {
             for (int k = 0; k < count; k++) {
                 if (y < lo[k] || y > hi[k]) {
                     continue;

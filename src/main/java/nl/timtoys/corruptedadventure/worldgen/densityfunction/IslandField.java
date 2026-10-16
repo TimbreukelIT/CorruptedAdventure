@@ -436,9 +436,12 @@ public final class IslandField implements DensityFunction {
         return landmarks.skyLakes(minX, minZ, maxX, maxZ);
     }
 
-    /** Whether a world tree has a block in the column (74; for the surface rule). */
+    /**
+     * Whether a world tree has a block in the column (74; for the surface rule). Away from the trees without the column
+     * itself: the surface pass asks this of every ring 4 column, whose column the table may no longer hold.
+     */
     public boolean hasTree(int x, int z) {
-        return islandColumn(x, z).tree != null;
+        return landmarks.nearTree(x, z) && islandColumn(x, z).tree != null;
     }
 
     /** What the block is of a world tree (74; {@code corruptedadventure:world_tree}), {@link WorldTreePart#NONE} if none. */

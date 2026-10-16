@@ -144,8 +144,11 @@ final class IslandArches {
         found.sort(Comparator.comparingDouble(Pair::gap).thenComparingDouble(p -> p.second().x()).thenComparingDouble(p -> p.second().z()));
         List<Pair> nearest = found.subList(0, Math.min(PARTNERS, found.size()));
         List<Pair> result = new ArrayList<>();
+        // Review 74 #3: at most one arch from an island (its nearest pair that gets one), so its arches never cross.
+        boolean arched = false;
         for (Pair pair : nearest) {
-            Arch arch = arch(field, pair);
+            Arch arch = arched ? null : arch(field, pair);
+            arched |= arch != null;
             result.add(arch == null ? pair : new Pair(pair.first(), pair.second(), pair.a(), pair.b(), pair.gap(), arch));
         }
         return List.copyOf(result);

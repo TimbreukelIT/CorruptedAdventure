@@ -51,9 +51,14 @@ final class IslandLandmarks {
     List<WorldTreeShape> trees() {
         List<WorldTreeShape> known = memo.trees;
         if (known == null) {
-            // Pure: racing threads compute the same list.
-            known = WorldTrees.place(field);
-            memo.trees = known;
+            // Review 74 #5: once, not once per worker thread arriving at the start of a world.
+            synchronized (memo) {
+                known = memo.trees;
+                if (known == null) {
+                    known = WorldTrees.place(field);
+                    memo.trees = known;
+                }
+            }
         }
         return known;
     }
@@ -80,6 +85,7 @@ final class IslandLandmarks {
         }
         int cellSize = field.settings().cellSize();
         List<IslandShape> kept = new ArrayList<>(candidates.size() + 1);
+        boolean changed = false;
         for (IslandShape candidate : candidates) {
             boolean clashes = false;
             for (WorldTreeShape tree : trees) {
@@ -88,16 +94,19 @@ final class IslandLandmarks {
                     break;
                 }
             }
-            if (!clashes) {
+            if (clashes) {
+                changed = true;
+            } else {
                 kept.add(candidate);
             }
         }
         for (WorldTreeShape tree : trees) {
             if (WorldTrees.inCell(tree, cellSize, i, j)) {
                 kept.add(tree.island);
+                changed = true;
             }
         }
-        return kept.size() == candidates.size() && kept.equals(candidates) ? candidates : List.copyOf(kept);
+        return changed ? List.copyOf(kept) : candidates;
     }
 
     /** Hook of {@link IslandField#details}: a tree's island has its falls beside its roots. */
@@ -182,6 +191,16 @@ final class IslandLandmarks {
     }
 
     // ---------------------------------------------------------------- read access
+
+    /** Whether a world tree's bounding square holds the column (no column computed). */
+    boolean nearTree(int x, int z) {
+        for (WorldTreeShape tree : trees()) {
+            if (tree.touches(x, z)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     List<IslandField.WorldTree> worldTrees(int minX, int minZ, int maxX, int maxZ) {
         List<IslandField.WorldTree> found = new ArrayList<>();
