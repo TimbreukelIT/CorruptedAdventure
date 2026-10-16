@@ -710,3 +710,41 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-15 | worldgen | `steam_fens`-poelen, geisers en stoomopeningen blijven vóór de verdant-split (placement-filter `before_split`, reikwijdte 6/3); randmeren en kloofvallen blijven ongewijzigd | Gebruikersbesluit na review 2c-2b: vervaagde biomegrens liet poelen bij ~3 % van de randmeerkolommen komen |
 | 2026-10-15 | worldgen | oever langs de kloofarmen loopt door tot de geul: helling bij elke lip | review 2c-2b |
 | 2026-10-15 | worldgen | teststop 5a2 (`verdant_falls`, heuvelfix ring 4) goedgekeurd; door naar prestatiemeting en golf 2 | Gebruiker: "dit ziet er top uit allemaal" |
+| 2026-10-16 | infra | Golf 2 ring 4: W-terrein en W-biomes takken af na de prestatiefix van de `steam_fens`-zone (`ring4/vf-perf2`); B, C, A, T en W-nether starten direct | Gebruiker (aanbevolen); geen conflicten in `IslandField`/`Verdant*` |
+| 2026-10-16 | infra | Golf 2 ring 4: 73 (tunnelnet) en 74 (wereldboom) parallel; 74 in een eigen worktree (poort 8) | Gebruiker (aanbevolen); korter kritiek pad |
+| 2026-10-16 | infra | Golf 2 ring 4: voorpakket 80-0 (sound events en particle types) op main; 72 merget vooruit naar main | Gebruiker (aanbevolen); zoals 50-0 bij ring 3, eigenaarschap blijft heel |
+| 2026-10-16 | blocks | De eigen tropische flora van `verdant_falls` komt in golf 2 (72b blokken, 71b textures, 75b aankleding), na een eigen flora-sparring | Gebruiker (afwijking van aanbevolen "na 5b"); 5b ziet `verdant_falls` compleet |
+| 2026-10-16 | worldgen | Tunnelnet ring 4 per band: mythisch overstroomd tot zeeniveau met koepelluchtkamers, bedorven droog met gaskamers en gifpoelen, gesloten overgangen | Gebruiker (aanbevolen); duiken versus gevaar, vlak waterniveau per kamer |
+| 2026-10-16 | worldgen | Tunnelingangen via gatmeren op zeeniveau en zinkgaten; niet onder gatmeren boven zeeniveau; geen tunnels in zone 3→4 en 4→5 (≥ 32 ervoor) | Gebruiker (aanbevolen); geen leeglopende meren, afdaling en afgrond blijven heel |
+| 2026-10-16 | worldgen | Wereldboom volledig terrein (veld + surface rule, bladeren persistent) | Gebruiker (aanbevolen); deterministisch, geen chunkgrens-limiet |
+| 2026-10-16 | worldgen | Hemelmeren, rotsbogen tussen eilanden en eilandparen door W-terrein in 74 (terrein), niet als feature in 75 | Gebruiker (aanbevolen); water alleen in terrein en vastgelegde vallen |
+| 2026-10-16 | blocks | Moerasgasketting gespreid via scheduled ticks (max. ~64 blokken per tick); één echte ontploffing per ~8 blokken, max. 4 per tick | Gebruiker (aanbevolen); geen lag-spike in grote kamers |
+| 2026-10-16 | worldgen | Moerasgas aan het oppervlak: gesloten bellen onder de veenkorst en 1–2 lagen in zinkgatbodems | Gebruiker (aanbevolen); onzichtbare val, herkenbaar aan de particles |
+| 2026-10-16 | blocks | Opwaartse stroom beweegt zoals de vanilla bubble column (gedeelde code in `entityInside`) | Gebruiker (aanbevolen); soepel in multiplayer, geen client-class |
+| 2026-10-16 | blocks | Zuigmodder wordt dodelijk drijfzand: helemaal wegzakken, stikschade na een paar seconden | Gebruiker (afwijking van aanbevolen "tot borsthoogte, geen schade"); echt gevaar in de bedorven band |
+| 2026-10-16 | worldgen | Gloed onder de eilanden in de bedorven band ook met gifkristal aan het oppervlak (naast `blighted_glowcap` en `glowcap`) | Gebruiker (afwijking van aanbevolen "alleen flora"); zichtbaar gif-thema |
+| 2026-10-16 | worldgen | Aquamarijn-geodes half open in de bodem onder diep water; gifkristal in de wanden van de droge bedorven tunnels en gaskamers | Gebruiker (aanbevolen) |
+| 2026-10-16 | worldgen | Nether-4-fossielen als terrein (veld in de Nether-4-DF, tot 80+ lang), binnen het budget ≤ 1,75× | Gebruiker (afwijking van aanbevolen "feature tot ~40"); reusachtige ribbenkasten |
+| 2026-10-16 | textures | 71b: alleen nieuwe golf 2-behoeften, de particle-check en de flora-textures; afstemmen van bestaande textures in 71 na 5b | Gebruiker (aanbevolen) |
+| 2026-10-16 | atmosphere | Zone 4→5 ontkleurt geleidelijk naar grijs via een client-hook (lucht, fog, water) | Gebruiker (aanbevolen); "loopt leeg" over de hele zone |
+| 2026-10-16 | atmosphere | Silhouet onder water: donkere, enorme billboard-particle ver in diep water (≥ 20 diep), zeldzaam (≤ 1 per ~20 min per speler), client-only | Gebruiker (aanbevolen); voorbode zonder mob-ontwerp |
+| 2026-10-16 | atmosphere | Nachtkoor en nachtgloed alleen 's nachts via een client-controller | Gebruiker (aanbevolen); geen harp overdag |
+| 2026-10-16 | atmosphere | Geen flikkerende stukjes lucht in fase 1 (alleen `glitch_speck`); flikkeren naar ring 5 (89/94) | Gebruiker (aanbevolen); geen risico met Sodium/Iris |
+| 2026-10-16 | infra | Golf 2 ring 4: geen aparte I-stroom; gifscan, `MapPalette`-kleuren en waterscan-settle in INT2 | Gebruiker (afwijking van aanbevolen I-stroom) |
+| 2026-10-16 | blocks | Drijfzand (`sucking_mud`) alleen in kleine plekken (≤ 4×4, 2–3 diep) op oevers in `peat_moors` en `drowned_forest`, niet midden in het riet; altijd herkenbaar (natte glanzende texture, bel, slurpgeluid) | Gebruiker (aanbevolen, G1); dodelijk maar eerlijk |
+| 2026-10-16 | blocks | Drijfzand: zakken ~1 blok per 2 s; hoofd boven traag eruit springen; hoofd onder schade, blijven springen brengt je eruit | Gebruiker (aanbevolen, G2); ontsnappen blijft mogelijk |
+| 2026-10-16 | conditions | Drijfzand: eigen damage type `corruptedadventure:sucking_mud` met doodsbericht, schade zoals gif (`DifficultyFloor`); mobs zakken ook weg, items niet | Gebruiker (aanbevolen, G3); consistent met gif |
+| 2026-10-16 | worldgen | Gifkristal aan het oppervlak van de bedorven band ook als clusters (licht 5, scherven); scherven zijn daardoor vroeg beschikbaar (fase 2-balans) | Gebruiker (afwijking van aanbevolen "alleen knoppen", G4) |
+| 2026-10-16 | worldgen | Nether-4-fossielen alleen in `bone_dunes`, ~1 per 250 × 250, half begraven, hol en beloopbaar (ruimte voor fase 3-tempels), niet in de zones of boven lava | Gebruiker (aanbevolen, G5); prestatie en ruimte-check beheersbaar |
+| 2026-10-16 | blocks | Tropische boom `verdant` met volledige houtset (log, wood, gestript, planken + houtset, bladeren, sapling) | Gebruiker (afwijking van aanbevolen "zonder planken", F1); bouwmateriaal |
+| 2026-10-16 | worldgen | `verdant_falls`-bomen in twee vormen: emergent 14–22 met plankwortels en schermkroon, boomvaren 4–7 | Gebruiker (aanbevolen, F2) |
+| 2026-10-16 | worldgen | Kleine bomen (boomvarens) ook op de stootborden van `verdant_falls`; paden, klimroutes en vallen blijven vrij | Gebruiker (afwijking van aanbevolen "geen bomen op stootborden", F3); meer jungle |
+| 2026-10-16 | worldgen | Flora `verdant_falls` weelderig maar open: vallen, lippen, paden, klimroutes, brugdekken en de bevaarbare voetrivier vrij | Gebruiker (aanbevolen, F4) |
+| 2026-10-16 | blocks | ~10 plantsoorten voor `verdant_falls`: reuzenblad, varen (laag/dubbel), bromelia (grond/wand), orchidee, hangorchidee, bloeiende struik, liaan, waterplant, fruit | Gebruiker (afwijking van aanbevolen "6 soorten", F5) |
+| 2026-10-16 | blocks | Eigen klimbare liaan met bloeiende variant; vervangt het hangmos in `ledge_strand` binnen `verdant_falls` | Gebruiker (afwijking van aanbevolen "zonder bloeiende variant", F6) |
+| 2026-10-16 | worldgen | Geen planten in beken, vallen en de voetrivier; stille meren een paar lotussen; oevers reuzenbladen en riet | Gebruiker (aanbevolen, F7); de waterplant van F5 is een vervolgvraag |
+| 2026-10-16 | textures | Gloed in de flora alleen als overlay op orchidee en bromelia, zonder bloklicht | Gebruiker (aanbevolen, F8) |
+| 2026-10-16 | textures | Palet van de flora: mythisch pastel, aansluitend op `moonpetal`; moet onderscheidbaar blijven van `cascade_vale` | Gebruiker (afwijking van aanbevolen "tropisch verzadigd", F9) |
+| 2026-10-16 | worldgen | Papegaaien in `verdant_falls` op de nieuwe bomen | Gebruiker (aanbevolen, F10) |
+| 2026-10-16 | blocks | `verdant_sapling` groeit alleen de boomvaren; de emergente boom alleen via worldgen; planten werken met bonemeal | Gebruiker (aanbevolen, F11) |
+| 2026-10-16 | blocks | Flora-namen met voorvoegsel `verdant_` | Gebruiker (aanbevolen, F12); ringthema herkenbaar |
