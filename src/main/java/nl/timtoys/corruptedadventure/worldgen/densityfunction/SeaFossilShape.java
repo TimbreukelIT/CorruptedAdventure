@@ -25,7 +25,7 @@ import java.util.List;
 public final class SeaFossilShape {
     private static final int SALT = 59;
     /** How many placements a cell tries, in order; the first that lies wholly in the dunes is the fossil of the cell. */
-    public static final int ATTEMPTS = 96;
+    public static final int ATTEMPTS = 128;
     /** Thickness of a rib along the spine. */
     static final double RIB_THICKNESS = 3.0;
     /** Radial thickness of a rib (and of the skull's shell: {@link #SHELL}). */
@@ -39,6 +39,8 @@ public final class SeaFossilShape {
     static final double VERTEBRA_RADIUS = 1.8;
     /** The bone mask of a column covers Y {@code floor − BELOW} .. {@code floor − BELOW + 63}. */
     public static final int BELOW = 8;
+    /** A column's {@code flat_cache} value comes from its quart corner, at most this far away. */
+    static final double QUART_REACH = 5.0;
     /** How far the jaws reach past the snout, as a share of the skull's length. */
     private static final double JAW_REACH = 0.25;
 
@@ -387,12 +389,13 @@ public final class SeaFossilShape {
 
     /**
      * Whether everything of the fossil lies in the dunes and clear of the borders: its floor with the ramp round it (and
-     * the jaws past the snout) on a grid of {@link Settings#sampleStep}, and a ring round every vertebra of the tail and
-     * the neck.
+     * the jaws past the snout) and a square round every vertebra, on a grid of {@link Settings#sampleStep}, all
+     * {@link #QUART_REACH} wider: the terrain picks the fossils' branch with the region as the noise chunk caches it
+     * ({@code flat_cache}: the value of the column's quart corner, up to ~4.2 blocks away).
      */
     static boolean fits(Settings settings, Fossil fossil, ColumnFunction region, ColumnFunction edge) {
         double step = settings.sampleStep();
-        double ramp = fossil.ramp() + 1.0;
+        double ramp = fossil.ramp() + 1.0 + QUART_REACH;
         double end = fossil.skullStart() + fossil.skullLength();
         for (double s = -fossil.cageHalf() - ramp; s <= fossil.sMax() + ramp; s += step) {
             double clamped = Math.min(end, Math.max(-fossil.cageHalf(), s));
@@ -409,10 +412,12 @@ public final class SeaFossilShape {
         for (Vertebra v : fossil.vertebrae()) {
             double s = fossil.along(v.x(), v.z());
             double l = fossil.across(v.x(), v.z());
-            for (int i = 0; i < 6; i++) {
-                double angle = i * Math.PI / 3.0;
-                if (!clear(settings, fossil, s + 4.0 * Math.cos(angle), l + 4.0 * Math.sin(angle), region, edge)) {
-                    return false;
+            double around = v.radius() + QUART_REACH;
+            for (double ds = -around; ds <= around + 1e-9; ds += step) {
+                for (double dl = -around; dl <= around + 1e-9; dl += step) {
+                    if (!clear(settings, fossil, s + ds, l + dl, region, edge)) {
+                        return false;
+                    }
                 }
             }
         }

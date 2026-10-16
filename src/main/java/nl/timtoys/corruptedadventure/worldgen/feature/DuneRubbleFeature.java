@@ -26,7 +26,7 @@ import java.util.List;
 public final class DuneRubbleFeature extends Feature<RubbleConfiguration> {
     /** How far above and below the origin the ground is looked for. */
     private static final int SCAN_UP = 3;
-    private static final int SCAN_DOWN = 8;
+    private static final int SCAN_DOWN = 12;
     /** Clear of a fossil by this many blocks round the origin (a boulder is at most 3 across, shifted by 1). */
     private static final int FOSSIL_CLEARANCE = 3;
 
@@ -82,12 +82,21 @@ public final class DuneRubbleFeature extends Feature<RubbleConfiguration> {
         if (fossils == null) {
             return false;
         }
+        // the box lies in at most four cells (a fossil stays inside its own): resolve them once
+        int size = fossils.settings().cellSize();
+        int lowX = Math.floorDiv(x - FOSSIL_CLEARANCE, size);
+        int lowZ = Math.floorDiv(z - FOSSIL_CLEARANCE, size);
+        SeaFossilShape.Fossil[] cells = {fossils.fossilOfCell(lowX, lowZ), fossils.fossilOfCell(lowX + 1, lowZ),
+                fossils.fossilOfCell(lowX, lowZ + 1), fossils.fossilOfCell(lowX + 1, lowZ + 1)};
+        if (cells[0] == null && cells[1] == null && cells[2] == null && cells[3] == null) {
+            return false;
+        }
         for (int dx = -FOSSIL_CLEARANCE; dx <= FOSSIL_CLEARANCE; dx++) {
             for (int dz = -FOSSIL_CLEARANCE; dz <= FOSSIL_CLEARANCE; dz++) {
                 int cx = x + dx;
                 int cz = z + dz;
                 // the column's own cell: near a cell edge the neighbouring cell's fossil may be the near one
-                SeaFossilShape.Fossil fossil = fossils.fossilAt(cx, cz);
+                SeaFossilShape.Fossil fossil = cells[(Math.floorDiv(cx, size) - lowX) + 2 * (Math.floorDiv(cz, size) - lowZ)];
                 if (fossil != null && fossil.touches(cx, cz) && (fossil.floorWeight(cx, cz) > 0.0 || fossil.boneMask(cx, cz) != 0L)) {
                     return true;
                 }

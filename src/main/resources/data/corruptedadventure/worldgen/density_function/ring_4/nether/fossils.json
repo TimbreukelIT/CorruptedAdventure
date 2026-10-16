@@ -9,8 +9,8 @@
     "cell_size": 256,
     "ramp": 8,
     "region": [
-      -0.125,
-      0.125
+      -0.13,
+      0.13
     ],
     "sample_step": 2,
     "cage_length": [

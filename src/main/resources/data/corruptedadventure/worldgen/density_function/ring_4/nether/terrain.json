@@ -8,5 +8,12 @@
     "argument1": "corruptedadventure:ring_4/nether/interpolated_shape",
     "argument2": "corruptedadventure:ring_4/nether/geodes"
   },
-  "when_out_of_range": "corruptedadventure:ring_4/nether/fossils"
+  "when_out_of_range": {
+    "type": "minecraft:range_choice",
+    "input": "corruptedadventure:ring_4/nether/region",
+    "min_inclusive": -0.14,
+    "max_exclusive": 0.14,
+    "when_in_range": "corruptedadventure:ring_4/nether/fossils",
+    "when_out_of_range": "corruptedadventure:ring_4/nether/interpolated_shape"
+  }
 }

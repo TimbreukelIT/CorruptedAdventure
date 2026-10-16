@@ -79,7 +79,8 @@ class NetherRing4JsonTest {
         assertEquals(REF + "shape", WorldgenData.read(DIR + "interpolated_shape.json").get("argument").getAsString());
         // both branches of terrain (with the geodes, and the fossils that wrap it) name the same file: one interpolator
         String terrain = Files.readString(RING_4.resolve("terrain.json"));
-        assertEquals(1, count(terrain, "\"" + REF + "interpolated_shape\""));
+        assertEquals(2, count(terrain, "\"" + REF + "interpolated_shape\""));
+        assertTrue(terrain.contains("\"" + REF + "region\""), "the fossils only in the dunes' band of the region");
         assertTrue(terrain.contains("\"" + REF + "geodes\""));
         assertTrue(terrain.contains("\"" + REF + "fossils\""));
         assertEquals(CA_GEODES, WorldgenData.read(DIR + "geodes.json").get("type").getAsString());

@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.KeyDispatchDataCodec;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
 
 import javax.annotation.Nullable;
@@ -136,6 +137,11 @@ public final class SeaFossils implements DensityFunction {
         return region.compute(new SinglePointContext(x, 0, z));
     }
 
+    /** The region axis of Nether ring 4 at a column ({@code ring_4/nether/region}, as wired): the features' view of it. */
+    public double regionAt(int x, int z) {
+        return region(x, z);
+    }
+
     private double edge(int x, int z) {
         return edge.compute(new SinglePointContext(x, 0, z));
     }
@@ -237,8 +243,9 @@ public final class SeaFossils implements DensityFunction {
                 return;
             }
             double natural = owner.naturalFloor(x, z);
-            target = (int) Math.ceil(natural + (fossil.floor() - natural) * weight - 1e-9);
-            cutTop = Math.max(target, (int) Math.ceil(natural)) + CUT_ABOVE;
+            // clamped to the guard band, so every block the floor changes lies where compute() looks (the dunes lie far inside)
+            target = Mth.clamp((int) Math.ceil(natural + (fossil.floor() - natural) * weight - 1e-9), LOWEST + FILL_DEPTH, HIGHEST - CUT_ABOVE);
+            cutTop = Math.min(HIGHEST + 1, Math.max(target, (int) Math.ceil(natural)) + CUT_ABOVE);
         }
 
         /** +1 in a bone or under the floor, −1 above the floor up to the cut, NaN for "the terrain decides". */

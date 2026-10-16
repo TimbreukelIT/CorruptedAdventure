@@ -47,16 +47,18 @@ GEODES = {                  # GiantGeodeShape.Settings: hollows of diameter 20-4
     "cell_size": 128, "chance": 0.85, "radius_min": 10, "radius_max": 20, "floor_min": 42, "floor_max": 48,
     "region_max": HOLLOWS_THRESHOLD - RAMP, "region_reach_max": round(HOLLOWS_THRESHOLD + RAMP - 0.005, 6), "shell": 3, "door_width": 6, "door_height": 6, "door_length": 24, "doors_max": 3,
 }
-# SeaFossilShape.Settings (78, G5 = A): one fossil per cell of 256 at most (~1 per 256 x 256 of bone dunes), wholly in
-# the dunes (|region| <= 0.125 on a 2-grid over its floor, ramp and vertebrae: the spires' walkways and sea start at 0.14,
-# the hollows at -0.14) and clear of the ring's borders (edge = 0: 48 inside, past the zones and the dams).
-# 92-136 long: ribcage, neck, skull, tail.
+# SeaFossilShape.Settings (78, G5 = A): one fossil per cell of 256 at most (measured ~0.75 per 256 x 256 of bone
+# dunes), wholly in the dunes (|region| <= 0.13 on a 2-grid over its floor, ramp and vertebrae, 5 wider for the cached
+# region: the spires' walkways and sea start at 0.14, the hollows at -0.14) and clear of the ring's borders (edge = 0:
+# 48 inside, past the zones and the dams). 92-136 long: ribcage, neck, skull, tail.
 FOSSILS = {
-    "cell_size": 256, "ramp": 8, "region": [-0.125, 0.125], "sample_step": 2,
+    "cell_size": 256, "ramp": 8, "region": [-0.13, 0.13], "sample_step": 2,
     "cage_length": [40, 56], "half_width": [11, 16], "height": [16, 24], "rib_period": [8, 10], "burial": [0.0, 0.2],
     "neck_length": [6, 10], "skull_length": [18, 24], "skull_width": [7, 10], "skull_height": [10, 14],
     "tail_length": [24, 40], "tail_swing": [3, 9],
 }
+
+FOSSIL_BAND = 0.14          # sea_fossils only runs where the cached |region| < this (SeaFossilShapeTest checks the corners)
 
 NOISES = {
     "nether_ring_4_dunes": (-5, [1.0, 0.5]),
@@ -196,13 +198,15 @@ def files():
                      "noise": CA + "nether_ring_4_geode_cells", "settings": GEODES}
     out["fossils"] = {"type": CA + "sea_fossils", "terrain": ref("interpolated_shape"), "floor": ref("floor_height"),
                       "region": region, "edge": ref("edge"), "noise": CA + "nether_ring_4_fossil_cells", "settings": FOSSILS}
-    # One interpolator (both branches name the same file); the geodes cut it outside the interpolation, only where the
-    # hollows have weight, and the fossils wrap it everywhere else. A density function file must be an object or a
+    # One interpolator (every branch names the same file); the geodes cut it outside the interpolation, only where the
+    # hollows have weight, and the fossils wrap it only in the band of the dunes where they can lie (the spires skip it). A density function file must be an object or a
     # number, never a bare reference.
     out["interpolated_shape"] = {"type": "minecraft:interpolated", "argument": ref("shape")}
     out["terrain"] = {"type": "minecraft:range_choice", "input": ref("hollows_weight"), "min_inclusive": 1e-6,
                       "max_exclusive": 2.0, "when_in_range": mn(ref("interpolated_shape"), ref("geodes")),
-                      "when_out_of_range": ref("fossils")}
+                      "when_out_of_range": {"type": "minecraft:range_choice", "input": region,
+                                            "min_inclusive": -FOSSIL_BAND, "max_exclusive": FOSSIL_BAND,
+                                            "when_in_range": ref("fossils"), "when_out_of_range": ref("interpolated_shape")}}
     return out
 
 

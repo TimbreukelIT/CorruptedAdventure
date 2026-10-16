@@ -174,25 +174,37 @@ class SeaFossilShapeTest {
         }
     }
 
-    /** Every fossil lies in the bone dunes, never over the spires' sea or in the hollows, and clear of the zones. */
+    /**
+     * Every fossil lies in the bone dunes, never over the spires' sea or in the hollows, and clear of the zones: also
+     * the quart corners whose cached region picks the terrain's branch (up to 4 blocks round each fossil column) lie
+     * in the band where the terrain runs {@code sea_fossils} (|region| < 0.14) and the hollows have no weight.
+     */
     @Test
     void onlyInTheDunesAndClearOfTheZones() {
         for (long seed : new long[]{20260930L, 1L, 42L}) {
             World world = World.of(seed);
             for (SeaFossilShape.Fossil fossil : world.fossils()) {
-                for (double s = fossil.sMin() - fossil.ramp(); s <= fossil.sMax() + fossil.ramp(); s += 1.0) {
-                    for (double l = -fossil.lMax() - fossil.ramp(); l <= fossil.lMax() + fossil.ramp(); l += 1.0) {
+                java.util.Set<Long> corners = new java.util.HashSet<>();
+                for (double s = fossil.sMin() - fossil.ramp() - 2; s <= fossil.sMax() + fossil.ramp() + 2; s += 1.0) {
+                    for (double l = -fossil.lMax() - fossil.ramp() - 2; l <= fossil.lMax() + fossil.ramp() + 2; l += 1.0) {
                         int x = (int) Math.floor(fossil.x() + s * fossil.cos() - l * fossil.sin());
                         int z = (int) Math.floor(fossil.z() + s * fossil.sin() + l * fossil.cos());
                         if (fossil.boneMask(x, z) == 0L && fossil.floorWeight(x, z) <= 0.0) {
                             continue;
                         }
-                        double region = world.region(x, z);
-                        assertTrue(region < NetherRing4Features.SPIRES_THRESHOLD - 0.04, "not where the spires start: " + region);
-                        assertTrue(region > NetherRing4Features.HOLLOWS_THRESHOLD + 0.04, "not where the hollows start: " + region);
+                        for (int cx = (x & ~3); cx <= (x & ~3) + 4; cx += 4) {
+                            for (int cz = (z & ~3); cz <= (z & ~3) + 4; cz += 4) {
+                                corners.add((long) cx << 32 | cz & 0xFFFFFFFFL);
+                            }
+                        }
                         double r = Math.hypot(x, z);
                         assertTrue(r - INNER >= EDGE_WIDTH && OUTER - r >= EDGE_WIDTH, "clear of the zones and dams: r " + r);
                     }
+                }
+                for (long corner : corners) {
+                    double region = world.region((int) (corner >> 32), (int) corner);
+                    assertTrue(region < NetherRing4Features.SPIRES_THRESHOLD - 0.04, "not where the spires start: " + region);
+                    assertTrue(region >= NetherRing4Features.HOLLOWS_THRESHOLD + 0.04, "not where the hollows start: " + region);
                 }
             }
         }
