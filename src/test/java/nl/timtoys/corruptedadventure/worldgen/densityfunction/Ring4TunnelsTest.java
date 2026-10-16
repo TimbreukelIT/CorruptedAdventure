@@ -110,7 +110,7 @@ class Ring4TunnelsTest {
         for (Ring4Tunnels.Element e : ELEMENTS) {
             String kind = e instanceof Ring4Tunnels.Room room ? "room" + room.kind + room.sealed + (room.owner != null)
                     : e instanceof Ring4Tunnels.Sink ? "sink" : "seg" + e.flooded() + (((Ring4Tunnels.Seg) e).owner.mixed);
-            if (boxed.merge(kind, 1, Integer::sum) <= 3) {
+            if (boxed.merge(kind, 1, Integer::sum) <= 6) {
                 double[] s = e.spheres()[e.spheres().length / 2];
                 boxes.add(new int[]{(int) s[0] - 40, (int) s[2] - 40, (int) s[0] + 40, (int) s[2] + 40});
             }
@@ -255,6 +255,44 @@ class Ring4TunnelsTest {
         }
         System.out.printf("entrances: flooded %d, dry %d%n", flooded, dry);
         assertTrue(flooded > 0 && dry > 0);
+    }
+
+    /**
+     * Never under a lake above the sea (Q6 = A), the world trees' hole lakes (74) included: no open block of the net in
+     * a lake's closed band, along every tunnel and hall; the world trees' columns are checked too.
+     */
+    @Test
+    void theNetStaysOutOfTheBandsOfLakesAboveTheSea() {
+        List<int[]> columns = new ArrayList<>();
+        for (Ring4Tunnels.Element e : ELEMENTS) {
+            for (double[] s : e.spheres()) {
+                for (int k = -2; k <= 2; k++) {
+                    columns.add(new int[]{(int) Math.floor(s[0]) + 2 * k, (int) Math.floor(s[2]) - k});
+                }
+            }
+        }
+        for (IslandField.WorldTree tree : field.worldTrees(5800, -1500, 8200, 1500)) {
+            for (int dx = -60; dx <= 60; dx += 3) {
+                for (int dz = -60; dz <= 60; dz += 3) {
+                    columns.add(new int[]{tree.x() + dx, tree.z() + dz});
+                }
+            }
+        }
+        int guarded = 0;
+        for (int[] p : columns) {
+            IslandField.Column c = field.column(p[0], p[1]);
+            int from = c.caveLiftFrom();
+            int to = c.caveLiftTo();
+            if (from > to || c.lakeTop() == Integer.MIN_VALUE && from == Integer.MAX_VALUE) {
+                continue;
+            }
+            guarded++;
+            Ring4Tunnels.Span span = field.tunnelSpan(p[0], p[1]);
+            for (int y = from; span != null && y <= to; y++) {
+                assertTrue(!span.opens(y), "the net opens " + p[0] + " " + y + " " + p[1] + " in a lake's band " + from + ".." + to);
+            }
+        }
+        System.out.printf("lake bands checked in %d of %d columns%n", guarded, columns.size());
     }
 
     /** Tunnels are 5–12 wide and 5–7 high. */

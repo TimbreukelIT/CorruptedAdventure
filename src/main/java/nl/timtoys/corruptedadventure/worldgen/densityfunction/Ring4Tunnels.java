@@ -150,6 +150,7 @@ public final class Ring4Tunnels {
     private static final int KIND_EDGE = 7302;
     private static final int KIND_ENTRANCE = 7304;
     private static final int KIND_HALL = 7305;
+    private static final int KIND_DRY_ENTRANCE = 7306;
 
     // Interval kinds of a column's span.
     private static final byte K_FLOOD = 1;
@@ -280,6 +281,8 @@ public final class Ring4Tunnels {
                 lowest = Math.min(lowest, known);
             }
         }
+        // Peat sinkholes are cut per block, not on the grid: the deepest bowl whose disc comes near the point's cell.
+        lowest = Math.min(lowest, sinkFloorNear(x, z, 4.0 * Math.sqrt(2.0)));
         double limit = lowest - COVER;
         for (IslandShape shape : field.shapesNear(Mth.floor(x), Mth.floor(z))) {
             double reach = shape.groundReach();
@@ -294,6 +297,25 @@ public final class Ring4Tunnels {
             }
         }
         return limit;
+    }
+
+    /** The deepest floor of a sinkhole (the peat cutting it) whose bowl comes within {@code ring} of (x, z), else infinity. */
+    private double sinkFloorNear(double x, double z, double ring) {
+        double reach = ring + Ring4Relief.SINKHOLE_MAX_RADIUS;
+        int cell = Ring4Relief.SINKHOLE_CELL;
+        double floor = Double.POSITIVE_INFINITY;
+        for (int si = Math.floorDiv(Mth.floor(x - reach), cell); si <= Math.floorDiv(Mth.floor(x + reach), cell); si++) {
+            for (int sj = Math.floorDiv(Mth.floor(z - reach), cell); sj <= Math.floorDiv(Mth.floor(z + reach), cell); sj++) {
+                double[] hole = Ring4Relief.sinkhole(si, sj, field.salt());
+                if (hole != null && Math.hypot(hole[0] - x, hole[1] - z) - hole[2] <= ring) {
+                    double f = sinkFloor(si, sj, hole);
+                    if (!Double.isNaN(f)) {
+                        floor = Math.min(floor, f);
+                    }
+                }
+            }
+        }
+        return floor;
     }
 
     // ---------------------------------------------------------------- stage 1: nodes
@@ -327,11 +349,16 @@ public final class Ring4Tunnels {
         double jitter = 2.0 * CellShapes.unit(h, 4) - 1.0;
         double y = flooded ? FLOODED_MID + FLOODED_AMP * base + FLOODED_JITTER * jitter : DRY_MID + DRY_AMP * base + DRY_JITTER * jitter;
         Map<Long, Double> ground = new HashMap<>();
-        double limit = ceilingLimit(ground, x, z);
+        // The hall's whole footprint (its outline swung out, a block more), every 4 blocks: each sample reads its cell's
+        // corners, so every corner under the hall counts.
+        double limit = Double.POSITIVE_INFINITY;
         double ring = hallR * (1.0 + RAGGED) + 1.0;
-        for (int k = 0; k < 8; k++) {
-            double a = k * Math.PI / 4.0;
-            limit = Math.min(limit, ceilingLimit(ground, x + ring * Math.cos(a), z + ring * Math.sin(a)));
+        for (double dx = -ring; dx <= ring + 0.01; dx += 4.0) {
+            for (double dz = -ring; dz <= ring + 0.01; dz += 4.0) {
+                if (dx * dx + dz * dz <= (ring + 3.0) * (ring + 3.0)) {
+                    limit = Math.min(limit, ceilingLimit(ground, x + dx, z + dz));
+                }
+            }
         }
         y = Math.min(y, limit - HALL_UP_MAX);
         if (y < Y_MIN + 10.0) {
@@ -511,7 +538,15 @@ public final class Ring4Tunnels {
         for (int p = 0; p < line.size(); p++) {
             double x = line.x[p];
             double z = line.z[p];
-            if (!inBand(x, z, w[p] + (sealedLift ? LIFT_SIDE : 0.0))) {
+            double reach = w[p];
+            for (int k = 0; k < domeH.length; k++) {
+                double c = crest.applyAsDouble(k);
+                if (!Double.isNaN(c) && Math.abs(line.s[p] - c) <= DOME_REACH) {
+                    // A crest's dome is wider than the tunnel, and its closed caves reach past it.
+                    reach = Math.max(reach, DOME_REACH);
+                }
+            }
+            if (!inBand(x, z, reach + (sealedLift ? LIFT_SIDE : 0.0))) {
                 return false;
             }
             double nx = -line.dz(p);
@@ -651,7 +686,7 @@ public final class Ring4Tunnels {
         if (a == null || a.flooded) {
             return null;
         }
-        long h = CellShapes.cell(field.salt(), i, j, KIND_ENTRANCE + 1);
+        long h = CellShapes.cell(field.salt(), i, j, KIND_DRY_ENTRANCE);
         if (CellShapes.unit(h, 0) >= ENTRANCE_CHANCE) {
             return null;
         }
@@ -668,7 +703,7 @@ public final class Ring4Tunnels {
                     continue;
                 }
                 // A bowl dry under the sea level, or one whose floor lies above it with its ground checked all the same.
-                double floor = sinkFloor(hole);
+                double floor = sinkFloor(si, sj, hole);
                 if (Double.isNaN(floor) || !rimHolds(hole) || floor <= SEA_TOP && drySink(si, sj) == null) {
                     continue;
                 }
@@ -702,11 +737,13 @@ public final class Ring4Tunnels {
         return null;
     }
 
-    /** A sinkhole's floor at its centre, NaN where the peat does not cut it. */
-    private double sinkFloor(double[] hole) {
-        Ring4Relief.Sample s = new Ring4Relief.Sample();
-        field.relief().sample(hole[0], hole[1], Ring4Band.of(field.ringLayout()).value(hole[0], hole[1]), s, field.salt());
-        return s.sinkholeFloor;
+    /** A sinkhole's floor at its centre (its deepest), NaN where the peat does not cut it; remembered per world. */
+    private double sinkFloor(int si, int sj, double[] hole) {
+        return memo().once(memo().sinkFloors, KeyedSlots.key(si, sj), () -> {
+            Ring4Relief.Sample s = new Ring4Relief.Sample();
+            field.relief().sample(hole[0], hole[1], Ring4Band.of(field.ringLayout()).value(hole[0], hole[1]), s, field.salt());
+            return s.sinkholeFloor;
+        });
     }
 
     // ---------------------------------------------------------------- dry sinkholes
@@ -727,7 +764,7 @@ public final class Ring4Tunnels {
         if (hole == null || !inBand(hole[0], hole[1], hole[2] + LIFT_SIDE + 2.0)) {
             return null;
         }
-        double floor = sinkFloor(hole);
+        double floor = sinkFloor(si, sj, hole);
         if (Double.isNaN(floor) || floor > SEA_TOP) {
             return null;
         }
@@ -1152,7 +1189,7 @@ public final class Ring4Tunnels {
         final byte kind;
         final boolean sealed;
         private final double[] y;
-        private double[][] spheres;
+        private final double[][] spheres;
 
         Seg(Edge owner, Line line, double[] w, double hh, Profile profile, int from, int to, byte kind, boolean sealed,
             long nodeA, long nodeB) {
@@ -1170,6 +1207,14 @@ public final class Ring4Tunnels {
                 y[p] = profile.at(line.s[p]);
                 cover(line.x[p], line.z[p], w[p] + LIFT_SIDE + 1.0);
             }
+            List<double[]> list = new ArrayList<>();
+            for (int p = from; p <= to; p += 2) {
+                list.add(new double[]{line.x[p], y[p], line.z[p], Math.max(w[p], hh) + 0.5});
+            }
+            if ((to - from) % 2 != 0) {
+                list.add(new double[]{line.x[to], y[to], line.z[to], Math.max(w[to], hh) + 0.5});
+            }
+            spheres = list.toArray(new double[0][]);
         }
 
         @Override
@@ -1229,16 +1274,6 @@ public final class Ring4Tunnels {
 
         @Override
         double[][] spheres() {
-            if (spheres == null) {
-                List<double[]> list = new ArrayList<>();
-                for (int p = from; p <= to; p += 2) {
-                    list.add(new double[]{line.x[p], y[p], line.z[p], Math.max(w[p], hh) + 0.5});
-                }
-                if ((to - from) % 2 != 0) {
-                    list.add(new double[]{line.x[to], y[to], line.z[to], Math.max(w[to], hh) + 0.5});
-                }
-                spheres = list.toArray(new double[0][]);
-            }
             return spheres;
         }
     }
@@ -1258,7 +1293,7 @@ public final class Ring4Tunnels {
         final int level;
         final boolean sealed;
         final double rag;
-        private double[][] spheres;
+        private final double[][] spheres;
 
         Room(@Nullable Edge owner, double cx, double cz, double cy, double radius, double down, double up, byte kind, int level,
              boolean sealed, double rag, long nodeA, long nodeB) {
@@ -1274,6 +1309,7 @@ public final class Ring4Tunnels {
             this.sealed = sealed;
             this.rag = rag;
             cover(cx, cz, radius * (1.0 + RAGGED) + (sealed ? LIFT_SIDE : 0.0) + 1.0);
+            spheres = new double[][]{{cx, cy + (up - down) / 2.0, cz, Math.max(radius * (1.0 + RAGGED), (up + down) / 2.0)}};
         }
 
         /** A hall without its dome: water up to the sea level, no sealed air. */
@@ -1319,10 +1355,6 @@ public final class Ring4Tunnels {
 
         @Override
         double[][] spheres() {
-            if (spheres == null) {
-                double r = radius * (1.0 + RAGGED);
-                spheres = new double[][]{{cx, cy + (up - down) / 2.0, cz, Math.max(r, (up + down) / 2.0)}};
-            }
             return spheres;
         }
     }
@@ -1535,14 +1567,18 @@ public final class Ring4Tunnels {
 
     // ---------------------------------------------------------------- per world
 
-    /** The decisions of the net, per world (shared by all copies of one wired field); a cache like the field's. */
+    /**
+     * The decisions of the net, per world (shared by all copies of one wired field). Never cleared: {@link #finalCell}
+     * tells an element's own parts by identity, so a decision must not be made twice; the maps are bounded by the
+     * ring's area (a few thousand cells, some ten thousand sinkhole cells).
+     */
     static final class Memo {
-        private static final int LIMIT = 50_000;
         final Map<Long, Optional<Node>> nodes = new ConcurrentHashMap<>();
         final Map<Long, Optional<Edge>> edges = new ConcurrentHashMap<>();
         final Map<Long, Optional<Edge>> floodEntrances = new ConcurrentHashMap<>();
         final Map<Long, Optional<Edge>> dryEntrances = new ConcurrentHashMap<>();
         final Map<Long, Optional<Sink>> sinks = new ConcurrentHashMap<>();
+        final Map<Long, Double> sinkFloors = new ConcurrentHashMap<>();
         final Map<Long, Optional<Room>> halls = new ConcurrentHashMap<>();
         final Map<Long, List<Element>> stages = new ConcurrentHashMap<>();
         final Map<Long, List<Element>> finals = new ConcurrentHashMap<>();
@@ -1552,9 +1588,6 @@ public final class Ring4Tunnels {
             V known = map.get(key);
             if (known == null) {
                 known = decide.get();
-                if (map.size() > LIMIT) {
-                    map.clear();
-                }
                 V raced = map.putIfAbsent(key, known);
                 if (raced != null) {
                     known = raced;

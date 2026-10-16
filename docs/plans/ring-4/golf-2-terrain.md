@@ -45,7 +45,7 @@ Alles worldgen op de server; geen client-class, geen payload, geen `PROTOCOL_VER
 
 ## 4. Tests (licht, 2026-10-16)
 
-- `Ring4TunnelsTest`: alle onderdelen aanwezig (testseed, wig x 5.800–8.200, z ±1.500: 143 koepelhallen, 137 overstroomde tunnels, 252 topkoepels, 67 droge tunnels, 31 gas-, 18 gifpoel- en 29 kale hallen, 18 proppen, 19 overstroomde en 16 droge ingangen); ≥ 32 van de zones (bollen en kolommen langs de randen); **offline per blok** rond 3 elementen van elke soort (27 vakken van 81 × 81, ~167.000 open blokken, 0 fout): water nooit naast lucht/gas/gif of boven lucht, lucht en gas onder Y 63 alleen naast steen (onder het geïnterpoleerde oppervlak, grotten dicht op het blok en de 8 hoeken van zijn cel) of hun eigen soort, gifpoel alleen naast en boven steen of gif; ingangen openen (in het water van het gat; vloer = kombodem ±2,5); breedte/hoogte; determinisme (twee velden, omgekeerde volgorde); niets buiten ring 4.
+- `Ring4TunnelsTest`: alle onderdelen aanwezig (testseed, wig x 5.800–8.200, z ±1.500: 143 koepelhallen, 137 overstroomde tunnels, 252 topkoepels, 67 droge tunnels, 31 gas-, 18 gifpoel- en 30 kale hallen, 18 proppen, 20 overstroomde en 15 droge ingangen); ≥ 32 van de zones (bollen en kolommen langs de randen); nooit in de gesloten band van een meer boven zee (ook de gatmeren van de wereldbomen, 74); **offline per blok** rond 6 elementen van elke soort (54 vakken van 81 × 81, ~335.000 open blokken, 0 fout): water nooit naast lucht/gas/gif of boven lucht, lucht en gas onder Y 63 alleen naast steen (onder het geïnterpoleerde oppervlak, grotten dicht op het blok en de 8 hoeken van zijn cel) of hun eigen soort, gifpoel alleen naast en boven steen of gif; ingangen openen (in het water van het gat; vloer = kombodem ±2,5); breedte/hoogte; determinisme (twee velden, omgekeerde volgorde); niets buiten ring 4.
 - `RingAquiferTest`: één vlakke zee onder de grond in ring 4 (ook de ring 4-helft van zone 3→4, wat vanilla ook zou zetten), niet in zone 4→5; het net vult zijn eigen ruimte (gas, gif, koepels, droge lucht, water), carvers niet in de schil.
 - `Ring4JsonTest`: `tunnels` is geen stub meer.
 - Geen runServer, waterscan, determinisme in-game of perf (INT).
@@ -56,8 +56,19 @@ Alles worldgen op de server; geen client-class, geen payload, geen `PROTOCOL_VER
 - **Prestatie:** meetpunten in elke ring 4-biome plus een tunnelgebied (mythisch en bedorven); de aquifer is in ring 4 anders (vlakke zee), dus ook `cascade`, `fjord` en `steamfens` opnieuw.
 - **In-game:** koepels (adem halen), proppen, gas- en gifhallen, ingangen onder gatmeren en in droge zinkgaten; diepe grotten in ring 4 nu onder water.
 
+## Code-review (3908040a, 2026-10-16, medium, review-subagent)
+1. **Dek te grof** (medium): `ceilingLimit` las alleen de hoeken van het 4-raster; peat-zinkgaten worden per blok gesneden (een kom van straal 3 kan ~12 dieper liggen dan de dichtstbijzijnde hoek) en een hal werd alleen op een ring buiten de hal bemonsterd. **Opgelost:** de diepste kombodem waarvan de schijf binnen 4·√2 van het punt komt telt mee (`sinkFloorNear`, kombodems per wereld onthouden), en de hal wordt over zijn hele voetafdruk om de 4 blokken bemonsterd.
+2. **Hash-botsing** (laag): `KIND_ENTRANCE + 1` = `KIND_HALL`, zodat droge ingang en halsoort dezelfde waarde lazen. **Opgelost:** eigen soort `KIND_DRY_ENTRANCE`.
+3. **`Memo` leegde zich bij 50.000** terwijl `finalCell`/`attached` op identiteit vergelijken (latent, alleen bij veel grotere radii). **Opgelost:** nooit leegmaken (begrensd door de oppervlakte van de ring).
+4. **Schil van een topkoepel tot ~29 van de zone** (laag). **Opgelost:** de bandtoets rekent bij een top met de koepel (`DOME_REACH`) plus schil.
+5. **Bollen lui zonder veilige publicatie** (nit). **Opgelost:** in de constructor.
+Geen bevinding over recursie, regelvolgorde in de aquifer, vlakke niveaus, gifkommen, prop of kosten per blok.
+
+## Merge 74 (main 5c5f0594)
+Main (74: wereldbomen, hemelmeren, rotsbogen) in de branch gemerged, beide kanten behouden: in `IslandField` eerst de boomblokken (+1), dan de openingen van het net; in `RingAquifer` de hemelmeerregels vóór de tunnelregels. De gatmeren van de wereldbomen zijn `TREE`-eilanden in de cellen: hun meer boven zee (aan de rand) houdt het net buiten zijn band (`underLake`/`ceilingLimit` via `details`), een gatmeer van een boom op zeeniveau mag een ingang krijgen; wortels zijn massief (kunnen alleen een tunnel dichten). Hemelmeren liggen op de eilanden, ver boven het net. Test `theNetStaysOutOfTheBandsOfLakesAboveTheSea`.
+
 ## Voortgang
-- 2026-10-16: branch aangemaakt, 73 gebouwd (build en runData groen).
+- 2026-10-16: branch aangemaakt, 73 gebouwd (build en runData groen), review verwerkt, main (74) gemerged.
 
 ## CODEBASE-delta
 - Nieuw `worldgen/densityfunction/Ring4Tunnels` (73): het tunnelnet van ring 4 (knooppunten per cel van 128, randen met middellijn en profiel, hallen, topkoepels, gemengde randen met prop, ingangen naar zee-gatmeren en droge zinkgaten, droge zinkgaten, scheiding tussen de banden); per kolom `Span` (open intervallen met vulling, gesloten grotten); `Fill` (codes van de DF); beslissingen per wereld in `Memo` (`IslandField.Decisions.tunnels`), elementlijst per chunk in `KeyedSlots`.
