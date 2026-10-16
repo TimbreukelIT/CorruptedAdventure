@@ -1,0 +1,10 @@
+# verdant_falls performance (INT verdant_falls, 2026-10-15; 16 x 16 chunks each): the steam_fens zone 3|4 and the
+# ring 4 parts of the descent. perf.sh --areas tools/test/areas/perf-vf.txt; jfr-prof.sh --areas the same.
+# steamfens: zone 3|4 (steam_fens on top, the verdant_falls descent), same chunks as perf.txt
+# vfbasin: descent with stepped basins south (stream 202, around -300 6000)
+# vgorge: horseshoe gorge north; cascade: cascade_vale core 2171 6759; fjord: mist_fjords rim 6522 2804
+steamfens 367 -8 382 7
+vfbasin -27 366 -12 381
+vgorge -3 -385 12 -370
+cascade 127 414 142 429
+fjord 399 167 414 182

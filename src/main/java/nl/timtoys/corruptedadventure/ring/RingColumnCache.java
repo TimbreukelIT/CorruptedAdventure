@@ -30,7 +30,27 @@ public final class RingColumnCache {
 
     /** Ring at a block column of the running server's world. */
     public static RingPosition ringAt(ResourceKey<Level> dimension, int x, int z) {
-        return PER_THREAD.get().position(RingLayout.current(), RingLayout.scale(dimension), x, z);
+        return PER_THREAD.get().at(dimension, x, z);
+    }
+
+    /**
+     * The calling thread's cache, for a holder that keeps one per thread itself (a noise chunk's copy of a density
+     * function): {@code ThreadLocal.get} is slow in the worldgen threads, whose thread-local maps hold many entries.
+     */
+    public static RingColumnCache forThread() {
+        return PER_THREAD.get();
+    }
+
+    /** {@link #ringAt} on this cache; only from the thread it belongs to ({@link #forThread}). */
+    public RingPosition at(ResourceKey<Level> dimension, int x, int z) {
+        return position(RingLayout.current(), RingLayout.scale(dimension), x, z);
+    }
+
+    /** {@link #reaches(ResourceKey, Ring, int, int, double, double)} on this cache; only from its own thread. */
+    public boolean reachesHere(ResourceKey<Level> dimension, Ring ring, int x, int z, double margin, double outerMix) {
+        RingLayout layout = RingLayout.current();
+        int scale = RingLayout.scale(dimension);
+        return layout.reaches(ring, effectiveDistance(layout, scale, x, z), layout.reachMargin(margin, scale), outerMix);
     }
 
     /**
@@ -43,9 +63,7 @@ public final class RingColumnCache {
 
     /** The same with the mix share of the ring's outer boundary ({@link RingLayout#reaches(Ring, double, double, double)}). */
     public static boolean reaches(ResourceKey<Level> dimension, Ring ring, int x, int z, double margin, double outerMix) {
-        RingLayout layout = RingLayout.current();
-        int scale = RingLayout.scale(dimension);
-        return layout.reaches(ring, PER_THREAD.get().effectiveDistance(layout, scale, x, z), layout.reachMargin(margin, scale), outerMix);
+        return PER_THREAD.get().reachesHere(dimension, ring, x, z, margin, outerMix);
     }
 
     /**

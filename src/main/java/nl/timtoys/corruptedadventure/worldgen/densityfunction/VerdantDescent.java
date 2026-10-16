@@ -360,7 +360,7 @@ final class VerdantDescent {
         double width = width(layout);
         p.kind = Point.OUTSIDE;
         p.body = -1;
-        if (u < 0.0 || u > width || width <= 0.0) {
+        if (outside(u, width)) {
             return p;
         }
         p.u = u;
@@ -370,6 +370,10 @@ final class VerdantDescent {
         p.profile = profile(p.s);
         p.kind = u < p.rimAt ? Point.STRIP : Point.DESCENT;
         p.ramp = ramp(x, z, u, p.rimAt, p.profile, p);
+        if ((int) x == x && (int) z == z) {
+            // What rampAt answers for this block column: the same ramp on the descent, NaN on the strip.
+            field.decisions().verdantRamps.put(KeyedSlots.key((int) x, (int) z), p.kind == Point.DESCENT ? p.ramp : Double.NaN);
+        }
         // The risers' profile: not on the top terrace, which may stand part way up a riser (the rim height), nearly level,
         // where any noise would scatter loose blocks over the integer it hovers about.
         double detail = Mth.lerp(Ring4Relief.smooth(p.v, 0.0, TERRACE_FADE), -1.0, field.relief().detailAt(x, z));
@@ -394,15 +398,40 @@ final class VerdantDescent {
         return p;
     }
 
+    /**
+     * Whether (x, z) lies in the zone 3→4: exactly where {@link #locate} does not answer {@link Point#OUTSIDE}, for the
+     * price of the effective distance alone (performance round vf-perf2: the preliminary surface asked a whole
+     * {@code locate} only for this).
+     */
+    boolean inZone(double x, double z) {
+        RingLayout layout = field.ringLayout();
+        return !outside(layout.effectiveDistance(x, z) - zoneStart(layout), width(layout));
+    }
+
+    private static boolean outside(double u, double width) {
+        return u < 0.0 || u > width || width <= 0.0;
+    }
+
     /** The ramp at (x, z) with the profile there, or NaN off the descent (for the neighbours of a column). */
     double rampAt(double x, double z) {
+        // A whole block column's ramp is remembered per world (vf-perf2): the basins ask each column's four neighbours.
+        boolean column = (int) x == x && (int) z == z;
+        long key = column ? KeyedSlots.key((int) x, (int) z) : 0L;
+        if (column) {
+            Double known = field.decisions().verdantRamps.peek(key);
+            if (known != null) {
+                return known;
+            }
+        }
         RingLayout layout = field.ringLayout();
         double u = layout.effectiveDistance(x, z) - zoneStart(layout);
         double rim = rimAt(layout);
-        if (u < rim || u > width(layout)) {
-            return Double.NaN;
+        double ramp = u < rim || u > width(layout) ? Double.NaN
+                : ramp(x, z, u, rim, profile(RingArc.arc(x, z, midRadius(layout))), null);
+        if (column) {
+            field.decisions().verdantRamps.put(key, ramp);
         }
-        return ramp(x, z, u, rim, profile(RingArc.arc(x, z, midRadius(layout))), null);
+        return ramp;
     }
 
     /**

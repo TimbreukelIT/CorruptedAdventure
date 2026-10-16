@@ -98,11 +98,22 @@ public record RingGate(ResourceKey<Level> dimension, Ring ring, DensityFunction 
 
     @Override
     public void fillArray(double[] array, ContextProvider contextProvider) {
-        // Interpolators fill a slice of cell corners at a time; usually all or none of them are in reach.
+        // Interpolators fill a slice of cell corners at a time; usually all or none of them are in reach. The slice runs
+        // along Y first: the reach is looked up once per run of points in one column (vf-perf2), on the thread's cache.
+        RingColumnCache columns = RingColumnCache.forThread();
         boolean any = false;
         boolean all = true;
+        boolean reaches = false;
+        long column = 0L;
         for (int i = 0; i < array.length && (all || !any); i++) {
-            boolean reaches = reaches(contextProvider.forIndex(i));
+            FunctionContext context = contextProvider.forIndex(i);
+            int x = context.blockX();
+            int z = context.blockZ();
+            long key = KeyedSlots.key(x, z);
+            if (i == 0 || key != column) {
+                column = key;
+                reaches = columns.reachesHere(dimension, ring, x, z, MARGIN, mix);
+            }
             any |= reaches;
             all &= reaches;
         }

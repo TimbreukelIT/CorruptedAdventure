@@ -9,6 +9,7 @@ import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingColumnCache;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.ThreadOwned;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
 import javax.annotation.Nullable;
@@ -29,7 +30,7 @@ import java.util.Map;
  * generator's {@code fluid_levels}: the default fluid fills open space up to and including that Y instead of up to the
  * dimension's sea level; Nether ring 2 and 3 have a lower lava sea, overworld ring 3 has no sea above Y 0).
  */
-public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker vanilla, Map<Ring, Integer> levels) implements Aquifer.FluidPicker {
+public final class RingFluidPicker implements Aquifer.FluidPicker {
     private static final Aquifer.FluidStatus NO_FLUID = new Aquifer.FluidStatus(DimensionType.MIN_Y * 2, Blocks.AIR.defaultBlockState());
     /** Vanilla's global picker fills open space below this Y with lava (the overworld's lava layer). */
     static final int LAVA_LAYER_TOP = -54;
@@ -38,12 +39,38 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
     /** The overworld's sea level (noise settings), which ring 3's neighbours keep. */
     static final int SEA_LEVEL = 63;
 
-    public RingFluidPicker {
-        levels = Map.copyOf(levels);
+    private final ResourceKey<Level> dimension;
+    private final Aquifer.FluidPicker vanilla;
+    private final Map<Ring, Integer> levels;
+    // The per-block path (vf-perf2): the levels by ring ordinal (null: none), and per level slot (the rings, then the
+    // sundered zone) the last status made from a vanilla status. Vanilla's picker hands out a few fixed statuses, so
+    // this skips a map lookup and an allocation per open block. Racy but safe: the entries are immutable.
+    private final Integer[] levelByRing;
+    private final Derived[] derived;
+
+    public RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker vanilla, Map<Ring, Integer> levels) {
+        this.dimension = dimension;
+        this.vanilla = vanilla;
+        this.levels = Map.copyOf(levels);
+        this.levelByRing = new Integer[Ring.values().length];
+        this.levels.forEach((ring, level) -> levelByRing[ring.ordinal()] = level);
+        this.derived = new Derived[Ring.values().length + 1];
     }
 
     public RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker vanilla) {
         this(dimension, vanilla, Map.of());
+    }
+
+    public ResourceKey<Level> dimension() {
+        return dimension;
+    }
+
+    public Aquifer.FluidPicker vanilla() {
+        return vanilla;
+    }
+
+    public Map<Ring, Integer> levels() {
+        return levels;
     }
 
     /** Whether worldgen keeps all open space at this position free of fluid. */
@@ -180,18 +207,41 @@ public record RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker 
         return computeFluid(RingColumnCache.ringAt(dimension, x, z), x, y, z);
     }
 
+    /**
+     * This picker for one noise chunk (vf-perf2): the same answers, but the ring lookup per open block goes to the
+     * thread's {@link RingColumnCache} without a {@code ThreadLocal.get} (slow in the worldgen threads). A noise chunk
+     * is used by one thread at a time; a shared picker stays this one.
+     */
+    public Aquifer.FluidPicker forNoiseChunk() {
+        ThreadOwned<RingColumnCache> columns = new ThreadOwned<>(RingColumnCache::forThread);
+        return (x, y, z) -> computeFluid(columns.get().at(dimension, x, z), x, y, z);
+    }
+
     Aquifer.FluidStatus computeFluid(RingPosition position, int x, int y, int z) {
         if (noFluid(position)) {
             return NO_FLUID;
         }
         Aquifer.FluidStatus status = vanilla.computeFluid(x, y, z);
-        // Boxed on both sides: an int here would unbox the map's null for rings without a level.
-        Integer level = sunderedZone(dimension, position) ? Integer.valueOf(SUNDERED_SEA_TOP) : levels.get(position.ring());
-        if (level != null && dimension == Level.OVERWORLD && y < LAVA_LAYER_TOP) {
-            // The overworld's lava layer stays vanilla's; a ring's level only moves the sea above it.
+        boolean sundered = sunderedZone(dimension, position);
+        // Boxed on both sides: an int here would unbox the null of rings without a level.
+        Integer level = sundered ? Integer.valueOf(SUNDERED_SEA_TOP) : levelByRing[position.ring().ordinal()];
+        if (level == null || dimension == Level.OVERWORLD && y < LAVA_LAYER_TOP) {
+            // No level of its own, or the overworld's lava layer, which stays vanilla's: a ring's level only moves the sea
+            // above it.
             return status;
         }
         // Vanilla's status fills below its level; "up to and including Y" is one more. The fluid itself is vanilla's.
-        return level == null ? status : new Aquifer.FluidStatus(level + 1, status.at(Integer.MIN_VALUE));
+        int slot = sundered ? derived.length - 1 : position.ring().ordinal();
+        Derived known = derived[slot];
+        if (known != null && known.source() == status) {
+            return known.result();
+        }
+        Aquifer.FluidStatus result = new Aquifer.FluidStatus(level + 1, status.at(Integer.MIN_VALUE));
+        derived[slot] = new Derived(status, result);
+        return result;
+    }
+
+    /** A status with a ring's level ({@code result}) made from vanilla's status {@code source}. */
+    private record Derived(Aquifer.FluidStatus source, Aquifer.FluidStatus result) {
     }
 }

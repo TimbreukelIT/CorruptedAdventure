@@ -529,23 +529,42 @@ public final class IslandField implements DensityFunction {
 
     /**
      * The lowest open ground at a position: the surface with the descent of {@code verdant_falls}, the islands' holes
-     * and outlets, and a peat sinkhole's floor (which the terrain cuts per block, review 61 #6); exact and not cached. On
-     * the descent the ground of the block column the position lies in.
+     * and outlets, and a peat sinkhole's floor (which the terrain cuts per block, review 61 #6); exact, not in the column
+     * cache. On the descent the ground of the block column the position lies in (remembered per world where it needs no
+     * relief, {@link Decisions#verdantGrounds}).
      */
     double surfaceUncached(double x, double z) {
         int bx = Mth.floor(x);
         int bz = Mth.floor(z);
-        VerdantDescent.Point p = descent.locate(x, z, new VerdantDescent.Point());
-        if (p.kind != VerdantDescent.Point.OUTSIDE) {
-            descent.locate(bx, bz, p);
-        }
+        boolean outside = true;
         Ring4Relief.Sample s = null;
-        if (p.kind == VerdantDescent.Point.OUTSIDE || VerdantDescent.needsRelief(p)) {
-            s = new Ring4Relief.Sample();
-            relief.sample(x, z, band(x, z), s, salt());
+        double height;
+        // Off the zone exactly where locate(x, z) would say so; on it, the block column's point decides.
+        boolean inZone = descent.inZone(x, z);
+        Double ground = inZone ? decisions.verdantGrounds.peek(KeyedSlots.key(bx, bz)) : null;
+        if (ground != null) {
+            // The block column's ground without ring 4's relief, remembered (vf-perf2): the rings of lowestAround meet
+            // the same block columns from neighbouring quarts.
+            outside = false;
+            height = ground;
+        } else {
+            VerdantDescent.Point p = new VerdantDescent.Point();
+            p.kind = VerdantDescent.Point.OUTSIDE;
+            p.body = -1;
+            if (inZone) {
+                descent.locate(bx, bz, p);
+            }
+            if (p.kind == VerdantDescent.Point.OUTSIDE || VerdantDescent.needsRelief(p)) {
+                s = new Ring4Relief.Sample();
+                relief.sample(x, z, band(x, z), s, salt());
+            }
+            outside = p.kind == VerdantDescent.Point.OUTSIDE;
+            height = outside ? s.height : verdantGround(bx, bz, p, s, new VerdantBasins.Water(), null);
+            if (s == null) {
+                // A function of the block column alone (no relief at x, z): the same for every position in it.
+                decisions.verdantGrounds.put(KeyedSlots.key(bx, bz), height);
+            }
         }
-        boolean outside = p.kind == VerdantDescent.Point.OUTSIDE;
-        double height = outside ? s.height : verdantGround(bx, bz, p, s, new VerdantBasins.Water(), null);
         double surface = withHoles(height, x, z, shapesNear(bx, bz), null);
         surface = rimmed(x, z, surface);
         Sunder sunder = sunder(x, z);
@@ -884,6 +903,10 @@ public final class IslandField implements DensityFunction {
             VerdantBasins.Water w = new VerdantBasins.Water();
             VerdantGorges.Shape gorge = new VerdantGorges.Shape();
             c.height = verdantGround(c.x, c.z, p, s, w, gorge);
+            if (s == null) {
+                // The same ground surfaceUncached asks of this block column (vf-perf2): no relief, a fresh gorge shape.
+                decisions.verdantGrounds.put(KeyedSlots.key(c.x, c.z), c.height);
+            }
             c.verdant = p.kind == VerdantDescent.Point.DESCENT;
             c.arc = p.s;
             c.body = w.body;
@@ -1441,6 +1464,13 @@ public final class IslandField implements DensityFunction {
         final Map<IslandShape, Details> details = new ConcurrentHashMap<>();
         final Map<Long, List<Fall>> chunkFalls = new ConcurrentHashMap<>();
         final Map<Long, Double> initialHeights = new ConcurrentHashMap<>();
+        /**
+         * {@link #surfaceUncached} (vf-perf2): the ground of a block column of the zone 3→4 where it needs no relief, also
+         * put by {@link #ensureSurface}.
+         */
+        final KeyedSlots<Double> verdantGrounds = new KeyedSlots<>(1 << 14);
+        /** {@link VerdantDescent#rampAt} of whole block columns (NaN off the descent), also put by its {@code locate}. */
+        final KeyedSlots<Double> verdantRamps = new KeyedSlots<>(1 << 14);
         volatile Long salt;
 
         <K, V> void remember(Map<K, V> map, K key, V value) {

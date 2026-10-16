@@ -41,6 +41,7 @@ every 20 s, holding nothing). `clean` removes entries older than 60 min whose ho
 
 ```bash
 bash tools/test/server.sh start <level> [--fresh] [--perf] [--worktree DIR]   # slot, runServer, waits for "Done"
+CA_SERVER_JVM="<opts>" bash tools/test/server.sh start ...                     # extra JVM options for the server (jfr-prof.sh)
 python tools/test/py/rcon.py "list" "/ca tpring 3"                          # RCON of the running server
 bash tools/test/server.sh stop                                               # RCON stop, PID gone, RCON off, slot free
 bash tools/test/client.sh start [1|2]          # lock + slot, quick play (127.0.0.1), waits until joined, then frees the lock
@@ -68,7 +69,7 @@ Area files (`areas/*.txt`): `name cx0 cz0 cx1 cz1 [ow|nether]` in chunks, inclus
 `python tools/test/py/areas.py around <name> <x> <z> <r> [nether]` prints a line around a block position.
 
 ```bash
-bash tools/test/world.sh <level> tools/test/areas/int.txt [--reverse] [--settle S] [--worktree DIR]   # fresh world, load, stop
+bash tools/test/world.sh <level> tools/test/areas/int.txt [--reverse] [--settle S] [--freeze] [--worktree DIR]   # fresh world, load, stop
 W=run/<level>
 python tools/test/py/lavascan.py $W tools/test/areas/int.txt [--json out.json] [--strict]
 python tools/test/py/inventory.py $W tools/test/areas/int.txt build/test/inv.json --grep ice
@@ -121,6 +122,12 @@ error. Areas: `areas/ring4.txt` (interior 4 at r 7000, boundaries 3|4 at r 6000 
   --worktree <main checkout or worktree on main>`; that checkout's `run/`), then `featidx.py` compares biomes (must be
   identical) and terrain shape (top block that is not air/fluid/decoration).
 
+**Same terrain before and after a change (vf-perf2):** make a world of the areas with `world.sh --freeze` on the old
+code and one on the new code (`/tick freeze`: no fluid or block ticks after generation), then
+`python tools/test/py/detcmp.py run/<old> run/<new> <areas>`. Chunks at the edge of an area (and sometimes one further
+in) can still differ in features placed across chunk borders (ores, dripstone, huge fungi, mineshafts): the load order.
+Two worlds of the *same* code show the same kind; compare against such a pair before blaming the change.
+
 ## Performance
 
 ```bash
@@ -137,6 +144,22 @@ lock + all 3 slots for the whole run; the hard-stop clock starts once they are h
 mod/vanilla over the warm rounds for noise (with min–max), surface and features, plus the cold round. Budget noise
 ≤ 1,75. Only when the user is not playing; the JFR files and round worlds are deleted after each round.
 
+### Hot methods (JFR profile)
+
+```bash
+bash tools/test/jfr-prof.sh --areas tools/test/areas/perf-vf.txt --only "steamfens vgorge"   # -> build/test/prof-<stamp>/
+python tools/test/py/jfrhot.py <jfr.exe> build/test/prof-<stamp>/steamfens.jfr --callees IslandField.lowestAround
+```
+
+Same machine rules as `perf.sh` (lock + all 3 slots, fresh world, warm-up). Per area one recording with the server's
+own profiler (RCON `jfr start` / `jfr stop`: Minecraft's settings sample Java stacks every 10 ms), so nothing attaches
+to the JVM; the server starts with `CA_SERVER_JVM=-XX:FlightRecorderOptions:stackdepth=1024` (density functions nest
+deeper than JFR's default 64 frames) and `-XX:+DebugNonSafepoints` (else self time lands on the nearest safepoint's
+frame, often another inlined method). `jfrhot.py` streams `jfr print` as text (the JSON form of one area's samples is
+gigabytes), puts every sample under its chunk step and prints the top self frames and the inclusive share of every mod
+method, for all steps and for `--step` (default `noise`); `--callees` splits a method's samples over its callees.
+Shares are of the samples, not of the time `perf.sh` compares: a fresh world also pays the per-world decisions.
+
 ## Files
 
 | File | What |
@@ -145,7 +168,7 @@ mod/vanilla over the warm rounds for noise (with min–max), surface and feature
 | `setup.sh` | one-time setup of a checkout |
 | `slots.sh` | lock + JVM slots |
 | `server.sh`, `client.sh`, `win.ps1` | server, client, window helper (own PID only) |
-| `world.sh`, `det.sh`, `perf.sh`, `waterscan.sh` | fresh world + areas, determinism, performance, ring 4 waterscan |
+| `world.sh`, `det.sh`, `perf.sh`, `waterscan.sh`, `jfr-prof.sh` | fresh world + areas, determinism, performance, ring 4 waterscan, hot methods |
 | `perfpack/` | datapack with the vanilla dimensions for perf |
 | `areas/` | area files |
 | `py/rcon.py` | RCON client (script + module) |
@@ -153,6 +176,7 @@ mod/vanilla over the warm rounds for noise (with min–max), surface and feature
 | `py/gen.py` | load areas via RCON forceload (forward / reversed) |
 | `py/lavascan.py`, `py/detcmp.py`, `py/featidx.py`, `py/inventory.py`, `py/section.py` | offline scans |
 | `py/perf.py`, `py/perfsum.py` | one perf round, the table |
+| `py/jfrprof.py`, `py/jfrhot.py` | one profile per area, hot methods of a recording |
 | `py/sheet.py` | contact sheet of screenshots |
 
 `tools/nether-lava-walls.py` (RCON, change 39a) still works; offline `lavascan.py` on `areas/nether-walls.txt` covers
