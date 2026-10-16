@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.GlowLichenBlock;
 import net.minecraft.world.level.block.HangingRootsBlock;
 import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SaplingBlock;
@@ -65,13 +66,19 @@ import nl.timtoys.corruptedadventure.block.LooseSandTrigger;
 import nl.timtoys.corruptedadventure.block.ModFlowerPots;
 import nl.timtoys.corruptedadventure.block.ModTreeGrowers;
 import nl.timtoys.corruptedadventure.block.ModWoodTypes;
+import nl.timtoys.corruptedadventure.block.MoonpetalLeavesBlock;
 import nl.timtoys.corruptedadventure.block.PalmSaplingBlock;
 import nl.timtoys.corruptedadventure.block.ReedsBlock;
+import nl.timtoys.corruptedadventure.block.SlimeTrailBlock;
 import nl.timtoys.corruptedadventure.block.SoakedNetherrackBlock;
 import nl.timtoys.corruptedadventure.block.SporeMossBlock;
 import nl.timtoys.corruptedadventure.block.SporeSproutsBlock;
 import nl.timtoys.corruptedadventure.block.StalactiteBlock;
 import nl.timtoys.corruptedadventure.block.StrippableLogBlock;
+import nl.timtoys.corruptedadventure.block.SuckingMudBlock;
+import nl.timtoys.corruptedadventure.block.SuckingMudSuffocation;
+import nl.timtoys.corruptedadventure.block.SwampGasBlock;
+import nl.timtoys.corruptedadventure.block.UpdraftBlock;
 import nl.timtoys.corruptedadventure.block.WitheredDirtBlock;
 
 import java.util.Collection;
@@ -709,9 +716,9 @@ public final class ModBlocks {
             () -> new PressurePlateBlock(ModWoodTypes.MOONPETAL_SET, moonpetal(Blocks.CHERRY_PRESSURE_PLATE)));
     public static final DeferredBlock<ButtonBlock> MOONPETAL_BUTTON = register("moonpetal_button",
             () -> new ButtonBlock(ModWoodTypes.MOONPETAL_SET, 30, moonpetal(Blocks.CHERRY_BUTTON)));
-    /** The pink-lilac blossom crown: cherry leaves' properties as plain leaves (no vanilla petal particles). */
+    /** The pink-lilac blossom crown: cherry leaves' properties, with our own blossom petals instead of vanilla's (72). */
     public static final DeferredBlock<LeavesBlock> MOONPETAL_LEAVES = register("moonpetal_leaves",
-            () -> new LeavesBlock(Properties.ofFullCopy(Blocks.CHERRY_LEAVES)));
+            () -> new MoonpetalLeavesBlock(Properties.ofFullCopy(Blocks.CHERRY_LEAVES)));
     /** Grows into {@code corruptedadventure:ring_4/moonpetal_tree} (75); until then bonemeal is used up without growth. */
     public static final DeferredBlock<SaplingBlock> MOONPETAL_SAPLING = register("moonpetal_sapling",
             () -> new SaplingBlock(ModTreeGrowers.MOONPETAL, Properties.ofFullCopy(Blocks.CHERRY_SAPLING)));
@@ -820,6 +827,43 @@ public final class ModBlocks {
     /** Full-grown stage; the default state faces up. */
     public static final DeferredBlock<AmethystClusterBlock> AQUAMARINE_CLUSTER = register("aquamarine_cluster",
             () -> new AmethystClusterBlock(7.0F, 3.0F, recolored(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_CYAN)));
+
+    // Gameplay blocks (package 72): the hazards of the blighted band, the lift and the tracks of creatures.
+    /**
+     * Invisible, walk-through, replaceable gas that cannot be aimed at, without an item (like vanilla's bubble column):
+     * only worldgen and commands place it. Burns in a capped chain ({@link SwampGasBlock}).
+     */
+    public static final DeferredBlock<SwampGasBlock> SWAMP_GAS = registerWithoutItem("swamp_gas",
+            () -> new SwampGasBlock(Properties.of().mapColor(MapColor.NONE).replaceable().noCollission().noLootTable()
+                    .noOcclusion().pushReaction(PushReaction.DESTROY).isValidSpawn((state, level, pos, type) -> false)));
+    /**
+     * Mud's strength and sounds; living things sink in it ({@link SuckingMudBlock}). It never suffocates through the
+     * vanilla wall check (its own suffocation is {@link SuckingMudSuffocation}), shows its texture over the screen with
+     * the head inside, and nothing spawns on it.
+     */
+    public static final DeferredBlock<SuckingMudBlock> SUCKING_MUD = register("sucking_mud",
+            () -> new SuckingMudBlock(Properties.ofFullCopy(Blocks.MUD).mapColor(MapColor.TERRACOTTA_GREEN)
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> true)
+                    .isValidSpawn((state, level, pos, type) -> false)));
+    /** The toxic pool's liquid block (water's block properties); the item is {@link ModItems#TOXIC_POOL_BUCKET}. */
+    public static final DeferredBlock<LiquidBlock> TOXIC_POOL = registerWithoutItem("toxic_pool",
+            () -> new LiquidBlock(ModFluids.TOXIC_POOL.get(), Properties.ofFullCopy(Blocks.WATER).mapColor(MapColor.COLOR_LIGHT_GREEN)));
+    /** Walk-through, see-through and replaceable like the bubble column, but drawn (T's rising streaks). No drop. */
+    public static final DeferredBlock<UpdraftBlock> UPDRAFT = register("updraft",
+            () -> new UpdraftBlock(Properties.of().mapColor(MapColor.NONE).replaceable().noCollission().noLootTable()
+                    .noOcclusion().pushReaction(PushReaction.DESTROY).sound(SoundType.WOOL)
+                    .isValidSpawn((state, level, pos, type) -> false).isSuffocating((state, level, pos) -> false)
+                    .isViewBlocking((state, level, pos) -> false)));
+    /** Tidestone with claw marks in the tunnel walls: tidestone in every way, breaks into cobbled tidestone too. */
+    public static final DeferredBlock<Block> CLAWED_TIDESTONE = register("clawed_tidestone",
+            () -> new Block(tidestone(Blocks.STONE)));
+    /** A flat slime track on the floor: walk-through, gone at a touch, with slime sounds. */
+    public static final DeferredBlock<SlimeTrailBlock> SLIME_TRAIL = register("slime_trail",
+            () -> new SlimeTrailBlock(Properties.of().mapColor(MapColor.COLOR_LIGHT_GREEN).replaceable().noCollission()
+                    .instabreak().noOcclusion().sound(SoundType.SLIME_BLOCK).pushReaction(PushReaction.DESTROY)));
+    /** An abandoned nest of twigs, roots and reed: hay's strength and feel (without its soft landing); burns, also by lava. */
+    public static final DeferredBlock<Block> CREATURE_NEST = register("creature_nest",
+            () -> new Block(Properties.ofFullCopy(Blocks.HAY_BLOCK).mapColor(MapColor.TERRACOTTA_BROWN).ignitedByLava()));
 
     // ---- Nether ring 4 ----
     // Dry crystal and bone desert (contract ring 4 §3, package 68): bone sand, bleached netherrack, the fossil stone set

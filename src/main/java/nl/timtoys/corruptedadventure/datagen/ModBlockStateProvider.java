@@ -23,6 +23,7 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.block.GiantLilyPadBlock;
 import nl.timtoys.corruptedadventure.block.ReedsBlock;
+import nl.timtoys.corruptedadventure.block.SlimeTrailBlock;
 import nl.timtoys.corruptedadventure.block.StalactiteBlock;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 
@@ -155,6 +156,44 @@ final class ModBlockStateProvider extends BlockStateProvider {
         vent(ModBlocks.BUBBLE_SPRING.get());
 
         ring4Ores();
+        ring4Gameplay();
+    }
+
+    /**
+     * The gameplay blocks of package 72 (texture paths confirmed with T, backlog r. 277): the invisible gas on vanilla's
+     * empty model, the mud and the nest as cubes, the toxic pool as a liquid (only its particle; the fluid renderer
+     * draws it through the client extension), the updraft as a see-through column of four sides, the clawed tidestone
+     * as a cube and the slime trail as a flat decal along its axis.
+     */
+    private void ring4Gameplay() {
+        simpleBlock(ModBlocks.SWAMP_GAS.get(), models().getExistingFile(mcLoc("block/air")));
+        simpleBlock(ModBlocks.SUCKING_MUD.get());
+        simpleBlock(ModBlocks.TOXIC_POOL.get(), models().getBuilder("toxic_pool")
+                .texture("particle", modLoc("block/toxic_pool_still")));
+        updraft();
+        simpleBlock(ModBlocks.CLAWED_TIDESTONE.get());
+        ModelFile trail = flatPad("slime_trail", blockTexture(ModBlocks.SLIME_TRAIL.get()));
+        getVariantBuilder(ModBlocks.SLIME_TRAIL.get()).forAllStates(state -> ConfiguredModel.builder().modelFile(trail)
+                .rotationY(state.getValue(SlimeTrailBlock.AXIS) == Direction.Axis.X ? 0 : 90).build());
+        simpleBlock(ModBlocks.CREATURE_NEST.get());
+    }
+
+    /**
+     * The updraft: a full cube with only its four sides, each drawn from both sides (you see the streaks around you
+     * when you stand in it), cutout; faces towards another updraft block are skipped by the block itself.
+     */
+    private void updraft() {
+        ResourceLocation texture = blockTexture(ModBlocks.UPDRAFT.get());
+        BlockModelBuilder model = models().getBuilder("updraft").renderType("cutout").ao(false)
+                .texture("particle", texture).texture("updraft", texture);
+        model.element().from(0, 0, 0).to(16, 16, 16).allFacesExcept((direction, face) -> face.texture("#updraft")
+                .cullface(direction), Set.of(Direction.UP, Direction.DOWN)).end();
+        // The same sides seen from inside: four flat planes on the sides, each facing inwards (no cull face).
+        model.element().from(0, 0, 0).to(16, 16, 0).face(Direction.SOUTH).texture("#updraft").end().end();
+        model.element().from(0, 0, 16).to(16, 16, 16).face(Direction.NORTH).texture("#updraft").end().end();
+        model.element().from(0, 0, 0).to(0, 16, 16).face(Direction.EAST).texture("#updraft").end().end();
+        model.element().from(16, 0, 0).to(16, 16, 16).face(Direction.WEST).texture("#updraft").end().end();
+        simpleBlock(ModBlocks.UPDRAFT.get(), model);
     }
 
     /**

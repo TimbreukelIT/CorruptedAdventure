@@ -8,6 +8,7 @@ import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.client.ambient.SingingSandAmbience;
+import nl.timtoys.corruptedadventure.client.fluid.ToxicPoolClientExtensions;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
 import nl.timtoys.corruptedadventure.client.network.ConditionSyncHandler;
 import nl.timtoys.corruptedadventure.client.network.RingLayoutHandler;
@@ -53,6 +54,7 @@ public final class CorruptedAdventureClient {
         ClientboundHandlers.set(VolcanoPlumesPayload.TYPE, VolcanoPlumesHandler::handle);
         modEventBus.addListener(ConditionHudLayer::onRegisterGuiLayers);
         modEventBus.addListener(CorruptedAdventureClient::onRegisterParticleProviders);
+        modEventBus.addListener(ToxicPoolClientExtensions::onRegisterClientExtensions);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);
         NeoForge.EVENT_BUS.addListener(SingingSandAmbience::onClientTick);

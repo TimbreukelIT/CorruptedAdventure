@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "corruptedadventure:block/slime_trail"
+    },
+    "axis=z": {
+      "model": "corruptedadventure:block/slime_trail",
+      "y": 90
+    }
+  }
+}

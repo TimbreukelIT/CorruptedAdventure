@@ -154,7 +154,23 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.LARGE_AQUAMARINE_BUD.get());
         tag(Tags.Blocks.CLUSTERS).add(ModBlocks.TOXIC_CRYSTAL_CLUSTER.get(), ModBlocks.AQUAMARINE_CLUSTER.get());
 
+        ring4Gameplay();
         netherRing4();
+    }
+
+    /**
+     * The gameplay blocks of package 72 and the poison couplings (contract §3, §5): the toxic pool's liquid block is a
+     * poison source, the swamp gas a poison gas, both listed directly (C's coupling test reads them). The mud, the slime
+     * trail and the rest are no poison. The clawed tidestone is tidestone, so it is an ore host ({@code ring_4_stones}).
+     */
+    private void ring4Gameplay() {
+        tag(ModTags.Blocks.POISON_SOURCES).add(ModBlocks.TOXIC_POOL.get());
+        tag(ModTags.Blocks.POISON_GASES).add(ModBlocks.SWAMP_GAS.get());
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.SWAMP_GAS.get(), ModBlocks.UPDRAFT.get(), ModBlocks.SLIME_TRAIL.get());
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.SUCKING_MUD.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.CLAWED_TIDESTONE.get());
+        tag(ModTags.Blocks.RING_4_STONES).add(ModBlocks.CLAWED_TIDESTONE.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.CREATURE_NEST.get());
     }
 
     /**

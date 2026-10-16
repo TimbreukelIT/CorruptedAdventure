@@ -317,6 +317,14 @@ final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.TOXIC_CRYSTAL_SHARD.get());
         basicItem(ModItems.AQUAMARINE_SHARD.get());
 
+        // Gameplay blocks (72); the swamp gas and the toxic pool have no block item.
+        blockItem(ModBlocks.SUCKING_MUD);
+        basicItem(ModItems.TOXIC_POOL_BUCKET.get());
+        flatBlockItem(ModBlocks.UPDRAFT);
+        blockItem(ModBlocks.CLAWED_TIDESTONE);
+        flatBlockItem(ModBlocks.SLIME_TRAIL);
+        blockItem(ModBlocks.CREATURE_NEST);
+
         netherRing4();
     }
 

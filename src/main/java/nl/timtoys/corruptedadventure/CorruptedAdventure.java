@@ -10,6 +10,8 @@ import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.block.LooseSandTrigger;
 import nl.timtoys.corruptedadventure.block.ModFlammables;
 import nl.timtoys.corruptedadventure.block.ModFlowerPots;
+import nl.timtoys.corruptedadventure.block.SuckingMudSuffocation;
+import nl.timtoys.corruptedadventure.block.SwampGasIgnition;
 import nl.timtoys.corruptedadventure.command.CaCommand;
 import nl.timtoys.corruptedadventure.condition.ConditionTicker;
 import nl.timtoys.corruptedadventure.condition.DebugConditionDriver;
@@ -19,6 +21,7 @@ import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
+import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.network.ModNetwork;
 import nl.timtoys.corruptedadventure.network.RingLayoutSync;
 import nl.timtoys.corruptedadventure.registry.ModAttachments;
@@ -29,6 +32,8 @@ import nl.timtoys.corruptedadventure.registry.ModCreativeTabs;
 import nl.timtoys.corruptedadventure.registry.ModDensityFunctionTypes;
 import nl.timtoys.corruptedadventure.registry.ModCarverTypes;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
+import nl.timtoys.corruptedadventure.registry.ModFluidTypes;
+import nl.timtoys.corruptedadventure.registry.ModFluids;
 import nl.timtoys.corruptedadventure.registry.ModFoliagePlacerTypes;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
@@ -62,6 +67,9 @@ public final class CorruptedAdventure {
         ServerConfig.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
+        ModFluidTypes.register(modEventBus);
+        ModFluids.register(modEventBus);
+        ToxicPoolInteractions.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
         ModFlammables.register(modEventBus);
         ModFlowerPots.register(modEventBus);
@@ -92,6 +100,8 @@ public final class CorruptedAdventure {
         WaterBottleDrink.register(NeoForge.EVENT_BUS);
         RingWeather.register(NeoForge.EVENT_BUS);
         LooseSandTrigger.register(NeoForge.EVENT_BUS);
+        SwampGasIgnition.register(NeoForge.EVENT_BUS);
+        SuckingMudSuffocation.register(NeoForge.EVENT_BUS);
         Ring3StriderSpawns.register(NeoForge.EVENT_BUS);
     }
 
