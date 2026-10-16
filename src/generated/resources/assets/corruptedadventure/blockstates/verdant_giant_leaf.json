@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "corruptedadventure:block/verdant_giant_leaf_bottom"
+    },
+    "half=upper": {
+      "model": "corruptedadventure:block/verdant_giant_leaf_top"
+    }
+  }
+}

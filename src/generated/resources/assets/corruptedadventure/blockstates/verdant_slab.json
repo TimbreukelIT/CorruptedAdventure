@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "corruptedadventure:block/verdant_slab"
+    },
+    "type=double": {
+      "model": "corruptedadventure:block/verdant_planks"
+    },
+    "type=top": {
+      "model": "corruptedadventure:block/verdant_slab_top"
+    }
+  }
+}

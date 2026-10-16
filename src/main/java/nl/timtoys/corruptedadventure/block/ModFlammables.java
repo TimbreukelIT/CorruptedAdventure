@@ -64,5 +64,23 @@ public final class ModFlammables {
         fire.setFlammable(ModBlocks.GLOW_BLOOM.get(), 60, 100);
         // The creature nest (72) burns like hay.
         fire.setFlammable(ModBlocks.CREATURE_NEST.get(), 60, 20);
+        // The verdant flora (72b): the wood set like oak, the plants like ferns and flowers, the vine like vines; the
+        // water bloom and the fruit pod do not burn (like the lily pad and cocoa).
+        for (Block log : new Block[] {ModBlocks.VERDANT_LOG.get(), ModBlocks.VERDANT_WOOD.get(),
+                ModBlocks.STRIPPED_VERDANT_LOG.get(), ModBlocks.STRIPPED_VERDANT_WOOD.get()}) {
+            fire.setFlammable(log, 5, 5);
+        }
+        for (Block planks : new Block[] {ModBlocks.VERDANT_PLANKS.get(), ModBlocks.VERDANT_STAIRS.get(),
+                ModBlocks.VERDANT_SLAB.get(), ModBlocks.VERDANT_FENCE.get(), ModBlocks.VERDANT_FENCE_GATE.get()}) {
+            fire.setFlammable(planks, 5, 20);
+        }
+        fire.setFlammable(ModBlocks.VERDANT_LEAVES.get(), 30, 60);
+        for (Block plant : new Block[] {ModBlocks.VERDANT_GIANT_LEAF.get(), ModBlocks.VERDANT_FERN.get(),
+                ModBlocks.VERDANT_TALL_FERN.get(), ModBlocks.VERDANT_BROMELIAD.get(), ModBlocks.VERDANT_WALL_BROMELIAD.get(),
+                ModBlocks.VERDANT_ORCHID.get(), ModBlocks.VERDANT_HANGING_ORCHID.get(), ModBlocks.VERDANT_BLOSSOM_BUSH.get()}) {
+            fire.setFlammable(plant, 60, 100);
+        }
+        fire.setFlammable(ModBlocks.VERDANT_VINE.get(), 15, 100);
+        fire.setFlammable(ModBlocks.VERDANT_VINE_PLANT.get(), 15, 100);
     }
 }

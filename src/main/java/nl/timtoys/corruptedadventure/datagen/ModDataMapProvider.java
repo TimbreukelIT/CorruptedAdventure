@@ -12,6 +12,7 @@ import net.neoforged.neoforge.registries.datamaps.builtin.Compostable;
 import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
 import java.util.concurrent.CompletableFuture;
@@ -65,7 +66,21 @@ final class ModDataMapProvider extends DataMapProvider {
                 .add(ModBlocks.GIANT_LILY_PAD.getId(), new Compostable(0.65F), false)
                 // Like sugar cane and the lily pad.
                 .add(ModBlocks.REEDS.getId(), new Compostable(0.5F), false)
-                .add(ModBlocks.LOTUS.getId(), new Compostable(0.65F), false);
+                .add(ModBlocks.LOTUS.getId(), new Compostable(0.65F), false)
+                // Verdant flora (72b): leaves and sapling 0.3, ferns, flowers, bushes and the fruit 0.65 (like cocoa
+                // beans), the vine 0.5 (like weeping vines).
+                .add(ModBlocks.VERDANT_LEAVES.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.VERDANT_SAPLING.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.VERDANT_GIANT_LEAF.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.VERDANT_FERN.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.VERDANT_TALL_FERN.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.VERDANT_BROMELIAD.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.VERDANT_ORCHID.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.VERDANT_HANGING_ORCHID.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.VERDANT_BLOSSOM_BUSH.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.VERDANT_VINE.getId(), new Compostable(0.5F), false)
+                .add(ModBlocks.VERDANT_WATER_BLOOM.getId(), new Compostable(0.65F), false)
+                .add(ModItems.VERDANT_FRUIT.getId(), new Compostable(0.65F), false);
 
         // Peat: a weak fuel (6 items per block, coal does 8), because the whole surface of the peat moors is peat.
         builder(NeoForgeDataMaps.FURNACE_FUELS).add(ModBlocks.PEAT.getId(), new FurnaceFuel(PEAT_BURN_TIME), false);

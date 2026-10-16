@@ -155,6 +155,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(Tags.Blocks.CLUSTERS).add(ModBlocks.TOXIC_CRYSTAL_CLUSTER.get(), ModBlocks.AQUAMARINE_CLUSTER.get());
 
         ring4Gameplay();
+        verdant();
         netherRing4();
     }
 
@@ -163,6 +164,46 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
      * poison source, the swamp gas a poison gas, both listed directly (C's coupling test reads them). The mud, the slime
      * trail and the rest are no poison. The clawed tidestone is tidestone, so it is an ore host ({@code ring_4_stones}).
      */
+    /**
+     * The verdant flora (72b): the wood set tagged like the moonpetal set (burns: {@code #logs_that_burn}); the vine is
+     * climbable in all its blocks (it replaces the hanging moss on the climb routes); parrots spawn on the leaves and
+     * logs (F10, also through {@code #leaves}/{@code #logs}, listed explicitly as the plan asks); the low plants are
+     * replaceable like vanilla's ferns, and trees grow through the soft flora.
+     */
+    private void verdant() {
+        tag(ModTags.Blocks.VERDANT_LOGS).add(ModBlocks.VERDANT_LOG.get(), ModBlocks.VERDANT_WOOD.get(),
+                ModBlocks.STRIPPED_VERDANT_LOG.get(), ModBlocks.STRIPPED_VERDANT_WOOD.get());
+        tag(BlockTags.LOGS_THAT_BURN).addTag(ModTags.Blocks.VERDANT_LOGS);
+        tag(BlockTags.PLANKS).add(ModBlocks.VERDANT_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.VERDANT_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.VERDANT_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.VERDANT_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.VERDANT_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.VERDANT_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.VERDANT_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.VERDANT_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.VERDANT_BUTTON.get());
+        tag(BlockTags.LEAVES).add(ModBlocks.VERDANT_LEAVES.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.VERDANT_LEAVES.get());
+        tag(BlockTags.SAPLINGS).add(ModBlocks.VERDANT_SAPLING.get());
+        tag(BlockTags.FLOWER_POTS).add(ModBlocks.POTTED_VERDANT_SAPLING.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_VERDANT_LOG.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_VERDANT_WOOD.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.VERDANT_FENCE_GATE.get());
+        tag(BlockTags.PARROTS_SPAWNABLE_ON).add(ModBlocks.VERDANT_LEAVES.get(), ModBlocks.VERDANT_LOG.get());
+
+        tag(BlockTags.CLIMBABLE).add(ModBlocks.VERDANT_VINE.get(), ModBlocks.VERDANT_VINE_PLANT.get());
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.VERDANT_FERN.get(), ModBlocks.VERDANT_TALL_FERN.get());
+        tag(BlockTags.REPLACEABLE_BY_TREES).add(ModBlocks.VERDANT_FERN.get(), ModBlocks.VERDANT_TALL_FERN.get(),
+                ModBlocks.VERDANT_GIANT_LEAF.get(), ModBlocks.VERDANT_VINE.get(), ModBlocks.VERDANT_VINE_PLANT.get(),
+                ModBlocks.VERDANT_HANGING_ORCHID.get());
+        tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.VERDANT_GIANT_LEAF.get(), ModBlocks.VERDANT_FERN.get(),
+                ModBlocks.VERDANT_TALL_FERN.get(), ModBlocks.VERDANT_BROMELIAD.get(), ModBlocks.VERDANT_WALL_BROMELIAD.get(),
+                ModBlocks.VERDANT_ORCHID.get(), ModBlocks.VERDANT_HANGING_ORCHID.get(), ModBlocks.VERDANT_BLOSSOM_BUSH.get(),
+                ModBlocks.VERDANT_VINE.get(), ModBlocks.VERDANT_VINE_PLANT.get(), ModBlocks.VERDANT_FRUIT_POD.get());
+        tag(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.VERDANT_FRUIT_POD.get());
+    }
+
     private void ring4Gameplay() {
         tag(ModTags.Blocks.POISON_SOURCES).add(ModBlocks.TOXIC_POOL.get());
         tag(ModTags.Blocks.POISON_GASES).add(ModBlocks.SWAMP_GAS.get());

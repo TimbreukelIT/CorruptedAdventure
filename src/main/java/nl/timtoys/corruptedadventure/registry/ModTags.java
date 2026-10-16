@@ -72,6 +72,8 @@ public final class ModTags {
         public static final TagKey<Block> MOONPETAL_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("moonpetal_logs"));
         /** Withered moonpetal log, wood and their stripped variants. */
         public static final TagKey<Block> WITHERED_MOONPETAL_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("withered_moonpetal_logs"));
+        /** Verdant log, wood and their stripped variants (72b); the fruit pod hangs on them. */
+        public static final TagKey<Block> VERDANT_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("verdant_logs"));
         public static final TagKey<Block> ORES_TIDESILVER = TagKey.create(Registries.BLOCK, common("ores/tidesilver"));
         public static final TagKey<Block> ORES_JADE = TagKey.create(Registries.BLOCK, common("ores/jade"));
         /** Convention tag {@code c:ores_in_ground/tidestone}: the ring 4 ores in tidestone. */
@@ -118,6 +120,7 @@ public final class ModTags {
         // Ring 4 and Nether ring 4 (docs/plans/ring-4/contract.md §3); contents from stream B.
         public static final TagKey<Item> MOONPETAL_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("moonpetal_logs"));
         public static final TagKey<Item> WITHERED_MOONPETAL_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("withered_moonpetal_logs"));
+        public static final TagKey<Item> VERDANT_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("verdant_logs"));
         public static final TagKey<Item> ORES_TIDESILVER = TagKey.create(Registries.ITEM, common("ores/tidesilver"));
         public static final TagKey<Item> ORES_JADE = TagKey.create(Registries.ITEM, common("ores/jade"));
         public static final TagKey<Item> ORES_IN_GROUND_TIDESTONE = TagKey.create(Registries.ITEM, common("ores_in_ground/tidestone"));

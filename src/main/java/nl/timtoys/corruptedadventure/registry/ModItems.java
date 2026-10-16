@@ -58,6 +58,8 @@ public final class ModItems {
     /** A bucket of the toxic pool (contract ring 4 §3): picks it up and pours it out; its use follows in phase 2. */
     public static final DeferredItem<BucketItem> TOXIC_POOL_BUCKET = ITEMS.registerItem("toxic_pool_bucket",
             properties -> new BucketItem(ModFluids.TOXIC_POOL.get(), properties.craftRemainder(Items.BUCKET).stacksTo(1)));
+    /** Drop of the verdant fruit pod (72b, H3 = A). Placeholder without food value: eating and recipes in phase 2. */
+    public static final DeferredItem<Item> VERDANT_FRUIT = ITEMS.registerSimpleItem("verdant_fruit");
 
     // ---- Nether ring 4 ----
     /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */

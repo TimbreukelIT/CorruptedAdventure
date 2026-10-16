@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cocoa_stage2",
+  "textures": {
+    "cocoa": "corruptedadventure:block/verdant_fruit_pod_stage2",
+    "particle": "corruptedadventure:block/verdant_fruit_pod_stage2"
+  }
+}

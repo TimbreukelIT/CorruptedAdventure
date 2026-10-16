@@ -26,8 +26,44 @@ Texturepaden (bevestigd met T, backlog r. 277): `block/sucking_mud`, `block/toxi
 - **B:** `./gradlew build` groen: `SwampGasBurnTest` (knal bij nieuwe brand, 1 per 8 in een trage ketting, cap 64/4 per tick, ontstekers), `SuckingMudBlockTest` (zakken/stijgen, horizontale snelheid, vast voor items, adem/schade-ritme, updraft-topsnelheid), `ModBlocksTest` (volgorde 72 na de kristallen, emmer na de scherven, geen item voor gas en gifpoel, doorloopbaar, vloeistof/emmer gekoppeld), C's `PoisonCouplingsTest` groen; `ClientIsolationTest` groen.
 - **D:** `runData` twee keer, `git diff --exit-code src/generated` schoon.
 
+## 72b — tropische flora `verdant_falls` (§6b)
+
+Paden en vormen volgens `golf-2-textures.md` (T, 71b). Creative-volgorde: na `creature_nest`, vóór Nether-4.
+
+| Blok | Gedrag |
+|---|---|
+| houtset (16) | `verdant_log`/`_wood`/`stripped_*` (bijl strippt), planken, trap, plaat, hek, poort, deur, valluik, drukplaat, knop: eik-eigenschappen en -geluid (`ModWoodTypes.VERDANT_SET`), brandbaar als eik; `verdant_leaves` (vaste kleur, geen tint); `verdant_sapling` groeit alleen `ring_4/verdant_tree_fern` (`ModTreeGrowers.VERDANT`, key in `ModConfiguredFeatures` `// ring 4 — B`; tot 75b verbruikt bonemeal zonder groei) + `potted_verdant_sapling`. Geen borden, boot of recepten (H1 = A). |
+| `verdant_giant_leaf` | dubbele plant (`TallFlowerBlock`, zonnebloem-eigenschappen: niet vervangbaar), bonemeal → kopie; onderste helft dropt. |
+| `verdant_fern` | `VerdantFernBlock`: varen-eigenschappen (vervangbaar, offset), bonemeal → `verdant_tall_fern` (als er ruimte is), loot als varen. |
+| `verdant_tall_fern` | dubbele plant (`TallFlowerBlock`, grote-varen-eigenschappen), loot als grote varen. |
+| `verdant_bromeliad` + `verdant_wall_bromeliad` | `VerdantPlantBlock` op `#dirt`; de wandvorm `VerdantWallPlantBlock` (geen item, `StandingAndWallBlockItem` zoals de fakkel, dropt de bromelia). Gloei-overlay (emissive laag), geen bloklicht. |
+| `verdant_orchid` | `VerdantWallPlantBlock` (`facing` weg van de wand; stevige wand nodig, anders valt hij), plat vlak op de wand + emissive `_glow`-laag, geen bloklicht. |
+| `verdant_hanging_orchid` | `VerdantHangingOrchidBlock`: hangende wortels (onder een stevige onderkant, waterlogbaar). |
+| `verdant_blossom_bush` | `VerdantPlantBlock` (kruis). |
+| `verdant_vine` + `verdant_vine_plant` | `VerdantVineBlock`/`VerdantVinePlantBlock`: weeping vines (hangt, groeit omlaag op random ticks en met bonemeal), klimbaar (`#climbable`), state `flowering` op beide; een liaan houdt `flowering` bij groei en bij kop ↔ stengel. Stengel zonder item; loot als weeping vines. **Voor 75b:** de kop op leeftijd 25 plaatsen waar een streng niet langer mag worden; de liaan is niet waterlogbaar (het hangmos wel), dus niet in water plaatsen. |
+| `verdant_water_bloom` | `VerdantWaterBloomBlock`: lelieblad (op een waterbron, beloopbaar), plat model zonder tint. |
+| `verdant_fruit_pod` | `VerdantFruitPodBlock`: cacao (3 stadia, random ticks en bonemeal, `facing` naar de stam) maar alleen aan `#verdant_logs`; geen item; dropt `verdant_fruit` (rijp 3, anders 1); modellen met parent `minecraft:block/cocoa_stageN`. |
+| item `verdant_fruit` | placeholder zonder voedingswaarde (H3 = A), na `toxic_pool_bucket`. |
+
+Bonemeal (F11 = A): planten die niet groeien laten een kopie vallen (`PoppingBonemealable`, zoals vanilla's hoge bloemen); varen, liaan, peul en sapling groeien.
+Tags: `verdant_logs` (blok + item) → `#logs_that_burn`; planken, `wooden_*`, poort, bladeren (`#leaves`, hoe), `#saplings`, `#flower_pots`, `c:stripped_*`, `c:fence_gates/wooden`; `#parrots_spawnable_on` = bladeren + stam (expliciet, F10); `#climbable` liaan + stengel; `#replaceable` varens; `#replaceable_by_trees` zachte flora; `#sword_efficient` planten. Compost en `ModFlammables` zoals de vanilla-tegenhangers (waterbloem en peul niet brandbaar). `ModCreativeTabs` toont elk item één keer (`distinct`: de wandbromelia deelt het item van de bromelia).
+
+### Client/server-impact 72b
+Alles gewone blokken; groei op de server (random ticks, bonemeal). Geen client-code, geen payloads.
+
 ## Voortgang
 - 2026-10-16: 72 gebouwd; B en D groen.
+- 2026-10-16: 72 vooruit op main (3585b20); keuzes 1–4 bevestigd door de gebruiker.
+- 2026-10-16: 72b gebouwd; B (incl. `ModBlocksTest`, `ModTreeGrowersTest`) en D groen, geen ontbrekende textures.
+
+## Code-review (medium, 72 + 72b, review-subagent)
+Verwerkt in de vervolgcommit:
+1. Slow Falling liet een wezen uit de zuigmodder drijven (de blokcode compenseerde de volle zwaartekracht, `travel` haalt onder Slow Falling maar 0,01 af): `SuckingMudBlock.travelGravity` rekent zoals `travel`; test `slowFallingStillSinks`.
+2. Avontuur- en toeschouwerspelers konden gas aansteken met vuursteen (de event komt vóór vanilla's bouwcheck): `SwampGasIgnition` eist `mayUseItemAt` en `mayInteract`.
+3. Een windlading (`TRIGGER_BLOCK`, geen vuur) stak het gas aan: `SwampGasBlock.ignitedBy` slaat die over in `Detonate` en `onExplosionHit`.
+4. Al brandend geplaatst gas (`/setblock …[lit=true]`, sjabloon) kreeg nooit een tick: `onPlace` plant hem in.
+5. De outline van bromelia en bloeiende struik volgde de willekeurige offset van het model niet: `VerdantPlantBlock.getShape` schuift mee.
+Gecontroleerd en goed: kop ↔ stengel van de liaan (vanilla's parameternamen zijn misleidend, de implementatie klopt), geen herintreding bij ontploffingen, de statische `BURNS`-map alleen op de serverthread, registervolgorde fluids/blokken/items, geen client-class buiten `client/`, datagen compleet.
 
 ## CODEBASE-delta
 **Nieuwe classes**
@@ -48,6 +84,10 @@ Texturepaden (bevestigd met T, backlog r. 277): `block/sucking_mud`, `block/toxi
 
 **Registries:** 7 blokken (5 met item), 1 item, 1 fluid type, 2 fluids.
 
+**72b — nieuwe classes:** `block/PoppingBonemealable` (bonemeal laat een kopie vallen), `VerdantPlantBlock`, `VerdantFernBlock`, `VerdantWallPlantBlock`, `VerdantHangingOrchidBlock`, `VerdantVineBlock` (`FLOWERING`), `VerdantVinePlantBlock`, `VerdantWaterBloomBlock`, `VerdantFruitPodBlock`.
+**72b — gewijzigd:** `ModBlocks` (sectie verdant na `creature_nest`; helpers `verdant(...)`, `registerDoubleHigh`; item van de bromelia als `StandingAndWallBlockItem` in een static-blok), `ModItems` (`verdant_fruit`), `ModWoodTypes` (`VERDANT_SET`, `VERDANT`), `ModTreeGrowers` (`VERDANT`), `ModConfiguredFeatures` (`VERDANT_TREE_FERN`, blok `// ring 4 — B`), `ModTags` (`Blocks/Items.VERDANT_LOGS`), `ModFlowerPots`, `ModFlammables`, `ModCreativeTabs` (`distinct`), datagen (`verdant()` in blockstate-, item-model-, loot- en tagproviders; `doublePlant`, `glowingWallPlant`, `vine`, `fruitPod`; compost; lang).
+**72b — registries:** 29 blokken (25 met item: geen item voor `potted_verdant_sapling`, `verdant_wall_bromeliad`, `verdant_vine_plant`, `verdant_fruit_pod`), 1 item.
+
 ## Beslissingen
 - 2026-10-16, `blocks` (implementatie B): `swamp_gas` heeft geen item (afwijking van contract §3 "alle blokken een item"): het is onzichtbaar, heeft geen outline en kan niet gericht of gebroken worden, zoals vanilla's bubble column; alleen worldgen en commando's plaatsen het. Omkeerbaar.
 - 2026-10-16, `blocks` (implementatie B, met akkoord main dat B hoeveelheid en interval kiest): zuigmodder-schade = de adem raakt in ~3 s op (adem −9/tick, de luchtbellen op de HUD waarschuwen), daarna 2 HP per seconde (zoals verdrinken), via C's `SuckingMudDamage`. Server-side als entity-tick, omdat de server een stilstaande speler niet elke tick beweegt.
@@ -57,8 +97,14 @@ Texturepaden (bevestigd met T, backlog r. 277): `block/sucking_mud`, `block/toxi
 - 2026-10-16, `blocks` (implementatie B): weergavenaam van de gifpoel "Toxic Sludge" / "Gifslijk" (vloeistof, blok en emmer "Toxic Sludge Bucket" / "Emmer met gifslijk"); registry-namen blijven `toxic_pool`/`toxic_pool_bucket` (contract).
 - 2026-10-16, `blocks` (implementatie B): `slime_trail` heeft een `axis` (X/Z) zodat sporen aansluiten, valt zonder vloer weg en geeft alleen met Silk Touch iets; `creature_nest` is een volle kubus met hooi-eigenschappen, brandbaar; `clawed_tidestone` hoort bij `ring_4_stones` (het is tidestone).
 
+- 2026-10-16, gebruiker: de vier keuzes van 72 (gas zonder item; ~3 s adem dan 2 HP/s; ontstekers zoals gebouwd; "Toxic Sludge"/"Gifslijk") bevestigd.
+- 2026-10-16, `blocks` (implementatie B, 72b): planten die niet groeien laten met bonemeal een kopie vallen (zoals vanilla's hoge bloemen); de varen groeit tot de hoge varen. De orchidee is alleen een wandplant (item plaatst hem tegen een wand); de bromelia staat op de grond en het item zet hem tegen een wand zoals een fakkel. Reuzenblad niet vervangbaar (een grote plant), de varens wel. De liaan is niet waterlogbaar. Vruchtpeul alleen aan `#verdant_logs`.
+- 2026-10-16, `blocks` (implementatie B, 72b): kaartkleuren: schors `TERRACOTTA_WHITE` (zandbeige), hout/planken `SAND` (honingcrème), kruin `GLOW_LICHEN` (pastel zeegroen).
+
 ## Backlog
 - `blocks`: moerasgas aansteken door brandende wezens, vuurpijlen en een dispenser met vuursteen (nu niet: vanilla plaatst vuur alleen in lucht).
 - `blocks`: `swamp_gas` een item geven als de testers het in creatief willen plaatsen (nu `/setblock`/`/fill`).
 - `atmosphere`/`textures`: de groene mist in de gifpoel (kleur `4E8A14`, 4 blokken) in-game beoordelen (5b).
+- `worldgen` (75b): de liaankop op leeftijd 25 plaatsen in `ledge_strand` (anders groeien strengen door); de liaan niet in water plaatsen (niet waterlogbaar); `verdant_fruit_pod` alleen tegen een `verdant_log` met `facing` naar de stam.
+- `items`: recepten van de `verdant`-houtset en het nut van `verdant_fruit` (fase 2; staat al in de backlog).
 - `conditions`: zuigmodder-ritme (3 s adem, 2 HP/s) en de zak-/stijgsnelheid afstemmen in teststop 5b.

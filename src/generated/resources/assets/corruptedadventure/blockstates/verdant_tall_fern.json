@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "corruptedadventure:block/verdant_tall_fern_bottom"
+    },
+    "half=upper": {
+      "model": "corruptedadventure:block/verdant_tall_fern_top"
+    }
+  }
+}

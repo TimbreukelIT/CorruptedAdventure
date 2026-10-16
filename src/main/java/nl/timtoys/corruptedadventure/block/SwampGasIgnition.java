@@ -34,7 +34,7 @@ public final class SwampGasIgnition {
 
     private static void onDetonate(ExplosionEvent.Detonate event) {
         Level level = event.getLevel();
-        if (level.isClientSide()) {
+        if (level.isClientSide() || !SwampGasBlock.ignitedBy(event.getExplosion())) {
             return;
         }
         for (BlockPos pos : event.getAffectedBlocks()) {
@@ -49,10 +49,12 @@ public final class SwampGasIgnition {
             return;
         }
         BlockPos target = event.getPos().relative(event.getFace());
-        if (!SwampGasBlock.ignite(level, target, 1)) {
+        Player player = event.getEntity();
+        // Like placing fire: not for spectators, not where an adventure player may not build, not in spawn protection.
+        if (!player.mayUseItemAt(target, event.getFace(), stack) || !level.mayInteract(player, target)
+                || !SwampGasBlock.ignite(level, target, 1)) {
             return;
         }
-        Player player = event.getEntity();
         level.playSound(null, target, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
         level.playSound(null, target, ModSoundEvents.SWAMP_GAS_IGNITE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         // Used up like vanilla's: a durability point of flint and steel, or one fire charge.

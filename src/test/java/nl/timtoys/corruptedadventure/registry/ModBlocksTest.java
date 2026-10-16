@@ -15,12 +15,15 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.PlaceOnWaterBlockItem;
+import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.FallingBlock;
+import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
@@ -34,6 +37,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import nl.timtoys.corruptedadventure.block.AshCrustBlock;
 import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
 import nl.timtoys.corruptedadventure.block.MoonpetalLeavesBlock;
+import nl.timtoys.corruptedadventure.block.VerdantVineBlock;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import org.junit.jupiter.api.Test;
 
@@ -49,12 +53,17 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModBlocksTest {
-    /** Blocks without an item besides pots and liquids: the swamp gas (invisible, cannot be aimed at). */
-    private static final Set<DeferredHolder<Block, ? extends Block>> WITHOUT_ITEM = Set.of(ModBlocks.SWAMP_GAS);
+    /**
+     * Blocks without an item of their own besides pots and liquids: the swamp gas (invisible, cannot be aimed at), the
+     * wall bromeliad (placed by the bromeliad's item), the vine stem and the fruit pod (worldgen only).
+     */
+    private static final Set<DeferredHolder<Block, ? extends Block>> WITHOUT_ITEM = Set.of(ModBlocks.SWAMP_GAS,
+            ModBlocks.VERDANT_WALL_BROMELIAD, ModBlocks.VERDANT_VINE_PLANT, ModBlocks.VERDANT_FRUIT_POD);
 
     @Test
     void everyBlockExceptPottedPlantsHasABlockItemWithTheSameName() {
@@ -63,7 +72,7 @@ class ModBlocksTest {
             Item item = block.get().asItem();
             // Potted plants, liquids (a bucket instead) and blocks that only worldgen places have no item.
             if (block.get() instanceof FlowerPotBlock || block.get() instanceof LiquidBlock || WITHOUT_ITEM.contains(block)) {
-                assertSame(Items.AIR, item, block.getId().toString());
+                assertNotEquals(block.getId(), BuiltInRegistries.ITEM.getKey(item), block.getId().toString());
                 continue;
             }
             assertInstanceOf(BlockItem.class, item, block.getId().toString());
@@ -88,7 +97,8 @@ class ModBlocksTest {
         List<Item> shown = tab.getDisplayItems().stream().map(ItemStack::getItem).toList();
 
         List<Item> expected = new ArrayList<>();
-        ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).forEach(expected::add);
+        ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).distinct()
+                .forEach(expected::add);
         ModItems.entries().stream().<Item>map(DeferredHolder::get).filter(item -> !(item instanceof BlockItem)).forEach(expected::add);
         assertEquals(expected, shown);
         // Every item exactly once.
@@ -652,11 +662,78 @@ class ModBlocksTest {
         assertInstanceOf(MoonpetalLeavesBlock.class, ModBlocks.MOONPETAL_LEAVES.get());
     }
 
+    /** The verdant flora (72b) follows the gameplay blocks; the fruit follows the bucket. */
+    @Test
+    void verdantFloraFollowsTheGameplayBlocksInOrder() {
+        List<Item> shown = blockItems().stream().distinct().toList();
+        int nest = shown.indexOf(ModBlocks.CREATURE_NEST.asItem());
+        List<Item> verdant = Stream.of(ModBlocks.VERDANT_LOG, ModBlocks.VERDANT_WOOD, ModBlocks.STRIPPED_VERDANT_LOG,
+                ModBlocks.STRIPPED_VERDANT_WOOD, ModBlocks.VERDANT_PLANKS, ModBlocks.VERDANT_STAIRS, ModBlocks.VERDANT_SLAB,
+                ModBlocks.VERDANT_FENCE, ModBlocks.VERDANT_FENCE_GATE, ModBlocks.VERDANT_DOOR, ModBlocks.VERDANT_TRAPDOOR,
+                ModBlocks.VERDANT_PRESSURE_PLATE, ModBlocks.VERDANT_BUTTON, ModBlocks.VERDANT_LEAVES, ModBlocks.VERDANT_SAPLING,
+                ModBlocks.VERDANT_GIANT_LEAF, ModBlocks.VERDANT_FERN, ModBlocks.VERDANT_TALL_FERN, ModBlocks.VERDANT_BROMELIAD,
+                ModBlocks.VERDANT_ORCHID, ModBlocks.VERDANT_HANGING_ORCHID, ModBlocks.VERDANT_BLOSSOM_BUSH,
+                ModBlocks.VERDANT_VINE, ModBlocks.VERDANT_WATER_BLOOM).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(verdant, shown.subList(nest + 1, nest + 1 + verdant.size()));
+        List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
+                .filter(item -> !(item instanceof BlockItem)).toList();
+        assertEquals(ModItems.VERDANT_FRUIT.get(), standalone.get(standalone.indexOf(ModItems.TOXIC_POOL_BUCKET.get()) + 1));
+        assertSame(ModBlocks.VERDANT_SAPLING.get(), ModBlocks.POTTED_VERDANT_SAPLING.get().getPotted());
+        assertInstanceOf(StandingAndWallBlockItem.class, ModBlocks.VERDANT_BROMELIAD.asItem());
+        assertSame(ModBlocks.VERDANT_BROMELIAD.asItem(), ModBlocks.VERDANT_WALL_BROMELIAD.asItem());
+        assertInstanceOf(DoubleHighBlockItem.class, ModBlocks.VERDANT_GIANT_LEAF.asItem());
+        assertInstanceOf(DoubleHighBlockItem.class, ModBlocks.VERDANT_TALL_FERN.asItem());
+        assertInstanceOf(PlaceOnWaterBlockItem.class, ModBlocks.VERDANT_WATER_BLOOM.asItem());
+    }
+
+    /**
+     * The verdant flora behaves as planned: the glow is only a model layer (no block light, F8 = A), the wood burns,
+     * the plants are bonemealable, the fern is replaceable but the giant leaf is not, the pod grows like cocoa.
+     */
+    @Test
+    void verdantFloraBehavesAsPlanned() {
+        for (DeferredBlock<?> block : List.of(ModBlocks.VERDANT_BROMELIAD, ModBlocks.VERDANT_WALL_BROMELIAD,
+                ModBlocks.VERDANT_ORCHID, ModBlocks.VERDANT_LEAVES, ModBlocks.VERDANT_VINE)) {
+            assertEquals(0, block.get().defaultBlockState().getLightEmission(), block.getId().toString());
+        }
+        for (DeferredBlock<?> block : List.of(ModBlocks.VERDANT_LOG, ModBlocks.VERDANT_PLANKS, ModBlocks.VERDANT_LEAVES)) {
+            assertTrue(block.get().defaultBlockState().ignitedByLava(), block.getId().toString());
+        }
+        for (DeferredBlock<?> block : List.of(ModBlocks.VERDANT_GIANT_LEAF, ModBlocks.VERDANT_FERN, ModBlocks.VERDANT_TALL_FERN,
+                ModBlocks.VERDANT_BROMELIAD, ModBlocks.VERDANT_WALL_BROMELIAD, ModBlocks.VERDANT_ORCHID,
+                ModBlocks.VERDANT_HANGING_ORCHID, ModBlocks.VERDANT_BLOSSOM_BUSH, ModBlocks.VERDANT_VINE,
+                ModBlocks.VERDANT_VINE_PLANT, ModBlocks.VERDANT_WATER_BLOOM, ModBlocks.VERDANT_FRUIT_POD,
+                ModBlocks.VERDANT_SAPLING)) {
+            assertInstanceOf(BonemealableBlock.class, block.get(), block.getId().toString());
+        }
+        assertTrue(ModBlocks.VERDANT_FERN.get().defaultBlockState().canBeReplaced());
+        assertFalse(ModBlocks.VERDANT_GIANT_LEAF.get().defaultBlockState().canBeReplaced());
+        assertTrue(ModBlocks.VERDANT_FRUIT_POD.get().defaultBlockState().isRandomlyTicking());
+        assertFalse(ModBlocks.VERDANT_VINE.get().defaultBlockState().getValue(VerdantVineBlock.FLOWERING));
+        assertTrue(ModBlocks.VERDANT_VINE_PLANT.get().defaultBlockState().hasProperty(VerdantVineBlock.FLOWERING));
+    }
+
+    /** The verdant vine replaces the hanging moss on the climb routes: both of its blocks are climbable and walk-through. */
+    @Test
+    void verdantVineIsClimbable() {
+        String relative = "src/generated/resources/data/minecraft/tags/block/climbable.json";
+        Path dir = Path.of("").toAbsolutePath();
+        while (!Files.exists(dir.resolve(relative))) {
+            dir = dir.getParent();
+        }
+        Set<String> values = new HashSet<>();
+        WorldgenData.read(dir.resolve(relative)).getAsJsonArray("values").forEach(value -> values.add(value.getAsString()));
+        for (DeferredBlock<?> block : List.of(ModBlocks.VERDANT_VINE, ModBlocks.VERDANT_VINE_PLANT)) {
+            assertTrue(values.contains(block.getId().toString()), block.getId().toString());
+            assertTrue(block.get().defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).isEmpty());
+        }
+    }
+
     /** Nether ring 4 follows ring 4 directly and ends the blocks (contract ring 4 §3); its shard ends the loose items. */
     @Test
     void netherRing4FollowsRing4InOrderAndBehavesAsPlanned() {
         List<Item> shown = blockItems();
-        int lastRing4 = shown.indexOf(ModBlocks.CREATURE_NEST.asItem());
+        int lastRing4 = shown.indexOf(ModBlocks.VERDANT_WATER_BLOOM.asItem());
         List<Item> netherRing4 = Stream.of(ModBlocks.BONE_SAND, ModBlocks.BLEACHED_NETHERRACK, ModBlocks.FOSSIL_STONE,
                 ModBlocks.FOSSIL_STONE_STAIRS, ModBlocks.FOSSIL_STONE_SLAB, ModBlocks.FOSSIL_STONE_WALL,
                 ModBlocks.POLISHED_FOSSIL_STONE, ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, ModBlocks.POLISHED_FOSSIL_STONE_SLAB,

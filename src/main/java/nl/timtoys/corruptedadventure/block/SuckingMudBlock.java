@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -43,6 +44,8 @@ public class SuckingMudBlock extends Block {
     static final double HORIZONTAL_DRAG = 0.87;
     /** Vertical drag {@code LivingEntity.travel} applies after the gravity. */
     private static final double VERTICAL_DRAG = 0.98;
+    /** Vanilla's gravity cap under Slow Falling ({@code LivingEntity.travel}). */
+    private static final double SLOW_FALLING_GRAVITY = 0.01;
     /** One in this many animate ticks of a block with air above shows a bubble. */
     private static final int BUBBLE_CHANCE = 12;
     /** One in this many animate ticks tries the slurp; the limiter thins a large patch further. */
@@ -76,8 +79,18 @@ public class SuckingMudBlock extends Block {
         }
         living.resetFallDistance();
         Vec3 motion = living.getDeltaMovement();
-        living.setDeltaMovement(motion.x * HORIZONTAL_DRAG, nextVerticalSpeed(living.jumping, living.getGravity()),
+        living.setDeltaMovement(motion.x * HORIZONTAL_DRAG,
+                nextVerticalSpeed(living.jumping, travelGravity(living.getGravity(), motion.y, living.hasEffect(MobEffects.SLOW_FALLING))),
                 motion.z * HORIZONTAL_DRAG);
+    }
+
+    /**
+     * The gravity {@code LivingEntity.travel} subtracts after this move: Slow Falling caps it at 0.01 while the entity is
+     * not rising ({@code vertical} is the velocity it moved with, which travel checks). Without this, Slow Falling would
+     * let an entity float out of the mud.
+     */
+    static double travelGravity(double gravity, double vertical, boolean slowFalling) {
+        return slowFalling && vertical <= 0.0 ? Math.min(gravity, SLOW_FALLING_GRAVITY) : gravity;
     }
 
     /**

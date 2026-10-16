@@ -93,6 +93,11 @@ public final class ModConfiguredFeatures {
      * comes from the biome stream (75); until then the sapling does not grow.
      */
     public static final ResourceKey<ConfiguredFeature<?, ?>> MOONPETAL_TREE = key("ring_4/moonpetal_tree");
+    /**
+     * The tree fern the verdant sapling grows (ModTreeGrowers.VERDANT; golf 2 §6b, F11 = A: the emergent tree only comes
+     * from worldgen). The feature itself comes from the biome stream (75b); until then the sapling does not grow.
+     */
+    public static final ResourceKey<ConfiguredFeature<?, ?>> VERDANT_TREE_FERN = key("ring_4/verdant_tree_fern");
 
     private ModConfiguredFeatures() {
     }

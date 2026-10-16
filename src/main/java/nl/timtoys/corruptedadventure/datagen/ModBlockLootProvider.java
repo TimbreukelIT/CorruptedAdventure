@@ -2,7 +2,10 @@ package nl.timtoys.corruptedadventure.datagen;
 
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.world.level.block.CocoaBlock;
+import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -222,7 +225,39 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropWhenSilkTouch(ModBlocks.SLIME_TRAIL.get());
         dropSelf(ModBlocks.CREATURE_NEST.get());
 
+        verdant();
         netherRing4();
+    }
+
+    /** The verdant flora (72b), each like its vanilla model. */
+    private void verdant() {
+        for (Block block : List.of(ModBlocks.VERDANT_LOG.get(), ModBlocks.VERDANT_WOOD.get(), ModBlocks.STRIPPED_VERDANT_LOG.get(),
+                ModBlocks.STRIPPED_VERDANT_WOOD.get(), ModBlocks.VERDANT_PLANKS.get(), ModBlocks.VERDANT_STAIRS.get(),
+                ModBlocks.VERDANT_FENCE.get(), ModBlocks.VERDANT_FENCE_GATE.get(), ModBlocks.VERDANT_TRAPDOOR.get(),
+                ModBlocks.VERDANT_PRESSURE_PLATE.get(), ModBlocks.VERDANT_BUTTON.get(), ModBlocks.VERDANT_SAPLING.get(),
+                ModBlocks.VERDANT_BROMELIAD.get(), ModBlocks.VERDANT_ORCHID.get(), ModBlocks.VERDANT_HANGING_ORCHID.get(),
+                ModBlocks.VERDANT_BLOSSOM_BUSH.get(), ModBlocks.VERDANT_WATER_BLOOM.get())) {
+            dropSelf(block);
+        }
+        add(ModBlocks.VERDANT_SLAB.get(), this::createSlabItemTable);
+        add(ModBlocks.VERDANT_DOOR.get(), this::createDoorTable);
+        add(ModBlocks.VERDANT_LEAVES.get(), block -> createLeavesDrops(block, ModBlocks.VERDANT_SAPLING.get(), NORMAL_LEAVES_SAPLING_CHANCES));
+        dropPottedContents(ModBlocks.POTTED_VERDANT_SAPLING.get());
+        // Like the sunflower: the lower half drops the plant.
+        add(ModBlocks.VERDANT_GIANT_LEAF.get(), block -> createSinglePropConditionTable(block, DoublePlantBlock.HALF, DoubleBlockHalf.LOWER));
+        // Like fern and large fern: shears give the fern(s), otherwise now and then wheat seeds.
+        add(ModBlocks.VERDANT_FERN.get(), this::createGrassDrops);
+        add(ModBlocks.VERDANT_TALL_FERN.get(), block -> createDoublePlantWithSeedDrops(block, ModBlocks.VERDANT_FERN.get()));
+        dropOther(ModBlocks.VERDANT_WALL_BROMELIAD.get(), ModBlocks.VERDANT_BROMELIAD.get());
+        // Like weeping vines: shears or Silk Touch, otherwise a third of the time (Fortune more).
+        addNetherVinesDropTable(ModBlocks.VERDANT_VINE.get(), ModBlocks.VERDANT_VINE_PLANT.get());
+        // Like cocoa: three fruits when ripe, otherwise one.
+        add(ModBlocks.VERDANT_FRUIT_POD.get(), block -> LootTable.lootTable().withPool(LootPool.lootPool()
+                .setRolls(ConstantValue.exactly(1.0F))
+                .add(applyExplosionDecay(block, LootItem.lootTableItem(ModItems.VERDANT_FRUIT.get())
+                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(3.0F))
+                                .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                                        .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CocoaBlock.AGE, 2))))))));
     }
 
     private void netherRing4() {
