@@ -71,6 +71,9 @@ class Ring4IslandsTest {
             switch (s.kind()) {
                 case IslandShape.CLOD -> assertTrue(diameter >= 5.0 - 1e-9 && diameter <= 15.0 + 1e-9, "clod " + diameter);
                 case IslandShape.MIDDLE -> assertTrue(diameter >= 20.0 - 1e-9 && diameter <= 60.0 + 1e-9, "middle " + diameter);
+                // 74: a world tree's half torn-out island.
+                case IslandShape.TREE -> assertTrue(diameter >= WorldTrees.ISLAND_MIN - 1e-9
+                        && diameter <= WorldTrees.ISLAND_MIN + WorldTrees.ISLAND_SPREAD + 1e-9, "tree " + diameter);
                 default -> assertTrue(diameter >= 80.0 - 1e-9 && diameter <= 150.0 + 1e-9, "giant " + diameter);
             }
             assertTrue(s.groundReach() <= cellSize, "reach " + s.groundReach());
@@ -109,8 +112,11 @@ class Ring4IslandsTest {
             assertTrue(c.islandHole() > 0.0);
             if (s.kind() != IslandShape.CLOD) {
                 assertTrue(c.islandMask() > 0.0);
-                assertTrue(field.thin(x, s.highest(), z) > 0.0 || c.springY() == s.highest(), "island block at the top");
-                if (field.islandsAt(x, z).size() == 1) {
+                // 74: a sky lake's basin lowers the top at the centre.
+                assertTrue(field.thin(x, s.highest(), z) > 0.0 || c.springY() == s.highest()
+                        || c.skyLakeFloor() != Integer.MIN_VALUE, "island block at the top");
+                // 74: a world tree's trunk stands on its island.
+                if (field.islandsAt(x, z).size() == 1 && s.kind() != IslandShape.TREE) {
                     assertEquals(0.0, field.thin(x, s.highest() + 2, z));
                 }
             }

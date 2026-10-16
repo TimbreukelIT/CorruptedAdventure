@@ -197,8 +197,29 @@ def verdant_falls():
 SPECIAL = {"verdant_falls": verdant_falls}
 
 
+# ---------------------------------------------------------------- W-terrein-b (74): the world trees
+def tree_part(part):
+    """True in the blocks of a world tree (terrain, Q7 = A) that are part: log (trunk), wood (branches, roots), leaves,
+    or any of them."""
+    return {"type": CA + "world_tree", "part": part}
+
+
+def world_tree():
+    """The world trees of ring 4 (74): the trunk moonpetal_log, branches and roots moonpetal_wood (bark all round), the
+    crown persistent moonpetal_leaves (they never decay, Q7 = A). First in the ring 4 branch: whatever biome the tree
+    stands in, its blocks are wood and leaves, never the biome's soil. One condition in front (any part), so a block
+    outside the trees costs one test."""
+    leaves = {"type": "minecraft:block", "result_state": {"Name": CA + "moonpetal_leaves",
+                                                          "Properties": {"distance": "7", "persistent": "true",
+                                                                         "waterlogged": "false"}}}
+    return cond(tree_part("any"), seq(cond(tree_part("log"), block(CA + "moonpetal_log")),
+                                      cond(tree_part("wood"), block(CA + "moonpetal_wood")),
+                                      leaves))
+
+
 def ring_4_branch():
-    return cond(biome(*RING_4), seq(*[cond(biome(name), SPECIAL[name]() if name in SPECIAL else surface(*SURFACES[name]))
+    return cond(biome(*RING_4), seq(world_tree(),
+                                    *[cond(biome(name), SPECIAL[name]() if name in SPECIAL else surface(*SURFACES[name]))
                                       for name in RING_4]))
 
 
