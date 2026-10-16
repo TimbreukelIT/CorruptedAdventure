@@ -1,6 +1,6 @@
 # Ring 4 — golf 2: inrichting, overleving en sfeer
 
-**Status:** gespard 2026-10-16: Q1–Q21 (§4), G1–G5 (§4b) en de flora-sparring F1–F12 (§6) beantwoord. Nog open: H1–H5 (§6c); 72b, 75b en het flora-deel van 71b wachten alleen op de punten die H1–H5 raken.
+**Status:** gespard 2026-10-16: Q1–Q21 (§4), G1–G5 (§4b) en de flora-sparring F1–F12 (§6) beantwoord. H1–H5 (§6c) beantwoord: geen open punten.
 
 Scope per pakket: één categorie (CLAUDE.md §2). Basis: `main` na teststop 5a2 (89e8831); W-terrein en W-biomes pas na de prestatiefix van de `steam_fens`-zone (Q1). Namen en sleutels: `contract.md` (vast; wijzigingen via main, zie §5). Werkwijze: `waves.md` §2 (golf 2), §4 (worktrees, licht testen), §5 (eigenaarschap), §6 (INT2). Ontwerp: `fase-1-wereld.md` → Ring 4 ("Sparring golf 2 (2026-10-16)"), bouwplan F (72–80, 71b).
 
@@ -48,7 +48,7 @@ Alle sound events (contract §6, ambient + blok) en particle types (`will_o_wisp
 - Sporen: `clawed_tidestone`, `slime_trail`, `creature_nest`.
 - `moonpetal_leaves`: `blossom` in `animateTick` (backlog r. 271).
 - Paden met T bevestigen (backlog r. 277); `ring_4_stones` aanvullen.
-**72b — af als:** de 28 flora-blokken van §6b (houtset `verdant_` + planten), met gedrag, loot, tags (`#logs`, `#logs_that_burn`, `#planks`, `#leaves`, `#saplings`, houtset-tags, `minecraft:climbable` voor de liaan, `parrots_spawnable_on`), lang en `ModFlammables`; de sapling groeit `ring_4/verdant_tree_fern` (key van W-biomes, 75b). Extra's (borden, boot, potten, recipes) volgens H1; fruit volgens H3.
+**72b — af als:** de 29 flora-blokken van §6b (+ item `verdant_fruit`) (houtset `verdant_` + planten), met gedrag, loot, tags (`#logs`, `#logs_that_burn`, `#planks`, `#leaves`, `#saplings`, houtset-tags, `minecraft:climbable` voor de liaan, `parrots_spawnable_on`), lang en `ModFlammables`; de sapling groeit `ring_4/verdant_tree_fern` (key van W-biomes, 75b). Geen borden, boot of potten; recipes naar de `items`-backlog (H1 = A). Fruit als peul aan de stam (H3 = A).
 
 ### W-terrein — 73 tunnelnet (`worldgen`)
 **Af als:**
@@ -72,7 +72,7 @@ Alle sound events (contract §6, ambient + blok) en particle types (`will_o_wisp
 
 ### W-biomes — 75, 76, 77, 75b (`worldgen`)
 **75 — af als:** aankleding van de vijf mythische biomes en `sky_gardens`: `moonpetal`-bomen (incl. `ring_4/moonpetal_tree` voor de sapling), moerasbomen, vanilla spar/donkere eik met mos, `giant_lily_pad`, `lotus`, gloeiflora, koraal/zeegras/sea pickles, hangende (gloei)wortels en ranken onder de eilanden (lage eilanden tot vlak boven de grond), ranken tussen de eilandparen van 74 (per chunk een deel), planten rond de hemelmeren van 74, `bubble_spring` in diepe poelen. **Gloed onder de eilanden** (besluit teststop 5a): licht ≥ 1 op droog land in de eilandschaduw; mythisch `aquamarine`-knoppen + `glow_bloom`/`glowcap`.
-**76 — af als:** de drie bedorven biomes en `withered_gardens`: `withered_moonpetal`-bomen, `reeds`, veen, `sucking_mud` (**G1 = A**: kleine plekken ≤ 4×4, 2–3 diep, op oevers in `peat_moors` en `drowned_forest`; niet midden in het riet van `reed_marsh`), gifpoelen, **moerasgas aan het oppervlak (Q10 = A)**: gesloten gasbellen net onder de veenkorst en 1–2 lagen gas in zinkgatbodems; `blighted_glowcap`; dichter richting ring 5. **Gloed onder de eilanden (Q13 = B):** `blighted_glowcap`, `glowcap` **en gifkristal aan het oppervlak** (**G4 = B**: ook clusters, licht 5, die scherven droppen; gevolg: `toxic_crystal_shard` is vroeg en makkelijk te vinden, fase 2 houdt daar rekening mee; budding aan het oppervlak: H5).
+**76 — af als:** de drie bedorven biomes en `withered_gardens`: `withered_moonpetal`-bomen, `reeds`, veen, `sucking_mud` (**G1 = A**: kleine plekken ≤ 4×4, 2–3 diep, op oevers in `peat_moors` en `drowned_forest`; niet midden in het riet van `reed_marsh`), gifpoelen, **moerasgas aan het oppervlak (Q10 = A)**: gesloten gasbellen net onder de veenkorst en 1–2 lagen gas in zinkgatbodems; `blighted_glowcap`; dichter richting ring 5. **Gloed onder de eilanden (Q13 = B):** `blighted_glowcap`, `glowcap` **en gifkristal aan het oppervlak** (**G4 = B**: ook clusters, licht 5, die scherven droppen; gevolg: `toxic_crystal_shard` is vroeg en makkelijk te vinden, fase 2 houdt daar rekening mee; budding-blokken alleen ondergronds, **H5 = A**).
 **77 — af als:** **ertsen (Q14 = A)**: aquamarijn-geodes half open in de bodem onder diep water (lagune-troggen, fjorden, overstroomde tunnels); gifkristal (budding) in de wanden van de droge bedorven tunnels en gaskamers (de gifgrotten); `tidesilver` in de tunnelwanden; jade diep in overstroomde tunnels; vanilla-ertsen ×0,2 / ×0,15 / ×0,1. Sporen van wezens in de tunnels (klauwkras, slijmspoor, nesten, botresten met `bone_block`). Controle van de dierspawns.
 **75b — af als:** de flora in `verdant_falls` volgens §6b (plaatsing per deel), `ledge_strand` binnen `verdant_falls` met `verdant_vine` i.p.v. `hanging_swamp_moss` (klimroutes blijven 100 %), papegaaien in de spawns, de configured feature `ring_4/verdant_tree_fern` voor de sapling.
 **Opruimen:** `placeholder_ring_4`/`placeholder_nether_ring_4` weg (backlog r. 265).
@@ -170,15 +170,15 @@ Alle sound events (contract §6, ambient + blok) en particle types (`will_o_wisp
 | F6 | **C** — eigen klimbare liaan + bloeiende variant; vervangt het hangmos in `ledge_strand` binnen `verdant_falls` |
 | F7 | A — geen planten in beken, vallen en de voetrivier; stille meren een paar lotussen; oevers reuzenbladen en riet |
 | F8 | A — gloeiende overlay op orchidee en bromelia zonder bloklicht |
-| F9 | **B** — mythisch pastel, aansluitend op `moonpetal`; moet onderscheidbaar blijven van `cascade_vale` (H4) |
+| F9 | **B** — mythisch pastel, aansluitend op `moonpetal`; moet onderscheidbaar blijven van `cascade_vale` (H4 = A) |
 | F10 | A — papegaaien op de nieuwe bomen |
 | F11 | A — de sapling groeit alleen de boomvaren; de emergente boom alleen via worldgen; planten werken met bonemeal |
 | F12 | A — voorvoegsel `verdant_` |
 
 ### 6b. Scope 72b / 71b / 75b
-**Houtset (16 blokken, F1 = B, volgens de vaste definitie "houtset"):** `verdant_log`, `verdant_wood`, `stripped_verdant_log`, `stripped_verdant_wood`, `verdant_planks`, `verdant_stairs`, `verdant_slab`, `verdant_fence`, `verdant_fence_gate`, `verdant_door`, `verdant_trapdoor`, `verdant_pressure_plate`, `verdant_button`, `verdant_leaves`, `verdant_sapling`, `potted_verdant_sapling` (geen item). `BlockSetType`/geluid als eik, bijl strippt, brandbaar als vanilla-hout. Borden, hangborden, boot en recipes: **H1**.
+**Houtset (16 blokken, F1 = B, volgens de vaste definitie "houtset"):** `verdant_log`, `verdant_wood`, `stripped_verdant_log`, `stripped_verdant_wood`, `verdant_planks`, `verdant_stairs`, `verdant_slab`, `verdant_fence`, `verdant_fence_gate`, `verdant_door`, `verdant_trapdoor`, `verdant_pressure_plate`, `verdant_button`, `verdant_leaves`, `verdant_sapling`, `potted_verdant_sapling` (geen item). `BlockSetType`/geluid als eik, bijl strippt, brandbaar als vanilla-hout. Geen borden, hangborden, boot of potten; recipes in de `items`-backlog (**H1 = A**).
 
-**Planten (12 blokken, 9 soorten + de bloeiende liaan, F5 = C):**
+**Planten (13 blokken, 9 soorten + de bloeiende liaan, F5 = C):**
 
 | Blok | Soort / gedrag | Waar (75b) |
 |---|---|---|
@@ -191,30 +191,36 @@ Alle sound events (contract §6, ambient + blok) en particle types (`will_o_wisp
 | `verdant_hanging_orchid` | hangorchidee onder richels en takken | onder richels, kronen |
 | `verdant_blossom_bush` | bloeiende struik | bassinranden (niet op calcietlippen) |
 | `verdant_vine` + `verdant_vine_plant` | liaan (kop + stengel, groeit omlaag, klimbaar); state `flowering` voor de bloeiende variant (implementatiekeuze: één blokpaar met state i.p.v. vier blokken) | `ledge_strand`, kloofwanden, kronen |
-| waterplant (naam volgt, `verdant_`) | waterplant | **H2** (botst met F7) |
-| fruitblok (naam volgt, `verdant_`) | fruit | **H3** |
+| `verdant_water_bloom` | drijvende waterplant (zoals een lelieblad, op een waterbron) | alleen stille meren (bassin- en kloofmeren), naast de lotussen (**H2 = A**) |
+| `verdant_fruit_pod` | vruchtpeul aan de emergente stam, groeistadia zoals cacao (geen item) | stammen van de emergente bomen (**H3 = A**) |
+| item `verdant_fruit` | placeholder-drop van de peul, geen voedingswaarde; eten en recipes in fase 2 (`items`) | — |
 
-Samen 16 + 12 = **28 blokken**. Gloed alleen als emissive overlay (geen licht, F8). Kleuren: F9 + H4.
+Samen 16 + 13 = **29 blokken**. Gloed alleen als emissive overlay (geen licht, F8). Namen `verdant_water_bloom`, `verdant_fruit_pod`, `verdant_fruit`: voorstel plan-agent, B mag via main bijstellen.
 
-**71b (flora-deel):** textures voor alle 28 blokken (stam/top, gestript, planken, deur boven/onder/item, valluik, bladeren in pastel, planten, liaan kop/stengel × bloeiend/niet), gloei-overlays orchidee en bromelia, contactblad met een vergelijking naast `moonpetal` (H4).
+**Palet (F9 = B, H4 = A):** mythisch pastel; kruin pastel mint/zeegroen (vaste kleur, geen biome-tint), bloemen perzik, abrikoos en lila, stam warm zandbeige. Gras, lucht, mist en water blijven zoals goedgekeurd. Zo blijft `verdant_falls` onderscheidbaar van `cascade_vale` (zilverwitte stam, roze-lila kruin).
+
+**71b (flora-deel):** textures voor alle 29 blokken (stam/top, gestript, planken, deur boven/onder/item, valluik, bladeren in pastel, planten, liaan kop/stengel × bloeiend/niet), gloei-overlays orchidee en bromelia, vruchtpeul (stadia) en `verdant_fruit`, contactblad met een vergelijking naast `moonpetal`.
 
 **75b (plaatsing, F2–F4, F7, F10):**
 - **Treden:** dichte onderbegroeiing (varens, reuzenbladen, bromelia's) en verspreide boomvarens; emergente bomen aan de meeroevers.
 - **Stootborden (F3 = B):** boomvarens en varens, nooit op de looplijnen of binnen 2 van een val.
 - **Kloven:** emergente bomen aan de kloofranden (niet boven de vallen); wanden orchideeën, wandbromelia's, lianen (ook bloeiend); hangorchideeën onder het richelpad en de klimrichels.
 - **Bassinranden:** bloeiende struiken (niet op de calcietlippen en drempels).
-- **Water (F7):** beken, vallen, plonspoelen en de voetrivier vrij; stille meren een paar lotussen (ring 4-blok); waterplant volgens H2.
+- **Water (F7, H2 = A):** beken, vallen, plonspoelen en de voetrivier vrij; stille meren een paar lotussen (ring 4-blok) en `verdant_water_bloom`.
+- **Fruit (H3 = A):** peulen aan een deel van de emergente stammen.
 - **Altijd vrij (F4):** valkolommen en lippen, richelpad, klimroutes (knoppen en strengen), brugdekken en -opstappen, nissen en tunnels, de bevaarbare voetrivier en de rotsbogen.
 - **`ledge_strand`:** in `verdant_falls` `verdant_vine` (deels bloeiend) i.p.v. `hanging_swamp_moss`; 100 % van de routes blijft beklimbaar (test).
 - **Papegaaien** (F10) in de spawns; `verdant_leaves`/`verdant_log` in `parrots_spawnable_on` (B).
 - Kruinen binnen het 3×3-chunkvenster; determinisme via `Ring4Features.ORDER`.
 
-### 6c. Vervolgvragen (OPEN)
-- **H1 — Extra's bij de houtset:** borden/hangborden, boot, potten voor de planten, recipes. De vaste definitie "houtset" sluit borden en boten uit; recipes staan voor elke houtset in de `items`-backlog (fase 2).
-- **H2 — Waar leeft de eigen waterplant?** F5-C voegt hem toe; F7-A houdt beken, vallen en de voetrivier vrij en geeft stille meren alleen lotus.
-- **H3 — Fruit:** welke vorm, en eetbaar nu (dat is `items`, fase 2) of een placeholder?
-- **H4 — Pastel tegenover `cascade_vale`:** hoe blijft `verdant_falls` onderscheidbaar van de roze-lila `moonpetal`-kruinen?
-- **H5 — Gifkristal aan het oppervlak (G4 = B):** ook budding-blokken aan het oppervlak, of alleen clusters en knoppen?
+### 6c. Vervolgvragen (beantwoord 2026-10-16)
+| H | Antwoord |
+|---|---|
+| H1 | A — geen borden, hangborden, boot of potten (vaste definitie "houtset"); recipes in de `items`-backlog (fase 2) |
+| H2 | A — de waterplant (`verdant_water_bloom`) alleen in stille meren, naast de lotussen; beken, vallen en de voetrivier vrij |
+| H3 | A — vruchtpeul aan de emergente stam (stadia zoals cacao), drop placeholder-item `verdant_fruit` zonder voedingswaarde; eten en recipes in fase 2 |
+| H4 | A — kruin pastel mint/zeegroen, bloemen perzik, abrikoos en lila, stam warm zandbeige; gras, lucht, mist en water ongewijzigd |
+| H5 | A — budding-gifkristal alleen ondergronds; aan het oppervlak alleen clusters en knoppen |
 
 ## Voortgang
-- 2026-10-16: concept opgesteld (plan-agent); antwoorden Q1–Q21, G1–G5 en F1–F12 verwerkt.
+- 2026-10-16: concept opgesteld (plan-agent); antwoorden Q1–Q21, G1–G5, F1–F12 en H1–H5 verwerkt. Plan definitief, geen open punten.

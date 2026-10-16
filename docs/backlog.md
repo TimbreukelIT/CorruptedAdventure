@@ -276,6 +276,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [blocks] Eén gedeelde groeihelper voor `DewSourceBlock` (ring 2) en `BuddingCrystalBlock` (ring 4); ring 2 is nu vergrendeld. (bron: 67)
 - [blocks] Golf 2 (72): `poison_gases` vullen met `swamp_gas`, `toxic_pool` in `poison_sources`; de paden van de gameplayblokken bevestigen met T. (bron: 66, 71a)
 - [items] Placeholder-items ring 4 `raw_tidesilver`, `jade`, `toxic_crystal_shard`, `aquamarine_shard`, `purity_crystal_shard`: smelten, nut en recipes in fase 2 (zoals `raw_sunstone`). (bron: 67, 68)
+- [items] Recipes `verdant`-houtset (log → planks, wood, trap, plaat, hek, poort, deur, valluik, knop, drukplaat; generieke vanilla-recipes via de tags) en nut van de placeholder-vrucht `verdant_fruit` (voedingswaarde, recipes). Gifkristalscherven liggen sinds golf 2 ook aan het oppervlak van de bedorven band (clusters): vroeg beschikbaar, meenemen in de balans van gifwapens en -pijlen. (bron: sparring golf 2 ring 4, 2026-10-16)
 - [conditions] Gedeelde `inZone`-helper en `ConditionContext`-helpers (oog in blok, onder water) voor hitte, kou en gif. (bron: 69)
 - [conditions] Zuiverend in Nether-4 (`RateModifier.Stage.PURIFYING`, ×3 op de daling) en de gifkoppelingen met de blokken van 72 (golf 2, 79). (bron: 69)
 - [conditions] Startwaarden van `[conditions.poison]` en de schade van de wither afstemmen in de teststop (5b). (bron: 69)

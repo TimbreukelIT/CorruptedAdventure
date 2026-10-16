@@ -748,3 +748,8 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-16 | worldgen | Papegaaien in `verdant_falls` op de nieuwe bomen | Gebruiker (aanbevolen, F10) |
 | 2026-10-16 | blocks | `verdant_sapling` groeit alleen de boomvaren; de emergente boom alleen via worldgen; planten werken met bonemeal | Gebruiker (aanbevolen, F11) |
 | 2026-10-16 | blocks | Flora-namen met voorvoegsel `verdant_` | Gebruiker (aanbevolen, F12); ringthema herkenbaar |
+| 2026-10-16 | blocks | Houtset `verdant` zonder borden, hangborden, boot of potten; recipes in de `items`-backlog | Gebruiker (aanbevolen, H1); vaste definitie "houtset" |
+| 2026-10-16 | worldgen | Waterplant `verdant_water_bloom` alleen in stille meren van `verdant_falls`, naast de lotussen | Gebruiker (aanbevolen, H2); beken, vallen en voetrivier blijven vrij |
+| 2026-10-16 | blocks | Fruit: vruchtpeul aan de emergente stam (stadia zoals cacao), drop placeholder-item `verdant_fruit` zonder voedingswaarde | Gebruiker (aanbevolen, H3); eten en recipes in fase 2 |
+| 2026-10-16 | textures | Flora `verdant_falls`: kruin pastel mint/zeegroen, bloemen perzik/abrikoos/lila, stam warm zandbeige | Gebruiker (aanbevolen, H4); onderscheidbaar van `moonpetal` |
+| 2026-10-16 | worldgen | Budding-gifkristal alleen ondergronds; aan het oppervlak alleen clusters en knoppen | Gebruiker (aanbevolen, H5); geen eindeloze bron aan het oppervlak |
