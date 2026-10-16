@@ -56,7 +56,24 @@ final class MapPalette {
             Map.entry("corruptedadventure:frozen_lava_sea", 0x9FD3FF),
             Map.entry("corruptedadventure:rime_forest", 0x5F8FB8),
             Map.entry("corruptedadventure:glacier_rifts", 0x2F4D8A),
-            // placeholders and the edge (ring 4 has its real biomes since golf 1; those take a stable hash colour)
+            // ring 4: mythic band light and watery, blighted band dull, the zones on their own
+            Map.entry("corruptedadventure:verdant_falls", 0x9BE35A),
+            Map.entry("corruptedadventure:cascade_vale", 0xE6B8D8),
+            Map.entry("corruptedadventure:crystal_lagoon", 0x2BE3B4),
+            Map.entry("corruptedadventure:lotus_shallows", 0xF2C6A0),
+            Map.entry("corruptedadventure:glowroot_swamp", 0x2E7D6B),
+            Map.entry("corruptedadventure:mist_fjords", 0x8FA8C8),
+            Map.entry("corruptedadventure:sky_gardens", 0xFFF2A8),
+            Map.entry("corruptedadventure:peat_moors", 0x5B4A32),
+            Map.entry("corruptedadventure:reed_marsh", 0xA8A060),
+            Map.entry("corruptedadventure:drowned_forest", 0x3E4F33),
+            Map.entry("corruptedadventure:withered_gardens", 0x8C7A8A),
+            Map.entry("corruptedadventure:sundered_reach", 0x5E6656),
+            // Nether-ring 4
+            Map.entry("corruptedadventure:bone_dunes", 0xE3D7B0),
+            Map.entry("corruptedadventure:crystal_spires", 0xC9C2FF),
+            Map.entry("corruptedadventure:geode_hollows", 0x8A6BC9),
+            // placeholders and the edge
             Map.entry("corruptedadventure:placeholder_ring_3", 0x7A4A3A),
             Map.entry("corruptedadventure:placeholder_ring_5", 0x5A3A6A),
             Map.entry("corruptedadventure:placeholder_nether_ring_5", 0x3A2A4A),
