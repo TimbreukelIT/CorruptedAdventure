@@ -12,6 +12,7 @@
 #       RCON `stop`, waits until the recorded PID is gone (only then, after the time-out, stops that PID - after
 #       checking it is still this checkout's server JVM), turns RCON off, frees the slot.
 #   server.sh status
+# Environment: CA_SERVER_JVM adds JVM options to JAVA_TOOL_OPTIONS (e.g. jfr-prof.sh: a deeper JFR stack depth).
 # Exit 3 when the user is playing (C:/Temp/ca-user-test.lock): no JVM starts.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 STATE="$CA_OUT/server.state"
@@ -61,7 +62,7 @@ start() {
     rm -f "$log"
     ca_log "starting runServer in $wt on level $level (port $CA_SERVER_PORT, RCON $CA_RCON_PORT)"
     # All of the background job's descriptors go to the log first, so it never holds the caller's stdout (a pipe).
-    (exec > "$log" 2>&1 < /dev/null; cd "$wt" && JAVA_TOOL_OPTIONS="-Xmx$xmx" exec nohup ./gradlew runServer --no-daemon --console=plain) &
+    (exec > "$log" 2>&1 < /dev/null; cd "$wt" && JAVA_TOOL_OPTIONS="-Xmx$xmx${CA_SERVER_JVM:+ $CA_SERVER_JVM}" exec nohup ./gradlew runServer --no-daemon --console=plain) &
     local job=$!
     t0=$(date +%s); pid=""
     while true; do
