@@ -28,7 +28,8 @@ public final class ModFlowerPots {
         FlowerPotBlock emptyPot = (FlowerPotBlock) Blocks.FLOWER_POT;
         for (DeferredBlock<FlowerPotBlock> pot : List.of(
                 ModBlocks.POTTED_DRY_SHRUB, ModBlocks.POTTED_BARREL_CACTUS, ModBlocks.POTTED_DESERT_FLOWER,
-                ModBlocks.POTTED_PALM_SAPLING, ModBlocks.POTTED_FIRE_BLOOM, ModBlocks.POTTED_MOONPETAL_SAPLING)) {
+                ModBlocks.POTTED_PALM_SAPLING, ModBlocks.POTTED_FIRE_BLOOM, ModBlocks.POTTED_MOONPETAL_SAPLING,
+                ModBlocks.POTTED_VERDANT_SAPLING)) {
             emptyPot.addPlant(BuiltInRegistries.BLOCK.getKey(pot.get().getPotted()), pot);
         }
     }

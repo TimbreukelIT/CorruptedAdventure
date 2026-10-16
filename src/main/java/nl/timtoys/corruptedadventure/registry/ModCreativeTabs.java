@@ -24,8 +24,9 @@ public final class ModCreativeTabs {
             .title(Component.translatable("itemGroup.corruptedadventure.main"))
             .icon(() -> new ItemStack(ModBlocks.DEAD_LOG.get()))
             .displayItems((parameters, output) -> {
-                // Blocks without an item (potted plants) would be an empty stack.
-                ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR)
+                // Blocks without an item (potted plants) would be an empty stack; a wall variant shares the item of its
+                // standing block (the wall bromeliad), so each item once.
+                ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).distinct()
                         .forEach(output::accept);
                 ModItems.entries().stream().map(DeferredHolder::get)
                         .filter(item -> !(item instanceof BlockItem))

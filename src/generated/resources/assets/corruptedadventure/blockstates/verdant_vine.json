@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "flowering=false": {
+      "model": "corruptedadventure:block/verdant_vine"
+    },
+    "flowering=true": {
+      "model": "corruptedadventure:block/verdant_vine_flowering"
+    }
+  }
+}

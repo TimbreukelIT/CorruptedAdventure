@@ -325,7 +325,39 @@ final class ModItemModelProvider extends ItemModelProvider {
         flatBlockItem(ModBlocks.SLIME_TRAIL);
         blockItem(ModBlocks.CREATURE_NEST);
 
+        verdant();
         netherRing4();
+    }
+
+    /** The verdant flora (72b); the wall bromeliad, the vine stem and the fruit pod have no item of their own. */
+    private void verdant() {
+        ResourceLocation planks = modLoc("block/verdant_planks");
+        blockItem(ModBlocks.VERDANT_LOG);
+        blockItem(ModBlocks.VERDANT_WOOD);
+        blockItem(ModBlocks.STRIPPED_VERDANT_LOG);
+        blockItem(ModBlocks.STRIPPED_VERDANT_WOOD);
+        blockItem(ModBlocks.VERDANT_PLANKS);
+        blockItem(ModBlocks.VERDANT_STAIRS);
+        blockItem(ModBlocks.VERDANT_SLAB);
+        fenceInventory(ModBlocks.VERDANT_FENCE.getId().getPath(), planks);
+        blockItem(ModBlocks.VERDANT_FENCE_GATE);
+        basicItem(ModBlocks.VERDANT_DOOR.asItem());
+        withExistingParent(ModBlocks.VERDANT_TRAPDOOR.getId().getPath(), modLoc("block/verdant_trapdoor_bottom"));
+        blockItem(ModBlocks.VERDANT_PRESSURE_PLATE);
+        buttonInventory(ModBlocks.VERDANT_BUTTON.getId().getPath(), planks);
+        blockItem(ModBlocks.VERDANT_LEAVES);
+        flatBlockItem(ModBlocks.VERDANT_SAPLING);
+        // Double plants show their top half, like vanilla's large fern.
+        flatItem(ModBlocks.VERDANT_GIANT_LEAF, "verdant_giant_leaf_top");
+        flatBlockItem(ModBlocks.VERDANT_FERN);
+        flatItem(ModBlocks.VERDANT_TALL_FERN, "verdant_tall_fern_top");
+        flatBlockItem(ModBlocks.VERDANT_BROMELIAD);
+        flatBlockItem(ModBlocks.VERDANT_ORCHID);
+        flatBlockItem(ModBlocks.VERDANT_HANGING_ORCHID);
+        flatBlockItem(ModBlocks.VERDANT_BLOSSOM_BUSH);
+        flatBlockItem(ModBlocks.VERDANT_VINE);
+        flatBlockItem(ModBlocks.VERDANT_WATER_BLOOM);
+        basicItem(ModItems.VERDANT_FRUIT.get());
     }
 
     private void netherRing4() {
@@ -353,6 +385,11 @@ final class ModItemModelProvider extends ItemModelProvider {
     private void flatBlockItem(DeferredBlock<? extends Block> block) {
         String name = block.getId().getPath();
         withExistingParent(name, mcLoc("item/generated")).texture("layer0", modLoc("block/" + name));
+    }
+
+    /** A flat item on the block texture {@code texture}. */
+    private void flatItem(DeferredBlock<? extends Block> block, String texture) {
+        withExistingParent(block.getId().getPath(), mcLoc("item/generated")).texture("layer0", modLoc("block/" + texture));
     }
 
     private void blockItem(DeferredBlock<? extends Block> block) {

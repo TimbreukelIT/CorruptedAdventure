@@ -29,6 +29,17 @@ class ModTreeGrowersTest {
         assertEquals("corruptedadventure:moonpetal", sapling.getAsJsonObject().get("tree").getAsString());
     }
 
+    /** The verdant sapling grows only the tree fern (F11 = A); the key is W-biomes' (75b). */
+    @Test
+    void verdantGrowerGrowsTheTreeFern() {
+        JsonElement json = TreeGrower.CODEC.encodeStart(JsonOps.INSTANCE, ModTreeGrowers.VERDANT).getOrThrow();
+        assertEquals("corruptedadventure:verdant", json.getAsString());
+        assertEquals("corruptedadventure:ring_4/verdant_tree_fern",
+                ModConfiguredFeatures.VERDANT_TREE_FERN.location().toString());
+        JsonElement sapling = SaplingBlock.CODEC.codec().encodeStart(JsonOps.INSTANCE, ModBlocks.VERDANT_SAPLING.get()).getOrThrow();
+        assertEquals("corruptedadventure:verdant", sapling.getAsJsonObject().get("tree").getAsString());
+    }
+
     @Test
     void palmSaplingCodecKeepsItsGrower() {
         PalmSaplingBlock sapling = ModBlocks.PALM_SAPLING.get();

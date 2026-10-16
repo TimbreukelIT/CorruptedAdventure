@@ -5,7 +5,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CocoaBlock;
+import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.GrowingPlantHeadBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.Property;
+import nl.timtoys.corruptedadventure.block.VerdantVineBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SnowyDirtBlock;
@@ -157,6 +163,108 @@ final class ModBlockStateProvider extends BlockStateProvider {
 
         ring4Ores();
         ring4Gameplay();
+        verdant();
+    }
+
+    /**
+     * The verdant flora (72b) on T's paths ({@code golf-2-textures.md}): the wood set laid out like the moonpetal set,
+     * fixed-colour leaves; the plants as crosses, double plants on {@code _bottom}/{@code _top}, the glowing ones with
+     * their emissive {@code _glow} layer, the wall plants as a plane on the wall, the vine per {@code flowering}, the
+     * water bloom flat like the lily pad and the fruit pod on vanilla's cocoa models.
+     */
+    private void verdant() {
+        logBlock(ModBlocks.VERDANT_LOG.get());
+        axisBlock(ModBlocks.VERDANT_WOOD.get(), blockTexture(ModBlocks.VERDANT_LOG.get()), blockTexture(ModBlocks.VERDANT_LOG.get()));
+        logBlock(ModBlocks.STRIPPED_VERDANT_LOG.get());
+        axisBlock(ModBlocks.STRIPPED_VERDANT_WOOD.get(),
+                blockTexture(ModBlocks.STRIPPED_VERDANT_LOG.get()), blockTexture(ModBlocks.STRIPPED_VERDANT_LOG.get()));
+        ResourceLocation planks = blockTexture(ModBlocks.VERDANT_PLANKS.get());
+        simpleBlock(ModBlocks.VERDANT_PLANKS.get());
+        stairsBlock(ModBlocks.VERDANT_STAIRS.get(), planks);
+        slabBlock(ModBlocks.VERDANT_SLAB.get(), planks, planks);
+        fenceBlock(ModBlocks.VERDANT_FENCE.get(), planks);
+        fenceGateBlock(ModBlocks.VERDANT_FENCE_GATE.get(), planks);
+        doorBlockWithRenderType(ModBlocks.VERDANT_DOOR.get(),
+                modLoc("block/verdant_door_bottom"), modLoc("block/verdant_door_top"), "cutout");
+        trapdoorBlockWithRenderType(ModBlocks.VERDANT_TRAPDOOR.get(), modLoc("block/verdant_trapdoor"), true, "cutout");
+        pressurePlateBlock(ModBlocks.VERDANT_PRESSURE_PLATE.get(), planks);
+        buttonBlock(ModBlocks.VERDANT_BUTTON.get(), planks);
+        simpleBlock(ModBlocks.VERDANT_LEAVES.get(), models().cubeAll("verdant_leaves",
+                blockTexture(ModBlocks.VERDANT_LEAVES.get())).renderType("cutout_mipped"));
+        cross(ModBlocks.VERDANT_SAPLING.get());
+        simpleBlock(ModBlocks.POTTED_VERDANT_SAPLING.get(), models().flowerPotCross("potted_verdant_sapling",
+                blockTexture(ModBlocks.VERDANT_SAPLING.get())).renderType("cutout"));
+
+        doublePlant(ModBlocks.VERDANT_GIANT_LEAF.get());
+        cross(ModBlocks.VERDANT_FERN.get());
+        doublePlant(ModBlocks.VERDANT_TALL_FERN.get());
+        glowingCross(ModBlocks.VERDANT_BROMELIAD.get());
+        ResourceLocation bromeliad = blockTexture(ModBlocks.VERDANT_BROMELIAD.get());
+        horizontalBlock(ModBlocks.VERDANT_WALL_BROMELIAD.get(), glowingWallPlant("verdant_wall_bromeliad", bromeliad), 180);
+        horizontalBlock(ModBlocks.VERDANT_ORCHID.get(),
+                glowingWallPlant("verdant_orchid", blockTexture(ModBlocks.VERDANT_ORCHID.get())), 180);
+        // The waterlogged property does not change the model.
+        getVariantBuilder(ModBlocks.VERDANT_HANGING_ORCHID.get()).forAllStatesExcept(state -> ConfiguredModel.builder()
+                .modelFile(crossModel("verdant_hanging_orchid", blockTexture(ModBlocks.VERDANT_HANGING_ORCHID.get()))).build(),
+                BlockStateProperties.WATERLOGGED);
+        cross(ModBlocks.VERDANT_BLOSSOM_BUSH.get());
+        // Age does not change the model; flowering picks the flowering texture.
+        vine(ModBlocks.VERDANT_VINE.get(), "verdant_vine", GrowingPlantHeadBlock.AGE);
+        vine(ModBlocks.VERDANT_VINE_PLANT.get(), "verdant_vine_plant");
+        simpleBlock(ModBlocks.VERDANT_WATER_BLOOM.get(),
+                flatPad("verdant_water_bloom", blockTexture(ModBlocks.VERDANT_WATER_BLOOM.get())));
+        fruitPod();
+    }
+
+    /** A double plant: a cross per half on {@code <name>_bottom} and {@code <name>_top}. */
+    private void doublePlant(Block block) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        ModelFile lower = crossModel(name + "_bottom", modLoc("block/" + name + "_bottom"));
+        ModelFile upper = crossModel(name + "_top", modLoc("block/" + name + "_top"));
+        getVariantBuilder(block).forAllStates(state -> ConfiguredModel.builder()
+                .modelFile(state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.LOWER ? lower : upper).build());
+    }
+
+    /**
+     * A plant on a wall, drawn for {@code facing=north} (the wall to the south) like vanilla's ladder: one double-sided
+     * plane a pixel off the wall with the texture, and the same plane with the emissive {@code _glow} overlay.
+     */
+    private ModelFile glowingWallPlant(String name, ResourceLocation texture) {
+        BlockModelBuilder model = models().getBuilder(name).renderType("cutout").ao(false)
+                .texture("particle", texture).texture("plant", texture).texture("glow", texture.withSuffix("_glow"));
+        wallPlane(model, "#plant", false);
+        wallPlane(model, "#glow", true);
+        return model;
+    }
+
+    private static void wallPlane(BlockModelBuilder model, String texture, boolean emissive) {
+        var plane = model.element().from(0, 0, 15).to(16, 16, 15).shade(false);
+        if (emissive) {
+            plane.emissivity(15, 15).ao(false);
+        }
+        plane.face(Direction.NORTH).uvs(0, 0, 16, 16).texture(texture).end()
+                .face(Direction.SOUTH).uvs(16, 0, 0, 16).texture(texture).end().end();
+    }
+
+    /** A vine block: a cross on {@code <name>} or, flowering, on {@code <name>_flowering}; {@code ignored} properties do not count. */
+    private void vine(Block block, String name, Property<?>... ignored) {
+        ModelFile plain = crossModel(name, modLoc("block/" + name));
+        ModelFile flowering = crossModel(name + "_flowering", modLoc("block/" + name + "_flowering"));
+        getVariantBuilder(block).forAllStatesExcept(state -> ConfiguredModel.builder()
+                .modelFile(state.getValue(VerdantVineBlock.FLOWERING) ? flowering : plain).build(), ignored);
+    }
+
+    /** The fruit pod on vanilla's cocoa models (T's cocoa UV layout), rotated like vanilla's cocoa blockstate. */
+    private void fruitPod() {
+        List<ModelFile> stages = new ArrayList<>();
+        for (int age = 0; age <= 2; age++) {
+            String name = "verdant_fruit_pod_stage" + age;
+            stages.add(models().withExistingParent(name, mcLoc("block/cocoa_stage" + age))
+                    .texture("cocoa", modLoc("block/" + name)).texture("particle", modLoc("block/" + name)));
+        }
+        getVariantBuilder(ModBlocks.VERDANT_FRUIT_POD.get()).forAllStates(state -> ConfiguredModel.builder()
+                .modelFile(stages.get(state.getValue(CocoaBlock.AGE)))
+                .rotationY((int) state.getValue(CocoaBlock.FACING).toYRot()).build());
     }
 
     /**

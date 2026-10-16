@@ -6,6 +6,7 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.PlaceOnWaterBlockItem;
+import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.level.block.AmethystBlock;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
@@ -29,6 +30,7 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.TallFlowerBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.WaterlilyBlock;
@@ -79,6 +81,14 @@ import nl.timtoys.corruptedadventure.block.SuckingMudBlock;
 import nl.timtoys.corruptedadventure.block.SuckingMudSuffocation;
 import nl.timtoys.corruptedadventure.block.SwampGasBlock;
 import nl.timtoys.corruptedadventure.block.UpdraftBlock;
+import nl.timtoys.corruptedadventure.block.VerdantFernBlock;
+import nl.timtoys.corruptedadventure.block.VerdantFruitPodBlock;
+import nl.timtoys.corruptedadventure.block.VerdantHangingOrchidBlock;
+import nl.timtoys.corruptedadventure.block.VerdantPlantBlock;
+import nl.timtoys.corruptedadventure.block.VerdantVineBlock;
+import nl.timtoys.corruptedadventure.block.VerdantVinePlantBlock;
+import nl.timtoys.corruptedadventure.block.VerdantWallPlantBlock;
+import nl.timtoys.corruptedadventure.block.VerdantWaterBloomBlock;
 import nl.timtoys.corruptedadventure.block.WitheredDirtBlock;
 
 import java.util.Collection;
@@ -865,6 +875,93 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> CREATURE_NEST = register("creature_nest",
             () -> new Block(Properties.ofFullCopy(Blocks.HAY_BLOCK).mapColor(MapColor.TERRACOTTA_BROWN).ignitedByLava()));
 
+    // Tropical flora of verdant_falls (package 72b, golf 2 §6b): the verdant wood set (warm sand-beige bark around
+    // honey-cream wood, a fixed pastel mint crown) with oak's sounds and behaviour, burnable like vanilla wood; no signs,
+    // boat or pots (H1 = A). The sapling only grows the tree fern (F11 = A).
+    public static final DeferredBlock<StrippableLogBlock> VERDANT_LOG = register("verdant_log",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_VERDANT_LOG, Properties.ofFullCopy(Blocks.OAK_LOG)
+                    .mapColor(state -> state.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y
+                            ? MapColor.SAND : MapColor.TERRACOTTA_WHITE)));
+    public static final DeferredBlock<StrippableLogBlock> VERDANT_WOOD = register("verdant_wood",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_VERDANT_WOOD, Properties.ofFullCopy(Blocks.OAK_WOOD)
+                    .mapColor(MapColor.TERRACOTTA_WHITE)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_VERDANT_LOG = register("stripped_verdant_log",
+            () -> new RotatedPillarBlock(verdant(Blocks.STRIPPED_OAK_LOG)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_VERDANT_WOOD = register("stripped_verdant_wood",
+            () -> new RotatedPillarBlock(verdant(Blocks.STRIPPED_OAK_WOOD)));
+    public static final DeferredBlock<Block> VERDANT_PLANKS = register("verdant_planks",
+            () -> new Block(verdant(Blocks.OAK_PLANKS)));
+    public static final DeferredBlock<StairBlock> VERDANT_STAIRS = register("verdant_stairs",
+            () -> new StairBlock(VERDANT_PLANKS.get().defaultBlockState(), verdant(Blocks.OAK_STAIRS)));
+    public static final DeferredBlock<SlabBlock> VERDANT_SLAB = register("verdant_slab",
+            () -> new SlabBlock(verdant(Blocks.OAK_SLAB)));
+    public static final DeferredBlock<FenceBlock> VERDANT_FENCE = register("verdant_fence",
+            () -> new FenceBlock(verdant(Blocks.OAK_FENCE)));
+    public static final DeferredBlock<FenceGateBlock> VERDANT_FENCE_GATE = register("verdant_fence_gate",
+            () -> new FenceGateBlock(ModWoodTypes.VERDANT, verdant(Blocks.OAK_FENCE_GATE)));
+    public static final DeferredBlock<DoorBlock> VERDANT_DOOR = registerDoor("verdant_door",
+            () -> new DoorBlock(ModWoodTypes.VERDANT_SET, verdant(Blocks.OAK_DOOR)));
+    public static final DeferredBlock<TrapDoorBlock> VERDANT_TRAPDOOR = register("verdant_trapdoor",
+            () -> new TrapDoorBlock(ModWoodTypes.VERDANT_SET, verdant(Blocks.OAK_TRAPDOOR)));
+    public static final DeferredBlock<PressurePlateBlock> VERDANT_PRESSURE_PLATE = register("verdant_pressure_plate",
+            () -> new PressurePlateBlock(ModWoodTypes.VERDANT_SET, verdant(Blocks.OAK_PRESSURE_PLATE)));
+    public static final DeferredBlock<ButtonBlock> VERDANT_BUTTON = register("verdant_button",
+            () -> new ButtonBlock(ModWoodTypes.VERDANT_SET, 30, verdant(Blocks.OAK_BUTTON)));
+    /** Oak leaves' behaviour in a fixed pastel mint (no biome tint); parrots spawn on them (F10). */
+    public static final DeferredBlock<LeavesBlock> VERDANT_LEAVES = register("verdant_leaves",
+            () -> new LeavesBlock(Properties.ofFullCopy(Blocks.OAK_LEAVES).mapColor(MapColor.GLOW_LICHEN)));
+    /** Grows {@code corruptedadventure:ring_4/verdant_tree_fern} (75b); until then bonemeal is used up without growth. */
+    public static final DeferredBlock<SaplingBlock> VERDANT_SAPLING = register("verdant_sapling",
+            () -> new SaplingBlock(ModTreeGrowers.VERDANT, Properties.ofFullCopy(Blocks.OAK_SAPLING)));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_VERDANT_SAPLING = registerPot("potted_verdant_sapling", VERDANT_SAPLING);
+
+    // The plants (F5 = C): nine kinds plus the flowering vine. All work with bonemeal (F11 = A); the orchid and the
+    // bromeliad glow only through an emissive layer in their models, without block light (F8 = A).
+    /** A giant leaf two blocks high: a double plant with the sunflower's feel (not replaceable; bonemeal pops a copy). */
+    public static final DeferredBlock<TallFlowerBlock> VERDANT_GIANT_LEAF = registerDoubleHigh("verdant_giant_leaf",
+            () -> new TallFlowerBlock(Properties.ofFullCopy(Blocks.SUNFLOWER).mapColor(MapColor.PLANT)));
+    /** The low fern: vanilla fern's feel (replaceable, offset); bonemeal grows the tall fern. */
+    public static final DeferredBlock<VerdantFernBlock> VERDANT_FERN = register("verdant_fern",
+            () -> new VerdantFernBlock(Properties.ofFullCopy(Blocks.FERN)));
+    /** The tall fern: vanilla large fern's feel (replaceable); bonemeal pops a copy. */
+    public static final DeferredBlock<TallFlowerBlock> VERDANT_TALL_FERN = registerDoubleHigh("verdant_tall_fern",
+            () -> new TallFlowerBlock(Properties.ofFullCopy(Blocks.LARGE_FERN)));
+    /** The standing bromeliad; its item also places {@link #VERDANT_WALL_BROMELIAD} against a wall, like a torch. */
+    public static final DeferredBlock<VerdantPlantBlock> VERDANT_BROMELIAD = registerWithoutItem("verdant_bromeliad",
+            () -> new VerdantPlantBlock(Properties.ofFullCopy(Blocks.POPPY)));
+    /** The bromeliad on a gorge wall or trunk: no item of its own, it drops the bromeliad. */
+    public static final DeferredBlock<VerdantWallPlantBlock> VERDANT_WALL_BROMELIAD = registerWithoutItem("verdant_wall_bromeliad",
+            () -> new VerdantWallPlantBlock(Properties.ofFullCopy(Blocks.POPPY).offsetType(BlockBehaviour.OffsetType.NONE)));
+
+    static {
+        ModItems.ITEMS.registerItem("verdant_bromeliad", properties -> new StandingAndWallBlockItem(VERDANT_BROMELIAD.get(),
+                VERDANT_WALL_BROMELIAD.get(), properties, Direction.DOWN));
+    }
+
+    /** The orchid on the emergent trunks and gorge walls (facing away from the wall). */
+    public static final DeferredBlock<VerdantWallPlantBlock> VERDANT_ORCHID = register("verdant_orchid",
+            () -> new VerdantWallPlantBlock(Properties.ofFullCopy(Blocks.POPPY).offsetType(BlockBehaviour.OffsetType.NONE)));
+    /** The hanging orchid under ledges and crowns: hanging roots' feel (waterloggable, offset). */
+    public static final DeferredBlock<VerdantHangingOrchidBlock> VERDANT_HANGING_ORCHID = register("verdant_hanging_orchid",
+            () -> new VerdantHangingOrchidBlock(Properties.ofFullCopy(Blocks.HANGING_ROOTS).mapColor(MapColor.COLOR_PURPLE)));
+    /** A flowering bush on the basin rims. */
+    public static final DeferredBlock<VerdantPlantBlock> VERDANT_BLOSSOM_BUSH = register("verdant_blossom_bush",
+            () -> new VerdantPlantBlock(Properties.ofFullCopy(Blocks.POPPY).mapColor(MapColor.COLOR_PINK)));
+    /**
+     * The climbable vine (tip and stem, F6 = C), weeping vines' feel; its {@code flowering} state is the flowering
+     * variant. It replaces the hanging moss in {@code ledge_strand} inside verdant_falls (75b).
+     */
+    public static final DeferredBlock<VerdantVineBlock> VERDANT_VINE = register("verdant_vine",
+            () -> new VerdantVineBlock(Properties.ofFullCopy(Blocks.WEEPING_VINES).mapColor(MapColor.PLANT)));
+    public static final DeferredBlock<VerdantVinePlantBlock> VERDANT_VINE_PLANT = registerWithoutItem("verdant_vine_plant",
+            () -> new VerdantVinePlantBlock(Properties.ofFullCopy(Blocks.WEEPING_VINES_PLANT).mapColor(MapColor.PLANT)));
+    /** A floating bloom on still lakes (H2 = A): the lily pad's behaviour, placed on the water. */
+    public static final DeferredBlock<VerdantWaterBloomBlock> VERDANT_WATER_BLOOM = registerOnWater("verdant_water_bloom",
+            () -> new VerdantWaterBloomBlock(Properties.ofFullCopy(Blocks.LILY_PAD).mapColor(MapColor.COLOR_PINK)));
+    /** The fruit pod on the emergent trunks (H3 = A): cocoa's growth; no item, it drops {@link ModItems#VERDANT_FRUIT}. */
+    public static final DeferredBlock<VerdantFruitPodBlock> VERDANT_FRUIT_POD = registerWithoutItem("verdant_fruit_pod",
+            () -> new VerdantFruitPodBlock(Properties.ofFullCopy(Blocks.COCOA).mapColor(MapColor.COLOR_ORANGE)));
+
     // ---- Nether ring 4 ----
     // Dry crystal and bone desert (contract ring 4 §3, package 68): bone sand, bleached netherrack, the fossil stone set
     // and the purity crystal. The ribcages of the sea creatures are vanilla bone blocks.
@@ -1022,6 +1119,11 @@ public final class ModBlocks {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_WHITE);
     }
 
+    /** Verdant wood without bark (planks family, stripped): oak's behaviour and sounds, honey cream on the map. */
+    private static Properties verdant(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.SAND);
+    }
+
     /**
      * A glowcap: a mushroom's feel (walk-through, instant, fungus sounds, destroyed by pistons) with its own light, and
      * without the random ticks of vanilla mushrooms (it never spreads).
@@ -1050,6 +1152,13 @@ public final class ModBlocks {
 
     /** Doors need a {@link DoubleHighBlockItem}, which places both halves. */
     private static <B extends DoorBlock> DeferredBlock<B> registerDoor(String name, Supplier<B> block) {
+        DeferredBlock<B> holder = BLOCKS.register(name, block);
+        ModItems.ITEMS.registerItem(name, properties -> new DoubleHighBlockItem(holder.get(), properties));
+        return holder;
+    }
+
+    /** Double plants need a {@link DoubleHighBlockItem}, which places both halves (like doors). */
+    private static <B extends Block> DeferredBlock<B> registerDoubleHigh(String name, Supplier<B> block) {
         DeferredBlock<B> holder = BLOCKS.register(name, block);
         ModItems.ITEMS.registerItem(name, properties -> new DoubleHighBlockItem(holder.get(), properties));
         return holder;

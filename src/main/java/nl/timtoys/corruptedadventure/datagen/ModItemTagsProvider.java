@@ -125,6 +125,7 @@ final class ModItemTagsProvider extends ItemTagsProvider {
     private void ring4() {
         copy(ModTags.Blocks.MOONPETAL_LOGS, ModTags.Items.MOONPETAL_LOGS);
         copy(ModTags.Blocks.WITHERED_MOONPETAL_LOGS, ModTags.Items.WITHERED_MOONPETAL_LOGS);
+        copy(ModTags.Blocks.VERDANT_LOGS, ModTags.Items.VERDANT_LOGS);
         // Cobbled tidestone makes stone tools and the cobblestone recipes, like canyon cobblestone.
         tag(ItemTags.STONE_TOOL_MATERIALS).add(ModBlocks.COBBLED_TIDESTONE.asItem());
         tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.COBBLED_TIDESTONE.asItem());

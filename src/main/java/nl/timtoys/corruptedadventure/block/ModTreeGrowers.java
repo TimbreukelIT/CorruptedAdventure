@@ -25,6 +25,13 @@ public final class ModTreeGrowers {
     public static final TreeGrower MOONPETAL = new TreeGrower(CorruptedAdventure.id("moonpetal").toString(),
             Optional.empty(), Optional.of(ModConfiguredFeatures.MOONPETAL_TREE), Optional.empty());
 
+    /**
+     * Grows {@link ModConfiguredFeatures#VERDANT_TREE_FERN}, only the tree fern (F11 = A). Until the feature exists (75b)
+     * the sapling stays.
+     */
+    public static final TreeGrower VERDANT = new TreeGrower(CorruptedAdventure.id("verdant").toString(),
+            Optional.empty(), Optional.of(ModConfiguredFeatures.VERDANT_TREE_FERN), Optional.empty());
+
     private ModTreeGrowers() {
     }
 }

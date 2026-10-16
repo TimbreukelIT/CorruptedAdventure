@@ -53,6 +53,11 @@ public final class ModWoodTypes {
             SoundType.CHERRY_WOOD, SoundType.CHERRY_WOOD_HANGING_SIGN,
             SoundEvents.CHERRY_WOOD_FENCE_GATE_CLOSE, SoundEvents.CHERRY_WOOD_FENCE_GATE_OPEN);
 
+    /** {@code corruptedadventure:verdant}: the tropical wood of {@code verdant_falls} (72b), oak sounds and behaviour. */
+    public static final BlockSetType VERDANT_SET = BlockSetType.register(new BlockSetType(CorruptedAdventure.id("verdant").toString()));
+    /** Not registered, for the same reason as {@link #DEAD}. */
+    public static final WoodType VERDANT = new WoodType(CorruptedAdventure.id("verdant").toString(), VERDANT_SET);
+
     private ModWoodTypes() {
     }
 

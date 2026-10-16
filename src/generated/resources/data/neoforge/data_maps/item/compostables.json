@@ -59,6 +59,42 @@
     },
     "corruptedadventure:spore_sprouts": {
       "chance": 0.3
+    },
+    "corruptedadventure:verdant_blossom_bush": {
+      "chance": 0.65
+    },
+    "corruptedadventure:verdant_bromeliad": {
+      "chance": 0.65
+    },
+    "corruptedadventure:verdant_fern": {
+      "chance": 0.65
+    },
+    "corruptedadventure:verdant_fruit": {
+      "chance": 0.65
+    },
+    "corruptedadventure:verdant_giant_leaf": {
+      "chance": 0.65
+    },
+    "corruptedadventure:verdant_hanging_orchid": {
+      "chance": 0.65
+    },
+    "corruptedadventure:verdant_leaves": {
+      "chance": 0.3
+    },
+    "corruptedadventure:verdant_orchid": {
+      "chance": 0.65
+    },
+    "corruptedadventure:verdant_sapling": {
+      "chance": 0.3
+    },
+    "corruptedadventure:verdant_tall_fern": {
+      "chance": 0.65
+    },
+    "corruptedadventure:verdant_vine": {
+      "chance": 0.5
+    },
+    "corruptedadventure:verdant_water_bloom": {
+      "chance": 0.65
     }
   }
 }
