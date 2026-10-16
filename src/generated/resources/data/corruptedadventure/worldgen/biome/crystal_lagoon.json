@@ -8,6 +8,11 @@
   },
   "downfall": 0.9,
   "effects": {
+    "additions_sound": {
+      "sound": "corruptedadventure:ambient.ring_4.bubbles",
+      "tick_chance": 0.002
+    },
+    "ambient_sound": "corruptedadventure:ambient.ring_4.water",
     "fog_color": 15005428,
     "foliage_color": 7129956,
     "grass_color": 8312442,

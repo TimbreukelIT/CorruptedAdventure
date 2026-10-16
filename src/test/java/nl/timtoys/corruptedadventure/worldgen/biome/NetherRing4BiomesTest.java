@@ -38,11 +38,12 @@ class NetherRing4BiomesTest {
 
     @Test
     void hotAndDryWithTheBoneDesertFog() {
-        for (Biome biome : BIOMES.values()) {
+        for (Map.Entry<ResourceKey<Biome>, Biome> entry : BIOMES.entrySet()) {
+            Biome biome = entry.getValue();
+            assertEquals(BiomeAmbience.netherRing4(entry.getKey()).build().getFogColor(), biome.getFogColor());
             assertFalse(biome.hasPrecipitation());
             assertTrue(biome.getBaseTemperature() > 1.0F, "hot");
             assertEquals(0.0F, biome.getModifiedClimateSettings().downfall());
-            assertEquals(NetherRing4Biomes.FOG, biome.getFogColor());
             assertEquals(0x000000, biome.getSkyColor());
             assertTrue(biome.getBackgroundMusic().isPresent());
         }

@@ -7,10 +7,8 @@ import net.minecraft.data.worldgen.BiomeDefaultFeatures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.level.biome.AmbientMoodSettings;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
-import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
@@ -38,8 +36,7 @@ import java.util.stream.Stream;
  * preset's {@code transitions.ring_4}, a fixed biome over the zone 4→5; {@code verdant_falls} is the outer part of the
  * zone 3→4 ({@code transition_splits.ring_3}, after the steam fens' strip).
  * <p>
- * The colours here are a first version: the atmosphere (stream A, change 80) moves them into a {@code BiomeAmbience}
- * hook. Features only in {@code verdant_falls} so far ({@link Ring4Features#ORDER}); no ores yet (77).
+ * Every effect (colours, particles, sounds) comes from the atmosphere's hook {@link BiomeAmbience#ring4}. Features only in {@code verdant_falls} so far ({@link Ring4Features#ORDER}); no ores yet (77).
  */
 public final class Ring4Biomes {
     /** The mythical band (inner ~60 %), in the order of the preset. */
@@ -71,24 +68,22 @@ public final class Ring4Biomes {
     static final float FALLS = 0.95F;
 
     /**
-     * First colours per biome (sky, fog, water, water fog, grass, foliage): mythical clear turquoise with soft white fog,
-     * {@code mist_fjords} grey-white with dark steel-blue water; the blighted band poison green with a greenish sky;
-     * {@code sundered_reach} drained to grey; {@code verdant_falls} tropical: clear turquoise water and sky, a soft
-     * white-green fog of spray, lush green.
+     * Climate per biome: how much it rains and whether it does. The colours and sounds are the atmosphere's
+     * ({@link BiomeAmbience#ring4}, change 80); {@code sundered_reach} has no precipitation (the abyss).
      */
-    private static final Map<ResourceKey<Biome>, Look> LOOKS = Map.ofEntries(
-            Map.entry(ModBiomes.CASCADE_VALE, new Look(0x72D2E3, 0xEAF4F2, 0x8FD8F0, 0x2C6E86, 0x6FCB6A, 0x7FD66E, LAND, true)),
-            Map.entry(ModBiomes.CRYSTAL_LAGOON, new Look(0x6CD6E8, 0xE4F6F4, 0x2FD3C8, 0x0F5A66, 0x7ED67A, 0x6CCB64, WET, true)),
-            Map.entry(ModBiomes.LOTUS_SHALLOWS, new Look(0x78D4E4, 0xF0F2EE, 0x9ADFF2, 0x356F82, 0x86D47A, 0x7AC96C, WET, true)),
-            Map.entry(ModBiomes.GLOWROOT_SWAMP, new Look(0x6FC9D6, 0xDCEBE2, 0x4CC08A, 0x16503A, 0x5FAE5A, 0x4E9E4C, WET, true)),
-            Map.entry(ModBiomes.MIST_FJORDS, new Look(0x9FB8C4, 0xC8D0D4, 0x2F5A7A, 0x0E2234, 0x4F8F4A, 0x3F7A44, WET, true)),
-            Map.entry(ModBiomes.DROWNED_FOREST, new Look(0x8FAE8A, 0xA9BB98, 0x3E8A3A, 0x0E2A10, 0x7A8A5A, 0x6A7A4A, WET, true)),
-            Map.entry(ModBiomes.PEAT_MOORS, new Look(0x9CB08A, 0xB4BE98, 0x6FC23A, 0x1E3A12, 0x8A8E5A, 0x7A7E4E, WET, true)),
-            Map.entry(ModBiomes.REED_MARSH, new Look(0x96B28E, 0xAEC09C, 0x5DB03A, 0x1A3614, 0x8E9A5C, 0x7C8A50, WET, true)),
-            Map.entry(ModBiomes.SKY_GARDENS, new Look(0x66D0EE, 0xF2F8F8, 0x8FE0F4, 0x2E7890, 0x7CDA74, 0x88E07A, LAND, true)),
-            Map.entry(ModBiomes.WITHERED_GARDENS, new Look(0xA2B496, 0xBCC4A8, 0x6FA048, 0x22381A, 0x9A9466, 0x8A8458, LAND, true)),
-            Map.entry(ModBiomes.SUNDERED_REACH, new Look(0x8C9096, 0x9A9CA0, 0x5A6670, 0x1A1E22, 0x8A8C84, 0x7C7E78, LAND, false)),
-            Map.entry(ModBiomes.VERDANT_FALLS, new Look(0x86D6E0, 0xD2F0E4, 0x3FD0C0, 0x0F4F4A, 0x6CC24A, 0x55B03A, FALLS, true)));
+    private static final Map<ResourceKey<Biome>, Climate> CLIMATES = Map.ofEntries(
+            Map.entry(ModBiomes.CASCADE_VALE, new Climate(LAND, true)),
+            Map.entry(ModBiomes.CRYSTAL_LAGOON, new Climate(WET, true)),
+            Map.entry(ModBiomes.LOTUS_SHALLOWS, new Climate(WET, true)),
+            Map.entry(ModBiomes.GLOWROOT_SWAMP, new Climate(WET, true)),
+            Map.entry(ModBiomes.MIST_FJORDS, new Climate(WET, true)),
+            Map.entry(ModBiomes.DROWNED_FOREST, new Climate(WET, true)),
+            Map.entry(ModBiomes.PEAT_MOORS, new Climate(WET, true)),
+            Map.entry(ModBiomes.REED_MARSH, new Climate(WET, true)),
+            Map.entry(ModBiomes.SKY_GARDENS, new Climate(LAND, true)),
+            Map.entry(ModBiomes.WITHERED_GARDENS, new Climate(LAND, true)),
+            Map.entry(ModBiomes.SUNDERED_REACH, new Climate(LAND, false)),
+            Map.entry(ModBiomes.VERDANT_FALLS, new Climate(FALLS, true)));
 
     private Ring4Biomes() {
     }
@@ -97,36 +92,25 @@ public final class Ring4Biomes {
         HolderGetter<PlacedFeature> features = context.lookup(Registries.PLACED_FEATURE);
         HolderGetter<ConfiguredWorldCarver<?>> carvers = context.lookup(Registries.CONFIGURED_CARVER);
         for (ResourceKey<Biome> key : WITH_TRANSITION) {
-            Look look = look(key);
+            Climate climate = climate(key);
             context.register(key, new Biome.BiomeBuilder()
-                    .hasPrecipitation(look.precipitation())
+                    .hasPrecipitation(climate.precipitation())
                     .temperature(TEMPERATURE)
-                    .downfall(look.downfall())
-                    .specialEffects(BiomeAmbience.ring4(key, effects(look)).build())
+                    .downfall(climate.downfall())
+                    .specialEffects(BiomeAmbience.ring4(key).build())
                     .mobSpawnSettings(spawns(key))
                     .generationSettings(generation(features, carvers, key).build())
                     .build());
         }
     }
 
-    /** The look of a ring 4 biome; throws for any other biome. */
-    static Look look(ResourceKey<Biome> biome) {
-        Look look = LOOKS.get(biome);
-        if (look == null) {
-            throw new IllegalArgumentException("no ring 4 look for " + biome);
+    /** The climate of a ring 4 biome; throws for any other biome. */
+    static Climate climate(ResourceKey<Biome> biome) {
+        Climate climate = CLIMATES.get(biome);
+        if (climate == null) {
+            throw new IllegalArgumentException("no ring 4 climate for " + biome);
         }
-        return look;
-    }
-
-    private static BiomeSpecialEffects.Builder effects(Look look) {
-        return new BiomeSpecialEffects.Builder()
-                .skyColor(look.sky())
-                .fogColor(look.fog())
-                .waterColor(look.water())
-                .waterFogColor(look.waterFog())
-                .grassColorOverride(look.grass())
-                .foliageColorOverride(look.foliage())
-                .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS);
+        return climate;
     }
 
     /**
@@ -205,7 +189,7 @@ public final class Ring4Biomes {
     private record Spawn(MobCategory category, EntityType<?> type, int weight, int min, int max) {
     }
 
-    /** Sky, fog, water and water fog, grass and foliage, the downfall and whether it rains (snow never: too warm). */
-    record Look(int sky, int fog, int water, int waterFog, int grass, int foliage, float downfall, boolean precipitation) {
+    /** The downfall and whether it rains (snow never: too warm). */
+    record Climate(float downfall, boolean precipitation) {
     }
 }

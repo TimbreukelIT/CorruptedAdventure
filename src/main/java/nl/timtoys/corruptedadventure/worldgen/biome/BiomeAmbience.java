@@ -30,6 +30,11 @@ public final class BiomeAmbience {
     public static final Optional<AmbientMoodSettings> STRANGE =
             Optional.of(new AmbientMoodSettings(ModSoundEvents.RING_1_STRANGE_CAVE, 1800, 12, 3.0));
 
+    /** Rec. 601 luma weights: the grey of a colour. */
+    private static final float LUMA_RED = 0.299F;
+    private static final float LUMA_GREEN = 0.587F;
+    private static final float LUMA_BLUE = 0.114F;
+
     private BiomeAmbience() {
     }
 
@@ -57,9 +62,9 @@ public final class BiomeAmbience {
                 .ambientParticle(new AmbientParticleSettings(particle, probability));
     }
 
-    // Ring 3 and Nether ring 3 (stream A, packages 50 and 56): the biome bootstraps take every effect from these hooks,
-    // so the atmosphere changes in Ring3Atmosphere / NetherRing3Atmosphere without touching the biome classes. Ring 4
-    // (Ring4Atmosphere) layers on top of the bootstrap's effects until change 80 owns all its colours.
+    // Ring 3, ring 4 and their Nether rings (stream A, packages 50, 56 and 80): the biome bootstraps take every effect
+    // from these hooks, so the atmosphere changes in Ring3Atmosphere / NetherRing3Atmosphere / Ring4Atmosphere /
+    // NetherRing4Atmosphere without touching the biome classes.
 
     /**
      * Effects of a ring 3 overworld biome ({@code Ring3Biomes.ALL} and the transition {@code steam_fens}): sky, fog,
@@ -84,16 +89,26 @@ public final class BiomeAmbience {
     }
 
     /**
-     * The ring 4 atmosphere on top of a ring 4 biome's {@code effects} ({@code Ring4Biomes.WITH_TRANSITION} and
-     * {@code verdant_falls}): the bootstrap builds colours, grass and foliage, and passes them through here. Every ring 4
-     * biome gets the cave mood; {@code verdant_falls} also its own sky, fog and water colours, spray particles, waterfall
-     * loop and wildlife additions ({@code Ring4Atmosphere}). The rest of ring 4 follows in change 80.
+     * Effects of a ring 4 overworld biome ({@code Ring4Biomes.WITH_TRANSITION}: the ring, {@code sundered_reach} and
+     * {@code verdant_falls}): sky, fog, water, grass and foliage, ambient particle, loop and additions sounds and the
+     * cave mood ({@code Ring4Atmosphere}, change 80). Only effects: the bootstrap sets climate, spawns and generation.
      *
-     * @return {@code effects}, changed
      * @throws IllegalArgumentException for a biome without ring 4 atmosphere
      */
-    public static BiomeSpecialEffects.Builder ring4(ResourceKey<Biome> biome, BiomeSpecialEffects.Builder effects) {
-        return Ring4Atmosphere.effects(biome, effects);
+    public static BiomeSpecialEffects.Builder ring4(ResourceKey<Biome> biome) {
+        return Ring4Atmosphere.effects(biome);
+    }
+
+    /**
+     * Effects of a Nether ring 4 biome ({@code bone_dunes}, {@code crystal_spires}, {@code geode_hollows}): the near
+     * white-beige fog, drifting bone dust, the dry wind and the crystals' hum, and the cave mood
+     * ({@code NetherRing4Atmosphere}, change 80). The bootstrap only adds the music; the pulsing of the fog is client
+     * code.
+     *
+     * @throws IllegalArgumentException for a biome without Nether ring 4 atmosphere
+     */
+    public static BiomeSpecialEffects.Builder netherRing4(ResourceKey<Biome> biome) {
+        return NetherRing4Atmosphere.effects(biome);
     }
 
     /** A builder with only the four colours of {@code palette}. */
@@ -124,8 +139,13 @@ public final class BiomeAmbience {
         int red = rgb >> 16 & 0xFF;
         int green = rgb >> 8 & 0xFF;
         int blue = rgb & 0xFF;
-        float grey = 0.299F * red + 0.587F * green + 0.114F * blue;
+        float grey = LUMA_RED * red + LUMA_GREEN * green + LUMA_BLUE * blue;
         return mix(red, grey, amount) << 16 | mix(green, grey, amount) << 8 | mix(blue, grey, amount);
+    }
+
+    /** The grey value of a colour (the weights of {@link #desaturate}), in the channels' own scale; the zone 4→5 fade. */
+    public static double luma(double red, double green, double blue) {
+        return LUMA_RED * red + LUMA_GREEN * green + LUMA_BLUE * blue;
     }
 
     /** Mixes each channel of {@code rgb} towards black: 0 keeps the colour, 1 gives black. */

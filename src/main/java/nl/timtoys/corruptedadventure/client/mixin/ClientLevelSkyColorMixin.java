@@ -4,6 +4,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.client.weather.AshClouds;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
+import nl.timtoys.corruptedadventure.client.weather.SunderedFade;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,7 +20,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 abstract class ClientLevelSkyColorMixin {
     @Inject(method = "getSkyColor", at = @At("RETURN"), cancellable = true)
     private void corruptedadventure$tintSky(Vec3 pos, float partialTick, CallbackInfoReturnable<Vec3> cir) {
-        Vec3 tinted = RingWeatherClientHooks.skyColor((ClientLevel) (Object) this, pos, cir.getReturnValue(), partialTick);
+        ClientLevel level = (ClientLevel) (Object) this;
+        Vec3 tinted = RingWeatherClientHooks.skyColor(level, pos, cir.getReturnValue(), partialTick);
+        // Zone 4→5 drains to grey after the weather (change 80).
+        tinted = SunderedFade.skyColor(level, pos, tinted);
         if (tinted != cir.getReturnValue()) {
             cir.setReturnValue(tinted);
         }
