@@ -2030,37 +2030,51 @@ public final class Ring4Textures {
         for (int[] twig : twigs) {
             set(image, twig[0], twig[1], VERDANT_BARK[twig[1] == 15 ? 1 : 3]);
         }
-        int[][] petals = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
         int placed = 0;
         for (int attempt = 0; attempt < 60 && placed < 9; attempt++) {
             int x = 1 + random.nextInt(SIZE - 2);
             int y = 3 + random.nextInt(11);
             double e = Math.pow((x + 0.5 - 8) / 7.6, 2) + Math.pow((y + 0.5 - 9.2) / 6.9, 2);
-            if (e > 0.75 || isPeach(image, x, y)) {
+            if (e > 0.75 || floretNear(image, x, y)) {
                 continue;
             }
-            double tone = 0.62 - 0.2 * (x + y - 17) / 16.0;
-            for (int[] petal : petals) {
-                double light = tone + (petal[0] + petal[1] < 0 ? 0.18 : petal[0] + petal[1] > 0 ? -0.22 : 0);
-                set(image, x + petal[0], y + petal[1], shade(PEACH, light));
-            }
-            set(image, x, y, APRICOT[5]);
+            floret(image, x, y, PEACH, 0.62 - 0.2 * (x + y - 17) / 16.0);
             placed++;
         }
     }
 
-    /** Whether a floret already sits at or next to (x, y), so florets do not merge into blobs. */
-    private static boolean isPeach(BufferedImage image, int x, int y) {
-        Set<Integer> flower = toneSet(PEACH);
-        flower.add(APRICOT[5]);
+    /** The colours of a peach floret (petals and cream heart), to keep florets apart. */
+    private static final Set<Integer> FLORET_TONES = floretTones();
+
+    private static Set<Integer> floretTones() {
+        Set<Integer> tones = toneSet(PEACH);
+        tones.add(APRICOT[5]);
+        return tones;
+    }
+
+    /** Whether a peach floret already sits within two pixels of (x, y), so florets do not merge into blobs. */
+    private static boolean floretNear(BufferedImage image, int x, int y) {
         for (int dy = -2; dy <= 2; dy++) {
             for (int dx = -2; dx <= 2; dx++) {
-                if (isOpaque(image, x + dx, y + dy) && flower.contains(image.getRGB(x + dx, y + dy) & 0xFFFFFF)) {
+                if (isOpaque(image, x + dx, y + dy) && FLORET_TONES.contains(image.getRGB(x + dx, y + dy) & 0xFFFFFF)) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * A five-pixel floret centred at (x, y) (blossom bush, flowering vine): four petals from {@code palette} around
+     * {@code tone}, the upper-left ones lit and the lower-right ones shaded, and a cream heart; clipped at the tile edge.
+     */
+    private static void floret(BufferedImage image, int x, int y, int[] palette, double tone) {
+        int[][] petals = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
+        for (int[] petal : petals) {
+            double light = tone + (petal[0] + petal[1] < 0 ? 0.2 : petal[0] + petal[1] > 0 ? -0.24 : 0);
+            plot(image, x + petal[0], y + petal[1], shade(palette, light));
+        }
+        plot(image, x, y, APRICOT[5]);
     }
 
     /** One vine strand: column {@code x0}, swaying a pixel (periodic over the tile height, so stems join), its leaf beat. */
@@ -2073,8 +2087,9 @@ public final class Ring4Textures {
     /**
      * Verdant vine (72b, cross, climbable, grows down like weeping vines): three woody green stems with small sea-green
      * leaves every four rows on alternating sides. The stem part ({@code head} false) tiles vertically; the head is the
-     * lowest block, the same stems (shared seed) ending at different lengths in a pale curled bud. {@code flowering}: the
-     * same pixels plus peach florets (some lilac) at a few nodes (Q-T2 A).
+     * lowest block, the same stems (shared seed) ending at different lengths in a pale curled bud. Leaves and florets
+     * only grow from nodes on rows 1–14, so none crosses the tile edge: a stem joins a stem, the head and a ledge alike
+     * (71b review). {@code flowering}: the same pixels plus peach florets (some lilac) at a few nodes (Q-T2 A).
      */
     private static void vine(BufferedImage image, boolean head, boolean flowering) {
         Random shared = seeded("block/verdant_vine#strands");
@@ -2092,9 +2107,9 @@ public final class Ring4Textures {
                 boolean node = Math.floorMod(y + strand.nodeOffset(), 4) == 0;
                 int colour = head && y >= last - 1 ? VERDANT_PLANT[5] : node ? VERDANT_BARK[2] : VERDANT_PLANT[y % 2 == 0 ? 1 : 2];
                 plot(image, strand.x(y), y, colour);
-                if (node && (!head || y < last - 2)) {
+                if (node && y >= 1 && y <= SIZE - 2 && (!head || y < last - 2)) {
                     int side = Math.floorMod((y + strand.nodeOffset()) / 4, 2) == 0 ? 1 : -1;
-                    leaflet(image, strand.x(y), y, side, head);
+                    leaflet(image, strand.x(y), y, side);
                     nodes.add(new int[] {strand.x(y), y, -side});
                 }
             }
@@ -2106,38 +2121,23 @@ public final class Ring4Textures {
         }
         if (flowering) {
             Random flowers = seeded((head ? "block/verdant_vine" : "block/verdant_vine_plant") + "#flowers");
-            int[][] petals = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
             for (int[] node : nodes) {
-                if (flowers.nextInt(5) < 2) {
+                int x = node[0] + 2 * node[2];
+                if (flowers.nextInt(5) < 2 || x < 1 || x > SIZE - 2) {
                     continue;
                 }
-                int x = node[0] + 2 * node[2];
-                int y = node[1];
-                int[] palette = flowers.nextInt(3) == 0 ? LILAC : PEACH;
-                for (int[] petal : petals) {
-                    double light = 0.66 + (petal[0] + petal[1] < 0 ? 0.2 : petal[0] + petal[1] > 0 ? -0.25 : 0);
-                    vinePixel(image, x + petal[0], y + petal[1], shade(palette, light), head);
-                }
-                vinePixel(image, x, y, APRICOT[5], head);
+                floret(image, x, node[1], flowers.nextInt(3) == 0 ? LILAC : PEACH, 0.66);
             }
         }
     }
 
     /** A small two-row leaf leaving the stem at (x, y) to {@code side}: lit on top, darker at the hanging tip. */
-    private static void leaflet(BufferedImage image, int x, int y, int side, boolean head) {
-        vinePixel(image, x + side, y, VERDANT_PLANT[4], head);
-        vinePixel(image, x + 2 * side, y, VERDANT_PLANT[3], head);
-        vinePixel(image, x + side, y + 1, VERDANT_PLANT[3], head);
-        vinePixel(image, x + 2 * side, y + 1, VERDANT_PLANT[2], head);
-        vinePixel(image, x + 3 * side, y + 1, VERDANT_PLANT[1], head);
-    }
-
-    /** A vine pixel: the stem part wraps vertically (it tiles), the head is clipped (nothing hangs below it). */
-    private static void vinePixel(BufferedImage image, int x, int y, int rgb, boolean head) {
-        if (x < 0 || x >= SIZE || (head && (y < 0 || y >= SIZE))) {
-            return;
-        }
-        set(image, x, Math.floorMod(y, SIZE), rgb);
+    private static void leaflet(BufferedImage image, int x, int y, int side) {
+        plot(image, x + side, y, VERDANT_PLANT[4]);
+        plot(image, x + 2 * side, y, VERDANT_PLANT[3]);
+        plot(image, x + side, y + 1, VERDANT_PLANT[3]);
+        plot(image, x + 2 * side, y + 1, VERDANT_PLANT[2]);
+        plot(image, x + 3 * side, y + 1, VERDANT_PLANT[1]);
     }
 
     /**
@@ -2189,6 +2189,10 @@ public final class Ring4Textures {
      * (4/6/8 px), the four sides at {@code [11,4,15,9]}, {@code [9,4,15,11]}, {@code [8,4,16,13]}, the stalk at
      * {@code [12,0,16,4]}. Ribbed pod lit on the left; young mint green, half-ripe in between, ripe apricot-orange (Q-T2 A).
      */
+    /** Vanilla's cocoa UV per stage (cocoa_stageN.json): the up/down square's size and the side face {x0, y0, x1, y1}. */
+    private static final int[] POD_TOP = {4, 6, 8};
+    private static final int[][] POD_SIDE = {{11, 4, 15, 9}, {9, 4, 15, 11}, {8, 4, 16, 13}};
+
     private static void fruitPod(BufferedImage image, Random random, int stage) {
         int[] palette = stage == 0 ? VERDANT_LEAF : stage == 2 ? FRUIT : new int[FRUIT.length];
         if (stage == 1) {
@@ -2196,10 +2200,10 @@ public final class Ring4Textures {
                 palette[i] = mix(VERDANT_LEAF[i], FRUIT[i], 0.55);
             }
         }
-        int top = 4 + 2 * stage;
-        int sideX = new int[] {11, 9, 8}[stage];
-        int sideWidth = SIZE - 1 - sideX + (stage == 2 ? 1 : 0);
-        int sideHeight = 5 + 2 * stage;
+        int top = POD_TOP[stage];
+        int sideX = POD_SIDE[stage][0];
+        int sideWidth = POD_SIDE[stage][2] - sideX;
+        int sideHeight = POD_SIDE[stage][3] - POD_SIDE[stage][1];
         for (int y = 0; y < top; y++) {
             for (int x = 0; x < top; x++) {
                 double dx = x + 0.5 - top / 2.0;
@@ -2964,7 +2968,7 @@ public final class Ring4Textures {
         drawScene(graphics, NETHER_FLOOR, 10, top, 0xE6DCC8, false);
         drawScene(graphics, WITHERED, 10 + 11 * SIZE * 4, top, 0xA8B4A0, false);
         top += NETHER_FLOOR.length * SIZE * 4 + 20;
-        return drawVerdant(graphics, top);
+        return top;
     }
 
     /** The 71b sheet on its own: the verdant section only. */
@@ -2975,6 +2979,9 @@ public final class Ring4Textures {
         graphics.fillRect(0, 0, sheet.getWidth(), sheet.getHeight());
         int bottom = drawVerdant(graphics, 10);
         graphics.dispose();
+        if (bottom > sheet.getHeight()) {
+            throw new IllegalStateException("verdant sheet needs " + bottom + " px, has " + sheet.getHeight());
+        }
         Files.createDirectories(VERDANT_PREVIEW.getParent());
         ImageIO.write(sheet.getSubimage(0, 0, sheet.getWidth(), bottom), "png", VERDANT_PREVIEW.toFile());
         System.out.println("wrote " + VERDANT_PREVIEW);
@@ -3059,13 +3066,12 @@ public final class Ring4Textures {
     private static BufferedImage podView(int stage) throws IOException {
         BufferedImage pod = render("block/verdant_fruit_pod_stage" + stage);
         BufferedImage view = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
-        int width = 4 + 2 * stage;
-        int height = 5 + 2 * stage;
-        int sideX = new int[] {11, 9, 8}[stage];
+        int[] side = POD_SIDE[stage];
+        int width = side[2] - side[0];
         int left = (SIZE - width) / 2;
-        for (int y = 0; y < height; y++) {
+        for (int y = side[1]; y < side[3]; y++) {
             for (int x = 0; x < width; x++) {
-                view.setRGB(left + x, 4 + y, pod.getRGB(sideX + x, 4 + y));
+                view.setRGB(left + x, y, pod.getRGB(side[0] + x, y));
             }
         }
         for (int y = 0; y < 4; y++) {
@@ -3083,7 +3089,16 @@ public final class Ring4Textures {
     /** Preview-only side view of the ripe fruit pod ({@link #podView}). */
     private static final String POD = "preview:pod";
 
+    private static BufferedImage grassStandIn;
+
     private static BufferedImage grassStandIn() {
+        if (grassStandIn == null) {
+            grassStandIn = paintGrassStandIn();
+        }
+        return grassStandIn;
+    }
+
+    private static BufferedImage paintGrassStandIn() {
         BufferedImage image = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
         Random random = seeded(GRASS);
         for (int y = 0; y < SIZE; y++) {
