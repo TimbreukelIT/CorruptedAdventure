@@ -56,7 +56,7 @@ class TunnelLiningFeatureTest {
         for (int x = 0; x < 64; x++) {
             for (int y = -20; y < 20; y++) {
                 for (int z = 0; z < 16; z++) {
-                    float u = TunnelLiningFeature.unit(x, y, z, 0);
+                    float u = TunnelLiningFeature.unit(20260930L, x, y, z, 0);
                     assertTrue(u >= 0.0F && u < 1.0F);
                     buckets.merge((int) (u * 10), 1, Integer::sum);
                     n++;

@@ -19,11 +19,11 @@ import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.HeightRangePlacement;
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.TagMatchTest;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
-import nl.timtoys.corruptedadventure.registry.ModTags;
 import nl.timtoys.corruptedadventure.ring.Ring;
 
 import java.util.List;
@@ -84,7 +84,8 @@ public final class Ring4OreFeatures {
 
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         RuleTest stone = new TagMatchTest(BlockTags.STONE_ORE_REPLACEABLES);
-        RuleTest tidestone = new TagMatchTest(ModTags.Blocks.RING_4_STONES);
+        // Plain tidestone only: not the tunnels' claw marks (in ring_4_stones), which a later vein would turn to ore.
+        RuleTest tidestone = new BlockMatchTest(ModBlocks.TIDESTONE.get());
         RuleTest deepslate = new TagMatchTest(BlockTags.DEEPSLATE_ORE_REPLACEABLES);
         FeatureUtils.register(context, TIDESILVER_ORE_CONFIGURED, Feature.ORE, new OreConfiguration(List.of(
                 target(stone, ModBlocks.TIDESILVER_ORE.get()),

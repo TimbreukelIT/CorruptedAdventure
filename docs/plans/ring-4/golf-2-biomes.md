@@ -97,6 +97,8 @@ Verwerkt in de vervolgcommit:
 11. Plankwortels: alleen op droge, vaste grond binnen 3 omlaag (geen hout boven de kloof, nooit in water); de hangorchidee onder een tak alleen in lucht.
 12. Wandplanten alleen op de eigen grond (`ground_only`: niet op brugdekken).
 
+13. (tunnelbekleding, derde review) De zijwanden werden bijna niet bekleed: de kolommen naast een tunnel en de hoogtes van de buurkolommen tellen nu mee (ook klauwkras komt nu voor). Ertsvariant volgt het gastgesteente ook als het blok al een erts van een buurchunk is (conventietags); de ring 4-aders richten op gewoon `tidestone`, niet op klauwkras: volgorde-onafhankelijk. Budding alleen ≥ 3 onder de bodem van de open wereld (geen budding in een ingangsmond). Snelle uitgang per chunk zonder net (`tunnelsWithin`/`tunnelRoomsWithin`). De hash mengt de wereldseed.
+
 Niet opgepakt (bewust, backlog/INT):
 - Peulen, orchideeën en lianen gaan via de stamsetter van `TreeFeature` (tellen als bron voor de bladafstand); met de huidige maten raakt geen blad ze en vergaat niets (`VerdantFloraTest`). Netter als `TreeDecorator` (nieuwe registry) → backlog.
 - Mos onder een rank of eiland en bladeren van een latere buurboom (beide `#replaceable_by_trees`): cosmetisch volgorde-verschil van losse blokken.
@@ -121,7 +123,7 @@ Niet opgepakt (bewust, backlog/INT):
 - `worldgen`: vruchtpeulen, orchideeën en lianen van de emergente boom naar een eigen `TreeDecorator` (nu via de stamsetter; correct maar fragiel bij andere kroon-/takmaten).
 - `blocks`: `verdant_vine`/`_plant` en `verdant_hanging_orchid` staan in `#replaceable_by_trees` (ook water): een kroon kan ze vervangen; nu houden de bomen afstand tot knoppen en vallen.
 - `worldgen`/INT: een rank van `mangrove_roots` die een stam van een featureboom in een buurchunk kruist, maakt die boom (zeldzaam) volgorde-afhankelijk (wortels zijn geen `replaceable_by_trees`); determinismecheck rond eilandranden.
-- `worldgen`/INT: een erts van een buurchunk (tidesilver-config richt op `ring_4_stones`) kan later klauwkras (`clawed_tidestone` hoort bij `ring_4_stones`) aan een chunkrand vervangen: zeldzaam volgorde-verschil van één blok.
+- `textures`/`blocks`: klauwkras is een tidestone-variant, maar het tunnelgesteente is nu steen/deepslate (tidestone staat nog niet in de surface, backlog r. 283): een steen- en deepslate-klauwkras, of tidestone in het tunnelgesteente.
 - `blocks`: `glow_bloom`, `glowcap`, `verdant_bromeliad`, `verdant_blossom_bush` niet in `#replaceable_by_trees`: een boomkruin uit een buurchunk die later komt, laat zo'n plant staan, een eerdere niet (zeldzaam: kruinen op grondhoogte). INT-determinisme let erop.
 
 ## Voortgang

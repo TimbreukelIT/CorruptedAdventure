@@ -18,8 +18,8 @@
           "Name": "corruptedadventure:tidestone_tidesilver_ore"
         },
         "target": {
-          "predicate_type": "minecraft:tag_match",
-          "tag": "corruptedadventure:ring_4_stones"
+          "block": "corruptedadventure:tidestone",
+          "predicate_type": "minecraft:block_match"
         }
       },
       {
