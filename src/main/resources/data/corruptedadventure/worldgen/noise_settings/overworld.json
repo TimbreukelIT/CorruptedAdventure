@@ -13386,6 +13386,55 @@
                   {
                     "type": "minecraft:condition",
                     "if_true": {
+                      "type": "corruptedadventure:world_tree",
+                      "part": "any"
+                    },
+                    "then_run": {
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "corruptedadventure:world_tree",
+                            "part": "log"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "corruptedadventure:moonpetal_log"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "corruptedadventure:world_tree",
+                            "part": "wood"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "corruptedadventure:moonpetal_wood"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:moonpetal_leaves",
+                            "Properties": {
+                              "distance": "7",
+                              "persistent": "true",
+                              "waterlogged": "false"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
                       "type": "minecraft:biome",
                       "biome_is": [
                         "corruptedadventure:cascade_vale"

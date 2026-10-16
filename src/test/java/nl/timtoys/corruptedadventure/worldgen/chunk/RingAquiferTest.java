@@ -577,6 +577,37 @@ class RingAquiferTest {
         assertTrue(buried <= Math.max(1, lakes / 5), buried + " lakes buried at their centre of " + (lakes + buried));
     }
 
+    /** 74: a sky lake holds still water over its basin's floor, air above, and carvers stay out of its basin. */
+    @Test
+    void ring4SkyLakesHoldStillWater() {
+        IslandField islands = IslandFieldTest.field();
+        RingAquifer aquifer = new RingAquifer(Level.OVERWORLD, DRY, null, islands);
+        RingPosition ring4 = RingPosition.within(Ring.RING_4);
+        int lakes = 0;
+        for (IslandField.SkyLake lake : islands.skyLakes(6000, -1500, 8100, 1500)) {
+            IslandField.Column column = islands.column(lake.x(), lake.z());
+            if (lake.dry()) {
+                assertEquals(Integer.MIN_VALUE, column.skyLakeTop(), "a dry bowl holds no water");
+                continue;
+            }
+            if (column.skyLakeTop() == Integer.MIN_VALUE) {
+                continue;
+            }
+            lakes++;
+            assertEquals(lake.waterY() + 1, column.skyLakeTop());
+            assertSame(Blocks.WATER.defaultBlockState(),
+                    aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(lake.x(), lake.waterY(), lake.z()), -0.5));
+            assertFalse(aquifer.shouldScheduleFluidUpdate(), "a sky lake is still");
+            assertSame(Blocks.AIR.defaultBlockState(),
+                    aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(lake.x(), lake.waterY() + 1, lake.z()), -0.5));
+            aquifer.carving(true);
+            assertNull(aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(lake.x(), column.skyLakeFloor(), lake.z()), 0.0),
+                    "carvers stay out of the basin");
+            aquifer.carving(false);
+        }
+        assertTrue(lakes > 0, "no sky lake found");
+    }
+
     /**
      * verdant_falls: the water branch also holds in the {@code verdant_falls} strip of ring 3's half of the zone 3→4
      * (recorded falls and springs placed as in ring 4), but not on the {@code steam_fens} rim; ring 3's seal below Y 63
