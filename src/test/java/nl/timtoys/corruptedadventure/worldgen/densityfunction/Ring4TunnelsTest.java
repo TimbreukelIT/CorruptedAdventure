@@ -32,6 +32,7 @@ class Ring4TunnelsTest {
 
     @BeforeAll
     static void decide() {
+        Ring4Tunnels.forgetWorlds();
         field = IslandFieldTest.field();
         tunnels = new Ring4Tunnels(field);
         long start = System.nanoTime();
@@ -311,6 +312,8 @@ class Ring4TunnelsTest {
     /** Determinism: a field built apart, asked in the opposite order, gives the same spans. */
     @Test
     void theNetIsPureWhateverTheOrder() {
+        // A field of a world decided from scratch (the decisions are kept per world in the JVM).
+        Ring4Tunnels.forgetWorlds();
         IslandField other = IslandFieldTest.field();
         List<int[]> points = new ArrayList<>();
         for (Ring4Tunnels.Element e : ELEMENTS.subList(0, Math.min(60, ELEMENTS.size()))) {

@@ -1678,8 +1678,6 @@ public final class IslandField implements DensityFunction {
         final KeyedSlots<Double> verdantGrounds = new KeyedSlots<>(1 << 14);
         /** {@link VerdantDescent#rampAt} of whole block columns (NaN off the descent), also put by its {@code locate}. */
         final KeyedSlots<Double> verdantRamps = new KeyedSlots<>(1 << 14);
-        /** The tunnel net's decisions (73). */
-        final Ring4Tunnels.Memo tunnels = new Ring4Tunnels.Memo();
         /** 74: the world trees, sky lakes and island pairs. */
         final IslandLandmarks.Memo landmarks = new IslandLandmarks.Memo();
         volatile Long salt;

@@ -164,8 +164,50 @@ public final class Ring4Tunnels {
         this.field = field;
     }
 
+    /**
+     * The world's decisions. Kept per world here, not in the field's {@code Decisions}: a noise chunk's copy of the
+     * field gets fresh caches inside its ring 3 plateau input, so the copy is not {@code equals} and gets decisions of
+     * its own; the net's decisions reach some hundred cells around a chunk and must not be made again per chunk (perf,
+     * 2026-10-16). The key is everything they depend on: the seed (through the salt and the layout's noise seed) and
+     * the ring settings.
+     */
     private Memo memo() {
-        return field.decisions().tunnels;
+        Memo known = memo;
+        if (known == null) {
+            RingLayout layout = field.ringLayout();
+            WorldKey key = new WorldKey(field.salt(), layout.noiseSeed(), layout.settings());
+            known = WORLDS.get(key);
+            if (known == null) {
+                synchronized (WORLDS) {
+                    known = WORLDS.get(key);
+                    if (known == null) {
+                        if (WORLDS.size() >= MAX_WORLDS) {
+                            // A new world (seed or radii): the old ones' decisions are no longer asked for.
+                            WORLDS.clear();
+                        }
+                        known = new Memo();
+                        WORLDS.put(key, known);
+                    }
+                }
+            }
+            memo = known;
+        }
+        return known;
+    }
+
+    private record WorldKey(long salt, long noiseSeed, nl.timtoys.corruptedadventure.config.RingSettings settings) {
+    }
+
+    /** The decisions of the worlds generated in this JVM (a server has one overworld; tests make a few). */
+    private static final Map<WorldKey, Memo> WORLDS = new HashMap<>();
+    private static final int MAX_WORLDS = 4;
+    private volatile Memo memo;
+
+    /** Forgets every world's decisions (tests: decide a world again from scratch); fields already asked keep theirs. */
+    static void forgetWorlds() {
+        synchronized (WORLDS) {
+            WORLDS.clear();
+        }
     }
 
     // ---------------------------------------------------------------- per column
@@ -212,11 +254,11 @@ public final class Ring4Tunnels {
             }
             List<Element> chambers = new ArrayList<>();
             List<Element> tunnels = new ArrayList<>();
-            // A cell's elements reach into the next cell (its edges, entrances) and, bent, a little further back.
+            // A cell's elements stay inside the cells around it (withinNeighbours).
             int i0 = Math.floorDiv(minX, CELL);
             int j0 = Math.floorDiv(minZ, CELL);
-            for (int i = i0 - 2; i <= i0 + 1; i++) {
-                for (int j = j0 - 2; j <= j0 + 1; j++) {
+            for (int i = i0 - 1; i <= i0 + 1; i++) {
+                for (int j = j0 - 1; j <= j0 + 1; j++) {
                     for (Element el : finalCell(i, j)) {
                         if (el.maxX >= minX && el.minX <= minX + 16 && el.maxZ >= minZ && el.minZ <= minZ + 16) {
                             (el instanceof Room ? chambers : tunnels).add(el);
@@ -395,13 +437,33 @@ public final class Ring4Tunnels {
         double hh = HH_MIN + (HH_MAX - HH_MIN) * CellShapes.unit(h, 4);
         double[] w = line.widths(h);
         Edge edge = new Edge(a.key(), b.key());
+        boolean made;
         if (a.flooded && b.flooded) {
-            return floodedEdge(edge, line, w, hh, a, b, h) ? edge : null;
+            made = floodedEdge(edge, line, w, hh, a, b, h);
+        } else if (!a.flooded && !b.flooded) {
+            made = dryEdge(edge, line, w, hh, a, b, h);
+        } else {
+            made = mixedEdge(edge, line, w, hh, a, b, h);
         }
-        if (!a.flooded && !b.flooded) {
-            return dryEdge(edge, line, w, hh, a, b, h) ? edge : null;
+        return made && withinNeighbours(edge, i, j) ? edge : null;
+    }
+
+    /**
+     * Whether every part of an edge or entrance of cell (i, j), with its closed caves, stays inside the cells around it
+     * (i ± 1, j ± 1): so a chunk needs only the elements of the 3 × 3 cells around its own, and two elements can meet
+     * only if their cells lie at most 2 apart.
+     */
+    private static boolean withinNeighbours(Edge edge, int i, int j) {
+        double minX = (i - 1) * (double) CELL;
+        double maxX = (i + 2) * (double) CELL;
+        double minZ = (j - 1) * (double) CELL;
+        double maxZ = (j + 2) * (double) CELL;
+        for (Element e : edge.parts) {
+            if (e.minX < minX || e.maxX > maxX || e.minZ < minZ || e.maxZ > maxZ) {
+                return false;
+            }
         }
-        return mixedEdge(edge, line, w, hh, a, b, h) ? edge : null;
+        return true;
     }
 
     /** The distance from a node to its first valley: past its hall and a tunnel's width. */
@@ -619,11 +681,12 @@ public final class Ring4Tunnels {
         int r = (int) ENTRANCE_MAX;
         for (IslandShape shape : field.shapesWithin(Mth.floor(a.x) - r, Mth.floor(a.z) - r, Mth.floor(a.x) + r, Mth.floor(a.z) + r)) {
             double d = Math.hypot(shape.x() - a.x, shape.z() - a.z);
-            if (d < ENTRANCE_MIN || d > ENTRANCE_MAX || field.details(shape).lakeTop() != Integer.MIN_VALUE) {
+            if (d < ENTRANCE_MIN || d > ENTRANCE_MAX) {
                 continue;
             }
             double floor = shape.holeFloor(shape.x(), shape.z());
-            if (Double.isNaN(floor) || floor > ENTRANCE_HOLE_FLOOR || !inBand(shape.x(), shape.z(), W_MAX + 2.0)) {
+            if (Double.isNaN(floor) || floor > ENTRANCE_HOLE_FLOOR || !inBand(shape.x(), shape.z(), W_MAX + 2.0)
+                    || field.details(shape).lakeTop() != Integer.MIN_VALUE) {
                 continue;
             }
             holes.add(shape);
@@ -655,6 +718,9 @@ public final class Ring4Tunnels {
                 continue;
             }
             edge.parts.add(new Seg(edge, line, w, hh, profile, 0, line.size() - 1, K_FLOOD, false, a.key(), Long.MIN_VALUE));
+            if (!withinNeighbours(edge, i, j)) {
+                continue;
+            }
             return edge;
         }
         return null;
@@ -732,6 +798,9 @@ public final class Ring4Tunnels {
             }
             Edge edge = new Edge(a.key(), Long.MIN_VALUE);
             edge.parts.add(new Seg(edge, line, w, hh, profile, 0, line.size() - 1, K_DRY, true, a.key(), Long.MIN_VALUE));
+            if (!withinNeighbours(edge, i, j)) {
+                continue;
+            }
             return edge;
         }
         return null;
@@ -774,8 +843,8 @@ public final class Ring4Tunnels {
         Sink sink = new Sink(si, sj, hole[0], hole[1], hole[2], floor);
         int i0 = Math.floorDiv((int) hole[0], CELL);
         int j0 = Math.floorDiv((int) hole[1], CELL);
-        for (int i = i0 - 2; i <= i0 + 1; i++) {
-            for (int j = j0 - 2; j <= j0 + 1; j++) {
+        for (int i = i0 - 1; i <= i0 + 1; i++) {
+            for (int j = j0 - 1; j <= j0 + 1; j++) {
                 for (Element e : floodedOf(i, j)) {
                     if (e.conflicts(sink)) {
                         return null;
@@ -986,8 +1055,8 @@ public final class Ring4Tunnels {
 
     private List<Element> elementsWithin(int minX, int minZ, int maxX, int maxZ) {
         List<Element> found = new ArrayList<>();
-        for (int i = Math.floorDiv(minX, CELL) - 2; i <= Math.floorDiv(maxX, CELL) + 1; i++) {
-            for (int j = Math.floorDiv(minZ, CELL) - 2; j <= Math.floorDiv(maxZ, CELL) + 1; j++) {
+        for (int i = Math.floorDiv(minX, CELL) - 1; i <= Math.floorDiv(maxX, CELL) + 1; i++) {
+            for (int j = Math.floorDiv(minZ, CELL) - 1; j <= Math.floorDiv(maxZ, CELL) + 1; j++) {
                 for (Element e : finalCell(i, j)) {
                     if (e.maxX >= minX && e.minX <= maxX + 1 && e.maxZ >= minZ && e.minZ <= maxZ + 1) {
                         found.add(e);
@@ -1568,32 +1637,54 @@ public final class Ring4Tunnels {
     // ---------------------------------------------------------------- per world
 
     /**
-     * The decisions of the net, per world (shared by all copies of one wired field). Never cleared: {@link #finalCell}
+     * The decisions of the net, per world (shared by all copies of the world's field, {@link #memo}). Never cleared: {@link #finalCell}
      * tells an element's own parts by identity, so a decision must not be made twice; the maps are bounded by the
      * ring's area (a few thousand cells, some ten thousand sinkhole cells).
      */
     static final class Memo {
-        final Map<Long, Optional<Node>> nodes = new ConcurrentHashMap<>();
-        final Map<Long, Optional<Edge>> edges = new ConcurrentHashMap<>();
-        final Map<Long, Optional<Edge>> floodEntrances = new ConcurrentHashMap<>();
-        final Map<Long, Optional<Edge>> dryEntrances = new ConcurrentHashMap<>();
-        final Map<Long, Optional<Sink>> sinks = new ConcurrentHashMap<>();
-        final Map<Long, Double> sinkFloors = new ConcurrentHashMap<>();
-        final Map<Long, Optional<Room>> halls = new ConcurrentHashMap<>();
-        final Map<Long, List<Element>> stages = new ConcurrentHashMap<>();
-        final Map<Long, List<Element>> finals = new ConcurrentHashMap<>();
+        final Once<Optional<Node>> nodes = new Once<>();
+        final Once<Optional<Edge>> edges = new Once<>();
+        final Once<Optional<Edge>> floodEntrances = new Once<>();
+        final Once<Optional<Edge>> dryEntrances = new Once<>();
+        final Once<Optional<Sink>> sinks = new Once<>();
+        final Once<Double> sinkFloors = new Once<>();
+        final Once<Optional<Room>> halls = new Once<>();
+        final Once<List<Element>> stages = new Once<>();
+        final Once<List<Element>> finals = new Once<>();
         final KeyedSlots<List<Element>> chunks = new KeyedSlots<>(1024);
 
-        <V> V once(Map<Long, V> map, long key, Supplier<V> decide) {
-            V known = map.get(key);
+        <V> V once(Once<V> map, long key, Supplier<V> decide) {
+            return map.get(key, decide);
+        }
+    }
+
+    /**
+     * Decisions made exactly once per key: the first thread decides, the others wait for its result. At the start of an
+     * area every worldgen thread needs the same decisions at the same moment (a chunk asks for some hundred cells);
+     * deciding them all in every thread cost more than the noise itself (perf, 2026-10-16). Safe from deadlock: the
+     * decisions depend on each other without a cycle (node ← edge ← entrance ← sinkhole ← hall ← stage ← final).
+     */
+    static final class Once<V> {
+        private final Map<Long, java.util.concurrent.CompletableFuture<V>> map = new ConcurrentHashMap<>();
+
+        V get(long key, Supplier<V> decide) {
+            java.util.concurrent.CompletableFuture<V> known = map.get(key);
             if (known == null) {
-                known = decide.get();
-                V raced = map.putIfAbsent(key, known);
-                if (raced != null) {
-                    known = raced;
+                java.util.concurrent.CompletableFuture<V> mine = new java.util.concurrent.CompletableFuture<>();
+                known = map.putIfAbsent(key, mine);
+                if (known == null) {
+                    try {
+                        V value = decide.get();
+                        mine.complete(value);
+                        return value;
+                    } catch (RuntimeException | Error e) {
+                        map.remove(key, mine);
+                        mine.completeExceptionally(e);
+                        throw e;
+                    }
                 }
             }
-            return known;
+            return known.join();
         }
     }
 }
