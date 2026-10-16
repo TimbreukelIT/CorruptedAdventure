@@ -59,7 +59,7 @@ public final class ModSoundEvents {
     /** Bubble of boiling mud (stream B plays it, package 46). */
     public static final DeferredHolder<SoundEvent, SoundEvent> BOILING_MUD_BUBBLE = register("block.boiling_mud.bubble");
 
-    // Ring 4 weather (package 70): loops the client plays while the weather is felt; vanilla placeholders until 80.
+    // Ring 4 weather (package 70): loops the client plays while the weather is felt; own audio since 80.
     /** Soft, muffled hum in dense fog (mythical band). */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_DENSE_FOG = register("weather.ring_4.dense_fog");
     /** Hard wind of the storm (mythical band). */
@@ -73,7 +73,7 @@ public final class ModSoundEvents {
     /** Tropical birds and frogs, the additions sound of {@code verdant_falls}. */
     public static final DeferredHolder<SoundEvent, SoundEvent> VERDANT_FALLS_WILDLIFE = register("ambient.verdant_falls.wildlife");
 
-    // Ring 4 and Nether ring 4 (package 80-0, stream A): ids for golf 2; vanilla placeholders until the own audio of 80.
+    // Ring 4 and Nether ring 4 (package 80-0, stream A): ids for golf 2; own audio from tools/sounds/Ring4Sounds.java (80).
     /** Water all around: the ambient loop of the mythical ring 4 biomes. */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_WATER = register("ambient.ring_4.water");
     /** Harp and choir tones at night (Q19: only at night, through a client controller). */
@@ -86,7 +86,7 @@ public final class ModSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_SUNDERED_DRONE = register("ambient.ring_4.sundered_drone");
     /** Dry wind of Nether ring 4. */
     public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_4_WIND = register("ambient.nether_ring_4.wind");
-    /** Soft hum of the crystals of Nether ring 4. */
+    /** Soft hum of the crystals of Nether ring 4, the additions sound of its biomes. */
     public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_4_CRYSTAL_HUM = register("ambient.nether_ring_4.crystal_hum");
     /** Swamp gas catching fire (stream B plays it, package 72). */
     public static final DeferredHolder<SoundEvent, SoundEvent> SWAMP_GAS_IGNITE = register("block.swamp_gas.ignite");

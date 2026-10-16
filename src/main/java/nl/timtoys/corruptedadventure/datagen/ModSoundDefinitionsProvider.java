@@ -1,7 +1,6 @@
 package nl.timtoys.corruptedadventure.datagen;
 
 import net.minecraft.data.PackOutput;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.common.data.SoundDefinition;
@@ -13,7 +12,8 @@ import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
  * {@code sounds.json}. Ring 1 and the sandstorm reuse vanilla's samples through {@code event} entries (pitch and volume
  * multiply those of the vanilla event); the ring 2 ambient sounds are our own {@code .ogg}s ({@code tools/sounds/Ring2Sounds.java}),
  * which must exist before datagen runs: the provider checks the files. Ring 3 has its own as well
- * ({@code tools/sounds/Ring3Sounds.java}, package 50), and so has {@code verdant_falls} ({@code tools/sounds/Ring4Sounds.java}).
+ * ({@code tools/sounds/Ring3Sounds.java}, package 50), and so has ring 4 with Nether ring 4 ({@code tools/sounds/Ring4Sounds.java},
+ * {@code verdant_falls} and change 80).
  */
 final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
     // Ambient volumes (teststop 4c: all ambience somewhat softer). Only sounds the game plays at a fixed volume are set
@@ -94,17 +94,17 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .subtitle(subtitle("ambient.nether_ring_3.ice_creak"))
                 .with(ambient("ambient/nether_ring_3/ice_creak_1"), ambient("ambient/nether_ring_3/ice_creak_2"),
                         ambient("ambient/nether_ring_3/ice_creak_3")));
-        // Ring 4 weather (package 70): vanilla placeholders until the ring 4 sound script (80). The loops' volume follows
-        // the weather on the client (WeatherLoopSound).
+        // Ring 4 weather (package 70, own audio since 80): the loops' volume follows the weather on the client
+        // (WeatherLoopSound). The storm carries the creaking of the islands in its loop (not positional).
         add(ModSoundEvents.RING_4_DENSE_FOG, SoundDefinition.definition()
                 .subtitle(subtitle("weather.ring_4.dense_fog"))
-                .with(sound(SoundEvents.AMBIENT_UNDERWATER_LOOP.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.6F)));
+                .with(loop("weather/ring_4/dense_fog_loop_1")));
         add(ModSoundEvents.RING_4_STORM_WIND, SoundDefinition.definition()
                 .subtitle(subtitle("weather.ring_4.storm_wind"))
-                .with(sound(SoundEvents.ELYTRA_FLYING.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.5F)));
+                .with(loop("weather/ring_4/storm_wind_loop_1"), loop("weather/ring_4/storm_wind_loop_2")));
         add(ModSoundEvents.RING_4_TOXIC_RAIN, SoundDefinition.definition()
                 .subtitle(subtitle("weather.ring_4.toxic_rain"))
-                .with(sound(SoundEvents.WEATHER_RAIN.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.8F)));
+                .with(loop("weather/ring_4/toxic_rain_loop_1"), loop("weather/ring_4/toxic_rain_loop_2")));
         // verdant_falls (ring 4 stream A): our own audio (tools/sounds/Ring4Sounds.java). The roar of distant falls as
         // the biome loop, tropical birds (more often) and frogs as its additions.
         add(ModSoundEvents.VERDANT_FALLS_FALLS, SoundDefinition.definition()
@@ -114,37 +114,42 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .with(ambient("ambient/ring_4/tropical_bird_1"), ambient("ambient/ring_4/tropical_bird_2"),
                         ambient("ambient/ring_4/tropical_bird_3"), ambient("ambient/ring_4/frog_1"),
                         ambient("ambient/ring_4/frog_2")));
-        // Ring 4 and Nether ring 4 (package 80-0): vanilla placeholders until the ring 4 sound script (80). Loops carry no
-        // subtitle, like vanilla's; one-shots, additions and block sounds do.
+        // Ring 4 and Nether ring 4 (package 80): our own audio (tools/sounds/Ring4Sounds.java). Loops carry no subtitle,
+        // like vanilla's; one-shots, additions and block sounds do. The choir and the reeds are played by the client
+        // (Ring4Ambience) at their own volume, the reeds positional (mono, so they fade with distance).
         add(ModSoundEvents.RING_4_WATER, SoundDefinition.definition()
-                .with(placeholder(SoundEvents.WATER_AMBIENT, 0.8F, AMBIENT_VOLUME)));
+                .with(ambientLoop("ambient/ring_4/water_loop_1"), ambientLoop("ambient/ring_4/water_loop_2")));
         add(ModSoundEvents.RING_4_NIGHT_CHOIR, SoundDefinition.definition()
                 .subtitle(subtitle("ambient.ring_4.night_choir"))
-                .with(placeholder(SoundEvents.NOTE_BLOCK_HARP.value(), 0.8F, 0.3F)));
+                .with(file("ambient/ring_4/night_choir_1"), file("ambient/ring_4/night_choir_2"), file("ambient/ring_4/night_choir_3")));
         add(ModSoundEvents.RING_4_REEDS, SoundDefinition.definition()
                 .subtitle(subtitle("ambient.ring_4.reeds"))
-                .with(placeholder(SoundEvents.GRASS_BREAK, 0.7F, 0.4F)));
+                .with(file("ambient/ring_4/reeds_1"), file("ambient/ring_4/reeds_2"), file("ambient/ring_4/reeds_3")));
         add(ModSoundEvents.RING_4_BUBBLES, SoundDefinition.definition()
                 .subtitle(subtitle("ambient.ring_4.bubbles"))
-                .with(placeholder(SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT, 0.8F, AMBIENT_VOLUME)));
+                .with(ambient("ambient/ring_4/bubbles_1"), ambient("ambient/ring_4/bubbles_2"), ambient("ambient/ring_4/bubbles_3")));
         add(ModSoundEvents.RING_4_SUNDERED_DRONE, SoundDefinition.definition()
-                .with(placeholder(SoundEvents.AMBIENT_WARPED_FOREST_LOOP.value(), 0.5F, AMBIENT_VOLUME)));
+                .with(ambientLoop("ambient/ring_4/sundered_drone_loop_1")));
         add(ModSoundEvents.NETHER_RING_4_WIND, SoundDefinition.definition()
-                .with(placeholder(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_LOOP.value(), 1.1F, AMBIENT_VOLUME)));
+                .with(ambientLoop("ambient/nether_ring_4/wind_loop_1"), ambientLoop("ambient/nether_ring_4/wind_loop_2")));
         add(ModSoundEvents.NETHER_RING_4_CRYSTAL_HUM, SoundDefinition.definition()
-                .with(placeholder(SoundEvents.AMETHYST_BLOCK_RESONATE, 0.8F, 0.5F)));
+                .subtitle(subtitle("ambient.nether_ring_4.crystal_hum"))
+                .with(ambient("ambient/nether_ring_4/crystal_hum_1"), ambient("ambient/nether_ring_4/crystal_hum_2"),
+                        ambient("ambient/nether_ring_4/crystal_hum_3")));
         add(ModSoundEvents.SWAMP_GAS_IGNITE, SoundDefinition.definition()
                 .subtitle(subtitle("block.swamp_gas.ignite"))
-                .with(placeholder(SoundEvents.FIRECHARGE_USE, 0.8F, 1.0F)));
+                .with(file("block/ring_4/swamp_gas_ignite_1"), file("block/ring_4/swamp_gas_ignite_2")));
         add(ModSoundEvents.BUBBLE_SPRING_BUBBLE, SoundDefinition.definition()
                 .subtitle(subtitle("block.bubble_spring.bubble"))
-                .with(placeholder(SoundEvents.BUBBLE_COLUMN_BUBBLE_POP, 1.0F, 1.0F)));
+                .with(file("block/ring_4/bubble_spring_bubble_1"), file("block/ring_4/bubble_spring_bubble_2"),
+                        file("block/ring_4/bubble_spring_bubble_3")));
         add(ModSoundEvents.UPDRAFT_FLOW, SoundDefinition.definition()
                 .subtitle(subtitle("block.updraft.flow"))
-                .with(placeholder(SoundEvents.BUBBLE_COLUMN_UPWARDS_INSIDE, 1.0F, 1.0F)));
+                .with(file("block/ring_4/updraft_flow_1"), file("block/ring_4/updraft_flow_2")));
         add(ModSoundEvents.SUCKING_MUD_SLURP, SoundDefinition.definition()
                 .subtitle(subtitle("block.sucking_mud.slurp"))
-                .with(placeholder(SoundEvents.HONEY_BLOCK_SLIDE, 0.6F, 1.0F)));
+                .with(file("block/ring_4/sucking_mud_slurp_1"), file("block/ring_4/sucking_mud_slurp_2"),
+                        file("block/ring_4/sucking_mud_slurp_3")));
         // Block sounds, played by stream B (package 46) at the block.
         add(ModSoundEvents.FUMAROLE_PUFF, SoundDefinition.definition()
                 .subtitle(subtitle("block.fumarole.puff"))
@@ -159,11 +164,6 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .subtitle(subtitle("block.boiling_mud.bubble"))
                 .with(file("block/ring_3/boiling_mud_bubble_1"), file("block/ring_3/boiling_mud_bubble_2"),
                         file("block/ring_3/boiling_mud_bubble_3")));
-    }
-
-    /** A vanilla event standing in until our own audio exists; pitch and volume multiply the event's own. */
-    private static SoundDefinition.Sound placeholder(SoundEvent event, float pitch, float volume) {
-        return sound(event.getLocation(), SoundDefinition.SoundType.EVENT).pitch(pitch).volume(volume);
     }
 
     /** One of our own one-shots, {@code sounds/<path>.ogg}. */
