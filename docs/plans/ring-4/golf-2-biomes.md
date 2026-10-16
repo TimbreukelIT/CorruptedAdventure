@@ -78,6 +78,8 @@ Vrij (F4 = A): vallen en lippen (afstand tot de vastgelegde vallen, calciet draa
 
 **75b — nieuwe classes:** `VerdantTrunkPlacer` (`verdant_trunk_placer`, in `ModTrunkPlacerTypes`, blok `// ring 4 — W-biomes`), `VerdantFoliagePlacer` (`verdant_foliage_placer`, `Shape` UMBRELLA/FRONDS, in `ModFoliagePlacerTypes`), `WallPlantFeature`/`…Configuration` (`wall_plant`). **Gewijzigd:** `VerdantFallsFeatures` (flora; `ring_4/verdant_tree_fern` = key van B), `LedgeStrandConfiguration` (optioneel `tip`, `variant` + `variant_chance`; constructor met 7 argumenten blijft), `LedgeStrandFeature.strand` (tip + variant op positie), `LedgeStrands.inVariant`, `SlopeFilter` (meting `drop`, `rimTop`), `Ring4Biomes` (papegaaien in `verdant_falls`), `Ring4Features.ORDER`. **Registries:** 1 feature-type, 1 trunk- en 1 foliage-placer-type; 9 + 2 configured, 13 placed.
 
+**Opruimen (backlog r. 265):** `placeholder_ring_4` en `placeholder_nether_ring_4` weg uit `PlaceholderBiomes`, `ModBiomes` en de lang-providers (de gegenereerde biome-JSON's en langregels vervallen).
+
 ## Beslissingen
 - 2026-10-16, `worldgen` (implementatie W-biomes, 75): de gloed onder de eilanden als vast rooster (cellen van 4, bron 1–2 in de cel) i.p.v. een losse kans, zodat elk vlak blok in de schaduw licht ≥ 1 krijgt; de palet per kolom via de band (`Ring4Band.blighted`), niet per biome.
 - 2026-10-16, `worldgen` (implementatie, 75): moerasboom = vanilla's hoge mangrove een maat groter (stam 5–14, wortels 3–7) met `glowcap` en mostapijt op de wortels, zonder vanilla-vines (geen vanilla vine in ring 4) en zonder bijen. Fjordbomen: vanilla spar (default), den 40 %, donkere eik 10 %.

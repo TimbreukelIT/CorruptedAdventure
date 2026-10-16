@@ -225,12 +225,10 @@ final class EnglishLanguageProvider extends LanguageProvider implements LangOutp
         biome(ModBiomes.HOODOO_FIELDS, "Hoodoo Fields");
         biome(ModBiomes.SALT_FLATS, "Salt Flats");
         biome(ModBiomes.DUNE_SEA, "Dune Sea");
-        biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder Ring 4");
         biome(ModBiomes.PLACEHOLDER_RING_5, "Placeholder Ring 5");
         biome(ModBiomes.VOID_EDGE, "Void Edge");
         biome(ModBiomes.DRIPSHROOM_FOREST, "Dripshroom Forest");
         biome(ModBiomes.SPORE_CAVES, "Spore Caves");
-        biome(ModBiomes.PLACEHOLDER_NETHER_RING_4, "Placeholder Nether Ring 4");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_5, "Placeholder Nether Ring 5");
         biome(ModBiomes.NETHER_VOID_EDGE, "Nether Void Edge");
 
