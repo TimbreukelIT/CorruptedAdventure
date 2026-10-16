@@ -1,0 +1,61 @@
+{
+  "type": "corruptedadventure:sea_fossils",
+  "terrain": "corruptedadventure:ring_4/nether/interpolated_shape",
+  "floor": "corruptedadventure:ring_4/nether/floor_height",
+  "region": "corruptedadventure:ring_4/nether/region",
+  "edge": "corruptedadventure:ring_4/nether/edge",
+  "noise": "corruptedadventure:nether_ring_4_fossil_cells",
+  "settings": {
+    "cell_size": 256,
+    "ramp": 8,
+    "region": [
+      -0.13,
+      0.13
+    ],
+    "sample_step": 2,
+    "cage_length": [
+      40,
+      56
+    ],
+    "half_width": [
+      11,
+      16
+    ],
+    "height": [
+      16,
+      24
+    ],
+    "rib_period": [
+      8,
+      10
+    ],
+    "burial": [
+      0.0,
+      0.2
+    ],
+    "neck_length": [
+      6,
+      10
+    ],
+    "skull_length": [
+      18,
+      24
+    ],
+    "skull_width": [
+      7,
+      10
+    ],
+    "skull_height": [
+      10,
+      14
+    ],
+    "tail_length": [
+      24,
+      40
+    ],
+    "tail_swing": [
+      3,
+      9
+    ]
+  }
+}

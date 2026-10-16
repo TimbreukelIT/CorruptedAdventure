@@ -7,6 +7,11 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.DuneRubbleFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.GiantGeodeLiningConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.GiantGeodeLiningFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.PillarCladdingConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.PillarCladdingFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.CanyonSpringConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.CanyonSpringFeature;
@@ -146,6 +151,17 @@ public final class ModFeatures {
     /** {@code corruptedadventure:ledge_strand} (verdant_falls: climbing strands under the ledges) */
     public static final DeferredHolder<Feature<?>, Feature<LedgeStrandConfiguration>> LEDGE_STRAND =
             FEATURES.register("ledge_strand", () -> new LedgeStrandFeature(LedgeStrandConfiguration.CODEC));
+
+    // ring 4 — W-nether
+    /** {@code corruptedadventure:giant_geode_lining} (78: the lining of the giant geodes of geode_hollows) */
+    public static final DeferredHolder<Feature<?>, Feature<GiantGeodeLiningConfiguration>> GIANT_GEODE_LINING =
+            FEATURES.register("giant_geode_lining", () -> new GiantGeodeLiningFeature(GiantGeodeLiningConfiguration.CODEC));
+    /** {@code corruptedadventure:pillar_cladding} (78: clusters and lamps on the crystal columns of crystal_spires) */
+    public static final DeferredHolder<Feature<?>, Feature<PillarCladdingConfiguration>> PILLAR_CLADDING =
+            FEATURES.register("pillar_cladding", () -> new PillarCladdingFeature(PillarCladdingConfiguration.CODEC));
+    /** {@code corruptedadventure:dune_rubble} (78: loose bones and boulders in the bone dunes, clear of the fossils) */
+    public static final DeferredHolder<Feature<?>, Feature<RubbleConfiguration>> DUNE_RUBBLE =
+            FEATURES.register("dune_rubble", () -> new DuneRubbleFeature(RubbleConfiguration.CODEC));
 
     private ModFeatures() {
     }

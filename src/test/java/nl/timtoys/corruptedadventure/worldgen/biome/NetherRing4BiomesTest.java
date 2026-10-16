@@ -49,14 +49,26 @@ class NetherRing4BiomesTest {
         }
     }
 
-    /** No carvers (the dam of the steps 3|4 and 4|5 stays whole) and no features before 78. */
+    /**
+     * No carvers (the dam of the steps 3|4 and 4|5 stays whole). The dressing of 78: the geode lining and the column
+     * cladding in every biome (a geode or a column may cross into a chunk of another biome), in the same order; the
+     * loose bones and boulders only in the dunes.
+     */
     @Test
-    void noCarversAndNoFeaturesYet() {
-        for (Biome biome : BIOMES.values()) {
+    void noCarversAndTheDressingOf78() {
+        for (Map.Entry<ResourceKey<Biome>, Biome> entry : BIOMES.entrySet()) {
+            Biome biome = entry.getValue();
             for (GenerationStep.Carving step : GenerationStep.Carving.values()) {
                 assertFalse(biome.getGenerationSettings().getCarvers(step).iterator().hasNext());
             }
-            assertTrue(biome.getGenerationSettings().features().stream().allMatch(set -> set.size() == 0));
+            List<List<String>> steps = biome.getGenerationSettings().features().stream()
+                    .map(set -> set.stream().map(h -> h.unwrapKey().orElseThrow().location().getPath()).toList()).toList();
+            assertEquals(List.of("nether_ring_4/geode_linings", "nether_ring_4/pillar_claddings"),
+                    steps.get(GenerationStep.Decoration.UNDERGROUND_DECORATION.ordinal()));
+            assertEquals(entry.getKey() == ModBiomes.BONE_DUNES ? List.of("nether_ring_4/dune_bones", "nether_ring_4/dune_boulders") : List.of(),
+                    steps.get(GenerationStep.Decoration.LOCAL_MODIFICATIONS.ordinal()));
+            int total = steps.stream().mapToInt(List::size).sum();
+            assertEquals(entry.getKey() == ModBiomes.BONE_DUNES ? 4 : 2, total);
         }
     }
 

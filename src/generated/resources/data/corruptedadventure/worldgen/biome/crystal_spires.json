@@ -30,7 +30,19 @@
     "water_color": 4159204,
     "water_fog_color": 329011
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:nether_ring_4/geode_linings",
+      "corruptedadventure:nether_ring_4/pillar_claddings"
+    ]
+  ],
   "has_precipitation": false,
   "spawn_costs": {
     "minecraft:enderman": {

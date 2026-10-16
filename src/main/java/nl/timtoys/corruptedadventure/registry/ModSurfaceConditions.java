@@ -10,6 +10,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.surface.PolygonEdgeCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.Ring4ThresholdCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.RingDepthCondition;
+import nl.timtoys.corruptedadventure.worldgen.surface.SeaFossilCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.RingReachCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.VolcanicThresholdCondition;
 
@@ -36,6 +37,9 @@ public final class ModSurfaceConditions {
     /** {@code corruptedadventure:ring_depth} (65: the crystal columns of Nether ring 4 only where the terrain has them) */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<RingDepthCondition>> RING_DEPTH =
             CONDITIONS.register("ring_depth", () -> RingDepthCondition.MAP_CODEC);
+    /** {@code corruptedadventure:sea_fossil} (78: the bones of the sea-creature fossils, painted bone_block) */
+    public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<SeaFossilCondition>> SEA_FOSSIL =
+            CONDITIONS.register("sea_fossil", () -> SeaFossilCondition.MAP_CODEC);
 
     // ring 4 — W-biomes (verdant_falls)
     /** {@code corruptedadventure:ring4_threshold} (Q7 = A: calcite on the rims and lips, stone on the exact walls) */

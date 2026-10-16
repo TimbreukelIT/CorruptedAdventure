@@ -12,6 +12,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing4Features;
@@ -26,9 +27,9 @@ import java.util.List;
  * (= {@code ring_4/nether/region}) at {@link NetherRing4Features#SPIRES_THRESHOLD} and
  * {@link NetherRing4Features#HOLLOWS_THRESHOLD}, the thresholds the terrain and the surface rule turn over at.
  * <p>
- * No features yet (fossils, crystals and geode linings are 78) and no carvers: the dam of the steps 3|4 and 4|5 stays
- * whole, like Nether ring 3. The effects come from the atmosphere's hook {@link BiomeAmbience#netherRing4} (stream A,
- * 80).
+ * The sea-creature fossils of the dunes are terrain; the features dress the rest (78: the geode linings, the cladding
+ * of the columns, loose bones and boulders in the dunes). No carvers: the dam of the steps 3|4 and 4|5 stays whole,
+ * like Nether ring 3. The effects come from the atmosphere's hook {@link BiomeAmbience#netherRing4} (stream A, 80).
  */
 public final class NetherRing4Biomes {
     /** Every biome of Nether ring 4, the only Java list of them (tags {@code is_nether_ring_4}, {@code purifying}, {@code c:}). */
@@ -54,9 +55,21 @@ public final class NetherRing4Biomes {
                             .backgroundMusic(Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SOUL_SAND_VALLEY))
                             .build())
                     .mobSpawnSettings(spawns())
-                    .generationSettings(new BiomeGenerationSettings.Builder(features, carvers).build())
+                    .generationSettings(generation(features, carvers, key))
                     .build());
         }
+    }
+
+    /** The dressing of 78 ({@link NetherRing4Features#features}); still no carvers (the dams stay whole). */
+    static BiomeGenerationSettings generation(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers,
+                                              ResourceKey<Biome> biome) {
+        BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(features, carvers);
+        for (GenerationStep.Decoration step : GenerationStep.Decoration.values()) {
+            for (ResourceKey<PlacedFeature> feature : NetherRing4Features.features(biome, step)) {
+                generation.addFeature(step, features.getOrThrow(feature));
+            }
+        }
+        return generation.build();
     }
 
     /**

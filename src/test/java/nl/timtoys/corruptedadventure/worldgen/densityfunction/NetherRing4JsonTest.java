@@ -77,12 +77,45 @@ class NetherRing4JsonTest {
         }
         assertEquals(1, interpolated);
         assertEquals(REF + "shape", WorldgenData.read(DIR + "interpolated_shape.json").get("argument").getAsString());
-        // both branches of terrain (with and without the geodes) name the same file: one interpolator
+        // both branches of terrain (with the geodes, and the fossils that wrap it) name the same file: one interpolator
         String terrain = Files.readString(RING_4.resolve("terrain.json"));
         assertEquals(2, count(terrain, "\"" + REF + "interpolated_shape\""));
+        assertTrue(terrain.contains("\"" + REF + "region\""), "the fossils only in the dunes' band of the region");
         assertTrue(terrain.contains("\"" + REF + "geodes\""));
+        assertTrue(terrain.contains("\"" + REF + "fossils\""));
         assertEquals(CA_GEODES, WorldgenData.read(DIR + "geodes.json").get("type").getAsString());
         assertEquals(REF + "shape", WorldgenData.read(DIR + "geodes.json").get("shape").getAsString(), "the geodes test the uninterpolated shape");
+        JsonObject fossils = WorldgenData.read(DIR + "fossils.json");
+        assertEquals("corruptedadventure:sea_fossils", fossils.get("type").getAsString());
+        assertEquals(REF + "interpolated_shape", fossils.get("terrain").getAsString(), "the fossils wrap the interpolated shape");
+        assertEquals(REF + "floor_height", fossils.get("floor").getAsString(), "the fossils ramp to the dunes' own floor");
+    }
+
+    /**
+     * The fossils lie only in the dunes: their region span stays inside the band where neither the spires (sea, bridges,
+     * walkways from threshold − ramp) nor the hollows have weight; the ramp of the weights is the terrain's own.
+     */
+    @Test
+    void fossilsOnlyWhereTheDunesHaveFullWeight() {
+        JsonObject settings = WorldgenData.read(DIR + "fossils.json").getAsJsonObject("settings");
+        double ramp = NetherRing4Features.SPIRES_THRESHOLD - 0.14;
+        assertEquals(0.5, weight("spires_weight", NetherRing4Features.SPIRES_THRESHOLD), 1e-9);
+        assertEquals(0.0, weight("spires_weight", NetherRing4Features.SPIRES_THRESHOLD - ramp), 1e-9);
+        assertEquals(0.0, weight("hollows_weight", NetherRing4Features.HOLLOWS_THRESHOLD + ramp), 1e-9);
+        double min = settings.getAsJsonArray("region").get(0).getAsDouble();
+        double max = settings.getAsJsonArray("region").get(1).getAsDouble();
+        assertTrue(max < NetherRing4Features.SPIRES_THRESHOLD - ramp, "below the spires' weight");
+        assertTrue(min > NetherRing4Features.HOLLOWS_THRESHOLD + ramp, "above the hollows' weight");
+        // the guard of sea_fossils holds the dunes' floors: 43 ± 3
+        assertTrue(SeaFossils.LOWEST + 12 < 40 && SeaFossils.HIGHEST - 55 > 46);
+    }
+
+    /** The surface paints the fossils bone block before any other rule of the branch (floors included). */
+    @Test
+    void fossilsAreBoneBeforeEveryOtherRule() {
+        JsonObject first = ownBranch().get(0).getAsJsonObject();
+        assertEquals("corruptedadventure:sea_fossil", first.getAsJsonObject("if_true").get("type").getAsString());
+        assertEquals("minecraft:bone_block", first.getAsJsonObject("then_run").getAsJsonObject("result_state").get("Name").getAsString());
     }
 
     /** A density function file must be a number or an object (the registry codec takes no bare reference). */
@@ -163,7 +196,7 @@ class NetherRing4JsonTest {
             if (floor < 0 && test != null && "floor".equals(test.has("surface_type") ? test.get("surface_type").getAsString() : null)) {
                 floor = i;
             }
-            if (crystal < 0 && rule.contains("\"minecraft:calcite\"")) {
+            if (crystal < 0 && rule.contains("\"corruptedadventure:purity_crystal_block\"")) {
                 crystal = i;
                 assertTrue(rule.contains("\"corruptedadventure:ring_depth\""), "crystal follows core");
                 JsonObject depth = find(branch.get(i), "corruptedadventure:ring_depth");
@@ -171,10 +204,11 @@ class NetherRing4JsonTest {
                 JsonObject region = branch.get(i).getAsJsonObject().getAsJsonObject("if_true");
                 assertEquals("corruptedadventure:nether_ring_4_region", region.get("noise").getAsString());
                 assertTrue(region.get("min_threshold").getAsDouble() >= NetherRing4Features.SPIRES_THRESHOLD, "spires weight >= 0.5");
+                assertEquals(NetherRing4Features.COLUMNS_REGION_FROM, region.get("min_threshold").getAsDouble(), "the cladding's columns");
             }
         }
         assertTrue(floor >= 0 && crystal > floor, "floors before the crystal");
-        assertFalse(branch.get(floor).toString().contains("\"minecraft:calcite\""), "no crystal on a floor");
+        assertFalse(branch.get(floor).toString().contains("\"corruptedadventure:purity_crystal_block\""), "no crystal on a floor");
     }
 
     /** The roughness is only in the hollows (a = 0): the dunes, bridges and ledges stay smooth, no holes in the bridges. */
