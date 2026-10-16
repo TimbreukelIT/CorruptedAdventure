@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.datagen;
 
 import net.minecraft.data.PackOutput;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.common.data.SoundDefinition;
@@ -113,6 +114,37 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .with(ambient("ambient/ring_4/tropical_bird_1"), ambient("ambient/ring_4/tropical_bird_2"),
                         ambient("ambient/ring_4/tropical_bird_3"), ambient("ambient/ring_4/frog_1"),
                         ambient("ambient/ring_4/frog_2")));
+        // Ring 4 and Nether ring 4 (package 80-0): vanilla placeholders until the ring 4 sound script (80). Loops carry no
+        // subtitle, like vanilla's; one-shots, additions and block sounds do.
+        add(ModSoundEvents.RING_4_WATER, SoundDefinition.definition()
+                .with(placeholder(SoundEvents.WATER_AMBIENT, 0.8F, AMBIENT_VOLUME)));
+        add(ModSoundEvents.RING_4_NIGHT_CHOIR, SoundDefinition.definition()
+                .subtitle(subtitle("ambient.ring_4.night_choir"))
+                .with(placeholder(SoundEvents.NOTE_BLOCK_HARP.value(), 0.8F, 0.3F)));
+        add(ModSoundEvents.RING_4_REEDS, SoundDefinition.definition()
+                .subtitle(subtitle("ambient.ring_4.reeds"))
+                .with(placeholder(SoundEvents.GRASS_BREAK, 0.7F, 0.4F)));
+        add(ModSoundEvents.RING_4_BUBBLES, SoundDefinition.definition()
+                .subtitle(subtitle("ambient.ring_4.bubbles"))
+                .with(placeholder(SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT, 0.8F, AMBIENT_VOLUME)));
+        add(ModSoundEvents.RING_4_SUNDERED_DRONE, SoundDefinition.definition()
+                .with(placeholder(SoundEvents.AMBIENT_WARPED_FOREST_LOOP.value(), 0.5F, AMBIENT_VOLUME)));
+        add(ModSoundEvents.NETHER_RING_4_WIND, SoundDefinition.definition()
+                .with(placeholder(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_LOOP.value(), 1.1F, AMBIENT_VOLUME)));
+        add(ModSoundEvents.NETHER_RING_4_CRYSTAL_HUM, SoundDefinition.definition()
+                .with(placeholder(SoundEvents.AMETHYST_BLOCK_RESONATE, 0.8F, 0.5F)));
+        add(ModSoundEvents.SWAMP_GAS_IGNITE, SoundDefinition.definition()
+                .subtitle(subtitle("block.swamp_gas.ignite"))
+                .with(placeholder(SoundEvents.FIRECHARGE_USE, 0.8F, 1.0F)));
+        add(ModSoundEvents.BUBBLE_SPRING_BUBBLE, SoundDefinition.definition()
+                .subtitle(subtitle("block.bubble_spring.bubble"))
+                .with(placeholder(SoundEvents.BUBBLE_COLUMN_BUBBLE_POP, 1.0F, 1.0F)));
+        add(ModSoundEvents.UPDRAFT_FLOW, SoundDefinition.definition()
+                .subtitle(subtitle("block.updraft.flow"))
+                .with(placeholder(SoundEvents.BUBBLE_COLUMN_UPWARDS_INSIDE, 1.0F, 1.0F)));
+        add(ModSoundEvents.SUCKING_MUD_SLURP, SoundDefinition.definition()
+                .subtitle(subtitle("block.sucking_mud.slurp"))
+                .with(placeholder(SoundEvents.HONEY_BLOCK_SLIDE, 0.6F, 1.0F)));
         // Block sounds, played by stream B (package 46) at the block.
         add(ModSoundEvents.FUMAROLE_PUFF, SoundDefinition.definition()
                 .subtitle(subtitle("block.fumarole.puff"))
@@ -127,6 +159,11 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .subtitle(subtitle("block.boiling_mud.bubble"))
                 .with(file("block/ring_3/boiling_mud_bubble_1"), file("block/ring_3/boiling_mud_bubble_2"),
                         file("block/ring_3/boiling_mud_bubble_3")));
+    }
+
+    /** A vanilla event standing in until our own audio exists; pitch and volume multiply the event's own. */
+    private static SoundDefinition.Sound placeholder(SoundEvent event, float pitch, float volume) {
+        return sound(event.getLocation(), SoundDefinition.SoundType.EVENT).pitch(pitch).volume(volume);
     }
 
     /** One of our own one-shots, {@code sounds/<path>.ogg}. */

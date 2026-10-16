@@ -15,8 +15,13 @@ import nl.timtoys.corruptedadventure.client.network.RingWeatherHandler;
 import nl.timtoys.corruptedadventure.client.network.VolcanoPlumesHandler;
 import nl.timtoys.corruptedadventure.client.network.WindGustHandler;
 import nl.timtoys.corruptedadventure.client.particle.AshFlakeParticle;
+import nl.timtoys.corruptedadventure.client.particle.BlossomParticle;
+import nl.timtoys.corruptedadventure.client.particle.DriftingHazeParticle;
 import nl.timtoys.corruptedadventure.client.particle.EmberParticle;
+import nl.timtoys.corruptedadventure.client.particle.GlitchSpeckParticle;
+import nl.timtoys.corruptedadventure.client.particle.GlowMoteParticle;
 import nl.timtoys.corruptedadventure.client.particle.IceGlintParticle;
+import nl.timtoys.corruptedadventure.client.particle.RisingBubbleParticle;
 import nl.timtoys.corruptedadventure.client.particle.SandGustParticle;
 import nl.timtoys.corruptedadventure.client.particle.SteamPuffParticle;
 import nl.timtoys.corruptedadventure.client.particle.WaterfallMistParticle;
@@ -79,5 +84,20 @@ public final class CorruptedAdventureClient {
                 sprites -> new SteamPuffParticle.Provider(sprites, SteamPuffParticle.SULFUR_STEAM));
         event.registerSpriteSet(ModParticleTypes.ICE_GLINT.get(), IceGlintParticle.Provider::new);
         event.registerSpriteSet(ModParticleTypes.WATERFALL_MIST.get(), WaterfallMistParticle.Provider::new);
+        // Ring 4 and Nether ring 4 (package 80-0).
+        event.registerSpriteSet(ModParticleTypes.WILL_O_WISP.get(),
+                sprites -> new GlowMoteParticle.Provider(sprites, GlowMoteParticle.WILL_O_WISP));
+        event.registerSpriteSet(ModParticleTypes.FIREFLY.get(),
+                sprites -> new GlowMoteParticle.Provider(sprites, GlowMoteParticle.FIREFLY));
+        event.registerSpriteSet(ModParticleTypes.BLOSSOM.get(), BlossomParticle.Provider::new);
+        event.registerSpriteSet(ModParticleTypes.SWAMP_GAS.get(),
+                sprites -> new DriftingHazeParticle.Provider(sprites, DriftingHazeParticle.SWAMP_GAS));
+        event.registerSpriteSet(ModParticleTypes.BONE_DUST.get(),
+                sprites -> new DriftingHazeParticle.Provider(sprites, DriftingHazeParticle.BONE_DUST));
+        event.registerSpriteSet(ModParticleTypes.TOXIC_BUBBLE.get(),
+                sprites -> new RisingBubbleParticle.Provider(sprites, RisingBubbleParticle.TOXIC));
+        event.registerSpriteSet(ModParticleTypes.UPDRAFT_BUBBLE.get(),
+                sprites -> new RisingBubbleParticle.Provider(sprites, RisingBubbleParticle.UPDRAFT));
+        event.registerSpriteSet(ModParticleTypes.GLITCH_SPECK.get(), GlitchSpeckParticle.Provider::new);
     }
 }

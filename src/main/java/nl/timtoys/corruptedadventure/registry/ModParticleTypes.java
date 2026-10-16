@@ -49,6 +49,33 @@ public final class ModParticleTypes {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> WATERFALL_MIST =
             PARTICLE_TYPES.register("waterfall_mist", () -> new SimpleParticleType(false));
 
+    // Ring 4 and Nether ring 4 (package 80-0, stream A): light grey 8×8 sprites <name>_0..3 from stream T (71a), tinted by
+    // the particle, except blossom and glitch_speck, which carry their own colours.
+    /** Will-o'-the-wisp floating over peat and water in the blighted band. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> WILL_O_WISP =
+            PARTICLE_TYPES.register("will_o_wisp", () -> new SimpleParticleType(false));
+    /** Petal drifting down from {@code moonpetal} blossom. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLOSSOM =
+            PARTICLE_TYPES.register("blossom", () -> new SimpleParticleType(false));
+    /** Blinking firefly of the mythical swamp. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FIREFLY =
+            PARTICLE_TYPES.register("firefly", () -> new SimpleParticleType(false));
+    /** Faint yellow haze above swamp gas (stream B, {@code animateTick}). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SWAMP_GAS =
+            PARTICLE_TYPES.register("swamp_gas", () -> new SimpleParticleType(false));
+    /** Toxic green bubble of a toxic pool (stream B, {@code animateTick}). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> TOXIC_BUBBLE =
+            PARTICLE_TYPES.register("toxic_bubble", () -> new SimpleParticleType(false));
+    /** Air bubble rushing up an updraft (stream B, {@code animateTick}). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> UPDRAFT_BUBBLE =
+            PARTICLE_TYPES.register("updraft_bubble", () -> new SimpleParticleType(false));
+    /** Flickering speck of a broken world in zone 4→5. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GLITCH_SPECK =
+            PARTICLE_TYPES.register("glitch_speck", () -> new SimpleParticleType(false));
+    /** Dust drifting over the bone dunes of Nether ring 4. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BONE_DUST =
+            PARTICLE_TYPES.register("bone_dust", () -> new SimpleParticleType(false));
+
     private ModParticleTypes() {
     }
 

@@ -62,6 +62,26 @@
       }
     ]
   },
+  "ambient.nether_ring_4.crystal_hum": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.amethyst_block.resonate",
+        "pitch": 0.8,
+        "volume": 0.5
+      }
+    ]
+  },
+  "ambient.nether_ring_4.wind": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "ambient.soul_sand_valley.loop",
+        "pitch": 1.1,
+        "volume": 0.7
+      }
+    ]
+  },
   "ambient.ring_1.strange_cave": {
     "sounds": [
       {
@@ -182,6 +202,59 @@
       }
     ]
   },
+  "ambient.ring_4.bubbles": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.bubble_column.upwards_ambient",
+        "pitch": 0.8,
+        "volume": 0.7
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_4.bubbles"
+  },
+  "ambient.ring_4.night_choir": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.note_block.harp",
+        "pitch": 0.8,
+        "volume": 0.3
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_4.night_choir"
+  },
+  "ambient.ring_4.reeds": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.grass.break",
+        "pitch": 0.7,
+        "volume": 0.4
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_4.reeds"
+  },
+  "ambient.ring_4.sundered_drone": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "ambient.warped_forest.loop",
+        "pitch": 0.5,
+        "volume": 0.7
+      }
+    ]
+  },
+  "ambient.ring_4.water": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.water.ambient",
+        "pitch": 0.8,
+        "volume": 0.7
+      }
+    ]
+  },
   "ambient.verdant_falls.falls": {
     "sounds": [
       {
@@ -229,6 +302,15 @@
     ],
     "subtitle": "subtitles.corruptedadventure.block.boiling_mud.bubble"
   },
+  "block.bubble_spring.bubble": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.bubble_column.bubble_pop"
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.block.bubble_spring.bubble"
+  },
   "block.fumarole.puff": {
     "sounds": [
       "corruptedadventure:block/ring_3/fumarole_puff_1",
@@ -249,6 +331,35 @@
       "corruptedadventure:block/ring_3/geyser_warning_2"
     ],
     "subtitle": "subtitles.corruptedadventure.block.geyser.warning"
+  },
+  "block.sucking_mud.slurp": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.honey_block.slide",
+        "pitch": 0.6
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.block.sucking_mud.slurp"
+  },
+  "block.swamp_gas.ignite": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "item.firecharge.use",
+        "pitch": 0.8
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.block.swamp_gas.ignite"
+  },
+  "block.updraft.flow": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.bubble_column.upwards_inside"
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.block.updraft.flow"
   },
   "weather.ring_2.sandstorm": {
     "sounds": [

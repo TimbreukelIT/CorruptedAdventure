@@ -29,5 +29,14 @@ final class ModParticleDescriptionProvider extends ParticleDescriptionProvider {
         spriteSet(ModParticleTypes.SULFUR_STEAM.get(), CorruptedAdventure.id("steam_puff"), 4, false);
         // verdant_falls (ring 4 stream A): light 8×8 sprites waterfall_mist_0..3 from stream T, tinted by the particle.
         spriteSet(ModParticleTypes.WATERFALL_MIST.get(), CorruptedAdventure.id("waterfall_mist"), 4, false);
+        // Ring 4 and Nether ring 4 (package 80-0): 8×8 sprites <name>_0..3 from stream T (71a).
+        spriteSet(ModParticleTypes.WILL_O_WISP.get(), CorruptedAdventure.id("will_o_wisp"), 4, false);
+        spriteSet(ModParticleTypes.BLOSSOM.get(), CorruptedAdventure.id("blossom"), 4, false);
+        spriteSet(ModParticleTypes.FIREFLY.get(), CorruptedAdventure.id("firefly"), 4, false);
+        spriteSet(ModParticleTypes.SWAMP_GAS.get(), CorruptedAdventure.id("swamp_gas"), 4, false);
+        spriteSet(ModParticleTypes.TOXIC_BUBBLE.get(), CorruptedAdventure.id("toxic_bubble"), 4, false);
+        spriteSet(ModParticleTypes.UPDRAFT_BUBBLE.get(), CorruptedAdventure.id("updraft_bubble"), 4, false);
+        spriteSet(ModParticleTypes.GLITCH_SPECK.get(), CorruptedAdventure.id("glitch_speck"), 4, false);
+        spriteSet(ModParticleTypes.BONE_DUST.get(), CorruptedAdventure.id("bone_dust"), 4, false);
     }
 }

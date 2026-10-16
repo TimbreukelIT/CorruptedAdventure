@@ -73,6 +73,30 @@ public final class ModSoundEvents {
     /** Tropical birds and frogs, the additions sound of {@code verdant_falls}. */
     public static final DeferredHolder<SoundEvent, SoundEvent> VERDANT_FALLS_WILDLIFE = register("ambient.verdant_falls.wildlife");
 
+    // Ring 4 and Nether ring 4 (package 80-0, stream A): ids for golf 2; vanilla placeholders until the own audio of 80.
+    /** Water all around: the ambient loop of the mythical ring 4 biomes. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_WATER = register("ambient.ring_4.water");
+    /** Harp and choir tones at night (Q19: only at night, through a client controller). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_NIGHT_CHOIR = register("ambient.ring_4.night_choir");
+    /** Something rustling in the reeds (client-only tension, per player, not synced). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_REEDS = register("ambient.ring_4.reeds");
+    /** Bubbles rising from the deep pools. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_BUBBLES = register("ambient.ring_4.bubbles");
+    /** Low drone of the emptying zone 4→5 ({@code sundered_reach}). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_4_SUNDERED_DRONE = register("ambient.ring_4.sundered_drone");
+    /** Dry wind of Nether ring 4. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_4_WIND = register("ambient.nether_ring_4.wind");
+    /** Soft hum of the crystals of Nether ring 4. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_4_CRYSTAL_HUM = register("ambient.nether_ring_4.crystal_hum");
+    /** Swamp gas catching fire (stream B plays it, package 72). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SWAMP_GAS_IGNITE = register("block.swamp_gas.ignite");
+    /** Bubble of a bubble spring (stream B plays it). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BUBBLE_SPRING_BUBBLE = register("block.bubble_spring.bubble");
+    /** Rushing of an updraft (stream B plays it, package 72). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> UPDRAFT_FLOW = register("block.updraft.flow");
+    /** Slurp of sucking mud, its tell (G1; stream B plays it, package 72). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SUCKING_MUD_SLURP = register("block.sucking_mud.slurp");
+
     private ModSoundEvents() {
     }
 
