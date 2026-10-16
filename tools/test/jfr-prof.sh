@@ -31,8 +31,9 @@ cleanup() {
 }
 trap cleanup EXIT
 trap 'exit 130' INT TERM
-# Density functions nest deeply: JFR's default of 64 frames per sample cuts off the chunk step at the root.
-CA_SERVER_JVM="-XX:FlightRecorderOptions:stackdepth=1024" bash "$CA_TOOLS/server.sh" start "$level" --fresh --no-slot || exit 1
+# Density functions nest deeply: JFR's default of 64 frames per sample cuts off the chunk step at the root. Without
+# DebugNonSafepoints the samples land on the nearest safepoint's frame, so self time sticks to the wrong (inlined) method.
+CA_SERVER_JVM="-XX:FlightRecorderOptions:stackdepth=1024 -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints" bash "$CA_TOOLS/server.sh" start "$level" --fresh --no-slot || exit 1
 java="$(ca_state_get server JAVA)"
 $CA_PY "$CA_TOOLS/py/jfrprof.py" "$(cygpath -m "$out")" --run "$(cygpath -m "$CA_WT/run")" \
     --jfr "$(dirname "$java")/jfr.exe" --areas "$(cygpath -m "$areas")" "${only[@]}" "${extra[@]}" | tee "$out/prof.txt"
