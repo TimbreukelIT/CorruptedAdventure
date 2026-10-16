@@ -14,6 +14,8 @@ import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandFieldTest;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring4Tunnels;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicFieldTest;
 import nl.timtoys.corruptedadventure.worldgen.feature.FireGeodeShape;
@@ -507,6 +509,97 @@ class RingAquiferTest {
         for (int y : new int[]{63, 100, 200}) {
             assertSame(Blocks.AIR.defaultBlockState(), dry.computeSubstance(RingPosition.within(Ring.RING_4), at(y), -0.5), "y " + y);
         }
+    }
+
+    /**
+     * 73: ring 4's own water rule. Whatever vanilla's local aquifer would put there (lava, water, nothing), open space is
+     * water up to the sea's top block (Y 62) and air above, never let flow; one block of rock right over the dry
+     * bottom. Not in the zone 4→5 (its own sea), nor in ring 3's half of the zone 3→4 (its seal).
+     */
+    @Test
+    void ring4IsOneFlatSeaUnderTheGround() {
+        RingPosition ring4 = RingPosition.within(Ring.RING_4);
+        RingPosition verdantHalf = new RingPosition(Ring.RING_3, Ring.RING_4, 0.7);
+        for (Aquifer vanilla : new Aquifer[]{DRY, STILL_LAVA, WATER_WITH_UPDATE, LAVA_POCKETS}) {
+            RingAquifer aquifer = new RingAquifer(Level.OVERWORLD, vanilla);
+            for (RingPosition position : new RingPosition[]{ring4, verdantHalf}) {
+                for (int y : new int[]{-53, -10, 30, 61, 62}) {
+                    assertSame(Blocks.WATER.defaultBlockState(), aquifer.computeSubstance(position, at(y), -0.5), "y " + y);
+                    assertFalse(aquifer.shouldScheduleFluidUpdate());
+                }
+                for (int y : new int[]{63, 64, 100}) {
+                    assertSame(Blocks.AIR.defaultBlockState(), aquifer.computeSubstance(position, at(y), -0.5), "y " + y);
+                    assertFalse(aquifer.shouldScheduleFluidUpdate());
+                }
+                assertNull(aquifer.computeSubstance(position, at(RingFluidPicker.LAVA_LAYER_TOP), -0.5));
+            }
+        }
+        // The zone 4→5 keeps its own rules (with the island field, as in worldgen): dry over its sea at Y 0.
+        RingAquifer water = new RingAquifer(Level.OVERWORLD, WATER_WITH_UPDATE, null, IslandFieldTest.field());
+        assertSame(Blocks.AIR.defaultBlockState(), water.computeSubstance(new RingPosition(Ring.RING_4, Ring.RING_5, 0.7), at(30), -0.5));
+    }
+
+    /**
+     * 73: the tunnel net fills its own open space (domes' air over their level, the dry net's air, gas, pools), and
+     * carvers stay out of the rock around its sealed spaces.
+     */
+    @Test
+    void ring4TunnelNetFillsItsOwnSpace() {
+        IslandField islands = IslandFieldTest.field();
+        RingAquifer aquifer = new RingAquifer(Level.OVERWORLD, WATER_WITH_UPDATE, null, islands);
+        RingPosition ring4 = RingPosition.within(Ring.RING_4);
+        int gas = 0;
+        int pools = 0;
+        int domes = 0;
+        for (IslandField.TunnelRoom room : islands.tunnelRoomsWithin(6200, -1400, 7800, 1400)) {
+            int x = (int) Math.floor(room.x());
+            int z = (int) Math.floor(room.z());
+            if (islands.tunnelFill(x, room.floor(), z) == Ring4Tunnels.Fill.NONE) {
+                continue;
+            }
+            switch (room.fill()) {
+                case GAS -> {
+                    gas++;
+                    assertSame(ModBlocks.SWAMP_GAS.get().defaultBlockState(), state(aquifer, ring4, x, room.floor(), z));
+                    assertSame(ModBlocks.SWAMP_GAS.get().defaultBlockState(), state(aquifer, ring4, x, (int) Math.round(room.y()), z));
+                }
+                case POOL -> {
+                    pools++;
+                    assertSame(ModBlocks.TOXIC_POOL.get().defaultBlockState(), state(aquifer, ring4, x, room.level(), z));
+                    assertSame(Blocks.AIR.defaultBlockState(), state(aquifer, ring4, x, room.level() + 1, z));
+                }
+                case WATER -> {
+                    if (room.level() < Ring4Tunnels.SEA_TOP && room.top() > room.level()) {
+                        domes++;
+                        assertSame(Blocks.WATER.defaultBlockState(), state(aquifer, ring4, x, room.level(), z));
+                        assertSame(Blocks.AIR.defaultBlockState(), state(aquifer, ring4, x, room.level() + 1, z));
+                        aquifer.carving(true);
+                        assertNull(aquifer.computeSubstance(ring4, new DensityFunction.SinglePointContext(x, room.top() + 2, z), -0.5),
+                                "carvers stay out above a dome");
+                        aquifer.carving(false);
+                    }
+                }
+                default -> assertSame(Blocks.AIR.defaultBlockState(), state(aquifer, ring4, x, room.floor(), z));
+            }
+            assertFalse(aquifer.shouldScheduleFluidUpdate(), "the net's fills never flow at generation");
+        }
+        assertTrue(gas > 0 && pools > 0 && domes > 0, gas + " gas, " + pools + " pools, " + domes + " domes");
+        for (IslandField.TunnelPath path : islands.tunnelsWithin(6200, -1400, 7800, 1400)) {
+            IslandField.TunnelPoint p = path.centreline().get(path.centreline().size() / 2);
+            int x = (int) Math.floor(p.x());
+            int y = (int) Math.round(p.y());
+            int z = (int) Math.floor(p.z());
+            Ring4Tunnels.Fill fill = islands.tunnelFill(x, y, z);
+            if (fill == Ring4Tunnels.Fill.DRY_AIR) {
+                assertSame(Blocks.AIR.defaultBlockState(), state(aquifer, ring4, x, y, z));
+            } else if (fill == Ring4Tunnels.Fill.WATER) {
+                assertSame(Blocks.WATER.defaultBlockState(), state(aquifer, ring4, x, y, z));
+            }
+        }
+    }
+
+    private static BlockState state(RingAquifer aquifer, RingPosition position, int x, int y, int z) {
+        return aquifer.computeSubstance(position, new DensityFunction.SinglePointContext(x, y, z), -0.5);
     }
 
     /**

@@ -179,6 +179,17 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
                 && position.blend() >= IslandField.VERDANT_EDGE_SHARE;
     }
 
+    /**
+     * Whether open space in the column is decided by ring 4's own water rule instead of vanilla's local aquifer (73):
+     * overworld ring 4, including its half of the zone 3→4, but not the zone 4→5 (its own sea at Y 0). There every open
+     * block up to the sea's top block is water and above it air: one flat level for every cave, so no water stands
+     * beside air (vanilla's local levels and empty cells hung walls of water in ring 4's caves, 5a), and caves under the
+     * sea that open into it are full. The tunnel net's sealed spaces ({@code Ring4Tunnels}) come before this rule.
+     */
+    static boolean ring4Flooded(ResourceKey<Level> dimension, RingPosition position) {
+        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_4 && !sunderedZone(dimension, position);
+    }
+
     /** The top block of the still sea in the zone 4→5 ({@code sundered_reach}, 63): the abyss's sea, Y 0. */
     static final int SUNDERED_SEA_TOP = 0;
 

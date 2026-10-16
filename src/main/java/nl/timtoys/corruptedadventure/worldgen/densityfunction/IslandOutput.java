@@ -51,7 +51,13 @@ public final class IslandOutput implements DensityFunction {
         /** 3D, not interpolated: +1 inside an island, −1 in a carved opening, 0 elsewhere (the terrain decides). */
         THIN("thin", -1.0, 1.0),
         /** 3D: added to the density of vanilla's caves, 0 where they run freely, up to 2 where they are gone. */
-        CAVE_LIFT("cave_lift", 0.0, 2.0);
+        CAVE_LIFT("cave_lift", 0.0, 2.0),
+        /**
+         * 3D, the tunnel net (73): what fills the block ({@link Ring4Tunnels.Fill#code}): 0 not in the net, 1 water
+         * (flooded net), 2 air in the flooded net (a dome over its level), 3 air in the dry net, 4 swamp gas, 5 a poison
+         * pool. Not in the terrain's stack; for readers (W-biomes).
+         */
+        TUNNELS("tunnels", 0.0, 5.0);
 
         public static final StringRepresentable.EnumCodec<Output> CODEC = StringRepresentable.fromEnum(Output::values);
 
@@ -113,6 +119,7 @@ public final class IslandOutput implements DensityFunction {
             case CAVE_LIFT -> f.caveLift(x, context.blockY(), z);
             case ISLAND_MASK -> f.islandColumn(x, z).islandMask;
             case SLOPE -> f.slope(x, z);
+            case TUNNELS -> f.tunnelFill(x, context.blockY(), z).code();
             default -> columnValue(f.column(x, z), output);
         };
     }
@@ -129,7 +136,7 @@ public final class IslandOutput implements DensityFunction {
             case CLIFF -> column.cliff;
             case RIM -> column.rim;
             case SUNDERED -> column.sundered;
-            case INITIAL_HEIGHT, THIN, CAVE_LIFT, SLOPE -> throw new IllegalArgumentException(output + " is not a column value");
+            case INITIAL_HEIGHT, THIN, CAVE_LIFT, SLOPE, TUNNELS -> throw new IllegalArgumentException(output + " is not a column value");
         };
     }
 

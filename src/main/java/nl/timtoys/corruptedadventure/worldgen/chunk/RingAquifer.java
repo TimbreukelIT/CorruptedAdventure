@@ -11,7 +11,9 @@ import net.minecraft.world.level.levelgen.DensityFunction;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingColumnCache;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring4Tunnels;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
 import javax.annotation.Nullable;
@@ -38,7 +40,10 @@ import javax.annotation.Nullable;
  * {@link IslandField} fall as water ({@link RingFluidPicker#ring4WaterColumn}); 61: their springs flow, and the lakes
  * above the sea in the islands' holes hold still water, with a band carvers may not cut. verdant_falls: that water
  * branch also holds in the {@code verdant_falls} strip of ring 3's half of the zone 3→4
- * ({@link RingFluidPicker#verdantWater}), without ring 3's terrain lava; its seal below Y 63 stays.
+ * ({@link RingFluidPicker#verdantWater}), without ring 3's terrain lava; its seal below Y 63 stays. 73: ring 4's
+ * tunnel net fills its own open space ({@link Ring4Tunnels.Span}: water and air domes, the dry net's air, swamp gas,
+ * poison pools, dry sinkholes) and keeps carvers out of the rock around its sealed spaces; all other open space of ring
+ * 4 is water up to the sea's top block and air above ({@link RingFluidPicker#ring4Flooded}), not vanilla's local levels.
  * <p>
  * One instance per noise chunk, so the per-call state below is single-threaded like vanilla's.
  */
@@ -121,6 +126,9 @@ final class RingAquifer implements Aquifer {
     // and wall), left as air: [openFrom, openTo], else openFrom > openTo.
     private final int[] openFrom = new int[COLUMNS + 1];
     private final int[] openTo = new int[COLUMNS + 1];
+    // 73: ring 4's own water rule for the column, and its tunnel net (null: none there).
+    private final boolean[] flooded = new boolean[COLUMNS + 1];
+    private final Ring4Tunnels.Span[] tunnels = new Ring4Tunnels.Span[COLUMNS + 1];
 
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla) {
         this(dimension, vanilla, null, null);
@@ -256,11 +264,14 @@ final class RingAquifer implements Aquifer {
         lakeGuardTop[i] = falls ? islandColumn.caveLiftTo() : Integer.MIN_VALUE;
         openFrom[i] = falls ? islandColumn.openFrom() : Integer.MAX_VALUE;
         openTo[i] = falls ? islandColumn.openTo() : Integer.MIN_VALUE;
+        double exactFloor = falls ? islandColumn.exactFloor() : Double.NaN;
+        // 73 (after the island column's values: it asks the column again).
+        flooded[i] = RingFluidPicker.ring4Flooded(dimension, position);
+        tunnels[i] = falls ? islands.tunnelSpan(x, z) : null;
         // Review 61b #2, #7 (last: it reads other columns, which may reuse the island column read above): in the band
         // around a lake above the sea the ground starts just under the terrain's interpolated surface; open space below
         // it (a cave the lift missed, a sinkhole the surface does not know) stays rock, the lake fills its bowl above.
         // verdant_falls (2c): the descent is exact per block, so its own floor counts (the grid would fill a gully in).
-        double exactFloor = falls ? islandColumn.exactFloor() : Double.NaN;
         lakeFloor[i] = lakeGuardBottom[i] == Integer.MAX_VALUE ? Integer.MAX_VALUE
                 : Mth.floor(Double.isNaN(exactFloor) ? lakeSurface(x, z) : exactFloor) - 1;
         boolean lava = RingFluidPicker.ring3LavaColumn(dimension, position, volcanic);
@@ -356,6 +367,26 @@ final class RingAquifer implements Aquifer {
         if (y < lakeTop[i] && y >= lakeFloor[i]) {
             // A lake above the sea in an island's hole (61): still water, walled in by its rim.
             return WATER;
+        }
+        Ring4Tunnels.Span span = tunnels[i];
+        if (span != null) {
+            if (carving && span.lifted(y)) {
+                // 73: a carver may not cut the rock around the net's sealed spaces (its tunnel would bring water).
+                return null;
+            }
+            Ring4Tunnels.Fill fill = span.fillAt(y);
+            if (fill != Ring4Tunnels.Fill.NONE) {
+                // The net's own fill, laid out so that it never stands beside the wrong neighbour: never let flow.
+                return TunnelFills.state(fill);
+            }
+        }
+        if (flooded[i]) {
+            // 73: one flat level for all of ring 4's open space: water up to the sea's top block, air above, still.
+            if (y == RingFluidPicker.LAVA_LAYER_TOP) {
+                lid = true;
+                return null;
+            }
+            return y <= Ring4Tunnels.SEA_TOP ? WATER : AIR;
         }
         if (carving && y >= guardBottom[i] && y <= guardTop[i]) {
             // A carver may not cut into the band around lava (42b): its tunnel would open the lava to the air beside it.
@@ -527,6 +558,21 @@ final class RingAquifer implements Aquifer {
     private boolean dryOpening(int x, int y, int z) {
         VolcanicField.Column neighbour = volcanic.column(x, z);
         return neighbour.voidAt(y) && !neighbour.subLavaAt(y);
+    }
+
+    /** The block states of the net's fills (the mod's blocks, looked up once they are registered). */
+    private static final class TunnelFills {
+        private static final BlockState GAS = ModBlocks.SWAMP_GAS.get().defaultBlockState();
+        private static final BlockState POOL = ModBlocks.TOXIC_POOL.get().defaultBlockState();
+
+        static BlockState state(Ring4Tunnels.Fill fill) {
+            return switch (fill) {
+                case WATER -> WATER;
+                case GAS -> GAS;
+                case POOL -> POOL;
+                default -> AIR;
+            };
+        }
     }
 
     @Override
