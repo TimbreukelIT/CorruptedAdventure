@@ -155,9 +155,9 @@ SURFACES = {
     "glowroot_swamp": ("grass_block", "dirt", seq(cond(CLAY_PATCHES, block("clay")), block("mud")), "mud"),
     # Grass on the flat tops (rabbits spawn there), moss and stone on the cliffs.
     "mist_fjords": ("grass_block", "dirt", "gravel", "gravel", "moss_block"),
-    # Blighted band: dead soil and mud.
+    # Blighted band: dead soil and mud; the moors are peat (golf 2, 76: the crust over the swamp gas bubbles).
     "drowned_forest": ("coarse_dirt", "dirt", "mud", "mud"),
-    "peat_moors": ("podzol", "mud", "mud", "mud"),
+    "peat_moors": (CA + "peat", CA + "peat", "mud", "mud"),
     "reed_marsh": ("grass_block", "dirt", "mud", "mud"),
     # Height biomes: sky lakes on clay (sand would hang under thin islands).
     "sky_gardens": ("grass_block", "dirt", "clay", "dirt"),

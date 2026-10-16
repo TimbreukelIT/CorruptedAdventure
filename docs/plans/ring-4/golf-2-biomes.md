@@ -22,6 +22,22 @@ Scope: `worldgen`. Branch `ring4/biomes-g2` (worktree, basis `main` d1a37f11: 72
 
 Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond de hemelmeren.
 
+## 76 — bedorven band, `withered_gardens`
+| Waar | Wat |
+|---|---|
+| surface `peat_moors` | `peat` als top- en dieptelaag (de veenkorst; onder water modder), via `ring4_surface.py` |
+| `peat_moors` (`LOCAL_MODIFICATIONS`, eerst) | gesloten moerasgasbellen (`gas_pocket`: 2–4 × 2–4 × 1–2, 1–2 onder de korst, aan alle zes kanten droge vaste grond); 1–2 lagen gas op de bodem van de veenzinkgaten (`sinkhole_gas`, uit `Column.sinkholeFloor`, 2 lagen vanaf 9 diep); gifpoelen (`toxic_pool`) |
+| `reed_marsh`, `drowned_forest` | gifpoelen (minder) |
+| oevers `peat_moors`, `drowned_forest` | `sucking_mud_patch` (≤ 4 × 4, 2–3 diep, op de grondhoogte van de oorsprong; G1 = A), niet in `reed_marsh` |
+| `drowned_forest` | `withered_moonpetal`-stammen (recht 7–13 of gevorkt) op de bodem in water tot 10 diep |
+| `withered_gardens` | dezelfde kale bomen, dode struiken, `blighted_glowcap` |
+| `reed_marsh` | dicht riet (pollen r 3, 2–3 hoog, ook in water één diep), `blighted_glowcap` |
+| oevers `peat_moors`, `drowned_forest` | ijl riet, `blighted_glowcap`, dode struiken (veen) |
+
+- **Gifpoel** (`toxic_pool`): schijf r 1–3, rand 1 diep, midden 1–2; alleen als de hele kom in de chunk op vlakke grond ligt, elk blok nu vaste grond is en elke zij- en onderkant van elk poelblok poel of droge vaste grond is (`ToxicPoolFeature.closed`): nooit gif tegen lucht of water opzij/onder (de bovenkant is het open oppervlak). Bronblokken zonder tick.
+- **Dichter richting ring 5:** gas, poelen, modder en `blighted_glowcap` met `ring_chance` op de voortgang over ring 4 (0,35 aan de binnenrand → 1 aan de buitenrand).
+- Gevaren alleen op de eigen grond van het terrein (`ring4_filter` `ground_only`), niet op eilanden; ze vormen de grond vóór het riet en de planten (riet en planten staan dus nooit op modder of aan een poelrand door toeval van volgorde).
+
 ## CODEBASE-delta
 **Nieuwe classes (`worldgen.feature`)**
 - `Ring4Terrain`, `Ring4Filter` (+ `ModPlacementModifierTypes.RING4_FILTER`, blok `// ring 4 — W-biomes g2`), `Ring4Placements`.
@@ -34,11 +50,17 @@ Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond 
 
 **Registries:** 5 feature-types, 1 placement modifier; configured `ring_4/moonpetal_tree` (key van B) en 17 eigen; 22 placed.
 
+**76 — nieuwe classes:** `SuckingMudPatchFeature`/`…Configuration` (`sucking_mud_patch`), `ToxicPoolFeature`/`…Configuration` (`toxic_pool`), `GasPocketFeature`/`…Configuration` (`gas_pocket`), `SinkholeGasFeature`/`…Configuration` (`sinkhole_gas`), `Ring4BlightedFeatures`. **Gewijzigd:** `ModFeatures` (blok `// ring 4 — W-biomes g2`), `Ring4Features.ORDER` (+ `local`), `tools/worldgen/ring4_surface.py` + `noise_settings/overworld.json` (`peat_moors` = veen). **Registries:** 4 feature-types; 11 configured, 12 placed.
+
 ## Beslissingen
 - 2026-10-16, `worldgen` (implementatie W-biomes, 75): de gloed onder de eilanden als vast rooster (cellen van 4, bron 1–2 in de cel) i.p.v. een losse kans, zodat elk vlak blok in de schaduw licht ≥ 1 krijgt; de palet per kolom via de band (`Ring4Band.blighted`), niet per biome.
 - 2026-10-16, `worldgen` (implementatie, 75): moerasboom = vanilla's hoge mangrove een maat groter (stam 5–14, wortels 3–7) met `glowcap` en mostapijt op de wortels, zonder vanilla-vines (geen vanilla vine in ring 4) en zonder bijen. Fjordbomen: vanilla spar (default), den 40 %, donkere eik 10 %.
 - 2026-10-16, `worldgen` (implementatie, 75): `moonpetal_tree` = vanilla's kersvorm met moonpetal-blokken (ook de sapling).
 - 2026-10-16, `worldgen` (implementatie, 75): koraal via eigen `local_coral` (vanilla-vormen, maar alleen ≥ 1 blok van de chunkrand) omdat vanilla tot 6 blokken in buurchunks schrijft (23c-regel).
+
+- 2026-10-16, `worldgen` (implementatie, 76): `peat_moors` krijgt veen als top- en dieptelaag (ontwerp "veen: oppervlak van `peat_moors`"); de gasbellen liggen 1–2 blokken onder die korst.
+- 2026-10-16, `worldgen` (implementatie, 76): "dichter richting ring 5" = `ring_chance` over de voortgang door ring 4 (0,35 → 1) op gas, gifpoelen, zuigmodder en `blighted_glowcap`; riet en bomen niet.
+- 2026-10-16, `worldgen` (implementatie, 76): dode bomen = alleen de `withered_moonpetal`-stam (recht 7–13, of gevorkt 60 %), in `drowned_forest` op de bodem in water tot 10 diep.
 
 ## Backlog
 - `worldgen` (75, na 74 op main): ranken tussen de eilandparen (`IslandField`-accessor van 74), planten rond de hemelmeren.
@@ -46,3 +68,4 @@ Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond 
 
 ## Voortgang
 - 2026-10-16: 75 gebouwd; B (incl. `Ring4MythicFeaturesTest`, `Ring4BiomesTest`, `FeatureOrderTest`) en D (twee keer, tweede keer 0 geschreven) groen.
+- 2026-10-16: 76 gebouwd; B (incl. `Ring4BlightedFeaturesTest`) en D groen.

@@ -1,0 +1,45 @@
+{
+  "feature": "corruptedadventure:ring_4/blighted_glowcap",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 4,
+      "chance": 0.05
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:air"
+          },
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:empty",
+            "offset": [
+              0,
+              -1,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "corruptedadventure:ring_chance",
+      "from_chance": 0.35,
+      "ring": "ring_4",
+      "signal": "progress",
+      "to_chance": 1.0
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

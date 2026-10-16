@@ -46,6 +46,14 @@ import nl.timtoys.corruptedadventure.worldgen.feature.IslandUndersideFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.LocalCoralFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.ReedClumpConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.ReedClumpFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.GasPocketConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.GasPocketFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.SinkholeGasConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SinkholeGasFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.SuckingMudPatchConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SuckingMudPatchFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPoolConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPoolFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallDrapeConfiguration;
@@ -188,6 +196,18 @@ public final class ModFeatures {
     /** {@code corruptedadventure:local_coral} (75: vanilla's warm-ocean coral kept in its chunk) */
     public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> LOCAL_CORAL =
             FEATURES.register("local_coral", () -> new LocalCoralFeature(NoneFeatureConfiguration.CODEC));
+    /** {@code corruptedadventure:sucking_mud_patch} (76: small patches of sucking mud on the blighted banks, G1 = A) */
+    public static final DeferredHolder<Feature<?>, Feature<SuckingMudPatchConfiguration>> SUCKING_MUD_PATCH =
+            FEATURES.register("sucking_mud_patch", () -> new SuckingMudPatchFeature(SuckingMudPatchConfiguration.CODEC));
+    /** {@code corruptedadventure:toxic_pool} (76: closed bowls of toxic sludge) */
+    public static final DeferredHolder<Feature<?>, Feature<ToxicPoolConfiguration>> TOXIC_POOL =
+            FEATURES.register("toxic_pool", () -> new ToxicPoolFeature(ToxicPoolConfiguration.CODEC));
+    /** {@code corruptedadventure:gas_pocket} (76: closed swamp gas bubbles under the peat crust, Q10 = A) */
+    public static final DeferredHolder<Feature<?>, Feature<GasPocketConfiguration>> GAS_POCKET =
+            FEATURES.register("gas_pocket", () -> new GasPocketFeature(GasPocketConfiguration.CODEC));
+    /** {@code corruptedadventure:sinkhole_gas} (76: layers of swamp gas on the floor of the peat sinkholes, Q10 = A) */
+    public static final DeferredHolder<Feature<?>, Feature<SinkholeGasConfiguration>> SINKHOLE_GAS =
+            FEATURES.register("sinkhole_gas", () -> new SinkholeGasFeature(SinkholeGasConfiguration.CODEC));
 
     private ModFeatures() {
     }

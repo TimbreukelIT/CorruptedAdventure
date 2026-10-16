@@ -61,7 +61,21 @@ public final class Ring4Features {
             vegetal(Ring4MythicFeatures.GLOWROOT_SWAMP_MOSS, ModBiomes.GLOWROOT_SWAMP),
             vegetal(Ring4MythicFeatures.MIST_FJORDS_FERNS, ModBiomes.MIST_FJORDS),
             vegetal(Ring4MythicFeatures.MIST_FJORDS_MOSS, ModBiomes.MIST_FJORDS),
-            vegetal(Ring4MythicFeatures.SKY_GARDENS_FLOWERS, ModBiomes.SKY_GARDENS));
+            vegetal(Ring4MythicFeatures.SKY_GARDENS_FLOWERS, ModBiomes.SKY_GARDENS),
+            // 76: the hazards shape the ground before anything grows on it.
+            local(Ring4BlightedFeatures.PEAT_MOORS_GAS_POCKETS, ModBiomes.PEAT_MOORS),
+            local(Ring4BlightedFeatures.PEAT_MOORS_SINKHOLE_GAS, ModBiomes.PEAT_MOORS),
+            local(Ring4BlightedFeatures.PEAT_MOORS_TOXIC_POOLS, ModBiomes.PEAT_MOORS),
+            local(Ring4BlightedFeatures.BLIGHTED_TOXIC_POOLS, ModBiomes.REED_MARSH, ModBiomes.DROWNED_FOREST),
+            local(Ring4BlightedFeatures.BANK_SUCKING_MUD, ModBiomes.PEAT_MOORS, ModBiomes.DROWNED_FOREST),
+            // 76: the dead trees, the reeds (dense in the marsh), the blighted glowcaps and dead bushes.
+            vegetal(Ring4BlightedFeatures.DROWNED_FOREST_TREES, ModBiomes.DROWNED_FOREST),
+            vegetal(Ring4BlightedFeatures.WITHERED_GARDENS_TREES, ModBiomes.WITHERED_GARDENS),
+            vegetal(Ring4BlightedFeatures.REED_MARSH_REEDS, ModBiomes.REED_MARSH),
+            vegetal(Ring4BlightedFeatures.BLIGHTED_BANK_REEDS, ModBiomes.PEAT_MOORS, ModBiomes.DROWNED_FOREST),
+            vegetal(Ring4BlightedFeatures.REED_MARSH_GLOWCAPS, ModBiomes.REED_MARSH),
+            vegetal(Ring4BlightedFeatures.BLIGHTED_GLOWCAPS, ModBiomes.PEAT_MOORS, ModBiomes.DROWNED_FOREST, ModBiomes.WITHERED_GARDENS),
+            vegetal(Ring4BlightedFeatures.BLIGHTED_DEAD_BUSHES, ModBiomes.PEAT_MOORS, ModBiomes.WITHERED_GARDENS));
 
     private Ring4Features() {
     }
@@ -69,6 +83,11 @@ public final class Ring4Features {
     @SafeVarargs
     private static Entry vegetal(ResourceKey<PlacedFeature> feature, ResourceKey<Biome>... biomes) {
         return new Entry(feature, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(biomes));
+    }
+
+    @SafeVarargs
+    private static Entry local(ResourceKey<PlacedFeature> feature, ResourceKey<Biome>... biomes) {
+        return new Entry(feature, GenerationStep.Decoration.LOCAL_MODIFICATIONS, Set.of(biomes));
     }
 
     /** In every ground biome (the islands lie over all of them; the feature finds them through the terrain). */
@@ -84,10 +103,12 @@ public final class Ring4Features {
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         VerdantFallsFeatures.configured(context);
         Ring4MythicFeatures.configured(context);
+        Ring4BlightedFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
         VerdantFallsFeatures.placed(context);
         Ring4MythicFeatures.placed(context);
+        Ring4BlightedFeatures.placed(context);
     }
 }

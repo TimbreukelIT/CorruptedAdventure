@@ -34,7 +34,10 @@
   "features": [
     [],
     [],
-    [],
+    [
+      "corruptedadventure:ring_4/blighted_toxic_pools",
+      "corruptedadventure:ring_4/bank_sucking_mud"
+    ],
     [],
     [],
     [],
@@ -43,7 +46,10 @@
     [],
     [
       "corruptedadventure:ring_4/island_glow_ground",
-      "corruptedadventure:ring_4/island_undersides"
+      "corruptedadventure:ring_4/island_undersides",
+      "corruptedadventure:ring_4/drowned_forest_trees",
+      "corruptedadventure:ring_4/blighted_bank_reeds",
+      "corruptedadventure:ring_4/blighted_glowcaps"
     ]
   ],
   "has_precipitation": true,
