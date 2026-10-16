@@ -36,7 +36,9 @@
     [],
     [],
     [],
-    [],
+    [
+      "corruptedadventure:ring_4/tunnel_linings"
+    ],
     [],
     [
       "corruptedadventure:ring_4/island_glow_ground",

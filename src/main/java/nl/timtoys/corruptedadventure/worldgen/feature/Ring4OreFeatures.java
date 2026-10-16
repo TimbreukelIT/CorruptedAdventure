@@ -43,17 +43,21 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
  * ({@code Ring4BiomeModifiers}); the geodes are the two biomes' own.
  * <p>
  * The tunnel-bound parts (toxic crystal in the dry blighted tunnels and gas chambers, tidesilver in the tunnel walls,
- * jade deep in the flooded tunnels, aquamarine in flooded tunnels) follow the tunnel net of package 73.
+ * jade deep in the flooded tunnels, aquamarine in flooded tunnels, the creatures' tracks) line the tunnel net of
+ * package 73 ({@link TunnelLiningFeature}).
  */
 public final class Ring4OreFeatures {
     static final ResourceKey<ConfiguredFeature<?, ?>> TIDESILVER_ORE_CONFIGURED = configuredKey("tidesilver_ore");
     static final ResourceKey<ConfiguredFeature<?, ?>> JADE_ORE_CONFIGURED = configuredKey("jade_ore");
     static final ResourceKey<ConfiguredFeature<?, ?>> AQUAMARINE_GEODE = configuredKey("aquamarine_geode");
+    static final ResourceKey<ConfiguredFeature<?, ?>> TUNNEL_LINING = configuredKey("tunnel_lining");
 
     public static final ResourceKey<PlacedFeature> TIDESILVER_ORE = placedKey("tidesilver_ore");
     public static final ResourceKey<PlacedFeature> JADE_ORE = placedKey("jade_ore");
     /** LOCAL_MODIFICATIONS of {@code crystal_lagoon} and {@code mist_fjords}. */
     public static final ResourceKey<PlacedFeature> DEEP_WATER_AQUAMARINE_GEODES = placedKey("deep_water_aquamarine_geodes");
+    /** UNDERGROUND_DECORATION of every ground biome: crystals, ores and tracks in the tunnel net (73). */
+    public static final ResourceKey<PlacedFeature> TUNNEL_LININGS = placedKey("tunnel_linings");
 
     /** Vanilla's ores in ring 4 ({@link RingVanillaOres}; contract §4): ×0.2, ×0.15, ×0.1. */
     public static final Map<ResourceKey<PlacedFeature>, Double> RING_4_FACTORS = RingVanillaOres.factors(0.2, 0.15, 0.1);
@@ -90,6 +94,8 @@ public final class Ring4OreFeatures {
                 target(stone, ModBlocks.JADE_ORE.get()),
                 target(tidestone, ModBlocks.TIDESTONE_JADE_ORE.get()),
                 target(deepslate, ModBlocks.DEEPSLATE_JADE_ORE.get())), JADE_SIZE, 0.0F));
+        FeatureUtils.register(context, TUNNEL_LINING, ModFeatures.TUNNEL_LINING.get(),
+                net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration.INSTANCE);
         FeatureUtils.register(context, AQUAMARINE_GEODE, ModFeatures.SUNKEN_GEODE.get(), new SunkenGeodeConfiguration(
                 ModBlocks.AQUAMARINE_BLOCK.get().defaultBlockState(), ModBlocks.BUDDING_AQUAMARINE.get().defaultBlockState(),
                 Ring4MythicFeatures.weighted(ModBlocks.SMALL_AQUAMARINE_BUD.get().defaultBlockState(), 2,
@@ -109,6 +115,7 @@ public final class Ring4OreFeatures {
                 CountPlacement.of(JADE_COUNT), InSquarePlacement.spread(),
                 HeightRangePlacement.uniform(VerticalAnchor.absolute(JADE_MIN_Y), VerticalAnchor.absolute(JADE_MAX_Y)),
                 IN_RING_4, BiomeFilter.biome()));
+        Ring4Placements.perChunk(context, TUNNEL_LININGS, TUNNEL_LINING);
         // One try in a few chunks, kept whole in its chunk (a geode reaches 6 blocks).
         register(context, DEEP_WATER_AQUAMARINE_GEODES, AQUAMARINE_GEODE, JitteredGridPlacement.of(16, 6, 0.12F), FLOOR,
                 only(Ring4Placements.waterAbove(GEODE_WATER)));

@@ -60,6 +60,7 @@ import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.TunnelLiningFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallDrapeConfiguration;
@@ -223,6 +224,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:island_vines} (75: sagging root vines between the island pairs of 74) */
     public static final DeferredHolder<Feature<?>, Feature<IslandVinesConfiguration>> ISLAND_VINES =
             FEATURES.register("island_vines", () -> new IslandVinesFeature(IslandVinesConfiguration.CODEC));
+    /** {@code corruptedadventure:tunnel_lining} (77: crystals, ores and creature tracks in the tunnel net of 73) */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> TUNNEL_LINING =
+            FEATURES.register("tunnel_lining", () -> new TunnelLiningFeature(NoneFeatureConfiguration.CODEC));
 
     private ModFeatures() {
     }

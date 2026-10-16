@@ -86,6 +86,8 @@ public final class Ring4Features {
             local(Ring4BlightedFeatures.BANK_SUCKING_MUD, ModBiomes.PEAT_MOORS, ModBiomes.DROWNED_FOREST),
             // 77: aquamarine geodes half open under deep water (the lagoon's troughs, the fjords).
             local(Ring4OreFeatures.DEEP_WATER_AQUAMARINE_GEODES, ModBiomes.CRYSTAL_LAGOON, ModBiomes.MIST_FJORDS),
+            // 77: the lining of the tunnel net (73), under every ground biome.
+            new Entry(Ring4OreFeatures.TUNNEL_LININGS, GenerationStep.Decoration.UNDERGROUND_DECORATION, Set.copyOf(Ring4Biomes.GROUND)),
             // 76: the dead trees, the reeds (dense in the marsh), the blighted glowcaps and dead bushes.
             vegetal(Ring4BlightedFeatures.DROWNED_FOREST_TREES, ModBiomes.DROWNED_FOREST),
             vegetal(Ring4BlightedFeatures.WITHERED_GARDENS_TREES, ModBiomes.WITHERED_GARDENS),
