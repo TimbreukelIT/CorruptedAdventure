@@ -28,8 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class Ring4JsonTest {
     private static final String DF = "density_function/";
-    // rim (verdant_falls): read by the surface (ring4_threshold), filled by the verdant terrain (W-terrein 2c).
-    private static final String[] STUBS = {"tunnels"};
+    // The last stub, tunnels, was filled by 73 (the tunnel net): no stubs left.
+    private static final String[] STUBS = {};
     private static final RingLayout LAYOUT = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
             CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), RingLayout.noiseSeed(20260930L));
 
@@ -100,6 +100,8 @@ class Ring4JsonTest {
         for (String stub : STUBS) {
             assertEquals(0.0, element(DF + "ring_4/overworld/" + stub + ".json").getAsDouble(), stub);
         }
+        // 73: the tunnel net's per-block fill, an output of the island field (not in the terrain's stack).
+        assertOutput(DF + "ring_4/overworld/tunnels.json", "tunnels");
     }
 
     /**

@@ -75,7 +75,7 @@ public final class IslandField implements DensityFunction {
     /** What the stack adds to vanilla's caves around a lake above the sea (closes them). */
     private static final double CAVE_LIFT = 2.0;
     /** How far (blocks) under a lake's deepest floor the caves stay closed. */
-    private static final int CAVE_FLOOR_MARGIN = 14;
+    static final int CAVE_FLOOR_MARGIN = 14;
     /**
      * The half window (blocks) of {@link #gradient}; with {@link #slope}'s neighbour well within {@link ColumnTable#MARGIN},
      * so a chunk's edge reads the table's rim.
@@ -104,6 +104,8 @@ public final class IslandField implements DensityFunction {
     private final VerdantDescent descent;
     private final VerdantGorges gorges;
     private final VerdantBasins basins;
+    /** The tunnel net (73). */
+    private final Ring4Tunnels tunnels;
     /** 74: the world trees, sky lakes and rock arches (W-terrein-b). */
     private final IslandLandmarks landmarks;
 
@@ -131,6 +133,7 @@ public final class IslandField implements DensityFunction {
         this.descent = new VerdantDescent(this);
         this.gorges = new VerdantGorges(this, descent);
         this.basins = new VerdantBasins(this, descent, gorges);
+        this.tunnels = new Ring4Tunnels(this);
         this.landmarks = new IslandLandmarks(this, decisions.landmarks);
     }
 
@@ -698,6 +701,13 @@ public final class IslandField implements DensityFunction {
             // 74: a world tree's trunk, branch, root or leaves.
             return 1.0;
         }
+        if (thin == 0.0) {
+            // 73: the tunnel net, exact per block (two comparisons where a column has none).
+            ensureTunnels(c);
+            if (y >= c.tunnelLo && y <= c.tunnelHi && c.tunnelSpan.opens(y)) {
+                return -1.0;
+            }
+        }
         if (thin == 0.0 && c.sinkholeDisc) {
             ensureSurface(c);
             if (!Double.isNaN(c.sinkholeFloor) && y >= Mth.ceil(c.sinkholeFloor) && y <= c.height + 2.0) {
@@ -788,7 +798,91 @@ public final class IslandField implements DensityFunction {
     double caveLift(int x, int y, int z) {
         Column c = columns.get(x, z, IslandField::reset);
         ensureIslands(c);
-        return y >= c.caveLiftFrom && y <= c.caveLiftTo ? CAVE_LIFT : 0.0;
+        if (y >= c.caveLiftFrom && y <= c.caveLiftTo) {
+            return CAVE_LIFT;
+        }
+        // 73: closed around the net's sealed spaces (domes, the dry net, dry sinkholes).
+        ensureTunnels(c);
+        return y >= c.tunnelLiftLo && y <= c.tunnelLiftHi && c.tunnelSpan.lifted(y) ? CAVE_LIFT : 0.0;
+    }
+
+    // ---------------------------------------------------------------- the tunnel net (73)
+
+    /** Fills a column's tunnel values once ({@link Ring4Tunnels#span}); its island values must be there. */
+    private void ensureTunnels(Column c) {
+        if (c.tunnelsFilled) {
+            return;
+        }
+        Ring4Tunnels.Span span = tunnels.span(c);
+        c.tunnelSpan = span;
+        if (span != null) {
+            c.tunnelLo = span.openLo;
+            c.tunnelHi = span.openHi;
+            c.tunnelLiftLo = span.liftMin;
+            c.tunnelLiftHi = span.liftMax;
+        }
+        c.tunnelsFilled = true;
+    }
+
+    /**
+     * The tunnel net in a column, for the aquifer: what fills its open blocks and where carvers stay out; null where
+     * the net has nothing.
+     */
+    @Nullable
+    public Ring4Tunnels.Span tunnelSpan(int x, int z) {
+        Column c = columns.get(x, z, IslandField::reset);
+        ensureIslands(c);
+        ensureTunnels(c);
+        return c.tunnelSpan;
+    }
+
+    /** What fills a block of the tunnel net ({@link Ring4Tunnels.Fill#NONE} outside it); the DF {@code tunnels}. */
+    public Ring4Tunnels.Fill tunnelFill(int x, int y, int z) {
+        Ring4Tunnels.Span span = tunnelSpan(x, z);
+        return span == null ? Ring4Tunnels.Fill.NONE : span.netFillAt(y);
+    }
+
+    /**
+     * The net's wall (77: ores, crystals and tracks in the tunnels' walls, floors and ceilings): for a block outside the
+     * net, what fills the net beside it (one of its six neighbours: below, above, then the sides), else
+     * {@link Ring4Tunnels.Fill#NONE}. {@code WATER}/{@code DOME_AIR}: a wall of the flooded net (mythical band);
+     * {@code DRY_AIR}/{@code GAS}/{@code POOL}: of the dry net (blighted band); never both (they keep 4 blocks of rock
+     * apart). Pure, like {@link #tunnelFill}. It does not say the block is rock: at an entrance's mouth, in a sinkhole's
+     * bowl or where a vanilla cave meets a flooded tunnel it may be water or air; check the block itself.
+     */
+    private static final int[][] SIDES = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    public Ring4Tunnels.Fill tunnelWall(int x, int y, int z) {
+        if (tunnelFill(x, y, z) != Ring4Tunnels.Fill.NONE) {
+            return Ring4Tunnels.Fill.NONE;
+        }
+        Ring4Tunnels.Span own = tunnelSpan(x, z);
+        if (own != null) {
+            Ring4Tunnels.Fill vertical = own.netFillAt(y - 1);
+            if (vertical == Ring4Tunnels.Fill.NONE) {
+                vertical = own.netFillAt(y + 1);
+            }
+            if (vertical != Ring4Tunnels.Fill.NONE) {
+                return vertical;
+            }
+        }
+        for (int[] d : SIDES) {
+            Ring4Tunnels.Fill side = tunnelFill(x + d[0], y, z + d[1]);
+            if (side != Ring4Tunnels.Fill.NONE) {
+                return side;
+            }
+        }
+        return Ring4Tunnels.Fill.NONE;
+    }
+
+    /** The tunnels whose reach comes into the box (block coordinates, inclusive): centrelines with heights and widths. */
+    public List<TunnelPath> tunnelsWithin(int minX, int minZ, int maxX, int maxZ) {
+        return tunnels.pathsWithin(minX, minZ, maxX, maxZ);
+    }
+
+    /** The halls and air domes of the tunnel net whose reach comes into the box. */
+    public List<TunnelRoom> tunnelRoomsWithin(int minX, int minZ, int maxX, int maxZ) {
+        return tunnels.roomsWithin(minX, minZ, maxX, maxZ);
     }
 
     // ---------------------------------------------------------------- cells
@@ -1229,6 +1323,27 @@ public final class IslandField implements DensityFunction {
     }
 
     /**
+     * A tunnel of the net (73): what fills it ({@link Ring4Tunnels.Fill#WATER} flooded, {@code DRY_AIR} dry), its
+     * half height, and its centreline. Its cross-section is an ellipse in the vertical plane: a column at horizontal
+     * distance d from the line is open over {@code y ± halfHeight · sqrt(1 − (d / halfWidth)²)}.
+     */
+    public record TunnelPath(Ring4Tunnels.Fill fill, double halfHeight, List<TunnelPoint> centreline) {
+    }
+
+    /** A point of a tunnel's centreline: its centre height and half width there. */
+    public record TunnelPoint(double x, double y, double z, double halfWidth) {
+    }
+
+    /**
+     * A hall at a node ({@code hall}) or a crest's air dome of the net (73): what fills it (water up to {@code level}
+     * with air above; dry air; gas; a pool up to {@code level}), its centre, radius (the outline swings ±20 %) and its
+     * lowest and highest block at the centre. {@code level} {@link Integer#MIN_VALUE} where it has none.
+     */
+    public record TunnelRoom(Ring4Tunnels.Fill fill, boolean hall, double x, double y, double z, double radius, int floor,
+                             int top, int level) {
+    }
+
+    /**
      * An island's waterfall: the spring (a source that flows) at ({@code springX}, {@code springY}, {@code springZ}),
      * and the falling water beside it in column ({@code fallX}, {@code fallZ}) from {@code springY} down to
      * {@code bottom} (the first block above the water it falls into).
@@ -1348,6 +1463,15 @@ public final class IslandField implements DensityFunction {
         int skyGuardTo;
         int x;
         int z;
+        // 73: the tunnel net in the column ({@link IslandField#ensureTunnels}): its span (null: none), the envelope of
+        // the blocks it opens and of the caves it closes.
+        boolean tunnelsFilled;
+        @Nullable
+        Ring4Tunnels.Span tunnelSpan;
+        int tunnelLo;
+        int tunnelHi;
+        int tunnelLiftLo;
+        int tunnelLiftHi;
 
         void reset(int x, int z) {
             this.x = x;
@@ -1395,6 +1519,12 @@ public final class IslandField implements DensityFunction {
             fallTop = Integer.MIN_VALUE;
             fallBottom = Integer.MIN_VALUE;
             fallFlowBelow = Integer.MIN_VALUE;
+            tunnelsFilled = false;
+            tunnelSpan = null;
+            tunnelLo = Integer.MAX_VALUE;
+            tunnelHi = Integer.MIN_VALUE;
+            tunnelLiftLo = Integer.MAX_VALUE;
+            tunnelLiftHi = Integer.MIN_VALUE;
             tree = null;
             skyLakeTop = Integer.MIN_VALUE;
             skyLakeFloor = Integer.MIN_VALUE;
