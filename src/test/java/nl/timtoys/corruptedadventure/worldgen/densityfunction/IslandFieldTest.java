@@ -165,13 +165,14 @@ public class IslandFieldTest {
         assertTrue(lakes > 0, "no water among the points");
     }
 
-    /** No islands (nor falls or lifts) outside ring 4 and its reach. */
+    /** No islands (nor falls, lifts or world trees) outside ring 4 and its reach. */
     @Test
     void noIslandsOutsideRing4() {
         assertTrue(FIELD.islandsWithin(-3000, -3000, 3000, 3000).isEmpty());
         assertTrue(FIELD.islandsWithin(9000, -500, 9500, 500).isEmpty());
         assertTrue(FIELD.waterfallsWithin(-500, -500, 500, 500).isEmpty());
-        assertTrue(FIELD.worldTrees(6000, -500, 8000, 500).isEmpty());
+        assertTrue(FIELD.worldTrees(-4000, -4000, 4000, 4000).isEmpty());
+        assertTrue(FIELD.worldTrees(-9500, 8000, 9500, 9500).isEmpty());
     }
 
     /** Review 59 (2nd): one rule for overlapping islands, whatever the order: bottom, top, then the centre. */

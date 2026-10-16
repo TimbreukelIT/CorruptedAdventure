@@ -12,7 +12,7 @@ import net.minecraft.util.Mth;
  * <p>
  * Pure value; {@link IslandField} reads it per column, {@link IslandPlacement} makes it.
  *
- * @param kind     {@link #CLOD}, {@link #MIDDLE} or {@link #GIANT}
+ * @param kind     {@link #CLOD}, {@link #MIDDLE}, {@link #GIANT} or {@link #TREE}
  * @param outletX  the outlet's far end (open water), NaN without one
  */
 record IslandShape(double x, double z, double a, double stretch, double angle, int lobes, double phase, double top,
@@ -20,6 +20,8 @@ record IslandShape(double x, double z, double a, double stretch, double angle, i
     static final int CLOD = 0;
     static final int MIDDLE = 1;
     static final int GIANT = 2;
+    /** 74: the half torn-out island a world tree stands on ({@link WorldTrees}); outranks every other kind. */
+    static final int TREE = 3;
     /** The overworld's sea level. */
     static final double SEA_LEVEL = 63.0;
     /** The deepest torn edge (blocks). */

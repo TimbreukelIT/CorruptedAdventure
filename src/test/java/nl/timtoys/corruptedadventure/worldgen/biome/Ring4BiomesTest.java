@@ -221,8 +221,14 @@ class Ring4BiomesTest {
         assertNotNull(branch, "ring 4 branch");
         assertEquals(ring3At + 1, ring4At, "right after the ring 3 branch, before vanilla's rules");
         Map<String, JsonObject> branches = new LinkedHashMap<>();
-        for (JsonElement element : branch.getAsJsonArray("sequence")) {
-            JsonObject rule = element.getAsJsonObject();
+        JsonArray branchRules = branch.getAsJsonArray("sequence");
+        for (int i = 0; i < branchRules.size(); i++) {
+            JsonObject rule = branchRules.get(i).getAsJsonObject();
+            if (rule.getAsJsonObject("if_true").get("type").getAsString().equals("corruptedadventure:world_tree")) {
+                // 74 (W-terrein-b): the world trees' wood and leaves come first, whatever the biome.
+                assertEquals(0, i, "the world trees first");
+                continue;
+            }
             JsonArray biomes = rule.getAsJsonObject("if_true").getAsJsonArray("biome_is");
             assertEquals(1, biomes.size());
             assertNull(branches.put(biomes.get(0).getAsString(), rule.getAsJsonObject("then_run")));
