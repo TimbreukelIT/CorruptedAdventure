@@ -111,6 +111,8 @@ public final class Ring4Textures {
     // Gameplay blocks (72).
     private static final int[] SUCKING_MUD = {0x1A1C14, 0x24271B, 0x2F3322, 0x3B402A, 0x484E33, 0x575E3E};
     private static final int SUCKING_SHEEN = 0x737C55;
+    /** Wet gloss on the sucking mud (G1 = A, 71b): the sheen, a lighter cool wet green and the brightest glint. */
+    private static final int[] SUCKING_GLOSS = {SUCKING_SHEEN, 0x98A47A, 0xC4CEA6};
     private static final int[] TOXIC_POOL = {0x2E5A0C, 0x3E7610, 0x509214, 0x66AE1C, 0x80C82A, 0xA2E040};
     private static final int TOXIC_SHEEN = 0xD4F870;
     private static final int[] BUCKET = {0x3A3E44, 0x5A6068, 0x7E868E, 0xA8B0B6, 0xD0D6DA};
@@ -1573,16 +1575,58 @@ public final class Ring4Textures {
     // ---- Gameplay blocks (72) -----------------------------------------------------------------------------------
 
     /**
-     * Sucking mud (72): wet green-black mud with a soft sheen; three slow dimples each on its own beat, a dark ring that
-     * draws in (the mud sucking down) with a lit lip, then a small bubble at the centre. Periodic in {@code phase}; opaque.
+     * Sucking mud (72): wet green-black mud; three slow dimples each on its own beat, a dark ring that draws in (the mud
+     * sucking down) with a lit lip, then a small bubble at the centre. Wet and glossy as the tell (G1 = A, 71b): every
+     * bulge facing the light (top left) carries a cool sheen, the low spots are dark wet hollows with a reflecting lower
+     * rim, and a few glints twinkle on their own beat. Periodic in {@code phase}; opaque.
      */
     private static void suckingMud(BufferedImage image, Random random, double phase) {
         double[][] broad = valueNoise(random, 8, 8);
         double[][] mid = valueNoise(random, 4, 4);
+        double[][] glints = valueNoise(random, 2, 2);
+        double[][] beats = valueNoise(random, 4, 4);
+        double[][] height = new double[SIZE][SIZE];
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                height[x][y] = broad[x][y] + 0.6 * mid[x][y];
+            }
+        }
+        // slope towards the light: higher here than one pixel down and right means this face catches the sky
+        double[][] slope = new double[SIZE][SIZE];
+        List<Double> slopes = new ArrayList<>();
+        List<Double> heights = new ArrayList<>();
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                slope[x][y] = height[x][y] - height[(x + 1) % SIZE][(y + 1) % SIZE];
+                slopes.add(slope[x][y]);
+                heights.add(height[x][y]);
+            }
+        }
+        slopes.sort(null);
+        heights.sort(null);
+        // by rank, so the share of gloss is the same for every seed: ~4 % bright sheen, ~9 % sheen, ~12 % wet hollow
+        double bright = slopes.get(SIZE * SIZE * 96 / 100);
+        double sheen = slopes.get(SIZE * SIZE * 87 / 100);
+        double rim = slopes.get(SIZE * SIZE * 6 / 100);
+        double hollow = heights.get(SIZE * SIZE * 12 / 100);
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 double t = 0.45 + 0.4 * (broad[x][y] - 0.5) + 0.3 * (mid[x][y] - 0.5) + 0.2 * (random.nextDouble() - 0.5);
-                set(image, x, y, t > 0.9 ? SUCKING_SHEEN : shade(SUCKING_MUD, t));
+                double twinkle = 0.05 * Math.sin(2 * Math.PI * (phase + beats[x][y] * 3));
+                int colour;
+                if (glints[x][y] > 0.9 + twinkle && slope[x][y] > 0.0) {
+                    colour = SUCKING_GLOSS[2];
+                } else if (slope[x][y] > bright) {
+                    colour = SUCKING_GLOSS[1];
+                } else if (slope[x][y] > sheen) {
+                    colour = SUCKING_GLOSS[0];
+                } else if (height[x][y] < hollow) {
+                    // a wet hollow: darkest mud, its far (lower right) rim reflecting
+                    colour = slope[x][y] < rim ? SUCKING_GLOSS[0] : SUCKING_MUD[0];
+                } else {
+                    colour = shade(SUCKING_MUD, t);
+                }
+                set(image, x, y, colour);
             }
         }
         for (int i = 0; i < 3; i++) {
