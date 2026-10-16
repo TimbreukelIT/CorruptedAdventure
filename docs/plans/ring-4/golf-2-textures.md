@@ -62,9 +62,18 @@ Geen (assets en een los script).
 
 ## Voortgang
 - 2026-10-16: branch `ring4/textures-g2` vanaf `c5b7d11`; plan en padenlijst; vragen Q-T1..4 aan main (alle A).
+- 2026-10-16: `sucking_mud` glanzender (`25c0276`); flora 31 PNG's + 2 `.mcmeta`'s en contactblad `ring4-verdant.png` (`56f0ee3`). Script 2× → md5 identiek, lint 0, `checkGlowLayers` groen; **B** en **D** groen, `src/generated` ongewijzigd.
+
+## Afwijkingen bij de bouw
+- **Dubbele planten** (`verdant_giant_leaf`, `verdant_tall_fern`): één canvas van 16×32 per plant (`tallHalf`, seed `block/<plant>`), boven = rijen 0–15, onder = 16–31; de helften sluiten dus altijd aan.
+- **Liaan:** de stengels delen de seed `block/verdant_vine#strands` en zwaaien periodiek over 16 rijen, dus `_plant` tegelt verticaal en de kop sluit er precies onder aan. De bloeiende varianten zijn exact dezelfde pixels plus bloempjes (eigen seed `…#flowers`).
+- **Vruchtpeul:** vanilla's cacao-UV (`cocoa_stage0..2.json` gelezen, geen pixels): boven/onder `[0,0,4|6|8]`, zijden `[11,4,15,9]` / `[9,4,15,11]` / `[8,4,16,13]`, steeltje `[12,0,16,4]`; de rest transparant. Stadium 1 is een menging (55 %) van mint en abrikoos (halfrijp).
+- **Orchidee, hangorchidee, sapling:** handgelegde sprites (`stamp`/`sprite`); de gloeipixels van de orchidee en de schutbladspits van de bromelia via `stamp(..., glowing)`.
+- **Contactblad:** gras is in de scène een stand-in (biomekleur `6CC24A` boven donkere aarde, alleen in de preview); de peul in de scène is een zij-aanzicht uit de UV-indeling (`podView`).
 
 ## CODEBASE-delta
-_(wordt aangevuld bij de bouw)_
+- `tools/textures/Ring4Textures.java` (71b): paletten `VERDANT_BARK`, `VERDANT_WOOD`, `VERDANT_LEAF`, `VERDANT_PLANT`, `LILAC`, `APRICOT`, `PEACH`, `FRUIT` (+ `FRUIT_OUTLINE`), `LILAC_GLOW`, `APRICOT_GLOW`, `SUCKING_GLOSS`; schilders `verdantLog`, `verdantLeaves`, `verdantSapling`, `giantLeaf`, `verdantFern`, `tallFern`, `bromeliad` (+ `BROMELIAD_SPIKE`), `orchid`, `hangingOrchid`, `blossomBush` (+ `isPeach`), `vine` (+ `VineStrand`, `leaflet`, `vinePixel`), `waterBloom`, `fruitPod`, `verdantFruit`; helpers `tallHalf` (+ `TALL_CANVASES`, 16×32-canvas voor dubbele planten), `plot`, `stalk`, `blade` (breed blad, optioneel hartvormig), `frond` (varenblad), `strap` (riemblad), `stamp` (sprite op een positie, met gloeitekens); `suckingMud` met natte glans (rangdrempels, twinkelende glinsteringen). Contactblad: sectie `drawVerdant` (onderaan `ring4.png` én los als `build/texture-preview/ring4-verdant.png`): houtset `moonpetal` boven `verdant`, scènes cascade vale / verdant falls dag / nacht (`VERDANT`, `GRASS`/`POD`-stand-ins, `podView`, `darkened`), peulstadia, waterplant naast lotus, `VERDANT_SLOTS`; `NIGHT` + orchidee en bromelia.
+- `textures/` (71b): `block/` verdant_log(_top), stripped_verdant_log(_top), verdant_planks, verdant_door_{top,bottom}, verdant_trapdoor, verdant_leaves, verdant_sapling, verdant_giant_leaf_{bottom,top}, verdant_fern, verdant_tall_fern_{bottom,top}, verdant_bromeliad(+`_glow`, puls), verdant_orchid(+`_glow`, puls), verdant_hanging_orchid, verdant_blossom_bush, verdant_vine, verdant_vine_plant, verdant_vine_flowering, verdant_vine_plant_flowering, verdant_water_bloom, verdant_fruit_pod_stage{0,1,2}; `item/` verdant_door, verdant_fruit. `block/sucking_mud` vernieuwd (natte glans). 31 nieuwe PNG's, 2 nieuwe `.png.mcmeta`'s.
 
 ## Beslissingen
 | Datum | Categorie | Beslissing | Reden |
@@ -76,4 +85,8 @@ _(wordt aangevuld bij de bouw)_
 | 2026-10-16 | textures | `sucking_mud` glanzender (natte glanslichten, natte kuilen, twinkelende glinsteringen) | G1 = A (natte glanzende texture als tell); akkoord main |
 
 ## Backlog
-_(wordt aangevuld bij de bouw)_
+- `[textures]` Flora `verdant_falls` in-game beoordelen bij teststop 5b: de lage varen leest op 16 px wat druk, de kruin in een echte schermkroon (motief), de gloed van orchidee en bromelia 's nachts, het halfrijpe peulstadium (olijfkleurig), het reuzenblad als dubbele plant naast de boomvarens.
+- `[textures]` `sucking_mud` in-game naast `mud` en veen beoordelen: is de glans genoeg als tell zonder op een bewegend patroon te lijken (5b).
+- `[blocks]` B bevestigt de paden en vormen (dubbele planten `_bottom`/`_top`, `verdant_wall_bromeliad` deelt de bromelia-textures, liaan kop/stengel × `flowering`, peul op de cacao-parents, bladeren en waterplant zonder tint); T past aan als B een andere vorm kiest.
+- `[atmosphere]` `bubble_spring` "eigen bel-particle" (golf-2.md §2, B 72): geen eigen particle type in contract §6; A kiest of `updraft_bubble` volstaat of dat er een sprite bij moet (T levert dan).
+- `[infra]` (bestaand) ontdubbeling texturescripts: `Ring4Textures.java` groeit verder (nu ~3.900 regels).
