@@ -28,7 +28,23 @@
     "water_color": 9429236,
     "water_fog_color": 3045520
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/sky_gardens_trees",
+      "corruptedadventure:ring_4/mythic_grass",
+      "corruptedadventure:ring_4/lakeside_glow_blooms",
+      "corruptedadventure:ring_4/sky_gardens_flowers"
+    ]
+  ],
   "has_precipitation": true,
   "spawn_costs": {},
   "spawners": {

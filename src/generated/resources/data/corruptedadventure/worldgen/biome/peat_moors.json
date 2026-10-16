@@ -31,7 +31,21 @@
     "water_color": 7324218,
     "water_fog_color": 1980946
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/island_glow_ground",
+      "corruptedadventure:ring_4/island_undersides"
+    ]
+  ],
   "has_precipitation": true,
   "spawn_costs": {},
   "spawners": {

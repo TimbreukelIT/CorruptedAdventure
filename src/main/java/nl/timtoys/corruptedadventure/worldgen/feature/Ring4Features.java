@@ -7,6 +7,7 @@ import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring4Biomes;
 
 import java.util.List;
 import java.util.Set;
@@ -30,11 +31,49 @@ public final class Ring4Features {
 
     /** Every biome-own ring 4 feature in the global order (within a step, list order = placement order). */
     public static final List<Entry> ORDER = List.of(
+            // 75: under the islands of every ground biome, the glow on the ground first, then what hangs above it.
+            ground(Ring4MythicFeatures.ISLAND_GLOW_GROUND),
+            ground(Ring4MythicFeatures.ISLAND_UNDERSIDES),
             // verdant_falls: the moss carpets on the treads, the climbing strands under the ledges.
-            new Entry(VerdantFallsFeatures.VERDANT_FALLS_MOSS_CARPETS, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.VERDANT_FALLS)),
-            new Entry(VerdantFallsFeatures.VERDANT_FALLS_LEDGE_STRANDS, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.VERDANT_FALLS)));
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_MOSS_CARPETS, ModBiomes.VERDANT_FALLS),
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_LEDGE_STRANDS, ModBiomes.VERDANT_FALLS),
+            // 75: the trees of the mythical band and the sky gardens.
+            vegetal(Ring4MythicFeatures.CASCADE_VALE_TREES, ModBiomes.CASCADE_VALE),
+            vegetal(Ring4MythicFeatures.SKY_GARDENS_TREES, ModBiomes.SKY_GARDENS),
+            vegetal(Ring4MythicFeatures.GLOWROOT_SWAMP_TREES, ModBiomes.GLOWROOT_SWAMP),
+            vegetal(Ring4MythicFeatures.MIST_FJORDS_TREES, ModBiomes.MIST_FJORDS),
+            // 75: the water (the springs change the floor before anything grows on it).
+            vegetal(Ring4MythicFeatures.DEEP_POOL_BUBBLE_SPRINGS, ModBiomes.CRYSTAL_LAGOON, ModBiomes.LOTUS_SHALLOWS,
+                    ModBiomes.GLOWROOT_SWAMP, ModBiomes.MIST_FJORDS),
+            vegetal(Ring4MythicFeatures.LAGOON_CORAL, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(Ring4MythicFeatures.LAGOON_SEAGRASS, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(Ring4MythicFeatures.LAGOON_SEA_PICKLES, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(Ring4MythicFeatures.SHALLOWS_SEAGRASS, ModBiomes.CASCADE_VALE, ModBiomes.LOTUS_SHALLOWS, ModBiomes.GLOWROOT_SWAMP,
+                    ModBiomes.MIST_FJORDS),
+            vegetal(Ring4MythicFeatures.LOTUS_SHALLOWS_GIANT_LILY_PADS, ModBiomes.LOTUS_SHALLOWS),
+            vegetal(Ring4MythicFeatures.LOTUS_SHALLOWS_LOTUS, ModBiomes.LOTUS_SHALLOWS),
+            vegetal(Ring4MythicFeatures.LOTUS_SHALLOWS_REEDS, ModBiomes.LOTUS_SHALLOWS),
+            // 75: the land.
+            vegetal(Ring4MythicFeatures.MYTHIC_GRASS, ModBiomes.CASCADE_VALE, ModBiomes.LOTUS_SHALLOWS, ModBiomes.GLOWROOT_SWAMP,
+                    ModBiomes.SKY_GARDENS),
+            vegetal(Ring4MythicFeatures.LAKESIDE_GLOW_BLOOMS, ModBiomes.CASCADE_VALE, ModBiomes.LOTUS_SHALLOWS, ModBiomes.SKY_GARDENS),
+            vegetal(Ring4MythicFeatures.GLOWROOT_SWAMP_GLOWCAPS, ModBiomes.GLOWROOT_SWAMP),
+            vegetal(Ring4MythicFeatures.GLOWROOT_SWAMP_MOSS, ModBiomes.GLOWROOT_SWAMP),
+            vegetal(Ring4MythicFeatures.MIST_FJORDS_FERNS, ModBiomes.MIST_FJORDS),
+            vegetal(Ring4MythicFeatures.MIST_FJORDS_MOSS, ModBiomes.MIST_FJORDS),
+            vegetal(Ring4MythicFeatures.SKY_GARDENS_FLOWERS, ModBiomes.SKY_GARDENS));
 
     private Ring4Features() {
+    }
+
+    @SafeVarargs
+    private static Entry vegetal(ResourceKey<PlacedFeature> feature, ResourceKey<Biome>... biomes) {
+        return new Entry(feature, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(biomes));
+    }
+
+    /** In every ground biome (the islands lie over all of them; the feature finds them through the terrain). */
+    private static Entry ground(ResourceKey<PlacedFeature> feature) {
+        return new Entry(feature, GenerationStep.Decoration.VEGETAL_DECORATION, Set.copyOf(Ring4Biomes.GROUND));
     }
 
     /** The biome-own features of {@code biome} in {@code step}, in the global order. */
@@ -44,9 +83,11 @@ public final class Ring4Features {
 
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         VerdantFallsFeatures.configured(context);
+        Ring4MythicFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
         VerdantFallsFeatures.placed(context);
+        Ring4MythicFeatures.placed(context);
     }
 }

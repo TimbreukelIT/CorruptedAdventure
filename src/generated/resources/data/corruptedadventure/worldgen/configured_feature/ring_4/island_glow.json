@@ -1,0 +1,142 @@
+{
+  "type": "corruptedadventure:island_glow",
+  "config": {
+    "blighted": {
+      "accent": {
+        "type": "minecraft:weighted_state_provider",
+        "entries": [
+          {
+            "data": {
+              "Name": "corruptedadventure:blighted_glowcap"
+            },
+            "weight": 3
+          },
+          {
+            "data": {
+              "Name": "corruptedadventure:small_toxic_crystal_bud",
+              "Properties": {
+                "facing": "up",
+                "waterlogged": "false"
+              }
+            },
+            "weight": 2
+          },
+          {
+            "data": {
+              "Name": "corruptedadventure:medium_toxic_crystal_bud",
+              "Properties": {
+                "facing": "up",
+                "waterlogged": "false"
+              }
+            },
+            "weight": 2
+          },
+          {
+            "data": {
+              "Name": "corruptedadventure:large_toxic_crystal_bud",
+              "Properties": {
+                "facing": "up",
+                "waterlogged": "false"
+              }
+            },
+            "weight": 1
+          }
+        ]
+      },
+      "accent_chance": 0.4,
+      "fallback": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "corruptedadventure:toxic_crystal_cluster",
+          "Properties": {
+            "facing": "up",
+            "waterlogged": "false"
+          }
+        }
+      },
+      "light": {
+        "type": "minecraft:weighted_state_provider",
+        "entries": [
+          {
+            "data": {
+              "Name": "corruptedadventure:glowcap"
+            },
+            "weight": 2
+          },
+          {
+            "data": {
+              "Name": "corruptedadventure:toxic_crystal_cluster",
+              "Properties": {
+                "facing": "up",
+                "waterlogged": "false"
+              }
+            },
+            "weight": 1
+          }
+        ]
+      }
+    },
+    "mythic": {
+      "accent": {
+        "type": "minecraft:weighted_state_provider",
+        "entries": [
+          {
+            "data": {
+              "Name": "corruptedadventure:small_aquamarine_bud",
+              "Properties": {
+                "facing": "up",
+                "waterlogged": "false"
+              }
+            },
+            "weight": 2
+          },
+          {
+            "data": {
+              "Name": "corruptedadventure:medium_aquamarine_bud",
+              "Properties": {
+                "facing": "up",
+                "waterlogged": "false"
+              }
+            },
+            "weight": 2
+          },
+          {
+            "data": {
+              "Name": "corruptedadventure:large_aquamarine_bud",
+              "Properties": {
+                "facing": "up",
+                "waterlogged": "false"
+              }
+            },
+            "weight": 1
+          }
+        ]
+      },
+      "accent_chance": 0.35,
+      "fallback": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "corruptedadventure:glowcap"
+        }
+      },
+      "light": {
+        "type": "minecraft:weighted_state_provider",
+        "entries": [
+          {
+            "data": {
+              "Name": "corruptedadventure:glow_bloom"
+            },
+            "weight": 2
+          },
+          {
+            "data": {
+              "Name": "corruptedadventure:glowcap"
+            },
+            "weight": 1
+          }
+        ]
+      }
+    },
+    "spacing": 4
+  }
+}

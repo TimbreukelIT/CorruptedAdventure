@@ -36,7 +36,8 @@ import java.util.stream.Stream;
  * preset's {@code transitions.ring_4}, a fixed biome over the zone 4→5; {@code verdant_falls} is the outer part of the
  * zone 3→4 ({@code transition_splits.ring_3}, after the steam fens' strip).
  * <p>
- * Every effect (colours, particles, sounds) comes from the atmosphere's hook {@link BiomeAmbience#ring4}. Features only in {@code verdant_falls} so far ({@link Ring4Features#ORDER}); no ores yet (77).
+ * Every effect (colours, particles, sounds) comes from the atmosphere's hook {@link BiomeAmbience#ring4}. The features come from
+ * the one global order {@link Ring4Features#ORDER} (golf 2: 75 mythical band, 76 blighted band, 77 ores, 75b verdant_falls).
  */
 public final class Ring4Biomes {
     /** The mythical band (inner ~60 %), in the order of the preset. */

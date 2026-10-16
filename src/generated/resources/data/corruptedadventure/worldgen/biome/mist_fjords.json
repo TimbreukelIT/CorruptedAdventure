@@ -32,7 +32,26 @@
     "water_color": 3103354,
     "water_fog_color": 926260
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/island_glow_ground",
+      "corruptedadventure:ring_4/island_undersides",
+      "corruptedadventure:ring_4/mist_fjords_trees",
+      "corruptedadventure:ring_4/deep_pool_bubble_springs",
+      "corruptedadventure:ring_4/shallows_seagrass",
+      "corruptedadventure:ring_4/mist_fjords_ferns",
+      "corruptedadventure:ring_4/mist_fjords_moss"
+    ]
+  ],
   "has_precipitation": true,
   "spawn_costs": {},
   "spawners": {

@@ -22,7 +22,27 @@
     "water_color": 5030026,
     "water_fog_color": 1462330
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/island_glow_ground",
+      "corruptedadventure:ring_4/island_undersides",
+      "corruptedadventure:ring_4/glowroot_swamp_trees",
+      "corruptedadventure:ring_4/deep_pool_bubble_springs",
+      "corruptedadventure:ring_4/shallows_seagrass",
+      "corruptedadventure:ring_4/mythic_grass",
+      "corruptedadventure:ring_4/glowroot_swamp_glowcaps",
+      "corruptedadventure:ring_4/glowroot_swamp_moss"
+    ]
+  ],
   "has_precipitation": true,
   "spawn_costs": {},
   "spawners": {
