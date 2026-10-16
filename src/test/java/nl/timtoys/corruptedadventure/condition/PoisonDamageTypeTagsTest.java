@@ -33,7 +33,7 @@ class PoisonDamageTypeTagsTest {
     }
 
     /** {@code src/generated/resources/data}, found upwards from the working directory. */
-    private static Path generated() {
+    static Path generated() {
         for (Path dir = Path.of("").toAbsolutePath(); dir != null; dir = dir.getParent()) {
             if (Files.isDirectory(dir.resolve(GENERATED))) {
                 return dir.resolve(GENERATED);

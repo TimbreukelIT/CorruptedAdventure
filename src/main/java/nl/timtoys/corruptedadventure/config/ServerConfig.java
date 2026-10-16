@@ -33,6 +33,8 @@ public final class ServerConfig {
     public static final ColdCondition COLD;
     /** {@code [conditions.poison]}: ring 4 (package 69). */
     public static final PoisonCondition POISON;
+    /** {@code [conditions.purifying]}: Nether ring 4, every meter falls faster (package 79). */
+    public static final PurifyingCondition PURIFYING;
     /** {@code [weather.ring2]}: the effects of sandstorm and heat wave (change 28). */
     public static final Ring2WeatherEffects RING_2_WEATHER;
     /** {@code [weather.ring3]}: ash cloud duration, heat factors and lava bombs (package 45). */
@@ -53,6 +55,7 @@ public final class ServerConfig {
         HEAT = new HeatCondition(builder);
         COLD = new ColdCondition(builder);
         POISON = new PoisonCondition(builder);
+        PURIFYING = new PurifyingCondition(builder);
         builder.pop();
         builder.comment("Ring weather: a cycle per ring (clear, then a weather of that ring, then clear again).",
                 "Durations in seconds, drawn uniformly between min and max; edits apply from the next change of weather.")
@@ -355,6 +358,24 @@ public final class ServerConfig {
                     .defineInRange("damage", 1.0, 0.0, 100.0);
             damageInterval = builder.comment("Seconds between hits at threshold3.")
                     .defineInRange("damageInterval", 2, 1, 60);
+            builder.pop();
+        }
+    }
+
+    /**
+     * {@code [conditions.purifying]}: Nether ring 4 (package 79). No meter of its own: there every falling meter falls
+     * faster. Start value from {@code docs/plans/ring-4/contract.md} §5, to be tuned in teststop 5b.
+     */
+    public static final class PurifyingCondition {
+        public final ModConfigSpec.DoubleValue fallMultiplier;
+
+        private PurifyingCondition(ModConfigSpec.Builder builder) {
+            builder.comment("Nether ring 4 purifies (biome tag corruptedadventure:purifying): every condition meter that falls",
+                            "there falls faster. A rising meter is left alone.")
+                    .push("purifying");
+            fallMultiplier = builder.comment("Factor on every falling meter in a purifying biome (3.0: poison falls 3 points per",
+                            "second instead of 1). 1.0 turns purifying off.")
+                    .defineInRange("fallMultiplier", 3.0, 1.0, 10.0);
             builder.pop();
         }
     }
