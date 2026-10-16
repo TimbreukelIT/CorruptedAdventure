@@ -83,7 +83,7 @@
     },
     {
       "type": "corruptedadventure:ring4_filter",
-      "fall_clearance": 5
+      "fall_clearance": 7
     },
     {
       "type": "minecraft:biome"

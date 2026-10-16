@@ -1,6 +1,10 @@
 {
   "type": "corruptedadventure:sucking_mud_patch",
   "config": {
+    "biomes": [
+      "corruptedadventure:peat_moors",
+      "corruptedadventure:drowned_forest"
+    ],
     "depth": {
       "type": "minecraft:uniform",
       "max_inclusive": 3,

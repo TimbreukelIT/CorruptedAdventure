@@ -28,6 +28,7 @@ import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacer;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import net.minecraft.world.level.levelgen.placement.SurfaceWaterDepthFilter;
+import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
 import nl.timtoys.corruptedadventure.ring.Ring;
@@ -85,6 +86,8 @@ public final class Ring4BlightedFeatures {
     public static final ResourceKey<PlacedFeature> BLIGHTED_GLOWCAPS = placedKey("blighted_glowcaps");
     public static final ResourceKey<PlacedFeature> BLIGHTED_DEAD_BUSHES = placedKey("blighted_dead_bushes");
 
+    /** The deepest water a dead tree stands in (most trunks reach out of it; a short one stays a sunken trunk). */
+    static final int DROWNED_WATER = 10;
     /** The hazards and the blighted glowcaps grow denser towards ring 5: this chance at ring 4's inner edge, 1 at its outer. */
     static final double INNER_CHANCE = 0.35;
 
@@ -94,8 +97,8 @@ public final class Ring4BlightedFeatures {
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         HolderGetter<ConfiguredFeature<?, ?>> features = context.lookup(Registries.CONFIGURED_FEATURE);
         // Dead, bare and grey: only the trunk (withered moonpetal has no leaves), tall enough to stand out of deep water.
-        FeatureUtils.register(context, WITHERED_TREE, Feature.TREE, bareTree(new StraightTrunkPlacer(7, 4, 2)));
-        FeatureUtils.register(context, WITHERED_TREE_FORKED, Feature.TREE, bareTree(new ForkingTrunkPlacer(6, 3, 3)));
+        FeatureUtils.register(context, WITHERED_TREE, Feature.TREE, bareTree(new StraightTrunkPlacer(9, 4, 2)));
+        FeatureUtils.register(context, WITHERED_TREE_FORKED, Feature.TREE, bareTree(new ForkingTrunkPlacer(8, 3, 3)));
         FeatureUtils.register(context, WITHERED_TREES, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(
                 List.of(new WeightedPlacedFeature(PlacementUtils.inlinePlaced(features.getOrThrow(WITHERED_TREE_FORKED)), 0.6F)),
                 PlacementUtils.inlinePlaced(features.getOrThrow(WITHERED_TREE))));
@@ -108,7 +111,9 @@ public final class Ring4BlightedFeatures {
         FeatureUtils.register(context, SUCKING_MUD, ModFeatures.SUCKING_MUD_PATCH.get(), new SuckingMudPatchConfiguration(
                 UniformInt.of(2, SuckingMudPatchFeature.MAX_WIDTH), UniformInt.of(2, 3),
                 HolderSet.direct(Block::builtInRegistryHolder, Blocks.MUD, Blocks.DIRT, Blocks.COARSE_DIRT, Blocks.PODZOL,
-                        Blocks.GRASS_BLOCK, Blocks.CLAY, Blocks.ROOTED_DIRT, ModBlocks.PEAT.get())));
+                        Blocks.GRASS_BLOCK, Blocks.CLAY, Blocks.ROOTED_DIRT, ModBlocks.PEAT.get()),
+                HolderSet.direct(context.lookup(Registries.BIOME).getOrThrow(ModBiomes.PEAT_MOORS),
+                        context.lookup(Registries.BIOME).getOrThrow(ModBiomes.DROWNED_FOREST))));
         FeatureUtils.register(context, TOXIC_POOL, ModFeatures.TOXIC_POOL.get(), new ToxicPoolConfiguration(
                 ModBlocks.TOXIC_POOL.get().defaultBlockState(), UniformInt.of(1, 3), UniformInt.of(1, 2)));
         FeatureUtils.register(context, GAS_POCKET, ModFeatures.GAS_POCKET.get(), new GasPocketConfiguration(
@@ -126,16 +131,16 @@ public final class Ring4BlightedFeatures {
                 Ring4Filter.builder().ground().build(), outward());
         register(context, BLIGHTED_TOXIC_POOLS, TOXIC_POOL, JitteredGridPlacement.of(16, 4, 0.15F), SURFACE, only(ON_LAND),
                 Ring4Filter.builder().ground().build(), outward());
-        register(context, BANK_SUCKING_MUD, SUCKING_MUD, JitteredGridPlacement.of(16, 0, 0.4F), SURFACE,
+        register(context, BANK_SUCKING_MUD, SUCKING_MUD, JitteredGridPlacement.of(16, 2, 0.4F), SURFACE,
                 only(BlockPredicate.allOf(ON_LAND, Ring4Placements.waterNear(2))), Ring4Filter.builder().ground().build(), outward());
 
         // VEGETAL_DECORATION.
         register(context, DROWNED_FOREST_TREES, WITHERED_TREES, JitteredGridPlacement.of(8, 1, 0.45F), FLOOR,
-                SurfaceWaterDepthFilter.forMaxDepth(10), only(BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT)));
+                SurfaceWaterDepthFilter.forMaxDepth(DROWNED_WATER), only(BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT)));
         register(context, WITHERED_GARDENS_TREES, WITHERED_TREES, JitteredGridPlacement.of(16, 2, 0.5F), SURFACE,
                 only(BlockPredicate.allOf(ON_LAND, BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT))));
         register(context, REED_MARSH_REEDS, DENSE_REEDS, JitteredGridPlacement.of(8, 3, 0.85F), SURFACE);
-        register(context, BLIGHTED_BANK_REEDS, SPARSE_REEDS, JitteredGridPlacement.of(16, 2, 0.4F), SURFACE,
+        register(context, BLIGHTED_BANK_REEDS, SPARSE_REEDS, JitteredGridPlacement.of(16, 3, 0.4F), SURFACE,
                 only(Ring4Placements.waterNear(3)));
         register(context, REED_MARSH_GLOWCAPS, BLIGHTED_GLOWCAP, JitteredGridPlacement.of(4, 0, 0.12F), SURFACE, only(ON_LAND), outward());
         register(context, BLIGHTED_GLOWCAPS, BLIGHTED_GLOWCAP, JitteredGridPlacement.of(4, 0, 0.05F), SURFACE, only(ON_LAND), outward());
@@ -147,12 +152,15 @@ public final class Ring4BlightedFeatures {
         return RingChanceFilter.progress(Ring.RING_4, INNER_CHANCE, 1.0, 0.0, 1.0);
     }
 
-    /** A dead tree: the withered trunk only (air as foliage, as the bare trees of the withered expanse), on mud. */
+    /**
+     * A dead tree: the withered trunk only, on mud. Its "foliage" is one more block of the trunk above each trunk end
+     * (not air, as the withered expanse's bare trees: under water an air leaf would leave a bubble against the water).
+     */
     private static TreeConfiguration bareTree(TrunkPlacer trunk) {
         return new TreeConfiguration.TreeConfigurationBuilder(
                 BlockStateProvider.simple(ModBlocks.WITHERED_MOONPETAL_LOG.get()),
                 trunk,
-                BlockStateProvider.simple(Blocks.AIR),
+                BlockStateProvider.simple(ModBlocks.WITHERED_MOONPETAL_LOG.get()),
                 new BlobFoliagePlacer(ConstantInt.of(0), ConstantInt.of(0), 0),
                 new TwoLayersFeatureSize(1, 0, 1))
                 .dirt(BlockStateProvider.simple(Blocks.MUD))

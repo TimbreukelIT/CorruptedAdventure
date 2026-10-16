@@ -63,5 +63,12 @@ class Ring4BlightedFeaturesTest {
             }
         }
         assertEquals(4, SuckingMudPatchFeature.MAX_WIDTH);
+        // A gas pocket keeps one block from the chunk's edges: all it reads round it is its own chunk.
+        for (int size = 1; size <= GasPocketFeature.MAX_WIDTH; size++) {
+            for (int centre = -40; centre <= 40; centre++) {
+                int start = SuckingMudPatchFeature.start(centre, size, 1);
+                assertTrue((start & 15) >= 1 && ((start + size - 1) & 15) <= 14 && start >> 4 == centre >> 4, "pocket " + start + " for " + centre);
+            }
+        }
     }
 }

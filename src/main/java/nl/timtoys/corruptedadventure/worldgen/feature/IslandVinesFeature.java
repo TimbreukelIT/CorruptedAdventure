@@ -52,7 +52,10 @@ public final class IslandVinesFeature extends Feature<IslandVinesConfiguration> 
         IslandVinesConfiguration config = context.config();
         int minX = context.origin().getX() & ~15;
         int minZ = context.origin().getZ() & ~15;
-        List<IslandField.IslandPair> pairs = new ArrayList<>(field.islandPairs(minX, minZ, minX + 15, minZ + 15));
+        // Wider than the chunk: the second vine lies beside the line between the edges, so it can cross a chunk the
+        // edges' box does not touch.
+        int reach = SECOND_OFFSET + 1;
+        List<IslandField.IslandPair> pairs = new ArrayList<>(field.islandPairs(minX - reach, minZ - reach, minX + 15 + reach, minZ + 15 + reach));
         pairs.sort(Comparator.comparingInt(IslandField.IslandPair::firstX).thenComparingInt(IslandField.IslandPair::firstZ)
                 .thenComparingInt(IslandField.IslandPair::secondX).thenComparingInt(IslandField.IslandPair::secondZ));
         boolean placed = false;

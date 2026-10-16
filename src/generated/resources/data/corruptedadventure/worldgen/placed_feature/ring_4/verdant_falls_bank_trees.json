@@ -5,7 +5,7 @@
       "type": "corruptedadventure:jittered_grid",
       "cell_size": 16,
       "chance": 0.45,
-      "margin": 3
+      "margin": 4
     },
     {
       "type": "minecraft:heightmap",
@@ -230,9 +230,9 @@
     },
     {
       "type": "corruptedadventure:ring4_filter",
-      "fall_clearance": 5,
+      "fall_clearance": 7,
       "ground_only": true,
-      "knob_clearance": 5,
+      "knob_clearance": 7,
       "ranges": [
         {
           "max": 0.5,

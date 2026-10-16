@@ -7,6 +7,16 @@
         "entries": [
           {
             "data": {
+              "Name": "corruptedadventure:toxic_crystal_cluster",
+              "Properties": {
+                "facing": "up",
+                "waterlogged": "false"
+              }
+            },
+            "weight": 3
+          },
+          {
+            "data": {
               "Name": "corruptedadventure:blighted_glowcap"
             },
             "weight": 3
@@ -43,37 +53,18 @@
           }
         ]
       },
-      "accent_chance": 0.4,
+      "accent_chance": 0.5,
       "fallback": {
         "type": "minecraft:simple_state_provider",
         "state": {
-          "Name": "corruptedadventure:toxic_crystal_cluster",
-          "Properties": {
-            "facing": "up",
-            "waterlogged": "false"
-          }
+          "Name": "corruptedadventure:glowcap"
         }
       },
       "light": {
-        "type": "minecraft:weighted_state_provider",
-        "entries": [
-          {
-            "data": {
-              "Name": "corruptedadventure:glowcap"
-            },
-            "weight": 2
-          },
-          {
-            "data": {
-              "Name": "corruptedadventure:toxic_crystal_cluster",
-              "Properties": {
-                "facing": "up",
-                "waterlogged": "false"
-              }
-            },
-            "weight": 1
-          }
-        ]
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "corruptedadventure:glowcap"
+        }
       }
     },
     "mythic": {

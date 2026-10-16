@@ -40,7 +40,9 @@ public final class ToxicPoolFeature extends Feature<ToxicPoolConfiguration> {
         int chunkX = top.getX() >> 4;
         int chunkZ = top.getZ() >> 4;
         for (BlockPos pos : pool) {
-            if (pos.getX() >> 4 != chunkX || pos.getZ() >> 4 != chunkZ
+            // One block from the chunk's edge: every block {@link #closed} reads is the own chunk's.
+            if (pos.getX() >> 4 != chunkX || pos.getZ() >> 4 != chunkZ || (pos.getX() & 15) == 0 || (pos.getX() & 15) == 15
+                    || (pos.getZ() & 15) == 0 || (pos.getZ() & 15) == 15
                     || level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, pos.getX(), pos.getZ()) - 1 != top.getY()
                     || !solid(level.getBlockState(pos))) {
                 return false;

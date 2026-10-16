@@ -102,8 +102,11 @@ public final class VerdantFallsFeatures {
     static final float FLOWERING_SHARE = 0.35F;
     /** The still lakes lie on the treads (64 + 8k, water from Y 64 up); the foot river's water stands at the sea level. */
     static final int ABOVE_THE_FOOT_RIVER = 65;
-    /** Trees keep this far from the falls (their columns and lips) and from the climbing knobs. */
-    static final int TREE_CLEARANCE = 5;
+    /**
+     * Trees keep this far from the falls (their columns and lips) and from the climbing knobs: the umbrella's reach (6)
+     * and one more, so no leaf takes a fall's water or a knob's strand.
+     */
+    static final int TREE_CLEARANCE = 7;
     /** Tree ferns and wall plants keep this far from the falls (F3 = B: never within 2 of a fall). */
     static final int FERN_CLEARANCE = 3;
 
@@ -160,7 +163,7 @@ public final class VerdantFallsFeatures {
         PlacementModifier treeClear = Ring4Filter.builder().ground().below(IslandOutput.Output.CLIFF, 0.5)
                 .clearOfFalls(TREE_CLEARANCE).clearOfKnobs(TREE_CLEARANCE).build();
         // Emergent trees on the banks of the still lakes (not the foot river) and on the gorge rims.
-        register(context, VERDANT_FALLS_BANK_TREES, EMERGENT_TREE, JitteredGridPlacement.of(16, 3, 0.45F), SURFACE,
+        register(context, VERDANT_FALLS_BANK_TREES, EMERGENT_TREE, JitteredGridPlacement.of(16, 4, 0.45F), SURFACE,
                 HeightBandFilter.above(ABOVE_THE_FOOT_RIVER), only(BlockPredicate.allOf(ON_LAND, Ring4Placements.waterNear(4))),
                 sapling, treeClear);
         register(context, VERDANT_FALLS_RIM_TREES, EMERGENT_TREE, JitteredGridPlacement.of(16, 3, 0.35F), SURFACE,
@@ -173,7 +176,7 @@ public final class VerdantFallsFeatures {
                 SURFACE, only(ON_LAND), Ring4Filter.builder().range(IslandOutput.Output.SLOPE, 0.4, 1.5).build(), sapling, fernClear);
         // The gorge walls: from the foot of a wall up.
         register(context, VERDANT_FALLS_WALL_PLANTS, WALL_PLANTS, JitteredGridPlacement.of(4, 0, 0.5F), SURFACE,
-                SlopeFilter.wallFoot(2, 6), Ring4Filter.builder().clearOfFalls(FERN_CLEARANCE).build());
+                SlopeFilter.wallFoot(2, 6), Ring4Filter.builder().ground().clearOfFalls(FERN_CLEARANCE).build());
 
         PlacementModifier ground = Ring4Filter.builder().ground().build();
         register(context, VERDANT_FALLS_FERNS, FERN, JitteredGridPlacement.of(2, 0, 0.3F), SURFACE, only(ON_LAND), ground);

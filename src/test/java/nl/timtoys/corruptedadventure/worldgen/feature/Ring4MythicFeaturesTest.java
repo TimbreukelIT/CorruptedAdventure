@@ -38,6 +38,16 @@ class Ring4MythicFeaturesTest {
             }
         }
         assertEquals(0, 16 % spacing, "cells divide the chunk");
+        // Where the drawn spot fails, the cell's other columns follow, nearest first; every column once.
+        List<int[]> spots = IslandGlowFeature.spots(1, 2, spacing);
+        assertEquals(spacing * spacing, spots.size());
+        assertEquals(1, spots.get(0)[0]);
+        assertEquals(2, spots.get(0)[1]);
+        for (int i = 1; i < spots.size(); i++) {
+            int before = Math.abs(spots.get(i - 1)[0] - 1) + Math.abs(spots.get(i - 1)[1] - 2);
+            int now = Math.abs(spots.get(i)[0] - 1) + Math.abs(spots.get(i)[1] - 2);
+            assertTrue(before <= now);
+        }
     }
 
     /** The scan for the ground: the first block that is not air with air above; a start inside a solid passes its air first. */

@@ -17,8 +17,9 @@ import java.util.function.Predicate;
 /**
  * {@code corruptedadventure:gas_pocket} (package 76, Q10 = A): a closed bubble of swamp gas just under the peat crust.
  * The pocket is a small box ({@code width} × {@code width} × {@code height}) whose top lies {@code crust} blocks under
- * the ground at the origin (the top block under {@code WORLD_SURFACE_WG}); it is only placed when it lies wholly in
- * the origin's chunk, all of it is solid ground now, and every block around it is solid and dry ({@link #closed}): the
+ * the ground at the origin (the top block under {@code WORLD_SURFACE_WG}); it lies in the origin's chunk at least one
+ * block from its edges (every block {@link #closed} reads is the own chunk's, so two pockets of neighbouring chunks
+ * never judge each other), and is only placed when all of it is solid ground now, and every block around it is solid and dry ({@link #closed}): the
  * gas never touches air, water or a cave, so it stays hidden until someone digs (or lights) it.
  */
 public final class GasPocketFeature extends Feature<GasPocketConfiguration> {
@@ -39,8 +40,8 @@ public final class GasPocketFeature extends Feature<GasPocketConfiguration> {
         int crust = config.crust().sample(random);
         BlockPos origin = context.origin();
         int top = origin.getY() - 1 - crust;
-        int x0 = SuckingMudPatchFeature.start(origin.getX(), sizeX);
-        int z0 = SuckingMudPatchFeature.start(origin.getZ(), sizeZ);
+        int x0 = SuckingMudPatchFeature.start(origin.getX(), sizeX, 1);
+        int z0 = SuckingMudPatchFeature.start(origin.getZ(), sizeZ, 1);
         Set<BlockPos> pocket = box(x0, top - height + 1, z0, sizeX, height, sizeZ);
         Predicate<BlockPos> solid = pos -> solid(level.getBlockState(pos));
         for (BlockPos pos : pocket) {

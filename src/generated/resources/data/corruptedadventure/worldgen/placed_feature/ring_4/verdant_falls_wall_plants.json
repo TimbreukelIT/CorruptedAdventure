@@ -18,7 +18,8 @@
     },
     {
       "type": "corruptedadventure:ring4_filter",
-      "fall_clearance": 3
+      "fall_clearance": 3,
+      "ground_only": true
     },
     {
       "type": "minecraft:biome"

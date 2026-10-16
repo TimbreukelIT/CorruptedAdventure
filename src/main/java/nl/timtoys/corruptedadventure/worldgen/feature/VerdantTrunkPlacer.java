@@ -104,13 +104,18 @@ public final class VerdantTrunkPlacer extends TrunkPlacer {
         BlockState wood = ModBlocks.VERDANT_WOOD.get().defaultBlockState();
         for (int d = 1; d <= BUTTRESS_HEIGHTS.length; d++) {
             BlockPos base = pos.relative(side, d);
-            int height = BUTTRESS_HEIGHTS[d - 1];
-            for (int y = height - 1; y >= -ROOT_REACH_DOWN; y--) {
+            // The piece stands on solid, dry ground within reach below the tree's foot, or the root ends here (a rim's
+            // edge: no wood hanging over the gorge).
+            int down = 0;
+            while (down < ROOT_REACH_DOWN && open(level, base.below(down))) {
+                down++;
+            }
+            if (open(level, base.below(down)) || level.isFluidAtPosition(base.below(down), fluid -> !fluid.isEmpty())) {
+                return;
+            }
+            for (int y = BUTTRESS_HEIGHTS[d - 1] - 1; y > -down - 1; y--) {
                 BlockPos at = base.above(y);
-                if (y < 0 && !TreeFeature.validTreePos(level, at)) {
-                    break;
-                }
-                if (TreeFeature.validTreePos(level, at)) {
+                if (open(level, at)) {
                     blockSetter.accept(at, wood);
                 }
             }
@@ -130,7 +135,7 @@ public final class VerdantTrunkPlacer extends TrunkPlacer {
             blockSetter.accept(at, config.trunkProvider.getState(random, at).trySetValue(RotatedPillarBlock.AXIS, axis));
         }
         BlockPos below = at.below();
-        if (!TreeFeature.validTreePos(level, below)) {
+        if (!level.isStateAtPosition(below, BlockState::isAir)) {
             return;
         }
         if (random.nextFloat() < 0.6F) {
@@ -176,6 +181,11 @@ public final class VerdantTrunkPlacer extends TrunkPlacer {
                 }
             }
         }
+    }
+
+    /** A spot a root piece may take: what a tree may replace, but no fluid (no wood dams a brook or stands in a lake). */
+    private static boolean open(LevelSimulatedReader level, BlockPos pos) {
+        return TreeFeature.validTreePos(level, pos) && level.isFluidAtPosition(pos, fluid -> fluid.isEmpty());
     }
 
     /** A Fisher–Yates shuffle with the tree's random (pure for a given random). */

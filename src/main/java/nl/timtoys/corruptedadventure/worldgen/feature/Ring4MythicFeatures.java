@@ -202,8 +202,8 @@ public final class Ring4MythicFeatures {
         FeatureUtils.register(context, BUBBLE_SPRING, Feature.REPLACE_SINGLE_BLOCK, new ReplaceBlockConfiguration(List.of(
                 OreConfiguration.target(AlwaysTrueTest.INSTANCE, ModBlocks.BUBBLE_SPRING.get().defaultBlockState()))));
 
-        // Under the islands: mythical glow blooms and glowcaps with aquamarine buds; blighted glowcaps and toxic crystal
-        // clusters with their buds and the faint blighted glowcap (Q13 = B, G4 = B; no budding block at the surface, H5 = A).
+        // Under the islands: mythical glow blooms and glowcaps with aquamarine buds; blighted glowcaps with toxic crystal
+        // clusters, their buds and the faint blighted glowcap (Q13 = B, G4 = B; no budding block at the surface, H5 = A).
         FeatureUtils.register(context, ISLAND_GLOW, ModFeatures.ISLAND_GLOW.get(), new IslandGlowConfiguration(
                 new IslandGlowConfiguration.Palette(
                         weighted(ModBlocks.GLOW_BLOOM.get().defaultBlockState(), 2, ModBlocks.GLOWCAP.get().defaultBlockState(), 1),
@@ -211,12 +211,14 @@ public final class Ring4MythicFeatures {
                         weighted(ModBlocks.SMALL_AQUAMARINE_BUD.get().defaultBlockState(), 2, ModBlocks.MEDIUM_AQUAMARINE_BUD.get().defaultBlockState(), 2,
                                 ModBlocks.LARGE_AQUAMARINE_BUD.get().defaultBlockState(), 1),
                         0.35F),
+                // The light duty only for light 6 or more (the cluster's 5 leaves a far corner one block up dark).
                 new IslandGlowConfiguration.Palette(
-                        weighted(ModBlocks.GLOWCAP.get().defaultBlockState(), 2, ModBlocks.TOXIC_CRYSTAL_CLUSTER.get().defaultBlockState(), 1),
-                        BlockStateProvider.simple(ModBlocks.TOXIC_CRYSTAL_CLUSTER.get()),
-                        weighted(ModBlocks.BLIGHTED_GLOWCAP.get().defaultBlockState(), 3, ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get().defaultBlockState(), 2,
-                                ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get().defaultBlockState(), 2, ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get().defaultBlockState(), 1),
-                        0.4F),
+                        BlockStateProvider.simple(ModBlocks.GLOWCAP.get()),
+                        BlockStateProvider.simple(ModBlocks.GLOWCAP.get()),
+                        weighted(ModBlocks.TOXIC_CRYSTAL_CLUSTER.get().defaultBlockState(), 3, ModBlocks.BLIGHTED_GLOWCAP.get().defaultBlockState(), 3,
+                                ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get().defaultBlockState(), 2, ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get().defaultBlockState(), 2,
+                                ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get().defaultBlockState(), 1),
+                        0.5F),
                 GLOW_SPACING));
         FeatureUtils.register(context, ISLAND_UNDERSIDE, ModFeatures.ISLAND_UNDERSIDE.get(), new IslandUndersideConfiguration(
                 ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState(),

@@ -4,7 +4,8 @@
     {
       "type": "corruptedadventure:jittered_grid",
       "cell_size": 16,
-      "chance": 0.4
+      "chance": 0.4,
+      "margin": 2
     },
     {
       "type": "minecraft:heightmap",

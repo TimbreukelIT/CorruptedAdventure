@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.material.Fluids;
 import nl.timtoys.corruptedadventure.block.GiantLilyPadBlock;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 
@@ -31,7 +32,7 @@ public final class GiantLilyPadFeature extends Feature<NoneFeatureConfiguration>
         BlockState pad = ModBlocks.GIANT_LILY_PAD.get().defaultBlockState();
         for (GiantLilyPadBlock.Part part : GiantLilyPadBlock.Part.values()) {
             BlockPos pos = part.from(northWest);
-            if (!level.getBlockState(pos).isAir() || !level.getFluidState(pos.below()).isSource()
+            if (!level.getBlockState(pos).isAir() || !level.getFluidState(pos.below()).isSourceOfType(Fluids.WATER)
                     || !pad.canSurvive(level, pos)) {
                 return false;
             }

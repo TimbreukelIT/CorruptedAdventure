@@ -76,9 +76,29 @@ Vrij (F4 = A): vallen en lippen (afstand tot de vastgelegde vallen, calciet draa
 
 **77 — nieuwe classes:** `SunkenGeodeFeature`/`…Configuration` (`sunken_geode`), `Ring4OreFeatures`. **Gewijzigd:** `Ring4BiomeModifiers` (`ADD_RING_4_ORES`, `ores()`, `oreBiomes()`), `ModFeatures`, `Ring4Features.ORDER`. **Registries:** 1 feature-type, 1 biome modifier; 3 configured, 16 + 3 placed (`ring_4/ore_*` vanilla, tidesilver, jade, geodes).
 
-**75b — nieuwe classes:** `VerdantTrunkPlacer` (`verdant_trunk_placer`, in `ModTrunkPlacerTypes`, blok `// ring 4 — W-biomes`), `VerdantFoliagePlacer` (`verdant_foliage_placer`, `Shape` UMBRELLA/FRONDS, in `ModFoliagePlacerTypes`), `WallPlantFeature`/`…Configuration` (`wall_plant`). **Gewijzigd:** `VerdantFallsFeatures` (flora; `ring_4/verdant_tree_fern` = key van B), `LedgeStrandConfiguration` (optioneel `tip`, `variant` + `variant_chance`; constructor met 7 argumenten blijft), `LedgeStrandFeature.strand` (tip + variant op positie), `LedgeStrands.inVariant`, `SlopeFilter` (meting `drop`, `rimTop`), `Ring4Biomes` (papegaaien in `verdant_falls`), `Ring4Features.ORDER`. **Registries:** 1 feature-type, 1 trunk- en 1 foliage-placer-type; 9 + 2 configured, 13 placed.
+**75b — nieuwe classes:** `VerdantTrunkPlacer` (`verdant_trunk_placer`, in `ModTrunkPlacerTypes`, blok `// ring 4 — W-biomes`), `VerdantFoliagePlacer` (`verdant_foliage_placer`, `Shape` UMBRELLA/FRONDS, in `ModFoliagePlacerTypes`), `WallPlantFeature`/`…Configuration` (`wall_plant`). **Gewijzigd:** `VerdantFallsFeatures` (flora; `ring_4/verdant_tree_fern` = key van B), `LedgeStrandConfiguration` (optioneel `tip`, `variant` + `variant_chance`; constructor met 7 argumenten blijft), `LedgeStrandFeature.strand` (tip + variant op positie), `LedgeStrands.inVariant`, `SlopeFilter` (meting `drop`, `rimTop`), `Ring4Biomes` (papegaaien in `verdant_falls`), `Ring4Features.ORDER`. **Registries:** 1 feature-type, 1 trunk- en 1 foliage-placer-type; `SuckingMudPatchConfiguration` kreeg `biomes`; 9 + 2 configured, 13 placed.
 
 **Opruimen (backlog r. 265):** `placeholder_ring_4` en `placeholder_nether_ring_4` weg uit `PlaceholderBiomes`, `ModBiomes` en de lang-providers (de gegenereerde biome-JSON's en langregels vervallen).
+
+## Code-review (medium, twee review-subagents: 75+76, daarna 77+75b+ranken)
+Verwerkt in de vervolgcommit:
+1. Dode bomen in `drowned_forest`: hun "kruin" was een luchtblok boven elk stameinde, onder water een luchtbel tegen water. Nu een stamblok (`withered_moonpetal_log`) als kruin; stammen 9–15 (recht) en 8–14 (gevorkt), water tot 10 diep (korte stammen blijven verzonken).
+2. Gasbellen (en gifpoelen) blijven ≥ 1 van de chunkrand (`SuckingMudPatchFeature.start(c, size, margin)`): `closed` leest zo alleen de eigen chunk; twee bellen van buurchunks beoordelen elkaar niet meer (volgorde).
+3. Gloed en hangsels onder eilanden: bladeren van een featureboom uit een buurchunk tellen als open (scan en plek volgorde-onafhankelijk; de plant vervangt zo'n blad).
+4. Gloed: faalt de getrokken plek (water, geen schaduw), dan de andere kolommen van de cel, dichtstbij eerst; bedorven lichtbron alleen `glowcap` (licht 6), clusters/knoppen/`blighted_glowcap` als accent.
+5. Gloed, hangsels en wandplanten trekken al hun random vóór ze de wereld bevragen.
+6. Oeverplaatsingen in de bedorven band (`bank_sucking_mud`, `blighted_bank_reeds`) en de oeverbomen van `verdant_falls`: rastermarge ≥ bereik van `waterNear` (water lezen alleen in de eigen chunk waar buren water kunnen veranderen).
+7. Zuigmodder neemt alleen kolommen in `peat_moors`/`drowned_forest` (config `biomes`): nooit in het riet van `reed_marsh`.
+8. Reuzenlelie alleen op een waterbron (geen gifslijk).
+9. Ranken tussen eilanden: de tweede rank ligt naast de lijn; de paren worden in een ruimer vak gevraagd (geen gaten aan chunkgrenzen).
+10. Emergente bomen ≥ 7 van vallen en knoppen (kroon reikt 6): geen blad in een val of een knoopstreng.
+11. Plankwortels: alleen op droge, vaste grond binnen 3 omlaag (geen hout boven de kloof, nooit in water); de hangorchidee onder een tak alleen in lucht.
+12. Wandplanten alleen op de eigen grond (`ground_only`: niet op brugdekken).
+
+Niet opgepakt (bewust, backlog/INT):
+- Peulen, orchideeën en lianen gaan via de stamsetter van `TreeFeature` (tellen als bron voor de bladafstand); met de huidige maten raakt geen blad ze en vergaat niets (`VerdantFloraTest`). Netter als `TreeDecorator` (nieuwe registry) → backlog.
+- Mos onder een rank of eiland en bladeren van een latere buurboom (beide `#replaceable_by_trees`): cosmetisch volgorde-verschil van losse blokken.
+- `CODEBASE.md` en backlog r. 265: INT (waves.md §5); de delta staat hierboven.
 
 ## Beslissingen
 - 2026-10-16, `worldgen` (implementatie W-biomes, 75): de gloed onder de eilanden als vast rooster (cellen van 4, bron 1–2 in de cel) i.p.v. een losse kans, zodat elk vlak blok in de schaduw licht ≥ 1 krijgt; de palet per kolom via de band (`Ring4Band.blighted`), niet per biome.
@@ -96,6 +116,8 @@ Vrij (F4 = A): vallen en lippen (afstand tot de vastgelegde vallen, calciet draa
 - 2026-10-16, `worldgen` (implementatie, 75 na 74): de ranken tussen eilanden van `mangrove_roots` (contract §3: vanilla mangrovewortels horen bij ring 4; draagt zichzelf, beloopbaar) met mos en gloeiwortels eronder; op alle paren zonder boog, 40 % dubbel. Rond de hemelmeren alleen planten op de oever, niets in het water (aanwijzing main).
 
 ## Backlog
+- `worldgen`: vruchtpeulen, orchideeën en lianen van de emergente boom naar een eigen `TreeDecorator` (nu via de stamsetter; correct maar fragiel bij andere kroon-/takmaten).
+- `blocks`: `verdant_vine`/`_plant` en `verdant_hanging_orchid` staan in `#replaceable_by_trees` (ook water): een kroon kan ze vervangen; nu houden de bomen afstand tot knoppen en vallen.
 - `worldgen`/INT: een rank van `mangrove_roots` die een stam van een featureboom in een buurchunk kruist, maakt die boom (zeldzaam) volgorde-afhankelijk (wortels zijn geen `replaceable_by_trees`); determinismecheck rond eilandranden.
 - `worldgen` (77, na 73 op main): gifkristal-budding in de droge bedorven tunnels en gaskamers, tidesilver in de tunnelwanden, jade en aquamarijn in de overstroomde tunnels, sporen van wezens; via de tunnel-accessor van 73.
 - `blocks`: `glow_bloom`, `glowcap`, `verdant_bromeliad`, `verdant_blossom_bush` niet in `#replaceable_by_trees`: een boomkruin uit een buurchunk die later komt, laat zo'n plant staan, een eerdere niet (zeldzaam: kruinen op grondhoogte). INT-determinisme let erop.

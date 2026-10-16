@@ -33,14 +33,14 @@ public final class WallPlantFeature extends Feature<WallPlantConfiguration> {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         boolean placed = false;
         for (int dy = 0; dy < config.height(); dy++) {
-            // Always both draws, so a block never depends on the ones below it.
+            // Always the same draws, before the world is asked, so a block never depends on the ones below it.
             float roll = random.nextFloat();
             int turn = random.nextInt(SIDES.length);
+            BlockState plant = config.plants().getState(random, BlockPos.ZERO);
             pos.set(origin.getX(), origin.getY() + dy, origin.getZ());
             if (roll >= config.chance() || !level.getBlockState(pos).isAir()) {
                 continue;
             }
-            BlockState plant = config.plants().getState(random, pos);
             for (int i = 0; i < SIDES.length; i++) {
                 Direction wall = SIDES[(turn + i) % SIDES.length];
                 BlockState state = plant.trySetValue(HorizontalDirectionalBlock.FACING, wall.getOpposite());

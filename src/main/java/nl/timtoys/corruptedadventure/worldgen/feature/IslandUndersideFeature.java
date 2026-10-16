@@ -24,7 +24,8 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
  * ({@link IslandField#islandColumn}, pure); the overhangs are found in the own column from the frozen
  * {@code WORLD_SURFACE_WG} down to just below the terrain's surface ({@link LedgeStrands#overhangs}), so the scan reads
  * the island and the open space under it, which only this chunk's features change (this one after the glow on the
- * ground). Writes only air in its own chunk; never water (a strand stops above it).
+ * ground). The leaves a neighbouring chunk's tree may put here count as air (the scan does not depend on which chunk
+ * decorated first). Writes only into open space in its own chunk; never water (a strand stops above it).
  */
 public final class IslandUndersideFeature extends Feature<IslandUndersideConfiguration> {
     /** How far below the terrain's surface the scan still looks for the floor under an island. */
@@ -80,9 +81,10 @@ public final class IslandUndersideFeature extends Feature<IslandUndersideConfigu
         boolean placed = false;
         for (int dz = 0; dz < 16; dz++) {
             for (int dx = 0; dx < 16; dx++) {
-                // Always both draws, so a column's outcome never depends on an earlier one.
+                // Always the same draws, before the world is asked, so a column's outcome never depends on an earlier one.
                 float roll = random.nextFloat();
                 int dangle = config.minLength() + random.nextInt(config.maxLength() - config.minLength() + 1);
+                BlockState accent = config.accent().getState(random, BlockPos.ZERO);
                 Kind kind = kind(roll, config);
                 int x = minX + dx;
                 int z = minZ + dz;
@@ -92,7 +94,7 @@ public final class IslandUndersideFeature extends Feature<IslandUndersideConfigu
                 int bottom = Mth.floor(field.column(x, z).surface()) - FLOOR_DEPTH;
                 int top = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1;
                 for (LedgeStrands.Overhang overhang : LedgeStrands.overhangs(top, bottom,
-                        y -> level.getBlockState(pos.set(x, y, z)).isAir(),
+                        y -> IslandGlowFeature.open(level.getBlockState(pos.set(x, y, z))),
                         y -> level.getBlockState(pos.set(x, y, z)).isFaceSturdy(level, pos, Direction.DOWN))) {
                     int hang = length(kind, overhang.gap(), dangle, config.maxClimbGap());
                     // Nothing hangs from the world tree (74: its wood is terrain, but no island's underside).
@@ -100,8 +102,7 @@ public final class IslandUndersideFeature extends Feature<IslandUndersideConfigu
                         continue;
                     }
                     if (kind == Kind.ACCENT) {
-                        BlockState accent = config.accent().getState(random, pos.set(x, overhang.underside() - 1, z));
-                        if (accent.canSurvive(level, pos)) {
+                        if (accent.canSurvive(level, pos.set(x, overhang.underside() - 1, z))) {
                             level.setBlock(pos, accent, Block.UPDATE_CLIENTS);
                             placed = true;
                         }
