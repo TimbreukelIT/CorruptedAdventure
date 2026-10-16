@@ -2,12 +2,29 @@
   "carvers": {},
   "downfall": 0.0,
   "effects": {
-    "fog_color": 14207910,
+    "additions_sound": {
+      "sound": "corruptedadventure:ambient.nether_ring_4.crystal_hum",
+      "tick_chance": 0.004
+    },
+    "ambient_sound": "corruptedadventure:ambient.nether_ring_4.wind",
+    "fog_color": 14473420,
+    "mood_sound": {
+      "block_search_extent": 8,
+      "offset": 2.0,
+      "sound": "minecraft:ambient.cave",
+      "tick_delay": 6000
+    },
     "music": {
       "max_delay": 24000,
       "min_delay": 12000,
       "replace_current_music": false,
       "sound": "minecraft:music.nether.soul_sand_valley"
+    },
+    "particle": {
+      "options": {
+        "type": "corruptedadventure:bone_dust"
+      },
+      "probability": 0.002
     },
     "sky_color": 0,
     "water_color": 4159204,

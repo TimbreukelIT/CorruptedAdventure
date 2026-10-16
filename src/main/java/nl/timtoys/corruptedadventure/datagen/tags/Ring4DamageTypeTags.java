@@ -10,10 +10,11 @@ import nl.timtoys.corruptedadventure.condition.Ring4DamageTypes;
 import java.util.function.Function;
 
 /**
- * Damage-type tags of the ring 4 conditions (poison), written by {@code ModDamageTypeTagsProvider}. Owned by stream C
+ * Damage-type tags of the ring 4 conditions (poison, sucking mud), written by {@code ModDamageTypeTagsProvider}. Owned by stream C
  * ({@code docs/plans/ring-4/waves.md}). Poison has the tags of vanilla's {@code wither} that matter for players: through
  * armour, no knockback; plus NeoForge's poison and environment tags. It also bypasses the hurt cooldown: the vanilla
- * poison of the second threshold hits just before it, and inside the cooldown a hit of equal size is swallowed.
+ * poison of the second threshold hits just before it, and inside the cooldown a hit of equal size is swallowed. The
+ * sucking mud (package 79) has the tags of vanilla's {@code in_wall}: through armour, no knockback, environment.
  */
 public final class Ring4DamageTypeTags {
     private Ring4DamageTypeTags() {
@@ -25,5 +26,8 @@ public final class Ring4DamageTypeTags {
         tag.apply(DamageTypeTags.BYPASSES_COOLDOWN).add(Ring4DamageTypes.POISON);
         tag.apply(Tags.DamageTypes.IS_POISON).add(Ring4DamageTypes.POISON);
         tag.apply(Tags.DamageTypes.IS_ENVIRONMENT).add(Ring4DamageTypes.POISON);
+        tag.apply(DamageTypeTags.BYPASSES_ARMOR).add(Ring4DamageTypes.SUCKING_MUD);
+        tag.apply(DamageTypeTags.NO_KNOCKBACK).add(Ring4DamageTypes.SUCKING_MUD);
+        tag.apply(Tags.DamageTypes.IS_ENVIRONMENT).add(Ring4DamageTypes.SUCKING_MUD);
     }
 }

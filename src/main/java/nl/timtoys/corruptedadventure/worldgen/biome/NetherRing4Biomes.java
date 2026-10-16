@@ -10,7 +10,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
-import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.GenerationStep;
@@ -30,8 +29,7 @@ import java.util.List;
  * <p>
  * The sea-creature fossils of the dunes are terrain; the features dress the rest (78: the geode linings, the cladding
  * of the columns, loose bones and boulders in the dunes). No carvers: the dam of the steps 3|4 and 4|5 stays whole,
- * like Nether ring 3. The effects are the bone-desert fog of the old placeholder until stream A gives Nether
- * ring 4 its atmosphere (80, a hook in {@link BiomeAmbience} like {@code netherRing3}).
+ * like Nether ring 3. The effects come from the atmosphere's hook {@link BiomeAmbience#netherRing4} (stream A, 80).
  */
 public final class NetherRing4Biomes {
     /** Every biome of Nether ring 4, the only Java list of them (tags {@code is_nether_ring_4}, {@code purifying}, {@code c:}). */
@@ -39,10 +37,6 @@ public final class NetherRing4Biomes {
 
     /** Hot and dry, no precipitation: a desert of bones and crystal above the lava sea. */
     static final float TEMPERATURE = 2.0F;
-    /** The near-white beige fog of the bone desert (fase-1-wereld.md, Nether ring 4); A tunes it per biome in 80. */
-    static final int FOG = 0xD8CBA6;
-    private static final int WATER = 0x3F76E4;
-    private static final int WATER_FOG = 0x050533;
 
     private NetherRing4Biomes() {
     }
@@ -55,12 +49,9 @@ public final class NetherRing4Biomes {
                     .hasPrecipitation(false)
                     .temperature(TEMPERATURE)
                     .downfall(0.0F)
-                    .specialEffects(new BiomeSpecialEffects.Builder()
-                            .skyColor(0x000000)
-                            .fogColor(FOG)
-                            .waterColor(WATER)
-                            .waterFogColor(WATER_FOG)
-                            // Vanilla's soul sand valley music (a valley of bones) until the Nether has its own.
+                    // Every effect is the atmosphere's (stream A, change 80); vanilla's soul sand valley music (a valley
+                    // of bones) until the Nether has its own.
+                    .specialEffects(BiomeAmbience.netherRing4(key)
                             .backgroundMusic(Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SOUL_SAND_VALLEY))
                             .build())
                     .mobSpawnSettings(spawns())

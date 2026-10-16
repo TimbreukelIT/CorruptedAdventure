@@ -8,6 +8,10 @@
   },
   "downfall": 0.9,
   "effects": {
+    "additions_sound": {
+      "sound": "corruptedadventure:ambient.ring_4.bubbles",
+      "tick_chance": 0.002
+    },
     "fog_color": 11845272,
     "foliage_color": 8027726,
     "grass_color": 9080410,
@@ -16,6 +20,12 @@
       "offset": 2.0,
       "sound": "minecraft:ambient.cave",
       "tick_delay": 6000
+    },
+    "particle": {
+      "options": {
+        "type": "corruptedadventure:will_o_wisp"
+      },
+      "probability": 1.0E-4
     },
     "sky_color": 10268810,
     "water_color": 7324218,

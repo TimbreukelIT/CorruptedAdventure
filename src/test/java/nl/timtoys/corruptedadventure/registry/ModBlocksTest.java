@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.NetherrackBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -32,6 +33,7 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import nl.timtoys.corruptedadventure.block.AshCrustBlock;
 import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
+import nl.timtoys.corruptedadventure.block.MoonpetalLeavesBlock;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import org.junit.jupiter.api.Test;
 
@@ -51,12 +53,16 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModBlocksTest {
+    /** Blocks without an item besides pots and liquids: the swamp gas (invisible, cannot be aimed at). */
+    private static final Set<DeferredHolder<Block, ? extends Block>> WITHOUT_ITEM = Set.of(ModBlocks.SWAMP_GAS);
+
     @Test
     void everyBlockExceptPottedPlantsHasABlockItemWithTheSameName() {
         assertFalse(ModBlocks.entries().isEmpty());
         for (DeferredHolder<Block, ? extends Block> block : ModBlocks.entries()) {
             Item item = block.get().asItem();
-            if (block.get() instanceof FlowerPotBlock) {
+            // Potted plants, liquids (a bucket instead) and blocks that only worldgen places have no item.
+            if (block.get() instanceof FlowerPotBlock || block.get() instanceof LiquidBlock || WITHOUT_ITEM.contains(block)) {
                 assertSame(Items.AIR, item, block.getId().toString());
                 continue;
             }
@@ -607,11 +613,50 @@ class ModBlocksTest {
         assertEquals(0, ModBlocks.AQUAMARINE_BLOCK.get().defaultBlockState().getLightEmission());
     }
 
+    /** The gameplay blocks (72) follow the crystals; gas and toxic pool have no item, the bucket follows the shards. */
+    @Test
+    void ring4GameplayBlocksFollowTheCrystalsInOrder() {
+        List<Item> shown = blockItems();
+        int cluster = shown.indexOf(ModBlocks.AQUAMARINE_CLUSTER.asItem());
+        List<Item> gameplay = Stream.of(ModBlocks.SUCKING_MUD, ModBlocks.UPDRAFT, ModBlocks.CLAWED_TIDESTONE,
+                ModBlocks.SLIME_TRAIL, ModBlocks.CREATURE_NEST).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(gameplay, shown.subList(cluster + 1, cluster + 1 + gameplay.size()));
+        List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
+                .filter(item -> !(item instanceof BlockItem)).toList();
+        assertEquals(ModItems.TOXIC_POOL_BUCKET.get(), standalone.get(standalone.indexOf(ModItems.AQUAMARINE_SHARD.get()) + 1));
+        assertSame(Items.AIR, ModBlocks.SWAMP_GAS.get().asItem());
+        assertSame(Items.AIR, ModBlocks.TOXIC_POOL.get().asItem());
+        assertSame(ModFluids.TOXIC_POOL.get(), ModBlocks.TOXIC_POOL.get().defaultBlockState().getFluidState().getType());
+        assertSame(ModFluidTypes.TOXIC_POOL.get(), ModFluids.FLOWING_TOXIC_POOL.get().getFluidType());
+        assertSame(ModFluids.TOXIC_POOL.get(), ModItems.TOXIC_POOL_BUCKET.get().content);
+    }
+
+    /**
+     * The gas, the updraft and the slime trail are walk-through and replaceable; the gas and the updraft cannot be aimed
+     * at. The mud is solid for an item but has no floor for a living entity (checked in {@code SuckingMudBlockTest}).
+     */
+    @Test
+    void ring4GameplayBlocksAreWalkThroughWhereTheyShouldBe() {
+        for (DeferredBlock<?> block : List.of(ModBlocks.SWAMP_GAS, ModBlocks.UPDRAFT, ModBlocks.SLIME_TRAIL)) {
+            BlockState state = block.get().defaultBlockState();
+            assertTrue(state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).isEmpty(), block.getId().toString());
+            assertTrue(state.canBeReplaced(), block.getId().toString());
+        }
+        for (DeferredBlock<?> block : List.of(ModBlocks.SWAMP_GAS, ModBlocks.UPDRAFT)) {
+            assertTrue(block.get().defaultBlockState().getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).isEmpty());
+            assertFalse(block.get().defaultBlockState().isRandomlyTicking());
+        }
+        assertFalse(ModBlocks.SUCKING_MUD.get().defaultBlockState().isSuffocating(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+        assertEquals(ModBlocks.TIDESTONE.get().defaultDestroyTime(), ModBlocks.CLAWED_TIDESTONE.get().defaultDestroyTime());
+        assertTrue(ModBlocks.CREATURE_NEST.get().defaultBlockState().ignitedByLava());
+        assertInstanceOf(MoonpetalLeavesBlock.class, ModBlocks.MOONPETAL_LEAVES.get());
+    }
+
     /** Nether ring 4 follows ring 4 directly and ends the blocks (contract ring 4 §3); its shard ends the loose items. */
     @Test
     void netherRing4FollowsRing4InOrderAndBehavesAsPlanned() {
         List<Item> shown = blockItems();
-        int lastRing4 = shown.indexOf(ModBlocks.AQUAMARINE_CLUSTER.asItem());
+        int lastRing4 = shown.indexOf(ModBlocks.CREATURE_NEST.asItem());
         List<Item> netherRing4 = Stream.of(ModBlocks.BONE_SAND, ModBlocks.BLEACHED_NETHERRACK, ModBlocks.FOSSIL_STONE,
                 ModBlocks.FOSSIL_STONE_STAIRS, ModBlocks.FOSSIL_STONE_SLAB, ModBlocks.FOSSIL_STONE_WALL,
                 ModBlocks.POLISHED_FOSSIL_STONE, ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, ModBlocks.POLISHED_FOSSIL_STONE_SLAB,

@@ -15,6 +15,12 @@ public final class Ring4DamageTypes {
     /** Withering at the top of the poison meter ({@link PoisonWither}); tagged like vanilla's {@code wither}. */
     public static final ResourceKey<DamageType> POISON =
             ResourceKey.create(Registries.DAMAGE_TYPE, CorruptedAdventure.id("poison"));
+    /**
+     * Suffocating with the head under the sucking mud (package 72, applied by stream B through
+     * {@link SuckingMudDamage#hurt}); tagged like vanilla's {@code in_wall}.
+     */
+    public static final ResourceKey<DamageType> SUCKING_MUD =
+            ResourceKey.create(Registries.DAMAGE_TYPE, CorruptedAdventure.id("sucking_mud"));
 
     private Ring4DamageTypes() {
     }
@@ -22,5 +28,7 @@ public final class Ring4DamageTypes {
     public static void bootstrap(BootstrapContext<DamageType> context) {
         // As vanilla's wither: no exhaustion, default scaling and effects.
         context.register(POISON, new DamageType("corruptedadventure.poison", 0.0f));
+        // As vanilla's in_wall: no exhaustion, default scaling and effects.
+        context.register(SUCKING_MUD, new DamageType("corruptedadventure.sucking_mud", 0.0f));
     }
 }

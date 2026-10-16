@@ -62,6 +62,37 @@
       }
     ]
   },
+  "ambient.nether_ring_4.crystal_hum": {
+    "sounds": [
+      {
+        "name": "corruptedadventure:ambient/nether_ring_4/crystal_hum_1",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/nether_ring_4/crystal_hum_2",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/nether_ring_4/crystal_hum_3",
+        "volume": 0.7
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.nether_ring_4.crystal_hum"
+  },
+  "ambient.nether_ring_4.wind": {
+    "sounds": [
+      {
+        "name": "corruptedadventure:ambient/nether_ring_4/wind_loop_1",
+        "stream": true,
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/nether_ring_4/wind_loop_2",
+        "stream": true,
+        "volume": 0.7
+      }
+    ]
+  },
   "ambient.ring_1.strange_cave": {
     "sounds": [
       {
@@ -182,6 +213,62 @@
       }
     ]
   },
+  "ambient.ring_4.bubbles": {
+    "sounds": [
+      {
+        "name": "corruptedadventure:ambient/ring_4/bubbles_1",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/ring_4/bubbles_2",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/ring_4/bubbles_3",
+        "volume": 0.7
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_4.bubbles"
+  },
+  "ambient.ring_4.night_choir": {
+    "sounds": [
+      "corruptedadventure:ambient/ring_4/night_choir_1",
+      "corruptedadventure:ambient/ring_4/night_choir_2",
+      "corruptedadventure:ambient/ring_4/night_choir_3"
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_4.night_choir"
+  },
+  "ambient.ring_4.reeds": {
+    "sounds": [
+      "corruptedadventure:ambient/ring_4/reeds_1",
+      "corruptedadventure:ambient/ring_4/reeds_2",
+      "corruptedadventure:ambient/ring_4/reeds_3"
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_4.reeds"
+  },
+  "ambient.ring_4.sundered_drone": {
+    "sounds": [
+      {
+        "name": "corruptedadventure:ambient/ring_4/sundered_drone_loop_1",
+        "stream": true,
+        "volume": 0.7
+      }
+    ]
+  },
+  "ambient.ring_4.water": {
+    "sounds": [
+      {
+        "name": "corruptedadventure:ambient/ring_4/water_loop_1",
+        "stream": true,
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/ring_4/water_loop_2",
+        "stream": true,
+        "volume": 0.7
+      }
+    ]
+  },
   "ambient.verdant_falls.falls": {
     "sounds": [
       {
@@ -229,6 +316,14 @@
     ],
     "subtitle": "subtitles.corruptedadventure.block.boiling_mud.bubble"
   },
+  "block.bubble_spring.bubble": {
+    "sounds": [
+      "corruptedadventure:block/ring_4/bubble_spring_bubble_1",
+      "corruptedadventure:block/ring_4/bubble_spring_bubble_2",
+      "corruptedadventure:block/ring_4/bubble_spring_bubble_3"
+    ],
+    "subtitle": "subtitles.corruptedadventure.block.bubble_spring.bubble"
+  },
   "block.fumarole.puff": {
     "sounds": [
       "corruptedadventure:block/ring_3/fumarole_puff_1",
@@ -249,6 +344,28 @@
       "corruptedadventure:block/ring_3/geyser_warning_2"
     ],
     "subtitle": "subtitles.corruptedadventure.block.geyser.warning"
+  },
+  "block.sucking_mud.slurp": {
+    "sounds": [
+      "corruptedadventure:block/ring_4/sucking_mud_slurp_1",
+      "corruptedadventure:block/ring_4/sucking_mud_slurp_2",
+      "corruptedadventure:block/ring_4/sucking_mud_slurp_3"
+    ],
+    "subtitle": "subtitles.corruptedadventure.block.sucking_mud.slurp"
+  },
+  "block.swamp_gas.ignite": {
+    "sounds": [
+      "corruptedadventure:block/ring_4/swamp_gas_ignite_1",
+      "corruptedadventure:block/ring_4/swamp_gas_ignite_2"
+    ],
+    "subtitle": "subtitles.corruptedadventure.block.swamp_gas.ignite"
+  },
+  "block.updraft.flow": {
+    "sounds": [
+      "corruptedadventure:block/ring_4/updraft_flow_1",
+      "corruptedadventure:block/ring_4/updraft_flow_2"
+    ],
+    "subtitle": "subtitles.corruptedadventure.block.updraft.flow"
   },
   "weather.ring_2.sandstorm": {
     "sounds": [
@@ -293,9 +410,8 @@
   "weather.ring_4.dense_fog": {
     "sounds": [
       {
-        "type": "event",
-        "name": "ambient.underwater.loop",
-        "pitch": 0.6
+        "name": "corruptedadventure:weather/ring_4/dense_fog_loop_1",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.corruptedadventure.weather.ring_4.dense_fog"
@@ -303,9 +419,12 @@
   "weather.ring_4.storm_wind": {
     "sounds": [
       {
-        "type": "event",
-        "name": "item.elytra.flying",
-        "pitch": 0.5
+        "name": "corruptedadventure:weather/ring_4/storm_wind_loop_1",
+        "stream": true
+      },
+      {
+        "name": "corruptedadventure:weather/ring_4/storm_wind_loop_2",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.corruptedadventure.weather.ring_4.storm_wind"
@@ -313,9 +432,12 @@
   "weather.ring_4.toxic_rain": {
     "sounds": [
       {
-        "type": "event",
-        "name": "weather.rain",
-        "pitch": 0.8
+        "name": "corruptedadventure:weather/ring_4/toxic_rain_loop_1",
+        "stream": true
+      },
+      {
+        "name": "corruptedadventure:weather/ring_4/toxic_rain_loop_2",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.corruptedadventure.weather.ring_4.toxic_rain"

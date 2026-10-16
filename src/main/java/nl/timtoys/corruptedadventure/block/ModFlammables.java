@@ -62,5 +62,7 @@ public final class ModFlammables {
         fire.setFlammable(ModBlocks.HANGING_SWAMP_MOSS.get(), 15, 100);
         fire.setFlammable(ModBlocks.GLOWING_HANGING_ROOTS.get(), 30, 60);
         fire.setFlammable(ModBlocks.GLOW_BLOOM.get(), 60, 100);
+        // The creature nest (72) burns like hay.
+        fire.setFlammable(ModBlocks.CREATURE_NEST.get(), 60, 20);
     }
 }

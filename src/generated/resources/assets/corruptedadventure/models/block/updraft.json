@@ -1,0 +1,108 @@
+{
+  "ambientocclusion": false,
+  "elements": [
+    {
+      "faces": {
+        "east": {
+          "cullface": "east",
+          "texture": "#updraft"
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#updraft"
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#updraft"
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#updraft"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "south": {
+          "texture": "#updraft"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        0
+      ]
+    },
+    {
+      "faces": {
+        "north": {
+          "texture": "#updraft"
+        }
+      },
+      "from": [
+        0,
+        0,
+        16
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "east": {
+          "texture": "#updraft"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        0,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "west": {
+          "texture": "#updraft"
+        }
+      },
+      "from": [
+        16,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    }
+  ],
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "corruptedadventure:block/updraft",
+    "updraft": "corruptedadventure:block/updraft"
+  }
+}

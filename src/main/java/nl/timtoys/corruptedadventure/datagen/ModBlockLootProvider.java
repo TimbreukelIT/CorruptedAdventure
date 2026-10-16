@@ -215,6 +215,13 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropWhenSilkTouch(ModBlocks.LARGE_AQUAMARINE_BUD.get());
         add(ModBlocks.AQUAMARINE_CLUSTER.get(), block -> createCrystalClusterTable(block, ModItems.AQUAMARINE_SHARD.get()));
 
+        // Gameplay blocks (72); gas, toxic pool and updraft have no loot table (like air, water and the bubble column).
+        dropSelf(ModBlocks.SUCKING_MUD.get());
+        add(ModBlocks.CLAWED_TIDESTONE.get(), block -> createSingleItemTableWithSilkTouch(block, ModBlocks.COBBLED_TIDESTONE.get()));
+        // A smear of slime: only Silk Touch lifts it.
+        dropWhenSilkTouch(ModBlocks.SLIME_TRAIL.get());
+        dropSelf(ModBlocks.CREATURE_NEST.get());
+
         netherRing4();
     }
 

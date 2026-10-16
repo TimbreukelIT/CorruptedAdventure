@@ -8,6 +8,7 @@ import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.client.ambient.SingingSandAmbience;
+import nl.timtoys.corruptedadventure.client.fluid.ToxicPoolClientExtensions;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
 import nl.timtoys.corruptedadventure.client.network.ConditionSyncHandler;
 import nl.timtoys.corruptedadventure.client.network.RingLayoutHandler;
@@ -15,14 +16,22 @@ import nl.timtoys.corruptedadventure.client.network.RingWeatherHandler;
 import nl.timtoys.corruptedadventure.client.network.VolcanoPlumesHandler;
 import nl.timtoys.corruptedadventure.client.network.WindGustHandler;
 import nl.timtoys.corruptedadventure.client.particle.AshFlakeParticle;
+import nl.timtoys.corruptedadventure.client.particle.BlossomParticle;
+import nl.timtoys.corruptedadventure.client.particle.DriftingHazeParticle;
 import nl.timtoys.corruptedadventure.client.particle.EmberParticle;
+import nl.timtoys.corruptedadventure.client.particle.GlitchSpeckParticle;
+import nl.timtoys.corruptedadventure.client.particle.GlowMoteParticle;
 import nl.timtoys.corruptedadventure.client.particle.IceGlintParticle;
+import nl.timtoys.corruptedadventure.client.particle.RisingBubbleParticle;
 import nl.timtoys.corruptedadventure.client.particle.SandGustParticle;
 import nl.timtoys.corruptedadventure.client.particle.SteamPuffParticle;
 import nl.timtoys.corruptedadventure.client.particle.WaterfallMistParticle;
 import nl.timtoys.corruptedadventure.client.weather.ColdBreath;
+import nl.timtoys.corruptedadventure.client.weather.NetherRing4Fog;
 import nl.timtoys.corruptedadventure.client.weather.Ring3Ambience;
+import nl.timtoys.corruptedadventure.client.weather.Ring4Ambience;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
+import nl.timtoys.corruptedadventure.client.weather.SunderedFade;
 import nl.timtoys.corruptedadventure.client.weather.VolcanoPlumeRenderer;
 import nl.timtoys.corruptedadventure.network.ClientboundHandlers;
 import nl.timtoys.corruptedadventure.network.ConditionSyncPayload;
@@ -48,6 +57,7 @@ public final class CorruptedAdventureClient {
         ClientboundHandlers.set(VolcanoPlumesPayload.TYPE, VolcanoPlumesHandler::handle);
         modEventBus.addListener(ConditionHudLayer::onRegisterGuiLayers);
         modEventBus.addListener(CorruptedAdventureClient::onRegisterParticleProviders);
+        modEventBus.addListener(ToxicPoolClientExtensions::onRegisterClientExtensions);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);
         NeoForge.EVENT_BUS.addListener(SingingSandAmbience::onClientTick);
@@ -62,6 +72,11 @@ public final class CorruptedAdventureClient {
         ColdBreath.register(NeoForge.EVENT_BUS);
         // Smoke plumes above the ring 3 volcanoes the server sends (package 50b).
         VolcanoPlumeRenderer.register(NeoForge.EVENT_BUS);
+        // Ring 4 (change 80): day and night, reeds, the silhouette, glitch specks; zone 4→5 to grey after the weather's
+        // fog colour; the pulsing fog of Nether ring 4.
+        Ring4Ambience.register(NeoForge.EVENT_BUS);
+        SunderedFade.register(NeoForge.EVENT_BUS);
+        NetherRing4Fog.register(NeoForge.EVENT_BUS);
     }
 
     private static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
@@ -79,5 +94,20 @@ public final class CorruptedAdventureClient {
                 sprites -> new SteamPuffParticle.Provider(sprites, SteamPuffParticle.SULFUR_STEAM));
         event.registerSpriteSet(ModParticleTypes.ICE_GLINT.get(), IceGlintParticle.Provider::new);
         event.registerSpriteSet(ModParticleTypes.WATERFALL_MIST.get(), WaterfallMistParticle.Provider::new);
+        // Ring 4 and Nether ring 4 (package 80-0).
+        event.registerSpriteSet(ModParticleTypes.WILL_O_WISP.get(),
+                sprites -> new GlowMoteParticle.Provider(sprites, GlowMoteParticle.WILL_O_WISP));
+        event.registerSpriteSet(ModParticleTypes.FIREFLY.get(),
+                sprites -> new GlowMoteParticle.Provider(sprites, GlowMoteParticle.FIREFLY));
+        event.registerSpriteSet(ModParticleTypes.BLOSSOM.get(), BlossomParticle.Provider::new);
+        event.registerSpriteSet(ModParticleTypes.SWAMP_GAS.get(),
+                sprites -> new DriftingHazeParticle.Provider(sprites, DriftingHazeParticle.SWAMP_GAS));
+        event.registerSpriteSet(ModParticleTypes.BONE_DUST.get(),
+                sprites -> new DriftingHazeParticle.Provider(sprites, DriftingHazeParticle.BONE_DUST));
+        event.registerSpriteSet(ModParticleTypes.TOXIC_BUBBLE.get(),
+                sprites -> new RisingBubbleParticle.Provider(sprites, RisingBubbleParticle.TOXIC));
+        event.registerSpriteSet(ModParticleTypes.UPDRAFT_BUBBLE.get(),
+                sprites -> new RisingBubbleParticle.Provider(sprites, RisingBubbleParticle.UPDRAFT));
+        event.registerSpriteSet(ModParticleTypes.GLITCH_SPECK.get(), GlitchSpeckParticle.Provider::new);
     }
 }

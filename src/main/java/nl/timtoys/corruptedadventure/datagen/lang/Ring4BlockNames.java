@@ -8,6 +8,9 @@ import nl.timtoys.corruptedadventure.registry.ModItems;
  * ({@code docs/plans/ring-4/waves.md}); English is mandatory, Dutch welcome.
  */
 public final class Ring4BlockNames {
+    /** Prefix of a NeoForge fluid type's name ({@code FluidType#getDescriptionId}). */
+    private static final String FLUID_TYPE = "fluid_type.corruptedadventure.";
+
     private Ring4BlockNames() {
     }
 
@@ -80,6 +83,15 @@ public final class Ring4BlockNames {
         lang.addBlock(ModBlocks.LARGE_AQUAMARINE_BUD, "Large Aquamarine Bud");
         lang.addBlock(ModBlocks.AQUAMARINE_CLUSTER, "Aquamarine Cluster");
         lang.addItem(ModItems.AQUAMARINE_SHARD, "Aquamarine Shard");
+        lang.addBlock(ModBlocks.SWAMP_GAS, "Swamp Gas");
+        lang.addBlock(ModBlocks.SUCKING_MUD, "Sucking Mud");
+        lang.addBlock(ModBlocks.TOXIC_POOL, "Toxic Sludge");
+        lang.add(FLUID_TYPE + "toxic_pool", "Toxic Sludge");
+        lang.addItem(ModItems.TOXIC_POOL_BUCKET, "Toxic Sludge Bucket");
+        lang.addBlock(ModBlocks.UPDRAFT, "Updraft");
+        lang.addBlock(ModBlocks.CLAWED_TIDESTONE, "Clawed Tidestone");
+        lang.addBlock(ModBlocks.SLIME_TRAIL, "Slime Trail");
+        lang.addBlock(ModBlocks.CREATURE_NEST, "Creature Nest");
         lang.addBlock(ModBlocks.BONE_SAND, "Bone Sand");
         lang.addBlock(ModBlocks.BLEACHED_NETHERRACK, "Bleached Netherrack");
         lang.addBlock(ModBlocks.FOSSIL_STONE, "Fossil Stone");
@@ -171,6 +183,15 @@ public final class Ring4BlockNames {
         lang.addBlock(ModBlocks.LARGE_AQUAMARINE_BUD, "Grote aquamarijnknop");
         lang.addBlock(ModBlocks.AQUAMARINE_CLUSTER, "Aquamarijncluster");
         lang.addItem(ModItems.AQUAMARINE_SHARD, "Aquamarijnscherf");
+        lang.addBlock(ModBlocks.SWAMP_GAS, "Moerasgas");
+        lang.addBlock(ModBlocks.SUCKING_MUD, "Zuigmodder");
+        lang.addBlock(ModBlocks.TOXIC_POOL, "Gifslijk");
+        lang.add(FLUID_TYPE + "toxic_pool", "Gifslijk");
+        lang.addItem(ModItems.TOXIC_POOL_BUCKET, "Emmer met gifslijk");
+        lang.addBlock(ModBlocks.UPDRAFT, "Opwaartse stroom");
+        lang.addBlock(ModBlocks.CLAWED_TIDESTONE, "Bekraste getijdesteen");
+        lang.addBlock(ModBlocks.SLIME_TRAIL, "Slijmspoor");
+        lang.addBlock(ModBlocks.CREATURE_NEST, "Wezensnest");
         lang.addBlock(ModBlocks.BONE_SAND, "Bottenzand");
         lang.addBlock(ModBlocks.BLEACHED_NETHERRACK, "Gebleekt netherrack");
         lang.addBlock(ModBlocks.FOSSIL_STONE, "Fossielsteen");
