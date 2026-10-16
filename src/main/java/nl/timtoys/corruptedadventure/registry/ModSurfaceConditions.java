@@ -13,6 +13,7 @@ import nl.timtoys.corruptedadventure.worldgen.surface.RingDepthCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.SeaFossilCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.RingReachCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.VolcanicThresholdCondition;
+import nl.timtoys.corruptedadventure.worldgen.surface.WorldTreeCondition;
 
 /** Surface rule condition types (the {@code if_true} of a surface rule); the rules themselves are hand-written JSON. */
 public final class ModSurfaceConditions {
@@ -45,6 +46,11 @@ public final class ModSurfaceConditions {
     /** {@code corruptedadventure:ring4_threshold} (Q7 = A: calcite on the rims and lips, stone on the exact walls) */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<Ring4ThresholdCondition>> RING4_THRESHOLD =
             CONDITIONS.register("ring4_threshold", () -> Ring4ThresholdCondition.MAP_CODEC);
+
+    // ring 4 — W-terrein-b
+    /** {@code corruptedadventure:world_tree} (74, Q7 = A: the world tree's trunk, wood and leaves) */
+    public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<WorldTreeCondition>> WORLD_TREE =
+            CONDITIONS.register("world_tree", () -> WorldTreeCondition.MAP_CODEC);
 
     private ModSurfaceConditions() {
     }

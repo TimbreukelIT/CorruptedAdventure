@@ -193,7 +193,7 @@ final class IslandPlacement {
      * cell's reach. Null for none.
      */
     @Nullable
-    private static double[] outlet(IslandField field, IslandShape probe, double x, double z, double groundY, int cell) {
+    static double[] outlet(IslandField field, IslandShape probe, double x, double z, double groundY, int cell) {
         if (groundY < IslandShape.SEA_LEVEL || groundY > 75.0 || groundY - probe.thickness() * 0.6 > IslandShape.SEA_LEVEL - 2.0) {
             return null;
         }
@@ -339,7 +339,7 @@ final class IslandPlacement {
      * islands from the spring down to the water, which must stand under it.
      */
     @Nullable
-    private static IslandField.Fall fall(IslandField field, IslandShape shape, double t, int waterTop, int lakeTop) {
+    static IslandField.Fall fall(IslandField field, IslandShape shape, double t, int waterTop, int lakeTop) {
         int[] step = step(t);
         int[] edge = edge(shape, t, step);
         if (edge == null || edge[2] - edge[3] < SPRING_DEPTH - 1) {

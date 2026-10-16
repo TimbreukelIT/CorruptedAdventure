@@ -104,6 +104,8 @@ public final class IslandField implements DensityFunction {
     private final VerdantDescent descent;
     private final VerdantGorges gorges;
     private final VerdantBasins basins;
+    /** 74: the world trees, sky lakes and rock arches (W-terrein-b). */
+    private final IslandLandmarks landmarks;
 
     public IslandField(NoiseHolder hash, Ring4Relief relief, Settings settings) {
         this(hash, relief, settings, null, RingLayout::current, new Decisions());
@@ -129,6 +131,7 @@ public final class IslandField implements DensityFunction {
         this.descent = new VerdantDescent(this);
         this.gorges = new VerdantGorges(this, descent);
         this.basins = new VerdantBasins(this, descent, gorges);
+        this.landmarks = new IslandLandmarks(this, decisions.landmarks);
     }
 
     /** Ring 3's terrain for the rim of {@code verdant_falls}, or null. */
@@ -168,6 +171,10 @@ public final class IslandField implements DensityFunction {
 
     VerdantGorges gorges() {
         return gorges;
+    }
+
+    IslandLandmarks landmarks() {
+        return landmarks;
     }
 
     // ---------------------------------------------------------------- density function
@@ -414,9 +421,30 @@ public final class IslandField implements DensityFunction {
         return found;
     }
 
-    /** The world trees in the box (74). */
+    /** The world trees whose reach (crown, roots) comes into the box (74). */
     public List<WorldTree> worldTrees(int minX, int minZ, int maxX, int maxZ) {
-        return List.of();
+        return landmarks.worldTrees(minX, minZ, maxX, maxZ);
+    }
+
+    /** The island pairs (74: for the vines between islands, 75) whose facing edges come into the box. */
+    public List<IslandPair> islandPairs(int minX, int minZ, int maxX, int maxZ) {
+        return landmarks.islandPairs(minX, minZ, maxX, maxZ);
+    }
+
+    /** The sky lakes and dried-up bowls (74) of the islands whose basin comes into the box. */
+    public List<SkyLake> skyLakes(int minX, int minZ, int maxX, int maxZ) {
+        return landmarks.skyLakes(minX, minZ, maxX, maxZ);
+    }
+
+    /** Whether a world tree has a block in the column (74; for the surface rule). */
+    public boolean hasTree(int x, int z) {
+        return islandColumn(x, z).tree != null;
+    }
+
+    /** What the block is of a world tree (74; {@code corruptedadventure:world_tree}), {@link WorldTreePart#NONE} if none. */
+    public WorldTreePart treePart(int x, int y, int z) {
+        WorldTreeShape.Slice tree = islandColumn(x, z).tree;
+        return tree == null ? WorldTreePart.NONE : tree.part(x, y, z);
     }
 
     // ---------------------------------------------------------------- outputs ({@link IslandOutput})
@@ -663,6 +691,10 @@ public final class IslandField implements DensityFunction {
         Column c = columns.get(x, z, IslandField::reset);
         ensureIslands(c);
         double thin = c.thin(y);
+        if (thin == 0.0 && c.tree != null && c.tree.solid(x, y, z)) {
+            // 74: a world tree's trunk, branch, root or leaves.
+            return 1.0;
+        }
         if (thin == 0.0 && c.sinkholeDisc) {
             ensureSurface(c);
             if (!Double.isNaN(c.sinkholeFloor) && y >= Mth.ceil(c.sinkholeFloor) && y <= c.height + 2.0) {
@@ -779,7 +811,8 @@ public final class IslandField implements DensityFunction {
 
     /** The candidates of a grid cell, decided once per world ({@link IslandPlacement#candidates}). */
     List<IslandShape> candidates(int i, int j) {
-        return decisions.once(decisions.candidates, KeyedSlots.key(i, j), () -> IslandPlacement.candidates(this, i, j));
+        return decisions.once(decisions.candidates, KeyedSlots.key(i, j),
+                () -> landmarks.withTrees(i, j, IslandPlacement.candidates(this, i, j)));
     }
 
     /** The islands of a grid cell, decided once per world ({@link IslandPlacement#place}). */
@@ -822,7 +855,8 @@ public final class IslandField implements DensityFunction {
 
     /** The lake, falls and lift of an island, decided once per world ({@link IslandPlacement#details}). */
     Details details(IslandShape shape) {
-        return decisions.once(decisions.details, shape, () -> IslandPlacement.details(this, shape));
+        return decisions.once(decisions.details, shape, () -> shape.kind() == IslandShape.TREE
+                ? landmarks.treeDetails(shape) : IslandPlacement.details(this, shape));
     }
 
     /**
@@ -1086,6 +1120,8 @@ public final class IslandField implements DensityFunction {
                 c.fallFlowBelow = fall.bottom();
             }
         }
+        // 74: a world tree's blocks, a sky lake's basin, a rock arch.
+        landmarks.fill(c);
     }
 
     /**
@@ -1166,8 +1202,27 @@ public final class IslandField implements DensityFunction {
     public record Waterfall(int x, int z, int top, int bottom) {
     }
 
-    /** A world tree standing on the ground at {@code baseY}, its crown reaching {@code top}. */
-    public record WorldTree(int x, int z, int baseY, int top) {
+    /**
+     * A world tree (74): its trunk's axis, standing on its island at {@code baseY}, its crown reaching {@code top}; its
+     * crown and roots reach at most {@code radius} blocks from the axis.
+     */
+    public record WorldTree(int x, int z, int baseY, int top, int radius) {
+    }
+
+    /**
+     * Two nearby islands (74, for the vines between them, 75): the column of each one's edge facing the other with its
+     * top and bottom block; {@code arch}: a rock arch joins them.
+     */
+    public record IslandPair(Island first, Island second, int firstX, int firstZ, int firstTop, int firstBottom,
+                             int secondX, int secondZ, int secondTop, int secondBottom, boolean arch) {
+    }
+
+    /**
+     * A sky lake on a large high island (74): its island's centre, the basin's mean radius (blocks), the top water block
+     * ({@code dry}: a dried-up bowl in {@code withered_gardens}, this its brim without water) and the length of its
+     * brook to a fall (0: none).
+     */
+    public record SkyLake(int x, int z, double radius, int waterY, boolean dry, int brook) {
     }
 
     /**
@@ -1278,6 +1333,16 @@ public final class IslandField implements DensityFunction {
         int fallTop;
         int fallBottom;
         int fallFlowBelow;
+        /** 74: the world tree's blocks in this column, else null. */
+        @Nullable
+        WorldTreeShape.Slice tree;
+        /** 74: a sky lake's water up to (exclusive) {@code skyLakeTop} over its floor, else MIN_VALUE. */
+        int skyLakeTop;
+        /** 74: the last block of a sky lake's (or dry bowl's) floor, else MIN_VALUE. */
+        int skyLakeFloor;
+        /** 74: the blocks carvers may not cut around a sky lake, else from > to. */
+        int skyGuardFrom;
+        int skyGuardTo;
         int x;
         int z;
 
@@ -1327,6 +1392,11 @@ public final class IslandField implements DensityFunction {
             fallTop = Integer.MIN_VALUE;
             fallBottom = Integer.MIN_VALUE;
             fallFlowBelow = Integer.MIN_VALUE;
+            tree = null;
+            skyLakeTop = Integer.MIN_VALUE;
+            skyLakeFloor = Integer.MIN_VALUE;
+            skyGuardFrom = Integer.MAX_VALUE;
+            skyGuardTo = Integer.MIN_VALUE;
         }
 
         void addIsland(int lo, int hi) {
@@ -1335,6 +1405,23 @@ public final class IslandField implements DensityFunction {
                 islandHi[islandCount] = hi;
                 islandCount++;
             }
+        }
+
+        /** 74: lowers the top of the island range [lo, hi] to {@code top} (a sky lake's basin); false if none matches. */
+        boolean lowerIsland(int lo, int hi, int top) {
+            for (int k = 0; k < islandCount; k++) {
+                if (islandLo[k] == lo && islandHi[k] == hi) {
+                    islandHi[k] = top;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /** 74: keeps carvers out of [from, to] (around a sky lake). */
+        void guardSky(int from, int to) {
+            skyGuardFrom = Math.min(skyGuardFrom, from);
+            skyGuardTo = Math.max(skyGuardTo, to);
         }
 
         /** +1 inside an island, −1 in a spring's block, 0 elsewhere. */
@@ -1439,6 +1526,26 @@ public final class IslandField implements DensityFunction {
         public int fallFlowBelow() {
             return fallFlowBelow;
         }
+
+        /** 74: the top (exclusive) of a sky lake's still water in this column, else {@link Integer#MIN_VALUE}. */
+        public int skyLakeTop() {
+            return skyLakeTop;
+        }
+
+        /** 74: the floor's last block under a sky lake (or a dry bowl), else {@link Integer#MIN_VALUE}. */
+        public int skyLakeFloor() {
+            return skyLakeFloor;
+        }
+
+        /** 74: the lowest block carvers may not cut around a sky lake, else MAX_VALUE. */
+        public int skyGuardFrom() {
+            return skyGuardFrom;
+        }
+
+        /** 74: the highest such block, else MIN_VALUE. */
+        public int skyGuardTo() {
+            return skyGuardTo;
+        }
     }
 
     /**
@@ -1471,6 +1578,8 @@ public final class IslandField implements DensityFunction {
         final KeyedSlots<Double> verdantGrounds = new KeyedSlots<>(1 << 14);
         /** {@link VerdantDescent#rampAt} of whole block columns (NaN off the descent), also put by its {@code locate}. */
         final KeyedSlots<Double> verdantRamps = new KeyedSlots<>(1 << 14);
+        /** 74: the world trees, sky lakes and island pairs. */
+        final IslandLandmarks.Memo landmarks = new IslandLandmarks.Memo();
         volatile Long salt;
 
         <K, V> void remember(Map<K, V> map, K key, V value) {

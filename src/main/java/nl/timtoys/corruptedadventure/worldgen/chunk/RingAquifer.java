@@ -121,6 +121,12 @@ final class RingAquifer implements Aquifer {
     // and wall), left as air: [openFrom, openTo], else openFrom > openTo.
     private final int[] openFrom = new int[COLUMNS + 1];
     private final int[] openTo = new int[COLUMNS + 1];
+    // 74: a sky lake's still water (skyFloor, skyTop) in the basin cut into an island's top, and the blocks around it
+    // carvers may not cut [skyGuardFrom, skyGuardTo].
+    private final int[] skyTop = new int[COLUMNS + 1];
+    private final int[] skyFloor = new int[COLUMNS + 1];
+    private final int[] skyGuardFrom = new int[COLUMNS + 1];
+    private final int[] skyGuardTo = new int[COLUMNS + 1];
 
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla) {
         this(dimension, vanilla, null, null);
@@ -256,6 +262,10 @@ final class RingAquifer implements Aquifer {
         lakeGuardTop[i] = falls ? islandColumn.caveLiftTo() : Integer.MIN_VALUE;
         openFrom[i] = falls ? islandColumn.openFrom() : Integer.MAX_VALUE;
         openTo[i] = falls ? islandColumn.openTo() : Integer.MIN_VALUE;
+        skyTop[i] = falls ? islandColumn.skyLakeTop() : Integer.MIN_VALUE;
+        skyFloor[i] = falls ? islandColumn.skyLakeFloor() : Integer.MIN_VALUE;
+        skyGuardFrom[i] = falls ? islandColumn.skyGuardFrom() : Integer.MAX_VALUE;
+        skyGuardTo[i] = falls ? islandColumn.skyGuardTo() : Integer.MIN_VALUE;
         // Review 61b #2, #7 (last: it reads other columns, which may reuse the island column read above): in the band
         // around a lake above the sea the ground starts just under the terrain's interpolated surface; open space below
         // it (a cave the lift missed, a sinkhole the surface does not know) stays rock, the lake fills its bowl above.
@@ -339,6 +349,14 @@ final class RingAquifer implements Aquifer {
             suppressed = false;
             spring = true;
             return WATER;
+        }
+        if (y < skyTop[i] && y > skyFloor[i]) {
+            // A sky lake on a high island (74): still water in its basin, walled in by the island's rim.
+            return WATER;
+        }
+        if (carving && y >= skyGuardFrom[i] && y <= skyGuardTo[i]) {
+            // A carver may not cut a sky lake's basin, its brook or its rim (74): its tunnel would drain the lake.
+            return null;
         }
         if (carving && y >= lakeGuardBottom[i] && y <= lakeGuardTop[i]) {
             // A carver may not cut under, beside or into a lake above the sea (61): its tunnel would open the lake.
