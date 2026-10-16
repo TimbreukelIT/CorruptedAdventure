@@ -22,6 +22,7 @@ import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring4Features;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring4MythicFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.VerdantFallsFeatures;
 import org.junit.jupiter.api.Test;
 
@@ -102,8 +103,8 @@ class Ring4BiomesTest {
         assertTrue(animals(biomes.get(ModBiomes.MIST_FJORDS).getMobSettings()).contains(EntityType.RABBIT));
         assertThrows(IllegalArgumentException.class, () -> Ring4Biomes.spawns(ModBiomes.STEAM_FENS));
         assertTrue(animals(biomes.get(ModBiomes.CASCADE_VALE).getMobSettings()).containsAll(Set.of(EntityType.FOX, EntityType.RABBIT)));
-        // Q9 = A: frogs and turtles by the lakes of the descent, no parrots until the own trees.
-        assertEquals(Set.of(EntityType.FROG, EntityType.TURTLE), animals(biomes.get(ModBiomes.VERDANT_FALLS).getMobSettings()));
+        // Q9 = A: frogs and turtles by the lakes of the descent; F10 = A: parrots on the own trees (75b).
+        assertEquals(Set.of(EntityType.FROG, EntityType.TURTLE, EntityType.PARROT), animals(biomes.get(ModBiomes.VERDANT_FALLS).getMobSettings()));
     }
 
     /** verdant_falls: the wettest of the ring, and rainy. */
@@ -141,12 +142,23 @@ class Ring4BiomesTest {
                 assertEquals(Ring4Features.features(entry.getKey(), step), placed, entry.getKey() + " " + step);
             }
         }
-        // verdant_falls: bare (no trees, no vines), only moss carpets and the climbing strands.
+        // verdant_falls: the moss carpets and the climbing strands first; only its own features (golf 2: no 75–77
+        // feature of the ground biomes in verdant_falls).
         assertEquals(List.of(VerdantFallsFeatures.VERDANT_FALLS_MOSS_CARPETS, VerdantFallsFeatures.VERDANT_FALLS_LEDGE_STRANDS),
-                Ring4Features.features(ModBiomes.VERDANT_FALLS, GenerationStep.Decoration.VEGETAL_DECORATION));
+                Ring4Features.features(ModBiomes.VERDANT_FALLS, GenerationStep.Decoration.VEGETAL_DECORATION).subList(0, 2));
         for (Ring4Features.Entry entry : Ring4Features.ORDER) {
-            assertEquals(Set.of(ModBiomes.VERDANT_FALLS), entry.biomes(), entry.feature().toString());
+            if (entry.biomes().contains(ModBiomes.VERDANT_FALLS)) {
+                assertEquals(Set.of(ModBiomes.VERDANT_FALLS), entry.biomes(), entry.feature().toString());
+            }
+            assertFalse(entry.biomes().contains(ModBiomes.SUNDERED_REACH), entry.feature() + ": nothing in the zone 4→5");
         }
+        // The glow under the islands (teststop 5a) in every ground biome, before what hangs from the islands.
+        for (ResourceKey<Biome> ground : Ring4Biomes.GROUND) {
+            List<ResourceKey<PlacedFeature>> vegetal = Ring4Features.features(ground, GenerationStep.Decoration.VEGETAL_DECORATION);
+            assertEquals(List.of(Ring4MythicFeatures.ISLAND_GLOW_GROUND, Ring4MythicFeatures.ISLAND_UNDERSIDES), vegetal.subList(0, 2), ground.toString());
+        }
+        // Every feature of the order once.
+        assertEquals(Ring4Features.ORDER.size(), Ring4Features.ORDER.stream().map(Ring4Features.Entry::feature).distinct().count());
     }
 
     /** The preset: the ground biomes in the ring 4 source, the transition 4→5 and the height biomes in the hook. */

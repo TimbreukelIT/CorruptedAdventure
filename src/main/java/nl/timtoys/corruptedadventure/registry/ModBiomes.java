@@ -68,9 +68,7 @@ public final class ModBiomes {
 
     // Temporary: one per ring until the ring's real biomes exist. Ring 1's copies (overworld and Nether):
     // VanillaBiomeCopies.copyOf.
-    public static final ResourceKey<Biome> PLACEHOLDER_RING_4 = key("placeholder_ring_4");
     public static final ResourceKey<Biome> PLACEHOLDER_RING_5 = key("placeholder_ring_5");
-    public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_4 = key("placeholder_nether_ring_4");
     public static final ResourceKey<Biome> PLACEHOLDER_NETHER_RING_5 = key("placeholder_nether_ring_5");
 
     // Transition biomes: one per boundary, filling its transition zone.

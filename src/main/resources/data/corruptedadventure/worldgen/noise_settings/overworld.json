@@ -14254,7 +14254,7 @@
                                 "then_run": {
                                   "type": "minecraft:block",
                                   "result_state": {
-                                    "Name": "minecraft:podzol"
+                                    "Name": "corruptedadventure:peat"
                                   }
                                 }
                               },
@@ -14290,7 +14290,7 @@
                                 "then_run": {
                                   "type": "minecraft:block",
                                   "result_state": {
-                                    "Name": "minecraft:mud"
+                                    "Name": "corruptedadventure:peat"
                                   }
                                 }
                               },

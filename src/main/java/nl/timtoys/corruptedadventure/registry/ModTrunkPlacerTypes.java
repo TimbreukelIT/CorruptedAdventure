@@ -7,6 +7,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.feature.PalmTrunkPlacer;
+import nl.timtoys.corruptedadventure.worldgen.feature.VerdantTrunkPlacer;
 
 /** Trunk placer types with their own code, used by the tree features from datagen. */
 public final class ModTrunkPlacerTypes {
@@ -16,6 +17,11 @@ public final class ModTrunkPlacerTypes {
     /** {@code corruptedadventure:palm_trunk_placer} */
     public static final DeferredHolder<TrunkPlacerType<?>, TrunkPlacerType<PalmTrunkPlacer>> PALM_TRUNK_PLACER =
             TRUNK_PLACER_TYPES.register("palm_trunk_placer", () -> new TrunkPlacerType<>(PalmTrunkPlacer.CODEC));
+
+    // ring 4 — W-biomes
+    /** {@code corruptedadventure:verdant_trunk_placer} (75b: the emergent tree and the tree fern of verdant_falls) */
+    public static final DeferredHolder<TrunkPlacerType<?>, TrunkPlacerType<VerdantTrunkPlacer>> VERDANT_TRUNK_PLACER =
+            TRUNK_PLACER_TYPES.register("verdant_trunk_placer", () -> new TrunkPlacerType<>(VerdantTrunkPlacer.CODEC));
 
     private ModTrunkPlacerTypes() {
     }

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:replace_single_block",
+  "config": {
+    "targets": [
+      {
+        "state": {
+          "Name": "corruptedadventure:bubble_spring"
+        },
+        "target": {
+          "predicate_type": "minecraft:always_true"
+        }
+      }
+    ]
+  }
+}

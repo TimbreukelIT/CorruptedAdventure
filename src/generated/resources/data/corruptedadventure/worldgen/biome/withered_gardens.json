@@ -21,7 +21,22 @@
     "water_color": 7315528,
     "water_fog_color": 2242586
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/withered_gardens_trees",
+      "corruptedadventure:ring_4/blighted_glowcaps",
+      "corruptedadventure:ring_4/blighted_dead_bushes"
+    ]
+  ],
   "has_precipitation": true,
   "spawn_costs": {},
   "spawners": {

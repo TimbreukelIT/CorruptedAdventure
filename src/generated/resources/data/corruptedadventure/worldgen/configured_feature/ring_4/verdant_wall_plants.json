@@ -1,0 +1,30 @@
+{
+  "type": "corruptedadventure:wall_plant",
+  "config": {
+    "chance": 0.1,
+    "height": 28,
+    "plants": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:verdant_orchid",
+            "Properties": {
+              "facing": "north"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:verdant_wall_bromeliad",
+            "Properties": {
+              "facing": "north"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

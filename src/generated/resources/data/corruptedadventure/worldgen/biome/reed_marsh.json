@@ -21,7 +21,26 @@
     "water_color": 6139962,
     "water_fog_color": 1717780
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/blighted_toxic_pools"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/island_glow_ground",
+      "corruptedadventure:ring_4/island_undersides",
+      "corruptedadventure:ring_4/island_vines",
+      "corruptedadventure:ring_4/reed_marsh_reeds",
+      "corruptedadventure:ring_4/reed_marsh_blighted_glowcaps"
+    ]
+  ],
   "has_precipitation": true,
   "spawn_costs": {},
   "spawners": {

@@ -10,7 +10,8 @@ import nl.timtoys.corruptedadventure.registry.ModBiomes;
 /**
  * Datagen bootstrap for the skeleton biomes: one placeholder per ring and a void edge, per dimension. Ring 1 (overworld
  * and Nether) no longer has one: it uses {@link VanillaBiomeCopies}; overworld ring 2 neither: {@link Ring2Biomes}; Nether ring 2
- * neither: {@link NetherRing2Biomes}; overworld ring 3 neither: {@link Ring3Biomes}; Nether ring 3 neither: {@link NetherRing3Biomes}.
+ * neither: {@link NetherRing2Biomes}; overworld ring 3 neither: {@link Ring3Biomes}; Nether ring 3 neither: {@link NetherRing3Biomes}; ring 4 neither:
+ * {@link Ring4Biomes} and {@link NetherRing4Biomes} (golf 2: the ring 4 placeholders are gone).
  * Only colours and weather (precipitation, temperature) differ; no features and no mob spawns, and no
  * {@code has_structure/*} tags, so no vanilla structures (strongholds included) can generate in them.
  */
@@ -23,9 +24,6 @@ public final class PlaceholderBiomes {
     }
 
     public static void bootstrap(BootstrapContext<Biome> context) {
-        // Ring 4: swamp, murky water; vanilla rain.
-        context.register(ModBiomes.PLACEHOLDER_RING_4, overworld(true, 0.8F, 0.9F,
-                0x8BA08A, 0x9DAA8A, 0x617B64, 0x232317, 0x6A7039, 0x6A7039));
         // Ring 5: corrupted, colourless.
         context.register(ModBiomes.PLACEHOLDER_RING_5, overworld(false, 0.5F, 0.0F,
                 0x3A3A48, 0x5A5A66, 0x2B2B3A, 0x0A0A12, 0x8A8A8A, 0x777777));
@@ -34,7 +32,6 @@ public final class PlaceholderBiomes {
 
         // Nether counterparts (see fase-1-wereld.md §1.12); fog is what sets them apart. Nether ring 1 has none:
         // it uses VanillaBiomeCopies, Nether ring 2 NetherRing2Biomes, Nether ring 3 NetherRing3Biomes.
-        context.register(ModBiomes.PLACEHOLDER_NETHER_RING_4, nether(0xD8CBA6, DEFAULT_WATER));   // bone desert
         context.register(ModBiomes.PLACEHOLDER_NETHER_RING_5, nether(0xE8E8EC, DEFAULT_WATER));   // white, silent
         context.register(ModBiomes.NETHER_VOID_EDGE, nether(0x0A0A0A, DEFAULT_WATER));
     }

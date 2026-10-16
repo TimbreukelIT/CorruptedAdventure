@@ -1,0 +1,60 @@
+{
+  "type": "minecraft:tree",
+  "config": {
+    "decorators": [],
+    "dirt_provider": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:dirt"
+      }
+    },
+    "foliage_placer": {
+      "type": "corruptedadventure:verdant_foliage_placer",
+      "offset": 0,
+      "radius": {
+        "type": "minecraft:uniform",
+        "max_inclusive": 3,
+        "min_inclusive": 2
+      },
+      "shape": "fronds"
+    },
+    "foliage_provider": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:verdant_leaves",
+        "Properties": {
+          "distance": "7",
+          "persistent": "false",
+          "waterlogged": "false"
+        }
+      }
+    },
+    "force_dirt": false,
+    "ignore_vines": true,
+    "minimum_size": {
+      "type": "minecraft:two_layers_feature_size",
+      "limit": 1,
+      "lower_size": 0,
+      "upper_size": 1
+    },
+    "trunk_placer": {
+      "type": "corruptedadventure:verdant_trunk_placer",
+      "base_height": 4,
+      "branches": 0,
+      "buttresses": 0,
+      "height_rand_a": 2,
+      "height_rand_b": 1,
+      "orchid_chance": 0.0,
+      "pod_chance": 0.0
+    },
+    "trunk_provider": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:verdant_log",
+        "Properties": {
+          "axis": "y"
+        }
+      }
+    }
+  }
+}

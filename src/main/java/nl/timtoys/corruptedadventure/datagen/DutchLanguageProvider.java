@@ -225,12 +225,10 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         biome(ModBiomes.HOODOO_FIELDS, "Hoodoovelden");
         biome(ModBiomes.SALT_FLATS, "Zoutvlakte");
         biome(ModBiomes.DUNE_SEA, "Duinenzee");
-        biome(ModBiomes.PLACEHOLDER_RING_4, "Placeholder ring 4");
         biome(ModBiomes.PLACEHOLDER_RING_5, "Placeholder ring 5");
         biome(ModBiomes.VOID_EDGE, "Voidrand");
         biome(ModBiomes.DRIPSHROOM_FOREST, "Druipzwamwoud");
         biome(ModBiomes.SPORE_CAVES, "Sporengrotten");
-        biome(ModBiomes.PLACEHOLDER_NETHER_RING_4, "Placeholder Nether-ring 4");
         biome(ModBiomes.PLACEHOLDER_NETHER_RING_5, "Placeholder Nether-ring 5");
         biome(ModBiomes.NETHER_VOID_EDGE, "Nether-voidrand");
 

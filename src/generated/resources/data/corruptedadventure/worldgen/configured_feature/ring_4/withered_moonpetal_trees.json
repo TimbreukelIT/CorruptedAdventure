@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": {
+      "feature": "corruptedadventure:ring_4/withered_moonpetal_tree",
+      "placement": []
+    },
+    "features": [
+      {
+        "chance": 0.6,
+        "feature": {
+          "feature": "corruptedadventure:ring_4/withered_moonpetal_tree_forked",
+          "placement": []
+        }
+      }
+    ]
+  }
+}

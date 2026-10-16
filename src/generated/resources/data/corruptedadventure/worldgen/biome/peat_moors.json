@@ -31,7 +31,30 @@
     "water_color": 7324218,
     "water_fog_color": 1980946
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/peat_moors_gas_pockets",
+      "corruptedadventure:ring_4/peat_moors_sinkhole_gas",
+      "corruptedadventure:ring_4/peat_moors_toxic_pools",
+      "corruptedadventure:ring_4/bank_sucking_mud"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/island_glow_ground",
+      "corruptedadventure:ring_4/island_undersides",
+      "corruptedadventure:ring_4/island_vines",
+      "corruptedadventure:ring_4/blighted_bank_reeds",
+      "corruptedadventure:ring_4/blighted_glowcaps",
+      "corruptedadventure:ring_4/blighted_dead_bushes"
+    ]
+  ],
   "has_precipitation": true,
   "spawn_costs": {},
   "spawners": {

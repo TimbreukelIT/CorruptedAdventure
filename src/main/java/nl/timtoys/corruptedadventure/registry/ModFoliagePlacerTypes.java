@@ -7,6 +7,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.feature.PalmFoliagePlacer;
+import nl.timtoys.corruptedadventure.worldgen.feature.VerdantFoliagePlacer;
 
 /** Foliage placer types with their own code, used by the tree features from datagen. */
 public final class ModFoliagePlacerTypes {
@@ -16,6 +17,11 @@ public final class ModFoliagePlacerTypes {
     /** {@code corruptedadventure:palm_foliage_placer} */
     public static final DeferredHolder<FoliagePlacerType<?>, FoliagePlacerType<PalmFoliagePlacer>> PALM_FOLIAGE_PLACER =
             FOLIAGE_PLACER_TYPES.register("palm_foliage_placer", () -> new FoliagePlacerType<>(PalmFoliagePlacer.CODEC));
+
+    // ring 4 — W-biomes
+    /** {@code corruptedadventure:verdant_foliage_placer} (75b: umbrella crown and fern fronds of verdant_falls) */
+    public static final DeferredHolder<FoliagePlacerType<?>, FoliagePlacerType<VerdantFoliagePlacer>> VERDANT_FOLIAGE_PLACER =
+            FOLIAGE_PLACER_TYPES.register("verdant_foliage_placer", () -> new FoliagePlacerType<>(VerdantFoliagePlacer.CODEC));
 
     private ModFoliagePlacerTypes() {
     }

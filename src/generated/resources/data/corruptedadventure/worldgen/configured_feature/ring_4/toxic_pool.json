@@ -1,0 +1,21 @@
+{
+  "type": "corruptedadventure:toxic_pool",
+  "config": {
+    "depth": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "fluid": {
+      "Name": "corruptedadventure:toxic_pool",
+      "Properties": {
+        "level": "0"
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    }
+  }
+}

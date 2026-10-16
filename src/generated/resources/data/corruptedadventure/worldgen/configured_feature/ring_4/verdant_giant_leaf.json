@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:simple_block",
+  "config": {
+    "to_place": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:verdant_giant_leaf",
+        "Properties": {
+          "half": "lower"
+        }
+      }
+    }
+  }
+}

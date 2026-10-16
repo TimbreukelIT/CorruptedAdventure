@@ -26,7 +26,28 @@
     "water_color": 3134408,
     "water_fog_color": 1006182
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/deep_water_aquamarine_geodes"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/island_glow_ground",
+      "corruptedadventure:ring_4/island_undersides",
+      "corruptedadventure:ring_4/island_vines",
+      "corruptedadventure:ring_4/deep_pool_bubble_springs",
+      "corruptedadventure:ring_4/crystal_lagoon_coral",
+      "corruptedadventure:ring_4/crystal_lagoon_seagrass",
+      "corruptedadventure:ring_4/crystal_lagoon_sea_pickles"
+    ]
+  ],
   "has_precipitation": true,
   "spawn_costs": {},
   "spawners": {
