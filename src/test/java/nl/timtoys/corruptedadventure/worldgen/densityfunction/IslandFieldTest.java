@@ -21,7 +21,9 @@ import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Ring 4's terrain field: found through the router, read access, determinism (59, 60). */
@@ -59,6 +61,24 @@ public class IslandFieldTest {
 
     private static String key(JsonObject json, String field) {
         return ResourceLocation.parse(json.get(field).getAsString()).getPath();
+    }
+
+    /**
+     * INT2: a noise chunk wraps the ring 3 plateau in caches and gates of its own; its copy of the field must still keep
+     * the island decisions of the random state's instance (else every chunk re-decides its cells), and a copy with
+     * other noises must not.
+     */
+    @Test
+    void aNoiseChunkCopyKeepsTheDecisionsThroughAWrappedPlateau() {
+        IslandField field = field();
+        DensityFunction copy = field.mapAll(new DensityFunction.Visitor() {
+            @Override
+            public DensityFunction apply(DensityFunction function) {
+                return function instanceof VolcanicField ? DensityFunctions.flatCache(function) : function;
+            }
+        });
+        assertSame(field.decisions(), ((IslandField) copy).decisions());
+        assertNotSame(field.decisions(), field(42L).decisions());
     }
 
     @Test

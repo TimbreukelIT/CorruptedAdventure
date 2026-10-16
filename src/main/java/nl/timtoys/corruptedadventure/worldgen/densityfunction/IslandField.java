@@ -197,9 +197,23 @@ public final class IslandField implements DensityFunction {
         NoiseHolder mapped = visitor.visitNoise(hash);
         Ring4Relief mappedRelief = relief.map(visitor);
         DensityFunction mappedPlateau = plateau == null ? null : plateau.mapAll(visitor);
-        // A noise chunk's copy keeps the cell decisions of the random state's instance (same noises, same results).
-        boolean same = mapped.equals(hash) && mappedRelief.equals(relief) && Objects.equals(mappedPlateau, plateau);
+        // A noise chunk's copy keeps the cell decisions of the random state's instance (same noises, same results). The
+        // plateau is compared by the ring 3 field it resolves to: the noise chunk wraps it in gates and caches of its
+        // own, so the wrappers never compare equal and every chunk re-decided its island cells (INT2: the biome step,
+        // which builds the noise chunk, took 56 % of the generation time in cascade_vale).
+        boolean same = mapped.equals(hash) && mappedRelief.equals(relief) && samePlateau(mappedPlateau);
         return visitor.apply(new IslandField(mapped, mappedRelief, settings, mappedPlateau, layout, same ? decisions : new Decisions()));
+    }
+
+    private boolean samePlateau(@Nullable DensityFunction mappedPlateau) {
+        if (plateau == null || mappedPlateau == null) {
+            return plateau == mappedPlateau;
+        }
+        if (mappedPlateau.equals(plateau)) {
+            return true;
+        }
+        VolcanicField field = VolcanicField.resolveIfBound(plateau);
+        return field != null && field.equals(VolcanicField.resolveIfBound(mappedPlateau));
     }
 
     @Override
