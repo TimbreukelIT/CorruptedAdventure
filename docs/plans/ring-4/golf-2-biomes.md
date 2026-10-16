@@ -38,6 +38,12 @@ Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond 
 - **Dichter richting ring 5:** gas, poelen, modder en `blighted_glowcap` met `ring_chance` op de voortgang over ring 4 (0,35 aan de binnenrand → 1 aan de buitenrand).
 - Gevaren alleen op de eigen grond van het terrein (`ring4_filter` `ground_only`), niet op eilanden; ze vormen de grond vóór het riet en de planten (riet en planten staan dus nooit op modder of aan een poelrand door toeval van volgorde).
 
+## 77 — ertsen, sporen, dieren
+- **Biome modifier `add_ring_4_ores`** (`UNDERGROUND_ORES`, `Ring4Biomes.ALL` + `sundered_reach`, niet `verdant_falls`): vanilla ×0,2 / ×0,15 / ×0,1 (`RingVanillaOres`, `ring_4/ore_*`), dan `ring_4/tidesilver_ore` (8, 5×, driehoek Y −48…48) en `ring_4/jade_ore` (6, 3×, Y −64…0), elk met de varianten steen / `ring_4_stones` / deepslate en een `ring_chance` op ring 4 (de ring 5-helft van `sundered_reach` krijgt niets).
+- **Aquamarijn-geodes** (`sunken_geode`, `LOCAL_MODIFICATIONS` in `crystal_lagoon` en `mist_fjords`): holte r 2–3 + kristal (10 % budding) + calciet + tidestone, half open in de bodem onder ≥ 8 water (alleen het deel op/onder de bodem van elke kolom); de holte vol water, knoppen (45 % per wandvlak) waterlogged naar binnen. Alleen als de geode in de chunk ligt, geen blok lucht is (grot) en elke kolom water boven de bodem heeft: nooit water tegen lucht.
+- **Dieren:** gecontroleerd tegen V4 (geen wijziging); papegaaien in `verdant_falls` komen met 75b.
+- **Wacht op 73 (tunnelnet):** gifkristal (budding) in de wanden van de droge bedorven tunnels en gaskamers, tidesilver in de tunnelwanden, jade diep in de overstroomde tunnels, aquamarijn in overstroomde tunnels, sporen van wezens (klauwkras, slijmspoor, nesten, botresten met `bone_block`). Nu lopen tidesilver en jade als gewone ertsen door het gesteente.
+
 ## CODEBASE-delta
 **Nieuwe classes (`worldgen.feature`)**
 - `Ring4Terrain`, `Ring4Filter` (+ `ModPlacementModifierTypes.RING4_FILTER`, blok `// ring 4 — W-biomes g2`), `Ring4Placements`.
@@ -52,6 +58,8 @@ Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond 
 
 **76 — nieuwe classes:** `SuckingMudPatchFeature`/`…Configuration` (`sucking_mud_patch`), `ToxicPoolFeature`/`…Configuration` (`toxic_pool`), `GasPocketFeature`/`…Configuration` (`gas_pocket`), `SinkholeGasFeature`/`…Configuration` (`sinkhole_gas`), `Ring4BlightedFeatures`. **Gewijzigd:** `ModFeatures` (blok `// ring 4 — W-biomes g2`), `Ring4Features.ORDER` (+ `local`), `tools/worldgen/ring4_surface.py` + `noise_settings/overworld.json` (`peat_moors` = veen). **Registries:** 4 feature-types; 11 configured, 12 placed.
 
+**77 — nieuwe classes:** `SunkenGeodeFeature`/`…Configuration` (`sunken_geode`), `Ring4OreFeatures`. **Gewijzigd:** `Ring4BiomeModifiers` (`ADD_RING_4_ORES`, `ores()`, `oreBiomes()`), `ModFeatures`, `Ring4Features.ORDER`. **Registries:** 1 feature-type, 1 biome modifier; 3 configured, 16 + 3 placed (`ring_4/ore_*` vanilla, tidesilver, jade, geodes).
+
 ## Beslissingen
 - 2026-10-16, `worldgen` (implementatie W-biomes, 75): de gloed onder de eilanden als vast rooster (cellen van 4, bron 1–2 in de cel) i.p.v. een losse kans, zodat elk vlak blok in de schaduw licht ≥ 1 krijgt; de palet per kolom via de band (`Ring4Band.blighted`), niet per biome.
 - 2026-10-16, `worldgen` (implementatie, 75): moerasboom = vanilla's hoge mangrove een maat groter (stam 5–14, wortels 3–7) met `glowcap` en mostapijt op de wortels, zonder vanilla-vines (geen vanilla vine in ring 4) en zonder bijen. Fjordbomen: vanilla spar (default), den 40 %, donkere eik 10 %.
@@ -63,9 +71,11 @@ Nog niet (wacht op 74, W-terrein-b): ranken tussen de eilandparen, planten rond 
 - 2026-10-16, `worldgen` (implementatie, 76): dode bomen = alleen de `withered_moonpetal`-stam (recht 7–13, of gevorkt 60 %), in `drowned_forest` op de bodem in water tot 10 diep.
 
 ## Backlog
+- `worldgen` (77, na 73 op main): gifkristal-budding in de droge bedorven tunnels en gaskamers, tidesilver in de tunnelwanden, jade en aquamarijn in de overstroomde tunnels, sporen van wezens; via de tunnel-accessor van 73.
 - `worldgen` (75, na 74 op main): ranken tussen de eilandparen (`IslandField`-accessor van 74), planten rond de hemelmeren.
 - `blocks`: `glow_bloom`, `glowcap`, `verdant_bromeliad`, `verdant_blossom_bush` niet in `#replaceable_by_trees`: een boomkruin uit een buurchunk die later komt, laat zo'n plant staan, een eerdere niet (zeldzaam: kruinen op grondhoogte). INT-determinisme let erop.
 
 ## Voortgang
 - 2026-10-16: 75 gebouwd; B (incl. `Ring4MythicFeaturesTest`, `Ring4BiomesTest`, `FeatureOrderTest`) en D (twee keer, tweede keer 0 geschreven) groen.
 - 2026-10-16: 76 gebouwd; B (incl. `Ring4BlightedFeaturesTest`) en D groen.
+- 2026-10-16: 77 gebouwd (zonder de tunneldelen: 73 nog niet op main); B (incl. `Ring4OreFeaturesTest`) en D groen.

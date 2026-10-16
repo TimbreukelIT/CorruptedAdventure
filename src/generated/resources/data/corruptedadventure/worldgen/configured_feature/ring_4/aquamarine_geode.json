@@ -1,0 +1,69 @@
+{
+  "type": "corruptedadventure:sunken_geode",
+  "config": {
+    "bud_chance": 0.45,
+    "budding": {
+      "Name": "corruptedadventure:budding_aquamarine"
+    },
+    "budding_chance": 0.1,
+    "buds": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:small_aquamarine_bud",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:medium_aquamarine_bud",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:large_aquamarine_bud",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:aquamarine_cluster",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "crystal": {
+      "Name": "corruptedadventure:aquamarine_block"
+    },
+    "hollow": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    },
+    "middle": {
+      "Name": "minecraft:calcite"
+    },
+    "outer": {
+      "Name": "corruptedadventure:tidestone"
+    }
+  }
+}

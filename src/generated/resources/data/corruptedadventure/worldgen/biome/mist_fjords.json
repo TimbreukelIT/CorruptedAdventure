@@ -35,7 +35,9 @@
   "features": [
     [],
     [],
-    [],
+    [
+      "corruptedadventure:ring_4/deep_water_aquamarine_geodes"
+    ],
     [],
     [],
     [],

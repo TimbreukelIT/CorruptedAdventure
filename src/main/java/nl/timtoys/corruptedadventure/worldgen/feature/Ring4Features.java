@@ -68,6 +68,8 @@ public final class Ring4Features {
             local(Ring4BlightedFeatures.PEAT_MOORS_TOXIC_POOLS, ModBiomes.PEAT_MOORS),
             local(Ring4BlightedFeatures.BLIGHTED_TOXIC_POOLS, ModBiomes.REED_MARSH, ModBiomes.DROWNED_FOREST),
             local(Ring4BlightedFeatures.BANK_SUCKING_MUD, ModBiomes.PEAT_MOORS, ModBiomes.DROWNED_FOREST),
+            // 77: aquamarine geodes half open under deep water (the lagoon's troughs, the fjords).
+            local(Ring4OreFeatures.DEEP_WATER_AQUAMARINE_GEODES, ModBiomes.CRYSTAL_LAGOON, ModBiomes.MIST_FJORDS),
             // 76: the dead trees, the reeds (dense in the marsh), the blighted glowcaps and dead bushes.
             vegetal(Ring4BlightedFeatures.DROWNED_FOREST_TREES, ModBiomes.DROWNED_FOREST),
             vegetal(Ring4BlightedFeatures.WITHERED_GARDENS_TREES, ModBiomes.WITHERED_GARDENS),
@@ -104,11 +106,13 @@ public final class Ring4Features {
         VerdantFallsFeatures.configured(context);
         Ring4MythicFeatures.configured(context);
         Ring4BlightedFeatures.configured(context);
+        Ring4OreFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
         VerdantFallsFeatures.placed(context);
         Ring4MythicFeatures.placed(context);
         Ring4BlightedFeatures.placed(context);
+        Ring4OreFeatures.placed(context);
     }
 }

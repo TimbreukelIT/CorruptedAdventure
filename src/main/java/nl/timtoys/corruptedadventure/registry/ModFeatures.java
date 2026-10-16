@@ -54,6 +54,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.SuckingMudPatchConfigurati
 import nl.timtoys.corruptedadventure.worldgen.feature.SuckingMudPatchFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPoolConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPoolFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.SunkenGeodeConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SunkenGeodeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallDrapeConfiguration;
@@ -208,6 +210,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:sinkhole_gas} (76: layers of swamp gas on the floor of the peat sinkholes, Q10 = A) */
     public static final DeferredHolder<Feature<?>, Feature<SinkholeGasConfiguration>> SINKHOLE_GAS =
             FEATURES.register("sinkhole_gas", () -> new SinkholeGasFeature(SinkholeGasConfiguration.CODEC));
+    /** {@code corruptedadventure:sunken_geode} (77: aquamarine geodes half open in the floor under deep water, Q14 = A) */
+    public static final DeferredHolder<Feature<?>, Feature<SunkenGeodeConfiguration>> SUNKEN_GEODE =
+            FEATURES.register("sunken_geode", () -> new SunkenGeodeFeature(SunkenGeodeConfiguration.CODEC));
 
     private ModFeatures() {
     }
