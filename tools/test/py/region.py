@@ -117,7 +117,7 @@ def _unpack(longs, bits, count):
 
 def _state_name(p, fluid_levels):
     n = p["Name"]
-    if fluid_levels and n in ("minecraft:lava", "minecraft:water"):
+    if fluid_levels and n in ("minecraft:lava", "minecraft:water", "corruptedadventure:toxic_pool"):
         level = p.get("Properties", {}).get("level", "0")
         if level != "0":
             return "%s[level=%s]" % (n, level)
