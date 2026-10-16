@@ -33,6 +33,20 @@ class SuckingMudBlockTest {
         assertEquals(-0.025, nextMove(false, 0.0), 1.0E-9);
     }
 
+    /** Slow Falling (travel's gravity 0.01 while not rising) must not let an entity float out (review 72). */
+    @Test
+    void slowFallingStillSinks() {
+        double moved = 0.0;
+        for (int i = 0; i < 20; i++) {
+            // Travel takes its gravity from the velocity it starts with, which is what the entity moved with.
+            double gravity = SuckingMudBlock.travelGravity(GRAVITY, moved, true);
+            moved = (SuckingMudBlock.nextVerticalSpeed(false, gravity) - gravity) * TRAVEL_DRAG;
+            assertEquals(-0.025, moved, 1.0E-9);
+        }
+        assertEquals(GRAVITY, SuckingMudBlock.travelGravity(GRAVITY, 0.1, true));
+        assertEquals(GRAVITY, SuckingMudBlock.travelGravity(GRAVITY, -0.1, false));
+    }
+
     @Test
     void horizontalSpeedSettlesNearFourTenthsOfWalking() {
         double speed = 0.0;

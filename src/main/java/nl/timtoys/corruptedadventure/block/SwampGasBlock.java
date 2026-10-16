@@ -110,7 +110,14 @@ public class SwampGasBlock extends Block {
 
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        if (level.isClientSide() || state.getValue(LIT) || oldState.is(this)) {
+        if (level.isClientSide() || oldState.is(this)) {
+            return;
+        }
+        // Gas placed already lit (a command, a template) still needs its tick, or it would never burn.
+        if (state.getValue(LIT)) {
+            if (!level.getBlockTicks().hasScheduledTick(pos, this)) {
+                level.scheduleTick(pos, this, 1);
+            }
             return;
         }
         for (Direction direction : Direction.values()) {
@@ -150,11 +157,21 @@ public class SwampGasBlock extends Block {
         }
     }
 
-    /** The explosion lit it ({@link SwampGasIgnition}); it burns on its own tick instead of vanishing. */
+    /**
+     * The explosion lit it ({@link SwampGasIgnition}); it burns on its own tick instead of vanishing. A wind charge
+     * (a fireless gust, {@code TRIGGER_BLOCK}) leaves the gas alone.
+     */
     @Override
     protected void onExplosionHit(BlockState state, Level level, BlockPos pos, Explosion explosion,
                                   BiConsumer<ItemStack, BlockPos> dropConsumer) {
-        ignite(level, pos, 1);
+        if (ignitedBy(explosion)) {
+            ignite(level, pos, 1);
+        }
+    }
+
+    /** Whether an explosion carries fire: every one but a wind charge's gust. */
+    static boolean ignitedBy(Explosion explosion) {
+        return explosion.getBlockInteraction() != Explosion.BlockInteraction.TRIGGER_BLOCK;
     }
 
     @Override

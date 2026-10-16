@@ -56,6 +56,15 @@ Alles gewone blokken; groei op de server (random ticks, bonemeal). Geen client-c
 - 2026-10-16: 72 vooruit op main (3585b20); keuzes 1–4 bevestigd door de gebruiker.
 - 2026-10-16: 72b gebouwd; B (incl. `ModBlocksTest`, `ModTreeGrowersTest`) en D groen, geen ontbrekende textures.
 
+## Code-review (medium, 72 + 72b, review-subagent)
+Verwerkt in de vervolgcommit:
+1. Slow Falling liet een wezen uit de zuigmodder drijven (de blokcode compenseerde de volle zwaartekracht, `travel` haalt onder Slow Falling maar 0,01 af): `SuckingMudBlock.travelGravity` rekent zoals `travel`; test `slowFallingStillSinks`.
+2. Avontuur- en toeschouwerspelers konden gas aansteken met vuursteen (de event komt vóór vanilla's bouwcheck): `SwampGasIgnition` eist `mayUseItemAt` en `mayInteract`.
+3. Een windlading (`TRIGGER_BLOCK`, geen vuur) stak het gas aan: `SwampGasBlock.ignitedBy` slaat die over in `Detonate` en `onExplosionHit`.
+4. Al brandend geplaatst gas (`/setblock …[lit=true]`, sjabloon) kreeg nooit een tick: `onPlace` plant hem in.
+5. De outline van bromelia en bloeiende struik volgde de willekeurige offset van het model niet: `VerdantPlantBlock.getShape` schuift mee.
+Gecontroleerd en goed: kop ↔ stengel van de liaan (vanilla's parameternamen zijn misleidend, de implementatie klopt), geen herintreding bij ontploffingen, de statische `BURNS`-map alleen op de serverthread, registervolgorde fluids/blokken/items, geen client-class buiten `client/`, datagen compleet.
+
 ## CODEBASE-delta
 **Nieuwe classes**
 - `block/SwampGasBlock` (gas, `LIT`, `ignite(level, pos, delay)`, `ignites(state)`), `block/SwampGasBurn` (budget per level per tick), `block/SwampGasIgnition` (game bus: `ExplosionEvent.Detonate`, `PlayerInteractEvent.RightClickBlock` met `ItemAbilities.FIRESTARTER_LIGHT`).
