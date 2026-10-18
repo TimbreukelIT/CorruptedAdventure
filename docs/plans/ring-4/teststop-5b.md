@@ -9,7 +9,7 @@ Coördinaten: uit het terreinveld op de testseed (`IslandFieldTest`-layout), `/l
 (`tools/test/areas/int2.txt`, wereld `int2-ws`); in-game gecontroleerd in `ring4-wave2`: de portals, de grenzen en het
 Nether-fossiel. Wijkt een plek af, ga dan uit van wat je ter plaatse ziet en noteer de F3-coördinaat.
 
-**Eerst beslissen:** de drie INT2-bevindingen in §4 (liften ontbreken, zuigmodder zeldzaam, boomkruinen en determinisme).
+**INT2-bevindingen §4.1–4.3 zijn beslist en opgelost (liften, zuigmodder, bomen; main `9c234799`).
 
 ## 1. Server starten
 
