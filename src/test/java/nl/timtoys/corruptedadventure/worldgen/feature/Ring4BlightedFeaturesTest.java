@@ -1,8 +1,10 @@
 package nl.timtoys.corruptedadventure.worldgen.feature;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -82,5 +84,26 @@ class Ring4BlightedFeaturesTest {
         assertFalse(SuckingMudPatchFeature.waterFits(67, 62, drop), "a cliff, no bank");
         assertFalse(SuckingMudPatchFeature.waterFits(61, 62, drop), "ground under the water's top is no bank");
         assertEquals(0.25F, Ring4BlightedFeatures.BANK_CHANCE);
+    }
+
+    /** mud-5b review: the chosen bank does not depend on the other candidates or their order (load-order safe). */
+    @Test
+    void theChosenBankIgnoresTheOthers() {
+        LongArrayList banks = new LongArrayList();
+        for (int x = 0; x < 16; x++) {
+            banks.add(BlockPos.asLong(x, 62, x / 2));
+        }
+        for (long salt = 0; salt < 50; salt++) {
+            long winner = SuckingMudPatchFeature.pick(banks, salt);
+            LongArrayList fewer = new LongArrayList(banks);
+            fewer.rem(winner == banks.getLong(0) ? banks.getLong(1) : banks.getLong(0));
+            assertEquals(winner, SuckingMudPatchFeature.pick(fewer, salt), "one loser less");
+            LongArrayList reversed = new LongArrayList(banks);
+            Collections.reverse(reversed);
+            assertEquals(winner, SuckingMudPatchFeature.pick(reversed, salt), "another order");
+        }
+        assertTrue(SuckingMudPatchFeature.inChunk(16, -32, 31, -17));
+        assertFalse(SuckingMudPatchFeature.inChunk(16, -32, 32, -17));
+        assertFalse(SuckingMudPatchFeature.inChunk(16, -32, 20, -33));
     }
 }
