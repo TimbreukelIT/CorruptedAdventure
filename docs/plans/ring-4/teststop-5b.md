@@ -88,8 +88,13 @@ F3 toont het biome. Noteer bij elke bevinding de F3-coördinaat.
 - **Let op:** zak je ~1 blok per 2 s weg? Hoofd boven: kom je er springend uit? Hoofd onder: ~3 s adem, dan 2 HP/s; brengt blijven springen je eruit? Herken je de modder (glans, bel, slurpgeluid)? Peaceful/easy: geen dood (easy stopt op 10 HP). Een mob (`/summon cow`) zakt ook weg; items zinken niet.
 
 ### 3.4 Opwaartse stroom (lift)
-**Worldgen plaatst nog geen opwaartse stromen** (§4 punt 1). Test het blok zelf: `/fill 7010 64 10 7010 100 10 corruptedadventure:updraft` (bij 7000 0) en stap erin.
-- **Let op:** ~8 blok/s omhoog, geen valschade, items gaan mee? Ziet de tweede client je soepel stijgen?
+Liftkolommen staan sinds het liftpakket (§4 punt 1) in de wereld: één kolom `updraft` 2 blokken naast de eilandrand, van het bovenste waterblok tot 2 boven de rand.
+| Wat | Plek | Kolom |
+|---|---|---|
+| Lift uit de zee (mythische band west) | `/tp @s -6806.5 63 -883.5` | x −6807 z −884, Y 62–128 |
+| Hoge lift uit de zee (bedorven band zuid) | `/tp @s -339.5 63 -7206.5` | x −340 z −7207, Y 62–214 |
+| Lift uit het meer onder de wereldboom | `/tp @s 6405.5 71 2261.5` | x 6405 z 2261, Y 70–119 |
+- **Let op:** ~8 blok/s omhoog, geen valschade, items gaan mee? Kom je bovenin makkelijk op het eiland (2 blokken opzij)? Herken je de kolom van een afstand (bellen, geluid)? Ziet de tweede client je soepel stijgen?
 
 ### 3.5 Weer en storm
 In ring 4 (`/tp @s 7000 90 0`): `/ca weather 4 dense_fog`, `storm_wind`, `toxic_rain`, `clear`.
@@ -164,7 +169,7 @@ In ring 4 (`/tp @s 7000 90 0`): `/ca weather 4 dense_fog`, `storm_wind`, `toxic_
 ## 4. Open punten om te beoordelen
 
 **INT2-bevindingen (eerst beslissen):**
-1. **Geen opwaartse stromen in de wereld.** `IslandField.liftsWithin` kent liftposities (≈ 1 op 4 middel- en reuzeneilanden), maar geen feature zet er `updraft`-blokken in: 0 `updraft` in alle INT2-scangebieden. Opties: (A, aanbevolen) een klein `worldgen`-pakket dat de liftkolommen vult (van het water tot 2 boven de top), vóór 5b of meteen erna; (B) 5b test het blok handmatig (3.4), plaatsing in golf 3.
+1. **Opgelost in 0221e49b + b075b848** (liftpakket, branch `ring4/lifts-5b`, besluit 2026-10-18 = A): feature `ring_4/island_lifts` vult elke liftkolom (geen lift binnen 6 blokken van een waterval). In vier testgebieden (mythisch, bedorven noord/zuid, wereldboommeer) staan 7/7 geplande kolommen heel en op de juiste hoogte, in beide laadvolgordes gelijk (0 verschillen binnen 10 blokken van een kolom; elders alleen de bekende erts- en boomverschillen). Prestatie `lotus`/`reed`: noise 0,88/0,94 × vanilla (§3.4). Was: **Geen opwaartse stromen in de wereld.** `IslandField.liftsWithin` kent liftposities (≈ 1 op 4 middel- en reuzeneilanden), maar geen feature zet er `updraft`-blokken in: 0 `updraft` in alle INT2-scangebieden. Opties: (A, aanbevolen) een klein `worldgen`-pakket dat de liftkolommen vult (van het water tot 2 boven de top), vóór 5b of meteen erna; (B) 5b test het blok handmatig (3.4), plaatsing in golf 3.
 2. **Zuigmodder is zeldzaam:** 8 blokken (één plek, `51 62 7101`) in ~4.400 gescande chunks, 0 in de gebieden met veel `peat_moors`-/`drowned_forest`-oever (tdn, tds). Genoeg (G1: kleine plekken op oevers), of dichter in 76?
 3. **Boomkruinen en determinisme** (§J): moonpetal-bomen (`cascade_vale`, `sky_gardens`, rond de wereldbomen) en reuzenmangroves (`glowroot_swamp`) krijgen een andere vorm, of staan er niet, als de chunks in een andere volgorde laden. De wereld is per seed en per laadvolgorde gelijk; alleen een andere route door de wereld geeft hier en daar een andere boom. **Oorzaak** (INT2, uit de vanilla-code): een `TreeFeature`-boom leest wat er in zijn voetafdruk staat. Staat daar al de stam van een boom uit de buurchunk (of een plant die bomen niet vervangen), dan valt er een blad, wortel of tak weg, en daarna trekt de boom een ander aantal getallen uit zijn random (hangbladeren alleen onder gezette bladeren, de wortelsimulatie van de mangrove stopt bij een vreemde stam, `glowcap`/mos alleen boven een wortel in lucht): de rest van de boom verandert. Alle bomen van één feature in een chunk delen die random, dus ook elke volgende boom in die chunk verandert mee. Kronen en wortels reiken tot ~8 blokken over de chunkgrens (de cellen van 8 houden de stammen uit elkaar, niet de kronen). Vanilla-bossen (ring 1) doen hetzelfde; 47e loste in ring 3 alleen de grondplanten op. Opties:
    - (A, aanbevolen) **fixpakket W-biomes**: elke boom een eigen random op zijn positie (stopt de doorwerking naar de volgende bomen; niet zichtbaar) én een eigen boomfeature die de vanilla-vormen tekent tegen de grond zonder andere bomen, met een vaste voorrang waar twee bomen hetzelfde blok willen (stam > wortel > blad > mos/zwam/propagule): volgorde-onafhankelijk. Middelgroot (eigen variant van `TreeFeature` + leesbeeld van het niveau); daarna determinisme en prestatie opnieuw.
