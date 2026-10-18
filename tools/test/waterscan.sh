@@ -16,16 +16,17 @@
 # (run without --strict): 0 even with overtredingen - read the "over" columns; rerun the scans with --strict offline for
 # a failing exit code.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-[ $# -ge 2 ] || { sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+[ $# -ge 2 ] || { sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
 level="$1"; areas="$2"; shift 2
-settle=10; freeze=0
+settle=10; settle_given=0; freeze=0
 while [ $# -gt 0 ]; do
     case "$1" in
-        --settle) settle="$2"; shift 2 ;;
+        --settle) settle="$2"; settle_given=1; shift 2 ;;
         --freeze) freeze=1; shift ;;
         *) ca_die "unknown argument $1" ;;
     esac
 done
+[ $freeze = 1 ] && [ $settle_given = 1 ] && ca_die "--settle and --freeze exclude each other (frozen fluids never settle)"
 [ -f "$areas" ] || ca_die "no area file $areas"
 areas="$(cd "$(dirname "$areas")" && pwd)/$(basename "$areas")"
 

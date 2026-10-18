@@ -15,7 +15,7 @@
 # at ~19.000 chunks with 5 GB). --worktree makes the world in another checkout (e.g. a reference on main for the feature index).
 # Prints the world directory on the last line.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-[ $# -ge 2 ] || { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+[ $# -ge 2 ] || { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
 level="$1"; areas="$2"; shift 2
 gen=(); srv=(); keep=0; freeze=0; stay=0
 while [ $# -gt 0 ]; do

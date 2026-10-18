@@ -22,8 +22,8 @@ tmix 434 2 447 14
 # blighted band north: gas halls -342 7249, -291 7360, -168 7327, 74 7257; pool halls -430 7239, -430 7335,
 # -94 7250, -85 7355, 35 7355; dry entrance -108..7 7236..7328; dry sky-lake bowl 68 7355; reed_marsh -320 7352
 tdn -29 451 6 460
-# blighted band south: gas halls -293 -7359, -203 -7326, -182 -7240, 331 -7388 (edge); pool halls -354 -7205,
-# 42 -7378, 159 -7381; peat_moors 320 -7320, drowned_forest -352 -7320
+# blighted band south (x -368..175, z -7392..-7169): gas halls -293 -7359, -203 -7326, -182 -7240; pool halls
+# -354 -7205, 42 -7378, 159 -7381; reed_marsh -192 -7064 lies just north of it, peat_moors 320 -7320 east of it
 tds -23 -462 10 -449
 # geodes and drowned trees north: crystal_lagoon 0 7000, mist_fjords 32 7064, drowned_forest -32 7064, peat 64 7128
 lagn -8 430 7 445
@@ -38,7 +38,7 @@ tree2 393 -75 404 -64
 tree3 18 -426 29 -415
 # rock arch 7335 181 -> 7355 193
 arch4 456 9 460 13
-# lotus_shallows west -7160 320 (giant lily pads), glowroot_swamp -7096 128
+# lotus_shallows west -7160 320 (giant lily pads) and glowroot_swamp around -7221 253 (giant mangroves)
 lotusw -453 15 -444 24
 # Nether-4 (r 1500-2000): geode_hollows 1750 0, bone_dunes 1846 64, crystal_spires 1910 160
 n4e 104 -8 123 11 nether

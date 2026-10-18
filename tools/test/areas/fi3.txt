@@ -1,4 +1,5 @@
-# Feature index rings 1-3 (INT2 ring 4): fi.txt (rings 1/2, zones, Nether 1/2) plus a 4 x 4 box in every ring 3
+# Feature index rings 1-3 (INT2 ring 4): the 4 x 4 boxes of fi.txt (rings 1/2, zones; not its 16 x 16 ring1/ring2) and
+# its Nether 1/2 boxes, plus a 4 x 4 box in every ring 3
 # biome and landmark and two in Nether-3. Compare a world of the branch with one of a reference checkout on biomes
 # and terrain shape (featidx.py); with --freeze on both, detcmp.py shows what the decoration does.
 r1a -33 -45 -30 -42
