@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.registry;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -64,6 +65,7 @@ import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.GroundPlantFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.IsolatedTreeFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandLiftFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TunnelLiningFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelFeature;
@@ -228,6 +230,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:island_vines} (75: sagging root vines between the island pairs of 74) */
     public static final DeferredHolder<Feature<?>, Feature<IslandVinesConfiguration>> ISLAND_VINES =
             FEATURES.register("island_vines", () -> new IslandVinesFeature(IslandVinesConfiguration.CODEC));
+    /** {@code corruptedadventure:island_lift} (lift package before teststop 5b: the updraft columns of package 61) */
+    public static final DeferredHolder<Feature<?>, Feature<BlockStateConfiguration>> ISLAND_LIFT =
+            FEATURES.register("island_lift", () -> new IslandLiftFeature(BlockStateConfiguration.CODEC));
     /** {@code corruptedadventure:tunnel_lining} (77: crystals, ores and creature tracks in the tunnel net of 73) */
     public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> TUNNEL_LINING =
             FEATURES.register("tunnel_lining", () -> new TunnelLiningFeature(NoneFeatureConfiguration.CODEC));

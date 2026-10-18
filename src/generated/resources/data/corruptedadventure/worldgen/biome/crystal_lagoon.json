@@ -48,6 +48,9 @@
       "corruptedadventure:ring_4/crystal_lagoon_coral",
       "corruptedadventure:ring_4/crystal_lagoon_seagrass",
       "corruptedadventure:ring_4/crystal_lagoon_sea_pickles"
+    ],
+    [
+      "corruptedadventure:ring_4/island_lifts"
     ]
   ],
   "has_precipitation": true,

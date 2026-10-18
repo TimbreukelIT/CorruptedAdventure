@@ -1,0 +1,8 @@
+{
+  "type": "corruptedadventure:island_lift",
+  "config": {
+    "state": {
+      "Name": "corruptedadventure:updraft"
+    }
+  }
+}

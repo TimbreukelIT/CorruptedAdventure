@@ -194,6 +194,44 @@ class Ring4IslandsTest {
         perChunk.values().forEach(n -> assertTrue(n <= IslandField.FALLS_PER_CHUNK));
     }
 
+    /**
+     * Lift package: every lift away from the falls is listed by its own chunk and its own column (the feature fills it
+     * there); the reach filter of {@link IslandField#liftsWithin} drops none against a scan of every island around the
+     * chunk; no listed lift stands near a fall.
+     */
+    @Test
+    void everyLiftIsListedByItsOwnChunk() {
+        int lifts = 0;
+        int nearFalls = 0;
+        for (IslandShape s : SHAPES) {
+            IslandField.Lift lift = field.details(s).lift();
+            if (lift == null) {
+                continue;
+            }
+            lifts++;
+            int minX = lift.x() & ~15;
+            int minZ = lift.z() & ~15;
+            List<IslandField.Lift> listed = field.liftsWithin(minX, minZ, minX + 15, minZ + 15);
+            boolean nearFall = field.waterfallsWithin(lift.x() - 5, lift.z() - 5, lift.x() + 5, lift.z() + 5).stream()
+                    .anyMatch(f -> Math.abs(f.x() - lift.x()) + Math.abs(f.z() - lift.z()) < IslandField.LIFT_FALL_CLEARANCE);
+            nearFalls += nearFall ? 1 : 0;
+            assertEquals(!nearFall, listed.contains(lift), "own chunk " + lift);
+            assertEquals(!nearFall, field.liftsWithin(lift.x(), lift.z(), lift.x(), lift.z()).contains(lift), "own column " + lift);
+            assertTrue(lift.top() - lift.bottom() >= 3, "a column to ride " + lift);
+            // Every island the chunk could see, without the reach filter.
+            for (IslandShape other : field.shapesWithin(minX, minZ, minX + 15, minZ + 15)) {
+                IslandField.Lift theirs = field.details(other).lift();
+                if (theirs != null && theirs.x() >> 4 == minX >> 4 && theirs.z() >> 4 == minZ >> 4
+                        && field.waterfallsWithin(theirs.x() - 5, theirs.z() - 5, theirs.x() + 5, theirs.z() + 5).stream()
+                        .noneMatch(f -> Math.abs(f.x() - theirs.x()) + Math.abs(f.z() - theirs.z()) < IslandField.LIFT_FALL_CLEARANCE)) {
+                    assertTrue(listed.contains(theirs), "filtered away " + theirs);
+                }
+            }
+        }
+        System.out.printf("lifts %d, of which near a fall %d%n", lifts, nearFalls);
+        assertTrue(lifts - nearFalls > 2, "lifts " + lifts + ", near falls " + nearFalls);
+    }
+
     /** Review 61 #4: no two islands grow into each other, also across cells (apart, or stacked 6 blocks apart). */
     @Test
     void noIslandsGrowIntoEachOther() {
