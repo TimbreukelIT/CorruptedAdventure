@@ -52,7 +52,7 @@ F3 toont het biome. Noteer bij elke bevinding de F3-coördinaat.
 |---|---|---|
 | Gifpoel + gifmeter (survival) | `/tp @s 71 67 7124` | 3.1 |
 | Moerasgas (in de gashal, daarna ontsteken) | `/tp @s -342 17 7249` | 3.1, 3.2 |
-| Zuigmodder | `/tp @s 51 64 7101` | 3.3 |
+| Zuigmodder | `/tp @s -123 64 7365` | 3.3 |
 | Opwaartse stroom (handmatig geplaatst) | `/fill` uit 3.4 bij `7010 64 10` | 3.4 |
 | Weer (mist, storm, gifregen) | `/tp @s 7000 90 0` | 3.5 |
 | Tunnelnet overstroomd (koepel) | `/tp @s 6625 10 -337` | 3.6 |
@@ -84,7 +84,7 @@ F3 toont het biome. Noteer bij elke bevinding de F3-coördinaat.
 - **Let op:** loopt de brand als een golf door de kamer (knallen, vlammen) zonder hapering (F3: ms/tick)? Met `mobGriefing true`: hoeveel schade? Steekt een windlading het **niet** aan (besluit)? Zien beide clients hetzelfde?
 
 ### 3.3 Zuigmodder (drijfzand)
-`/tp @s 51 64 7101` (oever in de bedorven band). Zeldzaam: zie §4 punt 2.
+Plekken op de testseed (mud-5b; alleen in chunks die na 6abf60c2 zijn gegenereerd, dus een verse wereld): lage waterrand `/tp @s -123 64 7365`, `/tp @s -311 64 7248`, `/tp @s 55 64 7104`; hoge veenrand `/tp @s 91 68 7275` (de grootste, 12 kolommen), `/tp @s 39 68 7315`. De plek ligt op de oever zelf; sta je er niet in, kijk dan rond naar de glans. Daarna: loop ~2 minuten langs de oevers van `peat_moors` (bv. vanaf `-123 64 7365` oost- of westwaarts) en tel hoeveel plekken je tegenkomt (verwacht een paar).
 - **Let op:** zak je ~1 blok per 2 s weg? Hoofd boven: kom je er springend uit? Hoofd onder: ~3 s adem, dan 2 HP/s; brengt blijven springen je eruit? Herken je de modder (glans, bel, slurpgeluid)? Peaceful/easy: geen dood (easy stopt op 10 HP). Een mob (`/summon cow`) zakt ook weg; items zinken niet.
 
 ### 3.4 Opwaartse stroom (lift)
@@ -165,7 +165,7 @@ In ring 4 (`/tp @s 7000 90 0`): `/ca weather 4 dense_fog`, `storm_wind`, `toxic_
 
 **INT2-bevindingen (eerst beslissen):**
 1. **Geen opwaartse stromen in de wereld.** `IslandField.liftsWithin` kent liftposities (≈ 1 op 4 middel- en reuzeneilanden), maar geen feature zet er `updraft`-blokken in: 0 `updraft` in alle INT2-scangebieden. Opties: (A, aanbevolen) een klein `worldgen`-pakket dat de liftkolommen vult (van het water tot 2 boven de top), vóór 5b of meteen erna; (B) 5b test het blok handmatig (3.4), plaatsing in golf 3.
-2. **Zuigmodder is zeldzaam:** 8 blokken (één plek, `51 62 7101`) in ~4.400 gescande chunks, 0 in de gebieden met veel `peat_moors`-/`drowned_forest`-oever (tdn, tds). Genoeg (G1: kleine plekken op oevers), of dichter in 76?
+2. ~~**Zuigmodder is zeldzaam:** 8 blokken (één plek, `51 62 7101`) in ~4.400 gescande chunks, 0 in de gebieden met veel `peat_moors`-/`drowned_forest`-oever (tdn, tds). Genoeg (G1: kleine plekken op oevers), of dichter in 76?~~ **Opgelost in a38314ac + 6abf60c2** (branch `ring4/mud-5b`, besluit 2026-10-18: 1A dichtheid 0,25 per oeverchunk, 2B ook hoge veenranden): de feature zoekt de oever zelf in de eigen chunk. Telling (vóór → na, blokken / plekken): tdn 0 → 183 / 23, lagn 8 / 1 → 24 / 2, tmix 0 → 16 / 2, tds 0 → 0; determinisme (`det.sh`, wereld b omgekeerd) voor de modder identiek (alleen de bekende moonpetal-bomen in tds en 2 ertswissels verschillen); prestatie (`perf.sh`, 2 warme rondes) noise peat 0,99, lagoon 0,94, features 0,52/0,40 tegen vanilla (tds heeft vrijwel geen `peat_moors`/`drowned_forest`-land aan het oppervlak). Plekken: §3.3.
 3. **Boomkruinen en determinisme** (§J): moonpetal-bomen (`cascade_vale`, `sky_gardens`, rond de wereldbomen) en reuzenmangroves (`glowroot_swamp`) krijgen een andere vorm, of staan er niet, als de chunks in een andere volgorde laden. De wereld is per seed en per laadvolgorde gelijk; alleen een andere route door de wereld geeft hier en daar een andere boom. **Oorzaak** (INT2, uit de vanilla-code): een `TreeFeature`-boom leest wat er in zijn voetafdruk staat. Staat daar al de stam van een boom uit de buurchunk (of een plant die bomen niet vervangen), dan valt er een blad, wortel of tak weg, en daarna trekt de boom een ander aantal getallen uit zijn random (hangbladeren alleen onder gezette bladeren, de wortelsimulatie van de mangrove stopt bij een vreemde stam, `glowcap`/mos alleen boven een wortel in lucht): de rest van de boom verandert. Alle bomen van één feature in een chunk delen die random, dus ook elke volgende boom in die chunk verandert mee. Kronen en wortels reiken tot ~8 blokken over de chunkgrens (de cellen van 8 houden de stammen uit elkaar, niet de kronen). Vanilla-bossen (ring 1) doen hetzelfde; 47e loste in ring 3 alleen de grondplanten op. Opties:
    - (A, aanbevolen) **fixpakket W-biomes**: elke boom een eigen random op zijn positie (stopt de doorwerking naar de volgende bomen; niet zichtbaar) én een eigen boomfeature die de vanilla-vormen tekent tegen de grond zonder andere bomen, met een vaste voorrang waar twee bomen hetzelfde blok willen (stam > wortel > blad > mos/zwam/propagule): volgorde-onafhankelijk. Middelgroot (eigen variant van `TreeFeature` + leesbeeld van het niveau); daarna determinisme en prestatie opnieuw.
    - (B) alleen de eigen random per boom: klein, vermindert de verschillen (vooral midden in een gebied), maar een boom die zelf een buurkruin raakt blijft volgorde-afhankelijk.
