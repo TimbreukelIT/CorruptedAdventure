@@ -1,6 +1,8 @@
 {
   "type": "corruptedadventure:sucking_mud_patch",
   "config": {
+    "bank_drop": 4,
+    "bank_reach": 2,
     "biomes": [
       "corruptedadventure:peat_moors",
       "corruptedadventure:drowned_forest"

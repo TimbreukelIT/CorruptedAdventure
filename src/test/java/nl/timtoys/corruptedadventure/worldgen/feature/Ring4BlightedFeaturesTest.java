@@ -71,4 +71,16 @@ class Ring4BlightedFeaturesTest {
             }
         }
     }
+
+    /** mud-5b (2B): a bank is ground beside water level with it or up to four lower (the high peat rims), never higher. */
+    @Test
+    void aBankHasWaterLevelOrBelow() {
+        int drop = Ring4BlightedFeatures.BANK_DROP;
+        assertEquals(4, drop);
+        assertTrue(SuckingMudPatchFeature.waterFits(62, 62, drop), "the low water edge");
+        assertTrue(SuckingMudPatchFeature.waterFits(66, 62, drop), "a peat rim four above the water");
+        assertFalse(SuckingMudPatchFeature.waterFits(67, 62, drop), "a cliff, no bank");
+        assertFalse(SuckingMudPatchFeature.waterFits(61, 62, drop), "ground under the water's top is no bank");
+        assertEquals(0.25F, Ring4BlightedFeatures.BANK_CHANCE);
+    }
 }
