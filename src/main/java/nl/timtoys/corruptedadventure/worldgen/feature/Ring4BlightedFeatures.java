@@ -48,7 +48,8 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
  * G1): the dead {@code withered_moonpetal} trees standing in the drowned forest's dark water and on the withered
  * islands, reeds higher than the player (dense in {@code reed_marsh}, sparse elsewhere), blighted glowcaps, dead
  * bushes; and the hazards: small patches of deadly sucking mud on the banks of {@code peat_moors} and
- * {@code drowned_forest} (≤ 4 × 4, 2–3 deep; never in the reeds of {@code reed_marsh}), closed toxic pools, closed
+ * {@code drowned_forest} (≤ 4 × 4, 2–3 deep; never in the reeds of {@code reed_marsh}; mud-5b: in a quarter of the
+ * chunks with a bank, low water edges and high peat rims alike), closed toxic pools, closed
  * gas bubbles under the peat crust and one or two layers of gas on the floor of the peat sinkholes. The hazards and
  * the blighted glowcaps grow denser towards ring 5 ({@link RingChanceFilter} on ring 4's progress).
  * <p>
@@ -88,6 +89,12 @@ public final class Ring4BlightedFeatures {
 
     /** The deepest water a dead tree stands in (most trunks reach out of it; a short one stays a sunken trunk). */
     static final int DROWNED_WATER = 10;
+    /** mud-5b (1A): the chance of a sucking mud patch per chunk with a bank, before {@link #outward()}. */
+    static final float BANK_CHANCE = 0.25F;
+    /** A bank: water within this many blocks straight along x or z ... */
+    static final int BANK_REACH = 2;
+    /** ... whose top lies level with the ground or up to this many blocks lower (mud-5b, 2B: the high peat rims too). */
+    static final int BANK_DROP = 4;
     /** The hazards and the blighted glowcaps grow denser towards ring 5: this chance at ring 4's inner edge, 1 at its outer. */
     static final double INNER_CHANCE = 0.35;
 
@@ -113,7 +120,7 @@ public final class Ring4BlightedFeatures {
                 HolderSet.direct(Block::builtInRegistryHolder, Blocks.MUD, Blocks.DIRT, Blocks.COARSE_DIRT, Blocks.PODZOL,
                         Blocks.GRASS_BLOCK, Blocks.CLAY, Blocks.ROOTED_DIRT, ModBlocks.PEAT.get()),
                 HolderSet.direct(context.lookup(Registries.BIOME).getOrThrow(ModBiomes.PEAT_MOORS),
-                        context.lookup(Registries.BIOME).getOrThrow(ModBiomes.DROWNED_FOREST))));
+                        context.lookup(Registries.BIOME).getOrThrow(ModBiomes.DROWNED_FOREST)), BANK_REACH, BANK_DROP));
         FeatureUtils.register(context, TOXIC_POOL, ModFeatures.TOXIC_POOL.get(), new ToxicPoolConfiguration(
                 ModBlocks.TOXIC_POOL.get().defaultBlockState(), UniformInt.of(1, 3), UniformInt.of(1, 2)));
         FeatureUtils.register(context, GAS_POCKET, ModFeatures.GAS_POCKET.get(), new GasPocketConfiguration(
@@ -131,8 +138,10 @@ public final class Ring4BlightedFeatures {
                 Ring4Filter.builder().ground().build(), outward());
         register(context, BLIGHTED_TOXIC_POOLS, TOXIC_POOL, JitteredGridPlacement.of(16, 4, 0.15F), SURFACE, only(ON_LAND),
                 Ring4Filter.builder().ground().build(), outward());
-        register(context, BANK_SUCKING_MUD, SUCKING_MUD, JitteredGridPlacement.of(16, 2, 0.4F), SURFACE,
-                only(BlockPredicate.allOf(ON_LAND, Ring4Placements.waterNear(2))), Ring4Filter.builder().ground().build(), outward());
+        // One draw per chunk; the feature finds the bank in the chunk and checks the biome per column (no biome filter:
+        // the origin is only the chunk, its biome says nothing about the bank's).
+        PlacementUtils.register(context, BANK_SUCKING_MUD, context.lookup(Registries.CONFIGURED_FEATURE).getOrThrow(SUCKING_MUD),
+                List.of(JitteredGridPlacement.of(16, 0, BANK_CHANCE), outward()));
 
         // VEGETAL_DECORATION.
         register(context, DROWNED_FOREST_TREES, WITHERED_TREES, JitteredGridPlacement.of(8, 1, 0.45F), FLOOR,
