@@ -2,21 +2,21 @@
   "type": "minecraft:random_selector",
   "config": {
     "default": {
-      "feature": "minecraft:spruce",
+      "feature": "corruptedadventure:ring_4/fjord_spruce",
       "placement": []
     },
     "features": [
       {
         "chance": 0.4,
         "feature": {
-          "feature": "minecraft:pine",
+          "feature": "corruptedadventure:ring_4/fjord_pine",
           "placement": []
         }
       },
       {
         "chance": 0.1,
         "feature": {
-          "feature": "minecraft:dark_oak",
+          "feature": "corruptedadventure:ring_4/fjord_dark_oak",
           "placement": []
         }
       }

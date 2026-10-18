@@ -38,6 +38,13 @@ final class Ring4Placements {
     /** Air here and dry ground below (not a tree): land. */
     static final BlockPredicate ON_LAND = BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
             BlockPredicate.noFluid(new Vec3i(0, -1, 0)), OFF_TREES);
+    /**
+     * Dry ground below that is no tree (as {@link #ON_LAND}, without asking for air here): the ground plants of
+     * {@link GroundPlantFeature}, which look at the spot themselves after their draw, and the trees
+     * ({@link IsolatedTreeFeature}, which see another tree's blocks as the terrain): a neighbour's tree may stand on the
+     * spot or not.
+     */
+    static final BlockPredicate ON_GROUND = BlockPredicate.allOf(BlockPredicate.noFluid(new Vec3i(0, -1, 0)), OFF_TREES);
     /** Air here over a water source: the water's surface. */
     static final BlockPredicate ON_WATER = BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
             BlockPredicate.matchesFluids(new Vec3i(0, -1, 0), Fluids.WATER));

@@ -97,8 +97,8 @@ public final class Ring4BlightedFeatures {
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         HolderGetter<ConfiguredFeature<?, ?>> features = context.lookup(Registries.CONFIGURED_FEATURE);
         // Dead, bare and grey: only the trunk (withered moonpetal has no leaves), tall enough to stand out of deep water.
-        FeatureUtils.register(context, WITHERED_TREE, Feature.TREE, bareTree(new StraightTrunkPlacer(9, 4, 2)));
-        FeatureUtils.register(context, WITHERED_TREE_FORKED, Feature.TREE, bareTree(new ForkingTrunkPlacer(8, 3, 3)));
+        FeatureUtils.register(context, WITHERED_TREE, ModFeatures.ISOLATED_TREE.get(), bareTree(new StraightTrunkPlacer(9, 4, 2)));
+        FeatureUtils.register(context, WITHERED_TREE_FORKED, ModFeatures.ISOLATED_TREE.get(), bareTree(new ForkingTrunkPlacer(8, 3, 3)));
         FeatureUtils.register(context, WITHERED_TREES, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(
                 List.of(new WeightedPlacedFeature(PlacementUtils.inlinePlaced(features.getOrThrow(WITHERED_TREE_FORKED)), 0.6F)),
                 PlacementUtils.inlinePlaced(features.getOrThrow(WITHERED_TREE))));
@@ -106,7 +106,7 @@ public final class Ring4BlightedFeatures {
         FeatureUtils.register(context, SPARSE_REEDS, ModFeatures.REED_CLUMP.get(), new ReedClumpConfiguration(2, 0.35F, 2, 3));
         FeatureUtils.register(context, BLIGHTED_GLOWCAP, Feature.SIMPLE_BLOCK,
                 new SimpleBlockConfiguration(BlockStateProvider.simple(ModBlocks.BLIGHTED_GLOWCAP.get())));
-        FeatureUtils.register(context, DEAD_BUSH, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(
+        FeatureUtils.register(context, DEAD_BUSH, ModFeatures.GROUND_PLANT.get(), new SimpleBlockConfiguration(
                 Ring4MythicFeatures.weighted(Blocks.DEAD_BUSH.defaultBlockState(), 3, Blocks.SHORT_GRASS.defaultBlockState(), 1)));
         FeatureUtils.register(context, SUCKING_MUD, ModFeatures.SUCKING_MUD_PATCH.get(), new SuckingMudPatchConfiguration(
                 UniformInt.of(2, SuckingMudPatchFeature.MAX_WIDTH), UniformInt.of(2, 3),
@@ -138,13 +138,13 @@ public final class Ring4BlightedFeatures {
         register(context, DROWNED_FOREST_TREES, WITHERED_TREES, JitteredGridPlacement.of(8, 1, 0.45F), FLOOR,
                 SurfaceWaterDepthFilter.forMaxDepth(DROWNED_WATER), only(BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT)));
         register(context, WITHERED_GARDENS_TREES, WITHERED_TREES, JitteredGridPlacement.of(16, 2, 0.5F), SURFACE,
-                only(BlockPredicate.allOf(ON_LAND, BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT))));
+                only(BlockPredicate.allOf(Ring4Placements.ON_GROUND, BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT))));
         register(context, REED_MARSH_REEDS, DENSE_REEDS, JitteredGridPlacement.of(8, 3, 0.85F), SURFACE);
         register(context, BLIGHTED_BANK_REEDS, SPARSE_REEDS, JitteredGridPlacement.of(16, 3, 0.4F), SURFACE,
                 only(Ring4Placements.waterNear(3)));
         register(context, REED_MARSH_GLOWCAPS, BLIGHTED_GLOWCAP, JitteredGridPlacement.of(4, 0, 0.12F), SURFACE, only(ON_LAND), outward());
         register(context, BLIGHTED_GLOWCAPS, BLIGHTED_GLOWCAP, JitteredGridPlacement.of(4, 0, 0.05F), SURFACE, only(ON_LAND), outward());
-        register(context, BLIGHTED_DEAD_BUSHES, DEAD_BUSH, JitteredGridPlacement.of(4, 0, 0.12F), SURFACE, only(ON_LAND));
+        register(context, BLIGHTED_DEAD_BUSHES, DEAD_BUSH, JitteredGridPlacement.of(4, 0, 0.12F), SURFACE, only(Ring4Placements.ON_GROUND));
     }
 
     /** Denser towards ring 5: {@link #INNER_CHANCE} at ring 4's inner edge, rising linearly to 1 at its outer one. */
