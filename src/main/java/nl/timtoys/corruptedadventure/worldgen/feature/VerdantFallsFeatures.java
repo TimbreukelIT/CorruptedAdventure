@@ -36,6 +36,7 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandOutput;
 
 import java.util.Optional;
 
+import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.ON_GROUND;
 import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.ON_LAND;
 import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.ON_WATER;
 import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.SURFACE;
@@ -123,14 +124,14 @@ public final class VerdantFallsFeatures {
                 Optional.of(new LedgeStrandConfiguration.Variant(
                         ModBlocks.VERDANT_VINE_PLANT.get().defaultBlockState().setValue(VerdantVineBlock.FLOWERING, true), vineTip(true))),
                 FLOWERING_SHARE));
-        FeatureUtils.register(context, EMERGENT_TREE, Feature.TREE, new TreeConfiguration.TreeConfigurationBuilder(
+        FeatureUtils.register(context, EMERGENT_TREE, ModFeatures.ISOLATED_TREE.get(), new TreeConfiguration.TreeConfigurationBuilder(
                 BlockStateProvider.simple(ModBlocks.VERDANT_LOG.get()),
                 new VerdantTrunkPlacer(14, 4, 4, UniformInt.of(2, 4), ConstantInt.of(8), 0.06F, 0.05F),
                 BlockStateProvider.simple(ModBlocks.VERDANT_LEAVES.get()),
                 new VerdantFoliagePlacer(UniformInt.of(5, 6), ConstantInt.of(0), VerdantFoliagePlacer.Shape.UMBRELLA),
                 new TwoLayersFeatureSize(1, 0, 1)).ignoreVines().build());
         // The tree fern: also what the sapling grows (F11 = A).
-        FeatureUtils.register(context, ModConfiguredFeatures.VERDANT_TREE_FERN, Feature.TREE, new TreeConfiguration.TreeConfigurationBuilder(
+        FeatureUtils.register(context, ModConfiguredFeatures.VERDANT_TREE_FERN, ModFeatures.ISOLATED_TREE.get(), new TreeConfiguration.TreeConfigurationBuilder(
                 BlockStateProvider.simple(ModBlocks.VERDANT_LOG.get()),
                 new VerdantTrunkPlacer(4, 2, 1, ConstantInt.of(0), ConstantInt.of(0), 0.0F, 0.0F),
                 BlockStateProvider.simple(ModBlocks.VERDANT_LEAVES.get()),
@@ -164,16 +165,16 @@ public final class VerdantFallsFeatures {
                 .clearOfFalls(TREE_CLEARANCE).clearOfKnobs(TREE_CLEARANCE).build();
         // Emergent trees on the banks of the still lakes (not the foot river) and on the gorge rims.
         register(context, VERDANT_FALLS_BANK_TREES, EMERGENT_TREE, JitteredGridPlacement.of(16, 4, 0.45F), SURFACE,
-                HeightBandFilter.above(ABOVE_THE_FOOT_RIVER), only(BlockPredicate.allOf(ON_LAND, Ring4Placements.waterNear(4))),
+                HeightBandFilter.above(ABOVE_THE_FOOT_RIVER), only(BlockPredicate.allOf(ON_GROUND, Ring4Placements.waterNear(4))),
                 sapling, treeClear);
         register(context, VERDANT_FALLS_RIM_TREES, EMERGENT_TREE, JitteredGridPlacement.of(16, 3, 0.35F), SURFACE,
-                only(ON_LAND), SlopeFilter.rimTop(6, 12), sapling, treeClear);
+                only(ON_GROUND), SlopeFilter.rimTop(6, 12), sapling, treeClear);
         // Tree ferns on the treads and on the risers (F3 = B).
         PlacementModifier fernClear = Ring4Filter.builder().ground().clearOfFalls(FERN_CLEARANCE).clearOfKnobs(FERN_CLEARANCE).build();
         register(context, VERDANT_FALLS_TREAD_TREE_FERNS, ModConfiguredFeatures.VERDANT_TREE_FERN, JitteredGridPlacement.of(8, 2, 0.35F),
-                SURFACE, only(ON_LAND), Ring4Filter.builder().below(IslandOutput.Output.SLOPE, 0.4).build(), sapling, fernClear);
+                SURFACE, only(ON_GROUND), Ring4Filter.builder().below(IslandOutput.Output.SLOPE, 0.4).build(), sapling, fernClear);
         register(context, VERDANT_FALLS_RISER_TREE_FERNS, ModConfiguredFeatures.VERDANT_TREE_FERN, JitteredGridPlacement.of(8, 2, 0.25F),
-                SURFACE, only(ON_LAND), Ring4Filter.builder().range(IslandOutput.Output.SLOPE, 0.4, 1.5).build(), sapling, fernClear);
+                SURFACE, only(ON_GROUND), Ring4Filter.builder().range(IslandOutput.Output.SLOPE, 0.4, 1.5).build(), sapling, fernClear);
         // The gorge walls: from the foot of a wall up.
         register(context, VERDANT_FALLS_WALL_PLANTS, WALL_PLANTS, JitteredGridPlacement.of(4, 0, 0.5F), SURFACE,
                 SlopeFilter.wallFoot(2, 6), Ring4Filter.builder().ground().clearOfFalls(FERN_CLEARANCE).build());

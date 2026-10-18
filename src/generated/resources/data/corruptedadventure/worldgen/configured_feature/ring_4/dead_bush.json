@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:simple_block",
+  "type": "corruptedadventure:ground_plant",
   "config": {
     "to_place": {
       "type": "minecraft:weighted_state_provider",

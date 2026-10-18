@@ -4,6 +4,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -61,6 +63,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.GroundPlantFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.IsolatedTreeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.IslandLiftFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TunnelLiningFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.UnnaturalTunnelConfiguration;
@@ -232,6 +236,18 @@ public final class ModFeatures {
     /** {@code corruptedadventure:tunnel_lining} (77: crystals, ores and creature tracks in the tunnel net of 73) */
     public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> TUNNEL_LINING =
             FEATURES.register("tunnel_lining", () -> new TunnelLiningFeature(NoneFeatureConfiguration.CODEC));
+    /**
+     * {@code corruptedadventure:isolated_tree} (tree determinism, option A): vanilla's tree for ring 4, grown against the
+     * terrain without the other trees, with its own random and a fixed priority where trees overlap
+     */
+    public static final DeferredHolder<Feature<?>, Feature<TreeConfiguration>> ISOLATED_TREE =
+            FEATURES.register("isolated_tree", () -> new IsolatedTreeFeature(TreeConfiguration.CODEC));
+    /**
+     * {@code corruptedadventure:ground_plant} (tree determinism): {@code simple_block} that always draws its plant and
+     * then only fills open air, for the weighted ground plants of ring 4
+     */
+    public static final DeferredHolder<Feature<?>, Feature<SimpleBlockConfiguration>> GROUND_PLANT =
+            FEATURES.register("ground_plant", () -> new GroundPlantFeature(SimpleBlockConfiguration.CODEC));
 
     private ModFeatures() {
     }

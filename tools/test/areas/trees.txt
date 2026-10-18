@@ -1,0 +1,25 @@
+# Tree determinism of ring 4 (option A, isolated_tree, 2026-10-18): the INT2 areas with tree differences, one area per
+# other ring 4 tree (fjord trees, drowned trunks, emergent trees and tree ferns) and a few control areas.
+# Chunk coordinates, inclusive; seed 20260930, default ring radii. det.sh --areas tools/test/areas/trees.txt
+# cascade_vale (moonpetal trees) and lotus_shallows/glowroot_swamp (giant mangroves) at r 7000
+r4w -441 -4 -433 4
+r4e 433 -4 441 4
+# sky_gardens above the blighted band south (moonpetal trees)
+tds -23 -462 10 -449
+# world trees (moonpetal trees around them; tree3 stands in the swamp)
+tree1 397 136 407 146
+tree2 393 -75 404 -64
+tree3 18 -426 29 -415
+# glowroot_swamp west -7221 253 (giant mangroves)
+lotusw -453 15 -444 24
+# verdant_falls north and east (moonpetal trees; emergent trees and tree ferns)
+vfn 14 -382 19 -368
+vfe 369 -2 382 4
+# mist_fjords (spruce, pine, dark oak), part of perf-r4 fjord
+fjord 403 171 410 178
+# drowned_forest south (withered trunks in the water)
+drowned -26 -462 -19 -455
+# controls: lagoon/geodes with the drowned forest north, a sky lake, the rock arch
+lagn -8 430 7 445
+skyw1 -435 9 -430 14
+arch4 456 9 460 13
