@@ -70,6 +70,8 @@ public final class IslandField implements DensityFunction {
     static final int FALLS_PER_CHUNK = 3;
     /** How far (blocks) past an island's reach its lift may stand: two out from the edge, plus the edge's block. */
     static final double LIFT_REACH = 4.0;
+    /** A lift keeps this Manhattan distance (blocks) from every fall, as {@link IslandPlacement} does from its own. */
+    static final int LIFT_FALL_CLEARANCE = 6;
     /** Recorded waterfalls of {@code verdant_falls} per chunk at most (Q4 = A: a cap of their own, besides the islands'). */
     static final int VERDANT_FALLS_PER_CHUNK = 6;
     /** How far (blocks) under the ground of {@code verdant_falls} the caves stay closed (no cave mouths on the descent). */
@@ -409,7 +411,10 @@ public final class IslandField implements DensityFunction {
         return found;
     }
 
-    /** The positions of the lifts (updrafts) in the box: beside about one in four middle and giant islands. */
+    /**
+     * The positions of the lifts (updrafts) in the box: beside about one in four middle and giant islands, none near a
+     * waterfall. Pure; the lift feature fills the column of each one.
+     */
     public List<Lift> liftsWithin(int minX, int minZ, int maxX, int maxZ) {
         List<Lift> found = new ArrayList<>();
         for (IslandShape shape : shapesWithin(minX, minZ, maxX, maxZ)) {
@@ -420,11 +425,25 @@ public final class IslandField implements DensityFunction {
                 continue;
             }
             Lift lift = details(shape).lift();
-            if (lift != null && lift.x() >= minX && lift.x() <= maxX && lift.z() >= minZ && lift.z() <= maxZ) {
+            if (lift != null && lift.x() >= minX && lift.x() <= maxX && lift.z() >= minZ && lift.z() <= maxZ && clearOfFalls(lift)) {
                 found.add(lift);
             }
         }
         return found;
+    }
+
+    /**
+     * Whether no waterfall the terrain places comes near the lift (review lift package: placement only keeps the lift
+     * away from its own island's falls; a neighbouring island's fall may stand right beside or in its column).
+     */
+    private boolean clearOfFalls(Lift lift) {
+        int r = LIFT_FALL_CLEARANCE - 1;
+        for (Waterfall fall : waterfallsWithin(lift.x() - r, lift.z() - r, lift.x() + r, lift.z() + r)) {
+            if (Math.abs(fall.x() - lift.x()) + Math.abs(fall.z() - lift.z()) < LIFT_FALL_CLEARANCE) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

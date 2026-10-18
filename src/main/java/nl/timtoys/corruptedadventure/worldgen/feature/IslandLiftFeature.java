@@ -18,8 +18,13 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
  * <p>
  * A column is one block wide, so it lies in one chunk: each chunk fills the lifts whose column it holds and writes
  * nothing elsewhere. The column is a pure function of the seed ({@link IslandField}); every block of it becomes the
- * updraft whatever stands there, so a lily pad, a vine or a neighbouring tree's leaves in the column never make the
- * result depend on the order chunks decorate in. Placed last (top layer step), after every feature of its own chunk.
+ * updraft whatever stands there (a lily pad, a vine, a neighbouring tree's leaves), so the column itself is the same in
+ * every load order. Placed last (top layer step), after every feature of its own chunk; no placement filter, so it
+ * runs in every chunk whose decoration window holds a ring 4 ground biome.
+ * <p>
+ * Known rest (the tree order issue of teststop 5b §4.3): a neighbouring chunk's tree that grows after the column sees
+ * the updraft as an obstacle (not air, not replaceable by trees), so a mangrove root running through the column stops
+ * there and leaf distances may differ, unlike a tree that grew first and lost only the blocks in the column.
  */
 public final class IslandLiftFeature extends Feature<BlockStateConfiguration> {
     public IslandLiftFeature(Codec<BlockStateConfiguration> codec) {
