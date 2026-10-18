@@ -202,6 +202,11 @@ Screenshot: ja/nee
 Tot slot: de drie INT2-bevindingen van §4, de drie dingen die het meest moeten veranderen, en per punt van §4
 "zo laten" of "anders: …". Het speel-lock blijft staan tot je de teststop afrondt.
 
+### 5.1 Feedback gebruiker (2026-10-18, eerste indruk)
+
+- **Het hele ring 4-gebied voelt leeg en saai aan, vooral `mist_fjords`.** Overal staan vooral bomen; er is weinig aankleding of iets dat het gebied voller maakt.
+- Volgende sessie: eerst een sparringsessie (CLAUDE.md §3) over aankleding en vulling per biome (te beginnen met `mist_fjords`), daarna een pakket. Niet bouwen zonder die ronde.
+
 ## J. INT2-resultaten (2026-10-16 – 2026-10-18)
 
 Branch `ring4/int2` op main `8cc10438` (alle golf 2-stromen al vooruit gemerged). Werelden in de worktree van INT2
