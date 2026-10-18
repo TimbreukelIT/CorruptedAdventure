@@ -1,29 +1,44 @@
 #!/bin/bash
-# Water against air outside the planned falls (contract §4, ring 4): waterscan.sh <level> <areas> [--settle S]
+# Water against air outside the planned falls (contract §4, ring 4), and poison against air or water:
+#   waterscan.sh <level> <areas> [--settle S | --freeze]
 #
 #   waterscan.sh ring4-ws tools/test/areas/ring4.txt
 #
 # Makes a fresh world of the areas with world.sh (--keep, so the server stays up), asks the server for the planned
 # falls of every overworld area box (`/ca falls`, the same IslandField.waterfallsWithin as the terrain; written to
-# <world>/ca_falls), stops the server, then runs py/waterscan.py on the saved regions and the fall lists.
-# Output: build/test/waterscan-<level>.txt (+ .json). Exit code of waterscan.py (run without --strict): 0 even with
-# overtredingen - read the "over" column; rerun py/waterscan.py --strict offline for a failing exit code.
+# <world>/ca_falls), stops the server, then runs py/waterscan.py and py/poisonscan.py on the saved regions.
+# Every tile stays forceloaded --settle S seconds (default 10) after it is loaded, so the flowing water of the falls
+# and of any leak reaches its rest before the chunks unload; without it the counts of flowing water depend on when a
+# chunk unloads (backlog: 129/183/137 in three runs of b45in). --freeze instead generates under `/tick freeze` (world.sh
+# --freeze --stay-frozen: exactly what the generator placed) - only for small areas: frozen, the server never purges
+# its stale chunk tickets, so nothing unloads (INT2: out of memory at ~19.000 chunks with 5 GB).
+# The poison scan of a settled world misses sludge that touched water (it turned into mud): --freeze for that count.
+# Output: build/test/waterscan-<level>.txt (+ .json) and poisonscan-<level>.txt (+ .json). Exit code of waterscan.py
+# (run without --strict): 0 even with overtredingen - read the "over" columns; rerun the scans with --strict offline for
+# a failing exit code.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-[ $# -ge 2 ] || { sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+[ $# -ge 2 ] || { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
 level="$1"; areas="$2"; shift 2
-settle=0
+settle=10; settle_given=0; freeze=0
 while [ $# -gt 0 ]; do
     case "$1" in
-        --settle) settle="$2"; shift 2 ;;
+        --settle) settle="$2"; settle_given=1; shift 2 ;;
+        --freeze) freeze=1; shift ;;
         *) ca_die "unknown argument $1" ;;
     esac
 done
+[ $freeze = 1 ] && [ $settle_given = 1 ] && ca_die "--settle and --freeze exclude each other (frozen fluids never settle)"
 [ -f "$areas" ] || ca_die "no area file $areas"
 areas="$(cd "$(dirname "$areas")" && pwd)/$(basename "$areas")"
 
 trap 'bash "$CA_TOOLS/server.sh" stop' EXIT
 trap 'exit 130' INT TERM
-out="$(bash "$CA_TOOLS/world.sh" "$level" "$areas" --keep --settle "$settle")" || exit $?
+if [ $freeze = 1 ]; then
+    mode=(--freeze --stay-frozen)
+else
+    mode=(--settle "$settle")
+fi
+out="$(bash "$CA_TOOLS/world.sh" "$level" "$areas" --keep "${mode[@]}")" || exit $?
 world="$(echo "$out" | tail -1)"
 
 # One /ca falls per overworld area box, in the block coordinates the scan uses (chunks x 16, far corner + 15).
@@ -41,4 +56,10 @@ trap 'exit 130' INT TERM
 
 $CA_PY "$CA_TOOLS/py/waterscan.py" "$(cygpath -m "$world")" "$(cygpath -m "$areas")" "$(cygpath -m "$world/ca_falls")" \
     --json "$(cygpath -m "$CA_OUT/waterscan-$level.json")" | tee "$CA_OUT/waterscan-$level.txt"
-exit "${PIPESTATUS[0]}"
+rc="${PIPESTATUS[0]}"
+[ $freeze = 1 ] || echo "poisonscan on a settled world: sludge that touched water may already be mud (s~wat); use --freeze for that count"
+$CA_PY "$CA_TOOLS/py/poisonscan.py" "$(cygpath -m "$world")" "$(cygpath -m "$areas")" \
+    --json "$(cygpath -m "$CA_OUT/poisonscan-$level.json")" | tee "$CA_OUT/poisonscan-$level.txt"
+prc="${PIPESTATUS[0]}"
+[ "$rc" = 0 ] && rc="$prc"
+exit "$rc"

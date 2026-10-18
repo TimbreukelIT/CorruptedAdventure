@@ -115,9 +115,11 @@ def _unpack(longs, bits, count):
     return vals.reshape(-1)[:count].astype(np.int32)
 
 
-def _state_name(p, fluid_levels):
+def _state_name(p, fluid_levels, waterlogged=False):
     n = p["Name"]
-    if fluid_levels and n in ("minecraft:lava", "minecraft:water"):
+    if waterlogged and "waterlogged" in p.get("Properties", {}):
+        return n + ("[waterlogged]" if p["Properties"]["waterlogged"] == "true" else "[waterloggable]")
+    if fluid_levels and n in ("minecraft:lava", "minecraft:water", "corruptedadventure:toxic_pool"):
         level = p.get("Properties", {}).get("level", "0")
         if level != "0":
             return "%s[level=%s]" % (n, level)
@@ -128,8 +130,9 @@ def is_full(c):
     return c is not None and c.get("Status") in ("minecraft:full", "full")
 
 
-def chunk_blocks(world, cx, cz, dim=None, fluid_levels=False, chunk=None):
-    """(names, ids[y][z][x] int32) for a saved chunk, or None. dim: an areas.Dim (default overworld)."""
+def chunk_blocks(world, cx, cz, dim=None, fluid_levels=False, chunk=None, waterlogged=False):
+    """(names, ids[y][z][x] int32) for a saved chunk, or None. dim: an areas.Dim (default overworld). waterlogged=True
+    names a block with a waterlogged property "<name>[waterlogged]" or "<name>[waterloggable]"."""
     regiondir, min_y, height = (dim.regiondir, dim.min_y, dim.height) if dim else ("region", -64, 384)
     c = chunk if chunk is not None else chunk_nbt(world, cx, cz, regiondir)
     if c is None:
@@ -146,7 +149,7 @@ def chunk_blocks(world, cx, cz, dim=None, fluid_levels=False, chunk=None):
             continue
         ids = []
         for p in bs["palette"]:
-            n = _state_name(p, fluid_levels)
+            n = _state_name(p, fluid_levels, waterlogged)
             if n not in index:
                 index[n] = len(names)
                 names.append(n)

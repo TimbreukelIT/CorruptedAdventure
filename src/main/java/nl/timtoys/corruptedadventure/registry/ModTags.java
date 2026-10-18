@@ -187,7 +187,7 @@ public final class ModTags {
         public static final TagKey<Biome> IS_NETHER_RING_4 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_nether_ring_4"));
         /** The blighted band of ring 4 and {@code withered_gardens} (poison sources, poison rain). */
         public static final TagKey<Biome> RING_4_BLIGHTED = TagKey.create(Registries.BIOME, CorruptedAdventure.id("ring_4_blighted"));
-        /** Biomes that purify (lower the poison meter): the Nether ring 4 biomes. */
+        /** Biomes that purify (every falling condition meter falls faster, {@code PurifyingModifier}): the Nether ring 4 biomes. */
         public static final TagKey<Biome> PURIFYING = TagKey.create(Registries.BIOME, CorruptedAdventure.id("purifying"));
 
         private Biomes() {

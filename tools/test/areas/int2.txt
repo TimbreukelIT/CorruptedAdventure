@@ -1,0 +1,44 @@
+# Integration 2 of ring 4 (golf 2): the new terrain and decoration of ring 4 and Nether-4. Chunk coordinates,
+# inclusive; seed 20260930, default ring radii. Used for waterscan.sh (+ poisonscan), det.sh and inventory.
+# Positions from the test field (Ring4Tunnels/IslandLandmarks on the test seed) and /locate biome on a fresh world.
+# verdant_falls (as ring4.txt): streams with lakes and the horseshoe gorges, now with the 75b flora
+vfe 369 -2 382 4
+vfs -22 367 -16 380
+vfw -382 -8 -369 -3
+vfn 14 -382 19 -368
+vge 364 -22 378 -7
+vgs -46 368 -33 381
+vgw -382 20 -367 35
+vgn -1 -384 11 -371
+# interior r 7000 (as ring4.txt): lotus_shallows, glowroot_swamp, mist_fjords near 7000 0; cascade_vale near -7000 0
+r4e 433 -4 441 4
+r4w -441 -4 -433 4
+# inner edge of zone 4->5, north (backlog (b): barriers between aquifer cells)
+b45in -4 486 4 498
+# tunnel net, mythical band east: dome halls 6625 -337, 6588 -206; flooded entrance 6613..6677 -348..-229
+tme 410 -22 425 -7
+# band transition east: plugs 6960..7141 32..226, gas hall 6986 172, dry hall 7129 45; dry sky-lake bowl 7002 83
+tmix 434 2 447 14
+# blighted band north: gas halls -342 7249, -291 7360, -168 7327, 74 7257; pool halls -430 7239, -430 7335,
+# -94 7250, -85 7355, 35 7355; dry entrance -108..7 7236..7328; dry sky-lake bowl 68 7355; reed_marsh -320 7352
+tdn -29 451 6 460
+# blighted band south (x -368..175, z -7392..-7169): gas halls -293 -7359, -203 -7326, -182 -7240; pool halls
+# -354 -7205, 42 -7378, 159 -7381; reed_marsh -192 -7064 lies just north of it, peat_moors 320 -7320 east of it
+tds -23 -462 10 -449
+# geodes and drowned trees north: crystal_lagoon 0 7000, mist_fjords 32 7064, drowned_forest -32 7064, peat 64 7128
+lagn -8 430 7 445
+# sky lakes north with a brook to a fall: 206 7087 (brook 12); 93 6856, 312 6982
+sky 5 427 20 443
+# sky lakes west with brooks: -6924 183 (brook 12), -7098 475 (brook 13)
+skyw1 -435 9 -430 14
+skyw2 -446 27 -441 32
+# world trees (centre, radius ~52 with roots and falls): 6436 2270, 6378 -1115, 381 -6724
+tree1 397 136 407 146
+tree2 393 -75 404 -64
+tree3 18 -426 29 -415
+# rock arch 7335 181 -> 7355 193
+arch4 456 9 460 13
+# lotus_shallows west -7160 320 (giant lily pads) and glowroot_swamp around -7221 253 (giant mangroves)
+lotusw -453 15 -444 24
+# Nether-4 (r 1500-2000): geode_hollows 1750 0, bone_dunes 1846 64, crystal_spires 1910 160
+n4e 104 -8 123 11 nether

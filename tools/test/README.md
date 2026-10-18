@@ -65,11 +65,13 @@ bash tools/test/client.sh stop [1|2]
 
 Area files (`areas/*.txt`): `name cx0 cz0 cx1 cz1 [ow|nether]` in chunks, inclusive.
 `int.txt` (integration: ring 3 biomes/landmarks + Nether 1–3), `fi.txt` (feature index ring 1/2), `perf.txt`,
-`nether-walls.txt` (Nether boundaries r 875/1500), `smoke.txt` (a few chunks).
+`nether-walls.txt` (Nether boundaries r 875/1500), `smoke.txt` (a few chunks); ring 4: `ring4.txt` (waterscan), `int2.txt`
+(golf 2: `verdant_falls`, tunnel net per band, sky lakes, world trees, arch, lagoon, Nether-4), `fi3.txt` (feature index
+rings 1–3), `perf-vf.txt`, `perf-r4.txt` (every ring 4 biome, tunnels, a world tree, `sundered_reach`, Nether-4).
 `python tools/test/py/areas.py around <name> <x> <z> <r> [nether]` prints a line around a block position.
 
 ```bash
-bash tools/test/world.sh <level> tools/test/areas/int.txt [--reverse] [--settle S] [--freeze] [--worktree DIR]   # fresh world, load, stop
+bash tools/test/world.sh <level> tools/test/areas/int.txt [--reverse] [--settle S] [--freeze [--keep --stay-frozen]] [--worktree DIR]   # fresh world, load, stop
 W=run/<level>
 python tools/test/py/lavascan.py $W tools/test/areas/int.txt [--json out.json] [--strict]
 python tools/test/py/inventory.py $W tools/test/areas/int.txt build/test/inv.json --grep ice
@@ -100,17 +102,28 @@ order. `--settle S` keeps each tile forceloaded S more seconds (fluids tick); us
 
 Water against air outside the planned falls (contract §4). `waterscan.sh` makes a fresh world of the areas (`--keep`),
 asks the server for the planned falls per overworld area box (`/ca falls x0 z0 x1 z1`: `IslandField.waterfallsWithin`,
-the same call as the terrain; `<world>/ca_falls/<box>.tsv`), stops the server, and runs `py/waterscan.py`:
+the same call as the terrain; `<world>/ca_falls/<box>.tsv`), stops the server, and runs `py/waterscan.py` and
+`py/poisonscan.py`. Every tile stays loaded 10 s after loading (`--settle 10`, default), so flowing water comes to rest
+before the chunks unload and the counts repeat. `--freeze` generates under `/tick freeze` instead (`world.sh --freeze
+--keep --stay-frozen`: exactly what the generator placed, nothing flows) - only for small areas: a frozen server never
+purges its stale chunk tickets, so nothing unloads (INT2: out of memory at ~19.000 loaded chunks with 5 GB).
 
 ```bash
-bash tools/test/waterscan.sh <level> tools/test/areas/ring4.txt      # -> build/test/waterscan-<level>.txt (+ .json)
+bash tools/test/waterscan.sh <level> tools/test/areas/ring4.txt [--settle S | --freeze]   # -> build/test/waterscan-<level>.txt, poisonscan-<level>.txt (+ .json)
 python tools/test/py/waterscan.py <world> <areas> <world>/ca_falls [--strict]   # offline, when the falls are there
+python tools/test/py/poisonscan.py <world> <areas> [--strict]                   # offline
 ```
 
 Exposed water (horizontal or below neighbour is air; air above is a surface) is an overtreding unless exempt: the sea
 plane Y 63 and the abyss sea Y 0; the falling column of a fall (Y bottom..top) and the four neighbours of its top (the
 spring); the plunge pool of a cliff fall that lands on Y 63 (horizontal radius 6, Y 56..63). Missing fall lists are an
-error. Areas: `areas/ring4.txt` (interior 4 at r 7000, boundaries 3|4 at r 6000 and 4|5 at r 8000).
+error. Areas: `areas/ring4.txt` (interior 4 at r 7000, boundaries 3|4 at r 6000 and 4|5 at r 8000), `areas/int2.txt`.
+
+**Poison scan (INT2):** toxic sludge with air, cave air, swamp gas or a non-solid block a fluid washes away (plants,
+carpets; a block with a `waterlogged` property is closed, only water enters it) beside or below it, or with water (also waterlogged blocks, seagrass, kelp, bubble columns) on any side, is an overtreding; so is swamp gas
+with water on any side. Gas against air is only counted (`gas~a`: gas halls open into dry tunnels, sinkhole layers lie
+under open air). Run it on a `--freeze` world to see what the generator placed: in a settled world a sludge-water
+contact may already have turned into mud.
 
 ### Determinism and feature index
 
@@ -174,7 +187,7 @@ Shares are of the samples, not of the time `perf.sh` compares: a fresh world als
 | `py/rcon.py` | RCON client (script + module) |
 | `py/region.py`, `py/areas.py` | Anvil reader, area files and dimensions |
 | `py/gen.py` | load areas via RCON forceload (forward / reversed) |
-| `py/lavascan.py`, `py/detcmp.py`, `py/featidx.py`, `py/inventory.py`, `py/section.py` | offline scans |
+| `py/lavascan.py`, `py/waterscan.py`, `py/poisonscan.py`, `py/detcmp.py`, `py/featidx.py`, `py/inventory.py`, `py/section.py` | offline scans |
 | `py/perf.py`, `py/perfsum.py` | one perf round, the table |
 | `py/jfrprof.py`, `py/jfrhot.py` | one profile per area, hot methods of a recording |
 | `py/sheet.py` | contact sheet of screenshots |

@@ -1,0 +1,26 @@
+# Ring 4 performance (INT2 golf 2; 16 x 16 chunks each): every ring 4 biome, the steam_fens zone and the
+# verdant_falls descent (perf-vf.txt), a tunnel area per band, a world tree, sundered_reach and Nether-4.
+# perf.sh --areas tools/test/areas/perf-r4.txt. Positions from /locate biome and the test field (int2.txt).
+steamfens 367 -8 382 7
+vfbasin -27 366 -12 381
+vgorge -3 -385 12 -370
+cascade 127 414 142 429
+fjord 399 167 414 182
+# lotus_shallows / glowroot_swamp / mist_fjords at 7000 0; crystal_lagoon / drowned_forest / peat_moors at 0 7000
+lotus 430 -8 445 7
+lagoon -8 430 7 445
+# peat_moors 320 -7320, drowned_forest -352 -7320, reed_marsh -320 7352
+peat 12 -466 27 -451
+drowned -30 -466 -15 -451
+reed -28 452 -13 467
+# tunnel net: mythical (dome halls, flooded entrance) and blighted (gas and pool halls)
+tunmyth 410 -22 425 -7
+tunblight -24 445 -9 460
+# world tree 6436 2270
+tree 394 133 409 148
+# sundered_reach 7832 -480 (zone 4->5)
+sundered 481 -38 496 -23
+# Nether-4: geode_hollows 1750 0, crystal_spires 1910 160, bone_dunes with the fossil at 1699 -429 (INT2 terrain map)
+n4dunes 99 -35 114 -20 nether
+n4hollows 102 -8 117 7 nether
+n4spires 111 2 126 17 nether
