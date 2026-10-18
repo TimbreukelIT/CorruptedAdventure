@@ -24,10 +24,6 @@
             "type": "minecraft:all_of",
             "predicates": [
               {
-                "type": "minecraft:matching_blocks",
-                "blocks": "minecraft:air"
-              },
-              {
                 "type": "minecraft:matching_fluids",
                 "fluids": "minecraft:empty",
                 "offset": [
