@@ -45,6 +45,9 @@
       "corruptedadventure:ring_4/lotus_shallows_reeds",
       "corruptedadventure:ring_4/mythic_grass",
       "corruptedadventure:ring_4/lakeside_glow_blooms"
+    ],
+    [
+      "corruptedadventure:ring_4/island_lifts"
     ]
   ],
   "has_precipitation": true,

@@ -24,6 +24,7 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.WeightedPlacedFeature;
+import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureConfiguration;
@@ -107,14 +108,17 @@ public final class Ring4MythicFeatures {
     static final ResourceKey<ConfiguredFeature<?, ?>> ISLAND_GLOW = configuredKey("island_glow");
     static final ResourceKey<ConfiguredFeature<?, ?>> ISLAND_UNDERSIDE = configuredKey("island_underside");
     static final ResourceKey<ConfiguredFeature<?, ?>> ISLAND_VINE = configuredKey("island_vine");
+    static final ResourceKey<ConfiguredFeature<?, ?>> ISLAND_LIFT = configuredKey("island_lift");
 
-    // Placed, in the global order of their step (Ring4Features.ORDER). All VEGETAL_DECORATION.
+    // Placed, in the global order of their step (Ring4Features.ORDER). All VEGETAL_DECORATION but the lifts.
     /** Every ground biome: the glow on the dry land under the islands (before anything hangs from them). */
     public static final ResourceKey<PlacedFeature> ISLAND_GLOW_GROUND = placedKey("island_glow_ground");
     /** Every ground biome: moss strands and glowing roots under the islands. */
     public static final ResourceKey<PlacedFeature> ISLAND_UNDERSIDES = placedKey("island_undersides");
     /** Every ground biome: the vines between the island pairs (74). */
     public static final ResourceKey<PlacedFeature> ISLAND_VINES = placedKey("island_vines");
+    /** Every ground biome, TOP_LAYER_MODIFICATION (after everything else in the chunk): the updraft columns of the lifts. */
+    public static final ResourceKey<PlacedFeature> ISLAND_LIFTS = placedKey("island_lifts");
     public static final ResourceKey<PlacedFeature> CASCADE_VALE_TREES = placedKey("cascade_vale_trees");
     public static final ResourceKey<PlacedFeature> SKY_GARDENS_TREES = placedKey("sky_gardens_trees");
     public static final ResourceKey<PlacedFeature> GLOWROOT_SWAMP_TREES = placedKey("glowroot_swamp_trees");
@@ -228,12 +232,16 @@ public final class Ring4MythicFeatures {
         FeatureUtils.register(context, ISLAND_VINE, ModFeatures.ISLAND_VINES.get(), new IslandVinesConfiguration(
                 Blocks.MANGROVE_ROOTS.defaultBlockState(), ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState(),
                 ModBlocks.GLOWING_HANGING_ROOTS.get().defaultBlockState(), 0.08F, 0.4F, 0.2F, 0.06F));
+        // The lifts beside the islands: one column of updraft from the water up past the edge.
+        FeatureUtils.register(context, ISLAND_LIFT, ModFeatures.ISLAND_LIFT.get(),
+                new BlockStateConfiguration(ModBlocks.UPDRAFT.get().defaultBlockState()));
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
         Ring4Placements.perChunk(context, ISLAND_GLOW_GROUND, ISLAND_GLOW);
         Ring4Placements.perChunk(context, ISLAND_UNDERSIDES, ISLAND_UNDERSIDE);
         Ring4Placements.perChunk(context, ISLAND_VINES, ISLAND_VINE);
+        Ring4Placements.perChunk(context, ISLAND_LIFTS, ISLAND_LIFT);
 
         // Trees: one cell of 8 holds at most one; the crowns reach into the neighbours (3 × 3 window).
         register(context, CASCADE_VALE_TREES, ModConfiguredFeatures.MOONPETAL_TREE, JitteredGridPlacement.of(8, 2, 0.4F), SURFACE,

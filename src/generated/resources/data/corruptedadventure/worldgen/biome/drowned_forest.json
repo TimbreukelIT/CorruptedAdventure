@@ -53,6 +53,9 @@
       "corruptedadventure:ring_4/drowned_forest_trees",
       "corruptedadventure:ring_4/blighted_bank_reeds",
       "corruptedadventure:ring_4/blighted_glowcaps"
+    ],
+    [
+      "corruptedadventure:ring_4/island_lifts"
     ]
   ],
   "has_precipitation": true,
