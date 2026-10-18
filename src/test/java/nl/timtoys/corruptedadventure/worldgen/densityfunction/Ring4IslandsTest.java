@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -192,6 +193,26 @@ class Ring4IslandsTest {
         assertTrue(falls > 10, "falls " + falls);
         assertTrue(lifts > 2, "lifts " + lifts);
         perChunk.values().forEach(n -> assertTrue(n <= IslandField.FALLS_PER_CHUNK));
+    }
+
+    /** Lift package: every lift is listed by exactly its own chunk (the feature fills the column there), and only there. */
+    @Test
+    void everyLiftIsListedByItsOwnChunk() {
+        int lifts = 0;
+        for (IslandShape s : SHAPES) {
+            IslandField.Lift lift = field.details(s).lift();
+            if (lift == null) {
+                continue;
+            }
+            lifts++;
+            int minX = lift.x() & ~15;
+            int minZ = lift.z() & ~15;
+            assertTrue(field.liftsWithin(minX, minZ, minX + 15, minZ + 15).contains(lift), "own chunk " + lift);
+            assertTrue(field.liftsWithin(lift.x(), lift.z(), lift.x(), lift.z()).contains(lift), "own column " + lift);
+            assertFalse(field.liftsWithin(minX + 16, minZ, minX + 31, minZ + 15).contains(lift), "east neighbour " + lift);
+            assertTrue(lift.top() - lift.bottom() >= 3, "a column to ride " + lift);
+        }
+        assertTrue(lifts > 2, "lifts " + lifts);
     }
 
     /** Review 61 #4: no two islands grow into each other, also across cells (apart, or stacked 6 blocks apart). */

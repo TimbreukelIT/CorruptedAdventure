@@ -68,6 +68,8 @@ public final class IslandField implements DensityFunction {
     public static final double VERDANT_EDGE_SHARE = 60.0 / 256.0;
     /** Recorded waterfalls of the islands per chunk at most (the cap of the water branch). */
     static final int FALLS_PER_CHUNK = 3;
+    /** How far (blocks) past an island's reach its lift may stand: two out from the edge, plus the edge's block. */
+    static final double LIFT_REACH = 4.0;
     /** Recorded waterfalls of {@code verdant_falls} per chunk at most (Q4 = A: a cap of their own, besides the islands'). */
     static final int VERDANT_FALLS_PER_CHUNK = 6;
     /** How far (blocks) under the ground of {@code verdant_falls} the caves stay closed (no cave mouths on the descent). */
@@ -411,6 +413,12 @@ public final class IslandField implements DensityFunction {
     public List<Lift> liftsWithin(int minX, int minZ, int maxX, int maxZ) {
         List<Lift> found = new ArrayList<>();
         for (IslandShape shape : shapesWithin(minX, minZ, maxX, maxZ)) {
+            // A lift stands two blocks out from an edge within the island's reach: skip islands too far off to have
+            // one in the box, so a chunk does not decide the details of every island in the cells around it.
+            double out = shape.reach() + LIFT_REACH;
+            if (shape.x() + out < minX || shape.x() - out > maxX + 1 || shape.z() + out < minZ || shape.z() - out > maxZ + 1) {
+                continue;
+            }
             Lift lift = details(shape).lift();
             if (lift != null && lift.x() >= minX && lift.x() <= maxX && lift.z() >= minZ && lift.z() <= maxZ) {
                 found.add(lift);

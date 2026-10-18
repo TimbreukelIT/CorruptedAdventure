@@ -44,6 +44,9 @@
       "corruptedadventure:ring_4/mythic_grass",
       "corruptedadventure:ring_4/glowroot_swamp_glowcaps",
       "corruptedadventure:ring_4/glowroot_swamp_moss"
+    ],
+    [
+      "corruptedadventure:ring_4/island_lifts"
     ]
   ],
   "has_precipitation": true,

@@ -41,6 +41,9 @@
       "corruptedadventure:ring_4/island_vines",
       "corruptedadventure:ring_4/reed_marsh_reeds",
       "corruptedadventure:ring_4/reed_marsh_blighted_glowcaps"
+    ],
+    [
+      "corruptedadventure:ring_4/island_lifts"
     ]
   ],
   "has_precipitation": true,

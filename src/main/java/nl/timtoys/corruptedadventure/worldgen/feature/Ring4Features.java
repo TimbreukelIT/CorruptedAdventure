@@ -95,7 +95,10 @@ public final class Ring4Features {
             vegetal(Ring4BlightedFeatures.BLIGHTED_BANK_REEDS, ModBiomes.PEAT_MOORS, ModBiomes.DROWNED_FOREST),
             vegetal(Ring4BlightedFeatures.REED_MARSH_GLOWCAPS, ModBiomes.REED_MARSH),
             vegetal(Ring4BlightedFeatures.BLIGHTED_GLOWCAPS, ModBiomes.PEAT_MOORS, ModBiomes.DROWNED_FOREST, ModBiomes.WITHERED_GARDENS),
-            vegetal(Ring4BlightedFeatures.BLIGHTED_DEAD_BUSHES, ModBiomes.PEAT_MOORS, ModBiomes.WITHERED_GARDENS));
+            vegetal(Ring4BlightedFeatures.BLIGHTED_DEAD_BUSHES, ModBiomes.PEAT_MOORS, ModBiomes.WITHERED_GARDENS),
+            // Lifts before teststop 5b: the updraft columns beside the islands, last of all, so no other feature of the
+            // chunk places into or onto them.
+            new Entry(Ring4MythicFeatures.ISLAND_LIFTS, GenerationStep.Decoration.TOP_LAYER_MODIFICATION, Set.copyOf(Ring4Biomes.GROUND)));
 
     private Ring4Features() {
     }

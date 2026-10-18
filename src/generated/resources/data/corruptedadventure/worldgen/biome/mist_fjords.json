@@ -55,6 +55,9 @@
       "corruptedadventure:ring_4/shallows_seagrass",
       "corruptedadventure:ring_4/mist_fjords_ferns",
       "corruptedadventure:ring_4/mist_fjords_moss"
+    ],
+    [
+      "corruptedadventure:ring_4/island_lifts"
     ]
   ],
   "has_precipitation": true,
