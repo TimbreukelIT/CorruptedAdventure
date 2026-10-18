@@ -78,7 +78,18 @@ public class IslandFieldTest {
             }
         });
         assertSame(field.decisions(), ((IslandField) copy).decisions());
-        assertNotSame(field.decisions(), field(42L).decisions());
+        DensityFunction otherNoises = field.mapAll(new DensityFunction.Visitor() {
+            @Override
+            public DensityFunction apply(DensityFunction function) {
+                return function;
+            }
+
+            @Override
+            public DensityFunction.NoiseHolder visitNoise(DensityFunction.NoiseHolder noise) {
+                return new DensityFunction.NoiseHolder(noise.noiseData());
+            }
+        });
+        assertNotSame(field.decisions(), ((IslandField) otherNoises).decisions());
     }
 
     @Test

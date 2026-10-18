@@ -33,6 +33,7 @@ while [ $# -gt 0 ]; do
 done
 [ -f "$areas" ] || ca_die "no area file $areas"
 [ $freeze = 1 ] && [[ " ${gen[*]} " == *" --settle "* ]] && ca_die "--freeze and --settle exclude each other (frozen fluids never settle)"
+[ $stay = 1 ] && { [ $freeze = 0 ] || [ $keep = 0 ]; } && ca_die "--stay-frozen needs --freeze and --keep"
 areas="$(cd "$(dirname "$areas")" && pwd)/$(basename "$areas")"
 
 bash "$CA_TOOLS/server.sh" start "$level" --fresh "${srv[@]}" || exit $?

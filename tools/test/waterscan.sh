@@ -12,11 +12,12 @@
 # chunk unloads (backlog: 129/183/137 in three runs of b45in). --freeze instead generates under `/tick freeze` (world.sh
 # --freeze --stay-frozen: exactly what the generator placed) - only for small areas: frozen, the server never purges
 # its stale chunk tickets, so nothing unloads (INT2: out of memory at ~19.000 chunks with 5 GB).
+# The poison scan of a settled world misses sludge that touched water (it turned into mud): --freeze for that count.
 # Output: build/test/waterscan-<level>.txt (+ .json) and poisonscan-<level>.txt (+ .json). Exit code of waterscan.py
 # (run without --strict): 0 even with overtredingen - read the "over" columns; rerun the scans with --strict offline for
 # a failing exit code.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-[ $# -ge 2 ] || { sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+[ $# -ge 2 ] || { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
 level="$1"; areas="$2"; shift 2
 settle=10; settle_given=0; freeze=0
 while [ $# -gt 0 ]; do
@@ -56,6 +57,7 @@ trap 'exit 130' INT TERM
 $CA_PY "$CA_TOOLS/py/waterscan.py" "$(cygpath -m "$world")" "$(cygpath -m "$areas")" "$(cygpath -m "$world/ca_falls")" \
     --json "$(cygpath -m "$CA_OUT/waterscan-$level.json")" | tee "$CA_OUT/waterscan-$level.txt"
 rc="${PIPESTATUS[0]}"
+[ $freeze = 1 ] || echo "poisonscan on a settled world: sludge that touched water may already be mud (s~wat); use --freeze for that count"
 $CA_PY "$CA_TOOLS/py/poisonscan.py" "$(cygpath -m "$world")" "$(cygpath -m "$areas")" \
     --json "$(cygpath -m "$CA_OUT/poisonscan-$level.json")" | tee "$CA_OUT/poisonscan-$level.txt"
 prc="${PIPESTATUS[0]}"
