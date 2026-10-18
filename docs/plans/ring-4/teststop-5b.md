@@ -205,6 +205,15 @@ Tot slot: de drie INT2-bevindingen van §4, de drie dingen die het meest moeten 
 ### 5.1 Feedback gebruiker (2026-10-18, eerste indruk)
 
 - **Het hele ring 4-gebied voelt leeg en saai aan, vooral `mist_fjords`.** Overal staan vooral bomen; er is weinig aankleding of iets dat het gebied voller maakt.
+- **Screenshot** `run/screenshots/2026-10-18_22.05.42.png` (overzicht van boven; de gebruiker: "toont goed aan hoe leeg en saai de ring er tot nu toe uit ziet. Hier moeten we grondig naar kijken"). Wat erop te zien is:
+  - grote vlakke bruine veenvlakten (`peat_moors`) met alleen losse lichtgroene vlekjes; geen planten, riet, plassen of reliëf erop;
+  - grasvlakten met moonpetal-bomen in een gelijkmatig raster, allemaal even groot; daartussen kaal gras zonder ondergroei, bloemen, rotsen of struiken;
+  - de sparren in `mist_fjords` staan los op kaal gras;
+  - de rivieren en oevers zijn kaal: geen riet, lelies of oeverplanten zichtbaar;
+  - het terrein is overal vlak en in strepen, met weinig hoogteverschil;
+  - de zwevende eilanden zijn klein en ver uit elkaar, met dunne ranken; het grote eiland heeft een kale, donkere onderkant;
+  - de lucht is vlak wit en grijs, en de mist en sfeer voegen weinig toe.
+- Aanpak volgende sessie: grondig. Neem per biome de huidige features en dichtheden door (bron: `Ring4MythicFeatures`, `Ring4BlightedFeatures`, `VerdantFallsFeatures`, `golf-2.md` §6b-flora). Vergelijk met de visie in `00-overzicht.md` en de ring 4-design. Maak daarna een vergelijking per biome: wat er nu staat en wat er moet komen (lagen ondergroei, rotsen, plassen, reliëf, oeverplanten, variatie in boomgrootte en -soort, meer eilanden en vulling in de lucht). Leg dat voor in een sparringronde.
 - Volgende sessie: eerst een sparringsessie (CLAUDE.md §3) over aankleding en vulling per biome (te beginnen met `mist_fjords`), daarna een pakket. Niet bouwen zonder die ronde.
 
 ## J. INT2-resultaten (2026-10-16 – 2026-10-18)
