@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=false": {
+      "model": "corruptedadventure:block/lagoon_glowgrass"
+    },
+    "waterlogged=true": {
+      "model": "corruptedadventure:block/lagoon_glowgrass"
+    }
+  }
+}

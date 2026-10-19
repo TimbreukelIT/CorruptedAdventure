@@ -68,7 +68,9 @@ import nl.timtoys.corruptedadventure.block.LooseSandTrigger;
 import nl.timtoys.corruptedadventure.block.ModFlowerPots;
 import nl.timtoys.corruptedadventure.block.ModTreeGrowers;
 import nl.timtoys.corruptedadventure.block.ModWoodTypes;
+import nl.timtoys.corruptedadventure.block.LagoonGlowgrassBlock;
 import nl.timtoys.corruptedadventure.block.MoonpetalLeavesBlock;
+import nl.timtoys.corruptedadventure.block.MythicPlantBlock;
 import nl.timtoys.corruptedadventure.block.PalmSaplingBlock;
 import nl.timtoys.corruptedadventure.block.ReedsBlock;
 import nl.timtoys.corruptedadventure.block.SlimeTrailBlock;
@@ -961,6 +963,34 @@ public final class ModBlocks {
     /** The fruit pod on the emergent trunks (H3 = A): cocoa's growth; no item, it drops {@link ModItems#VERDANT_FRUIT}. */
     public static final DeferredBlock<VerdantFruitPodBlock> VERDANT_FRUIT_POD = registerWithoutItem("verdant_fruit_pod",
             () -> new VerdantFruitPodBlock(Properties.ofFullCopy(Blocks.COCOA).mapColor(MapColor.COLOR_ORANGE)));
+
+    // Decor rollout blocks (sparring 2026-10-19, "nieuwe blokken"): stone variants for boulders and crystal spires and
+    // four mythical ground plants. Only the blocks; the worldgen groups hang them into the decor afterwards.
+    /** Tidestone overgrown with moss: tidestone's strength and tool rule, but it drops itself (like mossy cobblestone). */
+    public static final DeferredBlock<Block> MOSSY_TIDESTONE = register("mossy_tidestone", () -> new Block(tidestone(Blocks.STONE)));
+    public static final DeferredBlock<StairBlock> MOSSY_TIDESTONE_STAIRS = register("mossy_tidestone_stairs",
+            () -> new StairBlock(MOSSY_TIDESTONE.get().defaultBlockState(), tidestone(Blocks.STONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> MOSSY_TIDESTONE_SLAB = register("mossy_tidestone_slab",
+            () -> new SlabBlock(tidestone(Blocks.STONE_SLAB)));
+    public static final DeferredBlock<WallBlock> MOSSY_TIDESTONE_WALL = register("mossy_tidestone_wall",
+            () -> new WallBlock(tidestone(Blocks.STONE).forceSolidOn()));
+    /** Pale crystal stone of the lagoon's crystal spires: stone's strength and tool rule, a soft glow (light 7). */
+    public static final DeferredBlock<Block> AQUAMARINE_STONE = register("aquamarine_stone",
+            () -> new Block(Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_CYAN).lightLevel(state -> 7)));
+    /** A low tuft of misty moss for the fjords: short grass's feel (replaceable, offset), moss sounds. */
+    public static final DeferredBlock<MythicPlantBlock> FJORD_MOSS = register("fjord_moss",
+            () -> new MythicPlantBlock(Properties.ofFullCopy(Blocks.SHORT_GRASS).mapColor(MapColor.COLOR_GREEN)
+                    .sound(SoundType.MOSS_CARPET)));
+    /** A pale, half-see-through fern: vanilla fern's feel. */
+    public static final DeferredBlock<MythicPlantBlock> MIST_FERN = register("mist_fern",
+            () -> new MythicPlantBlock(Properties.ofFullCopy(Blocks.FERN).mapColor(MapColor.GLOW_LICHEN)));
+    /** A low moonpetal shrub in pink blossom: a flower's feel (not replaceable), like the verdant blossom bush. */
+    public static final DeferredBlock<MythicPlantBlock> MOONPETAL_SHRUB = register("moonpetal_shrub",
+            () -> new MythicPlantBlock(Properties.ofFullCopy(Blocks.POPPY).mapColor(MapColor.COLOR_PINK)));
+    /** Softly glowing grass on the lagoon shores and in shallow water (waterloggable), light 5. */
+    public static final DeferredBlock<LagoonGlowgrassBlock> LAGOON_GLOWGRASS = register("lagoon_glowgrass",
+            () -> new LagoonGlowgrassBlock(Properties.ofFullCopy(Blocks.SHORT_GRASS).mapColor(MapColor.COLOR_CYAN)
+                    .lightLevel(state -> 5)));
 
     // ---- Nether ring 4 ----
     // Dry crystal and bone desert (contract ring 4 §3, package 68): bone sand, bleached netherrack, the fossil stone set

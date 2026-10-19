@@ -164,6 +164,21 @@ final class ModBlockStateProvider extends BlockStateProvider {
         ring4Ores();
         ring4Gameplay();
         verdant();
+        ring4Decor();
+    }
+
+    /**
+     * The decor rollout blocks: mossy tidestone as a stone family, the aquamarine stone as a cube with its emissive
+     * {@code _glow} veins, the plants as crosses and the glowgrass with its glow layer (waterlogged or not, one model).
+     */
+    private void ring4Decor() {
+        stoneFamily(ModBlocks.MOSSY_TIDESTONE.get(), ModBlocks.MOSSY_TIDESTONE_STAIRS.get(),
+                ModBlocks.MOSSY_TIDESTONE_SLAB.get(), ModBlocks.MOSSY_TIDESTONE_WALL.get());
+        glowingCube(ModBlocks.AQUAMARINE_STONE.get());
+        cross(ModBlocks.FJORD_MOSS.get());
+        cross(ModBlocks.MIST_FERN.get());
+        cross(ModBlocks.MOONPETAL_SHRUB.get());
+        glowingCross(ModBlocks.LAGOON_GLOWGRASS.get());
     }
 
     /**

@@ -358,6 +358,17 @@ final class ModItemModelProvider extends ItemModelProvider {
         flatBlockItem(ModBlocks.VERDANT_VINE);
         flatBlockItem(ModBlocks.VERDANT_WATER_BLOOM);
         basicItem(ModItems.VERDANT_FRUIT.get());
+
+        // Decor rollout blocks: the stones on their block models, the plants flat on their texture.
+        blockItem(ModBlocks.MOSSY_TIDESTONE);
+        blockItem(ModBlocks.MOSSY_TIDESTONE_STAIRS);
+        blockItem(ModBlocks.MOSSY_TIDESTONE_SLAB);
+        wallInventory(ModBlocks.MOSSY_TIDESTONE_WALL.getId().getPath(), modLoc("block/mossy_tidestone"));
+        blockItem(ModBlocks.AQUAMARINE_STONE);
+        flatBlockItem(ModBlocks.FJORD_MOSS);
+        flatBlockItem(ModBlocks.MIST_FERN);
+        flatBlockItem(ModBlocks.MOONPETAL_SHRUB);
+        flatBlockItem(ModBlocks.LAGOON_GLOWGRASS);
     }
 
     private void netherRing4() {

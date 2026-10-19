@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "corruptedadventure:block/mossy_tidestone",
+    "side": "corruptedadventure:block/mossy_tidestone",
+    "top": "corruptedadventure:block/mossy_tidestone"
+  }
+}

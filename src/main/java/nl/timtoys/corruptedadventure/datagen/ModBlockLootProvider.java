@@ -226,7 +226,23 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.CREATURE_NEST.get());
 
         verdant();
+        ring4Decor();
         netherRing4();
+    }
+
+    /**
+     * The decor rollout blocks: the stones drop themselves (mossy tidestone like mossy cobblestone, also its shapes);
+     * the moss and the glowgrass only with shears (like seagrass), the fern like vanilla's fern, the shrub itself.
+     */
+    private void ring4Decor() {
+        for (Block block : List.of(ModBlocks.MOSSY_TIDESTONE.get(), ModBlocks.MOSSY_TIDESTONE_STAIRS.get(),
+                ModBlocks.MOSSY_TIDESTONE_WALL.get(), ModBlocks.AQUAMARINE_STONE.get(), ModBlocks.MOONPETAL_SHRUB.get())) {
+            dropSelf(block);
+        }
+        add(ModBlocks.MOSSY_TIDESTONE_SLAB.get(), this::createSlabItemTable);
+        add(ModBlocks.FJORD_MOSS.get(), BlockLootSubProvider::createShearsOnlyDrop);
+        add(ModBlocks.LAGOON_GLOWGRASS.get(), BlockLootSubProvider::createShearsOnlyDrop);
+        add(ModBlocks.MIST_FERN.get(), this::createGrassDrops);
     }
 
     /** The verdant flora (72b), each like its vanilla model. */

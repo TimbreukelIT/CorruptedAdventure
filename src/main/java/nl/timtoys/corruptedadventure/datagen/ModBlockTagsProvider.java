@@ -156,7 +156,29 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
 
         ring4Gameplay();
         verdant();
+        ring4Decor();
         netherRing4();
+    }
+
+    /**
+     * The decor rollout blocks: mossy tidestone tagged like the tidestone family (but no ore host or carver ground: it is
+     * surface dressing), the aquamarine stone for the pickaxe; the plants tagged like vanilla's grass and fern (the shrub
+     * like a flower: not replaceable) on their own ground tags.
+     */
+    private void ring4Decor() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.MOSSY_TIDESTONE.get(), ModBlocks.MOSSY_TIDESTONE_STAIRS.get(),
+                ModBlocks.MOSSY_TIDESTONE_SLAB.get(), ModBlocks.MOSSY_TIDESTONE_WALL.get(), ModBlocks.AQUAMARINE_STONE.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.MOSSY_TIDESTONE_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.MOSSY_TIDESTONE_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.MOSSY_TIDESTONE_WALL.get());
+
+        tag(ModTags.Blocks.RING_4_PLANT_SOIL).addTag(BlockTags.DIRT).addTag(BlockTags.SAND);
+        tag(ModTags.Blocks.LAGOON_PLANT_SOIL).addTag(ModTags.Blocks.RING_4_PLANT_SOIL).add(Blocks.GRAVEL, Blocks.CLAY);
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.FJORD_MOSS.get(), ModBlocks.MIST_FERN.get(), ModBlocks.LAGOON_GLOWGRASS.get());
+        tag(BlockTags.REPLACEABLE_BY_TREES).add(ModBlocks.FJORD_MOSS.get(), ModBlocks.MIST_FERN.get(),
+                ModBlocks.LAGOON_GLOWGRASS.get());
+        tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.FJORD_MOSS.get(), ModBlocks.MIST_FERN.get(),
+                ModBlocks.MOONPETAL_SHRUB.get(), ModBlocks.LAGOON_GLOWGRASS.get());
     }
 
     /**

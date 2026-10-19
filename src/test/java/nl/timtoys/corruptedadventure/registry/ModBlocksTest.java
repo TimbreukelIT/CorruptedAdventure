@@ -36,6 +36,7 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import nl.timtoys.corruptedadventure.block.AshCrustBlock;
 import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
+import nl.timtoys.corruptedadventure.block.LagoonGlowgrassBlock;
 import nl.timtoys.corruptedadventure.block.MoonpetalLeavesBlock;
 import nl.timtoys.corruptedadventure.block.VerdantVineBlock;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
@@ -729,11 +730,52 @@ class ModBlocksTest {
         }
     }
 
+    /**
+     * The decor rollout blocks follow the verdant flora; the plants grow on their ground tags, the glowgrass stands in
+     * water, and the glow is modest (glowgrass 5, aquamarine stone 7).
+     */
+    @Test
+    void ring4DecorBlocksFollowTheVerdantFloraAndBehaveAsPlanned() {
+        List<Item> shown = blockItems();
+        int waterBloom = shown.indexOf(ModBlocks.VERDANT_WATER_BLOOM.asItem());
+        List<Item> decor = Stream.of(ModBlocks.MOSSY_TIDESTONE, ModBlocks.MOSSY_TIDESTONE_STAIRS, ModBlocks.MOSSY_TIDESTONE_SLAB,
+                ModBlocks.MOSSY_TIDESTONE_WALL, ModBlocks.AQUAMARINE_STONE, ModBlocks.FJORD_MOSS, ModBlocks.MIST_FERN,
+                ModBlocks.MOONPETAL_SHRUB, ModBlocks.LAGOON_GLOWGRASS).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(decor, shown.subList(waterBloom + 1, waterBloom + 1 + decor.size()));
+
+        assertEquals(5, ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState().getLightEmission());
+        assertEquals(7, ModBlocks.AQUAMARINE_STONE.get().defaultBlockState().getLightEmission());
+        for (DeferredBlock<?> block : List.of(ModBlocks.FJORD_MOSS, ModBlocks.MIST_FERN, ModBlocks.MOONPETAL_SHRUB,
+                ModBlocks.MOSSY_TIDESTONE)) {
+            assertEquals(0, block.get().defaultBlockState().getLightEmission(), block.getId().toString());
+        }
+        for (DeferredBlock<?> block : List.of(ModBlocks.MOSSY_TIDESTONE, ModBlocks.AQUAMARINE_STONE)) {
+            assertEquals(Blocks.STONE.defaultDestroyTime(), block.get().defaultDestroyTime(), block.getId().toString());
+            assertTrue(block.get().defaultBlockState().requiresCorrectToolForDrops(), block.getId().toString());
+        }
+        for (DeferredBlock<?> block : List.of(ModBlocks.FJORD_MOSS, ModBlocks.MIST_FERN, ModBlocks.MOONPETAL_SHRUB,
+                ModBlocks.LAGOON_GLOWGRASS)) {
+            assertInstanceOf(BonemealableBlock.class, block.get(), block.getId().toString());
+            assertFalse(block.get().defaultBlockState().isRandomlyTicking(), block.getId().toString());
+            assertTrue(block.get().defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).isEmpty());
+        }
+        // Grass and fern are replaceable, the shrub is a flower and is not.
+        assertTrue(ModBlocks.FJORD_MOSS.get().defaultBlockState().canBeReplaced());
+        assertTrue(ModBlocks.MIST_FERN.get().defaultBlockState().canBeReplaced());
+        assertTrue(ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState().canBeReplaced());
+        assertFalse(ModBlocks.MOONPETAL_SHRUB.get().defaultBlockState().canBeReplaced());
+        BlockState wet = ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState().setValue(LagoonGlowgrassBlock.WATERLOGGED, true);
+        assertTrue(wet.getFluidState().isSource());
+        // Standing in water it does not burn (like seagrass).
+        assertEquals(0, wet.getFlammability(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, Direction.UP));
+        assertTrue(ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState().getFluidState().isEmpty());
+    }
+
     /** Nether ring 4 follows ring 4 directly and ends the blocks (contract ring 4 §3); its shard ends the loose items. */
     @Test
     void netherRing4FollowsRing4InOrderAndBehavesAsPlanned() {
         List<Item> shown = blockItems();
-        int lastRing4 = shown.indexOf(ModBlocks.VERDANT_WATER_BLOOM.asItem());
+        int lastRing4 = shown.indexOf(ModBlocks.LAGOON_GLOWGRASS.asItem());
         List<Item> netherRing4 = Stream.of(ModBlocks.BONE_SAND, ModBlocks.BLEACHED_NETHERRACK, ModBlocks.FOSSIL_STONE,
                 ModBlocks.FOSSIL_STONE_STAIRS, ModBlocks.FOSSIL_STONE_SLAB, ModBlocks.FOSSIL_STONE_WALL,
                 ModBlocks.POLISHED_FOSSIL_STONE, ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, ModBlocks.POLISHED_FOSSIL_STONE_SLAB,
