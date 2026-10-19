@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": {
+      "feature": "corruptedadventure:ring_4/moor_snag",
+      "placement": []
+    },
+    "features": [
+      {
+        "chance": 0.25,
+        "feature": {
+          "feature": "corruptedadventure:ring_4/moor_snag_rotten",
+          "placement": []
+        }
+      }
+    ]
+  }
+}

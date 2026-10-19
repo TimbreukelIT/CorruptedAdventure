@@ -33,6 +33,10 @@
       }
     },
     {
+      "type": "corruptedadventure:landmark_clearance",
+      "margin": 3
+    },
+    {
       "type": "minecraft:biome"
     }
   ]

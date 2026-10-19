@@ -1,0 +1,32 @@
+{
+  "feature": "corruptedadventure:ring_4/rotting_withered_logs",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 16,
+      "chance": 0.6,
+      "density": {
+        "floor": 0.25,
+        "high": 0.05,
+        "low": -0.25,
+        "noise": "corruptedadventure:ring_4_groves"
+      },
+      "margin": 1
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:ring4_filter",
+      "ground_only": true
+    },
+    {
+      "type": "corruptedadventure:landmark_clearance",
+      "margin": 9
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

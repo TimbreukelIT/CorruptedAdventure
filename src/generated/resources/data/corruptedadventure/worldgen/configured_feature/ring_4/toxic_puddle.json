@@ -1,0 +1,51 @@
+{
+  "type": "corruptedadventure:toxic_puddle",
+  "config": {
+    "plant_chance": 0.35,
+    "plants": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:dead_bush"
+          },
+          "weight": 4
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:blighted_glowcap"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "rim": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:mud"
+          },
+          "weight": 5
+        },
+        {
+          "data": {
+            "Name": "minecraft:coarse_dirt"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "size": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 5,
+      "min_inclusive": 1
+    },
+    "sludge": {
+      "Name": "corruptedadventure:toxic_pool",
+      "Properties": {
+        "level": "0"
+      }
+    }
+  }
+}

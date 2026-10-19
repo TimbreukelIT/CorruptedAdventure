@@ -70,6 +70,10 @@
       "to_chance": 1.0
     },
     {
+      "type": "corruptedadventure:landmark_clearance",
+      "margin": 4
+    },
+    {
       "type": "minecraft:biome"
     }
   ]

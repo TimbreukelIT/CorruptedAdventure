@@ -134,10 +134,11 @@ public final class Ring4BlightedFeatures {
         register(context, PEAT_MOORS_GAS_POCKETS, GAS_POCKET, JitteredGridPlacement.of(8, 1, 0.35F), SURFACE, only(ON_LAND),
                 Ring4Filter.builder().ground().build(), outward());
         Ring4Placements.perChunk(context, PEAT_MOORS_SINKHOLE_GAS, SINKHOLE_GAS);
+        // Decor B: the pools keep off the blighted landmarks (LandmarkClearanceFilter).
         register(context, PEAT_MOORS_TOXIC_POOLS, TOXIC_POOL, JitteredGridPlacement.of(16, 4, 0.45F), SURFACE, only(ON_LAND),
-                Ring4Filter.builder().ground().build(), outward());
+                Ring4Filter.builder().ground().build(), outward(), LandmarkClearanceFilter.of(ToxicPoolFeature.MAX_RADIUS));
         register(context, BLIGHTED_TOXIC_POOLS, TOXIC_POOL, JitteredGridPlacement.of(16, 4, 0.15F), SURFACE, only(ON_LAND),
-                Ring4Filter.builder().ground().build(), outward());
+                Ring4Filter.builder().ground().build(), outward(), LandmarkClearanceFilter.of(ToxicPoolFeature.MAX_RADIUS));
         // One draw per chunk; the feature finds the bank in the chunk and checks the biome per column (no biome filter:
         // the origin is only the chunk, its biome says nothing about the bank's).
         PlacementUtils.register(context, BANK_SUCKING_MUD, context.lookup(Registries.CONFIGURED_FEATURE).getOrThrow(SUCKING_MUD),
@@ -146,7 +147,8 @@ public final class Ring4BlightedFeatures {
         // VEGETAL_DECORATION.
         // Decor proef: the dead trees in groves too (Ring4Placements.GROVES), about as many as before.
         register(context, DROWNED_FOREST_TREES, WITHERED_TREES, JitteredGridPlacement.of(8, 1, 0.85F, Ring4Placements.GROVES), FLOOR,
-                SurfaceWaterDepthFilter.forMaxDepth(DROWNED_WATER), only(BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT)));
+                SurfaceWaterDepthFilter.forMaxDepth(DROWNED_WATER), only(BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT)),
+                LandmarkClearanceFilter.of(3));
         register(context, WITHERED_GARDENS_TREES, WITHERED_TREES, JitteredGridPlacement.of(16, 2, 0.95F, Ring4Placements.GROVES), SURFACE,
                 only(BlockPredicate.allOf(Ring4Placements.ON_GROUND, BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT))));
         register(context, REED_MARSH_REEDS, DENSE_REEDS, JitteredGridPlacement.of(8, 3, 0.85F), SURFACE);
@@ -158,7 +160,7 @@ public final class Ring4BlightedFeatures {
     }
 
     /** Denser towards ring 5: {@link #INNER_CHANCE} at ring 4's inner edge, rising linearly to 1 at its outer one. */
-    private static PlacementModifier outward() {
+    static PlacementModifier outward() {
         return RingChanceFilter.progress(Ring.RING_4, INNER_CHANCE, 1.0, 0.0, 1.0);
     }
 

@@ -1,0 +1,11 @@
+# Ring 4 decor B (ring4/decor-b, 2026-10-19): one area per blighted ground biome south of the centre, each with a
+# landmark (/ca landmarks), for the before/after contact sheets, the determinism check (world.sh --freeze, detcmp.py)
+# and the poison scan. Chunk coordinates, inclusive; seed 20260930, default ring radii.
+# drowned_forest with the drowned giant at -264 -7452
+drowned -22 -472 -13 -463
+# peat_moors with the stone circles at 489 -7405 and 458 -7308
+peat 25 -466 32 -455
+# reed_marsh with the bone carcass at 98 -7563
+reed 1 -478 10 -469
+# peat_moors with the bone carcass at 530 -7616
+carcpeat 31 -478 35 -474

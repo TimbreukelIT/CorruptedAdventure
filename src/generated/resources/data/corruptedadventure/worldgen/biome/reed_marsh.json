@@ -25,7 +25,8 @@
     [],
     [],
     [
-      "corruptedadventure:ring_4/blighted_toxic_pools"
+      "corruptedadventure:ring_4/blighted_toxic_pools",
+      "corruptedadventure:ring_4/reed_marsh_toxic_puddles"
     ],
     [],
     [],
@@ -39,6 +40,12 @@
       "corruptedadventure:ring_4/island_glow_ground",
       "corruptedadventure:ring_4/island_undersides",
       "corruptedadventure:ring_4/island_vines",
+      "corruptedadventure:ring_4/blighted_carcasses",
+      "corruptedadventure:ring_4/blighted_withered_stumps",
+      "corruptedadventure:ring_4/reed_marsh_rotting_logs",
+      "corruptedadventure:ring_4/reed_marsh_dead_trees",
+      "corruptedadventure:ring_4/reed_marsh_reed_thickets",
+      "corruptedadventure:ring_4/blighted_fungus_rings",
       "corruptedadventure:ring_4/reed_marsh_reeds",
       "corruptedadventure:ring_4/reed_marsh_blighted_glowcaps"
     ],

@@ -1,0 +1,25 @@
+{
+  "feature": "corruptedadventure:ring_4/blighted_fungus_ring",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 16,
+      "chance": 0.3
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:ring4_filter",
+      "ground_only": true
+    },
+    {
+      "type": "corruptedadventure:landmark_clearance",
+      "margin": 10
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

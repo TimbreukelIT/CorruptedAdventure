@@ -1,0 +1,12 @@
+{
+  "type": "corruptedadventure:blighted_landmark",
+  "config": {
+    "kind": "menhir_circle",
+    "sludge": {
+      "Name": "corruptedadventure:toxic_pool",
+      "Properties": {
+        "level": "0"
+      }
+    }
+  }
+}

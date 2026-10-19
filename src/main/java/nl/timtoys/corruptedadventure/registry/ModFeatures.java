@@ -11,10 +11,14 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.BlightedLandmarkFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.BoulderConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.BoulderFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.DeadTreeConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.DeadTreeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.FallenTreeConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.FallenTreeFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.FungusRingFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerraceDressingConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerraceDressingFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.DuneRubbleFeature;
@@ -65,6 +69,7 @@ import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPoolConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPoolFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.SunkenGeodeConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.SunkenGeodeFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.ToxicPuddleFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.WallPlantFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.IslandVinesConfiguration;
@@ -263,6 +268,20 @@ public final class ModFeatures {
     /** {@code corruptedadventure:terrace_dressing} (ring 4 decor proef): vines down the terrace walls, moss on the rims */
     public static final DeferredHolder<Feature<?>, Feature<TerraceDressingConfiguration>> TERRACE_DRESSING =
             FEATURES.register("terrace_dressing", () -> new TerraceDressingFeature(TerraceDressingConfiguration.CODEC));
+
+    // ring 4 — decor B (drowned_forest, peat_moors, reed_marsh)
+    /** {@code corruptedadventure:dead_tree} (decor B): a crooked dead tree with bare branches and vines, in its own chunk */
+    public static final DeferredHolder<Feature<?>, Feature<DeadTreeConfiguration>> DEAD_TREE =
+            FEATURES.register("dead_tree", () -> new DeadTreeFeature(DeadTreeConfiguration.CODEC));
+    /** {@code corruptedadventure:toxic_puddle} (decor B): a small closed puddle of toxic sludge in a rim of mud */
+    public static final DeferredHolder<Feature<?>, Feature<ToxicPuddleFeature.Config>> TOXIC_PUDDLE =
+            FEATURES.register("toxic_puddle", () -> new ToxicPuddleFeature(ToxicPuddleFeature.Config.CODEC));
+    /** {@code corruptedadventure:fungus_ring} (decor B): a ring of mushrooms on dry ground */
+    public static final DeferredHolder<Feature<?>, Feature<FungusRingFeature.Config>> FUNGUS_RING =
+            FEATURES.register("fungus_ring", () -> new FungusRingFeature(FungusRingFeature.Config.CODEC));
+    /** {@code corruptedadventure:blighted_landmark} (decor B): this chunk's part of the rare landmarks of the blighted band */
+    public static final DeferredHolder<Feature<?>, Feature<BlightedLandmarkFeature.Config>> BLIGHTED_LANDMARK =
+            FEATURES.register("blighted_landmark", () -> new BlightedLandmarkFeature(BlightedLandmarkFeature.Config.CODEC));
 
     private ModFeatures() {
     }

@@ -107,6 +107,26 @@ public final class Ring4Features {
             local(Ring4OreFeatures.DEEP_WATER_AQUAMARINE_GEODES, ModBiomes.CRYSTAL_LAGOON, ModBiomes.MIST_FJORDS),
             // 77: the lining of the tunnel net (73), under every ground biome.
             new Entry(Ring4OreFeatures.TUNNEL_LININGS, GenerationStep.Decoration.UNDERGROUND_DECORATION, Set.copyOf(Ring4Biomes.GROUND)),
+            // Decor B (2026-10-19): the dressing of drowned_forest, peat_moors and reed_marsh (BlightedDecorFeatures). The
+            // puddles after the hazards of 76 (LOCAL_MODIFICATIONS); then the landmarks before anything grows, the rot on
+            // the ground before the trees, the dead trees, the reeds, the mushroom rings and the heath, all before the
+            // trees and reeds of 76 (no reed under a trunk).
+            local(BlightedDecorFeatures.PEAT_MOORS_TOXIC_PUDDLES, ModBiomes.PEAT_MOORS),
+            local(BlightedDecorFeatures.REED_MARSH_TOXIC_PUDDLES, ModBiomes.REED_MARSH),
+            vegetal(BlightedDecorFeatures.DROWNED_FOREST_GIANTS, ModBiomes.DROWNED_FOREST),
+            vegetal(BlightedDecorFeatures.PEAT_MOORS_STONE_CIRCLES, ModBiomes.PEAT_MOORS),
+            vegetal(BlightedDecorFeatures.BLIGHTED_CARCASSES, ModBiomes.PEAT_MOORS, ModBiomes.REED_MARSH),
+            vegetal(BlightedDecorFeatures.BLIGHTED_WITHERED_STUMPS, ModBiomes.DROWNED_FOREST, ModBiomes.PEAT_MOORS, ModBiomes.REED_MARSH),
+            vegetal(BlightedDecorFeatures.DROWNED_FOREST_ROTTING_LOGS, ModBiomes.DROWNED_FOREST),
+            vegetal(BlightedDecorFeatures.PEAT_MOORS_ROTTING_LOGS, ModBiomes.PEAT_MOORS),
+            vegetal(BlightedDecorFeatures.REED_MARSH_ROTTING_LOGS, ModBiomes.REED_MARSH),
+            vegetal(BlightedDecorFeatures.DROWNED_FOREST_DEAD_TREES, ModBiomes.DROWNED_FOREST),
+            vegetal(BlightedDecorFeatures.REED_MARSH_DEAD_TREES, ModBiomes.REED_MARSH),
+            vegetal(BlightedDecorFeatures.PEAT_MOORS_SNAGS, ModBiomes.PEAT_MOORS),
+            vegetal(BlightedDecorFeatures.DROWNED_FOREST_REED_BEDS, ModBiomes.DROWNED_FOREST),
+            vegetal(BlightedDecorFeatures.REED_MARSH_REED_THICKETS, ModBiomes.REED_MARSH),
+            vegetal(BlightedDecorFeatures.BLIGHTED_FUNGUS_RINGS, ModBiomes.DROWNED_FOREST, ModBiomes.PEAT_MOORS, ModBiomes.REED_MARSH),
+            vegetal(BlightedDecorFeatures.PEAT_MOORS_HEATH, ModBiomes.PEAT_MOORS),
             // 76: the dead trees, the reeds (dense in the marsh), the blighted glowcaps and dead bushes.
             vegetal(Ring4BlightedFeatures.DROWNED_FOREST_TREES, ModBiomes.DROWNED_FOREST),
             vegetal(Ring4BlightedFeatures.WITHERED_GARDENS_TREES, ModBiomes.WITHERED_GARDENS),
@@ -148,6 +168,7 @@ public final class Ring4Features {
         MistFjordsFeatures.configured(context);
         CascadeValeFeatures.configured(context);
         Ring4BlightedFeatures.configured(context);
+        BlightedDecorFeatures.configured(context);
         Ring4OreFeatures.configured(context);
     }
 
@@ -157,6 +178,7 @@ public final class Ring4Features {
         MistFjordsFeatures.placed(context);
         CascadeValeFeatures.placed(context);
         Ring4BlightedFeatures.placed(context);
+        BlightedDecorFeatures.placed(context);
         Ring4OreFeatures.placed(context);
     }
 }

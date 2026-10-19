@@ -10,6 +10,7 @@ import nl.timtoys.corruptedadventure.worldgen.feature.BeforeSplitFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.HeightBandFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.InRingFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.JitteredGridPlacement;
+import nl.timtoys.corruptedadventure.worldgen.feature.LandmarkClearanceFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.NoiseBandFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring4Filter;
 import nl.timtoys.corruptedadventure.worldgen.feature.RingChanceFilter;
@@ -63,6 +64,11 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:ring4_filter} (75: the pure ring 4 terrain per column, ground only, clear of falls and knobs) */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<Ring4Filter>> RING4_FILTER =
             PLACEMENT_MODIFIER_TYPES.register("ring4_filter", () -> () -> Ring4Filter.CODEC);
+
+    // ring 4 — decor B
+    /** {@code corruptedadventure:landmark_clearance} (decor B: trees, stumps and puddles keep off the blighted landmarks) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<LandmarkClearanceFilter>> LANDMARK_CLEARANCE =
+            PLACEMENT_MODIFIER_TYPES.register("landmark_clearance", () -> () -> LandmarkClearanceFilter.CODEC);
 
     private ModPlacementModifierTypes() {
     }

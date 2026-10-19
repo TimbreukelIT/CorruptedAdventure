@@ -1,0 +1,62 @@
+{
+  "type": "corruptedadventure:dead_tree",
+  "config": {
+    "branch_length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 4,
+      "min_inclusive": 1
+    },
+    "branches": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "decor": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:moss_carpet"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:blighted_glowcap"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "decor_chance": 0.3,
+    "height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 8,
+      "min_inclusive": 4
+    },
+    "lean": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 0
+    },
+    "log": {
+      "Name": "corruptedadventure:stripped_withered_moonpetal_log",
+      "Properties": {
+        "axis": "y"
+      }
+    },
+    "max_water": 1,
+    "vine_chance": 0.12,
+    "vine_length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 4,
+      "min_inclusive": 1
+    },
+    "wood": {
+      "Name": "corruptedadventure:stripped_withered_moonpetal_wood",
+      "Properties": {
+        "axis": "y"
+      }
+    }
+  }
+}

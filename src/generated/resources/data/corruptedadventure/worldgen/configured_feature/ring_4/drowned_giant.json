@@ -1,0 +1,12 @@
+{
+  "type": "corruptedadventure:blighted_landmark",
+  "config": {
+    "kind": "drowned_giant",
+    "sludge": {
+      "Name": "corruptedadventure:toxic_pool",
+      "Properties": {
+        "level": "0"
+      }
+    }
+  }
+}
