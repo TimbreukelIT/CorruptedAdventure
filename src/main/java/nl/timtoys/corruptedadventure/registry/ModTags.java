@@ -74,6 +74,10 @@ public final class ModTags {
         public static final TagKey<Block> WITHERED_MOONPETAL_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("withered_moonpetal_logs"));
         /** Verdant log, wood and their stripped variants (72b); the fruit pod hangs on them. */
         public static final TagKey<Block> VERDANT_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("verdant_logs"));
+        /** Ground of the mythical decor plants (fjord moss, mist fern, moonpetal shrub): {@code #dirt} and {@code #sand}. */
+        public static final TagKey<Block> RING_4_PLANT_SOIL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("ring_4_plant_soil"));
+        /** Ground of the lagoon glowgrass: {@link #RING_4_PLANT_SOIL} plus the lagoon floor's gravel and clay. */
+        public static final TagKey<Block> LAGOON_PLANT_SOIL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("lagoon_plant_soil"));
         public static final TagKey<Block> ORES_TIDESILVER = TagKey.create(Registries.BLOCK, common("ores/tidesilver"));
         public static final TagKey<Block> ORES_JADE = TagKey.create(Registries.BLOCK, common("ores/jade"));
         /** Convention tag {@code c:ores_in_ground/tidestone}: the ring 4 ores in tidestone. */

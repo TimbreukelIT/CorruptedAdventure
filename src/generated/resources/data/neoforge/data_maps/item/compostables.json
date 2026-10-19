@@ -18,6 +18,9 @@
     "corruptedadventure:fire_bloom": {
       "chance": 0.65
     },
+    "corruptedadventure:fjord_moss": {
+      "chance": 0.3
+    },
     "corruptedadventure:giant_lily_pad": {
       "chance": 0.65
     },
@@ -36,7 +39,13 @@
     "corruptedadventure:hanging_swamp_moss": {
       "chance": 0.3
     },
+    "corruptedadventure:lagoon_glowgrass": {
+      "chance": 0.3
+    },
     "corruptedadventure:lotus": {
+      "chance": 0.65
+    },
+    "corruptedadventure:mist_fern": {
       "chance": 0.65
     },
     "corruptedadventure:moonpetal_leaves": {
@@ -44,6 +53,9 @@
     },
     "corruptedadventure:moonpetal_sapling": {
       "chance": 0.3
+    },
+    "corruptedadventure:moonpetal_shrub": {
+      "chance": 0.65
     },
     "corruptedadventure:palm_leaves": {
       "chance": 0.3

@@ -80,7 +80,12 @@ final class ModDataMapProvider extends DataMapProvider {
                 .add(ModBlocks.VERDANT_BLOSSOM_BUSH.getId(), new Compostable(0.65F), false)
                 .add(ModBlocks.VERDANT_VINE.getId(), new Compostable(0.5F), false)
                 .add(ModBlocks.VERDANT_WATER_BLOOM.getId(), new Compostable(0.65F), false)
-                .add(ModItems.VERDANT_FRUIT.getId(), new Compostable(0.65F), false);
+                .add(ModItems.VERDANT_FRUIT.getId(), new Compostable(0.65F), false)
+                // Decor rollout plants: moss and glowgrass like moss carpet and short grass, fern and shrub 0.65.
+                .add(ModBlocks.FJORD_MOSS.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.LAGOON_GLOWGRASS.getId(), new Compostable(0.3F), false)
+                .add(ModBlocks.MIST_FERN.getId(), new Compostable(0.65F), false)
+                .add(ModBlocks.MOONPETAL_SHRUB.getId(), new Compostable(0.65F), false);
 
         // Peat: a weak fuel (6 items per block, coal does 8), because the whole surface of the peat moors is peat.
         builder(NeoForgeDataMaps.FURNACE_FUELS).add(ModBlocks.PEAT.getId(), new FurnaceFuel(PEAT_BURN_TIME), false);

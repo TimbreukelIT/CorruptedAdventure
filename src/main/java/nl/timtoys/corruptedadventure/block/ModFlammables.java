@@ -82,5 +82,10 @@ public final class ModFlammables {
         }
         fire.setFlammable(ModBlocks.VERDANT_VINE.get(), 15, 100);
         fire.setFlammable(ModBlocks.VERDANT_VINE_PLANT.get(), 15, 100);
+        // The decor rollout plants burn like grass, ferns and flowers.
+        for (Block plant : new Block[] {ModBlocks.FJORD_MOSS.get(), ModBlocks.MIST_FERN.get(), ModBlocks.MOONPETAL_SHRUB.get(),
+                ModBlocks.LAGOON_GLOWGRASS.get()}) {
+            fire.setFlammable(plant, 60, 100);
+        }
     }
 }
