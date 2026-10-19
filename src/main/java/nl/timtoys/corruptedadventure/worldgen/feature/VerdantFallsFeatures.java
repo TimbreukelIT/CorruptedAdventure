@@ -51,6 +51,9 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
  *   under the overhanging ledges down to the next ledge, always under a route's knobs; a hanging orchid as a single
  *   accent under a ledge (also under the ledge path). The vine's tip is full grown (age 25), so a strand stays as long
  *   as placed; never in water.</li>
+ *   <li>Decor D (2026-10-19): a giant tree (28–38, {@link VerdantGiantTrunkPlacer}) beside each horseshoe gorge, on the
+ *   flat collar behind its wall ({@link VerdantGiantTrees}); the emergent trees and tree ferns below in groves
+ *   ({@link Ring4Placements#GROVES}), keeping their own bank, rim, tread and riser places.</li>
  *   <li>Trees (F2 = A, F3 = B): the emergent tree (14–22, buttress roots, umbrella crown, fruit pods and orchids on its
  *   trunk, vines and hanging orchids under its branches) on the banks of the still lakes and on the gorge rims, never
  *   over a fall; tree ferns (4–7, also the sapling's {@code ring_4/verdant_tree_fern}) on the treads and on the risers.
@@ -72,6 +75,7 @@ public final class VerdantFallsFeatures {
     static final ResourceKey<ConfiguredFeature<?, ?>> MOSS_CARPET = configured("verdant_moss_carpet");
     static final ResourceKey<ConfiguredFeature<?, ?>> LEDGE_STRANDS = configured("verdant_ledge_strands");
     static final ResourceKey<ConfiguredFeature<?, ?>> EMERGENT_TREE = configured("verdant_emergent_tree");
+    static final ResourceKey<ConfiguredFeature<?, ?>> GIANT_TREE = configured("verdant_giant_tree");
     static final ResourceKey<ConfiguredFeature<?, ?>> FERN = configured("verdant_fern");
     static final ResourceKey<ConfiguredFeature<?, ?>> TALL_FERN = configured("verdant_tall_fern");
     static final ResourceKey<ConfiguredFeature<?, ?>> GIANT_LEAF = configured("verdant_giant_leaf");
@@ -83,6 +87,7 @@ public final class VerdantFallsFeatures {
 
     public static final ResourceKey<PlacedFeature> VERDANT_FALLS_MOSS_CARPETS = placed("verdant_falls_moss_carpets");
     public static final ResourceKey<PlacedFeature> VERDANT_FALLS_LEDGE_STRANDS = placed("verdant_falls_ledge_strands");
+    public static final ResourceKey<PlacedFeature> VERDANT_FALLS_GIANT_TREES = placed("verdant_falls_giant_trees");
     public static final ResourceKey<PlacedFeature> VERDANT_FALLS_BANK_TREES = placed("verdant_falls_bank_trees");
     public static final ResourceKey<PlacedFeature> VERDANT_FALLS_RIM_TREES = placed("verdant_falls_rim_trees");
     public static final ResourceKey<PlacedFeature> VERDANT_FALLS_TREAD_TREE_FERNS = placed("verdant_falls_tread_tree_ferns");
@@ -110,6 +115,13 @@ public final class VerdantFallsFeatures {
     static final int TREE_CLEARANCE = 7;
     /** Tree ferns and wall plants keep this far from the falls (F3 = B: never within 2 of a fall). */
     static final int FERN_CLEARANCE = 3;
+    /** Decor D: the emergent trees keep this far from a giant tree's trunk (its crown's reach and a little more). */
+    static final int GIANT_CLEARANCE = 14;
+    /**
+     * Decor D: the tree ferns follow the same groves as the emergent trees, a little wider, with a few on the open
+     * ground (as the proef's bushes round the groves).
+     */
+    static final ClusterDensity FERN_GROVES = ClusterDensity.of(Ring4Placements.GROVES_NOISE, -0.2, 0.1).withFloor(0.15);
 
     private VerdantFallsFeatures() {
     }
@@ -130,6 +142,15 @@ public final class VerdantFallsFeatures {
                 BlockStateProvider.simple(ModBlocks.VERDANT_LEAVES.get()),
                 new VerdantFoliagePlacer(UniformInt.of(5, 6), ConstantInt.of(0), VerdantFoliagePlacer.Shape.UMBRELLA),
                 new TwoLayersFeatureSize(1, 0, 1)).ignoreVines().build());
+        // Decor D: the giant tree beside each gorge (28–38, a 2 × 2 trunk with buttresses, two tiers of branches with
+        // crowns of their own under a wide umbrella of 8–9).
+        FeatureUtils.register(context, GIANT_TREE, ModFeatures.ISOLATED_TREE.get(), new TreeConfiguration.TreeConfigurationBuilder(
+                BlockStateProvider.simple(ModBlocks.VERDANT_LOG.get()),
+                new VerdantGiantTrunkPlacer(28, 6, 4, UniformInt.of(4, 6), UniformInt.of(3, 5), UniformInt.of(2, 3), UniformInt.of(5, 7),
+                        0.05F, 0.06F),
+                BlockStateProvider.simple(ModBlocks.VERDANT_LEAVES.get()),
+                new VerdantFoliagePlacer(UniformInt.of(8, 9), ConstantInt.of(0), VerdantFoliagePlacer.Shape.UMBRELLA),
+                new TwoLayersFeatureSize(1, 1, 2)).ignoreVines().build());
         // The tree fern: also what the sapling grows (F11 = A).
         FeatureUtils.register(context, ModConfiguredFeatures.VERDANT_TREE_FERN, ModFeatures.ISOLATED_TREE.get(), new TreeConfiguration.TreeConfigurationBuilder(
                 BlockStateProvider.simple(ModBlocks.VERDANT_LOG.get()),
@@ -163,18 +184,25 @@ public final class VerdantFallsFeatures {
         PlacementModifier sapling = PlacementUtils.filteredByBlockSurvival(ModBlocks.VERDANT_SAPLING.get());
         PlacementModifier treeClear = Ring4Filter.builder().ground().below(IslandOutput.Output.CLIFF, 0.5)
                 .clearOfFalls(TREE_CLEARANCE).clearOfKnobs(TREE_CLEARANCE).build();
-        // Emergent trees on the banks of the still lakes (not the foot river) and on the gorge rims.
-        register(context, VERDANT_FALLS_BANK_TREES, EMERGENT_TREE, JitteredGridPlacement.of(16, 4, 0.45F), SURFACE,
+        // Decor D: the giant tree beside each gorge, on the collar behind its wall (the spot is pure: VerdantGiantTrees).
+        register(context, VERDANT_FALLS_GIANT_TREES, GIANT_TREE, GiantTreePlacement.INSTANCE, SURFACE, only(ON_GROUND),
+                Ring4Filter.builder().ground().build(), sapling);
+        // Emergent trees on the banks of the still lakes (not the foot river) and on the gorge rims; decor D: in the
+        // groves (Ring4Placements.GROVES, the chance doubled: about as many as before), clear of the giant trees.
+        PlacementModifier giantClear = new GiantTreeClearance(GIANT_CLEARANCE);
+        register(context, VERDANT_FALLS_BANK_TREES, EMERGENT_TREE, JitteredGridPlacement.of(16, 4, 0.9F, Ring4Placements.GROVES), SURFACE,
                 HeightBandFilter.above(ABOVE_THE_FOOT_RIVER), only(BlockPredicate.allOf(ON_GROUND, Ring4Placements.waterNear(4))),
-                sapling, treeClear);
-        register(context, VERDANT_FALLS_RIM_TREES, EMERGENT_TREE, JitteredGridPlacement.of(16, 3, 0.35F), SURFACE,
-                only(ON_GROUND), SlopeFilter.rimTop(6, 12), sapling, treeClear);
-        // Tree ferns on the treads and on the risers (F3 = B).
+                sapling, treeClear, giantClear);
+        register(context, VERDANT_FALLS_RIM_TREES, EMERGENT_TREE, JitteredGridPlacement.of(16, 3, 0.7F, Ring4Placements.GROVES), SURFACE,
+                only(ON_GROUND), SlopeFilter.rimTop(6, 12), sapling, treeClear, giantClear);
+        // Tree ferns on the treads and on the risers (F3 = B); decor D: in and round the groves (FERN_GROVES).
         PlacementModifier fernClear = Ring4Filter.builder().ground().clearOfFalls(FERN_CLEARANCE).clearOfKnobs(FERN_CLEARANCE).build();
-        register(context, VERDANT_FALLS_TREAD_TREE_FERNS, ModConfiguredFeatures.VERDANT_TREE_FERN, JitteredGridPlacement.of(8, 2, 0.35F),
-                SURFACE, only(ON_GROUND), Ring4Filter.builder().below(IslandOutput.Output.SLOPE, 0.4).build(), sapling, fernClear);
-        register(context, VERDANT_FALLS_RISER_TREE_FERNS, ModConfiguredFeatures.VERDANT_TREE_FERN, JitteredGridPlacement.of(8, 2, 0.25F),
-                SURFACE, only(ON_GROUND), Ring4Filter.builder().range(IslandOutput.Output.SLOPE, 0.4, 1.5).build(), sapling, fernClear);
+        register(context, VERDANT_FALLS_TREAD_TREE_FERNS, ModConfiguredFeatures.VERDANT_TREE_FERN, JitteredGridPlacement.of(8, 2, 0.6F,
+                        FERN_GROVES), SURFACE, only(ON_GROUND), Ring4Filter.builder().below(IslandOutput.Output.SLOPE, 0.4).build(), sapling,
+                fernClear);
+        register(context, VERDANT_FALLS_RISER_TREE_FERNS, ModConfiguredFeatures.VERDANT_TREE_FERN, JitteredGridPlacement.of(8, 2, 0.45F,
+                        FERN_GROVES), SURFACE, only(ON_GROUND), Ring4Filter.builder().range(IslandOutput.Output.SLOPE, 0.4, 1.5).build(), sapling,
+                fernClear);
         // The gorge walls: from the foot of a wall up.
         register(context, VERDANT_FALLS_WALL_PLANTS, WALL_PLANTS, JitteredGridPlacement.of(4, 0, 0.5F), SURFACE,
                 SlopeFilter.wallFoot(2, 6), Ring4Filter.builder().ground().clearOfFalls(FERN_CLEARANCE).build());

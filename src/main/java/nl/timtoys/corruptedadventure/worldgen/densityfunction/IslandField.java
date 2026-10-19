@@ -494,6 +494,51 @@ public final class IslandField implements DensityFunction {
         return tree == null ? WorldTreePart.NONE : tree.part(x, y, z);
     }
 
+    /**
+     * Decor D (2026-10-19): the horseshoe gorges of {@code verdant_falls} of the arc cell of (x, z) and its two
+     * neighbours (a gorge never reaches past a neighbouring cell), for the giant tree beside each.
+     */
+    public List<GorgeSite> gorgesNear(int x, int z) {
+        double period = VerdantDescent.perimeter(ringLayout());
+        double s = RingArc.wrap(Math.atan2(z, x) * VerdantDescent.midRadius(ringLayout()), period);
+        int k = (int) Math.floor(s / gorges.cellSize());
+        List<GorgeSite> sites = new ArrayList<>(3);
+        for (int dk = -1; dk <= 1; dk++) {
+            VerdantGorges.Gorge g = gorges.gorge(k + dk);
+            if (g != null && sites.stream().noneMatch(site -> site.index() == g.index())) {
+                sites.add(new GorgeSite(g.index(), g.cx(), g.cz(), g.ox(), g.oz(), g.radius(), g.depth()));
+            }
+        }
+        return sites;
+    }
+
+    /**
+     * Decor D (2026-10-19): the land bridges of the zone 4→5 ({@code sundered_reach}) of the bridge cell of (x, z) and
+     * its two neighbours, for the split rock on each.
+     */
+    public List<LandBridge> landBridgesNear(int x, int z) {
+        double period = Ring4Sundered.perimeter(ringLayout());
+        double start = Ring4Sundered.zoneStart(ringLayout());
+        double end = Ring4Sundered.zoneEnd(ringLayout());
+        double mid = 0.5 * (start + end);
+        int count = RingArc.cellCount(period, Ring4Sundered.BRIDGE_CELL);
+        int k = (int) Math.floor(Ring4Sundered.along(ringLayout(), x, z) / (period / count));
+        List<LandBridge> bridges = new ArrayList<>(3);
+        for (int dk = -1; dk <= 1; dk++) {
+            int index = Math.floorMod(k + dk, count);
+            if (bridges.stream().noneMatch(bridge -> bridge.index() == index)) {
+                double[] bridge = Ring4Sundered.bridge(salt(), index, period);
+                bridges.add(new LandBridge(index, bridge[0] / mid, bridge[1], start, end));
+            }
+        }
+        return bridges;
+    }
+
+    /** The ring layout's effective distance of (x, z) (with the boundary noise): what the zones are measured in. */
+    public double effectiveDistance(double x, double z) {
+        return ringLayout().effectiveDistance(x, z);
+    }
+
     // ---------------------------------------------------------------- outputs ({@link IslandOutput})
 
     /**
@@ -1345,6 +1390,21 @@ public final class IslandField implements DensityFunction {
      * crown and roots reach at most {@code radius} blocks from the axis.
      */
     public record WorldTree(int x, int z, int baseY, int top, int radius) {
+    }
+
+    /**
+     * A horseshoe gorge of {@code verdant_falls} (decor D): its cell's index, the amphitheatre's centre, the outward
+     * direction (unit, towards the foot river), the half ellipse's half width and depth. Its wall line, wobble aside, is
+     * centre + side · halfWidth · sin φ − out · depth · cos φ (φ in [−π/2, π/2], side = (−outZ, outX)).
+     */
+    public record GorgeSite(int index, double centreX, double centreZ, double outX, double outZ, double halfWidth, double depth) {
+    }
+
+    /**
+     * A land bridge of the zone 4→5 (decor D): its cell's index, its middle line's angle (radians, as {@code atan2(z, x)}
+     * up to whole turns), its half width along the zone (blocks) and the zone's inner and outer effective distance.
+     */
+    public record LandBridge(int index, double angle, double halfWidth, double zoneStart, double zoneEnd) {
     }
 
     /**

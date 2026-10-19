@@ -1,0 +1,107 @@
+{
+  "type": "corruptedadventure:split_rock",
+  "config": {
+    "body": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:deepslate",
+            "Properties": {
+              "axis": "y"
+            }
+          },
+          "weight": 6
+        },
+        {
+          "data": {
+            "Name": "minecraft:tuff"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:tidestone"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:cobbled_deepslate"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "crack": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:cobbled_deepslate"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:deepslate",
+            "Properties": {
+              "axis": "y"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:tuff"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "foot": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:mossy_cobblestone"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:cobbled_deepslate"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:moss_block"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 34,
+      "min_inclusive": 24
+    },
+    "lean": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 3.5,
+      "min_inclusive": 1.5
+    },
+    "length": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 5.5,
+      "min_inclusive": 4.0
+    },
+    "position": 0.7,
+    "shorter": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 0.9,
+      "min_inclusive": 0.7
+    }
+  }
+}

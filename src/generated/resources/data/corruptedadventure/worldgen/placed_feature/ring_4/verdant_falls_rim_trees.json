@@ -4,7 +4,12 @@
     {
       "type": "corruptedadventure:jittered_grid",
       "cell_size": 16,
-      "chance": 0.35,
+      "chance": 0.7,
+      "density": {
+        "high": 0.2,
+        "low": -0.1,
+        "noise": "corruptedadventure:ring_4_groves"
+      },
       "margin": 3
     },
     {
@@ -83,6 +88,10 @@
           "output": "cliff"
         }
       ]
+    },
+    {
+      "type": "corruptedadventure:giant_tree_clearance",
+      "clearance": 14
     },
     {
       "type": "minecraft:biome"

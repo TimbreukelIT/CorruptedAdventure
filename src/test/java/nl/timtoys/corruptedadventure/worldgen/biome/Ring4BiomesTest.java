@@ -23,6 +23,7 @@ import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring4Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring4MythicFeatures;
+import nl.timtoys.corruptedadventure.worldgen.feature.SunderedReachFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.VerdantFallsFeatures;
 import org.junit.jupiter.api.Test;
 
@@ -150,7 +151,12 @@ class Ring4BiomesTest {
             if (entry.biomes().contains(ModBiomes.VERDANT_FALLS)) {
                 assertEquals(Set.of(ModBiomes.VERDANT_FALLS), entry.biomes(), entry.feature().toString());
             }
-            assertFalse(entry.biomes().contains(ModBiomes.SUNDERED_REACH), entry.feature() + ": nothing in the zone 4→5");
+            // Decor D: the zone 4→5 holds only its split rocks, and they stand nowhere else.
+            if (entry.feature().equals(SunderedReachFeatures.SUNDERED_REACH_SPLIT_ROCKS)) {
+                assertEquals(Set.of(ModBiomes.SUNDERED_REACH), entry.biomes());
+            } else {
+                assertFalse(entry.biomes().contains(ModBiomes.SUNDERED_REACH), entry.feature() + ": nothing else in the zone 4→5");
+            }
         }
         // The glow under the islands (teststop 5a) in every ground biome, before what hangs from the islands.
         for (ResourceKey<Biome> ground : Ring4Biomes.GROUND) {

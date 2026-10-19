@@ -14,6 +14,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.BoulderConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.BoulderFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.FallenTreeConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SplitRockConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SplitRockFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.FallenTreeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerraceDressingConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerraceDressingFeature;
@@ -263,6 +265,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:terrace_dressing} (ring 4 decor proef): vines down the terrace walls, moss on the rims */
     public static final DeferredHolder<Feature<?>, Feature<TerraceDressingConfiguration>> TERRACE_DRESSING =
             FEATURES.register("terrace_dressing", () -> new TerraceDressingFeature(TerraceDressingConfiguration.CODEC));
+    /** {@code corruptedadventure:split_rock} (decor D): the split rock on each land bridge of sundered_reach */
+    public static final DeferredHolder<Feature<?>, Feature<SplitRockConfiguration>> SPLIT_ROCK =
+            FEATURES.register("split_rock", () -> new SplitRockFeature(SplitRockConfiguration.CODEC));
 
     private ModFeatures() {
     }
