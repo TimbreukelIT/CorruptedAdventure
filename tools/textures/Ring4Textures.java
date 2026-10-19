@@ -45,6 +45,8 @@ public final class Ring4Textures {
     private static final Path PREVIEW = Path.of("build/texture-preview/ring4.png");
     /** The verdant flora beside moonpetal (71b contact sheet): walls, scenes by day and night, plants in a slot. */
     private static final Path VERDANT_PREVIEW = Path.of("build/texture-preview/ring4-verdant.png");
+    /** The decor rollout blocks beside the ring 4 blocks they join (contact sheet of the decor-blocks change). */
+    private static final Path DECOR_PREVIEW = Path.of("build/texture-preview/ring4-decor.png");
 
     /** Retouched by hand after generation; the script skips these and the preview reads them from disk. */
     private static final Set<String> HAND_EDITED = Set.of();
@@ -149,6 +151,18 @@ public final class Ring4Textures {
     private static final int LILAC_GLOW_COLOUR = 0xFAF6FF;
     private static final int[] APRICOT_GLOW = {0xD08040, 0xFFC890, 0xFFDDB0, 0xFFF2DE};
     private static final int APRICOT_GLOW_COLOUR = 0xFFF6EA;
+
+    // Decor rollout blocks (sparring 2026-10-19): misty blue-green fjord moss, a pale silver-mint fern, a sage shrub in
+    // moonpetal blossom, teal glowgrass, and a pale crystal stone; both glowing blocks share the aquamarine glow.
+    private static final int[] FJORD_MOSS = {0x22383A, 0x2D4A48, 0x3B5E58, 0x4C746A, 0x62897C, 0x7EA292, 0xA2C0AE};
+    private static final int FJORD_CAPSULE = 0xD6E8DC;
+    private static final int[] MIST_FERN = {0x4E7A72, 0x66948A, 0x80ACA2, 0x9CC2B8, 0xB8D6CE, 0xD4E8E2};
+    private static final int[] SHRUB_LEAF = {0x2E4A3E, 0x3C5E4E, 0x4E7660, 0x648E74, 0x7EA88A, 0x9CC2A4};
+    private static final int[] GLOWGRASS = {0x173E40, 0x1F5254, 0x2A6866, 0x377E78, 0x48948A, 0x5EAA9C};
+    private static final int[] AQUA_STONE = {0x50646C, 0x627880, 0x758C92, 0x88A0A4, 0x9CB4B6, 0xB0C6C6, 0xC6D8D6};
+    /** Aquamarine glow of the glowgrass tips and the crystal stone's inclusions; [0] is the dim tone a pulse leans towards. */
+    private static final int[] AQUA_GLOW = {0x4FB4C8, 0x86E2EE, 0xB4F2F8, 0xEAFEFF};
+    private static final int AQUA_GLOW_COLOUR = 0xF2FFFF;
 
     // Nether ring 4.
     private static final int[] BONE_SAND = {0x9C9078, 0xB0A48A, 0xC2B79C, 0xD2C8AE, 0xE0D8C0, 0xECE6D2};
@@ -321,6 +335,17 @@ public final class Ring4Textures {
         }
         still("item/verdant_fruit", Ring4Textures::verdantFruit);
 
+        // ---- Decor rollout blocks (sparring 2026-10-19, "nieuwe blokken") ----
+        still("block/mossy_tidestone", Ring4Textures::mossyTidestone);
+        still("block/aquamarine_stone", Ring4Textures::aquamarineStone);
+        // Aquamarine is a still gem (71a), so the stone's glow layer does not pulse; the glowgrass pulses like the glow bloom.
+        stillGlowLayer("block/aquamarine_stone", AQUA_GLOW);
+        still("block/fjord_moss", Ring4Textures::fjordMoss);
+        still("block/mist_fern", Ring4Textures::mistFern);
+        still("block/moonpetal_shrub", Ring4Textures::moonpetalShrub);
+        still("block/lagoon_glowgrass", Ring4Textures::lagoonGlowgrass);
+        glowLayer("block/lagoon_glowgrass", AQUA_GLOW, AQUA_GLOW_COLOUR, AQUA_GLOW[0]);
+
         // ---- Nether ring 4 (68) ----
         still("block/bone_sand", Ring4Textures::boneSand);
         still("block/bleached_netherrack", Ring4Textures::bleachedNetherrack);
@@ -394,6 +419,16 @@ public final class Ring4Textures {
      * transparent; pulsing towards {@code glow}. {@code tones[1..]} are the colours a glowing pixel may have.
      */
     private static void glowLayer(String block, int[] tones, int glow, int dim) {
+        pulsing(registerGlowLayer(block, tones), glow, dim, glowPixels(block));
+    }
+
+    /** {@link #glowLayer} without the pulse: for a glowing material that is still (aquamarine). */
+    private static void stillGlowLayer(String block, int[] tones) {
+        still(registerGlowLayer(block, tones), glowPixels(block));
+    }
+
+    /** Records {@code <block>_glow} as the glow layer of {@code block} with the glow tones {@code tones[1..]}; returns its name. */
+    private static String registerGlowLayer(String block, int[] tones) {
         String name = block + "_glow";
         GLOW_LAYERS.put(name, block);
         Set<Integer> glowing = new HashSet<>();
@@ -401,7 +436,12 @@ public final class Ring4Textures {
             glowing.add(tones[i]);
         }
         GLOW_TONES.put(block, glowing);
-        pulsing(name, glow, dim, (image, random) -> {
+        return name;
+    }
+
+    /** Paints the pixels of {@code block} its painter marked as glowing, everything else transparent. */
+    private static Painter glowPixels(String block) {
+        return (image, random) -> {
             BufferedImage source = renderUnchecked(block);
             boolean[][] mask = glowMask(source);
             for (int y = 0; y < SIZE; y++) {
@@ -411,7 +451,7 @@ public final class Ring4Textures {
                     }
                 }
             }
-        });
+        };
     }
 
     /** Paints a glowing pixel: the colour, and the mark the glow layer reads. */
@@ -463,6 +503,7 @@ public final class Ring4Textures {
         lint();
         writePreview();
         writeVerdantPreview();
+        writeDecorPreview();
     }
 
     // ---- Checks -------------------------------------------------------------------------------------------------
@@ -3063,6 +3104,338 @@ public final class Ring4Textures {
         drawScene(graphics, NETHER_FLOOR, 10, top, 0xE6DCC8, false);
         drawScene(graphics, WITHERED, 10 + 11 * SIZE * 4, top, 0xA8B4A0, false);
         top += NETHER_FLOOR.length * SIZE * 4 + 20;
+        return top;
+    }
+
+    // ---- Decor rollout blocks -------------------------------------------------------------------------------------
+
+    /**
+     * Mossy tidestone (decor rollout): the tidestone pixels under tileable patches of fjord moss (about a third of the
+     * face), each patch lit on its upper left, with a dark lip where it hangs over the stone below, and a few loose tufts.
+     * Layout picked by {@link #bestOf} (the least repeating patches on a wall).
+     */
+    private static void mossyTidestone(BufferedImage image, Random random) {
+        BufferedImage stone = renderUnchecked("block/tidestone");
+        bestOf(image, random, (candidate, layout) -> mossyTidestoneLayout(candidate, layout, stone));
+    }
+
+    private static void mossyTidestoneLayout(BufferedImage image, Random random, BufferedImage stone) {
+        copy(stone, image);
+        double[][] patches = valueNoise(random, 4, 4);
+        double[][] fine = valueNoise(random, 2, 2);
+        boolean[][] moss = new boolean[SIZE][SIZE];
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                moss[x][y] = 0.7 * patches[x][y] + 0.3 * fine[x][y] > 0.56;
+            }
+        }
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                if (!moss[x][y]) {
+                    continue;
+                }
+                boolean lip = !moss[x][Math.floorMod(y + 1, SIZE)];
+                boolean lit = !moss[x][Math.floorMod(y - 1, SIZE)] || !moss[Math.floorMod(x - 1, SIZE)][y];
+                double light = 0.5 + 0.5 * (patches[x][y] - 0.56) + 0.3 * (fine[x][y] - 0.5) + 0.12 * (random.nextDouble() - 0.5)
+                        + (lit ? 0.22 : 0) - (lip ? 0.32 : 0);
+                set(image, x, y, shade(FJORD_MOSS, light));
+            }
+        }
+        for (int i = 0; i < 6; i++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            if (!moss[x][y]) {
+                set(image, x, y, FJORD_MOSS[random.nextBoolean() ? 3 : 4]);
+            }
+        }
+    }
+
+    /**
+     * Aquamarine stone (decor rollout, the lagoon's crystal spires): a pale blue-grey crystalline stone of small grains
+     * (wrapping cells lit on their upper left), short slanted aquamarine streaks and three small
+     * crystal inclusions whose cores glow (a still emissive layer). Layout picked by {@link #bestOf}.
+     */
+    private static void aquamarineStone(BufferedImage image, Random random) {
+        bestOf(image, random, Ring4Textures::aquamarineStoneLayout);
+    }
+
+    private static void aquamarineStoneLayout(BufferedImage image, Random random) {
+        Cells cells = Cells.random(random, 14);
+        double[] base = new double[cells.count()];
+        for (int i = 0; i < base.length; i++) {
+            base[i] = 0.35 + 0.35 * random.nextDouble();
+        }
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                Cells.Nearest nearest = cells.nearest(x, y);
+                double gap = nearest.secondDistance() - nearest.distance();
+                double slope = nearest.dx() + nearest.dy();
+                double light = base[nearest.index()] - 0.25 * slope + 0.1 * (random.nextDouble() - 0.5);
+                if (gap < 0.4 && random.nextInt(4) != 0) {
+                    light = slope < 0 ? 0.12 : 0.22;
+                }
+                set(image, x, y, shade(AQUA_STONE, light));
+            }
+        }
+        // Short slanted streaks of aquamarine scattered through the grains (a continuous vein repeats as a stripe on a wall).
+        for (int i = 0; i < 5; i++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            setWrapped(image, x, y, AQUAMARINE[3]);
+            setWrapped(image, x + 1, y + 1, AQUAMARINE[2]);
+            if (random.nextBoolean()) {
+                setWrapped(image, x + 2, y + 2, AQUAMARINE[1]);
+            }
+        }
+        List<int[]> placed = new ArrayList<>();
+        for (int attempt = 0; attempt < 200 && placed.size() < 3; attempt++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            boolean free = true;
+            for (int[] other : placed) {
+                int dx = Math.abs(x - other[0]);
+                int dy = Math.abs(y - other[1]);
+                free &= Math.min(dx, SIZE - dx) + Math.min(dy, SIZE - dy) >= 7;
+            }
+            if (!free) {
+                continue;
+            }
+            placed.add(new int[] {x, y});
+            // A small crystal: lit upper left, shaded lower right, a glowing core of two pixels.
+            setWrapped(image, x - 1, y, AQUAMARINE[4]);
+            setWrapped(image, x, y - 1, AQUAMARINE[5]);
+            setWrapped(image, x + 1, y, AQUAMARINE[2]);
+            setWrapped(image, x, y + 1, AQUAMARINE[2]);
+            setWrapped(image, x + 1, y + 1, AQUAMARINE[1]);
+            glow(image, Math.floorMod(x, SIZE), Math.floorMod(y, SIZE), AQUA_GLOW[3]);
+            if (random.nextBoolean()) {
+                glow(image, Math.floorMod(x + 1, SIZE), Math.floorMod(y - 1, SIZE), AQUA_GLOW[2]);
+            }
+        }
+    }
+
+    /**
+     * Fjord moss (decor rollout, cross): a low cushion of misty blue-green moss on the bottom rows with a ragged crown,
+     * lit to the upper left, and a few thin spore stalks rising out of it with pale capsules.
+     */
+    private static void fjordMoss(BufferedImage image, Random random) {
+        double[][] clumps = valueNoise(random, 2, 2);
+        int stalks = 4 + random.nextInt(2);
+        for (int i = 0; i < stalks; i++) {
+            int x = 2 + random.nextInt(12);
+            int top = 3 + random.nextInt(4);
+            for (int y = top + 1; y < 12; y++) {
+                set(image, x, y, FJORD_MOSS[y < top + 3 ? 3 : 2]);
+            }
+            set(image, x, top, FJORD_CAPSULE);
+        }
+        for (int y = 6; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double e = Math.pow((x + 0.5 - 8) / 7.8, 2) + Math.pow((y + 0.5 - 16.5) / 9.0, 2);
+                if (e > 1 || (e > 0.62 && clumps[x][y] < 0.5) || random.nextInt(12) == 0) {
+                    continue;
+                }
+                double light = 0.55 + 0.4 * (clumps[x][y] - 0.5) - 0.35 * (x + y - 20) / 16.0 + 0.1 * (random.nextDouble() - 0.5);
+                set(image, x, y, shade(FJORD_MOSS, light));
+            }
+        }
+        // The crown of each column catches the light.
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 9; y < SIZE; y++) {
+                if (isOpaque(image, x, y)) {
+                    if (!isOpaque(image, x, y - 1) && random.nextInt(3) != 0) {
+                        set(image, x, y, FJORD_MOSS[x < 9 ? 6 : 5]);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Mist fern (decor rollout, cross): six pale silver-mint fronds, taller and more upright than the verdant fern, with
+     * slender leaflets so the background shows between them (it reads see-through with alpha 0 or 255 only).
+     */
+    private static void mistFern(BufferedImage image, Random random) {
+        double[][] fronds = {{-165, 8.5, 0.07, 6.5}, {-134, 11.5, 0.045, 7}, {-104, 14, 0.02, 7.5}, {-77, 13.5, 0.02, 8},
+                {-47, 11.5, 0.045, 8.5}, {-15, 8.5, 0.07, 9}};
+        for (double[] f : fronds) {
+            frond(image, random, MIST_FERN, f[3] + 0.5 * random.nextDouble(), SIZE - 0.5,
+                    Math.toRadians(f[0] + 6 * (random.nextDouble() - 0.5)), f[1], f[2], 1.8);
+        }
+    }
+
+    /**
+     * Moonpetal shrub (decor rollout, cross): a low rounded shrub of sage leaves with a ragged, gappy edge, lit to the
+     * upper left, silver moonpetal twigs at the foot and the moonpetal crown's blossom on top: five-pixel pink-lilac
+     * florets with a cream heart, more of them towards the top.
+     */
+    private static void moonpetalShrub(BufferedImage image, Random random) {
+        double[][] clumps = valueNoise(random, 4, 4);
+        for (int y = 4; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double e = Math.pow((x + 0.5 - 8) / 7.4, 2) + Math.pow((y + 0.5 - 10.5) / 6.2, 2);
+                if (e > 1 || (e > 0.7 && clumps[x][y] < 0.45) || random.nextInt(10) == 0) {
+                    continue;
+                }
+                double light = 0.5 + 0.35 * (clumps[x][y] - 0.5) - 0.3 * (x + y - 18) / 16.0 + 0.1 * (random.nextDouble() - 0.5);
+                set(image, x, y, shade(SHRUB_LEAF, light));
+            }
+        }
+        int[][] twigs = {{6, 15}, {7, 14}, {9, 15}, {9, 14}, {8, 13}};
+        for (int[] twig : twigs) {
+            set(image, twig[0], twig[1], MOONPETAL_BARK[twig[1] == 15 ? 1 : 3]);
+        }
+        Set<Integer> blossom = toneSet(BLOSSOM);
+        blossom.add(BLOSSOM_HEART);
+        int[][] petals = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
+        int placed = 0;
+        for (int attempt = 0; attempt < 80 && placed < 8; attempt++) {
+            int x = 1 + random.nextInt(SIZE - 2);
+            int y = 5 + Math.min(random.nextInt(8), random.nextInt(8));
+            double e = Math.pow((x + 0.5 - 8) / 7.4, 2) + Math.pow((y + 0.5 - 10.5) / 6.2, 2);
+            if (e > 0.75 || tonesNear(image, x, y, blossom)) {
+                continue;
+            }
+            double tone = 0.66 - 0.2 * (x + y - 16) / 16.0;
+            for (int[] petal : petals) {
+                double light = tone + (petal[0] + petal[1] < 0 ? 0.18 : petal[0] + petal[1] > 0 ? -0.22 : 0);
+                plot(image, x + petal[0], y + petal[1], shade(BLOSSOM, light));
+            }
+            plot(image, x, y, random.nextInt(3) == 0 ? BLOSSOM[5] : BLOSSOM_HEART);
+            placed++;
+        }
+    }
+
+    /** Whether a pixel with one of {@code tones} lies within two pixels of (x, y), so florets do not merge into blobs. */
+    private static boolean tonesNear(BufferedImage image, int x, int y, Set<Integer> tones) {
+        for (int dy = -2; dy <= 2; dy++) {
+            for (int dx = -2; dx <= 2; dx++) {
+                if (isOpaque(image, x + dx, y + dy) && tones.contains(image.getRGB(x + dx, y + dy) & 0xFFFFFF)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Lagoon glowgrass (decor rollout, cross): ten slender teal blades fanning out from a clump, curving, darker at
+     * the foot and lighter up; most tips glow aquamarine (an emissive layer that pulses like the glow bloom's).
+     */
+    private static void lagoonGlowgrass(BufferedImage image, Random random) {
+        int[] columns = {2, 3, 5, 6, 7, 8, 9, 10, 12, 13};
+        for (int column : columns) {
+            int height = 6 + random.nextInt(8);
+            int top = SIZE - height;
+            // The blades fan out from the clump: the outer ones lean outwards, each with its own wobble.
+            double bend = 3.2 * (column - 7.5) / 5.5 + 1.6 * (random.nextDouble() - 0.5);
+            boolean glowing = random.nextInt(4) != 0;
+            for (int y = SIZE - 1; y >= top; y--) {
+                double t = (SIZE - 1 - y) / (double) (height - 1);
+                int x = Math.max(0, Math.min(SIZE - 1, column + (int) Math.round(bend * t * t)));
+                if (glowing && y - top < 2) {
+                    glow(image, x, y, AQUA_GLOW[y == top ? 3 : 2]);
+                } else {
+                    set(image, x, y, shade(GLOWGRASS, 0.12 + 0.8 * t + 0.1 * (random.nextDouble() - 0.5)));
+                }
+            }
+        }
+    }
+
+    private static void writeDecorPreview() throws IOException {
+        BufferedImage sheet = new BufferedImage(SHEET_WIDTH, 3000, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = sheet.createGraphics();
+        graphics.setColor(new Color(0x2B2B2B));
+        graphics.fillRect(0, 0, sheet.getWidth(), sheet.getHeight());
+        int bottom = drawDecor(graphics, 10);
+        graphics.dispose();
+        if (bottom > sheet.getHeight()) {
+            throw new IllegalStateException("decor sheet needs " + bottom + " px, has " + sheet.getHeight());
+        }
+        Files.createDirectories(DECOR_PREVIEW.getParent());
+        ImageIO.write(sheet.getSubimage(0, 0, sheet.getWidth(), bottom), "png", DECOR_PREVIEW.toFile());
+        System.out.println("wrote " + DECOR_PREVIEW);
+    }
+
+    /** The stones as 4×4 walls beside the ring 4 stones they join; the aquamarine stone again at night. */
+    private static final String[] DECOR_WALLS = {"block/tidestone", "block/mossy_tidestone", "block/cobbled_tidestone",
+            "block/aquamarine_block", "block/aquamarine_stone"};
+    /** The new plants in a slot, then three ring 4 plants to compare with. */
+    private static final String[] DECOR_SLOTS = {"block/fjord_moss", "block/mist_fern", "block/moonpetal_shrub",
+            "block/lagoon_glowgrass", "block/verdant_fern", "block/verdant_blossom_bush", "block/glow_bloom"};
+    private static final String MT = "block/mossy_tidestone";
+    private static final String AS = "block/aquamarine_stone";
+    // Qualified copies: TS and GRASS are declared further down (no forward references in static initialisers).
+    private static final String DT = "block/tidestone";
+    private static final String DG = Ring4Textures.GRASS;
+    /** A fjord shore (side view): mossy boulders on tidestone, fjord moss, mist ferns and a moonpetal shrub on the grass. */
+    private static final String[][] FJORD = {
+            {"", "", "", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", MT, "", ""},
+            {"", MT, "", "", "", "", MT, MT, "block/mist_fern", ""},
+            {"block/mist_fern", MT, MT, "block/fjord_moss", "block/mist_fern", "block/fjord_moss", MT, DT, "block/fjord_moss", "block/moonpetal_shrub"},
+            {DG, DG, DT, DG, DG, DG, DT, DT, DG, DG},
+            {DT, DT, DT, DT, DT, DT, DT, DT, DT, DT}};
+    /** A lagoon shore (side view): a crystal spire of aquamarine stone with a cluster, glowgrass on the shore. */
+    private static final String[][] LAGOON = {
+            {"", "", "", "", AS, "", "", "", "", ""},
+            {"", "", "", "", AS, "block/aquamarine_cluster", "", "", "", ""},
+            {"", "", "", AS, AS, "", "", "", "", ""},
+            {"", "block/lagoon_glowgrass", "block/glow_bloom", AS, AS, AS, "block/lagoon_glowgrass", "", "", ""},
+            {DG, DG, DG, AS, AS, AS, DG, "block/lagoon_glowgrass", "block/lagoon_glowgrass", "block/lagoon_glowgrass"},
+            {DT, DT, DT, DT, DT, DT, DT, DT, DT, DT}};
+
+    /**
+     * The decor rollout blocks beside the ring 4 blocks they join: the stones as walls (the aquamarine stone also at
+     * night), a fjord shore by day and a lagoon shore by day and night, and the plants in a slot. Returns the new top.
+     */
+    private static int drawDecor(Graphics2D graphics, int top) throws IOException {
+        graphics.setColor(new Color(0xFFC857));
+        graphics.drawString("== RING 4 DECOR ROLLOUT BLOCKS beside the ring 4 blocks they join ==", 10, top + 12);
+        top += 20;
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("4x4 walls at 2x: tidestone | mossy tidestone | cobbled tidestone | aquamarine block | aquamarine stone (day) | aquamarine stone (night)", 10, top + 12);
+        top += 20;
+        int block = SIZE * 2;
+        for (int i = 0; i <= DECOR_WALLS.length; i++) {
+            boolean night = i == DECOR_WALLS.length;
+            String name = night ? AS : DECOR_WALLS[i];
+            BufferedImage tile = night ? atNight(name) : render(name);
+            int left = 10 + i * (4 * block + 24);
+            for (int ty = 0; ty < 4; ty++) {
+                for (int tx = 0; tx < 4; tx++) {
+                    drawOn(graphics, tile, left + tx * block, top + ty * block, 2, 0x0A0E14);
+                }
+            }
+        }
+        top += 4 * block + 20;
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("fjord shore (day; grass = stand-in) | lagoon shore (day) | lagoon shore (night: glow layers at full brightness)", 10, top + 12);
+        top += 20;
+        drawScene(graphics, FJORD, 10, top + (LAGOON.length - FJORD.length) * SIZE * 4, 0xA9C8CE, false);
+        drawScene(graphics, LAGOON, 10 + 11 * SIZE * 4, top, 0x8ED8E0, false);
+        drawScene(graphics, LAGOON, 10 + 22 * SIZE * 4, top, 0x0A0E14, true);
+        top += LAGOON.length * SIZE * 4 + 20;
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("plants in a slot at 1x, 2x and 3x (inventory grey); last three: verdant fern, verdant blossom bush, glow bloom", 10, top + 12);
+        top += 20;
+        for (int i = 0; i < DECOR_SLOTS.length; i++) {
+            int left = 10 + (i % 9) * 128;
+            int rowTop = top + (i / 9) * 64;
+            BufferedImage sprite = render(DECOR_SLOTS[i]);
+            int x = left;
+            for (int scale = 1; scale <= 3; scale++) {
+                int size = SIZE * scale;
+                graphics.setColor(new Color(0xC6C6C6));
+                graphics.fillRect(x, rowTop, size + 4, size + 4);
+                graphics.setColor(new Color(0x8B8B8B));
+                graphics.fillRect(x + 2, rowTop + 2, size, size);
+                drawOn(graphics, sprite, x + 2, rowTop + 2, scale, -1);
+                x += size + 8;
+            }
+        }
+        top += ((DECOR_SLOTS.length + 8) / 9) * 64 + 20;
         return top;
     }
 
