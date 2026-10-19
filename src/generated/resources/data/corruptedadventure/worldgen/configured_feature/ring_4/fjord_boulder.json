@@ -1,0 +1,72 @@
+{
+  "type": "corruptedadventure:boulder",
+  "config": {
+    "carpet": {
+      "Name": "minecraft:moss_carpet"
+    },
+    "carpet_chance": 0.25,
+    "height": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 4.0,
+      "min_inclusive": 2.0
+    },
+    "moss_chance": 0.45,
+    "mossy_top": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:moss_block"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:mossy_cobblestone"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 3.4,
+      "min_inclusive": 1.8
+    },
+    "stone": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:stone"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:mossy_cobblestone"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:andesite"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:tidestone"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:cobblestone"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

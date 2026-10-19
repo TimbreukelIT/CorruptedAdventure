@@ -28,6 +28,11 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.WorldTreePart;
  * </ul>
  * Wood holds no water, so where it stood comes from the terrain alone ({@link Terrain#water}): ring 4's open space
  * under Y 63 is the flat sea (73), above it the frozen worldgen heightmaps show the lakes.
+ * <p>
+ * Ground objects (ring 4 decor proef, 2026-10-19: boulders, fallen trunks and stumps, {@link GroundObjects}) are the
+ * other way round: a solid block that is no tree block at or above its column's frozen {@code WORLD_SURFACE_WG} height
+ * cannot be terrain, so a tree sees the open space it took ({@link #object}) and never takes its place, as a lift
+ * column. The objects write over the trees' blocks, so either order ends with the object and the tree's own shape.
  */
 final class TreeOverlap {
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
@@ -54,6 +59,14 @@ final class TreeOverlap {
 
         /** Whether open space here held water: below the sea level, or between a column's floor and its water top. */
         boolean water(int x, int y, int z);
+
+        /**
+         * The column's frozen {@code WORLD_SURFACE_WG} height (the first open block over the terrain); a solid
+         * non-tree block from here up is a ground object. Without a heightmap: none.
+         */
+        default int surface(int x, int z) {
+            return Integer.MAX_VALUE;
+        }
     }
 
     private TreeOverlap() {
@@ -69,7 +82,7 @@ final class TreeOverlap {
         }
         boolean wood = state.is(BlockTags.LOGS);
         if (!wood && !state.is(BlockTags.LEAVES) && !root(state) && state.isSolid()) {
-            return state;
+            return object(state, pos, terrain) ? open(pos, terrain) : state;
         }
         // The world tree (74) is terrain: its wood stays, a tree's block in its crown took a crown leaf.
         WorldTreePart part = terrain.worldTree(pos.getX(), pos.getY(), pos.getZ());
@@ -85,10 +98,24 @@ final class TreeOverlap {
         }
         if (wood || state.is(ModBlocks.UPDRAFT.get())) {
             // Wood holds no water, and a lift column (island_lift) fills the open space whatever was there.
-            // The terrain says whether it was water (the sea, a lake) or air.
-            return terrain.water(pos.getX(), pos.getY(), pos.getZ()) ? WATER : AIR;
+            return open(pos, terrain);
         }
         return state.getFluidState().createLegacyBlock();
+    }
+
+    /** The open space at {@code pos}: the terrain says whether it was water (the sea, a lake) or air. */
+    private static BlockState open(BlockPos pos, Terrain terrain) {
+        return terrain.water(pos.getX(), pos.getY(), pos.getZ()) ? WATER : AIR;
+    }
+
+    /**
+     * Whether {@code state} at {@code pos} is a ground object: solid, no log, leaves or root, at or above the column's
+     * frozen surface ({@link Terrain#surface}), and no part of a tree (a fruit pod). Nothing of the terrain stands
+     * there; the world trees (74) are logs and leaves and lie under their own surface.
+     */
+    static boolean object(BlockState state, BlockPos pos, Terrain terrain) {
+        return state.isSolid() && !state.is(BlockTags.LOGS) && !state.is(BlockTags.LEAVES) && !root(state)
+                && !state.is(ModBlocks.VERDANT_FRUIT_POD.get()) && pos.getY() >= terrain.surface(pos.getX(), pos.getZ());
     }
 
     /** The rank of a block a tree planned (by its block: the trunk setter also lays dirt under the trunk). */

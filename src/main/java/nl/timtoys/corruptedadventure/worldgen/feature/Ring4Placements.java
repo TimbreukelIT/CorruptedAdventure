@@ -16,6 +16,7 @@ import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.HeightmapPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
+import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.Fluids;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 
@@ -51,6 +52,19 @@ final class Ring4Placements {
     /** Water here and right above: under water, at least two deep. */
     static final BlockPredicate UNDER_WATER = BlockPredicate.allOf(BlockPredicate.matchesFluids(Fluids.WATER),
             BlockPredicate.matchesFluids(new Vec3i(0, 1, 0), Fluids.WATER), OFF_TREES);
+
+    /** The ring 4 grove noise (decor proef, 2026-10-19), as in-world blocks: {@code ring_4_groves.json}. */
+    static final ResourceKey<NormalNoise.NoiseParameters> GROVES_NOISE = ResourceKey.create(Registries.NOISE,
+            CorruptedAdventure.id("ring_4_groves"));
+    /** The ring 4 patch noise (flower fields, berry clumps): smaller than the groves, {@code ring_4_patches.json}. */
+    static final ResourceKey<NormalNoise.NoiseParameters> PATCHES_NOISE = ResourceKey.create(Registries.NOISE,
+            CorruptedAdventure.id("ring_4_patches"));
+    /**
+     * The groves of the ring 4 trees: nothing where the grove noise is below −0,1, every cell from 0,2 up (about half
+     * of the land in groves, the rest open ground). One field for every biome (salt 0), so the forest floor and the
+     * undergrowth of a biome follow its trees.
+     */
+    static final ClusterDensity GROVES = ClusterDensity.of(GROVES_NOISE, -0.1, 0.2);
 
     private Ring4Placements() {
     }

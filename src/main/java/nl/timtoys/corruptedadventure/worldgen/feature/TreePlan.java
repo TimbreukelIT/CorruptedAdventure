@@ -13,7 +13,6 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -34,9 +33,7 @@ import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -63,8 +60,6 @@ import java.util.function.Predicate;
 final class TreePlan implements LevelSimulatedReader, LevelReader {
     private static final int UPDATE_FLAGS = 19;
     private static final int MAX_DISTANCE = 7;
-    /** How many changed blocks pass the shape update on (a giant lily pad has four parts). */
-    private static final int MAX_PASSED_ON = 16;
 
     private final WorldGenLevel level;
     private final TreeOverlap.Terrain terrain;
@@ -175,7 +170,8 @@ final class TreePlan implements LevelSimulatedReader, LevelReader {
 
     /**
      * Writes the plan: per position the planned block if it wins over what was there before this tree
-     * ({@link TreeOverlap#wins}, decided for all positions before the first write), then vanilla's shape update on
+     * ({@link TreeOverlap#wins}, decided for all positions before the first write; never over a ground object,
+     * {@link TreeOverlap#object}), then vanilla's shape update on
      * every face between a written block and one that is not (a propagule whose leaf lost to another tree's trunk
      * falls, a tall plant cut in half goes), passed on to the blocks that change (the rest of a giant lily pad).
      */
@@ -188,48 +184,13 @@ final class TreePlan implements LevelSimulatedReader, LevelReader {
             BlockState existing = level.getBlockState(pos);
             if (existing == ours) {
                 written.add(pos);
-            } else if (TreeOverlap.wins(ours, existing, level.getBlockState(pos.below()))) {
+            } else if (!TreeOverlap.object(existing, pos, terrain) && TreeOverlap.wins(ours, existing, level.getBlockState(pos.below()))) {
                 winners.put(pos, ours);
                 written.add(pos);
             }
         }
         winners.forEach((pos, state) -> level.setBlock(pos, state, UPDATE_FLAGS));
-        Deque<BlockPos> changed = new ArrayDeque<>();
-        for (BlockPos pos : written) {
-            for (Direction direction : Direction.values()) {
-                if (!written.contains(pos.relative(direction))) {
-                    updateFace(pos, direction, true, changed);
-                }
-            }
-        }
-        // A block that changed (gone) tells its other neighbours, a few steps at most.
-        for (int steps = 0; !changed.isEmpty() && steps < MAX_PASSED_ON; steps++) {
-            BlockPos pos = changed.poll();
-            for (Direction direction : Direction.values()) {
-                if (!written.contains(pos.relative(direction))) {
-                    updateFace(pos, direction, false, changed);
-                }
-            }
-        }
-    }
-
-    /** Vanilla's {@code updateShapeAtEdge} on one face; {@code both}: also the block at {@code pos} itself. */
-    private void updateFace(BlockPos pos, Direction direction, boolean both, Deque<BlockPos> changed) {
-        BlockPos neighbour = pos.relative(direction);
-        BlockState state = level.getBlockState(pos);
-        BlockState other = level.getBlockState(neighbour);
-        if (both) {
-            BlockState updated = state.updateShape(direction, other, level, pos, neighbour);
-            if (updated != state) {
-                level.setBlock(pos, updated, Block.UPDATE_CLIENTS);
-                state = updated;
-            }
-        }
-        BlockState otherUpdated = other.updateShape(direction.getOpposite(), state, level, neighbour, pos);
-        if (otherUpdated != other) {
-            level.setBlock(neighbour, otherUpdated, Block.UPDATE_CLIENTS);
-            changed.add(neighbour);
-        }
+        EdgeUpdates.apply(level, written);
     }
 
     // ---------------------------------------------------------------- the tree's view of the level

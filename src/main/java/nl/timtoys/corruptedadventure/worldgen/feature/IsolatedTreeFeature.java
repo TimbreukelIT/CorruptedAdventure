@@ -122,10 +122,15 @@ public final class IsolatedTreeFeature extends Feature<TreeConfiguration> {
      * or between a column's floor and its water top on the frozen worldgen heightmaps (lakes; 23c: they show the
      * terrain, also in the neighbouring chunks).
      */
-    private static TreeOverlap.Terrain terrain(WorldGenLevel level) {
+    static TreeOverlap.Terrain terrain(WorldGenLevel level) {
         IslandField field = Ring4Terrain.field(level);
         int seaLevel = level.getSeaLevel();
         return new TreeOverlap.Terrain() {
+            @Override
+            public int surface(int x, int z) {
+                return level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
+            }
+
             @Override
             public WorldTreePart worldTree(int x, int y, int z) {
                 return field != null && field.hasTree(x, z) ? field.treePart(x, y, z) : WorldTreePart.NONE;

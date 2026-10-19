@@ -31,7 +31,7 @@ import java.util.function.IntPredicate;
  * A cell counts only where an island stands over the column ({@link IslandField#islandColumn}, pure) and the frozen
  * {@code WORLD_SURFACE_WG} lies well above the ground found near the terrain's surface (a short scan in the own
  * column; this one runs before the island's hanging strands). The leaves a neighbouring chunk's tree may put here count
- * as open, so the scan and the spot do not depend on which chunk decorated first. Where the drawn spot fails (water,
+ * as open, so the scan and the spot do not depend on which chunk decorated first; the plant itself only fills air. Where the drawn spot fails (water,
  * no shadow), the cell's other columns are tried, nearest first. Every draw is made before the world is asked.
  * Placed once per chunk at its corner; writes only in its own chunk. Water stays: only dry ground takes a block.
  */
@@ -126,18 +126,22 @@ public final class IslandGlowFeature extends Feature<IslandGlowConfiguration> {
 
     /**
      * {@code state}, or the fallback where it cannot stand; nothing if neither can. The spot must be open: air or the
-     * leaves of a feature tree from a neighbouring chunk, which the plant replaces (a later tree's leaves skip the
-     * plant), so both orders end the same.
+     * leaves of a feature tree from a neighbouring chunk. The spot counts as taken either way (so the next spots are
+     * not tried), but the plant only goes into air: a tree's leaves win over a plant ({@link TreeOverlap#wins}), so a
+     * leaf here now and a leaf put here later end the same (decor proef 2026-10-19: the low bushes showed it).
      */
     private static boolean put(WorldGenLevel level, BlockPos pos, BlockState state, BlockState fallback) {
-        if (!open(level.getBlockState(pos))) {
+        BlockState existing = level.getBlockState(pos);
+        if (!open(existing)) {
             return false;
         }
         BlockState chosen = state.canSurvive(level, pos) ? state : fallback;
         if (!chosen.canSurvive(level, pos)) {
             return false;
         }
-        level.setBlock(pos, chosen, Block.UPDATE_CLIENTS);
+        if (existing.isAir()) {
+            level.setBlock(pos, chosen, Block.UPDATE_CLIENTS);
+        }
         return true;
     }
 

@@ -67,7 +67,8 @@ Area files (`areas/*.txt`): `name cx0 cz0 cx1 cz1 [ow|nether]` in chunks, inclus
 `int.txt` (integration: ring 3 biomes/landmarks + Nether 1–3), `fi.txt` (feature index ring 1/2), `perf.txt`,
 `nether-walls.txt` (Nether boundaries r 875/1500), `smoke.txt` (a few chunks); ring 4: `ring4.txt` (waterscan), `int2.txt`
 (golf 2: `verdant_falls`, tunnel net per band, sky lakes, world trees, arch, lagoon, Nether-4), `fi3.txt` (feature index
-rings 1–3), `perf-vf.txt`, `perf-r4.txt` (every ring 4 biome, tunnels, a world tree, `sundered_reach`, Nether-4).
+rings 1–3), `perf-vf.txt`, `perf-r4.txt` (every ring 4 biome, tunnels, a world tree, `sundered_reach`, Nether-4), `trees.txt` (tree
+determinism), `decor.txt` (one `mist_fjords` and one `cascade_vale` area: before/after shots, quick det check).
 `python tools/test/py/areas.py around <name> <x> <z> <r> [nether]` prints a line around a block position.
 
 ```bash

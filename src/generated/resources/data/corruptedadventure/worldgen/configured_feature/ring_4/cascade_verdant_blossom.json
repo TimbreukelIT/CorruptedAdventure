@@ -1,0 +1,11 @@
+{
+  "type": "corruptedadventure:ground_plant",
+  "config": {
+    "to_place": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:verdant_blossom_bush"
+      }
+    }
+  }
+}

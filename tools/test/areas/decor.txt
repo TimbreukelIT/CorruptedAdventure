@@ -1,0 +1,4 @@
+# Ring 4 decor proef (ring4/decor-proef, 2026-10-19): one mist_fjords and one cascade_vale area for the before/after
+# contact sheets and the quick determinism check (world.sh --freeze, detcmp.py). Chunk coordinates, inclusive; seed 20260930.
+fjord 402 170 411 179
+cascade -442 -5 -433 4
