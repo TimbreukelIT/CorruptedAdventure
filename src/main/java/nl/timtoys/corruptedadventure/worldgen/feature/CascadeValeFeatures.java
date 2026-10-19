@@ -10,7 +10,6 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PinkPetalsBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -101,7 +100,7 @@ public final class CascadeValeFeatures {
         register(context, CASCADE_VALE_FLOWER_FIELDS, FLOWER_FIELD, JitteredGridPlacement.of(1, 0, 0.55F, ClusterDensity.of(
                 PATCHES_NOISE, 0.1, 0.3)), SURFACE, only(ON_GROUND));
         register(context, CASCADE_VALE_VERDANT_BLOSSOMS, VERDANT_BLOSSOM, JitteredGridPlacement.of(4, 0, 0.35F, ClusterDensity.of(
-                PATCHES_NOISE, 0.15, 0.35).withSalt(2)), SURFACE, only(BlockPredicate.allOf(ON_LAND, ON_GROUND)));
+                PATCHES_NOISE, 0.15, 0.35).withSalt(2)), SURFACE, only(ON_LAND));
     }
 
     private static TreeConfiguration bush(BlockStateProvider log, BlockStateProvider leaves) {

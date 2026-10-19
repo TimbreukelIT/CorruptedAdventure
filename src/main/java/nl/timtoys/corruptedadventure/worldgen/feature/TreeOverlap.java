@@ -29,10 +29,11 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.WorldTreePart;
  * Wood holds no water, so where it stood comes from the terrain alone ({@link Terrain#water}): ring 4's open space
  * under Y 63 is the flat sea (73), above it the frozen worldgen heightmaps show the lakes.
  * <p>
- * Ground objects (ring 4 decor proef, 2026-10-19: boulders, fallen trunks and stumps, {@link GroundObjects}) are the
- * other way round: a solid block that is no tree block at or above its column's frozen {@code WORLD_SURFACE_WG} height
- * cannot be terrain, so a tree sees the open space it took ({@link #object}) and never takes its place, as a lift
- * column. The objects write over the trees' blocks, so either order ends with the object and the tree's own shape.
+ * Ground objects (ring 4 decor proef, 2026-10-19: boulders and rocks, {@link GroundObjects}) are the other way round:
+ * a solid block that is no tree block at or above its column's frozen {@code WORLD_SURFACE_WG} height cannot be
+ * terrain, so a tree sees the open space it took ({@link #object}) and never takes its place, as a lift column. The
+ * objects write over the trees' blocks, so either order ends with the object and the tree's own shape. Fallen trunks
+ * and stumps are wood and keep the trees' priority ({@link #wins}).
  */
 final class TreeOverlap {
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();

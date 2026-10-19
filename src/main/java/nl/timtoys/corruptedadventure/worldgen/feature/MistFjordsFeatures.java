@@ -183,9 +183,10 @@ public final class MistFjordsFeatures {
                 only(BlockPredicate.matchesBlocks(Blocks.GRASS_BLOCK)));
         // Rocks before the trees: a tree never roots in one (its sapling check finds the rock's foot), and the trees
         // never take a rock's stone (TreeOverlap.object). Boulders mostly on the open ground, small rocks everywhere.
-        register(context, MIST_FJORDS_BOULDERS, BOULDER, JitteredGridPlacement.of(16, 1, 0.75F,
+        // Margins as large as the rocks' reach (4 and 2), so GroundObjects.fit seldom has to move one.
+        register(context, MIST_FJORDS_BOULDERS, BOULDER, JitteredGridPlacement.of(16, 4, 0.75F,
                 ClusterDensity.of(Ring4Placements.GROVES_NOISE, 0.1, -0.2).withFloor(0.35)), SURFACE, ground);
-        register(context, MIST_FJORDS_ROCKS, ROCK, JitteredGridPlacement.of(8, 1, 0.35F,
+        register(context, MIST_FJORDS_ROCKS, ROCK, JitteredGridPlacement.of(8, 2, 0.35F,
                 ClusterDensity.of(Ring4Placements.GROVES_NOISE, 0.1, -0.2).withFloor(0.4)), SURFACE, ground);
         // Stumps and fallen trunks along and inside the groves, on gentle ground.
         register(context, MIST_FJORDS_FALLEN_TREES, FALLEN_TREE, JitteredGridPlacement.of(16, 1, 0.45F,

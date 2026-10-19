@@ -11,7 +11,7 @@
         "low": 0.1,
         "noise": "corruptedadventure:ring_4_groves"
       },
-      "margin": 1
+      "margin": 2
     },
     {
       "type": "minecraft:heightmap",
