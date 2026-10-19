@@ -7,16 +7,37 @@
     },
     "features": [
       {
-        "chance": 0.4,
+        "chance": 0.06,
         "feature": {
-          "feature": "corruptedadventure:ring_4/fjord_pine",
+          "feature": "corruptedadventure:ring_4/fjord_giant_spruce",
           "placement": []
         }
       },
       {
-        "chance": 0.1,
+        "chance": 0.06,
+        "feature": {
+          "feature": "corruptedadventure:ring_4/fjord_snag",
+          "placement": []
+        }
+      },
+      {
+        "chance": 0.04,
         "feature": {
           "feature": "corruptedadventure:ring_4/fjord_dark_oak",
+          "placement": []
+        }
+      },
+      {
+        "chance": 0.25,
+        "feature": {
+          "feature": "corruptedadventure:ring_4/fjord_young_spruce",
+          "placement": []
+        }
+      },
+      {
+        "chance": 0.33,
+        "feature": {
+          "feature": "corruptedadventure:ring_4/fjord_pine",
           "placement": []
         }
       }

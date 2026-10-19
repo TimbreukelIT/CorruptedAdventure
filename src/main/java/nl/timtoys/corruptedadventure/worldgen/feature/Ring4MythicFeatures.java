@@ -22,21 +22,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.WeightedPlacedFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.ReplaceBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
-import net.minecraft.world.level.levelgen.feature.featuresize.ThreeLayersFeatureSize;
 import net.minecraft.world.level.levelgen.feature.featuresize.TwoLayersFeatureSize;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.CherryFoliagePlacer;
-import net.minecraft.world.level.levelgen.feature.foliageplacers.DarkOakFoliagePlacer;
-import net.minecraft.world.level.levelgen.feature.foliageplacers.PineFoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.RandomSpreadFoliagePlacer;
-import net.minecraft.world.level.levelgen.feature.foliageplacers.SpruceFoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.rootplacers.AboveRootPlacement;
 import net.minecraft.world.level.levelgen.feature.rootplacers.MangroveRootPlacement;
 import net.minecraft.world.level.levelgen.feature.rootplacers.MangroveRootPlacer;
@@ -45,8 +39,6 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.RandomizedIntSt
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
 import net.minecraft.world.level.levelgen.feature.treedecorators.AttachedToLeavesDecorator;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.CherryTrunkPlacer;
-import net.minecraft.world.level.levelgen.feature.trunkplacers.DarkOakTrunkPlacer;
-import net.minecraft.world.level.levelgen.feature.trunkplacers.StraightTrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.UpwardsBranchingTrunkPlacer;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.RandomOffsetPlacement;
@@ -55,13 +47,12 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTes
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
-import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandOutput;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.FLOOR;
+import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.GROVES;
 import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.ON_GROUND;
 import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.ON_LAND;
 import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.ON_WATER;
@@ -83,7 +74,7 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
  *   <li>{@code lotus_shallows}: giant lily pads, lotus, reed accents on the banks, grass;</li>
  *   <li>{@code glowroot_swamp}: giant mangroves (vanilla mangrove wood and roots, no vines) with glowcaps and moss on
  *   their roots, glowcaps on the ground;</li>
- *   <li>{@code mist_fjords}: spruces, pines and a few dark oaks on the flat tops, moss and ferns;</li>
+ *   <li>{@code mist_fjords}: moss and ferns (the trees, rocks and undergrowth: {@link MistFjordsFeatures});</li>
  *   <li>{@code sky_gardens}: moonpetal trees, glow blooms and flowers;</li>
  *   <li>bubble springs on the floor of deep pools (lagoon, lotus, swamp, fjords).</li>
  * </ul>
@@ -98,10 +89,6 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
 public final class Ring4MythicFeatures {
     // Configured.
     static final ResourceKey<ConfiguredFeature<?, ?>> SWAMP_TREE = configuredKey("swamp_tree");
-    static final ResourceKey<ConfiguredFeature<?, ?>> FJORD_TREE = configuredKey("fjord_tree");
-    static final ResourceKey<ConfiguredFeature<?, ?>> FJORD_SPRUCE = configuredKey("fjord_spruce");
-    static final ResourceKey<ConfiguredFeature<?, ?>> FJORD_PINE = configuredKey("fjord_pine");
-    static final ResourceKey<ConfiguredFeature<?, ?>> FJORD_DARK_OAK = configuredKey("fjord_dark_oak");
     static final ResourceKey<ConfiguredFeature<?, ?>> MEADOW_GRASS = configuredKey("meadow_grass");
     static final ResourceKey<ConfiguredFeature<?, ?>> GLOW_BLOOM = configuredKey("glow_bloom");
     static final ResourceKey<ConfiguredFeature<?, ?>> GLOWCAPS = configuredKey("glowcaps");
@@ -132,7 +119,6 @@ public final class Ring4MythicFeatures {
     public static final ResourceKey<PlacedFeature> CASCADE_VALE_TREES = placedKey("cascade_vale_trees");
     public static final ResourceKey<PlacedFeature> SKY_GARDENS_TREES = placedKey("sky_gardens_trees");
     public static final ResourceKey<PlacedFeature> GLOWROOT_SWAMP_TREES = placedKey("glowroot_swamp_trees");
-    public static final ResourceKey<PlacedFeature> MIST_FJORDS_TREES = placedKey("mist_fjords_trees");
     public static final ResourceKey<PlacedFeature> LAGOON_CORAL = placedKey("crystal_lagoon_coral");
     public static final ResourceKey<PlacedFeature> LAGOON_SEAGRASS = placedKey("crystal_lagoon_seagrass");
     public static final ResourceKey<PlacedFeature> LAGOON_SEA_PICKLES = placedKey("crystal_lagoon_sea_pickles");
@@ -188,25 +174,6 @@ public final class Ring4MythicFeatures {
                         BlockStateProvider.simple(Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, true)),
                         MangrovePropaguleBlock.AGE, UniformInt.of(0, 4)), 2, List.of(Direction.DOWN))))
                 .ignoreVines().build());
-        // The dark, slender trees on the fjords' tops: spruce and pine, now and then a dark oak. Vanilla's spruce, pine
-        // and dark oak (TreeFeatures), as isolated trees.
-        FeatureUtils.register(context, FJORD_SPRUCE, ModFeatures.ISOLATED_TREE.get(), new TreeConfiguration.TreeConfigurationBuilder(
-                BlockStateProvider.simple(Blocks.SPRUCE_LOG), new StraightTrunkPlacer(5, 2, 1), BlockStateProvider.simple(Blocks.SPRUCE_LEAVES),
-                new SpruceFoliagePlacer(UniformInt.of(2, 3), UniformInt.of(0, 2), UniformInt.of(1, 2)),
-                new TwoLayersFeatureSize(2, 0, 2)).ignoreVines().build());
-        FeatureUtils.register(context, FJORD_PINE, ModFeatures.ISOLATED_TREE.get(), new TreeConfiguration.TreeConfigurationBuilder(
-                BlockStateProvider.simple(Blocks.SPRUCE_LOG), new StraightTrunkPlacer(6, 4, 0), BlockStateProvider.simple(Blocks.SPRUCE_LEAVES),
-                new PineFoliagePlacer(ConstantInt.of(1), ConstantInt.of(1), UniformInt.of(3, 4)),
-                new TwoLayersFeatureSize(2, 0, 2)).ignoreVines().build());
-        FeatureUtils.register(context, FJORD_DARK_OAK, ModFeatures.ISOLATED_TREE.get(), new TreeConfiguration.TreeConfigurationBuilder(
-                BlockStateProvider.simple(Blocks.DARK_OAK_LOG), new DarkOakTrunkPlacer(6, 2, 1), BlockStateProvider.simple(Blocks.DARK_OAK_LEAVES),
-                new DarkOakFoliagePlacer(ConstantInt.of(0), ConstantInt.of(0)),
-                new ThreeLayersFeatureSize(1, 1, 0, 1, 2, OptionalInt.empty())).ignoreVines().build());
-        FeatureUtils.register(context, FJORD_TREE, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(
-                new WeightedPlacedFeature(PlacementUtils.inlinePlaced(features.getOrThrow(FJORD_PINE)), 0.4F),
-                new WeightedPlacedFeature(PlacementUtils.inlinePlaced(features.getOrThrow(FJORD_DARK_OAK)), 0.1F)),
-                PlacementUtils.inlinePlaced(features.getOrThrow(FJORD_SPRUCE))));
-
         groundPlant(context, MEADOW_GRASS, weighted(Blocks.SHORT_GRASS.defaultBlockState(), 6, Blocks.FERN.defaultBlockState(), 1));
         simple(context, GLOW_BLOOM, BlockStateProvider.simple(ModBlocks.GLOW_BLOOM.get()));
         simple(context, GLOWCAPS, BlockStateProvider.simple(ModBlocks.GLOWCAP.get()));
@@ -267,15 +234,13 @@ public final class Ring4MythicFeatures {
         Ring4Placements.perChunk(context, ISLAND_LIFTS, ISLAND_LIFT);
 
         // Trees: one cell of 8 holds at most one; the crowns reach into the neighbours (3 × 3 window).
-        register(context, CASCADE_VALE_TREES, ModConfiguredFeatures.MOONPETAL_TREE, JitteredGridPlacement.of(8, 2, 0.4F), SURFACE,
+        // Decor proef: groves and open ground (Ring4Placements.GROVES) instead of an even grid; about as many trees as before.
+        register(context, CASCADE_VALE_TREES, ModConfiguredFeatures.MOONPETAL_TREE, JitteredGridPlacement.of(8, 2, 0.75F, GROVES), SURFACE,
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.MOONPETAL_SAPLING.get()));
-        register(context, SKY_GARDENS_TREES, ModConfiguredFeatures.MOONPETAL_TREE, JitteredGridPlacement.of(16, 3, 0.6F), SURFACE,
+        register(context, SKY_GARDENS_TREES, ModConfiguredFeatures.MOONPETAL_TREE, JitteredGridPlacement.of(16, 3, 1.0F, GROVES), SURFACE,
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.MOONPETAL_SAPLING.get()));
-        register(context, GLOWROOT_SWAMP_TREES, SWAMP_TREE, JitteredGridPlacement.of(8, 2, 0.35F), FLOOR,
+        register(context, GLOWROOT_SWAMP_TREES, SWAMP_TREE, JitteredGridPlacement.of(8, 2, 0.7F, GROVES), FLOOR,
                 SurfaceWaterDepthFilter.forMaxDepth(4), PlacementUtils.filteredByBlockSurvival(Blocks.MANGROVE_PROPAGULE));
-        register(context, MIST_FJORDS_TREES, FJORD_TREE, JitteredGridPlacement.of(8, 2, 0.35F), SURFACE,
-                Ring4Filter.builder().below(IslandOutput.Output.SLOPE, 0.8).build(),
-                PlacementUtils.filteredByBlockSurvival(Blocks.SPRUCE_SAPLING));
 
         // Water: coral, seagrass and pickles in the lagoon; seagrass in the other clear waters; the pads and lotus on
         // still shallow water; bubble springs on the floor of deep pools (six or more deep).
@@ -297,7 +262,8 @@ public final class Ring4MythicFeatures {
         register(context, GLOWROOT_SWAMP_GLOWCAPS, GLOWCAPS, JitteredGridPlacement.of(4, 0, 0.2F), SURFACE, only(ON_LAND));
         register(context, GLOWROOT_SWAMP_MOSS, MOSS_CARPET, JitteredGridPlacement.of(4, 0, 0.15F), SURFACE,
                 only(BlockPredicate.allOf(ON_LAND, BlockPredicate.matchesBlocks(Ring4Placements.up(-1), Blocks.GRASS_BLOCK, Blocks.MOSS_BLOCK))));
-        register(context, MIST_FJORDS_FERNS, FJORD_FERNS, JitteredGridPlacement.of(4, 0, 0.45F), SURFACE, only(ON_GROUND));
+        // Decor proef: a little denser, the meadows between the groves less bare.
+        register(context, MIST_FJORDS_FERNS, FJORD_FERNS, JitteredGridPlacement.of(2, 0, 0.3F), SURFACE, only(ON_GROUND));
         register(context, MIST_FJORDS_MOSS, MOSS_CARPET, JitteredGridPlacement.of(4, 0, 0.25F), SURFACE,
                 only(BlockPredicate.allOf(ON_LAND, BlockPredicate.matchesBlocks(Ring4Placements.up(-1), Blocks.GRASS_BLOCK, Blocks.MOSS_BLOCK))));
         register(context, SKY_GARDENS_FLOWERS, SKY_FLOWERS, JitteredGridPlacement.of(4, 0, 0.4F), SURFACE, only(ON_GROUND));

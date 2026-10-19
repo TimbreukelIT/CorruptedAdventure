@@ -11,6 +11,12 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.BoulderConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.BoulderFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.FallenTreeConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.FallenTreeFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.TerraceDressingConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.TerraceDressingFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.DuneRubbleFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantGeodeLiningConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantGeodeLiningFeature;
@@ -248,6 +254,15 @@ public final class ModFeatures {
      */
     public static final DeferredHolder<Feature<?>, Feature<SimpleBlockConfiguration>> GROUND_PLANT =
             FEATURES.register("ground_plant", () -> new GroundPlantFeature(SimpleBlockConfiguration.CODEC));
+    /** {@code corruptedadventure:boulder} (ring 4 decor proef): a mossy rock, a ground object trees never take */
+    public static final DeferredHolder<Feature<?>, Feature<BoulderConfiguration>> BOULDER =
+            FEATURES.register("boulder", () -> new BoulderFeature(BoulderConfiguration.CODEC));
+    /** {@code corruptedadventure:fallen_tree} (ring 4 decor proef): a stump and/or a fallen trunk with moss and mushrooms */
+    public static final DeferredHolder<Feature<?>, Feature<FallenTreeConfiguration>> FALLEN_TREE =
+            FEATURES.register("fallen_tree", () -> new FallenTreeFeature(FallenTreeConfiguration.CODEC));
+    /** {@code corruptedadventure:terrace_dressing} (ring 4 decor proef): vines down the terrace walls, moss on the rims */
+    public static final DeferredHolder<Feature<?>, Feature<TerraceDressingConfiguration>> TERRACE_DRESSING =
+            FEATURES.register("terrace_dressing", () -> new TerraceDressingFeature(TerraceDressingConfiguration.CODEC));
 
     private ModFeatures() {
     }

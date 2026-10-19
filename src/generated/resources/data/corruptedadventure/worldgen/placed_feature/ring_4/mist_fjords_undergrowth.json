@@ -1,0 +1,65 @@
+{
+  "feature": "corruptedadventure:ring_4/fjord_undergrowth",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 2,
+      "chance": 0.6,
+      "density": {
+        "high": 0.25,
+        "low": -0.05,
+        "noise": "corruptedadventure:ring_4_groves"
+      }
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_fluids",
+            "fluids": "minecraft:empty",
+            "offset": [
+              0,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:not",
+            "predicate": {
+              "type": "minecraft:any_of",
+              "predicates": [
+                {
+                  "type": "minecraft:matching_block_tag",
+                  "offset": [
+                    0,
+                    -1,
+                    0
+                  ],
+                  "tag": "minecraft:logs"
+                },
+                {
+                  "type": "minecraft:matching_block_tag",
+                  "offset": [
+                    0,
+                    -1,
+                    0
+                  ],
+                  "tag": "minecraft:leaves"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

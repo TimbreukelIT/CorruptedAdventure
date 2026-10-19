@@ -92,6 +92,40 @@ class IsolatedTreeTest {
     }
 
     @Test
+    void groundObjectsAreOpenSpaceToATreeAndNeverGiveWay() {
+        // Decor proef: the ground under Y 70 everywhere; a boulder's stone from Y 70 up is an object.
+        TreeOverlap.Terrain ground = new TreeOverlap.Terrain() {
+            @Override
+            public WorldTreePart worldTree(int x, int y, int z) {
+                return WorldTreePart.NONE;
+            }
+
+            @Override
+            public boolean water(int x, int y, int z) {
+                return y < SEA;
+            }
+
+            @Override
+            public int surface(int x, int z) {
+                return 70;
+            }
+        };
+        BlockState stone = Blocks.STONE.defaultBlockState();
+        BlockPos onTop = new BlockPos(3, 70, 4);
+        BlockPos sunk = new BlockPos(3, 69, 4);
+        assertTrue(TreeOverlap.object(stone, onTop, ground));
+        assertFalse(TreeOverlap.object(stone, sunk, ground), "the boulder's sunk foot is ground");
+        assertEquals(Blocks.AIR.defaultBlockState(), TreeOverlap.terrain(stone, onTop, ground), "a tree grows as if the rock were not there");
+        assertEquals(stone, TreeOverlap.terrain(stone, sunk, ground));
+        // Wood, leaves and plants above the surface are no objects: they keep the trees' priority.
+        assertFalse(TreeOverlap.object(Blocks.SPRUCE_LOG.defaultBlockState(), onTop, ground));
+        assertFalse(TreeOverlap.object(Blocks.SPRUCE_LEAVES.defaultBlockState(), onTop, ground));
+        assertFalse(TreeOverlap.object(Blocks.MOSS_CARPET.defaultBlockState(), onTop, ground));
+        // Without a heightmap (the default) nothing is an object.
+        assertFalse(TreeOverlap.object(stone, onTop, world(WorldTreePart.NONE)));
+    }
+
+    @Test
     void theWorldTreeIsTerrain() {
         BlockPos pos = new BlockPos(5, 120, 5);
         BlockState log = ModBlocks.MOONPETAL_LOG.get().defaultBlockState();

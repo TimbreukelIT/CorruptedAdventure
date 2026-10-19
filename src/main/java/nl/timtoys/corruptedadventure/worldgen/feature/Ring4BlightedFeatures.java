@@ -144,9 +144,10 @@ public final class Ring4BlightedFeatures {
                 List.of(JitteredGridPlacement.of(16, 0, BANK_CHANCE), outward()));
 
         // VEGETAL_DECORATION.
-        register(context, DROWNED_FOREST_TREES, WITHERED_TREES, JitteredGridPlacement.of(8, 1, 0.45F), FLOOR,
+        // Decor proef: the dead trees in groves too (Ring4Placements.GROVES), about as many as before.
+        register(context, DROWNED_FOREST_TREES, WITHERED_TREES, JitteredGridPlacement.of(8, 1, 0.85F, Ring4Placements.GROVES), FLOOR,
                 SurfaceWaterDepthFilter.forMaxDepth(DROWNED_WATER), only(BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT)));
-        register(context, WITHERED_GARDENS_TREES, WITHERED_TREES, JitteredGridPlacement.of(16, 2, 0.5F), SURFACE,
+        register(context, WITHERED_GARDENS_TREES, WITHERED_TREES, JitteredGridPlacement.of(16, 2, 0.95F, Ring4Placements.GROVES), SURFACE,
                 only(BlockPredicate.allOf(Ring4Placements.ON_GROUND, BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT))));
         register(context, REED_MARSH_REEDS, DENSE_REEDS, JitteredGridPlacement.of(8, 3, 0.85F), SURFACE);
         register(context, BLIGHTED_BANK_REEDS, SPARSE_REEDS, JitteredGridPlacement.of(16, 3, 0.4F), SURFACE,

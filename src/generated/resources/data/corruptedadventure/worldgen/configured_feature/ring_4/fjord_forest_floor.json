@@ -1,0 +1,55 @@
+{
+  "type": "minecraft:simple_block",
+  "config": {
+    "to_place": {
+      "type": "minecraft:noise_provider",
+      "noise": {
+        "amplitudes": [
+          1.0,
+          1.0
+        ],
+        "firstOctave": -2
+      },
+      "scale": 1.0,
+      "seed": 15740503,
+      "states": [
+        {
+          "Name": "minecraft:moss_block"
+        },
+        {
+          "Name": "minecraft:coarse_dirt"
+        },
+        {
+          "Name": "minecraft:podzol",
+          "Properties": {
+            "snowy": "false"
+          }
+        },
+        {
+          "Name": "minecraft:podzol",
+          "Properties": {
+            "snowy": "false"
+          }
+        },
+        {
+          "Name": "minecraft:podzol",
+          "Properties": {
+            "snowy": "false"
+          }
+        },
+        {
+          "Name": "minecraft:podzol",
+          "Properties": {
+            "snowy": "false"
+          }
+        },
+        {
+          "Name": "minecraft:coarse_dirt"
+        },
+        {
+          "Name": "minecraft:moss_block"
+        }
+      ]
+    }
+  }
+}

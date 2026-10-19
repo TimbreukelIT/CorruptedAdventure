@@ -1,0 +1,26 @@
+{
+  "type": "corruptedadventure:terrace_dressing",
+  "config": {
+    "carpet": {
+      "Name": "minecraft:moss_carpet"
+    },
+    "carpet_chance": 0.15,
+    "max_vine": 3,
+    "min_step": 1,
+    "moss": {
+      "Name": "minecraft:moss_block"
+    },
+    "moss_chance": 0.3,
+    "vine": {
+      "Name": "minecraft:vine",
+      "Properties": {
+        "east": "false",
+        "north": "false",
+        "south": "false",
+        "up": "false",
+        "west": "false"
+      }
+    },
+    "vine_chance": 0.3
+  }
+}

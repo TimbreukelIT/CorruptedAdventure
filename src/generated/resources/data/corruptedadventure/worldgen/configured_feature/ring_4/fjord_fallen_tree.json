@@ -1,0 +1,41 @@
+{
+  "type": "corruptedadventure:fallen_tree",
+  "config": {
+    "decor": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:moss_carpet"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:glowcap"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "decor_chance": 0.45,
+    "length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 6,
+      "min_inclusive": 3
+    },
+    "log": {
+      "Name": "minecraft:spruce_log",
+      "Properties": {
+        "axis": "y"
+      }
+    },
+    "stump_height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "stump_only": 0.3,
+    "trunk_only": 0.25
+  }
+}

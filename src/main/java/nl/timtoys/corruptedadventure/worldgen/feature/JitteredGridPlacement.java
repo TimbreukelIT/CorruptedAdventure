@@ -9,10 +9,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.placement.PlacementContext;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
+import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import nl.timtoys.corruptedadventure.registry.ModPlacementModifierTypes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -24,26 +26,46 @@ import java.util.stream.Stream;
  * least 2 · {@code margin} + 1 apart along one axis, also across chunks, without reading anything of the neighbours.
  * That spaces out trees (no "knots") and keeps a feature of reach ≤ {@code margin} inside its own chunk. Draws come
  * from the placement random (seeded per chunk and feature), so the result does not depend on generation order.
+ * <p>
+ * With a {@code density} ({@link ClusterDensity}, ring 4 decor proef) a cell keeps its candidate with
+ * {@code chance} · the density's share at the cell's centre: groves and open ground instead of an even grid. The draws
+ * stay the same (a cell always draws three), so only which cells are kept changes.
  */
 public final class JitteredGridPlacement extends PlacementModifier {
     public static final MapCodec<JitteredGridPlacement> CODEC = RecordCodecBuilder.<JitteredGridPlacement>mapCodec(instance -> instance.group(
             Codec.intRange(1, 16).fieldOf("cell_size").forGetter(placement -> placement.cellSize),
             Codec.intRange(0, 7).optionalFieldOf("margin", 0).forGetter(placement -> placement.margin),
-            Codec.floatRange(0.0F, 1.0F).optionalFieldOf("chance", 1.0F).forGetter(placement -> placement.chance)
+            Codec.floatRange(0.0F, 1.0F).optionalFieldOf("chance", 1.0F).forGetter(placement -> placement.chance),
+            ClusterDensity.CODEC.optionalFieldOf("density").forGetter(placement -> placement.density)
     ).apply(instance, JitteredGridPlacement::new)).validate(JitteredGridPlacement::validate);
+
+    /** The share of the chance a cell keeps, from the block position of its centre. */
+    @FunctionalInterface
+    interface CellShare {
+        CellShare ALL = (x, z) -> 1.0;
+
+        double at(double x, double z);
+    }
 
     private final int cellSize;
     private final int margin;
     private final float chance;
+    private final Optional<ClusterDensity> density;
 
-    public JitteredGridPlacement(int cellSize, int margin, float chance) {
+    public JitteredGridPlacement(int cellSize, int margin, float chance, Optional<ClusterDensity> density) {
         this.cellSize = cellSize;
         this.margin = margin;
         this.chance = chance;
+        this.density = density;
     }
 
     public static JitteredGridPlacement of(int cellSize, int margin, float chance) {
-        return new JitteredGridPlacement(cellSize, margin, chance);
+        return new JitteredGridPlacement(cellSize, margin, chance, Optional.empty());
+    }
+
+    /** As {@link #of(int, int, float)}, the chance thinned out per cell by {@code density}. */
+    public static JitteredGridPlacement of(int cellSize, int margin, float chance, ClusterDensity density) {
+        return new JitteredGridPlacement(cellSize, margin, chance, Optional.of(density));
     }
 
     private static DataResult<JitteredGridPlacement> validate(JitteredGridPlacement placement) {
@@ -58,20 +80,34 @@ public final class JitteredGridPlacement extends PlacementModifier {
 
     @Override
     public Stream<BlockPos> getPositions(PlacementContext context, RandomSource random, BlockPos pos) {
-        return candidates(pos.getX() & ~15, pos.getY(), pos.getZ() & ~15, random).stream();
+        CellShare share = CellShare.ALL;
+        if (density.isPresent()) {
+            ClusterDensity cluster = density.get();
+            NormalNoise noise = context.getLevel().getLevel().getChunkSource().randomState().getOrCreateNoise(cluster.noise());
+            share = (x, z) -> cluster.share(noise, x, z);
+        }
+        return candidates(pos.getX() & ~15, pos.getY(), pos.getZ() & ~15, random, share).stream();
+    }
+
+    /** The kept candidates of the chunk with minimum corner {@code minX, minZ}, row by row, without a density. */
+    List<BlockPos> candidates(int minX, int y, int minZ, RandomSource random) {
+        return candidates(minX, y, minZ, random, CellShare.ALL);
     }
 
     /** The kept candidates of the chunk with minimum corner {@code minX, minZ}, row by row. */
-    List<BlockPos> candidates(int minX, int y, int minZ, RandomSource random) {
+    List<BlockPos> candidates(int minX, int y, int minZ, RandomSource random, CellShare share) {
         int cells = 16 / cellSize;
         int span = cellSize - 2 * margin;
         List<BlockPos> positions = new ArrayList<>(cells * cells);
         for (int cz = 0; cz < cells; cz++) {
             for (int cx = 0; cx < cells; cx++) {
                 // Always draw all three, so a cell's position does not depend on whether earlier cells were kept.
-                boolean kept = random.nextFloat() < chance;
+                float roll = random.nextFloat();
                 int x = minX + cx * cellSize + margin + random.nextInt(span);
                 int z = minZ + cz * cellSize + margin + random.nextInt(span);
+                // The share only when the roll could pass: most cells of a thin feature skip the noise.
+                boolean kept = roll < chance && roll < chance * share.at(minX + cx * cellSize + cellSize / 2.0,
+                        minZ + cz * cellSize + cellSize / 2.0);
                 if (kept) {
                     positions.add(new BlockPos(x, y, z));
                 }
