@@ -1,0 +1,35 @@
+{
+  "feature": "corruptedadventure:ring_4/swamp_lily_pads",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 2,
+      "chance": 0.12,
+      "density": {
+        "high": 0.3,
+        "low": -0.1,
+        "noise": "corruptedadventure:ring_4_patches",
+        "salt": 8
+      }
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:matching_fluids",
+        "fluids": "minecraft:water",
+        "offset": [
+          0,
+          -1,
+          0
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

@@ -17,9 +17,11 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
  * @param carpetChance per top block: the chance of a carpet on it (only in open air)
  * @param radius      the horizontal half-width of the rock (per axis, ≤ {@link BoulderFeature#MAX_RADIUS})
  * @param height      how far the rock rises above the ground at its middle
+ * @param submerged   (decor A) on the floor under water instead of on dry land
  */
 public record BoulderConfiguration(BlockStateProvider stone, BlockStateProvider mossyTop, float mossChance, BlockState carpet,
-                                   float carpetChance, FloatProvider radius, FloatProvider height) implements FeatureConfiguration {
+                                   float carpetChance, FloatProvider radius, FloatProvider height, boolean submerged)
+        implements FeatureConfiguration {
     public static final Codec<BoulderConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BlockStateProvider.CODEC.fieldOf("stone").forGetter(BoulderConfiguration::stone),
             BlockStateProvider.CODEC.fieldOf("mossy_top").forGetter(BoulderConfiguration::mossyTop),
@@ -27,6 +29,13 @@ public record BoulderConfiguration(BlockStateProvider stone, BlockStateProvider 
             BlockState.CODEC.fieldOf("carpet").forGetter(BoulderConfiguration::carpet),
             Codec.floatRange(0.0F, 1.0F).fieldOf("carpet_chance").forGetter(BoulderConfiguration::carpetChance),
             FloatProvider.codec(0.5F, BoulderFeature.MAX_RADIUS).fieldOf("radius").forGetter(BoulderConfiguration::radius),
-            FloatProvider.codec(0.5F, 6.0F).fieldOf("height").forGetter(BoulderConfiguration::height)
+            FloatProvider.codec(0.5F, 6.0F).fieldOf("height").forGetter(BoulderConfiguration::height),
+            Codec.BOOL.optionalFieldOf("submerged", false).forGetter(BoulderConfiguration::submerged)
     ).apply(instance, BoulderConfiguration::new));
+
+    /** A rock on dry land (the decor proef's boulders). */
+    public BoulderConfiguration(BlockStateProvider stone, BlockStateProvider mossyTop, float mossChance, BlockState carpet,
+                                float carpetChance, FloatProvider radius, FloatProvider height) {
+        this(stone, mossyTop, mossChance, carpet, carpetChance, radius, height, false);
+    }
 }

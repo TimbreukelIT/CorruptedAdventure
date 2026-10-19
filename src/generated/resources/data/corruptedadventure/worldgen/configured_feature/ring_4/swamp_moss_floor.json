@@ -1,0 +1,46 @@
+{
+  "type": "minecraft:simple_block",
+  "config": {
+    "to_place": {
+      "type": "minecraft:noise_provider",
+      "noise": {
+        "amplitudes": [
+          1.0,
+          1.0
+        ],
+        "firstOctave": -3
+      },
+      "scale": 1.0,
+      "seed": 26039246573,
+      "states": [
+        {
+          "Name": "minecraft:moss_block"
+        },
+        {
+          "Name": "minecraft:moss_block"
+        },
+        {
+          "Name": "minecraft:grass_block",
+          "Properties": {
+            "snowy": "false"
+          }
+        },
+        {
+          "Name": "minecraft:moss_block"
+        },
+        {
+          "Name": "minecraft:moss_block"
+        },
+        {
+          "Name": "minecraft:grass_block",
+          "Properties": {
+            "snowy": "false"
+          }
+        },
+        {
+          "Name": "minecraft:moss_block"
+        }
+      ]
+    }
+  }
+}

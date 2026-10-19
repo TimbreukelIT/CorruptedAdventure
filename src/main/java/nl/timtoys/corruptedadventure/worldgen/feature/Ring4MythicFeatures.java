@@ -172,7 +172,9 @@ public final class Ring4MythicFeatures {
                 new TwoLayersFeatureSize(3, 0, 2))
                 .decorators(List.of(new AttachedToLeavesDecorator(0.14F, 1, 0, new RandomizedIntStateProvider(
                         BlockStateProvider.simple(Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, true)),
-                        MangrovePropaguleBlock.AGE, UniformInt.of(0, 4)), 2, List.of(Direction.DOWN))))
+                        MangrovePropaguleBlock.AGE, UniformInt.of(0, 4)), 2, List.of(Direction.DOWN)),
+                        // Decor A: strands of hanging moss and glowing roots under the crown and the roots.
+                        GlowrootSwampFeatures.strands()))
                 .ignoreVines().build());
         groundPlant(context, MEADOW_GRASS, weighted(Blocks.SHORT_GRASS.defaultBlockState(), 6, Blocks.FERN.defaultBlockState(), 1));
         simple(context, GLOW_BLOOM, BlockStateProvider.simple(ModBlocks.GLOW_BLOOM.get()));
