@@ -215,6 +215,11 @@ Tot slot: de drie INT2-bevindingen van §4, de drie dingen die het meest moeten 
   - de lucht is vlak wit en grijs, en de mist en sfeer voegen weinig toe.
 - Aanpak volgende sessie: grondig. Neem per biome de huidige features en dichtheden door (bron: `Ring4MythicFeatures`, `Ring4BlightedFeatures`, `VerdantFallsFeatures`, `golf-2.md` §6b-flora). Vergelijk met de visie in `00-overzicht.md` en de ring 4-design. Maak daarna een vergelijking per biome: wat er nu staat en wat er moet komen (lagen ondergroei, rotsen, plassen, reliëf, oeverplanten, variatie in boomgrootte en -soort, meer eilanden en vulling in de lucht). Leg dat voor in een sparringronde.
 - Volgende sessie: eerst een sparringsessie (CLAUDE.md §3) over aankleding en vulling per biome (te beginnen met `mist_fjords`), daarna een pakket. Niet bouwen zonder die ronde.
+- **Sparring 2026-10-19 (uitkomst, details in `02-beslissingenlog.md`):**
+  - Oorzaak van het raster: alle bomen staan op `jittered_grid` (cel 8, 4×4 speling). Wordt clusterplaatsing via noise, voor alle ring 4-bomen.
+  - Proefstuk `mist_fjords` (ruig en rotsig: keien, stammen, ondergroei, boomvariatie) en `cascade_vale` (weelderig: bloemvelden, struiken, oevers, terrasranden). Alleen bestaande en vanilla-blokken.
+  - Reliëf, eilanden en lucht/mist volgen als aparte changes (backlog).
+  - Werkwijze: afstemrondes met de lichte lus uit `tuning-loop.md`. De rest van teststop 5b (checklist §3, §4) schuift naar na het proefstuk.
 
 ## J. INT2-resultaten (2026-10-16 – 2026-10-18)
 
