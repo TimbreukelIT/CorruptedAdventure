@@ -56,6 +56,17 @@ public class LagoonGlowgrassBlock extends MythicPlantBlock implements SimpleWate
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
+    /** Burns like grass on the shore, but not while it stands in water (like seagrass). */
+    @Override
+    public int getFlammability(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        return state.getValue(WATERLOGGED) ? 0 : super.getFlammability(state, level, pos, direction);
+    }
+
+    @Override
+    public int getFireSpreadSpeed(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        return state.getValue(WATERLOGGED) ? 0 : super.getFireSpreadSpeed(state, level, pos, direction);
+    }
+
     @Override
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
             BlockPos pos, BlockPos neighborPos) {

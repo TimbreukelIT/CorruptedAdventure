@@ -766,6 +766,8 @@ class ModBlocksTest {
         assertFalse(ModBlocks.MOONPETAL_SHRUB.get().defaultBlockState().canBeReplaced());
         BlockState wet = ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState().setValue(LagoonGlowgrassBlock.WATERLOGGED, true);
         assertTrue(wet.getFluidState().isSource());
+        // Standing in water it does not burn (like seagrass).
+        assertEquals(0, wet.getFlammability(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, Direction.UP));
         assertTrue(ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState().getFluidState().isEmpty());
     }
 
