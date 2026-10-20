@@ -34,6 +34,8 @@ public final class Ring4Features {
             // 75: under the islands of every ground biome, the glow on the ground first, then what hangs above it.
             ground(Ring4MythicFeatures.ISLAND_GLOW_GROUND),
             ground(Ring4MythicFeatures.ISLAND_UNDERSIDES),
+            // Decor rollout C: the living undersides of the mythical band's islands, after the strands.
+            ground(SkyGardensFeatures.ISLAND_DRESSINGS),
             ground(Ring4MythicFeatures.ISLAND_VINES),
             // verdant_falls: the moss carpets on the treads, the climbing strands under the ledges.
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_MOSS_CARPETS, ModBiomes.VERDANT_FALLS),
@@ -58,7 +60,13 @@ public final class Ring4Features {
             local(SunderedReachFeatures.SUNDERED_REACH_SPLIT_ROCKS, ModBiomes.SUNDERED_REACH),
             // 75: the trees of the mythical band and the sky gardens (decor proef: in groves).
             vegetal(Ring4MythicFeatures.CASCADE_VALE_TREES, ModBiomes.CASCADE_VALE),
+            // Decor rollout C: the sky gardens' moss patches and landmarks before their trees, the bushes after them.
+            vegetal(SkyGardensFeatures.SKY_GARDENS_MOSS_FLOOR, ModBiomes.SKY_GARDENS),
+            vegetal(SkyGardensFeatures.SKY_GARDENS_RUINS, ModBiomes.SKY_GARDENS),
+            vegetal(SkyGardensFeatures.SKY_GARDENS_GIANT_MOONPETALS, ModBiomes.SKY_GARDENS),
             vegetal(Ring4MythicFeatures.SKY_GARDENS_TREES, ModBiomes.SKY_GARDENS),
+            vegetal(SkyGardensFeatures.SKY_GARDENS_BLOSSOM_BUSHES, ModBiomes.SKY_GARDENS),
+            vegetal(SkyGardensFeatures.SKY_GARDENS_AZALEA_BUSHES, ModBiomes.SKY_GARDENS),
             vegetal(Ring4MythicFeatures.GLOWROOT_SWAMP_TREES, ModBiomes.GLOWROOT_SWAMP),
             // Decor proef: cascade_vale's bushes after its trees.
             vegetal(CascadeValeFeatures.CASCADE_VALE_BLOSSOM_BUSHES, ModBiomes.CASCADE_VALE),
@@ -101,6 +109,9 @@ public final class Ring4Features {
             vegetal(Ring4MythicFeatures.MIST_FJORDS_MOSS, ModBiomes.MIST_FJORDS),
             vegetal(Ring4MythicFeatures.SKY_GARDENS_FLOWERS, ModBiomes.SKY_GARDENS),
             vegetal(Ring4MythicFeatures.SKY_LAKE_BANK_FLOWERS, ModBiomes.SKY_GARDENS),
+            // Decor rollout C: the sky gardens' flower fields and moss carpets.
+            vegetal(SkyGardensFeatures.SKY_GARDENS_FLOWER_FIELDS, ModBiomes.SKY_GARDENS),
+            vegetal(SkyGardensFeatures.SKY_GARDENS_MOSS_CARPETS, ModBiomes.SKY_GARDENS),
             // 76: the hazards shape the ground before anything grows on it.
             local(Ring4BlightedFeatures.PEAT_MOORS_GAS_POCKETS, ModBiomes.PEAT_MOORS),
             local(Ring4BlightedFeatures.PEAT_MOORS_SINKHOLE_GAS, ModBiomes.PEAT_MOORS),
@@ -172,6 +183,7 @@ public final class Ring4Features {
         MistFjordsFeatures.configured(context);
         CascadeValeFeatures.configured(context);
         SunderedReachFeatures.configured(context);
+        SkyGardensFeatures.configured(context);
         Ring4BlightedFeatures.configured(context);
         BlightedDecorFeatures.configured(context);
         Ring4OreFeatures.configured(context);
@@ -183,6 +195,7 @@ public final class Ring4Features {
         MistFjordsFeatures.placed(context);
         CascadeValeFeatures.placed(context);
         SunderedReachFeatures.placed(context);
+        SkyGardensFeatures.placed(context);
         Ring4BlightedFeatures.placed(context);
         BlightedDecorFeatures.placed(context);
         Ring4OreFeatures.placed(context);

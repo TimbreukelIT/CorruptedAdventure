@@ -24,8 +24,10 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
  * ({@link IslandField#islandColumn}, pure); the overhangs are found in the own column from the frozen
  * {@code WORLD_SURFACE_WG} down to just below the terrain's surface ({@link LedgeStrands#overhangs}), so the scan reads
  * the island and the open space under it, which only this chunk's features change (this one after the glow on the
- * ground). The leaves a neighbouring chunk's tree may put here count as air (the scan does not depend on which chunk
- * decorated first). Writes only into open space in its own chunk; never water (a strand stops above it).
+ * ground). The leaves a neighbouring chunk's tree may put here and every non-solid plant count as open ({@link #open}:
+ * the scan does not depend on which chunk decorated first). Writes only into air in its own chunk, a strand down to the
+ * first block that is taken (decor rollout C: a tree's leaf wins in either order); never water (a strand stops above
+ * it).
  */
 public final class IslandUndersideFeature extends Feature<IslandUndersideConfiguration> {
     /** How far below the terrain's surface the scan still looks for the floor under an island. */
@@ -94,7 +96,7 @@ public final class IslandUndersideFeature extends Feature<IslandUndersideConfigu
                 int bottom = Mth.floor(field.column(x, z).surface()) - FLOOR_DEPTH;
                 int top = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1;
                 for (LedgeStrands.Overhang overhang : LedgeStrands.overhangs(top, bottom,
-                        y -> IslandGlowFeature.open(level.getBlockState(pos.set(x, y, z))),
+                        y -> open(level.getBlockState(pos.set(x, y, z))),
                         y -> level.getBlockState(pos.set(x, y, z)).isFaceSturdy(level, pos, Direction.DOWN))) {
                     int hang = length(kind, overhang.gap(), dangle, config.maxClimbGap());
                     // Nothing hangs from the world tree (74: its wood is terrain, but no island's underside).
@@ -102,19 +104,39 @@ public final class IslandUndersideFeature extends Feature<IslandUndersideConfigu
                         continue;
                     }
                     if (kind == Kind.ACCENT) {
-                        if (accent.canSurvive(level, pos.set(x, overhang.underside() - 1, z))) {
-                            level.setBlock(pos, accent, Block.UPDATE_CLIENTS);
-                            placed = true;
-                        }
+                        placed |= fill(level, pos.set(x, overhang.underside() - 1, z), accent);
                         continue;
                     }
+                    // Decor rollout C: only into air, and the strand ends at the first block that is not (a neighbour's
+                    // leaf): the shape update cuts it there the same way when the leaf comes later.
                     for (int y = overhang.underside() - 1; y >= overhang.underside() - hang; y--) {
-                        level.setBlock(pos.set(x, y, z), config.strand(), Block.UPDATE_CLIENTS);
+                        if (!fill(level, pos.set(x, y, z), config.strand())) {
+                            break;
+                        }
+                        placed = true;
                     }
-                    placed = true;
                 }
             }
         }
         return placed;
+    }
+
+    /**
+     * What the scan for overhangs counts as open (decor rollout C, backlog "boom-determinisme, rest"): air, the leaves of
+     * a feature tree ({@link IslandGlowFeature#open}) and every other block that is neither solid nor fluid (the glow
+     * plants on the ground, the strands and plants of this chunk's features), so an overhang and its gap are the
+     * terrain's alone, whether a neighbour's leaf or this chunk's glow plant came first. Water stays a floor.
+     */
+    static boolean open(BlockState state) {
+        return IslandGlowFeature.open(state) || !state.isSolid() && state.getFluidState().isEmpty();
+    }
+
+    /** {@code state} into air where it holds; false if the spot is taken or it cannot stand there. */
+    private static boolean fill(WorldGenLevel level, BlockPos pos, BlockState state) {
+        if (!level.getBlockState(pos).isAir() || !state.canSurvive(level, pos)) {
+            return false;
+        }
+        level.setBlock(pos, state, Block.UPDATE_CLIENTS);
+        return true;
     }
 }

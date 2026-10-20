@@ -23,6 +23,12 @@ import nl.timtoys.corruptedadventure.worldgen.feature.FallenTreeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.FungusRingFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerraceDressingConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerraceDressingFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.GiantMoonpetalConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.GiantMoonpetalFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandDressingConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.IslandDressingFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.SkyRuinConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SkyRuinFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.DuneRubbleFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantGeodeLiningConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantGeodeLiningFeature;
@@ -287,6 +293,15 @@ public final class ModFeatures {
     /** {@code corruptedadventure:blighted_landmark} (decor B): this chunk's part of the rare landmarks of the blighted band */
     public static final DeferredHolder<Feature<?>, Feature<BlightedLandmarkFeature.Config>> BLIGHTED_LANDMARK =
             FEATURES.register("blighted_landmark", () -> new BlightedLandmarkFeature(BlightedLandmarkFeature.Config.CODEC));
+    /** {@code corruptedadventure:island_dressing} (decor rollout C): moss, crystals, hanging plants and vines on the islands' undersides */
+    public static final DeferredHolder<Feature<?>, Feature<IslandDressingConfiguration>> ISLAND_DRESSING =
+            FEATURES.register("island_dressing", () -> new IslandDressingFeature(IslandDressingConfiguration.CODEC));
+    /** {@code corruptedadventure:giant_moonpetal} (decor rollout C): the giant moonpetal whose crown covers a sky island */
+    public static final DeferredHolder<Feature<?>, Feature<GiantMoonpetalConfiguration>> GIANT_MOONPETAL =
+            FEATURES.register("giant_moonpetal", () -> new GiantMoonpetalFeature(GiantMoonpetalConfiguration.CODEC));
+    /** {@code corruptedadventure:sky_ruin} (decor rollout C): a crumbling ring of pillars with an arch on a sky island */
+    public static final DeferredHolder<Feature<?>, Feature<SkyRuinConfiguration>> SKY_RUIN =
+            FEATURES.register("sky_ruin", () -> new SkyRuinFeature(SkyRuinConfiguration.CODEC));
 
     private ModFeatures() {
     }

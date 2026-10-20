@@ -1,0 +1,12 @@
+# Ring 4 decor rollout C (ring4/decor-c, 2026-10-19): the sky gardens, the undersides of the islands and the landmarks,
+# for the before/after contact sheets, the quick determinism check (world.sh --freeze, detcmp.py) and the waterscan.
+# Chunk coordinates, inclusive; seed 20260930, default ring radii (positions from IslandFieldTest.field()).
+# sky gardens west: -6924 184 (r 38, sky lake, a fall), -6921 264 (r 19, two falls), the clod -6893 129
+sky -436 8 -428 18
+# giant moonpetals on -7190 250 (r 16, top 207) and -7099 382 (r 15, top 163)
+moon1 -452 13 -448 17
+moon2 -446 21 -442 25
+# ruin on the giant sky island 7027 -58 (r 61, top 203), anchor 7038 -48
+ruin 437 -5 441 -1
+# the underside of the low giant island 6796 -94 (r 82, bottom 93): seen from the ground
+under 421 -9 427 -3

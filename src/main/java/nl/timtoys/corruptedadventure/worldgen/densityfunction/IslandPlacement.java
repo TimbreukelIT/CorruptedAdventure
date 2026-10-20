@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 
 import net.minecraft.util.Mth;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.ring.Ring4Band;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 
@@ -19,8 +20,9 @@ import java.util.List;
  *   (review 59 #6) and inside ring 4 proper (the zones are 62 and 63). A low hole whose water lies at the sea level
  *   gets an outlet to the nearest open water.</li>
  *   <li>{@link #details}: per island, from the islands of stage 1 around it and the full surface: the lake level of its
- *   hole (above the sea only on high ground, below the lowest rim), its waterfalls (middle 1–2, giants 2–3: a spring in
- *   the top block at the edge, the falling water in the column beside it down to the lake) and, for about one in four
+ *   hole (above the sea only on high ground, below the lowest rim), its waterfalls (middle 1–2, giants 2–3, since decor
+ *   rollout C one off about four in ten clods of the mythical band: a spring in the top block at the edge, the falling
+ *   water in the column beside it down to the lake) and, for about one in four
  *   middle and giant islands, a lift column beside the edge from the lake up to above the top.</li>
  * </ol>
  */
@@ -34,6 +36,8 @@ final class IslandPlacement {
     /** A spring needs this many blocks of island under its top. */
     private static final int SPRING_DEPTH = 3;
     private static final double LIFT_CHANCE = 0.25;
+    /** Decor rollout C: the share of the mythical band's clods with a fall (the blighted band's stay dry). */
+    static final double CLOD_FALL_CHANCE = 0.4;
     /** An outlet looks this far (blocks, from the hole's edge) for open water. */
     private static final double OUTLET_SEARCH = 60.0;
     private static final double OPEN_WATER = 61.0;
@@ -254,19 +258,25 @@ final class IslandPlacement {
         long h = SeededHash.hash(field.hashNoise(), Mth.floor(shape.x()), Mth.floor(shape.z()), CELL_SALT + 1);
         List<IslandField.Fall> falls = new ArrayList<>();
         IslandField.Lift lift = null;
-        if (shape.kind() != IslandShape.CLOD) {
-            int wanted = shape.kind() == IslandShape.GIANT
-                    ? 2 + (SeededHash.unit(h, 0) < 0.5 ? 1 : 0) : 1 + (SeededHash.unit(h, 0) < 0.4 ? 1 : 0);
-            double start = SeededHash.unit(h, 1) * Math.PI * 2.0;
-            int tries = 12;
-            for (int k = 0; k < tries && falls.size() < wanted; k++) {
-                // Spread around the island: golden-angle steps from a seeded start.
-                double t = start + k * 2.399963;
-                IslandField.Fall fall = fall(field, shape, t, waterTop, lakeTop);
-                if (fall != null && falls.stream().noneMatch(f -> Math.abs(f.fallX() - fall.fallX()) + Math.abs(f.fallZ() - fall.fallZ()) < 6)) {
-                    falls.add(fall);
-                }
+        int wanted = switch (shape.kind()) {
+            case IslandShape.GIANT -> 2 + (SeededHash.unit(h, 0) < 0.5 ? 1 : 0);
+            // Decor rollout C: a small fall off about four in ten clods of the mythical band.
+            case IslandShape.CLOD -> SeededHash.unit(h, 0) < CLOD_FALL_CHANCE
+                    && !Ring4Band.of(field.ringLayout()).blighted(shape.x(), shape.z()) ? 1 : 0;
+            default -> 1 + (SeededHash.unit(h, 0) < 0.4 ? 1 : 0);
+        };
+        double start = SeededHash.unit(h, 1) * Math.PI * 2.0;
+        int tries = 12;
+        for (int k = 0; k < tries && falls.size() < wanted; k++) {
+            // Spread around the island: golden-angle steps from a seeded start.
+            double t = start + k * 2.399963;
+            IslandField.Fall fall = fall(field, shape, t, waterTop, lakeTop);
+            if (fall != null && falls.stream().noneMatch(f -> Math.abs(f.fallX() - fall.fallX()) + Math.abs(f.fallZ() - fall.fallZ()) < 6)
+                    && (shape.kind() != IslandShape.CLOD || !nearLift(field, fall))) {
+                falls.add(fall);
             }
+        }
+        if (shape.kind() != IslandShape.CLOD) {
             if (SeededHash.unit(h, 2) < LIFT_CHANCE) {
                 for (int k = 0; k < 6 && lift == null; k++) {
                     lift = lift(field, shape, start + Math.PI + k * 1.1, waterTop, lakeTop, falls);
@@ -385,6 +395,27 @@ final class IslandPlacement {
             return null;
         }
         return new IslandField.Lift(lx, lz, waterTop, top);
+    }
+
+    /**
+     * Decor rollout C: whether the lift of a middle or giant island stands near a clod's fall. That lift would give way
+     * to the fall ({@link IslandField#liftsWithin}), so the clod pours none there. A lift depends only on its own
+     * island's falls, so this never asks back for the clod's details.
+     */
+    private static boolean nearLift(IslandField field, IslandField.Fall fall) {
+        int r = IslandField.LIFT_FALL_CLEARANCE;
+        for (IslandShape other : field.shapesWithin(fall.fallX() - r, fall.fallZ() - r, fall.fallX() + r, fall.fallZ() + r)) {
+            double out = other.reach() + IslandField.LIFT_REACH + r;
+            if (other.kind() != IslandShape.MIDDLE && other.kind() != IslandShape.GIANT
+                    || Math.abs(other.x() - fall.fallX()) > out || Math.abs(other.z() - fall.fallZ()) > out) {
+                continue;
+            }
+            IslandField.Lift lift = field.details(other).lift();
+            if (lift != null && Math.abs(lift.x() - fall.fallX()) + Math.abs(lift.z() - fall.fallZ()) < r) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Whether no other island has a block in the column between {@code bottom} and {@code top}. */

@@ -1,0 +1,124 @@
+{
+  "type": "corruptedadventure:island_dressing",
+  "config": {
+    "crystal": {
+      "Name": "corruptedadventure:aquamarine_block"
+    },
+    "crystal_bud": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:large_aquamarine_bud",
+            "Properties": {
+              "facing": "down",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:aquamarine_cluster",
+            "Properties": {
+              "facing": "down",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        }
+      ]
+    },
+    "crystal_chance": 0.006,
+    "hanging": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:glow_lichen",
+            "Properties": {
+              "down": "false",
+              "east": "false",
+              "north": "false",
+              "south": "false",
+              "up": "true",
+              "waterlogged": "false",
+              "west": "false"
+            }
+          },
+          "weight": 6
+        },
+        {
+          "data": {
+            "Name": "minecraft:spore_blossom"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:glowing_hanging_roots",
+            "Properties": {
+              "waterlogged": "false"
+            }
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:hanging_roots",
+            "Properties": {
+              "waterlogged": "false"
+            }
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:small_aquamarine_bud",
+            "Properties": {
+              "facing": "down",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:medium_aquamarine_bud",
+            "Properties": {
+              "facing": "down",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "hanging_chance": 0.2,
+    "max_length": 6,
+    "min_length": 2,
+    "moss": {
+      "Name": "minecraft:moss_block"
+    },
+    "moss_cover": -0.1,
+    "strand": {
+      "Name": "corruptedadventure:hanging_swamp_moss",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "strand_chance": 0.05,
+    "vine": {
+      "Name": "minecraft:vine",
+      "Properties": {
+        "east": "false",
+        "north": "false",
+        "south": "false",
+        "up": "false",
+        "west": "false"
+      }
+    },
+    "vine_below": 3,
+    "vine_chance": 0.1
+  }
+}

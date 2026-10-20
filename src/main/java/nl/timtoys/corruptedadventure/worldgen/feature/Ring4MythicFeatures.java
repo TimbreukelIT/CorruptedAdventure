@@ -237,7 +237,8 @@ public final class Ring4MythicFeatures {
         // Decor proef: groves and open ground (Ring4Placements.GROVES) instead of an even grid; about as many trees as before.
         register(context, CASCADE_VALE_TREES, ModConfiguredFeatures.MOONPETAL_TREE, JitteredGridPlacement.of(8, 2, 0.75F, GROVES), SURFACE,
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.MOONPETAL_SAPLING.get()));
-        register(context, SKY_GARDENS_TREES, ModConfiguredFeatures.MOONPETAL_TREE, JitteredGridPlacement.of(16, 3, 1.0F, GROVES), SURFACE,
+        // Decor rollout C: small groves of small and cascade-sized moonpetals (SkyGardensFeatures).
+        register(context, SKY_GARDENS_TREES, SkyGardensFeatures.SKY_TREE, SkyGardensFeatures.TREE_PLACEMENT, SURFACE,
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.MOONPETAL_SAPLING.get()));
         register(context, GLOWROOT_SWAMP_TREES, SWAMP_TREE, JitteredGridPlacement.of(8, 2, 0.7F, GROVES), FLOOR,
                 SurfaceWaterDepthFilter.forMaxDepth(4), PlacementUtils.filteredByBlockSurvival(Blocks.MANGROVE_PROPAGULE));

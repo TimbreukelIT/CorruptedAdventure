@@ -1,0 +1,25 @@
+{
+  "type": "corruptedadventure:giant_moonpetal",
+  "config": {
+    "leaves": {
+      "Name": "corruptedadventure:moonpetal_leaves",
+      "Properties": {
+        "distance": "7",
+        "persistent": "false",
+        "waterlogged": "false"
+      }
+    },
+    "log": {
+      "Name": "corruptedadventure:moonpetal_log",
+      "Properties": {
+        "axis": "y"
+      }
+    },
+    "wood": {
+      "Name": "corruptedadventure:moonpetal_wood",
+      "Properties": {
+        "axis": "y"
+      }
+    }
+  }
+}
