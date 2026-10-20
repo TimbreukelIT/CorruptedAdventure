@@ -637,7 +637,7 @@ src/generated/resources/       ✅ datagen-output — NIET handmatig bewerken, N
   data/{corruptedadventure,minecraft,c}/tags/{block,item}/  blok- en item-tags (`ModBlockTagsProvider`, `ModItemTagsProvider`)
 
 docs/
-  design/                      ✅ 00-overzicht, 01-techniek, 02-beslissingenlog, fase-1-wereld (incl. bouwplan); 🔲 fase-2..5
+  design/                      ✅ 00-overzicht, 01-techniek, 02-beslissingenlog, fase-1-wereld (incl. bouwplan), fase-4-nightmares-concept (concept, vooruitblik); 🔲 fase-2..5
   prompts/                     ✅ opdrachten voor Claude Code (opdracht-01-sparring-fase-1)
   plans/                       ✅ uitgewerkte bouwplannen per change (`change-NN.md`: scope, stappen, tests, beantwoorde ontwerpvragen); klaar: 08–37 (+ 23b, 23c, 30b, 30c, 37b, 37c, 39a). Een bouw-subagent leest eerst zijn plan. `plans/ring-3/`: `contract.md`, `waves.md`, per stroom en golf `golf-N-<stroom>.md` (met de secties CODEBASE-delta, Beslissingen, Backlog), `change-39c.md`…`change-39f.md`, teststops `teststop-4<x>.md`, integraties `int2.md`
   backlog.md                   ✅

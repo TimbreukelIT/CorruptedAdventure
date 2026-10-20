@@ -69,7 +69,7 @@ Elke fase start met een sparringsessie (vragenrondes) in Claude Code; beslissing
 1. **Fase 1 — Wereld:** world preset (overworld + Nether), `ringAt`, ringverdeling, terrein, biomes, grotten, ores, custom blocks, weer per ring, omgevingscondities per ring en de mechanics die daarbij horen
 2. **Fase 2 — Items en tools:** tools, gear, items en recipes per ring
 3. **Fase 3 — Structures:** structures per ring en Nether-ring, loot, bewakersstructures, kastelen, vaste structure-posities
-4. **Fase 4 — Mobs en bosses:** monsters per ring, ringbewakers, bosses
+4. **Fase 4 — Mobs en bosses:** monsters per ring, ringbewakers, bosses, Nightmares (één rondzwervende boss per ring; concept in `fase-4-nightmares-concept.md`)
 5. **Fase 5 — Progressie en corruptie:** quests, grenssysteem, bewakerskompas, wereldcorruptie, horror-events, Herobrine, final battle, post-game
 
 Werkcategorieën (één per change): `worldgen`, `blocks`, `textures`, `atmosphere`, `conditions`, `items`, `structures`, `mobs`, `progression`, `corruption`, `infra`.
