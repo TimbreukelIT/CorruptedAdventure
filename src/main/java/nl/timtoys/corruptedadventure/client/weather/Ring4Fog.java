@@ -32,11 +32,11 @@ public final class Ring4Fog {
     /** Ring 4's flat sea surface (design 2026-10-16: open water up to Y 62). */
     static final int SEA_LEVEL = 62;
     /** Terrain fog start in clear weather as a share of the far plane (vanilla: the last ~10 %). */
-    static final float HAZE_NEAR = 0.5F;
+    static final float HAZE_NEAR = 0.7F;
     /** Far plane at the outer edge of the blighted band as a share of the view (terrain, sky); near plane share. */
-    static final float BLIGHT_FAR = 0.5F;
-    static final float BLIGHT_SKY_FAR = 0.65F;
-    static final float BLIGHT_NEAR = 0.05F;
+    static final float BLIGHT_FAR = 0.6F;
+    static final float BLIGHT_SKY_FAR = 0.75F;
+    static final float BLIGHT_NEAR = 0.2F;
     /** The blighted haze on the band line, as a share of its strength at ring 5. */
     static final float BLIGHT_BASE = 0.3F;
     /** Sickly yellow-green; how far the fog colour goes there at full strength. */
@@ -52,7 +52,7 @@ public final class Ring4Fog {
     static final float MIST_COLOUR_SHARE = 0.8F;
     static final float MIST_SKY_SHARE = 0.35F;
     /** The fog colours follow the daylight down to this share (mist in moonlight stays a little light). */
-    static final float MIN_LIGHT = 0.15F;
+    static final float MIN_LIGHT = 0.1F;
 
     private Ring4Fog() {
     }

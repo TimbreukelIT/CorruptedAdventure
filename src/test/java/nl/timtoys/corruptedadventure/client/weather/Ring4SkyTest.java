@@ -72,5 +72,9 @@ class Ring4SkyTest {
         assertEquals(108.0F, Ring4Clouds.fogExtra(108.0F, Ring4Clouds.REFERENCE_FOG));
         assertEquals(108.0F, Ring4Clouds.fogExtra(108.0F, 512.0F));
         assertEquals(18.0F, Ring4Clouds.fogExtra(108.0F, 32.0F), 1.0E-4F);
+        // The distance haze's early start (104 of 160) does not reach the clouds: vanilla's fade, last tenth.
+        assertEquals(250.0F - 25.0F, Ring4Clouds.cloudFogStart(104.0F, 160.0F, 250.0F), 1.0E-4F);
+        // In a thick fog (mist: 0..56, clouds to 87) the layer 200+ blocks up lies beyond the end anyway.
+        assertEquals(87.0F - 8.7F, Ring4Clouds.cloudFogStart(0.0F, 56.0F, 87.0F), 1.0E-4F);
     }
 }

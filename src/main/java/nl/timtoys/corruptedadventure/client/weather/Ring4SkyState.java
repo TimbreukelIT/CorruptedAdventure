@@ -42,10 +42,10 @@ public final class Ring4SkyState {
      */
     static final List<Mist> MISTS = List.of(
             new Mist(ModBiomes.MIST_FJORDS, 56.0F, 0xC9D3D8),
-            new Mist(ModBiomes.GLOWROOT_SWAMP, 80.0F, 0xC6E2D6),
-            new Mist(ModBiomes.PEAT_MOORS, 72.0F, 0xC4C894),
-            new Mist(ModBiomes.DROWNED_FOREST, 72.0F, 0xC0C690),
-            new Mist(ModBiomes.REED_MARSH, 88.0F, 0xC8CA98));
+            new Mist(ModBiomes.GLOWROOT_SWAMP, 104.0F, 0xC6E2D6),
+            new Mist(ModBiomes.PEAT_MOORS, 96.0F, 0xC4C894),
+            new Mist(ModBiomes.DROWNED_FOREST, 96.0F, 0xC0C690),
+            new Mist(ModBiomes.REED_MARSH, 112.0F, 0xC8CA98));
 
     private static float ring4;
     private static float blighted;

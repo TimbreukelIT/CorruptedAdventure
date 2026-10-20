@@ -70,9 +70,17 @@ public final class Ring4Clouds {
         raisedBy = raised;
         savedStart = RenderSystem.getShaderFogStart();
         savedEnd = RenderSystem.getShaderFogEnd();
-        float extra = fogExtra(raised, savedEnd);
-        RenderSystem.setShaderFogStart(savedStart + extra);
-        RenderSystem.setShaderFogEnd(savedEnd + extra);
+        float end = savedEnd + fogExtra(raised, savedEnd);
+        RenderSystem.setShaderFogStart(cloudFogStart(savedStart, savedEnd, end));
+        RenderSystem.setShaderFogEnd(end);
+    }
+
+    /**
+     * The fog start for the clouds: moved out as far as the end, but never before vanilla's own fade (the last tenth,
+     * 4–64 blocks): ring 4's distance haze starts the terrain fog early, and the clouds overhead would fade in it.
+     */
+    static float cloudFogStart(float start, float end, float cloudEnd) {
+        return Math.max(start + (cloudEnd - end), cloudEnd - Mth.clamp(cloudEnd / 10.0F, 4.0F, 64.0F));
     }
 
     /**
