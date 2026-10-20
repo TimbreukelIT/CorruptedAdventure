@@ -1,0 +1,17 @@
+{
+  "type": "corruptedadventure:fungus_ring",
+  "config": {
+    "density": 0.7,
+    "plant": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:blighted_glowcap"
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 4,
+      "min_inclusive": 2
+    }
+  }
+}

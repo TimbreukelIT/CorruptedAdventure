@@ -1,0 +1,27 @@
+{
+  "feature": "corruptedadventure:ring_4/marsh_dead_trees",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 4,
+      "chance": 0.45,
+      "density": {
+        "high": 0.4,
+        "low": 0.15,
+        "noise": "corruptedadventure:ring_4_groves"
+      },
+      "margin": 1
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "OCEAN_FLOOR_WG"
+    },
+    {
+      "type": "corruptedadventure:landmark_clearance",
+      "margin": 9
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

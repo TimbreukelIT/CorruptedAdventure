@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": {
+      "feature": "corruptedadventure:ring_4/withered_stump",
+      "placement": []
+    },
+    "features": [
+      {
+        "chance": 0.35,
+        "feature": {
+          "feature": "corruptedadventure:ring_4/stripped_withered_stump",
+          "placement": []
+        }
+      }
+    ]
+  }
+}

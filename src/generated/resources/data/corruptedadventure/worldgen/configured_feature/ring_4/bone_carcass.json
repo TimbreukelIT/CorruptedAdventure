@@ -1,0 +1,12 @@
+{
+  "type": "corruptedadventure:blighted_landmark",
+  "config": {
+    "kind": "bone_carcass",
+    "sludge": {
+      "Name": "corruptedadventure:toxic_pool",
+      "Properties": {
+        "level": "0"
+      }
+    }
+  }
+}

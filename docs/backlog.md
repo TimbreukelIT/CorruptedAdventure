@@ -383,3 +383,9 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [items] Recepten voor de nieuwe stenen: `mossy_tidestone` (tidestone + mos/ranken, zoals mossy cobblestone) en zijn trap/plaat/muur (werkbank en steenhouwer); eventueel `aquamarine_stone`. (bron: decor-blocks)
 - [infra] Testslots kunnen deadlocken: drie agents hielden elk een server-slot en wachtten op een client-slot (2026-10-19). `server.sh`/`client.sh` moeten server + client atomair reserveren. (bron: decor-uitrol 2026-10-19)
 - [infra] `client.sh shot` (PrintWindow) geeft volledig witte beelden na ~20:50 (vermoedelijk vergrendeld/uit scherm); B en C weken uit naar F2 of offline renders. Robuustere screenshotroute nodig. (bron: decor-uitrol 2026-10-19)
+
+## Uit aankleding ring 4, decor B (`ring4/decor-b`, 2026-10-19)
+- [worldgen] Decor B: verwelkte stronken van `withered_moonpetal_wood` lezen van dichtbij als grijze steen (de schors-texture); bij de afstemming kijken of een donkerdere/rottere schors (textures) of minder stronken beter is. (bron: decor B)
+- [worldgen] Decor B: de blikvangers staan nergens in een feature-index of teststop-checklist; bij de volgende formele teststop `/ca landmarks` gebruiken om ze in de gebieden op te nemen. (bron: decor B)
+- [textures] Decor B: `blighted_glowcap` oogt overdag bijna als de blauwe `glowcap`; een duidelijker ziekelijk groen/grijs zou de gifzwamkringen beter laten lezen. (bron: decor B)
+- [worldgen] Decor B det-check: ertsblobs over chunkgrenzen zijn volgorde-afhankelijk (main b348be33 a/b: `reed` 2 chunks vanilla-ruis; decor B a/b: 2× `tidesilver_ore` ↔ `copper_ore` op Y 36–37 bij 159 -7592, ver onder alle aankleding). Bestaand gedrag van ertsen (77 + vanilla), niet van de aankleding; bij een formele teststop met `det.sh` bekijken. (bron: decor B)

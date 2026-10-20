@@ -1,0 +1,28 @@
+{
+  "feature": "corruptedadventure:ring_4/moor_snags",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 16,
+      "chance": 0.25,
+      "density": {
+        "floor": 0.25,
+        "high": 0.2,
+        "low": -0.1,
+        "noise": "corruptedadventure:ring_4_groves"
+      },
+      "margin": 2
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "OCEAN_FLOOR_WG"
+    },
+    {
+      "type": "corruptedadventure:landmark_clearance",
+      "margin": 9
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

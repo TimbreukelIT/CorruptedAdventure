@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": {
+      "feature": "corruptedadventure:ring_4/marsh_dead_tree",
+      "placement": []
+    },
+    "features": [
+      {
+        "chance": 0.25,
+        "feature": {
+          "feature": "corruptedadventure:ring_4/marsh_dead_tree_rotten",
+          "placement": []
+        }
+      }
+    ]
+  }
+}

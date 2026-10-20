@@ -1,0 +1,28 @@
+{
+  "feature": "corruptedadventure:ring_4/reed_thicket",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.8,
+      "density": {
+        "high": 0.2,
+        "low": -0.15,
+        "noise": "corruptedadventure:ring_4_patches",
+        "salt": 1
+      },
+      "margin": 3
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:landmark_clearance",
+      "margin": 3
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

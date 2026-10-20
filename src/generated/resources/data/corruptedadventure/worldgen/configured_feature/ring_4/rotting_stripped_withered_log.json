@@ -1,0 +1,41 @@
+{
+  "type": "corruptedadventure:fallen_tree",
+  "config": {
+    "decor": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:moss_carpet"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:blighted_glowcap"
+          },
+          "weight": 2
+        }
+      ]
+    },
+    "decor_chance": 0.55,
+    "length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 6,
+      "min_inclusive": 3
+    },
+    "log": {
+      "Name": "corruptedadventure:stripped_withered_moonpetal_log",
+      "Properties": {
+        "axis": "y"
+      }
+    },
+    "stump_height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "stump_only": 0.15,
+    "trunk_only": 0.6
+  }
+}
