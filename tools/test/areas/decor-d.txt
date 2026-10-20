@@ -1,0 +1,8 @@
+# Ring 4 decor D (ring4/decor-d, 2026-10-19): verdant_falls and sundered_reach for the before/after contact sheets, the
+# quick determinism check (world.sh --freeze, detcmp.py) and the waterscan. Chunk coordinates, inclusive; seed 20260930.
+# vfgorge: horseshoe gorge 40 (centre 85 -6034) with its giant tree (trunk 84 95 -5971; DecorDLandmarksTest).
+# vfbasin: the stepped basins of the descent (trees and tree ferns in groves).
+# sundered: land bridge 0 of the zone 4->5 with its split rock (7997 64 272).
+vfgorge -2 -383 10 -370
+vfbasin -24 369 -15 378
+sundered 495 13 503 21

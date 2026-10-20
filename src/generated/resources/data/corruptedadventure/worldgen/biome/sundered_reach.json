@@ -22,7 +22,13 @@
     "water_color": 5147194,
     "water_fog_color": 1454095
   },
-  "features": [],
+  "features": [
+    [],
+    [],
+    [
+      "corruptedadventure:ring_4/sundered_reach_split_rocks"
+    ]
+  ],
   "has_precipitation": false,
   "spawn_costs": {},
   "spawners": {

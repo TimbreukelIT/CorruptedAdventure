@@ -7,6 +7,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.feature.PalmTrunkPlacer;
+import nl.timtoys.corruptedadventure.worldgen.feature.VerdantGiantTrunkPlacer;
 import nl.timtoys.corruptedadventure.worldgen.feature.VerdantTrunkPlacer;
 
 /** Trunk placer types with their own code, used by the tree features from datagen. */
@@ -22,6 +23,9 @@ public final class ModTrunkPlacerTypes {
     /** {@code corruptedadventure:verdant_trunk_placer} (75b: the emergent tree and the tree fern of verdant_falls) */
     public static final DeferredHolder<TrunkPlacerType<?>, TrunkPlacerType<VerdantTrunkPlacer>> VERDANT_TRUNK_PLACER =
             TRUNK_PLACER_TYPES.register("verdant_trunk_placer", () -> new TrunkPlacerType<>(VerdantTrunkPlacer.CODEC));
+    /** {@code corruptedadventure:verdant_giant_trunk_placer} (decor D: the giant verdant tree beside the gorges) */
+    public static final DeferredHolder<TrunkPlacerType<?>, TrunkPlacerType<VerdantGiantTrunkPlacer>> VERDANT_GIANT_TRUNK_PLACER =
+            TRUNK_PLACER_TYPES.register("verdant_giant_trunk_placer", () -> new TrunkPlacerType<>(VerdantGiantTrunkPlacer.CODEC));
 
     private ModTrunkPlacerTypes() {
     }

@@ -38,7 +38,9 @@ public final class Ring4Features {
             // verdant_falls: the moss carpets on the treads, the climbing strands under the ledges.
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_MOSS_CARPETS, ModBiomes.VERDANT_FALLS),
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_LEDGE_STRANDS, ModBiomes.VERDANT_FALLS),
-            // 75b: the tropical flora (after the strands: no plant ever shortens a climbing route).
+            // 75b: the tropical flora (after the strands: no plant ever shortens a climbing route); decor D: the giant
+            // tree beside each gorge first.
+            vegetal(VerdantFallsFeatures.VERDANT_FALLS_GIANT_TREES, ModBiomes.VERDANT_FALLS),
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_BANK_TREES, ModBiomes.VERDANT_FALLS),
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_RIM_TREES, ModBiomes.VERDANT_FALLS),
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_TREAD_TREE_FERNS, ModBiomes.VERDANT_FALLS),
@@ -52,6 +54,8 @@ public final class Ring4Features {
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_BLOSSOM_BUSHES, ModBiomes.VERDANT_FALLS),
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_LOTUS, ModBiomes.VERDANT_FALLS),
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_WATER_BLOOMS, ModBiomes.VERDANT_FALLS),
+            // Decor D: the split rock on each land bridge of sundered_reach (its only feature this round).
+            local(SunderedReachFeatures.SUNDERED_REACH_SPLIT_ROCKS, ModBiomes.SUNDERED_REACH),
             // 75: the trees of the mythical band and the sky gardens (decor proef: in groves).
             vegetal(Ring4MythicFeatures.CASCADE_VALE_TREES, ModBiomes.CASCADE_VALE),
             vegetal(Ring4MythicFeatures.SKY_GARDENS_TREES, ModBiomes.SKY_GARDENS),
@@ -167,6 +171,7 @@ public final class Ring4Features {
         Ring4MythicFeatures.configured(context);
         MistFjordsFeatures.configured(context);
         CascadeValeFeatures.configured(context);
+        SunderedReachFeatures.configured(context);
         Ring4BlightedFeatures.configured(context);
         BlightedDecorFeatures.configured(context);
         Ring4OreFeatures.configured(context);
@@ -177,6 +182,7 @@ public final class Ring4Features {
         Ring4MythicFeatures.placed(context);
         MistFjordsFeatures.placed(context);
         CascadeValeFeatures.placed(context);
+        SunderedReachFeatures.placed(context);
         Ring4BlightedFeatures.placed(context);
         BlightedDecorFeatures.placed(context);
         Ring4OreFeatures.placed(context);

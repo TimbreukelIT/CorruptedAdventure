@@ -7,6 +7,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.worldgen.feature.BeforeSplitFilter;
+import nl.timtoys.corruptedadventure.worldgen.feature.GiantTreeClearance;
+import nl.timtoys.corruptedadventure.worldgen.feature.GiantTreePlacement;
 import nl.timtoys.corruptedadventure.worldgen.feature.HeightBandFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.InRingFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.JitteredGridPlacement;
@@ -64,6 +66,12 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:ring4_filter} (75: the pure ring 4 terrain per column, ground only, clear of falls and knobs) */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<Ring4Filter>> RING4_FILTER =
             PLACEMENT_MODIFIER_TYPES.register("ring4_filter", () -> () -> Ring4Filter.CODEC);
+    /** {@code corruptedadventure:giant_tree} (decor D: the trunk of each giant verdant tree beside a gorge in this chunk) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<GiantTreePlacement>> GIANT_TREE =
+            PLACEMENT_MODIFIER_TYPES.register("giant_tree", () -> () -> GiantTreePlacement.CODEC);
+    /** {@code corruptedadventure:giant_tree_clearance} (decor D: other trees keep clear of the giant verdant trees) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<GiantTreeClearance>> GIANT_TREE_CLEARANCE =
+            PLACEMENT_MODIFIER_TYPES.register("giant_tree_clearance", () -> () -> GiantTreeClearance.CODEC);
 
     // ring 4 — decor B
     /** {@code corruptedadventure:landmark_clearance} (decor B: trees, stumps and puddles keep off the blighted landmarks) */
