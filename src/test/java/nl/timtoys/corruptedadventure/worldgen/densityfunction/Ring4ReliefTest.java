@@ -41,13 +41,19 @@ class Ring4ReliefTest {
         }
     }
 
+    /** The share of the relief's landforms under the sea (without the islands' holes: they are no landform). */
     private static double waterShare(java.util.function.Predicate<double[]> filter) {
+        return waterShare(filter, 7);
+    }
+
+    /** The same on the column's value {@code index}: 2 the surface with the holes, 7 the relief's ground. */
+    private static double waterShare(java.util.function.Predicate<double[]> filter, int index) {
         int water = 0;
         int all = 0;
         for (double[] c : COLUMNS) {
             if (filter.test(c)) {
                 all++;
-                water += c[2] < Ring4Relief.SEA ? 1 : 0;
+                water += c[index] < Ring4Relief.SEA ? 1 : 0;
             }
         }
         return all == 0 ? Double.NaN : water / (double) all;
@@ -75,6 +81,13 @@ class Ring4ReliefTest {
         assertTrue(all > 0.42 && all < 0.58, "water share " + all);
         assertTrue(mythic > 0.35 && mythic < 0.65, "mythic " + mythic);
         assertTrue(blighted > 0.35 && blighted < 0.65, "blighted " + blighted);
+        // With the islands' holes: sparring 2026-10-20 (B1-4) keeps a hole under every island of the denser field, so
+        // the outer band fills with island-shaped lakes (design ring 4 "Gat = spiegelbeeld").
+        double holesAll = waterShare(c -> true, 2);
+        double holesBlighted = waterShare(c -> c[5] >= 0.0, 2);
+        System.out.printf("with the holes: all %.3f, mythic %.3f, blighted %.3f%n", holesAll, waterShare(c -> c[5] < 0.0, 2), holesBlighted);
+        assertTrue(holesAll > all && holesAll < 0.62, "with the holes " + holesAll);
+        assertTrue(holesBlighted < 0.72, "blighted with the holes " + holesBlighted);
     }
 
     @Test
@@ -133,7 +146,7 @@ class Ring4ReliefTest {
         for (double[] c : COLUMNS) {
             if (c[5] > -0.5 && c[5] < -0.1 && c[6] < 0.01) {
                 rim++;
-                deep += c[2] < 55.0 && field.column((int) c[0], (int) c[1]).fjord < 0.01 ? 1 : 0;
+                deep += c[7] < 55.0 && field.column((int) c[0], (int) c[1]).fjord < 0.01 ? 1 : 0;
             }
         }
         assertTrue(rim > 5, "rim columns " + rim);

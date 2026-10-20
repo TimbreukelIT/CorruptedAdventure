@@ -24,11 +24,13 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
  * @param vine          the vine on the island's outer walls (one face set per wall)
  * @param vineChance    per wall column and side: the chance of a curtain of vines down the wall
  * @param vineBelow     how far at most a curtain hangs on below the wall
+ * @param blighted      sparring 2026-10-20 (B2-2): whether this dressing is the blighted band's (else the mythical's)
  */
 public record IslandDressingConfiguration(BlockState moss, float mossCover, BlockStateProvider hanging, float hangingChance,
                                           BlockState strand, float strandChance, int minLength, int maxLength,
                                           BlockState crystal, BlockStateProvider crystalBud, float crystalChance,
-                                          BlockState vine, float vineChance, int vineBelow) implements FeatureConfiguration {
+                                          BlockState vine, float vineChance, int vineBelow, boolean blighted)
+        implements FeatureConfiguration {
     public static final Codec<IslandDressingConfiguration> CODEC = RecordCodecBuilder.<IslandDressingConfiguration>create(instance -> instance.group(
             BlockState.CODEC.fieldOf("moss").forGetter(IslandDressingConfiguration::moss),
             Codec.floatRange(-1.0F, 1.0F).fieldOf("moss_cover").forGetter(IslandDressingConfiguration::mossCover),
@@ -43,7 +45,8 @@ public record IslandDressingConfiguration(BlockState moss, float mossCover, Bloc
             Codec.floatRange(0.0F, 1.0F).fieldOf("crystal_chance").forGetter(IslandDressingConfiguration::crystalChance),
             BlockState.CODEC.fieldOf("vine").forGetter(IslandDressingConfiguration::vine),
             Codec.floatRange(0.0F, 1.0F).fieldOf("vine_chance").forGetter(IslandDressingConfiguration::vineChance),
-            Codec.intRange(0, 16).fieldOf("vine_below").forGetter(IslandDressingConfiguration::vineBelow)
+            Codec.intRange(0, 16).fieldOf("vine_below").forGetter(IslandDressingConfiguration::vineBelow),
+            Codec.BOOL.optionalFieldOf("blighted", false).forGetter(IslandDressingConfiguration::blighted)
     ).apply(instance, IslandDressingConfiguration::new)).validate(IslandDressingConfiguration::check);
 
     private static DataResult<IslandDressingConfiguration> check(IslandDressingConfiguration config) {

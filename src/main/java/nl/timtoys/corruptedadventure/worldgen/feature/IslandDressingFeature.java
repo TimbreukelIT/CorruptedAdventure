@@ -27,8 +27,10 @@ import java.util.List;
  *   hanging under it;</li>
  *   <li>single blocks hang under it (glow lichen, spore blossoms, roots, aquamarine buds), or a strand of moss;</li>
  * </ul>
- * and on the islands' outer walls curtains of vines that hang on a little below the edge. The blighted band keeps the
- * plain undersides of {@link IslandUndersideFeature} (its height biome {@code withered_gardens} stays as it is).
+ * and on the islands' outer walls curtains of vines that hang on a little below the edge. Sparring 2026-10-20 (B2-2):
+ * a second configuration ({@code blighted}) dresses the islands over the blighted band the same way with a dead
+ * palette (rooted earth with dead roots, grey moss strands, toxic crystal knobs); each configuration only touches the
+ * columns (and walls) of its own band.
  * <p>
  * Order-independent as {@link IslandUndersideFeature}: every column draws the same values before the world is asked;
  * the overhangs are found in the own column with every non-solid block counted as open ({@link IslandUndersideFeature#open}:
@@ -80,7 +82,7 @@ public final class IslandDressingFeature extends Feature<IslandDressingConfigura
                 }
                 int x = minX + dx;
                 int z = minZ + dz;
-                if (Ring4Terrain.blighted(x, z)) {
+                if (Ring4Terrain.blighted(x, z) != config.blighted()) {
                     continue;
                 }
                 boolean island = field.islandColumn(x, z).islandMask() > 0.0;
@@ -148,7 +150,7 @@ public final class IslandDressingFeature extends Feature<IslandDressingConfigura
                                    Direction side, int start, int below, BlockPos.MutableBlockPos pos) {
         int wx = x + side.getStepX();
         int wz = z + side.getStepZ();
-        if (field.islandColumn(wx, wz).islandMask() <= 0.0 || Ring4Terrain.blighted(wx, wz)) {
+        if (field.islandColumn(wx, wz).islandMask() <= 0.0 || Ring4Terrain.blighted(wx, wz) != config.blighted()) {
             return false;
         }
         BlockState vine = config.vine().setValue(VineBlock.getPropertyForFace(side), true);

@@ -19,9 +19,14 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
  *                      islands no higher than {@code maxClimbGap}: the low islands are climbable)
  * @param maxClimbGap   the largest gap under an island that a climbing strand fills
  * @param accentChance  per column: the chance of an accent (when no strand hangs)
+ * @param curtainCover  sparring 2026-10-20 (B2-3 b): the patch noise's value above which a column lies in a curtain
+ *                      (−1 … 1: lower is more; 1 for none)
+ * @param curtainChance per column in a curtain: the chance of a climbing strand (instead of {@code climbChance}), so
+ *                      the strands hang side by side
  */
 public record IslandUndersideConfiguration(BlockState strand, BlockStateProvider accent, float strandChance, int minLength,
-                                           int maxLength, float climbChance, int maxClimbGap, float accentChance)
+                                           int maxLength, float climbChance, int maxClimbGap, float accentChance,
+                                           float curtainCover, float curtainChance)
         implements FeatureConfiguration {
     public static final Codec<IslandUndersideConfiguration> CODEC = RecordCodecBuilder.<IslandUndersideConfiguration>create(instance -> instance.group(
             BlockState.CODEC.fieldOf("strand").forGetter(IslandUndersideConfiguration::strand),
@@ -31,7 +36,9 @@ public record IslandUndersideConfiguration(BlockState strand, BlockStateProvider
             Codec.intRange(1, 32).fieldOf("max_length").forGetter(IslandUndersideConfiguration::maxLength),
             Codec.floatRange(0.0F, 1.0F).fieldOf("climb_chance").forGetter(IslandUndersideConfiguration::climbChance),
             Codec.intRange(2, 128).fieldOf("max_climb_gap").forGetter(IslandUndersideConfiguration::maxClimbGap),
-            Codec.floatRange(0.0F, 1.0F).fieldOf("accent_chance").forGetter(IslandUndersideConfiguration::accentChance)
+            Codec.floatRange(0.0F, 1.0F).fieldOf("accent_chance").forGetter(IslandUndersideConfiguration::accentChance),
+            Codec.floatRange(-1.0F, 1.0F).optionalFieldOf("curtain_cover", 1.0F).forGetter(IslandUndersideConfiguration::curtainCover),
+            Codec.floatRange(0.0F, 1.0F).optionalFieldOf("curtain_chance", 0.0F).forGetter(IslandUndersideConfiguration::curtainChance)
     ).apply(instance, IslandUndersideConfiguration::new)).validate(IslandUndersideConfiguration::check);
 
     private static DataResult<IslandUndersideConfiguration> check(IslandUndersideConfiguration config) {

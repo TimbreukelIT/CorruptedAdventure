@@ -58,7 +58,8 @@ class Ring4IslandsTest {
         }
         System.out.printf("islands: %d (inner third %d, outer third %d, giants %d), highest top inner %.0f, outer %.0f%n",
                 SHAPES.size(), inner, outer, giants, innerTop, outerTop);
-        assertTrue(outer > 3 * inner, inner + " inner, " + outer + " outer");
+        // Sparring 2026-10-20 (B1-1): the inner edge clearly fuller than before, the gradient stays.
+        assertTrue(outer > 1.5 * inner, inner + " inner, " + outer + " outer");
         assertTrue(inner > 0);
         assertTrue(giants > 0);
         assertTrue(outerTop > innerTop + 40.0, innerTop + " / " + outerTop);
@@ -71,7 +72,8 @@ class Ring4IslandsTest {
             double diameter = 2.0 * s.a() * Math.sqrt(s.stretch());
             switch (s.kind()) {
                 case IslandShape.CLOD -> assertTrue(diameter >= 5.0 - 1e-9 && diameter <= 15.0 + 1e-9, "clod " + diameter);
-                case IslandShape.MIDDLE -> assertTrue(diameter >= 20.0 - 1e-9 && diameter <= 60.0 + 1e-9, "middle " + diameter);
+                case IslandShape.MIDDLE -> assertTrue(diameter >= IslandPlacement.MIDDLE_MIN - 1e-9
+                        && diameter <= IslandPlacement.MIDDLE_MIN + IslandPlacement.MIDDLE_SPREAD + 1e-9, "middle " + diameter);
                 // 74: a world tree's half torn-out island.
                 case IslandShape.TREE -> assertTrue(diameter >= WorldTrees.ISLAND_MIN - 1e-9
                         && diameter <= WorldTrees.ISLAND_MIN + WorldTrees.ISLAND_SPREAD + 1e-9, "tree " + diameter);
@@ -83,22 +85,35 @@ class Ring4IslandsTest {
         }
     }
 
-    /** Only in ring 4 proper; low islands on the inside: bottom 15–40 above the ground, tops around Y 90–130. */
+    /**
+     * Only in ring 4 proper; low islands in the inner half (sparring 2026-10-20, B1-3): bottom 15–60 above the highest
+     * ground under them, in two layers, so some columns hold two islands above each other.
+     */
     @Test
     void islandsHangFreeAboveTheirGround() {
         int inner = 0;
+        int upper = 0;
         for (IslandShape s : SHAPES) {
             RingPosition position = IslandFieldTest.LAYOUT.sampleOverworld(s.x(), s.z());
             assertTrue(!position.inTransition() && position.ring() == Ring.RING_4);
             double bottom = s.top() - 1.0 - s.thickness() * IslandShape.MAX_UNDERSIDE;
             assertTrue(bottom >= Math.max(63.0, s.groundY()) + IslandPlacement.MIN_CLEARANCE - 1e-9, "bottom " + bottom);
-            if (progress(s) < 0.15) {
+            if (progress(s) < IslandPlacement.LAYERS_TO && s.kind() != IslandShape.TREE) {
                 inner++;
-                assertTrue(bottom <= Math.max(63.0, s.groundY()) + 70.0, "inner bottom " + bottom + " over " + s.groundY());
-                assertTrue(s.top() < 175.0, "inner top " + s.top());
+                // The highest ground under the footprint lies at most a terrace or two above the centre's.
+                assertTrue(bottom <= Math.max(63.0, s.groundY()) + 60.0 + 45.0, "inner bottom " + bottom + " over " + s.groundY());
+                upper += bottom > Math.max(63.0, s.groundY()) + 40.0 ? 1 : 0;
             }
         }
+        System.out.printf("inner half: %d islands, %d in the upper layer%n", inner, upper);
         assertTrue(inner > 0);
+        assertTrue(upper > 0.1 * inner && upper < 0.6 * inner, upper + " of " + inner);
+        for (double v = 0.0; v <= 1.0; v += 0.25) {
+            assertEquals(IslandPlacement.MIN_CLEARANCE + 20.0 * v, IslandPlacement.clearance(0.2, v, 0.9), 1e-9);
+            assertEquals(40.0 + 20.0 * v, IslandPlacement.clearance(0.2, v, 0.1), 1e-9);
+        }
+        // The outer half as before (up to ~200 above the ground).
+        assertEquals(IslandPlacement.MIN_CLEARANCE + 185.0, IslandPlacement.clearance(1.0, 1.0, 0.9), 1e-9);
     }
 
     /** Under every island its hole: the surface under the centre lies below the ground it was torn from. */

@@ -62,11 +62,15 @@ class Ring4MythicFeaturesTest {
 
     @Test
     void whatHangsUnderAnIsland() {
-        IslandUndersideConfiguration config = new IslandUndersideConfiguration(null, null, 0.05F, 2, 7, 0.004F, 40, 0.04F);
-        assertEquals(IslandUndersideFeature.Kind.CLIMB, IslandUndersideFeature.kind(0.003F, config));
-        assertEquals(IslandUndersideFeature.Kind.DANGLE, IslandUndersideFeature.kind(0.01F, config));
-        assertEquals(IslandUndersideFeature.Kind.ACCENT, IslandUndersideFeature.kind(0.06F, config));
-        assertEquals(IslandUndersideFeature.Kind.NONE, IslandUndersideFeature.kind(0.5F, config));
+        IslandUndersideConfiguration config = new IslandUndersideConfiguration(null, null, 0.05F, 2, 7, 0.004F, 40, 0.04F, 0.4F, 0.3F);
+        assertEquals(IslandUndersideFeature.Kind.CLIMB, IslandUndersideFeature.kind(0.003F, config, false));
+        assertEquals(IslandUndersideFeature.Kind.DANGLE, IslandUndersideFeature.kind(0.01F, config, false));
+        assertEquals(IslandUndersideFeature.Kind.ACCENT, IslandUndersideFeature.kind(0.06F, config, false));
+        assertEquals(IslandUndersideFeature.Kind.NONE, IslandUndersideFeature.kind(0.5F, config, false));
+        // B2-3 b: in a curtain most columns climb, the rest shifts up behind them.
+        assertEquals(IslandUndersideFeature.Kind.CLIMB, IslandUndersideFeature.kind(0.2F, config, true));
+        assertEquals(IslandUndersideFeature.Kind.DANGLE, IslandUndersideFeature.kind(0.32F, config, true));
+        assertEquals(IslandUndersideFeature.Kind.NONE, IslandUndersideFeature.kind(0.5F, config, true));
         // A climbing strand under a low island ends one block above the floor (gap − 1 blocks long).
         assertEquals(29, IslandUndersideFeature.length(IslandUndersideFeature.Kind.CLIMB, 30, 5, 40));
         // Under a high island it only dangles, never closer than two blocks to the floor.

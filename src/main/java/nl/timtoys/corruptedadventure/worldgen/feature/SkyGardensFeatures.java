@@ -74,6 +74,7 @@ public final class SkyGardensFeatures {
     static final ResourceKey<ConfiguredFeature<?, ?>> GIANT_MOONPETAL = configuredKey("giant_moonpetal");
     static final ResourceKey<ConfiguredFeature<?, ?>> RUIN = configuredKey("sky_ruin");
     static final ResourceKey<ConfiguredFeature<?, ?>> ISLAND_DRESSING = configuredKey("island_dressing");
+    static final ResourceKey<ConfiguredFeature<?, ?>> ISLAND_DRESSING_BLIGHTED = configuredKey("island_dressing_blighted");
 
     public static final ResourceKey<PlacedFeature> SKY_GARDENS_MOSS_FLOOR = placedKey("sky_gardens_moss_floor");
     public static final ResourceKey<PlacedFeature> SKY_GARDENS_RUINS = placedKey("sky_gardens_ruins");
@@ -84,6 +85,8 @@ public final class SkyGardensFeatures {
     public static final ResourceKey<PlacedFeature> SKY_GARDENS_MOSS_CARPETS = placedKey("sky_gardens_moss_carpets");
     /** Every ground biome (the islands lie over all of them): the living undersides, after the hanging strands. */
     public static final ResourceKey<PlacedFeature> ISLAND_DRESSINGS = placedKey("island_dressings");
+    /** Sparring 2026-10-20 (B2-2): the dead undersides of the blighted band's islands, right after the living ones. */
+    public static final ResourceKey<PlacedFeature> ISLAND_DRESSINGS_BLIGHTED = placedKey("island_dressings_blighted");
 
     /**
      * The small groves of the sky gardens: the grove noise at twice its frequency (groves of ~30 blocks, a few per
@@ -147,11 +150,26 @@ public final class SkyGardensFeatures {
                 weighted(ModBlocks.LARGE_AQUAMARINE_BUD.get().defaultBlockState().setValue(AmethystClusterBlock.FACING, Direction.DOWN), 1,
                         ModBlocks.AQUAMARINE_CLUSTER.get().defaultBlockState().setValue(AmethystClusterBlock.FACING, Direction.DOWN), 2),
                 0.006F,
-                Blocks.VINE.defaultBlockState(), 0.1F, 3));
+                Blocks.VINE.defaultBlockState(), 0.1F, 3, false));
+        // Sparring 2026-10-20 (B2-2): under the islands of the blighted band dead roots in rooted earth, grey moss
+        // strands (the hanging swamp moss, longer and more of them), toxic crystal knobs; a few vines only.
+        FeatureUtils.register(context, ISLAND_DRESSING_BLIGHTED, ModFeatures.ISLAND_DRESSING.get(), new IslandDressingConfiguration(
+                Blocks.ROOTED_DIRT.defaultBlockState(), 0.0F,
+                weighted(Blocks.HANGING_ROOTS.defaultBlockState(), 8,
+                        ModBlocks.SMALL_TOXIC_CRYSTAL_BUD.get().defaultBlockState().setValue(AmethystClusterBlock.FACING, Direction.DOWN), 1,
+                        ModBlocks.MEDIUM_TOXIC_CRYSTAL_BUD.get().defaultBlockState().setValue(AmethystClusterBlock.FACING, Direction.DOWN), 1),
+                0.2F,
+                ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState(), 0.1F, 3, 9,
+                ModBlocks.TOXIC_CRYSTAL_BLOCK.get().defaultBlockState(),
+                weighted(ModBlocks.LARGE_TOXIC_CRYSTAL_BUD.get().defaultBlockState().setValue(AmethystClusterBlock.FACING, Direction.DOWN), 1,
+                        ModBlocks.TOXIC_CRYSTAL_CLUSTER.get().defaultBlockState().setValue(AmethystClusterBlock.FACING, Direction.DOWN), 2),
+                0.012F,
+                Blocks.VINE.defaultBlockState(), 0.03F, 2, true));
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
         Ring4Placements.perChunk(context, ISLAND_DRESSINGS, ISLAND_DRESSING);
+        Ring4Placements.perChunk(context, ISLAND_DRESSINGS_BLIGHTED, ISLAND_DRESSING_BLIGHTED);
         // The moss patches before anything grows on them; the landmarks before the trees (no tree roots on a ruin's stone).
         register(context, SKY_GARDENS_MOSS_FLOOR, MOSS_FLOOR, JitteredGridPlacement.of(1, 0, 1.0F, new ClusterDensity(PATCHES_NOISE, 1.0,
                         MOSS_SALT, 0.2, 0.4, 0.0)), SURFACE, RandomOffsetPlacement.vertical(ConstantInt.of(-1)),

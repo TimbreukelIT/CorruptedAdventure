@@ -647,6 +647,13 @@ public final class IslandField implements DensityFunction {
         return s.height;
     }
 
+    /** Whether a peat sinkhole's bowl lies at the position (its floor cut per block below the base terrain). */
+    boolean inSinkhole(double x, double z) {
+        Ring4Relief.Sample s = new Ring4Relief.Sample();
+        relief.sample(x, z, band(x, z), s, salt());
+        return !Double.isNaN(s.sinkholeFloor);
+    }
+
     /**
      * The lowest open ground at a position: the surface with the descent of {@code verdant_falls}, the islands' holes
      * and outlets, and a peat sinkhole's floor (which the terrain cuts per block, review 61 #6); exact, not in the column

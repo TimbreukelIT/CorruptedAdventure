@@ -12,8 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * What package 74 adds to the islands of ring 4, behind a few hooks in {@link IslandField}: the world trees
  * ({@link WorldTrees}, {@link WorldTreeShape}), the sky lakes ({@link SkyLakes}) and the island pairs with their rock
- * arches ({@link IslandArches}). Per column ({@link #fill}) it adds a tree's blocks, cuts a sky lake's basin and adds an
- * arch's rock; per cell of the island grid it keeps what reaches into the cell ({@link Cell}), so a column without any
+ * arches ({@link IslandArches}), and (sparring 2026-10-20, B2-3) the floating debris round the big islands
+ * ({@link IslandDebris}). Per column ({@link #fill}) it adds a tree's blocks, cuts a sky lake's basin and adds an
+ * arch's rock and the debris; per cell of the island grid it keeps what reaches into the cell ({@link Cell}), so a column without any
  * of them costs one lookup.
  * <p>
  * Pure: everything is a function of the field's seed, relief and ring layout, decided once per world in
@@ -32,16 +33,21 @@ final class IslandLandmarks {
     static final class Memo {
         volatile List<WorldTreeShape> trees;
         final Map<IslandShape, Optional<SkyLakes.Lake>> lakes = new ConcurrentHashMap<>();
+        final Map<IslandShape, List<IslandArches.Pair>> candidatePairs = new ConcurrentHashMap<>();
+        final Map<IslandShape, List<IslandArches.Pair>> archCandidates = new ConcurrentHashMap<>();
+        final Map<IslandArches.Pair, Boolean> archKept = new ConcurrentHashMap<>();
         final Map<IslandShape, List<IslandArches.Pair>> pairs = new ConcurrentHashMap<>();
+        final Map<IslandShape, List<IslandDebris.Piece>> debris = new ConcurrentHashMap<>();
         final KeyedSlots<Cell> cells = new KeyedSlots<>(256);
     }
 
-    /** What reaches into one cell of the island grid: trees, lakes (incl. rim), arches. */
-    record Cell(List<WorldTreeShape> trees, List<SkyLakes.Lake> lakes, List<IslandArches.Arch> arches) {
-        static final Cell EMPTY = new Cell(List.of(), List.of(), List.of());
+    /** What reaches into one cell of the island grid: trees, lakes (incl. rim), arches, debris. */
+    record Cell(List<WorldTreeShape> trees, List<SkyLakes.Lake> lakes, List<IslandArches.Arch> arches,
+                List<IslandDebris.Piece> debris) {
+        static final Cell EMPTY = new Cell(List.of(), List.of(), List.of(), List.of());
 
         boolean empty() {
-            return trees.isEmpty() && lakes.isEmpty() && arches.isEmpty();
+            return trees.isEmpty() && lakes.isEmpty() && arches.isEmpty() && debris.isEmpty();
         }
     }
 
@@ -69,9 +75,32 @@ final class IslandLandmarks {
         return field.decisions().once(memo.lakes, island, () -> Optional.ofNullable(SkyLakes.decide(field, island))).orElse(null);
     }
 
-    /** The pairs an island starts, decided once. */
+    /** The pairs an island starts, each with the arch it keeps ({@link IslandArches#archKept}), decided once. */
     List<IslandArches.Pair> pairs(IslandShape island) {
-        return field.decisions().once(memo.pairs, island, () -> IslandArches.pairsOf(field, island));
+        return field.decisions().once(memo.pairs, island, () -> candidatePairs(island).stream()
+                .map(pair -> pair.arch() == null || archKept(pair) ? pair : pair.withArch(null))
+                .filter(pair -> !pair.archOnly() || pair.arch() != null)
+                .toList());
+    }
+
+    /** The pairs an island starts with their candidate arches ({@link IslandArches#pairsOf}), decided once. */
+    List<IslandArches.Pair> candidatePairs(IslandShape island) {
+        return field.decisions().once(memo.candidatePairs, island, () -> IslandArches.pairsOf(field, island));
+    }
+
+    /** The pairs with a candidate arch that an island is part of, decided once. */
+    List<IslandArches.Pair> archCandidates(IslandShape island) {
+        return field.decisions().once(memo.archCandidates, island, () -> IslandArches.archCandidatesOf(field, island));
+    }
+
+    /** Whether a candidate arch stays ({@link IslandArches#archKept}), decided once. */
+    boolean archKept(IslandArches.Pair pair) {
+        return field.decisions().once(memo.archKept, pair, () -> IslandArches.archKept(field, pair));
+    }
+
+    /** The floating debris round an island ({@link IslandDebris#of}), decided once. */
+    List<IslandDebris.Piece> debris(IslandShape island) {
+        return field.decisions().once(memo.debris, island, () -> IslandDebris.of(field, island));
     }
 
     /**
@@ -141,6 +170,7 @@ final class IslandLandmarks {
         }
         List<SkyLakes.Lake> lakes = new ArrayList<>();
         List<IslandArches.Arch> arches = new ArrayList<>();
+        List<IslandDebris.Piece> debris = new ArrayList<>();
         // An arch reaches from its first island's edge past the second's: within an island's reach and a gap of both.
         int margin = Mth.ceil(IslandField.MAX_REACH + IslandArches.MAX_GAP);
         for (IslandShape island : field.shapesWithin(minX - margin, minZ - margin, maxX + margin, maxZ + margin)) {
@@ -154,11 +184,17 @@ final class IslandLandmarks {
                     arches.add(arch);
                 }
             }
+            // Debris lies within IslandDebris.MAX_OUT of its island's reach, well inside the margin.
+            for (IslandDebris.Piece piece : debris(island)) {
+                if (piece.maxX() >= minX && piece.minX() <= maxX && piece.maxZ() >= minZ && piece.minZ() <= maxZ) {
+                    debris.add(piece);
+                }
+            }
         }
-        if (trees.isEmpty() && lakes.isEmpty() && arches.isEmpty()) {
+        if (trees.isEmpty() && lakes.isEmpty() && arches.isEmpty() && debris.isEmpty()) {
             return Cell.EMPTY;
         }
-        return new Cell(List.copyOf(trees), List.copyOf(lakes), List.copyOf(arches));
+        return new Cell(List.copyOf(trees), List.copyOf(lakes), List.copyOf(arches), List.copyOf(debris));
     }
 
     /**
@@ -184,6 +220,12 @@ final class IslandLandmarks {
         }
         for (IslandArches.Arch arch : cell.arches()) {
             int[] interval = arch.interval(c.x, c.z);
+            if (interval != null) {
+                c.addIsland(interval[0], interval[1]);
+            }
+        }
+        for (IslandDebris.Piece piece : cell.debris()) {
+            int[] interval = piece.interval(c.x, c.z);
             if (interval != null) {
                 c.addIsland(interval[0], interval[1]);
             }

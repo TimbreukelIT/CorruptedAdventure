@@ -12,13 +12,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
+import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 
 /**
  * {@code corruptedadventure:island_underside} (package 75; design ring 4 "Uitgerukt", "Omhoog"): what hangs under the
  * floating islands. Strands of hanging moss of a few blocks, single glowing roots right under the island, and under
  * the low islands (gap up to {@code max_climb_gap}) now and then a strand down to one block above the ground or the
- * lake, so a player can climb up (the moss is climbable in all of ring 4).
+ * lake, so a player can climb up (the moss is climbable in all of ring 4). Sparring 2026-10-20 (B2-3 b): in patches of
+ * the ring 4 patch noise the climbing strands hang side by side as curtains.
  * <p>
  * Per chunk, per column one roll; only a hit pays for the scan. A column counts where an island stands over it
  * ({@link IslandField#islandColumn}, pure); the overhangs are found in the own column from the frozen
@@ -32,6 +34,9 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 public final class IslandUndersideFeature extends Feature<IslandUndersideConfiguration> {
     /** How far below the terrain's surface the scan still looks for the floor under an island. */
     static final int FLOOR_DEPTH = 4;
+    /** The curtains' field of the ring 4 patch noise (B2-3 b): its own offset, patches of ~6 blocks. */
+    private static final double CURTAIN_SALT = 51071.0;
+    private static final double CURTAIN_SCALE = 2.5;
 
     public IslandUndersideFeature(Codec<IslandUndersideConfiguration> codec) {
         super(codec);
@@ -42,15 +47,19 @@ public final class IslandUndersideFeature extends Feature<IslandUndersideConfigu
         NONE, CLIMB, DANGLE, ACCENT
     }
 
-    /** The kind for a roll in [0, 1): climbing strands first, then dangling ones, then accents. */
-    static Kind kind(float roll, IslandUndersideConfiguration config) {
-        if (roll < config.climbChance()) {
+    /**
+     * The kind for a roll in [0, 1): climbing strands first (in a curtain with {@code curtainChance}), then dangling
+     * ones, then accents.
+     */
+    static Kind kind(float roll, IslandUndersideConfiguration config, boolean curtain) {
+        float climb = curtain ? Math.max(config.climbChance(), config.curtainChance()) : config.climbChance();
+        if (roll < climb) {
             return Kind.CLIMB;
         }
-        if (roll < config.climbChance() + config.strandChance()) {
+        if (roll < climb + config.strandChance()) {
             return Kind.DANGLE;
         }
-        return roll < config.climbChance() + config.strandChance() + config.accentChance() ? Kind.ACCENT : Kind.NONE;
+        return roll < climb + config.strandChance() + config.accentChance() ? Kind.ACCENT : Kind.NONE;
     }
 
     /**
@@ -77,6 +86,7 @@ public final class IslandUndersideFeature extends Feature<IslandUndersideConfigu
         }
         IslandUndersideConfiguration config = context.config();
         RandomSource random = context.random();
+        NormalNoise patches = level.getLevel().getChunkSource().randomState().getOrCreateNoise(Ring4Placements.PATCHES_NOISE);
         int minX = context.origin().getX() & ~15;
         int minZ = context.origin().getZ() & ~15;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -87,9 +97,11 @@ public final class IslandUndersideFeature extends Feature<IslandUndersideConfigu
                 float roll = random.nextFloat();
                 int dangle = config.minLength() + random.nextInt(config.maxLength() - config.minLength() + 1);
                 BlockState accent = config.accent().getState(random, BlockPos.ZERO);
-                Kind kind = kind(roll, config);
                 int x = minX + dx;
                 int z = minZ + dz;
+                boolean curtain = config.curtainCover() < 1.0F
+                        && patches.getValue((x + CURTAIN_SALT) * CURTAIN_SCALE, 0.0, z * CURTAIN_SCALE) > config.curtainCover();
+                Kind kind = kind(roll, config, curtain);
                 if (kind == Kind.NONE || field.islandColumn(x, z).islandMask() <= 0.0) {
                     continue;
                 }

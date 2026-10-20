@@ -220,7 +220,9 @@ public final class Ring4MythicFeatures {
         FeatureUtils.register(context, ISLAND_UNDERSIDE, ModFeatures.ISLAND_UNDERSIDE.get(), new IslandUndersideConfiguration(
                 ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState(),
                 weighted(ModBlocks.GLOWING_HANGING_ROOTS.get().defaultBlockState(), 3, Blocks.HANGING_ROOTS.defaultBlockState(), 1),
-                0.05F, 2, 7, 0.004F, 40, 0.04F));
+                // Sparring 2026-10-20 (B2-3 b): longer strands, climbing strands under the islands up to 64 above the
+                // ground (the inner half hangs 15–60 high) and curtains of them in patches.
+                0.05F, 2, 12, 0.006F, 64, 0.04F, 0.7F, 0.2F));
         // The vines between the islands: a rope of roots (it holds itself), moss and glowing roots hanging under it.
         FeatureUtils.register(context, ISLAND_VINE, ModFeatures.ISLAND_VINES.get(), new IslandVinesConfiguration(
                 Blocks.MANGROVE_ROOTS.defaultBlockState(), ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState(),
