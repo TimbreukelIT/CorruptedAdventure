@@ -1,13 +1,18 @@
 #!/bin/bash
 # Dedicated test server of this stream (Gradle runServer, port 25570+n, RCON 25580+n on 127.0.0.1).
 #
-#   server.sh start <level> [--fresh] [--perf] [--xmx 5G] [--timeout 900] [--wait 1800] [--no-slot] [--worktree DIR]
+#   server.sh start <level> [--fresh] [--perf] [--xmx 5G] [--timeout 900] [--wait 1800] [--no-slot] [--client [1|2|both]]
+#                   [--worktree DIR]
 #       prepares run/ (eula, server.properties: level, seed 20260930, corrupted world preset, ports, RCON on with a new
 #       password), takes a JVM slot (unless --no-slot: the caller holds one, e.g. perf.sh), starts runServer in the
 #       background, waits for "Done" (time-out --timeout s), records the server JVM PID in build/<stream>.pids and the
 #       state in build/test/server.state (rcon.py reads it). --fresh deletes run/<level> first; --perf installs the
 #       vanilla datapack dimensions (perfpack/). --worktree runs another checkout (e.g. a reference on main) with these
 #       tools; its run/ is used, state and logs stay here. Log: build/test/server-<level>.log.
+#       --client: reserve the slot(s) of client 1 (default), 2 or both together with the server's, all at once
+#       (`slots.sh take --tasks server,client1`), so `client.sh start` never waits for a slot while the server holds one
+#       (the deadlock of 2026-10-19). The server JVM holds the reservation until client.sh start takes it over;
+#       client.sh stop hands it back, server.sh stop frees what the server still holds.
 #   server.sh stop [--timeout 180]
 #       RCON `stop`, waits until the recorded PID is gone (only then, after the time-out, stops that PID - after
 #       checking it is still this checkout's server JVM), turns RCON off, frees the slot.
@@ -17,16 +22,17 @@
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 STATE="$CA_OUT/server.state"
 
-running_pid() {
-    local pid wt
-    pid="$(ca_state_get server PID)"; wt="$(ca_state_get server WT)"
-    [ -n "$pid" ] && ca_is_own_java "$pid" "$wt" server && echo "$pid"
+# Free the slots of a failed start (comma-separated task labels): only those this script holds (the caller of
+# `slots.sh take`), never a still-running client's slot with the same label.
+release_tasks() {
+    local t
+    for t in ${1//,/ }; do bash "$CA_TOOLS/slots.sh" release --task "$t" --holder "$(ca_winpid)" >/dev/null; done
 }
 
 start() {
     local level="$1"; shift
     [[ "$level" =~ ^[A-Za-z0-9._-]+$ ]] || ca_die "level name must be [A-Za-z0-9._-]+"
-    local fresh=0 perf=0 xmx=5G timeout=900 wait=1800 slot=1 wt="$CA_WT"
+    local fresh=0 perf=0 xmx=5G timeout=900 wait=1800 slot=1 wt="$CA_WT" clients="" tasks=server c
     while [ $# -gt 0 ]; do
         case "$1" in
             --fresh) fresh=1; shift ;;
@@ -35,16 +41,21 @@ start() {
             --timeout) timeout="$2"; shift 2 ;;
             --wait) wait="$2"; shift 2 ;;
             --no-slot) slot=0; shift ;;
+            --client)
+                shift
+                case "$1" in 1|2) clients="$1"; shift ;; both) clients="1 2"; shift ;; *) clients=1 ;; esac ;;
             --worktree) wt="$(cd "$2" && pwd)" || ca_die "no worktree $2"; shift 2 ;;
             *) ca_die "unknown argument $1" ;;
         esac
     done
     ca_user_check
     ca_need_port
-    [ -z "$(running_pid)" ] || ca_die "a server of this stream is still running (pid $(running_pid)); server.sh stop first"
+    [ -z "$(ca_server_pid)" ] || ca_die "a server of this stream is still running (pid $(ca_server_pid)); server.sh stop first"
     [ -x "$wt/gradlew" ] || ca_die "$wt has no gradlew"
+    [ -z "$clients" ] || [ $slot = 1 ] || ca_die "--client reserves slots, it cannot go with --no-slot"
+    for c in $clients; do tasks="$tasks,client$c"; done
     if [ $slot = 1 ]; then
-        bash "$CA_TOOLS/slots.sh" take -n 1 --task "server" --wait "$wait" || exit $?
+        bash "$CA_TOOLS/slots.sh" take --tasks "$tasks" --wait "$wait" || exit $?
     fi
     ca_prepare_run "$wt" "$level"
     local props="$wt/run/server.properties" password
@@ -79,7 +90,7 @@ start() {
             [ -n "$pid" ] && ca_is_own_java "$pid" "$wt" server && ca_stop_pid "$pid"
             ca_stop_job "$job"
             ca_setprop "$props" enable-rcon false
-            [ $slot = 1 ] && bash "$CA_TOOLS/slots.sh" release --task server >/dev/null
+            [ $slot = 1 ] && release_tasks "$tasks"
             exit 1
         fi
         sleep 3
@@ -91,7 +102,7 @@ start() {
         sleep 20
         ca_stop_job "$job"
         ca_setprop "$props" enable-rcon false
-        [ $slot = 1 ] && bash "$CA_TOOLS/slots.sh" release --task server >/dev/null
+        [ $slot = 1 ] && release_tasks "$tasks"
         exit 1
     fi
     local java
@@ -107,8 +118,11 @@ RCON_PORT=$CA_RCON_PORT
 RCON_PASSWORD=$password
 JAVA=$java
 SLOT=$slot
+CLIENTS=$clients
 EOF
-    [ $slot = 1 ] && bash "$CA_TOOLS/slots.sh" adopt "$pid" --task server >/dev/null
+    if [ $slot = 1 ]; then
+        for c in ${tasks//,/ }; do bash "$CA_TOOLS/slots.sh" adopt "$pid" --task "$c" --holder "$(ca_winpid)" >/dev/null; done
+    fi
     grep -E "Done \(" "$log" | tail -1
     ca_log "server up: pid $pid, world $(cygpath -m "$wt/run/$level")"
 }
@@ -117,8 +131,9 @@ stop() {
     local timeout=180
     [ "$1" = --timeout ] && timeout="$2"
     [ -f "$STATE" ] || { echo "no server state (nothing to stop)"; return 0; }
-    local pid wt slot t0
+    local pid wt slot clients c t0
     pid="$(ca_state_get server PID)"; wt="$(ca_state_get server WT)"; slot="$(ca_state_get server SLOT)"
+    clients="$(ca_state_get server CLIENTS)"
     if ca_is_own_java "$pid" "$wt" server; then
         $CA_PY "$CA_TOOLS/py/rcon.py" stop || echo "RCON stop failed; waiting for the time-out" >&2
         t0=$(date +%s)
@@ -135,6 +150,9 @@ stop() {
     fi
     ca_setprop "$wt/run/server.properties" enable-rcon false
     [ "$slot" = 1 ] && bash "$CA_TOOLS/slots.sh" release --task server >/dev/null
+    # A reserved client slot the server still holds (no client took it, or client.sh stop handed it back); a running
+    # client keeps its own until client.sh stop.
+    [ -n "$pid" ] && for c in $clients; do bash "$CA_TOOLS/slots.sh" release --task "client$c" --holder "$pid" >/dev/null; done
     rm -f "$STATE"
     ca_log "stopped server $pid; RCON off"
 }
@@ -144,6 +162,6 @@ case "$cmd" in
     start) [ -n "$1" ] || ca_die "start needs a level name"; start "$@" ;;
     stop) stop "$@" ;;
     status)
-        if [ -n "$(running_pid)" ]; then cat "$STATE" | grep -v PASSWORD; else echo "no server running"; fi ;;
-    *) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+        if [ -n "$(ca_server_pid)" ]; then cat "$STATE" | grep -v PASSWORD; else echo "no server running"; fi ;;
+    *) sed -n '2,/^source/p' "$0" | grep '^#' | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac
