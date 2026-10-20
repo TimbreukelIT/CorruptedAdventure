@@ -61,9 +61,43 @@ public final class IsolatedTreeFeature extends Feature<TreeConfiguration> {
                     plan.logs, plan.leaves, plan.roots);
             config.decorators.forEach(decorator -> decorator.place(decorations));
         }
+        if (inAFall(level, plan)) {
+            return false;
+        }
         plan.settleLeafDistances();
         plan.commit();
         return true;
+    }
+
+    /**
+     * Whether a block of the planned tree lies in the falling column of a waterfall of ring 4 (backlog "bomen in
+     * valkolommen", more often with the denser islands of 2026-10-20): the water would land on its crown and run off it.
+     * Such a tree is left out; the falls are pure, so the choice does not depend on the order of the chunks.
+     */
+    private static boolean inAFall(WorldGenLevel level, TreePlan plan) {
+        IslandField field = Ring4Terrain.field(level);
+        if (field == null) {
+            return false;
+        }
+        int minX = Integer.MAX_VALUE;
+        int minZ = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxZ = Integer.MIN_VALUE;
+        for (BlockPos pos : plan.planned()) {
+            minX = Math.min(minX, pos.getX());
+            minZ = Math.min(minZ, pos.getZ());
+            maxX = Math.max(maxX, pos.getX());
+            maxZ = Math.max(maxZ, pos.getZ());
+        }
+        List<IslandField.Waterfall> falls = field.waterfallsWithin(minX, minZ, maxX, maxZ);
+        for (IslandField.Waterfall fall : falls) {
+            for (BlockPos pos : plan.planned()) {
+                if (pos.getX() == fall.x() && pos.getZ() == fall.z() && pos.getY() >= fall.bottom() && pos.getY() <= fall.top()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
