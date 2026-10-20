@@ -891,6 +891,17 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 
 **Ring 4-heuvels (sparring 2026-10-15):** het karakter blijft (terrassen van `cascade_vale`, fjordkliffen), maar de randen worden zachter: afgeronde trederanden, golvende in plaats van rechte traplijnen, egalere treden. Eerst meten waar de blokkige hoeken vandaan komen. **Uitwerking (2026-10-15):** terrassen trede 60 % / stootbord 40 % met afgeronde rand en voet (ook voor de treden van `verdant_falls`); fjordrand en -wand per blok exact met smalle afronding, kliffen blijven 2:1. Diagnose: fjordranden knikten binnen één cel van het 4×4-raster (zaagtand), terrasstootborden te smal, detailruis op de treden.
 
+**Reliëf ring 4 (sparring 2026-10-20, na teststop 5b "vlak en in strepen"; voorbereiding `docs/plans/ring-4/sparring-prep-relief-islands-atmo.md` §A):**
+- **Waar (A1-1):** reliëf in **alle landbiomes**, elk in zijn eigen stijl.
+- **Hoeveel (A1-2):** **klein**: +5–15 boven het huidige land (niet de middenoptie). Ring 4 blijft lager dan ring 3.
+- **De "strepen" (A1-3):** de lange contourlijnen van 1 blok op de vlakke veen-/rietvlakten (niet de cascadeterrassen, niet de fjordwanden).
+- **Water (A1-4):** land/water blijft ~50/50: reliëf alleen omhoog op bestaand land; dalen blijven ≥ Y 64 of zijn bewust rivier/zee. Lagune en lotus blijven zoals ze zijn.
+- **`peat_moors` / `reed_marsh` (A2-1):** bulten en lage ruggen (2–8 hoog) met kommen ertussen; zinkgaten blijven; plassen en gifpoelen vallen volgens de bestaande regels in de gesloten kommen. Een korte detailruis haalt de lange evenwijdige contourlijnen weg.
+- **`cascade_vale` (A2-2):** de treden van 8 blijven zoals ze zijn; alleen +5–15 extra glooiing eronder, zodat het minder strak oogt.
+- **`mist_fjords` (A2-3):** heuvels en rotsknobbels op het plateau (binnen +5–15) én ruwere wanden: richels en uitstekende rotsen zoals de klif 3→4 uit teststop 5a (`rough`), exact per blok gesneden (4×4-raster-zaagtand, les van de heuvelfix).
+- **Aanpak (A-W):** alle biomes in één change, één afstemronde (geen apart proefstuk).
+- **Interpretatie team-lead (door de gebruiker te corrigeren):** `glowroot_swamp` krijgt een zachte golving binnen het kleine bereik en houdt zijn water; `crystal_lagoon`, `lotus_shallows` en `drowned_forest` (waterbiomes, onder zee) blijven ongewijzigd (A1-4); de overgangen `verdant_falls` en `sundered_reach` blijven ongewijzigd.
+
 **Grens 4→5: `sundered_reach` — de wereld valt uit elkaar**
 - De grond breekt op in steeds meer **zwevende brokken boven een diepe leegte**; eilanden worden de enige grond, water stort de diepte in, kleuren vallen weg, de eerste glitchplekken. Vervangt `blighted_mire` als concept.
 - **Breedte ~256** (het dubbele van de gewone zone), geleidelijk.
