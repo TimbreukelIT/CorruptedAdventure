@@ -9,7 +9,7 @@
   "downfall": 0.6,
   "effects": {
     "ambient_sound": "corruptedadventure:ambient.ring_4.water",
-    "fog_color": 15398130,
+    "fog_color": 12577004,
     "foliage_color": 8377966,
     "grass_color": 7326570,
     "mood_sound": {
@@ -24,7 +24,7 @@
       },
       "probability": 0.0012
     },
-    "sky_color": 7525091,
+    "sky_color": 5227496,
     "water_color": 9427184,
     "water_fog_color": 2911878
   },

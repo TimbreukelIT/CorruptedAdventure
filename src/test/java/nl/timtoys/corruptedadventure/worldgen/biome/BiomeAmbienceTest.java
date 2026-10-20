@@ -166,12 +166,15 @@ class BiomeAmbienceTest {
                 .getAsJsonObject().get("probability").getAsFloat();
     }
 
-    /** verdant-falls.md §4 and Q8 = A: plan colours, light spray, waterfall loop, birds and frogs, cave mood. */
+    /**
+     * verdant-falls.md §4 and Q8 = A: plan colours (sky and fog deepened by the ring 4 sky sparring, 2026-10-20), light
+     * spray, waterfall loop, birds and frogs, cave mood.
+     */
     @Test
     void ring4HookGivesVerdantFallsItsColoursSprayAndSounds() {
         BiomeSpecialEffects effects = BiomeAmbience.ring4(ModBiomes.VERDANT_FALLS).build();
-        assertEquals(0x86D6E0, effects.getSkyColor());
-        assertEquals(0xD2F0E4, effects.getFogColor());
+        assertEquals(0x64CCE2, effects.getSkyColor());
+        assertEquals(0xBCEAD8, effects.getFogColor());
         assertEquals(0x3FD0C0, effects.getWaterColor());
         assertEquals(0x0F4F4A, effects.getWaterFogColor());
         assertEquals(0x6CC24A, effects.getGrassColorOverride().orElseThrow());

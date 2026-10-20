@@ -13,7 +13,7 @@
       "tick_chance": 0.002
     },
     "ambient_sound": "corruptedadventure:ambient.ring_4.water",
-    "fog_color": 15005428,
+    "fog_color": 11987692,
     "foliage_color": 7129956,
     "grass_color": 8312442,
     "mood_sound": {
@@ -22,7 +22,7 @@
       "sound": "minecraft:ambient.cave",
       "tick_delay": 6000
     },
-    "sky_color": 7132904,
+    "sky_color": 4638444,
     "water_color": 3134408,
     "water_fog_color": 1006182
   },

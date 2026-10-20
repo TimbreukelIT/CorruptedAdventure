@@ -12,7 +12,7 @@
       "sound": "corruptedadventure:ambient.ring_4.bubbles",
       "tick_chance": 0.002
     },
-    "fog_color": 11123608,
+    "fog_color": 11451508,
     "foliage_color": 6978122,
     "grass_color": 8030810,
     "mood_sound": {
@@ -27,7 +27,7 @@
       },
       "probability": 5.0E-5
     },
-    "sky_color": 9416330,
+    "sky_color": 9612926,
     "water_color": 4098618,
     "water_fog_color": 928272
   },
