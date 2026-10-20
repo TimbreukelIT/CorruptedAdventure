@@ -99,7 +99,8 @@ rings 1–3), `perf-vf.txt`, `perf-r4.txt` (every ring 4 biome, tunnels, a world
 determinism), `decor.txt` (one `mist_fjords` and one `cascade_vale` area: before/after shots, quick det check), `decor-d.txt` (decor D: a `verdant_falls` gorge with its giant tree, the basins, a `sundered_reach` land bridge with its split rock).
 `decor-c.txt` (decor rollout C: sky gardens, two giant moonpetals, a ruin, the underside of a low giant island).
 `islands.txt` (islands revision 2026-10-20: `tds`, `skyw1`, `skyw2` as in `int2.txt`, the inner edge and the middle of
-ring 4 east; det, waterscan and `perf.sh --areas`).
+ring 4 east; det and waterscan), `perf-islands.txt` (the same places in 16 x 16 chunks for `perf.sh --areas`:
+forceload takes at most 256 chunks, a bigger area like `tds` measures nothing).
 `python tools/test/py/areas.py around <name> <x> <z> <r> [nether]` prints a line around a block position.
 
 ```bash

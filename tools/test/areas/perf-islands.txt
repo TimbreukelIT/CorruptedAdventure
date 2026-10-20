@@ -1,0 +1,9 @@
+# Ring 4 islands performance (ring4/islands, 2026-10-20): 16 x 16 chunks each (forceload takes at most 256 chunks).
+# perf.sh --areas tools/test/areas/perf-islands.txt. Around the island areas of islands.txt.
+# blighted band south (inside tds), the sky lakes west (round skyw1 and skyw2)
+tds -15 -464 0 -449
+skyw1 -440 4 -425 19
+skyw2 -451 22 -436 37
+# inner edge east (r ~6150..6400) and the middle of the ring east (lotus_shallows, r ~7000)
+inner 383 -8 398 7
+lotus 430 -8 445 7
