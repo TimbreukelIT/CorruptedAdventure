@@ -868,3 +868,7 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-20 | worldgen | Eilanden verbindingen (B2-1): rotsboog bij alle geschikte paren (max. één per eiland), ranken blijven zoals ze zijn | Meer beloopbare verbindingen zonder nieuw ranksysteem |
 | 2026-10-20 | worldgen | Bedorven eilandonderkant (B2-2): nu aankleden met dode wortels, grijs mos en gifkristal-knoppen via `island_dressing`/`island_underside` | Sluit de kale onderkant boven `withered_gardens` in dezelfde change af |
 | 2026-10-20 | worldgen | Luchtvulling (B2-3): kleine zwevende brokken (1–4) rond grote eilanden en meer/langere wortelgordijnen onder lage eilanden | "Meer vulling in de lucht" goedkoop en van ver zichtbaar |
+| 2026-10-20 | worldgen | Eilanden dichtheid: `0,45 + 2,4·p^1,25` per cel i.p.v. het voorbeeld `0,75 + 3·p^1,2` | Met de grotere middeleilanden gaf het voorbeeld ~7/19/26 % lucht; dit haalt de bedoelde ~3/12/22 % |
+| 2026-10-20 | worldgen | Rotsbogen: dekhelling tot 0,7 per blok en 20 hoogteverschil (was 0,4 / 12) | Anders kwamen er door de gelaagde hoogtes nauwelijks bogen bij (8 i.p.v. 7, nu 14 in de testwig) |
+| 2026-10-20 | worldgen | Bedorven onderkant: "grijs mos" = hangend moerasmos + geworteld aardeblok met hangwortels; eigen blok blijft backlog | Bestaande blokken volstaan voorlopig |
+| 2026-10-20 | worldgen | Minder meren boven zee (20 → 10 in de testwig) door de dichtere eilanden: akkoord, bekijken bij de vlucht | Gevolg van het kernbesluit "elk eiland een gat" |
