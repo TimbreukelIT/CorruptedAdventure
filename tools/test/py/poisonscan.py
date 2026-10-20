@@ -6,7 +6,7 @@ Toxic sludge (`corruptedadventure:toxic_pool`, the 72 fluid) lies only in closed
 73) and at the surface (`toxic_pool` feature, 76), every side and the bottom poison or dry solid ground; the top is the
 open surface. An overtreding (`over`) is a sludge block with
   open    air, cave_air, swamp gas or a non-solid block a fluid washes away (grass, ferns, flowers, vines, carpets,
-          snow layers, the ring 4 glow plants and the verdant flora; OPEN_PLANTS) beside it or below it: it would flow at
+          snow layers, the ring 4 glow plants, the verdant flora and the mythic plants; OPEN_PLANTS) beside it or below it: it would flow at
           the first update. A block with a `waterlogged` property is closed (vanilla lets only water into it), or
   water   water on any of its six sides: water, a waterlogged block, seagrass, kelp or a bubble column (sludge next to
           water turns into mud, `ToxicPoolInteractions`).
@@ -39,7 +39,8 @@ AIR = ("minecraft:air", "minecraft:cave_air")
 OPEN_PLANTS = re.compile(r"(short_grass|tall_grass|:fern$|large_fern|dead_bush|vine|^minecraft:snow$|dandelion|poppy|"
                          r"orchid|allium|bluet|tulip|daisy|cornflower|lily_of_the_valley|torchflower|sunflower|lilac|"
                          r"rose_bush|peony|sapling|_mushroom$|_carpet$|glow_bloom|glowcap|slime_trail|verdant_fern|"
-                         r"verdant_tall_fern|verdant_bromeliad|verdant_blossom_bush|verdant_giant_leaf|verdant_fruit_pod)")
+                         r"verdant_tall_fern|verdant_bromeliad|verdant_blossom_bush|verdant_giant_leaf|verdant_fruit_pod|fjord_moss|"
+                         r"mist_fern|moonpetal_shrub)")
 WATERY = ("minecraft:water", "minecraft:seagrass", "minecraft:tall_seagrass", "minecraft:kelp", "minecraft:kelp_plant",
           "minecraft:bubble_column")
 SLUDGE = "corruptedadventure:toxic_pool"

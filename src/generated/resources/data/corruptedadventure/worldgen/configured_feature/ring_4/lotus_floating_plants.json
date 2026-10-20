@@ -1,0 +1,22 @@
+{
+  "type": "corruptedadventure:ground_plant",
+  "config": {
+    "to_place": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:lotus"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:lily_pad"
+          },
+          "weight": 2
+        }
+      ]
+    }
+  }
+}

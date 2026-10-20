@@ -40,11 +40,18 @@
       "corruptedadventure:ring_4/island_dressings",
       "corruptedadventure:ring_4/island_vines",
       "corruptedadventure:ring_4/glowroot_swamp_trees",
+      "corruptedadventure:ring_4/glowroot_swamp_moss_floor",
+      "corruptedadventure:ring_4/glowroot_swamp_ancient_trees",
+      "corruptedadventure:ring_4/glowroot_swamp_root_arches",
+      "corruptedadventure:ring_4/glowroot_swamp_root_tangles",
       "corruptedadventure:ring_4/deep_pool_bubble_springs",
       "corruptedadventure:ring_4/shallows_seagrass",
+      "corruptedadventure:ring_4/glowroot_swamp_lily_pads",
       "corruptedadventure:ring_4/mythic_grass",
       "corruptedadventure:ring_4/glowroot_swamp_glowcaps",
-      "corruptedadventure:ring_4/glowroot_swamp_moss"
+      "corruptedadventure:ring_4/glowroot_swamp_moss",
+      "corruptedadventure:ring_4/glowroot_swamp_ferns",
+      "corruptedadventure:ring_4/glowroot_swamp_mushrooms"
     ],
     [
       "corruptedadventure:ring_4/island_lifts"

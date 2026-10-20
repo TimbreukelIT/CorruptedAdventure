@@ -73,6 +73,13 @@ ca_is_own_java() {
     [ -n "$pid" ] && ca_java_pids "$wt" "$kind" | grep -qx "$pid"
 }
 
+# PID of this stream's server JVM while it runs (from build/test/server.state), else nothing.
+ca_server_pid() {
+    local pid wt
+    pid="$(ca_state_get server PID)"; wt="$(ca_state_get server WT)"
+    [ -n "$pid" ] && ca_is_own_java "$pid" "$wt" server && echo "$pid"
+}
+
 ca_stop_pid() {
     powershell -NoProfile -Command "Stop-Process -Id $1 -Force -ErrorAction SilentlyContinue" >/dev/null 2>&1
 }

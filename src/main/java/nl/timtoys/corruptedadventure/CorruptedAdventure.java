@@ -40,6 +40,7 @@ import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 import nl.timtoys.corruptedadventure.registry.ModPlacementModifierTypes;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.registry.ModSurfaceConditions;
+import nl.timtoys.corruptedadventure.registry.ModTreeDecoratorTypes;
 import nl.timtoys.corruptedadventure.registry.ModTrunkPlacerTypes;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.weather.RingWeather;
@@ -83,6 +84,7 @@ public final class CorruptedAdventure {
         ModSurfaceConditions.register(modEventBus);
         ModTrunkPlacerTypes.register(modEventBus);
         ModFoliagePlacerTypes.register(modEventBus);
+        ModTreeDecoratorTypes.register(modEventBus);
         ModSoundEvents.register(modEventBus);
         ModParticleTypes.register(modEventBus);
         ModAttachments.register(modEventBus);

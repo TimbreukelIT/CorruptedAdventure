@@ -1,0 +1,86 @@
+{
+  "type": "corruptedadventure:ancient_swamp_tree",
+  "config": {
+    "biome": "corruptedadventure:glowroot_swamp",
+    "branches": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 7,
+      "min_inclusive": 5
+    },
+    "grid": {
+      "cell_size": 288,
+      "chance": 0.85,
+      "margin": 24,
+      "tries": 8
+    },
+    "height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 34,
+      "min_inclusive": 26
+    },
+    "leaves": {
+      "Name": "minecraft:mangrove_leaves",
+      "Properties": {
+        "distance": "7",
+        "persistent": "false",
+        "waterlogged": "false"
+      }
+    },
+    "log": {
+      "Name": "minecraft:mangrove_log",
+      "Properties": {
+        "axis": "y"
+      }
+    },
+    "muddy_roots": {
+      "Name": "minecraft:muddy_mangrove_roots",
+      "Properties": {
+        "axis": "y"
+      }
+    },
+    "propagule": {
+      "Name": "minecraft:mangrove_propagule",
+      "Properties": {
+        "age": "0",
+        "hanging": "true",
+        "stage": "0",
+        "waterlogged": "false"
+      }
+    },
+    "root_decor": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:moss_carpet"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:glowcap"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "roots": {
+      "Name": "minecraft:mangrove_roots",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "strand": {
+      "Name": "corruptedadventure:hanging_swamp_moss",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "tip": {
+      "Name": "corruptedadventure:glowing_hanging_roots",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    }
+  }
+}
