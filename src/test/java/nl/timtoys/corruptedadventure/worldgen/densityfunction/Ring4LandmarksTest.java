@@ -285,8 +285,54 @@ class Ring4LandmarksTest {
         System.out.printf("island pairs %d, rock arches %d%n", pairs, arches);
         assertTrue(pairs > 50, "pairs " + pairs);
         assertTrue(arches > 0, "no arch");
+        // Sparring 2026-10-20 (B2-1): every suitable pair may get one, but an island holds at most one arch.
+        Map<IslandShape, Integer> perIsland = new HashMap<>();
+        for (IslandShape s : SHAPES) {
+            for (IslandArches.Pair pair : field.landmarks().pairs(s)) {
+                if (pair.arch() != null) {
+                    perIsland.merge(pair.first(), 1, Integer::sum);
+                    perIsland.merge(pair.second(), 1, Integer::sum);
+                }
+            }
+        }
+        perIsland.forEach((island, n) -> assertTrue(n <= 1, n + " arches at " + island));
         // The public accessor finds them too.
         assertFalse(field.islandPairs(6500, -1000, 8000, 1000).isEmpty());
+    }
+
+    /**
+     * Sparring 2026-10-20 (B2-3 a): debris round the big islands is terrain, floats free (air round it, no island, fall
+     * or lift near it) and stays near its island.
+     */
+    @Test
+    void debrisFloatsFreeRoundTheBigIslands() {
+        int pieces = 0;
+        int islands = 0;
+        for (IslandShape s : SHAPES) {
+            List<IslandDebris.Piece> debris = field.landmarks().debris(s);
+            if (s.kind() == IslandShape.CLOD || s.kind() == IslandShape.TREE) {
+                assertTrue(debris.isEmpty());
+                continue;
+            }
+            islands += debris.isEmpty() ? 0 : 1;
+            for (IslandDebris.Piece piece : debris) {
+                pieces++;
+                assertTrue(Math.hypot(piece.x() - s.x(), piece.z() - s.z()) <= s.reach() + IslandDebris.MAX_OUT, "far " + piece);
+                assertEquals(1.0, field.thin(piece.x(), piece.y(), piece.z()), "debris is terrain: " + piece);
+                assertEquals(0.0, field.thin(piece.x(), piece.y() + 1, piece.z()), "air above " + piece);
+                assertEquals(0.0, field.thin(piece.x(), piece.y() - piece.size(), piece.z()), "air below " + piece);
+                for (IslandShape other : field.shapesNear(piece.x(), piece.z())) {
+                    assertTrue(other.interval(piece.x() + 0.5, piece.z() + 0.5) == null
+                            || other.interval(piece.x() + 0.5, piece.z() + 0.5)[0] > piece.y() + IslandDebris.KEEP_CLEAR_Y
+                            || other.interval(piece.x() + 0.5, piece.z() + 0.5)[1] < piece.y() - piece.size() - 1, "in an island: " + piece);
+                }
+                assertTrue(field.waterfallsWithin(piece.minX() - 2, piece.minZ() - 2, piece.maxX() + 2, piece.maxZ() + 2).isEmpty(),
+                        "fall at " + piece);
+                assertTrue(field.liftsWithin(piece.minX() - 2, piece.minZ() - 2, piece.maxX() + 2, piece.maxZ() + 2).isEmpty(), "lift at " + piece);
+            }
+        }
+        System.out.printf("debris: %d pieces round %d islands%n", pieces, islands);
+        assertTrue(pieces > 50, "pieces " + pieces);
     }
 
     // ---------------------------------------------------------------- determinism
@@ -330,6 +376,6 @@ class Ring4LandmarksTest {
     private static String describe(IslandField f, IslandShape s) {
         SkyLakes.Lake lake = f.landmarks().lake(s);
         return s + " " + (lake == null ? "-" : lake.view() + " " + lake.brook()) + " "
-                + f.landmarks().pairs(s).stream().map(p -> p.view() + " " + p.arch()).toList();
+                + f.landmarks().pairs(s).stream().map(p -> p.view() + " " + p.arch()).toList() + " " + f.landmarks().debris(s);
     }
 }

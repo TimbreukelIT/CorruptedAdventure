@@ -111,6 +111,11 @@ final class TreePlan implements LevelSimulatedReader, LevelReader {
         return logs.isEmpty() && leaves.isEmpty();
     }
 
+    /** Every planned position (trunk, roots, leaves, decorations). */
+    Set<BlockPos> planned() {
+        return own.keySet();
+    }
+
     /**
      * Vanilla's {@code TreeFeature.updateLeaves} on the plan: the leaves' distance to the trunk, counted through the
      * tree's own leaves (roots and decorations block the way, as in vanilla). Only the own leaves change.

@@ -1,0 +1,9 @@
+# Ring 4 islands (ring4/islands, 2026-10-20, sparring B1/B2): the island-rich areas for determinism, waterscan and
+# performance. Chunk coordinates, inclusive; seed 20260930, default ring radii.
+# blighted band south and the sky lakes west (as int2.txt)
+tds -23 -462 10 -449
+skyw1 -435 9 -430 14
+skyw2 -446 27 -441 32
+# inner edge east (r ~6150..6400) and the middle of the ring east (lotus_shallows, r ~7000; as perf-r4.txt "lotus")
+inner 383 -8 398 7
+lotus 430 -8 445 7

@@ -40,7 +40,7 @@ record IslandShape(double x, double z, double a, double stretch, double angle, i
     static final double OUTLET_BANK = 4.0;
     static final double OUTLET_BED = 59.0;
     /** The outline reaches at most this far past {@code a · stretch} ({@link Volcano#ragged}: |h| ≤ 0.16). */
-    private static final double RAGGED_REACH = 1.0 / (1.0 - 0.16);
+    static final double RAGGED_REACH = 1.0 / (1.0 - 0.16);
 
     /** Normalised distance from the centre (ragged outline): below 1 inside the island. */
     double distance(double px, double pz) {

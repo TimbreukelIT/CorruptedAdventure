@@ -869,3 +869,10 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-20 | mobs | De Holle was een oude stenen wachter van de overworld (steen/deepslate/mos), de corruptie van ring 5 glijdt over zijn lijf | Tragisch en eng; verbindt ring 1 met ring 5 |
 | 2026-10-20 | mobs | Een scheur laat een klein permanent litteken van ring 5-corruptieblokken achter | De wereld onthoudt dat hij er was; gedrag in fase 5 |
 | 2026-10-20 | mobs | Zijn ziel is versplinterd tot de zielkristallen van Nether-ring 1; later (fase 2) een zwakte tegen hem | Geeft Nether-1 extra betekenis |
+| 2026-10-20 | worldgen | Eilanden aantal (B1-1): binnenrand duidelijk meer, gradiënt blijft; verwacht per cel `0,75 + 3·p^1,2` (~3 % / 12 % / 22 % lucht) | "Klein en ver uit elkaar" zat vooral in de binnenste helft; naar buiten dichter blijft het ontwerp |
+| 2026-10-20 | worldgen | Eilanden maat (B1-2): minder kluiten, middel 25–70 zonder scheefheid, reuzen vanaf p > 0,15 (4 % + 8 %·p), kluiten vooral als satellieten; binnen cel 128 | Grotere eilanden lezen van ver; geen groter raster nodig |
+| 2026-10-20 | worldgen | Eilanden hoogte (B1-3): binnenste helft 15–60 boven de grond, soms twee lagen; buitenste helft zoals nu (tot ~250) | Eilanden dichtbij "doemen op", stapels geven diepte |
+| 2026-10-20 | worldgen | Eilanden gaten (B1-4): elk eiland houdt zijn gat | Kernbesluit 2026-10-10 blijft |
+| 2026-10-20 | worldgen | Eilanden verbindingen (B2-1): rotsboog bij alle geschikte paren (max. één per eiland), ranken blijven zoals ze zijn | Meer beloopbare verbindingen zonder nieuw ranksysteem |
+| 2026-10-20 | worldgen | Bedorven eilandonderkant (B2-2): nu aankleden met dode wortels, grijs mos en gifkristal-knoppen via `island_dressing`/`island_underside` | Sluit de kale onderkant boven `withered_gardens` in dezelfde change af |
+| 2026-10-20 | worldgen | Luchtvulling (B2-3): kleine zwevende brokken (1–4) rond grote eilanden en meer/langere wortelgordijnen onder lage eilanden | "Meer vulling in de lucht" goedkoop en van ver zichtbaar |

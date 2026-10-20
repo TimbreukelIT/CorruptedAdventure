@@ -21,8 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Decor rollout C: the sky landmarks on the test seed and the shape of the giant moonpetal. */
 class SkyLandmarksTest {
-    /** A wedge of each side of ring 4 (block boxes). */
-    private static final int[][] BOXES = {{6000, -900, 7400, 900}, {-7400, -900, -6000, 900}, {-900, 6000, 900, 7400}};
+    /**
+     * A wedge of each side of ring 4 (block boxes), out to the zone 4→5: since the sparring of 2026-10-20 (B1-3) the
+     * inner half's islands hang low and the sky gardens lie mostly in the outer half.
+     */
+    private static final int[][] BOXES = {{6000, -900, 7800, 900}, {-7800, -900, -6000, 900}, {-900, 6000, 900, 7800}};
 
     @Test
     void landmarksAreRareHighAndOnTheirIsland() {
@@ -54,7 +57,8 @@ class SkyLandmarksTest {
         }
         System.out.printf("sky landmarks: %d giant moonpetals, %d ruins%n", moonpetals, ruins);
         assertTrue(moonpetals >= 2 && moonpetals <= 20, "moonpetals " + moonpetals);
-        assertTrue(ruins >= 1 && ruins <= 20, "ruins " + ruins);
+        // About one in seven high islands of radius 11 or more (the larger boxes and the denser field of 2026-10-20).
+        assertTrue(ruins >= 1 && ruins <= 45, "ruins " + ruins);
     }
 
     @Test

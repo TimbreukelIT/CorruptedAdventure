@@ -9,16 +9,18 @@ import nl.timtoys.corruptedadventure.ring.RingPosition;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.DoubleUnaryOperator;
 
 /**
  * Where the islands of ring 4 lie and what belongs to each (package 61), in two pure stages:
  * <ol>
  *   <li>{@link #place}: the islands of one grid cell, from the cell alone (hash, ring layout, base terrain): how many,
- *   how big and how high grow towards ring 5 (at the inner edge now and then, at the outer edge archipelagos); sizes
- *   (diameters) clods 5–15, middle 20–60, giants 80–150; each island's bottom 15–40 above the ground on the inside,
- *   up to ~200 on the outside. Each island with its hole and the reach of its lake stays within one cell of its centre
- *   (review 59 #6) and inside ring 4 proper (the zones are 62 and 63). A low hole whose water lies at the sea level
- *   gets an outlet to the nearest open water.</li>
+ *   how big and how high grow towards ring 5 (sparring 2026-10-20: islands everywhere, the inner edge clearly fuller,
+ *   archipelagos at the outer edge); sizes (diameters) clods 5–15, middle 25–70, giants 80–150 from the middle of the
+ *   ring on; clods mostly as satellites round the bigger islands. Each island's bottom 15–60 above the ground in the
+ *   inner half (in two layers), up to ~200 on the outside. Each island with its hole and the reach of its lake stays
+ *   within one cell of its centre (review 59 #6) and inside ring 4 proper (the zones are 62 and 63). A low hole whose
+ *   water lies at the sea level gets an outlet to the nearest open water.</li>
  *   <li>{@link #details}: per island, from the islands of stage 1 around it and the full surface: the lake level of its
  *   hole (above the sea only on high ground, below the lowest rim), its waterfalls (middle 1–2, giants 2–3, since decor
  *   rollout C one off about four in ten clods of the mythical band: a spring in the top block at the edge, the falling
@@ -29,6 +31,34 @@ import java.util.List;
 final class IslandPlacement {
     private static final long CELL_SALT = 6101;
     private static final int MAX_PER_CELL = 5;
+    /**
+     * Sparring 2026-10-20 (B1-1): islands per cell expected {@code COUNT_BASE + COUNT_RISE · p^COUNT_POWER}. The
+     * sparring's example {@code 0.75 + 3 · p^1.2} covers ~7 / 19 / 26 % of the sky (inner / middle / outer) with the
+     * bigger middle islands of B1-2; these values hit the coverage it aimed at (~3–4 / 12 / 20 %).
+     */
+    static final double COUNT_BASE = 0.45;
+    static final double COUNT_RISE = 2.4;
+    static final double COUNT_POWER = 1.25;
+    /** B1-2: giants from {@code p > GIANT_FROM} with chance {@code GIANT_BASE + GIANT_RISE · p}. */
+    static final double GIANT_FROM = 0.15;
+    static final double GIANT_BASE = 0.04;
+    static final double GIANT_RISE = 0.08;
+    /** B1-2: the share of the other islands that is a middle one (diameter 25–70, even); the rest a lone clod. */
+    static final double MIDDLE_SHARE = 0.8;
+    static final double MIDDLE_MIN = 25.0;
+    static final double MIDDLE_SPREAD = 45.0;
+    /** B1-2: the chance of a middle island to get a satellite clod (giants get 1–3). */
+    static final double SATELLITE_CHANCE = 0.4;
+    /** A clod's thickness as a share of its diameter. */
+    private static final double CLOD_SHARE = 0.7;
+    /** B1-3: the share of the inner half's islands in the upper layer, and where the layers give way to the outside. */
+    static final double UPPER_LAYER = 0.3;
+    static final double LAYERS_TO = 0.5;
+    static final double LAYERS_BLEND = 0.15;
+    /** B1-3: an upper-layer island over a lower one: its centre this share of the lower one's reach off, this far above. */
+    static final double STACK_OFFSET_MIN = 0.2;
+    static final double STACK_OFFSET_SPREAD = 0.6;
+    static final double STACK_GAP = 8.0;
     /** The bottom of an island stays at least this far above the ground under it. */
     static final double MIN_CLEARANCE = 15.0;
     /** The highest top (below the top slide of the stack, 300). */
@@ -103,36 +133,139 @@ final class IslandPlacement {
         }
         double p = Mth.clamp((distance - inner) / (outer - inner), 0.0, 1.0);
         long h = SeededHash.hash(field.hashNoise(), i, j, CELL_SALT);
-        double expected = 0.25 + 3.25 * Math.pow(p, 1.5);
+        double expected = COUNT_BASE + COUNT_RISE * Math.pow(p, COUNT_POWER);
         int count = Math.min(MAX_PER_CELL, (int) expected + (SeededHash.unit(h, 0) < expected - Math.floor(expected) ? 1 : 0));
         List<IslandShape> placed = new ArrayList<>();
-        for (int k = 0; k < count * 4 && placed.size() < count; k++) {
-            IslandShape shape = candidate(field, layout, SeededHash.mix(h + (k + 1) * 0x9E3779B97F4A7C15L), i, j, cell, p);
-            if (shape != null && clearOf(shape, placed)) {
-                placed.add(shape);
+        int primaries = 0;
+        for (int k = 0; k < count * 4 && primaries < count; k++) {
+            long hk = SeededHash.mix(h + (k + 1) * 0x9E3779B97F4A7C15L);
+            IslandShape shape = candidate(field, layout, hk, i, j, cell, p, placed);
+            if (shape == null || !clearOf(shape, placed)) {
+                continue;
+            }
+            placed.add(shape);
+            primaries++;
+            // Sparring 2026-10-20 (B1-2): the clods mostly as satellites round the bigger islands.
+            int wanted = satellites(shape, SeededHash.unit(hk, 11));
+            for (int n = 0; n < wanted * 3 && wanted > 0; n++) {
+                IslandShape satellite = satellite(field, layout, SeededHash.mix(hk + (n + 1) * 0xC2B2AE3D27D4EB4FL), shape, i, j, cell);
+                if (satellite != null && clearOf(satellite, placed)) {
+                    placed.add(satellite);
+                    wanted--;
+                }
             }
         }
         return List.copyOf(placed);
     }
 
+    /** How many satellite clods an island gets for a roll {@code u} in [0, 1): giants 1–3, middle ones 0–1, clods none. */
+    static int satellites(IslandShape shape, double u) {
+        return switch (shape.kind()) {
+            case IslandShape.GIANT -> 1 + (int) (u * 3.0);
+            case IslandShape.MIDDLE -> u < SATELLITE_CHANCE ? 1 : 0;
+            default -> 0;
+        };
+    }
+
+    /**
+     * A primary island of the cell. In the inner half an island of the upper layer stands over a lower middle or giant
+     * island placed before it in the cell (B1-3: now and then two layers above each other), if that one lies over low
+     * ground (its hole holds the sea, so the two holes never take a lake above the sea from each other).
+     */
     @Nullable
-    private static IslandShape candidate(IslandField field, RingLayout layout, long h, int i, int j, int cell, double p) {
+    private static IslandShape candidate(IslandField field, RingLayout layout, long h, int i, int j, int cell, double p,
+                                         List<IslandShape> placed) {
         double u = SeededHash.unit(h, 1);
-        int kind = p > 0.3 && u < 0.015 + 0.06 * p ? IslandShape.GIANT : u < 0.4 + 0.2 * p ? IslandShape.MIDDLE : IslandShape.CLOD;
+        double giant = p > GIANT_FROM ? GIANT_BASE + GIANT_RISE * p : 0.0;
+        int kind = u < giant ? IslandShape.GIANT : u < giant + (1.0 - giant) * MIDDLE_SHARE ? IslandShape.MIDDLE : IslandShape.CLOD;
         double s = SeededHash.unit(h, 2);
         double diameter = switch (kind) {
             case IslandShape.GIANT -> 80.0 + 70.0 * s;
-            case IslandShape.MIDDLE -> 20.0 + 40.0 * s * s;
+            case IslandShape.MIDDLE -> MIDDLE_MIN + MIDDLE_SPREAD * s;
             default -> 5.0 + 10.0 * s;
         };
-        double stretch = 1.0 + (kind == IslandShape.GIANT ? 0.15 : 0.4) * SeededHash.unit(h, 3);
-        double a = diameter / 2.0 / Math.sqrt(stretch);
         double x = (i + SeededHash.unit(h, 4)) * cell;
         double z = (j + SeededHash.unit(h, 5)) * cell;
+        double layer = SeededHash.unit(h, 10);
+        double clearance = clearance(p, SeededHash.unit(h, 9), layer);
+        IslandShape below = layer < UPPER_LAYER && p < LAYERS_TO ? lowerLayer(placed) : null;
+        if (below != null) {
+            double t = SeededHash.unit(h, 4) * Math.PI * 2.0;
+            double off = (STACK_OFFSET_MIN + STACK_OFFSET_SPREAD * SeededHash.unit(h, 5)) * below.reach();
+            double sx = below.x() + off * Math.cos(t);
+            double sz = below.z() + off * Math.sin(t);
+            if (Math.floorDiv(Mth.floor(sx), cell) == i && Math.floorDiv(Mth.floor(sz), cell) == j) {
+                double floor = below.highest() + STACK_GAP;
+                IslandShape upper = shape(field, layout, h, sx, sz, kind, diameter, cell, highest -> Math.max(highest + clearance, floor));
+                return upper == null || upper.groundY() > IslandShape.SEA_LEVEL + 1.0 ? null : upper;
+            }
+        }
+        return shape(field, layout, h, x, z, kind, diameter, cell, highest -> highest + clearance);
+    }
+
+    /** The first middle or giant island of the cell over low ground, for an upper-layer island to stand over; or null. */
+    @Nullable
+    private static IslandShape lowerLayer(List<IslandShape> placed) {
+        for (IslandShape shape : placed) {
+            if ((shape.kind() == IslandShape.MIDDLE || shape.kind() == IslandShape.GIANT) && shape.groundY() <= IslandShape.SEA_LEVEL + 1.0) {
+                return shape;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The clearance of an island's bottom over the highest ground under it (sparring 2026-10-20, B1-3): in the inner
+     * half 15–60 in two layers (mostly a low one 15–35, now and then a high one 40–60, so the islands come close and
+     * now and then hang above each other); towards ring 5 as before (up to ~200), blended in over
+     * {@link #LAYERS_BLEND} of the ring's width past {@link #LAYERS_TO}.
+     */
+    static double clearance(double p, double v, double layer) {
+        double layered = layer < UPPER_LAYER ? 40.0 + 20.0 * v : MIN_CLEARANCE + 20.0 * v;
+        double outer = Mth.lerp(Math.pow(p, 1.3), MIN_CLEARANCE + 25.0 * v, MIN_CLEARANCE + 185.0 * v);
+        double t = Mth.clamp((p - LAYERS_TO) / LAYERS_BLEND, 0.0, 1.0);
+        return Mth.lerp(t * t * (3.0 - 2.0 * t), layered, outer);
+    }
+
+    /**
+     * A satellite clod of {@code parent} (B1-2): beside it, a few blocks past its edge, its top about level with the
+     * parent's torn edge. On high ground (where the parent's hole may hold a lake above the sea) it keeps out of the
+     * band in which its own hole would take that lake away ({@link #alone}). Its centre stays in the parent's cell.
+     */
+    @Nullable
+    private static IslandShape satellite(IslandField field, RingLayout layout, long h, IslandShape parent, int i, int j, int cell) {
+        double diameter = 5.0 + 10.0 * SeededHash.unit(h, 2);
+        // The farthest a clod of this diameter reaches (stretch at most 1.4).
+        double clodReach = diameter / 2.0 * Math.sqrt(1.4) * IslandShape.RAGGED_REACH + 1.0;
+        double gap = 3.0 + 12.0 * SeededHash.unit(h, 9);
+        double distance = parent.reach() + clodReach + gap;
+        if (parent.groundY() > IslandShape.SEA_LEVEL + 1.0) {
+            distance = Math.max(distance, (parent.reach() + clodReach) * IslandShape.HOLE_SCALE + IslandShape.CAVE_BAND + 4.0 + gap);
+        }
+        double t = SeededHash.unit(h, 10) * Math.PI * 2.0;
+        double x = parent.x() + distance * Math.cos(t);
+        double z = parent.z() + distance * Math.sin(t);
+        if (Math.floorDiv(Mth.floor(x), cell) != i || Math.floorDiv(Mth.floor(z), cell) != j) {
+            return null;
+        }
+        double top = parent.top() - parent.edgeDepth() + (SeededHash.unit(h, 11) - 0.6) * 14.0;
+        return shape(field, layout, h, x, z, IslandShape.CLOD, diameter, cell, highest -> top - 1.0 - diameter * CLOD_SHARE);
+    }
+
+    /**
+     * One island of {@code kind} and {@code diameter} at (x, z): its outline and thickness from {@code h}, its bottom at
+     * {@code bottom(highest ground under its footprint)} but at least {@link #MIN_CLEARANCE} above that ground, its
+     * outlet. Null if it does not fit (cell, ring 4 proper, highest top).
+     */
+    @Nullable
+    private static IslandShape shape(IslandField field, RingLayout layout, long h, double x, double z, int kind, double diameter,
+                                     int cell, DoubleUnaryOperator bottom) {
+        double stretch = 1.0 + (kind == IslandShape.GIANT ? 0.15 : 0.4) * SeededHash.unit(h, 3);
+        double a = diameter / 2.0 / Math.sqrt(stretch);
         double angle = SeededHash.unit(h, 6) * Math.PI;
         int lobes = 2 + (int) (SeededHash.unit(h, 7) * 3.0);
         double phase = SeededHash.unit(h, 8) * Math.PI * 2.0;
-        double share = kind == IslandShape.GIANT ? 0.45 : kind == IslandShape.MIDDLE ? 0.55 : 0.7;
+        double share = kind == IslandShape.GIANT ? 0.45 : kind == IslandShape.MIDDLE ? 0.55 : CLOD_SHARE;
         double thickness = diameter * share / IslandShape.MAX_UNDERSIDE;
         IslandShape probe = new IslandShape(x, z, a, stretch, angle, lobes, phase, 0.0, thickness, 0.0, kind, Double.NaN, Double.NaN);
         if (probe.groundReach() > cell || !insideRing4(layout, x, z, probe.groundReach())) {
@@ -146,12 +279,8 @@ final class IslandPlacement {
             double t = n * Math.PI / 4.0;
             highest = Math.max(highest, field.baseHeight(x + reach * Math.cos(t), z + reach * Math.sin(t)));
         }
-        double v = SeededHash.unit(h, 9);
-        double low = MIN_CLEARANCE + 25.0 * v;
-        double high = MIN_CLEARANCE + 185.0 * v;
-        double clearance = Mth.lerp(Math.pow(p, 1.3), low, high);
-        double top = highest + clearance + thickness * IslandShape.MAX_UNDERSIDE + 1.0;
-        top = Math.min(top, MAX_TOP);
+        double low = Math.max(bottom.applyAsDouble(highest), highest + MIN_CLEARANCE);
+        double top = Math.min(low + thickness * IslandShape.MAX_UNDERSIDE + 1.0, MAX_TOP);
         if (top - 1.0 - thickness * IslandShape.MAX_UNDERSIDE < highest + MIN_CLEARANCE) {
             return null;
         }
@@ -314,6 +443,12 @@ final class IslandPlacement {
             if (!other.equals(shape) && other.holeDistance(x, z) < 1.0) {
                 return false;
             }
+        }
+        // A peat sinkhole's bowl is cut per block and may lie dry under the sea level (only the sea plane and the holes
+        // hold water): surfaceUncached counts its floor as the ground, so it would pass for water (seen with the denser
+        // islands of 2026-10-20). No fall or lift over one.
+        if (field.inSinkhole(x, z)) {
+            return false;
         }
         // One block of margin for the terrain's interpolation.
         return field.surfaceUncached(x, z) <= waterTop - 1.0;

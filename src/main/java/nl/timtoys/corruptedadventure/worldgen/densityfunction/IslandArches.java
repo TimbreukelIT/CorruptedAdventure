@@ -11,24 +11,25 @@ import java.util.List;
  * The island pairs of ring 4 and the rock arches between some of them (74, Q8 = A). A pair is two islands whose facing
  * edges lie {@link #MIN_GAP}–{@link #MAX_GAP} blocks apart along the line between their centres, at most
  * {@link #MAX_STEP} apart in height (W-biomes hangs vines between them, 75); each island pairs with its
- * {@link #PARTNERS} nearest islands after it (by x, then z), so a pair is found once. About one in two pairs of two
- * middle or giant islands {@link #ARCH_MIN_GAP}–{@link #ARCH_MAX_GAP} apart, their facing tops close enough for a
- * walkable deck ({@link #ARCH_STEP}, {@link #ARCH_SLOPE}), gets a natural rock arch: a deck rising a little in the
- * middle, thicker and wider where it grows out of each island, rounded underneath. An arch keeps away from other
- * islands, from every fall, spring and lift, from the sky lakes and the world trees. Pure, decided once per island and
- * world.
+ * {@link #PARTNERS} nearest islands after it (by x, then z), so a pair is found once. A pair of two middle or giant
+ * islands {@link #ARCH_MIN_GAP}–{@link #ARCH_MAX_GAP} apart, their facing tops close enough for a walkable deck
+ * ({@link #ARCH_STEP}, {@link #ARCH_SLOPE}), may get a natural rock arch: a deck rising a little in the middle, thicker
+ * and wider where it grows out of each island, rounded underneath. An arch keeps away from other islands, from every
+ * fall, spring and lift, from the sky lakes and the world trees. Sparring 2026-10-20 (B2-1): every such pair
+ * ({@link #ARCH_CHANCE} 1, was 0.5), but at most one arch per island: of two candidate arches that share an island the
+ * one with the smaller gap wins ({@link #archKept}). Pure, decided once per island and world.
  */
 final class IslandArches {
     static final double MIN_GAP = 3.0;
     static final double MAX_GAP = 40.0;
     static final int MAX_STEP = 40;
     static final int PARTNERS = 3;
-    static final double ARCH_CHANCE = 0.5;
+    static final double ARCH_CHANCE = 1.0;
     static final double ARCH_MIN_GAP = 6.0;
     static final double ARCH_MAX_GAP = 32.0;
-    static final int ARCH_STEP = 12;
+    static final int ARCH_STEP = 20;
     /** The facing tops differ at most this much per block of gap (the deck stays walkable). */
-    static final double ARCH_SLOPE = 0.4;
+    static final double ARCH_SLOPE = 0.7;
     /** How far (blocks) an arch reaches into each island, so it grows out of it. */
     static final double ANCHOR = 3.0;
     /** The free space (blocks) an arch keeps from falls, springs, lifts and sky lakes, and over and under other islands. */
@@ -42,8 +43,16 @@ final class IslandArches {
     record Edge(int x, int z, int top, int bottom) {
     }
 
-    /** Two nearby islands, their facing edges, the gap between them (blocks) and the arch between them (or null). */
-    record Pair(IslandShape first, IslandShape second, Edge a, Edge b, double gap, @Nullable Arch arch) {
+    /**
+     * Two nearby islands, their facing edges, the gap between them (blocks) and the arch between them (or null).
+     * {@code archOnly}: not one of the first island's {@link #PARTNERS} nearest, only there for its arch (B2-1); without
+     * an arch such a pair is dropped (no vines).
+     */
+    record Pair(IslandShape first, IslandShape second, Edge a, Edge b, double gap, @Nullable Arch arch, boolean archOnly) {
+        Pair withArch(@Nullable Arch arch) {
+            return new Pair(first, second, a, b, gap, arch, archOnly);
+        }
+
         IslandField.IslandPair view() {
             return new IslandField.IslandPair(first.view(), second.view(), a.x(), a.z(), a.top(), a.bottom(),
                     b.x(), b.z(), b.top(), b.bottom(), arch != null);
@@ -120,7 +129,54 @@ final class IslandArches {
         return a.x() < b.x() || a.x() == b.x() && a.z() < b.z();
     }
 
-    /** The pairs an island starts (with islands after it), each with its arch if it has one. */
+    /** Which of two candidate arches that share an island wins: the smaller gap, then the positions. */
+    static final Comparator<Pair> RANK = Comparator.comparingDouble(Pair::gap)
+            .thenComparingDouble(p -> p.first().x()).thenComparingDouble(p -> p.first().z())
+            .thenComparingDouble(p -> p.second().x()).thenComparingDouble(p -> p.second().z());
+
+    /**
+     * Whether a candidate arch stays (B2-1, like {@link IslandPlacement#kept}): unless another candidate arch of one of
+     * its two islands ranks before it ({@link #RANK}) and itself stays. The recursion only climbs in rank, so it ends;
+     * the answer depends on nothing but the candidates.
+     */
+    static boolean archKept(IslandField field, Pair pair) {
+        for (IslandShape island : List.of(pair.first(), pair.second())) {
+            for (Pair other : field.landmarks().archCandidates(island)) {
+                if (!other.equals(pair) && RANK.compare(other, pair) < 0 && field.landmarks().archKept(other)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** The pairs with a candidate arch that an island is part of: those it starts and those an earlier island starts. */
+    static List<Pair> archCandidatesOf(IslandField field, IslandShape island) {
+        List<Pair> found = new ArrayList<>();
+        for (Pair pair : field.landmarks().candidatePairs(island)) {
+            if (pair.arch() != null) {
+                found.add(pair);
+            }
+        }
+        double reach = island.reach() + IslandField.MAX_REACH + MAX_GAP;
+        for (IslandShape other : field.shapesWithin(Mth.floor(island.x() - reach), Mth.floor(island.z() - reach),
+                Mth.floor(island.x() + reach), Mth.floor(island.z() + reach))) {
+            if (other.kind() == IslandShape.TREE || !before(other, island)) {
+                continue;
+            }
+            for (Pair pair : field.landmarks().candidatePairs(other)) {
+                if (pair.arch() != null && pair.second().equals(island)) {
+                    found.add(pair);
+                }
+            }
+        }
+        return List.copyOf(found);
+    }
+
+    /**
+     * The pairs an island starts (with islands after it), each with its candidate arch if it may have one (whether the
+     * arch stays is {@link #archKept}).
+     */
     static List<Pair> pairsOf(IslandField field, IslandShape island) {
         if (island.kind() == IslandShape.TREE) {
             return List.of();
@@ -142,14 +198,17 @@ final class IslandArches {
             }
         }
         found.sort(Comparator.comparingDouble(Pair::gap).thenComparingDouble(p -> p.second().x()).thenComparingDouble(p -> p.second().z()));
-        List<Pair> nearest = found.subList(0, Math.min(PARTNERS, found.size()));
         List<Pair> result = new ArrayList<>();
-        // Review 74 #3: at most one arch from an island (its nearest pair that gets one), so its arches never cross.
-        boolean arched = false;
-        for (Pair pair : nearest) {
-            Arch arch = arched ? null : arch(field, pair);
-            arched |= arch != null;
-            result.add(arch == null ? pair : new Pair(pair.first(), pair.second(), pair.a(), pair.b(), pair.gap(), arch));
+        for (int n = 0; n < found.size(); n++) {
+            Pair pair = found.get(n);
+            Arch arch = arch(field, pair);
+            if (n < PARTNERS) {
+                result.add(pair.withArch(arch));
+            } else if (arch != null) {
+                // B2-1: every suitable pair is a candidate for an arch, also beyond the nearest partners (the satellite
+                // clods often are those).
+                result.add(new Pair(pair.first(), pair.second(), pair.a(), pair.b(), pair.gap(), arch, true));
+            }
         }
         return List.copyOf(result);
     }
@@ -194,7 +253,7 @@ final class IslandArches {
         if (gap < MIN_GAP || gap > MAX_GAP || Math.abs(a.top() - b.top()) > MAX_STEP) {
             return null;
         }
-        return new Pair(first, second, a, b, gap, null);
+        return new Pair(first, second, a, b, gap, null, false);
     }
 
     /** The arch of a pair, if it gets one and it stays clear; else null. */

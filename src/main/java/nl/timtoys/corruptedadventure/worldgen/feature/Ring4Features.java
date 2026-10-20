@@ -36,6 +36,8 @@ public final class Ring4Features {
             ground(Ring4MythicFeatures.ISLAND_UNDERSIDES),
             // Decor rollout C: the living undersides of the mythical band's islands, after the strands.
             ground(SkyGardensFeatures.ISLAND_DRESSINGS),
+            // Sparring 2026-10-20 (B2-2): the dead undersides of the blighted band's islands.
+            ground(SkyGardensFeatures.ISLAND_DRESSINGS_BLIGHTED),
             ground(Ring4MythicFeatures.ISLAND_VINES),
             // verdant_falls: the moss carpets on the treads, the climbing strands under the ledges.
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_MOSS_CARPETS, ModBiomes.VERDANT_FALLS),
