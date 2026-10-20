@@ -1,0 +1,8 @@
+# Ring 4 relief (ring4/relief, 2026-10-20): one area per land biome with new relief, for the before/after contact
+# sheets, the determinism check (det.sh), the waterscan and the poison scan. Chunk coordinates, inclusive; seed 20260930,
+# default ring radii. Areas from decor.txt (fjord, cascade), decor-b.txt (peat, reed) and decor-a.txt (swamp).
+fjord 402 170 411 179
+cascade -442 -5 -433 4
+peat 25 -466 32 -455
+reed 1 -478 10 -469
+swamp 430 -31 439 -20

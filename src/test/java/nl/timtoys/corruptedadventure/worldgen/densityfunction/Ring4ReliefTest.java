@@ -280,7 +280,10 @@ class Ring4ReliefTest {
         int coreLevel;
         /** Fjord rim (fjord weight > 0.9, |cut − plateau| ≤ 4, no river or hole): the rendered top's difference. */
         final List<Integer> rimTop = new ArrayList<>();
+        /** The wall (cut 4 or more below the plateau): how far the rendered top lies beyond the wall's roughness. */
         final List<Integer> wallTop = new ArrayList<>();
+        /** The rough wall (roughness >= 3 blocks): the rendered top's difference from the smooth exact surface. */
+        final List<Integer> roughTop = new ArrayList<>();
         /** The plateau just behind the rim (cut 4..12 above it): where a cell's corner may still lie on the wall. */
         final List<Integer> behindTop = new ArrayList<>();
         final List<Double> plateauBumps = new ArrayList<>();
@@ -318,7 +321,7 @@ class Ring4ReliefTest {
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n; j++) {
                     Ring4Relief.Sample s = new Ring4Relief.Sample();
-                    relief.sample(x0 + i, z0 + j, band.value(x0 + i, z0 + j), s, field.salt());
+                    field.sampleRelief(x0 + i, z0 + j, s);
                     samples[i][j] = s;
                     h[i][j] = s.height;
                 }
@@ -363,12 +366,61 @@ class Ring4ReliefTest {
                             if (Math.abs(s.fjordRim) <= 4.0) {
                                 rimTop.add(rendered);
                             } else if (s.fjordRim < -4.0) {
-                                wallTop.add(rendered);
+                                wallTop.add(Math.max(0, rendered - (int) Math.ceil(s.wallRough)));
+                                if (s.wallRough >= 3.0) {
+                                    roughTop.add(rendered);
+                                }
                             } else if (s.fjordRim <= 12.0) {
                                 behindTop.add(rendered);
                             }
                         }
                     }
+                    if (s.wallRough > 0.0 && renderedTopDifference(x0 + i, z0 + j) != null) {
+                        roughWall(s, x0 + i, z0 + j);
+                    }
+                }
+            }
+        }
+
+        /** Rough wall columns (any fjord weight): over the blended plateau, per block as the roughness says, tunnels. */
+        int roughColumns;
+        int blendColumns;
+        int overPlateau;
+        int overBlendedPlateau;
+        int notAsRough;
+        int tunnelsNearFace;
+
+        private void roughWall(Ring4Relief.Sample s, int x, int z) {
+            roughColumns++;
+            int top = renderedTop(field, x, z);
+            // The blended plateau, or less (the rim's rounding lowers the cut): rock stays under it (review relief #1).
+            double plateau = s.height - s.fjordLand * s.fjordRim;
+            if (s.fjordLand < 0.9) {
+                blendColumns++;
+                overBlendedPlateau += top >= plateau ? 1 : 0;
+            } else {
+                overPlateau += top >= plateau ? 1 : 0;
+            }
+            notAsRough += top != expectedTop(x, z) ? 1 : 0;
+            // Review relief #2: the net's ceilings stay under the face the roughness may cut.
+            IslandField.Column c = field.column(x, z);
+            Ring4Tunnels.Span span = field.tunnelSpan(x, z);
+            if (span != null) {
+                for (int k = 0; k < span.n; k++) {
+                    tunnelsNearFace += span.hi[k] >= c.surface() - c.wallRough - 1.0 ? 1 : 0;
+                }
+            }
+        }
+
+        /** The top block of a rough wall's column as its roughness cuts it, block by block (independent of the band). */
+        private static int expectedTop(int x, int z) {
+            IslandField.Column c = field.column(x, z);
+            field.thin(x, (int) Math.floor(c.surface()), z);
+            c = field.column(x, z);
+            double amplitude = c.roughAmplitude;
+            for (int y = (int) Math.ceil(c.surface() + amplitude) + 1; ; y--) {
+                if (y < c.surface() + amplitude * field.roughness(x, y, z)) {
+                    return y;
                 }
             }
         }
@@ -450,10 +502,12 @@ class Ring4ReliefTest {
 
         /** The top solid block of a column as the stack builds it (caves aside): {@code thin}, else the grid's surface. */
         static int renderedTop(IslandField field, int x, int z) {
-            double exact = field.column(x, z).surface();
+            IslandField.Column c = field.column(x, z);
+            double exact = c.surface();
+            double rough = c.wallRough;
             double bilinear = field.gridSurface(x, z);
-            int from = (int) Math.ceil(Math.max(exact, bilinear)) + 3;
-            int to = (int) Math.floor(Math.min(exact, bilinear)) - 3;
+            int from = (int) Math.ceil(Math.max(exact + rough, bilinear)) + 3;
+            int to = (int) Math.floor(Math.min(exact - rough, bilinear)) - 3;
             for (int y = from; y >= to; y--) {
                 double thin = field.thin(x, y, z);
                 if (thin >= 0.5 || thin >= -0.5 && y < bilinear) {
@@ -477,10 +531,11 @@ class Ring4ReliefTest {
             System.out.printf("level (slope < 0.05): cascade area %.3f (%d), core %.3f, blend %.3f; steep (>= 0.6) %.3f%n", flat(g.cascadeSlope),
                     g.cascadeSlope.size(), flat(g.coreSlope), flat(g.blendSlope),
                     g.cascadeSlope.stream().filter(v -> v >= 0.6).count() / (double) g.cascadeSlope.size());
-            System.out.printf("fjord rim %d columns: top off >=1 %.4f >=2 %.4f; wall %d: >=1 %.4f >=2 %.4f; behind the rim %d: >=1 %.4f >=2 %.4f; plateau bumps %d: median %.3f p90 %.3f%n",
+            System.out.printf("fjord rim %d columns: top off >=1 %.4f >=2 %.4f; wall %d: beyond its roughness >=1 %.4f >=2 %.4f; rough wall %d: off >=2 %.4f >=4 %.4f; behind the rim %d: >=1 %.4f >=2 %.4f; plateau bumps %d: median %.3f p90 %.3f max %.3f%n",
                     g.rimTop.size(), share(g.rimTop, 1), share(g.rimTop, 2), g.wallTop.size(), share(g.wallTop, 1), share(g.wallTop, 2),
+                    g.roughTop.size(), share(g.roughTop, 2), share(g.roughTop, 4),
                     g.behindTop.size(), share(g.behindTop, 1), share(g.behindTop, 2),
-                    g.plateauBumps.size(), quantile(g.plateauBumps, 0.5), quantile(g.plateauBumps, 0.9));
+                    g.plateauBumps.size(), quantile(g.plateauBumps, 0.5), quantile(g.plateauBumps, 0.9), quantile(g.plateauBumps, 1.0));
         }
         return survey;
     }
@@ -512,7 +567,8 @@ class Ring4ReliefTest {
         GridSurvey g = survey();
         assertTrue(g.cellError.size() > 20_000, "cells " + g.cellError.size());
         assertTrue(quantile(g.cellError, 0.99) <= 0.6, "p99 " + quantile(g.cellError, 0.99));
-        assertTrue(quantile(g.cellError, 1.0) <= 1.5, "max " + quantile(g.cellError, 1.0));
+        // The rolling under the terraces (2026-10-20) steepens the rise in rare spots: a narrower riser (max 1.5 → 2).
+        assertTrue(quantile(g.cellError, 1.0) <= 2.0, "max " + quantile(g.cellError, 1.0));
         // An error over 1 can still put the top block 2 off where it straddles two whole blocks: once in ~66,000.
         assertTrue(share(g.cellTop, 2) <= 0.0001, "top block 2 off " + share(g.cellTop, 2));
         // The whole core, with the steep seams to other landforms: rare.
@@ -530,13 +586,15 @@ class Ring4ReliefTest {
         GridSurvey g = survey();
         assertTrue(g.coreLevel / (double) g.coreError.size() > 0.6, "on a level " + g.coreLevel / (double) g.coreError.size());
         assertTrue(flat(g.coreSlope) > 0.72, "core " + flat(g.coreSlope));
-        assertTrue(flat(g.blendSlope) > 0.5, "blend " + flat(g.blendSlope));
+        // The cascades' rolling (2026-10-20) tilts the blends a little (0.56 → 0.51).
+        assertTrue(flat(g.blendSlope) > 0.45, "blend " + flat(g.blendSlope));
         assertTrue(flat(g.cascadeSlope) > 0.66, "cascade area " + flat(g.cascadeSlope));
     }
 
     /**
      * Q6: a fjord's rim and wall are cut per block ({@code thin}), so the stack shows them exactly, no sawtooth on the
-     * grid (before: 38 % of the rim's columns 2 or more blocks off, up to 6).
+     * grid (before: 38 % of the rim's columns 2 or more blocks off, up to 6). The wall's roughness (2026-10-20) moves
+     * its face on purpose, within its own range; the rim stays as cut.
      */
     @Test
     void fjordRimsAreExactPerBlock() {
@@ -544,17 +602,76 @@ class Ring4ReliefTest {
         assertTrue(g.rimTop.size() > 500 && g.wallTop.size() > 5000, "rim " + g.rimTop.size() + ", wall " + g.wallTop.size());
         assertTrue(share(g.rimTop, 1) <= 0.01, "rim off " + share(g.rimTop, 1));
         assertEquals(0.0, share(g.rimTop, 2), "rim 2 off");
-        assertTrue(share(g.wallTop, 2) <= 0.002, "wall 2 off " + share(g.wallTop, 2));
+        assertTrue(share(g.wallTop, 2) <= 0.002, "wall 2 off beyond its roughness " + share(g.wallTop, 2));
         assertTrue(share(g.behindTop, 1) <= 0.01, "behind the rim off " + share(g.behindTop, 1));
     }
 
-    /** H6: the fjord plateaus read as flat land: their bumps around the plane are small (before: median 0.13). */
+    /**
+     * Review relief: a rough wall's rock never rises over the (blended) plateau, also where the fjord blends into another
+     * landform; every column's top is exactly what its roughness cuts (the band covers it); the net's ceilings stay under
+     * the face the roughness may cut.
+     */
     @Test
-    void fjordPlateausAreCalm() {
+    void roughWallsStayUnderThePlateauAndFollowTheirRoughness() {
+        GridSurvey g = survey();
+        System.out.printf("rough wall columns %d (blend %d): over the plateau %d, over the blended plateau %d, not as rough %d, tunnels near the face %d%n",
+                g.roughColumns, g.blendColumns, g.overPlateau, g.overBlendedPlateau, g.notAsRough, g.tunnelsNearFace);
+        assertTrue(g.roughColumns > 1000 && g.blendColumns > 50, "rough " + g.roughColumns + ", blend " + g.blendColumns);
+        assertEquals(0, g.overPlateau, "over the plateau");
+        assertEquals(0, g.overBlendedPlateau, "over the blended plateau");
+        assertEquals(0, g.notAsRough, "not as rough");
+        assertEquals(0, g.tunnelsNearFace, "tunnels near the face");
+    }
+
+    /** A2-3 (2026-10-20): the fjords' walls are rough (ledges, jutting rock), not a straight striped face. */
+    @Test
+    void fjordWallsAreRough() {
+        GridSurvey g = survey();
+        assertTrue(g.roughTop.size() > 1000, "rough wall columns " + g.roughTop.size());
+        assertTrue(share(g.roughTop, 2) > 0.2, "rough wall 2 off " + share(g.roughTop, 2));
+    }
+
+    /**
+     * A2-3 (2026-10-20): hills and rock knobs on the fjord plateaus (before: median 0.05, the plateaus read flat), within
+     * the small relief of A1-2.
+     */
+    @Test
+    void fjordPlateausHaveHillsAndKnobs() {
         GridSurvey g = survey();
         assertTrue(g.plateauBumps.size() > 50, "plateau samples " + g.plateauBumps.size());
-        assertTrue(quantile(g.plateauBumps, 0.5) < 0.07, "median " + quantile(g.plateauBumps, 0.5));
-        assertTrue(quantile(g.plateauBumps, 0.9) < 0.15, "p90 " + quantile(g.plateauBumps, 0.9));
+        assertTrue(quantile(g.plateauBumps, 0.5) > 0.25, "median " + quantile(g.plateauBumps, 0.5));
+        assertTrue(quantile(g.plateauBumps, 1.0) < 0.5 * (Ring4Relief.FJORD_HILL + Ring4Relief.FJORD_KNOB),
+                "max " + quantile(g.plateauBumps, 1.0));
+    }
+
+    /**
+     * A2-1 (2026-10-20): the moors get hummocks and low ridges, the hollows between them stay above the sea (no new
+     * water: A1-4), and nothing rises more than the small relief of A1-2.
+     */
+    @Test
+    void peatHasHummocksAboveTheSea() {
+        Ring4Relief relief = field.relief();
+        int peat = 0;
+        int raised = 0;
+        double low = Double.MAX_VALUE;
+        double most = 0.0;
+        for (double[] c : COLUMNS) {
+            Ring4Relief.Sample s = new Ring4Relief.Sample();
+            field.sampleRelief(c[0], c[1], s);
+            if (s.peat < 0.99 || s.riverDepth > 0.0) {
+                continue;
+            }
+            peat++;
+            double hummocks = relief.hummocks(c[0], c[1]);
+            raised += hummocks > 2.0 ? 1 : 0;
+            most = Math.max(most, hummocks);
+            low = Math.min(low, s.height);
+        }
+        System.out.printf("peat %d columns: hummocks > 2 %.3f, highest %.2f, lowest ground %.2f%n", peat, raised / (double) peat, most, low);
+        assertTrue(peat > 100, "peat columns " + peat);
+        assertTrue(raised / (double) peat > 0.25 && raised / (double) peat < 0.8, "raised " + raised / (double) peat);
+        assertTrue(most <= Ring4Relief.MOUND_MAX + Ring4Relief.RIDGE, "highest " + most);
+        assertTrue(low >= Ring4Relief.SEA + 1.0, "lowest " + low);
     }
 
     @Test

@@ -880,3 +880,16 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-20 | worldgen | Rotsbogen: dekhelling tot 0,7 per blok en 20 hoogteverschil (was 0,4 / 12) | Anders kwamen er door de gelaagde hoogtes nauwelijks bogen bij (8 i.p.v. 7, nu 14 in de testwig) |
 | 2026-10-20 | worldgen | Bedorven onderkant: "grijs mos" = hangend moerasmos + geworteld aardeblok met hangwortels; eigen blok blijft backlog | Bestaande blokken volstaan voorlopig |
 | 2026-10-20 | worldgen | Minder meren boven zee (20 → 10 in de testwig) door de dichtere eilanden: akkoord, bekijken bij de vlucht | Gevolg van het kernbesluit "elk eiland een gat" |
+| 2026-10-20 | worldgen | Reliëf ring 4 (A1-1): reliëf in alle landbiomes, elk in zijn eigen stijl | Teststop 5b: overal vlak; biome-karakters blijven |
+| 2026-10-20 | worldgen | Reliëf ring 4 (A1-2): klein hoogteverschil, +5–15 boven het huidige land | Laag risico voor water, aankleding, eilanden; ring 4 blijft lager dan ring 3 |
+| 2026-10-20 | worldgen | Reliëf ring 4 (A1-3): de "strepen" zijn de lange contourlijnen van 1 blok op de vlakke veen-/rietvlakten | Niet de cascadeterrassen of de fjordwanden |
+| 2026-10-20 | worldgen | Reliëf ring 4 (A1-4): land/water blijft ~50/50; reliëf alleen omhoog op bestaand land, dalen ≥ Y 64 of bewust rivier/zee; lagune en lotus ongewijzigd | Besluit 2026-10-10 (50/50) en de vlakke zee |
+| 2026-10-20 | worldgen | Reliëf ring 4 (A2-1): `peat_moors`/`reed_marsh` bulten en lage ruggen (2–8) met kommen; zinkgaten blijven; korte detailruis tegen de contourlijnen | Hoogveen; plassen en gifpoelen vallen in de gesloten kommen |
+| 2026-10-20 | worldgen | Reliëf ring 4 (A2-2): `cascade_vale` treden van 8 blijven, alleen +5–15 glooiing eronder | Minder strak, karakter goedgekeurd in 5a2 |
+| 2026-10-20 | worldgen | Reliëf ring 4 (A2-3): `mist_fjords` heuvels en rotsknobbels op het plateau en ruwere wanden (richels, uitstekende rotsen zoals de klif uit 5a), exact per blok | Fjordwand nu een lange rechte gestreepte muur; 4×4-raster maakt anders zaagtanden |
+| 2026-10-20 | worldgen | Reliëf ring 4 (A-W): alle biomes in één change, één afstemronde | Geen apart proefstuk nodig |
+| 2026-10-20 | worldgen | Reliëf ring 4, interpretatie team-lead (door de gebruiker te corrigeren): `glowroot_swamp` zachte golving binnen het kleine bereik met behoud van water; `crystal_lagoon`, `lotus_shallows`, `drowned_forest`, `verdant_falls` en `sundered_reach` ongewijzigd | Waterbiomes onder zee (A1-4); overgangen buiten de vraag |
+| 2026-10-20 | worldgen | Reliëf ring 4: gifpoelen in het veen ×0,2 accepteren; `toxic_pool` vaker laten proberen in de veenkommen bij de decor-hercheck | Bulten geven minder vlakke plekken; decor volgt |
+| 2026-10-20 | worldgen | Reliëf ring 4: afbakening akkoord (moeras zachte golving; lagune, lotus, drowned_forest, verdant_falls, sundered_reach ongewijzigd; zonemarge 24 + 64 blokken) | Interpretatie team-lead bevestigd |
+| 2026-10-20 | worldgen | Reliëf ring 4: cascadeglooiing 0–12 blijft; beoordelen bij de vlucht | Subtiel op de beelden, eerst in-game zien |
+| 2026-10-20 | worldgen | Reliëf ring 4: fjordwandruwheid ±6 blijft | Gebruiker tevreden |

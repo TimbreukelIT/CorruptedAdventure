@@ -326,7 +326,8 @@ public final class Ring4Tunnels {
                 int gz = qz + dz;
                 Double known = ground.get(KeyedSlots.key(gx, gz));
                 if (known == null) {
-                    known = field.surfaceUncached(gx, gz);
+                    // The face of a rough fjord wall may lie its roughness under the surface (relief 2026-10-20).
+                    known = field.faceUncached(gx, gz);
                     ground.put(KeyedSlots.key(gx, gz), known);
                 }
                 lowest = Math.min(lowest, known);
@@ -359,10 +360,8 @@ public final class Ring4Tunnels {
             for (int sj = Math.floorDiv(Mth.floor(z - reach), cell); sj <= Math.floorDiv(Mth.floor(z + reach), cell); sj++) {
                 double[] hole = Ring4Relief.sinkhole(si, sj, field.salt());
                 if (hole != null && Math.hypot(hole[0] - x, hole[1] - z) - hole[2] <= ring) {
-                    double f = sinkFloor(si, sj, hole);
-                    if (!Double.isNaN(f)) {
-                        floor = Math.min(floor, f);
-                    }
+                    // The deepest floor, not the centre's: on a slope the bowl is deepest on its low side.
+                    floor = Math.min(floor, field.deepestSinkholeFloor(si, sj, hole));
                 }
             }
         }
@@ -815,11 +814,14 @@ public final class Ring4Tunnels {
         return null;
     }
 
-    /** A sinkhole's floor at its centre (its deepest), NaN where the peat does not cut it; remembered per world. */
+    /**
+     * A sinkhole's floor at its centre, NaN where the peat does not cut it; remembered per world. The entrances meet the
+     * bowl there and a dry bowl is decided by it; a bound of the ground takes {@link IslandField#deepestSinkholeFloor}.
+     */
     private double sinkFloor(int si, int sj, double[] hole) {
         return memo().once(memo().sinkFloors, KeyedSlots.key(si, sj), () -> {
             Ring4Relief.Sample s = new Ring4Relief.Sample();
-            field.relief().sample(hole[0], hole[1], Ring4Band.of(field.ringLayout()).value(hole[0], hole[1]), s, field.salt());
+            field.sampleRelief(hole[0], hole[1], s);
             return s.sinkholeFloor;
         });
     }

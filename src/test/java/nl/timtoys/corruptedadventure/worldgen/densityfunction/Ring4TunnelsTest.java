@@ -207,7 +207,7 @@ class Ring4TunnelsTest {
                 return false;
             }
             double grid = field.gridSurface(x, z);
-            if (y >= Math.min(c.surface, grid) - 1.0) {
+            if (y >= Math.min(c.surface - c.wallRough, grid) - 1.0) {
                 return false;
             }
             if (field.caveLift(x, y, z) < 2.0) {

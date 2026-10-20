@@ -23,8 +23,8 @@ import net.minecraft.world.level.levelgen.DensityFunction;
  * </ul>
  * The mythical half of the band's transition is always {@code mist_fjords} (a narrow misty rim): there the terrain
  * turns into a low fjord plateau whatever the climate, never a lagoon. Blighted band: {@code drowned_forest} from
- * {@link #WATER_SPLIT} (deep dark water); below it {@code reed_marsh} where it grows, {@code peat_moors} (flat, with
- * sinkholes) where it is bare. Rivers run at the sea level through the land, their beds below it, so they hold sea
+ * {@link #WATER_SPLIT} (deep dark water); below it {@code reed_marsh} where it grows, {@code peat_moors} (hummocks and low
+ * ridges, with sinkholes) where it is bare. Rivers run at the sea level through the land, their beds below it, so they hold sea
  * water and connect the lakes, the lagoon and the fjords.
  * <p>
  * Pure: functions of the noises and x, z. The landform pieces only sample their noise where they have weight.
@@ -118,6 +118,50 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
     static final double SINKHOLE_MAX_RADIUS = 7.0;
     static final double SINKHOLE_MAX_DEPTH = 16.0;
     private static final long SINKHOLE_SALT = 4401;
+    /** How far beyond a sinkhole's edge the hummocks keep off ({@link #sinkholeApron}). */
+    private static final double SINKHOLE_APRON = 8.0;
+    // Relief (sparring 2026-10-20): small, +5..15 above the land before it, only upwards on land (the water share
+    // stays). Each from the detail or warp noise at its own scale and offset (2D, a few samples per column).
+    /** Peat and reed hummocks (~25 blocks): MOUND_MIN..MOUND_MAX high, the height changing over ~150 blocks. */
+    static final double MOUND_MIN = 2.0;
+    static final double MOUND_MAX = 8.0;
+    /** Low ridges (~16 wide) between the hummocks, where the mounds are small. */
+    static final double RIDGE = 4.0;
+    /**
+     * The detail noise on the moors (was 0.6): over the ~40 blocks between two hummocks it outgrows the hills' slow
+     * slope, so the 1-block contour lines close into short loops instead of running for hundreds of blocks in parallel.
+     */
+    private static final double PEAT_DETAIL = 1.5;
+    /** The detail noise on the moors without the relief (near the zones, {@link IslandField#reliefShare}). */
+    private static final double PEAT_DETAIL_BEFORE = 0.6;
+    /**
+     * Where the reed and the swamp count as land for the relief (their base height, blocks): none under the sea (the
+     * shore stays where it is), full from LAND_FULL (most of the reed lies within two blocks of the sea).
+     */
+    private static final double LAND_FROM = SEA;
+    private static final double LAND_FULL = SEA + 1.5;
+    /** The swamp's gentle undulation (~60 blocks), on its land only. */
+    static final double SWAMP_ROLL = 5.0;
+    /**
+     * The cascades' rolling under the terraces (~110 blocks of the warp noise, before the steps): up to CASCADE_ROLL
+     * of rise on the low terraces, CASCADE_ROLL − CASCADE_ROLL_HIGH on the highest hills (ring 4 stays under ring 3).
+     */
+    static final double CASCADE_ROLL = 12.0;
+    private static final double CASCADE_ROLL_HIGH = 6.0;
+    /** The fjord plateau's hills (~85 blocks) and rock knobs (~20 blocks, sparse). */
+    static final double FJORD_HILL = 7.0;
+    static final double FJORD_KNOB = 5.0;
+    /**
+     * How far (blocks, up and down) the fjord's walls move with the roughness ({@link #rough}), cut per block: on a
+     * 2:1 wall ±3 blocks across, like the gorges' faces of 5a. Fades out towards the rim and the floor.
+     */
+    static final double FJORD_WALL_ROUGH = 6.0;
+    /**
+     * The roughness grows from WALL_ROUGH_FROM to WALL_ROUGH_FULL blocks below the plateau (the cut): the rim stays as
+     * cut, and the rock never juts above the plateau (the roughness stays within the depth below it).
+     */
+    private static final double WALL_ROUGH_FROM = 4.0;
+    private static final double WALL_ROUGH_FULL = 10.0;
 
     Ring4Relief map(DensityFunction.Visitor visitor) {
         return new Ring4Relief(visitor.visitNoise(water), visitor.visitNoise(growth), visitor.visitNoise(hills),
@@ -173,8 +217,11 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         return sample(growth, x, z);
     }
 
-    /** Fills {@code s} with the base terrain of the column at (x, z) ({@code band}: the band axis there, −1..1). */
-    void sample(double x, double z, double band, Sample s, long salt) {
+    /**
+     * Fills {@code s} with the base terrain of the column at (x, z) ({@code band}: the band axis there, −1..1;
+     * {@code reliefShare}: 0..1, how much of the relief of 2026-10-20 the column gets, {@link IslandField#reliefShare}).
+     */
+    void sample(double x, double z, double band, double reliefShare, Sample s, long salt) {
         double w = sample(water, x, z);
         double g = sample(growth, x, z);
         // Mythical weights (sum 1), the rim of the band's transition pulling them towards the fjords.
@@ -208,6 +255,9 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         double fjord = 0.0;
         double fjordRim = Double.NaN;
         boolean fjordEdge = false;
+        double wallRough = 0.0;
+        // Where the cascades' steps take over (after the mix, below).
+        double stepped = smooth(cascadeW, 0.2, 0.6);
         if (blighted < 1.0) {
             if (lagoonW > 0.0) {
                 mythicH += lagoonW * (TROUGH_Y + LAGOON_RISE * Math.sqrt(shoal) + 1.2 * d);
@@ -223,13 +273,20 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
                 // level. The stair lines wander with the warp noise: else they follow the hills' long, straight iso-lines.
                 double inland = smooth(-w, WATER_SPLIT, WATER_SPLIT + 0.33);
                 double wave = TERRACE_WAVE * sample(warp, TERRACE_WAVE_SCALE * x + 777.0, TERRACE_WAVE_SCALE * z - 333.0);
-                mythicH += cascadeW * (SEA + 1.0 + Math.max(0.0, (5.0 + CASCADE_RISE * hill01) * inland + wave));
+                // The rolling under the terraces (2026-10-20): it moves where the treads lie, they stay level and 8 high.
+                double roll = reliefShare > 0.0 ? reliefShare * (CASCADE_ROLL - CASCADE_ROLL_HIGH * hill01)
+                        * smooth(sample(warp, 0.7 * x + 5113.0, 0.7 * z - 3371.0), -0.6, 0.6) : 0.0;
+                mythicH += cascadeW * (SEA + 1.0 + Math.max(0.0, (5.0 + CASCADE_RISE * hill01 + roll) * inland + wave));
             }
             if (fjordW > 0.0) {
                 double inland = smooth(-w, 0.0, 0.3) * (1.0 - rim);
                 // Only the detail's coarse scale, and less of it: the plateaus read as flat land, still alive.
                 double coarse = sample(detail, 0.5 * x, 0.5 * z);
                 double plateau = SEA + FJORD_PLATEAU + FJORD_RISE * inland * (0.55 + 0.45 * hill01) + FJORD_DETAIL * coarse;
+                if (stepped < 1.0 && reliefShare > 0.0) {
+                    // Not where the cascades' steps take over: knobs in the mix would bend their stair lines.
+                    plateau += reliefShare * (1.0 - stepped) * fjordHills(x, z);
+                }
                 double distance = fjordLine(wx, wz) / FJORD_GRADIENT;
                 // A floor FJORD_HALF wide each side, then steep walls up to the plateau (a fjord, not a slot).
                 double cut = FJORD_FLOOR + Math.max(0.0, distance - FJORD_HALF) * FJORD_SLOPE;
@@ -239,9 +296,25 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
                 fjordRim = cut - plateau;
                 fjordEdge = fjordW * (1.0 - blighted) > FJORD_EDGE_WEIGHT && distance > FJORD_HALF - FJORD_EDGE_FLOOR
                         && fjordRim < FJORD_EDGE_RIM;
+                if (fjordEdge) {
+                    // The rough face only on the wall itself: none on the floor and the rim (they stay as cut), and
+                    // nothing where the fjord landform thins out towards the band's edge (no step where it ends). The
+                    // depth is the blended one (review: the fjord's share of the cut): the roughness never exceeds it
+                    // (smooth(t, 4, 10) · 6 ≤ t), so no rock juts above the blended plateau.
+                    double share = fjordW * (1.0 - blighted);
+                    // None where the cascades' steps reshape the mix either (the bound holds for the unstepped height).
+                    wallRough = reliefShare * (1.0 - stepped) * FJORD_WALL_ROUGH * smooth(distance, FJORD_HALF, FJORD_HALF + 3.0)
+                            * smooth(-share * fjordRim, WALL_ROUGH_FROM, WALL_ROUGH_FULL) * smooth(share, FJORD_EDGE_WEIGHT, 0.4);
+                }
+            }
+            double terraced = smooth(cascadeW, 0.0, 0.3);
+            if (swampW > 0.0 && terraced < 1.0 && reliefShare > 0.0) {
+                // The swamp's undulation on its land only, after the mix: where it blends into the lotus or the lagoon
+                // under the sea, none (A1-4: no new land in the water); nor towards the cascades (their blend stays level).
+                double roll = smooth(detail.getValue(0.6 * x + 2719.0, 0.0, 0.6 * z - 1931.0), -0.3, 0.4);
+                mythicH += reliefShare * swampW * (1.0 - terraced) * landness(mythicH) * SWAMP_ROLL * roll;
             }
             // The steps after the mix (H4): blended landforms keep their treads level instead of tilting them.
-            double stepped = smooth(cascadeW, 0.2, 0.6);
             if (stepped > 0.0) {
                 mythicH = Mth.lerp(stepped, mythicH, SEA + 1.0 + steps(mythicH - SEA - 1.0, d));
             }
@@ -250,8 +323,20 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         if (blighted > 0.0) {
             double drowned = DROWNED_Y + 2.5 * d + 2.0 * hillsV;
             double reed = SEA + 1.2 * hillsV + 0.8 * d;
-            double peatY = PEAT_Y + 1.5 * hill01 + 0.6 * d;
+            // The extra detail only upwards (A1-4): the moors' lows and their waterline stay where they were.
+            double peatY = PEAT_Y + 1.5 * hill01 + PEAT_DETAIL_BEFORE * d
+                    + reliefShare * (PEAT_DETAIL - PEAT_DETAIL_BEFORE) * Math.max(0.0, d);
             blightedH = drownedW * drowned + reedW * reed + peatW * peatY;
+            // Hummocks and low ridges with hollows between (2026-10-20), after the mix and on land only: none on the
+            // reed's water, its shores, or where the moors blend into the drowned forest.
+            double land = reliefShare * (1.0 - drownedW) * landness(blightedH);
+            if (land > 0.0) {
+                // Around every sinkhole's place, also on the reed (else a step where the peat's weight ends).
+                double apron = sinkholeApron(x, z, salt);
+                if (apron > 0.0) {
+                    blightedH += land * apron * hummocks(x, z);
+                }
+            }
         }
         double h = Mth.lerp(blighted, mythicH, blightedH);
         double river = 0.0;
@@ -271,6 +356,8 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         s.fjordLand = fjordW * (1.0 - blighted);
         s.fjordRim = fjordRim;
         s.fjordEdge = fjordEdge;
+        // A river's valley cut into the wall: its slopes stay smooth.
+        s.wallRough = wallRough * (1.0 - smooth(riverDepth, 0.0, 2.0));
         s.riverDepth = riverDepth;
         s.height = h;
         s.water = w;
@@ -292,6 +379,32 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
 
     private static double swamp(double hillsV, double d) {
         return SEA + 0.3 + 2.5 * hillsV + 1.5 * d;
+    }
+
+    /** 0 where a base height lies under {@link #LAND_FROM} (water, the shore), 1 from {@link #LAND_FULL} on. */
+    private static double landness(double base) {
+        return smooth(base, LAND_FROM, LAND_FULL);
+    }
+
+    /**
+     * The peat's and reed's relief above their base (0 in the hollows, up to {@link #MOUND_MAX} + {@link #RIDGE}):
+     * hummocks where the detail noise is high, their height from a slow field; where that field keeps them small, low
+     * ridges along the zero lines of the warp noise (rounded tops: the smoothstep is flat at 0).
+     */
+    double hummocks(double x, double z) {
+        double mound = smooth(detail.getValue(1.4 * x + 1301.0, 0.0, 1.4 * z - 877.0), -0.15, 0.35);
+        double field = sample(warp, 0.8 * x - 4211.0, 0.8 * z + 2981.0);
+        double size = MOUND_MIN + (MOUND_MAX - MOUND_MIN) * smooth(field, -0.35, 0.35);
+        double line = Math.abs(sample(warp, 1.7 * x - 2203.0, 1.7 * z + 1559.0));
+        double ridge = (1.0 - smooth(line, 0.0, 0.12)) * smooth(-field, -0.1, 0.3);
+        return mound * size + RIDGE * ridge;
+    }
+
+    /** The fjord plateau's hills and rock knobs (0 .. {@link #FJORD_HILL} + {@link #FJORD_KNOB}). */
+    double fjordHills(double x, double z) {
+        double hill = smooth(sample(warp, 1.5 * x + 6007.0, 1.5 * z + 1777.0), -0.35, 0.45);
+        double knob = smooth(detail.getValue(1.8 * x - 3011.0, 0.0, 1.8 * z + 2441.0), 0.12, 0.42);
+        return FJORD_HILL * hill + FJORD_KNOB * knob;
     }
 
     /**
@@ -380,6 +493,29 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         return depth < 1.0 ? Double.NaN : height - depth;
     }
 
+    /**
+     * 0 in and right around a peat sinkhole, 1 from {@link #SINKHOLE_APRON} blocks beyond its edge: the hummocks keep
+     * off, so a sinkhole lies in a hollow of the base terrain, not across a hummock's flank. Where that base terrain
+     * slopes (the band's blend) its floor may still be deepest off its centre: the preliminary surface and the tunnels'
+     * ceilings therefore take the deepest of several points ({@link IslandField#deepestSinkholeFloor}). Its own cell and
+     * the neighbours (the apron may reach across a border).
+     */
+    static double sinkholeApron(double x, double z, long salt) {
+        int i0 = Math.floorDiv(Mth.floor(x), SINKHOLE_CELL);
+        int j0 = Math.floorDiv(Mth.floor(z), SINKHOLE_CELL);
+        double apron = 1.0;
+        for (int i = i0 - 1; i <= i0 + 1; i++) {
+            for (int j = j0 - 1; j <= j0 + 1; j++) {
+                double[] hole = sinkhole(i, j, salt);
+                if (hole != null) {
+                    double edge = Math.hypot(x - hole[0], z - hole[1]) - hole[2];
+                    apron = Math.min(apron, smooth(edge, 1.0, SINKHOLE_APRON));
+                }
+            }
+        }
+        return apron;
+    }
+
     /** The sinkhole of a cell as {x, z, radius, depth}, or null. Pure. */
     static double[] sinkhole(int i, int j, long salt) {
         long h = CellShapes.cell(salt, i, j, (int) SINKHOLE_SALT);
@@ -418,6 +554,11 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
          * {@link IslandField#thin} cuts the surface there per block (Q6).
          */
         boolean fjordEdge;
+        /**
+         * How far (blocks, up and down) {@link IslandField#thin} moves the exact surface with {@link #rough} on a fjord's
+         * wall (0 elsewhere, and only where {@link #fjordEdge}).
+         */
+        double wallRough;
         /** How far a river's valley lowered the column (0 outside one). */
         double riverDepth;
     }
