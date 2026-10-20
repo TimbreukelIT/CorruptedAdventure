@@ -804,6 +804,15 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Rivieren** verbinden de gatmeren, de lagune en de fjorden; in de cascades met watervallen over de terrassen. Per boot te bereizen.
 - Eigen ring 4-invoer voor `ring_blend` met een **band-as** (mythisch ↔ bedorven) en klimaatassen voor de biomes binnen een band; een echte `initial_terrain` (overstroomde grotten; valkuil Y 55).
 - **Lucht en kleur:** mythisch helder turquoise, zachte witte fog, roze/gouden schemer; `mist_fjords` een eigen grijswitte mist; de bedorven band gifgroen (felgroen water, groenige lucht); zone 4→5 loopt leeg naar grijs.
+- **Lucht en mist herzien (sparring 2026-10-20, na teststop 5b "lucht vlak wit/grijs"):** alles client-side of biome-data, geen nieuwe weerstaat, geen sync, geen eigen lucht-renderer.
+  - *Lucht overdag (C1-1):* diepere, verzadigde lucht en een getinte fog via de biome-data (`Ring4Atmosphere`): mythisch lucht ~`4FC3E8`, fog licht aqua/pastel ~`BFE8EC` i.p.v. bijna wit; bedorven fog duidelijk zieklijk geelgroen. Startwaarden; per biome afstemmen met behoud van het karakter (`mist_fjords` grijswit, `verdant_falls` tropisch, `sundered_reach` grijsfade blijft).
+  - *Schemer (C1-2):* zonsop- en -ondergang roze/goud in de mythische band, groenig-vaal in de bedorven band; client-mixin op de vanilla zonsopkomst-kleur plus lucht-/fogkleur rond schemer (tijd is vanilla gesynct).
+  - *Wolken (C1-3):* in ring 4 gaat de wolkenlaag geleidelijk omhoog naar ~Y 300 (boven de eilanden) en wordt licht getint; client-mixin per camerapositie, overgang zoals de grijsfade.
+  - *Bedorven band (C1-4):* duidelijk geelgroen waas, dichter richting ring 5: fog-kleur en -afstand naar de ringpositie (client-hook op de layout-blend, zoals de grijsfade).
+  - *Mist (C2-1):* permanente lage grondmist in `mist_fjords` en boven moeras/veen (`glowroot_swamp`, `peat_moors`, `reed_marsh`, `drowned_forest`): fog dichterbij als de camera laag in een dal of boven water staat (t.o.v. zee Y 62), open zicht vanaf plateaus en eilanden; client-hook (biome + camerahoogte). Het weer (dikke mist, gifregen) wint waar het dichter is.
+  - *Zicht bij helder weer (C2-2):* lichte gekleurde nevel op afstand (fog-start iets dichterbij, getint) zodat verre eilanden blauwig wegvallen: luchtperspectief; client-hook.
+  - *Nacht (C2-3):* zo laten; eerst in-game beoordelen.
+  - *Toets (C2-4):* vaste camera's per ring 4-biome op dag / schemer / nacht in contactbladen (voor/na), daarna vliegt de gebruiker live.
 
 **Zwevende eilanden**
 - **Uitgerukt:** onder elk eiland (ook de hoge) ligt recht eronder het gat waar het uit kwam, vol water. De onderkant is een omgekeerde kluit van gelaagde aarde en steen met hangende (lichtgevende) wortels, ranken en druppend water.
