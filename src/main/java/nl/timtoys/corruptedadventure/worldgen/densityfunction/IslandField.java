@@ -705,7 +705,7 @@ public final class IslandField implements DensityFunction {
     /** Whether a peat sinkhole's bowl lies at the position (its floor cut per block below the base terrain). */
     boolean inSinkhole(double x, double z) {
         Ring4Relief.Sample s = new Ring4Relief.Sample();
-        relief.sample(x, z, band(x, z), s, salt());
+        sampleRelief(x, z, s);
         return !Double.isNaN(s.sinkholeFloor);
     }
 
