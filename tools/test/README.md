@@ -19,7 +19,8 @@ Port n (waves.md §4): server 25570+n, RCON 25580+n (RCON on 127.0.0.1 and only 
 - `C:/Temp/ca-user-test.lock` exists = the user is playing: every script that would start a JVM exits with code 3.
   Start nothing, tell main, wait idle. Only main places/removes that lock.
 - Max. 3 JVMs: every build/runData/server/client holds a slot; machine-wide things (the quick-play start of a client,
-  JFR) also hold the lock, taken first. Nothing waits while holding something.
+  JFR) also hold the lock, taken first. Nothing waits for a slot while holding something (a client with a reserved
+  slot waits only for the lock, and nobody waits while holding the lock).
 - Gradle always with `--no-daemon` (the tools do this themselves): a daemon would stay behind outside the slot count.
   Never `./gradlew --stop` (it also stops the user's daemons).
 
@@ -27,25 +28,42 @@ Port n (waves.md §4): server 25570+n, RCON 25580+n (RCON on 127.0.0.1 and only 
 bash tools/test/slots.sh run -- ./gradlew build --rerun-tasks --no-daemon   # slot for the duration, always released
 bash tools/test/slots.sh run -- ./gradlew runData --no-daemon
 bash tools/test/slots.sh run -n 1 --lock --task ffmpeg -- ffmpeg ...           # lock + slot
-bash tools/test/slots.sh status | clean | release
+bash tools/test/slots.sh status | clean | release | held [--task T]
+bash tools/test/selftest-slots.sh [--slow]                                     # self-test in a scratch lock dir, no JVM
 ```
 
 Owner file: `stream=<s> pid=<windows pid of the holder> time=<iso> task=<label> token=<id> root=<checkout>`. `run`
 holds with its own PID and a unique token per run (parallel runs in one checkout never free each other's slots).
 A bare `take` registers its caller as holder (`--pid` for another one; server/client hand over to their JVM with
 `adopt`), so use it only from a script that lives as long as the hold. `take` waits only with `--wait <s>` (retry
-every 20 s, holding nothing). `clean` removes entries older than 60 min whose holder PID is dead (also before every
-`take`). Test the protocol with `CA_LOCK_DIR=<scratch dir>`.
+every 20 s, holding nothing). `take --tasks server,client1` takes one slot per label at once (all or nothing, each
+with its own task); `take -n 0 --lock` takes the lock only. `clean` removes entries whose holder PID is dead and whose
+owner file is older than `CA_STALE_MIN` (20) min - longer than a server (900 s) or client (600 s) start, during which
+the starting script is the holder (also before every `take`; until 2026-10-20 it was 60 min); when the PID lookup
+itself fails nothing is removed. `status` marks dead holders. Test the protocol with
+`CA_LOCK_DIR=<scratch dir>` (`selftest-slots.sh` does).
+
+**Server + client: reserve both at once.** A server holds its slot while it runs; a client started later needs a
+second one. On 2026-10-19 three streams each held a server slot and waited for a client slot that never came. So a
+test that will need a client starts the server with `--client` (`--client 2`, `--client both`): `server.sh` takes the
+server's and the client's slot in one `take --tasks server,client1` (or waits holding nothing), the server JVM holds
+the client's reservation, `client.sh start` then only takes the lock and the reserved slot, `client.sh stop` hands the
+slot back to the running server (a next client start needs no slot either) and `server.sh stop` frees what the server
+still holds. Adopt and release go by holder PID, so a restarted server's reservation and an old client's slot with the
+same label never get mixed up. Without `--client` a client start works as before, except when this stream's server
+holds a slot: then it tries once (exit 2 when busy, with a hint) instead of waiting 1800 s with the server slot held;
+an explicit `--wait SEC` still waits.
 
 ## Server, RCON, client
 
 ```bash
 bash tools/test/server.sh start <level> [--fresh] [--perf] [--worktree DIR]   # slot, runServer, waits for "Done"
+bash tools/test/server.sh start <level> --client [1|2|both]                   # + reserve the client slot(s) at once
 CA_SERVER_JVM="<opts>" bash tools/test/server.sh start ...                     # extra JVM options for the server (jfr-prof.sh)
 python tools/test/py/rcon.py "list" "/ca tpring 3"                          # RCON of the running server
 bash tools/test/server.sh stop                                               # RCON stop, PID gone, RCON off, slot free
-bash tools/test/client.sh start [1|2]          # lock + slot, quick play (127.0.0.1), waits until joined, then frees the lock
-bash tools/test/client.sh shot build/test/shots/x.png [1|2]
+bash tools/test/client.sh start [1|2]          # lock + slot (or the reserved one), quick play (127.0.0.1), waits until joined, then frees the lock
+bash tools/test/client.sh shot build/test/shots/x.png [1|2]   # PrintWindow; blank -> F2 fallback + warning; exit 4 if no F2 file
 bash tools/test/client.sh key F1 [1|2]         # F1 F2 F3 ESC T ENTER
 bash tools/test/client.sh stop [1|2]
 ```
@@ -58,6 +76,16 @@ bash tools/test/client.sh stop [1|2]
   that one PID — never a window found by title (golf 2: a script once photographed the user's client).
 - A new `run/options.txt` gets `pauseOnLostFocus:false` (a covered window keeps rendering); an existing one only
   `onboardAccessibility:false` and `skipMultiplayerWarning:true`.
+- Blank shots: PrintWindow copies what DWM composed for the window, and DWM composes nothing while the display is off
+  or the window is minimized. The power plan turns the display off after 15 min without user input; the monitor then
+  goes to standby and drops off the bus (event log Kernel-PnP 1010, `DISPLAY\SAM7053` "surprise removed", 2026-10-19
+  20:46:08: every shot after that was white). Reproduced 2026-10-20 15:06 with the user idle for 3.6 h; F2 worked.
+  `win.ps1` therefore checks every capture (64 x 36 samples within 6 levels per channel, near white or near black; a
+  flat fog or sky colour is not blank) and reports `blank #RRGGBB (WxH) minimized=... user-idle=<min>min`;
+  `client.sh shot` then presses F2 (Minecraft's own screenshot of its framebuffer, `run/screenshots` or
+  `run/client2/screenshots`), waits until the new file's size is stable (max. 20 s) and copies it to the output. A flat
+  F2 image is what the game shows (a black cave with F1): kept, with a warning. F2 puts a "Saved screenshot" line in
+  the chat for the next shots: hide the HUD with F1 for photo series. `win.ps1 blank 0 <png>` checks an existing image.
 - Shots: generate first (wait until the chunks are loaded), then photograph; no `save-all flush` while shooting.
   `python tools/test/py/sheet.py build/test/shots build/test/sheet.png` makes a contact sheet.
 
@@ -181,7 +209,7 @@ Shares are of the samples, not of the time `perf.sh` compares: a fresh world als
 |---|---|
 | `lib.sh` | shared settings (checkout, stream, ports, lock dir) and helpers (PIDs, properties, run/ preparation) |
 | `setup.sh` | one-time setup of a checkout |
-| `slots.sh` | lock + JVM slots |
+| `slots.sh`, `selftest-slots.sh` | lock + JVM slots, their self-test (scratch lock dir, no JVM) |
 | `server.sh`, `client.sh`, `win.ps1` | server, client, window helper (own PID only) |
 | `world.sh`, `det.sh`, `perf.sh`, `waterscan.sh`, `jfr-prof.sh` | fresh world + areas, determinism, performance, ring 4 waterscan, hot methods |
 | `perfpack/` | datapack with the vanilla dimensions for perf |
