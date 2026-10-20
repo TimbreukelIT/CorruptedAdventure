@@ -25,6 +25,12 @@
             "Name": "minecraft:mossy_cobblestone"
           },
           "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:mossy_tidestone"
+          },
+          "weight": 1
         }
       ]
     },
@@ -46,7 +52,13 @@
           "data": {
             "Name": "minecraft:mossy_cobblestone"
           },
-          "weight": 3
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:mossy_tidestone"
+          },
+          "weight": 2
         },
         {
           "data": {

@@ -74,7 +74,7 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
  *   <li>{@code lotus_shallows}: giant lily pads, lotus, reed accents on the banks, grass;</li>
  *   <li>{@code glowroot_swamp}: giant mangroves (vanilla mangrove wood and roots, no vines) with glowcaps and moss on
  *   their roots, glowcaps on the ground;</li>
- *   <li>{@code mist_fjords}: moss and ferns (the trees, rocks and undergrowth: {@link MistFjordsFeatures});</li>
+ *   <li>{@code mist_fjords}: moss, fjord moss and ferns (the trees, rocks and undergrowth: {@link MistFjordsFeatures});</li>
  *   <li>{@code sky_gardens}: moonpetal trees, glow blooms and flowers;</li>
  *   <li>bubble springs on the floor of deep pools (lagoon, lotus, swamp, fjords).</li>
  * </ul>
@@ -178,7 +178,7 @@ public final class Ring4MythicFeatures {
         simple(context, GLOW_BLOOM, BlockStateProvider.simple(ModBlocks.GLOW_BLOOM.get()));
         simple(context, GLOWCAPS, BlockStateProvider.simple(ModBlocks.GLOWCAP.get()));
         groundPlant(context, FJORD_FERNS, weighted(Blocks.FERN.defaultBlockState(), 4, Blocks.LARGE_FERN.defaultBlockState(), 1,
-                Blocks.SHORT_GRASS.defaultBlockState(), 2));
+                Blocks.SHORT_GRASS.defaultBlockState(), 2, ModBlocks.FJORD_MOSS.get().defaultBlockState(), 2));
         simple(context, MOSS_CARPET, BlockStateProvider.simple(Blocks.MOSS_CARPET));
         groundPlant(context, SKY_FLOWERS, weighted(ModBlocks.GLOW_BLOOM.get().defaultBlockState(), 3, Blocks.ALLIUM.defaultBlockState(), 2,
                 Blocks.AZURE_BLUET.defaultBlockState(), 2, Blocks.CORNFLOWER.defaultBlockState(), 2,

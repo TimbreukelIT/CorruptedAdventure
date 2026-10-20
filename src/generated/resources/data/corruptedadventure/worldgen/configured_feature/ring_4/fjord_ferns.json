@@ -24,6 +24,12 @@
             "Name": "minecraft:short_grass"
           },
           "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:fjord_moss"
+          },
+          "weight": 2
         }
       ]
     }
