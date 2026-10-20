@@ -121,7 +121,7 @@ final class TreeOverlap {
 
     /**
      * The rank of a block a tree planned (by its block: the trunk setter also lays dirt under the trunk; a hanging strand
-     * ranks as that dirt, {@link #strand}).
+     * ranks with that dirt, {@link #strand}).
      */
     static Rank planned(BlockState state) {
         if (root(state)) {
@@ -139,8 +139,9 @@ final class TreeOverlap {
     /**
      * The rank of a block already in the level ({@code below} is the block under it): another tree's trunk, root or
      * leaves, or its moss, glowcap, propagule or fruit pod (a hanging propagule; moss or a glowcap on a mangrove root;
-     * pods grow only on the emergent tree). Everything else (terrain and dirt, the world tree's leaves, ground plants,
-     * which the ground features only put in open air) is {@link Rank#NONE}.
+     * pods grow only on the emergent tree), or a hanging strand ({@link #strand}, {@link Rank#GROUND}). Everything else
+     * (terrain and dirt, the world tree's leaves, ground plants, which the ground features only put in open air) is
+     * {@link Rank#NONE}.
      */
     static Rank existing(BlockState state, BlockState below) {
         if (root(state)) {
@@ -151,6 +152,9 @@ final class TreeOverlap {
         }
         if (state.is(BlockTags.LEAVES)) {
             return persistent(state) ? Rank.NONE : Rank.LEAF;
+        }
+        if (strand(state)) {
+            return Rank.GROUND;
         }
         boolean decor = state.is(Blocks.MANGROVE_PROPAGULE) && state.getValue(MangrovePropaguleBlock.HANGING)
                 || (state.is(Blocks.MOSS_CARPET) || state.is(ModBlocks.GLOWCAP.get())) && root(below)
@@ -179,9 +183,18 @@ final class TreeOverlap {
 
     /**
      * A total order within one rank (positive: {@code a} goes first): leaves closer to a log first (they keep their
-     * crown alive), then the higher block state id. Symmetric, so the merge is the same in either order.
+     * crown alive); at {@link Rank#GROUND} a tree's dirt before a strand and a glowing root before moss (a moss strand cut
+     * by a root falls whole, {@link EdgeUpdates}); then the higher block state id. Symmetric, so the merge is the same in
+     * either order.
      */
     static int compareWithinRank(BlockState a, BlockState b) {
+        if (strand(a) != strand(b)) {
+            return strand(a) ? -1 : 1;
+        }
+        boolean rootA = a.is(ModBlocks.GLOWING_HANGING_ROOTS.get());
+        if (strand(a) && rootA != b.is(ModBlocks.GLOWING_HANGING_ROOTS.get())) {
+            return rootA ? 1 : -1;
+        }
         if (a.hasProperty(BlockStateProperties.DISTANCE) && b.hasProperty(BlockStateProperties.DISTANCE)) {
             int distance = Integer.compare(b.getValue(BlockStateProperties.DISTANCE), a.getValue(BlockStateProperties.DISTANCE));
             if (distance != 0) {
@@ -193,9 +206,10 @@ final class TreeOverlap {
 
     /**
      * Hanging swamp moss and glowing roots (decor A: the strands of {@code hanging_strand}, the arches and the ancient
-     * tree). Found in the level they are {@link Rank#NONE} (the island strands hang there too), so a tree plans them at
-     * {@link Rank#GROUND}: they take only open space and another strand, never another tree's moss, propagule or leaf,
-     * which gives the same block in either order.
+     * tree): {@link Rank#GROUND}, planned and found in the level alike, so they take only open space, never another tree's
+     * moss, propagule or leaf; two trees' strands on one block meet by a fixed order ({@link #compareWithinRank}: a
+     * glowing root before moss), which gives the same block in either order (det 2026-10-20: before, a strand in the level
+     * ranked as terrain and the later tree's strand always won).
      */
     static boolean strand(BlockState state) {
         return state.is(ModBlocks.HANGING_SWAMP_MOSS.get()) || state.is(ModBlocks.GLOWING_HANGING_ROOTS.get());

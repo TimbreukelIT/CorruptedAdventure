@@ -213,12 +213,20 @@ class IsolatedTreeTest {
         BlockState air = Blocks.AIR.defaultBlockState();
         for (BlockState strand : List.of(ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState(),
                 ModBlocks.GLOWING_HANGING_ROOTS.get().defaultBlockState())) {
-            assertEquals(TreeOverlap.Rank.NONE, TreeOverlap.existing(strand, air), "the island strands hang there too");
+            assertEquals(TreeOverlap.Rank.GROUND, TreeOverlap.existing(strand, air), "a strand in the level ranks as a planned one");
             assertEquals(TreeOverlap.Rank.GROUND, TreeOverlap.planned(strand));
             BlockState strandThenPropagule = TreeOverlap.wins(propagule, strand, air) ? propagule : strand;
             BlockState propaguleThenStrand = TreeOverlap.wins(strand, propagule, air) ? strand : propagule;
             assertEquals(strandThenPropagule, propaguleThenStrand, strand.toString());
         }
+        // Two trees' strands on one block (det 2026-10-20): the same block in either order, a glowing root before moss, and
+        // a tree's dirt before a strand.
+        BlockState moss = ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState();
+        BlockState glowRoot = ModBlocks.GLOWING_HANGING_ROOTS.get().defaultBlockState();
+        assertTrue(TreeOverlap.wins(glowRoot, moss, air), "a glowing root takes a moss block");
+        assertFalse(TreeOverlap.wins(moss, glowRoot, air), "moss leaves a glowing root");
+        assertFalse(TreeOverlap.wins(moss, moss, air), "the same strand stays");
+        assertTrue(TreeOverlap.wins(Blocks.DIRT.defaultBlockState(), moss, air), "a tree's dirt takes a strand");
         BlockState near = Blocks.MANGROVE_LEAVES.defaultBlockState().setValue(LeavesBlock.DISTANCE, 1);
         BlockState far = Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.DISTANCE, 5);
         assertTrue(wins(near, far), "the leaf closer to a log stays");
