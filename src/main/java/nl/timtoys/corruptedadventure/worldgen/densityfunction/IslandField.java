@@ -60,6 +60,9 @@ public final class IslandField implements DensityFunction {
     private static final double RELIEF_FADE = 64.0;
     /** The roughness noise mostly stays within ±0.5: scaled by this and held to ±1 (as the gorges' faces, 5a). */
     private static final double WALL_ROUGH_GAIN = 2.0;
+    /** How far {@link #roughFade} looks for a wall column without an exact band. */
+    private static final int ROUGH_FADE = 4;
+    private static final int[][] DIRECTIONS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
     /** Islands one column may hold (overlapping footprints at different heights; more are dropped). */
     static final int MAX_ISLANDS = 8;
     /** An island reaches at most this far from its centre (a giant: 150 across, stretched 1.15, ragged). */
@@ -622,10 +625,18 @@ public final class IslandField implements DensityFunction {
                 if (hole == null || Math.hypot(hole[0] - x, hole[1] - z) - hole[2] > ring) {
                     continue;
                 }
-                floor = Math.min(floor, decisions.once(decisions.sinkholeFloors, KeyedSlots.key(i, j), () -> deepestFloor(hole)));
+                floor = Math.min(floor, deepestSinkholeFloor(i, j, hole));
             }
         }
         return floor;
+    }
+
+    /**
+     * The deepest floor of the sinkhole {@code hole} of sinkhole cell (i, j) that the peat cuts, +infinity if none;
+     * remembered per world. For lower bounds of the ground (the preliminary surface, the tunnels' ceilings).
+     */
+    double deepestSinkholeFloor(int i, int j, double[] hole) {
+        return decisions.once(decisions.sinkholeFloors, KeyedSlots.key(i, j), () -> deepestFloor(hole));
     }
 
     /**
@@ -698,6 +709,18 @@ public final class IslandField implements DensityFunction {
      * relief, {@link Decisions#verdantGrounds}).
      */
     double surfaceUncached(double x, double z) {
+        return surfaceUncached(x, z, false);
+    }
+
+    /**
+     * {@link #surfaceUncached}, less the roughness of a fjord's wall there (relief 2026-10-20: {@link #thin} may cut the
+     * face that far under the surface): the lowest a block of the column may be open, for ceilings that must stay covered.
+     */
+    double faceUncached(double x, double z) {
+        return surfaceUncached(x, z, true);
+    }
+
+    private double surfaceUncached(double x, double z, boolean rough) {
         int bx = Mth.floor(x);
         int bz = Mth.floor(z);
         boolean outside = true;
@@ -734,6 +757,9 @@ public final class IslandField implements DensityFunction {
         Sunder sunder = sunder(x, z);
         if (sunder.kind() != Sunder.NONE) {
             surface = Math.min(surface, Ring4Sundered.ABYSS_FLOOR);
+        }
+        if (rough && outside && s.fjordEdge) {
+            surface -= s.wallRough;
         }
         return !outside || Double.isNaN(s.sinkholeFloor) ? surface : Math.min(surface, s.sinkholeFloor);
     }
@@ -863,10 +889,9 @@ public final class IslandField implements DensityFunction {
                     return gorges.block(c.gorgeBlocks, c.gorgeLocal, c.gorgeInside, c.gorgeOutside, c.gorgeNearFall, c.gorgeEarY,
                             x, y, z);
                 }
-                if (c.wallRough > 0.0) {
+                if (c.roughAmplitude > 0.0) {
                     // A fjord's rough wall (relief 2026-10-20): ledges, overhangs and jutting rock, like the gorges' faces.
-                    double rough = Mth.clamp(WALL_ROUGH_GAIN * relief.rough(x, y, z), -1.0, 1.0);
-                    return y < c.surface + c.wallRough * rough ? 1.0 : -1.0;
+                    return y < c.surface + c.roughAmplitude * roughness(x, y, z) ? 1.0 : -1.0;
                 }
                 return y < c.surface ? 1.0 : -1.0;
             }
@@ -891,12 +916,14 @@ public final class IslandField implements DensityFunction {
         boolean banded = (c.verdant || c.lakeTop == Integer.MIN_VALUE && c.caveLiftFrom > c.caveLiftTo) && c.islandHole == 0.0
                 && pureRing4(layout.get().sampleOverworld(x, z));
         double bilinear = banded ? gridSurface(x, z) : exact;
+        double amplitude = banded && c.wallRough > 0.0 ? c.wallRough * roughFade(x, z) : 0.0;
         // The corners may have moved the table's window: the same column again (recomputed if so).
         c = columns.get(x, z, IslandField::reset);
         ensureIslands(c);
-        // A rough fjord wall moves the exact surface up and down by up to wallRough (relief 2026-10-20).
-        double lo = Math.min(exact - c.wallRough, bilinear);
-        double hi = Math.max(exact + c.wallRough, bilinear);
+        // A rough fjord wall moves the exact surface up and down by up to its amplitude (relief 2026-10-20).
+        c.roughAmplitude = amplitude;
+        double lo = Math.min(exact - amplitude, bilinear);
+        double hi = Math.max(exact + amplitude, bilinear);
         if (c.gorgeBlocks != null) {
             // The wall's own range: from the gorge floor to the collar.
             lo = Math.min(lo, Math.min(c.gorgeInside, c.gorgeOutside));
@@ -905,6 +932,29 @@ public final class IslandField implements DensityFunction {
         c.bandLo = banded ? Mth.floor(lo) - 1 : Integer.MAX_VALUE;
         c.bandHi = banded ? Mth.ceil(hi) + 1 : Integer.MIN_VALUE;
         return c;
+    }
+
+    /** The roughness of a fjord's wall at a block, −1..1 (times the column's amplitude: how far the face moves). */
+    double roughness(int x, int y, int z) {
+        return Mth.clamp(WALL_ROUGH_GAIN * relief.rough(x, y, z), -1.0, 1.0);
+    }
+
+    /**
+     * 0..1: how much of its roughness a fjord wall's column keeps, by the nearest column within {@link #ROUGH_FADE}
+     * blocks (8 directions) that would be rough but has no exact band (a hole, its lake and cave band, an outlet: the grid
+     * shows it smooth). Without it the face would step by up to the roughness there.
+     */
+    private double roughFade(int x, int z) {
+        for (int d = 1; d <= ROUGH_FADE; d++) {
+            for (int[] dir : DIRECTIONS) {
+                Column n = column(x + d * dir[0], z + d * dir[1]);
+                if (n.wallRoughRaw > 0.0 && !(n.fjordEdge && n.lakeTop == Integer.MIN_VALUE && n.caveLiftFrom > n.caveLiftTo
+                        && n.islandHole == 0.0)) {
+                    return Ring4Relief.smooth(d, 0.0, ROUGH_FADE + 1.0);
+                }
+            }
+        }
+        return 1.0;
     }
 
     /** Whether ring 4's density stands alone at a position (ring 4 itself, or the zone 3→4 past ring 3's mix share). */
@@ -1231,6 +1281,7 @@ public final class IslandField implements DensityFunction {
         c.exactFloor = c.verdant && c.surface == c.height ? c.surface : Double.NaN;
         // Only the relief's own fjord: not where the descent, a hole, the rim or the sundering changed the surface.
         c.fjordEdge = outside && s.fjordEdge && c.surface == c.height;
+        c.wallRoughRaw = outside ? s.wallRough : 0.0;
         c.wallRough = c.fjordEdge ? s.wallRough : 0.0;
         c.surfaceFilled = true;
     }
@@ -1582,8 +1633,12 @@ public final class IslandField implements DensityFunction {
         double sinkholeFloor;
         /** On a fjord's wall or rim ({@link Ring4Relief.Sample#fjordEdge}): {@link #thin} may cut the surface per block. */
         boolean fjordEdge;
-        /** On a fjord's wall: how far {@link #thin} moves the exact surface with the roughness (blocks; 0 elsewhere). */
+        /** On a fjord's wall: how far {@link #thin} may move the exact surface with the roughness (blocks; 0 elsewhere). */
         double wallRough;
+        /** The relief's roughness of the column whatever its band (holes, lakes, outlets included): for the neighbours. */
+        double wallRoughRaw;
+        /** The roughness {@link #thin} applies: {@link #wallRough} faded by {@link #roughFade} (set with the band). */
+        double roughAmplitude;
         /**
          * The blocks where the exact surface decides ({@link #withExactBand}); {@code bandLo} {@link Integer#MIN_VALUE}
          * until first asked, {@code bandLo > bandHi} for none.
@@ -1646,6 +1701,8 @@ public final class IslandField implements DensityFunction {
             sinkholeFloor = Double.NaN;
             fjordEdge = false;
             wallRough = 0.0;
+            wallRoughRaw = 0.0;
+            roughAmplitude = 0.0;
             bandLo = Integer.MIN_VALUE;
             bandHi = Integer.MIN_VALUE;
             sundered = 0.0;

@@ -870,3 +870,7 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-20 | worldgen | Reliëf ring 4 (A2-3): `mist_fjords` heuvels en rotsknobbels op het plateau en ruwere wanden (richels, uitstekende rotsen zoals de klif uit 5a), exact per blok | Fjordwand nu een lange rechte gestreepte muur; 4×4-raster maakt anders zaagtanden |
 | 2026-10-20 | worldgen | Reliëf ring 4 (A-W): alle biomes in één change, één afstemronde | Geen apart proefstuk nodig |
 | 2026-10-20 | worldgen | Reliëf ring 4, interpretatie team-lead (door de gebruiker te corrigeren): `glowroot_swamp` zachte golving binnen het kleine bereik met behoud van water; `crystal_lagoon`, `lotus_shallows`, `drowned_forest`, `verdant_falls` en `sundered_reach` ongewijzigd | Waterbiomes onder zee (A1-4); overgangen buiten de vraag |
+| 2026-10-20 | worldgen | Reliëf ring 4: gifpoelen in het veen ×0,2 accepteren; `toxic_pool` vaker laten proberen in de veenkommen bij de decor-hercheck | Bulten geven minder vlakke plekken; decor volgt |
+| 2026-10-20 | worldgen | Reliëf ring 4: afbakening akkoord (moeras zachte golving; lagune, lotus, drowned_forest, verdant_falls, sundered_reach ongewijzigd; zonemarge 24 + 64 blokken) | Interpretatie team-lead bevestigd |
+| 2026-10-20 | worldgen | Reliëf ring 4: cascadeglooiing 0–12 blijft; beoordelen bij de vlucht | Subtiel op de beelden, eerst in-game zien |
+| 2026-10-20 | worldgen | Reliëf ring 4: fjordwandruwheid ±6 blijft | Gebruiker tevreden |

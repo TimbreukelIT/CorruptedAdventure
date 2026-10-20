@@ -362,6 +362,52 @@ class Ring4ReliefTest {
                             }
                         }
                     }
+                    if (s.wallRough > 0.0 && renderedTopDifference(x0 + i, z0 + j) != null) {
+                        roughWall(s, x0 + i, z0 + j);
+                    }
+                }
+            }
+        }
+
+        /** Rough wall columns (any fjord weight): over the blended plateau, per block as the roughness says, tunnels. */
+        int roughColumns;
+        int blendColumns;
+        int overPlateau;
+        int overBlendedPlateau;
+        int notAsRough;
+        int tunnelsNearFace;
+
+        private void roughWall(Ring4Relief.Sample s, int x, int z) {
+            roughColumns++;
+            int top = renderedTop(field, x, z);
+            // The blended plateau, or less (the rim's rounding lowers the cut): rock stays under it (review relief #1).
+            double plateau = s.height - s.fjordLand * s.fjordRim;
+            if (s.fjordLand < 0.9) {
+                blendColumns++;
+                overBlendedPlateau += top >= plateau ? 1 : 0;
+            } else {
+                overPlateau += top >= plateau ? 1 : 0;
+            }
+            notAsRough += top != expectedTop(x, z) ? 1 : 0;
+            // Review relief #2: the net's ceilings stay under the face the roughness may cut.
+            IslandField.Column c = field.column(x, z);
+            Ring4Tunnels.Span span = field.tunnelSpan(x, z);
+            if (span != null) {
+                for (int k = 0; k < span.n; k++) {
+                    tunnelsNearFace += span.hi[k] >= c.surface() - c.wallRough - 1.0 ? 1 : 0;
+                }
+            }
+        }
+
+        /** The top block of a rough wall's column as its roughness cuts it, block by block (independent of the band). */
+        private static int expectedTop(int x, int z) {
+            IslandField.Column c = field.column(x, z);
+            field.thin(x, (int) Math.floor(c.surface()), z);
+            c = field.column(x, z);
+            double amplitude = c.roughAmplitude;
+            for (int y = (int) Math.ceil(c.surface() + amplitude) + 1; ; y--) {
+                if (y < c.surface() + amplitude * field.roughness(x, y, z)) {
+                    return y;
                 }
             }
         }
@@ -545,6 +591,23 @@ class Ring4ReliefTest {
         assertEquals(0.0, share(g.rimTop, 2), "rim 2 off");
         assertTrue(share(g.wallTop, 2) <= 0.002, "wall 2 off beyond its roughness " + share(g.wallTop, 2));
         assertTrue(share(g.behindTop, 1) <= 0.01, "behind the rim off " + share(g.behindTop, 1));
+    }
+
+    /**
+     * Review relief: a rough wall's rock never rises over the (blended) plateau, also where the fjord blends into another
+     * landform; every column's top is exactly what its roughness cuts (the band covers it); the net's ceilings stay under
+     * the face the roughness may cut.
+     */
+    @Test
+    void roughWallsStayUnderThePlateauAndFollowTheirRoughness() {
+        GridSurvey g = survey();
+        System.out.printf("rough wall columns %d (blend %d): over the plateau %d, over the blended plateau %d, not as rough %d, tunnels near the face %d%n",
+                g.roughColumns, g.blendColumns, g.overPlateau, g.overBlendedPlateau, g.notAsRough, g.tunnelsNearFace);
+        assertTrue(g.roughColumns > 1000 && g.blendColumns > 50, "rough " + g.roughColumns + ", blend " + g.blendColumns);
+        assertEquals(0, g.overPlateau, "over the plateau");
+        assertEquals(0, g.overBlendedPlateau, "over the blended plateau");
+        assertEquals(0, g.notAsRough, "not as rough");
+        assertEquals(0, g.tunnelsNearFace, "tunnels near the face");
     }
 
     /** A2-3 (2026-10-20): the fjords' walls are rough (ledges, jutting rock), not a straight striped face. */

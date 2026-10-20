@@ -298,9 +298,13 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
                         && fjordRim < FJORD_EDGE_RIM;
                 if (fjordEdge) {
                     // The rough face only on the wall itself: none on the floor and the rim (they stay as cut), and
-                    // nothing where the fjord landform thins out towards the band's edge (no step where it ends).
-                    wallRough = reliefShare * FJORD_WALL_ROUGH * smooth(distance, FJORD_HALF, FJORD_HALF + 3.0)
-                            * smooth(-fjordRim, WALL_ROUGH_FROM, WALL_ROUGH_FULL) * smooth(fjordW * (1.0 - blighted), FJORD_EDGE_WEIGHT, 0.4);
+                    // nothing where the fjord landform thins out towards the band's edge (no step where it ends). The
+                    // depth is the blended one (review: the fjord's share of the cut): the roughness never exceeds it
+                    // (smooth(t, 4, 10) · 6 ≤ t), so no rock juts above the blended plateau.
+                    double share = fjordW * (1.0 - blighted);
+                    // None where the cascades' steps reshape the mix either (the bound holds for the unstepped height).
+                    wallRough = reliefShare * (1.0 - stepped) * FJORD_WALL_ROUGH * smooth(distance, FJORD_HALF, FJORD_HALF + 3.0)
+                            * smooth(-share * fjordRim, WALL_ROUGH_FROM, WALL_ROUGH_FULL) * smooth(share, FJORD_EDGE_WEIGHT, 0.4);
                 }
             }
             double terraced = smooth(cascadeW, 0.0, 0.3);
@@ -319,7 +323,9 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
         if (blighted > 0.0) {
             double drowned = DROWNED_Y + 2.5 * d + 2.0 * hillsV;
             double reed = SEA + 1.2 * hillsV + 0.8 * d;
-            double peatY = PEAT_Y + 1.5 * hill01 + Mth.lerp(reliefShare, PEAT_DETAIL_BEFORE, PEAT_DETAIL) * d;
+            // The extra detail only upwards (A1-4): the moors' lows and their waterline stay where they were.
+            double peatY = PEAT_Y + 1.5 * hill01 + PEAT_DETAIL_BEFORE * d
+                    + reliefShare * (PEAT_DETAIL - PEAT_DETAIL_BEFORE) * Math.max(0.0, d);
             blightedH = drownedW * drowned + reedW * reed + peatW * peatY;
             // Hummocks and low ridges with hollows between (2026-10-20), after the mix and on land only: none on the
             // reed's water, its shores, or where the moors blend into the drowned forest.
@@ -489,8 +495,10 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
 
     /**
      * 0 in and right around a peat sinkhole, 1 from {@link #SINKHOLE_APRON} blocks beyond its edge: the hummocks keep
-     * off, so a sinkhole lies in a level hollow and stays deepest at its centre (the preliminary surface counts on that,
-     * {@link IslandField#sinkholeFloorWithin}). Its own cell and the neighbours (the apron may reach across a border).
+     * off, so a sinkhole lies in a hollow of the base terrain, not across a hummock's flank. Where that base terrain
+     * slopes (the band's blend) its floor may still be deepest off its centre: the preliminary surface and the tunnels'
+     * ceilings therefore take the deepest of several points ({@link IslandField#deepestSinkholeFloor}). Its own cell and
+     * the neighbours (the apron may reach across a border).
      */
     static double sinkholeApron(double x, double z, long salt) {
         int i0 = Math.floorDiv(Mth.floor(x), SINKHOLE_CELL);
