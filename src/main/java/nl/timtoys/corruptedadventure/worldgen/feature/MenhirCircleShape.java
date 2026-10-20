@@ -15,7 +15,7 @@ import java.util.function.IntBinaryOperator;
 /**
  * The stone circle of {@code peat_moors} ({@link BlightedLandmarks.Kind#MENHIR_CIRCLE}): seven to nine menhirs (4–7
  * high, most two wide, some 2 × 2) on a ring of radius 6.5–8.5, most of them leaning one block out or aside from half their height, one
- * now and then fallen flat or gone. Tidestone and cobblestone, patched with mossy cobblestone, moss on the
+ * now and then fallen flat or gone. Tidestone and cobblestone, patched with mossy cobblestone and mossy tidestone, moss on the
  * tops, vines down the sides. In the middle a small toxic pool in a ring of mud with dead bushes, round it a ring of
  * blighted glowcaps. Pure in the site and the pure ground heights.
  */
@@ -30,7 +30,8 @@ final class MenhirCircleShape {
         // would hold ore or not by the order of generation (det check decor B). Tidestone's own ores stay below Y 48.
         List<BlockState> stones = List.of(ModBlocks.TIDESTONE.get().defaultBlockState(), ModBlocks.TIDESTONE.get().defaultBlockState(),
                 Blocks.COBBLESTONE.defaultBlockState());
-        BlockState mossy = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+        // Mossy tidestone beside mossy cobblestone (2026-10-20); in no ore-host tag (not ring_4_stones), so no ore blob takes it.
+        Mossy mossy = new Mossy(Blocks.MOSSY_COBBLESTONE.defaultBlockState(), ModBlocks.MOSSY_TIDESTONE.get().defaultBlockState());
         int count = 7 + random.nextInt(3);
         double radius = 6.5 + random.nextDouble() * 2.0;
         double start = random.nextDouble() * Math.PI * 2.0;
@@ -68,7 +69,7 @@ final class MenhirCircleShape {
 
     private static void standingStone(LandmarkPlan plan, BlightedLandmarks.Site site, IntBinaryOperator ground, int x, int z, Direction out, Direction along,
                                       Direction lean, int leanAt, int height, boolean wide, boolean thick, BlockState main,
-                                      BlockState mossy, RandomSource random) {
+                                      Mossy mossy, RandomSource random) {
         int base = ground.applyAsInt(x, z);
         for (int w = 0; w < (wide ? 2 : 1) * (thick ? 2 : 1); w++) {
             int cx = x + along.getStepX() * (w % 2) + out.getStepX() * (w / 2);
@@ -78,7 +79,7 @@ final class MenhirCircleShape {
             for (int dy = 0; dy < height; dy++) {
                 boolean shifted = dy >= leanAt;
                 BlockPos pos = new BlockPos(cx + (shifted ? lean.getStepX() : 0), base + dy, cz + (shifted ? lean.getStepZ() : 0));
-                put(plan, site, pos, random.nextFloat() < 0.4F ? mossy : main);
+                put(plan, site, pos, mossy.patch(random.nextFloat(), 0.4F, main));
                 top = pos;
             }
             // Under the shifted part the stone also fills the block it leans over (no thin overhang at the joint).
@@ -93,19 +94,30 @@ final class MenhirCircleShape {
     }
 
     private static void fallenStone(LandmarkPlan plan, BlightedLandmarks.Site site, IntBinaryOperator ground, int x, int z, Direction out, Direction along,
-                                    int length, boolean wide, BlockState main, BlockState mossy, RandomSource random) {
+                                    int length, boolean wide, BlockState main, Mossy mossy, RandomSource random) {
         for (int i = 0; i < length; i++) {
             for (int w = 0; w < (wide ? 2 : 1); w++) {
                 int cx = x + out.getStepX() * i + along.getStepX() * w;
                 int cz = z + out.getStepZ() * i + along.getStepZ() * w;
                 int base = ground.applyAsInt(cx, cz);
                 BlockPos pos = new BlockPos(cx, base, cz);
-                BlockState stone = random.nextFloat() < 0.5F ? mossy : main;
+                BlockState stone = mossy.patch(random.nextFloat(), 0.5F, main);
                 if (put(plan, site, pos, stone)) {
                     plan.feet.add(new LandmarkPlan.Foot(cx, cz, base, 1, main));
                     dressTop(plan, pos, random);
                 }
             }
+        }
+    }
+
+    /**
+     * The two mossy stones of the patches. One roll decides both whether a block is mossy and which moss it gets, so the
+     * menhirs draw exactly as many numbers as before the mossy tidestone.
+     */
+    private record Mossy(BlockState cobblestone, BlockState tidestone) {
+        /** {@code main} unless {@code roll < share}: then mossy cobblestone in the lower half of the share, else mossy tidestone. */
+        BlockState patch(float roll, float share, BlockState main) {
+            return roll >= share ? main : roll < share * 0.5F ? cobblestone : tidestone;
         }
     }
 

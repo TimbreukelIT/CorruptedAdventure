@@ -33,6 +33,12 @@
             "Name": "minecraft:lily_of_the_valley"
           },
           "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:moonpetal_shrub"
+          },
+          "weight": 2
         }
       ]
     }

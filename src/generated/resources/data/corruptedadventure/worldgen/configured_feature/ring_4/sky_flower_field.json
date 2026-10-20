@@ -42,6 +42,18 @@
         },
         {
           "data": {
+            "Name": "corruptedadventure:moonpetal_shrub"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:mist_fern"
+          },
+          "weight": 4
+        },
+        {
+          "data": {
             "Name": "minecraft:pink_petals",
             "Properties": {
               "facing": "north",

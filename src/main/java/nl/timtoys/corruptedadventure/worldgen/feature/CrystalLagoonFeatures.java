@@ -8,6 +8,7 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
@@ -33,12 +34,13 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
  * {@code crystal_lagoon} (ring 4 decor rollout group A, 2026-10-19; sparring 2026-10-19): clear, light and crystalline.
  * <ul>
  *   <li>Sand banks just awash and small sandy atolls raised out of the shallow water ({@link ShoalFeature}), with
- *   aquamarine buds on them and seagrass on their slopes;</li>
- *   <li>aquamarine clusters and buds on the floor and the banks, tidestone rocks under the water and on the shores
+ *   aquamarine buds and lagoon glowgrass on them and seagrass and (waterlogged) glowgrass on their slopes;</li>
+ *   <li>aquamarine clusters and buds on the floor, with glowgrass on the banks, tidestone rocks under the water and on the shores
  *   ({@link BoulderFeature}, also {@code submerged});</li>
  *   <li>coral reefs and seagrass meadows in patches ({@link Ring4Placements#PATCHES_NOISE}) besides the even coral and
  *   seagrass of package 75;</li>
- *   <li>the eye-catcher: groups of glowing crystal spires, 8–20 out of the water ({@link CrystalSpireFeature}).</li>
+ *   <li>the eye-catcher: groups of glowing crystal spires, 8–20 out of the water, aquamarine with glowing aquamarine
+ *   stone and calcite in the shell ({@link CrystalSpireFeature}).</li>
  * </ul>
  * The lagoon has no trees, so its objects only keep clear of the trees of the neighbouring biomes (biome margins).
  * Amounts are starting values for the tuning loop.
@@ -75,15 +77,18 @@ public final class CrystalLagoonFeatures {
                 BlockStateProvider.simple(sand), BlockStateProvider.simple(sand), BlockStateProvider.simple(sand),
                 weighted(bud(ModBlocks.LARGE_AQUAMARINE_BUD.get().defaultBlockState(), false), 2,
                         bud(ModBlocks.AQUAMARINE_CLUSTER.get().defaultBlockState(), false), 1,
-                        bud(ModBlocks.MEDIUM_AQUAMARINE_BUD.get().defaultBlockState(), false), 2), 0.04F,
+                        bud(ModBlocks.MEDIUM_AQUAMARINE_BUD.get().defaultBlockState(), false), 2,
+                        ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState(), 3), 0.04F,
                 BlockStateProvider.simple(sand), 0.0F, 0.0F,
-                weighted(Blocks.SEAGRASS.defaultBlockState(), 6, bud(ModBlocks.AQUAMARINE_CLUSTER.get().defaultBlockState(), true), 1), 0.3F));
+                weighted(Blocks.SEAGRASS.defaultBlockState(), 6, bud(ModBlocks.AQUAMARINE_CLUSTER.get().defaultBlockState(), true), 1,
+                        ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, true), 2), 0.3F));
         // The eye-catcher: one group per cell of 192 at most (about one in every 200 × 200 blocks of open lagoon).
         FeatureUtils.register(context, SPIRES, ModFeatures.CRYSTAL_SPIRE.get(), new CrystalSpireConfiguration(
                 new Landmarks.Grid(192, 0.8F, 8, 24), ModBiomes.CRYSTAL_LAGOON, UniformInt.of(10, 20), UniformFloat.of(2.2F, 3.6F),
                 UniformInt.of(1, 3), ModBlocks.AQUAMARINE_BLOCK.get().defaultBlockState(),
                 // White calcite veins in the crystal; no budding block (that stays in the geodes under deep water).
-                weighted(ModBlocks.AQUAMARINE_BLOCK.get().defaultBlockState(), 9, Blocks.CALCITE.defaultBlockState(), 1),
+                weighted(ModBlocks.AQUAMARINE_BLOCK.get().defaultBlockState(), 6, ModBlocks.AQUAMARINE_STONE.get().defaultBlockState(), 3,
+                        Blocks.CALCITE.defaultBlockState(), 1),
                 weighted(ModBlocks.TIDESTONE.get().defaultBlockState(), 5, ModBlocks.COBBLED_TIDESTONE.get().defaultBlockState(), 2,
                         ModBlocks.POLISHED_TIDESTONE.get().defaultBlockState(), 1),
                 Blocks.SEA_LANTERN.defaultBlockState(), 0.07F,
@@ -105,7 +110,8 @@ public final class CrystalLagoonFeatures {
                 BlockStateProvider.simple(bud(ModBlocks.LARGE_AQUAMARINE_BUD.get().defaultBlockState(), true))));
         FeatureUtils.register(context, BANK_CLUSTER, ModFeatures.GROUND_PLANT.get(), new SimpleBlockConfiguration(
                 weighted(bud(ModBlocks.AQUAMARINE_CLUSTER.get().defaultBlockState(), false), 1,
-                        bud(ModBlocks.LARGE_AQUAMARINE_BUD.get().defaultBlockState(), false), 2)));
+                        bud(ModBlocks.LARGE_AQUAMARINE_BUD.get().defaultBlockState(), false), 2,
+                        ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState(), 3)));
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {

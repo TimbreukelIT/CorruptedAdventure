@@ -96,7 +96,13 @@
           "data": {
             "Name": "corruptedadventure:aquamarine_block"
           },
-          "weight": 9
+          "weight": 6
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:aquamarine_stone"
+          },
+          "weight": 3
         },
         {
           "data": {

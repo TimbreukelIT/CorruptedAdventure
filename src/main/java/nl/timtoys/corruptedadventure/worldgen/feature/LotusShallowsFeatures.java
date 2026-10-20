@@ -10,6 +10,7 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
@@ -44,7 +45,7 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
  *   ({@link Ring4Placements#PATCHES_NOISE});</li>
  *   <li>collars of reeds and sugar cane along the banks;</li>
  *   <li>small grassy islets in the shallows ({@link ShoalFeature}) with azalea shrubs, flowers and reeds round their
- *   edge; flowers and azalea bushes on the banks.</li>
+ *   edge, lagoon glowgrass on and round them; flowers and azalea bushes on the banks.</li>
  * </ul>
  * The plants on the water draw before they look ({@link GroundPlantFeature}); the bushes are trees of
  * {@link IsolatedTreeFeature} and stand on ground at least two blocks over the sea, so their leaves never meet an islet
@@ -74,7 +75,8 @@ public final class LotusShallowsFeatures {
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         BlockStateProvider flowers = weighted(Blocks.BLUE_ORCHID.defaultBlockState(), 4, Blocks.ALLIUM.defaultBlockState(), 2,
                 Blocks.AZURE_BLUET.defaultBlockState(), 3, Blocks.OXEYE_DAISY.defaultBlockState(), 2, ModBlocks.GLOW_BLOOM.get().defaultBlockState(), 2,
-                Blocks.SHORT_GRASS.defaultBlockState(), 6, Blocks.FERN.defaultBlockState(), 2);
+                Blocks.SHORT_GRASS.defaultBlockState(), 6, Blocks.FERN.defaultBlockState(), 2,
+                ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState(), 2);
         // Islets of ~8–25 blocks: the grove noise at three times its frequency, its own field (salt 6); the top one block
         // over the water, the edges sink to three under it.
         FeatureUtils.register(context, ISLET, ModFeatures.SHOAL.get(), new ShoalConfiguration(ModBiomes.LOTUS_SHALLOWS, 10,
@@ -82,7 +84,8 @@ public final class LotusShallowsFeatures {
                 BlockStateProvider.simple(Blocks.CLAY), BlockStateProvider.simple(Blocks.DIRT), BlockStateProvider.simple(Blocks.GRASS_BLOCK),
                 flowers, 0.55F,
                 weighted(persistent(Blocks.AZALEA_LEAVES.defaultBlockState()), 3, persistent(Blocks.FLOWERING_AZALEA_LEAVES.defaultBlockState()), 2),
-                0.1F, 0.55F, BlockStateProvider.simple(Blocks.SEAGRASS), 0.15F));
+                0.1F, 0.55F, weighted(Blocks.SEAGRASS.defaultBlockState(), 3,
+                        ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, true), 1), 0.15F));
         groundPlant(context, FLOATING, weighted(ModBlocks.LOTUS.get().defaultBlockState(), 3, Blocks.LILY_PAD.defaultBlockState(), 2));
         FeatureUtils.register(context, SUGAR_CANE, Feature.BLOCK_COLUMN, BlockColumnConfiguration.simple(BiasedToBottomInt.of(2, 3),
                 BlockStateProvider.simple(Blocks.SUGAR_CANE)));

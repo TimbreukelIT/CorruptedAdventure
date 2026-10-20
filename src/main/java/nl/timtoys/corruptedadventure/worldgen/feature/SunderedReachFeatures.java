@@ -39,8 +39,8 @@ public final class SunderedReachFeatures {
                         ModBlocks.TIDESTONE.get().defaultBlockState(), 2, Blocks.COBBLED_DEEPSLATE.defaultBlockState(), 1),
                 weighted(Blocks.COBBLED_DEEPSLATE.defaultBlockState(), 3, Blocks.DEEPSLATE.defaultBlockState(), 2,
                         Blocks.TUFF.defaultBlockState(), 1),
-                weighted(Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 2, Blocks.COBBLED_DEEPSLATE.defaultBlockState(), 2,
-                        Blocks.MOSS_BLOCK.defaultBlockState(), 1),
+                weighted(Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 2, ModBlocks.MOSSY_TIDESTONE.get().defaultBlockState(), 2,
+                        Blocks.COBBLED_DEEPSLATE.defaultBlockState(), 2, Blocks.MOSS_BLOCK.defaultBlockState(), 1),
                 UniformInt.of(24, 34), UniformFloat.of(0.7F, 0.9F), UniformFloat.of(4.0F, 5.5F), UniformFloat.of(1.5F, 3.5F),
                 POSITION));
     }

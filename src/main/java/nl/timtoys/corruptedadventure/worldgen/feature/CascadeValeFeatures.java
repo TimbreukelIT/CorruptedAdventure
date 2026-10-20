@@ -37,7 +37,8 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
  * {@code cascade_vale} (ring 4 decor proef, 2026-10-19; decisions of the sparring 2026-10-19): lush. The moonpetal
  * trees themselves stay as they are, in groves now ({@link Ring4MythicFeatures#CASCADE_VALE_TREES}); around them:
  * <ul>
- *   <li>flower fields in patches (glow blooms, alliums, azure bluets, pink petals) with open grass between them;</li>
+ *   <li>flower fields in patches (glow blooms, alliums, azure bluets, pink petals, moonpetal shrubs and mist ferns)
+ *   with open grass between them;</li>
  *   <li>low blossom: moonpetal and flowering azalea bushes (trees of {@link IsolatedTreeFeature}) and the verdant
  *   blossom bushes of {@link VerdantFallsFeatures};</li>
  *   <li>the banks: reeds, giant lily pads and lotus on the water (the glow blooms along the lakes stay);</li>
@@ -108,12 +109,17 @@ public final class CascadeValeFeatures {
                 new BushFoliagePlacer(ConstantInt.of(2), ConstantInt.of(1), 2), new TwoLayersFeatureSize(0, 0, 0)).build();
     }
 
-    /** The flower fields: glow blooms, alliums, azure bluets and pink petals (1–4 petals, every way round). */
+    /**
+     * The flower fields: glow blooms, alliums, azure bluets, pink petals (1–4 petals, every way round), moonpetal
+     * shrubs and mist ferns among them.
+     */
     private static WeightedStateProvider flowers() {
         SimpleWeightedRandomList.Builder<BlockState> list = SimpleWeightedRandomList.builder();
         list.add(ModBlocks.GLOW_BLOOM.get().defaultBlockState(), 6);
         list.add(Blocks.ALLIUM.defaultBlockState(), 5);
         list.add(Blocks.AZURE_BLUET.defaultBlockState(), 6);
+        list.add(ModBlocks.MOONPETAL_SHRUB.get().defaultBlockState(), 4);
+        list.add(ModBlocks.MIST_FERN.get().defaultBlockState(), 5);
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             for (int amount = 2; amount <= 4; amount++) {
                 list.add(Blocks.PINK_PETALS.defaultBlockState().setValue(PinkPetalsBlock.FACING, facing)

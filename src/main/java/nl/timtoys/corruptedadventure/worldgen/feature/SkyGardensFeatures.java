@@ -55,7 +55,7 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
  *   <li>small moonpetal groves ({@link Ring4MythicFeatures#SKY_GARDENS_TREES}: small and cascade-sized moonpetals on
  *   a grid of 8, {@link #TREE_PLACEMENT}), blossom and azalea bushes round them;</li>
  *   <li>flower fields in patches (glow blooms, bluets, lilies of the valley, daisies, alliums, cornflowers, pink
- *   petals) with open grass between, moss patches with carpets;</li>
+ *   petals, moonpetal shrubs and mist ferns) with open grass between, moss patches with carpets;</li>
  *   <li>the eye-catchers ({@link SkyLandmarks}): a giant moonpetal whose crown covers its island
  *   ({@link GiantMoonpetalFeature}) and a crumbling ring of pillars with an arch ({@link SkyRuinFeature});</li>
  *   <li>under every island of the mythical band ({@link IslandDressingFeature}): moss and aquamarine in the underside,
@@ -173,7 +173,7 @@ public final class SkyGardensFeatures {
                 BlockPredicate.matchesBlocks(Ring4Placements.up(-1), Blocks.MOSS_BLOCK))));
     }
 
-    /** The flower fields: lighter than the cascades' (more white and blue), a few pink petals. */
+    /** The flower fields: lighter than the cascades' (more white and blue), a few pink petals, moonpetal shrubs and mist ferns. */
     private static WeightedStateProvider flowers() {
         SimpleWeightedRandomList.Builder<BlockState> list = SimpleWeightedRandomList.builder();
         list.add(ModBlocks.GLOW_BLOOM.get().defaultBlockState(), 4);
@@ -182,6 +182,8 @@ public final class SkyGardensFeatures {
         list.add(Blocks.OXEYE_DAISY.defaultBlockState(), 3);
         list.add(Blocks.ALLIUM.defaultBlockState(), 2);
         list.add(Blocks.CORNFLOWER.defaultBlockState(), 2);
+        list.add(ModBlocks.MOONPETAL_SHRUB.get().defaultBlockState(), 3);
+        list.add(ModBlocks.MIST_FERN.get().defaultBlockState(), 4);
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             list.add(Blocks.PINK_PETALS.defaultBlockState().setValue(PinkPetalsBlock.FACING, facing).setValue(PinkPetalsBlock.AMOUNT, 2), 1);
         }
