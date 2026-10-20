@@ -32,6 +32,30 @@
         "exclusion_radius_y": 0,
         "probability": 0.14,
         "required_empty_blocks": 2
+      },
+      {
+        "type": "corruptedadventure:hanging_strand",
+        "hanger": {
+          "Name": "minecraft:mangrove_roots",
+          "Properties": {
+            "waterlogged": "false"
+          }
+        },
+        "max_length": 4,
+        "strand": {
+          "Name": "corruptedadventure:hanging_swamp_moss",
+          "Properties": {
+            "waterlogged": "false"
+          }
+        },
+        "strand_chance": 0.2,
+        "tip": {
+          "Name": "corruptedadventure:glowing_hanging_roots",
+          "Properties": {
+            "waterlogged": "false"
+          }
+        },
+        "tip_chance": 0.3
       }
     ],
     "dirt_provider": {

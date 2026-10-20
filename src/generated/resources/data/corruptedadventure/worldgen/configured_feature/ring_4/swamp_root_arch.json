@@ -1,0 +1,51 @@
+{
+  "type": "corruptedadventure:root_arch",
+  "config": {
+    "biome": "corruptedadventure:glowroot_swamp",
+    "grid": {
+      "cell_size": 160,
+      "chance": 0.85,
+      "margin": 20,
+      "tries": 16
+    },
+    "max_strand": 6,
+    "roots": {
+      "Name": "minecraft:mangrove_roots",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "strand": {
+      "Name": "corruptedadventure:hanging_swamp_moss",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "strand_chance": 0.3,
+    "tip": {
+      "Name": "corruptedadventure:glowing_hanging_roots",
+      "Properties": {
+        "waterlogged": "false"
+      }
+    },
+    "tip_chance": 0.3,
+    "top_chance": 0.5,
+    "top_decor": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:moss_carpet"
+          },
+          "weight": 5
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:glowcap"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

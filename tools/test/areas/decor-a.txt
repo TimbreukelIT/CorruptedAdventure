@@ -1,0 +1,8 @@
+# Ring 4 decor rollout group A (ring4/decor-a, 2026-10-19): one area per biome for the before/after contact sheets and the
+# quick determinism check (world.sh --freeze, detcmp.py). Chunk coordinates, inclusive; seed 20260930.
+# crystal_lagoon with a group of crystal spires (main spire near 6373 70)
+lagoon 393 -1 402 8
+# lotus_shallows around 7000 100 (islets, lotus fields, reed collars)
+lotus 433 2 442 11
+# glowroot_swamp with a root arch (anchor 6963 -345) and the ancient swamp tree (trunk 6970 -475)
+swamp 430 -31 439 -20

@@ -119,7 +119,10 @@ final class TreeOverlap {
                 && !state.is(ModBlocks.VERDANT_FRUIT_POD.get()) && pos.getY() >= terrain.surface(pos.getX(), pos.getZ());
     }
 
-    /** The rank of a block a tree planned (by its block: the trunk setter also lays dirt under the trunk). */
+    /**
+     * The rank of a block a tree planned (by its block: the trunk setter also lays dirt under the trunk; a hanging strand
+     * ranks as that dirt, {@link #strand}).
+     */
     static Rank planned(BlockState state) {
         if (root(state)) {
             return Rank.ROOT;
@@ -127,7 +130,7 @@ final class TreeOverlap {
         if (state.is(BlockTags.LOGS)) {
             return Rank.TRUNK;
         }
-        if (state.is(BlockTags.DIRT)) {
+        if (state.is(BlockTags.DIRT) || strand(state)) {
             return Rank.GROUND;
         }
         return state.is(BlockTags.LEAVES) ? Rank.LEAF : Rank.DECOR;
@@ -186,6 +189,16 @@ final class TreeOverlap {
             }
         }
         return Integer.compare(Block.getId(a), Block.getId(b));
+    }
+
+    /**
+     * Hanging swamp moss and glowing roots (decor A: the strands of {@code hanging_strand}, the arches and the ancient
+     * tree). Found in the level they are {@link Rank#NONE} (the island strands hang there too), so a tree plans them at
+     * {@link Rank#GROUND}: they take only open space and another strand, never another tree's moss, propagule or leaf,
+     * which gives the same block in either order.
+     */
+    static boolean strand(BlockState state) {
+        return state.is(ModBlocks.HANGING_SWAMP_MOSS.get()) || state.is(ModBlocks.GLOWING_HANGING_ROOTS.get());
     }
 
     private static boolean root(BlockState state) {

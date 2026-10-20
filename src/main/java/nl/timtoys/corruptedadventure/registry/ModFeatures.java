@@ -29,6 +29,15 @@ import nl.timtoys.corruptedadventure.worldgen.feature.IslandDressingConfiguratio
 import nl.timtoys.corruptedadventure.worldgen.feature.IslandDressingFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.SkyRuinConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.SkyRuinFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.AncientSwampTreeConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.AncientSwampTreeFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.CrystalSpireConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.CrystalSpireFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.RootArchConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.RootArchFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.RootTangleFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.ShoalConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.ShoalFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.DuneRubbleFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantGeodeLiningConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantGeodeLiningFeature;
@@ -302,6 +311,23 @@ public final class ModFeatures {
     /** {@code corruptedadventure:sky_ruin} (decor rollout C): a crumbling ring of pillars with an arch on a sky island */
     public static final DeferredHolder<Feature<?>, Feature<SkyRuinConfiguration>> SKY_RUIN =
             FEATURES.register("sky_ruin", () -> new SkyRuinFeature(SkyRuinConfiguration.CODEC));
+
+    // ring 4 — decor rollout group A (crystal_lagoon, lotus_shallows, glowroot_swamp)
+    /** {@code corruptedadventure:shoal} (decor A): sand banks, atolls and islets raised out of shallow sea water */
+    public static final DeferredHolder<Feature<?>, Feature<ShoalConfiguration>> SHOAL =
+            FEATURES.register("shoal", () -> new ShoalFeature(ShoalConfiguration.CODEC));
+    /** {@code corruptedadventure:crystal_spire} (decor A): the lagoon's landmark, a group of glowing crystal spires */
+    public static final DeferredHolder<Feature<?>, Feature<CrystalSpireConfiguration>> CRYSTAL_SPIRE =
+            FEATURES.register("crystal_spire", () -> new CrystalSpireFeature(CrystalSpireConfiguration.CODEC));
+    /** {@code corruptedadventure:root_arch} (decor A): the swamp's landmark arch of mangrove roots over the water */
+    public static final DeferredHolder<Feature<?>, Feature<RootArchConfiguration>> ROOT_ARCH =
+            FEATURES.register("root_arch", () -> new RootArchFeature(RootArchConfiguration.CODEC));
+    /** {@code corruptedadventure:root_tangle} (decor A): a knot of small root bows over shallow swamp water */
+    public static final DeferredHolder<Feature<?>, Feature<RootArchConfiguration>> ROOT_TANGLE =
+            FEATURES.register("root_tangle", () -> new RootTangleFeature(RootArchConfiguration.CODEC));
+    /** {@code corruptedadventure:ancient_swamp_tree} (decor A): the swamp's landmark tree, a 3 × 3 mangrove full of moss */
+    public static final DeferredHolder<Feature<?>, Feature<AncientSwampTreeConfiguration>> ANCIENT_SWAMP_TREE =
+            FEATURES.register("ancient_swamp_tree", () -> new AncientSwampTreeFeature(AncientSwampTreeConfiguration.CODEC));
 
     private ModFeatures() {
     }

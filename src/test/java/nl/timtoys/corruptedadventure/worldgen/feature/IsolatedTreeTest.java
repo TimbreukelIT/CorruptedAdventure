@@ -209,6 +209,16 @@ class IsolatedTreeTest {
         BlockState propaguleThenCap = TreeOverlap.wins(glowcap, propagule, Blocks.AIR.defaultBlockState()) ? glowcap : propagule;
         assertEquals(capThenPropagule, propaguleThenCap);
         assertEquals(TreeOverlap.Rank.NONE, TreeOverlap.existing(glowcap, Blocks.MUD.defaultBlockState()), "a ground glowcap");
+        // Decor A: a swamp tree's strand of moss or glowing root against another tree's propagule, in either order.
+        BlockState air = Blocks.AIR.defaultBlockState();
+        for (BlockState strand : List.of(ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState(),
+                ModBlocks.GLOWING_HANGING_ROOTS.get().defaultBlockState())) {
+            assertEquals(TreeOverlap.Rank.NONE, TreeOverlap.existing(strand, air), "the island strands hang there too");
+            assertEquals(TreeOverlap.Rank.GROUND, TreeOverlap.planned(strand));
+            BlockState strandThenPropagule = TreeOverlap.wins(propagule, strand, air) ? propagule : strand;
+            BlockState propaguleThenStrand = TreeOverlap.wins(strand, propagule, air) ? strand : propagule;
+            assertEquals(strandThenPropagule, propaguleThenStrand, strand.toString());
+        }
         BlockState near = Blocks.MANGROVE_LEAVES.defaultBlockState().setValue(LeavesBlock.DISTANCE, 1);
         BlockState far = Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.DISTANCE, 5);
         assertTrue(wins(near, far), "the leaf closer to a log stays");

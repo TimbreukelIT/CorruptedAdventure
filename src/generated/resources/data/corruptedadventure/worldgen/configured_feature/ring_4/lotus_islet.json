@@ -1,0 +1,122 @@
+{
+  "type": "corruptedadventure:shoal",
+  "config": {
+    "bed": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:clay"
+      }
+    },
+    "bed_chance": 0.15,
+    "bed_plants": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:seagrass"
+      }
+    },
+    "biome": "corruptedadventure:lotus_shallows",
+    "biome_margin": 10,
+    "fill": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:dirt"
+      }
+    },
+    "land_plants": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:blue_orchid"
+          },
+          "weight": 4
+        },
+        {
+          "data": {
+            "Name": "minecraft:allium"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:azure_bluet"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:oxeye_daisy"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:glow_bloom"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:short_grass"
+          },
+          "weight": 6
+        },
+        {
+          "data": {
+            "Name": "minecraft:fern"
+          },
+          "weight": 2
+        }
+      ]
+    },
+    "land_top": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:grass_block",
+        "Properties": {
+          "snowy": "false"
+        }
+      }
+    },
+    "max_depth": 5,
+    "plant_chance": 0.55,
+    "reed_chance": 0.55,
+    "rise": 1,
+    "shape": {
+      "high": 0.6,
+      "low": 0.3,
+      "noise": "corruptedadventure:ring_4_groves",
+      "salt": 6,
+      "xz_scale": 3.0
+    },
+    "shrub_chance": 0.1,
+    "shrubs": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:azalea_leaves",
+            "Properties": {
+              "distance": "7",
+              "persistent": "true",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:flowering_azalea_leaves",
+            "Properties": {
+              "distance": "7",
+              "persistent": "true",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        }
+      ]
+    },
+    "sink": 3
+  }
+}

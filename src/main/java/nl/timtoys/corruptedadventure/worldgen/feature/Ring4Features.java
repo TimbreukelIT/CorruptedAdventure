@@ -79,6 +79,17 @@ public final class Ring4Features {
             vegetal(MistFjordsFeatures.MIST_FJORDS_FALLEN_TREES, ModBiomes.MIST_FJORDS),
             vegetal(MistFjordsFeatures.MIST_FJORDS_TREES, ModBiomes.MIST_FJORDS),
             vegetal(MistFjordsFeatures.MIST_FJORDS_BUSHES, ModBiomes.MIST_FJORDS),
+            // Decor A: the lagoon's banks and the lotus islets rise and the eye-catchers stand before anything grows in the
+            // water; the swamp's moss floor before its plants.
+            vegetal(CrystalLagoonFeatures.CRYSTAL_LAGOON_SHOALS, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(CrystalLagoonFeatures.CRYSTAL_LAGOON_SPIRES, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(CrystalLagoonFeatures.CRYSTAL_LAGOON_BANK_ROCKS, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(CrystalLagoonFeatures.CRYSTAL_LAGOON_SEABED_ROCKS, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(LotusShallowsFeatures.LOTUS_SHALLOWS_ISLETS, ModBiomes.LOTUS_SHALLOWS),
+            vegetal(GlowrootSwampFeatures.GLOWROOT_SWAMP_MOSS_FLOOR, ModBiomes.GLOWROOT_SWAMP),
+            vegetal(GlowrootSwampFeatures.GLOWROOT_SWAMP_ANCIENT_TREES, ModBiomes.GLOWROOT_SWAMP),
+            vegetal(GlowrootSwampFeatures.GLOWROOT_SWAMP_ROOT_ARCHES, ModBiomes.GLOWROOT_SWAMP),
+            vegetal(GlowrootSwampFeatures.GLOWROOT_SWAMP_ROOT_TANGLES, ModBiomes.GLOWROOT_SWAMP),
             // 75: the water (the springs change the floor before anything grows on it).
             vegetal(Ring4MythicFeatures.DEEP_POOL_BUBBLE_SPRINGS, ModBiomes.CRYSTAL_LAGOON, ModBiomes.LOTUS_SHALLOWS,
                     ModBiomes.GLOWROOT_SWAMP, ModBiomes.MIST_FJORDS),
@@ -90,6 +101,17 @@ public final class Ring4Features {
             vegetal(Ring4MythicFeatures.LOTUS_SHALLOWS_GIANT_LILY_PADS, ModBiomes.LOTUS_SHALLOWS),
             vegetal(Ring4MythicFeatures.LOTUS_SHALLOWS_LOTUS, ModBiomes.LOTUS_SHALLOWS),
             vegetal(Ring4MythicFeatures.LOTUS_SHALLOWS_REEDS, ModBiomes.LOTUS_SHALLOWS),
+            // Decor A: reefs, meadows and crystals in the lagoon; fields, collars and lily groups in the shallows; the swamp's pads.
+            vegetal(CrystalLagoonFeatures.CRYSTAL_LAGOON_REEFS, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(CrystalLagoonFeatures.CRYSTAL_LAGOON_SEAGRASS_MEADOWS, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(CrystalLagoonFeatures.CRYSTAL_LAGOON_SEABED_CLUSTERS, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(CrystalLagoonFeatures.CRYSTAL_LAGOON_SEABED_BUDS, ModBiomes.CRYSTAL_LAGOON),
+            vegetal(LotusShallowsFeatures.LOTUS_SHALLOWS_LILY_GROUPS, ModBiomes.LOTUS_SHALLOWS),
+            vegetal(LotusShallowsFeatures.LOTUS_SHALLOWS_LOTUS_FIELDS, ModBiomes.LOTUS_SHALLOWS),
+            vegetal(LotusShallowsFeatures.LOTUS_SHALLOWS_REED_COLLARS, ModBiomes.LOTUS_SHALLOWS),
+            vegetal(LotusShallowsFeatures.LOTUS_SHALLOWS_SUGAR_CANE, ModBiomes.LOTUS_SHALLOWS),
+            vegetal(LotusShallowsFeatures.LOTUS_SHALLOWS_BUSHES, ModBiomes.LOTUS_SHALLOWS),
+            vegetal(GlowrootSwampFeatures.GLOWROOT_SWAMP_LILY_PADS, ModBiomes.GLOWROOT_SWAMP),
             vegetal(CascadeValeFeatures.CASCADE_VALE_LILY_PADS, ModBiomes.CASCADE_VALE),
             vegetal(CascadeValeFeatures.CASCADE_VALE_LOTUS, ModBiomes.CASCADE_VALE),
             vegetal(CascadeValeFeatures.CASCADE_VALE_REEDS, ModBiomes.CASCADE_VALE),
@@ -101,6 +123,11 @@ public final class Ring4Features {
             vegetal(Ring4MythicFeatures.LAKESIDE_GLOW_BLOOMS, ModBiomes.CASCADE_VALE, ModBiomes.LOTUS_SHALLOWS, ModBiomes.SKY_GARDENS),
             vegetal(Ring4MythicFeatures.GLOWROOT_SWAMP_GLOWCAPS, ModBiomes.GLOWROOT_SWAMP),
             vegetal(Ring4MythicFeatures.GLOWROOT_SWAMP_MOSS, ModBiomes.GLOWROOT_SWAMP),
+            // Decor A: the swamp's ferns and hummock mushrooms, the shallows' bank flowers, the lagoon's bank crystals.
+            vegetal(GlowrootSwampFeatures.GLOWROOT_SWAMP_FERNS, ModBiomes.GLOWROOT_SWAMP),
+            vegetal(GlowrootSwampFeatures.GLOWROOT_SWAMP_MUSHROOMS, ModBiomes.GLOWROOT_SWAMP),
+            vegetal(LotusShallowsFeatures.LOTUS_SHALLOWS_BANK_FLOWERS, ModBiomes.LOTUS_SHALLOWS),
+            vegetal(CrystalLagoonFeatures.CRYSTAL_LAGOON_BANK_CLUSTERS, ModBiomes.CRYSTAL_LAGOON),
             vegetal(CascadeValeFeatures.CASCADE_VALE_FLOWER_FIELDS, ModBiomes.CASCADE_VALE),
             vegetal(CascadeValeFeatures.CASCADE_VALE_VERDANT_BLOSSOMS, ModBiomes.CASCADE_VALE),
             vegetal(MistFjordsFeatures.MIST_FJORDS_UNDERGROWTH, ModBiomes.MIST_FJORDS),
@@ -184,6 +211,9 @@ public final class Ring4Features {
         CascadeValeFeatures.configured(context);
         SunderedReachFeatures.configured(context);
         SkyGardensFeatures.configured(context);
+        CrystalLagoonFeatures.configured(context);
+        LotusShallowsFeatures.configured(context);
+        GlowrootSwampFeatures.configured(context);
         Ring4BlightedFeatures.configured(context);
         BlightedDecorFeatures.configured(context);
         Ring4OreFeatures.configured(context);
@@ -196,6 +226,9 @@ public final class Ring4Features {
         CascadeValeFeatures.placed(context);
         SunderedReachFeatures.placed(context);
         SkyGardensFeatures.placed(context);
+        CrystalLagoonFeatures.placed(context);
+        LotusShallowsFeatures.placed(context);
+        GlowrootSwampFeatures.placed(context);
         Ring4BlightedFeatures.placed(context);
         BlightedDecorFeatures.placed(context);
         Ring4OreFeatures.placed(context);

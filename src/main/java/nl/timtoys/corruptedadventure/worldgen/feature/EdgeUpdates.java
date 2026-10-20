@@ -15,42 +15,66 @@ import java.util.Set;
  * {@link GroundObjects}): every face between a written block and one that is not, passed on to the blocks that change
  * (a propagule whose leaf lost falls, a tall plant cut in half goes, the rest of a giant lily pad follows). The same
  * pass for trees and objects, so the end does not depend on which of them was written first.
+ * <p>
+ * Hanging strands (decor A, {@link TreeOverlap#strand}) that lose their hold pass the update on in a queue of their own,
+ * also into strands that were just written, so a strand cut by another tree's leaf falls whole in either order. Without
+ * strands the pass is exactly the decor proef's.
  */
 final class EdgeUpdates {
     /** How many changed blocks pass the shape update on (a giant lily pad has four parts). */
     private static final int MAX_PASSED_ON = 16;
+    /** How many fallen strand blocks pass it on (a strand is up to 12 long, a crown has many). */
+    private static final int MAX_STRANDS_PASSED_ON = 64;
 
     private EdgeUpdates() {
     }
 
     static void apply(WorldGenLevel level, Set<BlockPos> written) {
         Deque<BlockPos> changed = new ArrayDeque<>();
+        Deque<BlockPos> fallen = new ArrayDeque<>();
         for (BlockPos pos : written) {
             for (Direction direction : Direction.values()) {
                 if (!written.contains(pos.relative(direction))) {
-                    updateFace(level, pos, direction, true, changed);
+                    updateFace(level, pos, direction, true, changed, fallen);
                 }
             }
         }
         // A block that changed (gone) tells its other neighbours, a few steps at most.
-        for (int steps = 0; !changed.isEmpty() && steps < MAX_PASSED_ON; steps++) {
-            BlockPos pos = changed.poll();
+        int steps = 0;
+        int strandSteps = 0;
+        while (true) {
+            BlockPos pos;
+            if (!changed.isEmpty() && steps < MAX_PASSED_ON) {
+                pos = changed.poll();
+                steps++;
+            } else if (!fallen.isEmpty() && strandSteps < MAX_STRANDS_PASSED_ON) {
+                pos = fallen.poll();
+                strandSteps++;
+            } else {
+                return;
+            }
             for (Direction direction : Direction.values()) {
-                if (!written.contains(pos.relative(direction))) {
-                    updateFace(level, pos, direction, false, changed);
+                BlockPos next = pos.relative(direction);
+                if (!written.contains(next) || TreeOverlap.strand(level.getBlockState(next))) {
+                    updateFace(level, pos, direction, false, changed, fallen);
                 }
             }
         }
     }
 
     /** Vanilla's {@code updateShapeAtEdge} on one face; {@code both}: also the block at {@code pos} itself. */
-    private static void updateFace(WorldGenLevel level, BlockPos pos, Direction direction, boolean both, Deque<BlockPos> changed) {
+    private static void updateFace(WorldGenLevel level, BlockPos pos, Direction direction, boolean both, Deque<BlockPos> changed,
+                                   Deque<BlockPos> fallen) {
         BlockPos neighbour = pos.relative(direction);
         BlockState state = level.getBlockState(pos);
         BlockState other = level.getBlockState(neighbour);
         if (both) {
             BlockState updated = state.updateShape(direction, other, level, pos, neighbour);
             if (updated != state) {
+                // A written strand that loses its hold tells its neighbours too; other written blocks do not.
+                if (TreeOverlap.strand(state)) {
+                    fallen.add(pos);
+                }
                 level.setBlock(pos, updated, Block.UPDATE_CLIENTS);
                 state = updated;
             }
@@ -58,7 +82,7 @@ final class EdgeUpdates {
         BlockState otherUpdated = other.updateShape(direction.getOpposite(), state, level, neighbour, pos);
         if (otherUpdated != other) {
             level.setBlock(neighbour, otherUpdated, Block.UPDATE_CLIENTS);
-            changed.add(neighbour);
+            (TreeOverlap.strand(other) ? fallen : changed).add(neighbour);
         }
     }
 }

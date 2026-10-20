@@ -1,0 +1,101 @@
+{
+  "type": "corruptedadventure:shoal",
+  "config": {
+    "bed": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:sand"
+      }
+    },
+    "bed_chance": 0.3,
+    "bed_plants": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:seagrass"
+          },
+          "weight": 6
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:aquamarine_cluster",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "true"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "biome": "corruptedadventure:crystal_lagoon",
+    "biome_margin": 10,
+    "fill": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:sand"
+      }
+    },
+    "land_plants": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:large_aquamarine_bud",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:aquamarine_cluster",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:medium_aquamarine_bud",
+            "Properties": {
+              "facing": "up",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        }
+      ]
+    },
+    "land_top": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:sand"
+      }
+    },
+    "max_depth": 8,
+    "plant_chance": 0.04,
+    "reed_chance": 0.0,
+    "rise": 1,
+    "shape": {
+      "high": 0.55,
+      "low": 0.15,
+      "noise": "corruptedadventure:ring_4_groves",
+      "salt": 5,
+      "xz_scale": 2.5
+    },
+    "shrub_chance": 0.0,
+    "shrubs": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:sand"
+      }
+    },
+    "sink": 6
+  }
+}
