@@ -865,3 +865,7 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-20 | mobs | Eén unieke Nightmare per ring per server, virtuele positie in `SavedData`, verschijnt bij spelers in zijn ring | Gedeelde legende in multiplayer; meeste kippenvel |
 | 2026-10-20 | mobs | Een verslagen Nightmare komt sterker terug (timer en/of wereldcorruptie) | Horror blijft, herspeelbaar, sluit aan op fase 5 |
 | 2026-10-20 | mobs | Ring 1-Nightmare (De Holle, werktitel) krijgt een volwaardig bossgevecht, ook bovengronds; stalk-opbouw als aanloop | Keuze gebruiker; balans met ring 1-gear in de fase 4-sparring |
+| 2026-10-20 | mobs | Ring 1-Nightmare herontworpen: De Holle is een ontzielde titaan en dimension shifter die via een dimensiescheur komt (voorbode, scheur, eerst de hand), ~6 blokken en altijd krom | Gebruiker vond de nabootser niet eng genoeg; scheuren lossen ook de pathfinding van een reus op |
+| 2026-10-20 | mobs | De Holle was een oude stenen wachter van de overworld (steen/deepslate/mos), de corruptie van ring 5 glijdt over zijn lijf | Tragisch en eng; verbindt ring 1 met ring 5 |
+| 2026-10-20 | mobs | Een scheur laat een klein permanent litteken van ring 5-corruptieblokken achter | De wereld onthoudt dat hij er was; gedrag in fase 5 |
+| 2026-10-20 | mobs | Zijn ziel is versplinterd tot de zielkristallen van Nether-ring 1; later (fase 2) een zwakte tegen hem | Geeft Nether-1 extra betekenis |
