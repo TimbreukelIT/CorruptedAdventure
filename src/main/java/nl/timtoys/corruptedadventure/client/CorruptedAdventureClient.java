@@ -30,6 +30,8 @@ import nl.timtoys.corruptedadventure.client.weather.ColdBreath;
 import nl.timtoys.corruptedadventure.client.weather.NetherRing4Fog;
 import nl.timtoys.corruptedadventure.client.weather.Ring3Ambience;
 import nl.timtoys.corruptedadventure.client.weather.Ring4Ambience;
+import nl.timtoys.corruptedadventure.client.weather.Ring4Fog;
+import nl.timtoys.corruptedadventure.client.weather.Ring4SkyState;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
 import nl.timtoys.corruptedadventure.client.weather.SunderedFade;
 import nl.timtoys.corruptedadventure.client.weather.VolcanoPlumeRenderer;
@@ -77,6 +79,10 @@ public final class CorruptedAdventureClient {
         Ring4Ambience.register(NeoForge.EVENT_BUS);
         SunderedFade.register(NeoForge.EVENT_BUS);
         NetherRing4Fog.register(NeoForge.EVENT_BUS);
+        // Ring 4 sky and mist (sparring 2026-10-20): camera state per tick, then the fog listeners; dusk, clouds and the
+        // sky tint come in through the client mixins.
+        Ring4SkyState.register(NeoForge.EVENT_BUS);
+        Ring4Fog.register(NeoForge.EVENT_BUS);
     }
 
     private static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {

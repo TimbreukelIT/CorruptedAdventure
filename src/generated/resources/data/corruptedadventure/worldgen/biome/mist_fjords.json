@@ -13,7 +13,7 @@
       "tick_chance": 0.002
     },
     "ambient_sound": "corruptedadventure:ambient.ring_4.water",
-    "fog_color": 13160660,
+    "fog_color": 12767448,
     "foliage_color": 4160068,
     "grass_color": 5214026,
     "mood_sound": {
@@ -28,7 +28,7 @@
       },
       "probability": 0.001
     },
-    "sky_color": 10467524,
+    "sky_color": 8826052,
     "water_color": 3103354,
     "water_fog_color": 926260
   },

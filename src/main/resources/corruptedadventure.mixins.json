@@ -6,7 +6,10 @@
   "mixins": [],
   "client": [
     "BiomeColorsWaterMixin",
-    "ClientLevelSkyColorMixin"
+    "ClientLevelSkyColorMixin",
+    "DimensionSpecialEffectsAccessor",
+    "DimensionSpecialEffectsMixin",
+    "LevelRendererCloudsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

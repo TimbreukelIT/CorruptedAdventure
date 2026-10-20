@@ -9,7 +9,7 @@
   "downfall": 0.6,
   "effects": {
     "ambient_sound": "corruptedadventure:ambient.ring_4.sundered_drone",
-    "fog_color": 11318428,
+    "fog_color": 11712132,
     "foliage_color": 7961439,
     "grass_color": 9014124,
     "mood_sound": {
@@ -18,7 +18,7 @@
       "sound": "minecraft:ambient.cave",
       "tick_delay": 6000
     },
-    "sky_color": 10004622,
+    "sky_color": 10135684,
     "water_color": 5147194,
     "water_fog_color": 1454095
   },

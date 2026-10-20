@@ -13,7 +13,7 @@
       "tick_chance": 0.006
     },
     "ambient_sound": "corruptedadventure:ambient.verdant_falls.falls",
-    "fog_color": 13824228,
+    "fog_color": 12380888,
     "foliage_color": 5615674,
     "grass_color": 7127626,
     "mood_sound": {
@@ -28,7 +28,7 @@
       },
       "probability": 0.002
     },
-    "sky_color": 8836832,
+    "sky_color": 6606050,
     "water_color": 4182208,
     "water_fog_color": 1003338
   },
