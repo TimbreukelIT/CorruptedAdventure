@@ -1,0 +1,133 @@
+{
+  "type": "corruptedadventure:sky_ruin",
+  "config": {
+    "altar": {
+      "Name": "corruptedadventure:polished_tidestone"
+    },
+    "capital": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:chiseled_quartz_block"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:quartz_bricks"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "floor": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:polished_diorite"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:calcite"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:mossy_stone_bricks"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "minecraft:moss_block"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "light": {
+      "Name": "corruptedadventure:aquamarine_cluster",
+      "Properties": {
+        "facing": "up",
+        "waterlogged": "false"
+      }
+    },
+    "moss": {
+      "Name": "minecraft:moss_carpet"
+    },
+    "rubble": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:calcite"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:quartz_slab",
+            "Properties": {
+              "type": "bottom",
+              "waterlogged": "false"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:mossy_stone_bricks"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "minecraft:quartz_bricks"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "shaft": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:quartz_pillar",
+            "Properties": {
+              "axis": "y"
+            }
+          },
+          "weight": 5
+        },
+        {
+          "data": {
+            "Name": "minecraft:calcite"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:mossy_stone_bricks"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "vine": {
+      "Name": "minecraft:vine",
+      "Properties": {
+        "east": "false",
+        "north": "false",
+        "south": "false",
+        "up": "false",
+        "west": "false"
+      }
+    }
+  }
+}

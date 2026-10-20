@@ -1000,7 +1000,8 @@ public final class IslandField implements DensityFunction {
     /**
      * The falls whose falling column lies in chunk (cx, cz): the islands' at most {@link #FALLS_PER_CHUNK} and those of
      * {@code verdant_falls} at most {@link #VERDANT_FALLS_PER_CHUNK} (each the first ones by x, then z, then the
-     * spring's height, so the cap does not depend on the order chunks are made in), together in that order.
+     * spring's height, so the cap does not depend on the order chunks are made in; the clods' falls only in the islands'
+     * places left over), together in that order.
      */
     List<Fall> fallsOfChunk(int cx, int cz) {
         long key = KeyedSlots.key(cx, cz);
@@ -1009,17 +1010,20 @@ public final class IslandField implements DensityFunction {
             int minX = cx << 4;
             int minZ = cz << 4;
             List<Fall> falls = new ArrayList<>();
+            List<Fall> clodFalls = new ArrayList<>();
             for (IslandShape shape : shapesWithin(minX, minZ, minX + 15, minZ + 15)) {
                 if (Math.abs(shape.x() - (minX + 8)) > shape.reach() + 10 || Math.abs(shape.z() - (minZ + 8)) > shape.reach() + 10) {
                     continue;
                 }
                 for (Fall fall : details(shape).falls()) {
                     if (fall.fallX() >> 4 == cx && fall.fallZ() >> 4 == cz) {
-                        falls.add(fall);
+                        (shape.kind() == IslandShape.CLOD ? clodFalls : falls).add(fall);
                     }
                 }
             }
             List<Fall> kept = new ArrayList<>(capped(falls, FALLS_PER_CHUNK));
+            // Decor rollout C: the clods' small falls only take what the cap leaves (never a bigger island's fall).
+            kept.addAll(capped(clodFalls, FALLS_PER_CHUNK - kept.size()));
             // verdant_falls (2c): the falls of the streams along the chunk, where the chunk lies on the descent.
             RingLayout ringLayout = layout.get();
             double u = ringLayout.effectiveDistance(minX + 8, minZ + 8) - VerdantDescent.zoneStart(ringLayout);

@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.ring.Ring4Band;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -149,6 +150,49 @@ class Ring4IslandsTest {
             }
         }
         System.out.println("lakes above the sea: " + lakes);
+    }
+
+    /**
+     * Decor rollout C: about four in ten clods of the mythical band pour a small fall; the blighted band's stay dry. A
+     * clod's fall never pushes a bigger island's fall out of its chunk's cap, nor stands near a lift.
+     */
+    @Test
+    void mythicalClodsPourSmallFalls() {
+        Ring4Band band = Ring4Band.of(IslandFieldTest.LAYOUT);
+        int mythical = 0;
+        int pouring = 0;
+        List<IslandField.Fall> clodFalls = new ArrayList<>();
+        for (IslandShape s : SHAPES) {
+            if (s.kind() != IslandShape.CLOD) {
+                continue;
+            }
+            List<IslandField.Fall> falls = field.details(s).falls();
+            assertTrue(falls.size() <= 1, "a clod pours at most one fall");
+            clodFalls.addAll(falls);
+            if (band.blighted(s.x(), s.z())) {
+                assertEquals(0, falls.size(), "a blighted clod stays dry");
+            } else {
+                mythical++;
+                pouring += falls.size();
+            }
+        }
+        System.out.printf("mythical clods %d, with a fall %d%n", mythical, pouring);
+        assertTrue(pouring > 0.1 * mythical && pouring <= 0.6 * mythical, pouring + " of " + mythical);
+        for (IslandShape s : SHAPES) {
+            if (s.kind() == IslandShape.CLOD) {
+                continue;
+            }
+            IslandField.Details details = field.details(s);
+            for (IslandField.Fall fall : details.falls()) {
+                List<IslandField.Fall> kept = field.fallsOfChunk(fall.fallX() >> 4, fall.fallZ() >> 4);
+                assertTrue(kept.contains(fall) || kept.stream().noneMatch(clodFalls::contains), "pushed out by a clod's fall: " + fall);
+            }
+            IslandField.Lift lift = details.lift();
+            if (lift != null) {
+                assertTrue(clodFalls.stream().noneMatch(f -> Math.abs(f.fallX() - lift.x()) + Math.abs(f.fallZ() - lift.z())
+                        < IslandField.LIFT_FALL_CLEARANCE), "a clod's fall beside " + lift);
+            }
+        }
     }
 
     /** Falls: a spring walled in by the island, the fall beside it free down to the water, at most 3 per chunk. */
