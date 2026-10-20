@@ -70,6 +70,12 @@
         },
         {
           "data": {
+            "Name": "corruptedadventure:mossy_tidestone"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
             "Name": "minecraft:cobbled_deepslate"
           },
           "weight": 2

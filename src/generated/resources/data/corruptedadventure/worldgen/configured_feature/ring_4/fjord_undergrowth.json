@@ -30,6 +30,12 @@
             "Name": "corruptedadventure:fjord_moss"
           },
           "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:mist_fern"
+          },
+          "weight": 2
         }
       ]
     }

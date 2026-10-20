@@ -26,6 +26,15 @@
             }
           },
           "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:lagoon_glowgrass",
+            "Properties": {
+              "waterlogged": "true"
+            }
+          },
+          "weight": 2
         }
       ]
     },
@@ -69,6 +78,15 @@
             }
           },
           "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:lagoon_glowgrass",
+            "Properties": {
+              "waterlogged": "false"
+            }
+          },
+          "weight": 3
         }
       ]
     },

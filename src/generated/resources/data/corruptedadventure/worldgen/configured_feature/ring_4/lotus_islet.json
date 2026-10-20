@@ -9,10 +9,24 @@
     },
     "bed_chance": 0.15,
     "bed_plants": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "minecraft:seagrass"
-      }
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:seagrass"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:lagoon_glowgrass",
+            "Properties": {
+              "waterlogged": "true"
+            }
+          },
+          "weight": 1
+        }
+      ]
     },
     "biome": "corruptedadventure:lotus_shallows",
     "biome_margin": 10,
@@ -64,6 +78,15 @@
         {
           "data": {
             "Name": "minecraft:fern"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:lagoon_glowgrass",
+            "Properties": {
+              "waterlogged": "false"
+            }
           },
           "weight": 2
         }

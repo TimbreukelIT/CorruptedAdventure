@@ -60,7 +60,7 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring4Placements.reg
  *   spruces, young spruces, pines, now and then a giant 2 × 2 spruce, a dark oak or a dead snag; leaf bushes around
  *   and under them.</li>
  *   <li>The forest floor under the groves: podzol, moss and coarse dirt for the grass, dense ferns and large ferns
- *   with fjord moss, clumps of sweet berries.</li>
+ *   with fjord moss and mist ferns, clumps of sweet berries.</li>
  *   <li>Mossy boulders and small rocks of stone, mossy cobblestone, mossy tidestone, andesite and tidestone, more on
  *   the open ground;
  *   stumps and fallen trunks with moss and glowcaps (the ring's mushroom) along the groves ({@link BoulderFeature}, {@link FallenTreeFeature}:
@@ -159,7 +159,8 @@ public final class MistFjordsFeatures {
                 Blocks.PODZOL.defaultBlockState(), Blocks.PODZOL.defaultBlockState(), Blocks.COARSE_DIRT.defaultBlockState(),
                 Blocks.MOSS_BLOCK.defaultBlockState()))));
         groundPlant(context, UNDERGROWTH, weighted(Blocks.LARGE_FERN.defaultBlockState(), 3, Blocks.FERN.defaultBlockState(), 4,
-                Blocks.SHORT_GRASS.defaultBlockState(), 1, ModBlocks.FJORD_MOSS.get().defaultBlockState(), 2));
+                Blocks.SHORT_GRASS.defaultBlockState(), 1, ModBlocks.FJORD_MOSS.get().defaultBlockState(), 2,
+                ModBlocks.MIST_FERN.get().defaultBlockState(), 2));
         groundPlant(context, BERRY_BUSH, weighted(Blocks.SWEET_BERRY_BUSH.defaultBlockState().setValue(SweetBerryBushBlock.AGE, 2), 1,
                 Blocks.SWEET_BERRY_BUSH.defaultBlockState().setValue(SweetBerryBushBlock.AGE, 3), 2));
 
