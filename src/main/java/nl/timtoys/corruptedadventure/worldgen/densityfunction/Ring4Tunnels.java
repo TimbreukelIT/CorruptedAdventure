@@ -819,7 +819,7 @@ public final class Ring4Tunnels {
     private double sinkFloor(int si, int sj, double[] hole) {
         return memo().once(memo().sinkFloors, KeyedSlots.key(si, sj), () -> {
             Ring4Relief.Sample s = new Ring4Relief.Sample();
-            field.relief().sample(hole[0], hole[1], Ring4Band.of(field.ringLayout()).value(hole[0], hole[1]), s, field.salt());
+            field.sampleRelief(hole[0], hole[1], s);
             return s.sinkholeFloor;
         });
     }
