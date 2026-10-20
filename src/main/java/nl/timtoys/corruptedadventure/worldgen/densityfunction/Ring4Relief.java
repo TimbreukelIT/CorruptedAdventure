@@ -134,9 +134,12 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
     private static final double PEAT_DETAIL = 1.5;
     /** The detail noise on the moors without the relief (near the zones, {@link IslandField#reliefShare}). */
     private static final double PEAT_DETAIL_BEFORE = 0.6;
-    /** Where the reed and the swamp count as land for the relief (their base height, blocks): below it none. */
-    private static final double LAND_FROM = SEA + 0.5;
-    private static final double LAND_FULL = SEA + 2.5;
+    /**
+     * Where the reed and the swamp count as land for the relief (their base height, blocks): none under the sea (the
+     * shore stays where it is), full from LAND_FULL (most of the reed lies within two blocks of the sea).
+     */
+    private static final double LAND_FROM = SEA;
+    private static final double LAND_FULL = SEA + 1.5;
     /** The swamp's gentle undulation (~60 blocks), on its land only. */
     static final double SWAMP_ROLL = 5.0;
     /**
@@ -300,11 +303,12 @@ public record Ring4Relief(DensityFunction.NoiseHolder water, DensityFunction.Noi
                             * smooth(-fjordRim, WALL_ROUGH_FROM, WALL_ROUGH_FULL) * smooth(fjordW * (1.0 - blighted), FJORD_EDGE_WEIGHT, 0.4);
                 }
             }
-            if (swampW > 0.0 && stepped < 1.0 && reliefShare > 0.0) {
+            double terraced = smooth(cascadeW, 0.0, 0.3);
+            if (swampW > 0.0 && terraced < 1.0 && reliefShare > 0.0) {
                 // The swamp's undulation on its land only, after the mix: where it blends into the lotus or the lagoon
-                // under the sea, none (A1-4: no new land in the water); nor where the cascades' steps take over.
+                // under the sea, none (A1-4: no new land in the water); nor towards the cascades (their blend stays level).
                 double roll = smooth(detail.getValue(0.6 * x + 2719.0, 0.0, 0.6 * z - 1931.0), -0.3, 0.4);
-                mythicH += reliefShare * swampW * (1.0 - stepped) * landness(mythicH) * SWAMP_ROLL * roll;
+                mythicH += reliefShare * swampW * (1.0 - terraced) * landness(mythicH) * SWAMP_ROLL * roll;
             }
             // The steps after the mix (H4): blended landforms keep their treads level instead of tilting them.
             if (stepped > 0.0) {

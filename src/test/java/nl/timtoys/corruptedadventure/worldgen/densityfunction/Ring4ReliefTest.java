@@ -527,7 +527,7 @@ class Ring4ReliefTest {
         GridSurvey g = survey();
         assertTrue(g.coreLevel / (double) g.coreError.size() > 0.6, "on a level " + g.coreLevel / (double) g.coreError.size());
         assertTrue(flat(g.coreSlope) > 0.72, "core " + flat(g.coreSlope));
-        // The relief of the neighbours (swamp undulation, fjord hills; 2026-10-20) tilts the blends a little (0.52 → 0.49).
+        // The cascades' rolling (2026-10-20) tilts the blends a little (0.56 → 0.51).
         assertTrue(flat(g.blendSlope) > 0.45, "blend " + flat(g.blendSlope));
         assertTrue(flat(g.cascadeSlope) > 0.66, "cascade area " + flat(g.cascadeSlope));
     }
