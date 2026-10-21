@@ -131,6 +131,16 @@ public final class Ring4BlockNames {
         lang.addBlock(ModBlocks.MOONPETAL_SHRUB, "Moonpetal Shrub");
         lang.addBlock(ModBlocks.LAGOON_GLOWGRASS, "Lagoon Glowgrass");
         lang.addBlock(ModBlocks.LAGOON_SAND, "Lagoon Sand");
+        lang.addBlock(ModBlocks.LAGOON_SANDSTONE, "Lagoon Sandstone");
+        lang.addBlock(ModBlocks.LAGOON_SANDSTONE_STAIRS, "Lagoon Sandstone Stairs");
+        lang.addBlock(ModBlocks.LAGOON_SANDSTONE_SLAB, "Lagoon Sandstone Slab");
+        lang.addBlock(ModBlocks.LAGOON_SANDSTONE_WALL, "Lagoon Sandstone Wall");
+        lang.addBlock(ModBlocks.CUT_LAGOON_SANDSTONE, "Cut Lagoon Sandstone");
+        lang.addBlock(ModBlocks.CUT_LAGOON_SANDSTONE_SLAB, "Cut Lagoon Sandstone Slab");
+        lang.addBlock(ModBlocks.CHISELED_LAGOON_SANDSTONE, "Chiseled Lagoon Sandstone");
+        lang.addBlock(ModBlocks.SMOOTH_LAGOON_SANDSTONE, "Smooth Lagoon Sandstone");
+        lang.addBlock(ModBlocks.SMOOTH_LAGOON_SANDSTONE_STAIRS, "Smooth Lagoon Sandstone Stairs");
+        lang.addBlock(ModBlocks.SMOOTH_LAGOON_SANDSTONE_SLAB, "Smooth Lagoon Sandstone Slab");
         lang.addBlock(ModBlocks.CLAWED_STONE, "Clawed Stone");
         lang.addBlock(ModBlocks.CLAWED_DEEPSLATE, "Clawed Deepslate");
         lang.addBlock(ModBlocks.BONE_SAND, "Bone Sand");
@@ -272,6 +282,18 @@ public final class Ring4BlockNames {
         lang.addBlock(ModBlocks.MOONPETAL_SHRUB, "Maanbloesemstruik");
         lang.addBlock(ModBlocks.LAGOON_GLOWGRASS, "Lagunegloeigras");
         lang.addBlock(ModBlocks.LAGOON_SAND, "Lagunezand");
+        // Vanilla nl_nl: "Zandsteen", "Zandstenen trap", "Gesneden zandsteen", "Gebeiteld zandsteen", "Glad zandsteen",
+        // "Gladde zandstenen plaat"; the lagoon set follows it with "lagune-".
+        lang.addBlock(ModBlocks.LAGOON_SANDSTONE, "Lagunezandsteen");
+        lang.addBlock(ModBlocks.LAGOON_SANDSTONE_STAIRS, "Lagunezandstenen trap");
+        lang.addBlock(ModBlocks.LAGOON_SANDSTONE_SLAB, "Lagunezandstenen plaat");
+        lang.addBlock(ModBlocks.LAGOON_SANDSTONE_WALL, "Lagunezandstenen muur");
+        lang.addBlock(ModBlocks.CUT_LAGOON_SANDSTONE, "Gesneden lagunezandsteen");
+        lang.addBlock(ModBlocks.CUT_LAGOON_SANDSTONE_SLAB, "Gesneden lagunezandstenen plaat");
+        lang.addBlock(ModBlocks.CHISELED_LAGOON_SANDSTONE, "Gebeiteld lagunezandsteen");
+        lang.addBlock(ModBlocks.SMOOTH_LAGOON_SANDSTONE, "Glad lagunezandsteen");
+        lang.addBlock(ModBlocks.SMOOTH_LAGOON_SANDSTONE_STAIRS, "Gladde lagunezandstenen trap");
+        lang.addBlock(ModBlocks.SMOOTH_LAGOON_SANDSTONE_SLAB, "Gladde lagunezandstenen plaat");
         lang.addBlock(ModBlocks.CLAWED_STONE, "Bekraste steen");
         // Vanilla nl_nl calls deepslate "Diepleisteen" (as in the ring 3 deepslate ores).
         lang.addBlock(ModBlocks.CLAWED_DEEPSLATE, "Bekraste diepleisteen");

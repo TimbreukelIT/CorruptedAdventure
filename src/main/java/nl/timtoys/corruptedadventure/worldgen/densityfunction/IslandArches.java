@@ -38,11 +38,21 @@ final class IslandArches {
      * at most 1.5): with the gap and an island's reach it bounds how far an island's arches reach from its centre.
      */
     static final double MAX_MARGIN = 1.5 * 2.2 + 1.5 + ANCHOR + 2.0;
+    /**
+     * {@link #archReach} with the largest island reach: the window that looks for the islands whose arches may come
+     * into a box (review golf 3: one bound for the cells, the debris and {@link #archKept}).
+     */
+    static final int MAX_ARCH_WINDOW = Mth.ceil(IslandField.MAX_REACH + ARCH_MAX_GAP + MAX_MARGIN + 2.0);
     /** The free space (blocks) an arch keeps from falls, springs, lifts and sky lakes, and over and under other islands. */
     private static final int KEEP_CLEAR = 2;
     private static final long SALT = 7403;
 
     private IslandArches() {
+    }
+
+    /** How far (blocks) an island's candidate arches may reach from its centre: its reach, the gap, the margin, 2 spare. */
+    static double archReach(IslandShape island) {
+        return island.reach() + ARCH_MAX_GAP + MAX_MARGIN + 2.0;
     }
 
     /** The column of an island's edge facing the other island: its top and bottom block. */
@@ -156,9 +166,9 @@ final class IslandArches {
         }
         Arch arch = pair.arch();
         // A crossing arch's box meets this one's, and its first island lies within its reach, the gap and the margin.
-        int margin = Mth.ceil(IslandField.MAX_REACH + ARCH_MAX_GAP + MAX_MARGIN + 2.0);
+        int margin = MAX_ARCH_WINDOW;
         for (IslandShape island : field.shapesWithin(arch.minX() - margin, arch.minZ() - margin, arch.maxX() + margin, arch.maxZ() + margin)) {
-            double near = island.reach() + ARCH_MAX_GAP + MAX_MARGIN + 2.0;
+            double near = archReach(island);
             if (island.x() + near < arch.minX() || island.x() - near > arch.maxX() || island.z() + near < arch.minZ()
                     || island.z() - near > arch.maxZ()) {
                 continue;

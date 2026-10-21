@@ -494,7 +494,16 @@ public final class IslandField implements DensityFunction {
      * trees, rocks and ground plants stay off the debris, whose top the surface heightmaps show as the ground). Pure.
      */
     public boolean inDebris(int x, int z) {
-        return landmarks.inDebris(x, z);
+        return landmarks.inDebris(x, z, Integer.MIN_VALUE);
+    }
+
+    /**
+     * Whether a piece of floating debris has a block in the column at or above {@code fromY} (review golf 3: a feature
+     * on an island top above a piece stands clear of it; the islands keep {@link IslandDebris#KEEP_CLEAR_Y} from the
+     * debris, so that top is never the piece's own). Pure.
+     */
+    public boolean inDebris(int x, int z, int fromY) {
+        return landmarks.inDebris(x, z, fromY);
     }
 
     /**
@@ -509,31 +518,35 @@ public final class IslandField implements DensityFunction {
         int hi = y + reach;
         // The islands whose blocks, arches (from their edge across a gap) or debris (below their torn edge) may come near.
         int margin = reach + ISLAND_ROCK_REACH;
-        List<IslandShape> near = new ArrayList<>();
+        boolean any = false;
+        // Of those, the islands whose own footprint (within its reach) meets the box: only their columns can hold a block.
+        List<IslandShape> solid = new ArrayList<>();
         for (IslandShape shape : shapesWithin(x - margin, z - margin, x + margin, z + margin)) {
             double r = shape.reach() + margin;
-            if (Math.abs(shape.x() - x) <= r && Math.abs(shape.z() - z) <= r
-                    && hi >= Math.min(shape.lowest(), shape.top() - ISLAND_ROCK_BELOW) - ISLAND_ROCK_BELOW && lo <= shape.top() + ISLAND_ROCK_ABOVE) {
-                near.add(shape);
+            double dx = Math.abs(shape.x() - x);
+            double dz = Math.abs(shape.z() - z);
+            if (dx <= r && dz <= r && hi >= Math.min(shape.lowest(), shape.top() - ISLAND_ROCK_BELOW) && lo <= shape.top() + ISLAND_ROCK_ABOVE) {
+                any = true;
+                double own = shape.reach() + reach + 1.0;
+                if (dx <= own && dz <= own) {
+                    solid.add(shape);
+                }
             }
         }
-        if (near.isEmpty()) {
+        if (!any) {
             return false;
         }
-        for (int cx = x - reach; cx <= x + reach; cx++) {
-            for (int cz = z - reach; cz <= z + reach; cz++) {
-                for (IslandShape shape : near) {
-                    int[] solid = shape.interval(cx + 0.5, cz + 0.5);
-                    if (solid != null && solid[0] <= hi && solid[1] >= lo) {
+        for (IslandShape shape : solid) {
+            for (int cx = x - reach; cx <= x + reach; cx++) {
+                for (int cz = z - reach; cz <= z + reach; cz++) {
+                    int[] block = shape.interval(cx + 0.5, cz + 0.5);
+                    if (block != null && block[0] <= hi && block[1] >= lo) {
                         return true;
                     }
                 }
-                if (landmarks.rockWithin(cx, cz, lo, hi)) {
-                    return true;
-                }
             }
         }
-        return false;
+        return landmarks.rockWithin(x - reach, z - reach, x + reach, z + reach, lo, hi);
     }
 
     /** The island pairs (74: for the vines between islands, 75) whose facing edges come into the box. */
@@ -1834,6 +1847,21 @@ public final class IslandField implements DensityFunction {
         void guardSky(int from, int to) {
             skyGuardFrom = Math.min(skyGuardFrom, from);
             skyGuardTo = Math.max(skyGuardTo, to);
+        }
+
+        /**
+         * Whether a floating island has a block above {@code y} in this column and none at it (review golf 3: the
+         * worldgen heightmaps read the island's top there, not what lies under it). Needs the island values.
+         */
+        public boolean underIsland(int y) {
+            boolean above = false;
+            for (int k = 0; k < islandCount; k++) {
+                if (y >= islandLo[k] && y <= islandHi[k]) {
+                    return false;
+                }
+                above |= islandLo[k] > y;
+            }
+            return above;
         }
 
         /** +1 inside an island, −1 in a spring's block, 0 elsewhere. */

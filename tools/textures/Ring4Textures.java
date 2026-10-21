@@ -152,6 +152,8 @@ public final class Ring4Textures {
     private static final int[] LAGOON_SAND = {0xBAB6A4, 0xCCC9B8, 0xDBD9CA, 0xE7E5D9, 0xF0EFE6, 0xF8F8F2};
     private static final int[] LAGOON_SPECK = {0x3E9EB0, 0x76CCD6};
     private static final int[] LAGOON_SHELL = {0xD8B4AC, 0xF6DED6};
+    // Lagoon sandstone (71c): the lagoon sand's tones pressed into stone, one deeper tone for grooves and carving.
+    private static final int[] LAGOON_SANDSTONE = {0xA8A390, 0xBAB6A4, 0xCCC9B8, 0xDBD9CA, 0xE7E5D9, 0xF0EFE6, 0xF8F8F2};
     // Stone and deepslate in vanilla's palette family (own values and grain, no vanilla pixels): the hosts of the claw marks.
     private static final int[] STONE = {0x4E4E4E, 0x5E5E5E, 0x6C6C6C, 0x787878, 0x848484, 0x919191, 0xA0A0A0};
     private static final int[] DEEPSLATE = {0x252528, 0x2F2F33, 0x39393E, 0x434348, 0x4E4E53, 0x5A5A5F, 0x68686D};
@@ -378,6 +380,12 @@ public final class Ring4Textures {
         still("block/lagoon_sand", Ring4Textures::lagoonSand);
         still("block/clawed_stone", Ring4Textures::clawedStone);
         still("block/clawed_deepslate", Ring4Textures::clawedDeepslate);
+        // Lagoon sandstone (66f/71c); smooth lagoon sandstone uses the top on every face, like vanilla.
+        still("block/lagoon_sandstone_top", Ring4Textures::lagoonSandstoneTop);
+        still("block/lagoon_sandstone", Ring4Textures::lagoonSandstoneSide);
+        still("block/lagoon_sandstone_bottom", Ring4Textures::lagoonSandstoneBottom);
+        still("block/cut_lagoon_sandstone", Ring4Textures::cutLagoonSandstone);
+        still("block/chiseled_lagoon_sandstone", Ring4Textures::chiseledLagoonSandstone);
 
         // ---- Nether ring 4 (68) ----
         still("block/bone_sand", Ring4Textures::boneSand);
@@ -2915,6 +2923,148 @@ public final class Ring4Textures {
         clawMarks(image, random, DEEPSLATE);
     }
 
+    // ---- Lagoon sandstone (71c) ----------------------------------------------------------------------------------
+
+    /**
+     * Lagoon sandstone top (also smooth lagoon sandstone and the ends of cut and chiseled): the lagoon sand's grain pressed
+     * flat, calmer than the sand, with fewer aquamarine grains and one shell bit.
+     */
+    private static void lagoonSandstoneTop(BufferedImage image, Random random) {
+        double[][] noise = valueNoise(random, 4, 4);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(LAGOON_SANDSTONE, 0.35 + 0.4 * noise[x][y] + 0.3 * random.nextDouble()));
+            }
+        }
+        lagoonInclusions(image, random, 0, SIZE, 3, 1);
+    }
+
+    /**
+     * Like vanilla sandstone's side: a lighter band on top with a dark line under it, a body of short grainy layers (not
+     * long streaks, which read as planks), a darker foot; a few aquamarine grains and a shell bit in the body.
+     */
+    private static void lagoonSandstoneSide(BufferedImage image, Random random) {
+        double[][] layers = valueNoise(random, 4, 2);
+        for (int y = 0; y < SIZE; y++) {
+            double band = y < 3 ? 0.3 : y >= 13 ? -0.2 : 0.0;
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(LAGOON_SANDSTONE, 0.3 + band + 0.35 * layers[x][y] + 0.25 * random.nextDouble()));
+            }
+        }
+        for (int x = 0; x < SIZE; x++) {
+            set(image, x, 3, LAGOON_SANDSTONE[random.nextInt(4) == 0 ? 2 : 1]);
+        }
+        lagoonInclusions(image, random, 4, 13, 3, 1);
+    }
+
+    /** The underside: darker grain, two aquamarine grains. */
+    private static void lagoonSandstoneBottom(BufferedImage image, Random random) {
+        double[][] noise = valueNoise(random, 4, 4);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(LAGOON_SANDSTONE, 0.2 + 0.4 * noise[x][y] + 0.3 * random.nextDouble()));
+            }
+        }
+        lagoonInclusions(image, random, 0, SIZE, 2, 0);
+    }
+
+    /** Cut: a 1-pixel frame (lit top left, dark bottom right) around a lightly grained face with one inner groove. */
+    private static void cutLagoonSandstone(BufferedImage image, Random random) {
+        double[][] noise = valueNoise(random, 4, 2);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(LAGOON_SANDSTONE, 0.35 + 0.4 * noise[x][y] + 0.3 * random.nextDouble()));
+            }
+        }
+        lagoonInclusions(image, random, 1, SIZE - 1, 1, 0);
+        for (int x = 1; x < SIZE - 1; x++) {
+            set(image, x, 7, LAGOON_SANDSTONE[1]);
+            set(image, x, 8, LAGOON_SANDSTONE[5]);
+        }
+        rim(image, random, LAGOON_SANDSTONE, 0.0, 0.3);
+        for (int i = 1; i < SIZE - 1; i++) {
+            set(image, i, 0, LAGOON_SANDSTONE[5]);
+            set(image, 0, i, LAGOON_SANDSTONE[5]);
+        }
+    }
+
+    /**
+     * Chiseled, in the spirit of vanilla's: a lit band with a groove at the top and the bottom, and between them a carved
+     * lotus (the lotus shallows' flower) on its pad. The carving is a dark groove (a little lighter inside the wide
+     * petals) with a lit lip under it, the same on both sides so the flower stays symmetric.
+     */
+    private static void chiseledLagoonSandstone(BufferedImage image, Random random) {
+        for (int y = 0; y < SIZE; y++) {
+            double band = y < 2 || y >= 14 ? 0.25 : 0.0;
+            for (int x = 0; x < SIZE; x++) {
+                set(image, x, y, shade(LAGOON_SANDSTONE, 0.5 + band + 0.25 * random.nextDouble()));
+            }
+        }
+        for (int x = 0; x < SIZE; x++) {
+            set(image, x, 2, LAGOON_SANDSTONE[1]);
+            set(image, x, 3, LAGOON_SANDSTONE[5]);
+            set(image, x, 12, LAGOON_SANDSTONE[1]);
+            set(image, x, 13, LAGOON_SANDSTONE[5]);
+        }
+        boolean[][] carved = lotusCarving();
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                if (!carved[x][y]) {
+                    continue;
+                }
+                boolean inner = carved[x - 1][y] && carved[x + 1][y] && carved[x][y - 1] && carved[x][y + 1];
+                set(image, x, y, LAGOON_SANDSTONE[inner ? 2 : 0]);
+                if (y + 1 < 12 && !carved[x][y + 1]) {
+                    set(image, x, y + 1, LAGOON_SANDSTONE[6]);
+                }
+            }
+        }
+    }
+
+    /** The chiseled motif, rows 4–11 and columns 1–14 ({@code #} carved): a lotus of three petals on a pad. */
+    private static final String[] LOTUS_CARVING = {
+            "......##......",
+            ".....####.....",
+            ".#...####...#.",
+            ".##..####..##.",
+            "..##.####.##..",
+            "..####..####..",
+            "...########...",
+            ".############."};
+
+    /** The chiseled motif as a mask (never on the outer ring of pixels). */
+    private static boolean[][] lotusCarving() {
+        boolean[][] carved = new boolean[SIZE][SIZE];
+        for (int row = 0; row < LOTUS_CARVING.length; row++) {
+            for (int column = 0; column < LOTUS_CARVING[row].length(); column++) {
+                carved[1 + column][4 + row] = LOTUS_CARVING[row].charAt(column) == '#';
+            }
+        }
+        return carved;
+    }
+
+    /**
+     * The lagoon sand's inclusions in its stone: {@code specks} single aquamarine grains (some with a lighter neighbour)
+     * and {@code shells} pale shell bits with a shadow pixel, in rows {@code [fromY, toY)}, wrapping only sideways.
+     */
+    private static void lagoonInclusions(BufferedImage image, Random random, int fromY, int toY, int specks, int shells) {
+        for (int i = 0; i < specks; i++) {
+            int x = random.nextInt(SIZE);
+            int y = fromY + random.nextInt(toY - fromY);
+            setWrapped(image, x, y, LAGOON_SPECK[0]);
+            if (random.nextInt(3) == 0) {
+                setWrapped(image, x - 1, y, LAGOON_SPECK[1]);
+            }
+        }
+        for (int i = 0; i < shells; i++) {
+            int x = random.nextInt(SIZE);
+            int y = fromY + random.nextInt(toY - fromY - 1);
+            setWrapped(image, x, y, LAGOON_SHELL[1]);
+            setWrapped(image, x + 1, y, LAGOON_SHELL[0]);
+            setWrapped(image, x + 1, y + 1, LAGOON_SANDSTONE[1]);
+        }
+    }
+
     /**
      * A plain stone face in vanilla stone's grey family, drawn from our own noise (no vanilla pixels): soft blotches, fine
      * grain and a few dark specks, so the claw marks sit in rock that matches the tunnel around them. Layout picked by
@@ -4031,6 +4181,32 @@ public final class Ring4Textures {
                 {ground, ground, ground, ground, ground, ground, ground, ground, ground}};
     }
 
+    /** A lagoon sandstone wall, side view: plain courses, two chiseled blocks, a cut course, on lagoon sand. */
+    private static final String[][] SANDSTONE_WALL = lagoonSandstoneWall();
+
+    private static String[][] lagoonSandstoneWall() {
+        String side = "block/lagoon_sandstone";
+        String chiseled = "block/chiseled_lagoon_sandstone";
+        String cut = "block/cut_lagoon_sandstone";
+        String sand = "block/lagoon_sand";
+        return new String[][] {
+                {side, side, side, side, side, side, side, side},
+                {side, chiseled, side, side, side, side, chiseled, side},
+                {side, side, side, side, side, side, side, side},
+                {cut, cut, cut, cut, cut, cut, cut, cut},
+                {sand, sand, sand, sand, sand, sand, sand, sand},
+                {sand, sand, sand, sand, sand, sand, sand, sand}};
+    }
+
+    /** Worldgen 77c in section: lagoon sand on top, lagoon sandstone where the sand would hang over a hollow. */
+    private static final String[][] SANDSTONE_CEILING = {
+            {"block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand"},
+            {"block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand"},
+            {"block/lagoon_sand", "block/lagoon_sandstone", "block/lagoon_sandstone", "block/lagoon_sandstone", "block/lagoon_sandstone", "block/lagoon_sand"},
+            {"block/lagoon_sand", "", "", "", "", "block/lagoon_sand"},
+            {"block/lagoon_sand", "", "", "", "", "block/lagoon_sand"},
+            {"block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand", "block/lagoon_sand"}};
+
     /** A swamp pool from above: the toxic pool beside the lime-green swamp water, on peat. */
     private static final String[][] POOLS = {
             {"block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat"},
@@ -4046,7 +4222,8 @@ public final class Ring4Textures {
 
     /**
      * The golf 3 sheet: tidestone as a cliff and the three clawed rocks in their walls; the polished textures as walls;
-     * the three sands and bone blocks on bone sand and fossil stone; the withered garden, the moonpetal crowns and a toxic
+     * the three sands and bone blocks on bone sand and fossil stone; the lagoon sandstone set (71c) as walls, as a wall on
+     * lagoon sand and under lagoon sand above a hollow; the withered garden, the moonpetal crowns and a toxic
      * pool beside swamp water; glowcap beside blighted glowcap by day and night; the deep silhouette as the particle
      * tints it (near black, the alpha does the work). Stand-ins are own pixels and labelled.
      */
@@ -4091,6 +4268,19 @@ public final class Ring4Textures {
         left = 10 + 3 * (6 * block + 24) + 24;
         drawGrid(graphics, source, ribcage("block/bone_sand"), left, top, 2, 0xE6DCC8, false);
         drawGrid(graphics, source, ribcage("block/fossil_stone"), left + 9 * block + 24, top, 2, 0xE6DCC8, false);
+        top += 6 * block + 16;
+
+        String[] sandstones = {"block/lagoon_sandstone", "block/lagoon_sandstone_top", "block/lagoon_sandstone_bottom",
+                "block/cut_lagoon_sandstone", "block/chiseled_lagoon_sandstone"};
+        label(graphics, "lagoon sandstone 6x6 at 2x: " + String.join(" | ", sandstones).replace("block/", "")
+                + " (top = smooth)  ||  wall on lagoon sand | lagoon sand over sandstone above a hollow, at 2x", 10, top);
+        top += 18;
+        for (int i = 0; i < sandstones.length; i++) {
+            drawGrid(graphics, source, wall(sandstones[i], null, 6, 6), 10 + i * (6 * block + 24), top, 2, 0x0A0E14, false);
+        }
+        left = 10 + sandstones.length * (6 * block + 24) + 24;
+        drawGrid(graphics, source, SANDSTONE_WALL, left, top, 2, 0x9FDCE6, false);
+        drawGrid(graphics, source, SANDSTONE_CEILING, left + 8 * block + 24, top, 2, 0x0A0E14, false);
         top += 6 * block + 16;
 
         int scene = SIZE * 4;

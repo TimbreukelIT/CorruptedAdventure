@@ -170,6 +170,29 @@ final class ModBlockStateProvider extends BlockStateProvider {
         verdant();
         ring4Decor();
         lagoonSandAndClawMarks();
+        lagoonSandstone();
+    }
+
+    /**
+     * The lagoon sandstone set (66f), modelled like vanilla sandstone: the block, its stairs and slab on side/bottom/top,
+     * the wall on the side; cut and chiseled are columns with the sandstone top as end; smooth is the top on all faces.
+     */
+    private void lagoonSandstone() {
+        ResourceLocation top = modLoc("block/lagoon_sandstone_top");
+        ResourceLocation side = modLoc("block/lagoon_sandstone");
+        ResourceLocation bottom = modLoc("block/lagoon_sandstone_bottom");
+        simpleBlock(ModBlocks.LAGOON_SANDSTONE.get(), models().cubeBottomTop("lagoon_sandstone", side, bottom, top));
+        stairsBlock(ModBlocks.LAGOON_SANDSTONE_STAIRS.get(), side, bottom, top);
+        slabBlock(ModBlocks.LAGOON_SANDSTONE_SLAB.get(), modLoc("block/lagoon_sandstone"), side, bottom, top);
+        wallBlock(ModBlocks.LAGOON_SANDSTONE_WALL.get(), side);
+        ResourceLocation cutSide = blockTexture(ModBlocks.CUT_LAGOON_SANDSTONE.get());
+        simpleBlock(ModBlocks.CUT_LAGOON_SANDSTONE.get(), models().cubeColumn("cut_lagoon_sandstone", cutSide, top));
+        slabBlock(ModBlocks.CUT_LAGOON_SANDSTONE_SLAB.get(), modLoc("block/cut_lagoon_sandstone"), cutSide, top, top);
+        simpleBlock(ModBlocks.CHISELED_LAGOON_SANDSTONE.get(), models().cubeColumn("chiseled_lagoon_sandstone",
+                blockTexture(ModBlocks.CHISELED_LAGOON_SANDSTONE.get()), top));
+        simpleBlock(ModBlocks.SMOOTH_LAGOON_SANDSTONE.get(), models().cubeAll("smooth_lagoon_sandstone", top));
+        stairsBlock(ModBlocks.SMOOTH_LAGOON_SANDSTONE_STAIRS.get(), top);
+        slabBlock(ModBlocks.SMOOTH_LAGOON_SANDSTONE_SLAB.get(), modLoc("block/smooth_lagoon_sandstone"), top);
     }
 
     /** The golf 3 blocks (66c): plain cubes on T's textures (the clawed deepslate is no pillar, like clawed tidestone). */

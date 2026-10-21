@@ -95,3 +95,18 @@ afvinken volgens de inventaris hieronder). Daarna **teststop 5c** (`teststop-5c.
 
 ## Voortgang
 - 2026-10-21: plan en besluiten vastgelegd; build in de cloud groen (7m40s, alle tests).
+- 2026-10-21: stroom I (I3, `06c209f`) en stroom B/T/IT (66c `88b8430`, 71 `46f8949`, 66d `043321a`) gemerged; 66e
+  (`a41448f`, gespiegelde tidestone, besluit gebruiker) erbij.
+- 2026-10-21: stroom W (74b `da25812`, 75c `7708fea`, 77b `3847928`) gemerged; daarna de lagunezandsteenset (66f
+  `31921ed`, 71c `4aadbef`, 66g `e173515`, 77c `c29c3be`; besluit gebruiker).
+- 2026-10-21: `/code-review` (medium) op `aeebe14..d77a385`: 10 bevindingen → fixes in `05725ae` (Y-bewuste brokcheck,
+  water onder eilanden, één boogvenster, borstelbare blokken, ertsfiltervenster; `archKept`-kosten → meten bij 5c);
+  details `golf-3-worldgen.md` "Review-fixes".
+- 2026-10-21: **INT-G3** op `c6f917f`: `runData` zonder verschil in `src/generated`; `build` groen (4m06s, 1.118 tests,
+  0 fouten). Det (wereld b omgekeerd): `islands.txt` 1.051/1.060 identiek, own 9, other 0 (vóór de fixes 1.050/1.060
+  own 8); `perf-islands.txt` 1.268/1.280, own 11, other 1 (vóór 1.269/1.280 own 11 other 1). Own = alleen ertswissels
+  over chunkgrenzen (nieuw t.o.v. de eerste run: één wissel `redstone_ore` → `tidesilver_ore` op 95 8 −7392, rand van
+  `tds`, zelfde soort); other = −7008 61 380 zeegras ↔ mangrovewortels (backlog). Server-smoke (verse wereld, ring 4,
+  grenzen, lagune, Nether-4): 0 ERROR behalve Yggdrasil, geen client-class. Lagune: 0 vanilla zand/zandsteen,
+  lagunezandsteen onder plafonds, 6188 59 −68 dicht. Docs: CODEBASE, backlog (uitkomst hierboven + sectie "Uit golf 3
+  ring 4"), `fase-1-wereld.md` §3 F. Volgende: **teststop 5c** (`teststop-5c.md`, lokaal).

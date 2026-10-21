@@ -28,7 +28,7 @@ public final class GroundPlantFeature extends Feature<SimpleBlockConfiguration> 
         WorldGenLevel level = context.level();
         BlockPos pos = context.origin();
         BlockState state = context.config().toPlace().getState(context.random(), pos);
-        if (!level.getBlockState(pos).isAir() || !state.canSurvive(level, pos) || Ring4Terrain.onDebris(level, pos.getX(), pos.getZ())) {
+        if (!level.getBlockState(pos).isAir() || !state.canSurvive(level, pos) || Ring4Terrain.onDebris(level, pos.getX(), pos.getY(), pos.getZ())) {
             return false;
         }
         if (state.getBlock() instanceof DoublePlantBlock) {

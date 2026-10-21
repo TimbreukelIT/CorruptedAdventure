@@ -179,7 +179,9 @@ public final class TunnelLiningFeature extends Feature<NoneFeatureConfiguration>
      * convention tag), so the lining is the same whether a neighbour's vein came before or after it.
      */
     static BlockState liningState(Lining lining, BlockState host, float roll) {
-        boolean deepslate = host.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES) || host.is(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE);
+        // The claw marks in deepslate are in no stone tag (77b), so they name their rock themselves.
+        boolean deepslate = host.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES) || host.is(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE)
+                || host.is(ModBlocks.CLAWED_DEEPSLATE.get());
         boolean tidestone = host.is(ModTags.Blocks.RING_4_STONES) || host.is(ModTags.Blocks.ORES_IN_GROUND_TIDESTONE);
         return switch (lining) {
             case TOXIC_CRYSTAL -> (roll < BUDDING_SHARE ? ModBlocks.BUDDING_TOXIC_CRYSTAL : ModBlocks.TOXIC_CRYSTAL_BLOCK).get().defaultBlockState();

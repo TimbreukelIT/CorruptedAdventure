@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": [
+      {
+        "item": "corruptedadventure:lagoon_sandstone"
+      },
+      {
+        "item": "corruptedadventure:chiseled_lagoon_sandstone"
+      }
+    ]
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "count": 6,
+    "id": "corruptedadventure:lagoon_sandstone_slab"
+  }
+}

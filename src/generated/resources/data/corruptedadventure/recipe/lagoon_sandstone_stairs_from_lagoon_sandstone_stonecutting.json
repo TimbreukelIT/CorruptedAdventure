@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "corruptedadventure:lagoon_sandstone"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:lagoon_sandstone_stairs"
+  }
+}

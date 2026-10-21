@@ -999,6 +999,27 @@ public final class ModBlocks {
     public static final DeferredBlock<ColoredFallingBlock> LAGOON_SAND = register("lagoon_sand",
             () -> new ColoredFallingBlock(new ColorRGBA(LAGOON_SAND_DUST_COLOR),
                     Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.QUARTZ)));
+    // Lagoon sandstone (package 66f): the same set as vanilla sandstone, white like the lagoon sand.
+    public static final DeferredBlock<Block> LAGOON_SANDSTONE = register("lagoon_sandstone",
+            () -> new Block(lagoon(Blocks.SANDSTONE)));
+    public static final DeferredBlock<StairBlock> LAGOON_SANDSTONE_STAIRS = register("lagoon_sandstone_stairs",
+            () -> new StairBlock(LAGOON_SANDSTONE.get().defaultBlockState(), lagoon(Blocks.SANDSTONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> LAGOON_SANDSTONE_SLAB = register("lagoon_sandstone_slab",
+            () -> new SlabBlock(lagoon(Blocks.SANDSTONE_SLAB)));
+    public static final DeferredBlock<WallBlock> LAGOON_SANDSTONE_WALL = register("lagoon_sandstone_wall",
+            () -> new WallBlock(lagoon(Blocks.SANDSTONE_WALL)));
+    public static final DeferredBlock<Block> CUT_LAGOON_SANDSTONE = register("cut_lagoon_sandstone",
+            () -> new Block(lagoon(Blocks.CUT_SANDSTONE)));
+    public static final DeferredBlock<SlabBlock> CUT_LAGOON_SANDSTONE_SLAB = register("cut_lagoon_sandstone_slab",
+            () -> new SlabBlock(lagoon(Blocks.CUT_SANDSTONE_SLAB)));
+    public static final DeferredBlock<Block> CHISELED_LAGOON_SANDSTONE = register("chiseled_lagoon_sandstone",
+            () -> new Block(lagoon(Blocks.CHISELED_SANDSTONE)));
+    public static final DeferredBlock<Block> SMOOTH_LAGOON_SANDSTONE = register("smooth_lagoon_sandstone",
+            () -> new Block(lagoon(Blocks.SMOOTH_SANDSTONE)));
+    public static final DeferredBlock<StairBlock> SMOOTH_LAGOON_SANDSTONE_STAIRS = register("smooth_lagoon_sandstone_stairs",
+            () -> new StairBlock(SMOOTH_LAGOON_SANDSTONE.get().defaultBlockState(), lagoon(Blocks.SMOOTH_SANDSTONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> SMOOTH_LAGOON_SANDSTONE_SLAB = register("smooth_lagoon_sandstone_slab",
+            () -> new SlabBlock(lagoon(Blocks.SMOOTH_SANDSTONE_SLAB)));
     /** Stone with claw marks in the tunnel walls: stone in every way, breaks into cobblestone too. */
     public static final DeferredBlock<Block> CLAWED_STONE = register("clawed_stone",
             () -> new Block(Properties.ofFullCopy(Blocks.STONE)));
@@ -1069,6 +1090,11 @@ public final class ModBlocks {
 
     private static Properties scorched(Block vanilla) {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.TERRACOTTA_BROWN);
+    }
+
+    /** The vanilla sandstone block's properties on the lagoon sand's map colour. */
+    private static Properties lagoon(Block vanilla) {
+        return Properties.ofFullCopy(vanilla).mapColor(MapColor.QUARTZ);
     }
 
     /** Iron ore's hardness and tool rule (harder than its host rock), XP 2–5, light 3. */

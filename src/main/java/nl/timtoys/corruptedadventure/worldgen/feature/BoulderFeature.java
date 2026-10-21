@@ -49,11 +49,11 @@ public final class BoulderFeature extends Feature<BoulderConfiguration> {
         float height = config.height().sample(random);
         int reach = Mth.ceil(Math.max(rx, rz));
         BlockPos origin = GroundObjects.fit(context.origin(), reach);
-        if (Ring4Terrain.onDebris(level, origin.getX(), origin.getZ())) {
-            return false;
-        }
         boolean submerged = config.submerged();
         int foot = ground(level, origin.getX(), origin.getZ(), submerged);
+        if (Ring4Terrain.onDebris(level, origin.getX(), foot, origin.getZ())) {
+            return false;
+        }
         if (GroundObjects.dry(level, origin.getX(), origin.getZ()) == submerged || submerged && !oneBiome(level, origin)) {
             return false;
         }

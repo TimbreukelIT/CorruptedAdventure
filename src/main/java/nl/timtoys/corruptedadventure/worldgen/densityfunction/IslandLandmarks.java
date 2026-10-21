@@ -171,8 +171,8 @@ final class IslandLandmarks {
         List<SkyLakes.Lake> lakes = new ArrayList<>();
         List<IslandArches.Arch> arches = new ArrayList<>();
         List<IslandDebris.Piece> debris = new ArrayList<>();
-        // An arch reaches from its first island's edge past the second's: within an island's reach and a gap of both.
-        int margin = Mth.ceil(IslandField.MAX_REACH + IslandArches.MAX_GAP);
+        // An arch reaches from its first island's edge past the second's: within IslandArches.archReach of its centre.
+        int margin = IslandArches.MAX_ARCH_WINDOW;
         for (IslandShape island : field.shapesWithin(minX - margin, minZ - margin, maxX + margin, maxZ + margin)) {
             SkyLakes.Lake lake = lake(island);
             if (lake != null && lake.maxX() + 4 >= minX && lake.minX() - 4 <= maxX && lake.maxZ() + 4 >= minZ && lake.minZ() - 4 <= maxZ) {
@@ -244,29 +244,60 @@ final class IslandLandmarks {
         return false;
     }
 
-    /** Whether a piece of debris ({@link IslandDebris}) has a block in the column. */
-    boolean inDebris(int x, int z) {
+    /** Whether a piece of debris ({@link IslandDebris}) has a block in the column at or above {@code fromY}. */
+    boolean inDebris(int x, int z, int fromY) {
         for (IslandDebris.Piece piece : cell(x, z).debris()) {
-            if (piece.interval(x, z) != null) {
+            int[] rock = piece.interval(x, z);
+            if (rock != null && rock[1] >= fromY) {
                 return true;
             }
         }
         return false;
     }
 
-    /** Whether a rock arch or a piece of debris has a block in the column between {@code lo} and {@code hi}. */
-    boolean rockWithin(int x, int z, int lo, int hi) {
-        Cell cell = cell(x, z);
-        for (IslandArches.Arch arch : cell.arches()) {
-            int[] rock = arch.interval(x, z);
-            if (rock != null && rock[0] <= hi && rock[1] >= lo) {
-                return true;
+    /**
+     * Whether a rock arch or a piece of debris has a block in the box (block coordinates, inclusive) between {@code lo}
+     * and {@code hi}. The arches and pieces of the cells the box touches whose own box meets it, then their columns
+     * (review golf 3: one cell lookup per cell, not per column; a block of either lies in its box, and its box in the
+     * lists of the cells it meets, so the answer is the per-column one).
+     */
+    boolean rockWithin(int minX, int minZ, int maxX, int maxZ, int lo, int hi) {
+        int size = field.settings().cellSize();
+        List<IslandArches.Arch> arches = new ArrayList<>();
+        List<IslandDebris.Piece> pieces = new ArrayList<>();
+        for (int i = Math.floorDiv(minX, size); i <= Math.floorDiv(maxX, size); i++) {
+            for (int j = Math.floorDiv(minZ, size); j <= Math.floorDiv(maxZ, size); j++) {
+                Cell cell = cell(i * size, j * size);
+                for (IslandArches.Arch arch : cell.arches()) {
+                    if (arch.maxX() >= minX && arch.minX() <= maxX && arch.maxZ() >= minZ && arch.minZ() <= maxZ && !arches.contains(arch)) {
+                        arches.add(arch);
+                    }
+                }
+                for (IslandDebris.Piece piece : cell.debris()) {
+                    if (piece.maxX() >= minX && piece.minX() <= maxX && piece.maxZ() >= minZ && piece.minZ() <= maxZ
+                            && piece.y() >= lo && piece.y() - piece.size() + 1 <= hi && !pieces.contains(piece)) {
+                        pieces.add(piece);
+                    }
+                }
             }
         }
-        for (IslandDebris.Piece piece : cell.debris()) {
-            int[] rock = piece.interval(x, z);
-            if (rock != null && rock[0] <= hi && rock[1] >= lo) {
-                return true;
+        if (arches.isEmpty() && pieces.isEmpty()) {
+            return false;
+        }
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                for (IslandArches.Arch arch : arches) {
+                    int[] rock = arch.interval(x, z);
+                    if (rock != null && rock[0] <= hi && rock[1] >= lo) {
+                        return true;
+                    }
+                }
+                for (IslandDebris.Piece piece : pieces) {
+                    int[] rock = piece.interval(x, z);
+                    if (rock != null && rock[0] <= hi && rock[1] >= lo) {
+                        return true;
+                    }
+                }
             }
         }
         return false;

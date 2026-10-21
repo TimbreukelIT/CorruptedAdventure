@@ -13606,7 +13606,7 @@
                                       "then_run": {
                                         "type": "minecraft:block",
                                         "result_state": {
-                                          "Name": "minecraft:sandstone"
+                                          "Name": "corruptedadventure:lagoon_sandstone"
                                         }
                                       }
                                     },
@@ -13634,7 +13634,7 @@
                                     "then_run": {
                                       "type": "minecraft:block",
                                       "result_state": {
-                                        "Name": "minecraft:sandstone"
+                                        "Name": "corruptedadventure:lagoon_sandstone"
                                       }
                                     }
                                   },
@@ -13684,7 +13684,7 @@
                                       "then_run": {
                                         "type": "minecraft:block",
                                         "result_state": {
-                                          "Name": "minecraft:sandstone"
+                                          "Name": "corruptedadventure:lagoon_sandstone"
                                         }
                                       }
                                     },
@@ -13712,7 +13712,7 @@
                                     "then_run": {
                                       "type": "minecraft:block",
                                       "result_state": {
-                                        "Name": "minecraft:sandstone"
+                                        "Name": "corruptedadventure:lagoon_sandstone"
                                       }
                                     }
                                   },

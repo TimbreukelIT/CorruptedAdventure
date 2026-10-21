@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "corruptedadventure:block/lagoon_sandstone_bottom",
+    "side": "corruptedadventure:block/lagoon_sandstone",
+    "top": "corruptedadventure:block/lagoon_sandstone_top"
+  }
+}

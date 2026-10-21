@@ -178,9 +178,9 @@ final class IslandDebris {
         // island whose candidate arches can reach the box, and only a candidate arch whose rock meets the piece's space
         // asks whether it stays (archKept, which spreads over the arches around it); the kept arches are those
         // candidates, so the answer is the same as asking every island's kept pairs.
-        int margin = Mth.ceil(IslandField.MAX_REACH + IslandArches.MAX_GAP);
+        int margin = IslandArches.MAX_ARCH_WINDOW;
         for (IslandShape other : field.shapesWithin(minX - margin, minZ - margin, maxX + margin, maxZ + margin)) {
-            double near = other.reach() + IslandArches.ARCH_MAX_GAP + IslandArches.MAX_MARGIN + 2.0;
+            double near = IslandArches.archReach(other);
             if (other.x() + near < minX || other.x() - near > maxX || other.z() + near < minZ || other.z() - near > maxZ) {
                 continue;
             }

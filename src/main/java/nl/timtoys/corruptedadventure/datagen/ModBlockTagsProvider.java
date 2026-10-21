@@ -158,7 +158,33 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         verdant();
         ring4Decor();
         lagoonSandAndClawMarks();
+        lagoonSandstone();
         netherRing4();
+    }
+
+    /**
+     * The lagoon sandstone set (66f) has vanilla sandstone's tags: pickaxe, stairs/slabs/walls, and for the plain block
+     * the carver and sculk replaceables (it is the lagoon's sand under a ceiling, so caves cut through it as through
+     * sandstone); the {@code c:sandstone/...} groups like the scorched sandstone (not "uncolored": it is white sandstone).
+     */
+    private void lagoonSandstone() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.LAGOON_SANDSTONE.get(), ModBlocks.LAGOON_SANDSTONE_STAIRS.get(),
+                ModBlocks.LAGOON_SANDSTONE_SLAB.get(), ModBlocks.LAGOON_SANDSTONE_WALL.get(),
+                ModBlocks.CUT_LAGOON_SANDSTONE.get(), ModBlocks.CUT_LAGOON_SANDSTONE_SLAB.get(),
+                ModBlocks.CHISELED_LAGOON_SANDSTONE.get(), ModBlocks.SMOOTH_LAGOON_SANDSTONE.get(),
+                ModBlocks.SMOOTH_LAGOON_SANDSTONE_STAIRS.get(), ModBlocks.SMOOTH_LAGOON_SANDSTONE_SLAB.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.LAGOON_SANDSTONE_STAIRS.get(), ModBlocks.SMOOTH_LAGOON_SANDSTONE_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.LAGOON_SANDSTONE_SLAB.get(), ModBlocks.CUT_LAGOON_SANDSTONE_SLAB.get(),
+                ModBlocks.SMOOTH_LAGOON_SANDSTONE_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.LAGOON_SANDSTONE_WALL.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.LAGOON_SANDSTONE.get());
+        tag(BlockTags.SCULK_REPLACEABLE).add(ModBlocks.LAGOON_SANDSTONE.get());
+        tag(Tags.Blocks.SANDSTONE_BLOCKS).add(ModBlocks.LAGOON_SANDSTONE.get(), ModBlocks.CUT_LAGOON_SANDSTONE.get(),
+                ModBlocks.CHISELED_LAGOON_SANDSTONE.get(), ModBlocks.SMOOTH_LAGOON_SANDSTONE.get());
+        tag(Tags.Blocks.SANDSTONE_SLABS).add(ModBlocks.LAGOON_SANDSTONE_SLAB.get(), ModBlocks.CUT_LAGOON_SANDSTONE_SLAB.get(),
+                ModBlocks.SMOOTH_LAGOON_SANDSTONE_SLAB.get());
+        tag(Tags.Blocks.SANDSTONE_STAIRS).add(ModBlocks.LAGOON_SANDSTONE_STAIRS.get(),
+                ModBlocks.SMOOTH_LAGOON_SANDSTONE_STAIRS.get());
     }
 
     /**
