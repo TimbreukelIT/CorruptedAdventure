@@ -130,6 +130,7 @@ hieronder.
 - Voortgang: 2026-10-21 21:15 `build` + `runData` groen (1165+ tests; één oude assert in `RingWeatherConfigTest` aangepast: ring 5 heeft eigen gewichten); `src/generated` alleen lang + `sounds.json`.
 - Voortgang: 2026-10-21 21:19 S-smoke `r5-a92` (poort 5): log zonder ERROR/client-class-fout; RCON `/ca weather`, `/ca weather 5 glitch_storm|reverse_rain|standstill|clear` (stilstand 69 s uit 40–120, beide banden gelijk bij seed 0), fout-melding voor een ring 4-type in ring 5. Client-mixin-doelen gecontroleerd met `javap` (twee `GETFIELD ticks` + één float-argument in `renderClouds`; `SoundEngine#getVolume(SoundSource)`), niet in een client geladen.
 - Voortgang: 2026-10-21 21:20 eigen review op de worktree-diff (zie Beslissingen); commit.
+- Voortgang: 2026-10-21 21:55 reviewbevindingen 1–7 verwerkt (hum, drift-local i.p.v. partialTick/ticks, pauze en lagen voor de hotbar, cache + short-circuit, live-reload-notitie, tests); `build` + `runData` groen, `src/generated` schoon, S-smoke `r5-a92b` schoon.
 
 ## CODEBASE-delta
 
@@ -157,13 +158,13 @@ hieronder.
   vóór `register`); `shares` splitst ring 5 in binnen- × (1 − s) en buitentype × s (`addRing5`), één aandeel bij gelijk
   type; F3 `CA weather` krijgt ` [ring_5 inner …, outer …]`. Nieuw: `GlitchStormRenderer` (fog/flitsen/specks/geluid),
   `GlitchStormOverlay` (HUD-laag `corruptedadventure:glitch_storm` boven `camera_overlays`: ruisblokjes + scanlines;
-  hotbar-hapering 1–2 ticks via `RenderGuiLayerEvent` LOWEST), `ReverseRainRenderer` (`RainSheet` met snelheid −0,8,
+  hotbar-hapering 1–2 ticks via de eigen lagen `glitch_hotbar_shift`/`glitch_hotbar_unshift` rond `hotbar`), `ReverseRainRenderer` (`RainSheet` met snelheid −0,8,
   `#1A1022`), `StandstillRenderer` (bevroren `RainSheet` op een tijd uit de seed, witte vlakke fog), `StandstillClouds`
   (wolkenklok vertraagt tot stilstand, geen sprong daarna), `Ring5SoundDamping` (stilstand: alle categorieën behalve
   `MASTER` × (1 − 0,85 · sterkte); glitchstorm: korte dips van `WEATHER`/`AMBIENT`; ververst lopende kanalen bij een
   wijziging). `RainSheet.render(…, time)` + `scroll(...)` (negatieve snelheid = omhoog).
-- Client-mixins: `LevelRendererCloudsMixin` uitgebreid (`@ModifyVariable` partialTick + `@Redirect` op `ticks` in
-  `renderClouds`); **nieuw `SoundEngineVolumeMixin`** (`SoundEngine#getVolume` RETURN × `Ring5SoundDamping.volume`), in
+- Client-mixins: `LevelRendererCloudsMixin` uitgebreid (`@ModifyVariable` op de STORE van de drift-local `d1`, slot 16
+  in NeoForge 21.1.252, + `StandstillClouds.beginFrame` in de bestaande HEAD-inject); **nieuw `SoundEngineVolumeMixin`** (`SoundEngine#getVolume` RETURN × `Ring5SoundDamping.volume`), in
   `corruptedadventure.mixins.json` → `client`.
 - Tests: `weather/Ring5WeatherTest`, `config/Ring5WeatherConfigTest`, `client/weather/Ring5WeatherRenderTest`;
   `Ring4WeatherTest` (index `STORM_WIND` = 10).
@@ -184,14 +185,23 @@ payload); P2-gewichten binnen 55/30/15, buiten 70/20/10, stilstand 40–120 s. I
   `SoundManager.updateSourceVolume(AMBIENT, …)`. Afwijking van het bezit (§ "Bezit": alleen bestaande mixins): nieuw
   bestand, raakt niemand anders.
 - **Wolken:** geen harde bevriezing maar een vertraagde klok (`lag += sterkte` per tick): ze remmen af met de fade (100
-  ticks) en drijven daarna verder vanaf waar ze stonden, zonder sprong.
+  ticks) en drijven daarna verder vanaf waar ze stonden, zonder sprong. Alleen de drift-local van `renderClouds` wordt
+  aangepast (review: partialTick/ticks globaal wijzigen liet wolken onder Sodium/Embeddium haperen en raakte
+  `getCloudColor`); vervangt een mod de wolken, dan drijven ze gewoon door.
+- **Hotbar-hapering via twee eigen GUI-lagen** (`glitch_hotbar_shift` onder en `glitch_hotbar_unshift` boven
+  `hotbar`): alleen translaties, geen push/pop (de pose stack blijft altijd in balans); "weg" = van het scherm geschoven;
+  niet tijdens pauze.
+- **Stilstand-hum** wordt opgehoogd met de dempfactor (`humVolume = sterkte · blootstelling / (1 − 0,85 · sterkte)`), zodat
+  hij op zijn eigen (bijna stille) niveau eindigt i.p.v. op 15 % daarvan.
+- **Prestatie:** `ServerConfig.ring5Bands()` komt uit een cache die bij `ModConfigEvent.Loading/Reloading` (ook de
+  gesyncte client-kopie) wordt gevuld en bij `Unloading` leeg; `RingWeather.stateAt` slaat band en settings over bij
+  `clear` en seed 0 (pure kern `RingWeather.feltAt`, getest).
 - **Glitchstorm-HUD:** laag boven `camera_overlays` (onder de HUD-elementen), max. 48 ruisblokjes + scanlines om de 3 px,
   patroon wisselt elke 2 ticks; hotbar-hapering kans 2 %/tick bij vol, 1–2 ticks, ⅓ weg, anders 4–15 px verschoven.
   Geluidsdips 5 %/tick, 2–5 ticks, diepte 0,7; flitsen 3 %/tick, 2–4 ticks, `#120818` (ongeacht daglicht).
 - **Kleuren/waarden (constanten, bij 6b bij te sturen):** glitchstorm-waas `#2A2233`, fog ×0,6; omgekeerde regen
   `#1A1022`, snelheid −0,8, waas `#2B1E38`, fog ×0,75; stilstand-strepen `#C4C8D2` op 55 %, bevroren tijd =
   `floorMod(seed, 4096)`, fog `#D6D7DB` ×0,8 ("vlak" = kleurloos; geen near-plane-truc).
-- **Stilstand-loop** wordt zelf ook gedempt (blijft dus bijna stil); dat is de bedoeling.
 - **`/ca weather`:** `ring_5: <type>, … (inner band) | outer band: <type>, …`; F3: ` [ring_5 inner …, outer …]` achter de
   aandelen.
 
@@ -207,3 +217,6 @@ een stilstand is en het afgeleide type niet; **C** een kortere fade voor afgelei
 - `conditions` (C, INT1): `VoidAmplifierModifier` leest `ServerConfig.RING_5_WEATHER.voidMultiplier(type)` op
   `RingWeather.stateAt(...)` (de felt-staat, met zijn fade); dezelfde bandgrens (`Ring5Band.outer`, void = buiten).
 - `infra` (INT1): `ModNetwork.PROTOCOL_VERSION` "8" → "9" (`STANDSTILL` is een nieuwe enum-index).
+- `atmosphere` (bekend gedrag): een live-reload van `outer*Weight` verandert het buitentype van het lopende weer meteen
+  (het wordt uit de seed afgeleid); een client volgt pas als zijn gesyncte config-kopie is bijgewerkt, tot dan kan hij
+  even een ander buitentype tonen dan de server rekent. Staat ook in het config-commentaar.

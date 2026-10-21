@@ -42,7 +42,7 @@ final class StandstillRenderer implements RingWeatherRenderer {
     public void clientTick(ClientLevel level, LocalPlayer player, float strength) {
         StandstillClouds.feed(strength);
         Ring5SoundDamping.feedStandstill(strength);
-        hum.play(Minecraft.getInstance(), level.getGameTime(), strength * SkyExposure.get());
+        hum.play(Minecraft.getInstance(), level.getGameTime(), humVolume(strength, SkyExposure.get()));
         Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         RingWeatherClientHooks.felt(level, camera.x, camera.z, RingWeatherType.STANDSTILL)
                 .map(RingWeatherMix.Share::state)
@@ -67,6 +67,14 @@ final class StandstillRenderer implements RingWeatherRenderer {
     @Override
     public void renderLevel(RenderLevelStageEvent event, float strength) {
         rain.render(event, strength * SkyExposure.get() * RAIN_SHARE, Vec3.ZERO, frozenTime);
+    }
+
+    /**
+     * The hum's loop volume: its weather category is drained with everything else, so it is raised by the same factor
+     * and stays at its own (near-silent) level; the engine clamps the product to 1.
+     */
+    static float humVolume(float strength, float exposure) {
+        return strength * exposure / Ring5SoundDamping.standstillFactor(strength);
     }
 
     /** The streaks' frozen time for a standstill with {@code seed}: the same for its whole length, on every client. */

@@ -62,33 +62,52 @@ public final class Ring5SoundDamping {
         if (minecraft.level != null && minecraft.isPaused()) {
             return;
         }
+        if (advance()) {
+            refresh(minecraft);
+        }
+    }
+
+    /** One tick: the feeds become the factors; true if the playing channels need a refresh. Pure, for tests. */
+    static boolean advance() {
         all = standstillFactor(standstillFeed);
         weatherAndAmbient = all * (1.0F - Math.clamp(dipFeed, 0.0F, 1.0F));
         standstillFeed = 0.0F;
         dipFeed = 0.0F;
-        refreshIfChanged(minecraft);
+        return takeRefresh();
     }
 
     static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        if (reset()) {
+            refresh(Minecraft.getInstance());
+        }
+    }
+
+    /** Back to full volume; true if the playing channels need a refresh. */
+    static boolean reset() {
         standstillFeed = 0.0F;
         dipFeed = 0.0F;
         all = 1.0F;
         weatherAndAmbient = 1.0F;
-        refreshIfChanged(Minecraft.getInstance());
+        return takeRefresh();
     }
 
-    private static void refreshIfChanged(Minecraft minecraft) {
+    /** Whether the factors moved far enough from the last refreshed ones; if so they become the refreshed ones. */
+    private static boolean takeRefresh() {
         if (!changed(refreshedAll, all) && !changed(refreshedWeather, weatherAndAmbient)) {
-            return;
+            return false;
         }
         refreshedAll = all;
         refreshedWeather = weatherAndAmbient;
+        return true;
+    }
+
+    private static void refresh(Minecraft minecraft) {
         // A non-MASTER category recalculates every playing channel (through our factor); the volume passed is unused there.
         minecraft.getSoundManager().updateSourceVolume(SoundSource.AMBIENT, minecraft.options.getSoundSourceVolume(SoundSource.AMBIENT));
     }
 
     /** A change worth a refresh: a real step, or the last bit back to exactly full volume. */
-    private static boolean changed(float refreshed, float now) {
+    static boolean changed(float refreshed, float now) {
         return Math.abs(refreshed - now) >= REFRESH_STEP || now == 1.0F && refreshed != 1.0F;
     }
 }

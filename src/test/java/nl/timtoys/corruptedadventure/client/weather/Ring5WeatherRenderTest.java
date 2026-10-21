@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -39,16 +40,45 @@ class Ring5WeatherRenderTest {
         }
     }
 
-    /** The clouds: vanilla's clock without a standstill, still at full strength, never running backwards. */
+    /** The drift's clock: vanilla's ticks + partial tick, minus the frame's lag. */
+    private static double cloudTime(int ticks, float partialTick, double lag, float freeze) {
+        return ticks + (double) partialTick - StandstillClouds.frameLag(lag, freeze, partialTick);
+    }
+
+    /** The clouds: vanilla's clock without a standstill, still at full strength, never running backwards or jumping. */
     @Test
     void cloudClockSlowsToAHalt() {
-        assertEquals(1000.25, StandstillClouds.cloudTime(1000, 0.25F, 0.0F, 0.0), 1.0E-9);
-        assertEquals(StandstillClouds.cloudTime(1000, 0.0F, 1.0F, 30.0), StandstillClouds.cloudTime(1000, 0.9F, 1.0F, 30.0), 1.0E-9);
+        assertEquals(1000.25, cloudTime(1000, 0.25F, 0.0, 0.0F), 1.0E-9);
+        assertEquals(cloudTime(1000, 0.0F, 30.0, 1.0F), cloudTime(1000, 0.9F, 30.0, 1.0F), 1.0E-6);
         // Across a tick at half strength: before the tick (lag 10, partial 1) equals after it (lag 10.5, partial 0).
-        double before = StandstillClouds.cloudTime(1000, 1.0F, 0.5F, 10.0);
-        double after = StandstillClouds.cloudTime(1001, 0.0F, 0.5F, 10.5);
-        assertEquals(before, after, 1.0E-6);
-        assertTrue(StandstillClouds.cloudTime(1000, 0.5F, 0.5F, 10.0) > StandstillClouds.cloudTime(1000, 0.0F, 0.5F, 10.0));
+        assertEquals(cloudTime(1000, 1.0F, 10.0, 0.5F), cloudTime(1001, 0.0F, 10.5, 0.5F), 1.0E-6);
+        assertTrue(cloudTime(1000, 0.5F, 10.0, 0.5F) > cloudTime(1000, 0.0F, 10.0, 0.5F));
+    }
+
+    /** The order per tick: the lag grows by the freeze of the tick that passed, then the feed becomes the freeze. */
+    @Test
+    void cloudLagBuildsUpFeedThenFreezeThenLag() {
+        StandstillClouds.reset();
+        StandstillClouds.feed(1.0F);
+        StandstillClouds.advance();
+        assertEquals(1.0F, StandstillClouds.freeze());
+        assertEquals(0.0, StandstillClouds.lag());
+        StandstillClouds.feed(0.5F);
+        StandstillClouds.feed(0.25F);
+        StandstillClouds.advance();
+        assertEquals(0.5F, StandstillClouds.freeze());
+        assertEquals(1.0, StandstillClouds.lag());
+        StandstillClouds.advance();
+        assertEquals(0.0F, StandstillClouds.freeze());
+        assertEquals(1.5, StandstillClouds.lag());
+        StandstillClouds.advance();
+        assertEquals(1.5, StandstillClouds.lag());
+        // The drift: vanilla's minus 0.03 per tick of lag; untouched without one.
+        StandstillClouds.beginFrame(0.5F);
+        assertEquals(30.0 - 0.03 * 1.5, StandstillClouds.drift(30.0), 1.0E-9);
+        StandstillClouds.reset();
+        StandstillClouds.beginFrame(0.5F);
+        assertEquals(30.0, StandstillClouds.drift(30.0));
     }
 
     /** A full standstill drains to 15 %, nothing at 0; the UI (MASTER) is never touched. */
@@ -61,6 +91,46 @@ class Ring5WeatherRenderTest {
         assertEquals(1.0F, Ring5SoundDamping.volume(SoundSource.MASTER));
         assertEquals(1.0F, Ring5SoundDamping.volume(null));
         assertEquals(1.0F, Ring5SoundDamping.volume(SoundSource.MUSIC));
+    }
+
+    /** Damping and the refresh of the playing channels: on a real change, and once on the way back to exactly 1. */
+    @Test
+    void dampingRefreshesAndReturnsToExactlyFull() {
+        Ring5SoundDamping.reset();
+        assertFalse(Ring5SoundDamping.advance());
+        Ring5SoundDamping.feedStandstill(1.0F);
+        assertTrue(Ring5SoundDamping.advance());
+        assertEquals(0.15F, Ring5SoundDamping.volume(SoundSource.MUSIC), 1.0E-6F);
+        assertEquals(1.0F, Ring5SoundDamping.volume(SoundSource.MASTER));
+        Ring5SoundDamping.feedStandstill(0.995F);
+        assertFalse(Ring5SoundDamping.advance(), "a step below 0.01 does not refresh");
+        Ring5SoundDamping.feedStandstill(0.005F);
+        assertTrue(Ring5SoundDamping.advance());
+        // No feed: back to exactly full, refreshed once more although the step is below 0.01.
+        assertTrue(Ring5SoundDamping.advance());
+        assertEquals(1.0F, Ring5SoundDamping.volume(SoundSource.MUSIC));
+        assertFalse(Ring5SoundDamping.advance());
+        // A glitch dip only takes weather and ambient.
+        Ring5SoundDamping.feedDip(0.5F);
+        assertTrue(Ring5SoundDamping.advance());
+        assertEquals(0.5F, Ring5SoundDamping.volume(SoundSource.WEATHER), 1.0E-6F);
+        assertEquals(0.5F, Ring5SoundDamping.volume(SoundSource.AMBIENT), 1.0E-6F);
+        assertEquals(1.0F, Ring5SoundDamping.volume(SoundSource.BLOCKS));
+        Ring5SoundDamping.reset();
+        assertTrue(Ring5SoundDamping.changed(0.995F, 1.0F));
+        assertFalse(Ring5SoundDamping.changed(1.0F, 1.0F));
+        assertFalse(Ring5SoundDamping.changed(0.5F, 0.505F));
+        assertTrue(Ring5SoundDamping.changed(0.5F, 0.52F));
+    }
+
+    /** The standstill's hum is raised by what the damping takes, so it ends at its own level, not at 15 % of it. */
+    @Test
+    void standstillHumOutlivesItsOwnDamping() {
+        for (float strength : new float[]{0.1F, 0.5F, 1.0F}) {
+            float played = StandstillRenderer.humVolume(strength, 1.0F) * Ring5SoundDamping.standstillFactor(strength);
+            assertEquals(strength, played, 1.0E-6F);
+        }
+        assertEquals(0.0F, StandstillRenderer.humVolume(0.0F, 1.0F));
     }
 
     @Test

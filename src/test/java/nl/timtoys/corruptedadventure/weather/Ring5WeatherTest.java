@@ -142,6 +142,38 @@ class Ring5WeatherTest {
         assertEquals(Ring5WeatherBands.Band.OUTER, Ring5WeatherBands.bandAt(LAYOUT, Ring.VOID, 0.0, 0.0));
     }
 
+    /** stateAt (through its pure part): ring 5 switches on Ring5Band.outer, the void follows ring 5 as outer. */
+    @Test
+    void stateAtSwitchesOnTheBand() {
+        int seed = seedWithOuter(RingWeatherType.GLITCH_STORM, RingWeatherType.REVERSE_RAIN);
+        RingWeatherState storm = RingWeatherState.start(RingWeatherType.GLITCH_STORM, 20000, seed).countDown(5000);
+        Map<Ring, RingWeatherState> states = new EnumMap<>(Ring.class);
+        states.put(Ring.RING_5, storm);
+        states.put(Ring.RING_4, RingWeatherState.start(RingWeatherType.CLEAR, 100, 0));
+        Ring5Band band = Ring5Band.of(LAYOUT);
+        int checked = 0;
+        for (double angle = 0.0; angle < 2.0 * Math.PI; angle += Math.PI / 45.0) {
+            for (int distance = 8400; distance <= 10400; distance += 50) {
+                double x = distance * Math.cos(angle);
+                double z = distance * Math.sin(angle);
+                Ring ring = LAYOUT.sampleOverworld(x, z).ring();
+                if (ring != Ring.RING_5 && ring != Ring.VOID) {
+                    continue;
+                }
+                boolean outside = ring == Ring.VOID || band.outer(x, z);
+                RingWeatherState felt = RingWeather.feltAt(LAYOUT, Level.OVERWORLD, states::get, x, z);
+                assertEquals(outside ? RingWeatherType.REVERSE_RAIN : RingWeatherType.GLITCH_STORM, felt.type());
+                assertEquals(storm.remainingTicks(), felt.remainingTicks());
+                checked++;
+            }
+        }
+        assertTrue(checked > 3000, "checked " + checked);
+        // A set weather (seed 0) and clear are the same everywhere.
+        RingWeatherState set = RingWeatherState.start(RingWeatherType.STANDSTILL, 1200, 0);
+        states.put(Ring.RING_5, set);
+        assertSame(set, RingWeather.feltAt(LAYOUT, Level.OVERWORLD, states::get, 9900.0, 0.0));
+    }
+
     @Test
     void outerShareBlendsOverTheTransition() {
         assertEquals(0.0F, Ring5WeatherBands.outerShare(-1.0));

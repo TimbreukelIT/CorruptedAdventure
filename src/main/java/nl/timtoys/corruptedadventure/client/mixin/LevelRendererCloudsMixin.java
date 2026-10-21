@@ -6,29 +6,25 @@ import net.minecraft.client.renderer.LevelRenderer;
 import nl.timtoys.corruptedadventure.client.weather.Ring4Clouds;
 import nl.timtoys.corruptedadventure.client.weather.StandstillClouds;
 import org.joml.Matrix4f;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * While vanilla draws the clouds, the fog moves out by the height ring 4 raised them (sparring 2026-10-20, C1-3), so the
  * layer at Y 300 fades as vanilla's at Y 192 would instead of vanishing in the vertical fog ({@link Ring4Clouds}).
- * Restored on every return. Since package 92 also the cloud clock: a ring 5 standstill slows the clouds to a halt
- * ({@link StandstillClouds}); vanilla's two reads of its tick counter and the partial tick get the slowed clock.
+ * Restored on every return. Since package 92 also the clouds' drift: a ring 5 standstill slows them to a halt
+ * ({@link StandstillClouds}), only in the drift's own local ({@code d1 = (ticks + partialTick) × 0.03}, slot 16 in
+ * NeoForge 21.1.252); the tick counter and the partial tick stay vanilla's for everything else.
  * Client-only mixin ({@code "client"} in the config).
  */
 @Mixin(LevelRenderer.class)
 abstract class LevelRendererCloudsMixin {
     @Shadow
     private ClientLevel level;
-
-    @Shadow
-    private int ticks;
 
     @Inject(method = "renderClouds", at = @At("HEAD"))
     private void corruptedadventure$cloudFogOut(PoseStack poseStack, Matrix4f frustumMatrix, Matrix4f projectionMatrix, float partialTick,
@@ -39,18 +35,13 @@ abstract class LevelRendererCloudsMixin {
             raised = Ring4Clouds.cloudHeight(vanilla) - vanilla;
         }
         Ring4Clouds.beforeClouds(raised);
+        StandstillClouds.beginFrame(partialTick);
     }
 
-    /** First, before vanilla reads the tick counter: the slowed clock's partial tick (and its whole ticks for below). */
-    @ModifyVariable(method = "renderClouds", at = @At("HEAD"), argsOnly = true)
-    private float corruptedadventure$standstillPartialTick(float partialTick) {
-        return StandstillClouds.partialTick(ticks, partialTick);
-    }
-
-    @Redirect(method = "renderClouds", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;ticks:I",
-            opcode = Opcodes.GETFIELD))
-    private int corruptedadventure$standstillTicks(LevelRenderer renderer) {
-        return StandstillClouds.ticks();
+    /** The drift as vanilla stores it, minus what a standstill held back. */
+    @ModifyVariable(method = "renderClouds", at = @At(value = "STORE", ordinal = 0), index = 16)
+    private double corruptedadventure$standstillDrift(double drift) {
+        return StandstillClouds.drift(drift);
     }
 
     @Inject(method = "renderClouds", at = @At("RETURN"))

@@ -4,17 +4,16 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.RandomSource;
-import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 
 /**
  * The glitch storm on the screen (ring 5, package 92): image noise (short flickering blocks and faint scanlines, under
- * the HUD) and now and then a hiccup of the hotbar: shifted or gone for 1–2 ticks, never longer than 0.1 s. Fed every
+ * the HUD) and now and then a hiccup of the hotbar: shifted or gone for 1–2 ticks, never longer than 0.1 s (and never
+ * while paused). Fed every
  * tick by {@link GlitchStormRenderer} while the storm is felt; without a feed it is gone the next tick. Hidden with F1.
  */
 final class GlitchStormOverlay {
@@ -37,15 +36,15 @@ final class GlitchStormOverlay {
     private static int hiccupTicks;
     /** Horizontal shift of the hotbar during a hiccup, 0 = hidden. */
     private static int hiccupShift;
-    private static boolean shifted;
+    /** The translation the shift layer applied this frame, taken back by the layer above the hotbar. */
+    private static float appliedX;
+    private static float appliedY;
 
     private GlitchStormOverlay() {
     }
 
     static void register(IEventBus modBus, IEventBus gameBus) {
         modBus.addListener(GlitchStormOverlay::onRegisterGuiLayers);
-        gameBus.addListener(EventPriority.LOWEST, GlitchStormOverlay::onHotbarPre);
-        gameBus.addListener(GlitchStormOverlay::onHotbarPost);
         gameBus.addListener(GlitchStormOverlay::onLoggingOut);
     }
 
@@ -71,6 +70,10 @@ final class GlitchStormOverlay {
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, CorruptedAdventure.id("glitch_storm"), GlitchStormOverlay::render);
+        // The hiccup: our own layers right below and right above the hotbar move it and move it back. Only translations,
+        // no push/pop, so the pose stack stays balanced whatever other mods cancel.
+        event.registerBelow(VanillaGuiLayers.HOTBAR, CorruptedAdventure.id("glitch_hotbar_shift"), GlitchStormOverlay::shiftHotbar);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, CorruptedAdventure.id("glitch_hotbar_unshift"), GlitchStormOverlay::unshiftHotbar);
     }
 
     private static void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
@@ -109,28 +112,25 @@ final class GlitchStormOverlay {
         return Math.round(Math.clamp(alpha, 0.0F, 1.0F) * 255.0F) << 24;
     }
 
-    private static void onHotbarPre(RenderGuiLayerEvent.Pre event) {
-        if (!event.getName().equals(VanillaGuiLayers.HOTBAR)) {
+    /** Below the hotbar: shifts it sideways, or off the bottom of the screen (gone), during a hiccup. Not while paused. */
+    private static void shiftHotbar(GuiGraphics graphics, DeltaTracker deltaTracker) {
+        appliedX = 0.0F;
+        appliedY = 0.0F;
+        Minecraft minecraft = Minecraft.getInstance();
+        if (hiccupTicks <= 0 || minecraft.isPaused() || current(minecraft) <= 0.0F) {
             return;
         }
-        shifted = false;
-        if (hiccupTicks <= 0 || current(Minecraft.getInstance()) <= 0.0F) {
-            return;
-        }
-        if (hiccupShift == 0) {
-            event.setCanceled(true);
-            return;
-        }
-        // Lowest priority: nothing cancels after us, so Post comes and pops.
-        event.getGuiGraphics().pose().pushPose();
-        event.getGuiGraphics().pose().translate(hiccupShift, 0.0F, 0.0F);
-        shifted = true;
+        appliedX = hiccupShift;
+        appliedY = hiccupShift == 0 ? graphics.guiHeight() : 0.0F;
+        graphics.pose().translate(appliedX, appliedY, 0.0F);
     }
 
-    private static void onHotbarPost(RenderGuiLayerEvent.Post event) {
-        if (shifted && event.getName().equals(VanillaGuiLayers.HOTBAR)) {
-            event.getGuiGraphics().pose().popPose();
-            shifted = false;
+    /** Above the hotbar: takes the shift back. */
+    private static void unshiftHotbar(GuiGraphics graphics, DeltaTracker deltaTracker) {
+        if (appliedX != 0.0F || appliedY != 0.0F) {
+            graphics.pose().translate(-appliedX, -appliedY, 0.0F);
+            appliedX = 0.0F;
+            appliedY = 0.0F;
         }
     }
 
@@ -138,6 +138,5 @@ final class GlitchStormOverlay {
         amount = 0.0F;
         fedAt = NEVER;
         hiccupTicks = 0;
-        shifted = false;
     }
 }

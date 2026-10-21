@@ -1,9 +1,11 @@
 package nl.timtoys.corruptedadventure.weather;
 
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -20,6 +22,7 @@ import nl.timtoys.corruptedadventure.ring.RingWorld;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Server side of the ring weather: the cycle (every 20 ticks, paused while {@code doWeatherCycle} is off), the sync and
@@ -78,12 +81,24 @@ public final class RingWeather {
         if (data.isEmpty()) {
             return RingWeatherState.STILL;
         }
-        RingLayout layout = RingLayout.current();
-        Ring sampled = layout.sample(level.dimension(), x, z).ring();
+        return feltAt(RingLayout.current(), level.dimension(), data.get()::get, x, z);
+    }
+
+    /**
+     * {@link #stateAt} without a level: the ring at x, z in {@code dimension} of {@code layout}, its state from
+     * {@code states}, and the band rule of ring 4 or 5. Pure, for tests.
+     */
+    static RingWeatherState feltAt(RingLayout layout, ResourceKey<Level> dimension, Function<Ring, RingWeatherState> states,
+                                   double x, double z) {
+        Ring sampled = layout.sample(dimension, x, z).ring();
         Ring ring = weatherRing(sampled);
-        RingWeatherState state = data.get().get(ring);
+        RingWeatherState state = states.apply(ring);
         // Ring 4 and 5 weather exist only in the overworld, so x, z are overworld positions here.
         if (ring == Ring.RING_5) {
+            // Clear, and a set weather (seed 0), are the same in both bands: no band or settings needed.
+            if (state.type() == RingWeatherType.CLEAR || state.seed() == 0) {
+                return state;
+            }
             return Ring5WeatherBands.felt(state, Ring5WeatherBands.bandAt(layout, sampled, x, z), ServerConfig.ring5Bands());
         }
         if (ring != Ring.RING_4 || Ring4WeatherBands.bandOf(state.type()) == Ring4WeatherBands.Band.ANY) {

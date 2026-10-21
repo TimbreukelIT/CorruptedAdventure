@@ -46,6 +46,11 @@ public final class ServerConfig {
     public static final Ring5WeatherEffects RING_5_WEATHER;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
+    /**
+     * {@link #ring5Bands()} as of the last load or reload of the SERVER config (on the client: of the synced copy), so
+     * the per-frame and per-player reads build no maps; null before the first load and after an unload.
+     */
+    private static volatile Ring5WeatherBands.Settings ring5Bands;
     /** Per ring with weather types; package-private for tests. */
     static final Map<Ring, RingWeather> RING_WEATHER = new EnumMap<>(Ring.class);
 
@@ -82,12 +87,18 @@ public final class ServerConfig {
     public static void register(IEventBus modEventBus) {
         modEventBus.addListener(ModConfigEvent.Loading.class, event -> validate(event.getConfig().getSpec()));
         modEventBus.addListener(ModConfigEvent.Reloading.class, event -> validate(event.getConfig().getSpec()));
+        modEventBus.addListener(ModConfigEvent.Unloading.class, event -> {
+            if (event.getConfig().getSpec() == SPEC) {
+                ring5Bands = null;
+            }
+        });
     }
 
     private static void validate(Object spec) {
         if (spec == SPEC) {
             ALL_THRESHOLDS.forEach(ThresholdLevels::validate);
             RING_WEATHER.values().forEach(RingWeather::validate);
+            ring5Bands = RING_5_WEATHER.bands(true);
         }
     }
 
@@ -105,7 +116,9 @@ public final class ServerConfig {
      * the client (the SERVER config is synced): before the synced copy has arrived, the defaults.
      */
     public static Ring5WeatherBands.Settings ring5Bands() {
-        return RING_5_WEATHER.bands(SPEC.isLoaded());
+        Ring5WeatherBands.Settings cached = ring5Bands;
+        boolean loaded = SPEC.isLoaded();
+        return cached != null && loaded ? cached : RING_5_WEATHER.bands(loaded);
     }
 
     /** {@code [conditions.debug]}: the test condition, driven by {@code /ca condition debug}. */
@@ -522,7 +535,9 @@ public final class ServerConfig {
         private Ring5WeatherEffects(ModConfigSpec.Builder builder) {
             outerGlitchStormWeight = builder.comment("Outer band: relative chance of glitch_storm when the ring has weather. The cycle's",
                             "own weights above (glitchStormWeight, reverseRainWeight, standstillWeight) are the inner band's; both",
-                            "bands share the timing, each draws its own type. All outer weights 0 = the outer band stays clear.")
+                            "bands share the timing, each draws its own type. All outer weights 0 = the outer band stays clear.",
+                            "Changing an outer weight while a weather runs changes that weather's outer type at once; a client",
+                            "follows when its synced copy of this config is updated.")
                     .defineInRange("outerGlitchStormWeight", DEFAULT_OUTER_GLITCH_STORM, 0, 100);
             outerReverseRainWeight = builder.comment("Outer band: relative chance of reverse_rain.")
                     .defineInRange("outerReverseRainWeight", DEFAULT_OUTER_REVERSE_RAIN, 0, 100);
