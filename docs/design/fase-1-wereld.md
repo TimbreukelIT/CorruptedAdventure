@@ -1297,6 +1297,18 @@ Rij 39 wordt alleen het **terrein** (kegels, caldera's, lavarivieren, zwevende e
 | 80 | `atmosphere` | Sfeer ring 4, zone 4→5 en Nether-4: kleuren, particles, geluid (`.ogg`'s), spanning (dwaallichten, geritsel, bellen, silhouet), pulserende fog | 2 | B |
 | 71b | `textures` | Nieuwe blokken en particles uit golf 2, incl. de tropische flora van 72b; bijsturen van bestaande textures in 71 (2026-10-16) | 2 | contactblad |
 | 71 | `textures` | Definitieve textures ring 4 + Nether-ring 4 | 3 | runClient |
+| I3 | `infra` | `Ring4Tunnels` wist zijn werelden bij `ServerStoppedEvent`; `Ring4IslandStatsTest` `@Tag("stats")` (`-PincludeStats`); `tools/test/` ook op Linux (cloud) (2026-10-21) | 3 | B, selftest, det-rooktest |
+| 66c | `blocks` | `lagoon_sand` (valt als zand, `#sand`), `clawed_stone`, `clawed_deepslate` (2026-10-21) | 3 | B, D |
+| 66e | `blocks` | `tidestone` in gespiegelde en gedraaide modelvarianten (zoals vanilla stone) (2026-10-21) | 3 | B, D |
+| 66f | `blocks` | `lagoon_sandstone`-set (10 blokken, zoals vanilla zandsteen) (2026-10-21) | 3 | B, D |
+| 71 (gericht) | `textures` | Gerichte polijstronde (verwelkte maanbloesem, `blighted_glowcap`, bloesemkruin, tidestone in kliffen, gifpoel, fossielsteen, bottenzand, silhouet) + textures van 66c (2026-10-21) | 3 | contactblad; in-game bij 5c |
+| 71c | `textures` | Textures `lagoon_sandstone`-set (lotus op chiseled) (2026-10-21) | 3 | contactblad |
+| 66d | `items` | Smeltrecept `lagoon_sand` → `glass` (eerste `ModRecipeProvider`) (2026-10-21) | 3 | B, D |
+| 66g | `items` | De 19 recepten van de `lagoon_sandstone`-set (zoals vanilla) (2026-10-21) | 3 | B, D |
+| 74b | `worldgen` | Eilandpunten: geen aankleding op brokken, grondvrijte over de hele brok, geen kruisende bogen, filter vóór `pairs()` (2026-10-21) | 3 | B, D, unit tests, det |
+| 75c | `worldgen` | Determinisme-keten: geen ertsen bij eilanden, riet/ranken/reuzenmangrove volgorde-onafhankelijk, luchtblok in een kei gedicht (2026-10-21) | 3 | B, D, unit tests, det |
+| 77b | `worldgen` | Inzet `lagoon_sand` in `crystal_lagoon`; klauwsporen volgen het tunnelgesteente (2026-10-21) | 3 | B, D, unit tests |
+| 77c | `worldgen` | `lagoon_sandstone` als plafondwacht onder `lagoon_sand` (surface) (2026-10-21) | 3 | B, D, unit tests |
 
 - **Teststops:** **5-pre** terreinpreview (eilanden en gaten via `/ca terrainmap` + een vliegtocht) ná golf 0 of vroeg in golf 1; **5a** terrein-wow na golf 1 (blokkerend); **5b** overleving + sfeer na golf 2; **5c** eindcheck na golf 3.
 - **Golf 3:** 71, fixes uit 5b (nieuwe lettercodes waar nodig, zoals 39d/47d bij ring 3), backlog-opruiming ring 4.
