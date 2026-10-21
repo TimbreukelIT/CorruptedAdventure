@@ -930,3 +930,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-21 | blocks | Nulliet en witte kern (OV2 = A): needs_diamond_tool, hardheid vanilla-erts +1,5, XP 5–9 / 6–10, witte kern licht 3 | Gebruiker; één trede boven ring 4 zonder netherite |
 | 2026-10-21 | worldgen | Ring 5-biomeverdeling (P1): binnen glitch_fields ~33 %, false_meadow ~13 %, corrupted_wastes ~54 %; buiten shattered_expanse bij breukas ≥ 0,6, rest half void_scars / half inverted_hills | Gebruiker akkoord op voorstel |
 | 2026-10-21 | conditions | Void-meter (P3–P5): schade 1,0 per 2 s zoals gif (LETHAL_FROM_NORMAL); void-rand 9.700–10.200 telt als buitenband; nacht- en weerfactor stapelen niet, grootste telt, stilstand ook ×1,5 | Gebruiker akkoord op voorstel |
+| 2026-10-21 | conditions | Void-teleport mag door muren en vloeren naar elke veilige plek binnen 1–5 blokken (geen zicht- of padeis) | Gebruiker; voelt als een echte glitch, je kunt je uitgraven |
