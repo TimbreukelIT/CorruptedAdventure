@@ -129,7 +129,13 @@ neoForge {
 }
 
 tasks.named('test', Test).configure {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        // Output-only measurements (@Tag("stats")) never fail and only print; they run on request:
+        // ./gradlew test -PincludeStats --tests '*StatsTest' --no-daemon
+        if (!project.hasProperty('includeStats')) {
+            excludeTags 'stats'
+        }
+    }
 }
 
 // Sets up a dependency configuration called 'localRuntime'.
