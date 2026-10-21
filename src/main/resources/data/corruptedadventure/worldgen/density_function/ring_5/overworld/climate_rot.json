@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:range_choice",
+    "input": "corruptedadventure:ring_5/overworld/castles",
+    "min_inclusive": 0.99,
+    "max_exclusive": 2.0,
+    "when_in_range": -2.0,
+    "when_out_of_range": "corruptedadventure:ring_5/overworld/region_rot"
+  }
+}

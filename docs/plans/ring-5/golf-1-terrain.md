@@ -206,9 +206,55 @@ B + D + unit tests + S-smoke met kaarten (§2–§4). **Niet per pakket:** `det.
 op `castles.txt` (klein), in overleg met main (slot).
 
 ## Voortgang
+- Voortgang: 2026-10-21 20:41 worktree `P:/Projecten/Java/wt/r5-terrain-g1` op `ring5/terrain-g1` (vanaf 3dfd50aa), `setup.sh W-terrein 1`, eerste compile groen; start 84.
+- Voortgang: 2026-10-21 21:49 84 klaar: build groen (1.153 tests), runData zonder wijziging, S-smoke `r84` (log schoon, `/ca castles`, kaarten oost + kasteel #1 + doorsnede); commit.
 
 ## CODEBASE-delta
+**84:** `Ring5Field` echt voor de buitenband: codec-veld `noises` (`Noises`: `rot` = `ring_5_rot`, `relief`, `detail`, `scars`;
+nieuwe noises `noise/ring_5_relief` (−8), `ring_5_detail` (−4), `ring_5_scars` (−7)); schotsen op een gejitterd raster van
+40 (`floeCell`, `floeSolid`, gecachet in `Decisions.floes`), `void_scars` (scheuren langs de nullijnen van `ring_5_scars` +
+kraters), `inverted_hills` (omgekeerde heuvels onder de schotsen), brokken (`fragment`, `fragmentsWithin`), ruggen
+(`ridges`, in `bridgesWithin` met `siteIndex` −1) en stroken springstenen (`strips`), kasteelpinakel met verwoeste rand
+(`rimWidth`) en per kasteel 2 bruggen (`castleBridges`, landingsheuvel `mounded`); `groundAt` (puur, zonder cache) voor
+de beslissingen. `Column` kreeg `scars`, `inverted`, `height` en exacte spans (bruggen, ruggen, brokken). Records:
+`Bridge` + `endY`, `sag`; `Fragment` + `direction`. Nieuwe constanten-klassen `Ring5Outer` (buitenband/buitenrand) en
+`Ring5Castles` (pinakel, rand, bruggen). `Ring5Output` + uitgangen `height`, `scars`, `inverted`. JSON:
+`ring_5/overworld` = `ring_5_output terrain` **zonder** `interpolated` (exact per blok); `ring_5/overworld/{height,scars,
+inverted}` = flat_caches van de uitgangen; nieuw `ring_5/overworld/climate_rot` (−2 op het plateau) als router-temperature
+ring_5; `void/overworld` = `add(0, ring_5/overworld)` (V2-A; de oude zwevende eilanden en `void_islands` zijn in de
+overworld weg, Nether ongewijzigd); `ring_blend/overworld_initial` void = `ring_5/overworld/initial_terrain`;
+`ring_blend/overworld_erosion` + `switch_at ["ring_5"]` (verzoek main na de review van 86). Tests: `Ring5OuterTest`,
+`CastleBridgesTest`, `Ring5FieldTest`/`Ring5JsonTest`/`Ring3JsonTest` aangepast.
 
 ## Beslissingen
+**84 (implementatiekeuzes):**
+- Terrein exact per blok (geen `interpolated`): elke kolom is een 2D-top en -onderkant plus exacte spans, dus wanden,
+  brugranden en scheuren liggen precies op het blok (§1.2 vraagt exacte wanden; met een 2D-hoogteveld geeft de
+  interpolatie geen winst). Dichtheid blijft `0,125 · afstand` geklemd op ±1, zodat de menging in zone 4→5 glad blijft.
+- Schotsen = cellen van 40 op een gebogen raster; elke cel is schots of void met kans `share(p)` (p = 0 op de bandlijn,
+  1 op de ringrand); `share` 0 tot p 0,04, 0,86 op de rand (`SHARE_POWER` 0,85), daarna in 140 blokken naar 1; de
+  buitenrand is leeg vanaf 70 % van rand→border (10.050). Gemeten (testseed): breakup 0,008 op de lijn, 0,875 tussen
+  9.600 en 9.700, per strook van 100 stijgend.
+- `breakup` per kolom: schots 0,4 · share (< 0,6, dus nooit `shattered_expanse`), void 1, void met brok/brug/rug erboven
+  0,9; scheurkolommen houden de schotswaarde (biome blijft `void_scars`), `scars` = 1.
+- Onderkant schots: −40 + 56 · p (+ rafel ±7), naar de rand van een schots 50 % dunner over 20 blokken; gemeten mediaan
+  −38,7 bij de lijn, 38,7 bij de rand (p 0,95–1). Nooit onder −56 (geen bedrock), minstens 6 dik.
+- Pinakel: plateau = de straal van `CastleSite` (castles 1), verwoeste rand 8–16 breed **binnen** de gordel (treden 3 breed,
+  2 lager, naar buiten tot 45 % weggebroken, onderkant stijgt 3 per blok), daarbuiten open gordel (castles 0,6 → 0).
+- Kasteelbruggen: het dek begint op de plateautop (`deckY`) en loopt naar de landing (`endY`), met doorhang 2–6; is het
+  verval meer dan 0,5 per blok, dan landt de brug hoger en draagt de grond daar een landingsheuvel (helling 0,8). Brug 1
+  langs de straal naar binnen tot de eerste grond (3 blokken landing), brug 2 onder 30/40/50/60° naar de grootste schots
+  (geteld in schotscellen, max. 120) binnen 260 (anders 900). `Bridge` kreeg `endY` en `sag` erbij (contract-record +2
+  componenten, zoals `belt` in 82).
+- Ruggen: één per ~500 langs de lijnstraal (±100), radiaal van de bandlijn tot p 0,92, 3–5 breed, 4–6 dik, dek volgt de
+  (virtuele) schotstop; stroken springstenen halverwege twee ruggen (Ø 7, om de 8, hoogteverschil ≤ 1), alleen boven void.
+  Niet in kasteelgordels.
+- Brokken: één cel van 48, kans 0,2 → 0,65 (p 0,15 → 1), daarna naar 0 aan de lege rand; straal 20 → 5 naar buiten
+  (× 0,35–1); top zo dat Y 40–160 ook met kanteling (≤ 20°) klopt; rand ≥ 3 dik; alleen met het midden boven void.
+- `height` = top van de vaste grond (scheurkolommen: de schotstop), `VOID_HEIGHT` boven de void.
+- Kaarten: `/ca terrainmap` zoekt de top in grove stappen, dus dunne dekken (4–8) zien er op de bovenkaart gestippeld uit;
+  de doorsnede toont ze heel.
 
 ## Backlog
+- [infra] `/ca terrainmap` (bovenkaart) mist dunne lagen (bruggen, ruggen, springstenen) door de grove stap van
+  `ColumnScan`; voor ring 5 een fijnere stap of een "spans"-pad (infra/tooling).

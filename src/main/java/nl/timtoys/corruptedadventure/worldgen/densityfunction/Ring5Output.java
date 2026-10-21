@@ -24,9 +24,15 @@ public final class Ring5Output implements DensityFunction {
         BREAKUP("breakup", 0.0, 1.0),
         /** 0..1: the castle surroundings (1 on a pinnacle's plateau, falling to 0 across its belt). */
         CASTLES("castles", 0.0, 1.0),
+        /** The top of the solid ground (without scars, void and caves), {@link Ring5Field#VOID_HEIGHT} over the void. */
+        HEIGHT("height", Ring5Field.VOID_HEIGHT, 320.0),
+        /** 0..1: a scar open to the void (1) and its rim ({@code void_scars}; the inner band's cracks in 83). */
+        SCARS("scars", 0.0, 1.0),
+        /** 0..1: how far an upside-down hill hangs under the floe ({@code inverted_hills}; 1 = 40 blocks). */
+        INVERTED("inverted", 0.0, 1.0),
         /** The preliminary surface (blocks): the ground's top; over the void below the world's bottom (no surface). */
         INITIAL_HEIGHT("initial_height", Ring5Field.VOID_HEIGHT, 320.0),
-        /** 3D, the terrain's density (skeleton until 83/84), −1..1. */
+        /** 3D, the terrain's density, exact per block, −1..1. */
         TERRAIN("terrain", -1.0, 1.0);
 
         public static final StringRepresentable.EnumCodec<Output> CODEC = StringRepresentable.fromEnum(Output::values);
@@ -86,6 +92,9 @@ public final class Ring5Output implements DensityFunction {
         return switch (output) {
             case BREAKUP -> f.breakupAt(x, z);
             case CASTLES -> f.column(x, z).castle();
+            case HEIGHT -> f.column(x, z).height();
+            case SCARS -> f.column(x, z).scars();
+            case INVERTED -> f.column(x, z).inverted();
             case INITIAL_HEIGHT -> f.initialHeight(x, z);
             case TERRAIN -> f.terrain(x, context.blockY(), z);
         };

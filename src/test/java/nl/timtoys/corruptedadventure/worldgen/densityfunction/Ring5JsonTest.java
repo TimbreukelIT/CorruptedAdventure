@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class Ring5JsonTest {
     private static final String DF = "density_function/";
-    private static final String[] STUBS = {"height", "scars", "glitch", "inverted", "caves"};
+    private static final String[] STUBS = {"glitch", "caves"};
     private static final RingLayout LAYOUT = Ring5FieldTest.LAYOUT;
 
     private static JsonElement element(String relative) {
@@ -41,7 +41,16 @@ class Ring5JsonTest {
 
     @Test
     void routerOfRing5IsTheRegionBandAndBreakupAxes() {
-        assertEquals("corruptedadventure:ring_5/overworld/region_rot", rings("overworld_temperature").get("ring_5").getAsString());
+        // The pinnacle axis (84): region_rot, but −2 on a castle's plateau so it takes void_scars (V12-A).
+        assertEquals("corruptedadventure:ring_5/overworld/climate_rot", rings("overworld_temperature").get("ring_5").getAsString());
+        JsonObject climate = WorldgenData.read(DF + "ring_5/overworld/climate_rot.json");
+        assertEquals("minecraft:flat_cache", climate.get("type").getAsString());
+        JsonObject choice = climate.getAsJsonObject("argument");
+        assertEquals("minecraft:range_choice", choice.get("type").getAsString());
+        assertEquals("corruptedadventure:ring_5/overworld/castles", choice.get("input").getAsString());
+        assertEquals(0.99, choice.get("min_inclusive").getAsDouble());
+        assertEquals(-2.0, choice.get("when_in_range").getAsDouble());
+        assertEquals("corruptedadventure:ring_5/overworld/region_rot", choice.get("when_out_of_range").getAsString());
         assertEquals("corruptedadventure:ring_5/overworld/region_glitch", rings("overworld_vegetation").get("ring_5").getAsString());
         assertEquals("corruptedadventure:ring_5/overworld/band", rings("overworld_weirdness").get("ring_5").getAsString());
         // V12-A: the break-up on the erosion slot; V9: no aquifer flooding (the fluid rule decides anyway).
@@ -94,17 +103,31 @@ class Ring5JsonTest {
         assertOutput(DF + "ring_5/overworld/breakup.json", "breakup", true);
         assertOutput(DF + "ring_5/overworld/castles.json", "castles", true);
         assertOutput(DF + "ring_5/overworld/initial_height.json", "initial_height", false);
+        assertOutput(DF + "ring_5/overworld/height.json", "height", true);
+        assertOutput(DF + "ring_5/overworld/scars.json", "scars", true);
+        assertOutput(DF + "ring_5/overworld/inverted.json", "inverted", true);
         JsonObject field = WorldgenData.read(DF + "ring_5/overworld/field.json");
         assertEquals("corruptedadventure:ring_5_field", field.get("type").getAsString());
         assertEquals("corruptedadventure:ring_5_cells", field.get("hash").getAsString());
         assertEquals("corruptedadventure:placeholder_terrain", field.get("placeholder").getAsString());
         assertTrue(Files.exists(WorldgenData.root().resolve("noise/ring_5_cells.json")));
-        // The skeleton terrain: the field's per-block density, interpolated (RingBlend gates the marker).
-        JsonObject terrain = WorldgenData.read(DF + "ring_5/overworld.json");
-        assertEquals("minecraft:interpolated", terrain.get("type").getAsString());
-        JsonObject output = terrain.getAsJsonObject("argument");
+        JsonObject noises = field.getAsJsonObject("noises");
+        // The terrain reads the router's own region axis.
+        assertEquals("corruptedadventure:ring_5_rot", noises.get("rot").getAsString());
+        for (String noise : new String[]{"relief", "detail", "scars"}) {
+            assertEquals("corruptedadventure:ring_5_" + noise, noises.get(noise).getAsString());
+            assertTrue(Files.exists(WorldgenData.root().resolve("noise/ring_5_" + noise + ".json")), noise);
+        }
+        // The terrain: the field's per-block density, exact (no interpolation).
+        JsonObject output = WorldgenData.read(DF + "ring_5/overworld.json");
         assertEquals("corruptedadventure:ring_5_output", output.get("type").getAsString());
         assertEquals("terrain", output.get("output").getAsString());
+        // V2-A: the void edge is the same field (no seam at the hard switch 5→void), also for the initial density.
+        JsonObject voidTerrain = WorldgenData.read(DF + "void/overworld.json");
+        assertEquals(0.0, voidTerrain.get("argument1").getAsDouble());
+        assertEquals("corruptedadventure:ring_5/overworld", voidTerrain.get("argument2").getAsString());
+        assertEquals("corruptedadventure:ring_5/overworld/initial_terrain",
+                rings("overworld_initial").getAsJsonObject("void").get("argument2").getAsString());
     }
 
     private static void assertOutput(String file, String output, boolean flatCache) {
@@ -134,33 +157,36 @@ class Ring5JsonTest {
     }
 
     /**
-     * The skeleton surface (82, until 83/84): ring 5's old placeholder surface, Y 85 + 8 × noise, lowered by 6 × band in
-     * the outer band (the step that shows the band line); the field's terrain is rock below it and open above.
+     * The inner band's skeleton surface (82, until 83): ring 5's old placeholder surface, Y 85 + 8 × noise, full down to the
+     * bedrock; no band step any more (the outer band is its own, 84).
      */
     @Test
-    void skeletonSurfaceIsThePlaceholderWithTheBandStep() {
+    void innerBandKeepsTheSkeletonSurface() {
         Ring5Field field = Ring5FieldTest.field();
         DensityFunction.NoiseHolder noise = IslandFieldTest.noise("placeholder_terrain", Ring5FieldTest.SEED);
         Ring5Band band = Ring5Band.of(LAYOUT);
         int inner = 0;
-        int stepped = 0;
-        for (int distance = 8000; distance <= 9700; distance += 23) {
+        for (int distance = 8000; distance <= 9300; distance += 23) {
             for (double angle = 0.0; angle < 2.0 * Math.PI; angle += Math.PI / 24.0) {
                 int x = (int) Math.round(distance * Math.cos(angle));
                 int z = (int) Math.round(distance * Math.sin(angle));
-                if (field.column(x, z).castle() > 0.0) {
+                if (!band.inner(x, z) || nearBridgeEnd(field, x, z)) {
                     continue;
                 }
-                double b = band.value(x, z);
-                double expected = 85.0 + 8.0 * noise.getValue(x, 0.0, z) - 6.0 * Math.max(0.0, b);
+                double expected = 85.0 + 8.0 * noise.getValue(x, 0.0, z);
                 assertEquals(expected, field.initialHeight(x, z), 1e-9, x + ", " + z);
                 int top = (int) Math.ceil(expected) - 1;
                 assertTrue(field.terrain(x, top, z) > 0.0 && field.terrain(x, top + 1, z) <= 0.0, x + ", " + z);
-                inner += b == -1.0 ? 1 : 0;
-                stepped += b == 1.0 ? 1 : 0;
+                assertTrue(field.terrain(x, -63, z) > 0.0, "full down to the bedrock at " + x + ", " + z);
+                inner++;
             }
         }
-        assertTrue(inner > 100 && stepped > 100);
+        assertTrue(inner > 100);
+    }
+
+    /** Near where a castle bridge lands its mound may raise the ground. */
+    private static boolean nearBridgeEnd(Ring5Field field, int x, int z) {
+        return field.castleBridges().stream().anyMatch(b -> Math.hypot(x - b.toX(), z - b.toZ()) < 120.0);
     }
 
     @Test

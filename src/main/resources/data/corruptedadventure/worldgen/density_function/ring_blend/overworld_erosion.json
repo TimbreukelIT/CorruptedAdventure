@@ -9,6 +9,9 @@
     "ring_5": "corruptedadventure:ring_5/overworld/breakup",
     "void": "minecraft:overworld/erosion"
   },
+  "switch_at": [
+    "ring_5"
+  ],
   "mix": {
     "ring_3": 0.234375
   }
