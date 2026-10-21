@@ -103,8 +103,12 @@ final class ModBlockStateProvider extends BlockStateProvider {
 
     /** Ring 4: tidestone, the moonpetal set (laid out like the palm set), the swamp and water flora, the glowing flora. */
     private void ring4() {
-        stoneFamily(ModBlocks.TIDESTONE.get(), ModBlocks.TIDESTONE_STAIRS.get(), ModBlocks.TIDESTONE_SLAB.get(),
-                ModBlocks.TIDESTONE_WALL.get());
+        // The layered texture repeats visibly on large cliffs (golf 3): mirrored and rotated variants, like vanilla stone.
+        ResourceLocation tidestone = blockTexture(ModBlocks.TIDESTONE.get());
+        mirroredAndRotated(ModBlocks.TIDESTONE.get());
+        stairsBlock(ModBlocks.TIDESTONE_STAIRS.get(), tidestone);
+        slabBlock(ModBlocks.TIDESTONE_SLAB.get(), tidestone, tidestone);
+        wallBlock(ModBlocks.TIDESTONE_WALL.get(), tidestone);
         stoneFamily(ModBlocks.COBBLED_TIDESTONE.get(), ModBlocks.COBBLED_TIDESTONE_STAIRS.get(),
                 ModBlocks.COBBLED_TIDESTONE_SLAB.get(), ModBlocks.COBBLED_TIDESTONE_WALL.get());
         stoneFamily(ModBlocks.POLISHED_TIDESTONE.get(), ModBlocks.POLISHED_TIDESTONE_STAIRS.get(),
@@ -814,6 +818,23 @@ final class ModBlockStateProvider extends BlockStateProvider {
         stairsBlock(stairs, texture);
         slabBlock(slab, texture, texture);
         wallBlock(wall, texture);
+    }
+
+    /**
+     * Like vanilla stone: the plain and a mirrored cube, each in four Y rotations, so a large face of the block does not
+     * repeat the same texture tile after tile.
+     */
+    private void mirroredAndRotated(Block block) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        ResourceLocation texture = blockTexture(block);
+        ModelFile plain = models().cubeAll(name, texture);
+        ModelFile mirrored = models().singleTexture(name + "_mirrored", mcLoc("block/cube_mirrored_all"), "all", texture);
+        List<ConfiguredModel> variants = new ArrayList<>();
+        for (int y = 0; y < 360; y += 90) {
+            variants.add(new ConfiguredModel(plain, 0, y, false));
+            variants.add(new ConfiguredModel(mirrored, 0, y, false));
+        }
+        getVariantBuilder(block).partialState().setModels(variants.toArray(ConfiguredModel[]::new));
     }
 
     /** Cross model like vanilla plants; cutout, so the texture only has alpha 0 or 255. */
