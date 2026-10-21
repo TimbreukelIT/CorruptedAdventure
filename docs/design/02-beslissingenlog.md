@@ -915,3 +915,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-21 | blocks | Tidestone krijgt gespiegelde en gedraaide modelvarianten (zoals vanilla stone) | Herhaling op grote kliffen; 71 zelf goedgekeurd |
 | 2026-10-21 | blocks | Eigen `lagoon_sandstone`-set zoals vanilla zandsteen (blok, smooth, cut, chiseled + trap/plaat/muur, recepten); onder een plafond in `crystal_lagoon` i.p.v. vanilla sandstone | Gebruiker: lagune moet wit blijven, ook als bouwblok |
 | 2026-10-21 | items | Uitzondering op 'niet vooruitwerken' (CLAUDE.md §5): recepten voor `lagoon_sand` → glas en de `lagoon_sandstone`-set al in fase 1 | Expliciete keuze gebruiker (golf 3); de rest van de recepten blijft fase 2 |
+| 2026-10-21 | infra | Ring 5 golf 0 start al tijdens golf 3/5c, op een aparte branch `ring5/golf0`; merge pas na 5c-akkoord (ook de herziening zone 4→5) | Gebruiker wil de usage benutten; 5c-wereld blijft ongemoeid |
