@@ -21,9 +21,10 @@ import java.util.OptionalInt;
 
 /**
  * {@code /ca castles}: the four castle sites of ring 5 ({@link Ring5Field#castleSites}, server only), one line each:
- * {@code #<1–4> angle x z radius top belt distance} (distance from the command's source). {@code /ca castles tp <1–4>}
- * puts the player on top of that pinnacle (the landing rule of {@code /ca tpring}). Only in a ring world with ring 5
- * terrain; numbers 1–4 are {@link Ring5Field.CastleSite#index()} + 1.
+ * {@code #<n> angle x z radius top belt distance} (overworld coordinates; the distance from the command's source, its
+ * position scaled to the overworld by its dimension's {@code coordinate_scale}). {@code /ca castles tp <n>} puts the
+ * player on top of that pinnacle (the landing rule of {@code /ca tpring}). Only in a ring world with ring 5 terrain;
+ * numbers 1–{@link Ring5Field#CASTLES} are {@link Ring5Field.CastleSite#index()} + 1.
  */
 final class CastlesCommand {
     private CastlesCommand() {
@@ -32,7 +33,7 @@ final class CastlesCommand {
     static LiteralArgumentBuilder<CommandSourceStack> build() {
         return Commands.literal("castles")
                 .executes(context -> list(context.getSource()))
-                .then(Commands.literal("tp").then(Commands.argument("site", IntegerArgumentType.integer(1, 4))
+                .then(Commands.literal("tp").then(Commands.argument("site", IntegerArgumentType.integer(1, Ring5Field.CASTLES))
                         .executes(context -> teleport(context.getSource(), IntegerArgumentType.getInteger(context, "site")))));
     }
 
@@ -51,14 +52,16 @@ final class CastlesCommand {
         if (sites == null) {
             return 0;
         }
+        // The sites are overworld coordinates: the source's position scaled like the ring layout does (Nether × 4).
         Vec3 from = source.getPosition();
-        source.sendSuccess(() -> Component.literal(describe(sites, from.x, from.z)), false);
+        double scale = source.getLevel().dimensionType().coordinateScale();
+        source.sendSuccess(() -> Component.literal(describe(sites, from.x * scale, from.z * scale)), false);
         return sites.size();
     }
 
     /** The listing: a header and one line per site. */
     static String describe(List<Ring5Field.CastleSite> sites, double fromX, double fromZ) {
-        StringBuilder text = new StringBuilder("Castle sites: " + sites.size() + " (# angle x z radius top belt distance)");
+        StringBuilder text = new StringBuilder("Castle sites: " + sites.size() + " (# angle x z radius top belt distance; overworld blocks)");
         for (Ring5Field.CastleSite site : sites) {
             text.append('\n').append(line(site, fromX, fromZ));
         }
@@ -86,7 +89,7 @@ final class CastlesCommand {
         Ring5Field.CastleSite site = site(sites, number);
         ServerLevel level = source.getServer().getLevel(Level.OVERWORLD);
         if (site == null || level == null) {
-            source.sendFailure(Component.literal("No castle site #" + number));
+            source.sendFailure(Component.literal("No castle site #" + number + " (1–" + Ring5Field.CASTLES + ")"));
             return 0;
         }
         OptionalInt safeY = RingTeleportCommand.findSafeY(level, site.x(), site.z());

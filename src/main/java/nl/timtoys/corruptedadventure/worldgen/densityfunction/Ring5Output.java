@@ -24,8 +24,8 @@ public final class Ring5Output implements DensityFunction {
         BREAKUP("breakup", 0.0, 1.0),
         /** 0..1: the castle surroundings (1 on a pinnacle's plateau, falling to 0 across its belt). */
         CASTLES("castles", 0.0, 1.0),
-        /** The preliminary surface (blocks): the ground's top, the world's bottom over the void. */
-        INITIAL_HEIGHT("initial_height", -64.0, 320.0),
+        /** The preliminary surface (blocks): the ground's top; over the void below the world's bottom (no surface). */
+        INITIAL_HEIGHT("initial_height", Ring5Field.VOID_HEIGHT, 320.0),
         /** 3D, the terrain's density (skeleton until 83/84), −1..1. */
         TERRAIN("terrain", -1.0, 1.0);
 

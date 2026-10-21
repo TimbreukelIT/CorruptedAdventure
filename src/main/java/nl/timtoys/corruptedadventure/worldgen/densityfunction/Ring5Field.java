@@ -52,10 +52,14 @@ public final class Ring5Field implements DensityFunction {
     static final double BAND_STEP = 6.0;
     /** Where a pinnacle's walls end (V3-A: void below). */
     static final int PINNACLE_BOTTOM = -40;
-    /** What the initial height of a void column is: the world's bottom (no preliminary surface). */
-    static final double VOID_HEIGHT = -64.0;
+    /**
+     * The initial height of a void column: far enough below the world's bottom that the initial density
+     * ({@code 0.390625 + 0.125 × (height − y)}) stays negative down to min_y, so the column has no preliminary surface
+     * (at −64 it read as a surface at about Y −61).
+     */
+    static final double VOID_HEIGHT = -128.0;
     /** The four castle sites (V5-A): one per quarter, at this share of ring 5 (effective distance). */
-    static final int CASTLES = 4;
+    public static final int CASTLES = 4;
     static final double CASTLE_SHARE = 0.75;
     /** Each site turns up to this far (degrees) from its quarter's direction. */
     static final double CASTLE_JITTER = 8.0;
@@ -246,7 +250,7 @@ public final class Ring5Field implements DensityFunction {
         return column(x, z).breakup < 1.0;
     }
 
-    /** The preliminary surface of the column: its top, or the world's bottom over the void. */
+    /** The preliminary surface of the column: its top, or {@link #VOID_HEIGHT} (no surface) over the void. */
     public double initialHeight(int x, int z) {
         Column column = column(x, z);
         return column.isVoid() ? VOID_HEIGHT : column.top;
@@ -337,7 +341,7 @@ public final class Ring5Field implements DensityFunction {
             int belt = CASTLE_MIN_BELT + (int) Math.floor((CASTLE_MAX_BELT - CASTLE_MIN_BELT + 1) * SeededHash.unit(salt, 1 + 3 * CASTLES + k));
             raw.add(new double[]{angle, Math.round(distance * Math.cos(radians)), Math.round(distance * Math.sin(radians)), radius, top, belt});
         }
-        // Index 0 closest to east; then by angle counter-clockwise from there.
+        // Index 0 closest to east; then by growing angle from there (+x towards +z: clockwise on a north-up map).
         raw.sort(Comparator.comparingDouble(r -> Math.abs(signedAngle(r[0]))));
         double start = raw.getFirst()[0];
         raw.sort(Comparator.comparingDouble(r -> ((r[0] - start) % 360.0 + 360.0) % 360.0));

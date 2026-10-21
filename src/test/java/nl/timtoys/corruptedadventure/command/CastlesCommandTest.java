@@ -22,7 +22,7 @@ class CastlesCommandTest {
         assertEquals("#3 190.5° -9119 -1691 r=56 top=140 belt=40 d=0", CastlesCommand.line(SITES.get(2), -9119, -1691));
         String text = CastlesCommand.describe(SITES, 0.0, 0.0);
         assertEquals(5, text.split("\n").length);
-        assertEquals("Castle sites: 4 (# angle x z radius top belt distance)", text.split("\n")[0]);
+        assertEquals("Castle sites: 4 (# angle x z radius top belt distance; overworld blocks)", text.split("\n")[0]);
     }
 
     @Test

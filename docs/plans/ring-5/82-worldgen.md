@@ -32,7 +32,7 @@ Scope: `worldgen` — pakket 82, worktree `/home/user/wt/ring5-g0` op `ring5/gol
 6. **Skeletterrein** (tot 83/84): oppervlak `85 + 8 · placeholder_terrain − 6 · max(0, band)` (de band-trede),
    dichtheid `0,125 · (top − y)` geklemd op ±1, geen grotten, geen slides (dus geen bodem-slide in de gordel); per kasteel
    een pinakel (schijf met straal en top, rots tot Y −40, eronder void) in een gordel van void tot onder `min_y` (dichtheid
-   −1, `breakup` 1, `initial_height` −64; de bedrockregel legt niets op lucht). `ring_5/overworld` = `interpolated` van de
+   −1, `breakup` 1, `initial_height` −128 = geen voorlopig oppervlak, review; de bedrockregel legt niets op lucht). `ring_5/overworld` = `interpolated` van de
    uitgang `terrain` (RingBlend zet zijn gate erin).
 7. **`initial_terrain`** zoals ring 3/4: `0,125 · cache_2d(initial_height) + gradiënt (−64 → 8, 320 → −40)`.
 8. **Vloeistofregel ring 5 (V9-B)** (`RingFluidPicker`, `RingAquifer`):
@@ -98,3 +98,13 @@ Gebruiker: V1-A, V3-A, V4-A, V5-A, V9-B, V12-A (`golf-0.md` §7). Implementatiek
 - [worldgen] 83: de dam van de lavalaag ook rond de scheuren van de binnenband (scheuren tot in de void).
 - [worldgen] 85: zone 4→5 droog (V7-A); tot dan kan afgrondwater aan de buitenrand van de zone tegen een droge ring 5-grot
   staan (vroeger lava).
+- [infra] `IslandFields`/`Ring5Fields`: twee kopieën van het register per dimensie → een generiek `PerDimensionFields<T>` (review golf 0).
+- [worldgen] `Ring5Field.find`/`resolve` is de vijfde kopie van dat zoekpatroon → een generiek `DensityFunctionSearch` (review golf 0).
+- [worldgen] `RingChunkGenerator` loopt per veldtype apart met `mapAll` door de router; één loop die alle velden verzamelt (review golf 0).
+
+## Review golf 0 (a61afc1..cfe7890)
+Opgepakt: `/ca castles` meet de afstand vanaf de bronpositie geschaald naar de overworld (`coordinate_scale`); void-kolommen
+hebben `initial_height` −128 (`Ring5Field.VOID_HEIGHT`), zodat de initiële dichtheid tot `min_y` negatief blijft (geen
+voorlopig oppervlak op Y ~−61; test in `Ring5FieldTest`); commentaar over de volgorde van de kasteelplekken klopt nu met de
+code (oplopende hoek = met de klok mee op een kaart met noord boven); het bereik van `/ca castles tp` komt uit
+`Ring5Field.CASTLES`.

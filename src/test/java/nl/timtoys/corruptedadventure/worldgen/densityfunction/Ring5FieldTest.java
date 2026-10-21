@@ -109,7 +109,7 @@ public class Ring5FieldTest {
 
     /**
      * The skeleton terrain: a pinnacle from its top down to Y −40 with void below, a belt of void down past the bottom
-     * (breakup 1, initial height −64), elsewhere the placeholder surface with the band step.
+     * (breakup 1, no preliminary surface), elsewhere the placeholder surface with the band step.
      */
     @Test
     void skeletonTerrainHasPinnaclesInVoidBelts() {
@@ -132,7 +132,13 @@ public class Ring5FieldTest {
             }
             assertEquals(1.0, field.breakupAt(beltX, beltZ));
             assertTrue(!field.solidGround(beltX, beltZ));
-            assertEquals(-64.0, field.initialHeight(beltX, beltZ));
+            // No preliminary surface over the void: the router's initial density (0.390625 + 0.125 × (height − y), see
+            // ring_blend/overworld_initial and initial_terrain) stays negative down to the world's bottom.
+            double height = field.initialHeight(beltX, beltZ);
+            assertEquals(Ring5Field.VOID_HEIGHT, height);
+            for (int y = -64; y < 320; y++) {
+                assertTrue(0.390625 + 0.125 * (height - y) < 0.0, "initial density over the void at y " + y);
+            }
             double castle = field.column(beltX, beltZ).castle();
             assertTrue(castle > 0.0 && castle < 1.0, "castle surroundings " + castle);
         }
