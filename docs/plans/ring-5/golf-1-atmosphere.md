@@ -125,9 +125,85 @@ hieronder.
 - C vraagt het weer alleen via `RingWeather.stateAt`; dezelfde bandgrens als `VoidRule` (`Ring5Band.outer`).
 
 ## Voortgang
+- Voortgang: 2026-10-21 20:47 worktree `P:/Projecten/Java/wt/r5-atmosphere-g1` op `ring5/atmosphere-g1` vanaf `757523bf`, `setup.sh A 5`.
+- Voortgang: 2026-10-21 21:00 code + tests geschreven; wacht op een slot voor de eerste build.
+- Voortgang: 2026-10-21 21:15 `build` + `runData` groen (1165+ tests; één oude assert in `RingWeatherConfigTest` aangepast: ring 5 heeft eigen gewichten); `src/generated` alleen lang + `sounds.json`.
+- Voortgang: 2026-10-21 21:19 S-smoke `r5-a92` (poort 5): log zonder ERROR/client-class-fout; RCON `/ca weather`, `/ca weather 5 glitch_storm|reverse_rain|standstill|clear` (stilstand 69 s uit 40–120, beide banden gelijk bij seed 0), fout-melding voor een ring 4-type in ring 5. Client-mixin-doelen gecontroleerd met `javap` (twee `GETFIELD ticks` + één float-argument in `renderClouds`; `SoundEngine#getVolume(SoundSource)`), niet in een client geladen.
+- Voortgang: 2026-10-21 21:20 eigen review op de worktree-diff (zie Beslissingen); commit.
 
 ## CODEBASE-delta
 
+- `weather/RingWeatherType`: **`STANDSTILL`** (`standstill`, ring 5, overworld, fade 100 ticks) achteraan (index 11; de
+  oude indices blijven). Ring 5 heeft nu `glitch_storm`, `reverse_rain`, `standstill`.
+- Nieuw `weather/Ring5WeatherBands` (common, puur): `Band {INNER, OUTER}`, `bandAt(layout, ring, x, z)` (=
+  `Ring5Band.outer`, ring `VOID` = buiten), `typeIn`/`felt(state, band, Settings)` (binnen = de cyclus; buiten een
+  gewogen trekking uit `state.seed()` met de buitengewichten; seed 0 = gezet type in beide banden; een afgeleide
+  stilstand korter dan het venster geldt alleen aan het begin, daarna `clear`), `outerShare(bandValue)` (smoothstep, ½
+  op de lijn), record `Settings(outerWeights, standstillTicks)`.
+- `weather/RingWeather.stateAt`: band-bewust voor ring 5 en `void` (hard op `Ring5Band.outer`) — de API voor C.
+  `RingWeather.set` voor ring 5 zet seed 0. `RingWeatherCycle.seed(random)`: nooit 0 (alle ringen, één trekking zoals
+  voorheen).
+- `config/ServerConfig`: `RING_5_WEATHER` = `Ring5WeatherEffects` in `[weather.ring5]`: `outerGlitchStormWeight` 20,
+  `outerReverseRainWeight` 70, `outerStandstillWeight` 10, `standstillMinSeconds` 40, `standstillMaxSeconds` 120,
+  `glitchStormVoidMultiplier` 2,0, `reverseRainVoidMultiplier` 1,5, `standstillVoidMultiplier` 1,5 (+ `voidMultiplier(type)`
+  voor C); binnenbandgewichten (de bestaande sleutels) 55/15/30 via `RingWeather.defaultWeight`. `ServerConfig.ring5Bands()`
+  (ook client-side; standaarden zolang de gesyncte config er niet is). Stilstand: eigen duurbereik in de cyclus, min > max
+  → standaard + ERROR-log.
+- `command/RingWeatherCommand.describe`: ring 5 met weer toont ook de buitenband (`… (inner band) | outer band: …`).
+- `registry/ModSoundEvents`: `weather.ring_5.{glitch_storm,reverse_rain,standstill}`; `sounds.json` met vanilla-
+  placeholders (`block.respawn_anchor.ambient` p 0,5; `weather.rain` p 0,6 v 0,5; `ambient.basalt_deltas.loop` p 0,5
+  v 0,1). `datagen/lang/Ring5WeatherText`: ondertitels en + nl.
+- Client (`client/weather/`): `RingWeatherClientHooks.registerRing5(modBus, gameBus)` (vanuit `CorruptedAdventureClient`,
+  vóór `register`); `shares` splitst ring 5 in binnen- × (1 − s) en buitentype × s (`addRing5`), één aandeel bij gelijk
+  type; F3 `CA weather` krijgt ` [ring_5 inner …, outer …]`. Nieuw: `GlitchStormRenderer` (fog/flitsen/specks/geluid),
+  `GlitchStormOverlay` (HUD-laag `corruptedadventure:glitch_storm` boven `camera_overlays`: ruisblokjes + scanlines;
+  hotbar-hapering 1–2 ticks via `RenderGuiLayerEvent` LOWEST), `ReverseRainRenderer` (`RainSheet` met snelheid −0,8,
+  `#1A1022`), `StandstillRenderer` (bevroren `RainSheet` op een tijd uit de seed, witte vlakke fog), `StandstillClouds`
+  (wolkenklok vertraagt tot stilstand, geen sprong daarna), `Ring5SoundDamping` (stilstand: alle categorieën behalve
+  `MASTER` × (1 − 0,85 · sterkte); glitchstorm: korte dips van `WEATHER`/`AMBIENT`; ververst lopende kanalen bij een
+  wijziging). `RainSheet.render(…, time)` + `scroll(...)` (negatieve snelheid = omhoog).
+- Client-mixins: `LevelRendererCloudsMixin` uitgebreid (`@ModifyVariable` partialTick + `@Redirect` op `ticks` in
+  `renderClouds`); **nieuw `SoundEngineVolumeMixin`** (`SoundEngine#getVolume` RETURN × `Ring5SoundDamping.volume`), in
+  `corruptedadventure.mixins.json` → `client`.
+- Tests: `weather/Ring5WeatherTest`, `config/Ring5WeatherConfigTest`, `client/weather/Ring5WeatherRenderTest`;
+  `Ring4WeatherTest` (index `STORM_WIND` = 10).
+
 ## Beslissingen
 
+Gebruiker (2026-10-21): OV1 = A (gedeelde tijden, eigen type per band, overvloei over de ~200-blok-overgang, geen
+payload); P2-gewichten binnen 55/30/15, buiten 70/20/10, stilstand 40–120 s. Implementatiekeuzes van de stroom:
+- **Buitentype uit de seed:** een 32-bit hash (murmur3-finaliser) van `state.seed()` met een vaste salt, `floorMod` over
+  de som van de buitengewichten in enum-volgorde; de lengte van een afgeleide stilstand met een tweede salt (uniform in
+  40–120 s). Server en client rekenen hetzelfde (zelfde seed, gesyncte SERVER-config; vóór de sync de standaarden).
+- **Seed 0 = gezet:** `RingWeather.set` zet voor ring 5 seed 0; `RingWeatherCycle.seed` maakt van een getrokken 0 een 1
+  voor alle ringen (één trekking zoals voorheen, dus dezelfde reeks; windrichting bij seed 0 vs 1 is verwaarloosbaar).
+- **Geluid dempen via een nieuwe client-mixin** `SoundEngineVolumeMixin` (+ regel in `corruptedadventure.mixins.json`)
+  i.p.v. alleen een luisteraar op afgespeelde geluiden: `PlaySoundEvent` bereikt lopende geluiden (muziek!) niet, en een
+  wrapper-instantie breekt de `isActive`-checks van `MusicManager` en `WeatherLoop`. De mixin vermenigvuldigt de
+  categorievolume (niet `MASTER` = UI); bij een wijziging ververst `Ring5SoundDamping` de lopende kanalen via
+  `SoundManager.updateSourceVolume(AMBIENT, …)`. Afwijking van het bezit (§ "Bezit": alleen bestaande mixins): nieuw
+  bestand, raakt niemand anders.
+- **Wolken:** geen harde bevriezing maar een vertraagde klok (`lag += sterkte` per tick): ze remmen af met de fade (100
+  ticks) en drijven daarna verder vanaf waar ze stonden, zonder sprong.
+- **Glitchstorm-HUD:** laag boven `camera_overlays` (onder de HUD-elementen), max. 48 ruisblokjes + scanlines om de 3 px,
+  patroon wisselt elke 2 ticks; hotbar-hapering kans 2 %/tick bij vol, 1–2 ticks, ⅓ weg, anders 4–15 px verschoven.
+  Geluidsdips 5 %/tick, 2–5 ticks, diepte 0,7; flitsen 3 %/tick, 2–4 ticks, `#120818` (ongeacht daglicht).
+- **Kleuren/waarden (constanten, bij 6b bij te sturen):** glitchstorm-waas `#2A2233`, fog ×0,6; omgekeerde regen
+  `#1A1022`, snelheid −0,8, waas `#2B1E38`, fog ×0,75; stilstand-strepen `#C4C8D2` op 55 %, bevroren tijd =
+  `floorMod(seed, 4096)`, fog `#D6D7DB` ×0,8 ("vlak" = kleurloos; geen near-plane-truc).
+- **Stilstand-loop** wordt zelf ook gedempt (blijft dus bijna stil); dat is de bedoeling.
+- **`/ca weather`:** `ring_5: <type>, … (inner band) | outer band: <type>, …`; F3: ` [ring_5 inner …, outer …]` achter de
+  aandelen.
+
+**Open punt voor 6b (niet blokkerend, volgt uit OV1 = A + gedeelde tijden):** trekt de binnenband een stilstand (venster
+40–120 s), dan krijgt de buitenband in dat korte venster zijn eigen type (meestal omgekeerde regen) met de gewone fade
+van 30 s: een korte, zwakke bui (piek ~0,67–1,0). Opties: **A (huidig)** zo laten; **B** buiten `clear` als het venster
+een stilstand is en het afgeleide type niet; **C** een kortere fade voor afgeleide typen in een kort venster.
+
 ## Backlog
+
+- `atmosphere` (98): `glitch_pixel` en `reverse_raindrop` als particles in de renderers (nu tijdelijk `glitch_speck`, geen
+  druppel-particles); echte audio voor de drie weer-loops (nu vanilla-placeholders).
+- `conditions` (C, INT1): `VoidAmplifierModifier` leest `ServerConfig.RING_5_WEATHER.voidMultiplier(type)` op
+  `RingWeather.stateAt(...)` (de felt-staat, met zijn fade); dezelfde bandgrens (`Ring5Band.outer`, void = buiten).
+- `infra` (INT1): `ModNetwork.PROTOCOL_VERSION` "8" → "9" (`STANDSTILL` is een nieuwe enum-index).

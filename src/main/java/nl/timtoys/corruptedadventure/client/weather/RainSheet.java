@@ -23,7 +23,8 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
  * Rain streaks of a ring weather (package 70): vanilla's rain sheet ({@code LevelRenderer#renderSnowAndRain}) with its
  * own tint, strength and slant, drawn after vanilla's weather (so also in biomes without precipitation and whatever
  * vanilla's weather does). Columns around the camera from the {@code MOTION_BLOCKING} height up, never under a roof.
- * Toxic rain falls straight and green, the storm's rain slants with the wind.
+ * Toxic rain falls straight and green, the storm's rain slants with the wind; ring 5's reverse rain rises (a negative
+ * speed) and the standstill's streaks hang still (a fixed time).
  */
 final class RainSheet {
     private static final ResourceLocation RAIN = ResourceLocation.withDefaultNamespace("textures/environment/rain.png");
@@ -31,7 +32,7 @@ final class RainSheet {
     private final float red;
     private final float green;
     private final float blue;
-    /** Streak speed relative to vanilla rain. */
+    /** Streak speed relative to vanilla rain; negative = the streaks rise. */
     private final float speed;
 
     RainSheet(int rgb, float speed) {
@@ -48,6 +49,15 @@ final class RainSheet {
      * @param slant  horizontal blocks the streak moves per block of fall, towards the direction the wind blows
      */
     void render(RenderLevelStageEvent event, float amount, Vec3 slant) {
+        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        render(event, amount, slant, (event.getRenderTick() & 131071) + partialTick);
+    }
+
+    /**
+     * {@link #render(RenderLevelStageEvent, float, Vec3)} at a given time (ticks, wrapped like vanilla's): a fixed
+     * time freezes the streaks where they are.
+     */
+    void render(RenderLevelStageEvent event, float amount, Vec3 slant, float time) {
         Minecraft minecraft = Minecraft.getInstance();
         ClientLevel level = minecraft.level;
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER || level == null || amount <= 0.0F
@@ -55,7 +65,6 @@ final class RainSheet {
             return;
         }
         Vec3 camera = event.getCamera().getPosition();
-        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         int radius = Minecraft.useFancyGraphics() ? 10 : 5;
         int camX = Mth.floor(camera.x);
         int camY = Mth.floor(camera.y);
@@ -71,7 +80,6 @@ final class RainSheet {
         RenderSystem.setShaderTexture(0, RAIN);
         BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        int ticks = event.getRenderTick();
         for (int z = camZ - radius; z <= camZ + radius; z++) {
             for (int x = camX - radius; x <= camX + radius; x++) {
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
@@ -88,7 +96,7 @@ final class RainSheet {
                 double halfZ = distance < 1.0E-3 ? 0.0 : dx / distance * 0.5;
                 int hash = x * x * 3121 + x * 45238971 + z * z * 418711 + z * 13761;
                 float columnSpeed = 3.0F + ((hash >>> 8) & 0xFF) / 255.0F;
-                float scroll = -((ticks & 131071) + (hash & 0xFF) + partialTick) / 32.0F * columnSpeed * speed % 32.0F;
+                float scroll = scroll(time, hash, columnSpeed, speed);
                 float fade = (float) (distance / radius);
                 float alpha = ((1.0F - fade * fade) * 0.5F + 0.5F) * amount;
                 pos.set(x, Math.max(ground, camY), z);
@@ -120,5 +128,13 @@ final class RainSheet {
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
         lightTexture.turnOffLightLayer();
+    }
+
+    /**
+     * Vanilla's texture scroll of one column at {@code time}: it falls as the time grows for a positive speed (the V
+     * coordinate moves down the streak), and rises for a negative one.
+     */
+    static float scroll(float time, int hash, float columnSpeed, float speed) {
+        return -(time + (hash & 0xFF)) / 32.0F * columnSpeed * speed % 32.0F;
     }
 }

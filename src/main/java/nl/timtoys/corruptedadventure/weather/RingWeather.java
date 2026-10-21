@@ -69,7 +69,9 @@ public final class RingWeather {
     /**
      * The weather at a position: the ring of {@code ringAt(…).ring()} (hard switch at 0.5, like the biome); the void
      * follows ring 5. In ring 4 the band rule applies too ({@link Ring4WeatherBands#felt}): a weather of the other band
-     * is {@code clear} here. For gameplay; rendering blends over the transition zones instead (client).
+     * is {@code clear} here. In ring 5 (and the void) each band has its own type ({@link Ring5WeatherBands#felt}, hard
+     * switch on {@code Ring5Band.outer}); the void meter of stream C asks only this. For gameplay; rendering blends over
+     * the transition zones instead (client).
      */
     public static RingWeatherState stateAt(ServerLevel level, double x, double z) {
         Optional<RingWeatherData> data = data(level);
@@ -77,12 +79,16 @@ public final class RingWeather {
             return RingWeatherState.STILL;
         }
         RingLayout layout = RingLayout.current();
-        Ring ring = weatherRing(layout.sample(level.dimension(), x, z).ring());
+        Ring sampled = layout.sample(level.dimension(), x, z).ring();
+        Ring ring = weatherRing(sampled);
         RingWeatherState state = data.get().get(ring);
+        // Ring 4 and 5 weather exist only in the overworld, so x, z are overworld positions here.
+        if (ring == Ring.RING_5) {
+            return Ring5WeatherBands.felt(state, Ring5WeatherBands.bandAt(layout, sampled, x, z), ServerConfig.ring5Bands());
+        }
         if (ring != Ring.RING_4 || Ring4WeatherBands.bandOf(state.type()) == Ring4WeatherBands.Band.ANY) {
             return state;
         }
-        // Ring 4 weather exists only in the overworld, so x, z are overworld positions here.
         return Ring4WeatherBands.felt(ring, state, Ring4Band.of(layout).blighted(x, z));
     }
 
@@ -108,7 +114,7 @@ public final class RingWeather {
 
     /**
      * Sets the weather of a ring for {@code durationTicks} and syncs it to the dimension. The cycle continues from
-     * there.
+     * there. In ring 5 the set type holds in both bands (seed 0).
      *
      * @throws IllegalArgumentException if the level has no weather for that ring or the type does not belong to it
      */
@@ -117,7 +123,9 @@ public final class RingWeather {
         if (!type.allowedIn(level.dimension(), ring) || durationTicks <= 0) {
             throw new IllegalArgumentException(type.getSerializedName() + " for " + durationTicks + " ticks is not a weather of " + ring.getSerializedName());
         }
-        data.put(ring, RingWeatherState.start(type, durationTicks, level.getRandom().nextInt()));
+        // Ring 5: seed 0 makes the set type hold in both bands (Ring5WeatherBands), so /ca weather tests one type everywhere.
+        int seed = ring == Ring.RING_5 ? 0 : RingWeatherCycle.seed(level.getRandom());
+        data.put(ring, RingWeatherState.start(type, durationTicks, seed));
         sync(level, data);
     }
 

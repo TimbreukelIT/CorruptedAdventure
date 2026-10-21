@@ -32,7 +32,12 @@ public enum RingWeatherType implements StringRepresentable {
     GLITCH_STORM(Ring.RING_5, Level.OVERWORLD),
     REVERSE_RAIN(Ring.RING_5, Level.OVERWORLD),
     /** Storm wind of ring 4's mythical band (package 70). Last, so the wire indices of the older types stay the same. */
-    STORM_WIND(Ring.RING_4, Level.OVERWORLD);
+    STORM_WIND(Ring.RING_4, Level.OVERWORLD),
+    /**
+     * Standstill of ring 5 (package 92): rain and clouds freeze in mid-air, sound drains away. Short and rare; it freezes
+     * almost at once, hence the short fade. Appended after {@link #STORM_WIND} for the same reason.
+     */
+    STANDSTILL(Ring.RING_5, Level.OVERWORLD, 100);
 
     /** {@code clear}, {@code sandstorm}, {@code heat_wave}, … */
     public static final Codec<RingWeatherType> CODEC = StringRepresentable.fromEnum(RingWeatherType::values);

@@ -6,6 +6,7 @@ import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.weather.Ring5WeatherBands;
 import nl.timtoys.corruptedadventure.weather.RingWeatherSettings;
 import nl.timtoys.corruptedadventure.weather.RingWeatherType;
 
@@ -41,6 +42,8 @@ public final class ServerConfig {
     public static final Ring3WeatherEffects RING_3_WEATHER;
     /** {@code [weather.ring4]}: the toxic rain's poison factor and the storm's push (package 70). */
     public static final Ring4WeatherEffects RING_4_WEATHER;
+    /** {@code [weather.ring5]}: the outer band's weights, the standstill's duration and the void factors (package 92). */
+    public static final Ring5WeatherEffects RING_5_WEATHER;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
     /** Per ring with weather types; package-private for tests. */
@@ -67,6 +70,7 @@ public final class ServerConfig {
         RING_2_WEATHER = RING_WEATHER.get(Ring.RING_2).ring2Effects;
         RING_3_WEATHER = RING_WEATHER.get(Ring.RING_3).ring3Effects;
         RING_4_WEATHER = RING_WEATHER.get(Ring.RING_4).ring4Effects;
+        RING_5_WEATHER = RING_WEATHER.get(Ring.RING_5).ring5Effects;
         SPEC = builder.build();
         ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds,
                 POISON.thresholds);
@@ -94,6 +98,14 @@ public final class ServerConfig {
     public static RingWeatherSettings ringWeather(Ring ring) {
         RingWeather config = RING_WEATHER.get(ring);
         return config == null ? RingWeatherSettings.NONE : config.settings();
+    }
+
+    /**
+     * What the ring 5 band rule needs from {@code [weather.ring5]} (outer weights, standstill range), read live. Also on
+     * the client (the SERVER config is synced): before the synced copy has arrived, the defaults.
+     */
+    public static Ring5WeatherBands.Settings ring5Bands() {
+        return RING_5_WEATHER.bands(SPEC.isLoaded());
     }
 
     /** {@code [conditions.debug]}: the test condition, driven by {@code /ca condition debug}. */
@@ -484,6 +496,90 @@ public final class ServerConfig {
         }
     }
 
+    /**
+     * The extras of the ring 5 weather, in {@code [weather.ring5]} next to its cycle (package 92, OV1 = A): the cycle's
+     * own weights ({@code glitchStormWeight} etc.) draw the inner band's type; the outer band draws its own type from
+     * the same weather's seed with the weights here. The standstill lasts its own short range in both bands. The void
+     * factors are read by the void modifier of stream C.
+     */
+    public static final class Ring5WeatherEffects {
+        static final int DEFAULT_STANDSTILL_MIN = 40;
+        static final int DEFAULT_STANDSTILL_MAX = 120;
+        /** Outer band defaults (P2, 2026-10-21): reverse rain 70, glitch storm 20, standstill 10. */
+        static final int DEFAULT_OUTER_GLITCH_STORM = 20;
+        static final int DEFAULT_OUTER_REVERSE_RAIN = 70;
+        static final int DEFAULT_OUTER_STANDSTILL = 10;
+
+        public final ModConfigSpec.IntValue outerGlitchStormWeight;
+        public final ModConfigSpec.IntValue outerReverseRainWeight;
+        public final ModConfigSpec.IntValue outerStandstillWeight;
+        public final ModConfigSpec.IntValue standstillMinSeconds;
+        public final ModConfigSpec.IntValue standstillMaxSeconds;
+        public final ModConfigSpec.DoubleValue glitchStormVoidMultiplier;
+        public final ModConfigSpec.DoubleValue reverseRainVoidMultiplier;
+        public final ModConfigSpec.DoubleValue standstillVoidMultiplier;
+
+        private Ring5WeatherEffects(ModConfigSpec.Builder builder) {
+            outerGlitchStormWeight = builder.comment("Outer band: relative chance of glitch_storm when the ring has weather. The cycle's",
+                            "own weights above (glitchStormWeight, reverseRainWeight, standstillWeight) are the inner band's; both",
+                            "bands share the timing, each draws its own type. All outer weights 0 = the outer band stays clear.")
+                    .defineInRange("outerGlitchStormWeight", DEFAULT_OUTER_GLITCH_STORM, 0, 100);
+            outerReverseRainWeight = builder.comment("Outer band: relative chance of reverse_rain.")
+                    .defineInRange("outerReverseRainWeight", DEFAULT_OUTER_REVERSE_RAIN, 0, 100);
+            outerStandstillWeight = builder.comment("Outer band: relative chance of standstill.")
+                    .defineInRange("outerStandstillWeight", DEFAULT_OUTER_STANDSTILL, 0, 100);
+            standstillMinSeconds = builder.comment("Shortest standstill; it is short (its own range instead of",
+                            "weatherMinSeconds/weatherMaxSeconds, in both bands).")
+                    .defineInRange("standstillMinSeconds", DEFAULT_STANDSTILL_MIN, 1, RingWeather.MAX_SECONDS);
+            standstillMaxSeconds = builder.comment("Longest standstill. Not below standstillMinSeconds.")
+                    .defineInRange("standstillMaxSeconds", DEFAULT_STANDSTILL_MAX, 1, RingWeather.MAX_SECONDS);
+            glitchStormVoidMultiplier = builder.comment("Factor on the rising void meter during a full glitch storm. Applied by stream C's",
+                            "void modifier; the largest of night and weather counts (they do not stack).")
+                    .defineInRange("glitchStormVoidMultiplier", 2.0, 0.0, 10.0);
+            reverseRainVoidMultiplier = builder.comment("Factor on the rising void meter during full reverse rain (same rule).")
+                    .defineInRange("reverseRainVoidMultiplier", 1.5, 0.0, 10.0);
+            standstillVoidMultiplier = builder.comment("Factor on the rising void meter during a full standstill (same rule).")
+                    .defineInRange("standstillVoidMultiplier", 1.5, 0.0, 10.0);
+        }
+
+        /** The void factor of a full {@code type} (glitch storm, reverse rain, standstill); 1 for every other type. */
+        public double voidMultiplier(RingWeatherType type) {
+            return voidMultiplier(type, ModConfigSpec.DoubleValue::get);
+        }
+
+        /** {@link #voidMultiplier(RingWeatherType)} with its own read of the values (a unit test reads the defaults). */
+        public double voidMultiplier(RingWeatherType type, ToDoubleFunction<ModConfigSpec.DoubleValue> value) {
+            return switch (type) {
+                case GLITCH_STORM -> value.applyAsDouble(glitchStormVoidMultiplier);
+                case REVERSE_RAIN -> value.applyAsDouble(reverseRainVoidMultiplier);
+                case STANDSTILL -> value.applyAsDouble(standstillVoidMultiplier);
+                default -> 1.0;
+            };
+        }
+
+        /** The standstill's own duration in seconds; a min above its max falls back to the defaults. */
+        RingWeatherSettings.Range standstillSeconds() {
+            return standstillSeconds(standstillMinSeconds.get(), standstillMaxSeconds.get());
+        }
+
+        static RingWeatherSettings.Range standstillSeconds(int min, int max) {
+            return min > max ? new RingWeatherSettings.Range(DEFAULT_STANDSTILL_MIN, DEFAULT_STANDSTILL_MAX)
+                    : new RingWeatherSettings.Range(min, max);
+        }
+
+        /** The band rule's settings: the configured values when {@code loaded}, else the defaults. */
+        Ring5WeatherBands.Settings bands(boolean loaded) {
+            Map<RingWeatherType, Integer> weights = new EnumMap<>(RingWeatherType.class);
+            weights.put(RingWeatherType.GLITCH_STORM, loaded ? outerGlitchStormWeight.get() : outerGlitchStormWeight.getDefault());
+            weights.put(RingWeatherType.REVERSE_RAIN, loaded ? outerReverseRainWeight.get() : outerReverseRainWeight.getDefault());
+            weights.put(RingWeatherType.STANDSTILL, loaded ? outerStandstillWeight.get() : outerStandstillWeight.getDefault());
+            RingWeatherSettings.Range seconds = loaded ? standstillSeconds()
+                    : standstillSeconds(standstillMinSeconds.getDefault(), standstillMaxSeconds.getDefault());
+            return new Ring5WeatherBands.Settings(weights, new RingWeatherSettings.Range(
+                    seconds.min() * RingWeatherSettings.TICKS_PER_SECOND, seconds.max() * RingWeatherSettings.TICKS_PER_SECOND));
+        }
+    }
+
     /** {@code [weather.ringN]}: the cycle of one ring with weather types. */
     static final class RingWeather {
         static final int DEFAULT_CLEAR_MIN = 600;
@@ -505,6 +601,8 @@ public final class ServerConfig {
         final Ring3WeatherEffects ring3Effects;
         /** Only in {@code [weather.ring4]}; null for the other rings. */
         final Ring4WeatherEffects ring4Effects;
+        /** Only in {@code [weather.ring5]}; null for the other rings. */
+        final Ring5WeatherEffects ring5Effects;
 
         private RingWeather(ModConfigSpec.Builder builder, Ring ring) {
             String name = "ring" + ring.number();
@@ -520,21 +618,28 @@ public final class ServerConfig {
                     .defineInRange("weatherMaxSeconds", DEFAULT_WEATHER_MAX, 1, MAX_SECONDS);
             for (RingWeatherType type : RingWeatherType.typesFor(Level.OVERWORLD, ring)) {
                 weights.put(type, builder.comment("Relative chance of " + type.getSerializedName()
-                                + " after a clear spell; 0 = never in the cycle.")
+                                + " after a clear spell; 0 = never in the cycle." + (ring == Ring.RING_5 ? " Inner band." : ""))
                         .defineInRange(weightKey(type), defaultWeight(type), 0, 100));
             }
             ring2Effects = ring == Ring.RING_2 ? new Ring2WeatherEffects(builder) : null;
             ring3Effects = ring == Ring.RING_3 ? new Ring3WeatherEffects(builder) : null;
             ring4Effects = ring == Ring.RING_4 ? new Ring4WeatherEffects(builder) : null;
+            ring5Effects = ring == Ring.RING_5 ? new Ring5WeatherEffects(builder) : null;
             builder.pop();
         }
 
-        /** Equal weights, except ring 3: ash rain 45, eruption 40, the rare ash cloud 15 (decision V6, 2026-10-06). */
+        /**
+         * Equal weights, except ring 3: ash rain 45, eruption 40, the rare ash cloud 15 (decision V6, 2026-10-06); and
+         * ring 5's inner band: glitch storm 55, standstill 30, reverse rain 15 (P2, 2026-10-21).
+         */
         static int defaultWeight(RingWeatherType type) {
             return switch (type) {
                 case ASH_RAIN -> 45;
                 case ERUPTION -> 40;
                 case ASH_CLOUD -> 15;
+                case GLITCH_STORM -> 55;
+                case REVERSE_RAIN -> 15;
+                case STANDSTILL -> 30;
                 default -> DEFAULT_WEIGHT;
             };
         }
@@ -569,8 +674,13 @@ public final class ServerConfig {
             }
             Map<RingWeatherType, Integer> configured = new EnumMap<>(RingWeatherType.class);
             weights.forEach((type, value) -> configured.put(type, value.get()));
-            Map<RingWeatherType, RingWeatherSettings.Range> durations = ring3Effects == null ? Map.of()
-                    : Map.of(RingWeatherType.ASH_CLOUD, ring3Effects.ashCloudSeconds());
+            Map<RingWeatherType, RingWeatherSettings.Range> durations = new EnumMap<>(RingWeatherType.class);
+            if (ring3Effects != null) {
+                durations.put(RingWeatherType.ASH_CLOUD, ring3Effects.ashCloudSeconds());
+            }
+            if (ring5Effects != null) {
+                durations.put(RingWeatherType.STANDSTILL, ring5Effects.standstillSeconds());
+            }
             return RingWeatherSettings.ofSeconds(clearMin, clearMax, weatherMin, weatherMax, configured, durations);
         }
 
@@ -580,6 +690,10 @@ public final class ServerConfig {
             if (ring3Effects != null) {
                 check(ring3Effects.ashCloudMinSeconds, ring3Effects.ashCloudMaxSeconds,
                         Ring3WeatherEffects.DEFAULT_ASH_CLOUD_MIN, Ring3WeatherEffects.DEFAULT_ASH_CLOUD_MAX);
+            }
+            if (ring5Effects != null) {
+                check(ring5Effects.standstillMinSeconds, ring5Effects.standstillMaxSeconds,
+                        Ring5WeatherEffects.DEFAULT_STANDSTILL_MIN, Ring5WeatherEffects.DEFAULT_STANDSTILL_MAX);
             }
         }
 

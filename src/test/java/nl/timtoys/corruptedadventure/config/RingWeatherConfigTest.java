@@ -23,7 +23,8 @@ class RingWeatherConfigTest {
             assertEquals(600, config.weatherMinSeconds.getDefault());
             assertEquals(1200, config.weatherMaxSeconds.getDefault());
             assertEquals(RingWeatherType.typesFor(Level.OVERWORLD, ring), config.weights.keySet().stream().toList());
-            if (ring != Ring.RING_3) {
+            // Ring 3 (V6) and ring 5 (P2, package 92) have their own weights.
+            if (ring != Ring.RING_3 && ring != Ring.RING_5) {
                 config.weights.values().forEach(weight -> assertEquals(1, weight.getDefault()));
             }
         }

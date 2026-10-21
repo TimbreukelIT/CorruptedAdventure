@@ -67,6 +67,7 @@ public final class CorruptedAdventureClient {
         RingWeatherClientHooks.registerRing2(modEventBus, NeoForge.EVENT_BUS);
         RingWeatherClientHooks.registerRing3();
         RingWeatherClientHooks.registerRing4();
+        RingWeatherClientHooks.registerRing5(modEventBus, NeoForge.EVENT_BUS);
         RingWeatherClientHooks.register(NeoForge.EVENT_BUS);
         // Ring 3 ambience outside the weather (package 50): rumble with camera shake, sparks on the peaks.
         Ring3Ambience.register(NeoForge.EVENT_BUS);

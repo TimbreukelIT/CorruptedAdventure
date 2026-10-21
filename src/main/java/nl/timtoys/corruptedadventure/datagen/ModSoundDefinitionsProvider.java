@@ -150,6 +150,17 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .subtitle(subtitle("block.sucking_mud.slurp"))
                 .with(file("block/ring_4/sucking_mud_slurp_1"), file("block/ring_4/sucking_mud_slurp_2"),
                         file("block/ring_4/sucking_mud_slurp_3")));
+        // Ring 5 weather (package 92): vanilla placeholders until the ring 5 sound script (98). Volume in code (MAX_VOLUME).
+        add(ModSoundEvents.RING_5_GLITCH_STORM, SoundDefinition.definition()
+                .subtitle(subtitle("weather.ring_5.glitch_storm"))
+                .with(sound(SoundEvents.RESPAWN_ANCHOR_AMBIENT.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.5F)));
+        add(ModSoundEvents.RING_5_REVERSE_RAIN, SoundDefinition.definition()
+                .subtitle(subtitle("weather.ring_5.reverse_rain"))
+                .with(sound(SoundEvents.WEATHER_RAIN.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.6F).volume(0.5F)));
+        add(ModSoundEvents.RING_5_STANDSTILL, SoundDefinition.definition()
+                .subtitle(subtitle("weather.ring_5.standstill"))
+                .with(sound(SoundEvents.AMBIENT_BASALT_DELTAS_LOOP.value().getLocation(), SoundDefinition.SoundType.EVENT)
+                        .pitch(0.5F).volume(0.1F)));
         // Block sounds, played by stream B (package 46) at the block.
         add(ModSoundEvents.FUMAROLE_PUFF, SoundDefinition.definition()
                 .subtitle(subtitle("block.fumarole.puff"))

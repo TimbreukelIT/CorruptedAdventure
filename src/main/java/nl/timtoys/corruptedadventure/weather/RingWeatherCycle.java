@@ -45,7 +45,16 @@ public final class RingWeatherCycle {
         }
         RingWeatherSettings.Range range = settings.weatherRange(type);
         int duration = between(range.min(), range.max(), random);
-        return RingWeatherState.start(type, duration, random.nextInt());
+        return RingWeatherState.start(type, duration, seed(random));
+    }
+
+    /**
+     * A new weather's seed, never 0: seed 0 is kept for a weather set by command (ring 5: the set type in both bands,
+     * {@link Ring5WeatherBands}). One draw, as before.
+     */
+    public static int seed(RandomSource random) {
+        int seed = random.nextInt();
+        return seed == 0 ? 1 : seed;
     }
 
     private static RingWeatherType pick(Map<RingWeatherType, Integer> weights, RandomSource random) {
