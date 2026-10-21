@@ -186,7 +186,7 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
      * beside air (vanilla's local levels and empty cells hung walls of water in ring 4's caves, 5a), and caves under the
      * sea that open into it are full. The tunnel net's sealed spaces ({@code Ring4Tunnels}) come before this rule.
      */
-    static boolean ring4Flooded(ResourceKey<Level> dimension, RingPosition position) {
+    public static boolean ring4Flooded(ResourceKey<Level> dimension, RingPosition position) {
         return dimension == Level.OVERWORLD && position.ring() == Ring.RING_4 && !sunderedZone(dimension, position);
     }
 

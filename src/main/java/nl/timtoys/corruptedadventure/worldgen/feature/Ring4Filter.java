@@ -12,8 +12,11 @@ import net.minecraft.world.level.levelgen.placement.PlacementContext;
 import net.minecraft.world.level.levelgen.placement.PlacementFilter;
 import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
 import nl.timtoys.corruptedadventure.registry.ModPlacementModifierTypes;
+import nl.timtoys.corruptedadventure.ring.RingColumnCache;
+import nl.timtoys.corruptedadventure.worldgen.chunk.RingFluidPicker;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandOutput;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring4Tunnels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +37,8 @@ import java.util.Set;
  * {@code water_near} keeps a position with water beside the block below it within that many blocks (the four
  * directions, as {@link Ring4Placements#waterNear}) and {@code max_water_depth} one whose column holds at most that much
  * water (as vanilla's {@code surface_water_depth_filter}), both read on the frozen worldgen heightmaps: a neighbouring
- * chunk's tree standing in the water or hanging over it changes neither (backlog r. 367, r. 415).
+ * chunk's tree standing in the water or hanging over it changes neither (backlog r. 367, r. 415); {@code water_near}
+ * reads the pure terrain under a floating island, whose top the heightmaps show (review golf 3).
  * <p>
  * Without ring 4 terrain (another dimension or generator) nothing passes. Reads only the pure column and the frozen
  * worldgen heightmap, so the result does not depend on generation order (like {@link VolcanicFilter} in ring 3).
@@ -122,7 +126,7 @@ public final class Ring4Filter extends PlacementFilter {
         if (maxWaterDepth.isPresent() && waterDepth(context, x, z) > maxWaterDepth.get()) {
             return false;
         }
-        if (waterNear > 0 && !waterNear(context, x, pos.getY() - 1, z, waterNear)) {
+        if (waterNear > 0 && !waterNear(context, field, x, pos.getY() - 1, z, waterNear)) {
             return false;
         }
         if (groundOnly && !onGround(context.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z), field.column(x, z).surface(), tolerance)) {
@@ -145,19 +149,47 @@ public final class Ring4Filter extends PlacementFilter {
     /**
      * Whether water stands at height {@code y} within {@code reach} blocks in one of the four directions, on the frozen
      * worldgen heightmaps: between a column's floor and its first open block (as the trees' terrain sees the lakes,
-     * {@link IsolatedTreeFeature#terrain}).
+     * {@link IsolatedTreeFeature#terrain}). Under a floating island those maps read the island's top; there the pure
+     * terrain answers instead ({@link #waterUnderIsland}). Water that features place is not seen (it would make the
+     * answer depend on the order of the chunks).
      */
-    private static boolean waterNear(PlacementContext context, int x, int y, int z, int reach) {
+    private static boolean waterNear(PlacementContext context, IslandField field, int x, int y, int z, int reach) {
         for (int d = 1; d <= reach; d++) {
-            if (water(context, x + d, y, z) || water(context, x - d, y, z) || water(context, x, y, z + d) || water(context, x, y, z - d)) {
+            if (water(context, field, x + d, y, z) || water(context, field, x - d, y, z) || water(context, field, x, y, z + d)
+                    || water(context, field, x, y, z - d)) {
                 return true;
             }
         }
         return false;
     }
 
-    private static boolean water(PlacementContext context, int x, int y, int z) {
-        return water(y, context.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, x, z), context.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z));
+    private static boolean water(PlacementContext context, IslandField field, int x, int y, int z) {
+        int surface = context.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
+        if (water(y, context.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, x, z), surface)) {
+            return true;
+        }
+        // Open on the maps at y and dry: air. Covered at y: the ground, or an island over the column.
+        if (surface <= y) {
+            return false;
+        }
+        // The island values first (no base terrain noise): most covered neighbours are plain ground.
+        if (!field.islandColumn(x, z).underIsland(y)) {
+            return false;
+        }
+        IslandField.Column column = field.column(x, z);
+        return waterUnderIsland(y, column.surface(), column.lakeTop(),
+                RingFluidPicker.ring4Flooded(context.getLevel().getLevel().dimension(),
+                        RingColumnCache.ringAt(context.getLevel().getLevel().dimension(), x, z)));
+    }
+
+    /**
+     * Whether height {@code y} under a floating island holds water, from the pure terrain (review golf 3: the reeds on a
+     * bank beside water under an island's overhang): open above the ground ({@code terrain}, its first open block as
+     * {@link #onGround} counts it) and below ring 4's flat sea ({@link RingFluidPicker#ring4Flooded}: water up to
+     * {@link Ring4Tunnels#SEA_TOP}) or a lake above the sea in the column ({@code lakeTop}, exclusive). Pure.
+     */
+    static boolean waterUnderIsland(int y, double terrain, int lakeTop, boolean flooded) {
+        return y >= Mth.ceil(terrain) && (flooded && y <= Ring4Tunnels.SEA_TOP || y < lakeTop);
     }
 
     /** Whether height {@code y} holds water in a column with its first open block over the floor and over the water. */

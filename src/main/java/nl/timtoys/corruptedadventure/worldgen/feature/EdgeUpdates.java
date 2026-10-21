@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BrushableBlock;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -19,7 +20,7 @@ import java.util.Set;
  * <p>
  * Hanging strands (decor A, {@link TreeOverlap#strand}) that lose their hold pass the update on in a queue of their own,
  * also into strands that were just written, so a strand cut by another tree's leaf falls whole in either order. Without
- * strands the pass is exactly the decor proef's. Sand and gravel beside what was written are left alone (backlog r. 421).
+ * strands the pass is exactly the decor proef's. Sand and gravel (also suspicious) beside what was written are left alone (backlog r. 421).
  */
 final class EdgeUpdates {
     /** How many changed blocks pass the shape update on (a giant lily pad has four parts). */
@@ -80,9 +81,10 @@ final class EdgeUpdates {
                 state = updated;
             }
         }
-        if (other.getBlock() instanceof FallingBlock) {
+        if (other.getBlock() instanceof FallingBlock || other.getBlock() instanceof BrushableBlock) {
             // Backlog r. 421: sand or gravel of the terrain only schedules its fall here, and drops into an open space
-            // under it (seen under the lagoon floor) and leaves air under the sea: the terrain stays as it is.
+            // under it (seen under the lagoon floor) and leaves air under the sea: the terrain stays as it is. The same
+            // for a structure's suspicious sand or gravel (review golf 3), which falls like sand.
             return;
         }
         BlockState otherUpdated = other.updateShape(direction.getOpposite(), state, level, neighbour, pos);
