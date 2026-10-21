@@ -24,7 +24,9 @@ import java.util.Set;
  *
  * <p>Good first versions in the 37b style (fase-1-wereld §1.4, package 71a): light from the top left, 5–7 tones per
  * material with a hue shift, selective outlines for items and crystals, a flatness lint, and a contact sheet
- * ({@code build/texture-preview/ring4.png}) with 6×6 walls, night views, items in a slot and small scenes.
+ * ({@code build/texture-preview/ring4.png}) with 6×6 walls, night views, items in a slot and small scenes. Golf 3 adds
+ * {@code ring4-g3.png} (the polished and new textures in their settings); {@code --golf3-sheet <texture root> <out>} draws
+ * that sheet from another texture root's PNGs instead, for a before/after pair, and writes nothing else.
  *
  * <p>Glow (contract §7): the glowing flora has two textures, {@code <name>} (the whole plant, glow painted in) and
  * {@code <name>_glow} (a cutout layer with only the glowing pixels, pulsing). B's model draws the glow layer emissive over
@@ -47,6 +49,11 @@ public final class Ring4Textures {
     private static final Path VERDANT_PREVIEW = Path.of("build/texture-preview/ring4-verdant.png");
     /** The decor rollout blocks beside the ring 4 blocks they join (contact sheet of the decor-blocks change). */
     private static final Path DECOR_PREVIEW = Path.of("build/texture-preview/ring4-decor.png");
+    /**
+     * Golf 3 (71): the polished and the new textures in their settings. {@code --golf3-sheet <texture root> <out>} draws
+     * the same sheet from the PNGs under another texture root (e.g. an older commit's), for a before/after pair.
+     */
+    private static final Path GOLF3_PREVIEW = Path.of("build/texture-preview/ring4-g3.png");
 
     /** Retouched by hand after generation; the script skips these and the preview reads them from disk. */
     private static final Set<String> HAND_EDITED = Set.of();
@@ -78,9 +85,11 @@ public final class Ring4Textures {
     private static final int[] BLOSSOM = {0x6E4472, 0x8E5A90, 0xB078AE, 0xCE96C8, 0xE6B6DE, 0xF6D8EE};
     private static final int BLOSSOM_HEART = 0xFFF2DC;
     private static final int[] SAPLING_LEAF = {0x4E6A40, 0x6E8A5A};
-    // Withered moonpetal: dead grey bark, grey-beige wood.
-    private static final int[] WITHERED_BARK = {0x3A3A3C, 0x4A494B, 0x5B5A5B, 0x6D6C6C, 0x807E7D, 0x93918F};
-    private static final int[] WITHERED_WOOD = {0x5E5852, 0x6F6861, 0x817971, 0x938A80, 0xA59B90};
+    // Withered moonpetal: dead, rotting bark in a dark brown-grey (golf 3, r. 390: the old neutral grey read as stone),
+    // rotting grey-brown wood; punky rot holes and a faint grey-green lichen on the bark.
+    private static final int[] WITHERED_BARK = {0x221D19, 0x2E2722, 0x3A322B, 0x473E35, 0x564B40, 0x675A4D};
+    private static final int[] WITHERED_WOOD = {0x4A4036, 0x5A4F43, 0x6B5E50, 0x7C6E5E, 0x8E7F6C};
+    private static final int[] WITHERED_LICHEN = {0x4E5444, 0x646B56};
     // Reeds, peat, hanging moss, water flora.
     private static final int[] REED = {0x3E4A22, 0x52602C, 0x687936, 0x809142, 0x99A852, 0xB4BE6E};
     private static final int[] REED_PLUME = {0x5A4434, 0x7A604A, 0x9A7E62, 0xBCA184, 0xD8C2A4};
@@ -100,9 +109,11 @@ public final class Ring4Textures {
     private static final int[] BLOOM_PETAL = {0x3A2266, 0x50308A, 0x6A44AA, 0x8862C6, 0xA886DC};
     private static final int[] BLOOM_STEM = {0x1E4A40, 0x2E6656, 0x44846E, 0x62A288};
     private static final int[] ROOT = {0x2E241E, 0x3E3128, 0x524034, 0x685242, 0x806652};
-    // Blighted glowcap: the same fungus gone sickly green-grey, a weak yellow-green glow.
-    private static final int[] BLIGHT_CAP = {0x30352A, 0x3F4636, 0x505842, 0x636B50, 0x777F62};
-    private static final int[] BLIGHT_STEM = {0x55584E, 0x6D7064, 0x878A7C, 0xA0A294};
+    // Blighted glowcap: the same fungus gone sickly: a pale olive-yellow cap with grey, flaking lesions on a grey stem
+    // (golf 3, r. 392: the old dark green-grey cap read as the blue glowcap by day), a weak yellow-green glow.
+    private static final int[] BLIGHT_CAP = {0x3E4226, 0x585E32, 0x737A3E, 0x8E944E, 0xA8AA64, 0xBEBC80};
+    private static final int[] BLIGHT_STEM = {0x6A6A5E, 0x86867A, 0xA2A196, 0xBCBBB0};
+    private static final int[] BLIGHT_LESION = {0x8C8A80, 0xC8C6B8};
     private static final int[] BLIGHT_GLOW = {0x4E6424, 0x6A8430, 0x86A040, 0xA2B85A, 0xBACD7A};
     private static final int BLIGHT_GLOW_COLOUR = 0xC8DC8A;
     // Bubble spring: a pale mineral crust (travertine) around vents of dark water.
@@ -124,14 +135,26 @@ public final class Ring4Textures {
     private static final int SUCKING_SHEEN = 0x737C55;
     /** Wet gloss on the sucking mud (G1 = A, 71b): the sheen, a lighter cool wet green and the brightest glint. */
     private static final int[] SUCKING_GLOSS = {SUCKING_SHEEN, 0x98A47A, 0xC4CEA6};
-    private static final int[] TOXIC_POOL = {0x2E5A0C, 0x3E7610, 0x509214, 0x66AE1C, 0x80C82A, 0xA2E040};
-    private static final int TOXIC_SHEEN = 0xD4F870;
+    // Toxic pool (golf 3): a murky olive sludge with acid-yellow swirls and scum, darker and yellower than the lime-green
+    // water of the swamps around it (peat_moors 6FC23A, reed_marsh 5DB03A) so the two never read as the same liquid.
+    private static final int[] TOXIC_POOL = {0x24320A, 0x34460C, 0x485E10, 0x627A14, 0x82961C, 0xA6B428};
+    private static final int TOXIC_SHEEN = 0xE8EE6A;
+    private static final int[] TOXIC_SCUM = {0x9A9A50, 0xC4C27A};
     private static final int[] BUCKET = {0x3A3E44, 0x5A6068, 0x7E868E, 0xA8B0B6, 0xD0D6DA};
     private static final int[] UPDRAFT = {0x8CC8DC, 0xB8E2EE, 0xE6F8FC};
     private static final int[] SLIME = {0x4E6A48, 0x6A8A5E, 0x8AAA78, 0xAECA9A, 0xD6EAC4};
     private static final int[] NEST = {0x1E1712, 0x2E241A, 0x423426, 0x584634, 0x705A44, 0x8A7256};
     private static final int[] NEST_MOSS = {0x4E6A3A, 0x6A8A4A};
     private static final int[] BONE = {0xA8A090, 0xDCD4BE, 0xF6F2E6};
+
+    // Golf 3 blocks (66c). Lagoon sand: white cream, cooler and lighter than bone sand, far from vanilla sand's yellow,
+    // with fine aquamarine grains and pale coral-pink shell bits.
+    private static final int[] LAGOON_SAND = {0xBAB6A4, 0xCCC9B8, 0xDBD9CA, 0xE7E5D9, 0xF0EFE6, 0xF8F8F2};
+    private static final int[] LAGOON_SPECK = {0x3E9EB0, 0x76CCD6};
+    private static final int[] LAGOON_SHELL = {0xD8B4AC, 0xF6DED6};
+    // Stone and deepslate in vanilla's palette family (own values and grain, no vanilla pixels): the hosts of the claw marks.
+    private static final int[] STONE = {0x4E4E4E, 0x5E5E5E, 0x6C6C6C, 0x787878, 0x848484, 0x919191, 0xA0A0A0};
+    private static final int[] DEEPSLATE = {0x252528, 0x2F2F33, 0x39393E, 0x434348, 0x4E4E53, 0x5A5A5F, 0x68686D};
 
     // verdant_falls flora (72b, H4 = A, Q-T1..4 = A): mythical pastel, apart from moonpetal's silver trunk and pink crown.
     // Trunk warm sand-beige; inner wood pale honey-cream (Q-T1 A).
@@ -165,10 +188,12 @@ public final class Ring4Textures {
     private static final int AQUA_GLOW_COLOUR = 0xF2FFFF;
 
     // Nether ring 4.
-    private static final int[] BONE_SAND = {0x9C9078, 0xB0A48A, 0xC2B79C, 0xD2C8AE, 0xE0D8C0, 0xECE6D2};
+    // Bone sand: a step warmer and darker since golf 3 (r. 343), so bone blocks (ribcages) and the white lagoon sand stand apart.
+    private static final int[] BONE_SAND = {0x8E8068, 0xA19378, 0xB3A68A, 0xC3B79A, 0xD1C6AA, 0xDCD3B8};
     private static final int[] BLEACHED = {0x8A6E68, 0x9C807A, 0xAE948C, 0xC0A8A0, 0xD0BCB4, 0xDFCFC8};
     private static final int BLEACHED_RED = 0x9A645E;
-    private static final int[] FOSSIL_STONE = {0x6A6250, 0x7E7562, 0x928874, 0xA59B86, 0xB8AE98, 0xCAC1AC};
+    // Fossil stone: a little greyer and darker since golf 3 (r. 272/343), so its bone fragments and bone blocks read.
+    private static final int[] FOSSIL_STONE = {0x5C564A, 0x70695B, 0x847C6C, 0x978E7C, 0xA9A08C, 0xBAB19C};
     private static final int FOSSIL_MORTAR = 0x48422F;
     private static final int[] FOSSIL_BONE = {0x554D3C, 0xE4DCC6, 0xF4F0E2};
 
@@ -180,12 +205,15 @@ public final class Ring4Textures {
     private static final Crystal AQUA = new Crystal(AQUAMARINE, 0x1E5A70, 0x0A2430, false, 0, 0, true);
     private static final Crystal PURE = new Crystal(PURITY, 0x8A7A54, 0x4A4030, true, 0xFFF4D0, PURITY[2], false);
 
-    /** A glowing fungus: palettes, the number of glowing spots on the caps and whether the whole gill rim glows. */
-    private record Fungus(int[] cap, int[] stem, int[] glow, int spots, boolean rimGlow) {
+    /**
+     * A glowing fungus: palettes, the number of glowing spots on the caps, whether the whole gill rim glows, and the
+     * tones of grey lesions on the caps ({@code null}: none).
+     */
+    private record Fungus(int[] cap, int[] stem, int[] glow, int spots, boolean rimGlow, int[] lesion) {
     }
 
-    private static final Fungus GLOWCAP = new Fungus(GLOWCAP_CAP, GLOWCAP_STEM, GLOW, 3, true);
-    private static final Fungus BLIGHTED = new Fungus(BLIGHT_CAP, BLIGHT_STEM, BLIGHT_GLOW, 1, false);
+    private static final Fungus GLOWCAP = new Fungus(GLOWCAP_CAP, GLOWCAP_STEM, GLOW, 3, true, null);
+    private static final Fungus BLIGHTED = new Fungus(BLIGHT_CAP, BLIGHT_STEM, BLIGHT_GLOW, 1, false, BLIGHT_LESION);
 
     /**
      * How a texture moves: {@code frames} frames of {@code frametime} ticks, optionally interpolated; {@code glow} is the
@@ -346,6 +374,11 @@ public final class Ring4Textures {
         still("block/lagoon_glowgrass", Ring4Textures::lagoonGlowgrass);
         glowLayer("block/lagoon_glowgrass", AQUA_GLOW, AQUA_GLOW_COLOUR, AQUA_GLOW[0]);
 
+        // ---- Golf 3 blocks (66c): lagoon sand, claw marks in plain stone and deepslate ----
+        still("block/lagoon_sand", Ring4Textures::lagoonSand);
+        still("block/clawed_stone", Ring4Textures::clawedStone);
+        still("block/clawed_deepslate", Ring4Textures::clawedDeepslate);
+
         // ---- Nether ring 4 (68) ----
         still("block/bone_sand", Ring4Textures::boneSand);
         still("block/bleached_netherrack", Ring4Textures::bleachedNetherrack);
@@ -466,6 +499,11 @@ public final class Ring4Textures {
 
     public static void main(String[] args) throws IOException {
         System.setProperty("java.awt.headless", "true");
+        if (args.length == 3 && args[0].equals("--golf3-sheet")) {
+            Path root = Path.of(args[1]);
+            writeGolf3Preview(name -> fromRoot(root, name), Path.of(args[2]));
+            return;
+        }
         if (!Files.isDirectory(Path.of("src/main/resources"))) {
             throw new IllegalStateException("Run from the repository root (src/main/resources not found)");
         }
@@ -504,6 +542,7 @@ public final class Ring4Textures {
         writePreview();
         writeVerdantPreview();
         writeDecorPreview();
+        writeGolf3Preview(name -> TEXTURES.containsKey(name) ? render(name) : null, GOLF3_PREVIEW);
     }
 
     // ---- Checks -------------------------------------------------------------------------------------------------
@@ -694,7 +733,11 @@ public final class Ring4Textures {
     /**
      * Tidestone (66): blue-grey layered rock. Two wavy layers per block (the waves are periodic across the tile, so a
      * cliff shows continuous strata), each lit on its upper part and darker towards a broken seam below; horizontally
-     * stretched grain and a few pale silt grains with a shadow pixel. Layout picked by {@link #bestOf}.
+     * stretched grain and a few pale silt grains with a shadow pixel. Golf 3 (cliffs read flat and repetitive): the two
+     * layers differ in thickness (6–7 and 9–10 rows) and a little in tone, so a cliff alternates a thin pale band and a
+     * thick darker one instead of two equal stripes per block; the light gradient in a layer is a little gentler (a
+     * stronger one, a bent seam and a vertical joint were tried and read as a repeating scale or dot motif). Layout picked by
+     * {@link #bestOf}.
      */
     private static void tidestone(BufferedImage image, Random random) {
         bestOf(image, random, Ring4Textures::tidestoneLayout);
@@ -703,15 +746,19 @@ public final class Ring4Textures {
     private static void tidestoneLayout(BufferedImage image, Random random) {
         double phase = random.nextDouble() * 2 * Math.PI;
         double phase2 = random.nextDouble() * 2 * Math.PI;
+        int thin = 6 + random.nextInt(2);
         double[][] streaks = valueNoise(random, 8, 2);
         double[][] fine = valueNoise(random, 4, 1);
         double[][] seamGaps = valueNoise(random, 4, 4);
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 double wave = y + 1.1 * Math.sin(2 * Math.PI * x / SIZE + phase) + 0.5 * Math.sin(4 * Math.PI * x / SIZE + phase2);
-                double inLayer = frac(wave / 8.0);
-                double t = 0.62 - 0.32 * inLayer + 0.3 * (streaks[x][y] - 0.5) + 0.25 * (fine[x][y] - 0.5) + 0.14 * (random.nextDouble() - 0.5);
-                if (inLayer > 0.88 && seamGaps[x][y] > 0.3) {
+                double p = wave - SIZE * Math.floor(wave / SIZE);
+                boolean thinLayer = p < thin;
+                double inLayer = thinLayer ? p / thin : (p - thin) / (SIZE - thin);
+                double t = (thinLayer ? 0.66 : 0.56) - 0.26 * inLayer + 0.3 * (streaks[x][y] - 0.5) + 0.25 * (fine[x][y] - 0.5)
+                        + 0.14 * (random.nextDouble() - 0.5);
+                if (inLayer > (thinLayer ? 0.84 : 0.9) && seamGaps[x][y] > 0.3) {
                     t = 0.08 + 0.1 * random.nextDouble();
                 }
                 set(image, x, y, shade(TIDESTONE, t));
@@ -785,6 +832,15 @@ public final class Ring4Textures {
      */
     private static void clawedTidestone(BufferedImage image, Random random) {
         copy(renderUnchecked("block/tidestone"), image);
+        clawMarks(image, random, TIDESTONE);
+    }
+
+    /**
+     * Three claw gouges (the clawed tidestone's mark language, shared by the golf 3 clawed stone and deepslate) over the
+     * rock already on {@code image}, in the rock's own seven-tone {@code palette}: groove {@code [0]}, shadowed wall and
+     * shallow ends {@code [1]}/{@code [3]}, lit wall {@code [6]}.
+     */
+    private static void clawMarks(BufferedImage image, Random random, int[] palette) {
         int start = 7 + random.nextInt(2);
         for (int claw = 0; claw < 3; claw++) {
             int length = 9 + random.nextInt(3) - (claw == 2 ? 2 : 0);
@@ -793,10 +849,10 @@ public final class Ring4Textures {
                 int x = start + 3 * claw - (int) Math.round(j * 0.55);
                 int y = y0 + j;
                 boolean end = j == 0 || j == length - 1;
-                set(image, x, y, end ? TIDESTONE[1] : TIDESTONE[0]);
-                set(image, x + 1, y, end ? TIDESTONE[3] : TIDESTONE[6]);
+                set(image, x, y, end ? palette[1] : palette[0]);
+                set(image, x + 1, y, end ? palette[3] : palette[6]);
                 if (!end) {
-                    set(image, x - 1, y, TIDESTONE[1]);
+                    set(image, x - 1, y, palette[1]);
                 }
             }
         }
@@ -880,11 +936,40 @@ public final class Ring4Textures {
     }
 
     /**
-     * Withered moonpetal log side (66): dead grey bark split by deep vertical cracks into long plates (columns of 3–5 px,
+     * Withered moonpetal log side (66): dead bark split by deep vertical cracks into long plates (columns of 3–5 px,
      * plates of 4–8 rows), each plate lit on its top row and left column; a few plates have peeled off and show the
-     * grey-beige wood.
+     * rotting wood. Golf 3 (r. 390, it read as grey stone): dark brown-grey, a lengthwise fibre in every plate (wood, not
+     * rock), a few punky rot holes (dark, lit on their lower right rim) and a little grey-green lichen.
      */
     private static void witheredLog(BufferedImage image, Random random) {
+        witheredPlates(image, random);
+        double[][] fibre = valueNoise(random, 2, 8);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                int rgb = image.getRGB(x, y) & 0xFFFFFF;
+                int index = indexOf(WITHERED_BARK, rgb);
+                if (index > 0 && index < WITHERED_BARK.length - 1 && fibre[x][y] < 0.28) {
+                    set(image, x, y, WITHERED_BARK[index - 1]);
+                }
+            }
+        }
+        for (int i = 0; i < 2; i++) {
+            int x = 1 + random.nextInt(SIZE - 3);
+            int y = random.nextInt(SIZE);
+            setWrapped(image, x, y, WITHERED_BARK[0]);
+            setWrapped(image, x, y + 1, WITHERED_BARK[0]);
+            setWrapped(image, x + 1, y + 1, WITHERED_WOOD[2]);
+            setWrapped(image, x, y + 2, WITHERED_WOOD[1]);
+        }
+        for (int i = 0; i < 3; i++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            setWrapped(image, x, y, WITHERED_LICHEN[1]);
+            setWrapped(image, x + (random.nextBoolean() ? 1 : -1), y + 1, WITHERED_LICHEN[0]);
+        }
+    }
+
+    private static void witheredPlates(BufferedImage image, Random random) {
         int x0 = 0;
         while (x0 < SIZE) {
             int width = Math.min(SIZE - x0, 3 + random.nextInt(3));
@@ -926,31 +1011,44 @@ public final class Ring4Textures {
     /**
      * Moonpetal leaves (66): a blossom crown in pink-lilac (fixed colour, no tint): a depth of darker lilac with holes
      * (cutout_mipped, like vanilla leaves) and small five-pixel florets on top, lit petals on the upper left, a shadowed
-     * petal on the lower right and a cream heart on some.
+     * petal on the lower right and a cream heart on some. Golf 3 (crown readability): fewer stray holes, so the clumps
+     * read as clusters, a dark lilac lip under every clump (it overhangs the hole below) and the florets kept on the
+     * clumps' cores, where they are lit a step brighter.
      */
     private static void moonpetalLeaves(BufferedImage image, Random random) {
         double[][] clumps = valueNoise(random, 4, 4);
+        boolean[][] hole = new boolean[SIZE][SIZE];
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                if (clumps[x][y] < 0.22 || random.nextInt(9) == 0) {
+                hole[x][y] = clumps[x][y] < 0.22 || random.nextInt(16) == 0;
+            }
+        }
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                if (hole[x][y]) {
                     continue;
                 }
-                set(image, x, y, shade(BLOSSOM, 0.05 + 0.35 * clumps[x][y] + 0.1 * random.nextDouble()));
+                boolean lip = hole[x][Math.floorMod(y + 1, SIZE)] || hole[Math.floorMod(x + 1, SIZE)][Math.floorMod(y + 1, SIZE)];
+                set(image, x, y, lip ? BLOSSOM[0] : shade(BLOSSOM, 0.08 + 0.36 * clumps[x][y] + 0.1 * random.nextDouble()));
             }
         }
         int[][] petals = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
-        for (int i = 0; i < 26; i++) {
+        for (int i = 0; i < 30; i++) {
             int x = random.nextInt(SIZE);
             int y = random.nextInt(SIZE);
-            if (clumps[x][y] < 0.3) {
+            if (clumps[x][y] < 0.36) {
                 continue;
             }
-            double tone = 0.55 + 0.25 * clumps[x][y];
+            double tone = 0.6 + 0.3 * clumps[x][y];
             for (int[] petal : petals) {
                 double light = tone + (petal[0] + petal[1] < 0 ? 0.15 : petal[0] + petal[1] > 0 ? -0.2 : 0);
-                setWrapped(image, x + petal[0], y + petal[1], shade(BLOSSOM, light));
+                int px = Math.floorMod(x + petal[0], SIZE);
+                int py = Math.floorMod(y + petal[1], SIZE);
+                if (!hole[px][py]) {
+                    set(image, px, py, shade(BLOSSOM, light));
+                }
             }
-            setWrapped(image, x, y, random.nextInt(3) == 0 ? BLOSSOM_HEART : BLOSSOM[5]);
+            set(image, x, y, random.nextInt(3) == 0 ? BLOSSOM_HEART : BLOSSOM[5]);
         }
     }
 
@@ -1298,6 +1396,11 @@ public final class Ring4Textures {
         for (int i = 0; i < fungus.spots() && !capPixels.isEmpty(); i++) {
             int[] spot = capPixels.remove(random.nextInt(capPixels.size()));
             glow(image, spot[0], spot[1], glow[fungus.rimGlow() ? 4 : 2]);
+        }
+        // Golf 3 (r. 392): flaking grey lesions, one per 4 cap pixels at most, so the blight reads by day.
+        for (int i = 0; fungus.lesion() != null && i < Math.max(1, capPixels.size() / 4) && !capPixels.isEmpty(); i++) {
+            int[] spot = capPixels.remove(random.nextInt(capPixels.size()));
+            set(image, spot[0], spot[1], fungus.lesion()[random.nextInt(fungus.lesion().length)]);
         }
     }
 
@@ -2413,9 +2516,11 @@ public final class Ring4Textures {
     }
 
     /**
-     * Toxic pool, still (72, V-T3 A: opaque like lava): a thick, bright poison green that drifts slowly (two
-     * noise layers moving in different directions, each one tile per cycle) with five bubbles on their own beat that
-     * swell (lit top left) and pop into a dark ring with a few bright drops. Periodic in {@code phase}; opaque.
+     * Toxic pool, still (72, V-T3 A: opaque like lava): a thick poison sludge that drifts slowly (two noise layers
+     * moving in different directions, each one tile per cycle) with five bubbles on their own beat that swell (lit top
+     * left) and pop into a dark ring with a few bright drops. Golf 3 (beside the lime-green swamp water): murky olive
+     * with acid-yellow swirls and three flecks of pale scum that ride along with the broad layer. Periodic in
+     * {@code phase}; opaque.
      */
     private static void toxicPoolStill(BufferedImage image, Random random, double phase) {
         double[][] broad = valueNoise(random, 8, 8);
@@ -2425,6 +2530,16 @@ public final class Ring4Textures {
             for (int x = 0; x < SIZE; x++) {
                 double t = 0.5 + 0.55 * (sample(broad, x + shift, y) - 0.5) + 0.45 * (sample(mid, x, y - shift) - 0.5);
                 set(image, x, y, shade(TOXIC_POOL, t));
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            int cx = random.nextInt(SIZE);
+            int cy = random.nextInt(SIZE);
+            int x = Math.floorMod(cx - (int) Math.floor(shift), SIZE);
+            setWrapped(image, x, cy, TOXIC_SCUM[1]);
+            setWrapped(image, x + 1, cy, TOXIC_SCUM[0]);
+            if (random.nextBoolean()) {
+                setWrapped(image, x, cy + 1, TOXIC_SCUM[0]);
             }
         }
         for (int i = 0; i < 5; i++) {
@@ -2683,9 +2798,11 @@ public final class Ring4Textures {
     }
 
     /**
-     * Fossil stone (68): beige-grey sedimentary stone (soft grain, a few pale grains) with small fossil fragments: two rib
-     * arcs and a tiny spiral shell in bone white, each with a dark shadow edge below right. Fragments stay small so a wall
-     * does not repeat one motif; layout picked by {@link #bestOf}.
+     * Fossil stone (68): beige-grey sedimentary stone (soft grain, a few pale grains) with small fossil fragments: a rib
+     * arc, a tiny spiral shell and a vertebra pair in bone white, each with a dark shadow edge below right. Golf 3
+     * (r. 272, on a wall one bright arc per block read as a pattern): the arc is shorter, the fragments are spread over
+     * the tile as three small marks and two faint broken bedding lines run through the stone. Layout picked by
+     * {@link #bestOf}.
      */
     private static void fossilStone(BufferedImage image, Random random) {
         bestOf(image, random, Ring4Textures::fossilStoneLayout);
@@ -2694,23 +2811,27 @@ public final class Ring4Textures {
     private static void fossilStoneLayout(BufferedImage image, Random random) {
         double[][] grain = valueNoise(random, 8, 2);
         double[][] mid = valueNoise(random, 4, 4);
+        int bed = 3 + random.nextInt(4);
+        int[] beds = {bed, bed + 7 + random.nextInt(2)};
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 double t = 0.5 + 0.45 * (grain[x][y] - 0.5) + 0.4 * (mid[x][y] - 0.5) + 0.3 * (random.nextDouble() - 0.5);
+                if ((y == beds[0] || y == beds[1]) && random.nextInt(4) != 0) {
+                    t -= 0.16;
+                }
                 set(image, x, y, shade(FOSSIL_STONE, t));
             }
         }
-        // 71a-r1: one short rib arc and a tiny shell in a pale bone just above the stone's lightest tone, with a soft
-        // shadow: two arcs and a white shell read as the same bright motif in every tile of a wall
+        // a short rib arc in a pale bone just above the stone's lightest tone, with a soft shadow
         double cx = random.nextDouble() * SIZE;
         double cy = random.nextDouble() * SIZE;
-        double radius = 3.5 + 2 * random.nextDouble();
+        double radius = 3.0 + 1.5 * random.nextDouble();
         double start = random.nextDouble() * 2 * Math.PI;
-        for (int j = 0; j < 6; j++) {
-            double a = start + j * 0.2;
+        for (int j = 0; j < 4; j++) {
+            double a = start + j * 0.26;
             int x = (int) Math.floor(cx + radius * Math.cos(a));
             int y = (int) Math.floor(cy + radius * Math.sin(a));
-            setWrapped(image, x, y, j == 0 || j == 5 ? FOSSIL_STONE[5] : FOSSIL_BONE[1]);
+            setWrapped(image, x, y, j == 0 || j == 3 ? FOSSIL_STONE[5] : FOSSIL_BONE[1]);
             setWrapped(image, x + 1, y + 1, FOSSIL_STONE[1]);
         }
         int sx = random.nextInt(SIZE);
@@ -2720,6 +2841,13 @@ public final class Ring4Textures {
             setWrapped(image, sx + s[0], sy + s[1], s[2] == 1 ? FOSSIL_BONE[1] : FOSSIL_STONE[s[2]]);
         }
         setWrapped(image, sx + 1, sy + 1, FOSSIL_STONE[1]);
+        // a vertebra pair: two bone pixels with a gap, each with its shadow
+        int vx = random.nextInt(SIZE);
+        int vy = random.nextInt(SIZE);
+        for (int k = 0; k < 2; k++) {
+            setWrapped(image, vx + 2 * k, vy, FOSSIL_BONE[1]);
+            setWrapped(image, vx + 2 * k, vy + 1, FOSSIL_STONE[1]);
+        }
     }
 
     /** Polished fossil stone: a smooth mottled beige face with vanilla's bevel. */
@@ -2732,6 +2860,106 @@ public final class Ring4Textures {
             }
         }
         bevel(image, FOSSIL_STONE);
+    }
+
+    // ---- Golf 3 blocks (66c) -------------------------------------------------------------------------------------
+
+    /**
+     * Lagoon sand (golf 3): fine white-cream grains (falls like sand), soft drifts, a scatter of single aquamarine grains
+     * (some with a lighter neighbour) and a few pale coral-pink shell bits with a shadow pixel. Whiter and cooler than
+     * bone sand, nothing of vanilla sand's yellow. Layout picked by {@link #bestOf}.
+     */
+    private static void lagoonSand(BufferedImage image, Random random) {
+        bestOf(image, random, Ring4Textures::lagoonSandLayout);
+    }
+
+    private static void lagoonSandLayout(BufferedImage image, Random random) {
+        double[][] mid = valueNoise(random, 4, 4);
+        double[][] fine = valueNoise(random, 2, 2);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                double t = 0.55 + 0.3 * (mid[x][y] - 0.5) + 0.25 * (fine[x][y] - 0.5) + 0.3 * (random.nextDouble() - 0.5);
+                set(image, x, y, shade(LAGOON_SAND, t));
+            }
+        }
+        for (int i = 0; i < 6; i++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            setWrapped(image, x, y, LAGOON_SPECK[0]);
+            if (random.nextInt(3) == 0) {
+                setWrapped(image, x - 1, y, LAGOON_SPECK[1]);
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            setWrapped(image, x, y, LAGOON_SHELL[1]);
+            setWrapped(image, x + 1, y, LAGOON_SHELL[0]);
+            setWrapped(image, x + 1, y + 1, LAGOON_SAND[0]);
+        }
+    }
+
+    /** Preview-only names of the plain claw hosts; the clawed blocks paint the same base from the same seed. */
+    private static final String STONE_BASE = "preview:stone";
+    private static final String DEEPSLATE_BASE = "preview:deepslate";
+
+    /** Clawed stone (golf 3): our own stone base ({@link #stoneBase}) with the clawed tidestone's three gouges. */
+    private static void clawedStone(BufferedImage image, Random random) {
+        stoneBase(image, seeded(STONE_BASE));
+        clawMarks(image, random, STONE);
+    }
+
+    /** Clawed deepslate (golf 3): our own deepslate base ({@link #deepslateBase}) with the same three gouges. */
+    private static void clawedDeepslate(BufferedImage image, Random random) {
+        deepslateBase(image, seeded(DEEPSLATE_BASE));
+        clawMarks(image, random, DEEPSLATE);
+    }
+
+    /**
+     * A plain stone face in vanilla stone's grey family, drawn from our own noise (no vanilla pixels): soft blotches, fine
+     * grain and a few dark specks, so the claw marks sit in rock that matches the tunnel around them. Layout picked by
+     * {@link #bestOf}.
+     */
+    private static void stoneBase(BufferedImage image, Random random) {
+        bestOf(image, random, (canvas, r) -> {
+            double[][] mid = valueNoise(r, 4, 4);
+            double[][] fine = valueNoise(r, 2, 2);
+            for (int y = 0; y < SIZE; y++) {
+                for (int x = 0; x < SIZE; x++) {
+                    double t = 0.5 + 0.4 * (mid[x][y] - 0.5) + 0.3 * (fine[x][y] - 0.5) + 0.25 * (r.nextDouble() - 0.5);
+                    set(canvas, x, y, shade(STONE, t));
+                }
+            }
+            for (int i = 0; i < 4; i++) {
+                setWrapped(canvas, r.nextInt(SIZE), r.nextInt(SIZE), STONE[1]);
+            }
+        });
+    }
+
+    /**
+     * A plain deepslate face in vanilla deepslate's dark grey family, from our own noise: horizontally stretched streaks
+     * and a few short dark dashes, each lit on the row above. Layout picked by {@link #bestOf}.
+     */
+    private static void deepslateBase(BufferedImage image, Random random) {
+        bestOf(image, random, (canvas, r) -> {
+            double[][] streaks = valueNoise(r, 8, 2);
+            double[][] fine = valueNoise(r, 2, 2);
+            for (int y = 0; y < SIZE; y++) {
+                for (int x = 0; x < SIZE; x++) {
+                    double t = 0.5 + 0.45 * (streaks[x][y] - 0.5) + 0.25 * (fine[x][y] - 0.5) + 0.2 * (r.nextDouble() - 0.5);
+                    set(canvas, x, y, shade(DEEPSLATE, t));
+                }
+            }
+            for (int i = 0; i < 3; i++) {
+                int x = r.nextInt(SIZE);
+                int y = r.nextInt(SIZE);
+                int length = 2 + r.nextInt(3);
+                for (int j = 0; j < length; j++) {
+                    setWrapped(canvas, x + j, y, DEEPSLATE[0]);
+                    setWrapped(canvas, x + j, y - 1, DEEPSLATE[4]);
+                }
+            }
+        });
     }
 
     // ---- Particles ----------------------------------------------------------------------------------------------
@@ -2815,9 +3043,11 @@ public final class Ring4Textures {
      * Deep silhouette (A, change 80, Q18 = A): an enormous sea creature seen from the side, far down in deep water, as one
      * soft dark shape: a long, slim body (a leviathan, not a fish) with a long thin tail stock ending in a wide forked
      * fluke on the left, a long head with a gaping jaw line on the right, a big pair of flippers sweeping back and a
-     * smaller hind pair, a low dorsal fin set back. The alpha falls off over ~3 px at every edge (soft, blended on the
+     * smaller hind pair, a low dorsal fin set back. The alpha falls off over ~1.5 px at every edge (soft, blended on the
      * translucent particle sheet); colour near-black with a slight blue-green, the back a shade lighter. The particle
-     * tints it darker still and fades it in and out.
+     * tints it darker still and fades it in and out. Golf 3 (r. 341): the particle's colour makes it practically black,
+     * so only the alpha shape reads: the edge is half as soft as before and the tail stock, fluke, fins and jaw are a
+     * little thicker, so the thin parts reach full alpha instead of fading into a blob.
      */
     private static void deepSilhouette(BufferedImage image, Random random) {
         int size = image.getWidth();
@@ -2827,10 +3057,10 @@ public final class Ring4Textures {
                 double px = x + 0.5;
                 double py = y + 0.5;
                 double depth = silhouetteDepth(px, py);
-                if (depth <= -1.5) {
+                if (depth <= -0.75) {
                     continue;
                 }
-                int a = (int) Math.round(255 * smoothstep(Math.min(1, (depth + 1.5) / 3.0)));
+                int a = (int) Math.round(255 * smoothstep(Math.min(1, (depth + 0.75) / 1.5)));
                 if (a == 0) {
                     continue;
                 }
@@ -2863,20 +3093,20 @@ public final class Ring4Textures {
         // the gaping jaw: a wedge cut into the head along its lower half, opening towards the snout
         double jaw = centre + 1.6;
         if (x > 47) {
-            double gape = 0.25 + 0.12 * (x - 47);
+            double gape = 0.35 + 0.15 * (x - 47);
             depth = Math.min(depth, Math.abs(y - jaw - 0.04 * (x - 47) * (x - 47) / 4) - gape + 0.4);
         }
         // tail stock to the fork, and a wide forked fluke
-        depth = Math.max(depth, taperedSegment(x, y, 14, spineY(14), 5, spineY(5), 1.4, 1.1));
-        depth = Math.max(depth, taperedSegment(x, y, 6, spineY(6), 2.0, spineY(6) - 11, 2.6, 0.6));
-        depth = Math.max(depth, taperedSegment(x, y, 6, spineY(6), 2.5, spineY(6) + 10, 2.4, 0.6));
+        depth = Math.max(depth, taperedSegment(x, y, 14, spineY(14), 5, spineY(5), 1.8, 1.4));
+        depth = Math.max(depth, taperedSegment(x, y, 6, spineY(6), 2.0, spineY(6) - 11, 2.9, 1.0));
+        depth = Math.max(depth, taperedSegment(x, y, 6, spineY(6), 2.5, spineY(6) + 10, 2.7, 1.0));
         // big flippers sweeping back and down, a smaller hind pair
-        depth = Math.max(depth, taperedSegment(x, y, 44, spineY(44) + 4, 30, spineY(44) + 17, 3.2, 0.9));
-        depth = Math.max(depth, taperedSegment(x, y, 41, spineY(41) + 4, 31, spineY(41) + 12, 2.2, 0.7));
-        depth = Math.max(depth, taperedSegment(x, y, 24, spineY(24) + 3, 15, spineY(24) + 10, 1.9, 0.6));
+        depth = Math.max(depth, taperedSegment(x, y, 44, spineY(44) + 4, 30, spineY(44) + 17, 3.4, 1.2));
+        depth = Math.max(depth, taperedSegment(x, y, 41, spineY(41) + 4, 31, spineY(41) + 12, 2.4, 1.0));
+        depth = Math.max(depth, taperedSegment(x, y, 24, spineY(24) + 3, 15, spineY(24) + 10, 2.1, 0.9));
         // a low dorsal fin, set back, leaning towards the tail
         double base = spineY(26) - bodyHalf(26) + 1.5;
-        depth = Math.max(depth, taperedSegment(x, y, 28, base, 21, base - 6, 2.6, 0.5));
+        depth = Math.max(depth, taperedSegment(x, y, 28, base, 21, base - 6, 2.8, 0.9));
         return depth;
     }
 
@@ -3657,6 +3887,260 @@ public final class Ring4Textures {
         }
     }
 
+    // ---- Golf 3 sheet (71) ----------------------------------------------------------------------------------------
+
+    /** Where the golf 3 sheet takes a texture's first frame from; {@code null} when the texture does not exist there. */
+    @FunctionalInterface
+    private interface Source {
+        BufferedImage get(String name) throws IOException;
+    }
+
+    /** The first (square) frame of {@code <root>/<name>.png} as ARGB, or {@code null} when there is no such file. */
+    private static BufferedImage fromRoot(Path root, String name) throws IOException {
+        Path file = root.resolve(name + ".png");
+        if (!Files.exists(file)) {
+            return null;
+        }
+        BufferedImage strip = ImageIO.read(file.toFile());
+        int size = strip.getWidth();
+        BufferedImage frame = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                frame.setRGB(x, y, strip.getRGB(x, y));
+            }
+        }
+        return frame;
+    }
+
+    /** Preview-only stand-ins (own pixels, never written to the assets): vanilla sand, a bone block side, swamp water. */
+    private static final String SAND_STAND_IN = "preview:sand";
+    private static final String BONE_BLOCK_STAND_IN = "preview:bone_block";
+    private static final String GREEN_WATER_STAND_IN = "preview:green_water";
+    private static final Map<String, BufferedImage> STAND_INS = new HashMap<>();
+
+    private static BufferedImage standIn(String name) {
+        return STAND_INS.computeIfAbsent(name, key -> {
+            BufferedImage image = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+            Random random = seeded(key);
+            switch (key) {
+                case STONE_BASE -> stoneBase(image, random);
+                case DEEPSLATE_BASE -> deepslateBase(image, random);
+                case SAND_STAND_IN -> {
+                    int[] sand = {0xC4B67E, 0xD2C58E, 0xDBD3A0, 0xE3DBAC, 0xEDE5BC};
+                    for (int y = 0; y < SIZE; y++) {
+                        for (int x = 0; x < SIZE; x++) {
+                            set(image, x, y, shade(sand, 0.5 + 0.5 * (random.nextDouble() - 0.5)));
+                        }
+                    }
+                }
+                case BONE_BLOCK_STAND_IN -> {
+                    // a bone block's side as a pale cream face with two darker lengthwise grooves (rough stand-in)
+                    for (int y = 0; y < SIZE; y++) {
+                        for (int x = 0; x < SIZE; x++) {
+                            boolean groove = x == 4 || x == 11;
+                            set(image, x, y, groove ? 0xC9C4AE : random.nextInt(5) == 0 ? 0xDFDBC8 : 0xEAE7D8);
+                        }
+                    }
+                }
+                case GREEN_WATER_STAND_IN -> {
+                    // swamp water seen from above: a grey ripple multiplied by peat_moors' water colour 6FC23A, darkened a bit
+                    for (int y = 0; y < SIZE; y++) {
+                        for (int x = 0; x < SIZE; x++) {
+                            double v = 0.55 + 0.12 * Math.sin((x + 2 * y) * 0.8) + 0.08 * random.nextDouble();
+                            int r = (int) (0x6F * v);
+                            int g = (int) (0xC2 * v);
+                            int b = (int) (0x3A * v);
+                            set(image, x, y, r << 16 | g << 8 | b);
+                        }
+                    }
+                }
+                default -> throw new IllegalArgumentException(key);
+            }
+            return image;
+        });
+    }
+
+    /** A grid cell's image: a stand-in, or the source's texture (night: darkened, its glow layer on top). */
+    private static BufferedImage cell(Source source, String name, boolean night) throws IOException {
+        if (name.startsWith("preview:")) {
+            return night ? darkened(standIn(name)) : standIn(name);
+        }
+        BufferedImage base = source.get(name);
+        if (base == null || !night) {
+            return base;
+        }
+        BufferedImage glow = source.get(name + "_glow");
+        BufferedImage dark = darkened(base);
+        if (glow != null) {
+            for (int y = 0; y < SIZE; y++) {
+                for (int x = 0; x < SIZE; x++) {
+                    if (isOpaque(glow, x, y)) {
+                        dark.setRGB(x, y, glow.getRGB(x, y));
+                    }
+                }
+            }
+        }
+        return dark;
+    }
+
+    /** Draws a grid of textures; a texture the source lacks (new in golf 3, on the before sheet) shows a dark cross. */
+    private static void drawGrid(Graphics2D graphics, Source source, String[][] grid, int left0, int top, int scale,
+                                 int backdrop, boolean night) throws IOException {
+        int cellSize = SIZE * scale;
+        for (int ty = 0; ty < grid.length; ty++) {
+            for (int tx = 0; tx < grid[ty].length; tx++) {
+                int left = left0 + tx * cellSize;
+                int rowTop = top + ty * cellSize;
+                graphics.setColor(new Color(backdrop));
+                graphics.fillRect(left, rowTop, cellSize, cellSize);
+                String name = grid[ty][tx];
+                if (name.isEmpty()) {
+                    continue;
+                }
+                BufferedImage image = cell(source, name, night);
+                if (image == null) {
+                    graphics.setColor(new Color(0x601010));
+                    graphics.drawLine(left, rowTop, left + cellSize - 1, rowTop + cellSize - 1);
+                    graphics.drawLine(left + cellSize - 1, rowTop, left, rowTop + cellSize - 1);
+                } else {
+                    drawOn(graphics, image, left, rowTop, scale, -1);
+                }
+            }
+        }
+    }
+
+    /** A {@code cols} × {@code rows} wall of {@code base} with {@code mark} at a few fixed spots (or none). */
+    private static String[][] wall(String base, String mark, int cols, int rows) {
+        String[][] grid = new String[rows][cols];
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                boolean marked = mark != null && ((x == 1 && y == 1) || (x == 4 && y == 2) || (x == 2 && y == 4));
+                grid[y][x] = marked ? mark : base;
+            }
+        }
+        return grid;
+    }
+
+    /** Bone blocks (stand-in) as a low ribcage on a floor, side view: two rows of ground under arches of bone. */
+    private static String[][] ribcage(String ground) {
+        String b = BONE_BLOCK_STAND_IN;
+        return new String[][] {
+                {"", b, b, b, "", "", b, b, ""},
+                {"", b, "", b, "", "", b, "", b},
+                {ground, b, ground, b, ground, ground, b, ground, b},
+                {ground, ground, ground, ground, ground, ground, ground, ground, ground}};
+    }
+
+    /** A swamp pool from above: the toxic pool beside the lime-green swamp water, on peat. */
+    private static final String[][] POOLS = {
+            {"block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat"},
+            {"block/peat", GREEN_WATER_STAND_IN, GREEN_WATER_STAND_IN, GREEN_WATER_STAND_IN, "block/peat", "block/toxic_pool_still", "block/toxic_pool_still", "block/peat"},
+            {"block/peat", GREEN_WATER_STAND_IN, GREEN_WATER_STAND_IN, "block/toxic_pool_still", "block/toxic_pool_still", "block/toxic_pool_still", "block/toxic_pool_still", "block/peat"},
+            {"block/peat", GREEN_WATER_STAND_IN, GREEN_WATER_STAND_IN, GREEN_WATER_STAND_IN, "block/peat", "block/toxic_pool_still", "block/peat", "block/peat"},
+            {"block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat", "block/peat"}};
+
+    private static void label(Graphics2D graphics, String text, int left, int top) {
+        graphics.setColor(Color.WHITE);
+        graphics.drawString(text, left, top + 12);
+    }
+
+    /**
+     * The golf 3 sheet: tidestone as a cliff and the three clawed rocks in their walls; the polished textures as walls;
+     * the three sands and bone blocks on bone sand and fossil stone; the withered garden, the moonpetal crowns and a toxic
+     * pool beside swamp water; glowcap beside blighted glowcap by day and night; the deep silhouette as the particle
+     * tints it (near black, the alpha does the work). Stand-ins are own pixels and labelled.
+     */
+    private static void writeGolf3Preview(Source source, Path out) throws IOException {
+        BufferedImage sheet = new BufferedImage(SHEET_WIDTH, 2400, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = sheet.createGraphics();
+        graphics.setColor(new Color(0x2B2B2B));
+        graphics.fillRect(0, 0, sheet.getWidth(), sheet.getHeight());
+        int top = 10;
+        graphics.setColor(new Color(0xFFC857));
+        graphics.drawString("== RING 4 GOLF 3 (71): polished and new textures | dark cross = texture does not exist yet ==", 10, top + 12);
+        top += 24;
+
+        int block = SIZE * 2;
+        label(graphics, "tidestone cliff 12x6 at 2x | clawed tidestone in tidestone | clawed stone in stone (stand-in base) | clawed deepslate in deepslate (stand-in base)", 10, top);
+        top += 18;
+        drawGrid(graphics, source, wall("block/tidestone", null, 12, 6), 10, top, 2, 0x0A0E14, false);
+        int left = 10 + 12 * block + 24;
+        for (String[] claw : new String[][] {{"block/tidestone", "block/clawed_tidestone"}, {STONE_BASE, "block/clawed_stone"},
+                {DEEPSLATE_BASE, "block/clawed_deepslate"}}) {
+            drawGrid(graphics, source, wall(claw[0], claw[1], 6, 6), left, top, 2, 0x0A0E14, false);
+            left += 6 * block + 24;
+        }
+        top += 6 * block + 16;
+
+        String[] walls = {"block/fossil_stone", "block/withered_moonpetal_log", "block/stripped_withered_moonpetal_log",
+                "block/withered_moonpetal_log_top", "block/moonpetal_leaves", "block/toxic_pool_still"};
+        label(graphics, "6x6 walls at 2x: " + String.join(" | ", walls).replace("block/", "") + " (leaves over sky)", 10, top);
+        top += 18;
+        for (int i = 0; i < walls.length; i++) {
+            int backdrop = walls[i].equals("block/moonpetal_leaves") ? 0x9FDCE6 : 0x0A0E14;
+            drawGrid(graphics, source, wall(walls[i], null, 6, 6), 10 + i * (6 * block + 24), top, 2, backdrop, false);
+        }
+        top += 6 * block + 16;
+
+        label(graphics, "sands 6x6 at 2x: vanilla sand (stand-in) | bone sand | lagoon sand  ||  bone blocks (stand-in) on bone sand | on fossil stone, at 2x", 10, top);
+        top += 18;
+        String[] sands = {SAND_STAND_IN, "block/bone_sand", "block/lagoon_sand"};
+        for (int i = 0; i < sands.length; i++) {
+            drawGrid(graphics, source, wall(sands[i], null, 6, 6), 10 + i * (6 * block + 24), top, 2, 0x0A0E14, false);
+        }
+        left = 10 + 3 * (6 * block + 24) + 24;
+        drawGrid(graphics, source, ribcage("block/bone_sand"), left, top, 2, 0xE6DCC8, false);
+        drawGrid(graphics, source, ribcage("block/fossil_stone"), left + 9 * block + 24, top, 2, 0xE6DCC8, false);
+        top += 6 * block + 16;
+
+        int scene = SIZE * 4;
+        label(graphics, "withered garden (day, side view) | cascade vale: moonpetal crowns (day) | toxic pool beside lime-green swamp water (stand-in, top view) at 4x", 10, top);
+        top += 18;
+        drawGrid(graphics, source, WITHERED, 10, top, 4, 0xA8B4A0, false);
+        drawGrid(graphics, source, CASCADE, 10 + 10 * scene + 16, top, 4, 0x9FDCE6, false);
+        drawGrid(graphics, source, POOLS, 10 + 20 * scene + 32, top, 4, 0x0A0E14, false);
+        top += 7 * scene + 16;
+
+        label(graphics, "glowcap | blighted glowcap by day (over peat) and at night (glow layer full bright), 3x3 at 4x  ||  deep silhouette as tinted in-game (rgb x 0.02/0.04/0.06) over deep and lighter water, 2x and 1x", 10, top);
+        top += 18;
+        String[][] fungi = {{"block/glowcap", "block/glowcap", "block/glowcap"}, {"block/glowcap", "block/glowcap", "block/glowcap"},
+                {"block/peat", "block/peat", "block/peat"}};
+        String[][] blighted = {{"block/blighted_glowcap", "block/blighted_glowcap", "block/blighted_glowcap"},
+                {"block/blighted_glowcap", "block/blighted_glowcap", "block/blighted_glowcap"}, {"block/peat", "block/peat", "block/peat"}};
+        left = 10;
+        for (boolean night : new boolean[] {false, true}) {
+            drawGrid(graphics, source, fungi, left, top, 4, night ? 0x0A0A12 : 0x6E8C7A, night);
+            left += 3 * scene + 16;
+            drawGrid(graphics, source, blighted, left, top, 4, night ? 0x0A0A12 : 0x6E8C7A, night);
+            left += 3 * scene + 32;
+        }
+        BufferedImage silhouette = source.get(DEEP_SILHOUETTE);
+        if (silhouette != null) {
+            BufferedImage tinted = new BufferedImage(silhouette.getWidth(), silhouette.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            for (int y = 0; y < silhouette.getHeight(); y++) {
+                for (int x = 0; x < silhouette.getWidth(); x++) {
+                    int argb = silhouette.getRGB(x, y);
+                    int r = (int) (((argb >> 16) & 0xFF) * 0.02);
+                    int g = (int) (((argb >> 8) & 0xFF) * 0.04);
+                    int b = (int) ((argb & 0xFF) * 0.06);
+                    tinted.setRGB(x, y, (argb & 0xFF000000) | r << 16 | g << 8 | b);
+                }
+            }
+            drawOn(graphics, tinted, left, top, 2, 0x0B2E3A);
+            drawOn(graphics, tinted, left + 2 * SILHOUETTE_SIZE + 16, top, 2, 0x1D6A80);
+            drawOn(graphics, tinted, left + 4 * SILHOUETTE_SIZE + 32, top, 1, 0x1D6A80);
+        }
+        top += Math.max(3 * scene, 2 * SILHOUETTE_SIZE) + 16;
+
+        graphics.dispose();
+        if (top > sheet.getHeight()) {
+            throw new IllegalStateException("golf 3 sheet needs " + top + " px, has " + sheet.getHeight());
+        }
+        Files.createDirectories(out.toAbsolutePath().getParent());
+        ImageIO.write(sheet.getSubimage(0, 0, sheet.getWidth(), top), "png", out.toFile());
+        System.out.println("wrote " + out);
+    }
+
     // ---- Helpers ------------------------------------------------------------------------------------------------
 
     /** Tileable value noise in [0, 1) over a 16×16 tile: random values on a grid of {@code cellX} × {@code cellY} pixels. */
@@ -4408,6 +4892,16 @@ public final class Ring4Textures {
     private static Random seeded(String name) {
         return new Random(name.hashCode());
     }
+    /** The index of {@code rgb} in {@code palette}, or -1. */
+    private static int indexOf(int[] palette, int rgb) {
+        for (int i = 0; i < palette.length; i++) {
+            if (palette[i] == rgb) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     /** Palette colour for {@code t} in [0, 1] (clamped), dark to light: quantises everything onto the palette. */
     private static int shade(int[] palette, double t) {
         int index = (int) (Math.max(0, Math.min(0.999, t)) * palette.length);
