@@ -912,3 +912,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-21 | worldgen | Zone 4→5 (`sundered_reach`) herzien tot breukzone (dichte grond, spleten, schotsen), landbruggen vervallen; in ring 5 golf 0/1 | Patroon vast → breuk → vast → uiteenvallen |
 | 2026-10-21 | worldgen | Nether-5: `white_halls` + `hollow_cathedral`; stilte-meter zoals ontworpen | Tegen eentonigheid (les 5b), idee blijft |
 | 2026-10-21 | infra | Ring 5 in golven zoals ring 4, start na teststop 5c | Bewezen werkwijze |
+| 2026-10-21 | blocks | Tidestone krijgt gespiegelde en gedraaide modelvarianten (zoals vanilla stone) | Herhaling op grote kliffen; 71 zelf goedgekeurd |
