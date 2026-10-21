@@ -120,3 +120,92 @@ Besluit gebruiker 2026-10-21 (open vraag 1 van 71): zoals vanilla stone. `ModBlo
 gelijk gewicht); trap, plaat en muur ongewijzigd. Alleen client-rendering, geen server-impact. Tests: `runData`
 (blockstate + 1 model), `build` groen.
 - CODEBASE-delta: `ModBlockStateProvider.mirroredAndRotated(Block)`; gegenereerd `models/block/tidestone_mirrored.json`.
+
+## 66f / 71c / 66g / 77c — lagunezandsteen (2026-10-21)
+Besluit gebruiker 2026-10-21 (`02-beslissingenlog.md`): een eigen `lagoon_sandstone`-set zoals vanilla zandsteen, onder
+een plafond in `crystal_lagoon` i.p.v. vanilla `sandstone`. Vier commits, elk één categorie: **66f** `blocks`
+(`31921ed`), **71c** `textures` (`4aadbef`), **66g** `items` (`e173515`), **77c** `worldgen` (commit met dit stuk).
+
+### Gedaan
+- **66f `blocks`:** tien blokken, precies vanilla's zandsteenfamilie: `lagoon_sandstone` (+ `_stairs`, `_slab`, `_wall`),
+  `cut_lagoon_sandstone` (+ `_slab`), `chiseled_lagoon_sandstone`, `smooth_lagoon_sandstone` (+ `_stairs`, `_slab`).
+  Elk `ofFullCopy` van zijn vanilla-tweeling (sterkte, blastweerstand, geluid, pikhouweel vereist) met kaartkleur `QUARTZ`
+  (als `lagoon_sand`), helper `ModBlocks.lagoon(Block)`. In de tab direct na `lagoon_sand`, vóór `clawed_stone` (volgorde
+  zoals de scorched-set: blok, trap, plaat, muur, cut, cut-plaat, chiseled, smooth, smooth-trap, smooth-plaat).
+  Models zoals vanilla: blok/trap/plaat `cube_bottom_top`-stijl (side/bottom/top), muur op de side, cut en chiseled
+  `cube_column` met de top als einde (cut-plaat: side cut, boven/onder top), smooth overal de top. Loot: alles dropt
+  zichzelf, dubbele platen twee. Tags zoals vanilla zandsteen: `#mineable/pickaxe`, `#stairs`, `#slabs`, `#walls`; het
+  gewone blok ook `#overworld_carver_replaceables` en `#sculk_replaceable`; `c:sandstone/blocks|slabs|stairs` zoals de
+  scorched-set (item-tags via de bestaande `copy`). Lang en_us + nl_nl volgens vanilla's nl_nl-patroon ("Zandsteen",
+  "Zandstenen trap", "Gesneden zandsteen", "Gebeiteld zandsteen", "Glad zandsteen", "Gladde zandstenen plaat") met
+  "lagune-": "Lagunezandsteen", "Lagunezandstenen trap/plaat/muur", "Gesneden lagunezandsteen", "Gesneden
+  lagunezandstenen plaat", "Gebeiteld lagunezandsteen", "Glad lagunezandsteen", "Gladde lagunezandstenen trap/plaat".
+  In de 66f-commit tijdelijk kopieën van onze eigen scorched-sandstone-PNG's; 71c vervangt ze.
+- **71c `textures`** (`Ring4Textures.java`): palet `LAGOON_SANDSTONE` (de tinten van `LAGOON_SAND` plus één diepere voor
+  groeven); `lagoon_sandstone_top` (rustige korrel, ook smooth en de einden van cut/chiseled), `lagoon_sandstone` (side:
+  lichte band, donkere lijn, korte lagen, donkerder voet, zoals vanilla), `lagoon_sandstone_bottom`, `cut_lagoon_sandstone`
+  (kader + één groef), `chiseled_lagoon_sandstone` (twee gegroefde banden met een gebeitelde **lotus** op een blad,
+  symmetrisch: donkere groef, binnenin iets lichter, lichte lip eronder; masker `LOTUS_CARVING`). Aquamarijnkorrels en
+  een schelpje van het lagunezand in de steen (`lagoonInclusions`; cut 1 korrel, chiseled geen). Contactblad
+  `ring4-g3.png`: nieuwe rij (vijf 6×6-muren, een muur op lagunezand, lagunezand boven zandsteen boven een holte).
+- **66g `items`** (`ModRecipeProvider.lagoonSandstone`): de 19 recepten van vanilla's zandsteenfamilie, zelfde vormen,
+  aantallen, categorieën en unlocks: 4 `lagoon_sand` → 1 `lagoon_sandstone`; plaat (uit blok of chiseled), trap (uit
+  blok, chiseled of cut), muur (`DECORATIONS`), cut 4→4, cut-plaat, chiseled uit 2 platen; smelten → smooth (0,1 xp,
+  200 ticks); smooth-plaat en -trap; 9 steenzaagrecepten (plaat ×2, cut-plaat ×2 uit blok en uit cut, trap, muur, cut,
+  chiseled, smooth-plaat ×2, smooth-trap). Ids zoals vanilla in onze namespace (`lagoon_sandstone`,
+  `cut_lagoon_sandstone_slab_from_lagoon_sandstone_stonecutting`, …); eigen helper `stonecutting` omdat vanilla's
+  `stonecutterResultFromBase` onder een kale string-id opslaat (→ `minecraft:`).
+- **77c `worldgen`:** `ring4_surface.py` `FALLING`: `lagoon_sand` → `corruptedadventure:lagoon_sandstone` (was
+  `minecraft:sandstone`); script gedraaid → `noise_settings/overworld.json` (4 blokken in de `crystal_lagoon`-tak, verder
+  ongewijzigd). `Ring4BiomesTest` eist nu `lagoon_sandstone` als plafondwacht van lagunezand. Overige vanilla
+  zandsteen in `crystal_lagoon`: geen. De zandbanken/atollen (`ShoalFeature`) bouwen vanaf de bodem op en vervangen alleen
+  water en lucht, dus hangen niet; geen ring 4-feature gebruikt vanilla `sandstone` (alleen ring 1/2-features).
+
+### Tests
+- 66f: `runData` groen (10 blockstates, 19 block- en 10 itemmodels, 10 loot tables, tags, lang); `build` groen, nieuwe
+  test `ModBlocksTest.lagoonSandstoneMirrorsVanillaSandstone` (klasse, sterkte, blastweerstand, geluid, gereedschap per
+  tweeling) en de tabvolgorde in `ring4Golf3BlocksFollowTheDecorBlocksAndKeepTheirRock` (ModBlocksTest 47/47).
+- 71c: script 2× → md5 van alle texturen en van `ring4-g3.png` identiek; lint 0; alleen de 5 nieuwe PNG's gewijzigd;
+  `build` groen.
+- 66g: `runData` groen (19 recepten + advancements); elk recept JSON-vergeleken met vanilla's (namespace/naam
+  genormaliseerd): identiek, op één expliciete `"count": 1` in het smeltresultaat na (zelfde betekenis); `build` groen.
+- 77c: script + `runData` + `build` groen (`Ring4BiomesTest` 8/8). Geen `runServer`: een andere stroom draait een server
+  op deze machine; de wereldcheck (lagunezandsteen onder plafonds) hoort bij INT/teststop 5c.
+- Client/server-impact: alleen standaard-`Block`/`StairBlock`/`SlabBlock`/`WallBlock`, data, assets en surface rules;
+  geen client-class, geen netwerk.
+
+### CODEBASE-delta
+- `registry/ModBlocks`: `LAGOON_SANDSTONE`, `LAGOON_SANDSTONE_STAIRS`, `LAGOON_SANDSTONE_SLAB`, `LAGOON_SANDSTONE_WALL`,
+  `CUT_LAGOON_SANDSTONE`, `CUT_LAGOON_SANDSTONE_SLAB`, `CHISELED_LAGOON_SANDSTONE`, `SMOOTH_LAGOON_SANDSTONE`,
+  `SMOOTH_LAGOON_SANDSTONE_STAIRS`, `SMOOTH_LAGOON_SANDSTONE_SLAB` (sectie golf 3, na `LAGOON_SAND`); helper `lagoon(Block)`.
+- Bloktabel: rij lagoon sandstone-set | 4 (golf 3) | `Block`/`StairBlock`/`SlabBlock`/`WallBlock` | zoals vanilla
+  zandsteen; tags en lang zoals hierboven.
+- `datagen`: `lagoonSandstone()` in `ModBlockStateProvider`, `ModBlockLootProvider`, `ModBlockTagsProvider`; items in
+  `ModItemModelProvider` (muur via `wallInventory`); `Ring4BlockNames`; `ModRecipeProvider.lagoonSandstone` +
+  `stonecutting` (de recipe-provider heeft nu 20 recepten).
+- Gegenereerd: 10 blockstates, models, loot tables, 19 recepten + advancements (`building_blocks/`, `decorations/`),
+  tags `mineable/pickaxe`, `stairs`, `slabs`, `walls` (blok + item), `overworld_carver_replaceables`,
+  `sculk_replaceable`, `c:sandstone/{blocks,slabs,stairs}` (blok + item).
+- `tools/textures/Ring4Textures.java`: palet `LAGOON_SANDSTONE`; schilders `lagoonSandstoneTop/Side/Bottom`,
+  `cutLagoonSandstone`, `chiseledLagoonSandstone`, `lotusCarving` (+ `LOTUS_CARVING`), `lagoonInclusions`; contactblad
+  `SANDSTONE_WALL`/`lagoonSandstoneWall`, `SANDSTONE_CEILING`. Textures: 5 PNG's (`block/lagoon_sandstone{,_top,_bottom}`,
+  `cut_lagoon_sandstone`, `chiseled_lagoon_sandstone`).
+- `tools/worldgen/ring4_surface.py` `FALLING` (lagoon sand → lagoon sandstone); `noise_settings/overworld.json`
+  (4 blokken).
+
+### Beslissingen
+| Datum | Categorie | Beslissing | Reden |
+|---|---|---|---|
+| 2026-10-21 | blocks | Kaartkleur `QUARTZ` voor de hele set | Zoals `lagoon_sand`; vanilla zandsteen deelt ook de kaartkleur van zijn zand |
+| 2026-10-21 | blocks | Tabvolgorde zoals de scorched-set, direct na `lagoon_sand` | Huisstijl van de eerdere zandsteenset; "naast lagoon_sand" |
+| 2026-10-21 | blocks | `c:sandstone/*` zoals de scorched-set, niet `uncolored_*` | Net als `lagoon_sand` niet in `c:sands/colorless`: het is wit zandsteen, geen "gewoon" |
+| 2026-10-21 | textures | Chiseled-motief: lotus op een blad | Opdracht noemde golf of lotus; de lotus leest op 16 px als bloem, een golf als streep |
+| 2026-10-21 | items | Steenzaag-ids via eigen helper in onze namespace | Vanilla's helper zou `minecraft:`-ids maken |
+
+### Backlog
+- `[textures]` In-game beoordelen bij teststop 5c: de lagunezandsteenset als bouwblok (vooral de lotus op chiseled en
+  de herhaling van de korrels in een grote muur) en onder plafonds in `crystal_lagoon`.
+- `[worldgen]` (INT) `crystal_lagoon` onder plafonds (dunne zandbodem boven grotten/tunnels): lagunezandsteen i.p.v.
+  vanilla zandsteen; `runServer`-start met de nieuwe surface rules.
+- `[infra]` `ring4_surface.py` schrijft CRLF, de repo bewaart `overworld.json` met LF: na het script `sed -i 's/\r$//'`
+  (anders lijkt het hele bestand gewijzigd). Zo ook bij 77c gedaan.

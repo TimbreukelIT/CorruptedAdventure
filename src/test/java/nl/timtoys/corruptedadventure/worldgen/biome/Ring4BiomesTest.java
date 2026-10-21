@@ -314,11 +314,11 @@ class Ring4BiomesTest {
 
     /**
      * Every sand or gravel block is the last rule of a sequence whose rule before it puts its own solid stand-in at a
-     * ceiling (sand and lagoon sand → sandstone, gravel → stone), so it never hangs over air.
+     * ceiling (sand → sandstone, lagoon sand → lagoon sandstone, gravel → stone), so it never hangs over air.
      */
     private static void assertFallingBlocksAreGuarded(JsonObject branch, String biome) {
         Map<String, String> standIn = Map.of("minecraft:sand", "minecraft:sandstone", "minecraft:gravel", "minecraft:stone",
-                "corruptedadventure:lagoon_sand", "minecraft:sandstone");
+                "corruptedadventure:lagoon_sand", "corruptedadventure:lagoon_sandstone");
         int[] guarded = {0};
         walk(branch, rule -> {
             if (!rule.has("type") || !rule.get("type").getAsString().equals("minecraft:sequence")) {
