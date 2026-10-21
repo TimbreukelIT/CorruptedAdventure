@@ -302,3 +302,19 @@ ring 5, testgebieden en `voidscan.py`.)
 ## Backlog
 - [infra] `slots.sh`: aantal JVM-slots per machine instelbaar (`CA_MAX_SLOTS`), zodat de container op 2 kan.
 - [worldgen] Na 85: `CODEBASE.md`-valkuil "zonevorm ná de blend" en de oude `Ring4Sundered`-regels opruimen.
+
+## 7. Antwoorden gebruiker (2026-10-21)
+| Punt | Besluit |
+|---|---|
+| V1 bandlijn | A: ±15 % (~250), twee octaven (~600/~150) |
+| V2 buitenrand | A: één doorlopend verloop tot ~85 % void, buitenrand loopt door tot leeg vanaf ~10.050; oude void-invoer vervalt, 93 gaat op in 84 |
+| V3 onderkant | A: binnen volle grond tot bedrock, scheuren tot in de void zonder bedrock; buiten zwevende schotsen (onderkant ~Y −40 → Y 20–40), daaronder void |
+| V4 hoogtes | A: binnen Y 70–95 (rond 78), buiten schotsen Y 70–110, brokken Y 40–160, pinakeltop Y 120–140 |
+| V5 kastelen | A: 75 % (~9.275), ±8°, plateau Ø 80–110, void-gordel 40–80 |
+| V6 bruggen | A: 2 natuurlijke bruggen per kasteel (5–9 breed) + smalle ruggen om de ~400–600 + springbare brokstroken; geen bereikbaarheidsgarantie |
+| V7 breukzone | A: 256 breed, ~75 % dicht, droge spleten 2–8 breed en 30–60 diep, schotsen 8–30 omhoog (≤ 30°), oversteek om de ~30; zee op Y 0 vervalt |
+| V8 ombouw | A: `ZoneFracture` (één eigenaar W-terrein); landbruggen/afgrond/`sunder` weg; gespleten rots blijft op een opgeheven schots; `sundered_reach` blijft |
+| V9 vloeistof | **B: droog, behalve een diepe lavalaag in de binnenband (vanilla, onder −54)**: dam tussen binnen- en buitenband (geen lava in scheuren/void of de breukzone), lavascan in de INT |
+| V10 Nether-5 | A: `white_halls` basis, `hollow_cathedral` als zeldzame holtes (~1 per 400×400, Ø 120–180, dak ~Y 120, één reuzenzuil met witte kern) |
+| V11 nummering | A: 81–99 + lettercodes, H blijft 100 |
+| V12 biomes buitenband | A: `shattered_expanse` = veel void (breukas ≥ ~0,6); `void_scars`/`inverted_hills` op de rest via klimaatas; pinakel `void_scars`; via router-assen |
