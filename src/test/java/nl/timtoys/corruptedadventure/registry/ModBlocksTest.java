@@ -857,8 +857,8 @@ class ModBlocksTest {
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem)).toList();
         int shard = standalone.indexOf(ModItems.PURITY_CRYSTAL_SHARD.get());
-        assertEquals(List.of(ModItems.PURITY_CRYSTAL_SHARD.get(), ModItems.GLITCH_SHARD.get(), ModItems.RAW_NULLITE.get()),
-                standalone.subList(shard, shard + 3));
+        assertEquals(List.of(ModItems.PURITY_CRYSTAL_SHARD.get(), ModItems.GLITCH_SHARD.get(), ModItems.RAW_NULLITE.get(),
+                ModItems.WHITE_CORE.get()), standalone.subList(shard, standalone.size()));
 
         assertInstanceOf(FallingBlock.class, ModBlocks.BONE_SAND.get());
         assertFalse(ModBlocks.BLEACHED_NETHERRACK.get() instanceof NetherrackBlock);
@@ -870,11 +870,11 @@ class ModBlocksTest {
     }
 
     /**
-     * Ring 5 follows Nether ring 4 directly and ends the blocks (contract ring 5 §3): the nine corrupted variants and the
-     * wood set (each sign item once: the wall signs place through it), then glitch, voidstone and nullite.
+     * Ring 5 follows Nether ring 4 directly (contract ring 5 §3): the nine corrupted variants and the wood set (each sign
+     * item once: the wall signs place through it), then glitch, voidstone and nullite; Nether ring 5 ends the blocks.
      */
     @Test
-    void ring5FollowsNetherRing4InOrder() {
+    void ring5AndNetherRing5FollowNetherRing4InOrder() {
         List<Item> shown = blockItems().stream().distinct().toList();
         int lastNetherRing4 = shown.indexOf(ModBlocks.PURITY_CRYSTAL_LAMP.asItem());
         List<Item> ring5 = Stream.of(ModBlocks.CORRUPTED_GRASS_BLOCK, ModBlocks.CORRUPTED_DIRT, ModBlocks.CORRUPTED_STONE,
@@ -885,7 +885,15 @@ class ModBlocksTest {
                 ModBlocks.CORRUPTED_BUTTON, ModBlocks.CORRUPTED_SIGN, ModBlocks.CORRUPTED_HANGING_SIGN,
                 ModBlocks.CORRUPTED_LEAVES, ModBlocks.GLITCH_BLOCK, ModBlocks.VOIDSTONE, ModBlocks.NULLITE_ORE,
                 ModBlocks.VOIDSTONE_NULLITE_ORE).<Item>map(DeferredBlock::asItem).toList();
-        assertEquals(ring5, shown.subList(lastNetherRing4 + 1, shown.size()));
+        assertEquals(ring5, shown.subList(lastNetherRing4 + 1, lastNetherRing4 + 1 + ring5.size()));
+        List<Item> netherRing5 = Stream.of(ModBlocks.CHALKRACK, ModBlocks.WHITE_STONE, ModBlocks.WHITE_STONE_STAIRS,
+                ModBlocks.WHITE_STONE_SLAB, ModBlocks.WHITE_STONE_WALL, ModBlocks.POLISHED_WHITE_STONE,
+                ModBlocks.POLISHED_WHITE_STONE_STAIRS, ModBlocks.POLISHED_WHITE_STONE_SLAB, ModBlocks.POLISHED_WHITE_STONE_WALL,
+                ModBlocks.WHITE_STONE_BRICKS, ModBlocks.WHITE_STONE_BRICK_STAIRS, ModBlocks.WHITE_STONE_BRICK_SLAB,
+                ModBlocks.WHITE_STONE_BRICK_WALL, ModBlocks.WHITE_STONE_PILLAR, ModBlocks.MIRROR_STONE, ModBlocks.STILL_LIGHT,
+                ModBlocks.WHITE_CORE_ORE).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(17, netherRing5.size());
+        assertEquals(netherRing5, shown.subList(lastNetherRing4 + 1 + ring5.size(), shown.size()));
         assertInstanceOf(SignItem.class, ModBlocks.CORRUPTED_SIGN.asItem());
         assertInstanceOf(HangingSignItem.class, ModBlocks.CORRUPTED_HANGING_SIGN.asItem());
         assertEquals(16, ModBlocks.CORRUPTED_SIGN.asItem().getDefaultMaxStackSize());
@@ -982,6 +990,30 @@ class ModBlocksTest {
             assertEquals(vanilla.defaultDestroyTime() + 1.5F, ore.get().defaultDestroyTime(), ore.getId().toString());
             assertEquals(UniformInt.of(5, 9).toString(), experience(ore.get()), ore.getId().toString());
         });
+    }
+
+    /**
+     * 90 (OV2 = A): still light shines like shroomlight without sound or particles, the white core glows softly (3) and
+     * sits 1.5 above diamond ore with XP 6-10; chalkrack is netherrack-hard but no nylium host; mirror stone is not slippery.
+     */
+    @Test
+    void netherRing5BlocksBehaveAsPlanned() {
+        assertEquals(15, ModBlocks.STILL_LIGHT.get().defaultBlockState().getLightEmission());
+        assertSame(SoundType.GLASS, ModBlocks.STILL_LIGHT.get().defaultBlockState().getSoundType());
+        assertSame(Block.class, ModBlocks.STILL_LIGHT.get().getClass());
+        assertEquals(3, ModBlocks.WHITE_CORE_ORE.get().defaultBlockState().getLightEmission());
+        assertEquals(Blocks.DIAMOND_ORE.defaultDestroyTime() + 1.5F, ModBlocks.WHITE_CORE_ORE.get().defaultDestroyTime());
+        assertEquals(UniformInt.of(6, 10).toString(), experience(ModBlocks.WHITE_CORE_ORE.get()));
+        assertFalse(ModBlocks.CHALKRACK.get() instanceof NetherrackBlock);
+        assertEquals(Blocks.NETHERRACK.defaultDestroyTime(), ModBlocks.CHALKRACK.get().defaultDestroyTime());
+        assertEquals(Blocks.STONE.getFriction(), ModBlocks.MIRROR_STONE.get().getFriction());
+        assertInstanceOf(RotatedPillarBlock.class, ModBlocks.WHITE_STONE_PILLAR.get());
+        for (DeferredBlock<?> block : List.of(ModBlocks.CHALKRACK, ModBlocks.WHITE_STONE, ModBlocks.POLISHED_WHITE_STONE,
+                ModBlocks.WHITE_STONE_BRICKS, ModBlocks.WHITE_STONE_PILLAR, ModBlocks.MIRROR_STONE)) {
+            assertEquals(0, block.get().defaultBlockState().getLightEmission(), block.getId().toString());
+            assertFalse(block.get().defaultBlockState().isRandomlyTicking(), block.getId().toString());
+        }
+        assertFalse(ModBlocks.STILL_LIGHT.get().defaultBlockState().isRandomlyTicking());
     }
 
     private static void assertStripsTo(Block log, Block stripped) {

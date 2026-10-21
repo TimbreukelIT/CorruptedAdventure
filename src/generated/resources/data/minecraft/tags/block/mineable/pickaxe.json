@@ -151,6 +151,22 @@
     "corruptedadventure:corrupted_cobblestone",
     "corruptedadventure:glitch_block",
     "corruptedadventure:voidstone",
-    "#c:ores/nullite"
+    "#c:ores/nullite",
+    "corruptedadventure:chalkrack",
+    "corruptedadventure:white_stone",
+    "corruptedadventure:white_stone_stairs",
+    "corruptedadventure:white_stone_slab",
+    "corruptedadventure:white_stone_wall",
+    "corruptedadventure:polished_white_stone",
+    "corruptedadventure:polished_white_stone_stairs",
+    "corruptedadventure:polished_white_stone_slab",
+    "corruptedadventure:polished_white_stone_wall",
+    "corruptedadventure:white_stone_bricks",
+    "corruptedadventure:white_stone_brick_stairs",
+    "corruptedadventure:white_stone_brick_slab",
+    "corruptedadventure:white_stone_brick_wall",
+    "corruptedadventure:white_stone_pillar",
+    "corruptedadventure:mirror_stone",
+    "#c:ores/white_core"
   ]
 }

@@ -132,6 +132,22 @@ final class ModBlockStateProvider extends BlockStateProvider {
         ResourceLocation corruptedStone = blockTexture(ModBlocks.CORRUPTED_STONE.get());
         oreWithOverlay(ModBlocks.NULLITE_ORE.get(), corruptedStone, CubeTextures.all(corruptedStone), nullite, true);
         oreWithOverlay(ModBlocks.VOIDSTONE_NULLITE_ORE.get(), voidstone, CubeTextures.all(voidstone), nullite, true);
+
+        // 90 (Nether ring 5): the white stone set like the fossil stone set, the pillar like quartz's, the white core's
+        // glow as an emissive overlay on white stone.
+        simpleBlock(ModBlocks.CHALKRACK.get());
+        stoneFamily(ModBlocks.WHITE_STONE.get(), ModBlocks.WHITE_STONE_STAIRS.get(), ModBlocks.WHITE_STONE_SLAB.get(),
+                ModBlocks.WHITE_STONE_WALL.get());
+        stoneFamily(ModBlocks.POLISHED_WHITE_STONE.get(), ModBlocks.POLISHED_WHITE_STONE_STAIRS.get(),
+                ModBlocks.POLISHED_WHITE_STONE_SLAB.get(), ModBlocks.POLISHED_WHITE_STONE_WALL.get());
+        stoneFamily(ModBlocks.WHITE_STONE_BRICKS.get(), ModBlocks.WHITE_STONE_BRICK_STAIRS.get(),
+                ModBlocks.WHITE_STONE_BRICK_SLAB.get(), ModBlocks.WHITE_STONE_BRICK_WALL.get());
+        logBlock(ModBlocks.WHITE_STONE_PILLAR.get());
+        simpleBlock(ModBlocks.MIRROR_STONE.get());
+        simpleBlock(ModBlocks.STILL_LIGHT.get());
+        ResourceLocation whiteStone = blockTexture(ModBlocks.WHITE_STONE.get());
+        oreWithOverlay(ModBlocks.WHITE_CORE_ORE.get(), whiteStone, CubeTextures.all(whiteStone),
+                CubeTextures.all(modLoc("block/white_core_ore_overlay")), true);
     }
 
     /** Nether ring 4: bone sand, bleached netherrack, the fossil stone set (like tidestone) and the purity crystal. */

@@ -131,6 +131,41 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_NULLITE);
         tag(ModTags.Blocks.ORES_IN_GROUND_CORRUPTED_STONE).add(ModBlocks.NULLITE_ORE.get());
         tag(ModTags.Blocks.ORES_IN_GROUND_VOIDSTONE).add(ModBlocks.VOIDSTONE_NULLITE_ORE.get());
+
+        netherRing5();
+    }
+
+    /**
+     * Nether ring 5 (90). Chalkrack is Nether ground like netherrack; white stone, like fossil stone (68), stays out of
+     * {@code #base_stone_nether} (no vanilla Nether ore or debris blobs in the white terrain) but the carvers cut through
+     * it. Both are the hosts of the Nether ring 5 ores. Still light is mined like shroomlight; the white core like nullite.
+     */
+    private void netherRing5() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.CHALKRACK.get(), ModBlocks.WHITE_STONE.get(),
+                ModBlocks.WHITE_STONE_STAIRS.get(), ModBlocks.WHITE_STONE_SLAB.get(), ModBlocks.WHITE_STONE_WALL.get(),
+                ModBlocks.POLISHED_WHITE_STONE.get(), ModBlocks.POLISHED_WHITE_STONE_STAIRS.get(),
+                ModBlocks.POLISHED_WHITE_STONE_SLAB.get(), ModBlocks.POLISHED_WHITE_STONE_WALL.get(),
+                ModBlocks.WHITE_STONE_BRICKS.get(), ModBlocks.WHITE_STONE_BRICK_STAIRS.get(), ModBlocks.WHITE_STONE_BRICK_SLAB.get(),
+                ModBlocks.WHITE_STONE_BRICK_WALL.get(), ModBlocks.WHITE_STONE_PILLAR.get(), ModBlocks.MIRROR_STONE.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.WHITE_STONE_STAIRS.get(), ModBlocks.POLISHED_WHITE_STONE_STAIRS.get(),
+                ModBlocks.WHITE_STONE_BRICK_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.WHITE_STONE_SLAB.get(), ModBlocks.POLISHED_WHITE_STONE_SLAB.get(),
+                ModBlocks.WHITE_STONE_BRICK_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.WHITE_STONE_WALL.get(), ModBlocks.POLISHED_WHITE_STONE_WALL.get(),
+                ModBlocks.WHITE_STONE_BRICK_WALL.get());
+        tag(BlockTags.BASE_STONE_NETHER).add(ModBlocks.CHALKRACK.get());
+        tag(Tags.Blocks.NETHERRACKS).add(ModBlocks.CHALKRACK.get());
+        tag(BlockTags.INFINIBURN_OVERWORLD).add(ModBlocks.CHALKRACK.get());
+        tag(BlockTags.NETHER_CARVER_REPLACEABLES).add(ModBlocks.WHITE_STONE.get());
+        tag(ModTags.Blocks.NETHER_RING_5_STONES).add(ModBlocks.WHITE_STONE.get(), ModBlocks.CHALKRACK.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.STILL_LIGHT.get());
+
+        tag(ModTags.Blocks.ORES_WHITE_CORE).add(ModBlocks.WHITE_CORE_ORE.get());
+        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_WHITE_CORE);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_WHITE_CORE);
+        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_WHITE_CORE);
+        tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_WHITE_CORE);
+        tag(ModTags.Blocks.ORES_IN_GROUND_WHITE_STONE).add(ModBlocks.WHITE_CORE_ORE.get());
     }
 
     /**

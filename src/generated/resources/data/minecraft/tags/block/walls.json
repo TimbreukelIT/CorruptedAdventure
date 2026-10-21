@@ -18,6 +18,9 @@
     "corruptedadventure:lagoon_sandstone_wall",
     "corruptedadventure:fossil_stone_wall",
     "corruptedadventure:polished_fossil_stone_wall",
-    "corruptedadventure:fossil_stone_brick_wall"
+    "corruptedadventure:fossil_stone_brick_wall",
+    "corruptedadventure:white_stone_wall",
+    "corruptedadventure:polished_white_stone_wall",
+    "corruptedadventure:white_stone_brick_wall"
   ]
 }

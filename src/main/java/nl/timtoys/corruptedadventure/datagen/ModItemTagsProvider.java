@@ -145,6 +145,12 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         copy(ModTags.Blocks.ORES_IN_GROUND_VOIDSTONE, ModTags.Items.ORES_IN_GROUND_VOIDSTONE);
         tag(ModTags.Items.RAW_MATERIALS_NULLITE).add(ModItems.RAW_NULLITE.get());
         tag(Tags.Items.RAW_MATERIALS).addTag(ModTags.Items.RAW_MATERIALS_NULLITE);
+
+        // 90: the white core like jade; the stairs, slabs and walls come through the general copies above.
+        copy(ModTags.Blocks.ORES_WHITE_CORE, ModTags.Items.ORES_WHITE_CORE);
+        copy(ModTags.Blocks.ORES_IN_GROUND_WHITE_STONE, ModTags.Items.ORES_IN_GROUND_WHITE_STONE);
+        tag(ModTags.Items.GEMS_WHITE_CORE).add(ModItems.WHITE_CORE.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_WHITE_CORE);
     }
 
     /** Ring 4: the burnable wood sets reach #logs_that_burn through the block tag copy above. */

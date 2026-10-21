@@ -188,6 +188,21 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         for (Block ore : List.of(ModBlocks.NULLITE_ORE.get(), ModBlocks.VOIDSTONE_NULLITE_ORE.get())) {
             add(ore, block -> createOreDrop(block, ModItems.RAW_NULLITE.get()));
         }
+
+        // 90: everything drops itself except the slabs (two from a double slab) and the white core ore (one white core,
+        // Fortune adds; Silk Touch the ore).
+        for (Block block : List.of(ModBlocks.CHALKRACK.get(), ModBlocks.WHITE_STONE.get(), ModBlocks.WHITE_STONE_STAIRS.get(),
+                ModBlocks.WHITE_STONE_WALL.get(), ModBlocks.POLISHED_WHITE_STONE.get(), ModBlocks.POLISHED_WHITE_STONE_STAIRS.get(),
+                ModBlocks.POLISHED_WHITE_STONE_WALL.get(), ModBlocks.WHITE_STONE_BRICKS.get(), ModBlocks.WHITE_STONE_BRICK_STAIRS.get(),
+                ModBlocks.WHITE_STONE_BRICK_WALL.get(), ModBlocks.WHITE_STONE_PILLAR.get(), ModBlocks.MIRROR_STONE.get(),
+                ModBlocks.STILL_LIGHT.get())) {
+            dropSelf(block);
+        }
+        for (Block slab : List.of(ModBlocks.WHITE_STONE_SLAB.get(), ModBlocks.POLISHED_WHITE_STONE_SLAB.get(),
+                ModBlocks.WHITE_STONE_BRICK_SLAB.get())) {
+            add(slab, this::createSlabItemTable);
+        }
+        add(ModBlocks.WHITE_CORE_ORE.get(), block -> createOreDrop(block, ModItems.WHITE_CORE.get()));
     }
 
     private void ring4() {

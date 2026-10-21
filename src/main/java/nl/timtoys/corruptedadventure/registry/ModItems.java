@@ -72,6 +72,10 @@ public final class ModItems {
     /** Drop of the nullite ores (ring 5's metal). */
     public static final DeferredItem<Item> RAW_NULLITE = ITEMS.registerSimpleItem("raw_nullite");
 
+    // ---- Nether ring 5 ----
+    /** Drop of the white core ore (one per ore, Fortune adds). Placeholder without behaviour in phase 1. */
+    public static final DeferredItem<Item> WHITE_CORE = ITEMS.registerSimpleItem("white_core");
+
     private ModItems() {
     }
 

@@ -22,6 +22,9 @@
     "corruptedadventure:smooth_lagoon_sandstone_slab",
     "corruptedadventure:fossil_stone_slab",
     "corruptedadventure:polished_fossil_stone_slab",
-    "corruptedadventure:fossil_stone_brick_slab"
+    "corruptedadventure:fossil_stone_brick_slab",
+    "corruptedadventure:white_stone_slab",
+    "corruptedadventure:polished_white_stone_slab",
+    "corruptedadventure:white_stone_brick_slab"
   ]
 }

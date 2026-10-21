@@ -97,6 +97,8 @@ public final class ModTags {
         public static final TagKey<Block> ORES_NULLITE = TagKey.create(Registries.BLOCK, common("ores/nullite"));
         public static final TagKey<Block> ORES_IN_GROUND_CORRUPTED_STONE = TagKey.create(Registries.BLOCK, common("ores_in_ground/corrupted_stone"));
         public static final TagKey<Block> ORES_IN_GROUND_VOIDSTONE = TagKey.create(Registries.BLOCK, common("ores_in_ground/voidstone"));
+        public static final TagKey<Block> ORES_WHITE_CORE = TagKey.create(Registries.BLOCK, common("ores/white_core"));
+        public static final TagKey<Block> ORES_IN_GROUND_WHITE_STONE = TagKey.create(Registries.BLOCK, common("ores_in_ground/white_stone"));
 
         private Blocks() {
         }
@@ -161,6 +163,10 @@ public final class ModTags {
         public static final TagKey<Item> ORES_IN_GROUND_VOIDSTONE = TagKey.create(Registries.ITEM, common("ores_in_ground/voidstone"));
         /** Convention tag {@code c:raw_materials/nullite}; part of {@code c:raw_materials}. */
         public static final TagKey<Item> RAW_MATERIALS_NULLITE = TagKey.create(Registries.ITEM, common("raw_materials/nullite"));
+        public static final TagKey<Item> ORES_WHITE_CORE = TagKey.create(Registries.ITEM, common("ores/white_core"));
+        public static final TagKey<Item> ORES_IN_GROUND_WHITE_STONE = TagKey.create(Registries.ITEM, common("ores_in_ground/white_stone"));
+        /** Convention tag {@code c:gems/white_core}; part of {@code c:gems}. */
+        public static final TagKey<Item> GEMS_WHITE_CORE = TagKey.create(Registries.ITEM, common("gems/white_core"));
 
         private Items() {
         }

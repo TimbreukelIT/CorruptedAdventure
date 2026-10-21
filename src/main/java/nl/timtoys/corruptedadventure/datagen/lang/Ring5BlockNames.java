@@ -40,6 +40,24 @@ public final class Ring5BlockNames {
         lang.addBlock(ModBlocks.VOIDSTONE_NULLITE_ORE, "Voidstone Nullite Ore");
         lang.addItem(ModItems.GLITCH_SHARD, "Glitch Shard");
         lang.addItem(ModItems.RAW_NULLITE, "Raw Nullite");
+        lang.addBlock(ModBlocks.CHALKRACK, "Chalkrack");
+        lang.addBlock(ModBlocks.WHITE_STONE, "White Stone");
+        lang.addBlock(ModBlocks.WHITE_STONE_STAIRS, "White Stone Stairs");
+        lang.addBlock(ModBlocks.WHITE_STONE_SLAB, "White Stone Slab");
+        lang.addBlock(ModBlocks.WHITE_STONE_WALL, "White Stone Wall");
+        lang.addBlock(ModBlocks.POLISHED_WHITE_STONE, "Polished White Stone");
+        lang.addBlock(ModBlocks.POLISHED_WHITE_STONE_STAIRS, "Polished White Stone Stairs");
+        lang.addBlock(ModBlocks.POLISHED_WHITE_STONE_SLAB, "Polished White Stone Slab");
+        lang.addBlock(ModBlocks.POLISHED_WHITE_STONE_WALL, "Polished White Stone Wall");
+        lang.addBlock(ModBlocks.WHITE_STONE_BRICKS, "White Stone Bricks");
+        lang.addBlock(ModBlocks.WHITE_STONE_BRICK_STAIRS, "White Stone Brick Stairs");
+        lang.addBlock(ModBlocks.WHITE_STONE_BRICK_SLAB, "White Stone Brick Slab");
+        lang.addBlock(ModBlocks.WHITE_STONE_BRICK_WALL, "White Stone Brick Wall");
+        lang.addBlock(ModBlocks.WHITE_STONE_PILLAR, "White Stone Pillar");
+        lang.addBlock(ModBlocks.MIRROR_STONE, "Mirror Stone");
+        lang.addBlock(ModBlocks.STILL_LIGHT, "Still Light");
+        lang.addBlock(ModBlocks.WHITE_CORE_ORE, "White Core Ore");
+        lang.addItem(ModItems.WHITE_CORE, "White Core");
     }
 
     public static void addDutch(LangOutput lang) {
@@ -70,5 +88,23 @@ public final class Ring5BlockNames {
         lang.addBlock(ModBlocks.VOIDSTONE_NULLITE_ORE, "Voidsteen-nullieterts");
         lang.addItem(ModItems.GLITCH_SHARD, "Glitchscherf");
         lang.addItem(ModItems.RAW_NULLITE, "Ruw nulliet");
+        lang.addBlock(ModBlocks.CHALKRACK, "Kalkrack");
+        lang.addBlock(ModBlocks.WHITE_STONE, "Witsteen");
+        lang.addBlock(ModBlocks.WHITE_STONE_STAIRS, "Witsteentrap");
+        lang.addBlock(ModBlocks.WHITE_STONE_SLAB, "Witsteenplaat");
+        lang.addBlock(ModBlocks.WHITE_STONE_WALL, "Witsteenmuur");
+        lang.addBlock(ModBlocks.POLISHED_WHITE_STONE, "Gepolijste witsteen");
+        lang.addBlock(ModBlocks.POLISHED_WHITE_STONE_STAIRS, "Gepolijste witsteentrap");
+        lang.addBlock(ModBlocks.POLISHED_WHITE_STONE_SLAB, "Gepolijste witsteenplaat");
+        lang.addBlock(ModBlocks.POLISHED_WHITE_STONE_WALL, "Gepolijste witsteenmuur");
+        lang.addBlock(ModBlocks.WHITE_STONE_BRICKS, "Witstenen blokstenen");
+        lang.addBlock(ModBlocks.WHITE_STONE_BRICK_STAIRS, "Witstenen bloksteentrap");
+        lang.addBlock(ModBlocks.WHITE_STONE_BRICK_SLAB, "Witstenen bloksteenplaat");
+        lang.addBlock(ModBlocks.WHITE_STONE_BRICK_WALL, "Witstenen bloksteenmuur");
+        lang.addBlock(ModBlocks.WHITE_STONE_PILLAR, "Witsteenzuil");
+        lang.addBlock(ModBlocks.MIRROR_STONE, "Spiegelsteen");
+        lang.addBlock(ModBlocks.STILL_LIGHT, "Stil licht");
+        lang.addBlock(ModBlocks.WHITE_CORE_ORE, "Witte-kernerts");
+        lang.addItem(ModItems.WHITE_CORE, "Witte kern");
     }
 }

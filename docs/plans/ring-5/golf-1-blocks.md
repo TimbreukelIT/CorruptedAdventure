@@ -171,7 +171,8 @@ rondom; deuren `_top`/`_bottom` + `item/<naam>_door`.
 - Voortgang: 2026-10-21 21:08 88 klaar: B groen (1154 tests, 0 fouten), D groen (alleen ring 5-output), S-smoke `r5-b88` schoon (0 ERROR; bord, wandbord, hangend bord en hangend wandbord via RCON: block entity `minecraft:sign`/`minecraft:hanging_sign`, tekst blijft staan, drops = `corrupted_sign`/`corrupted_hanging_sign`).
 - Voortgang: 2026-10-21 21:25 88r klaar: D = 13 recepten + 13 advancements (gelijk aan eik), B groen (1157 tests). Geen S-smoke (alleen data, plan §8).
 - Voortgang: 2026-10-21 21:26 OV2 beantwoord (A); 89 en 90 gestart.
-- Voortgang: 2026-10-21 21:50 89 klaar: D groen (alleen ring 5-output), B groen (1162 tests). S-smoke volgt samen met 90.
+- Voortgang: 2026-10-21 21:40 89 klaar: D groen (alleen ring 5-output), B groen (1162 tests). S-smoke volgt samen met 90.
+- Voortgang: 2026-10-21 21:48 90 klaar: D groen, B groen (1164 tests); S-smoke `r5-b90` (89 + 90) schoon (0 ERROR): alle nieuwe blokken via `setblock`, `loot … mine` geeft glitchscherf / ruw nulliet / witte kern, voidsteen in `#void_sources`, witte-kernerts in `#needs_diamond_tool`, bord nog steeds `minecraft:sign`.
 
 ## CODEBASE-delta
 **88 (blocks):**
@@ -195,6 +196,12 @@ rondom; deuren `_top`/`_bottom` + `item/<naam>_door`.
 - Tags: `void_sources` = glitch_block + voidstone; `ring_5_stones` += voidstone; voidstone in `#base_stone_overworld`, `#overworld_carver_replaceables`; nieuwe keys `ModTags.Blocks/Items.ORES_NULLITE` (`c:ores/nullite`), `ORES_IN_GROUND_CORRUPTED_STONE`, `ORES_IN_GROUND_VOIDSTONE`, `Items.RAW_MATERIALS_NULLITE`; nulliet in `c:ores`, `c:ore_rates/singular`, `#mineable/pickaxe`, `#needs_diamond_tool`.
 - Tests: `ModBlocksTest.glitchVoidAndNulliteHaveTheirStrengthXpAndNoLight`, volgorde-test uitgebreid; nieuw `Ring5BlockDataTest` (void_sources, ring_5_stones, nulliet-tags, glitch-loot).
 
+**90 (blocks):**
+- Blocks (Nether-ring 5, na `voidstone_nullite_ore`, eindigen de blokken): `chalkrack` (netherrack-kopie, `QUARTZ`, gewone `Block`), `white_stone` + `_stairs`/`_slab`/`_wall`, `polished_white_stone` + idem, `white_stone_bricks` + `white_stone_brick_stairs`/`_slab`/`_wall` (patroon fossielsteen: steen / gepolijst andesiet / steenbakstenen; muren `forceSolidOn`), `white_stone_pillar` (`RotatedPillarBlock`, steen-hardheid), `mirror_stone` (steen, normale wrijving), `still_light` (shroomlight-kopie, licht 15, glasgeluid, geen `animateTick`), `white_core_ore` (diamanterts +1,5, XP 6–10, licht 3 + emissive overlay op `white_stone`). Kaartkleur `SNOW` (witsteen-familie, spiegelsteen, stil licht, erts), `QUARTZ` (kalkrack). 17 blokken.
+- Item `white_core` (na `raw_nullite`, laatste los item).
+- Tags: `nether_ring_5_stones` = white_stone + chalkrack; chalkrack in `#base_stone_nether`, `c:netherracks`, `#infiniburn_overworld`; white_stone **niet** in `#base_stone_nether`, wel in `#nether_carver_replaceables`; `#stairs`/`#slabs`/`#walls`; `still_light` in `#mineable/hoe` (zoals shroomlight); nieuwe keys `ORES_WHITE_CORE` (`c:ores/white_core`), `ORES_IN_GROUND_WHITE_STONE`, `Items.GEMS_WHITE_CORE` (in `c:gems`); witte kern in `c:ores`, `c:ore_rates/singular`, `#needs_diamond_tool`.
+- Tests: `ModBlocksTest.netherRing5BlocksBehaveAsPlanned`, volgorde-test (`ring5AndNetherRing5FollowNetherRing4InOrder`, 17 Nether-5-blokken eindigen de lijst; losse items eindigen op `white_core`); `Ring5BlockDataTest` (+1: Nether-5-stenen en base_stone).
+
 ## Beslissingen
 - **Bordjes-route (88): (a)** NeoForge 21.1.252 heeft `BlockEntityTypeAddBlocksEvent` → onze bordblokken in de vanilla sign/hanging-sign-types; vanilla renderers (`SignRenderer`/`HangingSignRenderer`, al voor die types geregistreerd) en bewerkschermen doen de rest. Geen `registry/ModBlockEntityTypes`. Client: alleen `Sheets.addWoodType` (defensief tegen class-load-volgorde). Textures volgens §5 (`entity/signs/corrupted`, `entity/signs/hanging/corrupted`, `gui/hanging_signs/corrupted`).
 - **Kaartkleuren (88):** `COLOR_GRAY` voor gras/aarde/steen/keien/schors/bladeren, `COLOR_LIGHT_GRAY` voor zand, planken-familie, gestript hout en bordjes; zandstof `0x8C8792`.
@@ -205,6 +212,8 @@ rondom; deuren `_top`/`_bottom` + `item/<naam>_door`.
 - **Erts-sjablonen (89):** nulliet in `corrupted_stone` = diamanterts, in voidsteen = deepslate-diamanterts (hardheid 4,5 resp. 6,0); het voidsteen-erts toont gewone voidsteen onder de kristallen (geen sterrenlaag: één overlay per model).
 - **Voidsteen-deeltje (89):** 1 op 10 display-ticks, alleen uit een zijde zonder stevige buur (begraven voidsteen is stil).
 - **Namen (89):** Glitchblok, Glitchscherf, Voidsteen, Nullieterts, Voidsteen-nullieterts, Ruw nulliet.
+- **Nether-5 (90):** sjablonen als fossielsteen (68); `still_light` = shroomlight (hardheid 1,0, hak) met glasgeluid en dropt zichzelf; de pilaar als `logBlock` (`white_stone_pillar` + `_top`); witte-kernerts op `white_stone` (diamanterts-sjabloon, want witsteen heeft steen-hardheid).
+- **Namen (90):** Kalkrack, Witsteen (+trap/plaat/muur), Gepolijste witsteen (+…), Witstenen blokstenen (+bloksteentrap/-plaat/-muur, zoals getijdesteen), Witsteenzuil, Spiegelsteen, Stil licht, Witte-kernerts, Witte kern.
 - **Bladeren-loot (88):** vanilla's mangrove-tabel (geen sapling): schaar/Silk Touch zichzelf, anders 1–2 stokken met de eikkansen.
 
 ## Backlog

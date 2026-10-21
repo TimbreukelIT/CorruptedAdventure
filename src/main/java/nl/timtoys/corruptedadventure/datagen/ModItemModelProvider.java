@@ -443,6 +443,25 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.VOIDSTONE_NULLITE_ORE);
         basicItem(ModItems.GLITCH_SHARD.get());
         basicItem(ModItems.RAW_NULLITE.get());
+        // 90.
+        blockItem(ModBlocks.CHALKRACK);
+        blockItem(ModBlocks.WHITE_STONE);
+        blockItem(ModBlocks.WHITE_STONE_STAIRS);
+        blockItem(ModBlocks.WHITE_STONE_SLAB);
+        wallInventory(ModBlocks.WHITE_STONE_WALL.getId().getPath(), modLoc("block/white_stone"));
+        blockItem(ModBlocks.POLISHED_WHITE_STONE);
+        blockItem(ModBlocks.POLISHED_WHITE_STONE_STAIRS);
+        blockItem(ModBlocks.POLISHED_WHITE_STONE_SLAB);
+        wallInventory(ModBlocks.POLISHED_WHITE_STONE_WALL.getId().getPath(), modLoc("block/polished_white_stone"));
+        blockItem(ModBlocks.WHITE_STONE_BRICKS);
+        blockItem(ModBlocks.WHITE_STONE_BRICK_STAIRS);
+        blockItem(ModBlocks.WHITE_STONE_BRICK_SLAB);
+        wallInventory(ModBlocks.WHITE_STONE_BRICK_WALL.getId().getPath(), modLoc("block/white_stone_bricks"));
+        blockItem(ModBlocks.WHITE_STONE_PILLAR);
+        blockItem(ModBlocks.MIRROR_STONE);
+        blockItem(ModBlocks.STILL_LIGHT);
+        blockItem(ModBlocks.WHITE_CORE_ORE);
+        basicItem(ModItems.WHITE_CORE.get());
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

@@ -1172,6 +1172,54 @@ public final class ModBlocks {
             () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DEEPSLATE_DIAMOND_ORE, RING_5_ORE_EXTRA_HARDNESS)
                     .mapColor(MapColor.COLOR_BLACK)));
 
+    // ---- Nether ring 5 ----
+    // The white, silent Nether ring (contract ring 5 §3, package 90): chalkrack, the white stone set (like the fossil
+    // stone set), mirror stone, still light and the white core.
+    /** White netherrack: netherrack's strength and sound; a plain {@code Block}, so bone meal spreads no nylium onto it. */
+    public static final DeferredBlock<Block> CHALKRACK = register("chalkrack",
+            () -> new Block(recolored(Blocks.NETHERRACK, MapColor.QUARTZ)));
+    private static final MapColor WHITE_STONE_COLOR = MapColor.SNOW;
+    public static final DeferredBlock<Block> WHITE_STONE = register("white_stone", () -> new Block(recolored(Blocks.STONE, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<StairBlock> WHITE_STONE_STAIRS = register("white_stone_stairs",
+            () -> new StairBlock(WHITE_STONE.get().defaultBlockState(), recolored(Blocks.STONE_STAIRS, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<SlabBlock> WHITE_STONE_SLAB = register("white_stone_slab",
+            () -> new SlabBlock(recolored(Blocks.STONE_SLAB, WHITE_STONE_COLOR)));
+    /** Solid for support like vanilla walls ({@code forceSolidOn}); vanilla has no plain stone wall to copy. */
+    public static final DeferredBlock<WallBlock> WHITE_STONE_WALL = register("white_stone_wall",
+            () -> new WallBlock(recolored(Blocks.STONE, WHITE_STONE_COLOR).forceSolidOn()));
+    public static final DeferredBlock<Block> POLISHED_WHITE_STONE = register("polished_white_stone",
+            () -> new Block(recolored(Blocks.POLISHED_ANDESITE, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<StairBlock> POLISHED_WHITE_STONE_STAIRS = register("polished_white_stone_stairs",
+            () -> new StairBlock(POLISHED_WHITE_STONE.get().defaultBlockState(), recolored(Blocks.POLISHED_ANDESITE_STAIRS, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<SlabBlock> POLISHED_WHITE_STONE_SLAB = register("polished_white_stone_slab",
+            () -> new SlabBlock(recolored(Blocks.POLISHED_ANDESITE_SLAB, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<WallBlock> POLISHED_WHITE_STONE_WALL = register("polished_white_stone_wall",
+            () -> new WallBlock(recolored(Blocks.POLISHED_ANDESITE, WHITE_STONE_COLOR).forceSolidOn()));
+    public static final DeferredBlock<Block> WHITE_STONE_BRICKS = register("white_stone_bricks",
+            () -> new Block(recolored(Blocks.STONE_BRICKS, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<StairBlock> WHITE_STONE_BRICK_STAIRS = register("white_stone_brick_stairs",
+            () -> new StairBlock(WHITE_STONE_BRICKS.get().defaultBlockState(), recolored(Blocks.STONE_BRICK_STAIRS, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<SlabBlock> WHITE_STONE_BRICK_SLAB = register("white_stone_brick_slab",
+            () -> new SlabBlock(recolored(Blocks.STONE_BRICK_SLAB, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<WallBlock> WHITE_STONE_BRICK_WALL = register("white_stone_brick_wall",
+            () -> new WallBlock(recolored(Blocks.STONE_BRICK_WALL, WHITE_STONE_COLOR)));
+    /** A pillar like quartz's, with stone's strength; no stairs, slab or wall. */
+    public static final DeferredBlock<RotatedPillarBlock> WHITE_STONE_PILLAR = register("white_stone_pillar",
+            () -> new RotatedPillarBlock(recolored(Blocks.STONE, WHITE_STONE_COLOR)));
+    /** Smooth and glossy (the gloss is in the texture), stone's strength and normal friction: walkable, not ice. */
+    public static final DeferredBlock<Block> MIRROR_STONE = register("mirror_stone",
+            () -> new Block(recolored(Blocks.STONE, WHITE_STONE_COLOR)));
+    /** A white light source without sound or particles: shroomlight's light (15) and strength, glass's sound. */
+    public static final DeferredBlock<Block> STILL_LIGHT = register("still_light",
+            () -> new Block(recolored(Blocks.SHROOMLIGHT, WHITE_STONE_COLOR).sound(SoundType.GLASS)));
+    /**
+     * The white core in white stone (OV2 = A): diamond ore +1.5, a diamond pickaxe, XP 6-10, a soft glow (light 3, and
+     * an emissive overlay); drops {@link ModItems#WHITE_CORE}.
+     */
+    public static final DeferredBlock<DropExperienceBlock> WHITE_CORE_ORE = register("white_core_ore",
+            () -> new DropExperienceBlock(UniformInt.of(6, 10), oreIn(Blocks.DIAMOND_ORE, RING_5_ORE_EXTRA_HARDNESS)
+                    .mapColor(WHITE_STONE_COLOR).lightLevel(state -> 3)));
+
     private ModBlocks() {
     }
 
