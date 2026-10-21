@@ -1052,6 +1052,18 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 - **Sfeer (80):** alle ring 4-looks in `Ring4Atmosphere`; mythisch een waterloop, bloesem in `cascade_vale`/`sky_gardens`, lage mist in de fjorden, bellen en dwaallichten in de natte biomes; de bedorven band stiller; `sundered_reach` draagt de bedorven look, de grijsfade tot 0,9 komt client-side; vogels/kikkers overdag en nachtkoor/nachtgloed 's nachts via een client-controller; geritsel in het riet; Nether-4 met pulserende fog (8 s), ver zicht, droge wind en kristalgezoem. Het gekraak (storm, zone 4→5) zit in de loops. *Volumes, dichtheden, fade en puls: 5b.*
 - **Nether-4-aankleding (78, N1–N4 = A):** echte blokken in de surface (zuilkern ook zuiverkristal); geodes bekleed met zuiverkristal → calciet → gebleekt netherrack (clusters ~25 %, enkele lampen, vloer blijft bottenzand); zuilen met clusters op de zijkanten en onder de kop (~18 %, niet op richels/bruggen) en lampen (~1 op 150); losse botten en fossielsteen-keien in de duinen. *Kansen: 5b.*
 
+#### Golf 3 (2026-10-21)
+Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). Golf 3 (`docs/plans/ring-4/golf-3.md`):
+- **Worldgen:** de review-punten van de eilanden (geen aankleding op brokken, grondvrijte over de hele brok, geen
+  kruisende rotsbogen, hapering meten) en de resterende volgorde-afhankelijkheden (erts in de eilandonderkant, riet/ranken/
+  reuzenleliebladen, reuzenmangrove `glowroot_swamp`, luchtblok in een kei).
+- **Textures (71):** gerichte polijstronde op de bekende punten, geen volledige ronde.
+- **Nieuwe blokken:** `lagoon_sand` (wit-crème met aquamarijn-/schelpspikkels, valt als zand, `#sand`, smelt tot glas;
+  zandbanken en oevers van `crystal_lagoon`) en `clawed_stone`/`clawed_deepslate` (klauwsporen in het tunnelgesteente;
+  drop cobblestone/cobbled deepslate, silk touch het blok; de tunnelbekleding kiest de variant van het gesteente).
+  `withered_moss` niet.
+- **Zo laten:** `toxic_pool` in de veenkommen, de riet-oevercheck, een eigen schuim-particle.
+
 ### Ring 5 — Corrupted ring (8.000 – 9.700; was 7.800 – 9.500, daarvóór 7.500 – 9.500)
 
 *Sparring ring 4 (2026-10-10):* ring 5 schuift op naar 8.000 – 9.700 met de void-rand op 10.200. Ring 5 begint achter `sundered_reach` (zone 4→5), waar de wereld al uit elkaar valt; de rest van deze sectie is nog het ontwerp van sessie 2.

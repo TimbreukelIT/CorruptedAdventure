@@ -895,3 +895,8 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-20 | worldgen | Reliëf ring 4: fjordwandruwheid ±6 blijft | Gebruiker tevreden |
 | 2026-10-21 | worldgen | Teststop 5b akkoord: ring 4 zoals op main `85c7c21`; de open punten van 5b (§3/§4, vluchtpunten reliëf en eilanden) blijven zo, metingen naar 5c | Gebruiker heeft zelf getest: niet alles perfect, maar prima |
 | 2026-10-21 | infra | Golf 3 ring 4 wordt in de cloudsessie uitgevoerd (71 + backlog-opruiming); teststop 5c doet de gebruiker lokaal; sparring ring 5 mag alvast als voorbereiding | Cloud: build, runData en headless server mogelijk, geen client of Windows-testtools |
+| 2026-10-21 | worldgen | Golf 3 ring 4: eilandpunten uit de review + de resterende determinisme-keten bouwen | Gebruiker; één verse wereld voor 5c |
+| 2026-10-21 | textures | Pakket 71 als gerichte polijstronde op de bekende punten (max. twee rondes) | 71a/71b zijn goed genoeg; in de cloud geen in-game beeld |
+| 2026-10-21 | blocks | Nieuw `lagoon_sand` (valt als zand, `#sand`, smelt tot glas) voor de zandbanken en oevers van `crystal_lagoon` | Echt wit lagunezand (backlog decor A) |
+| 2026-10-21 | blocks | Nieuw `clawed_stone` en `clawed_deepslate`; de tunnelbekleding kiest de variant van het gesteente | Klauwkras op tidestone las los in steen/deepslate-tunnels |
+| 2026-10-21 | worldgen | `toxic_pool` in veenkommen, riet-oevercheck en eigen schuim-particle: zo laten | Past bij "prima" voor 5b |
