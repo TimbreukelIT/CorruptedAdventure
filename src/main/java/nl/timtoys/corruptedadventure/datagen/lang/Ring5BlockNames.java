@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.datagen.lang;
 
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModItems;
 
 /**
  * Names of the ring 5 and Nether ring 5 blocks and items. Owned by stream B
@@ -33,6 +34,12 @@ public final class Ring5BlockNames {
         lang.addBlock(ModBlocks.CORRUPTED_SIGN, "Corrupted Sign");
         lang.addBlock(ModBlocks.CORRUPTED_HANGING_SIGN, "Corrupted Hanging Sign");
         lang.addBlock(ModBlocks.CORRUPTED_LEAVES, "Corrupted Leaves");
+        lang.addBlock(ModBlocks.GLITCH_BLOCK, "Glitch Block");
+        lang.addBlock(ModBlocks.VOIDSTONE, "Voidstone");
+        lang.addBlock(ModBlocks.NULLITE_ORE, "Nullite Ore");
+        lang.addBlock(ModBlocks.VOIDSTONE_NULLITE_ORE, "Voidstone Nullite Ore");
+        lang.addItem(ModItems.GLITCH_SHARD, "Glitch Shard");
+        lang.addItem(ModItems.RAW_NULLITE, "Raw Nullite");
     }
 
     public static void addDutch(LangOutput lang) {
@@ -57,5 +64,11 @@ public final class Ring5BlockNames {
         lang.addBlock(ModBlocks.CORRUPTED_SIGN, "Verdorven bord");
         lang.addBlock(ModBlocks.CORRUPTED_HANGING_SIGN, "Verdorven hangbord");
         lang.addBlock(ModBlocks.CORRUPTED_LEAVES, "Verdorven bladeren");
+        lang.addBlock(ModBlocks.GLITCH_BLOCK, "Glitchblok");
+        lang.addBlock(ModBlocks.VOIDSTONE, "Voidsteen");
+        lang.addBlock(ModBlocks.NULLITE_ORE, "Nullieterts");
+        lang.addBlock(ModBlocks.VOIDSTONE_NULLITE_ORE, "Voidsteen-nullieterts");
+        lang.addItem(ModItems.GLITCH_SHARD, "Glitchscherf");
+        lang.addItem(ModItems.RAW_NULLITE, "Ruw nulliet");
     }
 }

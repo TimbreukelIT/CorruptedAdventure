@@ -84,6 +84,7 @@ import nl.timtoys.corruptedadventure.block.SoakedNetherrackBlock;
 import nl.timtoys.corruptedadventure.block.SporeMossBlock;
 import nl.timtoys.corruptedadventure.block.SporeSproutsBlock;
 import nl.timtoys.corruptedadventure.block.StalactiteBlock;
+import nl.timtoys.corruptedadventure.block.VoidstoneBlock;
 import nl.timtoys.corruptedadventure.block.StrippableLogBlock;
 import nl.timtoys.corruptedadventure.block.SuckingMudBlock;
 import nl.timtoys.corruptedadventure.block.SuckingMudSuffocation;
@@ -121,6 +122,8 @@ public final class ModBlocks {
     static final float RING_3_ORE_EXTRA_HARDNESS = 0.5F;
     /** Ring 4 ores are this much harder than the vanilla ore of their host (a step above ring 3; decision V3 golf 1). */
     static final float RING_4_ORE_EXTRA_HARDNESS = 1.0F;
+    /** Ring 5 (and Nether ring 5) ores: half a point above ring 4 (OV2 = A golf 1). */
+    static final float RING_5_ORE_EXTRA_HARDNESS = 1.5F;
 
     // ---- Ring 1 ----
     public static final DeferredBlock<DeadGrassBlock> DEAD_GRASS_BLOCK = register("dead_grass_block",
@@ -1151,6 +1154,23 @@ public final class ModBlocks {
     /** Oak leaves' behaviour: decays without a log within 6 blocks. */
     public static final DeferredBlock<LeavesBlock> CORRUPTED_LEAVES = register("corrupted_leaves",
             () -> new LeavesBlock(recolored(Blocks.OAK_LEAVES, CORRUPTED_COLOR)));
+    // Glitch, void and nullite (package 89).
+    /** The missing-texture block: stone's strength, opaque, no light; animated only through its texture. */
+    public static final DeferredBlock<Block> GLITCH_BLOCK = register("glitch_block",
+            () -> new Block(recolored(Blocks.STONE, MapColor.COLOR_PURPLE)));
+    /** Black rock with stars: deepslate's strength and sound, a rare void mote out of an open face. */
+    public static final DeferredBlock<VoidstoneBlock> VOIDSTONE = register("voidstone",
+            () -> new VoidstoneBlock(recolored(Blocks.DEEPSLATE, MapColor.COLOR_BLACK)));
+    // Nullite (OV2 = A): one step above ring 4 without netherite, 1.5 harder than the vanilla ore of the host and a
+    // diamond pickaxe, XP 5-9. Its crystals are faintly emissive in the model, without block light.
+    /** Nullite in corrupted stone; drops {@link ModItems#RAW_NULLITE}. */
+    public static final DeferredBlock<DropExperienceBlock> NULLITE_ORE = register("nullite_ore",
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DIAMOND_ORE, RING_5_ORE_EXTRA_HARDNESS)
+                    .mapColor(CORRUPTED_COLOR)));
+    /** Nullite in voidstone (deepslate's ore as the template, like the voidstone itself). */
+    public static final DeferredBlock<DropExperienceBlock> VOIDSTONE_NULLITE_ORE = register("voidstone_nullite_ore",
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DEEPSLATE_DIAMOND_ORE, RING_5_ORE_EXTRA_HARDNESS)
+                    .mapColor(MapColor.COLOR_BLACK)));
 
     private ModBlocks() {
     }
@@ -1219,7 +1239,7 @@ public final class ModBlocks {
 
     /**
      * A ring ore in a vanilla host: that vanilla ore's look, sound and blast resistance, {@code extraHardness} harder
-     * (ring 3 half a point, ring 4 a whole one). The tool tier comes from the {@code needs_*_tool} tags.
+     * (ring 3 half a point, ring 4 a whole one, ring 5 one and a half). The tool tier comes from the {@code needs_*_tool} tags.
      */
     private static Properties oreIn(Block vanillaOre, float extraHardness) {
         return Properties.ofFullCopy(vanillaOre).destroyTime(vanillaOre.defaultDestroyTime() + extraHardness);

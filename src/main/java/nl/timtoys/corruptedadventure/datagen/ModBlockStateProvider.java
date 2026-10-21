@@ -121,6 +121,17 @@ final class ModBlockStateProvider extends BlockStateProvider {
         hangingSignBlock(ModBlocks.CORRUPTED_HANGING_SIGN.get(), ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get(), stripped);
         simpleBlock(ModBlocks.CORRUPTED_LEAVES.get(), models().cubeAll("corrupted_leaves",
                 blockTexture(ModBlocks.CORRUPTED_LEAVES.get())).renderType("cutout_mipped"));
+
+        // 89: the glitch block animates through its .mcmeta (T); voidstone's stars and the nullite crystals are emissive
+        // overlays (no block light). The voidstone ore shows plain voidstone under the crystals.
+        simpleBlock(ModBlocks.GLITCH_BLOCK.get());
+        ResourceLocation voidstone = blockTexture(ModBlocks.VOIDSTONE.get());
+        oreWithOverlay(ModBlocks.VOIDSTONE.get(), voidstone, CubeTextures.all(voidstone),
+                CubeTextures.all(modLoc("block/voidstone_glow")), true);
+        CubeTextures nullite = CubeTextures.all(modLoc("block/nullite_ore_overlay"));
+        ResourceLocation corruptedStone = blockTexture(ModBlocks.CORRUPTED_STONE.get());
+        oreWithOverlay(ModBlocks.NULLITE_ORE.get(), corruptedStone, CubeTextures.all(corruptedStone), nullite, true);
+        oreWithOverlay(ModBlocks.VOIDSTONE_NULLITE_ORE.get(), voidstone, CubeTextures.all(voidstone), nullite, true);
     }
 
     /** Nether ring 4: bone sand, bleached netherrack, the fossil stone set (like tidestone) and the purity crystal. */

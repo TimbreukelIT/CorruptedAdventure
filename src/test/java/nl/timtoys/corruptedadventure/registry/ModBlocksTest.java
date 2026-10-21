@@ -51,6 +51,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.common.ItemAbilities;
 import nl.timtoys.corruptedadventure.block.ModWoodTypes;
+import nl.timtoys.corruptedadventure.block.VoidstoneBlock;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -855,7 +856,9 @@ class ModBlocksTest {
         assertEquals(netherRing4, shown.subList(lastRing4 + 1, lastRing4 + 1 + netherRing4.size()));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem)).toList();
-        assertEquals(ModItems.PURITY_CRYSTAL_SHARD.get(), standalone.getLast());
+        int shard = standalone.indexOf(ModItems.PURITY_CRYSTAL_SHARD.get());
+        assertEquals(List.of(ModItems.PURITY_CRYSTAL_SHARD.get(), ModItems.GLITCH_SHARD.get(), ModItems.RAW_NULLITE.get()),
+                standalone.subList(shard, shard + 3));
 
         assertInstanceOf(FallingBlock.class, ModBlocks.BONE_SAND.get());
         assertFalse(ModBlocks.BLEACHED_NETHERRACK.get() instanceof NetherrackBlock);
@@ -868,7 +871,7 @@ class ModBlocksTest {
 
     /**
      * Ring 5 follows Nether ring 4 directly and ends the blocks (contract ring 5 §3): the nine corrupted variants and the
-     * wood set, each sign item once (the wall signs place through it).
+     * wood set (each sign item once: the wall signs place through it), then glitch, voidstone and nullite.
      */
     @Test
     void ring5FollowsNetherRing4InOrder() {
@@ -880,7 +883,8 @@ class ModBlocksTest {
                 ModBlocks.CORRUPTED_STAIRS, ModBlocks.CORRUPTED_SLAB, ModBlocks.CORRUPTED_FENCE, ModBlocks.CORRUPTED_FENCE_GATE,
                 ModBlocks.CORRUPTED_DOOR, ModBlocks.CORRUPTED_TRAPDOOR, ModBlocks.CORRUPTED_PRESSURE_PLATE,
                 ModBlocks.CORRUPTED_BUTTON, ModBlocks.CORRUPTED_SIGN, ModBlocks.CORRUPTED_HANGING_SIGN,
-                ModBlocks.CORRUPTED_LEAVES).<Item>map(DeferredBlock::asItem).toList();
+                ModBlocks.CORRUPTED_LEAVES, ModBlocks.GLITCH_BLOCK, ModBlocks.VOIDSTONE, ModBlocks.NULLITE_ORE,
+                ModBlocks.VOIDSTONE_NULLITE_ORE).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(ring5, shown.subList(lastNetherRing4 + 1, shown.size()));
         assertInstanceOf(SignItem.class, ModBlocks.CORRUPTED_SIGN.asItem());
         assertInstanceOf(HangingSignItem.class, ModBlocks.CORRUPTED_HANGING_SIGN.asItem());
@@ -951,6 +955,33 @@ class ModBlocksTest {
         assertTrue(BlockEntityType.SIGN.isValid(Blocks.OAK_SIGN.defaultBlockState()));
         assertSame(ModWoodTypes.CORRUPTED, ModBlocks.CORRUPTED_SIGN.get().type());
         assertSame(ModWoodTypes.CORRUPTED, ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get().type());
+    }
+
+    /**
+     * 89 (OV2 = A): no block light anywhere (the stars and crystals are emissive in the models), no random ticks;
+     * voidstone has deepslate's strength, nullite 1.5 above the vanilla ore of its host, XP 5-9.
+     */
+    @Test
+    void glitchVoidAndNulliteHaveTheirStrengthXpAndNoLight() {
+        for (DeferredBlock<?> block : List.of(ModBlocks.GLITCH_BLOCK, ModBlocks.VOIDSTONE, ModBlocks.NULLITE_ORE,
+                ModBlocks.VOIDSTONE_NULLITE_ORE)) {
+            BlockState state = block.get().defaultBlockState();
+            assertEquals(0, state.getLightEmission(), block.getId().toString());
+            assertFalse(state.isRandomlyTicking(), block.getId().toString());
+            assertTrue(state.canOcclude(), block.getId().toString());
+            assertTrue(state.requiresCorrectToolForDrops(), block.getId().toString());
+        }
+        assertEquals(Blocks.STONE.defaultDestroyTime(), ModBlocks.GLITCH_BLOCK.get().defaultDestroyTime());
+        assertInstanceOf(VoidstoneBlock.class, ModBlocks.VOIDSTONE.get());
+        assertEquals(Blocks.DEEPSLATE.defaultDestroyTime(), ModBlocks.VOIDSTONE.get().defaultDestroyTime());
+        assertEquals(Blocks.DEEPSLATE.getExplosionResistance(), ModBlocks.VOIDSTONE.get().getExplosionResistance());
+        assertSame(SoundType.DEEPSLATE, ModBlocks.VOIDSTONE.get().defaultBlockState().getSoundType());
+        Map<DeferredBlock<DropExperienceBlock>, Block> hosts = Map.of(ModBlocks.NULLITE_ORE, Blocks.DIAMOND_ORE,
+                ModBlocks.VOIDSTONE_NULLITE_ORE, Blocks.DEEPSLATE_DIAMOND_ORE);
+        hosts.forEach((ore, vanilla) -> {
+            assertEquals(vanilla.defaultDestroyTime() + 1.5F, ore.get().defaultDestroyTime(), ore.getId().toString());
+            assertEquals(UniformInt.of(5, 9).toString(), experience(ore.get()), ore.getId().toString());
+        });
     }
 
     private static void assertStripsTo(Block log, Block stripped) {

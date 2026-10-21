@@ -171,6 +171,7 @@ rondom; deuren `_top`/`_bottom` + `item/<naam>_door`.
 - Voortgang: 2026-10-21 21:08 88 klaar: B groen (1154 tests, 0 fouten), D groen (alleen ring 5-output), S-smoke `r5-b88` schoon (0 ERROR; bord, wandbord, hangend bord en hangend wandbord via RCON: block entity `minecraft:sign`/`minecraft:hanging_sign`, tekst blijft staan, drops = `corrupted_sign`/`corrupted_hanging_sign`).
 - Voortgang: 2026-10-21 21:25 88r klaar: D = 13 recepten + 13 advancements (gelijk aan eik), B groen (1157 tests). Geen S-smoke (alleen data, plan §8).
 - Voortgang: 2026-10-21 21:26 OV2 beantwoord (A); 89 en 90 gestart.
+- Voortgang: 2026-10-21 21:50 89 klaar: D groen (alleen ring 5-output), B groen (1162 tests). S-smoke volgt samen met 90.
 
 ## CODEBASE-delta
 **88 (blocks):**
@@ -187,12 +188,23 @@ rondom; deuren `_top`/`_bottom` + `item/<naam>_door`.
 - `ModRecipeProvider.ring5()`: `planksFromLogs` (`#corruptedadventure:corrupted_logs` → 4), `woodFromLogs` (hout, gestript hout), `hangingSign` (gestripte stam + ketting → 6) en de plankenfamilie via vanilla's `generateRecipes` met een eigen `BlockFamily` (niet in `BlockFamilies`' map), groep `wooden_*`, `has_planks`. Ids = resultaat-item (`corruptedadventure:corrupted_*`).
 - Test: nieuw `datagen/Ring5RecipesTest` (13 ids + aantallen, advancement per recept, geen andere `corrupted`-recepten).
 
+**89 (blocks):**
+- Blocks (na `corrupted_leaves`): `glitch_block` (`Block`, steen-kopie, `COLOR_PURPLE`; loot 1–3 `glitch_shard`, Fortune uniform bonus, max 4, Silk Touch zichzelf), `voidstone` (nieuw `block/VoidstoneBlock`: deepslate-kopie, `COLOR_BLACK`, `animateTick` 1 op 10 een vanilla `REVERSE_PORTAL` uit een open zijde, zoals crying obsidian), `nullite_ore` (diamanterts-kopie +1,5, XP 5–9, `CORRUPTED_COLOR`), `voidstone_nullite_ore` (deepslate-diamanterts +1,5, XP 5–9). Geen bloklicht; sterren en kristallen emissive via `oreWithOverlay` (`voidstone` + `voidstone_glow`, `nullite_ore_overlay`).
+- `ModBlocks.RING_5_ORE_EXTRA_HARDNESS = 1.5F` (OV2 = A).
+- Items (na `purity_crystal_shard`): `glitch_shard`, `raw_nullite` (placeholders, geen recepten).
+- Tags: `void_sources` = glitch_block + voidstone; `ring_5_stones` += voidstone; voidstone in `#base_stone_overworld`, `#overworld_carver_replaceables`; nieuwe keys `ModTags.Blocks/Items.ORES_NULLITE` (`c:ores/nullite`), `ORES_IN_GROUND_CORRUPTED_STONE`, `ORES_IN_GROUND_VOIDSTONE`, `Items.RAW_MATERIALS_NULLITE`; nulliet in `c:ores`, `c:ore_rates/singular`, `#mineable/pickaxe`, `#needs_diamond_tool`.
+- Tests: `ModBlocksTest.glitchVoidAndNulliteHaveTheirStrengthXpAndNoLight`, volgorde-test uitgebreid; nieuw `Ring5BlockDataTest` (void_sources, ring_5_stones, nulliet-tags, glitch-loot).
+
 ## Beslissingen
 - **Bordjes-route (88): (a)** NeoForge 21.1.252 heeft `BlockEntityTypeAddBlocksEvent` → onze bordblokken in de vanilla sign/hanging-sign-types; vanilla renderers (`SignRenderer`/`HangingSignRenderer`, al voor die types geregistreerd) en bewerkschermen doen de rest. Geen `registry/ModBlockEntityTypes`. Client: alleen `Sheets.addWoodType` (defensief tegen class-load-volgorde). Textures volgens §5 (`entity/signs/corrupted`, `entity/signs/hanging/corrupted`, `gui/hanging_signs/corrupted`).
 - **Kaartkleuren (88):** `COLOR_GRAY` voor gras/aarde/steen/keien/schors/bladeren, `COLOR_LIGHT_GRAY` voor zand, planken-familie, gestript hout en bordjes; zandstof `0x8C8792`.
 - **Nederlandse namen (88):** "verdorven" (verdord = withered, ring 4): Verdorven grasblok, aarde, steen, keisteen, zand, stam, hout; Gestripte verdorven stam, Gestript verdorven hout; Verdorven planken, trap, plaat, hek, poort, deur, valluik, drukplaat, knop, bord, hangbord, bladeren.
 - **Blockstates (88):** gras 4 Y-rotaties (zonder tint), aarde/zand 4 rotaties, steen gespiegeld + geroteerd (zoals vanilla steen), keien één model; hout als de verdant-set; bladeren `cutout_mipped` zonder tint.
 - **Creative-volgorde (88):** de 9 + houtset in vanilla-volgorde (stam … knop), dan bord, hangend bord, bladeren.
+- **Mijn-niveau (89/90): OV2 = A** (gebruiker): `needs_diamond_tool`, vanilla-erts +1,5; XP nulliet 5–9, witte kern 6–10; nulliet zwak emissive zonder bloklicht, witte kern licht 3.
+- **Erts-sjablonen (89):** nulliet in `corrupted_stone` = diamanterts, in voidsteen = deepslate-diamanterts (hardheid 4,5 resp. 6,0); het voidsteen-erts toont gewone voidsteen onder de kristallen (geen sterrenlaag: één overlay per model).
+- **Voidsteen-deeltje (89):** 1 op 10 display-ticks, alleen uit een zijde zonder stevige buur (begraven voidsteen is stil).
+- **Namen (89):** Glitchblok, Glitchscherf, Voidsteen, Nullieterts, Voidsteen-nullieterts, Ruw nulliet.
 - **Bladeren-loot (88):** vanilla's mangrove-tabel (geen sapling): schaar/Silk Touch zichzelf, anders 1–2 stokken met de eikkansen.
 
 ## Backlog

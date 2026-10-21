@@ -22,7 +22,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
+import net.minecraft.world.level.storage.loot.functions.LimitCount;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.MatchTool;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -174,6 +176,18 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         // No sapling and no apple: shears or Silk Touch -> the leaves, otherwise sticks like oak leaves (vanilla's
         // table for the sapling-less mangrove leaves).
         add(ModBlocks.CORRUPTED_LEAVES.get(), this::createMangroveLeavesDrops);
+
+        // 89. Like glowstone's dust: 1-3 shards, Fortune adds, never more than 4; Silk Touch -> the block itself.
+        add(ModBlocks.GLITCH_BLOCK.get(), block -> createSilkTouchDispatchTable(block, applyExplosionDecay(block,
+                LootItem.lootTableItem(ModItems.GLITCH_SHARD.get())
+                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F)))
+                        .apply(ApplyBonusCount.addUniformBonusCount(registries.lookupOrThrow(Registries.ENCHANTMENT)
+                                .getOrThrow(Enchantments.FORTUNE)))
+                        .apply(LimitCount.limitCount(IntRange.range(1, 4))))));
+        dropSelf(ModBlocks.VOIDSTONE.get());
+        for (Block ore : List.of(ModBlocks.NULLITE_ORE.get(), ModBlocks.VOIDSTONE_NULLITE_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.RAW_NULLITE.get()));
+        }
     }
 
     private void ring4() {

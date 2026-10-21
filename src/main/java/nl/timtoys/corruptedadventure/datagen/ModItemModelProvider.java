@@ -436,6 +436,13 @@ final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModBlocks.CORRUPTED_SIGN.asItem());
         basicItem(ModBlocks.CORRUPTED_HANGING_SIGN.asItem());
         blockItem(ModBlocks.CORRUPTED_LEAVES);
+        // 89.
+        blockItem(ModBlocks.GLITCH_BLOCK);
+        blockItem(ModBlocks.VOIDSTONE);
+        blockItem(ModBlocks.NULLITE_ORE);
+        blockItem(ModBlocks.VOIDSTONE_NULLITE_ORE);
+        basicItem(ModItems.GLITCH_SHARD.get());
+        basicItem(ModItems.RAW_NULLITE.get());
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

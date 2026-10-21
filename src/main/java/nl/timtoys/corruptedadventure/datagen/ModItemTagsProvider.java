@@ -138,6 +138,13 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         // Like vanilla's own copies; the sign items are named after the standing and the ceiling block.
         copy(BlockTags.STANDING_SIGNS, ItemTags.SIGNS);
         copy(BlockTags.CEILING_HANGING_SIGNS, ItemTags.HANGING_SIGNS);
+
+        // 89: nullite like tidesilver.
+        copy(ModTags.Blocks.ORES_NULLITE, ModTags.Items.ORES_NULLITE);
+        copy(ModTags.Blocks.ORES_IN_GROUND_CORRUPTED_STONE, ModTags.Items.ORES_IN_GROUND_CORRUPTED_STONE);
+        copy(ModTags.Blocks.ORES_IN_GROUND_VOIDSTONE, ModTags.Items.ORES_IN_GROUND_VOIDSTONE);
+        tag(ModTags.Items.RAW_MATERIALS_NULLITE).add(ModItems.RAW_NULLITE.get());
+        tag(Tags.Items.RAW_MATERIALS).addTag(ModTags.Items.RAW_MATERIALS_NULLITE);
     }
 
     /** Ring 4: the burnable wood sets reach #logs_that_burn through the block tag copy above. */

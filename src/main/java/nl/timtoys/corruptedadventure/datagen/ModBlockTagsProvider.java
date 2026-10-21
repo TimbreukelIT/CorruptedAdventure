@@ -108,6 +108,29 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_CORRUPTED_LOG.get());
         tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_CORRUPTED_WOOD.get());
         tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.CORRUPTED_FENCE_GATE.get());
+
+        ring5VoidAndNullite();
+    }
+
+    /**
+     * Ring 5 (89): the glitch block and voidstone raise the void meter ({@code void_sources}, read by C); voidstone is
+     * natural ground like deepslate and the second host rock of the ring 5 ores. Nullite has ring 4's tags one host
+     * further, with the diamond tier (OV2 = A).
+     */
+    private void ring5VoidAndNullite() {
+        tag(ModTags.Blocks.VOID_SOURCES).add(ModBlocks.GLITCH_BLOCK.get(), ModBlocks.VOIDSTONE.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.GLITCH_BLOCK.get(), ModBlocks.VOIDSTONE.get());
+        tag(BlockTags.BASE_STONE_OVERWORLD).add(ModBlocks.VOIDSTONE.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.VOIDSTONE.get());
+        tag(ModTags.Blocks.RING_5_STONES).add(ModBlocks.VOIDSTONE.get());
+
+        tag(ModTags.Blocks.ORES_NULLITE).add(ModBlocks.NULLITE_ORE.get(), ModBlocks.VOIDSTONE_NULLITE_ORE.get());
+        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_NULLITE);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_NULLITE);
+        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_NULLITE);
+        tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_NULLITE);
+        tag(ModTags.Blocks.ORES_IN_GROUND_CORRUPTED_STONE).add(ModBlocks.NULLITE_ORE.get());
+        tag(ModTags.Blocks.ORES_IN_GROUND_VOIDSTONE).add(ModBlocks.VOIDSTONE_NULLITE_ORE.get());
     }
 
     /**

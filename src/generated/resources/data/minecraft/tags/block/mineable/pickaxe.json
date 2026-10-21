@@ -148,6 +148,9 @@
     "corruptedadventure:purity_crystal_cluster",
     "corruptedadventure:purity_crystal_lamp",
     "corruptedadventure:corrupted_stone",
-    "corruptedadventure:corrupted_cobblestone"
+    "corruptedadventure:corrupted_cobblestone",
+    "corruptedadventure:glitch_block",
+    "corruptedadventure:voidstone",
+    "#c:ores/nullite"
   ]
 }

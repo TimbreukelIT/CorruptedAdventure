@@ -65,6 +65,13 @@ public final class ModItems {
     /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */
     public static final DeferredItem<Item> PURITY_CRYSTAL_SHARD = ITEMS.registerSimpleItem("purity_crystal_shard");
 
+    // ---- Ring 5 ----
+    // Placeholders like raw_sunstone: their use and recipes follow in phase 2.
+    /** Drop of the glitch block (1-3, Fortune adds, at most 4). */
+    public static final DeferredItem<Item> GLITCH_SHARD = ITEMS.registerSimpleItem("glitch_shard");
+    /** Drop of the nullite ores (ring 5's metal). */
+    public static final DeferredItem<Item> RAW_NULLITE = ITEMS.registerSimpleItem("raw_nullite");
+
     private ModItems() {
     }
 
