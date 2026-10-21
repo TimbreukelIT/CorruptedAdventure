@@ -111,6 +111,9 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         copy(Tags.Blocks.COBBLESTONES, Tags.Items.COBBLESTONES);
         copy(Tags.Blocks.NETHERRACKS, Tags.Items.NETHERRACKS);
         copy(BlockTags.WART_BLOCKS, ItemTags.WART_BLOCKS);
+        // The lagoon sand (66c) is sand as an item too (vanilla's item tag holds sand and red sand).
+        copy(BlockTags.SAND, ItemTags.SAND);
+        copy(Tags.Blocks.SANDS, Tags.Items.SANDS);
         copy(Tags.Blocks.SANDSTONE_BLOCKS, Tags.Items.SANDSTONE_BLOCKS);
         copy(Tags.Blocks.SANDSTONE_SLABS, Tags.Items.SANDSTONE_SLABS);
         copy(Tags.Blocks.SANDSTONE_STAIRS, Tags.Items.SANDSTONE_STAIRS);

@@ -369,6 +369,11 @@ final class ModItemModelProvider extends ItemModelProvider {
         flatBlockItem(ModBlocks.MIST_FERN);
         flatBlockItem(ModBlocks.MOONPETAL_SHRUB);
         flatBlockItem(ModBlocks.LAGOON_GLOWGRASS);
+
+        // Golf 3 blocks (66c): cubes on their block models.
+        blockItem(ModBlocks.LAGOON_SAND);
+        blockItem(ModBlocks.CLAWED_STONE);
+        blockItem(ModBlocks.CLAWED_DEEPSLATE);
     }
 
     private void netherRing4() {

@@ -157,7 +157,28 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         ring4Gameplay();
         verdant();
         ring4Decor();
+        lagoonSandAndClawMarks();
         netherRing4();
+    }
+
+    /**
+     * The golf 3 blocks (66c). The lagoon sand has vanilla sand's tag memberships: the ones vanilla gives through
+     * {@code #sand} it gets through {@code #sand} (and with it {@code ring_4_plant_soil}, so also
+     * {@code lagoon_plant_soil}), the ones vanilla lists sand in directly it gets directly; not {@code #smelts_to_glass}
+     * (its glass is its own smelting recipe, 66d). The claw marks are pickaxe rock only: unlike the clawed tidestone (in
+     * {@code ring_4_stones} because it is tidestone) no stone tag, since {@code ring_4_stones} means tidestone, and the
+     * ore-replaceable tags would let a later vein turn the claw marks to ore (see {@code Ring4OreFeatures}).
+     */
+    private void lagoonSandAndClawMarks() {
+        tag(BlockTags.SAND).add(ModBlocks.LAGOON_SAND.get());
+        tag(Tags.Blocks.SANDS).add(ModBlocks.LAGOON_SAND.get());
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.LAGOON_SAND.get());
+        tag(BlockTags.AZALEA_ROOT_REPLACEABLE).add(ModBlocks.LAGOON_SAND.get());
+        tag(BlockTags.ENDERMAN_HOLDABLE).add(ModBlocks.LAGOON_SAND.get());
+        tag(BlockTags.LUSH_GROUND_REPLACEABLE).add(ModBlocks.LAGOON_SAND.get());
+        tag(BlockTags.RABBITS_SPAWNABLE_ON).add(ModBlocks.LAGOON_SAND.get());
+        tag(BlockTags.SCULK_REPLACEABLE).add(ModBlocks.LAGOON_SAND.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.CLAWED_STONE.get(), ModBlocks.CLAWED_DEEPSLATE.get());
     }
 
     /**

@@ -165,6 +165,14 @@ final class ModBlockStateProvider extends BlockStateProvider {
         ring4Gameplay();
         verdant();
         ring4Decor();
+        lagoonSandAndClawMarks();
+    }
+
+    /** The golf 3 blocks (66c): plain cubes on T's textures (the clawed deepslate is no pillar, like clawed tidestone). */
+    private void lagoonSandAndClawMarks() {
+        simpleBlock(ModBlocks.LAGOON_SAND.get());
+        simpleBlock(ModBlocks.CLAWED_STONE.get());
+        simpleBlock(ModBlocks.CLAWED_DEEPSLATE.get());
     }
 
     /**
