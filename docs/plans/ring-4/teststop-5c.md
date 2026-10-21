@@ -1,7 +1,6 @@
 # Teststop 5c — eindcheck ring 4 + Nether-4 (checklist)
 
-Blokkerende eindcheck van ring 4 en Nether-4 na golf 3 (`golf-3.md`; `waves.md` "Teststop 5c"). Stand: branch
-`claude/admiring-cray-2ywybu` na INT-G3 (I3, 66c–66g, 71, 71c, 74b, 75c, 77b, 77c + review-fixes). Lokaal door de
+Blokkerende eindcheck van ring 4 en Nether-4 na golf 3 (`golf-3.md`; `waves.md` "Teststop 5c"). Stand: `main` `4bd8e444` (incl. ring 5 golf 0) na INT-G3 (I3, 66c–66g, 71, 71c, 74b, 75c, 77b, 77c + review-fixes). Lokaal door de
 gebruiker (Windows); de cloud kon geen client draaien. Ring 5 begint pas na akkoord.
 
 **Beoordeeld wordt:** standaard-W (elke ring en grens, ook Nether, portal per ring, overworld ring 4 → Nether-4), de
@@ -81,6 +80,11 @@ Op `c6f917f` (golf 3 compleet), Linux-container, seed 20260930:
   liggen boven grot-/zeewater en vallen bij een blokupdate (zoals vanilla zand; backlog).
 - **Klauwkras** in de tunnels: `clawed_stone` en `clawed_deepslate` (`lag` 5 + 11, deel `lagn` 18 + 4);
   `clawed_tidestone` komt in tunnels niet voor (tunnelwanden zijn steen/deepslate; verwacht).
+
+## Uitkomst (2026-10-21)
+**Akkoord** voor ring 4 zoals hij nu op `main` staat (`4bd8e444`), in het geheel. De gebruiker heeft de secties A–D niet
+afzonderlijk gemeld; het akkoord geldt voor de hele ring 4 en Nether-4. Eventuele losse opmerkingen zijn niet
+vastgelegd en gaan naar de backlog als ze terugkomen.
 
 ## Terugmelden
 Per sectie **akkoord / opmerking**, per bevinding kort:
