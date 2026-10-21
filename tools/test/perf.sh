@@ -63,7 +63,7 @@ for ((i = 1; i <= warm + cold; i++)); do
     level="$name-p$i"
     bash "$CA_TOOLS/server.sh" start "$level" --fresh --perf --no-slot || exit 1
     java="$(ca_state_get server JAVA)"
-    args+=(--jfr "$(dirname "$java")/jfr.exe")
+    args+=(--jfr "$(dirname "$java")/jfr$CA_EXE")
     $CA_PY "$CA_TOOLS/py/perf.py" "$i" "$(cygpath -m "$out/p$i.json")" "${args[@]}" > "$out/p$i.txt" 2>&1
     grep "^R$i" "$out/p$i.txt" | sed 's/^/  /'
     bash "$CA_TOOLS/server.sh" stop --timeout 120

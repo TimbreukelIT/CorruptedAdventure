@@ -55,7 +55,8 @@ age_min() {
 }
 
 # The holder PIDs (of the given entries) that are alive, one per line, then the line `ok`. Without `ok` (PowerShell
-# failed) nothing is known and callers treat every holder as alive. CA_ALIVE_PIDS (self-test) replaces the lookup.
+# failed) nothing is known and callers treat every holder as alive (posix: kill -0 and /proc, which cannot fail).
+# CA_ALIVE_PIDS (self-test) replaces the lookup.
 alive_pids() {
     local e pid pids=()
     if [ -n "${CA_ALIVE_PIDS+x}" ]; then printf '%s\n' $CA_ALIVE_PIDS ok; return; fi
@@ -63,6 +64,11 @@ alive_pids() {
         pid="$(field "$e" pid)"; [[ "$pid" =~ ^[0-9]+$ ]] && pids+=("$pid")
     done
     [ ${#pids[@]} = 0 ] && { echo ok; return; }
+    if [ "$CA_OS" = posix ]; then
+        for pid in "${pids[@]}"; do ca_pid_alive "$pid" && echo "$pid"; done
+        echo ok
+        return
+    fi
     powershell -NoProfile -Command "Get-Process -Id $(IFS=,; echo "${pids[*]}") -ErrorAction SilentlyContinue | ForEach-Object { \$_.Id }; 'ok'" 2>/dev/null | tr -d '\r'
 }
 

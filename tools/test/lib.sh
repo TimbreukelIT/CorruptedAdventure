@@ -5,9 +5,17 @@
 # Settings (environment overrides build/test.conf, written by `setup.sh`):
 #   CA_STREAM    stream name for owner files and build/<stream>.pids (default: branch name after the last '/')
 #   CA_PORT_N    port number n: server 25570+n, RCON 25580+n (waves.md §4)
-#   CA_LOCK_DIR  directory of the machine lock, the JVM slots and the user's play lock (default C:/Temp)
+#   CA_LOCK_DIR  directory of the machine lock, the JVM slots and the user's play lock (default C:/Temp on Windows,
+#                ${TMPDIR:-/tmp}/ca-test elsewhere)
 #   CA_WT        worktree to run Gradle/servers in (default: this checkout; `--worktree` on server.sh/world.sh)
+#
+# CA_OS: `windows` under Git Bash/MSYS/Cygwin (PowerShell for processes, cygpath for paths, Windows PIDs), else `posix`
+# (Linux, e.g. the cloud container: kill/proc for processes, paths as they are, the shell's own PIDs).
 
+case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*) CA_OS=windows ;;
+    *) CA_OS=posix ;;
+esac
 CA_TOOLS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CA_ROOT="$(cd "$CA_TOOLS/../.." && pwd)"
 if [ -f "$CA_ROOT/build/test.conf" ]; then
@@ -19,7 +27,11 @@ if [ -f "$CA_ROOT/build/test.conf" ]; then
 fi
 CA_STREAM="${CA_STREAM:-$(git -C "$CA_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null | sed 's#.*/##')}"
 CA_STREAM="${CA_STREAM:-main}"
-CA_LOCK_DIR="${CA_LOCK_DIR:-C:/Temp}"
+if [ "$CA_OS" = windows ]; then
+    CA_LOCK_DIR="${CA_LOCK_DIR:-C:/Temp}"
+else
+    CA_LOCK_DIR="${CA_LOCK_DIR:-${TMPDIR:-/tmp}/ca-test}"
+fi
 CA_WT="${CA_WT:-$CA_ROOT}"
 CA_OUT="$CA_ROOT/build/test"            # logs, state and scan output of this checkout (on P:, never C:)
 CA_PIDS="$CA_ROOT/build/$CA_STREAM.pids"
@@ -27,6 +39,16 @@ CA_SEED=20260930
 CA_USER_LOCK="$CA_LOCK_DIR/ca-user-test.lock"
 CA_MACHINE_LOCK="$CA_LOCK_DIR/ca-test.lock"
 CA_PY="python"
+CA_EXE=".exe"                           # suffix of JDK tools (jfr.exe)
+CA_GRADLEW=(./gradlew)
+if [ "$CA_OS" = posix ]; then
+    command -v python >/dev/null 2>&1 || CA_PY="python3"
+    CA_EXE=""
+    # A checkout made on Windows may have gradlew without the executable bit.
+    CA_GRADLEW=(bash ./gradlew)
+    # No cygpath outside Windows: paths are already what the JVM and Python see (`cygpath -m|-w <path>` -> <path>).
+    command -v cygpath >/dev/null 2>&1 || cygpath() { printf '%s\n' "${@: -1}"; }
+fi
 mkdir -p "$CA_OUT"
 
 ca_die() { echo "error: $*" >&2; exit "${CA_EXIT:-1}"; }
@@ -56,13 +78,27 @@ ca_winpid() { cat /proc/$$/winpid 2>/dev/null || echo $$; }
 ca_pid_alive() {
     local pid="$1"
     [ -n "$pid" ] || return 1
+    if [ "$CA_OS" = posix ]; then
+        [[ "$pid" =~ ^[0-9]+$ ]] && { kill -0 "$pid" 2>/dev/null || [ -d "/proc/$pid" ]; }
+        return
+    fi
     powershell -NoProfile -Command "if (Get-Process -Id $pid -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }" >/dev/null 2>&1
 }
 
 # Java PIDs whose command line points at <worktree>\build\moddev\<kind>RunVmArgs (kind: server, client, client2).
 # Exact worktree prefix, so the main checkout never matches a worktree's JVM (or the other way round).
 ca_java_pids() {
-    local wt kind
+    local wt kind f p
+    if [ "$CA_OS" = posix ]; then
+        # The JVM gets `@<canonical project dir>/build/moddev/<kind>RunVmArgs.txt`; the comm check drops grep itself.
+        wt="$(cd "$1" 2>/dev/null && pwd -P)" || return 0
+        kind="$2"
+        for f in $(grep -lsaF -- "$wt/build/moddev/${kind}RunVmArgs" /proc/[0-9]*/cmdline); do
+            p="${f#/proc/}"; p="${p%/cmdline}"
+            [ "$(cat "/proc/$p/comm" 2>/dev/null)" = java ] && echo "$p"
+        done
+        return 0
+    fi
     wt="$(ca_winpath "$1")"; kind="$2"
     powershell -NoProfile -Command "\$w = '$wt'.TrimEnd('\\') + '\\build\\moddev\\${kind}RunVmArgs'; Get-CimInstance Win32_Process -Filter \"Name='java.exe'\" | Where-Object { \$_.CommandLine -and \$_.CommandLine.Replace('\\\\', '\\').Replace('/', '\\').ToLower().Contains(\$w.ToLower()) } | ForEach-Object { \$_.ProcessId }" | tr -d '\r'
 }
@@ -81,18 +117,46 @@ ca_server_pid() {
 }
 
 ca_stop_pid() {
+    if [ "$CA_OS" = posix ]; then
+        kill -9 "$1" 2>/dev/null
+        return 0
+    fi
     powershell -NoProfile -Command "Stop-Process -Id $1 -Force -ErrorAction SilentlyContinue" >/dev/null 2>&1
 }
 
 # Stop a background Gradle job we started ourselves (Git Bash job PID): the Windows process behind it (the gradlew
 # java wrapper and, with --no-daemon, the build JVM under it) as a tree. Only for our own `$!`.
 ca_stop_job() {
-    local job="$1" wp
+    local job="$1" wp tree
     [ -n "$job" ] || return 0
+    if [ "$CA_OS" = posix ]; then
+        tree="$(ca_descendants "$job")"
+        kill "$job" 2>/dev/null
+        [ -n "$tree" ] && kill -9 $tree 2>/dev/null
+        return 0
+    fi
     wp="$(cat "/proc/$job/winpid" 2>/dev/null)"
     kill "$job" 2>/dev/null
     [ -n "$wp" ] && taskkill //PID "$wp" //T //F >/dev/null 2>&1
     return 0
+}
+
+# Every descendant PID of <pid> (posix; for ca_stop_job), children before grandchildren.
+ca_descendants() {
+    local c
+    for c in $(pgrep -P "$1" 2>/dev/null); do
+        echo "$c"
+        ca_descendants "$c"
+    done
+}
+
+# Executable of a running process (the server's java, for jfr next to it), as a mixed path on Windows.
+ca_pid_exe() {
+    if [ "$CA_OS" = posix ]; then
+        readlink "/proc/$1/exe"
+        return
+    fi
+    cygpath -m "$(powershell -NoProfile -Command "(Get-CimInstance Win32_Process -Filter 'ProcessId=$1').ExecutablePath" | tr -d '\r')"
 }
 
 ca_record_pid() { echo "$1 $2 $(ca_now)" >> "$CA_PIDS"; }

@@ -36,5 +36,5 @@ trap 'exit 130' INT TERM
 CA_SERVER_JVM="-XX:FlightRecorderOptions:stackdepth=1024 -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints" bash "$CA_TOOLS/server.sh" start "$level" --fresh --no-slot || exit 1
 java="$(ca_state_get server JAVA)"
 $CA_PY "$CA_TOOLS/py/jfrprof.py" "$(cygpath -m "$out")" --run "$(cygpath -m "$CA_WT/run")" \
-    --jfr "$(dirname "$java")/jfr.exe" --areas "$(cygpath -m "$areas")" "${only[@]}" "${extra[@]}" | tee "$out/prof.txt"
+    --jfr "$(dirname "$java")/jfr$CA_EXE" --areas "$(cygpath -m "$areas")" "${only[@]}" "${extra[@]}" | tee "$out/prof.txt"
 exit "${PIPESTATUS[0]}"
