@@ -50,4 +50,10 @@ class ThresholdLevelsTest {
         // Ring 4 contract §5: nausea 30, poison 60, wither 90 (PoisonWither is the third effect).
         assertArrayEquals(new int[]{30, 60, 90}, ServerConfig.POISON.thresholds.defaults());
     }
+
+    @Test
+    void voidHasTheContractThresholds() {
+        // Ring 5 contract §11: glitches 30, teleports or darkness 60, darkness and void damage 90.
+        assertArrayEquals(new int[]{30, 60, 90}, ServerConfig.VOID.thresholds.defaults());
+    }
 }

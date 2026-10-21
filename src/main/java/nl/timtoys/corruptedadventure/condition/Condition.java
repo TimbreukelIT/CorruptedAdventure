@@ -27,7 +27,13 @@ public enum Condition implements StringRepresentable {
      * Ring 4 (package 69): rises only at a source — in or next to a toxic pool, head in swamp gas, toxic rain under the
      * open sky in the blighted band; falls everywhere else (water and the blighted glowcaps are no source).
      */
-    POISON("poison", 0xFF7BC832);
+    POISON("poison", 0xFF7BC832),
+    /**
+     * Ring 5 (package 91): creeps up everywhere in overworld ring 5 and on the void rim, faster in the outer band, near a
+     * void source, at night and in ring weather; falls in block light and outside. Glitches, teleports or darkness, then
+     * void damage. Last, so the sync positions of the older conditions stay the same.
+     */
+    VOID("void", 0xFF8A4FD8);
 
     public static final Codec<Condition> CODEC = StringRepresentable.fromEnum(Condition::values);
 

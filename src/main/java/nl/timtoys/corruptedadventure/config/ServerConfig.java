@@ -35,6 +35,8 @@ public final class ServerConfig {
     public static final PoisonCondition POISON;
     /** {@code [conditions.purifying]}: Nether ring 4, every meter falls faster (package 79). */
     public static final PurifyingCondition PURIFYING;
+    /** {@code [conditions.void]}: overworld ring 5 and the void rim (package 91). */
+    public static final VoidCondition VOID;
     /** {@code [weather.ring2]}: the effects of sandstorm and heat wave (change 28). */
     public static final Ring2WeatherEffects RING_2_WEATHER;
     /** {@code [weather.ring3]}: ash cloud duration, heat factors and lava bombs (package 45). */
@@ -56,6 +58,7 @@ public final class ServerConfig {
         COLD = new ColdCondition(builder);
         POISON = new PoisonCondition(builder);
         PURIFYING = new PurifyingCondition(builder);
+        VOID = new VoidCondition(builder);
         builder.pop();
         builder.comment("Ring weather: a cycle per ring (clear, then a weather of that ring, then clear again).",
                 "Durations in seconds, drawn uniformly between min and max; edits apply from the next change of weather.")
@@ -69,7 +72,7 @@ public final class ServerConfig {
         RING_4_WEATHER = RING_WEATHER.get(Ring.RING_4).ring4Effects;
         SPEC = builder.build();
         ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds,
-                POISON.thresholds);
+                POISON.thresholds, VOID.thresholds);
     }
 
     private ServerConfig() {
@@ -377,6 +380,82 @@ public final class ServerConfig {
                             "second instead of 1). 1.0 turns purifying off.")
                     .defineInRange("fallMultiplier", 3.0, 1.0, 10.0);
             builder.pop();
+        }
+    }
+
+    /**
+     * {@code [conditions.void]}: overworld ring 5 and the void rim (package 91); numbers from
+     * {@code docs/plans/ring-5/contract.md} §11, to be tuned in teststop 6b.
+     */
+    public static final class VoidCondition {
+        public final ModConfigSpec.DoubleValue innerRise;
+        public final ModConfigSpec.DoubleValue outerRise;
+        public final ModConfigSpec.DoubleValue sourceRise;
+        public final ModConfigSpec.IntValue sourceRadius;
+        public final ModConfigSpec.DoubleValue nightMultiplier;
+        public final ModConfigSpec.IntValue lightLevel;
+        public final ModConfigSpec.DoubleValue lightFall;
+        public final ModConfigSpec.DoubleValue outsideFall;
+        public final ThresholdLevels thresholds;
+        public final ModConfigSpec.IntValue teleportMinBlocks;
+        public final ModConfigSpec.IntValue teleportMaxBlocks;
+        public final ModConfigSpec.IntValue teleportIntervalSeconds;
+        public final ModConfigSpec.IntValue darknessAmplifier;
+        public final ModConfigSpec.DoubleValue damage;
+        public final ModConfigSpec.IntValue damageInterval;
+
+        private VoidCondition(ModConfigSpec.Builder builder) {
+            builder.comment("The void in ring 5 of the overworld and on the void rim beyond it (the rim counts as outer band).",
+                            "Creeps up everywhere there; faster in the outer band and near a void source (block tag",
+                            "corruptedadventure:void_sources). The strongest wins, they do not stack. At night and in ring weather",
+                            "it rises faster (the larger factor counts, not both). Block light at eye height keeps it away.")
+                    .push("void");
+            innerRise = builder.comment("Points per second in the inner band (0.28: 0 -> 100 in ~6 min).")
+                    .defineInRange("innerRise", 0.28, 0.0, 100.0);
+            outerRise = builder.comment("Points per second in the outer band and on the void rim (0.55: 0 -> 100 in ~3 min).")
+                    .defineInRange("outerRise", 0.55, 0.0, 100.0);
+            sourceRise = builder.comment("Points per second within sourceRadius of a void source (0.55: 0 -> 100 in ~3 min).")
+                    .defineInRange("sourceRise", 0.55, 0.0, 100.0);
+            sourceRadius = builder.comment("Blocks around the player (a box, from feet and head) that count as near a void source.")
+                    .defineInRange("sourceRadius", 4, 1, 8);
+            nightMultiplier = builder.comment("Factor on the rise at night (1.5: inner band 0 -> 100 in ~4 min). Does not stack",
+                            "with the ring weather factor ([weather.ring5]): the larger one counts.")
+                    .defineInRange("nightMultiplier", 1.5, 1.0, 4.0);
+            lightLevel = builder.comment("Block light at eye height from which the meter falls instead (daylight does not count),",
+                            "also near a source and in the outer band.")
+                    .defineInRange("lightLevel", 12, 1, 15);
+            lightFall = builder.comment("Points per second in block light of at least lightLevel (1.0: 100 -> 0 in ~1.7 min).")
+                    .defineInRange("lightFall", 1.0, 0.0, 100.0);
+            outsideFall = builder.comment("Points per second outside ring 5 and the void rim (other rings, the Nether).")
+                    .defineInRange("outsideFall", 1.0, 0.0, 100.0);
+            thresholds = ThresholdLevels.define(builder, "conditions.void", new int[]{30, 60, 90},
+                    "Glitch visuals from here (client only, no gameplay effect).",
+                    "From here: in the inner band a short teleport every teleportIntervalSeconds while standing on solid"
+                            + " ground; in the outer band and on the void rim darkness instead.",
+                    "Darkness and void damage every damageInterval seconds from here (own death message); can kill on"
+                            + " normal and hard. The teleports of threshold2 go on in the inner band.");
+            teleportMinBlocks = builder.comment("Shortest teleport at threshold2, in blocks (horizontal).")
+                    .defineInRange("teleportMinBlocks", 1, 1, 16);
+            teleportMaxBlocks = builder.comment("Longest teleport at threshold2, in blocks (horizontal); below teleportMinBlocks",
+                            "counts as teleportMinBlocks.")
+                    .defineInRange("teleportMaxBlocks", 5, 1, 16);
+            teleportIntervalSeconds = builder.comment("Seconds between two teleports at threshold2 (the first one this long after",
+                            "reaching it in the inner band). Without a safe spot that time there is none; in the air it waits",
+                            "for the ground.")
+                    .defineInRange("teleportIntervalSeconds", 20, 5, 600);
+            darknessAmplifier = builder.comment("Darkness amplifier (0 = level I) at threshold2 in the outer band and at threshold3.")
+                    .defineInRange("darknessAmplifier", 0, 0, 9);
+            damage = builder.comment("Void damage per hit at threshold3 (1.0 = half a heart, like the poison's wither: 1.0 every",
+                            "2 s); through armour. None on peaceful, down to 10 health on easy, lethal on normal and hard.")
+                    .defineInRange("damage", 1.0, 0.0, 100.0);
+            damageInterval = builder.comment("Seconds between hits at threshold3.")
+                    .defineInRange("damageInterval", 2, 1, 60);
+            builder.pop();
+        }
+
+        /** The longest teleport, never below the shortest. */
+        public int teleportMax() {
+            return Math.max(teleportMinBlocks.get(), teleportMaxBlocks.get());
         }
     }
 

@@ -27,6 +27,7 @@ public final class ConditionDefinitions {
             case HEAT -> HeatRule.fromConfig();
             case COLD -> ColdRule.fromConfig();
             case POISON -> PoisonRule.fromConfig();
+            case VOID -> VoidRule.fromConfig();
         };
     }
 
@@ -38,6 +39,7 @@ public final class ConditionDefinitions {
             case HEAT -> ServerConfig.HEAT.thresholds.get();
             case COLD -> ServerConfig.COLD.thresholds.get();
             case POISON -> ServerConfig.POISON.thresholds.get();
+            case VOID -> ServerConfig.VOID.thresholds.get();
         };
     }
 
@@ -90,6 +92,13 @@ public final class ConditionDefinitions {
                         new MobEffectThreshold(MobEffects.CONFUSION, config.effect1Amplifier.get()),
                         new MobEffectThreshold(MobEffects.POISON, config.effect2Amplifier.get()),
                         PoisonWither.WITHER);
+            }
+            case VOID -> {
+                // The darkness of the third threshold comes with the second (VoidDarkness, driven by VoidSlip).
+                ServerConfig.VoidCondition config = ServerConfig.VOID;
+                yield List.of(VoidGlitchVisuals.VISUALS, VoidSlip.SLIP,
+                        new DamageThreshold(Ring5DamageTypes.VOID, config.damage.get().floatValue(),
+                                config.damageInterval.get(), DifficultyFloor.LETHAL_FROM_NORMAL));
             }
         };
     }
