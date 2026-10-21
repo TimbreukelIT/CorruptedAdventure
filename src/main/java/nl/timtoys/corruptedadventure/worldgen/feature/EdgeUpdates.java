@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayDeque;
@@ -18,7 +19,7 @@ import java.util.Set;
  * <p>
  * Hanging strands (decor A, {@link TreeOverlap#strand}) that lose their hold pass the update on in a queue of their own,
  * also into strands that were just written, so a strand cut by another tree's leaf falls whole in either order. Without
- * strands the pass is exactly the decor proef's.
+ * strands the pass is exactly the decor proef's. Sand and gravel beside what was written are left alone (backlog r. 421).
  */
 final class EdgeUpdates {
     /** How many changed blocks pass the shape update on (a giant lily pad has four parts). */
@@ -78,6 +79,11 @@ final class EdgeUpdates {
                 level.setBlock(pos, updated, Block.UPDATE_CLIENTS);
                 state = updated;
             }
+        }
+        if (other.getBlock() instanceof FallingBlock) {
+            // Backlog r. 421: sand or gravel of the terrain only schedules its fall here, and drops into an open space
+            // under it (seen under the lagoon floor) and leaves air under the sea: the terrain stays as it is.
+            return;
         }
         BlockState otherUpdated = other.updateShape(direction.getOpposite(), state, level, neighbour, pos);
         if (otherUpdated != other) {

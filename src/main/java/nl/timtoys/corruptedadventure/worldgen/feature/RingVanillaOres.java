@@ -64,8 +64,12 @@ public final class RingVanillaOres {
         return Map.copyOf(factors);
     }
 
-    /** Registers the tapered ores of {@code ring}; {@code factors} needs an entry for every ore of {@link #ORES}. */
-    public static void placed(BootstrapContext<PlacedFeature> context, Ring ring, Map<ResourceKey<PlacedFeature>, Double> factors) {
+    /**
+     * Registers the tapered ores of {@code ring}; {@code factors} needs an entry for every ore of {@link #ORES}.
+     * {@code extra} filters follow the chance (ring 4: no ore in the islands, backlog r. 420).
+     */
+    public static void placed(BootstrapContext<PlacedFeature> context, Ring ring, Map<ResourceKey<PlacedFeature>, Double> factors,
+                              PlacementModifier... extra) {
         Map<ResourceKey<PlacedFeature>, PlacedFeature> vanilla = vanillaPlacements(context);
         for (ResourceKey<PlacedFeature> ore : ORES) {
             Double factor = factors.get(ore);
@@ -76,7 +80,7 @@ public final class RingVanillaOres {
             if (original == null) {
                 throw new IllegalStateException("vanilla no longer registers " + ore.location());
             }
-            context.register(key(ring, ore), tapered(original, RingChanceFilter.progress(ring, factor, factor, 0.0, 1.0)));
+            context.register(key(ring, ore), tapered(original, RingChanceFilter.progress(ring, factor, factor, 0.0, 1.0), extra));
         }
     }
 
@@ -90,8 +94,8 @@ public final class RingVanillaOres {
         return ResourceKey.create(Registries.PLACED_FEATURE, CorruptedAdventure.id(ring.getSerializedName() + "/" + ore.location().getPath()));
     }
 
-    /** The same feature and modifiers, with {@code chance} inserted right before the (single) biome filter. */
-    static PlacedFeature tapered(PlacedFeature original, PlacementModifier chance) {
+    /** The same feature and modifiers, with {@code chance} (and {@code extra}) inserted right before the (single) biome filter. */
+    static PlacedFeature tapered(PlacedFeature original, PlacementModifier chance, PlacementModifier... extra) {
         List<PlacementModifier> modifiers = new ArrayList<>(original.placement());
         int biome = -1;
         for (int i = 0; i < modifiers.size(); i++) {
@@ -106,6 +110,7 @@ public final class RingVanillaOres {
             throw new IllegalStateException("no biome filter in " + original);
         }
         modifiers.add(biome, chance);
+        modifiers.addAll(biome + 1, List.of(extra));
         return new PlacedFeature(original.feature(), List.copyOf(modifiers));
     }
 

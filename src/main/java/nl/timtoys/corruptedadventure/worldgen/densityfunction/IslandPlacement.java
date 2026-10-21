@@ -273,12 +273,7 @@ final class IslandPlacement {
         }
         // The ground the island was torn from (its centre) and the highest ground under its footprint.
         double groundY = field.baseHeight(x, z);
-        double highest = Math.max(groundY, IslandShape.SEA_LEVEL);
-        double reach = probe.reach();
-        for (int n = 0; n < 8; n++) {
-            double t = n * Math.PI / 4.0;
-            highest = Math.max(highest, field.baseHeight(x + reach * Math.cos(t), z + reach * Math.sin(t)));
-        }
+        double highest = highestGround(field, x, z, groundY, probe.reach());
         double low = Math.max(bottom.applyAsDouble(highest), highest + MIN_CLEARANCE);
         double top = Math.min(low + thickness * IslandShape.MAX_UNDERSIDE + 1.0, MAX_TOP);
         if (top - 1.0 - thickness * IslandShape.MAX_UNDERSIDE < highest + MIN_CLEARANCE) {
@@ -287,6 +282,19 @@ final class IslandPlacement {
         double[] outlet = outlet(field, probe, x, z, groundY, cell);
         return new IslandShape(x, z, a, stretch, angle, lobes, phase, top, thickness, groundY, kind,
                 outlet == null ? Double.NaN : outlet[0], outlet == null ? Double.NaN : outlet[1]);
+    }
+
+    /**
+     * The highest ground under an island's footprint, at least the sea: its centre's ground {@code groundY} and eight
+     * columns round it at {@code reach}.
+     */
+    static double highestGround(IslandField field, double x, double z, double groundY, double reach) {
+        double highest = Math.max(groundY, IslandShape.SEA_LEVEL);
+        for (int n = 0; n < 8; n++) {
+            double t = n * Math.PI / 4.0;
+            highest = Math.max(highest, field.baseHeight(x + reach * Math.cos(t), z + reach * Math.sin(t)));
+        }
+        return highest;
     }
 
     /** Whether a disc of {@code reach} around (x, z) lies in ring 4 proper (no transition zone). */

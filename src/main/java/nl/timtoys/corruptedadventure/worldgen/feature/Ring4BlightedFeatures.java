@@ -153,7 +153,7 @@ public final class Ring4BlightedFeatures {
                 only(BlockPredicate.allOf(Ring4Placements.ON_GROUND, BlockPredicate.matchesTag(Ring4Placements.up(-1), BlockTags.DIRT))));
         register(context, REED_MARSH_REEDS, DENSE_REEDS, JitteredGridPlacement.of(8, 3, 0.85F), SURFACE);
         register(context, BLIGHTED_BANK_REEDS, SPARSE_REEDS, JitteredGridPlacement.of(16, 3, 0.4F), SURFACE,
-                only(Ring4Placements.waterNear(3)));
+                Ring4Filter.builder().waterNear(3).build());
         register(context, REED_MARSH_GLOWCAPS, BLIGHTED_GLOWCAP, JitteredGridPlacement.of(4, 0, 0.12F), SURFACE, only(ON_LAND), outward());
         register(context, BLIGHTED_GLOWCAPS, BLIGHTED_GLOWCAP, JitteredGridPlacement.of(4, 0, 0.05F), SURFACE, only(ON_LAND), outward());
         register(context, BLIGHTED_DEAD_BUSHES, DEAD_BUSH, JitteredGridPlacement.of(4, 0, 0.12F), SURFACE, only(Ring4Placements.ON_GROUND));

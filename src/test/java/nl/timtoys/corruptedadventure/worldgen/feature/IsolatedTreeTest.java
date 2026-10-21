@@ -232,6 +232,32 @@ class IsolatedTreeTest {
         assertTrue(wins(near, far), "the leaf closer to a log stays");
     }
 
+    /**
+     * Backlog r. 367: a vine of {@code island_vines} (mangrove roots) takes exactly the tree blocks a tree coming later
+     * would leave it, so the vine and a neighbour's tree end the same in either order; never terrain, water, the world
+     * tree's leaves or a lift column.
+     */
+    @Test
+    void islandVinesTakeWhatALaterTreeLeavesThem() {
+        BlockState rope = Blocks.MANGROVE_ROOTS.defaultBlockState();
+        BlockState air = Blocks.AIR.defaultBlockState();
+        List<BlockState> treeBlocks = List.of(Blocks.MANGROVE_LEAVES.defaultBlockState(), Blocks.MANGROVE_LOG.defaultBlockState(),
+                Blocks.MANGROVE_ROOTS.defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, true),
+                Blocks.MUDDY_MANGROVE_ROOTS.defaultBlockState(),
+                Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, true),
+                ModBlocks.HANGING_SWAMP_MOSS.get().defaultBlockState(), ModBlocks.GLOWING_HANGING_ROOTS.get().defaultBlockState());
+        for (BlockState block : treeBlocks) {
+            assertEquals(!TreeOverlap.wins(block, rope, air), IslandVinesFeature.takes(rope, block, air), block.toString());
+        }
+        assertTrue(IslandVinesFeature.takes(rope, Blocks.MANGROVE_LEAVES.defaultBlockState(), air));
+        assertFalse(IslandVinesFeature.takes(rope, Blocks.MANGROVE_LOG.defaultBlockState(), air));
+        assertTrue(IslandVinesFeature.takes(rope, air, air));
+        for (BlockState other : List.of(Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), ModBlocks.UPDRAFT.get().defaultBlockState(),
+                ModBlocks.MOONPETAL_LEAVES.get().defaultBlockState().setValue(LeavesBlock.PERSISTENT, true))) {
+            assertFalse(IslandVinesFeature.takes(rope, other, air), other.toString());
+        }
+    }
+
     @Test
     void everyTreeHasItsOwnRandom() {
         long seed = 20260930L;

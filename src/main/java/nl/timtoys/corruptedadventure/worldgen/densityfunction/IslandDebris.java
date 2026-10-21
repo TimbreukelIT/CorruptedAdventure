@@ -132,8 +132,7 @@ final class IslandDebris {
     /** Whether the piece keeps its free space (class comment). */
     private static boolean clear(IslandField field, IslandShape island, Piece piece) {
         int lo = piece.y() - piece.size() + 1;
-        if (piece.y() > IslandPlacement.MAX_TOP
-                || lo < Math.max(field.baseHeight(piece.x() + 0.5, piece.z() + 0.5), IslandShape.SEA_LEVEL) + GROUND_CLEARANCE) {
+        if (piece.y() > IslandPlacement.MAX_TOP || lo < groundUnder(field, piece) + GROUND_CLEARANCE) {
             return false;
         }
         int minX = piece.minX() - KEEP_CLEAR;
@@ -175,25 +174,57 @@ final class IslandDebris {
                 return false;
             }
         }
-        // The rock arches: an arch reaches from its first island's edge past the second's.
+        // The rock arches: an arch reaches from its first island's edge past the second's. Backlog r. 427: only an
+        // island whose candidate arches can reach the box, and only a candidate arch whose rock meets the piece's space
+        // asks whether it stays (archKept, which spreads over the arches around it); the kept arches are those
+        // candidates, so the answer is the same as asking every island's kept pairs.
         int margin = Mth.ceil(IslandField.MAX_REACH + IslandArches.MAX_GAP);
         for (IslandShape other : field.shapesWithin(minX - margin, minZ - margin, maxX + margin, maxZ + margin)) {
-            for (IslandArches.Pair pair : field.landmarks().pairs(other)) {
+            double near = other.reach() + IslandArches.ARCH_MAX_GAP + IslandArches.MAX_MARGIN + 2.0;
+            if (other.x() + near < minX || other.x() - near > maxX || other.z() + near < minZ || other.z() - near > maxZ) {
+                continue;
+            }
+            for (IslandArches.Pair pair : field.landmarks().candidatePairs(other)) {
                 IslandArches.Arch arch = pair.arch();
-                if (arch == null || arch.maxX() < minX || arch.minX() > maxX || arch.maxZ() < minZ || arch.minZ() > maxZ) {
+                if (arch == null || arch.maxX() < minX || arch.minX() > maxX || arch.maxZ() < minZ || arch.minZ() > maxZ
+                        || !meets(arch, minX, minZ, maxX, maxZ, bottom, top)) {
                     continue;
                 }
-                for (int x = minX; x <= maxX; x++) {
-                    for (int z = minZ; z <= maxZ; z++) {
-                        int[] rock = arch.interval(x, z);
-                        if (rock != null && rock[0] <= top && rock[1] >= bottom) {
-                            return false;
-                        }
-                    }
+                if (field.landmarks().archKept(pair)) {
+                    return false;
                 }
             }
         }
         return true;
+    }
+
+    /** Whether the arch's rock lies in the box between {@code bottom} and {@code top}. */
+    private static boolean meets(IslandArches.Arch arch, int minX, int minZ, int maxX, int maxZ, int bottom, int top) {
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                int[] rock = arch.interval(x, z);
+                if (rock != null && rock[0] <= top && rock[1] >= bottom) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The highest ground (or the sea) under the piece (backlog r. 428): over the corners of its box and its centre, so
+     * a clump of 4 beside a fjord wall or a terrace edge keeps its clearance too.
+     */
+    private static double groundUnder(IslandField field, Piece piece) {
+        double ground = Math.max(field.baseHeight(piece.x() + 0.5, piece.z() + 0.5), IslandShape.SEA_LEVEL);
+        if (piece.size() > 1) {
+            for (int corner = 0; corner < 4; corner++) {
+                int x = (corner & 1) == 0 ? piece.minX() : piece.maxX();
+                int z = (corner & 2) == 0 ? piece.minZ() : piece.maxZ();
+                ground = Math.max(ground, field.baseHeight(x + 0.5, z + 0.5));
+            }
+        }
+        return ground;
     }
 
     private static boolean inBox(int x, int z, int minX, int minZ, int maxX, int maxZ) {

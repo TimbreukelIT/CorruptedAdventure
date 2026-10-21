@@ -2,11 +2,9 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
@@ -25,10 +23,13 @@ import java.util.Set;
  * under the vine in places, a glowing root now and then.
  * <p>
  * Every chunk draws its own part of each vine ({@link #rope}: a pure function of the pair, so the parts meet across
- * chunk borders) and writes only in its own chunk. A vine block replaces only air and the leaves of a feature tree
- * (never the world tree's persistent leaves, logs, water or terrain), so whichever decorates first, a neighbour's
- * tree or this chunk, the result is the same; what hangs under it only takes air. Decisions per pair and per block
- * come from a hash of their position, not from the placement random.
+ * chunk borders) and writes only in its own chunk. A vine block replaces only air and the blocks of a feature tree it
+ * outranks as a root ({@link #takes}: leaves, a tree's moss, propagule or strand; never a trunk, the world tree's
+ * persistent leaves, water or terrain), and passes the shape update on where it took one, so what hung on a taken leaf
+ * goes as when the tree comes later and loses that block to the vine ({@link TreeOverlap#wins}, {@link EdgeUpdates};
+ * backlog r. 367): whichever decorates first, a neighbour's tree or this chunk, the result is the same. What hangs
+ * under the vine only takes air. Decisions per pair and per block come from a hash of their position, not from the
+ * placement random.
  */
 public final class IslandVinesFeature extends Feature<IslandVinesConfiguration> {
     /** How far below an edge's top block a vine leaves the island. */
@@ -77,10 +78,17 @@ public final class IslandVinesFeature extends Feature<IslandVinesConfiguration> 
                                 BlockPos.MutableBlockPos pos) {
         boolean placed = false;
         for (BlockPos block : rope) {
-            if ((block.getX() & ~15) != minX || (block.getZ() & ~15) != minZ || !takes(level.getBlockState(block))) {
+            if ((block.getX() & ~15) != minX || (block.getZ() & ~15) != minZ) {
+                continue;
+            }
+            BlockState existing = level.getBlockState(block);
+            if (!takes(config.rope(), existing, level.getBlockState(block.below()))) {
                 continue;
             }
             level.setBlock(block, config.rope(), Block.UPDATE_CLIENTS);
+            if (!existing.isAir()) {
+                EdgeUpdates.apply(level, Set.of(block));
+            }
             placed = true;
             float roll = unit(hash(block.getX(), block.getY(), block.getZ(), STRAND_SALT));
             if (roll < config.strandChance()) {
@@ -96,12 +104,15 @@ public final class IslandVinesFeature extends Feature<IslandVinesConfiguration> 
         return placed;
     }
 
-    /** Air, or the leaves of a feature tree (not persistent: the world tree's leaves are). Never logs, water or terrain. */
-    static boolean takes(BlockState state) {
-        if (state.isAir()) {
-            return true;
-        }
-        return state.is(BlockTags.LEAVES) && state.hasProperty(LeavesBlock.PERSISTENT) && !state.getValue(LeavesBlock.PERSISTENT);
+    /**
+     * Whether the vine block {@code rope} goes where {@code existing} stands on {@code below}: air, or a feature tree's
+     * block that the rope (a root to the trees) wins by the trees' own priority ({@link TreeOverlap#wins}), exactly the
+     * blocks a tree coming later would not take from it. Never terrain, water, the world tree's persistent leaves or a
+     * lift column ({@link TreeOverlap.Rank#NONE}).
+     */
+    static boolean takes(BlockState rope, BlockState existing, BlockState below) {
+        return existing.isAir()
+                || TreeOverlap.existing(existing, below) != TreeOverlap.Rank.NONE && TreeOverlap.wins(rope, existing, below);
     }
 
     /**

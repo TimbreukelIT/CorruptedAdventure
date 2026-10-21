@@ -244,6 +244,34 @@ final class IslandLandmarks {
         return false;
     }
 
+    /** Whether a piece of debris ({@link IslandDebris}) has a block in the column. */
+    boolean inDebris(int x, int z) {
+        for (IslandDebris.Piece piece : cell(x, z).debris()) {
+            if (piece.interval(x, z) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether a rock arch or a piece of debris has a block in the column between {@code lo} and {@code hi}. */
+    boolean rockWithin(int x, int z, int lo, int hi) {
+        Cell cell = cell(x, z);
+        for (IslandArches.Arch arch : cell.arches()) {
+            int[] rock = arch.interval(x, z);
+            if (rock != null && rock[0] <= hi && rock[1] >= lo) {
+                return true;
+            }
+        }
+        for (IslandDebris.Piece piece : cell.debris()) {
+            int[] rock = piece.interval(x, z);
+            if (rock != null && rock[0] <= hi && rock[1] >= lo) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     List<IslandField.WorldTree> worldTrees(int minX, int minZ, int maxX, int maxZ) {
         List<IslandField.WorldTree> found = new ArrayList<>();
         for (WorldTreeShape tree : trees()) {

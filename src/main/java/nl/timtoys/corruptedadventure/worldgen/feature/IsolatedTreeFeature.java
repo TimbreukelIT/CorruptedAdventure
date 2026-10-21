@@ -33,7 +33,8 @@ import java.util.OptionalInt;
  *   <li>where two trees want one block a fixed priority decides ({@link TreeOverlap#wins}: trunk &gt; root &gt; leaf
  *   &gt; moss, glowcap or propagule).</li>
  * </ul>
- * Outside world generation (a sapling, {@code /place}) it is vanilla's tree in the live world.
+ * No tree stands on the floating debris round the big islands ({@link Ring4Terrain#onDebris}). Outside world generation
+ * (a sapling, {@code /place}) it is vanilla's tree in the live world.
  */
 public final class IsolatedTreeFeature extends Feature<TreeConfiguration> {
     /** Keeps the trees' randoms apart from other per-position randoms of the same world seed. */
@@ -50,6 +51,9 @@ public final class IsolatedTreeFeature extends Feature<TreeConfiguration> {
             return Feature.TREE.place(context);
         }
         BlockPos origin = context.origin();
+        if (Ring4Terrain.onDebris(level, origin.getX(), origin.getZ())) {
+            return false;
+        }
         TreeConfiguration config = context.config();
         RandomSource random = random(level.getSeed(), origin);
         TreePlan plan = new TreePlan(level, terrain(level));

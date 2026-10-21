@@ -17,7 +17,7 @@
       "heightmap": "OCEAN_FLOOR_WG"
     },
     {
-      "type": "minecraft:surface_water_depth_filter",
+      "type": "corruptedadventure:ring4_filter",
       "max_water_depth": 4
     },
     {

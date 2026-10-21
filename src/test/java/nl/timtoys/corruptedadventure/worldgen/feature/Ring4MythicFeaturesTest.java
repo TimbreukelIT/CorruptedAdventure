@@ -117,4 +117,13 @@ class Ring4MythicFeaturesTest {
         assertTrue(Ring4Filter.onGround(68, 64.2, 3));
         assertFalse(Ring4Filter.onGround(80, 64.2, 3), "an island's or a bridge deck's top");
     }
+
+    /** Backlog r. 367/415: water on the frozen heightmaps, between the floor and the first open block. */
+    @Test
+    void frozenWaterLiesBetweenTheFloorAndTheFirstOpenBlock() {
+        assertTrue(Ring4Filter.water(62, 60, 63));
+        assertTrue(Ring4Filter.water(60, 60, 63));
+        assertFalse(Ring4Filter.water(63, 60, 63), "the open block over the water");
+        assertFalse(Ring4Filter.water(64, 64, 64), "dry land");
+    }
 }

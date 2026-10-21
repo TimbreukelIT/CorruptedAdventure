@@ -106,7 +106,7 @@ public final class LotusShallowsFeatures {
                 ClusterDensity.of(PATCHES_NOISE, 0.0, 0.35).withSalt(2)), SURFACE, only(Ring4Placements.ON_WATER));
         // The banks: collars of reeds and sugar cane, flowers and a few azalea bushes on higher ground.
         register(context, LOTUS_SHALLOWS_REED_COLLARS, Ring4MythicFeatures.REED_ACCENT, JitteredGridPlacement.of(4, 1, 0.55F), SURFACE,
-                only(Ring4Placements.waterNear(2)));
+                Ring4Filter.builder().waterNear(2).build());
         register(context, LOTUS_SHALLOWS_SUGAR_CANE, SUGAR_CANE, JitteredGridPlacement.of(2, 0, 0.35F, ClusterDensity.of(
                 PATCHES_NOISE, -0.1, 0.3).withSalt(3)), SURFACE, only(BlockPredicate.allOf(ON_LAND, Ring4Placements.waterNear(1))),
                 PlacementUtils.filteredByBlockSurvival(Blocks.SUGAR_CANE));
