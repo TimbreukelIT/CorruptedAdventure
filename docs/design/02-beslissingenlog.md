@@ -913,3 +913,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-21 | worldgen | Nether-5: `white_halls` + `hollow_cathedral`; stilte-meter zoals ontworpen | Tegen eentonigheid (les 5b), idee blijft |
 | 2026-10-21 | infra | Ring 5 in golven zoals ring 4, start na teststop 5c | Bewezen werkwijze |
 | 2026-10-21 | blocks | Tidestone krijgt gespiegelde en gedraaide modelvarianten (zoals vanilla stone) | Herhaling op grote kliffen; 71 zelf goedgekeurd |
+| 2026-10-21 | blocks | Eigen `lagoon_sandstone`-set zoals vanilla zandsteen (blok, smooth, cut, chiseled + trap/plaat/muur, recepten); onder een plafond in `crystal_lagoon` i.p.v. vanilla sandstone | Gebruiker: lagune moet wit blijven, ook als bouwblok |
