@@ -213,13 +213,32 @@ class NetherRing5JsonTest {
     }
 
     /**
-     * The lava step 4|5 (for {@code Ring3JsonTest.everyNetherLavaStepIsCoveredBySolidGround}): Nether ring 5 is solid up to
-     * its floor everywhere ({@link #floorIsFlatAtY31AndSolidBelow}), so it covers a step up to {@code top} if the floor
-     * reaches above it.
+     * The lava step 4|5 (for {@code Ring3JsonTest.everyNetherLavaStepIsCoveredBySolidGround}): Nether ring 5's floor reaches
+     * above {@code top}, and its terrain is solid up to Y {@code top} on a grid over the whole zone 4→5 (depth −32..32 in
+     * the ring, where {@code ring_blend} mixes it with Nether ring 4). Nether ring 4's input is solid there too (its dam,
+     * {@code NetherRing4JsonTest.assertDamSolidUpTo}), and a mix of two solid inputs is solid.
+     * <p>
+     * Limitation: this samples the two inputs, not the blended density of the running world; the scan of the generated
+     * world ({@code tools/nether-lava-walls.py} r 2.000, {@code lavascan.py}) is INT1's.
      */
     static void assertSolidUpTo(int top, String boundary) {
         JsonObject halls = WorldgenData.read(DIR + "terrain.json").getAsJsonObject("settings").getAsJsonObject("halls");
         assertTrue(halls.get("floor_top").getAsInt() >= top, boundary + ": Nether ring 5's floor must reach Y " + top);
+        int sampled = 0;
+        for (int x = -NetherCathedralsTest.REACH; x <= NetherCathedralsTest.REACH; x += 5) {
+            for (int z = -NetherCathedralsTest.REACH; z <= NetherCathedralsTest.REACH; z += 5) {
+                double depth = NetherCathedralsTest.depth(LAYOUT, x, z);
+                if (depth < -NetherCathedralsTest.INNER_ZONE_HALF || depth > NetherCathedralsTest.INNER_ZONE_HALF
+                        || Math.hypot(x, z) > (NetherCathedralsTest.INNER + NetherCathedralsTest.OUTER) / 2.0) {
+                    continue;
+                }
+                sampled++;
+                for (int y = 0; y <= top; y++) {
+                    assertTrue(density(x, y, z) > 0.0, boundary + ": Nether ring 5 open at " + x + " " + y + " " + z);
+                }
+            }
+        }
+        assertTrue(sampled > 1000, boundary + ": the zone 4→5 sampled (" + sampled + ")");
     }
 
     /** A density function file must be a number or an object (the registry codec takes no bare reference). */

@@ -41,6 +41,11 @@ public final class NetherCathedrals implements DensityFunction {
     static final double BOUND = 2.5;
     /** Density per block above or below a surface (the scripts' {@code (height - y) / 8}). */
     static final double SLOPE = 0.125;
+    /**
+     * The highest lowest-solid Y of a cathedral roof: vanilla's Nether surface paints netherrack from {@code below_top 5}
+     * (Y 122) up, before any biome branch, so a roof at 122 or higher would not be white stone.
+     */
+    static final int ROOF_MAX = 121;
     /** Blocks between the points tested on a cathedral's outline against {@code edge} (the boundary noise has ripples). */
     static final double OUTLINE_SPACING = 4.0;
     private static final int COLUMN_MEMORY = 256;
@@ -65,6 +70,7 @@ public final class NetherCathedrals implements DensityFunction {
     private final DensityFunction edge;
     private final Settings settings;
     private final Map<Long, Cell> decided;
+    // Lazy: a Memory is only made for a thread that reads the terrain (never for the mask, which reads the shared map).
     private final ThreadOwned<Memory> memory = new ThreadOwned<>(Memory::new);
 
     public NetherCathedrals(Output output, NoiseHolder cells, NoiseHolder plains, DensityFunction edge, Settings settings) {
@@ -491,7 +497,8 @@ public final class NetherCathedrals implements DensityFunction {
             if (2 * ((int) c.radius().max() + c.clearance()) >= c.cellSize()) {
                 return DataResult.error(() -> "nether_cathedrals: a cathedral with its clearance must fit in its cell");
             }
-            if (c.pillarRadius().max() >= c.radius().max() - c.rim().max()) {
+            // the smallest hall with the widest rim must still hold the widest giant column inside its rim
+            if (c.pillarRadius().max() >= c.radius().min() - c.rim().max()) {
                 return DataResult.error(() -> "nether_cathedrals: the giant column must stand inside the rim");
             }
             if (h.pillarSize() + 2 > h.grid()) {
@@ -499,6 +506,12 @@ public final class NetherCathedrals implements DensityFunction {
             }
             if (!(h.floorTop() < h.ceiling() && h.ceiling() <= h.roof())) {
                 return DataResult.error(() -> "nether_cathedrals: floor < ceiling <= roof");
+            }
+            if (h.roof() > ROOF_MAX) {
+                return DataResult.error(() -> "nether_cathedrals: the roof must lie below the Nether's netherrack and bedrock roof (Y " + ROOF_MAX + ")");
+            }
+            if (h.floorTop() + (int) h.plainsHeight().max() >= h.ceiling()) {
+                return DataResult.error(() -> "nether_cathedrals: the highest plain must stay below the ceiling");
             }
             return DataResult.success(settings);
         }

@@ -210,6 +210,44 @@ public class NetherCathedralsTest {
         assertSame(wired.decided(), found.decided(), "find gives a copy of the terrain with its cells");
     }
 
+    /**
+     * Each world wires its own noises and starts its own map of decided cells: an unwired function wired for seed A and
+     * for seed B never share cells, and neither shares the unwired source's map, so no cell of one world (or of the
+     * datagen-time object) leaks into another.
+     */
+    @Test
+    void everyWiringStartsItsOwnCells() {
+        JsonObject json = WorldgenData.read(DIR + "terrain.json");
+        NetherCathedrals.Settings settings = NetherCathedrals.Settings.CODEC.parse(JsonOps.INSTANCE, json.get("settings")).getOrThrow();
+        DensityFunction.NoiseHolder cells = netherNoise("nether_ring_5_cathedral_cells", SEED);
+        DensityFunction.NoiseHolder plains = netherNoise("nether_ring_5_region", SEED);
+        NetherCathedrals unwired = new NetherCathedrals(NetherCathedrals.Output.TERRAIN, new DensityFunction.NoiseHolder(cells.noiseData()),
+                new DensityFunction.NoiseHolder(plains.noiseData()), new Edge(layout(SEED), 56.0), settings);
+        NetherCathedrals a = (NetherCathedrals) unwired.mapAll(wiring(SEED));
+        NetherCathedrals b = (NetherCathedrals) unwired.mapAll(wiring(SEED + 1));
+        assertNotSame(unwired.decided(), a.decided(), "source and world A");
+        assertNotSame(a.decided(), b.decided(), "world A and world B");
+        assertNotEquals(all(a), all(b), "two seeds, two layouts of cells");
+        assertEquals(all(terrain(SEED)), all(a), "the wiring gives the seed's cells");
+    }
+
+    /** A visitor that wires every noise as the Nether's random state does on {@code seed}. */
+    private static DensityFunction.Visitor wiring(long seed) {
+        return new DensityFunction.Visitor() {
+            @Override
+            public DensityFunction apply(DensityFunction function) {
+                return function;
+            }
+
+            @Override
+            public DensityFunction.NoiseHolder visitNoise(DensityFunction.NoiseHolder holder) {
+                // The holders are direct (no key): tell the two noises apart by their parameters.
+                boolean plains = holder.noiseData().value().equals(WorldgenData.noiseParameters("nether_ring_5_region"));
+                return netherNoise(plains ? "nether_ring_5_region" : "nether_ring_5_cathedral_cells", seed);
+            }
+        };
+    }
+
     /** The mask: 1 inside the rim, 0 beyond the footprint, ≥ 0.5 up to the middle of the rim (the biome's threshold). */
     @Test
     void maskCoversTheHallUpToTheMiddleOfItsRim() {

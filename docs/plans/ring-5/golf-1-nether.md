@@ -105,6 +105,8 @@ Voortgang: 2026-10-21 21:00 `nether_cathedrals` (Java), terrein-/surfacescript, 
 Voortgang: 2026-10-21 21:15 kalibratie (aantal kathedralen, aandeel vlaktes); gerichte tests groen; volledige build + runData
 Voortgang: 2026-10-21 21:28 B groen (1.167 tests, 0 fouten), D groen; S-smoke `r5-87` (log 0 ERROR), kaarten in `build/test/maps/golf-1/`; zelfreview; commit
 
+Voortgang: 2026-10-21 reviewbevindingen 3dcfb263 verwerkt (validaties, test eigen cellen per bedrading, zone 4→5-raster in de lavatrede-check); B (1.167 tests, 0 fouten) en D groen
+
 ## Tests en metingen (87)
 - **B** `./gradlew build` groen: 1.167 tests, 0 fouten (incl. `ClientIsolationTest`). **D** `runData` groen;
   `src/generated`: 2 biome-JSON's, `is_nether_ring_5`, `silent`, `c:is_nether`, `c:is_dry/nether`, lang en/nl (gecommit).
@@ -160,6 +162,9 @@ Voortgang: 2026-10-21 21:28 B groen (1.167 tests, 0 fouten), D groen; S-smoke `r
   - `tools/worldgen/nether_ring5_terrain.py`, `nether_ring5_surface.py` (W-nether; idempotent).
 - **Tests:** `NetherCathedralsTest`, `NetherRing5JsonTest`, `NetherRing5BiomesTest`; `Ring3JsonTest` (ring 5-tak in de
   lavatrede-check: ring 5 is nu de lage kant van 4\|5), `Ring5JsonTest` (alleen de Nether-asserts).
+- **Correctie contract (INT1 past `contract.md` §4 toe):** de tabelregel `ring_5/nether/region` ("flat_cache van
+  `nether_ring_5_region` (−9)") klopt sinds 87 niet meer: het is de `flat_cache` van het kathedraalmasker
+  (`nether_cathedrals`, `output` `mask`); `nether_ring_5_region` is nu de ruis van de vlaktes (`plains`).
 - **Valkuilen:** `ThreadOwned` op een gedeelde instantie (climate sampler, `/ca terrainmap`-workers) wisselt per thread
   en maakt dan steeds een nieuw geheugen: `mask` leest daarom direct de gedeelde map, de surface een eigen `Reader`.
 
@@ -183,6 +188,10 @@ Voortgang: 2026-10-21 21:28 B groen (1.167 tests, 0 fouten), D groen; S-smoke `r
   binnen de rand Y 120. Masker = (r − d) / rand, biome-drempel 0,5 (midden van de rand).
 - (implementatie) Surface: vloer-topblok (Y 31) `smooth_quartz`, eronder `diorite`, zuilen (conditie
   `nether_ring_5_pillar`) `quartz_pillar`, al het andere `calcite`. Bovenop een vlakte dus `calcite`, geen spiegelsteen.
+
+- (review 3dcfb263) `Settings` weigert nu ook: een reuzenzuil die in de kleinste hal met de breedste rand niet binnen de
+  rand past (`pillar_radius.max < radius.min − rim.max`), een dak boven Y 121 (vanilla's netherrack-regel `below_top 5`
+  begint op Y 122) en een hoogste vlakte tot aan het plafond (`floor_top + plains_height.max < ceiling`).
 
 ## Backlog
 - `atmosphere` (98, A): zonder eigen muziek speelt de client in een biome zonder `background_music` vanilla's
