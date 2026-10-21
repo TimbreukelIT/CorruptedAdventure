@@ -29,7 +29,8 @@
     "erosion": "corruptedadventure:ring_blend/overworld_erosion",
     "final_density": {
       "type": "corruptedadventure:zone_fracture",
-      "argument": "corruptedadventure:ring_blend/overworld"
+      "argument": "corruptedadventure:ring_blend/overworld",
+      "hash": "corruptedadventure:zone_4_5_cells"
     },
     "fluid_level_floodedness": "corruptedadventure:ring_blend/overworld_floodedness",
     "fluid_level_spread": {

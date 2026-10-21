@@ -99,7 +99,8 @@ class Ring5JsonTest {
         for (String stub : STUBS) {
             assertEquals(0.0, element(DF + "ring_5/overworld/" + stub + ".json").getAsDouble(), stub);
         }
-        assertEquals(0.0, element(DF + "zone_4_5/overworld/fracture.json").getAsDouble());
+        assertEquals("corruptedadventure:zone_fracture_value",
+                WorldgenData.read(DF + "zone_4_5/overworld/fracture.json").getAsJsonObject("argument").get("type").getAsString());
         assertOutput(DF + "ring_5/overworld/breakup.json", "breakup", true);
         assertOutput(DF + "ring_5/overworld/castles.json", "castles", true);
         assertOutput(DF + "ring_5/overworld/initial_height.json", "initial_height", false);

@@ -1,1 +1,7 @@
-0.0
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "corruptedadventure:zone_fracture_value",
+    "hash": "corruptedadventure:zone_4_5_cells"
+  }
+}

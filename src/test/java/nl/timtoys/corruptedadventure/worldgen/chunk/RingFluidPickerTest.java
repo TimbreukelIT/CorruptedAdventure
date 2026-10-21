@@ -28,19 +28,20 @@ class RingFluidPickerTest {
         for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_4}) {
             assertSame(SEA, PICKER.computeFluid(RingPosition.within(ring), 0, 40, 0));
         }
-        // 5a: the zone 4→5 (both halves) has the abyss's still sea at Y 0, not the sea up to Y 62.
-        for (double blend : new double[]{0.1, 0.9}) {
+        // 85 (V7-A): the fracture zone 4→5 (both halves) is dry at every height (below Y −54 ring 4's dam holds rock).
+        for (double blend : new double[]{0.1, 0.4, 0.6, 0.9}) {
             RingPosition zone = new RingPosition(Ring.RING_4, Ring.RING_5, blend);
-            assertTrue(PICKER.computeFluid(zone, 0, 40, 0).at(40).isAir(), "zone 4→5 at " + blend);
-            assertTrue(PICKER.computeFluid(zone, 0, 1, 0).at(1).isAir());
-            assertSame(SEA.at(0), PICKER.computeFluid(zone, 0, 0, 0).at(0));
+            for (int y : new int[]{100, 62, 40, 1, 0, -20, -53, -60}) {
+                assertTrue(PICKER.computeFluid(zone, 0, y, 0).at(y).isAir(), "zone 4→5 at " + blend + ", y " + y);
+            }
         }
     }
 
     /**
      * 82 (V9-B): no sea in overworld ring 5 (switching hard on {@code ring()}, so also its half of the zone 5→void, which
      * has no fluid anyway), but vanilla's lava layer below Y −54 in the inner band, more than the dam inside the band
-     * line; the band is only asked there. The zone 4→5 keeps its own sea until 85, the Nether its own rules.
+     * line; the band is only asked there. Its half of the zone 4→5 counts as ring 5 (85), but the zone's own dry rule
+     * comes first; the Nether keeps its own rules.
      */
     @Test
     void ring5IsDryWithItsLavaLayerOnlyInTheInnerBand() {
@@ -70,9 +71,12 @@ class RingFluidPickerTest {
         assertTrue(RingFluidPicker.ring5Dry(Level.OVERWORLD, ring5));
         assertFalse(RingFluidPicker.ring5Dry(Level.OVERWORLD, new RingPosition(Ring.RING_5, Ring.VOID, 0.2)));
         assertFalse(RingFluidPicker.ring5Dry(Level.NETHER, ring5));
-        for (double blend : new double[]{0.4, 0.6}) {
-            assertFalse(RingFluidPicker.ring5Dry(Level.OVERWORLD, new RingPosition(Ring.RING_4, Ring.RING_5, blend)), "zone 4→5 at " + blend);
-        }
+        assertFalse(RingFluidPicker.ring5Dry(Level.OVERWORLD, new RingPosition(Ring.RING_4, Ring.RING_5, 0.4)));
+        assertTrue(RingFluidPicker.ring5Dry(Level.OVERWORLD, new RingPosition(Ring.RING_4, Ring.RING_5, 0.6)));
+        // No lava layer in the zone, whatever the band says: the zone's rule comes first.
+        RingFluidPicker lavaEverywhere = new RingFluidPicker(Level.OVERWORLD, (x, y, z) -> new Aquifer.FluidStatus(-54,
+                Blocks.LAVA.defaultBlockState()), Map.of(), (x, z) -> -500.0);
+        assertTrue(lavaEverywhere.computeFluid(new RingPosition(Ring.RING_4, Ring.RING_5, 0.6), 0, -60, 0).at(-60).isAir());
         for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_4, Ring.VOID}) {
             assertFalse(RingFluidPicker.ring5Dry(Level.OVERWORLD, RingPosition.within(ring)), ring.name());
         }
@@ -171,12 +175,10 @@ class RingFluidPickerTest {
             assertTrue(c.at(13).isAir());
         }
         RingFluidPicker overworld = new RingFluidPicker(Level.OVERWORLD, (x, y, z) -> SEA, Map.of(Ring.RING_4, 62));
-        RingPosition sundered = new RingPosition(Ring.RING_4, Ring.RING_5, 0.6);
-        int top = RingFluidPicker.SUNDERED_SEA_TOP;
-        assertTrue(overworld.computeFluid(sundered, 0, 10, 0).at(top + 1).isAir());
-        assertSame(Blocks.WATER.defaultBlockState(), overworld.computeFluid(RingPosition.within(Ring.RING_4), 0, 10, 0).at(top + 1));
-        assertSame(Blocks.WATER.defaultBlockState(), overworld.computeFluid(sundered, 0, 10, 0).at(top));
-        assertTrue(overworld.computeFluid(sundered, 0, 10, 0).at(top + 1).isAir());
+        RingPosition zone = new RingPosition(Ring.RING_4, Ring.RING_5, 0.6);
+        assertSame(Blocks.WATER.defaultBlockState(), overworld.computeFluid(RingPosition.within(Ring.RING_4), 0, 10, 0).at(1));
+        assertTrue(overworld.computeFluid(zone, 0, 10, 0).at(0).isAir());
+        assertTrue(overworld.computeFluid(zone, 0, 10, 0).at(1).isAir());
     }
 
     @Test

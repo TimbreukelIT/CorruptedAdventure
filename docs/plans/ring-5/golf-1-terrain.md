@@ -208,6 +208,7 @@ op `castles.txt` (klein), in overleg met main (slot).
 ## Voortgang
 - Voortgang: 2026-10-21 20:41 worktree `P:/Projecten/Java/wt/r5-terrain-g1` op `ring5/terrain-g1` (vanaf 3dfd50aa), `setup.sh W-terrein 1`, eerste compile groen; start 84.
 - Voortgang: 2026-10-21 21:49 84 klaar: build groen (1.153 tests), runData zonder wijziging, S-smoke `r84` (log schoon, `/ca castles`, kaarten oost + kasteel #1 + doorsnede); commit.
+- Voortgang: 2026-10-21 22:16 85 klaar: build groen (1.154 tests, 1 overgeslagen), runData zonder wijziging, S-smoke `pre1` (log schoon) + kaartenset 6-pre-1 in `build/test/maps/6-pre-1/`; commit, daarna 83.
 
 ## CODEBASE-delta
 **84:** `Ring5Field` echt voor de buitenband: codec-veld `noises` (`Noises`: `rot` = `ring_5_rot`, `relief`, `detail`, `scars`;
@@ -225,6 +226,19 @@ ring_5; `void/overworld` = `add(0, ring_5/overworld)` (V2-A; de oude zwevende ei
 overworld weg, Nether ongewijzigd); `ring_blend/overworld_initial` void = `ring_5/overworld/initial_terrain`;
 `ring_blend/overworld_erosion` + `switch_at ["ring_5"]` (verzoek main na de review van 86). Tests: `Ring5OuterTest`,
 `CastleBridgesTest`, `Ring5FieldTest`/`Ring5JsonTest`/`Ring3JsonTest` aangepast.
+**85:** `ZoneFracture` is nu een klasse (geen record) met codec-velden `argument` en `hash` (`noise/zone_4_5_cells`, nieuw);
+vorm in `ZoneFractureShape` (constanten + beslissingen per kolom), 2D-waarde `ZoneFractureValue` (DF-type
+`zone_fracture_value`, `zone_4_5/overworld/fracture` = flat_cache ervan). Accessors: statisch `strength(layout, eff)`;
+instance `crackAt`, `floeAt`, `landmarksWithin`/`landmarks` → `Landmark(x, z, topY, radius)`, `find(root)`;
+`CALM_SHARE`. `ring_4/overworld/sundered` = `add(0, zone_4_5/overworld/fracture)`. `Ring4Sundered` teruggebracht tot
+zonegrenzen + rand (`zoneStart`, `zoneEnd`, `inRim`, `RIM_TOP`, `RIM_BEFORE`); weg: scheurraster, losse brokken,
+landbruggen, afgrond, zee Y 0, `CALM_SHARE`. `IslandField`: `sunder`, `Sunder`, `SUNDERED_CALM_SHARE`,
+`Column.sundered/sunderKind/abyssSeaTop/abyssFloor` weg; `landBridgesNear` `@Deprecated(forRemoval = true)` en leeg.
+`IslandOutput.SUNDERED` weg (ook uit `Ring4Filter`). `RingFluidPicker`: `sunderedZone` → `fractureZone` (public),
+`sunderedSealBelow` → `fractureSealBelow`, `SUNDERED_SEA_TOP` weg; zone 4→5 overal droog (picker `NO_FLUID`); `ring5Dry`
+sluit de zone niet meer uit (zoneregel gaat voor). `RingAquifer`: zone droog vanaf Y −54 (`airFrom`), abyss-takken weg.
+Tests: `Ring4SunderedTest` weg, `ZoneFractureTest` nieuw, `RingFluidPickerTest`/`RingAquiferTest`/`Ring4JsonTest`/
+`Ring5JsonTest`/`Ring5FieldTest` aangepast, `DecorDLandmarksTest` brug-test `@Disabled`.
 
 ## Beslissingen
 **84 (implementatiekeuzes):**
@@ -254,7 +268,29 @@ overworld weg, Nether ongewijzigd); `ring_blend/overworld_initial` void = `ring_
 - `height` = top van de vaste grond (scheurkolommen: de schotstop), `VOID_HEIGHT` boven de void.
 - Kaarten: `/ca terrainmap` zoekt de top in grove stappen, dus dunne dekken (4–8) zien er op de bovenkaart gestippeld uit;
   de doorsnede toont ze heel.
+**85 (implementatiekeuzes):**
+- Spleten = randen van een gejitterd raster van 48 (langs de ring) × 26 (dwars), gebogen met ±7: een netwerk langs en
+  schuin op de ring. Halve breedte 1–4 × sterkte (2–8 breed), bodem 30–60 onder de grond (± 2 ruw). De sterkte is 0 in
+  de eerste en laatste 16 blokken van de zone en vol na 32 meer. Gemeten (testseed): dicht 0,76–0,79 per strook van 32 in
+  het midden, 0,98 aan de randen, gemiddeld 0,82; mediane spleet radiaal 4 breed.
+- De grond onder de snede komt uit de twee terreinen die de blend mengt (`IslandField`-oppervlak en `Ring5Field`-top,
+  gewogen met de blend en hun dichtheidshelling 0,08/0,125); zonder die velden (tests) Y 72. Diepte, schotsen en brokken
+  rekenen vanaf die grond.
+- Oversteken: langs elke spleetrand om de 24–34 blokken een dichte plek van 4 lang (de "ingestorte schots" op
+  grondhoogte: lopend over te steken, niet springen). De variant "smalle plek ≤ 3" is niet gebouwd.
+- Opgeheven schotsen: 20 % van de cellen, 8–30 omhoog, kanteling ≤ 30°, rots tot 12 onder de grond. Losse brokken: per
+  cel van 40 kans 0,45 (buitenste helft) / 0,1 (binnenste), alleen boven een spleet, Ø 4–16, 4–16 boven de grond, ≥ 3 dik.
+- Landmarks: om de ~650 (± 100) langs de zone op 55 % van de zone, straal 9–13, 10–16 boven de grond, vlak, 4 blokken
+  rondom zonder spleet. W-biomes 86c leest `ZoneFracture.landmarksWithin` (via `find` op de router); tot dan plaatst de
+  gespleten rots niets (`landBridgesNear` leeg).
+- Vloeistof: zone 4→5 (beide helften) droog op elke hoogte boven de dam −54; de kalme eerste strook (`CALM_SHARE`
+  16/256) blijft onder Y 63 dicht (zoals de oude `sunderedSealBelow`), zodat ring 4's zee in een grot over de binnenrand
+  niet naast lucht staat.
+- `sundered_reach`-features: ongewijzigd (de gespleten rots vindt geen bruggen meer en plaatst niets); geen aparte commit
+  nodig.
 
 ## Backlog
+- [worldgen] 86c (W-biomes): `SplitRockFeature` naar `ZoneFracture.landmarksWithin` en `IslandField.landBridgesNear` +
+  `LandBridge` + de uitgeschakelde test in `DecorDLandmarksTest` verwijderen (compile-waarschuwing `[removal]` tot dan).
 - [infra] `/ca terrainmap` (bovenkaart) mist dunne lagen (bruggen, ruggen, springstenen) door de grove stap van
   `ColumnScan`; voor ring 5 een fijnere stap of een "spans"-pad (infra/tooling).

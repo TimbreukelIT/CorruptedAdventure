@@ -44,7 +44,9 @@ import javax.annotation.Nullable;
  * tunnel net fills its own open space ({@link Ring4Tunnels.Span}: water and air domes, the dry net's air, swamp gas,
  * poison pools, dry sinkholes) and keeps carvers out of the rock around its sealed spaces; all other open space of ring
  * 4 is water up to the sea's top block and air above ({@link RingFluidPicker#ring4Flooded}), not vanilla's local levels.
- * Overworld ring 5 (82, V9-B; not the zone 4→5): dry, all open space is air ({@link RingFluidPicker#ring5Dry}), except
+ * The fracture zone 4→5 (85, V7-A): dry, open space from Y −54 up is air ({@link RingFluidPicker#fractureZone}), its calm
+ * first strip sealed below the sea level ({@link RingFluidPicker#fractureSealBelow}).
+ * Overworld ring 5 (82, V9-B; behind the zone 4→5): dry, all open space is air ({@link RingFluidPicker#ring5Dry}), except
  * vanilla's lava layer below Y −54 in the inner band ({@link RingFluidPicker#ring5LavaColumn}, left to vanilla) behind a
  * dam of rock along the line between the bands ({@link RingFluidPicker#ring5Dam}); carvers place no lava outside the
  * layer ({@link #carverLava}).
@@ -123,10 +125,6 @@ final class RingAquifer implements Aquifer {
     private final int[] waterSpringY = new int[COLUMNS + 1];
     private final int[] lakeTop = new int[COLUMNS + 1];
     private final int[] lakeFloor = new int[COLUMNS + 1];
-    // The top (exclusive) of the still sea of the abyss in the zone 4→5 (63), else Integer.MIN_VALUE.
-    private final int[] abyssTop = new int[COLUMNS + 1];
-    private final int[] abyssFloor = new int[COLUMNS + 1];
-    private final boolean[] zone45 = new boolean[COLUMNS + 1];
     private final int[] lakeGuardBottom = new int[COLUMNS + 1];
     private final int[] lakeGuardTop = new int[COLUMNS + 1];
     // verdant_falls (2c part 2): open space the field carves under the ground (niches, tunnels, a gorge's ledge path
@@ -265,11 +263,14 @@ final class RingAquifer implements Aquifer {
     private void load(int i, RingPosition position, int x, int z) {
         noFluid[i] = RingFluidPicker.noFluid(position);
         sealBelow[i] = Math.max(Math.max(RingFluidPicker.ring3SealBelow(dimension, position), RingFluidPicker.ring4DamBelow(dimension, position)),
-                RingFluidPicker.sunderedSealBelow(dimension, position));
+                RingFluidPicker.fractureSealBelow(dimension, position));
         dryBelow[i] = RingFluidPicker.ring4DryBelow(dimension, position);
         noLava[i] = RingFluidPicker.ring4NoLava(dimension, position);
         airFrom[i] = Integer.MAX_VALUE;
-        if (RingFluidPicker.ring5Dry(dimension, position)) {
+        if (RingFluidPicker.fractureZone(dimension, position)) {
+            // The fracture zone 4→5 (85, V7-A): dry from vanilla's lava layer up, ring 4's dam below it.
+            airFrom[i] = RingFluidPicker.LAVA_LAYER_TOP;
+        } else if (RingFluidPicker.ring5Dry(dimension, position)) {
             // Ring 5 (82, V9-B): the band is asked once per column. The lava layer stays vanilla's; the dam holds rock
             // below its top; the outer band is air down to the void.
             double band = bands.signedDistance(x, z);
@@ -282,12 +283,7 @@ final class RingAquifer implements Aquifer {
             noLava[i] = !lava;
         }
         boolean falls = RingFluidPicker.ring4WaterColumn(dimension, position, islands);
-        // The zone 4→5 (both halves) has the abyss's still sea (63), read from the island field's column.
-        boolean sundered = islands != null && position.inTransition() && position.inner() == Ring.RING_4 && position.outer() == Ring.RING_5;
-        IslandField.Column islandColumn = falls || sundered ? islands.islandColumn(x, z) : null;
-        zone45[i] = sundered;
-        abyssTop[i] = sundered ? islandColumn.abyssSeaTop() : Integer.MIN_VALUE;
-        abyssFloor[i] = sundered ? islandColumn.abyssFloor() : Integer.MAX_VALUE;
+        IslandField.Column islandColumn = falls ? islands.islandColumn(x, z) : null;
         waterFallTop[i] = falls ? islandColumn.fallTop() : Integer.MIN_VALUE;
         waterFallBottom[i] = falls ? islandColumn.fallBottom() : Integer.MIN_VALUE;
         waterFallFlow[i] = falls ? islandColumn.fallFlowBelow() : Integer.MIN_VALUE;
@@ -352,17 +348,6 @@ final class RingAquifer implements Aquifer {
         if (y >= airFrom[i]) {
             // Ring 5 is dry (82): no sea, no aquifer water or lava, never scheduled to flow.
             return AIR;
-        }
-        if (abyssTop[i] != Integer.MIN_VALUE && y >= abyssFloor[i]) {
-            // The open abyss in the zone 4→5 (63), from its floor up: the still sea up to its top, air above, never
-            // scheduled to flow; the same level as the rest of the zone (RingFluidPicker.sunderedZone).
-            suppressed = true;
-            return y < abyssTop[i] ? WATER : AIR;
-        }
-        if (zone45[i] && y <= RingFluidPicker.SUNDERED_SEA_TOP) {
-            // 5a: every other open space of the zone at or below its sea (a cave, the ground the 4-block grid opens beside
-            // a crack, space under the abyss's floor) stays rock, so the abyss's water never stands beside air there.
-            return null;
         }
         if (y < dryBelow[i]) {
             return AIR;
@@ -478,13 +463,6 @@ final class RingAquifer implements Aquifer {
         if (dryFrom[i] != Integer.MAX_VALUE && y >= RingFluidPicker.LAVA_LAYER_TOP && state.is(Blocks.LAVA)) {
             // 42b (V2 = A): no local aquifer lava in ring 3 (its pools stood against the air of their caves); lava lies
             // only where the terrain puts it. Vanilla's lava layer below stays.
-            suppressed = true;
-            return AIR;
-        }
-        if (zone45[i] && y > RingFluidPicker.SUNDERED_SEA_TOP && (state.is(Blocks.WATER) || state.is(Blocks.LAVA))) {
-            // Review 5a: vanilla fills a cave from its nearest aquifer cells, whose centres may lie in ring 4 (sea Y 62)
-            // while the cave is in the zone; above the zone's sea its open space is dry, so no pocket of water stands
-            // against the air of a crack.
             suppressed = true;
             return AIR;
         }

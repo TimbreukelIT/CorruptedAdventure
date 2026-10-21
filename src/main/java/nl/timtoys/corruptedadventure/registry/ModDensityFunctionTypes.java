@@ -28,6 +28,7 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.VoidEdge;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicOutput;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.ZoneFracture;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.ZoneFractureValue;
 
 public final class ModDensityFunctionTypes {
     private static final DeferredRegister<MapCodec<? extends DensityFunction>> DENSITY_FUNCTION_TYPES =
@@ -127,6 +128,10 @@ public final class ModDensityFunctionTypes {
     /** {@code corruptedadventure:zone_fracture} (the fracture zone 4→5 around the overworld's final density; 82 skeleton, 85) */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<ZoneFracture>> ZONE_FRACTURE =
             DENSITY_FUNCTION_TYPES.register("zone_fracture", () -> ZoneFracture.MAP_CODEC);
+
+    /** {@code corruptedadventure:zone_fracture_value} (the column value of the fracture zone 4→5, package 85) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<ZoneFractureValue>> ZONE_FRACTURE_VALUE =
+            DENSITY_FUNCTION_TYPES.register("zone_fracture_value", () -> ZoneFractureValue.MAP_CODEC);
 
     private ModDensityFunctionTypes() {
     }

@@ -186,7 +186,7 @@ public class Ring5FieldTest {
         DensityFunction router = DensityFunctions.add(DensityFunctions.interpolated(new Ring5Output(field, Ring5Output.Output.TERRAIN)),
                 DensityFunctions.zero());
         // find maps the router: it gives the mapped copy, equal and with the same decisions.
-        Ring5Field found = Ring5Field.find(new ZoneFracture(router));
+        Ring5Field found = Ring5Field.find(new ZoneFracture(router, IslandFieldTest.noise("zone_4_5_cells", SEED), () -> LAYOUT));
         assertEquals(field, found);
         assertSame(field.decisions(), found.decisions());
         DensityFunction copy = field.mapAll(function -> function);
