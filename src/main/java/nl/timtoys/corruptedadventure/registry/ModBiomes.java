@@ -77,7 +77,7 @@ public final class ModBiomes {
     /** The void itself with its chunks and bridges: every outer-band column with much void (V12-A). */
     public static final ResourceKey<Biome> SHATTERED_EXPANSE = key("shattered_expanse");
 
-    // Nether ring 5 (NetherRing5Biomes, 87). Keys only until then.
+    // Nether ring 5 (NetherRing5Biomes, 87).
     public static final ResourceKey<Biome> WHITE_HALLS = key("white_halls");
     public static final ResourceKey<Biome> HOLLOW_CATHEDRAL = key("hollow_cathedral");
 

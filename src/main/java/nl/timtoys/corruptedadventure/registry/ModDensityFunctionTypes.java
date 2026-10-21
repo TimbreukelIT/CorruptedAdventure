@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.CanyonDetails;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.CellEdges;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.DewGeodes;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.GiantGeodes;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.NetherCathedrals;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.SeaFossils;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandOutput;
@@ -127,6 +128,12 @@ public final class ModDensityFunctionTypes {
     /** {@code corruptedadventure:zone_fracture} (the fracture zone 4→5 around the overworld's final density; 82 skeleton, 85) */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<ZoneFracture>> ZONE_FRACTURE =
             DENSITY_FUNCTION_TYPES.register("zone_fracture", () -> ZoneFracture.MAP_CODEC);
+
+    // ring 5 — W-nether
+
+    /** {@code corruptedadventure:nether_cathedrals} (Nether ring 5: the cathedral mask and the terrain of the white halls, package 87) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<NetherCathedrals>> NETHER_CATHEDRALS =
+            DENSITY_FUNCTION_TYPES.register("nether_cathedrals", () -> NetherCathedrals.MAP_CODEC);
 
     private ModDensityFunctionTypes() {
     }
