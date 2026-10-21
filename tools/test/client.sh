@@ -18,6 +18,8 @@
 #                                      (a reserved slot goes back to the running server instead)
 # Exit 3 when the user is playing (C:/Temp/ca-user-test.lock).
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+# Window handling and screenshots go through win.ps1 (PowerShell, user32): Windows only.
+[ "$CA_OS" = windows ] || ca_die "client.sh needs Windows (Git Bash + PowerShell for the client window); on $(uname -s) only the headless server tools work"
 
 k=1
 pick() { case "$1" in 1|2) k="$1" ;; "") ;; *) ca_die "client number must be 1 or 2" ;; esac; }

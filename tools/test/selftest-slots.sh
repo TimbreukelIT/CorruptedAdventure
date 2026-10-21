@@ -115,13 +115,18 @@ reset; foreign 1 a 7777 30; foreign 2 b 7778 30; foreign 3 c 1111
 slots take --tasks server,client1 --pid 1111 >/dev/null
 check "take after clean: pair held" [ "$(slots held | wc -l)" = 2 ]
 
-# 8. Unknown liveness (PowerShell fails) keeps everything.
-reset; foreign 1 a 7777 30
-mkdir -p "$SCRATCH/bin"; printf '#!/bin/sh\nexit 1\n' > "$SCRATCH/bin/powershell"; chmod +x "$SCRATCH/bin/powershell"
-( unset CA_ALIVE_PIDS; PATH="$SCRATCH/bin:$PATH" bash "$T/slots.sh" clean >/dev/null )
-check "clean: unknown liveness keeps" [ -d "$(slot 1)" ]
+# 8. Unknown liveness (PowerShell fails) keeps everything. Windows only: the posix lookup (kill -0, /proc) cannot fail.
+case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) windows=1 ;; *) windows=0 ;; esac
+if [ $windows = 1 ]; then
+    reset; foreign 1 a 7777 30
+    mkdir -p "$SCRATCH/bin"; printf '#!/bin/sh\nexit 1\n' > "$SCRATCH/bin/powershell"; chmod +x "$SCRATCH/bin/powershell"
+    ( unset CA_ALIVE_PIDS; PATH="$SCRATCH/bin:$PATH" bash "$T/slots.sh" clean >/dev/null )
+    check "clean: unknown liveness keeps" [ -d "$(slot 1)" ]
+else
+    echo "skip clean: unknown liveness keeps (posix)"
+fi
 
-# 9. The real liveness lookup (PowerShell): this shell is alive, PID 999999 is not.
+# 9. The real liveness lookup (PowerShell on Windows, kill -0 elsewhere): this shell is alive, PID 999999 is not.
 reset; foreign 1 a 999999 30; foreign 2 b "$ME" 30
 ( unset CA_ALIVE_PIDS; bash "$T/slots.sh" clean >/dev/null )
 check "real lookup: dead removed" [ ! -d "$(slot 1)" ]
