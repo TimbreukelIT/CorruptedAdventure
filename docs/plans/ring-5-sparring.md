@@ -20,3 +20,11 @@ beslissingenlog; hier staat de ruwe uitkomst per ronde.
 | Kasteelomgeving | **Pinakel boven de void**: massieve rotspijler/plateau in het void-deel, één of twee brede natuurlijke bruggen ernaartoe, verwoeste grond en voidsteen-randen eromheen; van ver zichtbaar. |
 | Herinneringen | **Vervormde brokken als feature**: zeldzame brokken van 10–30 blokken (stuk eikenbos, oase met palm, gestold lavaveld, eilandje met gat), half grijs/gecorrumpeerd, soms zwevend of scheef; bestaande blokken. |
 | Biomes | **6 biomes over 2 banden**: binnen (dood) `corrupted_wastes`, `glitch_fields`, `false_meadow`; buiten (weg) `void_scars`, `inverted_hills` en een **eigen void-biome voor de brokken en bruggen** (werktitel `shattered_expanse`). Kastelen zonder eigen biome. |
+
+## Ronde 3 — blokken, materiaal, grotten, conditie
+| Vraag | Besluit |
+|---|---|
+| Blokstijl | **Grijs uitgeloogd + violette aders**: corrupted varianten in vanilla-vorm, kleur uitgeloogd naar grijs met dunne violet-zwarte aders; glitchblok missing-texture paars-zwart (geanimeerd); voidsteen zwart met sterrenpixels. Sluit aan op de violette lucht. |
+| Nulliet | **In scheurwanden en brokken**: vooral in de wanden van void-scheuren en de onderkant van drijvende brokken in de buitenband, wat diep in de binnenband. Het risico is de afgrond. |
+| Grotten | **Onmogelijke gangen + void-grotten + "gekopieerde" grotten**: rechte, te perfecte 2×1/3×3-tunnels in rasters (doodlopend, lussen), grotten met gaten naar de void, én grotten die exact herhaald of gespiegeld zijn (dezelfde gang drie keer naast elkaar, een kamer die zichzelf spiegelt). Buitenband nauwelijks grotten. |
+| Void-meter | **Teleports alleen in de binnenband**: meter ↑ overal (sneller bij scheuren, glitchblokken, 's nachts, ringweer); ↓ bij licht ≥ 12. Drempels: glitch-visuals → korte veilige teleports **alleen op vaste grond in de binnenband** (in de buitenband vervangt sneller darkness ze) → darkness + schade. |
