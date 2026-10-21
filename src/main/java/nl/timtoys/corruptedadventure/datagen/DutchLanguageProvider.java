@@ -9,6 +9,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.datagen.lang.LangOutput;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing3BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing4BiomeNames;
+import nl.timtoys.corruptedadventure.datagen.lang.NetherRing5BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3AmbienceText;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring3BlockNames;
@@ -19,6 +20,11 @@ import nl.timtoys.corruptedadventure.datagen.lang.Ring4BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring4BlockNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring4ConditionText;
 import nl.timtoys.corruptedadventure.datagen.lang.Ring4WeatherText;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring5BiomeNames;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring5BlockNames;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring5ConditionText;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring5SignText;
+import nl.timtoys.corruptedadventure.datagen.lang.Ring5WeatherText;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
@@ -247,6 +253,14 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         Ring4ConditionText.addDutch(this);
         Ring4WeatherText.addDutch(this);
         Ring4AmbienceText.addDutch(this);
+
+        // Ring 5 and Nether ring 5: likewise, one helper per stream.
+        Ring5BlockNames.addDutch(this);
+        Ring5BiomeNames.addDutch(this);
+        NetherRing5BiomeNames.addDutch(this);
+        Ring5ConditionText.addDutch(this);
+        Ring5WeatherText.addDutch(this);
+        Ring5SignText.addDutch(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s is uitgedroogd");

@@ -10,11 +10,14 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.condition.ConditionDamageTypes;
 import nl.timtoys.corruptedadventure.condition.Ring3DamageTypes;
 import nl.timtoys.corruptedadventure.condition.Ring4DamageTypes;
+import nl.timtoys.corruptedadventure.condition.Ring5DamageTypes;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing2Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing3BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing3Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing4BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing4Biomes;
+import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing5BiomeModifiers;
+import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing5Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.PlaceholderBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring1BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring2BiomeModifiers;
@@ -23,25 +26,31 @@ import nl.timtoys.corruptedadventure.worldgen.biome.Ring3BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring3Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring4BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring4Biomes;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring5BiomeModifiers;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring5Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.TransitionBiomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 import nl.timtoys.corruptedadventure.worldgen.carver.NetherRing2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.carver.NetherRing3Carvers;
 import nl.timtoys.corruptedadventure.worldgen.carver.NetherRing4Carvers;
+import nl.timtoys.corruptedadventure.worldgen.carver.NetherRing5Carvers;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring3Carvers;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring4Carvers;
+import nl.timtoys.corruptedadventure.worldgen.carver.Ring5Carvers;
 import nl.timtoys.corruptedadventure.worldgen.feature.DryRiverbedsFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing1Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing2Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing3Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing4Features;
+import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing5Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring1HorrorFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2DressingFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2FlatsFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring3Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring4Features;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring5Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.WitheredExpanseFeatures;
 
 import java.util.Set;
@@ -58,7 +67,7 @@ public final class DataGenerators {
     }
 
     private static void gatherData(GatherDataEvent event) {
-        // A registry may be added only once, so all bootstraps of one registry share one lambda. Rings 3 and 4 and their
+        // A registry may be added only once, so all bootstraps of one registry share one lambda. Rings 3, 4 and 5 and their
         // Nether rings have one entry class per stream (and registry); a stream calls its further classes from there.
         event.createDatapackRegistryObjects(new RegistrySetBuilder()
                 .add(Registries.CONFIGURED_FEATURE, context -> {
@@ -74,6 +83,8 @@ public final class DataGenerators {
                     NetherRing3Features.configured(context);
                     Ring4Features.configured(context);
                     NetherRing4Features.configured(context);
+                    Ring5Features.configured(context);
+                    NetherRing5Features.configured(context);
                 })
                 .add(Registries.CONFIGURED_CARVER, context -> {
                     Ring2Carvers.bootstrap(context);
@@ -82,6 +93,8 @@ public final class DataGenerators {
                     NetherRing3Carvers.bootstrap(context);
                     Ring4Carvers.bootstrap(context);
                     NetherRing4Carvers.bootstrap(context);
+                    Ring5Carvers.bootstrap(context);
+                    NetherRing5Carvers.bootstrap(context);
                 })
                 .add(Registries.PLACED_FEATURE, context -> {
                     WitheredExpanseFeatures.placed(context);
@@ -96,6 +109,8 @@ public final class DataGenerators {
                     NetherRing3Features.placed(context);
                     Ring4Features.placed(context);
                     NetherRing4Features.placed(context);
+                    Ring5Features.placed(context);
+                    NetherRing5Features.placed(context);
                 })
                 .add(Registries.BIOME, context -> {
                     PlaceholderBiomes.bootstrap(context);
@@ -107,6 +122,8 @@ public final class DataGenerators {
                     NetherRing3Biomes.bootstrap(context);
                     Ring4Biomes.bootstrap(context);
                     NetherRing4Biomes.bootstrap(context);
+                    Ring5Biomes.bootstrap(context);
+                    NetherRing5Biomes.bootstrap(context);
                 })
                 .add(Registries.WOLF_VARIANT, VanillaBiomeCopies::bootstrapWolfVariants)
                 .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, context -> {
@@ -116,11 +133,14 @@ public final class DataGenerators {
                     NetherRing3BiomeModifiers.bootstrap(context);
                     Ring4BiomeModifiers.bootstrap(context);
                     NetherRing4BiomeModifiers.bootstrap(context);
+                    Ring5BiomeModifiers.bootstrap(context);
+                    NetherRing5BiomeModifiers.bootstrap(context);
                 })
                 .add(Registries.DAMAGE_TYPE, context -> {
                     ConditionDamageTypes.bootstrap(context);
                     Ring3DamageTypes.bootstrap(context);
                     Ring4DamageTypes.bootstrap(context);
+                    Ring5DamageTypes.bootstrap(context);
                 }),
                 // "minecraft": the wolf variants override vanilla's entries.
                 Set.of(CorruptedAdventure.MOD_ID, "minecraft"));

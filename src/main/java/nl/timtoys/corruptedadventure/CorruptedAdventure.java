@@ -29,6 +29,7 @@ import nl.timtoys.corruptedadventure.registry.ModBiomeSources;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModChunkGenerators;
 import nl.timtoys.corruptedadventure.registry.ModCreativeTabs;
+import nl.timtoys.corruptedadventure.registry.ModDataMaps;
 import nl.timtoys.corruptedadventure.registry.ModDensityFunctionTypes;
 import nl.timtoys.corruptedadventure.registry.ModCarverTypes;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
@@ -89,6 +90,7 @@ public final class CorruptedAdventure {
         ModSoundEvents.register(modEventBus);
         ModParticleTypes.register(modEventBus);
         ModAttachments.register(modEventBus);
+        ModDataMaps.register(modEventBus);
         DataGenerators.register(modEventBus);
         ModNetwork.register(modEventBus);
         RingSettingsSnapshot.register(NeoForge.EVENT_BUS);

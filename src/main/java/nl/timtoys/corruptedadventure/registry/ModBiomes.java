@@ -66,6 +66,21 @@ public final class ModBiomes {
     public static final ResourceKey<Biome> CRYSTAL_SPIRES = key("crystal_spires");
     public static final ResourceKey<Biome> GEODE_HOLLOWS = key("geode_hollows");
 
+    // Ring 5 (Ring5Biomes, 86; docs/plans/ring-5/contract.md §2). Keys only until then.
+    // Inner band (dead).
+    public static final ResourceKey<Biome> CORRUPTED_WASTES = key("corrupted_wastes");
+    public static final ResourceKey<Biome> GLITCH_FIELDS = key("glitch_fields");
+    public static final ResourceKey<Biome> FALSE_MEADOW = key("false_meadow");
+    // Outer band (gone).
+    public static final ResourceKey<Biome> VOID_SCARS = key("void_scars");
+    public static final ResourceKey<Biome> INVERTED_HILLS = key("inverted_hills");
+    /** The void itself with its chunks and bridges: every outer-band column with much void (V12-A). */
+    public static final ResourceKey<Biome> SHATTERED_EXPANSE = key("shattered_expanse");
+
+    // Nether ring 5 (NetherRing5Biomes, 87). Keys only until then.
+    public static final ResourceKey<Biome> WHITE_HALLS = key("white_halls");
+    public static final ResourceKey<Biome> HOLLOW_CATHEDRAL = key("hollow_cathedral");
+
     // Temporary: one per ring until the ring's real biomes exist. Ring 1's copies (overworld and Nether):
     // VanillaBiomeCopies.copyOf.
     public static final ResourceKey<Biome> PLACEHOLDER_RING_5 = key("placeholder_ring_5");

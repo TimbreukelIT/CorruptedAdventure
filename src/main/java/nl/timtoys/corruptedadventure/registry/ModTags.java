@@ -83,6 +83,16 @@ public final class ModTags {
         /** Convention tag {@code c:ores_in_ground/tidestone}: the ring 4 ores in tidestone. */
         public static final TagKey<Block> ORES_IN_GROUND_TIDESTONE = TagKey.create(Registries.BLOCK, common("ores_in_ground/tidestone"));
 
+        // Ring 5 and Nether ring 5 (docs/plans/ring-5/contract.md §3); contents from stream B.
+        /** The corrupted variants of vanilla blocks (88); each has a {@code healthy_block} data map entry ({@code ModDataMaps}). */
+        public static final TagKey<Block> CORRUPTED = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("corrupted"));
+        /** Host rocks of the ring 5 ores. */
+        public static final TagKey<Block> RING_5_STONES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("ring_5_stones"));
+        /** Blocks that raise the void meter of players nearby (glitch block, voidstone). */
+        public static final TagKey<Block> VOID_SOURCES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("void_sources"));
+        /** Host rocks of the Nether ring 5 ores. */
+        public static final TagKey<Block> NETHER_RING_5_STONES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("nether_ring_5_stones"));
+
         private Blocks() {
         }
     }
@@ -193,6 +203,18 @@ public final class ModTags {
         public static final TagKey<Biome> RING_4_BLIGHTED = TagKey.create(Registries.BIOME, CorruptedAdventure.id("ring_4_blighted"));
         /** Biomes that purify (every falling condition meter falls faster, {@code PurifyingModifier}): the Nether ring 4 biomes. */
         public static final TagKey<Biome> PURIFYING = TagKey.create(Registries.BIOME, CorruptedAdventure.id("purifying"));
+
+        // Ring 5 and Nether ring 5 (docs/plans/ring-5/contract.md §2); contents from the worldgen streams.
+        /** The six ring 5 biomes (not {@code sundered_reach}: it stays in {@link #IS_RING_4}). */
+        public static final TagKey<Biome> IS_RING_5 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_ring_5"));
+        /** The biomes of Nether ring 5. */
+        public static final TagKey<Biome> IS_NETHER_RING_5 = TagKey.create(Registries.BIOME, CorruptedAdventure.id("is_nether_ring_5"));
+        /** The biomes of ring 5's inner (dead) band; a fallback only, the band itself is {@code Ring5Band}. */
+        public static final TagKey<Biome> RING_5_INNER = TagKey.create(Registries.BIOME, CorruptedAdventure.id("ring_5_inner"));
+        /** The biomes of ring 5's outer band (falling away into the void); a fallback only, like {@link #RING_5_INNER}. */
+        public static final TagKey<Biome> RING_5_OUTER = TagKey.create(Registries.BIOME, CorruptedAdventure.id("ring_5_outer"));
+        /** Biomes without ambience or music ({@code false_meadow}, Nether ring 5). */
+        public static final TagKey<Biome> SILENT = TagKey.create(Registries.BIOME, CorruptedAdventure.id("silent"));
 
         private Biomes() {
         }
