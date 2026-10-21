@@ -113,3 +113,10 @@ Gerichte polijstronde (geen volledige ronde) plus de drie nieuwe textures:
   de zandbanken (na 77b) en klauwkras in steen/deepslate.
 - `[textures]` De stand-ins op `ring4-g3.png` (vanilla zand, botblok, gifgroen water, steen/deepslate-basis) zijn
   benaderingen; `VanillaCompare` voor ring 4 zou het echte naast elkaar tonen (alleen in `build/`).
+
+## 66e — tidestone in gespiegelde en gedraaide varianten (`blocks`, 2026-10-21)
+Besluit gebruiker 2026-10-21 (open vraag 1 van 71): zoals vanilla stone. `ModBlockStateProvider.mirroredAndRotated`:
+`tidestone` = `cube_all` + `tidestone_mirrored` (`minecraft:block/cube_mirrored_all`), elk in 4 Y-rotaties (8 varianten,
+gelijk gewicht); trap, plaat en muur ongewijzigd. Alleen client-rendering, geen server-impact. Tests: `runData`
+(blockstate + 1 model), `build` groen.
+- CODEBASE-delta: `ModBlockStateProvider.mirroredAndRotated(Block)`; gegenereerd `models/block/tidestone_mirrored.json`.
