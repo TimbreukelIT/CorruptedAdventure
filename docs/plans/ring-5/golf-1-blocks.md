@@ -169,6 +169,8 @@ rondom; deuren `_top`/`_bottom` + `item/<naam>_door`.
 ## Voortgang
 - Voortgang: 2026-10-21 20:39 worktree `P:/Projecten/Java/wt/r5-blocks-g1` (branch `ring5/blocks-g1` vanaf `3dfd50aa`), `setup.sh B 0`, eerste build groen.
 - Voortgang: 2026-10-21 21:08 88 klaar: B groen (1154 tests, 0 fouten), D groen (alleen ring 5-output), S-smoke `r5-b88` schoon (0 ERROR; bord, wandbord, hangend bord en hangend wandbord via RCON: block entity `minecraft:sign`/`minecraft:hanging_sign`, tekst blijft staan, drops = `corrupted_sign`/`corrupted_hanging_sign`).
+- Voortgang: 2026-10-21 21:25 88r klaar: D = 13 recepten + 13 advancements (gelijk aan eik), B groen (1157 tests). Geen S-smoke (alleen data, plan §8).
+- Voortgang: 2026-10-21 21:26 OV2 beantwoord (A); 89 en 90 gestart.
 
 ## CODEBASE-delta
 **88 (blocks):**
@@ -180,6 +182,10 @@ rondom; deuren `_top`/`_bottom` + `item/<naam>_door`.
 - `ModDataMapProvider.ring5HealthyBlocks()` (`healthy_block`, de 9); compost `corrupted_leaves` 0,3. `ModFlammables`: houtset als eik. `Ring5BlockNames` gevuld (en + nl).
 - Tests: `ModBlocksTest` (+5: volgorde ring 5, gedrag, strippen, wandbord-loot, sign-BE-types), `ModWoodTypesTest` (+1), nieuw `Ring5HealthyBlockTest` (tag = data map = de 9; houtset in geen van beide).
 - Valkuilen: `Properties.ofFullCopy` kopieert het `drops`-veld; daarom krijgen de wandbordjes expliciet `lootFrom(<staand bord>)`, zodat ze nooit de loot van het eiken-origineel erven (test `corruptedWallSignsDropTheirStandingSign`); `WallSignBlock.getDescriptionId()` = die van het item, dus geen lang-key voor wandbordjes (dubbele sleutel breekt `runData`); `ofFullCopy(GRASS_BLOCK)` kopieert de random ticks — daarom `Properties.of()`.
+
+**88r (items):**
+- `ModRecipeProvider.ring5()`: `planksFromLogs` (`#corruptedadventure:corrupted_logs` → 4), `woodFromLogs` (hout, gestript hout), `hangingSign` (gestripte stam + ketting → 6) en de plankenfamilie via vanilla's `generateRecipes` met een eigen `BlockFamily` (niet in `BlockFamilies`' map), groep `wooden_*`, `has_planks`. Ids = resultaat-item (`corruptedadventure:corrupted_*`).
+- Test: nieuw `datagen/Ring5RecipesTest` (13 ids + aantallen, advancement per recept, geen andere `corrupted`-recepten).
 
 ## Beslissingen
 - **Bordjes-route (88): (a)** NeoForge 21.1.252 heeft `BlockEntityTypeAddBlocksEvent` → onze bordblokken in de vanilla sign/hanging-sign-types; vanilla renderers (`SignRenderer`/`HangingSignRenderer`, al voor die types geregistreerd) en bewerkschermen doen de rest. Geen `registry/ModBlockEntityTypes`. Client: alleen `Sheets.addWoodType` (defensief tegen class-load-volgorde). Textures volgens §5 (`entity/signs/corrupted`, `entity/signs/hanging/corrupted`, `gui/hanging_signs/corrupted`).
