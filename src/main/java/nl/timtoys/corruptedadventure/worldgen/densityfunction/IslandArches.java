@@ -16,8 +16,9 @@ import java.util.List;
  * ({@link #ARCH_STEP}, {@link #ARCH_SLOPE}), may get a natural rock arch: a deck rising a little in the middle, thicker
  * and wider where it grows out of each island, rounded underneath. An arch keeps away from other islands, from every
  * fall, spring and lift, from the sky lakes and the world trees. Sparring 2026-10-20 (B2-1): every such pair
- * ({@link #ARCH_CHANCE} 1, was 0.5), but at most one arch per island: of two candidate arches that share an island the
- * one with the smaller gap wins ({@link #archKept}). Pure, decided once per island and world.
+ * ({@link #ARCH_CHANCE} 1, was 0.5), but at most one arch per island: of two candidate arches that share an island, or
+ * that cross each other (backlog r. 429), the one with the smaller gap wins ({@link #archKept}). Pure, decided once per
+ * island and world.
  */
 final class IslandArches {
     static final double MIN_GAP = 3.0;
@@ -32,6 +33,11 @@ final class IslandArches {
     static final double ARCH_SLOPE = 0.7;
     /** How far (blocks) an arch reaches into each island, so it grows out of it. */
     static final double ANCHOR = 3.0;
+    /**
+     * The widest margin of an arch's box round its two edge points ({@link Arch#between}: half width at most 2.2, bend
+     * at most 1.5): with the gap and an island's reach it bounds how far an island's arches reach from its centre.
+     */
+    static final double MAX_MARGIN = 1.5 * 2.2 + 1.5 + ANCHOR + 2.0;
     /** The free space (blocks) an arch keeps from falls, springs, lifts and sky lakes, and over and under other islands. */
     private static final int KEEP_CLEAR = 2;
     private static final long SALT = 7403;
@@ -136,8 +142,9 @@ final class IslandArches {
 
     /**
      * Whether a candidate arch stays (B2-1, like {@link IslandPlacement#kept}): unless another candidate arch of one of
-     * its two islands ranks before it ({@link #RANK}) and itself stays. The recursion only climbs in rank, so it ends;
-     * the answer depends on nothing but the candidates.
+     * its two islands, or (backlog r. 429) one that crosses it between four islands ({@link #crosses}), ranks before it
+     * ({@link #RANK}) and itself stays. The recursion only climbs in rank, so it ends; the answer depends on nothing but
+     * the candidates.
      */
     static boolean archKept(IslandField field, Pair pair) {
         for (IslandShape island : List.of(pair.first(), pair.second())) {
@@ -147,7 +154,47 @@ final class IslandArches {
                 }
             }
         }
+        Arch arch = pair.arch();
+        // A crossing arch's box meets this one's, and its first island lies within its reach, the gap and the margin.
+        int margin = Mth.ceil(IslandField.MAX_REACH + ARCH_MAX_GAP + MAX_MARGIN + 2.0);
+        for (IslandShape island : field.shapesWithin(arch.minX() - margin, arch.minZ() - margin, arch.maxX() + margin, arch.maxZ() + margin)) {
+            double near = island.reach() + ARCH_MAX_GAP + MAX_MARGIN + 2.0;
+            if (island.x() + near < arch.minX() || island.x() - near > arch.maxX() || island.z() + near < arch.minZ()
+                    || island.z() - near > arch.maxZ()) {
+                continue;
+            }
+            for (Pair other : field.landmarks().candidatePairs(island)) {
+                if (other.arch() != null && !other.equals(pair) && RANK.compare(other, pair) < 0 && crosses(arch, other.arch())
+                        && field.landmarks().archKept(other)) {
+                    return false;
+                }
+            }
+        }
         return true;
+    }
+
+    /**
+     * Whether two arches meet: a column holds rock of both no more than {@link #KEEP_CLEAR} apart in height (the room an
+     * arch keeps over and under other islands), so they would cross as an X.
+     */
+    static boolean crosses(Arch a, Arch b) {
+        int minX = Math.max(a.minX(), b.minX());
+        int maxX = Math.min(a.maxX(), b.maxX());
+        int minZ = Math.max(a.minZ(), b.minZ());
+        int maxZ = Math.min(a.maxZ(), b.maxZ());
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                int[] one = a.interval(x, z);
+                if (one == null) {
+                    continue;
+                }
+                int[] two = b.interval(x, z);
+                if (two != null && two[0] <= one[1] + KEEP_CLEAR + 1 && two[1] >= one[0] - KEEP_CLEAR - 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** The pairs with a candidate arch that an island is part of: those it starts and those an earlier island starts. */

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -87,7 +88,8 @@ class Ring4IslandsTest {
 
     /**
      * Only in ring 4 proper; low islands in the inner half (sparring 2026-10-20, B1-3): bottom 15–60 above the highest
-     * ground under them, in two layers, so some columns hold two islands above each other.
+     * ground under them (backlog r. 430b: the highest ground under the footprint, not the centre's), in two layers, so
+     * some columns hold two islands above each other.
      */
     @Test
     void islandsHangFreeAboveTheirGround() {
@@ -97,12 +99,31 @@ class Ring4IslandsTest {
             RingPosition position = IslandFieldTest.LAYOUT.sampleOverworld(s.x(), s.z());
             assertTrue(!position.inTransition() && position.ring() == Ring.RING_4);
             double bottom = s.top() - 1.0 - s.thickness() * IslandShape.MAX_UNDERSIDE;
-            assertTrue(bottom >= Math.max(63.0, s.groundY()) + IslandPlacement.MIN_CLEARANCE - 1e-9, "bottom " + bottom);
-            if (progress(s) < IslandPlacement.LAYERS_TO && s.kind() != IslandShape.TREE) {
+            if (s.kind() == IslandShape.TREE) {
+                assertTrue(bottom >= Math.max(63.0, s.groundY()) + IslandPlacement.MIN_CLEARANCE - 1e-9, "bottom " + bottom);
+                continue;
+            }
+            double highest = IslandPlacement.highestGround(field, s.x(), s.z(), s.groundY(), s.reach());
+            assertTrue(bottom >= highest + IslandPlacement.MIN_CLEARANCE - 1e-9, "bottom " + bottom + " over " + highest);
+            if (progress(s) < IslandPlacement.LAYERS_TO) {
                 inner++;
-                // The highest ground under the footprint lies at most a terrace or two above the centre's.
-                assertTrue(bottom <= Math.max(63.0, s.groundY()) + 60.0 + 45.0, "inner bottom " + bottom + " over " + s.groundY());
-                upper += bottom > Math.max(63.0, s.groundY()) + 40.0 ? 1 : 0;
+                // At most 60 over the highest ground; an upper-layer island over a lower one at least STACK_GAP over that
+                // island, and a satellite clod about level with its parent's torn edge.
+                double allowed = highest + 60.0;
+                for (IslandShape other : SHAPES) {
+                    if (other.equals(s) || other.kind() == IslandShape.CLOD) {
+                        continue;
+                    }
+                    double d = Math.hypot(other.x() - s.x(), other.z() - s.z());
+                    if (d < s.reach() + other.reach() && other.highest() < bottom) {
+                        allowed = Math.max(allowed, other.highest() + IslandPlacement.STACK_GAP);
+                    }
+                    if (s.kind() == IslandShape.CLOD && d < s.reach() + other.reach() * IslandShape.HOLE_SCALE + IslandShape.CAVE_BAND + 20.0) {
+                        allowed = Math.max(allowed, other.top() + 6.0);
+                    }
+                }
+                assertTrue(bottom <= allowed + 1e-9, "inner bottom " + bottom + " over " + highest + " (" + s + ")");
+                upper += bottom > highest + 40.0 ? 1 : 0;
             }
         }
         System.out.printf("inner half: %d islands, %d in the upper layer%n", inner, upper);
@@ -224,6 +245,7 @@ class Ring4IslandsTest {
             if (details.lift() != null) {
                 IslandField.Lift lift = details.lift();
                 assertTrue(lift.top() > s.lowest());
+                assertFalse(field.inSinkhole(lift.x(), lift.z()), "lift over a sinkhole " + lift);
                 for (int y = lift.bottom() + 1; y <= lift.top(); y++) {
                     assertEquals(0.0, field.thin(lift.x(), y, lift.z()), "lift column " + lift);
                 }
@@ -246,6 +268,8 @@ class Ring4IslandsTest {
                 // The fall lands in the water: the ground lies under the water's top block (fall.bottom() − 1). The lowest
                 // open ground, as the fall's own check (surfaceUncached): a peat sinkhole's bowl may open the column deeper.
                 assertTrue(column.lowestSurface() < fall.bottom() - 1.0, "lands in water: " + column.lowestSurface() + " " + fall);
+                // Backlog r. 435: never over a peat sinkhole's bowl, which may lie dry under the sea level.
+                assertFalse(field.inSinkhole(fall.fallX(), fall.fallZ()), "fall over a sinkhole " + fall);
                 List<IslandField.Waterfall> listed = field.waterfallsWithin(fall.fallX(), fall.fallZ(), fall.fallX(), fall.fallZ());
                 assertEquals(1, listed.size());
             }

@@ -15,7 +15,8 @@ import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConf
  * ground plants with a weighted pick (grass and fern, flowers, dead bushes), which draws the plant before it looks at
  * the spot and then only fills open air. A tree from a neighbouring chunk may already stand on the spot or come later
  * ({@link IsolatedTreeFeature} takes the plant's place): with the draw always made, the plants after it in the chunk
- * stay the same in either order. The placement checks the ground only ({@link Ring4Placements#ON_GROUND}).
+ * stay the same in either order. The placement checks the ground only ({@link Ring4Placements#ON_GROUND}); nothing grows
+ * on the floating debris ({@link Ring4Terrain#onDebris}).
  */
 public final class GroundPlantFeature extends Feature<SimpleBlockConfiguration> {
     public GroundPlantFeature(Codec<SimpleBlockConfiguration> codec) {
@@ -27,7 +28,7 @@ public final class GroundPlantFeature extends Feature<SimpleBlockConfiguration> 
         WorldGenLevel level = context.level();
         BlockPos pos = context.origin();
         BlockState state = context.config().toPlace().getState(context.random(), pos);
-        if (!level.getBlockState(pos).isAir() || !state.canSurvive(level, pos)) {
+        if (!level.getBlockState(pos).isAir() || !state.canSurvive(level, pos) || Ring4Terrain.onDebris(level, pos.getX(), pos.getZ())) {
             return false;
         }
         if (state.getBlock() instanceof DoublePlantBlock) {

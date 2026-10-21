@@ -480,6 +480,14 @@ public final class IslandField implements DensityFunction {
         return landmarks.worldTrees(minX, minZ, maxX, maxZ);
     }
 
+    /**
+     * Whether a piece of floating debris (sparring 2026-10-20, B2-3 a) has a block in the column (backlog r. 426: the
+     * trees, rocks and ground plants stay off the debris, whose top the surface heightmaps show as the ground). Pure.
+     */
+    public boolean inDebris(int x, int z) {
+        return landmarks.inDebris(x, z);
+    }
+
     /** The island pairs (74: for the vines between islands, 75) whose facing edges come into the box. */
     public List<IslandPair> islandPairs(int minX, int minZ, int maxX, int maxZ) {
         return landmarks.islandPairs(minX, minZ, maxX, maxZ);

@@ -244,6 +244,16 @@ final class IslandLandmarks {
         return false;
     }
 
+    /** Whether a piece of debris ({@link IslandDebris}) has a block in the column. */
+    boolean inDebris(int x, int z) {
+        for (IslandDebris.Piece piece : cell(x, z).debris()) {
+            if (piece.interval(x, z) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     List<IslandField.WorldTree> worldTrees(int minX, int minZ, int maxX, int maxZ) {
         List<IslandField.WorldTree> found = new ArrayList<>();
         for (WorldTreeShape tree : trees()) {

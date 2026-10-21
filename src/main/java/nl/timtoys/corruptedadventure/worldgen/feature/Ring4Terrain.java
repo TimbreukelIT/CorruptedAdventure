@@ -34,6 +34,16 @@ public final class Ring4Terrain {
         return FIELDS.computeIfAbsent(random, state -> Optional.ofNullable(IslandField.find(state.router().finalDensity()))).orElse(null);
     }
 
+    /**
+     * Whether the column holds a piece of the floating debris round the big islands ({@link IslandField#inDebris}):
+     * the trees, rocks, trunks and ground plants of ring 4 do not stand on it (backlog r. 426). False without ring 4
+     * terrain. Pure, so the choice does not depend on the order of the chunks.
+     */
+    static boolean onDebris(WorldGenLevel level, int x, int z) {
+        IslandField field = field(level);
+        return field != null && field.inDebris(x, z);
+    }
+
     /** Whether (x, z) lies in the blighted band of ring 4 ({@link Ring4Band#blighted}: the line of weather and poison). */
     public static boolean blighted(int x, int z) {
         return Ring4Band.of(RingLayout.current()).blighted(x, z);
