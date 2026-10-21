@@ -6,20 +6,22 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.data.DataMapProvider;
 import net.neoforged.neoforge.registries.datamaps.builtin.BiomeVillagerType;
 import net.neoforged.neoforge.registries.datamaps.builtin.Compostable;
 import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModDataMaps;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.worldgen.biome.VanillaBiomeCopies;
 
 import java.util.concurrent.CompletableFuture;
 
 /**
- * NeoForge data maps: villager types (vanilla looks them up by biome key, so the ring 1 copies need their own entries)
- * and compostables.
+ * NeoForge data maps: villager types (vanilla looks them up by biome key, so the ring 1 copies need their own entries),
+ * compostables, fuels, and our own {@code healthy_block}.
  */
 final class ModDataMapProvider extends DataMapProvider {
     ModDataMapProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
@@ -85,10 +87,31 @@ final class ModDataMapProvider extends DataMapProvider {
                 .add(ModBlocks.FJORD_MOSS.getId(), new Compostable(0.3F), false)
                 .add(ModBlocks.LAGOON_GLOWGRASS.getId(), new Compostable(0.3F), false)
                 .add(ModBlocks.MIST_FERN.getId(), new Compostable(0.65F), false)
-                .add(ModBlocks.MOONPETAL_SHRUB.getId(), new Compostable(0.65F), false);
+                .add(ModBlocks.MOONPETAL_SHRUB.getId(), new Compostable(0.65F), false)
+                // Ring 5: leaves like oak leaves.
+                .add(ModBlocks.CORRUPTED_LEAVES.getId(), new Compostable(0.3F), false);
 
         // Peat: a weak fuel (6 items per block, coal does 8), because the whole surface of the peat moors is peat.
         builder(NeoForgeDataMaps.FURNACE_FUELS).add(ModBlocks.PEAT.getId(), new FurnaceFuel(PEAT_BURN_TIME), false);
+
+        ring5HealthyBlocks();
+    }
+
+    /**
+     * The healthy counterpart of each block in {@code #corruptedadventure:corrupted} (contract ring 5 §3), for phase 5's
+     * healing and decay. Exactly these nine; the rest of the corrupted wood set has none.
+     */
+    private void ring5HealthyBlocks() {
+        builder(ModDataMaps.HEALTHY_BLOCK)
+                .add(ModBlocks.CORRUPTED_GRASS_BLOCK.getId(), Blocks.GRASS_BLOCK, false)
+                .add(ModBlocks.CORRUPTED_DIRT.getId(), Blocks.DIRT, false)
+                .add(ModBlocks.CORRUPTED_STONE.getId(), Blocks.STONE, false)
+                .add(ModBlocks.CORRUPTED_COBBLESTONE.getId(), Blocks.COBBLESTONE, false)
+                .add(ModBlocks.CORRUPTED_SAND.getId(), Blocks.SAND, false)
+                .add(ModBlocks.CORRUPTED_LOG.getId(), Blocks.OAK_LOG, false)
+                .add(ModBlocks.CORRUPTED_WOOD.getId(), Blocks.OAK_WOOD, false)
+                .add(ModBlocks.CORRUPTED_PLANKS.getId(), Blocks.OAK_PLANKS, false)
+                .add(ModBlocks.CORRUPTED_LEAVES.getId(), Blocks.OAK_LEAVES, false);
     }
 
     /** Ticks of furnace fuel per peat block. */

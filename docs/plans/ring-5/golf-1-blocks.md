@@ -167,11 +167,30 @@ rondom; deuren `_top`/`_bottom` + `item/<naam>_door`.
   B, D, S-smoke groen; per pakket `/code-review` verwerkt.
 
 ## Voortgang
+- Voortgang: 2026-10-21 20:39 worktree `P:/Projecten/Java/wt/r5-blocks-g1` (branch `ring5/blocks-g1` vanaf `3dfd50aa`), `setup.sh B 0`, eerste build groen.
+- Voortgang: 2026-10-21 21:08 88 klaar: B groen (1154 tests, 0 fouten), D groen (alleen ring 5-output), S-smoke `r5-b88` schoon (0 ERROR; bord, wandbord, hangend bord en hangend wandbord via RCON: block entity `minecraft:sign`/`minecraft:hanging_sign`, tekst blijft staan, drops = `corrupted_sign`/`corrupted_hanging_sign`).
 
 ## CODEBASE-delta
+**88 (blocks):**
+- Blocks (na Nether-ring 4, sectie "Ring 5"): `corrupted_grass_block` (`Block`, gras-hardheid/-geluid, geen random ticks, geen snowy; loot → `corrupted_dirt`, Silk Touch zichzelf), `corrupted_dirt`, `corrupted_stone` (loot → `corrupted_cobblestone`), `corrupted_cobblestone`, `corrupted_sand` (`ColoredFallingBlock`, stof `0x8C8792`), `corrupted_log`/`corrupted_wood` (`StrippableLogBlock` → `stripped_corrupted_log`/`_wood`), `stripped_corrupted_log`/`_wood`, `corrupted_planks`, `_stairs`, `_slab`, `_fence`, `_fence_gate`, `_door` (`DoubleHighBlockItem`), `_trapdoor`, `_pressure_plate`, `_button` (30 ticks), `corrupted_sign` + `corrupted_wall_sign` (`StandingSignBlock`/`WallSignBlock`, item `SignItem` 16), `corrupted_hanging_sign` + `corrupted_wall_hanging_sign` (`CeilingHangingSignBlock`/`WallHangingSignBlock`, item `HangingSignItem` 16), `corrupted_leaves` (`LeavesBlock`; loot zoals mangrove: schaar/Silk Touch zichzelf, anders stokken). Kaartkleur `COLOR_GRAY` (gras, aarde, steen, keien, schors, bladeren), `COLOR_LIGHT_GRAY` (zand, planken-familie, gestript, bordjes). Wandbordjes zonder eigen item/loot table (`lootFrom` het staande bord).
+- `ModWoodTypes.CORRUPTED_SET`/`CORRUPTED` (`corruptedadventure:corrupted`, eik-geluiden) — de **enige geregistreerde** `WoodType` van de mod (`WoodType.register`, voor de bordmaterialen).
+- Nieuw `block/ModSigns` (common): `BlockEntityTypeAddBlocksEvent` voegt de 4 bordblokken toe aan vanilla `BlockEntityType.SIGN`/`HANGING_SIGN` (geen eigen block-entity-type, geen eigen renderer). Geregistreerd in `CorruptedAdventure`.
+- Nieuw `client/block/SignMaterials` (client): `Sheets.addWoodType(ModWoodTypes.CORRUPTED)` in `FMLClientSetupEvent.enqueueWork`; geregistreerd in `CorruptedAdventureClient` (regel "ring 5 — B (88)").
+- Tags: `ModTags.Blocks/Items.CORRUPTED_LOGS` (nieuw, `corruptedadventure:corrupted_logs` → `#logs_that_burn`); inhoud `#corruptedadventure:corrupted` (de 9), `ring_5_stones` (`corrupted_stone`); vanilla: `#dirt`, `#sand`, `#base_stone_overworld` (eerste mod-blok erin), `#overworld_carver_replaceables`, `#mineable/*`, `#planks`, `#wooden_*`, `#fence_gates`, `#standing_signs`, `#wall_signs`, `#ceiling_hanging_signs`, `#wall_hanging_signs`, `#leaves`; `c:cobblestones`, `c:sands`, `c:stripped_logs`/`_woods`, `c:fence_gates/wooden`; items: `#stone_tool_materials`, `#stone_crafting_materials`, `#smelts_to_glass`, `#signs`, `#hanging_signs` (+ de kopieën).
+- `ModDataMapProvider.ring5HealthyBlocks()` (`healthy_block`, de 9); compost `corrupted_leaves` 0,3. `ModFlammables`: houtset als eik. `Ring5BlockNames` gevuld (en + nl).
+- Tests: `ModBlocksTest` (+5: volgorde ring 5, gedrag, strippen, wandbord-loot, sign-BE-types), `ModWoodTypesTest` (+1), nieuw `Ring5HealthyBlockTest` (tag = data map = de 9; houtset in geen van beide).
+- Valkuilen: `Properties.ofFullCopy` kopieert het `drops`-veld; daarom krijgen de wandbordjes expliciet `lootFrom(<staand bord>)`, zodat ze nooit de loot van het eiken-origineel erven (test `corruptedWallSignsDropTheirStandingSign`); `WallSignBlock.getDescriptionId()` = die van het item, dus geen lang-key voor wandbordjes (dubbele sleutel breekt `runData`); `ofFullCopy(GRASS_BLOCK)` kopieert de random ticks — daarom `Properties.of()`.
 
 ## Beslissingen
+- **Bordjes-route (88): (a)** NeoForge 21.1.252 heeft `BlockEntityTypeAddBlocksEvent` → onze bordblokken in de vanilla sign/hanging-sign-types; vanilla renderers (`SignRenderer`/`HangingSignRenderer`, al voor die types geregistreerd) en bewerkschermen doen de rest. Geen `registry/ModBlockEntityTypes`. Client: alleen `Sheets.addWoodType` (defensief tegen class-load-volgorde). Textures volgens §5 (`entity/signs/corrupted`, `entity/signs/hanging/corrupted`, `gui/hanging_signs/corrupted`).
+- **Kaartkleuren (88):** `COLOR_GRAY` voor gras/aarde/steen/keien/schors/bladeren, `COLOR_LIGHT_GRAY` voor zand, planken-familie, gestript hout en bordjes; zandstof `0x8C8792`.
+- **Nederlandse namen (88):** "verdorven" (verdord = withered, ring 4): Verdorven grasblok, aarde, steen, keisteen, zand, stam, hout; Gestripte verdorven stam, Gestript verdorven hout; Verdorven planken, trap, plaat, hek, poort, deur, valluik, drukplaat, knop, bord, hangbord, bladeren.
+- **Blockstates (88):** gras 4 Y-rotaties (zonder tint), aarde/zand 4 rotaties, steen gespiegeld + geroteerd (zoals vanilla steen), keien één model; hout als de verdant-set; bladeren `cutout_mipped` zonder tint.
+- **Creative-volgorde (88):** de 9 + houtset in vanilla-volgorde (stam … knop), dan bord, hangend bord, bladeren.
+- **Bladeren-loot (88):** vanilla's mangrove-tabel (geen sapling): schaar/Silk Touch zichzelf, anders 1–2 stokken met de eikkansen.
 
 ## Backlog
 - `items`: corrupted boot (niet in contract §11).
 - `blocks`: schoffel/pad op `corrupted_grass_block`/`corrupted_dirt` (zou ze "genezen" tot vanilla-akkerland; fase 5 beslist).
+- `infra` (INT1/main, client nodig): bordjes in-game controleren — staand, wand, hangend, hangend aan de wand plaatsen, tekst bewerken (hangbord-scherm toont `gui/hanging_signs/corrupted`), rendering met T's textures.
+- `blocks`: corrupted gras/aarde/zand bewust niet in `#enderman_holdable`, `#animals_spawnable_on` e.d. (dode ring; fase 4/5 kan dat herzien).

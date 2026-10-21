@@ -151,6 +151,29 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         ring3();
         netherRing3();
         ring4();
+        ring5();
+    }
+
+    /**
+     * Ring 5 (88): like the vanilla counterparts. The wall signs have no table of their own: they drop the standing
+     * sign's ({@code lootFrom} in {@code ModBlocks}).
+     */
+    private void ring5() {
+        add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), block -> createSingleItemTableWithSilkTouch(block, ModBlocks.CORRUPTED_DIRT.get()));
+        add(ModBlocks.CORRUPTED_STONE.get(), block -> createSingleItemTableWithSilkTouch(block, ModBlocks.CORRUPTED_COBBLESTONE.get()));
+        for (Block block : List.of(ModBlocks.CORRUPTED_DIRT.get(), ModBlocks.CORRUPTED_COBBLESTONE.get(), ModBlocks.CORRUPTED_SAND.get(),
+                ModBlocks.CORRUPTED_LOG.get(), ModBlocks.CORRUPTED_WOOD.get(), ModBlocks.STRIPPED_CORRUPTED_LOG.get(),
+                ModBlocks.STRIPPED_CORRUPTED_WOOD.get(), ModBlocks.CORRUPTED_PLANKS.get(), ModBlocks.CORRUPTED_STAIRS.get(),
+                ModBlocks.CORRUPTED_FENCE.get(), ModBlocks.CORRUPTED_FENCE_GATE.get(), ModBlocks.CORRUPTED_TRAPDOOR.get(),
+                ModBlocks.CORRUPTED_PRESSURE_PLATE.get(), ModBlocks.CORRUPTED_BUTTON.get(), ModBlocks.CORRUPTED_SIGN.get(),
+                ModBlocks.CORRUPTED_HANGING_SIGN.get())) {
+            dropSelf(block);
+        }
+        add(ModBlocks.CORRUPTED_SLAB.get(), this::createSlabItemTable);
+        add(ModBlocks.CORRUPTED_DOOR.get(), this::createDoorTable);
+        // No sapling and no apple: shears or Silk Touch -> the leaves, otherwise sticks like oak leaves (vanilla's
+        // table for the sapling-less mangrove leaves).
+        add(ModBlocks.CORRUPTED_LEAVES.get(), this::createMangroveLeavesDrops);
     }
 
     private void ring4() {

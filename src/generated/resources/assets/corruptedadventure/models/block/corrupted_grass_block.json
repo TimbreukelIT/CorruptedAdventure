@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "corruptedadventure:block/corrupted_dirt",
+    "particle": "corruptedadventure:block/corrupted_dirt",
+    "side": "corruptedadventure:block/corrupted_grass_block_side",
+    "top": "corruptedadventure:block/corrupted_grass_block_top"
+  }
+}

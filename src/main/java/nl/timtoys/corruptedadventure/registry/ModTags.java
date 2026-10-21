@@ -92,6 +92,8 @@ public final class ModTags {
         public static final TagKey<Block> VOID_SOURCES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("void_sources"));
         /** Host rocks of the Nether ring 5 ores. */
         public static final TagKey<Block> NETHER_RING_5_STONES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("nether_ring_5_stones"));
+        /** Corrupted log, wood and their stripped variants (88): the planks recipe takes them. */
+        public static final TagKey<Block> CORRUPTED_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("corrupted_logs"));
 
         private Blocks() {
         }
@@ -148,6 +150,9 @@ public final class ModTags {
         public static final TagKey<Item> GEMS_AQUAMARINE = TagKey.create(Registries.ITEM, common("gems/aquamarine"));
         /** Convention tag {@code c:gems/purity_crystal}; part of {@code c:gems}. */
         public static final TagKey<Item> GEMS_PURITY_CRYSTAL = TagKey.create(Registries.ITEM, common("gems/purity_crystal"));
+
+        // Ring 5 and Nether ring 5 (docs/plans/ring-5/contract.md §3); contents from stream B.
+        public static final TagKey<Item> CORRUPTED_LOGS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("corrupted_logs"));
 
         private Items() {
         }

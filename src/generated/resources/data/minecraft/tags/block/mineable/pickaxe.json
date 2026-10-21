@@ -146,6 +146,8 @@
     "corruptedadventure:fossil_stone_brick_wall",
     "corruptedadventure:purity_crystal_block",
     "corruptedadventure:purity_crystal_cluster",
-    "corruptedadventure:purity_crystal_lamp"
+    "corruptedadventure:purity_crystal_lamp",
+    "corruptedadventure:corrupted_stone",
+    "corruptedadventure:corrupted_cobblestone"
   ]
 }

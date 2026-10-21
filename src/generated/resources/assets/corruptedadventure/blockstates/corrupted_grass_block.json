@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "corruptedadventure:block/corrupted_grass_block"
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_grass_block",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_grass_block",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_grass_block",
+        "y": 270
+      }
+    ]
+  }
+}

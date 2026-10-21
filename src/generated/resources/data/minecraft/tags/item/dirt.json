@@ -2,6 +2,8 @@
   "values": [
     "corruptedadventure:dead_grass_block",
     "corruptedadventure:withered_dirt",
-    "corruptedadventure:peat"
+    "corruptedadventure:peat",
+    "corruptedadventure:corrupted_grass_block",
+    "corruptedadventure:corrupted_dirt"
   ]
 }

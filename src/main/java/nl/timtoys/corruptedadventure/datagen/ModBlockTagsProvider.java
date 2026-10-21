@@ -60,6 +60,54 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         ring3();
         netherRing3();
         ring4();
+        ring5();
+    }
+
+    /**
+     * Ring 5 (88). {@code #corruptedadventure:corrupted} is exactly the nine corrupted variants of vanilla blocks (each with
+     * a {@code healthy_block} mapping in {@code ModDataMapProvider}); each carries its vanilla counterpart's tags. The rest
+     * of the wood set is tagged like oak and burns ({@code #logs_that_burn}); {@code #mineable/axe} and the fuels come
+     * through the vanilla wood and sign tags. No {@code #animals_spawnable_on}: ring 5 has no animals.
+     */
+    private void ring5() {
+        tag(ModTags.Blocks.CORRUPTED).add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ModBlocks.CORRUPTED_DIRT.get(),
+                ModBlocks.CORRUPTED_STONE.get(), ModBlocks.CORRUPTED_COBBLESTONE.get(), ModBlocks.CORRUPTED_SAND.get(),
+                ModBlocks.CORRUPTED_LOG.get(), ModBlocks.CORRUPTED_WOOD.get(), ModBlocks.CORRUPTED_PLANKS.get(),
+                ModBlocks.CORRUPTED_LEAVES.get());
+
+        tag(BlockTags.DIRT).add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ModBlocks.CORRUPTED_DIRT.get());
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ModBlocks.CORRUPTED_DIRT.get(),
+                ModBlocks.CORRUPTED_SAND.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ModBlocks.CORRUPTED_DIRT.get(),
+                ModBlocks.CORRUPTED_STONE.get(), ModBlocks.CORRUPTED_SAND.get());
+        tag(BlockTags.BASE_STONE_OVERWORLD).add(ModBlocks.CORRUPTED_STONE.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.CORRUPTED_STONE.get(), ModBlocks.CORRUPTED_COBBLESTONE.get());
+        tag(ModTags.Blocks.RING_5_STONES).add(ModBlocks.CORRUPTED_STONE.get());
+        tag(Tags.Blocks.COBBLESTONES).add(ModBlocks.CORRUPTED_COBBLESTONE.get());
+        tag(BlockTags.SAND).add(ModBlocks.CORRUPTED_SAND.get());
+        tag(Tags.Blocks.SANDS).add(ModBlocks.CORRUPTED_SAND.get());
+
+        tag(ModTags.Blocks.CORRUPTED_LOGS).add(ModBlocks.CORRUPTED_LOG.get(), ModBlocks.CORRUPTED_WOOD.get(),
+                ModBlocks.STRIPPED_CORRUPTED_LOG.get(), ModBlocks.STRIPPED_CORRUPTED_WOOD.get());
+        tag(BlockTags.LOGS_THAT_BURN).addTag(ModTags.Blocks.CORRUPTED_LOGS);
+        tag(BlockTags.PLANKS).add(ModBlocks.CORRUPTED_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.CORRUPTED_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.CORRUPTED_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.CORRUPTED_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.CORRUPTED_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.CORRUPTED_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.CORRUPTED_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.CORRUPTED_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.CORRUPTED_BUTTON.get());
+        tag(BlockTags.STANDING_SIGNS).add(ModBlocks.CORRUPTED_SIGN.get());
+        tag(BlockTags.WALL_SIGNS).add(ModBlocks.CORRUPTED_WALL_SIGN.get());
+        tag(BlockTags.CEILING_HANGING_SIGNS).add(ModBlocks.CORRUPTED_HANGING_SIGN.get());
+        tag(BlockTags.WALL_HANGING_SIGNS).add(ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get());
+        tag(BlockTags.LEAVES).add(ModBlocks.CORRUPTED_LEAVES.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.CORRUPTED_LEAVES.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_CORRUPTED_LOG.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_CORRUPTED_WOOD.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.CORRUPTED_FENCE_GATE.get());
     }
 
     /**

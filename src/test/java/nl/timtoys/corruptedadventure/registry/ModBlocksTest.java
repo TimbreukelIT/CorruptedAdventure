@@ -41,6 +41,16 @@ import nl.timtoys.corruptedadventure.block.LagoonGlowgrassBlock;
 import nl.timtoys.corruptedadventure.block.MoonpetalLeavesBlock;
 import nl.timtoys.corruptedadventure.block.VerdantVineBlock;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.HangingSignItem;
+import net.minecraft.world.item.SignItem;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.common.ItemAbilities;
+import nl.timtoys.corruptedadventure.block.ModWoodTypes;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -63,10 +73,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ModBlocksTest {
     /**
      * Blocks without an item of their own besides pots and liquids: the swamp gas (invisible, cannot be aimed at), the
-     * wall bromeliad (placed by the bromeliad's item), the vine stem and the fruit pod (worldgen only).
+     * wall bromeliad (placed by the bromeliad's item), the vine stem and the fruit pod (worldgen only), and the wall
+     * signs (placed by the sign items).
      */
     private static final Set<DeferredHolder<Block, ? extends Block>> WITHOUT_ITEM = Set.of(ModBlocks.SWAMP_GAS,
-            ModBlocks.VERDANT_WALL_BROMELIAD, ModBlocks.VERDANT_VINE_PLANT, ModBlocks.VERDANT_FRUIT_POD);
+            ModBlocks.VERDANT_WALL_BROMELIAD, ModBlocks.VERDANT_VINE_PLANT, ModBlocks.VERDANT_FRUIT_POD,
+            ModBlocks.CORRUPTED_WALL_SIGN, ModBlocks.CORRUPTED_WALL_HANGING_SIGN);
 
     @Test
     void everyBlockExceptPottedPlantsHasABlockItemWithTheSameName() {
@@ -829,7 +841,7 @@ class ModBlocksTest {
         });
     }
 
-    /** Nether ring 4 follows ring 4 directly and ends the blocks (contract ring 4 §3); its shard ends the loose items. */
+    /** Nether ring 4 follows ring 4 directly (contract ring 4 §3); its shard ends the loose items. */
     @Test
     void netherRing4FollowsRing4InOrderAndBehavesAsPlanned() {
         List<Item> shown = blockItems();
@@ -840,7 +852,7 @@ class ModBlocksTest {
                 ModBlocks.POLISHED_FOSSIL_STONE_WALL, ModBlocks.FOSSIL_STONE_BRICKS, ModBlocks.FOSSIL_STONE_BRICK_STAIRS,
                 ModBlocks.FOSSIL_STONE_BRICK_SLAB, ModBlocks.FOSSIL_STONE_BRICK_WALL, ModBlocks.PURITY_CRYSTAL_BLOCK,
                 ModBlocks.PURITY_CRYSTAL_CLUSTER, ModBlocks.PURITY_CRYSTAL_LAMP).<Item>map(DeferredBlock::asItem).toList();
-        assertEquals(netherRing4, shown.subList(lastRing4 + 1, shown.size()));
+        assertEquals(netherRing4, shown.subList(lastRing4 + 1, lastRing4 + 1 + netherRing4.size()));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem)).toList();
         assertEquals(ModItems.PURITY_CRYSTAL_SHARD.get(), standalone.getLast());
@@ -852,6 +864,103 @@ class ModBlocksTest {
         assertEquals(5, ModBlocks.PURITY_CRYSTAL_CLUSTER.get().defaultBlockState().getLightEmission());
         assertEquals(0, ModBlocks.PURITY_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
         assertFalse(ModBlocks.PURITY_CRYSTAL_CLUSTER.get().defaultBlockState().isRandomlyTicking());
+    }
+
+    /**
+     * Ring 5 follows Nether ring 4 directly and ends the blocks (contract ring 5 §3): the nine corrupted variants and the
+     * wood set, each sign item once (the wall signs place through it).
+     */
+    @Test
+    void ring5FollowsNetherRing4InOrder() {
+        List<Item> shown = blockItems().stream().distinct().toList();
+        int lastNetherRing4 = shown.indexOf(ModBlocks.PURITY_CRYSTAL_LAMP.asItem());
+        List<Item> ring5 = Stream.of(ModBlocks.CORRUPTED_GRASS_BLOCK, ModBlocks.CORRUPTED_DIRT, ModBlocks.CORRUPTED_STONE,
+                ModBlocks.CORRUPTED_COBBLESTONE, ModBlocks.CORRUPTED_SAND, ModBlocks.CORRUPTED_LOG, ModBlocks.CORRUPTED_WOOD,
+                ModBlocks.STRIPPED_CORRUPTED_LOG, ModBlocks.STRIPPED_CORRUPTED_WOOD, ModBlocks.CORRUPTED_PLANKS,
+                ModBlocks.CORRUPTED_STAIRS, ModBlocks.CORRUPTED_SLAB, ModBlocks.CORRUPTED_FENCE, ModBlocks.CORRUPTED_FENCE_GATE,
+                ModBlocks.CORRUPTED_DOOR, ModBlocks.CORRUPTED_TRAPDOOR, ModBlocks.CORRUPTED_PRESSURE_PLATE,
+                ModBlocks.CORRUPTED_BUTTON, ModBlocks.CORRUPTED_SIGN, ModBlocks.CORRUPTED_HANGING_SIGN,
+                ModBlocks.CORRUPTED_LEAVES).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(ring5, shown.subList(lastNetherRing4 + 1, shown.size()));
+        assertInstanceOf(SignItem.class, ModBlocks.CORRUPTED_SIGN.asItem());
+        assertInstanceOf(HangingSignItem.class, ModBlocks.CORRUPTED_HANGING_SIGN.asItem());
+        assertEquals(16, ModBlocks.CORRUPTED_SIGN.asItem().getDefaultMaxStackSize());
+        assertEquals(16, ModBlocks.CORRUPTED_HANGING_SIGN.asItem().getDefaultMaxStackSize());
+        assertInstanceOf(DoubleHighBlockItem.class, ModBlocks.CORRUPTED_DOOR.asItem());
+    }
+
+    /** Contract ring 5 §11: the grass never spreads, dies or turns into grass; sand falls; leaves decay like oak's. */
+    @Test
+    void corruptedVariantsBehaveLikeTheirCounterpartsExceptTheGrass() {
+        BlockState grass = ModBlocks.CORRUPTED_GRASS_BLOCK.get().defaultBlockState();
+        assertFalse(grass.isRandomlyTicking());
+        assertSame(Block.class, ModBlocks.CORRUPTED_GRASS_BLOCK.get().getClass());
+        assertEquals(Blocks.GRASS_BLOCK.defaultDestroyTime(), ModBlocks.CORRUPTED_GRASS_BLOCK.get().defaultDestroyTime());
+        assertSame(SoundType.GRASS, grass.getSoundType());
+        assertSame(Block.class, ModBlocks.CORRUPTED_DIRT.get().getClass());
+        assertFalse(ModBlocks.CORRUPTED_DIRT.get().defaultBlockState().isRandomlyTicking());
+
+        assertInstanceOf(ColoredFallingBlock.class, ModBlocks.CORRUPTED_SAND.get());
+        assertEquals(Blocks.SAND.defaultDestroyTime(), ModBlocks.CORRUPTED_SAND.get().defaultDestroyTime());
+
+        // Persistent leaves (placed by a player) never tick; natural ones do, and decay without a log in reach.
+        BlockState leaves = ModBlocks.CORRUPTED_LEAVES.get().defaultBlockState();
+        assertInstanceOf(LeavesBlock.class, leaves.getBlock());
+        assertTrue(leaves.setValue(LeavesBlock.PERSISTENT, false).setValue(LeavesBlock.DISTANCE, LeavesBlock.DECAY_DISTANCE)
+                .isRandomlyTicking());
+        assertFalse(leaves.setValue(LeavesBlock.PERSISTENT, true).isRandomlyTicking());
+
+        Map<DeferredBlock<?>, Block> twins = new LinkedHashMap<>();
+        twins.put(ModBlocks.CORRUPTED_DIRT, Blocks.DIRT);
+        twins.put(ModBlocks.CORRUPTED_STONE, Blocks.STONE);
+        twins.put(ModBlocks.CORRUPTED_COBBLESTONE, Blocks.COBBLESTONE);
+        twins.put(ModBlocks.CORRUPTED_LOG, Blocks.OAK_LOG);
+        twins.put(ModBlocks.CORRUPTED_PLANKS, Blocks.OAK_PLANKS);
+        twins.put(ModBlocks.CORRUPTED_LEAVES, Blocks.OAK_LEAVES);
+        twins.put(ModBlocks.CORRUPTED_SIGN, Blocks.OAK_SIGN);
+        twins.put(ModBlocks.CORRUPTED_HANGING_SIGN, Blocks.OAK_HANGING_SIGN);
+        twins.forEach((corrupted, vanilla) -> {
+            String id = corrupted.getId().toString();
+            assertEquals(vanilla.defaultDestroyTime(), corrupted.get().defaultDestroyTime(), id);
+            assertEquals(vanilla.getExplosionResistance(), corrupted.get().getExplosionResistance(), id);
+            assertSame(vanilla.defaultBlockState().getSoundType(), corrupted.get().defaultBlockState().getSoundType(), id);
+        });
+    }
+
+    @Test
+    void anAxeStripsTheCorruptedLogAndWoodKeepingTheAxis() {
+        assertStripsTo(ModBlocks.CORRUPTED_LOG.get(), ModBlocks.STRIPPED_CORRUPTED_LOG.get());
+        assertStripsTo(ModBlocks.CORRUPTED_WOOD.get(), ModBlocks.STRIPPED_CORRUPTED_WOOD.get());
+    }
+
+    /** The wall signs drop the standing sign (not oak's, which a full copy of the oak wall sign would keep). */
+    @Test
+    void corruptedWallSignsDropTheirStandingSign() {
+        assertEquals(ModBlocks.CORRUPTED_SIGN.get().getLootTable(), ModBlocks.CORRUPTED_WALL_SIGN.get().getLootTable());
+        assertEquals(ModBlocks.CORRUPTED_HANGING_SIGN.get().getLootTable(),
+                ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get().getLootTable());
+    }
+
+    /** Vanilla's sign block entity types accept the corrupted signs (ModSigns), so the signs keep their block entity. */
+    @Test
+    void vanillaSignBlockEntityTypesAcceptTheCorruptedSigns() {
+        assertTrue(BlockEntityType.SIGN.isValid(ModBlocks.CORRUPTED_SIGN.get().defaultBlockState()));
+        assertTrue(BlockEntityType.SIGN.isValid(ModBlocks.CORRUPTED_WALL_SIGN.get().defaultBlockState()));
+        assertTrue(BlockEntityType.HANGING_SIGN.isValid(ModBlocks.CORRUPTED_HANGING_SIGN.get().defaultBlockState()));
+        assertTrue(BlockEntityType.HANGING_SIGN.isValid(ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get().defaultBlockState()));
+        assertTrue(BlockEntityType.SIGN.isValid(Blocks.OAK_SIGN.defaultBlockState()));
+        assertSame(ModWoodTypes.CORRUPTED, ModBlocks.CORRUPTED_SIGN.get().type());
+        assertSame(ModWoodTypes.CORRUPTED, ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get().type());
+    }
+
+    private static void assertStripsTo(Block log, Block stripped) {
+        BlockHitResult hit = new BlockHitResult(Vec3.ZERO, Direction.UP, BlockPos.ZERO, false);
+        UseOnContext context = new UseOnContext(null, null, InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_AXE), hit) {
+        };
+        BlockState state = log.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
+        BlockState result = state.getToolModifiedState(context, ItemAbilities.AXE_STRIP, true);
+        assertSame(stripped, result.getBlock());
+        assertEquals(Direction.Axis.X, result.getValue(RotatedPillarBlock.AXIS));
     }
 
     private static List<Item> blockItems() {

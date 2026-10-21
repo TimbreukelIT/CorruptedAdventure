@@ -1,0 +1,13 @@
+{
+  "values": {
+    "corruptedadventure:corrupted_cobblestone": "minecraft:cobblestone",
+    "corruptedadventure:corrupted_dirt": "minecraft:dirt",
+    "corruptedadventure:corrupted_grass_block": "minecraft:grass_block",
+    "corruptedadventure:corrupted_leaves": "minecraft:oak_leaves",
+    "corruptedadventure:corrupted_log": "minecraft:oak_log",
+    "corruptedadventure:corrupted_planks": "minecraft:oak_planks",
+    "corruptedadventure:corrupted_sand": "minecraft:sand",
+    "corruptedadventure:corrupted_stone": "minecraft:stone",
+    "corruptedadventure:corrupted_wood": "minecraft:oak_wood"
+  }
+}

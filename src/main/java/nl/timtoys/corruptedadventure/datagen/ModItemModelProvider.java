@@ -327,6 +327,7 @@ final class ModItemModelProvider extends ItemModelProvider {
 
         verdant();
         netherRing4();
+        ring5();
     }
 
     /** The verdant flora (72b); the wall bromeliad, the vine stem and the fruit pod have no item of their own. */
@@ -406,6 +407,35 @@ final class ModItemModelProvider extends ItemModelProvider {
         // purity_crystal_cluster: ModBlockStateProvider.crystalCluster writes its item model.
         blockItem(ModBlocks.PURITY_CRYSTAL_LAMP);
         basicItem(ModItems.PURITY_CRYSTAL_SHARD.get());
+    }
+
+    /**
+     * Ring 5 (88): cubes and the wood set like the verdant set; the door and the two signs are flat items on T's
+     * {@code item/} textures. The wall signs have no item.
+     */
+    private void ring5() {
+        blockItem(ModBlocks.CORRUPTED_GRASS_BLOCK);
+        blockItem(ModBlocks.CORRUPTED_DIRT);
+        blockItem(ModBlocks.CORRUPTED_STONE);
+        blockItem(ModBlocks.CORRUPTED_COBBLESTONE);
+        blockItem(ModBlocks.CORRUPTED_SAND);
+        ResourceLocation planks = modLoc("block/corrupted_planks");
+        blockItem(ModBlocks.CORRUPTED_LOG);
+        blockItem(ModBlocks.CORRUPTED_WOOD);
+        blockItem(ModBlocks.STRIPPED_CORRUPTED_LOG);
+        blockItem(ModBlocks.STRIPPED_CORRUPTED_WOOD);
+        blockItem(ModBlocks.CORRUPTED_PLANKS);
+        blockItem(ModBlocks.CORRUPTED_STAIRS);
+        blockItem(ModBlocks.CORRUPTED_SLAB);
+        fenceInventory(ModBlocks.CORRUPTED_FENCE.getId().getPath(), planks);
+        blockItem(ModBlocks.CORRUPTED_FENCE_GATE);
+        basicItem(ModBlocks.CORRUPTED_DOOR.asItem());
+        withExistingParent(ModBlocks.CORRUPTED_TRAPDOOR.getId().getPath(), modLoc("block/corrupted_trapdoor_bottom"));
+        blockItem(ModBlocks.CORRUPTED_PRESSURE_PLATE);
+        buttonInventory(ModBlocks.CORRUPTED_BUTTON.getId().getPath(), planks);
+        basicItem(ModBlocks.CORRUPTED_SIGN.asItem());
+        basicItem(ModBlocks.CORRUPTED_HANGING_SIGN.asItem());
+        blockItem(ModBlocks.CORRUPTED_LEAVES);
     }
 
     /** A flat item showing the block texture, like vanilla's plants. */

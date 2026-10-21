@@ -17,6 +17,10 @@
     "corruptedadventure:green_sulfur_mud",
     "corruptedadventure:orange_sulfur_mud",
     "corruptedadventure:tidestone",
-    "corruptedadventure:lagoon_sandstone"
+    "corruptedadventure:lagoon_sandstone",
+    "corruptedadventure:corrupted_grass_block",
+    "corruptedadventure:corrupted_dirt",
+    "corruptedadventure:corrupted_stone",
+    "corruptedadventure:corrupted_sand"
   ]
 }

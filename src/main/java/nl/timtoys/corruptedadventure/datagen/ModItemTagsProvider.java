@@ -122,6 +122,22 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.CANYON_COBBLESTONE.asItem());
 
         ring4();
+        ring5();
+    }
+
+    /**
+     * Ring 5 (88): the corrupted items join the vanilla item tags of their counterparts (the general block tag copies above
+     * cover planks, leaves, dirt, sand, cobblestones and the wood shapes), so vanilla's recipes take them: stone tools and
+     * furnaces from the cobblestone, glass from the sand, sticks and crafting tables from the planks.
+     */
+    private void ring5() {
+        copy(ModTags.Blocks.CORRUPTED_LOGS, ModTags.Items.CORRUPTED_LOGS);
+        tag(ItemTags.STONE_TOOL_MATERIALS).add(ModBlocks.CORRUPTED_COBBLESTONE.asItem());
+        tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.CORRUPTED_COBBLESTONE.asItem());
+        tag(ItemTags.SMELTS_TO_GLASS).add(ModBlocks.CORRUPTED_SAND.asItem());
+        // Like vanilla's own copies; the sign items are named after the standing and the ceiling block.
+        copy(BlockTags.STANDING_SIGNS, ItemTags.SIGNS);
+        copy(BlockTags.CEILING_HANGING_SIGNS, ItemTags.HANGING_SIGNS);
     }
 
     /** Ring 4: the burnable wood sets reach #logs_that_burn through the block tag copy above. */

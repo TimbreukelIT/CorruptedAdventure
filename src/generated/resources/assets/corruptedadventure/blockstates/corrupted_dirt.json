@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "corruptedadventure:block/corrupted_dirt"
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_dirt",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_dirt",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_dirt",
+        "y": 270
+      }
+    ]
+  }
+}
