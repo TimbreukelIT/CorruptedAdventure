@@ -164,6 +164,9 @@ Klaar moet zijn (INT1 + 86b/87b/86c op main):
 
 ## 6. Open vragen voor de gebruiker
 
+**Beantwoord 2026-10-21:** OV1 = A (eigen type per band, gedeelde tijden); OV2 = A (diamant, hardheid vanilla-erts
++1,5, XP nulliet 5–9 / witte kern 6–10, witte kern licht 3).
+
 Alleen echte blokkades; de rest staat als voorstel in §7.
 
 ### OV1 — Ringweer ring 5: hebben binnen- en buitenband tegelijk elk hun eigen weer? (blokkeert A, 92)
@@ -189,6 +192,8 @@ Ring 4 (V3 = B): `needs_diamond_tool`, hardheid vanilla-erts +1,0, XP 4–7 / 5�
 - **C: precies zoals ring 4** (diamant, +1,0, XP 4–7). *Speelgevoel:* geen merkbare stap tussen ring 4 en 5.
 
 ## 7. Voorstellen ter bevestiging (niet blokkerend; gelden tenzij de gebruiker anders zegt)
+
+**Bevestigd 2026-10-21:** P1–P5 zoals hieronder, door de gebruiker akkoord.
 
 | # | Stroom | Voorstel | Wanneer bijsturen |
 |---|---|---|---|
