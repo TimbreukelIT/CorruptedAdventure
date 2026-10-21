@@ -12,7 +12,24 @@ bash tools/test/setup.sh <stream> <n>     # e.g. setup.sh I 7: build/test.conf +
 ```
 
 Port n (waves.md §4): server 25570+n, RCON 25580+n (RCON on 127.0.0.1 and only while a server runs). PIDs go to
-`build/<stream>.pids`. Environment overrides: `CA_STREAM`, `CA_PORT_N`, `CA_LOCK_DIR` (default `C:/Temp`).
+`build/<stream>.pids`. Environment overrides: `CA_STREAM`, `CA_PORT_N`, `CA_LOCK_DIR` (default `C:/Temp`; on Linux
+`${TMPDIR:-/tmp}/ca-test`).
+
+## Linux (cloud container)
+
+`lib.sh` sets `CA_OS` from `uname -s`: `windows` under Git Bash/MSYS/Cygwin (everything as described here), `posix`
+elsewhere. On posix: processes via `kill -0`/`kill`/`pgrep -P` and `/proc` (a JVM is found by
+`/proc/<pid>/cmdline` containing `<canonical checkout>/build/moddev/<kind>RunVmArgs` and `comm` = `java`; a failed
+start kills the Gradle job's process tree), `cygpath` is a pass-through, PIDs are the shell's own, Gradle runs as
+`bash ./gradlew` (the file may lack its executable bit), `jfr` instead of `jfr.exe`, Python is `python` or else
+`python3`, and the server keeps the container's `JAVA_TOOL_OPTIONS` (proxy, trust store) and adds `-Xmx` to it.
+`client.sh` (and so screenshots, `win.ps1`) refuses with exit 1: there is no screen. Server, RCON, `world.sh`, `det.sh`,
+`waterscan.sh` and the offline scans work; `perf.sh`/`jfr-prof.sh` run, but cloud timings are not comparable.
+
+```bash
+bash tools/test/setup.sh I 7                                   # once
+bash tools/test/det.sh --areas tools/test/areas/smoke.txt --name det-smoke   # -> build/test/det-smoke.txt
+```
 
 ## The machine and the user
 

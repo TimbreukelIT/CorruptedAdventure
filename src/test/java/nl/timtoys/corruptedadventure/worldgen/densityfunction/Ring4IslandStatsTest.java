@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -11,8 +12,10 @@ import java.util.Map;
  * Measurements of the islands of ring 4 on the test seed (sparring 2026-10-20, B1/B2): per fifth of the ring's width
  * the islands by kind, the share of the sky they cover, stacked columns, lakes, holes on high ground without a lake,
  * pairs, arches and falls. Prints only (the tuning loop reads it before and after a change); the rules themselves are
- * checked in {@link Ring4IslandsTest} and {@link Ring4LandmarksTest}.
+ * checked in {@link Ring4IslandsTest} and {@link Ring4LandmarksTest}. Tagged {@code stats}: not part of {@code build};
+ * run it with {@code ./gradlew test -PincludeStats --tests '*Ring4IslandStatsTest'}.
  */
+@Tag("stats")
 class Ring4IslandStatsTest {
     private static final int BINS = 5;
 

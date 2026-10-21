@@ -51,7 +51,11 @@ start() {
     ca_user_check
     ca_need_port
     [ -z "$(ca_server_pid)" ] || ca_die "a server of this stream is still running (pid $(ca_server_pid)); server.sh stop first"
-    [ -x "$wt/gradlew" ] || ca_die "$wt has no gradlew"
+    if [ "$CA_OS" = windows ]; then
+        [ -x "$wt/gradlew" ] || ca_die "$wt has no gradlew"
+    else
+        [ -f "$wt/gradlew" ] || ca_die "$wt has no gradlew"
+    fi
     [ -z "$clients" ] || [ $slot = 1 ] || ca_die "--client reserves slots, it cannot go with --no-slot"
     for c in $clients; do tasks="$tasks,client$c"; done
     if [ $slot = 1 ]; then
@@ -68,12 +72,16 @@ start() {
         rm -rf "$wt/run/$level/datapacks/perftest"
         cp -r "$CA_TOOLS/perfpack" "$wt/run/$level/datapacks/perftest"
     fi
-    local log="$CA_OUT/server-$level.log" before pid t0
+    local log="$CA_OUT/server-$level.log" before pid t0 jto
+    # The JVM options replace JAVA_TOOL_OPTIONS on Windows; elsewhere they are added to it (the cloud container puts
+    # its proxy and trust store there, which Gradle needs to download).
+    jto="-Xmx$xmx${CA_SERVER_JVM:+ $CA_SERVER_JVM}"
+    [ "$CA_OS" = posix ] && jto="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }$jto"
     before=" $(ca_java_pids "$wt" server | tr '\n' ' ') "
     rm -f "$log"
     ca_log "starting runServer in $wt on level $level (port $CA_SERVER_PORT, RCON $CA_RCON_PORT)"
     # All of the background job's descriptors go to the log first, so it never holds the caller's stdout (a pipe).
-    (exec > "$log" 2>&1 < /dev/null; cd "$wt" && JAVA_TOOL_OPTIONS="-Xmx$xmx${CA_SERVER_JVM:+ $CA_SERVER_JVM}" exec nohup ./gradlew runServer --no-daemon --console=plain) &
+    (exec > "$log" 2>&1 < /dev/null; cd "$wt" && JAVA_TOOL_OPTIONS="$jto" exec nohup "${CA_GRADLEW[@]}" runServer --no-daemon --console=plain) &
     local job=$!
     t0=$(date +%s); pid=""
     while true; do
@@ -106,7 +114,7 @@ start() {
         exit 1
     fi
     local java
-    java="$(cygpath -m "$(powershell -NoProfile -Command "(Get-CimInstance Win32_Process -Filter 'ProcessId=$pid').ExecutablePath" | tr -d '\r')")"
+    java="$(ca_pid_exe "$pid")"
     cat > "$STATE" <<EOF
 PID=$pid
 LEVEL=$level

@@ -130,6 +130,9 @@ public final class Ring4BlockNames {
         lang.addBlock(ModBlocks.MIST_FERN, "Mist Fern");
         lang.addBlock(ModBlocks.MOONPETAL_SHRUB, "Moonpetal Shrub");
         lang.addBlock(ModBlocks.LAGOON_GLOWGRASS, "Lagoon Glowgrass");
+        lang.addBlock(ModBlocks.LAGOON_SAND, "Lagoon Sand");
+        lang.addBlock(ModBlocks.CLAWED_STONE, "Clawed Stone");
+        lang.addBlock(ModBlocks.CLAWED_DEEPSLATE, "Clawed Deepslate");
         lang.addBlock(ModBlocks.BONE_SAND, "Bone Sand");
         lang.addBlock(ModBlocks.BLEACHED_NETHERRACK, "Bleached Netherrack");
         lang.addBlock(ModBlocks.FOSSIL_STONE, "Fossil Stone");
@@ -268,6 +271,10 @@ public final class Ring4BlockNames {
         lang.addBlock(ModBlocks.MIST_FERN, "Nevelvaren");
         lang.addBlock(ModBlocks.MOONPETAL_SHRUB, "Maanbloesemstruik");
         lang.addBlock(ModBlocks.LAGOON_GLOWGRASS, "Lagunegloeigras");
+        lang.addBlock(ModBlocks.LAGOON_SAND, "Lagunezand");
+        lang.addBlock(ModBlocks.CLAWED_STONE, "Bekraste steen");
+        // Vanilla nl_nl calls deepslate "Diepleisteen" (as in the ring 3 deepslate ores).
+        lang.addBlock(ModBlocks.CLAWED_DEEPSLATE, "Bekraste diepleisteen");
         lang.addBlock(ModBlocks.BONE_SAND, "Bottenzand");
         lang.addBlock(ModBlocks.BLEACHED_NETHERRACK, "Gebleekt netherrack");
         lang.addBlock(ModBlocks.FOSSIL_STONE, "Fossielsteen");

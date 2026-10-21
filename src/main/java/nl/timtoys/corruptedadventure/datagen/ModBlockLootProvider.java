@@ -227,7 +227,15 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
 
         verdant();
         ring4Decor();
+        lagoonSandAndClawMarks();
         netherRing4();
+    }
+
+    /** The golf 3 blocks (66c): the sand drops itself, the claw marks break like their rock (Silk Touch: the block). */
+    private void lagoonSandAndClawMarks() {
+        dropSelf(ModBlocks.LAGOON_SAND.get());
+        add(ModBlocks.CLAWED_STONE.get(), block -> createSingleItemTableWithSilkTouch(block, Items.COBBLESTONE));
+        add(ModBlocks.CLAWED_DEEPSLATE.get(), block -> createSingleItemTableWithSilkTouch(block, Items.COBBLED_DEEPSLATE));
     }
 
     /**

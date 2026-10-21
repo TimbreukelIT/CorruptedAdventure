@@ -1,6 +1,8 @@
 package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 
 import net.minecraft.util.Mth;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import nl.timtoys.corruptedadventure.ring.Ring4Band;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 
@@ -217,6 +219,16 @@ public final class Ring4Tunnels {
         synchronized (WORLDS) {
             WORLDS.clear();
         }
+    }
+
+    public static void register(IEventBus gameBus) {
+        gameBus.addListener(Ring4Tunnels::onServerStopped);
+    }
+
+    // A stopped server's worlds are never asked again (a reopened world has new noises: a new key), so their
+    // decisions would only hold memory until the JVM stops.
+    private static void onServerStopped(ServerStoppedEvent event) {
+        forgetWorlds();
     }
 
     // ---------------------------------------------------------------- per column

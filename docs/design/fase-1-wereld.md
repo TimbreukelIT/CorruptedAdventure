@@ -1066,6 +1066,20 @@ Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). G
 
 ### Ring 5 — Corrupted ring (8.000 – 9.700; was 7.800 – 9.500, daarvóór 7.500 – 9.500)
 
+**Sparring ring 5 (2026-10-21, voorbereiding; rondes in `docs/plans/ring-5-sparring.md`).** Herziet het ontwerp hieronder waar het botst; de rest blijft. Bouw na teststop 5c, in golven zoals ring 4 (contract, golf 0-plan, vroege terreinpreview, teststops 6a/6b/6c).
+- **Twee banden:** binnenste ~50 % vaste grijze dode grond met losse scheuren ("alles net fout"); overgangsband ~200 met grillige ruis; buitenste ~50 % valt steeds meer weg (void, drijvende brokken, bruggen) tot de rand.
+- **Biomes (6):** binnen `corrupted_wastes`, `glitch_fields`, `false_meadow`; buiten `void_scars`, `inverted_hills`, nieuw `shattered_expanse` (werktitel; brokken en bruggen).
+- **Kastelen (fase 3) als terrein nu:** 4 vaste plekken (windrichtingen, seed-gedraaid) in de buitenband, elk een massieve pinakel/plateau boven de void met één of twee brede natuurlijke bruggen, verwoeste grond en voidsteen-randen; fase 3 zet alleen het gebouw.
+- **Horror in de wereld (fase 1):** ontbrekende chunks, Herobrine-tekens, gespiegelde dubbelgangers (stuk terrein verderop exact gespiegeld), verlaten kampen van spelers (kleine feature), en "herinneringen": zeldzame vervormde brokken (10–30) van ring 1–4 (eikenbos, oase, lavaveld, eilandje met gat), half gecorrumpeerd, soms zwevend of scheef.
+- **Blokstijl:** grijs uitgeloogd met dunne violet-zwarte aders; glitchblok missing-texture paars-zwart (geanimeerd); voidsteen zwart met sterrenpixels.
+- **Nulliet:** vooral in de wanden van void-scheuren en de onderkant van brokken in de buitenband, wat diep in de binnenband.
+- **Grotten:** onmogelijke gangen (rasters, lussen), void-grotten, én gekopieerde/gespiegelde grotten; buitenband nauwelijks grotten.
+- **Void-meter:** zoals hieronder, maar teleports alleen op vaste grond in de binnenband; in de buitenband vervangt sneller darkness ze.
+- **Weer:** glitchstorm, omgekeerde regen en nieuw "stilstand" (wolken en regen bevriezen, geluid valt weg; kort en zeldzaam).
+- **Sfeer:** binnen grijs-violet met dikke kleurloze fog; buiten steeds zwarter met sterren, ook overdag; echo-voetstappen in beide banden.
+- **Zone 4→5 herzien (ring 5 golf 0/1):** `sundered_reach` wordt een breukzone: grond grotendeels dicht, diepe spleten, opgeheven en gekantelde schotsen, losse brokken; overal over te steken; de landbruggen vervallen. Patroon: vast → breuk → vast → uiteenvallen.
+- **Nether-5:** `white_halls` + tweede biome `hollow_cathedral` (enorme lege witte ruimte met één gigantische zuil); stilte-meter zoals ontworpen.
+
 *Sparring ring 4 (2026-10-10):* ring 5 schuift op naar 8.000 – 9.700 met de void-rand op 10.200. Ring 5 begint achter `sundered_reach` (zone 4→5), waar de wereld al uit elkaar valt; de rest van deze sectie is nog het ontwerp van sessie 2.
 
 **Terrein en sfeer**

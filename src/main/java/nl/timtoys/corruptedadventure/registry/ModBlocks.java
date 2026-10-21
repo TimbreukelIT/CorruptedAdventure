@@ -109,6 +109,8 @@ public final class ModBlocks {
     private static final int ASH_DUST_COLOR = 0x8A8580;
     /** Falling dust colour of the bone sand: pale bone white. */
     private static final int BONE_DUST_COLOR = 0xE3DCC6;
+    /** Falling dust colour of the lagoon sand: white cream, lighter than the bone sand. */
+    private static final int LAGOON_SAND_DUST_COLOR = 0xF2EEDC;
     /** Ring 3 ores are this much harder than the vanilla ore of their host ("one step above ring 2"). */
     static final float RING_3_ORE_EXTRA_HARDNESS = 0.5F;
     /** Ring 4 ores are this much harder than the vanilla ore of their host (a step above ring 3; decision V3 golf 1). */
@@ -991,6 +993,18 @@ public final class ModBlocks {
     public static final DeferredBlock<LagoonGlowgrassBlock> LAGOON_GLOWGRASS = register("lagoon_glowgrass",
             () -> new LagoonGlowgrassBlock(Properties.ofFullCopy(Blocks.SHORT_GRASS).mapColor(MapColor.COLOR_CYAN)
                     .lightLevel(state -> 5)));
+
+    // Golf 3 blocks (package 66c): the lagoon's white sand and the claw marks in the plain tunnel rock.
+    /** White-cream sand of the crystal lagoon's banks: vanilla sand in every way (falls, sounds, tool), its own dust. */
+    public static final DeferredBlock<ColoredFallingBlock> LAGOON_SAND = register("lagoon_sand",
+            () -> new ColoredFallingBlock(new ColorRGBA(LAGOON_SAND_DUST_COLOR),
+                    Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.QUARTZ)));
+    /** Stone with claw marks in the tunnel walls: stone in every way, breaks into cobblestone too. */
+    public static final DeferredBlock<Block> CLAWED_STONE = register("clawed_stone",
+            () -> new Block(Properties.ofFullCopy(Blocks.STONE)));
+    /** Deepslate with claw marks: deepslate's strength and sounds (a plain cube, not a pillar), breaks into cobbled deepslate. */
+    public static final DeferredBlock<Block> CLAWED_DEEPSLATE = register("clawed_deepslate",
+            () -> new Block(Properties.ofFullCopy(Blocks.DEEPSLATE)));
 
     // ---- Nether ring 4 ----
     // Dry crystal and bone desert (contract ring 4 §3, package 68): bone sand, bleached netherrack, the fossil stone set

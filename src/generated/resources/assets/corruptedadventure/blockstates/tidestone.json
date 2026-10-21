@@ -1,7 +1,36 @@
 {
   "variants": {
-    "": {
-      "model": "corruptedadventure:block/tidestone"
-    }
+    "": [
+      {
+        "model": "corruptedadventure:block/tidestone"
+      },
+      {
+        "model": "corruptedadventure:block/tidestone_mirrored"
+      },
+      {
+        "model": "corruptedadventure:block/tidestone",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/tidestone_mirrored",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/tidestone",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/tidestone_mirrored",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/tidestone",
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/tidestone_mirrored",
+        "y": 270
+      }
+    ]
   }
 }
