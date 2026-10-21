@@ -28,6 +28,10 @@
       "to_chance": 0.1
     },
     {
+      "type": "corruptedadventure:ring4_filter",
+      "island_clearance": 6
+    },
+    {
       "type": "minecraft:biome"
     }
   ]

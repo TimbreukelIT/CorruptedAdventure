@@ -381,6 +381,61 @@ class Ring4LandmarksTest {
         assertTrue(pieces > 50, "pieces " + pieces);
     }
 
+    /**
+     * Backlog r. 420: {@link IslandField#islandBlockNear} (the ore filter of ring 4) sees every island, arch and debris
+     * block in its box, and nothing far under the islands.
+     */
+    @Test
+    void islandBlockNearSeesEveryIslandBlock() {
+        int reach = 2;
+        int checked = 0;
+        int seen = 0;
+        java.util.Random random = new java.util.Random(420);
+        for (IslandShape s : SHAPES) {
+            if (s.kind() == IslandShape.TREE) {
+                continue;
+            }
+            List<int[]> probes = new ArrayList<>();
+            // Round the island's edge and under its belly, at its arches and its debris.
+            for (int n = 0; n < 6; n++) {
+                double t = random.nextDouble() * Math.PI * 2.0;
+                double r = s.reach() * (0.6 + 0.6 * random.nextDouble());
+                probes.add(new int[]{(int) Math.floor(s.x() + r * Math.cos(t)), s.lowest() - 4 + random.nextInt(s.highest() - s.lowest() + 8),
+                        (int) Math.floor(s.z() + r * Math.sin(t))});
+            }
+            for (IslandArches.Pair pair : field.landmarks().pairs(s)) {
+                if (pair.arch() != null) {
+                    IslandArches.Arch arch = pair.arch();
+                    int x = (int) Math.floor((arch.ax() + arch.bx()) / 2.0);
+                    int z = (int) Math.floor((arch.az() + arch.bz()) / 2.0);
+                    probes.add(new int[]{x + 1, (arch.topA() + arch.topB()) / 2 - 3, z - 1});
+                }
+            }
+            for (IslandDebris.Piece piece : field.landmarks().debris(s)) {
+                probes.add(new int[]{piece.x() + 2, piece.y() + 2, piece.z() - 1});
+            }
+            for (int[] p : probes) {
+                boolean block = false;
+                for (int x = p[0] - reach; x <= p[0] + reach && !block; x++) {
+                    for (int z = p[2] - reach; z <= p[2] + reach && !block; z++) {
+                        for (int y = p[1] - reach; y <= p[1] + reach && !block; y++) {
+                            block = field.thin(x, y, z) == 1.0;
+                        }
+                    }
+                }
+                checked++;
+                seen += block ? 1 : 0;
+                if (block) {
+                    assertTrue(field.islandBlockNear(p[0], p[1], p[2], reach), "missed at " + p[0] + " " + p[1] + " " + p[2]);
+                }
+            }
+            // Far under the island, in the ground below its hole: nothing.
+            assertFalse(field.islandBlockNear((int) Math.floor(s.x()), (int) Math.floor(s.groundY()) - 40, (int) Math.floor(s.z()), 6));
+        }
+        System.out.printf("islandBlockNear: %d probes, %d next to an island block%n", checked, seen);
+        assertTrue(seen > 500, "seen " + seen);
+    }
+
     // ---------------------------------------------------------------- determinism
 
     /** Pure: a second field, asked in the reverse order, gives the same trees, lakes, pairs and blocks. */

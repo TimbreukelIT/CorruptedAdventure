@@ -93,8 +93,9 @@ public final class CascadeValeFeatures {
         register(context, CASCADE_VALE_LILY_PADS, Ring4MythicFeatures.GIANT_LILY_PAD, JitteredGridPlacement.of(8, 1, 0.3F), SURFACE,
                 only(ON_WATER));
         register(context, CASCADE_VALE_LOTUS, Ring4MythicFeatures.LOTUS, JitteredGridPlacement.of(4, 0, 0.12F), SURFACE, only(ON_WATER));
+        // Backlog r. 367: the bank on the frozen heightmaps (a neighbour's tree in the water shifts no reed's draws).
         register(context, CASCADE_VALE_REEDS, Ring4MythicFeatures.REED_ACCENT, JitteredGridPlacement.of(8, 1, 0.5F), SURFACE,
-                only(Ring4Placements.waterNear(2)));
+                Ring4Filter.builder().waterNear(2).build());
 
         // Land: the terrace edges first (moss under the rim's plants), then the flower fields and the verdant blossom.
         register(context, CASCADE_VALE_TERRACE_EDGES, TERRACE_DRESSING, JitteredGridPlacement.of(1, 0, 1.0F), SURFACE);

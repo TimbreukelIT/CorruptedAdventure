@@ -78,6 +78,15 @@ public final class IslandField implements DensityFunction {
     public static final double VERDANT_EDGE_SHARE = 60.0 / 256.0;
     /** Recorded waterfalls of the islands per chunk at most (the cap of the water branch). */
     static final int FALLS_PER_CHUNK = 3;
+    /**
+     * {@link #islandBlockNear}: how far (blocks) past an island's reach its arches and debris may lie (an arch across
+     * its gap and margin, {@link IslandArches#ARCH_MAX_GAP} and {@link IslandArches#MAX_MARGIN}, debris within
+     * {@link IslandDebris#MAX_OUT}), and how far below its top or lowest block, and above its top, their rock may lie
+     * (debris sinks up to ~28 below the torn edge, an arch's rock ~8 under its islands' edges and ~5 over their tops).
+     */
+    private static final int ISLAND_ROCK_REACH = 60;
+    private static final int ISLAND_ROCK_BELOW = 30;
+    private static final int ISLAND_ROCK_ABOVE = 25;
     /** How far (blocks) past an island's reach its lift may stand: two out from the edge, plus the edge's block. */
     static final double LIFT_REACH = 4.0;
     /** A lift keeps this Manhattan distance (blocks) from every fall, as {@link IslandPlacement} does from its own. */
@@ -486,6 +495,45 @@ public final class IslandField implements DensityFunction {
      */
     public boolean inDebris(int x, int z) {
         return landmarks.inDebris(x, z);
+    }
+
+    /**
+     * Whether a block of an island, a rock arch or a piece of debris may lie within {@code reach} blocks of the position
+     * (a box, also in height). Backlog r. 420: the ores of ring 4 keep out of the floating islands, whose undersides
+     * {@code island_dressing} and {@code island_underside} dress; an ore blob from a neighbouring chunk would make that
+     * dressing depend on which chunk decorated first. An island counts with its whole outline (a sky lake's basin
+     * included). Pure.
+     */
+    public boolean islandBlockNear(int x, int y, int z, int reach) {
+        int lo = y - reach;
+        int hi = y + reach;
+        // The islands whose blocks, arches (from their edge across a gap) or debris (below their torn edge) may come near.
+        int margin = reach + ISLAND_ROCK_REACH;
+        List<IslandShape> near = new ArrayList<>();
+        for (IslandShape shape : shapesWithin(x - margin, z - margin, x + margin, z + margin)) {
+            double r = shape.reach() + margin;
+            if (Math.abs(shape.x() - x) <= r && Math.abs(shape.z() - z) <= r
+                    && hi >= Math.min(shape.lowest(), shape.top() - ISLAND_ROCK_BELOW) - ISLAND_ROCK_BELOW && lo <= shape.top() + ISLAND_ROCK_ABOVE) {
+                near.add(shape);
+            }
+        }
+        if (near.isEmpty()) {
+            return false;
+        }
+        for (int cx = x - reach; cx <= x + reach; cx++) {
+            for (int cz = z - reach; cz <= z + reach; cz++) {
+                for (IslandShape shape : near) {
+                    int[] solid = shape.interval(cx + 0.5, cz + 0.5);
+                    if (solid != null && solid[0] <= hi && solid[1] >= lo) {
+                        return true;
+                    }
+                }
+                if (landmarks.rockWithin(cx, cz, lo, hi)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** The island pairs (74: for the vines between islands, 75) whose facing edges come into the box. */

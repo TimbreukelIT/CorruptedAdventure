@@ -42,7 +42,6 @@ import net.minecraft.world.level.levelgen.feature.trunkplacers.CherryTrunkPlacer
 import net.minecraft.world.level.levelgen.feature.trunkplacers.UpwardsBranchingTrunkPlacer;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.RandomOffsetPlacement;
-import net.minecraft.world.level.levelgen.placement.SurfaceWaterDepthFilter;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures;
@@ -246,7 +245,7 @@ public final class Ring4MythicFeatures {
         register(context, SKY_GARDENS_TREES, SkyGardensFeatures.SKY_TREE, SkyGardensFeatures.TREE_PLACEMENT, SURFACE,
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.MOONPETAL_SAPLING.get()));
         register(context, GLOWROOT_SWAMP_TREES, SWAMP_TREE, JitteredGridPlacement.of(8, 2, 0.7F, GROVES), FLOOR,
-                SurfaceWaterDepthFilter.forMaxDepth(4), PlacementUtils.filteredByBlockSurvival(Blocks.MANGROVE_PROPAGULE));
+                Ring4Filter.builder().maxWaterDepth(4).build(), PlacementUtils.filteredByBlockSurvival(Blocks.MANGROVE_PROPAGULE));
 
         // Water: coral, seagrass and pickles in the lagoon; seagrass in the other clear waters; the pads and lotus on
         // still shallow water; bubble springs on the floor of deep pools (six or more deep).
@@ -257,7 +256,7 @@ public final class Ring4MythicFeatures {
         register(context, LOTUS_SHALLOWS_GIANT_LILY_PADS, GIANT_LILY_PAD, JitteredGridPlacement.of(8, 1, 0.45F), SURFACE, only(ON_WATER));
         register(context, LOTUS_SHALLOWS_LOTUS, LOTUS, JitteredGridPlacement.of(4, 0, 0.25F), SURFACE, only(ON_WATER));
         register(context, LOTUS_SHALLOWS_REEDS, REED_ACCENT, JitteredGridPlacement.of(16, 1, 0.5F), SURFACE,
-                only(Ring4Placements.waterNear(2)));
+                Ring4Filter.builder().waterNear(2).build());
         register(context, DEEP_POOL_BUBBLE_SPRINGS, BUBBLE_SPRING, JitteredGridPlacement.of(16, 1, 0.2F), FLOOR,
                 only(Ring4Placements.waterAbove(6)), RandomOffsetPlacement.vertical(ConstantInt.of(-1)));
 
