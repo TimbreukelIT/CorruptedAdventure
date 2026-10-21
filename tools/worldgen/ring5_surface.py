@@ -83,8 +83,10 @@ def void_scars():
 
 
 def inverted_hills():
-    """Dead soil on top; the undersides of the hills hanging over the void stone, never dirt."""
-    return seq(cond(UNDERSIDE, block("stone")), *surface("coarse_dirt", "dirt"))
+    """Dead soil on top, also on a thin edge; below it the undersides of the hills hanging over the void stone, never
+    dirt (before the surface depth, after the top block)."""
+    top, under = surface("coarse_dirt", "dirt")
+    return seq(top, cond(UNDERSIDE, block("stone")), under)
 
 
 # Vanilla blocks per biome (first version, 86): top, surface depth; or a function for a biome with more.

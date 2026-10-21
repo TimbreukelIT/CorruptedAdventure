@@ -18,6 +18,7 @@ import nl.timtoys.corruptedadventure.ring.Ring5Band;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -100,6 +101,80 @@ class Ring5RegionSharesTest {
                 }
             }
         }
+    }
+
+    /**
+     * The router must feed each ring's {@code multi_noise} its own climate up to the ring's edge: at a boundary without a
+     * transition biome, every axis on which a source on either side splits switches hard ({@code switch_at}, keyed by
+     * the inner ring) in its {@code ring_blend} input. A mix there would blend in the neighbour's value (ring 5: the void's
+     * erosion and weirdness) and move the biome borders in the zone. Read from the preset and the router, not from
+     * {@code Ring5Band}, so a wrong router fails here. Every axis but erosion; erosion in the test below.
+     */
+    @Test
+    void everySplitAxisSwitchesHardAtABoundaryWithoutATransitionBiome() {
+        assertEquals(List.of(), missingSwitches(Set.of("temperature", "humidity", "continentalness", "depth", "weirdness")));
+    }
+
+    /** As above for erosion (ring 5's {@code breakup}); the router file is W-terrein's. */
+    @Test
+    @Disabled("enabled at INT1 after W-terrein adds switch_at to overworld_erosion")
+    void erosionSwitchesHardAtABoundaryWithoutATransitionBiome() {
+        assertEquals(List.of(), missingSwitches(Set.of("erosion")));
+    }
+
+    /**
+     * The overworld boundaries without a transition biome (keyed by their inner ring) where an axis in {@code axes}
+     * splits a {@code multi_noise} on either side but its router input does not switch: "boundary axis (file)".
+     */
+    private static List<String> missingSwitches(Set<String> axes) {
+        Map<String, String> routerFiles = Map.of("temperature", "overworld_temperature", "humidity", "overworld_vegetation",
+                "erosion", "overworld_erosion", "weirdness", "overworld_weirdness");
+        JsonObject source = WorldgenData.read("world_preset/corrupted_world.json").getAsJsonObject("dimensions")
+                .getAsJsonObject("minecraft:overworld").getAsJsonObject("generator").getAsJsonObject("biome_source");
+        JsonObject rings = source.getAsJsonObject("rings");
+        List<String> order = List.of("ring_1", "ring_2", "ring_3", "ring_4", "ring_5", "void");
+        List<String> missing = new ArrayList<>();
+        int checked = 0;
+        for (int i = 0; i < order.size() - 1; i++) {
+            String boundary = order.get(i);
+            if (source.getAsJsonObject("transitions").has(boundary)) {
+                continue;
+            }
+            for (String side : List.of(order.get(i), order.get(i + 1))) {
+                JsonObject ring = rings.getAsJsonObject(side);
+                if (!ring.get("type").getAsString().equals("minecraft:multi_noise")) {
+                    continue;
+                }
+                for (String axis : axes) {
+                    if (!splits(ring.getAsJsonArray("biomes"), axis)) {
+                        continue;
+                    }
+                    checked++;
+                    String file = routerFiles.get(axis);
+                    if (file == null) {
+                        missing.add(boundary + " " + axis + " (no ring_blend input)");
+                        continue;
+                    }
+                    JsonArray switchAt = WorldgenData.read("density_function/ring_blend/" + file + ".json").getAsJsonArray("switch_at");
+                    if (switchAt == null || switchAt.asList().stream().noneMatch(entry -> entry.getAsString().equals(boundary))) {
+                        missing.add(boundary + " " + axis + " (" + file + ")");
+                    }
+                }
+            }
+        }
+        assertTrue(checked > 0, "no split axis checked for " + axes);
+        return missing;
+    }
+
+    /** Whether a {@code multi_noise}'s boxes do not all span the whole axis. */
+    private static boolean splits(JsonArray biomes, String axis) {
+        for (JsonElement entry : biomes) {
+            JsonArray range = entry.getAsJsonObject().getAsJsonObject("parameters").getAsJsonArray(axis);
+            if (range.get(0).getAsDouble() > -2.0 || range.get(1).getAsDouble() < 2.0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** V12-A with the pinnacle axis of 84: the pinnacle's plateau (temperature −2, erosion 0) is void_scars, whatever the humidity. */

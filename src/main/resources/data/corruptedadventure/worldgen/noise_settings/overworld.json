@@ -15967,22 +15967,6 @@
                           "type": "minecraft:condition",
                           "if_true": {
                             "type": "minecraft:stone_depth",
-                            "offset": 2,
-                            "add_surface_depth": false,
-                            "secondary_depth_range": 0,
-                            "surface_type": "ceiling"
-                          },
-                          "then_run": {
-                            "type": "minecraft:block",
-                            "result_state": {
-                              "Name": "minecraft:stone"
-                            }
-                          }
-                        },
-                        {
-                          "type": "minecraft:condition",
-                          "if_true": {
-                            "type": "minecraft:stone_depth",
                             "offset": 0,
                             "add_surface_depth": false,
                             "secondary_depth_range": 0,
@@ -15992,6 +15976,22 @@
                             "type": "minecraft:block",
                             "result_state": {
                               "Name": "minecraft:coarse_dirt"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:stone_depth",
+                            "offset": 2,
+                            "add_surface_depth": false,
+                            "secondary_depth_range": 0,
+                            "surface_type": "ceiling"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "minecraft:stone"
                             }
                           }
                         },

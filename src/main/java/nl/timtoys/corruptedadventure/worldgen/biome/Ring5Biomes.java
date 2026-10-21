@@ -98,7 +98,9 @@ public final class Ring5Biomes {
      * and ring 5 is dry); {@code false_meadow} nothing at all. Throws for any other biome.
      */
     static MobSpawnSettings spawns(ResourceKey<Biome> biome) {
-        look(biome);
+        if (!ALL.contains(biome)) {
+            throw new IllegalArgumentException("no ring 5 spawns for " + biome);
+        }
         MobSpawnSettings.Builder spawns = new MobSpawnSettings.Builder();
         if (!SILENT.contains(biome)) {
             // The monster weights of vanilla's commonSpawns, without its cave spawns.

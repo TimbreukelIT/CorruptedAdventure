@@ -232,9 +232,15 @@ class Ring5BiomesTest {
         assertEquals("minecraft:dirt", lastBlock(floorRule(branches.get(id(ModBiomes.FALSE_MEADOW)), true)));
         // The scar walls deepslate, the inverted hills' undersides stone, the wastes' pit floors tuff.
         assertTrue(branches.get(id(ModBiomes.VOID_SCARS)).toString().contains("\"minecraft:deepslate\""));
-        JsonObject underside = branches.get(id(ModBiomes.INVERTED_HILLS)).getAsJsonArray("sequence").get(0).getAsJsonObject();
+        // Order top, underside, depth: a thin edge keeps its coarse dirt on top, the layer below it hangs as stone, not dirt.
+        JsonArray hills = branches.get(id(ModBiomes.INVERTED_HILLS)).getAsJsonArray("sequence");
+        assertEquals(3, hills.size());
+        assertEquals("minecraft:coarse_dirt", lastBlock(floorRule(branches.get(id(ModBiomes.INVERTED_HILLS)), false)));
+        assertEquals(floorRule(branches.get(id(ModBiomes.INVERTED_HILLS)), false), hills.get(0).getAsJsonObject().getAsJsonObject("then_run"));
+        JsonObject underside = hills.get(1).getAsJsonObject();
         assertEquals("ceiling", underside.getAsJsonObject("if_true").get("surface_type").getAsString());
         assertEquals("minecraft:stone", lastBlock(underside.getAsJsonObject("then_run")));
+        assertEquals(floorRule(branches.get(id(ModBiomes.INVERTED_HILLS)), true), hills.get(2).getAsJsonObject().getAsJsonObject("then_run"));
         assertTrue(floorRule(branches.get(id(ModBiomes.CORRUPTED_WASTES)), false).toString().contains("\"minecraft:tuff\""));
     }
 

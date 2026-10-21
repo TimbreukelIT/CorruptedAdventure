@@ -179,9 +179,9 @@ class Ring5JsonTest {
         assertEquals(-9, WorldgenData.read("noise/nether_ring_5_region.json").get("firstOctave").getAsInt());
     }
 
-    /** V12-A: no Java hook; the preset keeps the placeholder biomes until 86/87 (W-biomes, W-nether). */
+    /** V12-A: no Java hook; ring 5's sources in the preset (overworld 86, W-biomes; Nether placeholder until 87, W-nether). */
     @Test
-    void presetKeepsThePlaceholderBiomes() {
+    void presetRing5Sources() {
         JsonObject dimensions = WorldgenData.read("world_preset/corrupted_world.json").getAsJsonObject("dimensions");
         // 86 (W-biomes): the overworld's ring 5 is its own multi_noise (Ring5RegionSharesTest checks the boxes).
         assertEquals("minecraft:multi_noise", dimensions.getAsJsonObject("minecraft:overworld").getAsJsonObject("generator")

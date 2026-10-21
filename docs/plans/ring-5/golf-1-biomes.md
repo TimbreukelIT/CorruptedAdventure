@@ -142,6 +142,10 @@ de binnenband toont drie biomes, de buitenband de drie andere); PNG's in `build/
   worktree en zag de diff van 86 niet; daarom een eigen review van de diff (correctheid: gekwantiseerde vakgrenzen,
   surface-volgorde ring 4 → ring 5, idempotentie van beide scripts, spawns/tags tegen het contract): geen bevindingen open.
 - 2026-10-21 21:20: 86 gecommit op `ring5/biomes-g1`. 86b/86c pas na INT1.
+- Review 86 (main): volgorde `inverted_hills` (boven → onderkant → diepte), `Ring5JsonTest.presetRing5Sources`,
+  expliciete check in `Ring5Biomes.spawns`, en een router-invariant in `Ring5RegionSharesTest`: elke as waarop een
+  `multi_noise` splitst, schakelt hard (`switch_at`) op een grens zonder overgangsbiome. Erosie (ring 5 = `breakup`)
+  heeft dat nog niet: die ene test staat `@Disabled` tot INT1.
 
 ## CODEBASE-delta
 - `worldgen/biome/Ring5Biomes` (86): lijsten `INNER` (`corrupted_wastes`, `glitch_fields`, `false_meadow`), `OUTER`
@@ -202,12 +206,16 @@ Handgeschreven JSON en scripts kunnen dat niet; een nieuwe ring 5-biome moet ook
     → `tuff`; geen eigen DF nodig. 86b leest dezelfde regel voor `corrupted_sand`.
   - `void_scars`: scheur- en kraterwanden = vanilla `minecraft:steep` → de hele steile kolom boven het voorlopige
     oppervlak `deepslate` (het bovenste deel van een wand tot in de void).
-  - `inverted_hills`: onderkant = de 3 blokken boven lucht (`stone_depth` ceiling, offset 2) `stone`, vóór het bovenblok.
+  - `inverted_hills`: onderkant = de 3 blokken boven lucht (`stone_depth` ceiling, offset 2) `stone`, ná het bovenblok
+    en vóór de surface-diepte (review 86: een dunne rand houdt `coarse_dirt` bovenop).
   - Geen vallend blok in 86, dus geen plafondwacht; de test verbiedt zand/grind in de tak tot 86b er een wacht bij zet.
 - **Plaats van de tak:** direct na de ring 4-tak (`ring4_surface.py` voegt in na ring 3, dus de volgorde blijft bij
   het opnieuw draaien van beide scripts; nagelopen, byte-gelijk).
 
 ## Backlog
+- [worldgen] W-terrein (eigenaar router), INT1: `switch_at ["ring_5"]` in `ring_blend/overworld_erosion` (anders mengt
+  `breakup` in zone 5→void met de void en schuiven de biomegrenzen), dan `Ring3JsonTest` (zegt nu "erosion mengt")
+  aanpassen en `Ring5RegionSharesTest.erosionSwitchesHardAtABoundaryWithoutATransitionBiome` aanzetten.
 - [worldgen] 86b/83: als 83 een eigen kuilen-DF levert, de "lage plekken"-regel van `corrupted_wastes` (onder Y 76) daarop
   laten lezen.
 - [worldgen] 95: `void_scars`-wanden via `scars` (W-terrein) in plaats van vanilla's `steep` (die kijkt alleen binnen de
