@@ -28,3 +28,11 @@ beslissingenlog; hier staat de ruwe uitkomst per ronde.
 | Nulliet | **In scheurwanden en brokken**: vooral in de wanden van void-scheuren en de onderkant van drijvende brokken in de buitenband, wat diep in de binnenband. Het risico is de afgrond. |
 | Grotten | **Onmogelijke gangen + void-grotten + "gekopieerde" grotten**: rechte, te perfecte 2×1/3×3-tunnels in rasters (doodlopend, lussen), grotten met gaten naar de void, én grotten die exact herhaald of gespiegeld zijn (dezelfde gang drie keer naast elkaar, een kamer die zichzelf spiegelt). Buitenband nauwelijks grotten. |
 | Void-meter | **Teleports alleen in de binnenband**: meter ↑ overal (sneller bij scheuren, glitchblokken, 's nachts, ringweer); ↓ bij licht ≥ 12. Drempels: glitch-visuals → korte veilige teleports **alleen op vaste grond in de binnenband** (in de buitenband vervangt sneller darkness ze) → darkness + schade. |
+
+## Ronde 4 — weer, sfeer, overgang, horror
+| Vraag | Besluit |
+|---|---|
+| Weer | **Glitchstorm + omgekeerde regen + "stilstand"**: derde weertype waarin wolken en regen midden in de lucht bevriezen en geluid wegvalt; kort en zeldzaam. Staat server-side, rendering client. |
+| Sfeer | **Binnen grijs-violet, buiten zwart met sterren**: binnenband donkergrijs met violette zweem en dikke kleurloze fog; buitenband steeds zwarter met sterren, ook overdag. Echo-voetstappen in beide banden. |
+| Overgang 4→5 | **Zone 4→5 opnieuw bekijken**, zodat het patroon klopt (vast → uiteenvallen → vast → uiteenvallen). Raakt het afgeronde ring 4-terrein; uitwerking in ronde 5. |
+| Horror (fase 1) | **Alle vier**: ontbrekende chunks, Herobrine-tekens, gespiegelde dubbelgangers (een stuk terrein dat verderop exact gespiegeld nog eens staat), verlaten kampen van spelers (klein, als feature; tent, kist, uitgebrand kampvuur, bed). |
