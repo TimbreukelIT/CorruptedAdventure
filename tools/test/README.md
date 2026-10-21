@@ -118,6 +118,9 @@ determinism), `decor.txt` (one `mist_fjords` and one `cascade_vale` area: before
 `islands.txt` (islands revision 2026-10-20: `tds`, `skyw1`, `skyw2` as in `int2.txt`, the inner edge and the middle of
 ring 4 east; det and waterscan), `perf-islands.txt` (the same places in 16 x 16 chunks for `perf.sh --areas`:
 forceload takes at most 256 chunks, a bigger area like `tds` measures nothing).
+Ring 5 (golf 0, 81b): `ring5.txt` (zone 4→5 east/north, inner band east/north, across the band line east, outer band
+east/north, zone 5→void east, castle site #1; voidscan and det) and `castles.txt` (the four castle sites on seed 20260930
+with their belts, from `/ca castles`).
 `python tools/test/py/areas.py around <name> <x> <z> <r> [nether]` prints a line around a block position.
 
 ```bash
@@ -174,6 +177,21 @@ carpets; a block with a `waterlogged` property is closed, only water enters it) 
 with water on any side. Gas against air is only counted (`gas~a`: gas halls open into dry tunnels, sinkhole layers lie
 under open air). Run it on a `--freeze` world to see what the generator placed: in a settled world a sludge-water
 contact may already have turned into mud.
+
+### Voidscan (ring 5)
+
+What lies over the void and the dry rule of ring 5 (82, V3-A, V9-B), on a `world.sh` world:
+
+```bash
+python tools/test/py/voidscan.py <world> tools/test/areas/ring5.txt [--wet z45e ...] [--list 5] [--json out.json] [--strict]
+```
+
+Counts per area: `void` (columns without any solid block; information) and the faults `bedrock` (bedrock above Y −60 or
+over the void), `loose` (solid groups of 1–2 blocks with nothing solid below them), `fluidvoid` (water or lava beside a
+void column or over the void), `water` (any water) and `lavahigh` (lava at or above Y −54). `water` and `lavahigh` only in
+dry areas: every area except `--wet` ones (default: names starting with `z45`, the zone 4→5 keeps its abyss sea until
+85). Lava leaks (the dam of ring 5's lava layer) come from `lavascan.py` on the same world: `lek` must be 0. Golf 0:
+`voidscan.py` on `ring5.txt` gives 0 faults (only the castle belt and the void edge have void).
 
 ### Determinism and feature index
 

@@ -92,7 +92,8 @@ final class RingTeleportCommand {
         return 1;
     }
 
-    private static OptionalInt findSafeY(ServerLevel level, int x, int z) {
+    /** The Y to stand on at a column (the landing rule of {@code tpring}), generating the chunk; empty if none is safe. */
+    static OptionalInt findSafeY(ServerLevel level, int x, int z) {
         // Generates the chunk if needed; heightmaps of unloaded chunks read as empty.
         level.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z));
         if (level.dimensionType().hasCeiling()) {

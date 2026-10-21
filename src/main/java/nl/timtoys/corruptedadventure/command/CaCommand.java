@@ -29,6 +29,7 @@ public final class CaCommand {
                 .then(RingWeatherCommand.build())
                 .then(TerrainMapCommand.build())
                 .then(FallListCommand.build())
-                .then(LandmarkListCommand.build()));
+                .then(LandmarkListCommand.build())
+                .then(CastlesCommand.build()));
     }
 }

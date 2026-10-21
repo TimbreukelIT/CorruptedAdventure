@@ -1,0 +1,8 @@
+# The four castle sites of ring 5 on seed 20260930 (/ca castles after 82; Ring5Field.castleSites), each the pinnacle
+# with its void belt (radius + belt <= 136) and a margin: centre chunk +-10. Chunk coordinates, inclusive.
+# #1 327.5 deg 7794 -4962 r=49 top=127 belt=75 | #2 60.1 deg 4653 8078 r=50 top=124 belt=62
+# #3 154.3 deg -8342 4012 r=51 top=129 belt=58 | #4 245.4 deg -3871 -8440 r=47 top=139 belt=77
+c1 477 -321 497 -301
+c2 280 494 300 514
+c3 -532 240 -512 260
+c4 -252 -538 -232 -518
