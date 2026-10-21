@@ -1,0 +1,8 @@
+{
+  "type": "corruptedadventure:ring_5_field",
+  "hash": "corruptedadventure:ring_5_cells",
+  "placeholder": "corruptedadventure:placeholder_terrain",
+  "settings": {
+    "cell_size": 128
+  }
+}

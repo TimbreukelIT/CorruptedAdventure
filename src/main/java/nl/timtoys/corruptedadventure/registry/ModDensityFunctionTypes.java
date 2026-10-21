@@ -16,6 +16,9 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandOutput;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RadialFalloff;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring4BandFunction;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring5BandFunction;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring5Field;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring5Output;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingBlend;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingEdge;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingFillGate;
@@ -24,6 +27,7 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.RockPillars;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VoidEdge;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicOutput;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.ZoneFracture;
 
 public final class ModDensityFunctionTypes {
     private static final DeferredRegister<MapCodec<? extends DensityFunction>> DENSITY_FUNCTION_TYPES =
@@ -105,6 +109,24 @@ public final class ModDensityFunctionTypes {
     /** {@code corruptedadventure:sea_fossils} (the sea-creature fossils of Nether ring 4's bone dunes as terrain, package 78) */
     public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<SeaFossils>> SEA_FOSSILS =
             DENSITY_FUNCTION_TYPES.register("sea_fossils", () -> SeaFossils.MAP_CODEC);
+
+    // ring 5 — W-terrein
+
+    /** {@code corruptedadventure:ring_5_band} (the band axis of ring 5, package 82) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<Ring5BandFunction>> RING_5_BAND =
+            DENSITY_FUNCTION_TYPES.register("ring_5_band", () -> Ring5BandFunction.MAP_CODEC);
+
+    /** {@code corruptedadventure:ring_5_field} (the terrain field of ring 5 with the castle sites, package 82) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<Ring5Field>> RING_5_FIELD =
+            DENSITY_FUNCTION_TYPES.register("ring_5_field", () -> Ring5Field.MAP_CODEC);
+
+    /** {@code corruptedadventure:ring_5_output} (one output of the ring 5 terrain field, package 82) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<Ring5Output>> RING_5_OUTPUT =
+            DENSITY_FUNCTION_TYPES.register("ring_5_output", () -> Ring5Output.MAP_CODEC);
+
+    /** {@code corruptedadventure:zone_fracture} (the fracture zone 4→5 around the overworld's final density; 82 skeleton, 85) */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<ZoneFracture>> ZONE_FRACTURE =
+            DENSITY_FUNCTION_TYPES.register("zone_fracture", () -> ZoneFracture.MAP_CODEC);
 
     private ModDensityFunctionTypes() {
     }

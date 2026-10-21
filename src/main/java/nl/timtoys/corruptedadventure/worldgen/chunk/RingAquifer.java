@@ -44,6 +44,10 @@ import javax.annotation.Nullable;
  * tunnel net fills its own open space ({@link Ring4Tunnels.Span}: water and air domes, the dry net's air, swamp gas,
  * poison pools, dry sinkholes) and keeps carvers out of the rock around its sealed spaces; all other open space of ring
  * 4 is water up to the sea's top block and air above ({@link RingFluidPicker#ring4Flooded}), not vanilla's local levels.
+ * Overworld ring 5 (82, V9-B; not the zone 4→5): dry, all open space is air ({@link RingFluidPicker#ring5Dry}), except
+ * vanilla's lava layer below Y −54 in the inner band ({@link RingFluidPicker#ring5LavaColumn}, left to vanilla) behind a
+ * dam of rock along the line between the bands ({@link RingFluidPicker#ring5Dam}); carvers place no lava outside the
+ * layer ({@link #carverLava}).
  * <p>
  * One instance per noise chunk, so the per-call state below is single-threaded like vanilla's.
  */
@@ -71,6 +75,7 @@ final class RingAquifer implements Aquifer {
     @Nullable
     private final IslandField islands;
     private final RingLookup rings;
+    private final RingFluidPicker.Ring5Bands bands;
     private boolean suppressed;
     /** Set while the chunk's carvers run ({@code RingChunkGenerator#applyCarvers}): their open space is a carved tunnel. */
     private boolean carving;
@@ -105,6 +110,8 @@ final class RingAquifer implements Aquifer {
     private final int[] guardTop = new int[COLUMNS + 1];
     private final int[] waterOnlyFrom = new int[COLUMNS + 1];
     private final int[] dryBelow = new int[COLUMNS + 1];
+    // Ring 5 (82): open space is air from this Y up (Integer.MAX_VALUE: no such rule).
+    private final int[] airFrom = new int[COLUMNS + 1];
     private final boolean[] noLava = new boolean[COLUMNS + 1];
     // The column's recorded waterfall (ring 4, 59): falling water in [waterFallBottom, waterFallTop], let flow at and
     // below waterFallFlow.
@@ -155,11 +162,18 @@ final class RingAquifer implements Aquifer {
     /** @param rings the ring of a column: the running server's layout in worldgen, a fixed one in tests */
     RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla, @Nullable VolcanicField volcanic, @Nullable IslandField islands,
                 RingLookup rings) {
+        this(dimension, vanilla, volcanic, islands, rings, RingFluidPicker.CURRENT_BANDS);
+    }
+
+    /** @param bands ring 5's band: the running server's layout in worldgen, a fixed one in tests */
+    RingAquifer(ResourceKey<Level> dimension, Aquifer vanilla, @Nullable VolcanicField volcanic, @Nullable IslandField islands,
+                RingLookup rings, RingFluidPicker.Ring5Bands bands) {
         this.dimension = dimension;
         this.vanilla = vanilla;
         this.volcanic = volcanic;
         this.islands = islands;
         this.rings = rings;
+        this.bands = bands;
     }
 
     /** The ring of a column (block x, z). */
@@ -176,8 +190,8 @@ final class RingAquifer implements Aquifer {
 
     /**
      * Whether this aquifer decides what a carver places at or below its lava level in the column, where vanilla puts
-     * lava without asking (through {@link CarverLava}): in ring 4 and its dams ({@link RingFluidPicker#ring4NoLava}).
-     * Elsewhere vanilla's lava stays.
+     * lava without asking (through {@link CarverLava}): in ring 4 and its dams ({@link RingFluidPicker#ring4NoLava}), and in
+     * ring 5 outside its lava layer (82: the dam and the outer band). Elsewhere vanilla's lava stays.
      */
     boolean decidesCarverLava(int x, int z) {
         return noLava[peek(x, z)];
@@ -254,6 +268,19 @@ final class RingAquifer implements Aquifer {
                 RingFluidPicker.sunderedSealBelow(dimension, position));
         dryBelow[i] = RingFluidPicker.ring4DryBelow(dimension, position);
         noLava[i] = RingFluidPicker.ring4NoLava(dimension, position);
+        airFrom[i] = Integer.MAX_VALUE;
+        if (RingFluidPicker.ring5Dry(dimension, position)) {
+            // Ring 5 (82, V9-B): the band is asked once per column. The lava layer stays vanilla's; the dam holds rock
+            // below its top; the outer band is air down to the void.
+            double band = bands.signedDistance(x, z);
+            boolean lava = RingFluidPicker.ring5LavaColumn(band);
+            boolean dam = RingFluidPicker.ring5Dam(band);
+            airFrom[i] = lava || dam ? RingFluidPicker.LAVA_LAYER_TOP : Integer.MIN_VALUE;
+            if (dam) {
+                sealBelow[i] = Math.max(sealBelow[i], RingFluidPicker.LAVA_LAYER_TOP);
+            }
+            noLava[i] = !lava;
+        }
         boolean falls = RingFluidPicker.ring4WaterColumn(dimension, position, islands);
         // The zone 4→5 (both halves) has the abyss's still sea (63), read from the island field's column.
         boolean sundered = islands != null && position.inTransition() && position.inner() == Ring.RING_4 && position.outer() == Ring.RING_5;
@@ -321,6 +348,10 @@ final class RingAquifer implements Aquifer {
         }
         if (y < sealBelow[i]) {
             return null;
+        }
+        if (y >= airFrom[i]) {
+            // Ring 5 is dry (82): no sea, no aquifer water or lava, never scheduled to flow.
+            return AIR;
         }
         if (abyssTop[i] != Integer.MIN_VALUE && y >= abyssFloor[i]) {
             // The open abyss in the zone 4→5 (63), from its floor up: the still sea up to its top, air above, never

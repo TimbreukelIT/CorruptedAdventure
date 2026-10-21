@@ -6,7 +6,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Aquifer;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.ring.Ring5Band;
 import nl.timtoys.corruptedadventure.ring.RingColumnCache;
+import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.ThreadOwned;
@@ -17,14 +19,16 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * No sea fluid from the start of the ring 5 → void transition outwards; everywhere else the vanilla picker. Starting
+ * No sea fluid from the start of the ring 5 → void transition outwards, nor in overworld ring 5 ({@link #ring5Dry});
+ * everywhere else the vanilla picker. Starting
  * at the zone instead of at the boundary keeps the terrain that dips towards the edge dry, so no water or lava wall
  * stands at the edge of the world. Local aquifer fluids are handled by {@link RingAquifer}.
  * <p>
  * The one place for the fluid rules per ring: {@link #noFluid} (void edge), {@link #waterOnlyFrom} (rings 2 and 4),
  * {@link #ring3LavaColumn}, {@link #ring3DryFrom} and {@link #ring3SealBelow} (overworld ring 3),
  * {@link #ring4DryBelow}, {@link #ring4DamBelow}, {@link #ring4NoLava} and {@link #ring4WaterColumn} (overworld ring 4,
- * package 59; {@link #verdantWater}: also the {@code verdant_falls} strip of ring 3's half of the zone 3→4), each per
+ * package 59; {@link #verdantWater}: also the {@code verdant_falls} strip of ring 3's half of the zone 3→4),
+ * {@link #ring5Dry}, {@link #ring5LavaColumn} and {@link #ring5Dam} (overworld ring 5, package 82), each per
  * column (a Y bound), so that {@link RingAquifer}'s per-block path only compares Y (change 39e), and the fluid levels per ring
  * ({@code levels}, from the
  * generator's {@code fluid_levels}: the default fluid fills open space up to and including that Y instead of up to the
@@ -38,6 +42,15 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
     public static final int RING_3_DRY_FROM = 0;
     /** The overworld's sea level (noise settings), which ring 3's neighbours keep. */
     static final int SEA_LEVEL = 63;
+    /**
+     * The dam of ring 5's lava layer (82, V9-B): the inner band keeps vanilla's lava layer only this far (in
+     * {@link Ring5Band#signedDistance}, radial blocks) inside the line between the bands; the strip up to the line holds
+     * rock below the layer's top, so no lava reaches the outer band. At least ~{@code RING_5_DAM / 5} blocks wide where
+     * the line's noise is steepest.
+     */
+    static final double RING_5_DAM = 32.0;
+    /** Ring 5's band in the running server's world (worldgen); tests give their own. */
+    static final Ring5Bands CURRENT_BANDS = (x, z) -> Ring5Band.of(RingLayout.current()).signedDistance(x, z);
 
     private final ResourceKey<Level> dimension;
     private final Aquifer.FluidPicker vanilla;
@@ -47,9 +60,16 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
     // this skips a map lookup and an allocation per open block. Racy but safe: the entries are immutable.
     private final Integer[] levelByRing;
     private final Derived[] derived;
+    private final Ring5Bands bands;
 
     public RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker vanilla, Map<Ring, Integer> levels) {
+        this(dimension, vanilla, levels, CURRENT_BANDS);
+    }
+
+    /** @param bands ring 5's band ({@link Ring5Band#signedDistance}): the running server's in worldgen, a fixed one in tests */
+    RingFluidPicker(ResourceKey<Level> dimension, Aquifer.FluidPicker vanilla, Map<Ring, Integer> levels, Ring5Bands bands) {
         this.dimension = dimension;
+        this.bands = bands;
         this.vanilla = vanilla;
         this.levels = Map.copyOf(levels);
         this.levelByRing = new Integer[Ring.values().length];
@@ -84,7 +104,7 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
      * has none ({@link #ring4DryBelow}). {@link Integer#MAX_VALUE} (never) elsewhere. Switches hard on
      * {@link RingPosition#ring()}, so a lava cell across the 1↔2 boundary is water on the ring 2 side; ring 4's rule
      * covers the whole zone 4→5 (59, decision of the user), so no water meets lava at the 4|5 midline: the seam lies at
-     * the zone's outer edge, inside ring 5, whose own rule settles it (81–99).
+     * the zone's outer edge, where ring 5 is dry (82, {@link #ring5Dry}; its lava layer starts behind ring 4's dam).
      */
     static int waterOnlyFrom(ResourceKey<Level> dimension, RingPosition position) {
         return dimension == Level.OVERWORLD && (position.ring() == Ring.RING_2 || ring4NoLava(dimension, position))
@@ -213,6 +233,40 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
         return sunderedZone(dimension, position) && position.blend() < IslandField.SUNDERED_CALM_SHARE ? SEA_LEVEL : Integer.MIN_VALUE;
     }
 
+    /** Ring 5's band at a column: {@link Ring5Band#signedDistance} (negative in the inner band). */
+    @FunctionalInterface
+    interface Ring5Bands {
+        double signedDistance(int x, int z);
+    }
+
+    /**
+     * Whether ring 5's fluid rule holds in the column (82, V9-B): overworld ring 5 (switching hard on
+     * {@link RingPosition#ring()}), but not the zone 4→5, which keeps the abyss's sea of 63 until the fracture zone (85), nor
+     * the void edge ({@link #noFluid}). Ring 5 is dry: no sea, no aquifer water, no local lava; open space is air, except
+     * vanilla's lava layer below Y −54 in the inner band ({@link #ring5LavaColumn}) with its dam ({@link #ring5Dam}).
+     */
+    static boolean ring5Dry(ResourceKey<Level> dimension, RingPosition position) {
+        return dimension == Level.OVERWORLD && position.ring() == Ring.RING_5 && !noFluid(position)
+                && !sunderedZone(dimension, position);
+    }
+
+    /**
+     * Whether a column of ring 5 ({@link #ring5Dry}) keeps vanilla's lava layer below Y −54 (V9-B): the inner band, more
+     * than {@link #RING_5_DAM} inside the line ({@code signedDistance}: {@link Ring5Band#signedDistance}). Package 83
+     * adds the dam around the inner band's scars (they reach down into the void).
+     */
+    static boolean ring5LavaColumn(double signedDistance) {
+        return signedDistance < -RING_5_DAM;
+    }
+
+    /**
+     * Whether a column of ring 5 ({@link #ring5Dry}) is the dam of its lava layer: the strip of the inner band up to the
+     * line, where open space below Y −54 stays rock. The outer band beyond is dry down to the void.
+     */
+    static boolean ring5Dam(double signedDistance) {
+        return signedDistance >= -RING_5_DAM && signedDistance < 0.0;
+    }
+
     @Override
     public Aquifer.FluidStatus computeFluid(int x, int y, int z) {
         return computeFluid(RingColumnCache.ringAt(dimension, x, z), x, y, z);
@@ -231,6 +285,10 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
     Aquifer.FluidStatus computeFluid(RingPosition position, int x, int y, int z) {
         if (noFluid(position)) {
             return NO_FLUID;
+        }
+        if (ring5Dry(dimension, position)) {
+            // Dry, but the inner band keeps vanilla's lava layer (the band is only asked down there).
+            return y < LAVA_LAYER_TOP && ring5LavaColumn(bands.signedDistance(x, z)) ? vanilla.computeFluid(x, y, z) : NO_FLUID;
         }
         Aquifer.FluidStatus status = vanilla.computeFluid(x, y, z);
         boolean sundered = sunderedZone(dimension, position);

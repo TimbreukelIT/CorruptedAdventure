@@ -29,6 +29,7 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring5Field;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingFillGate;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 
@@ -66,6 +67,7 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
     // One random state per level in practice; remembered so the router is searched once.
     private volatile VolcanicFieldLookup volcanicLookup;
     private volatile IslandFieldLookup islandLookup;
+    private volatile Ring5FieldLookup ring5Lookup;
 
     public RingChunkGenerator(BiomeSource biomeSource, Holder<NoiseGeneratorSettings> settings, ResourceKey<Level> dimension) {
         this(biomeSource, settings, dimension, Map.of());
@@ -133,6 +135,23 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
     }
 
     private record IslandFieldLookup(RandomState random, @Nullable IslandField field) {
+    }
+
+    /**
+     * The ring 5 terrain inside this generator's final density (wired by {@code random}), or null if it has none (82).
+     * Thread-safe; read outside generation ({@link Ring5Fields}: the castle sites).
+     */
+    @Nullable
+    public Ring5Field ring5Field(RandomState random) {
+        Ring5FieldLookup lookup = ring5Lookup;
+        if (lookup == null || lookup.random() != random) {
+            lookup = new Ring5FieldLookup(random, Ring5Field.find(random.router().finalDensity()));
+            ring5Lookup = lookup;
+        }
+        return lookup.field();
+    }
+
+    private record Ring5FieldLookup(RandomState random, @Nullable Ring5Field field) {
     }
 
     /**

@@ -21,7 +21,7 @@
     "ring_5": {
       "type": "minecraft:add",
       "argument1": 0.390625,
-      "argument2": "corruptedadventure:ring_5/overworld"
+      "argument2": "corruptedadventure:ring_5/overworld/initial_terrain"
     },
     "void": {
       "type": "minecraft:add",

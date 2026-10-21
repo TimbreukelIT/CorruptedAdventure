@@ -6,7 +6,7 @@
     "ring_2": 0.0,
     "ring_3": "corruptedadventure:ring_3/overworld/caldera_dormant",
     "ring_4": "corruptedadventure:ring_4/overworld/band",
-    "ring_5": 0.0,
+    "ring_5": "corruptedadventure:ring_5/overworld/band",
     "void": 0.0
   },
   "switch_at": [

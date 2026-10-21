@@ -27,7 +27,10 @@
     "continents": "corruptedadventure:ring_1/overworld/continents",
     "depth": "corruptedadventure:ring_1/overworld/depth",
     "erosion": "corruptedadventure:ring_blend/overworld_erosion",
-    "final_density": "corruptedadventure:ring_blend/overworld",
+    "final_density": {
+      "type": "corruptedadventure:zone_fracture",
+      "argument": "corruptedadventure:ring_blend/overworld"
+    },
     "fluid_level_floodedness": "corruptedadventure:ring_blend/overworld_floodedness",
     "fluid_level_spread": {
       "type": "minecraft:noise",

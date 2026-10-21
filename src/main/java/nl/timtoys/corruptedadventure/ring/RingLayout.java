@@ -56,6 +56,8 @@ public final class RingLayout {
     private final SimplexNoise ripples;
     // Ring 4's band axis of this layout (59), built on first use; two threads may both build it, the results are equal.
     private volatile Ring4Band ring4Band;
+    // Ring 5's band axis of this layout (82), likewise.
+    private volatile Ring5Band ring5Band;
 
     /** @param noiseSeed seed of the boundary noise; on a server always {@link #noiseSeed(long)} of the world seed */
     public RingLayout(RingSettings settings, long noiseSeed) {
@@ -99,6 +101,16 @@ public final class RingLayout {
         if (band == null) {
             band = new Ring4Band(this);
             ring4Band = band;
+        }
+        return band;
+    }
+
+    /** The band axis of ring 5 for this layout ({@link Ring5Band#of}). */
+    Ring5Band ring5Band() {
+        Ring5Band band = ring5Band;
+        if (band == null) {
+            band = new Ring5Band(this);
+            ring5Band = band;
         }
         return band;
     }

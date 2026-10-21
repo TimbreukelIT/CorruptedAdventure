@@ -24,7 +24,8 @@ class RingFluidPickerTest {
 
     @Test
     void ringsKeepTheVanillaSea() {
-        for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_4, Ring.RING_5}) {
+        // Ring 5 is dry (82): ring5IsDryWithItsLavaLayerOnlyInTheInnerBand.
+        for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_4}) {
             assertSame(SEA, PICKER.computeFluid(RingPosition.within(ring), 0, 40, 0));
         }
         // 5a: the zone 4→5 (both halves) has the abyss's still sea at Y 0, not the sea up to Y 62.
@@ -33,6 +34,47 @@ class RingFluidPickerTest {
             assertTrue(PICKER.computeFluid(zone, 0, 40, 0).at(40).isAir(), "zone 4→5 at " + blend);
             assertTrue(PICKER.computeFluid(zone, 0, 1, 0).at(1).isAir());
             assertSame(SEA.at(0), PICKER.computeFluid(zone, 0, 0, 0).at(0));
+        }
+    }
+
+    /**
+     * 82 (V9-B): no sea in overworld ring 5 (switching hard on {@code ring()}, so also its half of the zone 5→void, which
+     * has no fluid anyway), but vanilla's lava layer below Y −54 in the inner band, more than the dam inside the band
+     * line; the band is only asked there. The zone 4→5 keeps its own sea until 85, the Nether its own rules.
+     */
+    @Test
+    void ring5IsDryWithItsLavaLayerOnlyInTheInnerBand() {
+        Aquifer.FluidStatus lava = new Aquifer.FluidStatus(-54, Blocks.LAVA.defaultBlockState());
+        Aquifer.FluidPicker vanilla = (x, y, z) -> y < -54 ? lava : SEA;
+        int[] asked = new int[1];
+        double[] band = new double[1];
+        RingFluidPicker picker = new RingFluidPicker(Level.OVERWORLD, vanilla, Map.of(), (x, z) -> {
+            asked[0]++;
+            return band[0];
+        });
+        RingPosition ring5 = RingPosition.within(Ring.RING_5);
+        for (double b : new double[]{-RingFluidPicker.RING_5_DAM - 1.0, -RingFluidPicker.RING_5_DAM, -1.0, 0.0, 400.0}) {
+            band[0] = b;
+            for (int y : new int[]{-54, -40, 0, 40, 62, 63, 100}) {
+                assertTrue(picker.computeFluid(ring5, 0, y, 0).at(y).isAir(), "y " + y + ", band " + b);
+            }
+            boolean layer = b < -RingFluidPicker.RING_5_DAM;
+            for (int y : new int[]{-55, -64}) {
+                assertEquals(layer, picker.computeFluid(ring5, 0, y, 0).at(y).is(Blocks.LAVA), "y " + y + ", band " + b);
+            }
+        }
+        // The band is asked only below the layer's top.
+        asked[0] = 0;
+        picker.computeFluid(ring5, 0, 40, 0);
+        assertEquals(0, asked[0]);
+        assertTrue(RingFluidPicker.ring5Dry(Level.OVERWORLD, ring5));
+        assertFalse(RingFluidPicker.ring5Dry(Level.OVERWORLD, new RingPosition(Ring.RING_5, Ring.VOID, 0.2)));
+        assertFalse(RingFluidPicker.ring5Dry(Level.NETHER, ring5));
+        for (double blend : new double[]{0.4, 0.6}) {
+            assertFalse(RingFluidPicker.ring5Dry(Level.OVERWORLD, new RingPosition(Ring.RING_4, Ring.RING_5, blend)), "zone 4→5 at " + blend);
+        }
+        for (Ring ring : new Ring[]{Ring.RING_1, Ring.RING_4, Ring.VOID}) {
+            assertFalse(RingFluidPicker.ring5Dry(Level.OVERWORLD, RingPosition.within(ring)), ring.name());
         }
     }
 
