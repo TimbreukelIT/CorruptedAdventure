@@ -13613,7 +13613,7 @@
                                     {
                                       "type": "minecraft:block",
                                       "result_state": {
-                                        "Name": "minecraft:sand"
+                                        "Name": "corruptedadventure:lagoon_sand"
                                       }
                                     }
                                   ]
@@ -13641,7 +13641,7 @@
                                   {
                                     "type": "minecraft:block",
                                     "result_state": {
-                                      "Name": "minecraft:sand"
+                                      "Name": "corruptedadventure:lagoon_sand"
                                     }
                                   }
                                 ]
@@ -13691,7 +13691,7 @@
                                     {
                                       "type": "minecraft:block",
                                       "result_state": {
-                                        "Name": "minecraft:sand"
+                                        "Name": "corruptedadventure:lagoon_sand"
                                       }
                                     }
                                   ]
@@ -13719,7 +13719,7 @@
                                   {
                                     "type": "minecraft:block",
                                     "result_state": {
-                                      "Name": "minecraft:sand"
+                                      "Name": "corruptedadventure:lagoon_sand"
                                     }
                                   }
                                 ]

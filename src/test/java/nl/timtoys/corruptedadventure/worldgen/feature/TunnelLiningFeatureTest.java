@@ -1,9 +1,18 @@
 package nl.timtoys.corruptedadventure.worldgen.feature;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import nl.timtoys.corruptedadventure.registry.ModTags;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring4Tunnels;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,6 +42,35 @@ class TunnelLiningFeatureTest {
         assertEquals(TunnelLiningFeature.Lining.CLAW_MARKS, TunnelLiningFeature.lining(Ring4Tunnels.Fill.DRY_AIR, true, 20, claw));
         assertEquals(TunnelLiningFeature.Lining.NONE, TunnelLiningFeature.lining(Ring4Tunnels.Fill.DRY_AIR, false, 20, claw), "not in a floor");
         assertEquals(TunnelLiningFeature.Lining.NONE, TunnelLiningFeature.lining(Ring4Tunnels.Fill.DRY_AIR, true, 20, 0.5F));
+    }
+
+    /**
+     * 77b: the claw marks follow the rock around them (stone, deepslate, tidestone), and the clawed stone and deepslate
+     * stay rock for the floors' tracks although they are in neither stone tag.
+     */
+    @Test
+    void clawMarksFollowTheirRock() {
+        BuiltInRegistries.BLOCK.bindTags(Map.of(
+                BlockTags.BASE_STONE_OVERWORLD, holders(Blocks.STONE, Blocks.DEEPSLATE),
+                BlockTags.DEEPSLATE_ORE_REPLACEABLES, holders(Blocks.DEEPSLATE),
+                ModTags.Blocks.RING_4_STONES, holders(ModBlocks.TIDESTONE.get())));
+        try {
+            assertEquals(ModBlocks.CLAWED_STONE.get(), claws(Blocks.STONE));
+            assertEquals(ModBlocks.CLAWED_DEEPSLATE.get(), claws(Blocks.DEEPSLATE));
+            assertEquals(ModBlocks.CLAWED_TIDESTONE.get(), claws(ModBlocks.TIDESTONE.get()));
+            assertTrue(TunnelLiningFeature.rock(ModBlocks.CLAWED_STONE.get().defaultBlockState()));
+            assertTrue(TunnelLiningFeature.rock(ModBlocks.CLAWED_DEEPSLATE.get().defaultBlockState()));
+        } finally {
+            BuiltInRegistries.BLOCK.resetTags();
+        }
+    }
+
+    private static Block claws(Block host) {
+        return TunnelLiningFeature.liningState(TunnelLiningFeature.Lining.CLAW_MARKS, host.defaultBlockState(), 0.5F).getBlock();
+    }
+
+    private static List<Holder<Block>> holders(Block... blocks) {
+        return Arrays.stream(blocks).map(BuiltInRegistries.BLOCK::wrapAsHolder).toList();
     }
 
     /** Dry floors: trails, bones, nests; flooded floors only bones; nothing elsewhere. */

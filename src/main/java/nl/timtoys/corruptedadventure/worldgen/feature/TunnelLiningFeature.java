@@ -34,7 +34,8 @@ import javax.annotation.Nullable;
  *   poison caves; budding only underground, H5 = A), a bud or cluster in front where the tunnel is air;</li>
  *   <li>the flooded mythical net: aquamarine patches with budding blocks, a waterlogged bud in front in the water; jade
  *   deep down (below Y 0);</li>
- *   <li>both: tidesilver ore, claw marks ({@code clawed_tidestone}) in the side walls;</li>
+ *   <li>both: tidesilver ore, claw marks in the side walls ({@code clawed_tidestone}, {@code clawed_stone},
+ *   {@code clawed_deepslate} by the rock around them, 77b);</li>
  *   <li>on the dry net's floors: slime trails, now and then a nest or a few bones; bones on the flooded floors.</li>
  * </ul>
  * Only solid, dry blocks of the wall turn into other solid blocks, and what stands in front of a wall only takes air
@@ -177,7 +178,7 @@ public final class TunnelLiningFeature extends Feature<NoneFeatureConfiguration>
      * The block for a lining by its host: an ore's variant follows the host rock (an ore of another feature by its
      * convention tag), so the lining is the same whether a neighbour's vein came before or after it.
      */
-    private static BlockState liningState(Lining lining, BlockState host, float roll) {
+    static BlockState liningState(Lining lining, BlockState host, float roll) {
         boolean deepslate = host.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES) || host.is(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE);
         boolean tidestone = host.is(ModTags.Blocks.RING_4_STONES) || host.is(ModTags.Blocks.ORES_IN_GROUND_TIDESTONE);
         return switch (lining) {
@@ -186,7 +187,9 @@ public final class TunnelLiningFeature extends Feature<NoneFeatureConfiguration>
             case TIDESILVER -> (deepslate ? ModBlocks.DEEPSLATE_TIDESILVER_ORE : tidestone ? ModBlocks.TIDESTONE_TIDESILVER_ORE
                     : ModBlocks.TIDESILVER_ORE).get().defaultBlockState();
             case JADE -> (deepslate ? ModBlocks.DEEPSLATE_JADE_ORE : tidestone ? ModBlocks.TIDESTONE_JADE_ORE : ModBlocks.JADE_ORE).get().defaultBlockState();
-            case CLAW_MARKS -> ModBlocks.CLAWED_TIDESTONE.get().defaultBlockState();
+            // 77b (golf 3): the claw marks in the rock around them.
+            case CLAW_MARKS -> (deepslate ? ModBlocks.CLAWED_DEEPSLATE : tidestone ? ModBlocks.CLAWED_TIDESTONE : ModBlocks.CLAWED_STONE)
+                    .get().defaultBlockState();
             case NONE -> host;
         };
     }
@@ -269,9 +272,14 @@ public final class TunnelLiningFeature extends Feature<NoneFeatureConfiguration>
         return wet && roll < BONES ? Blocks.BONE_BLOCK.defaultBlockState().setValue(RotatedPillarBlock.AXIS, axis) : null;
     }
 
-    /** A wall block that may turn: solid and dry rock or ore (also another feature's ore), never a budding block. */
+    /**
+     * A wall block that may turn: solid and dry rock or ore (also another feature's ore), never a budding block. The claw
+     * marks in stone and deepslate count as rock too (77b: they are in neither stone tag on purpose), so a floor with
+     * claw marks carries a track as the rock did.
+     */
     static boolean rock(BlockState state) {
-        return (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(ModTags.Blocks.RING_4_STONES) || state.is(Tags.Blocks.ORES))
+        return (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(ModTags.Blocks.RING_4_STONES) || state.is(Tags.Blocks.ORES)
+                || state.is(ModBlocks.CLAWED_STONE.get()) || state.is(ModBlocks.CLAWED_DEEPSLATE.get()))
                 && state.getFluidState().isEmpty();
     }
 

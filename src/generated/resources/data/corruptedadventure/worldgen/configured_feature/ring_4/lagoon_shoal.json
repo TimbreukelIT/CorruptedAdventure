@@ -4,7 +4,7 @@
     "bed": {
       "type": "minecraft:simple_state_provider",
       "state": {
-        "Name": "minecraft:sand"
+        "Name": "corruptedadventure:lagoon_sand"
       }
     },
     "bed_chance": 0.3,
@@ -43,7 +43,7 @@
     "fill": {
       "type": "minecraft:simple_state_provider",
       "state": {
-        "Name": "minecraft:sand"
+        "Name": "corruptedadventure:lagoon_sand"
       }
     },
     "land_plants": {
@@ -93,7 +93,7 @@
     "land_top": {
       "type": "minecraft:simple_state_provider",
       "state": {
-        "Name": "minecraft:sand"
+        "Name": "corruptedadventure:lagoon_sand"
       }
     },
     "max_depth": 8,
@@ -111,7 +111,7 @@
     "shrubs": {
       "type": "minecraft:simple_state_provider",
       "state": {
-        "Name": "minecraft:sand"
+        "Name": "corruptedadventure:lagoon_sand"
       }
     },
     "sink": 6

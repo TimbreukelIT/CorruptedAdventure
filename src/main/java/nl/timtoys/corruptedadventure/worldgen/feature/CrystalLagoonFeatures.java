@@ -69,7 +69,8 @@ public final class CrystalLagoonFeatures {
     }
 
     public static void configured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
-        BlockState sand = Blocks.SAND.defaultBlockState();
+        // 77b (golf 3): the banks and atolls of the white lagoon sand, like the surface around them.
+        BlockState sand = ModBlocks.LAGOON_SAND.get().defaultBlockState();
         // Banks of ~15–50 blocks: the grove noise at 2.5 times its frequency, its own field (salt 5). Strength 1 lifts the
         // top one block over the water, the edges sink to six under it (only where the floor lies lower).
         FeatureUtils.register(context, SHOAL, ModFeatures.SHOAL.get(), new ShoalConfiguration(ModBiomes.CRYSTAL_LAGOON, 10,

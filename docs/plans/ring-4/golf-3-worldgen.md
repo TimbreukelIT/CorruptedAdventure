@@ -53,6 +53,18 @@ Branch `ring4/worldgen-g3` vanaf `aeebe14`. Plan: `golf-3.md`. Backlogregels ver
   Na de fix (verse wereld): het zand ligt op 58–59, geen lucht onder zee meer in het gebied (alleen 6229 4 −37..−34,
   diep, ander geval, zie Backlog).
 
+### 77b — inzet nieuwe blokken (merge `claude/admiring-cray-2ywybu` + commit `worldgen: lay lagoon sand …`)
+- Merge van de integratiebranch (stroom I, B/T, 66c/66d/66e/71) zonder conflicten; `runData` daarna alleen met de
+  77b-wijziging.
+- `lagoon_sand` i.p.v. vanilla zand in `crystal_lagoon`: de surface (`tools/worldgen/ring4_surface.py` `SURFACES`, land en
+  bodem, boven en eronder → `noise_settings/overworld.json`; met `sandstone` als vaste plaatsvervanger waar het aan een
+  plafond zou hangen, zoals vanilla zand: `FALLING`) en de zandbanken/atollen van `lagoon_shoal`
+  (`CrystalLagoonFeatures`). `Ring4BiomesTest` eist ook voor `lagoon_sand` de plafondwacht.
+- `TunnelLiningFeature`: klauwsporen in de variant van het gesteente eromheen (deepslate → `clawed_deepslate`, tidestone
+  → `clawed_tidestone`, overig gesteente → `clawed_stone`; dezelfde gesteentetoets als de ertsen van de bekleding).
+  `rock()` telt `clawed_stone`/`clawed_deepslate` expliciet als gesteente (bewust in geen van beide steentags, besluit
+  stroom B/coördinator), zodat een vloer met klauwsporen een spoor blijft dragen.
+
 ## Tests
 - `Ring4IslandsTest`: bodem ≥ hoogste grond onder de voetafdruk + 15 (`IslandPlacement.highestGround`, dezelfde 9
   monsters als de plaatsing) en in de binnenste helft ≤ die grond + 60 (gestapeld: ≥ onderste eiland + `STACK_GAP`
@@ -65,6 +77,8 @@ Branch `ring4/worldgen-g3` vanaf `aeebe14`. Plan: `golf-3.md`. Backlogregels ver
 - `Ring4MythicFeaturesTest.frozenWaterLiesBetweenTheFloorAndTheFirstOpenBlock`.
 - `bash ./gradlew build --no-daemon` groen; `runData` gedraaid (placed features ring 4: ertsen, riet, mangrove).
 - r. 421 headless: vóór/na-vergelijking met `tools/test/py/region.py` (zie Gedaan).
+- 77b: `TunnelLiningFeatureTest.clawMarksFollowTheirRock`, `Ring4BiomesTest` (plafondwacht `lagoon_sand`); `runData` en
+  `build` groen na de merge.
 
 ## CODEBASE-delta
 - `IslandField`: `inDebris(x, z)`, `islandBlockNear(x, y, z, reach)` (+ constanten `ISLAND_ROCK_*`).
@@ -78,6 +92,9 @@ Branch `ring4/worldgen-g3` vanaf `aeebe14`. Plan: `golf-3.md`. Backlogregels ver
 - `RingVanillaOres.placed(…, PlacementModifier... extra)`, `tapered(…, extra)`; `Ring4OreFeatures.ORE_ISLAND_CLEARANCE`.
 - `IslandVinesFeature.takes(rope, existing, below)` (+ `EdgeUpdates` waar genomen).
 - `EdgeUpdates`: slaat `FallingBlock`-buren over.
+- 77b: `TunnelLiningFeature.liningState` (pakket-zichtbaar) kiest de klauwvariant; `rock()` met de twee klauwblokken;
+  `CrystalLagoonFeatures` shoal op `lagoon_sand`; `ring4_surface.py` `crystal_lagoon` = `lagoon_sand`, `FALLING` +
+  `lagoon_sand → sandstone`; `noise_settings/overworld.json` (4 blokken); `configured_feature/ring_4/lagoon_shoal.json`.
 - Gegenereerd: `placed_feature/ring_4/ore_*.json` (+ `ring4_filter`), `*_reeds.json`/`*_reed_collars.json`,
   `glowroot_swamp_trees.json`.
 
@@ -89,6 +106,8 @@ Branch `ring4/worldgen-g3` vanaf `aeebe14`. Plan: `golf-3.md`. Backlogregels ver
   eilanden van ring 4 (en ook niet binnen 6 blokken ervan).
 - r. 367 riet en r. 415 via bevroren heightmaps (zelfde regel als het terrein van de bomen); leliebladen ongewijzigd.
 - r. 421 `EdgeUpdates` raakt zand/grind niet meer aan (geldt voor bomen en grondobjecten van ring 4).
+- 77b plaatsvervanger van `lagoon_sand` onder een plafond: vanilla `sandstone` (er is geen lagunezandsteen); overig
+  gesteente dan stone/deepslate/tidestone (graniet, andesiet, dioriet, tuf) krijgt `clawed_stone`.
 
 ## Backlog (nieuw)
 - [worldgen] `drowned_forest`-bomen (`Ring4BlightedFeatures`, `SurfaceWaterDepthFilter.forMaxDepth(DROWNED_WATER)`) en
@@ -109,3 +128,7 @@ Branch `ring4/worldgen-g3` vanaf `aeebe14`. Plan: `golf-3.md`. Backlogregels ver
 - Riet en mangroves: `glowroot_swamp` west rond −6975 284 (gebied `archw`), `lotus_shallows`/`cascade_vale`-oevers.
 - Waterscan op 6144..6239 × −128..−17 (6188 59 −68 moet schoon zijn) en de andere `crystal_lagoon`-gebieden.
 - Brokken: geen boom/kei/stam/plant op een brok (bijv. rond reuzeneilanden in `islands.txt`).
+- 77b: `crystal_lagoon` (bijv. 6144..6239 × −128..−17 en de lagunegebieden van `decor.txt`): `lagoon_sand` op oevers,
+  bodem en zandbanken, geen vanilla zand meer; sandstone alleen onder plafonds. Tunnelnet (`tools/test/areas` met de
+  tunnels van 73): klauwsporen in stone/deepslate/tidestone volgens de wand, sporen op klauwvloeren; det-check op de
+  tunnelgebieden.

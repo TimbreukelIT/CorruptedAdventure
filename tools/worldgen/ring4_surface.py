@@ -89,7 +89,7 @@ CEILING = depth("ceiling")          # the block right above air: sand or gravel 
 DRY_TOP = water(-1, 0, False)       # at most one block under the water level: land and the shore
 DRY_DEPTH = water(-6, -1, True)     # vanilla's test for the layer under land
 # Each falling block with its own solid stand-in where it would hang.
-FALLING = {"sand": "sandstone", "gravel": "stone"}
+FALLING = {"sand": "sandstone", "gravel": "stone", CA + "lagoon_sand": "sandstone"}
 # Clay patches (~60 blocks, vanilla's surface noise) in the swamp's lake beds: axolotls spawn only on clay.
 CLAY_PATCHES = noise("minecraft:surface", 0.12)
 # verdant_falls: the travertine rims and fall lips, the exact walls (both 0..1 from the terrain).
@@ -150,7 +150,8 @@ def surface(land_top, land_under, wet_top, wet_under, steep=None):
 SURFACES = {
     # Mythical band: green and clear; clear lake beds of sand, the swamp on mud with clay patches.
     "cascade_vale": ("grass_block", "dirt", "sand", "sand"),
-    "crystal_lagoon": ("sand", "sand", "sand", "sand"),
+    # 77b (golf 3): the white lagoon sand of stream B on the banks, beds and atolls.
+    "crystal_lagoon": (CA + "lagoon_sand", CA + "lagoon_sand", CA + "lagoon_sand", CA + "lagoon_sand"),
     "lotus_shallows": ("grass_block", "dirt", "clay", "dirt"),
     "glowroot_swamp": ("grass_block", "dirt", seq(cond(CLAY_PATCHES, block("clay")), block("mud")), "mud"),
     # Grass on the flat tops (rabbits spawn there), moss and stone on the cliffs.
