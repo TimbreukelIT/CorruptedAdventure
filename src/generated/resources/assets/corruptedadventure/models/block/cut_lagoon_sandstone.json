@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "corruptedadventure:block/lagoon_sandstone_top",
+    "side": "corruptedadventure:block/cut_lagoon_sandstone"
+  }
+}

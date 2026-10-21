@@ -88,8 +88,8 @@ DEPTH = depth(add=True)             # the surface depth (3-6 blocks)
 CEILING = depth("ceiling")          # the block right above air: sand or gravel there would fall
 DRY_TOP = water(-1, 0, False)       # at most one block under the water level: land and the shore
 DRY_DEPTH = water(-6, -1, True)     # vanilla's test for the layer under land
-# Each falling block with its own solid stand-in where it would hang.
-FALLING = {"sand": "sandstone", "gravel": "stone", CA + "lagoon_sand": "sandstone"}
+# Each falling block with its own solid stand-in where it would hang; the lagoon sand with its own sandstone (77c).
+FALLING = {"sand": "sandstone", "gravel": "stone", CA + "lagoon_sand": CA + "lagoon_sandstone"}
 # Clay patches (~60 blocks, vanilla's surface noise) in the swamp's lake beds: axolotls spawn only on clay.
 CLAY_PATCHES = noise("minecraft:surface", 0.12)
 # verdant_falls: the travertine rims and fall lips, the exact walls (both 0..1 from the terrain).

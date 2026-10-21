@@ -1,6 +1,8 @@
 {
   "values": [
     "corruptedadventure:scorched_sandstone_stairs",
-    "corruptedadventure:smooth_scorched_sandstone_stairs"
+    "corruptedadventure:smooth_scorched_sandstone_stairs",
+    "corruptedadventure:lagoon_sandstone_stairs",
+    "corruptedadventure:smooth_lagoon_sandstone_stairs"
   ]
 }

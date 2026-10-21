@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "corruptedadventure:block/smooth_lagoon_sandstone_slab"
+    },
+    "type=double": {
+      "model": "corruptedadventure:block/smooth_lagoon_sandstone"
+    },
+    "type=top": {
+      "model": "corruptedadventure:block/smooth_lagoon_sandstone_slab_top"
+    }
+  }
+}

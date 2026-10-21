@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_smooth_lagoon_sandstone": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:smooth_lagoon_sandstone"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:smooth_lagoon_sandstone_slab_from_smooth_lagoon_sandstone_stonecutting"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_smooth_lagoon_sandstone"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:smooth_lagoon_sandstone_slab_from_smooth_lagoon_sandstone_stonecutting"
+    ]
+  }
+}
