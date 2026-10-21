@@ -36,3 +36,11 @@ beslissingenlog; hier staat de ruwe uitkomst per ronde.
 | Sfeer | **Binnen grijs-violet, buiten zwart met sterren**: binnenband donkergrijs met violette zweem en dikke kleurloze fog; buitenband steeds zwarter met sterren, ook overdag. Echo-voetstappen in beide banden. |
 | Overgang 4→5 | **Zone 4→5 opnieuw bekijken**, zodat het patroon klopt (vast → uiteenvallen → vast → uiteenvallen). Raakt het afgeronde ring 4-terrein; uitwerking in ronde 5. |
 | Horror (fase 1) | **Alle vier**: ontbrekende chunks, Herobrine-tekens, gespiegelde dubbelgangers (een stuk terrein dat verderop exact gespiegeld nog eens staat), verlaten kampen van spelers (klein, als feature; tent, kist, uitgebrand kampvuur, bed). |
+
+## Ronde 5 — zone 4→5, Nether-5, volgorde
+| Vraag | Besluit |
+|---|---|
+| Zone 4→5 | **Breuklijn**: `sundered_reach` wordt een breukzone met nog grotendeels dichte grond, diepe spleten, opgeheven en gekantelde schotsen en losse brokken; overal over te steken als je oplet. De landbruggen vervallen. Het echte uiteenvallen is voor de buitenband van ring 5. |
+| Nether-5 | **`white_halls` + tweede biome** `hollow_cathedral` (enorme lege witte ruimte met één gigantische zuil). Rest zoals ontworpen (kalkrack, witsteen-set, spiegelsteen, stil licht, witte kern in de zuilen). |
+| Stilte | **Zoals ontworpen** (↑ overal, ↓ door bel/goat horn/note block/jukebox en andere spelers binnen ~8 blokken; drempels gedempt → HUD weg → geluid weg + darkness → schade). |
+| Volgorde | **Na 5c**: golf 3 en teststop 5c ronden ring 4 af zoals hij is; de herziening van zone 4→5 hoort bij golf 0/1 van ring 5 en wordt samen met ring 5 getest. |
