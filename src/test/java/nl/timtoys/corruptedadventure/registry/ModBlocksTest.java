@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ColoredFallingBlock;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -771,11 +772,38 @@ class ModBlocksTest {
         assertTrue(ModBlocks.LAGOON_GLOWGRASS.get().defaultBlockState().getFluidState().isEmpty());
     }
 
+    /**
+     * The golf 3 blocks (66c) follow the decor blocks: the lagoon sand falls like sand with sand's strength and sound,
+     * the claw marks keep the strength of their rock and need a pickaxe.
+     */
+    @Test
+    void ring4Golf3BlocksFollowTheDecorBlocksAndKeepTheirRock() {
+        List<Item> shown = blockItems();
+        int glowgrass = shown.indexOf(ModBlocks.LAGOON_GLOWGRASS.asItem());
+        List<Item> golf3 = Stream.of(ModBlocks.LAGOON_SAND, ModBlocks.CLAWED_STONE, ModBlocks.CLAWED_DEEPSLATE)
+                .<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(golf3, shown.subList(glowgrass + 1, glowgrass + 1 + golf3.size()));
+
+        assertInstanceOf(ColoredFallingBlock.class, ModBlocks.LAGOON_SAND.get());
+        assertEquals(Blocks.SAND.defaultDestroyTime(), ModBlocks.LAGOON_SAND.get().defaultDestroyTime());
+        assertSame(SoundType.SAND, ModBlocks.LAGOON_SAND.get().defaultBlockState().getSoundType());
+        assertFalse(ModBlocks.LAGOON_SAND.get().defaultBlockState().requiresCorrectToolForDrops());
+        assertEquals(Blocks.STONE.defaultDestroyTime(), ModBlocks.CLAWED_STONE.get().defaultDestroyTime());
+        assertEquals(Blocks.STONE.getExplosionResistance(), ModBlocks.CLAWED_STONE.get().getExplosionResistance());
+        assertSame(SoundType.STONE, ModBlocks.CLAWED_STONE.get().defaultBlockState().getSoundType());
+        assertEquals(Blocks.DEEPSLATE.defaultDestroyTime(), ModBlocks.CLAWED_DEEPSLATE.get().defaultDestroyTime());
+        assertEquals(Blocks.DEEPSLATE.getExplosionResistance(), ModBlocks.CLAWED_DEEPSLATE.get().getExplosionResistance());
+        assertSame(SoundType.DEEPSLATE, ModBlocks.CLAWED_DEEPSLATE.get().defaultBlockState().getSoundType());
+        for (DeferredBlock<?> block : List.of(ModBlocks.CLAWED_STONE, ModBlocks.CLAWED_DEEPSLATE)) {
+            assertTrue(block.get().defaultBlockState().requiresCorrectToolForDrops(), block.getId().toString());
+        }
+    }
+
     /** Nether ring 4 follows ring 4 directly and ends the blocks (contract ring 4 §3); its shard ends the loose items. */
     @Test
     void netherRing4FollowsRing4InOrderAndBehavesAsPlanned() {
         List<Item> shown = blockItems();
-        int lastRing4 = shown.indexOf(ModBlocks.LAGOON_GLOWGRASS.asItem());
+        int lastRing4 = shown.indexOf(ModBlocks.CLAWED_DEEPSLATE.asItem());
         List<Item> netherRing4 = Stream.of(ModBlocks.BONE_SAND, ModBlocks.BLEACHED_NETHERRACK, ModBlocks.FOSSIL_STONE,
                 ModBlocks.FOSSIL_STONE_STAIRS, ModBlocks.FOSSIL_STONE_SLAB, ModBlocks.FOSSIL_STONE_WALL,
                 ModBlocks.POLISHED_FOSSIL_STONE, ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, ModBlocks.POLISHED_FOSSIL_STONE_SLAB,

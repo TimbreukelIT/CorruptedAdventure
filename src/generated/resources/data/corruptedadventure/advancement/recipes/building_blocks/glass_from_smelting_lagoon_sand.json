@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_lagoon_sand": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:lagoon_sand"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:glass_from_smelting_lagoon_sand"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_lagoon_sand"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:glass_from_smelting_lagoon_sand"
+    ]
+  }
+}
