@@ -58,6 +58,11 @@ class TunnelLiningFeatureTest {
             assertEquals(ModBlocks.CLAWED_STONE.get(), claws(Blocks.STONE));
             assertEquals(ModBlocks.CLAWED_DEEPSLATE.get(), claws(Blocks.DEEPSLATE));
             assertEquals(ModBlocks.CLAWED_TIDESTONE.get(), claws(ModBlocks.TIDESTONE.get()));
+            // A claw-marked host keeps its rock (review golf 3, finding 2).
+            assertEquals(ModBlocks.CLAWED_DEEPSLATE.get(), claws(ModBlocks.CLAWED_DEEPSLATE.get()));
+            assertEquals(ModBlocks.CLAWED_STONE.get(), claws(ModBlocks.CLAWED_STONE.get()));
+            assertEquals(ModBlocks.DEEPSLATE_TIDESILVER_ORE.get(), TunnelLiningFeature.liningState(TunnelLiningFeature.Lining.TIDESILVER,
+                    ModBlocks.CLAWED_DEEPSLATE.get().defaultBlockState(), 0.5F).getBlock());
             assertTrue(TunnelLiningFeature.rock(ModBlocks.CLAWED_STONE.get().defaultBlockState()));
             assertTrue(TunnelLiningFeature.rock(ModBlocks.CLAWED_DEEPSLATE.get().defaultBlockState()));
         } finally {

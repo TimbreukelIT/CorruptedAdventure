@@ -310,6 +310,23 @@ class Ring4LandmarksTest {
                 assertFalse(IslandArches.crosses(kept.get(a), kept.get(b)), "crossing arches " + kept.get(a) + " " + kept.get(b));
             }
         }
+        // Review golf 3: every candidate arch's box lies within archReach of its first island (the windows of the cells,
+        // the debris and archKept), and that bound within MAX_ARCH_WINDOW.
+        int candidates = 0;
+        for (IslandShape s : SHAPES) {
+            double reach = IslandArches.archReach(s);
+            assertTrue(reach <= IslandArches.MAX_ARCH_WINDOW, "window " + s);
+            for (IslandArches.Pair pair : field.landmarks().candidatePairs(s)) {
+                IslandArches.Arch arch = pair.arch();
+                if (arch == null) {
+                    continue;
+                }
+                candidates++;
+                assertTrue(arch.minX() >= s.x() - reach && arch.maxX() <= s.x() + reach && arch.minZ() >= s.z() - reach
+                        && arch.maxZ() <= s.z() + reach, "arch past its reach: " + arch + " of " + s);
+            }
+        }
+        assertTrue(candidates >= arches, "candidates " + candidates);
         // The public accessor finds them too.
         assertFalse(field.islandPairs(6500, -1000, 8000, 1000).isEmpty());
     }
@@ -339,6 +356,7 @@ class Ring4LandmarksTest {
     void debrisFloatsFreeRoundTheBigIslands() {
         int pieces = 0;
         int islands = 0;
+        int toppedColumns = 0;
         for (IslandShape s : SHAPES) {
             List<IslandDebris.Piece> debris = field.landmarks().debris(s);
             if (s.kind() == IslandShape.CLOD || s.kind() == IslandShape.TREE) {
@@ -362,8 +380,21 @@ class Ring4LandmarksTest {
                 // Backlog r. 426: the features see every column of it.
                 for (int x = piece.minX(); x <= piece.maxX(); x++) {
                     for (int z = piece.minZ(); z <= piece.maxZ(); z++) {
-                        if (piece.interval(x, z) != null) {
+                        int[] rock = piece.interval(x, z);
+                        if (rock != null) {
                             assertTrue(field.inDebris(x, z), "not listed: " + piece + " at " + x + ", " + z);
+                            // Review golf 3: on the piece (its top is the ground) it counts; on an island top above it not.
+                            assertTrue(field.inDebris(x, z, rock[1]), "not on its top: " + piece + " at " + x + ", " + z);
+                            // Review golf 3: water_near sees the column under the piece as covered, not the piece itself.
+                            assertTrue(field.islandColumn(x, z).underIsland(rock[0] - 1), "not over: " + piece + " at " + x + ", " + z);
+                            assertFalse(field.islandColumn(x, z).underIsland(rock[1]), "in: " + piece + " at " + x + ", " + z);
+                            for (IslandShape other : field.shapesNear(x, z)) {
+                                int[] above = other.interval(x + 0.5, z + 0.5);
+                                if (above != null && above[0] > rock[1]) {
+                                    toppedColumns++;
+                                    assertFalse(field.inDebris(x, z, above[1]), "island top over " + piece + " at " + x + ", " + z);
+                                }
+                            }
                         }
                     }
                 }
@@ -377,7 +408,7 @@ class Ring4LandmarksTest {
                 assertTrue(field.liftsWithin(piece.minX() - 2, piece.minZ() - 2, piece.maxX() + 2, piece.maxZ() + 2).isEmpty(), "lift at " + piece);
             }
         }
-        System.out.printf("debris: %d pieces round %d islands%n", pieces, islands);
+        System.out.printf("debris: %d pieces round %d islands, %d columns under an island top%n", pieces, islands, toppedColumns);
         assertTrue(pieces > 50, "pieces " + pieces);
     }
 

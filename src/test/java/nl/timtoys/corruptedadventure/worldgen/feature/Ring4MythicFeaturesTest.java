@@ -126,4 +126,16 @@ class Ring4MythicFeaturesTest {
         assertFalse(Ring4Filter.water(63, 60, 63), "the open block over the water");
         assertFalse(Ring4Filter.water(64, 64, 64), "dry land");
     }
+
+    /** Review golf 3: under a floating island the pure terrain says where the water stands (ring 4's sea, a lake). */
+    @Test
+    void waterUnderAnIslandFollowsTheTerrain() {
+        assertTrue(Ring4Filter.waterUnderIsland(62, 60.4, Integer.MIN_VALUE, true), "the sea's top block over the ground");
+        assertTrue(Ring4Filter.waterUnderIsland(61, 60.4, Integer.MIN_VALUE, true));
+        assertFalse(Ring4Filter.waterUnderIsland(60, 60.4, Integer.MIN_VALUE, true), "in the ground");
+        assertFalse(Ring4Filter.waterUnderIsland(63, 60.4, Integer.MIN_VALUE, true), "air over the sea");
+        assertFalse(Ring4Filter.waterUnderIsland(62, 60.4, Integer.MIN_VALUE, false), "no flat sea outside ring 4's own");
+        assertTrue(Ring4Filter.waterUnderIsland(70, 66.0, 72, false), "a lake above the sea");
+        assertFalse(Ring4Filter.waterUnderIsland(72, 66.0, 72, true), "over the lake (its top is exclusive)");
+    }
 }

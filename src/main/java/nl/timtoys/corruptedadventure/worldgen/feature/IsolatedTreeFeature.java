@@ -51,7 +51,7 @@ public final class IsolatedTreeFeature extends Feature<TreeConfiguration> {
             return Feature.TREE.place(context);
         }
         BlockPos origin = context.origin();
-        if (Ring4Terrain.onDebris(level, origin.getX(), origin.getZ())) {
+        if (Ring4Terrain.onDebris(level, origin.getX(), origin.getY(), origin.getZ())) {
             return false;
         }
         TreeConfiguration config = context.config();

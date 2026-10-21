@@ -47,7 +47,7 @@ public final class FallenTreeFeature extends Feature<FallenTreeConfiguration> {
         Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(random);
         BlockPos origin = inChunk(context.origin(), direction, trunk ? gap + length : 0);
         int foot = GroundObjects.surface(level, origin.getX(), origin.getZ());
-        if (!GroundObjects.dry(level, origin.getX(), origin.getZ()) || Ring4Terrain.onDebris(level, origin.getX(), origin.getZ())) {
+        if (!GroundObjects.dry(level, origin.getX(), origin.getZ()) || Ring4Terrain.onDebris(level, origin.getX(), foot, origin.getZ())) {
             return false;
         }
         Map<BlockPos, BlockState> wood = new LinkedHashMap<>();

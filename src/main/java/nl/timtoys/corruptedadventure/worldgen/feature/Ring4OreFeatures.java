@@ -74,7 +74,6 @@ public final class Ring4OreFeatures {
     static final int JADE_COUNT = 3;
     static final int JADE_MIN_Y = -64;
     static final int JADE_MAX_Y = 0;
-    /** Chance 1 in ring 4, 0 beyond: in {@code sundered_reach} the own ores stay out of the ring 5 half. */
     /**
      * Backlog r. 420: a vanilla ore blob reaches at most 5 blocks sideways and 4 up and down from its origin (coal, size
      * 17, the largest of {@link RingVanillaOres#ORES}); with one more no blob touches a floating island, so the dressing of
@@ -82,6 +81,7 @@ public final class Ring4OreFeatures {
      * deep (at most Y 48) and need no filter.
      */
     static final int ORE_ISLAND_CLEARANCE = 6;
+    /** Chance 1 in ring 4, 0 beyond: in {@code sundered_reach} the own ores stay out of the ring 5 half. */
     private static final RingChanceFilter IN_RING_4 = RingChanceFilter.progress(Ring.RING_4, 1.0, 1.0, 0.0, 1.0);
     /** A geode lies under at least this much water. */
     static final int GEODE_WATER = 8;
