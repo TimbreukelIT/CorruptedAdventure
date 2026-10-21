@@ -2,6 +2,9 @@
   "values": [
     "corruptedadventure:scorched_sandstone_slab",
     "corruptedadventure:cut_scorched_sandstone_slab",
-    "corruptedadventure:smooth_scorched_sandstone_slab"
+    "corruptedadventure:smooth_scorched_sandstone_slab",
+    "corruptedadventure:lagoon_sandstone_slab",
+    "corruptedadventure:cut_lagoon_sandstone_slab",
+    "corruptedadventure:smooth_lagoon_sandstone_slab"
   ]
 }

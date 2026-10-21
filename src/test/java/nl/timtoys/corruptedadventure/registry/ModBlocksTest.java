@@ -47,6 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -780,8 +781,11 @@ class ModBlocksTest {
     void ring4Golf3BlocksFollowTheDecorBlocksAndKeepTheirRock() {
         List<Item> shown = blockItems();
         int glowgrass = shown.indexOf(ModBlocks.LAGOON_GLOWGRASS.asItem());
-        List<Item> golf3 = Stream.of(ModBlocks.LAGOON_SAND, ModBlocks.CLAWED_STONE, ModBlocks.CLAWED_DEEPSLATE)
-                .<Item>map(DeferredBlock::asItem).toList();
+        List<Item> golf3 = Stream.of(ModBlocks.LAGOON_SAND, ModBlocks.LAGOON_SANDSTONE, ModBlocks.LAGOON_SANDSTONE_STAIRS,
+                ModBlocks.LAGOON_SANDSTONE_SLAB, ModBlocks.LAGOON_SANDSTONE_WALL, ModBlocks.CUT_LAGOON_SANDSTONE,
+                ModBlocks.CUT_LAGOON_SANDSTONE_SLAB, ModBlocks.CHISELED_LAGOON_SANDSTONE, ModBlocks.SMOOTH_LAGOON_SANDSTONE,
+                ModBlocks.SMOOTH_LAGOON_SANDSTONE_STAIRS, ModBlocks.SMOOTH_LAGOON_SANDSTONE_SLAB,
+                ModBlocks.CLAWED_STONE, ModBlocks.CLAWED_DEEPSLATE).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(golf3, shown.subList(glowgrass + 1, glowgrass + 1 + golf3.size()));
 
         assertInstanceOf(ColoredFallingBlock.class, ModBlocks.LAGOON_SAND.get());
@@ -797,6 +801,32 @@ class ModBlocksTest {
         for (DeferredBlock<?> block : List.of(ModBlocks.CLAWED_STONE, ModBlocks.CLAWED_DEEPSLATE)) {
             assertTrue(block.get().defaultBlockState().requiresCorrectToolForDrops(), block.getId().toString());
         }
+    }
+
+    /** The lagoon sandstone set (66f) keeps the strength, blast resistance, sound and tool rule of its vanilla twin. */
+    @Test
+    void lagoonSandstoneMirrorsVanillaSandstone() {
+        Map<DeferredBlock<?>, Block> twins = new LinkedHashMap<>();
+        twins.put(ModBlocks.LAGOON_SANDSTONE, Blocks.SANDSTONE);
+        twins.put(ModBlocks.LAGOON_SANDSTONE_STAIRS, Blocks.SANDSTONE_STAIRS);
+        twins.put(ModBlocks.LAGOON_SANDSTONE_SLAB, Blocks.SANDSTONE_SLAB);
+        twins.put(ModBlocks.LAGOON_SANDSTONE_WALL, Blocks.SANDSTONE_WALL);
+        twins.put(ModBlocks.CUT_LAGOON_SANDSTONE, Blocks.CUT_SANDSTONE);
+        twins.put(ModBlocks.CUT_LAGOON_SANDSTONE_SLAB, Blocks.CUT_SANDSTONE_SLAB);
+        twins.put(ModBlocks.CHISELED_LAGOON_SANDSTONE, Blocks.CHISELED_SANDSTONE);
+        twins.put(ModBlocks.SMOOTH_LAGOON_SANDSTONE, Blocks.SMOOTH_SANDSTONE);
+        twins.put(ModBlocks.SMOOTH_LAGOON_SANDSTONE_STAIRS, Blocks.SMOOTH_SANDSTONE_STAIRS);
+        twins.put(ModBlocks.SMOOTH_LAGOON_SANDSTONE_SLAB, Blocks.SMOOTH_SANDSTONE_SLAB);
+        twins.forEach((lagoon, vanilla) -> {
+            Block block = lagoon.get();
+            String id = lagoon.getId().toString();
+            assertSame(vanilla.getClass(), block.getClass(), id);
+            assertEquals(vanilla.defaultDestroyTime(), block.defaultDestroyTime(), id);
+            assertEquals(vanilla.getExplosionResistance(), block.getExplosionResistance(), id);
+            assertSame(vanilla.defaultBlockState().getSoundType(), block.defaultBlockState().getSoundType(), id);
+            assertEquals(vanilla.defaultBlockState().requiresCorrectToolForDrops(),
+                    block.defaultBlockState().requiresCorrectToolForDrops(), id);
+        });
     }
 
     /** Nether ring 4 follows ring 4 directly and ends the blocks (contract ring 4 §3); its shard ends the loose items. */

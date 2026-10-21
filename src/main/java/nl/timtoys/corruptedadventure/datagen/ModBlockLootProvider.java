@@ -228,7 +228,22 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         verdant();
         ring4Decor();
         lagoonSandAndClawMarks();
+        lagoonSandstone();
         netherRing4();
+    }
+
+    /** The lagoon sandstone set (66f) drops like vanilla sandstone: each block itself, a double slab two slabs. */
+    private void lagoonSandstone() {
+        dropSelf(ModBlocks.LAGOON_SANDSTONE.get());
+        dropSelf(ModBlocks.LAGOON_SANDSTONE_STAIRS.get());
+        add(ModBlocks.LAGOON_SANDSTONE_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.LAGOON_SANDSTONE_WALL.get());
+        dropSelf(ModBlocks.CUT_LAGOON_SANDSTONE.get());
+        add(ModBlocks.CUT_LAGOON_SANDSTONE_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.CHISELED_LAGOON_SANDSTONE.get());
+        dropSelf(ModBlocks.SMOOTH_LAGOON_SANDSTONE.get());
+        dropSelf(ModBlocks.SMOOTH_LAGOON_SANDSTONE_STAIRS.get());
+        add(ModBlocks.SMOOTH_LAGOON_SANDSTONE_SLAB.get(), this::createSlabItemTable);
     }
 
     /** The golf 3 blocks (66c): the sand drops itself, the claw marks break like their rock (Silk Touch: the block). */

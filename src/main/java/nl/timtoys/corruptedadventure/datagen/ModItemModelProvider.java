@@ -372,6 +372,17 @@ final class ModItemModelProvider extends ItemModelProvider {
 
         // Golf 3 blocks (66c): cubes on their block models.
         blockItem(ModBlocks.LAGOON_SAND);
+        // Lagoon sandstone (66f): like the scorched sandstone set.
+        blockItem(ModBlocks.LAGOON_SANDSTONE);
+        blockItem(ModBlocks.LAGOON_SANDSTONE_STAIRS);
+        blockItem(ModBlocks.LAGOON_SANDSTONE_SLAB);
+        wallInventory(ModBlocks.LAGOON_SANDSTONE_WALL.getId().getPath(), modLoc("block/lagoon_sandstone"));
+        blockItem(ModBlocks.CUT_LAGOON_SANDSTONE);
+        blockItem(ModBlocks.CUT_LAGOON_SANDSTONE_SLAB);
+        blockItem(ModBlocks.CHISELED_LAGOON_SANDSTONE);
+        blockItem(ModBlocks.SMOOTH_LAGOON_SANDSTONE);
+        blockItem(ModBlocks.SMOOTH_LAGOON_SANDSTONE_STAIRS);
+        blockItem(ModBlocks.SMOOTH_LAGOON_SANDSTONE_SLAB);
         blockItem(ModBlocks.CLAWED_STONE);
         blockItem(ModBlocks.CLAWED_DEEPSLATE);
     }
