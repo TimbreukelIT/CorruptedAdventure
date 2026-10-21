@@ -221,6 +221,14 @@ Tot slot: de drie INT2-bevindingen van §4, de drie dingen die het meest moeten 
   - Reliëf, eilanden en lucht/mist volgen als aparte changes (backlog).
   - Werkwijze: afstemrondes met de lichte lus uit `tuning-loop.md`. De rest van teststop 5b (checklist §3, §4) schuift naar na het proefstuk.
 
+### 5.2 Uitslag (2026-10-21)
+
+**Teststop 5b akkoord.** De gebruiker heeft ring 4 na de rondes op de eerste indruk (aankleding proefstuk en decor A–D,
+nieuwe blokken, lucht en mist, reliëf, eilanden; alles op main `85c7c21`) zelf doorlopen: "niet alles ziet er perfect
+uit, maar ik vind het prima". De open punten van §3 en §4 (implementatiekeuzes golf 2, sfeer, textures, Nether-4,
+de vlucht-punten van reliëf en eilanden) blijven **zoals ze zijn**; wat nog speelt gaat naar golf 3 (backlog-opruiming
+ring 4) of blijft als idee in de backlog. De formele metingen (det, perf, waterscan) schuiven naar teststop 5c.
+
 ## J. INT2-resultaten (2026-10-16 – 2026-10-18)
 
 Branch `ring4/int2` op main `8cc10438` (alle golf 2-stromen al vooruit gemerged). Werelden in de worktree van INT2

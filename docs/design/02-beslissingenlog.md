@@ -893,3 +893,5 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-20 | worldgen | Reliëf ring 4: afbakening akkoord (moeras zachte golving; lagune, lotus, drowned_forest, verdant_falls, sundered_reach ongewijzigd; zonemarge 24 + 64 blokken) | Interpretatie team-lead bevestigd |
 | 2026-10-20 | worldgen | Reliëf ring 4: cascadeglooiing 0–12 blijft; beoordelen bij de vlucht | Subtiel op de beelden, eerst in-game zien |
 | 2026-10-20 | worldgen | Reliëf ring 4: fjordwandruwheid ±6 blijft | Gebruiker tevreden |
+| 2026-10-21 | worldgen | Teststop 5b akkoord: ring 4 zoals op main `85c7c21`; de open punten van 5b (§3/§4, vluchtpunten reliëf en eilanden) blijven zo, metingen naar 5c | Gebruiker heeft zelf getest: niet alles perfect, maar prima |
+| 2026-10-21 | infra | Golf 3 ring 4 wordt in de cloudsessie uitgevoerd (71 + backlog-opruiming); teststop 5c doet de gebruiker lokaal; sparring ring 5 mag alvast als voorbereiding | Cloud: build, runData en headless server mogelijk, geen client of Windows-testtools |
