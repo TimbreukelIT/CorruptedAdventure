@@ -900,3 +900,15 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-21 | blocks | Nieuw `lagoon_sand` (valt als zand, `#sand`, smelt tot glas) voor de zandbanken en oevers van `crystal_lagoon` | Echt wit lagunezand (backlog decor A) |
 | 2026-10-21 | blocks | Nieuw `clawed_stone` en `clawed_deepslate`; de tunnelbekleding kiest de variant van het gesteente | Klauwkras op tidestone las los in steen/deepslate-tunnels |
 | 2026-10-21 | worldgen | `toxic_pool` in veenkommen, riet-oevercheck en eigen schuim-particle: zo laten | Past bij "prima" voor 5b |
+| 2026-10-21 | worldgen | Ring 5 in twee banden: binnen vaste dode grond, buiten uiteenvallend tot de rand; zachte band ~200 | Zet de lijn van ring 4 door; twee werelden in één ring |
+| 2026-10-21 | worldgen | Ring 5: 6 biomes (`corrupted_wastes`, `glitch_fields`, `false_meadow` / `void_scars`, `inverted_hills`, `shattered_expanse`) | Eigen void-biome voor brokken en bruggen |
+| 2026-10-21 | worldgen | Kastelen ring 5 krijgen nu al plek en omgeving als terrein: pinakel boven de void met bruggen | Fase 3 zet alleen het gebouw; geen herbouw van terrein |
+| 2026-10-21 | worldgen | Horror ring 5 fase 1: ontbrekende chunks, Herobrine-tekens, gespiegelde dubbelgangers, verlaten kampen, herinneringen van ring 1–4 | Meer horror in de wereld zelf; levende events blijven fase 5 |
+| 2026-10-21 | blocks | Ring 5-blokstijl: grijs uitgeloogd met violet-zwarte aders; glitchblok paars-zwart; voidsteen met sterren | Leest als besmet, sluit aan op de violette lucht |
+| 2026-10-21 | worldgen | Nulliet vooral in scheurwanden en brokonderkanten (buitenband) | Risico zit aan de afgrond |
+| 2026-10-21 | worldgen | Grotten ring 5: onmogelijke gangen, void-grotten en gekopieerde/gespiegelde grotten | Gebruiker koos de engere variant |
+| 2026-10-21 | conditions | Void-meter: teleports alleen op vaste grond in de binnenband; buitenband sneller darkness | Veilige teleports zijn boven de void niet te garanderen |
+| 2026-10-21 | atmosphere | Ring 5-weer: glitchstorm, omgekeerde regen, nieuw 'stilstand'; lucht binnen grijs-violet, buiten zwart met sterren | Banden ook in sfeer |
+| 2026-10-21 | worldgen | Zone 4→5 (`sundered_reach`) herzien tot breukzone (dichte grond, spleten, schotsen), landbruggen vervallen; in ring 5 golf 0/1 | Patroon vast → breuk → vast → uiteenvallen |
+| 2026-10-21 | worldgen | Nether-5: `white_halls` + `hollow_cathedral`; stilte-meter zoals ontworpen | Tegen eentonigheid (les 5b), idee blijft |
+| 2026-10-21 | infra | Ring 5 in golven zoals ring 4, start na teststop 5c | Bewezen werkwijze |
