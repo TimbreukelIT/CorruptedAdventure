@@ -256,3 +256,31 @@ verse werelden tellen (zoals elke terreinchange).
 Zie `golf-0.md` §6 (V1–V12). Samengevat: V1 bandlijn en ruis · V2 buitenband en buitenrand · V3 onderkant en void ·
 V4 hoogtes · V5 kasteelplekken en pinakel · V6 bruggen · V7 vorm breukzone 4→5 · V8 omvang van de ombouw ring 4 ·
 V9 vloeistof ring 5 · V10 Nether-5-indeling · V11 nummering blok G · V12 biome-indeling buitenband.
+
+## 11. Besluiten vragenronde golf 1 (2026-10-21)
+
+Gaan vóór de "voorlopig"-waarden hierboven.
+
+- **Namen:** alle registry-namen uit §3 liggen vast (`corrupted_*`, `glitch_block`, `glitch_shard`, `voidstone`,
+  `nullite_ore`, `voidstone_nullite_ore`, `raw_nullite`, `chalkrack`, `white_stone`-set, `mirror_stone`, `still_light`,
+  `white_core_ore`).
+- **Corrupted blokken (88):** gedrag als de vanilla-tegenhanger (zand valt, leaves vergaan zonder log); gras spreidt
+  zich niet en wordt nooit gewoon gras. Geen eigen verspreiding tot fase 5.
+- **Houtset (88):** volledige vanilla-set erbij: `stripped_corrupted_log`, `stripped_corrupted_wood`,
+  `corrupted_stairs`, `corrupted_slab`, `corrupted_fence`, `corrupted_fence_gate`, `corrupted_door`,
+  `corrupted_trapdoor`, `corrupted_button`, `corrupted_pressure_plate`, `corrupted_sign`/`corrupted_wall_sign`
+  (+ hanging sign). Recipes zoals vanilla (fase 1-uitzondering, zoals de lagoon sandstone-set). Alleen de 9 blokken
+  uit de tabel zitten in `#corruptedadventure:corrupted` met een `healthy_block`-mapping; de houtset volgt vanilla's
+  hout-tags.
+- **Void-meter (91):** sluipend. 0→100 in ~6 min in de binnenband (~0,28/s); ~3 min (~0,55/s) in de buitenband of
+  binnen `void_sources`-bereik; 's nachts en tijdens ringweer ×1,5–2 (factor in `[weather.ring5]`). Drempels
+  30/60/90. Bloklicht ≥ 12 laat hem zakken.
+- **Teleports (91):** 1–5 blokken, elke ~20 s zolang de meter ≥ 60, alleen op vaste grond in de binnenband
+  (`teleportMinBlocks` 1, `teleportMaxBlocks` 5, `teleportIntervalSeconds` 20).
+- **Stilte-meter (97):** 0→100 in ~5 min (~0,33/s); open ruimte en `hollow_cathedral` ×1,5. Bel, goat horn, note
+  block en jukebox binnen ~16 blokken laten hem zakken (`soundRelief`-bereik 16); andere spelers binnen 8 blokken
+  halveren de opbouw (`companionRadius` 8). Drempels 30/60/90.
+- **Weer (92):** één cyclus voor ring 5; het type hangt af van de band van de speler via gewichten per band:
+  binnenband vooral `GLITCH_STORM` en `STANDSTILL`, buitenband vooral `REVERSE_RAIN`. Geen payload-wijziging.
+- **Nulliet (99a):** donkere violet-zwarte kristallen met een violette rand, zwak emissive zodat ze in grotten net
+  opvallen.

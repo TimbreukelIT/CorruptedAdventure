@@ -918,3 +918,11 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-21 | infra | Ring 5 golf 0 start al tijdens golf 3/5c, op een aparte branch `ring5/golf0`; merge pas na 5c-akkoord (ook de herziening zone 4→5) | Gebruiker wil de usage benutten; 5c-wereld blijft ongemoeid |
 | 2026-10-21 | infra | Teststop 5c wordt getest op main `4bd8e444`, dus mét ring 5 golf 0 (skelet en herziene zone 4→5); wijkt af van de merge-na-5c-regel hierboven | Gebruiker liet golf 0 op main mergen (één stroom); zone 4→5 moet toch beoordeeld worden |
 | 2026-10-21 | worldgen | Teststop 5c akkoord: ring 4 en Nether-4 zoals op main `4bd8e444` | Gebruiker heeft lokaal getest; akkoord over ring 4 in het geheel, secties niet afzonderlijk gemeld |
+| 2026-10-21 | blocks | Ring 5: alle voorlopige registry-namen uit contract §3 vastgelegd | Gebruiker (vragenronde golf 1) |
+| 2026-10-21 | blocks | Corrupted blokken gedragen zich als hun vanilla-tegenhanger; gras spreidt zich niet | Gebruiker; verspreiding pas in fase 5 |
+| 2026-10-21 | blocks | Corrupted hout krijgt de volledige vanilla-houtset (stripped, stairs, slab, fence, gate, door, trapdoor, button, plate, signs) met vanilla-recipes | Gebruiker; fase 1-uitzondering zoals lagoon sandstone |
+| 2026-10-21 | conditions | Void-meter: 0→100 in ~6 min binnenband, ~3 min buitenband/bij void_sources, ×1,5–2 's nachts en bij ringweer; drempels 30/60/90; licht ≥ 12 laat zakken | Gebruiker (sluipend) |
+| 2026-10-21 | conditions | Void-teleports: 1–5 blokken, elke ~20 s bij meter ≥ 60, alleen vaste grond in de binnenband | Gebruiker |
+| 2026-10-21 | conditions | Stilte-meter Nether-5: 0→100 in ~5 min, open ruimte ×1,5; geluidsbronnen binnen 16 laten zakken; spelers binnen 8 halveren de opbouw; drempels 30/60/90 | Gebruiker |
+| 2026-10-21 | atmosphere | Ring 5-weer: één cyclus, type gewogen per band (binnen glitchstorm/stilstand, buiten omgekeerde regen) | Gebruiker |
+| 2026-10-21 | textures | Nulliet: violet-zwarte kristallen met violette rand, zwak emissive | Gebruiker |
