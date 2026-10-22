@@ -14,6 +14,7 @@ import nl.timtoys.corruptedadventure.worldgen.surface.SeaFossilCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.RingReachCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.VolcanicThresholdCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.WorldTreeCondition;
+import nl.timtoys.corruptedadventure.worldgen.surface.NetherRing5PillarCondition;
 
 /** Surface rule condition types (the {@code if_true} of a surface rule); the rules themselves are hand-written JSON. */
 public final class ModSurfaceConditions {
@@ -51,6 +52,11 @@ public final class ModSurfaceConditions {
     /** {@code corruptedadventure:world_tree} (74, Q7 = A: the world tree's trunk, wood and leaves) */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<WorldTreeCondition>> WORLD_TREE =
             CONDITIONS.register("world_tree", () -> WorldTreeCondition.MAP_CODEC);
+
+    // ring 5 — W-nether
+    /** {@code corruptedadventure:nether_ring_5_pillar} (87: the columns of Nether ring 5, grid and giant, painted as columns) */
+    public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<NetherRing5PillarCondition>> NETHER_RING_5_PILLAR =
+            CONDITIONS.register("nether_ring_5_pillar", () -> NetherRing5PillarCondition.MAP_CODEC);
 
     private ModSurfaceConditions() {
     }

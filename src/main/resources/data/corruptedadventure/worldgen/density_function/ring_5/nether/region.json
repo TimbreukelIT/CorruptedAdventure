@@ -1,9 +1,44 @@
 {
   "type": "minecraft:flat_cache",
   "argument": {
-    "type": "minecraft:noise",
-    "noise": "corruptedadventure:nether_ring_5_region",
-    "xz_scale": 1.0,
-    "y_scale": 0.0
+    "type": "corruptedadventure:nether_cathedrals",
+    "output": "mask",
+    "cells": "corruptedadventure:nether_ring_5_cathedral_cells",
+    "plains": "corruptedadventure:nether_ring_5_region",
+    "edge": "corruptedadventure:ring_5/nether/edge",
+    "settings": {
+      "cathedrals": {
+        "cell_size": 400,
+        "chance": 0.9,
+        "attempts": 24,
+        "radius": [
+          60,
+          90
+        ],
+        "rim": [
+          8,
+          16
+        ],
+        "pillar_radius": [
+          10,
+          15
+        ],
+        "clearance": 16
+      },
+      "halls": {
+        "floor_top": 31,
+        "ceiling": 104,
+        "roof": 120,
+        "grid": 24,
+        "pillar_size": 4,
+        "cell_margin": 4,
+        "plains_threshold": 0.08,
+        "plains_step": 0.08,
+        "plains_height": [
+          2,
+          6
+        ]
+      }
+    }
   }
 }

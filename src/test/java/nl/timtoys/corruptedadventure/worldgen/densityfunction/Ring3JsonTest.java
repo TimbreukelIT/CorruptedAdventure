@@ -204,10 +204,12 @@ class Ring3JsonTest {
                 case "ring_3" -> assertRing3DamSolidUpTo(top, boundary);
                 // Nether ring 4 (65): the lava sea sunk to Y 10, so it is the low side of 3|4 and 4|5; same dam as ring 3.
                 case "ring_4" -> NetherRing4JsonTest.assertDamSolidUpTo(top, boundary);
+                // Nether ring 5 (87): no lava at all (level −1), solid up to its floor (Y 31) everywhere, so the low side of 4|5.
+                case "ring_5" -> NetherRing5JsonTest.assertSolidUpTo(top, boundary);
                 default -> throw new AssertionError(boundary + ": lava step from Y " + top + " with nothing guarding the " + low + " side");
             }
         }
-        assertEquals(3, steps, "steps 1|2 (32/22), 3|4 (22/10) and 4|5 (10/32)");
+        assertEquals(3, steps, "steps 1|2 (32/22), 3|4 (22/10) and 4|5 (10/−1)");
     }
 
     /**

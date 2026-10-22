@@ -545,8 +545,33 @@
               ]
             },
             "ring_5": {
-              "type": "minecraft:fixed",
-              "biome": "corruptedadventure:placeholder_nether_ring_5"
+              "type": "minecraft:multi_noise",
+              "biomes": [
+                {
+                  "biome": "corruptedadventure:white_halls",
+                  "parameters": {
+                    "temperature": [-2.0, 0.5],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                },
+                {
+                  "biome": "corruptedadventure:hollow_cathedral",
+                  "parameters": {
+                    "temperature": [0.5, 2.0],
+                    "humidity": [-2.0, 2.0],
+                    "continentalness": [-2.0, 2.0],
+                    "erosion": [-2.0, 2.0],
+                    "weirdness": [-2.0, 2.0],
+                    "depth": [-2.0, 2.0],
+                    "offset": 0.0
+                  }
+                }
+              ]
             },
             "void": {
               "type": "minecraft:fixed",
@@ -557,7 +582,8 @@
         "fluid_levels": {
           "ring_2": 22,
           "ring_3": 22,
-          "ring_4": 10
+          "ring_4": 10,
+          "ring_5": -1
         },
         "settings": "corruptedadventure:nether"
       }

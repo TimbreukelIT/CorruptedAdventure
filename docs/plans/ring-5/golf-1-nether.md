@@ -100,9 +100,105 @@ kathedraal (`section`), PNG's in `build/test/maps/golf-1/`; positie van een kath
 De lavawand-scan (`tools/nether-lava-walls.py` r 2.000, `lavascan.py`) doet INT1.
 
 ## Voortgang
+Voortgang: 2026-10-21 20:40 worktree `P:/Projecten/Java/wt/r5-nether-g1` op `ring5/nether-g1` vanaf 757523bf; `run/` klaar (poort 3); eerste build groen (20:49)
+Voortgang: 2026-10-21 21:00 `nether_cathedrals` (Java), terrein-/surfacescript, biomes, tags, lang, preset; gerichte tests
+Voortgang: 2026-10-21 21:15 kalibratie (aantal kathedralen, aandeel vlaktes); gerichte tests groen; volledige build + runData
+Voortgang: 2026-10-21 21:28 B groen (1.167 tests, 0 fouten), D groen; S-smoke `r5-87` (log 0 ERROR), kaarten in `build/test/maps/golf-1/`; zelfreview; commit
+
+Voortgang: 2026-10-21 reviewbevindingen 3dcfb263 verwerkt (validaties, test eigen cellen per bedrading, zone 4→5-raster in de lavatrede-check); B (1.167 tests, 0 fouten) en D groen
+
+## Tests en metingen (87)
+- **B** `./gradlew build` groen: 1.167 tests, 0 fouten (incl. `ClientIsolationTest`). **D** `runData` groen;
+  `src/generated`: 2 biome-JSON's, `is_nether_ring_5`, `silent`, `c:is_nether`, `c:is_dry/nether`, lang en/nl (gecommit).
+- **Kathedralen** (unit, 5 seeds): 31 / 31 / 28 / 27 / 32; op seed 20260930 o.a. (2248, 212) r 90, (2189, −240) r 72,
+  (2197, 588) r 79, (−539, −2149) r 90, (148, 2286) r 62 (Nether-coördinaten; `/ca castles`-achtig commando bestaat niet,
+  `NetherCathedrals.cathedralsWithin`).
+- **Vorm** (unit, seed 20260930): vloer overal top Y 31 en vast tot Y 0; plafond vanaf 104; zuilen 4 × 4 om de 24, geen
+  binnen 16 van een kathedraal of < 56 van een middellijn; dak Y 120 binnen de rand, rand ≤ 3 per blok; reuzenzuil
+  21–31 breed. Vlaktes 31 % van de open halvloer. **Ruimte:** 100 % van de halvloer beloopbaar (2 lucht boven vaste
+  vloer), 99,3 % ook met stap ±1 (de rest = vlakteranden); vrije hoogte ≥ 66 in de hallen, ≥ 88 in een kathedraal.
+- **S-smoke** (verse wereld `r5-87`, seed 20260930, poort 3): log 0 ERROR, geen client-class-fout;
+  `/execute in minecraft:the_nether run ca terrainmap 2200 0 300 1` (1,7 s; hallen, zuilenraster, vlaktes, twee
+  kathedralen, aansluiting op Nether-4 en de void-rand) en twee doorsneden (`section 1900 212 2500 212` door de kathedraal
+  bij (2248, 212) en zone 4→5; `section 2300 -300 2300 300`). Echte chunks rond (2248, 212) (forceload): reuzenzuil
+  `quartz_pillar`, vloer Y 31 `smooth_quartz`, eronder `diorite`, lucht Y 32–119, dak Y 120 `calcite`.
+- Nether-ring 1–4: buiten zone 4→5 ongewijzigd door constructie (alleen de ring 5-invoer van `ring_blend/nether` en
+  `nether_temperature`, een eigen surfacetak per biome en `fluid_levels.ring_5`); niet met kaarten vóór/na gemeten.
+  Zone 4→5 verandert (mengt nu met het nieuwe Nether-5-terrein). Lavawand-scan r 2.000 en `lavascan.py`: INT1.
 
 ## CODEBASE-delta
+- **Klassen:**
+  - `worldgen/densityfunction/NetherCathedrals` ✅ 87: DF-type `corruptedadventure:nether_cathedrals`, het hele
+    Nether-5-veld als pure cellen van 400 (per cel een eigen offset van het zuilraster en hoogstens één kathedraal).
+    Twee uitgangen uit dezelfde settings (`output`): `mask` (2D 0..1, 1 binnen de rand van een kathedraal; de
+    router-temperature van ring 5) en `terrain` (3D dichtheid, exact per blok, niet geïnterpoleerd: vloer top Y 31 en
+    vast tot de bodem, vlaktes 2–6 op de tegels tussen de zuilen uit `nether_ring_5_region`, plafond vanaf Y 104,
+    zuilen 4 × 4 om de 24, kathedraal: dak naar Y 120 over een smoothstep-rand van 8–16, reuzenzuil r 10–15).
+    Codec: `output`, `cells` (hash-noise), `plains` (noise), `edge` (DF), `settings` {`cathedrals`, `halls`}.
+    Accessors: `mask`, `cathedralAt`, `cathedralsWithin`, `cellAt`, `pillarAt`, `floorTop`, `ceiling`, `reader()`
+    (eigen geheugen per gebruiker/thread), `find(root)` (de `terrain`-uitgang). Cellen eenmaal per wereld, gedeeld door
+    de kopieën (`mapAll` bedraadt alleen de noises, zoals `GiantGeodes`); per thread een geheugen van cellen, tegels en
+    kolommen. Een kathedraal ligt met footprint + `clearance` (16) in zijn eigen cel en met `edge` = 0 op de hele omtrek
+    (punten om de 4 blokken).
+  - `worldgen/feature/NetherRing5Terrain` ✅ vindt de `nether_cathedrals`-terrein-DF per random state (zoals
+    `NetherRing4Terrain`); voor de surface en straks 96.
+  - `worldgen/surface/NetherRing5PillarCondition` ✅ surface-conditie `corruptedadventure:nether_ring_5_pillar`: waar
+    een zuil (raster of reuzenzuil) staat, via `NetherCathedrals.Reader`. `registry/ModSurfaceConditions` blok
+    `// ring 5 — W-nether`.
+  - `registry/ModDensityFunctionTypes` ✅ blok `// ring 5 — W-nether`: `nether_cathedrals`.
+  - `worldgen/biome/NetherRing5Biomes` ✅ `white_halls`, `hollow_cathedral` (`ALL`), temperatuur 0,5, geen neerslag,
+    geen spawns/carvers/features, fog `E8E8EC` / `F4F4F6`, lucht zwart, geen muziek/ambient/particles (tijdelijk, tot
+    A in 98); `CATHEDRAL_THRESHOLD` 0,5 (preset).
+  - `datagen/tags/NetherRing5BiomeTags` ✅ `is_nether_ring_5`, `silent`, `c:is_nether`, `c:is_dry/nether`;
+    `datagen/lang/NetherRing5BiomeNames` ✅ White Halls / Witte Hallen, Hollow Cathedral / Holle Kathedraal.
+- **Databestanden:**
+  - `density_function/ring_5/nether/`: `edge` (`ring_edge` ring_5, breedte 56 = halve zone 4→5 + marge 24),
+    `region` (`flat_cache` van `nether_cathedrals` `mask`), `terrain` (`nether_cathedrals` `terrain`); de placeholder
+    `ring_5/nether.json` is weg. Noise `nether_ring_5_cathedral_cells` (−4, [1], alleen hash); `nether_ring_5_region`
+    (82) is nu de vlakte-ruis.
+  - `noise_settings/nether.json`: ring 5-surfacetak direct na Nether-4 (index 6, vóór `hole` → lava).
+  - preset: Nether `rings.ring_5` = `multi_noise` op temperature (≥ 0,5 `hollow_cathedral`, anders `white_halls`),
+    `fluid_levels.ring_5` = **−1** (geen lava).
+  - `tools/worldgen/nether_ring5_terrain.py`, `nether_ring5_surface.py` (W-nether; idempotent).
+- **Tests:** `NetherCathedralsTest`, `NetherRing5JsonTest`, `NetherRing5BiomesTest`; `Ring3JsonTest` (ring 5-tak in de
+  lavatrede-check: ring 5 is nu de lage kant van 4\|5), `Ring5JsonTest` (alleen de Nether-asserts).
+- **Correctie contract (INT1 past `contract.md` §4 toe):** de tabelregel `ring_5/nether/region` ("flat_cache van
+  `nether_ring_5_region` (−9)") klopt sinds 87 niet meer: het is de `flat_cache` van het kathedraalmasker
+  (`nether_cathedrals`, `output` `mask`); `nether_ring_5_region` is nu de ruis van de vlaktes (`plains`).
+- **Valkuilen:** `ThreadOwned` op een gedeelde instantie (climate sampler, `/ca terrainmap`-workers) wisselt per thread
+  en maakt dan steeds een nieuw geheugen: `mask` leest daarom direct de gedeelde map, de surface een eigen `Reader`.
 
 ## Beslissingen
+- (implementatie) Nether-5-terrein als één Java-DF (`nether_cathedrals`, twee uitgangen) in plaats van JSON: het zuilraster
+  met offset per cel, de gekwantiseerde vlaktes en de ronde hallen vragen modulo-/afstandsrekenwerk dat JSON niet heeft;
+  exact per blok (geen interpolatie), dus de vloer ligt overal precies op Y 31 en de zuilen zijn scherpe 4 × 4. De
+  getallen staan in de JSON (script), niet in Java.
+- (implementatie) Vloeistof: `fluid_levels.ring_5` = −1 (geen eigen `RingFluidPicker`-methode): niets in Nether-5 is
+  open onder Y 31, en met −1 kan er ook nergens lava ontstaan. Trede 4\|5 = 10 / −1; de lage kant is nu ring 5, gedekt
+  door de vloer (vast tot Y 31 ≥ 10); Nether-4 houdt daarnaast zijn eigen dam tot Y 33.
+- (implementatie) Kathedralen: cel 400, kans **0,9** (plan ~0,8), 24 pogingen: gemeten 27–32 op 5 seeds (met 0,8/8
+  pogingen 21–26). Footprint Ø 120–180 (r 60–90 = waar het dak van het plafond loskomt), rand 8–16, reuzenzuil r 10–15;
+  footprint + 16 in de eigen cel (geen twee hallen tegen elkaar, geen zuil van de buurcel erin); omtrek ≥ 56 van de
+  middellijnen (zone 4→5 32 + marge 24; aan de voidkant dus ≥ 40 voorbij de zone).
+- (implementatie) Zuilen: raster 24, 4 × 4, offset per cel (0–23), alleen hele zuilen ≥ 4 van de celrand, niet binnen
+  16 van een kathedraal, niet waar `edge` > 0 (dus ≥ 56 van de middellijn). Vlaktes: tegels tussen de zuilmiddens
+  (randen door de zuilen), hoogte uit `nether_ring_5_region` op het tegelmidden: drempel 0,08, +1 per 0,08, 2–6;
+  gemeten 31 % van de open halvloer verhoogd; geen vlakte bij een kathedraal of de zones.
+- (implementatie) Kathedraaldak: laagste vaste blok per kolom = 104 + 16 · smoothstep(rand), afgerond (≤ 3 per blok);
+  binnen de rand Y 120. Masker = (r − d) / rand, biome-drempel 0,5 (midden van de rand).
+- (implementatie) Surface: vloer-topblok (Y 31) `smooth_quartz`, eronder `diorite`, zuilen (conditie
+  `nether_ring_5_pillar`) `quartz_pillar`, al het andere `calcite`. Bovenop een vlakte dus `calcite`, geen spiegelsteen.
+
+- (review 3dcfb263) `Settings` weigert nu ook: een reuzenzuil die in de kleinste hal met de breedste rand niet binnen de
+  rand past (`pillar_radius.max < radius.min − rim.max`), een dak boven Y 121 (vanilla's netherrack-regel `below_top 5`
+  begint op Y 122) en een hoogste vlakte tot aan het plafond (`floor_top + plains_height.max < ceiling`).
 
 ## Backlog
+- `atmosphere` (98, A): zonder eigen muziek speelt de client in een biome zonder `background_music` vanilla's
+  `Musics.GAME`; "geen muziek" in Nether-5 vraagt een stille muziek of de `silent`-haak van A. Effecten tijdelijk in
+  `NetherRing5Biomes.effects` → `BiomeAmbience.netherRing5`.
+- `infra` (INT1): `MapPalette` vaste kleuren voor `white_halls` en `hollow_cathedral`.
+- `worldgen` (golf 3): `placeholder_nether_ring_5` wordt niet meer gebruikt (preset); weghalen met de andere placeholders.
+- `worldgen` (6a, gebruiker): de vlaktes hebben randen van 2–6 hoog; zonder blokken kom je er niet op (stap ±1: 99,3 %
+  van de halvloer). Eventueel een trede of lagere randen.
+- `infra` (INT1): de klasse-doc van `Ring5JsonTest` noemt Nether-5 nog placeholder (W-biomes past dezelfde test aan).

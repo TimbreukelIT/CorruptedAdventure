@@ -192,18 +192,14 @@ class Ring5JsonTest {
     }
 
     @Test
-    void netherRing5KeepsItsPlaceholderTerrainAndGetsItsRegion() {
+    void netherRing5HasItsTerrainAndRegion() {
+        // 87 (W-nether): the terrain and the region are the two outputs of nether_cathedrals (NetherRing5JsonTest).
         assertEquals("corruptedadventure:ring_5/nether/terrain", rings("nether").get("ring_5").getAsString());
-        JsonObject terrain = WorldgenData.read(DF + "ring_5/nether/terrain.json");
-        // A reference to the placeholder: + 0 (a density function file cannot be a bare reference).
-        assertEquals("minecraft:add", terrain.get("type").getAsString());
-        assertEquals(0.0, terrain.get("argument1").getAsDouble());
-        assertEquals("corruptedadventure:ring_5/nether", terrain.get("argument2").getAsString());
-        assertEquals("minecraft:interpolated", WorldgenData.read(DF + "ring_5/nether.json").get("type").getAsString());
+        assertEquals("corruptedadventure:nether_cathedrals", WorldgenData.read(DF + "ring_5/nether/terrain.json").get("type").getAsString());
         assertEquals("corruptedadventure:ring_5/nether/region", rings("nether_temperature").get("ring_5").getAsString());
         JsonObject region = WorldgenData.read(DF + "ring_5/nether/region.json");
         assertEquals("minecraft:flat_cache", region.get("type").getAsString());
-        assertEquals("corruptedadventure:nether_ring_5_region", region.getAsJsonObject("argument").get("noise").getAsString());
+        assertEquals("corruptedadventure:nether_ring_5_region", region.getAsJsonObject("argument").get("plains").getAsString());
         assertEquals(-9, WorldgenData.read("noise/nether_ring_5_region.json").get("firstOctave").getAsInt());
     }
 
@@ -214,7 +210,8 @@ class Ring5JsonTest {
         // 86 (W-biomes): the overworld's ring 5 is its own multi_noise (Ring5RegionSharesTest checks the boxes).
         assertEquals("minecraft:multi_noise", dimensions.getAsJsonObject("minecraft:overworld").getAsJsonObject("generator")
                 .getAsJsonObject("biome_source").getAsJsonObject("rings").getAsJsonObject("ring_5").get("type").getAsString());
-        assertEquals("corruptedadventure:placeholder_nether_ring_5", dimensions.getAsJsonObject("minecraft:the_nether").getAsJsonObject("generator")
-                .getAsJsonObject("biome_source").getAsJsonObject("rings").getAsJsonObject("ring_5").get("biome").getAsString());
+        // Nether ring 5: its own biomes since 87 (NetherRing5BiomesTest).
+        assertEquals("minecraft:multi_noise", dimensions.getAsJsonObject("minecraft:the_nether").getAsJsonObject("generator")
+                .getAsJsonObject("biome_source").getAsJsonObject("rings").getAsJsonObject("ring_5").get("type").getAsString());
     }
 }
