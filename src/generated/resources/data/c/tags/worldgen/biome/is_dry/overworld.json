@@ -13,6 +13,12 @@
     "corruptedadventure:sulfur_fields",
     "corruptedadventure:dried_seabed",
     "corruptedadventure:titan_fields",
-    "corruptedadventure:dormant_caldera"
+    "corruptedadventure:dormant_caldera",
+    "corruptedadventure:corrupted_wastes",
+    "corruptedadventure:glitch_fields",
+    "corruptedadventure:false_meadow",
+    "corruptedadventure:void_scars",
+    "corruptedadventure:inverted_hills",
+    "corruptedadventure:shattered_expanse"
   ]
 }

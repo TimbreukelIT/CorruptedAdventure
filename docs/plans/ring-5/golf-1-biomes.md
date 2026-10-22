@@ -130,9 +130,97 @@ registry-sync en rendert kleuren. Geen client-class, geen payload, geen `PROTOCO
 de binnenband toont drie biomes, de buitenband de drie andere); PNG's in `build/test/maps/golf-1/`.
 
 ## Voortgang
+- 2026-10-21 20:44: worktree `P:/Projecten/Java/wt/r5-biomes-g1` op `ring5/biomes-g1` vanaf `757523bf`; `setup.sh W-biomes 2`.
+- 2026-10-21 20:55: 86 geschreven (biomes, tags, lang, preset, surface-script, tests); runData groen.
+- 2026-10-21 21:05: gerichte tests groen (gemeten drempels, aandelen); volledige build loopt.
+- 2026-10-21 21:15: B groen (1.160 tests, 0 fouten); D: runData na de laatste datagen-wijziging, output gecommit;
+  S-smoke verse wereld `r5-86` (poort 25572): log 0 ERROR, geen client-class; `/ca ring` en `/locate biome` vinden alle 6
+  biomes; `/ca terrainmap 8900 0 1400 4` → `build/test/maps/golf-1/top_overworld_8900_0_r1400_s4_{biome,height}.png`:
+  binnenband `corrupted_wastes`/`glitch_fields`/`false_meadow`, buitenband `void_scars`/`inverted_hills`;
+  `shattered_expanse` alleen in de kasteelgordels (`breakup` is buiten de gordels een stub tot 84; `/locate` vindt hem daar).
+- Review: de geforkte `/code-review medium` keek in de hoofdmap (main's `CODEBASE.md`, 476199f7) in plaats van deze
+  worktree en zag de diff van 86 niet; daarom een eigen review van de diff (correctheid: gekwantiseerde vakgrenzen,
+  surface-volgorde ring 4 → ring 5, idempotentie van beide scripts, spawns/tags tegen het contract): geen bevindingen open.
+- 2026-10-21 21:20: 86 gecommit op `ring5/biomes-g1`. 86b/86c pas na INT1.
+- Review 86 (main): volgorde `inverted_hills` (boven → onderkant → diepte), `Ring5JsonTest.presetRing5Sources`,
+  expliciete check in `Ring5Biomes.spawns`, en een router-invariant in `Ring5RegionSharesTest`: elke as waarop een
+  `multi_noise` splitst, schakelt hard (`switch_at`) op een grens zonder overgangsbiome. Erosie (ring 5 = `breakup`)
+  heeft dat nog niet: die ene test staat `@Disabled` tot INT1.
 
 ## CODEBASE-delta
+- `worldgen/biome/Ring5Biomes` (86): lijsten `INNER` (`corrupted_wastes`, `glitch_fields`, `false_meadow`), `OUTER`
+  (`void_scars`, `inverted_hills`, `shattered_expanse`), `ALL`, `SILENT` (`false_meadow`); record `Look` (palet,
+  gras, blad) per biome; temperatuur 0,5, geen neerslag, downfall 0; spawns: vanilla-monsters zonder grotspawns
+  (`BiomeDefaultFeatures.monsters(95, 5, 100)`, geen vleermuizen/glow squids), geen dieren, `false_meadow` niets; geen
+  carvers, geen features. Kleuren nog in `Ring5Biomes` (er is geen `BiomeAmbience.ring5`; A verhuist ze in 98).
+- `datagen/tags/Ring5BiomeTags`: `is_ring_5` = `ALL`, `ring_5_inner`/`_outer`, `silent` += `false_meadow`; `CONVENTION`:
+  `c:is_dry/overworld` en `c:is_spooky` alle 6, `c:is_wasteland` (`corrupted_wastes`, `void_scars`, `shattered_expanse`),
+  `c:is_dead` (`corrupted_wastes`), `c:is_plains` en `c:no_default_monsters` (`false_meadow`), `c:is_void`
+  (`shattered_expanse`).
+- `datagen/lang/Ring5BiomeNames`: en + nl.
+- Preset `corrupted_world.json`: `rings.ring_5` = `multi_noise` (6 vakken, §2; `placeholder_ring_5` niet meer in de
+  preset, de key/biome blijft geregistreerd tot de opruiming in golf 3). `transitions.ring_4` = `sundered_reach`
+  ongewijzigd.
+- `tools/worldgen/ring5_surface.py` (nieuw, idempotent): de ring 5-tak van `noise_settings/overworld.json` direct ná de
+  ring 4-tak (vóór vanilla), de rest byte-gelijk.
+- Tests: `Ring5BiomesTest` (bootstrap, klimaat, kleuren, spawns, generatie, preset, tags, lang, surface-tak),
+  `Ring5RegionSharesTest` (vakken in vanilla's gekwantiseerde ruimte precies één keer, vanilla's lookup = de regel van §2,
+  pinakelplateau, gemeten kwantielen, aandelen P1, echte ring met lokale `breakup`); `Ring5JsonTest`: de
+  overworld-assert van de preset is nu `multi_noise` (Nether-assert ongewijzigd, van W-nether).
+- **Valkuil (nieuw, voor CODEBASE):** `multi_noise`-vakken mogen geen gekwantiseerde waarde delen. De codec kwantiseert
+  `(long) (float · 10000)` (afkappen naar nul); een gedeelde grens is een gelijke stand, en vanilla's lookup kiest dan
+  op basis van het vorige resultaat van de thread (niet deterministisch). Daarom liggen de bovengrenzen op
+  `drempel − 0,00005` (positief) of `−0,0001` (negatief), zodat buren aangrenzende gehele getallen zijn
+  (`Ring5RegionSharesTest.theBoxesTileThePlaneExactlyOnce`). Ring 4 doet het op de bandgrens al zo (`−0,0001`).
+
+### Plekken die ring 5-biomes opsommen (controlelijst, 86)
+Java leest `Ring5Biomes.ALL`/`INNER`/`OUTER`/`SILENT` (bootstrap, tags, `Ring5BiomesTest`, `Ring5RegionSharesTest`).
+Handgeschreven JSON en scripts kunnen dat niet; een nieuwe ring 5-biome moet ook in:
+- preset `corrupted_world.json`: een vak in `rings.ring_5` (de vakken dekken per band het vlak precies één keer, in
+  gekwantiseerde waarden; `Ring5RegionSharesTest`);
+- `tools/worldgen/ring5_surface.py` (`RING_5`, `SURFACES`), dan het script draaien;
+- `Ring5BiomeNames` (en + nl), `Ring5BiomeTags.CONVENTION`;
+- `MapPalette` (kaartkleur; INT);
+- de vormdrempels van W-terrein (`golf-1-terrain.md` §1.3) als de indeling verandert.
 
 ## Beslissingen
+- **Drempels gemeten** (5 seeds, raster 401 over 128.000², `Ring5RegionSharesTest`): `region_glitch` q67 = 0,1251,
+  `region_rot` q80 = 0,2480, q50 = −0,0000. Alles binnen 0,02 van het plan, dus de planwaarden blijven: 0,125 / 0,244 / 0
+  (geen melding aan W-terrein nodig). Aandelen op de echte ruis (3 seeds): `glitch_fields` 33,6 %, `false_meadow` 13,8 %,
+  `corrupted_wastes` 52,6 %; buiten (breakup 0) `void_scars` 50,0 %, `inverted_hills` 50,0 %.
+- **Gekwantiseerde grenzen:** bovengrens van het lagere vak = drempel − 0,00005 (0,12495, 0,24395, 0,59995), resp.
+  −0,0001 bij 0 (weirdness binnen, temperature `void_scars`); zie de valkuil hierboven. Gevolg: een bandwaarde in
+  (−0,0001, 0) telt als buitenband (`Ring5Band.outer` zegt binnen); dat is < 0,02 blok.
+- **Klimaat** als constanten in plaats van per `Look` (alle 6 gelijk: geen neerslag, downfall 0).
+- **Spawns:** `BiomeDefaultFeatures.monsters(95, 5, 100, false)` (de monstergewichten van `commonSpawns`), zonder
+  `caveSpawns` (vleermuizen en glow squids: niets leeft hier, en ring 5 is droog).
+- **Kleuren in `Ring5Biomes`** (`BiomeAmbience.colours`): er is nog geen sfeerhaak `BiomeAmbience.ring5`; geen mood,
+  loop, particles of muziek tot A (98).
+- **`c:`-tags:** het voorstel van §1.7, plus `c:no_default_monsters` voor `false_meadow` (klopt: geen monsters).
+  `c:is_void` mag: NeoForge zelf hangt er geen gedrag aan (bron 21.1.252 nagelopen; alleen andere mods zouden het
+  kunnen lezen).
+- **Nederlandse namen in zinshoofdletters** zoals ring 4 ("Gecorrumpeerde woestenij", "Valse weide", "Omgekeerde
+  heuvels", "Verbrijzelde vlakte").
+- **Surface 86 (voorlopig):**
+  - `corrupted_wastes`: kuilbodems en lage plekken = bovenblok onder Y 76 (dode grond rond Y 78, kuilen 2–4 diep, V4-A/83)
+    → `tuff`; geen eigen DF nodig. 86b leest dezelfde regel voor `corrupted_sand`.
+  - `void_scars`: scheur- en kraterwanden = vanilla `minecraft:steep` → de hele steile kolom boven het voorlopige
+    oppervlak `deepslate` (het bovenste deel van een wand tot in de void).
+  - `inverted_hills`: onderkant = de 3 blokken boven lucht (`stone_depth` ceiling, offset 2) `stone`, ná het bovenblok
+    en vóór de surface-diepte (review 86: een dunne rand houdt `coarse_dirt` bovenop).
+  - Geen vallend blok in 86, dus geen plafondwacht; de test verbiedt zand/grind in de tak tot 86b er een wacht bij zet.
+- **Plaats van de tak:** direct na de ring 4-tak (`ring4_surface.py` voegt in na ring 3, dus de volgorde blijft bij
+  het opnieuw draaien van beide scripts; nagelopen, byte-gelijk).
 
 ## Backlog
+- [worldgen] W-terrein (eigenaar router), INT1: `switch_at ["ring_5"]` in `ring_blend/overworld_erosion` (anders mengt
+  `breakup` in zone 5→void met de void en schuiven de biomegrenzen), dan `Ring3JsonTest` (zegt nu "erosion mengt")
+  aanpassen en `Ring5RegionSharesTest.erosionSwitchesHardAtABoundaryWithoutATransitionBiome` aanzetten.
+- [worldgen] 86b/83: als 83 een eigen kuilen-DF levert, de "lage plekken"-regel van `corrupted_wastes` (onder Y 76) daarop
+  laten lezen.
+- [worldgen] 95: `void_scars`-wanden via `scars` (W-terrein) in plaats van vanilla's `steep` (die kijkt alleen binnen de
+  chunk, zie `ring4_surface.py`), samen met de voidsteen-randen.
+- [infra] golf 3: `placeholder_ring_5` (biome, lang, `MapPalette`, `PlaceholderBiomes`) opruimen; hij staat niet meer in
+  de preset.
+- [atmosphere] 98: de kleuren van `Ring5Biomes.LOOKS` naar de sfeerhaak `BiomeAmbience.ring5` (zoals ring 4,
+  `Ring4Atmosphere`).
