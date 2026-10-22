@@ -201,9 +201,9 @@ class Ring5InnerTest {
                         int x = cube[0] + dx;
                         int z = cube[1] + dz;
                         Ring5Field.Column column = FIELD.column(x, z);
-                        if (!column.inner || column.isVoid() || column.castle() > 0.0) {
-                            continue;
-                        }
+                        // Whole in the glitch fields: no column under the cube is outer band, castle, crack or plain ground.
+                        assertTrue(column.inner && !column.isVoid() && column.castle() == 0.0 && column.glitch() > 0.0,
+                                "cube cut at " + x + ", " + z);
                         assertTrue(FIELD.terrain(x, cube[3], z) > 0.0 && FIELD.terrain(x, cube[3] + cube[2] - 1, z) > 0.0);
                         assertTrue(FIELD.terrain(x, cube[3] - 1, z) < 0.0, "air under the cube at " + x + ", " + z);
                         assertTrue(cube[3] - column.top() >= Ring5Inner.MIN_CUBE_LIFT - 4, "lift");
@@ -239,5 +239,58 @@ class Ring5InnerTest {
             }
         }
         assertTrue(cracks > 100, "cracks " + cracks);
+    }
+
+    /**
+     * A staircase lies whole inside its own cell: a column next to the cell's edge never needs a staircase of the
+     * neighbour, so none is cut off. Its columns make one full rectangle that touches neither edge of the cell.
+     */
+    @Test
+    void stairsLieWhollyInTheirCell() {
+        int stairs = 0;
+        for (int i = 50; i < 70; i++) {
+            for (int j = -10; j < 10; j++) {
+                int minX = Integer.MAX_VALUE;
+                int maxX = Integer.MIN_VALUE;
+                int minZ = Integer.MAX_VALUE;
+                int maxZ = Integer.MIN_VALUE;
+                int count = 0;
+                for (int x = i * Ring5Inner.STAIR_CELL; x < (i + 1) * Ring5Inner.STAIR_CELL; x++) {
+                    for (int z = j * Ring5Inner.STAIR_CELL; z < (j + 1) * Ring5Inner.STAIR_CELL; z++) {
+                        if (!Double.isNaN(INNER.stairAt(x, z))) {
+                            count++;
+                            minX = Math.min(minX, x);
+                            maxX = Math.max(maxX, x);
+                            minZ = Math.min(minZ, z);
+                            maxZ = Math.max(maxZ, z);
+                        }
+                    }
+                }
+                if (count == 0) {
+                    continue;
+                }
+                stairs++;
+                assertTrue(minX > i * Ring5Inner.STAIR_CELL && maxX < (i + 1) * Ring5Inner.STAIR_CELL - 1
+                        && minZ > j * Ring5Inner.STAIR_CELL && maxZ < (j + 1) * Ring5Inner.STAIR_CELL - 1,
+                        "stair touches the edge of its cell " + i + ", " + j);
+                assertEquals((long) (maxX - minX + 1) * (maxZ - minZ + 1), count, "stair cut in cell " + i + ", " + j);
+            }
+        }
+        assertTrue(stairs > 20, "stairs " + stairs);
+    }
+
+    /** {@code glitch_fields}: every block's top lies in whole blocks of {@link Ring5Inner#QUANTUM}, from 72 up to 92. */
+    @Test
+    void glitchBlocksStayInTheBand() {
+        int blocks = 0;
+        for (int[] c : raster(13)) {
+            if (INNER.glitchWeight(c[0], c[1]) < 1.0) {
+                continue;
+            }
+            double top = INNER.glitchTop(c[0], c[1]);
+            blocks++;
+            assertTrue(top >= 72.0 && top <= 92.0 && top % Ring5Inner.QUANTUM == 0.0, "glitch top " + top + " at " + c[0] + ", " + c[1]);
+        }
+        assertTrue(blocks > 50, "blocks " + blocks);
     }
 }

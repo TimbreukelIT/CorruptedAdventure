@@ -316,6 +316,14 @@ van het huidige veld. `RingAquifer`: de scheurafstand alleen in de binnenband ge
 - Zwevende kubussen: kans 0,25 per cel van 32, vermenigvuldigd met het glitch-gewicht; onderkant = hoogste grond onder de
   kubus + 6–30.
 - Placeholder-ruis en band-trede weg. `innerTop` blijft alleen als invoer voor de blend van de buitenband.
+- Review 83 (c3c3b1f7): trappen blijven in hun eigen cel (oorsprong 48 van de celgrens; geen afgesneden randen meer), de
+  zwevende kubus alleen waar de hele voetafdruk glitch-binnenband is (geen buitenband, kasteel of scheur eronder), de
+  glitchblokken nooit onder 72, en `CURRENT_BANDS.crackDistance` faalt hard als het veld van de overworld ontbreekt (geen
+  stille dam-loze lava meer).
+- **Open vraag aan de ontwerper (trappen boven 95):** de trappen en de kuilen liggen op de basis en gaan tot +24 erboven
+  (tot ~119), terwijl de dode grond 70–95 blijft. Opties: (a) zo laten en de klassedoc die uitzondering laten noemen;
+  (b) de trappen naar beneden aftrekken van de basis, dan blijft alles ≤ 95; (c) de basis per trede meeklemmen, dat breekt
+  "exact 4 hoog". Aanbevolen: (a), want het is de 'net-fout'-vorm van de woestenij en de oppervlaktetest blijft ≥ 95 %.
 - **Open vraag aan de ontwerper:** schijfhoogte per laagcel (nu) of per schijf (variatie binnen een kolom). Aanbevolen:
   per cel houden; per schijf vraagt een cumulatieve grens per kolom en is duurder in de kolomberekening.
 

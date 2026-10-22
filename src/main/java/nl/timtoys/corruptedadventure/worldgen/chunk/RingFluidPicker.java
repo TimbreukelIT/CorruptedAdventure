@@ -66,8 +66,12 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
 
         @Override
         public double crackDistance(int x, int z) {
+            // Without the field the dam round the cracks cannot be decided: fail loud rather than let the lava through.
             Ring5Field field = Ring5Fields.current(Level.OVERWORLD);
-            return field == null ? Double.POSITIVE_INFINITY : field.innerCrackDistance(x, z);
+            if (field == null) {
+                throw new IllegalStateException("ring 5 terrain of the overworld is not registered: no crack dam for the lava layer");
+            }
+            return field.innerCrackDistance(x, z);
         }
     };
 

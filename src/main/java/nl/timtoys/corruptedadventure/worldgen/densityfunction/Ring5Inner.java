@@ -4,7 +4,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
 
 /**
- * The inner band of ring 5 (package 83, V4-A): dead ground around Y 78 with low hills (Y 70–95), and per region the shapes
+ * The inner band of ring 5 (package 83, V4-A): dead ground around Y 78 with low hills (Y 70–95; the stairs and pits of
+ * {@code corrupted_wastes} are the exception: their treads go up to {@link #STEP} × {@link #MAX_STEPS} above the ground,
+ * see the open question in the plan), and per region the shapes
  * that are "just wrong" (the region axes and thresholds of W-biomes, {@code golf-1-biomes.md} §2):
  * <ul>
  *     <li>{@code corrupted_wastes}: a plain with too regular stairs (treads exactly {@link #STEP} high, straight edges on
@@ -152,7 +154,9 @@ final class Ring5Inner {
     double glitchTop(int x, int z) {
         int qx = Math.floorDiv(x, QUANTUM) * QUANTUM;
         int qz = Math.floorDiv(z, QUANTUM) * QUANTUM;
-        return Math.floor(base(qx + QUANTUM / 2.0, qz + QUANTUM / 2.0) / QUANTUM) * QUANTUM;
+        double rounded = Math.floor(base(qx + QUANTUM / 2.0, qz + QUANTUM / 2.0) / QUANTUM) * QUANTUM;
+        // Rounding down can land below MIN_TOP (base 70–71 gives 68): the lowest block multiple at or above it is 72.
+        return Math.max(Math.ceil(MIN_TOP / QUANTUM) * QUANTUM, rounded);
     }
 
     /** A stair's tread top at the column (exactly {@link #STEP} apart), or NaN. */
@@ -167,9 +171,11 @@ final class Ring5Inner {
         int run = MIN_RUN + (int) Math.floor((MAX_RUN - MIN_RUN + 1) * CellShapes.unit(h, 2));
         int width = MIN_WIDTH + (int) Math.floor((MAX_WIDTH - MIN_WIDTH + 1) * CellShapes.unit(h, 3));
         int direction = (int) Math.floor(4 * CellShapes.unit(h, 4));
-        int margin = MAX_STEPS * MAX_RUN + MAX_WIDTH;
-        int ox = ci * STAIR_CELL + margin / 2 + (int) Math.floor((STAIR_CELL - margin) * CellShapes.unit(h, 5));
-        int oz = cj * STAIR_CELL + margin / 2 + (int) Math.floor((STAIR_CELL - margin) * CellShapes.unit(h, 6));
+        // The origin keeps the whole staircase inside its cell (MAX_STEPS × MAX_RUN along, half of it either side): the
+        // column of a neighbouring cell then never needs this staircase, so no edge is cut.
+        int reach = MAX_STEPS * MAX_RUN;
+        int ox = ci * STAIR_CELL + reach + (int) Math.floor((STAIR_CELL - 2 * reach) * CellShapes.unit(h, 5));
+        int oz = cj * STAIR_CELL + reach + (int) Math.floor((STAIR_CELL - 2 * reach) * CellShapes.unit(h, 6));
         int dx = x - ox;
         int dz = z - oz;
         // Along (u ≥ 0 up the stairs) and across (v) in one of the four directions: straight edges on the grid.

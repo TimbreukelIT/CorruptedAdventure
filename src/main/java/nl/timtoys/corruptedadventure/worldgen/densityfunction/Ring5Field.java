@@ -596,15 +596,10 @@ public final class Ring5Field implements DensityFunction {
         if (c.glitch <= 0.0) {
             return;
         }
-        int ci = Math.floorDiv(x, Ring5Inner.CUBE_CELL);
-        int cj = Math.floorDiv(z, Ring5Inner.CUBE_CELL);
-        for (int di = -1; di <= 0; di++) {
-            for (int dj = -1; dj <= 0; dj++) {
-                int[] cube = cube(ci + di, cj + dj);
-                if (cube != null && x >= cube[0] && x < cube[0] + cube[2] && z >= cube[1] && z < cube[1] + cube[2]) {
-                    c.addSpan(cube[3], cube[3] + cube[2]);
-                }
-            }
+        // A cube lies inside its own cell, so only that cell's cube can cover the column.
+        int[] cube = cube(Math.floorDiv(x, Ring5Inner.CUBE_CELL), Math.floorDiv(z, Ring5Inner.CUBE_CELL));
+        if (cube != null && x >= cube[0] && x < cube[0] + cube[2] && z >= cube[1] && z < cube[1] + cube[2]) {
+            c.addSpan(cube[3], cube[3] + cube[2]);
         }
     }
 
@@ -614,10 +609,34 @@ public final class Ring5Field implements DensityFunction {
         long key = (((long) i) << 32) ^ (j & 0xFFFFFFFFL);
         Optional<int[]> known = decisions.cubes.peek(key);
         if (known == null) {
-            known = Optional.ofNullable(inner().cube(i, j));
+            known = Optional.ofNullable(wholeInGlitch(inner().cube(i, j)));
             decisions.cubes.put(key, known);
         }
         return known.orElse(null);
+    }
+
+    /**
+     * A cube is kept only where every column under it is glitch ground of the inner band (no outer band, castle reach or
+     * crack under it): a cube cut by one of those edges would hang in lines. Pure: it asks the band, the castles and the
+     * cracks directly, not the column table (a cube is computed inside a column).
+     */
+    @Nullable
+    private int[] wholeInGlitch(@Nullable int[] cube) {
+        if (cube == null) {
+            return null;
+        }
+        Ring5Band band = Ring5Band.of(layout.get());
+        for (int x = cube[0]; x < cube[0] + cube[2]; x++) {
+            for (int z = cube[1]; z < cube[1] + cube[2]; z++) {
+                CastleSite castle = nearestCastle(x, z);
+                boolean glitch = band.inner(x, z) && inner().glitchWeight(x, z) > 0.0 && innerCrackDistance(x, z) > 0.0
+                        && castle.distance(x, z) > castle.radius() + castle.belt();
+                if (!glitch) {
+                    return null;
+                }
+            }
+        }
+        return cube;
     }
 
     /**

@@ -16,6 +16,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RingFluidPickerTest {
@@ -116,6 +117,16 @@ class RingFluidPickerTest {
         assertTrue(RingFluidPicker.ring5Dam(-1.0, Double.POSITIVE_INFINITY));
         assertFalse(RingFluidPicker.ring5Dam(1.0, 2.0));
         assertFalse(RingFluidPicker.ring5LavaColumn(1.0, 50.0));
+    }
+
+    /**
+     * The running server's bands ({@link RingFluidPicker#CURRENT_BANDS}) without its overworld ring 5 terrain (no server
+     * here, so none is registered): the crack dam cannot be decided, and the picker must fail loud rather than let the
+     * lava layer through.
+     */
+    @Test
+    void ring5CrackDamFailsLoudWithoutTheField() {
+        assertThrows(IllegalStateException.class, () -> RingFluidPicker.CURRENT_BANDS.crackDistance(0, 0));
     }
 
     @Test
