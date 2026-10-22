@@ -3,10 +3,12 @@ package nl.timtoys.corruptedadventure.condition;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.weather.RingWeatherState;
 import nl.timtoys.corruptedadventure.weather.RingWeatherType;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -20,6 +22,9 @@ class VoidAmplifierModifierTest {
     private static final BooleanSupplier NEVER_NIGHT = () -> {
         throw new AssertionError("night asked for a falling rate");
     };
+    /** The defaults of {@code [weather.ring5]}: the factors are read from the config, not hardcoded here. */
+    private static final ToDoubleFunction<RingWeatherType> DEFAULT_VOID = type ->
+            ServerConfig.RING_5_WEATHER.voidMultiplier(type, ModConfigSpec.DoubleValue::getDefault);
     private static final Supplier<RingWeatherState> NEVER_WEATHER = () -> {
         throw new AssertionError("weather asked for a falling rate");
     };
@@ -32,17 +37,17 @@ class VoidAmplifierModifierTest {
     }
 
     private static float amplified(float rate, BooleanSupplier night, Supplier<RingWeatherState> weather) {
-        return VoidAmplifierModifier.amplified(rate, night, weather, NIGHT);
+        return VoidAmplifierModifier.amplified(rate, night, weather, NIGHT, DEFAULT_VOID);
     }
 
     @Test
     void theFactorsAreTheConfirmedOnes() {
         assertEquals(1.5, ServerConfig.VOID.nightMultiplier.getDefault());
-        assertEquals(2.0F, VoidAmplifierModifier.weatherFactor(RingWeatherType.GLITCH_STORM));
-        assertEquals(1.5F, VoidAmplifierModifier.weatherFactor(RingWeatherType.REVERSE_RAIN));
-        assertEquals(1.5F, VoidAmplifierModifier.DEFAULT_STANDSTILL_VOID_FACTOR);
-        assertEquals(1.0F, VoidAmplifierModifier.weatherFactor(RingWeatherType.CLEAR));
-        assertEquals(1.0F, VoidAmplifierModifier.weatherFactor(RingWeatherType.TOXIC_RAIN));
+        assertEquals(2.0, DEFAULT_VOID.applyAsDouble(RingWeatherType.GLITCH_STORM));
+        assertEquals(1.5, DEFAULT_VOID.applyAsDouble(RingWeatherType.REVERSE_RAIN));
+        assertEquals(1.5, DEFAULT_VOID.applyAsDouble(RingWeatherType.STANDSTILL));
+        assertEquals(1.0, DEFAULT_VOID.applyAsDouble(RingWeatherType.CLEAR));
+        assertEquals(1.0, DEFAULT_VOID.applyAsDouble(RingWeatherType.TOXIC_RAIN));
     }
 
     @Test
