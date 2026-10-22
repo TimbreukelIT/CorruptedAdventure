@@ -35,8 +35,12 @@ public class Ring5FieldTest {
         RingLayout layout = seed == SEED ? LAYOUT : new RingLayout(LAYOUT.settings(), RingLayout.noiseSeed(seed));
         JsonObject json = WorldgenData.read("density_function/ring_5/overworld/field.json");
         Ring5Field.Settings settings = Ring5Field.Settings.CODEC.parse(JsonOps.INSTANCE, json.get("settings")).getOrThrow();
-        return new Ring5Field(IslandFieldTest.noise(key(json, "hash"), seed), IslandFieldTest.noise(key(json, "placeholder"), seed),
-                settings, () -> layout);
+        JsonObject noises = json.getAsJsonObject("noises");
+        Ring5Field.Noises holders = new Ring5Field.Noises(IslandFieldTest.noise(key(noises, "rot"), seed),
+                IslandFieldTest.noise(key(noises, "glitch"), seed), IslandFieldTest.noise(key(noises, "hills"), seed),
+                IslandFieldTest.noise(key(noises, "relief"), seed), IslandFieldTest.noise(key(noises, "detail"), seed),
+                IslandFieldTest.noise(key(noises, "scars"), seed));
+        return new Ring5Field(IslandFieldTest.noise(key(json, "hash"), seed), holders, settings, () -> layout);
     }
 
     private static String key(JsonObject json, String field) {
@@ -108,40 +112,71 @@ public class Ring5FieldTest {
     }
 
     /**
-     * The skeleton terrain: a pinnacle from its top down to Y −40 with void below, a belt of void down past the bottom
-     * (breakup 1, no preliminary surface), elsewhere the placeholder surface with the band step.
+     * The pinnacles (84): the plateau from its top down to about Y −40 with void below, its wall exact (the plateau's
+     * edge solid, the open belt beyond the rim air from top to bottom except on the bridges), {@code castles} 1 exactly on
+     * the plateau, the belt without a preliminary surface.
      */
     @Test
-    void skeletonTerrainHasPinnaclesInVoidBelts() {
+    void pinnaclesStandInOpenBeltsWithExactWalls() {
         Ring5Field field = field();
         for (Ring5Field.CastleSite site : field.castleSites()) {
             int x = site.x();
             int z = site.z();
             assertTrue(field.terrain(x, site.top() - 1, z) > 0.0);
             assertTrue(field.terrain(x, site.top(), z) <= 0.0);
-            assertTrue(field.terrain(x, Ring5Field.PINNACLE_BOTTOM + 1, z) > 0.0);
-            assertTrue(field.terrain(x, Ring5Field.PINNACLE_BOTTOM - 1, z) < 0.0);
+            assertTrue(field.terrain(x, Ring5Castles.PINNACLE_BOTTOM + (int) Ring5Castles.WALL_RAG + 1, z) > 0.0);
+            assertTrue(field.terrain(x, Ring5Castles.PINNACLE_BOTTOM - 1, z) < 0.0);
             assertTrue(field.terrain(x, -64, z) < 0.0);
             assertEquals(site.top(), field.initialHeight(x, z));
             assertEquals(0.0, field.breakupAt(x, z));
-            assertEquals(1.0, field.column(x, z).castle());
-            int beltX = (int) Math.round(x + (site.radius() + site.belt() / 2.0) * Math.cos(Math.toRadians(site.angle())));
-            int beltZ = (int) Math.round(z + (site.radius() + site.belt() / 2.0) * Math.sin(Math.toRadians(site.angle())));
-            for (int y = -64; y < 320; y += 7) {
-                assertEquals(-1.0, field.terrain(beltX, y, beltZ), "belt at y " + y);
+            int rim = field.rimWidth(site);
+            assertTrue(rim >= 8 && rim <= 16);
+            int open = 0;
+            for (int k = 0; k < 360; k++) {
+                double a = Math.toRadians(k);
+                // The plateau's edge: solid just inside the radius, castles exactly 1 there and 0.9 or less beyond it.
+                int ex = (int) Math.floor(x + (site.radius() - 1.0) * Math.cos(a));
+                int ez = (int) Math.floor(z + (site.radius() - 1.0) * Math.sin(a));
+                if (site.distance(ex, ez) <= site.radius() - 0.5) {
+                    assertTrue(field.terrain(ex, site.top() - 1, ez) > 0.0 && field.terrain(ex, 0, ez) > 0.0, "wall at " + ex + ", " + ez);
+                    assertEquals(1.0, field.column(ex, ez).castle());
+                }
+                int ox = (int) Math.floor(x + (site.radius() + 1.5) * Math.cos(a));
+                int oz = (int) Math.floor(z + (site.radius() + 1.5) * Math.sin(a));
+                assertTrue(field.column(ox, oz).castle() < 0.99);
+                // The open belt, away from the bridges.
+                double out = site.radius() + rim + 2.0 + (site.belt() - rim - 4.0) * (k % 7) / 6.0;
+                int bx = (int) Math.floor(x + out * Math.cos(a));
+                int bz = (int) Math.floor(z + out * Math.sin(a));
+                if (nearBridge(field, bx, bz)) {
+                    continue;
+                }
+                open++;
+                for (int y = -64; y < 320; y += 5) {
+                    assertEquals(-1.0, field.terrain(bx, y, bz), "belt at " + bx + ", " + y + ", " + bz);
+                }
+                assertTrue(field.breakupAt(bx, bz) >= 0.9);
+                assertTrue(!field.solidGround(bx, bz));
+                double height = field.initialHeight(bx, bz);
+                assertEquals(Ring5Field.VOID_HEIGHT, height);
+                for (int y = -64; y < 320; y += 9) {
+                    assertTrue(0.390625 + 0.125 * (height - y) < 0.0, "initial density over the void at y " + y);
+                }
             }
-            assertEquals(1.0, field.breakupAt(beltX, beltZ));
-            assertTrue(!field.solidGround(beltX, beltZ));
-            // No preliminary surface over the void: the router's initial density (0.390625 + 0.125 × (height − y), see
-            // ring_blend/overworld_initial and initial_terrain) stays negative down to the world's bottom.
-            double height = field.initialHeight(beltX, beltZ);
-            assertEquals(Ring5Field.VOID_HEIGHT, height);
-            for (int y = -64; y < 320; y++) {
-                assertTrue(0.390625 + 0.125 * (height - y) < 0.0, "initial density over the void at y " + y);
-            }
-            double castle = field.column(beltX, beltZ).castle();
-            assertTrue(castle > 0.0 && castle < 1.0, "castle surroundings " + castle);
+            assertTrue(open > 300, "open belt samples " + open);
         }
+    }
+
+    private static boolean nearBridge(Ring5Field field, int x, int z) {
+        for (Ring5Field.Bridge bridge : field.castleBridges()) {
+            double dx = bridge.toX() - bridge.fromX();
+            double dz = bridge.toZ() - bridge.fromZ();
+            double t = Math.max(0.0, Math.min(1.0, ((x + 0.5 - bridge.fromX()) * dx + (z + 0.5 - bridge.fromZ()) * dz) / (dx * dx + dz * dz)));
+            if (Math.hypot(x + 0.5 - bridge.fromX() - t * dx, z + 0.5 - bridge.fromZ() - t * dz) <= bridge.halfWidth() + 1.0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** A noise chunk's copy keeps the decisions of the random state's instance; the field is found through a router. */
@@ -151,7 +186,7 @@ public class Ring5FieldTest {
         DensityFunction router = DensityFunctions.add(DensityFunctions.interpolated(new Ring5Output(field, Ring5Output.Output.TERRAIN)),
                 DensityFunctions.zero());
         // find maps the router: it gives the mapped copy, equal and with the same decisions.
-        Ring5Field found = Ring5Field.find(new ZoneFracture(router));
+        Ring5Field found = Ring5Field.find(new ZoneFracture(router, IslandFieldTest.noise("zone_4_5_cells", SEED), () -> LAYOUT));
         assertEquals(field, found);
         assertSame(field.decisions(), found.decisions());
         DensityFunction copy = field.mapAll(function -> function);

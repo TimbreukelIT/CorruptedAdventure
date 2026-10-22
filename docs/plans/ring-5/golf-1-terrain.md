@@ -206,9 +206,129 @@ B + D + unit tests + S-smoke met kaarten (§2–§4). **Niet per pakket:** `det.
 op `castles.txt` (klein), in overleg met main (slot).
 
 ## Voortgang
+- Voortgang: 2026-10-21 20:41 worktree `P:/Projecten/Java/wt/r5-terrain-g1` op `ring5/terrain-g1` (vanaf 3dfd50aa), `setup.sh W-terrein 1`, eerste compile groen; start 84.
+- Voortgang: 2026-10-21 21:49 84 klaar: build groen (1.153 tests), runData zonder wijziging, S-smoke `r84` (log schoon, `/ca castles`, kaarten oost + kasteel #1 + doorsnede); commit.
+- Voortgang: 2026-10-21 22:16 85 klaar: build groen (1.154 tests, 1 overgeslagen), runData zonder wijziging, S-smoke `pre1` (log schoon) + kaartenset 6-pre-1 in `build/test/maps/6-pre-1/`; commit, daarna 83.
+- Voortgang: 2026-10-22 15:20 83 klaar: build groen, runData zonder wijziging (`src/generated` schoon), unit tests ring 5 groen, S-smoke `golf-1` (verse wereld, log schoon), kaarten `terrainmap 8500 0 400 2` en `section 8000 0 9000 0` in `build/test/maps/golf-1/`; commit.
 
 ## CODEBASE-delta
+**84:** `Ring5Field` echt voor de buitenband: codec-veld `noises` (`Noises`: `rot` = `ring_5_rot`, `relief`, `detail`, `scars`;
+nieuwe noises `noise/ring_5_relief` (−8), `ring_5_detail` (−4), `ring_5_scars` (−7)); schotsen op een gejitterd raster van
+40 (`floeCell`, `floeSolid`, gecachet in `Decisions.floes`), `void_scars` (scheuren langs de nullijnen van `ring_5_scars` +
+kraters), `inverted_hills` (omgekeerde heuvels onder de schotsen), brokken (`fragment`, `fragmentsWithin`), ruggen
+(`ridges`, in `bridgesWithin` met `siteIndex` −1) en stroken springstenen (`strips`), kasteelpinakel met verwoeste rand
+(`rimWidth`) en per kasteel 2 bruggen (`castleBridges`, landingsheuvel `mounded`); `groundAt` (puur, zonder cache) voor
+de beslissingen. `Column` kreeg `scars`, `inverted`, `height` en exacte spans (bruggen, ruggen, brokken). Records:
+`Bridge` + `endY`, `sag`; `Fragment` + `direction`. Nieuwe constanten-klassen `Ring5Outer` (buitenband/buitenrand) en
+`Ring5Castles` (pinakel, rand, bruggen). `Ring5Output` + uitgangen `height`, `scars`, `inverted`. JSON:
+`ring_5/overworld` = `ring_5_output terrain` **zonder** `interpolated` (exact per blok); `ring_5/overworld/{height,scars,
+inverted}` = flat_caches van de uitgangen; nieuw `ring_5/overworld/climate_rot` (−2 op het plateau) als router-temperature
+ring_5; `void/overworld` = `add(0, ring_5/overworld)` (V2-A; de oude zwevende eilanden en `void_islands` zijn in de
+overworld weg, Nether ongewijzigd); `ring_blend/overworld_initial` void = `ring_5/overworld/initial_terrain`;
+`ring_blend/overworld_erosion` + `switch_at ["ring_5"]` (verzoek main na de review van 86). Tests: `Ring5OuterTest`,
+`CastleBridgesTest`, `Ring5FieldTest`/`Ring5JsonTest`/`Ring3JsonTest` aangepast.
+**85:** `ZoneFracture` is nu een klasse (geen record) met codec-velden `argument` en `hash` (`noise/zone_4_5_cells`, nieuw);
+vorm in `ZoneFractureShape` (constanten + beslissingen per kolom), 2D-waarde `ZoneFractureValue` (DF-type
+`zone_fracture_value`, `zone_4_5/overworld/fracture` = flat_cache ervan). Accessors: statisch `strength(layout, eff)`;
+instance `crackAt`, `floeAt`, `landmarksWithin`/`landmarks` → `Landmark(x, z, topY, radius)`, `find(root)`;
+`CALM_SHARE`. `ring_4/overworld/sundered` = `add(0, zone_4_5/overworld/fracture)`. `Ring4Sundered` teruggebracht tot
+zonegrenzen + rand (`zoneStart`, `zoneEnd`, `inRim`, `RIM_TOP`, `RIM_BEFORE`); weg: scheurraster, losse brokken,
+landbruggen, afgrond, zee Y 0, `CALM_SHARE`. `IslandField`: `sunder`, `Sunder`, `SUNDERED_CALM_SHARE`,
+`Column.sundered/sunderKind/abyssSeaTop/abyssFloor` weg; `landBridgesNear` `@Deprecated(forRemoval = true)` en leeg.
+`IslandOutput.SUNDERED` weg (ook uit `Ring4Filter`). `RingFluidPicker`: `sunderedZone` → `fractureZone` (public),
+`sunderedSealBelow` → `fractureSealBelow`, `SUNDERED_SEA_TOP` weg; zone 4→5 overal droog (picker `NO_FLUID`); `ring5Dry`
+sluit de zone niet meer uit (zoneregel gaat voor). `RingAquifer`: zone droog vanaf Y −54 (`airFrom`), abyss-takken weg.
+Tests: `Ring4SunderedTest` weg, `ZoneFractureTest` nieuw, `RingFluidPickerTest`/`RingAquiferTest`/`Ring4JsonTest`/
+`Ring5JsonTest`/`Ring5FieldTest` aangepast, `DecorDLandmarksTest` brug-test `@Disabled`.
+**83:** `Ring5Inner` (constanten en vormen van de binnenband, pure functies van de ruis en de wereldzout; één exemplaar per
+wereld via `Ring5Field.inner()`): `top` (de gemengde basis), `wastesTop` (`stairAt`, `pitAt`), `meadowTop`, `glitchTop`,
+`layerHeight`/`layerShift`, `cube`, `crack`/`crackDistance`. `Ring5Field`: `fillInner` (de binnenband-kolom: hoogte,
+scheur → void, `scars`, `glitch`, `layered`), `cubeSpans` (zwevende kubussen als exacte spans), `innerCrackDistance`/
+`innerCrack` (gecachet, weg van de bandlijn en zone 4→5), `initialHeight` (de ondergrens rond de kolom); `Noises` kreeg
+`glitch` (`ring_5_glitch`) en `hills` (`ring_5_hills`, nieuw); `placeholder` is uit het codec-veld weg. `Ring5Output` +
+uitgang `glitch`. `ring_5/overworld/glitch.json` = flat_cache van die uitgang. `RingFluidPicker`: `ring5LavaColumn` en
+`ring5Dam` krijgen `crackDistance` (`Ring5Bands.crackDistance`, standaard oneindig); `CURRENT_BANDS` leest `innerCrackDistance`
+van het huidige veld. `RingAquifer`: de scheurafstand alleen in de binnenband gevraagd. Tests: `Ring5InnerTest` nieuw
+(6 tests), `RingFluidPickerTest` (+1: dam rond scheuren), `Ring5JsonTest`/`Ring5FieldTest` aangepast.
 
 ## Beslissingen
+**84 (implementatiekeuzes):**
+- Terrein exact per blok (geen `interpolated`): elke kolom is een 2D-top en -onderkant plus exacte spans, dus wanden,
+  brugranden en scheuren liggen precies op het blok (§1.2 vraagt exacte wanden; met een 2D-hoogteveld geeft de
+  interpolatie geen winst). Dichtheid blijft `0,125 · afstand` geklemd op ±1, zodat de menging in zone 4→5 glad blijft.
+- Schotsen = cellen van 40 op een gebogen raster; elke cel is schots of void met kans `share(p)` (p = 0 op de bandlijn,
+  1 op de ringrand); `share` 0 tot p 0,04, 0,86 op de rand (`SHARE_POWER` 0,85), daarna in 140 blokken naar 1; de
+  buitenrand is leeg vanaf 70 % van rand→border (10.050). Gemeten (testseed): breakup 0,008 op de lijn, 0,875 tussen
+  9.600 en 9.700, per strook van 100 stijgend.
+- `breakup` per kolom: schots 0,4 · share (< 0,6, dus nooit `shattered_expanse`), void 1, void met brok/brug/rug erboven
+  0,9; scheurkolommen houden de schotswaarde (biome blijft `void_scars`), `scars` = 1.
+- Onderkant schots: −40 + 56 · p (+ rafel ±7), naar de rand van een schots 50 % dunner over 20 blokken; gemeten mediaan
+  −38,7 bij de lijn, 38,7 bij de rand (p 0,95–1). Nooit onder −56 (geen bedrock), minstens 6 dik.
+- Pinakel: plateau = de straal van `CastleSite` (castles 1), verwoeste rand 8–16 breed **binnen** de gordel (treden 3 breed,
+  2 lager, naar buiten tot 45 % weggebroken, onderkant stijgt 3 per blok), daarbuiten open gordel (castles 0,6 → 0).
+- Kasteelbruggen: het dek begint op de plateautop (`deckY`) en loopt naar de landing (`endY`), met doorhang 2–6; is het
+  verval meer dan 0,5 per blok, dan landt de brug hoger en draagt de grond daar een landingsheuvel (helling 0,8). Brug 1
+  langs de straal naar binnen tot de eerste grond (3 blokken landing), brug 2 onder 30/40/50/60° naar de grootste schots
+  (geteld in schotscellen, max. 120) binnen 260 (anders 900). `Bridge` kreeg `endY` en `sag` erbij (contract-record +2
+  componenten, zoals `belt` in 82).
+- Ruggen: één per ~500 langs de lijnstraal (±100), radiaal van de bandlijn tot p 0,92, 3–5 breed, 4–6 dik, dek volgt de
+  (virtuele) schotstop; stroken springstenen halverwege twee ruggen (Ø 7, om de 8, hoogteverschil ≤ 1), alleen boven void.
+  Niet in kasteelgordels.
+- Brokken: één cel van 48, kans 0,2 → 0,65 (p 0,15 → 1), daarna naar 0 aan de lege rand; straal 20 → 5 naar buiten
+  (× 0,35–1); top zo dat Y 40–160 ook met kanteling (≤ 20°) klopt; rand ≥ 3 dik; alleen met het midden boven void.
+- `height` = top van de vaste grond (scheurkolommen: de schotstop), `VOID_HEIGHT` boven de void.
+- Kaarten: `/ca terrainmap` zoekt de top in grove stappen, dus dunne dekken (4–8) zien er op de bovenkaart gestippeld uit;
+  de doorsnede toont ze heel.
+**85 (implementatiekeuzes):**
+- Spleten = randen van een gejitterd raster van 48 (langs de ring) × 26 (dwars), gebogen met ±7: een netwerk langs en
+  schuin op de ring. Halve breedte 1–4 × sterkte (2–8 breed), bodem 30–60 onder de grond (± 2 ruw). De sterkte is 0 in
+  de eerste en laatste 16 blokken van de zone en vol na 32 meer. Gemeten (testseed): dicht 0,76–0,79 per strook van 32 in
+  het midden, 0,98 aan de randen, gemiddeld 0,82; mediane spleet radiaal 4 breed.
+- De grond onder de snede komt uit de twee terreinen die de blend mengt (`IslandField`-oppervlak en `Ring5Field`-top,
+  gewogen met de blend en hun dichtheidshelling 0,08/0,125); zonder die velden (tests) Y 72. Diepte, schotsen en brokken
+  rekenen vanaf die grond.
+- Oversteken: langs elke spleetrand om de 24–34 blokken een dichte plek van 4 lang (de "ingestorte schots" op
+  grondhoogte: lopend over te steken, niet springen). De variant "smalle plek ≤ 3" is niet gebouwd.
+- Opgeheven schotsen: 20 % van de cellen, 8–30 omhoog, kanteling ≤ 30°, rots tot 12 onder de grond. Losse brokken: per
+  cel van 40 kans 0,45 (buitenste helft) / 0,1 (binnenste), alleen boven een spleet, Ø 4–16, 4–16 boven de grond, ≥ 3 dik.
+- Landmarks: om de ~650 (± 100) langs de zone op 55 % van de zone, straal 9–13, 10–16 boven de grond, vlak, 4 blokken
+  rondom zonder spleet. W-biomes 86c leest `ZoneFracture.landmarksWithin` (via `find` op de router); tot dan plaatst de
+  gespleten rots niets (`landBridgesNear` leeg).
+- Vloeistof: zone 4→5 (beide helften) droog op elke hoogte boven de dam −54; de kalme eerste strook (`CALM_SHARE`
+  16/256) blijft onder Y 63 dicht (zoals de oude `sunderedSealBelow`), zodat ring 4's zee in een grot over de binnenrand
+  niet naast lucht staat.
+- `sundered_reach`-features: ongewijzigd (de gespleten rots vindt geen bruggen meer en plaatst niets); geen aparte commit
+  nodig.
+**83 (implementatiekeuzes):**
+- Glitch-blokken in **Java** (`Ring5Inner.glitchTop`: de basis afgerond op blokken van 4), geen `quantize`-DF-type. De
+  binnenband is een Java-hoogteveld; een JSON-`quantize` zou alleen een wrapper om dezelfde Java zijn en voegt een tweede
+  plek toe waar de vorm bepaald wordt.
+- Schijven 4–6 hoog, **één hoogte per laagcel van 64** (`layerHeight`, hash van de cel), verschuiving 2–6 zijwaarts per
+  schijf (`layerShift`, hash van cel en schijfnummer). Alleen waar `glitch` ≥ 0,999 (geen half geblende schijven), in de
+  bovenste 16 blokken. Een naad op een celgrens is mogelijk; nog niet gezien op de kaart.
+- Basis Y 78 (`BASE`), `ring_5_hills` × 16, geklemd op 70–95. Gemeten (testseed, `Ring5InnerTest`): mediaan 76,4, 96 % in
+  70–95, scheuren 0,3 % van de kolommen.
+- `false_meadow`: golf Y 76 ± 3 als som van twee sinussen (amplitude 1,5 per as, golflengte 64); Y 73–79.
+- Scheuren: 1 per cel van 256 met kans 0,85 (de spec: ~1 per 256 × 256); halve breedte 1–3 (2–6 breed), lengte 20–120,
+  uiteinden taperen over 8 blokken, wand gerafeld (sinus ±2). Ze blijven 24 blokken weg van de bandlijn en van zone 4→5.
+  Scheurkolommen: void tot onder `min_y`, `scars` 1.
+- Dam: 6 blokken rond elke scheur (`RING_5_CRACK_DAM`). De scheur zelf blijft open; lava onder −54 alleen buiten de dam.
+- Zwevende kubussen: kans 0,25 per cel van 32, vermenigvuldigd met het glitch-gewicht; onderkant = hoogste grond onder de
+  kubus + 6–30.
+- Placeholder-ruis en band-trede weg. `innerTop` blijft alleen als invoer voor de blend van de buitenband.
+- Review 83 (c3c3b1f7): trappen blijven in hun eigen cel (oorsprong 48 van de celgrens; geen afgesneden randen meer), de
+  zwevende kubus alleen waar de hele voetafdruk glitch-binnenband is (geen buitenband, kasteel of scheur eronder), de
+  glitchblokken nooit onder 72, en `CURRENT_BANDS.crackDistance` faalt hard als het veld van de overworld ontbreekt (geen
+  stille dam-loze lava meer).
+- **Beantwoord (gebruiker, 2026-10-22): trappen boven 95 blijven.** De trappen van `corrupted_wastes` lopen tot +24 boven
+  de basis (~Y 119), terwijl de dode grond 70–95 blijft. Bewuste uitzondering, vastgelegd in de klassedoc van `Ring5Inner`
+  en in het beslissingenlog.
+- **Beantwoord (gebruiker, 2026-10-22): schijfhoogte per laagcel van 64.** Geen wijziging. Per schijf zou een cumulatieve
+  grens per kolom vragen en duurder zijn.
+- Doc van `initialHeight` (punt 6 review): "binnenband: grondhoogte, ook op een scheur"; waarde ongewijzigd.
 
 ## Backlog
+- [worldgen] 86c (W-biomes): `SplitRockFeature` naar `ZoneFracture.landmarksWithin` en `IslandField.landBridgesNear` +
+  `LandBridge` + de uitgeschakelde test in `DecorDLandmarksTest` verwijderen (compile-waarschuwing `[removal]` tot dan).
+- [infra] `/ca terrainmap` (bovenkaart) mist dunne lagen (bruggen, ruggen, springstenen) door de grove stap van
+  `ColumnScan`; voor ring 5 een fijnere stap of een "spans"-pad (infra/tooling).

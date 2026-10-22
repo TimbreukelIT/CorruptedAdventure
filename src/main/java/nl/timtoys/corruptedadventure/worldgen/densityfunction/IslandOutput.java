@@ -46,8 +46,6 @@ public final class IslandOutput implements DensityFunction {
          * decision 2026-10-15: stone on the steep slopes of {@code verdant_falls}); read per column, not stored in it.
          */
         SLOPE("slope", 0.0, 96.0),
-        /** 0..1: how far the ground is sundered here (63; the cracks and loose chunks of the zone 4→5). */
-        SUNDERED("sundered", 0.0, 1.0),
         /** 3D, not interpolated: +1 inside an island, −1 in a carved opening, 0 elsewhere (the terrain decides). */
         THIN("thin", -1.0, 1.0),
         /** 3D: added to the density of vanilla's caves, 0 where they run freely, up to 2 where they are gone. */
@@ -135,7 +133,6 @@ public final class IslandOutput implements DensityFunction {
             case FJORD -> column.fjord;
             case CLIFF -> column.cliff;
             case RIM -> column.rim;
-            case SUNDERED -> column.sundered;
             case INITIAL_HEIGHT, THIN, CAVE_LIFT, SLOPE, TUNNELS -> throw new IllegalArgumentException(output + " is not a column value");
         };
     }

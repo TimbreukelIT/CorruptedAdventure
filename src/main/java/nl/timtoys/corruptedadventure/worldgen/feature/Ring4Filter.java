@@ -48,7 +48,7 @@ public final class Ring4Filter extends PlacementFilter {
     /** The outputs a filter may read: one 2D value per column. */
     static final Set<IslandOutput.Output> COLUMN_OUTPUTS = Set.of(IslandOutput.Output.HEIGHT, IslandOutput.Output.SURFACE,
             IslandOutput.Output.ISLAND_MASK, IslandOutput.Output.ISLAND_HOLE, IslandOutput.Output.RIVER, IslandOutput.Output.FJORD,
-            IslandOutput.Output.CLIFF, IslandOutput.Output.RIM, IslandOutput.Output.SLOPE, IslandOutput.Output.SUNDERED);
+            IslandOutput.Output.CLIFF, IslandOutput.Output.RIM, IslandOutput.Output.SLOPE);
 
     /** One output in [{@code min}, {@code max}). */
     public record Range(IslandOutput.Output output, double min, double max) {

@@ -164,7 +164,9 @@ class Ring4JsonTest {
         assertOutput(DF + "ring_4/overworld/rim.json", "rim");
         // 2026-10-15: the slope of verdant_falls' ground (stone on its steep slopes, instead of vanilla's steep).
         assertOutput(DF + "ring_4/overworld/slope.json", "slope");
-        assertOutput(DF + "ring_4/overworld/sundered.json", "sundered");
+        // 85: the zone 4→5's fracture is ZoneFracture's; ring 4's key refers to it.
+        assertEquals("corruptedadventure:zone_4_5/overworld/fracture",
+                WorldgenData.read(DF + "ring_4/overworld/sundered.json").get("argument2").getAsString());
         // 2c: the rim of verdant_falls follows ring 3's terrain (the key is still called plateau).
         assertEquals("corruptedadventure:ring_3/overworld/field", islands.get("plateau").getAsString());
         assertOutput(DF + "ring_4/overworld/cave_lift.json", "cave_lift");

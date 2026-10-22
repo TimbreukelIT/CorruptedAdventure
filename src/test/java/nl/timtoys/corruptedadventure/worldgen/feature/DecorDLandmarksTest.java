@@ -7,6 +7,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandFieldTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
@@ -70,6 +71,7 @@ class DecorDLandmarksTest {
     }
 
     @Test
+    @Disabled("85: land bridges removed; split rock moves in 86c")
     void everyLandBridgeCarriesOneSplitRockInTheBrokenZone() {
         SplitRockConfiguration config = new SplitRockConfiguration(BlockStateProvider.simple(Blocks.STONE), BlockStateProvider.simple(Blocks.STONE),
                 BlockStateProvider.simple(Blocks.STONE), ConstantInt.of(30), ConstantFloat.of(0.8F), ConstantFloat.of(3.5F),
@@ -87,12 +89,6 @@ class DecorDLandmarksTest {
                     (int) Math.floor(rock.z()), rock.halfWidth());
             double target = bridge.zoneStart() + SunderedReachFeatures.POSITION * (bridge.zoneEnd() - bridge.zoneStart());
             assertEquals(target, FIELD.effectiveDistance(rock.x(), rock.z()), 3.0);
-            // The split and its faces stand on the bridge: whole ground, no abyss.
-            for (double across = -SplitRockFeature.GAP - 1.0; across <= SplitRockFeature.GAP + 1.0; across += 0.5) {
-                int x = (int) Math.floor(rock.x() - across * rock.uz());
-                int z = (int) Math.floor(rock.z() + across * rock.ux());
-                assertEquals(Integer.MIN_VALUE, FIELD.column(x, z).abyssSeaTop(), "bridge " + bridge.index() + " at " + x + ", " + z);
-            }
             // Pure: a chunk it reaches finds it.
             int cx = (int) Math.floor(rock.x()) & ~15;
             int cz = (int) Math.floor(rock.z()) & ~15;

@@ -85,12 +85,14 @@ class Ring3JsonTest {
      */
     @Test
     void climateSwitchesExactlyAtBoundariesWithoutATransitionBiome() {
-        for (String file : new String[]{"overworld_temperature", "overworld_vegetation", "overworld_weirdness"}) {
+        // Erosion too since 84: ring 5's outer band splits its biomes on it (shattered_expanse), and the zone 5→void has
+        // no transition biome.
+        for (String file : new String[]{"overworld_temperature", "overworld_vegetation", "overworld_weirdness", "overworld_erosion"}) {
             assertEquals(withoutTransition("minecraft:overworld", Set.of()), Set.copyOf(switchAt(file)), file);
         }
         assertEquals(withoutTransition("minecraft:the_nether", Set.of("ring_1")), Set.copyOf(switchAt("nether_temperature")));
         // Terrain and the other router fields keep mixing.
-        for (String file : new String[]{"overworld", "nether", "overworld_initial", "overworld_vein_toggle", "overworld_floodedness", "overworld_erosion"}) {
+        for (String file : new String[]{"overworld", "nether", "overworld_initial", "overworld_vein_toggle", "overworld_floodedness"}) {
             assertEquals(List.of(), switchAt(file), file);
         }
     }

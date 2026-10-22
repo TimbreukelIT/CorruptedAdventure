@@ -1,7 +1,14 @@
 {
   "type": "corruptedadventure:ring_5_field",
   "hash": "corruptedadventure:ring_5_cells",
-  "placeholder": "corruptedadventure:placeholder_terrain",
+  "noises": {
+    "rot": "corruptedadventure:ring_5_rot",
+    "glitch": "corruptedadventure:ring_5_glitch",
+    "hills": "corruptedadventure:ring_5_hills",
+    "relief": "corruptedadventure:ring_5_relief",
+    "detail": "corruptedadventure:ring_5_detail",
+    "scars": "corruptedadventure:ring_5_scars"
+  },
   "settings": {
     "cell_size": 128
   }
