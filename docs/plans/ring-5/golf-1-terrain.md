@@ -209,6 +209,7 @@ op `castles.txt` (klein), in overleg met main (slot).
 - Voortgang: 2026-10-21 20:41 worktree `P:/Projecten/Java/wt/r5-terrain-g1` op `ring5/terrain-g1` (vanaf 3dfd50aa), `setup.sh W-terrein 1`, eerste compile groen; start 84.
 - Voortgang: 2026-10-21 21:49 84 klaar: build groen (1.153 tests), runData zonder wijziging, S-smoke `r84` (log schoon, `/ca castles`, kaarten oost + kasteel #1 + doorsnede); commit.
 - Voortgang: 2026-10-21 22:16 85 klaar: build groen (1.154 tests, 1 overgeslagen), runData zonder wijziging, S-smoke `pre1` (log schoon) + kaartenset 6-pre-1 in `build/test/maps/6-pre-1/`; commit, daarna 83.
+- Voortgang: 2026-10-22 15:20 83 klaar: build groen, runData zonder wijziging (`src/generated` schoon), unit tests ring 5 groen, S-smoke `golf-1` (verse wereld, log schoon), kaarten `terrainmap 8500 0 400 2` en `section 8000 0 9000 0` in `build/test/maps/golf-1/`; commit.
 
 ## CODEBASE-delta
 **84:** `Ring5Field` echt voor de buitenband: codec-veld `noises` (`Noises`: `rot` = `ring_5_rot`, `relief`, `detail`, `scars`;
@@ -239,6 +240,16 @@ landbruggen, afgrond, zee Y 0, `CALM_SHARE`. `IslandField`: `sunder`, `Sunder`, 
 sluit de zone niet meer uit (zoneregel gaat voor). `RingAquifer`: zone droog vanaf Y −54 (`airFrom`), abyss-takken weg.
 Tests: `Ring4SunderedTest` weg, `ZoneFractureTest` nieuw, `RingFluidPickerTest`/`RingAquiferTest`/`Ring4JsonTest`/
 `Ring5JsonTest`/`Ring5FieldTest` aangepast, `DecorDLandmarksTest` brug-test `@Disabled`.
+**83:** `Ring5Inner` (constanten en vormen van de binnenband, pure functies van de ruis en de wereldzout; één exemplaar per
+wereld via `Ring5Field.inner()`): `top` (de gemengde basis), `wastesTop` (`stairAt`, `pitAt`), `meadowTop`, `glitchTop`,
+`layerHeight`/`layerShift`, `cube`, `crack`/`crackDistance`. `Ring5Field`: `fillInner` (de binnenband-kolom: hoogte,
+scheur → void, `scars`, `glitch`, `layered`), `cubeSpans` (zwevende kubussen als exacte spans), `innerCrackDistance`/
+`innerCrack` (gecachet, weg van de bandlijn en zone 4→5), `initialHeight` (de ondergrens rond de kolom); `Noises` kreeg
+`glitch` (`ring_5_glitch`) en `hills` (`ring_5_hills`, nieuw); `placeholder` is uit het codec-veld weg. `Ring5Output` +
+uitgang `glitch`. `ring_5/overworld/glitch.json` = flat_cache van die uitgang. `RingFluidPicker`: `ring5LavaColumn` en
+`ring5Dam` krijgen `crackDistance` (`Ring5Bands.crackDistance`, standaard oneindig); `CURRENT_BANDS` leest `innerCrackDistance`
+van het huidige veld. `RingAquifer`: de scheurafstand alleen in de binnenband gevraagd. Tests: `Ring5InnerTest` nieuw
+(6 tests), `RingFluidPickerTest` (+1: dam rond scheuren), `Ring5JsonTest`/`Ring5FieldTest` aangepast.
 
 ## Beslissingen
 **84 (implementatiekeuzes):**
@@ -288,6 +299,25 @@ Tests: `Ring4SunderedTest` weg, `ZoneFractureTest` nieuw, `RingFluidPickerTest`/
   niet naast lucht staat.
 - `sundered_reach`-features: ongewijzigd (de gespleten rots vindt geen bruggen meer en plaatst niets); geen aparte commit
   nodig.
+**83 (implementatiekeuzes):**
+- Glitch-blokken in **Java** (`Ring5Inner.glitchTop`: de basis afgerond op blokken van 4), geen `quantize`-DF-type. De
+  binnenband is een Java-hoogteveld; een JSON-`quantize` zou alleen een wrapper om dezelfde Java zijn en voegt een tweede
+  plek toe waar de vorm bepaald wordt.
+- Schijven 4–6 hoog, **één hoogte per laagcel van 64** (`layerHeight`, hash van de cel), verschuiving 2–6 zijwaarts per
+  schijf (`layerShift`, hash van cel en schijfnummer). Alleen waar `glitch` ≥ 0,999 (geen half geblende schijven), in de
+  bovenste 16 blokken. Een naad op een celgrens is mogelijk; nog niet gezien op de kaart.
+- Basis Y 78 (`BASE`), `ring_5_hills` × 16, geklemd op 70–95. Gemeten (testseed, `Ring5InnerTest`): mediaan 76,4, 96 % in
+  70–95, scheuren 0,3 % van de kolommen.
+- `false_meadow`: golf Y 76 ± 3 als som van twee sinussen (amplitude 1,5 per as, golflengte 64); Y 73–79.
+- Scheuren: 1 per cel van 256 met kans 0,85 (de spec: ~1 per 256 × 256); halve breedte 1–3 (2–6 breed), lengte 20–120,
+  uiteinden taperen over 8 blokken, wand gerafeld (sinus ±2). Ze blijven 24 blokken weg van de bandlijn en van zone 4→5.
+  Scheurkolommen: void tot onder `min_y`, `scars` 1.
+- Dam: 6 blokken rond elke scheur (`RING_5_CRACK_DAM`). De scheur zelf blijft open; lava onder −54 alleen buiten de dam.
+- Zwevende kubussen: kans 0,25 per cel van 32, vermenigvuldigd met het glitch-gewicht; onderkant = hoogste grond onder de
+  kubus + 6–30.
+- Placeholder-ruis en band-trede weg. `innerTop` blijft alleen als invoer voor de blend van de buitenband.
+- **Open vraag aan de ontwerper:** schijfhoogte per laagcel (nu) of per schijf (variatie binnen een kolom). Aanbevolen:
+  per cel houden; per schijf vraagt een cumulatieve grens per kolom en is duurder in de kolomberekening.
 
 ## Backlog
 - [worldgen] 86c (W-biomes): `SplitRockFeature` naar `ZoneFracture.landmarksWithin` en `IslandField.landBridgesNear` +

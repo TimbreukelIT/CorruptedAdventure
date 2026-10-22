@@ -37,10 +37,10 @@ public class Ring5FieldTest {
         Ring5Field.Settings settings = Ring5Field.Settings.CODEC.parse(JsonOps.INSTANCE, json.get("settings")).getOrThrow();
         JsonObject noises = json.getAsJsonObject("noises");
         Ring5Field.Noises holders = new Ring5Field.Noises(IslandFieldTest.noise(key(noises, "rot"), seed),
+                IslandFieldTest.noise(key(noises, "glitch"), seed), IslandFieldTest.noise(key(noises, "hills"), seed),
                 IslandFieldTest.noise(key(noises, "relief"), seed), IslandFieldTest.noise(key(noises, "detail"), seed),
                 IslandFieldTest.noise(key(noises, "scars"), seed));
-        return new Ring5Field(IslandFieldTest.noise(key(json, "hash"), seed), IslandFieldTest.noise(key(json, "placeholder"), seed),
-                holders, settings, () -> layout);
+        return new Ring5Field(IslandFieldTest.noise(key(json, "hash"), seed), holders, settings, () -> layout);
     }
 
     private static String key(JsonObject json, String field) {

@@ -274,8 +274,10 @@ final class RingAquifer implements Aquifer {
             // Ring 5 (82, V9-B): the band is asked once per column. The lava layer stays vanilla's; the dam holds rock
             // below its top; the outer band is air down to the void.
             double band = bands.signedDistance(x, z);
-            boolean lava = RingFluidPicker.ring5LavaColumn(band);
-            boolean dam = RingFluidPicker.ring5Dam(band);
+            // The cracks of the inner band (83) are asked there only.
+            double crack = band < 0.0 ? bands.crackDistance(x, z) : Double.POSITIVE_INFINITY;
+            boolean lava = RingFluidPicker.ring5LavaColumn(band, crack);
+            boolean dam = RingFluidPicker.ring5Dam(band, crack);
             airFrom[i] = lava || dam ? RingFluidPicker.LAVA_LAYER_TOP : Integer.MIN_VALUE;
             if (dam) {
                 sealBelow[i] = Math.max(sealBelow[i], RingFluidPicker.LAVA_LAYER_TOP);

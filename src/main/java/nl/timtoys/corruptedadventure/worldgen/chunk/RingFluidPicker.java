@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.ring.RingColumnCache;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
+import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring5Field;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.ThreadOwned;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.ZoneFracture;
@@ -51,8 +52,24 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
      * the line's noise is steepest.
      */
     static final double RING_5_DAM = 32.0;
-    /** Ring 5's band in the running server's world (worldgen); tests give their own. */
-    static final Ring5Bands CURRENT_BANDS = (x, z) -> Ring5Band.of(RingLayout.current()).signedDistance(x, z);
+    /**
+     * The dam of ring 5's lava layer round the loose cracks of the inner band (83): within this many blocks of a crack no
+     * lava and no open space below Y −54; the crack itself stays open down into the void.
+     */
+    static final double RING_5_CRACK_DAM = 6.0;
+    /** Ring 5's band (and the inner band's cracks) in the running server's world (worldgen); tests give their own. */
+    static final Ring5Bands CURRENT_BANDS = new Ring5Bands() {
+        @Override
+        public double signedDistance(int x, int z) {
+            return Ring5Band.of(RingLayout.current()).signedDistance(x, z);
+        }
+
+        @Override
+        public double crackDistance(int x, int z) {
+            Ring5Field field = Ring5Fields.current(Level.OVERWORLD);
+            return field == null ? Double.POSITIVE_INFINITY : field.innerCrackDistance(x, z);
+        }
+    };
 
     private final ResourceKey<Level> dimension;
     private final Aquifer.FluidPicker vanilla;
@@ -233,10 +250,17 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
         return fractureZone(dimension, position) && position.blend() < ZoneFracture.CALM_SHARE ? SEA_LEVEL : Integer.MIN_VALUE;
     }
 
-    /** Ring 5's band at a column: {@link Ring5Band#signedDistance} (negative in the inner band). */
+    /**
+     * Ring 5's band at a column: {@link Ring5Band#signedDistance} (negative in the inner band), and how far the column lies
+     * from a loose crack of the inner band ({@link Ring5Field#innerCrackDistance}: at most 0 inside one).
+     */
     @FunctionalInterface
     interface Ring5Bands {
         double signedDistance(int x, int z);
+
+        default double crackDistance(int x, int z) {
+            return Double.POSITIVE_INFINITY;
+        }
     }
 
     /**
@@ -252,19 +276,21 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
 
     /**
      * Whether a column of ring 5 ({@link #ring5Dry}) keeps vanilla's lava layer below Y −54 (V9-B): the inner band, more
-     * than {@link #RING_5_DAM} inside the line ({@code signedDistance}: {@link Ring5Band#signedDistance}). Package 83
-     * adds the dam around the inner band's scars (they reach down into the void).
+     * than {@link #RING_5_DAM} inside the line ({@code signedDistance}: {@link Ring5Band#signedDistance}) and more than
+     * {@link #RING_5_CRACK_DAM} from a loose crack ({@code crackDistance}, 83: the cracks reach down into the void).
      */
-    static boolean ring5LavaColumn(double signedDistance) {
-        return signedDistance < -RING_5_DAM;
+    static boolean ring5LavaColumn(double signedDistance, double crackDistance) {
+        return signedDistance < -RING_5_DAM && crackDistance > RING_5_CRACK_DAM;
     }
 
     /**
-     * Whether a column of ring 5 ({@link #ring5Dry}) is the dam of its lava layer: the strip of the inner band up to the
-     * line, where open space below Y −54 stays rock. The outer band beyond is dry down to the void.
+     * Whether a column of ring 5 ({@link #ring5Dry}) is the dam of its lava layer, where open space below Y −54 stays
+     * rock: the strip of the inner band up to the line, and the strip round a loose crack (83; not the crack itself, which
+     * is open down into the void). The outer band beyond is dry down to the void.
      */
-    static boolean ring5Dam(double signedDistance) {
-        return signedDistance >= -RING_5_DAM && signedDistance < 0.0;
+    static boolean ring5Dam(double signedDistance, double crackDistance) {
+        return signedDistance < 0.0 && crackDistance > 0.0
+                && (signedDistance >= -RING_5_DAM || crackDistance <= RING_5_CRACK_DAM);
     }
 
     @Override
@@ -288,7 +314,11 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
         }
         if (ring5Dry(dimension, position)) {
             // Dry, but the inner band keeps vanilla's lava layer (the band is only asked down there).
-            return y < LAVA_LAYER_TOP && ring5LavaColumn(bands.signedDistance(x, z)) ? vanilla.computeFluid(x, y, z) : NO_FLUID;
+            if (y >= LAVA_LAYER_TOP) {
+                return NO_FLUID;
+            }
+            double band = bands.signedDistance(x, z);
+            return band < -RING_5_DAM && ring5LavaColumn(band, bands.crackDistance(x, z)) ? vanilla.computeFluid(x, y, z) : NO_FLUID;
         }
         Aquifer.FluidStatus status = vanilla.computeFluid(x, y, z);
         Integer level = levelByRing[position.ring().ordinal()];

@@ -30,8 +30,9 @@ import java.util.function.Supplier;
  * from Y −40 at the band line to Y 20–40 at the edge; {@code void_scars} cut cracks and craters into them, {@code
  * inverted_hills} hang upside-down hills under them; floating chunks, narrow ridges and strips of stepping stones over the
  * void; the same field runs on past ring 5's boundary until the edge is empty. The four castle pinnacles (82 sites, 84
- * shape in {@link Ring5Castles}) with their ruined rims, void belts and two bridges each. The inner band is still the
- * skeleton of golf 0 (the placeholder surface) until 83.
+ * shape in {@link Ring5Castles}) with their ruined rims, void belts and two bridges each. The inner band (83, numbers in
+ * {@link Ring5Inner}): dead ground with low hills, per region the shapes that are just wrong (stairs and pits, a regular
+ * wave, blocky ground with shifted layers and floating cubes) and loose cracks down into the void.
  * <p>
  * The terrain is exact per block (no interpolation): a column's ground is a 2D top and underside, plus the exact spans of
  * the bridges, ridges and chunks over it, so walls, deck edges and cracks lie on the block.
@@ -46,17 +47,16 @@ import java.util.function.Supplier;
 public final class Ring5Field implements DensityFunction {
     public static final MapCodec<Ring5Field> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             NoiseHolder.CODEC.fieldOf("hash").forGetter(f -> f.hash),
-            NoiseHolder.CODEC.fieldOf("placeholder").forGetter(f -> f.placeholder),
             Noises.CODEC.fieldOf("noises").forGetter(f -> f.noises),
             Settings.CODEC.optionalFieldOf("settings", Settings.DEFAULT).forGetter(f -> f.settings)
-    ).apply(instance, (hash, placeholder, noises, settings) -> new Ring5Field(hash, placeholder, noises, settings, RingLayout::current)));
+    ).apply(instance, (hash, noises, settings) -> new Ring5Field(hash, noises, settings, RingLayout::current)));
 
     public static final KeyDispatchDataCodec<Ring5Field> CODEC = KeyDispatchDataCodec.of(MAP_CODEC);
 
     private static final long WORLD_SALT = 5005;
-    /** Skeleton surface of the inner band (until 83): the placeholder terrain's surface, Y 85 + 8 × noise. */
-    static final double SURFACE_BASE = 85.0;
-    static final double SURFACE_NOISE = 8.0;
+    /** The preliminary surface of the inner band: the lowest ground on a ring of this radius round the column, less a margin. */
+    private static final double INITIAL_RADIUS = 6.0;
+    private static final double INITIAL_MARGIN = 2.0;
     /**
      * The initial height of a void column: far enough below the world's bottom that the initial density
      * ({@code 0.390625 + 0.125 × (height − y)}) stays negative down to min_y, so the column has no preliminary surface
@@ -93,7 +93,6 @@ public final class Ring5Field implements DensityFunction {
     private static final int DECK_SALT = 8409;
 
     private final NoiseHolder hash;
-    private final NoiseHolder placeholder;
     private final Noises noises;
     private final Settings settings;
     private final Supplier<RingLayout> layout;
@@ -101,14 +100,13 @@ public final class Ring5Field implements DensityFunction {
     private final Decisions decisions;
 
     /** @param layout the ring layout (the running server's; tests give their own) */
-    Ring5Field(NoiseHolder hash, NoiseHolder placeholder, Noises noises, Settings settings, Supplier<RingLayout> layout) {
-        this(hash, placeholder, noises, settings, layout, new Decisions());
+    Ring5Field(NoiseHolder hash, Noises noises, Settings settings, Supplier<RingLayout> layout) {
+        this(hash, noises, settings, layout, new Decisions());
     }
 
-    private Ring5Field(NoiseHolder hash, NoiseHolder placeholder, Noises noises, Settings settings, Supplier<RingLayout> layout,
+    private Ring5Field(NoiseHolder hash, Noises noises, Settings settings, Supplier<RingLayout> layout,
                        Decisions decisions) {
         this.hash = hash;
-        this.placeholder = placeholder;
         this.noises = noises;
         this.settings = settings;
         this.layout = layout;
@@ -142,11 +140,10 @@ public final class Ring5Field implements DensityFunction {
     @Override
     public DensityFunction mapAll(Visitor visitor) {
         NoiseHolder mappedHash = visitor.visitNoise(hash);
-        NoiseHolder mappedPlaceholder = visitor.visitNoise(placeholder);
         Noises mappedNoises = noises.map(visitor);
         // A noise chunk's copy keeps the decisions of the random state's instance (same noises, same results).
-        boolean same = mappedHash.equals(hash) && mappedPlaceholder.equals(placeholder) && mappedNoises.equals(noises);
-        return visitor.apply(new Ring5Field(mappedHash, mappedPlaceholder, mappedNoises, settings, layout, same ? decisions : new Decisions()));
+        boolean same = mappedHash.equals(hash) && mappedNoises.equals(noises);
+        return visitor.apply(new Ring5Field(mappedHash, mappedNoises, settings, layout, same ? decisions : new Decisions()));
     }
 
     @Override
@@ -167,13 +164,13 @@ public final class Ring5Field implements DensityFunction {
     // Equality without the caches: the noise chunk's memo then shares one instance between all its users.
     @Override
     public boolean equals(Object o) {
-        return o instanceof Ring5Field f && hash.equals(f.hash) && placeholder.equals(f.placeholder) && noises.equals(f.noises)
+        return o instanceof Ring5Field f && hash.equals(f.hash) && noises.equals(f.noises)
                 && settings.equals(f.settings);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(hash, placeholder, noises, settings);
+        return Objects.hash(hash, noises, settings);
     }
 
     /** The first {@code ring_5_field} anywhere inside {@code root} (e.g. a random state's final density), or null. */
@@ -307,7 +304,23 @@ public final class Ring5Field implements DensityFunction {
     /** The preliminary surface of the column: its top, or {@link #VOID_HEIGHT} (no surface) over the void. */
     public double initialHeight(int x, int z) {
         Column column = column(x, z);
-        return column.isVoid() ? VOID_HEIGHT : column.top;
+        if (!column.inner) {
+            return column.isVoid() ? VOID_HEIGHT : column.top;
+        }
+        // The inner band (83): the lowest ground round the column (its shapes, not its cracks or cubes), less a margin.
+        double initial = column.initial;
+        if (Double.isNaN(initial)) {
+            Ring5Inner inner = inner();
+            initial = column.height;
+            for (int k = 0; k < 8; k++) {
+                double a = Math.PI / 4.0 * k;
+                initial = Math.min(initial, inner.top(Mth.floor(x + 0.5 + INITIAL_RADIUS * Math.cos(a)),
+                        Mth.floor(z + 0.5 + INITIAL_RADIUS * Math.sin(a))));
+            }
+            initial -= INITIAL_MARGIN;
+            column.initial = initial;
+        }
+        return initial;
     }
 
     /**
@@ -323,6 +336,12 @@ public final class Ring5Field implements DensityFunction {
         }
         if (column.isVoid()) {
             return -1.0;
+        }
+        if (column.layered && y >= column.top - Ring5Inner.LAYER_DEPTH && y < column.top + Ring5Inner.LAYER_DEPTH) {
+            // The glitch fields' layers (83): each slice is the ground of a column a few blocks over.
+            int[] shift = inner().layerShift(x, y, z);
+            Column other = column(x + shift[0], z + shift[1]);
+            return y < (other.isVoid() ? other.height : other.top) ? 1.0 : -1.0;
         }
         double density = DENSITY_PER_BLOCK * (column.top - y);
         if (column.bottom != Double.NEGATIVE_INFINITY) {
@@ -345,9 +364,7 @@ public final class Ring5Field implements DensityFunction {
         if (castleReach) {
             fillCastle(c, x, z, castle, castleDistance);
         } else if (signed < 0.0) {
-            c.top = mounded(x, z, innerTop(x, z));
-            c.bottom = Double.NEGATIVE_INFINITY;
-            c.height = c.top;
+            fillInner(c, x, z);
         } else if (effective >= emptyFrom(l)) {
             c.setVoid();
         } else {
@@ -357,6 +374,29 @@ public final class Ring5Field implements DensityFunction {
         if (c.isVoid() && !c.scarOpen) {
             c.breakup = c.spans > 0 ? 0.9 : 1.0;
         }
+    }
+
+    /** A column of the inner band: the ground with its regions' shapes, a loose crack, the glitch fields' layers. */
+    private void fillInner(Column c, int x, int z) {
+        Ring5Inner inner = inner();
+        double top = mounded(x, z, inner.top(x, z));
+        double glitch = inner.glitchWeight(x, z);
+        c.glitch = glitch;
+        c.inner = true;
+        c.height = top;
+        double crack = innerCrackDistance(x, z);
+        if (crack <= 0.0) {
+            c.setVoid();
+            c.height = top;
+            c.scarOpen = true;
+            c.scars = 1.0;
+            return;
+        }
+        c.scars = Mth.clamp(1.0 - crack / Ring5Outer.SCAR_RIM, 0.0, 1.0);
+        c.top = top;
+        c.bottom = Double.NEGATIVE_INFINITY;
+        // Shifted layers only where the glitch fields hold alone (no half-blended layers).
+        c.layered = glitch >= 0.999;
     }
 
     /** A column of the outer band or the outer edge (not near a castle): floe, scar or void. */
@@ -441,6 +481,12 @@ public final class Ring5Field implements DensityFunction {
             }
         }
         if (castleReach) {
+            return;
+        }
+        if (c.inner) {
+            if (!c.isVoid()) {
+                cubeSpans(c, x, z);
+            }
             return;
         }
         List<Bridge> ridges = ridges();
@@ -530,9 +576,94 @@ public final class Ring5Field implements DensityFunction {
         return Ring5Outer.emptyFrom(ring5Radius(l), l.settings().voidOuterRadius());
     }
 
-    /** The inner band's surface: the skeleton until 83. */
+    /** The inner band's shapes (83), made once per world. */
+    Ring5Inner inner() {
+        Ring5Inner known = decisions.inner;
+        if (known == null) {
+            known = new Ring5Inner(noises.hills, noises.rot, noises.glitch, salt());
+            decisions.inner = known;
+        }
+        return known;
+    }
+
+    /** The inner band's surface (83) at a position, without cracks, layers and cubes. Pure. */
     private double innerTop(double x, double z) {
-        return SURFACE_BASE + SURFACE_NOISE * placeholder.getValue(x, 0.0, z);
+        return inner().top(Mth.floor(x), Mth.floor(z));
+    }
+
+    /** The floating cubes of the glitch fields over a column (83): exact spans. */
+    private void cubeSpans(Column c, int x, int z) {
+        if (c.glitch <= 0.0) {
+            return;
+        }
+        int ci = Math.floorDiv(x, Ring5Inner.CUBE_CELL);
+        int cj = Math.floorDiv(z, Ring5Inner.CUBE_CELL);
+        for (int di = -1; di <= 0; di++) {
+            for (int dj = -1; dj <= 0; dj++) {
+                int[] cube = cube(ci + di, cj + dj);
+                if (cube != null && x >= cube[0] && x < cube[0] + cube[2] && z >= cube[1] && z < cube[1] + cube[2]) {
+                    c.addSpan(cube[3], cube[3] + cube[2]);
+                }
+            }
+        }
+    }
+
+    /** The floating cube of cube cell (i, j) (83): {x0, z0, size, bottom}, or null. Cached, pure. */
+    @Nullable
+    int[] cube(int i, int j) {
+        long key = (((long) i) << 32) ^ (j & 0xFFFFFFFFL);
+        Optional<int[]> known = decisions.cubes.peek(key);
+        if (known == null) {
+            known = Optional.ofNullable(inner().cube(i, j));
+            decisions.cubes.put(key, known);
+        }
+        return known.orElse(null);
+    }
+
+    /**
+     * How far (blocks) a column lies from the nearest loose crack of the inner band (83), at most 0 inside one; infinite
+     * where none is near. For the terrain and the dam of the lava layer ({@code RingFluidPicker}). Pure.
+     */
+    public double innerCrackDistance(int x, int z) {
+        int ci = Math.floorDiv(x, Ring5Inner.CRACK_CELL);
+        int cj = Math.floorDiv(z, Ring5Inner.CRACK_CELL);
+        double distance = Double.POSITIVE_INFINITY;
+        for (int di = -1; di <= 1; di++) {
+            for (int dj = -1; dj <= 1; dj++) {
+                double[] crack = innerCrack(ci + di, cj + dj);
+                if (crack != null) {
+                    distance = Math.min(distance, Ring5Inner.crackDistance(crack, x + 0.5, z + 0.5));
+                }
+            }
+        }
+        return distance;
+    }
+
+    /** The loose crack of crack cell (i, j) if it lies well inside the inner band (off the band line and the zone 4→5). */
+    @Nullable
+    double[] innerCrack(int i, int j) {
+        long key = (((long) i) << 32) ^ (j & 0xFFFFFFFFL);
+        Optional<double[]> known = decisions.cracks.peek(key);
+        if (known == null) {
+            double[] crack = inner().crack(i, j);
+            if (crack != null) {
+                RingLayout l = layout.get();
+                Ring5Band band = Ring5Band.of(l);
+                double zoneEnd = Ring4Sundered.zoneEnd(l);
+                for (double t : new double[]{0.0, 0.5, 1.0}) {
+                    double px = crack[0] + crack[2] * crack[4] * t;
+                    double pz = crack[1] + crack[3] * crack[4] * t;
+                    if (band.signedDistance(px, pz) > -Ring5Inner.CRACK_CLEARANCE
+                            || l.effectiveDistance(px, pz) < zoneEnd + Ring5Inner.CRACK_CLEARANCE) {
+                        crack = null;
+                        break;
+                    }
+                }
+            }
+            known = Optional.ofNullable(crack);
+            decisions.cracks.put(key, known);
+        }
+        return known.orElse(null);
     }
 
     /** The ground's top in the outer band (a floe's, or where a floe would be): from the inner band's surface at the line. */
@@ -1072,20 +1203,25 @@ public final class Ring5Field implements DensityFunction {
     }
 
     /**
-     * The noises of the terrain: {@code rot} the region axis of the router's temperature ({@code ring_5_rot}, the same as
-     * {@code ring_5/overworld/region_rot}), {@code relief} the floes' tops, {@code detail} rags and roughness,
+     * The noises of the terrain: {@code rot} and {@code glitch} the region axes of the router's temperature and vegetation
+     * ({@code ring_5_rot}, {@code ring_5_glitch}, the same as {@code ring_5/overworld/region_rot} and {@code region_glitch}),
+     * {@code hills} the inner band's hills, {@code relief} the floes' tops, {@code detail} rags and roughness,
      * {@code scars} the cracks of {@code void_scars}.
      */
-    public record Noises(NoiseHolder rot, NoiseHolder relief, NoiseHolder detail, NoiseHolder scars) {
+    public record Noises(NoiseHolder rot, NoiseHolder glitch, NoiseHolder hills, NoiseHolder relief, NoiseHolder detail,
+                         NoiseHolder scars) {
         public static final Codec<Noises> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 NoiseHolder.CODEC.fieldOf("rot").forGetter(Noises::rot),
+                NoiseHolder.CODEC.fieldOf("glitch").forGetter(Noises::glitch),
+                NoiseHolder.CODEC.fieldOf("hills").forGetter(Noises::hills),
                 NoiseHolder.CODEC.fieldOf("relief").forGetter(Noises::relief),
                 NoiseHolder.CODEC.fieldOf("detail").forGetter(Noises::detail),
                 NoiseHolder.CODEC.fieldOf("scars").forGetter(Noises::scars)
         ).apply(instance, Noises::new));
 
         Noises map(Visitor visitor) {
-            return new Noises(visitor.visitNoise(rot), visitor.visitNoise(relief), visitor.visitNoise(detail), visitor.visitNoise(scars));
+            return new Noises(visitor.visitNoise(rot), visitor.visitNoise(glitch), visitor.visitNoise(hills), visitor.visitNoise(relief),
+                    visitor.visitNoise(detail), visitor.visitNoise(scars));
         }
     }
 
@@ -1182,6 +1318,13 @@ public final class Ring5Field implements DensityFunction {
         double inverted;
         /** The ground's top without scars (a scar column: its floe's top), {@link #VOID_HEIGHT} over the void. */
         double height;
+        /** 0..1: the glitch fields' weight (83). */
+        double glitch;
+        /** The inner band's preliminary surface, NaN until asked for. */
+        double initial;
+        boolean inner;
+        /** The glitch fields' shifted layers apply (83). */
+        boolean layered;
         boolean scarOpen;
         int spans;
         final int[] spanBottom = new int[MAX_SPANS];
@@ -1195,6 +1338,10 @@ public final class Ring5Field implements DensityFunction {
             scars = 0.0;
             inverted = 0.0;
             height = VOID_HEIGHT;
+            glitch = 0.0;
+            initial = Double.NaN;
+            inner = false;
+            layered = false;
             scarOpen = false;
             spans = 0;
         }
@@ -1241,6 +1388,10 @@ public final class Ring5Field implements DensityFunction {
             return height;
         }
 
+        public double glitch() {
+            return glitch;
+        }
+
         public boolean isVoid() {
             return Double.isNaN(top);
         }
@@ -1258,5 +1409,8 @@ public final class Ring5Field implements DensityFunction {
         volatile List<Strip> strips;
         final KeyedSlots<Boolean> floes = new KeyedSlots<>(1024);
         final KeyedSlots<Optional<Fragment>> fragments = new KeyedSlots<>(256);
+        volatile Ring5Inner inner;
+        final KeyedSlots<Optional<int[]>> cubes = new KeyedSlots<>(256);
+        final KeyedSlots<Optional<double[]>> cracks = new KeyedSlots<>(64);
     }
 }

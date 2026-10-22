@@ -82,6 +82,42 @@ class RingFluidPickerTest {
         }
     }
 
+    /**
+     * 83: round each loose crack of the inner band a dam of {@link RingFluidPicker#RING_5_CRACK_DAM} blocks: no lava and
+     * no open space below Y −54 there; the crack itself is open (no dam, no lava) down into the void; further away the
+     * layer as before.
+     */
+    @Test
+    void ring5LavaLayerKeepsItsDamRoundTheCracks() {
+        Aquifer.FluidStatus lava = new Aquifer.FluidStatus(-54, Blocks.LAVA.defaultBlockState());
+        double[] crack = new double[1];
+        RingFluidPicker picker = new RingFluidPicker(Level.OVERWORLD, (x, y, z) -> y < -54 ? lava : SEA, Map.of(),
+                new RingFluidPicker.Ring5Bands() {
+                    @Override
+                    public double signedDistance(int x, int z) {
+                        return -500.0;
+                    }
+
+                    @Override
+                    public double crackDistance(int x, int z) {
+                        return crack[0];
+                    }
+                });
+        RingPosition ring5 = RingPosition.within(Ring.RING_5);
+        for (double d : new double[]{-2.0, 0.0, 0.5, 3.0, RingFluidPicker.RING_5_CRACK_DAM, RingFluidPicker.RING_5_CRACK_DAM + 0.5, 50.0}) {
+            crack[0] = d;
+            boolean layer = d > RingFluidPicker.RING_5_CRACK_DAM;
+            assertEquals(layer, picker.computeFluid(ring5, 0, -60, 0).at(-60).is(Blocks.LAVA), "crack distance " + d);
+            assertEquals(layer, RingFluidPicker.ring5LavaColumn(-500.0, d));
+            // The dam holds rock below the layer's top round the crack, never in it.
+            assertEquals(d > 0.0 && d <= RingFluidPicker.RING_5_CRACK_DAM, RingFluidPicker.ring5Dam(-500.0, d), "dam at " + d);
+        }
+        // The band line's dam stays; the outer band has neither.
+        assertTrue(RingFluidPicker.ring5Dam(-1.0, Double.POSITIVE_INFINITY));
+        assertFalse(RingFluidPicker.ring5Dam(1.0, 2.0));
+        assertFalse(RingFluidPicker.ring5LavaColumn(1.0, 50.0));
+    }
+
     @Test
     void voidEdgeAndItsTransitionHaveNoFluid() {
         RingPosition[] positions = {

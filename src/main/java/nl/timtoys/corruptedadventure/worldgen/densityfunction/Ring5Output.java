@@ -28,6 +28,8 @@ public final class Ring5Output implements DensityFunction {
         HEIGHT("height", Ring5Field.VOID_HEIGHT, 320.0),
         /** 0..1: a scar open to the void (1) and its rim ({@code void_scars}; the inner band's cracks in 83). */
         SCARS("scars", 0.0, 1.0),
+        /** 0..1: the glitch fields' blocky shapes (their weight; the shifted layers and floating cubes lie where it is 1; 83). */
+        GLITCH("glitch", 0.0, 1.0),
         /** 0..1: how far an upside-down hill hangs under the floe ({@code inverted_hills}; 1 = 40 blocks). */
         INVERTED("inverted", 0.0, 1.0),
         /** The preliminary surface (blocks): the ground's top; over the void below the world's bottom (no surface). */
@@ -95,6 +97,7 @@ public final class Ring5Output implements DensityFunction {
             case HEIGHT -> f.column(x, z).height();
             case SCARS -> f.column(x, z).scars();
             case INVERTED -> f.column(x, z).inverted();
+            case GLITCH -> f.column(x, z).glitch();
             case INITIAL_HEIGHT -> f.initialHeight(x, z);
             case TERRAIN -> f.terrain(x, context.blockY(), z);
         };
