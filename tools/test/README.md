@@ -183,8 +183,13 @@ contact may already have turned into mud.
 What lies over the void and the dry rule of ring 5 (82, V3-A, V9-B), on a `world.sh` world:
 
 ```bash
-python tools/test/py/voidscan.py <world> tools/test/areas/ring5.txt [--wet z45e ...] [--list 5] [--json out.json] [--strict]
+python tools/test/py/voidscan.py <world> tools/test/areas/ring5.txt [--rings rings.txt] [--wet z45e ...] [--list 5] [--json out.json] [--strict]
 ```
+
+`--rings` takes the ring of every column (the noisy margin of the zone 4→5 holds ring 4's columns, which keep ring 4's
+own sea and count no faults; without it the margin counts as zone). Make it with the world's seed:
+`CA_RING_AREAS=<abs path of areas> CA_RING_OUT=<abs path out> CA_WORLD_SEED=<seed> ./gradlew cleanTest test --tests '*RingColumnsExportTest*'`
+(paths must be absolute: the test JVM does not run from the checkout root).
 
 Counts per area: `void` (columns without any solid block; information) and the faults `bedrock` (bedrock above Y −60 or
 over the void), `loose` (solid groups of 1–2 blocks with nothing solid below them), `fluidvoid` (water or lava beside a

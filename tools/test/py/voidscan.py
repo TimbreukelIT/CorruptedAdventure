@@ -1,7 +1,11 @@
 """Bottom scan of ring 5 (82, V3-A, V9-B): what lies over the void and what the dry rule allows. Offline, on the saved
 region files.
 
-    python -I voidscan.py <world> <areas> [--only name ...] [--wet name ...] [--list 10] [--json out.json] [--strict]
+    python -I voidscan.py <world> <areas> [--rings rings.txt] [--only name ...] [--wet name ...] [--list 10] [--json out.json] [--strict]
+
+--rings: the ring of every column of the areas (made by RingColumnsExportTest, see there). A column of ring 4 lies in
+the noisy margin of the zone 4→5 and keeps ring 4's own rules, so no fault is counted there; the column is still
+counted as `ring4`. Without --rings every column counts, as before.
 
 Per area (overworld only; Nether areas are skipped) it counts:
 
@@ -77,14 +81,41 @@ def shifted(m, dy, dz, dx):
     return out
 
 
+def load_rings(path):
+    """{(x, z): ring 4 (True) or not} from an export of RingColumnsExportTest: lines `x z RING_n transition`."""
+    out = {}
+    for line in open(path, encoding="utf-8"):
+        x, z, ring, transition = line.split()
+        out[(int(x), int(z))] = ring == "RING_4" and transition == "false"
+    return out
+
+
+def ring4_columns(rings, a):
+    """Per column of the area (z, x): whether the layout puts it in ring 4. Raises when a column is missing."""
+    w, h = (a.cx1 - a.cx0 + 1) * 16, (a.cz1 - a.cz0 + 1) * 16
+    out = np.zeros((h, w), bool)
+    for z in range(h):
+        for x in range(w):
+            key = (a.cx0 * 16 + x, a.cz0 * 16 + z)
+            if key not in rings:
+                raise SystemExit("--rings has no column %d,%d of area %s" % (key[0], key[1], a.name))
+            out[z, x] = rings[key]
+    return out
+
+
 def points(mask, a, list_n):
     ys, zs, xs = np.nonzero(mask)
     return [(int(a.cx0 * 16 + x), int(y + a.dim.min_y), int(a.cz0 * 16 + z)) for y, z, x in list(zip(ys, zs, xs))[:list_n]]
 
 
-def scan(world, a, wet, list_n):
+def scan(world, a, wet, list_n, ring4=None):
     solid, water, lava, bedrock, missing = load(world, a)
     min_y = a.dim.min_y
+    # Ring 4's columns (--rings) keep ring 4's own rules: they are not counted as faults of the zone or of ring 5.
+    keep = np.ones_like(solid) if ring4 is None else ~np.broadcast_to(ring4, solid.shape)
+    water &= keep
+    lava &= keep
+    bedrock &= keep
     # Anything solid strictly below each block of its column.
     below = np.zeros_like(solid)
     below[1:] = np.logical_or.accumulate(solid, axis=0)[:-1]
@@ -108,7 +139,9 @@ def scan(world, a, wet, list_n):
     loose = (single | pair) & open_below
     loose[:, :1, :] = loose[:, -1:, :] = False
     loose[:, :, :1] = loose[:, :, -1:] = False
+    loose &= keep
     result["loose"] = int(loose.sum())
+    result["ring4"] = 0 if ring4 is None else int(ring4.sum())
 
     fluid = water | lava
     beside_void = np.zeros_like(solid)
@@ -140,20 +173,22 @@ def main():
     p.add_argument("--only", nargs="*")
     p.add_argument("--wet", nargs="*", help="areas without the dry rule (default: none)")
     p.add_argument("--list", type=int, default=5)
+    p.add_argument("--rings", help="ring of each column (RingColumnsExportTest); ring 4 columns count no faults")
     p.add_argument("--json")
     p.add_argument("--strict", action="store_true")
     args = p.parse_args()
     results = {}
     faults = 0
+    rings = load_rings(args.rings) if args.rings else None
     for a in areas.load(args.areas, only_dim="ow", names=args.only):
         wet = a.name in args.wet if args.wet is not None else False
-        r = scan(args.world, a, wet, args.list)
+        r = scan(args.world, a, wet, args.list, None if rings is None else ring4_columns(rings, a))
         region.clear_cache()
         results[a.name] = r
         total = sum(r[k] for k in FAULTS)
         faults += total
-        print("%-8s void=%-6d bedrock=%-4d loose=%-4d fluidvoid=%-4d water=%-5d lavahigh=%-4d%s%s" % (
-            a.name, r["void"], r["bedrock"], r["loose"], r["fluidvoid"], r["water"], r["lavahigh"],
+        print("%-8s void=%-6d bedrock=%-4d loose=%-4d fluidvoid=%-4d water=%-5d lavahigh=%-4d ring4=%-6d%s%s" % (
+            a.name, r["void"], r["bedrock"], r["loose"], r["fluidvoid"], r["water"], r["lavahigh"], r["ring4"],
             "" if r["dry"] else " (wet)", " MISSING %d chunks" % r["missing"] if r["missing"] else ""))
         for kind, pts in r.get("examples", {}).items():
             print("    %s: %s" % (kind, " ".join("%d,%d,%d" % pt for pt in pts)))
