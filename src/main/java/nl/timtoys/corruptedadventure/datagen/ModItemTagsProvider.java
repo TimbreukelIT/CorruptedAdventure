@@ -122,6 +122,35 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.CANYON_COBBLESTONE.asItem());
 
         ring4();
+        ring5();
+    }
+
+    /**
+     * Ring 5 (88): the corrupted items join the vanilla item tags of their counterparts (the general block tag copies above
+     * cover planks, leaves, dirt, sand, cobblestones and the wood shapes), so vanilla's recipes take them: stone tools and
+     * furnaces from the cobblestone, glass from the sand, sticks and crafting tables from the planks.
+     */
+    private void ring5() {
+        copy(ModTags.Blocks.CORRUPTED_LOGS, ModTags.Items.CORRUPTED_LOGS);
+        tag(ItemTags.STONE_TOOL_MATERIALS).add(ModBlocks.CORRUPTED_COBBLESTONE.asItem());
+        tag(ItemTags.STONE_CRAFTING_MATERIALS).add(ModBlocks.CORRUPTED_COBBLESTONE.asItem());
+        tag(ItemTags.SMELTS_TO_GLASS).add(ModBlocks.CORRUPTED_SAND.asItem());
+        // Like vanilla's own copies; the sign items are named after the standing and the ceiling block.
+        copy(BlockTags.STANDING_SIGNS, ItemTags.SIGNS);
+        copy(BlockTags.CEILING_HANGING_SIGNS, ItemTags.HANGING_SIGNS);
+
+        // 89: nullite like tidesilver.
+        copy(ModTags.Blocks.ORES_NULLITE, ModTags.Items.ORES_NULLITE);
+        copy(ModTags.Blocks.ORES_IN_GROUND_CORRUPTED_STONE, ModTags.Items.ORES_IN_GROUND_CORRUPTED_STONE);
+        copy(ModTags.Blocks.ORES_IN_GROUND_VOIDSTONE, ModTags.Items.ORES_IN_GROUND_VOIDSTONE);
+        tag(ModTags.Items.RAW_MATERIALS_NULLITE).add(ModItems.RAW_NULLITE.get());
+        tag(Tags.Items.RAW_MATERIALS).addTag(ModTags.Items.RAW_MATERIALS_NULLITE);
+
+        // 90: the white core like jade; the stairs, slabs and walls come through the general copies above.
+        copy(ModTags.Blocks.ORES_WHITE_CORE, ModTags.Items.ORES_WHITE_CORE);
+        copy(ModTags.Blocks.ORES_IN_GROUND_WHITE_STONE, ModTags.Items.ORES_IN_GROUND_WHITE_STONE);
+        tag(ModTags.Items.GEMS_WHITE_CORE).add(ModItems.WHITE_CORE.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_WHITE_CORE);
     }
 
     /** Ring 4: the burnable wood sets reach #logs_that_burn through the block tag copy above. */

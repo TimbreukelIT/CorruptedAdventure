@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "corruptedadventure:block/corrupted_stone"
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_stone_mirrored"
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_stone",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_stone_mirrored",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_stone",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_stone_mirrored",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_stone",
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/corrupted_stone_mirrored",
+        "y": 270
+      }
+    ]
+  }
+}

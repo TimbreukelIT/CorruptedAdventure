@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/wall_inventory",
+  "textures": {
+    "wall": "corruptedadventure:block/white_stone_bricks"
+  }
+}

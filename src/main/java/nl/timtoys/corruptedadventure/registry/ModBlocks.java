@@ -5,13 +5,16 @@ import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.DoubleHighBlockItem;
+import net.minecraft.world.item.HangingSignItem;
 import net.minecraft.world.item.PlaceOnWaterBlockItem;
+import net.minecraft.world.item.SignItem;
 import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.level.block.AmethystBlock;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
+import net.minecraft.world.level.block.CeilingHangingSignBlock;
 import net.minecraft.world.level.block.ColoredFallingBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.DropExperienceBlock;
@@ -30,9 +33,12 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.TallFlowerBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.WallHangingSignBlock;
+import net.minecraft.world.level.block.WallSignBlock;
 import net.minecraft.world.level.block.WaterlilyBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
@@ -78,6 +84,7 @@ import nl.timtoys.corruptedadventure.block.SoakedNetherrackBlock;
 import nl.timtoys.corruptedadventure.block.SporeMossBlock;
 import nl.timtoys.corruptedadventure.block.SporeSproutsBlock;
 import nl.timtoys.corruptedadventure.block.StalactiteBlock;
+import nl.timtoys.corruptedadventure.block.VoidstoneBlock;
 import nl.timtoys.corruptedadventure.block.StrippableLogBlock;
 import nl.timtoys.corruptedadventure.block.SuckingMudBlock;
 import nl.timtoys.corruptedadventure.block.SuckingMudSuffocation;
@@ -115,6 +122,8 @@ public final class ModBlocks {
     static final float RING_3_ORE_EXTRA_HARDNESS = 0.5F;
     /** Ring 4 ores are this much harder than the vanilla ore of their host (a step above ring 3; decision V3 golf 1). */
     static final float RING_4_ORE_EXTRA_HARDNESS = 1.0F;
+    /** Ring 5 (and Nether ring 5) ores: half a point above ring 4 (OV2 = A golf 1). */
+    static final float RING_5_ORE_EXTRA_HARDNESS = 1.5F;
 
     // ---- Ring 1 ----
     public static final DeferredBlock<DeadGrassBlock> DEAD_GRASS_BLOCK = register("dead_grass_block",
@@ -1076,6 +1085,141 @@ public final class ModBlocks {
     public static final DeferredBlock<AmethystBlock> PURITY_CRYSTAL_LAMP = register("purity_crystal_lamp",
             () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.SNOW).lightLevel(state -> 15)));
 
+    // ---- Ring 5 ----
+    // The corrupted variants of vanilla blocks (contract ring 5 §3/§11, package 88): the vanilla counterpart's strength,
+    // sounds and behaviour, leached grey on the map; no tint (the colour is in the texture). The nine in
+    // #corruptedadventure:corrupted each have a healthy_block mapping; the rest of the wood set is plain vanilla-like wood.
+    private static final MapColor CORRUPTED_COLOR = MapColor.COLOR_GRAY;
+    /** Sand, and wood without bark: a paler grey. */
+    private static final MapColor CORRUPTED_PALE_COLOR = MapColor.COLOR_LIGHT_GRAY;
+    /** The dust of falling corrupted sand: ash grey with a hint of violet. */
+    private static final int CORRUPTED_SAND_DUST_COLOR = 0x8C8792;
+    /**
+     * Grass's strength and sound as a plain block: no random ticks, so it never spreads, dies or turns into grass, and no
+     * snowy state (contract §11). Not a copy of grass, whose properties carry the random ticks.
+     */
+    public static final DeferredBlock<Block> CORRUPTED_GRASS_BLOCK = register("corrupted_grass_block",
+            () -> new Block(Properties.of().mapColor(CORRUPTED_COLOR).strength(0.6F).sound(SoundType.GRASS)));
+    public static final DeferredBlock<Block> CORRUPTED_DIRT = register("corrupted_dirt",
+            () -> new Block(recolored(Blocks.DIRT, CORRUPTED_COLOR)));
+    public static final DeferredBlock<Block> CORRUPTED_STONE = register("corrupted_stone",
+            () -> new Block(recolored(Blocks.STONE, CORRUPTED_COLOR)));
+    public static final DeferredBlock<Block> CORRUPTED_COBBLESTONE = register("corrupted_cobblestone",
+            () -> new Block(recolored(Blocks.COBBLESTONE, CORRUPTED_COLOR)));
+    /** Falls like sand. */
+    public static final DeferredBlock<ColoredFallingBlock> CORRUPTED_SAND = register("corrupted_sand",
+            () -> new ColoredFallingBlock(new ColorRGBA(CORRUPTED_SAND_DUST_COLOR), recolored(Blocks.SAND, CORRUPTED_PALE_COLOR)));
+    // The wood set (contract §11): oak's sounds and behaviour (ModWoodTypes.CORRUPTED), burnable like oak.
+    public static final DeferredBlock<StrippableLogBlock> CORRUPTED_LOG = register("corrupted_log",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_CORRUPTED_LOG, Properties.ofFullCopy(Blocks.OAK_LOG)
+                    .mapColor(state -> state.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y
+                            ? CORRUPTED_PALE_COLOR : CORRUPTED_COLOR)));
+    public static final DeferredBlock<StrippableLogBlock> CORRUPTED_WOOD = register("corrupted_wood",
+            () -> new StrippableLogBlock(ModBlocks.STRIPPED_CORRUPTED_WOOD, recolored(Blocks.OAK_WOOD, CORRUPTED_COLOR)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_CORRUPTED_LOG = register("stripped_corrupted_log",
+            () -> new RotatedPillarBlock(corruptedWood(Blocks.STRIPPED_OAK_LOG)));
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_CORRUPTED_WOOD = register("stripped_corrupted_wood",
+            () -> new RotatedPillarBlock(corruptedWood(Blocks.STRIPPED_OAK_WOOD)));
+    public static final DeferredBlock<Block> CORRUPTED_PLANKS = register("corrupted_planks",
+            () -> new Block(corruptedWood(Blocks.OAK_PLANKS)));
+    public static final DeferredBlock<StairBlock> CORRUPTED_STAIRS = register("corrupted_stairs",
+            () -> new StairBlock(CORRUPTED_PLANKS.get().defaultBlockState(), corruptedWood(Blocks.OAK_STAIRS)));
+    public static final DeferredBlock<SlabBlock> CORRUPTED_SLAB = register("corrupted_slab",
+            () -> new SlabBlock(corruptedWood(Blocks.OAK_SLAB)));
+    public static final DeferredBlock<FenceBlock> CORRUPTED_FENCE = register("corrupted_fence",
+            () -> new FenceBlock(corruptedWood(Blocks.OAK_FENCE)));
+    public static final DeferredBlock<FenceGateBlock> CORRUPTED_FENCE_GATE = register("corrupted_fence_gate",
+            () -> new FenceGateBlock(ModWoodTypes.CORRUPTED, corruptedWood(Blocks.OAK_FENCE_GATE)));
+    public static final DeferredBlock<DoorBlock> CORRUPTED_DOOR = registerDoor("corrupted_door",
+            () -> new DoorBlock(ModWoodTypes.CORRUPTED_SET, corruptedWood(Blocks.OAK_DOOR)));
+    public static final DeferredBlock<TrapDoorBlock> CORRUPTED_TRAPDOOR = register("corrupted_trapdoor",
+            () -> new TrapDoorBlock(ModWoodTypes.CORRUPTED_SET, corruptedWood(Blocks.OAK_TRAPDOOR)));
+    public static final DeferredBlock<PressurePlateBlock> CORRUPTED_PRESSURE_PLATE = register("corrupted_pressure_plate",
+            () -> new PressurePlateBlock(ModWoodTypes.CORRUPTED_SET, corruptedWood(Blocks.OAK_PRESSURE_PLATE)));
+    public static final DeferredBlock<ButtonBlock> CORRUPTED_BUTTON = register("corrupted_button",
+            () -> new ButtonBlock(ModWoodTypes.CORRUPTED_SET, 30, corruptedWood(Blocks.OAK_BUTTON)));
+    // The mod's first signs. Vanilla's sign and hanging sign block entity types accept them (ModSigns), so vanilla's
+    // block entities, sync, edit screens and renderers serve them. The wall variants have no item of their own: the
+    // sign items place them against a wall, and they drop the standing sign's loot (lootFrom; a full copy of the oak
+    // wall sign would otherwise keep oak's drops).
+    public static final DeferredBlock<StandingSignBlock> CORRUPTED_SIGN = registerWithoutItem("corrupted_sign",
+            () -> new StandingSignBlock(ModWoodTypes.CORRUPTED, corruptedWood(Blocks.OAK_SIGN)));
+    public static final DeferredBlock<WallSignBlock> CORRUPTED_WALL_SIGN = registerWallSign("corrupted_wall_sign", CORRUPTED_SIGN,
+            () -> new WallSignBlock(ModWoodTypes.CORRUPTED, corruptedWood(Blocks.OAK_WALL_SIGN).lootFrom(CORRUPTED_SIGN)));
+    public static final DeferredBlock<CeilingHangingSignBlock> CORRUPTED_HANGING_SIGN = registerWithoutItem("corrupted_hanging_sign",
+            () -> new CeilingHangingSignBlock(ModWoodTypes.CORRUPTED, corruptedWood(Blocks.OAK_HANGING_SIGN)));
+    public static final DeferredBlock<WallHangingSignBlock> CORRUPTED_WALL_HANGING_SIGN = registerWallHangingSign(
+            "corrupted_wall_hanging_sign", CORRUPTED_HANGING_SIGN, () -> new WallHangingSignBlock(ModWoodTypes.CORRUPTED,
+                    corruptedWood(Blocks.OAK_WALL_HANGING_SIGN).lootFrom(CORRUPTED_HANGING_SIGN)));
+    /** Oak leaves' behaviour: decays without a log within 6 blocks. */
+    public static final DeferredBlock<LeavesBlock> CORRUPTED_LEAVES = register("corrupted_leaves",
+            () -> new LeavesBlock(recolored(Blocks.OAK_LEAVES, CORRUPTED_COLOR)));
+    // Glitch, void and nullite (package 89).
+    /** The missing-texture block: stone's strength, opaque, no light; animated only through its texture. */
+    public static final DeferredBlock<Block> GLITCH_BLOCK = register("glitch_block",
+            () -> new Block(recolored(Blocks.STONE, MapColor.COLOR_PURPLE)));
+    /** Black rock with stars: deepslate's strength and sound, a rare void mote out of an open face. */
+    public static final DeferredBlock<VoidstoneBlock> VOIDSTONE = register("voidstone",
+            () -> new VoidstoneBlock(recolored(Blocks.DEEPSLATE, MapColor.COLOR_BLACK)));
+    // Nullite (OV2 = A): one step above ring 4 without netherite, 1.5 harder than the vanilla ore of the host and a
+    // diamond pickaxe, XP 5-9. Its crystals are faintly emissive in the model, without block light.
+    /** Nullite in corrupted stone; drops {@link ModItems#RAW_NULLITE}. */
+    public static final DeferredBlock<DropExperienceBlock> NULLITE_ORE = register("nullite_ore",
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DIAMOND_ORE, RING_5_ORE_EXTRA_HARDNESS)
+                    .mapColor(CORRUPTED_COLOR)));
+    /** Nullite in voidstone (deepslate's ore as the template, like the voidstone itself). */
+    public static final DeferredBlock<DropExperienceBlock> VOIDSTONE_NULLITE_ORE = register("voidstone_nullite_ore",
+            () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DEEPSLATE_DIAMOND_ORE, RING_5_ORE_EXTRA_HARDNESS)
+                    .mapColor(MapColor.COLOR_BLACK)));
+
+    // ---- Nether ring 5 ----
+    // The white, silent Nether ring (contract ring 5 §3, package 90): chalkrack, the white stone set (like the fossil
+    // stone set), mirror stone, still light and the white core.
+    /** White netherrack: netherrack's strength and sound; a plain {@code Block}, so bone meal spreads no nylium onto it. */
+    public static final DeferredBlock<Block> CHALKRACK = register("chalkrack",
+            () -> new Block(recolored(Blocks.NETHERRACK, MapColor.QUARTZ)));
+    private static final MapColor WHITE_STONE_COLOR = MapColor.SNOW;
+    public static final DeferredBlock<Block> WHITE_STONE = register("white_stone", () -> new Block(recolored(Blocks.STONE, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<StairBlock> WHITE_STONE_STAIRS = register("white_stone_stairs",
+            () -> new StairBlock(WHITE_STONE.get().defaultBlockState(), recolored(Blocks.STONE_STAIRS, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<SlabBlock> WHITE_STONE_SLAB = register("white_stone_slab",
+            () -> new SlabBlock(recolored(Blocks.STONE_SLAB, WHITE_STONE_COLOR)));
+    /** Solid for support like vanilla walls ({@code forceSolidOn}); vanilla has no plain stone wall to copy. */
+    public static final DeferredBlock<WallBlock> WHITE_STONE_WALL = register("white_stone_wall",
+            () -> new WallBlock(recolored(Blocks.STONE, WHITE_STONE_COLOR).forceSolidOn()));
+    public static final DeferredBlock<Block> POLISHED_WHITE_STONE = register("polished_white_stone",
+            () -> new Block(recolored(Blocks.POLISHED_ANDESITE, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<StairBlock> POLISHED_WHITE_STONE_STAIRS = register("polished_white_stone_stairs",
+            () -> new StairBlock(POLISHED_WHITE_STONE.get().defaultBlockState(), recolored(Blocks.POLISHED_ANDESITE_STAIRS, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<SlabBlock> POLISHED_WHITE_STONE_SLAB = register("polished_white_stone_slab",
+            () -> new SlabBlock(recolored(Blocks.POLISHED_ANDESITE_SLAB, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<WallBlock> POLISHED_WHITE_STONE_WALL = register("polished_white_stone_wall",
+            () -> new WallBlock(recolored(Blocks.POLISHED_ANDESITE, WHITE_STONE_COLOR).forceSolidOn()));
+    public static final DeferredBlock<Block> WHITE_STONE_BRICKS = register("white_stone_bricks",
+            () -> new Block(recolored(Blocks.STONE_BRICKS, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<StairBlock> WHITE_STONE_BRICK_STAIRS = register("white_stone_brick_stairs",
+            () -> new StairBlock(WHITE_STONE_BRICKS.get().defaultBlockState(), recolored(Blocks.STONE_BRICK_STAIRS, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<SlabBlock> WHITE_STONE_BRICK_SLAB = register("white_stone_brick_slab",
+            () -> new SlabBlock(recolored(Blocks.STONE_BRICK_SLAB, WHITE_STONE_COLOR)));
+    public static final DeferredBlock<WallBlock> WHITE_STONE_BRICK_WALL = register("white_stone_brick_wall",
+            () -> new WallBlock(recolored(Blocks.STONE_BRICK_WALL, WHITE_STONE_COLOR)));
+    /** A pillar like quartz's, with stone's strength; no stairs, slab or wall. */
+    public static final DeferredBlock<RotatedPillarBlock> WHITE_STONE_PILLAR = register("white_stone_pillar",
+            () -> new RotatedPillarBlock(recolored(Blocks.STONE, WHITE_STONE_COLOR)));
+    /** Smooth and glossy (the gloss is in the texture), stone's strength and normal friction: walkable, not ice. */
+    public static final DeferredBlock<Block> MIRROR_STONE = register("mirror_stone",
+            () -> new Block(recolored(Blocks.STONE, WHITE_STONE_COLOR)));
+    /** A white light source without sound or particles: shroomlight's light (15) and strength, glass's sound. */
+    public static final DeferredBlock<Block> STILL_LIGHT = register("still_light",
+            () -> new Block(recolored(Blocks.SHROOMLIGHT, WHITE_STONE_COLOR).sound(SoundType.GLASS)));
+    /**
+     * The white core in white stone (OV2 = A): diamond ore +1.5, a diamond pickaxe, XP 6-10, a soft glow (light 3, and
+     * an emissive overlay); drops {@link ModItems#WHITE_CORE}.
+     */
+    public static final DeferredBlock<DropExperienceBlock> WHITE_CORE_ORE = register("white_core_ore",
+            () -> new DropExperienceBlock(UniformInt.of(6, 10), oreIn(Blocks.DIAMOND_ORE, RING_5_ORE_EXTRA_HARDNESS)
+                    .mapColor(WHITE_STONE_COLOR).lightLevel(state -> 3)));
+
     private ModBlocks() {
     }
 
@@ -1143,7 +1287,7 @@ public final class ModBlocks {
 
     /**
      * A ring ore in a vanilla host: that vanilla ore's look, sound and blast resistance, {@code extraHardness} harder
-     * (ring 3 half a point, ring 4 a whole one). The tool tier comes from the {@code needs_*_tool} tags.
+     * (ring 3 half a point, ring 4 a whole one, ring 5 one and a half). The tool tier comes from the {@code needs_*_tool} tags.
      */
     private static Properties oreIn(Block vanillaOre, float extraHardness) {
         return Properties.ofFullCopy(vanillaOre).destroyTime(vanillaOre.defaultDestroyTime() + extraHardness);
@@ -1194,6 +1338,11 @@ public final class ModBlocks {
         return Properties.ofFullCopy(vanilla).mapColor(MapColor.SAND);
     }
 
+    /** Corrupted wood without bark (planks family, stripped, signs): oak's behaviour and sounds, pale grey on the map. */
+    private static Properties corruptedWood(Block vanilla) {
+        return recolored(vanilla, CORRUPTED_PALE_COLOR);
+    }
+
     /**
      * A glowcap: a mushroom's feel (walk-through, instant, fungus sounds, destroyed by pistons) with its own light, and
      * without the random ticks of vanilla mushrooms (it never spreads).
@@ -1224,6 +1373,27 @@ public final class ModBlocks {
     private static <B extends DoorBlock> DeferredBlock<B> registerDoor(String name, Supplier<B> block) {
         DeferredBlock<B> holder = BLOCKS.register(name, block);
         ModItems.ITEMS.registerItem(name, properties -> new DoubleHighBlockItem(holder.get(), properties));
+        return holder;
+    }
+
+    /**
+     * A wall sign, followed by the sign item (named after {@code standing}, stacks of 16 like vanilla's) that places
+     * {@code standing} on the ground and this block against a wall.
+     */
+    private static <B extends WallSignBlock> DeferredBlock<B> registerWallSign(String name,
+            DeferredBlock<? extends StandingSignBlock> standing, Supplier<B> wall) {
+        DeferredBlock<B> holder = BLOCKS.register(name, wall);
+        ModItems.ITEMS.registerItem(standing.getId().getPath(),
+                properties -> new SignItem(properties.stacksTo(16), standing.get(), holder.get()));
+        return holder;
+    }
+
+    /** A wall hanging sign, followed by its hanging sign item, like {@link #registerWallSign}. */
+    private static <B extends WallHangingSignBlock> DeferredBlock<B> registerWallHangingSign(String name,
+            DeferredBlock<? extends CeilingHangingSignBlock> ceiling, Supplier<B> wall) {
+        DeferredBlock<B> holder = BLOCKS.register(name, wall);
+        ModItems.ITEMS.registerItem(ceiling.getId().getPath(),
+                properties -> new HangingSignItem(ceiling.get(), holder.get(), properties.stacksTo(16)));
         return holder;
     }
 

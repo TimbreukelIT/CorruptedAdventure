@@ -10,6 +10,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.block.LooseSandTrigger;
 import nl.timtoys.corruptedadventure.block.ModFlammables;
 import nl.timtoys.corruptedadventure.block.ModFlowerPots;
+import nl.timtoys.corruptedadventure.block.ModSigns;
 import nl.timtoys.corruptedadventure.block.SuckingMudSuffocation;
 import nl.timtoys.corruptedadventure.block.SwampGasIgnition;
 import nl.timtoys.corruptedadventure.command.CaCommand;
@@ -77,6 +78,7 @@ public final class CorruptedAdventure {
         ModCreativeTabs.register(modEventBus);
         ModFlammables.register(modEventBus);
         ModFlowerPots.register(modEventBus);
+        ModSigns.register(modEventBus);
         ModBiomeSources.register(modEventBus);
         BiomeSpawnPlacements.register(modEventBus);
         ModDensityFunctionTypes.register(modEventBus);

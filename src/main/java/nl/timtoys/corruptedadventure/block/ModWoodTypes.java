@@ -58,6 +58,14 @@ public final class ModWoodTypes {
     /** Not registered, for the same reason as {@link #DEAD}. */
     public static final WoodType VERDANT = new WoodType(CorruptedAdventure.id("verdant").toString(), VERDANT_SET);
 
+    /** {@code corruptedadventure:corrupted}: the leached wood of ring 5 (88), oak sounds and behaviour. */
+    public static final BlockSetType CORRUPTED_SET = BlockSetType.register(new BlockSetType(CorruptedAdventure.id("corrupted").toString()));
+    /**
+     * Registered, unlike the other wood types: the corrupted set has signs, and {@code WoodType.values()} is where the
+     * client's {@code Sheets} builds the sign materials ({@code entity/signs/corrupted}, {@code entity/signs/hanging/corrupted}).
+     */
+    public static final WoodType CORRUPTED = WoodType.register(new WoodType(CorruptedAdventure.id("corrupted").toString(), CORRUPTED_SET));
+
     private ModWoodTypes() {
     }
 

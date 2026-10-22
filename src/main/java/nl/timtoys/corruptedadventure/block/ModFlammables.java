@@ -87,5 +87,15 @@ public final class ModFlammables {
                 ModBlocks.LAGOON_GLOWGRASS.get()}) {
             fire.setFlammable(plant, 60, 100);
         }
+        // Ring 5: the corrupted wood set burns like oak (its doors, trapdoors, buttons, plates and signs do not, like oak's).
+        for (Block log : new Block[] {ModBlocks.CORRUPTED_LOG.get(), ModBlocks.CORRUPTED_WOOD.get(),
+                ModBlocks.STRIPPED_CORRUPTED_LOG.get(), ModBlocks.STRIPPED_CORRUPTED_WOOD.get()}) {
+            fire.setFlammable(log, 5, 5);
+        }
+        for (Block planks : new Block[] {ModBlocks.CORRUPTED_PLANKS.get(), ModBlocks.CORRUPTED_STAIRS.get(),
+                ModBlocks.CORRUPTED_SLAB.get(), ModBlocks.CORRUPTED_FENCE.get(), ModBlocks.CORRUPTED_FENCE_GATE.get()}) {
+            fire.setFlammable(planks, 5, 20);
+        }
+        fire.setFlammable(ModBlocks.CORRUPTED_LEAVES.get(), 30, 60);
     }
 }

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModWoodTypesTest {
     @Test
@@ -60,6 +61,19 @@ class ModWoodTypesTest {
         assertSame(ModWoodTypes.RIMESHROOM_SET, BlockSetType.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
         assertEquals(BlockSetType.CRIMSON.soundType(), ModWoodTypes.RIMESHROOM_SET.soundType());
         assertNetherWoodType(ModWoodTypes.RIMESHROOM, ModWoodTypes.RIMESHROOM_SET);
+    }
+
+    /** The corrupted set (ring 5) is oak wood and, unlike the others, a registered wood type: it has signs. */
+    @Test
+    void corruptedWoodTypeIsRegisteredOakWood() {
+        JsonElement json = BlockSetType.CODEC.encodeStart(JsonOps.INSTANCE, ModWoodTypes.CORRUPTED_SET).getOrThrow();
+        assertEquals("corruptedadventure:corrupted", json.getAsString());
+        assertSame(ModWoodTypes.CORRUPTED_SET, ModWoodTypes.CORRUPTED.setType());
+        assertEquals(BlockSetType.OAK.soundType(), ModWoodTypes.CORRUPTED_SET.soundType());
+        assertEquals(BlockSetType.OAK.doorOpen(), ModWoodTypes.CORRUPTED_SET.doorOpen());
+        assertEquals(WoodType.OAK.fenceGateOpen(), ModWoodTypes.CORRUPTED.fenceGateOpen());
+        assertEquals(WoodType.OAK.hangingSignSoundType(), ModWoodTypes.CORRUPTED.hangingSignSoundType());
+        assertTrue(WoodType.values().anyMatch(type -> type == ModWoodTypes.CORRUPTED));
     }
 
     private static void assertNetherWoodType(WoodType wood, BlockSetType set) {

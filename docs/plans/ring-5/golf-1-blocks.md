@@ -167,11 +167,57 @@ rondom; deuren `_top`/`_bottom` + `item/<naam>_door`.
   B, D, S-smoke groen; per pakket `/code-review` verwerkt.
 
 ## Voortgang
+- Voortgang: 2026-10-21 20:39 worktree `P:/Projecten/Java/wt/r5-blocks-g1` (branch `ring5/blocks-g1` vanaf `3dfd50aa`), `setup.sh B 0`, eerste build groen.
+- Voortgang: 2026-10-21 21:08 88 klaar: B groen (1154 tests, 0 fouten), D groen (alleen ring 5-output), S-smoke `r5-b88` schoon (0 ERROR; bord, wandbord, hangend bord en hangend wandbord via RCON: block entity `minecraft:sign`/`minecraft:hanging_sign`, tekst blijft staan, drops = `corrupted_sign`/`corrupted_hanging_sign`).
+- Voortgang: 2026-10-21 21:25 88r klaar: D = 13 recepten + 13 advancements (gelijk aan eik), B groen (1157 tests). Geen S-smoke (alleen data, plan §8).
+- Voortgang: 2026-10-21 21:26 OV2 beantwoord (A); 89 en 90 gestart.
+- Voortgang: 2026-10-21 21:40 89 klaar: D groen (alleen ring 5-output), B groen (1162 tests). S-smoke volgt samen met 90.
+- Voortgang: 2026-10-21 21:48 90 klaar: D groen, B groen (1164 tests); S-smoke `r5-b90` (89 + 90) schoon (0 ERROR): alle nieuwe blokken via `setblock`, `loot … mine` geeft glitchscherf / ruw nulliet / witte kern, voidsteen in `#void_sources`, witte-kernerts in `#needs_diamond_tool`, bord nog steeds `minecraft:sign`.
 
 ## CODEBASE-delta
+**88 (blocks):**
+- Blocks (na Nether-ring 4, sectie "Ring 5"): `corrupted_grass_block` (`Block`, gras-hardheid/-geluid, geen random ticks, geen snowy; loot → `corrupted_dirt`, Silk Touch zichzelf), `corrupted_dirt`, `corrupted_stone` (loot → `corrupted_cobblestone`), `corrupted_cobblestone`, `corrupted_sand` (`ColoredFallingBlock`, stof `0x8C8792`), `corrupted_log`/`corrupted_wood` (`StrippableLogBlock` → `stripped_corrupted_log`/`_wood`), `stripped_corrupted_log`/`_wood`, `corrupted_planks`, `_stairs`, `_slab`, `_fence`, `_fence_gate`, `_door` (`DoubleHighBlockItem`), `_trapdoor`, `_pressure_plate`, `_button` (30 ticks), `corrupted_sign` + `corrupted_wall_sign` (`StandingSignBlock`/`WallSignBlock`, item `SignItem` 16), `corrupted_hanging_sign` + `corrupted_wall_hanging_sign` (`CeilingHangingSignBlock`/`WallHangingSignBlock`, item `HangingSignItem` 16), `corrupted_leaves` (`LeavesBlock`; loot zoals mangrove: schaar/Silk Touch zichzelf, anders stokken). Kaartkleur `COLOR_GRAY` (gras, aarde, steen, keien, schors, bladeren), `COLOR_LIGHT_GRAY` (zand, planken-familie, gestript, bordjes). Wandbordjes zonder eigen item/loot table (`lootFrom` het staande bord).
+- `ModWoodTypes.CORRUPTED_SET`/`CORRUPTED` (`corruptedadventure:corrupted`, eik-geluiden) — de **enige geregistreerde** `WoodType` van de mod (`WoodType.register`, voor de bordmaterialen).
+- Nieuw `block/ModSigns` (common): `BlockEntityTypeAddBlocksEvent` voegt de 4 bordblokken toe aan vanilla `BlockEntityType.SIGN`/`HANGING_SIGN` (geen eigen block-entity-type, geen eigen renderer). Geregistreerd in `CorruptedAdventure`.
+- Nieuw `client/block/SignMaterials` (client): `Sheets.addWoodType(ModWoodTypes.CORRUPTED)` in `FMLClientSetupEvent.enqueueWork`; geregistreerd in `CorruptedAdventureClient` (regel "ring 5 — B (88)").
+- Tags: `ModTags.Blocks/Items.CORRUPTED_LOGS` (nieuw, `corruptedadventure:corrupted_logs` → `#logs_that_burn`); inhoud `#corruptedadventure:corrupted` (de 9), `ring_5_stones` (`corrupted_stone`); vanilla: `#dirt`, `#sand`, `#base_stone_overworld` (eerste mod-blok erin), `#overworld_carver_replaceables`, `#mineable/*`, `#planks`, `#wooden_*`, `#fence_gates`, `#standing_signs`, `#wall_signs`, `#ceiling_hanging_signs`, `#wall_hanging_signs`, `#leaves`; `c:cobblestones`, `c:sands`, `c:stripped_logs`/`_woods`, `c:fence_gates/wooden`; items: `#stone_tool_materials`, `#stone_crafting_materials`, `#smelts_to_glass`, `#signs`, `#hanging_signs` (+ de kopieën).
+- `ModDataMapProvider.ring5HealthyBlocks()` (`healthy_block`, de 9); compost `corrupted_leaves` 0,3. `ModFlammables`: houtset als eik. `Ring5BlockNames` gevuld (en + nl).
+- Tests: `ModBlocksTest` (+5: volgorde ring 5, gedrag, strippen, wandbord-loot, sign-BE-types), `ModWoodTypesTest` (+1), nieuw `Ring5HealthyBlockTest` (tag = data map = de 9; houtset in geen van beide).
+- Valkuilen: `Properties.ofFullCopy` kopieert het `drops`-veld; daarom krijgen de wandbordjes expliciet `lootFrom(<staand bord>)`, zodat ze nooit de loot van het eiken-origineel erven (test `corruptedWallSignsDropTheirStandingSign`); `WallSignBlock.getDescriptionId()` = die van het item, dus geen lang-key voor wandbordjes (dubbele sleutel breekt `runData`); `ofFullCopy(GRASS_BLOCK)` kopieert de random ticks — daarom `Properties.of()`.
+
+**88r (items):**
+- `ModRecipeProvider.ring5()`: `planksFromLogs` (`#corruptedadventure:corrupted_logs` → 4), `woodFromLogs` (hout, gestript hout), `hangingSign` (gestripte stam + ketting → 6) en de plankenfamilie via vanilla's `generateRecipes` met een eigen `BlockFamily` (niet in `BlockFamilies`' map), groep `wooden_*`, `has_planks`. Ids = resultaat-item (`corruptedadventure:corrupted_*`).
+- Test: nieuw `datagen/Ring5RecipesTest` (13 ids + aantallen, advancement per recept, geen andere `corrupted`-recepten).
+
+**89 (blocks):**
+- Blocks (na `corrupted_leaves`): `glitch_block` (`Block`, steen-kopie, `COLOR_PURPLE`; loot 1–3 `glitch_shard`, Fortune uniform bonus, max 4, Silk Touch zichzelf), `voidstone` (nieuw `block/VoidstoneBlock`: deepslate-kopie, `COLOR_BLACK`, `animateTick` 1 op 10 een vanilla `REVERSE_PORTAL` uit een open zijde, zoals crying obsidian), `nullite_ore` (diamanterts-kopie +1,5, XP 5–9, `CORRUPTED_COLOR`), `voidstone_nullite_ore` (deepslate-diamanterts +1,5, XP 5–9). Geen bloklicht; sterren en kristallen emissive via `oreWithOverlay` (`voidstone` + `voidstone_glow`, `nullite_ore_overlay`).
+- `ModBlocks.RING_5_ORE_EXTRA_HARDNESS = 1.5F` (OV2 = A).
+- Items (na `purity_crystal_shard`): `glitch_shard`, `raw_nullite` (placeholders, geen recepten).
+- Tags: `void_sources` = glitch_block + voidstone; `ring_5_stones` += voidstone; voidstone in `#base_stone_overworld`, `#overworld_carver_replaceables`; nieuwe keys `ModTags.Blocks/Items.ORES_NULLITE` (`c:ores/nullite`), `ORES_IN_GROUND_CORRUPTED_STONE`, `ORES_IN_GROUND_VOIDSTONE`, `Items.RAW_MATERIALS_NULLITE`; nulliet in `c:ores`, `c:ore_rates/singular`, `#mineable/pickaxe`, `#needs_diamond_tool`.
+- Tests: `ModBlocksTest.glitchVoidAndNulliteHaveTheirStrengthXpAndNoLight`, volgorde-test uitgebreid; nieuw `Ring5BlockDataTest` (void_sources, ring_5_stones, nulliet-tags, glitch-loot).
+
+**90 (blocks):**
+- Blocks (Nether-ring 5, na `voidstone_nullite_ore`, eindigen de blokken): `chalkrack` (netherrack-kopie, `QUARTZ`, gewone `Block`), `white_stone` + `_stairs`/`_slab`/`_wall`, `polished_white_stone` + idem, `white_stone_bricks` + `white_stone_brick_stairs`/`_slab`/`_wall` (patroon fossielsteen: steen / gepolijst andesiet / steenbakstenen; muren `forceSolidOn`), `white_stone_pillar` (`RotatedPillarBlock`, steen-hardheid), `mirror_stone` (steen, normale wrijving), `still_light` (shroomlight-kopie, licht 15, glasgeluid, geen `animateTick`), `white_core_ore` (diamanterts +1,5, XP 6–10, licht 3 + emissive overlay op `white_stone`). Kaartkleur `SNOW` (witsteen-familie, spiegelsteen, stil licht, erts), `QUARTZ` (kalkrack). 17 blokken.
+- Item `white_core` (na `raw_nullite`, laatste los item).
+- Tags: `nether_ring_5_stones` = white_stone + chalkrack; chalkrack in `#base_stone_nether`, `c:netherracks`, `#infiniburn_overworld`; white_stone **niet** in `#base_stone_nether`, wel in `#nether_carver_replaceables`; `#stairs`/`#slabs`/`#walls`; `still_light` in `#mineable/hoe` (zoals shroomlight); nieuwe keys `ORES_WHITE_CORE` (`c:ores/white_core`), `ORES_IN_GROUND_WHITE_STONE`, `Items.GEMS_WHITE_CORE` (in `c:gems`); witte kern in `c:ores`, `c:ore_rates/singular`, `#needs_diamond_tool`.
+- Tests: `ModBlocksTest.netherRing5BlocksBehaveAsPlanned`, volgorde-test (`ring5AndNetherRing5FollowNetherRing4InOrder`, 17 Nether-5-blokken eindigen de lijst; losse items eindigen op `white_core`); `Ring5BlockDataTest` (+1: Nether-5-stenen en base_stone).
 
 ## Beslissingen
+- **Bordjes-route (88): (a)** NeoForge 21.1.252 heeft `BlockEntityTypeAddBlocksEvent` → onze bordblokken in de vanilla sign/hanging-sign-types; vanilla renderers (`SignRenderer`/`HangingSignRenderer`, al voor die types geregistreerd) en bewerkschermen doen de rest. Geen `registry/ModBlockEntityTypes`. Client: alleen `Sheets.addWoodType` (defensief tegen class-load-volgorde). Textures volgens §5 (`entity/signs/corrupted`, `entity/signs/hanging/corrupted`, `gui/hanging_signs/corrupted`).
+- **Kaartkleuren (88):** `COLOR_GRAY` voor gras/aarde/steen/keien/schors/bladeren, `COLOR_LIGHT_GRAY` voor zand, planken-familie, gestript hout en bordjes; zandstof `0x8C8792`.
+- **Nederlandse namen (88):** "verdorven" (verdord = withered, ring 4): Verdorven grasblok, aarde, steen, keisteen, zand, stam, hout; Gestripte verdorven stam, Gestript verdorven hout; Verdorven planken, trap, plaat, hek, poort, deur, valluik, drukplaat, knop, bord, hangbord, bladeren.
+- **Blockstates (88):** gras 4 Y-rotaties (zonder tint), aarde/zand 4 rotaties, steen gespiegeld + geroteerd (zoals vanilla steen), keien één model; hout als de verdant-set; bladeren `cutout_mipped` zonder tint.
+- **Creative-volgorde (88):** de 9 + houtset in vanilla-volgorde (stam … knop), dan bord, hangend bord, bladeren.
+- **Mijn-niveau (89/90): OV2 = A** (gebruiker): `needs_diamond_tool`, vanilla-erts +1,5; XP nulliet 5–9, witte kern 6–10; nulliet zwak emissive zonder bloklicht, witte kern licht 3.
+- **Erts-sjablonen (89):** nulliet in `corrupted_stone` = diamanterts, in voidsteen = deepslate-diamanterts (hardheid 4,5 resp. 6,0); het voidsteen-erts toont gewone voidsteen onder de kristallen (geen sterrenlaag: één overlay per model).
+- **Voidsteen-deeltje (89):** 1 op 10 display-ticks, alleen uit een zijde zonder stevige buur (begraven voidsteen is stil).
+- **Namen (89):** Glitchblok, Glitchscherf, Voidsteen, Nullieterts, Voidsteen-nullieterts, Ruw nulliet.
+- **Nether-5 (90):** sjablonen als fossielsteen (68); `still_light` = shroomlight (hardheid 1,0, hak) met glasgeluid en dropt zichzelf; de pilaar als `logBlock` (`white_stone_pillar` + `_top`); witte-kernerts op `white_stone` (diamanterts-sjabloon, want witsteen heeft steen-hardheid).
+- **Namen (90):** Kalkrack, Witsteen (+trap/plaat/muur), Gepolijste witsteen (+…), Witstenen blokstenen (+bloksteentrap/-plaat/-muur, zoals getijdesteen), Witsteenzuil, Spiegelsteen, Stil licht, Witte-kernerts, Witte kern.
+- **Bladeren-loot (88):** vanilla's mangrove-tabel (geen sapling): schaar/Silk Touch zichzelf, anders 1–2 stokken met de eikkansen.
 
 ## Backlog
 - `items`: corrupted boot (niet in contract §11).
 - `blocks`: schoffel/pad op `corrupted_grass_block`/`corrupted_dirt` (zou ze "genezen" tot vanilla-akkerland; fase 5 beslist).
+- `infra` (INT1/main, client nodig): bordjes in-game controleren — staand, wand, hangend, hangend aan de wand plaatsen, tekst bewerken (hangbord-scherm toont `gui/hanging_signs/corrupted`), rendering met T's textures.
+- `blocks`: corrupted gras/aarde/zand bewust niet in `#enderman_holdable`, `#animals_spawnable_on` e.d. (dode ring; fase 4/5 kan dat herzien).

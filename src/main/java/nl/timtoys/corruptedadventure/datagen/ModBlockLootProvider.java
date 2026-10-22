@@ -22,7 +22,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
+import net.minecraft.world.level.storage.loot.functions.LimitCount;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.MatchTool;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -151,6 +153,56 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         ring3();
         netherRing3();
         ring4();
+        ring5();
+    }
+
+    /**
+     * Ring 5 (88): like the vanilla counterparts. The wall signs have no table of their own: they drop the standing
+     * sign's ({@code lootFrom} in {@code ModBlocks}).
+     */
+    private void ring5() {
+        add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), block -> createSingleItemTableWithSilkTouch(block, ModBlocks.CORRUPTED_DIRT.get()));
+        add(ModBlocks.CORRUPTED_STONE.get(), block -> createSingleItemTableWithSilkTouch(block, ModBlocks.CORRUPTED_COBBLESTONE.get()));
+        for (Block block : List.of(ModBlocks.CORRUPTED_DIRT.get(), ModBlocks.CORRUPTED_COBBLESTONE.get(), ModBlocks.CORRUPTED_SAND.get(),
+                ModBlocks.CORRUPTED_LOG.get(), ModBlocks.CORRUPTED_WOOD.get(), ModBlocks.STRIPPED_CORRUPTED_LOG.get(),
+                ModBlocks.STRIPPED_CORRUPTED_WOOD.get(), ModBlocks.CORRUPTED_PLANKS.get(), ModBlocks.CORRUPTED_STAIRS.get(),
+                ModBlocks.CORRUPTED_FENCE.get(), ModBlocks.CORRUPTED_FENCE_GATE.get(), ModBlocks.CORRUPTED_TRAPDOOR.get(),
+                ModBlocks.CORRUPTED_PRESSURE_PLATE.get(), ModBlocks.CORRUPTED_BUTTON.get(), ModBlocks.CORRUPTED_SIGN.get(),
+                ModBlocks.CORRUPTED_HANGING_SIGN.get())) {
+            dropSelf(block);
+        }
+        add(ModBlocks.CORRUPTED_SLAB.get(), this::createSlabItemTable);
+        add(ModBlocks.CORRUPTED_DOOR.get(), this::createDoorTable);
+        // No sapling and no apple: shears or Silk Touch -> the leaves, otherwise sticks like oak leaves (vanilla's
+        // table for the sapling-less mangrove leaves).
+        add(ModBlocks.CORRUPTED_LEAVES.get(), this::createMangroveLeavesDrops);
+
+        // 89. Like glowstone's dust: 1-3 shards, Fortune adds, never more than 4; Silk Touch -> the block itself.
+        add(ModBlocks.GLITCH_BLOCK.get(), block -> createSilkTouchDispatchTable(block, applyExplosionDecay(block,
+                LootItem.lootTableItem(ModItems.GLITCH_SHARD.get())
+                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F)))
+                        .apply(ApplyBonusCount.addUniformBonusCount(registries.lookupOrThrow(Registries.ENCHANTMENT)
+                                .getOrThrow(Enchantments.FORTUNE)))
+                        .apply(LimitCount.limitCount(IntRange.range(1, 4))))));
+        dropSelf(ModBlocks.VOIDSTONE.get());
+        for (Block ore : List.of(ModBlocks.NULLITE_ORE.get(), ModBlocks.VOIDSTONE_NULLITE_ORE.get())) {
+            add(ore, block -> createOreDrop(block, ModItems.RAW_NULLITE.get()));
+        }
+
+        // 90: everything drops itself except the slabs (two from a double slab) and the white core ore (one white core,
+        // Fortune adds; Silk Touch the ore).
+        for (Block block : List.of(ModBlocks.CHALKRACK.get(), ModBlocks.WHITE_STONE.get(), ModBlocks.WHITE_STONE_STAIRS.get(),
+                ModBlocks.WHITE_STONE_WALL.get(), ModBlocks.POLISHED_WHITE_STONE.get(), ModBlocks.POLISHED_WHITE_STONE_STAIRS.get(),
+                ModBlocks.POLISHED_WHITE_STONE_WALL.get(), ModBlocks.WHITE_STONE_BRICKS.get(), ModBlocks.WHITE_STONE_BRICK_STAIRS.get(),
+                ModBlocks.WHITE_STONE_BRICK_WALL.get(), ModBlocks.WHITE_STONE_PILLAR.get(), ModBlocks.MIRROR_STONE.get(),
+                ModBlocks.STILL_LIGHT.get())) {
+            dropSelf(block);
+        }
+        for (Block slab : List.of(ModBlocks.WHITE_STONE_SLAB.get(), ModBlocks.POLISHED_WHITE_STONE_SLAB.get(),
+                ModBlocks.WHITE_STONE_BRICK_SLAB.get())) {
+            add(slab, this::createSlabItemTable);
+        }
+        add(ModBlocks.WHITE_CORE_ORE.get(), block -> createOreDrop(block, ModItems.WHITE_CORE.get()));
     }
 
     private void ring4() {

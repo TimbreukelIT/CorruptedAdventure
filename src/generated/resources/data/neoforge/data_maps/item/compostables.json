@@ -6,6 +6,9 @@
     "corruptedadventure:blighted_glowcap": {
       "chance": 0.65
     },
+    "corruptedadventure:corrupted_leaves": {
+      "chance": 0.3
+    },
     "corruptedadventure:dripshroom_cap": {
       "chance": 0.85
     },

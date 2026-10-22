@@ -41,6 +41,17 @@ import nl.timtoys.corruptedadventure.block.LagoonGlowgrassBlock;
 import nl.timtoys.corruptedadventure.block.MoonpetalLeavesBlock;
 import nl.timtoys.corruptedadventure.block.VerdantVineBlock;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.HangingSignItem;
+import net.minecraft.world.item.SignItem;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.common.ItemAbilities;
+import nl.timtoys.corruptedadventure.block.ModWoodTypes;
+import nl.timtoys.corruptedadventure.block.VoidstoneBlock;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -63,10 +74,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ModBlocksTest {
     /**
      * Blocks without an item of their own besides pots and liquids: the swamp gas (invisible, cannot be aimed at), the
-     * wall bromeliad (placed by the bromeliad's item), the vine stem and the fruit pod (worldgen only).
+     * wall bromeliad (placed by the bromeliad's item), the vine stem and the fruit pod (worldgen only), and the wall
+     * signs (placed by the sign items).
      */
     private static final Set<DeferredHolder<Block, ? extends Block>> WITHOUT_ITEM = Set.of(ModBlocks.SWAMP_GAS,
-            ModBlocks.VERDANT_WALL_BROMELIAD, ModBlocks.VERDANT_VINE_PLANT, ModBlocks.VERDANT_FRUIT_POD);
+            ModBlocks.VERDANT_WALL_BROMELIAD, ModBlocks.VERDANT_VINE_PLANT, ModBlocks.VERDANT_FRUIT_POD,
+            ModBlocks.CORRUPTED_WALL_SIGN, ModBlocks.CORRUPTED_WALL_HANGING_SIGN);
 
     @Test
     void everyBlockExceptPottedPlantsHasABlockItemWithTheSameName() {
@@ -829,7 +842,7 @@ class ModBlocksTest {
         });
     }
 
-    /** Nether ring 4 follows ring 4 directly and ends the blocks (contract ring 4 §3); its shard ends the loose items. */
+    /** Nether ring 4 follows ring 4 directly (contract ring 4 §3); its shard ends the loose items. */
     @Test
     void netherRing4FollowsRing4InOrderAndBehavesAsPlanned() {
         List<Item> shown = blockItems();
@@ -840,10 +853,12 @@ class ModBlocksTest {
                 ModBlocks.POLISHED_FOSSIL_STONE_WALL, ModBlocks.FOSSIL_STONE_BRICKS, ModBlocks.FOSSIL_STONE_BRICK_STAIRS,
                 ModBlocks.FOSSIL_STONE_BRICK_SLAB, ModBlocks.FOSSIL_STONE_BRICK_WALL, ModBlocks.PURITY_CRYSTAL_BLOCK,
                 ModBlocks.PURITY_CRYSTAL_CLUSTER, ModBlocks.PURITY_CRYSTAL_LAMP).<Item>map(DeferredBlock::asItem).toList();
-        assertEquals(netherRing4, shown.subList(lastRing4 + 1, shown.size()));
+        assertEquals(netherRing4, shown.subList(lastRing4 + 1, lastRing4 + 1 + netherRing4.size()));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem)).toList();
-        assertEquals(ModItems.PURITY_CRYSTAL_SHARD.get(), standalone.getLast());
+        int shard = standalone.indexOf(ModItems.PURITY_CRYSTAL_SHARD.get());
+        assertEquals(List.of(ModItems.PURITY_CRYSTAL_SHARD.get(), ModItems.GLITCH_SHARD.get(), ModItems.RAW_NULLITE.get(),
+                ModItems.WHITE_CORE.get()), standalone.subList(shard, standalone.size()));
 
         assertInstanceOf(FallingBlock.class, ModBlocks.BONE_SAND.get());
         assertFalse(ModBlocks.BLEACHED_NETHERRACK.get() instanceof NetherrackBlock);
@@ -852,6 +867,163 @@ class ModBlocksTest {
         assertEquals(5, ModBlocks.PURITY_CRYSTAL_CLUSTER.get().defaultBlockState().getLightEmission());
         assertEquals(0, ModBlocks.PURITY_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
         assertFalse(ModBlocks.PURITY_CRYSTAL_CLUSTER.get().defaultBlockState().isRandomlyTicking());
+    }
+
+    /**
+     * Ring 5 follows Nether ring 4 directly (contract ring 5 §3): the nine corrupted variants and the wood set (each sign
+     * item once: the wall signs place through it), then glitch, voidstone and nullite; Nether ring 5 ends the blocks.
+     */
+    @Test
+    void ring5AndNetherRing5FollowNetherRing4InOrder() {
+        List<Item> shown = blockItems().stream().distinct().toList();
+        int lastNetherRing4 = shown.indexOf(ModBlocks.PURITY_CRYSTAL_LAMP.asItem());
+        List<Item> ring5 = Stream.of(ModBlocks.CORRUPTED_GRASS_BLOCK, ModBlocks.CORRUPTED_DIRT, ModBlocks.CORRUPTED_STONE,
+                ModBlocks.CORRUPTED_COBBLESTONE, ModBlocks.CORRUPTED_SAND, ModBlocks.CORRUPTED_LOG, ModBlocks.CORRUPTED_WOOD,
+                ModBlocks.STRIPPED_CORRUPTED_LOG, ModBlocks.STRIPPED_CORRUPTED_WOOD, ModBlocks.CORRUPTED_PLANKS,
+                ModBlocks.CORRUPTED_STAIRS, ModBlocks.CORRUPTED_SLAB, ModBlocks.CORRUPTED_FENCE, ModBlocks.CORRUPTED_FENCE_GATE,
+                ModBlocks.CORRUPTED_DOOR, ModBlocks.CORRUPTED_TRAPDOOR, ModBlocks.CORRUPTED_PRESSURE_PLATE,
+                ModBlocks.CORRUPTED_BUTTON, ModBlocks.CORRUPTED_SIGN, ModBlocks.CORRUPTED_HANGING_SIGN,
+                ModBlocks.CORRUPTED_LEAVES, ModBlocks.GLITCH_BLOCK, ModBlocks.VOIDSTONE, ModBlocks.NULLITE_ORE,
+                ModBlocks.VOIDSTONE_NULLITE_ORE).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(ring5, shown.subList(lastNetherRing4 + 1, lastNetherRing4 + 1 + ring5.size()));
+        List<Item> netherRing5 = Stream.of(ModBlocks.CHALKRACK, ModBlocks.WHITE_STONE, ModBlocks.WHITE_STONE_STAIRS,
+                ModBlocks.WHITE_STONE_SLAB, ModBlocks.WHITE_STONE_WALL, ModBlocks.POLISHED_WHITE_STONE,
+                ModBlocks.POLISHED_WHITE_STONE_STAIRS, ModBlocks.POLISHED_WHITE_STONE_SLAB, ModBlocks.POLISHED_WHITE_STONE_WALL,
+                ModBlocks.WHITE_STONE_BRICKS, ModBlocks.WHITE_STONE_BRICK_STAIRS, ModBlocks.WHITE_STONE_BRICK_SLAB,
+                ModBlocks.WHITE_STONE_BRICK_WALL, ModBlocks.WHITE_STONE_PILLAR, ModBlocks.MIRROR_STONE, ModBlocks.STILL_LIGHT,
+                ModBlocks.WHITE_CORE_ORE).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(17, netherRing5.size());
+        assertEquals(netherRing5, shown.subList(lastNetherRing4 + 1 + ring5.size(), shown.size()));
+        assertInstanceOf(SignItem.class, ModBlocks.CORRUPTED_SIGN.asItem());
+        assertInstanceOf(HangingSignItem.class, ModBlocks.CORRUPTED_HANGING_SIGN.asItem());
+        assertEquals(16, ModBlocks.CORRUPTED_SIGN.asItem().getDefaultMaxStackSize());
+        assertEquals(16, ModBlocks.CORRUPTED_HANGING_SIGN.asItem().getDefaultMaxStackSize());
+        assertInstanceOf(DoubleHighBlockItem.class, ModBlocks.CORRUPTED_DOOR.asItem());
+    }
+
+    /** Contract ring 5 §11: the grass never spreads, dies or turns into grass; sand falls; leaves decay like oak's. */
+    @Test
+    void corruptedVariantsBehaveLikeTheirCounterpartsExceptTheGrass() {
+        BlockState grass = ModBlocks.CORRUPTED_GRASS_BLOCK.get().defaultBlockState();
+        assertFalse(grass.isRandomlyTicking());
+        assertSame(Block.class, ModBlocks.CORRUPTED_GRASS_BLOCK.get().getClass());
+        assertEquals(Blocks.GRASS_BLOCK.defaultDestroyTime(), ModBlocks.CORRUPTED_GRASS_BLOCK.get().defaultDestroyTime());
+        assertSame(SoundType.GRASS, grass.getSoundType());
+        assertSame(Block.class, ModBlocks.CORRUPTED_DIRT.get().getClass());
+        assertFalse(ModBlocks.CORRUPTED_DIRT.get().defaultBlockState().isRandomlyTicking());
+
+        assertInstanceOf(ColoredFallingBlock.class, ModBlocks.CORRUPTED_SAND.get());
+        assertEquals(Blocks.SAND.defaultDestroyTime(), ModBlocks.CORRUPTED_SAND.get().defaultDestroyTime());
+
+        // Persistent leaves (placed by a player) never tick; natural ones do, and decay without a log in reach.
+        BlockState leaves = ModBlocks.CORRUPTED_LEAVES.get().defaultBlockState();
+        assertInstanceOf(LeavesBlock.class, leaves.getBlock());
+        assertTrue(leaves.setValue(LeavesBlock.PERSISTENT, false).setValue(LeavesBlock.DISTANCE, LeavesBlock.DECAY_DISTANCE)
+                .isRandomlyTicking());
+        assertFalse(leaves.setValue(LeavesBlock.PERSISTENT, true).isRandomlyTicking());
+
+        Map<DeferredBlock<?>, Block> twins = new LinkedHashMap<>();
+        twins.put(ModBlocks.CORRUPTED_DIRT, Blocks.DIRT);
+        twins.put(ModBlocks.CORRUPTED_STONE, Blocks.STONE);
+        twins.put(ModBlocks.CORRUPTED_COBBLESTONE, Blocks.COBBLESTONE);
+        twins.put(ModBlocks.CORRUPTED_LOG, Blocks.OAK_LOG);
+        twins.put(ModBlocks.CORRUPTED_PLANKS, Blocks.OAK_PLANKS);
+        twins.put(ModBlocks.CORRUPTED_LEAVES, Blocks.OAK_LEAVES);
+        twins.put(ModBlocks.CORRUPTED_SIGN, Blocks.OAK_SIGN);
+        twins.put(ModBlocks.CORRUPTED_HANGING_SIGN, Blocks.OAK_HANGING_SIGN);
+        twins.forEach((corrupted, vanilla) -> {
+            String id = corrupted.getId().toString();
+            assertEquals(vanilla.defaultDestroyTime(), corrupted.get().defaultDestroyTime(), id);
+            assertEquals(vanilla.getExplosionResistance(), corrupted.get().getExplosionResistance(), id);
+            assertSame(vanilla.defaultBlockState().getSoundType(), corrupted.get().defaultBlockState().getSoundType(), id);
+        });
+    }
+
+    @Test
+    void anAxeStripsTheCorruptedLogAndWoodKeepingTheAxis() {
+        assertStripsTo(ModBlocks.CORRUPTED_LOG.get(), ModBlocks.STRIPPED_CORRUPTED_LOG.get());
+        assertStripsTo(ModBlocks.CORRUPTED_WOOD.get(), ModBlocks.STRIPPED_CORRUPTED_WOOD.get());
+    }
+
+    /** The wall signs drop the standing sign (not oak's, which a full copy of the oak wall sign would keep). */
+    @Test
+    void corruptedWallSignsDropTheirStandingSign() {
+        assertEquals(ModBlocks.CORRUPTED_SIGN.get().getLootTable(), ModBlocks.CORRUPTED_WALL_SIGN.get().getLootTable());
+        assertEquals(ModBlocks.CORRUPTED_HANGING_SIGN.get().getLootTable(),
+                ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get().getLootTable());
+    }
+
+    /** Vanilla's sign block entity types accept the corrupted signs (ModSigns), so the signs keep their block entity. */
+    @Test
+    void vanillaSignBlockEntityTypesAcceptTheCorruptedSigns() {
+        assertTrue(BlockEntityType.SIGN.isValid(ModBlocks.CORRUPTED_SIGN.get().defaultBlockState()));
+        assertTrue(BlockEntityType.SIGN.isValid(ModBlocks.CORRUPTED_WALL_SIGN.get().defaultBlockState()));
+        assertTrue(BlockEntityType.HANGING_SIGN.isValid(ModBlocks.CORRUPTED_HANGING_SIGN.get().defaultBlockState()));
+        assertTrue(BlockEntityType.HANGING_SIGN.isValid(ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get().defaultBlockState()));
+        assertTrue(BlockEntityType.SIGN.isValid(Blocks.OAK_SIGN.defaultBlockState()));
+        assertSame(ModWoodTypes.CORRUPTED, ModBlocks.CORRUPTED_SIGN.get().type());
+        assertSame(ModWoodTypes.CORRUPTED, ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get().type());
+    }
+
+    /**
+     * 89 (OV2 = A): no block light anywhere (the stars and crystals are emissive in the models), no random ticks;
+     * voidstone has deepslate's strength, nullite 1.5 above the vanilla ore of its host, XP 5-9.
+     */
+    @Test
+    void glitchVoidAndNulliteHaveTheirStrengthXpAndNoLight() {
+        for (DeferredBlock<?> block : List.of(ModBlocks.GLITCH_BLOCK, ModBlocks.VOIDSTONE, ModBlocks.NULLITE_ORE,
+                ModBlocks.VOIDSTONE_NULLITE_ORE)) {
+            BlockState state = block.get().defaultBlockState();
+            assertEquals(0, state.getLightEmission(), block.getId().toString());
+            assertFalse(state.isRandomlyTicking(), block.getId().toString());
+            assertTrue(state.canOcclude(), block.getId().toString());
+            assertTrue(state.requiresCorrectToolForDrops(), block.getId().toString());
+        }
+        assertEquals(Blocks.STONE.defaultDestroyTime(), ModBlocks.GLITCH_BLOCK.get().defaultDestroyTime());
+        assertInstanceOf(VoidstoneBlock.class, ModBlocks.VOIDSTONE.get());
+        assertEquals(Blocks.DEEPSLATE.defaultDestroyTime(), ModBlocks.VOIDSTONE.get().defaultDestroyTime());
+        assertEquals(Blocks.DEEPSLATE.getExplosionResistance(), ModBlocks.VOIDSTONE.get().getExplosionResistance());
+        assertSame(SoundType.DEEPSLATE, ModBlocks.VOIDSTONE.get().defaultBlockState().getSoundType());
+        Map<DeferredBlock<DropExperienceBlock>, Block> hosts = Map.of(ModBlocks.NULLITE_ORE, Blocks.DIAMOND_ORE,
+                ModBlocks.VOIDSTONE_NULLITE_ORE, Blocks.DEEPSLATE_DIAMOND_ORE);
+        hosts.forEach((ore, vanilla) -> {
+            assertEquals(vanilla.defaultDestroyTime() + 1.5F, ore.get().defaultDestroyTime(), ore.getId().toString());
+            assertEquals(UniformInt.of(5, 9).toString(), experience(ore.get()), ore.getId().toString());
+        });
+    }
+
+    /**
+     * 90 (OV2 = A): still light shines like shroomlight without sound or particles, the white core glows softly (3) and
+     * sits 1.5 above diamond ore with XP 6-10; chalkrack is netherrack-hard but no nylium host; mirror stone is not slippery.
+     */
+    @Test
+    void netherRing5BlocksBehaveAsPlanned() {
+        assertEquals(15, ModBlocks.STILL_LIGHT.get().defaultBlockState().getLightEmission());
+        assertSame(SoundType.GLASS, ModBlocks.STILL_LIGHT.get().defaultBlockState().getSoundType());
+        assertSame(Block.class, ModBlocks.STILL_LIGHT.get().getClass());
+        assertEquals(3, ModBlocks.WHITE_CORE_ORE.get().defaultBlockState().getLightEmission());
+        assertEquals(Blocks.DIAMOND_ORE.defaultDestroyTime() + 1.5F, ModBlocks.WHITE_CORE_ORE.get().defaultDestroyTime());
+        assertEquals(UniformInt.of(6, 10).toString(), experience(ModBlocks.WHITE_CORE_ORE.get()));
+        assertFalse(ModBlocks.CHALKRACK.get() instanceof NetherrackBlock);
+        assertEquals(Blocks.NETHERRACK.defaultDestroyTime(), ModBlocks.CHALKRACK.get().defaultDestroyTime());
+        assertEquals(Blocks.STONE.getFriction(), ModBlocks.MIRROR_STONE.get().getFriction());
+        assertInstanceOf(RotatedPillarBlock.class, ModBlocks.WHITE_STONE_PILLAR.get());
+        for (DeferredBlock<?> block : List.of(ModBlocks.CHALKRACK, ModBlocks.WHITE_STONE, ModBlocks.POLISHED_WHITE_STONE,
+                ModBlocks.WHITE_STONE_BRICKS, ModBlocks.WHITE_STONE_PILLAR, ModBlocks.MIRROR_STONE)) {
+            assertEquals(0, block.get().defaultBlockState().getLightEmission(), block.getId().toString());
+            assertFalse(block.get().defaultBlockState().isRandomlyTicking(), block.getId().toString());
+        }
+        assertFalse(ModBlocks.STILL_LIGHT.get().defaultBlockState().isRandomlyTicking());
+    }
+
+    private static void assertStripsTo(Block log, Block stripped) {
+        BlockHitResult hit = new BlockHitResult(Vec3.ZERO, Direction.UP, BlockPos.ZERO, false);
+        UseOnContext context = new UseOnContext(null, null, InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_AXE), hit) {
+        };
+        BlockState state = log.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
+        BlockState result = state.getToolModifiedState(context, ItemAbilities.AXE_STRIP, true);
+        assertSame(stripped, result.getBlock());
+        assertEquals(Direction.Axis.X, result.getValue(RotatedPillarBlock.AXIS));
     }
 
     private static List<Item> blockItems() {

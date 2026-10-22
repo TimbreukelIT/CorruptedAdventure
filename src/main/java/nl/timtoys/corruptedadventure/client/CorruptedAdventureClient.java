@@ -8,6 +8,7 @@ import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.client.ambient.SingingSandAmbience;
+import nl.timtoys.corruptedadventure.client.block.SignMaterials;
 import nl.timtoys.corruptedadventure.client.fluid.ToxicPoolClientExtensions;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
 import nl.timtoys.corruptedadventure.client.network.ConditionSyncHandler;
@@ -60,6 +61,8 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(ConditionHudLayer::onRegisterGuiLayers);
         modEventBus.addListener(CorruptedAdventureClient::onRegisterParticleProviders);
         modEventBus.addListener(ToxicPoolClientExtensions::onRegisterClientExtensions);
+        // ring 5 — B (88): the corrupted signs' materials.
+        modEventBus.addListener(SignMaterials::onClientSetup);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);
         NeoForge.EVENT_BUS.addListener(SingingSandAmbience::onClientTick);

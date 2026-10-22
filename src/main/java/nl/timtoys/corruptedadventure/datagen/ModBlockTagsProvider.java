@@ -60,6 +60,112 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         ring3();
         netherRing3();
         ring4();
+        ring5();
+    }
+
+    /**
+     * Ring 5 (88). {@code #corruptedadventure:corrupted} is exactly the nine corrupted variants of vanilla blocks (each with
+     * a {@code healthy_block} mapping in {@code ModDataMapProvider}); each carries its vanilla counterpart's tags. The rest
+     * of the wood set is tagged like oak and burns ({@code #logs_that_burn}); {@code #mineable/axe} and the fuels come
+     * through the vanilla wood and sign tags. No {@code #animals_spawnable_on}: ring 5 has no animals.
+     */
+    private void ring5() {
+        tag(ModTags.Blocks.CORRUPTED).add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ModBlocks.CORRUPTED_DIRT.get(),
+                ModBlocks.CORRUPTED_STONE.get(), ModBlocks.CORRUPTED_COBBLESTONE.get(), ModBlocks.CORRUPTED_SAND.get(),
+                ModBlocks.CORRUPTED_LOG.get(), ModBlocks.CORRUPTED_WOOD.get(), ModBlocks.CORRUPTED_PLANKS.get(),
+                ModBlocks.CORRUPTED_LEAVES.get());
+
+        tag(BlockTags.DIRT).add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ModBlocks.CORRUPTED_DIRT.get());
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ModBlocks.CORRUPTED_DIRT.get(),
+                ModBlocks.CORRUPTED_SAND.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ModBlocks.CORRUPTED_DIRT.get(),
+                ModBlocks.CORRUPTED_STONE.get(), ModBlocks.CORRUPTED_SAND.get());
+        tag(BlockTags.BASE_STONE_OVERWORLD).add(ModBlocks.CORRUPTED_STONE.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.CORRUPTED_STONE.get(), ModBlocks.CORRUPTED_COBBLESTONE.get());
+        tag(ModTags.Blocks.RING_5_STONES).add(ModBlocks.CORRUPTED_STONE.get());
+        tag(Tags.Blocks.COBBLESTONES).add(ModBlocks.CORRUPTED_COBBLESTONE.get());
+        tag(BlockTags.SAND).add(ModBlocks.CORRUPTED_SAND.get());
+        tag(Tags.Blocks.SANDS).add(ModBlocks.CORRUPTED_SAND.get());
+
+        tag(ModTags.Blocks.CORRUPTED_LOGS).add(ModBlocks.CORRUPTED_LOG.get(), ModBlocks.CORRUPTED_WOOD.get(),
+                ModBlocks.STRIPPED_CORRUPTED_LOG.get(), ModBlocks.STRIPPED_CORRUPTED_WOOD.get());
+        tag(BlockTags.LOGS_THAT_BURN).addTag(ModTags.Blocks.CORRUPTED_LOGS);
+        tag(BlockTags.PLANKS).add(ModBlocks.CORRUPTED_PLANKS.get());
+        tag(BlockTags.WOODEN_STAIRS).add(ModBlocks.CORRUPTED_STAIRS.get());
+        tag(BlockTags.WOODEN_SLABS).add(ModBlocks.CORRUPTED_SLAB.get());
+        tag(BlockTags.WOODEN_FENCES).add(ModBlocks.CORRUPTED_FENCE.get());
+        tag(BlockTags.FENCE_GATES).add(ModBlocks.CORRUPTED_FENCE_GATE.get());
+        tag(BlockTags.WOODEN_DOORS).add(ModBlocks.CORRUPTED_DOOR.get());
+        tag(BlockTags.WOODEN_TRAPDOORS).add(ModBlocks.CORRUPTED_TRAPDOOR.get());
+        tag(BlockTags.WOODEN_PRESSURE_PLATES).add(ModBlocks.CORRUPTED_PRESSURE_PLATE.get());
+        tag(BlockTags.WOODEN_BUTTONS).add(ModBlocks.CORRUPTED_BUTTON.get());
+        tag(BlockTags.STANDING_SIGNS).add(ModBlocks.CORRUPTED_SIGN.get());
+        tag(BlockTags.WALL_SIGNS).add(ModBlocks.CORRUPTED_WALL_SIGN.get());
+        tag(BlockTags.CEILING_HANGING_SIGNS).add(ModBlocks.CORRUPTED_HANGING_SIGN.get());
+        tag(BlockTags.WALL_HANGING_SIGNS).add(ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get());
+        tag(BlockTags.LEAVES).add(ModBlocks.CORRUPTED_LEAVES.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.CORRUPTED_LEAVES.get());
+        tag(Tags.Blocks.STRIPPED_LOGS).add(ModBlocks.STRIPPED_CORRUPTED_LOG.get());
+        tag(Tags.Blocks.STRIPPED_WOODS).add(ModBlocks.STRIPPED_CORRUPTED_WOOD.get());
+        tag(Tags.Blocks.FENCE_GATES_WOODEN).add(ModBlocks.CORRUPTED_FENCE_GATE.get());
+
+        ring5VoidAndNullite();
+    }
+
+    /**
+     * Ring 5 (89): the glitch block and voidstone raise the void meter ({@code void_sources}, read by C); voidstone is
+     * natural ground like deepslate and the second host rock of the ring 5 ores. Nullite has ring 4's tags one host
+     * further, with the diamond tier (OV2 = A).
+     */
+    private void ring5VoidAndNullite() {
+        tag(ModTags.Blocks.VOID_SOURCES).add(ModBlocks.GLITCH_BLOCK.get(), ModBlocks.VOIDSTONE.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.GLITCH_BLOCK.get(), ModBlocks.VOIDSTONE.get());
+        tag(BlockTags.BASE_STONE_OVERWORLD).add(ModBlocks.VOIDSTONE.get());
+        tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.VOIDSTONE.get());
+        tag(ModTags.Blocks.RING_5_STONES).add(ModBlocks.VOIDSTONE.get());
+
+        tag(ModTags.Blocks.ORES_NULLITE).add(ModBlocks.NULLITE_ORE.get(), ModBlocks.VOIDSTONE_NULLITE_ORE.get());
+        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_NULLITE);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_NULLITE);
+        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_NULLITE);
+        tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_NULLITE);
+        tag(ModTags.Blocks.ORES_IN_GROUND_CORRUPTED_STONE).add(ModBlocks.NULLITE_ORE.get());
+        tag(ModTags.Blocks.ORES_IN_GROUND_VOIDSTONE).add(ModBlocks.VOIDSTONE_NULLITE_ORE.get());
+
+        netherRing5();
+    }
+
+    /**
+     * Nether ring 5 (90). Chalkrack is Nether ground like netherrack; white stone, like fossil stone (68), stays out of
+     * {@code #base_stone_nether} (no vanilla Nether ore or debris blobs in the white terrain) but the carvers cut through
+     * it. Both are the hosts of the Nether ring 5 ores. Still light is mined like shroomlight; the white core like nullite.
+     */
+    private void netherRing5() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.CHALKRACK.get(), ModBlocks.WHITE_STONE.get(),
+                ModBlocks.WHITE_STONE_STAIRS.get(), ModBlocks.WHITE_STONE_SLAB.get(), ModBlocks.WHITE_STONE_WALL.get(),
+                ModBlocks.POLISHED_WHITE_STONE.get(), ModBlocks.POLISHED_WHITE_STONE_STAIRS.get(),
+                ModBlocks.POLISHED_WHITE_STONE_SLAB.get(), ModBlocks.POLISHED_WHITE_STONE_WALL.get(),
+                ModBlocks.WHITE_STONE_BRICKS.get(), ModBlocks.WHITE_STONE_BRICK_STAIRS.get(), ModBlocks.WHITE_STONE_BRICK_SLAB.get(),
+                ModBlocks.WHITE_STONE_BRICK_WALL.get(), ModBlocks.WHITE_STONE_PILLAR.get(), ModBlocks.MIRROR_STONE.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.WHITE_STONE_STAIRS.get(), ModBlocks.POLISHED_WHITE_STONE_STAIRS.get(),
+                ModBlocks.WHITE_STONE_BRICK_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.WHITE_STONE_SLAB.get(), ModBlocks.POLISHED_WHITE_STONE_SLAB.get(),
+                ModBlocks.WHITE_STONE_BRICK_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.WHITE_STONE_WALL.get(), ModBlocks.POLISHED_WHITE_STONE_WALL.get(),
+                ModBlocks.WHITE_STONE_BRICK_WALL.get());
+        tag(BlockTags.BASE_STONE_NETHER).add(ModBlocks.CHALKRACK.get());
+        tag(Tags.Blocks.NETHERRACKS).add(ModBlocks.CHALKRACK.get());
+        tag(BlockTags.INFINIBURN_OVERWORLD).add(ModBlocks.CHALKRACK.get());
+        tag(BlockTags.NETHER_CARVER_REPLACEABLES).add(ModBlocks.WHITE_STONE.get());
+        tag(ModTags.Blocks.NETHER_RING_5_STONES).add(ModBlocks.WHITE_STONE.get(), ModBlocks.CHALKRACK.get());
+        tag(BlockTags.MINEABLE_WITH_HOE).add(ModBlocks.STILL_LIGHT.get());
+
+        tag(ModTags.Blocks.ORES_WHITE_CORE).add(ModBlocks.WHITE_CORE_ORE.get());
+        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_WHITE_CORE);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_WHITE_CORE);
+        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_WHITE_CORE);
+        tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_WHITE_CORE);
+        tag(ModTags.Blocks.ORES_IN_GROUND_WHITE_STONE).add(ModBlocks.WHITE_CORE_ORE.get());
     }
 
     /**

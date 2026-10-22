@@ -83,6 +83,71 @@ final class ModBlockStateProvider extends BlockStateProvider {
         netherRing3();
         ring4();
         netherRing4();
+        ring5();
+    }
+
+    /**
+     * Ring 5 (88) on T's paths ({@code golf-1-textures.md} §2): the corrupted variants laid out like their vanilla
+     * counterparts, without tint (grass and leaves carry their grey in the texture); the wood set like the verdant set.
+     * The signs' block models only carry the particle (the planks; the stripped log for the hanging sign).
+     */
+    private void ring5() {
+        ResourceLocation dirt = blockTexture(ModBlocks.CORRUPTED_DIRT.get());
+        ModelFile grass = models().cubeBottomTop("corrupted_grass_block", modLoc("block/corrupted_grass_block_side"), dirt,
+                modLoc("block/corrupted_grass_block_top")).texture("particle", dirt);
+        simpleBlock(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ConfiguredModel.allYRotations(grass, 0, false));
+        randomlyRotated(ModBlocks.CORRUPTED_DIRT.get());
+        mirroredAndRotated(ModBlocks.CORRUPTED_STONE.get());
+        simpleBlock(ModBlocks.CORRUPTED_COBBLESTONE.get());
+        randomlyRotated(ModBlocks.CORRUPTED_SAND.get());
+
+        logBlock(ModBlocks.CORRUPTED_LOG.get());
+        axisBlock(ModBlocks.CORRUPTED_WOOD.get(), blockTexture(ModBlocks.CORRUPTED_LOG.get()), blockTexture(ModBlocks.CORRUPTED_LOG.get()));
+        ResourceLocation stripped = blockTexture(ModBlocks.STRIPPED_CORRUPTED_LOG.get());
+        logBlock(ModBlocks.STRIPPED_CORRUPTED_LOG.get());
+        axisBlock(ModBlocks.STRIPPED_CORRUPTED_WOOD.get(), stripped, stripped);
+        ResourceLocation planks = blockTexture(ModBlocks.CORRUPTED_PLANKS.get());
+        simpleBlock(ModBlocks.CORRUPTED_PLANKS.get());
+        stairsBlock(ModBlocks.CORRUPTED_STAIRS.get(), planks);
+        slabBlock(ModBlocks.CORRUPTED_SLAB.get(), planks, planks);
+        fenceBlock(ModBlocks.CORRUPTED_FENCE.get(), planks);
+        fenceGateBlock(ModBlocks.CORRUPTED_FENCE_GATE.get(), planks);
+        doorBlockWithRenderType(ModBlocks.CORRUPTED_DOOR.get(),
+                modLoc("block/corrupted_door_bottom"), modLoc("block/corrupted_door_top"), "cutout");
+        trapdoorBlockWithRenderType(ModBlocks.CORRUPTED_TRAPDOOR.get(), modLoc("block/corrupted_trapdoor"), true, "cutout");
+        pressurePlateBlock(ModBlocks.CORRUPTED_PRESSURE_PLATE.get(), planks);
+        buttonBlock(ModBlocks.CORRUPTED_BUTTON.get(), planks);
+        signBlock(ModBlocks.CORRUPTED_SIGN.get(), ModBlocks.CORRUPTED_WALL_SIGN.get(), planks);
+        hangingSignBlock(ModBlocks.CORRUPTED_HANGING_SIGN.get(), ModBlocks.CORRUPTED_WALL_HANGING_SIGN.get(), stripped);
+        simpleBlock(ModBlocks.CORRUPTED_LEAVES.get(), models().cubeAll("corrupted_leaves",
+                blockTexture(ModBlocks.CORRUPTED_LEAVES.get())).renderType("cutout_mipped"));
+
+        // 89: the glitch block animates through its .mcmeta (T); voidstone's stars and the nullite crystals are emissive
+        // overlays (no block light). The voidstone ore shows plain voidstone under the crystals.
+        simpleBlock(ModBlocks.GLITCH_BLOCK.get());
+        ResourceLocation voidstone = blockTexture(ModBlocks.VOIDSTONE.get());
+        oreWithOverlay(ModBlocks.VOIDSTONE.get(), voidstone, CubeTextures.all(voidstone),
+                CubeTextures.all(modLoc("block/voidstone_glow")), true);
+        CubeTextures nullite = CubeTextures.all(modLoc("block/nullite_ore_overlay"));
+        ResourceLocation corruptedStone = blockTexture(ModBlocks.CORRUPTED_STONE.get());
+        oreWithOverlay(ModBlocks.NULLITE_ORE.get(), corruptedStone, CubeTextures.all(corruptedStone), nullite, true);
+        oreWithOverlay(ModBlocks.VOIDSTONE_NULLITE_ORE.get(), voidstone, CubeTextures.all(voidstone), nullite, true);
+
+        // 90 (Nether ring 5): the white stone set like the fossil stone set, the pillar like quartz's, the white core's
+        // glow as an emissive overlay on white stone.
+        simpleBlock(ModBlocks.CHALKRACK.get());
+        stoneFamily(ModBlocks.WHITE_STONE.get(), ModBlocks.WHITE_STONE_STAIRS.get(), ModBlocks.WHITE_STONE_SLAB.get(),
+                ModBlocks.WHITE_STONE_WALL.get());
+        stoneFamily(ModBlocks.POLISHED_WHITE_STONE.get(), ModBlocks.POLISHED_WHITE_STONE_STAIRS.get(),
+                ModBlocks.POLISHED_WHITE_STONE_SLAB.get(), ModBlocks.POLISHED_WHITE_STONE_WALL.get());
+        stoneFamily(ModBlocks.WHITE_STONE_BRICKS.get(), ModBlocks.WHITE_STONE_BRICK_STAIRS.get(),
+                ModBlocks.WHITE_STONE_BRICK_SLAB.get(), ModBlocks.WHITE_STONE_BRICK_WALL.get());
+        logBlock(ModBlocks.WHITE_STONE_PILLAR.get());
+        simpleBlock(ModBlocks.MIRROR_STONE.get());
+        simpleBlock(ModBlocks.STILL_LIGHT.get());
+        ResourceLocation whiteStone = blockTexture(ModBlocks.WHITE_STONE.get());
+        oreWithOverlay(ModBlocks.WHITE_CORE_ORE.get(), whiteStone, CubeTextures.all(whiteStone),
+                CubeTextures.all(modLoc("block/white_core_ore_overlay")), true);
     }
 
     /** Nether ring 4: bone sand, bleached netherrack, the fossil stone set (like tidestone) and the purity crystal. */

@@ -20,6 +20,9 @@
     "corruptedadventure:smooth_lagoon_sandstone_stairs",
     "corruptedadventure:fossil_stone_stairs",
     "corruptedadventure:polished_fossil_stone_stairs",
-    "corruptedadventure:fossil_stone_brick_stairs"
+    "corruptedadventure:fossil_stone_brick_stairs",
+    "corruptedadventure:white_stone_stairs",
+    "corruptedadventure:polished_white_stone_stairs",
+    "corruptedadventure:white_stone_brick_stairs"
   ]
 }
