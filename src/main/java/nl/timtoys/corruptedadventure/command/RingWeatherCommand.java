@@ -15,6 +15,7 @@ import net.minecraft.world.level.GameRules;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.RingWorld;
+import nl.timtoys.corruptedadventure.weather.Ring5WeatherBands;
 import nl.timtoys.corruptedadventure.weather.RingWeather;
 import nl.timtoys.corruptedadventure.weather.RingWeatherCycle;
 import nl.timtoys.corruptedadventure.weather.RingWeatherData;
@@ -63,12 +64,23 @@ final class RingWeatherCommand {
         return data.states().size();
     }
 
-    /** E.g. {@code ring_2: sandstorm, 412 s of 600 left, intensity 0.83, wind 225° (from SW)}. */
+    /**
+     * E.g. {@code ring_2: sandstorm, 412 s of 600 left, intensity 0.83, wind 225° (from SW)}. Ring 5 with weather also
+     * shows the outer band's own type (package 92): {@code ring_5: glitch_storm, … (inner band) | outer band: reverse_rain, …}.
+     */
     static String describe(Ring ring, RingWeatherState state) {
+        String text = ring.getSerializedName() + ": " + describe(state);
+        if (ring != Ring.RING_5 || state.type() == RingWeatherType.CLEAR) {
+            return text;
+        }
+        RingWeatherState outer = Ring5WeatherBands.felt(state, Ring5WeatherBands.Band.OUTER, ServerConfig.ring5Bands());
+        return text + " (inner band) | outer band: " + describe(outer);
+    }
+
+    private static String describe(RingWeatherState state) {
         String wind = SandstormWind.hasWind(state.type()) ? ", wind " + SandstormWind.describe(state) : "";
-        return String.format(Locale.ROOT, "%s: %s, %d s of %d left, intensity %.2f%s", ring.getSerializedName(),
-                state.type().getSerializedName(), seconds(state.remainingTicks()), seconds(state.durationTicks()),
-                state.intensity(), wind);
+        return String.format(Locale.ROOT, "%s, %d s of %d left, intensity %.2f%s", state.type().getSerializedName(),
+                seconds(state.remainingTicks()), seconds(state.durationTicks()), state.intensity(), wind);
     }
 
     private static int set(CommandContext<CommandSourceStack> context, Optional<Integer> seconds) throws CommandSyntaxException {

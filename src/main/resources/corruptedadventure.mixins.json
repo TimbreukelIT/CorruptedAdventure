@@ -9,7 +9,8 @@
     "ClientLevelSkyColorMixin",
     "DimensionSpecialEffectsAccessor",
     "DimensionSpecialEffectsMixin",
-    "LevelRendererCloudsMixin"
+    "LevelRendererCloudsMixin",
+    "SoundEngineVolumeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

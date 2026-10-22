@@ -34,8 +34,8 @@ class Ring4WeatherTest {
         assertEquals("storm_wind", RingWeatherType.STORM_WIND.getSerializedName());
         assertTrue(RingWeatherType.STORM_WIND.allowedIn(Level.OVERWORLD, Ring.RING_4));
         assertFalse(RingWeatherType.STORM_WIND.allowedIn(Level.OVERWORLD, Ring.RING_5));
-        // Appended: the older types keep their wire index.
-        assertEquals(RingWeatherType.values().length - 1, RingWeatherType.STORM_WIND.ordinal());
+        // Appended: the older types keep their wire index (package 92 appended STANDSTILL after it).
+        assertEquals(10, RingWeatherType.STORM_WIND.ordinal());
         assertEquals(9, RingWeatherType.REVERSE_RAIN.ordinal());
     }
 

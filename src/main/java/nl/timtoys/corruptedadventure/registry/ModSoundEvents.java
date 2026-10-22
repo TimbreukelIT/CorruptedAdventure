@@ -97,6 +97,15 @@ public final class ModSoundEvents {
     /** Slurp of sucking mud, its tell (G1; stream B plays it, package 72). */
     public static final DeferredHolder<SoundEvent, SoundEvent> SUCKING_MUD_SLURP = register("block.sucking_mud.slurp");
 
+    // Ring 5 weather (package 92, stream A): loops the client plays while the weather is felt; vanilla placeholders in
+    // sounds.json until the ring 5 sound script (98).
+    /** Crackling, stuttering hum of the glitch storm. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_GLITCH_STORM = register("weather.ring_5.glitch_storm");
+    /** Low, wrong rain of the reverse rain. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_REVERSE_RAIN = register("weather.ring_5.reverse_rain");
+    /** The almost silent hum of the standstill, while every other sound drains away. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_STANDSTILL = register("weather.ring_5.standstill");
+
     private ModSoundEvents() {
     }
 

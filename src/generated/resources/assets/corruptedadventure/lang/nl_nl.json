@@ -534,5 +534,8 @@
   "subtitles.corruptedadventure.weather.ring_3.eruption": "Vulkaan rommelt",
   "subtitles.corruptedadventure.weather.ring_4.dense_fog": "Mist dempt de wereld",
   "subtitles.corruptedadventure.weather.ring_4.storm_wind": "Stormwind huilt",
-  "subtitles.corruptedadventure.weather.ring_4.toxic_rain": "Gifregen sist"
+  "subtitles.corruptedadventure.weather.ring_4.toxic_rain": "Gifregen sist",
+  "subtitles.corruptedadventure.weather.ring_5.glitch_storm": "Glitchstorm hapert",
+  "subtitles.corruptedadventure.weather.ring_5.reverse_rain": "Regen stijgt op",
+  "subtitles.corruptedadventure.weather.ring_5.standstill": "De wereld staat stil"
 }
