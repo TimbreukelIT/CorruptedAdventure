@@ -5,9 +5,9 @@ import net.minecraft.world.level.levelgen.DensityFunction;
 
 /**
  * The inner band of ring 5 (package 83, V4-A): dead ground around Y 78 with low hills (Y 70–95; the stairs and pits of
- * {@code corrupted_wastes} are the exception: their treads go up to {@link #STEP} × {@link #MAX_STEPS} above the ground,
- * see the open question in the plan), and per region the shapes
- * that are "just wrong" (the region axes and thresholds of W-biomes, {@code golf-1-biomes.md} §2):
+ * {@code corrupted_wastes} are a deliberate exception: their treads go up to {@link #STEP} × {@link #MAX_STEPS} above the
+ * ground, so up to about Y 119), and per region the shapes that are "just wrong" (the region axes and thresholds of
+ * W-biomes, {@code golf-1-biomes.md} §2):
  * <ul>
  *     <li>{@code corrupted_wastes}: a plain with too regular stairs (treads exactly {@link #STEP} high, straight edges on
  *     the block grid) and perfectly round, shallow pits;</li>

@@ -926,3 +926,5 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-21 | conditions | Stilte-meter Nether-5: 0→100 in ~5 min, open ruimte ×1,5; geluidsbronnen binnen 16 laten zakken; spelers binnen 8 halveren de opbouw; drempels 30/60/90 | Gebruiker |
 | 2026-10-21 | atmosphere | Ring 5-weer: één cyclus, type gewogen per band (binnen glitchstorm/stilstand, buiten omgekeerde regen) | Gebruiker |
 | 2026-10-21 | textures | Nulliet: violet-zwarte kristallen met violette rand, zwak emissive | Gebruiker |
+| 2026-10-22 | worldgen | Ring 5 binnenband: trappen van corrupted_wastes mogen tot ~Y 119 uitsteken (boven de dode grond 70–95), bewuste uitzondering | Gebruiker |
+| 2026-10-22 | worldgen | Ring 5 binnenband: glitch-schijven 4–6 hoog, één hoogte per laagcel van 64 | Gebruiker |

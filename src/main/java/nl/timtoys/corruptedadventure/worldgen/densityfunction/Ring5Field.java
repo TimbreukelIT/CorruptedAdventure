@@ -301,7 +301,10 @@ public final class Ring5Field implements DensityFunction {
         return !column(x, z).isVoid();
     }
 
-    /** The preliminary surface of the column: its top, or {@link #VOID_HEIGHT} (no surface) over the void. */
+    /**
+     * The preliminary surface of the column: its top, or {@link #VOID_HEIGHT} (no surface) over the void. In the inner band
+     * (83) it is the ground's height, also on a crack.
+     */
     public double initialHeight(int x, int z) {
         Column column = column(x, z);
         if (!column.inner) {
