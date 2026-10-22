@@ -16,8 +16,7 @@ Per area (overworld only; Nether areas are skipped) it counts:
   water     any water (ring 5 is dry), and
   lavahigh  lava at or above Y -54 (only vanilla's lava layer below -54 in the inner band may stay; its dam and the
             outer band are checked by `lavascan.py` (leaks) and `fluidvoid`).
-            Both only in dry areas: every area except those named with --wet (default: names starting with "z45",
-            the zone 4→5 keeps its abyss sea until package 85).
+            Both only in dry areas: every area except those named with --wet (default: none; the zone 4→5 is dry since 85).
 
 Exit code 1 with --strict when any area has a fault (everything but `void`).
 """
@@ -139,7 +138,7 @@ def main():
     p.add_argument("world")
     p.add_argument("areas")
     p.add_argument("--only", nargs="*")
-    p.add_argument("--wet", nargs="*", help="areas without the dry rule (default: names starting with z45)")
+    p.add_argument("--wet", nargs="*", help="areas without the dry rule (default: none)")
     p.add_argument("--list", type=int, default=5)
     p.add_argument("--json")
     p.add_argument("--strict", action="store_true")
@@ -147,7 +146,7 @@ def main():
     results = {}
     faults = 0
     for a in areas.load(args.areas, only_dim="ow", names=args.only):
-        wet = a.name in args.wet if args.wet is not None else a.name.startswith("z45")
+        wet = a.name in args.wet if args.wet is not None else False
         r = scan(args.world, a, wet, args.list)
         region.clear_cache()
         results[a.name] = r

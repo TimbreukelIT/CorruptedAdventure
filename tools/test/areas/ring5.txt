@@ -1,7 +1,7 @@
 # Ring 5 (overworld), golf 0 (82): radii 8000-9700 (CommonConfig defaults), void edge 10200; seed 20260930.
 # Chunk coordinates, inclusive. The zone 4->5 is 256 wide (7872-8128), the zone 5->void 128 (9636-9764); the boundary
 # noise moves both up to 96. The band line lies at 8850 +-255 (Ring5Band), its transition ~200 wide.
-# z45*: the whole zone 4->5 plus the noise (7776-8224, chunks 486-514), 5 along. Wet: keeps its abyss sea until 85.
+# z45*: the whole zone 4->5 plus the noise (7776-8224, chunks 486-514), 5 along. Dry since 85 (checked as dry).
 z45e 486 -2 514 2
 z45n -2 486 2 514
 # r5i*: inner band at radius 8400 (chunk 525), 5 x 5: dry; vanilla's lava layer below Y -54.
