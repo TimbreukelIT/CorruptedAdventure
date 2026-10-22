@@ -18,7 +18,6 @@ import nl.timtoys.corruptedadventure.ring.Ring5Band;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.ring.RingPosition;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -117,7 +116,6 @@ class Ring5RegionSharesTest {
 
     /** As above for erosion (ring 5's {@code breakup}); the router file is W-terrein's. */
     @Test
-    @Disabled("enabled at INT1 after W-terrein adds switch_at to overworld_erosion")
     void erosionSwitchesHardAtABoundaryWithoutATransitionBiome() {
         assertEquals(List.of(), missingSwitches(Set.of("erosion")));
     }
