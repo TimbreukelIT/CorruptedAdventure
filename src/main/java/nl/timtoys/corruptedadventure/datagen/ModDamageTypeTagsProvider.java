@@ -9,6 +9,7 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.datagen.tags.Ring3DamageTypeTags;
 import nl.timtoys.corruptedadventure.datagen.tags.Ring4DamageTypeTags;
+import nl.timtoys.corruptedadventure.datagen.tags.Ring5DamageTypeTags;
 import nl.timtoys.corruptedadventure.registry.ModDamageTypes;
 
 import java.util.concurrent.CompletableFuture;
@@ -33,5 +34,6 @@ final class ModDamageTypeTagsProvider extends DamageTypeTagsProvider {
         // Ring 3: the conditions stream adds its tags in its own helper.
         Ring3DamageTypeTags.addTags(this::tag);
         Ring4DamageTypeTags.addTags(this::tag);
+        Ring5DamageTypeTags.addTags(this::tag);
     }
 }

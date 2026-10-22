@@ -25,6 +25,7 @@ public final class ConditionTicker {
         gameBus.addListener(PlayerTickEvent.Post.class, ConditionTicker::onPlayerTick);
         Ring3Conditions.register(gameBus);
         Ring4Conditions.register(gameBus);
+        Ring5Conditions.register(gameBus);
     }
 
     private static void onPlayerTick(PlayerTickEvent.Post event) {
@@ -49,6 +50,7 @@ public final class ConditionTicker {
                     meters.get(condition), exposed, meters.appliedThresholds(condition), thresholds);
             toClear.addAll(update.clear());
             toApply.addAll(update.apply());
+            // Before any effect runs: VoidDarkness reads the reached count of the void.
             meters.setAppliedThresholds(condition, update.reached());
         }
 

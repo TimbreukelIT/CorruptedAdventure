@@ -484,6 +484,8 @@
   "death.attack.corruptedadventure.poison.player": "%1$s bezweek aan het gif van het bedorven moeras tijdens het gevecht met %2$s",
   "death.attack.corruptedadventure.sucking_mud": "%1$s werd opgeslokt door de zuigmodder",
   "death.attack.corruptedadventure.sucking_mud.player": "%1$s werd opgeslokt door de zuigmodder tijdens het gevecht met %2$s",
+  "death.attack.corruptedadventure.void": "%1$s werd door de void uitgewist",
+  "death.attack.corruptedadventure.void.player": "%1$s werd door de void uitgewist tijdens het gevecht met %2$s",
   "fluid_type.corruptedadventure.toxic_pool": "Gifslijk",
   "generator.corruptedadventure.corrupted_world": "Corrupte wereld",
   "item.corruptedadventure.aquamarine_shard": "Aquamarijnscherf",

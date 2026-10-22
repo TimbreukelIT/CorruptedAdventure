@@ -484,6 +484,8 @@
   "death.attack.corruptedadventure.poison.player": "%1$s succumbed to the poison of the blighted marsh whilst fighting %2$s",
   "death.attack.corruptedadventure.sucking_mud": "%1$s was swallowed by the sucking mud",
   "death.attack.corruptedadventure.sucking_mud.player": "%1$s was swallowed by the sucking mud whilst fighting %2$s",
+  "death.attack.corruptedadventure.void": "%1$s was unmade by the void",
+  "death.attack.corruptedadventure.void.player": "%1$s was unmade by the void whilst fighting %2$s",
   "fluid_type.corruptedadventure.toxic_pool": "Toxic Sludge",
   "generator.corruptedadventure.corrupted_world": "Corrupted World",
   "item.corruptedadventure.aquamarine_shard": "Aquamarine Shard",
