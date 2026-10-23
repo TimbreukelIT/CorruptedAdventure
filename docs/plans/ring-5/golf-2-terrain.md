@@ -227,8 +227,8 @@ Aanbevolen optie steeds eerst. "Perf" = de noise-stap tegen vanilla (budget ≤ 
    mee; gridnetten de schachten/gangen ± 1 rond de buitenste knopen (was 1 te ver). Test: elk net ≥ 12 binnen zijn cel.
 7. **Grotten op plekken en dubbelgangers:** `nearSpotOrCopy` (netten: hun omhullende; kamers: middelpunt ± reikwijdte)
    houdt ze ≥ `CAVE_CLEARANCE` 8 van de chunks van een corrupte plek en van beide vierkanten van een dubbelganger. Gevolg:
-   in een dubbelganger zitten in de praktijk geen eigen grotten meer (V93-6/7 zei "eigen grotten mee"); open punt in de
-   backlog voor de gebruiker.
+   in een dubbelganger zitten geen eigen grotten meer. **Besluit gebruiker 2026-10-23 ("zo laten"):** dubbelgangers
+   zonder eigen grotten; wijzigt V93-6/7 op dit punt (fase-1-wereld.md, beslissingenlog).
 8. **Niet gewijzigd:** de uitgang `caves` blijft (afnemer W-biomes 95: wandblok en voidsteen-rand); in de backlog.
 
 Gemeten na de review (testseed): 587 netten (50 % breed, 113 met twee niveaus, 151 gekopieerd), 409 void-grotten
