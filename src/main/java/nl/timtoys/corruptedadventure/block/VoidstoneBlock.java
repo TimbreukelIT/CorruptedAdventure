@@ -3,16 +3,16 @@ package nl.timtoys.corruptedadventure.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 
 /**
- * Voidstone (ring 5, 89): black rock that now and then breathes a void mote out of an open face. The mote is vanilla's
- * reverse portal particle as a placeholder until A's {@code void_mote} (golf 2). {@code animateTick} only runs on the
- * client level and names no client class; the stars are emissive in the model, the block gives no light.
+ * Voidstone (ring 5, 89): black rock that now and then breathes a void mote ({@code void_mote}, A's 98) out of an open
+ * face. {@code animateTick} only runs on the client level and names no client class; the stars are emissive in the
+ * model, the block gives no light.
  */
 public class VoidstoneBlock extends Block {
     public static final MapCodec<VoidstoneBlock> CODEC = simpleCodec(VoidstoneBlock::new);
@@ -42,6 +42,6 @@ public class VoidstoneBlock extends Block {
         double x = pos.getX() + 0.5 + direction.getStepX() * 0.55 + (direction.getStepX() == 0 ? random.nextDouble() - 0.5 : 0.0);
         double y = pos.getY() + 0.5 + direction.getStepY() * 0.55 + (direction.getStepY() == 0 ? random.nextDouble() - 0.5 : 0.0);
         double z = pos.getZ() + 0.5 + direction.getStepZ() * 0.55 + (direction.getStepZ() == 0 ? random.nextDouble() - 0.5 : 0.0);
-        level.addParticle(ParticleTypes.REVERSE_PORTAL, x, y, z, 0.0, 0.0, 0.0);
+        level.addParticle(ModParticleTypes.VOID_MOTE.get(), x, y, z, 0.0, 0.0, 0.0);
     }
 }
