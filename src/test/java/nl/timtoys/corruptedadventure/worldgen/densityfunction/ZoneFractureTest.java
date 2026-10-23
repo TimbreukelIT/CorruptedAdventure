@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 
+import net.minecraft.core.Holder;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.DensityFunctions;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
@@ -11,6 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * with dry cracks 2–8 wide and 30–60 deep, crossings along every crack, raised floes, loose chunks, landmarks; the same
  * across the seam of the angle; pure.
  */
-class ZoneFractureTest {
+public class ZoneFractureTest {
     private static final RingLayout LAYOUT = IslandFieldTest.LAYOUT;
     private static final double START = 8000.0 - 128.0;
     private static final double END = 8000.0 + 128.0;
@@ -50,7 +52,7 @@ class ZoneFractureTest {
                 }
             });
 
-    static ZoneFracture fracture(long seed) {
+    public static ZoneFracture fracture(long seed) {
         RingLayout layout = seed == IslandFieldTest.SEED ? LAYOUT : new RingLayout(LAYOUT.settings(), RingLayout.noiseSeed(seed));
         return new ZoneFracture(ARGUMENT, IslandFieldTest.noise("zone_4_5_cells", seed), () -> layout);
     }
@@ -299,12 +301,10 @@ class ZoneFractureTest {
         }
     }
 
-    /** V8-A: ring 4's own terrain has no land bridges, no abyss; its ground in the zone stays at least Y 64 (the rim). */
+    /** V8-A: ring 4's own terrain has no abyss; its ground in the zone stays at least Y 64 (the rim). */
     @Test
-    @SuppressWarnings("removal")
     void ring4KeepsOnlyItsRim() {
         IslandField islands = IslandFieldTest.field();
-        assertTrue(islands.landBridgesNear(8000, 0).isEmpty());
         for (double angle = 0.0; angle < 2.0 * Math.PI; angle += 0.02) {
             for (double r = START + 2.0; r < END - 2.0; r += 9.0) {
                 int x = (int) Math.floor(r * Math.cos(angle));
@@ -332,6 +332,18 @@ class ZoneFractureTest {
         ZoneFracture wrapper = assertInstanceOf(ZoneFracture.class, mapped);
         assertTrue(wrapper.argument() instanceof DensityFunctions.MarkerOrMarked);
         assertTrue(visited.stream().anyMatch(f -> f instanceof DensityFunctions.MarkerOrMarked));
+    }
+
+    /**
+     * 86c: {@code find} sees the fracture also inside the holder the wired router keeps it in (a random state's final
+     * density is a {@code HolderHolder}) and under a marker, and nothing in another function.
+     */
+    @Test
+    void findUnwrapsTheRoutersHolder() {
+        assertSame(FRACTURE, ZoneFracture.find(FRACTURE));
+        assertSame(FRACTURE, ZoneFracture.find(new DensityFunctions.HolderHolder(Holder.direct(FRACTURE))));
+        assertSame(FRACTURE, ZoneFracture.find(DensityFunctions.interpolated(new DensityFunctions.HolderHolder(Holder.direct(FRACTURE)))));
+        assertNull(ZoneFracture.find(ARGUMENT));
     }
 
     /** The overworld router: {@code final_density} is the zone fracture around the ring blend; the column value its own DF. */

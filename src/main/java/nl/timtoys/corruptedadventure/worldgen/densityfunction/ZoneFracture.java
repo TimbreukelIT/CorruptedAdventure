@@ -78,10 +78,18 @@ public final class ZoneFracture implements DensityFunction {
         return hash;
     }
 
-    /** The first {@code zone_fracture} in {@code root} (e.g. a random state's final density), or null. */
+    /**
+     * The {@code zone_fracture} at the top of {@code root} (a random state's final density), through holders, markers and
+     * ring gates ({@link RingGated#unwrap}), or null. The wired router holds it in a {@code HolderHolder} (86c: an
+     * {@code instanceof} on the root found nothing in-game).
+     */
     @Nullable
     public static ZoneFracture find(DensityFunction root) {
-        return root instanceof ZoneFracture fracture ? fracture : null;
+        DensityFunction function = root;
+        while (function != null && !(function instanceof ZoneFracture)) {
+            function = RingGated.unwrap(function);
+        }
+        return (ZoneFracture) function;
     }
 
     /**
@@ -120,11 +128,11 @@ public final class ZoneFracture implements DensityFunction {
         return found;
     }
 
-    /** All landmarks round the zone, decided once per world. */
+    /** All landmarks round the zone, decided once per world (per shape: a new layout gives new landmarks). */
     public List<Landmark> landmarks() {
-        List<Landmark> known = shared.landmarks;
-        if (known == null) {
-            ZoneFractureShape shape = shape();
+        ZoneFractureShape shape = shape();
+        Landmarks known = shared.landmarks;
+        if (known == null || known.shape() != shape) {
             List<Landmark> list = new ArrayList<>();
             for (int k = 0; k < shape.landmarkCount(); k++) {
                 double[] l = shape.landmark(k);
@@ -132,10 +140,10 @@ public final class ZoneFracture implements DensityFunction {
                 int z = Mth.floor(l[1]);
                 list.add(new Landmark(x, z, (int) Math.round(groundHeight(x, z) + l[3]), (int) l[2]));
             }
-            known = List.copyOf(list);
+            known = new Landmarks(shape, List.copyOf(list));
             shared.landmarks = known;
         }
-        return known;
+        return known.list();
     }
 
     // ---------------------------------------------------------------- density function
@@ -303,6 +311,10 @@ public final class ZoneFracture implements DensityFunction {
     public record Landmark(int x, int z, int topY, int radius) {
     }
 
+    /** The landmarks of one shape. */
+    private record Landmarks(ZoneFractureShape shape, List<Landmark> list) {
+    }
+
     /** Per column: the shape's decisions and the cuts' heights. */
     static final class Column {
         final ZoneFractureShape.Info info = new ZoneFractureShape.Info();
@@ -334,7 +346,7 @@ public final class ZoneFracture implements DensityFunction {
     /** Shared by a wired instance and the noise chunks' copies: pure per-world values. */
     static final class Shared {
         volatile ZoneFractureShape shape;
-        volatile List<Landmark> landmarks;
+        volatile Landmarks landmarks;
         volatile double[] annulus;
         volatile Terrains terrains;
     }

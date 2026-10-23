@@ -104,6 +104,7 @@ zolang 84 niet gemerged is, levert die `region_rot` (zelfde verdeling, alleen zo
   `minecraft:grass_block`. Kaarten opnieuw (main).
 
 ### 86c — gespleten rots naar de breukzone (V8-A, na 85)
+**Status:** gebouwd 2026-10-23 op `ring5/86c` (worktree `P:/Projecten/Java/wt/r5-86c`, poort 2), klaar voor review en merge door main.
 - `SplitRockFeature`/`SunderedReachFeatures`: plaatsing op `ZoneFracture.landmarksWithin` (opgeheven, vlakke schots om de
   ~650) in plaats van de landbruggen; hoogte uit `Landmark.topY` (niet uit `Column.surface()`, backlog decor D r. 396).
 - `IslandField.landBridgesNear` (deprecated sinds 85) weghalen (toestemming main, `golf-1.md`), de `@Disabled`-asserts in
@@ -150,6 +151,10 @@ de binnenband toont drie biomes, de buitenband de drie andere); PNG's in `build/
 - 2026-10-23 12:40: 86b: worktree `P:/Projecten/Java/wt/r5-86b` op `ring5/86b` vanaf `d5e4e859`; `setup.sh W2 2`.
 - 2026-10-23 12:55: 86b gebouwd: `ring5_surface.py` (blokken van 88, plafondwacht, basisgesteente), `Ring5BiomesTest`; script idempotent en stabiel na `ring4_surface.py`/`ring3_surface.py` (byte-gelijk). B groen (1.282 tests, 0 fouten, 2 overgeslagen); D zonder wijziging in `src/generated` (de surface is handgeschreven JSON); S-smoke verse wereld `r5-86b` (poort 25572): log 0 ERROR, geen client-class; `/ca ring` ok; `/ca terrainmap 8900 0 1400 4` → `build/test/maps/86b/` (biomes/hoogte; 86b raakt de vorm niet). Blokscan van 472 gegenereerde chunks (7 plekken per biome + 16 plekken rond de binnenband): zie Beslissingen 86b.
 - 2026-10-23 13:10: review (medium, 7 punten): basisgesteente zonder biome-opzoeking buiten de randstroken, `is_base_rock` herkent de hele regel, test zonder NPE en over de hele boom; kuilregel en scheurwanden zoals het plan (open vraag aan main: zandaandeel). B opnieuw groen (1.282 tests), D zonder wijziging, S-smoke opnieuw schoon met dezelfde blokscan.
+- 2026-10-23 13:40: 86c: worktree `P:/Projecten/Java/wt/r5-86c` op `ring5/86c` vanaf `554caff8`; `setup.sh W2 2`.
+- 2026-10-23 14:00: 86c gebouwd (`SplitRockFeature` op `landmarksWithin`, `ZoneFractureTerrain`, `landBridgesNear` weg, tests). Eerste S-smoke: 0 rotsen bij groene unit tests; oorzaak `ZoneFracture.find` (de bedrade `final_density` is een `HolderHolder`), gerepareerd + test.
+- 2026-10-23 14:10: review (medium, 8 punten): `find` via `RingGated.unwrap` (holders, markers, poorten), `ZoneFractureTerrain` logt een misser, `landmarks()` per shape, test `floeAt` op de basis; niet overgenomen: de dubbele filter in `rocksNear` (`landmarksWithin` rekent met de straal, de rots met `REACH`; het plan noemt de accessor), de lineaire `landmarksWithin` (~80 vergelijkingen per chunk in de zone), één generieke cache voor de vier `…Terrain`-klassen (bestaand patroon, buiten 86c).
+- 2026-10-23 14:30: B groen (1.285 tests, 0 fouten, 1 overgeslagen: `RingColumnsExportTest`); D: alleen `ring_4/sundered_split_rock.json` (`position` weg); S-smoke verse wereld `r5-86c` (poort 25572): log 0 ERROR, geen client-class, `/ca ring` ok (op landmark 7994, 409: transition 4→5, gewicht 0,55); blokscan van 6 landmarks rond de zone (54 chunks): op elke schots een rots (24–31 hoog, 1.508–2.780 blokken), 0 rotsblokken buiten de schots, de schots 5–15 boven de grond eromheen. `det.sh` op `ring5.txt`: 991/991 identiek, own 0; op 6 rotsplekken (`build/86c/rocks.txt`, niet gecommit): 149/150 identiek, own 0, noise 6 (vanilla). `voidscan.py --strict --rings` op `ring5.txt` 0 fouten, op de rotsplekken 0 fouten.
 
 ## CODEBASE-delta
 - `worldgen/biome/Ring5Biomes` (86): lijsten `INNER` (`corrupted_wastes`, `glitch_fields`, `false_meadow`), `OUTER`
@@ -185,6 +190,14 @@ de binnenband toont drie biomes, de buitenband de drie andere); PNG's in `build/
   `shattered_expanse` `corrupted_stone`; scheurwanden `void_scars` blijven `deepslate`; `false_meadow` vanilla gras/aarde.
   `Ring5BiomesTest`: blokken per biome, wacht vóór elk `corrupted_sand`, geen vanilla-standins buiten `false_meadow` en de
   scheurwanden, nieuw `theBaseRockIsCorruptedStoneBelowAllSixBiomes`.
+- **86c:** `SplitRockFeature` op `ZoneFracture.landmarksWithin` via het nieuwe `ZoneFractureTerrain` (de `zone_fracture` per
+  random state, zwakke cache); `Rock` met `base` (= `Landmark.topY` − 1), `plan(seed, config, landmark)`, `rocksNear(fracture,
+  …)` op dezelfde kolommen als `placeInChunk`; `FLOE_MARGIN` 3; `SEARCH` en de heightmap op het anker weg.
+  `SplitRockConfiguration` zonder `position`, `SunderedReachFeatures.POSITION` weg (`ring_4/sundered_split_rock.json`
+  opnieuw). `IslandField.landBridgesNear`, `LandBridge`, `effectiveDistance` weg. `ZoneFracture.find` pakt holders, markers en
+  ringpoorten uit (fix, `RingGated.unwrap`), `ZoneFracture.landmarks()` per shape, `ZoneFractureTerrain` logt een misser. Tests: `DecorDLandmarksTest.everyLandmarkCarriesOneSplitRockOnItsFloe`/`noSplitRockOutsideTheZone`,
+  `ZoneFractureTest.findUnwrapsTheRoutersHolder` (`ZoneFractureTest` en `fracture(seed)` publiek), brug-assert uit
+  `ring4KeepsOnlyItsRim`.
 ### Plekken die ring 5-biomes opsommen (controlelijst, 86)
 Java leest `Ring5Biomes.ALL`/`INNER`/`OUTER`/`SILENT` (bootstrap, tags, `Ring5BiomesTest`, `Ring5RegionSharesTest`).
 Handgeschreven JSON en scripts kunnen dat niet; een nieuwe ring 5-biome moet ook in:
@@ -244,6 +257,22 @@ Handgeschreven JSON en scripts kunnen dat niet; een nieuwe ring 5-biome moet ook
     `sundered_reach` (99,9 % binnen één quart van een `sundered_reach`-quart: de zoom-ruis van de biome per blok). Die
     gespikkelde naad (steen/corrupted steen per blok) is dezelfde als bij elke biomegrens in de surface (gras/zand);
     bewust zo gelaten, het plan kiest per biome.
+- **86c (implementatiekeuzes):**
+  - **Plek en richting:** de rots staat op het midden van de landmark (`x + 0,5`, `z + 0,5`), de spleet langs de straal
+    naar buiten, zoals hij eerder langs de landbrug liep (die liep ook radiaal): de spleet wijst de weg naar ring 5.
+  - **Maat op de schots:** halve breedte = straal − 3, geklemd op 6–8 (de maat van decor D; straal 9 → 6, 10 → 7, ≥ 11 →
+    8); de lengte (config 4–5,5) wordt ingekort tot de voet met maximale ruwheid binnen de straal past (alleen bij straal
+    9 merkbaar: ~5,2). De kiel (`HANG`) blijft als vangnet voor een kolom zonder schots.
+  - **`position` weg** uit `SplitRockConfiguration`: de plek komt nu uit de landmark (0,55 van de zone, W-terrein); een
+    veld zonder werking zou misleiden. Registry-namen (`ring_4/sundered_split_rock`, `…_split_rocks`) ongewijzigd.
+  - **Basis = `Landmark.topY` − 1** (puur, plan); de grond per kolom blijft de bevroren `WORLD_SURFACE_WG` van die kolom
+    (voet en kiel), zoals het grondobjectmodel.
+  - **`ZoneFracture.find` (bestand van W-terrein, 85) gerepareerd:** in de bedrade router is de `final_density` een
+    `HolderHolder`; de `instanceof` op de wortel gaf null, dus de eerste S-smoke vond 0 rotsen bij groene unit tests.
+    `find` pakt nu holders uit (+ test). Valkuil in `CODEBASE.md`.
+  - **`IslandField.effectiveDistance` ook weg:** alleen de gespleten rots gebruikte hem (voor de landbrug-bisectie).
+  - **Ring 4:** de oude plaatsing (landbruggen) is weg met `landBridgesNear`; de feature blijft in `sundered_reach` (de hele
+    zone 4→5, `RingBiomeSourceTest`), dus nergens anders (`Ring4BiomesTest`).
 ## Backlog
 - [worldgen] W-terrein (eigenaar router), INT1: `switch_at ["ring_5"]` in `ring_blend/overworld_erosion` (anders mengt
   `breakup` in zone 5→void met de void en schuiven de biomegrenzen), dan `Ring3JsonTest` (zegt nu "erosion mengt")

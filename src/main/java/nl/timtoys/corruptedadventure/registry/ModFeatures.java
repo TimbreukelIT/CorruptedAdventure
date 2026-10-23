@@ -285,7 +285,7 @@ public final class ModFeatures {
     /** {@code corruptedadventure:terrace_dressing} (ring 4 decor proef): vines down the terrace walls, moss on the rims */
     public static final DeferredHolder<Feature<?>, Feature<TerraceDressingConfiguration>> TERRACE_DRESSING =
             FEATURES.register("terrace_dressing", () -> new TerraceDressingFeature(TerraceDressingConfiguration.CODEC));
-    /** {@code corruptedadventure:split_rock} (decor D): the split rock on each land bridge of sundered_reach */
+    /** {@code corruptedadventure:split_rock} (decor D; 86c): the split rock on each landmark floe of the zone 4→5 (sundered_reach) */
     public static final DeferredHolder<Feature<?>, Feature<SplitRockConfiguration>> SPLIT_ROCK =
             FEATURES.register("split_rock", () -> new SplitRockFeature(SplitRockConfiguration.CODEC));
 

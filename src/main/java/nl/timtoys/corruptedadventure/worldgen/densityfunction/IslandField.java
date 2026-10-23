@@ -589,20 +589,6 @@ public final class IslandField implements DensityFunction {
         return sites;
     }
 
-    /**
-     * Decor D (2026-10-19): the land bridges of the zone 4→5 ({@code sundered_reach}), for the split rock on each. Gone
-     * since the fracture zone (85, V8-A): always empty; the split rock moves to {@code ZoneFracture.landmarksWithin} (86c).
-     */
-    @Deprecated(forRemoval = true)
-    public List<LandBridge> landBridgesNear(int x, int z) {
-        return List.of();
-    }
-
-    /** The ring layout's effective distance of (x, z) (with the boundary noise): what the zones are measured in. */
-    public double effectiveDistance(double x, double z) {
-        return ringLayout().effectiveDistance(x, z);
-    }
-
     // ---------------------------------------------------------------- outputs ({@link IslandOutput})
 
     /**
@@ -1498,13 +1484,6 @@ public final class IslandField implements DensityFunction {
      * centre + side · halfWidth · sin φ − out · depth · cos φ (φ in [−π/2, π/2], side = (−outZ, outX)).
      */
     public record GorgeSite(int index, double centreX, double centreZ, double outX, double outZ, double halfWidth, double depth) {
-    }
-
-    /**
-     * A land bridge of the zone 4→5 (decor D): its cell's index, its middle line's angle (radians, as {@code atan2(z, x)}
-     * up to whole turns), its half width along the zone (blocks) and the zone's inner and outer effective distance.
-     */
-    public record LandBridge(int index, double angle, double halfWidth, double zoneStart, double zoneEnd) {
     }
 
     /**

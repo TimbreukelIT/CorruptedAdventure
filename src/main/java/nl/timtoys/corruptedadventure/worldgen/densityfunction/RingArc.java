@@ -3,8 +3,8 @@ package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 /**
  * Positions along a ring (a loop round the world's centre): the arc in blocks at a radius, wrapped into one period so
  * it runs on continuously across the seam of the angle (−π | π, at x &lt; 0, z = 0), and periodic cells along it. Shared
- * by the descent of {@code verdant_falls} ({@link VerdantDescent}, {@link VerdantBasins}) and the land bridges of the
- * zone 4→5 ({@link Ring4Sundered}). Pure.
+ * by the descent of {@code verdant_falls} ({@link VerdantDescent}, {@link VerdantBasins}) and the fracture zone 4→5
+ * ({@link ZoneFractureShape}: cracks, landmarks). Pure.
  */
 final class RingArc {
     private RingArc() {

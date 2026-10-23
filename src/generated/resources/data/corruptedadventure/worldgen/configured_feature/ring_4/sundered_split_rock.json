@@ -103,7 +103,6 @@
       "max_exclusive": 5.5,
       "min_inclusive": 4.0
     },
-    "position": 0.7,
     "shorter": {
       "type": "minecraft:uniform",
       "max_exclusive": 0.9,

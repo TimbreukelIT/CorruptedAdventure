@@ -58,7 +58,7 @@ public final class Ring4Features {
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_BLOSSOM_BUSHES, ModBiomes.VERDANT_FALLS),
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_LOTUS, ModBiomes.VERDANT_FALLS),
             vegetal(VerdantFallsFeatures.VERDANT_FALLS_WATER_BLOOMS, ModBiomes.VERDANT_FALLS),
-            // Decor D: the split rock on each land bridge of sundered_reach (its only feature this round).
+            // Decor D: the split rock on each landmark floe of sundered_reach (86c; its only feature this round).
             local(SunderedReachFeatures.SUNDERED_REACH_SPLIT_ROCKS, ModBiomes.SUNDERED_REACH),
             // 75: the trees of the mythical band and the sky gardens (decor proef: in groves).
             vegetal(Ring4MythicFeatures.CASCADE_VALE_TREES, ModBiomes.CASCADE_VALE),
