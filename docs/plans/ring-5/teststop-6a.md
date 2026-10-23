@@ -200,3 +200,4 @@ bestand (§Uitkomst) en waar nodig in de beslissingenlog.
 ## Uitkomst tijdens 6a (2026-10-23)
 
 - Binnenband te plat → herzien (zie `fase-1-wereld.md`, beslissingenlog 2026-10-23): golvend reliëf + corrupte plekken. Gebouwd ná deze 6a-sessie; de terreinpunten van de binnenband (B) worden daarna opnieuw beoordeeld. Buitenband en kastelen blijven.
+- Nether-5: akkoord voor nu ("bijzonder"; benieuwd naar de latere aankleding).
