@@ -967,3 +967,5 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-23 | structures | Structure engine: alle structures procedureel via de engine (geen handwerk); de gebruiker beoordeelt op screenshots (case study `docs/plans/structures/engine-case-study.md`) | Gebruiker |
 | 2026-10-23 | structures | Add-ins voor de engine: fotostudio-commando en reviewer-agent; geen offline renderer, geen WorldEdit | Gebruiker |
 | 2026-10-23 | structures | Proef van de engine: verzonken kapel ring 4, nu, parallel aan ring 5 (nulmeting zonder engine, daarna met een minimale engine) | Gebruiker |
+| 2026-10-23 | infra | Fotostudio (S0): eigen dev-dimensie `studio` uit een datapack alleen in `run/` (nooit in de jar) + modus in-situ op het echte terrein | Gebruiker (aanbevolen) |
+| 2026-10-23 | infra | Fotostudio (S0): volledige camera-set (4 iso, 4 gevels, boven, doorsnede per verdieping overdag; 4 iso 's nachts) op één contactsheet; plaatst sjablonen en (jigsaw-)structures met vaste seed | Gebruiker (aanbevolen) |

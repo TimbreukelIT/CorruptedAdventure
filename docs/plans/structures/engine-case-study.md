@@ -164,3 +164,11 @@ Volgende stappen:
 2. **S1 (`structures`)**: korte sparring over de kapel (grootte, staat, wat er binnen is), daarna de nulmeting zonder
    engine.
 3. **S2 (`structures`)**: minimale engine en dezelfde kapel opnieuw; vergelijken met een reviewer-agent en jouw oordeel.
+
+### Besluiten S0 fotostudio (2026-10-23)
+
+| # | Besluit |
+|---|---|
+| S0-1 | Plek: een **eigen dev-dimensie** `corruptedadventure:studio` (leeg, vaste tijd, geen weer, neutrale lucht) uit een datapack dat alleen in `run/` staat en **nooit in de mod-jar** zit; plus een modus **in-situ** (`here`): de structure op het echte terrein, om de aansluiting te toetsen |
+| S0-2 | Camera: **volledige set**: 4 iso-hoeken, 4 gevels, een bovenaanzicht, een doorsnede per verdieping (de lagen erboven tijdelijk weg), overdag; 's nachts de 4 iso-hoeken (licht en spawnplekken); alles op één contactsheet met labels |
+| S0-3 | Inhoud: losse **`.nbt`-sjablonen** én **geregistreerde (jigsaw-)structures**, met een vaste seed |
