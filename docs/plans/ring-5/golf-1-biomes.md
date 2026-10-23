@@ -93,6 +93,7 @@ zolang 84 niet gemerged is, levert die `region_rot` (zelfde verdeling, alleen zo
 ## 3. Na INT1
 
 ### 86b — echte ring 5-blokken in de surface (op main, na B + W-terrein + W-biomes)
+**Status:** gebouwd 2026-10-23 op `ring5/86b` (worktree `P:/Projecten/Java/wt/r5-86b`, poort 2), klaar voor review en merge door main.
 - `ring5_surface.py`: constanten naar de blokken van B: `corrupted_wastes`, `inverted_hills` → `corrupted_grass_block` /
   `corrupted_dirt`; `glitch_fields`, `void_scars`, `shattered_expanse` → `corrupted_stone` (top) / `corrupted_stone`;
   kuilbodems en lage plekken in `corrupted_wastes` → `corrupted_sand` (met plafondwacht: boven lucht `corrupted_stone`);
@@ -146,6 +147,9 @@ de binnenband toont drie biomes, de buitenband de drie andere); PNG's in `build/
   expliciete check in `Ring5Biomes.spawns`, en een router-invariant in `Ring5RegionSharesTest`: elke as waarop een
   `multi_noise` splitst, schakelt hard (`switch_at`) op een grens zonder overgangsbiome. Erosie (ring 5 = `breakup`)
   heeft dat nog niet: die ene test staat `@Disabled` tot INT1.
+- 2026-10-23 12:40: 86b: worktree `P:/Projecten/Java/wt/r5-86b` op `ring5/86b` vanaf `d5e4e859`; `setup.sh W2 2`.
+- 2026-10-23 12:55: 86b gebouwd: `ring5_surface.py` (blokken van 88, plafondwacht, basisgesteente), `Ring5BiomesTest`; script idempotent en stabiel na `ring4_surface.py`/`ring3_surface.py` (byte-gelijk). B groen (1.282 tests, 0 fouten, 2 overgeslagen); D zonder wijziging in `src/generated` (de surface is handgeschreven JSON); S-smoke verse wereld `r5-86b` (poort 25572): log 0 ERROR, geen client-class; `/ca ring` ok; `/ca terrainmap 8900 0 1400 4` → `build/test/maps/86b/` (biomes/hoogte; 86b raakt de vorm niet). Blokscan van 472 gegenereerde chunks (7 plekken per biome + 16 plekken rond de binnenband): zie Beslissingen 86b.
+- 2026-10-23 13:10: review (medium, 7 punten): basisgesteente zonder biome-opzoeking buiten de randstroken, `is_base_rock` herkent de hele regel, test zonder NPE en over de hele boom; kuilregel en scheurwanden zoals het plan (open vraag aan main: zandaandeel). B opnieuw groen (1.282 tests), D zonder wijziging, S-smoke opnieuw schoon met dezelfde blokscan.
 
 ## CODEBASE-delta
 - `worldgen/biome/Ring5Biomes` (86): lijsten `INNER` (`corrupted_wastes`, `glitch_fields`, `false_meadow`), `OUTER`
@@ -173,6 +177,14 @@ de binnenband toont drie biomes, de buitenband de drie andere); PNG's in `build/
   `drempel − 0,00005` (positief) of `−0,0001` (negatief), zodat buren aangrenzende gehele getallen zijn
   (`Ring5RegionSharesTest.theBoxesTileThePlaneExactlyOnce`). Ring 4 doet het op de bandgrens al zo (`−0,0001`).
 
+- **86b:** `tools/worldgen/ring5_surface.py` met de blokken van 88 (`GRASS`, `DIRT`, `STONE`, `SAND`), `put` met plafondwacht
+  (`FALLING`: `corrupted_sand` → `corrupted_stone` op `stone_depth` ceiling 0, zoals ring 4) en `ring_5_base_rock`: de laatste
+  top-level surface-regel, ná vanilla's deepslate-gradient (`ring_reach` ring 5 → `biome_is` de 6 → `corrupted_stone`).
+  Per biome: `corrupted_wastes`/`inverted_hills` `corrupted_grass_block`/`corrupted_dirt` (kuilbodems en lage plekken
+  onder Y 76 `corrupted_sand`; onderkant `inverted_hills` `corrupted_stone`); `glitch_fields`/`void_scars`/
+  `shattered_expanse` `corrupted_stone`; scheurwanden `void_scars` blijven `deepslate`; `false_meadow` vanilla gras/aarde.
+  `Ring5BiomesTest`: blokken per biome, wacht vóór elk `corrupted_sand`, geen vanilla-standins buiten `false_meadow` en de
+  scheurwanden, nieuw `theBaseRockIsCorruptedStoneBelowAllSixBiomes`.
 ### Plekken die ring 5-biomes opsommen (controlelijst, 86)
 Java leest `Ring5Biomes.ALL`/`INNER`/`OUTER`/`SILENT` (bootstrap, tags, `Ring5BiomesTest`, `Ring5RegionSharesTest`).
 Handgeschreven JSON en scripts kunnen dat niet; een nieuwe ring 5-biome moet ook in:
@@ -212,6 +224,26 @@ Handgeschreven JSON en scripts kunnen dat niet; een nieuwe ring 5-biome moet ook
 - **Plaats van de tak:** direct na de ring 4-tak (`ring4_surface.py` voegt in na ring 3, dus de volgorde blijft bij
   het opnieuw draaien van beide scripts; nagelopen, byte-gelijk).
 
+- **86b (implementatiekeuzes):**
+  - **Basisgesteente** als één top-level regel achteraan (ná vanilla's deepslate-gradient Y 0–8, de enige deepslate-grens
+    die ring 4 heeft): elke steen van de kolom die geen andere regel krijgt (onder de surface-diepte, onderkanten van
+    overhangen) wordt `corrupted_stone`; onder Y 0 blijft het deepslate, tussen 0 en 8 het verloop. `ring_reach` ring 5
+    vóór de `biome`-conditie (die zoekt de biome per blok op; `RingReachCondition`). Review: waar ring 4 (zone 4→5,
+    `sundered_reach`) en de void (`void_edge`) niet binnen bereik zijn, is elke biome een ring 5-biome: daar
+    `corrupted_stone` zonder opzoeking (zoals `ring_3_deep`); de opzoeking alleen in die randstroken. Zelfde blokscan als
+    vóór de wijziging (identieke tellingen).
+  - **Plafondwacht:** alleen `corrupted_sand` valt; de wacht staat in `put` (op elk vallend blok van `FALLING`), niet alleen
+    in de kuilregel, zodat een later vallend blok vanzelf een wacht krijgt.
+  - **Wat blijft vanilla:** `false_meadow` gras/aarde (plan), en de scheurwanden van `void_scars` `deepslate` (het plan noemt
+    ze niet bij 86b; contrast, de voidsteen-randen zijn 95).
+  - **Kuilregel ongewijzigd** (onder Y 76; backlog: 83 leverde geen kuilen-DF). Gemeten in de S-smoke: `corrupted_sand` =
+    24 % van de bovenblokken van `corrupted_wastes` (16 plekken rond de binnenband, 31.179 kolommen), lokaal tot 84 % (bij
+    8900, 0) waar `ring_5_hills` de grond op `Ring5Inner.MIN_TOP` 70 klemt: daar is de woestenij vooral zandvlakte, niet
+    alleen kuilbodem. Beoordelen bij 6a; anders de regel aan `pitAt` hangen (backlog).
+  - Blokscan: 0 `corrupted_sand` boven lucht; geen vanilla-steen in ring 5-biomes behalve 3.795 blokken aan de grens met
+    `sundered_reach` (99,9 % binnen één quart van een `sundered_reach`-quart: de zoom-ruis van de biome per blok). Die
+    gespikkelde naad (steen/corrupted steen per blok) is dezelfde als bij elke biomegrens in de surface (gras/zand);
+    bewust zo gelaten, het plan kiest per biome.
 ## Backlog
 - [worldgen] W-terrein (eigenaar router), INT1: `switch_at ["ring_5"]` in `ring_blend/overworld_erosion` (anders mengt
   `breakup` in zone 5→void met de void en schuiven de biomegrenzen), dan `Ring3JsonTest` (zegt nu "erosion mengt")

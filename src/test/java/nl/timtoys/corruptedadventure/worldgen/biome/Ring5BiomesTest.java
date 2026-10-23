@@ -40,6 +40,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class Ring5BiomesTest {
     private static final String GENERATED = "src/generated/resources/";
     private static final String TAGS = GENERATED + "data/corruptedadventure/tags/worldgen/biome/";
+    // The blocks of stream B (88) in the surface (86b).
+    private static final String GRASS = "corruptedadventure:corrupted_grass_block";
+    private static final String DIRT = "corruptedadventure:corrupted_dirt";
+    private static final String STONE = "corruptedadventure:corrupted_stone";
+    private static final String SAND = "corruptedadventure:corrupted_sand";
 
     @Test
     void bootstrapRegistersExactlyTheRing5Lists() {
@@ -166,7 +171,9 @@ class Ring5BiomesTest {
     /**
      * One ring 5 branch above the preliminary surface, right after the ring 4 branch and before vanilla's rules (written
      * by {@code tools/worldgen/ring5_surface.py}); per biome an unconditional top block and an unconditional block for
-     * the surface depth, so vanilla's rules never decide a ring 5 surface; no falling block (nothing guards one yet).
+     * the surface depth, so vanilla's rules never decide a ring 5 surface. 86b: the blocks of stream B; the one falling
+     * block (corrupted sand) behind a ceiling guard, so it never hangs over air; vanilla blocks only in the false
+     * meadow (grass on dirt) and on the scar walls (deepslate).
      */
     @Test
     void everyBiomeHasItsOwnSurfaceBranch() {
@@ -222,26 +229,161 @@ class Ring5BiomesTest {
             }
             assertTrue(top, entry.getKey() + ": no unconditional top block");
             assertTrue(layer, entry.getKey() + ": no unconditional block for the surface depth");
-            String text = entry.getValue().toString();
-            for (String falling : new String[]{"minecraft:sand", "minecraft:red_sand", "minecraft:gravel", "corruptedadventure:corrupted_sand"}) {
-                assertFalse(text.contains("\"" + falling + "\""), entry.getKey() + ": " + falling + " without a ceiling guard");
-            }
+            assertFallingBlocksAreGuarded(entry.getValue(), entry.getKey());
+            Set<String> vanilla = blockNames(entry.getValue()).stream().filter(name -> name.startsWith("minecraft:")).collect(Collectors.toSet());
+            Set<String> allowed = entry.getKey().equals(id(ModBiomes.FALSE_MEADOW)) ? Set.of("minecraft:grass_block", "minecraft:dirt")
+                    : entry.getKey().equals(id(ModBiomes.VOID_SCARS)) ? Set.of("minecraft:deepslate") : Set.of();
+            assertEquals(allowed, vanilla, entry.getKey() + ": vanilla stand-ins left");
         }
-        // false_meadow is the perfect vanilla meadow: grass on dirt (also after 86b).
-        assertEquals("minecraft:grass_block", lastBlock(floorRule(branches.get(id(ModBiomes.FALSE_MEADOW)), false)));
-        assertEquals("minecraft:dirt", lastBlock(floorRule(branches.get(id(ModBiomes.FALSE_MEADOW)), true)));
-        // The scar walls deepslate, the inverted hills' undersides stone, the wastes' pit floors tuff.
+        // The plan's blocks (86b): top and surface depth per biome.
+        Map<ResourceKey<Biome>, List<String>> surfaces = Map.of(
+                ModBiomes.CORRUPTED_WASTES, List.of(GRASS, DIRT),
+                ModBiomes.GLITCH_FIELDS, List.of(STONE, STONE),
+                ModBiomes.FALSE_MEADOW, List.of("minecraft:grass_block", "minecraft:dirt"),
+                ModBiomes.VOID_SCARS, List.of(STONE, STONE),
+                ModBiomes.INVERTED_HILLS, List.of(GRASS, DIRT),
+                ModBiomes.SHATTERED_EXPANSE, List.of(STONE, STONE));
+        for (Map.Entry<ResourceKey<Biome>, List<String>> entry : surfaces.entrySet()) {
+            JsonObject branchOf = branches.get(id(entry.getKey()));
+            assertEquals(entry.getValue().get(0), lastBlock(floorRule(branchOf, false)), entry.getKey() + " top");
+            assertEquals(entry.getValue().get(1), lastBlock(floorRule(branchOf, true)), entry.getKey() + " surface depth");
+        }
+        // The scar walls deepslate, the inverted hills' undersides corrupted stone, the wastes' pit floors corrupted sand.
         assertTrue(branches.get(id(ModBiomes.VOID_SCARS)).toString().contains("\"minecraft:deepslate\""));
-        // Order top, underside, depth: a thin edge keeps its coarse dirt on top, the layer below it hangs as stone, not dirt.
+        // Order top, underside, depth: a thin edge keeps its soil on top, the layer below it hangs as stone, not dirt.
         JsonArray hills = branches.get(id(ModBiomes.INVERTED_HILLS)).getAsJsonArray("sequence");
         assertEquals(3, hills.size());
-        assertEquals("minecraft:coarse_dirt", lastBlock(floorRule(branches.get(id(ModBiomes.INVERTED_HILLS)), false)));
         assertEquals(floorRule(branches.get(id(ModBiomes.INVERTED_HILLS)), false), hills.get(0).getAsJsonObject().getAsJsonObject("then_run"));
         JsonObject underside = hills.get(1).getAsJsonObject();
         assertEquals("ceiling", underside.getAsJsonObject("if_true").get("surface_type").getAsString());
-        assertEquals("minecraft:stone", lastBlock(underside.getAsJsonObject("then_run")));
+        assertEquals(STONE, lastBlock(underside.getAsJsonObject("then_run")));
         assertEquals(floorRule(branches.get(id(ModBiomes.INVERTED_HILLS)), true), hills.get(2).getAsJsonObject().getAsJsonObject("then_run"));
-        assertTrue(floorRule(branches.get(id(ModBiomes.CORRUPTED_WASTES)), false).toString().contains("\"minecraft:tuff\""));
+        assertTrue(blockNames(floorRule(branches.get(id(ModBiomes.CORRUPTED_WASTES)), false)).contains(SAND));
+        for (Map.Entry<String, JsonObject> entry : branches.entrySet()) {
+            assertEquals(entry.getKey().equals(id(ModBiomes.CORRUPTED_WASTES)), blockNames(entry.getValue()).contains(SAND),
+                    entry.getKey() + ": corrupted sand only on the wastes' pit floors");
+        }
+    }
+
+    /**
+     * 86b: the base rock of the column is corrupted stone in all six biomes (also under the false meadow): one top-level
+     * rule right after vanilla's deepslate gradient (so deepslate keeps its boundary at Y 0–8, as in ring 4), behind the
+     * cheap ring guard. Only where ring 4 (the zone 4→5) or the void can have weight does it ask the biome per block;
+     * elsewhere in ring 5's reach every biome is a ring 5 biome.
+     */
+    @Test
+    void theBaseRockIsCorruptedStoneBelowAllSixBiomes() {
+        JsonObject surfaceRule = WorldgenData.read("noise_settings/overworld.json").getAsJsonObject("surface_rule");
+        JsonArray sequence = surfaceRule.getAsJsonArray("sequence");
+        JsonObject gradient = sequence.get(sequence.size() - 2).getAsJsonObject().getAsJsonObject("if_true");
+        assertEquals("minecraft:vertical_gradient", gradient.get("type").getAsString());
+        assertEquals("minecraft:deepslate", gradient.get("random_name").getAsString());
+        assertEquals(0, gradient.getAsJsonObject("true_at_and_below").get("absolute").getAsInt());
+        assertEquals(8, gradient.getAsJsonObject("false_at_and_above").get("absolute").getAsInt());
+        JsonObject rule = sequence.get(sequence.size() - 1).getAsJsonObject();
+        assertEquals(reach("ring_5"), rule.getAsJsonObject("if_true"));
+        JsonArray steps = rule.getAsJsonObject("then_run").getAsJsonArray("sequence");
+        assertEquals(2, steps.size());
+        // Away from ring 4 and the void: corrupted stone without a biome lookup.
+        JsonObject away = steps.get(0).getAsJsonObject();
+        assertEquals(not(reach("ring_4")), away.getAsJsonObject("if_true"));
+        assertEquals(not(reach("void")), away.getAsJsonObject("then_run").getAsJsonObject("if_true"));
+        assertEquals(STONE, blockName(away.getAsJsonObject("then_run").getAsJsonObject("then_run")));
+        // Near them: only the six ring 5 biomes.
+        JsonObject near = steps.get(1).getAsJsonObject();
+        assertEquals("minecraft:biome", near.getAsJsonObject("if_true").get("type").getAsString());
+        assertEquals(ids(Ring5Biomes.ALL), near.getAsJsonObject("if_true").getAsJsonArray("biome_is").asList().stream().map(JsonElement::getAsString).toList());
+        assertEquals(STONE, blockName(near.getAsJsonObject("then_run")));
+        assertEquals(Set.of(STONE), blockNames(rule));
+        // The only base-rock rule in the file: no other rule guarded by ring 5 that puts nothing but corrupted stone.
+        long[] rules = {0};
+        walk(surfaceRule, node -> {
+            if (node.has("if_true") && reach("ring_5").equals(node.get("if_true")) && blockNames(node).equals(Set.of(STONE))) {
+                rules[0]++;
+            }
+        });
+        assertEquals(1, rules[0]);
+    }
+
+    private static JsonObject reach(String ring) {
+        JsonObject condition = new JsonObject();
+        condition.addProperty("type", "corruptedadventure:ring_reach");
+        condition.addProperty("dimension", "minecraft:overworld");
+        condition.addProperty("ring", ring);
+        return condition;
+    }
+
+    private static JsonObject not(JsonObject condition) {
+        JsonObject not = new JsonObject();
+        not.addProperty("type", "minecraft:not");
+        not.add("invert", condition);
+        return not;
+    }
+
+    /**
+     * Every falling block is the last rule of a sequence whose rule before it puts corrupted stone at a ceiling, so it
+     * never hangs over air (like ring 4); no vanilla falling block at all.
+     */
+    private static void assertFallingBlocksAreGuarded(JsonObject branch, String biome) {
+        long[] guarded = {0};
+        walk(branch, rule -> {
+            if (!rule.has("type") || !rule.get("type").getAsString().equals("minecraft:sequence")) {
+                return;
+            }
+            JsonArray sequence = rule.getAsJsonArray("sequence");
+            for (int i = 0; i < sequence.size(); i++) {
+                if (!SAND.equals(blockName(sequence.get(i).getAsJsonObject()))) {
+                    continue;
+                }
+                assertTrue(i > 0, biome + ": corrupted sand without a guard");
+                JsonObject guard = sequence.get(i - 1).getAsJsonObject().getAsJsonObject("if_true");
+                assertEquals("minecraft:stone_depth", guard.get("type").getAsString(), biome);
+                assertEquals("ceiling", guard.get("surface_type").getAsString(), biome);
+                assertEquals(0, guard.get("offset").getAsInt(), biome + ": the block right above air");
+                assertFalse(guard.get("add_surface_depth").getAsBoolean(), biome);
+                assertEquals(STONE, blockName(sequence.get(i - 1).getAsJsonObject().getAsJsonObject("then_run")), biome);
+                guarded[0]++;
+            }
+        });
+        assertEquals(count(branch, SAND), guarded[0], biome + ": every corrupted sand behind its guard");
+        for (String falling : new String[]{"minecraft:sand", "minecraft:red_sand", "minecraft:gravel"}) {
+            assertFalse(blockNames(branch).contains(falling), biome + ": " + falling);
+        }
+    }
+
+    private static void walk(JsonElement element, java.util.function.Consumer<JsonObject> visit) {
+        if (element.isJsonArray()) {
+            element.getAsJsonArray().forEach(e -> walk(e, visit));
+        } else if (element.isJsonObject()) {
+            visit.accept(element.getAsJsonObject());
+            element.getAsJsonObject().entrySet().forEach(e -> walk(e.getValue(), visit));
+        }
+    }
+
+    private static String blockName(JsonObject rule) {
+        return rule.has("type") && rule.get("type").getAsString().equals("minecraft:block")
+                ? rule.getAsJsonObject("result_state").get("Name").getAsString() : null;
+    }
+
+    private static Set<String> blockNames(JsonObject node) {
+        Set<String> names = new HashSet<>();
+        walk(node, rule -> {
+            String name = blockName(rule);
+            if (name != null) {
+                names.add(name);
+            }
+        });
+        return names;
+    }
+
+    private static long count(JsonObject node, String block) {
+        long[] count = {0};
+        walk(node, rule -> {
+            if (block.equals(blockName(rule))) {
+                count[0]++;
+            }
+        });
+        return count[0];
     }
 
     /** The then-rule of a branch's floor rule: the top ({@code depth} false) or the surface depth. */

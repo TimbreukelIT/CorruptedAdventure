@@ -5,12 +5,14 @@ Usage (from the repo root, Python 3, standard library only):  python tools/world
 The surface rules are hand-written JSON (CLAUDE.md §9); this script is their source for ring 5, like
 ring4_surface.py for ring 4. Edit the rules here, run the script, commit the script and the JSON together. It is
 idempotent: one ring 5 branch (the six ring 5 biomes; the zone 4->5 keeps ring 4's sundered_reach) inside the rules
-above the preliminary surface, right after the ring 4 branch (so before vanilla's rules), replaced if present;
+above the preliminary surface, right after the ring 4 branch (so before vanilla's rules), and one top-level rule for
+the base rock of the column right after vanilla's deepslate gradient (the last rule), both replaced if present;
 everything else stays byte-identical (a json round trip with indent 2 and CRLF reproduces the file exactly).
 
-Golf 1 (86) uses vanilla blocks only, a first version; the real ring 5 blocks of stream B follow after integration 1
-(86b). Ring 5 is dry (V9-B), so there is no wet variant, and no block here falls: a falling block (86b's corrupted
-sand) needs a ceiling guard like ring 4's. Bedrock stays vanilla's rule 0: it puts nothing on air (V3-A).
+86b: the real ring 5 blocks of stream B (88). The base rock of all six biomes is corrupted stone, also under the false
+meadow (whoever digs finds it is wrong); deepslate keeps vanilla's gradient at Y 0-8, the same boundary as ring 4.
+Ring 5 is dry (V9-B), so there is no wet variant. The one falling block, corrupted sand, has a ceiling guard like ring
+4's: where it would hang over air it is corrupted stone. Bedrock stays vanilla's rule 0: it puts nothing on air (V3-A).
 """
 import json
 import os
@@ -30,6 +32,14 @@ RING_4 = ["cascade_vale", "crystal_lagoon", "lotus_shallows", "glowroot_swamp", 
 # ---------------------------------------------------------------- builders
 def block(name):
     return {"type": "minecraft:block", "result_state": {"Name": name if ":" in name else "minecraft:" + name}}
+
+
+def ring_reach(ring):
+    return {"type": CA + "ring_reach", "dimension": "minecraft:overworld", "ring": ring}
+
+
+def NOT(c):
+    return {"type": "minecraft:not", "invert": c}
 
 
 def seq(*rules):
@@ -57,49 +67,67 @@ def below(y):
 
 TOP = depth()                       # the surface block
 DEPTH = depth(add=True)             # the surface depth (3-6 blocks)
+CEILING = depth("ceiling")          # the block right above air: sand there would fall
 # The three blocks above air under an overhang: the underside of the inverted hills.
 UNDERSIDE = depth("ceiling", offset=2)
 STEEP = {"type": "minecraft:steep"}
 # corrupted_wastes' pit floors and low places: the dead ground lies around Y 78 (V4-A, 83), its round pits are 2-4 deep;
-# a surface below Y 76 is a pit floor or a low place. 83 shapes the pits; this needs no density function of its own.
+# a surface below Y 76 is a pit floor or a low place. 83 shapes the pits (Ring5Inner.pitAt, Java only, no output of
+# the field); this needs no density function of its own.
 LOW = below(76)
+
+# The blocks of stream B (88).
+GRASS = CA + "corrupted_grass_block"
+DIRT = CA + "corrupted_dirt"
+STONE = CA + "corrupted_stone"
+SAND = CA + "corrupted_sand"
+# Each falling block with its solid stand-in where it would hang over air.
+FALLING = {SAND: STONE}
+
+
+def put(name):
+    """A block; a falling one becomes its stand-in where the surface reaches a ceiling (a thin edge over a scar or the
+    void), so it never hangs over air."""
+    if name in FALLING:
+        return seq(cond(CEILING, block(FALLING[name])), block(name))
+    return block(name)
 
 
 def surface(top, under):
     """A biome's surface: a top block and a layer of the surface depth. Both unconditional, so vanilla's grass and dirt
     never reach a ring 5 biome."""
-    return [cond(TOP, block(top)), cond(DEPTH, block(under))]
+    return [cond(TOP, put(top)), cond(DEPTH, put(under))]
 
 
 def corrupted_wastes():
-    """Dead soil; tuff on the pit floors and in the low places."""
-    return seq(cond(TOP, seq(cond(LOW, block("tuff")), block("coarse_dirt"))), cond(DEPTH, block("dirt")))
+    """Dead soil; corrupted sand on the pit floors and in the low places."""
+    return seq(cond(TOP, seq(cond(LOW, put(SAND)), block(GRASS))), cond(DEPTH, block(DIRT)))
 
 
 def void_scars():
-    """Tuff and stone; the walls of the scars and craters deepslate for contrast (the voidstone rims are 95): every block of
-    a steep column above the preliminary surface, which is the upper part of a wall down to the void."""
-    return seq(cond(STEEP, block("deepslate")), *surface("tuff", "stone"))
+    """Corrupted stone; the walls of the scars and craters deepslate for contrast (the voidstone rims are 95): every block
+    of a steep column above the preliminary surface, which is the upper part of a wall down to the void."""
+    return seq(cond(STEEP, block("deepslate")), *surface(STONE, STONE))
 
 
 def inverted_hills():
-    """Dead soil on top, also on a thin edge; below it the undersides of the hills hanging over the void stone, never
-    dirt (before the surface depth, after the top block)."""
-    top, under = surface("coarse_dirt", "dirt")
-    return seq(top, cond(UNDERSIDE, block("stone")), under)
+    """Dead soil on top, also on a thin edge; below it the undersides of the hills hanging over the void corrupted stone,
+    never dirt (before the surface depth, after the top block)."""
+    top, under = surface(GRASS, DIRT)
+    return seq(top, cond(UNDERSIDE, block(STONE)), under)
 
 
-# Vanilla blocks per biome (first version, 86): top, surface depth; or a function for a biome with more.
+# The blocks per biome (86b): top, surface depth; or a function for a biome with more.
 SURFACES = {
     "corrupted_wastes": corrupted_wastes,
     # The cubes and shifted layers (83) are terrain of the same blocks.
-    "glitch_fields": ("tuff", "stone"),
-    # The "perfect" vanilla meadow: this is also its final surface (86b keeps it).
+    "glitch_fields": (STONE, STONE),
+    # The "perfect" vanilla meadow: vanilla grass on vanilla dirt (only the base rock below is wrong).
     "false_meadow": ("grass_block", "dirt"),
     "void_scars": void_scars,
     "inverted_hills": inverted_hills,
     # Chunks and bridges over the void.
-    "shattered_expanse": ("tuff", "stone"),
+    "shattered_expanse": (STONE, STONE),
 }
 
 
@@ -109,6 +137,17 @@ def ring_5_branch():
         rule = SURFACES[name]
         rules.append(cond(biome(name), rule() if callable(rule) else seq(*surface(*rule))))
     return cond(biome(*RING_5), seq(*rules))
+
+
+def ring_5_base_rock():
+    """The rest of the column (below the surface depth, the undersides of overhangs): corrupted stone instead of the default
+    stone. After vanilla's deepslate gradient, so deepslate keeps its boundary. The biome condition looks the biome up per
+    block (RingReachCondition), so only columns where ring 4 (with the zone 4->5, sundered_reach) or the void (void_edge)
+    can have weight ask it; everywhere else in ring 5's reach every biome is a ring 5 biome, so the stone is the same
+    without the lookup (like ring 3's deep rule)."""
+    return cond(ring_reach("ring_5"), seq(
+        cond(NOT(ring_reach("ring_4")), cond(NOT(ring_reach("void")), block(STONE))),
+        cond(biome(*RING_5), block(STONE))))
 
 
 # ---------------------------------------------------------------- write
@@ -127,6 +166,21 @@ def only_of(rule, names):
     return len(biomes) > 0 and all(b in [CA + n for n in names] for b in biomes)
 
 
+def blocks_in(node):
+    if isinstance(node, list):
+        return [b for n in node for b in blocks_in(n)]
+    if not isinstance(node, dict):
+        return []
+    own = [node["result_state"]["Name"]] if node.get("type") == "minecraft:block" else []
+    return own + [b for v in node.values() for b in blocks_in(v)]
+
+
+def is_base_rock(rule):
+    """The ring 5 guard and nothing but corrupted stone (also an older form of this rule): another top-level ring 5 rule
+    (93's cave walls, say) keeps its place."""
+    return rule.get("if_true") == ring_reach("ring_5") and set(blocks_in(rule)) == {STONE}
+
+
 def main():
     assert sorted(SURFACES) == sorted(RING_5)
     path = os.path.join(ROOT, "noise_settings", "overworld.json")
@@ -140,6 +194,11 @@ def main():
     ring4 = [i for i, r in enumerate(rules) if only_of(r, RING_4)]
     assert len(ring4) == 1, ring4
     rules.insert(ring4[0] + 1, ring_5_branch())
+    top[:] = [r for r in top if not is_base_rock(r)]
+    gradient = top[-1].get("if_true", {})
+    assert gradient.get("type") == "minecraft:vertical_gradient" and gradient.get("random_name") == "minecraft:deepslate", \
+        "vanilla's deepslate gradient is the last top-level rule"
+    top.append(ring_5_base_rock())
     dump(path, data)
     print("ring 5 surface written")
 

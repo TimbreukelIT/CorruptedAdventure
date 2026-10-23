@@ -15769,16 +15769,37 @@
                                   }
                                 },
                                 "then_run": {
-                                  "type": "minecraft:block",
-                                  "result_state": {
-                                    "Name": "minecraft:tuff"
-                                  }
+                                  "type": "minecraft:sequence",
+                                  "sequence": [
+                                    {
+                                      "type": "minecraft:condition",
+                                      "if_true": {
+                                        "type": "minecraft:stone_depth",
+                                        "offset": 0,
+                                        "add_surface_depth": false,
+                                        "secondary_depth_range": 0,
+                                        "surface_type": "ceiling"
+                                      },
+                                      "then_run": {
+                                        "type": "minecraft:block",
+                                        "result_state": {
+                                          "Name": "corruptedadventure:corrupted_stone"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "minecraft:block",
+                                      "result_state": {
+                                        "Name": "corruptedadventure:corrupted_sand"
+                                      }
+                                    }
+                                  ]
                                 }
                               },
                               {
                                 "type": "minecraft:block",
                                 "result_state": {
-                                  "Name": "minecraft:coarse_dirt"
+                                  "Name": "corruptedadventure:corrupted_grass_block"
                                 }
                               }
                             ]
@@ -15796,7 +15817,7 @@
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
-                              "Name": "minecraft:dirt"
+                              "Name": "corruptedadventure:corrupted_dirt"
                             }
                           }
                         }
@@ -15826,7 +15847,7 @@
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
-                              "Name": "minecraft:tuff"
+                              "Name": "corruptedadventure:corrupted_stone"
                             }
                           }
                         },
@@ -15842,7 +15863,7 @@
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
-                              "Name": "minecraft:stone"
+                              "Name": "corruptedadventure:corrupted_stone"
                             }
                           }
                         }
@@ -15930,7 +15951,7 @@
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
-                              "Name": "minecraft:tuff"
+                              "Name": "corruptedadventure:corrupted_stone"
                             }
                           }
                         },
@@ -15946,7 +15967,7 @@
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
-                              "Name": "minecraft:stone"
+                              "Name": "corruptedadventure:corrupted_stone"
                             }
                           }
                         }
@@ -15976,7 +15997,7 @@
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
-                              "Name": "minecraft:coarse_dirt"
+                              "Name": "corruptedadventure:corrupted_grass_block"
                             }
                           }
                         },
@@ -15992,7 +16013,7 @@
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
-                              "Name": "minecraft:stone"
+                              "Name": "corruptedadventure:corrupted_stone"
                             }
                           }
                         },
@@ -16008,7 +16029,7 @@
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
-                              "Name": "minecraft:dirt"
+                              "Name": "corruptedadventure:corrupted_dirt"
                             }
                           }
                         }
@@ -16038,7 +16059,7 @@
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
-                              "Name": "minecraft:tuff"
+                              "Name": "corruptedadventure:corrupted_stone"
                             }
                           }
                         },
@@ -16054,7 +16075,7 @@
                           "then_run": {
                             "type": "minecraft:block",
                             "result_state": {
-                              "Name": "minecraft:stone"
+                              "Name": "corruptedadventure:corrupted_stone"
                             }
                           }
                         }
@@ -19989,6 +20010,67 @@
               "axis": "y"
             }
           }
+        }
+      },
+      {
+        "type": "minecraft:condition",
+        "if_true": {
+          "type": "corruptedadventure:ring_reach",
+          "dimension": "minecraft:overworld",
+          "ring": "ring_5"
+        },
+        "then_run": {
+          "type": "minecraft:sequence",
+          "sequence": [
+            {
+              "type": "minecraft:condition",
+              "if_true": {
+                "type": "minecraft:not",
+                "invert": {
+                  "type": "corruptedadventure:ring_reach",
+                  "dimension": "minecraft:overworld",
+                  "ring": "ring_4"
+                }
+              },
+              "then_run": {
+                "type": "minecraft:condition",
+                "if_true": {
+                  "type": "minecraft:not",
+                  "invert": {
+                    "type": "corruptedadventure:ring_reach",
+                    "dimension": "minecraft:overworld",
+                    "ring": "void"
+                  }
+                },
+                "then_run": {
+                  "type": "minecraft:block",
+                  "result_state": {
+                    "Name": "corruptedadventure:corrupted_stone"
+                  }
+                }
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "if_true": {
+                "type": "minecraft:biome",
+                "biome_is": [
+                  "corruptedadventure:corrupted_wastes",
+                  "corruptedadventure:glitch_fields",
+                  "corruptedadventure:false_meadow",
+                  "corruptedadventure:void_scars",
+                  "corruptedadventure:inverted_hills",
+                  "corruptedadventure:shattered_expanse"
+                ]
+              },
+              "then_run": {
+                "type": "minecraft:block",
+                "result_state": {
+                  "Name": "corruptedadventure:corrupted_stone"
+                }
+              }
+            }
+          ]
         }
       }
     ]
