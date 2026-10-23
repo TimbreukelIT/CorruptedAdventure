@@ -98,6 +98,10 @@ public final class Ring5Field implements DensityFunction {
     static final double NATURAL_OPENING = 8.0;
     static final double NATURAL_FADE = 12.0;
     static final double CAVES_CLOSED = 2.0;
+    /** Vanilla's noise caves only this many blocks under the ground's top (or under a glitch field's layers); above it the entrances. */
+    static final int NATURAL_COVER = 8;
+    /** The own caves (93) keep this far off a corrupt spot's chunks and a doppelganger's squares (blocks, Chebyshev). */
+    static final int CAVE_CLEARANCE = 8;
     /** The outer band's void caves (93, V93-8 A) lie at most this far beyond the band line (its signed distance). */
     static final double OUTER_CAVE_REACH = 300.0;
 
@@ -398,10 +402,18 @@ public final class Ring5Field implements DensityFunction {
                 c.sourceZ = sz;
                 // A shifted layer copies a column a few blocks over: only where that one is a copy too.
                 c.layered &= pair.depth(x, z) >= pair.edge() + Ring5Inner.MAX_SHIFT;
-                return;
+                if (c.inner && !c.isVoid()) {
+                    c.room = Math.min(c.room, naturalRoom(x, z));
+                }
+            } else {
+                fillAt(c, x, z);
+                blendCopy(c, pair, x, z);
             }
-            fillAt(c, x, z);
-            blendCopy(c, pair, x, z);
+            // Vanilla's caves run at the real column, not the source: they and the dam see the openings round both.
+            if (c.inner && !c.isVoid()) {
+                c.opening = openingDistance(x, z);
+                c.closure = closure(c.room, c.opening);
+            }
             return;
         }
         fillAt(c, x, z);
@@ -433,10 +445,9 @@ public final class Ring5Field implements DensityFunction {
         }
         if (c.inner) {
             innerCaves(c, x, z);
-            double opening = Math.min(c.crack, chamberHoleDistance(x, z));
-            double room = Math.min(Math.min(-signed - NATURAL_LINE, effective - Ring4Sundered.zoneEnd(l) - NATURAL_ZONE),
-                    Math.min(opening - NATURAL_OPENING, castleDistance - castle.radius() - castle.belt() - NATURAL_CASTLE));
-            c.closure = CAVES_CLOSED * (1.0 - Ring4Relief.smooth(room, 0.0, NATURAL_FADE));
+            c.opening = Math.min(c.crack, chamberHoleDistance(x, z));
+            c.room = naturalRoom(l, signed, effective, castleDistance - castle.radius() - castle.belt());
+            c.closure = closure(c.room, c.opening);
         } else {
             Ring5Caves.Chamber chamber = outerChamber(Ring5Caves.outerCellOf(x), Ring5Caves.outerCellOf(z));
             if (chamber != null) {
@@ -475,8 +486,29 @@ public final class Ring5Field implements DensityFunction {
         }
     }
 
+    /**
+     * How far a column lies inside the room of vanilla's damped caves (93, V93-1 A), its openings aside: off the band line,
+     * the zone 4→5 and a castle's reach ({@code castleGap} blocks off it); at most 0 where they are closed.
+     */
+    private static double naturalRoom(RingLayout l, double signed, double effective, double castleGap) {
+        return Math.min(Math.min(-signed - NATURAL_LINE, effective - Ring4Sundered.zoneEnd(l) - NATURAL_ZONE),
+                castleGap - NATURAL_CASTLE);
+    }
+
+    private double naturalRoom(int x, int z) {
+        RingLayout l = layout.get();
+        CastleSite castle = nearestCastle(x, z);
+        return naturalRoom(l, Ring5Band.of(l).signedDistance(x, z), l.effectiveDistance(x, z),
+                castle.distance(x, z) - castle.radius() - castle.belt());
+    }
+
+    /** The closure of vanilla's damped caves (93): {@link #CAVES_CLOSED} within {@link #NATURAL_OPENING} of an opening. */
+    private static double closure(double room, double opening) {
+        return CAVES_CLOSED * (1.0 - Ring4Relief.smooth(Math.min(room, opening - NATURAL_OPENING), 0.0, NATURAL_FADE));
+    }
+
     private static void chamberCave(Column c, Ring5Caves.Chamber chamber, int x, int z) {
-        int[] out = new int[4];
+        int[] out = c.chamberOut;
         if (chamber.near(x, z, 0.0) && chamber.column(x, z, out)) {
             c.addCave(out[0], out[1], Ring5Caves.Kind.of(out[2]));
             c.rimTop = out[3];
@@ -881,9 +913,19 @@ public final class Ring5Field implements DensityFunction {
     /**
      * How far (blocks) a column of the inner band lies from the nearest opening into the void, the underground ones of 93
      * included: {@link #innerCrackDistance} and the holes of the void caves; in a doppelganger's target also those of its
-     * source (mirrored). At most 0 on an open column. For the dam of the lava layer ({@code RingFluidPicker}). Pure.
+     * source (mirrored). At most 0 on an open column. For the dam of the lava layer ({@code RingFluidPicker}, per fluid
+     * block): kept on the column.
      */
     public double innerOpeningDistance(int x, int z) {
+        Column column = column(x, z);
+        if (Double.isNaN(column.opening)) {
+            column.opening = openingDistance(x, z);
+        }
+        return column.opening;
+    }
+
+    /** {@link #innerOpeningDistance} from the shapes, not the column table (also inside a column's fill). Pure. */
+    private double openingDistance(int x, int z) {
         double distance = Math.min(innerCrackDistance(x, z), chamberHoleDistance(x, z));
         Ring5Copies.Pair pair = copyPair(Ring5Copies.cellOf(x), Ring5Copies.cellOf(z));
         if (pair != null && pair.inTarget(x, z)) {
@@ -915,6 +957,32 @@ public final class Ring5Field implements DensityFunction {
         return Ring5Caves.Kind.NONE.code();
     }
 
+    /**
+     * Where vanilla's damped caves (93, V93-1 A) may cut a block: 0 not at all (closed, an exact span, a glitch field's
+     * shifted layers, void), 1 only the entrances ({@link #NATURAL_COVER} under the top), 2 also the noise caves. Exact
+     * shapes stay whole: a bridge, a cube or a layer has density 1 right at its visible face. The DF {@code
+     * ring_5/overworld/cave_zone}.
+     */
+    public int caveZone(int x, int y, int z) {
+        Column column = column(x, z);
+        if (column.isVoid() || column.closure >= CAVES_CLOSED) {
+            return 0;
+        }
+        for (int k = 0; k < column.spans; k++) {
+            if (y >= column.spanBottom[k] && y < column.spanTop[k]) {
+                return 0;
+            }
+        }
+        double top = column.top;
+        if (column.layered) {
+            top -= Ring5Inner.LAYER_DEPTH;
+            if (y >= top) {
+                return 0;
+            }
+        }
+        return y < top - NATURAL_COVER && y >= column.bottom + NATURAL_COVER ? 2 : 1;
+    }
+
     /** The own caves' shapes (93), made once per world. */
     Ring5Caves caves() {
         Ring5Caves known = decisions.caveShapes;
@@ -935,14 +1003,15 @@ public final class Ring5Field implements DensityFunction {
         return known;
     }
 
-    /** The corridor net of net cell (i, j) (93) if it lies wholly deep in the inner band. Cached, pure. */
+    /** The corridor net of net cell (i, j) (93) if it lies wholly deep in the inner band, off spots and copies. Cached, pure. */
     @Nullable
     Ring5Caves.Net cavesNet(int i, int j) {
         long key = KeyedSlots.key(i, j);
         Optional<Ring5Caves.Net> known = decisions.nets.peek(key);
         if (known == null) {
             Ring5Caves.Net net = caves().net(i, j);
-            known = Optional.ofNullable(net != null && netDeepInner(net) ? net : null);
+            known = Optional.ofNullable(net != null && netDeepInner(net)
+                    && !nearSpotOrCopy(net.minX, net.minZ, net.maxX, net.maxZ) ? net : null);
             decisions.nets.put(key, known);
         }
         return known.orElse(null);
@@ -960,7 +1029,36 @@ public final class Ring5Field implements DensityFunction {
         return true;
     }
 
-    /** The void cave of chamber cell (i, j) (93) if it lies wholly deep in the inner band. Cached, pure. */
+    /**
+     * Whether a box (blocks, inclusive) comes within {@link #CAVE_CLEARANCE} of a corrupt spot's chunk or a doppelganger's
+     * square (93): the own caves keep off both, as the glitch cubes do (a spot's shift or fallen chunk would cut a cave
+     * open, a copy's edge would cut it off).
+     */
+    private boolean nearSpotOrCopy(int minX, int minZ, int maxX, int maxZ) {
+        int x0 = minX - CAVE_CLEARANCE;
+        int z0 = minZ - CAVE_CLEARANCE;
+        int x1 = maxX + CAVE_CLEARANCE;
+        int z1 = maxZ + CAVE_CLEARANCE;
+        for (int i = Ring5CorruptSpots.cellOf(x0); i <= Ring5CorruptSpots.cellOf(x1); i++) {
+            for (int j = Ring5CorruptSpots.cellOf(z0); j <= Ring5CorruptSpots.cellOf(z1); j++) {
+                Ring5CorruptSpots.Spot spot = corruptSpot(i, j);
+                if (spot != null && spot.touches(x0, z0, x1, z1)) {
+                    return true;
+                }
+            }
+        }
+        for (int i = Ring5Copies.cellOf(x0); i <= Ring5Copies.cellOf(x1); i++) {
+            for (int j = Ring5Copies.cellOf(z0); j <= Ring5Copies.cellOf(z1); j++) {
+                Ring5Copies.Pair pair = copyPair(i, j);
+                if (pair != null && pair.touches(x0, z0, x1, z1)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** The void cave of chamber cell (i, j) (93) if it lies wholly deep in the inner band, off spots and copies. Cached, pure. */
     @Nullable
     Ring5Caves.Chamber chamber(int i, int j) {
         long key = KeyedSlots.key(i, j);
@@ -976,6 +1074,10 @@ public final class Ring5Field implements DensityFunction {
                         chamber = null;
                         break;
                     }
+                }
+                if (chamber != null && nearSpotOrCopy(Mth.floor(chamber.x() - reach), Mth.floor(chamber.z() - reach),
+                        Mth.floor(chamber.x() + reach), Mth.floor(chamber.z() + reach))) {
+                    chamber = null;
                 }
             }
             known = Optional.ofNullable(chamber);
@@ -1813,6 +1915,12 @@ public final class Ring5Field implements DensityFunction {
         int rimTop;
         /** 0..{@link #CAVES_CLOSED}: how far vanilla's damped caves are closed here (93; 0 open). */
         double closure;
+        /** How far vanilla's damped caves keep from the band line, the zone 4→5 and a castle's reach (93); −∞ elsewhere. */
+        double room;
+        /** {@link #innerOpeningDistance} of the column (93), NaN until known. */
+        double opening;
+        /** Scratch for {@link Ring5Caves.Chamber#column} (93): no allocation per column. */
+        final int[] chamberOut = new int[4];
         /** A doppelganger's copy (93): the pair, and the source column this one mirrors; null elsewhere. */
         Ring5Copies.Pair copy;
         int sourceX;
@@ -1823,6 +1931,8 @@ public final class Ring5Field implements DensityFunction {
             caves = 0;
             rimTop = Integer.MIN_VALUE;
             closure = CAVES_CLOSED;
+            room = Double.NEGATIVE_INFINITY;
+            opening = Double.NaN;
             copy = null;
             top = 0.0;
             bottom = Double.NEGATIVE_INFINITY;

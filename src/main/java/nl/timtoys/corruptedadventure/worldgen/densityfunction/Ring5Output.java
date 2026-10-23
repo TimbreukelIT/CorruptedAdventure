@@ -39,7 +39,9 @@ public final class Ring5Output implements DensityFunction {
         /** 3D, ring 5's own caves (93): the code of {@link Ring5Caves.Kind} (0 none, corridor, chamber, hole, hole rim). */
         CAVES("caves", 0.0, 4.0),
         /** 0..2: how far vanilla's damped caves are closed in the column (93, V93-1; 0 open deep in the inner band). */
-        CAVE_CLOSURE("cave_closure", 0.0, Ring5Field.CAVES_CLOSED);
+        CAVE_CLOSURE("cave_closure", 0.0, Ring5Field.CAVES_CLOSED),
+        /** 3D, where vanilla's damped caves may cut (93): {@link Ring5Field#caveZone}, 0 none, 1 entrances, 2 all. */
+        CAVE_ZONE("cave_zone", 0.0, 2.0);
 
         public static final StringRepresentable.EnumCodec<Output> CODEC = StringRepresentable.fromEnum(Output::values);
 
@@ -106,6 +108,7 @@ public final class Ring5Output implements DensityFunction {
             case TERRAIN -> f.terrain(x, context.blockY(), z);
             case CAVES -> f.caveCode(x, context.blockY(), z);
             case CAVE_CLOSURE -> f.column(x, z).closure();
+            case CAVE_ZONE -> f.caveZone(x, context.blockY(), z);
         };
     }
 

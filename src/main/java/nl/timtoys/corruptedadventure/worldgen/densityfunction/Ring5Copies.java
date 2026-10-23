@@ -83,6 +83,15 @@ final class Ring5Copies {
             return x >= sx && x < sx + SIZE && z >= sz && z < sz + SIZE;
         }
 
+        /** Whether the source or the target square overlaps the box (blocks, inclusive). */
+        boolean touches(int minX, int minZ, int maxX, int maxZ) {
+            return overlaps(sx, sz, minX, minZ, maxX, maxZ) || overlaps(tx, tz, minX, minZ, maxX, maxZ);
+        }
+
+        private static boolean overlaps(int x0, int z0, int minX, int minZ, int maxX, int maxZ) {
+            return x0 <= maxX && x0 + SIZE > minX && z0 <= maxZ && z0 + SIZE > minZ;
+        }
+
         /** The source column of a target column (the mirror image). */
         int sourceX(int x, int z) {
             return alongX ? sx + tx + SIZE - 1 - x : sx + (x - tx);

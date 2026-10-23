@@ -78,6 +78,12 @@ class Ring5CopiesTest {
                     double targetTop = target.top();
                     double targetHeight = target.height();
                     int targetCaves = target.caves;
+                    double targetClosure = target.closure();
+                    boolean targetSolid = !target.isVoid();
+                    // Vanilla's caves run at the real column: closed near the openings round it and round the source.
+                    if (targetSolid && FIELD.innerOpeningDistance(x, z) <= Ring5Field.NATURAL_OPENING) {
+                        assertEquals(Ring5Field.CAVES_CLOSED, targetClosure, 1e-9, "open by an opening at " + x + ", " + z);
+                    }
                     int depth = pair.depth(x, z);
                     Ring5Field.Column source = FIELD.column(sx, sz);
                     if (!pair.core(x, z)) {
@@ -105,7 +111,7 @@ class Ring5CopiesTest {
         assertTrue(checked > 5000, "checked " + checked);
     }
 
-    /** The squares lie in quiet inner band: no crack or spot hole within 16, no glitch cube on them. */
+    /** The squares lie in quiet inner band: no crack or spot hole within 16, no glitch cube or own cave on them (93 review). */
     @Test
     void squaresLieInQuietInnerBand() {
         for (Ring5Copies.Pair pair : pairs(FIELD)) {
@@ -114,6 +120,7 @@ class Ring5CopiesTest {
                     for (int z = corner[1]; z < corner[1] + S; z += 3) {
                         assertTrue(FIELD.innerCrackDistance(x, z) > 8.0, "crack near a doppelganger at " + x + ", " + z);
                         assertEquals(0, FIELD.column(x, z).spans, "cube on a doppelganger at " + x + ", " + z);
+                        assertEquals(0, FIELD.column(x, z).caves, "own cave on a doppelganger at " + x + ", " + z);
                     }
                 }
             }

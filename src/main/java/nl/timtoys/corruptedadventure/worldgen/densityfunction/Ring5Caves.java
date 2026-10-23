@@ -181,8 +181,10 @@ final class Ring5Caves {
         int max = wide ? WIDE_MAX_NODES : NARROW_MAX_NODES;
         int nx = min + (int) Math.floor((max - min + 1) * CellShapes.unit(h, 4));
         int nz = min + (int) Math.floor((max - min + 1) * CellShapes.unit(h, 5));
-        int x0 = i * NET_CELL + NET_MARGIN + (int) Math.floor((NET_CELL - 2 * NET_MARGIN - (nx - 1) * spacing) * CellShapes.unit(h, 6));
-        int z0 = j * NET_CELL + NET_MARGIN + (int) Math.floor((NET_CELL - 2 * NET_MARGIN - (nz - 1) * spacing) * CellShapes.unit(h, 7));
+        // The outermost nodes' shafts and corridors reach SHAFT_HALF past them (WIDE_HALF is no wider).
+        int room = NET_CELL - 2 * NET_MARGIN - 2 * SHAFT_HALF;
+        int x0 = i * NET_CELL + NET_MARGIN + SHAFT_HALF + (int) Math.floor((room - (nx - 1) * spacing) * CellShapes.unit(h, 6));
+        int z0 = j * NET_CELL + NET_MARGIN + SHAFT_HALF + (int) Math.floor((room - (nz - 1) * spacing) * CellShapes.unit(h, 7));
         boolean two = level < LEVELS - 1 && CellShapes.unit(h, 8) < SECOND_LEVEL_CHANCE;
         int half = wide ? WIDE_HALF : NARROW_HALF;
         int height = wide ? WIDE_HEIGHT : NARROW_HEIGHT;
@@ -283,8 +285,11 @@ final class Ring5Caves {
         // The stubs end STUB_ROCK before the next copy's corridor.
         int stub = Math.min(MAX_STUB, gap - 2 * half - 1 - STUB_ROCK);
         int stubs = stub < 2 ? 0 : (int) Math.floor((MAX_STUBS + 1) * CellShapes.unit(g, 4));
-        int across = (copies - 1) * gap + 2 * SHAFT_HALF;
-        int along0 = NET_MARGIN + (int) Math.floor((NET_CELL - 2 * NET_MARGIN - length) * CellShapes.unit(g, 5));
+        // The extent across: the first copy's shaft, then the last copy's shaft or, wider, its stubs on the far side.
+        int far = stubs > 0 ? Math.max(SHAFT_HALF, half + stub) : SHAFT_HALF;
+        int across = (copies - 1) * gap + SHAFT_HALF + far;
+        // Along: the shaft at the start reaches SHAFT_HALF before the corridor.
+        int along0 = NET_MARGIN + SHAFT_HALF + (int) Math.floor((NET_CELL - 2 * NET_MARGIN - SHAFT_HALF - length) * CellShapes.unit(g, 5));
         int across0 = NET_MARGIN + SHAFT_HALF + (int) Math.floor((NET_CELL - 2 * NET_MARGIN - across) * CellShapes.unit(g, 6));
         int[] stubAt = new int[stubs];
         for (int s = 0; s < stubs; s++) {

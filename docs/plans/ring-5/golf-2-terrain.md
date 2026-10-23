@@ -24,7 +24,8 @@ ring_5/overworld/**` (o.a. `caves.json`, `ring_5/overworld.json`), eventueel `no
 `ModDensityFunctionTypes`, de ring 5-terreintests. **Niet:** surface rules (wandblokken, voidsteen-randen van de gaten),
 features, carvers (`Ring5Carvers` blijft leeg), biomes (W-biomes); `docs/prompts/`.
 
-**Status:** fase A (plan + vragen). Er wordt pas gebouwd na de antwoorden op §6 (CLAUDE.md §3).
+**Status:** fase B. **Besluit gebruiker 2026-10-23: V93-1 … V93-8 = A** (de aanbevolen opties van §6); vastgelegd in
+`fase-1-wereld.md` → Ring 5 "Grotten" en het beslissingenlog.
 
 ---
 
@@ -202,15 +203,100 @@ Aanbevolen optie steeds eerst. "Perf" = de noise-stap tegen vanilla (budget ≤ 
 ## Voortgang
 - Voortgang: 2026-10-23 18:34 worktree `P:/Projecten/Java/wt/r5-93` op `ring5/93` vanaf `061a20c4`; `setup.sh W-terrein 8`
   (server 25578, RCON 25588); plan en vragen V93-1 … V93-8; wacht op antwoorden.
+- Voortgang: 2026-10-23 18:54 antwoorden: V93-1 … V93-8 = A; vastgelegd in `fase-1-wereld.md` en het beslissingenlog; start bouw.
+- Voortgang: 2026-10-23 19:21 `Ring5Caves`, `Ring5Copies`, haken in `Ring5Field`/`Ring5Output`, JSON (natuurlijke grotten,
+  `caves`, `cave_closure`), dam via `innerOpeningDistance`; tests `Ring5CavesTest`, `Ring5CopiesTest`; B groen (1.358 tests,
+  1 overgeslagen), D zonder wijziging; S-smoke `r5-93` (kaarten); afstemming natuurlijke grotten.
+- Voortgang: 2026-10-23 20:05 bouwcommit `7455e1b8`; code-review: 8 punten (zie "Review van 7455e1b8").
+- Voortgang: 2026-10-23 21:00 (hervat na onderbreking) reviewpunten 1–7 opgelost; gates: zie "Review van 7455e1b8".
+
+## Review van 7455e1b8
+1. **Sluiting te zwak** (vanilla-ingangen open op schotsen, pinakels, bandlijn, zone 4→5, rond scheuren/gaten): de
+   uitgang `cave_zone` geeft 0 waar `cave_closure` = 2 (dan alleen `terrain`, geen entrances); in de overgang telt de
+   sluiting 4 × bij de entrances (5 × entrances ≥ ~−6); entrances en natuurlijke grotten staan binnen hun `interpolated`
+   in een `range_choice` op `cave_closure` (dicht = constante 1 / 2, geen ruis).
+2. **Exacte vormen naar de diepe tak** (terrain = 1,0 op spans, glitch-lagen, kubussen, bruggen): de router kiest nu op
+   `Ring5Field.caveZone` i.p.v. op `terrain`: 0 op een span, in de glitch-lagen (top − 16 en hoger) en dicht; 1 tot 8
+   onder de top (bij lagen: onder top − 16); 2 dieper.
+3. **Dubbelganger-doel:** sluiting en dam rekenen met de echte kolom (`openingDistance(x, z)`: eigen openingen én die van
+   de bron, gespiegeld) en de kleinste ruimte van doel en bron (`naturalRoom`).
+4. **Dam per vloeistofblok te duur:** `innerOpeningDistance` staat op `Column.opening` (in `fill` gezet voor de
+   binnenband, anders lui; puur: `openingDistance`).
+5. **`new int[4]` per kolom:** scratch `Column.chamberOut`.
+6. **`NET_MARGIN` geschonden:** gekopieerde netten tellen de zijgangen van de laatste kopie en de schacht aan het begin
+   mee; gridnetten de schachten/gangen ± 1 rond de buitenste knopen (was 1 te ver). Test: elk net ≥ 12 binnen zijn cel.
+7. **Grotten op plekken en dubbelgangers:** `nearSpotOrCopy` (netten: hun omhullende; kamers: middelpunt ± reikwijdte)
+   houdt ze ≥ `CAVE_CLEARANCE` 8 van de chunks van een corrupte plek en van beide vierkanten van een dubbelganger. Gevolg:
+   in een dubbelganger zitten in de praktijk geen eigen grotten meer (V93-6/7 zei "eigen grotten mee"); open punt in de
+   backlog voor de gebruiker.
+8. **Niet gewijzigd:** de uitgang `caves` blijft (afnemer W-biomes 95: wandblok en voidsteen-rand); in de backlog.
+
+Gemeten na de review (testseed): 587 netten (50 % breed, 113 met twee niveaus, 151 gekopieerd), 409 void-grotten
+(100 gespiegeld, 1.007 gaten), 22 buitenkamers, 51 dubbelgangers. Scangebieden opnieuw bepaald in `build/test/areas-93.txt`.
+
+**Gates na de review (2026-10-23):** B groen (1.360 tests, 1 overgeslagen); D schoon (geen wijziging in `src/generated`);
+S-smoke `r5-93` (`world.sh --keep`, verse wereld) 0 ERROR, geen client-class; voidscan `--strict --rings` op `ring5.txt` +
+`areas-93.txt` 0 fouten; lavascan `--strict` lek 0 (trede 0, val 0); det 1.277/1.277 chunks gelijk (own 0, other 0);
+perf `perf-r5` noise-mediaan max 1,44 (zone45; wastes 1,07, halls 1,07, cathedral 1,06, rest ≤ 0,94) ≤ 1,75. Kaarten
+(`/ca terrainmap 8900 0 1400 4`, doorsneden 8000→9000 op z 0, net, gekopieerd net, void-grot, dubbelganger) in
+`build/test/maps/93/`. Her-review van de fixes: geen nieuwe fouten; één bestaand gat (grotten in hoge wanden van
+corrupte plekken) in de backlog.
 
 ## CODEBASE-delta
-(na de bouw)
+Bijgewerkt in `CODEBASE.md` (op verzoek van main in deze change): `Ring5Caves`, `Ring5Copies` (bestandsboom en Belangrijke
+classes), `Ring5Field` (93-alinea), `Ring5Output` (`caves`, `cave_closure`), `RingFluidPicker` (`innerOpeningDistance`),
+de JSON-rij `ring_5/overworld/*` (`terrain`, `caves`, `cave_closure`, `cave_zone`, `natural_caves`, `ring_5/overworld.json`,
+`void/overworld`), tests `Ring5CavesTest`, `Ring5CopiesTest`, `Ring5JsonTest`; na de review `caveZone`, `Column.opening`/
+`room`/`chamberOut`, `nearSpotOrCopy`, `Spot.touches`, `Pair.touches`.
 
 ## Beslissingen
-(na de antwoorden)
+**Gebruiker 2026-10-23:** V93-1 … V93-8 = A (§6).
+
+**Implementatiekeuzes (van mij):**
+- **Eigen grotten in het veld, exact per blok:** per kolom open intervallen (max. 8) die `terrain` na de spans en vóór de
+  void als −1 geeft; geen DF-wrapper, geen feature, geen carver. Netten als lijst van `Box`en (as-uitgelijnd, dus een kolom
+  vergelijkt alleen gehele getallen); elk element ligt binnen zijn cel (netten ≥ 12, kamers ≥ 40), dus een kolom vraagt
+  alleen zijn eigen cel.
+- **Netten:** grid-knopen in het midden van de gang (breed: midden ± 1, smal: de kolom zelf); een net zonder enige rand
+  vervalt; de ingangsschacht staat op een knoop met een gang op het bovenste niveau, de tussenschacht op een knoop met een
+  gang op beide niveaus (anders krijgt het lagere niveau daar één rand). Geen rotsdek-regel: waar een gang hoger ligt dan
+  de grond (dalen, verzakte plekken) snijdt hij open ("een gang die een helling snijdt"). Gemeten (testseed, na de
+  review): 587 netten, 50 % breed, 113 met twee niveaus, 26 % gekopieerd; van de 436 gridnetten 435 met een doodloper en
+  341 met een lus.
+- **Gekopieerde netten:** de zijgangen alleen aan één kant en ≥ 2 rots voor de volgende kopie; elke kopie een eigen schacht
+  (drie gelijke gaten op een rij aan de oppervlakte).
+- **Void-grotten:** omtrek met drie harmonischen (k = 2–4, samen ±20 %); vloer stijgt 3 naar de wand, plafond een koepel
+  (`height · √(1 − t²)`); gaten binnen 0,8 × de kleinste omtrek; gespiegeld = as langs x of z door een geheel
+  middelpunt (blokken vallen op blokken), gaten in paren, een oneven laatste gat op de as. De rand (code 4) = de 2 blokken
+  vloer binnen 2 van een gat. Gemeten (na de review): 409 kamers (24 % gespiegeld), 1.007 gaten.
+- **Dam:** de gaten tellen mee in `Ring5Field.innerOpeningDistance` (nieuw; `innerCrackDistance` blijft de scheur/plek-
+  afstand voor de vorm); `RingFluidPicker.CURRENT_BANDS` leest de nieuwe. In een dubbelganger telt ook de afstand op de
+  bronpositie (de gespiegelde gaten).
+- **Natuurlijke grotten (V93-1 A):** vanilla's cheese (`0,4 + cave_cheese` i.p.v. 0,27; gemeten: binnenband ~4 % lucht
+  onder de grond tegen ~6 % in ring 1 met 0,37 — bij 0,4 iets minder, zie Tests), `cave_layer`, `entrances` en spaghetti,
+  **zonder** noodles en pillars, in één `interpolated`; boven op de exacte dichtheid met `min`. Ondiep (de bovenste 8
+  blokken) alleen `entrances`, zoals vanilla; na de review kiest de uitgang `cave_zone` de tak (niet meer `terrain` < 1). De sluiting (`cave_closure`, 0..2) is 2D uit het veld: dicht
+  binnen 24 van de bandlijn, 32 na zone 4→5, 16 buiten kasteelbereik en 8 van een opening (scheur, plekgat, void-gat),
+  over 12 blokken open; buiten de binnenband altijd dicht. `void/overworld` wijst naar `ring_5/overworld/terrain`
+  (zonder natuurlijke grotten, die daar toch dicht zijn): scheelt de geïnterpoleerde ruis in de void-ring.
+- **Buitenband (V93-8 A):** kandidaat per cel van 512, alleen 96–300 voorbij de bandlijn, 17 monsters (midden, 8 op de
+  halve en 8 op de volle reikwijdte) moeten schots zijn zonder scheur, ≥ 40 dik; de vloer tussen onderkant + 4 en top − 6
+  − hoogte. Gemeten: 22 kamers.
+- **Dubbelgangers (V93-6/7 A):** spiegeling in het vlak halverwege, langs x of z (blok-exact; schuine richtingen zouden niet
+  op het raster vallen). Tot 2 plekken per cel geprobeerd (de binnenband is maar ~650 breed): 51 paren op de testseed
+  (met 1 poging 32, met 4 74). Beide vierkanten diep in de binnenband, geen scheur of plekgat binnen 16, geen plek binnen 8,
+  geen glitchkubussen erop (een rand zou een kubus doorsnijden). De doelkolom binnen de rand wordt op de bronpositie gevuld
+  (vorm, glitch, eigen grotten); verschoven schijven alleen ≥ rand + 6 binnen (hun buurkolom moet ook een kopie zijn), de
+  verschuiving gespiegeld. De rand: alleen de grond gemengd (smoothstep over 8–12), eigen grotten. De biome volgt de eigen
+  klimaatassen, dus een gekopieerde glitchvorm kan in een andere biome staan (net fout; features en surface volgen de
+  biome).
 
 ## Backlog
+Ook in `docs/backlog.md` ("Uit 93 ring 5 golf 2"):
 - [infra] `/ca copies` (lijst + teleport naar bron en doel van de dubbelgangers) voor de teststop, zoals `/ca castles`;
   `command/*` is van I.
 - [worldgen] (W-biomes, na 93) de surface van ring 5-grotten: wandblok van de gangen (bijv. glad `corrupted_stone`) en de
-  voidsteen-rand rond de void-gaten lezen de uitgang `caves`.
+  voidsteen-rand rond de void-gaten lezen de uitgang `caves` (code 4 = rand).
+- [worldgen] 6b: de ingangsschachten zijn recht, 3 × 3 en tot ~180 diep: zonder ladder dodelijk; een uitweg is een nieuw
+  ontwerppunt.
+- [infra] De gebieden van `build/test/areas-93.txt` (hieronder bij Tests) in `tools/test/areas/ring5.txt`.

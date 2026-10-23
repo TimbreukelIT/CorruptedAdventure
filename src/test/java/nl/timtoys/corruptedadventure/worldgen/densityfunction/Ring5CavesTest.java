@@ -370,4 +370,86 @@ class Ring5CavesTest {
             }
         }
     }
+    /**
+     * Every net keeps {@link Ring5Caves#NET_MARGIN} inside its cell (the shafts and the last copy's stubs included); no own
+     * cave comes within {@link Ring5Field#CAVE_CLEARANCE} of a corrupt spot's chunk or a doppelganger's square.
+     */
+    @Test
+    void cavesKeepInsideTheirCellAndOffSpotsAndCopies() {
+        int cell = Ring5Caves.NET_CELL;
+        int margin = Ring5Caves.NET_MARGIN;
+        for (Ring5Caves.Net net : nets(FIELD)) {
+            int i = Ring5Caves.netCellOf(net.minX);
+            int j = Ring5Caves.netCellOf(net.minZ);
+            assertTrue(net.minX >= i * cell + margin && net.maxX < (i + 1) * cell - margin, "net past its margin along x at " + net.minX);
+            assertTrue(net.minZ >= j * cell + margin && net.maxZ < (j + 1) * cell - margin, "net past its margin along z at " + net.minZ);
+            for (Ring5Caves.Box box : net.boxes) {
+                assertOffSpotsAndCopies(box.x0(), box.z0(), box.x1(), box.z1());
+            }
+        }
+        for (Ring5Caves.Chamber chamber : chambers(FIELD)) {
+            int reach = (int) Math.ceil(chamber.radius() * (1.0 + Ring5Caves.RAGGED));
+            int x = (int) Math.floor(chamber.x());
+            int z = (int) Math.floor(chamber.z());
+            assertOffSpotsAndCopies(x - reach, z - reach, x + reach, z + reach);
+        }
+    }
+
+    /** Samples a box (every 4 blocks and its far edges): no doppelganger's square, no spot chunk within the clearance. */
+    private static void assertOffSpotsAndCopies(int x0, int z0, int x1, int z1) {
+        for (int x = x0; x <= x1 + 3; x += 4) {
+            for (int z = z0; z <= z1 + 3; z += 4) {
+                int bx = Math.min(x, x1);
+                int bz = Math.min(z, z1);
+                Ring5Copies.Pair pair = FIELD.copyPair(Ring5Copies.cellOf(bx), Ring5Copies.cellOf(bz));
+                assertTrue(pair == null || !pair.inSource(bx, bz) && !pair.inTarget(bx, bz), "own cave on a doppelganger at " + bx + ", " + bz);
+                Ring5CorruptSpots.Spot spot = FIELD.corruptSpot(Ring5CorruptSpots.cellOf(bx), Ring5CorruptSpots.cellOf(bz));
+                assertTrue(spot == null || !spot.near(bx, bz, Ring5Field.CAVE_CLEARANCE - 1), "own cave by a corrupt spot at " + bx + ", " + bz);
+            }
+        }
+    }
+
+    /**
+     * Vanilla's caves never cut an exact shape (review of 93): a span (a glitch cube) and a layered column's slices are
+     * zone 0, as is closed ground; elsewhere the entrances within {@link Ring5Field#NATURAL_COVER} of the top, the noise
+     * caves only below that.
+     */
+    @Test
+    void naturalCavesKeepOffExactShapes() {
+        int spans = 0;
+        int layered = 0;
+        int open = 0;
+        for (int distance = 8200; distance <= 9600; distance += 13) {
+            for (double angle = 0.0; angle < 2.0 * Math.PI; angle += Math.PI / 90.0) {
+                int x = (int) Math.round(distance * Math.cos(angle));
+                int z = (int) Math.round(distance * Math.sin(angle));
+                Ring5Field.Column column = FIELD.column(x, z);
+                if (column.isVoid()) {
+                    continue;
+                }
+                int top = (int) Math.floor(column.top());
+                if (column.closure() >= Ring5Field.CAVES_CLOSED) {
+                    assertEquals(0, FIELD.caveZone(x, top - 20, z), "closed ground cut at " + x + ", " + z);
+                    continue;
+                }
+                if (column.spans > 0) {
+                    spans++;
+                    assertEquals(0, FIELD.caveZone(x, column.spanBottom[0], z), "span cut at " + x + ", " + z);
+                    assertEquals(0, FIELD.caveZone(x, column.spanTop[0] - 1, z), "span cut at " + x + ", " + z);
+                }
+                if (column.layered) {
+                    layered++;
+                    assertEquals(0, FIELD.caveZone(x, top - 1, z), "layer cut at " + x + ", " + z);
+                    assertEquals(0, FIELD.caveZone(x, (int) Math.ceil(column.top() - Ring5Inner.LAYER_DEPTH), z), "layer cut at " + x + ", " + z);
+                    assertEquals(2, FIELD.caveZone(x, top - Ring5Inner.LAYER_DEPTH - Ring5Field.NATURAL_COVER - 2, z));
+                } else if (column.spans == 0) {
+                    open++;
+                    assertEquals(1, FIELD.caveZone(x, top - 1, z), "no entrances at " + x + ", " + z);
+                    assertEquals(2, FIELD.caveZone(x, top - Ring5Field.NATURAL_COVER - 2, z), "no noise caves at " + x + ", " + z);
+                }
+            }
+        }
+        System.out.printf("cave zone: spans %d, layered %d, open %d%n", spans, layered, open);
+        assertTrue(spans > 0 && layered > 100 && open > 1000, "spans " + spans + ", layered " + layered + ", open " + open);
+    }
 }

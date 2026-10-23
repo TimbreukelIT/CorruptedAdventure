@@ -96,6 +96,7 @@ class Ring5JsonTest {
         // 93: the own caves per block (no cache) and the closure of vanilla's damped caves.
         assertOutput(DF + "ring_5/overworld/caves.json", "caves", false);
         assertOutput(DF + "ring_5/overworld/cave_closure.json", "cave_closure", false);
+        assertOutput(DF + "ring_5/overworld/cave_zone.json", "cave_zone", false);
         JsonObject field = WorldgenData.read(DF + "ring_5/overworld/field.json");
         assertEquals("corruptedadventure:ring_5_field", field.get("type").getAsString());
         assertEquals("corruptedadventure:ring_5_cells", field.get("hash").getAsString());
@@ -111,24 +112,37 @@ class Ring5JsonTest {
             assertTrue(Files.exists(WorldgenData.root().resolve("noise/ring_5_" + noise + ".json")), noise);
         }
         // The terrain: the field's per-block density, exact (no interpolation), with vanilla's damped caves (93, V93-1 A)
-        // under it: entrances within 8 of the surface (density < 1), the cheese and spaghetti deeper; both closed by the
-        // closure, interpolated (only the caves).
+        // under it by the field's cave zone: the cheese and spaghetti deep under the ground (2), the entrances within 8 of
+        // its top (1, the closure 4×: 5× entrances reach about −6), none on exact shapes and closed ground (0); the caves
+        // interpolated, the closure not.
         JsonObject terrain = WorldgenData.read(DF + "ring_5/overworld/terrain.json");
         assertEquals("minecraft:cache_once", terrain.get("type").getAsString());
         assertEquals("terrain", terrain.getAsJsonObject("argument").get("output").getAsString());
+        String zone = "corruptedadventure:ring_5/overworld/cave_zone";
+        String closure = "corruptedadventure:ring_5/overworld/cave_closure";
+        String ground = "corruptedadventure:ring_5/overworld/terrain";
         JsonObject output = WorldgenData.read(DF + "ring_5/overworld.json");
         assertEquals("minecraft:range_choice", output.get("type").getAsString());
-        assertEquals("corruptedadventure:ring_5/overworld/terrain", output.get("input").getAsString());
-        assertEquals(1.0, output.get("max_exclusive").getAsDouble());
-        for (String branch : new String[]{"when_in_range", "when_out_of_range"}) {
-            JsonObject min = output.getAsJsonObject(branch);
-            assertEquals("minecraft:min", min.get("type").getAsString(), branch);
-            assertEquals("corruptedadventure:ring_5/overworld/terrain", min.get("argument1").getAsString(), branch);
-            assertEquals("corruptedadventure:ring_5/overworld/cave_closure",
-                    min.getAsJsonObject("argument2").get("argument2").getAsString(), branch);
-        }
-        assertEquals("corruptedadventure:ring_5/overworld/natural_caves",
-                output.getAsJsonObject("when_out_of_range").getAsJsonObject("argument2").get("argument1").getAsString());
+        assertEquals(zone, output.get("input").getAsString());
+        assertEquals(1.5, output.get("min_inclusive").getAsDouble());
+        JsonObject deep = output.getAsJsonObject("when_in_range");
+        assertEquals("minecraft:min", deep.get("type").getAsString());
+        assertEquals(ground, deep.get("argument1").getAsString());
+        assertEquals("corruptedadventure:ring_5/overworld/natural_caves", deep.getAsJsonObject("argument2").get("argument1").getAsString());
+        assertEquals(closure, deep.getAsJsonObject("argument2").get("argument2").getAsString());
+        JsonObject shallowChoice = output.getAsJsonObject("when_out_of_range");
+        assertEquals(zone, shallowChoice.get("input").getAsString());
+        assertEquals(0.5, shallowChoice.get("min_inclusive").getAsDouble());
+        assertEquals(1.5, shallowChoice.get("max_exclusive").getAsDouble());
+        assertEquals(ground, shallowChoice.get("when_out_of_range").getAsString());
+        JsonObject shallow = shallowChoice.getAsJsonObject("when_in_range");
+        assertEquals(ground, shallow.get("argument1").getAsString());
+        JsonObject entrances = shallow.getAsJsonObject("argument2").getAsJsonObject("argument1");
+        assertEquals(5.0, entrances.get("argument1").getAsDouble());
+        assertEquals("minecraft:interpolated", entrances.getAsJsonObject("argument2").get("type").getAsString());
+        JsonObject shut = shallow.getAsJsonObject("argument2").getAsJsonObject("argument2");
+        assertEquals(4.0, shut.get("argument1").getAsDouble());
+        assertEquals(closure, shut.get("argument2").getAsString());
         assertEquals("minecraft:interpolated", WorldgenData.read(DF + "ring_5/overworld/natural_caves.json").get("type").getAsString());
         // V2-A: the void edge is the same field (no seam at the hard switch 5→void), also for the initial density; without
         // the natural caves, which are closed beyond the inner band anyway.
