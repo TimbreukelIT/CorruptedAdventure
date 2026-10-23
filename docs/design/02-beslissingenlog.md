@@ -957,3 +957,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-23 | worldgen | Ring 5 buitenband blijft; kastelen blijven op ~9.250 (liggen al in de buitenband) | Gebruiker |
 | 2026-10-23 | worldgen | Nether-5-aankleding (96): stil licht als band in de zuilen; witte kern in ~1 op 10 zuilen (1–3 erts, halverwege); reuzenzuil met witte-kernader in het hart + vloer-afdruk van witsteen rond de voet | Gebruiker |
 | 2026-10-23 | infra | Golf 2 ring 5 start deels: 96, 97, 98 nu (los van het terrein); 93–95 en 99b wachten op 83b | Gebruiker |
+| 2026-10-23 | worldgen | Nether-5 (96): lichtband per zuil op een eigen hoogte (Y 38/44/50/56, 2 hoog); reuzenzuil zonder lichtband (alleen ader + vloer-afdruk) | Gebruiker (aanbevolen) |
