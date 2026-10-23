@@ -82,20 +82,24 @@ def stable_shot(path, client, first_wait, max_wait):
     time.sleep(first_wait)
     tmp = path + ".prev.png"
     t0 = time.time()
-    if not shot(tmp, client):
-        return False
-    while True:
-        time.sleep(1.0)
-        if not shot(path, client):
+    try:
+        if not shot(tmp, client):
             return False
-        diff = difference(tmp, path)
-        if diff < STABLE_DIFF or time.time() - t0 > max_wait:
-            if diff >= STABLE_DIFF:
-                print("warning: %s still changing after %d s (diff %.1f)" % (os.path.basename(path), max_wait, diff),
-                      file=sys.stderr)
+        while True:
+            time.sleep(1.0)
+            if not shot(path, client):
+                return False
+            diff = difference(tmp, path)
+            if diff < STABLE_DIFF or time.time() - t0 > max_wait:
+                if diff >= STABLE_DIFF:
+                    print("warning: %s still changing after %d s (diff %.1f)" % (os.path.basename(path), max_wait,
+                                                                                 diff), file=sys.stderr)
+                return True
+            os.replace(path, tmp)
+    finally:
+        # A leftover <label>.png.prev.png would show up on the sheet as an extra tile.
+        if os.path.exists(tmp):
             os.remove(tmp)
-            return True
-        os.replace(path, tmp)
 
 
 def font(size):
@@ -165,7 +169,8 @@ def photograph(rcon, args, name):
     for f in os.listdir(folder):
         if f.endswith(".png"):
             os.remove(os.path.join(folder, f))
-    listing = check(rcon.cmd("ca studio shots" + (" " + args.floors if args.floors else "")), "")
+    # An error reply has no pose lines: the check below exits with it.
+    listing = rcon.cmd("ca studio shots" + (" " + args.floors if args.floors else ""))
     poses = [m.groups() for m in (POSE.match(line) for line in listing.splitlines()) if m]
     if not poses:
         sys.exit("studio: " + listing.strip())
@@ -195,9 +200,11 @@ def photograph(rcon, args, name):
             # A new dimension (or the first pose) has to load and render every chunk; the next pose mostly re-renders.
             first_wait = 6 if dim != last_dim else 2
             path = os.path.join(folder, label + ".png")
-            ok = stable_shot(path, args.client, first_wait, args.max_wait)
-            if cut != "-":
-                rcon.cmd("ca studio restore")
+            try:
+                ok = stable_shot(path, args.client, first_wait, args.max_wait)
+            finally:
+                if cut != "-":
+                    rcon.cmd("ca studio restore")
             print(("shot " if ok else "FAILED ") + label)
             last_dim, last_time = dim, daytime
     finally:
