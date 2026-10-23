@@ -1158,6 +1158,7 @@ Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). G
 - **Biomes (2; was 1 tot de sparring ring 5)**: `white_halls` (basis: vlakke spiegelsteen-vloer op Y 31, plafond Y ~104, zuilen 4 × 4 om de 24 in rasters met een eigen offset per cel van 400, lage witte vlaktes 2–6 hoog op ~30 % van de vloer) en `hollow_cathedral` (V10-A: zeldzame ronde hallen Ø 120–180, dak opgetild tot Y 120, één reuzenzuil Ø 20–30). Het kale en eentonige is juist het punt.
 - **Blokken**: kalkrack (wit netherrack, anders dan het beige gebleekte netherrack van Nether-4), witsteen-set (glad, gepolijst, bricks, zuil, slab, stairs, wall), spiegelsteen, stil licht (witte lichtbron zonder geluid of particles).
 - **Sleutelmateriaal: witte kern**, het "hart van de stilte". Zeldzaam, in de kern van de zuilen. Nodig voor toegang tot Herobrines kastelen en de final battle (fase 3/5); in fase 2 de basis van zuiveringsgear tegen corruptie. Geen gedrag in fase 1.
+- **Aankleding (96, besluit 2026-10-23):** stil licht als lichtband **in de zuilen** (vaste hoogte per zuil); witte kern in **~1 op 10 zuilen**, een kern van 1–3 erts halverwege de zuil; de reuzenzuil van `hollow_cathedral` krijgt een **verticale witte-kernader in het hart** en een **vloer-afdruk** van gepolijst/bakstenen witsteen rond de voet (leest als bouwwerk).
 - **Sfeer**: witte fog, geen ambient-geluid, geen muziek, bijna geen particles (biome-data).
 - **Conditie: stilte**
   - Meter ↑ overal in Nether-5, sneller in de open vlaktes.

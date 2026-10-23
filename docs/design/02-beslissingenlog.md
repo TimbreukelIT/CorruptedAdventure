@@ -955,3 +955,5 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-23 | worldgen | Ring 5 binnenband (herziening V4-A bij 6a): golvend reliëf Y ~65–120, kammen/kliffen tot ~140; klem op Y 70 vervalt | Gebruiker: te plat, moet als avonturenwereld voelen |
 | 2026-10-23 | worldgen | Ring 5 binnenband: corrupte plekken ~elke 200–300 blokken, 2–5 chunks, verschoven chunk-blokken (±8–30, harde wanden) + deel weggevallen naar de void (droog) | Gebruiker: meer corrupte chunks, nu karig |
 | 2026-10-23 | worldgen | Ring 5 buitenband blijft; kastelen blijven op ~9.250 (liggen al in de buitenband) | Gebruiker |
+| 2026-10-23 | worldgen | Nether-5-aankleding (96): stil licht als band in de zuilen; witte kern in ~1 op 10 zuilen (1–3 erts, halverwege); reuzenzuil met witte-kernader in het hart + vloer-afdruk van witsteen rond de voet | Gebruiker |
+| 2026-10-23 | infra | Golf 2 ring 5 start deels: 96, 97, 98 nu (los van het terrein); 93–95 en 99b wachten op 83b | Gebruiker |
