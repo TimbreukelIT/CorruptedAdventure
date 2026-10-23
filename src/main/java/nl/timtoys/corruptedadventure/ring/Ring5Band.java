@@ -23,9 +23,9 @@ import java.util.List;
  */
 public final class Ring5Band {
     /** Share of ring 5's width (from its inner boundary) that is inner band, on average. */
-    static final double INNER_SHARE = 0.5;
+    public static final double INNER_SHARE = 0.5;
     /** How far (share of ring 5's width) the noise moves the line between the bands, at most (V1-A). */
-    static final double AMPLITUDE_SHARE = 0.15;
+    public static final double AMPLITUDE_SHARE = 0.15;
     /** Width (blocks, across the line) over which {@link #value} runs from −1 to 1 (sparring ring 5, round 2). */
     static final double TRANSITION = 200.0;
     /**

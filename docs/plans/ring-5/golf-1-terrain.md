@@ -192,6 +192,52 @@ aan main: klaar voor teststop 6-pre-1** (`golf-1.md` §5), en gaat door met 83.
 **Af als:** B, D, unit tests groen; S-smoke + kaart `terrainmap 8500 0 400 2` (binnenband oost) en een doorsnede
 `section 8000 0 9000 0` in `build/test/maps/golf-1/`.
 
+## 4b. Pakket 83b — binnenband: reliëf en corrupte plekken (herziening V4-A bij teststop 6a)
+
+Scope: `worldgen`. Branch `ring5/83b`, worktree `P:/Projecten/Java/wt/r5-83b`, slot W1/1. Bron: `fase-1-wereld.md`
+"Herzien bij teststop 6a" en de drie worldgen-regels van 2026-10-23 in het beslissingenlog. Buitenband, kastelen en
+zone 4→5 blijven zoals ze zijn.
+
+**Wat**
+1. **Golvend reliëf** (`Ring5Inner.base`): grond Y ~65–120 uit `ring_5_hills` (`ROLL_BASE` + `ROLL` × ruis, zacht begrensd
+   in plaats van de harde klem op Y 70/95), plus af en toe een **kam of klif** tot ~140: een asymmetrisch profiel langs de
+   nullijn van een tweede monster van `ring_5_hills` (steile wand aan één kant, flauwe rug aan de andere), alleen waar een
+   derde, groot monster het toelaat (masker). Aan de binnenrand loopt het reliëf over `RELIEF_FADE` blokken na zone 4→5
+   uit naar de oude dode grond (Y 78 + 16 × ruis, 70–95), zodat de breukzone (die de top van `Ring5Field` mengt) niet
+   verandert. Aan de bandlijn mengt de buitenband zoals in 84 over `LINE_BLEND` (96) van de binnentop naar de schotsen.
+2. **"Net fout"-vormen op de nieuwe grond:** trappen vanaf de grond van hun oorsprong, **bergop gericht** (de richting met
+   de grootste stijging van de vier, i.p.v. een willekeurige); kuilen met de bodem 2–4 onder de **laagste** grond van
+   midden en rand (altijd een kuil, ook op een helling); `false_meadow` = het golvende reliëf zonder kammen + de
+   regelmatige golf (Y ± 3); `glitch_fields` = de nieuwe grond in blokken van 4 (geen ondergrens 72 meer). Scheuren, dam en
+   droogregel ongewijzigd.
+3. **Corrupte plekken** (nieuw `Ring5CorruptSpots`, puur uit de wereldzout): een raster van cellen van 15 × 15 chunks
+   (240 blokken), per cel kans 0,9 op een plek; startchunk 5 chunks binnen de celrand, groei met 1–4 aangrenzende chunks
+   tot 2–5 chunks (elke chunk minstens 1 chunk van de celrand: een kolom hoeft alleen de plek van zijn eigen cel te zien). Eén chunk van de plek is **weggevallen**: void tot onder `min_y`, met een gerafelde rand van 1–3 blokken
+   vaste grond binnen de chunk (scheurrand); de andere chunks hele 16 × 16-kolommen **8–30 omhoog of omlaag** (teken per
+   chunk), harde wanden op de chunkgrens; de vormen erop schuiven mee. Plekken alleen geheel binnen de binnenband: ≥ 32 van
+   de bandlijn, ≥ 32 na zone 4→5, ≥ 16 buiten elk kasteelbereik (anders vervalt de hele plek). `innerCrackDistance` telt het
+   gat mee (≤ 0 precies op de void-kolommen), dus dam (6), lavaregel en `scars`-rand gelden er net als bij scheuren.
+   Geen zwevende kubussen boven een plek, geen verschoven schijven binnen 6 van een plek.
+4. **Zandregel 86b** (`corrupted_wastes`: top onder Y 76 → `corrupted_sand`) blijft; het reliëf is zo gekozen dat Y < 76
+   alleen de dalbodems zijn (gemeten in `Ring5InnerTest`, doel ≤ ~20 % van `corrupted_wastes`).
+
+**Tuning:** zie "Beslissingen" → 83b.
+
+**Tests (unit):** `Ring5InnerTest`: oppervlak grotendeels in 62–124 met p5/p95 rond 65/120, kammen boven 125 aanwezig maar
+zeldzaam; zone-uitloop (in zone 4→5 gelijk aan de oude grond); trappen exact 4, bergop; kuilen rond en onder hun rand;
+weide = reliëf + regelmatige golf; glitch blokken van 4; aandeel zandlaag (top < 76 in `corrupted_wastes`) gemeten.
+`Ring5CorruptSpotsTest` (nieuw): deterministisch (twee velden, zelfde seed), afstand tussen naburige plekken, 2–5 chunks
+aaneengesloten, elke kolom van een chunk dezelfde verschuiving (chunk-uitgelijnd), |verschuiving| 8–30, precies één gat
+per plek, gat tot onder `min_y` zonder vast blok, `innerCrackDistance` ≤ 0 alleen op het gat en ≤ 6 rondom (dam), plekken
+alleen binnen de binnenband met de marges.
+
+**Gates:** `build --offline` groen; `runData --offline` (output committen als hij verandert); server-smoke
+`server.sh start r5-83b --fresh` + `/ca terrainmap 8900 0 1400 4`, `0 -8900 1400 4` en `section 8000 0 9000 0`; `world.sh`
+op `ring5.txt` + `voidscan.py --strict --rings` = 0 en `lavascan.py --strict` lek 0; `det.sh --areas ring5.txt` own 0;
+`perf.sh --areas perf-r5.txt --cold-only "wastes cathedral"`: noise ≤ 1,75 per gebied.
+
+**Client/server-impact:** puur worldgen (server). Geen client-class, geen payload, geen config.
+
 ---
 
 ## 5. Afhankelijkheden
@@ -210,6 +256,7 @@ op `castles.txt` (klein), in overleg met main (slot).
 - Voortgang: 2026-10-21 21:49 84 klaar: build groen (1.153 tests), runData zonder wijziging, S-smoke `r84` (log schoon, `/ca castles`, kaarten oost + kasteel #1 + doorsnede); commit.
 - Voortgang: 2026-10-21 22:16 85 klaar: build groen (1.154 tests, 1 overgeslagen), runData zonder wijziging, S-smoke `pre1` (log schoon) + kaartenset 6-pre-1 in `build/test/maps/6-pre-1/`; commit, daarna 83.
 - Voortgang: 2026-10-22 15:20 83 klaar: build groen, runData zonder wijziging (`src/generated` schoon), unit tests ring 5 groen, S-smoke `golf-1` (verse wereld, log schoon), kaarten `terrainmap 8500 0 400 2` en `section 8000 0 9000 0` in `build/test/maps/golf-1/`; commit.
+- Voortgang: 2026-10-23 17:20 83b klaar (`ring5/83b`, worktree `P:/Projecten/Java/wt/r5-83b`): build groen (1.295 tests, 1 overgeslagen), runData zonder wijziging, server-smoke `r5-83b` (log schoon) met kaarten `terrainmap 8900 0 1400 4`, `0 -8900 1400 4`, `8450 0 300 1`, doorsneden `8000 0 9000 0`, `8400 -400 8400 400` en door een plek (`8460 152 8630 152`) in `build/test/maps/83b/`; `voidscan --strict --rings` 0 fouten op `ring5.txt` en op drie plekken (los gebiedsbestand, backlog), `lavascan --strict` lek 0 op beide; `det.sh` `ring5.txt` 991/991 en plekken 137/137 identiek (own 0); perf `perf-r5.txt`: noise wastes 0,53, glitch 0,54, meadow 0,47, zone45 1,30, cathedral 1,08 (alle ≤ 1,75); review medium (7 punten: celrand, brug-landing, namen, dubbele opzoeking opgelost; prestatie-punt niet nodig volgens perf).
 
 ## CODEBASE-delta
 **84:** `Ring5Field` echt voor de buitenband: codec-veld `noises` (`Noises`: `rot` = `ring_5_rot`, `relief`, `detail`, `scars`;
@@ -326,6 +373,35 @@ van het huidige veld. `RingAquifer`: de scheurafstand alleen in de binnenband ge
 - **Beantwoord (gebruiker, 2026-10-22): schijfhoogte per laagcel van 64.** Geen wijziging. Per schijf zou een cumulatieve
   grens per kolom vragen en duurder zijn.
 - Doc van `initialHeight` (punt 6 review): "binnenband: grondhoogte, ook op een scheur"; waarde ongewijzigd.
+**83b (implementatiekeuzes en tuning, teststop 6a):**
+- Reliëf: `ROLL_BASE` 90 + `ROLL` 48 × `ring_5_hills` + `ROUGH` 24 × `ring_5_hills` op schaal 2 (bulten van ~130/65
+  blokken; niet op de weide), zacht begrensd (`soft`, knie 8) op 60–124. Kammen/kliffen: nullijn van `ring_5_hills` op
+  schaal 0,6, hoogte 26, steile wand over 0,012 ruis (~3 blokken), flauwe rug over 0,12 (~25 blokken), masker
+  `ring_5_hills` op schaal 0,35 open van 0,05 tot 0,25; met kammen zacht tot 146. Gemeten (testseed, `Ring5InnerTest`):
+  p1 62, p5 66, mediaan 90, p95 116, p99 123, max 145; 0,4 % boven 125; 2,7 % van de band onder een kam boven de halve
+  hoogte. Een gesloten nullijn geeft een ring van kliffen (kom of tafelberg); dat telt hier als "kam of klif".
+- Geen nieuwe ruis: alle monsters van `ring_5_hills` op andere schaal en verschuiving (de JSON blijft gelijk, de zone
+  4→5 leest dezelfde ruis voor de oude grond).
+- Zone 4→5: `RELIEF_FADE` 160 (effectieve afstand na het zone-einde, smoothstep) van de oude grond (Y 78 + 16 × ruis,
+  70–95) naar het reliëf; in de zone bitgelijk aan 83, dus de breukzone verandert niet.
+- Bandlijn: binnen `LINE_FADE` 160 van `Ring5Band.signedDistance` (~90 blokken) buigt de grond zacht in 70–110 (de
+  schotstoppen van 84); `groundTop` van de buitenband klemt de binnentop daarnaast op 70–110 (glitchblokken, kuilen en
+  trappen vlak bij de lijn), zodat de schotsen van de buitenband in hun bereik blijven. `Ring5Band.INNER_SHARE` en
+  `AMPLITUDE_SHARE` zijn public geworden (snelle afkap: ver binnen de lijn geen bandruis).
+- Trappen bergop (van de vier richtingen die met de hoogste grond op één trap-lengte); kuilen 2–4 onder de laagste van
+  midden en vier randpunten. Trap en kuil gecachet per cel in `Ring5Inner` (een paar reliëfmonsters per cel).
+- Glitchblokken: de ondergrens 72 vervalt (de klem op 70 is weg); de blokken volgen het reliëf.
+- Corrupte plekken (`Ring5CorruptSpots`): cel 15 chunks (240), kans 0,9, 2–5 chunks, verschuiving 8–30 (teken 50/50),
+  één weggevallen chunk met rand 1–3 (`ring_5_hills` op schaal 8). Gemeten (testseed): 481 plekken in de binnenband,
+  afstand tot de naaste p10 182 / mediaan 217 / p90 257. Startchunk 5 chunks binnen de celrand (review: met 4 kon een
+  plek de celrand raken en zagen dam en schijfregel hem vanuit de buurcel niet). Marges: 32 tot bandlijn en zone, 16 buiten elk kasteelbereik;
+  de hele plek vervalt als één chunk erbuiten valt. Openingen (scheuren + gaten) samen 0,5 % van de binnenband.
+- Het gat telt mee in `innerCrackDistance` (Chebyshev buiten de chunk + dunste rand: nooit meer dan de echte afstand),
+  dus `RingFluidPicker` (lava, dam 6) en `RingAquifer` gebruiken het zonder eigen code; `scars` krijgt dezelfde rand.
+- Geen verschoven schijven binnen 6 van een plek (een schijf zou een kolom tot 30 hoger kopiëren en los kunnen hangen),
+  geen zwevende kubus boven een plek.
+- Zandregel 86b (top < 76 in `corrupted_wastes`) ongewijzigd: gemeten 18,6 % van de `corrupted_wastes`-kolommen (was 24 %
+  met plekken tot 84 % rond 8900, 0), nu de dalbodems tussen de heuvels.
 
 ## Backlog
 - [worldgen] 86c (W-biomes): `SplitRockFeature` naar `ZoneFracture.landmarksWithin` en `IslandField.landBridgesNear` +

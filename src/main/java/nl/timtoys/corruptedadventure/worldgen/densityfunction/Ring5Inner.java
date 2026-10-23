@@ -3,28 +3,73 @@ package nl.timtoys.corruptedadventure.worldgen.densityfunction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.DoubleBinaryOperator;
+
 /**
- * The inner band of ring 5 (package 83, V4-A): dead ground around Y 78 with low hills (Y 70–95; the stairs and pits of
- * {@code corrupted_wastes} are a deliberate exception: their treads go up to {@link #STEP} × {@link #MAX_STEPS} above the
- * ground, so up to about Y 119), and per region the shapes that are "just wrong" (the region axes and thresholds of
- * W-biomes, {@code golf-1-biomes.md} §2):
+ * The inner band of ring 5 (package 83, V4-A; relief revised in 83b at teststop 6a): rolling dead ground Y ~65–120 with
+ * now and then a ridge or cliff up to ~140, growing over {@link #RELIEF_FADE} blocks after the zone 4→5 out of the old
+ * low ground (Y 70–95 round 78) that the fracture zone blends with. On it, per region, the shapes that are "just wrong"
+ * (the region axes and thresholds of W-biomes, {@code golf-1-biomes.md} §2; the stairs rise up to {@link #STEP} ×
+ * {@link #MAX_STEPS} above their ground, a deliberate exception):
  * <ul>
- *     <li>{@code corrupted_wastes}: a plain with too regular stairs (treads exactly {@link #STEP} high, straight edges on
+ *     <li>{@code corrupted_wastes}: too regular stairs up the slope (treads exactly {@link #STEP} high, straight edges on
  *     the block grid) and perfectly round, shallow pits;</li>
- *     <li>{@code false_meadow}: a smooth meadow (Y 73–79) whose roll is a regular wave on two axes instead of noise;</li>
+ *     <li>{@code false_meadow}: the rolling ground without ridges, a regular wave on two axes over it;</li>
  *     <li>{@code glitch_fields}: blocky ground ({@link #QUANTUM} × {@link #QUANTUM} × {@link #QUANTUM}, the quantisation
  *     in Java: the inner band's ground is a Java height field, so no {@code quantize} density function type is needed),
  *     shifted layers and floating cubes.</li>
  * </ul>
  * The shapes blend over ±{@link #BLEND} of the region axes. Loose cracks (2–6 wide, 20–120 long, ~1 per 256 × 256) reach
- * down into the void. Pure: a function of the noises, the per-world salt and x, z.
+ * down into the void; the corrupt spots (83b) are {@link Ring5CorruptSpots}. Pure: a function of the noises, the
+ * per-world salt, the ring layout (the relief's weight) and x, z.
  */
 final class Ring5Inner {
-    /** The dead ground: Y {@link #BASE} plus the hills' noise times {@link #HILLS}, held to Y 70–95 (V4-A). */
-    static final double BASE = 78.0;
-    static final double HILLS = 16.0;
-    static final double MIN_TOP = 70.0;
-    static final double MAX_TOP = 95.0;
+    /**
+     * The rolling ground (83b): Y {@link #ROLL_BASE} plus the hills' noise times {@link #ROLL}, bent softly (over
+     * {@link #KNEE} blocks) towards {@link #ROLL_LOW} and {@link #ROLL_HIGH} instead of a hard clamp.
+     */
+    static final double ROLL_BASE = 90.0;
+    static final double ROLL = 48.0;
+    static final double ROLL_LOW = 60.0;
+    static final double ROLL_HIGH = 124.0;
+    static final double KNEE = 8.0;
+    /**
+     * Smaller bumps on the dead ground (not on the false meadow, which stays too smooth): a fourth sample of the hills at
+     * scale {@link #ROUGH_SCALE} (waves of ~130 and ~65 blocks) times {@link #ROUGH}.
+     */
+    static final double ROUGH = 24.0;
+    static final double ROUGH_SCALE = 2.0;
+    /**
+     * Ridges and cliffs (83b): along the zero line of a second sample of the hills (scale {@link #RIDGE_SCALE}) the ground
+     * rises {@link #RIDGE_HEIGHT}, steeply on one side (over {@link #RIDGE_FACE} of the noise: a few blocks), gently on the
+     * other ({@link #RIDGE_BACK}); only where a third, coarse sample (scale {@link #MASK_SCALE}) opens the mask
+     * ({@link #MASK_FROM}..{@link #MASK_TO}). With them the ground bends softly towards {@link #CAP}.
+     */
+    static final double RIDGE_SCALE = 0.6;
+    static final double RIDGE_HEIGHT = 26.0;
+    static final double RIDGE_FACE = 0.012;
+    static final double RIDGE_BACK = 0.12;
+    static final double MASK_SCALE = 0.35;
+    static final double MASK_FROM = 0.05;
+    static final double MASK_TO = 0.25;
+    static final double CAP = 146.0;
+    /** The relief grows over this many blocks (effective distance) after the zone 4→5 out of the old ground. */
+    static final double RELIEF_FADE = 160.0;
+    /** The old dead ground (83), kept in the zone 4→5: Y 78 plus the hills' noise times 16, held to Y 70–95. */
+    static final double ZONE_BASE = 78.0;
+    static final double ZONE_HILLS = 16.0;
+    static final double ZONE_MIN = 70.0;
+    static final double ZONE_MAX = 95.0;
+    /**
+     * Towards the band line (over {@link #LINE_FADE} of {@code Ring5Band.signedDistance}, ~90 blocks across the line) the
+     * ground bends softly into the outer band's floe tops, Y {@link #LINE_LOW}–{@link #LINE_HIGH} (84), so the outer band's
+     * blend from the inner top starts inside its own range and stays unchanged.
+     */
+    static final double LINE_FADE = 160.0;
+    static final double LINE_LOW = 70.0;
+    static final double LINE_HIGH = 110.0;
     /** The region thresholds (W-biomes): glitch ≥ 0.125 glitch_fields, else rot ≥ 0.244 false_meadow; blended ±0.04. */
     static final double GLITCH_AT = 0.125;
     static final double MEADOW_AT = 0.244;
@@ -40,15 +85,14 @@ final class Ring5Inner {
     static final int MAX_RUN = 8;
     static final int MIN_WIDTH = 12;
     static final int MAX_WIDTH = 24;
-    /** Pits: one per cell of 64 with this chance, perfectly round, Ø 8–20, flat floor 2–4 down. */
+    /** Pits: one per cell of 64 with this chance, perfectly round, Ø 8–20, flat floor 2–4 below the lowest rim. */
     static final int PIT_CELL = 64;
     static final double PIT_CHANCE = 0.35;
     static final int MIN_PIT_RADIUS = 4;
     static final int MAX_PIT_RADIUS = 10;
     static final int MIN_PIT_DEPTH = 2;
     static final int MAX_PIT_DEPTH = 4;
-    /** The false meadow: Y 76 ± 3 as a regular wave of this length on both axes. */
-    static final double MEADOW_Y = 76.0;
+    /** The false meadow: the rolling ground ± 3, a regular wave of this length on both axes. */
     static final double MEADOW_AMPLITUDE = 1.5;
     static final double MEADOW_WAVE = 64.0;
     /** Glitch fields: blocks of this size; layers 4–6 high (one height per layer cell) shifted 2–6 sideways in the top {@link #LAYER_DEPTH}. */
@@ -89,12 +133,27 @@ final class Ring5Inner {
     private final DensityFunction.NoiseHolder rot;
     private final DensityFunction.NoiseHolder glitch;
     private final long salt;
+    /** The relief's weight at a position: 0 up to the zone 4→5's outer edge, 1 from {@link #RELIEF_FADE} after it. */
+    private final DoubleBinaryOperator relief;
+    /** The weight of the full relief against the floe range at a position: 0 on the band line, 1 from {@link #LINE_FADE} inside. */
+    private final DoubleBinaryOperator line;
+    // Pure per-cell results: a staircase's or pit's ground takes a few samples of the relief.
+    private final KeyedSlots<Optional<Stair>> stairs = new KeyedSlots<>(64);
+    private final KeyedSlots<Optional<Pit>> pits = new KeyedSlots<>(256);
 
-    Ring5Inner(DensityFunction.NoiseHolder hills, DensityFunction.NoiseHolder rot, DensityFunction.NoiseHolder glitch, long salt) {
+    Ring5Inner(DensityFunction.NoiseHolder hills, DensityFunction.NoiseHolder rot, DensityFunction.NoiseHolder glitch, long salt,
+               DoubleBinaryOperator relief, DoubleBinaryOperator line) {
         this.hills = hills;
         this.rot = rot;
         this.glitch = glitch;
         this.salt = salt;
+        this.relief = relief;
+        this.line = line;
+    }
+
+    /** The hills' noise (the corrupt spots' ragged rims sample it too). */
+    DensityFunction.NoiseHolder hills() {
+        return hills;
     }
 
     /** The weight of {@code glitch_fields} (0..1). */
@@ -107,14 +166,64 @@ final class Ring5Inner {
         return (1.0 - glitchWeight) * Ring4Relief.smooth(rot.getValue(x, 0.0, z), MEADOW_AT - BLEND, MEADOW_AT + BLEND);
     }
 
-    /** The dead ground with its hills, before the regions' shapes. */
+    /** The dead ground with its relief (rolling ground, ridges and cliffs), before the regions' shapes. */
     double base(double x, double z) {
-        return Mth.clamp(BASE + HILLS * hills.getValue(x, 0.0, z), MIN_TOP, MAX_TOP);
+        return ground(x, z, true);
+    }
+
+    /** The rolling ground without ridges and cliffs (the false meadow's ground). */
+    double rolling(double x, double z) {
+        return ground(x, z, false);
+    }
+
+    private double ground(double x, double z, boolean ridges) {
+        double h = hills.getValue(x, 0.0, z);
+        double old = Mth.clamp(ZONE_BASE + ZONE_HILLS * h, ZONE_MIN, ZONE_MAX);
+        double w = relief.applyAsDouble(x, z);
+        if (w <= 0.0) {
+            return old;
+        }
+        double ground;
+        if (ridges) {
+            double bumps = ROUGH * hills.getValue(x * ROUGH_SCALE + 900.5, 0.0, z * ROUGH_SCALE + 5200.5);
+            ground = soft(soft(ROLL_BASE + ROLL * h + bumps, ROLL_LOW, ROLL_HIGH) + ridge(x, z), ROLL_LOW, CAP);
+        } else {
+            ground = soft(ROLL_BASE + ROLL * h, ROLL_LOW, ROLL_HIGH);
+        }
+        double l = line.applyAsDouble(x, z);
+        if (l < 1.0) {
+            ground = Mth.lerp(l, soft(ground, LINE_LOW, LINE_HIGH), ground);
+        }
+        return w >= 1.0 ? ground : Mth.lerp(w, old, ground);
+    }
+
+    /** The lift of a ridge or cliff at a position: 0 where the mask is shut or no zero line is near. */
+    double ridge(double x, double z) {
+        double mask = Ring4Relief.smooth(hills.getValue(x * MASK_SCALE + 4400.5, 0.0, z * MASK_SCALE - 900.5), MASK_FROM, MASK_TO);
+        if (mask <= 0.0) {
+            return 0.0;
+        }
+        double n = hills.getValue(x * RIDGE_SCALE + 3100.5, 0.0, z * RIDGE_SCALE - 1700.5);
+        double profile = n >= 0.0 ? 1.0 - Ring4Relief.smooth(n, 0.0, RIDGE_BACK) : Ring4Relief.smooth(n, -RIDGE_FACE, 0.0);
+        return RIDGE_HEIGHT * mask * profile;
+    }
+
+    /** {@code v} bent softly (over {@link #KNEE} blocks) towards {@code low} and {@code high}, which it never reaches. */
+    static double soft(double v, double low, double high) {
+        double top = high - KNEE;
+        if (v > top) {
+            v = top + KNEE * Math.tanh((v - top) / KNEE);
+        }
+        double bottom = low + KNEE;
+        if (v < bottom) {
+            v = bottom - KNEE * Math.tanh((bottom - v) / KNEE);
+        }
+        return v;
     }
 
     /**
-     * The inner band's surface (the Y above the highest block), the regions' shapes blended: without cracks, layers and
-     * cubes.
+     * The inner band's surface (the Y above the highest block), the regions' shapes blended: without cracks, corrupt
+     * spots, layers and cubes.
      */
     double top(int x, int z) {
         double g = glitchWeight(x, z);
@@ -135,78 +244,114 @@ final class Ring5Inner {
 
     /** {@code corrupted_wastes}: the ground with its stairs and pits. */
     double wastesTop(int x, int z) {
-        double top = base(x, z);
         double stair = stairAt(x, z);
         if (!Double.isNaN(stair)) {
             return stair;
         }
         double pit = pitAt(x, z);
-        return Double.isNaN(pit) ? top : pit;
+        return Double.isNaN(pit) ? base(x, z) : pit;
     }
 
-    /** {@code false_meadow}: a regular wave on both axes. */
+    /** {@code false_meadow}: the rolling ground with a regular wave on both axes over it. */
     double meadowTop(int x, int z) {
+        return rolling(x, z) + meadowWave(x, z);
+    }
+
+    /** The false meadow's regular wave (± 2 × {@link #MEADOW_AMPLITUDE}), the same every {@link #MEADOW_WAVE}. */
+    static double meadowWave(int x, int z) {
         double k = 2.0 * Math.PI / MEADOW_WAVE;
-        return MEADOW_Y + MEADOW_AMPLITUDE * (Math.sin(k * (x + 0.5)) + Math.sin(k * (z + 0.5)));
+        return MEADOW_AMPLITUDE * (Math.sin(k * (x + 0.5)) + Math.sin(k * (z + 0.5)));
     }
 
     /** {@code glitch_fields}: the ground sampled on a coarse grid and rounded to it (blocks of {@link #QUANTUM}). */
     double glitchTop(int x, int z) {
         int qx = Math.floorDiv(x, QUANTUM) * QUANTUM;
         int qz = Math.floorDiv(z, QUANTUM) * QUANTUM;
-        double rounded = Math.floor(base(qx + QUANTUM / 2.0, qz + QUANTUM / 2.0) / QUANTUM) * QUANTUM;
-        // Rounding down can land below MIN_TOP (base 70–71 gives 68): the lowest block multiple at or above it is 72.
-        return Math.max(Math.ceil(MIN_TOP / QUANTUM) * QUANTUM, rounded);
+        return Math.floor(base(qx + QUANTUM / 2.0, qz + QUANTUM / 2.0) / QUANTUM) * QUANTUM;
     }
 
     /** A stair's tread top at the column (exactly {@link #STEP} apart), or NaN. */
     double stairAt(int x, int z) {
         int ci = Math.floorDiv(x, STAIR_CELL);
         int cj = Math.floorDiv(z, STAIR_CELL);
-        long h = CellShapes.cell(salt, ci, cj, STAIR_SALT);
-        if (CellShapes.unit(h, 0) >= STAIR_CHANCE) {
+        Stair stair = stairs.get(KeyedSlots.key(ci, cj), key -> Optional.ofNullable(placeStair(ci, cj))).orElse(null);
+        if (stair == null) {
             return Double.NaN;
         }
-        int steps = MIN_STEPS + (int) Math.floor((MAX_STEPS - MIN_STEPS + 1) * CellShapes.unit(h, 1));
-        int run = MIN_RUN + (int) Math.floor((MAX_RUN - MIN_RUN + 1) * CellShapes.unit(h, 2));
-        int width = MIN_WIDTH + (int) Math.floor((MAX_WIDTH - MIN_WIDTH + 1) * CellShapes.unit(h, 3));
-        int direction = (int) Math.floor(4 * CellShapes.unit(h, 4));
-        // The origin keeps the whole staircase inside its cell (MAX_STEPS × MAX_RUN along, half of it either side): the
-        // column of a neighbouring cell then never needs this staircase, so no edge is cut.
-        int reach = MAX_STEPS * MAX_RUN;
-        int ox = ci * STAIR_CELL + reach + (int) Math.floor((STAIR_CELL - 2 * reach) * CellShapes.unit(h, 5));
-        int oz = cj * STAIR_CELL + reach + (int) Math.floor((STAIR_CELL - 2 * reach) * CellShapes.unit(h, 6));
-        int dx = x - ox;
-        int dz = z - oz;
+        int dx = x - stair.ox;
+        int dz = z - stair.oz;
         // Along (u ≥ 0 up the stairs) and across (v) in one of the four directions: straight edges on the grid.
-        int u = switch (direction) {
+        int u = switch (stair.direction) {
             case 0 -> dx;
             case 1 -> -dx;
             case 2 -> dz;
             default -> -dz;
         };
-        int v = direction < 2 ? dz : dx;
-        if (u < 0 || u >= steps * run || v < -width / 2 || v >= width - width / 2) {
+        int v = stair.direction < 2 ? dz : dx;
+        if (u < 0 || u >= stair.steps * stair.run || v < -stair.width / 2 || v >= stair.width - stair.width / 2) {
             return Double.NaN;
         }
-        int step = u / run;
-        return Math.round(base(ox, oz)) + (double) STEP * (step + 1);
+        return stair.ground + (double) STEP * (u / stair.run + 1);
+    }
+
+    /** The staircase of stair cell (i, j): {origin x, origin z, length, direction (0 +x, 1 −x, 2 +z, 3 −z)}, or null. */
+    @Nullable
+    int[] stairShape(int ci, int cj) {
+        Stair stair = stairs.get(KeyedSlots.key(ci, cj), key -> Optional.ofNullable(placeStair(ci, cj))).orElse(null);
+        return stair == null ? null : new int[]{stair.ox, stair.oz, stair.steps * stair.run, stair.direction};
+    }
+
+    /** The staircase of stair cell (i, j), or null; it climbs the slope (of the four directions the one rising most). */
+    @Nullable
+    private Stair placeStair(int ci, int cj) {
+        long h = CellShapes.cell(salt, ci, cj, STAIR_SALT);
+        if (CellShapes.unit(h, 0) >= STAIR_CHANCE) {
+            return null;
+        }
+        int steps = MIN_STEPS + (int) Math.floor((MAX_STEPS - MIN_STEPS + 1) * CellShapes.unit(h, 1));
+        int run = MIN_RUN + (int) Math.floor((MAX_RUN - MIN_RUN + 1) * CellShapes.unit(h, 2));
+        int width = MIN_WIDTH + (int) Math.floor((MAX_WIDTH - MIN_WIDTH + 1) * CellShapes.unit(h, 3));
+        // The origin keeps the whole staircase inside its cell (MAX_STEPS × MAX_RUN along, half of it either side): the
+        // column of a neighbouring cell then never needs this staircase, so no edge is cut.
+        int reach = MAX_STEPS * MAX_RUN;
+        int ox = ci * STAIR_CELL + reach + (int) Math.floor((STAIR_CELL - 2 * reach) * CellShapes.unit(h, 5));
+        int oz = cj * STAIR_CELL + reach + (int) Math.floor((STAIR_CELL - 2 * reach) * CellShapes.unit(h, 6));
+        int length = steps * run;
+        double[] ends = {base(ox + length, oz), base(ox - length, oz), base(ox, oz + length), base(ox, oz - length)};
+        int direction = 0;
+        for (int d = 1; d < ends.length; d++) {
+            if (ends[d] > ends[direction]) {
+                direction = d;
+            }
+        }
+        return new Stair(ox, oz, steps, run, width, direction, Math.round(base(ox, oz)));
     }
 
     /** A pit's flat floor at the column (perfectly round), or NaN. */
     double pitAt(int x, int z) {
         int ci = Math.floorDiv(x, PIT_CELL);
         int cj = Math.floorDiv(z, PIT_CELL);
+        Pit pit = pits.get(KeyedSlots.key(ci, cj), key -> Optional.ofNullable(placePit(ci, cj))).orElse(null);
+        if (pit == null) {
+            return Double.NaN;
+        }
+        return Math.hypot(x - pit.cx, z - pit.cz) <= pit.radius ? pit.floor : Double.NaN;
+    }
+
+    /** The pit of pit cell (i, j), or null: its floor 2–4 below the lowest ground of its middle and four rim points. */
+    @Nullable
+    private Pit placePit(int ci, int cj) {
         long h = CellShapes.cell(salt, ci, cj, PIT_SALT);
         if (CellShapes.unit(h, 0) >= PIT_CHANCE) {
-            return Double.NaN;
+            return null;
         }
         int radius = MIN_PIT_RADIUS + (int) Math.floor((MAX_PIT_RADIUS - MIN_PIT_RADIUS + 1) * CellShapes.unit(h, 1));
         int depth = MIN_PIT_DEPTH + (int) Math.floor((MAX_PIT_DEPTH - MIN_PIT_DEPTH + 1) * CellShapes.unit(h, 2));
         int cx = ci * PIT_CELL + radius + (int) Math.floor((PIT_CELL - 2 * radius) * CellShapes.unit(h, 3));
         int cz = cj * PIT_CELL + radius + (int) Math.floor((PIT_CELL - 2 * radius) * CellShapes.unit(h, 4));
-        double d = Math.hypot(x + 0.5 - (cx + 0.5), z + 0.5 - (cz + 0.5));
-        return d <= radius ? Math.round(base(cx, cz)) - depth : Double.NaN;
+        double low = Math.min(base(cx, cz), Math.min(Math.min(base(cx + radius, cz), base(cx - radius, cz)),
+                Math.min(base(cx, cz + radius), base(cx, cz - radius))));
+        return new Pit(cx, cz, radius, Math.round(low) - depth);
     }
 
     /** The height of the glitch layers at the column: 4–6, one value per layer cell. */
@@ -276,5 +421,13 @@ final class Ring5Inner {
         double half = crack[5] * Math.sqrt(Mth.clamp(Math.min(t, length - t) / CRACK_TAPER, 0.0, 1.0));
         double beyond = along - t;
         return Math.sqrt(across * across + beyond * beyond) - half;
+    }
+
+    /** A staircase: origin, 3–6 treads {@code run} deep, {@code width} across, rising in {@code direction} from {@code ground}. */
+    private record Stair(int ox, int oz, int steps, int run, int width, int direction, double ground) {
+    }
+
+    /** A round pit: its centre (as the distance is measured), radius and flat floor. */
+    private record Pit(int cx, int cz, int radius, double floor) {
     }
 }
