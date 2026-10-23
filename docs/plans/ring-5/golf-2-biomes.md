@@ -262,7 +262,11 @@ breed, half gecorrumpeerd.
 (volgt bij de bouw)
 
 ## Beslissingen
-(volgt na de antwoorden)
+- **Gebruiker 2026-10-23:** V1 A, V2 **B** (~30 % van de dode bomen met plukjes persistente `corrupted_leaves`), V3 A,
+  V4 A, V5 A, V6 A, V7 A, V8 **C** (ook de binnenband: losse scheuren, 83b-gaten en de schone ontbrekende chunks krijgen
+  voidsteen-randen), V9 **B** (heel plateau verwoest; fase 3 bouwt eroverheen), V10 A, V11 A. In `fase-1-wereld.md`
+  (Ring 5, "Aankleding en horror-features") en het beslissingenlog.
 
 ## Backlog
-(volgt bij de bouw)
+- [structures] Fase 3: het kasteelplateau van ring 5 is in fase 1 helemaal verwoest (puin, obsidiaan, glitchblokken; V9-B);
+  het kasteelgebouw bouwt eroverheen en ruimt zelf op waar het nodig is. (bron: 95)
