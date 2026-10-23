@@ -629,11 +629,11 @@ public final class ServerConfig {
                     .defineInRange("standstillMaxSeconds", DEFAULT_STANDSTILL_MAX, 1, RingWeather.MAX_SECONDS);
             glitchStormVoidMultiplier = builder.comment("Factor on the rising void meter during a full glitch storm. Applied by stream C's",
                             "void modifier; the largest of night and weather counts (they do not stack).")
-                    .defineInRange("glitchStormVoidMultiplier", 2.0, 0.0, 10.0);
-            reverseRainVoidMultiplier = builder.comment("Factor on the rising void meter during full reverse rain (same rule).")
-                    .defineInRange("reverseRainVoidMultiplier", 1.5, 0.0, 10.0);
-            standstillVoidMultiplier = builder.comment("Factor on the rising void meter during a full standstill (same rule).")
-                    .defineInRange("standstillVoidMultiplier", 1.5, 0.0, 10.0);
+                    .defineInRange("glitchStormVoidMultiplier", 2.0, 1.0, 10.0);
+            reverseRainVoidMultiplier = builder.comment("Factor on the rising void meter during full reverse rain (same rule; 1 or more: the meter is only amplified).")
+                    .defineInRange("reverseRainVoidMultiplier", 1.5, 1.0, 10.0);
+            standstillVoidMultiplier = builder.comment("Factor on the rising void meter during a full standstill (same rule; 1 or more: the meter is only amplified).")
+                    .defineInRange("standstillVoidMultiplier", 1.5, 1.0, 10.0);
         }
 
         /** The void factor of a full {@code type} (glitch storm, reverse rain, standstill); 1 for every other type. */
