@@ -6,29 +6,16 @@ import nl.timtoys.corruptedadventure.condition.ConditionDefinitions;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.registry.ModAttachments;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 /**
  * The ring 5 meters as the client sees them (package 98): the synced value of the local player (the existing
  * {@code condition_sync}, in his attachment) and the thresholds from the synced SERVER config. Void ({@link Condition#VOID},
- * package 91) and silence (contract §5: {@code Condition.SILENCE}, name {@code silence}, package 97). The silence is
- * looked up by its name, so this compiles and runs before stream C's 97 is merged (then there is simply no silence).
+ * package 91) and silence ({@link Condition#SILENCE}, package 97).
  * Client only.
  */
 final class Ring5Meters {
-    /** Contract §5: the name of the silence condition (97). */
-    static final String SILENCE_NAME = "silence";
-    private static final Optional<Condition> SILENCE = Arrays.stream(Condition.values())
-            .filter(condition -> condition.getSerializedName().equals(SILENCE_NAME))
-            .findFirst();
-
     private Ring5Meters() {
-    }
-
-    /** The silence condition, empty until stream C's 97 adds it. */
-    static Optional<Condition> silence() {
-        return SILENCE;
     }
 
     /** The synced meter of {@code condition}, 0–100. */
