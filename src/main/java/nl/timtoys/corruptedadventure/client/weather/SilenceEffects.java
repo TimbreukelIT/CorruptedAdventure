@@ -85,7 +85,7 @@ public final class SilenceEffects {
         if (player == null || minecraft.level == null || minecraft.isPaused()) {
             return;
         }
-        int[] levels = Ring5Meters.thresholds(Condition.SILENCE, 3).orElse(null);
+        int[] levels = Ring5Meters.exposed(minecraft) ? Ring5Meters.thresholds(Condition.SILENCE, 3).orElse(null) : null;
         int meter = levels == null ? 0 : Ring5Meters.value(player, Condition.SILENCE);
         float target = levels == null ? 1.0F : targetVolume(meter, levels[0], levels[2]);
         volume = SkyExposure.approach(volume, target, GLIDE_PER_TICK);

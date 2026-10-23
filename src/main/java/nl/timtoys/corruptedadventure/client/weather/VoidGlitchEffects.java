@@ -45,7 +45,7 @@ public final class VoidGlitchEffects {
             return;
         }
         int[] levels = Ring5Meters.thresholds(Condition.VOID, 1).orElse(null);
-        if (levels == null) {
+        if (levels == null || !Ring5Meters.exposed(minecraft)) {
             return;
         }
         float strength = strength(Ring5Meters.value(player, Condition.VOID), levels[0]);
