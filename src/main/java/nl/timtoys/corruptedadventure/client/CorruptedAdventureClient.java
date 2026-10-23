@@ -33,6 +33,7 @@ import nl.timtoys.corruptedadventure.client.weather.Ring3Ambience;
 import nl.timtoys.corruptedadventure.client.weather.Ring4Ambience;
 import nl.timtoys.corruptedadventure.client.weather.Ring4Fog;
 import nl.timtoys.corruptedadventure.client.weather.Ring4SkyState;
+import nl.timtoys.corruptedadventure.client.weather.Ring5ClientAtmosphere;
 import nl.timtoys.corruptedadventure.client.weather.RingWeatherClientHooks;
 import nl.timtoys.corruptedadventure.client.weather.SunderedFade;
 import nl.timtoys.corruptedadventure.client.weather.VolcanoPlumeRenderer;
@@ -87,6 +88,9 @@ public final class CorruptedAdventureClient {
         // sky tint come in through the client mixins.
         Ring4SkyState.register(NeoForge.EVENT_BUS);
         Ring4Fog.register(NeoForge.EVENT_BUS);
+        // ring 5 — A (98): sky and fog per band, the glitch fog, echo footsteps, Nether-5's white fog, the silence's and
+        // the void meter's client effects.
+        Ring5ClientAtmosphere.register(NeoForge.EVENT_BUS);
     }
 
     private static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
@@ -118,6 +122,14 @@ public final class CorruptedAdventureClient {
                 sprites -> new RisingBubbleParticle.Provider(sprites, RisingBubbleParticle.TOXIC));
         event.registerSpriteSet(ModParticleTypes.UPDRAFT_BUBBLE.get(),
                 sprites -> new RisingBubbleParticle.Provider(sprites, RisingBubbleParticle.UPDRAFT));
-        event.registerSpriteSet(ModParticleTypes.GLITCH_SPECK.get(), GlitchSpeckParticle.Provider::new);
+        event.registerSpriteSet(ModParticleTypes.GLITCH_SPECK.get(),
+                sprites -> new GlitchSpeckParticle.Provider(sprites, GlitchSpeckParticle.SPECK));
+        // ring 5 — A (98)
+        event.registerSpriteSet(ModParticleTypes.VOID_MOTE.get(),
+                sprites -> new DriftingHazeParticle.Provider(sprites, DriftingHazeParticle.VOID_MOTE));
+        event.registerSpriteSet(ModParticleTypes.GLITCH_PIXEL.get(),
+                sprites -> new GlitchSpeckParticle.Provider(sprites, GlitchSpeckParticle.PIXEL));
+        event.registerSpriteSet(ModParticleTypes.REVERSE_RAINDROP.get(),
+                sprites -> new RisingBubbleParticle.Provider(sprites, RisingBubbleParticle.REVERSE_RAINDROP));
     }
 }

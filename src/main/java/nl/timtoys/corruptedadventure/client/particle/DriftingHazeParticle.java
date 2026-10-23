@@ -11,7 +11,8 @@ import net.minecraft.util.Mth;
 
 /**
  * A faint speck of haze that drifts on its own (package 80-0): the subtle yellow of swamp gas ({@code swamp_gas}, rises
- * very slowly, "attentive players can see it") and the bone dust of Nether ring 4 ({@code bone_dust}, sinks slowly).
+ * very slowly, "attentive players can see it"), the bone dust of Nether ring 4 ({@code bone_dust}, sinks slowly) and,
+ * since 98, the void mote of ring 5 ({@code void_mote}, rises out of voidstone and the void scars).
  * Light grey sprites, tinted by the {@link Haze}.
  */
 public final class DriftingHazeParticle extends TextureSheetParticle {
@@ -19,6 +20,8 @@ public final class DriftingHazeParticle extends TextureSheetParticle {
     public static final Haze SWAMP_GAS = new Haze(0xD8D070, 0.004, 0.35F, 0.7F);
     /** Bone white-beige, sinking slowly. */
     public static final Haze BONE_DUST = new Haze(0xE8DFC8, -0.004, 0.6F, 0.5F);
+    /** Ring 5's void mote (98): the sprites carry their own black-violet (no tint); rises slowly, nearly opaque. */
+    public static final Haze VOID_MOTE = new Haze(0xFFFFFF, 0.006, 0.9F, 0.45F);
 
     private static final double DRIFT = 0.006;
 

@@ -76,9 +76,8 @@ class Ring5BiomesTest {
             assertEquals(Optional.of(look.grass()), biome.getSpecialEffects().getGrassColorOverride(), name);
             assertEquals(Optional.of(look.foliage()), biome.getSpecialEffects().getFoliageColorOverride(), name);
             assertTrue(looks.add(List.of(biome.getSkyColor(), biome.getFogColor(), biome.getWaterColor(), look.grass())), name + ": colours of its own");
-            // No sounds, particles or music yet: the atmosphere's (A, 98).
-            assertTrue(biome.getSpecialEffects().getAmbientLoopSoundEvent().isEmpty(), name);
-            assertTrue(biome.getSpecialEffects().getAmbientParticleSettings().isEmpty(), name);
+            // Sounds, particles and the silent music are the atmosphere's hook (A, 98).
+            assertEquals(Optional.of(BiomeAmbience.SILENT_MUSIC), biome.getBackgroundMusic(), name);
         }
         Biome meadow = bootstrap().get(ModBiomes.FALSE_MEADOW);
         assertEquals(BiomeAmbience.Palette.RING_1.sky(), meadow.getSkyColor());

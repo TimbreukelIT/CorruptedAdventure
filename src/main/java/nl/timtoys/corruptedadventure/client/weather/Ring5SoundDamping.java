@@ -11,8 +11,9 @@ import org.jetbrains.annotations.Nullable;
  * UI: {@code MASTER}, which the menus use, is never touched) down to {@code 1 − 0.85 × strength}; the glitch storm dips
  * the weather and ambient sounds for a few ticks now and then. The renderers feed it every tick while their weather is
  * felt; without a feed it returns to full volume. Applied through {@code SoundEngineVolumeMixin} on the category
- * volume, so sounds that already play follow too (a refresh of the channels whenever the factor changes). Client only,
- * main thread.
+ * volume, so sounds that already play follow too (a refresh of the channels whenever the factor changes). Since
+ * package 98 also the silence of Nether ring 5 ({@link SilenceEffects}): its factor multiplies every category but
+ * {@code MASTER} as well. Client only, main thread.
  */
 public final class Ring5SoundDamping {
     /** How deep a full standstill pulls the volume: to 15 %. */
@@ -22,6 +23,7 @@ public final class Ring5SoundDamping {
 
     private static float standstillFeed;
     private static float dipFeed;
+    private static float silenceFeed = 1.0F;
     private static float all = 1.0F;
     private static float weatherAndAmbient = 1.0F;
     private static float refreshedAll = 1.0F;
@@ -38,6 +40,11 @@ public final class Ring5SoundDamping {
     /** A glitch storm dip this tick, 0–1 of the weather and ambient volume taken away. */
     static void feedDip(float depth) {
         dipFeed = Math.max(dipFeed, depth);
+    }
+
+    /** The silence's volume factor this tick, 0–1 (98). */
+    static void feedSilence(float factor) {
+        silenceFeed = Math.min(silenceFeed, factor);
     }
 
     /** The volume factor for {@code source}: 1 for {@code MASTER} (the UI) and outside the ring 5 weather. */
@@ -69,10 +76,11 @@ public final class Ring5SoundDamping {
 
     /** One tick: the feeds become the factors; true if the playing channels need a refresh. Pure, for tests. */
     static boolean advance() {
-        all = standstillFactor(standstillFeed);
+        all = standstillFactor(standstillFeed) * Math.clamp(silenceFeed, 0.0F, 1.0F);
         weatherAndAmbient = all * (1.0F - Math.clamp(dipFeed, 0.0F, 1.0F));
         standstillFeed = 0.0F;
         dipFeed = 0.0F;
+        silenceFeed = 1.0F;
         return takeRefresh();
     }
 
@@ -86,6 +94,7 @@ public final class Ring5SoundDamping {
     static boolean reset() {
         standstillFeed = 0.0F;
         dipFeed = 0.0F;
+        silenceFeed = 1.0F;
         all = 1.0F;
         weatherAndAmbient = 1.0F;
         return takeRefresh();

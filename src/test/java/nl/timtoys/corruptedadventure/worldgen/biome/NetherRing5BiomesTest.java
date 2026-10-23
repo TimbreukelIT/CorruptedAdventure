@@ -34,7 +34,7 @@ class NetherRing5BiomesTest {
         assertEquals(NetherRing5Biomes.ALL, List.copyOf(BIOMES.keySet()));
     }
 
-    /** Mild and dry, white fog, black sky; silent: no music, no ambient loop, mood, additions or particles. */
+    /** Mild and dry, white fog, black sky; silent: the silent music, no ambient loop, mood or additions (98). */
     @Test
     void whiteAndSilent() {
         for (Map.Entry<ResourceKey<Biome>, Biome> entry : BIOMES.entrySet()) {
@@ -44,11 +44,12 @@ class NetherRing5BiomesTest {
             assertEquals(0.0F, biome.getModifiedClimateSettings().downfall());
             assertEquals(entry.getKey() == ModBiomes.HOLLOW_CATHEDRAL ? 0xF4F4F6 : 0xE8E8EC, biome.getFogColor());
             assertEquals(0x000000, biome.getSkyColor());
-            assertTrue(biome.getBackgroundMusic().isEmpty(), "no music");
+            assertEquals(java.util.Optional.of(BiomeAmbience.SILENT_MUSIC), biome.getBackgroundMusic(), "silent music");
             assertTrue(biome.getAmbientLoop().isEmpty(), "no ambient loop");
             assertTrue(biome.getAmbientMood().isEmpty(), "no mood");
             assertTrue(biome.getAmbientAdditions().isEmpty(), "no additions");
-            assertTrue(biome.getAmbientParticle().isEmpty(), "no particles");
+            assertEquals(net.minecraft.core.particles.ParticleTypes.WHITE_ASH, biome.getAmbientParticle().orElseThrow().getOptions(),
+                    "almost no particles: rare white ash");
         }
     }
 

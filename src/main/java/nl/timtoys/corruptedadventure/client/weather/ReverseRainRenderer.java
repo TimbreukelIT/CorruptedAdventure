@@ -6,12 +6,14 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
+import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 
 /**
  * Reverse rain (ring 5, mostly the outer band, package 92): black-violet streaks that rise from the ground into the sky
  * ({@link RainSheet} with a negative speed; also in biomes without precipitation, and per column never under a roof), a
- * darker sky, a slightly closer haze and a low, wrong rain. Rain, haze and sound × {@link SkyExposure}; the sky follows
+ * darker sky, a slightly closer haze, a low, wrong rain and, since 98, black drops shooting up around the camera
+ * ({@code reverse_raindrop}, only in the open air). Rain, haze and sound × {@link SkyExposure}; the sky follows
  * the strength only. Visual values are constants on purpose; the void factor is server-side (stream C).
  */
 final class ReverseRainRenderer implements RingWeatherRenderer {
@@ -30,13 +32,20 @@ final class ReverseRainRenderer implements RingWeatherRenderer {
     static final float FOG_FAR_FACTOR = 0.75F;
     /** Volume of the rain loop in full reverse rain in the open. */
     private static final float MAX_VOLUME = 0.4F;
+    /** Reverse raindrops per tick in full reverse rain in the open (98). */
+    private static final float DROPS = 3.0F;
 
     private final WeatherLoop patter = new WeatherLoop(ModSoundEvents.RING_5_REVERSE_RAIN, MAX_VOLUME);
     private final RainSheet rain = new RainSheet(RAIN_COLOUR, SPEED);
 
     @Override
     public void clientTick(ClientLevel level, LocalPlayer player, float strength) {
-        patter.play(Minecraft.getInstance(), level.getGameTime(), strength * SkyExposure.get());
+        Minecraft minecraft = Minecraft.getInstance();
+        float open = strength * SkyExposure.get();
+        patter.play(minecraft, level.getGameTime(), open);
+        // Mostly below the eyes, so they are seen rising past the camera.
+        Vec3 camera = minecraft.gameRenderer.getMainCamera().getPosition();
+        WeatherParticles.spawn(level, camera, ModParticleTypes.REVERSE_RAINDROP.get(), DROPS * open, 10.0, 6.0, 2.0, Vec3.ZERO, 0.0);
     }
 
     @Override

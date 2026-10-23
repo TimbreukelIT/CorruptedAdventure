@@ -93,6 +93,21 @@
       }
     ]
   },
+  "ambient.nether_ring_5.heartbeat": {
+    "sounds": [
+      "corruptedadventure:ambient/nether_ring_5/heartbeat_1",
+      "corruptedadventure:ambient/nether_ring_5/heartbeat_2"
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.nether_ring_5.heartbeat"
+  },
+  "ambient.nether_ring_5.silence": {
+    "sounds": [
+      {
+        "name": "corruptedadventure:ambient/nether_ring_5/silence_loop_1",
+        "stream": true
+      }
+    ]
+  },
   "ambient.ring_1.strange_cave": {
     "sounds": [
       {
@@ -264,6 +279,49 @@
       },
       {
         "name": "corruptedadventure:ambient/ring_4/water_loop_2",
+        "stream": true,
+        "volume": 0.7
+      }
+    ]
+  },
+  "ambient.ring_5.echo_step": {
+    "sounds": [
+      "corruptedadventure:ambient/ring_5/echo_step_1",
+      "corruptedadventure:ambient/ring_5/echo_step_2",
+      "corruptedadventure:ambient/ring_5/echo_step_3"
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_5.echo_step"
+  },
+  "ambient.ring_5.glitch": {
+    "sounds": [
+      {
+        "name": "corruptedadventure:ambient/ring_5/glitch_1",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/ring_5/glitch_2",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/ring_5/glitch_3",
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/ring_5/glitch_4",
+        "volume": 0.7
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.ambient.ring_5.glitch"
+  },
+  "ambient.ring_5.void_drone": {
+    "sounds": [
+      {
+        "name": "corruptedadventure:ambient/ring_5/void_drone_loop_1",
+        "stream": true,
+        "volume": 0.7
+      },
+      {
+        "name": "corruptedadventure:ambient/ring_5/void_drone_loop_2",
         "stream": true,
         "volume": 0.7
       }
@@ -445,9 +503,12 @@
   "weather.ring_5.glitch_storm": {
     "sounds": [
       {
-        "type": "event",
-        "name": "block.respawn_anchor.ambient",
-        "pitch": 0.5
+        "name": "corruptedadventure:weather/ring_5/glitch_storm_loop_1",
+        "stream": true
+      },
+      {
+        "name": "corruptedadventure:weather/ring_5/glitch_storm_loop_2",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.corruptedadventure.weather.ring_5.glitch_storm"
@@ -455,10 +516,12 @@
   "weather.ring_5.reverse_rain": {
     "sounds": [
       {
-        "type": "event",
-        "name": "weather.rain",
-        "pitch": 0.6,
-        "volume": 0.5
+        "name": "corruptedadventure:weather/ring_5/reverse_rain_loop_1",
+        "stream": true
+      },
+      {
+        "name": "corruptedadventure:weather/ring_5/reverse_rain_loop_2",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.corruptedadventure.weather.ring_5.reverse_rain"
@@ -466,10 +529,8 @@
   "weather.ring_5.standstill": {
     "sounds": [
       {
-        "type": "event",
-        "name": "ambient.basalt_deltas.loop",
-        "pitch": 0.5,
-        "volume": 0.1
+        "name": "corruptedadventure:weather/ring_5/standstill_loop_1",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.corruptedadventure.weather.ring_5.standstill"

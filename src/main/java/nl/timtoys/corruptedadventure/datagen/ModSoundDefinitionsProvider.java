@@ -13,7 +13,7 @@ import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
  * multiply those of the vanilla event); the ring 2 ambient sounds are our own {@code .ogg}s ({@code tools/sounds/Ring2Sounds.java}),
  * which must exist before datagen runs: the provider checks the files. Ring 3 has its own as well
  * ({@code tools/sounds/Ring3Sounds.java}, package 50), and so has ring 4 with Nether ring 4 ({@code tools/sounds/Ring4Sounds.java},
- * {@code verdant_falls} and change 80).
+ * {@code verdant_falls} and change 80), and ring 5 with Nether ring 5 ({@code tools/sounds/Ring5Sounds.java}, 98).
  */
 final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
     // Ambient volumes (teststop 4c: all ambience somewhat softer). Only sounds the game plays at a fixed volume are set
@@ -150,17 +150,32 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .subtitle(subtitle("block.sucking_mud.slurp"))
                 .with(file("block/ring_4/sucking_mud_slurp_1"), file("block/ring_4/sucking_mud_slurp_2"),
                         file("block/ring_4/sucking_mud_slurp_3")));
-        // Ring 5 weather (package 92): vanilla placeholders until the ring 5 sound script (98). Volume in code (MAX_VOLUME).
+        // Ring 5 weather (package 92, own audio since 98: tools/sounds/Ring5Sounds.java). Volume in code (MAX_VOLUME).
         add(ModSoundEvents.RING_5_GLITCH_STORM, SoundDefinition.definition()
                 .subtitle(subtitle("weather.ring_5.glitch_storm"))
-                .with(sound(SoundEvents.RESPAWN_ANCHOR_AMBIENT.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.5F)));
+                .with(loop("weather/ring_5/glitch_storm_loop_1"), loop("weather/ring_5/glitch_storm_loop_2")));
         add(ModSoundEvents.RING_5_REVERSE_RAIN, SoundDefinition.definition()
                 .subtitle(subtitle("weather.ring_5.reverse_rain"))
-                .with(sound(SoundEvents.WEATHER_RAIN.getLocation(), SoundDefinition.SoundType.EVENT).pitch(0.6F).volume(0.5F)));
+                .with(loop("weather/ring_5/reverse_rain_loop_1"), loop("weather/ring_5/reverse_rain_loop_2")));
         add(ModSoundEvents.RING_5_STANDSTILL, SoundDefinition.definition()
                 .subtitle(subtitle("weather.ring_5.standstill"))
-                .with(sound(SoundEvents.AMBIENT_BASALT_DELTAS_LOOP.value().getLocation(), SoundDefinition.SoundType.EVENT)
-                        .pitch(0.5F).volume(0.1F)));
+                .with(loop("weather/ring_5/standstill_loop_1")));
+        // Ring 5 and Nether ring 5 ambience (package 98, own audio). The drone is the outer band's biome loop, the
+        // glitch the inner band's additions (and the void teleport's sound); the silence is the silent biomes' music.
+        add(ModSoundEvents.RING_5_VOID_DRONE, SoundDefinition.definition()
+                .with(ambientLoop("ambient/ring_5/void_drone_loop_1"), ambientLoop("ambient/ring_5/void_drone_loop_2")));
+        add(ModSoundEvents.RING_5_GLITCH, SoundDefinition.definition()
+                .subtitle(subtitle("ambient.ring_5.glitch"))
+                .with(ambient("ambient/ring_5/glitch_1"), ambient("ambient/ring_5/glitch_2"), ambient("ambient/ring_5/glitch_3"),
+                        ambient("ambient/ring_5/glitch_4")));
+        add(ModSoundEvents.RING_5_ECHO_STEP, SoundDefinition.definition()
+                .subtitle(subtitle("ambient.ring_5.echo_step"))
+                .with(file("ambient/ring_5/echo_step_1"), file("ambient/ring_5/echo_step_2"), file("ambient/ring_5/echo_step_3")));
+        add(ModSoundEvents.NETHER_RING_5_SILENCE, SoundDefinition.definition()
+                .with(loop("ambient/nether_ring_5/silence_loop_1")));
+        add(ModSoundEvents.NETHER_RING_5_HEARTBEAT, SoundDefinition.definition()
+                .subtitle(subtitle("ambient.nether_ring_5.heartbeat"))
+                .with(file("ambient/nether_ring_5/heartbeat_1"), file("ambient/nether_ring_5/heartbeat_2")));
         // Block sounds, played by stream B (package 46) at the block.
         add(ModSoundEvents.FUMAROLE_PUFF, SoundDefinition.definition()
                 .subtitle(subtitle("block.fumarole.puff"))

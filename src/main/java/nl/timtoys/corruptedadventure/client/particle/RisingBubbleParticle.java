@@ -21,6 +21,11 @@ public final class RisingBubbleParticle extends TextureSheetParticle {
     public static final Bubble TOXIC = new Bubble(0x9BE03A, 0.012, 20, 20);
     /** Near white with a blue tinge, rushing upward. */
     public static final Bubble UPDRAFT = new Bubble(0xE6F4FF, 0.06, 20, 30);
+    /**
+     * Ring 5's reverse raindrop (98): a black drop that shoots up from the ground; the sprites carry their own colour (no
+     * tint). Stops at a roof like every bubble.
+     */
+    public static final Bubble REVERSE_RAINDROP = new Bubble(0xFFFFFF, 0.3, 14, 10);
 
     private final Bubble bubble;
     private final boolean startedInFluid;

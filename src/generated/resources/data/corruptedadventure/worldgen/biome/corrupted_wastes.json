@@ -2,9 +2,25 @@
   "carvers": {},
   "downfall": 0.0,
   "effects": {
+    "additions_sound": {
+      "sound": "corruptedadventure:ambient.ring_5.glitch",
+      "tick_chance": 0.002
+    },
     "fog_color": 9210514,
     "foliage_color": 7236722,
     "grass_color": 8289408,
+    "mood_sound": {
+      "block_search_extent": 12,
+      "offset": 3.0,
+      "sound": "corruptedadventure:ambient.ring_1.strange_cave",
+      "tick_delay": 1800
+    },
+    "music": {
+      "max_delay": 24000,
+      "min_delay": 12000,
+      "replace_current_music": true,
+      "sound": "corruptedadventure:ambient.nether_ring_5.silence"
+    },
     "sky_color": 6183016,
     "water_color": 4078152,
     "water_fog_color": 1710112

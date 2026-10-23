@@ -68,7 +68,7 @@ public final class Ring5Biomes {
                     .hasPrecipitation(false)
                     .temperature(TEMPERATURE)
                     .downfall(DOWNFALL)
-                    .specialEffects(effects(key).build())
+                    .specialEffects(BiomeAmbience.ring5(key, effects(key)).build())
                     .mobSpawnSettings(spawns(key))
                     // Nothing generates yet: no carvers (93), no features (94/95).
                     .generationSettings(new BiomeGenerationSettings.Builder(features, carvers).build())

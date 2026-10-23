@@ -76,6 +76,17 @@ public final class ModParticleTypes {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BONE_DUST =
             PARTICLE_TYPES.register("bone_dust", () -> new SimpleParticleType(false));
 
+    // ring 5 — A (package 98): sprites <name>_0..n from stream T (99a), with their own colours.
+    /** Black-violet mote breathed out by voidstone and drifting over the void scars. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> VOID_MOTE =
+            PARTICLE_TYPES.register("void_mote", () -> new SimpleParticleType(false));
+    /** Jumping, flickering pixel of the glitch storm, the glitch fields and a void glitch. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GLITCH_PIXEL =
+            PARTICLE_TYPES.register("glitch_pixel", () -> new SimpleParticleType(false));
+    /** Black drop of the reverse rain, rising from the ground. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> REVERSE_RAINDROP =
+            PARTICLE_TYPES.register("reverse_raindrop", () -> new SimpleParticleType(false));
+
     private ModParticleTypes() {
     }
 

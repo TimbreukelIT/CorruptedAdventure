@@ -3,7 +3,8 @@
 Scope: `atmosphere` — branch `ring5/98`, worktree `P:/Projecten/Java/wt/r5-98`, `setup.sh A 6` (server 25576, RCON
 25586), basis `main` `1a31dbd6`. Commit-prefix `atmosphere:`.
 
-**Status (2026-10-23): GEBLOKKEERD op de open punten van §2** (V98-1 … V98-11, drie rondes van max. 4). Het ontwerp zegt
+**Status (2026-10-23, later): beantwoord — V98-1 … V98-11 = A** (gebruiker, zie Beslissingen); 98 (incl. 98-0) wordt
+in één keer gebouwd. Oorspronkelijke status: geblokkeerd op de open punten van §2 (drie rondes van max. 4). Het ontwerp zegt
 *wat* er komt (lucht per band, sterren overdag, dikke kleurloze fog, glitch-fog, echo-voetstappen, geluid, stilte-client),
 maar niet *hoe sterk*, *welke bron* of *wanneer*; volgens CLAUDE.md §3 kiest A dat niet zelf. Hieronder is per onderdeel
 de **aanbevolen optie uitgewerkt** (zoals `golf-1-atmosphere.md` met OV1); een ander antwoord verandert alleen dat
@@ -265,8 +266,8 @@ backlogregel. Ondertitels (en + nl) in `Ring5WeatherText` (one-shots; loops zond
 ## 5. Client/server-impact
 - **Server:** alleen biome-data (JSON), registraties (sound events, particle types) en — bij V98-8 A — de server-haak
   `Ring5Glitches` (geluid en `sendParticles`, geen gameplay). De stilte-meter, darkness en schade blijven van C.
-- **Client:** alles in `client/` (`Ring5Sky`, `Ring5Fog`, `GlitchFog`, `Ring5Ambience`, `NetherRing5Fog`,
-  `SilenceEffects`, `VoidGlitchOverlay`, providers), geregistreerd vanuit `CorruptedAdventureClient` (`Dist.CLIENT`); de
+- **Client:** alles in `client/` (`Ring5Sky`, `Ring5Fog`, `GlitchFog`, `EchoFootsteps`, `NetherRing5Fog`,
+  `SilenceEffects`, `VoidGlitchEffects`, providers), geregistreerd vanuit `CorruptedAdventureClient` (`Dist.CLIENT`); de
   mixins alleen in de `client`-lijst. Geen `Minecraft.getInstance()` buiten `client/`; `worldgen/biome/*Atmosphere` en
   `Ring5Glitches` noemen geen client-klassen (`ClientIsolationTest`).
 - **Netwerk:** geen nieuwe payload en geen protocolwijziging door A (de meters gaan via `condition_sync`; de lucht rekent
@@ -275,7 +276,7 @@ backlogregel. Ondertitels (en + nl) in `Ring5WeatherText` (one-shots; loops zond
   alleen het teleport-geluid (V98-8 A) is gedeeld.
 
 ## 6. Tests en gates
-- Unit (pure kernen): `Ring5SkyTest` (blackness 0 op de bandlijn, monotoon, ~0,85 op de rand, 1 boven de void; sterren
+- Unit (pure kernen; gebouwd als één `client/weather/Ring5AtmosphereTest`): `Ring5SkyTest` (blackness 0 op de bandlijn, monotoon, ~0,85 op de rand, 1 boven de void; sterren
   = max), `Ring5FogTest` (far/near binnen de grenzen, luma-kleur grijs, uitdunnen), `GlitchFogTest` (interval, duur,
   Screen Effect 0 = uit), `EchoStepsTest` (vlaag 4–10, vertraging vast per vlaag, één echo na stilstand, plek achter de
   kijkrichting), `SilenceEffectsTest` (volume 1 onder t1, 0,35 op t3, 0 erboven, HUD-hysterese), `VoidGlitchOverlayTest`
@@ -304,25 +305,109 @@ speler); de drie weertypes met de nieuwe audio en deeltjes.
 ## Voortgang
 - Voortgang: 2026-10-23 15:00 worktree `P:/Projecten/Java/wt/r5-98` op `ring5/98` vanaf `1a31dbd6`, `setup.sh A 6`.
 - Voortgang: 2026-10-23 15:15 bronnen gelezen; plan met 11 open punten geschreven; **wacht op de antwoorden** (§2).
+- Voortgang: 2026-10-23 15:25 antwoorden binnen (alle elf A, via main); 98 + 98-0 gebouwd.
+- Voortgang: 2026-10-23 16:00 `build --offline` groen (incl. `ClientIsolationTest`, `Ring5AtmosphereTest` 9,
+  `BiomeAmbienceTest` 19); `runData --offline` groen (gegenereerd: lang, `sounds.json`, 3 particle-JSON's, 8 biome-JSON's);
+  `Ring5Sounds.java` → 17 `.ogg`'s (ffmpeg lokaal).
+- Voortgang: 2026-10-23 16:06 S-smoke `r5-98` (poort 6, verse wereld): `Done`, log zonder ERROR en zonder
+  client-class-fout; RCON `/ca ring`, `/ca weather 5 glitch_storm`, `/ca weather`, `/ca castles`; gestopt. Geen client
+  (slots bezet door andere stromen, o.a. perf van W3): de checklist van §6 is voor de gebruiker (6b).
 
-## CODEBASE-delta (verwacht, bij de aanbevolen opties; INT schrijft hem)
-- `registry/ModParticleTypes`: `void_mote`, `glitch_pixel`, `reverse_raindrop`; providers `client/particle/VoidMoteParticle`,
-  `ReverseRaindropParticle`, `GlitchSpeckParticle` + stijl `GLITCH_PIXEL`.
-- `registry/ModSoundEvents`: `ambient.ring_5.{void_drone,glitch,echo_step}`, `ambient.nether_ring_5.{silence,heartbeat}`;
-  `tools/sounds/Ring5Sounds.java` + de `.ogg`'s van §4; `sounds.json` zonder ring 5-placeholders.
-- `worldgen/biome/Ring5Atmosphere`, `NetherRing5Atmosphere`, `BiomeAmbience.ring5`/`netherRing5`; `Ring5Biomes`/
-  `NetherRing5Biomes` alleen nog klimaat + haakregel.
-- `client/weather/`: `Ring5Sky`, `Ring5Fog`, `GlitchFog`, `Ring5Ambience` (+ `EchoSteps`), `NetherRing5Fog`,
-  `SilenceEffects`, `VoidGlitchOverlay`; `GlitchStormRenderer` (`glitch_pixel`), `ReverseRainRenderer`
-  (`reverse_raindrop`), `Ring5SoundDamping` (+ stilte); `ClientLevelSkyColorMixin` (+ `getStarBrightness`, ring 5-lucht).
-- `weather/Ring5Glitches` (bij V98-8 A).
+## CODEBASE-delta (gebouwd; INT schrijft hem in `CODEBASE.md`)
+- `registry/ModParticleTypes` (blok `// ring 5 — A`): `void_mote`, `glitch_pixel`, `reverse_raindrop`; `particles/*.json`
+  via `ModParticleDescriptionProvider` (sprites van 99a: `void_mote_0..3`, `glitch_pixel_0..3`, `reverse_raindrop_0..1`).
+  Providers zonder nieuwe klassen: `DriftingHazeParticle.VOID_MOTE` (stijgt traag, geen tint), `GlitchSpeckParticle`
+  met record `Jitter` (`SPECK` 0,15/1 op 6 voor `glitch_speck`, `PIXEL` 0,3/1 op 3 voor `glitch_pixel`),
+  `RisingBubbleParticle.REVERSE_RAINDROP` (schiet omhoog, stopt onder een dak).
+- `registry/ModSoundEvents` (blok `// ring 5 — A`): `ambient.ring_5.{void_drone,glitch,echo_step}`,
+  `ambient.nether_ring_5.{silence,heartbeat}` (`heartbeat` nieuw t.o.v. het contract; `echo_step` gereserveerd: V98-6 a
+  speelt het stapgeluid van het blok). `ModSoundDefinitionsProvider`: de drie ring 5-weerloops en de vijf nieuwe events
+  naar eigen `.ogg`'s (geen vanilla-placeholders meer voor ring 5). `datagen/lang/Ring5WeatherText` + ondertitels
+  `ambient.ring_5.glitch`, `ambient.ring_5.echo_step`, `ambient.nether_ring_5.heartbeat` (en + nl).
+- **Nieuw `tools/sounds/Ring5Sounds.java`** (patroon `Ring4Sounds.java`; `java tools/sounds/Ring5Sounds.java [ffmpeg]`,
+  `--wav-only`) → 17 `.ogg`'s: `sounds/weather/ring_5/{glitch_storm_loop_1..2, reverse_rain_loop_1..2, standstill_loop_1}`,
+  `sounds/ambient/ring_5/{void_drone_loop_1..2, glitch_1..4, echo_step_1..3}`,
+  `sounds/ambient/nether_ring_5/{silence_loop_1, heartbeat_1..2}`.
+- `worldgen/biome/`: nieuw `Ring5Atmosphere` (`Look(particle, particleChance, drone, glitchChance, strangeCaves)` per
+  biome) en `NetherRing5Atmosphere` (`ASH_CHANCE` 0,0005 `white_ash`); `BiomeAmbience.ring5(key, colours)`,
+  `netherRing5(key, colours)` en `SILENT_MUSIC` (= `Music` op `ambient.nether_ring_5.silence`, 12.000–24.000, vervangt
+  lopende muziek). `Ring5Biomes.bootstrap` en `NetherRing5Biomes.effects`: één haakregel; **de kleuren blijven in de
+  biome-klassen** (minimale wijziging naast 94/95/96; backlog r. 474 daarmee half: de geluiden zitten in de haak, de
+  kleuren verhuizen niet).
+- `weather/Ring5Glitches` (common, server): `teleported(player, from, to)` = `ambient.ring_5.glitch` (`PLAYERS`, 0,8)
+  + 12 `glitch_pixel` op beide plekken. **`condition/VoidTeleport` (C):** één aanroep vóór `teleportTo` (+ 2 imports,
+  doc-regel) — **INT2-mergepunt met 97**.
+- `client/weather/` (alles via `Ring5ClientAtmosphere.register(gameBus)` uit `CorruptedAdventureClient`):
+  `Ring5Sky` (camerastand per tick: ring 5-gewicht, `blackness` = smoothstep van de bandlijn naar 0,85 op de ringrand,
+  1 vanaf 200 voorbij; `innerFog`; `skyColor`, `starBrightness` (≥ 0,5 × zwart), `sunFactor` (→ 0,4),
+  `sunriseColor`), `Ring5Fog` (binnenband-fog `innerFar` = 0,45 × zicht in 48–112, near 0,15 ×, lucht-fog × 2, kleur
+  naar luma op `HIGH`; zwart en glitch-violet op `LOW`; afstanden op `LOWEST`), `GlitchFog` (pure stotter-staat),
+  `EchoFootsteps` (+ pure `EchoSteps`; `PlayLevelSoundEvent.AtPosition` op het client-level, `*.step` in `PLAYERS` aan de
+  voeten van de lokale speler), `NetherRing5Fog` (0,8 × zicht ≤ 192, near 0,4 ×, op `is_nether_ring_5`),
+  `SilenceEffects` (volume 1 → 0,35 tussen drempel 1 en 3, daarna 0, ≤ 0,05 per tick; hartslag in `MASTER` 20 → 10
+  ticks; HUD-lagen weg vanaf drempel 2 met 2 punten hysterese), `Ring5Meters` (meter + drempels van de gesyncte
+  config; `SILENCE` op naam), `VoidGlitchEffects` (void-meter ≥ drempel 1: ruis via `GlitchStormOverlay.feedVoid` tot
+  0,6 × Screen Effect Scale, `glitch_pixel` rond de speler); `GlitchStormRenderer` → `glitch_pixel`,
+  `ReverseRainRenderer` → `reverse_raindrop` (3/tick); `Ring5SoundDamping.feedSilence`; `GlitchStormOverlay.feedVoid`
+  (ruis = max van storm en void, hotbar-hapering alleen van de storm).
+- Client-mixins: `ClientLevelSkyColorMixin` (+ `Ring5Sky.skyColor` na het weer, nieuwe inject `getStarBrightness`),
+  `DimensionSpecialEffectsMixin` (`Ring5Sky.sunriseColor` na `Ring4Dusk`), **nieuw `LevelRendererSkyMixin`**
+  (`@ModifyArg` alpha van de derde `RenderSystem.setShaderColor` in `renderSky` = zon/maan, met `javap` gecontroleerd
+  op 21.1.252); `corruptedadventure.mixins.json` → `client`.
+- Tests: nieuw `client/weather/Ring5AtmosphereTest` (zwartheid, sterren/zon, fog-afstanden binnen en Nether-5,
+  glitch-fog, echo-vlagen en extra echo, echo-volume, stilte-volume/hartslag/HUD, void-glitch, gedeelde demping);
+  `BiomeAmbienceTest.ring5HookAddsSilenceGlitchesAndTheDroneOnTopOfTheColours`; `Ring5BiomesTest` en
+  `NetherRing5BiomesTest` (stille muziek, `white_ash`).
+- Gegenereerd: `sounds.json`, `particles/{void_mote,glitch_pixel,reverse_raindrop}.json`, `lang/{en_us,nl_nl}.json`,
+  biome-JSON van de 6 ring 5- en de 2 Nether-5-biomes.
 
 ## Beslissingen
-- (nog geen; de antwoorden op V98-1 … V98-11 komen hier, en via INT2 in `fase-1-wereld.md` en het beslissingenlog)
-- Implementatiekeuze (geen ontwerp): "geen muziek" = een stille `Music` op het event `ambient.nether_ring_5.silence`
-  (contract: "vrijwel stil, voor het dempen"), ook voor `false_meadow` (tag `silent`).
+Gebruiker (2026-10-23): **alle elf = A** (INT2 zet ze in `fase-1-wereld.md` en het beslissingenlog):
+- V98-1 A: lucht geleidelijk zwart van de bandlijn (0 %) tot ~85 % op 9.700 en 100 % boven de void; zon en maan gedimd.
+- V98-2 A: sterren volgen de zwartheid (overdag in de buitenband, ook onder je in de void); binnenband vanilla.
+- V98-3 A: binnenband-fog far 0,45 × zicht (48–112), near 0,15 × far, kleurloos (luma × daglicht), naar buiten uitdunnend.
+- V98-4 A: glitch-fog = haperende fog-rand (1–3 ticks naar 40–70 %, om de 4–12 s, 1 op 4 violet-zwart), 2× in
+  `glitch_fields`, × Screen Effect Scale.
+- V98-5 A: binnenband bijna stil (zeldzame `glitch`-one-shots, vaker in `glitch_fields` + `glitch_pixel`),
+  `false_meadow` stil; buitenband `void_drone`-loop + `void_mote`; mood `STRANGE` binnen; geen muziek in ring 5.
+- V98-6 A (klank a): echo-voetstappen in vlagen van 4–10 stappen, 0,4–0,8 s later, 6–12 blokken achter je, met het
+  stapgeluid van het blok; één echo na stilstand.
+- V98-7 A: Nether-5-fog wit en ver (0,8 × zicht, max. 192), geen ambient, stille muziek, zeldzaam `white_ash`.
+- V98-8 A: void-teleport: geluid `ambient.ring_5.glitch` + `glitch_pixel` op beide plekken, server-side (één aanroep in
+  `VoidTeleport`, INT2-mergepunt met 97).
+- V98-9 A: stilte-volume 100 % → 35 % tussen 30 en 90, daarna stil; alleen de hartslag blijft.
+- V98-10 A: bij 60 blijven hotbar (+ itemnaam), crosshair, conditiebalken en chat.
+- V98-11 A: void-meter ≥ 30: lichte glitchstorm-overlay, meegroeiend tot ~60 %, × Screen Effect Scale.
+
+Implementatiekeuzes van de stroom:
+- "Geen muziek" = een stille `Music` (`BiomeAmbience.SILENT_MUSIC`) op het event `ambient.nether_ring_5.silence`
+  (contract: "vrijwel stil, voor het dempen"; een bijna lege loop van 20 s), in alle 6 ring 5- en beide Nether-5-biomes.
+- Kleuren blijven in `Ring5Biomes`/`NetherRing5Biomes` (opdracht main: haakwijziging minimaal naast 94/95/96); de haak
+  krijgt de kleurbouwer en voegt geluid, deeltjes en muziek toe.
+- Zwartheid op de gesyncte layout: `Ring5Band.signedDistance` (de bandlijn met haar ruis) en `effectiveDistance` tot de
+  ringrand (`outward` = afgelegd deel van de weg lijn → rand); niet de `breakup` van `Ring5Field` (die kent de client
+  niet, hij hangt aan de wereldseed).
+- Sterren: vanilla's middernacht is 0,5 (`getStarBrightness`); "vol aan de rand" = 0,5 × zwartheid. Zon/maan en de
+  zonsopgang-gloed dimmen tot 40 %.
+- Binnenband-fog: kleur = de luma van de al door vanilla belichte fog-kleur (dus "× daglicht" vanzelf); lucht-fog × 2
+  zodat de grijs-violette lucht boven blijft; × `SkyExposure` (grotten vanilla). De glitch-fog geldt ook in grotten.
+- Echo: het volume aan de bron wordt opgehoogd tegen vanilla's lineaire afval over 16 blokken, zodat de echo als
+  0,5–0,7 van je eigen stap klinkt (max. 1); de plek wordt bij het afspelen bepaald (achter de huidige kijkrichting).
+  Extra echo na stilstand: stilstand = 12 ticks zonder stap, de extra komt één eigen pas (5–12 ticks) na de laatste echo.
+- Stilte: hartslag in `MASTER` (niet gedempt, niet positioneel), elke 20 → 10 ticks van drempel 3 naar 100; HUD harde
+  wissel (vanilla-lagen kennen geen alpha) met 2 punten hysterese; verborgen: gezondheid, honger, pantser, lucht,
+  rijdier, XP-balk/-level, springmeter, effecten, bossbalk, scorebord.
+- Void-glitch: ruis × Screen Effect Scale; de deeltjes niet (vanilla's Particles-optie geldt al).
+- Teleport-glitch in `PLAYERS` (de speler hapert), toonhoogte 0,9–1,1.
 
 ## Backlog
-- `[blocks]` (B, via main): `VoidstoneBlock` van `reverse_portal` naar `void_mote` zodra 98-0 op main staat.
-- `[conditions]` (C, 97): bij V98-8 A één aanroep `Ring5Glitches.teleported` in `VoidTeleport`.
-- `[infra]` (INT2): `PROTOCOL_VERSION` bij `Condition.SILENCE` (97), niet door A.
+- `[blocks]` (B, via main): `VoidstoneBlock` van `reverse_portal` naar `void_mote` (het type staat er nu).
+- `[conditions]`/INT2: mergepunt `VoidTeleport` (één aanroep `Ring5Glitches.teleported`, door A gezet); 97 werkt
+  parallel aan de void-code.
+- `[infra]` (INT2): `PROTOCOL_VERSION` bij `Condition.SILENCE` (97), niet door A. Na de merge van 97 werkt de
+  stilte-client vanzelf (`Ring5Meters` zoekt `silence` op naam; `thresholdLevels(SILENCE)` moet dan bestaan).
+- `[worldgen]` (W-biomes/W-nether): de kleuren van `Ring5Biomes.LOOKS` en `NetherRing5Biomes` kunnen later alsnog naar
+  `Ring5Atmosphere`/`NetherRing5Atmosphere` (backlog r. 474, rest), als 94/95/96 klaar zijn.
+- `[atmosphere]` (6b, in-game): alles van §6 "In-game checks"; in het bijzonder de mixin-doelen (`getStarBrightness`,
+  `renderSky` ordinal 2) in een echte client, het volume van de nieuwe `.ogg`'s, de dichtheid van `void_mote`/
+  `glitch_pixel`/`reverse_raindrop` en de hoorbaarheid van de echo op 6–12 blokken.
