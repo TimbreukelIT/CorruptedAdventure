@@ -35,7 +35,11 @@ public final class Ring5Output implements DensityFunction {
         /** The preliminary surface (blocks): the ground's top; over the void below the world's bottom (no surface). */
         INITIAL_HEIGHT("initial_height", Ring5Field.VOID_HEIGHT, 320.0),
         /** 3D, the terrain's density, exact per block, −1..1. */
-        TERRAIN("terrain", -1.0, 1.0);
+        TERRAIN("terrain", -1.0, 1.0),
+        /** 3D, ring 5's own caves (93): the code of {@link Ring5Caves.Kind} (0 none, corridor, chamber, hole, hole rim). */
+        CAVES("caves", 0.0, 4.0),
+        /** 0..2: how far vanilla's damped caves are closed in the column (93, V93-1; 0 open deep in the inner band). */
+        CAVE_CLOSURE("cave_closure", 0.0, Ring5Field.CAVES_CLOSED);
 
         public static final StringRepresentable.EnumCodec<Output> CODEC = StringRepresentable.fromEnum(Output::values);
 
@@ -100,6 +104,8 @@ public final class Ring5Output implements DensityFunction {
             case GLITCH -> f.column(x, z).glitch();
             case INITIAL_HEIGHT -> f.initialHeight(x, z);
             case TERRAIN -> f.terrain(x, context.blockY(), z);
+            case CAVES -> f.caveCode(x, context.blockY(), z);
+            case CAVE_CLOSURE -> f.column(x, z).closure();
         };
     }
 

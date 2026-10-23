@@ -85,6 +85,21 @@ public final class Ring5Field implements DensityFunction {
     /** A corrupt spot's chunks keep this far from the band line and the zone 4→5, and this far off a castle's reach (83b). */
     static final double SPOT_CLEARANCE = 32.0;
     static final double SPOT_CASTLE_CLEARANCE = 16.0;
+    /** Open intervals of the own caves (93) one column keeps at most. */
+    static final int MAX_CAVES = 8;
+    /**
+     * Vanilla's damped caves (93, V93-1 A) only deep in the inner band: closed ({@link #CAVES_CLOSED}) within these many
+     * blocks of the band line, the zone 4→5, a castle's reach and an opening into the void (cracks, spot holes, void-cave
+     * holes), fully open {@link #NATURAL_FADE} further in.
+     */
+    static final double NATURAL_LINE = 24.0;
+    static final double NATURAL_ZONE = 32.0;
+    static final double NATURAL_CASTLE = 16.0;
+    static final double NATURAL_OPENING = 8.0;
+    static final double NATURAL_FADE = 12.0;
+    static final double CAVES_CLOSED = 2.0;
+    /** The outer band's void caves (93, V93-8 A) lie at most this far beyond the band line (its signed distance). */
+    static final double OUTER_CAVE_REACH = 300.0;
 
     private static final int FLOE_SALT = 8401;
     private static final int CRATER_SALT = 8402;
@@ -95,6 +110,7 @@ public final class Ring5Field implements DensityFunction {
     private static final int BRIDGE_SALT = 8407;
     private static final int RIM_SALT = 8408;
     private static final int DECK_SALT = 8409;
+    private static final int OUTER_FLOOR_SALT = 9307;
 
     private final NoiseHolder hash;
     private final Noises noises;
@@ -320,7 +336,7 @@ public final class Ring5Field implements DensityFunction {
             initial = column.height;
             for (int k = 0; k < 8; k++) {
                 double a = Math.PI / 4.0 * k;
-                initial = Math.min(initial, innerGround(Mth.floor(x + 0.5 + INITIAL_RADIUS * Math.cos(a)),
+                initial = Math.min(initial, copiedGround(Mth.floor(x + 0.5 + INITIAL_RADIUS * Math.cos(a)),
                         Mth.floor(z + 0.5 + INITIAL_RADIUS * Math.sin(a))));
             }
             initial -= INITIAL_MARGIN;
@@ -330,8 +346,9 @@ public final class Ring5Field implements DensityFunction {
     }
 
     /**
-     * The terrain's density at a block, exact: inside an exact span 1; in a void column −1; else 1/8 per block away from
-     * the column's top and underside, held to ±1 (smooth enough for the ring blend of the zones 4→5 and 5→void).
+     * The terrain's density at a block, exact: inside an exact span 1; in one of the own caves (93) or a void column −1;
+     * else 1/8 per block away from the column's top and underside, held to ±1 (smooth enough for the ring blend of the
+     * zones 4→5 and 5→void).
      */
     public double terrain(int x, int y, int z) {
         Column column = column(x, z);
@@ -340,13 +357,22 @@ public final class Ring5Field implements DensityFunction {
                 return 1.0;
             }
         }
+        for (int k = 0; k < column.caves; k++) {
+            if (y >= column.caveBottom[k] && y < column.caveTop[k]) {
+                return -1.0;
+            }
+        }
         if (column.isVoid()) {
             return -1.0;
         }
         if (column.layered && y >= column.top - Ring5Inner.LAYER_DEPTH && y < column.top + Ring5Inner.LAYER_DEPTH) {
-            // The glitch fields' layers (83): each slice is the ground of a column a few blocks over.
-            int[] shift = inner().layerShift(x, y, z);
-            Column other = column(x + shift[0], z + shift[1]);
+            // The glitch fields' layers (83): each slice is the ground of a column a few blocks over. In a doppelganger's
+            // copy (93) the shift is the source's, mirrored.
+            Ring5Copies.Pair copy = column.copy;
+            int[] shift = copy == null ? inner().layerShift(x, y, z) : inner().layerShift(column.sourceX, y, column.sourceZ);
+            int dx = copy != null && copy.alongX() ? -shift[0] : shift[0];
+            int dz = copy != null && !copy.alongX() ? -shift[1] : shift[1];
+            Column other = column(x + dx, z + dz);
             return y < (other.isVoid() ? other.height : other.top) ? 1.0 : -1.0;
         }
         double density = DENSITY_PER_BLOCK * (column.top - y);
@@ -360,6 +386,28 @@ public final class Ring5Field implements DensityFunction {
 
     private void fill(Column c, int x, int z) {
         c.reset();
+        // A doppelganger's target (93): inside its blending edge the column is its source's mirror image.
+        Ring5Copies.Pair pair = copyPair(Ring5Copies.cellOf(x), Ring5Copies.cellOf(z));
+        if (pair != null && pair.inTarget(x, z)) {
+            if (pair.core(x, z)) {
+                int sx = pair.sourceX(x, z);
+                int sz = pair.sourceZ(x, z);
+                fillAt(c, sx, sz);
+                c.copy = pair;
+                c.sourceX = sx;
+                c.sourceZ = sz;
+                // A shifted layer copies a column a few blocks over: only where that one is a copy too.
+                c.layered &= pair.depth(x, z) >= pair.edge() + Ring5Inner.MAX_SHIFT;
+                return;
+            }
+            fillAt(c, x, z);
+            blendCopy(c, pair, x, z);
+            return;
+        }
+        fillAt(c, x, z);
+    }
+
+    private void fillAt(Column c, int x, int z) {
         RingLayout l = layout.get();
         double effective = l.effectiveDistance(x, z);
         double signed = Ring5Band.of(l).signedDistance(x, z);
@@ -380,6 +428,59 @@ public final class Ring5Field implements DensityFunction {
         if (c.isVoid() && !c.scarOpen) {
             c.breakup = c.spans > 0 ? 0.9 : 1.0;
         }
+        if (castleReach || c.isVoid()) {
+            return;
+        }
+        if (c.inner) {
+            innerCaves(c, x, z);
+            double opening = Math.min(c.crack, chamberHoleDistance(x, z));
+            double room = Math.min(Math.min(-signed - NATURAL_LINE, effective - Ring4Sundered.zoneEnd(l) - NATURAL_ZONE),
+                    Math.min(opening - NATURAL_OPENING, castleDistance - castle.radius() - castle.belt() - NATURAL_CASTLE));
+            c.closure = CAVES_CLOSED * (1.0 - Ring4Relief.smooth(room, 0.0, NATURAL_FADE));
+        } else {
+            Ring5Caves.Chamber chamber = outerChamber(Ring5Caves.outerCellOf(x), Ring5Caves.outerCellOf(z));
+            if (chamber != null) {
+                chamberCave(c, chamber, x, z);
+            }
+        }
+    }
+
+    /**
+     * A target column in a doppelganger's blending edge (93, V93-7 A): its own column with the ground blended towards the
+     * source's (the copy's weight); no shifted layers there (they would copy a column a few blocks over).
+     */
+    private void blendCopy(Column c, Ring5Copies.Pair pair, int x, int z) {
+        if (!c.inner || c.isVoid()) {
+            return;
+        }
+        double source = innerGround(pair.sourceX(x, z), pair.sourceZ(x, z));
+        c.top = Mth.lerp(pair.weight(x, z), c.top, source);
+        c.height = c.top;
+        c.layered = false;
+    }
+
+    /** The own caves of an inner column (93): the corridors and shafts of its net cell's net, its chamber cell's void cave. */
+    private void innerCaves(Column c, int x, int z) {
+        Ring5Caves.Net net = cavesNet(Ring5Caves.netCellOf(x), Ring5Caves.netCellOf(z));
+        if (net != null && net.near(x, z, 0)) {
+            for (Ring5Caves.Box box : net.boxes) {
+                if (box.covers(x, z)) {
+                    c.addCave(box.y0(), box.y1(), Ring5Caves.Kind.CORRIDOR);
+                }
+            }
+        }
+        Ring5Caves.Chamber chamber = chamber(Ring5Caves.chamberCellOf(x), Ring5Caves.chamberCellOf(z));
+        if (chamber != null) {
+            chamberCave(c, chamber, x, z);
+        }
+    }
+
+    private static void chamberCave(Column c, Ring5Caves.Chamber chamber, int x, int z) {
+        int[] out = new int[4];
+        if (chamber.near(x, z, 0.0) && chamber.column(x, z, out)) {
+            c.addCave(out[0], out[1], Ring5Caves.Kind.of(out[2]));
+            c.rimTop = out[3];
+        }
     }
 
     /**
@@ -395,6 +496,7 @@ public final class Ring5Field implements DensityFunction {
         c.inner = true;
         c.height = top;
         double crack = innerCrackDistance(x, z, spot);
+        c.crack = crack;
         if (crack <= 0.0) {
             c.setVoid();
             c.height = top;
@@ -736,7 +838,10 @@ public final class Ring5Field implements DensityFunction {
                 Ring5CorruptSpots.Spot spot = corruptSpot(Ring5CorruptSpots.cellOf(x), Ring5CorruptSpots.cellOf(z));
                 boolean glitch = band.inner(x, z) && inner().glitchWeight(x, z) > 0.0 && innerCrackDistance(x, z, spot) > 0.0
                         && castle.distance(x, z) > castle.radius() + castle.belt() && (spot == null || spot.chunkAt(x, z) < 0);
-                if (!glitch) {
+                // Nor on a doppelganger's square (93): the copy's edge would cut a source's cube, the blend would move a
+                // target's ground under its own.
+                Ring5Copies.Pair pair = copyPair(Ring5Copies.cellOf(x), Ring5Copies.cellOf(z));
+                if (!glitch || pair != null && (pair.inSource(x, z) || pair.inTarget(x, z))) {
                     return null;
                 }
             }
@@ -771,6 +876,235 @@ public final class Ring5Field implements DensityFunction {
             distance = Math.min(distance, corruptSpots().holeDistance(spot, x, z));
         }
         return distance;
+    }
+
+    /**
+     * How far (blocks) a column of the inner band lies from the nearest opening into the void, the underground ones of 93
+     * included: {@link #innerCrackDistance} and the holes of the void caves; in a doppelganger's target also those of its
+     * source (mirrored). At most 0 on an open column. For the dam of the lava layer ({@code RingFluidPicker}). Pure.
+     */
+    public double innerOpeningDistance(int x, int z) {
+        double distance = Math.min(innerCrackDistance(x, z), chamberHoleDistance(x, z));
+        Ring5Copies.Pair pair = copyPair(Ring5Copies.cellOf(x), Ring5Copies.cellOf(z));
+        if (pair != null && pair.inTarget(x, z)) {
+            int sx = pair.sourceX(x, z);
+            int sz = pair.sourceZ(x, z);
+            distance = Math.min(distance, Math.min(innerCrackDistance(sx, sz), chamberHoleDistance(sx, sz)));
+        }
+        return distance;
+    }
+
+    /** How far (blocks) a column lies from a hole of its chamber cell's void cave (93); infinite without one. Pure. */
+    double chamberHoleDistance(int x, int z) {
+        // A chamber keeps CHAMBER_MARGIN (40) inside its cell: wider than the dam, so only the own cell's holes count.
+        Ring5Caves.Chamber chamber = chamber(Ring5Caves.chamberCellOf(x), Ring5Caves.chamberCellOf(z));
+        return chamber == null ? Double.POSITIVE_INFINITY : chamber.holeDistance(x, z);
+    }
+
+    /** The code of ring 5's own caves at a block (93, {@link Ring5Caves.Kind}): the DF {@code ring_5/overworld/caves}. */
+    public int caveCode(int x, int y, int z) {
+        Column column = column(x, z);
+        for (int k = 0; k < column.caves; k++) {
+            if (y >= column.caveBottom[k] && y < column.caveTop[k]) {
+                return column.caveKind[k];
+            }
+        }
+        if (column.rimTop != Integer.MIN_VALUE && y >= column.rimTop - Ring5Caves.RIM_DEPTH && y < column.rimTop) {
+            return Ring5Caves.Kind.RIM.code();
+        }
+        return Ring5Caves.Kind.NONE.code();
+    }
+
+    /** The own caves' shapes (93), made once per world. */
+    Ring5Caves caves() {
+        Ring5Caves known = decisions.caveShapes;
+        if (known == null) {
+            known = new Ring5Caves(salt());
+            decisions.caveShapes = known;
+        }
+        return known;
+    }
+
+    /** The doppelgangers' shapes (93), made once per world. */
+    Ring5Copies copies() {
+        Ring5Copies known = decisions.copyShapes;
+        if (known == null) {
+            known = new Ring5Copies(salt());
+            decisions.copyShapes = known;
+        }
+        return known;
+    }
+
+    /** The corridor net of net cell (i, j) (93) if it lies wholly deep in the inner band. Cached, pure. */
+    @Nullable
+    Ring5Caves.Net cavesNet(int i, int j) {
+        long key = KeyedSlots.key(i, j);
+        Optional<Ring5Caves.Net> known = decisions.nets.peek(key);
+        if (known == null) {
+            Ring5Caves.Net net = caves().net(i, j);
+            known = Optional.ofNullable(net != null && netDeepInner(net) ? net : null);
+            decisions.nets.put(key, known);
+        }
+        return known.orElse(null);
+    }
+
+    /** Whether the box round a net lies deep in the inner band (samples every 16 blocks and its far edges). */
+    private boolean netDeepInner(Ring5Caves.Net net) {
+        for (int x = net.minX; x <= net.maxX + 15; x += 16) {
+            for (int z = net.minZ; z <= net.maxZ + 15; z += 16) {
+                if (!deepInner(Math.min(x, net.maxX), Math.min(z, net.maxZ), SPOT_CLEARANCE, SPOT_CASTLE_CLEARANCE)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** The void cave of chamber cell (i, j) (93) if it lies wholly deep in the inner band. Cached, pure. */
+    @Nullable
+    Ring5Caves.Chamber chamber(int i, int j) {
+        long key = KeyedSlots.key(i, j);
+        Optional<Ring5Caves.Chamber> known = decisions.chambers.peek(key);
+        if (known == null) {
+            Ring5Caves.Chamber chamber = caves().chamber(i, j);
+            if (chamber != null) {
+                double reach = chamber.radius() * (1.0 + Ring5Caves.RAGGED);
+                for (int k = 0; k <= 8; k++) {
+                    double a = Math.PI / 4.0 * k;
+                    double r = k == 8 ? 0.0 : reach;
+                    if (!deepInner(chamber.x() + r * Math.cos(a), chamber.z() + r * Math.sin(a), SPOT_CLEARANCE, SPOT_CASTLE_CLEARANCE)) {
+                        chamber = null;
+                        break;
+                    }
+                }
+            }
+            known = Optional.ofNullable(chamber);
+            decisions.chambers.put(key, known);
+        }
+        return known.orElse(null);
+    }
+
+    /**
+     * The void cave of outer cell (i, j) (93, V93-8 A): only in a thick floe near the band line, where every sample round it
+     * is floe ground at least {@link Ring5Caves#OUTER_MIN_THICKNESS} thick (no scar, no castle); its floor between the
+     * floe's underside and top with rock to spare. Cached, pure (the samples use a column of their own, not the table).
+     */
+    @Nullable
+    Ring5Caves.Chamber outerChamber(int i, int j) {
+        long key = KeyedSlots.key(i, j);
+        Optional<Ring5Caves.Chamber> known = decisions.outerChambers.peek(key);
+        if (known == null) {
+            known = Optional.ofNullable(placeOuterChamber(i, j));
+            decisions.outerChambers.put(key, known);
+        }
+        return known.orElse(null);
+    }
+
+    @Nullable
+    private Ring5Caves.Chamber placeOuterChamber(int i, int j) {
+        Ring5Caves.Chamber candidate = caves().outerCandidate(i, j);
+        if (candidate == null) {
+            return null;
+        }
+        RingLayout l = layout.get();
+        Ring5Band band = Ring5Band.of(l);
+        double reach = candidate.radius() * (1.0 + Ring5Caves.RAGGED) + 2.0;
+        double signed = band.signedDistance(candidate.x(), candidate.z());
+        if (signed < reach + Ring5Outer.LINE_BLEND || signed > OUTER_CAVE_REACH) {
+            return null;
+        }
+        double r5 = ring5Radius(l);
+        double empty = emptyFrom(l);
+        Column sample = new Column();
+        double bottom = Double.NEGATIVE_INFINITY;
+        double top = Double.POSITIVE_INFINITY;
+        for (int k = 0; k < 17; k++) {
+            double a = Math.PI / 4.0 * k;
+            double r = k == 16 ? 0.0 : k < 8 ? reach : 0.5 * reach;
+            int x = Mth.floor(candidate.x() + r * Math.cos(a));
+            int z = Mth.floor(candidate.z() + r * Math.sin(a));
+            double effective = l.effectiveDistance(x, z);
+            double s = band.signedDistance(x, z);
+            if (s < 0.0 || effective >= empty || nearCastle(x, z, SPOT_CASTLE_CLEARANCE)) {
+                return null;
+            }
+            sample.reset();
+            fillOuter(sample, x, z, effective, s, r5);
+            if (sample.isVoid() || sample.scars > 0.0) {
+                return null;
+            }
+            bottom = Math.max(bottom, sample.bottom);
+            top = Math.min(top, sample.top);
+        }
+        if (top - bottom < Ring5Caves.OUTER_MIN_THICKNESS) {
+            return null;
+        }
+        int low = (int) Math.ceil(bottom) + Ring5Caves.OUTER_FLOOR_ROCK;
+        int high = (int) Math.floor(top) - Ring5Caves.OUTER_ROOF_ROCK - candidate.height();
+        if (high < low) {
+            return null;
+        }
+        return Ring5Caves.outerChamber(candidate, low, high, CellShapes.cell(salt(), i, j, OUTER_FLOOR_SALT));
+    }
+
+    /**
+     * The doppelganger of copy cell (i, j) (93, V93-6 A) if both its squares lie in quiet inner band: deep inside it (as the
+     * corrupt spots), no crack or spot hole within 16, no corrupt spot within 8. Cached, pure.
+     */
+    @Nullable
+    Ring5Copies.Pair copyPair(int i, int j) {
+        long key = KeyedSlots.key(i, j);
+        Optional<Ring5Copies.Pair> known = decisions.pairs.peek(key);
+        if (known == null) {
+            Ring5Copies.Pair pair = null;
+            for (int attempt = 0; attempt < Ring5Copies.ATTEMPTS && pair == null && copies().has(i, j); attempt++) {
+                Ring5Copies.Pair tried = copies().pair(i, j, attempt);
+                if (quietSquare(tried.sx(), tried.sz()) && quietSquare(tried.tx(), tried.tz())) {
+                    pair = tried;
+                }
+            }
+            known = Optional.ofNullable(pair);
+            decisions.pairs.put(key, known);
+        }
+        return known.orElse(null);
+    }
+
+    /** Whether a doppelganger's square (low corner) lies in quiet inner band; samples every 8 blocks and its far edge. */
+    private boolean quietSquare(int x0, int z0) {
+        int last = Ring5Copies.SIZE - 1;
+        for (int dx = 0; dx <= last + 7; dx += 8) {
+            for (int dz = 0; dz <= last + 7; dz += 8) {
+                int x = x0 + Math.min(dx, last);
+                int z = z0 + Math.min(dz, last);
+                Ring5CorruptSpots.Spot spot = corruptSpot(Ring5CorruptSpots.cellOf(x), Ring5CorruptSpots.cellOf(z));
+                // Samples 8 apart: a column within 8 of a spot lies within 12 of a sample (spots of other cells keep 16 off).
+                if (!deepInner(x, z, SPOT_CLEARANCE, SPOT_CASTLE_CLEARANCE) || innerCrackDistance(x, z, spot) <= 16.0
+                        || spot != null && spot.near(x, z, 12)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** The inner band's ground at a column with the doppelgangers (93): a target shows its source's, blended at its edge. */
+    private double copiedGround(int x, int z) {
+        Ring5Copies.Pair pair = copyPair(Ring5Copies.cellOf(x), Ring5Copies.cellOf(z));
+        if (pair == null || !pair.inTarget(x, z)) {
+            return innerGround(x, z);
+        }
+        double source = innerGround(pair.sourceX(x, z), pair.sourceZ(x, z));
+        return pair.core(x, z) ? source : Mth.lerp(pair.weight(x, z), innerGround(x, z), source);
+    }
+
+    /**
+     * Whether a position lies deep in the inner band: {@code clearance} inside the band line, {@code clearance} past the
+     * zone 4→5 and {@code castleClearance} off every castle's reach (the rule of the corrupt spots, 83b).
+     */
+    private boolean deepInner(double x, double z, double clearance, double castleClearance) {
+        RingLayout l = layout.get();
+        return Ring5Band.of(l).signedDistance(x, z) <= -clearance
+                && l.effectiveDistance(x, z) >= Ring4Sundered.zoneEnd(l) + clearance && !nearCastle(x, z, castleClearance);
     }
 
     /** The loose crack of crack cell (i, j) if it lies well inside the inner band (off the band line and the zone 4→5). */
@@ -1468,8 +1802,28 @@ public final class Ring5Field implements DensityFunction {
         int spans;
         final int[] spanBottom = new int[MAX_SPANS];
         final int[] spanTop = new int[MAX_SPANS];
+        /** The inner band's distance to a crack or spot hole (83/83b), infinite elsewhere. */
+        double crack;
+        /** The own caves (93): open intervals [bottom, top) and their kind's code. */
+        int caves;
+        final int[] caveBottom = new int[MAX_CAVES];
+        final int[] caveTop = new int[MAX_CAVES];
+        final int[] caveKind = new int[MAX_CAVES];
+        /** The top of a void cave's hole rim (rock, {@link Ring5Caves#RIM_DEPTH} deep), else {@link Integer#MIN_VALUE}. */
+        int rimTop;
+        /** 0..{@link #CAVES_CLOSED}: how far vanilla's damped caves are closed here (93; 0 open). */
+        double closure;
+        /** A doppelganger's copy (93): the pair, and the source column this one mirrors; null elsewhere. */
+        Ring5Copies.Pair copy;
+        int sourceX;
+        int sourceZ;
 
         void reset() {
+            crack = Double.POSITIVE_INFINITY;
+            caves = 0;
+            rimTop = Integer.MIN_VALUE;
+            closure = CAVES_CLOSED;
+            copy = null;
             top = 0.0;
             bottom = Double.NEGATIVE_INFINITY;
             breakup = 0.0;
@@ -1497,6 +1851,25 @@ public final class Ring5Field implements DensityFunction {
                 spanTop[spans] = to;
                 spans++;
             }
+        }
+
+        void addCave(int from, int to, Ring5Caves.Kind kind) {
+            for (int k = 0; k < caves; k++) {
+                if (caveBottom[k] == from && caveTop[k] == to) {
+                    return;
+                }
+            }
+            if (caves < MAX_CAVES && to > from) {
+                caveBottom[caves] = from;
+                caveTop[caves] = to;
+                caveKind[caves] = kind.code();
+                caves++;
+            }
+        }
+
+        /** 0..{@link #CAVES_CLOSED}: how far vanilla's damped caves are closed in this column (93). */
+        public double closure() {
+            return closure;
         }
 
         public double top() {
@@ -1553,5 +1926,11 @@ public final class Ring5Field implements DensityFunction {
         final KeyedSlots<Optional<double[]>> cracks = new KeyedSlots<>(64);
         volatile Ring5CorruptSpots spotShapes;
         final KeyedSlots<Optional<Ring5CorruptSpots.Spot>> spots = new KeyedSlots<>(64);
+        volatile Ring5Caves caveShapes;
+        final KeyedSlots<Optional<Ring5Caves.Net>> nets = new KeyedSlots<>(64);
+        final KeyedSlots<Optional<Ring5Caves.Chamber>> chambers = new KeyedSlots<>(64);
+        final KeyedSlots<Optional<Ring5Caves.Chamber>> outerChambers = new KeyedSlots<>(16);
+        volatile Ring5Copies copyShapes;
+        final KeyedSlots<Optional<Ring5Copies.Pair>> pairs = new KeyedSlots<>(16);
     }
 }
