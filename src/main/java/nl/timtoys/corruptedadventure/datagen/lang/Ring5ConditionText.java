@@ -1,8 +1,8 @@
 package nl.timtoys.corruptedadventure.datagen.lang;
 
 /**
- * Texts of the ring 5 conditions (void and silence: death messages). Owned by stream C
- * ({@code docs/plans/ring-5/waves.md}); English is mandatory, Dutch welcome. The meters have no text of their own
+ * Texts of the ring 5 conditions (the void's death message; the silence's heartbeat never kills, so it has none).
+ * Owned by stream C ({@code docs/plans/ring-5/waves.md}); English is mandatory, Dutch welcome. The meters have no text of their own
  * (the HUD shows a bar, {@code /ca condition} the serialized name).
  */
 public final class Ring5ConditionText {

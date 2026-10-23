@@ -16,8 +16,18 @@ void van 91 (`golf-1-conditions.md`).
 `datagen/tags/Ring5DamageTypeTags`. **Niet:** de client (volume, HUD verbergen, hartslaggeluid: A, 98), `ModTags`/biome-
 tags (W-nether), `ModNetwork.PROTOCOL_VERSION` (INT2), `CODEBASE.md` en `docs/design/*` (INT).
 
-**Stand (2026-10-23):** het ontwerp laat vier keuzes open (§0, V1–V4). **Er is nog niets gebouwd** (CLAUDE.md §3: stoppen
-en vragen). Na de antwoorden: §1 bouwen volgens de gekozen opties.
+**Stand (2026-10-23):** de vier open punten (§0) zijn door de gebruiker beantwoord: **V1 = A, V2 = A, V3 = A, V4 = B**;
+P1–P6 gelden. §1 is daarnaar gebouwd.
+
+### Besluiten gebruiker (2026-10-23; door INT naar `fase-1-wereld.md` en het beslissingenlog)
+- **V1 = A:** 30 geluid gedempt · 60 HUD weg behalve hotbar (beide client, 98) · 90 alle geluid weg + darkness +
+  hartslagschade.
+- **V2 = A:** elk geluid (bel, goat horn, note block, jukebox; ook via redstone) binnen 16 blokken → de meter zakt 10 s
+  lang met 2,0/s; geluid wint van alle opbouw.
+- **V3 = A:** open ruimte = biome `hollow_cathedral` of staan op `polished_white_stone` (de witte vlaktes), ×1,5.
+- **V4 = B:** hartslag 1,0 per 2 s, **nooit dodelijk** (stopt op 1 HP, op elke moeilijkheidsgraad); damage type
+  `corruptedadventure:silence` voor het hurt-effect; geen eigen doodsbericht (vanilla-terugval volstaat).
+- P1–P6 gelden zoals voorgesteld.
 
 ---
 
@@ -86,10 +96,10 @@ Niet in het ontwerp: hoeveel, hoe vaak, dodelijk of niet.
 
 ---
 
-## 1. Plan (bij de aanbevolen opties; wordt na de antwoorden bijgesteld)
+## 1. Plan (gebouwd; V1-A, V2-A, V3-A, V4-B)
 
 1. **`Condition.SILENCE`** (`silence`, HUD wit `0xFFE8E8EC`), **achteraan** de enum (sync per positie).
-2. **`SilenceZone`** (Nether + ring 5, P1) en **`SilenceRule`** + **`SilenceExposure`** (pure regeltabel zoals
+2. **Zone** (Nether + ring 5, P1; `SilenceRule.inZone`, geen eigen klasse: alleen de regel gebruikt hem) en **`SilenceRule`** + **`SilenceExposure`** (pure regeltabel zoals
    `ColdRule.evaluate`, testbaar zonder server): `rise` 0,33/s; `open` ×`openMultiplier` 1,5 (V3); samen
    ×`companionMultiplier` 0,5 (P2); geluid → `soundFall` 2,0/s (V2, wint van alles); buiten `outsideFall` 1,0/s.
    Labels voor `/ca condition get`: `zone`, `open`, `together` (een metgezel remt; de open-factor telt wel mee in de
@@ -104,13 +114,13 @@ Niet in het ontwerp: hoeveel, hoe vaak, dodelijk of niet.
 4. **Drempels** (`threshold1..3` = 30/60/90, V1-A; `ThresholdLevels`):
    - 30 `SilenceMuffle` en 60 `SilenceHudLoss`: server niets (no-op-effect, zoals `VoidGlitchVisuals`); de client leest de
      gesyncte meter (A, 98).
-   - 90 `SilenceHeartbeat`: darkness (eigen ambient instance, elke seconde ververst, nooit over een vreemde darkness van
-     de warden, zoals `VoidDarkness`; gedeelde code als dat kan zonder 91 te verbouwen) + `DamageThreshold`
-     (`Ring5DamageTypes.SILENCE`, `damage` 1,0 per `damageInterval` 2 s, `LETHAL_FROM_NORMAL`; V4-A).
+   - 90 `SilenceHeartbeat`: darkness via het nieuwe gedeelde **`ConditionDarkness`** (eigen ambient instance, elke
+     seconde ververst, nooit over een vreemde darkness van de warden; void en stilte vragen samen de sterkste, zodat de
+     een de darkness van de ander nooit weghaalt) + `DamageThreshold` (`Ring5DamageTypes.SILENCE`, `damage` 1,0 per
+     `damageInterval` 2 s, **`NEVER_LETHAL`**; V4-B).
 5. **Damage type** `corruptedadventure:silence` (`Ring5DamageTypes.bootstrap`, geen exhaustion); tags in
    `Ring5DamageTypeTags` zoals `void`: `minecraft:bypasses_armor`, `minecraft:no_knockback`,
-   `minecraft:bypasses_cooldown`, `neoforge:is_environment`. Doodsbericht `death.attack.corruptedadventure.silence`
-   (+ `.player`), en + nl (`Ring5ConditionText`).
+   `minecraft:bypasses_cooldown`, `neoforge:is_environment`. Geen doodsbericht (V4-B: nooit dodelijk).
 6. **Config `[conditions.silence]`** (`ServerConfig.SilenceCondition`): `rise` 0,33, `openMultiplier` 1,5 (1–4),
    `companionRadius` 8 (1–32), `companionMultiplier` 0,5 (0–1), `soundReliefRadius` 16 (1–64), `soundReliefSeconds` 10
    (1–120), `soundFall` 2,0, `outsideFall` 1,0, `threshold1..3` 30/60/90, `darknessAmplifier` 0, `damage` 1,0,
@@ -147,7 +157,7 @@ met een fakkel (bloklicht ≥ 12) `light` −1,0/s; de voidsteenranden van de sc
 - `SilenceThresholdsTest`: 30/60 niets op de server; 90 darkness + schade; warden-darkness blijft staan;
   `ThresholdLevelsTest` +1.
 - `Ring5DamageTypeTagsTest` +`silence`; `config/SilenceConfigTest` (precies de sleutels van §1.6 met hun standaarden).
-- D: `damage_type/silence.json`, de damage-type-tags, lang en + nl (gecommit).
+- D: `damage_type/silence.json` en de vier damage-type-tags (gecommit); geen lang.
 - S-smoke `r5-97` (verse wereld): log zonder ERROR en zonder client-class-fout; `/ca condition` via RCON beschikbaar en
   `silence` als conditienaam geparst (`/ca condition set` zonder speler geeft de gewone "geen speler"-fout).
 - **Gebruiker in-game (6b, dedicated server + 2 clients):** opbouw alleen en samen (binnen/buiten 8), op een vlakte en in
@@ -167,13 +177,71 @@ met een fakkel (bloklicht ≥ 12) `light` −1,0/s; de voidsteenranden van de sc
 - Voortgang: 2026-10-23 15:12 worktree `P:/Projecten/Java/wt/r5-97` (branch `ring5/97` vanaf `1a31dbd6`), `setup.sh C 5`.
 - Voortgang: 2026-10-23 15:30 ontwerp gelezen; vier open punten (V1–V4) + voorstellen P1–P6; plan gecommit, bouwen
   wacht op de antwoorden. Void-koppeling: geen code nodig (§2).
+- Voortgang: 2026-10-23 15:20 antwoorden V1 A, V2 A, V3 A, V4 B; code + tests 97.
+- Voortgang: 2026-10-23 15:28 runData groen (alleen eigen output: `silence.json` + 4 tags); build groen (1.304 tests,
+  0 fouten).
+- Voortgang: 2026-10-23 15:30 S-smoke `r5-97` (vers): 0 ERROR, geen client-class; `[conditions.silence]` in de
+  server-config; jukebox met plaat, bel en note block via redstone in Nether-5 via RCON: geen fout in de listener
+  (zonder speler geen meterwaarde te zien); `/ca condition` beschikbaar (zonder speler "No player was found").
+- Voortgang: 2026-10-23 15:41 `/code-review` medium verwerkt (zie Beslissingen); build groen (1.308 tests, 0 fouten),
+  S-smoke opnieuw schoon; commit.
 
 ## CODEBASE-delta
-(volgt na de bouw)
+Package `condition` (alles server-side; geen client-class):
+- `Condition.SILENCE` (`silence`, HUD `0xFFE8E8EC`), achteraan de enum (sync per positie).
+- `SilenceRule` + `SilenceExposure` (`zone`/`open`/`together`/`sound`/`outside`): zone = Nether, `ring() == RING_5`
+  (hard op 0,5; de Nether-voidrand telt niet); volgorde zone → geluid (`SilenceSounds.relieved`, wint, `soundFall`) →
+  open (`hollow_cathedral` of staan op `polished_white_stone`, ×`openMultiplier`) → metgezel (andere levende
+  niet-spectator binnen `companionRadius`, ×`companionMultiplier`, niet stapelend); open en samen vermenigvuldigen.
+- `SilenceSounds`: NeoForge `VanillaGameEvent` (via `Ring5Conditions`), alleen de Nether; `NOTE_BLOCK_PLAY`,
+  `INSTRUMENT_PLAY`, `JUKEBOX_PLAY` (vanilla elke seconde zolang de plaat speelt), `BLOCK_CHANGE` alleen op een bel;
+  elke speler van dat level binnen `soundReliefRadius` (3D) onthoudt de server-tick (`WeakHashMap`, niet opgeslagen).
+  Annuleert nooit.
+- Drempels (`ConditionDefinitions` `SILENCE`): 30 `SilenceCue.MUFFLED`, 60 `SilenceCue.HUD_HIDDEN` (no-op, de client
+  leest de meter), 90 `SilenceHeartbeat` (darkness + `DamageThreshold` `Ring5DamageTypes.SILENCE`, `NEVER_LETHAL`).
+- `ConditionDarkness` (nieuw, gedeeld): de ene darkness van de condities (`ours`/`isOurs`/`update(player, amplifier)`;
+  `wanted`/`combine` = max van void en stilte, de enige plek; `decide` = pure keuze `REFRESH`/`LOWER` (verwijderen +
+  opnieuw, alleen bij een lagere sterkte)/`REMOVE`/`NOTHING` (vreemde darkness)); `VoidDarkness` beslist alleen nog wanneer de void hem wil
+  (`amplifier(player)`, de band alleen vanaf drempel 2) en laat hem staan zolang de stilte hem wil.
+  `VoidSlip.zoneOf` package-private.
+- `ConditionContext.standsOn(Predicate<BlockState>)` naast de tag-variant.
+- `Ring5DamageTypes.SILENCE` (`corruptedadventure:silence`, msgId `corruptedadventure.silence`, exhaustion 0; geen
+  doodsbericht).
+- `Ring5Conditions.register`: ook de `VanillaGameEvent`-listener.
+Config: `ServerConfig.SILENCE` = `[conditions.silence]` (`SilenceCondition`, 14 sleutels: `rise` 0,33, `openMultiplier`
+1,5, `companionRadius` 8, `companionMultiplier` 0,5, `soundReliefRadius` 16, `soundReliefSeconds` 10, `soundFall` 2,0,
+`outsideFall` 1,0, `threshold1..3` 30/60/90, `darknessAmplifier` 0, `damage` 1,0, `damageInterval` 2). In
+`ALL_THRESHOLDS`.
+Datagen: `Ring5DamageTypeTags` + `silence` (`bypasses_armor`, `no_knockback`, `bypasses_cooldown`,
+`neoforge:is_environment`).
+Gegenereerd: `data/corruptedadventure/damage_type/silence.json`, de vier damage-type-tags.
+Tests: `SilenceRuleTest`, `SilenceSoundsTest`, `SilenceThresholdsTest`, `config/SilenceConfigTest`,
+`Ring5DamageTypeTagsTest` +1, `ThresholdLevelsTest` +1; `VoidThresholdsTest` leest `ConditionDarkness`.
+Docs voor INT2: `fase-1-wereld.md` Nether-5 "Conditie: stilte" en beslissingenlog (de vier besluiten hierboven);
+`ModNetwork.PROTOCOL_VERSION` `"9"` → `"10"` (`condition_sync` + `silence`).
 
 ## Beslissingen
 (implementatiedetails, door de stroom beslist)
 - Void-koppeling zonder eigen test: `Ring5BlockDataTest` (B) toetst de tag al exact (§2).
+- De Nether-voidrand (voorbij Nether-5) hoort niet bij de zone: het contract noemt alleen Nether-5, en de rand is de
+  zwevende-eilanden-invoer, geen witte hal (anders dan de overworld-voidrand bij de void, P4 van 91).
+- Drempel 3 werkt overal waar de meter is (zoals void en gif); buiten de zone zakt de meter 1,0/s, dus vanaf 100
+  stopt de hartslag na ~10 s (met een bel na ~5 s).
+- Hersteltijd in server-ticks (`server.getTickCount()`, zoals `SlipSchedule`), niet in de game-tijd van het level (die
+  kan met `/time` springen).
+- **Review (medium, 2026-10-23, op main...ring5/97 + werkmap; 8 bevindingen):** opgelost — (1) onze darkness werd
+  nooit lager gezet (vanilla `addEffect` houdt de sterkere en verstopt de zwakkere; nu `ConditionDarkness.decide` →
+  `LOWER`); (3) de max van void en stilte stond op twee plekken (nu alleen `ConditionDarkness.wanted`/`combine`) en de
+  javadoc van `VoidDarkness` was verouderd; (6) de hersteltijd rekende met `ConditionTicker.INTERVAL_TICKS` als "ticks
+  per seconde" (nu `SharedConstants.TICKS_PER_SECOND`); (8) tests voor combineren, verlagen en de vreemde
+  (warden-)darkness (`SilenceThresholdsTest` +4). Niet opgelost: (2) dubbele verversing per seconde als void ≥ 60 én
+  stilte ≥ 90 tegelijk gelden — kan alleen kort na een portal met beide meters hoog (de void zakt in de Nether 1/s);
+  twee effect-packets per seconde, verwaarloosbaar; (4) heel kleine hartslagschade vlak boven 1 HP (bv. 1,05) geeft een
+  hurt-flits — vanilla-regeneratie heelt in hele punten, de flits past bij een hartslag, en `DifficultyFloor` is gedeeld;
+  (5) geen doodsbericht: besluit van de gebruiker (V4-B); de javadoc van `Ring5ConditionText` zegt het nu; (7)
+  hersteltijd per `ServerPlayer`-object, weg na respawn — na de dood staan alle meters toch op 0, oude objecten vallen
+  weg via de zwakke sleutels. "Alleen de Nether, meerdere spelers" van `SilenceSounds` niet als unittest (de haak vraagt
+  een echt level): de filter is één regel; bereik, gebeurtenissen en hersteltijd zijn wel getest.
 - Geluidsdetectie via NeoForge `VanillaGameEvent` (vuurt in `ServerLevel.gameEvent` vóór de vanilla-dispatcher) in
   plaats van een eigen `GameEventListener` per speler: één globale haak, geen registratie per speler of chunk.
 

@@ -54,7 +54,7 @@ final class VoidSlip implements ThresholdEffect {
         return zone == VoidZone.INNER;
     }
 
-    private static VoidZone zoneOf(ServerPlayer player) {
+    static VoidZone zoneOf(ServerPlayer player) {
         return VoidZone.of(player.level().dimension(),
                 RingLayout.ringAt(player.level().dimension(), player.getX(), player.getZ()), player.getX(), player.getZ());
     }

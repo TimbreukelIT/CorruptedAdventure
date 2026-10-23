@@ -28,6 +28,7 @@ public final class ConditionDefinitions {
             case COLD -> ColdRule.fromConfig();
             case POISON -> PoisonRule.fromConfig();
             case VOID -> VoidRule.fromConfig();
+            case SILENCE -> SilenceRule.fromConfig();
         };
     }
 
@@ -40,6 +41,7 @@ public final class ConditionDefinitions {
             case COLD -> ServerConfig.COLD.thresholds.get();
             case POISON -> ServerConfig.POISON.thresholds.get();
             case VOID -> ServerConfig.VOID.thresholds.get();
+            case SILENCE -> ServerConfig.SILENCE.thresholds.get();
         };
     }
 
@@ -100,6 +102,7 @@ public final class ConditionDefinitions {
                         new DamageThreshold(Ring5DamageTypes.VOID, config.damage.get().floatValue(),
                                 config.damageInterval.get(), DifficultyFloor.LETHAL_FROM_NORMAL));
             }
+            case SILENCE -> List.of(SilenceCue.MUFFLED, SilenceCue.HUD_HIDDEN, SilenceHeartbeat.fromConfig());
         };
     }
 

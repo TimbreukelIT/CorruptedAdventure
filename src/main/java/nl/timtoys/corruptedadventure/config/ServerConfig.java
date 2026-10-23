@@ -38,6 +38,8 @@ public final class ServerConfig {
     public static final PurifyingCondition PURIFYING;
     /** {@code [conditions.void]}: overworld ring 5 and the void rim (package 91). */
     public static final VoidCondition VOID;
+    /** {@code [conditions.silence]}: Nether ring 5 (package 97). */
+    public static final SilenceCondition SILENCE;
     /** {@code [weather.ring2]}: the effects of sandstorm and heat wave (change 28). */
     public static final Ring2WeatherEffects RING_2_WEATHER;
     /** {@code [weather.ring3]}: ash cloud duration, heat factors and lava bombs (package 45). */
@@ -67,6 +69,7 @@ public final class ServerConfig {
         POISON = new PoisonCondition(builder);
         PURIFYING = new PurifyingCondition(builder);
         VOID = new VoidCondition(builder);
+        SILENCE = new SilenceCondition(builder);
         builder.pop();
         builder.comment("Ring weather: a cycle per ring (clear, then a weather of that ring, then clear again).",
                 "Durations in seconds, drawn uniformly between min and max; edits apply from the next change of weather.")
@@ -81,7 +84,7 @@ public final class ServerConfig {
         RING_5_WEATHER = RING_WEATHER.get(Ring.RING_5).ring5Effects;
         SPEC = builder.build();
         ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds,
-                POISON.thresholds, VOID.thresholds);
+                POISON.thresholds, VOID.thresholds, SILENCE.thresholds);
     }
 
     private ServerConfig() {
@@ -481,6 +484,61 @@ public final class ServerConfig {
         /** The longest teleport, never below the shortest. */
         public int teleportMax() {
             return Math.max(teleportMinBlocks.get(), teleportMaxBlocks.get());
+        }
+    }
+
+    /** {@code [conditions.silence]}: the silence of Nether ring 5 (package 97, ring 5 contract §5, §11). */
+    public static final class SilenceCondition {
+        public final ModConfigSpec.DoubleValue rise;
+        public final ModConfigSpec.DoubleValue openMultiplier;
+        public final ModConfigSpec.IntValue companionRadius;
+        public final ModConfigSpec.DoubleValue companionMultiplier;
+        public final ModConfigSpec.IntValue soundReliefRadius;
+        public final ModConfigSpec.IntValue soundReliefSeconds;
+        public final ModConfigSpec.DoubleValue soundFall;
+        public final ModConfigSpec.DoubleValue outsideFall;
+        public final ThresholdLevels thresholds;
+        public final ModConfigSpec.IntValue darknessAmplifier;
+        public final ModConfigSpec.DoubleValue damage;
+        public final ModConfigSpec.IntValue damageInterval;
+
+        private SilenceCondition(ModConfigSpec.Builder builder) {
+            builder.comment("The silence in ring 5 of the Nether. Rises everywhere there; faster in open space (the hollow",
+                            "cathedral, on the white plateaus), slower with another player close by. A bell, goat horn, note block",
+                            "or jukebox nearby (also played by redstone) makes it fall for a while, whatever else holds.")
+                    .push("silence");
+            rise = builder.comment("Points per second in the zone (0.33: 0 -> 100 in ~5 min).")
+                    .defineInRange("rise", 0.33, 0.0, 100.0);
+            openMultiplier = builder.comment("Factor on the rise in the hollow cathedral and on a white plateau (standing on",
+                            "polished white stone) (1.5: ~3.3 min).")
+                    .defineInRange("openMultiplier", 1.5, 1.0, 4.0);
+            companionRadius = builder.comment("Blocks within which another player (not a spectator) slows the rise.")
+                    .defineInRange("companionRadius", 8, 1, 32);
+            companionMultiplier = builder.comment("Factor on the rise with at least one other player within companionRadius;",
+                            "more players do not stack (0.5: ~10 min, ~6.7 min in open space).")
+                    .defineInRange("companionMultiplier", 0.5, 0.0, 1.0);
+            soundReliefRadius = builder.comment("Blocks from a bell, goat horn, note block or playing jukebox within which it counts.")
+                    .defineInRange("soundReliefRadius", 16, 1, 64);
+            soundReliefSeconds = builder.comment("Seconds the meter keeps falling after the last such sound (a playing jukebox",
+                            "sounds every second, so it keeps it falling).")
+                    .defineInRange("soundReliefSeconds", 10, 1, 120);
+            soundFall = builder.comment("Points per second while a sound relieves (2.0: one bell ring ~ -20, 100 -> 0 in 50 s).")
+                    .defineInRange("soundFall", 2.0, 0.0, 100.0);
+            outsideFall = builder.comment("Points per second outside Nether ring 5 (other rings, the overworld).")
+                    .defineInRange("outsideFall", 1.0, 0.0, 100.0);
+            thresholds = ThresholdLevels.define(builder, "conditions.silence", new int[]{30, 60, 90},
+                    "Sound muffled from here (client only, no gameplay effect).",
+                    "The HUD hidden from here, except the hotbar (client only, no gameplay effect).",
+                    "All sound gone, darkness and a heartbeat (damage every damageInterval seconds) from here; never"
+                            + " below 1 health.");
+            darknessAmplifier = builder.comment("Darkness amplifier (0 = level I) at threshold3.")
+                    .defineInRange("darknessAmplifier", 0, 0, 9);
+            damage = builder.comment("Heartbeat damage per hit at threshold3 (1.0 = half a heart); through armour, on every",
+                            "difficulty, but never below 1 health: the silence never kills.")
+                    .defineInRange("damage", 1.0, 0.0, 100.0);
+            damageInterval = builder.comment("Seconds between heartbeats at threshold3.")
+                    .defineInRange("damageInterval", 2, 1, 60);
+            builder.pop();
         }
     }
 
