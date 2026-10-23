@@ -196,3 +196,7 @@ Screenshot: ja/nee
 
 Bijsturing van de terreinvorm gaat als getallen terug naar W-terrein/W-nether (vóór golf 2). Antwoorden komen in dit
 bestand (§Uitkomst) en waar nodig in de beslissingenlog.
+
+## Uitkomst tijdens 6a (2026-10-23)
+
+- Binnenband te plat → herzien (zie `fase-1-wereld.md`, beslissingenlog 2026-10-23): golvend reliëf + corrupte plekken. Gebouwd ná deze 6a-sessie; de terreinpunten van de binnenband (B) worden daarna opnieuw beoordeeld. Buitenband en kastelen blijven.
