@@ -74,17 +74,17 @@ class VoidThresholdsTest {
 
     @Test
     void ourDarknessIsRecognisedAndAForeignOneMergedIntoItIsNot() {
-        assertTrue(VoidDarkness.isOurs(VoidDarkness.ours(0)));
-        assertFalse(VoidDarkness.isOurs(null));
+        assertTrue(ConditionDarkness.isOurs(ConditionDarkness.ours(0)));
+        assertFalse(ConditionDarkness.isOurs(null));
         // A warden's darkness (260 ticks, not ambient, no particles, no icon) on top of ours.
-        MobEffectInstance warden = VoidDarkness.ours(0);
+        MobEffectInstance warden = ConditionDarkness.ours(0);
         warden.update(new MobEffectInstance(MobEffects.DARKNESS, 260, 0, false, false));
-        assertFalse(VoidDarkness.isOurs(warden));
-        assertFalse(VoidDarkness.isOurs(new MobEffectInstance(MobEffects.DARKNESS, 260, 0, false, false)));
+        assertFalse(ConditionDarkness.isOurs(warden));
+        assertFalse(ConditionDarkness.isOurs(new MobEffectInstance(MobEffects.DARKNESS, 260, 0, false, false)));
         // Our own refresh keeps it ours.
-        MobEffectInstance refreshed = VoidDarkness.ours(0);
-        refreshed.update(VoidDarkness.ours(0));
-        assertTrue(VoidDarkness.isOurs(refreshed));
+        MobEffectInstance refreshed = ConditionDarkness.ours(0);
+        refreshed.update(ConditionDarkness.ours(0));
+        assertTrue(ConditionDarkness.isOurs(refreshed));
     }
 
     @Test

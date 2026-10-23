@@ -33,7 +33,14 @@ public enum Condition implements StringRepresentable {
      * void source, at night and in ring weather; falls in block light and outside. Glitches, teleports or darkness, then
      * void damage. Last, so the sync positions of the older conditions stay the same.
      */
-    VOID("void", 0xFF8A4FD8);
+    VOID("void", 0xFF8A4FD8),
+    /**
+     * Nether ring 5 (package 97): rises everywhere in the zone, faster in open space (the cathedral, the white plateaus),
+     * half as fast with another player close by; falls for a while after a bell, goat horn, note block or jukebox nearby,
+     * and outside the zone. Muffled sound and a hidden HUD (client), then silence, darkness and a heartbeat that never
+     * kills. Last, so the sync positions of the older conditions stay the same.
+     */
+    SILENCE("silence", 0xFFE8E8EC);
 
     public static final Codec<Condition> CODEC = StringRepresentable.fromEnum(Condition::values);
 

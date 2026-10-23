@@ -87,14 +87,19 @@ public record ConditionContext(ServerPlayer player, ServerLevel level, RingPosit
      * the ice (a jump lifts the feet ~1.25 blocks). Falling from higher counts as not standing on anything.
      */
     public boolean standsOn(TagKey<Block> tag) {
+        return standsOn(state -> state.is(tag));
+    }
+
+    /** As {@link #standsOn(TagKey)}, for any test of the state (one block: the white plateaus, package 97). */
+    public boolean standsOn(Predicate<BlockState> matches) {
         if (player.onGround()) {
-            return player.getBlockStateOn().is(tag);
+            return matches.test(player.getBlockStateOn());
         }
         BlockPos.MutableBlockPos pos = player.blockPosition().mutable();
         for (int i = 0; i < AIRBORNE_LOOKDOWN; i++) {
             BlockState state = level.getBlockState(pos.move(Direction.DOWN));
             if (!state.isAir()) {
-                return state.is(tag);
+                return matches.test(state);
             }
         }
         return false;

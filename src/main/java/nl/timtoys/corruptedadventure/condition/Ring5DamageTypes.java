@@ -18,6 +18,12 @@ public final class Ring5DamageTypes {
      */
     public static final ResourceKey<DamageType> VOID =
             ResourceKey.create(Registries.DAMAGE_TYPE, CorruptedAdventure.id("void"));
+    /**
+     * The heartbeat at the top of the silence meter (package 97, {@link SilenceHeartbeat}); tagged like the void. Never
+     * lethal ({@link DifficultyFloor#NEVER_LETHAL}), so it has no death message of its own.
+     */
+    public static final ResourceKey<DamageType> SILENCE =
+            ResourceKey.create(Registries.DAMAGE_TYPE, CorruptedAdventure.id("silence"));
 
     private Ring5DamageTypes() {
     }
@@ -25,5 +31,6 @@ public final class Ring5DamageTypes {
     public static void bootstrap(BootstrapContext<DamageType> context) {
         // As vanilla's wither: no exhaustion, default scaling and effects.
         context.register(VOID, new DamageType("corruptedadventure.void", 0.0f));
+        context.register(SILENCE, new DamageType("corruptedadventure.silence", 0.0f));
     }
 }

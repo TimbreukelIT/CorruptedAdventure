@@ -56,4 +56,10 @@ class ThresholdLevelsTest {
         // Ring 5 contract §11: glitches 30, teleports or darkness 60, darkness and void damage 90.
         assertArrayEquals(new int[]{30, 60, 90}, ServerConfig.VOID.thresholds.defaults());
     }
+
+    @Test
+    void silenceHasTheContractThresholds() {
+        // Ring 5 contract §11 and V1-A: muffled 30, HUD hidden 60, silence + darkness + heartbeat 90.
+        assertArrayEquals(new int[]{30, 60, 90}, ServerConfig.SILENCE.thresholds.defaults());
+    }
 }

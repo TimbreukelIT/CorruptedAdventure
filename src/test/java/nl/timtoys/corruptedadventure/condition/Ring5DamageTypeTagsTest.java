@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class Ring5DamageTypeTagsTest {
     private static final String VOID = "\"corruptedadventure:void\"";
+    private static final String SILENCE = "\"corruptedadventure:silence\"";
 
     @Test
     void voidDamageBypassesArmourAndTheHurtCooldown() throws IOException {
@@ -29,7 +30,25 @@ class Ring5DamageTypeTagsTest {
         assertTrue(type.contains("\"corruptedadventure.void\""), type);
     }
 
+    /** The silence's heartbeat (package 97) is tagged like the void damage. */
+    @Test
+    void theHeartbeatIsTaggedLikeTheVoid() throws IOException {
+        Path generated = PoisonDamageTypeTagsTest.generated();
+        for (String tag : new String[]{"minecraft/tags/damage_type/bypasses_armor.json",
+                "minecraft/tags/damage_type/no_knockback.json", "minecraft/tags/damage_type/bypasses_cooldown.json",
+                "neoforge/tags/damage_type/is_environment.json"}) {
+            assertTagged(generated, tag, SILENCE);
+        }
+        assertFalse(Files.readString(generated.resolve("neoforge/tags/damage_type/is_poison.json")).contains(SILENCE));
+        String type = Files.readString(generated.resolve("corruptedadventure/damage_type/silence.json"));
+        assertTrue(type.contains("\"corruptedadventure.silence\""), type);
+    }
+
     private static void assertTagged(Path generated, String tag) throws IOException {
-        assertTrue(Files.readString(generated.resolve(tag)).contains(VOID), tag + " lacks " + VOID);
+        assertTagged(generated, tag, VOID);
+    }
+
+    private static void assertTagged(Path generated, String tag, String entry) throws IOException {
+        assertTrue(Files.readString(generated.resolve(tag)).contains(entry), tag + " lacks " + entry);
     }
 }
