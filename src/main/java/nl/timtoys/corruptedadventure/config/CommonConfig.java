@@ -21,6 +21,8 @@ public final class CommonConfig {
      * Per boundary 1|2, 2|3, 3|4, 4|5, 5|void in a fresh config: the zones 3|4 ({@code steam_fens} plus the
      * {@code verdant_falls} descent, since verdant_falls) and 4|5 (since change 58) are 256 wide.
      */
+    public static final int DEFAULT_BOUNDARY_NOISE = 96;
+    public static final int DEFAULT_TRANSITION_WIDTH = 128;
     public static final List<Integer> DEFAULT_TRANSITION_WIDTH_OVERRIDES = List.of(0, 0, 256, 256, 0);
     /** Default of {@code transitionWidthOverrides} from change 58 until verdant_falls; moved to the new one on load. */
     static final List<Integer> OLD_DEFAULT_TRANSITION_WIDTH_OVERRIDES = List.of(0, 0, 0, 256, 0);
@@ -59,10 +61,10 @@ public final class CommonConfig {
                 .defineInRange("voidOuterRadius", DEFAULT_VOID_OUTER_RADIUS, 1, maxRadius);
         BOUNDARY_NOISE = builder
                 .comment("Maximum seeded offset of each boundary, in either direction.")
-                .defineInRange("boundaryNoise", 96, 0, 4096);
+                .defineInRange("boundaryNoise", DEFAULT_BOUNDARY_NOISE, 0, 4096);
         TRANSITION_WIDTH = builder
                 .comment("Width of the blend zone centred on each boundary without an override in transitionWidthOverrides.")
-                .defineInRange("transitionWidth", 128, 0, 4096);
+                .defineInRange("transitionWidth", DEFAULT_TRANSITION_WIDTH, 0, 4096);
         TRANSITION_WIDTH_OVERRIDES = builder
                 .comment("Width of the blend zone per boundary, in the order 1|2, 2|3, 3|4, 4|5, 5|void;",
                         "0 uses transitionWidth. Exactly " + RingSettings.BOUNDARY_COUNT + " values.")

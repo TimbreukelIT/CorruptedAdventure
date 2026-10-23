@@ -453,3 +453,8 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [infra] `tools/worldgen/ring4_surface.py` schrijft CRLF; de repo bewaart `overworld.json` met LF: na het script `sed -i 's/\r$//'` (of het script LF laten schrijven). (bron: 77c)
 - [infra] `server.sh` toont bij een mislukte start de eerste regel met "Exception"; in de cloud is dat altijd de onschuldige Yggdrasil-`UnknownHostException`, niet de echte oorzaak. Bij een time-out "time-out" melden en de Yggdrasil-regels overslaan. (bron: I3)
 - [infra] `det.sh` heeft geen `--only`: een det-check op één gebied van een groot gebiedenbestand vraagt nu een eigen areas-bestand. (bron: I3)
+
+## Uit INT1 ring 5 golf 1 (2026-10-23)
+
+- [worldgen] Eén biome-cel (4×4×4) in de Nether, chunk (37, −4) Y 0–3 in `fi3`-gebied `n2`, ligt op de temperatuurdrempel −0,1 tussen `spore_caves` en `dripshroom_forest`. Op pre-INT1 `476199f7` gaven 4 werelden 3× `spore_caves`, 1× `dripshroom_forest` (niet deterministisch); `main` gaf 9/9 `dripshroom_forest` (ook `det` vooruit/omgekeerd). Geen biome-schrijvende code gevonden; oorzaak onbekend. Bij een volgende `fi3` die cel als bekende ruis behandelen, of de bron zoeken (`flat_cache` in `ring_2/nether/region`, gedeelde `RingColumnCache`). (bron: INT1)
+- [infra] `world.sh --worktree` op een worktree zonder `setup.sh` draait toch (op de `test.conf` van de aanroeper), maar `bisect`/`det` vanuit die worktree niet: eerst `setup.sh <stream> <n>` op elke nieuwe worktree. (bron: INT1)

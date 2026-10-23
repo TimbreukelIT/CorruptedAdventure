@@ -9,6 +9,7 @@ import java.io.BufferedWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,16 +20,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * rules), not zone. The scan must tell them apart, so it asks this layout.
  * <p>
  * The export runs only when {@code CA_RING_AREAS} (an area file), {@code CA_RING_OUT} (the output) and
- * {@code CA_WORLD_SEED} are set; it is skipped otherwise:
+ * {@code CA_WORLD_SEED} are set; it is skipped otherwise. The paths must be absolute: the test JVM does not run from the
+ * checkout root.
  * <pre>
- * CA_RING_AREAS=tools/test/areas/ring5.txt CA_RING_OUT=build/test/rings-ring5.txt CA_WORLD_SEED=20260930 \
+ * CA_RING_AREAS=$PWD/tools/test/areas/ring5.txt CA_RING_OUT=$PWD/build/test/rings-ring5.txt CA_WORLD_SEED=20260930 \
  *   ./gradlew cleanTest test --tests '*RingColumnsExportTest*'
  * </pre>
  */
 class RingColumnsExportTest {
-    /** The defaults of the run config (common config): the layout of the scanned worlds. */
-    private static final RingSettings SETTINGS = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
-            CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES);
+    /**
+     * The defaults of the common config: the layout of the scanned worlds. A world made with other ring settings in
+     * {@code run/config} gets a wrong ring map from this export.
+     */
+    private static final RingSettings SETTINGS = new RingSettings(CommonConfig.DEFAULT_OUTER_RADII,
+            CommonConfig.DEFAULT_VOID_OUTER_RADIUS, CommonConfig.DEFAULT_BOUNDARY_NOISE,
+            CommonConfig.DEFAULT_TRANSITION_WIDTH, CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES);
+    /** The overworld names of an area line, as in {@code tools/test/py/areas.py}. */
+    private static final Set<String> OVERWORLD = Set.of("ow", "overworld", "minecraft:overworld");
     /** A column of ring 4 in the noisy margin of the zone 4→5 on the ring 5 test world (seed 20260930, INT1 water). */
     private static final int RING_4_MARGIN_X = 7777;
     private static final int RING_4_MARGIN_Z = -18;
@@ -57,12 +65,15 @@ class RingColumnsExportTest {
         String areas = System.getenv("CA_RING_AREAS");
         Assumptions.assumeTrue(areas != null && !areas.isBlank(), "CA_RING_AREAS not set: no export");
         String out = System.getenv("CA_RING_OUT");
-        long seed = Long.parseLong(System.getenv("CA_WORLD_SEED"));
+        String seedText = System.getenv("CA_WORLD_SEED");
+        assertTrue(out != null && !out.isBlank(), "CA_RING_AREAS needs CA_RING_OUT");
+        assertTrue(seedText != null && !seedText.isBlank(), "CA_RING_AREAS needs CA_WORLD_SEED");
+        long seed = Long.parseLong(seedText.trim());
         RingLayout layout = new RingLayout(SETTINGS, RingLayout.noiseSeed(seed));
         try (BufferedWriter w = Files.newBufferedWriter(Path.of(out))) {
             for (String line : areaLines(Path.of(areas))) {
                 String[] p = line.split("\\s+");
-                if (p.length == 6 && !p[5].equals("ow") && !p[5].equals("overworld")) {
+                if (p.length == 6 && !OVERWORLD.contains(p[5])) {
                     continue;
                 }
                 int cx0 = Integer.parseInt(p[1]), cz0 = Integer.parseInt(p[2]);

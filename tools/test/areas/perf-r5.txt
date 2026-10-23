@@ -1,0 +1,14 @@
+# Ring 5 performance (INT1 golf 1; 16 x 16 chunks each, no overlap): every ring 5 biome, zone 4->5, castle site #1,
+# the void edge and both Nether-5 biomes. perf.sh --areas tools/test/areas/perf-r5.txt --cold-only "wastes cathedral".
+# Positions from /locate biome on seed 20260930 (2026-10-23).
+wastes 517 -8 532 7
+glitch -8 -533 7 -518
+meadow 521 -60 536 -45
+scars -40 -574 -25 -559
+inverted -8 -558 7 -543
+shattered 554 -2 569 13
+zone45 492 -8 507 7
+castle1 479 -319 494 -304
+voidedge 598 -8 613 7
+halls 129 -8 144 7 nether
+cathedral -20 -146 -5 -131 nether

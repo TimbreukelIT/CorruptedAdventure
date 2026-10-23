@@ -112,7 +112,7 @@ Area files (`areas/*.txt`): `name cx0 cz0 cx1 cz1 [ow|nether]` in chunks, inclus
 `int.txt` (integration: ring 3 biomes/landmarks + Nether 1–3), `fi.txt` (feature index ring 1/2), `perf.txt`,
 `nether-walls.txt` (Nether boundaries r 875/1500), `smoke.txt` (a few chunks); ring 4: `ring4.txt` (waterscan), `int2.txt`
 (golf 2: `verdant_falls`, tunnel net per band, sky lakes, world trees, arch, lagoon, Nether-4), `fi3.txt` (feature index
-rings 1–3), `perf-vf.txt`, `perf-r4.txt` (every ring 4 biome, tunnels, a world tree, `sundered_reach`, Nether-4), `trees.txt` (tree
+rings 1–3), `perf-vf.txt`, `perf-r4.txt` (every ring 4 biome, tunnels, a world tree, `sundered_reach`, Nether-4), `perf-r5.txt` (every ring 5 biome, zone 4→5, castle site #1, the void edge, both Nether-5 biomes; `--cold-only "wastes cathedral"`), `trees.txt` (tree
 determinism), `decor.txt` (one `mist_fjords` and one `cascade_vale` area: before/after shots, quick det check), `decor-d.txt` (decor D: a `verdant_falls` gorge with its giant tree, the basins, a `sundered_reach` land bridge with its split rock).
 `decor-c.txt` (decor rollout C: sky gardens, two giant moonpetals, a ruin, the underside of a low giant island).
 `islands.txt` (islands revision 2026-10-20: `tds`, `skyw1`, `skyw2` as in `int2.txt`, the inner edge and the middle of
@@ -187,7 +187,8 @@ python tools/test/py/voidscan.py <world> tools/test/areas/ring5.txt [--rings rin
 ```
 
 `--rings` takes the ring of every column (the noisy margin of the zone 4→5 holds ring 4's columns, which keep ring 4's
-own sea and count no faults; without it the margin counts as zone). Make it with the world's seed:
+own sea and count no faults except `fluidvoid`; the `z45*` areas refuse to run without it). Make it with the world's
+seed (the export uses the default common config: a world with other ring settings needs its own layout):
 `CA_RING_AREAS=<abs path of areas> CA_RING_OUT=<abs path out> CA_WORLD_SEED=<seed> ./gradlew cleanTest test --tests '*RingColumnsExportTest*'`
 (paths must be absolute: the test JVM does not run from the checkout root).
 

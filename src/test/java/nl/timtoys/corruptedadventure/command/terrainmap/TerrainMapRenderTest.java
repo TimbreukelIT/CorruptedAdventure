@@ -3,7 +3,9 @@ package nl.timtoys.corruptedadventure.command.terrainmap;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing4Biomes;
+import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing5Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.Ring4Biomes;
+import nl.timtoys.corruptedadventure.worldgen.biome.Ring5Biomes;
 import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
@@ -41,11 +43,22 @@ class TerrainMapRenderTest {
     void everyRing4AndNether4BiomeHasAFixedColourOfItsOwn() {
         List<ResourceKey<Biome>> keys = new ArrayList<>(Ring4Biomes.WITH_TRANSITION);
         keys.addAll(NetherRing4Biomes.ALL);
+        assertFixedUniqueColours(keys, "ring 4");
+    }
+
+    @Test
+    void everyRing5AndNether5BiomeHasAFixedColourOfItsOwn() {
+        List<ResourceKey<Biome>> keys = new ArrayList<>(Ring5Biomes.ALL);
+        keys.addAll(NetherRing5Biomes.ALL);
+        assertFixedUniqueColours(keys, "ring 5");
+    }
+
+    private static void assertFixedUniqueColours(List<ResourceKey<Biome>> keys, String ring) {
         Set<Integer> colours = new HashSet<>();
         for (ResourceKey<Biome> key : keys) {
             String id = key.location().toString();
             assertTrue(MapPalette.hasFixedColour(id), id);
-            assertTrue(colours.add(MapPalette.biome(id)), "colour of " + id + " is not unique among ring 4");
+            assertTrue(colours.add(MapPalette.biome(id)), "colour of " + id + " is not unique among " + ring);
         }
     }
 

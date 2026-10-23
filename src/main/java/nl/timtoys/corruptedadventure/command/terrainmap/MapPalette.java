@@ -73,6 +73,16 @@ final class MapPalette {
             Map.entry("corruptedadventure:bone_dunes", 0xE3D7B0),
             Map.entry("corruptedadventure:crystal_spires", 0xC9C2FF),
             Map.entry("corruptedadventure:geode_hollows", 0x8A6BC9),
+            // Ring 5: one purple-grey family
+            Map.entry("corruptedadventure:corrupted_wastes", 0x5B4A66),
+            Map.entry("corruptedadventure:glitch_fields", 0x8E7AA8),
+            Map.entry("corruptedadventure:false_meadow", 0x9A88B8),
+            Map.entry("corruptedadventure:void_scars", 0x2E2838),
+            Map.entry("corruptedadventure:inverted_hills", 0x6F6780),
+            Map.entry("corruptedadventure:shattered_expanse", 0xB4AEC4),
+            // Nether ring 5: one red-white family
+            Map.entry("corruptedadventure:white_halls", 0xF4EEEE),
+            Map.entry("corruptedadventure:hollow_cathedral", 0x9E2B2B),
             // placeholders and the edge
             Map.entry("corruptedadventure:placeholder_ring_3", 0x7A4A3A),
             Map.entry("corruptedadventure:placeholder_ring_5", 0x5A3A6A),

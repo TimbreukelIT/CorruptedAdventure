@@ -4,8 +4,9 @@ region files.
     python -I voidscan.py <world> <areas> [--rings rings.txt] [--only name ...] [--wet name ...] [--list 10] [--json out.json] [--strict]
 
 --rings: the ring of every column of the areas (made by RingColumnsExportTest, see there). A column of ring 4 lies in
-the noisy margin of the zone 4→5 and keeps ring 4's own rules, so no fault is counted there; the column is still
-counted as `ring4`. Without --rings every column counts, as before.
+the noisy margin of the zone 4→5 and keeps ring 4's own rules, so no fault is counted there except `fluidvoid`
+(ring 4 water pouring into the void is still a fault); the column is still counted as `ring4`. Without --rings every
+column counts; the z45* areas reach into that margin and refuse to run without --rings.
 
 Per area (overworld only; Nether areas are skipped) it counts:
 
@@ -113,6 +114,7 @@ def scan(world, a, wet, list_n, ring4=None):
     min_y = a.dim.min_y
     # Ring 4's columns (--rings) keep ring 4's own rules: they are not counted as faults of the zone or of ring 5.
     keep = np.ones_like(solid) if ring4 is None else ~np.broadcast_to(ring4, solid.shape)
+    fluid = water | lava
     water &= keep
     lava &= keep
     bedrock &= keep
@@ -143,7 +145,6 @@ def scan(world, a, wet, list_n, ring4=None):
     result["loose"] = int(loose.sum())
     result["ring4"] = 0 if ring4 is None else int(ring4.sum())
 
-    fluid = water | lava
     beside_void = np.zeros_like(solid)
     vc = np.broadcast_to(void_column, solid.shape)
     for d in DIRS[2:]:
@@ -163,6 +164,7 @@ def scan(world, a, wet, list_n, ring4=None):
     return result
 
 
+MARGIN_PREFIX = "z45"
 FAULTS = ("bedrock", "loose", "fluidvoid", "water", "lavahigh")
 
 
@@ -181,6 +183,8 @@ def main():
     faults = 0
     rings = load_rings(args.rings) if args.rings else None
     for a in areas.load(args.areas, only_dim="ow", names=args.only):
+        if rings is None and a.name.startswith(MARGIN_PREFIX):
+            raise SystemExit("area %s reaches into ring 4's margin: pass --rings (RingColumnsExportTest)" % a.name)
         wet = a.name in args.wet if args.wet is not None else False
         r = scan(args.world, a, wet, args.list, None if rings is None else ring4_columns(rings, a))
         region.clear_cache()

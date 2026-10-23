@@ -933,3 +933,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-21 | conditions | Void-teleport mag door muren en vloeren naar elke veilige plek binnen 1–5 blokken (geen zicht- of padeis) | Gebruiker; voelt als een echte glitch, je kunt je uitgraven |
 | 2026-10-22 | worldgen | Ring 5 binnenband: trappen van corrupted_wastes mogen tot ~Y 119 uitsteken (boven de dode grond 70–95), bewuste uitzondering | Gebruiker |
 | 2026-10-22 | worldgen | Ring 5 binnenband: glitch-schijven 4–6 hoog, één hoogte per laagcel van 64 | Gebruiker |
+| 2026-10-23 | infra | Kaartkleuren ring 5 (`MapPalette`): één tint-familie per ring; ring 5 paars-grijs (`corrupted_wastes` 5B4A66, `glitch_fields` 8E7AA8, `false_meadow` 9A88B8, `void_scars` 2E2838, `inverted_hills` 6F6780, `shattered_expanse` B4AEC4), Nether-5 rood-wit (`white_halls` F4EEEE, `hollow_cathedral` 9E2B2B) | Gebruiker akkoord op voorstel |
