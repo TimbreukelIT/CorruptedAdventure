@@ -18,7 +18,6 @@ public final class Ring5WeatherText {
         lang.add(SUBTITLES + "reverse_rain", "Rain rises");
         lang.add(SUBTITLES + "standstill", "The world stands still");
         lang.add(AMBIENT + "glitch", "Something glitches");
-        lang.add(AMBIENT + "echo_step", "Footsteps behind you");
         lang.add(NETHER_AMBIENT + "heartbeat", "Heart beats");
     }
 
@@ -27,7 +26,6 @@ public final class Ring5WeatherText {
         lang.add(SUBTITLES + "reverse_rain", "Regen stijgt op");
         lang.add(SUBTITLES + "standstill", "De wereld staat stil");
         lang.add(AMBIENT + "glitch", "Iets hapert");
-        lang.add(AMBIENT + "echo_step", "Voetstappen achter je");
         lang.add(NETHER_AMBIENT + "heartbeat", "Hart klopt");
     }
 }

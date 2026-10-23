@@ -148,6 +148,26 @@ class Ring5AtmosphereTest {
         }
     }
 
+    /** A slow walker (sneaking, soul sand: steps further apart than the stop time) keeps his burst while he moves. */
+    @Test
+    void aSlowWalkerIsNotStandingStill() {
+        EchoSteps steps = new EchoSteps();
+        RandomSource random = RandomSource.create(11L);
+        long t = 0;
+        while (!steps.inBurst()) {
+            steps.tick(t++, true, random);
+        }
+        int echoes = 0;
+        while (steps.inBurst()) {
+            assertTrue(steps.step(t) != EchoSteps.NONE);
+            echoes++;
+            for (int i = 0; i < 20; i++) {
+                assertEquals(EchoSteps.NONE, steps.tick(++t, true, random), "moving: no stop between slow steps");
+            }
+        }
+        assertTrue(echoes >= EchoSteps.MIN_STEPS, "the whole burst: " + echoes);
+    }
+
     /** The echo is louder at its source so it is heard at 0.5–0.7 of the step; never above 1. */
     @Test
     void echoVolumeMakesUpForTheDistance() {

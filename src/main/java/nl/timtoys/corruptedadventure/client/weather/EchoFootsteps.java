@@ -22,16 +22,14 @@ import java.util.Deque;
 /**
  * The echo footsteps of ring 5 (package 98, V98-6 A, design "horror-elementen"): your own steps sound again a little
  * later, behind you, as if someone follows you. Client only and per player (nothing synced, nobody else hears it). The
- * client's own step sounds are recognised as they are played on the client level (a {@code *.step} sound of the
- * {@code PLAYERS} category at the local player's feet); the echo replays that same sound (the block's own step,
+ * client's own step sounds are recognised as the local player plays them ({@code LocalPlayer#playSound} fires
+ * {@link PlayLevelSoundEvent.AtEntity} for itself; a {@code *.step} sound of the {@code PLAYERS} category); the echo replays that same sound (the block's own step,
  * V98-6 a), a little lower, from behind the way the player looks at the moment it plays. When it comes is
  * {@link EchoSteps}. In both bands, in caves and in {@code false_meadow} (ring 5's weight at the camera &gt; ½).
  */
 public final class EchoFootsteps {
     /** Ring 5 counts from this weight at the camera (the middle of zone 4→5, like the ring weather's gameplay switch). */
     static final float IN_RING_5 = 0.5F;
-    /** How close (blocks) a step sound must be played to the local player to be his. */
-    private static final double OWN_STEP = 0.1;
     /** Horizontal speed² per tick above which an on-ground player walks. */
     private static final double WALKING = 1.0E-4;
 
@@ -52,16 +50,10 @@ public final class EchoFootsteps {
         return level.dimension() == Level.OVERWORLD && Ring5Sky.ring5() > IN_RING_5;
     }
 
-    private static void onPlaySound(PlayLevelSoundEvent.AtPosition event) {
-        // Also fired by the integrated server's level, on its own thread: only the client level counts.
-        if (!event.getLevel().isClientSide()) {
-            return;
-        }
-        Minecraft minecraft = Minecraft.getInstance();
-        LocalPlayer player = minecraft.player;
-        if (player == null || !(event.getLevel() instanceof ClientLevel level) || level != minecraft.level
-                || event.getSound() == null || event.getSource() != SoundSource.PLAYERS || !active(level)
-                || event.getPosition().distanceToSqr(player.position()) > OWN_STEP * OWN_STEP) {
+    private static void onPlaySound(PlayLevelSoundEvent.AtEntity event) {
+        // Also fired by the integrated server for its players, on its own thread: only the local player counts.
+        if (!(event.getEntity() instanceof LocalPlayer) || !(event.getLevel() instanceof ClientLevel level)
+                || event.getSound() == null || event.getSource() != SoundSource.PLAYERS || !active(level)) {
             return;
         }
         Holder<SoundEvent> sound = event.getSound();

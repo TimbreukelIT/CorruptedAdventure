@@ -14,7 +14,7 @@ import javax.sound.sampled.AudioSystem;
 /**
  * Synthesises the ring 5 and Nether ring 5 sounds from our own maths (package 98; pattern of {@code Ring4Sounds.java}):
  * no vanilla audio is read or copied. The three ring 5 weather loops (glitch storm, reverse rain, standstill), the void
- * drone of the outer band, the glitch one-shots, the echo step, the silent "music" of the silent biomes and the
+ * drone of the outer band, the glitch one-shots, the silent "music" of the silent biomes and the
  * heartbeat at the top of the silence meter.
  * Run from the repository root: {@code java tools/sounds/Ring5Sounds.java [path-to-ffmpeg]}; the ffmpeg path can also
  * come from the environment variable {@code FFMPEG}; {@code --wav-only} writes only the WAVs.
@@ -50,9 +50,6 @@ public final class Ring5Sounds {
             new Sound("ambient/ring_5/glitch_2", "glitch", 2),
             new Sound("ambient/ring_5/glitch_3", "glitch", 3),
             new Sound("ambient/ring_5/glitch_4", "glitch", 4),
-            new Sound("ambient/ring_5/echo_step_1", "echo_step", 1),
-            new Sound("ambient/ring_5/echo_step_2", "echo_step", 2),
-            new Sound("ambient/ring_5/echo_step_3", "echo_step", 3),
             // Nether ring 5 (98).
             new Sound("ambient/nether_ring_5/silence_loop_1", "silence", 1),
             new Sound("ambient/nether_ring_5/heartbeat_1", "heartbeat", 1),
@@ -77,7 +74,6 @@ public final class Ring5Sounds {
                 case "standstill" -> standstill(random);
                 case "void_drone" -> voidDrone(random, sound.index());
                 case "glitch" -> glitch(random, sound.index());
-                case "echo_step" -> echoStep(random, sound.index());
                 case "silence" -> silence(random);
                 case "heartbeat" -> heartbeat(random, sound.index());
                 default -> throw new IllegalStateException(sound.variant());
@@ -261,24 +257,6 @@ public final class Ring5Sounds {
         return normalise(out, 0.7);
     }
 
-    /** An echo step, 0.6 s: a dull footfall on hard ground and two soft reflections, as if from far away. */
-    private static double[] echoStep(Random random, int index) {
-        int length = (int) (0.6 * RATE);
-        double[] out = new double[length];
-        double[] noise = band(white(random, length), 120, 900 + index * 150);
-        int count = (int) (0.07 * RATE);
-        for (int i = 0; i < count; i++) {
-            double t = i / (double) RATE;
-            double envelope = (1 - StrictMath.exp(-t * 900)) * StrictMath.exp(-t / 0.018);
-            out[i + (int) (0.01 * RATE)] += envelope * (noise[i] * 3 + 0.4 * StrictMath.sin(2 * Math.PI * 90 * t));
-        }
-        echo(out, 0.13, 0.4);
-        echo(out, 0.27, 0.2);
-        out = lowpass(out, 2500);
-        fadeEnds(out, 0.005);
-        return normalise(out, 0.6);
-    }
-
     /** A heartbeat, 0.9 s: "lub-dub", two low, muffled thumps, the second softer. */
     private static double[] heartbeat(Random random, int index) {
         int length = (int) (0.9 * RATE);
@@ -374,14 +352,6 @@ public final class Ring5Sounds {
             phase += 2 * Math.PI * frequency * (1.3 - 0.3 * Math.min(1, t / 0.1)) / RATE;
             double envelope = (1 - StrictMath.exp(-t * 300)) * StrictMath.exp(-t / 0.05);
             out[first + i] += amp * envelope * (StrictMath.sin(phase) + 0.15 * (random.nextDouble() * 2 - 1));
-        }
-    }
-
-    /** One soft reflection {@code delay} seconds later; nothing past the end. */
-    private static void echo(double[] out, double delay, double gain) {
-        int offset = (int) (delay * RATE);
-        for (int i = out.length - 1; i >= offset; i--) {
-            out[i] += gain * out[i - offset];
         }
     }
 

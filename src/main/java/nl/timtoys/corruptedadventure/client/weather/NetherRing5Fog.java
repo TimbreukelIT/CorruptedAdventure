@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -33,7 +34,9 @@ public final class NetherRing5Fog {
 
     public static void register(IEventBus gameBus) {
         gameBus.addListener(NetherRing5Fog::onClientTick);
-        gameBus.addListener(NetherRing5Fog::onRenderFog);
+        // Also when NetherRing4Fog (registered before, same priority) cancelled the event: between the two rings both
+        // fade, each from the planes the other left.
+        gameBus.addListener(EventPriority.NORMAL, true, NetherRing5Fog::onRenderFog);
         gameBus.addListener(NetherRing5Fog::onLoggingOut);
     }
 

@@ -284,14 +284,6 @@
       }
     ]
   },
-  "ambient.ring_5.echo_step": {
-    "sounds": [
-      "corruptedadventure:ambient/ring_5/echo_step_1",
-      "corruptedadventure:ambient/ring_5/echo_step_2",
-      "corruptedadventure:ambient/ring_5/echo_step_3"
-    ],
-    "subtitle": "subtitles.corruptedadventure.ambient.ring_5.echo_step"
-  },
   "ambient.ring_5.glitch": {
     "sounds": [
       {

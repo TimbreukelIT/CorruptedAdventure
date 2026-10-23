@@ -168,9 +168,6 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .subtitle(subtitle("ambient.ring_5.glitch"))
                 .with(ambient("ambient/ring_5/glitch_1"), ambient("ambient/ring_5/glitch_2"), ambient("ambient/ring_5/glitch_3"),
                         ambient("ambient/ring_5/glitch_4")));
-        add(ModSoundEvents.RING_5_ECHO_STEP, SoundDefinition.definition()
-                .subtitle(subtitle("ambient.ring_5.echo_step"))
-                .with(file("ambient/ring_5/echo_step_1"), file("ambient/ring_5/echo_step_2"), file("ambient/ring_5/echo_step_3")));
         add(ModSoundEvents.NETHER_RING_5_SILENCE, SoundDefinition.definition()
                 .with(loop("ambient/nether_ring_5/silence_loop_1")));
         add(ModSoundEvents.NETHER_RING_5_HEARTBEAT, SoundDefinition.definition()

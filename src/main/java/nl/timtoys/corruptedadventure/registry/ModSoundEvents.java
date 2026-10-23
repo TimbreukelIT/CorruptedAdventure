@@ -111,11 +111,6 @@ public final class ModSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_VOID_DRONE = register("ambient.ring_5.void_drone");
     /** Short digital crackle: the inner band's rare additions and a void teleport. */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_GLITCH = register("ambient.ring_5.glitch");
-    /**
-     * The contract's echo step (a dull step with reverb). Reserved: the echo footsteps replay the block's own step sound
-     * (V98-6 a), so nothing plays this yet; it stays for an own echo later.
-     */
-    public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_ECHO_STEP = register("ambient.ring_5.echo_step");
     /** Almost silent: the "music" of the silent biomes, so vanilla's game music never plays there. */
     public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_5_SILENCE = register("ambient.nether_ring_5.silence");
     /** Heartbeat, the only sound left at the top of the silence meter. */

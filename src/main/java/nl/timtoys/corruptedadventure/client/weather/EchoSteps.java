@@ -24,11 +24,16 @@ final class EchoSteps {
     static final float MAX_LOUDNESS = 0.7F;
     /** A little lower than the player's own step. */
     static final float PITCH = 0.95F;
-    /** Ticks without a step after which the player counts as standing still. */
+    /**
+     * Ticks without moving (and without a step) after which the player counts as standing still. Movement, not the gap
+     * between steps: sneaking or soul sand spaces the steps further apart than this.
+     */
     static final int STOPPED_AFTER = 12;
-    /** The gap between the last echo and the extra one, when the player's own pace is unknown or odd. */
+    /** The gap between the last echo and the extra one: the player's own pace, clamped to this range. */
     static final int MIN_GAP = 5;
     static final int MAX_GAP = 12;
+    /** The gap when the pace is unknown (only one step in the burst): vanilla's walking pace. */
+    static final int DEFAULT_GAP = 8;
     /** Vanilla's attenuation range of a sound up to volume 1 (blocks): its gain falls linearly to 0 there. */
     static final double SOUND_RANGE = 16.0;
 
@@ -43,6 +48,7 @@ final class EchoSteps {
     private float loudness;
     private long lastStep = NONE;
     private long previousStep = NONE;
+    private long lastMove = NONE;
 
     /**
      * One client tick in ring 5.
@@ -51,6 +57,9 @@ final class EchoSteps {
      * @return the tick of the one extra echo after a stop, or {@link #NONE}
      */
     long tick(long now, boolean walking, RandomSource random) {
+        if (walking) {
+            lastMove = now;
+        }
         if (!burst) {
             if (walking) {
                 if (walkNeeded < 0) {
@@ -62,8 +71,8 @@ final class EchoSteps {
             }
             return NONE;
         }
-        if (lastStep != NONE && now - lastStep >= STOPPED_AFTER) {
-            long gap = previousStep == NONE ? MIN_DELAY : Math.max(MIN_GAP, Math.min(MAX_GAP, lastStep - previousStep));
+        if (lastStep != NONE && now - Math.max(lastStep, lastMove) >= STOPPED_AFTER) {
+            long gap = previousStep == NONE ? DEFAULT_GAP : Math.max(MIN_GAP, Math.min(MAX_GAP, lastStep - previousStep));
             long extra = lastStep + delay + gap;
             end();
             return extra;

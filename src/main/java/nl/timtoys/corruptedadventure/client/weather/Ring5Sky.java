@@ -34,6 +34,9 @@ public final class Ring5Sky {
     /** Vanilla's star brightness at midnight ({@code ClientLevel#getStarBrightness}: at most 0.5). */
     static final float FULL_STARS = 0.5F;
 
+    /** Our own scratch array for the dimmed glow (render thread only; vanilla shares its array the same way). */
+    private static final float[] SUNRISE = new float[4];
+
     private static float ring5;
     private static float blackness;
     private static float innerFog;
@@ -150,13 +153,17 @@ public final class Ring5Sky {
 
     /**
      * The sunrise glow with its alpha dimmed like the sun, for {@code DimensionSpecialEffectsMixin}; {@code colour}
-     * itself (vanilla's shared array, never written) outside ring 5's outer band.
+     * itself (vanilla's shared array, never written) outside ring 5's outer band. The result is a shared array too.
      */
     public static float[] sunriseColor(float[] colour) {
         if (colour == null || blackness <= 0.0F) {
             return colour;
         }
-        return new float[] {colour[0], colour[1], colour[2], colour[3] * sunFactor()};
+        SUNRISE[0] = colour[0];
+        SUNRISE[1] = colour[1];
+        SUNRISE[2] = colour[2];
+        SUNRISE[3] = colour[3] * sunFactor();
+        return SUNRISE;
     }
 
     static float smoothstep(float t) {

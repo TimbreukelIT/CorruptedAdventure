@@ -25,8 +25,8 @@ import nl.timtoys.corruptedadventure.worldgen.biome.BiomeAmbience;
  *     {@link #SKY_FACTOR} × so the grey-violet sky overhead stays; the colour drained to its own grey (luma). It thins
  *     out towards ring 5's outer boundary, so the outer band looks far over the void.</li>
  *     <li><b>Outer band</b>: the fog colour goes black with the sky ({@link Ring5Sky#blackness}).</li>
- *     <li><b>Glitch fog</b> (V98-4 A): {@link GlitchFog} makes the edge stutter in both bands, not during a glitch
- *     storm of its own (that has its flashes).</li>
+ *     <li><b>Glitch fog</b> (V98-4 A): {@link GlitchFog} makes the edge stutter in both bands (from the middle of zone
+ *     4→5 on), not during a glitch storm of its own (that has its flashes).</li>
  * </ul>
  * Combining as {@link Ring4Fog}: distances last ({@link EventPriority#LOWEST}, also after a cancelled event) and only
  * ever closer, so a denser weather fog wins; the drain to grey first ({@link EventPriority#HIGH}, the weather tints on
@@ -43,6 +43,8 @@ public final class Ring5Fog {
     private static final float GLITCH_RED = 0x12 / 255.0F;
     private static final float GLITCH_GREEN = 0x08 / 255.0F;
     private static final float GLITCH_BLUE = 0x18 / 255.0F;
+    /** The glitch fog runs from this ring 5 weight at the camera on (the middle of zone 4→5). */
+    static final float GLITCH_FROM = 0.5F;
     /** Above this glitch storm strength the storm's own flashes take over. */
     static final float STORM_TAKES_OVER = 0.5F;
 
@@ -70,7 +72,7 @@ public final class Ring5Fog {
         if (level == null || minecraft.isPaused()) {
             return;
         }
-        boolean active = Ring5Sky.ring5() > 0.0F;
+        boolean active = Ring5Sky.ring5() > GLITCH_FROM;
         float rate = 1.0F;
         if (active) {
             Vec3 camera = minecraft.gameRenderer.getMainCamera().getPosition();

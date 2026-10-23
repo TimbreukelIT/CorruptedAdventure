@@ -312,6 +312,17 @@ speler); de drie weertypes met de nieuwe audio en deeltjes.
 - Voortgang: 2026-10-23 16:06 S-smoke `r5-98` (poort 6, verse wereld): `Done`, log zonder ERROR en zonder
   client-class-fout; RCON `/ca ring`, `/ca weather 5 glitch_storm`, `/ca weather`, `/ca castles`; gestopt. Geen client
   (slots bezet door andere stromen, o.a. perf van W3): de checklist van §6 is voor de gebruiker (6b).
+- Voortgang: 2026-10-23 16:40 `/code-review medium` (main...ring5/98, 9 bevindingen). Opgelost: (1) de eigen stappen
+  komen als `PlayLevelSoundEvent.AtEntity` (`LocalPlayer#playSound`), niet `AtPosition` — de echo luisterde naar het
+  verkeerde event; (2)+(6) "stilstand" = 12 ticks zonder beweging (niet de staptussenruimte: sluipen/zielenzand), terugval
+  van de pas 8 ticks (`DEFAULT_GAP`); (3) `NetherRing5Fog` ook op een door `NetherRing4Fog` geannuleerd event (beide
+  faden over elkaar); (5) glitch-fog pas vanaf ring 5-gewicht ½ (zoals de echo), niet al diep in zone 4→5; (8) het
+  ongebruikte event `ambient.ring_5.echo_step` + 3 `.ogg`'s + ondertitel weg; (9) geen allocatie per frame voor de
+  zonsopgang-gloed. Bewust niet: (4) "dubbel zwart" — vanilla mengt de fog maar voor `1 − (0,25 + 0,75·rd/32)^¼` (≈ 15 %
+  bij 12 chunks, max. ~26 %) naar de lucht; het extra verschil is ≤ k·b·(1 − b), enkele procenten, en de
+  buitenband-biomes hebben een lichtere fog dan lucht, dus geen donkere band; bij 6b nakijken. (7) categorie: de
+  aanroep in `VoidTeleport` en de haakregels in `Ring5Biomes`/`NetherRing5Biomes` zijn op opdracht van main (V98-8 A,
+  "minimaal, INT2-mergepunt") en volgen het patroon van ring 3/4 (`BiomeAmbience`-haken); vastgelegd in de backlog.
 
 ## CODEBASE-delta (gebouwd; INT schrijft hem in `CODEBASE.md`)
 - `registry/ModParticleTypes` (blok `// ring 5 — A`): `void_mote`, `glitch_pixel`, `reverse_raindrop`; `particles/*.json`
@@ -319,14 +330,14 @@ speler); de drie weertypes met de nieuwe audio en deeltjes.
   Providers zonder nieuwe klassen: `DriftingHazeParticle.VOID_MOTE` (stijgt traag, geen tint), `GlitchSpeckParticle`
   met record `Jitter` (`SPECK` 0,15/1 op 6 voor `glitch_speck`, `PIXEL` 0,3/1 op 3 voor `glitch_pixel`),
   `RisingBubbleParticle.REVERSE_RAINDROP` (schiet omhoog, stopt onder een dak).
-- `registry/ModSoundEvents` (blok `// ring 5 — A`): `ambient.ring_5.{void_drone,glitch,echo_step}`,
-  `ambient.nether_ring_5.{silence,heartbeat}` (`heartbeat` nieuw t.o.v. het contract; `echo_step` gereserveerd: V98-6 a
-  speelt het stapgeluid van het blok). `ModSoundDefinitionsProvider`: de drie ring 5-weerloops en de vijf nieuwe events
+- `registry/ModSoundEvents` (blok `// ring 5 — A`): `ambient.ring_5.{void_drone,glitch}`,
+  `ambient.nether_ring_5.{silence,heartbeat}` (`heartbeat` nieuw t.o.v. het contract; **`echo_step` niet geregistreerd**:
+  V98-6 a speelt het stapgeluid van het blok, een ongebruikt event + `.ogg`'s viel in de review weg). `ModSoundDefinitionsProvider`: de drie ring 5-weerloops en de vijf nieuwe events
   naar eigen `.ogg`'s (geen vanilla-placeholders meer voor ring 5). `datagen/lang/Ring5WeatherText` + ondertitels
-  `ambient.ring_5.glitch`, `ambient.ring_5.echo_step`, `ambient.nether_ring_5.heartbeat` (en + nl).
+  `ambient.ring_5.glitch`, `ambient.nether_ring_5.heartbeat` (en + nl).
 - **Nieuw `tools/sounds/Ring5Sounds.java`** (patroon `Ring4Sounds.java`; `java tools/sounds/Ring5Sounds.java [ffmpeg]`,
-  `--wav-only`) → 17 `.ogg`'s: `sounds/weather/ring_5/{glitch_storm_loop_1..2, reverse_rain_loop_1..2, standstill_loop_1}`,
-  `sounds/ambient/ring_5/{void_drone_loop_1..2, glitch_1..4, echo_step_1..3}`,
+  `--wav-only`) → 14 `.ogg`'s: `sounds/weather/ring_5/{glitch_storm_loop_1..2, reverse_rain_loop_1..2, standstill_loop_1}`,
+  `sounds/ambient/ring_5/{void_drone_loop_1..2, glitch_1..4}`,
   `sounds/ambient/nether_ring_5/{silence_loop_1, heartbeat_1..2}`.
 - `worldgen/biome/`: nieuw `Ring5Atmosphere` (`Look(particle, particleChance, drone, glitchChance, strangeCaves)` per
   biome) en `NetherRing5Atmosphere` (`ASH_CHANCE` 0,0005 `white_ash`); `BiomeAmbience.ring5(key, colours)`,
@@ -342,8 +353,8 @@ speler); de drie weertypes met de nieuwe audio en deeltjes.
   1 vanaf 200 voorbij; `innerFog`; `skyColor`, `starBrightness` (≥ 0,5 × zwart), `sunFactor` (→ 0,4),
   `sunriseColor`), `Ring5Fog` (binnenband-fog `innerFar` = 0,45 × zicht in 48–112, near 0,15 ×, lucht-fog × 2, kleur
   naar luma op `HIGH`; zwart en glitch-violet op `LOW`; afstanden op `LOWEST`), `GlitchFog` (pure stotter-staat),
-  `EchoFootsteps` (+ pure `EchoSteps`; `PlayLevelSoundEvent.AtPosition` op het client-level, `*.step` in `PLAYERS` aan de
-  voeten van de lokale speler), `NetherRing5Fog` (0,8 × zicht ≤ 192, near 0,4 ×, op `is_nether_ring_5`),
+  `EchoFootsteps` (+ pure `EchoSteps`; `PlayLevelSoundEvent.AtEntity` van de `LocalPlayer` (zijn `playSound` vuurt
+  dat, niet `AtPosition`), `*.step` in `PLAYERS`; stilstand = 12 ticks zonder beweging), `NetherRing5Fog` (0,8 × zicht ≤ 192, near 0,4 ×, op `is_nether_ring_5`),
   `SilenceEffects` (volume 1 → 0,35 tussen drempel 1 en 3, daarna 0, ≤ 0,05 per tick; hartslag in `MASTER` 20 → 10
   ticks; HUD-lagen weg vanaf drempel 2 met 2 punten hysterese), `Ring5Meters` (meter + drempels van de gesyncte
   config; `SILENCE` op naam), `VoidGlitchEffects` (void-meter ≥ drempel 1: ruis via `GlitchStormOverlay.feedVoid` tot
