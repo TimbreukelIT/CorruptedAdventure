@@ -205,3 +205,5 @@ Ring 4 (V3 = B): `needs_diamond_tool`, hardheid vanilla-erts +1,0, XP 4–7 / 5�
 
 ## Voortgang
 - 2026-10-21: plan opgesteld (startcommit = de commit met deze plannen).
+- 2026-10-22/23: INT1 op `main`: de zeven stromen gemerged (B `8f941db0`, T `24d8f47f`, W-terrein `ec2e1fea`, W-biomes `84422d4f`, W-nether `adb29102`, C `0003f291`, A `45a56b42`), integratiefixes en zware checks (stap 3–6, t/m `df17ea25`).
+- 2026-10-23: INT1 stap 8 (docs): CODEBASE-delta's van alle stromen, beslissingenlog (V1–V12 + implementatiekeuzes), backlog, `waves.md` §9 (alles gedaan), `contract.md` §4 (Nether-5-regio), checklist `teststop-6a.md`. Open vóór 6a: 86b, 87b, 86c (stap 7).

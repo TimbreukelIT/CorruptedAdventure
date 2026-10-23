@@ -249,22 +249,33 @@ Nummers 81–99 blijven, met nieuwe inhoud; extra's met lettercodes. Het oude pa
 
 ## 9. Voorgestelde doc-wijzigingen (door INT, na de antwoorden op de open punten)
 
+**Stand (INT1 golf 1, 2026-10-23):** alles hieronder is gedaan (✅), in de docs-commit van INT1; per punt waar.
+
 - **`fase-1-wereld.md` §3 blok G:** tabel vervangen door §8 hierboven (of de variant uit V11), met de kop "Herzien
-  (sparring ring 5)": golven, teststops 6-pre/6a/6b/6c, verwijzing naar `docs/plans/ring-5/`.
-- **`fase-1-wereld.md` §1.3:** bij de zone 4→5: "breukzone (sinds de sparring ring 5), breedte <V7>".
+  (sparring ring 5)": golven, teststops 6-pre/6a/6b/6c, verwijzing naar `docs/plans/ring-5/`. — ✅ blok G vervangen
+  (kop "Herzien 2026-10-21 (sparring ring 5)", met golf, stand en teststops).
+- **`fase-1-wereld.md` §1.3:** bij de zone 4→5: "breukzone (sinds de sparring ring 5), breedte <V7>". — ✅ (256, V7-A)
 - **`fase-1-wereld.md` §1.8 Buitenrand:** de vorm komt uit de buitenband van ring 5 (84, was change 93); de oude
-  zwevende-eilanden-invoer wordt `<V2>`; "Afstemming in change 93" vervalt.
-- **`fase-1-wereld.md` §1.6:** weertype `STANDSTILL` (stilstand) bij ring 5; oude changenummers 85 → 92.
-- **`fase-1-wereld.md` §1.9/§1.11:** changenummers 81 (ertsen) → 95; condities 88 → 91, 97 → 97.
+  zwevende-eilanden-invoer wordt `<V2>`; "Afstemming in change 93" vervalt. — ✅ (V2-A: vervalt in de overworld)
+- **`fase-1-wereld.md` §1.6:** weertype `STANDSTILL` (stilstand) bij ring 5; oude changenummers 85 → 92. — ✅
+- **`fase-1-wereld.md` §1.9/§1.11:** changenummers 81 (ertsen) → 95; condities 88 → 91, 97 → 97. — ✅ (§1.11; §1.9
+  noemt geen nummers; ook §Geluid 90 → 98)
 - **`fase-1-wereld.md` Ring 4, "Grens 4→5":** de landbruggen-alinea en de afgrondzee als "vervallen in ring 5 (85)"
-  markeren; de breukzone beschrijven (uit V7); de gespleten rots volgens V8.
+  markeren; de breukzone beschrijven (uit V7); de gespleten rots volgens V8. — ✅
 - **`fase-1-wereld.md` Ring 5:** de antwoorden in het blok "Sparring ring 5" (band, buitenband, onderkant, hoogtes,
-  kastelen, bruggen, vloeistof, biome-indeling); "Biomes (5)" → 6; Nether-5 "Biome (1)" → 2 met de indeling uit V10.
-- **`02-beslissingenlog.md`:** één regel per beantwoorde vraag (datum, `worldgen`/`infra`, besluit, reden).
+  kastelen, bruggen, vloeistof, biome-indeling); "Biomes (5)" → 6; Nether-5 "Biome (1)" → 2 met de indeling uit V10. — ✅
+  (ook het weer: stilstand en de gewichten per band)
+- **`02-beslissingenlog.md`:** één regel per beantwoorde vraag (datum, `worldgen`/`infra`, besluit, reden). — ✅ V1–V12
+  (2026-10-21); de vragenronde golf 1 stond er al.
 - **`CODEBASE.md`:** sectie "Ring 5-haken per stroom (81)"; `Ring5Band`, `Ring5Field`, `ZoneFracture`, nieuwe DF-types,
-  `/ca castles`; de valkuil "zonevorm ná de blend"; `Ring4Sundered` bijwerken of verwijderen na 85.
+  `/ca castles`; de valkuil "zonevorm ná de blend"; `Ring4Sundered` bijwerken of verwijderen na 85. — ✅ (golf 0 in
+  `476199f7`; valkuil en `Ring4Sundered` in de docs-commit van INT1)
 - **`docs/backlog.md`:** r. 259 (naad 4\|5) en r. 262 (zone 4→5 mengt ring 5-placeholder) afhandelen in 82/85;
   r. 396–397 (decor D, gespleten rots) volgens V8; r. 438 (breukzone) bij 85; r. 266 (placeholders) bij golf 3;
-  nieuw: `[infra]` slot-aantal van `slots.sh` instelbaar per machine (`CA_MAX_SLOTS`), zodat de container op 2 kan.
-- **`tools/test/README.md`:** de nieuwe bodemscan en de ring 5-gebiedsbestanden (`areas/ring5.txt`, `castles.txt`).
-- **`00-overzicht.md`:** geen wijziging nodig (de Nether-5-biomes staan in `fase-1-wereld.md`).
+  nieuw: `[infra]` slot-aantal van `slots.sh` instelbaar per machine (`CA_MAX_SLOTS`), zodat de container op 2 kan. — ✅
+  (259, 262, 438 afgevinkt; 396–397 naar 86c; 266 deels; `CA_MAX_SLOTS` nieuw)
+- **`tools/test/README.md`:** de nieuwe bodemscan en de ring 5-gebiedsbestanden (`areas/ring5.txt`, `castles.txt`). — ✅
+  (al in 81b/INT1: sectie "Voidscan (ring 5)")
+- **`00-overzicht.md`:** geen wijziging nodig (de Nether-5-biomes staan in `fase-1-wereld.md`). — ✅ (niets gedaan)
+- **Ook (INT1):** `contract.md` §4: de regel `ring_5/nether/region` volgt 87 (kathedraalmasker; `nether_ring_5_region`
+  is de vlakte-ruis). — ✅

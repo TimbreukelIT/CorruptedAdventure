@@ -23,7 +23,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 
 ### 1.3 Ringgrenzen en overgangszones
 - Grenzen uit config (zie `00-overzicht.md`), vervormd met seeded ruis van **±96 blokken**. Vorm (change 2): twee lagen simplex-ruis, golven van ~600 en rimpels van ~150 blokken (75/25), gesampled in overworld-coördinaten zodat de Nether exact meeloopt.
-- Overgangszone van **~128 blokken** rond elke grens (Nether: ÷4, dus ~32 blokken en ±24 ruis); uitzondering zone 4→5 (`sundered_reach`): ~256 (sparring ring 4, uitwerking in pakket 58/63).
+- Overgangszone van **~128 blokken** rond elke grens (Nether: ÷4, dus ~32 blokken en ±24 ruis); uitzondering zone 4→5 (`sundered_reach`): ~256 (sparring ring 4, uitwerking in pakket 58/63); sinds de sparring ring 5 een **breukzone** (V7-A, pakket 85), breedte 256: grotendeels dichte grond met droge spleten, opgeheven schotsen en losse brokken, één veld ná de blend (`ZoneFracture`).
 - In de overgangszone: blend van terrein en een eigen overgangsbiome per grens (uit te werken per ring). De zone mag een eigen terreinvorm krijgen via het ring-gewicht als density function (JSON, `ring_weight/overworld/ring_N`: `ring_blend` met constante invoer), naast de smoothstep-blend (change 31: de beddingen van `dry_riverbeds`). Een overgangsbiome vult **de hele zone**, ook boven water (change 11). Tot een grens zijn overgangsbiome heeft, wisselt de biome **hard op gewicht 0,5** (precies op de verruisde grens); overgangsbiomes staan in het optionele veld `transitions` van de ring-BiomeSource (zie §1.14).
 - **Config → snapshot per wereld:** de config geeft de standaardwaarden. Bij het aanmaken van een wereld worden ze in die wereld vastgelegd; daarna gebruikt `ringAt` alleen die snapshot. Een aangepaste config geldt alleen voor nieuwe werelden. De server synct de waarden naar de client (voor HUD en muren).
 - **Sync naar de client (gebouwd in change 18):** bij elke login in een ringwereld stuurt de server payload `corruptedadventure:ring_layout` (de snapshot + een ruis-seed). De grensruis gebruikt sindsdien als seed de eerste 8 bytes van SHA-256(wereldseed ‖ `corruptedadventure:ring_boundary`), op server én client; de wereldseed zelf gaat nooit naar de client. Daardoor liggen de verruisde grenzen (binnen ±96 blokken) anders dan in werelden van vóór change 18; vorm en karakter zijn gelijk. De client rekent `ringAt` zelf (`ClientRingLayout`, F3-regel `CA ring (client)`), alleen voor weergave; gameplay rekent op de server.
@@ -45,7 +45,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 
 ### Geluid (productiemethode, change 32)
 - **Eigen, deterministisch synthesescript, geen vanilla-audio in de repo:** `tools/sounds/Ring2Sounds.java` (single-file Java, alleen JDK, buiten Gradle en de jar) schrijft mono WAV's naar `build/sounds/` (vaste seed per bestand, `StrictMath`, twee keer draaien = identiek) en laat ffmpeg (libvorbis, `-ac 1 -q:a 4`) er mono Ogg Vorbis van maken in `assets/corruptedadventure/sounds/`. De `.ogg`-bestanden staan in git; build en CI hebben ffmpeg niet nodig.
-- Varianten: `drone` (laag, zwellend, overtonen), `ambient` (vogels/insecten); `loop` komt in change 36. Sjabloon voor de geluiden van ring 3-5 (changes 50, 80 (ring 4 sinds de sparring ring 4), 90).
+- Varianten: `drone` (laag, zwellend, overtonen), `ambient` (vogels/insecten); `loop` komt in change 36. Sjabloon voor de geluiden van ring 3-5 (changes 50, 80 (ring 4 sinds de sparring ring 4), 98 (ring 5 sinds de sparring ring 5; was 90)).
 - Positionele geluiden zijn mono; de pitch-klem van vanilla is 0,5-2,0, dus echt diepe klanken vragen eigen audio. Kwaliteit is "nette programmer-audio", later te vervangen door eigen opnames zonder andere wijzigingen.
 
 ### 1.5 Grensmuur (ontwerp nu, bouw in fase 5)
@@ -60,7 +60,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Gameplay-effecten van weer (bijv. extra hitte bij asregen) lopen via de condities-tick op de server, nooit op de client.
 
 **Uitwerking (change 20, gebouwd):**
-- **Typen:** Java-enum `RingWeatherType` met ring en dimensie per waarde: `clear` + `sandstorm`, `heat_wave` (ring 2), `ash_rain`, `eruption` (ring 3), `dense_fog`, `toxic_rain` (ring 4), `glitch_storm`, `reverse_rain` (ring 5). Ze bestaan al, maar hebben nog geen effect: rendering en gameplay komen in changes 28, 45, 70 (ring 4, sinds de sparring ring 4; was 66) en 85. Tot dan "regent" het onzichtbaar (alleen in F3 en `/ca weather`). Ring 1 heeft geen ringweer (alleen vanilla regen/onweer).
+- **Typen:** Java-enum `RingWeatherType` met ring en dimensie per waarde: `clear` + `sandstorm`, `heat_wave` (ring 2), `ash_rain`, `eruption` (ring 3), `dense_fog`, `toxic_rain` (ring 4), `glitch_storm`, `reverse_rain` (ring 5). Ze bestaan al, maar hebben nog geen effect: rendering en gameplay komen in changes 28, 45, 70 (ring 4, sinds de sparring ring 4; was 66) en 92 (ring 5, sinds de sparring ring 5; was 85). Sinds de sparring ring 5 heeft ring 5 een derde type **`standstill`** (stilstand: wolken en regen bevriezen, geluid valt weg; kort en zeldzaam, 40–120 s; gebouwd in 92, achteraan de enum). Tot dan "regent" het onzichtbaar (alleen in F3 en `/ca weather`). Ring 1 heeft geen ringweer (alleen vanilla regen/onweer).
 - **Staat:** per ring type, resterende en totale duur en een `seed` (getrokken bij elk nieuw weer, bijv. voor de windrichting van change 28). `SavedData` per dimensie, alleen voor dimensies met typen in `corrupted_world`-werelden: nu alleen de overworld (`<wereld>/data/corruptedadventure_ring_weather.dat`). **Geen Nether-ringweer.** Een onleesbare of niet-passende opgeslagen staat wordt `clear` met een nieuwe duur.
 - **Cyclus:** elke 20 ticks op de server; na een weer altijd `clear`, na `clear` een type van die ring op gewicht. **Vanilla-ritme** (keuze gebruiker): helder 600–9000 s (12.000–180.000 ticks), weer 600–1200 s (12.000–24.000 ticks), gelijke gewichten; per ring instelbaar in de SERVER-config (`[weather.ring2]` … `[weather.ring5]`: `clearMinSeconds`, `clearMaxSeconds`, `weatherMinSeconds`, `weatherMaxSeconds`, `<type>Weight` 0–100). Live gelezen: een wijziging geldt vanaf het volgende weer. Gewicht 0 = niet in de cyclus (wel via `/ca weather`).
 - **Vanilla-weer:** onafhankelijk (`/weather` raakt het ringweer niet), maar de cyclus staat stil zolang `doWeatherCycle` uit staat (ook de fade).
@@ -90,7 +90,8 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - **World border op de void-rand, 10.200** (was 10.000; Nether ÷4: ~2.550, was 2.500). De exacte standaardwaarde legt pakket 58 vast. Server-side, alleen in werelden met de `corrupted_world`-preset (herkend aan de chunk-generator `ring_noise` van de overworld); andere presets blijven vanilla.
 - Uitwerking (change 7): de overworld-border (midden 0,0, diameter 2 × `voidOuterRadius`) wordt alleen gezet zolang hij nog op de vanilla-standaard staat (grootte én midden 0,0, geen lerp) — in de praktijk bij het aanmaken; een door een admin gewijzigde border (ook alleen het midden) blijft staan. Bekende, geaccepteerde beperking: wie bewust terugzet naar de vanilla-standaard, krijgt na een herstart weer 10.000. Schade en waarschuwing: vanilla-standaard.
 - Vanilla schaalt de Nether-border **niet** (alleen het midden; de grootte is 1-op-1 die van de overworld, en de client krijgt altijd de overworld-border). Daarom een echte Nether-border: bij elke start afgeleid als overworld-grootte ÷ `coordinate_scale` (dus 2.500 bij 10.000), en die volgt elke latere wijziging (`/worldborder set/add/center`) mee. Spelers in de Nether krijgen hun border via vanilla-packets na login, dimensiewissel en respawn en bij elke groottewijziging; geen mixins.
-- Vorm (change 6): zwevende eilanden (overworld Y ~50–110, Nether Y ~30–90) die van de grens van ring 5 tot ~9.900 dunner en zeldzamer worden; de laatste ~100 blokken vóór de border zijn leeg. Nether ÷4. Afstemming op het echte ring 5-terrein volgt in change 93 (was 89). (Getallen bij de radii van change 6; met de nieuwe radii van pakket 58 schuift de rand ~200 blokken op.)
+- Vorm (change 6): zwevende eilanden (overworld Y ~50–110, Nether Y ~30–90) die van de grens van ring 5 tot ~9.900 dunner en zeldzamer worden; de laatste ~100 blokken vóór de border zijn leeg. Nether ÷4. (Getallen bij de radii van change 6; met de nieuwe radii van pakket 58 schuift de rand ~200 blokken op.)
+- **Herzien (sparring ring 5, V2-A, pakket 84; was change 93):** in de overworld komt de vorm van de buitenrand uit de buitenband van ring 5: hetzelfde veld (`Ring5Field`) loopt door tot in de void-rand, steeds kleinere brokken, leeg vanaf ~10.050; `void/overworld.json` verwijst naar de ring 5-invoer (geen naad op de harde wissel). De oude zwevende-eilanden-invoer vervalt in de overworld; de Nether houdt `void/nether.json`. Een aparte afstemming (change 93) is niet meer nodig.
 - **Geen water of lava in de void:** vanaf het begin van de overgangszone ring 5 → void geeft de wereld geen zee-vloeistof meer (eigen chunk-generator, zie §1.15).
 
 ### 1.9 Omgevingscondities (systeem)
@@ -125,7 +126,7 @@ Beslissingen staan ook (kort) in `02-beslissingenlog.md`.
 - Ring 1 heeft alle vanilla-ores.
 - Naar buiten toe **bouwen vanilla-ores af**: ijzer en kolen schaarser, diamant bijna afwezig. Ringores nemen het over.
 - Netherite/ancient debris blijft zoals vanilla. Ring-gear is per ring een tier hoger (fase 2), zodat netherite rond ring 3 al achterloopt.
-- **Uitwerking (change 25) — afbouwmechanisme voor ring 2–5 (changes 25, 41, 77 (ring 4, sinds de sparring ring 4; was 61), 81):**
+- **Uitwerking (change 25) — afbouwmechanisme voor ring 2–5 (changes 25, 41, 77 (ring 4, sinds de sparring ring 4; was 61), 95 (ring 5, sinds de sparring ring 5; was 81)):**
   - Per ring en vanilla-erts een eigen placed feature `corruptedadventure:ring_<n>/<vanilla-pad>` = vanilla's eigen placed feature (zelfde configured feature, aantallen, hoogtes en air-exposure) met één `ring_chance` (`progress`, vaste kans = factor) direct vóór de biome-filter. Buiten de ring is de kans 0. Helper `RingVanillaOres` (`placed`, `keys`, `factors`); vanilla's getallen worden gelezen, niet gekopieerd.
   - De biomes van een ring krijgen géén vanilla-ertsen (alleen `underwater_magma` uit `addDefaultOres` blijft); de geschaalde ertsen en de ringores komen via één biome modifier per ring (`add_ring_<n>_ores`, `UNDERGROUND_ORES`, vaste volgorde).
   - Vaste factor per ring (geen verloop binnen de ring); `withered_expanse` (zone 1→2) houdt volle vanilla-ertsen. Vanilla-ertsen alleen in steen/deepslate, nooit in ringgesteente.
@@ -917,9 +918,11 @@ Sleutelmaterialen uit Nether-ring N zijn thematisch een tegengif voor ring N+1.
 **Grens 4→5: `sundered_reach` — de wereld valt uit elkaar**
 - De grond breekt op in steeds meer **zwevende brokken boven een diepe leegte**; eilanden worden de enige grond, water stort de diepte in, kleuren vallen weg, de eerste glitchplekken. Vervangt `blighted_mire` als concept.
 - **Breedte ~256** (het dubbele van de gewone zone), geleidelijk.
-- **De leegte is een mistige afgrond met diep water onderin** (overleefbaar); de echte void blijft voor ring 5.
-- **Oversteken:** enkele smalle **landbruggen/ruggen** blijven heel (om de ~500–800 blokken), en de brokken liggen dicht genoeg om te springen of kort te overbruggen.
-- **Golf 0-plan (2026-10-13):** een overgangsbreedte per grens in de config (4→5 = 256, de rest 128; ook in de snapshot en de layout-sync), zodat `ringAt` de echte zone kent; Nether ÷4 = 64. De afgrond heeft een stilstaande zee op Y 0; water stort alleen als vastgelegde vallen de diepte in, verder nergens vrij water tegen lucht.
+- **De leegte is een mistige afgrond met diep water onderin** (overleefbaar); de echte void blijft voor ring 5. — *Vervallen in ring 5 (85, V7-A): geen afgrond en geen zee op Y 0 meer; de zone is droog.*
+- **Oversteken:** enkele smalle **landbruggen/ruggen** blijven heel (om de ~500–800 blokken), en de brokken liggen dicht genoeg om te springen of kort te overbruggen. — *Vervallen in ring 5 (85, V8-A): de landbruggen zijn weg.*
+- **Breukzone (sparring ring 5, V7-A/V8-A, gebouwd in 85):** de zone wordt één gedeeld veld ná de blend (`ZoneFracture`, eigenaar W-terrein ring 5), zodat ring 4 en ring 5 dezelfde breuk zien. Breedte 256; ~75 % dichte grond (Y ≥ 64; gemeten 76–79 % per strook van 32); een netwerk van droge spleten 2–8 breed en 30–60 diep met een ruwe puinbodem, langs en schuin op de ring; opgeheven en gekantelde schotsen (8–30 omhoog, ≤ 30°); losse brokken vooral in de buitenste helft; langs elke spleet om de 24–34 blokken een dichte oversteek (lopend, niet springen). Patroon: vast → breuk → vast → uiteenvallen. `sundered_reach` (biome, kleur, grijsfade, drone) blijft.
+- **Gespleten rots (V8-A):** blijft als blikvanger, maar verhuist van de landbruggen naar een opgeheven, vlakke schots (top Ø ≥ 16) om de ~650 (± 100) blokken langs de zone (`ZoneFracture.landmarksWithin`; plaatsing in 86c, tot dan staat er geen rots).
+- **Golf 0-plan (2026-10-13):** een overgangsbreedte per grens in de config (4→5 = 256, de rest 128; ook in de snapshot en de layout-sync), zodat `ringAt` de echte zone kent; Nether ÷4 = 64. De afgrond heeft een stilstaande zee op Y 0; water stort alleen als vastgelegde vallen de diepte in, verder nergens vrij water tegen lucht. *(Afgrond en zee vervallen in ring 5, 85; de zonebreedte per grens blijft.)*
 
 **Unieke blokken (eerste versies in 71a)**
 - **`tidestone`-set** (werktitel): blauwgrijs gelaagd gesteente + cobble, polished en bricks (met stairs, slab, wall), voor kliffen, kluiten en tunnels.
@@ -1080,22 +1083,34 @@ Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). G
 - **Zone 4→5 herzien (ring 5 golf 0/1):** `sundered_reach` wordt een breukzone: grond grotendeels dicht, diepe spleten, opgeheven en gekantelde schotsen, losse brokken; overal over te steken; de landbruggen vervallen. Patroon: vast → breuk → vast → uiteenvallen.
 - **Nether-5:** `white_halls` + tweede biome `hollow_cathedral` (enorme lege witte ruimte met één gigantische zuil); stilte-meter zoals ontworpen.
 
+*Antwoorden golf 0 (2026-10-21, `docs/plans/ring-5/golf-0.md` §7; gebouwd in golf 0/1):*
+- **Band (V1-A):** bandlijn op 50 % van ring 5 (~8.850) met ruis ±15 % (~250 blokken, twee octaven ~600/~150); puur dood tot ~35 %, puur "weg" vanaf ~65 %; overgang gemeten ~200 (`Ring5Band`).
+- **Buitenband en buitenrand (V2-A):** één doorlopend verloop van ~0 op de bandlijn naar ~85 % void aan de ringrand (9.700), daarna steeds kleinere brokken in de buitenrand, leeg vanaf ~10.050 (§1.8).
+- **Onderkant (V3-A):** binnenband volle grond tot bedrock; scheuren (`void_scars` en de losse scheuren binnen) tot onder `min_y` zonder bedrock; buitenband zwevende schotsen met een onderkant van ~Y −40 (bandlijn) tot Y 20–40 (rand), daaronder void.
+- **Hoogtes (V4-A):** binnenband Y 70–95 (dode grond rond Y 78, lage heuvels; de "net fout"-trappen mogen tot ~Y 119 uitsteken, besluit 2026-10-22); buiten schotsen Y 70–110, brokken Y 40–160; pinakeltop Y 120–140.
+- **Kastelen (V5-A):** 4 plekken op 75 % van ring 5 (~9.275), één per windrichting met ±8° speling, gedraaid met de wereldseed; plateau Ø 80–110, rondom een void-gordel van 40–80 met een verwoeste rand (`/ca castles`).
+- **Bruggen (V6-A):** per kasteel 2 natuurlijke bruggen (5–9 breed, licht doorhangend; één naar binnen naar vaste grond, één schuin naar een grote schots); in de buitenband smalle ruggen (3–5 breed) om de ~400–600 en stroken springbare brokken; geen bereikbaarheidsgarantie.
+- **Vloeistof (V9-B):** ring 5 droog (geen zee, geen grondwater), behalve vanilla's lavalaag onder Y −54 in de binnenband achter een dam (32 van de bandlijn, 6 rond elke scheur); geen lava in scheuren, void of breukzone.
+- **Biome-indeling (V12-A, P1):** binnen via twee klimaatassen: `glitch_fields` ~33 %, `false_meadow` ~13 %, `corrupted_wastes` ~54 %; buiten `shattered_expanse` waar de breukas ≥ 0,6 (void met brokken en bruggen), de rest half `void_scars` / half `inverted_hills`; de pinakel is `void_scars`. Alles via router-assen (breukas op de erosion-plek), geen Java-haak; geen overgangsbiome op de bandlijn (harde wissel).
+- **Nether-5 (V10-A):** `white_halls` als basis, `hollow_cathedral` als zeldzame enorme holtes (cellen van 400 × 400 Nether-blokken, gemeten 27–32 per seed; Ø 120–180, dak opgetild tot Y 120, één reuzenzuil Ø 20–30); vloer van spiegelsteen precies op Y 31 (waar de lavazee lag), geen lava.
+
 *Sparring ring 4 (2026-10-10):* ring 5 schuift op naar 8.000 – 9.700 met de void-rand op 10.200. Ring 5 begint achter `sundered_reach` (zone 4→5), waar de wereld al uit elkaar valt; de rest van deze sectie is nog het ontwerp van sessie 2.
 
 **Terrein en sfeer**
 - Grijze, dode wastezone waar de wereld zichtbaar "fout" is: blokkerig terrein, zwevende brokken, scheuren tot in de void, en landschappen die net niet kloppen.
 - Lucht donkergrijs met een zweem violet, fog dik en kleurloos. Afwijkend fog-gedrag (glitch-fog) via client-code.
 - Eigen ring 5-invoer voor `ring_blend`. Blokkerige glitchvormen vragen mogelijk een eigen density function-type (bijv. kwantiseren); alleen als JSON niet volstaat.
-- Voorbij 9.700 brokkelt ring 5 af tot zwevende eilanden en void (§1.8).
+- Voorbij 9.700 brokkelt ring 5 af tot void (§1.8; sinds V2-A hetzelfde veld als de buitenband, geen aparte zwevende eilanden meer).
 
-**Biomes (5)**
-| Biome (werktitel) | Karakter |
-|---|---|
-| `corrupted_wastes` | Grijze dode vlakte, corrupted gras/aarde, dode bomen — kernbiome |
-| `glitch_fields` | Blokkerig terrein, zwevende kubussen, verschoven lagen, glitchblokken — kernbiome |
-| `void_scars` | Kraters en scheuren **tot in de void**: geen bedrock, vallen is dood (items weg). Randen van voidsteen met void-particles, zodat ze goed zichtbaar zijn |
-| `inverted_hills` | Heuvels die omgekeerd in de lucht hangen, met bomen ondersteboven |
-| `false_meadow` | Een perfecte kopie van een vanilla-weide waar alles net fout is: geen geluid, geen mobs, gespiegelde bomen. "Thuis" dat niet klopt |
+**Biomes (6; was 5 tot de sparring ring 5)**
+| Biome (werktitel) | Band | Karakter |
+|---|---|---|
+| `corrupted_wastes` | binnen | Grijze dode vlakte, corrupted gras/aarde, dode bomen — kernbiome |
+| `glitch_fields` | binnen | Blokkerig terrein, zwevende kubussen, verschoven lagen, glitchblokken — kernbiome |
+| `false_meadow` | binnen | Een perfecte kopie van een vanilla-weide waar alles net fout is: geen geluid, geen mobs, gespiegelde bomen. "Thuis" dat niet klopt |
+| `void_scars` | buiten | Kraters en scheuren **tot in de void**: geen bedrock, vallen is dood (items weg). Randen van voidsteen met void-particles, zodat ze goed zichtbaar zijn; ook de kasteelpinakels |
+| `inverted_hills` | buiten | Heuvels die omgekeerd in de lucht hangen, met bomen ondersteboven |
+| `shattered_expanse` | buiten | (sparring ring 5) Waar het meeste void is: brokken en bruggen boven het niets |
 
 - Geen overgangsbiome naar buiten: de buitenrand (9.700 – 10.200) is de void-invoer van `ring_blend`.
 
@@ -1118,6 +1133,8 @@ Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). G
 **Weer (ringweer)**
 - **Glitchstorm**: beeldruis-overlay, HUD flikkert, geluiden haperen (client); void ↑ ×2 (server).
 - **Omgekeerde regen**: zwarte druppels die omhoog vallen (client); void ↑ ×1,5 (server).
+- **Stilstand** (sparring ring 5, 92): regen en wolken bevriezen, geluid valt weg (client); void ↑ ×1,5 (server); kort en zeldzaam (40–120 s).
+- **Per band (OV1-A, P2):** één cyclus met gedeelde tijden, het type per band: binnen glitchstorm 55 / stilstand 30 / omgekeerde regen 15, buiten omgekeerde regen 70 / glitchstorm 20 / stilstand 10 (`[weather.ring5]`); nacht- en weerfactor op de void-meter stapelen niet (de grootste telt).
 
 **Conditie: void/glitches**
 - Meter ↑ overal in ring 5 (langzaam); sneller bij void-scheuren, glitchblokken, 's nachts en tijdens ringweer.
@@ -1137,7 +1154,7 @@ Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). G
 
 **Nether-tegenpool — Nether-ring 5 (2.000 – 2.425; was 1.950 – 2.375): 'zuivere' witte, stille Nether**
 - **Terrein**: na alle chaos is dit de engste plek, juist omdat alles schoon, wit, geordend en doodstil is. Gladde witte vlaktes met perfecte zuilen van vloer tot plafond, in rasters. Waar de lavazee lag, ligt een glad, glanzend en begaanbaar oppervlak van spiegelsteen, eindeloos en leeg.
-- **Biome (1)**: `white_halls`. Het kale en eentonige is juist het punt.
+- **Biomes (2; was 1 tot de sparring ring 5)**: `white_halls` (basis: vlakke spiegelsteen-vloer op Y 31, plafond Y ~104, zuilen 4 × 4 om de 24 in rasters met een eigen offset per cel van 400, lage witte vlaktes 2–6 hoog op ~30 % van de vloer) en `hollow_cathedral` (V10-A: zeldzame ronde hallen Ø 120–180, dak opgetild tot Y 120, één reuzenzuil Ø 20–30). Het kale en eentonige is juist het punt.
 - **Blokken**: kalkrack (wit netherrack, anders dan het beige gebleekte netherrack van Nether-4), witsteen-set (glad, gepolijst, bricks, zuil, slab, stairs, wall), spiegelsteen, stil licht (witte lichtbron zonder geluid of particles).
 - **Sleutelmateriaal: witte kern**, het "hart van de stilte". Zeldzaam, in de kern van de zuilen. Nodig voor toegang tot Herobrines kastelen en de final battle (fase 3/5); in fase 2 de basis van zuiveringsgear tegen corruptie. Geen gedrag in fase 1.
 - **Sfeer**: witte fog, geen ambient-geluid, geen muziek, bijna geen particles (biome-data).
@@ -1159,7 +1176,7 @@ Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). G
 
 ## 3. Bouwplan
 
-Elke change: één categorie, afgesloten met `/code-review`, `CODEBASE.md` bijgewerkt. Changes 0–37 uit sessie 1, 38–96 uit sessie 2. Blok E herzien in de sparring ring 3 (2026-10-06), blok F vervangen in de sparring ring 4 (2026-10-10).
+Elke change: één categorie, afgesloten met `/code-review`, `CODEBASE.md` bijgewerkt. Changes 0–37 uit sessie 1, 38–96 uit sessie 2. Blok E herzien in de sparring ring 3 (2026-10-06), blok F vervangen in de sparring ring 4 (2026-10-10), blok G herzien in de sparring ring 5 (2026-10-21).
 
 **Standaardtests** (per change aangegeven):
 - **B** — `./gradlew build` slaagt.
@@ -1315,27 +1332,36 @@ Rij 39 wordt alleen het **terrein** (kegels, caldera's, lavarivieren, zwevende e
 - **Nummering (golf 0-plan 2026-10-13):** de nummers 77–80 overlapten met blok G; G is hernummerd naar 81–99 (+4) en H naar 100. De inhoud van G verandert pas in de sparring van ring 5.
 
 ### G. Ring 5 (+ Nether-ring 5)
-| # | Categorie | Change | Test |
-|---|---|---|---|
-| 81 | `blocks` | Corrupted varianten (gras, aarde, steen, cobble, zand, log, wood, planks, leaves) + tag `corruptedadventure:corrupted` + data map `corrupted → vanilla`. Geen gedrag. | B, D: elke corrupted variant heeft een mapping |
-| 82 | `blocks` | Glitchblok (drop: glitchscherf als minimaal basis-item) + voidsteen (void-particles). | B, D |
-| 83 | `worldgen` | Ring 5-terrein (ring 5-invoer `ring_blend`: dode vlakte, blokkerige glitchvormen; eigen density function-type alleen als JSON niet volstaat) + kernbiomes `corrupted_wastes` en `glitch_fields`. | B, D, W |
-| 84 | `blocks` | Nulliet-erts. | B, D |
-| 85 | `worldgen` | Ores ring 5: nulliet (void-scheurwanden, diep), glitchblok-plaatsing, vanilla-ores vrijwel weg. | B, W |
-| 86 | `worldgen` | Biome `void_scars`: scheuren tot in de void (geen bedrock), voidsteen-randen. | B, D, W: vallen = void; randen goed zichtbaar |
-| 87 | `worldgen` | Grotten ring 5: onmogelijke gangen (rasters, lussen) + void-grotten. | B, W |
-| 88 | `conditions` | Void-meter (licht ≥ 12 remt; drempels glitch-visuals (client) → teleports 1–5 blokken met veilige-plek-check → darkness + schade). | B, S: teleport nooit in blokken of richting void; visuals alleen client |
-| 89 | `atmosphere` | Ring 5-weer: glitchstorm (beeldruis, HUD-flikker, void ×2) en omgekeerde regen (void ×1,5). | B, S |
-| 90 | `worldgen` | Extra biome `false_meadow` (vanilla-weide-kopie, stil, zonder mobs, gespiegelde bomen). | B, D, W |
-| 91 | `worldgen` | Extra biome `inverted_hills` (omgekeerde zwevende heuvels). | B, D, W |
-| 92 | `worldgen` | Horror-features ring 5: ontbrekende chunks (op chunkraster, tot de void) + Herobrine-tekens (bordjes met vertaalbare teksten, redstone-fakkelpatronen). | B, D, W |
-| 93 | `worldgen` | Buitenrand afstemmen: ring 5-terrein brokkelt af tot zwevende eilanden en void (void-invoer uit change 6 op ring 5 afgestemd). | B, W: vloeiende afbrokkeling 9.700 – 10.200 |
-| 94 | `atmosphere` | Ring 5-sfeer: lucht/fog-kleuren, glitch-fog (client), echo-voetstappen (client-only). | runClient; S |
-| 95 | `blocks` | Nether-5-blokken: kalkrack, witsteen-set, spiegelsteen, stil licht, witte kern. | B, D |
-| 96 | `worldgen` | Nether-5-terrein + biome `white_halls` (zuilenrasters, spiegelsteen-vloer, witte kern in zuilen). | B, D, W (Nether) |
-| 97 | `conditions` | Stilte (meter; ↓ via server-side game events van bel, goat horn, note block, jukebox en spelers binnen ~8 blokken; client dempt volume en verbergt HUD). | B, S: twee spelers samen bouwen langzamer op; HUD-verbergen alleen client |
-| 98 | `atmosphere` | Nether-5-sfeer: witte fog, geen ambient, geen muziek (biome-data). | runClient |
-| 99 | `textures` | Definitieve textures ring 5 + Nether-ring 5 (incl. geanimeerd glitchblok). | runClient |
+
+**Herzien 2026-10-21 (sparring ring 5):** de oude rijen 81–99 (sessie 2) vervallen; de nummers blijven met nieuwe inhoud, extra's met lettercodes (V11-A). Ring 5 wordt gebouwd in golven zoals ring 4, met dezelfde `tools/test/`-tooling (stromen, contract en integratie: `docs/plans/ring-5/waves.md`, `docs/plans/ring-5/contract.md`, per golf `docs/plans/ring-5/golf-<n>.md`). Het oude pakket 93 (buitenrand afstemmen) gaat op in 84 (V2-A).
+
+| # | Categorie | Pakket | Golf | Test |
+|---|---|---|---|---|
+| 81 | `infra` | Contract-raamwerk ring 5: `ModBiomes` (6 + 2 Nether), `ModTags`, data map-type `healthy_block`, lang-helpers en lege haken per stroom | 0 ✅ | B, D |
+| 82 | `worldgen` | Ring 5-skelet: router en stubs, `Ring5Band`, `Ring5Field` + kasteelplekken, vloeistofregel ring 5 (+ naad 4\|5), `initial_terrain`, `ZoneFracture`-skelet, biomehaak (V12) | 0 ✅ | B, D, unit tests, kaarten |
+| 81b | `infra` | `/ca castles` (lijst, `tp <1–4>`), testgebieden `ring5.txt`/`castles.txt`, `voidscan.py` | 0 ✅ | B, S |
+| 83 | `worldgen` | Binnenband: dode grond, "net fout"-vormen (trappen, kuilen, golvende weide), glitchvormen (in Java, geen `quantize`), losse scheuren tot de void | 1 ✅ | B, D, unit tests, kaarten |
+| 84 | `worldgen` | Buitenband: uiteenvallen, schotsen, brokken, ruggen en springstenen, kasteelpinakels + 2 bruggen, `void_scars`-scheuren tot de void, omgekeerde heuvels (vorm), buitenrand tot 10.200 (was 93) | 1 ✅ | B, D, unit tests, kaarten |
+| 85 | `worldgen` | Breukzone 4→5 (`sundered_reach` herzien; landbruggen en afgrondzee weg, V7/V8) | 1 ✅ | B, D, unit tests, kaarten |
+| 86 | `worldgen` | Biome-skelet ring 5 (6 biomes), kleuren, voorlopige surface, tags, lang; daarna 86b (echte blokken in de surface) en 86c (gespleten rots op de schotsen van de breukzone) | 1 (86 ✅) | B, D, unit tests, kaarten |
+| 87 | `worldgen` | Nether-5-terrein + `white_halls` + `hollow_cathedral` + vloeistofregel + ruimte-check; daarna 87b (echte blokken in de surface) | 1 (87 ✅) | B, D, unit tests, kaarten (Nether) |
+| 88 | `blocks` | Corrupted varianten + tag `corrupted` + data map `healthy_block`; volledige corrupted houtset (bordjes); geen gedrag (88r `items`: vanilla-recepten van de houtset) | 1 ✅ | B, D, S |
+| 89 | `blocks` | Glitchblok (+ glitchscherf), voidsteen, nulliet-ertsen (+ `raw_nullite`) | 1 ✅ | B, D, S |
+| 90 | `blocks` | Nether-5: kalkrack, witsteen-set, spiegelsteen, stil licht, witte kern | 1 ✅ | B, D, S |
+| 91 | `conditions` | Void-meter (teleports alleen binnenband, darkness buitenband) | 1 ✅ | B, D, S; teleport nooit in blokken of richting void |
+| 92 | `atmosphere` | Ringweer ring 5: glitchstorm, omgekeerde regen, stilstand; type per band | 1 ✅ | B, D, S; rendering runClient (6a/6b) |
+| 99a | `textures` | `Ring5Textures.java`: eerste versies ring 5 + Nether-5 (+ houtset, bordjes, particle-sprites) | 1 ✅ | contactblad, runClient |
+| 93 | `worldgen` | Grotten (onmogelijke gangen, void-grotten, gekopieerde grotten) + gespiegelde dubbelgangers | 2 | B, D, W |
+| 94 | `worldgen` | Aankleding binnenband + `false_meadow` + horror-features (ontbrekende chunks, tekens, kampen, herinneringen) | 2 | B, D, W |
+| 95 | `worldgen` | Aankleding buitenband + kasteelomgeving + ertsen (nulliet, glitchblokken; vanilla afgebouwd) | 2 | B, D, W |
+| 96 | `worldgen` | Nether-5-aankleding (zuilenrasters, witte kern, stil licht) | 2 | B, D, W (Nether) |
+| 97 | `conditions` | Stilte (Nether-5) + void-koppelingen met blokken | 2 | B, S |
+| 98 | `atmosphere` | Sfeer ring 5 + Nether-5 (lucht, sterren, fog, glitch-fog, echo-voetstappen, geluid, stilte-client) | 2 | runClient; S |
+| 99b | `textures` | Nieuwe blokken golf 2 + bijsturen | 2 | runClient |
+| 99 | `textures` | Definitieve textures ring 5 + Nether-5 | 3 | runClient |
+
+- **Teststops:** **6-pre** terreinpreview (kaarten na golf 0; vliegtocht na 84/85, 6-pre-1); **6a** terrein-wow na golf 1 + 86b/87b/86c (blokkerend; checklist `docs/plans/ring-5/teststop-6a.md`); **6b** overleving + sfeer na golf 2; **6c** eindcheck na golf 3.
+- **Stand (2026-10-23):** golf 0 en golf 1 (INT1) op `main`; volgende: 86b, 87b, 86c op main, dan teststop 6a.
 
 ### H. Afsluiting fase 1
 | # | Categorie | Change | Test |

@@ -124,8 +124,8 @@ de eigenaar vult hem in. Paden onder `data/corruptedadventure/worldgen/density_f
 | `ring_5/overworld/caves` | per blok: onmogelijke gangen, void-grotten, gekopieerde grotten | 93 | W-biomes (ertsen) |
 | `ring_5/overworld` | de ring 5-invoer van `ring_blend/overworld` (vervangt de placeholder) | 82 (skelet) → 83/84 | — |
 | `zone_4_5/overworld/fracture` | 0..1 per kolom: breuk in zone 4→5 (spleet, schots, brok); uit `ZoneFracture` | 82 stub → 85 | W-biomes, A (sfeer), `ring_4/overworld/sundered` (wordt een verwijzing hiernaar, 85) |
-| `ring_5/nether/region` | 2D regio-as Nether-5 (`white_halls` ↔ `hollow_cathedral`), flat_cache van `nether_ring_5_region` (−9) | 82 | Nether-router `temperature` |
-| `ring_5/nether/terrain` | terreinvorm Nether-5; in 82 een verwijzing naar de placeholder `ring_5/nether` (constante 0 zou Nether-5 leeg maken) | 82 → 87 | `ring_blend/nether` |
+| `ring_5/nether/region` | 2D regio-as Nether-5 (`white_halls` ↔ `hollow_cathedral`); in 82 flat_cache van `nether_ring_5_region` (−9), **sinds 87** flat_cache van het kathedraalmasker (`nether_cathedrals`, `output` `mask`; ≥ 0,5 = `hollow_cathedral`); `nether_ring_5_region` is sindsdien de ruis van de vlaktes (`plains`) | 82 → 87 | Nether-router `temperature` |
+| `ring_5/nether/terrain` | terreinvorm Nether-5; in 82 een verwijzing naar de placeholder `ring_5/nether` (constante 0 zou Nether-5 leeg maken); sinds 87 `nether_cathedrals` `terrain` (`ring_5/nether.json` weg) | 82 → 87 | `ring_blend/nether` |
 
 **Java-velden (één bron per vorm)**
 - **`ring.Ring5Band`** (82): `Ring5Band.of(layout).value(x, z)` ∈ [−1, 1]; `.outer(x, z)` (waarde ≥ 0 = buitenband) en
