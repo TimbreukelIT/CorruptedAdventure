@@ -4,6 +4,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FallingBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
@@ -14,6 +21,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -33,6 +42,13 @@ class NetherRing5JsonTest {
     private static final NetherCathedrals TERRAIN = NetherCathedralsTest.terrain(NetherCathedralsTest.SEED);
     private static final RingLayout LAYOUT = NetherCathedralsTest.layout(NetherCathedralsTest.SEED);
     private static final NetherCathedrals.HallSettings HALLS = TERRAIN.settings().halls();
+    // The blocks of stream B (90) in the surface (87b).
+    private static final String MIRROR_STONE = "corruptedadventure:mirror_stone";
+    private static final String CHALKRACK = "corruptedadventure:chalkrack";
+    private static final String WHITE_STONE = "corruptedadventure:white_stone";
+    private static final String POLISHED_WHITE_STONE = "corruptedadventure:polished_white_stone";
+    private static final String WHITE_STONE_BRICKS = "corruptedadventure:white_stone_bricks";
+    private static final String WHITE_STONE_PILLAR = "corruptedadventure:white_stone_pillar";
 
     private static double density(int x, int y, int z) {
         return TERRAIN.compute(new DensityFunction.SinglePointContext(x, y, z));
@@ -273,14 +289,12 @@ class NetherRing5JsonTest {
      */
     @Test
     void surfaceBranchComesBeforeVanillasLavaHoles() {
-        JsonArray rules = WorldgenData.read("noise_settings/nether.json").getAsJsonObject("surface_rule").getAsJsonArray("sequence");
-        int own = -1, ring4 = -1, hole = -1;
+        JsonArray rules = surfaceRules();
+        int own = ownBranch(rules), ring4 = -1, hole = -1;
         for (int i = 0; i < rules.size(); i++) {
             String rule = rules.get(i).toString();
             JsonObject test = rules.get(i).getAsJsonObject().getAsJsonObject("if_true");
-            if (test != null && test.has("biome_is") && test.get("biome_is").toString().equals(BIOMES)) {
-                own = i;
-            } else if (test != null && test.has("biome_is") && test.get("biome_is").toString().contains("corruptedadventure:bone_dunes")) {
+            if (test != null && test.has("biome_is") && test.get("biome_is").toString().contains("corruptedadventure:bone_dunes")) {
                 ring4 = i;
             } else if (hole < 0 && rule.contains("\"minecraft:hole\"")) {
                 hole = i;
@@ -297,5 +311,111 @@ class NetherRing5JsonTest {
         for (String banned : List.of("minecraft:lava", "minecraft:sand", "minecraft:gravel", "concrete_powder")) {
             assertFalse(text.contains(banned), banned);
         }
+    }
+
+    /**
+     * 87b: the branch paints stream B's blocks (90) as the plan maps them, in this order: below Y 32 the floor's top block
+     * mirror stone over chalkrack; the columns white stone pillars (axis y); from there up to the highest plain the plains,
+     * polished white stone on top and white stone bricks below their top (their sides); everything else (ceiling, walls,
+     * the cathedral's roof) white stone. No vanilla stand-in is left; every block exists, none falls, and every property
+     * is one of the block's.
+     */
+    @Test
+    void surfaceBranchPaintsStreamBsBlocks() {
+        JsonArray rules = surfaceRules();
+        JsonObject branch = rules.get(ownBranch(rules)).getAsJsonObject();
+        JsonArray sequence = branch.getAsJsonObject("then_run").getAsJsonArray("sequence");
+        assertEquals(4, sequence.size());
+        assertBand(sequence.get(0).getAsJsonObject(), HALLS.floorTop() + 1, MIRROR_STONE, CHALKRACK);
+        JsonObject pillar = sequence.get(1).getAsJsonObject();
+        assertEquals("corruptedadventure:nether_ring_5_pillar", pillar.getAsJsonObject("if_true").get("type").getAsString());
+        JsonObject pillarState = pillar.getAsJsonObject("then_run").getAsJsonObject("result_state");
+        assertEquals(WHITE_STONE_PILLAR, pillarState.get("Name").getAsString());
+        assertEquals("y", pillarState.getAsJsonObject("Properties").get("axis").getAsString());
+        // the plains reach floor_top + plains_height.max (NetherCathedrals; floorIsFlatAtY31AndSolidBelow)
+        assertBand(sequence.get(2).getAsJsonObject(), HALLS.floorTop() + (int) HALLS.plainsHeight().max() + 1,
+                POLISHED_WHITE_STONE, WHITE_STONE_BRICKS);
+        assertEquals(WHITE_STONE, blockName(sequence.get(3).getAsJsonObject()));
+        List<String> names = new ArrayList<>();
+        walk(branch, rule -> {
+            String name = blockName(rule);
+            if (name == null) {
+                return;
+            }
+            names.add(name);
+            ResourceLocation id = ResourceLocation.parse(name);
+            assertEquals("corruptedadventure", id.getNamespace(), "a vanilla stand-in left: " + name);
+            assertTrue(BuiltInRegistries.BLOCK.containsKey(id), "no such block: " + name);
+            Block block = BuiltInRegistries.BLOCK.get(id);
+            assertFalse(block instanceof FallingBlock, name + " falls");
+            // the codec falls back to the default for an unknown value, so compare every value with the parsed state
+            JsonObject json = rule.getAsJsonObject("result_state");
+            BlockState state = BlockState.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(error -> new AssertionError(name + ": " + error));
+            if (json.has("Properties")) {
+                for (Map.Entry<String, JsonElement> property : json.getAsJsonObject("Properties").entrySet()) {
+                    Property<?> known = block.getStateDefinition().getProperty(property.getKey());
+                    assertTrue(known != null, name + " has no " + property.getKey());
+                    assertEquals(property.getValue().getAsString(), valueName(state, known), name + " " + property.getKey());
+                }
+            }
+        });
+        assertEquals(List.of(MIRROR_STONE, CHALKRACK, WHITE_STONE_PILLAR, POLISHED_WHITE_STONE, WHITE_STONE_BRICKS, WHITE_STONE), names);
+    }
+
+    /** A band below Y {@code below}: its top block ({@code floor} depth 0) {@code top}, the rest {@code rest}. */
+    private static void assertBand(JsonObject rule, int below, String top, String rest) {
+        JsonObject test = rule.getAsJsonObject("if_true");
+        assertEquals("minecraft:not", test.get("type").getAsString());
+        JsonObject above = test.getAsJsonObject("invert");
+        assertEquals("minecraft:y_above", above.get("type").getAsString());
+        assertEquals(below, above.getAsJsonObject("anchor").get("absolute").getAsInt());
+        assertEquals(0, above.get("surface_depth_multiplier").getAsInt());
+        assertFalse(above.get("add_stone_depth").getAsBoolean());
+        JsonArray band = rule.getAsJsonObject("then_run").getAsJsonArray("sequence");
+        assertEquals(2, band.size());
+        JsonObject depth = band.get(0).getAsJsonObject().getAsJsonObject("if_true");
+        assertEquals("minecraft:stone_depth", depth.get("type").getAsString());
+        assertEquals("floor", depth.get("surface_type").getAsString());
+        assertEquals(0, depth.get("offset").getAsInt());
+        assertFalse(depth.get("add_surface_depth").getAsBoolean());
+        assertEquals(0, depth.get("secondary_depth_range").getAsInt());
+        assertEquals(top, blockName(band.get(0).getAsJsonObject().getAsJsonObject("then_run")));
+        assertEquals(rest, blockName(band.get(1).getAsJsonObject()));
+    }
+
+    private static <T extends Comparable<T>> String valueName(BlockState state, Property<T> property) {
+        return property.getName(state.getValue(property));
+    }
+
+    private static JsonArray surfaceRules() {
+        return WorldgenData.read("noise_settings/nether.json").getAsJsonObject("surface_rule").getAsJsonArray("sequence");
+    }
+
+    /** The index of the two biomes' branch (exactly one). */
+    private static int ownBranch(JsonArray rules) {
+        int own = -1;
+        for (int i = 0; i < rules.size(); i++) {
+            JsonObject test = rules.get(i).getAsJsonObject().getAsJsonObject("if_true");
+            if (test != null && test.has("biome_is") && test.get("biome_is").toString().equals(BIOMES)) {
+                assertEquals(-1, own, "one branch");
+                own = i;
+            }
+        }
+        assertTrue(own >= 0, "the branch");
+        return own;
+    }
+
+    private static void walk(JsonElement element, Consumer<JsonObject> visit) {
+        if (element.isJsonArray()) {
+            element.getAsJsonArray().forEach(e -> walk(e, visit));
+        } else if (element.isJsonObject()) {
+            visit.accept(element.getAsJsonObject());
+            element.getAsJsonObject().entrySet().forEach(e -> walk(e.getValue(), visit));
+        }
+    }
+
+    private static String blockName(JsonObject rule) {
+        return rule.has("type") && rule.get("type").getAsString().equals("minecraft:block")
+                ? rule.getAsJsonObject("result_state").get("Name").getAsString() : null;
     }
 }

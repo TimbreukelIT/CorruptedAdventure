@@ -74,6 +74,9 @@ Constanten in `nether_ring5_surface.py` naar B's blokken (90): vloer `mirror_sto
 `polished_white_stone`, plafond en wanden `white_stone`, zuilen `white_stone_pillar` (as y), de rand van de vlaktes
 `white_stone_bricks` (voorstel). Test: elk blok uit de tak bestaat; geen vallend blok. Kaarten opnieuw (main).
 
+**Status 87b:** gebouwd 2026-10-23 op `ring5/87b` (worktree `P:/Projecten/Java/wt/r5-87b`, poort 3), klaar voor review en
+merge door main.
+
 ## 3. Client/server-impact
 Geen client-code; worldgen (server-side), data-driven plus één DF-type en eventueel één surface-conditie (common, puur).
 Geen payload, geen `PROTOCOL_VERSION`. Biomes/tags/lang via datagen.
@@ -107,6 +110,11 @@ Voortgang: 2026-10-21 21:28 B groen (1.167 tests, 0 fouten), D groen; S-smoke `r
 
 Voortgang: 2026-10-21 reviewbevindingen 3dcfb263 verwerkt (validaties, test eigen cellen per bedrading, zone 4→5-raster in de lavatrede-check); B (1.167 tests, 0 fouten) en D groen
 
+Voortgang: 2026-10-23 13:13 87b: worktree `P:/Projecten/Java/wt/r5-87b` op `ring5/87b` vanaf `78c12ff5`; `setup.sh W3 3`
+Voortgang: 2026-10-23 13:15 87b: `nether_ring5_surface.py` naar de blokken van 90 (script idempotent), `NetherRing5JsonTest.surfaceBranchPaintsStreamBsBlocks`
+Voortgang: 2026-10-23 13:23 87b: B groen (1.283 tests, 0 fouten, 2 overgeslagen), D groen (geen wijziging in `src/generated`); S-smoke `r5-87b` (log 0 ERROR), kaarten in `build/test/maps/87b/`, blokscan echte chunks; review
+Voortgang: 2026-10-23 13:33 87b: review (medium, 8 punten) verwerkt: `range_max` in het script (getal of lijst, `int` zoals Java), test vergelijkt elke eigenschapswaarde met de geparste staat; extra blokscan (2 vlakken van 15 × 15 chunks) voor hogere vlaktes; B opnieuw groen (1.283 tests, 0 fouten), script byte-gelijk
+
 ## Tests en metingen (87)
 - **B** `./gradlew build` groen: 1.167 tests, 0 fouten (incl. `ClientIsolationTest`). **D** `runData` groen;
   `src/generated`: 2 biome-JSON's, `is_nether_ring_5`, `silent`, `c:is_nether`, `c:is_dry/nether`, lang en/nl (gecommit).
@@ -125,6 +133,26 @@ Voortgang: 2026-10-21 reviewbevindingen 3dcfb263 verwerkt (validaties, test eige
 - Nether-ring 1–4: buiten zone 4→5 ongewijzigd door constructie (alleen de ring 5-invoer van `ring_blend/nether` en
   `nether_temperature`, een eigen surfacetak per biome en `fluid_levels.ring_5`); niet met kaarten vóór/na gemeten.
   Zone 4→5 verandert (mengt nu met het nieuwe Nether-5-terrein). Lavawand-scan r 2.000 en `lavascan.py`: INT1.
+
+## Tests en metingen (87b)
+- **B** groen: 1.283 tests, 0 fouten, 2 overgeslagen (incl. `ClientIsolationTest`); nieuw
+  `NetherRing5JsonTest.surfaceBranchPaintsStreamBsBlocks` (per band het blok van het plan, geen `minecraft:`-blok in de
+  tak, elk blok geregistreerd, geen `FallingBlock`, elke `Properties`-waarde gelijk aan die van de via `BlockState.CODEC`
+  geparste staat (de codec valt bij een onbekende waarde stil terug op de standaard)). **D** groen, geen wijziging
+  in `src/generated` (de surface is handgeschreven JSON). Script idempotent (tweede run byte-gelijk).
+- **S-smoke** (verse wereld `r5-87b`, seed 20260930, poort 3): log 0 ERROR, geen client-class-fout; `/ca ring` (overworld
+  en Nether) antwoordt; `/execute in minecraft:the_nether run ca terrainmap 2200 0 300 1` (1,3 s) en `ca terrainmap
+  section 1900 212 2500 212` in `build/test/maps/87b/` (vorm gelijk aan 87: 87b raakt alleen de surface).
+- **Blokscan** echte chunks (`gen.py` + `inventory.py`, 3 vlakken: kathedraal bij (2248, 212), hal rond (2200, −100), hal
+  chunks 90..97 × 97..104): **0** `smooth_quartz`/`diorite`/`calcite`/`quartz_pillar`; `mirror_stone` alleen Y 31,
+  `chalkrack` Y 1–31, `white_stone_pillar` vloer tot plafond, vlaktes: `polished_white_stone` Y 33–34 (bovenblok),
+  `white_stone_bricks` Y 32–33, 0 bakstenen met lucht erboven; `white_stone` plafond/dak. Na de review twee vlakken van
+  15 × 15 chunks erbij (chunks 122..136 × −45..−31 en −7..7 × 130..144): bovenblokken van vlaktes Y 33–36 (vlaktes 2–5
+  hoog), allemaal `polished_white_stone`; 0 `white_stone` in Y 32–37, 0 bakstenen met lucht erboven. Bovenblokken op Y 32
+  (410) alleen op straal 2.018–2.034, in zone 4→5 (gemengd met de bottenduinen). Een vlakte van 6 hoog (top Y 37) kwam in
+  de scans niet voor; de bovengrens van de band (anker Y 38 = `floor_top` + `plains_height.max` + 1) bewaakt de unit test.
+  Netherrack alleen Y 122–126
+  (vanilla's top-level `below_top 5`, boven het plafond; zie Backlog).
 
 ## CODEBASE-delta
 - **Klassen:**
@@ -160,6 +188,10 @@ Voortgang: 2026-10-21 reviewbevindingen 3dcfb263 verwerkt (validaties, test eige
   - preset: Nether `rings.ring_5` = `multi_noise` op temperature (≥ 0,5 `hollow_cathedral`, anders `white_halls`),
     `fluid_levels.ring_5` = **−1** (geen lava).
   - `tools/worldgen/nether_ring5_terrain.py`, `nether_ring5_surface.py` (W-nether; idempotent).
+- **87b:** `nether_ring5_surface.py` met de blokken van 90 (vloer `mirror_stone`, eronder `chalkrack`, zuilen
+  `white_stone_pillar` as y, vlaktes Y 32–37 `polished_white_stone` bovenop en `white_stone_bricks` eronder, de rest
+  `white_stone`); de banden uit `halls` van `ring_5/nether/terrain.json` (`floor_top`, `plains_height.max`).
+  `NetherRing5JsonTest.surfaceBranchPaintsStreamBsBlocks`.
 - **Tests:** `NetherCathedralsTest`, `NetherRing5JsonTest`, `NetherRing5BiomesTest`; `Ring3JsonTest` (ring 5-tak in de
   lavatrede-check: ring 5 is nu de lage kant van 4\|5), `Ring5JsonTest` (alleen de Nether-asserts).
 - **Correctie contract (INT1 past `contract.md` §4 toe):** de tabelregel `ring_5/nether/region` ("flat_cache van
@@ -193,6 +225,23 @@ Voortgang: 2026-10-21 reviewbevindingen 3dcfb263 verwerkt (validaties, test eige
   rand past (`pillar_radius.max < radius.min − rim.max`), een dak boven Y 121 (vanilla's netherrack-regel `below_top 5`
   begint op Y 122) en een hoogste vlakte tot aan het plafond (`floor_top + plains_height.max < ceiling`).
 
+- (87b, interpretatie) "De rand van de vlaktes `white_stone_bricks`" = hun zijkanten: in de band Y 32 tot de hoogste
+  vlakte (`floor_top + plains_height.max` = 37) het bovenblok (`stone_depth` floor 0) `polished_white_stone`, alles eronder
+  `white_stone_bricks`. Alleen script (het plan noemt 87b een wijziging van de constanten), geen nieuwe surface-conditie.
+  Een vlakte van 2 hoog heeft dus 1 laag bakstenen onder een gepolijste top; aan de zijkant zie je bakstenen onder een
+  gepolijste rand. Een rand van bakstenen *bovenop* (een omlijning van de tegel) zou een eigen conditie op de tegelranden
+  van `NetherCathedrals` vragen: alleen als de gebruiker dat bij 6a wil.
+- (87b) De banden lezen `floor_top` en `plains_height` uit `ring_5/nether/terrain.json` (geen eigen `FLOOR_TOP` meer in
+  het script; `plains_height` als getal of lijst, afgekapt zoals Java's `(int)`). Na een wijziging van het terrein moet het
+  script opnieuw draaien (geen build-koppeling); `surfaceBranchPaintsStreamBsBlocks` faalt zolang de ankers niet kloppen.
+- (87b) De vlakteband is een pure Y-band (Y 32–37) in beide biomes: in zone 4→5 (gemengd met de bottenduinen) krijgt
+  grond van de witte biomes daar dezelfde regel (bovenblok gepolijst, wat eronder zichtbaar is bakstenen), hoger
+  `white_stone`. Gemeten alleen op straal 2.018–2.034; in de hallen zelf bestaat er buiten vloer, zuilen en vlaktes niets
+  vasts in Y 32–37. Bewust zo gelaten (geen eigen conditie op de vlaktetegels).
+- (review 87b) Niet overgenomen: de boomwandelaar `walk`/`blockName` in `NetherRing5JsonTest` is een vierde kopie (ook in
+  `Ring4BiomesTest`, `Ring5BiomesTest`, `VerdantSlopeTest`); samenvoegen in `WorldgenData` raakt testbestanden van andere
+  pakketten, dus buiten 87b (backlog).
+
 ## Backlog
 - `atmosphere` (98, A): zonder eigen muziek speelt de client in een biome zonder `background_music` vanilla's
   `Musics.GAME`; "geen muziek" in Nether-5 vraagt een stille muziek of de `silent`-haak van A. Effecten tijdelijk in
@@ -202,3 +251,9 @@ Voortgang: 2026-10-21 reviewbevindingen 3dcfb263 verwerkt (validaties, test eige
 - `worldgen` (6a, gebruiker): de vlaktes hebben randen van 2–6 hoog; zonder blokken kom je er niet op (stap ±1: 99,3 %
   van de halvloer). Eventueel een trede of lagere randen.
 - `infra` (INT1): de klasse-doc van `Ring5JsonTest` noemt Nether-5 nog placeholder (W-biomes past dezelfde test aan).
+- `worldgen` (87b, vraag aan main/gebruiker): vanilla's top-level regel `y_above below_top 5` → netherrack staat vóór alle
+  Nether-takken, dus boven het Nether-5-plafond liggen Y 122–126 netherrack (onder het bedrockdak). Zichtbaar alleen voor
+  wie door het plafond of het kathedraaldak (Y 120, dan 2 blokken erboven) hakt. Het plan noemt die laag niet; witsteen of
+  kalkrack daar vraagt een Nether-5-uitzondering vóór die vanilla-regel.
+- `infra` (review 87b): `walk`/`blockName` voor surface-JSON staan in vier tests (`NetherRing5JsonTest`,
+  `Ring4BiomesTest`, `Ring5BiomesTest`, `VerdantSlopeTest`); één gedeelde helper in `WorldgenData`.
