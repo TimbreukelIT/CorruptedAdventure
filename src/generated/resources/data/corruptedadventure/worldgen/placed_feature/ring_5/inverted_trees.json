@@ -1,0 +1,18 @@
+{
+  "feature": "corruptedadventure:ring_5/inverted_tree",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.8,
+      "margin": 2
+    },
+    {
+      "type": "corruptedadventure:ring5_filter",
+      "void_clearance": 3
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

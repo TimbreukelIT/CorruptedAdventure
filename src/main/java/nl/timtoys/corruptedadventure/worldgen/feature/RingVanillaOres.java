@@ -47,7 +47,7 @@ public final class RingVanillaOres {
 
     /**
      * The chance per vanilla ore placement attempt, by kind: coal, iron and copper; gold, redstone and lapis; diamond.
-     * Each in (0, 1].
+     * Each in [0, 1]; 0 leaves the ore out of the ring (ring 5's diamond, V11-A).
      */
     public static Map<ResourceKey<PlacedFeature>, Double> factors(double coalIronCopper, double goldRedstoneLapis, double diamond) {
         Map<ResourceKey<PlacedFeature>, Double> factors = new HashMap<>();
@@ -56,8 +56,8 @@ public final class RingVanillaOres {
             double factor = path.startsWith("ore_diamond") ? diamond
                     : path.startsWith("ore_gold") || path.startsWith("ore_redstone") || path.startsWith("ore_lapis") ? goldRedstoneLapis
                     : coalIronCopper;
-            if (!(factor > 0.0 && factor <= 1.0)) {
-                throw new IllegalArgumentException("ore factor must be in (0, 1], got " + factor + " for " + path);
+            if (!(factor >= 0.0 && factor <= 1.0)) {
+                throw new IllegalArgumentException("ore factor must be in [0, 1], got " + factor + " for " + path);
             }
             factors.put(ore, factor);
         }
@@ -76,6 +76,9 @@ public final class RingVanillaOres {
             if (factor == null) {
                 throw new IllegalArgumentException("no factor for " + ore.location() + " in " + ring.getSerializedName());
             }
+            if (factor == 0.0) {
+                continue;
+            }
             PlacedFeature original = vanilla.get(ore);
             if (original == null) {
                 throw new IllegalStateException("vanilla no longer registers " + ore.location());
@@ -87,6 +90,11 @@ public final class RingVanillaOres {
     /** The keys of the tapered ores of {@code ring}, in vanilla's order (for the ring's biome modifier). */
     public static List<ResourceKey<PlacedFeature>> keys(Ring ring) {
         return ORES.stream().map(ore -> key(ring, ore)).toList();
+    }
+
+    /** The keys of the tapered ores of {@code ring} with a factor above 0, in vanilla's order. */
+    public static List<ResourceKey<PlacedFeature>> keys(Ring ring, Map<ResourceKey<PlacedFeature>, Double> factors) {
+        return ORES.stream().filter(ore -> factors.getOrDefault(ore, 0.0) > 0.0).map(ore -> key(ring, ore)).toList();
     }
 
     /** {@code corruptedadventure:ring_<n>/<vanilla path>}. */

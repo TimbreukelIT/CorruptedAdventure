@@ -65,10 +65,10 @@ public final class ModSurfaceConditions {
             CONDITIONS.register("nether_ring_5_dressing", () -> NetherRing5DressingCondition.MAP_CODEC);
 
     // ring 5 — W-biomes
-    /** {@code corruptedadventure:ring_5_ground} (94: ring 5's own ground and its clean missing chunks) */
+    /** {@code corruptedadventure:ring_5_ground} (94/95: missing chunks, void rims and walls, castle ground, inverted hills of ring 5) */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<Ring5GroundCondition>> RING_5_GROUND =
             CONDITIONS.register("ring_5_ground", () -> Ring5GroundCondition.MAP_CODEC);
-    /** {@code corruptedadventure:ring_5_speckle} (94: pure random specks and patches, the glitch blocks of glitch_fields) */
+    /** {@code corruptedadventure:ring_5_speckle} (94/95: pure random specks and patches, glitch blocks and the ruined plateau) */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<Ring5SpeckleCondition>> RING_5_SPECKLE =
             CONDITIONS.register("ring_5_speckle", () -> Ring5SpeckleCondition.MAP_CODEC);
 

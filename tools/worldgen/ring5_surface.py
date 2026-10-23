@@ -14,11 +14,19 @@ meadow (whoever digs finds it is wrong); deepslate keeps vanilla's gradient at Y
 Ring 5 is dry (V9-B), so there is no wet variant. The one falling block, corrupted sand, has a ceiling guard like ring
 4's: where it would hang over air it is corrupted stone. Bedrock stays vanilla's rule 0: it puts nothing on air (V3-A).
 
-94: one more top-level rule of ring 5 right after the bedrock floor (and ring 3's cave walls), guarded per column by
+94/95: one more top-level rule of ring 5 right after the bedrock floor (and ring 3's cave walls), guarded per column by
 corruptedadventure:ring_5_ground (part core; ring 5 and the void edge, never the zone 4->5), replaced if present:
 - the clean missing chunks (V1-A): every stone block of the chunk becomes air (the bedrock floor stays for the feature
-  ring_5/missing_chunks, which also dams the lava under Y -54 round it).
-In the ring 5 branch: glitch_fields' glitch blocks in specks and patches of 1-4 on tops and undersides (V3-A).
+  ring_5/missing_chunks, which also dams the lava under Y -54 round it);
+- the void rims and walls (V8-C): the top block within 1-2 of the void voidstone, the top 2-4 blocks of a wall beside the
+  void voidstone, the wall below that corrupted stone with voidstone veins that grow denser downwards (no deepslate in
+  the walls, also below Y 0);
+- the upside-down hills of inverted_hills (V10-A): their underside an upside-down meadow, corrupted grass right above the
+  air and corrupted dirt in the two blocks above that, where the inverted trees hang;
+- the ruined castle sites (V9-B): the top block a mix of corrupted cobblestone, obsidian, crying obsidian and glitch
+  blocks over corrupted stone, the two blocks under it corrupted cobblestone and stone.
+In the ring 5 branch: glitch_fields' glitch blocks in specks and patches of 1-4 on tops and undersides (V3-A), no more
+deepslate on void_scars' steep walls (the rims and walls above replace it).
 """
 import json
 import os
@@ -97,10 +105,16 @@ STONE = CA + "corrupted_stone"
 SAND = CA + "corrupted_sand"
 # Each falling block with its solid stand-in where it would hang over air.
 FALLING = {SAND: STONE}
-# The blocks of stream B (89).
+# The blocks of stream B (89) and vanilla's accents.
+VOIDSTONE = CA + "voidstone"
 GLITCH = CA + "glitch_block"
+COBBLE = CA + "corrupted_cobblestone"
 # glitch_fields (V3-A): specks and patches of 1-4 glitch blocks (2 x 2 cubes) on about 3 % of the tops and undersides.
 GLITCH_SPECKS = speckle(5101, 0.03, 2)
+# The ruined castle sites (V9-B): per top block in this order, else corrupted stone.
+CASTLE_TOP = [(speckle(5201, 0.10), "obsidian"), (speckle(5202, 0.04), "crying_obsidian"),
+              (speckle(5203, 0.05, 2), GLITCH), (speckle(5204, 0.45), COBBLE)]
+CASTLE_UNDER = depth(offset=2)
 
 
 def put(name):
@@ -130,14 +144,14 @@ def glitch_fields():
 
 
 def void_scars():
-    """Corrupted stone; the walls of the scars and craters deepslate for contrast (the voidstone rims are 95): every block
-    of a steep column above the preliminary surface, which is the upper part of a wall down to the void."""
-    return seq(cond(STEEP, block("deepslate")), *surface(STONE, STONE))
+    """Corrupted stone; the walls down to the void get their voidstone from the top-level rims and walls (95)."""
+    return seq(*surface(STONE, STONE))
 
 
 def inverted_hills():
-    """Dead soil on top, also on a thin edge; below it the undersides of the hills hanging over the void corrupted stone,
-    never dirt (before the surface depth, after the top block)."""
+    """Dead soil on top, also on a thin edge; below it the undersides of a thin edge hanging over the void corrupted stone,
+    never dirt (before the surface depth, after the top block). The undersides of the upside-down hills, far below the
+    preliminary surface, are the top-level ring 5 rule's (an upside-down meadow, V10-A)."""
     top, under = surface(GRASS, DIRT)
     return seq(top, cond(UNDERSIDE, block(STONE)), under)
 
@@ -176,9 +190,17 @@ def ring_5_base_rock():
 
 
 def ring_5_ground():
-    """The top-level ring 5 rule (94): the clean missing chunks; see the module doc."""
+    """The top-level ring 5 rule (94/95): missing chunks, void rims and walls, ruined castle sites; see the module doc."""
+    castle_top = seq(*[cond(c, block(b)) for c, b in CASTLE_TOP], block(STONE))
     return cond(ground("core"), seq(
-        cond(ground("missing_chunk"), block("air"))))
+        cond(ground("missing_chunk"), block("air")),
+        cond(ground("rim"), cond(TOP, block(VOIDSTONE))),
+        cond(ground("wall_top"), block(VOIDSTONE)),
+        cond(ground("vein"), block(VOIDSTONE)),
+        cond(ground("wall"), block(STONE)),
+        cond(ground("inverted_hill"), seq(cond(CEILING, block(GRASS)), cond(UNDERSIDE, block(DIRT)))),
+        cond(ground("castle"), seq(cond(TOP, castle_top), cond(CASTLE_UNDER, seq(cond(speckle(5205, 0.5), block(COBBLE)),
+                                                                              block(STONE)))))))
 
 
 def is_ring_5_ground(rule):

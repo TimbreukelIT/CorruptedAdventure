@@ -29,7 +29,15 @@
       "corruptedadventure:ring_5/memory_oak_grove",
       "corruptedadventure:ring_5/memory_oasis",
       "corruptedadventure:ring_5/memory_lava_field",
-      "corruptedadventure:ring_5/memory_holed_islet"
+      "corruptedadventure:ring_5/memory_holed_islet",
+      "corruptedadventure:ring_5/castle_rubble"
+    ],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_5/nullite_faces",
+      "corruptedadventure:ring_5/glitch_clusters"
     ]
   ],
   "has_precipitation": false,

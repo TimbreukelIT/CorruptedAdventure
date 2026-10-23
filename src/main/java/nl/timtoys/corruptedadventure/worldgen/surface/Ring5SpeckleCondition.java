@@ -8,9 +8,9 @@ import net.minecraft.world.level.levelgen.SurfaceRules;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring5World;
 
 /**
- * Surface rule condition {@code corruptedadventure:ring_5_speckle} (94): true in a pure random share {@code chance} of
+ * Surface rule condition {@code corruptedadventure:ring_5_speckle} (94/95): true in a pure random share {@code chance} of
  * the cubes of {@code size} blocks a side, per world and {@code salt}: specks and patches of 1 to {@code size}² blocks on a
- * surface (the glitch blocks of {@code glitch_fields}, V3-A). One hash per block,
+ * surface (the glitch blocks of {@code glitch_fields}, V3-A; the ruined plateau of the castles, V9-B). One hash per block,
  * no lookup; the rule in front of it says where (top block, underside, biome).
  */
 public record Ring5SpeckleCondition(int salt, float chance, int size) implements SurfaceRules.ConditionSource {

@@ -157,8 +157,9 @@ public class Ring5DressingTest {
         assertEquals(0, d[1]);
     }
     /**
-     * The surface (94): one top-level ring 5 rule right after the bedrock floor and ring 3's cave walls, behind the
-     * guard {@code core}: the missing chunks to air. Written by {@code tools/worldgen/ring5_surface.py}.
+     * The surface (94/95): one top-level ring 5 rule right after the bedrock floor and ring 3's cave walls, behind the
+     * guard {@code core}: missing chunks to air first (before rims and walls), then rims, upper walls, veins, walls, the
+     * inverted hills' undersides, castle ground. Written by {@code tools/worldgen/ring5_surface.py}.
      */
     @Test
     void theRing5GroundRuleStandsAfterTheBedrockAndTheCaveWalls() {
@@ -173,8 +174,14 @@ public class Ring5DressingTest {
             parts.add(step.getAsJsonObject().getAsJsonObject("if_true").get("part").getAsString());
             results.add(step.getAsJsonObject().getAsJsonObject("then_run").toString());
         }
-        assertEquals(List.of("missing_chunk"), parts);
+        assertEquals(List.of("missing_chunk", "rim", "wall_top", "vein", "wall", "inverted_hill", "castle"), parts);
         assertTrue(results.get(0).contains("minecraft:air"));
+        for (int k = 1; k <= 3; k++) {
+            assertTrue(results.get(k).contains("corruptedadventure:voidstone"), parts.get(k));
+        }
+        assertTrue(results.get(4).contains("corruptedadventure:corrupted_stone") && !results.get(4).contains("deepslate"));
+        assertTrue(results.get(5).contains("corruptedadventure:corrupted_grass_block") && results.get(5).contains("corruptedadventure:corrupted_dirt"));
+        assertTrue(results.get(6).contains("minecraft:obsidian") && results.get(6).contains("corruptedadventure:glitch_block"));
         long count = rules.asList().stream().filter(r -> part("core").equals(r.getAsJsonObject().getAsJsonObject("if_true"))).count();
         assertEquals(1, count, "one ring 5 ground rule");
     }

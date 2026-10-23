@@ -1,0 +1,78 @@
+{
+  "type": "corruptedadventure:boulder",
+  "config": {
+    "carpet": {
+      "Name": "minecraft:air"
+    },
+    "carpet_chance": 0.0,
+    "height": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 2.5,
+      "min_inclusive": 1.0
+    },
+    "moss_chance": 0.0,
+    "mossy_top": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:corrupted_cobblestone"
+          },
+          "weight": 6
+        },
+        {
+          "data": {
+            "Name": "minecraft:obsidian"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:crying_obsidian"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:glitch_block"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 2.5,
+      "min_inclusive": 1.0
+    },
+    "stone": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:corrupted_cobblestone"
+          },
+          "weight": 6
+        },
+        {
+          "data": {
+            "Name": "minecraft:obsidian"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:crying_obsidian"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:glitch_block"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

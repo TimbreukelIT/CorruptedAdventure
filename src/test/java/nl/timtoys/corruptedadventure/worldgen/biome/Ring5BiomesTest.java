@@ -190,7 +190,8 @@ class Ring5BiomesTest {
      * by {@code tools/worldgen/ring5_surface.py}); per biome an unconditional top block and an unconditional block for
      * the surface depth, so vanilla's rules never decide a ring 5 surface. 86b: the blocks of stream B; the one falling
      * block (corrupted sand) behind a ceiling guard, so it never hangs over air; vanilla blocks only in the false
-     * meadow (grass on dirt) and on the scar walls (deepslate). 94: glitch blocks in glitch_fields.
+     * meadow (grass on dirt). 94/95: the scar walls no longer deepslate (the top-level rims and walls give them voidstone
+     * and corrupted stone), glitch blocks in glitch_fields.
      */
     @Test
     void everyBiomeHasItsOwnSurfaceBranch() {
@@ -249,7 +250,7 @@ class Ring5BiomesTest {
             assertFallingBlocksAreGuarded(entry.getValue(), entry.getKey());
             Set<String> vanilla = blockNames(entry.getValue()).stream().filter(name -> name.startsWith("minecraft:")).collect(Collectors.toSet());
             Set<String> allowed = entry.getKey().equals(id(ModBiomes.FALSE_MEADOW)) ? Set.of("minecraft:grass_block", "minecraft:dirt")
-                    : entry.getKey().equals(id(ModBiomes.VOID_SCARS)) ? Set.of("minecraft:deepslate") : Set.of();
+                    : Set.of();
             assertEquals(allowed, vanilla, entry.getKey() + ": vanilla stand-ins left");
         }
         // The plan's blocks (86b): top and surface depth per biome.
@@ -265,8 +266,7 @@ class Ring5BiomesTest {
             assertEquals(entry.getValue().get(0), lastBlock(floorRule(branchOf, false)), entry.getKey() + " top");
             assertEquals(entry.getValue().get(1), lastBlock(floorRule(branchOf, true)), entry.getKey() + " surface depth");
         }
-        // The scar walls deepslate; 94: glitch blocks in glitch_fields only.
-        assertTrue(branches.get(id(ModBiomes.VOID_SCARS)).toString().contains("\"minecraft:deepslate\""));
+        // 94/95: glitch blocks in glitch_fields only; the inverted hills' undersides an upside-down meadow under a hill.
         for (Map.Entry<String, JsonObject> entry : branches.entrySet()) {
             assertEquals(entry.getKey().equals(id(ModBiomes.GLITCH_FIELDS)), blockNames(entry.getValue()).contains(GLITCH),
                     entry.getKey() + ": glitch blocks only in glitch_fields");

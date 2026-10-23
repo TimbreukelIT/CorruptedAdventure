@@ -108,7 +108,12 @@ class RingVanillaOresTest {
         for (ResourceKey<PlacedFeature> ore : RingVanillaOres.ORES) {
             assertEquals(expectedFactor(ore.location().getPath()), factors.get(ore), ore.location().toString());
         }
-        assertThrows(IllegalArgumentException.class, () -> RingVanillaOres.factors(0.0, 0.5, 0.25));
+        assertThrows(IllegalArgumentException.class, () -> RingVanillaOres.factors(-0.1, 0.5, 0.25));
+        // 95: a factor 0 leaves the ore out (ring 5's diamond): not placed, not among the keys.
+        Map<ResourceKey<PlacedFeature>, Double> noDiamond = RingVanillaOres.factors(0.05, 0.03, 0.0);
+        List<ResourceKey<PlacedFeature>> keys = RingVanillaOres.keys(Ring.RING_5, noDiamond);
+        assertEquals(RingVanillaOres.ORES.stream().filter(ore -> !ore.location().getPath().startsWith("ore_diamond")).count(), keys.size());
+        assertTrue(keys.stream().noneMatch(key -> key.location().getPath().contains("diamond")));
         assertThrows(IllegalArgumentException.class, () -> RingVanillaOres.factors(0.6, 1.5, 0.25));
         assertThrows(IllegalArgumentException.class, () -> record(context -> RingVanillaOres.placed(context, Ring.RING_2, Map.of())));
     }

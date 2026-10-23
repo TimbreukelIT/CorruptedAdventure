@@ -259,14 +259,66 @@ breed, half gecorrumpeerd.
 - 2026-10-23 18:40: plan geschreven; vragen V1–V11 naar main. Nog niets gebouwd.
 
 ## CODEBASE-delta
-(volgt bij de bouw)
+- **Gedeelde basis (`worldgen/feature`):** `Ring5World` (record: `Ring5Field`, `RingLayout`, `Ring5Band`, salt; `core`
+  (ring 5 en de void-rand tot `EDGE_SHARE` 0,7, niet zone 4→5), `isVoid` (veld of schone ontbrekende chunk), `top`,
+  `voidDistance` (Chebyshev, ≤ 8), `ringDepth`, `nearestCastle`; `salt(RandomState)` = `salt(seed)`), `Ring5Terrain`
+  (`field`/`world` per random state, zwakke cache, WARN bij een misser), `Ring5Placements` (keys `ring_5/…`, `SURFACE`,
+  `free`, `register`/`perChunk`; de volgorderegel: alles schrijft alleen in de eigen chunk), `Ring5Filter`
+  (`ring5_filter`: `void_clearance`, `max_step`, `memory_clearance`, `on_castle`), `Ring5Features.ORDER` (één globale
+  volgorde, `features(biome, step)`; `Ring5Biomes.generation` leest hem).
+- **94:** `Ring5MissingChunks` (cel van 20 × 20 chunks, kans 0,9, ≥ 48 binnen de bandlijn, ≥ 176 van de ringgrens, op
+  vaste grond; per thread een memo), `MissingChunkFeature` (`missing_chunk`: bodem/bedrock en lava van het gat weg, dam
+  van 6 rond het gat onder Y 0), `HerobrineSignFeature` (`herobrine_sign`; `TEXTS`, `key`, `keepChance`, `placeSign`,
+  `facingTheMiddle`; tekst als opgeslagen data, gewaxt), `TorchPatternFeature` (`torch_pattern`; kruis/ring/rij/pijl,
+  `towardsCastle`), `AbandonedCampFeature` (`abandoned_camp`; `LOOT` `chests/ring_5/abandoned_camp`),
+  `MirroredTreesFeature` (`mirrored_trees`; `pair`, `oak`), `Ring5Memories` + `MemoryFeature` (`ring_5_memory`, `Kind`;
+  plannen per cel van 560, LRU-caches), `Ring5InnerFeatures` (configured/placed van 94), `datagen/Ring5ChestLoot`
+  (sub-provider naast de blokloot in `ModBlockLootProvider.create`), `Ring5SignText` (9 teksten en + nl).
+- **95:** `InvertedTreeFeature` (`inverted_tree`), `Ring5VoidFacePlacement` (`ring5_void_face`), `Ring5OuterFeatures`
+  (omgekeerde bomen, dode bomen op de schotsen van `inverted_hills`, kasteelpuin via `boulder`), `Ring5OreFeatures`
+  (`nullite_faces`, `nullite_deep`, `glitch_clusters`, `FACTORS` 0,05/0,03/0), `Ring5BiomeModifiers.ADD_RING_5_ORES`
+  (`add_ring_5_ores`), `RingVanillaOres` (factor 0 = erts weg, `keys(ring, factors)`).
+- **Surface:** condities `ring_5_ground` (`Ring5GroundCondition`, `part`: `core`, `missing_chunk`, `rim`, `wall_top`,
+  `vein`, `wall`, `castle`, `inverted_hill`; per thread de laatste kolom) en `ring_5_speckle` (`Ring5SpeckleCondition`:
+  `salt`, `chance`, `size`), blok `// ring 5 — W-biomes` in `ModSurfaceConditions`; `ring5_surface.py`: één top-level
+  ring 5-regel direct na de bedrockvloer en de grotwanden van ring 3 (ontbrekende chunks → lucht, randen en wanden,
+  omgekeerde weide, verwoest plateau), `glitch_fields` glitchvlekken, `void_scars` zonder `steep`/deepslate;
+  `ring3_surface.py` zoekt het blok boven het voorlopige oppervlak nu op type (byte-gelijke uitvoer).
+- **Registries:** `ModFeatures` blok `// ring 5 — W-biomes` (`missing_chunk`, `herobrine_sign`, `torch_pattern`,
+  `abandoned_camp`, `mirrored_trees`, `ring_5_memory`, `inverted_tree`), `ModPlacementModifierTypes` (`ring5_filter`,
+  `ring5_void_face`).
+- **Tests:** `Ring5DressingTest` (nieuw), `Ring5BiomesTest` (features volgens `ORDER`, surface), `RingVanillaOresTest`
+  (factor 0).
 
 ## Beslissingen
 - **Gebruiker 2026-10-23:** V1 A, V2 **B** (~30 % van de dode bomen met plukjes persistente `corrupted_leaves`), V3 A,
   V4 A, V5 A, V6 A, V7 A, V8 **C** (ook de binnenband: losse scheuren, 83b-gaten en de schone ontbrekende chunks krijgen
   voidsteen-randen), V9 **B** (heel plateau verwoest; fase 3 bouwt eroverheen), V10 A, V11 A. In `fase-1-wereld.md`
   (Ring 5, "Aankleding en horror-features") en het beslissingenlog.
+- (implementatie) **Volgorderegel:** elke ring 5-feature schrijft alleen in zijn eigen chunk (grondobject, of het eigen
+  deel van een puur plan: spiegelbomen, herinneringen), alles leest de pure grond (`Ring5World`) of de bevroren
+  heightmaps; daarom weidegras en -bloemen als `simple_block` (chunk-lokaal) in plaats van vanilla's `random_patch`, en
+  geen ertsdoel (steen, `corrupted_stone`) in een herinnering. Objecten gaan over lucht en planten (`free`).
+- (implementatie) **Ontbrekende chunks als surface + feature**, niet als terrein: de surface maakt alle steen lucht
+  (zodat geen feature er nog op of in bouwt en de randen ze als void zien), `missing_chunk` haalt bedrock en de lava
+  onder Y −54 weg en zet de dam (6) in de buurchunks. Geen wijziging aan `Ring5Field`/`RingFluidPicker` (W-terrein). De
+  regel staat ná de bedrockvloer (de tests van ring 3 houden de bedrockvloer op plek 0 en de grotwanden op plek 1).
+- (implementatie) **Herinneringen:** één placed feature per soort (`ring_5/memory_<kind>`, zoals het contract), één
+  plan per cel van 560 voor alle soorten; ≥ 32 + straal binnen de ringgrenzen (een chunk buiten de ring 5-biomes zou zijn
+  deel niet schrijven); boven de void houdt 0,4 van de kandidaten stand, zodat ~1/3 zweeft.
+- (implementatie) **Bordjes gewaxt** (niet te bewerken) en de tekst op regel 2 van de voorkant; de setters van
+  `SignBlockEntity` roepen een level aan dat in worldgen ontbreekt, dus de tekst gaat er als opgeslagen data in.
+- (implementatie) **Dode bomen op schotsen alleen in `inverted_hills`:** `void_scars` is kale `corrupted_stone` en
+  `dead_tree` wortelt alleen in aarde/zand.
+- (implementatie) **Omgekeerde weide als top-level regel:** de onderkanten van de omgekeerde heuvels liggen ver onder het
+  voorlopige oppervlak (tot Y −50), dus de biome-tak (boven het voorlopige oppervlak) bereikt ze niet.
+- (implementatie) **Vanilla-ertsen in `corrupted_stone`:** `corrupted_stone` in `minecraft:stone_ore_replaceables`
+  (blok-tag van B; via main), zodat `RingVanillaOres` vanilla's eigen configured features houdt.
 
 ## Backlog
+- [blocks] `deepslate_nullite_ore` (B + 99b): de diepe nulliet van de binnenband (Y −64…−16) ligt in deepslate; voorlopig
+  `nullite_ore` (in `corrupted_stone`-textuur). (bron: 95)
+- [worldgen] `voidscan.py` kent de schone ontbrekende chunks niet (ze tellen als `void`, geen fout); als een scan ooit
+  void binnen de binnenband als fout telt, de export (`RingColumnsExportTest`) `Ring5MissingChunks` laten lezen. (bron: 94)
 - [structures] Fase 3: het kasteelplateau van ring 5 is in fase 1 helemaal verwoest (puin, obsidiaan, glitchblokken; V9-B);
   het kasteelgebouw bouwt eroverheen en ruimt zelf op waar het nodig is. (bron: 95)

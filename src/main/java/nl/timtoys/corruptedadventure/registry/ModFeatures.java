@@ -10,6 +10,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.worldgen.feature.InvertedTreeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MemoryFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MirroredTreesFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.AbandonedCampFeature;
@@ -354,6 +355,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:ring_5_memory} (94): this chunk's part of ring 5's memories of one kind */
     public static final DeferredHolder<Feature<?>, Feature<MemoryFeature.Config>> RING_5_MEMORY =
             FEATURES.register("ring_5_memory", () -> new MemoryFeature(MemoryFeature.Config.CODEC));
+    /** {@code corruptedadventure:inverted_tree} (95): a tree hanging upside down under an inverted hill */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> INVERTED_TREE =
+            FEATURES.register("inverted_tree", () -> new InvertedTreeFeature(NoneFeatureConfiguration.CODEC));
 
     private ModFeatures() {
     }
