@@ -60,14 +60,14 @@ public final class NetherRing5Biomes {
         }
     }
 
-    /** White fog and a black sky; no music, no ambient loop, mood, additions or particles. */
+    /** White fog and a black sky; the silent music and the rest from the atmosphere's hook (98). */
     static BiomeSpecialEffects effects(ResourceKey<Biome> biome) {
         int fog = biome == ModBiomes.HOLLOW_CATHEDRAL ? HOLLOW_CATHEDRAL_FOG : WHITE_HALLS_FOG;
-        return new BiomeSpecialEffects.Builder()
+        return BiomeAmbience.netherRing5(biome, new BiomeSpecialEffects.Builder()
                 .fogColor(fog)
                 .skyColor(SKY)
                 .waterColor(WATER)
-                .waterFogColor(WATER_FOG)
+                .waterFogColor(WATER_FOG))
                 .build();
     }
 }

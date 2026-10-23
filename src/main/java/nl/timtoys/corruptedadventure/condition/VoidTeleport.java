@@ -6,16 +6,18 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.ring.Ring5Band;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
+import nl.timtoys.corruptedadventure.weather.Ring5Glitches;
 
 import java.util.Optional;
 
 /**
  * The short void teleport of the second threshold in ring 5's inner band (package 91): server-side, to a spot that
  * {@link VoidTeleportTarget} found safe. A normal server teleport (vanilla's position sync), so other players see a
- * plain jump. No sound or particles yet (stream A, package 98).
+ * plain jump, with a glitch sound and pixels at both spots ({@code Ring5Glitches}, stream A, package 98).
  */
 final class VoidTeleport {
     private VoidTeleport() {
@@ -48,6 +50,8 @@ final class VoidTeleport {
             return false;
         }
         BlockPos spot = target.get();
+        // Sound and pixels at both spots (stream A, package 98; INT2 merge point with 97).
+        Ring5Glitches.teleported(player, player.position(), Vec3.atBottomCenterOf(spot));
         player.teleportTo(level, spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, player.getYRot(), player.getXRot());
         player.resetFallDistance();
         return true;

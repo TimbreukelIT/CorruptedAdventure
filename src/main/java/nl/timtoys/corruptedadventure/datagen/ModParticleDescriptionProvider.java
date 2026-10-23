@@ -38,5 +38,9 @@ final class ModParticleDescriptionProvider extends ParticleDescriptionProvider {
         spriteSet(ModParticleTypes.UPDRAFT_BUBBLE.get(), CorruptedAdventure.id("updraft_bubble"), 4, false);
         spriteSet(ModParticleTypes.GLITCH_SPECK.get(), CorruptedAdventure.id("glitch_speck"), 4, false);
         spriteSet(ModParticleTypes.BONE_DUST.get(), CorruptedAdventure.id("bone_dust"), 4, false);
+        // ring 5 — A (package 98): 8×8 sprites from stream T (99a).
+        spriteSet(ModParticleTypes.VOID_MOTE.get(), CorruptedAdventure.id("void_mote"), 4, false);
+        spriteSet(ModParticleTypes.GLITCH_PIXEL.get(), CorruptedAdventure.id("glitch_pixel"), 4, false);
+        spriteSet(ModParticleTypes.REVERSE_RAINDROP.get(), CorruptedAdventure.id("reverse_raindrop"), 2, false);
     }
 }

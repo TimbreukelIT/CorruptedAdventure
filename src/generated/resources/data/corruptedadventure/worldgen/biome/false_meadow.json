@@ -5,6 +5,12 @@
     "fog_color": 12638463,
     "foliage_color": 7842607,
     "grass_color": 9551193,
+    "music": {
+      "max_delay": 24000,
+      "min_delay": 12000,
+      "replace_current_music": true,
+      "sound": "corruptedadventure:ambient.nether_ring_5.silence"
+    },
     "sky_color": 7907327,
     "water_color": 4159204,
     "water_fog_color": 329011

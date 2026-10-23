@@ -242,6 +242,40 @@ class BiomeAmbienceTest {
         assertThrows(IllegalArgumentException.class, () -> BiomeAmbience.netherRing4(ModBiomes.FROZEN_LAVA_SEA));
     }
 
+    /**
+     * Ring 5 (98, V98-5 A): no music anywhere; the inner band near-silent with rare glitches (more and with pixels in the
+     * glitch fields) and ring 1's cave sound; false_meadow nothing; the outer band the void drone and void motes. The
+     * colours are the bootstrap's and pass through unchanged.
+     */
+    @Test
+    void ring5HookAddsSilenceGlitchesAndTheDroneOnTopOfTheColours() {
+        for (ResourceKey<Biome> biome : Ring5Biomes.ALL) {
+            BiomeSpecialEffects effects = BiomeAmbience.ring5(biome, Ring5Biomes.effects(biome)).build();
+            assertEquals(Optional.of(BiomeAmbience.SILENT_MUSIC), effects.getBackgroundMusic(), biome.toString());
+            assertEquals(Ring5Biomes.look(biome).colours().fog(), effects.getFogColor(), "colours unchanged");
+            boolean outer = Ring5Biomes.OUTER.contains(biome);
+            assertEquals(outer, effects.getAmbientLoopSoundEvent().isPresent(), biome + ": the drone only outside");
+            if (outer) {
+                assertSame(ModSoundEvents.RING_5_VOID_DRONE.get(), effects.getAmbientLoopSoundEvent().orElseThrow().value());
+                assertSame(ModParticleTypes.VOID_MOTE.get(), effects.getAmbientParticleSettings().orElseThrow().getOptions());
+                assertTrue(effects.getAmbientMoodSettings().isEmpty(), "no cave sound outside");
+            }
+        }
+        BiomeSpecialEffects meadow = BiomeAmbience.ring5(ModBiomes.FALSE_MEADOW, Ring5Biomes.effects(ModBiomes.FALSE_MEADOW)).build();
+        assertTrue(meadow.getAmbientAdditionsSettings().isEmpty() && meadow.getAmbientMoodSettings().isEmpty()
+                && meadow.getAmbientParticleSettings().isEmpty(), "false_meadow is silent");
+        BiomeSpecialEffects wastes = BiomeAmbience.ring5(ModBiomes.CORRUPTED_WASTES, Ring5Biomes.effects(ModBiomes.CORRUPTED_WASTES)).build();
+        BiomeSpecialEffects fields = BiomeAmbience.ring5(ModBiomes.GLITCH_FIELDS, Ring5Biomes.effects(ModBiomes.GLITCH_FIELDS)).build();
+        assertTrue(fields.getAmbientAdditionsSettings().orElseThrow().getTickChance()
+                > wastes.getAmbientAdditionsSettings().orElseThrow().getTickChance(), "more glitches in the glitch fields");
+        assertSame(ModParticleTypes.GLITCH_PIXEL.get(), fields.getAmbientParticleSettings().orElseThrow().getOptions());
+        assertEquals(BiomeAmbience.STRANGE, wastes.getAmbientMoodSettings(), "ring 1's distorted cave sound inside");
+        assertThrows(IllegalArgumentException.class,
+                () -> BiomeAmbience.ring5(ModBiomes.SUNDERED_REACH, new BiomeSpecialEffects.Builder()));
+        assertThrows(IllegalArgumentException.class,
+                () -> BiomeAmbience.netherRing5(ModBiomes.BONE_DUNES, new BiomeSpecialEffects.Builder()));
+    }
+
     @Test
     void netherRing3HookIsBlueWhiteAndDistinctPerBiome() {
         List<ResourceKey<Biome>> biomes = List.of(ModBiomes.FROZEN_LAVA_SEA, ModBiomes.RIME_FOREST, ModBiomes.GLACIER_RIFTS);

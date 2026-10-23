@@ -2,9 +2,22 @@
   "carvers": {},
   "downfall": 0.0,
   "effects": {
+    "ambient_sound": "corruptedadventure:ambient.ring_5.void_drone",
     "fog_color": 1315352,
     "foliage_color": 4473418,
     "grass_color": 5131346,
+    "music": {
+      "max_delay": 24000,
+      "min_delay": 12000,
+      "replace_current_music": true,
+      "sound": "corruptedadventure:ambient.nether_ring_5.silence"
+    },
+    "particle": {
+      "options": {
+        "type": "corruptedadventure:void_mote"
+      },
+      "probability": 0.004
+    },
     "sky_color": 525836,
     "water_color": 1710112,
     "water_fog_color": 262918

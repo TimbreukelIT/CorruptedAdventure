@@ -15,6 +15,8 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
  * the HUD) and now and then a hiccup of the hotbar: shifted or gone for 1–2 ticks, never longer than 0.1 s (and never
  * while paused). Fed every
  * tick by {@link GlitchStormRenderer} while the storm is felt; without a feed it is gone the next tick. Hidden with F1.
+ * Since package 98 the void meter's glitch visuals feed the same noise ({@link #feedVoid}, {@link VoidGlitchEffects}),
+ * without the hotbar hiccup; the stronger of the two shows.
  */
 final class GlitchStormOverlay {
     /** Noise blocks on screen in a full storm. */
@@ -33,6 +35,8 @@ final class GlitchStormOverlay {
 
     private static float amount;
     private static long fedAt = NEVER;
+    private static float voidAmount;
+    private static long voidFedAt = NEVER;
     private static int hiccupTicks;
     /** Horizontal shift of the hotbar during a hiccup, 0 = hidden. */
     private static int hiccupShift;
@@ -60,12 +64,24 @@ final class GlitchStormOverlay {
         }
     }
 
-    /** The strength now: the last feed, if it came this or the previous tick (the renderer feeds only while felt). */
+    /** The void meter's glitch visuals this tick (98): noise only, no hotbar hiccup. */
+    static void feedVoid(long gameTime, float strength) {
+        voidAmount = Math.clamp(strength, 0.0F, 1.0F);
+        voidFedAt = gameTime;
+    }
+
+    /** The storm's strength now: the last feed, if it came this or the previous tick (the renderer feeds only while felt). */
     private static float current(Minecraft minecraft) {
         if (minecraft.level == null || minecraft.level.getGameTime() - fedAt > 1L) {
             return 0.0F;
         }
         return amount;
+    }
+
+    /** The noise's strength now: the storm's or the void meter's, whichever is stronger. */
+    private static float noise(Minecraft minecraft) {
+        float voidNow = minecraft.level == null || minecraft.level.getGameTime() - voidFedAt > 1L ? 0.0F : voidAmount;
+        return Math.max(current(minecraft), voidNow);
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
@@ -78,7 +94,7 @@ final class GlitchStormOverlay {
 
     private static void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
-        float strength = current(minecraft);
+        float strength = noise(minecraft);
         // Our layer is not inside vanilla's F1 group, so check hideGui ourselves.
         if (strength <= 0.0F || minecraft.options.hideGui || minecraft.level == null) {
             return;
@@ -137,6 +153,8 @@ final class GlitchStormOverlay {
     private static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         amount = 0.0F;
         fedAt = NEVER;
+        voidAmount = 0.0F;
+        voidFedAt = NEVER;
         hiccupTicks = 0;
     }
 }

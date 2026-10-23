@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.worldgen.biome;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.sounds.Music;
 import net.minecraft.world.level.biome.AmbientAdditionsSettings;
 import net.minecraft.world.level.biome.AmbientMoodSettings;
 import net.minecraft.world.level.biome.AmbientParticleSettings;
@@ -29,6 +30,11 @@ public final class BiomeAmbience {
      */
     public static final Optional<AmbientMoodSettings> STRANGE =
             Optional.of(new AmbientMoodSettings(ModSoundEvents.RING_1_STRANGE_CAVE, 1800, 12, 3.0));
+    /**
+     * "No music" (package 98): a biome without {@code background_music} gets vanilla's game music, so the silent biomes
+     * (ring 5, Nether ring 5) play an almost silent track instead, which replaces whatever music was playing.
+     */
+    public static final Music SILENT_MUSIC = new Music(ModSoundEvents.NETHER_RING_5_SILENCE, 12000, 24000, true);
 
     /** Rec. 601 luma weights: the grey of a colour. */
     private static final float LUMA_RED = 0.299F;
@@ -64,7 +70,8 @@ public final class BiomeAmbience {
 
     // Ring 3, ring 4 and their Nether rings (stream A, packages 50, 56 and 80): the biome bootstraps take every effect
     // from these hooks, so the atmosphere changes in Ring3Atmosphere / NetherRing3Atmosphere / Ring4Atmosphere /
-    // NetherRing4Atmosphere without touching the biome classes.
+    // NetherRing4Atmosphere without touching the biome classes. Ring 5 and Nether ring 5 (98): the bootstraps keep their
+    // colours and pass them through ring5 / netherRing5, which add the rest.
 
     /**
      * Effects of a ring 3 overworld biome ({@code Ring3Biomes.ALL} and the transition {@code steam_fens}): sky, fog,
@@ -109,6 +116,26 @@ public final class BiomeAmbience {
      */
     public static BiomeSpecialEffects.Builder netherRing4(ResourceKey<Biome> biome) {
         return NetherRing4Atmosphere.effects(biome);
+    }
+
+    /**
+     * Sound, particles and the silent music of a ring 5 overworld biome ({@code Ring5Biomes.ALL}) on top of its
+     * colours, which stay the biome bootstrap's ({@code Ring5Atmosphere}, package 98).
+     *
+     * @throws IllegalArgumentException for a biome without ring 5 atmosphere
+     */
+    public static BiomeSpecialEffects.Builder ring5(ResourceKey<Biome> biome, BiomeSpecialEffects.Builder colours) {
+        return Ring5Atmosphere.effects(biome, colours);
+    }
+
+    /**
+     * The silent music and the rare white ash of a Nether ring 5 biome on top of its colours, which stay the biome
+     * bootstrap's ({@code NetherRing5Atmosphere}, package 98).
+     *
+     * @throws IllegalArgumentException for a biome outside Nether ring 5
+     */
+    public static BiomeSpecialEffects.Builder netherRing5(ResourceKey<Biome> biome, BiomeSpecialEffects.Builder colours) {
+        return NetherRing5Atmosphere.effects(biome, colours);
     }
 
     /** A builder with only the four colours of {@code palette}. */

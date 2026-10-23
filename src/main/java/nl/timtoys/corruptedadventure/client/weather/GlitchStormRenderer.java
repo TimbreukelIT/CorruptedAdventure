@@ -13,7 +13,7 @@ import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
  * Glitch storm (ring 5, mostly the inner band, package 92): image noise and hotbar hiccups on the screen
  * ({@link GlitchStormOverlay}), a stuttering hum whose weather and ambient sounds dip now and then
  * ({@link Ring5SoundDamping}), violet-black flashes in the fog colour, a closer dark violet haze and glitch specks in the
- * open air (the ring 4 {@code glitch_speck} until {@code glitch_pixel} comes in 98). Everything × {@link SkyExposure}
+ * open air ({@code glitch_pixel} since 98; was the ring 4 {@code glitch_speck}). Everything × {@link SkyExposure}
  * except the sky. Visual values are constants on purpose; the void factor is server-side (stream C).
  */
 final class GlitchStormRenderer implements RingWeatherRenderer {
@@ -37,7 +37,7 @@ final class GlitchStormRenderer implements RingWeatherRenderer {
     private static final float DIP_CHANCE = 0.05F;
     /** How much of the weather and ambient volume a dip takes away in a full storm. */
     private static final float DIP_DEPTH = 0.7F;
-    /** Glitch specks per tick in a full storm in the open. */
+    /** Glitch pixels per tick in a full storm in the open. */
     private static final float SPECKS = 1.2F;
 
     private final WeatherLoop hum = new WeatherLoop(ModSoundEvents.RING_5_GLITCH_STORM, MAX_VOLUME);
@@ -57,7 +57,7 @@ final class GlitchStormRenderer implements RingWeatherRenderer {
             Ring5SoundDamping.feedDip(DIP_DEPTH * open);
         }
         Vec3 camera = minecraft.gameRenderer.getMainCamera().getPosition();
-        WeatherParticles.spawn(level, camera, ModParticleTypes.GLITCH_SPECK.get(),
+        WeatherParticles.spawn(level, camera, ModParticleTypes.GLITCH_PIXEL.get(),
                 SPECKS * open, 14.0, 4.0, 10.0, Vec3.ZERO, 0.0);
     }
 

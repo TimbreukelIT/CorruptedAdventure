@@ -97,14 +97,24 @@ public final class ModSoundEvents {
     /** Slurp of sucking mud, its tell (G1; stream B plays it, package 72). */
     public static final DeferredHolder<SoundEvent, SoundEvent> SUCKING_MUD_SLURP = register("block.sucking_mud.slurp");
 
-    // Ring 5 weather (package 92, stream A): loops the client plays while the weather is felt; vanilla placeholders in
-    // sounds.json until the ring 5 sound script (98).
+    // Ring 5 weather (package 92, stream A): loops the client plays while the weather is felt; own audio from
+    // tools/sounds/Ring5Sounds.java since 98.
     /** Crackling, stuttering hum of the glitch storm. */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_GLITCH_STORM = register("weather.ring_5.glitch_storm");
     /** Low, wrong rain of the reverse rain. */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_REVERSE_RAIN = register("weather.ring_5.reverse_rain");
     /** The almost silent hum of the standstill, while every other sound drains away. */
     public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_STANDSTILL = register("weather.ring_5.standstill");
+
+    // ring 5 — A (package 98): ambience of ring 5 and Nether ring 5, own audio from tools/sounds/Ring5Sounds.java.
+    /** Low, sucking drone of the void, the loop of the outer band. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_VOID_DRONE = register("ambient.ring_5.void_drone");
+    /** Short digital crackle: the inner band's rare additions and a void teleport. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RING_5_GLITCH = register("ambient.ring_5.glitch");
+    /** Almost silent: the "music" of the silent biomes, so vanilla's game music never plays there. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_5_SILENCE = register("ambient.nether_ring_5.silence");
+    /** Heartbeat, the only sound left at the top of the silence meter. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_5_HEARTBEAT = register("ambient.nether_ring_5.heartbeat");
 
     private ModSoundEvents() {
     }
