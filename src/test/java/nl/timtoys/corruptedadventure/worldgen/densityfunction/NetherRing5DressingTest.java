@@ -39,7 +39,7 @@ class NetherRing5DressingTest {
                 NetherCathedrals.Cell cell = field.cellAt(cx * size, cz * size);
                 for (int px = cx * size + cell.gridX() - grid; px < (cx + 1) * size; px += grid) {
                     for (int pz = cz * size + cell.gridZ() - grid; pz < (cz + 1) * size; pz += grid) {
-                        if (px >= cx * size && pz >= cz * size && field.gridPillarCorner(px, pz) == pack(px, pz)) {
+                        if (px >= cx * size && pz >= cz * size && field.gridPillarCorner(cell, px, pz) == pack(px, pz)) {
                             found.add(new int[]{px, pz});
                         }
                     }
@@ -75,8 +75,9 @@ class NetherRing5DressingTest {
     }
 
     /**
-     * Every grid column: one band of still light 2 high through all 16 of its columns, its lowest Y one of 38/44/50/56
-     * (each level used), above the highest plain and below the core; never on the floor.
+     * Every grid column: one band of still light 2 high round its outer ring (its 12 outer columns; none in the 4 inner
+     * ones, where it would never be seen), its lowest Y one of 38/44/50/56 (each level used), above the highest plain and
+     * below the core; never on the floor.
      */
     @Test
     void everyGridColumnHasItsOwnLightBand() {
@@ -91,8 +92,9 @@ class NetherRing5DressingTest {
             perLevel[LEVELS.indexOf(from)]++;
             eachColumnOf(corner, c -> {
                 NetherRing5Dressing.Column column = TERRAIN.dressing(c[0], c[1]);
+                boolean outer = c[2] == 0 || c[3] == 0 || c[2] == 3 || c[3] == 3;
                 assertEquals(from, column.lightFrom(), "one band per column at " + c[0] + " " + c[1]);
-                assertEquals(from + 1, column.lightTo());
+                assertEquals(outer ? from + 1 : from - 1, column.lightTo(), "the band only round the outside");
                 assertEquals(null, column.floor());
             });
         }

@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 
 /**
  * The dressing of Nether ring 5 (96, the user's decision of 2026-10-23), as the surface paints it on the shape of
- * {@link NetherCathedrals}: a band of still light in every grid column at a height of its own, a core of white core ore
+ * {@link NetherCathedrals}: a band of still light round every grid column (its outer ring) at a height of its own, a core of white core ore
  * in about one grid column in ten (halfway up, in the column's inside), and in a cathedral's giant column a vertical vein
  * of white core ore in its heart plus an imprint of polished white stone and bricks in the floor round its foot. Pure:
  * per grid column from a seeded hash of its low corner, per cathedral from its shape.
@@ -127,8 +127,9 @@ public final class NetherRing5Dressing {
         NetherCathedrals.Settings settings = field.settings();
         Settings d = settings.dressing();
         NetherCathedrals.HallSettings h = settings.halls();
-        NetherCathedrals.Cathedral cathedral = field.cathedralAt(x, z);
-        if (cathedral != null) {
+        NetherCathedrals.Cell cell = field.cellAt(x, z);
+        NetherCathedrals.Cathedral cathedral = cell.cathedral();
+        if (cathedral != null && cathedral.distance(x, z) < cathedral.radius()) {
             double distance = cathedral.distance(x, z);
             if (distance <= d.veinRadius()) {
                 return new Column(1, 0, h.floorTop() + 1, h.roof() - 1, null);
@@ -140,23 +141,28 @@ public final class NetherRing5Dressing {
             }
             return NONE;
         }
-        long corner = field.gridPillarCorner(x, z);
+        long corner = field.gridPillarCorner(cell, x, z);
         if (corner == NetherCathedrals.NO_PILLAR) {
             return NONE;
         }
         int px = (int) (corner >> 32);
         int pz = (int) corner;
         long hash = field.pillarHash(px, pz, PILLAR_SALT);
+        // the band only in the column's outer ring: a light block inside it would never be seen
+        int u = x - px;
+        int v = z - pz;
+        int last = h.pillarSize() - 1;
+        boolean outer = u == 0 || v == 0 || u == last || v == last;
         int lightFrom = (int) d.lightY().min() + d.lightStep() * Math.min(d.lightLevels() - 1,
                 (int) (SeededHash.unit(hash, 0) * d.lightLevels()));
-        int lightTo = lightFrom + d.lightHeight() - 1;
+        int lightTo = outer ? lightFrom + d.lightHeight() - 1 : lightFrom - 1;
         if (SeededHash.unit(hash, 1) >= d.coreChance()) {
             return new Column(lightFrom, lightTo, 1, 0, null);
         }
         // the core: one of the inner columns (u, v in 1 .. size - 2)
         int inner = h.pillarSize() - 2;
         int spot = Math.min(inner * inner - 1, (int) (SeededHash.unit(hash, 2) * inner * inner));
-        if (x - px != 1 + spot % inner || z - pz != 1 + spot / inner) {
+        if (u != 1 + spot % inner || v != 1 + spot / inner) {
             return new Column(lightFrom, lightTo, 1, 0, null);
         }
         int size = NetherCathedrals.pick(d.coreSize(), SeededHash.unit(hash, 3));

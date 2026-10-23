@@ -42,7 +42,8 @@ Onderdelen:
    `still_light`, `ore` → `white_core_ore`, dan `white_stone_pillar`.
 
 ## 2. Getallen (afstemming, van mij; bijsturen in de afstemlus)
-- **Lichtband:** 2 blokken hoog over de hele doorsnede van de zuil (4 × 4); onderkant per zuil uit de hash op een van de
+- **Lichtband:** 2 blokken hoog rond de zuil (de buitenste ring van 12 kolommen; na de review niet meer in de 4
+  binnenkolommen, waar je het nooit ziet); onderkant per zuil uit de hash op een van de
   niveaus Y **38, 44, 50, 56** (`light_y` [38, 56], `light_step` 6, `light_height` 2). Boven de hoogste vlakte (37), ver
   onder de kern. Alleen rasterzuilen (de reuzenzuil: zie §6).
 - **Witte kern:** kans **0,1** per rasterzuil (`core_chance`), **1–3** erts (`core_size`, gelijk verdeeld) boven elkaar
@@ -88,6 +89,7 @@ gecommit als het alleen voor 96 is: `build/test/areas-96.txt`).
 Voortgang: 2026-10-23 worktree `P:/Projecten/Java/wt/r5-96` op `ring5/96` vanaf `1a31dbd6`; `setup.sh W3 3`; plan
 Voortgang: 2026-10-23 15:05 `NetherRing5Dressing`, `nether_ring_5_dressing`, scripts, tests; gerichte tests groen (vraag band/reuzenzuil aan main: antwoord §6)
 Voortgang: 2026-10-23 15:25 B groen, D groen; S-smoke `r5-96` (0 ERROR), kaart, blokscan 4 gebieden; det-96 0
+Voortgang: 2026-10-23 15:40 review (medium, 6 punten) verwerkt; B groen; S-smoke + blokscan opnieuw; det-96 0; perf binnen budget
 
 ## Tests en metingen
 - **Unit** (`NetherRing5DressingTest`, seed 20260930, heel Nether-5): 5.679 rasterzuilen; bandniveaus 38/44/50/56 =
@@ -102,15 +104,22 @@ Voortgang: 2026-10-23 15:25 B groen, D groen; S-smoke `r5-96` (0 ERROR), kaart, 
 - **Blokscan** echte chunks (`gen.py` + eigen scan op `region.py`, niet gecommit): gebieden `hall96` (chunks 129..136 ×
   −8..−1), `cath96` (137..144 × 10..17, kathedraal (2248, 212)), `hall96b` (122..136 × −45..−31), `hall96c` (−7..7 ×
   130..144, kathedraal (−110, 2174)):
-  - 158 volledige rasterzuilen: elke zuil precies één band van 2 `still_light` over alle 16 kolommen, niveaus
-    38/44/50/56 = 37 / 40 / 42 / 39; 0 zuilen met gemengde banden.
+  - 158 volledige rasterzuilen: elke zuil precies één band van 2 `still_light` rond de buitenring (24 per zuil, na de
+    review; 0 in de binnenkolommen), niveaus 38/44/50/56 = 37 / 40 / 42 / 39; 0 zuilen met gemengde banden.
   - Kernen 15 van 158 (9,5 %), groottes 1: 5, 2: 5, 3: 5; erts alleen Y 66–68, alleen binnenkolommen (30 binnen, 0 buiten),
     nooit over meer dan één kolom.
   - Reuzenzuilen (2248, 212) r 10 en (−110, 2174): ader precies de middenkolom, Y 32–119, 88 `white_core_ore`; 0 licht
     in de reuzenzuil. Afdruk rond (2248, 212) op Y 31: t ≤ 1 60 bakstenen, t 2–7 524 gepolijst, t ≤ 8 108 bakstenen,
-    daarbuiten spiegelsteen.
+    daarbuiten spiegelsteen; rond (−110, 2174) (deels in het gebied) hetzelfde patroon (53 / 362 / 77).
+  - De metingen zijn herhaald op een verse wereld na de reviewfixes (zelfde getallen, behalve de band: 24 i.p.v. 32 per
+    zuil).
 - **det-96** (`build/test/areas-96.txt`, hall96 + cath96): 128/128 chunks gelijk, own 0, other 0, noise 0.
-- **perf** (volgt).
+- **B na de review** groen: 1.292 tests, 0 fouten, 1 overgeslagen.
+- **det-96 na de review** (16:02): opnieuw 128/128 gelijk, own 0.
+- **perf** (`perf.sh --areas tools/test/areas/perf-r5.txt --only "halls cathedral" --cold-only "cathedral"`, 3 warm + 1
+  koud, mod/vanilla, op de code na de review; `build/test/perf-20261023-1531/table.md`): `halls` noise **1,10** (1,05–1,17),
+  surface 0,74, features 0,05; `cathedral` noise **1,10** (1,07–1,13), surface 0,85, features 0,18; koud noise 1,04,
+  surface 0,86, features 0,22. Budget noise ≤ 1,75: ruim binnen. Surface blijft onder vanilla (< 1) met de aankleding.
 
 ## CODEBASE-delta
 - **Klassen:**
@@ -127,6 +136,9 @@ Voortgang: 2026-10-23 15:25 B groen, D groen; S-smoke `r5-96` (0 ERROR), kaart, 
   `nether_ring5_surface.py` (de regels).
 - **Tests:** `NetherRing5DressingTest` (nieuw), `NetherRing5JsonTest.surfaceBranchPaintsStreamBsBlocks`.
 - `NetherRing5Features`/`NetherRing5BiomeModifiers` blijven leeg.
+- **Na de review:** `gridPillarCorner(cell, x, z)` package-private en de enige plek die beslist waar een rasterzuil
+  staat (`gridPillar` van het terrein vraagt hem ook); `NetherRing5Dressing.of` haalt de cel één keer; de vier delen van
+  de conditie delen per thread de kolom (`ThreadLocal` `Last`); de band alleen in de buitenring.
 
 ## Beslissingen
 - **Gebruiker 2026-10-23:** elke zuil een eigen bandhoogte (Y 38/44/50/56, 2 hoog); de reuzenzuil geen lichtband (§6).
@@ -137,6 +149,15 @@ Voortgang: 2026-10-23 15:25 B groen, D groen; S-smoke `r5-96` (0 ERROR), kaart, 
   ader is één kolom recht omhoog (88 erts per kathedraal). De band loopt door de hele doorsnede van de zuil.
 - (implementatie) De afdruk vervangt alleen het vloerbovenblok (Y 31); de afstand komt uit het gehele kathedraalmidden,
   dezelfde maat als de reuzenzuil zelf (`d ≤ r` is zuil), dus de afdruk sluit naadloos op de voet aan.
+
+## Review (medium, 6 punten)
+- Opgelost: (1) vier condities rekenden dezelfde kolom elk opnieuw uit → één gedeelde kolom per thread; (2) cel twee keer
+  opgezocht → één keer; (3) zuilraster dubbel (terrein en aankleding) → één methode; (5) publieke gepakte long met
+  schildwacht → package-private, cel-variant, schildwacht gedocumenteerd (geen hoek op x = `Integer.MIN_VALUE` in
+  Nether-5); (6) onzichtbare lichtblokken in de zuilkern → band alleen in de buitenring.
+- Niet overgenomen: (4) `dressing` verplicht in beide uitgangen (`region` leest het niet). Beide JSON's komen uit één
+  dictionary van het script en `maskAndTerrainShareTheirSettings` bewaakt dat ze gelijk zijn; dat geldt al voor `halls`
+  en `cathedrals`. Optioneel maken zou de mask-JSON laten afwijken van de terrein-JSON en die test breken.
 
 ## Backlog
 - `items` (fase 2): witte kern per wereld (unit, seed 20260930): ~1.100 erts uit de rasterkernen (550 × gemiddeld 2) en
