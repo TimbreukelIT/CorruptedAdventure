@@ -211,8 +211,8 @@ zone 4→5 blijven zoals ze zijn.
    regelmatige golf (Y ± 3); `glitch_fields` = de nieuwe grond in blokken van 4 (geen ondergrens 72 meer). Scheuren, dam en
    droogregel ongewijzigd.
 3. **Corrupte plekken** (nieuw `Ring5CorruptSpots`, puur uit de wereldzout): een raster van cellen van 15 × 15 chunks
-   (240 blokken), per cel kans 0,9 op een plek; startchunk in de cel (4 chunks marge), groei met 1–4 aangrenzende chunks
-   tot 2–5 chunks. Eén chunk van de plek is **weggevallen**: void tot onder `min_y`, met een gerafelde rand van 1–3 blokken
+   (240 blokken), per cel kans 0,9 op een plek; startchunk 5 chunks binnen de celrand, groei met 1–4 aangrenzende chunks
+   tot 2–5 chunks (elke chunk minstens 1 chunk van de celrand: een kolom hoeft alleen de plek van zijn eigen cel te zien). Eén chunk van de plek is **weggevallen**: void tot onder `min_y`, met een gerafelde rand van 1–3 blokken
    vaste grond binnen de chunk (scheurrand); de andere chunks hele 16 × 16-kolommen **8–30 omhoog of omlaag** (teken per
    chunk), harde wanden op de chunkgrens; de vormen erop schuiven mee. Plekken alleen geheel binnen de binnenband: ≥ 32 van
    de bandlijn, ≥ 32 na zone 4→5, ≥ 16 buiten elk kasteelbereik (anders vervalt de hele plek). `innerCrackDistance` telt het
@@ -391,8 +391,9 @@ van het huidige veld. `RingAquifer`: de scheurafstand alleen in de binnenband ge
   midden en vier randpunten. Trap en kuil gecachet per cel in `Ring5Inner` (een paar reliëfmonsters per cel).
 - Glitchblokken: de ondergrens 72 vervalt (de klem op 70 is weg); de blokken volgen het reliëf.
 - Corrupte plekken (`Ring5CorruptSpots`): cel 15 chunks (240), kans 0,9, 2–5 chunks, verschuiving 8–30 (teken 50/50),
-  één weggevallen chunk met rand 1–3 (`ring_5_hills` op schaal 8). Gemeten (testseed): 484 plekken in de binnenband,
-  afstand tot de naaste p10 163 / mediaan 208 / p90 259. Marges: 32 tot bandlijn en zone, 16 buiten elk kasteelbereik;
+  één weggevallen chunk met rand 1–3 (`ring_5_hills` op schaal 8). Gemeten (testseed): 481 plekken in de binnenband,
+  afstand tot de naaste p10 182 / mediaan 217 / p90 257. Startchunk 5 chunks binnen de celrand (review: met 4 kon een
+  plek de celrand raken en zagen dam en schijfregel hem vanuit de buurcel niet). Marges: 32 tot bandlijn en zone, 16 buiten elk kasteelbereik;
   de hele plek vervalt als één chunk erbuiten valt. Openingen (scheuren + gaten) samen 0,5 % van de binnenband.
 - Het gat telt mee in `innerCrackDistance` (Chebyshev buiten de chunk + dunste rand: nooit meer dan de echte afstand),
   dus `RingFluidPicker` (lava, dam 6) en `RingAquifer` gebruiken het zonder eigen code; `scars` krijgt dezelfde rand.

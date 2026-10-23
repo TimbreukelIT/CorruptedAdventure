@@ -9,7 +9,7 @@ import java.util.Arrays;
 /**
  * The corrupt spots of ring 5's inner band (83b, teststop 6a): about one per {@link #CELL_CHUNKS} × {@link #CELL_CHUNKS}
  * chunks, each {@link #MIN_CHUNKS}–{@link #MAX_CHUNKS} touching chunks where the world looks wrongly rendered: whole
- * 16 × 16 columns lifted or sunk {@link #MIN_SHIFT}–{@link #MAX_SHIFT} with hard walls on the chunk borders, and one
+ * 16 × 16 columns lifted or sunk {@link #MIN_LIFT}–{@link #MAX_LIFT} with hard walls on the chunk borders, and one
  * chunk fallen away into the void, inside a ragged rim of {@link #MIN_RAG}–{@link #MAX_RAG} blocks. Only the shape; the
  * field ({@link Ring5Field#corruptSpot}) keeps the spots that lie wholly inside the inner band. Pure: a function of the
  * per-world salt, the hills' noise (the rim) and the cell.
@@ -21,11 +21,15 @@ final class Ring5CorruptSpots {
     static final double CHANCE = 0.9;
     static final int MIN_CHUNKS = 2;
     static final int MAX_CHUNKS = 5;
-    /** A spot grows from its first chunk by at most {@code MAX_CHUNKS − 1}; so far it keeps from its cell's edge. */
-    static final int MARGIN_CHUNKS = MAX_CHUNKS - 1;
+    /**
+     * The first chunk lies this many chunks inside its cell; the spot grows from it by at most {@code MAX_CHUNKS − 1}, so
+     * every chunk of a spot keeps at least one chunk (16 blocks) from its cell's edge: wider than the dam (6) and the
+     * layer margin (6), so a column only ever needs the spot of its own cell.
+     */
+    static final int MARGIN_CHUNKS = MAX_CHUNKS;
     /** How far a shifted chunk lies above or below its ground (whole blocks, either sign). */
-    static final int MIN_SHIFT = 8;
-    static final int MAX_SHIFT = 30;
+    static final int MIN_LIFT = 8;
+    static final int MAX_LIFT = 30;
     /** The fallen chunk's rim of solid ground inside it, per column, from the hills' noise at this scale. */
     static final int MIN_RAG = 1;
     static final int MAX_RAG = 3;
@@ -76,7 +80,7 @@ final class Ring5CorruptSpots {
         int fallen = (int) Math.floor(count * CellShapes.unit(h, 4));
         for (int k = 0; k < count; k++) {
             long g = CellShapes.cell(salt, xs[k], zs[k], SPOT_SALT + 1);
-            int amount = MIN_SHIFT + (int) Math.floor((MAX_SHIFT - MIN_SHIFT + 1) * CellShapes.unit(g, 0));
+            int amount = MIN_LIFT + (int) Math.floor((MAX_LIFT - MIN_LIFT + 1) * CellShapes.unit(g, 0));
             shifts[k] = k == fallen ? 0 : CellShapes.unit(g, 1) < 0.5 ? amount : -amount;
         }
         return new Spot(Arrays.copyOf(xs, count), Arrays.copyOf(zs, count), shifts, fallen);

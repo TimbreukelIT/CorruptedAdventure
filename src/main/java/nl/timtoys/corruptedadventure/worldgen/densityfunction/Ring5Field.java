@@ -394,7 +394,7 @@ public final class Ring5Field implements DensityFunction {
         c.glitch = glitch;
         c.inner = true;
         c.height = top;
-        double crack = innerCrackDistance(x, z);
+        double crack = innerCrackDistance(x, z, spot);
         if (crack <= 0.0) {
             c.setVoid();
             c.height = top;
@@ -405,8 +405,8 @@ public final class Ring5Field implements DensityFunction {
         c.scars = Mth.clamp(1.0 - crack / Ring5Outer.SCAR_RIM, 0.0, 1.0);
         c.top = top;
         c.bottom = Double.NEGATIVE_INFINITY;
-        // Shifted layers only where the glitch fields hold alone (no half-blended layers), and not by a corrupt spot's
-        // walls: a slice there would copy a column up to 30 higher or lower and could hang loose.
+        // Shifted layers only where the glitch fields hold alone (no half-blended layers), and not within a layer's
+        // sideways shift of a corrupt spot: a slice there would copy a chunk lifted or sunk by up to 30 and could hang loose.
         c.layered = glitch >= 0.999 && (spot == null || !spot.near(x, z, Ring5Inner.MAX_SHIFT));
     }
 
@@ -734,7 +734,7 @@ public final class Ring5Field implements DensityFunction {
             for (int z = cube[1]; z < cube[1] + cube[2]; z++) {
                 CastleSite castle = nearestCastle(x, z);
                 Ring5CorruptSpots.Spot spot = corruptSpot(Ring5CorruptSpots.cellOf(x), Ring5CorruptSpots.cellOf(z));
-                boolean glitch = band.inner(x, z) && inner().glitchWeight(x, z) > 0.0 && innerCrackDistance(x, z) > 0.0
+                boolean glitch = band.inner(x, z) && inner().glitchWeight(x, z) > 0.0 && innerCrackDistance(x, z, spot) > 0.0
                         && castle.distance(x, z) > castle.radius() + castle.belt() && (spot == null || spot.chunkAt(x, z) < 0);
                 if (!glitch) {
                     return null;
@@ -750,6 +750,11 @@ public final class Ring5Field implements DensityFunction {
      * terrain, the rim's {@code scars} and the dam of the lava layer ({@code RingFluidPicker}). Pure.
      */
     public double innerCrackDistance(int x, int z) {
+        return innerCrackDistance(x, z, corruptSpot(Ring5CorruptSpots.cellOf(x), Ring5CorruptSpots.cellOf(z)));
+    }
+
+    /** {@link #innerCrackDistance} with the column's corrupt spot already looked up (the spot of its own cell, or null). */
+    private double innerCrackDistance(int x, int z, @Nullable Ring5CorruptSpots.Spot spot) {
         int ci = Math.floorDiv(x, Ring5Inner.CRACK_CELL);
         int cj = Math.floorDiv(z, Ring5Inner.CRACK_CELL);
         double distance = Double.POSITIVE_INFINITY;
@@ -761,8 +766,7 @@ public final class Ring5Field implements DensityFunction {
                 }
             }
         }
-        // A spot keeps MARGIN_CHUNKS from its cell's edge, so only the own cell's hole can lie within the dam.
-        Ring5CorruptSpots.Spot spot = corruptSpot(Ring5CorruptSpots.cellOf(x), Ring5CorruptSpots.cellOf(z));
+        // Every chunk of a spot keeps a chunk from its cell's edge, so only the own cell's hole can lie within the dam.
         if (spot != null) {
             distance = Math.min(distance, corruptSpots().holeDistance(spot, x, z));
         }
@@ -1248,7 +1252,7 @@ public final class Ring5Field implements DensityFunction {
         double length = Math.hypot(tx - fx, tz - fz);
         RingLayout l = layout.get();
         double signed = Ring5Band.of(l).signedDistance(tx, tz);
-        double landTop = signed < 0.0 ? innerTop(tx, tz)
+        double landTop = signed < 0.0 ? innerGround(Mth.floor(tx), Mth.floor(tz))
                 : groundTop(tx, tz, signed, Ring5Outer.progress(l.effectiveDistance(tx, tz), signed, ring5Radius(l)));
         int end = (int) Math.round(Math.max(landTop, site.top() - Ring5Castles.MAX_SLOPE * length));
         double half = Ring5Castles.HALF_MIN + (Ring5Castles.HALF_MAX - Ring5Castles.HALF_MIN) * CellShapes.unit(h, 0);

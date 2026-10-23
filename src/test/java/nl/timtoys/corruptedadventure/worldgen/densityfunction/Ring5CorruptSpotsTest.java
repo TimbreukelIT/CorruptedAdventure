@@ -78,13 +78,6 @@ class Ring5CorruptSpotsTest {
             }
             nearest[a] = best;
         }
-        for (Ring5CorruptSpots.Spot spot : spots) {
-            double[] p = centre(spot);
-            if (Math.abs(p[1]) < 400.0 && p[0] > 0.0 || Math.abs(p[0]) < 400.0 && p[1] < 0.0) {
-                System.out.printf("spot near an axis: chunks x %s z %s shift %s fallen %d%n", Arrays.toString(spot.chunkX()),
-                        Arrays.toString(spot.chunkZ()), Arrays.toString(spot.shift()), spot.fallen());
-            }
-        }
         Arrays.sort(nearest);
         double median = nearest[nearest.length / 2];
         System.out.printf("corrupt spots: %d, nearest neighbour p10 %.0f, median %.0f, p90 %.0f%n", spots.size(),
@@ -115,11 +108,16 @@ class Ring5CorruptSpotsTest {
                     }
                 }
                 assertTrue(touches, "loose chunk in a spot");
+                // At least a chunk from its cell's edge: a column within the dam or layer margin needs only its own cell.
+                int lx = Math.floorMod(spot.chunkX()[k], Ring5CorruptSpots.CELL_CHUNKS);
+                int lz = Math.floorMod(spot.chunkZ()[k], Ring5CorruptSpots.CELL_CHUNKS);
+                assertTrue(lx >= 1 && lx <= Ring5CorruptSpots.CELL_CHUNKS - 2 && lz >= 1 && lz <= Ring5CorruptSpots.CELL_CHUNKS - 2,
+                        "chunk on its cell's edge");
                 int shift = spot.shift()[k];
                 if (k == spot.fallen()) {
                     assertEquals(0, shift);
                 } else {
-                    assertTrue(Math.abs(shift) >= Ring5CorruptSpots.MIN_SHIFT && Math.abs(shift) <= Ring5CorruptSpots.MAX_SHIFT, "shift " + shift);
+                    assertTrue(Math.abs(shift) >= Ring5CorruptSpots.MIN_LIFT && Math.abs(shift) <= Ring5CorruptSpots.MAX_LIFT, "shift " + shift);
                     if (shift > 0) {
                         up++;
                     } else {
@@ -157,7 +155,7 @@ class Ring5CorruptSpotsTest {
                 Ring5Field.Column in = FIELD.column(x0, z0 + 8);
                 Ring5Field.Column out = FIELD.column(x0 - 1, z0 + 8);
                 if (!in.isVoid() && !out.isVoid() && spot.chunkAt(x0 - 1, z0 + 8) < 0
-                        && Math.abs(in.top() - out.top()) >= Ring5CorruptSpots.MIN_SHIFT - 3) {
+                        && Math.abs(in.top() - out.top()) >= Ring5CorruptSpots.MIN_LIFT - 3) {
                     walls++;
                 }
             }
