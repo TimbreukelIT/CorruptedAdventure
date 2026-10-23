@@ -35,6 +35,9 @@ public class VoidstoneBlock extends Block {
         }
         // Like crying obsidian: only out of a face that is open, so buried voidstone stays quiet.
         Direction direction = Direction.getRandom(random);
+        if (direction == Direction.DOWN) {
+            return; // the mote rises: out of the bottom face it would drift straight back into the block
+        }
         BlockPos neighbor = pos.relative(direction);
         if (level.getBlockState(neighbor).isFaceSturdy(level, neighbor, direction.getOpposite())) {
             return;
