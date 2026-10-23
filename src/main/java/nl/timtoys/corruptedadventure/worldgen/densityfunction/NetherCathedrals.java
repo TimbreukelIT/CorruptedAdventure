@@ -53,6 +53,8 @@ public final class NetherCathedrals implements DensityFunction {
     private static final int CELL_MEMORY = 8;
     /** The shared map only holds the cells of one ring; cleared if something asks far more (it never should). */
     private static final int SHARED_LIMIT = 1 << 14;
+    /** {@link #gridPillarCorner} where no grid column stands. */
+    public static final long NO_PILLAR = Long.MIN_VALUE;
 
     public static final MapCodec<NetherCathedrals> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Output.CODEC.fieldOf("output").forGetter(NetherCathedrals::output),
@@ -152,6 +154,31 @@ public final class NetherCathedrals implements DensityFunction {
     /** The lowest solid Y of the ceiling over column (x, z). */
     public int ceiling(int x, int z) {
         return columnOf(x, z).ceiling();
+    }
+
+    /**
+     * The low corner of the grid column that holds (x, z), packed as {@code (long) x << 32 | z & 0xFFFFFFFFL}, or
+     * {@link #NO_PILLAR} (no grid column there; a cathedral's giant column is none). Pure, from the shared cells.
+     */
+    public long gridPillarCorner(int x, int z) {
+        Cell cell = cellAt(x, z);
+        HallSettings h = settings.halls();
+        int u = Math.floorMod(x - cell.originX(settings) - cell.gridX(), h.grid());
+        int v = Math.floorMod(z - cell.originZ(settings) - cell.gridZ(), h.grid());
+        if (u >= h.pillarSize() || v >= h.pillarSize() || !pillarStands(cell, x - u, z - v)) {
+            return NO_PILLAR;
+        }
+        return key(x - u, z - v);
+    }
+
+    /** A seeded hash of (a, b) with {@code salt}, from the cells' hash noise (the dressing's choice per grid column). */
+    long pillarHash(int a, int b, long salt) {
+        return SeededHash.hash(cells, a, b, salt);
+    }
+
+    /** What the surface paints differently in column (x, z) (96): the light band, the ore and the floor's imprint. Pure. */
+    public NetherRing5Dressing.Column dressing(int x, int z) {
+        return NetherRing5Dressing.of(this, x, z);
     }
 
     /**
@@ -484,11 +511,12 @@ public final class NetherCathedrals implements DensityFunction {
         }
     }
 
-    /** {@code settings}: the cathedrals and the halls. */
-    public record Settings(CathedralSettings cathedrals, HallSettings halls) {
+    /** {@code settings}: the cathedrals, the halls and their dressing (96, {@link NetherRing5Dressing}). */
+    public record Settings(CathedralSettings cathedrals, HallSettings halls, NetherRing5Dressing.Settings dressing) {
         public static final Codec<Settings> CODEC = RecordCodecBuilder.<Settings>create(instance -> instance.group(
                 CathedralSettings.CODEC.fieldOf("cathedrals").forGetter(Settings::cathedrals),
-                HallSettings.CODEC.fieldOf("halls").forGetter(Settings::halls)
+                HallSettings.CODEC.fieldOf("halls").forGetter(Settings::halls),
+                NetherRing5Dressing.Settings.CODEC.fieldOf("dressing").forGetter(Settings::dressing)
         ).apply(instance, Settings::new)).validate(Settings::validate);
 
         private static DataResult<Settings> validate(Settings settings) {
@@ -513,7 +541,7 @@ public final class NetherCathedrals implements DensityFunction {
             if (h.floorTop() + (int) h.plainsHeight().max() >= h.ceiling()) {
                 return DataResult.error(() -> "nether_cathedrals: the highest plain must stay below the ceiling");
             }
-            return DataResult.success(settings);
+            return settings.dressing.validate(h, c).map(dressing -> settings);
         }
     }
 

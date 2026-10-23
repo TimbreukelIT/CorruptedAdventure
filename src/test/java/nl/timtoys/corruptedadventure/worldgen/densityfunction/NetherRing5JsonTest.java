@@ -49,6 +49,10 @@ class NetherRing5JsonTest {
     private static final String POLISHED_WHITE_STONE = "corruptedadventure:polished_white_stone";
     private static final String WHITE_STONE_BRICKS = "corruptedadventure:white_stone_bricks";
     private static final String WHITE_STONE_PILLAR = "corruptedadventure:white_stone_pillar";
+    // The dressing (96).
+    private static final String STILL_LIGHT = "corruptedadventure:still_light";
+    private static final String WHITE_CORE_ORE = "corruptedadventure:white_core_ore";
+    private static final String DRESSING = "corruptedadventure:nether_ring_5_dressing";
 
     private static double density(int x, int y, int z) {
         return TERRAIN.compute(new DensityFunction.SinglePointContext(x, y, z));
@@ -318,7 +322,8 @@ class NetherRing5JsonTest {
      * mirror stone over chalkrack; the columns white stone pillars (axis y); from there up to the highest plain the plains,
      * polished white stone on top and white stone bricks below their top (their sides); everything else (ceiling, walls,
      * the cathedral's roof) white stone. No vanilla stand-in is left; every block exists, none falls, and every property
-     * is one of the block's.
+     * is one of the block's. 96: the floor's top block first asks the imprint (bricks, then polished), the columns first
+     * the light band (still light) and the ore (white core ore), each through {@code nether_ring_5_dressing}.
      */
     @Test
     void surfaceBranchPaintsStreamBsBlocks() {
@@ -326,10 +331,21 @@ class NetherRing5JsonTest {
         JsonObject branch = rules.get(ownBranch(rules)).getAsJsonObject();
         JsonArray sequence = branch.getAsJsonObject("then_run").getAsJsonArray("sequence");
         assertEquals(4, sequence.size());
-        assertBand(sequence.get(0).getAsJsonObject(), HALLS.floorTop() + 1, MIRROR_STONE, CHALKRACK);
+        JsonObject floor = sequence.get(0).getAsJsonObject();
+        assertBand(floor, HALLS.floorTop() + 1, null, CHALKRACK);
+        JsonArray top = floor.getAsJsonObject("then_run").getAsJsonArray("sequence").get(0).getAsJsonObject()
+                .getAsJsonObject("then_run").getAsJsonArray("sequence");
+        assertEquals(3, top.size());
+        assertDressing(top.get(0).getAsJsonObject(), "imprint_bricks", WHITE_STONE_BRICKS);
+        assertDressing(top.get(1).getAsJsonObject(), "imprint_polished", POLISHED_WHITE_STONE);
+        assertEquals(MIRROR_STONE, blockName(top.get(2).getAsJsonObject()));
         JsonObject pillar = sequence.get(1).getAsJsonObject();
         assertEquals("corruptedadventure:nether_ring_5_pillar", pillar.getAsJsonObject("if_true").get("type").getAsString());
-        JsonObject pillarState = pillar.getAsJsonObject("then_run").getAsJsonObject("result_state");
+        JsonArray column = pillar.getAsJsonObject("then_run").getAsJsonArray("sequence");
+        assertEquals(3, column.size());
+        assertDressing(column.get(0).getAsJsonObject(), "light", STILL_LIGHT);
+        assertDressing(column.get(1).getAsJsonObject(), "ore", WHITE_CORE_ORE);
+        JsonObject pillarState = column.get(2).getAsJsonObject().getAsJsonObject("result_state");
         assertEquals(WHITE_STONE_PILLAR, pillarState.get("Name").getAsString());
         assertEquals("y", pillarState.getAsJsonObject("Properties").get("axis").getAsString());
         // the plains reach floor_top + plains_height.max (NetherCathedrals; floorIsFlatAtY31AndSolidBelow)
@@ -359,10 +375,22 @@ class NetherRing5JsonTest {
                 }
             }
         });
-        assertEquals(List.of(MIRROR_STONE, CHALKRACK, WHITE_STONE_PILLAR, POLISHED_WHITE_STONE, WHITE_STONE_BRICKS, WHITE_STONE), names);
+        assertEquals(List.of(WHITE_STONE_BRICKS, POLISHED_WHITE_STONE, MIRROR_STONE, CHALKRACK, STILL_LIGHT, WHITE_CORE_ORE,
+                WHITE_STONE_PILLAR, POLISHED_WHITE_STONE, WHITE_STONE_BRICKS, WHITE_STONE), names);
     }
 
-    /** A band below Y {@code below}: its top block ({@code floor} depth 0) {@code top}, the rest {@code rest}. */
+    /** A rule {@code nether_ring_5_dressing} with {@code part} that paints {@code block}. */
+    private static void assertDressing(JsonObject rule, String part, String block) {
+        JsonObject test = rule.getAsJsonObject("if_true");
+        assertEquals(DRESSING, test.get("type").getAsString());
+        assertEquals(part, test.get("part").getAsString());
+        assertEquals(block, blockName(rule.getAsJsonObject("then_run")));
+    }
+
+    /**
+     * A band below Y {@code below}: its top block ({@code floor} depth 0) {@code top} (null: not checked, a rule of its
+     * own), the rest {@code rest}.
+     */
     private static void assertBand(JsonObject rule, int below, String top, String rest) {
         JsonObject test = rule.getAsJsonObject("if_true");
         assertEquals("minecraft:not", test.get("type").getAsString());
@@ -379,7 +407,9 @@ class NetherRing5JsonTest {
         assertEquals(0, depth.get("offset").getAsInt());
         assertFalse(depth.get("add_surface_depth").getAsBoolean());
         assertEquals(0, depth.get("secondary_depth_range").getAsInt());
-        assertEquals(top, blockName(band.get(0).getAsJsonObject().getAsJsonObject("then_run")));
+        if (top != null) {
+            assertEquals(top, blockName(band.get(0).getAsJsonObject().getAsJsonObject("then_run")));
+        }
         assertEquals(rest, blockName(band.get(1).getAsJsonObject()));
     }
 
