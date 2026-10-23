@@ -162,7 +162,7 @@ t.o.v. vanilla, mediaan warm: `wastes` 0,52, `glitch` 0,52, `meadow` 0,53, `scar
 ## I. INT1-resultaten (ter info)
 Lokaal, seed 20260930: `build` en `runData` groen, `src/generated` schoon; S-smoke (verse wereld) zonder ERROR en zonder
 client-class-fout; `det.sh` op `ring5.txt` (omgekeerd geladen) 991/991 chunks identiek; `voidscan.py --strict` (met
-`--rings`) 0 fouten; `waterscan.sh` op `ring4.txt` 0 (zone 4→5 zonder water); feature-index ring 1–4 (`fi3.txt`)
+`--rings`) 0 fouten; `lavascan.py` op `ring5.txt` `lek` 0 (alle gebieden 0 blootgestelde lava); `waterscan.sh` op `ring4.txt` 0 (zone 4→5 zonder water); feature-index ring 1–4 (`fi3.txt`)
 gelijk op één bekende Nether-cel na (backlog); prestatie zie G; `ModNetwork.PROTOCOL_VERSION` `"9"` (client en server
 moeten dezelfde build draaien).
 
