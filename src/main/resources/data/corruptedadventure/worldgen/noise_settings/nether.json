@@ -2019,10 +2019,41 @@
                       "surface_type": "floor"
                     },
                     "then_run": {
-                      "type": "minecraft:block",
-                      "result_state": {
-                        "Name": "corruptedadventure:mirror_stone"
-                      }
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "corruptedadventure:nether_ring_5_dressing",
+                            "part": "imprint_bricks"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "corruptedadventure:white_stone_bricks"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "corruptedadventure:nether_ring_5_dressing",
+                            "part": "imprint_polished"
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "corruptedadventure:polished_white_stone"
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:mirror_stone"
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -2040,13 +2071,44 @@
                 "type": "corruptedadventure:nether_ring_5_pillar"
               },
               "then_run": {
-                "type": "minecraft:block",
-                "result_state": {
-                  "Name": "corruptedadventure:white_stone_pillar",
-                  "Properties": {
-                    "axis": "y"
+                "type": "minecraft:sequence",
+                "sequence": [
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "corruptedadventure:nether_ring_5_dressing",
+                      "part": "light"
+                    },
+                    "then_run": {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "corruptedadventure:still_light"
+                      }
+                    }
+                  },
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "corruptedadventure:nether_ring_5_dressing",
+                      "part": "ore"
+                    },
+                    "then_run": {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "corruptedadventure:white_core_ore"
+                      }
+                    }
+                  },
+                  {
+                    "type": "minecraft:block",
+                    "result_state": {
+                      "Name": "corruptedadventure:white_stone_pillar",
+                      "Properties": {
+                        "axis": "y"
+                      }
+                    }
                   }
-                }
+                ]
               }
             },
             {

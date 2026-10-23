@@ -9,7 +9,9 @@ lava); everything else stays byte-identical (a json round trip with indent 2 and
 Blocks (87b: stream B's blocks of package 90, before that vanilla stand-ins): the floor's top block (Y 31) mirror
 stone, the rock below it chalkrack, the columns white stone pillars (axis y), the plains (Y 32 up to the highest plain)
 polished white stone on top and white stone bricks below their top (the sides: the plains' edges), everything else
-(ceiling, walls, the cathedral's roof) white stone. The columns are a shape rule: the surface condition
+(ceiling, walls, the cathedral's roof) white stone. 96 adds the dressing (condition nether_ring_5_dressing, settings in
+terrain.json's settings.dressing): still light bands and white core ore in the columns, and round a giant column's
+foot an imprint in the floor (polished white stone with white stone brick borders). The columns are a shape rule: the surface condition
 nether_ring_5_pillar asks the terrain itself (nether_cathedrals) which columns stand. The heights come from the
 terrain's settings (ring_5/nether/terrain.json): after a change there, run this script again.
 """
@@ -29,7 +31,14 @@ WHITE_STONE = CA + "white_stone"
 POLISHED_WHITE_STONE = CA + "polished_white_stone"
 WHITE_STONE_BRICKS = CA + "white_stone_bricks"
 WHITE_STONE_PILLAR = CA + "white_stone_pillar"
+STILL_LIGHT = CA + "still_light"
+WHITE_CORE_ORE = CA + "white_core_ore"
 PILLAR = {"type": CA + "nether_ring_5_pillar"}
+
+
+def dressing(part):
+    """96: where the dressing of nether_cathedrals (settings.dressing) puts this part."""
+    return {"type": CA + "nether_ring_5_dressing", "part": part}
 
 
 # ---------------------------------------------------------------- builders
@@ -82,11 +91,19 @@ def nether():
     plains_top = floor_top + range_max(settings["plains_height"])
     return cond(biome(*BIOMES), seq(
         # the floor (top block at Y 31) and the solid rock under it, down to the bedrock (also under the columns)
+        # (96: round a giant column's foot the floor's top block is an imprint of polished white stone, brick borders)
         cond(NOT(y_above(floor_top + 1)), seq(
-            cond(depth("floor"), block(MIRROR_STONE)),
+            cond(depth("floor"), seq(
+                cond(dressing("imprint_bricks"), block(WHITE_STONE_BRICKS)),
+                cond(dressing("imprint_polished"), block(POLISHED_WHITE_STONE)),
+                block(MIRROR_STONE))),
             block(CHALKRACK))),
         # the columns (grid and giant) from the floor to the ceiling and through it
-        cond(PILLAR, block(WHITE_STONE_PILLAR, axis="y")),
+        # (96: a band of still light in every grid column, white core ore in some cores and up the giant column's middle)
+        cond(PILLAR, seq(
+            cond(dressing("light"), block(STILL_LIGHT)),
+            cond(dressing("ore"), block(WHITE_CORE_ORE)),
+            block(WHITE_STONE_PILLAR, axis="y"))),
         # the plains (2-6 above the floor): polished on top, bricks below the top (their sides)
         cond(NOT(y_above(plains_top + 1)), seq(
             cond(depth("floor"), block(POLISHED_WHITE_STONE)),

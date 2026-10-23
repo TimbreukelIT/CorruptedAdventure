@@ -15,6 +15,8 @@ two outputs from the same settings:
   ceiling from Y 104, square columns 4 x 4 on a grid of 24 with an offset per cell of 400 (no jitter), and per cell at
   most one cathedral (diameter 120-180): the roof lifted to Y 120 over a rim of 8-16 (a smoothstep) and one giant column
   (diameter 20-30) in its middle. No column or plain within 16 of a cathedral.
+settings.dressing (96): the light band, the white core and the giant column's vein and floor imprint, which the
+surface paints (nether_ring5_surface.py); the density ignores it.
 edge = ring_edge of ring 5, as wide as the zone 4->5 (half of 64 Nether blocks) plus the margin of 24: a cathedral's
 outline, a column and a plain only stand where it is 0, so all of them keep clear of both zones.
 """
@@ -43,6 +45,19 @@ SETTINGS = {
         # ~30 % of the open hall floor raised (NetherRing5JsonTest measures it; the noise's 70th percentile lies at
         # ~0.1-0.2 depending on the seed), one block higher per step above the threshold (6 high above ~0.4, ~the 96th)
         "plains_threshold": 0.08, "plains_step": 0.08, "plains_height": [2, 6],
+    },
+    # 96 (the user's decision of 2026-10-23), painted by the surface (nether_ring5_surface.py, condition
+    # nether_ring_5_dressing); the terrain's density does not read it.
+    "dressing": {
+        # still light: a band 2 high through every grid column, its lowest Y per column one of 38, 44, 50, 56
+        # (above the highest plain, Y 37; the giant column gets none)
+        "light_y": [38, 56], "light_step": 6, "light_height": 2,
+        # white core: in ~1 grid column of 10 a core of 1-3 ore stacked in one inner column, centred halfway between
+        # the floor and the ceiling (Y 67)
+        "core_chance": 0.1, "core_size": [1, 3],
+        # the giant column: a vein of ore up its middle column (radius 0) from above the floor to below the roof,
+        # and an imprint 8 wide in the floor round its foot (polished, brick borders 1 wide inside and out)
+        "vein_radius": 0.0, "imprint_width": 8, "imprint_border": 1,
     },
 }
 NOISES = {

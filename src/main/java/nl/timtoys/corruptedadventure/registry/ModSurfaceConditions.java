@@ -14,6 +14,7 @@ import nl.timtoys.corruptedadventure.worldgen.surface.SeaFossilCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.RingReachCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.VolcanicThresholdCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.WorldTreeCondition;
+import nl.timtoys.corruptedadventure.worldgen.surface.NetherRing5DressingCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.NetherRing5PillarCondition;
 
 /** Surface rule condition types (the {@code if_true} of a surface rule); the rules themselves are hand-written JSON. */
@@ -57,6 +58,9 @@ public final class ModSurfaceConditions {
     /** {@code corruptedadventure:nether_ring_5_pillar} (87: the columns of Nether ring 5, grid and giant, painted as columns) */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<NetherRing5PillarCondition>> NETHER_RING_5_PILLAR =
             CONDITIONS.register("nether_ring_5_pillar", () -> NetherRing5PillarCondition.MAP_CODEC);
+    /** {@code corruptedadventure:nether_ring_5_dressing} (96: light band and ore in the columns, the giant column's vein and floor imprint) */
+    public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<NetherRing5DressingCondition>> NETHER_RING_5_DRESSING =
+            CONDITIONS.register("nether_ring_5_dressing", () -> NetherRing5DressingCondition.MAP_CODEC);
 
     private ModSurfaceConditions() {
     }

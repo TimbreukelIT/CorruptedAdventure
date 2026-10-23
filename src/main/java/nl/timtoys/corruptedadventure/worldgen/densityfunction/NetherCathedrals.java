@@ -53,6 +53,8 @@ public final class NetherCathedrals implements DensityFunction {
     private static final int CELL_MEMORY = 8;
     /** The shared map only holds the cells of one ring; cleared if something asks far more (it never should). */
     private static final int SHARED_LIMIT = 1 << 14;
+    /** {@link #gridPillarCorner} where no grid column stands (no corner of Nether ring 5 lies at x = Integer.MIN_VALUE). */
+    static final long NO_PILLAR = Long.MIN_VALUE;
 
     public static final MapCodec<NetherCathedrals> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Output.CODEC.fieldOf("output").forGetter(NetherCathedrals::output),
@@ -152,6 +154,16 @@ public final class NetherCathedrals implements DensityFunction {
     /** The lowest solid Y of the ceiling over column (x, z). */
     public int ceiling(int x, int z) {
         return columnOf(x, z).ceiling();
+    }
+
+    /** A seeded hash of (a, b) with {@code salt}, from the cells' hash noise (the dressing's choice per grid column). */
+    long pillarHash(int a, int b, long salt) {
+        return SeededHash.hash(cells, a, b, salt);
+    }
+
+    /** What the surface paints differently in column (x, z) (96): the light band, the ore and the floor's imprint. Pure. */
+    public NetherRing5Dressing.Column dressing(int x, int z) {
+        return NetherRing5Dressing.of(this, x, z);
     }
 
     /**
@@ -298,13 +310,21 @@ public final class NetherCathedrals implements DensityFunction {
 
     /** Whether (x, z) lies in one of the cell's grid columns that stands: wholly inside the cell, clear of its hall and the zones. */
     private boolean gridPillar(Cell cell, int x, int z) {
+        return gridPillarCorner(cell, x, z) != NO_PILLAR;
+    }
+
+    /**
+     * The low corner of the cell's grid column that holds (x, z) and stands, packed as {@link #key} (x high, z low), or
+     * {@link #NO_PILLAR}. The one place that decides where grid columns stand: the terrain and the dressing (96) both ask it.
+     */
+    long gridPillarCorner(Cell cell, int x, int z) {
         HallSettings h = settings.halls();
         int u = Math.floorMod(x - cell.originX(settings) - cell.gridX(), h.grid());
         int v = Math.floorMod(z - cell.originZ(settings) - cell.gridZ(), h.grid());
-        if (u >= h.pillarSize() || v >= h.pillarSize()) {
-            return false;
+        if (u >= h.pillarSize() || v >= h.pillarSize() || !pillarStands(cell, x - u, z - v)) {
+            return NO_PILLAR;
         }
-        return pillarStands(cell, x - u, z - v);
+        return key(x - u, z - v);
     }
 
     /** The grid column whose low corner is (px, pz) stands. */
@@ -484,11 +504,12 @@ public final class NetherCathedrals implements DensityFunction {
         }
     }
 
-    /** {@code settings}: the cathedrals and the halls. */
-    public record Settings(CathedralSettings cathedrals, HallSettings halls) {
+    /** {@code settings}: the cathedrals, the halls and their dressing (96, {@link NetherRing5Dressing}). */
+    public record Settings(CathedralSettings cathedrals, HallSettings halls, NetherRing5Dressing.Settings dressing) {
         public static final Codec<Settings> CODEC = RecordCodecBuilder.<Settings>create(instance -> instance.group(
                 CathedralSettings.CODEC.fieldOf("cathedrals").forGetter(Settings::cathedrals),
-                HallSettings.CODEC.fieldOf("halls").forGetter(Settings::halls)
+                HallSettings.CODEC.fieldOf("halls").forGetter(Settings::halls),
+                NetherRing5Dressing.Settings.CODEC.fieldOf("dressing").forGetter(Settings::dressing)
         ).apply(instance, Settings::new)).validate(Settings::validate);
 
         private static DataResult<Settings> validate(Settings settings) {
@@ -513,7 +534,7 @@ public final class NetherCathedrals implements DensityFunction {
             if (h.floorTop() + (int) h.plainsHeight().max() >= h.ceiling()) {
                 return DataResult.error(() -> "nether_cathedrals: the highest plain must stay below the ceiling");
             }
-            return DataResult.success(settings);
+            return settings.dressing.validate(h, c).map(dressing -> settings);
         }
     }
 
