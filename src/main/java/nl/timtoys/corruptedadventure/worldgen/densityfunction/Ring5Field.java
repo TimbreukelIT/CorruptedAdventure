@@ -31,8 +31,9 @@ import java.util.function.Supplier;
  * inverted_hills} hang upside-down hills under them; floating chunks, narrow ridges and strips of stepping stones over the
  * void; the same field runs on past ring 5's boundary until the edge is empty. The four castle pinnacles (82 sites, 84
  * shape in {@link Ring5Castles}) with their ruined rims, void belts and two bridges each. The inner band (83, numbers in
- * {@link Ring5Inner}): dead ground with low hills, per region the shapes that are just wrong (stairs and pits, a regular
- * wave, blocky ground with shifted layers and floating cubes) and loose cracks down into the void.
+ * {@link Ring5Inner}, relief revised in 83b): rolling dead ground with ridges and cliffs, per region the shapes that are
+ * just wrong (stairs and pits, a regular wave, blocky ground with shifted layers and floating cubes), loose cracks down
+ * into the void and the corrupt spots (83b, {@link Ring5CorruptSpots}): shifted chunks and a chunk fallen into the void.
  * <p>
  * The terrain is exact per block (no interpolation): a column's ground is a 2D top and underside, plus the exact spans of
  * the bridges, ridges and chunks over it, so walls, deck edges and cracks lie on the block.
@@ -81,6 +82,9 @@ public final class Ring5Field implements DensityFunction {
     private static final double DENSITY_PER_BLOCK = 0.125;
     /** Exact spans (bridges, ridges, chunks) one column keeps at most. */
     static final int MAX_SPANS = 8;
+    /** A corrupt spot's chunks keep this far from the band line and the zone 4→5, and this far off a castle's reach (83b). */
+    static final double SPOT_CLEARANCE = 32.0;
+    static final double SPOT_CASTLE_CLEARANCE = 16.0;
 
     private static final int FLOE_SALT = 8401;
     private static final int CRATER_SALT = 8402;
@@ -313,11 +317,10 @@ public final class Ring5Field implements DensityFunction {
         // The inner band (83): the lowest ground round the column (its shapes, not its cracks or cubes), less a margin.
         double initial = column.initial;
         if (Double.isNaN(initial)) {
-            Ring5Inner inner = inner();
             initial = column.height;
             for (int k = 0; k < 8; k++) {
                 double a = Math.PI / 4.0 * k;
-                initial = Math.min(initial, inner.top(Mth.floor(x + 0.5 + INITIAL_RADIUS * Math.cos(a)),
+                initial = Math.min(initial, innerGround(Mth.floor(x + 0.5 + INITIAL_RADIUS * Math.cos(a)),
                         Mth.floor(z + 0.5 + INITIAL_RADIUS * Math.sin(a))));
             }
             initial -= INITIAL_MARGIN;
@@ -379,10 +382,14 @@ public final class Ring5Field implements DensityFunction {
         }
     }
 
-    /** A column of the inner band: the ground with its regions' shapes, a loose crack, the glitch fields' layers. */
+    /**
+     * A column of the inner band: the ground with its regions' shapes, shifted in a corrupt spot's chunk; a loose crack or
+     * a spot's fallen chunk (void); the glitch fields' layers.
+     */
     private void fillInner(Column c, int x, int z) {
         Ring5Inner inner = inner();
-        double top = mounded(x, z, inner.top(x, z));
+        Ring5CorruptSpots.Spot spot = corruptSpot(Ring5CorruptSpots.cellOf(x), Ring5CorruptSpots.cellOf(z));
+        double top = mounded(x, z, inner.top(x, z) + spotShift(spot, x, z));
         double glitch = inner.glitchWeight(x, z);
         c.glitch = glitch;
         c.inner = true;
@@ -398,8 +405,9 @@ public final class Ring5Field implements DensityFunction {
         c.scars = Mth.clamp(1.0 - crack / Ring5Outer.SCAR_RIM, 0.0, 1.0);
         c.top = top;
         c.bottom = Double.NEGATIVE_INFINITY;
-        // Shifted layers only where the glitch fields hold alone (no half-blended layers).
-        c.layered = glitch >= 0.999;
+        // Shifted layers only where the glitch fields hold alone (no half-blended layers), and not by a corrupt spot's
+        // walls: a slice there would copy a column up to 30 higher or lower and could hang loose.
+        c.layered = glitch >= 0.999 && (spot == null || !spot.near(x, z, Ring5Inner.MAX_SHIFT));
     }
 
     /** A column of the outer band or the outer edge (not near a castle): floe, scar or void. */
@@ -583,15 +591,108 @@ public final class Ring5Field implements DensityFunction {
     Ring5Inner inner() {
         Ring5Inner known = decisions.inner;
         if (known == null) {
-            known = new Ring5Inner(noises.hills, noises.rot, noises.glitch, salt());
+            known = new Ring5Inner(noises.hills, noises.rot, noises.glitch, salt(), this::reliefWeight, this::lineWeight);
             decisions.inner = known;
         }
         return known;
     }
 
-    /** The inner band's surface (83) at a position, without cracks, layers and cubes. Pure. */
+    /**
+     * The inner band's relief weight (83b): 0 up to the zone 4→5's outer edge (the fracture zone blends the old ground),
+     * 1 from {@link Ring5Inner#RELIEF_FADE} after it (effective distance).
+     */
+    private double reliefWeight(double x, double z) {
+        RingLayout l = layout.get();
+        double zoneEnd = Ring4Sundered.zoneEnd(l);
+        // The boundary noise moves the effective distance at most boundaryNoise: far out the weight is 1 without it.
+        if (Math.sqrt(x * x + z * z) >= zoneEnd + Ring5Inner.RELIEF_FADE + l.settings().boundaryNoise() + 1.0) {
+            return 1.0;
+        }
+        return Ring4Relief.smooth(l.effectiveDistance(x, z) - zoneEnd, 0.0, Ring5Inner.RELIEF_FADE);
+    }
+
+    /**
+     * The inner band's weight of the full relief against the floe range (83b): 0 on and past the band line, 1 from
+     * {@link Ring5Inner#LINE_FADE} inside it ({@link Ring5Band#signedDistance}).
+     */
+    private double lineWeight(double x, double z) {
+        RingLayout l = layout.get();
+        // The line lies at most its amplitude inside its mean radius and the effective distance at most boundaryNoise
+        // inside the radius: well inside that the weight is 1 without the band's noise.
+        List<Integer> radii = l.settings().ringOuterRadii();
+        double inner = radii.get(Ring.RING_4.ordinal());
+        double width = radii.get(Ring.RING_5.ordinal()) - inner;
+        double nearest = inner + (Ring5Band.INNER_SHARE - Ring5Band.AMPLITUDE_SHARE) * width;
+        if (Math.sqrt(x * x + z * z) + l.settings().boundaryNoise() + 1.0 <= nearest - Ring5Inner.LINE_FADE) {
+            return 1.0;
+        }
+        return 1.0 - Ring4Relief.smooth(Ring5Band.of(l).signedDistance(x, z), -Ring5Inner.LINE_FADE, 0.0);
+    }
+
+    /** The inner band's surface (83) at a position, without cracks, corrupt spots, layers and cubes. Pure. */
     private double innerTop(double x, double z) {
         return inner().top(Mth.floor(x), Mth.floor(z));
+    }
+
+    /** The inner band's surface with the corrupt spots' shifts (83b), without cracks, holes, layers and cubes. Pure. */
+    double innerGround(int x, int z) {
+        return inner().top(x, z) + spotShift(corruptSpot(Ring5CorruptSpots.cellOf(x), Ring5CorruptSpots.cellOf(z)), x, z);
+    }
+
+    /** The shift of a corrupt spot's chunk at the column (0 outside a spot and on its fallen chunk). */
+    private static int spotShift(@Nullable Ring5CorruptSpots.Spot spot, int x, int z) {
+        if (spot == null) {
+            return 0;
+        }
+        int k = spot.chunkAt(x, z);
+        return k < 0 ? 0 : spot.shift()[k];
+    }
+
+    /** The corrupt spots' shapes (83b), made once per world. */
+    Ring5CorruptSpots corruptSpots() {
+        Ring5CorruptSpots known = decisions.spotShapes;
+        if (known == null) {
+            known = new Ring5CorruptSpots(salt(), noises.hills);
+            decisions.spotShapes = known;
+        }
+        return known;
+    }
+
+    /**
+     * The corrupt spot of spot cell (i, j) (83b) if every chunk of it lies well inside the inner band: off the band line and
+     * the zone 4→5 by {@link #SPOT_CLEARANCE}, off every castle's reach by {@link #SPOT_CASTLE_CLEARANCE}. Cached, pure.
+     */
+    @Nullable
+    Ring5CorruptSpots.Spot corruptSpot(int i, int j) {
+        long key = KeyedSlots.key(i, j);
+        Optional<Ring5CorruptSpots.Spot> known = decisions.spots.peek(key);
+        if (known == null) {
+            known = Optional.ofNullable(keepSpot(corruptSpots().spot(i, j)));
+            decisions.spots.put(key, known);
+        }
+        return known.orElse(null);
+    }
+
+    @Nullable
+    private Ring5CorruptSpots.Spot keepSpot(@Nullable Ring5CorruptSpots.Spot spot) {
+        if (spot == null) {
+            return null;
+        }
+        RingLayout l = layout.get();
+        Ring5Band band = Ring5Band.of(l);
+        double zoneEnd = Ring4Sundered.zoneEnd(l);
+        int c = Ring5CorruptSpots.CHUNK;
+        for (int k = 0; k < spot.size(); k++) {
+            double x0 = spot.chunkX()[k] * c;
+            double z0 = spot.chunkZ()[k] * c;
+            for (double[] p : new double[][]{{x0, z0}, {x0 + c, z0}, {x0, z0 + c}, {x0 + c, z0 + c}, {x0 + c / 2.0, z0 + c / 2.0}}) {
+                if (band.signedDistance(p[0], p[1]) > -SPOT_CLEARANCE || l.effectiveDistance(p[0], p[1]) < zoneEnd + SPOT_CLEARANCE
+                        || nearCastle(p[0], p[1], SPOT_CASTLE_CLEARANCE)) {
+                    return null;
+                }
+            }
+        }
+        return spot;
     }
 
     /** The floating cubes of the glitch fields over a column (83): exact spans. */
@@ -619,8 +720,8 @@ public final class Ring5Field implements DensityFunction {
     }
 
     /**
-     * A cube is kept only where every column under it is glitch ground of the inner band (no outer band, castle reach or
-     * crack under it): a cube cut by one of those edges would hang in lines. Pure: it asks the band, the castles and the
+     * A cube is kept only where every column under it is glitch ground of the inner band (no outer band, castle reach,
+     * crack or corrupt spot under it): a cube cut by one of those edges would hang in lines. Pure: it asks the band, the castles and the
      * cracks directly, not the column table (a cube is computed inside a column).
      */
     @Nullable
@@ -632,8 +733,9 @@ public final class Ring5Field implements DensityFunction {
         for (int x = cube[0]; x < cube[0] + cube[2]; x++) {
             for (int z = cube[1]; z < cube[1] + cube[2]; z++) {
                 CastleSite castle = nearestCastle(x, z);
+                Ring5CorruptSpots.Spot spot = corruptSpot(Ring5CorruptSpots.cellOf(x), Ring5CorruptSpots.cellOf(z));
                 boolean glitch = band.inner(x, z) && inner().glitchWeight(x, z) > 0.0 && innerCrackDistance(x, z) > 0.0
-                        && castle.distance(x, z) > castle.radius() + castle.belt();
+                        && castle.distance(x, z) > castle.radius() + castle.belt() && (spot == null || spot.chunkAt(x, z) < 0);
                 if (!glitch) {
                     return null;
                 }
@@ -643,8 +745,9 @@ public final class Ring5Field implements DensityFunction {
     }
 
     /**
-     * How far (blocks) a column lies from the nearest loose crack of the inner band (83), at most 0 inside one; infinite
-     * where none is near. For the terrain and the dam of the lava layer ({@code RingFluidPicker}). Pure.
+     * How far (blocks) a column lies from the nearest opening into the void of the inner band: a loose crack (83) or a
+     * corrupt spot's fallen chunk (83b); at most 0 exactly on the open columns, infinite where none is near. For the
+     * terrain, the rim's {@code scars} and the dam of the lava layer ({@code RingFluidPicker}). Pure.
      */
     public double innerCrackDistance(int x, int z) {
         int ci = Math.floorDiv(x, Ring5Inner.CRACK_CELL);
@@ -657,6 +760,11 @@ public final class Ring5Field implements DensityFunction {
                     distance = Math.min(distance, Ring5Inner.crackDistance(crack, x + 0.5, z + 0.5));
                 }
             }
+        }
+        // A spot keeps MARGIN_CHUNKS from its cell's edge, so only the own cell's hole can lie within the dam.
+        Ring5CorruptSpots.Spot spot = corruptSpot(Ring5CorruptSpots.cellOf(x), Ring5CorruptSpots.cellOf(z));
+        if (spot != null) {
+            distance = Math.min(distance, corruptSpots().holeDistance(spot, x, z));
         }
         return distance;
     }
@@ -688,13 +796,18 @@ public final class Ring5Field implements DensityFunction {
         return known.orElse(null);
     }
 
-    /** The ground's top in the outer band (a floe's, or where a floe would be): from the inner band's surface at the line. */
+    /**
+     * The ground's top in the outer band (a floe's, or where a floe would be): from the inner band's surface at the line,
+     * held to the floes' range (83b: the inner relief bends into it towards the line, but its glitch blocks, pits and
+     * stairs may still stick out a little).
+     */
     private double groundTop(double x, double z, double signed, double progress) {
         double own = Ring5Outer.floeTop(progress, noises.relief.getValue(x, 0.0, z), noises.detail.getValue(x, 0.0, z));
         if (signed >= Ring5Outer.LINE_BLEND) {
             return own;
         }
-        return Mth.lerp(Ring4Relief.smooth(signed, 0.0, Ring5Outer.LINE_BLEND), innerTop(x, z), own);
+        double inner = Mth.clamp(innerTop(x, z), Ring5Outer.TOP_MIN, Ring5Outer.TOP_MAX);
+        return Mth.lerp(Ring4Relief.smooth(signed, 0.0, Ring5Outer.LINE_BLEND), inner, own);
     }
 
     private CastleSite nearestCastle(double x, double z) {
@@ -1434,5 +1547,7 @@ public final class Ring5Field implements DensityFunction {
         volatile Ring5Inner inner;
         final KeyedSlots<Optional<int[]>> cubes = new KeyedSlots<>(256);
         final KeyedSlots<Optional<double[]>> cracks = new KeyedSlots<>(64);
+        volatile Ring5CorruptSpots spotShapes;
+        final KeyedSlots<Optional<Ring5CorruptSpots.Spot>> spots = new KeyedSlots<>(64);
     }
 }
