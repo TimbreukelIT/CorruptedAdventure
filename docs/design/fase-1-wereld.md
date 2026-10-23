@@ -1137,6 +1137,14 @@ Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). G
 - **Stilstand** (sparring ring 5, 92): regen en wolken bevriezen, geluid valt weg (client); void ↑ ×1,5 (server); kort en zeldzaam (40–120 s).
 - **Per band (OV1-A, P2):** één cyclus met gedeelde tijden, het type per band: binnen glitchstorm 55 / stilstand 30 / omgekeerde regen 15, buiten omgekeerde regen 70 / glitchstorm 20 / stilstand 10 (`[weather.ring5]`); nacht- en weerfactor op de void-meter stapelen niet (de grootste telt).
 
+**Sfeer (98, besluiten gebruiker 2026-10-23: V98-1 … V98-11 = A; `docs/plans/ring-5/golf-2-atmosphere.md`)**
+- **Lucht (V98-1/2):** van de bandlijn (0 %) geleidelijk zwart tot ~85 % op de ringrand (9.700) en 100 % boven de void; zon en maan (en de zonsopgang-gloed) gedimd tot ~40 %; het lichtniveau verandert niet. Sterren volgen de zwartheid (overdag in de buitenband, ook onder je boven de void); de binnenband houdt vanilla-sterren. Alles op de gesyncte layout (`Ring5Band`), niet op de biome.
+- **Fog (V98-3/4):** binnenband far 0,45 × kijkafstand (48–112), near 0,15 × far, kleurloos (luma × daglicht), naar buiten uitdunnend naar vanilla en zwart; niet in water/lava/grotten. Glitch-fog: de fog-rand hapert om de 4–12 s 1–3 ticks naar 40–70 % (1 op 4 violet-zwart), 2× zo vaak in `glitch_fields`, niet tijdens een glitchstorm, × Screen Effect Scale (0 = uit).
+- **Geluid (V98-5):** binnenband bijna stil (zeldzame `glitch`-one-shots, vaker in `glitch_fields` + `glitch_pixel`-deeltjes; `false_meadow` stil; grotklank `STRANGE`), buitenband `void_drone`-loop + `void_mote`-deeltjes (het meest in `shattered_expanse`); **geen muziek in heel ring 5** (een stille muziek). Eigen audio (`tools/sounds/Ring5Sounds.java`), ook voor de drie weerloops; de weer-renderers gebruiken `glitch_pixel` en `reverse_raindrop`.
+- **Echo-voetstappen (V98-6, klank a):** in vlagen: na 1–3 min lopen volgt voor 4–10 stappen elke stap een echo 0,4–0,8 s later (vast per vlaag), 6–12 blokken achter je, met het stapgeluid van het blok, zachter (0,5–0,7) en 5 % lager; stop je, dan nog precies één echo. Client-only, per speler.
+- **Void-meter op de client (V98-11):** vanaf drempel 1 (30) een lichte glitchstorm-overlay die meegroeit tot ~60 % van de storm bij 100, × Screen Effect Scale, `glitch_pixel` rond de speler; geen hotbar-hapering.
+- **Void-teleport (V98-8):** de server speelt `ambient.ring_5.glitch` en een plukje `glitch_pixel` op vertrek- én aankomstplek (medespelers zien en horen het).
+
 **Conditie: void/glitches**
 - Meter ↑ overal in ring 5 (langzaam); sneller bij void-scheuren, glitchblokken, 's nachts en tijdens ringweer.
 - Meter ↓ in fel licht: lichtniveau ≥ 12 van eigen lichtbronnen, want "licht houdt de void weg". Daalt ook buiten ring 5, en snel in Nether-4.
@@ -1159,13 +1167,15 @@ Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). G
 - **Blokken**: kalkrack (wit netherrack, anders dan het beige gebleekte netherrack van Nether-4), witsteen-set (glad, gepolijst, bricks, zuil, slab, stairs, wall), spiegelsteen, stil licht (witte lichtbron zonder geluid of particles).
 - **Sleutelmateriaal: witte kern**, het "hart van de stilte". Zeldzaam, in de kern van de zuilen. Nodig voor toegang tot Herobrines kastelen en de final battle (fase 3/5); in fase 2 de basis van zuiveringsgear tegen corruptie. Geen gedrag in fase 1.
 - **Aankleding (96, besluit 2026-10-23):** stil licht als lichtband **in de zuilen** (2 hoog, per zuil een eigen hoogte uit Y 38/44/50/56; de reuzenzuil krijgt geen band); witte kern in **~1 op 10 zuilen**, een kern van 1–3 erts halverwege de zuil; de reuzenzuil van `hollow_cathedral` krijgt een **verticale witte-kernader in het hart** en een **vloer-afdruk** van gepolijst/bakstenen witsteen rond de voet (leest als bouwwerk).
-- **Sfeer**: witte fog, geen ambient-geluid, geen muziek, bijna geen particles (biome-data).
+- **Sfeer**: witte fog, geen ambient-geluid, geen muziek, bijna geen particles (biome-data). *Gebouwd in 98 (V98-7 = A):* fog wit en ver (0,8 × kijkafstand, max. 192, near 0,4 × far, kleur van de biome-fog), geen ambient-loop of mood, stille muziek, heel zelden een wit stofje (`white_ash`).
 - **Conditie: stilte**
   - Meter ↑ overal in Nether-5, sneller in de open vlaktes.
   - Meter ↓ door **zelf geluid te maken**: bel luiden, goat horn, note block of jukebox in de buurt (server-side via vanilla game events).
   - **Andere spelers binnen ~8 blokken remmen de opbouw**: samen sta je sterker.
   - Drempels: geluid gedempt → HUD weg (behalve hotbar) → alle geluid weg + darkness → schade (hartslag).
   - De server stuurt de meter; de client past alleen volume en HUD aan.
+  - *Besluiten 97 (gebruiker 2026-10-23, V1–V4; `docs/plans/ring-5/golf-2-conditions.md`):* 0 → 100 in ~5 min (0,33/s) overal in Nether-5 (hard op de ringgrens, de Nether-voidrand telt niet); **open ruimte** ×1,5 = in `hollow_cathedral` of staand op `polished_white_stone` (de witte vlaktes); **samen**: een andere speler binnen 8 blokken halveert de opbouw (niet stapelend; open en samen vermenigvuldigen); **geluid**: bel, goat horn, note block of jukebox binnen 16 blokken (ook via redstone) laat de meter 10 s lang met 2/s zakken en wint van alle opbouw; buiten Nether-5 zakt hij 1/s (in Nether-4 ×3). **Drempels 30/60/90:** 30 geluid gedempt, 60 HUD weg behalve hotbar, 90 alle geluid weg + darkness + hartslagschade 1,0 per 2 s, **nooit dodelijk** (stopt op 1 HP, elke moeilijkheidsgraad; damage type `silence`, geen doodsbericht). Void en stilte delen één darkness (de sterkste telt; een warden-darkness blijft ongemoeid).
+  - *Client (98, V98-9/10 = A):* vanaf 30 zakt al het wereldgeluid en de muziek (niet `MASTER`) geleidelijk van 100 % naar 35 % bij 90, bij 90 binnen ~1 s naar stil; dan blijft alleen een hartslag (sneller naarmate de meter stijgt). Bij 60 verdwijnen gezondheid, honger, pantser, lucht, XP, effecten, bossbalk en scorebord; hotbar (+ itemnaam), richtkruis, conditiebalken en chat blijven.
 
 **Client/server-risico's**
 - Void-meter, teleports (veilige-plek-check op de server, nooit in blokken of richting void) en de stilte-meter: server-side.
