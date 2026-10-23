@@ -964,3 +964,6 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-23 | atmosphere | Geluid ring 5: binnenband bijna stil met zeldzame glitch-geluidjes, buitenband void-drone + void-deeltjes, geen muziek; echo-voetstappen in vlagen (4–10 stappen, 0,4–0,8 s later, 6–12 blokken achter je) (98) | Gebruiker (aanbevolen) |
 | 2026-10-23 | atmosphere | Nether-5: witte fog ~0,8 × renderafstand, geen achtergrondgeluid, muziek stil; void-teleport: geluid + deeltjes op vertrek- en aankomstplek (server) (98) | Gebruiker (aanbevolen) |
 | 2026-10-23 | atmosphere | Stilte-client: volume glijdt van 30 naar 35 % bij 90, daarna stil + hartslag; HUD bij 60: hotbar, richtkruis, meters en chat blijven; void-meter ≥ 30: lichte glitchstorm-overlay (98) | Gebruiker (aanbevolen) |
+| 2026-10-23 | structures | Structure engine: alle structures procedureel via de engine (geen handwerk); de gebruiker beoordeelt op screenshots (case study `docs/plans/structures/engine-case-study.md`) | Gebruiker |
+| 2026-10-23 | structures | Add-ins voor de engine: fotostudio-commando en reviewer-agent; geen offline renderer, geen WorldEdit | Gebruiker |
+| 2026-10-23 | structures | Proef van de engine: verzonken kapel ring 4, nu, parallel aan ring 5 (nulmeting zonder engine, daarna met een minimale engine) | Gebruiker |
