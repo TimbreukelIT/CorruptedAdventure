@@ -1,0 +1,52 @@
+{
+  "type": "corruptedadventure:dead_tree",
+  "config": {
+    "branch_length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "branches": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 1
+    },
+    "decor": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:corrupted_leaves",
+        "Properties": {
+          "distance": "7",
+          "persistent": "true",
+          "waterlogged": "false"
+        }
+      }
+    },
+    "decor_chance": 0.0,
+    "height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 9,
+      "min_inclusive": 4
+    },
+    "lean": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 0
+    },
+    "log": {
+      "Name": "corruptedadventure:corrupted_log",
+      "Properties": {
+        "axis": "y"
+      }
+    },
+    "max_water": 0,
+    "vine_chance": 0.0,
+    "vine_length": 1,
+    "wood": {
+      "Name": "corruptedadventure:corrupted_wood",
+      "Properties": {
+        "axis": "y"
+      }
+    }
+  }
+}

@@ -16,6 +16,8 @@ import nl.timtoys.corruptedadventure.worldgen.surface.VolcanicThresholdCondition
 import nl.timtoys.corruptedadventure.worldgen.surface.WorldTreeCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.NetherRing5DressingCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.NetherRing5PillarCondition;
+import nl.timtoys.corruptedadventure.worldgen.surface.Ring5GroundCondition;
+import nl.timtoys.corruptedadventure.worldgen.surface.Ring5SpeckleCondition;
 
 /** Surface rule condition types (the {@code if_true} of a surface rule); the rules themselves are hand-written JSON. */
 public final class ModSurfaceConditions {
@@ -61,6 +63,14 @@ public final class ModSurfaceConditions {
     /** {@code corruptedadventure:nether_ring_5_dressing} (96: light band and ore in the columns, the giant column's vein and floor imprint) */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<NetherRing5DressingCondition>> NETHER_RING_5_DRESSING =
             CONDITIONS.register("nether_ring_5_dressing", () -> NetherRing5DressingCondition.MAP_CODEC);
+
+    // ring 5 — W-biomes
+    /** {@code corruptedadventure:ring_5_ground} (94: ring 5's own ground and its clean missing chunks) */
+    public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<Ring5GroundCondition>> RING_5_GROUND =
+            CONDITIONS.register("ring_5_ground", () -> Ring5GroundCondition.MAP_CODEC);
+    /** {@code corruptedadventure:ring_5_speckle} (94: pure random specks and patches, the glitch blocks of glitch_fields) */
+    public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<Ring5SpeckleCondition>> RING_5_SPECKLE =
+            CONDITIONS.register("ring_5_speckle", () -> Ring5SpeckleCondition.MAP_CODEC);
 
     private ModSurfaceConditions() {
     }

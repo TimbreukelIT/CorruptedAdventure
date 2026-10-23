@@ -6,6 +6,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring5Filter;
 import nl.timtoys.corruptedadventure.worldgen.feature.BeforeSplitFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantTreeClearance;
 import nl.timtoys.corruptedadventure.worldgen.feature.GiantTreePlacement;
@@ -77,6 +78,11 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:landmark_clearance} (decor B: trees, stumps and puddles keep off the blighted landmarks) */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<LandmarkClearanceFilter>> LANDMARK_CLEARANCE =
             PLACEMENT_MODIFIER_TYPES.register("landmark_clearance", () -> () -> LandmarkClearanceFilter.CODEC);
+
+    // ring 5 — W-biomes
+    /** {@code corruptedadventure:ring5_filter} (94/95: ring 5's own ground, clear of the void, the walls and the memories) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<Ring5Filter>> RING5_FILTER =
+            PLACEMENT_MODIFIER_TYPES.register("ring5_filter", () -> () -> Ring5Filter.CODEC);
 
     private ModPlacementModifierTypes() {
     }

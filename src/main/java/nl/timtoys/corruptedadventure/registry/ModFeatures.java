@@ -10,6 +10,12 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.worldgen.feature.MemoryFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.MirroredTreesFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.AbandonedCampFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.TorchPatternFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.HerobrineSignFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.MissingChunkFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.BlightedLandmarkFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.BoulderConfiguration;
@@ -328,6 +334,26 @@ public final class ModFeatures {
     /** {@code corruptedadventure:ancient_swamp_tree} (decor A): the swamp's landmark tree, a 3 × 3 mangrove full of moss */
     public static final DeferredHolder<Feature<?>, Feature<AncientSwampTreeConfiguration>> ANCIENT_SWAMP_TREE =
             FEATURES.register("ancient_swamp_tree", () -> new AncientSwampTreeFeature(AncientSwampTreeConfiguration.CODEC));
+
+    // ring 5 — W-biomes
+    /** {@code corruptedadventure:missing_chunk} (94): the clean missing chunks (their floor) and the lava dam round them */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> MISSING_CHUNK =
+            FEATURES.register("missing_chunk", () -> new MissingChunkFeature(NoneFeatureConfiguration.CODEC));
+    /** {@code corruptedadventure:herobrine_sign} (94): a waxed corrupted sign with one translatable line, facing inwards */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> HEROBRINE_SIGN =
+            FEATURES.register("herobrine_sign", () -> new HerobrineSignFeature(NoneFeatureConfiguration.CODEC));
+    /** {@code corruptedadventure:torch_pattern} (94): redstone torches in a cross, a ring, a row or an arrow to a castle */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> TORCH_PATTERN =
+            FEATURES.register("torch_pattern", () -> new TorchPatternFeature(NoneFeatureConfiguration.CODEC));
+    /** {@code corruptedadventure:abandoned_camp} (94): a player's camp left behind (tent, bed, chest, dead campfire) */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> ABANDONED_CAMP =
+            FEATURES.register("abandoned_camp", () -> new AbandonedCampFeature(NoneFeatureConfiguration.CODEC));
+    /** {@code corruptedadventure:mirrored_trees} (94): this chunk's part of false_meadow's mirrored oak pairs */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> MIRRORED_TREES =
+            FEATURES.register("mirrored_trees", () -> new MirroredTreesFeature(NoneFeatureConfiguration.CODEC));
+    /** {@code corruptedadventure:ring_5_memory} (94): this chunk's part of ring 5's memories of one kind */
+    public static final DeferredHolder<Feature<?>, Feature<MemoryFeature.Config>> RING_5_MEMORY =
+            FEATURES.register("ring_5_memory", () -> new MemoryFeature(MemoryFeature.Config.CODEC));
 
     private ModFeatures() {
     }

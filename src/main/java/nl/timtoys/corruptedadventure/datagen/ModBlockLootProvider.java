@@ -47,7 +47,9 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
 
     static LootTableProvider create(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
         return new LootTableProvider(output, Set.of(),
-                List.of(new LootTableProvider.SubProviderEntry(ModBlockLootProvider::new, LootContextParamSets.BLOCK)), lookup);
+                List.of(new LootTableProvider.SubProviderEntry(ModBlockLootProvider::new, LootContextParamSets.BLOCK),
+                        // 94: the abandoned camps' chests (one loot provider per pack: its name must be unique).
+                        new LootTableProvider.SubProviderEntry(Ring5ChestLoot::new, LootContextParamSets.CHEST)), lookup);
     }
 
     @Override

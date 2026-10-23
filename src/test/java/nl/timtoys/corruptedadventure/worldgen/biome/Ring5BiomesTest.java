@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
@@ -14,8 +15,11 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.worldgen.WorldgenData;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring5Features;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring5InnerFeatures;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -45,6 +49,7 @@ class Ring5BiomesTest {
     private static final String DIRT = "corruptedadventure:corrupted_dirt";
     private static final String STONE = "corruptedadventure:corrupted_stone";
     private static final String SAND = "corruptedadventure:corrupted_sand";
+    private static final String GLITCH = "corruptedadventure:glitch_block";
 
     @Test
     void bootstrapRegistersExactlyTheRing5Lists() {
@@ -102,16 +107,29 @@ class Ring5BiomesTest {
         }
     }
 
-    /** Nothing generates in golf 1: no carvers (93), no features (94/95). */
+    /** No carvers (the caves are terrain, 93); per step exactly the features of the global order that name the biome (94/95). */
     @Test
-    void noCarversAndNoFeatures() {
+    void noCarversAndTheFeaturesOfTheGlobalOrder() {
         for (Map.Entry<ResourceKey<Biome>, Biome> entry : bootstrap().entrySet()) {
             Biome biome = entry.getValue();
             for (GenerationStep.Carving step : GenerationStep.Carving.values()) {
                 assertEquals(0, StreamSupport.stream(biome.getGenerationSettings().getCarvers(step).spliterator(), false).count(), entry.getKey().toString());
             }
-            assertTrue(biome.getGenerationSettings().features().stream().allMatch(set -> set.size() == 0), entry.getKey().toString());
+            List<HolderSet<PlacedFeature>> steps = biome.getGenerationSettings().features();
+            for (GenerationStep.Decoration step : GenerationStep.Decoration.values()) {
+                List<ResourceKey<PlacedFeature>> placed = step.ordinal() < steps.size()
+                        ? steps.get(step.ordinal()).stream().map(holder -> holder.unwrapKey().orElseThrow()).toList() : List.of();
+                assertEquals(Ring5Features.features(entry.getKey(), step), placed, entry.getKey() + " " + step);
+            }
         }
+        // Every biome has some (the memories); the false meadow its grass, flowers and mirrored trees, no camp.
+        for (ResourceKey<Biome> biome : Ring5Biomes.ALL) {
+            assertFalse(Ring5Features.features(biome, GenerationStep.Decoration.LOCAL_MODIFICATIONS).isEmpty(), biome.toString());
+        }
+        List<ResourceKey<PlacedFeature>> meadow = Ring5Features.features(ModBiomes.FALSE_MEADOW, GenerationStep.Decoration.VEGETAL_DECORATION);
+        assertTrue(meadow.contains(Ring5InnerFeatures.MEADOW_MIRRORED_TREES));
+        assertFalse(Ring5Features.features(ModBiomes.FALSE_MEADOW, GenerationStep.Decoration.LOCAL_MODIFICATIONS)
+                .contains(Ring5InnerFeatures.ABANDONED_CAMPS), "nobody camps in the silence");
     }
 
     /** The preset: ring 5's own source; the zone 4→5 keeps sundered_reach and the 5→void boundary stays hard. */
@@ -172,7 +190,7 @@ class Ring5BiomesTest {
      * by {@code tools/worldgen/ring5_surface.py}); per biome an unconditional top block and an unconditional block for
      * the surface depth, so vanilla's rules never decide a ring 5 surface. 86b: the blocks of stream B; the one falling
      * block (corrupted sand) behind a ceiling guard, so it never hangs over air; vanilla blocks only in the false
-     * meadow (grass on dirt) and on the scar walls (deepslate).
+     * meadow (grass on dirt) and on the scar walls (deepslate). 94: glitch blocks in glitch_fields.
      */
     @Test
     void everyBiomeHasItsOwnSurfaceBranch() {
@@ -247,8 +265,12 @@ class Ring5BiomesTest {
             assertEquals(entry.getValue().get(0), lastBlock(floorRule(branchOf, false)), entry.getKey() + " top");
             assertEquals(entry.getValue().get(1), lastBlock(floorRule(branchOf, true)), entry.getKey() + " surface depth");
         }
-        // The scar walls deepslate, the inverted hills' undersides corrupted stone, the wastes' pit floors corrupted sand.
+        // The scar walls deepslate; 94: glitch blocks in glitch_fields only.
         assertTrue(branches.get(id(ModBiomes.VOID_SCARS)).toString().contains("\"minecraft:deepslate\""));
+        for (Map.Entry<String, JsonObject> entry : branches.entrySet()) {
+            assertEquals(entry.getKey().equals(id(ModBiomes.GLITCH_FIELDS)), blockNames(entry.getValue()).contains(GLITCH),
+                    entry.getKey() + ": glitch blocks only in glitch_fields");
+        }
         // Order top, underside, depth: a thin edge keeps its soil on top, the layer below it hangs as stone, not dirt.
         JsonArray hills = branches.get(id(ModBiomes.INVERTED_HILLS)).getAsJsonArray("sequence");
         assertEquals(3, hills.size());
