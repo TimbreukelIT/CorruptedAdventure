@@ -76,6 +76,7 @@ an explicit `--wait SEC` still waits.
 ```bash
 bash tools/test/server.sh start <level> [--fresh] [--perf] [--worktree DIR]   # slot, runServer, waits for "Done"
 bash tools/test/server.sh start <level> --client [1|2|both]                   # + reserve the client slot(s) at once
+bash tools/test/server.sh start <level> --studio                              # + the photo studio's dimensions (see Studio)
 CA_SERVER_JVM="<opts>" bash tools/test/server.sh start ...                     # extra JVM options for the server (jfr-prof.sh)
 python tools/test/py/rcon.py "list" "/ca tpring 3"                          # RCON of the running server
 bash tools/test/server.sh stop                                               # RCON stop, PID gone, RCON off, slot free
@@ -105,6 +106,29 @@ bash tools/test/client.sh stop [1|2]
   the chat for the next shots: hide the HUD with F1 for photo series. `win.ps1 blank 0 <png>` checks an existing image.
 - Shots: generate first (wait until the chunks are loaded), then photograph; no `save-all flush` while shooting.
   `python tools/test/py/sheet.py build/test/shots build/test/sheet.png` makes a contact sheet.
+
+## Studio (structure photos, S0)
+
+`tools/structures/studio.sh` photographs one template or structure from every side into one contact sheet
+(`docs/plans/structures/s0-studio.md`). It uses this stream's server and client 1 (`--client 2` for Dev2):
+
+```bash
+bash tools/structures/studio.sh prepare                  # once, before client.sh start: FOV 70, no clouds, render distance 16
+bash tools/test/server.sh start studio --studio --client # --studio installs tools/structures/studio-datapack (void, day + night)
+bash tools/test/client.sh start
+bash tools/structures/studio.sh template minecraft:village/plains/houses/plains_small_house_1   # -> build/studio/<name>/sheet.png
+bash tools/structures/studio.sh structure minecraft:pillager_outpost [--seed S]
+bash tools/structures/studio.sh template <id> --here X surface Z [--dim minecraft:overworld]     # in situ (Y or surface)
+bash tools/structures/studio.sh shots [--floors 64,69]   # the current placement again; sheet <dir> rebuilds a sheet
+```
+
+The driver puts the player in spectator, runs `weather clear` (the studio shares the overworld's rain), hides the HUD
+with F1 (and shows it again at the end), teleports to every pose of `/ca studio shots` and shoots until two shots in a
+row match (chunks rendered). In situ it also sets the time (6000 / 18000, the old time back after), clears the ring
+weather of rings 2–5 and restores the terrain at the end (`--keep` leaves the structure; the snapshot lives only in the
+running server, so clear before a restart). A studio placement first empties the studio area: leftovers of a forgotten
+session never show. The studio dimensions only exist in a world started with `--studio`; the datapack never goes
+into the jar.
 
 ## Worlds and offline scans
 
@@ -257,6 +281,7 @@ Shares are of the samples, not of the time `perf.sh` compares: a fresh world als
 | `server.sh`, `client.sh`, `win.ps1` | server, client, window helper (own PID only) |
 | `world.sh`, `det.sh`, `perf.sh`, `waterscan.sh`, `jfr-prof.sh` | fresh world + areas, determinism, performance, ring 4 waterscan, hot methods |
 | `perfpack/` | datapack with the vanilla dimensions for perf |
+| `../structures/studio.sh`, `studio.py`, `studio-datapack/` | photo studio for structures (see Studio) |
 | `areas/` | area files |
 | `py/rcon.py` | RCON client (script + module) |
 | `py/region.py`, `py/areas.py` | Anvil reader, area files and dimensions |

@@ -1,14 +1,16 @@
 #!/bin/bash
 # Dedicated test server of this stream (Gradle runServer, port 25570+n, RCON 25580+n on 127.0.0.1).
 #
-#   server.sh start <level> [--fresh] [--perf] [--xmx 5G] [--timeout 900] [--wait 1800] [--no-slot] [--client [1|2|both]]
+#   server.sh start <level> [--fresh] [--perf] [--studio] [--xmx 5G] [--timeout 900] [--wait 1800] [--no-slot] [--client [1|2|both]]
 #                   [--worktree DIR]
 #       prepares run/ (eula, server.properties: level, seed 20260930, corrupted world preset, ports, RCON on with a new
 #       password), takes a JVM slot (unless --no-slot: the caller holds one, e.g. perf.sh), starts runServer in the
 #       background, waits for "Done" (time-out --timeout s), records the server JVM PID in build/<stream>.pids and the
 #       state in build/test/server.state (rcon.py reads it). --fresh deletes run/<level> first; --perf installs the
-#       vanilla datapack dimensions (perfpack/). --worktree runs another checkout (e.g. a reference on main) with these
-#       tools; its run/ is used, state and logs stay here. Log: build/test/server-<level>.log.
+#       vanilla datapack dimensions (perfpack/); --studio installs the photo studio's void dimensions
+#       (tools/structures/studio-datapack, dev only: corruptedadventure:studio and studio_night). --worktree runs
+#       another checkout (e.g. a reference on main) with these tools; its run/ is used, state and logs stay here.
+#       Log: build/test/server-<level>.log.
 #       --client: reserve the slot(s) of client 1 (default), 2 or both together with the server's, all at once
 #       (`slots.sh take --tasks server,client1`), so `client.sh start` never waits for a slot while the server holds one
 #       (the deadlock of 2026-10-19). The server JVM holds the reservation until client.sh start takes it over;
@@ -32,11 +34,12 @@ release_tasks() {
 start() {
     local level="$1"; shift
     [[ "$level" =~ ^[A-Za-z0-9._-]+$ ]] || ca_die "level name must be [A-Za-z0-9._-]+"
-    local fresh=0 perf=0 xmx=5G timeout=900 wait=1800 slot=1 wt="$CA_WT" clients="" tasks=server c
+    local fresh=0 perf=0 studio=0 xmx=5G timeout=900 wait=1800 slot=1 wt="$CA_WT" clients="" tasks=server c
     while [ $# -gt 0 ]; do
         case "$1" in
             --fresh) fresh=1; shift ;;
             --perf) perf=1; shift ;;
+            --studio) studio=1; shift ;;
             --xmx) xmx="$2"; shift 2 ;;
             --timeout) timeout="$2"; shift 2 ;;
             --wait) wait="$2"; shift 2 ;;
@@ -71,6 +74,11 @@ start() {
         mkdir -p "$wt/run/$level/datapacks"
         rm -rf "$wt/run/$level/datapacks/perftest"
         cp -r "$CA_TOOLS/perfpack" "$wt/run/$level/datapacks/perftest"
+    fi
+    if [ $studio = 1 ]; then
+        mkdir -p "$wt/run/$level/datapacks"
+        rm -rf "$wt/run/$level/datapacks/castudio"
+        cp -r "$CA_ROOT/tools/structures/studio-datapack" "$wt/run/$level/datapacks/castudio"
     fi
     local log="$CA_OUT/server-$level.log" before pid t0 jto
     # The JVM options replace JAVA_TOOL_OPTIONS on Windows; elsewhere they are added to it (the cloud container puts

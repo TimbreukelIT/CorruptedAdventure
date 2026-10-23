@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.command;
 import net.minecraft.commands.Commands;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import nl.timtoys.corruptedadventure.command.studio.StudioCommand;
 import nl.timtoys.corruptedadventure.command.terrainmap.TerrainMapCommand;
 import nl.timtoys.corruptedadventure.command.terrainmap.TerrainMapJob;
 
@@ -16,6 +17,7 @@ public final class CaCommand {
     public static void register(IEventBus gameBus) {
         gameBus.addListener(CaCommand::onRegisterCommands);
         TerrainMapJob.register(gameBus);
+        StudioCommand.register(gameBus);
     }
 
     private static void onRegisterCommands(RegisterCommandsEvent event) {
@@ -30,6 +32,7 @@ public final class CaCommand {
                 .then(TerrainMapCommand.build())
                 .then(FallListCommand.build())
                 .then(LandmarkListCommand.build())
-                .then(CastlesCommand.build()));
+                .then(CastlesCommand.build())
+                .then(StudioCommand.build()));
     }
 }
