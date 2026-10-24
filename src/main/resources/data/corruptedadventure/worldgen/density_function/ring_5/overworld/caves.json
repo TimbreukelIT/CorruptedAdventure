@@ -1,1 +1,5 @@
-0.0
+{
+  "type": "corruptedadventure:ring_5_output",
+  "field": "corruptedadventure:ring_5/overworld/field",
+  "output": "caves"
+}

@@ -1130,6 +1130,13 @@ Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). G
 **Grotten**
 - **Onmogelijke gangen**: rechte, te perfecte 2×1- en 3×3-tunnels in rasterpatronen, doodlopend of in lussen. Het groot geworden broertje van de ring 1-tunnels.
 - **Void-grotten**: grotten met gaten in de bodem naar de void.
+- *Besluiten 93 (gebruiker 2026-10-23, V93-1 … V93-8 = A; `docs/plans/ring-5/golf-2-terrain.md`):*
+  - **Natuurlijk grotnet:** gedempte vanilla-grotten (cheese + spaghetti, ongeveer half zo veel, droog), alleen in de binnenband, gesloten rond scheuren, plekgaten en void-gaten (dam); ze worden niet gekopieerd.
+  - **Onmogelijke gangen:** losse netten per cel van 128 (kans ~0,4), elk op één vast niveau (Y 48 / 32 / 16 / 0 / −16 / −32), een raster om de 16 (3 × 3) of om de 8 (2 × 1); elke rasterrand met kans ~0,6, dus doodlopers en lussen; soms een rechte schacht naar een ander niveau. **Ingangen:** te perfecte vierkante openingen waar een gang een helling, klif of kuil snijdt, plus per net één rechte schacht (3 × 3) tot het oppervlak.
+  - **Void-grotten:** rafelige kamers Ø 12–30, 6–14 hoog, diep (Y −40 … 10), ~1 per 256 × 256, met 1–4 gaten Ø 2–6 in de vloer tot in de void (geen bedrock); voidsteen-rand via de surface (W-biomes leest de DF `ring_5/overworld/caves`).
+  - **Gekopieerde grotten:** ~1 op 4 netten en kamers is een kopie dichtbij: een gang 2–3 keer parallel (8–24 verschoven, blok voor blok gelijk) of een kamer die zichzelf spiegelt. Alleen de eigen grotten.
+  - **Buitenband:** alleen zeldzame void-grotten in dikke schotsen bij de bandlijn (~1 per 512 × 512); geen netten; niets in pinakels, gordels, bruggen, ruggen en brokken.
+- **Gespiegelde dubbelgangers (93, V93-6/7 = A):** een vlak van 48 × 48 dat 64–160 blokken verderop gespiegeld staat (spiegelas haaks op de lijn bron–doel), ~1 per 600 × 600 in de binnenband; vorm, scheuren en glitchvormen gaan mee, features niet; **geen eigen grotten**: netten en void-grotten blijven ≥ 8 van beide vierkanten (besluit gebruiker 2026-10-23 na de review van 93, wijzigt V93-6/7 op dit punt: anders snijdt de rand van de kopie een grot af); een zachte rand van 8–12 blokken naar het eigen terrein.
 
 **Weer (ringweer)**
 - **Glitchstorm**: beeldruis-overlay, HUD flikkert, geluiden haperen (client); void ↑ ×2 (server).

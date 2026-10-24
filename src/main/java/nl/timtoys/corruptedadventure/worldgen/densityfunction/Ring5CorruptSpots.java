@@ -132,6 +132,18 @@ final class Ring5CorruptSpots {
             return indexOf(chunkX, chunkZ, chunkX.length, Math.floorDiv(x, CHUNK), Math.floorDiv(z, CHUNK));
         }
 
+        /** Whether one of the spot's chunks overlaps the box (blocks, inclusive). */
+        boolean touches(int minX, int minZ, int maxX, int maxZ) {
+            for (int k = 0; k < chunkX.length; k++) {
+                int x0 = chunkX[k] * CHUNK;
+                int z0 = chunkZ[k] * CHUNK;
+                if (x0 <= maxX && x0 + CHUNK > minX && z0 <= maxZ && z0 + CHUNK > minZ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /** Whether the column lies within {@code margin} blocks (Chebyshev) of one of the spot's chunks. */
         boolean near(int x, int z, int margin) {
             for (int k = 0; k < chunkX.length; k++) {

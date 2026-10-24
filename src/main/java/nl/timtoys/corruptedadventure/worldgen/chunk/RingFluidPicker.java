@@ -71,7 +71,7 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
             if (field == null) {
                 throw new IllegalStateException("ring 5 terrain of the overworld is not registered: no crack dam for the lava layer");
             }
-            return field.innerCrackDistance(x, z);
+            return field.innerOpeningDistance(x, z);
         }
     };
 
@@ -256,7 +256,8 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
 
     /**
      * Ring 5's band at a column: {@link Ring5Band#signedDistance} (negative in the inner band), and how far the column lies
-     * from a loose crack of the inner band ({@link Ring5Field#innerCrackDistance}: at most 0 inside one).
+     * from an opening into the void of the inner band ({@link Ring5Field#innerOpeningDistance}: loose cracks, corrupt spots'
+     * holes and, since 93, the holes of the void caves; at most 0 inside one).
      */
     @FunctionalInterface
     interface Ring5Bands {
