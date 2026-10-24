@@ -16,6 +16,7 @@ import glob
 import json
 import math
 import os
+import re
 import statistics
 import subprocess
 import sys
@@ -62,6 +63,13 @@ def forceload(r, dim, x, z, size):
     r.cmd("execute in %s run forceload remove %s" % (dim, box))
 
 
+def seconds(duration):
+    """An ISO-8601 duration of JFR's JSON ("PT0.0123S", "PT1M18.2S" for a chunk step that waited over a minute)."""
+    m = re.fullmatch(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?", duration)
+    h, mi, sec = m.groups()
+    return int(h or 0) * 3600 + int(mi or 0) * 60 + float(sec or 0)
+
+
 def parse(jfr, path, measured):
     res = subprocess.run([jfr, "print", "--json", "--events", "minecraft.ChunkGeneration", path],
                          capture_output=True, text=True, check=True).stdout
@@ -74,7 +82,7 @@ def parse(jfr, path, measured):
         level = v["level"].split(" / ")[-1].rstrip("]")
         for a in measured:
             if level in (a.dim.id, VANILLA[a.dim.key]) and a.cx0 <= v["chunkPosX"] <= a.cx1 and a.cz0 <= v["chunkPosZ"] <= a.cz1:
-                times["%s|%s|%s" % (a.name, level, step)].append(float(v["duration"][2:-1]) * 1000.0)
+                times["%s|%s|%s" % (a.name, level, step)].append(seconds(v["duration"]) * 1000.0)
     return {k: {"n": len(t), "median": statistics.median(t)} for k, t in times.items()}
 
 
