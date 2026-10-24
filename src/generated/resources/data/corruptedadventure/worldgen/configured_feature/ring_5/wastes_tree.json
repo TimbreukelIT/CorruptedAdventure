@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": {
+      "feature": "corruptedadventure:ring_5/wastes_dead_tree",
+      "placement": []
+    },
+    "features": [
+      {
+        "chance": 0.3,
+        "feature": {
+          "feature": "corruptedadventure:ring_5/wastes_tufted_tree",
+          "placement": []
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "feature": "corruptedadventure:ring_5/castle_rubble",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.35,
+      "margin": 2
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:ring5_filter",
+      "on_castle": true,
+      "void_clearance": 3
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

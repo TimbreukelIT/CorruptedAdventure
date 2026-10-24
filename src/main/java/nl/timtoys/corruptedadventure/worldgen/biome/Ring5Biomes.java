@@ -9,9 +9,11 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring5Features;
 
 import java.util.List;
 import java.util.Map;
@@ -27,8 +29,9 @@ import java.util.stream.Stream;
  * (= {@code region_rot}) pick the inner biome, {@code erosion} (= {@code breakup}) and {@code temperature} the outer one.
  * The zone 4→5 keeps ring 4's {@code sundered_reach}; there is no transition biome of ring 5's own.
  * <p>
- * Golf 1 is a skeleton: colours, climate, spawns. No carvers (caves are 93), no features (94/95), no biome modifiers;
- * the sound, particles and the sky beyond the biome colours are the atmosphere's (stream A, 98).
+ * Golf 1 is a skeleton: colours, climate, spawns; golf 2 adds the dressing and the horror features of 94/95
+ * ({@link Ring5Features}). No carvers (caves are 93); the sound, particles and the sky beyond the biome colours are the
+ * atmosphere's (stream A, 98).
  */
 public final class Ring5Biomes {
     /** The inner band (dead), in the order of the preset. */
@@ -70,10 +73,24 @@ public final class Ring5Biomes {
                     .downfall(DOWNFALL)
                     .specialEffects(BiomeAmbience.ring5(key, effects(key)).build())
                     .mobSpawnSettings(spawns(key))
-                    // Nothing generates yet: no carvers (93), no features (94/95).
-                    .generationSettings(new BiomeGenerationSettings.Builder(features, carvers).build())
+                    .generationSettings(generation(features, carvers, key).build())
                     .build());
         }
+    }
+
+    /**
+     * The generation of a ring 5 biome: no carvers (the caves are terrain, 93); the features of {@link Ring5Features#ORDER}
+     * that name it, in that order (94/95). Vanilla's ores come through the biome modifier (95).
+     */
+    static BiomeGenerationSettings.Builder generation(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers,
+                                                      ResourceKey<Biome> biome) {
+        BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(features, carvers);
+        for (GenerationStep.Decoration step : GenerationStep.Decoration.values()) {
+            for (ResourceKey<PlacedFeature> feature : Ring5Features.features(biome, step)) {
+                generation.addFeature(step, feature);
+            }
+        }
+        return generation;
     }
 
     /** The look of a ring 5 biome; throws for any other biome. */

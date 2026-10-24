@@ -81,6 +81,8 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ModBlocks.CORRUPTED_DIRT.get(),
                 ModBlocks.CORRUPTED_STONE.get(), ModBlocks.CORRUPTED_SAND.get());
         tag(BlockTags.BASE_STONE_OVERWORLD).add(ModBlocks.CORRUPTED_STONE.get());
+        // 95 (V11-A): vanilla's own ore features reach ring 5's stone (corrupted_stone stands only in ring 5).
+        tag(BlockTags.STONE_ORE_REPLACEABLES).add(ModBlocks.CORRUPTED_STONE.get());
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.CORRUPTED_STONE.get(), ModBlocks.CORRUPTED_COBBLESTONE.get());
         tag(ModTags.Blocks.RING_5_STONES).add(ModBlocks.CORRUPTED_STONE.get());
         tag(Tags.Blocks.COBBLESTONES).add(ModBlocks.CORRUPTED_COBBLESTONE.get());

@@ -15,7 +15,36 @@
     "water_color": 4159204,
     "water_fog_color": 329011
   },
-  "features": [],
+  "features": [
+    [
+      "corruptedadventure:ring_5/missing_chunks"
+    ],
+    [],
+    [
+      "corruptedadventure:ring_5/memory_oak_grove",
+      "corruptedadventure:ring_5/memory_oasis",
+      "corruptedadventure:ring_5/memory_lava_field",
+      "corruptedadventure:ring_5/memory_holed_islet"
+    ],
+    [],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_5/nullite_deep",
+      "corruptedadventure:ring_5/glitch_clusters"
+    ],
+    [],
+    [],
+    [
+      "corruptedadventure:ring_5/meadow_grass",
+      "corruptedadventure:ring_5/meadow_flowers",
+      "corruptedadventure:ring_5/meadow_mirrored_trees"
+    ],
+    [
+      "corruptedadventure:ring_5/herobrine_signs",
+      "corruptedadventure:ring_5/torch_patterns"
+    ]
+  ],
   "has_precipitation": false,
   "spawn_costs": {},
   "spawners": {

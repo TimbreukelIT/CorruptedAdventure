@@ -462,7 +462,8 @@ def main():
         data = json.load(f)
     top = data["surface_rule"]["sequence"]
     top[:] = [r for r in top if not is_cave_walls(r)]
-    rules = top[1]["then_run"]["sequence"]
+    # The block of rules above the preliminary surface (ring 5 puts top-level rules of its own after the cave walls, 94/95).
+    rules = next(r for r in top if r.get("if_true", {}).get("type") == "minecraft:above_preliminary_surface")["then_run"]["sequence"]
     rules[:] = [r for r in rules if not is_ring_3_deep(r)]
     positions = [i for i, r in enumerate(rules) if is_ring_3(r)]
     assert positions == list(range(positions[0], positions[0] + len(positions))), positions

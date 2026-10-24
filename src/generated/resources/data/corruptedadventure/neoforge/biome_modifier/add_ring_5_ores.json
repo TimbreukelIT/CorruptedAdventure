@@ -1,0 +1,26 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "corruptedadventure:corrupted_wastes",
+    "corruptedadventure:glitch_fields",
+    "corruptedadventure:false_meadow",
+    "corruptedadventure:void_scars",
+    "corruptedadventure:inverted_hills",
+    "corruptedadventure:shattered_expanse"
+  ],
+  "features": [
+    "corruptedadventure:ring_5/ore_coal_upper",
+    "corruptedadventure:ring_5/ore_coal_lower",
+    "corruptedadventure:ring_5/ore_iron_upper",
+    "corruptedadventure:ring_5/ore_iron_middle",
+    "corruptedadventure:ring_5/ore_iron_small",
+    "corruptedadventure:ring_5/ore_gold",
+    "corruptedadventure:ring_5/ore_gold_lower",
+    "corruptedadventure:ring_5/ore_redstone",
+    "corruptedadventure:ring_5/ore_redstone_lower",
+    "corruptedadventure:ring_5/ore_lapis",
+    "corruptedadventure:ring_5/ore_lapis_buried",
+    "corruptedadventure:ring_5/ore_copper"
+  ],
+  "step": "underground_ores"
+}

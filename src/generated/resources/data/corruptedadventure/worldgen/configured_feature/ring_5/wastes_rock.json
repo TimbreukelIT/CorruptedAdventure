@@ -1,0 +1,32 @@
+{
+  "type": "corruptedadventure:boulder",
+  "config": {
+    "carpet": {
+      "Name": "minecraft:air"
+    },
+    "carpet_chance": 0.0,
+    "height": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 2.0,
+      "min_inclusive": 1.0
+    },
+    "moss_chance": 0.0,
+    "mossy_top": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:corrupted_cobblestone"
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 2.0,
+      "min_inclusive": 1.0
+    },
+    "stone": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:corrupted_cobblestone"
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "feature": "corruptedadventure:ring_5/nullite_face",
+  "placement": [
+    {
+      "type": "minecraft:count",
+      "count": 4
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "corruptedadventure:ring5_void_face"
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}
