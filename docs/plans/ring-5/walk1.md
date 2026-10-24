@@ -17,7 +17,9 @@ landschap), wat binnen het ontwerp duidelijk beter kan meteen oplossen, nieuwe o
 - Valkuilen van de wandeling zelf: (1) de eerste ronde liep zonder `doDaylightCycle false`, waardoor de foto's na ~10 min
   in de schemering/nacht vielen (opnieuw geschoten; `walk.py` zet de dagcyclus nu stil); (2) `_top`/`_far` zijn in de
   binnenband bijna alleen fog (fog 48–112, bedoeld), daarom `_low`; (3) grotten en de onderkant van de omgekeerde heuvels
-  zijn met spectator zonder licht zwart (ook met night vision; niet verder uitgezocht, zie open punten).
+  zijn met spectator zonder licht zwart (ook met night vision). Opgelost met `walk.py --light 16` (onzichtbare
+  lichtblokken niveau 15 op een raster van 4 rond de camera) op een **kopie** van de wereld (`run/walk1after-light`,
+  daarna weggegooid): `build/test/shots/walk1-caves/`.
 
 ## Bevindingen per plek (vóór)
 | Plek | Oordeel |
@@ -36,7 +38,10 @@ landschap), wat binnen het ontwerp duidelijk beter kan meteen oplossen, nieuwe o
 | Bordjes / fakkelpatronen | Bordje dichtbij leesbaar ("You were here"), lichtgrijs bord valt op; fakkelpatronen alleen van dichtbij zichtbaar (fog). |
 | Herinneringen | Lavaveld in een verzonken vak, zwevende brokken bij de void-rand, struikenveld: herkenbaar als "vreemd stuk". |
 | `void_scars`, `inverted_hills`, `shattered_expanse`, buitenband, void-rand | Sterk: zwart met sterren, voidsteen-randen lezen goed, zwevende brokken; harde biome-rand steen/gras tussen `void_scars` en `inverted_hills`. |
-| Grotten (`n93`, `ch93`, `ch93b`), omgekeerde bomen van onderen | Niet te beoordelen: zwart (zie werkwijze). |
+| Natuurlijke grotten (Y 30–40) | `corrupted_stone` met aders, droog, leest goed; de aderstreepjes herhalen zich op grote wanden zichtbaar. |
+| Netten (`n93` Y 1, `cn93` Y 33) | Bij Y 1 een **peper-en-zout-mengsel** van licht `corrupted_stone` en donker vanilla deepslate (vanilla's overgang Y 0–8); de rechte gangen zijn tussen de natuurlijke grot nauwelijks als "te perfect" te herkennen vanaf deze punten. |
+| Void-grotten (`ch93` −31, `ch93b` −34, 8344 5 −614) | Voidsteen-rand rond de gaten leest goed (gevaarlijk zwart met sterren); maar kamer en wanden zijn **vanilla deepslate**: onder Y 0 is de grotvloer 91–100 % deepslate, Y 0–8 half/half (gemeten in `walk1after`, oostas). Ondergronds voelt ring 5 als vanilla. Vraag 5. |
+| Omgekeerde bomen van onderen | Kroon van `corrupted_leaves` hangt leesbaar aan een getrapte onderkant (omgekeerde weide); de onderkant zelf blijft donker (licht reikt niet tot daar). |
 | Nether `white_halls`, `hollow_cathedral` | Zuilen en stil-lichtbanden lezen; maar wit leest **bruin/sepia** door het Nether-licht (geen hemellicht, warm lichtkaart-tint). Vraag hieronder. |
 
 ## Opgelost (`worldgen`)
@@ -96,10 +101,14 @@ Lokaal, seed 20260930, na de fixes:
    - A: zo laten (blokkerig is het karakter).
    - B *(aanbevolen)*: in laagtes vaker verschoven lagen/kubussen (`CUBE_CHANCE`/lagen op de vloer), meer om naar te kijken.
 
+5. **Ondergronds vanilla deepslate** (`walk1-caves/voidcave_eye_e`, `net_eye_n`): onder Y 0 zijn grotten, netten en
+   void-grotten vanilla deepslate, Y 0–8 een hard gemengde overgang (INT3 koos bewust vanilla's gradient + `corrupted_stone`).
+   - A *(aanbevolen)*: in ring 5 geen deepslate: `corrupted_stone` tot de bodem (bestaand blok, surface-regel `ring_5_base_rock`).
+   - B: een nieuw blok `corrupted_deepslate` voor de diepte (nieuw blok + textures).
+   - C: alleen de overgang Y 0–8 zachter (smallere band), deepslate blijft.
+   - D: zo laten.
+
 ## Ter info / backlog
-- Foto's van grotten (`n93`, `ch93`, `ch93b`) en van de omgekeerde bomen van onderen zijn zwart: spectator zonder licht;
-  `effect give … night_vision` hielp in deze client niet (niet uitgezocht). Voor een volgende wandeling: fakkels/licht
-  plaatsen of `gamma` in `options.txt` omhoog (`infra`, backlog).
 - `_top`/`_far` in de binnenband zijn door de dikke fog (bedoeld) niet bruikbaar; `_low` (20 boven, 28 terug) wel.
 - De dubbelganger is in fog vanaf één punt niet als spiegeling te herkennen (al bekend als 6b-vraag §K).
 
@@ -108,5 +117,7 @@ Lokaal, seed 20260930, na de fixes:
   `compare_mc1_low.png` en `compare_mc1_eye_n.png` (vlakke glitch-vlakte), `compare_bandline_eye_s.png`.
 - Vóór, sterk: `build/test/shots/walk1/outer_top.png`, `castle1_top.png`, `csn_low.png`, `memfloat_eye_n.png`,
   `wastes_eye_e.png`, `meadow_eye_e.png`.
+- Grotten (verlicht): `build/test/shots/walk1-caves/voidcave2_down.png` (void-gat met voidsteen-rand),
+  `voidcave_eye_e.png` (deepslate-kamer), `net_eye_n.png` (Y 1-mengsel), `natcave_eye_e.png`, `invtree_up2.png`.
 - Vóór, open vragen: `build/test/shots/walk1/halls_eye_n.png` en `cathedral_high.png` (Nether-5 bruin),
   `zone45_eye_n.png` (zone 4→5), `sand_eye_e.png` (zand als sneeuw).
