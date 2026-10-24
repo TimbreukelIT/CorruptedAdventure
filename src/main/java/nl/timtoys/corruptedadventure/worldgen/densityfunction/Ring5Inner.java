@@ -42,6 +42,17 @@ final class Ring5Inner {
     static final double ROUGH = 24.0;
     static final double ROUGH_SCALE = 2.0;
     /**
+     * The basins (walk 1, 2026-10-24): the soft bend makes every low stretch converge on {@link #ROLL_LOW}, so the low
+     * basins were dead flat over 100–200 blocks (in {@code glitch_fields} exactly Y 60). On the floor the ground gets
+     * back swells of up to {@link #FLOOR_SWELL} (a fifth sample of the hills at scale {@link #FLOOR_SCALE}, waves of
+     * ~30–65 blocks, the noise's ±0.5 stretched to 0..1; only upwards, so the floor stays above {@link #ROLL_LOW}),
+     * faded out over {@link #FLOOR_FADE} blocks above the floor. The same at the top: the summits bent towards {@link #ROLL_HIGH} were flat round Y 123, so
+     * there the rolling ground (before the ridges) dips by up to {@link #FLOOR_SWELL} (another sample of the same scale).
+     */
+    static final double FLOOR_SWELL = 12.0;
+    static final double FLOOR_SCALE = 4.0;
+    static final double FLOOR_FADE = 20.0;
+    /**
      * Ridges and cliffs (83b): along the zero line of a second sample of the hills (scale {@link #RIDGE_SCALE}) the ground
      * rises {@link #RIDGE_HEIGHT}, steeply on one side (over {@link #RIDGE_FACE} of the noise: a few blocks), gently on the
      * other ({@link #RIDGE_BACK}); only where a third, coarse sample (scale {@link #MASK_SCALE}) opens the mask
@@ -186,7 +197,18 @@ final class Ring5Inner {
         double ground;
         if (ridges) {
             double bumps = ROUGH * hills.getValue(x * ROUGH_SCALE + 900.5, 0.0, z * ROUGH_SCALE + 5200.5);
-            ground = soft(soft(ROLL_BASE + ROLL * h + bumps, ROLL_LOW, ROLL_HIGH) + ridge(x, z), ROLL_LOW, CAP);
+            double rolled = soft(ROLL_BASE + ROLL * h + bumps, ROLL_LOW, ROLL_HIGH);
+            double summit = Ring4Relief.smooth(rolled, ROLL_HIGH - FLOOR_FADE, ROLL_HIGH);
+            if (summit > 0.0) {
+                double dip = Mth.clamp(0.5 + hills.getValue(x * FLOOR_SCALE + 6100.5, 0.0, z * FLOOR_SCALE - 3900.5), 0.0, 1.0);
+                rolled -= summit * FLOOR_SWELL * dip;
+            }
+            ground = soft(rolled + ridge(x, z), ROLL_LOW, CAP);
+            double floor = 1.0 - Ring4Relief.smooth(ground, ROLL_LOW, ROLL_LOW + FLOOR_FADE);
+            if (floor > 0.0) {
+                double swell = Mth.clamp(0.5 + hills.getValue(x * FLOOR_SCALE - 2600.5, 0.0, z * FLOOR_SCALE + 7300.5), 0.0, 1.0);
+                ground += floor * FLOOR_SWELL * swell;
+            }
         } else {
             ground = soft(ROLL_BASE + ROLL * h, ROLL_LOW, ROLL_HIGH);
         }
