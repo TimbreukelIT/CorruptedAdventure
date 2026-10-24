@@ -215,4 +215,20 @@ class Ring5AtmosphereTest {
         assertEquals(1.0F, Ring5SoundDamping.volume(net.minecraft.sounds.SoundSource.MUSIC), "without a feed back to full");
         Ring5SoundDamping.reset();
     }
+
+    /** A full silence under a full standstill and glitch dip never reaches volume 0, so vanilla keeps the biome loops. */
+    @Test
+    void theDampingNeverReachesZero() {
+        Ring5SoundDamping.reset();
+        Ring5SoundDamping.feedSilence(0.0F);
+        Ring5SoundDamping.feedStandstill(1.0F);
+        Ring5SoundDamping.feedDip(1.0F);
+        Ring5SoundDamping.advance();
+        for (net.minecraft.sounds.SoundSource source : net.minecraft.sounds.SoundSource.values()) {
+            assertTrue(Ring5SoundDamping.volume(source) >= Ring5SoundDamping.VOLUME_FLOOR, source.getName());
+        }
+        assertTrue(Ring5SoundDamping.VOLUME_FLOOR > 0.0F);
+        assertEquals(Ring5SoundDamping.VOLUME_FLOOR, Ring5SoundDamping.volume(net.minecraft.sounds.SoundSource.AMBIENT));
+        Ring5SoundDamping.reset();
+    }
 }

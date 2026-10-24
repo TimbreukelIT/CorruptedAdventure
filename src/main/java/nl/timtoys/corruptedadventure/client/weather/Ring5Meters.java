@@ -1,6 +1,5 @@
 package nl.timtoys.corruptedadventure.client.weather;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import nl.timtoys.corruptedadventure.condition.Condition;
 import nl.timtoys.corruptedadventure.condition.ConditionDefinitions;
@@ -17,14 +16,6 @@ import java.util.Optional;
  */
 final class Ring5Meters {
     private Ring5Meters() {
-    }
-
-    /**
-     * Whether the local player feels the meters: not in creative or spectator. The server counts no thresholds for
-     * them (the meter only stops rising) and {@code ConditionHudLayer} hides the bars, so the effects stop too.
-     */
-    static boolean exposed(Minecraft minecraft) {
-        return minecraft.gameMode != null && minecraft.gameMode.canHurtPlayer();
     }
 
     /** The synced meter of {@code condition}, 0–100. */
