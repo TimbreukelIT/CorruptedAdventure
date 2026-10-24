@@ -163,8 +163,6 @@ SURFACES = {
     # Height biomes: sky lakes on clay (sand would hang under thin islands).
     "sky_gardens": ("grass_block", "dirt", "clay", "dirt"),
     "withered_gardens": ("coarse_dirt", "dirt", "coarse_dirt", "dirt"),
-    # The zone 4->5 drains to grey: bare, the abyss floor of stone.
-    "sundered_reach": ("coarse_dirt", "stone", "stone", "stone"),
 }
 
 
@@ -195,7 +193,33 @@ def verdant_falls():
 
 
 # Biomes with a surface of their own shape (not the five-block pattern of SURFACES).
-SPECIAL = {"verdant_falls": verdant_falls}
+# The zone 4->5 drains to grey: bare, the abyss floor of stone (sundered_reach() adds ring 5's patches).
+SUNDERED = ("coarse_dirt", "stone", "stone", "stone")
+
+
+def zone_share(share):
+    """The zone 4->5 from this share across on (0 ring 4's side, 1 ring 5's side; Zone45ShareCondition)."""
+    return {"type": CA + "zone_4_5_share", "from": share}
+
+
+# Walk 1 (ring 5, question 2 = A, 2026-10-24): ring 5's blocks bleed into the outer half of the zone 4->5 in patches that
+# grow towards ring 5: from half-way corrupted grass on dirt in the vanilla surface noise above 0.35, from three quarters
+# above 0.05 (about half the top); bare corrupted stone in the patch noise. The surface only (the top and the surface
+# depth); the fracture's walls stay stone.
+BLEED = [(zone_share(0.5), noise("minecraft:surface", 0.35)), (zone_share(0.75), noise("minecraft:surface", 0.05))]
+BLEED_STONE = [(zone_share(0.5), noise("minecraft:patch", 0.3)), (zone_share(0.75), noise("minecraft:patch", 0.1))]
+
+
+def sundered_reach():
+    """The zone 4->5: bare coarse dirt on stone, with ring 5's corrupted grass and stone bleeding in (walk 1)."""
+    corrupted = seq(cond(TOP, block(CA + "corrupted_grass_block")), cond(DEPTH, block(CA + "corrupted_dirt")))
+    stone = seq(cond(TOP, block(CA + "corrupted_stone")), cond(DEPTH, block(CA + "corrupted_stone")))
+    return seq(*[cond(share, cond(patch, stone)) for share, patch in BLEED_STONE],
+               *[cond(share, cond(patch, corrupted)) for share, patch in BLEED],
+               *surface(*SUNDERED)["sequence"])
+
+
+SPECIAL = {"verdant_falls": verdant_falls, "sundered_reach": sundered_reach}
 
 
 # ---------------------------------------------------------------- W-terrein-b (74): the world trees

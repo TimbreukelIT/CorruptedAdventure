@@ -18,6 +18,7 @@ import nl.timtoys.corruptedadventure.worldgen.surface.NetherRing5DressingConditi
 import nl.timtoys.corruptedadventure.worldgen.surface.NetherRing5PillarCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.Ring5GroundCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.Ring5SpeckleCondition;
+import nl.timtoys.corruptedadventure.worldgen.surface.Zone45ShareCondition;
 
 /** Surface rule condition types (the {@code if_true} of a surface rule); the rules themselves are hand-written JSON. */
 public final class ModSurfaceConditions {
@@ -71,6 +72,11 @@ public final class ModSurfaceConditions {
     /** {@code corruptedadventure:ring_5_speckle} (94/95: pure random specks and patches, glitch blocks and the ruined plateau) */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<Ring5SpeckleCondition>> RING_5_SPECKLE =
             CONDITIONS.register("ring_5_speckle", () -> Ring5SpeckleCondition.MAP_CODEC);
+
+    // ring 5 — walk 1
+    /** {@code corruptedadventure:zone_4_5_share} (walk 1: how far across the zone 4→5 a column lies; ring 5's blocks bleed in) */
+    public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<Zone45ShareCondition>> ZONE_4_5_SHARE =
+            CONDITIONS.register("zone_4_5_share", () -> Zone45ShareCondition.MAP_CODEC);
 
     private ModSurfaceConditions() {
     }
