@@ -257,6 +257,73 @@ breed, half gecorrumpeerd.
 - 2026-10-23 18:32: worktree `P:/Projecten/Java/wt/r5-94` op `ring5/94` vanaf `061a20c4`; `setup.sh W-biomes 9`
   (server 25579, RCON 25589).
 - 2026-10-23 18:40: plan geschreven; vragen V1–V11 naar main. Nog niets gebouwd.
+- 2026-10-23 22:30: 94 (`7d3e5e7b`) en 95 (`ce7af152`) gebouwd.
+- 2026-10-24: review 94 afgerond + eigen review 95, afstemming rijkdom (zie "Review en afstemming 2026-10-24").
+
+## Review en afstemming 2026-10-24
+**Reviewpunten 94** (code-review op `main...ring5/94`, per punt gecontroleerd in de code):
+1. *Lavadam bij een schone ontbrekende chunk wisselt met de laadvolgorde* — **opgelost.** De dam (vloeistof → steen in de
+   buurchunks) was `corrupted_stone`/`deepslate`, beide ertsdoel; de ertsen van de chunks eromheen (ook van het gat zelf)
+   reiken in de damzone vóór of ná de dam en vonden lava (niets) of steen (erts). Nu `corrupted_cobblestone` aan de wand
+   en `cobbled_deepslate` verder: geen ertsdoel. Rest-ruis (bekend, niet opgelost): vanilla-ertsen met
+   luchtblootstelling (`lapis_buried` e.d., ×0,03) naast het gat onder Y −54 kunnen nog verschillen (lava of al lucht);
+   uiterst zeldzaam, valt onder `detcmp`-categorie `noise`.
+2. *Kampvloer steen/erts hangt af van de volgorde* — **opgelost.** De vloer kopieerde het grondblok, dat een erts van een
+   buurchunk kan zijn (of nog niet), en de opvulling (`corrupted_stone`) kon daarna alsnog erts worden. Nu: aarde/gras
+   blijft (geen ertsdoel), op steen `corrupted_cobblestone`.
+3. *Herinneringen lekken staat tussen werelden met dezelfde seed* — **opgelost.** De plannen hingen aan de salt (alleen de
+   seed) en de vormen aan het `Memory`-record, in statische LRU's: een tweede wereld met dezelfde seed maar andere
+   ringconfig kreeg oude plannen/rokken. Nu `Ring5PlanCache` (per `Ring5World` op identiteit, zwak); ook de spiegelparen.
+4. *Kamp kan in een herinnering vallen* — **opgelost.** Het filter keek op de gevraagde plek, `GroundObjects.fit` schoof
+   het kamp tot 4 verder en het kamp overschrijft alles. Het kamp kijkt nu zelf op het verschoven midden
+   (`FOOTPRINT` 6); keien, dode bomen en fakkelpatronen houden 8 afstand (`OBJECT_CLEARANCE`). De omvang van een
+   herinnering telt nu de rafelrand mee (`extent` = straal × 1,26 + 3).
+5. *Omgevallen (scheve) herinnering met bomen overschrijft terrein* — **opgelost.** Alles wat vast was ging als "terrein"
+   over de wereld, ook stammen en bladeren; een scheve herinnering sneed zijn kronen in de heuvel ernaast. Nu alleen de
+   grond van een liggende herinnering; bomen en planten alleen in de open lucht (`Placed.ground`).
+6. *Onnodig veel worldgen-werk* — **opgelost.** Elke chunk liep per soort alle blokken van een herinnering door; nu per
+   chunk geïndexeerd (`Shape.in`). De spiegelparen werden per chunk opnieuw berekend (tot 9 cellen × 2 bomen ×
+   `voidDistance`, dat het kolomvenster van `Ring5Field` laat verspringen); nu per wereld onthouden. Surface (2,5–2,7×
+   vanilla in de binnenband, was 1,8–2,1 vóór 94) komt van de randen/wanden (`voidDistance` 2 per kolom); ter info, het
+   budget is noise.
+7. *Nulliet onder zwevende brokken in de lucht* — **opgelost (oorzaak anders dan gedacht).** Blokscan: 0 nullietblokken
+   zonder vaste buur (ertsen vervangen alleen steen). Wel zat de poging op de onderkant van het brokmidden, die bij een
+   gekantelde brok (≤ 20°) of naast zijn ronde voetafdruk in de lucht ligt: de poging ging verloren. Nu het laagste blok
+   van de brok in de eigen kolom.
+8. *Overig* — de onaf gelaten fix (dunne rand van een zwevende herinnering nooit zand) afgemaakt; `voidscan` kent de
+   schone ontbrekende chunks nog niet (backlog, geen fout).
+
+**Eigen review 95** (determinisme, chunkgrenzen, schrijven buiten de eigen chunk): randen, wanden, aders, omgekeerde
+weide en verwoest plateau zijn surface (puur per blok); omgekeerde bomen, puin en dode bomen zijn grondobjecten in de
+eigen chunk (`fit`), die alleen hun eigen kolom lezen (vast/lucht verandert niet door ertsen); ertsen vervangen alleen
+steen en niets van de aankleding is ertsdoel. Gevonden: punt 7 (nulliet-onderkant). Kanttekeningen (niet veranderd):
+`inverted_hill` zet gras op elk plafond van zo'n kolom (met 93's grotten ook op grotplafonds, zie INT3); de `wall`-regel
+maakt de hele kolom naast de void `corrupted_stone` (ontwerp V8-C: geen deepslate in de wanden).
+
+**Rijkdom** (`build/test/dress.py` + `trees.py`, 16 × 16 chunks per gebied uit `perf-r5.txt`, seed 20260930; kaarten
+1 px = 1 blok in `build/test/maps/rich-before/` en `rich-after/`, `<gebied>_top.png`, `report.json`):
+
+| gebied | vóór | na |
+|---|---|---|
+| `false_meadow` | gras/bloemen ~15 % van de weide, ~1 spiegelpaar per 4 chunks | ~31 % (vanilla plains), 1 paar per ~2,3 chunks |
+| kampen (wastes + glitch) | 7 op 512 chunks (1 per 73; V6-A: 25–35) | 15 op 512 (1 per 34) |
+| `glitch_fields` | 94 % van de 8 × 8-cellen zonder enig object | 89 %, schaarse keien (`glitch_rocks`) |
+| `corrupted_wastes` | 0,77 dode boom/chunk, dode struik 2/chunk | 0,73 (ruimer om herinneringen), struik 3/chunk |
+| omgekeerde bomen | 0,7 per chunk-oppervlak heuvelonderkant | ongewijzigd (V10-A: 1 per 1–2) |
+
+Wat binnen de besluiten bleef (dichtheden) is aangepast; wat een nieuwe ontwerpkeuze zou zijn staat als vraag bij main
+(eentonige grond van `corrupted_wastes`, 97 % één blok; kale toppen van `inverted_hills`; karakter van `glitch_fields`).
+Waarneming buiten 94/95: in `inverted_hills` liggen rond de void-gaten rechthoekige, assen-parallelle vlakken
+`corrupted_stone` (de biome wordt daar `shattered_expanse` op de blokkerige `breakup`); backlog.
+
+**Verwachte conflicten met `ring5/93` (INT3):** tekstueel alleen `CODEBASE.md` (beide streams). Inhoudelijk: (a) 93's
+grotten in `Ring5Field`/`Ring5Caves` openen de grond onder features die `Ring5World.top`/de WG-heightmap lezen
+(spiegelbomen, herinneringen met rok, kampen) — een boom of rok kan boven een grotmond hangen; (b) de surface-regel
+`inverted_hill` (`CEILING` → gras) zet ook gras op grotplafonds binnen zo'n kolom; (c) nulliet (`ring5_void_face`, diep
+Y −64…−16) en glitchclusters komen in grotwanden bloot te liggen, en grotten kunnen aders wegsnijden; (d) 93's
+`RingFluidPicker`-wijziging tegenover de dam van `missing_chunk` (lava naast een gat); (e) `voidDistance`/randen zien
+grotten niet (alleen kolommen): een grot die in een scheurwand uitkomt krijgt geen voidsteen-rand. Na de rebase:
+`voidscan`, `lavascan`, `det.sh` en de ertsscan opnieuw.
 
 ## CODEBASE-delta
 - **Gedeelde basis (`worldgen/feature`):** `Ring5World` (record: `Ring5Field`, `RingLayout`, `Ring5Band`, salt; `core`
@@ -320,5 +387,9 @@ breed, half gecorrumpeerd.
   `nullite_ore` (in `corrupted_stone`-textuur). (bron: 95)
 - [worldgen] `voidscan.py` kent de schone ontbrekende chunks niet (ze tellen als `void`, geen fout); als een scan ooit
   void binnen de binnenband als fout telt, de export (`RingColumnsExportTest`) `Ring5MissingChunks` laten lezen. (bron: 94)
+- [worldgen] In `inverted_hills` rond de void-gaten rechthoekige, assen-parallelle vlakken `corrupted_stone`: de biome
+  wordt daar `shattered_expanse` op de blokkerige `breakup` (preset `rings.ring_5`); oogt kunstmatig. (bron: 94-review)
+- [worldgen] Rest-ruis lavadam: vanilla-ertsen met luchtblootstelling naast een schone ontbrekende chunk onder Y −54
+  kunnen per laadvolgorde verschillen (lava of al lucht ernaast); ×0,03, uiterst zeldzaam. (bron: 94-review)
 - [structures] Fase 3: het kasteelplateau van ring 5 is in fase 1 helemaal verwoest (puin, obsidiaan, glitchblokken; V9-B);
   het kasteelgebouw bouwt eroverheen en ruimt zelf op waar het nodig is. (bron: 95)
