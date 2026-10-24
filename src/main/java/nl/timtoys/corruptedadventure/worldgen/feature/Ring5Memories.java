@@ -4,8 +4,10 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.RandomSupport;
@@ -19,7 +21,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * The memories of ring 5 (94, V7-A): rare warped pieces of rings 1–4 swallowed by the corruption (a bit of oak wood, an
@@ -30,7 +31,8 @@ import java.util.Optional;
  * One memory at most per world cell of {@link #CELL} blocks, a pure plan ({@link #memory}) from the world seed, the cell
  * and the pure terrain ({@link Ring5World}); its blocks ({@link #blocks}) are pure too, so every chunk writes its own part
  * ({@link MemoryFeature}) and a memory across chunk borders is whole whatever generated first. No block of a memory is an
- * ore's target (no stone, no corrupted stone): the ores of a neighbouring chunk never change one.
+ * ore's target (no stone, no corrupted stone): the ores of a neighbouring chunk never change one. The plans and shapes are
+ * remembered per {@link Ring5World} (by identity, weakly), so two worlds of one seed in one session never share them.
  */
 public final class Ring5Memories {
     static final int CELL = 560;
@@ -57,12 +59,19 @@ public final class Ring5Memories {
     /** How far a memory keeps from a castle site's belt, and its decorations reach beyond its radius. */
     static final int CASTLE_CLEARANCE = 24;
     static final int REACH = 3;
+    /** How far a memory's ragged edge reaches beyond its radius, as a share of it (the sum of the edge's waves). */
+    static final double WOBBLE = 0.26;
+    /**
+     * How far the ground objects that move into their chunk ({@link GroundObjects#fit}: rocks, dead trees, torch patterns)
+     * keep from a memory where they are asked: their reach and the move together.
+     */
+    static final int OBJECT_CLEARANCE = 8;
     /** Blocks a memory keeps from ring 5's boundaries beyond its reach (a biome's quart corner and a chunk's 3 x 3). */
     static final int RING_MARGIN = 32;
     private static final long SALT = 0x3E30_41E5L;
 
-    private static final Map<Long, Optional<Memory>> PLANS = Collections.synchronizedMap(lru(4096));
-    private static final Map<Memory, Map<BlockPos, BlockState>> BLOCKS = Collections.synchronizedMap(lru(32));
+    private static final Ring5PlanCache<Long, Memory> PLANS = new Ring5PlanCache<>(4096);
+    private static final Ring5PlanCache<Memory, Shape> SHAPES = new Ring5PlanCache<>(32);
 
     private Ring5Memories() {
     }
@@ -92,15 +101,35 @@ public final class Ring5Memories {
      */
     public record Memory(Kind kind, int x, int z, int radius, int baseY, boolean floating, double tilt, double tiltDirection,
                          double corruptDirection, long shapeSeed) {
+        /** How far (blocks) the memory's blocks reach from its middle: the ragged edge and what grows on it. */
+        int extent() {
+            return extent(radius);
+        }
+
+        static int extent(int radius) {
+            return (int) Math.ceil(radius * (1.0 + WOBBLE)) + REACH;
+        }
+
         boolean touches(int minX, int minZ, int maxX, int maxZ, int margin) {
-            int r = radius + REACH + margin;
+            int r = extent() + margin;
             return x + r >= minX && x - r <= maxX && z + r >= minZ && z - r <= maxZ;
+        }
+    }
+
+    /** One block of a memory: its ground (a piece of terrain) or what grows on it (trees and plants: only into the open). */
+    record Placed(BlockPos pos, BlockState state, boolean ground) {
+    }
+
+    /** A memory's blocks, per chunk ({@link ChunkPos#toLong}), the ground first. */
+    record Shape(Map<Long, List<Placed>> chunks) {
+        List<Placed> in(ChunkPos chunk) {
+            return chunks.getOrDefault(chunk.toLong(), List.of());
         }
     }
 
     /** The memories whose blocks may reach into the box (blocks, inclusive). */
     static List<Memory> within(Ring5World world, int minX, int minZ, int maxX, int maxZ, int margin) {
-        int reach = MAX_RADIUS + REACH + margin;
+        int reach = Memory.extent(MAX_RADIUS) + margin;
         List<Memory> found = new ArrayList<>();
         for (int i = Math.floorDiv(minX - reach, CELL); i <= Math.floorDiv(maxX + reach, CELL); i++) {
             for (int j = Math.floorDiv(minZ - reach, CELL); j <= Math.floorDiv(maxZ + reach, CELL); j++) {
@@ -116,7 +145,7 @@ public final class Ring5Memories {
     /** Whether a memory lies within {@code margin} blocks (beyond its radius) of (x, z). */
     static boolean near(Ring5World world, int x, int z, int margin) {
         for (Memory memory : within(world, x, z, x, z, margin)) {
-            if (Math.hypot(x - memory.x(), z - memory.z()) <= memory.radius() + REACH + margin) {
+            if (Math.hypot(x - memory.x(), z - memory.z()) <= memory.extent() + margin) {
                 return true;
             }
         }
@@ -125,8 +154,7 @@ public final class Ring5Memories {
 
     @Nullable
     private static Memory cached(Ring5World world, int i, int j) {
-        long key = RandomSupport.mixStafford13(world.salt() ^ (((long) i << 32) ^ (j & 0xFFFFFFFFL)));
-        return PLANS.computeIfAbsent(key, k -> Optional.ofNullable(memory(world, i, j))).orElse(null);
+        return PLANS.get(world, ChunkPos.asLong(i, j), k -> memory(world, i, j));
     }
 
     /** The memory of cell (i, j), or null. Pure in the world and the cell. */
@@ -151,7 +179,7 @@ public final class Ring5Memories {
         long shapeSeed = r.nextLong();
         boolean keepOverVoid = r.nextDouble() < VOID_KEEP;
         // Wholly inside ring 5's biomes (whose chunks write the memory), clear of the zone 4->5 and the void edge.
-        if (!world.core(x, z) || world.ringDepth(x, z) < radius + REACH + RING_MARGIN) {
+        if (!world.core(x, z) || world.ringDepth(x, z) < Memory.extent(radius) + RING_MARGIN) {
             return null;
         }
         for (Ring5Field.CastleSite site : field.castleSites()) {
@@ -204,12 +232,19 @@ public final class Ring5Memories {
         return false;
     }
 
-    /** The blocks of a memory (world positions), the ground first, then what grows on it. Pure. */
-    static Map<BlockPos, BlockState> blocks(Memory memory, Ring5World world) {
-        return BLOCKS.computeIfAbsent(memory, m -> Collections.unmodifiableMap(build(m, world)));
+    /** The blocks of a memory per chunk. Pure. */
+    static Shape shape(Memory memory, Ring5World world) {
+        return SHAPES.get(world, memory, m -> build(m, world));
     }
 
-    private static Map<BlockPos, BlockState> build(Memory m, Ring5World world) {
+    /** All blocks of a memory (world positions), the ground first, then what grows on it. Pure. */
+    static Map<BlockPos, BlockState> blocks(Memory memory, Ring5World world) {
+        Map<BlockPos, BlockState> all = new LinkedHashMap<>();
+        shape(memory, world).chunks().values().forEach(part -> part.forEach(placed -> all.put(placed.pos(), placed.state())));
+        return all;
+    }
+
+    private static Shape build(Memory m, Ring5World world) {
         RandomSource random = new XoroshiroRandomSource(m.shapeSeed());
         Palette palette = Palette.of(m.kind());
         int r = m.radius();
@@ -242,6 +277,10 @@ public final class Ring5Memories {
                 for (int k = 0; k < depth; k++) {
                     int y = surface - k;
                     BlockState state = k == 0 ? palette.top(random, basin) : k == depth - 1 && m.floating() ? palette.bottom : palette.body(random);
+                    if (m.floating() && k == depth - 1 && state.getBlock() instanceof FallingBlock) {
+                        // The thin rim of a floating memory: sand there would drop into the air at the first update.
+                        state = palette.bottom;
+                    }
                     ground.put(new BlockPos(wx, y, wz), corrupt ? corrupt(state) : state);
                 }
                 if (!m.floating()) {
@@ -260,9 +299,16 @@ public final class Ring5Memories {
             }
         }
         decorate(m, palette, random, tops, ground, growth);
-        Map<BlockPos, BlockState> all = new LinkedHashMap<>(ground);
-        growth.forEach(all::putIfAbsent);
-        return all;
+        Map<Long, List<Placed>> chunks = new LinkedHashMap<>();
+        ground.forEach((pos, state) -> chunks.computeIfAbsent(ChunkPos.asLong(pos), k -> new ArrayList<>())
+                .add(new Placed(pos, state, true)));
+        growth.forEach((pos, state) -> {
+            if (!ground.containsKey(pos)) {
+                chunks.computeIfAbsent(ChunkPos.asLong(pos), k -> new ArrayList<>()).add(new Placed(pos, state, false));
+            }
+        });
+        chunks.replaceAll((k, part) -> List.copyOf(part));
+        return new Shape(Collections.unmodifiableMap(chunks));
     }
 
     /** What grows on a memory: trees (oak grove), a palm (oasis), plants by its kind; grey and dead where it is corrupted. */
@@ -398,14 +444,5 @@ public final class Ring5Memories {
             }
             return plants.get(random.nextInt(plants.size()));
         }
-    }
-
-    private static <K, V> Map<K, V> lru(int size) {
-        return new LinkedHashMap<>(16, 0.75F, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-                return size() > size;
-            }
-        };
     }
 }

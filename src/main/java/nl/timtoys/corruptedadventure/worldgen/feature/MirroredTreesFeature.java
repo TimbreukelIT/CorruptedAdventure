@@ -42,6 +42,8 @@ public final class MirroredTreesFeature extends Feature<NoneFeatureConfiguration
     static final int VOID_CLEARANCE = 4;
     private static final long SALT = 0x3177_0EE5L;
     private static final int FLAGS = Block.UPDATE_CLIENTS;
+    /** The pairs of the last cells (a chunk asks up to nine; each cell is asked by the chunks round it). */
+    private static final Ring5PlanCache<Long, Pair> PAIRS = new Ring5PlanCache<>(1024);
 
     public MirroredTreesFeature(Codec<NoneFeatureConfiguration> codec) {
         super(codec);
@@ -85,13 +87,15 @@ public final class MirroredTreesFeature extends Feature<NoneFeatureConfiguration
         boolean meadow(int x, int y, int z);
     }
 
-    /** The pairs whose blocks may reach into {@code chunk}. */
+    /** The pairs whose blocks may reach into {@code chunk} (remembered per world: {@code biomeAt} is the world's own). */
     static List<Pair> pairs(Ring5World world, BiomeAt biomeAt, ChunkPos chunk) {
         int reach = MAX_GAP + CROWN;
         List<Pair> pairs = new ArrayList<>();
         for (int i = Math.floorDiv(chunk.getMinBlockX() - reach, CELL); i <= Math.floorDiv(chunk.getMaxBlockX() + reach, CELL); i++) {
             for (int j = Math.floorDiv(chunk.getMinBlockZ() - reach, CELL); j <= Math.floorDiv(chunk.getMaxBlockZ() + reach, CELL); j++) {
-                Pair pair = pair(world, biomeAt, i, j);
+                int ci = i;
+                int cj = j;
+                Pair pair = PAIRS.get(world, ChunkPos.asLong(i, j), k -> pair(world, biomeAt, ci, cj));
                 if (pair != null) {
                     pairs.add(pair);
                 }
