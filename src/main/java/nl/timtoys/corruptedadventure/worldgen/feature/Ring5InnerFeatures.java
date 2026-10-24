@@ -63,6 +63,8 @@ public final class Ring5InnerFeatures {
     public static final ResourceKey<PlacedFeature> MISSING_CHUNKS = placedKey("missing_chunks");
     public static final ResourceKey<PlacedFeature> WASTES_DEAD_TREES = placedKey("wastes_dead_trees");
     public static final ResourceKey<PlacedFeature> WASTES_DEAD_BUSHES = placedKey("wastes_dead_bushes");
+    /** Dead bushes on the floes of {@code inverted_hills} (V-B, 2026-10-24: ~1–2 per chunk). */
+    public static final ResourceKey<PlacedFeature> FLOE_DEAD_BUSHES = placedKey("floe_dead_bushes");
     public static final ResourceKey<PlacedFeature> WASTES_ROCKS = placedKey("wastes_rocks");
     /** The same rocks, sparse, on {@code glitch_fields}' bare stone (plan 94.1: "spaarzaam glitch_fields"). */
     public static final ResourceKey<PlacedFeature> GLITCH_ROCKS = placedKey("glitch_rocks");
@@ -149,6 +151,7 @@ public final class Ring5InnerFeatures {
         register(context, WASTES_DEAD_TREES, WASTES_TREE, JitteredGridPlacement.of(8, 2, 0.45F, GROVES), SURFACE,
                 Ring5Filter.of(4, 3, Ring5Memories.OBJECT_CLEARANCE));
         register(context, WASTES_DEAD_BUSHES, DEAD_BUSH, CountPlacement.of(3), InSquarePlacement.spread(), SURFACE);
+        register(context, FLOE_DEAD_BUSHES, DEAD_BUSH, CountPlacement.of(2), InSquarePlacement.spread(), SURFACE);
         register(context, WASTES_ROCKS, WASTES_ROCK, JitteredGridPlacement.of(16, 3, 0.35F), SURFACE,
                 Ring5Filter.of(4, 2, Ring5Memories.OBJECT_CLEARANCE));
         register(context, GLITCH_ROCKS, WASTES_ROCK, JitteredGridPlacement.of(16, 3, 0.15F), SURFACE,

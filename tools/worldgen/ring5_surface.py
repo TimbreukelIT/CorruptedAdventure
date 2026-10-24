@@ -24,7 +24,11 @@ corruptedadventure:ring_5_ground (part core; ring 5 and the void edge, never the
 - the upside-down hills of inverted_hills (V10-A): their underside an upside-down meadow, corrupted grass right above the
   air and corrupted dirt in the two blocks above that, where the inverted trees hang;
 - the ruined castle sites (V9-B): the top block a mix of corrupted cobblestone, obsidian, crying obsidian and glitch
-  blocks over corrupted stone, the two blocks under it corrupted cobblestone and stone.
+  blocks over corrupted stone, the two blocks under it corrupted cobblestone and stone;
+- the biomes' surfaces (the ring 5 branch below) once more within 16 of the column's pure top (part upper, 94-review):
+  vanilla's above_preliminary_surface interpolates the preliminary surface between the chunk's corners, and a corner
+  over a void hole left chunk-aligned rectangles of ground beside the hole bare corrupted stone. The branch also stays in
+  above_preliminary_surface for the ring 5 biomes outside ring 5's core (the noisy margin of the zone 4->5).
 In the ring 5 branch: glitch_fields' glitch blocks in specks and patches of 1-4 on tops and undersides (V3-A), no more
 deepslate on void_scars' steep walls (the rims and walls above replace it).
 """
@@ -81,6 +85,10 @@ def speckle(salt, chance, size=1):
     return {"type": CA + "ring_5_speckle", "salt": salt, "chance": chance, "size": size}
 
 
+def noise(name, lo, hi=1.7976931348623157e+308):
+    return {"type": "minecraft:noise_threshold", "noise": name, "min_threshold": lo, "max_threshold": hi}
+
+
 def below(y):
     """Blocks below Y y."""
     return {"type": "minecraft:not", "invert": {"type": "minecraft:y_above", "anchor": {"absolute": y},
@@ -97,6 +105,10 @@ STEEP = {"type": "minecraft:steep"}
 # a surface below Y 76 is a pit floor or a low place. 83 shapes the pits (Ring5Inner.pitAt, Java only, no output of
 # the field); this needs no density function of its own.
 LOW = below(76)
+# corrupted_wastes' bare ground (V-A, 2026-10-24): patches of bare corrupted dirt (vanilla's surface noise, ~60 blocks)
+# and smaller ones of corrupted sand (the patch noise), together about 10-15 % of the top with the pit floors.
+BARE_PATCHES = noise("minecraft:surface", 0.53)
+SAND_PATCHES = noise("minecraft:patch", 0.62)
 
 # The blocks of stream B (88).
 GRASS = CA + "corrupted_grass_block"
@@ -132,8 +144,10 @@ def surface(top, under):
 
 
 def corrupted_wastes():
-    """Dead soil; corrupted sand on the pit floors and in the low places."""
-    return seq(cond(TOP, seq(cond(LOW, put(SAND)), block(GRASS))), cond(DEPTH, block(DIRT)))
+    """Dead soil; corrupted sand on the pit floors, in the low places and in patches; patches of bare dirt."""
+    return seq(cond(TOP, seq(cond(LOW, put(SAND)), cond(SAND_PATCHES, put(SAND)), cond(BARE_PATCHES, block(DIRT)),
+                             block(GRASS))),
+               cond(DEPTH, block(DIRT)))
 
 
 def glitch_fields():
@@ -200,7 +214,8 @@ def ring_5_ground():
         cond(ground("wall"), block(STONE)),
         cond(ground("inverted_hill"), seq(cond(CEILING, block(GRASS)), cond(UNDERSIDE, block(DIRT)))),
         cond(ground("castle"), seq(cond(TOP, castle_top), cond(CASTLE_UNDER, seq(cond(speckle(5205, 0.5), block(COBBLE)),
-                                                                              block(STONE)))))))
+                                                                              block(STONE))))),
+        cond(ground("upper"), ring_5_branch())))
 
 
 def is_ring_5_ground(rule):

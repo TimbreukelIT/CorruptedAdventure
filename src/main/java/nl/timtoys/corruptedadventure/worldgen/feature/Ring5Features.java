@@ -59,6 +59,7 @@ public final class Ring5Features {
         order.add(vegetal(Ring5InnerFeatures.MEADOW_GRASS_PATCHES, ModBiomes.FALSE_MEADOW));
         order.add(vegetal(Ring5InnerFeatures.MEADOW_FLOWERS, ModBiomes.FALSE_MEADOW));
         order.add(vegetal(Ring5InnerFeatures.WASTES_DEAD_BUSHES, ModBiomes.CORRUPTED_WASTES));
+        order.add(vegetal(Ring5InnerFeatures.FLOE_DEAD_BUSHES, ModBiomes.INVERTED_HILLS));
         order.add(vegetal(Ring5InnerFeatures.WASTES_ROCKS, ModBiomes.CORRUPTED_WASTES));
         order.add(vegetal(Ring5InnerFeatures.GLITCH_ROCKS, ModBiomes.GLITCH_FIELDS));
         order.add(vegetal(Ring5InnerFeatures.WASTES_DEAD_TREES, ModBiomes.CORRUPTED_WASTES));

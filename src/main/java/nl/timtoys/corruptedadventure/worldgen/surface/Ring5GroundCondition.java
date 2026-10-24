@@ -27,7 +27,11 @@ import nl.timtoys.corruptedadventure.worldgen.feature.Ring5World;
  *   <li>{@code vein}: a column beside the void, a block of the wall below that, with a chance growing with depth;</li>
  *   <li>{@code wall}: a column beside the void (the wall itself);</li>
  *   <li>{@code castle}: ground of a castle site (plateau and ruined rim; V9-B);</li>
- *   <li>{@code inverted_hill}: a floe column with an upside-down hill under it ({@code inverted_hills}, V10-A).</li>
+ *   <li>{@code inverted_hill}: a floe column with an upside-down hill under it ({@code inverted_hills}, V10-A);</li>
+ *   <li>{@code upper}: a block within {@link #UPPER_DEPTH} under the column's pure top, or above it (cubes, spans; every
+ *   block over the void): where the biomes' surfaces go. Vanilla's {@code above_preliminary_surface} interpolates the
+ *   preliminary surface between the chunk's corners, and a corner over a void hole made whole chunk-aligned rectangles of
+ *   ground beside the hole bare base rock.</li>
  * </ul>
  * Only in ring 5 and the void edge beyond it ({@link Ring5World#core}); never in the zone 4→5. Without a ring 5 field
  * (another dimension) false. The surface pass asks per block, column by column: the column's answers are shared per
@@ -42,6 +46,8 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
     static final double VEIN_BASE = 0.04;
     static final double VEIN_RISE = 0.0025;
     static final double VEIN_MAX = 0.35;
+    /** How deep under the column's top the biomes' surfaces reach ({@code upper}): the top block and the surface depth. */
+    static final int UPPER_DEPTH = 16;
 
     public static final MapCodec<Ring5GroundCondition> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Part.CODEC.fieldOf("part").forGetter(Ring5GroundCondition::part)
@@ -105,6 +111,7 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
                 case WALL -> voidDistance == 1;
                 case CASTLE -> castle;
                 case INVERTED_HILL -> hill;
+                case UPPER -> top == Integer.MIN_VALUE || y > top - UPPER_DEPTH;
             };
         }
     }
@@ -135,7 +142,8 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
         VEIN("vein"),
         WALL("wall"),
         CASTLE("castle"),
-        INVERTED_HILL("inverted_hill");
+        INVERTED_HILL("inverted_hill"),
+        UPPER("upper");
 
         public static final Codec<Part> CODEC = StringRepresentable.fromEnum(Part::values);
         private final String name;
