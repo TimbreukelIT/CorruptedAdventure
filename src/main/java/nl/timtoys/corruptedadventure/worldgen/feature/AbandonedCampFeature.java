@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.level.WorldGenLevel;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.storage.loot.LootTable;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -31,10 +33,14 @@ import java.util.Map;
  * ({@link #LOOT}), a campfire gone out with a log to sit on, and sometimes one of Herobrine's signs beside it.
  * <p>
  * On level ground only: every column of its {@link #REACH}-square at the middle's height or one lower (the lower ones
- * filled up with the middle's ground block). A ground object: its own random, the frozen heightmap, its own chunk.
+ * filled up: with the ground's soil, or with cobble on rock, which no ore of a neighbouring chunk replaces before or after
+ * the camp stands), and never on a memory ({@link Ring5Memories}; the placement's filter looks where the camp was asked,
+ * this where it is moved to). A ground object: its own random, the frozen heightmap, its own chunk.
  */
 public final class AbandonedCampFeature extends Feature<NoneFeatureConfiguration> {
     static final int REACH = 4;
+    /** How far the camp's blocks reach from its middle (the corners of its square). */
+    static final int FOOTPRINT = 6;
     static final float TORN_CHANCE = 0.15F;
     static final float SIGN_CHANCE = 0.4F;
     public static final ResourceKey<LootTable> LOOT = ResourceKey.create(Registries.LOOT_TABLE,
@@ -50,6 +56,10 @@ public final class AbandonedCampFeature extends Feature<NoneFeatureConfiguration
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
         WorldGenLevel level = context.level();
         BlockPos origin = GroundObjects.fit(context.origin(), REACH);
+        Ring5World world = Ring5Terrain.world(level);
+        if (world == null || Ring5Memories.near(world, origin.getX(), origin.getZ(), FOOTPRINT)) {
+            return false;
+        }
         RandomSource random = GroundObjects.random(level.getSeed(), origin, SALT);
         int y0 = GroundObjects.surface(level, origin.getX(), origin.getZ());
         for (int dx = -REACH; dx <= REACH; dx++) {
@@ -64,17 +74,19 @@ public final class AbandonedCampFeature extends Feature<NoneFeatureConfiguration
         if (!ground.isFaceSturdy(level, origin.atY(y0 - 1), Direction.UP)) {
             return false;
         }
+        // The ground block itself may be a neighbour's ore or not yet: the fill copies soil only.
+        BlockState fill = ground.is(BlockTags.DIRT) ? ground : ModBlocks.CORRUPTED_COBBLESTONE.get().defaultBlockState();
         Direction along = Direction.from2DDataValue(random.nextInt(4));
         Direction across = along.getClockWise();
         BlockState wool = (random.nextBoolean() ? Blocks.WHITE_WOOL : Blocks.LIGHT_GRAY_WOOL).defaultBlockState();
         BlockPos floor = origin.atY(y0);
 
-        // Level ground first: the lower columns filled up with the middle's ground.
+        // Level ground first: the lower columns filled up.
         for (int dx = -REACH; dx <= REACH; dx++) {
             for (int dz = -REACH; dz <= REACH; dz++) {
                 BlockPos column = floor.offset(dx, -1, dz);
                 if (GroundObjects.surface(level, column.getX(), column.getZ()) < y0) {
-                    level.setBlock(column, ground, FLAGS);
+                    level.setBlock(column, fill, FLAGS);
                 }
             }
         }

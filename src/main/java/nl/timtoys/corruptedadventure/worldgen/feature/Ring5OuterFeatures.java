@@ -50,7 +50,7 @@ public final class Ring5OuterFeatures {
         // The undersides are found in the feature (the hill's pure underside), the grid only gives the column.
         register(context, INVERTED_TREES, INVERTED_TREE, JitteredGridPlacement.of(8, 2, 0.8F), Ring5Filter.of(3, 0, 0));
         register(context, FLOE_DEAD_TREES, Ring5InnerFeatures.WASTES_TREE, JitteredGridPlacement.of(16, 2, 0.35F), SURFACE,
-                Ring5Filter.of(4, 3, 4));
+                Ring5Filter.of(4, 3, Ring5Memories.OBJECT_CLEARANCE));
         register(context, CASTLE_RUBBLES, CASTLE_RUBBLE, JitteredGridPlacement.of(8, 2, 0.35F), SURFACE, Ring5Filter.onCastle(3));
     }
 }

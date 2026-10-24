@@ -145,15 +145,17 @@ public final class Ring5InnerFeatures {
             perChunk(context, MEMORIES.get(kind), MEMORY.get(kind));
         }
         register(context, WASTES_DEAD_TREES, WASTES_TREE, JitteredGridPlacement.of(8, 2, 0.45F, GROVES), SURFACE,
-                Ring5Filter.of(4, 3, 4));
+                Ring5Filter.of(4, 3, Ring5Memories.OBJECT_CLEARANCE));
         register(context, WASTES_DEAD_BUSHES, DEAD_BUSH, CountPlacement.of(2), InSquarePlacement.spread(), SURFACE);
-        register(context, WASTES_ROCKS, WASTES_ROCK, JitteredGridPlacement.of(16, 3, 0.35F), SURFACE, Ring5Filter.of(4, 2, 3));
+        register(context, WASTES_ROCKS, WASTES_ROCK, JitteredGridPlacement.of(16, 3, 0.35F), SURFACE,
+                Ring5Filter.of(4, 2, Ring5Memories.OBJECT_CLEARANCE));
         register(context, MEADOW_GRASS_PATCHES, MEADOW_GRASS, CountPlacement.of(40), InSquarePlacement.spread(), SURFACE);
         register(context, MEADOW_FLOWERS, MEADOW_FLOWER, CountPlacement.of(4), InSquarePlacement.spread(), SURFACE);
         perChunk(context, MEADOW_MIRRORED_TREES, MIRRORED_TREES);
         register(context, ABANDONED_CAMPS, ABANDONED_CAMP, JitteredGridPlacement.of(16, 4, 0.045F), SURFACE, Ring5Filter.of(6, 0, 4));
         register(context, HEROBRINE_SIGNS, HEROBRINE_SIGN, JitteredGridPlacement.of(16, 1, 0.2F), SURFACE, Ring5Filter.of(3, 0, 3));
-        register(context, TORCH_PATTERNS, TORCH_PATTERN, JitteredGridPlacement.of(16, 3, 0.075F), SURFACE, Ring5Filter.of(4, 0, 4));
+        register(context, TORCH_PATTERNS, TORCH_PATTERN, JitteredGridPlacement.of(16, 3, 0.075F), SURFACE,
+                Ring5Filter.of(4, 0, Ring5Memories.OBJECT_CLEARANCE));
     }
 
     private static void none(BootstrapContext<ConfiguredFeature<?, ?>> context, ResourceKey<ConfiguredFeature<?, ?>> key,

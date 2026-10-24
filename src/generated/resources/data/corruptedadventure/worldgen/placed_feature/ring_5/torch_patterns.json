@@ -13,7 +13,7 @@
     },
     {
       "type": "corruptedadventure:ring5_filter",
-      "memory_clearance": 4,
+      "memory_clearance": 8,
       "void_clearance": 4
     },
     {

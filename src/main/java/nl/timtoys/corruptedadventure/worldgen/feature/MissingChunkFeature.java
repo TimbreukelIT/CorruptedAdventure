@@ -18,7 +18,8 @@ import nl.timtoys.corruptedadventure.registry.ModBlocks;
  * touch (the bedrock floor, the deep lava layer under Y −54): the chunk is open down to below {@code min_y}. In a chunk
  * beside one it turns the fluid within {@link #DAM} blocks of the hole into rock, down from Y {@link #DAM_TOP}: the dam the
  * fluid rule keeps round every crack (V9-B), so no lava ever stands against the hole. Only its own chunk, from the pure
- * decision: independent of generation order.
+ * decision: independent of generation order. The dam is cobble, which no ore replaces: the ores of the chunks round it
+ * (the hole's own among them) reach into the dam before or after it stands, and lava they would not have replaced.
  */
 public final class MissingChunkFeature extends Feature<NoneFeatureConfiguration> {
     static final int DAM = 6;
@@ -67,10 +68,10 @@ public final class MissingChunkFeature extends Feature<NoneFeatureConfiguration>
         }
     }
 
-    /** The fluid of {@code chunk} within {@link #DAM} of {@code hole} becomes rock: the wall beside it corrupted stone. */
+    /** The fluid of {@code chunk} within {@link #DAM} of {@code hole} becomes rock: the wall beside it corrupted cobblestone. */
     private static void dam(WorldGenLevel level, ChunkPos chunk, ChunkPos hole) {
-        BlockState wall = ModBlocks.CORRUPTED_STONE.get().defaultBlockState();
-        BlockState rock = Blocks.DEEPSLATE.defaultBlockState();
+        BlockState wall = ModBlocks.CORRUPTED_COBBLESTONE.get().defaultBlockState();
+        BlockState rock = Blocks.COBBLED_DEEPSLATE.defaultBlockState();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int x = chunk.getMinBlockX(); x <= chunk.getMaxBlockX(); x++) {
             for (int z = chunk.getMinBlockZ(); z <= chunk.getMaxBlockZ(); z++) {
