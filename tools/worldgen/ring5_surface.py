@@ -223,11 +223,12 @@ def ring_5_ground():
         cond(ground("wall_top"), block(VOIDSTONE)),
         cond(ground("vein"), block(VOIDSTONE)),
         cond(ground("wall"), block(STONE)),
+        # before the holes' walls, which reach down through a floe to its underside (INT3 review)
+        cond(ground("inverted_hill"), seq(cond(CEILING, block(GRASS)), cond(UNDERSIDE, block(DIRT)))),
         cond(ground("hole_rim"), block(VOIDSTONE)),
         cond(ground("hole_wall_top"), block(VOIDSTONE)),
         cond(ground("hole_vein"), block(VOIDSTONE)),
         cond(ground("hole_wall"), block(STONE)),
-        cond(ground("inverted_hill"), seq(cond(CEILING, block(GRASS)), cond(UNDERSIDE, block(DIRT)))),
         cond(ground("castle"), seq(cond(TOP, castle_top), cond(CASTLE_UNDER, seq(cond(speckle(5205, 0.5), block(COBBLE)),
                                                                               block(STONE))))),
         cond(ground("upper"), ring_5_branch())))
