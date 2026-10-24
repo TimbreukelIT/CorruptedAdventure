@@ -209,6 +209,7 @@ Aanbevolen optie steeds eerst. "Perf" = de noise-stap tegen vanilla (budget ≤ 
   1 overgeslagen), D zonder wijziging; S-smoke `r5-93` (kaarten); afstemming natuurlijke grotten.
 - Voortgang: 2026-10-23 20:05 bouwcommit `7455e1b8`; code-review: 8 punten (zie "Review van 7455e1b8").
 - Voortgang: 2026-10-23 21:00 (hervat na onderbreking) reviewpunten 1–7 opgelost; gates: zie "Review van 7455e1b8".
+- Voortgang: 2026-10-24 INT3 (main): gemerged als `342ac14d`. Bij de integratie gevonden: `ring_5/overworld/terrain` als `cache_once`, per blok gelezen via de `range_choice` op `cave_zone`, gaf in de `cache_all_in_cell` van de noise chunk de eerste waarde van de cel voor alle 128 blokken: de grond van de hele binnenband lag 1–8 lager (97 % van de kolommen, treden van 8 langs de hellingen); `/ca terrainmap` pakt de markers uit en liet het niet zien. Fix `c4fbfe6e` (terrein weer de kale veld-uitgang); de surface rond de grotten (voidsteen-rand rond de void-gaten, geen gras op grotvloeren) in `200b885b`. Gates: zie `teststop-6b.md` §N.
 
 ## Review van 7455e1b8
 1. **Sluiting te zwak** (vanilla-ingangen open op schotsen, pinakels, bandlijn, zone 4→5, rond scheuren/gaten): de

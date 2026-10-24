@@ -44,6 +44,7 @@ Beelden (niet in git) in `build/test/maps/99b/`: `ring5-before.png` (contactblad
 ## Voortgang
 - 2026-10-24 11:30 worktree `ring5/99b` vanaf `061a20c4`.
 - 2026-10-24 12:05 textures + modellen klaar, gates groen, in-game bekeken.
+- 2026-10-24 INT3 (main): gemerged als `7c8e1cf6` (conflict alleen in de `CODEBASE.md`-regel van `Ring5Textures.java`); `/code-review` op `e6afdf8e` bij INT3 (zie `teststop-6b.md` §N). Open vragen voor 6b: is het lichtere bordgrijs goed, zijn de bladeren dun genoeg (§M).
 
 ## CODEBASE-delta
 - `ModBlockStateProvider`: nieuwe helper `rotatedCube(block)` (gewoon + `<naam>_mirrored` in de 16 x/y-rotaties, zonder

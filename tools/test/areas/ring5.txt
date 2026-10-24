@@ -22,3 +22,13 @@ c1 478 -320 496 -302
 cse 529 -11 533 -4
 cse2 530 6 537 11
 csn -13 -523 -7 -517
+# 93 (seed 20260930, chunk coordinates; after the review): a grid net (Y 0) over a mirrored void cave by the lava layer
+# (floor -34), a copied net (3 copies, Y 0), a mirrored void cave (floor 5), a deep void cave (floor -34), a doppelganger
+# (source 8700 189, target 8783 189) and two void caves of the outer band.
+n93 521 0 527 5
+cn93 530 4 535 6
+ch93 520 -40 522 -38
+ch93b 533 -15 535 -13
+cp93 543 11 552 15
+oc93 545 -137 547 -134
+oc93b 565 -50 567 -48

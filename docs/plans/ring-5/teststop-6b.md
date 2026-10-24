@@ -1,11 +1,11 @@
-# Teststop 6b (deel 1) — binnenband, Nether-5-aankleding, stilte en sfeer (checklist)
+# Teststop 6b — ring 5 golf 2: binnenband, grotten, aankleding, Nether-5, stilte, sfeer, textures (checklist)
 
-Check na INT2 van ring 5 golf 2 (deels): **83b** (binnenband: golvend reliëf en corrupte plekken), **96** (aankleding
+**Deel 1** (A–J, na INT2 van 2026-10-23): **83b** (binnenband: golvend reliëf en corrupte plekken), **96** (aankleding
 Nether-5), **97** (stilte-meter Nether-5) en **98** (sfeer ring 5 + Nether-5), plus de INT2-fixes (protocol `"10"`,
-voidsteen met `void_mote`). Stand: `main` na INT2 (2026-10-23). **Nog niet in deze stand:** 93 (grotten), 94/95
-(aankleding en horror-features ring 5: dode bomen, glitchblokken in het terrein, voidsteen-randen, bordjes, ontbrekende
-chunks, omgekeerde bomen) en 99b (textures golf 2); die komen in een tweede deel van 6b. Wat hier staat, kan los daarvan
-beoordeeld worden.
+voidsteen met `void_mote`). **Deel 2** (K–N, na INT3 van 2026-10-24): **93** (grotten en gespiegelde dubbelgangers),
+**94/95** (aankleding en horror-features ring 5: dode bomen, glitchblokken in het terrein, voidsteen-randen, bordjes,
+ontbrekende chunks, kampen, herinneringen, omgekeerde bomen, verwoeste kasteelplateaus, ertsen) en **99b** (textures
+golf 2), plus de INT3-fixes. Stand: `main` na INT3 (2026-10-24); deel 1 en 2 kunnen in één sessie en in één verse wereld.
 
 Lokaal door de gebruiker: **dedicated server + 2 clients** (multiplayer is een harde eis; stilte en void-teleport hebben
 een tweede speler nodig). Elke sectie eindigt met **akkoord / opmerking**.
@@ -152,9 +152,83 @@ Prestatie (`perf.sh --areas perf-r5.txt --cold-only "wastes cathedral"`, 3 warm 
 1,22** (1,13–1,31), `castle1` 0,37, `voidedge` 0,46, Nether `halls` 1,06, `cathedral` 1,07 (koud 1,13). Budget ≤ 1,75×:
 gehaald. Surface het hoogst in de binnenband (1,8–2,1; ter info). `ModNetwork.PROTOCOL_VERSION` `"10"`.
 
+## K. Grotten en dubbelgangers (93)
+Plekken (seed 20260930, blokken; uit `tools/test/areas/ring5.txt`):
+| Plek | x, z | Wat |
+|---|---|---|
+| net `n93` | ~8336–8447, 0–95 | een rasternet op Y 0 boven een gespiegelde void-grot (vloer −34) |
+| gekopieerd net `cn93` | ~8480–8575, 64–111 | één gang 3 × naast elkaar, elk met een eigen schacht (drie gelijke gaten op een rij) |
+| void-grotten `ch93`, `ch93b` | ~8320–8367, −640…−593; ~8528–8575, −240…−193 | kamers met 1–4 gaten tot in de void; `ch93` gespiegeld |
+| dubbelganger `cp93` | bron 8700, 189 → doel 8783, 189 | 48 × 48 gespiegeld, zachte rand 8–12 |
+| buitenkamers `oc93`, `oc93b` | ~8720–8767, −2192…−2129; ~9040–9087, −800…−753 | een kamer in een dikke schots met een gat naar de void eronder |
+
+- [ ] **Onmogelijke gangen:** rechte 3 × 3- en 2 × 1-gangen op vaste niveaus (Y 48/32/16/0/−16/−32), doodlopers en lussen,
+      een rechte schacht 3 × 3 tot het oppervlak (zonder ladder dodelijk: backlog). Voelt het "te perfect"?
+- [ ] **Void-grotten:** in het donker sta je aan een gat; de rand is nu **voidsteen** (de vloer binnen 2 van het gat, en de
+      wand omlaag 2 breed `corrupted_stone` met voidsteen-aders, zoals de scheuren; INT3). Ziet het er gevaarlijk genoeg uit?
+- [ ] **Gekopieerd/gespiegeld:** een gang 2–3 × naast elkaar, een kamer die zichzelf spiegelt; merk je het?
+- [ ] **Natuurlijke grotten:** gedempt vanilla (cheese + spaghetti) in de binnenband, droog; onder Y −54 lava alleen in open
+      grotruimte, nooit binnen 6 van een gat of scheur. Grotvloeren zijn kale steen (geen gras of zand, INT3); alleen
+      vlak onder het oppervlak (binnen 8) krijgen ingangen gras, zoals in vanilla. Genoeg / te veel?
+- [ ] **Dubbelgangers:** sta bij de bron en kijk naar het doel: herken je de vorm gespiegeld? (Geen eigen grotten erin:
+      besluit 93-review.) De rand zacht genoeg?
+
+## L. Aankleding en horror-features (94/95)
+| Plek | x, z | Wat |
+|---|---|---|
+| schone ontbrekende chunks | ~8384–8495, −560…−449 (`mc1`); ~8528–8639, −288…−177 (`mc2`) | precies één chunk weg tot in de void, voidsteen-rand, droog |
+| herinneringen | ~8576–8655, −192…−113 / 32…111 | stukjes van andere ringen, liggend of zwevend |
+| `inverted_hills` | ~9200–9279, −32…47 | omgekeerde bomen onder de heuvels, omgekeerde weide eronder |
+
+- [ ] `corrupted_wastes`: dode bomen in groepjes (~30 % met plukjes blad), dode struiken, keien; **kale plekken**
+      `corrupted_dirt` + wat `corrupted_sand` (V-A): gemeten **13,1 %** van de top (dirt 9,9 % + zand 3,2 %; doel 10–15 %).
+- [ ] `false_meadow`: gras en bloemen ~vanilla, **spiegelparen** van eiken (exact gespiegeld); geen paar meer op een open
+      schacht (INT3), heel zelden nog boven een natuurlijke grotingang (backlog).
+- [ ] Herobrine-bordjes, fakkelpatronen (richting kasteel), verlaten kampen (tent, kampvuur, bed, kist): vaak genoeg, eng
+      genoeg?
+- [ ] Voidsteen op elke rand naar de void (scheuren, schotsranden, pinakel, plekgaten, ontbrekende chunks, en nu ook de
+      void-gaten van 93); verwoeste kasteelplateaus; nulliet aan void-wanden en diep in de binnenband.
+- [ ] `inverted_hills`: omgekeerde bomen van onderen, dode struiken op de schotsen; `glitch_fields` kaal (V-C).
+
+## M. Textures golf 2 (99b)
+- [ ] Voidsteen (32 oriëntaties, nevel, sterren in drie helderheden, kruisster): op een grote wand geen raster meer?
+- [ ] Glitchblok: een vlek glitchblokken geen egaal schaakbord meer? `corrupted_stone` onder de schotsen zonder aderraster?
+- [ ] **Vraag: is het lichtere, rustigere grijs van de bordjes (`SIGN_WOOD`) goed?** Lezen zwarte en donkerrode tekst nu?
+- [ ] **Vraag: zijn de bladeren (`corrupted_leaves`) dun genoeg?** Nu ~60 % bedekt (eik ~67 %), helderheid ~ getinte eik;
+      omgekeerde bomen van onderen leesbaar?
+
+## N. INT3-resultaten (ter info)
+Lokaal, seed 20260930, op `main` na INT3 (2026-10-24): `build` groen (1.371 tests, 1 overgeslagen, incl.
+`ClientIsolationTest` en het nieuwe `Ring5GroundConditionTest`), `runData` schoon (`src/generated` ongewijzigd; alleen de
+bekende `BiomeFilter`-meldingen); S-smoke (verse wereld `int3-smoke2`) 0 ERROR, geen client-class-fout, client 1 joint,
+`/ca tpring 5`, `/ca castles`, `/ca weather` werken; `voidscan.py --strict --rings` op `ring5.txt` (nu met de zeven
+grotgebieden van 93) en op de 94-plekken en biome-gebieden 0 fouten; `lavascan.py --strict` lek 0 (ook rond de schone
+ontbrekende chunks); `det.sh` op `ring5.txt` (omgekeerd geladen) 1.277/1.277 chunks identiek, own 0; feature-index ring
+1–4 (`fi3.txt`, tegen `main` vóór INT3) biomes en terreinvorm gelijk, op de bekende Nether-cel (`n2`, chunk 37, −4) na;
+`waterscan.sh` op `ring4.txt` over 0 (gif 0). Prestatie (`perf.sh --areas perf-r5.txt --cold-only "wastes cathedral"`,
+3 warm + 1 koud, noise t.o.v. vanilla, mediaan): `wastes` 1,10 (koud 1,26), `glitch` 1,01, `meadow` 0,97, `scars` 0,65,
+`inverted` 0,65, `shattered` 0,65, **`zone45` 1,53** (1,45–1,62), `castle1` 0,58, `voidedge` 0,67, Nether `halls` 1,07,
+`cathedral` 1,08 (koud 1,15). Budget ≤ 1,75×: gehaald; de binnenband kost nu ~2× zoveel als bij INT2 (de grotten van 93 en
+het terrein per blok, zie hieronder). Gemeten vóór de laatste reviewfix (`f32b2726`, alleen planning van herinneringen en
+spiegeleiken); daarna opnieuw build, runData, smoke, voidscan, lavascan en det. Kaarten in `build/test/maps/int3/`:
+`top_overworld_8900_0_r1400_s4_*`, `top_overworld_0_-8900_r1400_s4_*`, `top_the_nether_2200_0_r400_s2_*` en doorsneden
+`section_overworld_8000_0_9000_0`, door het net `8336 48 → 8447 48` en de void-grot `8320 −620 → 8367 −620`.
+`ModNetwork.PROTOCOL_VERSION` blijft `"10"` (geen payload gewijzigd).
+
+INT3-fixes (vóór de test):
+- **Terrein:** 93 las `ring_5/overworld/terrain` als `cache_once` per blok via een `range_choice`; in de noise chunk gaf dat
+  voor alle 128 blokken van een cel de eerste waarde, dus lag de grond van de hele binnenband 1–8 blokken lager, in treden
+  van 8 langs de hellingen (97 % van de kolommen). Nu weer exact (gelijk aan 94's wereld, op de grotten na).
+- **Grotvloeren:** geen gras, aarde of zand meer op grotvloeren dieper dan 8 onder de top (vóór de fix ~4.000 blokken in de
+  meetgebieden, erna 0); ingangen vlak onder het oppervlak houden de biome-surface, zoals vanilla.
+- **Void-gaten (93):** voidsteen op de rotsrand van de vloer en de wand omlaag 2 breed `corrupted_stone` met voidsteen.
+- **Omgekeerde weide** alleen nog op de onderkant van de heuvel; **spiegeleiken en herinneringen** niet op een schacht of
+  gang van 93 (boven een natuurlijke ingang kan een eik nog zweven: 2 stammen in 256 chunks weide, backlog).
+
 ## Bekende open punten
-- **Nog niet gebouwd in golf 2:** 93 (grotten), 94/95 (aankleding en horror-features ring 5), 99b (textures golf 2);
-  deel 2 van 6b na hun INT.
+- 6b-vragen van 99b: het lichtere bordgrijs en de dunte van de bladeren (§M).
+- Zwevende spiegeleik boven een natuurlijke grotingang (zeldzaam), grotvloeren binnen 8 onder de top met biome-surface,
+  rechte schachten zonder uitweg (backlog).
 - De kleuren van de ring 5-biomes bleven in `Ring5Biomes` (backlog); de witte kern is van buiten onzichtbaar (backlog).
 
 ## Uitkomst
