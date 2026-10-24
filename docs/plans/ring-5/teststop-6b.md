@@ -189,10 +189,16 @@ Plekken (seed 20260930, blokken; uit `tools/test/areas/ring5.txt`):
 - [ ] Voidsteen op elke rand naar de void (scheuren, schotsranden, pinakel, plekgaten, ontbrekende chunks, en nu ook de
       void-gaten van 93); verwoeste kasteelplateaus; nulliet aan void-wanden en diep in de binnenband.
 - [ ] `inverted_hills`: omgekeerde bomen van onderen, dode struiken op de schotsen; `glitch_fields` kaal (V-C).
+- [ ] `corrupted_wastes` vlak bij de bandlijn (bijv. 8900, 0): daar ligt de grond lager dan Y 76, dus is de top grotendeels
+      `corrupted_sand` (gemeten 67 % van de wastes-kolommen in het perf-gebied `shattered`, ook vóór INT3). Leest dat als
+      zandige rand naar de schotsen, of is het een te harde overgang?
 
 ## M. Textures golf 2 (99b)
 - [ ] Voidsteen (32 oriëntaties, nevel, sterren in drie helderheden, kruisster): op een grote wand geen raster meer?
-- [ ] Glitchblok: een vlek glitchblokken geen egaal schaakbord meer? `corrupted_stone` onder de schotsen zonder aderraster?
+- [ ] Glitchblok: een vlek glitchblokken geen egaal schaakbord meer? De scheurstrepen lopen door de 32 oriëntaties op veel
+      vlakken verticaal: stoort dat? `corrupted_stone` onder de schotsen zonder aderraster?
+- [ ] Nullieterts (INT3): draaien mee met hun gesteente; het voidsteen-erts heeft nu ook sterren tussen de kristallen. Vallen
+      ze nog te veel (of te weinig) op?
 - [ ] **Vraag: is het lichtere, rustigere grijs van de bordjes (`SIGN_WOOD`) goed?** Lezen zwarte en donkerrode tekst nu?
 - [ ] **Vraag: zijn de bladeren (`corrupted_leaves`) dun genoeg?** Nu ~60 % bedekt (eik ~67 %), helderheid ~ getinte eik;
       omgekeerde bomen van onderen leesbaar?
@@ -210,7 +216,7 @@ ontbrekende chunks); `det.sh` op `ring5.txt` (omgekeerd geladen) 1.277/1.277 chu
 `inverted` 0,65, `shattered` 0,65, **`zone45` 1,53** (1,45–1,62), `castle1` 0,58, `voidedge` 0,67, Nether `halls` 1,07,
 `cathedral` 1,08 (koud 1,15). Budget ≤ 1,75×: gehaald; de binnenband kost nu ~2× zoveel als bij INT2 (de grotten van 93 en
 het terrein per blok, zie hieronder). Gemeten vóór de laatste reviewfix (`f32b2726`, alleen planning van herinneringen en
-spiegeleiken); daarna opnieuw build, runData, smoke, voidscan, lavascan en det. Kaarten in `build/test/maps/int3/`:
+spiegeleiken); daarna opnieuw build, runData, smoke, voidscan, lavascan en det. Na de review van 99b en de laatste INT3-reviewfixes (`21d75e65`, `a2e436ee`, `b4bacffa`) nogmaals: build groen (1.371 tests), runData alleen de bedoelde erts-blockstates/-modellen, verse wereld 0 ERROR + client (muren voidsteen/nullieterts/glitchblokken bij nacht bekeken), `det.sh` 1.277/1.277 own 0, voidscan 0, lavascan lek 0. Kaarten in `build/test/maps/int3/`:
 `top_overworld_8900_0_r1400_s4_*`, `top_overworld_0_-8900_r1400_s4_*`, `top_the_nether_2200_0_r400_s2_*` en doorsneden
 `section_overworld_8000_0_9000_0`, door het net `8336 48 → 8447 48` en de void-grot `8320 −620 → 8367 −620`.
 `ModNetwork.PROTOCOL_VERSION` blijft `"10"` (geen payload gewijzigd).
