@@ -258,6 +258,13 @@ breed, half gecorrumpeerd.
   (server 25579, RCON 25589).
 - 2026-10-23 18:40: plan geschreven; vragen V1–V11 naar main. Nog niets gebouwd.
 - 2026-10-23 22:30: 94 (`7d3e5e7b`) en 95 (`ce7af152`) gebouwd.
+- 2026-10-24 13:30: V-A/V-B gebouwd, rechthoeken opgelost (zie Beslissingen en "Review en afstemming"); `corrupted_wastes`
+  gemeten: dirt 12,1 % + zand 3,3 % bij drempels 0,5/0,62, daarna dirt-drempel 0,53 (doel ~10–15 % samen);
+  `inverted_hills` dode struiken ~1,4 per chunk.
+  Poorten: build (incl. tests) groen, runData schoon, verse wereld `r5scan3` 0 ERROR, `voidscan --strict --rings` 0,
+  `lavascan --strict` lek 0, `det.sh` 1.694/1.694 identiek (own 0); perf noise wastes 0,51 (koud 0,52), glitch 0,55,
+  meadow 0,54, scars 0,52, inverted 0,46, shattered 0,37, zone45 1,57, castle1 0,36, voidedge 0,45, halls 1,09,
+  cathedral 1,04 (≤ 1,75); surface wastes 3,45 (was 3,17: de ring 5-tak nu ook top-level; ter info).
 - 2026-10-24: review 94 afgerond + eigen review 95, afstemming rijkdom (zie "Review en afstemming 2026-10-24").
 - 2026-10-24 13:00: poorten op HEAD van `ring5/94`: `build --offline` groen (incl. tests), `runData` schoon;
   verse werelden `rich2` en `r5scan2` 0 ERROR; `voidscan.py --strict --rings` (`ring5.txt` + castles + 94-plekken)
@@ -324,8 +331,13 @@ maakt de hele kolom naast de void `corrupted_stone` (ontwerp V8-C: geen deepslat
 
 Wat binnen de besluiten bleef (dichtheden) is aangepast; wat een nieuwe ontwerpkeuze zou zijn staat als vraag bij main
 (eentonige grond van `corrupted_wastes`, 97 % één blok; kale toppen van `inverted_hills`; karakter van `glitch_fields`).
-Waarneming buiten 94/95: in `inverted_hills` liggen rond de void-gaten rechthoekige, assen-parallelle vlakken
-`corrupted_stone` (de biome wordt daar `shattered_expanse` op de blokkerige `breakup`); backlog.
+**Rechthoeken naast de void-gaten (opgelost 2026-10-24):** niet de biome (de quart-biomes volgen het gat), maar de
+surface-keten: vanilla's `above_preliminary_surface` vergelijkt met het voorlopige oppervlak, dat per chunk tussen de
+vier hoeken wordt geïnterpoleerd; ligt een hoek boven een void-gat, dan ligt die grens in de hele chunk verkeerd en krijgt
+de grond naast het gat geen biome-surface maar het basisgesteente (`corrupted_stone`), in chunk-rechthoeken. Oplossing
+in 94/95's gebied: de ring 5-tak staat nu ook in de top-level ring 5-regel, achter `ring_5_ground` `upper` (binnen 16
+onder de pure bovenkant van de kolom, of erboven); de oude tak in `above_preliminary_surface` blijft voor de ring 5-
+biomes buiten de kern (rafelrand van zone 4→5). Na: de stenen rechthoeken in de ASCII-kaart van `inverted` weg.
 
 **Verwachte conflicten met `ring5/93` (INT3):** tekstueel alleen `CODEBASE.md` (beide streams). Inhoudelijk: (a) 93's
 grotten in `Ring5Field`/`Ring5Caves` openen de grond onder features die `Ring5World.top`/de WG-heightmap lezen
@@ -369,6 +381,9 @@ grotten niet (alleen kolommen): een grot die in een scheurwand uitkomt krijgt ge
   (factor 0).
 
 ## Beslissingen
+- **Gebruiker 2026-10-24 (vervolgvragen na de afstemming):** V-A A (kale plekken `corrupted_dirt` + wat `corrupted_sand` in
+  `corrupted_wastes`, ~10–15 %), V-B A (dode struiken op de schotsen van `inverted_hills`, ~1–2 per chunk), V-C C
+  (`glitch_fields` blijft kaal); de rechthoeken naast de void-gaten moeten weg (opgelost in de surface, zie onder).
 - **Gebruiker 2026-10-23:** V1 A, V2 **B** (~30 % van de dode bomen met plukjes persistente `corrupted_leaves`), V3 A,
   V4 A, V5 A, V6 A, V7 A, V8 **C** (ook de binnenband: losse scheuren, 83b-gaten en de schone ontbrekende chunks krijgen
   voidsteen-randen), V9 **B** (heel plateau verwoest; fase 3 bouwt eroverheen), V10 A, V11 A. In `fase-1-wereld.md`
@@ -398,8 +413,6 @@ grotten niet (alleen kolommen): een grot die in een scheurwand uitkomt krijgt ge
   `nullite_ore` (in `corrupted_stone`-textuur). (bron: 95)
 - [worldgen] `voidscan.py` kent de schone ontbrekende chunks niet (ze tellen als `void`, geen fout); als een scan ooit
   void binnen de binnenband als fout telt, de export (`RingColumnsExportTest`) `Ring5MissingChunks` laten lezen. (bron: 94)
-- [worldgen] In `inverted_hills` rond de void-gaten rechthoekige, assen-parallelle vlakken `corrupted_stone`: de biome
-  wordt daar `shattered_expanse` op de blokkerige `breakup` (preset `rings.ring_5`); oogt kunstmatig. (bron: 94-review)
 - [worldgen] Rest-ruis lavadam: vanilla-ertsen met luchtblootstelling naast een schone ontbrekende chunk onder Y −54
   kunnen per laadvolgorde verschillen (lava of al lucht ernaast); ×0,03, uiterst zeldzaam. (bron: 94-review)
 - [structures] Fase 3: het kasteelplateau van ring 5 is in fase 1 helemaal verwoest (puin, obsidiaan, glitchblokken; V9-B);
