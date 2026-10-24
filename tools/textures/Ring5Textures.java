@@ -68,7 +68,9 @@ public final class Ring5Textures {
     private static final int[] C_DIRT = {0x3B3836, 0x464240, 0x524D4A, 0x5E5854, 0x6A645F, 0x77706A};
     private static final int[] C_STONE = {0x52515A, 0x5D5C65, 0x68676F, 0x737279, 0x7E7D84, 0x8A8990, 0x97969C};
     private static final int C_MORTAR = 0x2E2C34;
-    private static final int[] C_SAND = {0xA29F99, 0xB0ADA6, 0xBCB9B2, 0xC7C4BD, 0xD1CEC7, 0xDAD8D1};
+    // Sand a few steps darker and warmer (walk 1, question 3 = A, 2026-10-24): the old light grey (up to #DAD8D1) read as
+    // snow next to the grey-green grass; now grey-beige.
+    private static final int[] C_SAND = {0x8C8476, 0x978F80, 0xA19989, 0xAAA292, 0xB3AB9A, 0xBBB3A2};
     private static final int[] C_BARK = {0x2F2B2D, 0x3A3638, 0x464143, 0x524C4E, 0x5E5859, 0x6B6465};
     private static final int[] C_WOOD = {0x56524F, 0x65605D, 0x736E6A, 0x817C77, 0x8F8984, 0x9D9791};
     // Leaves a few steps lighter than 99a with a lighter leaflet tone (99b): seen from below (vanilla shades a down face to
