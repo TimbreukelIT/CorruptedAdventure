@@ -33,7 +33,7 @@ import java.util.Map;
  * meadow has no life. The leaves are persistent.
  */
 public final class MirroredTreesFeature extends Feature<NoneFeatureConfiguration> {
-    static final int CELL = 28;
+    static final int CELL = 22;
     static final double CHANCE = 0.85;
     static final int MIN_GAP = 6;
     static final int MAX_GAP = 12;

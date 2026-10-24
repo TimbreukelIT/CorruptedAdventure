@@ -52,7 +52,9 @@
     ],
     [],
     [],
-    [],
+    [
+      "corruptedadventure:ring_5/glitch_rocks"
+    ],
     [
       "corruptedadventure:ring_5/herobrine_signs",
       "corruptedadventure:ring_5/torch_patterns"

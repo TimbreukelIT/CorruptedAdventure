@@ -123,7 +123,9 @@ public class Ring5DressingTest {
     void mirroredPairsAreExactMirrorImages() {
         MirroredTreesFeature.BiomeAt everywhere = (x, y, z) -> true;
         int pairs = 0;
-        for (int i = 300; i < 330; i++) {
+        // Cells in the inner band east (x 8400 on).
+        int first = 8400 / MirroredTreesFeature.CELL;
+        for (int i = first; i < first + 30; i++) {
             for (int j = -10; j < 10; j++) {
                 MirroredTreesFeature.Pair pair = MirroredTreesFeature.pair(WORLD, everywhere, i, j);
                 if (pair == null) {

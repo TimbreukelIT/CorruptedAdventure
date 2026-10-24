@@ -60,6 +60,7 @@ public final class Ring5Features {
         order.add(vegetal(Ring5InnerFeatures.MEADOW_FLOWERS, ModBiomes.FALSE_MEADOW));
         order.add(vegetal(Ring5InnerFeatures.WASTES_DEAD_BUSHES, ModBiomes.CORRUPTED_WASTES));
         order.add(vegetal(Ring5InnerFeatures.WASTES_ROCKS, ModBiomes.CORRUPTED_WASTES));
+        order.add(vegetal(Ring5InnerFeatures.GLITCH_ROCKS, ModBiomes.GLITCH_FIELDS));
         order.add(vegetal(Ring5InnerFeatures.WASTES_DEAD_TREES, ModBiomes.CORRUPTED_WASTES));
         order.add(vegetal(Ring5InnerFeatures.MEADOW_MIRRORED_TREES, ModBiomes.FALSE_MEADOW));
         // 95: the trees hanging under the inverted hills, a few dead trees on their floes.

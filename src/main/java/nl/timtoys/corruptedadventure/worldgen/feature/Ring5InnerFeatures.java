@@ -64,6 +64,8 @@ public final class Ring5InnerFeatures {
     public static final ResourceKey<PlacedFeature> WASTES_DEAD_TREES = placedKey("wastes_dead_trees");
     public static final ResourceKey<PlacedFeature> WASTES_DEAD_BUSHES = placedKey("wastes_dead_bushes");
     public static final ResourceKey<PlacedFeature> WASTES_ROCKS = placedKey("wastes_rocks");
+    /** The same rocks, sparse, on {@code glitch_fields}' bare stone (plan 94.1: "spaarzaam glitch_fields"). */
+    public static final ResourceKey<PlacedFeature> GLITCH_ROCKS = placedKey("glitch_rocks");
     public static final ResourceKey<PlacedFeature> MEADOW_GRASS_PATCHES = placedKey("meadow_grass");
     public static final ResourceKey<PlacedFeature> MEADOW_FLOWERS = placedKey("meadow_flowers");
     public static final ResourceKey<PlacedFeature> MEADOW_MIRRORED_TREES = placedKey("meadow_mirrored_trees");
@@ -146,13 +148,16 @@ public final class Ring5InnerFeatures {
         }
         register(context, WASTES_DEAD_TREES, WASTES_TREE, JitteredGridPlacement.of(8, 2, 0.45F, GROVES), SURFACE,
                 Ring5Filter.of(4, 3, Ring5Memories.OBJECT_CLEARANCE));
-        register(context, WASTES_DEAD_BUSHES, DEAD_BUSH, CountPlacement.of(2), InSquarePlacement.spread(), SURFACE);
+        register(context, WASTES_DEAD_BUSHES, DEAD_BUSH, CountPlacement.of(3), InSquarePlacement.spread(), SURFACE);
         register(context, WASTES_ROCKS, WASTES_ROCK, JitteredGridPlacement.of(16, 3, 0.35F), SURFACE,
                 Ring5Filter.of(4, 2, Ring5Memories.OBJECT_CLEARANCE));
-        register(context, MEADOW_GRASS_PATCHES, MEADOW_GRASS, CountPlacement.of(40), InSquarePlacement.spread(), SURFACE);
-        register(context, MEADOW_FLOWERS, MEADOW_FLOWER, CountPlacement.of(4), InSquarePlacement.spread(), SURFACE);
+        register(context, GLITCH_ROCKS, WASTES_ROCK, JitteredGridPlacement.of(16, 3, 0.15F), SURFACE,
+                Ring5Filter.of(4, 2, Ring5Memories.OBJECT_CLEARANCE));
+        // A meadow as thick as vanilla's plains (about a third of the ground grown over), its flowers plain to see.
+        register(context, MEADOW_GRASS_PATCHES, MEADOW_GRASS, CountPlacement.of(96), InSquarePlacement.spread(), SURFACE);
+        register(context, MEADOW_FLOWERS, MEADOW_FLOWER, CountPlacement.of(10), InSquarePlacement.spread(), SURFACE);
         perChunk(context, MEADOW_MIRRORED_TREES, MIRRORED_TREES);
-        register(context, ABANDONED_CAMPS, ABANDONED_CAMP, JitteredGridPlacement.of(16, 4, 0.045F), SURFACE, Ring5Filter.of(6, 0, 4));
+        register(context, ABANDONED_CAMPS, ABANDONED_CAMP, JitteredGridPlacement.of(16, 4, 0.1F), SURFACE, Ring5Filter.of(6, 0, 4));
         register(context, HEROBRINE_SIGNS, HEROBRINE_SIGN, JitteredGridPlacement.of(16, 1, 0.2F), SURFACE, Ring5Filter.of(3, 0, 3));
         register(context, TORCH_PATTERNS, TORCH_PATTERN, JitteredGridPlacement.of(16, 3, 0.075F), SURFACE,
                 Ring5Filter.of(4, 0, Ring5Memories.OBJECT_CLEARANCE));
