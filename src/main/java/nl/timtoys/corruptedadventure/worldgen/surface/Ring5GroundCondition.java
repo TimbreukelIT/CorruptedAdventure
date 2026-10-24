@@ -126,14 +126,14 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
                 case MISSING_CHUNK -> missing;
                 case RIM -> voidDistance > 0 && voidDistance <= rim;
                 case WALL_TOP -> voidDistance == 1 && y > top - wallTop;
-                case VEIN -> voidDistance == 1 && vein(seed, x, y, z, top - wallTop);
+                case VEIN -> voidDistance == 1 && vein(seed, x, y, z, top - wallTop, 0xFE1AL);
                 case WALL -> voidDistance == 1;
                 case CASTLE -> castle;
                 case INVERTED_HILL -> hillBottom != Integer.MIN_VALUE && y < hillBottom + HILL_UNDERSIDE;
                 case UPPER -> top == Integer.MIN_VALUE || y > top - upper;
                 case HOLE_RIM -> holeRim != Integer.MIN_VALUE && y < holeRim && y >= holeWall();
                 case HOLE_WALL_TOP -> holeRim != Integer.MIN_VALUE && y < holeWall() && y >= holeWall() - wallTop;
-                case HOLE_VEIN -> holeRim != Integer.MIN_VALUE && y < holeWall() && vein(seed, x, y, z, holeWall() - wallTop);
+                case HOLE_VEIN -> holeRim != Integer.MIN_VALUE && y < holeWall() && vein(seed, x, y, z, holeWall() - wallTop, 0x401EL);
                 case HOLE_WALL -> holeRim != Integer.MIN_VALUE && y < holeWall();
             };
         }
@@ -144,8 +144,8 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
         }
 
         /** Whether a block of a wall beside the void is voidstone: a chance growing with its depth under {@code from}. */
-        private static boolean vein(long seed, int x, int y, int z, int from) {
-            return unit(seed, x, y, z, 0xFE1AL) < Math.min(VEIN_MAX, VEIN_BASE + VEIN_RISE * Math.max(0, from - y));
+        private static boolean vein(long seed, int x, int y, int z, int from, long salt) {
+            return unit(seed, x, y, z, salt) < Math.min(VEIN_MAX, VEIN_BASE + VEIN_RISE * Math.max(0, from - y));
         }
     }
 

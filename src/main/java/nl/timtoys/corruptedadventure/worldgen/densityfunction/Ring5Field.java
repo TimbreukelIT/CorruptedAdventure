@@ -961,6 +961,17 @@ public final class Ring5Field implements DensityFunction {
         return Ring5Caves.Kind.NONE.code();
     }
 
+    /** Whether a block lies in one of ring 5's own caves (93: a net's corridor or shaft, a void cave, a hole). */
+    public boolean ownCave(int x, int y, int z) {
+        Column column = column(x, z);
+        for (int k = 0; k < column.caves; k++) {
+            if (y >= column.caveBottom[k] && y < column.caveTop[k]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * The top (exclusive) of the rock rim round a void cave's hole (93) in this column, within 2 of a hole: the lowest
      * open block of the cave's floor, the rim the {@link #HOLE_RIM_DEPTH} blocks under it ({@link Ring5Caves.Kind#RIM}); {@link Integer#MIN_VALUE} elsewhere. For

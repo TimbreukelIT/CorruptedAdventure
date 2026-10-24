@@ -198,6 +198,10 @@ public final class Ring5Memories {
                 return null;
             }
             if (!world.isVoid(sx, sz)) {
+                if (world.openTop(sx, sz)) {
+                    // A net's shaft or a corridor through the slope (93): the ground is not there.
+                    return null;
+                }
                 solid++;
                 int top = world.top(sx, sz);
                 lowest = Math.min(lowest, top);

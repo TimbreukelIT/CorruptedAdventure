@@ -79,7 +79,7 @@ public record Ring5World(Ring5Field field, RingLayout layout, Ring5Band band, lo
      */
     public boolean openTop(int x, int z) {
         int top = top(x, z);
-        return top != Integer.MIN_VALUE && field.terrain(x, top, z) <= 0.0;
+        return top != Integer.MIN_VALUE && field.ownCave(x, top, z);
     }
 
     /**

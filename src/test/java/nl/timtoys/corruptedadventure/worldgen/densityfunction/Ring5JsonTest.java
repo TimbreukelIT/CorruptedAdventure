@@ -120,6 +120,11 @@ class Ring5JsonTest {
         JsonObject terrain = WorldgenData.read(DF + "ring_5/overworld/terrain.json");
         assertEquals("corruptedadventure:ring_5_output", terrain.get("type").getAsString());
         assertEquals("terrain", terrain.get("output").getAsString());
+        // The same for the router's other per-block inputs.
+        for (String input : new String[]{"cave_zone", "cave_closure"}) {
+            assertEquals("corruptedadventure:ring_5_output",
+                    WorldgenData.read(DF + "ring_5/overworld/" + input + ".json").get("type").getAsString(), input);
+        }
         String zone = "corruptedadventure:ring_5/overworld/cave_zone";
         String closure = "corruptedadventure:ring_5/overworld/cave_closure";
         String ground = "corruptedadventure:ring_5/overworld/terrain";
