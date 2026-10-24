@@ -11,13 +11,15 @@ import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 
 /**
  * Voidstone (ring 5, 89): black rock that now and then breathes a void mote ({@code void_mote}, A's 98) out of an open
- * face. {@code animateTick} only runs on the client level and names no client class; the stars are emissive in the
- * model, the block gives no light.
+ * face, never the bottom one. {@code animateTick} only runs on the client level and names no client class; the stars
+ * are emissive in the model, the block gives no light.
  */
 public class VoidstoneBlock extends Block {
     public static final MapCodec<VoidstoneBlock> CODEC = simpleCodec(VoidstoneBlock::new);
-    /** About one mote per this many display ticks of a visible block. */
+    /** One mote per this many display ticks of a block with its top and sides open; fewer open faces, fewer motes. */
     static final int MOTE_CHANCE = 10;
+    /** Every face but the bottom: the mote rises, out of the bottom face it would drift straight back into the block. */
+    private static final Direction[] MOTE_FACES = {Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
 
     public VoidstoneBlock(Properties properties) {
         super(properties);
@@ -34,10 +36,7 @@ public class VoidstoneBlock extends Block {
             return;
         }
         // Like crying obsidian: only out of a face that is open, so buried voidstone stays quiet.
-        Direction direction = Direction.getRandom(random);
-        if (direction == Direction.DOWN) {
-            return; // the mote rises: out of the bottom face it would drift straight back into the block
-        }
+        Direction direction = MOTE_FACES[random.nextInt(MOTE_FACES.length)];
         BlockPos neighbor = pos.relative(direction);
         if (level.getBlockState(neighbor).isFaceSturdy(level, neighbor, direction.getOpposite())) {
             return;
