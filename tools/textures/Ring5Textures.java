@@ -227,6 +227,8 @@ public final class Ring5Textures {
         still("block/voidstone", Ring5Textures::voidstone);
         twinklingGlowLayer("block/voidstone", STAR);
         pulsing("block/nullite_ore_overlay", NULLITE_GLOW, NULLITE_DIM, Ring5Textures::nulliteOreOverlay);
+        // INT3: the voidstone ore keeps voidstone's stars, minus the pixels its crystals cover (one more layer, no z-fight).
+        twinklingGlowLayer("block/voidstone", "block/voidstone_nullite_ore_glow", STAR, "block/nullite_ore_overlay");
         still("item/raw_nullite", Ring5Textures::rawNullite);
 
         // ---- 90: Nether ring 5 ----
@@ -276,11 +278,29 @@ public final class Ring5Textures {
      * towards {@code tones[0]} at its own phase. Only colours change, so the alpha mask stays identical over the frames.
      */
     private static void twinklingGlowLayer(String block, int[] tones) {
-        String name = registerGlowLayer(block, tones);
+        twinklingGlowLayer(block, registerGlowLayer(block, tones), tones, null);
+    }
+
+    /**
+     * {@link #twinklingGlowLayer} as {@code name}, leaving out the pixels where {@code cover} (an overlay drawn over it in
+     * the same model, null for none) is opaque.
+     */
+    private static void twinklingGlowLayer(String block, String name, int[] tones, String cover) {
+        GLOW_LAYERS.put(name, block);
         CyclingPainter painter = (image, random, phase) -> {
             BufferedImage source = renderUnchecked(block);
             boolean[][] mask = glowMask(source);
-            int[][] star = components(mask);
+            if (cover != null) {
+                BufferedImage covering = renderUnchecked(cover);
+                boolean[][] uncovered = new boolean[SIZE][SIZE];
+                for (int y = 0; y < SIZE; y++) {
+                    for (int x = 0; x < SIZE; x++) {
+                        uncovered[x][y] = mask[x][y] && !isOpaque(covering, x, y);
+                    }
+                }
+                mask = uncovered;
+            }
+            int[][] star = components(glowMask(source));
             for (int y = 0; y < SIZE; y++) {
                 for (int x = 0; x < SIZE; x++) {
                     if (!mask[x][y]) {
@@ -1248,8 +1268,9 @@ public final class Ring5Textures {
     private static void glitchBlock(BufferedImage image, Random random, double phase) {
         int state = GLITCH_STATES[(int) Math.floor(phase * GLITCH_STATES.length + 1e-9) % GLITCH_STATES.length];
         Random r = new Random(random.nextLong() + 7919L * state);
-        // The same in every frame: the checker slips a few pixels sideways and one quadrant drops to a 4-px checker,
-        // so neighbouring blocks never join into one even checkerboard (99b).
+        // The same in every frame: the checker slips a few pixels sideways and one quadrant drops to a 4-px checker.
+        // Alone that would still tile into one even (if shifted) checkerboard; the 32 orientations of the blockstate
+        // break it up, so neighbouring blocks never join (99b).
         Random layout = new Random(random.nextLong());
         int slip = 2 + layout.nextInt(3);
         int fineX = 8 * layout.nextInt(2);
@@ -1374,7 +1395,8 @@ public final class Ring5Textures {
      * Voidstone: near-black with a violet depth (soft nebula wisps of a deeper violet, no grey noise), four or five star
      * pixels of mixed brightness (one with a 1-px cross) and three dim, non-glowing specks of star dust between them. The
      * stars keep apart over the tile edge too, so neither one tile nor the 32 orientations of its blockstate line them
-     * up into a grid (99b: the first version's single brightness and inner margin read as a lattice on large faces).
+     * up into a grid (99b: the first version's single brightness read as a lattice on large faces). All keep one pixel
+     * from the edge (INT3): across the edge of a turned or mirrored neighbour two edge stars would meet.
      * The stars are marked as glowing: {@code voidstone_glow} carries them (emissive, twinkling).
      */
     private static void voidstone(BufferedImage image, Random random) {
@@ -1392,10 +1414,10 @@ public final class Ring5Textures {
         int target = 4 + random.nextInt(2);
         List<int[]> stars = new ArrayList<>();
         for (int attempt = 0; attempt < 500 && stars.size() < target; attempt++) {
-            // the cross star needs its arms inside the tile; the others may sit on the edge
-            int margin = stars.isEmpty() ? 1 : 0;
-            int x = margin + random.nextInt(SIZE - 2 * margin);
-            int y = margin + random.nextInt(SIZE - 2 * margin);
+            // One pixel in from the edge (the cross star's arms too): the neighbours are turned and mirrored (32
+            // orientations), so a star on x = 15 could meet one on x = 0 of the next block as a double star.
+            int x = 1 + random.nextInt(SIZE - 2);
+            int y = 1 + random.nextInt(SIZE - 2);
             if (starFits(stars, x, y)) {
                 stars.add(new int[] {x, y});
             }
@@ -1415,8 +1437,8 @@ public final class Ring5Textures {
         }
         List<int[]> taken = new ArrayList<>(stars);
         for (int placed = 0, attempt = 0; placed < 3 && attempt < 500; attempt++) {
-            int x = random.nextInt(SIZE);
-            int y = random.nextInt(SIZE);
+            int x = 1 + random.nextInt(SIZE - 2);
+            int y = 1 + random.nextInt(SIZE - 2);
             if (dustFits(taken, x, y)) {
                 taken.add(new int[] {x, y});
                 set(image, x, y, STAR_DUST);
@@ -1442,10 +1464,14 @@ public final class Ring5Textures {
         return true;
     }
 
-    /** Whether a dust speck at (x, y) keeps more than two apart (Manhattan, across the tile edge) from every point. */
+    /**
+     * Whether a dust speck at (x, y) keeps more than two apart (Manhattan, across the tile edge) from every point, and from
+     * the cross star ({@code points[0]}) more than two from the ends of its arms too.
+     */
     private static boolean dustFits(List<int[]> points, int x, int y) {
-        for (int[] p : points) {
-            if (wrappedDistance(p[0], x) + wrappedDistance(p[1], y) <= 2) {
+        for (int i = 0; i < points.size(); i++) {
+            int[] p = points.get(i);
+            if (wrappedDistance(p[0], x) + wrappedDistance(p[1], y) <= (i == 0 ? 3 : 2)) {
                 return false;
             }
         }
