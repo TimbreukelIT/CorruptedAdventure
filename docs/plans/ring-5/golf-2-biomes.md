@@ -259,6 +259,14 @@ breed, half gecorrumpeerd.
 - 2026-10-23 18:40: plan geschreven; vragen V1–V11 naar main. Nog niets gebouwd.
 - 2026-10-23 22:30: 94 (`7d3e5e7b`) en 95 (`ce7af152`) gebouwd.
 - 2026-10-24: review 94 afgerond + eigen review 95, afstemming rijkdom (zie "Review en afstemming 2026-10-24").
+- 2026-10-24 13:00: poorten op HEAD van `ring5/94`: `build --offline` groen (incl. tests), `runData` schoon;
+  verse werelden `rich2` en `r5scan2` 0 ERROR; `voidscan.py --strict --rings` (`ring5.txt` + castles + 94-plekken)
+  0 fouten; `lavascan.py --strict` lek 0; `det.sh` (zelfde gebieden) 1.694/1.694 identiek, own 0 (een eerdere ronde vond
+  2 blokken glitch↔koper in `mem3`: kruisende aders, opgelost met de ertsvoorrang); `featidx.py` fi3 tegen
+  `ref-fi3` (main) overal identiek, ook `n2`; `perf.sh --areas perf-r5.txt --cold-only "wastes cathedral"` noise
+  wastes 0,51 (koud 0,59), glitch 0,52, meadow 0,52, scars 0,41, inverted 0,46, shattered 0,40, zone45 1,68 (1,50–1,71;
+  machine druk, 94/95 raakt de noise niet), castle1 0,37, voidedge 0,41, halls 1,08, cathedral 1,02 (koud 1,03): ≤ 1,75.
+  Features meadow 0,37 → 0,16 (spiegelparen onthouden). Geen lava in de binnenband van deze seed: de dam vuurt hier niet.
 
 ## Review en afstemming 2026-10-24
 **Reviewpunten 94** (code-review op `main...ring5/94`, per punt gecontroleerd in de code):
@@ -296,7 +304,10 @@ breed, half gecorrumpeerd.
 **Eigen review 95** (determinisme, chunkgrenzen, schrijven buiten de eigen chunk): randen, wanden, aders, omgekeerde
 weide en verwoest plateau zijn surface (puur per blok); omgekeerde bomen, puin en dode bomen zijn grondobjecten in de
 eigen chunk (`fit`), die alleen hun eigen kolom lezen (vast/lucht verandert niet door ertsen); ertsen vervangen alleen
-steen en niets van de aankleding is ertsdoel. Gevonden: punt 7 (nulliet-onderkant). Kanttekeningen (niet veranderd):
+steen en niets van de aankleding is ertsdoel. Gevonden: punt 7 (nulliet-onderkant) en **kruisende aders** (`det.sh`:
+glitchcluster tegen een koperader van de buurchunk, wie eerst kwam won): nu een vaste voorrang glitch > nulliet >
+vanilla (de sterkere vervangt de zwakkere), dus overal hetzelfde blok; niet nulliet over glitch, want het kasteelpuin
+heeft glitchblokken als feature. Kanttekeningen (niet veranderd):
 `inverted_hill` zet gras op elk plafond van zo'n kolom (met 93's grotten ook op grotplafonds, zie INT3); de `wall`-regel
 maakt de hele kolom naast de void `corrupted_stone` (ontwerp V8-C: geen deepslate in de wanden).
 
