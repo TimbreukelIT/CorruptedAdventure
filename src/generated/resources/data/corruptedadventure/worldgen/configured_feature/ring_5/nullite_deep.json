@@ -21,6 +21,60 @@
           "block": "minecraft:deepslate",
           "predicate_type": "minecraft:block_match"
         }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:nullite_ore"
+        },
+        "target": {
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:coal_ores"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:nullite_ore"
+        },
+        "target": {
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:iron_ores"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:nullite_ore"
+        },
+        "target": {
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:copper_ores"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:nullite_ore"
+        },
+        "target": {
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:gold_ores"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:nullite_ore"
+        },
+        "target": {
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:redstone_ores"
+        }
+      },
+      {
+        "state": {
+          "Name": "corruptedadventure:nullite_ore"
+        },
+        "target": {
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:lapis_ores"
+        }
       }
     ]
   }
