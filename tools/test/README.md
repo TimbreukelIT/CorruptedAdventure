@@ -106,6 +106,8 @@ bash tools/test/client.sh stop [1|2]
   the chat for the next shots: hide the HUD with F1 for photo series. `win.ps1 blank 0 <png>` checks an existing image.
 - Shots: generate first (wait until the chunks are loaded), then photograph; no `save-all flush` while shooting.
   `python tools/test/py/sheet.py build/test/shots build/test/sheet.png` makes a contact sheet.
+- Photo walks (ring 5 walk 1): `python tools/test/py/walk.py <poses.txt> <out dir> [--only label ...]` - spectator, ring
+  weather cleared, HUD off, daylight cycle stopped, time per pose; each shot waits until the picture is stable.
 
 ## Studio (structure photos, S0)
 
@@ -290,6 +292,7 @@ Shares are of the samples, not of the time `perf.sh` compares: a fresh world als
 | `py/perf.py`, `py/perfsum.py` | one perf round, the table |
 | `py/jfrprof.py`, `py/jfrhot.py` | one profile per area, hot methods of a recording |
 | `py/sheet.py` | contact sheet of screenshots |
+| `py/walk.py` | photo walk: a pose file (`label ow\|nether day\|night x y z yaw pitch`) shot with the running server + client 1 |
 
 `tools/nether-lava-walls.py` (RCON, change 39a) still works; offline `lavascan.py` on `areas/nether-walls.txt` covers
 the same boundaries.
