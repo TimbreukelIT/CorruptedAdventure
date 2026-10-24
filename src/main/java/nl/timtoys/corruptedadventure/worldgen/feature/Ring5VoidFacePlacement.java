@@ -17,14 +17,17 @@ import java.util.stream.Stream;
  * Placement modifier {@code corruptedadventure:ring5_void_face} (95, V11-A): moves a candidate column onto rock that faces
  * the void, where the outer band's nullite lies: a wall beside the void (a scar, a crater, a floe's edge; within
  * {@link #WALL_REACH} of a void column) at a height between the floe's underside and its top, else the underside of a
- * floe ({@link #UNDERSIDE} blocks up from it) or of a floating chunk over the column. Nothing on the inner band's ground
- * (no underside) or over the empty void. Pure in the terrain; the height from the placement's random.
+ * floe ({@link #UNDERSIDE} blocks up from it) or of a floating chunk over the column (its lowest block there). Nothing on
+ * the inner band's ground (no underside) or over the empty void. Pure in the terrain; the height from the placement's
+ * random.
  */
 public final class Ring5VoidFacePlacement extends PlacementModifier {
     public static final Ring5VoidFacePlacement INSTANCE = new Ring5VoidFacePlacement();
     public static final MapCodec<Ring5VoidFacePlacement> CODEC = MapCodec.unit(() -> INSTANCE);
     static final int WALL_REACH = 2;
     static final int UNDERSIDE = 2;
+    /** How far from a floating chunk's centre heights its underside is looked for (its tilt over its radius). */
+    static final int FRAGMENT_SEARCH = 24;
 
     private Ring5VoidFacePlacement() {
     }
@@ -44,7 +47,17 @@ public final class Ring5VoidFacePlacement extends PlacementModifier {
                 return Stream.empty();
             }
             Ring5Field.Fragment fragment = fragments.get(random.nextInt(fragments.size()));
-            return Stream.of(new BlockPos(x, fragment.bottom() + random.nextInt(UNDERSIDE + 1), z));
+            int under = random.nextInt(UNDERSIDE + 1);
+            // The chunk's own underside over this column: a tilted chunk's lies far from the bottom at its centre, and the
+            // box of fragmentsWithin also covers columns beside its round footprint. Its own column, solid or not
+            // whatever the neighbours' ores did: pure.
+            BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos(x, fragment.bottom() - FRAGMENT_SEARCH, z);
+            for (int y = fragment.bottom() - FRAGMENT_SEARCH; y <= fragment.top() + FRAGMENT_SEARCH; y++) {
+                if (!context.getBlockState(at.setY(y)).isAir()) {
+                    return Stream.of(new BlockPos(x, y + under, z));
+                }
+            }
+            return Stream.empty();
         }
         double bottom = column.bottom();
         if (!Double.isFinite(bottom)) {
