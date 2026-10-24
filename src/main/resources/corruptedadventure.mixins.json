@@ -11,6 +11,7 @@
     "DimensionSpecialEffectsMixin",
     "LevelRendererCloudsMixin",
     "LevelRendererSkyMixin",
+    "NetherEffectsLightMixin",
     "SoundEngineVolumeMixin"
   ],
   "injectors": {

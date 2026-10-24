@@ -51,6 +51,11 @@ public final class NetherRing5Fog {
         presence = SkyExposure.approach(presence, inside ? 1.0F : 0.0F, EASE);
     }
 
+    /** How far the player is in Nether ring 5 (0..1, eased over ~2.5 s); its light ({@link NetherRing5Light}) follows it too. */
+    public static float presence() {
+        return presence;
+    }
+
     /** The far and near planes for a view distance (blocks), {far, near}. Pure. */
     static float[] planes(float view) {
         float far = Math.min(view, MAX_VIEW) * FAR_SHARE;
