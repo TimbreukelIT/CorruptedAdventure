@@ -267,6 +267,7 @@ class Ring5CavesTest {
                 Ring5Field.Column rim = FIELD.column(rimX, z);
                 if (FIELD.chamberHoleDistance(rimX, z) > 0.0 && rim.rimTop != Integer.MIN_VALUE && rim.caves == 1) {
                     assertEquals(Ring5Caves.Kind.RIM.code(), FIELD.caveCode(rimX, FIELD.column(rimX, z).rimTop - 1, z));
+                    assertEquals(rim.rimTop, FIELD.holeRimTop(rimX, z), "the surface rule's hole rim (INT3)");
                 }
             }
         }

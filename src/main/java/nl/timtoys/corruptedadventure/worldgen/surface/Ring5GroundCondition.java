@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.KeyDispatchDataCodec;
+import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.SurfaceRules;
@@ -27,9 +28,15 @@ import nl.timtoys.corruptedadventure.worldgen.feature.Ring5World;
  *   <li>{@code vein}: a column beside the void, a block of the wall below that, with a chance growing with depth;</li>
  *   <li>{@code wall}: a column beside the void (the wall itself);</li>
  *   <li>{@code castle}: ground of a castle site (plateau and ruined rim; V9-B);</li>
- *   <li>{@code inverted_hill}: a floe column with an upside-down hill under it ({@code inverted_hills}, V10-A);</li>
- *   <li>{@code upper}: a block within {@link #UPPER_DEPTH} under the column's pure top, or above it (cubes, spans; every
- *   block over the void): where the biomes' surfaces go. Vanilla's {@code above_preliminary_surface} interpolates the
+ *   <li>{@code inverted_hill}: a floe column with an upside-down hill under it ({@code inverted_hills}, V10-A), its lowest
+ *   {@link #HILL_UNDERSIDE} blocks (not the ceiling of a void cave in the floe, 93);</li>
+ *   <li>{@code hole_rim}, {@code hole_wall_top}, {@code hole_vein}, {@code hole_wall}: the same edge round a void cave's
+ *   hole (93, V93-4 A with V8-C; INT3): the rock rim of its floor ({@link Ring5Field#holeRimTop}), the upper 2–4 blocks of
+ *   the wall down the hole under it, a vein in the wall below that, the wall itself (2 wide round the hole);</li>
+ *   <li>{@code upper}: a block within {@link #UPPER_DEPTH} under the column's pure top ({@link #UPPER_LAYERS} under a
+ *   glitch field's shifted layers), or above it (cubes, spans; every block over the void): where the biomes' surfaces go.
+ *   Not deeper: 93's caves start right under it, and their floors are no surface (INT3; vanilla's rule reaches about as
+ *   deep). Vanilla's {@code above_preliminary_surface} interpolates the
  *   preliminary surface between the chunk's corners, and a corner over a void hole made whole chunk-aligned rectangles of
  *   ground beside the hole bare base rock.</li>
  * </ul>
@@ -47,7 +54,11 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
     static final double VEIN_RISE = 0.0025;
     static final double VEIN_MAX = 0.35;
     /** How deep under the column's top the biomes' surfaces reach ({@code upper}): the top block and the surface depth. */
-    static final int UPPER_DEPTH = 16;
+    static final int UPPER_DEPTH = 8;
+    /** The upside-down meadow under an inverted hill: the hill's lowest blocks (the rule's grass and two of dirt). */
+    static final int HILL_UNDERSIDE = 3;
+    /** The same under a glitch field's shifted layers, whose faces lie up to this far under the top. */
+    static final int UPPER_LAYERS = Ring5Field.LAYER_DEPTH;
 
     public static final MapCodec<Ring5GroundCondition> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Part.CODEC.fieldOf("part").forGetter(Ring5GroundCondition::part)
@@ -77,13 +88,20 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
     }
 
     /** The answers for one column. */
-    record Column(boolean core, boolean missing, int voidDistance, int rim, int wallTop, int top, boolean castle, boolean hill) {
-        static final Column OUTSIDE = new Column(false, false, Ring5World.FAR, 0, 0, Integer.MIN_VALUE, false, false);
+    record Column(boolean core, boolean missing, int voidDistance, int rim, int wallTop, int top, int upper, boolean castle,
+                  int hillBottom, int holeRim) {
+        static final Column OUTSIDE = new Column(false, false, Ring5World.FAR, 0, 0, Integer.MIN_VALUE, 0, false,
+                Integer.MIN_VALUE, Integer.MIN_VALUE);
 
         static Column of(Ring5World world, int x, int z) {
             // The cached ring of the column first: rings 1-3 (most of the world) never ask the layout's noise again.
             Ring inner = RingColumnCache.ringAt(Level.OVERWORLD, x, z).inner();
-            if (inner != Ring.RING_4 && inner != Ring.RING_5 && inner != Ring.VOID || !world.core(x, z)) {
+            return inner != Ring.RING_4 && inner != Ring.RING_5 && inner != Ring.VOID ? OUTSIDE : ofWorld(world, x, z);
+        }
+
+        /** {@link #of} without the ring cache (which needs a running server): from the pure ground alone. */
+        static Column ofWorld(Ring5World world, int x, int z) {
+            if (!world.core(x, z)) {
                 return OUTSIDE;
             }
             long seed = world.salt();
@@ -94,7 +112,9 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
             Ring5Field.Column column = world.field().column(x, z);
             boolean solid = distance > 0;
             return new Column(true, missing, distance, rim, wallTop, world.top(x, z),
-                    solid && column.castle() > 0.0, solid && column.inverted() > 0.0);
+                    column.layered() ? UPPER_LAYERS : UPPER_DEPTH, solid && column.castle() > 0.0,
+                    solid && column.inverted() > 0.0 ? Mth.floor(column.bottom()) + 1 : Integer.MIN_VALUE,
+                    world.field().holeRimTop(x, z));
         }
 
         boolean test(Part part, int y, long seed, int x, int z) {
@@ -106,13 +126,26 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
                 case MISSING_CHUNK -> missing;
                 case RIM -> voidDistance > 0 && voidDistance <= rim;
                 case WALL_TOP -> voidDistance == 1 && y > top - wallTop;
-                case VEIN -> voidDistance == 1 && unit(seed, x, y, z, 0xFE1AL)
-                        < Math.min(VEIN_MAX, VEIN_BASE + VEIN_RISE * Math.max(0, top - wallTop - y));
+                case VEIN -> voidDistance == 1 && vein(seed, x, y, z, top - wallTop);
                 case WALL -> voidDistance == 1;
                 case CASTLE -> castle;
-                case INVERTED_HILL -> hill;
-                case UPPER -> top == Integer.MIN_VALUE || y > top - UPPER_DEPTH;
+                case INVERTED_HILL -> hillBottom != Integer.MIN_VALUE && y < hillBottom + HILL_UNDERSIDE;
+                case UPPER -> top == Integer.MIN_VALUE || y > top - upper;
+                case HOLE_RIM -> holeRim != Integer.MIN_VALUE && y < holeRim && y >= holeWall();
+                case HOLE_WALL_TOP -> holeRim != Integer.MIN_VALUE && y < holeWall() && y >= holeWall() - wallTop;
+                case HOLE_VEIN -> holeRim != Integer.MIN_VALUE && y < holeWall() && vein(seed, x, y, z, holeWall() - wallTop);
+                case HOLE_WALL -> holeRim != Integer.MIN_VALUE && y < holeWall();
             };
+        }
+
+        /** The top (exclusive) of the wall down a void cave's hole: under its floor's rim. */
+        private int holeWall() {
+            return holeRim - Ring5Field.HOLE_RIM_DEPTH;
+        }
+
+        /** Whether a block of a wall beside the void is voidstone: a chance growing with its depth under {@code from}. */
+        private static boolean vein(long seed, int x, int y, int z, int from) {
+            return unit(seed, x, y, z, 0xFE1AL) < Math.min(VEIN_MAX, VEIN_BASE + VEIN_RISE * Math.max(0, from - y));
         }
     }
 
@@ -143,7 +176,11 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
         WALL("wall"),
         CASTLE("castle"),
         INVERTED_HILL("inverted_hill"),
-        UPPER("upper");
+        UPPER("upper"),
+        HOLE_RIM("hole_rim"),
+        HOLE_WALL_TOP("hole_wall_top"),
+        HOLE_VEIN("hole_vein"),
+        HOLE_WALL("hole_wall");
 
         public static final Codec<Part> CODEC = StringRepresentable.fromEnum(Part::values);
         private final String name;

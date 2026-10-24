@@ -222,8 +222,15 @@ class Ring5BiomesTest {
         }
         assertNotNull(branch, "ring 5 branch");
         assertEquals(ring4At + 1, ring5At, "right after the ring 4 branch, before vanilla's rules");
+        // INT3: in ring 5's core the branch gives the base rock at once (the top-level ring 5 rule did the surfaces), so the
+        // floors of 93's caves under the preliminary surface get neither this branch nor vanilla's grass.
+        JsonArray steps = branch.getAsJsonArray("sequence");
+        JsonObject core = steps.get(0).getAsJsonObject();
+        assertEquals("core", core.getAsJsonObject("if_true").get("part").getAsString());
+        String rock = core.getAsJsonObject("then_run").toString();
+        assertTrue(rock.contains("minecraft:deepslate") && rock.contains("corruptedadventure:corrupted_stone"), rock);
         Map<String, JsonObject> branches = new LinkedHashMap<>();
-        for (JsonElement element : branch.getAsJsonArray("sequence")) {
+        for (JsonElement element : steps.asList().subList(1, steps.size())) {
             JsonArray biomes = element.getAsJsonObject().getAsJsonObject("if_true").getAsJsonArray("biome_is");
             assertEquals(1, biomes.size());
             assertNull(branches.put(biomes.get(0).getAsString(), element.getAsJsonObject().getAsJsonObject("then_run")));

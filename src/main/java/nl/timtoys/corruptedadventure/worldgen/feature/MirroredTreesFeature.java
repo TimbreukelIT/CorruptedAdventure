@@ -139,7 +139,7 @@ public final class MirroredTreesFeature extends Feature<NoneFeatureConfiguration
 
     /** The first block over the pure ground at (x, z) for a tree of the meadow, or {@link Integer#MIN_VALUE}. */
     private static int groundAbove(Ring5World world, BiomeAt biomeAt, int x, int z) {
-        if (!world.core(x, z) || world.voidDistance(x, z, VOID_CLEARANCE) <= VOID_CLEARANCE) {
+        if (!world.core(x, z) || world.voidDistance(x, z, VOID_CLEARANCE) <= VOID_CLEARANCE || world.openTop(x, z)) {
             return Integer.MIN_VALUE;
         }
         int top = world.top(x, z);

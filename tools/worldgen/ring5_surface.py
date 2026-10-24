@@ -21,14 +21,18 @@ corruptedadventure:ring_5_ground (part core; ring 5 and the void edge, never the
 - the void rims and walls (V8-C): the top block within 1-2 of the void voidstone, the top 2-4 blocks of a wall beside the
   void voidstone, the wall below that corrupted stone with voidstone veins that grow denser downwards (no deepslate in
   the walls, also below Y 0);
+- the same edge round the holes of 93's void caves (V93-4 A, INT3): the rock rim of the cave's floor within 2 of a hole
+  voidstone, under it the wall down the hole (2 wide) as above;
 - the upside-down hills of inverted_hills (V10-A): their underside an upside-down meadow, corrupted grass right above the
   air and corrupted dirt in the two blocks above that, where the inverted trees hang;
 - the ruined castle sites (V9-B): the top block a mix of corrupted cobblestone, obsidian, crying obsidian and glitch
   blocks over corrupted stone, the two blocks under it corrupted cobblestone and stone;
-- the biomes' surfaces (the ring 5 branch below) once more within 16 of the column's pure top (part upper, 94-review):
+- the biomes' surfaces (the ring 5 branch below) once more within 8 of the column's pure top, 16 under a glitch field's
+  shifted layers (part upper, 94-review; INT3: not deeper, where 93's caves begin, so their floors stay rock):
   vanilla's above_preliminary_surface interpolates the preliminary surface between the chunk's corners, and a corner
   over a void hole left chunk-aligned rectangles of ground beside the hole bare corrupted stone. The branch also stays in
-  above_preliminary_surface for the ring 5 biomes outside ring 5's core (the noisy margin of the zone 4->5).
+  above_preliminary_surface for the ring 5 biomes outside ring 5's core (the noisy margin of the zone 4->5); in the core
+  it gives the base rock at once (INT3: the floors of 93's caves are no surface, neither ring 5's nor vanilla's).
 In the ring 5 branch: glitch_fields' glitch blocks in specks and patches of 1-4 on tops and undersides (V3-A), no more
 deepslate on void_scars' steep walls (the rims and walls above replace it).
 """
@@ -184,11 +188,18 @@ SURFACES = {
 }
 
 
-def ring_5_branch():
+def ring_5_branch(base_rock=None):
+    """The biomes' surfaces. With base_rock (the copy above the preliminary surface): only outside ring 5's core (the noisy
+    margin of the zone 4->5). In the core the preliminary surface lies a margin under the ground (Ring5Field.initialHeight),
+    and the floors of 93's caves there would get this branch or vanilla's grass after it (INT3); so a core block that the
+    top-level rule left (not part upper, or not a surface block) gets the base rock right here, what the end of the column
+    would give it."""
     rules = []
     for name in RING_5:
         rule = SURFACES[name]
         rules.append(cond(biome(name), rule() if callable(rule) else seq(*surface(*rule))))
+    if base_rock is not None:
+        return cond(biome(*RING_5), seq(cond(ground("core"), base_rock), *rules))
     return cond(biome(*RING_5), seq(*rules))
 
 
@@ -212,6 +223,10 @@ def ring_5_ground():
         cond(ground("wall_top"), block(VOIDSTONE)),
         cond(ground("vein"), block(VOIDSTONE)),
         cond(ground("wall"), block(STONE)),
+        cond(ground("hole_rim"), block(VOIDSTONE)),
+        cond(ground("hole_wall_top"), block(VOIDSTONE)),
+        cond(ground("hole_vein"), block(VOIDSTONE)),
+        cond(ground("hole_wall"), block(STONE)),
         cond(ground("inverted_hill"), seq(cond(CEILING, block(GRASS)), cond(UNDERSIDE, block(DIRT)))),
         cond(ground("castle"), seq(cond(TOP, castle_top), cond(CASTLE_UNDER, seq(cond(speckle(5205, 0.5), block(COBBLE)),
                                                                               block(STONE))))),
@@ -273,11 +288,12 @@ def main():
     rules[:] = [r for r in rules if not only_of(r, RING_5)]
     ring4 = [i for i, r in enumerate(rules) if only_of(r, RING_4)]
     assert len(ring4) == 1, ring4
-    rules.insert(ring4[0] + 1, ring_5_branch())
     top[:] = [r for r in top if not is_base_rock(r)]
     gradient = top[-1].get("if_true", {})
     assert gradient.get("type") == "minecraft:vertical_gradient" and gradient.get("random_name") == "minecraft:deepslate", \
         "vanilla's deepslate gradient is the last top-level rule"
+    # The core's base rock: vanilla's deepslate gradient, then corrupted stone (ring_5_base_rock below).
+    rules.insert(ring4[0] + 1, ring_5_branch(seq(top[-1], block(STONE))))
     top.append(ring_5_base_rock())
     top[:] = [r for r in top if not is_ring_5_ground(r)]
     assert is_bedrock_floor(top[0]), "vanilla's bedrock floor is the first top-level rule"

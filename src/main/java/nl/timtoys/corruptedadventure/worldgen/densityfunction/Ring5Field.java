@@ -102,6 +102,10 @@ public final class Ring5Field implements DensityFunction {
     static final int NATURAL_COVER = 8;
     /** The own caves (93) keep this far off a corrupt spot's chunks and a doppelganger's squares (blocks, Chebyshev). */
     static final int CAVE_CLEARANCE = 8;
+    /** How far a glitch field's shifted layers reach round the column's top (83; {@link Column#layered}). */
+    public static final int LAYER_DEPTH = Ring5Inner.LAYER_DEPTH;
+    /** How deep the rock rim round a void cave's hole is (93; {@link #holeRimTop}). */
+    public static final int HOLE_RIM_DEPTH = Ring5Caves.RIM_DEPTH;
     /** The outer band's void caves (93, V93-8 A) lie at most this far beyond the band line (its signed distance). */
     static final double OUTER_CAVE_REACH = 300.0;
 
@@ -955,6 +959,15 @@ public final class Ring5Field implements DensityFunction {
             return Ring5Caves.Kind.RIM.code();
         }
         return Ring5Caves.Kind.NONE.code();
+    }
+
+    /**
+     * The top (exclusive) of the rock rim round a void cave's hole (93) in this column, within 2 of a hole: the lowest
+     * open block of the cave's floor, the rim the {@link #HOLE_RIM_DEPTH} blocks under it ({@link Ring5Caves.Kind#RIM}); {@link Integer#MIN_VALUE} elsewhere. For
+     * the hole's voidstone rim and wall (the surface rule {@code ring_5_ground}).
+     */
+    public int holeRimTop(int x, int z) {
+        return column(x, z).rimTop;
     }
 
     /**
@@ -2012,6 +2025,11 @@ public final class Ring5Field implements DensityFunction {
 
         public double glitch() {
             return glitch;
+        }
+
+        /** Whether a glitch field's shifted layers apply ({@link Ring5Inner#LAYER_DEPTH} round the top; 83). */
+        public boolean layered() {
+            return layered;
         }
 
         public boolean isVoid() {

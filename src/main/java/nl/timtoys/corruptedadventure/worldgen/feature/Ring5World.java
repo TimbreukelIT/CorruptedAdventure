@@ -74,6 +74,15 @@ public record Ring5World(Ring5Field field, RingLayout layout, Ring5Band band, lo
     }
 
     /**
+     * Whether one of the own caves of the terrain (93: a net's shaft, a corridor cutting a slope) opens the column's top
+     * block, so nothing stands on it. Vanilla's damped entrances are noise and not seen here.
+     */
+    public boolean openTop(int x, int z) {
+        int top = top(x, z);
+        return top != Integer.MIN_VALUE && field.terrain(x, top, z) <= 0.0;
+    }
+
+    /**
      * The Chebyshev distance (1 … {@code reach}) to the nearest void column, 0 if the column itself is void, {@link #FAR}
      * beyond {@code reach} (at most {@link #MAX_REACH}).
      */

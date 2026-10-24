@@ -367,6 +367,58 @@
               "type": "minecraft:condition",
               "if_true": {
                 "type": "corruptedadventure:ring_5_ground",
+                "part": "hole_rim"
+              },
+              "then_run": {
+                "type": "minecraft:block",
+                "result_state": {
+                  "Name": "corruptedadventure:voidstone"
+                }
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "if_true": {
+                "type": "corruptedadventure:ring_5_ground",
+                "part": "hole_wall_top"
+              },
+              "then_run": {
+                "type": "minecraft:block",
+                "result_state": {
+                  "Name": "corruptedadventure:voidstone"
+                }
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "if_true": {
+                "type": "corruptedadventure:ring_5_ground",
+                "part": "hole_vein"
+              },
+              "then_run": {
+                "type": "minecraft:block",
+                "result_state": {
+                  "Name": "corruptedadventure:voidstone"
+                }
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "if_true": {
+                "type": "corruptedadventure:ring_5_ground",
+                "part": "hole_wall"
+              },
+              "then_run": {
+                "type": "minecraft:block",
+                "result_state": {
+                  "Name": "corruptedadventure:corrupted_stone"
+                }
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "if_true": {
+                "type": "corruptedadventure:ring_5_ground",
                 "part": "inverted_hill"
               },
               "then_run": {
@@ -16463,6 +16515,46 @@
               "then_run": {
                 "type": "minecraft:sequence",
                 "sequence": [
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "corruptedadventure:ring_5_ground",
+                      "part": "core"
+                    },
+                    "then_run": {
+                      "type": "minecraft:sequence",
+                      "sequence": [
+                        {
+                          "type": "minecraft:condition",
+                          "if_true": {
+                            "type": "minecraft:vertical_gradient",
+                            "false_at_and_above": {
+                              "absolute": 8
+                            },
+                            "random_name": "minecraft:deepslate",
+                            "true_at_and_below": {
+                              "absolute": 0
+                            }
+                          },
+                          "then_run": {
+                            "type": "minecraft:block",
+                            "result_state": {
+                              "Name": "minecraft:deepslate",
+                              "Properties": {
+                                "axis": "y"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "minecraft:block",
+                          "result_state": {
+                            "Name": "corruptedadventure:corrupted_stone"
+                          }
+                        }
+                      ]
+                    }
+                  },
                   {
                     "type": "minecraft:condition",
                     "if_true": {

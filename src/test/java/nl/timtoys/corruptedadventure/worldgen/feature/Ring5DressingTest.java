@@ -161,7 +161,8 @@ public class Ring5DressingTest {
     /**
      * The surface (94/95): one top-level ring 5 rule right after the bedrock floor and ring 3's cave walls, behind the
      * guard {@code core}: missing chunks to air first (before rims and walls), then rims, upper walls, veins, walls, the
-     * inverted hills' undersides, castle ground, then the biomes' surfaces near the column's top. Written by
+     * same round the holes of 93's void caves (INT3), the inverted hills' undersides, castle ground, then the biomes'
+     * surfaces near the column's top. Written by
      * {@code tools/worldgen/ring5_surface.py}.
      */
     @Test
@@ -177,16 +178,19 @@ public class Ring5DressingTest {
             parts.add(step.getAsJsonObject().getAsJsonObject("if_true").get("part").getAsString());
             results.add(step.getAsJsonObject().getAsJsonObject("then_run").toString());
         }
-        assertEquals(List.of("missing_chunk", "rim", "wall_top", "vein", "wall", "inverted_hill", "castle", "upper"), parts);
+        assertEquals(List.of("missing_chunk", "rim", "wall_top", "vein", "wall", "hole_rim", "hole_wall_top", "hole_vein",
+                "hole_wall", "inverted_hill", "castle", "upper"), parts);
         assertTrue(results.get(0).contains("minecraft:air"));
-        for (int k = 1; k <= 3; k++) {
+        for (int k : new int[]{1, 2, 3, 5, 6, 7}) {
             assertTrue(results.get(k).contains("corruptedadventure:voidstone"), parts.get(k));
         }
-        assertTrue(results.get(4).contains("corruptedadventure:corrupted_stone") && !results.get(4).contains("deepslate"));
-        assertTrue(results.get(5).contains("corruptedadventure:corrupted_grass_block") && results.get(5).contains("corruptedadventure:corrupted_dirt"));
-        assertTrue(results.get(6).contains("minecraft:obsidian") && results.get(6).contains("corruptedadventure:glitch_block"));
+        for (int k : new int[]{4, 8}) {
+            assertTrue(results.get(k).contains("corruptedadventure:corrupted_stone") && !results.get(k).contains("deepslate"), parts.get(k));
+        }
+        assertTrue(results.get(9).contains("corruptedadventure:corrupted_grass_block") && results.get(9).contains("corruptedadventure:corrupted_dirt"));
+        assertTrue(results.get(10).contains("minecraft:obsidian") && results.get(10).contains("corruptedadventure:glitch_block"));
         // The biomes' surfaces once more near the column's pure top (no bare rectangles beside void holes).
-        assertTrue(results.get(7).contains("corruptedadventure:corrupted_wastes") && results.get(7).contains("minecraft:grass_block"));
+        assertTrue(results.get(11).contains("corruptedadventure:corrupted_wastes") && results.get(11).contains("minecraft:grass_block"));
         long count = rules.asList().stream().filter(r -> part("core").equals(r.getAsJsonObject().getAsJsonObject("if_true"))).count();
         assertEquals(1, count, "one ring 5 ground rule");
     }
