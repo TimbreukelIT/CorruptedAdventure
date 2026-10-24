@@ -121,6 +121,15 @@ final class Ring5Inner {
     static final int MAX_CUBE = 8;
     static final int MIN_CUBE_LIFT = 6;
     static final int MAX_CUBE_LIFT = 30;
+    /**
+     * Walk 1 (question 4 = B, 2026-10-24): on the floor of the dips (ground at most {@link #ROLL_LOW} +
+     * {@link #FLOOR_FADE}) the glitch fields were wide flat steps; there a cube cell holds a cube with
+     * {@link #FLOOR_CUBE_CHANCE} (times the glitch weight), hanging low: {@link #MIN_FLOOR_CUBE_LIFT}–
+     * {@link #MAX_FLOOR_CUBE_LIFT} above the ground (not lower: the shifted layers reach past the sampled ground).
+     */
+    static final double FLOOR_CUBE_CHANCE = 0.6;
+    static final int MIN_FLOOR_CUBE_LIFT = MIN_CUBE_LIFT;
+    static final int MAX_FLOOR_CUBE_LIFT = 12;
     /** Loose cracks: one per cell of 256 with this chance, 20–120 long, 2–6 wide, wavy; kept off the band line and the zone. */
     static final int CRACK_CELL = 256;
     static final double CRACK_CHANCE = 0.85;
@@ -402,7 +411,8 @@ final class Ring5Inner {
         int x0 = i * CUBE_CELL + (int) Math.floor((CUBE_CELL - size) * CellShapes.unit(h, 2));
         int z0 = j * CUBE_CELL + (int) Math.floor((CUBE_CELL - size) * CellShapes.unit(h, 3));
         double weight = glitchWeight(x0 + size / 2.0, z0 + size / 2.0);
-        if (CellShapes.unit(h, 0) >= CUBE_CHANCE * weight) {
+        double roll = CellShapes.unit(h, 0);
+        if (roll >= Math.max(CUBE_CHANCE, FLOOR_CUBE_CHANCE) * weight) {
             return null;
         }
         double ground = Double.NEGATIVE_INFINITY;
@@ -411,7 +421,13 @@ final class Ring5Inner {
                 ground = Math.max(ground, top(x0 + Math.min(dx, size - 1), z0 + Math.min(dz, size - 1)));
             }
         }
-        int lift = MIN_CUBE_LIFT + (int) Math.floor((MAX_CUBE_LIFT - MIN_CUBE_LIFT + 1) * CellShapes.unit(h, 4));
+        boolean floor = ground <= ROLL_LOW + FLOOR_FADE;
+        if (roll >= (floor ? FLOOR_CUBE_CHANCE : CUBE_CHANCE) * weight) {
+            return null;
+        }
+        int lift = floor
+                ? MIN_FLOOR_CUBE_LIFT + (int) Math.floor((MAX_FLOOR_CUBE_LIFT - MIN_FLOOR_CUBE_LIFT + 1) * CellShapes.unit(h, 4))
+                : MIN_CUBE_LIFT + (int) Math.floor((MAX_CUBE_LIFT - MIN_CUBE_LIFT + 1) * CellShapes.unit(h, 4));
         return new int[]{x0, z0, size, (int) Math.ceil(ground) + lift};
     }
 
