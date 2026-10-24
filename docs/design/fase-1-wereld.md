@@ -1375,6 +1375,16 @@ Rij 39 wordt alleen het **terrein** (kegels, caldera's, lavarivieren, zwevende e
 - **Teststops:** **6-pre** terreinpreview (kaarten na golf 0; vliegtocht na 84/85, 6-pre-1); **6a** terrein-wow na golf 1 + 86b/87b/86c (blokkerend; checklist `docs/plans/ring-5/teststop-6a.md`); **6b** overleving + sfeer na golf 2; **6c** eindcheck na golf 3.
 - **Stand (2026-10-23):** golf 0 en golf 1 (INT1) op `main`; volgende: 86b, 87b, 86c op main, dan teststop 6a.
 
+### G2. Opknapbeurt ring 2 en 3 (sparring 2026-10-24)
+Na ring 4 ligt de lat voor een levendig landschap hoger; ring 2 en 3 (overworld) krijgen een aanvullende ronde. Besluiten:
+- **Omvang:** aankleding + kleine terreinvormen (rotsblokken, geulen, heuveltjes); de hoofdvormen (kloven, plateaus, vulkanen) blijven.
+- **Focus:** dichtheid kleine features (geen lege vlakken), variatie binnen biomes (subzones/vlekken met andere bodem en flora), en worldgen-bezienswaardigheden (geen structures; die zijn fase 3).
+- **Bezienswaardigheden:** ~1 per 300–500 blokken.
+- **Nether-ring 2 en 3:** niet in deze ronde; later apart.
+- **Volgorde:** ring 2 en 3 tegelijk (na ring 5 golf 2 / INT3), elk in een eigen stroom.
+- **Perf:** binnen het bestaande budget (≤ 1,75× vanilla); lukt dat niet, dan eerst opties voorleggen.
+- **Testen:** vrije rondgang door Claude met de client, beoordeling aan de hand van screenshots; daarna feedback van de gebruiker en een sparring per ring over de concrete features.
+
 ### H. Afsluiting fase 1
 | # | Categorie | Change | Test |
 |---|---|---|---|
