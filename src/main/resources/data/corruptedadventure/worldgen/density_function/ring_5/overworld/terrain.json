@@ -1,8 +1,5 @@
 {
-  "type": "minecraft:cache_once",
-  "argument": {
-    "type": "corruptedadventure:ring_5_output",
-    "field": "corruptedadventure:ring_5/overworld/field",
-    "output": "terrain"
-  }
+  "type": "corruptedadventure:ring_5_output",
+  "field": "corruptedadventure:ring_5/overworld/field",
+  "output": "terrain"
 }

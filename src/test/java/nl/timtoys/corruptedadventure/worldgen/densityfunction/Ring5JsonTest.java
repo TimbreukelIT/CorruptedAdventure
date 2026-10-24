@@ -114,10 +114,12 @@ class Ring5JsonTest {
         // The terrain: the field's per-block density, exact (no interpolation), with vanilla's damped caves (93, V93-1 A)
         // under it by the field's cave zone: the cheese and spaghetti deep under the ground (2), the entrances within 8 of
         // its top (1, the closure 4×: 5× entrances reach about −6), none on exact shapes and closed ground (0); the caves
-        // interpolated, the closure not.
+        // interpolated, the closure not. The terrain is not a cache_once (INT3): the router reads it per block through a
+        // range_choice, and inside the noise chunk a cache_once read that way returned the values of its last array fill
+        // (cell corners), which cut the ground down to the cell's bottom in eight-block steps over the whole inner band.
         JsonObject terrain = WorldgenData.read(DF + "ring_5/overworld/terrain.json");
-        assertEquals("minecraft:cache_once", terrain.get("type").getAsString());
-        assertEquals("terrain", terrain.getAsJsonObject("argument").get("output").getAsString());
+        assertEquals("corruptedadventure:ring_5_output", terrain.get("type").getAsString());
+        assertEquals("terrain", terrain.get("output").getAsString());
         String zone = "corruptedadventure:ring_5/overworld/cave_zone";
         String closure = "corruptedadventure:ring_5/overworld/cave_closure";
         String ground = "corruptedadventure:ring_5/overworld/terrain";
