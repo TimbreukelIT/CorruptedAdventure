@@ -81,6 +81,49 @@
         16,
         16
       ]
+    },
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#overlay2_bottom"
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#overlay2_side"
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#overlay2_side"
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#overlay2_side"
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#overlay2_top"
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#overlay2_side"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "neoforge_data": {
+        "ambient_occlusion": false,
+        "block_light": 15,
+        "sky_light": 15
+      },
+      "to": [
+        16,
+        16,
+        16
+      ]
     }
   ],
   "render_type": "minecraft:cutout",
@@ -88,9 +131,12 @@
     "base_bottom": "corruptedadventure:block/voidstone",
     "base_side": "corruptedadventure:block/voidstone",
     "base_top": "corruptedadventure:block/voidstone",
-    "overlay_bottom": "corruptedadventure:block/nullite_ore_overlay",
-    "overlay_side": "corruptedadventure:block/nullite_ore_overlay",
-    "overlay_top": "corruptedadventure:block/nullite_ore_overlay",
+    "overlay2_bottom": "corruptedadventure:block/nullite_ore_overlay",
+    "overlay2_side": "corruptedadventure:block/nullite_ore_overlay",
+    "overlay2_top": "corruptedadventure:block/nullite_ore_overlay",
+    "overlay_bottom": "corruptedadventure:block/voidstone_nullite_ore_glow",
+    "overlay_side": "corruptedadventure:block/voidstone_nullite_ore_glow",
+    "overlay_top": "corruptedadventure:block/voidstone_nullite_ore_glow",
     "particle": "corruptedadventure:block/voidstone"
   }
 }

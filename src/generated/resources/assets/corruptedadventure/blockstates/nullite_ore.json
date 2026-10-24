@@ -1,7 +1,150 @@
 {
   "variants": {
-    "": {
-      "model": "corruptedadventure:block/nullite_ore"
-    }
+    "": [
+      {
+        "model": "corruptedadventure:block/nullite_ore"
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 90
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 90,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 90,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 90,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 180
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 180,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 180,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 180,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 270
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 270,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 270,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore",
+        "x": 270,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored"
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 90
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 90,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 90,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 90,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 180
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 180,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 180,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 180,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 270
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 270,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 270,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/nullite_ore_mirrored",
+        "x": 270,
+        "y": 270
+      }
+    ]
   }
 }

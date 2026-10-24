@@ -124,16 +124,18 @@ final class ModBlockStateProvider extends BlockStateProvider {
                 blockTexture(ModBlocks.CORRUPTED_LEAVES.get())).renderType("cutout_mipped"));
 
         // 89: the glitch block animates through its .mcmeta (T); voidstone's stars and the nullite crystals are emissive
-        // overlays (no block light). The voidstone ore shows plain voidstone under the crystals. 99b: the glitch block and
-        // voidstone in 32 orientations, so a patch of glitch blocks does not join into one even checkerboard and a large
-        // voidstone face shows no star lattice.
+        // overlays (no block light). 99b: the glitch block and voidstone in 32 orientations, so a patch of glitch blocks
+        // does not join into one even checkerboard and a large voidstone face shows no star lattice. INT3: the nullite
+        // ores turn with their host rock (the crystals with them), and the voidstone ore keeps voidstone's stars
+        // (voidstone_nullite_ore_glow: the star layer without the pixels the crystals cover).
         rotatedCube(ModBlocks.GLITCH_BLOCK.get());
         ResourceLocation voidstone = blockTexture(ModBlocks.VOIDSTONE.get());
         rotatedGlowingCube(ModBlocks.VOIDSTONE.get());
         CubeTextures nullite = CubeTextures.all(modLoc("block/nullite_ore_overlay"));
         ResourceLocation corruptedStone = blockTexture(ModBlocks.CORRUPTED_STONE.get());
-        oreWithOverlay(ModBlocks.NULLITE_ORE.get(), corruptedStone, CubeTextures.all(corruptedStone), nullite, true);
-        oreWithOverlay(ModBlocks.VOIDSTONE_NULLITE_ORE.get(), voidstone, CubeTextures.all(voidstone), nullite, true);
+        rotatedLayers(ModBlocks.NULLITE_ORE.get(), corruptedStone, List.of(nullite));
+        rotatedLayers(ModBlocks.VOIDSTONE_NULLITE_ORE.get(), voidstone,
+                List.of(CubeTextures.all(modLoc("block/voidstone_nullite_ore_glow")), nullite));
 
         // 90 (Nether ring 5): the white stone set like the fossil stone set, the pillar like quartz's, the white core's
         // glow as an emissive overlay on white stone.
@@ -640,17 +642,38 @@ final class ModBlockStateProvider extends BlockStateProvider {
      * stays on its pixels.
      */
     private void rotatedGlowingCube(Block block) {
-        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
         ResourceLocation base = blockTexture(block);
-        CubeTextures glow = CubeTextures.all(base.withSuffix("_glow"));
+        rotatedLayers(block, base, List.of(CubeTextures.all(base.withSuffix("_glow"))));
+    }
+
+    /**
+     * {@code block} (texture {@code base}) under emissive {@code overlays} (cutout, drawn in order), in the 32 orientations
+     * of {@link #rotatedGlowingCube}; the whole model turns, so every layer stays on its pixels.
+     */
+    private void rotatedLayers(Block block, ResourceLocation base, List<CubeTextures> overlays) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        orientations(block, layeredModel(name, base, CubeTextures.all(base), overlays, true, "cutout", false),
+                layeredModel(name + "_mirrored", base, CubeTextures.all(base), overlays, true, "cutout", true), true);
+    }
+
+    /**
+     * The plain and the mirrored model of {@code block} as its variants: in the four Y rotations (like vanilla stone), or
+     * with {@code aroundX} in all 16 x/y rotations (like netherrack), so every face shows the texture in all 8 orientations.
+     */
+    private void orientations(Block block, ModelFile plain, ModelFile mirrored, boolean aroundX) {
         List<ConfiguredModel> variants = new ArrayList<>();
-        for (ModelFile model : List.of(
-                overlayModel(name, base, CubeTextures.all(base), glow, true, "cutout", false),
-                overlayModel(name + "_mirrored", base, CubeTextures.all(base), glow, true, "cutout", true))) {
-            for (int x = 0; x < 360; x += 90) {
-                for (int y = 0; y < 360; y += 90) {
-                    variants.add(new ConfiguredModel(model, x, y, false));
+        if (aroundX) {
+            for (ModelFile model : List.of(plain, mirrored)) {
+                for (int x = 0; x < 360; x += 90) {
+                    for (int y = 0; y < 360; y += 90) {
+                        variants.add(new ConfiguredModel(model, x, y, false));
+                    }
                 }
+            }
+        } else {
+            for (int y = 0; y < 360; y += 90) {
+                variants.add(new ConfiguredModel(plain, 0, y, false));
+                variants.add(new ConfiguredModel(mirrored, 0, y, false));
             }
         }
         simpleBlock(block, variants.toArray(ConfiguredModel[]::new));
@@ -915,16 +938,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
      * repeat the same texture tile after tile.
      */
     private void mirroredAndRotated(Block block) {
-        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
-        ResourceLocation texture = blockTexture(block);
-        ModelFile plain = models().cubeAll(name, texture);
-        ModelFile mirrored = models().singleTexture(name + "_mirrored", mcLoc("block/cube_mirrored_all"), "all", texture);
-        List<ConfiguredModel> variants = new ArrayList<>();
-        for (int y = 0; y < 360; y += 90) {
-            variants.add(new ConfiguredModel(plain, 0, y, false));
-            variants.add(new ConfiguredModel(mirrored, 0, y, false));
-        }
-        getVariantBuilder(block).partialState().setModels(variants.toArray(ConfiguredModel[]::new));
+        mirroredCube(block, false);
     }
 
     /**
@@ -932,18 +946,15 @@ final class ModBlockStateProvider extends BlockStateProvider {
      * every face (sides too, unlike {@link #mirroredAndRotated}) shows the texture in all 8 orientations.
      */
     private void rotatedCube(Block block) {
+        mirroredCube(block, true);
+    }
+
+    /** {@link #orientations} of {@code cube_all} and vanilla's {@code cube_mirrored_all} with the block's texture. */
+    private void mirroredCube(Block block, boolean aroundX) {
         String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
         ResourceLocation texture = blockTexture(block);
-        List<ConfiguredModel> variants = new ArrayList<>();
-        for (ModelFile model : List.of(models().cubeAll(name, texture),
-                models().singleTexture(name + "_mirrored", mcLoc("block/cube_mirrored_all"), "all", texture))) {
-            for (int x = 0; x < 360; x += 90) {
-                for (int y = 0; y < 360; y += 90) {
-                    variants.add(new ConfiguredModel(model, x, y, false));
-                }
-            }
-        }
-        simpleBlock(block, variants.toArray(ConfiguredModel[]::new));
+        orientations(block, models().cubeAll(name, texture),
+                models().singleTexture(name + "_mirrored", mcLoc("block/cube_mirrored_all"), "all", texture), aroundX);
     }
 
     /** Cross model like vanilla plants; cutout, so the texture only has alpha 0 or 255. */
@@ -1019,27 +1030,41 @@ final class ModBlockStateProvider extends BlockStateProvider {
     /** The model of {@link #overlayCube}; {@code mirrored} flips every face of both layers horizontally. */
     private BlockModelBuilder overlayModel(String name, ResourceLocation particle, CubeTextures base, CubeTextures overlay,
                                            boolean emissive, String renderType, boolean mirrored) {
+        return layeredModel(name, particle, base, List.of(overlay), emissive, renderType, mirrored);
+    }
+
+    /**
+     * {@link #overlayModel} with one or more overlays, drawn in order (texture keys {@code overlay}, {@code overlay2}, ...);
+     * the opaque pixels of two overlays must not meet (coplanar faces would z-fight).
+     */
+    private BlockModelBuilder layeredModel(String name, ResourceLocation particle, CubeTextures base,
+                                           List<CubeTextures> overlays, boolean emissive, String renderType, boolean mirrored) {
         BlockModelBuilder model = models().withExistingParent(name, mcLoc("block/block"))
                 .renderType(renderType)
                 .texture("particle", particle);
         base.apply(model, "base");
-        overlay.apply(model, "overlay");
+        for (int i = 0; i < overlays.size(); i++) {
+            overlays.get(i).apply(model, i == 0 ? "overlay" : "overlay" + (i + 1));
+        }
         model.element().allFaces((direction, face) -> {
             face.texture("#base_" + CubeTextures.face(direction)).cullface(direction);
             if (mirrored) {
                 face.uvs(16, 0, 0, 16);
             }
         }).end();
-        var overlayElement = model.element().allFaces((direction, face) -> {
-            face.texture("#overlay_" + CubeTextures.face(direction)).cullface(direction);
-            if (mirrored) {
-                face.uvs(16, 0, 0, 16);
+        for (int i = 0; i < overlays.size(); i++) {
+            String key = i == 0 ? "overlay" : "overlay" + (i + 1);
+            var overlayElement = model.element().allFaces((direction, face) -> {
+                face.texture("#" + key + "_" + CubeTextures.face(direction)).cullface(direction);
+                if (mirrored) {
+                    face.uvs(16, 0, 0, 16);
+                }
+            });
+            if (emissive) {
+                overlayElement.emissivity(15, 15).ao(false);
             }
-        });
-        if (emissive) {
-            overlayElement.emissivity(15, 15).ao(false);
+            overlayElement.end();
         }
-        overlayElement.end();
         return model;
     }
 
