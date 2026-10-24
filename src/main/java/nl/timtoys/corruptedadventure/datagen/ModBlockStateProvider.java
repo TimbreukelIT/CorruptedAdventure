@@ -97,7 +97,8 @@ final class ModBlockStateProvider extends BlockStateProvider {
                 modLoc("block/corrupted_grass_block_top")).texture("particle", dirt);
         simpleBlock(ModBlocks.CORRUPTED_GRASS_BLOCK.get(), ConfiguredModel.allYRotations(grass, 0, false));
         randomlyRotated(ModBlocks.CORRUPTED_DIRT.get());
-        mirroredAndRotated(ModBlocks.CORRUPTED_STONE.get());
+        // 99b: all 32 orientations, not only stone's Y rotations: its veins lined up on the undersides of the floes.
+        rotatedCube(ModBlocks.CORRUPTED_STONE.get());
         simpleBlock(ModBlocks.CORRUPTED_COBBLESTONE.get());
         randomlyRotated(ModBlocks.CORRUPTED_SAND.get());
 
@@ -123,11 +124,12 @@ final class ModBlockStateProvider extends BlockStateProvider {
                 blockTexture(ModBlocks.CORRUPTED_LEAVES.get())).renderType("cutout_mipped"));
 
         // 89: the glitch block animates through its .mcmeta (T); voidstone's stars and the nullite crystals are emissive
-        // overlays (no block light). The voidstone ore shows plain voidstone under the crystals.
-        simpleBlock(ModBlocks.GLITCH_BLOCK.get());
+        // overlays (no block light). The voidstone ore shows plain voidstone under the crystals. 99b: the glitch block and
+        // voidstone in 32 orientations, so a patch of glitch blocks does not join into one even checkerboard and a large
+        // voidstone face shows no star lattice.
+        rotatedCube(ModBlocks.GLITCH_BLOCK.get());
         ResourceLocation voidstone = blockTexture(ModBlocks.VOIDSTONE.get());
-        oreWithOverlay(ModBlocks.VOIDSTONE.get(), voidstone, CubeTextures.all(voidstone),
-                CubeTextures.all(modLoc("block/voidstone_glow")), true);
+        rotatedGlowingCube(ModBlocks.VOIDSTONE.get());
         CubeTextures nullite = CubeTextures.all(modLoc("block/nullite_ore_overlay"));
         ResourceLocation corruptedStone = blockTexture(ModBlocks.CORRUPTED_STONE.get());
         oreWithOverlay(ModBlocks.NULLITE_ORE.get(), corruptedStone, CubeTextures.all(corruptedStone), nullite, true);
@@ -923,6 +925,25 @@ final class ModBlockStateProvider extends BlockStateProvider {
             variants.add(new ConfiguredModel(mirrored, 0, y, false));
         }
         getVariantBuilder(block).partialState().setModels(variants.toArray(ConfiguredModel[]::new));
+    }
+
+    /**
+     * Like {@link #rotatedGlowingCube} without the glow layer: the plain and a mirrored cube in all 16 x/y rotations, so
+     * every face (sides too, unlike {@link #mirroredAndRotated}) shows the texture in all 8 orientations.
+     */
+    private void rotatedCube(Block block) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        ResourceLocation texture = blockTexture(block);
+        List<ConfiguredModel> variants = new ArrayList<>();
+        for (ModelFile model : List.of(models().cubeAll(name, texture),
+                models().singleTexture(name + "_mirrored", mcLoc("block/cube_mirrored_all"), "all", texture))) {
+            for (int x = 0; x < 360; x += 90) {
+                for (int y = 0; y < 360; y += 90) {
+                    variants.add(new ConfiguredModel(model, x, y, false));
+                }
+            }
+        }
+        simpleBlock(block, variants.toArray(ConfiguredModel[]::new));
     }
 
     /** Cross model like vanilla plants; cutout, so the texture only has alpha 0 or 255. */

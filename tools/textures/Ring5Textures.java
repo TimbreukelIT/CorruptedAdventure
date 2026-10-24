@@ -71,7 +71,14 @@ public final class Ring5Textures {
     private static final int[] C_SAND = {0xA29F99, 0xB0ADA6, 0xBCB9B2, 0xC7C4BD, 0xD1CEC7, 0xDAD8D1};
     private static final int[] C_BARK = {0x2F2B2D, 0x3A3638, 0x464143, 0x524C4E, 0x5E5859, 0x6B6465};
     private static final int[] C_WOOD = {0x56524F, 0x65605D, 0x736E6A, 0x817C77, 0x8F8984, 0x9D9791};
-    private static final int[] C_LEAF = {0x2B2F2B, 0x373C36, 0x434942, 0x50564E, 0x5D635A, 0x6B7167};
+    // Leaves a few steps lighter than 99a with a lighter leaflet tone (99b): seen from below (vanilla shades a down face to
+    // half) the first palette went black, against oak's tinted green that still reads.
+    private static final int[] C_LEAF = {0x353933, 0x434840, 0x51574E, 0x60665C, 0x6F756A, 0x7E8479, 0x8E9488};
+    /**
+     * The sign boards' faces (99b): the grey wood a few steps lighter and calmer, so black and dark red text (dye
+     * colour × 0.4) reads as well as on vanilla's oak sign.
+     */
+    private static final int[] SIGN_WOOD = {0x7E7A76, 0x8C8884, 0x9A9692, 0xA7A39E, 0xB3AFAA, 0xBFBBB6};
     /** The veins: violet-black, 1 px; [0] the darkest heart of a vein, [2] its fading ends. */
     private static final int[] VEIN = {0x1A0E24, 0x2A1838, 0x3A1F52};
     /** The violet pith of the corrupted log's end grain. */
@@ -87,10 +94,13 @@ public final class Ring5Textures {
     private static final int BLACK_LIT = 0x2A0A30;
     private static final int GLITCH_CYAN = 0x00E8F0;
     private static final int GLITCH_WHITE = 0xF4F4F4;
-    // Void (89): near-black with a violet depth; the stars white to light violet ([0] the dim tone a twinkle leans to).
+    // Void (89): near-black with a violet depth; the stars white to light violet ([0] the dim tone a twinkle leans to, [1]
+    // the cross star's faint arms, 99b: bright arms made one "+" per block that tiled into a lattice).
     private static final int[] VOID = {0x07050A, 0x0C0911, 0x110D18, 0x16111F, 0x1C1527, 0x231A31};
     private static final int[] VOID_DEPTH = {0x24173A, 0x30204E};
-    private static final int[] STAR = {0x6A5498, 0xC8B4F0, 0xE8DCFF, 0xFFFFFF};
+    private static final int[] STAR = {0x6A5498, 0x8E7AC2, 0xC8B4F0, 0xE8DCFF, 0xFFFFFF};
+    /** Dim specks between the stars: part of the stone, not of the glow layer. */
+    private static final int STAR_DUST = 0x3E3058;
     // Nullite (§11): crystal body violet-black, its rim violet (8A4FD8-like), a pale violet glint; weakly emissive.
     private static final int[] NULLITE_BODY = {0x120A1E, 0x1C1030, 0x281644};
     private static final int[] NULLITE_RIM = {0x40246A, 0x7444BC, 0x8A4FD8};
@@ -892,46 +902,50 @@ public final class Ring5Textures {
     }
 
     /**
-     * Corrupted leaves: oak's leaf clumps, grey and thinner (more holes than vanilla; cutout_mipped), a dark lip under
-     * every clump, small two-pixel leaflets lit on the upper left, two dead violet-black spots; fixed colour, no tint.
+     * Corrupted leaves (99b): small leaflets of three to five pixels (diagonal strokes both ways and diamonds), lit on
+     * their upper-left pixel and dark on their lower right, scattered over the tile until ~60 % is covered (thinner than
+     * oak's ~67 %; cutout_mipped), two dead violet-black spots; fixed colour, no tint. The first version's large holes
+     * (one per tile) repeated visibly and read as black lace from below, where vanilla shades a down face to half.
      */
     private static void corruptedLeaves(BufferedImage image, Random random) {
         double[][] clumps = valueNoise(random, 4, 4);
-        boolean[][] hole = new boolean[SIZE][SIZE];
-        for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE; x++) {
-                hole[x][y] = clumps[x][y] < 0.34 || random.nextInt(9) == 0;
+        boolean[][] leaf = new boolean[SIZE][SIZE];
+        int covered = 0;
+        for (int attempt = 0; attempt < 2000 && covered < SIZE * SIZE * 0.6; attempt++) {
+            int[][] shape = LEAFLETS[random.nextInt(LEAFLETS.length)];
+            int x0 = random.nextInt(SIZE);
+            int y0 = random.nextInt(SIZE);
+            double base = 0.1 + 0.5 * clumps[x0][y0] + 0.2 * (random.nextDouble() - 0.5);
+            for (int i = 0; i < shape.length; i++) {
+                int x = Math.floorMod(x0 + shape[i][0], SIZE);
+                int y = Math.floorMod(y0 + shape[i][1], SIZE);
+                double t = i == 0 ? base + 0.3 : i == shape.length - 1 ? base - 0.25 : base;
+                covered += leaf[x][y] ? 0 : 1;
+                leaf[x][y] = true;
+                set(image, x, y, shade(C_LEAF, t));
             }
-        }
-        for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE; x++) {
-                if (hole[x][y]) {
-                    continue;
-                }
-                boolean lip = hole[x][Math.floorMod(y + 1, SIZE)];
-                set(image, x, y, lip ? C_LEAF[0] : shade(C_LEAF, 0.12 + 0.55 * clumps[x][y] + 0.25 * (random.nextDouble() - 0.5)));
-            }
-        }
-        for (int i = 0; i < 22; i++) {
-            int x = random.nextInt(SIZE);
-            int y = random.nextInt(SIZE);
-            int x1 = Math.floorMod(x + 1, SIZE);
-            int y1 = Math.floorMod(y + 1, SIZE);
-            if (hole[x][y] || hole[x1][y1]) {
-                continue;
-            }
-            set(image, x, y, C_LEAF[4 + random.nextInt(2)]);
-            set(image, x1, y1, C_LEAF[1]);
         }
         for (int placed = 0, attempt = 0; placed < 2 && attempt < 100; attempt++) {
             int x = random.nextInt(SIZE);
             int y = random.nextInt(SIZE);
-            if (!hole[x][y] && (image.getRGB(x, y) & 0xFFFFFF) != VEIN[0]) {
+            if (leaf[x][y] && (image.getRGB(x, y) & 0xFFFFFF) != VEIN[0]) {
                 set(image, x, y, VEIN[placed]);
                 placed++;
             }
         }
     }
+
+    /** Leaflet shapes for {@link #corruptedLeaves}, first pixel the lit tip, last the shadowed base. */
+    private static final int[][][] LEAFLETS = {
+            {{0, 0}, {1, 0}, {1, 1}, {2, 1}, {2, 2}},
+            {{2, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 2}},
+            {{1, 0}, {0, 1}, {2, 1}, {1, 1}, {1, 2}},
+            {{0, 0}, {1, 0}, {0, 1}, {1, 1}, {2, 2}},
+            {{1, 0}, {2, 0}, {1, 1}, {2, 1}, {0, 2}},
+            {{0, 0}, {1, 1}, {2, 2}},
+            {{2, 0}, {1, 1}, {0, 2}},
+            {{0, 0}, {0, 1}, {1, 1}, {1, 2}},
+            {{1, 0}, {1, 1}, {0, 1}, {0, 2}}};
 
     /**
      * Log end grain: a bark rim (two pixels, as a ring of {@code bark}), growth rings in squarish rounds lit to the top
@@ -970,12 +984,12 @@ public final class Ring5Textures {
         signFace(image, random, 28, 2, 24, 12);
         for (int y = 2; y < 14; y++) {
             for (int x : new int[] {0, 1, 26, 27}) {
-                set(image, x, y, shade(C_WOOD, 0.3 + 0.25 * random.nextDouble() + ((y - 2) % 4 == 3 ? -0.25 : 0)));
+                set(image, x, y, shade(SIGN_WOOD, 0.3 + 0.25 * random.nextDouble() + ((y - 2) % 4 == 3 ? -0.25 : 0)));
             }
         }
         for (int x = 2; x < 50; x++) {
-            set(image, x, 0, shade(C_WOOD, 0.6 + 0.3 * random.nextDouble()));
-            set(image, x, 1, shade(C_WOOD, 0.35 + 0.25 * random.nextDouble()));
+            set(image, x, 0, shade(SIGN_WOOD, 0.6 + 0.3 * random.nextDouble()));
+            set(image, x, 1, shade(SIGN_WOOD, 0.35 + 0.25 * random.nextDouble()));
         }
         for (int x = 2; x < 6; x++) {
             set(image, x, 14, shade(C_BARK, 0.5 + 0.3 * random.nextDouble()));
@@ -987,28 +1001,33 @@ public final class Ring5Textures {
                 set(image, x, y, shade(C_BARK, 0.45 + lit + 0.3 * (random.nextDouble() - 0.5)));
             }
         }
-        int veinX = 4 + random.nextInt(16);
-        int veinY = 3 + 4 * random.nextInt(3);
-        for (int j = 0; j < 4; j++) {
-            set(image, veinX + j, veinY, j == 0 || j == 3 ? VEIN[2] : VEIN[j % 2]);
+        // The vein runs in the bottom seam of the front and back, under the last line of text, never through it.
+        for (int face : new int[] {2, 28}) {
+            int veinX = face + 1 + random.nextInt(3);
+            for (int j = 0; j < 4; j++) {
+                set(image, veinX + j, 13, j == 0 || j == 3 ? VEIN[2] : VEIN[j % 2]);
+            }
         }
     }
 
-    /** A sign face: three planks of four rows (lit top row, dark seam at the bottom), staggered joints, grain. */
+    /**
+     * A sign face: three planks of four rows (lit top row, a soft seam at the bottom), staggered joints, faint grain; in
+     * {@link #SIGN_WOOD} with little noise, so the text on it stays readable.
+     */
     private static void signFace(BufferedImage image, Random random, int x0, int y0, int width, int height) {
         int rows = height / 3;
         for (int plank = 0; plank < 3; plank++) {
-            double tone = 0.4 + 0.25 * random.nextDouble();
+            double tone = 0.5 + 0.15 * random.nextDouble();
             int joint = x0 + 3 + random.nextInt(width - 6);
             for (int dy = 0; dy < rows; dy++) {
                 int y = y0 + plank * rows + dy;
                 for (int x = x0; x < x0 + width; x++) {
                     if (dy == rows - 1 || (x == joint && plank == 1)) {
-                        set(image, x, y, C_WOOD[0]);
+                        set(image, x, y, SIGN_WOOD[0]);
                     } else {
-                        double lit = dy == 0 ? 0.22 : 0.0;
+                        double lit = dy == 0 ? 0.18 : 0.0;
                         double edge = x == x0 ? 0.15 : x == x0 + width - 1 ? -0.2 : 0.0;
-                        set(image, x, y, shade(C_WOOD, tone + lit + edge + 0.25 * (random.nextDouble() - 0.5)));
+                        set(image, x, y, shade(SIGN_WOOD, tone + lit + edge + 0.14 * (random.nextDouble() - 0.5)));
                     }
                 }
             }
@@ -1016,7 +1035,7 @@ public final class Ring5Textures {
             int x = x0 + random.nextInt(width - 4);
             int length = 3 + random.nextInt(3);
             for (int j = 0; j < length; j++) {
-                set(image, x + j, y, C_WOOD[1]);
+                set(image, x + j, y, SIGN_WOOD[1]);
             }
         }
     }
@@ -1057,7 +1076,10 @@ public final class Ring5Textures {
         }
     }
 
-    /** A hanging sign's board face: a frame of darker wood lit on its top and left, stripped wood fibre inside, one vein. */
+    /**
+     * A hanging sign's board face: a frame of darker wood lit on its top and left, calm light fibre inside
+     * ({@link #SIGN_WOOD}, for the text), one vein in the bottom of the frame.
+     */
     private static void hangingBoard(BufferedImage image, Random random, int x0, int y0, int width, int height) {
         double[][] fibre = valueNoise(random, 8, 2);
         for (int dy = 0; dy < height; dy++) {
@@ -1073,14 +1095,13 @@ public final class Ring5Textures {
                 } else if (dy == 1 || dx == 1) {
                     set(image, x, y, C_WOOD[1]);
                 } else {
-                    set(image, x, y, shade(C_WOOD, 0.45 + 0.45 * (fibre[dx % SIZE][dy % SIZE] - 0.5) + 0.2 * (random.nextDouble() - 0.5)));
+                    set(image, x, y, shade(SIGN_WOOD, 0.55 + 0.3 * (fibre[dx % SIZE][dy % SIZE] - 0.5) + 0.12 * (random.nextDouble() - 0.5)));
                 }
             }
         }
-        int y = y0 + 3 + random.nextInt(height - 6);
-        int x = x0 + 3 + random.nextInt(width - 8);
+        int x = x0 + 1 + random.nextInt(width - 6);
         for (int j = 0; j < 4; j++) {
-            set(image, x + j, y + (j == 3 ? 1 : 0), j == 0 || j == 3 ? VEIN[2] : VEIN[j % 2]);
+            set(image, x + j, y0 + height - 1, j == 0 || j == 3 ? VEIN[2] : VEIN[j % 2]);
         }
     }
 
@@ -1218,7 +1239,8 @@ public final class Ring5Textures {
     private static final int[] GLITCH_STATES = {0, 0, 0, 1, 2, 2, 3, 4};
 
     /**
-     * Glitch block: vanilla's missing texture (8×8 checker of magenta and black) gone wrong. Every state shifts one to
+     * Glitch block: vanilla's missing texture (8×8 checker of magenta and black) gone wrong: slipped a few pixels
+     * sideways, with one quadrant fallen to a 4×4 checker (fixed over the frames). Every state shifts one to
      * three horizontal bands sideways (scanline tearing), moves or inverts one or two 4×4 blocks, dims one row, and in
      * some states drops in a band of a wrong colour (cyan, white). State 0 (the rest frame, shown longest) is only a
      * little broken, so the block still reads as the missing texture.
@@ -1226,10 +1248,17 @@ public final class Ring5Textures {
     private static void glitchBlock(BufferedImage image, Random random, double phase) {
         int state = GLITCH_STATES[(int) Math.floor(phase * GLITCH_STATES.length + 1e-9) % GLITCH_STATES.length];
         Random r = new Random(random.nextLong() + 7919L * state);
+        // The same in every frame: the checker slips a few pixels sideways and one quadrant drops to a 4-px checker,
+        // so neighbouring blocks never join into one even checkerboard (99b).
+        Random layout = new Random(random.nextLong());
+        int slip = 2 + layout.nextInt(3);
+        int fineX = 8 * layout.nextInt(2);
+        int fineY = 8 * layout.nextInt(2);
         int[][] pixels = new int[SIZE][SIZE];
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                boolean magenta = (x / 8 + y / 8) % 2 == 0;
+                boolean fine = x >= fineX && x < fineX + 8 && y >= fineY && y < fineY + 8;
+                boolean magenta = fine ? (x / 4 + y / 4) % 2 == 0 : (Math.floorMod(x - slip, SIZE) / 8 + y / 8) % 2 == 0;
                 pixels[x][y] = magenta ? MAGENTA : BLACK;
             }
         }
@@ -1342,32 +1371,32 @@ public final class Ring5Textures {
     // ---- Void and nullite (89) ---------------------------------------------------------------------------------
 
     /**
-     * Voidstone: near-black with a violet depth (soft, broad patches of a deeper violet, no grey noise) and four or five
-     * star pixels, one of them with a 1-px cross; the stars never share a row or column and keep apart, so a wall does
-     * not line them up. The stars are marked as glowing: {@code voidstone_glow} carries them (emissive, twinkling).
+     * Voidstone: near-black with a violet depth (soft nebula wisps of a deeper violet, no grey noise), four or five star
+     * pixels of mixed brightness (one with a 1-px cross) and three dim, non-glowing specks of star dust between them. The
+     * stars keep apart over the tile edge too, so neither one tile nor the 32 orientations of its blockstate line them
+     * up into a grid (99b: the first version's single brightness and inner margin read as a lattice on large faces).
+     * The stars are marked as glowing: {@code voidstone_glow} carries them (emissive, twinkling).
      */
     private static void voidstone(BufferedImage image, Random random) {
         double[][] broad = valueNoise(random, 8, 8);
         double[][] mid = valueNoise(random, 4, 4);
+        double[][] wisp = valueNoise(random, 16, 4);
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
-                double depth = 0.6 * broad[x][y] + 0.4 * mid[x][y];
-                int rgb = depth > 0.72 ? VOID_DEPTH[1] : depth > 0.6 ? VOID_DEPTH[0]
-                        : shade(VOID, 0.5 + 0.7 * (depth - 0.5) + 0.25 * (random.nextDouble() - 0.5));
+                double depth = 0.45 * broad[x][y] + 0.3 * mid[x][y] + 0.25 * wisp[x][y];
+                int rgb = depth > 0.8 ? VOID_DEPTH[1] : depth > 0.68 ? VOID_DEPTH[0]
+                        : shade(VOID, 0.5 + 1.5 * (depth - 0.5) + 0.25 * (random.nextDouble() - 0.5));
                 set(image, x, y, rgb);
             }
         }
         int target = 4 + random.nextInt(2);
         List<int[]> stars = new ArrayList<>();
         for (int attempt = 0; attempt < 500 && stars.size() < target; attempt++) {
-            int x = 1 + random.nextInt(SIZE - 2);
-            int y = 1 + random.nextInt(SIZE - 2);
-            boolean free = true;
-            for (int[] s : stars) {
-                // more than one apart in row and column, so no star meets the cross star's arms either
-                free &= Math.abs(s[0] - x) > 1 && Math.abs(s[1] - y) > 1 && Math.abs(s[0] - x) + Math.abs(s[1] - y) > 4;
-            }
-            if (free) {
+            // the cross star needs its arms inside the tile; the others may sit on the edge
+            int margin = stars.isEmpty() ? 1 : 0;
+            int x = margin + random.nextInt(SIZE - 2 * margin);
+            int y = margin + random.nextInt(SIZE - 2 * margin);
+            if (starFits(stars, x, y)) {
                 stars.add(new int[] {x, y});
             }
         }
@@ -1375,15 +1404,56 @@ public final class Ring5Textures {
             int x = stars.get(i)[0];
             int y = stars.get(i)[1];
             if (i == 0) {
-                glow(image, x, y, STAR[3]);
+                glow(image, x, y, STAR[4]);
                 glow(image, x - 1, y, STAR[1]);
                 glow(image, x + 1, y, STAR[1]);
                 glow(image, x, y - 1, STAR[1]);
                 glow(image, x, y + 1, STAR[1]);
             } else {
-                glow(image, x, y, STAR[1 + random.nextInt(2)]);
+                glow(image, x, y, STAR[2 + i % 3]);
             }
         }
+        List<int[]> taken = new ArrayList<>(stars);
+        for (int placed = 0, attempt = 0; placed < 3 && attempt < 500; attempt++) {
+            int x = random.nextInt(SIZE);
+            int y = random.nextInt(SIZE);
+            if (dustFits(taken, x, y)) {
+                taken.add(new int[] {x, y});
+                set(image, x, y, STAR_DUST);
+                placed++;
+            }
+        }
+    }
+
+    /**
+     * Whether a star at (x, y) keeps clear of the stars so far, measured across the tile edge: never on the row or column
+     * of another star, more than one apart from the cross star ({@code stars[0]}) in both so it never meets its arms, and
+     * more than four apart in Manhattan distance.
+     */
+    private static boolean starFits(List<int[]> stars, int x, int y) {
+        for (int i = 0; i < stars.size(); i++) {
+            int dx = wrappedDistance(stars.get(i)[0], x);
+            int dy = wrappedDistance(stars.get(i)[1], y);
+            int lane = i == 0 ? 1 : 0;
+            if (dx <= lane || dy <= lane || dx + dy <= 4) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether a dust speck at (x, y) keeps more than two apart (Manhattan, across the tile edge) from every point. */
+    private static boolean dustFits(List<int[]> points, int x, int y) {
+        for (int[] p : points) {
+            if (wrappedDistance(p[0], x) + wrappedDistance(p[1], y) <= 2) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static int wrappedDistance(int a, int b) {
+        return Math.min(Math.floorMod(a - b, SIZE), Math.floorMod(b - a, SIZE));
     }
 
     /**

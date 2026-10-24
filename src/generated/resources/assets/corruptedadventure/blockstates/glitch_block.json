@@ -1,7 +1,150 @@
 {
   "variants": {
-    "": {
-      "model": "corruptedadventure:block/glitch_block"
-    }
+    "": [
+      {
+        "model": "corruptedadventure:block/glitch_block"
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 90
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 90,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 90,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 90,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 180
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 180,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 180,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 180,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 270
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 270,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 270,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block",
+        "x": 270,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored"
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 90
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 90,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 90,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 90,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 180
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 180,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 180,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 180,
+        "y": 270
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 270
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 270,
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 270,
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/glitch_block_mirrored",
+        "x": 270,
+        "y": 270
+      }
+    ]
   }
 }
