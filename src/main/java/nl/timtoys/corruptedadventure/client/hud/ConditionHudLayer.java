@@ -8,6 +8,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.client.ConditionExposure;
 import nl.timtoys.corruptedadventure.condition.Condition;
 import nl.timtoys.corruptedadventure.condition.ConditionDefinitions;
 import nl.timtoys.corruptedadventure.condition.ConditionMeters;
@@ -40,8 +41,8 @@ public final class ConditionHudLayer {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
         // Our layer is not inside vanilla's F1 group, so check hideGui ourselves.
-        if (player == null || minecraft.options.hideGui || minecraft.gameMode == null
-                || !minecraft.gameMode.canHurtPlayer() || !ServerConfig.SPEC.isLoaded()) {
+        if (player == null || minecraft.options.hideGui || !ConditionExposure.exposed(minecraft)
+                || !ServerConfig.SPEC.isLoaded()) {
             return;
         }
         ConditionMeters meters = player.getData(ModAttachments.CONDITION_METERS);

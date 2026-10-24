@@ -7,6 +7,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import nl.timtoys.corruptedadventure.client.ConditionExposure;
 import nl.timtoys.corruptedadventure.condition.Condition;
 import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 
@@ -41,11 +42,11 @@ public final class VoidGlitchEffects {
     private static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
-        if (player == null || minecraft.level == null || minecraft.isPaused()) {
+        if (player == null || minecraft.level == null || minecraft.isPaused() || !ConditionExposure.exposed(minecraft)) {
             return;
         }
         int[] levels = Ring5Meters.thresholds(Condition.VOID, 1).orElse(null);
-        if (levels == null || !Ring5Meters.exposed(minecraft)) {
+        if (levels == null) {
             return;
         }
         float strength = strength(Ring5Meters.value(player, Condition.VOID), levels[0]);

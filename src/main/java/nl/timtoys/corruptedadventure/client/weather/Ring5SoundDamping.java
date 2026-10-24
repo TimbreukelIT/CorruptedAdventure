@@ -25,10 +25,10 @@ public final class Ring5SoundDamping {
     private static float dipFeed;
     private static float silenceFeed = 1.0F;
     /**
-     * The lowest silence factor: vanilla's {@code SoundEngine.play} drops a sound that starts at volume 0 (unless it may
-     * start silent), and a biome loop dropped that way is never played again while it stays in the handler's list.
+     * The lowest factor of any category: vanilla's {@code SoundEngine.play} drops a sound that starts at volume 0 (unless
+     * it may start silent), and a biome loop dropped that way is never played again while it stays in the handler's list.
      */
-    static final float SILENCE_FLOOR = 0.001F;
+    static final float VOLUME_FLOOR = 0.001F;
     private static float all = 1.0F;
     private static float weatherAndAmbient = 1.0F;
     private static float refreshedAll = 1.0F;
@@ -52,12 +52,15 @@ public final class Ring5SoundDamping {
         silenceFeed = Math.min(silenceFeed, factor);
     }
 
-    /** The volume factor for {@code source}: 1 for {@code MASTER} (the UI) and outside the ring 5 weather. */
+    /**
+     * The volume factor for {@code source}: 1 for {@code MASTER} (the UI) and outside the ring 5 weather, never below
+     * {@link #VOLUME_FLOOR}.
+     */
     public static float volume(@Nullable SoundSource source) {
         if (source == null || source == SoundSource.MASTER) {
             return 1.0F;
         }
-        return source == SoundSource.WEATHER || source == SoundSource.AMBIENT ? weatherAndAmbient : all;
+        return Math.max(VOLUME_FLOOR, source == SoundSource.WEATHER || source == SoundSource.AMBIENT ? weatherAndAmbient : all);
     }
 
     /** The factor of a standstill at {@code strength} (intensity × band share), at least 1 − {@link #STANDSTILL_DEPTH}. */
@@ -81,7 +84,7 @@ public final class Ring5SoundDamping {
 
     /** One tick: the feeds become the factors; true if the playing channels need a refresh. Pure, for tests. */
     static boolean advance() {
-        all = standstillFactor(standstillFeed) * Math.clamp(silenceFeed, SILENCE_FLOOR, 1.0F);
+        all = standstillFactor(standstillFeed) * Math.clamp(silenceFeed, 0.0F, 1.0F);
         weatherAndAmbient = all * (1.0F - Math.clamp(dipFeed, 0.0F, 1.0F));
         standstillFeed = 0.0F;
         dipFeed = 0.0F;
