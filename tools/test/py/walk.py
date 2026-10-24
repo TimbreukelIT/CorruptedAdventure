@@ -7,11 +7,16 @@ Puts the player in spectator, clears the ring weather of rings 2-5, hides the HU
 sets the time per pose,
 teleports and shoots until two shots in a row match (the studio's stable_shot), then shows the HUD again and puts the
 old time back. Start the server with --client and client.sh start first (studio.sh prepare for the fixed FOV).
+
+--light R (caves, undersides, the Nether): after the teleport puts invisible light blocks (level 15) on a grid of 4 in
+the air within R around the camera (R/2 up and down; `setblock ... keep`, so only air and cave air). They stay: use it
+on a copy of a world (cp -r run/<level> run/<level>-light), never on one that is scanned or compared later.
 """
 import argparse
 import os
 import re
 import sys
+import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.dont_write_bytecode = True  # no __pycache__ next to the studio driver
@@ -34,6 +39,20 @@ def poses(path):
     return out
 
 
+def light(rcon, dim, x, y, z, radius, wait):
+    """Light blocks on a grid of 4 in the air around (x, y, z), once the chunks there are loaded."""
+    bx, by, bz = int(x // 1), int(y // 1) + 1, int(z // 1)
+    for _ in range(30):
+        if "passed" in rcon.cmd("execute in %s if loaded %d %d %d" % (dim, bx, by, bz)).lower():
+            break
+        time.sleep(1)
+    time.sleep(wait)
+    for dx in range(-radius, radius + 1, 4):
+        for dy in range(-(radius // 2), radius // 2 + 1, 4):
+            for dz in range(-radius, radius + 1, 4):
+                rcon.cmd("execute in %s run setblock %d %d %d minecraft:light[level=15] keep" % (dim, bx + dx, by + dy, bz + dz))
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("poses")
@@ -41,6 +60,7 @@ def main():
     p.add_argument("--only", nargs="*")
     p.add_argument("--client", default="1", choices=["1", "2"])
     p.add_argument("--max-wait", type=float, default=25.0)
+    p.add_argument("--light", type=int, default=0, metavar="R")
     a = p.parse_args()
     player = studio.need_running(a.client)
     todo = [q for q in poses(a.poses) if not a.only or any(q[0].startswith(o) for o in a.only)]
@@ -64,6 +84,8 @@ def main():
             rcon.cmd("execute in %s run tp %s %s %s %s %s %s" % (dim, player, x, y, z, yaw, pitch))
             # A new spot has to load and render its chunks; another view of the same spot mostly re-renders.
             far = last_xz is None or dim != last_dim or abs(float(x) - last_xz[0]) + abs(float(z) - last_xz[1]) > 64
+            if a.light:
+                light(rcon, dim, float(x), float(y), float(z), a.light, 5 if far else 1)
             path = os.path.join(a.out, label + ".png")
             ok = studio.stable_shot(path, a.client, 8 if far else 2, a.max_wait)
             print(("shot " if ok else "FAILED ") + label, flush=True)

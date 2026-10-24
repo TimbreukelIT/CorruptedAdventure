@@ -108,6 +108,7 @@ bash tools/test/client.sh stop [1|2]
   `python tools/test/py/sheet.py build/test/shots build/test/sheet.png` makes a contact sheet.
 - Photo walks (ring 5 walk 1): `python tools/test/py/walk.py <poses.txt> <out dir> [--only label ...]` - spectator, ring
   weather cleared, HUD off, daylight cycle stopped, time per pose; each shot waits until the picture is stable.
+  `--light 16` lights caves and undersides with light blocks that stay: only on a copy of a world.
 
 ## Studio (structure photos, S0)
 
