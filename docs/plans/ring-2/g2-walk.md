@@ -235,4 +235,20 @@ skelet, reuzenpalm; `build/test/det-g2r2.txt`): alle verschillen liggen onder Y 
 (instortend `loose_sand` boven reservoirs: 5 blokken; stromend grotwater: 19) plus vanilla-klodders; boven Y 60 blok voor
 blok gelijk, brug 9/9 identiek.
 
+**Tweede na-rondgang (na de merge van `origin/main`, 0670fd68; `run/g2after2`, 16 foto's in
+`build/test/shots/g2-ring2-after2/`, contactblad `build/test/g2-ring2/sheet-after2.png`):** de drie onbruikbare foto's
+opnieuw en de zes overgeslagen spots. `runData` (geen wijziging) en `build --offline` groen, serverlog zonder ERROR.
+- `canyon_far.png`, `canyon_hi.png` (vervangen `canyon_low`/`_top`): kloof met bodemvlekken grind/grove aarde op het
+  plateau en de treden, een bronpoel onderin; leest goed. `oasisw_eye_e.png`, `oasisw_eye_n.png` (vervangen `_eye_s`):
+  poel, bloemen, struiken, palmen: levendig.
+- `duneslow` (`duneslow_low.png`, `duneslow_eye_n.png`): laag duindal met kleivloer, cactussen, half begraven dode bomen
+  en een rotsuitstekel: goed. `dunese` (`dunese_low.png`): hoge duinen, nog steeds kaal (één rots, één dode boom);
+  `dunese_eye_s.png` kijkt tegen een duinflank.
+- `salte` (`salte_low.png`, `salte_eye_n.png`): drukruggen, pekelpoelen, pilaren en kristallen; aan de horizon de
+  hoodoos: rijk.
+- `z12n` (`z12n_low.png`): `withered_expanse` met dode bomen en een grotopening; `z12n_eye_n.png` staat in een blok
+  (onbruikbaar, niet herhaald). `z23s`, `z23sw` (`*_low.png`, `*_eye_s.png`): `dry_riverbeds` met dode bomen, botten,
+  cactussen en de overgang naar de ring 3-kant: levendig.
+- Geen bugs gezien.
+
 Perf: overgeslagen op verzoek van de gebruiker (2026-10-25), in te halen bij de volgende formele teststop (`tools/test/areas/perf-g2.txt` en `perf-g2-ring2.txt` staan klaar).
