@@ -56,7 +56,8 @@ class Ring2FlatsLifeTest {
     @Test
     void theSurfaceRulesUseTheJavaThresholds() {
         JsonObject settings = WorldgenData.read("noise_settings/overworld.json");
-        assertEquals(List.of(Ring2FlatsLifeFeatures.RED_DUNES_FROM), thresholds(settings, "ring_2_red_dunes").stream().distinct().toList());
+        assertEquals(List.of(Ring2FlatsLifeFeatures.RED_FRINGE_FROM, Ring2FlatsLifeFeatures.RED_DUNES_FROM),
+                thresholds(settings, "ring_2_red_dunes").stream().distinct().toList());
         assertEquals(List.of(Ring2FlatsLifeFeatures.GROVE_GRASS_FROM), thresholds(settings, "ring_2_oasis_groves"));
         assertEquals(List.of(Ring2FlatsLifeFeatures.SCRUB_LOW), thresholds(settings, "ring_2_oasis_scrub"));
     }

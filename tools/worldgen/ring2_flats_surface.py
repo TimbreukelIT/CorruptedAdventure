@@ -9,12 +9,13 @@ file exactly, in its own line endings).
 
 - dune_sea: red dunes where corruptedadventure:ring_2_red_dunes >= RED_DUNES_FROM (~25 % of the dunes, patches ~300):
   every rule of the branch with sand once more in front of it, with red sand for sand and red sandstone for sandstone
-  (the hard valley floor and the canyon layers stay).
+  (the hard valley floor and the canyon layers stay); the top block also in a speckled fringe from RED_FRINGE_FROM
+  (minecraft:surface >= 0.1), so the patch has no sharp edge.
 - oasis_flats: on the open sand (below the pools' transition ring) a grass floor for the palm groves where
   ring_2_oasis_groves >= GROVE_GRASS_FROM (with coarse dirt specks), and coarse dirt specks in the scrub patches where
   ring_2_oasis_scrub >= SCRUB_FROM, for the dry grass.
 
-The thresholds are those of Ring2FlatsLifeFeatures (RED_DUNES_FROM, GROVE_GRASS_FROM, SCRUB_LOW); Ring2FlatsLifeTest
+The thresholds are those of Ring2FlatsLifeFeatures (RED_DUNES_FROM, RED_FRINGE_FROM, GROVE_GRASS_FROM, SCRUB_LOW); Ring2FlatsLifeTest
 checks that the JSON and the Java agree.
 """
 import copy
@@ -27,6 +28,7 @@ CA = "corruptedadventure:"
 MAX = 1.7976931348623157e+308
 
 RED_DUNES_FROM = 0.2
+RED_FRINGE_FROM = 0.12
 GROVE_GRASS_FROM = 0.33
 SCRUB_FROM = 0.1
 
@@ -85,6 +87,12 @@ def is_noise_rule(rule, name):
     return c.get("type") == "minecraft:noise_threshold" and c.get("noise") == CA + name
 
 
+def is_top(rule):
+    c = rule.get("if_true", {})
+    return (c.get("type") == "minecraft:stone_depth" and c.get("surface_type") == "floor" and c.get("offset") == 0
+            and not c.get("add_surface_depth"))
+
+
 def dunes(branch):
     # Each rule with sand gets its red copy right in front of it (in the red patches it decides first, and where it gives
     # no block the plain rule gives none either); rules without sand (the canyon layers) stay as they are.
@@ -94,6 +102,9 @@ def dunes(branch):
     for rule in plain:
         red = recolour(rule)
         if red != rule:
+            if is_top(rule):
+                # The top block also in a speckled fringe outside the patch, so its edge is no sharp line.
+                rules.append(cond(noise("ring_2_red_dunes", RED_FRINGE_FROM), cond(surface_noise(0.1), red)))
             rules.append(cond(noise("ring_2_red_dunes", RED_DUNES_FROM), red))
         rules.append(rule)
 

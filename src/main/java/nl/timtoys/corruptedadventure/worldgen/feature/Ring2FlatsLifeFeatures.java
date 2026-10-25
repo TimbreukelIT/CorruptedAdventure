@@ -31,6 +31,8 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static nl.timtoys.corruptedadventure.registry.ModConfiguredFeatures.DRY_GRASS;
@@ -61,6 +63,8 @@ public final class Ring2FlatsLifeFeatures {
 
     /** Red dunes where {@code ring_2_red_dunes} is at least this: ~25 % of the dunes (surface rule). */
     static final double RED_DUNES_FROM = 0.2;
+    /** The top block also red from here where {@code minecraft:surface} is at least 0.1: a speckled fringe, no sharp edge. */
+    static final double RED_FRINGE_FROM = 0.12;
     /** Thickets: no extra flora below the low end, every cell from the high end (~35 % of the valleys get some). */
     static final double THICKETS_LOW = 0.05;
     static final double THICKETS_HIGH = 0.3;
@@ -163,19 +167,20 @@ public final class Ring2FlatsLifeFeatures {
                 HeightBandFilter.below(Ring2DressingFeatures.CACTUS_TOP + 1),
                 PlacementUtils.isEmpty(),
                 BiomeFilter.biome());
-        // About one buried dead tree per four dune chunks, on the flanks.
+        // About one buried dead tree per four dune chunks, on the flanks; never in a fossil (its ribs arch over air, a
+        // trunk there would stand on nothing).
         PlacementUtils.register(context, DUNE_SEA_BURIED_TREES, features.getOrThrow(BURIED_DEAD_TREE),
                 JitteredGridPlacement.of(16, 2, 0.3F),
                 SURFACE,
                 HeightBandFilter.between(FLANK_BOTTOM, FLANK_TOP + 1),
-                BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, onDuneSand)),
+                BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, onDuneSand, noBones(2))),
                 BiomeFilter.biome());
 
-        // Salt islands: a bleached tree on about every second island (only ~5 % of the flats is island).
+        // Salt islands: a bleached tree on about every second island (an island of ~35 blocks holds ~20 cells of 8).
         PlacementUtils.register(context, SALT_ISLAND_BLEACHED_TREES, features.getOrThrow(BLEACHED_DEAD_TREE),
-                JitteredGridPlacement.of(16, 2, 0.35F),
+                JitteredGridPlacement.of(8, 2, 0.04F),
                 SURFACE,
-                BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, onIsland)),
+                BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, onIsland, noBones(2))),
                 BiomeFilter.biome());
 
         // Oasis: scrub in patches on the open sand (the transition ring's plants), dry grass on the coarse dirt specks.
@@ -192,6 +197,19 @@ public final class Ring2FlatsLifeFeatures {
                 BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
                         BlockPredicate.matchesBlocks(below(), Blocks.COARSE_DIRT))),
                 BiomeFilter.biome());
+    }
+
+    /** No bone block within {@code reach} of the origin, at its height and one below (a fossil's ribs). */
+    private static BlockPredicate noBones(int reach) {
+        List<BlockPredicate> bones = new ArrayList<>();
+        for (int dy = -1; dy <= 0; dy++) {
+            for (int dx = -reach; dx <= reach; dx++) {
+                for (int dz = -reach; dz <= reach; dz++) {
+                    bones.add(BlockPredicate.matchesBlocks(new Vec3i(dx, dy, dz), Blocks.BONE_BLOCK));
+                }
+            }
+        }
+        return BlockPredicate.not(BlockPredicate.anyOf(bones));
     }
 
     private static BlockStateProvider weighted(SimpleWeightedRandomList.Builder<BlockState> states) {
