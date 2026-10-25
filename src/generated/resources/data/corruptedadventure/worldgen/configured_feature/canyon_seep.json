@@ -1,0 +1,49 @@
+{
+  "type": "corruptedadventure:ground_patch",
+  "config": {
+    "depth": 1,
+    "material": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:moss_block"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:grass_block",
+            "Properties": {
+              "snowy": "false"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:coarse_dirt"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    },
+    "raised": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:moss_block"
+      }
+    },
+    "replaceable": [
+      "minecraft:red_sand",
+      "corruptedadventure:cracked_clay",
+      "minecraft:gravel"
+    ],
+    "stretch": 1.3
+  }
+}

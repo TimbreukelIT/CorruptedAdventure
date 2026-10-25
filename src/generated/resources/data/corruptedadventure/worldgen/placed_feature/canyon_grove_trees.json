@@ -1,0 +1,53 @@
+{
+  "feature": "corruptedadventure:canyon_grove_tree",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.35,
+      "density": {
+        "high": 0.37,
+        "low": 0.17,
+        "noise": "corruptedadventure:ring_2_canyon_groves"
+      },
+      "margin": 3
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 3,
+      "radius": 2
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:air"
+          },
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": [
+              "minecraft:red_sand",
+              "minecraft:coarse_dirt",
+              "corruptedadventure:cracked_clay"
+            ],
+            "offset": [
+              0,
+              -1,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

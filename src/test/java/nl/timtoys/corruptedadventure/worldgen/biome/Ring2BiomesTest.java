@@ -21,6 +21,7 @@ import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2RockFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.RingVanillaOres;
 import org.junit.jupiter.api.Test;
 
@@ -173,10 +174,13 @@ class Ring2BiomesTest {
     void ownFeaturesLastInTheirStepInAFixedOrder() {
         Map<ResourceKey<Biome>, Biome> biomes = bootstrap();
         Biome canyonlands = biomes.get(ModBiomes.CANYONLANDS);
-        List<ResourceKey<PlacedFeature>> rocks = step(canyonlands, GenerationStep.Decoration.LOCAL_MODIFICATIONS);
-        assertEquals(Ring2Biomes.CANYONLANDS_ROCKS, rocks.subList(rocks.size() - Ring2Biomes.CANYONLANDS_ROCKS.size(), rocks.size()));
-        assertEquals(ModPlacedFeatures.CANYON_SPRINGS, rocks.getLast(), "the spring last: it avoids the boulders of its chunk");
-        assertEquals(ModPlacedFeatures.CANYONLANDS_VEGETATION, step(canyonlands, GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
+        // G2: the seeps after the springs (a seep round a spring needs its water), the groves after the scrub.
+        List<ResourceKey<PlacedFeature>> rocks = Stream.concat(Ring2Biomes.CANYONLANDS_ROCKS.stream(), Ring2RockFeatures.CANYONLANDS_SEEPS.stream()).toList();
+        assertEquals(rocks, own(canyonlands, GenerationStep.Decoration.LOCAL_MODIFICATIONS));
+        assertEquals(ModPlacedFeatures.CANYON_SPRINGS, Ring2Biomes.CANYONLANDS_ROCKS.getLast(), "the spring last of the rocks: it avoids the boulders of its chunk");
+        assertEquals(Stream.concat(Stream.of(ModPlacedFeatures.CANYONLANDS_VEGETATION), Ring2RockFeatures.CANYONLANDS_GROVES.stream()).toList(),
+                own(canyonlands, GenerationStep.Decoration.VEGETAL_DECORATION));
+        assertEquals(Ring2RockFeatures.CANYON_GROVE_TREES, Ring2RockFeatures.CANYONLANDS_GROVES.getFirst(), "trees before their scrub");
 
         Biome oasis = biomes.get(ModBiomes.OASIS_FLATS);
         assertEquals(ModPlacedFeatures.OASIS_ROCKS, step(oasis, GenerationStep.Decoration.LOCAL_MODIFICATIONS).getLast());
@@ -190,7 +194,8 @@ class Ring2BiomesTest {
 
         // Change 30: the hoodoo fields reuse the canyon rockfall (same place in the step), each biome its own plants.
         Biome hoodoos = biomes.get(ModBiomes.HOODOO_FIELDS);
-        assertEquals(ModPlacedFeatures.CANYON_ROCKFALL, step(hoodoos, GenerationStep.Decoration.LOCAL_MODIFICATIONS).getLast());
+        assertEquals(Stream.concat(Stream.of(ModPlacedFeatures.CANYON_ROCKFALL), Ring2RockFeatures.HOODOO_GULLIES.stream()).toList(),
+                own(hoodoos, GenerationStep.Decoration.LOCAL_MODIFICATIONS));
         assertTrue(Ring2Biomes.CANYONLANDS_ROCKS.contains(ModPlacedFeatures.CANYON_ROCKFALL));
         // Change 30c: the hoodoo flora, then the pillar feet and the cactus groups.
         assertEquals(List.of(ModPlacedFeatures.HOODOO_FIELDS_VEGETATION, ModPlacedFeatures.HOODOO_PILLAR_FOOT_FLORA,

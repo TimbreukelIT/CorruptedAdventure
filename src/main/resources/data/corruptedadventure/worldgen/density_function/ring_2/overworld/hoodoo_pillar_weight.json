@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:mul",
+    "argument1": "corruptedadventure:ring_2/overworld/hoodoo_rock_weight",
+    "argument2": {
+      "type": "minecraft:spline",
+      "spline": {
+        "coordinate": {
+          "type": "minecraft:noise",
+          "noise": "corruptedadventure:ring_2_hoodoo_density",
+          "xz_scale": 1.0,
+          "y_scale": 0.0
+        },
+        "points": [
+          {
+            "location": -0.3,
+            "value": 0.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.24,
+            "value": 1.0,
+            "derivative": 0.0
+          }
+        ]
+      }
+    }
+  }
+}
