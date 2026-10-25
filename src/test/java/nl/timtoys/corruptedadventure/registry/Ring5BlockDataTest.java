@@ -35,8 +35,8 @@ class Ring5BlockDataTest {
     /** Phase 2 wave 1: ring 5 ores need the tier of ring 4 (tidesilver); was diamond (OV2 = A). */
     @Test
     void nulliteNeedsATidesilverPickaxe() throws IOException {
-        assertTrue(values("corruptedadventure/tags/block/needs_tidesilver_tool.json").contains("#c:ores/nullite"));
-        assertFalse(values("minecraft/tags/block/needs_diamond_tool.json").contains("#c:ores/nullite"));
+        assertTrue(values("corruptedadventure/tags/block/needs_tidesilver_tool.json").containsAll(Set.of("corruptedadventure:nullite_ore", "corruptedadventure:voidstone_nullite_ore")));
+        assertFalse(values("minecraft/tags/block/needs_diamond_tool.json").contains("corruptedadventure:nullite_ore"));
         assertEquals(Set.of("corruptedadventure:nullite_ore", "corruptedadventure:voidstone_nullite_ore"),
                 values("c/tags/block/ores/nullite.json"));
         assertTrue(values("c/tags/block/ores.json").contains("#c:ores/nullite"));
@@ -52,7 +52,7 @@ class Ring5BlockDataTest {
         assertTrue(baseStone.contains("corruptedadventure:chalkrack"));
         assertFalse(baseStone.contains("corruptedadventure:white_stone"));
         assertTrue(values("minecraft/tags/block/nether_carver_replaceables.json").contains("corruptedadventure:white_stone"));
-        assertTrue(values("corruptedadventure/tags/block/needs_tidesilver_tool.json").contains("#c:ores/white_core"));
+        assertTrue(values("corruptedadventure/tags/block/needs_tidesilver_tool.json").contains("corruptedadventure:white_core_ore"));
         assertEquals(Set.of("corruptedadventure:white_core_ore"), values("c/tags/block/ores_in_ground/white_stone.json"));
         assertEquals(Set.of("corruptedadventure:white_core"), values("c/tags/item/gems/white_core.json"));
     }

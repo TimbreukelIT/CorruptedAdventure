@@ -1,7 +1,11 @@
 {
   "values": [
-    "#c:ores/tidesilver",
-    "#c:ores/jade",
+    "corruptedadventure:tidesilver_ore",
+    "corruptedadventure:tidestone_tidesilver_ore",
+    "corruptedadventure:deepslate_tidesilver_ore",
+    "corruptedadventure:jade_ore",
+    "corruptedadventure:tidestone_jade_ore",
+    "corruptedadventure:deepslate_jade_ore",
     "corruptedadventure:raw_tidesilver_block",
     "corruptedadventure:tidesilver_block",
     "corruptedadventure:jade_block"

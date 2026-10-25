@@ -6,12 +6,14 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Tiers;
+import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -100,22 +102,47 @@ class GearTierTest {
 
     @Test
     void ringOresAreInTheNeedsTagOfTheRingBefore() throws IOException {
-        assertTrue(values("minecraft/tags/block/needs_diamond_tool.json").containsAll(Set.of("#c:ores/sunstone", "#c:ores/turquoise")));
+        assertTrue(values("minecraft/tags/block/needs_diamond_tool.json").containsAll(ours("red_canyon_sunstone_ore",
+                "orange_canyon_sunstone_ore", "cream_canyon_sunstone_ore", "scorched_sandstone_sunstone_ore",
+                "red_canyon_turquoise_ore", "orange_canyon_turquoise_ore", "cream_canyon_turquoise_ore")));
         // The tier tags hold exactly the ring's ores and storage blocks (the latter like vanilla: what their ore needs).
-        assertEquals(Set.of("#c:ores/volcanite", "#c:ores/sulfur", "#c:ores/fire_ruby", "corruptedadventure:raw_volcanite_block",
-                        "corruptedadventure:volcanite_block", "corruptedadventure:fire_ruby_block"),
+        assertEquals(ours("volcanite_ore", "deepslate_volcanite_ore", "basalt_volcanite_ore", "sulfur_ore", "basalt_sulfur_ore",
+                        "fire_ruby_ore", "deepslate_fire_ruby_ore", "basalt_fire_ruby_ore",
+                        "raw_volcanite_block", "volcanite_block", "fire_ruby_block"),
                 values("corruptedadventure/tags/block/needs_sunstone_tool.json"));
-        assertEquals(Set.of("#c:ores/tidesilver", "#c:ores/jade", "corruptedadventure:raw_tidesilver_block",
-                        "corruptedadventure:tidesilver_block", "corruptedadventure:jade_block"),
+        assertEquals(ours("tidesilver_ore", "tidestone_tidesilver_ore", "deepslate_tidesilver_ore", "jade_ore",
+                        "tidestone_jade_ore", "deepslate_jade_ore", "raw_tidesilver_block", "tidesilver_block", "jade_block"),
                 values("corruptedadventure/tags/block/needs_volcanite_tool.json"));
-        assertEquals(Set.of("#c:ores/nullite", "#c:ores/white_core", "corruptedadventure:raw_nullite_block",
-                        "corruptedadventure:nullite_block"),
+        assertEquals(ours("nullite_ore", "voidstone_nullite_ore", "white_core_ore", "raw_nullite_block", "nullite_block"),
                 values("corruptedadventure/tags/block/needs_tidesilver_tool.json"));
         assertEquals(Set.of(), values("corruptedadventure/tags/block/needs_nullite_tool.json"));
         Set<String> iron = values("minecraft/tags/block/needs_iron_tool.json");
-        for (String moved : new String[]{"#c:ores/sunstone", "#c:ores/turquoise", "#c:ores/volcanite", "#c:ores/fire_ruby"}) {
+        for (String moved : ours("red_canyon_sunstone_ore", "red_canyon_turquoise_ore", "volcanite_ore", "fire_ruby_ore")) {
             assertFalse(iron.contains(moved), moved);
         }
+    }
+
+    /**
+     * Review B (F1): a needs tag that took a public {@code c:} tag would gate other mods' ores in it too (a modpack's
+     * sulfur ore), since every vanilla tier fails on our needs tags.
+     */
+    @Test
+    void needsTagsNeverTakeAConventionTag() throws IOException {
+        for (String path : List.of("minecraft/tags/block/needs_iron_tool.json", "minecraft/tags/block/needs_diamond_tool.json",
+                "corruptedadventure/tags/block/needs_sunstone_tool.json", "corruptedadventure/tags/block/needs_volcanite_tool.json",
+                "corruptedadventure/tags/block/needs_tidesilver_tool.json", "corruptedadventure/tags/block/needs_nullite_tool.json")) {
+            for (String value : values(path)) {
+                assertFalse(value.startsWith("#c:"), path + " takes " + value);
+            }
+        }
+    }
+
+    private static Set<String> ours(String... names) {
+        Set<String> ids = new HashSet<>();
+        for (String name : names) {
+            ids.add(CorruptedAdventure.MOD_ID + ":" + name);
+        }
+        return ids;
     }
 
     private static Set<String> values(String path) throws IOException {

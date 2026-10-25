@@ -1520,6 +1520,7 @@ Java leest `NetherRing3Biomes.ALL` (tags `is_nether_ring_3`, `c:is_nether`, `c:i
 
 ## Bekende valkuilen
 
+- **Needs-tags nooit via een `c:`-tag (review B golf 1, F1):** elke vanilla-tier faalt op onze `needs_<tier>_tool`-tags (`tierGating`); zou een needs-tag `#c:ores/sulfur` nemen, dan is in een modpack ook het zwavelerts van een andere mod met geen enkele vanilla-houweel meer te mijnen. Zet ertsen en opslagblokken dus als blok (`.add`) in de needs-tags; `c:ores/*` alleen voor `c:ores`, `ore_rates` en `mineable`. `GearTierTest.needsTagsNeverTakeAConventionTag` bewaakt het.
 - _Voeg hier dingen toe die tijd kostten om uit te zoeken, zodat een volgende sessie ze niet opnieuw hoeft te ontdekken._
 - `./gradlew runServer` stuurt stdin niet door: `stop` via een pipe werkt niet. Gebruik `tools/test/server.sh` (sinds golf 3; stopt via RCON en alleen de eigen PID; niet meer `tools/server-smoke-test.sh`, dat elke `serverRun`-JVM stopt). `run/eula.txt` (`eula=true`) is nodig; `run/` staat in `.gitignore`.
 - **JVM-PID's op Windows (T0):** het args-bestand op de commandline van een MDG-run staat met dubbele backslashes (`"@P:\\…\\build\\moddev\\serverRunVmArgs.txt"`); normaliseer vóór het vergelijken. Git Bash-PID's (`$$`) zijn niet zichtbaar voor Windows-tools: `/proc/$$/winpid`.

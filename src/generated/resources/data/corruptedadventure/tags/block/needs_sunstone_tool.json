@@ -1,8 +1,13 @@
 {
   "values": [
-    "#c:ores/volcanite",
-    "#c:ores/sulfur",
-    "#c:ores/fire_ruby",
+    "corruptedadventure:volcanite_ore",
+    "corruptedadventure:deepslate_volcanite_ore",
+    "corruptedadventure:basalt_volcanite_ore",
+    "corruptedadventure:sulfur_ore",
+    "corruptedadventure:basalt_sulfur_ore",
+    "corruptedadventure:fire_ruby_ore",
+    "corruptedadventure:deepslate_fire_ruby_ore",
+    "corruptedadventure:basalt_fire_ruby_ore",
     "corruptedadventure:raw_volcanite_block",
     "corruptedadventure:volcanite_block",
     "corruptedadventure:fire_ruby_block"

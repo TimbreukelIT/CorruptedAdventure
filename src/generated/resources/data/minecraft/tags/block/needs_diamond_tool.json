@@ -1,7 +1,12 @@
 {
   "values": [
-    "#c:ores/sunstone",
-    "#c:ores/turquoise",
+    "corruptedadventure:red_canyon_sunstone_ore",
+    "corruptedadventure:orange_canyon_sunstone_ore",
+    "corruptedadventure:cream_canyon_sunstone_ore",
+    "corruptedadventure:scorched_sandstone_sunstone_ore",
+    "corruptedadventure:red_canyon_turquoise_ore",
+    "corruptedadventure:orange_canyon_turquoise_ore",
+    "corruptedadventure:cream_canyon_turquoise_ore",
     "corruptedadventure:raw_sunstone_block",
     "corruptedadventure:raw_turquoise_block",
     "corruptedadventure:sunstone_block",

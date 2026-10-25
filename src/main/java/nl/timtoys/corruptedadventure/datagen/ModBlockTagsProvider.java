@@ -200,7 +200,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(ModTags.Blocks.ORES_NULLITE).add(ModBlocks.NULLITE_ORE.get(), ModBlocks.VOIDSTONE_NULLITE_ORE.get());
         tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_NULLITE);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_NULLITE);
-        tag(GearTier.TIDESILVER.needsTool()).addTag(ModTags.Blocks.ORES_NULLITE);
+        tag(GearTier.TIDESILVER.needsTool()).add(ModBlocks.NULLITE_ORE.get(), ModBlocks.VOIDSTONE_NULLITE_ORE.get());
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_NULLITE);
         tag(ModTags.Blocks.ORES_IN_GROUND_CORRUPTED_STONE).add(ModBlocks.NULLITE_ORE.get());
         tag(ModTags.Blocks.ORES_IN_GROUND_VOIDSTONE).add(ModBlocks.VOIDSTONE_NULLITE_ORE.get());
@@ -236,7 +236,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(ModTags.Blocks.ORES_WHITE_CORE).add(ModBlocks.WHITE_CORE_ORE.get());
         tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_WHITE_CORE);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_WHITE_CORE);
-        tag(GearTier.TIDESILVER.needsTool()).addTag(ModTags.Blocks.ORES_WHITE_CORE);
+        tag(GearTier.TIDESILVER.needsTool()).add(ModBlocks.WHITE_CORE_ORE.get());
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_WHITE_CORE);
         tag(ModTags.Blocks.ORES_IN_GROUND_WHITE_STONE).add(ModBlocks.WHITE_CORE_ORE.get());
     }
@@ -314,7 +314,8 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(ModTags.Blocks.ORES_JADE).add(ModBlocks.JADE_ORE.get(), ModBlocks.TIDESTONE_JADE_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get());
         tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
-        tag(GearTier.VOLCANITE.needsTool()).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
+        tag(GearTier.VOLCANITE.needsTool()).add(ModBlocks.TIDESILVER_ORE.get(), ModBlocks.TIDESTONE_TIDESILVER_ORE.get(), ModBlocks.DEEPSLATE_TIDESILVER_ORE.get(),
+                ModBlocks.JADE_ORE.get(), ModBlocks.TIDESTONE_JADE_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get());
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
         tag(Tags.Blocks.ORES_IN_GROUND_STONE).add(ModBlocks.TIDESILVER_ORE.get(), ModBlocks.JADE_ORE.get());
         tag(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE).add(ModBlocks.DEEPSLATE_TIDESILVER_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get());
@@ -650,8 +651,9 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 .addTag(ModTags.Blocks.ORES_FIRE_RUBY);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_SULFUR)
                 .addTag(ModTags.Blocks.ORES_FIRE_RUBY);
-        tag(GearTier.SUNSTONE.needsTool()).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_SULFUR)
-                .addTag(ModTags.Blocks.ORES_FIRE_RUBY);
+        tag(GearTier.SUNSTONE.needsTool()).add(ModBlocks.VOLCANITE_ORE.get(), ModBlocks.DEEPSLATE_VOLCANITE_ORE.get(), ModBlocks.BASALT_VOLCANITE_ORE.get(),
+                ModBlocks.SULFUR_ORE.get(), ModBlocks.BASALT_SULFUR_ORE.get(),
+                ModBlocks.FIRE_RUBY_ORE.get(), ModBlocks.DEEPSLATE_FIRE_RUBY_ORE.get(), ModBlocks.BASALT_FIRE_RUBY_ORE.get());
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_FIRE_RUBY);
         tag(Tags.Blocks.ORE_RATES_DENSE).addTag(ModTags.Blocks.ORES_SULFUR);
         tag(Tags.Blocks.ORES_IN_GROUND_STONE).add(ModBlocks.VOLCANITE_ORE.get(), ModBlocks.SULFUR_ORE.get(),
@@ -698,7 +700,8 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
     /**
      * The gear tiers (phase 2 wave 1, {@link GearTier}): every vanilla tier fails on all our {@code needs_*_tool} tags,
      * each of our tiers on those of the higher tiers. The ores themselves go into the needs tags in their ring's
-     * method: ring 2 needs diamond (vanilla), ring N+1 the tier of ring N, Nether ring N like ring N.
+     * method: ring 2 needs diamond (vanilla), ring N+1 the tier of ring N, Nether ring N like ring N. Always as blocks,
+     * never through a {@code c:ores/*} tag: other mods' ores in those tags (a modpack's sulfur ore) must stay minable.
      */
     private void tierGating() {
         for (TagKey<Block> vanilla : List.of(BlockTags.INCORRECT_FOR_WOODEN_TOOL, BlockTags.INCORRECT_FOR_STONE_TOOL,
@@ -858,7 +861,9 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.ORANGE_CANYON_TURQUOISE_ORE.get(), ModBlocks.CREAM_CANYON_TURQUOISE_ORE.get());
         tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
-        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
+        tag(BlockTags.NEEDS_DIAMOND_TOOL).add(ModBlocks.RED_CANYON_SUNSTONE_ORE.get(), ModBlocks.ORANGE_CANYON_SUNSTONE_ORE.get(),
+                ModBlocks.CREAM_CANYON_SUNSTONE_ORE.get(), ModBlocks.SCORCHED_SANDSTONE_SUNSTONE_ORE.get(),
+                ModBlocks.RED_CANYON_TURQUOISE_ORE.get(), ModBlocks.ORANGE_CANYON_TURQUOISE_ORE.get(), ModBlocks.CREAM_CANYON_TURQUOISE_ORE.get());
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
     }
 
