@@ -420,6 +420,11 @@ final class Ring5Inner {
         if (roll >= Math.max(CUBE_CHANCE, FLOOR_CUBE_CHANCE) * weight) {
             return null;
         }
+        // A roll only the dip floors keep: the middle (one of the samples below) above the floor already rules the cell
+        // out, so most such cells cost one sample, not nine (walk 1 review).
+        if (roll >= CUBE_CHANCE * weight && top(x0 + size / 2, z0 + size / 2) > ROLL_LOW + FLOOR_FADE) {
+            return null;
+        }
         double ground = Double.NEGATIVE_INFINITY;
         for (int dx = 0; dx <= size; dx += Math.max(1, size / 2)) {
             for (int dz = 0; dz <= size; dz += Math.max(1, size / 2)) {
