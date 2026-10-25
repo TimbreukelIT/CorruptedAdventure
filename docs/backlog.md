@@ -514,3 +514,6 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 ## Uit G2 ring 3, grondvulling/subzones/vuurflora (`g2/ring3-ground`, 2026-10-25)
 
 - [textures] Echte texture voor `charred_shrub` (verkoolde struik, vuurflora van de kale ring 3-vlaktes): nu een placeholder uit `Ring3Textures.charredShrub` (kale verkoolde twijgjes met oranje puntjes, geen gloeilaag); overwegen een emissive gloeilaag op de puntjes zoals smeulblad. (bron: G2 ring 3, besluit 4)
+- [infra] `tools/test/setup.sh`: met poortnummer n ≥ 10 valt de serverpoort (25570 + n) samen met de RCON-poort van stroom n − 10 (25580 + n − 10); g2r3-marks (n = 16) botste met de RCON van g2-ring2 (n = 6). Een eigen RCON-basis (bijv. 25680 + n) of een controle in `ca_need_port`. (bron: G2 ring 3)
+- [worldgen] G2 ring 3: de gerafelde rand van `zone_edge` loopt alleen de zeekom in (de venen-surface kent de buurbiome niet); andere ring 3-biomes langs zone 3→4 houden een harde rand. Bij de na-rondgang beoordelen. (bron: G2 ring 3, besluit 8)
+- [blocks] G2 ring 3: de zwarte kronen van de half verbrande smeulboom zijn `charred_wood`; een eigen "verkoold blad"-blok (doorzichtig, valt af) zou natuurlijker lezen. (bron: G2 ring 3, besluit 7)
