@@ -469,7 +469,12 @@ public final class Ring5Field implements DensityFunction {
             return;
         }
         double source = innerGround(pair.sourceX(x, z), pair.sourceZ(x, z));
-        c.top = Mth.lerp(pair.weight(x, z), c.top, source);
+        double weight = pair.weight(x, z);
+        c.top = Mth.lerp(weight, c.top, source);
+        // The pit of whichever ground weighs most.
+        if (weight >= 0.5) {
+            c.pit = inner().pitFloor(pair.sourceX(x, z), pair.sourceZ(x, z));
+        }
         c.height = c.top;
         c.layered = false;
     }
@@ -541,6 +546,7 @@ public final class Ring5Field implements DensityFunction {
             return;
         }
         c.scars = Mth.clamp(1.0 - crack / Ring5Outer.SCAR_RIM, 0.0, 1.0);
+        c.pit = inner.pitFloor(x, z);
         c.top = top;
         c.bottom = Double.NEGATIVE_INFINITY;
         // Shifted layers only where the glitch fields hold alone (no half-blended layers), and not within a layer's
@@ -983,10 +989,11 @@ public final class Ring5Field implements DensityFunction {
 
     /**
      * Whether the column lies on the floor of one of {@code corrupted_wastes}' pits (83): its sand (walk 1 review; the
-     * surface rule {@code ring_5_ground}). The pit's shape only: the biome and the band are the rule's.
+     * surface rule {@code ring_5_ground}). The pit's shape only: the biome and the band are the rule's. A doppelganger's
+     * target has its source's pit, as it has its source's ground.
      */
     public boolean pitFloor(int x, int z) {
-        return inner().pitFloor(x, z);
+        return column(x, z).pit;
     }
 
     /**
@@ -1953,6 +1960,8 @@ public final class Ring5Field implements DensityFunction {
         double opening;
         /** Scratch for {@link Ring5Caves.Chamber#column} (93): no allocation per column. */
         final int[] chamberOut = new int[4];
+        /** On the floor of a {@code corrupted_wastes} pit ({@link Ring5Inner#pitFloor}; a copy: its source's). */
+        boolean pit;
         /** A doppelganger's copy (93): the pair, and the source column this one mirrors; null elsewhere. */
         Ring5Copies.Pair copy;
         int sourceX;
@@ -1962,6 +1971,7 @@ public final class Ring5Field implements DensityFunction {
             crack = Double.POSITIVE_INFINITY;
             caves = 0;
             rimTop = Integer.MIN_VALUE;
+            pit = false;
             closure = CAVES_CLOSED;
             room = Double.NEGATIVE_INFINITY;
             opening = Double.NaN;

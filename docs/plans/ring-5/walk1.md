@@ -147,3 +147,8 @@ Vraag 5 en de code-review van walk 1 (`7300b26a..39e4c306`) zijn verwerkt op `ma
   Budget ≤ 1,75: na gehaald. *Notitie:* `zone45` stond vóór deze change op 2,04, boven het budget (INT3 1,53, walk 1 fix 1,59); waarschijnlijk
   door de walk 1-kubussen (`39e4c306`), want met alleen de early-out erbij zakt hij terug naar 1,64. Niet verder uitgezocht; bij
   de volgende volledige perf-r5-ronde nog eens kijken (de spreiding van `zone45` is ~0,3).
+- **Review-ronde 2** (`39e4c306..fc094945`, 3 lage bevindingen): de kuil van `ring_5_ground` `pit` komt nu uit de veldkolom
+  (`Ring5Field.Column.pit`, in `fillInner`), zodat een dubbelganger-target de kuilen van zijn bron heeft (en in de blend-rand die van de
+  zwaarste grond; `Ring5CopiesTest.theTargetHasItsSourcesPits`); `walk.py` herstelt eerst via RCON en drukt F1 als laatste (in try/except);
+  `CODEBASE.md`-passage over het basisgesteente herschreven. Gates: `build --offline` 1.378 tests, 0 fouten; `runData` schoon.
+  `det.sh` niet gedraaid: g2-ring2/3 hielden de slots voor hun wandelingen; de change raakt alleen surface-blokken in dubbelgangers.

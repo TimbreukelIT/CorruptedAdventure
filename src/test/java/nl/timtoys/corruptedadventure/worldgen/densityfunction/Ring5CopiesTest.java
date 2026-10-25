@@ -126,4 +126,23 @@ class Ring5CopiesTest {
             }
         }
     }
+
+    /** A target's pit floors are its source's (walk 1 review: the sand of {@code ring_5_ground} {@code pit} follows the ground). */
+    @Test
+    void theTargetHasItsSourcesPits() {
+        int pits = 0;
+        for (Ring5Copies.Pair pair : pairs(FIELD)) {
+            for (int x = pair.tx(); x < pair.tx() + S; x++) {
+                for (int z = pair.tz(); z < pair.tz() + S; z++) {
+                    if (!pair.core(x, z) || FIELD.column(x, z).isVoid()) {
+                        continue;
+                    }
+                    boolean source = FIELD.inner().pitFloor(pair.sourceX(x, z), pair.sourceZ(x, z));
+                    assertEquals(source, FIELD.pitFloor(x, z), x + " " + z);
+                    pits += source ? 1 : 0;
+                }
+            }
+        }
+        assertTrue(pits > 0, "no pit on any doppelganger");
+    }
 }
