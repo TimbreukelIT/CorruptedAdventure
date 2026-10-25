@@ -16,8 +16,8 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
  * so the existing armor item models show a trim overlay (items show the material, not the pattern).
  */
 public enum CoatingMaterial {
-    /** Placeholder for the dehydration coating (golf 2 decides the real material). */
-    TURQUOISE("turquoise", "item", "raw_turquoise", 0x4FC6B5, 0.7F),
+    /** Placeholder for the dehydration coating: the cut turquoise gem (golf 2 decides the real material). */
+    TURQUOISE("turquoise", "item", "turquoise", 0x4FC6B5, 0.7F),
     DEW_CRYSTAL("dew_crystal", "item", "dew_crystal", 0x8BC4D6, 0.8F),
     /** Placeholder for the cold coating (golf 4 decides the real material). */
     FIRE_CRYSTAL("fire_crystal", "item", "fire_crystal", 0xE07A2A, 0.5F),

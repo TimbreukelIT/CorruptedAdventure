@@ -101,10 +101,16 @@ class GearTierTest {
     @Test
     void ringOresAreInTheNeedsTagOfTheRingBefore() throws IOException {
         assertTrue(values("minecraft/tags/block/needs_diamond_tool.json").containsAll(Set.of("#c:ores/sunstone", "#c:ores/turquoise")));
-        assertEquals(Set.of("#c:ores/volcanite", "#c:ores/sulfur", "#c:ores/fire_ruby"),
+        // The tier tags hold exactly the ring's ores and storage blocks (the latter like vanilla: what their ore needs).
+        assertEquals(Set.of("#c:ores/volcanite", "#c:ores/sulfur", "#c:ores/fire_ruby", "corruptedadventure:raw_volcanite_block",
+                        "corruptedadventure:volcanite_block", "corruptedadventure:fire_ruby_block"),
                 values("corruptedadventure/tags/block/needs_sunstone_tool.json"));
-        assertEquals(Set.of("#c:ores/tidesilver", "#c:ores/jade"), values("corruptedadventure/tags/block/needs_volcanite_tool.json"));
-        assertEquals(Set.of("#c:ores/nullite", "#c:ores/white_core"), values("corruptedadventure/tags/block/needs_tidesilver_tool.json"));
+        assertEquals(Set.of("#c:ores/tidesilver", "#c:ores/jade", "corruptedadventure:raw_tidesilver_block",
+                        "corruptedadventure:tidesilver_block", "corruptedadventure:jade_block"),
+                values("corruptedadventure/tags/block/needs_volcanite_tool.json"));
+        assertEquals(Set.of("#c:ores/nullite", "#c:ores/white_core", "corruptedadventure:raw_nullite_block",
+                        "corruptedadventure:nullite_block"),
+                values("corruptedadventure/tags/block/needs_tidesilver_tool.json"));
         assertEquals(Set.of(), values("corruptedadventure/tags/block/needs_nullite_tool.json"));
         Set<String> iron = values("minecraft/tags/block/needs_iron_tool.json");
         for (String moved : new String[]{"#c:ores/sunstone", "#c:ores/turquoise", "#c:ores/volcanite", "#c:ores/fire_ruby"}) {

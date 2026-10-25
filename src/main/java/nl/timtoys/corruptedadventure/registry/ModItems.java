@@ -56,7 +56,7 @@ public final class ModItems {
     /** Placeholder upgrade template to the sunstone tier (wave 1): recipe and source follow with the tier. */
     public static final DeferredItem<SmithingTemplateItem> SUNSTONE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
             UpgradeSmithingTemplates.itemName(GearTier.SUNSTONE), () -> UpgradeSmithingTemplates.create(GearTier.SUNSTONE));
-    /** Coating against dehydration (applied with raw turquoise, a placeholder). Where to find it: golf 2. */
+    /** Coating against dehydration (applied with the turquoise gem, a placeholder). Where to find it: golf 2. */
     public static final DeferredItem<SmithingTemplateItem> DEHYDRATION_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "dehydration_coating_smithing_template", () -> CoatingTemplates.create(Coating.DEHYDRATION));
 

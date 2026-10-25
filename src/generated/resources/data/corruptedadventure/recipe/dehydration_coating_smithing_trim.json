@@ -1,7 +1,7 @@
 {
   "type": "minecraft:smithing_trim",
   "addition": {
-    "item": "corruptedadventure:raw_turquoise"
+    "item": "corruptedadventure:turquoise"
   },
   "base": {
     "tag": "minecraft:trimmable_armor"

@@ -4,6 +4,6 @@
     "color": "#4FC6B5",
     "translate": "trim_material.corruptedadventure.turquoise"
   },
-  "ingredient": "corruptedadventure:raw_turquoise",
+  "ingredient": "corruptedadventure:turquoise",
   "item_model_index": 0.7
 }

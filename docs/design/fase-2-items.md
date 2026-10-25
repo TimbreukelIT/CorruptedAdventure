@@ -198,7 +198,7 @@ Gebouwd in fase 2 golf 1 (stroom C). Technische uitwerking van §1.3 en §4.
 - **Materiaal = trim-materiaal:** elk coatingmateriaal is een eigen `trim_material` met een eigen kleurenpalet. Zo
   maakt vanilla's `smithing_trim`-recept het harnas, en tekent vanilla de coating in de kleur van het materiaal.
   - hitte = dauwkristal, gif = oerijs, void én stilte = witte kern (zelfde materiaal, ander patroon);
-  - **voorlopig:** uitdroging = ruw turkoois, kou = vuurkristal (warmte tegen kou). Golf 2 en golf 4 kiezen het echte
+  - **voorlopig:** uitdroging = turkoois (de geslepen edelsteen `turquoise`; bij de merge van golf 1 omgezet van `raw_turquoise`), kou = vuurkristal (warmte tegen kou). Golf 2 en golf 4 kiezen het echte
     materiaal; dan wijzigt alleen `CoatingMaterial`.
   - De materialen staan **niet** in `#minecraft:trim_materials`: vanilla-templates nemen ze niet (geen decoratieve
     dauwkristal-trim), en per coating is er één recept dat precies zijn eigen materiaal neemt. Een `trim_material` is

@@ -544,7 +544,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [infra] De GameTest-template `data/corruptedadventure/structure/gametest/empty.nbt` en `gametest/` zitten in de mod-jar (alleen actief met `neoforge.enabledGameTestNamespaces`); eventueel een eigen source set als er meer gametests komen. (bron: f2 golf 1 B)
 
 ## Uit fase 2 golf 1 — coatings (C, 2026-10-25)
-- [items] Echte coatingmaterialen voor uitdroging (golf 2) en kou (golf 4): nu placeholders `raw_turquoise` en `fire_crystal` (`CoatingMaterial.TURQUOISE`/`FIRE_CRYSTAL`). (bron: f2 golf 1 C)
+- [items] Echte coatingmaterialen voor uitdroging (golf 2) en kou (golf 4): nu placeholders `turquoise` (de edelsteen) en `fire_crystal` (`CoatingMaterial.TURQUOISE`/`FIRE_CRYSTAL`). (bron: f2 golf 1 C)
 - [items] Vindplaats van het eerste coating-template per golf (loot, recept of drop); het kopie-recept (template + 7 × materiaal + ringsteen → 2) is een placeholder, voor de witte kern mogelijk te duur of te goedkoop. (bron: f2 golf 1 C)
 - [textures] Coating-textures zijn placeholders (`tools/textures/CoatingTextures.java`); het harnas-itemmodel toont bij een coating de overlay van een vanilla-materiaal met de dichtste kleur (geleende `item_model_index`), niet een eigen kleur. Eigen item-overlays vragen eigen armor-itemmodellen met overrides. (bron: f2 golf 1 C)
 - [items] Een coating-patroon met een vreemd trim-materiaal (alleen via commando's of andere mods) heeft geen texture: de atlas kent per coating alleen het eigen materiaal. (bron: f2 golf 1 C)
