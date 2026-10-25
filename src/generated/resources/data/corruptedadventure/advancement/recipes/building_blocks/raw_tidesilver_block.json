@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_raw_tidesilver": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:raw_tidesilver"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:raw_tidesilver_block"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_raw_tidesilver"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:raw_tidesilver_block"
+    ]
+  }
+}

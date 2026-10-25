@@ -6,6 +6,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.lang.Golf1MaterialNames;
 import nl.timtoys.corruptedadventure.datagen.lang.LangOutput;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing3BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing4BiomeNames;
@@ -99,7 +100,6 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         copy(Biomes.CRIMSON_FOREST, "Helrood bos");
         copy(Biomes.WARPED_FOREST, "Spookachtig bos");
 
-        add("itemGroup.corruptedadventure.main", "The Corrupted Adventure");
         add("subtitles.corruptedadventure.ambient.ring_1.strange_cave", "Er beweegt iets in het donker");
         add("subtitles.corruptedadventure.weather.ring_2.sandstorm", "Zandstorm raast");
         add("subtitles.corruptedadventure.ambient.ring_2.singing_sand", "Het zand zingt");
@@ -261,6 +261,9 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         Ring5ConditionText.addDutch(this);
         Ring5WeatherText.addDutch(this);
         Ring5SignText.addDutch(this);
+
+        // Phase 2 golf 1: one helper per stream.
+        Golf1MaterialNames.addDutch(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s is uitgedroogd");

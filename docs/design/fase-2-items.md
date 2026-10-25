@@ -96,3 +96,24 @@ testscript.
   - het coatingsysteem: trim-patronen, coating-templates, een `RateModifier` die het harnas leest (server-side) en
     tests.
   - Het raamwerk voor de verbruiksitems schuift naar golf 2, waar de veldfles het eerste voorbeeld is.
+
+### 4.1 Tabs, materialen en smelten (D)
+- **Creative-tabs:** vijf tabs `ring_1` … `ring_5` ("Corrupted Adventure: Ring N"); Nether-ring N zit in tab N. Per
+  tab eerst de blokken, dan de losse items, in registratievolgorde. De tab volgt uit de `// ---- Ring N ----`-sectie
+  in `ModBlocks`/`ModItems`; nieuwe items komen achteraan in hun (Nether-)ringsectie. Tab-iconen: dood hout, ruwe
+  zonnesteen, ruw vulkaniet, ruw getijdezilver, ruw nulliet.
+- **Producten (voorlopige namen):** `sunstone_ingot`, `volcanite_ingot`, `tidesilver_ingot`, `nullite_ingot` en
+  `turquoise` (de geslepen edelsteen uit `raw_turquoise`). Placeholder-textures.
+- **Opslagblokken (9 in, 9 uit):** ruw (`raw_sunstone_block`, `raw_turquoise_block`, `raw_volcanite_block`,
+  `raw_tidesilver_block`, `raw_nullite_block`; als `raw_iron_block`), metaal (`sunstone_block`, `volcanite_block`,
+  `tidesilver_block`, `nullite_block`; als `iron_block`) en edelsteen (`turquoise_block`, `fire_ruby_block`,
+  `jade_block`; als `diamond_block`). Mijnbaar met dezelfde tier als hun erts (ring 2: diamant; ring 3–5 volgen de
+  tier-tags uit §4.3). **Voorlopig:** geen beacon-basis en geen beacon-betaling (backlog).
+- **Zout en kristallen:** 4 zout ↔ zoutblok (beide kanten op). 4 scherven → kristalblok voor vuurkristal, gifkristal,
+  aquamarijn en zuiverkristal, zoals amethist (geen weg terug).
+- **Smelten (oven + hoogoven):** elk raw-item en elk erts (alle gesteente-varianten) naar zijn product: zonnesteen,
+  turkoois, vulkaniet, getijdezilver en nulliet, plus zielkristal, zwavel, vuurrobijn, jade en witte kern uit hun
+  ertsen. XP zoals het vanilla-analoog: metalen en turkoois 0,7 (ijzer/koper), nulliet en de edelstenen 1,0 (diamant),
+  zielkristal 0,2 (kwarts), zwavel 0,1 (kolen).
+- **Niet in golf 1:** opslagblokken voor zwavel, zielkristal, dauwkristal, witte kern, glitchscherven en de
+  kristalscherven-als-materiaal; die volgen met hun nut in golf 2–5.

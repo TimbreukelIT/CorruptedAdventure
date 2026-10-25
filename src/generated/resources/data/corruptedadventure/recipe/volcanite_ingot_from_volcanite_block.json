@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "corruptedadventure:volcanite_block"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "corruptedadventure:volcanite_ingot"
+  }
+}

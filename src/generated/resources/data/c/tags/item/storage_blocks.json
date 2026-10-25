@@ -1,0 +1,17 @@
+{
+  "values": [
+    "#c:storage_blocks/raw_sunstone",
+    "#c:storage_blocks/raw_turquoise",
+    "#c:storage_blocks/sunstone",
+    "#c:storage_blocks/turquoise",
+    "#c:storage_blocks/raw_volcanite",
+    "#c:storage_blocks/volcanite",
+    "#c:storage_blocks/fire_ruby",
+    "#c:storage_blocks/raw_tidesilver",
+    "#c:storage_blocks/tidesilver",
+    "#c:storage_blocks/jade",
+    "#c:storage_blocks/raw_nullite",
+    "#c:storage_blocks/nullite",
+    "#c:storage_blocks/salt"
+  ]
+}

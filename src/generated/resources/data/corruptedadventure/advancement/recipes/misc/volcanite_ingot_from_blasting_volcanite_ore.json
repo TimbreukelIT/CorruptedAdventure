@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:volcanite_ingot_from_blasting_volcanite_ore"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_volcanite_ore": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:volcanite_ore"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_volcanite_ore"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:volcanite_ingot_from_blasting_volcanite_ore"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:white_core_from_blasting_white_core_ore"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_white_core_ore": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:white_core_ore"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_white_core_ore"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:white_core_from_blasting_white_core_ore"
+    ]
+  }
+}

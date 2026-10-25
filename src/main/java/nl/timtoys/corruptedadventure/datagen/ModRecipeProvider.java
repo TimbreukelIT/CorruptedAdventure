@@ -14,6 +14,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.recipe.MaterialRecipes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 
@@ -21,7 +22,8 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Recipes. Phase 1 has only the few that make a world block usable like its vanilla counterpart (lagoon sand and
- * sandstone, the corrupted wood set).
+ * sandstone, the corrupted wood set); phase 2 adds one class per stream in {@code datagen/recipe/} (golf 1:
+ * {@link MaterialRecipes}).
  */
 final class ModRecipeProvider extends RecipeProvider {
     ModRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
@@ -37,6 +39,7 @@ final class ModRecipeProvider extends RecipeProvider {
                 .save(output, CorruptedAdventure.id("glass_from_smelting_lagoon_sand"));
         lagoonSandstone(output);
         ring5(output);
+        MaterialRecipes.build(output);
     }
 
     /**

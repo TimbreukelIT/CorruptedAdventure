@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "corruptedadventure:sunstone_block"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "corruptedadventure:sunstone_ingot"
+  }
+}

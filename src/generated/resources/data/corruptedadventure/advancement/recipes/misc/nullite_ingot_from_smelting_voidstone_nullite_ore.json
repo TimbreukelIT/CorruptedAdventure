@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:nullite_ingot_from_smelting_voidstone_nullite_ore"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_voidstone_nullite_ore": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:voidstone_nullite_ore"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_voidstone_nullite_ore"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:nullite_ingot_from_smelting_voidstone_nullite_ore"
+    ]
+  }
+}

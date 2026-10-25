@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 1.0,
+  "group": "nullite_ingot",
+  "ingredient": {
+    "item": "corruptedadventure:nullite_ore"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:nullite_ingot"
+  }
+}

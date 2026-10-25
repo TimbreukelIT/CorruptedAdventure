@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "corruptedadventure:turquoise_block"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "corruptedadventure:turquoise"
+  }
+}

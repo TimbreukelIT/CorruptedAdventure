@@ -6,6 +6,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.lang.Golf1MaterialNames;
 import nl.timtoys.corruptedadventure.datagen.lang.LangOutput;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing3BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing4BiomeNames;
@@ -99,7 +100,6 @@ final class EnglishLanguageProvider extends LanguageProvider implements LangOutp
         copy(Biomes.CRIMSON_FOREST, "Crimson Forest");
         copy(Biomes.WARPED_FOREST, "Warped Forest");
 
-        add("itemGroup.corruptedadventure.main", "The Corrupted Adventure");
         add("subtitles.corruptedadventure.ambient.ring_1.strange_cave", "Something stirs in the dark");
         add("subtitles.corruptedadventure.weather.ring_2.sandstorm", "Sandstorm howls");
         add("subtitles.corruptedadventure.ambient.ring_2.singing_sand", "Sand hums");
@@ -261,6 +261,9 @@ final class EnglishLanguageProvider extends LanguageProvider implements LangOutp
         Ring5ConditionText.addEnglish(this);
         Ring5WeatherText.addEnglish(this);
         Ring5SignText.addEnglish(this);
+
+        // Phase 2 golf 1: one helper per stream.
+        Golf1MaterialNames.addEnglish(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s dried out");

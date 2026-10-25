@@ -104,6 +104,28 @@ final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.SALT.get());
 
         netherRing2();
+        golf1Materials();
+    }
+
+    /** Phase 2 golf 1 (stream D): the storage blocks and the ingots and turquoise gem. */
+    private void golf1Materials() {
+        blockItem(ModBlocks.RAW_SUNSTONE_BLOCK);
+        blockItem(ModBlocks.RAW_TURQUOISE_BLOCK);
+        blockItem(ModBlocks.SUNSTONE_BLOCK);
+        blockItem(ModBlocks.TURQUOISE_BLOCK);
+        blockItem(ModBlocks.RAW_VOLCANITE_BLOCK);
+        blockItem(ModBlocks.VOLCANITE_BLOCK);
+        blockItem(ModBlocks.FIRE_RUBY_BLOCK);
+        blockItem(ModBlocks.RAW_TIDESILVER_BLOCK);
+        blockItem(ModBlocks.TIDESILVER_BLOCK);
+        blockItem(ModBlocks.JADE_BLOCK);
+        blockItem(ModBlocks.RAW_NULLITE_BLOCK);
+        blockItem(ModBlocks.NULLITE_BLOCK);
+        basicItem(ModItems.SUNSTONE_INGOT.get());
+        basicItem(ModItems.TURQUOISE.get());
+        basicItem(ModItems.VOLCANITE_INGOT.get());
+        basicItem(ModItems.TIDESILVER_INGOT.get());
+        basicItem(ModItems.NULLITE_INGOT.get());
     }
 
     private void netherRing2() {

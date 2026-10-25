@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_raw_sunstone": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:raw_sunstone"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:sunstone_ingot_from_blasting_raw_sunstone"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_raw_sunstone"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:sunstone_ingot_from_blasting_raw_sunstone"
+    ]
+  }
+}

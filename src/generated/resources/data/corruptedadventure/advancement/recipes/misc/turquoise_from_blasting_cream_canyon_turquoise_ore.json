@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_cream_canyon_turquoise_ore": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:cream_canyon_turquoise_ore"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:turquoise_from_blasting_cream_canyon_turquoise_ore"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_cream_canyon_turquoise_ore"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:turquoise_from_blasting_cream_canyon_turquoise_ore"
+    ]
+  }
+}

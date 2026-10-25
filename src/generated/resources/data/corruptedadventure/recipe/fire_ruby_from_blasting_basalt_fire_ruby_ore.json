@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 1.0,
+  "group": "fire_ruby",
+  "ingredient": {
+    "item": "corruptedadventure:basalt_fire_ruby_ore"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:fire_ruby"
+  }
+}

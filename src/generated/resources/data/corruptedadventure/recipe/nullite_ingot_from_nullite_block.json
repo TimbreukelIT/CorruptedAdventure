@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "corruptedadventure:nullite_block"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "corruptedadventure:nullite_ingot"
+  }
+}

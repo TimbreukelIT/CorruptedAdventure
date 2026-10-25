@@ -123,6 +123,49 @@ final class ModItemTagsProvider extends ItemTagsProvider {
 
         ring4();
         ring5();
+        golf1Materials();
+    }
+
+    /** Phase 2 golf 1 (stream D): the storage blocks' item tags, the ingots and the turquoise gem. */
+    private void golf1Materials() {
+        copy(ModTags.Blocks.STORAGE_BLOCKS_RAW_SUNSTONE, ModTags.Items.STORAGE_BLOCKS_RAW_SUNSTONE);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_RAW_TURQUOISE, ModTags.Items.STORAGE_BLOCKS_RAW_TURQUOISE);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_SUNSTONE, ModTags.Items.STORAGE_BLOCKS_SUNSTONE);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_TURQUOISE, ModTags.Items.STORAGE_BLOCKS_TURQUOISE);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_RAW_VOLCANITE, ModTags.Items.STORAGE_BLOCKS_RAW_VOLCANITE);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_VOLCANITE, ModTags.Items.STORAGE_BLOCKS_VOLCANITE);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_FIRE_RUBY, ModTags.Items.STORAGE_BLOCKS_FIRE_RUBY);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_RAW_TIDESILVER, ModTags.Items.STORAGE_BLOCKS_RAW_TIDESILVER);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_TIDESILVER, ModTags.Items.STORAGE_BLOCKS_TIDESILVER);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_JADE, ModTags.Items.STORAGE_BLOCKS_JADE);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_RAW_NULLITE, ModTags.Items.STORAGE_BLOCKS_RAW_NULLITE);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_NULLITE, ModTags.Items.STORAGE_BLOCKS_NULLITE);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_SALT, ModTags.Items.STORAGE_BLOCKS_SALT);
+        tag(Tags.Items.STORAGE_BLOCKS)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_RAW_SUNSTONE)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_RAW_TURQUOISE)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_SUNSTONE)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_TURQUOISE)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_RAW_VOLCANITE)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_VOLCANITE)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_FIRE_RUBY)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_RAW_TIDESILVER)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_TIDESILVER)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_JADE)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_RAW_NULLITE)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_NULLITE)
+                .addTag(ModTags.Items.STORAGE_BLOCKS_SALT);
+        tag(ModTags.Items.INGOTS_SUNSTONE).add(ModItems.SUNSTONE_INGOT.get());
+        tag(ModTags.Items.INGOTS_VOLCANITE).add(ModItems.VOLCANITE_INGOT.get());
+        tag(ModTags.Items.INGOTS_TIDESILVER).add(ModItems.TIDESILVER_INGOT.get());
+        tag(ModTags.Items.INGOTS_NULLITE).add(ModItems.NULLITE_INGOT.get());
+        tag(Tags.Items.INGOTS)
+                .addTag(ModTags.Items.INGOTS_SUNSTONE)
+                .addTag(ModTags.Items.INGOTS_VOLCANITE)
+                .addTag(ModTags.Items.INGOTS_TIDESILVER)
+                .addTag(ModTags.Items.INGOTS_NULLITE);
+        tag(ModTags.Items.GEMS_TURQUOISE).add(ModItems.TURQUOISE.get());
+        tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_TURQUOISE);
     }
 
     /**

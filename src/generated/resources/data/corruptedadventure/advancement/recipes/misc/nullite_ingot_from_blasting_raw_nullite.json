@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_raw_nullite": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:raw_nullite"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:nullite_ingot_from_blasting_raw_nullite"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_raw_nullite"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:nullite_ingot_from_blasting_raw_nullite"
+    ]
+  }
+}

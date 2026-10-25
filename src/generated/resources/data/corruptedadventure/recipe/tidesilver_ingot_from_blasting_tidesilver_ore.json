@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0.7,
+  "group": "tidesilver_ingot",
+  "ingredient": {
+    "item": "corruptedadventure:tidesilver_ore"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:tidesilver_ingot"
+  }
+}

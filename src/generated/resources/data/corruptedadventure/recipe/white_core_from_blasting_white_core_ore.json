@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 1.0,
+  "group": "white_core",
+  "ingredient": {
+    "item": "corruptedadventure:white_core_ore"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:white_core"
+  }
+}
