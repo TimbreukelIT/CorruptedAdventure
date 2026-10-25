@@ -66,7 +66,7 @@ Verhaallijn: het water uit ring 3 is gestolen en naar ring 4 gestroomd, waar het
 
 ## Fasering
 Elke fase start met een sparringsessie (vragenrondes) in Claude Code; beslissingen gaan naar `02-beslissingenlog.md` en `fase-N-*.md`.
-1. **Fase 1 — Wereld:** world preset (overworld + Nether), `ringAt`, ringverdeling, terrein, biomes, grotten, ores, custom blocks, weer per ring, omgevingscondities per ring en de mechanics die daarbij horen
+1. **Fase 1 — Wereld** (✅ afgerond 2026-10-25, change 100): world preset (overworld + Nether), `ringAt`, ringverdeling, terrein, biomes, grotten, ores, custom blocks, weer per ring, omgevingscondities per ring en de mechanics die daarbij horen
 2. **Fase 2 — Items en tools:** tools, gear, items en recipes per ring
 3. **Fase 3 — Structures:** structures per ring en Nether-ring, loot, bewakersstructures, kastelen, vaste structure-posities
 4. **Fase 4 — Mobs en bosses:** monsters per ring, ringbewakers, bosses, Nightmares (één rondzwervende boss per ring; concept in `fase-4-nightmares-concept.md`)
