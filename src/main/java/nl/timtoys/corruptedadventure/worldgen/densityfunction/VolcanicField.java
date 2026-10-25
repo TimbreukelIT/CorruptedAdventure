@@ -70,8 +70,6 @@ public final class VolcanicField implements DensityFunction {
     private static final double SHORE_BLOCKS = 3.0;
     private static final double HILL_HEIGHT = 40.0;
     private static final double PEAK_RIDGE_HEIGHT = 55.0;
-    /** Amplitude (blocks) of the micro relief on the plain. */
-    private static final double MICRO_RELIEF = 2.0;
     /** Below this the crags would barely show; the column gets none (and skips their 3D noise). */
     private static final double MIN_ROUGHNESS = 0.15;
     private static final double PLAIN_SOFT_CAP = 190.0;
@@ -1143,10 +1141,12 @@ public final class VolcanicField implements DensityFunction {
                 collapse = null;
             }
         }
-        // Micro relief (39d): a fine 2D wobble that breaks the straight one-block contour lines of smooth slopes, much
-        // cheaper than 3D crags on the whole plain.
-        double micro = r.fade() > 0.0 ? MICRO_RELIEF * r.fade() * keep * relief.microRelief(px, pz) : 0.0;
-        double preHeight = plain + raise + sink + keep * detail + cinder + micro - collapseCut;
+        // Micro relief (39d, G2): a fine 2D wobble plus a ripple tied to the height, so smooth slopes show no straight,
+        // evenly spaced one-block contour lines; much cheaper than 3D crags on the whole plain. The per-block fraying of
+        // the step lines follows in ThinShapes.microSteps.
+        double base = plain + raise + sink + keep * detail + cinder - collapseCut;
+        double micro = r.fade() > 0.0 ? r.fade() * keep * relief.microRelief(px, pz, base) : 0.0;
+        double preHeight = base + micro;
         c.rise = raise + cinder;
         c.cliff = Math.min(1.0, keep * cliff);
         Landmarks.Abyss abyss = r.core() > 0.0
@@ -1252,7 +1252,8 @@ public final class VolcanicField implements DensityFunction {
                 addIslands(c, cell, px, pz, warpX);
             }
             if (keep > 0.98 && r.fade() > 0.5) {
-                ThinShapes.microSteps(this, c, px, pz, height);
+                ThinShapes.microSteps(this, c, px, pz, height, VolcanicMath.smoothstep(0.98, 1.0, keep)
+                        * VolcanicMath.smoothstep(0.5, 0.8, r.fade()));
             }
             // The geode first: its cavity must not be crowded out of the column's openings by the tubes. Not behind the
             // core gate of the tubes: a geode's centre lies deep in the core, but its rim may reach columns where the core

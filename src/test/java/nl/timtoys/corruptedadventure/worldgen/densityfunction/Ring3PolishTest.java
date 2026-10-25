@@ -271,6 +271,9 @@ class Ring3PolishTest {
     void theMicroReliefRaisesSomeColumnsBelowEachStep() {
         int plain = 0;
         int raised = 0;
+        int lowRaised = 0;
+        double raisedFrac = 0.0;
+        double keptFrac = 0.0;
         for (int x = -4900; x < -4600; x += 3) {
             for (int z = 500; z < 800; z += 3) {
                 VolcanicField.Column c = field.column(x, z);
@@ -279,14 +282,41 @@ class Ring3PolishTest {
                     continue;
                 }
                 plain++;
+                double frac = c.height() - top;
                 if (c.thinKind(top + 1) == Landmarks.KIND_BIOME) {
                     raised++;
+                    raisedFrac += frac;
+                    lowRaised += frac < 0.3 ? 1 : 0;
                     assertTrue(c.thinKind(top) == Landmarks.KIND_BIOME && c.thinKind(top + 2) < 0, "one block up, gap filled");
-                    assertTrue(c.height() - top > 0.15, "only near the next step");
+                } else {
+                    keptFrac += frac;
                 }
             }
         }
         assertTrue(plain > 1000 && raised > plain / 10 && raised < plain * 7 / 10, raised + " of " + plain);
+        // G2: mostly just below the next step, but in places a whole tread (the line merges with the one below).
+        assertTrue(raisedFrac / raised > keptFrac / (plain - raised) + 0.15, "raised blocks lie high in their tread");
+        assertTrue(lowRaised > raised / 20, lowRaised + " raised low in their tread of " + raised);
+    }
+
+    @Test
+    void theMicroReliefFraysEveryStepLineOnItsOwn() {
+        // G2: the pattern is drawn anew for every block of height, so neighbouring step lines do not fray in step.
+        Ring3Relief relief = field.relief();
+        int differ = 0;
+        int n = 0;
+        double smoothMax = 0.0;
+        for (int x = -4900; x < -4600; x += 7) {
+            for (int z = 500; z < 800; z += 7) {
+                n++;
+                if (Math.abs(relief.microSteps(x, z, 100) - relief.microSteps(x, z, 101)) > 0.3) {
+                    differ++;
+                }
+                smoothMax = Math.max(smoothMax, Math.abs(relief.microRelief(x, z, 90.0 + (x + z) % 9)));
+            }
+        }
+        assertTrue(differ > n / 3, differ + " of " + n);
+        assertTrue(smoothMax <= Ring3Relief.MICRO_BUMP + Ring3Relief.MICRO_RIPPLE + 1e-9, "the smooth part stays within ±1.5: " + smoothMax);
     }
 
     @Test
