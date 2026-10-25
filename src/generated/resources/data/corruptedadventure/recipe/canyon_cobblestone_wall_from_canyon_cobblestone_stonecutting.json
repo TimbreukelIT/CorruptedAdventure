@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "corruptedadventure:canyon_cobblestone"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:canyon_cobblestone_wall"
+  }
+}

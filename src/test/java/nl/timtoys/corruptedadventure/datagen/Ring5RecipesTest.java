@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The generated recipes of the corrupted wood set (88r, after {@code runData}): exactly oak's thirteen, with oak's
- * output counts and a recipe advancement each, and no other ring 5 recipe (contract ring 5 §11).
+ * output counts and a recipe advancement each. Since phase 2 golf 1 the only other ring 5 recipe is corrupted
+ * cobblestone smelting back to corrupted stone.
  */
 class Ring5RecipesTest {
     private static final String GENERATED = "src/generated/resources/data/corruptedadventure";
@@ -69,13 +71,16 @@ class Ring5RecipesTest {
     }
 
     @Test
-    void noOtherRing5RecipesExist() throws IOException {
+    void theOnlyOtherRing5RecipeIsCorruptedStoneSmelting() throws IOException {
         List<String> ring5;
         try (Stream<Path> walk = Files.list(generated().resolve("recipe"))) {
             ring5 = walk.map(path -> path.getFileName().toString().replace(".json", ""))
                     .filter(name -> name.contains("corrupted")).sorted().toList();
         }
-        assertEquals(EXPECTED.keySet().stream().sorted().toList(), ring5);
+        List<String> expected = new ArrayList<>(EXPECTED.keySet());
+        expected.add("corrupted_stone");
+        assertEquals(expected.stream().sorted().toList(), ring5);
+        assertEquals("minecraft:smelting", read("recipe/corrupted_stone.json").get("type").getAsString());
     }
 
     private static JsonObject read(String file) throws IOException {

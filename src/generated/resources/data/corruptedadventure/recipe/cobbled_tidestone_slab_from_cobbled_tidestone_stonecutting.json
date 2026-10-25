@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "corruptedadventure:cobbled_tidestone"
+  },
+  "result": {
+    "count": 2,
+    "id": "corruptedadventure:cobbled_tidestone_slab"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": [
+      {
+        "item": "corruptedadventure:scorched_sandstone"
+      },
+      {
+        "item": "corruptedadventure:chiseled_scorched_sandstone"
+      }
+    ]
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "count": 6,
+    "id": "corruptedadventure:scorched_sandstone_slab"
+  }
+}

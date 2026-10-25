@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "corruptedadventure:smooth_scorched_sandstone"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:smooth_scorched_sandstone_stairs"
+  }
+}

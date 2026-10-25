@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "corruptedadventure:polished_fossil_stone"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:fossil_stone_bricks"
+  }
+}

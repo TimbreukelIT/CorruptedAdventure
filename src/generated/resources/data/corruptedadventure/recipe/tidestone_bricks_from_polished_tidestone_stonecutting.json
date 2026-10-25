@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "corruptedadventure:polished_tidestone"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:tidestone_bricks"
+  }
+}

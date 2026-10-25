@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "tag": "corruptedadventure:dead_logs"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "id": "corruptedadventure:dead_planks"
+  }
+}

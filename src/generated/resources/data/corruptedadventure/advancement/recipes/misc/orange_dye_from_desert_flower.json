@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_desert_flower": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:desert_flower"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:orange_dye_from_desert_flower"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_desert_flower"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:orange_dye_from_desert_flower"
+    ]
+  }
+}
