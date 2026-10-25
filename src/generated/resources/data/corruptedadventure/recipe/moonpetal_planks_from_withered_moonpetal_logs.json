@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "tag": "corruptedadventure:withered_moonpetal_logs"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "id": "corruptedadventure:moonpetal_planks"
+  }
+}

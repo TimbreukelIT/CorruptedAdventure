@@ -1,0 +1,54 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_chiseled_scorched_sandstone": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:chiseled_scorched_sandstone"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_cut_scorched_sandstone": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:cut_scorched_sandstone"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_scorched_sandstone": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:scorched_sandstone"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:scorched_sandstone_stairs"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_scorched_sandstone",
+      "has_chiseled_scorched_sandstone",
+      "has_cut_scorched_sandstone"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:scorched_sandstone_stairs"
+    ]
+  }
+}

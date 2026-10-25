@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_log": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:stripped_moonpetal_log"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:stripped_moonpetal_wood"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_log"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:stripped_moonpetal_wood"
+    ]
+  }
+}

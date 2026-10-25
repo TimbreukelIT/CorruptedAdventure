@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_cold_lava": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:cold_lava"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:polished_cold_lava_wall_from_cold_lava_stonecutting"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_cold_lava"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:polished_cold_lava_wall_from_cold_lava_stonecutting"
+    ]
+  }
+}

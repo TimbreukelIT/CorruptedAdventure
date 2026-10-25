@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "tag": "corruptedadventure:dripshroom_stems"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "id": "corruptedadventure:dripshroom_planks"
+  }
+}

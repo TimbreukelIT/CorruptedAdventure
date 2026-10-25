@@ -117,3 +117,29 @@ testscript.
   zielkristal 0,2 (kwarts), zwavel 0,1 (kolen).
 - **Niet in golf 1:** opslagblokken voor zwavel, zielkristal, dauwkristal, witte kern, glitchscherven en de
   kristalscherven-als-materiaal; die volgen met hun nut in golf 2–5.
+### 4.2 Recepten blok- en houtsets (A)
+Alle recepten volgen de vanilla-set die het blok kopieert (vormen, aantallen, categorieën, groepen, unlock-condities),
+met ids in onze namespace. Code in `datagen/recipe/` (`WoodSetRecipes`, `StoneSetRecipes`, `FloraRecipes`).
+- **Houtsets** (zoals eik; de Nether-stammen zoals crimson): dood, palm, druipzwam, verkoold, rijpzwam, moonpetal,
+  verdant en corrupted. Planken uit de log-tag (4), hout/hyphae uit 4 stammen (3, ook gestript), trap, plaat, hek,
+  poort, deur, valluik, knop en drukplaat; corrupted ook bord en hangbord. Stokken, werkbank, kist, houten tools en
+  houtskool komen al via de vanilla-tags.
+- **Verdorde moonpetal (voorlopig):** heeft geen eigen planken; zijn stammen geven moonpetal-planken
+  (`moonpetal_planks_from_withered_moonpetal_logs`), en 4 stammen geven het eigen (gestripte) verdorde hout.
+- **Steensets zoals tuf** (vormen aan de werkbank, 4 van een trede → 4 van de volgende, steenzaag van een trede naar
+  elke latere trede en alle vormen): puimsteen, koude lava, tidestone (tidestone → gepolijst → bakstenen),
+  fossielsteen, witte steen (+ zuil uit 2 witte steen, zoals de kwartszuil) en zout (`salt_block` → `polished_salt`;
+  4 zout ↔ zoutblok is stroom D).
+- **Keien:** kloofkeien, cobbled tidestone en corrupted keien hebben hun vormen en smelten terug naar hun steen
+  (0,1 XP, 200 ticks). Kloofkeien smelten naar **oranje** kloofsteen (de middelste tint en de kaartkleur van de keien;
+  voorlopig). Kloofstenen bakstenen komen uit elke mix van de drie tinten (2×2), en elke tint geeft aan de steenzaag de
+  bakstenen en hun vormen.
+- **Mossy tidestone:** tidestone + ranken of mosblok (zoals mossy cobblestone, met zijn eigen vormen).
+- **Zandsteen:** scorched sandstone krijgt de recepten van vanilla-zandsteen, maar **geen pakrecept**: ring 2 heeft geen
+  eigen zand (`loose_sand` laat vanilla-zand vallen), dus de basis komt alleen uit de wereld (voorlopig). Lagoon
+  sandstone houdt zijn pakrecept en glas uit lagoon-zand.
+- **Overig:** `packed_nether_ice` uit 9 `nether_ice` (zoals packed ice); `desert_flower` → 1 oranje kleurstof.
+- **Bewust geen recept:** `dripshroom_lamp` (shroomlight heeft er ook geen), `dripshroom_cap`/`rimeshroom_cap` (geen
+  wrattenitem), `clawed_tidestone`/`clawed_stone`/`clawed_deepslate`, `aquamarine_stone`, `mirror_stone`, `chalkrack`,
+  `bleached_netherrack`; de basisblokken zelf (kloofsteen, puimsteen, koude lava, tidestone, fossielsteen, witte steen)
+  komen alleen uit de wereld, zoals tuf en basalt.

@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "corruptedadventure:polished_pumice"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:polished_pumice_stairs"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "corruptedadventure:orange_canyon_stone"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:canyon_stone_brick_wall"
+  }
+}
