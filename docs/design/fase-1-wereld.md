@@ -1421,7 +1421,7 @@ Na ring 4 ligt de lat voor een levendig landschap hoger; ring 2 en 3 (overworld)
   - **Microreliëf (5 = B):** het 2D-microreliëf van 39f wordt in de noise herzien, zodat het van boven niet meer als hoogtelijnenkaart leest (onregelmatiger). Budget blijft ≤ 1,75× vanilla; lukt dat niet, dan eerst opties voorleggen (niet stilzwijgend terugschroeven).
   - **Kookpoelen (6 = A):** onregelmatige vormen en maten (straal 1–6) in clusters met lege stukken ertussen, i.p.v. even grote vierkanten op een raster.
   - **Smeulwoud (7 = A):** grotere open plekken en variatie in de kronen (half verbrande boom met zwarte kroon, kale reus).
-  - **`steam_fens` (8 = A):** poelen en geisers in clusters en een zachtere bodemrand naar de zeekom; geen terreinwijziging.
+  - **`steam_fens` (8 = A):** poelen en geisers in clusters en een zachtere bodemrand naar de zeekom; geen terreinwijziging. Bewust alleen de bovenlaag: onder een modderplek in de rand blijft de ondergrond zandsteen (ook op steile wanden), review B (2026-10-25).
 
 ### H. Afsluiting fase 1
 | # | Categorie | Change | Test |

@@ -8,10 +8,12 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.SurfaceRules;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import nl.timtoys.corruptedadventure.config.RingSettings;
 import nl.timtoys.corruptedadventure.ring.Ring;
+import nl.timtoys.corruptedadventure.ring.RingColumnCache;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
 
 /**
@@ -61,6 +63,8 @@ public record ZoneEdgeCondition(Ring ring, ResourceKey<NormalNoise.NoiseParamete
         RingLayout layout = RingLayout.current();
         double start = zoneStart(layout.settings(), ring);
         NormalNoise instance = context.randomState.getOrCreateNoise(noise);
+        // The surface pass of a chunk runs on one thread: take its ring cache once, not per column.
+        RingColumnCache columns = RingColumnCache.forThread();
         return new SurfaceRules.Condition() {
             private boolean known;
             private int lastX;
@@ -75,7 +79,7 @@ public record ZoneEdgeCondition(Ring ring, ResourceKey<NormalNoise.NoiseParamete
                     known = true;
                     lastX = x;
                     lastZ = z;
-                    double depth = layout.effectiveDistance(x, z) - start;
+                    double depth = columns.effectiveDistanceHere(Level.OVERWORLD, x, z) - start;
                     // Far from the edge the noise cannot change the answer: skip it.
                     result = depth >= 0.0 || depth >= -width && past(depth, width, instance.getValue(x, 0.0, z));
                 }

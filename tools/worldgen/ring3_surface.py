@@ -91,6 +91,7 @@ PATCH = 0.26
 NOISES = {
     "ring_3_surface_patches": (-7, [1.0, 1.0, 0.5]),
     "ring_3_surface_detail": (-4, [1.0, 1.0]),
+    "ring_3_fens_edge": (-4, [1.0, 1.0]),
     "ring_3_surface_cracks": (-6, [1.0, 0.6]),
     "ring_3_surface_grain": (-2, [1.0, 1.0]),
     "ring_3_patches": (-8, [1.0, 1.0, 0.5]),
@@ -333,8 +334,16 @@ def sulfur_fields():
 ZONE_EDGE_WIDTH = 36.0
 
 
+# Its own noise (review B #2): on D the deep tongues fell where the fens' own D split is clay, so they read as specks.
+E = "ring_3_fens_edge"
+
+
 def zone_edge_3():
-    return {"type": CA + "zone_edge", "ring": "ring_3", "noise": CA + D, "width": ZONE_EDGE_WIDTH}
+    return {"type": CA + "zone_edge", "ring": "ring_3", "noise": CA + E, "width": ZONE_EDGE_WIDTH}
+
+
+def is_zone_edge(rule):
+    return rule.get("type") == "minecraft:condition" and rule.get("if_true", {}).get("type") == CA + "zone_edge"
 
 
 def dried_seabed():
@@ -447,8 +456,10 @@ def subzones(name):
 
 
 def top_rules(name):
-    """The top rules of a biome: its subzones (G2), then its own."""
-    return subzones(name) + BIOMES[name]()[0]
+    """The top rules of a biome: its zone edge (it must win over the subzones, review B #1), its subzones (G2), then
+    its own."""
+    own = BIOMES[name]()[0]
+    return [r for r in own if is_zone_edge(r)] + subzones(name) + [r for r in own if not is_zone_edge(r)]
 
 
 # Biomes whose top gets a one-block roof of ash over an opening (39c: ash_crust; 42b: ash_block; 42d: ash_crust again,

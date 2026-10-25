@@ -106,7 +106,9 @@ public record Ring3Relief(DensityFunction.NoiseHolder highlands, DensityFunction
      * across the plain), which bunches neighbouring step lines into a two-block step in one place and spreads them over a
      * wide tread in another, so a slope shows no evenly spaced parallel lines. The wobble stays below a block (the old
      * ±2 wobble drew three or four nested rings round every bump, a contour map); the ripple is too weak to turn a slope
-     * around on its own ({@code MICRO_RIPPLE · 2π / MICRO_RIPPLE_PERIOD < 1}), so it adds no pits.
+     * around through its height term ({@code MICRO_RIPPLE · 2π / MICRO_RIPPLE_PERIOD < 1}). Its drifting phase is a
+     * free 2D term of up to ±{@link #MICRO_RIPPLE} on a flat tread, so tiny hollows of a block can occur there; the
+     * total stays within ±1.5, below the old ±2.
      */
     double microRelief(double x, double z, double base) {
         double bump = Math.max(-1.0, Math.min(1.0, 1.6 * sample(detail, x * 1.3 + 71.1, z * 1.3 - 19.7)));
