@@ -102,6 +102,21 @@ public final class ModTags {
         public static final TagKey<Block> ORES_WHITE_CORE = TagKey.create(Registries.BLOCK, common("ores/white_core"));
         public static final TagKey<Block> ORES_IN_GROUND_WHITE_STONE = TagKey.create(Registries.BLOCK, common("ores_in_ground/white_stone"));
 
+        // Phase 2 golf 1 (stream D): storage blocks, each in c:storage_blocks.
+        public static final TagKey<Block> STORAGE_BLOCKS_RAW_SUNSTONE = TagKey.create(Registries.BLOCK, common("storage_blocks/raw_sunstone"));
+        public static final TagKey<Block> STORAGE_BLOCKS_RAW_TURQUOISE = TagKey.create(Registries.BLOCK, common("storage_blocks/raw_turquoise"));
+        public static final TagKey<Block> STORAGE_BLOCKS_SUNSTONE = TagKey.create(Registries.BLOCK, common("storage_blocks/sunstone"));
+        public static final TagKey<Block> STORAGE_BLOCKS_TURQUOISE = TagKey.create(Registries.BLOCK, common("storage_blocks/turquoise"));
+        public static final TagKey<Block> STORAGE_BLOCKS_SALT = TagKey.create(Registries.BLOCK, common("storage_blocks/salt"));
+        public static final TagKey<Block> STORAGE_BLOCKS_RAW_VOLCANITE = TagKey.create(Registries.BLOCK, common("storage_blocks/raw_volcanite"));
+        public static final TagKey<Block> STORAGE_BLOCKS_VOLCANITE = TagKey.create(Registries.BLOCK, common("storage_blocks/volcanite"));
+        public static final TagKey<Block> STORAGE_BLOCKS_FIRE_RUBY = TagKey.create(Registries.BLOCK, common("storage_blocks/fire_ruby"));
+        public static final TagKey<Block> STORAGE_BLOCKS_RAW_TIDESILVER = TagKey.create(Registries.BLOCK, common("storage_blocks/raw_tidesilver"));
+        public static final TagKey<Block> STORAGE_BLOCKS_TIDESILVER = TagKey.create(Registries.BLOCK, common("storage_blocks/tidesilver"));
+        public static final TagKey<Block> STORAGE_BLOCKS_JADE = TagKey.create(Registries.BLOCK, common("storage_blocks/jade"));
+        public static final TagKey<Block> STORAGE_BLOCKS_RAW_NULLITE = TagKey.create(Registries.BLOCK, common("storage_blocks/raw_nullite"));
+        public static final TagKey<Block> STORAGE_BLOCKS_NULLITE = TagKey.create(Registries.BLOCK, common("storage_blocks/nullite"));
+
         private Blocks() {
         }
     }
@@ -169,6 +184,31 @@ public final class ModTags {
         public static final TagKey<Item> ORES_IN_GROUND_WHITE_STONE = TagKey.create(Registries.ITEM, common("ores_in_ground/white_stone"));
         /** Convention tag {@code c:gems/white_core}; part of {@code c:gems}. */
         public static final TagKey<Item> GEMS_WHITE_CORE = TagKey.create(Registries.ITEM, common("gems/white_core"));
+
+        // Phase 2 golf 1 (stream D): the storage blocks (copies of the block tags), ingots and the turquoise gem.
+        public static final TagKey<Item> STORAGE_BLOCKS_RAW_SUNSTONE = TagKey.create(Registries.ITEM, common("storage_blocks/raw_sunstone"));
+        public static final TagKey<Item> STORAGE_BLOCKS_RAW_TURQUOISE = TagKey.create(Registries.ITEM, common("storage_blocks/raw_turquoise"));
+        public static final TagKey<Item> STORAGE_BLOCKS_SUNSTONE = TagKey.create(Registries.ITEM, common("storage_blocks/sunstone"));
+        public static final TagKey<Item> STORAGE_BLOCKS_TURQUOISE = TagKey.create(Registries.ITEM, common("storage_blocks/turquoise"));
+        public static final TagKey<Item> STORAGE_BLOCKS_SALT = TagKey.create(Registries.ITEM, common("storage_blocks/salt"));
+        public static final TagKey<Item> STORAGE_BLOCKS_RAW_VOLCANITE = TagKey.create(Registries.ITEM, common("storage_blocks/raw_volcanite"));
+        public static final TagKey<Item> STORAGE_BLOCKS_VOLCANITE = TagKey.create(Registries.ITEM, common("storage_blocks/volcanite"));
+        public static final TagKey<Item> STORAGE_BLOCKS_FIRE_RUBY = TagKey.create(Registries.ITEM, common("storage_blocks/fire_ruby"));
+        public static final TagKey<Item> STORAGE_BLOCKS_RAW_TIDESILVER = TagKey.create(Registries.ITEM, common("storage_blocks/raw_tidesilver"));
+        public static final TagKey<Item> STORAGE_BLOCKS_TIDESILVER = TagKey.create(Registries.ITEM, common("storage_blocks/tidesilver"));
+        public static final TagKey<Item> STORAGE_BLOCKS_JADE = TagKey.create(Registries.ITEM, common("storage_blocks/jade"));
+        public static final TagKey<Item> STORAGE_BLOCKS_RAW_NULLITE = TagKey.create(Registries.ITEM, common("storage_blocks/raw_nullite"));
+        public static final TagKey<Item> STORAGE_BLOCKS_NULLITE = TagKey.create(Registries.ITEM, common("storage_blocks/nullite"));
+        /** Convention tag {@code c:ingots/sunstone}; part of {@code c:ingots}. The sunstone tier repairs with it. */
+        public static final TagKey<Item> INGOTS_SUNSTONE = TagKey.create(Registries.ITEM, common("ingots/sunstone"));
+        /** Convention tag {@code c:ingots/volcanite}; part of {@code c:ingots}. The volcanite tier repairs with it. */
+        public static final TagKey<Item> INGOTS_VOLCANITE = TagKey.create(Registries.ITEM, common("ingots/volcanite"));
+        /** Convention tag {@code c:ingots/tidesilver}; part of {@code c:ingots}. The tidesilver tier repairs with it. */
+        public static final TagKey<Item> INGOTS_TIDESILVER = TagKey.create(Registries.ITEM, common("ingots/tidesilver"));
+        /** Convention tag {@code c:ingots/nullite}; part of {@code c:ingots}. The nullite tier repairs with it. */
+        public static final TagKey<Item> INGOTS_NULLITE = TagKey.create(Registries.ITEM, common("ingots/nullite"));
+        /** Convention tag {@code c:gems/turquoise}; part of {@code c:gems}. */
+        public static final TagKey<Item> GEMS_TURQUOISE = TagKey.create(Registries.ITEM, common("gems/turquoise"));
 
         private Items() {
         }

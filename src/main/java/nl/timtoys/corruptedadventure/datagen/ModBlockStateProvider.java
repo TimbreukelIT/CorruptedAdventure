@@ -84,6 +84,23 @@ final class ModBlockStateProvider extends BlockStateProvider {
         ring4();
         netherRing4();
         ring5();
+        golf1Materials();
+    }
+
+    /** Phase 2 golf 1 (stream D): the storage blocks, {@code cube_all} like vanilla's (textures: {@code Golf1MaterialTextures}). */
+    private void golf1Materials() {
+        simpleBlock(ModBlocks.RAW_SUNSTONE_BLOCK.get());
+        simpleBlock(ModBlocks.RAW_TURQUOISE_BLOCK.get());
+        simpleBlock(ModBlocks.SUNSTONE_BLOCK.get());
+        simpleBlock(ModBlocks.TURQUOISE_BLOCK.get());
+        simpleBlock(ModBlocks.RAW_VOLCANITE_BLOCK.get());
+        simpleBlock(ModBlocks.VOLCANITE_BLOCK.get());
+        simpleBlock(ModBlocks.FIRE_RUBY_BLOCK.get());
+        simpleBlock(ModBlocks.RAW_TIDESILVER_BLOCK.get());
+        simpleBlock(ModBlocks.TIDESILVER_BLOCK.get());
+        simpleBlock(ModBlocks.JADE_BLOCK.get());
+        simpleBlock(ModBlocks.RAW_NULLITE_BLOCK.get());
+        simpleBlock(ModBlocks.NULLITE_BLOCK.get());
     }
 
     /**

@@ -7,13 +7,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ColoredFallingBlock;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.DoubleHighBlockItem;
@@ -103,23 +100,6 @@ class ModBlocksTest {
         assertSame(ModBlocks.DESERT_FLOWER.get(), ModBlocks.POTTED_DESERT_FLOWER.get().getPotted());
         assertSame(ModBlocks.PALM_SAPLING.get(), ModBlocks.POTTED_PALM_SAPLING.get().getPotted());
         assertSame(ModBlocks.FIRE_BLOOM.get(), ModBlocks.POTTED_FIRE_BLOOM.get().getPotted());
-    }
-
-    @Test
-    void creativeTabShowsBlocksThenStandaloneItemsInRegistrationOrder() {
-        CreativeModeTab tab = ModCreativeTabs.MAIN.get();
-        tab.buildContents(new CreativeModeTab.ItemDisplayParameters(
-                FeatureFlags.DEFAULT_FLAGS, false, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY)));
-        List<Item> shown = tab.getDisplayItems().stream().map(ItemStack::getItem).toList();
-
-        List<Item> expected = new ArrayList<>();
-        ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).distinct()
-                .forEach(expected::add);
-        ModItems.entries().stream().<Item>map(DeferredHolder::get).filter(item -> !(item instanceof BlockItem)).forEach(expected::add);
-        assertEquals(expected, shown);
-        // Every item exactly once.
-        assertEquals(ModItems.entries().size(), shown.size());
-        assertEquals(new HashSet<>(ModItems.entries().stream().<Item>map(DeferredHolder::get).toList()), new HashSet<>(shown));
     }
 
     @Test
@@ -219,7 +199,10 @@ class ModBlocksTest {
         List<Item> shown = new ArrayList<>();
         ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).forEach(shown::add);
         int soaked = shown.indexOf(ModBlocks.SOAKED_NETHERRACK.asItem());
-        assertEquals(ModBlocks.SALT_CRYSTAL.asItem(), shown.get(soaked - 1));
+        // The storage blocks (phase 2 golf 1) sit between the salt set and Nether ring 2.
+        assertEquals(List.of(ModBlocks.SALT_CRYSTAL.asItem(), ModBlocks.RAW_SUNSTONE_BLOCK.asItem(),
+                ModBlocks.RAW_TURQUOISE_BLOCK.asItem(), ModBlocks.SUNSTONE_BLOCK.asItem(), ModBlocks.TURQUOISE_BLOCK.asItem()),
+                shown.subList(soaked - 5, soaked));
         assertEquals(List.of(ModBlocks.SOAKED_NETHERRACK.asItem(), ModBlocks.SPORE_MOSS.asItem(),
                 ModBlocks.DRIPSHROOM_STEM.asItem(), ModBlocks.DRIPSHROOM_HYPHAE.asItem(), ModBlocks.STRIPPED_DRIPSHROOM_STEM.asItem(),
                 ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE.asItem(), ModBlocks.DRIPSHROOM_PLANKS.asItem(), ModBlocks.DRIPSHROOM_STAIRS.asItem(),
@@ -240,7 +223,9 @@ class ModBlocksTest {
                 ModBlocks.DEW_CRYSTAL_CLUSTER.asItem()), shown.subList(sprouts + 1, sprouts + 6));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem)).toList();
-        assertEquals(standalone.indexOf(ModItems.SALT.get()) + 1, standalone.indexOf(ModItems.DEW_CRYSTAL.get()));
+        assertEquals(List.of(ModItems.SALT.get(), ModItems.SUNSTONE_INGOT.get(), ModItems.TURQUOISE.get(),
+                ModItems.DEW_CRYSTAL.get()), standalone.subList(standalone.indexOf(ModItems.SALT.get()),
+                standalone.indexOf(ModItems.DEW_CRYSTAL.get()) + 1));
     }
 
     @Test
@@ -435,7 +420,11 @@ class ModBlocksTest {
     @Test
     void netherRing3FollowsRing3InOrder() {
         List<Item> shown = blockItems();
-        int lastRing3 = shown.indexOf(ModBlocks.SULFUR_CRYSTAL.asItem());
+        // The storage blocks (phase 2 golf 1) end the ring 3 section.
+        int crystal = shown.indexOf(ModBlocks.SULFUR_CRYSTAL.asItem());
+        assertEquals(List.of(ModBlocks.RAW_VOLCANITE_BLOCK.asItem(), ModBlocks.VOLCANITE_BLOCK.asItem(),
+                ModBlocks.FIRE_RUBY_BLOCK.asItem()), shown.subList(crystal + 1, crystal + 4));
+        int lastRing3 = crystal + 3;
         List<Item> netherRing3 = Stream.of(ModBlocks.COLD_LAVA, ModBlocks.COLD_LAVA_STAIRS, ModBlocks.COLD_LAVA_SLAB,
                 ModBlocks.COLD_LAVA_WALL, ModBlocks.POLISHED_COLD_LAVA, ModBlocks.POLISHED_COLD_LAVA_STAIRS,
                 ModBlocks.POLISHED_COLD_LAVA_SLAB, ModBlocks.POLISHED_COLD_LAVA_WALL, ModBlocks.COLD_LAVA_BRICKS,
@@ -599,8 +588,8 @@ class ModBlocksTest {
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem)).toList();
         int fireCrystal = standalone.indexOf(ModItems.FIRE_CRYSTAL.get());
-        assertEquals(List.of(ModItems.RAW_TIDESILVER.get(), ModItems.JADE.get(), ModItems.TOXIC_CRYSTAL_SHARD.get(),
-                ModItems.AQUAMARINE_SHARD.get()), standalone.subList(fireCrystal + 1, fireCrystal + 5));
+        assertEquals(List.of(ModItems.VOLCANITE_INGOT.get(), ModItems.RAW_TIDESILVER.get(), ModItems.JADE.get(),
+                ModItems.TOXIC_CRYSTAL_SHARD.get(), ModItems.AQUAMARINE_SHARD.get()), standalone.subList(fireCrystal + 1, fireCrystal + 6));
     }
 
     /** Decision V3 golf 1: a whole point harder than the vanilla host ore, XP 4–7 / 5–9, only tidesilver glows. */
@@ -846,7 +835,11 @@ class ModBlocksTest {
     @Test
     void netherRing4FollowsRing4InOrderAndBehavesAsPlanned() {
         List<Item> shown = blockItems();
-        int lastRing4 = shown.indexOf(ModBlocks.CLAWED_DEEPSLATE.asItem());
+        // The storage blocks (phase 2 golf 1) end the ring 4 section.
+        assertEquals(List.of(ModBlocks.CLAWED_DEEPSLATE.asItem(), ModBlocks.RAW_TIDESILVER_BLOCK.asItem(),
+                ModBlocks.TIDESILVER_BLOCK.asItem(), ModBlocks.JADE_BLOCK.asItem()),
+                shown.subList(shown.indexOf(ModBlocks.CLAWED_DEEPSLATE.asItem()), shown.indexOf(ModBlocks.JADE_BLOCK.asItem()) + 1));
+        int lastRing4 = shown.indexOf(ModBlocks.JADE_BLOCK.asItem());
         List<Item> netherRing4 = Stream.of(ModBlocks.BONE_SAND, ModBlocks.BLEACHED_NETHERRACK, ModBlocks.FOSSIL_STONE,
                 ModBlocks.FOSSIL_STONE_STAIRS, ModBlocks.FOSSIL_STONE_SLAB, ModBlocks.FOSSIL_STONE_WALL,
                 ModBlocks.POLISHED_FOSSIL_STONE, ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, ModBlocks.POLISHED_FOSSIL_STONE_SLAB,
@@ -858,7 +851,7 @@ class ModBlocksTest {
                 .filter(item -> !(item instanceof BlockItem)).toList();
         int shard = standalone.indexOf(ModItems.PURITY_CRYSTAL_SHARD.get());
         assertEquals(List.of(ModItems.PURITY_CRYSTAL_SHARD.get(), ModItems.GLITCH_SHARD.get(), ModItems.RAW_NULLITE.get(),
-                ModItems.WHITE_CORE.get()), standalone.subList(shard, standalone.size()));
+                ModItems.NULLITE_INGOT.get(), ModItems.WHITE_CORE.get()), standalone.subList(shard, standalone.size()));
 
         assertInstanceOf(FallingBlock.class, ModBlocks.BONE_SAND.get());
         assertFalse(ModBlocks.BLEACHED_NETHERRACK.get() instanceof NetherrackBlock);
@@ -884,7 +877,8 @@ class ModBlocksTest {
                 ModBlocks.CORRUPTED_DOOR, ModBlocks.CORRUPTED_TRAPDOOR, ModBlocks.CORRUPTED_PRESSURE_PLATE,
                 ModBlocks.CORRUPTED_BUTTON, ModBlocks.CORRUPTED_SIGN, ModBlocks.CORRUPTED_HANGING_SIGN,
                 ModBlocks.CORRUPTED_LEAVES, ModBlocks.GLITCH_BLOCK, ModBlocks.VOIDSTONE, ModBlocks.NULLITE_ORE,
-                ModBlocks.VOIDSTONE_NULLITE_ORE).<Item>map(DeferredBlock::asItem).toList();
+                ModBlocks.VOIDSTONE_NULLITE_ORE, ModBlocks.RAW_NULLITE_BLOCK, ModBlocks.NULLITE_BLOCK)
+                .<Item>map(DeferredBlock::asItem).toList();
         assertEquals(ring5, shown.subList(lastNetherRing4 + 1, lastNetherRing4 + 1 + ring5.size()));
         List<Item> netherRing5 = Stream.of(ModBlocks.CHALKRACK, ModBlocks.WHITE_STONE, ModBlocks.WHITE_STONE_STAIRS,
                 ModBlocks.WHITE_STONE_SLAB, ModBlocks.WHITE_STONE_WALL, ModBlocks.POLISHED_WHITE_STONE,

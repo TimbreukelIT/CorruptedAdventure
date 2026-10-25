@@ -61,6 +61,70 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         netherRing3();
         ring4();
         ring5();
+        golf1Materials();
+    }
+
+    /**
+     * Phase 2 golf 1 (stream D): the storage blocks, each in its {@code c:storage_blocks/*} tag (the salt block too) and
+     * mined with a pickaxe of the tier their ore asks for.
+     */
+    private void golf1Materials() {
+        tag(ModTags.Blocks.STORAGE_BLOCKS_RAW_SUNSTONE).add(ModBlocks.RAW_SUNSTONE_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_RAW_TURQUOISE).add(ModBlocks.RAW_TURQUOISE_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_SUNSTONE).add(ModBlocks.SUNSTONE_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_TURQUOISE).add(ModBlocks.TURQUOISE_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_RAW_VOLCANITE).add(ModBlocks.RAW_VOLCANITE_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_VOLCANITE).add(ModBlocks.VOLCANITE_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_FIRE_RUBY).add(ModBlocks.FIRE_RUBY_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_RAW_TIDESILVER).add(ModBlocks.RAW_TIDESILVER_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_TIDESILVER).add(ModBlocks.TIDESILVER_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_JADE).add(ModBlocks.JADE_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_RAW_NULLITE).add(ModBlocks.RAW_NULLITE_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_NULLITE).add(ModBlocks.NULLITE_BLOCK.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_SALT).add(ModBlocks.SALT_BLOCK.get());
+        tag(Tags.Blocks.STORAGE_BLOCKS)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_RAW_SUNSTONE)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_RAW_TURQUOISE)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_SUNSTONE)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_TURQUOISE)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_RAW_VOLCANITE)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_VOLCANITE)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_FIRE_RUBY)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_RAW_TIDESILVER)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_TIDESILVER)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_JADE)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_RAW_NULLITE)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_NULLITE)
+                .addTag(ModTags.Blocks.STORAGE_BLOCKS_SALT);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE)
+                .add(ModBlocks.RAW_SUNSTONE_BLOCK.get())
+                .add(ModBlocks.RAW_TURQUOISE_BLOCK.get())
+                .add(ModBlocks.SUNSTONE_BLOCK.get())
+                .add(ModBlocks.TURQUOISE_BLOCK.get())
+                .add(ModBlocks.RAW_VOLCANITE_BLOCK.get())
+                .add(ModBlocks.VOLCANITE_BLOCK.get())
+                .add(ModBlocks.FIRE_RUBY_BLOCK.get())
+                .add(ModBlocks.RAW_TIDESILVER_BLOCK.get())
+                .add(ModBlocks.TIDESILVER_BLOCK.get())
+                .add(ModBlocks.JADE_BLOCK.get())
+                .add(ModBlocks.RAW_NULLITE_BLOCK.get())
+                .add(ModBlocks.NULLITE_BLOCK.get());
+        // Ring 2 like its ores (diamond, fase-2-items.md §4).
+        tag(BlockTags.NEEDS_DIAMOND_TOOL)
+                .add(ModBlocks.RAW_SUNSTONE_BLOCK.get())
+                .add(ModBlocks.RAW_TURQUOISE_BLOCK.get())
+                .add(ModBlocks.SUNSTONE_BLOCK.get())
+                .add(ModBlocks.TURQUOISE_BLOCK.get());
+        // TODO(f2g1-int): rings 3-5 like their ores (needs_sunstone/volcanite/tidesilver_tool of stream B); diamond until then.
+        tag(BlockTags.NEEDS_DIAMOND_TOOL)
+                .add(ModBlocks.RAW_VOLCANITE_BLOCK.get())
+                .add(ModBlocks.VOLCANITE_BLOCK.get())
+                .add(ModBlocks.FIRE_RUBY_BLOCK.get())
+                .add(ModBlocks.RAW_TIDESILVER_BLOCK.get())
+                .add(ModBlocks.TIDESILVER_BLOCK.get())
+                .add(ModBlocks.JADE_BLOCK.get())
+                .add(ModBlocks.RAW_NULLITE_BLOCK.get())
+                .add(ModBlocks.NULLITE_BLOCK.get());
     }
 
     /**

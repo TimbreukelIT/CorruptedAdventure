@@ -156,6 +156,23 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         netherRing3();
         ring4();
         ring5();
+        golf1Materials();
+    }
+
+    /** Phase 2 golf 1 (stream D): the storage blocks drop themselves, like vanilla's. */
+    private void golf1Materials() {
+        dropSelf(ModBlocks.RAW_SUNSTONE_BLOCK.get());
+        dropSelf(ModBlocks.RAW_TURQUOISE_BLOCK.get());
+        dropSelf(ModBlocks.SUNSTONE_BLOCK.get());
+        dropSelf(ModBlocks.TURQUOISE_BLOCK.get());
+        dropSelf(ModBlocks.RAW_VOLCANITE_BLOCK.get());
+        dropSelf(ModBlocks.VOLCANITE_BLOCK.get());
+        dropSelf(ModBlocks.FIRE_RUBY_BLOCK.get());
+        dropSelf(ModBlocks.RAW_TIDESILVER_BLOCK.get());
+        dropSelf(ModBlocks.TIDESILVER_BLOCK.get());
+        dropSelf(ModBlocks.JADE_BLOCK.get());
+        dropSelf(ModBlocks.RAW_NULLITE_BLOCK.get());
+        dropSelf(ModBlocks.NULLITE_BLOCK.get());
     }
 
     /**

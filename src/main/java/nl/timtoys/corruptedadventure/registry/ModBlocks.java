@@ -111,6 +111,8 @@ import java.util.function.Supplier;
  */
 public final class ModBlocks {
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(CorruptedAdventure.MOD_ID);
+    /** The creative tab per ring: each {@code // ---- Ring N ----} section starts one (Nether ring N included). */
+    private static final RingSections<Block> SECTIONS = new RingSections<>(BLOCKS);
     /** Vanilla sand's falling dust colour. */
     private static final int SAND_DUST_COLOR = 0xDBD3A0;
     /** Falling dust colour of the ash crust: warm ash grey. */
@@ -127,6 +129,10 @@ public final class ModBlocks {
     static final float RING_5_ORE_EXTRA_HARDNESS = 1.5F;
 
     // ---- Ring 1 ----
+    static {
+        SECTIONS.start(1);
+    }
+
     public static final DeferredBlock<DeadGrassBlock> DEAD_GRASS_BLOCK = register("dead_grass_block",
             () -> new DeadGrassBlock(Properties.ofFullCopy(Blocks.GRASS_BLOCK).mapColor(MapColor.WOOD)));
     public static final DeferredBlock<WitheredDirtBlock> WITHERED_DIRT = register("withered_dirt",
@@ -171,6 +177,10 @@ public final class ModBlocks {
                     .mapColor(MapColor.CRIMSON_NYLIUM).sound(SoundType.NYLIUM).lightLevel(state -> 3)));
 
     // ---- Ring 2 ----
+    static {
+        SECTIONS.start(2);
+    }
+
     // Canyon stone: three natural tints that worldgen layers into strata, plus cobblestone and bricks.
     public static final DeferredBlock<Block> RED_CANYON_STONE = register("red_canyon_stone",
             () -> new Block(Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.TERRACOTTA_RED)));
@@ -321,6 +331,15 @@ public final class ModBlocks {
     public static final DeferredBlock<AmethystClusterBlock> SALT_CRYSTAL = register("salt_crystal",
             () -> new AmethystClusterBlock(7.0F, 3.0F, Properties.ofFullCopy(Blocks.AMETHYST_CLUSTER)
                     .mapColor(MapColor.QUARTZ).lightLevel(state -> 3)));
+    // Storage blocks (phase 2 golf 1): nine raw materials or ingots/gems, like vanilla's raw iron and iron/diamond blocks.
+    public static final DeferredBlock<Block> RAW_SUNSTONE_BLOCK = register("raw_sunstone_block",
+            () -> new Block(rawStorage(MapColor.COLOR_ORANGE)));
+    public static final DeferredBlock<Block> RAW_TURQUOISE_BLOCK = register("raw_turquoise_block",
+            () -> new Block(rawStorage(MapColor.COLOR_CYAN)));
+    public static final DeferredBlock<Block> SUNSTONE_BLOCK = register("sunstone_block",
+            () -> new Block(metalStorage(MapColor.COLOR_ORANGE)));
+    public static final DeferredBlock<Block> TURQUOISE_BLOCK = register("turquoise_block",
+            () -> new Block(gemStorage(MapColor.COLOR_CYAN)));
 
     // ---- Nether ring 2 ----
     // Wet fungal Nether: soaked netherrack with spore moss on top, the dripshroom wood set, cap and lamp, and the
@@ -401,6 +420,10 @@ public final class ModBlocks {
             () -> new AmethystClusterBlock(7.0F, 3.0F, recolored(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_LIGHT_BLUE)));
 
     // ---- Ring 3 ----
+    static {
+        SECTIONS.start(3);
+    }
+
     // Volcanic ring: ash ground, pumice, smouldering stone and the charred wood set.
     /** Plain ash ground: sand's strength and sound, but it does not fall. */
     public static final DeferredBlock<Block> ASH_BLOCK = register("ash_block",
@@ -588,6 +611,13 @@ public final class ModBlocks {
     /** Full-grown stage; the default state faces up. */
     public static final DeferredBlock<AmethystClusterBlock> SULFUR_CRYSTAL = register("sulfur_crystal",
             () -> new AmethystClusterBlock(7.0F, 3.0F, sulfurCrystal(Blocks.AMETHYST_CLUSTER, 3)));
+    // Storage blocks (phase 2 golf 1), like ring 2's.
+    public static final DeferredBlock<Block> RAW_VOLCANITE_BLOCK = register("raw_volcanite_block",
+            () -> new Block(rawStorage(MapColor.COLOR_BLACK)));
+    public static final DeferredBlock<Block> VOLCANITE_BLOCK = register("volcanite_block",
+            () -> new Block(metalStorage(MapColor.COLOR_BLACK)));
+    public static final DeferredBlock<Block> FIRE_RUBY_BLOCK = register("fire_ruby_block",
+            () -> new Block(gemStorage(MapColor.COLOR_RED)));
 
     // ---- Nether ring 3 ----
     // Frozen Nether: cold lava with its shapes, Nether ice, rime netherrack, the rimeshroom wood set and cap, ice
@@ -680,6 +710,10 @@ public final class ModBlocks {
             () -> new Block(Properties.ofFullCopy(Blocks.BLUE_ICE).explosionResistance(Blocks.OBSIDIAN.getExplosionResistance())));
 
     // ---- Ring 4 ----
+    static {
+        SECTIONS.start(4);
+    }
+
     // Mythical water ring (contract ring 4 §3, package 66): tidestone, the moonpetal wood set and its withered trunk,
     // the swamp and water flora, the glowing flora and the bubble spring.
     // Tidestone: the stone family's shapes and behaviour in a blue-grey layered rock; it breaks into cobbled tidestone.
@@ -1043,6 +1077,13 @@ public final class ModBlocks {
     /** Deepslate with claw marks: deepslate's strength and sounds (a plain cube, not a pillar), breaks into cobbled deepslate. */
     public static final DeferredBlock<Block> CLAWED_DEEPSLATE = register("clawed_deepslate",
             () -> new Block(Properties.ofFullCopy(Blocks.DEEPSLATE)));
+    // Storage blocks (phase 2 golf 1), like ring 2's.
+    public static final DeferredBlock<Block> RAW_TIDESILVER_BLOCK = register("raw_tidesilver_block",
+            () -> new Block(rawStorage(MapColor.METAL)));
+    public static final DeferredBlock<Block> TIDESILVER_BLOCK = register("tidesilver_block",
+            () -> new Block(metalStorage(MapColor.METAL)));
+    public static final DeferredBlock<Block> JADE_BLOCK = register("jade_block",
+            () -> new Block(gemStorage(MapColor.COLOR_GREEN)));
 
     // ---- Nether ring 4 ----
     // Dry crystal and bone desert (contract ring 4 §3, package 68): bone sand, bleached netherrack, the fossil stone set
@@ -1094,6 +1135,10 @@ public final class ModBlocks {
             () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.SNOW).lightLevel(state -> 15)));
 
     // ---- Ring 5 ----
+    static {
+        SECTIONS.start(5);
+    }
+
     // The corrupted variants of vanilla blocks (contract ring 5 §3/§11, package 88): the vanilla counterpart's strength,
     // sounds and behaviour, leached grey on the map; no tint (the colour is in the texture). The nine in
     // #corruptedadventure:corrupted each have a healthy_block mapping; the rest of the wood set is plain vanilla-like wood.
@@ -1179,6 +1224,11 @@ public final class ModBlocks {
     public static final DeferredBlock<DropExperienceBlock> VOIDSTONE_NULLITE_ORE = register("voidstone_nullite_ore",
             () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DEEPSLATE_DIAMOND_ORE, RING_5_ORE_EXTRA_HARDNESS)
                     .mapColor(MapColor.COLOR_BLACK)));
+    // Storage blocks (phase 2 golf 1), like ring 2's.
+    public static final DeferredBlock<Block> RAW_NULLITE_BLOCK = register("raw_nullite_block",
+            () -> new Block(rawStorage(MapColor.COLOR_PURPLE)));
+    public static final DeferredBlock<Block> NULLITE_BLOCK = register("nullite_block",
+            () -> new Block(metalStorage(MapColor.COLOR_PURPLE)));
 
     // ---- Nether ring 5 ----
     // The white, silent Nether ring (contract ring 5 §3, package 90): chalkrack, the white stone set (like the fossil
@@ -1238,6 +1288,26 @@ public final class ModBlocks {
     /** All blocks in registration order (datagen: loot tables and models must cover each of them). */
     public static Collection<DeferredHolder<Block, ? extends Block>> entries() {
         return BLOCKS.getEntries();
+    }
+
+    /** The blocks of ring {@code ring}'s creative tab (its Nether ring included), in registration order. */
+    static List<DeferredHolder<Block, ? extends Block>> entriesOfRing(int ring) {
+        return SECTIONS.entries(ring);
+    }
+
+    /** A raw storage block: vanilla's raw iron block in our map colour. */
+    private static Properties rawStorage(MapColor color) {
+        return Properties.ofFullCopy(Blocks.RAW_IRON_BLOCK).mapColor(color);
+    }
+
+    /** An ingot storage block: vanilla's iron block in our map colour. */
+    private static Properties metalStorage(MapColor color) {
+        return Properties.ofFullCopy(Blocks.IRON_BLOCK).mapColor(color);
+    }
+
+    /** A gem storage block: vanilla's diamond block in our map colour. */
+    private static Properties gemStorage(MapColor color) {
+        return Properties.ofFullCopy(Blocks.DIAMOND_BLOCK).mapColor(color);
     }
 
     private static Properties scorched(Block vanilla) {
