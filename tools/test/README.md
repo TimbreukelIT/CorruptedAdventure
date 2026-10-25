@@ -109,6 +109,9 @@ bash tools/test/client.sh stop [1|2]
 - Photo walks (ring 5 walk 1): `python tools/test/py/walk.py <poses.txt> <out dir> [--only label ...]` - spectator, ring
   weather cleared, HUD off, daylight cycle stopped, time per pose; each shot waits until the picture is stable.
   `--light 16` lights caves and undersides with light blocks that stay: only on a copy of a world.
+- Ring tour and portal test (change 100): `python tools/test/py/ringspots.py <poses> r1:ring1 nb12:boundary1:nether ...`
+  (then `walk.py` on the poses) and `python tools/test/py/portal.py --rings 1 4 5 [--json out]` (client 1 online; leaves
+  the frames standing, exit 1 when a ring fails).
 
 ## Studio (structure photos, S0)
 
@@ -294,6 +297,8 @@ Shares are of the samples, not of the time `perf.sh` compares: a fresh world als
 | `py/jfrprof.py`, `py/jfrhot.py` | one profile per area, hot methods of a recording |
 | `py/sheet.py` | contact sheet of screenshots |
 | `py/walk.py` | photo walk: a pose file (`label ow\|nether day\|night x y z yaw pitch`) shot with the running server + client 1 |
+| `py/ringspots.py` | (change 100) spots from `/ca tpring` / `/ca tpboundary` with the player (`label:ring<n>\|boundary<n>[:nether][:heading°]`): landing, `/ca ring`, biome, written as `walk.py` poses |
+| `py/portal.py` | (change 100) portal test per ring: `/ca tpring <n>`, obsidian frame + fire via RCON, the player (creative) to the Nether and back; `/ca ring` at the arrival must give the same ring, the return must land at its own frame |
 
 `tools/nether-lava-walls.py` (RCON, change 39a) still works; offline `lavascan.py` on `areas/nether-walls.txt` covers
 the same boundaries.
