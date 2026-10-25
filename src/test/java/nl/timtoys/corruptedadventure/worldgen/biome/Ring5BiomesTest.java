@@ -223,12 +223,13 @@ class Ring5BiomesTest {
         assertNotNull(branch, "ring 5 branch");
         assertEquals(ring4At + 1, ring5At, "right after the ring 4 branch, before vanilla's rules");
         // INT3: in ring 5's core the branch gives the base rock at once (the top-level ring 5 rule did the surfaces), so the
-        // floors of 93's caves under the preliminary surface get neither this branch nor vanilla's grass.
+        // floors of 93's caves under the preliminary surface get neither this branch nor vanilla's grass. Walk 1 (question
+        // 5 = A): corrupted stone alone, no deepslate.
         JsonArray steps = branch.getAsJsonArray("sequence");
         JsonObject core = steps.get(0).getAsJsonObject();
         assertEquals("core", core.getAsJsonObject("if_true").get("part").getAsString());
         String rock = core.getAsJsonObject("then_run").toString();
-        assertTrue(rock.contains("minecraft:deepslate") && rock.contains("corruptedadventure:corrupted_stone"), rock);
+        assertEquals(STONE, blockName(core.getAsJsonObject("then_run")), rock);
         Map<String, JsonObject> branches = new LinkedHashMap<>();
         for (JsonElement element : steps.asList().subList(1, steps.size())) {
             JsonArray biomes = element.getAsJsonObject().getAsJsonObject("if_true").getAsJsonArray("biome_is");
@@ -295,7 +296,7 @@ class Ring5BiomesTest {
 
     /**
      * 86b: the base rock of the column is corrupted stone in all six biomes (also under the false meadow): one top-level
-     * rule right after vanilla's deepslate gradient (so deepslate keeps its boundary at Y 0–8, as in ring 4), behind the
+     * rule right before vanilla's deepslate gradient (walk 1, question 5 = A: down to the bedrock, no deepslate), behind the
      * cheap ring guard. Only where ring 4 (the zone 4→5) or the void can have weight does it ask the biome per block;
      * elsewhere in ring 5's reach every biome is a ring 5 biome.
      */
@@ -303,12 +304,12 @@ class Ring5BiomesTest {
     void theBaseRockIsCorruptedStoneBelowAllSixBiomes() {
         JsonObject surfaceRule = WorldgenData.read("noise_settings/overworld.json").getAsJsonObject("surface_rule");
         JsonArray sequence = surfaceRule.getAsJsonArray("sequence");
-        JsonObject gradient = sequence.get(sequence.size() - 2).getAsJsonObject().getAsJsonObject("if_true");
+        JsonObject gradient = sequence.get(sequence.size() - 1).getAsJsonObject().getAsJsonObject("if_true");
         assertEquals("minecraft:vertical_gradient", gradient.get("type").getAsString());
         assertEquals("minecraft:deepslate", gradient.get("random_name").getAsString());
         assertEquals(0, gradient.getAsJsonObject("true_at_and_below").get("absolute").getAsInt());
         assertEquals(8, gradient.getAsJsonObject("false_at_and_above").get("absolute").getAsInt());
-        JsonObject rule = sequence.get(sequence.size() - 1).getAsJsonObject();
+        JsonObject rule = sequence.get(sequence.size() - 2).getAsJsonObject();
         assertEquals(reach("ring_5"), rule.getAsJsonObject("if_true"));
         JsonArray steps = rule.getAsJsonObject("then_run").getAsJsonArray("sequence");
         assertEquals(2, steps.size());

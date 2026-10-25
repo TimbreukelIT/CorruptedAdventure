@@ -6,11 +6,13 @@ The surface rules are hand-written JSON (CLAUDE.md §9); this script is their so
 ring4_surface.py for ring 4. Edit the rules here, run the script, commit the script and the JSON together. It is
 idempotent: one ring 5 branch (the six ring 5 biomes; the zone 4->5 keeps ring 4's sundered_reach) inside the rules
 above the preliminary surface, right after the ring 4 branch (so before vanilla's rules), and one top-level rule for
-the base rock of the column right after vanilla's deepslate gradient (the last rule), both replaced if present;
+the base rock of the column right before vanilla's deepslate gradient (the last rule), both replaced if present;
 everything else stays byte-identical (a json round trip with indent 2 and CRLF reproduces the file exactly).
 
 86b: the real ring 5 blocks of stream B (88). The base rock of all six biomes is corrupted stone, also under the false
-meadow (whoever digs finds it is wrong); deepslate keeps vanilla's gradient at Y 0-8, the same boundary as ring 4.
+meadow (whoever digs finds it is wrong). Walk 1 (question 5 = A, 2026-10-24): down to the bedrock, no deepslate in
+ring 5 (it had vanilla's gradient at Y 0-8 like ring 4, and caves, nets and void caves below Y 0 read as vanilla); the
+zone 4->5 (sundered_reach) keeps ring 4's deepslate.
 Ring 5 is dry (V9-B), so there is no wet variant. The one falling block, corrupted sand, has a ceiling guard like ring
 4's: where it would hang over air it is corrupted stone. Bedrock stays vanilla's rule 0: it puts nothing on air (V3-A).
 
@@ -212,7 +214,7 @@ def ring_5_branch(base_rock=None):
 
 def ring_5_base_rock():
     """The rest of the column (below the surface depth, the undersides of overhangs): corrupted stone instead of the default
-    stone. After vanilla's deepslate gradient, so deepslate keeps its boundary. The biome condition looks the biome up per
+    stone, down to the bedrock: before vanilla's deepslate gradient (walk 1, question 5 = A). The biome condition looks the biome up per
     block (RingReachCondition), so only columns where ring 4 (with the zone 4->5, sundered_reach) or the void (void_edge)
     can have weight ask it; everywhere else in ring 5's reach every biome is a ring 5 biome, so the stone is the same
     without the lookup (like ring 3's deep rule)."""
@@ -300,9 +302,9 @@ def main():
     gradient = top[-1].get("if_true", {})
     assert gradient.get("type") == "minecraft:vertical_gradient" and gradient.get("random_name") == "minecraft:deepslate", \
         "vanilla's deepslate gradient is the last top-level rule"
-    # The core's base rock: vanilla's deepslate gradient, then corrupted stone (ring_5_base_rock below).
-    rules.insert(ring4[0] + 1, ring_5_branch(seq(top[-1], block(STONE))))
-    top.append(ring_5_base_rock())
+    # The core's base rock: corrupted stone, as ring_5_base_rock below gives it.
+    rules.insert(ring4[0] + 1, ring_5_branch(block(STONE)))
+    top.insert(len(top) - 1, ring_5_base_rock())
     top[:] = [r for r in top if not is_ring_5_ground(r)]
     assert is_bedrock_floor(top[0]), "vanilla's bedrock floor is the first top-level rule"
     at = 2 if is_ring_3_cave_walls(top[1]) else 1

@@ -34,8 +34,9 @@ import static nl.timtoys.corruptedadventure.worldgen.feature.Ring5Placements.reg
  * The ores of ring 5 (95, V3-A, V11-A): nullite where the risk is, in rock that faces the void in the outer band (scar
  * walls, floe edges, the undersides of floes and floating chunks; {@link Ring5VoidFacePlacement}) and a little deep in
  * the inner band; glitch blocks in clusters everywhere in the ring (their shards are the glitches' harvest); vanilla's ores
- * nearly gone ({@link #FACTORS}: ×0,05 common, ×0,03 middle, no diamond), also in corrupted stone. Deep in the inner band
- * the rock is deepslate: nullite there is {@code nullite_ore} for now (placeholder; a deepslate variant is backlog).
+ * nearly gone ({@link #FACTORS}: ×0,05 common, ×0,03 middle, no diamond), also in corrupted stone. Ring 5 has no
+ * deepslate (walk 1, question 5 = A: corrupted stone down to the bedrock), so vanilla's ores there are their stone
+ * variants; the deepslate targets only catch a vein reaching into the zone 4→5, which keeps ring 4's deepslate.
  */
 public final class Ring5OreFeatures {
     /** Vanilla's ores in ring 5 (contract §4, V11-A). */
