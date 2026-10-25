@@ -227,6 +227,8 @@ public final class Ring3Textures {
         glowLayer("block/ember_leaves", EMBER, EMBER_GLOW, EMBER_DIM);
         still("block/fire_bloom", Ring3Textures::fireBloom);
         still("block/ash_sprouts", Ring3Textures::ashSprouts);
+        // G2 ring 3 (decision 4 = A): the fire flora of the bare plains (placeholder, backlog [textures]).
+        still("block/charred_shrub", Ring3Textures::charredShrub);
         for (int stage = 0; stage < 4; stage++) {
             int s = stage;
             still("block/ember_berry_bush_stage" + stage, (image, random) -> emberBerryBush(image, random, s));
@@ -1325,6 +1327,42 @@ public final class Ring3Textures {
                 if (row < 2 && bx + 1 < SIZE) {
                     set(image, bx + 1, y, ASH_SPROUTS[row == 0 ? 0 : 1]);
                 }
+            }
+        }
+    }
+
+    /**
+     * Charred shrub (G2 ring 3, placeholder): a burnt-out bush of bare, forked charcoal twigs from a dark root, the
+     * silver sheen of the charred logs on a few twigs, and ember-orange tips where it still smoulders. Cross model, cutout.
+     */
+    private static void charredShrub(BufferedImage image, Random random) {
+        charredTwig(image, random, 8, 15, 0, 11, 0);
+        charredTwig(image, random, 7, 15, -1, 10, 0);
+        charredTwig(image, random, 8, 15, 1, 10, 0);
+        charredTwig(image, random, 6, 14, -1, 6, 1);
+        charredTwig(image, random, 10, 14, 1, 6, 1);
+        for (int y = 13; y < SIZE; y++) {
+            set(image, 7, y, CHAR[0]);
+            set(image, 8, y, CHAR[y == 13 ? 2 : 1]);
+        }
+    }
+
+    /** A charred twig up from (x, y), leaning {@code lean} now and then and forking; its tip glows or is pale ash. */
+    private static void charredTwig(BufferedImage image, Random random, int x, int y, int lean, int length, int depth) {
+        for (int i = 0; i < length && y >= 1 && x >= 0 && x < SIZE; i++) {
+            boolean tip = i == length - 1 || y == 1;
+            int tone = tip ? (random.nextInt(3) == 0 ? CHAR_SHEEN[1] : EMBER[3 + random.nextInt(2)])
+                    : i < 2 ? CHAR[1] : random.nextInt(5) == 0 ? CHAR_SHEEN[0] : CHAR[2 + random.nextInt(3)];
+            set(image, x, y, tone);
+            if (tip && y + 1 < SIZE && random.nextBoolean()) {
+                set(image, x, y + 1, CHAR_EMBER);
+            }
+            y--;
+            if (lean != 0 && random.nextInt(2) == 0) {
+                x += lean;
+            }
+            if (depth < 2 && i > 2 && random.nextInt(3) == 0) {
+                charredTwig(image, random, x, y, lean == 0 ? (random.nextBoolean() ? 1 : -1) : -lean, length - i - 1, depth + 1);
             }
         }
     }
@@ -2880,7 +2918,7 @@ public final class Ring3Textures {
 
     private static final String[] SLOT_SPRITES = {"item/raw_volcanite", "item/sulfur", "item/fire_ruby", "item/fire_crystal",
             "item/charred_door", "item/rimeshroom_door", "item/ice_stalactite", "block/fire_bloom", "block/ash_sprouts",
-            "block/ember_berry_bush_stage3", "block/fire_crystal_cluster", "block/large_fire_crystal_bud",
+            "block/charred_shrub", "block/ember_berry_bush_stage3", "block/fire_crystal_cluster", "block/large_fire_crystal_bud",
             "block/medium_fire_crystal_bud", "block/small_fire_crystal_bud", "block/sulfur_crystal",
             "block/large_sulfur_crystal_bud", "block/medium_sulfur_crystal_bud", "block/small_sulfur_crystal_bud"};
 
