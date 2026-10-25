@@ -143,7 +143,7 @@ Dit is een eis, geen wens. Een change die dit breekt is niet af.
 | `docs/design/00-overzicht.md` | Visie, ringen, Nether, progressie, fasering |
 | `docs/design/01-techniek.md` | Technische architectuur en afspraken |
 | `docs/design/02-beslissingenlog.md` | Log van alle beslissingen |
-| `docs/design/fase-N-*.md` | Uitwerking per fase (ontstaat na elke sparringsessie) |
+| `docs/design/fase-N-*.md` | Uitwerking per fase (ontstaat na elke sparringsessie); fase 2: `fase-2-items.md` |
 | `docs/backlog.md` | Zaken buiten de huidige scope |
 
 ## 11. Definition of done
