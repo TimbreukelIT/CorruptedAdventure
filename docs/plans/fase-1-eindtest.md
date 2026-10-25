@@ -6,7 +6,8 @@ stronghold, The End onbereikbaar. Gevonden fouten klein herstellen (eigen commit
 
 - **Stand:** deel 1 op `main` 6021c2d1 (ring 1, 4, 5 en alle Nether-ringen veranderen niet meer); deel 2: ring 3 en
   zone 3→4 op `main` 39c07ed3 (na de merge van G2 ring 3), ring 2 en zones 1→2, 2→3 op een lokale merge met
-  `g2/ring2` 0670fd68 (om 17:49 stond G2 ring 2 nog niet op `main`; deadline 18:00).
+  `g2/ring2` 0670fd68 (om 17:49 stond G2 ring 2 nog niet op `main`), plus een nacontrole op `main` 3b299aca na de
+  merge met de reviewfixes (§H).
 - **Uitkomst (2026-10-25):** alles akkoord, behalve één niet-gereproduceerd verdwenen portaalframe in ring 3 oost (E3,
   backlog); geen herstel nodig. De perf-meting is overgeslagen op verzoek van de gebruiker (backlog).
 - **Wereld:** vers, seed `20260930`, `corruptedadventure:corrupted_world`, standaardradii 1.500 / 3.500 / 6.000 /
@@ -77,6 +78,18 @@ worktree.
 | F2 | `Dev` en `Dev2` tegelijk ingelogd, samen geteleporteerd (ring 1, 4, 5, Nether) | **akkoord**: 5 keer samen (ring 4, ring 5, Nether-4, Nether-5, ring 1), beide in dezelfde dimensie; Dev2 ziet Dev in ring 5 (`build/test/f1end/mp-dev2.png`) |
 | F3 | 0 ERROR in de serverlog (`build/test/server-<level>.log`) | **akkoord** deel 1: 0 ERROR (`build/test/f1end/server-deel1.log`); ring 3-run `f1end-r3` ook 0 (`server-deel2-r3.log`) |
 | F4 | idem na de merges (deel 2) | **akkoord**: ring 3-run `f1end-r3` (server + Dev) en ring 2-run `f1end-r2` (server + Dev + Dev2, 4 keer samen geteleporteerd: ring 2, ring 3, Nether-2, zone 1→2), beide 0 ERROR (`build/test/f1end/server-deel2-r3.log`, `server-deel2-r2.log`) |
+
+## H. Nacontrole na de merge van G2 ring 2 (`main` 3b299aca)
+Na de reviewfixes van G2 ring 2 (blikvangervoeten boven carvers, grondfilter bosjes, drukruggen zonder BiomeFilter,
+boommarge 4, begrensde caches): `build --offline` groen, verse wereld `f1end-r2m`, server + Dev, **0 ERROR**
+(`build/test/f1end/server-deel2-r2m.log`). Foto's `build/test/f1end/shots2m/` (contactblad `sheet2m.png`), poses van
+`g2-walk.md` §9:
+| # | Punt | Status |
+|---|---|---|
+| H1 | blikvangers: rotsbrug (`bridge_low`, `bridge_far`), zoutkoepel (`dome_low`, `dome_eye_e`), reuzenhoodoo (`ghoodoo_low`, `ghoodoo_far`), reuzenskelet (`skeleton_low`), reuzenpalm (`gpalm_low`, `gpalm_eye_e`) | **akkoord**: alle vijf staan en zweven niet; de koepel (~10 hoog) en de bronpoel bij de palm zijn nog klein, zoals in `g2-walk.md` §9 al gemeld (geen fout) |
+| H2 | ring 2-spot `dunes_low` | **akkoord** (rode duinrand, half begraven dode bomen) |
+| H3 | de twee foto's die in de tweede na-rondgang van de ring 2-walk onbruikbaar bleven: `dunese_eye_s` → `dunese_eye_e`, `dunese_eye_n`; `z12n_eye_n` → `z12n_eye_e`, `z12n_eye_s` (camera 10 hoger) | **akkoord**: hoge kale duinen met een rotsuitsteeksel; `withered_expanse` met dode bomen aan het water, de mesa van ring 2 erachter. De drie onbruikbare foto's en de zes overgeslagen spots van de eerste walk waren al opnieuw gedaan in `g2-walk.md` §9 |
+| H4 | portaal ring 2 opnieuw | **akkoord** (identiek aan E2, frame staat nog) |
 
 ## G. Vervallen / in te halen
 - Chunk-generatietijd per ring (perf): overgeslagen op verzoek van de gebruiker (2026-10-25), in te halen.
