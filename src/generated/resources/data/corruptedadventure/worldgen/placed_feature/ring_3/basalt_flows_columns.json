@@ -26,6 +26,7 @@
     {
       "type": "corruptedadventure:volcanic_filter",
       "ground_only": true,
+      "landmark_margin": 6,
       "ranges": [
         {
           "max": 0.1,

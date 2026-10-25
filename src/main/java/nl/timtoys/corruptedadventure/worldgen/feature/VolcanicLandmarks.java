@@ -185,6 +185,9 @@ public final class VolcanicLandmarks {
         return found;
     }
 
+    /** Every kind: a ground feature keeps clear of all of them (each kind only stands in its own biome). */
+    static final Set<Kind> ALL = java.util.Collections.unmodifiableSet(java.util.EnumSet.allOf(Kind.class));
+
     /** Whether (x, z) lies within {@code margin} of the reach of a landmark of one of {@code kinds}. */
     static boolean near(WorldGenLevel level, Set<Kind> kinds, int x, int z, int margin) {
         World world = world(level);

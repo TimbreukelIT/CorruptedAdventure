@@ -85,7 +85,8 @@ public final class TitanRockFeature extends Feature<TitanRockConfiguration> {
     private static boolean place(WorldGenLevel level, VolcanicField field, TitanRockConfiguration config, Rock rock, int minX, int minZ) {
         VolcanicField.Column centre = field.column(rock.x(), rock.z());
         double centreHeight = centre.height();
-        if (!PLAIN.test(centre, Mth.ceil(centreHeight))) {
+        if (!PLAIN.test(centre, Mth.ceil(centreHeight))
+                || VolcanicLandmarks.near(level, VolcanicLandmarks.ALL, rock.x(), rock.z(), MAX_REACH)) {
             return false;
         }
         RandomState random = level.getLevel().getChunkSource().randomState();

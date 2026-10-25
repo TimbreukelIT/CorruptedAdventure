@@ -80,7 +80,8 @@ public final class TerracePoolFeature extends Feature<TerracePoolConfiguration> 
     /** Whether the pool's centre lies in the biome, on plain and level ground; the same answer in every chunk. */
     private static boolean fits(WorldGenLevel level, VolcanicField field, TerracePoolConfiguration config, TerracePoolLayout.Pool pool) {
         int surface = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, pool.x(), pool.z());
-        if (!PLAIN.test(field.column(pool.x(), pool.z()), surface)) {
+        if (!PLAIN.test(field.column(pool.x(), pool.z()), surface)
+                || VolcanicLandmarks.near(level, VolcanicLandmarks.ALL, pool.x(), pool.z(), pool.reach() + 2)) {
             return false;
         }
         int relief = SlopeFilter.measure(SlopeFilter.Measure.RELIEF, FLAT_RADIUS, pool.x(), pool.z(),

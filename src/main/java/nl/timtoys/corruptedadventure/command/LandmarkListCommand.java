@@ -25,6 +25,8 @@ import java.util.Locale;
 final class LandmarkListCommand {
     /** The largest box side: every landmark cell in it is decided on the server thread. */
     private static final int MAX_SPAN = 8192;
+    /** The ring 3 landmarks decide every cell of the box on the server thread (build + fit per try): a smaller box. */
+    private static final int MAX_SPAN_RING_3 = 2048;
 
     private LandmarkListCommand() {
     }
@@ -53,10 +55,13 @@ final class LandmarkListCommand {
         for (BlightedLandmarks.Site site : BlightedLandmarks.centredIn(source.getLevel(), minX, minZ, maxX, maxZ)) {
             lines.add(String.format(Locale.ROOT, "%s %d %d %d", site.kind().getSerializedName(), site.x(), site.ground(), site.z()));
         }
-        for (VolcanicLandmarks.Site site : VolcanicLandmarks.centredIn(source.getLevel(), minX, minZ, maxX, maxZ)) {
+        boolean ring3 = maxX - minX <= MAX_SPAN_RING_3 && maxZ - minZ <= MAX_SPAN_RING_3;
+        for (VolcanicLandmarks.Site site : ring3 ? VolcanicLandmarks.centredIn(source.getLevel(), minX, minZ, maxX, maxZ)
+                : List.<VolcanicLandmarks.Site>of()) {
             lines.add(String.format(Locale.ROOT, "%s %d %d %d", site.kind().getSerializedName(), site.x(), site.ground(), site.z()));
         }
-        StringBuilder text = new StringBuilder("Landmarks: " + lines.size());
+        StringBuilder text = new StringBuilder("Landmarks: " + lines.size()
+                + (ring3 ? "" : " (ring 3 skipped: at most " + MAX_SPAN_RING_3 + " per side)"));
         lines.forEach(line -> text.append(System.lineSeparator()).append(line));
         source.sendSuccess(() -> Component.literal(text.toString()), false);
         return lines.size();

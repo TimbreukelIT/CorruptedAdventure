@@ -55,17 +55,28 @@ public final class VolcanicFilter extends PlacementFilter {
     public static final MapCodec<VolcanicFilter> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Range.CODEC.listOf().optionalFieldOf("ranges", List.of()).forGetter(filter -> filter.ranges),
             Codec.BOOL.optionalFieldOf("ground_only", false).forGetter(filter -> filter.groundOnly),
-            Codec.intRange(0, 16).optionalFieldOf("tolerance", DEFAULT_TOLERANCE).forGetter(filter -> filter.tolerance)
+            Codec.intRange(0, 16).optionalFieldOf("tolerance", DEFAULT_TOLERANCE).forGetter(filter -> filter.tolerance),
+            Codec.intRange(-1, 32).optionalFieldOf("landmark_margin", -1).forGetter(filter -> filter.landmarkMargin)
     ).apply(instance, VolcanicFilter::new));
+
+    /**
+     * The clearance of {@link Builder#ground()} round the biome landmarks (G2 ring 3, review A): at least the reach of
+     * the small dressing (stones, fans, vents, hornitos, reefs, casts), so nothing stands half in a landmark that is
+     * placed after it.
+     */
+    public static final int LANDMARK_MARGIN = 6;
 
     private final List<Range> ranges;
     private final boolean groundOnly;
     private final int tolerance;
+    /** Keep this far outside the reach of every ring 3 landmark ({@link VolcanicLandmarks}); −1 = no check. */
+    private final int landmarkMargin;
 
-    public VolcanicFilter(List<Range> ranges, boolean groundOnly, int tolerance) {
+    public VolcanicFilter(List<Range> ranges, boolean groundOnly, int tolerance, int landmarkMargin) {
         this.ranges = List.copyOf(ranges);
         this.groundOnly = groundOnly;
         this.tolerance = tolerance;
+        this.landmarkMargin = landmarkMargin;
     }
 
     public static Builder builder() {
@@ -79,7 +90,8 @@ public final class VolcanicFilter extends PlacementFilter {
             return false;
         }
         VolcanicField.Column column = field.column(pos.getX(), pos.getZ());
-        return test(column, groundOnly ? context.getHeight(Heightmap.Types.WORLD_SURFACE_WG, pos.getX(), pos.getZ()) : 0);
+        return test(column, groundOnly ? context.getHeight(Heightmap.Types.WORLD_SURFACE_WG, pos.getX(), pos.getZ()) : 0)
+                && (landmarkMargin < 0 || !VolcanicLandmarks.near(context.getLevel(), VolcanicLandmarks.ALL, pos.getX(), pos.getZ(), landmarkMargin));
     }
 
     /** The ranges and, with {@code ground_only}, the surface (first open block above the ground) against the column. */
@@ -106,6 +118,7 @@ public final class VolcanicFilter extends PlacementFilter {
     public static final class Builder {
         private final List<Range> ranges = new ArrayList<>();
         private boolean groundOnly;
+        private int landmarkMargin = -1;
         private int tolerance = DEFAULT_TOLERANCE;
 
         public Builder range(VolcanicOutput.Output output, double min, double max) {
@@ -137,11 +150,18 @@ public final class VolcanicFilter extends PlacementFilter {
                     .below(VolcanicOutput.Output.VOLCANO_RISE, 20.0)
                     .below(VolcanicOutput.Output.CALDERA_MASK, 0.001)
                     .below(VolcanicOutput.Output.COLLAPSE, 0.001)
-                    .groundOnly(DEFAULT_TOLERANCE);
+                    .groundOnly(DEFAULT_TOLERANCE)
+                    .clearOfLandmarks(LANDMARK_MARGIN);
+        }
+
+        /** Keeps {@code margin} blocks outside the reach of every ring 3 landmark (−1 = no check). */
+        public Builder clearOfLandmarks(int margin) {
+            this.landmarkMargin = margin;
+            return this;
         }
 
         public VolcanicFilter build() {
-            return new VolcanicFilter(ranges, groundOnly, tolerance);
+            return new VolcanicFilter(ranges, groundOnly, tolerance, landmarkMargin);
         }
     }
 }
