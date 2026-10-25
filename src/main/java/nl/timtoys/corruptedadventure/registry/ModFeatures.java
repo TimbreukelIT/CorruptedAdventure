@@ -10,7 +10,9 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.worldgen.feature.GiantHoodooFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.InvertedTreeFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.RockBridgeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MemoryFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MirroredTreesFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.AbandonedCampFeature;
@@ -364,6 +366,14 @@ public final class ModFeatures {
     /** {@code corruptedadventure:salt_ridge} (G2): pressure ridges on the cracks of the salt crust, in patches */
     public static final DeferredHolder<Feature<?>, Feature<SaltRidgeConfiguration>> SALT_RIDGE =
             FEATURES.register("salt_ridge", () -> new SaltRidgeFeature(SaltRidgeConfiguration.CODEC));
+
+    // ring 2 — G2 rock landmarks (marks-a)
+    /** {@code corruptedadventure:rock_bridge} (G2 ring 2): canyonlands' landmark, a natural rock bridge over a deep canyon */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> ROCK_BRIDGE =
+            FEATURES.register("rock_bridge", () -> new RockBridgeFeature(NoneFeatureConfiguration.CODEC));
+    /** {@code corruptedadventure:giant_hoodoo} (G2 ring 2): hoodoo_fields' landmark, a giant hoodoo with one or two companions */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> GIANT_HOODOO =
+            FEATURES.register("giant_hoodoo", () -> new GiantHoodooFeature(NoneFeatureConfiguration.CODEC));
 
     private ModFeatures() {
     }

@@ -8,13 +8,15 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import nl.timtoys.corruptedadventure.worldgen.feature.BlightedLandmarks;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2RockLandmarks;
 
 import java.util.List;
 import java.util.Locale;
 
 /**
  * {@code /ca landmarks x0 z0 x1 z1}: the blighted landmarks of ring 4 (decor B: drowned giant, stone circle, bone
- * carcass) whose centre lies in the box, as the features place them ({@link BlightedLandmarks}), one line each:
+ * carcass) and the rock landmarks of ring 2 (G2: rock bridge, giant hoodoo) whose centre lies in the box, as the
+ * features place them ({@link BlightedLandmarks}, {@link Ring2RockLandmarks}), one line each:
  * {@code kind x y z} (y: the first open block over the ground, under water the floor). Pure, no chunks needed; for the
  * tests and to find them in play.
  */
@@ -43,11 +45,17 @@ final class LandmarkListCommand {
         }
         List<BlightedLandmarks.Site> sites = BlightedLandmarks.centredIn(source.getLevel(), Math.min(x0, x1), Math.min(z0, z1),
                 Math.max(x0, x1), Math.max(z0, z1));
-        StringBuilder text = new StringBuilder("Landmarks: " + sites.size());
+        // G2 ring 2: the rock bridges and giant hoodoos (anchor: a point on the crossing / the main pillar's foot).
+        List<String> rocks = Ring2RockLandmarks.centredIn(source.getLevel(), Math.min(x0, x1), Math.min(z0, z1), Math.max(x0, x1),
+                Math.max(z0, z1));
+        StringBuilder text = new StringBuilder("Landmarks: " + (sites.size() + rocks.size()));
         for (BlightedLandmarks.Site site : sites) {
             text.append(String.format(Locale.ROOT, "%n%s %d %d %d", site.kind().getSerializedName(), site.x(), site.ground(), site.z()));
         }
+        for (String rock : rocks) {
+            text.append(System.lineSeparator()).append(rock);
+        }
         source.sendSuccess(() -> Component.literal(text.toString()), false);
-        return sites.size();
+        return sites.size() + rocks.size();
     }
 }
