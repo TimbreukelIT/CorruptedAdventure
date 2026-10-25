@@ -1,0 +1,8 @@
+{
+  "asset_id": "corruptedadventure:cold_coating",
+  "decal": false,
+  "description": {
+    "translate": "trim_pattern.corruptedadventure.cold_coating"
+  },
+  "template_item": "corruptedadventure:cold_coating_smithing_template"
+}

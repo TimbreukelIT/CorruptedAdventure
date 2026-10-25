@@ -1,0 +1,9 @@
+{
+  "asset_name": "primordial_ice",
+  "description": {
+    "color": "#BAD8F0",
+    "translate": "trim_material.corruptedadventure.primordial_ice"
+  },
+  "ingredient": "corruptedadventure:primordial_ice",
+  "item_model_index": 0.2
+}

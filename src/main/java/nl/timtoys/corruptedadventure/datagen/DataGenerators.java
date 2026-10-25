@@ -11,6 +11,8 @@ import nl.timtoys.corruptedadventure.condition.ConditionDamageTypes;
 import nl.timtoys.corruptedadventure.condition.Ring3DamageTypes;
 import nl.timtoys.corruptedadventure.condition.Ring4DamageTypes;
 import nl.timtoys.corruptedadventure.condition.Ring5DamageTypes;
+import nl.timtoys.corruptedadventure.item.coating.ModTrimMaterials;
+import nl.timtoys.corruptedadventure.item.coating.ModTrimPatterns;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing2Biomes;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing3BiomeModifiers;
 import nl.timtoys.corruptedadventure.worldgen.biome.NetherRing3Biomes;
@@ -153,7 +155,9 @@ public final class DataGenerators {
                     Ring3DamageTypes.bootstrap(context);
                     Ring4DamageTypes.bootstrap(context);
                     Ring5DamageTypes.bootstrap(context);
-                }),
+                })
+                .add(Registries.TRIM_PATTERN, ModTrimPatterns::bootstrap)
+                .add(Registries.TRIM_MATERIAL, ModTrimMaterials::bootstrap),
                 // "minecraft": the wolf variants override vanilla's entries.
                 Set.of(CorruptedAdventure.MOD_ID, "minecraft"));
         // Created after the datapack registries, so their lookup contains our biomes.
@@ -171,6 +175,7 @@ public final class DataGenerators {
         event.createProvider(output -> new ModSoundDefinitionsProvider(output, files));
         event.createProvider(output -> new ModParticleDescriptionProvider(output, files));
         event.createProvider(ModRecipeProvider::new);
+        event.createProvider((output, lookup) -> new CoatingAtlasProvider(output, lookup, files));
 
         event.createProvider(EnglishLanguageProvider::new);
         event.createProvider(DutchLanguageProvider::new);

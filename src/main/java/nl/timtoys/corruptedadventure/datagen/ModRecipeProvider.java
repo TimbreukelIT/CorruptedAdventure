@@ -14,6 +14,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.recipe.CoatingRecipes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 
@@ -37,6 +38,7 @@ final class ModRecipeProvider extends RecipeProvider {
                 .save(output, CorruptedAdventure.id("glass_from_smelting_lagoon_sand"));
         lagoonSandstone(output);
         ring5(output);
+        CoatingRecipes.build(output);
     }
 
     /**

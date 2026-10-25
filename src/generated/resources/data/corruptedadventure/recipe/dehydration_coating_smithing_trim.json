@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smithing_trim",
+  "addition": {
+    "item": "corruptedadventure:raw_turquoise"
+  },
+  "base": {
+    "tag": "minecraft:trimmable_armor"
+  },
+  "template": {
+    "item": "corruptedadventure:dehydration_coating_smithing_template"
+  }
+}

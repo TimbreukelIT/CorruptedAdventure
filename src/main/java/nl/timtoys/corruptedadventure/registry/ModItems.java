@@ -3,11 +3,14 @@ package nl.timtoys.corruptedadventure.registry;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SmithingTemplateItem;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.item.coating.Coating;
+import nl.timtoys.corruptedadventure.item.coating.CoatingTemplates;
 
 import java.util.Collection;
 
@@ -29,6 +32,9 @@ public final class ModItems {
     public static final DeferredItem<Item> RAW_TURQUOISE = ITEMS.registerSimpleItem("raw_turquoise");
     /** Drop of the salt crust. Placeholder: its use and recipes follow in phase 2. */
     public static final DeferredItem<Item> SALT = ITEMS.registerSimpleItem("salt");
+    /** Coating against dehydration (applied with raw turquoise, a placeholder). Where to find it: golf 2. */
+    public static final DeferredItem<SmithingTemplateItem> DEHYDRATION_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "dehydration_coating_smithing_template", () -> CoatingTemplates.create(Coating.DEHYDRATION));
 
     // ---- Nether ring 2 ----
     /** Drop of the grown dew crystal. Placeholder: its use, recipes and balance follow in phase 2. */
@@ -44,6 +50,14 @@ public final class ModItems {
     public static final DeferredItem<Item> FIRE_RUBY = ITEMS.registerSimpleItem("fire_ruby");
     /** Drop of the grown fire crystal cluster. */
     public static final DeferredItem<Item> FIRE_CRYSTAL = ITEMS.registerSimpleItem("fire_crystal");
+    /** Coating against heat (applied with dew crystal). Where to find it: golf 3. */
+    public static final DeferredItem<SmithingTemplateItem> HEAT_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "heat_coating_smithing_template", () -> CoatingTemplates.create(Coating.HEAT));
+
+    // ---- Nether ring 3 ----
+    /** Coating against the cold (applied with fire crystal, a placeholder). Where to find it: golf 4. */
+    public static final DeferredItem<SmithingTemplateItem> COLD_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "cold_coating_smithing_template", () -> CoatingTemplates.create(Coating.COLD));
 
     // ---- Ring 4 ----
     // Placeholders like raw_sunstone: smelting, products, recipes and balance follow in phase 2.
@@ -60,6 +74,9 @@ public final class ModItems {
             properties -> new BucketItem(ModFluids.TOXIC_POOL.get(), properties.craftRemainder(Items.BUCKET).stacksTo(1)));
     /** Drop of the verdant fruit pod (72b, H3 = A). Placeholder without food value: eating and recipes in phase 2. */
     public static final DeferredItem<Item> VERDANT_FRUIT = ITEMS.registerSimpleItem("verdant_fruit");
+    /** Coating against poison (applied with primordial ice). Where to find it: golf 4. */
+    public static final DeferredItem<SmithingTemplateItem> POISON_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "poison_coating_smithing_template", () -> CoatingTemplates.create(Coating.POISON));
 
     // ---- Nether ring 4 ----
     /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */
@@ -71,10 +88,16 @@ public final class ModItems {
     public static final DeferredItem<Item> GLITCH_SHARD = ITEMS.registerSimpleItem("glitch_shard");
     /** Drop of the nullite ores (ring 5's metal). */
     public static final DeferredItem<Item> RAW_NULLITE = ITEMS.registerSimpleItem("raw_nullite");
+    /** Coating against the void (applied with white core). Where to find it: golf 5. */
+    public static final DeferredItem<SmithingTemplateItem> VOID_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "void_coating_smithing_template", () -> CoatingTemplates.create(Coating.VOID));
 
     // ---- Nether ring 5 ----
     /** Drop of the white core ore (one per ore, Fortune adds). Placeholder without behaviour in phase 1. */
     public static final DeferredItem<Item> WHITE_CORE = ITEMS.registerSimpleItem("white_core");
+    /** Coating against the silence (applied with white core). Where to find it: golf 5. */
+    public static final DeferredItem<SmithingTemplateItem> SILENCE_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "silence_coating_smithing_template", () -> CoatingTemplates.create(Coating.SILENCE));
 
     private ModItems() {
     }

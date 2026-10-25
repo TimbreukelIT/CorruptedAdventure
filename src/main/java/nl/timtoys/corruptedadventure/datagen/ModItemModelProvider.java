@@ -7,6 +7,7 @@ import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 
@@ -104,6 +105,14 @@ final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.SALT.get());
 
         netherRing2();
+        coatings();
+    }
+
+    /** Phase 2 golf 1 (stream C): the coating templates, flat items like vanilla's trim templates. */
+    private void coatings() {
+        for (Coating coating : Coating.values()) {
+            basicItem(coating.template());
+        }
     }
 
     private void netherRing2() {

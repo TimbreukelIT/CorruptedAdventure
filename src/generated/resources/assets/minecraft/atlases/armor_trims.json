@@ -1,0 +1,70 @@
+{
+  "sources": [
+    {
+      "type": "minecraft:paletted_permutations",
+      "palette_key": "corruptedadventure:trims/color_palettes/coating_palette",
+      "permutations": {
+        "turquoise": "corruptedadventure:trims/color_palettes/turquoise"
+      },
+      "textures": [
+        "corruptedadventure:trims/models/armor/dehydration_coating",
+        "corruptedadventure:trims/models/armor/dehydration_coating_leggings"
+      ]
+    },
+    {
+      "type": "minecraft:paletted_permutations",
+      "palette_key": "corruptedadventure:trims/color_palettes/coating_palette",
+      "permutations": {
+        "dew_crystal": "corruptedadventure:trims/color_palettes/dew_crystal"
+      },
+      "textures": [
+        "corruptedadventure:trims/models/armor/heat_coating",
+        "corruptedadventure:trims/models/armor/heat_coating_leggings"
+      ]
+    },
+    {
+      "type": "minecraft:paletted_permutations",
+      "palette_key": "corruptedadventure:trims/color_palettes/coating_palette",
+      "permutations": {
+        "fire_crystal": "corruptedadventure:trims/color_palettes/fire_crystal"
+      },
+      "textures": [
+        "corruptedadventure:trims/models/armor/cold_coating",
+        "corruptedadventure:trims/models/armor/cold_coating_leggings"
+      ]
+    },
+    {
+      "type": "minecraft:paletted_permutations",
+      "palette_key": "corruptedadventure:trims/color_palettes/coating_palette",
+      "permutations": {
+        "primordial_ice": "corruptedadventure:trims/color_palettes/primordial_ice"
+      },
+      "textures": [
+        "corruptedadventure:trims/models/armor/poison_coating",
+        "corruptedadventure:trims/models/armor/poison_coating_leggings"
+      ]
+    },
+    {
+      "type": "minecraft:paletted_permutations",
+      "palette_key": "corruptedadventure:trims/color_palettes/coating_palette",
+      "permutations": {
+        "white_core": "corruptedadventure:trims/color_palettes/white_core"
+      },
+      "textures": [
+        "corruptedadventure:trims/models/armor/void_coating",
+        "corruptedadventure:trims/models/armor/void_coating_leggings"
+      ]
+    },
+    {
+      "type": "minecraft:paletted_permutations",
+      "palette_key": "corruptedadventure:trims/color_palettes/coating_palette",
+      "permutations": {
+        "white_core": "corruptedadventure:trims/color_palettes/white_core"
+      },
+      "textures": [
+        "corruptedadventure:trims/models/armor/silence_coating",
+        "corruptedadventure:trims/models/armor/silence_coating_leggings"
+      ]
+    }
+  ]
+}
