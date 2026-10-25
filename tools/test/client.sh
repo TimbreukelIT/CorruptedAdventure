@@ -13,6 +13,8 @@
 #                                      checking that PID is still this checkout's client JVM; never by window title).
 #                                      A blank (flat white or black) image falls back to F2 (Minecraft's own
 #                                      screenshot, run/screenshots) with a warning; exit 4 when no F2 file comes.
+#                                      CA_SHOT_F2=1: always F2 (walk 1: with the display off PrintWindow can also
+#                                      return the last composed frame again and again, not blank: a stale series).
 #   client.sh key <F1|F2|F3|ESC|T|ENTER> [1|2]
 #   client.sh stop [1|2]               close our client (WM_CLOSE, then the recorded PID only), free lock + slot
 #                                      (a reserved slot goes back to the running server instead)
@@ -147,11 +149,13 @@ shot() {
     pid="$(own_pid)"; [ -n "$pid" ] || ca_die "client $k is not running (or its PID is not ours)"
     mkdir -p "$(dirname "$out")"
     winout="$(cygpath -w "$(cd "$(dirname "$out")" && pwd)/$(basename "$out")")"
-    res="$(win shot "$pid" "$winout")"; rc=$?
-    [ $rc = 0 ] && { echo "$res"; return 0; }
-    [ $rc = 4 ] || { echo "$res" >&2; return $rc; }
-    echo "warning: PrintWindow image is blank ($res) - the display is off (no user input for the power plan's" \
-        "15 min) or the window is minimized; falling back to F2" >&2
+    if [ "${CA_SHOT_F2:-0}" != 1 ]; then
+        res="$(win shot "$pid" "$winout")"; rc=$?
+        [ $rc = 0 ] && { echo "$res"; return 0; }
+        [ $rc = 4 ] || { echo "$res" >&2; return $rc; }
+        echo "warning: PrintWindow image is blank ($res) - the display is off (no user input for the power plan's" \
+            "15 min) or the window is minimized; falling back to F2" >&2
+    fi
     dir="$(ca_state_get "client$k" WT)/run$([ "$k" = 2 ] && echo /client2)/screenshots"
     before="$(ls -t "$dir"/*.png 2>/dev/null | head -1)"
     win key "$pid" F2 >/dev/null || { echo "warning: F2 could not be sent; $out stays blank" >&2; return 4; }
