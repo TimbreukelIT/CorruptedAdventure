@@ -5,7 +5,7 @@
 T="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRATCH="$(mktemp -d)"
 trap 'rm -rf "$SCRATCH"' EXIT
-export CA_LOCK_DIR="$SCRATCH/lock" CA_STREAM=selftest
+export CA_LOCK_DIR="$SCRATCH/lock" CA_STREAM=selftest CA_SLOTS=3   # the cases below are written for 3 slots
 export CA_ALIVE_PIDS="1111 2222"            # the "living" holders; every other PID counts as dead
 ME="$(cat /proc/$$/winpid 2>/dev/null || echo $$)"
 fails=0
