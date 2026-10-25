@@ -1,6 +1,6 @@
 #!/bin/bash
-# Machine lock + JVM slots (waves.md §4, agent-rules-golf3). At most 3 Gradle/Minecraft JVMs on the machine: every
-# build, runData, runServer and runClient holds a slot `<lockdir>/ca-jvm-slot-{1,2,3}`; machine-wide things (the
+# Machine lock + JVM slots (waves.md §4, agent-rules-golf3). At most CA_SLOTS (5) Gradle/Minecraft JVMs: every
+# build, runData, runServer and runClient holds a slot `<lockdir>/ca-jvm-slot-{1..5}`; machine-wide things (the
 # quick-play start of a client, JFR, ffmpeg) also hold the lock `<lockdir>/ca-test.lock`, taken FIRST. Both are taken
 # with an atomic mkdir and carry an `owner` file:
 #     stream=<s> pid=<windows pid of the real holder> time=<iso> task=<label> token=<id> root=<checkout>
@@ -32,7 +32,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 STALE_MIN="${CA_STALE_MIN:-20}"
 mkdir -p "$CA_LOCK_DIR" 2>/dev/null
 
-ENTRIES=("$CA_MACHINE_LOCK" "$CA_LOCK_DIR/ca-jvm-slot-1" "$CA_LOCK_DIR/ca-jvm-slot-2" "$CA_LOCK_DIR/ca-jvm-slot-3")
+ENTRIES=("$CA_MACHINE_LOCK"); for s in $(seq 1 "$CA_SLOTS"); do ENTRIES+=("$CA_LOCK_DIR/ca-jvm-slot-$s"); done
 
 owner_line() {
     echo "stream=$CA_STREAM pid=$OWNER_PID time=$(ca_now) task=${TASK:-manual} token=${TOKEN:-${TASK:-manual}} root=$(ca_winpath "$CA_ROOT")"
@@ -110,7 +110,7 @@ attempt() {
         mkdir "$CA_MACHINE_LOCK" 2>/dev/null || return 2
         slot_owner 0 > "$CA_MACHINE_LOCK/owner"
     fi
-    for s in 1 2 3; do
+    for s in $(seq 1 "$CA_SLOTS"); do
         [ ${#got[@]} -ge "$N" ] && break
         if mkdir "$CA_LOCK_DIR/ca-jvm-slot-$s" 2>/dev/null; then
             slot_owner ${#got[@]} > "$CA_LOCK_DIR/ca-jvm-slot-$s/owner"; got+=("$s")
@@ -195,7 +195,7 @@ if [ -n "$TASKS" ]; then
     [[ "$TASKS" =~ ^[A-Za-z0-9._-]+(,[A-Za-z0-9._-]+)*$ ]] || ca_die "--tasks must be labels separated by commas"
     N=$(( $(tr -cd , <<< "$TASKS" | wc -c) + 1 )); TASK="${TASKS%%,*}"
 fi
-[[ "$N" =~ ^[0-3]$ ]] || ca_die "-n must be 0..3"
+[[ "$N" =~ ^[0-9]+$ ]] && [ "$N" -le "$CA_SLOTS" ] || ca_die "-n must be 0..$CA_SLOTS"
 [ "$N" -ge 1 ] || [ "$USE_LOCK" = 1 ] || ca_die "-n 0 only with --lock"
 
 case "$cmd" in

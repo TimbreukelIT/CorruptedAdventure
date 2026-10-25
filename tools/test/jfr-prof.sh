@@ -3,7 +3,7 @@
 #
 #   jfr-prof.sh [--areas FILE] [--only "a b"] [--name NAME] [--nowarm] [--top 20] [--wait 1800]
 #
-# Holds the machine lock + all 3 JVM slots like perf.sh (a quiet machine), starts the stream's server on a fresh
+# Holds the machine lock + all JVM slots like perf.sh (a quiet machine), starts the stream's server on a fresh
 # world, and runs py/jfrprof.py: warm-up, then per area RCON `jfr start`, forceload, `jfr stop` (the server's own
 # profiler, no jcmd attach). Output in build/test/<NAME>/ (default prof-<date>-<time>): <area>.jfr, <area>.txt (top self
 # frames and inclusive mod methods, py/jfrhot.py). The world is deleted afterwards; the recordings stay (on P:).
@@ -23,7 +23,7 @@ done
 ca_user_check
 out="$CA_OUT/$name"; mkdir -p "$out"
 level="$name-w"
-bash "$CA_TOOLS/slots.sh" take -n 3 --lock --task jfrprof --wait "$wait" || exit $?
+bash "$CA_TOOLS/slots.sh" take -n "$CA_SLOTS" --lock --task jfrprof --wait "$wait" || exit $?
 cleanup() {
     [ -n "$(bash "$CA_TOOLS/server.sh" status | grep '^PID=')" ] && bash "$CA_TOOLS/server.sh" stop --timeout 120
     rm -rf "${CA_WT:?}/run/$level"

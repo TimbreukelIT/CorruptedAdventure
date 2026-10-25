@@ -35,7 +35,7 @@ bash tools/test/det.sh --areas tools/test/areas/smoke.txt --name det-smoke   # -
 
 - `C:/Temp/ca-user-test.lock` exists = the user is playing: every script that would start a JVM exits with code 3.
   Start nothing, tell main, wait idle. Only main places/removes that lock.
-- Max. 3 JVMs: every build/runData/server/client holds a slot; machine-wide things (the quick-play start of a client,
+- Max. `CA_SLOTS` (5, since 2026-10-25; was 3) JVMs: every build/runData/server/client holds a slot; perf.sh and jfr-prof.sh take all of them; machine-wide things (the quick-play start of a client,
   JFR) also hold the lock, taken first. Nothing waits for a slot while holding something (a client with a reserved
   slot waits only for the lock, and nobody waits while holding the lock).
 - Gradle always with `--no-daemon` (the tools do this themselves): a daemon would stay behind outside the slot count.

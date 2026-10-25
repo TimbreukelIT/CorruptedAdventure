@@ -38,6 +38,7 @@ CA_PIDS="$CA_ROOT/build/$CA_STREAM.pids"
 CA_SEED=20260930
 CA_USER_LOCK="$CA_LOCK_DIR/ca-user-test.lock"
 CA_MACHINE_LOCK="$CA_LOCK_DIR/ca-test.lock"
+CA_SLOTS="${CA_SLOTS:-5}"                # JVM slots on the machine (2026-10-25: 3 -> 5; ~12 GB RAM and CPU were idle)
 CA_PY="python"
 CA_EXE=".exe"                           # suffix of JDK tools (jfr.exe)
 CA_GRADLEW=(./gradlew)

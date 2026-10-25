@@ -6,7 +6,7 @@
 #   perf.sh [--warm 3] [--cold 1] [--areas FILE] [--only "a b"] [--cold-only "a b"] [--max-min 45] [--name NAME]
 #           [--ref DIR] [--wait 1800]
 #
-# Holds the machine lock + all 3 JVM slots for the whole run (never two measurements at once), released on any exit.
+# Holds the machine lock + all JVM slots (CA_SLOTS) for the whole run (never two measurements at once), released on any exit.
 # After --max-min minutes no new round or area starts; a watchdog stops the server 2 minutes later if a round hangs.
 # Output in build/test/<NAME>/ (default perf-<date>-<time>): p<round>.json, p<round>.txt and table.md
 # (py/perfsum.py; --ref adds the noise of an earlier run directory). The JFR recordings and the round worlds are
@@ -32,7 +32,7 @@ done
 ca_user_check
 out="$CA_OUT/$name"; mkdir -p "$out"
 # Holder PID of the lock and slots = this script (the caller of slots.sh), alive for the whole run.
-bash "$CA_TOOLS/slots.sh" take -n 3 --lock --task perf --wait "$wait" || exit $?
+bash "$CA_TOOLS/slots.sh" take -n "$CA_SLOTS" --lock --task perf --wait "$wait" || exit $?
 # The measuring budget starts once everything is held (waiting for the slots does not count).
 start=$(date +%s); deadline=$((start + max_min * 60))
 watchdog=""
