@@ -18,6 +18,7 @@ import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2FlatLandmarkFeatures;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
@@ -187,14 +188,16 @@ class Ring2BiomesTest {
         assertEquals(Ring2RockFeatures.CANYON_GROVE_TREES, Ring2RockFeatures.CANYONLANDS_GROVES.getFirst(), "trees before their scrub");
 
         Biome oasis = biomes.get(ModBiomes.OASIS_FLATS);
-        // G2: the dry hollows after the rocks, the scrub after the oasis plants.
-        assertEquals(List.of(ModPlacedFeatures.OASIS_ROCKS, Ring2FlatsLifeFeatures.OASIS_DRY_HOLLOWS),
-                own(oasis, GenerationStep.Decoration.LOCAL_MODIFICATIONS));
+        // G2: the dry hollows after the rocks, then the giant palm's spring pool; the scrub after the oasis plants,
+        // the giant palm after all plants.
+        assertEquals(List.of(ModPlacedFeatures.OASIS_ROCKS, Ring2FlatsLifeFeatures.OASIS_DRY_HOLLOWS,
+                Ring2FlatLandmarkFeatures.OASIS_FLATS_GIANT_PALM_SPRING), own(oasis, GenerationStep.Decoration.LOCAL_MODIFICATIONS));
         // After vanilla's glow lichen only our own plants: vanilla's sugar cane random_patch is replaced by the
         // chunk-local shore plants.
         List<ResourceKey<PlacedFeature>> plants = step(oasis, GenerationStep.Decoration.VEGETAL_DECORATION);
+        assertEquals(Ring2FlatLandmarkFeatures.OASIS_FLATS_GIANT_PALM, plants.getLast());
         List<ResourceKey<PlacedFeature>> oasisOwn = Stream.concat(Ring2Biomes.OASIS_VEGETATION.stream(), Ring2Biomes.OASIS_SCRUB.stream()).toList();
-        assertEquals(oasisOwn, plants.subList(plants.size() - oasisOwn.size(), plants.size()));
+        assertEquals(oasisOwn, plants.subList(plants.size() - 1 - oasisOwn.size(), plants.size() - 1));
         assertFalse(plants.contains(VegetationPlacements.PATCH_SUGAR_CANE_DESERT));
         assertTrue(Ring2Biomes.OASIS_VEGETATION.indexOf(ModPlacedFeatures.OASIS_SHORE_PLANTS)
                 < Ring2Biomes.OASIS_VEGETATION.indexOf(ModPlacedFeatures.OASIS_PALM_GROVES));
@@ -217,12 +220,14 @@ class Ring2BiomesTest {
                 ModPlacedFeatures.SALT_ISLAND_BONES, Ring2FlatsLifeFeatures.SALT_FLATS_RIDGES),
                 own(biomes.get(ModBiomes.SALT_FLATS), GenerationStep.Decoration.LOCAL_MODIFICATIONS));
         assertEquals(List.of(ModPlacedFeatures.SALT_FLATS_CRYSTALS, ModPlacedFeatures.SALT_FLATS_CRYSTAL_FIELDS,
-                ModPlacedFeatures.SALT_ISLAND_FLORA, ModPlacedFeatures.SALT_ISLAND_CACTUS, Ring2FlatsLifeFeatures.SALT_ISLAND_BLEACHED_TREES),
+                ModPlacedFeatures.SALT_ISLAND_FLORA, ModPlacedFeatures.SALT_ISLAND_CACTUS, Ring2FlatsLifeFeatures.SALT_ISLAND_BLEACHED_TREES,
+                Ring2FlatLandmarkFeatures.SALT_FLATS_SALT_DOME),
                 own(biomes.get(ModBiomes.SALT_FLATS), GenerationStep.Decoration.VEGETAL_DECORATION));
         assertEquals(List.of(ModPlacedFeatures.DUNE_SEA_OASES, ModPlacedFeatures.DUNE_SEA_OUTCROPS, ModPlacedFeatures.DUNE_SEA_FOSSILS,
                 ModPlacedFeatures.DUNE_SEA_BONES), own(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.LOCAL_MODIFICATIONS));
         assertEquals(List.of(ModPlacedFeatures.DUNE_SEA_VEGETATION, ModPlacedFeatures.DUNE_SEA_VALLEY_FLORA, ModPlacedFeatures.DUNE_SEA_VALLEY_GRASS,
-                ModPlacedFeatures.DUNE_SEA_CACTUS_GROUPS, Ring2FlatsLifeFeatures.DUNE_SEA_THICKETS, Ring2FlatsLifeFeatures.DUNE_SEA_BURIED_TREES),
+                ModPlacedFeatures.DUNE_SEA_CACTUS_GROUPS, Ring2FlatsLifeFeatures.DUNE_SEA_THICKETS, Ring2FlatsLifeFeatures.DUNE_SEA_BURIED_TREES,
+                Ring2FlatLandmarkFeatures.DUNE_SEA_SKELETON),
                 own(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.VEGETAL_DECORATION));
         // The oasis flowers and shrubs after the palms (a standing palm blocks a shrub, never the other way round).
         List<ResourceKey<PlacedFeature>> oasisPlants = Ring2Biomes.OASIS_VEGETATION;

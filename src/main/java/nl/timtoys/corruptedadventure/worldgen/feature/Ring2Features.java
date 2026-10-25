@@ -366,12 +366,14 @@ public final class Ring2Features {
                         water(1, -1, 0), water(-1, -1, 0), water(0, -1, 1), water(0, -1, -1),
                         water(1, -2, 0), water(-1, -2, 0), water(0, -2, 1), water(0, -2, -1)))),
                 BiomeFilter.biome());
-        // Groups of 2–4 palms where ring_2_palm_groves is high, on the outer shore and the inner transition ring.
+        // Groups of 2–4 palms where ring_2_palm_groves is high, on the outer shore and the inner transition ring. All oasis
+        // palms keep clear of the giant palm (G2): no crown of a neighbouring chunk reaches into it.
         PlacementUtils.register(context, ModPlacedFeatures.OASIS_PALM_GROVES, features.getOrThrow(PALM_TREE),
                 JitteredGridPlacement.of(PALM_CELL, PALM_MARGIN, 0.75F),
                 SURFACE,
                 NoiseBandFilter.snapped(POOLS, GROVE_FROM, GROVE_TO, PALM_CELL),
                 NoiseBandFilter.snapped(PALM_GROVES, GROVE_NOISE, Double.MAX_VALUE, PALM_CELL),
+                Ring2FlatLandmarkFeatures.palmClearance(),
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.PALM_SAPLING.get()),
                 BiomeFilter.biome());
         // A single palm on the open sand, about one per six chunks; G2 (G2-R2-7): palm groves where ring_2_oasis_groves is
@@ -382,6 +384,7 @@ public final class Ring2Features {
                         Ring2FlatsLifeFeatures.GROVE_PALMS_LOW, Ring2FlatsLifeFeatures.GROVE_PALMS_HIGH).withFloor(SAND_PALM_CHANCE / SAND_GROVE_CHANCE)),
                 SURFACE,
                 NoiseBandFilter.snapped(POOLS, -Double.MAX_VALUE, SAND_BELOW, PALM_CELL),
+                Ring2FlatLandmarkFeatures.palmClearance(),
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.PALM_SAPLING.get()),
                 BiomeFilter.biome());
         // Palm bushes between the groves, on the shore and the transition ring.
@@ -390,6 +393,7 @@ public final class Ring2Features {
                 SURFACE,
                 NoiseBandFilter.snapped(POOLS, TRANSITION, WATER, PALM_CELL),
                 NoiseBandFilter.snapped(PALM_GROVES, -Double.MAX_VALUE, Math.nextDown(GROVE_NOISE), PALM_CELL),
+                Ring2FlatLandmarkFeatures.palmClearance(),
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.PALM_SAPLING.get()),
                 BiomeFilter.biome());
         // Change 30c: two passes over a grid of cell 4 (~26 spread candidates) instead of 10 random ones: about three times

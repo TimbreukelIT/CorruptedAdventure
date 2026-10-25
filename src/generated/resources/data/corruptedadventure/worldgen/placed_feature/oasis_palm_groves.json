@@ -25,6 +25,11 @@
       "snap": 8
     },
     {
+      "type": "corruptedadventure:ring_2_landmark_clearance",
+      "kind": "giant_palm",
+      "margin": 6
+    },
+    {
       "type": "minecraft:block_predicate_filter",
       "predicate": {
         "type": "minecraft:would_survive",

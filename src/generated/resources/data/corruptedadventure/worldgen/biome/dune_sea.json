@@ -62,8 +62,12 @@
       "corruptedadventure:dune_sea_valley_flora",
       "corruptedadventure:dune_sea_valley_grass",
       "corruptedadventure:dune_sea_cactus_groups",
+<<<<<<< HEAD
       "corruptedadventure:dune_sea_thickets",
       "corruptedadventure:dune_sea_buried_trees"
+=======
+      "corruptedadventure:dune_sea_skeleton"
+>>>>>>> g2r2/marks-b
     ],
     [
       "minecraft:freeze_top_layer"

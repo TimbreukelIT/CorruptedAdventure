@@ -23,6 +23,7 @@ import nl.timtoys.corruptedadventure.worldgen.feature.TerrainHeightPlacement;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerrainLandmarkPlacement;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerrainLavaFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.VolcanicFilter;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2LandmarkClearanceFilter;
 
 public final class ModPlacementModifierTypes {
     private static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_MODIFIER_TYPES =
@@ -87,6 +88,11 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:ring5_void_face} (95: the outer band's nullite onto rock facing the void) */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<Ring5VoidFacePlacement>> RING5_VOID_FACE =
             PLACEMENT_MODIFIER_TYPES.register("ring5_void_face", () -> () -> Ring5VoidFacePlacement.CODEC);
+
+    // ring 2 — G2 landmarks
+    /** {@code corruptedadventure:ring_2_landmark_clearance} (G2 ring 2: the oasis palms keep clear of the giant palm) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<Ring2LandmarkClearanceFilter>> RING_2_LANDMARK_CLEARANCE =
+            PLACEMENT_MODIFIER_TYPES.register("ring_2_landmark_clearance", () -> () -> Ring2LandmarkClearanceFilter.CODEC);
 
     private ModPlacementModifierTypes() {
     }
