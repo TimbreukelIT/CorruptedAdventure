@@ -271,10 +271,25 @@ def volcanic_peaks():
     return top, [cond(DEPTH, block("blackstone"))]
 
 
+# G2 ring 3 (decision 2, the ember woods' sub-zone): the hearts of the clearings are burn patches. Same noise and
+# threshold as EmberWoodsFeatures.CLEARINGS / BURN (the trees keep out of the clearings, the stumps stand on this).
+EMBER_CLEARINGS = "ring_3_ember_clearings"
+EMBER_BURN = 0.42
+
+
+def ember_burn():
+    """G2: a burn patch: smouldering ash, plain ash where the grain shows (the fire flora grows there), coarse dirt specks."""
+    return cond(noise(EMBER_CLEARINGS, EMBER_BURN), seq(
+        cond(noise(G, 0.3), mod("ash_block")),
+        cond(noise(D, 0.6), block("coarse_dirt")),
+        mod("smoldering_ash")))
+
+
 def ember_woods():
     # 39f: no more flat patches of coarse dirt; pumice and tuff by the step of the relief (`tread`: each block of height
     # its own share), so their edges follow the steps; coarse dirt only as small specks.
     top = [
+        ember_burn(),
         all_of([noise(K, -0.022, 0.022), noise(P, -0.1), noise(D, 0.15)], mod("smoldering_ash")),
         cond(noise(D, 0.55), mod("smoldering_ash")),
         cond(noise(P, -INF, -0.5), block("smooth_basalt")),
@@ -312,9 +327,20 @@ def sulfur_fields():
         cond(DEPTH, block("smooth_basalt"))]
 
 
+# G2 ring 3 (decision 8 = A): no hard straight line between the zeekom's sand and the steam fens' mud. The outer
+# ZONE_EDGE_WIDTH blocks of ring 3 before the zone 3->4 take the steam fens' surface in patches (corruptedadventure:zone_edge
+# on the detail noise) that thin out inwards: tongues and islands of mud in the sand, of sand in the mud. Surface only.
+ZONE_EDGE_WIDTH = 36.0
+
+
+def zone_edge_3():
+    return {"type": CA + "zone_edge", "ring": "ring_3", "noise": CA + D, "width": ZONE_EDGE_WIDTH}
+
+
 def dried_seabed():
     # 39f: the gravel and clay patches are smaller (specks inside the large patches).
     top = [
+        cond(zone_edge_3(), seq(*steam_fens()[0])),
         cond(noise(P, 0.5), seq(cond(noise(D, 0.3), block("sand")), mod("ash_block"))),
         cond(noise(D, 0.55), mod("pumice")),
         all_of([noise(S, 0.35), noise(D, 0.15)], block("gravel")),

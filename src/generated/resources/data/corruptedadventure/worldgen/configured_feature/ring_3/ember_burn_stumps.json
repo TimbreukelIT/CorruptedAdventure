@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": {
+      "feature": "corruptedadventure:ring_3/ember_charred_stump",
+      "placement": []
+    },
+    "features": [
+      {
+        "chance": 0.4,
+        "feature": {
+          "feature": "corruptedadventure:ring_3/ember_glowing_stump",
+          "placement": []
+        }
+      }
+    ]
+  }
+}

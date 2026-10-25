@@ -19,6 +19,7 @@ import nl.timtoys.corruptedadventure.worldgen.surface.NetherRing5PillarCondition
 import nl.timtoys.corruptedadventure.worldgen.surface.Ring5GroundCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.Ring5SpeckleCondition;
 import nl.timtoys.corruptedadventure.worldgen.surface.Zone45ShareCondition;
+import nl.timtoys.corruptedadventure.worldgen.surface.ZoneEdgeCondition;
 
 /** Surface rule condition types (the {@code if_true} of a surface rule); the rules themselves are hand-written JSON. */
 public final class ModSurfaceConditions {
@@ -77,6 +78,11 @@ public final class ModSurfaceConditions {
     /** {@code corruptedadventure:zone_4_5_share} (walk 1: how far across the zone 4→5 a column lies; ring 5's blocks bleed in) */
     public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<Zone45ShareCondition>> ZONE_4_5_SHARE =
             CONDITIONS.register("zone_4_5_share", () -> Zone45ShareCondition.MAP_CODEC);
+
+    // G2 ring 3
+    /** {@code corruptedadventure:zone_edge} (G2 ring 3: the frayed inner edge of a transition zone; the zeekom's sand ↔ the steam fens' mud) */
+    public static final DeferredHolder<MapCodec<? extends SurfaceRules.ConditionSource>, MapCodec<ZoneEdgeCondition>> ZONE_EDGE =
+            CONDITIONS.register("zone_edge", () -> ZoneEdgeCondition.MAP_CODEC);
 
     private ModSurfaceConditions() {
     }

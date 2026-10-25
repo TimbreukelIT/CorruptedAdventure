@@ -19,6 +19,20 @@
           "feature": "corruptedadventure:ring_3/charred_dead_tree",
           "placement": []
         }
+      },
+      {
+        "chance": 0.2,
+        "feature": {
+          "feature": "corruptedadventure:ring_3/half_burnt_ember_tree",
+          "placement": []
+        }
+      },
+      {
+        "chance": 0.1,
+        "feature": {
+          "feature": "corruptedadventure:ring_3/bare_ember_giant",
+          "placement": []
+        }
       }
     ]
   }
