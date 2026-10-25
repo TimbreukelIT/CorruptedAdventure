@@ -178,10 +178,10 @@ class Ring2BiomesTest {
         Map<ResourceKey<Biome>, Biome> biomes = bootstrap();
         Biome canyonlands = biomes.get(ModBiomes.CANYONLANDS);
         // G2: the seeps after the springs (a seep round a spring needs its water), the groves after the scrub.
-        // G2 ring 2: the rock bridge after the rocks, springs and seeps (it only builds high over the canyon floor).
-        List<ResourceKey<PlacedFeature>> rocks = Stream.of(Ring2Biomes.CANYONLANDS_ROCKS.stream(), Ring2RockFeatures.CANYONLANDS_SEEPS.stream(),
-                Stream.of(Ring2RockLandmarkFeatures.CANYONLANDS_ROCK_BRIDGES)).flatMap(s -> s).toList();
+        List<ResourceKey<PlacedFeature>> rocks = Stream.concat(Ring2Biomes.CANYONLANDS_ROCKS.stream(), Ring2RockFeatures.CANYONLANDS_SEEPS.stream()).toList();
         assertEquals(rocks, own(canyonlands, GenerationStep.Decoration.LOCAL_MODIFICATIONS));
+        // G2 ring 2: the rock bridge (a ring_2/ key, so not in own) last, after the rocks, springs and seeps.
+        assertEquals(Ring2RockLandmarkFeatures.CANYONLANDS_ROCK_BRIDGES, step(canyonlands, GenerationStep.Decoration.LOCAL_MODIFICATIONS).getLast());
         assertEquals(ModPlacedFeatures.CANYON_SPRINGS, Ring2Biomes.CANYONLANDS_ROCKS.getLast(), "the spring last of the rocks: it avoids the boulders of its chunk");
         assertEquals(Stream.concat(Stream.of(ModPlacedFeatures.CANYONLANDS_VEGETATION), Ring2RockFeatures.CANYONLANDS_GROVES.stream()).toList(),
                 own(canyonlands, GenerationStep.Decoration.VEGETAL_DECORATION));
@@ -204,9 +204,9 @@ class Ring2BiomesTest {
 
         // Change 30: the hoodoo fields reuse the canyon rockfall (same place in the step), each biome its own plants.
         Biome hoodoos = biomes.get(ModBiomes.HOODOO_FIELDS);
-        assertEquals(Stream.of(Stream.of(ModPlacedFeatures.CANYON_ROCKFALL), Ring2RockFeatures.HOODOO_GULLIES.stream(),
-                Stream.of(Ring2RockLandmarkFeatures.HOODOO_FIELDS_GIANT_HOODOOS)).flatMap(s -> s).toList(),
+        assertEquals(Stream.concat(Stream.of(ModPlacedFeatures.CANYON_ROCKFALL), Ring2RockFeatures.HOODOO_GULLIES.stream()).toList(),
                 own(hoodoos, GenerationStep.Decoration.LOCAL_MODIFICATIONS));
+        assertEquals(Ring2RockLandmarkFeatures.HOODOO_FIELDS_GIANT_HOODOOS, step(hoodoos, GenerationStep.Decoration.LOCAL_MODIFICATIONS).getLast());
         assertTrue(Ring2Biomes.CANYONLANDS_ROCKS.contains(ModPlacedFeatures.CANYON_ROCKFALL));
         // Change 30c: the hoodoo flora, then the pillar feet and the cactus groups.
         assertEquals(List.of(ModPlacedFeatures.HOODOO_FIELDS_VEGETATION, ModPlacedFeatures.HOODOO_PILLAR_FOOT_FLORA,

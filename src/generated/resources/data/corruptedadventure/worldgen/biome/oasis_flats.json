@@ -31,11 +31,8 @@
     [
       "minecraft:amethyst_geode",
       "corruptedadventure:oasis_rocks",
-<<<<<<< HEAD
-      "corruptedadventure:oasis_dry_hollows"
-=======
+      "corruptedadventure:oasis_dry_hollows",
       "corruptedadventure:oasis_flats_giant_palm_spring"
->>>>>>> g2r2/marks-b
     ],
     [
       "minecraft:monster_room",
@@ -75,12 +72,9 @@
       "corruptedadventure:oasis_flowers_purple",
       "corruptedadventure:oasis_edge_shrubs",
       "corruptedadventure:oasis_transition_vegetation",
-<<<<<<< HEAD
       "corruptedadventure:oasis_scrub",
-      "corruptedadventure:oasis_scrub_grass"
-=======
+      "corruptedadventure:oasis_scrub_grass",
       "corruptedadventure:oasis_flats_giant_palm"
->>>>>>> g2r2/marks-b
     ],
     [
       "minecraft:freeze_top_layer"

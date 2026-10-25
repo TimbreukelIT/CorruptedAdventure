@@ -65,11 +65,8 @@
       "corruptedadventure:salt_flats_crystal_fields",
       "corruptedadventure:salt_island_flora",
       "corruptedadventure:salt_island_cactus",
-<<<<<<< HEAD
-      "corruptedadventure:salt_island_bleached_trees"
-=======
+      "corruptedadventure:salt_island_bleached_trees",
       "corruptedadventure:salt_flats_salt_dome"
->>>>>>> g2r2/marks-b
     ],
     [
       "minecraft:freeze_top_layer"
