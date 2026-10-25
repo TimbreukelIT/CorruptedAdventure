@@ -13,7 +13,7 @@
     },
     {
       "type": "corruptedadventure:noise_band",
-      "min": 0.35,
+      "min": 0.2,
       "noise": "corruptedadventure:ring_3_ember_clearings",
       "snap": 16
     },
@@ -59,7 +59,10 @@
           },
           {
             "type": "minecraft:matching_blocks",
-            "blocks": "corruptedadventure:ember_leaves"
+            "blocks": [
+              "corruptedadventure:ember_leaves",
+              "corruptedadventure:charred_wood"
+            ]
           }
         ]
       }

@@ -4,7 +4,11 @@
     {
       "type": "corruptedadventure:jittered_grid",
       "cell_size": 16,
-      "chance": 0.7,
+      "density": {
+        "high": 0.1,
+        "low": -0.25,
+        "noise": "corruptedadventure:ring_3_fens_clusters"
+      },
       "margin": 6
     },
     {

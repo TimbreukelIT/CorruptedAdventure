@@ -24,6 +24,7 @@ import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.HeightmapPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
+import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
@@ -74,6 +75,16 @@ public final class SteamFensFeatures {
 
     private static final PlacementModifier SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
 
+    /**
+     * G2 ring 3 (decision 8 = A): pools, geysers and vents lie in clusters instead of an even grid. One noise for all of
+     * them (same salt): boiling pools and geysers in the cores (about 3 in 10 of the fens), mud pools in a wider halo
+     * around them, the vents with a floor everywhere. Mean amounts per chunk stay about those of 48.
+     */
+    static final ResourceKey<NormalNoise.NoiseParameters> CLUSTER_NOISE = ResourceKey.create(Registries.NOISE,
+            CorruptedAdventure.id("ring_3_fens_clusters"));
+    static final ClusterDensity CLUSTERS = ClusterDensity.of(CLUSTER_NOISE, 0.0, 0.35);
+    static final ClusterDensity HALO = ClusterDensity.of(CLUSTER_NOISE, -0.25, 0.1);
+
     private SteamFensFeatures() {
     }
 
@@ -111,17 +122,18 @@ public final class SteamFensFeatures {
         PlacementModifier mudOwnGround = BeforeSplitFilter.of(Ring.RING_3, IslandField.VERDANT_EDGE_SHARE, MUD_POOL_REACH);
         PlacementModifier ventsOwnGround = BeforeSplitFilter.of(Ring.RING_3, IslandField.VERDANT_EDGE_SHARE, GroundVentFeature.MAX_COLLAR);
 
+        // Cell 8 instead of 16: up to four per chunk in a cluster (PoolLayout still shifts each pool into its chunk).
         PlacementUtils.register(context, STEAM_FENS_BOILING_POOLS, features.getOrThrow(BOILING_POOL),
-                JitteredGridPlacement.of(16, 1, 0.3F), SURFACE, HeightBandFilter.above(POOLS_ABOVE), open, BiomeFilter.biome(),
+                JitteredGridPlacement.of(8, 1, 0.26F, CLUSTERS), SURFACE, HeightBandFilter.above(POOLS_ABOVE), open, BiomeFilter.biome(),
                 boilingOwnGround);
         // A mud pool reaches 3 · 1.4 + 1 = 6: margin 6 keeps it whole.
         PlacementUtils.register(context, STEAM_FENS_MUD_POOLS, features.getOrThrow(FENS_MUD_POOL),
-                JitteredGridPlacement.of(16, 6, 0.7F), SURFACE, SlopeFilter.flat(2, 1), open, BiomeFilter.biome(), mudOwnGround);
+                JitteredGridPlacement.of(16, 6, 1.0F, HALO), SURFACE, SlopeFilter.flat(2, 1), open, BiomeFilter.biome(), mudOwnGround);
         PlacementUtils.register(context, STEAM_FENS_GEYSERS, features.getOrThrow(GEYSER),
-                JitteredGridPlacement.of(16, GroundVentFeature.MAX_COLLAR, 0.3F), SURFACE, SlopeFilter.flat(2, 1), open,
+                JitteredGridPlacement.of(8, GroundVentFeature.MAX_COLLAR, 0.26F, CLUSTERS), SURFACE, SlopeFilter.flat(2, 1), open,
                 BiomeFilter.biome(), ventsOwnGround);
         PlacementUtils.register(context, STEAM_FENS_STEAM_VENTS, features.getOrThrow(STEAM_VENT),
-                JitteredGridPlacement.of(8, 1, 0.25F), SURFACE, SlopeFilter.flat(1, 1), open, BiomeFilter.biome(),
+                JitteredGridPlacement.of(8, 1, 0.5F, CLUSTERS.withFloor(0.3)), SURFACE, SlopeFilter.flat(1, 1), open, BiomeFilter.biome(),
                 ventsOwnGround);
     }
 

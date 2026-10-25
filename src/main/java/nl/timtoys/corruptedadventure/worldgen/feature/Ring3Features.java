@@ -85,6 +85,9 @@ public final class Ring3Features {
             vegetal(EmberWoodsFeatures.EMBER_WOODS_FALLEN_LOGS, ModBiomes.EMBER_WOODS),
             vegetal(EmberWoodsFeatures.EMBER_WOODS_FIRE_FLORA, ModBiomes.EMBER_WOODS),
             vegetal(EmberWoodsFeatures.EMBER_WOODS_BERRY_BUSHES, ModBiomes.EMBER_WOODS),
+            // G2 ring 3: the burn patches of the ember woods (after the trees and the clearings' logs).
+            vegetal(EmberWoodsFeatures.EMBER_WOODS_BURN_STUMPS, ModBiomes.EMBER_WOODS),
+            vegetal(EmberWoodsFeatures.EMBER_WOODS_BURN_FLORA, ModBiomes.EMBER_WOODS),
             vegetal(EmberWoodsFeatures.EMBER_WOODS_ASH, ModBiomes.EMBER_WOODS),
             vegetal(DormantCalderaFeatures.DORMANT_CALDERA_AZALEA_TREES, ModBiomes.DORMANT_CALDERA),
             vegetal(DormantCalderaFeatures.DORMANT_CALDERA_AZALEA_SHRUBS, ModBiomes.DORMANT_CALDERA),
