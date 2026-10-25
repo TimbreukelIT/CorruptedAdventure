@@ -3,14 +3,18 @@ package nl.timtoys.corruptedadventure.datagen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.item.GearTier;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -55,6 +59,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(Tags.Blocks.ORE_RATES_SINGULAR).add(ModBlocks.SOUL_CRYSTAL_ORE.get(), ModBlocks.CRIMSON_SOUL_CRYSTAL_ORE.get());
         tag(Tags.Blocks.ORES_IN_GROUND_NETHERRACK).add(ModBlocks.SOUL_CRYSTAL_ORE.get());
 
+        tierGating();
         ring2();
         netherRing2();
         ring3();
@@ -115,14 +120,16 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 .add(ModBlocks.RAW_TURQUOISE_BLOCK.get())
                 .add(ModBlocks.SUNSTONE_BLOCK.get())
                 .add(ModBlocks.TURQUOISE_BLOCK.get());
-        // TODO(f2g1-int): rings 3-5 like their ores (needs_sunstone/volcanite/tidesilver_tool of stream B); diamond until then.
-        tag(BlockTags.NEEDS_DIAMOND_TOOL)
+        // Rings 3-5 like their ores: the tier of the ring before (vanilla: a storage block needs what its ore needs).
+        tag(ModTags.Blocks.NEEDS_SUNSTONE_TOOL)
                 .add(ModBlocks.RAW_VOLCANITE_BLOCK.get())
                 .add(ModBlocks.VOLCANITE_BLOCK.get())
-                .add(ModBlocks.FIRE_RUBY_BLOCK.get())
+                .add(ModBlocks.FIRE_RUBY_BLOCK.get());
+        tag(ModTags.Blocks.NEEDS_VOLCANITE_TOOL)
                 .add(ModBlocks.RAW_TIDESILVER_BLOCK.get())
                 .add(ModBlocks.TIDESILVER_BLOCK.get())
-                .add(ModBlocks.JADE_BLOCK.get())
+                .add(ModBlocks.JADE_BLOCK.get());
+        tag(ModTags.Blocks.NEEDS_TIDESILVER_TOOL)
                 .add(ModBlocks.RAW_NULLITE_BLOCK.get())
                 .add(ModBlocks.NULLITE_BLOCK.get());
     }
@@ -193,7 +200,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(ModTags.Blocks.ORES_NULLITE).add(ModBlocks.NULLITE_ORE.get(), ModBlocks.VOIDSTONE_NULLITE_ORE.get());
         tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_NULLITE);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_NULLITE);
-        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_NULLITE);
+        tag(GearTier.TIDESILVER.needsTool()).addTag(ModTags.Blocks.ORES_NULLITE);
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_NULLITE);
         tag(ModTags.Blocks.ORES_IN_GROUND_CORRUPTED_STONE).add(ModBlocks.NULLITE_ORE.get());
         tag(ModTags.Blocks.ORES_IN_GROUND_VOIDSTONE).add(ModBlocks.VOIDSTONE_NULLITE_ORE.get());
@@ -229,7 +236,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(ModTags.Blocks.ORES_WHITE_CORE).add(ModBlocks.WHITE_CORE_ORE.get());
         tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_WHITE_CORE);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_WHITE_CORE);
-        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_WHITE_CORE);
+        tag(GearTier.TIDESILVER.needsTool()).addTag(ModTags.Blocks.ORES_WHITE_CORE);
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_WHITE_CORE);
         tag(ModTags.Blocks.ORES_IN_GROUND_WHITE_STONE).add(ModBlocks.WHITE_CORE_ORE.get());
     }
@@ -297,7 +304,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
     }
 
     /**
-     * Ring 4 ores: a diamond pickaxe for both (decision V3 golf 1). Not carver-replaceable: ore features run after the
+     * Ring 4 ores: a volcanite pickaxe for both (phase 2 wave 1; was diamond, V3 golf 1). Not carver-replaceable: ore features run after the
      * carvers; {@code ores_in_ground} per host, with our own {@code c:ores_in_ground/tidestone}. The crystals carry
      * amethyst's tags; the budding blocks are growth, deliberately in no ground or carver tag.
      */
@@ -307,7 +314,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(ModTags.Blocks.ORES_JADE).add(ModBlocks.JADE_ORE.get(), ModBlocks.TIDESTONE_JADE_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get());
         tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
-        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
+        tag(GearTier.VOLCANITE.needsTool()).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_TIDESILVER).addTag(ModTags.Blocks.ORES_JADE);
         tag(Tags.Blocks.ORES_IN_GROUND_STONE).add(ModBlocks.TIDESILVER_ORE.get(), ModBlocks.JADE_ORE.get());
         tag(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE).add(ModBlocks.DEEPSLATE_TIDESILVER_ORE.get(), ModBlocks.DEEPSLATE_JADE_ORE.get());
@@ -629,7 +636,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
     }
 
     /**
-     * Ring 3 ores. Volcanite and fire ruby need an iron pickaxe, sulfur a stone one. Not in
+     * Ring 3 ores. All three need a sunstone pickaxe (phase 2 wave 1; were iron and stone). Not in
      * {@code #overworld_carver_replaceables}: ore features run after the carvers. {@code ores_in_ground} only where a
      * convention tag exists (stone, deepslate; none for basalt).
      */
@@ -643,8 +650,8 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 .addTag(ModTags.Blocks.ORES_FIRE_RUBY);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_SULFUR)
                 .addTag(ModTags.Blocks.ORES_FIRE_RUBY);
-        tag(BlockTags.NEEDS_IRON_TOOL).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_FIRE_RUBY);
-        tag(BlockTags.NEEDS_STONE_TOOL).addTag(ModTags.Blocks.ORES_SULFUR);
+        tag(GearTier.SUNSTONE.needsTool()).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_SULFUR)
+                .addTag(ModTags.Blocks.ORES_FIRE_RUBY);
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_VOLCANITE).addTag(ModTags.Blocks.ORES_FIRE_RUBY);
         tag(Tags.Blocks.ORE_RATES_DENSE).addTag(ModTags.Blocks.ORES_SULFUR);
         tag(Tags.Blocks.ORES_IN_GROUND_STONE).add(ModBlocks.VOLCANITE_ORE.get(), ModBlocks.SULFUR_ORE.get(),
@@ -688,6 +695,31 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
      * gravel in the coloured strata; ring 2 picks its own ores through {@code canyon_stones}). Loose sand is not in
      * {@code #sand}: it is a ceiling block, not plant ground.
      */
+    /**
+     * The gear tiers (phase 2 wave 1, {@link GearTier}): every vanilla tier fails on all our {@code needs_*_tool} tags,
+     * each of our tiers on those of the higher tiers. The ores themselves go into the needs tags in their ring's
+     * method: ring 2 needs diamond (vanilla), ring N+1 the tier of ring N, Nether ring N like ring N.
+     */
+    private void tierGating() {
+        for (TagKey<Block> vanilla : List.of(BlockTags.INCORRECT_FOR_WOODEN_TOOL, BlockTags.INCORRECT_FOR_STONE_TOOL,
+                BlockTags.INCORRECT_FOR_GOLD_TOOL, BlockTags.INCORRECT_FOR_IRON_TOOL, BlockTags.INCORRECT_FOR_DIAMOND_TOOL,
+                BlockTags.INCORRECT_FOR_NETHERITE_TOOL)) {
+            for (GearTier tier : GearTier.values()) {
+                tag(vanilla).addTag(tier.needsTool());
+            }
+        }
+        for (GearTier tier : GearTier.values()) {
+            // An empty tag still gets its file, so the highest tier's incorrect tag and an unused needs tag resolve.
+            tag(tier.needsTool());
+            var incorrect = tag(tier.incorrectForTool());
+            for (GearTier higher : GearTier.values()) {
+                if (higher.ordinal() > tier.ordinal()) {
+                    incorrect.addTag(higher.needsTool());
+                }
+            }
+        }
+    }
+
     private void ring2() {
         tag(ModTags.Blocks.CANYON_STONES).add(
                 ModBlocks.RED_CANYON_STONE.get(), ModBlocks.ORANGE_CANYON_STONE.get(), ModBlocks.CREAM_CANYON_STONE.get());
@@ -826,7 +858,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.ORANGE_CANYON_TURQUOISE_ORE.get(), ModBlocks.CREAM_CANYON_TURQUOISE_ORE.get());
         tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
-        tag(BlockTags.NEEDS_IRON_TOOL).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
+        tag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
         tag(Tags.Blocks.ORE_RATES_SINGULAR).addTag(ModTags.Blocks.ORES_SUNSTONE).addTag(ModTags.Blocks.ORES_TURQUOISE);
     }
 

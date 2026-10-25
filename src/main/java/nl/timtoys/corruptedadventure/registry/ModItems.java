@@ -3,11 +3,14 @@ package nl.timtoys.corruptedadventure.registry;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SmithingTemplateItem;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.item.GearTier;
+import nl.timtoys.corruptedadventure.item.UpgradeSmithingTemplates;
 
 import java.util.Collection;
 import java.util.List;
@@ -48,6 +51,9 @@ public final class ModItems {
     public static final DeferredItem<Item> SUNSTONE_INGOT = ITEMS.registerSimpleItem("sunstone_ingot");
     /** Smelted from raw turquoise and its ores (phase 2 golf 1): the cut gem. Provisional name. */
     public static final DeferredItem<Item> TURQUOISE = ITEMS.registerSimpleItem("turquoise");
+    /** Placeholder upgrade template to the sunstone tier (wave 1): recipe and source follow with the tier. */
+    public static final DeferredItem<SmithingTemplateItem> SUNSTONE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
+            UpgradeSmithingTemplates.itemName(GearTier.SUNSTONE), () -> UpgradeSmithingTemplates.create(GearTier.SUNSTONE));
 
     // ---- Nether ring 2 ----
     /** Drop of the grown dew crystal. Placeholder: its use, recipes and balance follow in phase 2. */
@@ -69,6 +75,9 @@ public final class ModItems {
     public static final DeferredItem<Item> FIRE_CRYSTAL = ITEMS.registerSimpleItem("fire_crystal");
     /** Smelted from raw volcanite and its ores (phase 2 golf 1); the volcanite tier's ingot. Provisional name. */
     public static final DeferredItem<Item> VOLCANITE_INGOT = ITEMS.registerSimpleItem("volcanite_ingot");
+    /** Placeholder upgrade template to the volcanite tier (wave 1): recipe and source follow with the tier. */
+    public static final DeferredItem<SmithingTemplateItem> VOLCANITE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
+            UpgradeSmithingTemplates.itemName(GearTier.VOLCANITE), () -> UpgradeSmithingTemplates.create(GearTier.VOLCANITE));
 
     // ---- Ring 4 ----
     static {
@@ -91,6 +100,9 @@ public final class ModItems {
     public static final DeferredItem<Item> VERDANT_FRUIT = ITEMS.registerSimpleItem("verdant_fruit");
     /** Smelted from raw tidesilver and its ores (phase 2 golf 1); the tidesilver tier's ingot. Provisional name. */
     public static final DeferredItem<Item> TIDESILVER_INGOT = ITEMS.registerSimpleItem("tidesilver_ingot");
+    /** Placeholder upgrade template to the tidesilver tier (wave 1): recipe and source follow with the tier. */
+    public static final DeferredItem<SmithingTemplateItem> TIDESILVER_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
+            UpgradeSmithingTemplates.itemName(GearTier.TIDESILVER), () -> UpgradeSmithingTemplates.create(GearTier.TIDESILVER));
 
     // ---- Nether ring 4 ----
     /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */
@@ -108,6 +120,9 @@ public final class ModItems {
     public static final DeferredItem<Item> RAW_NULLITE = ITEMS.registerSimpleItem("raw_nullite");
     /** Smelted from raw nullite and its ores (phase 2 golf 1); the nullite tier's ingot. Provisional name. */
     public static final DeferredItem<Item> NULLITE_INGOT = ITEMS.registerSimpleItem("nullite_ingot");
+    /** Placeholder upgrade template to the nullite tier (wave 1): recipe and source follow with the tier. */
+    public static final DeferredItem<SmithingTemplateItem> NULLITE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
+            UpgradeSmithingTemplates.itemName(GearTier.NULLITE), () -> UpgradeSmithingTemplates.create(GearTier.NULLITE));
 
     // ---- Nether ring 5 ----
     /** Drop of the white core ore (one per ore, Fortune adds). Placeholder without behaviour in phase 1. */

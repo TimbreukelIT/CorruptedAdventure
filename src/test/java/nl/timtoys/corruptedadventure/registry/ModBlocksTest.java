@@ -12,6 +12,7 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SmithingTemplateItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.PlaceOnWaterBlockItem;
@@ -222,7 +223,9 @@ class ModBlocksTest {
                 ModBlocks.MEDIUM_DEW_CRYSTAL_BUD.asItem(), ModBlocks.LARGE_DEW_CRYSTAL_BUD.asItem(),
                 ModBlocks.DEW_CRYSTAL_CLUSTER.asItem()), shown.subList(sprouts + 1, sprouts + 6));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
-                .filter(item -> !(item instanceof BlockItem)).toList();
+                .filter(item -> !(item instanceof BlockItem))
+                // The smithing templates of phase 2 close their ring sections; these checks are about the materials.
+                .filter(item -> !(item instanceof SmithingTemplateItem)).toList();
         assertEquals(List.of(ModItems.SALT.get(), ModItems.SUNSTONE_INGOT.get(), ModItems.TURQUOISE.get(),
                 ModItems.DEW_CRYSTAL.get()), standalone.subList(standalone.indexOf(ModItems.SALT.get()),
                 standalone.indexOf(ModItems.DEW_CRYSTAL.get()) + 1));
@@ -586,7 +589,9 @@ class ModBlocksTest {
                 ModBlocks.LARGE_AQUAMARINE_BUD, ModBlocks.AQUAMARINE_CLUSTER).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(ores, shown.subList(spring + 1, spring + 1 + ores.size()));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
-                .filter(item -> !(item instanceof BlockItem)).toList();
+                .filter(item -> !(item instanceof BlockItem))
+                // The smithing templates of phase 2 close their ring sections; these checks are about the materials.
+                .filter(item -> !(item instanceof SmithingTemplateItem)).toList();
         int fireCrystal = standalone.indexOf(ModItems.FIRE_CRYSTAL.get());
         assertEquals(List.of(ModItems.VOLCANITE_INGOT.get(), ModItems.RAW_TIDESILVER.get(), ModItems.JADE.get(),
                 ModItems.TOXIC_CRYSTAL_SHARD.get(), ModItems.AQUAMARINE_SHARD.get()), standalone.subList(fireCrystal + 1, fireCrystal + 6));
@@ -848,7 +853,9 @@ class ModBlocksTest {
                 ModBlocks.PURITY_CRYSTAL_CLUSTER, ModBlocks.PURITY_CRYSTAL_LAMP).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(netherRing4, shown.subList(lastRing4 + 1, lastRing4 + 1 + netherRing4.size()));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
-                .filter(item -> !(item instanceof BlockItem)).toList();
+                .filter(item -> !(item instanceof BlockItem))
+                // The smithing templates of phase 2 close their ring sections; these checks are about the materials.
+                .filter(item -> !(item instanceof SmithingTemplateItem)).toList();
         int shard = standalone.indexOf(ModItems.PURITY_CRYSTAL_SHARD.get());
         assertEquals(List.of(ModItems.PURITY_CRYSTAL_SHARD.get(), ModItems.GLITCH_SHARD.get(), ModItems.RAW_NULLITE.get(),
                 ModItems.NULLITE_INGOT.get(), ModItems.WHITE_CORE.get()), standalone.subList(shard, standalone.size()));

@@ -25,6 +25,7 @@ import nl.timtoys.corruptedadventure.datagen.DataGenerators;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.network.ModNetwork;
 import nl.timtoys.corruptedadventure.network.RingLayoutSync;
+import nl.timtoys.corruptedadventure.registry.ModArmorMaterials;
 import nl.timtoys.corruptedadventure.registry.ModAttachments;
 import nl.timtoys.corruptedadventure.registry.ModBiomeSources;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
@@ -72,6 +73,7 @@ public final class CorruptedAdventure {
         ServerConfig.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
+        ModArmorMaterials.register(modEventBus);
         ModFluidTypes.register(modEventBus);
         ModFluids.register(modEventBus);
         ToxicPoolInteractions.register(modEventBus);

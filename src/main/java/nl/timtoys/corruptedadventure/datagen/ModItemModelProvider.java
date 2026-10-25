@@ -351,6 +351,15 @@ final class ModItemModelProvider extends ItemModelProvider {
         verdant();
         netherRing4();
         ring5();
+        tiers();
+    }
+
+    /** Phase 2 wave 1 (stream B): the upgrade smithing templates, flat items like vanilla's. */
+    private void tiers() {
+        basicItem(ModItems.SUNSTONE_UPGRADE_SMITHING_TEMPLATE.get());
+        basicItem(ModItems.VOLCANITE_UPGRADE_SMITHING_TEMPLATE.get());
+        basicItem(ModItems.TIDESILVER_UPGRADE_SMITHING_TEMPLATE.get());
+        basicItem(ModItems.NULLITE_UPGRADE_SMITHING_TEMPLATE.get());
     }
 
     /** The verdant flora (72b); the wall bromeliad, the vine stem and the fruit pod have no item of their own. */

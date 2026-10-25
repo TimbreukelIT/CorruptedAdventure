@@ -8,7 +8,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [mobs] Post-game boss: wie of wat? (bron: ontwerp)
 
 ## Uit sparring fase 1 (2026-09-30)
-- [items] Gear-tiers per ring: elke ring één tier hoger; netherite ≈ ring 1–2-niveau, zodat het in ring 3 zwak is vergeleken met ringmateriaal. (bron: sparring fase 1)
+- [items] Gear-tiers per ring: elke ring één tier hoger; netherite ≈ ring 1–2-niveau, zodat het in ring 3 zwak is vergeleken met ringmateriaal. (bron: sparring fase 1) — **Afgehandeld in fase 2 golf 1 (B):** tier-raamwerk `GearTier` (zonnesteen ≈ netherite, dan per ring een stap; voorlopige stats in fase-2-items.md §4.3), armor materials, `needs_*`/`incorrect_for_*`-tags en de gating op alle ring-ertsen; de tools en harnassen zelf per golf.
 - [corruption] Ring 1-horror-events: verdwijnende/verplaatste fakkels, Herobrine-silhouetten in de verte, geluiden achter je. (bron: sparring fase 1)
 - [structures] Ring 1: kleine 'Herobrine-schrijnen' (goudblokken, netherrack, redstone-fakkels) als zeldzame vondst. (bron: sparring fase 1)
 - [structures] Ancient cities in ring 1 (deep dark): wel of niet? Beslissen in fase 3. (bron: sparring fase 1)
@@ -535,3 +535,10 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [items] Opslagblokken voor zwavel, zielkristal, dauwkristal, witte kern en glitchscherven: niet in golf 1; per golf beslissen samen met het nut van het materiaal. (bron: fase 2 golf 1, D)
 - [items] Beacon: de metaal- en edelsteenblokken van golf 1 in `#beacon_base_blocks` en de ingots/edelstenen in `#beacon_payment_items` (vanilla doet dat voor ijzer, goud, smaragd, diamant, netherite)? Nu niet. (bron: fase 2 golf 1, D)
 - [textures] Placeholder-textures van de golf 1-materialen (4 ingots, `turquoise`, 12 opslagblokken, `tools/textures/Golf1MaterialTextures.java`): definitieve stijl per ring. (bron: fase 2 golf 1, D)
+
+## Uit fase 2 golf 1, stroom B (tier-raamwerk, 2026-10-25)
+- [items] Upgrade-templates: vindplaats per tier (Nether-ring-loot, recept of drop) en het smithing-recept (gear vorige tier + ingot + template); en of zonnesteen diamanten of netherite-gear opwaardeert (tooltip zegt nu voorlopig diamant). (bron: f2 golf 1 B)
+- [items] Ring 3-, 4-, 5- en Nether-5-ertsen zijn tot de bijbehorende tier-tools (golf 2–4) in survival niet te mijnen; testers via creatief of `/give`. (bron: f2 golf 1 B)
+- [items] Zwavelerts vraagt nu zonnesteen (was steen): vroeg zwavel komt alleen nog uit de oppervlakte-kristallen (`sulfur_crystal`); meenemen in de zwavelbalans van golf 3. (bron: f2 golf 1 B)
+- [textures] Harnas-layer-textures `textures/models/armor/<tier>_layer_1/2.png` komen met de harnasstukken (de armor materials verwijzen er al naar). (bron: f2 golf 1 B)
+- [infra] De GameTest-template `data/corruptedadventure/structure/gametest/empty.nbt` en `gametest/` zitten in de mod-jar (alleen actief met `neoforge.enabledGameTestNamespaces`); eventueel een eigen source set als er meer gametests komen. (bron: f2 golf 1 B)

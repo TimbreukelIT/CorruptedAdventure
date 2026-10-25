@@ -1,20 +1,6 @@
 {
   "values": [
-    "#c:ores/tidesilver",
-    "#c:ores/jade",
-    "#c:ores/nullite",
-    "#c:ores/white_core",
-    "corruptedadventure:raw_sunstone_block",
-    "corruptedadventure:raw_turquoise_block",
-    "corruptedadventure:sunstone_block",
-    "corruptedadventure:turquoise_block",
-    "corruptedadventure:raw_volcanite_block",
-    "corruptedadventure:volcanite_block",
-    "corruptedadventure:fire_ruby_block",
-    "corruptedadventure:raw_tidesilver_block",
-    "corruptedadventure:tidesilver_block",
-    "corruptedadventure:jade_block",
-    "corruptedadventure:raw_nullite_block",
-    "corruptedadventure:nullite_block"
+    "#c:ores/sunstone",
+    "#c:ores/turquoise"
   ]
 }

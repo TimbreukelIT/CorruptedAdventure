@@ -116,6 +116,16 @@ public final class ModTags {
         public static final TagKey<Block> STORAGE_BLOCKS_JADE = TagKey.create(Registries.BLOCK, common("storage_blocks/jade"));
         public static final TagKey<Block> STORAGE_BLOCKS_RAW_NULLITE = TagKey.create(Registries.BLOCK, common("storage_blocks/raw_nullite"));
         public static final TagKey<Block> STORAGE_BLOCKS_NULLITE = TagKey.create(Registries.BLOCK, common("storage_blocks/nullite"));
+        // Gear tiers (phase 2, GearTier): needs_<tier>_tool = blocks that need at least that tier; incorrect_for_<tier>_tool
+        // = the needs tags of all higher tiers (vanilla's incorrect_for_* tags get all of ours).
+        public static final TagKey<Block> NEEDS_SUNSTONE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("needs_sunstone_tool"));
+        public static final TagKey<Block> NEEDS_VOLCANITE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("needs_volcanite_tool"));
+        public static final TagKey<Block> NEEDS_TIDESILVER_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("needs_tidesilver_tool"));
+        public static final TagKey<Block> NEEDS_NULLITE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("needs_nullite_tool"));
+        public static final TagKey<Block> INCORRECT_FOR_SUNSTONE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("incorrect_for_sunstone_tool"));
+        public static final TagKey<Block> INCORRECT_FOR_VOLCANITE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("incorrect_for_volcanite_tool"));
+        public static final TagKey<Block> INCORRECT_FOR_TIDESILVER_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("incorrect_for_tidesilver_tool"));
+        public static final TagKey<Block> INCORRECT_FOR_NULLITE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("incorrect_for_nullite_tool"));
 
         private Blocks() {
         }
