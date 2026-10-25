@@ -4,7 +4,7 @@
     {
       "type": "corruptedadventure:jittered_grid",
       "cell_size": 16,
-      "chance": 0.45,
+      "chance": 0.2,
       "margin": 2
     },
     {

@@ -11,22 +11,19 @@
       "entries": [
         {
           "data": {
-            "Name": "minecraft:smooth_basalt"
-          },
-          "weight": 2
-        },
-        {
-          "data": {
             "Name": "minecraft:tuff"
           },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:pumice"
+          },
           "weight": 2
         },
         {
           "data": {
-            "Name": "minecraft:basalt",
-            "Properties": {
-              "axis": "y"
-            }
+            "Name": "minecraft:calcite"
           },
           "weight": 1
         }
