@@ -70,10 +70,12 @@ public final class Ring2RockFeatures {
     /** The top of the hoodoo floor (88 ± 3 with its step; the cap rock starts at Y 94). */
     static final int HOODOO_FLOOR_TOP = 96;
     /**
-     * Trees: a juniper's crown reaches 2 from its straight trunk, a forked dead tree bends at most 3 (no leaves); this
-     * margin keeps every block of them in the chunk.
+     * Trees: a juniper's crown reaches 2 from its straight trunk, a forked dead tree bends at most 3 and its foliage
+     * attachment (air, radius offset 1) writes one further; this margin keeps every block of them in the chunk.
      */
-    static final int TREE_MARGIN = 3;
+    static final int TREE_MARGIN = 4;
+    /** One tree cell per chunk: a margin of 4 leaves no room in a cell of 8 (review B #3; was 8 × 0.35). */
+    static final int TREE_CELL = 16;
     /**
      * Water this many blocks beside a seep's origin; the grid margin keeps every probe inside the chunk, and most of a
      * seep (radius 2–3, stretched up to 1.3) as well: the patch writes only its own chunk.
@@ -179,10 +181,10 @@ public final class Ring2RockFeatures {
                 BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks(below(), Blocks.GRAVEL, Blocks.RED_SAND)),
                 BiomeFilter.biome());
 
-        // Canyonlands, VEGETAL_DECORATION: up to four trees per grove chunk (a few in a grove's core, the ramp thins the edges), the scrub of the
+        // Canyonlands, VEGETAL_DECORATION: up to one tree per grove chunk (a few in a grove's core, the ramp thins the edges), the scrub of the
         // same grove field, then the greenery of the seeps (and of the spring rims).
         PlacementUtils.register(context, CANYON_GROVE_TREES, features.getOrThrow(CANYON_GROVE_TREE),
-                JitteredGridPlacement.of(8, TREE_MARGIN, 0.35F, groves),
+                JitteredGridPlacement.of(TREE_CELL, TREE_MARGIN, 1.0F, groves),
                 SURFACE,
                 SlopeFilter.flat(2, 3),
                 BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
@@ -191,7 +193,9 @@ public final class Ring2RockFeatures {
         PlacementUtils.register(context, CANYON_GROVE_SHRUBS, features.getOrThrow(CANYON_GROVE_SCRUB),
                 JitteredGridPlacement.of(4, 0, 0.45F, groves),
                 SURFACE,
-                PlacementUtils.isEmpty(),
+                // Loose leaves survive anywhere: only on the grove's ground, never on water, a spire tip or a bridge deck.
+                BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
+                        BlockPredicate.matchesBlocks(below(), Blocks.RED_SAND, Blocks.COARSE_DIRT, ModBlocks.CRACKED_CLAY.get(), Blocks.GRAVEL))),
                 BiomeFilter.biome());
         PlacementUtils.register(context, CANYON_SEEP_GREENERY, features.getOrThrow(CANYON_SEEP_PLANTS),
                 JitteredGridPlacement.of(4, 0, 0.6F),

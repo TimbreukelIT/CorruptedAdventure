@@ -147,11 +147,12 @@ public final class Ring2FlatsLifeFeatures {
         BlockPredicate onDuneSand = BlockPredicate.matchesBlocks(below(), Blocks.SAND, Blocks.RED_SAND);
         BlockPredicate onIsland = BlockPredicate.matchesBlocks(below(), Blocks.SAND, Blocks.RED_SAND);
 
-        // Salt flats: one ridge pass per chunk (the feature walks its own columns).
+        // Salt flats: one ridge pass per chunk (the feature walks its own columns). No biome filter on the pass's one
+        // point (review B #2: it cut ridge patches off on a chunk line at a biome edge); cracked salt block at Y <= 65
+        // with air above only comes from the salt_flats surface rule, so the feature finds its columns itself.
         PlacementUtils.register(context, SALT_FLATS_RIDGES, features.getOrThrow(SALT_RIDGE),
                 JitteredGridPlacement.of(16, 0, 1.0F),
-                SURFACE,
-                BiomeFilter.biome());
+                SURFACE);
         // Oasis: about one dry hollow per six chunks on the open sand, clear of the pools' transition ring.
         PlacementUtils.register(context, OASIS_DRY_HOLLOWS, features.getOrThrow(DRY_HOLLOW),
                 JitteredGridPlacement.of(16, 1, 0.2F),

@@ -101,8 +101,8 @@ class Ring2RockFeaturesTest {
     void seepProbesAndTreesStayInTheirChunk() {
         assertTrue(Ring2RockFeatures.SEEP_REACH <= 3, "a cell of 8 allows a margin of at most 3");
         // A juniper's blob reaches 2 from its trunk; vanilla's forking trunk (the dead trees) bends at most 3.
-        assertTrue(Ring2RockFeatures.TREE_MARGIN >= 3);
-        assertTrue(2 * Ring2RockFeatures.TREE_MARGIN < 8, "a cell of 8 has room for the margin");
+        assertTrue(Ring2RockFeatures.TREE_MARGIN >= 4, "the forked tree's foliage attachment writes 4 from the trunk");
+        assertTrue(2 * Ring2RockFeatures.TREE_MARGIN < Ring2RockFeatures.TREE_CELL, "the tree cell has room for the margin");
     }
 
     private static double share(String noise, DoublePredicate inside) {
