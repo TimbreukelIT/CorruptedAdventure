@@ -98,6 +98,8 @@ public final class Ring3Features {
             // Change 49: the casts stand before the drifts; the footprints dent them.
             local(Ring3HorrorFeatures.ASHEN_WASTES_ASH_CASTS, ModBiomes.ASHEN_WASTES),
             local(Ring3HorrorFeatures.RARE_ASH_CASTS, ModBiomes.EMBER_WOODS, ModBiomes.TITAN_FIELDS),
+            // G2: the biome-own landmarks, before the drifts (which then lie around them) and the trees (which keep off).
+            new Entry(VolcanicLandmarkFeatures.LANDMARKS, GenerationStep.Decoration.LOCAL_MODIFICATIONS, VolcanicLandmarkFeatures.BIOMES),
             local(Ring3DressingFeatures.ASH_DRIFTS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS,
                     ModBiomes.DRIED_SEABED),
             new Entry(Ring3HorrorFeatures.ASH_FOOTPRINT_TRAILS, GenerationStep.Decoration.LOCAL_MODIFICATIONS, Set.copyOf(Ring3HorrorFeatures.TRAIL_BIOMES)),
@@ -179,6 +181,7 @@ public final class Ring3Features {
         Ring3GeodeFeatures.configured(context);
         SulfurFieldsFeatures.configured(context);
         Ring3GroundFeatures.configured(context);
+        VolcanicLandmarkFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
@@ -194,5 +197,6 @@ public final class Ring3Features {
         Ring3GeodeFeatures.placed(context);
         SulfurFieldsFeatures.placed(context);
         Ring3GroundFeatures.placed(context);
+        VolcanicLandmarkFeatures.placed(context);
     }
 }

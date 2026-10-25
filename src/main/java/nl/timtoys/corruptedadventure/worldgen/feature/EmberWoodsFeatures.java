@@ -218,6 +218,7 @@ public final class EmberWoodsFeatures {
         // At most 7 trunks per chunk of wood (16 cells, chance 0.45), down to 2 in its open parts; none in the clearings.
         PlacementUtils.register(context, EMBER_WOODS_TREES, features.getOrThrow(EMBER_WOOD_TREES),
                 JitteredGridPlacement.of(TREE_CELL, 1, 0.45F, CANOPY_GAPS), SURFACE, wood, ground,
+                VolcanicLandmarkClearanceFilter.of(VolcanicLandmarkFeatures.TREE_CLEARANCE),
                 BlockPredicateFilter.forPredicate(BlockPredicate.allOf(airOrCrown(),
                         BlockPredicate.matchesBlocks(BlockPos.ZERO.below(), ModBlocks.ASH_BLOCK.get(), ModBlocks.SMOLDERING_ASH.get(),
                                 Blocks.COARSE_DIRT, Blocks.TUFF, ModBlocks.PUMICE.get(), Blocks.SMOOTH_BASALT))),
@@ -225,7 +226,8 @@ public final class EmberWoodsFeatures {
         // In the clearings: fallen logs (margin = longest log), berry bushes where the light lets them grow back.
         PlacementUtils.register(context, EMBER_WOODS_FALLEN_LOGS, features.getOrThrow(FALLEN_LOGS),
                 JitteredGridPlacement.of(16, 5, 0.3F), SURFACE, NoiseBandFilter.snapped(CLEARINGS, CLEARING, Double.MAX_VALUE, 16),
-                SlopeFilter.flat(5, 0), ground, BlockPredicateFilter.forPredicate(airOrCrown()),
+                SlopeFilter.flat(5, 0), ground, VolcanicLandmarkClearanceFilter.of(VolcanicLandmarkFeatures.TREE_CLEARANCE),
+                BlockPredicateFilter.forPredicate(airOrCrown()),
                 BiomeFilter.biome());
         // Fire flora in patches (a noise), on ash and coarse dirt.
         PlacementUtils.register(context, EMBER_WOODS_FIRE_FLORA, features.getOrThrow(FIRE_FLORA),
