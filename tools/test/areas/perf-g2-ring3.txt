@@ -1,0 +1,14 @@
+# G2 ring 3 performance baseline (g2-ring3, 2026-10-25; 16 x 16 chunks each, no overlap): every ring 3 biome, the
+# transition steam_fens, zone 2->3 and the horizon giant. Positions as perf.txt (integration 2, seed 20260930) plus the
+# zone. perf.sh --areas tools/test/areas/perf-g2-ring3.txt --cold-only "ashen ember titan sulfur".
+ashen 328 28 343 43
+peaks -53 -367 -38 -352
+seabed -254 46 -239 61
+basalt 295 -36 310 -21
+ember 289 -8 304 7
+sulfur 233 140 248 155
+titan -322 -38 -307 -23
+dormant -109 223 -94 238
+steamfens 367 -8 382 7
+zone23 211 -8 226 7
+great -250 -4 -235 11

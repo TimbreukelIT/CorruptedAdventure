@@ -41,6 +41,11 @@ public record Ring3Relief(DensityFunction.NoiseHolder highlands, DensityFunction
     /** The highland offset towards which the relief fades at the ring's edges (the mean of ring 2's plain there). */
     static final double EDGE_OFFSET = 8.0;
 
+    // Micro relief (G2): the wobble's and the height ripple's amplitude (blocks), and the ripple's period in height.
+    static final double MICRO_BUMP = 0.9;
+    static final double MICRO_RIPPLE = 0.6;
+    static final double MICRO_RIPPLE_PERIOD = 4.0;
+
     // Dunes (ashen_wastes): crests across a fixed wind direction, a gentle windward side and a steep lee.
     private static final double WIND = 0.35;
     private static final double WIND_COS = Math.cos(WIND);
@@ -94,17 +99,35 @@ public record Ring3Relief(DensityFunction.NoiseHolder highlands, DensityFunction
         return crest <= 0.0 ? 0.0 : crest * crest * crest;
     }
 
-    /** −1..1: a fine wobble (~16–32 blocks) of the plain, so smooth slopes show no straight contour lines. */
-    double microRelief(double x, double z) {
-        return Math.max(-1.0, Math.min(1.0, 1.6 * sample(detail, x * 1.3 + 71.1, z * 1.3 - 19.7)));
+    /**
+     * The smooth micro relief of the plain (G2), in blocks, within ±({@link #MICRO_BUMP} + {@link #MICRO_RIPPLE}): a
+     * fine wobble (~16–32 blocks) that bends the step lines, plus a ripple tied to the height itself ({@code base}, the
+     * ground without the micro relief; one period per {@link #MICRO_RIPPLE_PERIOD} blocks of height, its phase drifting
+     * across the plain), which bunches neighbouring step lines into a two-block step in one place and spreads them over a
+     * wide tread in another, so a slope shows no evenly spaced parallel lines. The wobble stays below a block (the old
+     * ±2 wobble drew three or four nested rings round every bump, a contour map); the ripple is too weak to turn a slope
+     * around through its height term ({@code MICRO_RIPPLE · 2π / MICRO_RIPPLE_PERIOD < 1}). Its drifting phase is a
+     * free 2D term of up to ±{@link #MICRO_RIPPLE} on a flat tread, so tiny hollows of a block can occur there; the
+     * total stays within ±1.5, below the old ±2.
+     */
+    double microRelief(double x, double z, double base) {
+        double bump = Math.max(-1.0, Math.min(1.0, 1.6 * sample(detail, x * 1.3 + 71.1, z * 1.3 - 19.7)));
+        double phase = Math.max(-1.0, Math.min(1.0, 1.5 * sample(detail, x * 0.9 - 2711.3, z * 0.9 + 1301.7)));
+        return MICRO_BUMP * bump + MICRO_RIPPLE * Math.sin(2.0 * Math.PI * base / MICRO_RIPPLE_PERIOD + Math.PI * phase);
     }
 
     /**
-     * −1..1 (39f): a fine, clumpy pattern (~6–8 blocks) that decides which columns just below the next step of a smooth
-     * slope are raised by a block ({@code ThinShapes#microSteps}), so the step lines turn ragged.
+     * The threshold (G2) on a column's height fraction above which {@code ThinShapes#microSteps} raises it by a block,
+     * about −0.45..1.45: a clumpy pattern (~16 blocks, with a ragged edge of ~4–8) drawn anew for every block of height
+     * ({@code level} shifts the sample), so each step line frays on its own instead of in step with its neighbours. Below
+     * 0 a whole tread rises (the line merges with the one below into a two-block step), above 1 none does (the line stays
+     * where the smooth relief put it).
      */
-    double microSteps(double x, double z) {
-        return Math.max(-1.0, Math.min(1.0, 1.4 * sample(detail, x * 4.3 - 517.3, z * 4.3 + 231.9)));
+    double microSteps(double x, double z, int level) {
+        double o = level * 97.31;
+        double smooth = Math.max(-1.0, Math.min(1.0, 1.4 * sample(detail, x * 2.0 - 517.3 + o, z * 2.0 + 231.9 - 0.61 * o)));
+        double rough = Math.max(-1.0, Math.min(1.0, 1.4 * sample(detail, x * 4.0 + 1517.3 - 0.37 * o, z * 4.0 - 731.9 + o)));
+        return 0.5 - 0.65 * smooth - 0.3 * rough;
     }
 
     /** A slowly varying phase (39f) for the per-block patterns of the ground that follow the steps of the relief. */

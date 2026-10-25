@@ -17,11 +17,7 @@
       "max_inclusive": 3,
       "min_inclusive": 2
     },
-    "raise": {
-      "type": "minecraft:uniform",
-      "max_inclusive": 1,
-      "min_inclusive": 0
-    },
+    "raise": 1,
     "raised": {
       "type": "minecraft:weighted_state_provider",
       "entries": [

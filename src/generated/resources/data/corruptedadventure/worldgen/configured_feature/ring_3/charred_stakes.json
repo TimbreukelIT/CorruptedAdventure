@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": {
+      "feature": "corruptedadventure:ring_3/charred_dead_tree",
+      "placement": []
+    },
+    "features": [
+      {
+        "chance": 0.4,
+        "feature": {
+          "feature": "corruptedadventure:ring_3/charred_stump",
+          "placement": []
+        }
+      }
+    ]
+  }
+}

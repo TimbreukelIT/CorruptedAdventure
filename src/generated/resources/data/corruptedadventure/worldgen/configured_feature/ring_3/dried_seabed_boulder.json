@@ -1,0 +1,39 @@
+{
+  "type": "corruptedadventure:rubble",
+  "config": {
+    "size": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    },
+    "state_provider": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "corruptedadventure:pumice"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:tuff"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:sandstone"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "minecraft:calcite"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

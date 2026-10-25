@@ -24,6 +24,7 @@ import nl.timtoys.corruptedadventure.worldgen.feature.TerrainLandmarkPlacement;
 import nl.timtoys.corruptedadventure.worldgen.feature.TerrainLavaFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.VolcanicFilter;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2LandmarkClearanceFilter;
+import nl.timtoys.corruptedadventure.worldgen.feature.VolcanicLandmarkClearanceFilter;
 
 public final class ModPlacementModifierTypes {
     private static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_MODIFIER_TYPES =
@@ -80,6 +81,11 @@ public final class ModPlacementModifierTypes {
     /** {@code corruptedadventure:landmark_clearance} (decor B: trees, stumps and puddles keep off the blighted landmarks) */
     public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<LandmarkClearanceFilter>> LANDMARK_CLEARANCE =
             PLACEMENT_MODIFIER_TYPES.register("landmark_clearance", () -> () -> LandmarkClearanceFilter.CODEC);
+
+    // ring 3 — G2
+    /** {@code corruptedadventure:volcanic_landmark_clearance} (G2 ring 3: the ember woods' trees keep off the ember giants) */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<VolcanicLandmarkClearanceFilter>> VOLCANIC_LANDMARK_CLEARANCE =
+            PLACEMENT_MODIFIER_TYPES.register("volcanic_landmark_clearance", () -> () -> VolcanicLandmarkClearanceFilter.CODEC);
 
     // ring 5 — W-biomes
     /** {@code corruptedadventure:ring5_filter} (94/95: ring 5's own ground, clear of the void, the walls and the memories) */

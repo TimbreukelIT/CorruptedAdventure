@@ -1,0 +1,78 @@
+{
+  "feature": "corruptedadventure:ring_3/volcanic_peaks_boulder",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 16,
+      "chance": 0.45,
+      "margin": 2
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 2,
+      "radius": 2
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ground_only": true,
+      "ranges": [
+        {
+          "max": 0.1,
+          "output": "lava_bank"
+        },
+        {
+          "max": 0.3,
+          "output": "cliff"
+        },
+        {
+          "max": 45.0,
+          "output": "volcano_rise"
+        },
+        {
+          "max": 0.001,
+          "output": "caldera_mask"
+        },
+        {
+          "max": 0.001,
+          "output": "collapse"
+        }
+      ]
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:air"
+          },
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": [
+              "corruptedadventure:ash_block",
+              "corruptedadventure:pumice",
+              "minecraft:basalt",
+              "minecraft:smooth_basalt",
+              "minecraft:blackstone",
+              "minecraft:tuff",
+              "minecraft:gravel"
+            ],
+            "offset": [
+              0,
+              -1,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

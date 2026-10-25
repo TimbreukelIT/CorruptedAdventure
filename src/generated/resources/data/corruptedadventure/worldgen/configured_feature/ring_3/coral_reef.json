@@ -39,12 +39,12 @@
     },
     "radius": {
       "type": "minecraft:uniform",
-      "max_inclusive": 4,
-      "min_inclusive": 2
+      "max_inclusive": 5,
+      "min_inclusive": 3
     },
     "raise": {
       "type": "minecraft:uniform",
-      "max_inclusive": 2,
+      "max_inclusive": 3,
       "min_inclusive": 1
     },
     "raised": {
@@ -89,6 +89,6 @@
       "corruptedadventure:ash_block",
       "corruptedadventure:pumice"
     ],
-    "stretch": 1.6
+    "stretch": 1.4
   }
 }

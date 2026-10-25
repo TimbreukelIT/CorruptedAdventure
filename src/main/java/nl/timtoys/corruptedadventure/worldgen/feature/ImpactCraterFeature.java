@@ -20,6 +20,8 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
  */
 public final class ImpactCraterFeature extends Feature<ImpactCraterConfiguration> {
     public static final int MAX_RADIUS = 3;
+    /** G2: the ground of the bowl may lie this far above or below the origin's (craters on the flanks of the peaks). */
+    public static final int MAX_STEP = 2;
 
     public ImpactCraterFeature(Codec<ImpactCraterConfiguration> codec) {
         super(codec);
@@ -45,7 +47,7 @@ public final class ImpactCraterFeature extends Feature<ImpactCraterConfiguration
                 int x = origin.getX() + dx;
                 int z = origin.getZ() + dz;
                 int ground = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1;
-                if (Math.abs(ground - top) > 1 || !level.getBlockState(pos.set(x, ground, z)).is(config.ground())
+                if (Math.abs(ground - top) > MAX_STEP || !level.getBlockState(pos.set(x, ground, z)).is(config.ground())
                         || !level.getBlockState(pos.set(x, ground + 1, z)).isAir() || fluidBelow(level, pos.set(x, ground, z))) {
                     return false;
                 }

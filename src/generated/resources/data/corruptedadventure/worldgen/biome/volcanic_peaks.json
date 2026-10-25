@@ -38,6 +38,13 @@
     [
       "corruptedadventure:ring_3/volcanic_peaks_impact_craters",
       "corruptedadventure:ring_3/volcanic_peaks_blackstone_rocks",
+      "corruptedadventure:ring_3/volcanic_peaks_debris_fans",
+      "corruptedadventure:ring_3/volcanic_peaks_ground_boulders",
+      "corruptedadventure:ring_3/volcanic_peaks_ground_stones",
+      "corruptedadventure:ring_3/volcanic_peaks_ridge_vents",
+      "corruptedadventure:ring_3/volcanic_peaks_fresh_lava_vents",
+      "corruptedadventure:ring_3/volcanic_peaks_scree",
+      "corruptedadventure:ring_3/landmarks",
       "corruptedadventure:ring_3/ash_drifts",
       "corruptedadventure:ring_3/ash_footprint_trails",
       "corruptedadventure:ring_3/lava_falls",
@@ -53,6 +60,7 @@
     ],
     [],
     [
+      "corruptedadventure:ring_3/charred_shrubs",
       "corruptedadventure:ring_3/island_ember_trees"
     ]
   ],

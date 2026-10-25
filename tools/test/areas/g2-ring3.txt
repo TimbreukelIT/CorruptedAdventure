@@ -1,0 +1,45 @@
+# G2 ring 3 walk (g2-ring3, 2026-10-25): 3 spots per ring 3 biome, the boundaries 2->3 and 3->4 and three existing
+# landmarks for reference. Chunk coordinates, inclusive; seed 20260930, default ring radii (CommonConfig: 1500, 3500,
+# 6000, 8000, 9700). Spots = the deepest biome interior (distance to the biome edge) at r 3750-5750 on the 4a biome map
+# (build/teststop-4a/top_overworld_0_0_r6000_s16_biome.png), >= 2500 apart; 9 x 9 chunks around each.
+# ashen_wastes (dune sea, gullies with hoodoos; ash1 = perf "ashen")
+ash1 342 34 350 42
+ash2 -284 185 -276 193
+ash3 140 256 148 264
+# volcanic_peaks (mountain chain, cones, ridges)
+peak1 -83 -251 -75 -243
+peak2 235 69 243 77
+peak3 -338 105 -330 113
+# dried_seabed (sea bowl, coastal terraces, reef ridges; sea1 = perf "seabed")
+sea1 -252 49 -244 57
+sea2 224 206 232 214
+sea3 85 -335 93 -327
+# basalt_flows (stepped plateaus, column cliffs, lava tubes; bas1 = perf "basalt")
+bas1 302 -49 310 -41
+bas2 155 -240 163 -232
+bas3 -22 337 -14 345
+# ember_woods (the smouldering wood)
+emb1 214 -143 222 -135
+emb2 -303 -172 -295 -164
+emb3 -8 -299 0 -291
+# sulfur_fields (sulfur basin, terraces, fumarole mounds, sinkholes)
+sul1 -190 -288 -182 -280
+sul2 150 308 158 316
+sul3 297 -127 305 -119
+# titan_fields (ribs, rib cages, titan rocks; tit2 = perf "titan")
+tit1 -213 148 -205 156
+tit2 -313 -33 -305 -25
+tit3 236 -191 244 -183
+# dormant_caldera (micro biome, 5 x 5 chunks; dor3 = perf "dormant")
+dor1 -54 245 -50 249
+dor2 48 -356 52 -352
+dor3 -103 228 -99 232
+# boundaries: 2->3 at r 3500 (chunk 218), 3->4 at r 6000 (chunk 375); across the zone (+-128 + boundary noise), 9 along
+b23e 206 -4 231 4
+b23n -4 -231 4 -206
+b34e 361 -4 389 4
+b34s -4 361 4 389
+# existing landmarks (int.txt): horizon giant with crater lake, archipelago, abyss
+great -250 -4 -235 11
+archipel 155 -180 172 -163
+abyss 276 -34 291 -19

@@ -33,7 +33,16 @@
     [
       "corruptedadventure:ring_3/ashen_wastes_pumice_boulders",
       "corruptedadventure:ring_3/ashen_wastes_dead_trees",
+      "corruptedadventure:ring_3/ashen_wastes_debris_fans",
+      "corruptedadventure:ring_3/ashen_wastes_ground_boulders",
+      "corruptedadventure:ring_3/ashen_wastes_ground_stones",
+      "corruptedadventure:ring_3/ashen_wastes_fallen_trees",
+      "corruptedadventure:ring_3/ashen_wastes_burnt_forest_trunks",
+      "corruptedadventure:ring_3/ashen_wastes_pumice_field_boulders",
+      "corruptedadventure:ring_3/ashen_wastes_dead_tree_groups",
+      "corruptedadventure:ring_3/ashen_wastes_burnt_forest",
       "corruptedadventure:ring_3/ashen_wastes_ash_casts",
+      "corruptedadventure:ring_3/landmarks",
       "corruptedadventure:ring_3/ash_drifts",
       "corruptedadventure:ring_3/ash_footprint_trails",
       "corruptedadventure:ring_3/lava_falls",
@@ -49,6 +58,7 @@
     ],
     [],
     [
+      "corruptedadventure:ring_3/charred_shrubs",
       "corruptedadventure:ring_3/island_ember_trees"
     ]
   ],

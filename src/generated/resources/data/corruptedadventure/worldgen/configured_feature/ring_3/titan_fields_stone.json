@@ -1,0 +1,42 @@
+{
+  "type": "corruptedadventure:rubble",
+  "config": {
+    "size": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "state_provider": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:basalt",
+            "Properties": {
+              "axis": "y"
+            }
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:smooth_basalt"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "minecraft:blackstone"
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "minecraft:tuff"
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

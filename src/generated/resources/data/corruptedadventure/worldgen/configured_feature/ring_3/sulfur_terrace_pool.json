@@ -1,6 +1,9 @@
 {
   "type": "corruptedadventure:terrace_pool",
   "config": {
+    "biome": "corruptedadventure:sulfur_fields",
+    "cell": 48,
+    "chance": 0.65,
     "fill": {
       "type": "minecraft:weighted_state_provider",
       "entries": [
@@ -38,10 +41,39 @@
         "Name": "minecraft:calcite"
       }
     },
-    "radius": {
+    "pools": {
       "type": "minecraft:uniform",
-      "max_inclusive": 3,
-      "min_inclusive": 1
+      "max_inclusive": 9,
+      "min_inclusive": 3
+    },
+    "radius": {
+      "type": "minecraft:weighted_list",
+      "distribution": [
+        {
+          "data": 1,
+          "weight": 4
+        },
+        {
+          "data": 2,
+          "weight": 5
+        },
+        {
+          "data": 3,
+          "weight": 4
+        },
+        {
+          "data": 4,
+          "weight": 3
+        },
+        {
+          "data": 5,
+          "weight": 2
+        },
+        {
+          "data": 6,
+          "weight": 1
+        }
+      ]
     },
     "terrace": {
       "type": "minecraft:weighted_state_provider",

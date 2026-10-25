@@ -46,6 +46,11 @@ public final class RingColumnCache {
         return position(RingLayout.current(), RingLayout.scale(dimension), x, z);
     }
 
+    /** {@link RingLayout#effectiveDistance} of a block column of {@code dimension} on this cache; only from its own thread. */
+    public double effectiveDistanceHere(ResourceKey<Level> dimension, int x, int z) {
+        return effectiveDistance(RingLayout.current(), RingLayout.scale(dimension), x, z);
+    }
+
     /** {@link #reaches(ResourceKey, Ring, int, int, double, double)} on this cache; only from its own thread. */
     public boolean reachesHere(ResourceKey<Level> dimension, Ring ring, int x, int z, double margin, double outerMix) {
         RingLayout layout = RingLayout.current();

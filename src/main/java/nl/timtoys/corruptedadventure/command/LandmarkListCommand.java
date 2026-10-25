@@ -9,20 +9,27 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import nl.timtoys.corruptedadventure.worldgen.feature.BlightedLandmarks;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2RockLandmarks;
+import nl.timtoys.corruptedadventure.worldgen.feature.VolcanicLandmarks;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * {@code /ca landmarks x0 z0 x1 z1}: the blighted landmarks of ring 4 (decor B: drowned giant, stone circle, bone
- * carcass) and the rock landmarks of ring 2 (G2: rock bridge, giant hoodoo) whose centre lies in the box, as the
- * features place them ({@link BlightedLandmarks}, {@link Ring2RockLandmarks}), one line each:
+ * carcass; {@link BlightedLandmarks}), the rock landmarks of ring 2 (G2: rock bridge, giant hoodoo; {@link
+ * Ring2RockLandmarks}, the anchor: a point on the crossing / the main pillar's foot) and the biome-own landmarks of ring 3
+ * (G2: charred giant, obsidian flow, whale skeleton, basalt organ, ember giant, sinter terraces, titan weapon; {@link
+ * VolcanicLandmarks}, the anchor: the flow's source, the middle of the others) whose centre lies in the box, as the
+ * features place them, one line each:
  * {@code kind x y z} (y: the first open block over the ground, under water the floor). Pure, no chunks needed; for the
  * tests and to find them in play.
  */
 final class LandmarkListCommand {
     /** The largest box side: every landmark cell in it is decided on the server thread. */
     private static final int MAX_SPAN = 8192;
+    /** The ring 3 landmarks decide every cell of the box on the server thread (build + fit per try): a smaller box. */
+    private static final int MAX_SPAN_RING_3 = 2048;
 
     private LandmarkListCommand() {
     }
@@ -43,19 +50,24 @@ final class LandmarkListCommand {
         if (Math.abs((long) x1 - x0) > MAX_SPAN || Math.abs((long) z1 - z0) > MAX_SPAN) {
             throw new SimpleCommandExceptionType(Component.literal("Box too large (at most " + MAX_SPAN + " per side)")).create();
         }
-        List<BlightedLandmarks.Site> sites = BlightedLandmarks.centredIn(source.getLevel(), Math.min(x0, x1), Math.min(z0, z1),
-                Math.max(x0, x1), Math.max(z0, z1));
-        // G2 ring 2: the rock bridges and giant hoodoos (anchor: a point on the crossing / the main pillar's foot).
-        List<String> rocks = Ring2RockLandmarks.centredIn(source.getLevel(), Math.min(x0, x1), Math.min(z0, z1), Math.max(x0, x1),
-                Math.max(z0, z1));
-        StringBuilder text = new StringBuilder("Landmarks: " + (sites.size() + rocks.size()));
-        for (BlightedLandmarks.Site site : sites) {
-            text.append(String.format(Locale.ROOT, "%n%s %d %d %d", site.kind().getSerializedName(), site.x(), site.ground(), site.z()));
+        int minX = Math.min(x0, x1);
+        int minZ = Math.min(z0, z1);
+        int maxX = Math.max(x0, x1);
+        int maxZ = Math.max(z0, z1);
+        List<String> lines = new ArrayList<>();
+        for (BlightedLandmarks.Site site : BlightedLandmarks.centredIn(source.getLevel(), minX, minZ, maxX, maxZ)) {
+            lines.add(String.format(Locale.ROOT, "%s %d %d %d", site.kind().getSerializedName(), site.x(), site.ground(), site.z()));
         }
-        for (String rock : rocks) {
-            text.append(System.lineSeparator()).append(rock);
+        lines.addAll(Ring2RockLandmarks.centredIn(source.getLevel(), minX, minZ, maxX, maxZ));
+        boolean ring3 = (long) maxX - minX <= MAX_SPAN_RING_3 && (long) maxZ - minZ <= MAX_SPAN_RING_3;
+        for (VolcanicLandmarks.Site site : ring3 ? VolcanicLandmarks.centredIn(source.getLevel(), minX, minZ, maxX, maxZ)
+                : List.<VolcanicLandmarks.Site>of()) {
+            lines.add(String.format(Locale.ROOT, "%s %d %d %d", site.kind().getSerializedName(), site.x(), site.ground(), site.z()));
         }
+        StringBuilder text = new StringBuilder("Landmarks: " + lines.size()
+                + (ring3 ? "" : " (ring 3 skipped: at most " + MAX_SPAN_RING_3 + " per side)"));
+        lines.forEach(line -> text.append(System.lineSeparator()).append(line));
         source.sendSuccess(() -> Component.literal(text.toString()), false);
-        return sites.size() + rocks.size();
+        return lines.size();
     }
 }

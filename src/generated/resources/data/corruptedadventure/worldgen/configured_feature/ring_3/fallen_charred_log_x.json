@@ -10,7 +10,10 @@
         },
         {
           "type": "minecraft:matching_blocks",
-          "blocks": "corruptedadventure:ember_leaves"
+          "blocks": [
+            "corruptedadventure:ember_leaves",
+            "corruptedadventure:charred_wood"
+          ]
         }
       ]
     },

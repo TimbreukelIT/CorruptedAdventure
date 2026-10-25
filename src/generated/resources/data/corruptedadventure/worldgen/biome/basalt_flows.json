@@ -39,6 +39,13 @@
       "corruptedadventure:ring_3/basalt_flows_hornitos",
       "corruptedadventure:ring_3/basalt_flows_vents",
       "corruptedadventure:ring_3/basalt_flows_boulders",
+      "corruptedadventure:ring_3/basalt_flows_debris_fans",
+      "corruptedadventure:ring_3/basalt_flows_ground_boulders",
+      "corruptedadventure:ring_3/basalt_flows_ground_stones",
+      "corruptedadventure:ring_3/basalt_flows_ropy_mounds",
+      "corruptedadventure:ring_3/basalt_flows_aa_rubble",
+      "corruptedadventure:ring_3/basalt_flows_columns",
+      "corruptedadventure:ring_3/landmarks",
       "corruptedadventure:ring_3/lava_falls",
       "corruptedadventure:ring_3/island_ember_patches",
       "corruptedadventure:ring_3/island_hanging_crystals"
@@ -52,6 +59,7 @@
     ],
     [],
     [
+      "corruptedadventure:ring_3/charred_shrubs",
       "corruptedadventure:ring_3/island_ember_trees"
     ]
   ],

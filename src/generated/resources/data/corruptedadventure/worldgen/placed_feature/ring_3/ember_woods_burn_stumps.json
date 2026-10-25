@@ -1,0 +1,87 @@
+{
+  "feature": "corruptedadventure:ring_3/ember_burn_stumps",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.45,
+      "margin": 1
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.42,
+      "noise": "corruptedadventure:ring_3_ember_clearings"
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ground_only": true,
+      "landmark_margin": 6,
+      "ranges": [
+        {
+          "max": 0.1,
+          "output": "lava_bank"
+        },
+        {
+          "max": 0.3,
+          "output": "cliff"
+        },
+        {
+          "max": 20.0,
+          "output": "volcano_rise"
+        },
+        {
+          "max": 0.001,
+          "output": "caldera_mask"
+        },
+        {
+          "max": 0.001,
+          "output": "collapse"
+        }
+      ]
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:any_of",
+            "predicates": [
+              {
+                "type": "minecraft:matching_blocks",
+                "blocks": "minecraft:air"
+              },
+              {
+                "type": "minecraft:matching_blocks",
+                "blocks": [
+                  "corruptedadventure:ember_leaves",
+                  "corruptedadventure:charred_wood"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": [
+              "corruptedadventure:smoldering_ash",
+              "corruptedadventure:ash_block",
+              "minecraft:coarse_dirt"
+            ],
+            "offset": [
+              0,
+              -1,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

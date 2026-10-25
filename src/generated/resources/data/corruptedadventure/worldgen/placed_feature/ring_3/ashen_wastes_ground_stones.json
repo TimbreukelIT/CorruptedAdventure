@@ -1,0 +1,79 @@
+{
+  "feature": "corruptedadventure:ring_3/ashen_wastes_stone",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.4,
+      "margin": 1
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 2,
+      "radius": 2
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ground_only": true,
+      "ranges": [
+        {
+          "max": 0.1,
+          "output": "lava_bank"
+        },
+        {
+          "max": 0.3,
+          "output": "cliff"
+        },
+        {
+          "max": 45.0,
+          "output": "volcano_rise"
+        },
+        {
+          "max": 0.001,
+          "output": "caldera_mask"
+        },
+        {
+          "max": 0.001,
+          "output": "collapse"
+        }
+      ]
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:air"
+          },
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": [
+              "corruptedadventure:ash_block",
+              "corruptedadventure:pumice",
+              "minecraft:gravel",
+              "minecraft:basalt",
+              "minecraft:smooth_basalt",
+              "minecraft:tuff",
+              "corruptedadventure:smoldering_ash",
+              "minecraft:coarse_dirt"
+            ],
+            "offset": [
+              0,
+              -1,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

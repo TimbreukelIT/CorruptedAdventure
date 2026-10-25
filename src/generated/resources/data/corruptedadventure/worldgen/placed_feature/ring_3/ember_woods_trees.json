@@ -5,6 +5,14 @@
       "type": "corruptedadventure:jittered_grid",
       "cell_size": 4,
       "chance": 0.45,
+      "density": {
+        "floor": 0.3,
+        "high": 0.1,
+        "low": -0.3,
+        "noise": "corruptedadventure:ring_3_ember_clearings",
+        "salt": 1,
+        "xz_scale": 3.0
+      },
       "margin": 1
     },
     {
@@ -13,13 +21,14 @@
     },
     {
       "type": "corruptedadventure:noise_band",
-      "max": 0.35,
+      "max": 0.2,
       "noise": "corruptedadventure:ring_3_ember_clearings",
       "snap": 4
     },
     {
       "type": "corruptedadventure:volcanic_filter",
       "ground_only": true,
+      "landmark_margin": 6,
       "ranges": [
         {
           "max": 0.1,
@@ -44,6 +53,10 @@
       ]
     },
     {
+      "type": "corruptedadventure:volcanic_landmark_clearance",
+      "margin": 2
+    },
+    {
       "type": "minecraft:block_predicate_filter",
       "predicate": {
         "type": "minecraft:all_of",
@@ -57,7 +70,10 @@
               },
               {
                 "type": "minecraft:matching_blocks",
-                "blocks": "corruptedadventure:ember_leaves"
+                "blocks": [
+                  "corruptedadventure:ember_leaves",
+                  "corruptedadventure:charred_wood"
+                ]
               }
             ]
           },

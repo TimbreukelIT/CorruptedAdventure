@@ -90,8 +90,10 @@ public final class TitanFieldsFeatures {
         PlacementUtils.register(context, TITAN_FIELDS_SKULLS, features.getOrThrow(TITAN_SKULL),
                 TerrainLandmarkPlacement.of(TerrainLandmarkPlacement.Landmark.RIBCAGE, 0.1F, 12, 1, 3), SURFACE, SlopeFilter.flat(3, 2), ground,
                 BiomeFilter.biome());
+        // G2: the bones in clumps (the loose bones of Ring3GroundFeatures share the clumps' salt).
         PlacementUtils.register(context, TITAN_FIELDS_BONES, features.getOrThrow(TITAN_BONES),
-                JitteredGridPlacement.of(16, 1, 0.15F), SURFACE, SlopeFilter.flat(3, 2), ground, BiomeFilter.biome());
+                JitteredGridPlacement.of(16, 1, 0.35F, Ring3GroundFeatures.clumps(5, 4.0, 0.15, 0.35).withFloor(0.2)), SURFACE,
+                SlopeFilter.flat(3, 2), ground, BiomeFilter.biome());
         // Soul patches around the feet of the ribs and the spine (47d: twice per point, moved off the bone itself, where
         // the ground filter finds no plain ground, and down to 1 from the chunk edge; INT2 found only two).
         PlacementUtils.register(context, TITAN_FIELDS_SOUL_FIRE, features.getOrThrow(SOUL_FIRE_PATCH),

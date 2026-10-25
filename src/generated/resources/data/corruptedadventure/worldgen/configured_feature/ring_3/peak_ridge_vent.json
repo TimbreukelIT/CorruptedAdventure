@@ -1,0 +1,65 @@
+{
+  "type": "corruptedadventure:ground_vent",
+  "config": {
+    "below": [
+      {
+        "state": {
+          "Name": "minecraft:magma_block"
+        },
+        "target": {
+          "block": "minecraft:basalt",
+          "predicate_type": "minecraft:block_match"
+        }
+      },
+      {
+        "state": {
+          "Name": "minecraft:magma_block"
+        },
+        "target": {
+          "block": "minecraft:blackstone",
+          "predicate_type": "minecraft:block_match"
+        }
+      }
+    ],
+    "below_count": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "collar": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:blackstone"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "corruptedadventure:smoldering_stone"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "collar_chance": 0.6,
+    "collar_radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "ground": [
+      "corruptedadventure:ash_block",
+      "corruptedadventure:pumice",
+      "minecraft:basalt",
+      "minecraft:smooth_basalt",
+      "minecraft:blackstone",
+      "minecraft:tuff",
+      "minecraft:gravel"
+    ],
+    "vent": {
+      "Name": "minecraft:magma_block"
+    }
+  }
+}

@@ -51,6 +51,44 @@ public final class Ring3Features {
             local(Ring3DressingFeatures.ASHEN_WASTES_DEAD_TREES, ModBiomes.ASHEN_WASTES),
             local(Ring3DressingFeatures.VOLCANIC_PEAKS_IMPACT_CRATERS, ModBiomes.VOLCANIC_PEAKS),
             local(Ring3DressingFeatures.VOLCANIC_PEAKS_BLACKSTONE_ROCKS, ModBiomes.VOLCANIC_PEAKS),
+            // G2 (ground filling + subzones, Ring3GroundFeatures): per rugged biome debris fans, boulders and small
+            // stones, then the biome's extras; the ash plain's trees last (they never root in a rock or a trunk).
+            local(Ring3GroundFeatures.ASHEN_WASTES_DEBRIS_FANS, ModBiomes.ASHEN_WASTES),
+            local(Ring3GroundFeatures.ASHEN_WASTES_GROUND_BOULDERS, ModBiomes.ASHEN_WASTES),
+            local(Ring3GroundFeatures.ASHEN_WASTES_GROUND_STONES, ModBiomes.ASHEN_WASTES),
+            local(Ring3GroundFeatures.VOLCANIC_PEAKS_DEBRIS_FANS, ModBiomes.VOLCANIC_PEAKS),
+            local(Ring3GroundFeatures.VOLCANIC_PEAKS_GROUND_BOULDERS, ModBiomes.VOLCANIC_PEAKS),
+            local(Ring3GroundFeatures.VOLCANIC_PEAKS_GROUND_STONES, ModBiomes.VOLCANIC_PEAKS),
+            local(Ring3GroundFeatures.BASALT_FLOWS_DEBRIS_FANS, ModBiomes.BASALT_FLOWS),
+            local(Ring3GroundFeatures.BASALT_FLOWS_GROUND_BOULDERS, ModBiomes.BASALT_FLOWS),
+            local(Ring3GroundFeatures.BASALT_FLOWS_GROUND_STONES, ModBiomes.BASALT_FLOWS),
+            local(Ring3GroundFeatures.DRIED_SEABED_DEBRIS_FANS, ModBiomes.DRIED_SEABED),
+            local(Ring3GroundFeatures.DRIED_SEABED_GROUND_BOULDERS, ModBiomes.DRIED_SEABED),
+            local(Ring3GroundFeatures.DRIED_SEABED_GROUND_STONES, ModBiomes.DRIED_SEABED),
+            local(Ring3GroundFeatures.TITAN_FIELDS_DEBRIS_FANS, ModBiomes.TITAN_FIELDS),
+            local(Ring3GroundFeatures.TITAN_FIELDS_GROUND_BOULDERS, ModBiomes.TITAN_FIELDS),
+            local(Ring3GroundFeatures.TITAN_FIELDS_GROUND_STONES, ModBiomes.TITAN_FIELDS),
+            local(Ring3GroundFeatures.SULFUR_FIELDS_DEBRIS_FANS, ModBiomes.SULFUR_FIELDS),
+            local(Ring3GroundFeatures.SULFUR_FIELDS_GROUND_BOULDERS, ModBiomes.SULFUR_FIELDS),
+            local(Ring3GroundFeatures.SULFUR_FIELDS_GROUND_STONES, ModBiomes.SULFUR_FIELDS),
+            local(Ring3GroundFeatures.ASHEN_WASTES_FALLEN_TREES, ModBiomes.ASHEN_WASTES),
+            local(Ring3GroundFeatures.ASHEN_WASTES_BURNT_FOREST_TRUNKS, ModBiomes.ASHEN_WASTES),
+            local(Ring3GroundFeatures.ASHEN_WASTES_PUMICE_FIELD_BOULDERS, ModBiomes.ASHEN_WASTES),
+            local(Ring3GroundFeatures.VOLCANIC_PEAKS_RIDGE_VENTS, ModBiomes.VOLCANIC_PEAKS),
+            local(Ring3GroundFeatures.VOLCANIC_PEAKS_FRESH_LAVA_VENTS, ModBiomes.VOLCANIC_PEAKS),
+            local(Ring3GroundFeatures.VOLCANIC_PEAKS_SCREE, ModBiomes.VOLCANIC_PEAKS),
+            local(Ring3GroundFeatures.DRIED_SEABED_LOOSE_BONES, ModBiomes.DRIED_SEABED),
+            local(Ring3GroundFeatures.DRIED_SEABED_SHELL_BANKS, ModBiomes.DRIED_SEABED),
+            local(Ring3GroundFeatures.BASALT_FLOWS_ROPY_MOUNDS, ModBiomes.BASALT_FLOWS),
+            local(Ring3GroundFeatures.BASALT_FLOWS_AA_RUBBLE, ModBiomes.BASALT_FLOWS),
+            local(Ring3GroundFeatures.BASALT_FLOWS_COLUMNS, ModBiomes.BASALT_FLOWS),
+            local(Ring3GroundFeatures.TITAN_FIELDS_BONE_FIELD_BONES, ModBiomes.TITAN_FIELDS),
+            local(Ring3GroundFeatures.TITAN_FIELDS_LOOSE_BONES, ModBiomes.TITAN_FIELDS),
+            local(Ring3GroundFeatures.TITAN_FIELDS_PLAIN_SOUL_FIRE, ModBiomes.TITAN_FIELDS),
+            local(Ring3GroundFeatures.SULFUR_FIELDS_YELLOW_CRUST_FUMAROLES, ModBiomes.SULFUR_FIELDS),
+            local(Ring3GroundFeatures.SULFUR_FIELDS_SINTER_MOUNDS, ModBiomes.SULFUR_FIELDS),
+            local(Ring3GroundFeatures.ASHEN_WASTES_DEAD_TREE_GROUPS, ModBiomes.ASHEN_WASTES),
+            local(Ring3GroundFeatures.ASHEN_WASTES_BURNT_FOREST, ModBiomes.ASHEN_WASTES),
             // Change 47b: the titan fields (the rocks before the drifts, which then lie around their feet).
             local(TitanFieldsFeatures.TITAN_FIELDS_SKULLS, ModBiomes.TITAN_FIELDS),
             local(TitanFieldsFeatures.TITAN_FIELDS_BONES, ModBiomes.TITAN_FIELDS),
@@ -60,6 +98,8 @@ public final class Ring3Features {
             // Change 49: the casts stand before the drifts; the footprints dent them.
             local(Ring3HorrorFeatures.ASHEN_WASTES_ASH_CASTS, ModBiomes.ASHEN_WASTES),
             local(Ring3HorrorFeatures.RARE_ASH_CASTS, ModBiomes.EMBER_WOODS, ModBiomes.TITAN_FIELDS),
+            // G2: the biome-own landmarks, before the drifts (which then lie around them) and the trees (which keep off).
+            new Entry(VolcanicLandmarkFeatures.LANDMARKS, GenerationStep.Decoration.LOCAL_MODIFICATIONS, VolcanicLandmarkFeatures.BIOMES),
             local(Ring3DressingFeatures.ASH_DRIFTS, ModBiomes.ASHEN_WASTES, ModBiomes.TITAN_FIELDS, ModBiomes.VOLCANIC_PEAKS,
                     ModBiomes.DRIED_SEABED),
             new Entry(Ring3HorrorFeatures.ASH_FOOTPRINT_TRAILS, GenerationStep.Decoration.LOCAL_MODIFICATIONS, Set.copyOf(Ring3HorrorFeatures.TRAIL_BIOMES)),
@@ -77,6 +117,11 @@ public final class Ring3Features {
             new Entry(Ring3GeodeFeatures.FIRE_GEODES, GenerationStep.Decoration.UNDERGROUND_DECORATION, Set.copyOf(Ring3Biomes.ALL)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_CORAL, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
             new Entry(Ring3DressingFeatures.DRIED_SEABED_DEAD_BUSHES, GenerationStep.Decoration.VEGETAL_DECORATION, Set.of(ModBiomes.DRIED_SEABED)),
+            // G2 (Ring3GroundFeatures): loose coral and the clay flats' bushes; the charred shrub of the bare plains.
+            vegetal(Ring3GroundFeatures.DRIED_SEABED_LOOSE_CORAL, ModBiomes.DRIED_SEABED),
+            vegetal(Ring3GroundFeatures.DRIED_SEABED_CLAY_FLAT_BUSHES, ModBiomes.DRIED_SEABED),
+            vegetal(Ring3GroundFeatures.CHARRED_SHRUBS, ModBiomes.ASHEN_WASTES, ModBiomes.VOLCANIC_PEAKS, ModBiomes.BASALT_FLOWS,
+                    ModBiomes.TITAN_FIELDS),
             // Change 47d: sulfur crystals on the crusts.
             vegetal(SulfurFieldsFeatures.SULFUR_FIELDS_CRUST_CRYSTALS, ModBiomes.SULFUR_FIELDS),
             // Change 47c: island trees, the ember woods (the ash last, around what stands), the dormant caldera.
@@ -85,6 +130,9 @@ public final class Ring3Features {
             vegetal(EmberWoodsFeatures.EMBER_WOODS_FALLEN_LOGS, ModBiomes.EMBER_WOODS),
             vegetal(EmberWoodsFeatures.EMBER_WOODS_FIRE_FLORA, ModBiomes.EMBER_WOODS),
             vegetal(EmberWoodsFeatures.EMBER_WOODS_BERRY_BUSHES, ModBiomes.EMBER_WOODS),
+            // G2 ring 3: the burn patches of the ember woods (after the trees and the clearings' logs).
+            vegetal(EmberWoodsFeatures.EMBER_WOODS_BURN_STUMPS, ModBiomes.EMBER_WOODS),
+            vegetal(EmberWoodsFeatures.EMBER_WOODS_BURN_FLORA, ModBiomes.EMBER_WOODS),
             vegetal(EmberWoodsFeatures.EMBER_WOODS_ASH, ModBiomes.EMBER_WOODS),
             vegetal(DormantCalderaFeatures.DORMANT_CALDERA_AZALEA_TREES, ModBiomes.DORMANT_CALDERA),
             vegetal(DormantCalderaFeatures.DORMANT_CALDERA_AZALEA_SHRUBS, ModBiomes.DORMANT_CALDERA),
@@ -132,6 +180,8 @@ public final class Ring3Features {
         SteamFensFeatures.configured(context);
         Ring3GeodeFeatures.configured(context);
         SulfurFieldsFeatures.configured(context);
+        Ring3GroundFeatures.configured(context);
+        VolcanicLandmarkFeatures.configured(context);
     }
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
@@ -146,5 +196,7 @@ public final class Ring3Features {
         SteamFensFeatures.placed(context);
         Ring3GeodeFeatures.placed(context);
         SulfurFieldsFeatures.placed(context);
+        Ring3GroundFeatures.placed(context);
+        VolcanicLandmarkFeatures.placed(context);
     }
 }

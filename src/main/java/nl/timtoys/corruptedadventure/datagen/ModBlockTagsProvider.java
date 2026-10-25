@@ -554,6 +554,11 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.ASH_SPROUTS.get(), ModBlocks.EMBER_BERRY_BUSH.get());
         // Like the sweet berry bush: landing in it breaks the fall.
         tag(BlockTags.FALL_DAMAGE_RESETTING).add(ModBlocks.EMBER_BERRY_BUSH.get());
+        // G2 ring 3: the charred shrub, on ash ground and the bare rock of the plains; replaceable like the dead bush.
+        tag(ModTags.Blocks.CHARRED_SHRUB_SOIL).add(ModBlocks.PUMICE.get(), Blocks.BASALT, Blocks.SMOOTH_BASALT);
+        tag(BlockTags.REPLACEABLE).add(ModBlocks.CHARRED_SHRUB.get());
+        tag(BlockTags.REPLACEABLE_BY_TREES).add(ModBlocks.CHARRED_SHRUB.get());
+        tag(BlockTags.SWORD_EFFICIENT).add(ModBlocks.CHARRED_SHRUB.get());
 
         ring3Ores();
         sulfurAndSteam();

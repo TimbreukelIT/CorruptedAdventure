@@ -55,6 +55,8 @@ public final class ModTags {
         public static final TagKey<Block> ORES_FIRE_RUBY = TagKey.create(Registries.BLOCK, common("ores/fire_ruby"));
         /** Ground of the ring 3 fire flora: ash, coarse dirt and a full ash layer ({@code AshPlantSoil}). Stream B. */
         public static final TagKey<Block> ASH_PLANT_SOIL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("ash_plant_soil"));
+        /** G2 ring 3: the bare rock a charred shrub stands on besides {@link #ASH_PLANT_SOIL} (pumice, basalt). */
+        public static final TagKey<Block> CHARRED_SHRUB_SOIL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("charred_shrub_soil"));
         /**
          * Falling blocks that cave in when a player walks under them ({@code LooseSandTrigger}): loose sand, ash crust.
          * Stream B. Only falling blocks belong here: the trigger relies on vanilla's falling-block tick.

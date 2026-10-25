@@ -9,7 +9,10 @@ import net.minecraft.data.worldgen.features.FeatureUtils;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.util.valueproviders.WeightedListInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,6 +30,7 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModFeatures;
 
@@ -37,8 +41,9 @@ import nl.timtoys.corruptedadventure.registry.ModFeatures;
  * the vents. The muds and crystals are stream B's (47d). The vents and mud patches of the sulfur fields keep off the
  * travertine (it is not in their ground). Amounts are starting values.
  * <p>
- * Determinism as in {@link Ring3DressingFeatures}: {@link JitteredGridPlacement} with a margin of the pool's reach, the
- * frozen {@code WORLD_SURFACE_WG} heightmap, the pure terrain and the placement random.
+ * Determinism as in {@link Ring3DressingFeatures} ({@link JitteredGridPlacement}, the frozen {@code WORLD_SURFACE_WG}
+ * heightmap, the pure terrain and the placement random); G2: the pools, wider than a chunk, as the titan rocks (a pure
+ * plan per cell, {@link TerracePoolFeature}).
  */
 public final class SulfurFieldsFeatures {
     static final ResourceKey<ConfiguredFeature<?, ?>> TERRACE_POOL = ResourceKey.create(Registries.CONFIGURED_FEATURE,
@@ -59,6 +64,27 @@ public final class SulfurFieldsFeatures {
     private static final PlacementModifier SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
 
     private SulfurFieldsFeatures() {
+    }
+
+    /**
+     * G2 (decision 6 = A): a cluster of 3–9 tries in about 2 cells in 3 of 48 × 48 blocks, the tries that crowd an
+     * earlier pool dropped: about 0.26 pools per chunk with ~21 blocks of mud each, the same mud area as 47d (0.5 tries
+     * per chunk on a grid, ~10.5 blocks each), before the checks at the centre.
+     */
+    static final int CLUSTER_CELL = 48;
+    static final float CLUSTER_CHANCE = 0.65F;
+    static final UniformInt CLUSTER_TRIES = UniformInt.of(3, 9);
+
+    /** Pool radii 1–6, small ones most often (mean ≈ 2.8). */
+    static IntProvider poolRadius() {
+        return new WeightedListInt(SimpleWeightedRandomList.<IntProvider>builder()
+                .add(ConstantInt.of(1), 4)
+                .add(ConstantInt.of(2), 5)
+                .add(ConstantInt.of(3), 4)
+                .add(ConstantInt.of(4), 3)
+                .add(ConstantInt.of(5), 2)
+                .add(ConstantInt.of(6), 1)
+                .build());
     }
 
     /** What boils in the pools: yellow, green or orange sulfur mud, one colour per pool (drawn once per pool). */
@@ -87,9 +113,10 @@ public final class SulfurFieldsFeatures {
                         .add(Blocks.YELLOW_TERRACOTTA.defaultBlockState(), 3)
                         .add(Blocks.ORANGE_TERRACOTTA.defaultBlockState(), 2)
                         .add(Blocks.CALCITE.defaultBlockState(), 2)),
-                UniformInt.of(1, TerracePoolFeature.MAX_RADIUS),
+                poolRadius(),
                 HolderSet.direct(Block::builtInRegistryHolder, ModBlocks.SULFUR_CRUST.get(), Blocks.CALCITE, Blocks.YELLOW_TERRACOTTA,
-                        Blocks.SMOOTH_BASALT, ModBlocks.ASH_BLOCK.get(), Blocks.TUFF)));
+                        Blocks.SMOOTH_BASALT, ModBlocks.ASH_BLOCK.get(), Blocks.TUFF),
+                CLUSTER_CELL, CLUSTER_CHANCE, CLUSTER_TRIES, ModBiomes.SULFUR_FIELDS));
     }
 
     private static void placedCrystals(BootstrapContext<PlacedFeature> context) {
@@ -104,9 +131,8 @@ public final class SulfurFieldsFeatures {
     public static void placed(BootstrapContext<PlacedFeature> context) {
         placedCrystals(context);
         HolderGetter<ConfiguredFeature<?, ?>> features = context.lookup(Registries.CONFIGURED_FEATURE);
-        // About one pool per 2 chunks on level ground of the terraces.
-        PlacementUtils.register(context, SULFUR_FIELDS_TERRACE_POOLS, features.getOrThrow(TERRACE_POOL),
-                JitteredGridPlacement.of(16, TerracePoolFeature.MAX_REACH, 0.5F), SURFACE, SlopeFilter.flat(3, 1),
-                VolcanicFilter.builder().ground().build(), BiomeFilter.biome());
+        // G2 (decision 6 = A): once per chunk without a biome filter; a pool is a function of its cluster's cell, every
+        // chunk it covers writes its part, and TerracePoolFeature checks biome, plain and level ground at its centre.
+        PlacementUtils.register(context, SULFUR_FIELDS_TERRACE_POOLS, features.getOrThrow(TERRACE_POOL));
     }
 }

@@ -1,0 +1,67 @@
+{
+  "feature": "corruptedadventure:ring_3/fire_flora",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 2,
+      "chance": 0.3
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.42,
+      "noise": "corruptedadventure:ring_3_ember_clearings"
+    },
+    {
+      "type": "corruptedadventure:volcanic_filter",
+      "ground_only": true,
+      "landmark_margin": 6,
+      "ranges": [
+        {
+          "max": 0.1,
+          "output": "lava_bank"
+        },
+        {
+          "max": 0.3,
+          "output": "cliff"
+        },
+        {
+          "max": 20.0,
+          "output": "volcano_rise"
+        },
+        {
+          "max": 0.001,
+          "output": "caldera_mask"
+        },
+        {
+          "max": 0.001,
+          "output": "collapse"
+        }
+      ]
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:air"
+          },
+          {
+            "type": "minecraft:would_survive",
+            "state": {
+              "Name": "corruptedadventure:fire_bloom"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

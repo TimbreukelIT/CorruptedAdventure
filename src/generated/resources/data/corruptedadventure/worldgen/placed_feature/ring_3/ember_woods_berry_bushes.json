@@ -12,13 +12,14 @@
     },
     {
       "type": "corruptedadventure:noise_band",
-      "min": 0.35,
+      "min": 0.2,
       "noise": "corruptedadventure:ring_3_ember_clearings",
       "snap": 8
     },
     {
       "type": "corruptedadventure:volcanic_filter",
       "ground_only": true,
+      "landmark_margin": 6,
       "ranges": [
         {
           "max": 0.1,

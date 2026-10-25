@@ -1402,7 +1402,7 @@ Rij 39 wordt alleen het **terrein** (kegels, caldera's, lavarivieren, zwevende e
 | 99 | `textures` | Definitieve textures ring 5 + Nether-5 | 3 | runClient |
 
 - **Teststops:** **6-pre** terreinpreview (kaarten na golf 0; vliegtocht na 84/85, 6-pre-1); **6a** terrein-wow na golf 1 + 86b/87b/86c (blokkerend; checklist `docs/plans/ring-5/teststop-6a.md`); **6b** overleving + sfeer na golf 2; **6c** eindcheck na golf 3.
-- **Stand (2026-10-23):** golf 0 en golf 1 (INT1) op `main`; volgende: 86b, 87b, 86c op main, dan teststop 6a.
+- **Stand (2026-10-25):** golf 0, golf 1 (INT1), 86b/87b/86c, teststop 6a, golf 2 (INT2, INT3) en walk 1 op `main`; **teststop 6b akkoord** (2026-10-25, `docs/plans/ring-5/teststop-6b.md`); volgende: golf 3 en teststop 6c.
 
 ### G2. Opknapbeurt ring 2 en 3 (sparring 2026-10-24)
 Na ring 4 ligt de lat voor een levendig landschap hoger; ring 2 en 3 (overworld) krijgen een aanvullende ronde. Besluiten:
@@ -1413,6 +1413,15 @@ Na ring 4 ligt de lat voor een levendig landschap hoger; ring 2 en 3 (overworld)
 - **Volgorde:** ring 2 en 3 tegelijk (na ring 5 golf 2 / INT3), elk in een eigen stroom.
 - **Perf:** binnen het bestaande budget (≤ 1,75× vanilla); lukt dat niet, dan eerst opties voorleggen.
 - **Testen:** vrije rondgang door Claude met de client, beoordeling aan de hand van screenshots; daarna feedback van de gebruiker en een sparring per ring over de concrete features.
+- **Uitwerking ring 3 (sparring 2026-10-25; materiaal en foto's in `docs/plans/ring-3/g2-walk.md`):**
+  - **Grondvulling (1 = A, matig, zoals het ring 4-proefstuk):** kleine stenen van biome-materiaal (puimsteen, basalt, blackstone, tuf) op raster 8, keien ≤ 1 per chunk ook op hellingen, puinwaaiers aan de voet van kliffen en kegelflanken; per biome extra vulling (dode bomen in groepjes ook in de lijzijde, puimsteen in plukken; rotsjes en kraters ook op de flanken van de pieken; kelpbalen in plukken half in het zand, grotere riffen, losse botjes in de zeekom; basaltzuiltjes en tongen met reliëf; botten in plukken en los zielvuur op de titanenvlakte; azaleastruiken in bosjes in de krater).
+  - **Subzones (2 = A):** één ringruis (`ring_3_patches`, golven ~150–300 blokken) kiest per biome twee vlektypes met eigen bodem én features: as "verbrand bos" ↔ "puimsteenveld", pieken "verse lava" ↔ "puinhelling", zeekom "kleiplaten" ↔ "schelpenbank", basalt "touwlava" ↔ "aa-lava", smeulwoud bosjes ↔ "brandplekken", zwavel "gele korst" ↔ "kalksinter", titanen "bottenveld" ↔ "zielgrondvlakte"; ~40 % van elk biome "anders".
+  - **Blikvangers (3 = A):** één biome-eigen blikvanger per wereldcel van ~400 (worldgen-feature, geen structure/loot; `/ca landmarks` noemt ze): verkoolde reuzenstam (as), obsidiaanstroom (pieken), walvisskelet (zeekom), zuilenorgel (basalt), vuurreus (smeulwoud), sinterterrastrap (zwavel), titanenwapen (titanen); niet in de krater en de venen.
+  - **Flora (4 = A):** één eigen vuurflora-plant (verkoolde struik/asgras) in plukken op as en basalt in as, pieken, basalt en titanen; nieuw blok met een placeholder-texture, de echte texture in de backlog.
+  - **Microreliëf (5 = B):** het 2D-microreliëf van 39f wordt in de noise herzien, zodat het van boven niet meer als hoogtelijnenkaart leest (onregelmatiger). Budget blijft ≤ 1,75× vanilla; lukt dat niet, dan eerst opties voorleggen (niet stilzwijgend terugschroeven).
+  - **Kookpoelen (6 = A):** onregelmatige vormen en maten (straal 1–6) in clusters met lege stukken ertussen, i.p.v. even grote vierkanten op een raster.
+  - **Smeulwoud (7 = A):** grotere open plekken en variatie in de kronen (half verbrande boom met zwarte kroon, kale reus).
+  - **`steam_fens` (8 = A):** poelen en geisers in clusters en een zachtere bodemrand naar de zeekom; geen terreinwijziging. Bewust alleen de bovenlaag: onder een modderplek in de rand blijft de ondergrond zandsteen (ook op steile wanden), review B (2026-10-25).
 
 #### Uitwerking ring 2 (sparring 2026-10-25, G2-R2-1…8 = A)
 Nulmeting, rondgang en voorstellen: `docs/plans/ring-2/g2-walk.md` (duinen 64 % lege chunks, zout 60 % lege 8 × 8-tegels, plateau 78–88 % egaal rood zand, nergens een blikvanger). Alle maten zijn startwaarden.
