@@ -203,3 +203,36 @@ Volgorde-advies: eerst D1/D2/S1/S2/C1/C2/C3/O1 (laag, groot effect op de lege vl
 6. **Hoodoovelden?** A *(aanbevolen)* H1 + H2 (dicht/open via ruis + geulen): kleine noise-kosten. B alleen H2 (0 noise-kosten). C laten.
 7. **Oase?** A *(aanbevolen)* O1 + O2 (palmbossen, droog gras/struiken, droge poelkuilen): laag. B alleen meer losse struiken. C laten.
 8. **Aanpak kleine terreinvormen?** A *(aanbevolen)* alles als chunk-lokale features; de noise-stap blijft gelijk behalve H1. B ook DF-vormen (heuveltjes, geulen) binnen ≤ 1,75×. C geen terreinvormen, alleen aankleding.
+
+## 9. Na de bouw (integratie `g2/ring2`, 2026-10-25)
+Vier substromen (flats, rock, marks-a, marks-b) gemerged; `build --offline` (alle tests) en `runData` groen, serverlog
+zonder ERROR/"far chunk". Verse wereld `run/g2after` (7 spots + één exemplaar van elke blikvanger), 23 foto's in
+`build/test/shots/g2-ring2-after/` (contactblad `build/test/g2-ring2/sheet-after.png`).
+
+| Spot | Objecten/chunk vóór → na | Lege 8×8 vóór → na | Bovenblokken na |
+|---|---|---|---|
+| `canyon` | 4,0 → 7,2 | 35 → 32 % | rood zand 61 %, grind 8 %, grove aarde 8 % |
+| `mesa` | 4,0 → 5,6 | 36 → 35 % | rood zand 68 %, grove aarde 6 %, rode zandsteen 5 %, grind 5 % |
+| `spring` | 4,9 → 19,8 | 33 → 18 % | rood zand 59 %, klei 18 %, mos 4 %, gras 3 % |
+| `hoodoo` | 7,3 → 6,9 | 12 → 14 % | rood zand 66 %, klei 20 %, grind 3 % (open stukken) |
+| `salt` | 2,9 → 2,6 | 60 → 63 % | ruggen tellen als grond (zoutblok); kristallen nu in klodders |
+| `dunes` | 2,5 → 6,3 | 79 → 69 % | zand 73 %, rood zand 20 % |
+| `oasis` | ~19 → 22 | 51 → 33 % | gras 31 %, grove aarde 8 % |
+
+Oordeel op de foto's:
+- **Goed:** drukruggen (`salt_low.png`) maken de zoutvlakte op ooghoogte en van boven veel rijker; het reuzenskelet op
+  rode duinen (`skeleton_low.png`) is een duidelijke blikvanger; de half begraven dode bomen breken de duinflanken
+  (`dunes_low.png`); de kloofbodem met sijpelplekken en geulen (`spring_low.png`, `spring_eye_e.png`) en de open
+  stukken met grindgeulen in de hoodoos (`hoodoo_top.png`) lezen als afwisseling; het plateau heeft nu strepen grind en
+  grove aarde (`mesa_low.png`).
+- **Zwakker, voor de feedback van de gebruiker:** de rotsbrug `bA` (1986 98) loopt diagonaal over een smalle kloof en
+  leest van boven als een dichtgegroeide kloof, niet als boog (`bridge_low.png`); de zoutkoepel is een wit "bijenkorfje"
+  van ~10 hoog dat tussen de ruggen weinig opvalt (`dome_low.png`); bij de reuzenpalm is de "bronpoel" een plasje van
+  2 × 2 met een oranje rotsje (`gpalm_low.png`); de duinen blijven met 69 % lege tegels de leegste biome (bewust kale kammen).
+
+Determinisme (`det.sh --all`, 7 gebieden van 3 × 3 chunks rond hoodoovloer, reuzenhoodoo, brug, sijpelplekken, koepel,
+skelet, reuzenpalm; `build/test/det-g2r2.txt`): alle verschillen liggen onder Y 60 en zijn het bekende gedrag van change 26
+(instortend `loose_sand` boven reservoirs: 5 blokken; stromend grotwater: 19) plus vanilla-klodders; boven Y 60 blok voor
+blok gelijk, brug 9/9 identiek.
+
+Perf (baseline op `origin/main` + na op `g2/ring2`, `perf-g2.txt`): volgt op het sein van main.
