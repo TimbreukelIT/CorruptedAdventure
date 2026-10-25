@@ -1018,3 +1018,5 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-25 | worldgen | G2 ring 3, vraag 6 = A: kookpoelen van `sulfur_fields` onregelmatig (straal 1–6) in clusters | Gebruiker (aanbevolen); het raster van even grote vierkanten las onnatuurlijk |
 | 2026-10-25 | worldgen | G2 ring 3, vraag 7 = A: smeulwoud met grotere open plekken en variatie in kronen | Gebruiker (aanbevolen); van boven een gesloten tapijt |
 | 2026-10-25 | worldgen | G2 ring 3, vraag 8 = A: `steam_fens` poelclusters en zachtere bodemrand naar de zeekom, geen terrein | Gebruiker (aanbevolen) |
+| 2026-10-25 | worldgen | Change 100 (fase 1-eindtest): de meting van de chunk-generatietijd per ring vervalt voor nu en staat in de backlog als in te halen | Gebruiker; deadline fase 1 om 18:00 |
+| 2026-10-25 | worldgen | Change 100 akkoord (`docs/plans/fase-1-eindtest.md`): elke ring, grens, Nether-ring, buitenrand, border, geen stronghold, portaal per ring; ring 2 getest op `g2/ring2` 0670fd68 omdat de merge om 17:49 nog niet op `main` stond | Eindtest fase 1 |
