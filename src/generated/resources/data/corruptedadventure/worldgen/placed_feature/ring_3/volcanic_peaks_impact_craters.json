@@ -13,7 +13,7 @@
     },
     {
       "type": "corruptedadventure:slope",
-      "max": 1,
+      "max": 2,
       "radius": 4
     },
     {
@@ -29,7 +29,7 @@
           "output": "cliff"
         },
         {
-          "max": 20.0,
+          "max": 45.0,
           "output": "volcano_rise"
         },
         {

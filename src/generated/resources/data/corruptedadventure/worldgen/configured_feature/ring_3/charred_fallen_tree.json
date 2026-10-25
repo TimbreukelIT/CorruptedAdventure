@@ -1,0 +1,33 @@
+{
+  "type": "corruptedadventure:fallen_tree",
+  "config": {
+    "decor": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:ash_layer",
+        "Properties": {
+          "layers": "1"
+        }
+      }
+    },
+    "decor_chance": 0.3,
+    "length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 5,
+      "min_inclusive": 3
+    },
+    "log": {
+      "Name": "corruptedadventure:charred_log",
+      "Properties": {
+        "axis": "y"
+      }
+    },
+    "stump_height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "stump_only": 0.25,
+    "trunk_only": 0.35
+  }
+}

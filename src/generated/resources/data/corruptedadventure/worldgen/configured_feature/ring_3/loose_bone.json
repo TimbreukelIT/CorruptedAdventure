@@ -1,0 +1,38 @@
+{
+  "type": "corruptedadventure:rubble",
+  "config": {
+    "size": 1,
+    "state_provider": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:bone_block",
+            "Properties": {
+              "axis": "x"
+            }
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "minecraft:bone_block",
+            "Properties": {
+              "axis": "y"
+            }
+          },
+          "weight": 1
+        },
+        {
+          "data": {
+            "Name": "minecraft:bone_block",
+            "Properties": {
+              "axis": "z"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

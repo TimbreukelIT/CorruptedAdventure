@@ -162,14 +162,16 @@ public final class DormantCalderaFeatures {
                 JitteredGridPlacement.of(16, AZALEA_TREE_REACH + 1, 0.6F), LIVE_SURFACE, grove, floor, survives(Blocks.AZALEA),
                 BiomeFilter.biome());
         // Bush crowns reach 2: margin 3 (cell 8).
+        // G2: the bushes follow the growth noise more strongly (thick round the groves, thin on the meadows).
         PlacementUtils.register(context, DORMANT_CALDERA_AZALEA_SHRUBS, features.getOrThrow(AZALEA_SHRUB),
-                JitteredGridPlacement.of(8, 3, 0.6F), LIVE_SURFACE, NoiseBandFilter.between(GROWTH, GROVE - 0.25, Double.MAX_VALUE), floor,
+                JitteredGridPlacement.of(8, 3, 0.75F, ClusterDensity.of(GROWTH, GROVE - 0.2, GROVE + 0.1)), LIVE_SURFACE, floor,
                 survives(Blocks.AZALEA), BiomeFilter.biome());
         PlacementUtils.register(context, DORMANT_CALDERA_FALLEN_LOGS, features.getOrThrow(FALLEN_LOGS),
                 JitteredGridPlacement.of(16, 5, 0.2F), LIVE_SURFACE, SlopeFilter.flat(FALLEN_LOG_LENGTH, 0), floor,
                 BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE), BiomeFilter.biome());
         PlacementUtils.register(context, DORMANT_CALDERA_AZALEA_BUSHES, features.getOrThrow(AZALEA_BUSH),
-                JitteredGridPlacement.of(4, 0, 0.3F), LIVE_SURFACE, floor, survives(Blocks.AZALEA), BiomeFilter.biome());
+                JitteredGridPlacement.of(4, 0, 0.7F, ClusterDensity.of(GROWTH, GROVE - 0.3, GROVE + 0.05).withFloor(0.08)), LIVE_SURFACE,
+                floor, survives(Blocks.AZALEA), BiomeFilter.biome());
         // Dripleaf in the damp hollows (higher ground around), ferns everywhere.
         PlacementUtils.register(context, DORMANT_CALDERA_DRIPLEAF, features.getOrThrow(CaveFeatures.DRIPLEAF),
                 JitteredGridPlacement.of(2, 0, 0.35F), LIVE_SURFACE, SlopeFilter.wallFoot(4, 2), SlopeFilter.flat(1, 1), floor,

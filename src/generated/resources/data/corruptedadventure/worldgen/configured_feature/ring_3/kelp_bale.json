@@ -1,16 +1,36 @@
 {
-  "type": "corruptedadventure:rubble",
+  "type": "corruptedadventure:ground_patch",
   "config": {
-    "size": {
-      "type": "minecraft:uniform",
-      "max_inclusive": 2,
-      "min_inclusive": 1
-    },
-    "state_provider": {
+    "depth": 1,
+    "material": {
       "type": "minecraft:simple_state_provider",
       "state": {
         "Name": "minecraft:dried_kelp_block"
       }
-    }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 2,
+      "min_inclusive": 1
+    },
+    "raise": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 1,
+      "min_inclusive": 0
+    },
+    "raised": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:dried_kelp_block"
+      }
+    },
+    "replaceable": [
+      "minecraft:sand",
+      "minecraft:gravel",
+      "minecraft:clay",
+      "corruptedadventure:ash_block",
+      "corruptedadventure:pumice"
+    ],
+    "stretch": 1.3
   }
 }

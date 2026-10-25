@@ -510,3 +510,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [worldgen] Grotvloeren binnen 8 onder de top (de ingangen en ondiepe grotten) krijgen nog de biome-surface (gras, zand, kale aarde), zoals in vanilla; dieper zijn ze kale steen. Bij 6b beoordelen. (bron: INT3)
 - [textures] 6b: het glitchblok heeft 32 oriëntaties (99b); de horizontale scheurstrepen lopen daardoor op veel vlakken verticaal. Alleen Y-rotaties zou het schaakbord weer laten aansluiten. Oordeel bij 6b. (bron: INT3-review 99b)
 - [worldgen] 6b: `corrupted_wastes` bij de bandlijn is grotendeels zand (de regel "top onder Y 76 = zand" van 83b, terwijl de grond daar naar Y 70 zakt); als dat een te harde overgang is, de zandgrens laten meelopen met de dalende grond. (bron: INT3, meting `shattered`) **Opgelost in walk 1 (2026-10-24):** zand in de lage plekken alleen nog in vlekken van `surface_secondary` (`LOW_SAND`): strook vóór de bandlijn 57 % → 19 % zand (`docs/plans/ring-5/walk1.md`).
+
+## Uit G2 ring 3, grondvulling/subzones/vuurflora (`g2/ring3-ground`, 2026-10-25)
+
+- [textures] Echte texture voor `charred_shrub` (verkoolde struik, vuurflora van de kale ring 3-vlaktes): nu een placeholder uit `Ring3Textures.charredShrub` (kale verkoolde twijgjes met oranje puntjes, geen gloeilaag); overwegen een emissive gloeilaag op de puntjes zoals smeulblad. (bron: G2 ring 3, besluit 4)

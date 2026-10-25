@@ -82,12 +82,18 @@ D = "ring_3_surface_detail"         # speckles ~4-10 blocks
 K = "ring_3_surface_cracks"         # thin lines where |K| is small
 G = "ring_3_surface_grain"          # grain ~2-4 blocks
 S = "minecraft:surface"
+# G2 (decision 2 = A): the subzones of the rugged biomes, waves of ~150-300 blocks. The features read the same noise
+# (Ring3GroundFeatures.PATCHES) with the same threshold (Ring3GroundFeatures.PATCH): A below -PATCH, B above +PATCH,
+# about 20 % of a biome each.
+PZ = "ring_3_patches"
+PATCH = 0.26
 
 NOISES = {
     "ring_3_surface_patches": (-7, [1.0, 1.0, 0.5]),
     "ring_3_surface_detail": (-4, [1.0, 1.0]),
     "ring_3_surface_cracks": (-6, [1.0, 0.6]),
     "ring_3_surface_grain": (-2, [1.0, 1.0]),
+    "ring_3_patches": (-8, [1.0, 1.0, 0.5]),
 }
 
 RING_3 = ["ashen_wastes", "volcanic_peaks", "ember_woods", "basalt_flows", "sulfur_fields", "dried_seabed",
@@ -336,7 +342,8 @@ def dormant_caldera():
             cond(noise(D, 0.2), mod("ash_block")),
             cond(noise(P, -INF, -0.3), block("basalt")),
             mod("pumice"))),
-        cond(noise(S, -INF, -0.3), block("coarse_dirt")),
+        # G2: the coarse dirt in smaller, broken patches (the moss shows through), no raw brown stains.
+        all_of([noise(S, -INF, -0.45), noise(G, -0.25)], block("coarse_dirt")),
         cond(noise(P, 0.45), mod("ash_block")),
         block("moss_block")]
     return top, [
@@ -358,6 +365,66 @@ def steam_fens():
         cond(DEPTH, seq(cond(noise(P, 0.25), block("mud")), block("packed_mud")))]
 
 
+# ---------------------------------------------------------------- overworld, subzones (G2)
+def zone_a():
+    return noise(PZ, -INF, -PATCH)
+
+
+def zone_b():
+    return noise(PZ, PATCH)
+
+
+def subzones(name):
+    """G2 (decision 2 = A): the two patch kinds of a rugged biome, before its own top rules. A rule that reads the crack
+    noise stands on its own, so the thin solids of the biome kind (which leave those rules out) keep the rest."""
+    a, b = zone_a(), zone_b()
+    if name == "ashen_wastes":
+        # Burnt forest: charred ground with embers and coarse dirt | pumice field: light pumice with ash and tuff.
+        return [
+            cond(a, seq(cond(noise(G, 0.6), mod("smoldering_ash")), cond(noise(D, 0.3), block("coarse_dirt")),
+                        cond(noise(D, -INF, -0.45), mod("smoldering_ash")), mod("ash_block"))),
+            cond(b, seq(cond(noise(D, 0.45), mod("ash_block")), cond(noise(G, 0.6), block("tuff")), mod("pumice")))]
+    if name == "volcanic_peaks":
+        # Fresh lava: black blackstone with glowing cracks | scree: tuff and gravel with pumice.
+        return [
+            all_of([a, noise(K, -0.025, 0.025)], block("magma_block")),
+            cond(a, seq(cond(noise(G, -0.035, 0.035), mod("smoldering_stone")), cond(noise(G, 0.6), block("basalt")),
+                        block("blackstone"))),
+            cond(b, seq(cond(noise(G, 0.3), block("gravel")), cond(noise(D, 0.45), mod("pumice")), block("tuff")))]
+    if name == "dried_seabed":
+        # Clay flats: plates of clay and cracked clay with terracotta in the shrinkage cracks | shell bank: calcite and
+        # bone in the sand.
+        return [
+            cond(a, seq(cond(noise(G, -0.07, 0.07), block("terracotta")), cond(noise(D, 0.1), mod("cracked_clay")),
+                        block("clay"))),
+            cond(b, seq(cond(noise(G, 0.45), block("calcite")), cond(noise(D, 0.55), block("bone_block")), block("sand")))]
+    if name == "basalt_flows":
+        # Ropy lava: smooth basalt with winding bands of polished basalt | aa lava: rough blackstone with basalt clinker.
+        return [
+            cond(a, seq(cond(noise(G, -0.18, 0.18), block("polished_basalt")), block("smooth_basalt"))),
+            cond(b, seq(cond(noise(G, 0.4), block("basalt")), cond(noise(D, 0.55), mod("smoldering_stone")),
+                        block("blackstone")))]
+    if name == "sulfur_fields":
+        # Yellow crust: bare sulfur crust with yellow terracotta | sinter: white calcite with orange rims (the patch's
+        # edge and thin lines).
+        return [
+            cond(a, seq(cond(noise(D, 0.5), block("yellow_terracotta")), mod("sulfur_crust"))),
+            cond(noise(PZ, PATCH, PATCH + 0.03), block("orange_terracotta")),
+            cond(b, seq(cond(noise(G, -0.03, 0.03), block("orange_terracotta")), cond(noise(D, 0.55), block("white_terracotta")),
+                        block("calcite")))]
+    if name == "titan_fields":
+        # Bone field: ash with bleached bone and soul soil | soul soil plain: soul soil with soul sand.
+        return [
+            cond(a, seq(cond(noise(G, 0.55), block("bone_block")), cond(noise(D, 0.45), block("soul_soil")), mod("ash_block"))),
+            cond(b, seq(cond(noise(G, 0.5), block("soul_sand")), cond(noise(D, -INF, -0.5), mod("ash_block")), block("soul_soil")))]
+    return []
+
+
+def top_rules(name):
+    """The top rules of a biome: its subzones (G2), then its own."""
+    return subzones(name) + BIOMES[name]()[0]
+
+
 # Biomes whose top gets a one-block roof of ash over an opening (39c: ash_crust; 42b: ash_block; 42d: ash_crust again,
 # the crust of 38c, which falls in only under a player).
 # The thin roof in front of every lava tube's mouth is ash crust in every biome (a thin solid of kind 6, thin_solids).
@@ -365,7 +432,7 @@ THIN_ROOF_CRUST = {"ashen_wastes", "volcanic_peaks", "ember_woods", "titan_field
 
 
 def biome_branch(name):
-    top, rest = BIOMES[name]()
+    top, rest = top_rules(name), BIOMES[name]()[1]
     # 42d: a roof of one block (air right below) gets the ash crust of 38c: it hangs whatever updates it gets during
     # generation and falls in only under a player (42b had ash_block: the old crust fell at the first neighbour update).
     head = [cond(THIN_ROOF, mod("ash_crust"))] if name in THIN_ROOF_CRUST else []
@@ -385,7 +452,7 @@ def ring_3_branch():
     """39f: all of ring 3 in one branch. First the thin solids (any depth); then, within GATE only, the shared volcanic
     rules, the biome branches and the ground package. Cheap tests come first: the per-block thin test returns at once
     for columns without thin shapes, the depth gate skips the deep blocks."""
-    thin_biome = [cond(biome(n), seq(*[r for r in BIOMES[n]()[0] if not uses_cracks(r)])) for n in RING_3]
+    thin_biome = [cond(biome(n), seq(*[r for r in top_rules(n) if not uses_cracks(r)])) for n in RING_3]
     return cond(biome(*RING_3), seq(
         cond(THIN_ANY, seq(thin_solids(), cond(THIN_BIOME, seq(*thin_biome)))),
         cond(GATE, seq(shared_volcanic(), *[biome_branch(n) for n in RING_3], shared_ground()))))
