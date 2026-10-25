@@ -14,12 +14,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 import java.util.Optional;
 
 /**
  * {@code corruptedadventure:surface_pool}: a small pool of still water in a closed basin with a rim ({@link PoolLayout}),
- * the brine pools of the salt flats and the hidden oases of the dune sea (change 30b). Reads the
+ * the brine pools of the salt flats and the hidden oases of the dune sea (change 30b); with {@code dry_floor} a dry
+ * hollow with that floor instead (G2: the dry pool hollows of the oasis flats). Reads the
  * {@code WORLD_SURFACE_WG} heightmap and blocks of its own chunk only; everything but tree crowns lies at least one
  * block from the chunk edge.
  * <p>
@@ -53,9 +55,15 @@ public final class SurfacePoolFeature extends Feature<SurfacePoolConfiguration> 
         for (BlockPos pos : layout.carve()) {
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
         }
+        Optional<BlockStateProvider> dry = config.dryFloor();
         for (BlockPos pos : layout.water()) {
-            level.setBlock(pos, Blocks.WATER.defaultBlockState(), Block.UPDATE_CLIENTS);
+            level.setBlock(pos, dry.isPresent() ? Blocks.AIR.defaultBlockState() : Blocks.WATER.defaultBlockState(), Block.UPDATE_CLIENTS);
         }
+        dry.ifPresent(floor -> {
+            for (BlockPos pos : layout.floor()) {
+                level.setBlock(pos, floor.getState(random, pos), Block.UPDATE_CLIENTS);
+            }
+        });
         for (BlockPos pos : layout.rim()) {
             level.setBlock(pos, config.rim().state().getState(random, pos), Block.UPDATE_CLIENTS);
         }
@@ -86,6 +94,10 @@ public final class SurfacePoolFeature extends Feature<SurfacePoolConfiguration> 
                 BlockPos pos = floor.above();
                 if (random.nextFloat() < decoration.chance()) {
                     BlockState state = decoration.state().getState(random, pos);
+                    if (dry.isPresent()) {
+                        placePlant(level, state, pos);
+                        continue;
+                    }
                     // Only waterloggable blocks, waterlogged: the basin keeps a source in every water block.
                     if (state.hasProperty(BlockStateProperties.WATERLOGGED) && state.getValue(BlockStateProperties.WATERLOGGED)
                             && state.canSurvive(level, pos)) {

@@ -1,0 +1,72 @@
+{
+  "type": "corruptedadventure:surface_pool",
+  "config": {
+    "depth": 1,
+    "dry_floor": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "corruptedadventure:cracked_clay"
+      }
+    },
+    "edge_jitter": 0.35,
+    "ground": [
+      "minecraft:sand",
+      "minecraft:coarse_dirt"
+    ],
+    "max_step": 1,
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_exclusive": 5.0,
+      "min_inclusive": 2.5
+    },
+    "rim": {
+      "state": {
+        "type": "minecraft:weighted_state_provider",
+        "entries": [
+          {
+            "data": {
+              "Name": "minecraft:coarse_dirt"
+            },
+            "weight": 2
+          },
+          {
+            "data": {
+              "Name": "minecraft:sand"
+            },
+            "weight": 1
+          }
+        ]
+      },
+      "width": 1
+    },
+    "rim_plants": {
+      "chance": 0.2,
+      "state": {
+        "type": "minecraft:weighted_state_provider",
+        "entries": [
+          {
+            "data": {
+              "Name": "corruptedadventure:dry_shrub"
+            },
+            "weight": 3
+          },
+          {
+            "data": {
+              "Name": "minecraft:dead_bush"
+            },
+            "weight": 2
+          }
+        ]
+      }
+    },
+    "underwater_decoration": {
+      "chance": 0.05,
+      "state": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "minecraft:dead_bush"
+        }
+      }
+    }
+  }
+}

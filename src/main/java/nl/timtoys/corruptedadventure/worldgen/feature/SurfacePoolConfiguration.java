@@ -31,11 +31,13 @@ import java.util.Optional;
  * @param rimDecoration        on the rim, e.g. a salt crystal
  * @param underwaterDecoration in the water on the floor, e.g. a waterlogged salt crystal
  * @param trees                trees on the outer rim
+ * @param dryFloor             a dry hollow instead of a pool (G2): the water blocks become air and the floor this block;
+ *                             the underwater decoration then stands on that floor as a plant
  */
 public record SurfacePoolConfiguration(FloatProvider radius, float edgeJitter, IntProvider depth, HolderSet<Block> ground,
                                        int maxStep, Rim rim, Optional<Scatter> rimPlants, Optional<Column> shoreColumn,
                                        Optional<Scatter> rimDecoration, Optional<Scatter> underwaterDecoration,
-                                       Optional<Trees> trees) implements FeatureConfiguration {
+                                       Optional<Trees> trees, Optional<BlockStateProvider> dryFloor) implements FeatureConfiguration {
     public static final Codec<SurfacePoolConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             FloatProvider.codec(1.0F, PoolLayout.MAX_RADIUS).fieldOf("radius").forGetter(SurfacePoolConfiguration::radius),
             Codec.floatRange(0.0F, 0.6F).fieldOf("edge_jitter").forGetter(SurfacePoolConfiguration::edgeJitter),
@@ -47,8 +49,17 @@ public record SurfacePoolConfiguration(FloatProvider radius, float edgeJitter, I
             Column.CODEC.optionalFieldOf("shore_column").forGetter(SurfacePoolConfiguration::shoreColumn),
             Scatter.CODEC.optionalFieldOf("rim_decoration").forGetter(SurfacePoolConfiguration::rimDecoration),
             Scatter.CODEC.optionalFieldOf("underwater_decoration").forGetter(SurfacePoolConfiguration::underwaterDecoration),
-            Trees.CODEC.optionalFieldOf("trees").forGetter(SurfacePoolConfiguration::trees)
+            Trees.CODEC.optionalFieldOf("trees").forGetter(SurfacePoolConfiguration::trees),
+            BlockStateProvider.CODEC.optionalFieldOf("dry_floor").forGetter(SurfacePoolConfiguration::dryFloor)
     ).apply(instance, SurfacePoolConfiguration::new));
+
+    /** A pool of water (no {@code dry_floor}). */
+    public SurfacePoolConfiguration(FloatProvider radius, float edgeJitter, IntProvider depth, HolderSet<Block> ground, int maxStep,
+                                    Rim rim, Optional<Scatter> rimPlants, Optional<Column> shoreColumn, Optional<Scatter> rimDecoration,
+                                    Optional<Scatter> underwaterDecoration, Optional<Trees> trees) {
+        this(radius, edgeJitter, depth, ground, maxStep, rim, rimPlants, shoreColumn, rimDecoration, underwaterDecoration, trees,
+                Optional.empty());
+    }
 
     /** The ring around the water: {@code width} columns (1–2) whose top block becomes {@code state}. */
     public record Rim(BlockStateProvider state, int width) {

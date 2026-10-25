@@ -1,0 +1,47 @@
+{
+  "type": "corruptedadventure:dead_tree",
+  "config": {
+    "branch_length": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 4,
+      "min_inclusive": 2
+    },
+    "branches": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 4,
+      "min_inclusive": 2
+    },
+    "decor": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:air"
+      }
+    },
+    "decor_chance": 0.0,
+    "height": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 3,
+      "min_inclusive": 2
+    },
+    "lean": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 1,
+      "min_inclusive": 0
+    },
+    "log": {
+      "Name": "corruptedadventure:dead_log",
+      "Properties": {
+        "axis": "y"
+      }
+    },
+    "max_water": 0,
+    "vine_chance": 0.0,
+    "vine_length": 1,
+    "wood": {
+      "Name": "corruptedadventure:dead_wood",
+      "Properties": {
+        "axis": "y"
+      }
+    }
+  }
+}

@@ -21,6 +21,7 @@ import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2FlatsLifeFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.RingVanillaOres;
 import org.junit.jupiter.api.Test;
 
@@ -179,11 +180,14 @@ class Ring2BiomesTest {
         assertEquals(ModPlacedFeatures.CANYONLANDS_VEGETATION, step(canyonlands, GenerationStep.Decoration.VEGETAL_DECORATION).getLast());
 
         Biome oasis = biomes.get(ModBiomes.OASIS_FLATS);
-        assertEquals(ModPlacedFeatures.OASIS_ROCKS, step(oasis, GenerationStep.Decoration.LOCAL_MODIFICATIONS).getLast());
+        // G2: the dry hollows after the rocks, the scrub after the oasis plants.
+        assertEquals(List.of(ModPlacedFeatures.OASIS_ROCKS, Ring2FlatsLifeFeatures.OASIS_DRY_HOLLOWS),
+                own(oasis, GenerationStep.Decoration.LOCAL_MODIFICATIONS));
         // After vanilla's glow lichen only our own plants: vanilla's sugar cane random_patch is replaced by the
         // chunk-local shore plants.
         List<ResourceKey<PlacedFeature>> plants = step(oasis, GenerationStep.Decoration.VEGETAL_DECORATION);
-        assertEquals(Ring2Biomes.OASIS_VEGETATION, plants.subList(plants.size() - Ring2Biomes.OASIS_VEGETATION.size(), plants.size()));
+        List<ResourceKey<PlacedFeature>> oasisOwn = Stream.concat(Ring2Biomes.OASIS_VEGETATION.stream(), Ring2Biomes.OASIS_SCRUB.stream()).toList();
+        assertEquals(oasisOwn, plants.subList(plants.size() - oasisOwn.size(), plants.size()));
         assertFalse(plants.contains(VegetationPlacements.PATCH_SUGAR_CANE_DESERT));
         assertTrue(Ring2Biomes.OASIS_VEGETATION.indexOf(ModPlacedFeatures.OASIS_SHORE_PLANTS)
                 < Ring2Biomes.OASIS_VEGETATION.indexOf(ModPlacedFeatures.OASIS_PALM_GROVES));
@@ -201,14 +205,16 @@ class Ring2BiomesTest {
         // Change 30c: fossils and bones after the shapes, the island life after the crystals.
         assertEquals(List.of(ModPlacedFeatures.SALT_FLATS_BRINE_POOLS, ModPlacedFeatures.SALT_FLATS_PILLAR_FIELDS,
                 ModPlacedFeatures.SALT_FLATS_PILLARS, ModPlacedFeatures.SALT_ISLAND_ROCKS, ModPlacedFeatures.SALT_ISLAND_FOSSILS,
-                ModPlacedFeatures.SALT_ISLAND_BONES), own(biomes.get(ModBiomes.SALT_FLATS), GenerationStep.Decoration.LOCAL_MODIFICATIONS));
+                ModPlacedFeatures.SALT_ISLAND_BONES, Ring2FlatsLifeFeatures.SALT_FLATS_RIDGES),
+                own(biomes.get(ModBiomes.SALT_FLATS), GenerationStep.Decoration.LOCAL_MODIFICATIONS));
         assertEquals(List.of(ModPlacedFeatures.SALT_FLATS_CRYSTALS, ModPlacedFeatures.SALT_FLATS_CRYSTAL_FIELDS,
-                ModPlacedFeatures.SALT_ISLAND_FLORA, ModPlacedFeatures.SALT_ISLAND_CACTUS),
+                ModPlacedFeatures.SALT_ISLAND_FLORA, ModPlacedFeatures.SALT_ISLAND_CACTUS, Ring2FlatsLifeFeatures.SALT_ISLAND_BLEACHED_TREES),
                 own(biomes.get(ModBiomes.SALT_FLATS), GenerationStep.Decoration.VEGETAL_DECORATION));
         assertEquals(List.of(ModPlacedFeatures.DUNE_SEA_OASES, ModPlacedFeatures.DUNE_SEA_OUTCROPS, ModPlacedFeatures.DUNE_SEA_FOSSILS,
                 ModPlacedFeatures.DUNE_SEA_BONES), own(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.LOCAL_MODIFICATIONS));
         assertEquals(List.of(ModPlacedFeatures.DUNE_SEA_VEGETATION, ModPlacedFeatures.DUNE_SEA_VALLEY_FLORA, ModPlacedFeatures.DUNE_SEA_VALLEY_GRASS,
-                ModPlacedFeatures.DUNE_SEA_CACTUS_GROUPS), own(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.VEGETAL_DECORATION));
+                ModPlacedFeatures.DUNE_SEA_CACTUS_GROUPS, Ring2FlatsLifeFeatures.DUNE_SEA_THICKETS, Ring2FlatsLifeFeatures.DUNE_SEA_BURIED_TREES),
+                own(biomes.get(ModBiomes.DUNE_SEA), GenerationStep.Decoration.VEGETAL_DECORATION));
         // The oasis flowers and shrubs after the palms (a standing palm blocks a shrub, never the other way round).
         List<ResourceKey<PlacedFeature>> oasisPlants = Ring2Biomes.OASIS_VEGETATION;
         for (ResourceKey<PlacedFeature> late : List.of(ModPlacedFeatures.OASIS_FLOWERS_WARM, ModPlacedFeatures.OASIS_FLOWERS_WHITE,

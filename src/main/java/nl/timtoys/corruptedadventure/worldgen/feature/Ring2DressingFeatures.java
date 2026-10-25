@@ -130,7 +130,8 @@ public final class Ring2DressingFeatures {
 
     public static void placed(BootstrapContext<PlacedFeature> context) {
         HolderGetter<ConfiguredFeature<?, ?>> features = context.lookup(Registries.CONFIGURED_FEATURE);
-        BlockPredicate onSand = BlockPredicate.matchesBlocks(below(), Blocks.SAND);
+        // The red dunes of G2 (G2-R2-2) count as sand.
+        BlockPredicate onSand = BlockPredicate.matchesBlocks(below(), Blocks.SAND, Blocks.RED_SAND);
         BlockPredicate onIsland = BlockPredicate.matchesBlocks(below(), Blocks.SAND, Blocks.RED_SAND);
         BlockPredicate cactus = BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
                 BlockPredicate.wouldSurvive(Blocks.CACTUS.defaultBlockState(), BlockPos.ZERO));
