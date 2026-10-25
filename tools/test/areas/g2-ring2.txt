@@ -1,0 +1,29 @@
+# G2 ring 2 walk (opknapbeurt ring 2, 2026-10-25): 2-3 spots per ring 2 biome plus the boundaries 1->2 and 2->3, for
+# world.sh (generate first) and the photo walk (docs/plans/ring-2/g2-walk.md). Chunk coordinates, inclusive; seed 20260930,
+# default ring radii (CommonConfig: 1500, 3500; zones 128 wide, boundary noise +-96). 11 x 11 chunks round each spot.
+# Spots from the W checklists of changes 27, 30, 30b and 30c (same biome layout since change 30).
+# canyonlands: canyon floor (1980 356), mesas (2952 -954), wall spring (2257 -990)
+canyon 118 17 128 27
+mesa 179 -65 189 -55
+spring 136 -67 146 -57
+# oasis_flats: biggest pool (918 -2376), the western oasis next to the dunes (-2560 1280)
+oasis 52 -154 62 -144
+oasisw -165 75 -155 85
+# hoodoo_fields: the field (2420 719), the scarp canyon plateau -> hoodoo floor (2368 370)
+hoodoo 146 39 156 49
+hscarp 143 18 153 28
+# salt_flats: the measured salt flat (-2700 -1560), the eastern one (2750 1050)
+salt -174 -103 -164 -93
+salte 166 60 176 70
+# dune_sea: high dunes (-2144 579, 2700 -1408), low dunes (-2445 545), mini-oases and the cactus field (2700 -110)
+dunes -139 31 -129 41
+duneslow -158 29 -148 39
+dunese 163 -93 173 -83
+duneoases 163 -12 173 -2
+# zone 1->2 (withered_expanse, r 1436-1564 + noise) east and north
+z12e 86 -4 100 4
+z12n -4 -100 4 -86
+# zone 2->3 (dry_riverbeds, r 3436-3564 + noise) east, south and south-west (r 3500 at -2475 2475)
+z23e 211 -4 225 4
+z23s -4 211 4 225
+z23sw -160 149 -150 159
