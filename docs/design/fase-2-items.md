@@ -108,7 +108,7 @@ testscript.
   `raw_tidesilver_block`, `raw_nullite_block`; als `raw_iron_block`), metaal (`sunstone_block`, `volcanite_block`,
   `tidesilver_block`, `nullite_block`; als `iron_block`) en edelsteen (`turquoise_block`, `fire_ruby_block`,
   `jade_block`; als `diamond_block`). Mijnbaar met dezelfde tier als hun erts (ring 2: diamant; ring 3–5 volgen de
-  tier-tags uit §4.3). **Voorlopig:** geen beacon-basis en geen beacon-betaling (backlog).
+  tier-tags uit §4.3). Geen beacon-basis en geen beacon-betaling (bevestigd door de gebruiker, 2026-10-25).
 - **Zout en kristallen:** 4 zout ↔ zoutblok (beide kanten op). 4 scherven → kristalblok voor vuurkristal, gifkristal,
   aquamarijn en zuiverkristal, zoals amethist (geen weg terug).
 - **Smelten (oven + hoogoven):** elk raw-item en elk erts (alle gesteente-varianten) naar zijn product: zonnesteen,
@@ -124,7 +124,7 @@ met ids in onze namespace. Code in `datagen/recipe/` (`WoodSetRecipes`, `StoneSe
   verdant en corrupted. Planken uit de log-tag (4), hout/hyphae uit 4 stammen (3, ook gestript), trap, plaat, hek,
   poort, deur, valluik, knop en drukplaat; corrupted ook bord en hangbord. Stokken, werkbank, kist, houten tools en
   houtskool komen al via de vanilla-tags.
-- **Verdorde moonpetal (voorlopig):** heeft geen eigen planken; zijn stammen geven moonpetal-planken
+- **Verdorde moonpetal (bevestigd door de gebruiker, 2026-10-25):** heeft geen eigen planken; zijn stammen geven moonpetal-planken
   (`moonpetal_planks_from_withered_moonpetal_logs`), en 4 stammen geven het eigen (gestripte) verdorde hout.
 - **Steensets zoals tuf** (vormen aan de werkbank, 4 van een trede → 4 van de volgende, steenzaag van een trede naar
   elke latere trede en alle vormen): puimsteen, koude lava, tidestone (tidestone → gepolijst → bakstenen),
@@ -132,11 +132,11 @@ met ids in onze namespace. Code in `datagen/recipe/` (`WoodSetRecipes`, `StoneSe
   4 zout ↔ zoutblok is stroom D).
 - **Keien:** kloofkeien, cobbled tidestone en corrupted keien hebben hun vormen en smelten terug naar hun steen
   (0,1 XP, 200 ticks). Kloofkeien smelten naar **oranje** kloofsteen (de middelste tint en de kaartkleur van de keien;
-  voorlopig). Kloofstenen bakstenen komen uit elke mix van de drie tinten (2×2), en elke tint geeft aan de steenzaag de
+  bevestigd door de gebruiker, 2026-10-25). Kloofstenen bakstenen komen uit elke mix van de drie tinten (2×2), en elke tint geeft aan de steenzaag de
   bakstenen en hun vormen.
 - **Mossy tidestone:** tidestone + ranken of mosblok (zoals mossy cobblestone, met zijn eigen vormen).
 - **Zandsteen:** scorched sandstone krijgt de recepten van vanilla-zandsteen, maar **geen pakrecept**: ring 2 heeft geen
-  eigen zand (`loose_sand` laat vanilla-zand vallen), dus de basis komt alleen uit de wereld (voorlopig). Lagoon
+  eigen zand (`loose_sand` laat vanilla-zand vallen), dus de basis komt alleen uit de wereld (bevestigd door de gebruiker, 2026-10-25). Lagoon
   sandstone houdt zijn pakrecept en glas uit lagoon-zand.
 - **Overig:** `packed_nether_ice` uit 9 `nether_ice` (zoals packed ice); `desert_flower` → 1 oranje kleurstof.
 - **Bewust geen recept:** `dripshroom_lamp` (shroomlight heeft er ook geen), `dripshroom_cap`/`rimeshroom_cap` (geen
@@ -186,8 +186,8 @@ bevat de needs-tags van de hogere tiers.
 **Upgrade-templates (placeholder).** `sunstone_upgrade_smithing_template`, `volcanite_…`, `tidesilver_…`,
 `nullite_…`: `SmithingTemplateItem` zoals de netherite-upgrade (item heet "Smithing Template", de tooltip noemt de
 upgrade). Nog geen smithing-recept en geen vindplaats (golf 2–5). In de creative-tab van de ring van hun tier.
-- *Voorlopig:* de tooltip zegt dat zonnesteen **diamanten** uitrusting opwaardeert (een alternatief pad naast netherite)
-  en elke volgende tier de uitrusting van de tier ervoor. Of zonnesteen uit diamant of uit netherite komt, beslist golf 2.
+- Zonnesteen waardeert **diamanten** uitrusting op (een alternatief pad naast netherite) (bevestigd door de gebruiker, 2026-10-25), en elke volgende tier
+  de uitrusting van de tier ervoor; de tooltip zegt dat ook.
 ### 4.4 Coatings (C)
 Gebouwd in fase 2 golf 1 (stroom C). Technische uitwerking van §1.3 en §4.
 - **Vorm:** elke coating is een vanilla armor-trim-patroon (`trim_pattern`, datapack-registry via datagen):
@@ -198,10 +198,9 @@ Gebouwd in fase 2 golf 1 (stroom C). Technische uitwerking van §1.3 en §4.
 - **Materiaal = trim-materiaal:** elk coatingmateriaal is een eigen `trim_material` met een eigen kleurenpalet. Zo
   maakt vanilla's `smithing_trim`-recept het harnas, en tekent vanilla de coating in de kleur van het materiaal.
   - hitte = dauwkristal, gif = oerijs, void én stilte = witte kern (zelfde materiaal, ander patroon);
-  - **voorlopig:** uitdroging = turkoois (de geslepen edelsteen `turquoise`; bij de merge van golf 1 omgezet van `raw_turquoise`), kou = vuurkristal (warmte tegen kou). Golf 2 en golf 4 kiezen het echte
-    materiaal; dan wijzigt alleen `CoatingMaterial`.
+  - uitdroging = turkoois (de geslepen edelsteen `turquoise`), kou = vuurkristal (warmte tegen kou) (bevestigd door de gebruiker, 2026-10-25).
   - De materialen staan **niet** in `#minecraft:trim_materials`: vanilla-templates nemen ze niet (geen decoratieve
-    dauwkristal-trim), en per coating is er één recept dat precies zijn eigen materiaal neemt. Een `trim_material` is
+    dauwkristal-trim; bevestigd door de gebruiker, 2026-10-25), en per coating is er één recept dat precies zijn eigen materiaal neemt. Een `trim_material` is
     wel nodig, want vanilla zoekt bij het smeden het materiaal op via het extra item.
   - De itemmodellen van harnassen tonen bij een trim alleen het materiaal (niet het patroon), via vanilla's
     `item_model_index`. Elk materiaal leent de index van het vanilla-materiaal met de dichtste kleur, zodat de

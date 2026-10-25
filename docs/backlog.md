@@ -533,18 +533,18 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [worldgen] Chunk-generatietijd per ring meten (perf, onderdeel van change 100): overgeslagen op verzoek van de gebruiker, in te halen (`tools/test/perf.sh`, `areas/perf*.txt`). (bron: change 100)
 - [worldgen] Portaaltest ring 3 oost (wereld `f1end-r3`, frame 4752 89 23 in het bladerdak van `ember_woods`, aan een chunkrand): een via RCON gebouwd obsidiaanframe was na de heen- en terugreis weg (lucht, met bladeren erin), het spel maakte een nieuw portaal op 57 blokken. Eén keer gezien, zuid en de herhaling oost hielden het frame. Reproduceren: blijft spelersbouw in ring 3 staan als een buurchunk later decoreert? (bron: change 100)
 - [items] Opslagblokken voor zwavel, zielkristal, dauwkristal, witte kern en glitchscherven: niet in golf 1; per golf beslissen samen met het nut van het materiaal. (bron: fase 2 golf 1, D)
-- [items] Beacon: de metaal- en edelsteenblokken van golf 1 in `#beacon_base_blocks` en de ingots/edelstenen in `#beacon_payment_items` (vanilla doet dat voor ijzer, goud, smaragd, diamant, netherite)? Nu niet. (bron: fase 2 golf 1, D)
+- [items] Beacon: de metaal- en edelsteenblokken van golf 1 in `#beacon_base_blocks` en de ingots/edelstenen in `#beacon_payment_items` (vanilla doet dat voor ijzer, goud, smaragd, diamant, netherite)? Nu niet. (bron: fase 2 golf 1, D) — **Besloten (gebruiker, 2026-10-25):** geen beacon voor de golf 1-materialen.
 - [textures] Placeholder-textures van de golf 1-materialen (4 ingots, `turquoise`, 12 opslagblokken, `tools/textures/Golf1MaterialTextures.java`): definitieve stijl per ring. (bron: fase 2 golf 1, D)
 
 ## Uit fase 2 golf 1, stroom B (tier-raamwerk, 2026-10-25)
-- [items] Upgrade-templates: vindplaats per tier (Nether-ring-loot, recept of drop) en het smithing-recept (gear vorige tier + ingot + template); en of zonnesteen diamanten of netherite-gear opwaardeert (tooltip zegt nu voorlopig diamant). (bron: f2 golf 1 B)
+- [items] Upgrade-templates: vindplaats per tier (Nether-ring-loot, recept of drop) en het smithing-recept (gear vorige tier + ingot + template). Zonnesteen waardeert diamanten gear op (bevestigd door de gebruiker, 2026-10-25). (bron: f2 golf 1 B)
 - [items] Ring 3-, 4-, 5- en Nether-5-ertsen zijn tot de bijbehorende tier-tools (golf 2–4) in survival niet te mijnen; testers via creatief of `/give`. (bron: f2 golf 1 B)
 - [items] Zwavelerts vraagt nu zonnesteen (was steen): vroeg zwavel komt alleen nog uit de oppervlakte-kristallen (`sulfur_crystal`); meenemen in de zwavelbalans van golf 3. (bron: f2 golf 1 B)
 - [textures] Harnas-layer-textures `textures/models/armor/<tier>_layer_1/2.png` komen met de harnasstukken (de armor materials verwijzen er al naar). (bron: f2 golf 1 B)
 - [infra] De GameTest-template `data/corruptedadventure/structure/gametest/empty.nbt` en `gametest/` zitten in de mod-jar (alleen actief met `neoforge.enabledGameTestNamespaces`); eventueel een eigen source set als er meer gametests komen. (bron: f2 golf 1 B)
 
 ## Uit fase 2 golf 1 — coatings (C, 2026-10-25)
-- [items] Echte coatingmaterialen voor uitdroging (golf 2) en kou (golf 4): nu placeholders `turquoise` (de edelsteen) en `fire_crystal` (`CoatingMaterial.TURQUOISE`/`FIRE_CRYSTAL`). (bron: f2 golf 1 C)
+- [items] Echte coatingmaterialen voor uitdroging (golf 2) en kou (golf 4): nu placeholders `turquoise` (de edelsteen) en `fire_crystal` (`CoatingMaterial.TURQUOISE`/`FIRE_CRYSTAL`). (bron: f2 golf 1 C) — **Besloten (gebruiker, 2026-10-25):** turkoois en vuurkristal blijven de definitieve materialen.
 - [items] Vindplaats van het eerste coating-template per golf (loot, recept of drop); het kopie-recept (template + 7 × materiaal + ringsteen → 2) is een placeholder, voor de witte kern mogelijk te duur of te goedkoop. (bron: f2 golf 1 C)
 - [textures] Coating-textures zijn placeholders (`tools/textures/CoatingTextures.java`); het harnas-itemmodel toont bij een coating de overlay van een vanilla-materiaal met de dichtste kleur (geleende `item_model_index`), niet een eigen kleur. Eigen item-overlays vragen eigen armor-itemmodellen met overrides. (bron: f2 golf 1 C)
 - [items] Een coating-patroon met een vreemd trim-materiaal (alleen via commando's of andere mods) heeft geen texture: de atlas kent per coating alleen het eigen materiaal. (bron: f2 golf 1 C)
