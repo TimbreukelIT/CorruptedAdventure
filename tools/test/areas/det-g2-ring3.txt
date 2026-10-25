@@ -1,0 +1,18 @@
+# G2 ring 3 determinism (det.sh, 2026-10-25): one 7 x 7 area per ring 3 biome (the walk spots), steam_fens at the
+# zone 3->4 and one of each biome landmark (positions from /ca landmarks on seed 20260930). Chunk coordinates, inclusive.
+ash1 343 35 349 41
+peak2 236 70 242 76
+sea1 -251 50 -245 56
+bas1 303 -48 309 -42
+emb1 215 -142 221 -136
+sul1 -189 -287 -183 -281
+tit1 -212 149 -206 155
+dor1 -55 244 -49 250
+fens 364 -3 370 3
+giant -84 332 -78 338
+flow -72 -223 -66 -217
+whale -146 250 -140 256
+organ -97 -355 -91 -349
+sinter -112 -197 -106 -191
+weapon -91 275 -85 281
+charred -93 209 -87 215
