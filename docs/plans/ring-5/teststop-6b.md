@@ -1,5 +1,7 @@
 # Teststop 6b — ring 5 golf 2: binnenband, grotten, aankleding, Nether-5, stilte, sfeer, textures (checklist)
 
+**Akkoord 2026-10-25 (gebruiker: 'waanzinnig so far'), op main f765d9df, verse wereld ring5-6b, server + 2 clients, 0 ERROR.**
+
 **Deel 1** (A–J, na INT2 van 2026-10-23): **83b** (binnenband: golvend reliëf en corrupte plekken), **96** (aankleding
 Nether-5), **97** (stilte-meter Nether-5) en **98** (sfeer ring 5 + Nether-5), plus de INT2-fixes (protocol `"10"`,
 voidsteen met `void_mote`). **Deel 2** (K–N, na INT3 van 2026-10-24): **93** (grotten en gespiegelde dubbelgangers),
