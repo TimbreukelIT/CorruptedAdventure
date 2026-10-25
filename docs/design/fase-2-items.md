@@ -96,3 +96,49 @@ testscript.
   - het coatingsysteem: trim-patronen, coating-templates, een `RateModifier` die het harnas leest (server-side) en
     tests.
   - Het raamwerk voor de verbruiksitems schuift naar golf 2, waar de veldfles het eerste voorbeeld is.
+
+### 4.3 Tier-raamwerk (B)
+**Stats (voorlopig, afstemmen in golf 2–5).** Curve: zonnesteen ≈ netherite, daarna per ring een stap. Bron in de code:
+`item/GearTier` (tools: `Tier`; harnas: `registry/ModArmorMaterials`). `GearTierTest` bewaakt de curve (elke tier strikt
+hoger op duurzaamheid, mijnsnelheid en schade, minstens gelijk op de rest; zonnesteen ≥ netherite op elke stat; volledig
+harnas binnen de vanilla-grenzen armor 30 en toughness 20).
+
+| Tier (ring) | Duurzaamheid tools | Mijnsnelheid | Schade-bonus | Enchant | Armor laars/been/borst/helm (dier) | Toughness | Knockback-weerstand | Duurzaamheidsfactor harnas |
+|---|---|---|---|---|---|---|---|---|
+| netherite (ter vergelijking) | 2031 | 9 | 4 | 15 | 3/6/8/3 (11) | 3 | 0,1 | 37 |
+| zonnesteen (2) | 2031 | 9 | 4 | 15 | 3/6/8/3 (11) | 3 | 0,1 | 37 |
+| vulkaniet (3) | 2500 | 10 | 5 | 15 | 4/7/9/4 (12) | 3,5 | 0,1 | 42 |
+| getijdezilver (4) | 3000 | 11 | 6 | 16 | 4/7/10/4 (13) | 4 | 0,15 | 47 |
+| nulliet (5) | 3600 | 12 | 7 | 18 | 5/8/10/5 (14) | 5 | 0,2 | 53 |
+
+- Reparatie met `c:ingots/<tier>` (het ingot van stroom D); equip-geluid en layer zoals netherite. De layer-textures van
+  het harnas komen met de harnasstukken.
+- De tiers zijn een enum die `Tier` implementeert, zoals vanilla's `Tiers` (geen `SimpleTier`-velden): één plek voor de
+  stats van tool en harnas.
+
+**Mijn-gating.** Blok-tags `corruptedadventure:needs_<tier>_tool` en `incorrect_for_<tier>_tool`. De vanilla-tags
+`incorrect_for_{wooden,stone,gold,iron,diamond,netherite}_tool` bevatten al onze needs-tags; `incorrect_for_<tier>_tool`
+bevat de needs-tags van de hogere tiers.
+
+| Ertsen | Vraagt | Tag |
+|---|---|---|
+| Nether-1: zielkristal (2 varianten) | ijzer (ring 1, ongewijzigd) | `minecraft:needs_iron_tool` |
+| ring 2: zonnesteen (4), turkoois (3) | diamant (netherite mag) | `minecraft:needs_diamond_tool` |
+| ring 3: vulkaniet (3), zwavel (2), vuurrobijn (3) | zonnesteen | `needs_sunstone_tool` |
+| ring 4: getijdezilver (3), jade (3) | vulkaniet | `needs_volcanite_tool` |
+| ring 5: nulliet (2); Nether-5: witte kern (1) | getijdezilver | `needs_tidesilver_tool` |
+| — | nulliet | `needs_nullite_tool` (leeg, voor later) |
+
+- Nether-2, -3 en -4 hebben geen echte ertsen (alleen kristallen/clusters), dus geen gating daar.
+- **Zwavel** vroeg eerst een stenen pickaxe en vraagt nu, als ring 3-erts, zonnesteen (zoals besloten: álle ring-ertsen).
+  Zwavelkristallen aan het oppervlak (`sulfur_crystal`) blijven vrij te oogsten.
+- **Gevolg in golf 1:** er zijn nog geen zonnesteen-tools, dus de ertsen van ring 3, 4, 5 en Nether-5 zijn in survival
+  tijdelijk niet te mijnen (ze breken traag en droppen niets). Zo bedoeld: de tools komen per golf.
+- Test: `gametest/TierGatingGameTests` (GameTest met de echte tags; elk eigen erts × de pickaxe-ladder; een tier-pickaxe
+  is een netherite-pickaxe met de `tool`-component van de tier) en `GearTierTest` (gegenereerde tags).
+
+**Upgrade-templates (placeholder).** `sunstone_upgrade_smithing_template`, `volcanite_…`, `tidesilver_…`,
+`nullite_…`: `SmithingTemplateItem` zoals de netherite-upgrade (item heet "Smithing Template", de tooltip noemt de
+upgrade). Nog geen smithing-recept en geen vindplaats (golf 2–5). In de creative-tab van de ring van hun tier.
+- *Voorlopig:* de tooltip zegt dat zonnesteen **diamanten** uitrusting opwaardeert (een alternatief pad naast netherite)
+  en elke volgende tier de uitrusting van de tier ervoor. Of zonnesteen uit diamant of uit netherite komt, beslist golf 2.

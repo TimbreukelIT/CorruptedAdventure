@@ -519,19 +519,19 @@ public final class ModBlocks {
 
     // Ores: one block per host rock (stone, deepslate, basalt; no blackstone). One step above ring 2: half a point
     // harder than the vanilla ore of that host, more XP.
-    /** Volcanite, ring 3's main metal: iron pickaxe, XP 3–6, matte; drops {@link ModItems#RAW_VOLCANITE}. */
+    /** Volcanite, ring 3's main metal: sunstone pickaxe (phase 2), XP 3–6, matte; drops {@link ModItems#RAW_VOLCANITE}. */
     public static final DeferredBlock<DropExperienceBlock> VOLCANITE_ORE = register("volcanite_ore",
             () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.IRON_ORE, RING_3_ORE_EXTRA_HARDNESS)));
     public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_VOLCANITE_ORE = register("deepslate_volcanite_ore",
             () -> new DropExperienceBlock(UniformInt.of(3, 6), oreIn(Blocks.DEEPSLATE_IRON_ORE, RING_3_ORE_EXTRA_HARDNESS)));
     public static final DeferredBlock<DropExperienceBlock> BASALT_VOLCANITE_ORE = register("basalt_volcanite_ore",
             () -> new DropExperienceBlock(UniformInt.of(3, 6), oreInBasalt(Blocks.IRON_ORE)));
-    /** Sulfur: any stone pickaxe, XP 1–3, matte; drops several {@link ModItems#SULFUR}. */
+    /** Sulfur: sunstone pickaxe (phase 2), XP 1–3, matte; drops several {@link ModItems#SULFUR}. */
     public static final DeferredBlock<DropExperienceBlock> SULFUR_ORE = register("sulfur_ore",
             () -> new DropExperienceBlock(UniformInt.of(1, 3), oreIn(Blocks.COAL_ORE, RING_3_ORE_EXTRA_HARDNESS)));
     public static final DeferredBlock<DropExperienceBlock> BASALT_SULFUR_ORE = register("basalt_sulfur_ore",
             () -> new DropExperienceBlock(UniformInt.of(1, 3), oreInBasalt(Blocks.COAL_ORE)));
-    /** Fire ruby, a rare gem: iron pickaxe, XP 4–8, faint glow (light 3, emissive overlay); drops {@link ModItems#FIRE_RUBY}. */
+    /** Fire ruby, a rare gem: sunstone pickaxe (phase 2), XP 4–8, faint glow (light 3, emissive overlay); drops {@link ModItems#FIRE_RUBY}. */
     public static final DeferredBlock<DropExperienceBlock> FIRE_RUBY_ORE = register("fire_ruby_ore",
             () -> new DropExperienceBlock(UniformInt.of(4, 8), oreIn(Blocks.IRON_ORE, RING_3_ORE_EXTRA_HARDNESS).lightLevel(state -> 3)));
     public static final DeferredBlock<DropExperienceBlock> DEEPSLATE_FIRE_RUBY_ORE = register("deepslate_fire_ruby_ore",
@@ -807,7 +807,7 @@ public final class ModBlocks {
             () -> new BubbleSpringBlock(tidestone(Blocks.STONE)));
 
     // Ores (package 67): one block per host rock (stone, tidestone, deepslate). A clear step above ring 3 (decision golf
-    // 1, V3 = B): a whole point harder than the vanilla ore of that host and a diamond pickaxe.
+    // 1, V3 = B): a whole point harder than the vanilla ore of that host; a volcanite pickaxe (phase 2, was diamond).
     /** Tidesilver, ring 4's mythical metal: XP 4–7, faint glow (light 3, emissive overlay); drops {@link ModItems#RAW_TIDESILVER}. */
     public static final DeferredBlock<DropExperienceBlock> TIDESILVER_ORE = register("tidesilver_ore",
             () -> new DropExperienceBlock(UniformInt.of(4, 7), oreIn(Blocks.IRON_ORE, RING_4_ORE_EXTRA_HARDNESS).lightLevel(state -> 3)));
@@ -1169,8 +1169,8 @@ public final class ModBlocks {
     /** Black rock with stars: deepslate's strength and sound, a rare void mote out of an open face. */
     public static final DeferredBlock<VoidstoneBlock> VOIDSTONE = register("voidstone",
             () -> new VoidstoneBlock(recolored(Blocks.DEEPSLATE, MapColor.COLOR_BLACK)));
-    // Nullite (OV2 = A): one step above ring 4 without netherite, 1.5 harder than the vanilla ore of the host and a
-    // diamond pickaxe, XP 5-9. Its crystals are faintly emissive in the model, without block light.
+    // Nullite (OV2 = A): one step above ring 4 without netherite, 1.5 harder than the vanilla ore of the host, a
+    // tidesilver pickaxe (phase 2, was diamond), XP 5-9. Its crystals are faintly emissive in the model, without block light.
     /** Nullite in corrupted stone; drops {@link ModItems#RAW_NULLITE}. */
     public static final DeferredBlock<DropExperienceBlock> NULLITE_ORE = register("nullite_ore",
             () -> new DropExperienceBlock(UniformInt.of(5, 9), oreIn(Blocks.DIAMOND_ORE, RING_5_ORE_EXTRA_HARDNESS)
@@ -1221,7 +1221,7 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> STILL_LIGHT = register("still_light",
             () -> new Block(recolored(Blocks.SHROOMLIGHT, WHITE_STONE_COLOR).sound(SoundType.GLASS)));
     /**
-     * The white core in white stone (OV2 = A): diamond ore +1.5, a diamond pickaxe, XP 6-10, a soft glow (light 3, and
+     * The white core in white stone (OV2 = A): diamond ore +1.5, a tidesilver pickaxe (phase 2), XP 6-10, a soft glow (light 3, and
      * an emissive overlay); drops {@link ModItems#WHITE_CORE}.
      */
     public static final DeferredBlock<DropExperienceBlock> WHITE_CORE_ORE = register("white_core_ore",
