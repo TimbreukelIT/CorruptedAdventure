@@ -57,6 +57,7 @@ import nl.timtoys.corruptedadventure.block.BarrelCactusBlock;
 import nl.timtoys.corruptedadventure.block.BoilingMudBlock;
 import nl.timtoys.corruptedadventure.block.BubbleSpringBlock;
 import nl.timtoys.corruptedadventure.block.BuddingCrystalBlock;
+import nl.timtoys.corruptedadventure.block.CharredShrubBlock;
 import nl.timtoys.corruptedadventure.block.GiantLilyPadBlock;
 import nl.timtoys.corruptedadventure.block.GlowcapBlock;
 import nl.timtoys.corruptedadventure.block.HangingSwampMossBlock;
@@ -505,6 +506,13 @@ public final class ModBlocks {
     public static final DeferredBlock<AshSproutsBlock> ASH_SPROUTS = register("ash_sprouts",
             () -> new AshSproutsBlock(Properties.ofFullCopy(Blocks.NETHER_SPROUTS).mapColor(MapColor.COLOR_GRAY)
                     .offsetType(BlockBehaviour.OffsetType.XYZ)));
+    /**
+     * G2 ring 3 (decision 4 = A): the fire flora of the bare plains. Nether sprouts' behaviour (replaceable, instant,
+     * not ignited by lava) in a dead bush outline; on ash, pumice and basalt.
+     */
+    public static final DeferredBlock<CharredShrubBlock> CHARRED_SHRUB = register("charred_shrub",
+            () -> new CharredShrubBlock(Properties.ofFullCopy(Blocks.NETHER_SPROUTS).mapColor(MapColor.COLOR_BLACK)
+                    .sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ)));
     /** Sweet berry bush properties (random ticks: it grows back after picking); rare, ember woods and dormant calderas. */
     public static final DeferredBlock<EmberBerryBushBlock> EMBER_BERRY_BUSH = register("ember_berry_bush",
             () -> new EmberBerryBushBlock(Properties.ofFullCopy(Blocks.SWEET_BERRY_BUSH).mapColor(MapColor.COLOR_ORANGE)));

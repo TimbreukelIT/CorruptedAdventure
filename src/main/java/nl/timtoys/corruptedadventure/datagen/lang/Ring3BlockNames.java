@@ -46,6 +46,7 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.FIRE_BLOOM, "Fire Bloom");
         lang.addBlock(ModBlocks.POTTED_FIRE_BLOOM, "Potted Fire Bloom");
         lang.addBlock(ModBlocks.ASH_SPROUTS, "Ash Sprouts");
+        lang.addBlock(ModBlocks.CHARRED_SHRUB, "Charred Shrub");
         lang.addBlock(ModBlocks.EMBER_BERRY_BUSH, "Ember Berry Bush");
         lang.addBlock(ModBlocks.VOLCANITE_ORE, "Volcanite Ore");
         lang.addBlock(ModBlocks.DEEPSLATE_VOLCANITE_ORE, "Deepslate Volcanite Ore");
@@ -145,6 +146,7 @@ public final class Ring3BlockNames {
         lang.addBlock(ModBlocks.FIRE_BLOOM, "Vuurbloem");
         lang.addBlock(ModBlocks.POTTED_FIRE_BLOOM, "Opgepotte vuurbloem");
         lang.addBlock(ModBlocks.ASH_SPROUTS, "Askruid");
+        lang.addBlock(ModBlocks.CHARRED_SHRUB, "Verkoolde struik");
         lang.addBlock(ModBlocks.EMBER_BERRY_BUSH, "Gloeibesstruik");
         // Vanilla pattern: "Diepleisteen-ijzererts", "Ruw ijzer".
         lang.addBlock(ModBlocks.VOLCANITE_ORE, "Vulkanieterts");

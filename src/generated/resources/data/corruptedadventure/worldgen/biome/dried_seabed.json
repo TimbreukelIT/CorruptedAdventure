@@ -34,6 +34,11 @@
       "corruptedadventure:ring_3/dried_seabed_coral_reefs",
       "corruptedadventure:ring_3/dried_seabed_kelp_bales",
       "corruptedadventure:ring_3/dried_seabed_fossils",
+      "corruptedadventure:ring_3/dried_seabed_debris_fans",
+      "corruptedadventure:ring_3/dried_seabed_ground_boulders",
+      "corruptedadventure:ring_3/dried_seabed_ground_stones",
+      "corruptedadventure:ring_3/dried_seabed_loose_bones",
+      "corruptedadventure:ring_3/dried_seabed_shell_banks",
       "corruptedadventure:ring_3/ash_drifts",
       "corruptedadventure:ring_3/lava_falls",
       "corruptedadventure:ring_3/island_ember_patches",
@@ -50,6 +55,8 @@
     [
       "corruptedadventure:ring_3/dried_seabed_dead_coral",
       "corruptedadventure:ring_3/dried_seabed_dead_bushes",
+      "corruptedadventure:ring_3/dried_seabed_loose_coral",
+      "corruptedadventure:ring_3/dried_seabed_clay_flat_bushes",
       "corruptedadventure:ring_3/island_ember_trees"
     ]
   ],

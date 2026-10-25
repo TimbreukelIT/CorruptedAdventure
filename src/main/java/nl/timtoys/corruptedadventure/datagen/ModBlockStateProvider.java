@@ -565,6 +565,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
         simpleBlock(ModBlocks.POTTED_FIRE_BLOOM.get(), models().flowerPotCross("potted_fire_bloom",
                 blockTexture(ModBlocks.FIRE_BLOOM.get())).renderType("cutout"));
         cross(ModBlocks.ASH_SPROUTS.get());
+        cross(ModBlocks.CHARRED_SHRUB.get());
         // Like vanilla's sweet berry bush: one cross model per age.
         getVariantBuilder(ModBlocks.EMBER_BERRY_BUSH.get()).forAllStates(state -> {
             String name = "ember_berry_bush_stage" + state.getValue(SweetBerryBushBlock.AGE);

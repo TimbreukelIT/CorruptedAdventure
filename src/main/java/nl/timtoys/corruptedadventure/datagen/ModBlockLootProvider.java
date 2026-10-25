@@ -438,6 +438,9 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         dropPottedContents(ModBlocks.POTTED_FIRE_BLOOM.get());
         // Like nether sprouts: only with shears.
         add(ModBlocks.ASH_SPROUTS.get(), BlockLootSubProvider::createShearsOnlyDrop);
+        // Like vanilla's dead bush (and ring 2's dry shrub): itself with shears, otherwise 0-2 sticks.
+        add(ModBlocks.CHARRED_SHRUB.get(), block -> createShearsDispatchTable(block, applyExplosionDecay(block,
+                LootItem.lootTableItem(Items.STICK).apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 2.0F))))));
         add(ModBlocks.EMBER_BERRY_BUSH.get(), this::createBerryBushTable);
 
         // Like iron ore -> raw iron / diamond ore -> diamond: one item (Fortune), Silk Touch -> the ore itself.

@@ -32,6 +32,12 @@
     [],
     [],
     [
+      "corruptedadventure:ring_3/titan_fields_debris_fans",
+      "corruptedadventure:ring_3/titan_fields_ground_boulders",
+      "corruptedadventure:ring_3/titan_fields_ground_stones",
+      "corruptedadventure:ring_3/titan_fields_bone_field_bones",
+      "corruptedadventure:ring_3/titan_fields_loose_bones",
+      "corruptedadventure:ring_3/titan_fields_plain_soul_fire",
       "corruptedadventure:ring_3/titan_fields_skulls",
       "corruptedadventure:ring_3/titan_fields_bones",
       "corruptedadventure:ring_3/titan_fields_soul_fire",
@@ -53,6 +59,7 @@
     ],
     [],
     [
+      "corruptedadventure:ring_3/charred_shrubs",
       "corruptedadventure:ring_3/island_ember_trees"
     ]
   ],

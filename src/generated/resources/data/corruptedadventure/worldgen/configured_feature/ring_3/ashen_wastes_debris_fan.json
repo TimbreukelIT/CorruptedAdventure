@@ -1,0 +1,73 @@
+{
+  "type": "corruptedadventure:ground_patch",
+  "config": {
+    "depth": 1,
+    "material": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:gravel"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:tuff"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:blackstone"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 4,
+      "min_inclusive": 2
+    },
+    "raise": {
+      "type": "minecraft:uniform",
+      "max_inclusive": 1,
+      "min_inclusive": 0
+    },
+    "raised": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:gravel"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:tuff"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:blackstone"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "replaceable": [
+      "corruptedadventure:ash_block",
+      "corruptedadventure:pumice",
+      "minecraft:gravel",
+      "minecraft:basalt",
+      "minecraft:smooth_basalt",
+      "minecraft:tuff",
+      "corruptedadventure:smoldering_ash",
+      "minecraft:coarse_dirt"
+    ],
+    "stretch": 1.6
+  }
+}

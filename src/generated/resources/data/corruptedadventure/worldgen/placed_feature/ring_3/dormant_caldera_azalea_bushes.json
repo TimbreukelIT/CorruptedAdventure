@@ -4,7 +4,13 @@
     {
       "type": "corruptedadventure:jittered_grid",
       "cell_size": 4,
-      "chance": 0.3
+      "chance": 0.7,
+      "density": {
+        "floor": 0.08,
+        "high": 0.2,
+        "low": -0.15,
+        "noise": "corruptedadventure:ring_3_caldera_growth"
+      }
     },
     {
       "type": "minecraft:heightmap",

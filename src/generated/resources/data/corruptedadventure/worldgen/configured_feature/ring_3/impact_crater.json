@@ -29,7 +29,8 @@
       "minecraft:smooth_basalt",
       "minecraft:blackstone",
       "corruptedadventure:ash_block",
-      "corruptedadventure:pumice"
+      "corruptedadventure:pumice",
+      "minecraft:tuff"
     ],
     "radius": {
       "type": "minecraft:uniform",

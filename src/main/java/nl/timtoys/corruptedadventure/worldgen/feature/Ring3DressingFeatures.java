@@ -149,9 +149,10 @@ public final class Ring3DressingFeatures {
                 ConstantInt.ZERO, BlockStateProvider.simple(ModBlocks.BOILING_MUD.get())));
 
         // Basalt flows (G2-WB8): long lobes of cooled lava, spatter cones with a glowing cap, smouldering vents, boulders.
+        // G2: every tongue has a lobe of one block of relief on its core (no flat stains).
         FeatureUtils.register(context, LAVA_TONGUE, ModFeatures.GROUND_PATCH.get(), new GroundPatchConfiguration(
                 BlockStateProvider.simple(Blocks.BLACKSTONE), basaltGround, UniformInt.of(2, 3), 2.5F, UniformInt.of(1, 2),
-                UniformInt.of(0, 1), weighted(SimpleWeightedRandomList.<BlockState>builder()
+                ConstantInt.of(1), weighted(SimpleWeightedRandomList.<BlockState>builder()
                         .add(Blocks.BLACKSTONE.defaultBlockState(), 4)
                         .add(Blocks.POLISHED_BLACKSTONE.defaultBlockState(), 1))));
         FeatureUtils.register(context, HORNITO, ModFeatures.HORNITO.get(), new HornitoConfiguration(
@@ -177,11 +178,13 @@ public final class Ring3DressingFeatures {
                         .add(Blocks.BLACKSTONE.defaultBlockState(), 1)), UniformInt.of(1, 3)));
 
         // Dried seabed (G2-WB7): dead reefs on the ridges, kelp bales and dead bushes in the bowl, sea monster fossils.
+        // G2: larger, higher reefs; the kelp bales half sunk in the sand (a patch of kelp with a block on its core).
+        HolderSet<Block> seabedFloor = blocks(Blocks.SAND, Blocks.GRAVEL, Blocks.CLAY, ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get());
         FeatureUtils.register(context, CORAL_REEF, ModFeatures.GROUND_PATCH.get(), new GroundPatchConfiguration(
-                deadCoralBlocks(), blocks(Blocks.SAND, Blocks.GRAVEL, Blocks.CLAY, ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get()),
-                UniformInt.of(2, 4), 1.6F, ConstantInt.of(1), UniformInt.of(1, 2), deadCoralBlocks()));
-        FeatureUtils.register(context, KELP_BALE, ModFeatures.RUBBLE.get(), new RubbleConfiguration(
-                BlockStateProvider.simple(Blocks.DRIED_KELP_BLOCK), UniformInt.of(1, 2)));
+                deadCoralBlocks(), seabedFloor, UniformInt.of(3, 5), 1.4F, ConstantInt.of(1), UniformInt.of(1, 3), deadCoralBlocks()));
+        FeatureUtils.register(context, KELP_BALE, ModFeatures.GROUND_PATCH.get(), new GroundPatchConfiguration(
+                BlockStateProvider.simple(Blocks.DRIED_KELP_BLOCK), seabedFloor, UniformInt.of(1, 2), 1.3F, ConstantInt.of(1),
+                UniformInt.of(0, 1), BlockStateProvider.simple(Blocks.DRIED_KELP_BLOCK)));
         FeatureUtils.register(context, SEA_FOSSIL, ModFeatures.SURFACE_FOSSIL.get(), new SurfaceFossilConfiguration(
                 List.of(template("sea_serpent_1"), template("sea_serpent_2"), template("sea_serpent_3"), template("sea_skull_1"), template("sea_skull_2")),
                 UniformFloat.of(0.3F, 0.6F), 0.85F, blocks(Blocks.SAND, Blocks.GRAVEL, Blocks.CLAY, ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get())));
@@ -207,7 +210,7 @@ public final class Ring3DressingFeatures {
                         .add(Blocks.OBSIDIAN.defaultBlockState(), 4)
                         .add(Blocks.CRYING_OBSIDIAN.defaultBlockState(), 1)),
                 0.3F, Blocks.MAGMA_BLOCK.defaultBlockState(),
-                blocks(Blocks.BASALT, Blocks.SMOOTH_BASALT, Blocks.BLACKSTONE, ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get())));
+                blocks(Blocks.BASALT, Blocks.SMOOTH_BASALT, Blocks.BLACKSTONE, ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get(), Blocks.TUFF)));
         FeatureUtils.register(context, BLACKSTONE_ROCK, ModFeatures.RUBBLE.get(), new RubbleConfiguration(weighted(
                 SimpleWeightedRandomList.<BlockState>builder()
                         .add(Blocks.BLACKSTONE.defaultBlockState(), 3)
@@ -251,28 +254,35 @@ public final class Ring3DressingFeatures {
                 JitteredGridPlacement.of(8, 2, 0.15F), SURFACE, SlopeFilter.flat(2, 1), ground, BiomeFilter.biome());
         PlacementUtils.register(context, BASALT_FLOWS_BOULDERS, features.getOrThrow(BASALT_BOULDER),
                 JitteredGridPlacement.of(8, 2, 0.15F), SURFACE, ground, BiomeFilter.biome());
-        // Dried seabed: reefs on the crests (nothing higher within 6, lower ground within 4).
+        // Dried seabed: reefs on the crests (nothing more than 1 higher within 6, lower ground within 4; G2: more of them).
         PlacementUtils.register(context, DRIED_SEABED_CORAL_REEFS, features.getOrThrow(CORAL_REEF),
-                JitteredGridPlacement.of(16, 5, 0.7F), SURFACE, new SlopeFilter(6, SlopeFilter.Measure.RISE, Integer.MIN_VALUE, 0),
+                JitteredGridPlacement.of(16, 5, 0.9F), SURFACE, new SlopeFilter(6, SlopeFilter.Measure.RISE, Integer.MIN_VALUE, 1),
                 new SlopeFilter(4, SlopeFilter.Measure.RELIEF, 2, Integer.MAX_VALUE), ground, BiomeFilter.biome());
+        // G2: kelp bales in clumps, not evenly strewn.
         PlacementUtils.register(context, DRIED_SEABED_KELP_BALES, features.getOrThrow(KELP_BALE),
-                JitteredGridPlacement.of(8, 2, 0.12F), SURFACE, ground, BiomeFilter.biome());
+                JitteredGridPlacement.of(8, 3, 0.4F, Ring3GroundFeatures.clumps(7, 6.0, 0.2, 0.4).withFloor(0.1)), SURFACE, ground,
+                BiomeFilter.biome());
         PlacementUtils.register(context, DRIED_SEABED_FOSSILS, features.getOrThrow(SEA_FOSSIL),
                 JitteredGridPlacement.of(16, 1, 0.12F), SURFACE, SlopeFilter.flat(3, 2), ground, BiomeFilter.biome());
         // Ash plain: pumice boulders; charred dead trees in the gullies (before the drifts, which then lie around them).
+        // G2: the pumice boulders in clumps (the pumice field adds many more, Ring3GroundFeatures).
         PlacementUtils.register(context, ASHEN_WASTES_PUMICE_BOULDERS, features.getOrThrow(PUMICE_BOULDER),
-                JitteredGridPlacement.of(8, 2, 0.12F), SURFACE, ground, BiomeFilter.biome());
+                JitteredGridPlacement.of(8, 2, 0.3F, Ring3GroundFeatures.clumps(2, 6.0, 0.15, 0.4).withFloor(0.1)), SURFACE, ground,
+                BiomeFilter.biome());
         // Forked trunks lean up to 4 blocks: a margin of 4 keeps them in the chunk.
         PlacementUtils.register(context, ASHEN_WASTES_DEAD_TREES, features.getOrThrow(CHARRED_DEAD_TREES),
                 JitteredGridPlacement.of(16, 4, 0.35F), SURFACE, SlopeFilter.wallFoot(4, 2), ground,
                 BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
                         BlockPredicate.matchesBlocks(below(), ModBlocks.ASH_BLOCK.get(), Blocks.GRAVEL, ModBlocks.PUMICE.get()))),
                 BiomeFilter.biome());
-        // Peaks: impact craters of old lava bombs and low blackstone rocks.
+        // Peaks: impact craters of old lava bombs and low blackstone rocks; G2: also on the flanks (slopes up to ~45 degrees,
+        // the cinder cones; a crater's bowl may step by ImpactCraterFeature.MAX_STEP).
+        PlacementModifier slopes = Ring3GroundFeatures.slopes();
         PlacementUtils.register(context, VOLCANIC_PEAKS_IMPACT_CRATERS, features.getOrThrow(IMPACT_CRATER),
-                JitteredGridPlacement.of(16, ImpactCraterFeature.MAX_RADIUS + 1, 0.15F), SURFACE, SlopeFilter.flat(4, 1), ground, BiomeFilter.biome());
+                JitteredGridPlacement.of(16, ImpactCraterFeature.MAX_RADIUS + 1, 0.15F), SURFACE,
+                SlopeFilter.flat(4, ImpactCraterFeature.MAX_STEP), slopes, BiomeFilter.biome());
         PlacementUtils.register(context, VOLCANIC_PEAKS_BLACKSTONE_ROCKS, features.getOrThrow(BLACKSTONE_ROCK),
-                JitteredGridPlacement.of(8, 2, 0.12F), SURFACE, ground, BiomeFilter.biome());
+                JitteredGridPlacement.of(8, 2, 0.2F), SURFACE, SlopeFilter.flat(2, 2), slopes, BiomeFilter.biome());
         // Once per chunk that holds one of the drift biomes: the feature covers the chunk and each column's own biome
         // decides (a biome filter would test the chunk's corner at the bottom of the world).
         PlacementUtils.register(context, ASH_DRIFTS, features.getOrThrow(ASH_DRIFT));
