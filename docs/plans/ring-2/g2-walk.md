@@ -162,7 +162,7 @@ In de oase is het aantal objecten hoog door het gras en de varens op de oever; d
 ## 6. Perf-baseline
 Gezamenlijke run ring 2 + 3 (`tools/test/areas/perf-g2.txt`: ring 2 `canyon`, `hoodoo`, `dunes`; ring 3 `ember`, `sulfur`,
 `great`; gedeelde `zone23`; 1 warm + 1 koud). Start op het sein van main (ring 3 bouwt nu met vier substromen, en onder
-die last meet perf onzuiver). De uitkomst komt hier. Referentie: ring 2 zat in change 30 op ≈ 1,36× (noise; budget 1,75×).
+die last meet perf onzuiver). **Overgeslagen op verzoek van de gebruiker (2026-10-25), in te halen bij de volgende formele teststop.** Referentie: ring 2 zat in change 30 op ≈ 1,36× (noise; budget 1,75×).
 
 ## 7. Featurevoorstellen per biome
 Gemeenschappelijk: alle voorstellen zijn chunk-lokale features (`jittered_grid` → filters → `biome`) of surface rules,
@@ -235,4 +235,4 @@ skelet, reuzenpalm; `build/test/det-g2r2.txt`): alle verschillen liggen onder Y 
 (instortend `loose_sand` boven reservoirs: 5 blokken; stromend grotwater: 19) plus vanilla-klodders; boven Y 60 blok voor
 blok gelijk, brug 9/9 identiek.
 
-Perf (baseline op `origin/main` + na op `g2/ring2`, `perf-g2.txt`): volgt op het sein van main.
+Perf: overgeslagen op verzoek van de gebruiker (2026-10-25), in te halen bij de volgende formele teststop (`tools/test/areas/perf-g2.txt` en `perf-g2-ring2.txt` staan klaar).
