@@ -117,17 +117,19 @@ final class ThinShapes {
     }
 
     /**
-     * The micro relief's raised blocks (39f): on a smooth slope a clumpy pattern raises some columns just below the next
-     * one-block step by one block, so the step lines turn ragged instead of running straight. Only on gentle ground
-     * without other shapes (the terrain is interpolated; three blocks fill any gap to it).
+     * The micro relief's raised blocks (39f, G2): a clumpy pattern, drawn anew for every block of height, raises columns
+     * of a tread by one block, mostly just below the next step, in places the whole tread, elsewhere none; so each step
+     * line frays and wanders on its own and neighbouring lines merge and part instead of running parallel. Only on gentle
+     * ground without other shapes (the terrain is interpolated; three blocks fill any gap to it). {@code weight} (0..1)
+     * thins the raised blocks out towards volcano feet and zone 2→3.
      */
-    static void microSteps(VolcanicField f, VolcanicField.Column c, double px, double pz, double height) {
+    static void microSteps(VolcanicField f, VolcanicField.Column c, double px, double pz, double height, double weight) {
         if (c.cliff >= 0.05 || c.roughness > 0.0 || c.rise >= 1.0 || c.lavaBank > 0.0 || c.channel > 0.0 || c.collapse > 0.0
                 || c.hasLava() || c.solidCount > 0 || c.voidCount > 0) {
             return;
         }
         double frac = height - Math.floor(height);
-        if (frac > 0.55 - 0.35 * f.relief().microSteps(px, pz)) {
+        if (frac > f.relief().microSteps(px, pz, Mth.floor(height)) + 2.0 * (1.0 - weight)) {
             c.addSolid(Math.floor(height) - 1.0, Math.floor(height) + 1.0, Landmarks.KIND_BIOME);
         }
     }
