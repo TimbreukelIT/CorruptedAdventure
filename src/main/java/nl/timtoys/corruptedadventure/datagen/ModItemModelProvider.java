@@ -175,6 +175,7 @@ final class ModItemModelProvider extends ItemModelProvider {
         blockItem(ModBlocks.EMBER_LEAVES);
         flatBlockItem(ModBlocks.FIRE_BLOOM);
         flatBlockItem(ModBlocks.ASH_SPROUTS);
+        flatBlockItem(ModBlocks.CHARRED_SHRUB);
         // A flat bush with berries (vanilla's bush has no item of its own: its item is the berries).
         withExistingParent(ModBlocks.EMBER_BERRY_BUSH.getId().getPath(), mcLoc("item/generated"))
                 .texture("layer0", modLoc("block/ember_berry_bush_stage3"));
