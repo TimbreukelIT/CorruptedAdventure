@@ -46,10 +46,18 @@ def main():
     lines, results = [], []
     for spec in a.specs:
         parts = spec.split(":")
-        label, target = parts[0], parts[1]
+        label = parts[0]
+        m = re.match(r"(ring|boundary)(\d)", parts[1]) if len(parts) > 1 else None
+        try:
+            heading = next((float(q) for q in parts[2:] if q != "nether"), 0.0)
+        except ValueError:
+            m = None
+        if not m:
+            results.append({"label": label, "spec": spec, "error": "malformed spec (label:ring<N>|boundary<N>[:nether][:heading])"})
+            print("FAILED %s: malformed spec %r" % (label, spec), flush=True)
+            continue
+        kind, n = m.groups()
         nether = "nether" in parts[2:]
-        heading = next((float(q) for q in parts[2:] if q != "nether"), 0.0)
-        kind, n = re.match(r"(ring|boundary)(\d)", target).groups()
         dim = DIMS[nether]
         hx, hz = math.cos(math.radians(heading)), math.sin(math.radians(heading))
         rcon.cmd("execute in %s run tp %s %.1f 200 %.1f" % (dim, a.player, 100 * hx, 100 * hz))

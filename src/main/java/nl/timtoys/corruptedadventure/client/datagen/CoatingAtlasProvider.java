@@ -1,4 +1,4 @@
-package nl.timtoys.corruptedadventure.datagen;
+package nl.timtoys.corruptedadventure.client.datagen;
 
 import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
 import net.minecraft.core.HolderLookup;
@@ -17,13 +17,14 @@ import java.util.concurrent.CompletableFuture;
  * Adds the coating trims to vanilla's {@code minecraft:armor_trims} atlas ({@code assets/minecraft/atlases/armor_trims.json};
  * the atlas sources of all packs add up). One paletted source per coating with only its own material, because a
  * coating recipe takes no other. Our own palette key ({@code coating_palette}, 8 greys), so the pattern textures need no
- * vanilla pixels.
+ * vanilla pixels. In the client package because it uses a client class ({@link PalettedPermutations}); only
+ * {@code DataGenerators} creates it, and only for client data.
  */
-final class CoatingAtlasProvider extends SpriteSourceProvider {
+public final class CoatingAtlasProvider extends SpriteSourceProvider {
     static final ResourceLocation ARMOR_TRIMS_ATLAS = ResourceLocation.withDefaultNamespace("armor_trims");
     static final ResourceLocation PALETTE_KEY = CorruptedAdventure.id("trims/color_palettes/coating_palette");
 
-    CoatingAtlasProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup, ExistingFileHelper files) {
+    public CoatingAtlasProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup, ExistingFileHelper files) {
         super(output, lookup, CorruptedAdventure.MOD_ID, files);
     }
 

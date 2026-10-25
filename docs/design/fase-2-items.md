@@ -164,7 +164,8 @@ harnas binnen de vanilla-grenzen armor 30 en toughness 20).
 
 **Mijn-gating.** Blok-tags `corruptedadventure:needs_<tier>_tool` en `incorrect_for_<tier>_tool`. De vanilla-tags
 `incorrect_for_{wooden,stone,gold,iron,diamond,netherite}_tool` bevatten al onze needs-tags; `incorrect_for_<tier>_tool`
-bevat de needs-tags van de hogere tiers.
+bevat de needs-tags van de hogere tiers. De gating geldt voor de vanilla- en onze eigen tiers; tool-tiers van andere mods
+met een eigen `incorrect_for_*`-tag kunnen afwijken (ze mijnen de ring-ertsen misschien wel).
 
 | Ertsen | Vraagt | Tag |
 |---|---|---|

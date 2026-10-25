@@ -91,6 +91,9 @@ def test_ring(rcon, player, n, timeout, heading=0.0):
         return r
     time.sleep(2)
     arrival = position(rcon, player)
+    if arrival is None:
+        r["error"] = "no position in the Nether"
+        return r
     r["nether_arrival"] = [round(v, 1) for v in arrival]
     r["nether_expected"] = [round((fx + 1.5) / 4, 1), round((fz + 0.5) / 4, 1)]
     r["nether_ring"] = ring_at(rcon, NETHER, arrival[0], arrival[2])
@@ -103,6 +106,9 @@ def test_ring(rcon, player, n, timeout, heading=0.0):
         return r
     time.sleep(2)
     back = position(rcon, player)
+    if back is None:
+        r["error"] = "no position after the return"
+        return r
     r["overworld_return"] = [round(v, 1) for v in back]
     r["return_distance"] = round(((back[0] - fx - 1.5) ** 2 + (back[2] - fz - 0.5) ** 2) ** 0.5, 1)
     r["return_ring"] = ring_at(rcon, OW, back[0], back[2])

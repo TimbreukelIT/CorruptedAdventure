@@ -2,11 +2,13 @@ package nl.timtoys.corruptedadventure.datagen;
 
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.DataProvider;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.client.datagen.CoatingAtlasProvider;
 import nl.timtoys.corruptedadventure.condition.ConditionDamageTypes;
 import nl.timtoys.corruptedadventure.condition.Ring3DamageTypes;
 import nl.timtoys.corruptedadventure.condition.Ring4DamageTypes;
@@ -175,7 +177,9 @@ public final class DataGenerators {
         event.createProvider(output -> new ModSoundDefinitionsProvider(output, files));
         event.createProvider(output -> new ModParticleDescriptionProvider(output, files));
         event.createProvider(ModRecipeProvider::new);
-        event.createProvider((output, lookup) -> new CoatingAtlasProvider(output, lookup, files));
+        // Client data only: the atlas provider uses a client class (CLAUDE.md §7).
+        event.getGenerator().addProvider(event.includeClient(),
+                (DataProvider.Factory<CoatingAtlasProvider>) output -> new CoatingAtlasProvider(output, event.getLookupProvider(), files));
 
         event.createProvider(EnglishLanguageProvider::new);
         event.createProvider(DutchLanguageProvider::new);
