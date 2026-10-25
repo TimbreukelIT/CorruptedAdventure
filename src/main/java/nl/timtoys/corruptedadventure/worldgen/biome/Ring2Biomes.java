@@ -22,6 +22,7 @@ import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2RockLandmarkFeatures;
 
 import java.util.List;
 import java.util.Optional;
@@ -111,6 +112,7 @@ public final class Ring2Biomes {
         for (ResourceKey<PlacedFeature> feature : CANYONLANDS_ROCKS) {
             generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
         }
+        generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, Ring2RockLandmarkFeatures.CANYONLANDS_ROCK_BRIDGES);
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, ModPlacedFeatures.CANYONLANDS_VEGETATION);
         return biome(BiomeAmbience.Palette.CANYONLANDS, 0.0F, 0xBFB755, 0xAEA42A, Optional.empty(), spawns(false), generation);
     }
@@ -137,6 +139,7 @@ public final class Ring2Biomes {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
         // A subset of CANYONLANDS_ROCKS in the same order (one global order per step).
         generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, ModPlacedFeatures.CANYON_ROCKFALL);
+        generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, Ring2RockLandmarkFeatures.HOODOO_FIELDS_GIANT_HOODOOS);
         for (ResourceKey<PlacedFeature> feature : HOODOO_FIELDS_VEGETATION) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
