@@ -5,8 +5,8 @@
 Pose file, one per line (# comments): `label dim day|night x y z yaw pitch`, dim `ow` or `nether` (or a full id).
 Puts the player in spectator, clears the ring weather of rings 2-5, hides the HUD (F1), stops the daylight cycle and
 sets the time per pose,
-teleports and shoots until two shots in a row match (the studio's stable_shot), then shows the HUD again and puts the
-old time back. Start the server with --client and client.sh start first (studio.sh prepare for the fixed FOV).
+teleports and shoots until two shots in a row match (the studio's stable_shot), then puts everything back as it was:
+the HUD, the player's game mode, the daylight cycle's game rule and the full day time (day count included). Start the server with --client and client.sh start first (studio.sh prepare for the fixed FOV).
 
 --light R (caves, undersides, the Nether): after the teleport puts invisible light blocks (level 15) on a grid of 4 in
 the air within R around the camera (R/2 up and down; `setblock ... keep`, so only air and cave air). They stay: use it
@@ -53,6 +53,22 @@ def light(rcon, dim, x, y, z, radius, wait):
                 rcon.cmd("execute in %s run setblock %d %d %d minecraft:light[level=15] keep" % (dim, bx + dx, by + dy, bz + dz))
 
 
+GAMEMODES = ("survival", "creative", "adventure", "spectator")
+
+
+def gamemode(rcon, player):
+    """The player's game mode, or None."""
+    for mode in GAMEMODES:
+        if "passed" in rcon.cmd("execute if entity @a[name=%s,gamemode=%s]" % (player, mode)).lower():
+            return mode
+    return None
+
+
+def number(text):
+    m = re.search(r"(-?\d+)\s*$", text.strip())
+    return int(m.group(1)) if m else None
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("poses")
@@ -66,18 +82,23 @@ def main():
     todo = [q for q in poses(a.poses) if not a.only or any(q[0].startswith(o) for o in a.only)]
     os.makedirs(a.out, exist_ok=True)
     rcon = Rcon()
-    rcon.cmd("gamemode spectator " + player)
-    rcon.cmd("weather clear")
-    for dim in sorted({q[1] for q in todo}):
-        for ring in range(2, 6):
-            rcon.cmd("execute in %s run ca weather %d clear" % (dim, ring))
-    m = re.search(r"(\d+)", rcon.cmd("time query daytime"))
-    old_time = int(m.group(1)) if m else None
-    # A walk takes longer than a day: the time stands still while it runs.
-    rcon.cmd("gamerule doDaylightCycle false")
-    studio.run_client("key", "F1", a.client)
+    old_mode = gamemode(rcon, player)
+    old_cycle = rcon.cmd("gamerule doDaylightCycle").strip().lower().endswith("true")
+    # `time set` sets the full day time: the day count (`time query day`) and the time of day together.
+    day, daytime = number(rcon.cmd("time query day")), number(rcon.cmd("time query daytime"))
+    old_time = day * 24000 + daytime if day is not None and daytime is not None else None
+    hud_hidden = False
     last_dim, last_time, last_xz = None, None, None
     try:
+        rcon.cmd("gamemode spectator " + player)
+        rcon.cmd("weather clear")
+        for dim in sorted({q[1] for q in todo}):
+            for ring in range(2, 6):
+                rcon.cmd("execute in %s run ca weather %d clear" % (dim, ring))
+        # A walk takes longer than a day: the time stands still while it runs.
+        rcon.cmd("gamerule doDaylightCycle false")
+        studio.run_client("key", "F1", a.client)
+        hud_hidden = True
         for label, dim, daytime, x, y, z, yaw, pitch in todo:
             if daytime != last_time:
                 rcon.cmd("time set %d" % (6000 if daytime == "day" else 18000))
@@ -91,10 +112,13 @@ def main():
             print(("shot " if ok else "FAILED ") + label, flush=True)
             last_dim, last_time, last_xz = dim, daytime, (float(x), float(z))
     finally:
-        studio.run_client("key", "F1", a.client)
-        rcon.cmd("gamerule doDaylightCycle true")
+        if hud_hidden:
+            studio.run_client("key", "F1", a.client)
+        rcon.cmd("gamerule doDaylightCycle %s" % ("true" if old_cycle else "false"))
         if old_time is not None:
             rcon.cmd("time set %d" % old_time)
+        if old_mode is not None:
+            rcon.cmd("gamemode %s %s" % (old_mode, player))
 
 
 if __name__ == "__main__":
