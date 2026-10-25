@@ -11,6 +11,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.item.GearTier;
 import nl.timtoys.corruptedadventure.item.UpgradeSmithingTemplates;
+import nl.timtoys.corruptedadventure.item.coating.Coating;
+import nl.timtoys.corruptedadventure.item.coating.CoatingTemplates;
 
 import java.util.Collection;
 import java.util.List;
@@ -54,6 +56,9 @@ public final class ModItems {
     /** Placeholder upgrade template to the sunstone tier (wave 1): recipe and source follow with the tier. */
     public static final DeferredItem<SmithingTemplateItem> SUNSTONE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
             UpgradeSmithingTemplates.itemName(GearTier.SUNSTONE), () -> UpgradeSmithingTemplates.create(GearTier.SUNSTONE));
+    /** Coating against dehydration (applied with raw turquoise, a placeholder). Where to find it: golf 2. */
+    public static final DeferredItem<SmithingTemplateItem> DEHYDRATION_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "dehydration_coating_smithing_template", () -> CoatingTemplates.create(Coating.DEHYDRATION));
 
     // ---- Nether ring 2 ----
     /** Drop of the grown dew crystal. Placeholder: its use, recipes and balance follow in phase 2. */
@@ -78,6 +83,14 @@ public final class ModItems {
     /** Placeholder upgrade template to the volcanite tier (wave 1): recipe and source follow with the tier. */
     public static final DeferredItem<SmithingTemplateItem> VOLCANITE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
             UpgradeSmithingTemplates.itemName(GearTier.VOLCANITE), () -> UpgradeSmithingTemplates.create(GearTier.VOLCANITE));
+    /** Coating against heat (applied with dew crystal). Where to find it: golf 3. */
+    public static final DeferredItem<SmithingTemplateItem> HEAT_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "heat_coating_smithing_template", () -> CoatingTemplates.create(Coating.HEAT));
+
+    // ---- Nether ring 3 ----
+    /** Coating against the cold (applied with fire crystal, a placeholder). Where to find it: golf 4. */
+    public static final DeferredItem<SmithingTemplateItem> COLD_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "cold_coating_smithing_template", () -> CoatingTemplates.create(Coating.COLD));
 
     // ---- Ring 4 ----
     static {
@@ -103,6 +116,9 @@ public final class ModItems {
     /** Placeholder upgrade template to the tidesilver tier (wave 1): recipe and source follow with the tier. */
     public static final DeferredItem<SmithingTemplateItem> TIDESILVER_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
             UpgradeSmithingTemplates.itemName(GearTier.TIDESILVER), () -> UpgradeSmithingTemplates.create(GearTier.TIDESILVER));
+    /** Coating against poison (applied with primordial ice). Where to find it: golf 4. */
+    public static final DeferredItem<SmithingTemplateItem> POISON_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "poison_coating_smithing_template", () -> CoatingTemplates.create(Coating.POISON));
 
     // ---- Nether ring 4 ----
     /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */
@@ -123,10 +139,16 @@ public final class ModItems {
     /** Placeholder upgrade template to the nullite tier (wave 1): recipe and source follow with the tier. */
     public static final DeferredItem<SmithingTemplateItem> NULLITE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
             UpgradeSmithingTemplates.itemName(GearTier.NULLITE), () -> UpgradeSmithingTemplates.create(GearTier.NULLITE));
+    /** Coating against the void (applied with white core). Where to find it: golf 5. */
+    public static final DeferredItem<SmithingTemplateItem> VOID_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "void_coating_smithing_template", () -> CoatingTemplates.create(Coating.VOID));
 
     // ---- Nether ring 5 ----
     /** Drop of the white core ore (one per ore, Fortune adds). Placeholder without behaviour in phase 1. */
     public static final DeferredItem<Item> WHITE_CORE = ITEMS.registerSimpleItem("white_core");
+    /** Coating against the silence (applied with white core). Where to find it: golf 5. */
+    public static final DeferredItem<SmithingTemplateItem> SILENCE_COATING_SMITHING_TEMPLATE = ITEMS.register(
+            "silence_coating_smithing_template", () -> CoatingTemplates.create(Coating.SILENCE));
 
     private ModItems() {
     }

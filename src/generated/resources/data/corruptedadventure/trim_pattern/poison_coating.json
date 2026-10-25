@@ -1,0 +1,8 @@
+{
+  "asset_id": "corruptedadventure:poison_coating",
+  "decal": false,
+  "description": {
+    "translate": "trim_pattern.corruptedadventure.poison_coating"
+  },
+  "template_item": "corruptedadventure:poison_coating_smithing_template"
+}

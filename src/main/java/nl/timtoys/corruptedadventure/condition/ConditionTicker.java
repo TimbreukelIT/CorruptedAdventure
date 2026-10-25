@@ -23,6 +23,8 @@ public final class ConditionTicker {
 
     public static void register(IEventBus gameBus) {
         gameBus.addListener(PlayerTickEvent.Post.class, ConditionTicker::onPlayerTick);
+        // Coatings (phase 2) work on every condition, so they sit here and not in a ring's hooks.
+        ConditionDefinitions.addModifier(RateModifier.Stage.GEAR, new CoatingModifier());
         Ring3Conditions.register(gameBus);
         Ring4Conditions.register(gameBus);
         Ring5Conditions.register(gameBus);

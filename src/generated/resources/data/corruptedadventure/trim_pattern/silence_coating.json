@@ -1,0 +1,8 @@
+{
+  "asset_id": "corruptedadventure:silence_coating",
+  "decal": false,
+  "description": {
+    "translate": "trim_pattern.corruptedadventure.silence_coating"
+  },
+  "template_item": "corruptedadventure:silence_coating_smithing_template"
+}

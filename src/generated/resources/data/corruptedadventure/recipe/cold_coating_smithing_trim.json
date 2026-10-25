@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smithing_trim",
+  "addition": {
+    "item": "corruptedadventure:fire_crystal"
+  },
+  "base": {
+    "tag": "minecraft:trimmable_armor"
+  },
+  "template": {
+    "item": "corruptedadventure:cold_coating_smithing_template"
+  }
+}

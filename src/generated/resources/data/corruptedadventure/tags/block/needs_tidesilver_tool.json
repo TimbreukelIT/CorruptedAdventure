@@ -1,6 +1,8 @@
 {
   "values": [
     "#c:ores/nullite",
-    "#c:ores/white_core"
+    "#c:ores/white_core",
+    "corruptedadventure:raw_nullite_block",
+    "corruptedadventure:nullite_block"
   ]
 }

@@ -4,6 +4,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import nl.timtoys.corruptedadventure.datagen.recipe.CoatingRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.FloraRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.MaterialRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.StoneSetRecipes;
@@ -23,5 +24,6 @@ final class ModRecipeProvider extends RecipeProvider {
         StoneSetRecipes.build(output);
         FloraRecipes.build(output);
         MaterialRecipes.build(output);
+        CoatingRecipes.build(output);
     }
 }

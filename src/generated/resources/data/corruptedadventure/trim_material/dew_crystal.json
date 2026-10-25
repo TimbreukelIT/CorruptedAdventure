@@ -1,0 +1,9 @@
+{
+  "asset_name": "dew_crystal",
+  "description": {
+    "color": "#8BC4D6",
+    "translate": "trim_material.corruptedadventure.dew_crystal"
+  },
+  "ingredient": "corruptedadventure:dew_crystal",
+  "item_model_index": 0.8
+}

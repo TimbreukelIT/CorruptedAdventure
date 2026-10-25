@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "corruptedadventure:item/cold_coating_smithing_template"
+  }
+}

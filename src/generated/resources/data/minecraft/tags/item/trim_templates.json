@@ -1,0 +1,10 @@
+{
+  "values": [
+    "corruptedadventure:dehydration_coating_smithing_template",
+    "corruptedadventure:heat_coating_smithing_template",
+    "corruptedadventure:cold_coating_smithing_template",
+    "corruptedadventure:poison_coating_smithing_template",
+    "corruptedadventure:void_coating_smithing_template",
+    "corruptedadventure:silence_coating_smithing_template"
+  ]
+}

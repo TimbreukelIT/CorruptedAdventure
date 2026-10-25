@@ -7,6 +7,7 @@ import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 
@@ -105,6 +106,7 @@ final class ModItemModelProvider extends ItemModelProvider {
 
         netherRing2();
         golf1Materials();
+        coatings();
     }
 
     /** Phase 2 golf 1 (stream D): the storage blocks and the ingots and turquoise gem. */
@@ -126,6 +128,13 @@ final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.VOLCANITE_INGOT.get());
         basicItem(ModItems.TIDESILVER_INGOT.get());
         basicItem(ModItems.NULLITE_INGOT.get());
+    }
+
+    /** Phase 2 golf 1 (stream C): the coating templates, flat items like vanilla's trim templates. */
+    private void coatings() {
+        for (Coating coating : Coating.values()) {
+            basicItem(coating.template());
+        }
     }
 
     private void netherRing2() {

@@ -2,6 +2,9 @@
   "values": [
     "#c:ores/volcanite",
     "#c:ores/sulfur",
-    "#c:ores/fire_ruby"
+    "#c:ores/fire_ruby",
+    "corruptedadventure:raw_volcanite_block",
+    "corruptedadventure:volcanite_block",
+    "corruptedadventure:fire_ruby_block"
   ]
 }

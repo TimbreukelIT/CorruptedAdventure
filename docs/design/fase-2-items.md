@@ -188,3 +188,40 @@ bevat de needs-tags van de hogere tiers.
 upgrade). Nog geen smithing-recept en geen vindplaats (golf 2–5). In de creative-tab van de ring van hun tier.
 - *Voorlopig:* de tooltip zegt dat zonnesteen **diamanten** uitrusting opwaardeert (een alternatief pad naast netherite)
   en elke volgende tier de uitrusting van de tier ervoor. Of zonnesteen uit diamant of uit netherite komt, beslist golf 2.
+### 4.4 Coatings (C)
+Gebouwd in fase 2 golf 1 (stroom C). Technische uitwerking van §1.3 en §4.
+- **Vorm:** elke coating is een vanilla armor-trim-patroon (`trim_pattern`, datapack-registry via datagen):
+  `corruptedadventure:dehydration_coating`, `heat_coating`, `poison_coating`, `void_coating`, `cold_coating` en
+  `silence_coating`, elk met een template-item `<conditie>_coating_smithing_template` (vanilla `SmithingTemplateItem`;
+  de tooltip noemt het ene coatingmateriaal). Rendering, tooltip (patroon + materiaal)
+  en het vervangen doet vanilla.
+- **Materiaal = trim-materiaal:** elk coatingmateriaal is een eigen `trim_material` met een eigen kleurenpalet. Zo
+  maakt vanilla's `smithing_trim`-recept het harnas, en tekent vanilla de coating in de kleur van het materiaal.
+  - hitte = dauwkristal, gif = oerijs, void én stilte = witte kern (zelfde materiaal, ander patroon);
+  - **voorlopig:** uitdroging = ruw turkoois, kou = vuurkristal (warmte tegen kou). Golf 2 en golf 4 kiezen het echte
+    materiaal; dan wijzigt alleen `CoatingMaterial`.
+  - De materialen staan **niet** in `#minecraft:trim_materials`: vanilla-templates nemen ze niet (geen decoratieve
+    dauwkristal-trim), en per coating is er één recept dat precies zijn eigen materiaal neemt. Een `trim_material` is
+    wel nodig, want vanilla zoekt bij het smeden het materiaal op via het extra item.
+  - De itemmodellen van harnassen tonen bij een trim alleen het materiaal (niet het patroon), via vanilla's
+    `item_model_index`. Elk materiaal leent de index van het vanilla-materiaal met de dichtste kleur, zodat de
+    bestaande overlays werken zonder eigen itemmodellen: turkoois = smaragd (0,7), dauwkristal = diamant (0,8),
+    vuurkristal = koper (0,5), oerijs = ijzer (0,2), witte kern = kwarts (0,1). Op het lichaam zie je wel de eigen kleur.
+- **Atlas:** `assets/minecraft/atlases/armor_trims.json` (datagen, `CoatingAtlasProvider`) voegt per coating een
+  `paletted_permutations`-bron toe met alleen het eigen materiaal en een eigen paletsleutel (8 grijzen), zodat de
+  patroon-textures geen vanilla-pixels gebruiken. Een coating met een vreemd materiaal (alleen via commando's) heeft
+  geen texture.
+- **Recepten:** per coating `<coating>_smithing_trim` (template + `#trimmable_armor` + het materiaal). **Placeholder:**
+  een kopie-recept zoals vanilla's templates (template + 7 × materiaal + een steen van de ring → 2 templates; uitdroging
+  scorched sandstone, hitte puimsteen, kou koudlava, gif tidestone, void voidsteen, stilte witsteen). De vindplaats van
+  het eerste template volgt per golf.
+- **Regels (vanilla, getest):** een nieuwe coating (of een decoratieve trim) vervangt de oude; dezelfde coating nog
+  eens geeft niets. Een smithing-upgrade (`smithing_transform`) kopieert de `trim`-component, dus de coating blijft.
+  `CoatingSmithingTest` draait vanilla's receptklassen op onze registries.
+- **Werking:** `CoatingModifier` (server, `RateModifier`, stage `GEAR`) telt de gedragen harnasstukken met het patroon
+  van de conditie en vermenigvuldigt een **stijgende** rate met `1 − n × 0,1875` (`[conditions.coating]
+  reductionPerPiece`, bereik 0–0,24, dus nooit immuun): 0,81× / 0,63× / 0,44× / 0,25×. Dalen blijft gelijk. Met leer
+  tegen kou (zelfde stage) vermenigvuldigen de factoren: 4 leren stukken met koudecoating geven 0,4 × 0,25 = 0,1×.
+- **Textures:** placeholders uit `tools/textures/CoatingTextures.java`: per coating een band per harnasstuk in een
+  eigen stijl (golf, vlammen, kristallen, druppels, gebroken lijn, dubbele lijn) en een embleem op de borst; het
+  template is een stenen tablet met hetzelfde embleem in de materiaalkleur.

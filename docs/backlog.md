@@ -19,11 +19,11 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [items] Placeholder-items `raw_sunstone` en `raw_turquoise` (ruwe drops van de ring 2-ertsen) zijn minimale basis-items zonder recipes of rarity; het gesmolten product (naam en vorm nog open), het smeltrecept (ruw materiaal en erts → product, oven/hoogoven), zonnesteen-gear-tier en turkoois als handelswaar in fase 2. (bron: change 24) — **Afgehandeld in fase 2 golf 1 (D):** product `sunstone_ingot` / `turquoise` (voorlopige namen), smelten en blasten van raw-item en ertsen (`MaterialRecipes`); zonnesteen-tier en turkoois-nut volgen in golf 2.
 - [items] Ruwe opslagblokken `raw_sunstone_block` en `raw_turquoise_block` (9× ruw materiaal, zoals `raw_iron_block`) en hun recipes; het blok zelf is blocks-werk in fase 2. (bron: change 24) — **Afgehandeld in fase 2 golf 1 (D):** beide blokken + recepten, plus `sunstone_block` en `turquoise_block`.
 - [mobs] Ring 2: zandwormen in de duinenzee, schorpioenen in canyons, mummies bij begraven skeletten. Nether-2: sporenmonsters, slijmwezens. (bron: sparring fase 1)
-- [items] Nether-2: dauwkristal als basis van hittebescherming voor ring 3; druipzwam-hout; zielkristal (Nether-1) gebruik bepalen. (bron: sparring fase 1) Zie ook de regel van change 15 (`soul_crystal`).
+- [items] Nether-2: dauwkristal als basis van hittebescherming voor ring 3; druipzwam-hout; zielkristal (Nether-1) gebruik bepalen. (bron: sparring fase 1) Zie ook de regel van change 15 (`soul_crystal`). — **Deels afgehandeld in fase 2 golf 1 (C):** dauwkristal is het materiaal van de hittecoating (`heat_coating`).
 
 ## Uit sparring fase 1, sessie 2 (2026-09-30)
 - [items] Ring 3: vulkaniet-gear-tier; zwavel → buskruit/vuur/brandstof; vuurrobijn als edelsteen/handelswaar; hittebescherming op basis van dauwkristal. (bron: sparring fase 1 sessie 2)
-- [items] Nether-3: oerijs smelten tot zuiver water (basis gifbescherming ring 4); rijpzwam-hout; warmte-item tegen kou (bijv. smeulsteen-lantaarn). (bron: sparring fase 1 sessie 2)
+- [items] Nether-3: oerijs smelten tot zuiver water (basis gifbescherming ring 4); rijpzwam-hout; warmte-item tegen kou (bijv. smeulsteen-lantaarn). (bron: sparring fase 1 sessie 2) — **Deels afgehandeld in fase 2 golf 1 (C):** oerijs (het blok) is het materiaal van de gifcoating; het water en het warmte-item volgen in golf 4.
 - [structures] Ring 3: gestrande scheepswrakken en verlaten havens in de lege zeekom (`dried_seabed`), verdroogde putten, verkoolde dorpen. (bron: sparring fase 1 sessie 2)
 - [mobs] Ring 3: aswandelaars (uit de as-afgietsels), magmawezens in lavabuizen. Nether-3: bevroren ghasts, ijs-strays. (bron: sparring fase 1 sessie 2)
 - [items] Ring 4: `tidesilver`-gear-tier (hoofdmateriaal); gifkristal voor gifwapens/-pijlen; jade als edelsteen; aquamarijn/getijdekristal als mogelijke basis van waterbescherming; gifbescherming uit oerijs-water; veen als brandstof. Veenijzer vervalt. (bron: sparring fase 1 sessie 2, bijgewerkt sparring ring 4 2026-10-10) — *Latere fase: fase 2 (golf 3, 2026-10-21).*
@@ -142,7 +142,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [textures] Change 37: de dikte-modellen van de slijmstalactiet delen nu per dikte een gespiegelde `up`/`down`-texture; definitief kan een eigen stijl per richting. Stam/hyfen, gloeischimmel en zwamlamp zijn nog `still` (animatie/emissive: 37 vraag 4). (bron: change 33)
 
 ## Uit change 34
-- [items] Dauwkristal (`dew_crystal`, placeholder uit change 34): nut en recipes in fase 2 (basis van hittebescherming voor ring 3); eventueel een dauwkristalblok (opslag/bouwblok, zoals amethistblok). (bron: change 34)
+- [items] Dauwkristal (`dew_crystal`, placeholder uit change 34): nut en recipes in fase 2 (basis van hittebescherming voor ring 3); eventueel een dauwkristalblok (opslag/bouwblok, zoals amethistblok). (bron: change 34) — **Deels afgehandeld in fase 2 golf 1 (C):** materiaal van de hittecoating; overige recipes en het blok volgen in golf 3.
 - [items] Idee: fles vullen bij een dauwbron (water in de Nether). (bron: change 34)
 - [blocks] Later-idee: verplaatsbare dauwbron (Silk Touch) of ring-gebonden groei (`RingLayout.ringAt` in `randomTick`); afgewezen in 34-2. (bron: change 34)
 - [blocks] De dauwkristal-stadia spelen het amethist-belgeluid bij een projectieltreffer (vanilla `AmethystClusterBlock`, zoals `salt_crystal`). (bron: change 34)
@@ -542,3 +542,9 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [items] Zwavelerts vraagt nu zonnesteen (was steen): vroeg zwavel komt alleen nog uit de oppervlakte-kristallen (`sulfur_crystal`); meenemen in de zwavelbalans van golf 3. (bron: f2 golf 1 B)
 - [textures] Harnas-layer-textures `textures/models/armor/<tier>_layer_1/2.png` komen met de harnasstukken (de armor materials verwijzen er al naar). (bron: f2 golf 1 B)
 - [infra] De GameTest-template `data/corruptedadventure/structure/gametest/empty.nbt` en `gametest/` zitten in de mod-jar (alleen actief met `neoforge.enabledGameTestNamespaces`); eventueel een eigen source set als er meer gametests komen. (bron: f2 golf 1 B)
+
+## Uit fase 2 golf 1 — coatings (C, 2026-10-25)
+- [items] Echte coatingmaterialen voor uitdroging (golf 2) en kou (golf 4): nu placeholders `raw_turquoise` en `fire_crystal` (`CoatingMaterial.TURQUOISE`/`FIRE_CRYSTAL`). (bron: f2 golf 1 C)
+- [items] Vindplaats van het eerste coating-template per golf (loot, recept of drop); het kopie-recept (template + 7 × materiaal + ringsteen → 2) is een placeholder, voor de witte kern mogelijk te duur of te goedkoop. (bron: f2 golf 1 C)
+- [textures] Coating-textures zijn placeholders (`tools/textures/CoatingTextures.java`); het harnas-itemmodel toont bij een coating de overlay van een vanilla-materiaal met de dichtste kleur (geleende `item_model_index`), niet een eigen kleur. Eigen item-overlays vragen eigen armor-itemmodellen met overrides. (bron: f2 golf 1 C)
+- [items] Een coating-patroon met een vreemd trim-materiaal (alleen via commando's of andere mods) heeft geen texture: de atlas kent per coating alleen het eigen materiaal. (bron: f2 golf 1 C)

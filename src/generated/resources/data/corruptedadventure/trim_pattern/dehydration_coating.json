@@ -1,0 +1,8 @@
+{
+  "asset_id": "corruptedadventure:dehydration_coating",
+  "decal": false,
+  "description": {
+    "translate": "trim_pattern.corruptedadventure.dehydration_coating"
+  },
+  "template_item": "corruptedadventure:dehydration_coating_smithing_template"
+}

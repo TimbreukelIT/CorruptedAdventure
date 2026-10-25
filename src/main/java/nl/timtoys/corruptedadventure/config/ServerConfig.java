@@ -40,6 +40,8 @@ public final class ServerConfig {
     public static final VoidCondition VOID;
     /** {@code [conditions.silence]}: Nether ring 5 (package 97). */
     public static final SilenceCondition SILENCE;
+    /** {@code [conditions.coating]}: coated armor slows the rising meters (phase 2 golf 1). */
+    public static final CoatingEffect COATING;
     /** {@code [weather.ring2]}: the effects of sandstorm and heat wave (change 28). */
     public static final Ring2WeatherEffects RING_2_WEATHER;
     /** {@code [weather.ring3]}: ash cloud duration, heat factors and lava bombs (package 45). */
@@ -70,6 +72,7 @@ public final class ServerConfig {
         PURIFYING = new PurifyingCondition(builder);
         VOID = new VoidCondition(builder);
         SILENCE = new SilenceCondition(builder);
+        COATING = new CoatingEffect(builder);
         builder.pop();
         builder.comment("Ring weather: a cycle per ring (clear, then a weather of that ring, then clear again).",
                 "Durations in seconds, drawn uniformly between min and max; edits apply from the next change of weather.")
@@ -389,6 +392,25 @@ public final class ServerConfig {
                     .defineInRange("damage", 1.0, 0.0, 100.0);
             damageInterval = builder.comment("Seconds between hits at threshold3.")
                     .defineInRange("damageInterval", 2, 1, 60);
+            builder.pop();
+        }
+    }
+
+    /**
+     * {@code [conditions.coating]} (phase 2 golf 1, fase-2-items.md §4): no meter of its own; every armor piece with the
+     * coating of a condition slows that condition's rise.
+     */
+    public static final class CoatingEffect {
+        public final ModConfigSpec.DoubleValue reductionPerPiece;
+
+        private CoatingEffect(ModConfigSpec.Builder builder) {
+            builder.comment("Coatings (armor trims of corruptedadventure:<condition>_coating): every worn piece with the coating of a",
+                            "condition slows that condition's rising meter; a falling meter is left alone.")
+                    .push("coating");
+            reductionPerPiece = builder.comment("Part of a rising rate taken off per coated piece, linearly (0.1875: 1 piece 0.81x,",
+                            "2 pieces 0.63x, 3 pieces 0.44x, 4 pieces 0.25x, so a full set rises ~4x slower). At most 0.24, so a",
+                            "full set never makes immune.")
+                    .defineInRange("reductionPerPiece", 0.1875, 0.0, 0.24);
             builder.pop();
         }
     }

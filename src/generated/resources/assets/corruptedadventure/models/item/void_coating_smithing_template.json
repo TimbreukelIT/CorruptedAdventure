@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "corruptedadventure:item/void_coating_smithing_template"
+  }
+}

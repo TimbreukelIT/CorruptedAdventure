@@ -1,0 +1,8 @@
+{
+  "asset_id": "corruptedadventure:heat_coating",
+  "decal": false,
+  "description": {
+    "translate": "trim_pattern.corruptedadventure.heat_coating"
+  },
+  "template_item": "corruptedadventure:heat_coating_smithing_template"
+}

@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModTags;
@@ -124,6 +125,7 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         ring4();
         ring5();
         golf1Materials();
+        coatings();
     }
 
     /** Phase 2 golf 1 (stream D): the storage blocks' item tags, the ingots and the turquoise gem. */
@@ -166,6 +168,16 @@ final class ModItemTagsProvider extends ItemTagsProvider {
                 .addTag(ModTags.Items.INGOTS_NULLITE);
         tag(ModTags.Items.GEMS_TURQUOISE).add(ModItems.TURQUOISE.get());
         tag(Tags.Items.GEMS).addTag(ModTags.Items.GEMS_TURQUOISE);
+    }
+
+    /**
+     * Phase 2 golf 1 (stream C): the coating templates are trim templates (the smithing table's template slot); the
+     * coating materials deliberately stay out of {@code #trim_materials}, so only the coating recipes take them.
+     */
+    private void coatings() {
+        for (Coating coating : Coating.values()) {
+            tag(ItemTags.TRIM_TEMPLATES).add(coating.template());
+        }
     }
 
     /**

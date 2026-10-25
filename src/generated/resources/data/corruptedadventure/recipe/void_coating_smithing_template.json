@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "corruptedadventure:white_core"
+    },
+    "C": {
+      "item": "corruptedadventure:voidstone"
+    },
+    "S": {
+      "item": "corruptedadventure:void_coating_smithing_template"
+    }
+  },
+  "pattern": [
+    "#S#",
+    "#C#",
+    "###"
+  ],
+  "result": {
+    "count": 2,
+    "id": "corruptedadventure:void_coating_smithing_template"
+  }
+}

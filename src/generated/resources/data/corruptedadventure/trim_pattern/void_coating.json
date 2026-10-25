@@ -1,0 +1,8 @@
+{
+  "asset_id": "corruptedadventure:void_coating",
+  "decal": false,
+  "description": {
+    "translate": "trim_pattern.corruptedadventure.void_coating"
+  },
+  "template_item": "corruptedadventure:void_coating_smithing_template"
+}
