@@ -113,6 +113,9 @@ public final class Ring2Features {
     static final double GROVE_TO = 0.28;
     /** Single palms on the open sand, clear of the transition ring. */
     static final double SAND_BELOW = 0.0;
+    /** A palm per cell of the open sand outside the groves (about one per six chunks) and in a grove's core (G2). */
+    static final float SAND_PALM_CHANCE = 1.0F / 24.0F;
+    static final float SAND_GROVE_CHANCE = 0.6F;
     /** Shrubs and berries: the outer edge of the shore and the inner part of the transition ring (change 30c). */
     static final double SHRUBS_FROM = 0.05;
     static final double SHRUBS_TO = 0.16;
@@ -371,9 +374,12 @@ public final class Ring2Features {
                 NoiseBandFilter.snapped(PALM_GROVES, GROVE_NOISE, Double.MAX_VALUE, PALM_CELL),
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.PALM_SAPLING.get()),
                 BiomeFilter.biome());
-        // A single palm on the open sand, about one per six chunks.
+        // A single palm on the open sand, about one per six chunks; G2 (G2-R2-7): palm groves where ring_2_oasis_groves is
+        // high (their grass floor is the surface rule), up to SAND_GROVE_CHANCE per cell. The same cells, so the trunks
+        // keep their distance to the other palm features.
         PlacementUtils.register(context, ModPlacedFeatures.OASIS_PALMS_SAND, features.getOrThrow(PALM_TREE),
-                JitteredGridPlacement.of(PALM_CELL, PALM_MARGIN, 1.0F / 24.0F),
+                JitteredGridPlacement.of(PALM_CELL, PALM_MARGIN, SAND_GROVE_CHANCE, ClusterDensity.of(Ring2FlatsLifeFeatures.OASIS_GROVES,
+                        Ring2FlatsLifeFeatures.GROVE_PALMS_LOW, Ring2FlatsLifeFeatures.GROVE_PALMS_HIGH).withFloor(SAND_PALM_CHANCE / SAND_GROVE_CHANCE)),
                 SURFACE,
                 NoiseBandFilter.snapped(POOLS, -Double.MAX_VALUE, SAND_BELOW, PALM_CELL),
                 PlacementUtils.filteredByBlockSurvival(ModBlocks.PALM_SAPLING.get()),
@@ -423,9 +429,11 @@ public final class Ring2Features {
                 SURFACE,
                 PlacementUtils.isEmpty(),
                 BiomeFilter.biome());
-        // Salt flats: a rare crystal on the crust (~1 per chunk), dimly lit at night.
+        // Salt flats: a rare crystal on the crust (~1 per chunk), dimly lit at night; G2 (G2-R2-3): in small clusters on
+        // ring_2_salt_crystal_clusters instead of evenly spread, about as many.
         PlacementUtils.register(context, ModPlacedFeatures.SALT_FLATS_CRYSTALS, features.getOrThrow(SALT_CRYSTAL),
-                JitteredGridPlacement.of(8, 1, 0.25F),
+                JitteredGridPlacement.of(4, 0, 0.5F, ClusterDensity.of(Ring2FlatsLifeFeatures.SALT_CRYSTAL_CLUSTERS,
+                        Ring2FlatsLifeFeatures.CRYSTALS_LOW, Ring2FlatsLifeFeatures.CRYSTALS_HIGH)),
                 SURFACE,
                 BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE,
                         BlockPredicate.matchesBlocks(below(), ModBlocks.SALT_CRUST.get()))),

@@ -19,7 +19,10 @@
       "type": "minecraft:block_predicate_filter",
       "predicate": {
         "type": "minecraft:matching_blocks",
-        "blocks": "minecraft:sand",
+        "blocks": [
+          "minecraft:sand",
+          "minecraft:red_sand"
+        ],
         "offset": [
           0,
           -1,

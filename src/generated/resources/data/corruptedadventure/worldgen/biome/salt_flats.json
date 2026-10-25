@@ -31,7 +31,8 @@
       "corruptedadventure:salt_flats_pillars",
       "corruptedadventure:salt_island_rocks",
       "corruptedadventure:salt_island_fossils",
-      "corruptedadventure:salt_island_bones"
+      "corruptedadventure:salt_island_bones",
+      "corruptedadventure:salt_flats_ridges"
     ],
     [
       "minecraft:monster_room",
@@ -63,7 +64,8 @@
       "corruptedadventure:salt_flats_crystals",
       "corruptedadventure:salt_flats_crystal_fields",
       "corruptedadventure:salt_island_flora",
-      "corruptedadventure:salt_island_cactus"
+      "corruptedadventure:salt_island_cactus",
+      "corruptedadventure:salt_island_bleached_trees"
     ],
     [
       "minecraft:freeze_top_layer"

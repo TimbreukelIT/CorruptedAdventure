@@ -1,0 +1,495 @@
+{
+  "feature": "corruptedadventure:bleached_dead_tree",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "chance": 0.04,
+      "margin": 2
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:all_of",
+        "predicates": [
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": "minecraft:air"
+          },
+          {
+            "type": "minecraft:matching_blocks",
+            "blocks": [
+              "minecraft:sand",
+              "minecraft:red_sand"
+            ],
+            "offset": [
+              0,
+              -1,
+              0
+            ]
+          },
+          {
+            "type": "minecraft:not",
+            "predicate": {
+              "type": "minecraft:any_of",
+              "predicates": [
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -2,
+                    -1,
+                    -2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -2,
+                    -1,
+                    -1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -2,
+                    -1,
+                    0
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -2,
+                    -1,
+                    1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -2,
+                    -1,
+                    2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -1,
+                    -1,
+                    -2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -1,
+                    -1,
+                    -1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -1,
+                    -1,
+                    0
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -1,
+                    -1,
+                    1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -1,
+                    -1,
+                    2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    0,
+                    -1,
+                    -2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    0,
+                    -1,
+                    -1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    0,
+                    -1,
+                    0
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    0,
+                    -1,
+                    1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    0,
+                    -1,
+                    2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    1,
+                    -1,
+                    -2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    1,
+                    -1,
+                    -1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    1,
+                    -1,
+                    0
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    1,
+                    -1,
+                    1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    1,
+                    -1,
+                    2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    2,
+                    -1,
+                    -2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    2,
+                    -1,
+                    -1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    2,
+                    -1,
+                    0
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    2,
+                    -1,
+                    1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    2,
+                    -1,
+                    2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -2,
+                    0,
+                    -2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -2,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -2,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -2,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -2,
+                    0,
+                    2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -1,
+                    0,
+                    -2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -1,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -1,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    -1,
+                    0,
+                    2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    0,
+                    0,
+                    -2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    0,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block"
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    0,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    0,
+                    0,
+                    2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    1,
+                    0,
+                    -2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    1,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    1,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    1,
+                    0,
+                    2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    2,
+                    0,
+                    -2
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    2,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    2,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    2,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "type": "minecraft:matching_blocks",
+                  "blocks": "minecraft:bone_block",
+                  "offset": [
+                    2,
+                    0,
+                    2
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

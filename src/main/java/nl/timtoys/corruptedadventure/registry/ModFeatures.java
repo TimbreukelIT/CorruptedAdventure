@@ -14,6 +14,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.InvertedTreeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MemoryFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MirroredTreesFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.AbandonedCampFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.SaltRidgeConfiguration;
+import nl.timtoys.corruptedadventure.worldgen.feature.SaltRidgeFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TorchPatternFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.HerobrineSignFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MissingChunkFeature;
@@ -358,6 +360,10 @@ public final class ModFeatures {
     /** {@code corruptedadventure:inverted_tree} (95): a tree hanging upside down under an inverted hill */
     public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> INVERTED_TREE =
             FEATURES.register("inverted_tree", () -> new InvertedTreeFeature(NoneFeatureConfiguration.CODEC));
+    // ring 2 — G2 flats (dune_sea, salt_flats, oasis_flats)
+    /** {@code corruptedadventure:salt_ridge} (G2): pressure ridges on the cracks of the salt crust, in patches */
+    public static final DeferredHolder<Feature<?>, Feature<SaltRidgeConfiguration>> SALT_RIDGE =
+            FEATURES.register("salt_ridge", () -> new SaltRidgeFeature(SaltRidgeConfiguration.CODEC));
 
     private ModFeatures() {
     }

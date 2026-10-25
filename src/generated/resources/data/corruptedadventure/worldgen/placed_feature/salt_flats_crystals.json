@@ -3,9 +3,13 @@
   "placement": [
     {
       "type": "corruptedadventure:jittered_grid",
-      "cell_size": 8,
-      "chance": 0.25,
-      "margin": 1
+      "cell_size": 4,
+      "chance": 0.5,
+      "density": {
+        "high": 0.5,
+        "low": 0.2,
+        "noise": "corruptedadventure:ring_2_salt_crystal_clusters"
+      }
     },
     {
       "type": "minecraft:heightmap",

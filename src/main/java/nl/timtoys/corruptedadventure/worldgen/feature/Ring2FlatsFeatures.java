@@ -93,7 +93,7 @@ public final class Ring2FlatsFeatures {
         // A hidden oasis in a dune valley: water 2 deep in the core, a grass rim with plants, sugar cane and 1–2 palms.
         FeatureUtils.register(context, DUNE_OASIS, ModFeatures.SURFACE_POOL.get(), new SurfacePoolConfiguration(
                 UniformFloat.of(1.5F, 3.0F), 0.3F, ConstantInt.of(2),
-                HolderSet.direct(Block::builtInRegistryHolder, Blocks.SAND), 2,
+                HolderSet.direct(Block::builtInRegistryHolder, Blocks.SAND, Blocks.RED_SAND), 2,
                 new SurfacePoolConfiguration.Rim(BlockStateProvider.simple(Blocks.GRASS_BLOCK), 2),
                 Optional.of(new SurfacePoolConfiguration.Scatter(weighted(SimpleWeightedRandomList.<BlockState>builder()
                         .add(Blocks.SHORT_GRASS.defaultBlockState(), 5)
@@ -173,12 +173,12 @@ public final class Ring2FlatsFeatures {
                 SURFACE,
                 HeightBandFilter.below(VALLEY_FLOOR),
                 SlopeFilter.flat(4, 2),
-                BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks(below(), Blocks.SAND)),
+                BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks(below(), Blocks.SAND, Blocks.RED_SAND)),
                 BiomeFilter.biome());
         PlacementUtils.register(context, ModPlacedFeatures.DUNE_SEA_OUTCROPS, features.getOrThrow(DUNE_ROCK),
                 JitteredGridPlacement.of(16, 1, 0.1F),
                 SURFACE,
-                BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks(below(), Blocks.SAND)),
+                BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks(below(), Blocks.SAND, Blocks.RED_SAND)),
                 BiomeFilter.biome());
     }
 

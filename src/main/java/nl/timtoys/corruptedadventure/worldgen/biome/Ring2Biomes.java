@@ -23,6 +23,7 @@ import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2RockFeatures;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2FlatsLifeFeatures;
 
 import java.util.List;
 import java.util.Optional;
@@ -89,6 +90,19 @@ public final class Ring2Biomes {
     static final List<ResourceKey<PlacedFeature>> DUNE_SEA_VEGETATION = List.of(ModPlacedFeatures.DUNE_SEA_VEGETATION,
             ModPlacedFeatures.DUNE_SEA_VALLEY_FLORA, ModPlacedFeatures.DUNE_SEA_VALLEY_GRASS, ModPlacedFeatures.DUNE_SEA_CACTUS_GROUPS);
 
+    /** G2 (G2-R2-3), after the island bones ({@code LOCAL_MODIFICATIONS}): pressure ridges on the crust in patches. */
+    static final List<ResourceKey<PlacedFeature>> SALT_FLATS_RIDGES = List.of(Ring2FlatsLifeFeatures.SALT_FLATS_RIDGES);
+    /** G2 (G2-R2-3), after the island vegetation ({@code VEGETAL_DECORATION}): bleached dead trees on the islands. */
+    static final List<ResourceKey<PlacedFeature>> SALT_ISLAND_TREES = List.of(Ring2FlatsLifeFeatures.SALT_ISLAND_BLEACHED_TREES);
+    /** G2 (G2-R2-2), after the dune plants ({@code VEGETAL_DECORATION}): thickets in the valleys, buried dead trees on the flanks. */
+    static final List<ResourceKey<PlacedFeature>> DUNE_SEA_THICKETS = List.of(Ring2FlatsLifeFeatures.DUNE_SEA_THICKETS,
+            Ring2FlatsLifeFeatures.DUNE_SEA_BURIED_TREES);
+    /** G2 (G2-R2-7), after the oasis rocks ({@code LOCAL_MODIFICATIONS}): dry pool hollows on the open sand. */
+    static final List<ResourceKey<PlacedFeature>> OASIS_HOLLOWS = List.of(Ring2FlatsLifeFeatures.OASIS_DRY_HOLLOWS);
+    /** G2 (G2-R2-7), after the oasis vegetation ({@code VEGETAL_DECORATION}): scrub and dry grass on the open sand. */
+    static final List<ResourceKey<PlacedFeature>> OASIS_SCRUB = List.of(Ring2FlatsLifeFeatures.OASIS_SCRUB,
+            Ring2FlatsLifeFeatures.OASIS_SCRUB_GRASS);
+
     /** In place of vanilla's soft disks, in vanilla's order. */
     static final List<ResourceKey<PlacedFeature>> DISKS = List.of(ModPlacedFeatures.RING_2_DISK_SAND, ModPlacedFeatures.RING_2_DISK_CLAY,
             ModPlacedFeatures.RING_2_DISK_GRAVEL);
@@ -127,7 +141,10 @@ public final class Ring2Biomes {
     private static Biome oasisFlats(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
         generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, ModPlacedFeatures.OASIS_ROCKS);
-        for (ResourceKey<PlacedFeature> feature : OASIS_VEGETATION) {
+        for (ResourceKey<PlacedFeature> feature : OASIS_HOLLOWS) {
+            generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
+        }
+        for (ResourceKey<PlacedFeature> feature : concat(OASIS_VEGETATION, OASIS_SCRUB)) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
         // Downfall only colours (and farmland); there is no rain in ring 2.
@@ -160,10 +177,10 @@ public final class Ring2Biomes {
      */
     private static Biome saltFlats(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
-        for (ResourceKey<PlacedFeature> feature : concat(SALT_FLATS_SHAPES, SALT_ISLAND_BONES)) {
+        for (ResourceKey<PlacedFeature> feature : concat(concat(SALT_FLATS_SHAPES, SALT_ISLAND_BONES), SALT_FLATS_RIDGES)) {
             generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
         }
-        for (ResourceKey<PlacedFeature> feature : concat(SALT_FLATS_CRYSTALS, SALT_ISLAND_VEGETATION)) {
+        for (ResourceKey<PlacedFeature> feature : concat(concat(SALT_FLATS_CRYSTALS, SALT_ISLAND_VEGETATION), SALT_ISLAND_TREES)) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
         return biome(BiomeAmbience.Palette.SALT_FLATS, 0.0F, 0xC9C08A, 0xB5AC6E, Optional.empty(), withoutCreatures(spawns(false)), generation);
@@ -178,7 +195,7 @@ public final class Ring2Biomes {
         for (ResourceKey<PlacedFeature> feature : concat(DUNE_SEA_SHAPES, DUNE_SEA_BONES)) {
             generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, feature);
         }
-        for (ResourceKey<PlacedFeature> feature : DUNE_SEA_VEGETATION) {
+        for (ResourceKey<PlacedFeature> feature : concat(DUNE_SEA_VEGETATION, DUNE_SEA_THICKETS)) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
         return biome(BiomeAmbience.Palette.DUNE_SEA, 0.0F, 0xBFB755, 0xAEA42A, Optional.empty(), spawns(false), generation);

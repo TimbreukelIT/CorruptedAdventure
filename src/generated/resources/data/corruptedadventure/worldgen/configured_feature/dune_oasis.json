@@ -3,7 +3,10 @@
   "config": {
     "depth": 2,
     "edge_jitter": 0.3,
-    "ground": "minecraft:sand",
+    "ground": [
+      "minecraft:sand",
+      "minecraft:red_sand"
+    ],
     "max_step": 2,
     "radius": {
       "type": "minecraft:uniform",
