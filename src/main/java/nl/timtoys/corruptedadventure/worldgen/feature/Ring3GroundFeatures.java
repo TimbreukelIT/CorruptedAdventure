@@ -231,7 +231,8 @@ public final class Ring3GroundFeatures {
         } else if (biome == ModBiomes.TITAN_FIELDS) {
             return weighted(Blocks.BASALT, 2, Blocks.SMOOTH_BASALT, 1, Blocks.BLACKSTONE, 1, Blocks.TUFF, 1);
         }
-        return weighted(Blocks.SMOOTH_BASALT, 2, Blocks.TUFF, 2, Blocks.BASALT, 1);
+        // Sulfur fields: light rock, the dark basalt read as litter on the yellow crust (G2 after-walk).
+        return weighted(Blocks.TUFF, 3, ModBlocks.PUMICE.get(), 2, Blocks.CALCITE, 1);
     }
 
     /** The scree of a debris fan. */
@@ -324,10 +325,12 @@ public final class Ring3GroundFeatures {
             PlacementUtils.register(context, filling.fans(), features.getOrThrow(filling.fan()),
                     JitteredGridPlacement.of(16, 5, filling.fanChance()), SURFACE, SlopeFilter.wallFoot(6, 5), slopes, onGround,
                     BiomeFilter.biome());
+            // Sparser on the sulfur crust, where every stone stands out against the yellow (G2 after-walk).
+            boolean sulfur = filling.biome() == ModBiomes.SULFUR_FIELDS;
             PlacementUtils.register(context, filling.boulders(), features.getOrThrow(filling.boulder()),
-                    JitteredGridPlacement.of(16, 2, 0.45F), SURFACE, upTo45, slopes, onGround, BiomeFilter.biome());
+                    JitteredGridPlacement.of(16, 2, sulfur ? 0.2F : 0.45F), SURFACE, upTo45, slopes, onGround, BiomeFilter.biome());
             PlacementUtils.register(context, filling.stones(), features.getOrThrow(filling.stone()),
-                    JitteredGridPlacement.of(8, 1, 0.4F), SURFACE, upTo45, slopes, onGround, BiomeFilter.biome());
+                    JitteredGridPlacement.of(8, 1, sulfur ? 0.15F : 0.4F), SURFACE, upTo45, slopes, onGround, BiomeFilter.biome());
         }
 
         // Ash plain. Fallen trunks in the tree groups and the burnt forest (FallenTreeFeature keeps them in the chunk).
