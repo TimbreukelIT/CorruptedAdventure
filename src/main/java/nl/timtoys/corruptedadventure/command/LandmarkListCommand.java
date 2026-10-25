@@ -40,7 +40,7 @@ final class LandmarkListCommand {
     }
 
     private static int list(CommandSourceStack source, int x0, int z0, int x1, int z1) throws CommandSyntaxException {
-        if (Math.abs(x1 - x0) > MAX_SPAN || Math.abs(z1 - z0) > MAX_SPAN) {
+        if (Math.abs((long) x1 - x0) > MAX_SPAN || Math.abs((long) z1 - z0) > MAX_SPAN) {
             throw new SimpleCommandExceptionType(Component.literal("Box too large (at most " + MAX_SPAN + " per side)")).create();
         }
         List<BlightedLandmarks.Site> sites = BlightedLandmarks.centredIn(source.getLevel(), Math.min(x0, x1), Math.min(z0, z1),
