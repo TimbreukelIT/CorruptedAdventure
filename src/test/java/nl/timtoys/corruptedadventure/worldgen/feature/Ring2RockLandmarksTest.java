@@ -60,7 +60,7 @@ class Ring2RockLandmarksTest {
         assertEquals(12.0, cross[0]);
         assertEquals(12.0, cross[1]);
         assertEquals(131.0, cross[2]);
-        assertNull(Ring2RockLandmarks.crossingOf(profile(25, 132.0, 40), 70.0), "too wide");
+        assertNull(Ring2RockLandmarks.crossingOf(profile(23, 132.0, 40), 70.0), "too wide");
         assertNull(Ring2RockLandmarks.crossingOf(profile(6, 132.0, 40), 70.0), "too narrow");
         assertNull(Ring2RockLandmarks.crossingOf(profile(12, 132.0, 40), 115.0), "too shallow");
         assertNull(Ring2RockLandmarks.crossingOf(profile(12, 90.0, 3), 70.0), "no landing behind the rim");

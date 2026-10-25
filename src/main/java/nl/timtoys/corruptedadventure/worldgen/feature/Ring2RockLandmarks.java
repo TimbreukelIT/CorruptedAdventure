@@ -23,7 +23,7 @@ import nl.timtoys.corruptedadventure.registry.ModBiomes;
  */
 public final class Ring2RockLandmarks {
     /** The grids (cell, share of cells that try, tries, margin); the anchor is a point on the crossing or the hoodoo's foot. */
-    static final Landmarks.Grid BRIDGE_GRID = new Landmarks.Grid(448, 1.0F, 24, 48);
+    static final Landmarks.Grid BRIDGE_GRID = new Landmarks.Grid(256, 1.0F, 48, 40);
     static final Landmarks.Grid HOODOO_GRID = new Landmarks.Grid(384, 1.0F, 12, 40);
     private static final long BRIDGE_SALT = 0x2B_41D6_E5L;
     private static final long HOODOO_SALT = 0x2B_400D_00L;
@@ -31,10 +31,12 @@ public final class Ring2RockLandmarks {
     // ---- the bridge
     /** Half the longest scan across the canyon, and the directions tried (over half a turn). */
     static final int SCAN = 44;
-    private static final int DIRECTIONS = 16;
+    private static final int DIRECTIONS = 32;
+    /** The crossing point lies on a canyon floor or its lower steps (canyon floors lie at Y 66–89). */
+    static final int MAX_FLOOR_Y = 104;
     /** Span between the rims at deck height. */
     static final int MIN_SPAN = 18;
-    static final int MAX_SPAN = 40;
+    static final int MAX_SPAN = 44;
     /** The canyon under the crossing point is at least this much lower than the deck, the rims at least on this height. */
     static final int MIN_DEPTH = 24;
     static final int MIN_RIM_Y = 112;
@@ -156,26 +158,32 @@ public final class Ring2RockLandmarks {
     }
 
     /**
-     * The shortest crossing of a deep canyon through (x, z), or null: over {@value #DIRECTIONS} directions the profile of
+     * The shortest crossing of a deep canyon through (x, z), or null: over up to 12 of {@value #DIRECTIONS} directions the profile of
      * the pure height {@code height} is scanned {@value #SCAN} blocks each way; the deck lies one block under the lower
      * of the two highest points, the rims are where the ground first reaches it, and both rims need a landing.
      */
     static Bridge crossing(DoubleBinaryOperator height, int x, int z, RandomSource random) {
         double floor = height.applyAsDouble(x + 0.5, z + 0.5);
-        double best = Double.MAX_VALUE;
+        if (floor > MAX_FLOOR_Y) {
+            return null;
+        }
+        // Coarse every fourth direction, then the neighbours of the best one: 12 profiles instead of 32.
         double[] pick = null;
-        double[] profile = new double[2 * SCAN + 1];
-        for (int d = 0; d < DIRECTIONS; d++) {
-            double angle = Math.PI * d / DIRECTIONS;
-            double cos = Math.cos(angle);
-            double sin = Math.sin(angle);
-            for (int i = -SCAN; i <= SCAN; i++) {
-                profile[i + SCAN] = height.applyAsDouble(x + 0.5 + i * cos, z + 0.5 + i * sin);
+        int bestD = -1;
+        for (int d = 0; d < DIRECTIONS; d += 4) {
+            double[] cross = scan(height, x, z, d, floor);
+            if (cross != null && (pick == null || cross[2] + cross[3] < pick[2] + pick[3])) {
+                pick = cross;
+                bestD = d;
             }
-            double[] cross = crossingOf(profile, floor);
-            if (cross != null && cross[0] + cross[1] < best) {
-                best = cross[0] + cross[1];
-                pick = new double[]{cos, sin, cross[0], cross[1], cross[2]};
+        }
+        if (pick == null) {
+            return null;
+        }
+        for (int step : new int[]{-2, -1, 1, 2}) {
+            double[] cross = scan(height, x, z, Math.floorMod(bestD + step, DIRECTIONS), floor);
+            if (cross != null && cross[2] + cross[3] < pick[2] + pick[3]) {
+                pick = cross;
             }
         }
         if (pick == null) {
@@ -187,6 +195,19 @@ public final class Ring2RockLandmarks {
         double flare = 3.0 + random.nextDouble() * 4.0;
         double width = 3.0 + random.nextDouble() * 2.2;
         return new Bridge(x, z, pick[0], pick[1], pick[2], pick[3], top, crown, thickness, flare, width, random.nextLong());
+    }
+
+    /** The crossing along direction {@code d} (of {@value #DIRECTIONS} over half a turn): {cos, sin, back, ahead, top} or null. */
+    private static double[] scan(DoubleBinaryOperator height, int x, int z, int d, double floor) {
+        double angle = Math.PI * d / DIRECTIONS;
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double[] profile = new double[2 * SCAN + 1];
+        for (int i = -SCAN; i <= SCAN; i++) {
+            profile[i + SCAN] = height.applyAsDouble(x + 0.5 + i * cos, z + 0.5 + i * sin);
+        }
+        double[] cross = crossingOf(profile, floor);
+        return cross == null ? null : new double[]{cos, sin, cross[0], cross[1], cross[2]};
     }
 
     /**
