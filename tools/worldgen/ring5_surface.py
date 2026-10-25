@@ -111,8 +111,10 @@ STEEP = {"type": "minecraft:steep"}
 LOW = below(76)
 # Walk 1 (2026-10-24): since 83b the ground rolls (Y ~60-120) and sinks towards the band line, so "below Y 76" is no
 # longer only the pit floors but whole valleys and the last ~150 blocks before the band line (67 % sand there, a white
-# strip). The low places take sand only in coarse blobs of the secondary surface noise (~64 blocks): about half of them.
+# strip). The open low places take sand only in coarse blobs of the secondary surface noise (~64 blocks): about half of
+# them. The pit floors below Y 76 keep their sand as before walk 1 (review: LOW_SAND had bared half of them).
 LOW_SAND = noise("minecraft:surface_secondary", 0.0)
+PIT = ground("pit")
 # corrupted_wastes' bare ground (V-A, 2026-10-24): patches of bare corrupted dirt (vanilla's surface noise, ~60 blocks)
 # and smaller ones of corrupted sand (the patch noise), together about 10-15 % of the top with the pit floors.
 BARE_PATCHES = noise("minecraft:surface", 0.53)
@@ -152,9 +154,10 @@ def surface(top, under):
 
 
 def corrupted_wastes():
-    """Dead soil; corrupted sand in blobs of the low places (pit floors, valleys) and in patches; patches of bare dirt."""
-    return seq(cond(TOP, seq(cond(LOW, cond(LOW_SAND, put(SAND))), cond(SAND_PATCHES, put(SAND)), cond(BARE_PATCHES, block(DIRT)),
-                             block(GRASS))),
+    """Dead soil; corrupted sand on the low pit floors, in blobs of the other low places (valleys) and in patches; patches
+    of bare dirt."""
+    return seq(cond(TOP, seq(cond(LOW, seq(cond(PIT, put(SAND)), cond(LOW_SAND, put(SAND)))), cond(SAND_PATCHES, put(SAND)),
+                             cond(BARE_PATCHES, block(DIRT)), block(GRASS))),
                cond(DEPTH, block(DIRT)))
 
 

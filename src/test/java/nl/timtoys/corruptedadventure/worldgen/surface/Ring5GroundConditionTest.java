@@ -91,4 +91,27 @@ class Ring5GroundConditionTest {
         }
         assertTrue(hills > 100, "hill columns " + hills);
     }
+
+    /**
+     * {@code corrupted_wastes}' pits (perf area {@code wastes}): {@code pit} on their floors (walk 1 review: they keep their
+     * sand), a small share of the ground, never off ring 5's core.
+     */
+    @Test
+    void pitFloorsAreKnown() {
+        long seed = WORLD.salt();
+        int pits = 0;
+        int columns = 0;
+        for (int x = 517 * 16; x < 533 * 16; x += 2) {
+            for (int z = -8 * 16; z < 8 * 16; z += 2) {
+                Ring5GroundCondition.Column column = Ring5GroundCondition.Column.ofWorld(WORLD, x, z);
+                columns++;
+                boolean pit = column.test(Ring5GroundCondition.Part.PIT, 0, seed, x, z);
+                if (pit) {
+                    pits++;
+                    assertTrue(column.core() && WORLD.field().pitFloor(x, z), x + " " + z);
+                }
+            }
+        }
+        assertTrue(pits > 20 && pits < columns / 5, "pit columns " + pits + " of " + columns);
+    }
 }

@@ -358,6 +358,11 @@ final class Ring5Inner {
         return new Stair(ox, oz, steps, run, width, direction, Math.round(base(ox, oz)));
     }
 
+    /** Whether {@link #wastesTop} gives the column a pit's floor (a pit, no stair over it). */
+    boolean pitFloor(int x, int z) {
+        return !Double.isNaN(pitAt(x, z)) && Double.isNaN(stairAt(x, z));
+    }
+
     /** A pit's flat floor at the column (perfectly round), or NaN. */
     double pitAt(int x, int z) {
         int ci = Math.floorDiv(x, PIT_CELL);

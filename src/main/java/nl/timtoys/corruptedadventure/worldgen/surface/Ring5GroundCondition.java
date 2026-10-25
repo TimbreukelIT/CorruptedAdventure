@@ -28,6 +28,8 @@ import nl.timtoys.corruptedadventure.worldgen.feature.Ring5World;
  *   <li>{@code vein}: a column beside the void, a block of the wall below that, with a chance growing with depth;</li>
  *   <li>{@code wall}: a column beside the void (the wall itself);</li>
  *   <li>{@code castle}: ground of a castle site (plateau and ruined rim; V9-B);</li>
+ *   <li>{@code pit}: a column on the floor of one of {@code corrupted_wastes}' pits (walk 1 review: the pit floors keep
+ *   their sand where the open low ground takes it only in blobs);</li>
  *   <li>{@code inverted_hill}: a floe column with an upside-down hill under it ({@code inverted_hills}, V10-A), its lowest
  *   {@link #HILL_UNDERSIDE} blocks (not the ceiling of a void cave in the floe, 93);</li>
  *   <li>{@code hole_rim}, {@code hole_wall_top}, {@code hole_vein}, {@code hole_wall}: the same edge round a void cave's
@@ -89,9 +91,9 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
 
     /** The answers for one column. */
     record Column(boolean core, boolean missing, int voidDistance, int rim, int wallTop, int top, int upper, boolean castle,
-                  int hillBottom, int holeRim) {
+                  int hillBottom, int holeRim, boolean pit) {
         static final Column OUTSIDE = new Column(false, false, Ring5World.FAR, 0, 0, Integer.MIN_VALUE, 0, false,
-                Integer.MIN_VALUE, Integer.MIN_VALUE);
+                Integer.MIN_VALUE, Integer.MIN_VALUE, false);
 
         static Column of(Ring5World world, int x, int z) {
             // The cached ring of the column first: rings 1-3 (most of the world) never ask the layout's noise again.
@@ -114,7 +116,7 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
             return new Column(true, missing, distance, rim, wallTop, world.top(x, z),
                     column.layered() ? UPPER_LAYERS : UPPER_DEPTH, solid && column.castle() > 0.0,
                     solid && column.inverted() > 0.0 ? Mth.floor(column.bottom()) + 1 : Integer.MIN_VALUE,
-                    world.field().holeRimTop(x, z));
+                    world.field().holeRimTop(x, z), solid && world.field().pitFloor(x, z));
         }
 
         boolean test(Part part, int y, long seed, int x, int z) {
@@ -129,6 +131,7 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
                 case VEIN -> voidDistance == 1 && vein(seed, x, y, z, top - wallTop, 0xFE1AL);
                 case WALL -> voidDistance == 1;
                 case CASTLE -> castle;
+                case PIT -> pit;
                 case INVERTED_HILL -> hillBottom != Integer.MIN_VALUE && y < hillBottom + HILL_UNDERSIDE;
                 case UPPER -> top == Integer.MIN_VALUE || y > top - upper;
                 case HOLE_RIM -> holeRim != Integer.MIN_VALUE && y < holeRim && y >= holeWall();
@@ -175,6 +178,7 @@ public record Ring5GroundCondition(Part part) implements SurfaceRules.ConditionS
         VEIN("vein"),
         WALL("wall"),
         CASTLE("castle"),
+        PIT("pit"),
         INVERTED_HILL("inverted_hill"),
         UPPER("upper"),
         HOLE_RIM("hole_rim"),

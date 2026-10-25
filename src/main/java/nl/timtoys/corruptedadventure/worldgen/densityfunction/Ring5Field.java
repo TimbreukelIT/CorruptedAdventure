@@ -982,6 +982,14 @@ public final class Ring5Field implements DensityFunction {
     }
 
     /**
+     * Whether the column lies on the floor of one of {@code corrupted_wastes}' pits (83): its sand (walk 1 review; the
+     * surface rule {@code ring_5_ground}). The pit's shape only: the biome and the band are the rule's.
+     */
+    public boolean pitFloor(int x, int z) {
+        return inner().pitFloor(x, z);
+    }
+
+    /**
      * Where vanilla's damped caves (93, V93-1 A) may cut a block: 0 not at all (closed, an exact span, a glitch field's
      * shifted layers, void), 1 only the entrances ({@link #NATURAL_COVER} under the top), 2 also the noise caves. Exact
      * shapes stay whole: a bridge, a cube or a layer has density 1 right at its visible face. The DF {@code
