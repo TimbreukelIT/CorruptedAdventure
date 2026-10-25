@@ -44,7 +44,7 @@ final class LandmarkListCommand {
     }
 
     private static int list(CommandSourceStack source, int x0, int z0, int x1, int z1) throws CommandSyntaxException {
-        if (Math.abs(x1 - x0) > MAX_SPAN || Math.abs(z1 - z0) > MAX_SPAN) {
+        if (Math.abs((long) x1 - x0) > MAX_SPAN || Math.abs((long) z1 - z0) > MAX_SPAN) {
             throw new SimpleCommandExceptionType(Component.literal("Box too large (at most " + MAX_SPAN + " per side)")).create();
         }
         int minX = Math.min(x0, x1);
@@ -55,7 +55,7 @@ final class LandmarkListCommand {
         for (BlightedLandmarks.Site site : BlightedLandmarks.centredIn(source.getLevel(), minX, minZ, maxX, maxZ)) {
             lines.add(String.format(Locale.ROOT, "%s %d %d %d", site.kind().getSerializedName(), site.x(), site.ground(), site.z()));
         }
-        boolean ring3 = maxX - minX <= MAX_SPAN_RING_3 && maxZ - minZ <= MAX_SPAN_RING_3;
+        boolean ring3 = (long) maxX - minX <= MAX_SPAN_RING_3 && (long) maxZ - minZ <= MAX_SPAN_RING_3;
         for (VolcanicLandmarks.Site site : ring3 ? VolcanicLandmarks.centredIn(source.getLevel(), minX, minZ, maxX, maxZ)
                 : List.<VolcanicLandmarks.Site>of()) {
             lines.add(String.format(Locale.ROOT, "%s %d %d %d", site.kind().getSerializedName(), site.x(), site.ground(), site.z()));
