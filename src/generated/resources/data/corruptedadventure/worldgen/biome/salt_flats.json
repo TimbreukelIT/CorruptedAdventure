@@ -63,7 +63,8 @@
       "corruptedadventure:salt_flats_crystals",
       "corruptedadventure:salt_flats_crystal_fields",
       "corruptedadventure:salt_island_flora",
-      "corruptedadventure:salt_island_cactus"
+      "corruptedadventure:salt_island_cactus",
+      "corruptedadventure:salt_flats_salt_dome"
     ],
     [
       "minecraft:freeze_top_layer"

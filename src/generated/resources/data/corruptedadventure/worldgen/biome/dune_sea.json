@@ -61,7 +61,8 @@
       "corruptedadventure:dune_sea_vegetation",
       "corruptedadventure:dune_sea_valley_flora",
       "corruptedadventure:dune_sea_valley_grass",
-      "corruptedadventure:dune_sea_cactus_groups"
+      "corruptedadventure:dune_sea_cactus_groups",
+      "corruptedadventure:dune_sea_skeleton"
     ],
     [
       "minecraft:freeze_top_layer"

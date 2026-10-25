@@ -1,0 +1,8 @@
+{
+  "type": "corruptedadventure:ring_2_flat_landmark",
+  "config": {
+    "kind": "giant_palm",
+    "part": "spring",
+    "pool": "corruptedadventure:giant_palm_pool"
+  }
+}

@@ -22,6 +22,7 @@ import nl.timtoys.corruptedadventure.registry.ModBiomes;
 import nl.timtoys.corruptedadventure.registry.ModPlacedFeatures;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.worldgen.carver.Ring2Carvers;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2FlatLandmarkFeatures;
 
 import java.util.List;
 import java.util.Optional;
@@ -88,6 +89,14 @@ public final class Ring2Biomes {
     static final List<ResourceKey<PlacedFeature>> DUNE_SEA_VEGETATION = List.of(ModPlacedFeatures.DUNE_SEA_VEGETATION,
             ModPlacedFeatures.DUNE_SEA_VALLEY_FLORA, ModPlacedFeatures.DUNE_SEA_VALLEY_GRASS, ModPlacedFeatures.DUNE_SEA_CACTUS_GROUPS);
 
+    /**
+     * The eye-catchers of the flat biomes (G2 ring 2, {@code Ring2FlatLandmarkFeatures}): each last in its step, after
+     * everything of its chunk it may stand on or over; the giant palm's spring pool before the oasis plants.
+     */
+    static final List<ResourceKey<PlacedFeature>> FLAT_LANDMARKS = List.of(Ring2FlatLandmarkFeatures.SALT_FLATS_SALT_DOME,
+            Ring2FlatLandmarkFeatures.DUNE_SEA_SKELETON, Ring2FlatLandmarkFeatures.OASIS_FLATS_GIANT_PALM_SPRING,
+            Ring2FlatLandmarkFeatures.OASIS_FLATS_GIANT_PALM);
+
     /** In place of vanilla's soft disks, in vanilla's order. */
     static final List<ResourceKey<PlacedFeature>> DISKS = List.of(ModPlacedFeatures.RING_2_DISK_SAND, ModPlacedFeatures.RING_2_DISK_CLAY,
             ModPlacedFeatures.RING_2_DISK_GRAVEL);
@@ -119,9 +128,11 @@ public final class Ring2Biomes {
     private static Biome oasisFlats(HolderGetter<PlacedFeature> features, HolderGetter<ConfiguredWorldCarver<?>> carvers) {
         BiomeGenerationSettings.Builder generation = generation(features, carvers);
         generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, ModPlacedFeatures.OASIS_ROCKS);
+        generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, Ring2FlatLandmarkFeatures.OASIS_FLATS_GIANT_PALM_SPRING);
         for (ResourceKey<PlacedFeature> feature : OASIS_VEGETATION) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
+        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, Ring2FlatLandmarkFeatures.OASIS_FLATS_GIANT_PALM);
         // Downfall only colours (and farmland); there is no rain in ring 2.
         return biome(BiomeAmbience.Palette.OASIS_FLATS, 0.4F, 0x6FB33F, 0x5DA032, OASIS_BIRDS, spawns(true), generation);
     }
@@ -155,6 +166,7 @@ public final class Ring2Biomes {
         for (ResourceKey<PlacedFeature> feature : concat(SALT_FLATS_CRYSTALS, SALT_ISLAND_VEGETATION)) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
+        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, Ring2FlatLandmarkFeatures.SALT_FLATS_SALT_DOME);
         return biome(BiomeAmbience.Palette.SALT_FLATS, 0.0F, 0xC9C08A, 0xB5AC6E, Optional.empty(), withoutCreatures(spawns(false)), generation);
     }
 
@@ -170,6 +182,7 @@ public final class Ring2Biomes {
         for (ResourceKey<PlacedFeature> feature : DUNE_SEA_VEGETATION) {
             generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, feature);
         }
+        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, Ring2FlatLandmarkFeatures.DUNE_SEA_SKELETON);
         return biome(BiomeAmbience.Palette.DUNE_SEA, 0.0F, 0xBFB755, 0xAEA42A, Optional.empty(), spawns(false), generation);
     }
 

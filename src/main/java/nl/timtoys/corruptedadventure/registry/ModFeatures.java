@@ -128,6 +128,7 @@ import nl.timtoys.corruptedadventure.worldgen.feature.LedgeStrandConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.LedgeStrandFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TitanRockConfiguration;
 import nl.timtoys.corruptedadventure.worldgen.feature.TitanRockFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2FlatLandmarkFeature;
 
 /** Feature types with their own code; the configured and placed features come from datagen. */
 public final class ModFeatures {
@@ -358,6 +359,11 @@ public final class ModFeatures {
     /** {@code corruptedadventure:inverted_tree} (95): a tree hanging upside down under an inverted hill */
     public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> INVERTED_TREE =
             FEATURES.register("inverted_tree", () -> new InvertedTreeFeature(NoneFeatureConfiguration.CODEC));
+
+    // ring 2 — G2 landmarks of the flat biomes (salt dome, dune skeleton, giant palm)
+    /** {@code corruptedadventure:ring_2_flat_landmark} (G2 ring 2): this chunk's part of the flat biomes' landmarks of one kind */
+    public static final DeferredHolder<Feature<?>, Feature<Ring2FlatLandmarkFeature.Config>> RING_2_FLAT_LANDMARK =
+            FEATURES.register("ring_2_flat_landmark", () -> new Ring2FlatLandmarkFeature(Ring2FlatLandmarkFeature.Config.CODEC));
 
     private ModFeatures() {
     }

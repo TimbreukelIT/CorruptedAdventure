@@ -30,7 +30,8 @@
     [],
     [
       "minecraft:amethyst_geode",
-      "corruptedadventure:oasis_rocks"
+      "corruptedadventure:oasis_rocks",
+      "corruptedadventure:oasis_flats_giant_palm_spring"
     ],
     [
       "minecraft:monster_room",
@@ -69,7 +70,8 @@
       "corruptedadventure:oasis_flowers_white",
       "corruptedadventure:oasis_flowers_purple",
       "corruptedadventure:oasis_edge_shrubs",
-      "corruptedadventure:oasis_transition_vegetation"
+      "corruptedadventure:oasis_transition_vegetation",
+      "corruptedadventure:oasis_flats_giant_palm"
     ],
     [
       "minecraft:freeze_top_layer"

@@ -32,6 +32,7 @@ public final class CaCommand {
                 .then(TerrainMapCommand.build())
                 .then(FallListCommand.build())
                 .then(LandmarkListCommand.build())
+                .then(FlatLandmarkListCommand.build())
                 .then(CastlesCommand.build())
                 .then(StudioCommand.build()));
     }
