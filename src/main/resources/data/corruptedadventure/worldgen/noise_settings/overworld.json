@@ -15386,41 +15386,20 @@
                               "max_threshold": 1.7976931348623157e+308
                             },
                             "then_run": {
-                              "type": "minecraft:sequence",
-                              "sequence": [
-                                {
-                                  "type": "minecraft:condition",
-                                  "if_true": {
-                                    "type": "minecraft:stone_depth",
-                                    "offset": 0,
-                                    "add_surface_depth": false,
-                                    "secondary_depth_range": 0,
-                                    "surface_type": "floor"
-                                  },
-                                  "then_run": {
-                                    "type": "minecraft:block",
-                                    "result_state": {
-                                      "Name": "corruptedadventure:corrupted_stone"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "minecraft:condition",
-                                  "if_true": {
-                                    "type": "minecraft:stone_depth",
-                                    "offset": 0,
-                                    "add_surface_depth": true,
-                                    "secondary_depth_range": 0,
-                                    "surface_type": "floor"
-                                  },
-                                  "then_run": {
-                                    "type": "minecraft:block",
-                                    "result_state": {
-                                      "Name": "corruptedadventure:corrupted_stone"
-                                    }
-                                  }
+                              "type": "minecraft:condition",
+                              "if_true": {
+                                "type": "minecraft:stone_depth",
+                                "offset": 0,
+                                "add_surface_depth": true,
+                                "secondary_depth_range": 0,
+                                "surface_type": "floor"
+                              },
+                              "then_run": {
+                                "type": "minecraft:block",
+                                "result_state": {
+                                  "Name": "corruptedadventure:corrupted_stone"
                                 }
-                              ]
+                              }
                             }
                           }
                         },
@@ -15439,41 +15418,20 @@
                               "max_threshold": 1.7976931348623157e+308
                             },
                             "then_run": {
-                              "type": "minecraft:sequence",
-                              "sequence": [
-                                {
-                                  "type": "minecraft:condition",
-                                  "if_true": {
-                                    "type": "minecraft:stone_depth",
-                                    "offset": 0,
-                                    "add_surface_depth": false,
-                                    "secondary_depth_range": 0,
-                                    "surface_type": "floor"
-                                  },
-                                  "then_run": {
-                                    "type": "minecraft:block",
-                                    "result_state": {
-                                      "Name": "corruptedadventure:corrupted_stone"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "minecraft:condition",
-                                  "if_true": {
-                                    "type": "minecraft:stone_depth",
-                                    "offset": 0,
-                                    "add_surface_depth": true,
-                                    "secondary_depth_range": 0,
-                                    "surface_type": "floor"
-                                  },
-                                  "then_run": {
-                                    "type": "minecraft:block",
-                                    "result_state": {
-                                      "Name": "corruptedadventure:corrupted_stone"
-                                    }
-                                  }
+                              "type": "minecraft:condition",
+                              "if_true": {
+                                "type": "minecraft:stone_depth",
+                                "offset": 0,
+                                "add_surface_depth": true,
+                                "secondary_depth_range": 0,
+                                "surface_type": "floor"
+                              },
+                              "then_run": {
+                                "type": "minecraft:block",
+                                "result_state": {
+                                  "Name": "corruptedadventure:corrupted_stone"
                                 }
-                              ]
+                              }
                             }
                           }
                         },
@@ -15504,10 +15462,30 @@
                                     "surface_type": "floor"
                                   },
                                   "then_run": {
-                                    "type": "minecraft:block",
-                                    "result_state": {
-                                      "Name": "corruptedadventure:corrupted_grass_block"
-                                    }
+                                    "type": "minecraft:sequence",
+                                    "sequence": [
+                                      {
+                                        "type": "minecraft:condition",
+                                        "if_true": {
+                                          "type": "minecraft:water",
+                                          "offset": -1,
+                                          "surface_depth_multiplier": 0,
+                                          "add_stone_depth": false
+                                        },
+                                        "then_run": {
+                                          "type": "minecraft:block",
+                                          "result_state": {
+                                            "Name": "corruptedadventure:corrupted_grass_block"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "minecraft:block",
+                                        "result_state": {
+                                          "Name": "minecraft:stone"
+                                        }
+                                      }
+                                    ]
                                   }
                                 },
                                 {
@@ -15520,10 +15498,30 @@
                                     "surface_type": "floor"
                                   },
                                   "then_run": {
-                                    "type": "minecraft:block",
-                                    "result_state": {
-                                      "Name": "corruptedadventure:corrupted_dirt"
-                                    }
+                                    "type": "minecraft:sequence",
+                                    "sequence": [
+                                      {
+                                        "type": "minecraft:condition",
+                                        "if_true": {
+                                          "type": "minecraft:water",
+                                          "offset": -6,
+                                          "surface_depth_multiplier": -1,
+                                          "add_stone_depth": true
+                                        },
+                                        "then_run": {
+                                          "type": "minecraft:block",
+                                          "result_state": {
+                                            "Name": "corruptedadventure:corrupted_dirt"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "minecraft:block",
+                                        "result_state": {
+                                          "Name": "minecraft:stone"
+                                        }
+                                      }
+                                    ]
                                   }
                                 }
                               ]
@@ -15557,10 +15555,30 @@
                                     "surface_type": "floor"
                                   },
                                   "then_run": {
-                                    "type": "minecraft:block",
-                                    "result_state": {
-                                      "Name": "corruptedadventure:corrupted_grass_block"
-                                    }
+                                    "type": "minecraft:sequence",
+                                    "sequence": [
+                                      {
+                                        "type": "minecraft:condition",
+                                        "if_true": {
+                                          "type": "minecraft:water",
+                                          "offset": -1,
+                                          "surface_depth_multiplier": 0,
+                                          "add_stone_depth": false
+                                        },
+                                        "then_run": {
+                                          "type": "minecraft:block",
+                                          "result_state": {
+                                            "Name": "corruptedadventure:corrupted_grass_block"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "minecraft:block",
+                                        "result_state": {
+                                          "Name": "minecraft:stone"
+                                        }
+                                      }
+                                    ]
                                   }
                                 },
                                 {
@@ -15573,10 +15591,30 @@
                                     "surface_type": "floor"
                                   },
                                   "then_run": {
-                                    "type": "minecraft:block",
-                                    "result_state": {
-                                      "Name": "corruptedadventure:corrupted_dirt"
-                                    }
+                                    "type": "minecraft:sequence",
+                                    "sequence": [
+                                      {
+                                        "type": "minecraft:condition",
+                                        "if_true": {
+                                          "type": "minecraft:water",
+                                          "offset": -6,
+                                          "surface_depth_multiplier": -1,
+                                          "add_stone_depth": true
+                                        },
+                                        "then_run": {
+                                          "type": "minecraft:block",
+                                          "result_state": {
+                                            "Name": "corruptedadventure:corrupted_dirt"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "minecraft:block",
+                                        "result_state": {
+                                          "Name": "minecraft:stone"
+                                        }
+                                      }
+                                    ]
                                   }
                                 }
                               ]

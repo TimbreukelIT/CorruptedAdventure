@@ -9,7 +9,7 @@ import nl.timtoys.corruptedadventure.ring.RingLayout;
  * sea (Y 62) stops against rock. The cracks, loose chunks, land bridges and the abyss's sea are gone: the zone's shape is
  * {@link ZoneFractureShape}, cut after the ring blend by {@link ZoneFracture}. Pure.
  */
-public final class Ring4Sundered {
+final class Ring4Sundered {
     /**
      * The ground of the zone (and of a band {@link #RIM_BEFORE} blocks before it in ring 4) never lies below this (5a):
      * ring 4's sea (Y 62) stops against this rim instead of standing beside the zone's dry air.
@@ -21,13 +21,13 @@ public final class Ring4Sundered {
     }
 
     /** The inner edge of the zone 4→5 (effective distance). */
-    public static double zoneStart(RingLayout layout) {
+    static double zoneStart(RingLayout layout) {
         double r4 = layout.settings().ringOuterRadii().get(Ring.RING_4.ordinal());
         return r4 - layout.settings().transitionWidth(Ring.RING_4.ordinal()) / 2.0;
     }
 
     /** The outer edge of the zone 4→5 (effective distance). */
-    public static double zoneEnd(RingLayout layout) {
+    static double zoneEnd(RingLayout layout) {
         double r4 = layout.settings().ringOuterRadii().get(Ring.RING_4.ordinal());
         return r4 + layout.settings().transitionWidth(Ring.RING_4.ordinal()) / 2.0;
     }

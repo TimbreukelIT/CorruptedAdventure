@@ -205,15 +205,17 @@ def zone_share(share):
 # Walk 1 (ring 5, question 2 = A, 2026-10-24): ring 5's blocks bleed into the outer half of the zone 4->5 in patches that
 # grow towards ring 5: from half-way corrupted grass on dirt in the vanilla surface noise above 0.35, from three quarters
 # above 0.05 (about half the top); bare corrupted stone in the patch noise. The surface only (the top and the surface
-# depth); the fracture's walls stay stone.
+# depth); the fracture's walls stay stone. The grass and dirt only on land (DRY_TOP/DRY_DEPTH, as every surface here):
+# under water the zone's own wet blocks.
 BLEED = [(zone_share(0.5), noise("minecraft:surface", 0.35)), (zone_share(0.75), noise("minecraft:surface", 0.05))]
 BLEED_STONE = [(zone_share(0.5), noise("minecraft:patch", 0.3)), (zone_share(0.75), noise("minecraft:patch", 0.1))]
 
 
 def sundered_reach():
     """The zone 4->5: bare coarse dirt on stone, with ring 5's corrupted grass and stone bleeding in (walk 1)."""
-    corrupted = seq(cond(TOP, block(CA + "corrupted_grass_block")), cond(DEPTH, block(CA + "corrupted_dirt")))
-    stone = seq(cond(TOP, block(CA + "corrupted_stone")), cond(DEPTH, block(CA + "corrupted_stone")))
+    corrupted = surface(CA + "corrupted_grass_block", CA + "corrupted_dirt", *SUNDERED[2:])
+    # DEPTH holds the top block too.
+    stone = cond(DEPTH, block(CA + "corrupted_stone"))
     return seq(*[cond(share, cond(patch, stone)) for share, patch in BLEED_STONE],
                *[cond(share, cond(patch, corrupted)) for share, patch in BLEED],
                *surface(*SUNDERED)["sequence"])
