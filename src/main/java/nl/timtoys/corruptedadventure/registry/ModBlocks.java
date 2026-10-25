@@ -1092,8 +1092,8 @@ public final class ModBlocks {
     private static final MapColor CORRUPTED_COLOR = MapColor.COLOR_GRAY;
     /** Sand, and wood without bark: a paler grey. */
     private static final MapColor CORRUPTED_PALE_COLOR = MapColor.COLOR_LIGHT_GRAY;
-    /** The dust of falling corrupted sand: ash grey with a hint of violet. */
-    private static final int CORRUPTED_SAND_DUST_COLOR = 0x8C8792;
+    /** The dust of falling corrupted sand: the grey-beige of its texture (its mean colour since walk 1, question 3 = A). */
+    private static final int CORRUPTED_SAND_DUST_COLOR = 0xA39B8C;
     /**
      * Grass's strength and sound as a plain block: no random ticks, so it never spreads, dies or turns into grass, and no
      * snowy state (contract §11). Not a copy of grass, whose properties carry the random ticks.
