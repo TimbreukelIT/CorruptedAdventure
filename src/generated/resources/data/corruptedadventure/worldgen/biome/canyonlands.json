@@ -30,7 +30,9 @@
       "corruptedadventure:canyon_talus_rubble",
       "corruptedadventure:canyon_rockfall",
       "corruptedadventure:plateau_rubble",
-      "corruptedadventure:canyon_springs"
+      "corruptedadventure:canyon_springs",
+      "corruptedadventure:canyon_spring_seeps",
+      "corruptedadventure:canyon_floor_seeps"
     ],
     [
       "minecraft:monster_room",
@@ -59,7 +61,10 @@
     ],
     [
       "minecraft:glow_lichen",
-      "corruptedadventure:canyonlands_vegetation"
+      "corruptedadventure:canyonlands_vegetation",
+      "corruptedadventure:canyon_grove_trees",
+      "corruptedadventure:canyon_grove_shrubs",
+      "corruptedadventure:canyon_seep_greenery"
     ],
     [
       "minecraft:freeze_top_layer"

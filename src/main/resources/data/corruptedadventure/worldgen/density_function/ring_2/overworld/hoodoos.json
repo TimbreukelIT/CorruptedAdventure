@@ -4,7 +4,7 @@
   "cell_size": 17,
   "chance": 0.75,
   "margin": 1,
-  "weight": "corruptedadventure:ring_2/overworld/hoodoo_rock_weight",
+  "weight": "corruptedadventure:ring_2/overworld/hoodoo_pillar_weight",
   "min_weight": 0.5,
   "floor": "corruptedadventure:ring_2/overworld/height",
   "max_floor_step": 4.0,

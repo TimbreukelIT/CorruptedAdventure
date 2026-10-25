@@ -46,6 +46,7 @@ import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing4Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.NetherRing5Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring1HorrorFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2DressingFeatures;
+import nl.timtoys.corruptedadventure.worldgen.feature.Ring2RockFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2Features;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring2FlatsFeatures;
 import nl.timtoys.corruptedadventure.worldgen.feature.Ring3Features;
@@ -79,6 +80,7 @@ public final class DataGenerators {
                     Ring2FlatsFeatures.configured(context);
                     Ring2DressingFeatures.configured(context);
                     DryRiverbedsFeatures.configured(context);
+                    Ring2RockFeatures.configured(context);
                     Ring3Features.configured(context);
                     NetherRing3Features.configured(context);
                     Ring4Features.configured(context);
@@ -105,6 +107,7 @@ public final class DataGenerators {
                     Ring2FlatsFeatures.placed(context);
                     Ring2DressingFeatures.placed(context);
                     DryRiverbedsFeatures.placed(context);
+                    Ring2RockFeatures.placed(context);
                     Ring3Features.placed(context);
                     NetherRing3Features.placed(context);
                     Ring4Features.placed(context);

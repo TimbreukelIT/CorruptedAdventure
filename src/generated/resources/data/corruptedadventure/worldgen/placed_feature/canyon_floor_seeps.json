@@ -1,0 +1,47 @@
+{
+  "feature": "corruptedadventure:canyon_seep",
+  "placement": [
+    {
+      "type": "corruptedadventure:jittered_grid",
+      "cell_size": 8,
+      "margin": 3
+    },
+    {
+      "type": "corruptedadventure:noise_band",
+      "min": 0.1,
+      "noise": "corruptedadventure:ring_2_canyon_seeps"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "corruptedadventure:height_band",
+      "max_y": 100
+    },
+    {
+      "type": "corruptedadventure:slope",
+      "max": 2,
+      "radius": 2
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:matching_blocks",
+        "blocks": [
+          "minecraft:red_sand",
+          "corruptedadventure:cracked_clay",
+          "minecraft:gravel"
+        ],
+        "offset": [
+          0,
+          -1,
+          0
+        ]
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}
