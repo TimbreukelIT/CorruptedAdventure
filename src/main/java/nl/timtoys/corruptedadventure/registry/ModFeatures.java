@@ -15,6 +15,7 @@ import nl.timtoys.corruptedadventure.worldgen.feature.MemoryFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MirroredTreesFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.AbandonedCampFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.TorchPatternFeature;
+import nl.timtoys.corruptedadventure.worldgen.feature.VolcanicLandmarkFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.HerobrineSignFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.MissingChunkFeature;
 import nl.timtoys.corruptedadventure.worldgen.feature.BarePatchConfiguration;
@@ -190,6 +191,9 @@ public final class ModFeatures {
     /** {@code corruptedadventure:titan_rock} (change 47b) */
     public static final DeferredHolder<Feature<?>, Feature<TitanRockConfiguration>> TITAN_ROCK =
             FEATURES.register("titan_rock", () -> new TitanRockFeature(TitanRockConfiguration.CODEC));
+    /** {@code corruptedadventure:volcanic_landmark} (G2 ring 3): this chunk's part of the biome-own ring 3 landmarks */
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> VOLCANIC_LANDMARK =
+            FEATURES.register("volcanic_landmark", () -> new VolcanicLandmarkFeature(NoneFeatureConfiguration.CODEC));
     /** {@code corruptedadventure:ash_cast} (change 49) */
     public static final DeferredHolder<Feature<?>, Feature<AshCastConfiguration>> ASH_CAST =
             FEATURES.register("ash_cast", () -> new AshCastFeature(AshCastConfiguration.CODEC));

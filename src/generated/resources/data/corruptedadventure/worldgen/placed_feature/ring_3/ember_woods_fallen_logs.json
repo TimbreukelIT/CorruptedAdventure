@@ -49,6 +49,10 @@
       ]
     },
     {
+      "type": "corruptedadventure:volcanic_landmark_clearance",
+      "margin": 2
+    },
+    {
       "type": "minecraft:block_predicate_filter",
       "predicate": {
         "type": "minecraft:any_of",
