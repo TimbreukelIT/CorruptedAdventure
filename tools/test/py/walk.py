@@ -112,13 +112,17 @@ def main():
             print(("shot " if ok else "FAILED ") + label, flush=True)
             last_dim, last_time, last_xz = dim, daytime, (float(x), float(z))
     finally:
-        if hud_hidden:
-            studio.run_client("key", "F1", a.client)
+        # The world first (RCON); the HUD key last and on its own, so a client that is gone cannot skip the rest.
         rcon.cmd("gamerule doDaylightCycle %s" % ("true" if old_cycle else "false"))
         if old_time is not None:
             rcon.cmd("time set %d" % old_time)
         if old_mode is not None:
             rcon.cmd("gamemode %s %s" % (old_mode, player))
+        if hud_hidden:
+            try:
+                studio.run_client("key", "F1", a.client)
+            except Exception as e:  # noqa: BLE001 - the restore must not hide the walk's own error
+                print("warning: F1 (HUD back) failed: %s" % e, file=sys.stderr)
 
 
 if __name__ == "__main__":
