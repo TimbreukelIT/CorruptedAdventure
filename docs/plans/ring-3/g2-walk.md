@@ -91,12 +91,11 @@ plantengroei buiten smeulwoud en krater, en geen subzones (elke 500 blokken van 
 1-blok-putjes en het hoogtelijnenpatroon zijn ontwerp (microreliëf van 39f) en staan hieronder als voorstel.
 
 ## 3. Prestatie-baseline
-Op verzoek van main geen eigen perf-run vooraf: één gezamenlijke run met g2-ring2 na beide walks (1 warm + 1 koud),
-ring 3-gebieden `ember`, `sulfur`, `great` (en eventueel `titan`) uit `tools/test/areas/perf-g2-ring3.txt`. De tabel komt
-hier zodra die run klaar is. Referentie INT3 (`teststop-4c.md` §J, warm, ronde 1–2): noise 1,03–1,33× (smeulwoud 1,33,
-zwavel 1,22, horizonreus 1,18), surface 1,7–2,5×, features 0,26–1,32×; koud ≤ 1,69. **Inschatting G2:** alle voorstellen
-hieronder zijn features of surface-regels; de noise-stap (het budget van 1,75×) verandert niet, behalve bij voorstel R4
-optie B (microreliëf herzien).
+**Perf overgeslagen op verzoek van de gebruiker (2026-10-25), in te halen bij de volgende formele teststop.** Referentie
+INT3 (`teststop-4c.md` §J, warm, ronde 1–2): noise 1,03–1,33× (smeulwoud 1,33, zwavel 1,22, horizonreus 1,18), surface
+1,7–2,5×, features 0,26–1,32×; koud ≤ 1,69. Te meten gebieden: `tools/test/areas/perf-g2-ring3.txt` (minstens `ember`,
+`sulfur`, `great`). Let op bij de inhaalmeting: G2 raakt de noise-stap (microreliëf, besluit 5 = B; geschat hooguit +2
+2D-samples per kolom) en de surface (subzones, ~2 extra ruis-lookups per kolom).
 
 ## 4. Featurevoorstellen
 
@@ -164,3 +163,34 @@ smeulwoud (gerichte fixes), dan de blikvangers (R3). R5 alleen met een `blocks`/
    - **A. Alleen kleine aankleding: poelclusters en een zachtere bodemrand naar de zeekom (aanbevolen):** de harde zand↔modder-lijn verdwijnt; terrein blijft zoals het is.
    - B. Niet in deze ronde (G2 = de 7 sub-biomes; de venen horen bij de overgang naar ring 4).
    - C. Volledig opknappen inclusief terreinvorm. Raakt de ring 4-kant; grotere change.
+
+## 6. Bouw en na-rondgang (2026-10-25)
+
+**Gebouwd** (besluiten in `fase-1-wereld.md` §G2 "Uitwerking ring 3"; vier substromen in eigen worktrees, gemerged in
+`g2/ring3`): grondvulling + subzones + `charred_shrub` (`Ring3GroundFeatures`), kookpoelen/smeulwoud/venen
+(`TerracePoolLayout`, `EmberWoodsFeatures`, `SteamFensFeatures`, `zone_edge`), 7 blikvangers (`VolcanicLandmarks`, 293 in
+ring 3 op de testseed), microreliëf (`Ring3Relief.microRelief`/`microSteps`). Details: `CODEBASE.md` §"G2 ring 3".
+
+**Gates:** `runData` en `build --offline` (alle tests) groen, ook na de merge met `main`; server zonder ERROR
+(`server-g2r3-after.log`); `det.sh --areas tools/test/areas/det-g2-ring3.txt` (16 gebieden van 7 × 7 chunks, wereld b
+omgekeerd): 729/784 chunks identiek, `own` 8 = alleen de bekende ertswissels over chunkgrenzen (sulfur/volcanite ↔
+kolen/lapis), `other` 103 = aquiferwater ↔ lucht op Y −30 (vloeistoftiming, bekend); geen verschil in een G2-feature of
+blikvanger. Perf: overgeslagen (§3).
+
+**Na-rondgang** (wereld `det-g2r3-a`, 27 foto's in `build/test/shots/g2-ring3-after/`):
+| Plek | Foto's | Oordeel |
+|---|---|---|
+| `ashen_wastes` | `ash1_low`, `ash1_eye_n`, `charred_low` | Groot verschil: verbrand bos, puimsteenvelden, verkoolde struiken, keien; verkoolde reuzenstam leest als baken. De staken van het verbrande bos zijn wel **erg dicht en gelijkvormig** (rijen zwarte paaltjes van 1 breed); afstemmen (dichtheid omlaag, meer omgevallen stammen, hoogtes variëren). |
+| Microreliëf | `ash1_low`, `tit1_top` | De concentrische ringen zijn weg; treden lopen nu samen en uiteen. Op hellingen blijven traplijntjes (normaal in Minecraft). |
+| `sulfur_fields` | `sul1_top`, `sinter_low` | Poelen onregelmatig en geclusterd, geen raster meer. Sinterterrastrap is een sterke blikvanger. De donkere keien/stenen vallen op de gele korst erg op (overweeg tuf/smooth basalt of minder). |
+| `ember_woods` | `emb1_top`, `giant_low` | Open plekken en brandplekken zichtbaar van boven, half verbrande en kale bomen breken het tapijt. Vuurreus leest als reuzenkroon. |
+| `dried_seabed` | `sea1_top`, `whale_low` | Walvisskelet goed. De subzone "kleiplaten" (blauwgrijze klei met oranje terracottaspikkels) is **druk/camouflage-achtig** met een harde rand naar het zand; afstemmen (minder spikkels, zachtere rand). |
+| `titan_fields` | `tit1_top`, `weapon_low` | Meer botten, zielvuur en stenen; titanenwapen leest duidelijk. |
+| `basalt_flows` | `organ_low` | Zuilenorgel goed zichtbaar tussen hornito's en lavarivier. |
+| `volcanic_peaks` | `flow_top` | Obsidiaanstroom zichtbaar maar smal; leest pas van dichtbij. |
+| `steam_fens` | `fens_top` | Rand naar de zeekom zachter (vlekken), poelen in clusters. |
+
+**Afstempunten voor de gebruiker** (geen bugs; startwaarden): dichtheid verbrand bos, kleiplaten-patroon, keien op de
+zwavelkorst, breedte obsidiaanstroom, en het aantal blikvangers (dichter dan 1 per 550 in kleine biome-vlekken: ember 64,
+obsidiaan 24).
+
