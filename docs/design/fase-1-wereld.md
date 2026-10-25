@@ -1414,6 +1414,17 @@ Na ring 4 ligt de lat voor een levendig landschap hoger; ring 2 en 3 (overworld)
 - **Perf:** binnen het bestaande budget (≤ 1,75× vanilla); lukt dat niet, dan eerst opties voorleggen.
 - **Testen:** vrije rondgang door Claude met de client, beoordeling aan de hand van screenshots; daarna feedback van de gebruiker en een sparring per ring over de concrete features.
 
+#### Uitwerking ring 2 (sparring 2026-10-25, G2-R2-1…8 = A)
+Nulmeting, rondgang en voorstellen: `docs/plans/ring-2/g2-walk.md` (duinen 64 % lege chunks, zout 60 % lege 8 × 8-tegels, plateau 78–88 % egaal rood zand, nergens een blikvanger). Alle maten zijn startwaarden.
+- **Blikvangers (1):** één soort per biome op een wereldraster van ~384 (ring 4 `feature/Landmarks.Grid`), hooguit één per cel en alleen als de cel in die biome valt: `canyonlands` natuurlijke rotsbrug over een hoofdkloof, `hoodoo_fields` reuzenhoodoo, `salt_flats` zoutkoepel met kristalgrot, `dune_sea` half begraven reuzenskelet, `oasis_flats` oeroude reuzenpalm bij een bronmeer.
+- **Duinen (2):** rood-zandgebieden als subzone (~25 % van de duinen, vlekken ~300), dichtere flora in plukken in de dalen, half begraven dode bomen/takken op de flanken.
+- **Zoutvlakte (3):** drukruggen (zoutblok 1 hoog op de zeshoekranden, in vlekken, ~15 % van de vlakte), kristallen in clusters i.p.v. gelijkmatig (zelfde aantal), gebleekte dode bomen op de eilandjes. **Geen** natte spiegelpannen.
+- **Plateau en tafelbergen (4):** bodemvlekken (grind, grove aarde, rode zandsteen, gebarsten klei; ~25–30 %) en bosjes knoestige dode bomen/struiken op ruis.
+- **Kloofbodem (5):** de grote kleipannen opbreken met rood zand en grind; groene sijpelplekken bij de bronnen en in lage kolken (mos, varens, gras, struikjes).
+- **Hoodoovelden (6):** dichte en open stukken via ruis op de pilaarkans (de **enige** wijziging in de density functions van ring 2) + droge geulen met grind in de vloer.
+- **Oase (7):** palmbossen op ruis (ook buiten de poelen), plukken gras/droog gras en struiken op het zand, droge poelkuilen met gebarsten klei.
+- **Aanpak (8):** kleine vormen (richels, rotsen, heuveltjes) als chunk-lokale features; de noise-stap blijft ongewijzigd behalve (6).
+
 ### H. Afsluiting fase 1
 | # | Categorie | Change | Test |
 |---|---|---|---|
