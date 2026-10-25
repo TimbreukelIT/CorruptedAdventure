@@ -81,27 +81,27 @@ Lokaal, seed 20260930, na de fixes:
   1,53; binnen de ruis van een losse ronde). Ronde 2 viel uit: `perf.py` las JFR-duur `PT1M18.2S` (één chunkstap wachtte
   > 1 min) niet; opgelost (`seconds`, ISO-duur met uren/minuten), de tabel heeft daardoor 2 warme rondes.
 
-## Open vragen (nieuwe ontwerpkeuzes: niet gebouwd)
-1. **Nether-5 leest bruin in plaats van wit** (`halls_eye_n`, `cathedral_high`): zonder hemellicht kleurt de Nether-lichtkaart
+## Open vragen (nieuwe ontwerpkeuzes; besloten door de gebruiker 2026-10-24, gebouwd: zie Status)
+1. **Besloten A** (`116f688b`). **Nether-5 leest bruin in plaats van wit** (`halls_eye_n`, `cathedral_high`): zonder hemellicht kleurt de Nether-lichtkaart
    het witsteen warm grijsbruin; alleen de stil-lichtbanden zijn echt wit.
    - A *(aanbevolen)*: client-side lichtkaart voor Nether-5 neutraal en iets lichter (zoals de fog van 98, alleen `client/`;
      geen invloed op spawnen of de stilte-meter).
    - B: meer stil licht (tweede band per zuil of lampen in de vloer): echt licht, wit waar het schijnt, de rest blijft bruin.
    - C: witsteen-set met een zwakke emissive laag (zoals de voidsteen-gloed): altijd wit, minder diepte.
    - D: zo laten (het donkere is juist eng).
-2. **Zone 4→5 is monotoon** (`zone45_*`): bruine grond met lange rechte grijze breukwanden en beige ring 4-fog.
+2. **Besloten A** (`5158cea9`). **Zone 4→5 is monotoon** (`zone45_*`): bruine grond met lange rechte grijze breukwanden en beige ring 4-fog.
    - A *(aanbevolen)*: in de buitenste helft van de zone de ring 5-blokken laten inlopen (corrupted gras/steen in vlekken),
      zodat de overgang al "vergaat".
    - B: strata/aders in de breukwanden (minder egaal grijs), grond blijft.
    - C: zo laten (ring 4-terrein, `sundered_reach` was akkoord bij 5c).
-3. **`corrupted_sand` leest als sneeuw** (`sand_eye_e`, `bandline_eye_e`): het zand is veel lichter dan het grijsgroene gras.
+3. **Besloten A** (`f28b4ec2`). **`corrupted_sand` leest als sneeuw** (`sand_eye_e`, `bandline_eye_e`): het zand is veel lichter dan het grijsgroene gras.
    - A *(aanbevolen)*: zand een paar tinten donkerder en iets warmer (grijsbeige), textures-change.
    - B: zo laten (nu nog maar ~20 % vóór de bandlijn).
-4. **Glitch-vlaktes blijven brede treden** (`mc1_low` na): de kwantisering ×4 maakt van elke laagte een paar grote niveaus.
+4. **Besloten B** (`39e4c306`). **Glitch-vlaktes blijven brede treden** (`mc1_low` na): de kwantisering ×4 maakt van elke laagte een paar grote niveaus.
    - A: zo laten (blokkerig is het karakter).
    - B *(aanbevolen)*: in laagtes vaker verschoven lagen/kubussen (`CUBE_CHANCE`/lagen op de vloer), meer om naar te kijken.
 
-5. **Ondergronds vanilla deepslate** (`walk1-caves/voidcave_eye_e`, `net_eye_n`): onder Y 0 zijn grotten, netten en
+5. **Besloten A** (zie Status). **Ondergronds vanilla deepslate** (`walk1-caves/voidcave_eye_e`, `net_eye_n`): onder Y 0 zijn grotten, netten en
    void-grotten vanilla deepslate, Y 0–8 een hard gemengde overgang (INT3 koos bewust vanilla's gradient + `corrupted_stone`).
    - A *(aanbevolen)*: in ring 5 geen deepslate: `corrupted_stone` tot de bodem (bestaand blok, surface-regel `ring_5_base_rock`).
    - B: een nieuw blok `corrupted_deepslate` voor de diepte (nieuw blok + textures).
@@ -121,3 +121,29 @@ Lokaal, seed 20260930, na de fixes:
   `voidcave_eye_e.png` (deepslate-kamer), `net_eye_n.png` (Y 1-mengsel), `natcave_eye_e.png`, `invtree_up2.png`.
 - Vóór, open vragen: `build/test/shots/walk1/halls_eye_n.png` en `cathedral_high.png` (Nether-5 bruin),
   `zone45_eye_n.png` (zone 4→5), `sand_eye_e.png` (zand als sneeuw).
+
+## Status (2026-10-25)
+Alle vijf vragen zijn besloten (gebruiker, 2026-10-24; zie de vragen hierboven) en gebouwd; de na-foto's van de keuzes vervallen.
+Vraag 5 en de code-review van walk 1 (`7300b26a..39e4c306`) zijn verwerkt op `main`:
+- **Vraag 5 = A:** `ring_5_base_rock` staat nu vóór vanilla's deepslate-gradient: `corrupted_stone` tot de bedrock in de zes ring 5-biomes
+  (ook de kerntak boven het voorlopige oppervlak). Vanilla-ertsen (×0,05/×0,03) zitten daar in hun steenvariant (`corrupted_stone` staat in
+  `#stone_ore_replaceables`), dus geen losse deepslate-ertsen. `sundered_reach` (zone 4→5) houdt ring 4's deepslate; de deepslate-doelen van
+  `nullite_deep`/`glitch_cluster` vangen alleen nog een ader die de zone in loopt.
+- **Review:** `zone_4_5_share` geldt nu tot aan de buitenrand van de zone en daarbuiten (geen kale strook meer), via `RingColumnCache`; de bleed
+  in `ring4_surface.py` alleen droog en zonder de dode TOP-clausule; de kuilbodems van `corrupted_wastes` houden hun zand (`ring_5_ground` `pit`);
+  goedkope early-out voor kubuscellen die alleen een laagte houdt (exact dezelfde kubussen); stofkleur van `corrupted_sand` `A39B8C`;
+  `walk.py` zet HUD, spelmodus, `doDaylightCycle` en de volledige dagtijd terug.
+- **Gates** (seed 20260930): `build --offline` 1.377 tests, 0 fouten (1 overgeslagen); `runData` op een schone `src/generated`: geen diff;
+  servers `det-walk1fix-a`/`-b` vers, 0 ERROR; `det.sh --areas ring5.txt`: 1.277/1.277 chunks identiek, own 0, other 0.
+- **Prestatie** (`perf.sh --areas perf-r5.txt --only "glitch wastes meadow zone45" --warm 2 --cold-only glitch`), noise t.o.v. vanilla, mediaan:
+
+  | Gebied | Vóór (`bac7f266`) | Na |
+  |---|---|---|
+  | `wastes` | 1,17 | 1,14 |
+  | `glitch` | 1,03 (koud 0,87) | 0,90 (koud 1,21) |
+  | `meadow` | 1,05 | 1,05 |
+  | `zone45` | **2,04** (2,04–2,05) | 1,64 (1,51–1,78) |
+
+  Budget ≤ 1,75: na gehaald. *Notitie:* `zone45` stond vóór deze change op 2,04, boven het budget (INT3 1,53, walk 1 fix 1,59); waarschijnlijk
+  door de walk 1-kubussen (`39e4c306`), want met alleen de early-out erbij zakt hij terug naar 1,64. Niet verder uitgezocht; bij
+  de volgende volledige perf-r5-ronde nog eens kijken (de spreiding van `zone45` is ~0,3).

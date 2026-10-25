@@ -1179,6 +1179,15 @@ Teststop 5b akkoord (ring 4 zoals op `85c7c21`; open afstempunten "zo laten"). G
 - **Buitenband (V10-A):** onder de omgekeerde heuvels hangen bomen ondersteboven (`corrupted_log` omlaag, kroon van persistente `corrupted_leaves`), daar is de onderkant een omgekeerde weide; spaarzaam dode bomen op de schotsen; `shattered_expanse` blijft kaal. *V-B (2026-10-24):* dode struiken op de schotsen van `inverted_hills` (~1–2 per chunk). *V-C (2026-10-24):* `glitch_fields` blijft zoals het is (kaal is het karakter). Geen kale rechthoeken `corrupted_stone` naast de void-gaten (de biome-surface volgt de echte bovenkant van de kolom).
 - **Ertsen (V11-A):** nulliet in de buitenband alleen in steen met void binnen 2 blokken (aders 3–6), diep in de binnenband Y −64…−16 (aders 2–4); vanilla-ertsen ×0,05 gewoon, ×0,03 midden, diamant ×0, ook in `corrupted_stone`.
 
+**Walk 1 (fotowandeling 2026-10-24, `docs/plans/ring-5/walk1.md`; besluiten gebruiker, alle vijf de aanbevolen optie)**
+- **Laagtes en toppen** van de binnenband niet meer vlak (deiningen/dalingen tot 12, `Ring5Inner.FLOOR_*`); zand in de open lage plekken van `corrupted_wastes` (onder Y 76) alleen in grove vlekken (~de helft), de kuilbodems houden hun zand (review).
+- **Nether-5-licht (vraag 1 = A):** de lichtkaart in Nether-5 neutraal en iets lichter (0,18), mee met de fog-inloop, zodat het witsteen wit leest i.p.v. sepia; alleen client, lichtniveaus/spawnen/stilte-meter ongewijzigd.
+- **Zone 4→5 (vraag 2 = A):** in de buitenste helft van `sundered_reach` lopen de ring 5-blokken in: vanaf de helft `corrupted_grass_block` op `corrupted_dirt` (op land) en kaal `corrupted_stone` in ruisvlekken die naar ring 5 toe groeien (vanaf driekwart ~de helft van de bovenkant), tot de buitenrand van de zone; de breukwanden blijven steen.
+- **Zand (vraag 3 = A):** `corrupted_sand` grijsbeige, een paar tinten donkerder en warmer (gemiddeld `A39B8C`, ook het valstof).
+- **Glitch-laagtes (vraag 4 = B):** op de bodem van de laagtes (grond ≤ Y 80) heeft een kubuscel een kubus met kans 0,6 (was 0,25), laag: 6–12 boven de grond.
+- **Ondergrond (vraag 5 = A):** geen deepslate in ring 5: `corrupted_stone` tot de bedrock, ook in grotten, netten en void-grotten onder Y 0; vanilla's ertsen (×0,05/×0,03) zitten daar in hun steenvariant, nulliet diep als `nullite_ore`. De zone 4→5 (`sundered_reach`, ring 4-biome) houdt ring 4's deepslate-overgang Y 0–8.
+- Geen na-foto's van de vijf keuzes (gebruiker).
+
 **Grensmuur**: geen uitgaande grens; de buitenrand is void + world border.
 
 **Nether-tegenpool — Nether-ring 5 (2.000 – 2.425; was 1.950 – 2.375): 'zuivere' witte, stille Nether**
