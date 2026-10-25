@@ -8,7 +8,7 @@ stronghold, The End onbereikbaar. Gevonden fouten klein herstellen (eigen commit
   zone 3→4 op `main` 39c07ed3 (na de merge van G2 ring 3), ring 2 en zones 1→2, 2→3 op een lokale merge met
   `g2/ring2` 0670fd68 (om 17:49 stond G2 ring 2 nog niet op `main`), plus een nacontrole op `main` 3b299aca na de
   merge met de reviewfixes (§H).
-- **Uitkomst (2026-10-25):** alles akkoord, behalve één niet-gereproduceerd verdwenen portaalframe in ring 3 oost (E3,
+- **Uitkomst (2026-10-25): fase 1 formeel afgerond.** Alles akkoord, behalve één niet-gereproduceerd verdwenen portaalframe in ring 3 oost (E3,
   backlog); geen herstel nodig. De perf-meting is overgeslagen op verzoek van de gebruiker (backlog).
 - **Wereld:** vers, seed `20260930`, `corruptedadventure:corrupted_world`, standaardradii 1.500 / 3.500 / 6.000 /
   8.000 / 9.700, void-rand 10.200 (Nether ÷ 4). Worktree `P:/Projecten/Java/wt/fase1-end` (stroom `fase1-end`, n 12: n 8 was al van `g2r2-flats`, de eerste start faalde op `BindException`).
@@ -90,6 +90,7 @@ boommarge 4, begrensde caches): `build --offline` groen, verse wereld `f1end-r2m
 | H2 | ring 2-spot `dunes_low` | **akkoord** (rode duinrand, half begraven dode bomen) |
 | H3 | de twee foto's die in de tweede na-rondgang van de ring 2-walk onbruikbaar bleven: `dunese_eye_s` → `dunese_eye_e`, `dunese_eye_n`; `z12n_eye_n` → `z12n_eye_e`, `z12n_eye_s` (camera 10 hoger) | **akkoord**: hoge kale duinen met een rotsuitsteeksel; `withered_expanse` met dode bomen aan het water, de mesa van ring 2 erachter. De drie onbruikbare foto's en de zes overgeslagen spots van de eerste walk waren al opnieuw gedaan in `g2-walk.md` §9 |
 | H4 | portaal ring 2 opnieuw | **akkoord** (identiek aan E2, frame staat nog) |
+| H5 | herhaling met **server + 2 clients** (verse wereld `f1end-r2f`, `main` 797dd449): `ringspots.py` ring 2 oost/noord, zone 1→2 en 2→3, `portal.py --rings 2`, Dev en Dev2 samen naar ring 2, zone 2→3, Nether-2, Nether-3 en zone 1→2 | **akkoord**: dezelfde landingen en biomes als in deel 2, portaal ring 2 heen en terug bij het eigen frame, 0 ERROR (`build/test/f1end/server-deel2-r2f.log`, foto's `shots2f/`). Dev2 stond nog in survival en viel bij de eerste teleport dood (testopzet, geen modfout); na een herstart van client 2 in creative ging alles goed |
 
 ## G. Vervallen / in te halen
 - Chunk-generatietijd per ring (perf): overgeslagen op verzoek van de gebruiker (2026-10-25), in te halen.
