@@ -66,6 +66,9 @@ public final class Ring2FlatLandmarkFeature extends Feature<Ring2FlatLandmarkFea
         ).apply(instance, Config::new));
     }
 
+    /** A foot whose real floor lies more than this under the planned one is skipped (carved away under the plan). */
+    static final int MAX_FOOT_DROP = 4;
+
     public Ring2FlatLandmarkFeature(Codec<Config> codec) {
         super(codec);
     }
@@ -105,6 +108,11 @@ public final class Ring2FlatLandmarkFeature extends Feature<Ring2FlatLandmarkFea
         for (LandmarkPlan.Foot foot : plan.feet) {
             if (own.test(new BlockPos(foot.x(), 0, foot.z()))) {
                 int floor = level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, foot.x(), foot.z());
+                if (foot.bottom() - floor > MAX_FOOT_DROP) {
+                    // The plan stands on the noise terrain; a carver (ring_2/canyon, caves) cut this column away:
+                    // no column of salt, bone or log down to the ravine floor.
+                    continue;
+                }
                 for (int y = floor - foot.sink(); y < foot.bottom(); y++) {
                     placed |= set(level, new BlockPos(foot.x(), y, foot.z()), foot.state(), spares);
                 }

@@ -1,11 +1,12 @@
 package nl.timtoys.corruptedadventure.worldgen.feature;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.DoubleBinaryOperator;
 
 import net.minecraft.util.Mth;
@@ -62,6 +63,7 @@ public final class Ring2RockLandmarks {
     /** The columns go this deep under the pure floor (never floating on a slightly lower real floor). */
     static final int ROOT = 10;
 
+    private static final int CACHE_CELLS = 4096;
     private static final Map<Object, Map<Long, Optional<Bridge>>> BRIDGES = new WeakHashMap<>();
     private static final Map<Object, Map<Long, Optional<Hoodoo>>> HOODOOS = new WeakHashMap<>();
 
@@ -127,31 +129,45 @@ public final class Ring2RockLandmarks {
     /** The bridge of the cell, decided once per world. */
     static Optional<Bridge> bridge(WorldGenLevel level, int cellX, int cellZ) {
         Map<Long, Optional<Bridge>> cache = cache(BRIDGES, Landmarks.world(level));
-        return cache.computeIfAbsent(ChunkPos.asLong(cellX, cellZ), key -> {
-            Ring2PureTerrain terrain = Ring2PureTerrain.of(level);
-            Bridge[] found = new Bridge[1];
-            Landmarks.inCell(level.getSeed(), BRIDGE_SALT, BRIDGE_GRID, cellX, cellZ, candidate -> {
-                if (!Landmarks.biome(level, candidate.x(), candidate.z()).is(ModBiomes.CANYONLANDS)) {
-                    return false;
-                }
-                Bridge bridge = crossing(terrain::height, candidate.x(), candidate.z(), candidate.random());
-                if (bridge == null || !bridgeBiome(level, bridge)) {
-                    return false;
-                }
-                found[0] = bridge;
-                return true;
-            });
-            return Optional.ofNullable(found[0]);
+        long key = ChunkPos.asLong(cellX, cellZ);
+        Optional<Bridge> known = cache.get(key);
+        if (known != null) {
+            return known;
+        }
+        // Pure: computed outside the map (no lock held during the terrain scan); a race only computes it twice.
+        Optional<Bridge> computed = computeBridge(level, cellX, cellZ);
+        Optional<Bridge> raced = cache.putIfAbsent(key, computed);
+        return raced != null ? raced : computed;
+    }
+
+    private static Optional<Bridge> computeBridge(WorldGenLevel level, int cellX, int cellZ) {
+        Ring2PureTerrain terrain = Ring2PureTerrain.of(level);
+        Bridge[] found = new Bridge[1];
+        Landmarks.inCell(level.getSeed(), BRIDGE_SALT, BRIDGE_GRID, cellX, cellZ, candidate -> {
+            if (!Landmarks.biome(level, candidate.x(), candidate.z()).is(ModBiomes.CANYONLANDS)) {
+                return false;
+            }
+            Bridge bridge = crossing(terrain::height, candidate.x(), candidate.z(), candidate.random());
+            if (bridge == null || !bridgeBiome(level, bridge)) {
+                return false;
+            }
+            found[0] = bridge;
+            return true;
         });
+        return Optional.ofNullable(found[0]);
     }
 
     private static boolean bridgeBiome(WorldGenLevel level, Bridge bridge) {
-        // Every 8 blocks along the deck: every chunk the bridge reaches then holds canyonlands and runs the feature.
+        // Every 8 blocks along the deck, on its centreline and both sides of its box: every chunk the bridge reaches
+        // then holds canyonlands and runs the feature.
+        double side = bridge.width() / 2.0 + 1.0;
         for (double u = -bridge.back() - BIOME_MARGIN; u <= bridge.ahead() + BIOME_MARGIN; u += 8.0) {
-            int px = Mth.floor(bridge.x() + 0.5 + u * bridge.cos());
-            int pz = Mth.floor(bridge.z() + 0.5 + u * bridge.sin());
-            if (!Landmarks.biome(level, px, pz).is(ModBiomes.CANYONLANDS)) {
-                return false;
+            for (double v : new double[] {-side, 0.0, side}) {
+                int px = Mth.floor(bridge.x() + 0.5 + u * bridge.cos() - v * bridge.sin());
+                int pz = Mth.floor(bridge.z() + 0.5 + u * bridge.sin() + v * bridge.cos());
+                if (!Landmarks.biome(level, px, pz).is(ModBiomes.CANYONLANDS)) {
+                    return false;
+                }
             }
         }
         return true;
@@ -323,20 +339,29 @@ public final class Ring2RockLandmarks {
     /** The giant hoodoo of the cell, decided once per world. */
     static Optional<Hoodoo> hoodoo(WorldGenLevel level, int cellX, int cellZ) {
         Map<Long, Optional<Hoodoo>> cache = cache(HOODOOS, Landmarks.world(level));
-        return cache.computeIfAbsent(ChunkPos.asLong(cellX, cellZ), key -> {
-            Ring2PureTerrain terrain = Ring2PureTerrain.of(level);
-            Hoodoo[] found = new Hoodoo[1];
-            Landmarks.inCell(level.getSeed(), HOODOO_SALT, HOODOO_GRID, cellX, cellZ, candidate -> {
-                if (!Landmarks.biome(level, candidate.x(), candidate.z()).is(ModBiomes.HOODOO_FIELDS)
-                        || !flatFloor(terrain::height, candidate.x(), candidate.z())
-                        || !Landmarks.biomeAround(level, candidate.x(), candidate.z(), HOODOO_REACH + HOODOO_BIOME_MARGIN, ModBiomes.HOODOO_FIELDS)) {
-                    return false;
-                }
-                found[0] = group(terrain::height, candidate.x(), candidate.z(), candidate.random());
-                return true;
-            });
-            return Optional.ofNullable(found[0]);
+        long key = ChunkPos.asLong(cellX, cellZ);
+        Optional<Hoodoo> known = cache.get(key);
+        if (known != null) {
+            return known;
+        }
+        Optional<Hoodoo> computed = computeHoodoo(level, cellX, cellZ);
+        Optional<Hoodoo> raced = cache.putIfAbsent(key, computed);
+        return raced != null ? raced : computed;
+    }
+
+    private static Optional<Hoodoo> computeHoodoo(WorldGenLevel level, int cellX, int cellZ) {
+        Ring2PureTerrain terrain = Ring2PureTerrain.of(level);
+        Hoodoo[] found = new Hoodoo[1];
+        Landmarks.inCell(level.getSeed(), HOODOO_SALT, HOODOO_GRID, cellX, cellZ, candidate -> {
+            if (!Landmarks.biome(level, candidate.x(), candidate.z()).is(ModBiomes.HOODOO_FIELDS)
+                    || !flatFloor(terrain::height, candidate.x(), candidate.z())
+                    || !Landmarks.biomeAround(level, candidate.x(), candidate.z(), HOODOO_REACH + HOODOO_BIOME_MARGIN, ModBiomes.HOODOO_FIELDS)) {
+                return false;
+            }
+            found[0] = group(terrain::height, candidate.x(), candidate.z(), candidate.random());
+            return true;
         });
+        return Optional.ofNullable(found[0]);
     }
 
     /** Whether the pure floor at (x, z) and 8 columns round it lies in the hoodoo floor's band and nearly level. */
@@ -452,7 +477,13 @@ public final class Ring2RockLandmarks {
 
     private static <T> Map<Long, Optional<T>> cache(Map<Object, Map<Long, Optional<T>>> caches, Object world) {
         synchronized (caches) {
-            return caches.computeIfAbsent(world, w -> new ConcurrentHashMap<>());
+            // Bounded like Landmarks.WINNERS: an explored world keeps at most CACHE_CELLS decided cells per kind.
+            return caches.computeIfAbsent(world, w -> Collections.synchronizedMap(new LinkedHashMap<>(256, 0.75F, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<Long, Optional<T>> eldest) {
+                    return size() > CACHE_CELLS;
+                }
+            }));
         }
     }
 
