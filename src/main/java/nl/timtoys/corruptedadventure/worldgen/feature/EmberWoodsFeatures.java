@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.worldgen.feature;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.FeatureUtils;
@@ -11,6 +12,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
@@ -200,8 +202,11 @@ public final class EmberWoodsFeatures {
         FeatureUtils.register(context, BURN_STUMPS, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(
                 new WeightedPlacedFeature(PlacementUtils.inlinePlaced(configured.getOrThrow(GLOWING_STUMP)), 0.4F)),
                 PlacementUtils.inlinePlaced(configured.getOrThrow(CHARRED_STUMP))));
+        // G2: not on the smouldering ash, so the burn patches keep their glow (the drift fell before the fire).
         FeatureUtils.register(context, EMBER_ASH_DRIFT, ModFeatures.ASH_DRIFT.get(), new AshDriftConfiguration(
-                ModBlocks.ASH_LAYER.get(), Ring3DressingFeatures.openGround(), Ring3DressingFeatures.ASH_DRIFT_NOISE, 1.0,
+                ModBlocks.ASH_LAYER.get(), HolderSet.direct(Block::builtInRegistryHolder, ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get(),
+                        Blocks.BASALT, Blocks.SMOOTH_BASALT, Blocks.BLACKSTONE, Blocks.GRAVEL, Blocks.TUFF),
+                Ring3DressingFeatures.ASH_DRIFT_NOISE, 1.0,
                 Ring3DressingFeatures.WIND, List.of(new AshDriftConfiguration.BiomeAmount(ModBiomes.EMBER_WOODS, 0.35F, false, false))));
     }
 

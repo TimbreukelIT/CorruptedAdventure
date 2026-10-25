@@ -11,17 +11,10 @@
     "ground": [
       "corruptedadventure:ash_block",
       "corruptedadventure:pumice",
-      "corruptedadventure:sulfur_crust",
-      "corruptedadventure:smoldering_ash",
       "minecraft:basalt",
       "minecraft:smooth_basalt",
       "minecraft:blackstone",
       "minecraft:gravel",
-      "minecraft:sand",
-      "minecraft:clay",
-      "minecraft:calcite",
-      "minecraft:yellow_terracotta",
-      "minecraft:soul_soil",
       "minecraft:tuff"
     ],
     "layer": "corruptedadventure:ash_layer",
