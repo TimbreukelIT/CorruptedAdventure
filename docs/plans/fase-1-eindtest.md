@@ -24,7 +24,7 @@ worktree.
 |---|---|---|---|---|
 | A1 | ring 1, midden (`/ca tpring 1`, 750 63 0) | vanilla-klimaat, ring 1 | **akkoord** (`stony_shore` aan zee, ring 1) | `build/test/f1end/shots1/r1.png` |
 | A2 | ring 2, midden | woestijnbiome ring 2 (canyonlands / hoodoo_fields / salt_flats / dune_sea / oasis_flats) | | |
-| A3 | ring 3, midden | vulkanisch biome ring 3 | | |
+| A3 | ring 3, midden (4750 92 0 en 0 97 −4750) | vulkanisch biome ring 3 | **akkoord** (na G2 ring 3, wereld `f1end-r3`: `ember_woods` oost en noord, verbrande bomen op as, oranje lucht) | `build/test/f1end/shots3/r3.png`, `r3n.png` |
 | A4 | ring 4, midden (7000 63 0) | moeras/waterbiome ring 4 | **akkoord** (`lotus_shallows` onder een eiland met hangende wortels) | `build/test/f1end/shots1/r4.png` |
 | A5 | ring 5, midden (8850 63 0) | corrupted biome ring 5 | **akkoord** (`corrupted_wastes`, mist, dode bomen) | `build/test/f1end/shots1/r5.png` |
 
@@ -33,7 +33,7 @@ worktree.
 |---|---|---|---|---|
 | B1 | 1→2 | `withered_expanse` | | |
 | B2 | 2→3 | `dry_riverbeds` | | |
-| B3 | 3→4 | `steam_fens` (+ `verdant_falls`-afdaling) | | |
+| B3 | 3→4 (6044 88 0 en 0 80 6036; `steam_fens` op 5930 0) | `steam_fens` (+ `verdant_falls`-afdaling) | **akkoord**: de grens (gewicht 0,50) ligt in `verdant_falls` (groen, de afdaling naar ring 4); binnen gewicht 0,234 `steam_fens` met modder, zwavel en stoom | `build/test/f1end/shots3/b34.png`, `b34s.png`, `b34f.png` |
 | B4 | 4→5 (8014 72 0) | `sundered_reach` (breukzone) | **akkoord** (`sundered_reach`, overgang 4 → 5 gewicht 0,50; gebroken terrasblokken) | `build/test/f1end/shots1/b45.png` |
 
 ## C. Nether: spots per ring en grenzen (`/ca tpring <n> nether`, `/ca tpboundary <n> nether`)
@@ -63,7 +63,7 @@ worktree.
 |---|---|---|---|---|
 | E1 | ring 1 | Nether-1 | ja: frame 752 63 3 → Nether 187,5 37 1,5 (ring 1) → terug op 0 blokken van het frame | **akkoord**; het vuur ontstak het frame hier niet (landingsplek op zeeniveau naast water), dus portaalblokken gezet |
 | E2 | ring 2 | Nether-2 | | |
-| E3 | ring 3 | Nether-3 | | |
+| E3 | ring 3 | Nether-3 | zuid: frame 3 99 4750 (vuur) → Nether 13,5 41 1178,5 (ring 3) → terug op 0 blokken | **akkoord** (zuid). Oost (frame 4752 89 23, in het bladerdak van `ember_woods`): aankomst Nether-3 klopte, maar het frame was bij terugkomst verdwenen en het spel maakte een nieuw portaal op 57 blokken (`build/test/f1end/shots3/p3a.png`, `p3b.png`); niet gereproduceerd (de herhaling oost hield het frame, maar koos het nieuwe portaal als dichtste). In de backlog |
 | E4 | ring 4 | Nether-4 | ja: frame 7002 69 34 (vuur) → Nether 1750,5 86 4,5 (ring 4) → terug op 0 blokken | **akkoord** |
 | E5 | ring 5 | Nether-5 | ja: frame 8852 65 44 (vuur) → Nether 2214,5 32 11,5 (ring 5) → terug op 0 blokken | **akkoord** |
 
@@ -72,7 +72,7 @@ worktree.
 |---|---|---|
 | F1 | dedicated server start zonder client-class-fouten | **akkoord** (deel 1, wereld `f1end`) |
 | F2 | `Dev` en `Dev2` tegelijk ingelogd, samen geteleporteerd (ring 1, 4, 5, Nether) | **akkoord**: 5 keer samen (ring 4, ring 5, Nether-4, Nether-5, ring 1), beide in dezelfde dimensie; Dev2 ziet Dev in ring 5 (`build/test/f1end/mp-dev2.png`) |
-| F3 | 0 ERROR in `logs/latest.log` van de server | **akkoord** deel 1: 0 ERROR (`build/test/f1end/server-deel1.log`) |
+| F3 | 0 ERROR in de serverlog (`build/test/server-<level>.log`) | **akkoord** deel 1: 0 ERROR (`build/test/f1end/server-deel1.log`); ring 3-run `f1end-r3` ook 0 (`server-deel2-r3.log`) |
 | F4 | idem na de merges (deel 2) | |
 
 ## G. Vervallen / in te halen

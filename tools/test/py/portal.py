@@ -1,8 +1,8 @@
 """Portal test (change 100): from the middle of every ring through a Nether portal and back, with a real player.
 
-    python tools/test/py/portal.py [--rings 1 4 5] [--player Dev] [--json out.json]
+    python tools/test/py/portal.py [--rings 1 4 5] [--heading 0] [--player Dev] [--json out.json]
 
-Per ring: `/ca tpring <n>` (overworld, heading east), an obsidian frame (4 x 5, axis x) beside the landing spot and
+Per ring: `/ca tpring <n>` (overworld, along --heading, default east), an obsidian frame (4 x 5, axis x) beside the landing spot and
 fire in it (RCON `setblock`; portal blocks only if the fire did not light it), the player (creative: one tick in the
 portal) into the portal, wait for the Nether, `/ca ring` at the arrival, out of the portal for the cooldown (300 ticks),
 back into the portal it arrived in, wait for the overworld, and the distance to its own frame. Needs the running server
@@ -10,6 +10,7 @@ of this stream and the player online (client.sh start). Leaves the frames standi
 """
 import argparse
 import json
+import math
 import re
 import sys
 import time
@@ -67,9 +68,10 @@ def build_portal(rcon, x, y, z):
     return "blocks" if portal_block(rcon, OW, x + 1, y + 2, z) else "failed"
 
 
-def test_ring(rcon, player, n, timeout):
-    r = {"ring": n}
-    rcon.cmd("execute in %s run tp %s 100 200 0" % (OW, player))
+def test_ring(rcon, player, n, timeout, heading=0.0):
+    r = {"ring": n, "heading": heading}
+    hx, hz = math.cos(math.radians(heading)), math.sin(math.radians(heading))
+    rcon.cmd("execute in %s run tp %s %.1f 200 %.1f" % (OW, player, 100 * hx, 100 * hz))
     out = rcon.cmd("execute as %s run ca tpring %d" % (player, n))
     m = re.search(r"at (-?\d+) (-?\d+) (-?\d+)", out)
     if not m:
@@ -104,6 +106,8 @@ def test_ring(rcon, player, n, timeout):
     r["overworld_return"] = [round(v, 1) for v in back]
     r["return_distance"] = round(((back[0] - fx - 1.5) ** 2 + (back[2] - fz - 0.5) ** 2) ** 0.5, 1)
     r["return_ring"] = ring_at(rcon, OW, back[0], back[2])
+    # Loaded again by the player's return when it lands near the frame; "not loaded" counts as gone.
+    r["frame_after"] = "passed" in rcon.cmd("execute in %s if block %d %d %d minecraft:obsidian" % (OW, fx, y, fz)).lower()
     r["ok"] = (r["nether_ring"].lower().startswith("ring %d" % n) and r["overworld_ring"].lower().startswith("ring %d" % n)
                and r["return_distance"] <= 4)
     return r
@@ -114,13 +118,14 @@ def main():
     p.add_argument("--rings", nargs="*", type=int, default=[1, 2, 3, 4, 5])
     p.add_argument("--player", default="Dev")
     p.add_argument("--timeout", type=float, default=60.0)
+    p.add_argument("--heading", type=float, default=0.0, help="degrees from +x towards +z (0 = east, 90 = south)")
     p.add_argument("--json")
     a = p.parse_args()
     rcon = Rcon()
     rcon.cmd("gamemode creative %s" % a.player)
     results = []
     for n in a.rings:
-        r = test_ring(rcon, a.player, n, a.timeout)
+        r = test_ring(rcon, a.player, n, a.timeout, a.heading)
         results.append(r)
         print(json.dumps(r), flush=True)
     rcon.cmd("execute in %s run tp %s 100 200 0" % (OW, a.player))
