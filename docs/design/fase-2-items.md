@@ -74,3 +74,25 @@ testscript.
 - De visuele vorm van een coating: alleen de tooltip, of ook een overlay of trim op het harnas.
 - De thematische extra's per ring.
 - Wat de lens precies omlijnt, en hoe de server die informatie naar de client stuurt.
+
+## 4. Golf 1 — basis (vragenronde 2026-10-25)
+- **Coating = vanilla armor-trim:** elke coating is een eigen trim-patroon, aangebracht op de smithing table met een
+  coating-template en het coatingmateriaal. Je ziet hem op het harnas en in de tooltip, en de rendering doet vanilla.
+  Een stuk met een coating kan dus geen decoratieve trim meer hebben.
+- **Coating-regels:** een nieuwe coating vervangt de oude. Bij een smithing-upgrade naar de volgende tier blijft de
+  coating behouden, zoals een trim bij netherite.
+- **Opbouw lineair per stuk:** elk stuk met dezelfde coating haalt ~19 % van de stijging af. 1 stuk geeft 0,81×,
+  2 stukken 0,63×, 3 stukken 0,44× en 4 stukken 0,25×. Alleen een stijgende meter wordt vertraagd; het dalen blijft
+  gelijk.
+- **Mijn-gating:** de ring 2-ertsen (zonnesteen, turkoois) vragen **diamant** (netherite mag ook). Ring 3-ertsen vragen
+  zonnesteen, ring 4-ertsen vulkaniet en ring 5-ertsen getijdezilver. De ertsen van Nether-ring N vragen hetzelfde als
+  die van ring N.
+- **Inhoud van golf 1:**
+  - creative-tabs per ring;
+  - recepten voor de bestaande blok- en houtsets en de opslagblokken;
+  - smelten van de ruwe ertsen (oven + hoogoven);
+  - het tier-raamwerk: 4 tiers met voorlopige stats (afstemmen in golf 2–5), `needs_*_tool`- en
+    `incorrect_for_*_tool`-tags op de ertsen, en upgrade-template-items als placeholder;
+  - het coatingsysteem: trim-patronen, coating-templates, een `RateModifier` die het harnas leest (server-side) en
+    tests.
+  - Het raamwerk voor de verbruiksitems schuift naar golf 2, waar de veldfles het eerste voorbeeld is.
