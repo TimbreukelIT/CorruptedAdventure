@@ -394,8 +394,9 @@ public final class Ring3GroundFeatures {
                         Blocks.COARSE_DIRT)));
         PlacementUtils.register(context, ASHEN_WASTES_DEAD_TREE_GROUPS, features.getOrThrow(Ring3DressingFeatures.CHARRED_DEAD_TREE),
                 JitteredGridPlacement.of(4, 1, 0.5F, TREE_GROUPS), SURFACE, SlopeFilter.flat(2, 2), ground, treeSpot, BiomeFilter.biome());
+        // Grid 8 (a 6 x 6 jitter), not 4: on a grid of 4 the stakes stood in visible rows (G2 after-walk).
         PlacementUtils.register(context, ASHEN_WASTES_BURNT_FOREST, features.getOrThrow(CHARRED_STAKES),
-                JitteredGridPlacement.of(4, 1, 0.45F, zoneA()), SURFACE, SlopeFilter.flat(2, 2), ground, treeSpot, BiomeFilter.biome());
+                JitteredGridPlacement.of(8, 1, 0.6F, zoneA()), SURFACE, SlopeFilter.flat(2, 2), ground, treeSpot, BiomeFilter.biome());
 
         // VEGETAL_DECORATION. Loose dead coral in the hollows of the seabed (higher ground around), dead bushes in the
         // cracks of the clay flats.
