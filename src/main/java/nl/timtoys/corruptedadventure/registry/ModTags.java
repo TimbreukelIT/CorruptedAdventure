@@ -102,6 +102,17 @@ public final class ModTags {
         public static final TagKey<Block> ORES_WHITE_CORE = TagKey.create(Registries.BLOCK, common("ores/white_core"));
         public static final TagKey<Block> ORES_IN_GROUND_WHITE_STONE = TagKey.create(Registries.BLOCK, common("ores_in_ground/white_stone"));
 
+        // Gear tiers (phase 2, GearTier): needs_<tier>_tool = blocks that need at least that tier; incorrect_for_<tier>_tool
+        // = the needs tags of all higher tiers (vanilla's incorrect_for_* tags get all of ours).
+        public static final TagKey<Block> NEEDS_SUNSTONE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("needs_sunstone_tool"));
+        public static final TagKey<Block> NEEDS_VOLCANITE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("needs_volcanite_tool"));
+        public static final TagKey<Block> NEEDS_TIDESILVER_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("needs_tidesilver_tool"));
+        public static final TagKey<Block> NEEDS_NULLITE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("needs_nullite_tool"));
+        public static final TagKey<Block> INCORRECT_FOR_SUNSTONE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("incorrect_for_sunstone_tool"));
+        public static final TagKey<Block> INCORRECT_FOR_VOLCANITE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("incorrect_for_volcanite_tool"));
+        public static final TagKey<Block> INCORRECT_FOR_TIDESILVER_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("incorrect_for_tidesilver_tool"));
+        public static final TagKey<Block> INCORRECT_FOR_NULLITE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("incorrect_for_nullite_tool"));
+
         private Blocks() {
         }
     }
@@ -169,6 +180,12 @@ public final class ModTags {
         public static final TagKey<Item> ORES_IN_GROUND_WHITE_STONE = TagKey.create(Registries.ITEM, common("ores_in_ground/white_stone"));
         /** Convention tag {@code c:gems/white_core}; part of {@code c:gems}. */
         public static final TagKey<Item> GEMS_WHITE_CORE = TagKey.create(Registries.ITEM, common("gems/white_core"));
+
+        // Gear tiers: the repair material (c:ingots/<tier>, part of c:ingots); stream D fills them with the ingots.
+        public static final TagKey<Item> INGOTS_SUNSTONE = TagKey.create(Registries.ITEM, common("ingots/sunstone"));
+        public static final TagKey<Item> INGOTS_VOLCANITE = TagKey.create(Registries.ITEM, common("ingots/volcanite"));
+        public static final TagKey<Item> INGOTS_TIDESILVER = TagKey.create(Registries.ITEM, common("ingots/tidesilver"));
+        public static final TagKey<Item> INGOTS_NULLITE = TagKey.create(Registries.ITEM, common("ingots/nullite"));
 
         private Items() {
         }

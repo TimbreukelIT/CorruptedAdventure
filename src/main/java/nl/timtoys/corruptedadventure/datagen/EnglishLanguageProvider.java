@@ -6,6 +6,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.lang.Golf1TierNames;
 import nl.timtoys.corruptedadventure.datagen.lang.LangOutput;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing3BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing4BiomeNames;
@@ -261,6 +262,9 @@ final class EnglishLanguageProvider extends LanguageProvider implements LangOutp
         Ring5ConditionText.addEnglish(this);
         Ring5WeatherText.addEnglish(this);
         Ring5SignText.addEnglish(this);
+
+        // Phase 2 wave 1: one helper per stream.
+        Golf1TierNames.addEnglish(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s dried out");
