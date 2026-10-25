@@ -1402,7 +1402,7 @@ Rij 39 wordt alleen het **terrein** (kegels, caldera's, lavarivieren, zwevende e
 | 99 | `textures` | Definitieve textures ring 5 + Nether-5 | 3 | runClient |
 
 - **Teststops:** **6-pre** terreinpreview (kaarten na golf 0; vliegtocht na 84/85, 6-pre-1); **6a** terrein-wow na golf 1 + 86b/87b/86c (blokkerend; checklist `docs/plans/ring-5/teststop-6a.md`); **6b** overleving + sfeer na golf 2; **6c** eindcheck na golf 3.
-- **Stand (2026-10-23):** golf 0 en golf 1 (INT1) op `main`; volgende: 86b, 87b, 86c op main, dan teststop 6a.
+- **Stand (2026-10-25):** golf 0, golf 1 (INT1), 86b/87b/86c, teststop 6a, golf 2 (INT2, INT3) en walk 1 op `main`; **teststop 6b akkoord** (2026-10-25, `docs/plans/ring-5/teststop-6b.md`); volgende: golf 3 en teststop 6c.
 
 ### G2. Opknapbeurt ring 2 en 3 (sparring 2026-10-24)
 Na ring 4 ligt de lat voor een levendig landschap hoger; ring 2 en 3 (overworld) krijgen een aanvullende ronde. Besluiten:
