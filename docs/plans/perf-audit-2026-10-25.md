@@ -60,6 +60,10 @@ gemeten. De run is gestopt omdat ring 5 bleef hangen. Worktree: `P:/Projecten/Ja
   regio-afhankelijke takken en een storm-detector in de perf-tests (`tools/test/py/deopt.py`, `2b61b386`). Zie
   `docs/design/01-techniek.md` "JIT-robuustheid van worldgen".
 
+**Doel (gebruiker, 2026-10-26):** noise ≤ 1,5× per gebied (mediaan van ≥ 5 warme rondes, rustige machine); 1,75× blijft de
+harde grens. Op het randje volgens de meting van 2026-10-25: zone23 1,50, z12 1,46, canyon 1,43, zone45 1,43–1,64; nog
+niet gemeten: wastes, glitch, meadow en de Nether.
+
 ## Volgende optimalisatiedoelen (uit de profielen van 2026-10-26, `build/test/r5repro/*.txt` in `wt/perf-audit`)
 - **Surface ring 2/3 (3–5×):** 99,9 % zit in vanilla `SurfaceRules` (`LazyCondition.test` 11–13 %,
   `BiomeManager.getFiddledDistance`/`getBiome` 15–17 %, de LCG-hash 5–6 %); de eigen condities zijn 1–4 %. De
