@@ -60,6 +60,18 @@ gemeten. De run is gestopt omdat ring 5 bleef hangen. Worktree: `P:/Projecten/Ja
   regio-afhankelijke takken en een storm-detector in de perf-tests (`tools/test/py/deopt.py`, `2b61b386`). Zie
   `docs/design/01-techniek.md` "JIT-robuustheid van worldgen".
 
+**A/B warm-up (2026-10-26, `opt/warmup` 6639c41b, standaardvlaggen, 23 gebieden: ring 1–4, dan zone45, wastes, glitch en
+meadow; beide armen tegelijk, `jfr-prof`-opnames per gebied):**
+- **Zonder warm-up:** een storm in alle drie de ring 5-biomes (`Ring5Field.terrain` r. 369): wastes 144.374, glitch
+  201.498, meadow 225.381 deopts met action `none`.
+- **Met warm-up:** geen storm in de echte generatie (wastes 948, glitch 963, meadow 861; de rest is vanilla
+  `ChunkSkyLightSources`). Ring 5 is 1–3 s per gebied sneller.
+- **Wel:** de warm-up-thread zelf stormde kort tijdens het eerste gebied (162.368 × `caveZone` r. 1016). De JVM was al
+  ~20 s na de start vergiftigd, op een zwaar belaste machine (warm-up 25,1 s). De ring 5-hotpaths (`opt/r5hot`) zijn
+  daarom de tweede linie.
+- Onder de stressvlag `PerMethodRecompilationCutoff=100` is de JVM al bij de start vergiftigd: dat test de warm-up
+  niet eerlijk.
+
 **Doel (gebruiker, 2026-10-26):** noise ≤ 1,5× per gebied (mediaan van ≥ 5 warme rondes, rustige machine); 1,75× blijft de
 harde grens. Op het randje volgens de meting van 2026-10-25: zone23 1,50, z12 1,46, canyon 1,43, zone45 1,43–1,64; nog
 niet gemeten: wastes, glitch, meadow en de Nether.
