@@ -18,6 +18,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import areas  # noqa: E402
+import deopt  # noqa: E402
 import jfrhot  # noqa: E402
 from perf import TOOLS, forceload, warm_spots  # noqa: E402
 from rcon import Rcon  # noqa: E402
@@ -62,7 +63,8 @@ def main():
         time.sleep(2)
         rec = os.path.join(a.out, ar.name + ".jfr")
         shutil.move(new[-1], rec)
-        text = "%s: %.1f s\n%s" % (ar.name, took, jfrhot.report(jfrhot.hot(a.jfr, rec), a.top))
+        text = "%s: %.1f s\n%s\n%s" % (ar.name, took, deopt.line(deopt.check(a.jfr, rec)),
+                                       jfrhot.report(jfrhot.hot(a.jfr, rec), a.top))
         with open(os.path.join(a.out, ar.name + ".txt"), "w", encoding="utf-8") as f:
             f.write(text + "\n")
         print(text, flush=True)

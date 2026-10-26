@@ -83,7 +83,7 @@ start() {
     local log="$CA_OUT/server-$level.log" before pid t0 jto
     # The JVM options replace JAVA_TOOL_OPTIONS on Windows; elsewhere they are added to it (the cloud container puts
     # its proxy and trust store there, which Gradle needs to download).
-    jto="-Xmx$xmx${CA_SERVER_JVM:+ $CA_SERVER_JVM}"
+    jto="-Xmx$xmx${CA_SERVER_JVM:+ $CA_SERVER_JVM}${CA_LOW_JVM:+ $CA_LOW_JVM}"
     [ "$CA_OS" = posix ] && jto="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }$jto"
     before=" $(ca_java_pids "$wt" server | tr '\n' ' ') "
     rm -f "$log"

@@ -64,6 +64,15 @@ def main():
         if ref:
             row.append(fmt(ratios(ref, ar, "noise")))
         lines.append("| " + " | ".join(row) + " |")
+    for r in rs:
+        d = r.get("deopt")
+        if d and d["storms"]:
+            lines.append("")
+            lines.append("**Deopt-storm** in ronde %d: %s." % (r["round"], "; ".join("%d x %s" % (c, s) for c, s in d["storms"])))
+    deopts = ["%d: %d" % (r["round"], r["deopt"]["none"]) for r in rs if r.get("deopt")]
+    if deopts:
+        lines.append("")
+        lines.append("Deopts met action none per ronde (een storm is meer dan 10.000 op één plek): %s." % ", ".join(deopts))
     aborted = [str(r["round"]) for r in rs if r.get("aborted")]
     if aborted:
         lines.append("")

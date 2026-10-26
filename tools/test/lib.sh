@@ -52,6 +52,26 @@ if [ "$CA_OS" = posix ]; then
 fi
 mkdir -p "$CA_OUT"
 
+# Low-priority mode (2026-10-26: the user plays a game next to the tests): `CA_LOW=1` or the machine-wide flag file
+# `<lockdir>/ca-low-priority`. This script and everything it starts (Gradle, servers, clients, Python) run below normal
+# priority (Windows passes the class on to child processes), and the JVMs see CA_LOW_CPUS (8) processors: fewer
+# worldgen, GC and JIT threads. Set once per process tree (CA_LOW_APPLIED).
+CA_LOW_FLAG="$CA_LOCK_DIR/ca-low-priority"
+CA_LOW_JVM=""
+if [ "${CA_LOW:-0}" = 1 ] || [ -e "$CA_LOW_FLAG" ]; then
+    CA_LOW_JVM="-XX:ActiveProcessorCount=${CA_LOW_CPUS:-8}"
+    if [ -z "$CA_LOW_APPLIED" ]; then
+        if [ "$CA_OS" = windows ]; then
+            powershell -NoProfile -Command "(Get-Process -Id $(cat /proc/$$/winpid 2>/dev/null || echo $$)).PriorityClass = 'BelowNormal'" >/dev/null 2>&1
+        else
+            renice -n 10 -p $$ >/dev/null 2>&1
+        fi
+        export CA_LOW_APPLIED=1
+        # Gradle builds started through these scripts (slots.sh run -- ./gradlew ...) see the same processor count.
+        export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }$CA_LOW_JVM"
+    fi
+fi
+
 ca_die() { echo "error: $*" >&2; exit "${CA_EXIT:-1}"; }
 ca_now() { date '+%Y-%m-%dT%H:%M:%S%z'; }
 ca_log() { echo "[$(date +%T)] $*"; }

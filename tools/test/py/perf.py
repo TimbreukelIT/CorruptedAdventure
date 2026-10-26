@@ -24,6 +24,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import areas  # noqa: E402
+import deopt  # noqa: E402
 from rcon import Rcon  # noqa: E402
 
 VANILLA = {"ow": "perftest:vanilla", "nether": "perftest:vanilla_nether"}
@@ -129,8 +130,11 @@ def main():
     if not new:
         raise SystemExit("no new JFR recording in %s/debug" % a.run)
     summary = parse(a.jfr, new[-1], measured)
+    storms = deopt.check(a.jfr, new[-1])
     with open(a.out, "w", encoding="utf-8") as f:
-        json.dump({"round": a.round, "cold": a.nowarm, "aborted": aborted, "jfr": new[-1], "summary": summary}, f, indent=1)
+        json.dump({"round": a.round, "cold": a.nowarm, "aborted": aborted, "jfr": new[-1], "summary": summary,
+                   "deopt": storms}, f, indent=1)
+    print("R%d %s" % (a.round, deopt.line(storms)), flush=True)
     for ar in measured:
         cells = []
         for step in STEPS:

@@ -1,0 +1,45 @@
+# Whole-world performance audit (2026-10-25; 16 x 16 chunks each, no overlap): per ring the most expensive or most
+# changed areas, every zone 1->2 .. 4->5, Nether rings 1-5. Assembled from perf.txt, perf-g2-ring2.txt, perf-g2-ring3.txt,
+# perf-r4.txt, perf-islands.txt and perf-r5.txt; seed 20260930, default ring radii.
+# perf.sh --areas tools/test/areas/perf-all.txt --warm 2 --cold 1 --max-min 60
+#   --cold-only "hoodoo zone23 ember steamfens vfbasin zone45 wastes n2"
+# ring 1, zone 1->2
+ring1 20 20 35 35
+z12 86 -8 101 7
+# ring 2 (G2: hoodoo_pillar_weight, new features): canyon floor, hoodoo field, high dunes, mesas
+canyon 116 14 131 29
+hoodoo 144 32 159 47
+dunes -144 32 -129 47
+mesa 177 -68 192 -53
+# zone 2->3
+zone23 211 -8 226 7
+# ring 3 (G2: microrelief in the noise on ash / seabed / titans, new features)
+ember 289 -8 304 7
+sulfur 233 140 248 155
+great -250 -4 -235 11
+ashen 328 28 343 43
+titan -322 -38 -307 -23
+seabed -254 46 -239 61
+# zone 3->4 (steam_fens + verdant_falls descent)
+steamfens 367 -8 382 7
+# ring 4: descent basins, horseshoe gorge, blighted islands band, mythical tunnels, world tree
+vfbasin -27 366 -12 381
+vgorge -3 -385 12 -370
+tds -15 -464 0 -449
+tunmyth 410 -22 425 -7
+tree 394 133 409 148
+# zone 4->5
+zone45 492 -8 507 7
+# ring 5: the three most expensive biomes (perf-r5 2026-10-24)
+wastes 517 -8 532 7
+glitch -8 -533 7 -518
+meadow 521 -60 536 -45
+# Nether rings 1-5
+n1 -8 -8 7 7 nether
+n2 31 -8 46 7 nether
+n3e 66 -8 81 7 nether
+n3rifts 68 -30 83 -15 nether
+n4dunes 99 -35 114 -20 nether
+n4hollows 102 -8 117 7 nether
+halls 129 -8 144 7 nether
+cathedral -20 -146 -5 -131 nether

@@ -101,7 +101,7 @@ start() {
     local joined_before
     joined_before=$(grep -c "$name joined the game" "$slog")
     ca_log "starting $task -> 127.0.0.1:$CA_SERVER_PORT"
-    (exec > "$log" 2>&1 < /dev/null; cd "$wt" && JAVA_TOOL_OPTIONS="-Xmx$xmx" exec nohup ./gradlew "$task" "-PquickPlay=127.0.0.1:$CA_SERVER_PORT" --no-daemon --console=plain) &
+    (exec > "$log" 2>&1 < /dev/null; cd "$wt" && JAVA_TOOL_OPTIONS="-Xmx$xmx${CA_LOW_JVM:+ $CA_LOW_JVM}" exec nohup ./gradlew "$task" "-PquickPlay=127.0.0.1:$CA_SERVER_PORT" --no-daemon --console=plain) &
     local job=$!
     t0=$(date +%s); pid=""
     while true; do

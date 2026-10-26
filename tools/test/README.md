@@ -38,6 +38,9 @@ bash tools/test/det.sh --areas tools/test/areas/smoke.txt --name det-smoke   # -
 - Max. `CA_SLOTS` (5, since 2026-10-25; was 3) JVMs: every build/runData/server/client holds a slot; perf.sh and jfr-prof.sh take all of them; machine-wide things (the quick-play start of a client,
   JFR) also hold the lock, taken first. Nothing waits for a slot while holding something (a client with a reserved
   slot waits only for the lock, and nobody waits while holding the lock).
+- Low-priority mode while the user plays something else: `touch C:/Temp/ca-low-priority` (or `CA_LOW=1`). Every
+  script then runs below normal priority with its children, and servers, clients and Gradle builds started through
+  the scripts see `CA_LOW_CPUS` (8) processors. Remove the file to measure on a quiet machine again.
 - Gradle always with `--no-daemon` (the tools do this themselves): a daemon would stay behind outside the slot count.
   Never `./gradlew --stop` (it also stops the user's daemons).
 
@@ -260,6 +263,13 @@ type (middle of rings 1-3 and the boundaries, from the ring radii in `run/config
 lock + all 3 slots for the whole run; the hard-stop clock starts once they are held. Table: per area the median of
 mod/vanilla over the warm rounds for noise (with min–max), surface and features, plus the cold round. Budget noise
 ≤ 1,75. Only when the user is not playing; the JFR files and round worlds are deleted after each round.
+
+Each round also counts the deoptimizations of the round's recording (`py/deopt.py`, `java/DeoptStorm.java`
+with the server's JDK): a **storm** is a site with more than 10.000 of action `none`, where C2 compiled a trap that
+never recompiles (2026-10-26: 56 million in `Ring5Field.terrain`, ring 5 692x slower after a long session). The
+table lists them; `jfr-prof.sh` prints the same line per area. Full world: `--areas tools/test/areas/perf-all.txt`.
+`CA_JVM_EXTRA="<opts>" bash tools/test/jfr-prof.sh ...` adds JVM options (e.g. `-XX:PerMethodRecompilationCutoff=20`:
+the poisoning limit drops from 201 to 11 summed decompiles, a stress test for storms).
 
 ### Hot methods (JFR profile)
 
