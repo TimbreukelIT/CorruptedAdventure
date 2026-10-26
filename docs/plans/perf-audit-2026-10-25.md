@@ -41,6 +41,35 @@ gemeten. De run is gestopt omdat ring 5 bleef hangen. Worktree: `P:/Projecten/Ja
   - Een wisselwerking tussen ring 4 en ring 5 (gedeelde state in RingBlend/ZoneFracture).
 - **Het risico is groot:** elke wereld die lang gespeeld wordt, kan in ring 5 vastlopen.
 
+## Diagnose 2026-10-26: een JIT-deoptimalisatiestorm, geen cache
+- De opname van de hangende run (`p1-partial.jfr`, 1,6 GB) bestond voor 1,5 GB uit `jdk.Deoptimization`: **56,4 miljoen**
+  keer `unstable_if` met action `none`, allemaal in de **eerste** C2-compilatie van `Ring5Field.terrain` (regels 363, 368,
+  373 en 376: de spans, de eigen grotten, de void en de glitchlagen). Daarnaast 23.041 in `Ring5Field.caveZone` regel
+  1007, en kleinere aantallen in `Ring4Band.blighted`, `IslandDressingFeature.place` en vanilla's `ChunkSkyLightSources`.
+- Mechanisme (JDK 21u `Compile::too_many_recompiles`): als de decompile-tellers van de wortelmethode en alle geïnlinede
+  methodes samen ≥ 201 zijn, krijgt elke nieuwe reinterpret-trap action `none`. Elke doorgang valt dan terug naar de
+  interpreter, zonder hercompilatie. Gedeelde hulpmethoden (`ColumnTable.get`, `ThreadOwned.get`, `Math.floorDiv`, ...)
+  verzamelen decompiles in de loop van een sessie. Code die pas laat voor het eerst compileert, is daardoor vergiftigd.
+  Dat verklaart waarom de hang van de geschiedenis afhangt.
+- Repro van 2026-10-26 (19 gebieden, daarna zone45 en wastes, 7 worldgen-threads, `build/test/r5repro/`): **geen storm**
+  in `terrain` (opgeteld 50 decompiles, onder de grens, normaal hercompileerd; zone45 22 s, wastes 19,7 s). Wel weer
+  23.041 action-`none`-deopts in `caveZone`. De storm hangt dus van de timing af (gisteren 23 threads).
+- Stresstest `-XX:PerMethodRecompilationCutoff=20` (grens 11) op de oude build: ook de warm-up in ring 1–3 stormt al
+  (81 chunks in 5 min; alle noise-threads in `RingFluidPicker.computeFluid`). Het risico zit dus in elke ring.
+- Besluit (gebruiker): een warm-up van alle ringtypes bij serverstart, per-blok-paden van ring 5 zonder
+  regio-afhankelijke takken en een storm-detector in de perf-tests (`tools/test/py/deopt.py`, `2b61b386`). Zie
+  `docs/design/01-techniek.md` "JIT-robuustheid van worldgen".
+
+## Volgende optimalisatiedoelen (uit de profielen van 2026-10-26, `build/test/r5repro/*.txt` in `wt/perf-audit`)
+- **Surface ring 2/3 (3–5×):** 99,9 % zit in vanilla `SurfaceRules` (`LazyCondition.test` 11–13 %,
+  `BiomeManager.getFiddledDistance`/`getBiome` 15–17 %, de LCG-hash 5–6 %); de eigen condities zijn 1–4 %. De
+  regelboom (6.709 knopen, 96 biome-condities) test waarschijnlijk biomes per steenblok vóór de goedkope diepte- en
+  y-checks.
+- **Aquifer:** `RingAquifer.openSpace` is 26 % van de noise-stap in canyon (via `CanyonDetails.compute`/`RockPillars`).
+- **Per chunk `mapAll`:** het kopiëren van de router (`RingBlend`/`RingFillGate`/`ZoneFracture`/`CanyonDetails.mapAll`)
+  is ~6–7 % van alle samples.
+- **`RingFluidPicker.computeFluid`:** stormgevoelig onder de stresstest, nog geen tabel per kolom.
+
 ## Plan voor 2026-10-26: eerst optimalisatie (op verzoek van de gebruiker)
 1. **Reproduceren met profiler:** jfr-prof met DebugNonSafepoints op een server die eerst de 19 ring 1–4-gebieden
    genereert en daarna zone45 (6×6). Bekijk jdk.GarbageCollection/GCHeapSummary en `jcmd GC.class_histogram` na een

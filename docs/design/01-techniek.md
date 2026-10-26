@@ -63,6 +63,12 @@ Technische architectuur en afspraken. De werkafspraken voor Claude Code staan in
 - Sfeer (lucht, fog, muziek) leest dezelfde vlag via sync naar de client.
 - Besloten in fase 1: corrupted blokken zijn aparte varianten van vanilla-natuurblokken, met tag `corruptedadventure:corrupted` en een data map `corrupted → vanilla` (de gezonde tegenhanger). Fase 5 voegt alleen het random-tick-gedrag toe dat die map leest.
 
+## JIT-robuustheid van worldgen (2026-10-26)
+- **Oorzaak van de 692× in ring 5:** de JIT-compiler (C2) zet een `unstable_if`-trap met action `none` zodra de decompile-tellers van de methode en alles wat hij inlinet samen ≥ 201 zijn (JDK 21u `Compile::too_many_recompiles`, `PerMethodRecompilationCutoff / 2 + 1`). Zo'n trap valt bij elke doorgang terug naar de interpreter en hercompileert nooit. Gedeelde hulpmethoden verzamelen decompiles in de loop van een sessie, dus code die laat voor het eerst compileert is "vergiftigd": stond in het profiel een tak nooit, dan stormt hij (56 miljoen deopts in `Ring5Field.terrain`).
+- **Warm-up bij serverstart (besluit 2026-10-26):** een server-side achtergrondthread genereert direct na de start chunks in alle ringtypes van de overworld en de Nether, alleen in het geheugen (niets opgeslagen, geen invloed op het terrein), zodat de ringcode compileert terwijl de JVM jong is. De trapgeschiedenis van de MethodData voorkomt daarna traps op die takken. Config-schakelaar, standaard aan.
+- **Per-blok-paden zonder regio-afhankelijke takken:** functies die per blok draaien (de 3D-uitvoer van density functions, de aquifer, surface-condities) nemen regio-beslissingen per kolom (een tabel per kolom) en doen per blok alleen een opzoeking met rekenwerk zonder takken. Eerst toegepast op `Ring5Field` (terrain, caves, cave_zone).
+- **Bewaking:** `perf.sh`/`jfr-prof.sh` tellen per ronde/gebied de deopts met action `none` (`tools/test/py/deopt.py`); een storm is meer dan 10.000 op één plek. Stresstest: `-XX:PerMethodRecompilationCutoff=20` (grens 11), waarmee vrijwel elke compilatie vergiftigd is.
+
 ## Multiplayer-regels (vanaf dag 1)
 - Alle gameplaylogica draait server-side; de client toont alleen.
 - Client-only code (renderers, schermen, fog, sky, weer-rendering, particles) strikt gescheiden (`Dist.CLIENT`, aparte client-classes). Een dedicated server mag nooit client-classes laden.
