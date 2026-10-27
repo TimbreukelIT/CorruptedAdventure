@@ -353,6 +353,11 @@ mee.
   terug.
 - **Handwarmer:** vuurkristal + leer; 4 ladingen, per lading −20 kou + 45 s effect **"verwarmd"** (stijgende kou ×0,5),
   bij te vullen met vuurkristal.
+- **Handwarmer, uitwerking (gebruiker, 2026-10-27):** gecraft is hij **leeg**; je vult hem bij door in de inventaris een
+  vuurkristal op de handwarmer te klikken (zoals bij de bundel; 1 kristal = 4 ladingen); een lading gebruik je door
+  1,6 s ingedrukt te houden. De lege staat werkt als bij de veldfles: een eigen texture, een oranje balkje en
+  "Ladingen: 3/4".
+- **Kou-coating-template:** 4 vuurkristal + 4 koudlava + **1 oerijs** → 1 (gebruiker, 2026-10-27).
 - Per conditie een eigen effect, op het raamwerk van §5.3. Bij een nieuwe dosis wint de langste resterende tijd.
 - **Gif- en kou-coating-templates:** een ringrecept volgens hetzelfde patroon (4 materiaal + 4 ringsteen + 1
   kernmateriaal → 1; gif met jade, kou met vuurkristal). Het kopie-recept blijft.

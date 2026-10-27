@@ -1053,3 +1053,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-27 | items | Zwavel: buskruit, brandstof + zwavelblok, brandpijlen; vuurrobijn in het hitte-template + ingelegde puimsteen; gloeibes, zwavellamp, puimsteen-vlotter, dauwkristalblok, druipzwamsoep | Gebruiker |
 | 2026-10-27 | items | Ring 4: gifpijlen, ingelegde jade/aquamarijn-bouwsets, gif-/kou-template uit een ringrecept, veen als brandstof; geen verdant-vrucht als voedsel | Gebruiker |
 | 2026-10-27 | textures | Palet vulkaniet: zwart basalt met gloeiende aders (geen emissive); getijdezilver: zilver met jade-accenten | Gebruiker |
+| 2026-10-27 | items | Handwarmer: gecraft leeg, bijvullen door een vuurkristal erop te klikken (1 = 4 ladingen), gebruiken met 1,6 s ingedrukt houden; kern van het kou-template = oerijs | Gebruiker |
