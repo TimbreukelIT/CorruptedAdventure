@@ -267,6 +267,8 @@ Besloten door de gebruiker op 2026-10-27, in drie vragenrondes.
   - drinken werkt overal, ook in de Nether;
   - recept: leer + touw + glazen fles;
   - de tooltip en het model tonen de slokken (de client toont alleen).
+- **Verkoeld = statuseffect `corruptedadventure:cooled`** (vanilla `MobEffect`, niet te brouwen): icoon met timer rechtsboven en in de inventaris, vanilla synct en bewaart het, weg bij de dood, melk haalt het weg. De `RateModifier` van de uitdroging kijkt of de speler het effect heeft. Bij een nieuwe slok **wint de langste resterende tijd** (de vanilla-regel). (Gebruiker, 2026-10-27.)
+- **Slokken in beeld:** twee textures (`canteen_empty`, `canteen`), een blauw balkje in 4 stappen onder het icoon (zoals bij de bundel) en de tooltip "Slokken: 3/4". (Gebruiker, 2026-10-27.)
 - **Cactussap (`cactus_juice`):** barrel cactus + glazen fles → 1; eenmalig, stack 16; **−15 uitdroging + 20 s
   verkoeld**; geeft de glazen fles terug. Het tweede item op het raamwerk.
 

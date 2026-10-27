@@ -1045,3 +1045,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-27 | items | Ring 2-extra's: cactussap (−15 + 20 s verkoeld), `salted_jerky` (voeding 6, +8 uitdroging), `salt_lamp` (licht 12); turkoois krijgt de bouwset `turquoise_inlaid_sandstone`; geen extra wapens in ring 2 | Gebruiker |
 | 2026-10-27 | textures | Palet zonnesteen: barnsteen-goud (amber, zongeel highlight, koperen schaduw, geen emissive); eerst één voorbeeld in Blockbench | Gebruiker; past bij de ertsgloed en verschilt van vanilla-goud |
 | 2026-10-27 | worldgen | De volledige perf-meting draait in een aparte sessie met `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`, buiten golf 2 | Gebruiker |
+| 2026-10-27 | items | Verkoeld is een eigen statuseffect `cooled` (de langste resterende tijd wint); de veldfles toont zijn slokken met 2 textures + een balkje + de tooltip | Gebruiker; de minste code, vanilla synct en bewaart het |
