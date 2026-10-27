@@ -13,9 +13,18 @@ public final class ModMobEffects {
     private static final DeferredRegister<MobEffect> MOB_EFFECTS =
             DeferredRegister.create(Registries.MOB_EFFECT, CorruptedAdventure.MOD_ID);
 
-    /** Canteen and cactus juice (phase 2 golf 2): dehydration rises slower while it lasts. Icon {@code mob_effect/cooled}. */
+    /**
+     * Canteen, cactus juice (phase 2 golf 2) and dew draught (golf 3): dehydration and heat rise slower while it lasts.
+     * Icon {@code mob_effect/cooled}.
+     */
     public static final DeferredHolder<MobEffect, RateEffectMobEffect> COOLED =
             MOB_EFFECTS.register("cooled", () -> new RateEffectMobEffect(0x7FD4FF));
+    /** Purified water (golf 4): poison rises slower while it lasts. Icon {@code mob_effect/cleansed}. */
+    public static final DeferredHolder<MobEffect, RateEffectMobEffect> CLEANSED =
+            MOB_EFFECTS.register("cleansed", () -> new RateEffectMobEffect(0xB8F0D0));
+    /** Hand warmer (golf 4): the cold rises slower while it lasts. Icon {@code mob_effect/warmed}. */
+    public static final DeferredHolder<MobEffect, RateEffectMobEffect> WARMED =
+            MOB_EFFECTS.register("warmed", () -> new RateEffectMobEffect(0xFF9A3C));
 
     private ModMobEffects() {
     }

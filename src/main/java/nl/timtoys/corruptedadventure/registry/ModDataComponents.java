@@ -9,6 +9,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.item.CanteenItem;
+import nl.timtoys.corruptedadventure.item.HandWarmerItem;
 
 /** Item data components. */
 public final class ModDataComponents {
@@ -22,6 +23,14 @@ public final class ModDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> SIPS =
             COMPONENTS.registerComponentType("sips", builder -> builder
                     .persistent(Codec.intRange(0, CanteenItem.MAX_SIPS))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT));
+    /**
+     * Charges left in a hand warmer (0 to {@link HandWarmerItem#MAX_CHARGES}). Saved and synced like {@link #SIPS}. Absent
+     * = empty, so a crafted hand warmer needs no default.
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> CHARGES =
+            COMPONENTS.registerComponentType("charges", builder -> builder
+                    .persistent(Codec.intRange(0, HandWarmerItem.MAX_CHARGES))
                     .networkSynchronized(ByteBufCodecs.VAR_INT));
 
     private ModDataComponents() {

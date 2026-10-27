@@ -2,7 +2,10 @@ package nl.timtoys.corruptedadventure.condition;
 
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 
-/** The doses of the consumables (fase-2-items.md §5.3–§5.4), from {@code [conditions.dehydration]}, read live. */
+/**
+ * The doses of the consumables (fase-2-items.md §5.3–§5.4, §6.3, §6.6), from the section of their condition
+ * ({@code [conditions.dehydration]}, {@code heat}, {@code poison}, {@code cold}), read live.
+ */
 public final class ConsumableDoses {
     private ConsumableDoses() {
     }
@@ -24,5 +27,26 @@ public final class ConsumableDoses {
     /** One salted jerky: +8, good food that makes you thirsty. */
     public static ConditionDose saltedJerky() {
         return ConditionDose.of(Condition.DEHYDRATION, ServerConfig.DEHYDRATION.saltedJerkyAmount.get().floatValue());
+    }
+
+    /** One dew draught: −20 heat and 45 s cooled. */
+    public static ConditionDose dewDraught() {
+        ServerConfig.HeatCondition config = ServerConfig.HEAT;
+        return ConditionDose.withEffect(Condition.HEAT, -config.dewDraughtAmount.get().floatValue(),
+                RateEffect.COOLED, config.dewDraughtCooledSeconds.get());
+    }
+
+    /** One purified water: −20 poison and 45 s cleansed. */
+    public static ConditionDose purifiedWater() {
+        ServerConfig.PoisonCondition config = ServerConfig.POISON;
+        return ConditionDose.withEffect(Condition.POISON, -config.purifiedWaterAmount.get().floatValue(),
+                RateEffect.CLEANSED, config.purifiedWaterCleansedSeconds.get());
+    }
+
+    /** One hand warmer charge: −20 cold and 45 s warmed. */
+    public static ConditionDose handWarmerCharge() {
+        ServerConfig.ColdCondition config = ServerConfig.COLD;
+        return ConditionDose.withEffect(Condition.COLD, -config.handWarmerAmount.get().floatValue(),
+                RateEffect.WARMED, config.handWarmerWarmedSeconds.get());
     }
 }

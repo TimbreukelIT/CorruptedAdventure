@@ -4,7 +4,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.function.Predicate;
-import java.util.function.ToDoubleFunction;
+import java.util.function.ToDoubleBiFunction;
 
 /**
  * Starts the {@link RateEffect}s of consumables and applies them as a {@link RateModifier} (stage
@@ -28,15 +28,16 @@ public final class RateEffects implements RateModifier {
         return modify(condition, rate, effect -> context.player().hasEffect(effect.mobEffect()), RateEffect::factor);
     }
 
-    /** {@code rate} times the factor of every active effect on {@code condition}, only if it rises. */
-    static float modify(Condition condition, float rate, Predicate<RateEffect> active, ToDoubleFunction<RateEffect> factor) {
+    /** {@code rate} times the factor of every active effect that slows {@code condition}, only if it rises. */
+    static float modify(Condition condition, float rate, Predicate<RateEffect> active,
+                        ToDoubleBiFunction<RateEffect, Condition> factor) {
         if (rate <= 0.0F) {
             return rate;
         }
         float result = rate;
         for (RateEffect effect : EFFECTS) {
-            if (effect.condition() == condition && active.test(effect)) {
-                result *= (float) factor.applyAsDouble(effect);
+            if (effect.slows(condition) && active.test(effect)) {
+                result *= (float) factor.applyAsDouble(effect, condition);
             }
         }
         return result;

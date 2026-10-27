@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_dew_crystal": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:dew_crystal"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:dew_draught"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_dew_crystal"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:dew_draught"
+    ]
+  }
+}

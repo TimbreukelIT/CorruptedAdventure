@@ -21,6 +21,6 @@ class ConditionDoseTest {
         ConditionDose sip = ConditionDose.withEffect(Condition.DEHYDRATION, -25.0F, RateEffect.COOLED, 45);
         assertTrue(sip.effect().isPresent());
         assertEquals(45, sip.effectSeconds());
-        assertEquals(Condition.DEHYDRATION, RateEffect.COOLED.condition());
+        assertTrue(RateEffect.COOLED.slows(sip.condition()));
     }
 }

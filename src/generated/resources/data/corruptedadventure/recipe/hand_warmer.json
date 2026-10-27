@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "corruptedadventure:fire_crystal"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
+  },
+  "pattern": [
+    "LFL",
+    " L "
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:hand_warmer"
+  }
+}
