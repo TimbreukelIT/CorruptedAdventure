@@ -27,6 +27,10 @@ in git staat.
 - 2026-10-27 19:20 start; 3 vragen over de handwarmer naar main (bijvullen, gecraft vol/leeg, gebruik).
 - 19:43 code af volgens de aanbevolen opties; build loopt.
 - 19:50 besluiten main: 1A, **2B (gecraft leeg)**, 3A; code aangepast.
+- 20:36 build (incl. unit tests) en runData groen; 20:37 GameTests 7/7 groen (2 nieuw); 20:38 server-smoke n=67 groen
+  (geen client-class-fouten).
+- 20:40 commits `conditions:` (036cb8d5) en `items:` (64b6d3aa); `/code-review low 9becd290..f2g34/consumables`: geen
+  bevindingen.
 
 ## Voorlopig (bevestigen bij de teststop)
 - Dauwdrank: shapeless dauwkristal + waterfles (alleen water) → 1, stack 16, drinkduur 32 ticks.
