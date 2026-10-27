@@ -55,18 +55,7 @@ public final class Golf1TemplateTextures {
 
     static {
         // Rock dark to light (the first is the outline), inlay dark to light (index 1..5 in the motif).
-        TEMPLATES.put("sunstone_upgrade_smithing_template", new Template(
-                new int[]{0x2A1810, 0x4E3222, 0x6A4630, 0x845A3E, 0x9C6E4E},
-                new int[]{0x5A1A06, 0x9A300C, 0xD95A16, 0xF2862A, 0xFFC878},
-                new String[]{
-                        "..4..4..",
-                        "...33...",
-                        "4.3553.4",
-                        ".355553.",
-                        ".355553.",
-                        "4.3553.4",
-                        "...33...",
-                        "..4..4.."}));
+        // sunstone_upgrade_smithing_template: final texture from Golf2SunstoneTextures (golf 2).
         TEMPLATES.put("volcanite_upgrade_smithing_template", new Template(
                 new int[]{0x141012, 0x2A2427, 0x3B3437, 0x4C4447, 0x5E5558},
                 new int[]{0x4A0C06, 0x8A1E0E, 0xC23A14, 0xE8641E, 0xFFAA50},
