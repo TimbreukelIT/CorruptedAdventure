@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.entity;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -43,7 +44,7 @@ public enum ArrowEffect {
 
         @Override
         ParticleOptions trail() {
-            return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, MobEffects.POISON.value().getColor());
+            return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.opaque(MobEffects.POISON.value().getColor()));
         }
     };
 
