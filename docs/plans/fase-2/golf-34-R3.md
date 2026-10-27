@@ -33,7 +33,8 @@ client-code, geen netwerk.
 
 ## Voortgang
 - 2026-10-27 19:35 start (setup.sh R3 69 gedaan)
-- 2026-10-27 20:05 blokken, items, datagen, recepten, textures, tests geschreven; runData loopt
+- 2026-10-27 20:05 blokken, items, datagen, recepten, textures, tests geschreven
+- 2026-10-27 20:10 runData, build (unit tests), GameTests (11/11, waarvan 6 nieuw) en server-smoke (n 69, geen fouten) groen; commits 72e6d254 (blocks) en 8f19096e (items); `/code-review low` loopt
 
 ## Voorlopig (bevestigen bij de teststop)
 - Hitte-template: `RPR / PDP / RPR` (R vuurrobijn, P puimsteen, D dauwkristal) → 1, id `heat_coating_smithing_template_from_fire_ruby`.
