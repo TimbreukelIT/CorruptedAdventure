@@ -120,7 +120,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
     }
 
     /**
-     * Phase 2 golf 4 (stream R4; placeholder textures: {@code Golf4MaterialTextures}). Both inlaid sets like the
+     * Phase 2 golf 4 (stream R4; textures: {@code Golf34BlockTextures}, stream T). Both inlaid sets like the
      * turquoise inlaid sandstone: {@code cube_column} with the inlaid side and the inlaid top on both ends.
      */
     private void golf4Materials() {
