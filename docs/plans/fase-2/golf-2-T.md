@@ -32,6 +32,9 @@ op het erts (`Ring2Textures.SUNSTONE`), geen emissive.
   renderer (`build/t-preview/golf2-T-final.png`). Main `6f4316f6` (stroom M) ingevoegd.
 - 2026-10-27 — `tools/textures/Golf2SunstoneTextures.java` (14 PNG's) en `tools/textures/Golf2Ring2Textures.java`
   (11 PNG's) gemaakt; de 4 voorbeeld-PNG's zijn pixel-identiek gebleven.
+- 2026-10-27 — main `f8c88b55` (V) ingevoegd; build + runData groen, `src/generated` ongewijzigd; Blockbench weer
+  bereikbaar: layer 1 op box-UV-kubussen gerenderd, UV-mapping klopt. Commit `999295f5`; `/code-review low`: 1
+  bevinding (dubbele helpers), backlog.
 
 ## Voorlopig (bevestigen bij de teststop)
 - Texturenamen van V (`canteen_empty`, `canteen`, `cactus_juice`, `salted_jerky`, `mob_effect/cooled`) aangenomen
@@ -68,5 +71,8 @@ op het erts (`Ring2Textures.SUNSTONE`), geen emissive.
   een houten voetrand in de zijtexture, hout aan de onderkant. Geen code-wijziging.
 
 ## Backlog
+- [textures] Bij de bestaande regel "texturescripts ontdubbelen" (backlog r. 274/471): `Golf2SunstoneTextures` en
+  `Golf2Ring2Textures` delen letterlijk `Texture`/`add`/`palette`/`write`/`contactSheet` (single-file `java File.java`
+  kan geen gedeelde helper laden; review 999295f5, besluit main: niet fixen).
 - [textures] De drie andere upgrade-templates (vulkaniet, getijzilver, nulliet) zijn nog golf 1-placeholders; het
   zonnesteen-template heeft nu de definitieve stijl (bij hun golf meenemen).
