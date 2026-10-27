@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "corruptedadventure:pumice"
+    },
+    "I": {
+      "item": "corruptedadventure:sunstone_ingot"
+    },
+    "S": {
+      "item": "corruptedadventure:dew_crystal"
+    }
+  },
+  "pattern": [
+    "SIS",
+    "SCS",
+    "SIS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:volcanite_upgrade_smithing_template"
+  }
+}

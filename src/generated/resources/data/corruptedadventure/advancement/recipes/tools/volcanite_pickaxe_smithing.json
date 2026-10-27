@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:volcanite_pickaxe_smithing"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_volcanite_ingot": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:volcanite_ingot"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_volcanite_ingot"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:volcanite_pickaxe_smithing"
+    ]
+  }
+}
