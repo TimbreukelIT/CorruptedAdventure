@@ -1,7 +1,7 @@
 # Teststop fase 2 — golf 1 t/m 4
 
-Eén speelsessie na golf 4 (besluit gebruiker, 2026-10-27). Dit bestand groeit per golf; nu staat alleen het deel
-**Golf 1 + 2** (basis, ring 2 + Nether-1) erin, golf 3 en 4 volgen.
+Eén speelsessie na golf 4 (besluit gebruiker, 2026-10-27). Dit bestand groeit per golf; nu staan de delen
+**Golf 1 + 2** (basis, ring 2 + Nether-1) en **Golf 3 + 4** (ring 3, Nether-3, ring 4, pijlen) erin.
 
 # Golf 1 + 2
 
@@ -77,8 +77,93 @@ automatisch testte staat in `docs/plans/fase-2/golf-2-INT.md`. Vink af, noteer b
 - Veldfles leeg (bleek, kurk aan een touwtje) / vol (kurk erin); cactussap; jerky; icoon "Verkoeld" (druppel met rijp).
 - Zielkristalblok, ingelegd zandsteen, zoutlamp (warm zout met gloed, houten voetrand).
 
-# Golf 3
-_(volgt)_
+# Golf 3 + 4
 
-# Golf 4
-_(volgt)_
+Ring 3 (vulkanisch), Nether-ring 3 (koud), ring 4 en de pijlen. Bron: `docs/design/fase-2-items.md` §6 en
+`docs/plans/fase-2/golf-34-{G,C,A,R3,R4,T}.md`; wat Claude al automatisch testte staat in het INT-rapport golf 3 + 4.
+
+## Zo start je
+Nieuwe wereld *Corrupted World*, cheats aan, creative. Handig: `/ca tpring 3` · `/ca tpring 4` · `/ca tpring 5` ·
+`/ca tpring 3 nether` · `/ca condition get` · `/time set noon` · `/gamemode survival`. Items: `/give @s
+corruptedadventure:<id> <n>`. Gear-start: `sunstone_sword`, `volcanite_upgrade_smithing_template`, `volcanite_ingot 9`,
+`tidesilver_upgrade_smithing_template`, `tidesilver_ingot 9`.
+
+## E. Gear: vulkaniet en getijdezilver
+22. [ ] **Templates craften:** 6 `dew_crystal` + 2 `sunstone_ingot` + 1 `pumice` (`S I S / S C S / S I S`) → vulkaniet-
+    template; 6 `primordial_ice` + 2 `volcanite_ingot` + 1 `tidestone` → getijdezilver-template. Geen kopie-recept.
+23. [ ] **Smithing:** zonnesteen-stuk (met enchantment én coating) + vulkaniet-template + `volcanite_ingot` → vulkaniet;
+    daarna + getijdezilver-template + `tidesilver_ingot` → getijdezilver. Enchantment en coating blijven.
+24. [ ] **Look:** vulkaniet (gloeiende scheuren, verkoolde greep) en getijdezilver (jade-binding/pommel) in hand en
+    inventaris naast zonnesteen/netherite; harnas layer 1 + 2, ook alleen beenstukken; smeedtafel met alle templates.
+    Ring 3-tab eindigt met de vulkaniet-set, ring 4-tab met de getijdezilver-set. Brandvrij in lava.
+25. [ ] **Mijnen (survival):** vulkaniet/zwavel/vuurrobijn (`/ca tpring 3`): diamant niets, zonnesteen-pickaxe wel.
+    Getijdezilver/jade (`/ca tpring 4`): zonnesteen niets, vulkaniet-pickaxe wel. Nulliet/witte kern (`/ca tpring 5`):
+    vulkaniet niets, getijdezilver-pickaxe wel.
+26. [ ] **Vulkaniet-blokken:** ruw blok en vulkanietblok 3 × 3 geplaatst (naden); erts op steen, basalt en deepslate.
+
+## F. Condities: dauwdrank, zuiver water, handwarmer
+27. [ ] **Dauwdrank** (`dew_crystal` + waterfles, vormloos): ring 3 in de zon −20 hitte, "Verkoeld" ~45 s (hitte stijgt
+    half zo snel, `/ca condition get`), fles terug. De veldfles geeft ook "Verkoeld" maar haalt geen hitte af.
+28. [ ] **Zuiver water** (1 `primordial_ice` + 4 glazen flessen → 4): ring 4 bij een gifpoel −20 gif, "Gezuiverd" 45 s
+    (gif stijgt half zo snel), fles terug.
+29. [ ] **Handwarmer** (`L F L / _ L _`: leer, `fire_crystal`) → gecraft **leeg** (asgrijs). Bijvullen: vuurkristal erop
+    (vuursteengeluid) → 4 ladingen. In `/ca tpring 3 nether`: per gebruik −20 kou + "Verwarmd" 45 s (kou half zo snel),
+    geknetter; tooltip, oranje balkje en model (leeg bij 0) lopen mee.
+30. [ ] **Effecten:** "Gezuiverd"/"Verwarmd" met timer rechtsboven en in de inventaris; melk haalt ze weg; relog: ze
+    lopen door. Met twee spelers: de ladingen van de een veranderen niets bij de ander.
+
+## G. Pijlen
+31. [ ] **Craften:** ` A ` / `AMA` / ` A ` (4 pijlen rond `sulfur`) → 4 `fire_arrow`; rond `toxic_crystal_shard` → 4
+    `poison_arrow`.
+32. [ ] **Schieten:** boog én kruisboog; Infinity geeft geen gratis pijlen. Brandpijl: mob brandt ~5 s; TNT, kampvuur
+    (uit) en kaarsen gaan níet aan, geen vuurblok. Gifpijl: Gif I ~5 s. Spoor in de vlucht (vlammetje / groene swirl).
+33. [ ] **Dispenser** schiet beide; opgeraapte pijl geeft het eigen item terug. Pijl-entity van dichtbij (punt, veren).
+
+## H. Ring 3-blokken en -items
+34. [ ] **Zwavel:** zwavel + houtskool → 2 buskruit (steenkool werkt niet); zwavel en `sulfur_block` branden in de oven
+    zo lang als kolen/kolenblok; zwavelblok ↔ 9 zwavel; een zwavelblok vat geen vuur in de wereld.
+35. [ ] **Gloeibessen:** rijpe struik plukken → `ember_berries`; ze planten de struik op as/mos; eten → 5 s
+    vuurbestendigheid. Druipzwamsoep: kom terug.
+36. [ ] **Puimsteen-vlotter** (`pumice_raft`, 4 puimsteen `# # / # #` → 2): alleen op lava te plaatsen (niet op water), je
+    kunt erop staan, breekt als de lava weg is, direct kapot te slaan.
+37. [ ] **Zwavellamp** (4 zwavel rond glas): licht 13, geelgroene gloed. **Dauwkristalblok** (2 × 2): tinkelt; staat aan
+    het eind van tab Nether-2.
+
+## I. Ring 4: ingelegde sets, coating-templates
+38. [ ] **Ingelegde sets** (8 steen rond 1 edelsteen → 8): `fire_ruby_inlaid_pumice`, `jade_inlaid_tidestone`,
+    `aquamarine_inlaid_lagoon_sandstone`; trap/plaat/muur aan werkbank en steenzaag; naden en bovenkant; mijnbaar met
+    een houten pickaxe, droppen zichzelf (dubbele plaat = 2). Tab 4: achteraan na `jade_block`.
+39. [ ] **Coating-templates uit het ringrecept:** hitte `R P R / P D P / R P R` (vuurrobijn, puimsteen, dauwkristal), gif
+    `J S J / S C S / J S J` (jade, tidestone, oerijs), kou `F S F / S C S / F S F` (vuurkristal, koude lava, oerijs);
+    de kopie-recepten werken nog. Gecoat harnas: in de juiste ring stijgt die conditie trager.
+40. [ ] **Veen** in de oven: 6 items per blok.
+
+## J. Tuningvragen golf 3 + 4 (graag per punt: ok / anders, en hoe)
+**Gear (G)**
+- Template-recepten `S I S / S C S / S I S` (Nether-materiaal, staaf van de vorige tier, ringsteen); geen kopie-recept.
+- NL-namen "Vulkanieten …" / "Getijdezilveren …"; schoffel slaat bij elke tier voor 1; brandvrij.
+**Consumables (C)**
+- Dauwdrank vormloos dauwkristal + waterfles → 1, stack 16, 32 ticks; zuiver water 1 oerijs + 4 flessen → 4 (oerijs
+  valt alleen met Silk Touch), stack 16.
+- Handwarmer-recept `LFL / _L_`, geluiden (geknetter / vuursteen), volle handwarmer + kristal = vanilla-wissel, balkkleur
+  `FF8A2A`; in creative gratis.
+- Effectkleuren cleansed `B8F0D0`, warmed `FF9A3C`.
+**Pijlen (A)**
+- Receptvorm ` A ` / `AMA` / ` A ` → 4; schade en vlucht als een gewone pijl; spoor per tick; in `#minecraft:arrows`
+  (breken dus ook puntig druipsteen, chorus en versierde potten); NL "Brandpijl" / "Gifpijl".
+**Ring 3 (R3)**
+- Hitte-template `RPR / PDP / RPR`; buskruit alleen met houtskool (→ 2); zwavelblok brandt niet in de wereld.
+- Ingelegde puimsteen 8 → 8 (trap 6 → 4, plaat 3 → 6, muur 6 → 6; steenzaag 1/2/1); zwavellamp in redstonelamp-vorm met
+  zeelantaarn-eigenschappen; vlotter 4 → 2, volle 16 × 16, direct kapot; dauwkristalblok 2 × 2 zonder weg terug.
+- Gloeibesstruik zonder eigen item; gloeibessen in `c:foods/berry`, composteerbaar 0,3; druipzwamsoep in `c:foods/soup`.
+**Ring 4 (R4)**
+- Ingelegde sets droppen zichzelf; basisstenen tidestone en lagoon sandstone.
+- Gif-template `JSJ / SCS / JSJ`; kou-template `FSF / SCS / FSF` met `cold_lava` als ringsteen (voorlopig).
+**Textures (T)**
+- Gear-silhouetten als zonnesteen; vulkaniet gloeiende scheuren + verkoolde greep; getijdezilver jade-binding en -pommel.
+- Templates: vulkaniet vlam uit basalttablet, getijdezilver twee golven in getijdesteen, nulliet void-ring.
+- Vulkaniet ruw/blokken herkleurd uit de ring 3-vormen; erts alleen palet.
+- Dauwdrank/zuiver water in de cactussapfles; handwarmer = leren buidel met venster; iconen cleansed (mintgroene
+  druppel) en warmed (vlam).
+- Pijlen: zwavelpunt + rode veren / gifkristalpunt + groene veren.
+- Zwavelblok, dauwkristalblok, zwavellamp; inleg (ruit / cabochon / langwerpig kristal); vlotter als vastgesjorde platen.
