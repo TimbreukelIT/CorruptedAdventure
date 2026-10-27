@@ -1579,37 +1579,6 @@ public final class Ring3Textures {
     }
 
     /**
-     * One angular nugget centred on (cx, cy): an octagon (diamond and square blended) stretched by (sx, sy), with facet
-     * tones from {@code palette} [0..5] by the light from the top left, its lower right rim in the darkest tone (the seam
-     * against what lies behind it) and one glint on the lit corner.
-     */
-    private static void nugget(BufferedImage image, double cx, double cy, double radius, double sx, double sy, int[] palette) {
-        int glintX = -1;
-        int glintY = -1;
-        for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE; x++) {
-                double dx = (x + 0.5 - cx) / sx;
-                double dy = (y + 0.5 - cy) / sy;
-                double edge = Math.max(Math.abs(dx) + Math.abs(dy), 1.3 * Math.max(Math.abs(dx), Math.abs(dy))) / (1.3 * radius);
-                if (edge > 1) {
-                    continue;
-                }
-                double light = -(dx + dy) / radius;
-                int tone = light > 0.45 ? 4 : light > 0.0 ? 3 : light > -0.45 ? 2 : 1;
-                if (edge > 0.82 && dx + dy > 0) {
-                    tone = 0;
-                }
-                set(image, x, y, palette[tone]);
-                if (glintX < 0 || x + y < glintX + glintY) {
-                    glintX = x;
-                    glintY = y;
-                }
-            }
-        }
-        set(image, glintX + 1, glintY + 1, palette[5]);
-    }
-
-    /**
      * Sulfur: a crumbly lump of bright yellow crystal crust, lit from the top left, darker ochre in the lower right,
      * a few pale crystal points; selective outline in dark ochre.
      */

@@ -28,6 +28,9 @@ Bron: `docs/design/fase-2-items.md` §6 (paletten §6.2/§6.5), namen uit `docs/
   (gear, layers 1 + 2 op een speler, templates, vulkaniet ruw/blokken) en `build/t-preview/golf34-misc.png` (C/A/R3/R4
   naast vanilla-referenties). Ring 3-script opnieuw gedraaid: alleen `volcanite_ore_overlay.png` wijzigt.
 
+- 2026-10-27 — main `20c8f1ba` (G, R3) ingevoegd; build + runData groen, `src/generated` ongewijzigd. Review low: ongebruikte
+  `nugget` in `Ring3Textures` verwijderd (output ongewijzigd); dubbele helpers → backlog.
+
 ## Voorlopig (bevestigen bij de teststop)
 - Gereedschap: zelfde silhouetten als zonnesteen; vulkaniet met gloeiende scheuren in de kop, getijdezilver met een
   jade-binding waar kop en steel samenkomen en een jade-pommel. Vulkaniet-greep verkoold (donkerder dan zonnesteen).
@@ -102,4 +105,4 @@ Bron: `docs/design/fase-2-items.md` §6 (paletten §6.2/§6.5), namen uit `docs/
 
 ## Backlog
 - [textures] `Golf34*Textures` delen met `Golf2*Textures` letterlijk `Texture`/`add`/`palette`/`write`/`contactSheet`
-  (bij de bestaande regel "texturescripts ontdubbelen").
+  (bij de bestaande regel "texturescripts ontdubbelen"; review 820ae679, besluit main: niet fixen, single-file-scripts).
