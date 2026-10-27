@@ -7,6 +7,7 @@ Een groep **Nightmares**: één per ring (5 totaal), groter dan gewone mobs, bed
 
 - **Rolverdeling:** bewakers zijn *poortwachters op een vaste plek* (jij gaat naar hen toe); Nightmares zijn *dreiging die jou vindt*. Herobrine blijft de enige die "persoonlijk" is.
 - **Rode draad:** Herobrines witte ogen als handtekening van het legioen. Elke Nightmare geeft betekenis aan iets wat fase 1 al in de wereld heeft gelegd.
+- **Art direction (2026-10-27):** ruig en boss-waardig, niveau Elden Ring. Gebroken silhouetten (geen kale blokken), gelaagde platen en richels, asymmetrie en schade (afgebroken hoorns, littekens, gescheurde vliezen, bloot bot), zware wenkbrauwen en diepe oogkassen, veel tanden, een dreigende houding en textures met sterk contrast, vuil en slijtage. Nooit schattig, schoon of speelgoedachtig. Geldt voor alle Nightmares, hun platen en hun modellen.
 
 ## Beslissingen (sparring 2026-10-20)
 1. **Los en optioneel** t.o.v. de bewakers: verslaan levert iets waardevols op, maar is geen progressie-eis.
@@ -19,9 +20,9 @@ Een groep **Nightmares**: één per ring (5 totaal), groter dan gewone mobs, bed
 |---|---|---|
 | 1 | **De Holle** (The Hollow) — ontzielde titaan, dimension shifter | corruptie van ring 5 in de vanilla-ring; zielkristallen van Nether-1 |
 | 2 | **De Gelaagde** (The Layered; was "De Luchtspiegeling") — veelkoppige kloofkruiper, eter van de reuzen | kloven, half begraven reuzenskeletten in de duinenzee |
-| 3 | **Het Askoor** — reus van samengesmolten as-afgietsels die zingen, beweegt door lava | as-afgietsels, voetsporen in de as, lavarivieren |
-| 4 | **Wat onder de bellen leeft** | backlog: "iets groots onder water (bij de bellen)", het silhouet is de voorbode |
-| 5 | **De Onvoltooide** — half geladen, glitchende wachter | void, glitches, kastelen (niet overlappen met "beweegt als je niet kijkt") |
+| 3 | **De Herrijzende** (The Risen; was "Het Askoor") — kolossale asfeniks met een koor van slachtoffers in zijn borst en veren | as-afgietsels, voetsporen in de as, lava en vulkanen |
+| 4 | **De Verloren Hoeder** (The Lost Keeper; was "Wat onder de bellen leeft") — gevallen mythische zeedraak, half parelwit, half gifgroen rot | bellen, het silhouet onder water, mist, zwevende eilanden, de zeewezen-fossielen van Nether-4 |
+| 5 | **De Onvoltooide** — kolossaal geënt mozaïek van herinneringen en van de vier verslagen Nightmares, klimt uit de void | herinneringen, void-scheuren, glitchblokken, stilstand-weer |
 
 ## Ring 1 — De Holle, de ontzielde titaan (werktitel)
 *Herontwerp 2026-10-20: vervangt de eerste schets (uitgerekte nabootser). "Hol" betekent nu: zonder ziel.*
@@ -85,28 +86,66 @@ Een groep **Nightmares**: één per ring (5 totaal), groter dan gewone mobs, bed
 - **Beweging:** over de kloofbodem én langs wanden en treden, en over de rand het plateau op. Bij de kloof ben je nergens veilig. Het model draait mee met de wand: de client rendert het, de server bepaalt de staat.
 - **Zwakte:** vrij te kiezen (geen vast patroon per Nether-ring); nog open.
 
-## Ring 3 — Het Askoor (werktitel)
-*Sparring 2026-10-27.*
+## Ring 3 — De Herrijzende (The Risen, werktitel; was Het Askoor)
+*Sparring 2026-10-27. Eerste versie was een vormeloze massa van afgietsels ("Het Askoor"); na het Blockbench-model vond de gebruiker dat komisch in plaats van eng. Herzien naar een mythisch wezen met een sterk silhouet. Verhaal, koor, lava, afgietsel bij dood en de hoorn zijn gebleven.*
 
-![Het Askoor](img/nightmare-ring3-het-askoor.png)
+![De Herrijzende](img/nightmare-ring3-de-herrijzende.png)
 
-- **Wie hij is:** een reus die bestaat uit honderden samengesmolten as-afgietsels: zijn slachtoffers. Gezichten, handen, ruggen en knieën steken uit zijn lijf, met gloeiende naden ertussen. Ze zingen laag: dat is het koor. Herobrines witte ogen zitten in één kop in het midden.
+- **Wie hij is:** een reusachtige **asfeniks**, een vogel van as en smeulende veren met een uitgemergelde, half verkoolde schedelkop en Herobrines witte ogen. Een feniks herrijst uit zijn as: zijn terugkeer na verslaan (algemene Nightmare-regel) is hier mythe, geen regel.
 - **Haak in de wereld:** elk as-afgietsel in ring 3 (die allemaal naar de dichtstbijzijnde vulkaan kijken) is iemand die hij verbrandde. De voetsporen in de as die abrupt stoppen of bij een kraterrand eindigen, zijn mensen die hij meenam.
-- **Beweging:** door lava. Hij zwemt door lavarivieren en kratermeren en komt eruit omhoog; kort kan hij over land. Lava is zijn "scheur", en dat lost ook de pathfinding van een reus op.
-- **Overal in ring 3 (hij smelt zich omhoog):** lava ligt maar op ~1,6 % van het oppervlak, dus hij **maakt het zelf**. Hij reist onder de grond (virtuele positie; de lavabuizen geven het verhaal) en kan overal bovenkomen. De grond gloeit en scheurt, en smelt dan tot een tijdelijke lavapoel (~5–7 breed) waar hij uit oprijst. Echte lavarivieren en kratermeren blijven zijn favoriet: daar is hij sterker en daar trekt hij zich terug.
-- **Litteken:** na afloop stolt de poel tot een blijvende plek van basalt, magma en obsidiaan, net als het litteken van De Holle. Hij raakt alleen natuurlijke blokken, nooit spelersblokken. Zo blijft de fase 1-regel "geen lava tegen open lucht" heel.
-- **Formaat:** de grootste Nightmare tot nu toe, ~8–10 blokken, zodat je hem van ver boven de asvlakte ziet.
-- **Gedaante (vormeloze massa):** een berg samengesmolten figuren zonder vaste vorm, die armen en koppen vormt waar hij ze nodig heeft. Dit is het engst, maar ook het zwaarste model- en animatiewerk van alle Nightmares (veel losse delen).
-- **Komst (het koor zwelt aan):** eerst hoor je een laag koor, steeds luider en uit de richting van de lava (of onder je voeten). Uit de afgietsels in de buurt stijgen rook en vonken op (particles). Dan borrelt de lava, of gloeit en smelt de grond, en rijst hij op. Behalve de gesmolten poel en het litteken verandert het terrein niet.
+- **Het koor (zijn slachtoffers):** zijn borst is een **open ribbenkast die gloeit als een oven**, vol samengesmolten gezichten die zingen. Ook zijn **slagpennen** zijn uitgerekte, verkoolde figuren met armen als veren; als hij vliegt, zie je ze bewegen.
+- **Formaat:** kolossaal, **spanwijdte ~24**, van ver te zien boven de vulkanen.
+- **Beweging:** hij **vliegt** vrij over heel ring 3 én kan zich **overal omhoog smelten**. Lava en vulkaankraters zijn zijn nest: daar rust hij en daar herrijst hij.
+  - *Omhoog smelten:* hij reist onder de grond (virtuele positie; de lavabuizen geven het verhaal). De grond gloeit en scheurt, en smelt tot een tijdelijke lavapoel (~5–7 breed) waar hij uit oprijst. Lava ligt maar op ~1,6 % van het oppervlak; zo komt hij ook waar geen lava is.
+  - *Litteken:* na afloop stolt de poel tot een blijvende plek van basalt, magma en obsidiaan, net als het litteken van De Holle. Alleen natuurlijke blokken, nooit spelersblokken; de fase 1-regel "geen lava tegen open lucht" blijft heel.
+- **Komst (het koor zwelt aan):** eerst hoor je een laag koor, steeds luider, uit de lucht of onder je voeten. Uit de afgietsels in de buurt stijgen rook en vonken op (particles). Dan valt zijn schaduw over je heen, of gloeit en smelt de grond en rijst hij op.
 - **Aanvallen:**
-  - *Tot afgietsel maken:* hij bedekt je met as, waardoor je steeds trager wordt tot je vaststaat. Medespelers kunnen de as eraf slaan. Sterf je zo, dan blijft er op die plek een blijvend afgietsel in jouw houding achter.
-  - *Koorschreeuw:* alle koppen schreeuwen tegelijk: misselijkheid of zwakte in een straal, en dieren en mobs vluchten.
-  - *Slachtoffers loslaten:* hij scheurt figuren uit zijn lijf die als aswandelaars gaan lopen (de gewone ring 3-mobs uit de backlog; afstemmen in fase 4).
+  - *Tot afgietsel maken:* zijn vleugels laten as regenen die je bedekt; je wordt steeds trager tot je vaststaat. Medespelers kunnen de as eraf slaan. Sterf je zo, dan blijft er een afgietsel in jouw houding achter (zie hieronder).
+  - *Koorschreeuw:* zijn kreet met alle stemmen van het koor tegelijk: misselijkheid of zwakte in een straal, en dieren en mobs vluchten.
+  - *Slachtoffers loslaten:* figuren vallen uit zijn veren en gaan als aswandelaars lopen (de gewone ring 3-mobs uit de backlog; afstemmen in fase 4).
 - **Zwakte (ring 3-hoorn):** een eigen, versterkte ring 3-hoorn overstemt het koor en laat hem kort verstijven; de vanilla-geitenhoorn doet niets. De basis is een geitenhoorn, en geiten leven in ring 3 alleen op de pieken. Het recept volgt in `items` (backlog).
-- **Techniek van de vormeloze massa:** één massa-model met ~20–30 figuren als geanimeerde delen. "Armen vormen" is een vaste set van 4–6 vormen (arm links, arm rechts, kop omhoog, ineengezakt, uit de lava) die in elkaar overvloeien. Alleen losgescheurde figuren worden echte entities (aswandelaars). GeckoLib ligt hier voor de hand (animatietechniek nog open).
 - **Afgietsel bij je dood:** blijvend, in jouw houding (as- en smeulende-asblokken), met je naam zichtbaar als iemand ernaar kijkt (klein block entity). Alleen op vrije ruimte, nooit over spelersblokken.
+- **Techniek (eerste inschatting):** vliegende boss met eigen vlucht-AI (zoals de enderdraak); grote vleugels met slagpennen als losse botten voor de animatie (GeckoLib ligt voor de hand, nog open); een hitbox op het lijf, de vleugels mogelijk als deel-hitbox.
 
-**Open (ring 3):** hoe ver en hoe lang hij over land kan; gedrag buiten het gevecht; aftocht en terugkeer; beloning; balans met ring 3-gear (vulkaniet); de precieze werking van het verstijven.
+**Open (ring 3):** gedrag buiten het gevecht (cirkelt hij boven vulkanen?); hoe lang hij op de grond komt en of je hem omlaag moet halen; aftocht en terugkeer; beloning; balans met ring 3-gear (vulkaniet); de precieze werking van het verstijven (valt hij uit de lucht?).
+
+## Ring 4 — De Verloren Hoeder (The Lost Keeper, werktitel)
+*Sparring 2026-10-27. Vervangt de werktitel "Wat onder de bellen leeft".*
+
+![De Verloren Hoeder](img/nightmare-ring4-de-verloren-hoeder.png)
+
+- **Wie hij was:** de beschermgeest van de wateren van ring 4, een mythische zeedraak. Herobrine verdorf hem. Zijn **voorste helft is nog mythisch** (parelwitte schubben, pastel gloed), zijn **achterste helft is gifgroen rot**: hij is het verloop van de ring zelf, van mythisch naar bedorven. Hij is de eerste Nightmare die je eerst prachtig vindt.
+- **Haak in de wereld:** de bellenstromen uit de diepte zijn zijn adem en het silhouet onder water (fase 1) is hij. De fossiele ribbenkasten van reusachtige zeewezens in Nether-4 zijn zijn dode soortgenoten.
+- **Gedaante (herzien 2026-10-27 na referentiebeelden; vervangt "zeedraak met flippers"):** een **lange zeeslang-draak** van ~24 blokken die kronkelt en lussen maakt; opgericht of opgerold ~10 hoog. **Volledig zichtbaar**; hij kan ook op een oever of eiland kruipen. Hij heeft een **gehoornde drakenkop met open muil**, een **rugkam van stekelige vinstralen** met membraan over de hele lengte, en **één paar grote, doorschijnende vinvleugels** bij de kop. In de mythische helft zijn de vinnen pastel-lila en doorschijnend, in de rotte helft gescheurd en groen verkleurd. Technisch: een kop-hitbox plus 5–6 lijfsegmenten die elkaar volgen (zoals de enderdraak).
+- **Beweging:** door water en door het tunnelnet, en hij **zwemt ook door de lucht** tussen de zwevende eilanden, alsof het water is. Zo komt hij overal in ring 4.
+- **Komst (uit de mist):** hij **brengt zijn eigen dikke mist mee**, ook bij helder weer (lokaal rond hem; server-staat en sync, zoals het ringweer). Mist die in helder weer optrekt, voorspelt hem. Zijn gloed schemert door de mist, eerst ver weg en dan steeds dichterbij.
+- **Aanvallen:**
+  - *Lokroep (mythische helft):* zijn gloed en een zachte zang trekken spelers langzaam naar hem toe, zoals een sirene.
+  - *Gifadem (rotte helft):* een gifgroene wolk; de gifmeter van ring 4 stijgt snel.
+  - *Onder water trekken:* hij slaat zijn lijf om een speler en trekt die onder water; medespelers bevrijden je.
+  - *Van het eiland slaan:* een staartzwiep langs een eiland of oever slaat spelers eraf (valschade of het water in).
+- **Zwakte (de kroon):** een kroon van gloeiend parelmoer en levend koraal die tussen en achter zijn hoorns groeit, het mooiste deel van de mythische helft. Bij elke treffer breekt er een tak af en dooft het licht. Raak hem daar en hij verliest zijn zwemkracht in de lucht en valt.
+
+**Open (ring 4):** hoe groot de mistbank is en hoe lang die blijft; de lokroep precies (kracht, hoe je je verzet); of de kroon na zijn terugkeer teruggroeit; balans met ring 4-gear (getijdezilver); de link met de mist-mobs uit de backlog.
+
+## Ring 5 — De Onvoltooide (The Unfinished, werktitel)
+*Sparring 2026-10-27. De laatste Nightmare vóór Herobrine: de zwaarste, en de finale van de hele reis.*
+
+![De Onvoltooide](img/nightmare-ring5-de-onvoltooide.png)
+
+- **Wie hij is:** een **geënte kolos**, aan elkaar genaaid uit brokken van alle ringen én van de vier verslagen Nightmares: de reuzenarm van De Holle, poten van De Gelaagde, een vleugel van De Herrijzende, de staart van De Hoeder. De naden zijn glitch en void. Hij is **onvoltooid**: delen laden nog in, flikkeren (draadmodel, missing texture) of ontbreken.
+- **Haak in de wereld:** de "herinneringen" in ring 5 (vervormde brokken van ring 1–4, soms zwevend of scheef) zijn brokken die van hem afvallen.
+- **Kop (kroon van vier koppen):** rond een lege void-kern met Herobrines witte ogen zitten de koppen van de vier verslagen Nightmares aan elkaar geënt: de schedel van De Holle, de snavelschedel van De Gelaagde, de haakschedel van De Herrijzende en de drakenkop van De Hoeder. Ze draaien en happen elk los.
+- **Formaat:** kolossaal, **~20+ blokken**. Het gevecht wordt vooral klimmen en zwakke plekken raken, op een brok, een brug of een kasteelplateau.
+- **Beweging:** hij leeft in de void en **klimt via scheuren en randen omhoog**. Waar geen scheur is (de binnenband), **scheurt hij de grond open** tot in de void en klimt eruit. Er blijft een blijvende void-scheur achter (alleen natuurlijke blokken), net als de littekens van De Holle en De Herrijzende.
+- **Komst (stilstand):** het ringweer "stilstand" valt in: regen en wolken bevriezen en het geluid valt weg. In die stilte hoor je hem klimmen.
+- **Aanvallen:**
+  - *Herinneringen gebruiken:* via zijn geënte delen gebruikt hij een aanval van elke eerdere Nightmare: verspringen via een scheur (De Holle), grijpen en meeklimmen (De Gelaagde), asregen (De Herrijzende), lokroep (De Hoeder).
+  - *Naar de void trekken:* een zuigkracht naar de dichtstbijzijnde void-rand; je void-meter stijgt snel.
+- **Zwakte (hemelglas):** hemelglas (het sleutelmateriaal van Nether-4, tegengif tegen void en glitches) "laadt" zijn flikkerende, onvoltooide delen helemaal in, zodat ze te raken zijn. De vorm (pijlen, een lens, een coating) volgt in `items` (backlog).
+- **Grens met andere ontwerpen:** hij beweegt niet "als je niet kijkt" (dat blijft voor de schaduw-mobs van ring 5) en is niet persoonlijk; dat blijft Herobrine.
+
+**Open (ring 5):** of losgeslagen of uitgeschakelde delen tijdens het gevecht wegvallen; wat er gebeurt als hij terugkeert (nieuwe herinneringen erbij?); de rol van de kastelen; balans met ring 5-gear (nulliet); beloning.
 
 ## Haalbaarheid in 1.21.1 / NeoForge
 - **Goed te doen:** grote modellen (4–6 blokken), bossbar (`ServerBossEvent`, multiplayer-proof), eigen AI-goals, positionele geluiden server-side (vanilla-events met pitch, zoals change 32), particles en client-effecten via payload.
