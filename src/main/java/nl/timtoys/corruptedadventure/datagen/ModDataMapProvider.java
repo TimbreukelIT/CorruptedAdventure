@@ -93,6 +93,7 @@ final class ModDataMapProvider extends DataMapProvider {
 
         // Peat: a weak fuel (6 items per block, coal does 8), because the whole surface of the peat moors is peat.
         builder(NeoForgeDataMaps.FURNACE_FUELS).add(ModBlocks.PEAT.getId(), new FurnaceFuel(PEAT_BURN_TIME), false);
+        golf3Ring3();
 
         ring5HealthyBlocks();
     }
@@ -113,6 +114,22 @@ final class ModDataMapProvider extends DataMapProvider {
                 .add(ModBlocks.CORRUPTED_PLANKS.getId(), Blocks.OAK_PLANKS, false)
                 .add(ModBlocks.CORRUPTED_LEAVES.getId(), Blocks.OAK_LEAVES, false);
     }
+
+    /**
+     * Phase 2 golf 3 (stream R3, §6.4): sulfur burns like coal, its block like a coal block; ember berries compost like
+     * sweet berries.
+     */
+    private void golf3Ring3() {
+        builder(NeoForgeDataMaps.FURNACE_FUELS)
+                .add(ModItems.SULFUR.getId(), new FurnaceFuel(SULFUR_BURN_TIME), false)
+                .add(ModBlocks.SULFUR_BLOCK.getId(), new FurnaceFuel(SULFUR_BLOCK_BURN_TIME), false);
+        builder(NeoForgeDataMaps.COMPOSTABLES).add(ModItems.EMBER_BERRIES.getId(), new Compostable(0.3F), false);
+    }
+
+    /** Ticks of furnace fuel per sulfur: coal's 1600 (8 items). */
+    static final int SULFUR_BURN_TIME = 1600;
+    /** Ticks of furnace fuel per sulfur block: the coal block's 16000 (80 items). */
+    static final int SULFUR_BLOCK_BURN_TIME = 16000;
 
     /** Ticks of furnace fuel per peat block. */
     static final int PEAT_BURN_TIME = 1200;
