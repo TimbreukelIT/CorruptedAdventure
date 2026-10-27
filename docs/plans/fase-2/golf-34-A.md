@@ -19,7 +19,12 @@ client tekent alleen de pijl en het spoor-deeltje.
 
 ## Voortgang
 - 2026-10-27 19:39 start; setup n = 68.
-- 19:55 code af; build gestart.
+- 19:55 code af; build gestart (wachtte op een slot).
+- 20:35 eerste build rood: `ModBlocksTest.ring4OresAndCrystals…` telt de standalone-items na het vuurkristal; de test
+  filtert nu ook `EffectArrowItem` (zoals de templates). build + runData groen; commit `13567657`.
+- 21:21 GameTests: de dispenser-test hing de hele GameTest-server (redstone-blok naast de vloer zette de structure block
+  van de test opnieuw aan, de batch herstartte elke tick); nu van boven gevoed. 10/10 groen; commit `70552aff`.
+- 21:23 server-smoke n = 68 groen (Done in 8 s, geen client-class-fouten). `/code-review low` gestart.
 
 ## Voorlopig (bevestigen bij de teststop)
 - Receptvorm (beide): materiaal in het midden, de 4 pijlen op de vier zijden (` A ` / `AMA` / ` A `) → 4.

@@ -1,0 +1,27 @@
+ring1 20 20 35 35
+z12 86 -8 101 7
+# ring 2 (G2: hoodoo_pillar_weight, new features): canyon floor, hoodoo field, high dunes, mesas
+canyon 116 14 131 29
+hoodoo 144 32 159 47
+dunes -144 32 -129 47
+mesa 177 -68 192 -53
+# zone 2->3
+zone23 211 -8 226 7
+# ring 3 (G2: microrelief in the noise on ash / seabed / titans, new features)
+ember 289 -8 304 7
+sulfur 233 140 248 155
+great -250 -4 -235 11
+ashen 328 28 343 43
+titan -322 -38 -307 -23
+seabed -254 46 -239 61
+# zone 3->4 (steam_fens + verdant_falls descent)
+steamfens 367 -8 382 7
+# ring 4: descent basins, horseshoe gorge, blighted islands band, mythical tunnels, world tree
+vfbasin -27 366 -12 381
+vgorge -3 -385 12 -370
+tds -15 -464 0 -449
+tunmyth 410 -22 425 -7
+tree 394 133 409 148
+# zone 4->5
+zone45 492 -8 507 7
+wastes 517 -8 532 7
