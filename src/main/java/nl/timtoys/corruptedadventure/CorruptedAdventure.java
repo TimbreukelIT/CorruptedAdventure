@@ -40,6 +40,7 @@ import nl.timtoys.corruptedadventure.registry.ModFluidTypes;
 import nl.timtoys.corruptedadventure.registry.ModFluids;
 import nl.timtoys.corruptedadventure.registry.ModFoliagePlacerTypes;
 import nl.timtoys.corruptedadventure.registry.ModItems;
+import nl.timtoys.corruptedadventure.registry.ModMobEffects;
 import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 import nl.timtoys.corruptedadventure.registry.ModPlacementModifierTypes;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
@@ -77,6 +78,7 @@ public final class CorruptedAdventure {
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModDataComponents.register(modEventBus);
+        ModMobEffects.register(modEventBus);
         ModArmorMaterials.register(modEventBus);
         ModFluidTypes.register(modEventBus);
         ModFluids.register(modEventBus);

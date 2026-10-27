@@ -1,29 +1,44 @@
 package nl.timtoys.corruptedadventure.condition;
 
 import net.minecraft.server.level.ServerPlayer;
-import nl.timtoys.corruptedadventure.registry.ModAttachments;
+import net.minecraft.world.effect.MobEffectInstance;
+
+import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
 
 /**
- * Server API for the timed {@link RateEffect}s of a player, and their {@link RateModifier} (stage
+ * Starts the {@link RateEffect}s of consumables and applies them as a {@link RateModifier} (stage
  * {@link RateModifier.Stage#GEAR}: what the player wears and drinks). With a coating the factors multiply.
  */
 public final class RateEffects implements RateModifier {
+    private static final RateEffect[] EFFECTS = RateEffect.values();
+
     RateEffects() {
     }
 
-    public static RateEffectTimers timers(ServerPlayer player) {
-        return player.getData(ModAttachments.RATE_EFFECTS);
-    }
-
+    /** Vanilla's {@code addEffect}: a shorter dose of the same effect does not cut a longer one short. */
     public static void start(ServerPlayer player, RateEffect effect, int ticks) {
-        timers(player).start(effect, player.serverLevel().getGameTime(), ticks);
+        if (ticks > 0) {
+            player.addEffect(new MobEffectInstance(effect.mobEffect(), ticks));
+        }
     }
 
     @Override
     public float modify(Condition condition, ConditionContext context, float rate) {
-        if (rate <= 0.0F || !context.player().hasData(ModAttachments.RATE_EFFECTS)) {
+        return modify(condition, rate, effect -> context.player().hasEffect(effect.mobEffect()), RateEffect::factor);
+    }
+
+    /** {@code rate} times the factor of every active effect on {@code condition}, only if it rises. */
+    static float modify(Condition condition, float rate, Predicate<RateEffect> active, ToDoubleFunction<RateEffect> factor) {
+        if (rate <= 0.0F) {
             return rate;
         }
-        return timers(context.player()).modify(condition, rate, context.level().getGameTime(), RateEffect::factor);
+        float result = rate;
+        for (RateEffect effect : EFFECTS) {
+            if (effect.condition() == condition && active.test(effect)) {
+                result *= (float) factor.applyAsDouble(effect);
+            }
+        }
+        return result;
     }
 }

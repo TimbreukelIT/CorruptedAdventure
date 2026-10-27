@@ -6,6 +6,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -21,12 +22,11 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.condition.Condition;
 import nl.timtoys.corruptedadventure.condition.PlayerConditions;
-import nl.timtoys.corruptedadventure.condition.RateEffect;
-import nl.timtoys.corruptedadventure.condition.RateEffects;
 import nl.timtoys.corruptedadventure.item.CanteenItem;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModDataComponents;
 import nl.timtoys.corruptedadventure.registry.ModItems;
+import nl.timtoys.corruptedadventure.registry.ModMobEffects;
 
 /**
  * The consumables against dehydration (phase 2 golf 2, fase-2-items.md §5.3): filling the canteen at a water cauldron,
@@ -88,20 +88,22 @@ public final class ConsumableGameTests {
             canteen = canteen.finishUsingItem(helper.getLevel(), player);
             helper.assertValueEqual(PlayerConditions.get(player, Condition.DEHYDRATION), 25.0F, "meter after a sip");
             helper.assertValueEqual(CanteenItem.sips(canteen), CanteenItem.MAX_SIPS - 1, "sips after drinking");
-            long now = helper.getLevel().getGameTime();
-            helper.assertValueEqual(RateEffects.timers(player).remainingTicks(RateEffect.COOLED, now), 45L * 20,
-                    "cooled ticks");
+            helper.assertValueEqual(cooledTicks(player), 45 * 20, "cooled ticks");
 
             ItemStack juice = new ItemStack(ModItems.CACTUS_JUICE.get());
             ItemStack left = juice.finishUsingItem(helper.getLevel(), player);
             helper.assertValueEqual(PlayerConditions.get(player, Condition.DEHYDRATION), 10.0F, "meter after juice");
             helper.assertTrue(left.is(Items.GLASS_BOTTLE), "the juice gives its bottle back");
-            helper.assertValueEqual(RateEffects.timers(player).remainingTicks(RateEffect.COOLED, now), 45L * 20,
-                    "a shorter juice does not cut the canteen's time");
+            helper.assertValueEqual(cooledTicks(player), 45 * 20, "a shorter juice does not cut the canteen's time");
         } finally {
             helper.getLevel().getServer().getPlayerList().remove(player);
         }
         helper.succeed();
+    }
+
+    private static int cooledTicks(ServerPlayer player) {
+        MobEffectInstance cooled = player.getEffect(ModMobEffects.COOLED);
+        return cooled == null ? 0 : cooled.getDuration();
     }
 
     private static ItemStack withSips(int sips) {

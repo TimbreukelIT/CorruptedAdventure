@@ -499,6 +499,7 @@
   "death.attack.corruptedadventure.sucking_mud.player": "%1$s was swallowed by the sucking mud whilst fighting %2$s",
   "death.attack.corruptedadventure.void": "%1$s was unmade by the void",
   "death.attack.corruptedadventure.void.player": "%1$s was unmade by the void whilst fighting %2$s",
+  "effect.corruptedadventure.cooled": "Cooled",
   "fluid_type.corruptedadventure.toxic_pool": "Toxic Sludge",
   "generator.corruptedadventure.corrupted_world": "Corrupted World",
   "item.corruptedadventure.aquamarine_shard": "Aquamarine Shard",
