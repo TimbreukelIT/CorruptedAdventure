@@ -50,6 +50,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.common.ItemAbilities;
 import nl.timtoys.corruptedadventure.block.ModWoodTypes;
 import nl.timtoys.corruptedadventure.block.VoidstoneBlock;
+import nl.timtoys.corruptedadventure.item.CanteenItem;
+import nl.timtoys.corruptedadventure.item.DoseDrinkItem;
+import nl.timtoys.corruptedadventure.item.DoseFoodItem;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -229,7 +232,10 @@ class ModBlocksTest {
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem))
                 // The smithing templates of phase 2 close their ring sections; these checks are about the materials.
-                .filter(item -> !(item instanceof SmithingTemplateItem)).toList();
+                .filter(item -> !(item instanceof SmithingTemplateItem))
+                // So do the consumables of golf 2 (canteen, cactus juice, salted jerky).
+                .filter(item -> !(item instanceof CanteenItem || item instanceof DoseDrinkItem || item instanceof DoseFoodItem))
+                .toList();
         assertEquals(List.of(ModItems.SALT.get(), ModItems.SUNSTONE_INGOT.get(), ModItems.TURQUOISE.get(),
                 ModItems.DEW_CRYSTAL.get()), standalone.subList(standalone.indexOf(ModItems.SALT.get()),
                 standalone.indexOf(ModItems.DEW_CRYSTAL.get()) + 1));

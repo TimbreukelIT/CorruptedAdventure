@@ -170,6 +170,12 @@ public final class ServerConfig {
         public final ModConfigSpec.DoubleValue fallRateOasis;
         public final ModConfigSpec.DoubleValue fallRateOutside;
         public final ModConfigSpec.DoubleValue waterBottleAmount;
+        public final ModConfigSpec.DoubleValue canteenSipAmount;
+        public final ModConfigSpec.IntValue canteenCooledSeconds;
+        public final ModConfigSpec.DoubleValue cactusJuiceAmount;
+        public final ModConfigSpec.IntValue cactusJuiceCooledSeconds;
+        public final ModConfigSpec.DoubleValue cooledFactor;
+        public final ModConfigSpec.DoubleValue saltedJerkyAmount;
         public final ThresholdLevels thresholds;
         public final ModConfigSpec.IntValue effect1Amplifier;
         public final ModConfigSpec.IntValue effect2Amplifier;
@@ -196,6 +202,19 @@ public final class ServerConfig {
                     .defineInRange("fallRateOutside", 0.5, 0.0, 100.0);
             waterBottleAmount = builder.comment("Points removed per vanilla water bottle drunk (anywhere, no cooldown).")
                     .defineInRange("waterBottleAmount", 30.0, 0.0, 100.0);
+            canteenSipAmount = builder.comment("Points removed per sip from a canteen (phase 2 golf 2; 4 sips per filling).")
+                    .defineInRange("canteenSipAmount", 25.0, 0.0, 100.0);
+            canteenCooledSeconds = builder.comment("Seconds of 'cooled' per canteen sip.")
+                    .defineInRange("canteenCooledSeconds", 45, 0, 3600);
+            cactusJuiceAmount = builder.comment("Points removed per cactus juice drunk.")
+                    .defineInRange("cactusJuiceAmount", 15.0, 0.0, 100.0);
+            cactusJuiceCooledSeconds = builder.comment("Seconds of 'cooled' per cactus juice.")
+                    .defineInRange("cactusJuiceCooledSeconds", 20, 0, 3600);
+            cooledFactor = builder.comment("While cooled, a rising dehydration rate is multiplied by this (0.5: rises half as",
+                            "fast); a falling meter is left alone.")
+                    .defineInRange("cooledFactor", 0.5, 0.0, 1.0);
+            saltedJerkyAmount = builder.comment("Points added per salted jerky eaten (good food, more thirst).")
+                    .defineInRange("saltedJerkyAmount", 8.0, 0.0, 100.0);
             thresholds = ThresholdLevels.define(builder, "conditions.dehydration", new int[]{25, 50, 75, 100},
                     "Hunger from here.", "Slowness from here.", "Mining fatigue from here.", "Damage from here.");
             effect1Amplifier = builder.comment("Hunger amplifier (0 = level I).")

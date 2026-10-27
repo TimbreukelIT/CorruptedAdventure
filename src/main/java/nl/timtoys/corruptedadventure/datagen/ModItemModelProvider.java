@@ -7,6 +7,7 @@ import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.model.ConsumableItemModels;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
@@ -108,6 +109,7 @@ final class ModItemModelProvider extends ItemModelProvider {
         golf1Materials();
         coatings();
         golf2Materials();
+        ConsumableItemModels.build(this);
     }
 
     /** Phase 2 golf 2 (stream M): the soul crystal block, the inlaid sandstone set and the salt lamp. */

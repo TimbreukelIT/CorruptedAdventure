@@ -25,6 +25,8 @@ public final class ConditionTicker {
         gameBus.addListener(PlayerTickEvent.Post.class, ConditionTicker::onPlayerTick);
         // Coatings (phase 2) work on every condition, so they sit here and not in a ring's hooks.
         ConditionDefinitions.addModifier(RateModifier.Stage.GEAR, new CoatingModifier());
+        // So do the timed effects of consumables (phase 2 golf 2): canteen, cactus juice.
+        ConditionDefinitions.addModifier(RateModifier.Stage.GEAR, new RateEffects());
         Ring3Conditions.register(gameBus);
         Ring4Conditions.register(gameBus);
         Ring5Conditions.register(gameBus);

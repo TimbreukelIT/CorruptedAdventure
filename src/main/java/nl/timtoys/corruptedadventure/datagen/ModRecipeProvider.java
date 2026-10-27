@@ -5,6 +5,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import nl.timtoys.corruptedadventure.datagen.recipe.CoatingRecipes;
+import nl.timtoys.corruptedadventure.datagen.recipe.ConsumableRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.FloraRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.Golf2MaterialRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.MaterialRecipes;
@@ -27,5 +28,6 @@ final class ModRecipeProvider extends RecipeProvider {
         MaterialRecipes.build(output);
         CoatingRecipes.build(output);
         Golf2MaterialRecipes.build(output);
+        ConsumableRecipes.build(output);
     }
 }

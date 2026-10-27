@@ -219,6 +219,8 @@ public final class ModTags {
         public static final TagKey<Item> INGOTS_NULLITE = TagKey.create(Registries.ITEM, common("ingots/nullite"));
         /** Convention tag {@code c:gems/turquoise}; part of {@code c:gems}. */
         public static final TagKey<Item> GEMS_TURQUOISE = TagKey.create(Registries.ITEM, common("gems/turquoise"));
+        /** What salted jerky is made from (phase 2 golf 2): every cooked meat and cooked fish. */
+        public static final TagKey<Item> SALTED_JERKY_MEATS = TagKey.create(Registries.ITEM, CorruptedAdventure.id("salted_jerky_meats"));
 
         private Items() {
         }
