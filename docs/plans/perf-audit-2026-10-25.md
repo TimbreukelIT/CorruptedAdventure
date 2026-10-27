@@ -165,8 +165,70 @@ Uitkomst:
   klaar als kandidaat.
 - **De Nether** is voor het eerst gemeten: 0,98–1,39.
 
-Volgende stappen:
-1. Een bevestigingsrun van 2 warme rondes op een echt rustige machine (~35 min), zodat n ≥ 5 per gebied.
+Volgende stappen (ochtend; herzien in de bevestiging hieronder):
+1. Een bevestigingsrun van 2 warme rondes op een echt rustige machine (~35 min), zodat n ≥ 5 per gebied. Gedaan, zie hieronder.
 2. `VerdantGorges.shape` en `Ring5Field.spotShift` takvrij maken (backlog).
 3. Marge op canyon, zone23 en zone45 met `opt/aquifer` (`RingAquifer.openSpace` is 26 % van canyon). Daarna
    `opt/surface`.
+
+### Bevestiging 2026-10-27 middag: 2 warme rondes op een rustige machine (`perf-all-20261027-c`)
+
+De machine was de hele run rustig: 0 node-processen en ≥ 15 GB vrij volgens de log per 15 s. Beide rondes stormden
+weer in `VerdantGorges.shape`: r. 1033 kreeg 72–74 k traps en r. 1056 38–40 k. **De ring 4-storm zat dus in 3 van de 6
+warme rondes**, en de belasting is er niet de oorzaak van.
+
+Gecombineerd met de rondes van de ochtend geeft dat 5–6 schone warme rondes per gebied:
+
+| Gebied | noise mediaan schoon | n | min-max | alle warm | surface | features | noise koud | noise 25-10 |
+|---|---|---|---|---|---|---|---|---|
+| ring1 | 1,01 | 6 | 0,80-1,19 | 1,01 | 1,53 | 0,85 | - | 0,94 |
+| z12 | 1,44 | 6 | 1,34-1,52 | 1,44 | 2,90 | 0,94 | - | 1,46 |
+| canyon | 1,45 | 6 | 1,34-1,56 | 1,45 | 5,33 | 0,85 | - | 1,43 |
+| hoodoo | 1,08 | 6 | 1,03-1,40 | 1,08 | 3,89 | 0,83 | 1,04 | 1,04 |
+| dunes | 1,13 | 6 | 1,04-1,16 | 1,13 | 2,19 | 0,80 | - | 1,22 |
+| mesa | 1,25 | 5 | 1,19-1,26 | 1,23 | 5,14 | 0,91 | - | 1,08 |
+| zone23 | 1,40 | 5 | 1,38-1,44 | 1,39 | 4,43 | 0,69 | 1,36 | 1,50 |
+| ember | 1,04 | 6 | 1,01-1,12 | 1,04 | 2,11 | 0,85 | 1,00 | 1,00 |
+| sulfur | 1,08 | 6 | 1,03-1,25 | 1,08 | 2,66 | 0,41 | - | 1,08 |
+| great | 1,16 | 5 | 1,06-1,26 | 1,16 | 2,82 | 0,44 | - | 1,11 |
+| ashen | 1,03 | 5 | 1,02-1,07 | 1,03 | 2,28 | 1,10 | - | 0,99 |
+| titan | 1,09 | 5 | 1,04-1,21 | 1,07 | 2,11 | 0,91 | - | 1,12 |
+| seabed | 1,10 | 5 | 1,07-1,26 | 1,11 | 1,91 | 0,90 | - | 1,22 |
+| steamfens | 1,32 | 6 | 1,21-1,36 | 1,32 | 2,79 | 0,45 | 1,41 | 1,30 |
+| vfbasin | 1,06 | 6 | 0,97-1,13 | 1,06 | 3,08 | 0,47 | 0,96 | 1,12 |
+| vgorge | 1,08 | 6 | 0,90-1,38 | 1,08 | 2,86 | 0,56 | - | 0,92 |
+| tds | 0,97 | 6 | 0,93-1,11 | 0,97 | 2,08 | 1,02 | - | 1,04 |
+| tunmyth | 0,85 | 6 | 0,74-0,91 | 0,85 | 1,60 | 0,80 | - | 0,90 |
+| tree | 1,01 | 6 | 0,77-1,14 | 1,01 | 2,18 | 1,44 | - | 1,05 |
+| zone45 | **1,53** | 6 | 1,26-1,73 | 1,53 | 3,25 | 0,16 | 1,46 | 691,78 |
+| wastes | 1,18 | 6 | 1,13-1,36 | 1,18 | 3,70 | 0,21 | 1,18 | - |
+| glitch | 1,04 | 5 | 0,99-1,06 | 1,03 | 3,18 | 0,12 | - | - |
+| meadow | 1,01 | 5 | 0,94-1,12 | 0,99 | 3,16 | 0,15 | - | - |
+| n1 | 1,17 | 6 | 1,00-1,33 | 1,17 | 1,18 | 0,84 | - | - |
+| n2 | 1,40 | 5 | 1,31-1,54 | 1,41 | 0,76 | 0,09 | 1,41 | - |
+| n3e | 1,22 | 5 | 1,15-1,23 | 1,22 | 1,49 | 0,51 | - | - |
+| n3rifts | 1,23 | 5 | 0,98-1,80 | 1,21 | 1,01 | 0,27 | - | - |
+| n4dunes | 1,09 | 5 | 1,07-1,17 | 1,10 | 0,59 | 0,10 | - | - |
+| n4hollows | 1,41 | 6 | 1,06-1,63 | 1,41 | 1,36 | 0,13 | - | - |
+| halls | 0,99 | 6 | 0,94-1,09 | 0,99 | 0,80 | 0,06 | - | - |
+| cathedral | 1,03 | 6 | 0,96-1,11 | 1,03 | 0,91 | 0,17 | - | - |
+
+**Herziene uitkomst:**
+- **Harde grens 1,75×:** elke mediaan haalt hem. De hoogste mediaan is zone45 met 1,53. Twee losse rondes kwamen
+  erboven of dichtbij: n3rifts 1,80 (Nether, 4–5 ms per chunk) en zone45 1,73.
+- **Doel 1,5×:** 30 van de 31 gebieden halen het. **zone45 haalt het niet: 1,53 (1,26–1,73).** Krap zijn canyon 1,45,
+  z12 1,44, n4hollows 1,41, n2 1,40 en zone23 1,40.
+- **Een volgorde-effect is er niet.** Het verschil tussen vanilla-eerst en mod-eerst is 0,006 (mediaan over de gebieden).
+- **De JIT-staat per JVM telt mee.** De rondes met de storm (m5, c1, c2) zijn over de hele linie trager: geometrisch
+  gemiddelde 1,15–1,20 tegen 1,08–1,11 zonder storm, ook in gebieden die vóór vgorge gemeten worden. De mod is ~2 ms per
+  chunk trager, vanilla niet.
+  - De storm in `VerdantGorges.shape` is dus het zichtbare deel van een slechtere compilatiestaat. Het is geen los
+    ring 4-kostje.
+  - Wie de ring 4-takken takvrij maakt, wint waarschijnlijk ook buiten vgorge.
+
+**Volgende stappen (herzien):**
+1. **Eerst** `VerdantGorges.shape` takvrij maken (r. 1033 boog, r. 1056 afbrokkelen, `Route.skipped` r. 444), op
+   dezelfde manier als de ring 5-hotpaths. Daarna de 6-rondemeting herhalen en kijken of storm en spreiding verdwijnen.
+2. **zone45 ~5 % goedkoper** voor marge op 1,5×. Kandidaten: `mapAll` per chunk (6–7 %), `RingAquifer.openSpace`
+   (`opt/aquifer`), en de noise van zone 4→5.
+3. Daarna `opt/surface`, en `spotShift` takvrij maken.
