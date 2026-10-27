@@ -68,6 +68,23 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         ring5();
         golf1Materials();
         golf2Materials();
+        golf3Ring3();
+    }
+
+    /**
+     * Phase 2 golf 3 (stream R3): the stone and crystal blocks with a pickaxe and no tier, like their bases (coal block,
+     * tuff, amethyst); the sulfur lamp and the raft need no tool (sea lantern, lily pad).
+     */
+    private void golf3Ring3() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.DEW_CRYSTAL_BLOCK.get(), ModBlocks.SULFUR_BLOCK.get(),
+                ModBlocks.FIRE_RUBY_INLAID_PUMICE.get(), ModBlocks.FIRE_RUBY_INLAID_PUMICE_STAIRS.get(),
+                ModBlocks.FIRE_RUBY_INLAID_PUMICE_SLAB.get(), ModBlocks.FIRE_RUBY_INLAID_PUMICE_WALL.get());
+        tag(BlockTags.CRYSTAL_SOUND_BLOCKS).add(ModBlocks.DEW_CRYSTAL_BLOCK.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.FIRE_RUBY_INLAID_PUMICE_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.FIRE_RUBY_INLAID_PUMICE_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.FIRE_RUBY_INLAID_PUMICE_WALL.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_SULFUR).add(ModBlocks.SULFUR_BLOCK.get());
+        tag(Tags.Blocks.STORAGE_BLOCKS).addTag(ModTags.Blocks.STORAGE_BLOCKS_SULFUR);
     }
 
     /**

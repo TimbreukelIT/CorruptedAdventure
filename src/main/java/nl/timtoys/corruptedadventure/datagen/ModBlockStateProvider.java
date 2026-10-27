@@ -86,6 +86,36 @@ final class ModBlockStateProvider extends BlockStateProvider {
         ring5();
         golf1Materials();
         golf2Materials();
+        golf3Ring3();
+    }
+
+    /**
+     * Phase 2 golf 3 (stream R3; placeholder textures from {@code Golf3Ring3Textures}, stream T replaces them). The inlaid
+     * pumice like the inlaid sandstone (inlaid side, inlaid top on both ends); the raft a plate of 1.5 pixels, turned at
+     * random like the lily pad.
+     */
+    private void golf3Ring3() {
+        simpleBlock(ModBlocks.DEW_CRYSTAL_BLOCK.get());
+        simpleBlock(ModBlocks.SULFUR_BLOCK.get());
+        ResourceLocation inlaidSide = blockTexture(ModBlocks.FIRE_RUBY_INLAID_PUMICE.get());
+        ResourceLocation inlaidTop = modLoc("block/fire_ruby_inlaid_pumice_top");
+        simpleBlock(ModBlocks.FIRE_RUBY_INLAID_PUMICE.get(),
+                models().cubeColumn("fire_ruby_inlaid_pumice", inlaidSide, inlaidTop));
+        stairsBlock(ModBlocks.FIRE_RUBY_INLAID_PUMICE_STAIRS.get(), inlaidSide, inlaidTop, inlaidTop);
+        slabBlock(ModBlocks.FIRE_RUBY_INLAID_PUMICE_SLAB.get(), modLoc("block/fire_ruby_inlaid_pumice"),
+                inlaidSide, inlaidTop, inlaidTop);
+        wallBlock(ModBlocks.FIRE_RUBY_INLAID_PUMICE_WALL.get(), inlaidSide);
+        simpleBlock(ModBlocks.SULFUR_LAMP.get());
+        ResourceLocation raft = blockTexture(ModBlocks.PUMICE_RAFT.get());
+        BlockModelBuilder raftModel = models().getBuilder("pumice_raft").texture("particle", raft).texture("texture", raft);
+        raftModel.element().from(0, 0, 0).to(16, 1.5f, 16)
+                .face(Direction.UP).uvs(0, 0, 16, 16).texture("#texture").end()
+                .face(Direction.DOWN).uvs(0, 16, 16, 0).texture("#texture").end()
+                .face(Direction.NORTH).uvs(0, 0, 16, 1.5f).texture("#texture").end()
+                .face(Direction.SOUTH).uvs(0, 0, 16, 1.5f).texture("#texture").end()
+                .face(Direction.WEST).uvs(0, 0, 16, 1.5f).texture("#texture").end()
+                .face(Direction.EAST).uvs(0, 0, 16, 1.5f).texture("#texture").end().end();
+        getVariantBuilder(ModBlocks.PUMICE_RAFT.get()).partialState().setModels(ConfiguredModel.allYRotations(raftModel, 0, false));
     }
 
     /**

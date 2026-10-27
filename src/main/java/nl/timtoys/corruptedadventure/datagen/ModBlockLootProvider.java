@@ -158,6 +158,19 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         ring5();
         golf1Materials();
         golf2Materials();
+        golf3Ring3();
+    }
+
+    /** Phase 2 golf 3 (stream R3): every block drops itself, a double slab two. */
+    private void golf3Ring3() {
+        dropSelf(ModBlocks.DEW_CRYSTAL_BLOCK.get());
+        dropSelf(ModBlocks.SULFUR_BLOCK.get());
+        dropSelf(ModBlocks.FIRE_RUBY_INLAID_PUMICE.get());
+        dropSelf(ModBlocks.FIRE_RUBY_INLAID_PUMICE_STAIRS.get());
+        add(ModBlocks.FIRE_RUBY_INLAID_PUMICE_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.FIRE_RUBY_INLAID_PUMICE_WALL.get());
+        dropSelf(ModBlocks.SULFUR_LAMP.get());
+        dropSelf(ModBlocks.PUMICE_RAFT.get());
     }
 
     /** Phase 2 golf 2 (stream M): every block drops itself (the amethyst block too), a double slab two. */
@@ -510,18 +523,18 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
     }
 
     /**
-     * Vanilla's sweet berry bush table on the ember berry bush: a ripe bush (age 3) drops 2–3 sweet berries, age 2 drops
-     * 1–2 (Fortune adds); younger bushes drop nothing. Vanilla sweet berries until the bush gets its own food (phase 2).
+     * Vanilla's sweet berry bush table on the ember berry bush: a ripe bush (age 3) drops 2–3 ember berries, age 2 drops
+     * 1–2 (Fortune adds); younger bushes drop nothing.
      */
     private LootTable.Builder createBerryBushTable(Block block) {
         var fortune = registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.FORTUNE);
         return applyExplosionDecay(block, LootTable.lootTable()
                 .withPool(LootPool.lootPool().when(age(block, SweetBerryBushBlock.MAX_AGE))
-                        .add(LootItem.lootTableItem(Items.SWEET_BERRIES))
+                        .add(LootItem.lootTableItem(ModItems.EMBER_BERRIES.get()))
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 3.0F)))
                         .apply(ApplyBonusCount.addUniformBonusCount(fortune)))
                 .withPool(LootPool.lootPool().when(age(block, 2))
-                        .add(LootItem.lootTableItem(Items.SWEET_BERRIES))
+                        .add(LootItem.lootTableItem(ModItems.EMBER_BERRIES.get()))
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F)))
                         .apply(ApplyBonusCount.addUniformBonusCount(fortune))));
     }
