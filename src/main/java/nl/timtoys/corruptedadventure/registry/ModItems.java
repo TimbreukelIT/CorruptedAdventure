@@ -22,6 +22,7 @@ import nl.timtoys.corruptedadventure.item.DoseDrinkItem;
 import nl.timtoys.corruptedadventure.item.DoseFoodItem;
 import nl.timtoys.corruptedadventure.item.GearItems;
 import nl.timtoys.corruptedadventure.item.GearTier;
+import nl.timtoys.corruptedadventure.item.HandWarmerItem;
 import nl.timtoys.corruptedadventure.item.UpgradeSmithingTemplates;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.item.coating.CoatingTemplates;
@@ -128,11 +129,16 @@ public final class ModItems {
     /** Coating against heat (applied with dew crystal). Where to find it: golf 3. */
     public static final DeferredItem<SmithingTemplateItem> HEAT_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "heat_coating_smithing_template", () -> CoatingTemplates.create(Coating.HEAT));
+    /** Against heat (phase 2 golf 3, §6.3): single use, cools for a while, gives the glass bottle back. */
+    public static final DeferredItem<DoseDrinkItem> DEW_DRAUGHT = ITEMS.registerItem("dew_draught",
+            properties -> new DoseDrinkItem(properties.stacksTo(16), ConsumableDoses::dewDraught));
 
     // ---- Nether ring 3 ----
     /** Coating against the cold (applied with fire crystal). Where to find it: golf 4. */
     public static final DeferredItem<SmithingTemplateItem> COLD_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "cold_coating_smithing_template", () -> CoatingTemplates.create(Coating.COLD));
+    /** Against the cold (phase 2 golf 4, §6.6): four charges, filled with a fire crystal. */
+    public static final DeferredItem<HandWarmerItem> HAND_WARMER = ITEMS.registerItem("hand_warmer", HandWarmerItem::new);
 
     // ---- Ring 4 ----
     static {
@@ -161,6 +167,9 @@ public final class ModItems {
     /** Coating against poison (applied with primordial ice). Where to find it: golf 4. */
     public static final DeferredItem<SmithingTemplateItem> POISON_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "poison_coating_smithing_template", () -> CoatingTemplates.create(Coating.POISON));
+    /** Against poison (phase 2 golf 4, §6.6): single use, cleanses for a while, gives the glass bottle back. */
+    public static final DeferredItem<DoseDrinkItem> PURIFIED_WATER = ITEMS.registerItem("purified_water",
+            properties -> new DoseDrinkItem(properties.stacksTo(16), ConsumableDoses::purifiedWater));
 
     // ---- Nether ring 4 ----
     /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */

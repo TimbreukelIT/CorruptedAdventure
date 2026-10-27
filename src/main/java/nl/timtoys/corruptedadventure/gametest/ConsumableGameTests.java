@@ -2,12 +2,15 @@ package nl.timtoys.corruptedadventure.gametest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
@@ -23,15 +26,16 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.condition.Condition;
 import nl.timtoys.corruptedadventure.condition.PlayerConditions;
 import nl.timtoys.corruptedadventure.item.CanteenItem;
+import nl.timtoys.corruptedadventure.item.HandWarmerItem;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModDataComponents;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModMobEffects;
 
 /**
- * The consumables against dehydration (phase 2 golf 2, fase-2-items.md §5.3): filling the canteen at a water cauldron,
- * a dew source and a water source, and what a sip and a cactus juice do to the meter. Run like
- * {@link TierGatingGameTests}.
+ * The consumables against the conditions (fase-2-items.md §5.3, §6.3, §6.6): filling the canteen at a water cauldron,
+ * a dew source and a water source; what a sip, a cactus juice, a dew draught, a purified water and a hand warmer charge
+ * do to their meter and effect; filling up the hand warmer with a fire crystal. Run like {@link TierGatingGameTests}.
  */
 @GameTestHolder(CorruptedAdventure.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -101,9 +105,61 @@ public final class ConsumableGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = "gametest/empty")
+    public static void theDrinksOfRing3And4LowerTheirMeterAndGiveTheirEffect(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.getAbilities().instabuild = false;
+        try {
+            PlayerConditions.set(player, Condition.HEAT, 50.0F);
+            ItemStack left = new ItemStack(ModItems.DEW_DRAUGHT.get()).finishUsingItem(helper.getLevel(), player);
+            helper.assertValueEqual(PlayerConditions.get(player, Condition.HEAT), 30.0F, "heat after a dew draught");
+            helper.assertTrue(left.is(Items.GLASS_BOTTLE), "the dew draught gives its bottle back");
+            helper.assertValueEqual(effectTicks(player, ModMobEffects.COOLED), 45 * 20, "cooled ticks");
+
+            PlayerConditions.set(player, Condition.POISON, 50.0F);
+            left = new ItemStack(ModItems.PURIFIED_WATER.get()).finishUsingItem(helper.getLevel(), player);
+            helper.assertValueEqual(PlayerConditions.get(player, Condition.POISON), 30.0F, "poison after purified water");
+            helper.assertTrue(left.is(Items.GLASS_BOTTLE), "purified water gives its bottle back");
+            helper.assertValueEqual(effectTicks(player, ModMobEffects.CLEANSED), 45 * 20, "cleansed ticks");
+        } finally {
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/empty")
+    public static void aHandWarmerChargeWarmsAndAFireCrystalFillsItUp(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.getAbilities().instabuild = false;
+        try {
+            PlayerConditions.set(player, Condition.COLD, 50.0F);
+            ItemStack warmer = new ItemStack(ModItems.HAND_WARMER.get());
+            warmer.set(ModDataComponents.CHARGES, HandWarmerItem.MAX_CHARGES);
+            warmer = warmer.finishUsingItem(helper.getLevel(), player);
+            helper.assertValueEqual(PlayerConditions.get(player, Condition.COLD), 30.0F, "cold after a charge");
+            helper.assertValueEqual(HandWarmerItem.charges(warmer), HandWarmerItem.MAX_CHARGES - 1, "charges after use");
+            helper.assertValueEqual(effectTicks(player, ModMobEffects.WARMED), 45 * 20, "warmed ticks");
+
+            // Hotbar slot 0 is slot 36 of the inventory menu; a right click with two crystals on the cursor.
+            player.getInventory().setItem(0, warmer);
+            player.inventoryMenu.setCarried(new ItemStack(ModItems.FIRE_CRYSTAL.get(), 2));
+            player.inventoryMenu.clicked(36, 1, ClickType.PICKUP, player);
+            helper.assertValueEqual(HandWarmerItem.charges(player.getInventory().getItem(0)), HandWarmerItem.MAX_CHARGES,
+                    "charges after a fire crystal");
+            helper.assertValueEqual(player.inventoryMenu.getCarried().getCount(), 1, "one crystal used");
+        } finally {
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        }
+        helper.succeed();
+    }
+
     private static int cooledTicks(ServerPlayer player) {
-        MobEffectInstance cooled = player.getEffect(ModMobEffects.COOLED);
-        return cooled == null ? 0 : cooled.getDuration();
+        return effectTicks(player, ModMobEffects.COOLED);
+    }
+
+    private static int effectTicks(ServerPlayer player, Holder<MobEffect> effect) {
+        MobEffectInstance instance = player.getEffect(effect);
+        return instance == null ? 0 : instance.getDuration();
     }
 
     private static ItemStack withSips(int sips) {

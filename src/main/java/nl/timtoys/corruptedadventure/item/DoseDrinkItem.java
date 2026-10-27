@@ -19,8 +19,8 @@ import nl.timtoys.corruptedadventure.condition.ConditionDose;
 import java.util.function.Supplier;
 
 /**
- * A single-use drink in a glass bottle that gives a {@link ConditionDose} (cactus juice). Drinkable at any time, like a
- * honey bottle (not food), and it gives the glass bottle back.
+ * A single-use drink in a glass bottle that gives a {@link ConditionDose} (cactus juice, dew draught, purified water).
+ * Drinkable at any time, like a honey bottle (not food), and it gives the glass bottle back.
  */
 public final class DoseDrinkItem extends Item {
     private final Supplier<ConditionDose> dose;

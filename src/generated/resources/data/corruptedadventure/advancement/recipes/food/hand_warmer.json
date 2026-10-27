@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_fire_crystal": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:fire_crystal"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:hand_warmer"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_fire_crystal"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:hand_warmer"
+    ]
+  }
+}
