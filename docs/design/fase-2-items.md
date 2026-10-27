@@ -302,7 +302,9 @@ De volledige 6-rondemeting (`perf.sh --areas tools/test/areas/perf-all.txt --war
 een **aparte sessie**, gestart met `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`, buiten golf 2.
 
 ### 5.8 Voorlopig (bevestigen bij de teststop)
-Keuzes die de stromen binnen §5 zelf maakten (bron: `docs/plans/fase-2/golf-2-{M,V,T}.md`):
+Keuzes die de stromen binnen §5 zelf maakten (bron: `docs/plans/fase-2/golf-2-{S,M,V,T}.md`):
+- **Zonnesteen-template:** vorm `S D S / S C S / S D S` (zielkristal, diamant, scorched sandstone).
+- **Zonnesteen-set:** brandvrij zoals netherite; het smithing-recept neemt het item `sunstone_ingot`, niet `c:ingots/sunstone`; NL-namen bijvoeglijk ("Zonnestenen zwaard", … "kuras", "beenstukken", "laarzen").
 - **Zielkristalblok:** geen tier-eis (zoals amethist), geen licht, kaartkleur `DIAMOND`; in creative-tab 1 (Nether-ring 1 hoort in tab 1).
 - **Ingelegd zandsteen:** 8 scorched sandstone rond 1 turkoois → 8; trap 6 → 4, plaat 3 → 6, muur 6 → 6; steenzaag trap 1, plaat 2, muur 1; in `c:sandstone/blocks|slabs|stairs`.
 - **Zoutlamp:** fakkel boven op een zoutblok → 1 (zoals de jack o'lantern); volle kubus (gebruiker: optie A).
