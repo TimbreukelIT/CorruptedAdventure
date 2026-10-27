@@ -60,6 +60,10 @@ public final class PlayerConditions {
     }
 
     private static void send(ServerPlayer player, ConditionMeters meters) {
+        // A connection without our channel (a GameTest mock player) would throw; it gets nothing, and stays unsynced.
+        if (!player.connection.hasChannel(ConditionSyncPayload.TYPE)) {
+            return;
+        }
         PacketDistributor.sendToPlayer(player, new ConditionSyncPayload(meters.roundedValues()));
         meters.markSynced();
     }
