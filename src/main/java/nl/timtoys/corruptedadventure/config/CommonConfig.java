@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Common config ({@code config/corruptedadventure-common.toml}). The only place where ring boundaries are defined.
+ * Common config ({@code config/corruptedadventure-common.toml}). The only place where ring boundaries are defined; also
+ * the settings of the installation rather than the world ({@code [performance]}).
  */
 public final class CommonConfig {
     public static final ModConfigSpec SPEC;
@@ -41,6 +42,7 @@ public final class CommonConfig {
     private static final ModConfigSpec.IntValue BOUNDARY_NOISE;
     private static final ModConfigSpec.IntValue TRANSITION_WIDTH;
     private static final ModConfigSpec.ConfigValue<List<? extends Integer>> TRANSITION_WIDTH_OVERRIDES;
+    private static final ModConfigSpec.BooleanValue WORLDGEN_WARMUP;
 
     static {
         int maxRadius = 29_999_984;
@@ -73,6 +75,16 @@ public final class CommonConfig {
                         // RingSettings.validate() then refuses the shorter list when a new world is created.
                         value -> value instanceof Integer width && width >= 0 && width <= 4096,
                         ModConfigSpec.Range.of(RingSettings.BOUNDARY_COUNT, RingSettings.BOUNDARY_COUNT));
+        builder.pop();
+        builder.push("performance");
+        WORLDGEN_WARMUP = builder
+                .comment("Right after the server starts, generate throwaway chunks of every region type of every ring in the",
+                        "background, never saved and with no effect on the world: one chunk at a time, its terrain steps on",
+                        "the shared worldgen threads (one of them at a time), the rest on a thread of its own at the lowest",
+                        "priority. The JVM then compiles the ring terrain code while it is young; without this, a ring first",
+                        "visited late in a long session can generate many times slower until the server restarts.",
+                        "Turn off only to measure or debug.")
+                .define("worldgenWarmup", true);
         builder.pop();
         SPEC = builder.build();
     }
@@ -174,6 +186,11 @@ public final class CommonConfig {
 
     private static List<Integer> radii() {
         return RING_OUTER_RADII.stream().map(ModConfigSpec.IntValue::get).toList();
+    }
+
+    /** Whether the server warms the JIT on the ring terrain at start ({@code WorldgenWarmup}). */
+    public static boolean worldgenWarmup() {
+        return WORLDGEN_WARMUP.get();
     }
 
     /** Current config values; only {@link RingSettingsSnapshot} should call this, when a new world is created. */

@@ -52,6 +52,7 @@ import nl.timtoys.corruptedadventure.worldgen.biome.Ring3StriderSpawns;
 import nl.timtoys.corruptedadventure.worldgen.border.RingWorldBorder;
 import nl.timtoys.corruptedadventure.worldgen.chunk.IslandFields;
 import nl.timtoys.corruptedadventure.worldgen.chunk.Ring5Fields;
+import nl.timtoys.corruptedadventure.worldgen.chunk.WorldgenWarmup;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring4Tunnels;
 import org.slf4j.Logger;
 
@@ -102,6 +103,7 @@ public final class CorruptedAdventure {
         RingLayout.register(NeoForge.EVENT_BUS);
         IslandFields.register(NeoForge.EVENT_BUS);
         Ring5Fields.register(NeoForge.EVENT_BUS);
+        WorldgenWarmup.register(NeoForge.EVENT_BUS);
         Ring4Tunnels.register(NeoForge.EVENT_BUS);
         RingWorldBorder.register(NeoForge.EVENT_BUS);
         RingLayoutSync.register(NeoForge.EVENT_BUS);
