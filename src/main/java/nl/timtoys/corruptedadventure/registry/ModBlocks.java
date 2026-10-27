@@ -175,6 +175,9 @@ public final class ModBlocks {
     public static final DeferredBlock<DropExperienceBlock> CRIMSON_SOUL_CRYSTAL_ORE = register("crimson_soul_crystal_ore",
             () -> new DropExperienceBlock(UniformInt.of(3, 7), Properties.ofFullCopy(Blocks.NETHER_QUARTZ_ORE)
                     .mapColor(MapColor.CRIMSON_NYLIUM).sound(SoundType.NYLIUM).lightLevel(state -> 3)));
+    /** Four soul crystals, one way (fase-2-items.md §5.2): the amethyst block's behaviour, no light. */
+    public static final DeferredBlock<AmethystBlock> SOUL_CRYSTAL_BLOCK = register("soul_crystal_block",
+            () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.DIAMOND)));
 
     // ---- Ring 2 ----
     static {
@@ -340,6 +343,18 @@ public final class ModBlocks {
             () -> new Block(metalStorage(MapColor.COLOR_ORANGE)));
     public static final DeferredBlock<Block> TURQUOISE_BLOCK = register("turquoise_block",
             () -> new Block(gemStorage(MapColor.COLOR_CYAN)));
+    // Phase 2 golf 2 (fase-2-items.md §5.4): scorched sandstone inlaid with turquoise, and the salt lamp.
+    public static final DeferredBlock<Block> TURQUOISE_INLAID_SANDSTONE = register("turquoise_inlaid_sandstone",
+            () -> new Block(scorched(Blocks.SANDSTONE)));
+    public static final DeferredBlock<StairBlock> TURQUOISE_INLAID_SANDSTONE_STAIRS = register("turquoise_inlaid_sandstone_stairs",
+            () -> new StairBlock(TURQUOISE_INLAID_SANDSTONE.get().defaultBlockState(), scorched(Blocks.SANDSTONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> TURQUOISE_INLAID_SANDSTONE_SLAB = register("turquoise_inlaid_sandstone_slab",
+            () -> new SlabBlock(scorched(Blocks.SANDSTONE_SLAB)));
+    public static final DeferredBlock<WallBlock> TURQUOISE_INLAID_SANDSTONE_WALL = register("turquoise_inlaid_sandstone_wall",
+            () -> new WallBlock(scorched(Blocks.SANDSTONE_WALL)));
+    /** The salt block with light 12; a full cube until its Blockbench model asks for another shape. */
+    public static final DeferredBlock<Block> SALT_LAMP = register("salt_lamp",
+            () -> new Block(Properties.ofFullCopy(SALT_BLOCK.get()).lightLevel(state -> 12)));
 
     // ---- Nether ring 2 ----
     // Wet fungal Nether: soaked netherrack with spore moss on top, the dripshroom wood set, cap and lamp, and the

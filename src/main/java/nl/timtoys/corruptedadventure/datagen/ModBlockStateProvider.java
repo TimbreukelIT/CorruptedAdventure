@@ -85,6 +85,25 @@ final class ModBlockStateProvider extends BlockStateProvider {
         netherRing4();
         ring5();
         golf1Materials();
+        golf2Materials();
+    }
+
+    /**
+     * Phase 2 golf 2 (stream M; textures: {@code Golf2MaterialTextures}, final ones by stream T). The inlaid sandstone
+     * like cut sandstone (inlaid side, inlaid top on both ends); the salt lamp's block model is hand-written in
+     * {@code src/main/resources} (its Blockbench model), so only its blockstate comes from here.
+     */
+    private void golf2Materials() {
+        simpleBlock(ModBlocks.SOUL_CRYSTAL_BLOCK.get());
+        ResourceLocation inlaidSide = blockTexture(ModBlocks.TURQUOISE_INLAID_SANDSTONE.get());
+        ResourceLocation inlaidTop = modLoc("block/turquoise_inlaid_sandstone_top");
+        simpleBlock(ModBlocks.TURQUOISE_INLAID_SANDSTONE.get(),
+                models().cubeColumn("turquoise_inlaid_sandstone", inlaidSide, inlaidTop));
+        stairsBlock(ModBlocks.TURQUOISE_INLAID_SANDSTONE_STAIRS.get(), inlaidSide, inlaidTop, inlaidTop);
+        slabBlock(ModBlocks.TURQUOISE_INLAID_SANDSTONE_SLAB.get(), modLoc("block/turquoise_inlaid_sandstone"),
+                inlaidSide, inlaidTop, inlaidTop);
+        wallBlock(ModBlocks.TURQUOISE_INLAID_SANDSTONE_WALL.get(), inlaidSide);
+        simpleBlock(ModBlocks.SALT_LAMP.get(), models().getExistingFile(modLoc("block/salt_lamp")));
     }
 
     /** Phase 2 golf 1 (stream D): the storage blocks, {@code cube_all} like vanilla's (textures: {@code Golf1MaterialTextures}). */

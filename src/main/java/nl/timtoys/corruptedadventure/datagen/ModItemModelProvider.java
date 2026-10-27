@@ -107,6 +107,18 @@ final class ModItemModelProvider extends ItemModelProvider {
         netherRing2();
         golf1Materials();
         coatings();
+        golf2Materials();
+    }
+
+    /** Phase 2 golf 2 (stream M): the soul crystal block, the inlaid sandstone set and the salt lamp. */
+    private void golf2Materials() {
+        blockItem(ModBlocks.SOUL_CRYSTAL_BLOCK);
+        blockItem(ModBlocks.TURQUOISE_INLAID_SANDSTONE);
+        blockItem(ModBlocks.TURQUOISE_INLAID_SANDSTONE_STAIRS);
+        blockItem(ModBlocks.TURQUOISE_INLAID_SANDSTONE_SLAB);
+        wallInventory(ModBlocks.TURQUOISE_INLAID_SANDSTONE_WALL.getId().getPath(),
+                modLoc("block/turquoise_inlaid_sandstone"));
+        blockItem(ModBlocks.SALT_LAMP);
     }
 
     /** Phase 2 golf 1 (stream D): the storage blocks and the ingots and turquoise gem. */

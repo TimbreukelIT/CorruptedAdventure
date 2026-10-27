@@ -179,6 +179,12 @@
     "corruptedadventure:tidesilver_block",
     "corruptedadventure:jade_block",
     "corruptedadventure:raw_nullite_block",
-    "corruptedadventure:nullite_block"
+    "corruptedadventure:nullite_block",
+    "corruptedadventure:soul_crystal_block",
+    "corruptedadventure:turquoise_inlaid_sandstone",
+    "corruptedadventure:turquoise_inlaid_sandstone_stairs",
+    "corruptedadventure:turquoise_inlaid_sandstone_slab",
+    "corruptedadventure:turquoise_inlaid_sandstone_wall",
+    "corruptedadventure:salt_lamp"
   ]
 }
