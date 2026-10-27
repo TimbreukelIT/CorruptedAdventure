@@ -1124,6 +1124,25 @@ public final class ModBlocks {
             () -> new Block(metalStorage(MapColor.METAL)));
     public static final DeferredBlock<Block> JADE_BLOCK = register("jade_block",
             () -> new Block(gemStorage(MapColor.COLOR_GREEN)));
+    // Phase 2 golf 4 (fase-2-items.md §6.7): tidestone inlaid with jade, lagoon sandstone inlaid with aquamarine.
+    /** Tidestone's properties, but a crafted block: it drops itself instead of cobbled tidestone. */
+    public static final DeferredBlock<Block> JADE_INLAID_TIDESTONE = register("jade_inlaid_tidestone",
+            () -> new Block(tidestone(Blocks.STONE)));
+    public static final DeferredBlock<StairBlock> JADE_INLAID_TIDESTONE_STAIRS = register("jade_inlaid_tidestone_stairs",
+            () -> new StairBlock(JADE_INLAID_TIDESTONE.get().defaultBlockState(), tidestone(Blocks.STONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> JADE_INLAID_TIDESTONE_SLAB = register("jade_inlaid_tidestone_slab",
+            () -> new SlabBlock(tidestone(Blocks.STONE_SLAB)));
+    public static final DeferredBlock<WallBlock> JADE_INLAID_TIDESTONE_WALL = register("jade_inlaid_tidestone_wall",
+            () -> new WallBlock(tidestone(Blocks.STONE).forceSolidOn()));
+    public static final DeferredBlock<Block> AQUAMARINE_INLAID_LAGOON_SANDSTONE = register("aquamarine_inlaid_lagoon_sandstone",
+            () -> new Block(lagoon(Blocks.SANDSTONE)));
+    public static final DeferredBlock<StairBlock> AQUAMARINE_INLAID_LAGOON_SANDSTONE_STAIRS = register(
+            "aquamarine_inlaid_lagoon_sandstone_stairs", () -> new StairBlock(
+                    AQUAMARINE_INLAID_LAGOON_SANDSTONE.get().defaultBlockState(), lagoon(Blocks.SANDSTONE_STAIRS)));
+    public static final DeferredBlock<SlabBlock> AQUAMARINE_INLAID_LAGOON_SANDSTONE_SLAB = register(
+            "aquamarine_inlaid_lagoon_sandstone_slab", () -> new SlabBlock(lagoon(Blocks.SANDSTONE_SLAB)));
+    public static final DeferredBlock<WallBlock> AQUAMARINE_INLAID_LAGOON_SANDSTONE_WALL = register(
+            "aquamarine_inlaid_lagoon_sandstone_wall", () -> new WallBlock(lagoon(Blocks.SANDSTONE_WALL)));
 
     // ---- Nether ring 4 ----
     // Dry crystal and bone desert (contract ring 4 §3, package 68): bone sand, bleached netherrack, the fossil stone set

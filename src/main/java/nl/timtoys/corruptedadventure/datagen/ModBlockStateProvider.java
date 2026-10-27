@@ -87,6 +87,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
         golf1Materials();
         golf2Materials();
         golf3Ring3();
+        golf4Materials();
     }
 
     /**
@@ -116,6 +117,27 @@ final class ModBlockStateProvider extends BlockStateProvider {
                 .face(Direction.WEST).uvs(0, 0, 16, 1.5f).texture("#texture").end()
                 .face(Direction.EAST).uvs(0, 0, 16, 1.5f).texture("#texture").end().end();
         getVariantBuilder(ModBlocks.PUMICE_RAFT.get()).partialState().setModels(ConfiguredModel.allYRotations(raftModel, 0, false));
+    }
+
+    /**
+     * Phase 2 golf 4 (stream R4; placeholder textures: {@code Golf4MaterialTextures}). Both inlaid sets like the
+     * turquoise inlaid sandstone: {@code cube_column} with the inlaid side and the inlaid top on both ends.
+     */
+    private void golf4Materials() {
+        inlaidSet(ModBlocks.JADE_INLAID_TIDESTONE.get(), ModBlocks.JADE_INLAID_TIDESTONE_STAIRS.get(),
+                ModBlocks.JADE_INLAID_TIDESTONE_SLAB.get(), ModBlocks.JADE_INLAID_TIDESTONE_WALL.get());
+        inlaidSet(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE.get(), ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_STAIRS.get(),
+                ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_SLAB.get(), ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_WALL.get());
+    }
+
+    private void inlaidSet(Block base, StairBlock stairs, SlabBlock slab, WallBlock wall) {
+        String name = BuiltInRegistries.BLOCK.getKey(base).getPath();
+        ResourceLocation side = blockTexture(base);
+        ResourceLocation top = modLoc("block/" + name + "_top");
+        simpleBlock(base, models().cubeColumn(name, side, top));
+        stairsBlock(stairs, side, top, top);
+        slabBlock(slab, modLoc("block/" + name), side, top, top);
+        wallBlock(wall, side);
     }
 
     /**

@@ -872,15 +872,46 @@ class ModBlocksTest {
         });
     }
 
+    /** The inlaid sets (phase 2 golf 4) keep the strength, sound, tool rule and map colour of the stone they inlay. */
+    @Test
+    void inlaidSetsMirrorTheirStone() {
+        Map<DeferredBlock<?>, DeferredBlock<?>> twins = new LinkedHashMap<>();
+        twins.put(ModBlocks.JADE_INLAID_TIDESTONE, ModBlocks.TIDESTONE);
+        twins.put(ModBlocks.JADE_INLAID_TIDESTONE_STAIRS, ModBlocks.TIDESTONE_STAIRS);
+        twins.put(ModBlocks.JADE_INLAID_TIDESTONE_SLAB, ModBlocks.TIDESTONE_SLAB);
+        twins.put(ModBlocks.JADE_INLAID_TIDESTONE_WALL, ModBlocks.TIDESTONE_WALL);
+        twins.put(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE, ModBlocks.LAGOON_SANDSTONE);
+        twins.put(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_STAIRS, ModBlocks.LAGOON_SANDSTONE_STAIRS);
+        twins.put(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_SLAB, ModBlocks.LAGOON_SANDSTONE_SLAB);
+        twins.put(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_WALL, ModBlocks.LAGOON_SANDSTONE_WALL);
+        twins.forEach((inlaid, stone) -> {
+            Block block = inlaid.get();
+            Block base = stone.get();
+            String id = inlaid.getId().toString();
+            assertSame(base.getClass(), block.getClass(), id);
+            assertEquals(base.defaultDestroyTime(), block.defaultDestroyTime(), id);
+            assertEquals(base.getExplosionResistance(), block.getExplosionResistance(), id);
+            assertSame(base.defaultBlockState().getSoundType(), block.defaultBlockState().getSoundType(), id);
+            assertEquals(base.defaultBlockState().requiresCorrectToolForDrops(),
+                    block.defaultBlockState().requiresCorrectToolForDrops(), id);
+            assertSame(base.defaultMapColor(), block.defaultMapColor(), id);
+        });
+    }
+
     /** Nether ring 4 follows ring 4 directly (contract ring 4 §3); its shard ends the loose items. */
     @Test
     void netherRing4FollowsRing4InOrderAndBehavesAsPlanned() {
         List<Item> shown = blockItems();
-        // The storage blocks (phase 2 golf 1) end the ring 4 section.
-        assertEquals(List.of(ModBlocks.CLAWED_DEEPSLATE.asItem(), ModBlocks.RAW_TIDESILVER_BLOCK.asItem(),
-                ModBlocks.TIDESILVER_BLOCK.asItem(), ModBlocks.JADE_BLOCK.asItem()),
-                shown.subList(shown.indexOf(ModBlocks.CLAWED_DEEPSLATE.asItem()), shown.indexOf(ModBlocks.JADE_BLOCK.asItem()) + 1));
-        int lastRing4 = shown.indexOf(ModBlocks.JADE_BLOCK.asItem());
+        // The storage blocks (phase 2 golf 1) and the inlaid sets (golf 4) end the ring 4 section.
+        Item lastRing4Block = ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_WALL.asItem();
+        assertEquals(Stream.of(ModBlocks.CLAWED_DEEPSLATE, ModBlocks.RAW_TIDESILVER_BLOCK, ModBlocks.TIDESILVER_BLOCK,
+                ModBlocks.JADE_BLOCK, ModBlocks.JADE_INLAID_TIDESTONE, ModBlocks.JADE_INLAID_TIDESTONE_STAIRS,
+                ModBlocks.JADE_INLAID_TIDESTONE_SLAB, ModBlocks.JADE_INLAID_TIDESTONE_WALL,
+                ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE, ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_STAIRS,
+                ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_SLAB, ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_WALL)
+                        .<Item>map(DeferredBlock::asItem).toList(),
+                shown.subList(shown.indexOf(ModBlocks.CLAWED_DEEPSLATE.asItem()), shown.indexOf(lastRing4Block) + 1));
+        int lastRing4 = shown.indexOf(lastRing4Block);
         List<Item> netherRing4 = Stream.of(ModBlocks.BONE_SAND, ModBlocks.BLEACHED_NETHERRACK, ModBlocks.FOSSIL_STONE,
                 ModBlocks.FOSSIL_STONE_STAIRS, ModBlocks.FOSSIL_STONE_SLAB, ModBlocks.FOSSIL_STONE_WALL,
                 ModBlocks.POLISHED_FOSSIL_STONE, ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, ModBlocks.POLISHED_FOSSIL_STONE_SLAB,

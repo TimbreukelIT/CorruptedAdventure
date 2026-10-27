@@ -111,6 +111,7 @@ final class ModItemModelProvider extends ItemModelProvider {
         golf2Materials();
         golf3Ring3();
         ConsumableItemModels.build(this);
+        golf4Materials();
     }
 
     /** Phase 2 golf 3 (stream R3): the blocks, the raft as a flat item, the ember berries and the dripshroom stew. */
@@ -125,6 +126,19 @@ final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModBlocks.PUMICE_RAFT.asItem());
         basicItem(ModItems.EMBER_BERRIES.get());
         basicItem(ModItems.DRIPSHROOM_STEW.get());
+    }
+
+    /** Phase 2 golf 4 (stream R4): the two inlaid sets. */
+    private void golf4Materials() {
+        blockItem(ModBlocks.JADE_INLAID_TIDESTONE);
+        blockItem(ModBlocks.JADE_INLAID_TIDESTONE_STAIRS);
+        blockItem(ModBlocks.JADE_INLAID_TIDESTONE_SLAB);
+        wallInventory(ModBlocks.JADE_INLAID_TIDESTONE_WALL.getId().getPath(), modLoc("block/jade_inlaid_tidestone"));
+        blockItem(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE);
+        blockItem(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_STAIRS);
+        blockItem(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_SLAB);
+        wallInventory(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_WALL.getId().getPath(),
+                modLoc("block/aquamarine_inlaid_lagoon_sandstone"));
     }
 
     /** Phase 2 golf 2 (stream M): the soul crystal block, the inlaid sandstone set and the salt lamp. */

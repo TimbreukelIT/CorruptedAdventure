@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": {
+      "item": "corruptedadventure:lagoon_sandstone"
+    },
+    "X": {
+      "item": "corruptedadventure:aquamarine_shard"
+    }
+  },
+  "pattern": [
+    "###",
+    "#X#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "id": "corruptedadventure:aquamarine_inlaid_lagoon_sandstone"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "corruptedadventure:primordial_ice"
+    },
+    "F": {
+      "item": "corruptedadventure:fire_crystal"
+    },
+    "S": {
+      "item": "corruptedadventure:cold_lava"
+    }
+  },
+  "pattern": [
+    "FSF",
+    "SCS",
+    "FSF"
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:cold_coating_smithing_template"
+  }
+}
