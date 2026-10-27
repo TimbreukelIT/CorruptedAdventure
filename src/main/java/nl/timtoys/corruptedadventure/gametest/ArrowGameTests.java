@@ -101,7 +101,8 @@ public final class ArrowGameTests {
         helper.setBlock(dispenser, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, Direction.EAST));
         DispenserBlockEntity contents = helper.getBlockEntity(dispenser);
         contents.setItem(0, new ItemStack(ArrowEffect.POISON.item()));
-        helper.pulseRedstone(dispenser.north(), 2);
+        // Powered from above: a redstone block next to the floor could reach the test's own structure block below it.
+        helper.pulseRedstone(dispenser.above(), 2);
         helper.succeedWhen(() -> {
             helper.assertEntityPresent(ModEntityTypes.POISON_ARROW.get());
             helper.assertTrue(contents.isEmpty(), "the dispenser shot its arrow");
