@@ -232,3 +232,36 @@ Gecombineerd met de rondes van de ochtend geeft dat 5–6 schone warme rondes pe
 2. **zone45 ~5 % goedkoper** voor marge op 1,5×. Kandidaten: `mapAll` per chunk (6–7 %), `RingAquifer.openSpace`
    (`opt/aquifer`), en de noise van zone 4→5.
 3. Daarna `opt/surface`, en `spotShift` takvrij maken.
+
+## Middag 2026-10-27: de stormen zijn (grotendeels) een meetartefact
+
+Gevonden door de r4gorge-agent (stress-repro met `-XX:PerMethodRecompilationCutoff=100` en LogCompilation):
+- De **eerste `jfr start`** van de JVM retransformeert classes voor JFR's eigen instrumentatie. HotSpot maakt bij de
+  eerste class-redefinitie **alle** gecompileerde code ongeldig, in één klap ~10.000–14.000 nmethods not-entrant. Elke
+  methode met C2-code krijgt daardoor +1 decompile.
+- Een grote compile-root die daarna pas compileert (bijvoorbeeld `VerdantGorges.shape`, 2.323 B, met ~450 geïnlinede
+  parses) komt zo over de grens van 201 opgetelde decompiles. Van de som van shape kwam ~316 uit dat ene moment en maar
+  ~18–27 uit gewone deopts. Elke tak die daarna trapt, krijgt action `none`: dat is de storm.
+- `perf.py` en `jfr-prof.sh` doen die `jfr start` na de warm-up en vóór het eerste gebied. **De meting vergiftigde zichzelf.**
+  Dat verklaart de ring 4-storm in 3 van de 6 rondes, de algemene vertraging in die rondes, en waarschijnlijk ook de
+  692× in ring 5 van 2026-10-25 (ook een perf-run met JFR).
+- **Een gewone server start geen JFR** en ziet dit dus niet, tenzij een beheerder `/jfr start` geeft of een profiler
+  classes retransformeert. Daarom blijven de warm-up en het kolomprofiel van ring 5 nuttig.
+- **Fix (infra, `infra/perf-jfr`):** JFR wordt al bij de JVM-start geïnitialiseerd. De ene invalidatie valt dan op t=0
+  (~1.460 nmethods, alleen bootstrap); rond de `jfr start` van de meting zie je alleen de normale churn (≤ ~110/s). Een
+  korte perf-run (ring1, steamfens, vgorge) gaf **0** deopts met action `none` (405 in totaal).
+- **Gevolg:** de waarden van vandaag zijn een bovengrens. Rondes zonder storm (m1, m3, m4) gaven een geometrisch
+  gemiddelde van 1,08–1,11, rondes met storm 1,15–1,20. **De volledige 6-rondemeting moet opnieuw met de gerepareerde
+  tooling.** Pas dan is duidelijk of zone45 onder 1,5 komt en of `VerdantGorges` zonder het artefact nog stormt.
+
+### Optimalisaties van vanmiddag (3 warme rondes branch vs. base, oude tooling)
+- **`opt/aquifer`** (kolomprofiel in `RingAquifer`, `VanillaSky`, `ChunkPicker`): noise z12 1,37 → 1,10, canyon 1,49 →
+  1,15, zone23 1,45 → 1,32, vfbasin 1,06 → 0,96, zone45 1,47 → 1,50 (gelijk). Oracle 94 M aanroepen identiek, detcmp
+  0/0 in 5 gebieden.
+- **`opt/surface`** (snelle biome-opzoeking, `y_bands`, biome-switches): surface-stap canyon 4,93 → 2,71, mesa 4,89 →
+  2,71, zone23 4,22 → 2,51, hoodoo 3,56 → 2,10, ember 2,19 → 1,81, sulfur 2,73 → 2,32. detcmp own 0 over 2.410 chunks.
+- **Profiel van zone45** (base): `ZoneFracture.fillArray` 54 %, met daarin `RingBlend.fillArray` 42 %; `ColumnTable.get`
+  18 %, `Ring5Output.compute` 16 %, `RingAquifer` 9 %. Voorstellen: `cave_zone`/`cave_closure` in `ring_5/overworld.json`
+  één keer per blok lezen (`cache_once` of een geheugen van één kolom in `Ring5Field`, ~3–5 %), en de terugval per punt
+  van `RingBlend.fillArray` in de menging 4→5 (backlog).
+
