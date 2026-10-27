@@ -1,11 +1,15 @@
 package nl.timtoys.corruptedadventure.registry;
 
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.food.Foods;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemNameBlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.ShovelItem;
@@ -106,6 +110,9 @@ public final class ModItems {
     // ---- Nether ring 2 ----
     /** Drop of the grown dew crystal. Placeholder: its use, recipes and balance follow in phase 2. */
     public static final DeferredItem<Item> DEW_CRYSTAL = ITEMS.registerSimpleItem("dew_crystal");
+    /** Phase 2 golf 3 (§6.4): a dripshroom cap in a bowl, mushroom stew's food (the bowl comes back). */
+    public static final DeferredItem<Item> DRIPSHROOM_STEW = ITEMS.registerItem("dripshroom_stew",
+            properties -> new Item(properties.stacksTo(1).food(Foods.MUSHROOM_STEW)));
 
     // ---- Ring 3 ----
     static {
@@ -129,6 +136,18 @@ public final class ModItems {
     /** Coating against heat (applied with dew crystal). Where to find it: golf 3. */
     public static final DeferredItem<SmithingTemplateItem> HEAT_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "heat_coating_smithing_template", () -> CoatingTemplates.create(Coating.HEAT));
+    /** Fire resistance from one ember berry: 5 s. */
+    public static final int EMBER_BERRY_FIRE_RESISTANCE_TICKS = 5 * 20;
+
+    /**
+     * Phase 2 golf 3 (§6.4): picked from the ember berry bush and planting it, like sweet berries; sweet berries' food plus
+     * 5 s of fire resistance.
+     */
+    public static final DeferredItem<ItemNameBlockItem> EMBER_BERRIES = ITEMS.registerItem("ember_berries",
+            properties -> new ItemNameBlockItem(ModBlocks.EMBER_BERRY_BUSH.get(), properties.food(new FoodProperties.Builder()
+                    .nutrition(2).saturationModifier(0.1F)
+                    .effect(() -> new MobEffectInstance(MobEffects.FIRE_RESISTANCE, EMBER_BERRY_FIRE_RESISTANCE_TICKS), 1.0F)
+                    .build())));
 
     // The volcanite set (golf 3, §6.1–§6.2): fire resistant like sunstone; smithed from sunstone.
     public static final DeferredItem<SwordItem> VOLCANITE_SWORD = ITEMS.registerItem("volcanite_sword",

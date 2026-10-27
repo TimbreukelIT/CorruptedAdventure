@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "corruptedadventure:dew_crystal"
+    },
+    "P": {
+      "item": "corruptedadventure:pumice"
+    },
+    "R": {
+      "item": "corruptedadventure:fire_ruby"
+    }
+  },
+  "pattern": [
+    "RPR",
+    "PDP",
+    "RPR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:heat_coating_smithing_template"
+  }
+}

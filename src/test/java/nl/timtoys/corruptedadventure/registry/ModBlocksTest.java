@@ -77,10 +77,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ModBlocksTest {
     /**
      * Blocks without an item of their own besides pots and liquids: the swamp gas (invisible, cannot be aimed at), the
-     * wall bromeliad (placed by the bromeliad's item), the vine stem and the fruit pod (worldgen only), and the wall
-     * signs (placed by the sign items).
+     * wall bromeliad (placed by the bromeliad's item), the vine stem and the fruit pod (worldgen only), the wall signs
+     * (placed by the sign items) and the ember berry bush (planted by its berries, like vanilla's).
      */
     private static final Set<DeferredHolder<Block, ? extends Block>> WITHOUT_ITEM = Set.of(ModBlocks.SWAMP_GAS,
+            ModBlocks.EMBER_BERRY_BUSH,
             ModBlocks.VERDANT_WALL_BROMELIAD, ModBlocks.VERDANT_VINE_PLANT, ModBlocks.VERDANT_FRUIT_POD,
             ModBlocks.CORRUPTED_WALL_SIGN, ModBlocks.CORRUPTED_WALL_HANGING_SIGN);
 
@@ -263,7 +264,9 @@ class ModBlocksTest {
     @Test
     void ring3FollowsTheDewBlocksInOrder() {
         List<Item> shown = blockItems();
-        int cluster = shown.indexOf(ModBlocks.DEW_CRYSTAL_CLUSTER.asItem());
+        // The dew crystal block (phase 2 golf 3) ends the Nether ring 2 section.
+        int cluster = shown.indexOf(ModBlocks.DEW_CRYSTAL_CLUSTER.asItem()) + 1;
+        assertEquals(ModBlocks.DEW_CRYSTAL_BLOCK.asItem(), shown.get(cluster));
         List<Item> ring3 = Stream.of(ModBlocks.ASH_BLOCK, ModBlocks.ASH_LAYER, ModBlocks.ASH_CRUST, ModBlocks.SMOLDERING_ASH,
                 ModBlocks.PUMICE, ModBlocks.PUMICE_STAIRS, ModBlocks.PUMICE_SLAB, ModBlocks.PUMICE_WALL,
                 ModBlocks.POLISHED_PUMICE, ModBlocks.POLISHED_PUMICE_STAIRS, ModBlocks.POLISHED_PUMICE_SLAB,
@@ -360,7 +363,9 @@ class ModBlocksTest {
     void ring3RawMaterialsFollowTheDewCrystal() {
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem)).toList();
-        int dew = standalone.indexOf(ModItems.DEW_CRYSTAL.get());
+        // The dripshroom stew (phase 2 golf 3) ends the Nether ring 2 section.
+        int dew = standalone.indexOf(ModItems.DEW_CRYSTAL.get()) + 1;
+        assertEquals(ModItems.DRIPSHROOM_STEW.get(), standalone.get(dew));
         assertEquals(List.of(ModItems.RAW_VOLCANITE.get(), ModItems.SULFUR.get(), ModItems.FIRE_RUBY.get(), ModItems.FIRE_CRYSTAL.get()),
                 standalone.subList(dew + 1, dew + 5));
     }
@@ -432,15 +437,29 @@ class ModBlocksTest {
         }
     }
 
+    /** Phase 2 golf 3 (§6.4): the sulfur lamp shines at 13, the dew crystal block chimes, the raft floats on lava only. */
+    @Test
+    void golf3Ring3BlocksHaveTheirLightSoundAndGround() {
+        assertEquals(13, ModBlocks.SULFUR_LAMP.get().defaultBlockState().getLightEmission());
+        assertEquals(0, ModBlocks.DEW_CRYSTAL_BLOCK.get().defaultBlockState().getLightEmission());
+        assertEquals(SoundType.AMETHYST, ModBlocks.DEW_CRYSTAL_BLOCK.get().defaultBlockState().getSoundType());
+        assertEquals(Blocks.COAL_BLOCK.defaultDestroyTime(), ModBlocks.SULFUR_BLOCK.get().defaultDestroyTime());
+        assertInstanceOf(PlaceOnWaterBlockItem.class, ModBlocks.PUMICE_RAFT.asItem());
+        assertSame(ModItems.EMBER_BERRIES.get(), ModBlocks.EMBER_BERRY_BUSH.asItem());
+    }
+
     /** Nether ring 3 follows ring 3 directly (contract §3), in this order. */
     @Test
     void netherRing3FollowsRing3InOrder() {
         List<Item> shown = blockItems();
-        // The storage blocks (phase 2 golf 1) end the ring 3 section.
+        // The storage blocks (phase 2 golf 1) and the golf 3 extras end the ring 3 section.
         int crystal = shown.indexOf(ModBlocks.SULFUR_CRYSTAL.asItem());
-        assertEquals(List.of(ModBlocks.RAW_VOLCANITE_BLOCK.asItem(), ModBlocks.VOLCANITE_BLOCK.asItem(),
-                ModBlocks.FIRE_RUBY_BLOCK.asItem()), shown.subList(crystal + 1, crystal + 4));
-        int lastRing3 = crystal + 3;
+        List<Item> end = Stream.of(ModBlocks.RAW_VOLCANITE_BLOCK, ModBlocks.VOLCANITE_BLOCK, ModBlocks.FIRE_RUBY_BLOCK,
+                ModBlocks.SULFUR_BLOCK, ModBlocks.FIRE_RUBY_INLAID_PUMICE, ModBlocks.FIRE_RUBY_INLAID_PUMICE_STAIRS,
+                ModBlocks.FIRE_RUBY_INLAID_PUMICE_SLAB, ModBlocks.FIRE_RUBY_INLAID_PUMICE_WALL, ModBlocks.SULFUR_LAMP,
+                ModBlocks.PUMICE_RAFT).<Item>map(DeferredBlock::asItem).toList();
+        assertEquals(end, shown.subList(crystal + 1, crystal + 1 + end.size()));
+        int lastRing3 = crystal + end.size();
         List<Item> netherRing3 = Stream.of(ModBlocks.COLD_LAVA, ModBlocks.COLD_LAVA_STAIRS, ModBlocks.COLD_LAVA_SLAB,
                 ModBlocks.COLD_LAVA_WALL, ModBlocks.POLISHED_COLD_LAVA, ModBlocks.POLISHED_COLD_LAVA_STAIRS,
                 ModBlocks.POLISHED_COLD_LAVA_SLAB, ModBlocks.POLISHED_COLD_LAVA_WALL, ModBlocks.COLD_LAVA_BRICKS,

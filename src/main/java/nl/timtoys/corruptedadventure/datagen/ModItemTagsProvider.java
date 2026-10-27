@@ -130,6 +130,15 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         coatings();
         ConsumableItemTags.addTags(this::tag);
         GearItemTags.build(this::tag);
+        golf3Ring3();
+    }
+
+    /** Phase 2 golf 3 (stream R3): the sulfur block, the ember berries like sweet berries, the stew like mushroom stew. */
+    private void golf3Ring3() {
+        copy(ModTags.Blocks.STORAGE_BLOCKS_SULFUR, ModTags.Items.STORAGE_BLOCKS_SULFUR);
+        tag(Tags.Items.STORAGE_BLOCKS).addTag(ModTags.Items.STORAGE_BLOCKS_SULFUR);
+        tag(Tags.Items.FOODS_BERRY).add(ModItems.EMBER_BERRIES.get());
+        tag(Tags.Items.FOODS_SOUP).add(ModItems.DRIPSHROOM_STEW.get());
     }
 
     /** Phase 2 golf 1 (stream D): the storage blocks' item tags, the ingots and the turquoise gem. */

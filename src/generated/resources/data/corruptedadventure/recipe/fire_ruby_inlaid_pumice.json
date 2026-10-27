@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": {
+      "item": "corruptedadventure:pumice"
+    },
+    "X": {
+      "item": "corruptedadventure:fire_ruby"
+    }
+  },
+  "pattern": [
+    "###",
+    "#X#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "id": "corruptedadventure:fire_ruby_inlaid_pumice"
+  }
+}
