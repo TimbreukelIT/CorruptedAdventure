@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "corruptedadventure:fire_ruby_inlaid_pumice"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:fire_ruby_inlaid_pumice_wall"
+  }
+}

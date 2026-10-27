@@ -10,7 +10,8 @@ import java.util.List;
 
 /**
  * The upgrade smithing template of a {@link GearTier}, built like vanilla's netherite upgrade (same slot icons and
- * tooltip layout, our own texts). Sunstone's has its recipes since wave 2 ({@code GearRecipes}); the others follow in waves 3–5.
+ * tooltip layout, our own texts). Their recipes are in {@code GearRecipes} (sunstone since wave 2, volcanite and
+ * tidesilver since waves 3–4); nullite's follow in wave 5.
  */
 public final class UpgradeSmithingTemplates {
     private static final List<ResourceLocation> GEAR_ICONS = List.of(

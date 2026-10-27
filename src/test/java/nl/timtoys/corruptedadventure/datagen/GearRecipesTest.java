@@ -15,29 +15,50 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The generated sunstone recipes (fase-2-items.md §5.1, after {@code runData}). */
+/** The generated gear tier recipes (fase-2-items.md §5.1, §6.2, §6.5, after {@code runData}). */
 class GearRecipesTest {
     private static final String GENERATED = "src/generated/resources/data";
     private static final Path DATA = generated();
     private static final Path RECIPES = DATA.resolve("corruptedadventure/recipe");
-    private static final String TEMPLATE = "corruptedadventure:sunstone_upgrade_smithing_template";
+    private static final List<String> PIECES = List.of("sword", "axe", "pickaxe", "shovel", "hoe", "helmet", "chestplate",
+            "leggings", "boots");
+    /** Each tier with the material whose gear it upgrades, lowest first. */
+    private static final List<List<String>> LADDER = List.of(List.of("sunstone", "minecraft:diamond"),
+            List.of("volcanite", "corruptedadventure:sunstone"), List.of("tidesilver", "corruptedadventure:volcanite"));
 
     @Test
-    void everyDiamondPieceUpgradesToSunstone() throws IOException {
-        for (String piece : List.of("sword", "axe", "pickaxe", "shovel", "hoe", "helmet", "chestplate", "leggings", "boots")) {
-            JsonObject recipe = read(RECIPES.resolve("sunstone_" + piece + "_smithing.json"));
-            assertEquals("minecraft:smithing_transform", recipe.get("type").getAsString(), piece);
-            assertEquals(TEMPLATE, recipe.getAsJsonObject("template").get("item").getAsString(), piece);
-            assertEquals("minecraft:diamond_" + piece, recipe.getAsJsonObject("base").get("item").getAsString(), piece);
-            assertEquals("corruptedadventure:sunstone_ingot", recipe.getAsJsonObject("addition").get("item").getAsString(), piece);
-            assertEquals("corruptedadventure:sunstone_" + piece, recipe.getAsJsonObject("result").get("id").getAsString(), piece);
+    void everyTierUpgradesThePiecesOfTheOneBefore() throws IOException {
+        for (List<String> step : LADDER) {
+            String tier = step.get(0);
+            for (String piece : PIECES) {
+                String name = tier + "_" + piece;
+                JsonObject recipe = read(RECIPES.resolve(name + "_smithing.json"));
+                assertEquals("minecraft:smithing_transform", recipe.get("type").getAsString(), name);
+                assertEquals("corruptedadventure:" + tier + "_upgrade_smithing_template",
+                        recipe.getAsJsonObject("template").get("item").getAsString(), name);
+                assertEquals(step.get(1) + "_" + piece, recipe.getAsJsonObject("base").get("item").getAsString(), name);
+                assertEquals("corruptedadventure:" + tier + "_ingot",
+                        recipe.getAsJsonObject("addition").get("item").getAsString(), name);
+                assertEquals("corruptedadventure:" + name, recipe.getAsJsonObject("result").get("id").getAsString(), name);
+            }
         }
     }
 
-    /** 6 soul crystal + 2 diamond + 1 scorched sandstone, one template; no copy recipe (crafting is the copy). */
+    /** Sunstone from soul crystal (§5.1), volcanite from dew crystal (§6.2), tidesilver from primordial ice (§6.5). */
     @Test
-    void theTemplateComesFromSoulCrystalOnly() throws IOException {
-        JsonObject recipe = read(RECIPES.resolve("sunstone_upgrade_smithing_template.json"));
+    void theTemplatesComeFromTheNetherMaterialTheIngotBeforeAndARingStone() throws IOException {
+        assertTemplate("sunstone", Map.of("corruptedadventure:soul_crystal", 6, "minecraft:diamond", 2,
+                "corruptedadventure:scorched_sandstone", 1));
+        assertTemplate("volcanite", Map.of("corruptedadventure:dew_crystal", 6, "corruptedadventure:sunstone_ingot", 2,
+                "corruptedadventure:pumice", 1));
+        assertTemplate("tidesilver", Map.of("corruptedadventure:primordial_ice", 6,
+                "corruptedadventure:volcanite_ingot", 2, "corruptedadventure:tidestone", 1));
+    }
+
+    /** One template per craft and no copy recipe: crafting already is the copy. */
+    private static void assertTemplate(String tier, Map<String, Integer> expected) throws IOException {
+        String template = tier + "_upgrade_smithing_template";
+        JsonObject recipe = read(RECIPES.resolve(template + ".json"));
         Map<String, String> key = new HashMap<>();
         recipe.getAsJsonObject("key").entrySet()
                 .forEach(entry -> key.put(entry.getKey(), entry.getValue().getAsJsonObject().get("item").getAsString()));
@@ -47,21 +68,23 @@ class GearRecipesTest {
                 counts.merge(key.get(String.valueOf(symbol)), 1, Integer::sum);
             }
         }
-        assertEquals(Map.of("corruptedadventure:soul_crystal", 6, "minecraft:diamond", 2,
-                "corruptedadventure:scorched_sandstone", 1), counts);
-        assertEquals(1, recipe.getAsJsonObject("result").get("count").getAsInt());
+        assertEquals(expected, counts, tier);
+        assertEquals(1, recipe.getAsJsonObject("result").get("count").getAsInt(), tier);
         try (var files = Files.list(RECIPES)) {
-            assertFalse(files.anyMatch(file -> !file.getFileName().toString().equals("sunstone_upgrade_smithing_template.json")
-                    && file.getFileName().toString().contains("sunstone_upgrade_smithing_template")));
+            assertFalse(files.anyMatch(file -> !file.getFileName().toString().equals(template + ".json")
+                    && file.getFileName().toString().contains(template)), tier);
         }
     }
 
-    /** The coatings ({@code smithing_trim} on {@code #trimmable_armor}) take sunstone armour too. */
+    /** The coatings ({@code smithing_trim} on {@code #trimmable_armor}) take the armour of every tier. */
     @Test
-    void sunstoneArmourTakesCoatings() throws IOException {
+    void tierArmourTakesCoatings() throws IOException {
         String trimmable = Files.readString(DATA.resolve("minecraft/tags/item/trimmable_armor.json"));
-        for (String piece : List.of("helmet", "chestplate", "leggings", "boots")) {
-            assertTrue(trimmable.contains("\"corruptedadventure:sunstone_" + piece + "\""), piece);
+        for (List<String> step : LADDER) {
+            for (String piece : List.of("helmet", "chestplate", "leggings", "boots")) {
+                assertTrue(trimmable.contains("\"corruptedadventure:" + step.get(0) + "_" + piece + "\""),
+                        step.get(0) + " " + piece);
+            }
         }
     }
 

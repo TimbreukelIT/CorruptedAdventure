@@ -79,6 +79,7 @@ import nl.timtoys.corruptedadventure.block.LagoonGlowgrassBlock;
 import nl.timtoys.corruptedadventure.block.MoonpetalLeavesBlock;
 import nl.timtoys.corruptedadventure.block.MythicPlantBlock;
 import nl.timtoys.corruptedadventure.block.PalmSaplingBlock;
+import nl.timtoys.corruptedadventure.block.PumiceRaftBlock;
 import nl.timtoys.corruptedadventure.block.ReedsBlock;
 import nl.timtoys.corruptedadventure.block.SlimeTrailBlock;
 import nl.timtoys.corruptedadventure.block.SoakedNetherrackBlock;
@@ -433,6 +434,9 @@ public final class ModBlocks {
     /** Full-grown stage; the default state faces up. */
     public static final DeferredBlock<AmethystClusterBlock> DEW_CRYSTAL_CLUSTER = register("dew_crystal_cluster",
             () -> new AmethystClusterBlock(7.0F, 3.0F, recolored(Blocks.AMETHYST_CLUSTER, MapColor.COLOR_LIGHT_BLUE)));
+    /** Phase 2 golf 3 (§6.4): 4 dew crystals, like the amethyst block (chimes when hit); no light. */
+    public static final DeferredBlock<AmethystBlock> DEW_CRYSTAL_BLOCK = register("dew_crystal_block",
+            () -> new AmethystBlock(recolored(Blocks.AMETHYST_BLOCK, MapColor.COLOR_LIGHT_BLUE)));
 
     // ---- Ring 3 ----
     static {
@@ -551,8 +555,11 @@ public final class ModBlocks {
     public static final DeferredBlock<CharredShrubBlock> CHARRED_SHRUB = register("charred_shrub",
             () -> new CharredShrubBlock(Properties.ofFullCopy(Blocks.NETHER_SPROUTS).mapColor(MapColor.COLOR_BLACK)
                     .sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ)));
-    /** Sweet berry bush properties (random ticks: it grows back after picking); rare, ember woods and dormant calderas. */
-    public static final DeferredBlock<EmberBerryBushBlock> EMBER_BERRY_BUSH = register("ember_berry_bush",
+    /**
+     * Sweet berry bush properties (random ticks: it grows back after picking); rare, ember woods and dormant calderas. No
+     * item of its own: {@link ModItems#EMBER_BERRIES} plant it (phase 2 golf 3).
+     */
+    public static final DeferredBlock<EmberBerryBushBlock> EMBER_BERRY_BUSH = registerWithoutItem("ember_berry_bush",
             () -> new EmberBerryBushBlock(Properties.ofFullCopy(Blocks.SWEET_BERRY_BUSH).mapColor(MapColor.COLOR_ORANGE)));
 
     // Ores: one block per host rock (stone, deepslate, basalt; no blackstone). One step above ring 2: half a point
@@ -633,6 +640,24 @@ public final class ModBlocks {
             () -> new Block(metalStorage(MapColor.COLOR_BLACK)));
     public static final DeferredBlock<Block> FIRE_RUBY_BLOCK = register("fire_ruby_block",
             () -> new Block(gemStorage(MapColor.COLOR_RED)));
+    // Phase 2 golf 3 (fase-2-items.md §6.4): the sulfur block, pumice inlaid with fire ruby, the sulfur lamp and the raft.
+    /** A coal block in yellow: the same strength, and a fuel like it; it does not burn in the world (like peat). */
+    public static final DeferredBlock<Block> SULFUR_BLOCK = register("sulfur_block",
+            () -> new Block(Properties.ofFullCopy(Blocks.COAL_BLOCK).mapColor(MapColor.COLOR_YELLOW)));
+    public static final DeferredBlock<Block> FIRE_RUBY_INLAID_PUMICE = register("fire_ruby_inlaid_pumice",
+            () -> new Block(pumice(Blocks.TUFF)));
+    public static final DeferredBlock<StairBlock> FIRE_RUBY_INLAID_PUMICE_STAIRS = register("fire_ruby_inlaid_pumice_stairs",
+            () -> new StairBlock(FIRE_RUBY_INLAID_PUMICE.get().defaultBlockState(), pumice(Blocks.TUFF_STAIRS)));
+    public static final DeferredBlock<SlabBlock> FIRE_RUBY_INLAID_PUMICE_SLAB = register("fire_ruby_inlaid_pumice_slab",
+            () -> new SlabBlock(pumice(Blocks.TUFF_SLAB)));
+    public static final DeferredBlock<WallBlock> FIRE_RUBY_INLAID_PUMICE_WALL = register("fire_ruby_inlaid_pumice_wall",
+            () -> new WallBlock(pumice(Blocks.TUFF_WALL)));
+    /** The sea lantern's glass block (breaks fast, glass sound) with light 13; drops itself. */
+    public static final DeferredBlock<Block> SULFUR_LAMP = register("sulfur_lamp",
+            () -> new Block(Properties.ofFullCopy(Blocks.SEA_LANTERN).mapColor(MapColor.COLOR_LIGHT_GREEN).lightLevel(state -> 13)));
+    /** The lily pad's behaviour (breaks at once, you can stand on it) on lava, with tuff's sound. */
+    public static final DeferredBlock<PumiceRaftBlock> PUMICE_RAFT = registerOnWater("pumice_raft",
+            () -> new PumiceRaftBlock(Properties.ofFullCopy(Blocks.LILY_PAD).mapColor(MapColor.COLOR_LIGHT_GRAY).sound(SoundType.TUFF)));
 
     // ---- Nether ring 3 ----
     // Frozen Nether: cold lava with its shapes, Nether ice, rime netherrack, the rimeshroom wood set and cap, ice
@@ -1497,7 +1522,10 @@ public final class ModBlocks {
         return holder;
     }
 
-    /** Water plants need a {@link PlaceOnWaterBlockItem}, which places them on the water surface like a lily pad. */
+    /**
+     * Water plants need a {@link PlaceOnWaterBlockItem}, which places them on the water surface like a lily pad. It aims
+     * at any fluid source, so the pumice raft uses it on lava.
+     */
     private static <B extends Block> DeferredBlock<B> registerOnWater(String name, Supplier<B> block) {
         DeferredBlock<B> holder = BLOCKS.register(name, block);
         ModItems.ITEMS.registerItem(name, properties -> new PlaceOnWaterBlockItem(holder.get(), properties));

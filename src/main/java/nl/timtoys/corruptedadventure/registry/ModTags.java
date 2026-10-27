@@ -111,6 +111,7 @@ public final class ModTags {
         public static final TagKey<Block> STORAGE_BLOCKS_RAW_VOLCANITE = TagKey.create(Registries.BLOCK, common("storage_blocks/raw_volcanite"));
         public static final TagKey<Block> STORAGE_BLOCKS_VOLCANITE = TagKey.create(Registries.BLOCK, common("storage_blocks/volcanite"));
         public static final TagKey<Block> STORAGE_BLOCKS_FIRE_RUBY = TagKey.create(Registries.BLOCK, common("storage_blocks/fire_ruby"));
+        public static final TagKey<Block> STORAGE_BLOCKS_SULFUR = TagKey.create(Registries.BLOCK, common("storage_blocks/sulfur"));
         public static final TagKey<Block> STORAGE_BLOCKS_RAW_TIDESILVER = TagKey.create(Registries.BLOCK, common("storage_blocks/raw_tidesilver"));
         public static final TagKey<Block> STORAGE_BLOCKS_TIDESILVER = TagKey.create(Registries.BLOCK, common("storage_blocks/tidesilver"));
         public static final TagKey<Block> STORAGE_BLOCKS_JADE = TagKey.create(Registries.BLOCK, common("storage_blocks/jade"));
@@ -204,6 +205,7 @@ public final class ModTags {
         public static final TagKey<Item> STORAGE_BLOCKS_RAW_VOLCANITE = TagKey.create(Registries.ITEM, common("storage_blocks/raw_volcanite"));
         public static final TagKey<Item> STORAGE_BLOCKS_VOLCANITE = TagKey.create(Registries.ITEM, common("storage_blocks/volcanite"));
         public static final TagKey<Item> STORAGE_BLOCKS_FIRE_RUBY = TagKey.create(Registries.ITEM, common("storage_blocks/fire_ruby"));
+        public static final TagKey<Item> STORAGE_BLOCKS_SULFUR = TagKey.create(Registries.ITEM, common("storage_blocks/sulfur"));
         public static final TagKey<Item> STORAGE_BLOCKS_RAW_TIDESILVER = TagKey.create(Registries.ITEM, common("storage_blocks/raw_tidesilver"));
         public static final TagKey<Item> STORAGE_BLOCKS_TIDESILVER = TagKey.create(Registries.ITEM, common("storage_blocks/tidesilver"));
         public static final TagKey<Item> STORAGE_BLOCKS_JADE = TagKey.create(Registries.ITEM, common("storage_blocks/jade"));

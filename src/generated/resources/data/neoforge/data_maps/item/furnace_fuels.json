@@ -2,6 +2,12 @@
   "values": {
     "corruptedadventure:peat": {
       "burn_time": 1200
+    },
+    "corruptedadventure:sulfur": {
+      "burn_time": 1600
+    },
+    "corruptedadventure:sulfur_block": {
+      "burn_time": 16000
     }
   }
 }

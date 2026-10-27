@@ -11,7 +11,7 @@ import nl.timtoys.corruptedadventure.registry.ModArmorMaterials;
 
 /**
  * The tools and armour of a {@link GearTier}, built like vanilla's netherite set: the same attack damage and speed per
- * kind (the tier's damage bonus on top), armour durability from the tier's durability factor. Extra properties (fire
+ * kind (the tier's damage bonus on top; the hoe stays at 1), armour durability from the tier's durability factor. Extra properties (fire
  * resistance) come from the caller.
  */
 public final class GearItems {
@@ -34,8 +34,9 @@ public final class GearItems {
         return new ShovelItem(tier, properties.attributes(ShovelItem.createAttributes(tier, 1.5F, -3.0F)));
     }
 
+    /** Like every vanilla hoe, it hits for 1: the base damage cancels the tier's bonus (netherite's -4). */
     public static HoeItem hoe(GearTier tier, Item.Properties properties) {
-        return new HoeItem(tier, properties.attributes(HoeItem.createAttributes(tier, -4.0F, 0.0F)));
+        return new HoeItem(tier, properties.attributes(HoeItem.createAttributes(tier, -tier.getAttackDamageBonus(), 0.0F)));
     }
 
     public static ArmorItem armor(GearTier tier, ArmorItem.Type type, Item.Properties properties) {

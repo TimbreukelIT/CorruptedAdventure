@@ -12,6 +12,7 @@
     "#c:storage_blocks/jade",
     "#c:storage_blocks/raw_nullite",
     "#c:storage_blocks/nullite",
-    "#c:storage_blocks/salt"
+    "#c:storage_blocks/salt",
+    "#c:storage_blocks/sulfur"
   ]
 }

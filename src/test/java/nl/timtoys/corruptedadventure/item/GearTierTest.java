@@ -21,12 +21,38 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The provisional tier curve (fase-2-items.md §4.3): sunstone at least netherite on every stat, every next tier strictly
- * above on uses, speed and damage and at least equal on the rest; and the generated gating tags (after {@code runData}).
+ * The tier curve (fase-2-items.md §6.1): the exact numbers, sunstone at least netherite on every stat, every next tier
+ * strictly above on uses, speed and damage and at least equal on the rest; and the generated gating tags (after
+ * {@code runData}).
  */
 class GearTierTest {
     private static final String GENERATED = "src/generated/resources/data";
     private static final int NETHERITE_DURABILITY_FACTOR = 37;
+
+    /** §6.1, one row per tier: uses, speed, damage bonus, enchantment value, toughness, knockback resistance, factor. */
+    @Test
+    void theCurveIsTheOneDecided() {
+        assertStats(GearTier.SUNSTONE, 2200, 9, 4, 15, 3, 0.1F, 40, 3, 6, 8, 3);
+        assertStats(GearTier.VOLCANITE, 2700, 10, 5.5F, 15, 4, 0.1F, 42, 4, 7, 9, 4);
+        assertStats(GearTier.TIDESILVER, 3200, 11, 6.5F, 16, 4.5F, 0.15F, 47, 4, 7, 10, 4);
+        assertStats(GearTier.NULLITE, 3800, 12, 7.5F, 18, 5, 0.2F, 53, 5, 8, 10, 5);
+    }
+
+    private static void assertStats(GearTier tier, int uses, float speed, float damage, int enchantment, float toughness,
+                                    float knockback, int factor, int boots, int leggings, int chestplate, int helmet) {
+        String name = tier.toString();
+        assertEquals(uses, tier.getUses(), name);
+        assertEquals(speed, tier.getSpeed(), name);
+        assertEquals(damage, tier.getAttackDamageBonus(), name);
+        assertEquals(enchantment, tier.getEnchantmentValue(), name);
+        assertEquals(toughness, tier.toughness(), name);
+        assertEquals(knockback, tier.knockbackResistance(), name);
+        assertEquals(factor, tier.durabilityFactor(), name);
+        assertEquals(boots, tier.defense().get(ArmorItem.Type.BOOTS), name);
+        assertEquals(leggings, tier.defense().get(ArmorItem.Type.LEGGINGS), name);
+        assertEquals(chestplate, tier.defense().get(ArmorItem.Type.CHESTPLATE), name);
+        assertEquals(helmet, tier.defense().get(ArmorItem.Type.HELMET), name);
+    }
 
     @Test
     void sunstoneIsAtLeastNetherite() {

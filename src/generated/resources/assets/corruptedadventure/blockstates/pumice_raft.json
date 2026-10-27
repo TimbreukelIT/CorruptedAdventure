@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "corruptedadventure:block/pumice_raft"
+      },
+      {
+        "model": "corruptedadventure:block/pumice_raft",
+        "y": 90
+      },
+      {
+        "model": "corruptedadventure:block/pumice_raft",
+        "y": 180
+      },
+      {
+        "model": "corruptedadventure:block/pumice_raft",
+        "y": 270
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "corruptedadventure:tidestone"
+    },
+    "I": {
+      "item": "corruptedadventure:volcanite_ingot"
+    },
+    "S": {
+      "item": "corruptedadventure:primordial_ice"
+    }
+  },
+  "pattern": [
+    "SIS",
+    "SCS",
+    "SIS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:tidesilver_upgrade_smithing_template"
+  }
+}

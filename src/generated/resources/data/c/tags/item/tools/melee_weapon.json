@@ -1,6 +1,10 @@
 {
   "values": [
     "corruptedadventure:sunstone_sword",
-    "corruptedadventure:sunstone_axe"
+    "corruptedadventure:sunstone_axe",
+    "corruptedadventure:volcanite_sword",
+    "corruptedadventure:volcanite_axe",
+    "corruptedadventure:tidesilver_sword",
+    "corruptedadventure:tidesilver_axe"
   ]
 }

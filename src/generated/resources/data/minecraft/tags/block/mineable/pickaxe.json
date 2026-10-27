@@ -185,6 +185,12 @@
     "corruptedadventure:turquoise_inlaid_sandstone_stairs",
     "corruptedadventure:turquoise_inlaid_sandstone_slab",
     "corruptedadventure:turquoise_inlaid_sandstone_wall",
-    "corruptedadventure:salt_lamp"
+    "corruptedadventure:salt_lamp",
+    "corruptedadventure:dew_crystal_block",
+    "corruptedadventure:sulfur_block",
+    "corruptedadventure:fire_ruby_inlaid_pumice",
+    "corruptedadventure:fire_ruby_inlaid_pumice_stairs",
+    "corruptedadventure:fire_ruby_inlaid_pumice_slab",
+    "corruptedadventure:fire_ruby_inlaid_pumice_wall"
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "corruptedadventure:tidesilver_ingot"
+  },
+  "base": {
+    "item": "corruptedadventure:volcanite_helmet"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:tidesilver_helmet"
+  },
+  "template": {
+    "item": "corruptedadventure:tidesilver_upgrade_smithing_template"
+  }
+}

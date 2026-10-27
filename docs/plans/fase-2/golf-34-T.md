@@ -43,8 +43,8 @@ Bron: `docs/design/fase-2-items.md` §6 (paletten §6.2/§6.5), namen uit `docs/
 - A: brandpijl = zwavelpunt + rode veren, gifpijl = gifkristalpunt + groene veren; entity in de vanilla 32 x 32-indeling.
 - R3/R4: zwavelblok (kolenblok-achtig), dauwkristalblok (amethist-achtig), zwavellamp (geelgroen, gloed van binnen);
   inleg: vuurrobijn als gefacetteerde ruit in puimsteen, jade als ovale cabochon in getijdesteen, aquamarijn als
-  langwerpig kristal in lagunezandsteen; `block/pumice_raft` = afgerond bovenaanzicht met transparantie (tegen het model
-  van R3 controleren).
+  langwerpig kristal in lagunezandsteen; `block/pumice_raft` = de puimsteentextuur als vastgesjorde platen, ondoorzichtig
+  (het model van R3 is een volle plaat 16 x 1,5 x 16 waarvan de zijkanten de bovenste rijen gebruiken).
 
 ## W-checklist voor INT
 - Gear: vulkaniet- en getijdezilver-items in hand/inventaris naast zonnesteen/netherite; harnas (layer 1 + 2) op een
@@ -78,6 +78,7 @@ Bron: `docs/design/fase-2-items.md` §6 (paletten §6.2/§6.5), namen uit `docs/
 - Weg: `tools/textures/Golf1TemplateTextures.java` (alle vier templates nu definitief: zonnesteen uit
   `Golf2SunstoneTextures`, de andere drie uit `Golf34*`). `Golf1MaterialTextures` schrijft `item/{volcanite,tidesilver}_
   ingot`, `block/raw_volcanite_block` en `block/volcanite_block` niet meer (constante `VOLCANITE` weg).
+- Weg: `tools/textures/Golf3Ring3Textures.java` (placeholders van R3, alle tien vervangen door `Golf34{Block,Item}Textures`).
 - `Ring3Textures`: schrijft `item/raw_volcanite` niet meer (methode `rawVolcanite` + `RAW_VOLCANITE` weg, ook uit het
   vak-voorbeeld van het contactblad); `VOLCANITE` (erts-overlay) = basalt + sintelrood schaduwfacet + oranje glinster.
 
@@ -87,6 +88,9 @@ Bron: `docs/design/fase-2-items.md` §6 (paletten §6.2/§6.5), namen uit `docs/
 - `item/{volcanite,tidesilver,nullite}_upgrade_smithing_template`: `Golf1TemplateTextures` (verwijderd) →
   `Golf34{Volcanite,Tidesilver,Nullite}Textures`.
 - `item/raw_volcanite`: `Ring3Textures` → `Golf34VolcaniteTextures`.
+- R3-placeholders `block/{sulfur_block,dew_crystal_block,fire_ruby_inlaid_pumice{,_top},sulfur_lamp,pumice_raft}`,
+  `item/{pumice_raft,ember_berries,dripshroom_stew}`: `Golf3Ring3Textures` (verwijderd) → `Golf34{Block,Item}Textures`.
+- G-placeholders van de 18 gear-items en 4 layers: mijn versie bij de merge van main (`--ours`).
 - `block/volcanite_ore_overlay`: blijft in `Ring3Textures` (alleen het palet gewijzigd).
 
 ## Beslissingen

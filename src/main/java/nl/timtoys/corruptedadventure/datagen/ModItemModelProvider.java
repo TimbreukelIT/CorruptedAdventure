@@ -109,7 +109,22 @@ final class ModItemModelProvider extends ItemModelProvider {
         golf1Materials();
         coatings();
         golf2Materials();
+        golf3Ring3();
         ConsumableItemModels.build(this);
+    }
+
+    /** Phase 2 golf 3 (stream R3): the blocks, the raft as a flat item, the ember berries and the dripshroom stew. */
+    private void golf3Ring3() {
+        blockItem(ModBlocks.DEW_CRYSTAL_BLOCK);
+        blockItem(ModBlocks.SULFUR_BLOCK);
+        blockItem(ModBlocks.FIRE_RUBY_INLAID_PUMICE);
+        blockItem(ModBlocks.FIRE_RUBY_INLAID_PUMICE_STAIRS);
+        blockItem(ModBlocks.FIRE_RUBY_INLAID_PUMICE_SLAB);
+        wallInventory(ModBlocks.FIRE_RUBY_INLAID_PUMICE_WALL.getId().getPath(), modLoc("block/fire_ruby_inlaid_pumice"));
+        blockItem(ModBlocks.SULFUR_LAMP);
+        basicItem(ModBlocks.PUMICE_RAFT.asItem());
+        basicItem(ModItems.EMBER_BERRIES.get());
+        basicItem(ModItems.DRIPSHROOM_STEW.get());
     }
 
     /** Phase 2 golf 2 (stream M): the soul crystal block, the inlaid sandstone set and the salt lamp. */
@@ -221,9 +236,7 @@ final class ModItemModelProvider extends ItemModelProvider {
         flatBlockItem(ModBlocks.FIRE_BLOOM);
         flatBlockItem(ModBlocks.ASH_SPROUTS);
         flatBlockItem(ModBlocks.CHARRED_SHRUB);
-        // A flat bush with berries (vanilla's bush has no item of its own: its item is the berries).
-        withExistingParent(ModBlocks.EMBER_BERRY_BUSH.getId().getPath(), mcLoc("item/generated"))
-                .texture("layer0", modLoc("block/ember_berry_bush_stage3"));
+        // ember_berry_bush: no item of its own (its item is the ember berries, golf3Ring3).
 
         blockItem(ModBlocks.VOLCANITE_ORE);
         blockItem(ModBlocks.DEEPSLATE_VOLCANITE_ORE);
