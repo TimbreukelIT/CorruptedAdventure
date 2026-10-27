@@ -11,6 +11,7 @@ import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.datagen.tags.ConsumableItemTags;
+import nl.timtoys.corruptedadventure.datagen.tags.GearItemTags;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
@@ -128,6 +129,7 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         golf1Materials();
         coatings();
         ConsumableItemTags.addTags(this::tag);
+        GearItemTags.build(this::tag);
     }
 
     /** Phase 2 golf 1 (stream D): the storage blocks' item tags, the ingots and the turquoise gem. */

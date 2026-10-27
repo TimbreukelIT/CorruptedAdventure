@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.datagen.lang.Golf1TierNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Golf2MaterialNames;
 import nl.timtoys.corruptedadventure.datagen.lang.CoatingText;
 import nl.timtoys.corruptedadventure.datagen.lang.ConsumableText;
+import nl.timtoys.corruptedadventure.datagen.lang.GearNames;
 import nl.timtoys.corruptedadventure.datagen.lang.LangOutput;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing3BiomeNames;
 import nl.timtoys.corruptedadventure.datagen.lang.NetherRing4BiomeNames;
@@ -273,6 +274,7 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         // Phase 2 golf 2: one helper per stream.
         Golf2MaterialNames.addDutch(this);
         ConsumableText.addDutch(this);
+        GearNames.addDutch(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s is uitgedroogd");
