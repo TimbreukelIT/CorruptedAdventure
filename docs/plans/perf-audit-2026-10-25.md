@@ -99,3 +99,74 @@ niet gemeten: wastes, glitch, meadow en de Nether.
    - de features;
    - een check op caches die per wereld onbegrensd groeien.
 5. Daarna gaat fase 2 verder met golf 2 (ring 2), in een nieuwe sessie met Blockbench.
+
+## Meting 2026-10-27: warm-up en r5hot op main (188bc162)
+
+`perf.sh --areas tools/test/areas/perf-all.txt --warm 5 --cold 1` (`build/test/perf-all-20261027/`, standaardvlaggen,
+zonder de zuinige modus). De machine was **niet de hele tijd rustig**: een Leap-CI (pnpm/turbo, ~22 vitest-workers) liep
+in pieken van 1–4 min (10:43, 11:17, 11:28, 11:32, 11:40, 11:41, 11:58), met geheugendruk tot 2 GB vrij.
+- Ronde 2 en de extra ronde (`perf-all-20261027-x1`) zijn verloren: `jfr print` crashte onder de geheugendruk
+  (0xC0000142), dus er is geen JSON.
+- Per gebied tellen alleen de schone metingen. Een meting telt niet mee als de belasting in haar venster viel (log per
+  15 s, tijd per gebiedsregel), als er na het einde van de log geen belastingdata meer was, of als de vanilla-tijd boven
+  1,5× de mediaan van het gebied lag. Daardoor vielen er 12 metingen af.
+- Dat geeft **3–4 schone warme rondes per gebied** (rondes 1, 3, 4 en 5), niet de beoogde ≥ 5.
+- Gemaakt met `C:/Temp/ca-wt-scripts/clean_perf.py` → `table-clean.md`. De ruwe tabel `table.md` van perfsum, zonder
+  filter, verschilt hooguit 0,04.
+
+| Gebied | noise mediaan schoon | n | min-max | alle warm | surface | features | noise koud | noise 25-10 |
+|---|---|---|---|---|---|---|---|---|
+| ring1 | 0,93 | 4 | 0,80-1,16 | 0,93 | 1,52 | 0,85 | - | 0,94 |
+| z12 | 1,37 | 4 | 1,34-1,52 | 1,37 | 2,92 | 0,94 | - | 1,46 |
+| canyon | 1,40 | 4 | 1,34-1,45 | 1,40 | 5,33 | 0,85 | - | 1,43 |
+| hoodoo | 1,08 | 4 | 1,03-1,40 | 1,08 | 3,90 | 0,83 | 1,04 | 1,04 |
+| dunes | 1,13 | 4 | 1,04-1,16 | 1,13 | 2,19 | 0,81 | - | 1,22 |
+| mesa | 1,25 | 3 | 1,21-1,26 | 1,23 | 5,16 | 0,91 | - | 1,08 |
+| zone23 | 1,39 | 3 | 1,38-1,40 | 1,38 | 4,41 | 0,69 | 1,36 | 1,50 |
+| ember | 1,02 | 4 | 1,01-1,06 | 1,02 | 2,10 | 0,86 | 1,00 | 1,00 |
+| sulfur | 1,05 | 4 | 1,03-1,25 | 1,05 | 2,67 | 0,41 | - | 1,08 |
+| great | 1,17 | 3 | 1,06-1,26 | 1,21 | 2,80 | 0,44 | - | 1,11 |
+| ashen | 1,03 | 3 | 1,02-1,03 | 1,02 | 2,28 | 1,12 | - | 0,99 |
+| titan | 1,05 | 3 | 1,04-1,09 | 1,05 | 2,08 | 0,91 | - | 1,12 |
+| seabed | 1,08 | 3 | 1,07-1,10 | 1,09 | 1,91 | 0,89 | - | 1,22 |
+| steamfens | 1,32 | 4 | 1,21-1,36 | 1,32 | 2,79 | 0,46 | 1,41 | 1,30 |
+| vfbasin | 1,04 | 4 | 0,97-1,13 | 1,04 | 3,09 | 0,47 | 0,96 | 1,12 |
+| vgorge | 0,97 | 4 | 0,90-1,19 | 0,97 | 2,69 | 0,50 | - | 0,92 |
+| tds | 0,94 | 4 | 0,93-0,99 | 0,94 | 2,07 | 1,02 | - | 1,04 |
+| tunmyth | 0,81 | 4 | 0,74-0,89 | 0,81 | 1,61 | 0,80 | - | 0,90 |
+| tree | 1,00 | 4 | 0,77-1,14 | 1,00 | 2,18 | 1,46 | - | 1,05 |
+| zone45 | 1,48 | 4 | 1,26-1,58 | 1,48 | 3,27 | 0,17 | 1,46 | 691,78 |
+| wastes | 1,18 | 4 | 1,13-1,24 | 1,18 | 3,75 | 0,21 | 1,18 | - |
+| glitch | 1,02 | 3 | 0,99-1,04 | 1,00 | 3,18 | 0,12 | - | - |
+| meadow | 1,01 | 3 | 0,94-1,12 | 0,99 | 3,16 | 0,15 | - | - |
+| n1 | 1,12 | 4 | 1,00-1,19 | 1,12 | 1,18 | 0,84 | - | - |
+| n2 | 1,39 | 3 | 1,31-1,41 | 1,40 | 0,76 | 0,09 | 1,41 | - |
+| n3e | 1,23 | 3 | 1,22-1,23 | 1,23 | 1,50 | 0,51 | - | - |
+| n3rifts | 1,04 | 3 | 0,98-1,30 | 1,12 | 1,01 | 0,27 | - | - |
+| n4dunes | 1,11 | 3 | 1,07-1,17 | 1,11 | 0,59 | 0,10 | - | - |
+| n4hollows | 1,36 | 4 | 1,06-1,63 | 1,36 | 1,36 | 0,14 | - | - |
+| halls | 0,98 | 4 | 0,94-1,09 | 0,98 | 0,80 | 0,06 | - | - |
+| cathedral | 1,03 | 4 | 0,96-1,07 | 1,03 | 0,90 | 0,17 | - | - |
+
+Uitkomst:
+- **Harde grens 1,75×: elk gebied haalt hem**, ook in elke losse ronde. De hoogste losse metingen zijn n4hollows 1,63
+  (de Nether-tijden zijn klein, 4–6 ms per chunk, dus ze schommelen) en zone45 1,58.
+- **Doel 1,5×: elke mediaan ligt eronder, maar voorlopig** (n = 3–4 in plaats van ≥ 5, geen volledig rustige machine).
+  Het krapst zijn zone45 1,48 (1,26–1,58), canyon 1,40, zone23 1,39, n2 1,39, z12 1,37 en n4hollows 1,36.
+- **De ring 5-hang is weg:** zone45 1,48 tegen 692× op 2026-10-25. In geen enkele ronde stormde ring 5.
+  `Ring5Field.spotShift` r. 924 gaf 7–10 k traps met action `none`, onder de stormgrens.
+- **Het stormrisico is niet weg:** in ronde 5 stormde ring 4. `VerdantGorges.shape` kreeg op r. 1033 71.855 traps
+  (de boogtak), op r. 1056 40.430 (de afbrokkelende rand) en `Route.skipped` r. 444 11.980. De belasting viel niet in
+  het meetvenster van vgorge. vgorge kwam op 1,19 tegen 0,90–0,98 in de andere rondes. Dat valt binnen het budget, maar
+  de tweede verdedigingslinie (per-kolom-takken zonder regio-afhankelijkheid) is ook buiten ring 5 nodig.
+- **De koude ronde** (8 gebieden) ligt op het niveau van de warme rondes. Met de warm-up aan is ze niet meer JIT-koud;
+  vergelijk haar dus niet met de koude rondes van vóór 2026-10-27.
+- **De surface-stap** blijft 1,5–5,3× (canyon 5,33, mesa 5,16, zone23 4,41). Daar geldt geen budget; `opt/surface` ligt
+  klaar als kandidaat.
+- **De Nether** is voor het eerst gemeten: 0,98–1,39.
+
+Volgende stappen:
+1. Een bevestigingsrun van 2 warme rondes op een echt rustige machine (~35 min), zodat n ≥ 5 per gebied.
+2. `VerdantGorges.shape` en `Ring5Field.spotShift` takvrij maken (backlog).
+3. Marge op canyon, zone23 en zone45 met `opt/aquifer` (`RingAquifer.openSpace` is 26 % van canyon). Daarna
+   `opt/surface`.
