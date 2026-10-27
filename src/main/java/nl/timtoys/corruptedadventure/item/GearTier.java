@@ -15,14 +15,15 @@ import java.util.Map;
 /**
  * The gear tiers of phase 2, one per ring (fase-2-items.md §1.1): sunstone (ring 2) about netherite, then a step up per
  * ring. The tool side is this {@link Tier}, like vanilla's {@code Tiers}; the armour side lives in
- * {@code ModArmorMaterials} with the numbers below. All stats are provisional (§4.3) and get tuned in waves 2–5.
+ * {@code ModArmorMaterials} with the numbers below. Sunstone is set (§5.1: netherite that lasts longer); the other
+ * stats are provisional (§4.3) and get tuned in waves 3–5.
  *
  * <p>Mining gating: a tier drops every block except those in its {@link #incorrectForTool()} tag, which holds the
  * {@code needs_*_tool} tags of all higher tiers. The ores of ring N+1 are in the {@link #needsTool()} tag of ring N's
  * tier (ring 2's ores need vanilla diamond).
  */
 public enum GearTier implements Tier, StringRepresentable {
-    SUNSTONE("sunstone", 2, 2031, 9.0F, 4.0F, 15, new int[]{3, 6, 8, 3, 11}, 3.0F, 0.1F, 37,
+    SUNSTONE("sunstone", 2, 2200, 9.0F, 4.0F, 15, new int[]{3, 6, 8, 3, 11}, 3.0F, 0.1F, 40,
             ModTags.Blocks.NEEDS_SUNSTONE_TOOL, ModTags.Blocks.INCORRECT_FOR_SUNSTONE_TOOL, ModTags.Items.INGOTS_SUNSTONE),
     VOLCANITE("volcanite", 3, 2500, 10.0F, 5.0F, 15, new int[]{4, 7, 9, 4, 12}, 3.5F, 0.1F, 42,
             ModTags.Blocks.NEEDS_VOLCANITE_TOOL, ModTags.Blocks.INCORRECT_FOR_VOLCANITE_TOOL, ModTags.Items.INGOTS_VOLCANITE),

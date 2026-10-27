@@ -1,10 +1,16 @@
 package nl.timtoys.corruptedadventure.registry;
 
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.SmithingTemplateItem;
+import net.minecraft.world.item.SwordItem;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -14,6 +20,7 @@ import nl.timtoys.corruptedadventure.condition.ConsumableDoses;
 import nl.timtoys.corruptedadventure.item.CanteenItem;
 import nl.timtoys.corruptedadventure.item.DoseDrinkItem;
 import nl.timtoys.corruptedadventure.item.DoseFoodItem;
+import nl.timtoys.corruptedadventure.item.GearItems;
 import nl.timtoys.corruptedadventure.item.GearTier;
 import nl.timtoys.corruptedadventure.item.UpgradeSmithingTemplates;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
@@ -58,12 +65,32 @@ public final class ModItems {
     public static final DeferredItem<Item> SUNSTONE_INGOT = ITEMS.registerSimpleItem("sunstone_ingot");
     /** Smelted from raw turquoise and its ores (phase 2 golf 1): the cut gem. Provisional name. */
     public static final DeferredItem<Item> TURQUOISE = ITEMS.registerSimpleItem("turquoise");
-    /** Placeholder upgrade template to the sunstone tier (wave 1): recipe and source follow with the tier. */
+    /** Upgrades diamond gear to sunstone; crafted from soul crystal (golf 2, §5.1), no copy recipe. */
     public static final DeferredItem<SmithingTemplateItem> SUNSTONE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
             UpgradeSmithingTemplates.itemName(GearTier.SUNSTONE), () -> UpgradeSmithingTemplates.create(GearTier.SUNSTONE));
     /** Coating against dehydration (applied with the turquoise gem). Where to find it: golf 2. */
     public static final DeferredItem<SmithingTemplateItem> DEHYDRATION_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "dehydration_coating_smithing_template", () -> CoatingTemplates.create(Coating.DEHYDRATION));
+    // The sunstone set (golf 2, §5.1): netherite's damage and speed, fire resistant like netherite; smithed from diamond.
+    public static final DeferredItem<SwordItem> SUNSTONE_SWORD = ITEMS.registerItem("sunstone_sword",
+            properties -> GearItems.sword(GearTier.SUNSTONE, properties.fireResistant()));
+    public static final DeferredItem<AxeItem> SUNSTONE_AXE = ITEMS.registerItem("sunstone_axe",
+            properties -> GearItems.axe(GearTier.SUNSTONE, properties.fireResistant()));
+    public static final DeferredItem<PickaxeItem> SUNSTONE_PICKAXE = ITEMS.registerItem("sunstone_pickaxe",
+            properties -> GearItems.pickaxe(GearTier.SUNSTONE, properties.fireResistant()));
+    public static final DeferredItem<ShovelItem> SUNSTONE_SHOVEL = ITEMS.registerItem("sunstone_shovel",
+            properties -> GearItems.shovel(GearTier.SUNSTONE, properties.fireResistant()));
+    public static final DeferredItem<HoeItem> SUNSTONE_HOE = ITEMS.registerItem("sunstone_hoe",
+            properties -> GearItems.hoe(GearTier.SUNSTONE, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> SUNSTONE_HELMET = ITEMS.registerItem("sunstone_helmet",
+            properties -> GearItems.armor(GearTier.SUNSTONE, ArmorItem.Type.HELMET, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> SUNSTONE_CHESTPLATE = ITEMS.registerItem("sunstone_chestplate",
+            properties -> GearItems.armor(GearTier.SUNSTONE, ArmorItem.Type.CHESTPLATE, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> SUNSTONE_LEGGINGS = ITEMS.registerItem("sunstone_leggings",
+            properties -> GearItems.armor(GearTier.SUNSTONE, ArmorItem.Type.LEGGINGS, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> SUNSTONE_BOOTS = ITEMS.registerItem("sunstone_boots",
+            properties -> GearItems.armor(GearTier.SUNSTONE, ArmorItem.Type.BOOTS, properties.fireResistant()));
+
     // Consumables against dehydration (phase 2 golf 2, §5.3–§5.4).
     /** Four sips per filling; filled at water, a water cauldron or a dew source. */
     public static final DeferredItem<CanteenItem> CANTEEN = ITEMS.registerItem("canteen", CanteenItem::new);

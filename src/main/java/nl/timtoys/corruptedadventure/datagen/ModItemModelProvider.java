@@ -375,6 +375,7 @@ final class ModItemModelProvider extends ItemModelProvider {
         netherRing4();
         ring5();
         tiers();
+        GearItemModels.build(this, existingFileHelper);
     }
 
     /** Phase 2 wave 1 (stream B): the upgrade smithing templates, flat items like vanilla's. */

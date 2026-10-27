@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "corruptedadventure:sunstone_ingot"
+  },
+  "base": {
+    "item": "minecraft:diamond_shovel"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:sunstone_shovel"
+  },
+  "template": {
+    "item": "corruptedadventure:sunstone_upgrade_smithing_template"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "corruptedadventure:scorched_sandstone"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "S": {
+      "item": "corruptedadventure:soul_crystal"
+    }
+  },
+  "pattern": [
+    "SDS",
+    "SCS",
+    "SDS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:sunstone_upgrade_smithing_template"
+  }
+}
