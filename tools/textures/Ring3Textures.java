@@ -84,9 +84,9 @@ public final class Ring3Textures {
     private static final int[] BERRY_TWIG = {0x1C1615, 0x2C221F};
     private static final int[] BERRY_UNRIPE = {0x5C3416, 0x864E22, 0xAE7438};
     private static final int[] BERRY_RIPE = {0x6E120A, 0xB0220E, 0xE24618, 0xFF9C5C};
-    // Ores (matte: volcanite, sulfur; glowing: fire ruby): outline → glint.
-    private static final int[] RAW_VOLCANITE = {0x261D29, 0x3A2E3E, 0x514256, 0x6E5A72, 0x9A6A86, 0xE2AEC2};
-    private static final int[] VOLCANITE = {0x120D14, 0x231A27, 0x362838, 0x4C3449, 0x66405A, 0x8A5370, 0xC88EA4};
+    // Ores (matte: volcanite, sulfur; glowing: fire ruby): outline → glint. Volcanite follows the gear palette of fase 2
+    // golf 3 (black basalt, ember-red shadow facet, orange glint; still no emissive).
+    private static final int[] VOLCANITE = {0x0A0809, 0x161214, 0x7A1C0C, 0x30282B, 0x40363A, 0x554A4D, 0xFF8A2C};
     private static final int[] SULFUR = {0x4A3A08, 0x7A6610, 0xAC961C, 0xD6BE30, 0xEDDA50, 0xF9EF8C, 0xFFFBD0};
     private static final int[] FIRE_RUBY = {0x24040A, 0x4E0A14, 0x82121E, 0xB81E2C, 0xE03A44, 0xFF7E6E, 0xFFD0C2};
     private static final int FIRE_RUBY_GLOW = 0xFFA090;
@@ -240,7 +240,7 @@ public final class Ring3Textures {
         still("block/volcanite_ore_overlay", Ring3Textures::volcaniteOreOverlay);
         still("block/sulfur_ore_overlay", Ring3Textures::sulfurOreOverlay);
         pulsing("block/fire_ruby_ore_overlay", FIRE_RUBY_GLOW, FIRE_RUBY_DIM, Ring3Textures::fireRubyOreOverlay);
-        still("item/raw_volcanite", Ring3Textures::rawVolcanite);
+        // item/raw_volcanite: final texture from Golf34VolcaniteTextures (fase 2 golf 3).
         still("item/sulfur", Ring3Textures::sulfurItem);
         pulsing("item/fire_ruby", FIRE_RUBY_GLOW, FIRE_RUBY_DIM, Ring3Textures::fireRubyItem);
         // Fire crystal (40b).
@@ -1579,50 +1579,6 @@ public final class Ring3Textures {
     }
 
     /**
-     * Raw volcanite: three angular nuggets of dark metal, back to front like vanilla's raw iron, each split into facets
-     * by the light from the top left (a purple-red sheen on the lit facets, a glint on the corner nearest the light), a
-     * dark seam where a front nugget overlaps a back one; selective outline.
-     */
-    private static void rawVolcanite(BufferedImage image, Random random) {
-        double[][] nuggets = {{10.2, 5.6, 3.4, 0.9, 1.1}, {5.6, 7.4, 4.2, 1.0, 0.85}, {9.4, 10.6, 3.6, 1.15, 0.9}};
-        for (double[] nugget : nuggets) {
-            nugget(image, nugget[0], nugget[1], nugget[2], nugget[3], nugget[4], RAW_VOLCANITE);
-        }
-        outlineSelective(image, VOLCANITE[1], VOLCANITE[0]);
-    }
-
-    /**
-     * One angular nugget centred on (cx, cy): an octagon (diamond and square blended) stretched by (sx, sy), with facet
-     * tones from {@code palette} [0..5] by the light from the top left, its lower right rim in the darkest tone (the seam
-     * against what lies behind it) and one glint on the lit corner.
-     */
-    private static void nugget(BufferedImage image, double cx, double cy, double radius, double sx, double sy, int[] palette) {
-        int glintX = -1;
-        int glintY = -1;
-        for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE; x++) {
-                double dx = (x + 0.5 - cx) / sx;
-                double dy = (y + 0.5 - cy) / sy;
-                double edge = Math.max(Math.abs(dx) + Math.abs(dy), 1.3 * Math.max(Math.abs(dx), Math.abs(dy))) / (1.3 * radius);
-                if (edge > 1) {
-                    continue;
-                }
-                double light = -(dx + dy) / radius;
-                int tone = light > 0.45 ? 4 : light > 0.0 ? 3 : light > -0.45 ? 2 : 1;
-                if (edge > 0.82 && dx + dy > 0) {
-                    tone = 0;
-                }
-                set(image, x, y, palette[tone]);
-                if (glintX < 0 || x + y < glintX + glintY) {
-                    glintX = x;
-                    glintY = y;
-                }
-            }
-        }
-        set(image, glintX + 1, glintY + 1, palette[5]);
-    }
-
-    /**
      * Sulfur: a crumbly lump of bright yellow crystal crust, lit from the top left, darker ochre in the lower right,
      * a few pale crystal points; selective outline in dark ochre.
      */
@@ -2916,7 +2872,7 @@ public final class Ring3Textures {
     private static final String[] NIGHT = {"block/smoldering_stone", "block/smoldering_ash", "block/ember_leaves",
             "block/glowing_fissure", "block/fire_crystal_block", "block/fire_crystal_cluster"};
 
-    private static final String[] SLOT_SPRITES = {"item/raw_volcanite", "item/sulfur", "item/fire_ruby", "item/fire_crystal",
+    private static final String[] SLOT_SPRITES = {"item/sulfur", "item/fire_ruby", "item/fire_crystal",
             "item/charred_door", "item/rimeshroom_door", "item/ice_stalactite", "block/fire_bloom", "block/ash_sprouts",
             "block/charred_shrub", "block/ember_berry_bush_stage3", "block/fire_crystal_cluster", "block/large_fire_crystal_bud",
             "block/medium_fire_crystal_bud", "block/small_fire_crystal_bud", "block/sulfur_crystal",

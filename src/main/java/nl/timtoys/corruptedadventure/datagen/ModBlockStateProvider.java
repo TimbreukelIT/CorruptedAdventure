@@ -90,8 +90,8 @@ final class ModBlockStateProvider extends BlockStateProvider {
     }
 
     /**
-     * Phase 2 golf 3 (stream R3; placeholder textures from {@code Golf3Ring3Textures}, stream T replaces them). The inlaid
-     * pumice like the inlaid sandstone (inlaid side, inlaid top on both ends); the raft a plate of 1.5 pixels, turned at
+     * Phase 2 golf 3 (stream R3; textures from {@code Golf34BlockTextures} and {@code Golf34ItemTextures}, stream T).
+     * The inlaid pumice like the inlaid sandstone (inlaid side, inlaid top on both ends); the raft a plate of 1.5 pixels, turned at
      * random like the lily pad.
      */
     private void golf3Ring3() {

@@ -29,7 +29,6 @@ public final class Golf1MaterialTextures {
     // Palettes dark to light (RGB), from the existing raw items and gems.
     private static final int[] SUNSTONE = {0x5A1A06, 0x9A300C, 0xD15515, 0xE77C26, 0xF3A851};
     private static final int[] TURQUOISE = {0x0E3B3A, 0x1C6B66, 0x2E9C92, 0x4FC6B5, 0x8FE6D6};
-    private static final int[] VOLCANITE = {0x120D14, 0x3A2E3E, 0x514256, 0x6E5A72, 0x9A6A86};
     private static final int[] TIDESILVER = {0x2C3E4C, 0x48606E, 0x6E8896, 0x96B2BC, 0xBCD8DC};
     private static final int[] NULLITE = {0x1A0E2A, 0x24143A, 0x301C4C, 0x42286A, 0x7444BC};
     private static final int[] FIRE_RUBY = {0x4E0A14, 0x82121E, 0xB21D2A, 0xD5353F, 0xF07164};
@@ -61,19 +60,16 @@ public final class Golf1MaterialTextures {
     }
 
     public static void main(String[] args) throws IOException {
-        // item/sunstone_ingot: final texture from Golf2SunstoneTextures (golf 2).
-        ingot("item/volcanite_ingot", VOLCANITE);
-        ingot("item/tidesilver_ingot", TIDESILVER);
+        // item/{sunstone,volcanite,tidesilver}_ingot, block/{raw_,}volcanite_block: final textures from
+        // Golf2SunstoneTextures and Golf34*Textures.
         ingot("item/nullite_ingot", NULLITE);
         gem("item/turquoise", TURQUOISE);
 
         rawBlock("block/raw_sunstone_block", SUNSTONE);
         rawBlock("block/raw_turquoise_block", TURQUOISE);
-        rawBlock("block/raw_volcanite_block", VOLCANITE);
         rawBlock("block/raw_tidesilver_block", TIDESILVER);
         rawBlock("block/raw_nullite_block", NULLITE);
         metalBlock("block/sunstone_block", SUNSTONE);
-        metalBlock("block/volcanite_block", VOLCANITE);
         metalBlock("block/tidesilver_block", TIDESILVER);
         metalBlock("block/nullite_block", NULLITE);
         gemBlock("block/turquoise_block", TURQUOISE);
