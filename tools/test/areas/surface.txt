@@ -1,0 +1,41 @@
+# Surface pass equivalence (opt/surface, 2026-10-27): every ring 2 and ring 3 biome, the zones 1->2, 2->3 and 3->4, a
+# sample of ring 4, zone 4->5 and ring 5 (the biome switches inside those branches) and Nether rings 1-5. For
+# world.sh --freeze on the old and the new code, then detcmp.py (README "Same terrain before and after a change").
+# Spots from g2-ring2.txt, det-g2-ring3.txt and perf-all.txt, trimmed; chunk coordinates, inclusive; seed 20260930,
+# default ring radii.
+# ring 2: canyonlands (floor, mesas, wall spring), oasis_flats, hoodoo_fields (field, scarp), salt_flats, dune_sea (high, low)
+canyon 119 18 127 26
+mesa 180 -64 188 -56
+spring 137 -66 145 -58
+oasis 53 -153 61 -145
+hoodoo 147 40 155 48
+hscarp 144 19 152 27
+salt -173 -102 -165 -94
+dunes -138 32 -130 40
+duneslow -157 30 -149 38
+# zones 1->2 and 2->3, east and north/south
+z12e 86 -4 100 4
+z12n -4 -100 4 -86
+z23e 211 -4 225 4
+z23s -4 211 4 225
+# ring 3: ashen_wastes, volcanic_peaks, dried_seabed, basalt_flows, ember_woods, sulfur_fields, titan_fields, dormant_caldera
+ash1 343 35 349 41
+peak2 236 70 242 76
+sea1 -251 50 -245 56
+bas1 303 -48 309 -42
+emb1 215 -142 221 -136
+sul1 -189 -287 -183 -281
+tit1 -212 149 -206 155
+dor1 -54 245 -50 249
+# zone 3->4 east (steam_fens, the verdant_falls descent)
+b34e 361 -4 389 4
+# ring 4 basin, zone 4->5, ring 5
+vfbasin -23 370 -16 377
+zone45 496 -4 503 3
+wastes 521 -4 528 3
+# Nether rings 1-5
+n1 -4 -4 3 3 nether
+n2 35 -4 42 3 nether
+n3e 70 -4 77 3 nether
+n4hollows 106 -4 113 3 nether
+halls 133 -4 140 3 nether

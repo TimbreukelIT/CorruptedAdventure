@@ -154,6 +154,8 @@ forceload takes at most 256 chunks, a bigger area like `tds` measures nothing).
 Ring 5 (golf 0, 81b): `ring5.txt` (zone 4→5 east/north, inner band east/north, across the band line east, outer band
 east/north, zone 5→void east, castle site #1; voidscan and det) and `castles.txt` (the four castle sites on seed 20260930
 with their belts, from `/ca castles`).
+`surface.txt` (opt/surface: every ring 2 and ring 3 biome, the zones 1→2, 2→3 and 3→4, a ring 4 basin, zone 4→5,
+ring 5 and Nether rings 1–5, ~2.400 chunks; `world.sh --freeze` on the old and the new code, then `detcmp.py`).
 `python tools/test/py/areas.py around <name> <x> <z> <r> [nether]` prints a line around a block position.
 
 ```bash
