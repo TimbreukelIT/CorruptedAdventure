@@ -245,6 +245,9 @@ public final class ServerConfig {
         public final ModConfigSpec.DoubleValue refugeFall;
         public final ModConfigSpec.DoubleValue outsideFall;
         public final ModConfigSpec.DoubleValue fireResistanceFactor;
+        public final ModConfigSpec.DoubleValue cooledFactor;
+        public final ModConfigSpec.DoubleValue dewDraughtAmount;
+        public final ModConfigSpec.IntValue dewDraughtCooledSeconds;
         public final ThresholdLevels thresholds;
         public final ModConfigSpec.IntValue effect1Amplifier;
         public final ModConfigSpec.IntValue effect2Amplifier;
@@ -281,6 +284,14 @@ public final class ServerConfig {
                     .defineInRange("outsideFall", 0.5, 0.0, 100.0);
             fireResistanceFactor = builder.comment("Factor on a rising heat rate while the player has fire resistance.")
                     .defineInRange("fireResistanceFactor", 0.5, 0.0, 1.0);
+            cooledFactor = builder.comment("While cooled (canteen, cactus juice, dew draught), a rising heat rate is multiplied",
+                            "by this (0.5: rises half as fast); a falling meter is left alone. The canteen and the cactus juice",
+                            "lower only dehydration, the dew draught only heat.")
+                    .defineInRange("cooledFactor", 0.5, 0.0, 1.0);
+            dewDraughtAmount = builder.comment("Points removed per dew draught drunk (phase 2 golf 3).")
+                    .defineInRange("dewDraughtAmount", 20.0, 0.0, 100.0);
+            dewDraughtCooledSeconds = builder.comment("Seconds of 'cooled' per dew draught.")
+                    .defineInRange("dewDraughtCooledSeconds", 45, 0, 3600);
             thresholds = ThresholdLevels.define(builder, "conditions.heat", new int[]{25, 50, 75, 100},
                     "Slowness from here.", "Weakness from here.", "Mining fatigue from here.",
                     "Burning from here: on fire and heat damage every second (own death message);"
@@ -307,6 +318,9 @@ public final class ServerConfig {
         public final ModConfigSpec.DoubleValue warmthFall;
         public final ModConfigSpec.DoubleValue outsideFall;
         public final ModConfigSpec.DoubleValue leatherReductionPerPiece;
+        public final ModConfigSpec.DoubleValue warmedFactor;
+        public final ModConfigSpec.DoubleValue handWarmerAmount;
+        public final ModConfigSpec.IntValue handWarmerWarmedSeconds;
         public final ThresholdLevels thresholds;
         public final ModConfigSpec.IntValue effect1Amplifier;
         public final ModConfigSpec.IntValue effect2Amplifier;
@@ -335,6 +349,13 @@ public final class ServerConfig {
                             "(item tag minecraft:freeze_immune_wearables); 0.15: full leather 60 %. At most 0.2 (full leather",
                             "80 %), so leather never makes immune.")
                     .defineInRange("leatherReductionPerPiece", 0.15, 0.0, 0.2);
+            warmedFactor = builder.comment("While warmed (hand warmer), a rising cold rate is multiplied by this (0.5: rises",
+                            "half as fast); a falling meter is left alone.")
+                    .defineInRange("warmedFactor", 0.5, 0.0, 1.0);
+            handWarmerAmount = builder.comment("Points removed per hand warmer charge used (phase 2 golf 4; 4 charges).")
+                    .defineInRange("handWarmerAmount", 20.0, 0.0, 100.0);
+            handWarmerWarmedSeconds = builder.comment("Seconds of 'warmed' per hand warmer charge.")
+                    .defineInRange("handWarmerWarmedSeconds", 45, 0, 3600);
             thresholds = ThresholdLevels.define(builder, "conditions.cold", new int[]{33, 66, 100},
                     "Slowness from here.", "Mining fatigue from here.",
                     "Freezing from here: vanilla frost (overlay, frozen hearts, powder snow slowness) and cold damage"
@@ -364,6 +385,9 @@ public final class ServerConfig {
         public final ModConfigSpec.DoubleValue outsideFall;
         public final ModConfigSpec.DoubleValue milkAmount;
         public final ModConfigSpec.DoubleValue honeyAmount;
+        public final ModConfigSpec.DoubleValue purifiedWaterAmount;
+        public final ModConfigSpec.IntValue purifiedWaterCleansedSeconds;
+        public final ModConfigSpec.DoubleValue cleansedFactor;
         public final ThresholdLevels thresholds;
         public final ModConfigSpec.IntValue effect1Amplifier;
         public final ModConfigSpec.IntValue effect2Amplifier;
@@ -396,6 +420,13 @@ public final class ServerConfig {
                     .defineInRange("milkAmount", 40.0, 0.0, 100.0);
             honeyAmount = builder.comment("Points removed per honey bottle drunk (anywhere, no cooldown).")
                     .defineInRange("honeyAmount", 20.0, 0.0, 100.0);
+            purifiedWaterAmount = builder.comment("Points removed per purified water drunk (phase 2 golf 4).")
+                    .defineInRange("purifiedWaterAmount", 20.0, 0.0, 100.0);
+            purifiedWaterCleansedSeconds = builder.comment("Seconds of 'cleansed' per purified water.")
+                    .defineInRange("purifiedWaterCleansedSeconds", 45, 0, 3600);
+            cleansedFactor = builder.comment("While cleansed (purified water), a rising poison rate is multiplied by this (0.5:",
+                            "rises half as fast); a falling meter is left alone.")
+                    .defineInRange("cleansedFactor", 0.5, 0.0, 1.0);
             thresholds = ThresholdLevels.define(builder, "conditions.poison", new int[]{30, 60, 90},
                     "Nausea from here.", "Vanilla poison from here (never kills: it stops at 1 health).",
                     "Wither from here: black hearts and poison damage every damageInterval seconds (own death message);"
