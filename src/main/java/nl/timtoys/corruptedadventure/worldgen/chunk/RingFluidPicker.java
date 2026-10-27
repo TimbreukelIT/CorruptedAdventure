@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.worldgen.chunk;
 
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -304,13 +305,94 @@ public final class RingFluidPicker implements Aquifer.FluidPicker {
     }
 
     /**
-     * This picker for one noise chunk (vf-perf2): the same answers, but the ring lookup per open block goes to the
-     * thread's {@link RingColumnCache} without a {@code ThreadLocal.get} (slow in the worldgen threads). A noise chunk
-     * is used by one thread at a time; a shared picker stays this one.
+     * This picker for one noise chunk (vf-perf2): the same answers, but the ring lookup goes to the thread's
+     * {@link RingColumnCache} without a {@code ThreadLocal.get} (slow in the worldgen threads), and the answers of the
+     * chunk's own columns are kept (opt/aquifer, {@link ChunkPicker}). Not thread-safe: a noise chunk is used by one thread
+     * at a time (as {@link RingAquifer} assumes); a shared picker stays this one.
      */
-    public Aquifer.FluidPicker forNoiseChunk() {
+    public ChunkPicker forNoiseChunk(ChunkPos chunk) {
         ThreadOwned<RingColumnCache> columns = new ThreadOwned<>(RingColumnCache::forThread);
-        return (x, y, z) -> computeFluid(columns.get().at(dimension, x, z), x, y, z);
+        return new ChunkPicker((x, z) -> columns.get().at(dimension, x, z), chunk.getMinBlockX(), chunk.getMinBlockZ());
+    }
+
+    /** The same with the ring of a column given, for tests. */
+    ChunkPicker forNoiseChunk(RingAquifer.RingLookup rings, ChunkPos chunk) {
+        return new ChunkPicker(rings, chunk.getMinBlockX(), chunk.getMinBlockZ());
+    }
+
+    /**
+     * {@link #computeFluid} of one noise chunk, per column (opt/aquifer): a column's answer is one status below
+     * {@link #LAVA_LAYER_TOP} and one from it up, so a call only looks up its column and picks one of the two, without a
+     * branch on the column's ring (the rules per ring, asked per open block and per aquifer cell, deoptimized there
+     * over and over late in a session: 2026-10-26). Exact: every rule of {@link #computeFluid} is constant in y on both
+     * sides of {@code LAVA_LAYER_TOP}, and so is vanilla's picker ({@code NoiseBasedChunkGenerator.createFluidPicker}:
+     * lava below {@code min(−54, sea level)}, the sea from it up; the overworld's sea level is 63, the Nether's 32).
+     * <p>
+     * Kept for the chunk's own columns only, each half on its first use (the Nether never asks below −54). The aquifer
+     * asks for them per open block; its cells ask for columns around the chunk too (their own spot and their surface
+     * samples, whole chunks away), each about once: those are answered as before, without a table they would only push
+     * the chunk's own columns out of.
+     */
+    public final class ChunkPicker implements Aquifer.FluidPicker {
+        private final RingAquifer.RingLookup rings;
+        private final int minX;
+        private final int minZ;
+        private final RingPosition[] positions = new RingPosition[16 * 16];
+        // Per column: [2i] the status from the lava layer's top up, [2i + 1] the one below it; null: not asked yet.
+        private final Aquifer.FluidStatus[] statuses = new Aquifer.FluidStatus[2 * positions.length];
+
+        private ChunkPicker(RingAquifer.RingLookup rings, int minX, int minZ) {
+            this.rings = rings;
+            this.minX = minX;
+            this.minZ = minZ;
+        }
+
+        @Override
+        public Aquifer.FluidStatus computeFluid(int x, int y, int z) {
+            int lx = x - minX;
+            int lz = z - minZ;
+            if (((lx | lz) & ~15) != 0) {
+                return RingFluidPicker.this.computeFluid(rings.at(x, z), x, y, z);
+            }
+            // (y − LAVA_LAYER_TOP) >>> 31: 1 below the lava layer's top, else 0.
+            return status(lx | lz << 4, x, z, (y - LAVA_LAYER_TOP) >>> 31);
+        }
+
+        /**
+         * The lowest Y from which this picker's status is not lava at any Y up in the column ({@code at(y)}: vanilla's
+         * aquifer places lava there before it looks at its cells).
+         */
+        int lavaFreeFrom(int x, int z) {
+            Aquifer.FluidStatus above = status(x, z, false);
+            Aquifer.FluidStatus below = status(x, z, true);
+            // Below the top: lava under its level; from the top up: lava from the top to its level.
+            int from = below.fluidType.is(Blocks.LAVA) ? Math.min(LAVA_LAYER_TOP, below.fluidLevel) : Integer.MIN_VALUE;
+            return above.fluidType.is(Blocks.LAVA) ? Math.max(from, above.fluidLevel) : from;
+        }
+
+        /** The column's status below the lava layer's top ({@code below}) or from it up, for the aquifer's profile. */
+        Aquifer.FluidStatus status(int x, int z, boolean below) {
+            int lx = x - minX;
+            int lz = z - minZ;
+            if (((lx | lz) & ~15) != 0) {
+                return RingFluidPicker.this.computeFluid(rings.at(x, z), x, below ? LAVA_LAYER_TOP - 1 : LAVA_LAYER_TOP, z);
+            }
+            return status(lx | lz << 4, x, z, below ? 1 : 0);
+        }
+
+        private Aquifer.FluidStatus status(int i, int x, int z, int below) {
+            Aquifer.FluidStatus status = statuses[2 * i + below];
+            if (status == null) {
+                RingPosition position = positions[i];
+                if (position == null) {
+                    position = rings.at(x, z);
+                    positions[i] = position;
+                }
+                status = RingFluidPicker.this.computeFluid(position, x, LAVA_LAYER_TOP - below, z);
+                statuses[2 * i + below] = status;
+            }
+            return status;
+        }
     }
 
     Aquifer.FluidStatus computeFluid(RingPosition position, int x, int y, int z) {

@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.worldgen.chunk;
 
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Aquifer;
@@ -333,5 +334,70 @@ class RingFluidPickerTest {
         assertTrue(RingFluidPicker.ring3LavaColumn(Level.OVERWORLD, RingPosition.within(Ring.RING_3), volcanic));
         assertTrue(RingFluidPicker.ring4WaterColumn(Level.OVERWORLD, RingPosition.within(Ring.RING_4), islands));
         assertFalse(RingFluidPicker.ring4WaterColumn(Level.OVERWORLD, RingPosition.within(Ring.RING_3), islands));
+    }
+
+    /**
+     * opt/aquifer: the noise chunk's picker answers per column what {@link RingFluidPicker#computeFluid} answers per
+     * block, over every ring and zone, both dimensions and the whole height, inside the chunk and around it, and knows
+     * where its lava ends; in the Nether it never works out a status below −54.
+     */
+    @Test
+    void theNoiseChunksPickerAnswersPerColumnAsPerBlock() {
+        Aquifer.FluidStatus lava = new Aquifer.FluidStatus(-54, Blocks.LAVA.defaultBlockState());
+        Aquifer.FluidStatus netherSea = new Aquifer.FluidStatus(32, Blocks.LAVA.defaultBlockState());
+        RingFluidPicker.Ring5Bands bands = new RingFluidPicker.Ring5Bands() {
+            @Override
+            public double signedDistance(int x, int z) {
+                return Math.floorMod(x * 7 + z * 3, 160) - 80.0;
+            }
+
+            @Override
+            public double crackDistance(int x, int z) {
+                return Math.floorMod(x + z * 5, 16) - 1.0;
+            }
+        };
+        RingPosition[] positions = {RingPosition.within(Ring.RING_1), RingPosition.within(Ring.RING_2), RingPosition.within(Ring.RING_3),
+                RingPosition.within(Ring.RING_4), RingPosition.within(Ring.RING_5), RingPosition.within(Ring.VOID),
+                new RingPosition(Ring.RING_2, Ring.RING_3, 0.6), new RingPosition(Ring.RING_3, Ring.RING_4, 0.3),
+                new RingPosition(Ring.RING_4, Ring.RING_5, 0.2), new RingPosition(Ring.RING_4, Ring.RING_5, 0.8),
+                new RingPosition(Ring.RING_5, Ring.VOID, 0.3)};
+        RingAquifer.RingLookup rings = (x, z) -> positions[Math.floorMod(x * 31 + z * 17, positions.length)];
+        RingFluidPicker overworld = new RingFluidPicker(Level.OVERWORLD, (x, y, z) -> y < -54 ? lava : SEA, Map.of(Ring.RING_3, -1), bands);
+        int[] netherBelow = new int[1];
+        RingFluidPicker nether = new RingFluidPicker(Level.NETHER, (x, y, z) -> {
+            netherBelow[0] += y < -54 ? 1 : 0;
+            return y < -54 ? lava : netherSea;
+        }, Map.of(Ring.RING_2, 22, Ring.RING_3, 22), bands);
+        // The Nether's own columns: its blocks never reach below −54, nor does the picker.
+        RingFluidPicker.ChunkPicker netherColumns = nether.forNoiseChunk(rings, new ChunkPos(1, -1));
+        for (int x = 16; x < 32; x++) {
+            for (int z = -16; z < 0; z++) {
+                for (int y = 0; y < 128; y += 7) {
+                    netherColumns.computeFluid(x, y, z);
+                }
+            }
+        }
+        assertEquals(0, netherBelow[0], "statuses below −54 in the Nether");
+        for (RingFluidPicker picker : new RingFluidPicker[]{overworld, nether}) {
+            // The chunk's own columns from the table, the others (aquifer cells round the chunk) asked as they come.
+            RingFluidPicker.ChunkPicker columns = picker.forNoiseChunk(rings, new ChunkPos(0, -1));
+            for (int x = -40; x < 40; x += 3) {
+                for (int z = -40; z < 40; z += 5) {
+                    RingPosition position = rings.at(x, z);
+                    int lavaFree = Integer.MIN_VALUE;
+                    for (int y = -64; y < 320; y++) {
+                        Aquifer.FluidStatus expected = picker.computeFluid(position, x, y, z);
+                        Aquifer.FluidStatus actual = columns.computeFluid(x, y, z);
+                        assertEquals(expected.fluidLevel, actual.fluidLevel, x + " " + y + " " + z);
+                        assertSame(expected.fluidType, actual.fluidType, x + " " + y + " " + z);
+                        if (expected.at(y).is(Blocks.LAVA)) {
+                            lavaFree = y + 1;
+                        }
+                    }
+                    assertTrue(columns.lavaFreeFrom(x, z) >= lavaFree, x + " " + z + ": " + columns.lavaFreeFrom(x, z) + " < " + lavaFree);
+                    assertTrue(columns.lavaFreeFrom(x, z) <= Math.max(lavaFree, -54), x + " " + z);
+                }
+            }
+        }
     }
 }
