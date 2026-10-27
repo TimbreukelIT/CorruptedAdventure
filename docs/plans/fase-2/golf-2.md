@@ -16,7 +16,7 @@ Regels voor agents: `build/agent-rules-fase2.md` (lokaal, niet in git).
 - **Hand-gemodelleerde blokken:** het blokmodel van `salt_lamp` staat handgeschreven in `src/main/resources/assets/corruptedadventure/models/block/salt_lamp.json` (M: placeholder `cube_all`; T: het Blockbench-model). Datagen maakt de blockstate en het itemmodel, maar **niet** dat blokmodel.
 - **Veldfles-model:** V maakt het itemmodel met overrides op een item-property voor de slokken (de client registreert de property in `client/`). Texturenamen: `canteen_empty`, `canteen` (gevuld; eventueel stappen `canteen_1..4` als V dat zo bouwt; V noemt de namen in zijn plan, T volgt).
 - **Datagen:** elke stroom eigen helperklassen (lang, modellen, recepten, tags), zoals in golf 1. In gedeelde providers alleen een aanroep toevoegen.
-- **Registry:** nieuwe items achteraan in de ring 2-sectie (S, V, M) van `ModItems`/`ModBlocks`, of in de Nether-1-sectie voor `soul_crystal_block` (tab 2 = ring 2 + Nether-1). Main lost botsingen bij de merge op.
+- **Registry:** nieuwe items achteraan in de ring 2-sectie (S, V, M) van `ModItems`/`ModBlocks`, of in de Nether-1-sectie voor `soul_crystal_block` (§4.1: Nether-ring 1 hoort in tab 1). Main lost botsingen bij de merge op.
 - **Recepten** die in §5 niet tot op het vak vastliggen (vorm van de veldfles, ingelegd zandsteen, zoutlamp, zielkristalblok, cactussap, jerky): de stroom kiest een vanilla-achtige vorm en zet hem onder **"Voorlopig (bevestigen bij de teststop)"** in zijn plan.
 
 ## Merge-volgorde
