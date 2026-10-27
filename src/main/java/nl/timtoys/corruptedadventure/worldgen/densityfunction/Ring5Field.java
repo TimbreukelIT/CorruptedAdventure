@@ -36,7 +36,8 @@ import java.util.function.Supplier;
  * into the void and the corrupt spots (83b, {@link Ring5CorruptSpots}): shifted chunks and a chunk fallen into the void.
  * <p>
  * The terrain is exact per block (no interpolation): a column's ground is a 2D top and underside, plus the exact spans of
- * the bridges, ridges and chunks over it, so walls, deck edges and cracks lie on the block.
+ * the bridges, ridges and chunks over it, so walls, deck edges and cracks lie on the block. The per-block outputs read a
+ * profile of the column (one byte per block, painted from those intervals on its first per-block query; {@link #profiled}).
  * <p>
  * The castle sites come from the world seed (the hash noise {@code ring_5_cells}) and exist on the server only: a client
  * has the layout's noise seed, not the world seed, and cannot derive them. Found through the router
@@ -108,6 +109,23 @@ public final class Ring5Field implements DensityFunction {
     public static final int HOLE_RIM_DEPTH = Ring5Caves.RIM_DEPTH;
     /** The outer band's void caves (93, V93-8 A) lie at most this far beyond the band line (its signed distance). */
     static final double OUTER_CAVE_REACH = 300.0;
+    /**
+     * The heights of a column's profile ({@link #profiled}): the overworld noise settings' {@code min_y} and {@code
+     * height}, every block the noise chunk asks for (a test holds them to the JSON). A block outside them (never in
+     * worldgen) gets its entry on its own.
+     */
+    static final int PROFILE_MIN_Y = -64;
+    static final int PROFILE_HEIGHT = 384;
+    // A profile entry, one byte per block: the terrain's clamp (bit 0: the lower bound +1 instead of −1, bit 1: the upper
+    // bound +1 instead of −1), the own caves' kind (bits 2–4), where vanilla's caves may cut (bits 5–6).
+    private static final int OPEN = 0b00;
+    private static final int FREE = 0b10;
+    private static final int SOLID = 0b11;
+    private static final int TERRAIN_BITS = 0b11;
+    private static final int KIND_SHIFT = 2;
+    private static final int KIND_BITS = 0b111 << KIND_SHIFT;
+    private static final int ZONE_SHIFT = 5;
+    private static final int ZONE_BITS = 0b11 << ZONE_SHIFT;
 
     private static final int FLOE_SALT = 8401;
     private static final int CRATER_SALT = 8402;
@@ -355,39 +373,153 @@ public final class Ring5Field implements DensityFunction {
 
     /**
      * The terrain's density at a block, exact: inside an exact span 1; in one of the own caves (93) or a void column −1;
-     * else 1/8 per block away from the column's top and underside, held to ±1 (smooth enough for the ring blend of the
-     * zones 4→5 and 5→void).
+     * in a glitch field's shifted layers (83) 1 or −1; else 1/8 per block away from the column's top and underside, held
+     * to ±1 (smooth enough for the ring blend of the zones 4→5 and 5→void). The column's profile gives the clamp's
+     * bounds: ±1 for the formula, both 1 or both −1 where the block is decided.
      */
     public double terrain(int x, int y, int z) {
+        return terrain(profiled(x, z), x, y, z);
+    }
+
+    /** {@link #terrain} from a profiled column ({@link #buildProfile}; the test gives columns of its own). */
+    double terrain(Column column, int x, int y, int z) {
+        double top = column.formulaTop;
+        double bottom = column.formulaBottom;
+        int entry = entry(column, x, y, z);
+        // Under full ground (underside −∞) the underside's term is +∞: the top's term stays.
+        double density = Math.min(DENSITY_PER_BLOCK * (top - y), DENSITY_PER_BLOCK * (y - bottom));
+        return Mth.clamp(density, (entry & 1) * 2.0 - 1.0, (entry >> 1 & 1) * 2.0 - 1.0);
+    }
+
+    // ---------------------------------------------------------------- the per-block profile
+
+    /**
+     * The column at x, z with its profile, built on the column's first per-block query: one entry per block of the
+     * world's height, so {@link #terrain}, {@link #caveCode} and {@link #caveZone} read an entry and do arithmetic
+     * without a branch per block. Their old tests (in a span, a cave, void, the layers?) went one way in one
+     * region and the other way in the next; a branch the JIT never saw taken compiles to a trap, and late in a session
+     * such a trap deoptimizes without recompiling, on every block where it is taken. This check goes the same way
+     * (once per column) everywhere.
+     */
+    private Column profiled(int x, int z) {
         Column column = column(x, z);
-        for (int k = 0; k < column.spans; k++) {
-            if (y >= column.spanBottom[k] && y < column.spanTop[k]) {
-                return 1.0;
+        return column.profiled ? column : buildProfile(column, x, z);
+    }
+
+    /** The entry of a block of a profiled column; outside the profile's heights painted on its own. */
+    private int entry(Column column, int x, int y, int z) {
+        int i = y - PROFILE_MIN_Y;
+        return i >= 0 && i < PROFILE_HEIGHT ? column.profile[i] : entryOutside(x, y, z);
+    }
+
+    private int entryOutside(int x, int y, int z) {
+        Column column = column(x, z);
+        byte[] entry = column.outside;
+        paint(column, x, z, y, entry);
+        return entry[0];
+    }
+
+    /**
+     * Paints the column's profile. The glitch fields' layers read columns a few blocks over, which may move the thread's
+     * window and refill {@code column} for another place (it counts its fills): the finished profile then goes into the
+     * column that holds x, z now (a test's own column, outside the table, is never refilled).
+     */
+    Column buildProfile(Column column, int x, int z) {
+        int generation = column.generation;
+        // A void column's every block has bounds of its own (both 1 or both −1): the formula only has to be a number.
+        boolean open = column.isVoid();
+        double top = open ? 0.0 : column.top;
+        double bottom = open ? Double.NEGATIVE_INFINITY : column.bottom;
+        byte[] profile = column.profile();
+        paint(column, x, z, PROFILE_MIN_Y, profile);
+        if (column.generation != generation) {
+            column = column(x, z);
+            System.arraycopy(profile, 0, column.profile(), 0, PROFILE_HEIGHT);
+        }
+        column.formulaTop = top;
+        column.formulaBottom = bottom;
+        column.profiled = true;
+        return column;
+    }
+
+    /**
+     * Paints the entries of the column's blocks from {@code baseY} up ({@code out.length} of them): its intervals from the
+     * lowest precedence to the highest, then the glitch fields' layers where nothing else decides the terrain. Reads all
+     * of the column before the layers read other columns (which may refill it).
+     */
+    private void paint(Column c, int x, int z, int baseY, byte[] out) {
+        int n = out.length;
+        boolean open = c.isVoid();
+        // Vanilla's caves (93): none in a void or closed column; else the entrances, and the noise caves from NATURAL_COVER
+        // over the underside to NATURAL_COVER under the top (in a glitch field: under its layers, none in them).
+        boolean closed = open || c.closure >= CAVES_CLOSED;
+        paintRange(out, 0, n, 0, (open ? OPEN : FREE) | (closed ? 0 : 1) << ZONE_SHIFT);
+        if (!closed) {
+            double top = c.layered ? c.top - Ring5Inner.LAYER_DEPTH : c.top;
+            paintRange(out, indexAbove(c.bottom + NATURAL_COVER, baseY, n), indexAbove(top - NATURAL_COVER, baseY, n),
+                    ~ZONE_BITS, 2 << ZONE_SHIFT);
+            if (c.layered) {
+                paintRange(out, indexAbove(top, baseY, n), n, ~ZONE_BITS, 0);
             }
         }
-        for (int k = 0; k < column.caves; k++) {
-            if (y >= column.caveBottom[k] && y < column.caveTop[k]) {
-                return -1.0;
-            }
+        paintRange(out, index((long) c.rimTop - Ring5Caves.RIM_DEPTH, baseY, n), index(c.rimTop, baseY, n), ~KIND_BITS,
+                Ring5Caves.Kind.RIM.code() << KIND_SHIFT);
+        // The first cave holding a block gives its kind: painted last.
+        for (int k = c.caves - 1; k >= 0; k--) {
+            paintRange(out, index(c.caveBottom[k], baseY, n), index(c.caveTop[k], baseY, n), ZONE_BITS,
+                    OPEN | c.caveKind[k] << KIND_SHIFT);
         }
-        if (column.isVoid()) {
-            return -1.0;
+        for (int k = 0; k < c.spans; k++) {
+            paintRange(out, index(c.spanBottom[k], baseY, n), index(c.spanTop[k], baseY, n), KIND_BITS, SOLID);
         }
-        if (column.layered && y >= column.top - Ring5Inner.LAYER_DEPTH && y < column.top + Ring5Inner.LAYER_DEPTH) {
-            // The glitch fields' layers (83): each slice is the ground of a column a few blocks over. In a doppelganger's
-            // copy (93) the shift is the source's, mirrored.
-            Ring5Copies.Pair copy = column.copy;
-            int[] shift = copy == null ? inner().layerShift(x, y, z) : inner().layerShift(column.sourceX, y, column.sourceZ);
-            int dx = copy != null && copy.alongX() ? -shift[0] : shift[0];
-            int dz = copy != null && !copy.alongX() ? -shift[1] : shift[1];
-            Column other = column(x + dx, z + dz);
-            return y < (other.isVoid() ? other.height : other.top) ? 1.0 : -1.0;
+        if (c.layered && !open) {
+            paintLayers(c, x, z, baseY, out);
         }
-        double density = DENSITY_PER_BLOCK * (column.top - y);
-        if (column.bottom != Double.NEGATIVE_INFINITY) {
-            density = Math.min(density, DENSITY_PER_BLOCK * (y - column.bottom));
+    }
+
+    /**
+     * The glitch fields' layers (83), {@link Ring5Inner#LAYER_DEPTH} round the top: each slice is the ground of a column a
+     * few blocks over; in a doppelganger's copy (93) the shift is the source's, mirrored. Not where a span or a cave
+     * decides the block.
+     */
+    private void paintLayers(Column c, int x, int z, int baseY, byte[] out) {
+        int n = out.length;
+        Ring5Copies.Pair copy = c.copy;
+        int sx = copy == null ? x : c.sourceX;
+        int sz = copy == null ? z : c.sourceZ;
+        int flipX = copy != null && copy.alongX() ? -1 : 1;
+        int flipZ = copy != null && !copy.alongX() ? -1 : 1;
+        int from = indexAbove(c.top - Ring5Inner.LAYER_DEPTH, baseY, n);
+        int to = indexAbove(c.top + Ring5Inner.LAYER_DEPTH, baseY, n);
+        Ring5Inner inner = inner();
+        for (int i = from; i < to; i++) {
+            int y = baseY + i;
+            int[] shift = inner.layerShift(sx, y, sz);
+            // The ground the slice copies: a solid column's height is its top, a void one's the ground it lost.
+            double ground = column(x + flipX * shift[0], z + flipZ * shift[1]).height;
+            int solid = (int) Math.max(0L, Math.min(1L, (long) Math.ceil(ground) - y));
+            // A free entry takes the slice's bounds (solid: both 1, else both −1); a decided one keeps its own.
+            int low = out[i] & 1;
+            int high = out[i] >> 1 & 1;
+            out[i] = (byte) (out[i] & ~TERRAIN_BITS | low | high & solid | (high & (low | solid)) << 1);
         }
-        return Mth.clamp(density, -1.0, 1.0);
+    }
+
+    /** Sets {@code bits} in the entries {@code from} .. {@code to − 1}, keeping their bits in {@code keep}. */
+    private static void paintRange(byte[] out, int from, int to, int keep, int bits) {
+        for (int i = from; i < to; i++) {
+            out[i] = (byte) (out[i] & keep | bits);
+        }
+    }
+
+    /** The entry of the whole height y, held to 0 .. n. */
+    private static int index(long y, int baseY, int n) {
+        return (int) Math.max(0L, Math.min(n, y - baseY));
+    }
+
+    /** The first entry at or above y (a whole height h holds h ≥ y from ⌈y⌉ on, h < y below it), held to 0 .. n. */
+    private static int indexAbove(double y, int baseY, int n) {
+        return (int) Math.max(0.0, Math.min(n, Math.ceil(y) - baseY));
     }
 
     // ---------------------------------------------------------------- columns
@@ -955,19 +1087,19 @@ public final class Ring5Field implements DensityFunction {
 
     /** The code of ring 5's own caves at a block (93, {@link Ring5Caves.Kind}): the DF {@code ring_5/overworld/caves}. */
     public int caveCode(int x, int y, int z) {
-        Column column = column(x, z);
-        for (int k = 0; k < column.caves; k++) {
-            if (y >= column.caveBottom[k] && y < column.caveTop[k]) {
-                return column.caveKind[k];
-            }
-        }
-        if (column.rimTop != Integer.MIN_VALUE && y >= column.rimTop - Ring5Caves.RIM_DEPTH && y < column.rimTop) {
-            return Ring5Caves.Kind.RIM.code();
-        }
-        return Ring5Caves.Kind.NONE.code();
+        return caveCode(profiled(x, z), x, y, z);
     }
 
-    /** Whether a block lies in one of ring 5's own caves (93: a net's corridor or shaft, a void cave, a hole). */
+    /** {@link #caveCode} from a profiled column, like {@link #terrain(Column, int, int, int)}. */
+    int caveCode(Column column, int x, int y, int z) {
+        return (entry(column, x, y, z) & KIND_BITS) >> KIND_SHIFT;
+    }
+
+    /**
+     * Whether a block lies in one of ring 5's own caves (93: a net's corridor or shaft, a void cave, a hole). Not a
+     * per-block output of the noise chunk (the dressing asks a block or two of a column): straight from the column's
+     * caves, without its profile.
+     */
     public boolean ownCave(int x, int y, int z) {
         Column column = column(x, z);
         for (int k = 0; k < column.caves; k++) {
@@ -1003,23 +1135,12 @@ public final class Ring5Field implements DensityFunction {
      * ring_5/overworld/cave_zone}.
      */
     public int caveZone(int x, int y, int z) {
-        Column column = column(x, z);
-        if (column.isVoid() || column.closure >= CAVES_CLOSED) {
-            return 0;
-        }
-        for (int k = 0; k < column.spans; k++) {
-            if (y >= column.spanBottom[k] && y < column.spanTop[k]) {
-                return 0;
-            }
-        }
-        double top = column.top;
-        if (column.layered) {
-            top -= Ring5Inner.LAYER_DEPTH;
-            if (y >= top) {
-                return 0;
-            }
-        }
-        return y < top - NATURAL_COVER && y >= column.bottom + NATURAL_COVER ? 2 : 1;
+        return caveZone(profiled(x, z), x, y, z);
+    }
+
+    /** {@link #caveZone} from a profiled column, like {@link #terrain(Column, int, int, int)}. */
+    int caveZone(Column column, int x, int y, int z) {
+        return (entry(column, x, y, z) & ZONE_BITS) >> ZONE_SHIFT;
     }
 
     /** The own caves' shapes (93), made once per world. */
@@ -1966,8 +2087,27 @@ public final class Ring5Field implements DensityFunction {
         Ring5Copies.Pair copy;
         int sourceX;
         int sourceZ;
+        /** The per-block profile ({@link #profiled}): an entry per block from {@link #PROFILE_MIN_Y}, made once per object. */
+        private byte[] profile;
+        /** Whether {@link #profile} and the formula's top and underside (void: 0 and −∞) are this fill's. */
+        boolean profiled;
+        double formulaTop;
+        double formulaBottom;
+        /** Counts the fills: a profile painted while it changed belongs to another column. */
+        int generation;
+        /** Scratch for a block outside the profile's heights ({@link #entryOutside}): no allocation per block. */
+        final byte[] outside = new byte[1];
+
+        byte[] profile() {
+            if (profile == null) {
+                profile = new byte[PROFILE_HEIGHT];
+            }
+            return profile;
+        }
 
         void reset() {
+            profiled = false;
+            generation++;
             crack = Double.POSITIVE_INFINITY;
             caves = 0;
             rimTop = Integer.MIN_VALUE;
