@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "corruptedadventure:block/jade_inlaid_tidestone_top",
+    "side": "corruptedadventure:block/jade_inlaid_tidestone",
+    "top": "corruptedadventure:block/jade_inlaid_tidestone_top"
+  }
+}

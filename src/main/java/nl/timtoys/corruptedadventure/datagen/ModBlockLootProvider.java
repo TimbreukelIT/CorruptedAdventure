@@ -158,6 +158,19 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         ring5();
         golf1Materials();
         golf2Materials();
+        golf4Materials();
+    }
+
+    /** Phase 2 golf 4 (stream R4): the inlaid sets drop themselves (not cobbled tidestone), a double slab two. */
+    private void golf4Materials() {
+        dropSelf(ModBlocks.JADE_INLAID_TIDESTONE.get());
+        dropSelf(ModBlocks.JADE_INLAID_TIDESTONE_STAIRS.get());
+        add(ModBlocks.JADE_INLAID_TIDESTONE_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.JADE_INLAID_TIDESTONE_WALL.get());
+        dropSelf(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE.get());
+        dropSelf(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_STAIRS.get());
+        add(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_WALL.get());
     }
 
     /** Phase 2 golf 2 (stream M): every block drops itself (the amethyst block too), a double slab two. */

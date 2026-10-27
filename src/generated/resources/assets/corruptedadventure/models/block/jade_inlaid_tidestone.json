@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "corruptedadventure:block/jade_inlaid_tidestone_top",
+    "side": "corruptedadventure:block/jade_inlaid_tidestone"
+  }
+}

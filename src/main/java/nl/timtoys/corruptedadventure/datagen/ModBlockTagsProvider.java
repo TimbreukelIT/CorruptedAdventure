@@ -68,6 +68,28 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         ring5();
         golf1Materials();
         golf2Materials();
+        golf4Materials();
+    }
+
+    /**
+     * Phase 2 golf 4 (stream R4): with a pickaxe and no tier, like their bases; the inlaid lagoon sandstone is sandstone
+     * in the {@code c:} tags, like the turquoise inlaid sandstone. Neither is natural rock, so no carver or ring tags.
+     */
+    private void golf4Materials() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.JADE_INLAID_TIDESTONE.get(),
+                ModBlocks.JADE_INLAID_TIDESTONE_STAIRS.get(), ModBlocks.JADE_INLAID_TIDESTONE_SLAB.get(),
+                ModBlocks.JADE_INLAID_TIDESTONE_WALL.get(), ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE.get(),
+                ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_STAIRS.get(), ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_SLAB.get(),
+                ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_WALL.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.JADE_INLAID_TIDESTONE_STAIRS.get(),
+                ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.JADE_INLAID_TIDESTONE_SLAB.get(),
+                ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.JADE_INLAID_TIDESTONE_WALL.get(),
+                ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_WALL.get());
+        tag(Tags.Blocks.SANDSTONE_BLOCKS).add(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE.get());
+        tag(Tags.Blocks.SANDSTONE_SLABS).add(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_SLAB.get());
+        tag(Tags.Blocks.SANDSTONE_STAIRS).add(ModBlocks.AQUAMARINE_INLAID_LAGOON_SANDSTONE_STAIRS.get());
     }
 
     /**
