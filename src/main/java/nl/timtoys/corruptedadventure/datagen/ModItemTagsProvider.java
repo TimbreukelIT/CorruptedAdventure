@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.tags.ArrowItemTags;
 import nl.timtoys.corruptedadventure.datagen.tags.ConsumableItemTags;
 import nl.timtoys.corruptedadventure.datagen.tags.GearItemTags;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
@@ -131,6 +132,7 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         ConsumableItemTags.addTags(this::tag);
         GearItemTags.build(this::tag);
         golf3Ring3();
+        ArrowItemTags.build(this::tag);
     }
 
     /** Phase 2 golf 3 (stream R3): the sulfur block, the ember berries like sweet berries, the stew like mushroom stew. */

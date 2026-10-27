@@ -7,6 +7,7 @@ import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.model.ArrowItemModels;
 import nl.timtoys.corruptedadventure.datagen.model.ConsumableItemModels;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
@@ -112,6 +113,7 @@ final class ModItemModelProvider extends ItemModelProvider {
         golf3Ring3();
         ConsumableItemModels.build(this);
         golf4Materials();
+        ArrowItemModels.build(this);
     }
 
     /** Phase 2 golf 3 (stream R3): the blocks, the raft as a flat item, the ember berries and the dripshroom stew. */

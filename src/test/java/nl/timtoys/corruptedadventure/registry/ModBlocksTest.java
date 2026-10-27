@@ -56,6 +56,7 @@ import nl.timtoys.corruptedadventure.item.CanteenItem;
 import nl.timtoys.corruptedadventure.item.DoseDrinkItem;
 import nl.timtoys.corruptedadventure.item.DoseFoodItem;
 import nl.timtoys.corruptedadventure.item.HandWarmerItem;
+import nl.timtoys.corruptedadventure.item.EffectArrowItem;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -623,11 +624,11 @@ class ModBlocksTest {
         assertEquals(ores, shown.subList(spring + 1, spring + 1 + ores.size()));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem))
-                // The smithing templates, gear and consumables of phase 2 close their ring sections; these checks are about
-                // the materials.
+                // The smithing templates, gear, consumables and arrows of phase 2 close their ring sections; these checks are
+                // about the materials.
                 .filter(item -> !(item instanceof SmithingTemplateItem) && !(item instanceof TieredItem)
                         && !(item instanceof ArmorItem) && !(item instanceof DoseDrinkItem)
-                        && !(item instanceof HandWarmerItem)).toList();
+                        && !(item instanceof HandWarmerItem) && !(item instanceof EffectArrowItem)).toList();
         int fireCrystal = standalone.indexOf(ModItems.FIRE_CRYSTAL.get());
         assertEquals(List.of(ModItems.VOLCANITE_INGOT.get(), ModItems.RAW_TIDESILVER.get(), ModItems.JADE.get(),
                 ModItems.TOXIC_CRYSTAL_SHARD.get(), ModItems.AQUAMARINE_SHARD.get()), standalone.subList(fireCrystal + 1, fireCrystal + 6));

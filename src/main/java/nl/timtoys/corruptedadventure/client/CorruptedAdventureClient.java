@@ -9,6 +9,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.client.ambient.SingingSandAmbience;
 import nl.timtoys.corruptedadventure.client.block.SignMaterials;
+import nl.timtoys.corruptedadventure.client.entity.EffectArrowRenderer;
 import nl.timtoys.corruptedadventure.client.fluid.ToxicPoolClientExtensions;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
 import nl.timtoys.corruptedadventure.client.item.ConsumableItemProperties;
@@ -67,6 +68,8 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(SignMaterials::onClientSetup);
         // Phase 2 golf 2 (V): the canteen's sips for its model.
         modEventBus.addListener(ConsumableItemProperties::onClientSetup);
+        // Phase 2 golf 3 + 4 (A): the fire and poison arrows.
+        modEventBus.addListener(EffectArrowRenderer::onRegisterRenderers);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);
         NeoForge.EVENT_BUS.addListener(SingingSandAmbience::onClientTick);
