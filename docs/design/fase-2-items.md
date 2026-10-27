@@ -258,8 +258,8 @@ Besloten door de gebruiker op 2026-10-27, in drie vragenrondes.
   per golf.
 - **Raamwerk voor verbruiksitems (server-side, via de condities-pijplijn):** een verbruiksitem kan, per conditie,
   (a) direct punten van de meter aftrekken en (b) een **tijdelijk effect** geven dat een stijgende rate vermenigvuldigt
-  (een `RateModifier` met een vervaltijd, opgeslagen per speler). Effecten van hetzelfde soort stapelen niet: een nieuwe
-  slok zet de tijd opnieuw. Waarden in de SERVER-config.
+  (een `RateModifier` met een vervaltijd, opgeslagen per speler). Effecten van hetzelfde soort stapelen niet: bij een
+  nieuwe slok wint de langste resterende tijd (zie Verkoeld hieronder). Waarden in de SERVER-config.
 - **Veldfles (`canteen`)** als eerste voorbeeld:
   - stack 1; **4 slokken**; per slok **−25 uitdroging** + **45 s "verkoeld"** (een stijgende uitdroging ×0,5);
   - vullen met rechtsklik op een waterbron (de bron blijft liggen), een gevulde cauldron (die zakt een niveau, zoals een
@@ -294,6 +294,8 @@ niet om.
   het cactussap, het gedroogde vlees, de zoutlamp, het zielkristalblok en het ingelegde zandsteen. Eerst één voorbeeld
   (ingot + zwaard + borstplaat) voor het akkoord van de gebruiker, dan de hele set. De generatorscripts in
   `tools/textures/` blijven voor de bestaande sets.
+- **Bron van de golf 2-textures:** Java-scripts in `tools/textures/` (`Golf2SunstoneTextures.java`,
+  `Golf2Ring2Textures.java`); Blockbench alleen ter controle (besluit gebruiker, 2026-10-27).
 
 ### 5.7 Prestatiemeting
 De volledige 6-rondemeting (`perf.sh --areas tools/test/areas/perf-all.txt --warm 6 --cold 1 --max-min 130`) draait in
