@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": {
+      "item": "corruptedadventure:scorched_sandstone"
+    },
+    "X": {
+      "item": "corruptedadventure:turquoise"
+    }
+  },
+  "pattern": [
+    "###",
+    "#X#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "id": "corruptedadventure:turquoise_inlaid_sandstone"
+  }
+}
