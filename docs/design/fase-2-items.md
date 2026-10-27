@@ -225,3 +225,74 @@ Gebouwd in fase 2 golf 1 (stroom C). Technische uitwerking van §1.3 en §4.
 - **Textures:** placeholders uit `tools/textures/CoatingTextures.java`: per coating een band per harnasstuk in een
   eigen stijl (golf, vlammen, kristallen, druppels, gebroken lijn, dubbele lijn) en een embleem op de borst; het
   template is een stenen tablet met hetzelfde embleem in de materiaalkleur.
+
+## 5. Golf 2 — ring 2 + Nether-1 (vragenronde 2026-10-27)
+Besloten door de gebruiker op 2026-10-27, in drie vragenrondes.
+
+### 5.1 Zonnesteen-tier
+- **Stats: netherite + iets meer.** Duurzaamheid tools **2200** (netherite 2031), mijnsnelheid 9, schade-bonus 4,
+  enchant 15; armor 3/6/8/3 (dier 11), toughness 3, knockback-weerstand 0,1, duurzaamheidsfactor harnas **40** (37).
+  Dezelfde klasse als netherite, hij gaat alleen langer mee. Netherite blijft een volwaardig alternatief, vulkaniet
+  (2500/10/5) blijft een duidelijke stap. De tabel in §4.3 en `GearTierTest` volgen.
+- **Set:** zwaard, bijl, houweel, schep, schoffel en 4 harnasstukken (`sunstone_sword` … `sunstone_boots`).
+- **Upgrade:** smithing van **diamanten** gear + `sunstone_ingot` + `sunstone_upgrade_smithing_template` (zoals
+  netherite: enchantments en trim/coating blijven).
+- **Template uit een recept, met zielkristal (Nether-1):** 6 `soul_crystal` + 2 diamant + 1 scorched sandstone → 1
+  template. Er komt **geen kopie-recept**, want craften is al de kopie. De lus overworld → Nether → ring blijft:
+  zielkristal komt alleen uit Nether-1.
+- **Product:** `sunstone_ingot` blijft de naam en de vorm ("Sunstone Ingot" / "Zonnesteenstaaf"), met
+  `c:ingots/sunstone`.
+- **Gating:** de ring 3-ertsen vragen `needs_sunstone_tool` (al zo sinds golf 1); met de zonnesteen-pickaxe zijn ze nu
+  in survival te mijnen.
+
+### 5.2 Zielkristal
+- Grondstof van het upgrade-template (§5.1).
+- **`soul_crystal_block`:** 4 zielkristal → 1 blok (zoals het amethistblok; decoratief, geen weg terug).
+- **Balans:** de ertstarieven blijven (~2,3 per chunk in Nether-ring 1 plus de crimson-vloerfeature). Eén template kost
+  dan ~3 chunks mijnen.
+
+### 5.3 Bescherming tegen uitdroging
+- **Coating:** `dehydration_coating` met turkoois (golf 1). **Het eerste template komt uit een ring 2-recept:**
+  4 `turquoise` + 4 scorched sandstone + 1 barrel cactus → 1 `dehydration_coating_smithing_template`. Het kopie-recept
+  (template + 7 turkoois + scorched sandstone → 2) blijft. De recepten voor de templates van de andere coatings volgen
+  per golf.
+- **Raamwerk voor verbruiksitems (server-side, via de condities-pijplijn):** een verbruiksitem kan, per conditie,
+  (a) direct punten van de meter aftrekken en (b) een **tijdelijk effect** geven dat een stijgende rate vermenigvuldigt
+  (een `RateModifier` met een vervaltijd, opgeslagen per speler). Effecten van hetzelfde soort stapelen niet: een nieuwe
+  slok zet de tijd opnieuw. Waarden in de SERVER-config.
+- **Veldfles (`canteen`)** als eerste voorbeeld:
+  - stack 1; **4 slokken**; per slok **−25 uitdroging** + **45 s "verkoeld"** (een stijgende uitdroging ×0,5);
+  - vullen met rechtsklik op een waterbron (de bron blijft liggen), een gevulde cauldron (die zakt een niveau, zoals een
+    fles) of een **dauwbron** (zo vul je hem in de Nether); een vulling zet hem op 4 slokken;
+  - drinken werkt overal, ook in de Nether;
+  - recept: leer + touw + glazen fles;
+  - de tooltip en het model tonen de slokken (de client toont alleen).
+- **Cactussap (`cactus_juice`):** barrel cactus + glazen fles → 1; eenmalig, stack 16; **−15 uitdroging + 20 s
+  verkoeld**; geeft de glazen fles terug. Het tweede item op het raamwerk.
+
+### 5.4 Turkoois en zout
+- **Turkoois:** naast coatingmateriaal en opslagblok komt een bouwset **`turquoise_inlaid_sandstone`** (blok +
+  trap/plaat/muur): scorched sandstone + turkoois, met een woestijn- en tempelsfeer. Turkoois zit ook in het
+  coating-template (§5.3). Handel volgt in fase 3/4.
+- **Zout:**
+  - **`salted_jerky`:** zout + elk gebakken vlees of elke gebakken vis (shapeless) → 2. Voeding 6, verzadiging 1,2,
+    snel te eten (zoals gedroogde kelp), maar **+8 uitdroging** per stuk (een afweging: goed eten, meer dorst);
+  - **`salt_lamp`:** een lichtblok (licht 12) uit een zoutblok + een fakkel, decoratief, met een eigen model in
+    Blockbench.
+
+### 5.5 Ring 2-extra's
+Cactussap (§5.3), gedroogd vlees en de zoutlamp (§5.4). Er komen geen extra wapens in ring 2: de materialen vragen er
+niet om.
+
+### 5.6 Textures en modellen
+- **Palet zonnesteen: barnsteen-goud.** Warm amber/goud met een licht zongeel highlight en donker koper in de schaduw.
+  Het sluit aan bij de pulsgloed van het erts en onderscheidt zich van vanilla-goud (dat is bleker en geler). Geen
+  emissive.
+- **Blockbench:** de set (item-textures van tools en harnas plus de armor-layer-textures), het template, de veldfles,
+  het cactussap, het gedroogde vlees, de zoutlamp, het zielkristalblok en het ingelegde zandsteen. Eerst één voorbeeld
+  (ingot + zwaard + borstplaat) voor het akkoord van de gebruiker, dan de hele set. De generatorscripts in
+  `tools/textures/` blijven voor de bestaande sets.
+
+### 5.7 Prestatiemeting
+De volledige 6-rondemeting (`perf.sh --areas tools/test/areas/perf-all.txt --warm 6 --cold 1 --max-min 130`) draait in
+een **aparte sessie**, gestart met `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`, buiten golf 2.
