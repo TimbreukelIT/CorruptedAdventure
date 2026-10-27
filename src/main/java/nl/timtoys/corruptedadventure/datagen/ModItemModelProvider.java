@@ -7,6 +7,7 @@ import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.model.ConsumableItemModels;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
@@ -107,6 +108,7 @@ final class ModItemModelProvider extends ItemModelProvider {
         netherRing2();
         golf1Materials();
         coatings();
+        ConsumableItemModels.build(this);
     }
 
     /** Phase 2 golf 1 (stream D): the storage blocks and the ingots and turquoise gem. */

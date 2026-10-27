@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.registry;
 
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -9,6 +10,10 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.condition.ConsumableDoses;
+import nl.timtoys.corruptedadventure.item.CanteenItem;
+import nl.timtoys.corruptedadventure.item.DoseDrinkItem;
+import nl.timtoys.corruptedadventure.item.DoseFoodItem;
 import nl.timtoys.corruptedadventure.item.GearTier;
 import nl.timtoys.corruptedadventure.item.UpgradeSmithingTemplates;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
@@ -59,6 +64,16 @@ public final class ModItems {
     /** Coating against dehydration (applied with the turquoise gem). Where to find it: golf 2. */
     public static final DeferredItem<SmithingTemplateItem> DEHYDRATION_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "dehydration_coating_smithing_template", () -> CoatingTemplates.create(Coating.DEHYDRATION));
+    // Consumables against dehydration (phase 2 golf 2, §5.3–§5.4).
+    /** Four sips per filling; filled at water, a water cauldron or a dew source. */
+    public static final DeferredItem<CanteenItem> CANTEEN = ITEMS.registerItem("canteen", CanteenItem::new);
+    /** Single use, gives the glass bottle back. */
+    public static final DeferredItem<DoseDrinkItem> CACTUS_JUICE = ITEMS.registerItem("cactus_juice",
+            properties -> new DoseDrinkItem(properties.stacksTo(16), ConsumableDoses::cactusJuice));
+    /** Fast food like dried kelp, but it makes you thirsty. */
+    public static final DeferredItem<DoseFoodItem> SALTED_JERKY = ITEMS.registerItem("salted_jerky",
+            properties -> new DoseFoodItem(properties.food(new FoodProperties.Builder()
+                    .nutrition(6).saturationModifier(1.2F).fast().build()), ConsumableDoses::saltedJerky));
 
     // ---- Nether ring 2 ----
     /** Drop of the grown dew crystal. Placeholder: its use, recipes and balance follow in phase 2. */

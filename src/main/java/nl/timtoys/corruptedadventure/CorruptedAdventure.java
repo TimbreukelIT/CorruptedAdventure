@@ -31,6 +31,7 @@ import nl.timtoys.corruptedadventure.registry.ModBiomeSources;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModChunkGenerators;
 import nl.timtoys.corruptedadventure.registry.ModCreativeTabs;
+import nl.timtoys.corruptedadventure.registry.ModDataComponents;
 import nl.timtoys.corruptedadventure.registry.ModDataMaps;
 import nl.timtoys.corruptedadventure.registry.ModDensityFunctionTypes;
 import nl.timtoys.corruptedadventure.registry.ModCarverTypes;
@@ -75,6 +76,7 @@ public final class CorruptedAdventure {
         ServerConfig.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
+        ModDataComponents.register(modEventBus);
         ModArmorMaterials.register(modEventBus);
         ModFluidTypes.register(modEventBus);
         ModFluids.register(modEventBus);

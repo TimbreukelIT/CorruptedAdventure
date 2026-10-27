@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.client.ambient.SingingSandAmbience;
 import nl.timtoys.corruptedadventure.client.block.SignMaterials;
 import nl.timtoys.corruptedadventure.client.fluid.ToxicPoolClientExtensions;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
+import nl.timtoys.corruptedadventure.client.item.CanteenItemProperties;
 import nl.timtoys.corruptedadventure.client.network.ConditionSyncHandler;
 import nl.timtoys.corruptedadventure.client.network.RingLayoutHandler;
 import nl.timtoys.corruptedadventure.client.network.RingWeatherHandler;
@@ -64,6 +65,8 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(ToxicPoolClientExtensions::onRegisterClientExtensions);
         // ring 5 — B (88): the corrupted signs' materials.
         modEventBus.addListener(SignMaterials::onClientSetup);
+        // Phase 2 golf 2 (V): the canteen's sips for its model.
+        modEventBus.addListener(CanteenItemProperties::onClientSetup);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);
         NeoForge.EVENT_BUS.addListener(SingingSandAmbience::onClientTick);
