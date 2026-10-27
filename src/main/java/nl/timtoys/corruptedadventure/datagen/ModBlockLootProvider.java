@@ -157,6 +157,17 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         ring4();
         ring5();
         golf1Materials();
+        golf2Materials();
+    }
+
+    /** Phase 2 golf 2 (stream M): every block drops itself (the amethyst block too), a double slab two. */
+    private void golf2Materials() {
+        dropSelf(ModBlocks.SOUL_CRYSTAL_BLOCK.get());
+        dropSelf(ModBlocks.TURQUOISE_INLAID_SANDSTONE.get());
+        dropSelf(ModBlocks.TURQUOISE_INLAID_SANDSTONE_STAIRS.get());
+        add(ModBlocks.TURQUOISE_INLAID_SANDSTONE_SLAB.get(), this::createSlabItemTable);
+        dropSelf(ModBlocks.TURQUOISE_INLAID_SANDSTONE_WALL.get());
+        dropSelf(ModBlocks.SALT_LAMP.get());
     }
 
     /** Phase 2 golf 1 (stream D): the storage blocks drop themselves, like vanilla's. */

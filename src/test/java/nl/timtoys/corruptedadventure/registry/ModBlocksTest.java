@@ -200,10 +200,14 @@ class ModBlocksTest {
         List<Item> shown = new ArrayList<>();
         ModBlocks.entries().stream().map(block -> block.get().asItem()).filter(item -> item != Items.AIR).forEach(shown::add);
         int soaked = shown.indexOf(ModBlocks.SOAKED_NETHERRACK.asItem());
-        // The storage blocks (phase 2 golf 1) sit between the salt set and Nether ring 2.
+        // The storage blocks (phase 2 golf 1), the inlaid sandstone set and the salt lamp (golf 2) sit between the salt
+        // set and Nether ring 2.
         assertEquals(List.of(ModBlocks.SALT_CRYSTAL.asItem(), ModBlocks.RAW_SUNSTONE_BLOCK.asItem(),
-                ModBlocks.RAW_TURQUOISE_BLOCK.asItem(), ModBlocks.SUNSTONE_BLOCK.asItem(), ModBlocks.TURQUOISE_BLOCK.asItem()),
-                shown.subList(soaked - 5, soaked));
+                ModBlocks.RAW_TURQUOISE_BLOCK.asItem(), ModBlocks.SUNSTONE_BLOCK.asItem(), ModBlocks.TURQUOISE_BLOCK.asItem(),
+                ModBlocks.TURQUOISE_INLAID_SANDSTONE.asItem(), ModBlocks.TURQUOISE_INLAID_SANDSTONE_STAIRS.asItem(),
+                ModBlocks.TURQUOISE_INLAID_SANDSTONE_SLAB.asItem(), ModBlocks.TURQUOISE_INLAID_SANDSTONE_WALL.asItem(),
+                ModBlocks.SALT_LAMP.asItem()),
+                shown.subList(soaked - 10, soaked));
         assertEquals(List.of(ModBlocks.SOAKED_NETHERRACK.asItem(), ModBlocks.SPORE_MOSS.asItem(),
                 ModBlocks.DRIPSHROOM_STEM.asItem(), ModBlocks.DRIPSHROOM_HYPHAE.asItem(), ModBlocks.STRIPPED_DRIPSHROOM_STEM.asItem(),
                 ModBlocks.STRIPPED_DRIPSHROOM_HYPHAE.asItem(), ModBlocks.DRIPSHROOM_PLANKS.asItem(), ModBlocks.DRIPSHROOM_STAIRS.asItem(),

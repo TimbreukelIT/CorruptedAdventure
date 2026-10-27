@@ -67,6 +67,25 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         ring4();
         ring5();
         golf1Materials();
+        golf2Materials();
+    }
+
+    /**
+     * Phase 2 golf 2 (stream M): all with a pickaxe and no tier, like their bases (amethyst, sandstone, the salt block);
+     * the inlaid set is sandstone in the {@code c:} tags, like chiseled sandstone.
+     */
+    private void golf2Materials() {
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SOUL_CRYSTAL_BLOCK.get(),
+                ModBlocks.TURQUOISE_INLAID_SANDSTONE.get(), ModBlocks.TURQUOISE_INLAID_SANDSTONE_STAIRS.get(),
+                ModBlocks.TURQUOISE_INLAID_SANDSTONE_SLAB.get(), ModBlocks.TURQUOISE_INLAID_SANDSTONE_WALL.get(),
+                ModBlocks.SALT_LAMP.get());
+        tag(BlockTags.CRYSTAL_SOUND_BLOCKS).add(ModBlocks.SOUL_CRYSTAL_BLOCK.get());
+        tag(BlockTags.STAIRS).add(ModBlocks.TURQUOISE_INLAID_SANDSTONE_STAIRS.get());
+        tag(BlockTags.SLABS).add(ModBlocks.TURQUOISE_INLAID_SANDSTONE_SLAB.get());
+        tag(BlockTags.WALLS).add(ModBlocks.TURQUOISE_INLAID_SANDSTONE_WALL.get());
+        tag(Tags.Blocks.SANDSTONE_BLOCKS).add(ModBlocks.TURQUOISE_INLAID_SANDSTONE.get());
+        tag(Tags.Blocks.SANDSTONE_SLABS).add(ModBlocks.TURQUOISE_INLAID_SANDSTONE_SLAB.get());
+        tag(Tags.Blocks.SANDSTONE_STAIRS).add(ModBlocks.TURQUOISE_INLAID_SANDSTONE_STAIRS.get());
     }
 
     /**

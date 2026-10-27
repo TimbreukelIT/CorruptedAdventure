@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "corruptedadventure:block/turquoise_inlaid_sandstone_top",
+    "side": "corruptedadventure:block/turquoise_inlaid_sandstone",
+    "top": "corruptedadventure:block/turquoise_inlaid_sandstone_top"
+  }
+}

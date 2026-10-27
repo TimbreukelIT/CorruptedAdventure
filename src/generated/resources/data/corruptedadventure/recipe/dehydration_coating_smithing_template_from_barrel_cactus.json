@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "corruptedadventure:barrel_cactus"
+    },
+    "S": {
+      "item": "corruptedadventure:scorched_sandstone"
+    },
+    "T": {
+      "item": "corruptedadventure:turquoise"
+    }
+  },
+  "pattern": [
+    "TST",
+    "SCS",
+    "TST"
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:dehydration_coating_smithing_template"
+  }
+}
