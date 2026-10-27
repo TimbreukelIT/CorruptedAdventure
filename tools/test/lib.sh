@@ -52,6 +52,16 @@ if [ "$CA_OS" = posix ]; then
 fi
 mkdir -p "$CA_OUT"
 
+# JFR from the JVM's start, for the measurements that use Minecraft's `jfr start` (perf.sh, jfr-prof.sh; 2026-10-27).
+# The first `jfr start` of a JVM instruments Minecraft's JFR event classes, and that first class retransformation makes
+# HotSpot deoptimize all compiled code at once (10-14 thousand methods): every method with C2 code gets one more
+# decompile, so every large compile root compiled afterwards sums >= 201 decompiles over its inline tree and its
+# never-taken branches become traps that never recompile (the ring 4 storm in VerdantGorges.shape). With an empty
+# recording from the JVM's start (no events, in memory, no file) that one invalidation falls in the first second, when
+# only bootstrap code is compiled, and `jfr start` deoptimizes nothing. Silent: Gradle's toolchain probe parses the
+# output of every java it starts.
+CA_JFR_AT_START="-XX:StartFlightRecording:settings=none -Xlog:jfr+startup=off"
+
 # Low-priority mode (2026-10-26: the user plays a game next to the tests): `CA_LOW=1` or the machine-wide flag file
 # `<lockdir>/ca-low-priority`. This script and everything it starts (Gradle, servers, clients, Python) run below normal
 # priority (Windows passes the class on to child processes), and the JVMs see CA_LOW_CPUS (8) processors: fewer

@@ -271,6 +271,28 @@ table lists them; `jfr-prof.sh` prints the same line per area. Full world: `--ar
 `CA_JVM_EXTRA="<opts>" bash tools/test/jfr-prof.sh ...` adds JVM options (e.g. `-XX:PerMethodRecompilationCutoff=20`:
 the poisoning limit drops from 201 to 11 summed decompiles, a stress test for storms).
 
+**JFR from the JVM's start (2026-10-27).** `perf.sh` and `jfr-prof.sh` start the server with `CA_JFR_AT_START`
+(`lib.sh`: `-XX:StartFlightRecording:settings=none -Xlog:jfr+startup=off`). That is an empty recording in memory for the
+whole session: no events, no file and no startup lines. Gradle's toolchain probe parses the output of every java it
+starts and rejects a JDK that prints more. Without it, the first RCON `jfr start` of a JVM deoptimized all compiled code
+at once: on 2026-10-27, 14.340 nmethods in one second. That start was perf.py's, after the warm-up.
+- Why: Minecraft's `JfrProfiler` registers its event classes and JFR retransforms them. At a JVM's first class
+  retransformation, HotSpot invalidates every nmethod.
+- Every method with C2 code then had one decompile more. Every large compile root compiled afterwards summed ≥ 201 over
+  its inline tree, so it compiled its never-taken branches as traps with action `none`.
+- Example: the ring 4 storms of 2026-10-27 in `VerdantGorges.shape`. That root has ~450 inlined parses (3× `rampAt`).
+  Under the stress flag its sum was 262. Counted from the make_not_entrant events, ~95 % of it came from that one
+  moment. The storm came from the measurement, not from the game.
+
+With the recording from the start, that invalidation falls in the JVM's first second (~1.500 nmethods, only bootstrap
+code). `jfr start` then deoptimizes nothing beyond the normal churn: at most ~110 make_not_entrant per second around it,
+against 14.340. A perf round with it had 0 deopts of action `none` (405 in all), where rounds had thousands before.
+The measurements see the JIT state of a server that is not profiled.
+
+To check it: add `CA_JVM_EXTRA="-XX:+LogCompilation -XX:LogFile=<dir>/hs_%p.log"` and count the `<make_not_entrant`
+lines per second of their `stamp`. In the compile log of a poisoned task, the `observe ... mdecompiles=` lines give the
+running sum at each trap.
+
 ### Hot methods (JFR profile)
 
 ```bash
@@ -278,14 +300,14 @@ bash tools/test/jfr-prof.sh --areas tools/test/areas/perf-vf.txt --only "steamfe
 python tools/test/py/jfrhot.py <jfr.exe> build/test/prof-<stamp>/steamfens.jfr --callees IslandField.lowestAround
 ```
 
-Same machine rules as `perf.sh` (lock + all 3 slots, fresh world, warm-up). Per area one recording with the server's
-own profiler (RCON `jfr start` / `jfr stop`: Minecraft's settings sample Java stacks every 10 ms), so nothing attaches
-to the JVM; the server starts with `CA_SERVER_JVM=-XX:FlightRecorderOptions:stackdepth=1024` (density functions nest
-deeper than JFR's default 64 frames) and `-XX:+DebugNonSafepoints` (else self time lands on the nearest safepoint's
-frame, often another inlined method). `jfrhot.py` streams `jfr print` as text (the JSON form of one area's samples is
-gigabytes), puts every sample under its chunk step and prints the top self frames and the inclusive share of every mod
-method, for all steps and for `--step` (default `noise`); `--callees` splits a method's samples over its callees.
-Shares are of the samples, not of the time `perf.sh` compares: a fresh world also pays the per-world decisions.
+Same machine rules as `perf.sh` (lock + all 3 slots, fresh world, warm-up). Per area one recording with the server's own
+profiler (RCON `jfr start` / `jfr stop`: Minecraft's settings sample Java stacks every 10 ms), so nothing attaches to
+the JVM; the server starts with `CA_JFR_AT_START` (see above), `-XX:FlightRecorderOptions:stackdepth=1024` (density
+functions nest deeper than JFR's default 64 frames) and `-XX:+DebugNonSafepoints` (else self time lands on the nearest
+safepoint's frame, often another inlined method). `jfrhot.py` streams `jfr print` as text (the JSON form of one area's
+samples is gigabytes), puts every sample under its chunk step and prints the top self frames and the inclusive share of
+every mod method, for all steps and for `--step` (default `noise`); `--callees` splits a method's samples over its
+callees. Shares are of the samples, not of the time `perf.sh` compares: a fresh world also pays the per-world decisions.
 
 ## Files
 

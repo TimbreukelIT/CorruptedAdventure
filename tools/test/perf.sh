@@ -61,7 +61,8 @@ for ((i = 1; i <= warm + cold; i++)); do
         read -r -a sel <<< "$only"; args+=(--only "${sel[@]}")
     fi
     level="$name-p$i"
-    bash "$CA_TOOLS/server.sh" start "$level" --fresh --perf --no-slot || exit 1
+    # JFR from the JVM's start (CA_JFR_AT_START, lib.sh): perf.py's `jfr start` must not deoptimize all compiled code.
+    CA_SERVER_JVM="$CA_JFR_AT_START${CA_SERVER_JVM:+ $CA_SERVER_JVM}" bash "$CA_TOOLS/server.sh" start "$level" --fresh --perf --no-slot || exit 1
     java="$(ca_state_get server JAVA)"
     args+=(--jfr "$(dirname "$java")/jfr$CA_EXE")
     $CA_PY "$CA_TOOLS/py/perf.py" "$i" "$(cygpath -m "$out/p$i.json")" "${args[@]}" > "$out/p$i.txt" 2>&1
