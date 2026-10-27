@@ -43,6 +43,7 @@ import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 import nl.timtoys.corruptedadventure.registry.ModPlacementModifierTypes;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
 import nl.timtoys.corruptedadventure.registry.ModSurfaceConditions;
+import nl.timtoys.corruptedadventure.registry.ModSurfaceRules;
 import nl.timtoys.corruptedadventure.registry.ModTreeDecoratorTypes;
 import nl.timtoys.corruptedadventure.registry.ModTrunkPlacerTypes;
 import nl.timtoys.corruptedadventure.ring.RingLayout;
@@ -90,6 +91,7 @@ public final class CorruptedAdventure {
         ModFeatures.register(modEventBus);
         ModCarverTypes.register(modEventBus);
         ModSurfaceConditions.register(modEventBus);
+        ModSurfaceRules.register(modEventBus);
         ModTrunkPlacerTypes.register(modEventBus);
         ModFoliagePlacerTypes.register(modEventBus);
         ModTreeDecoratorTypes.register(modEventBus);

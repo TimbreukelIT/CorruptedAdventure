@@ -64,6 +64,12 @@ def recolour(rule):
             if node.get("type") == "minecraft:block":
                 name = node["result_state"]["Name"]
                 node["result_state"]["Name"] = swap.get(name, name)
+            # The strata as y_bands (surface_bands.py) hold plain states, which the swap above misses: today they hold
+            # canyon stone only; with sand or sandstone in them the red copy would come out wrong.
+            if node.get("type") == "corruptedadventure:y_bands":
+                states = [band["block"] for band in node["bands"]] + [node["below"]]
+                if any(state["Name"] in swap for state in states):
+                    raise SystemExit("recolour: a y_bands rule holds sand or sandstone; teach recolour to swap its blocks")
             for value in node.values():
                 walk(value)
         elif isinstance(node, list):

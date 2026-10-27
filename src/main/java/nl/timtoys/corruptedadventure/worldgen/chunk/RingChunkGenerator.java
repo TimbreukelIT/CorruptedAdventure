@@ -25,6 +25,7 @@ import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseChunk;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.SurfaceRules;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import nl.timtoys.corruptedadventure.ring.Ring;
@@ -32,6 +33,7 @@ import nl.timtoys.corruptedadventure.worldgen.densityfunction.IslandField;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.Ring5Field;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.RingFillGate;
 import nl.timtoys.corruptedadventure.worldgen.densityfunction.VolcanicField;
+import nl.timtoys.corruptedadventure.worldgen.surface.BiomeSwitches;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -64,6 +66,8 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
 
     private final ResourceKey<Level> dimension;
     private final Map<Ring, Integer> fluidLevels;
+    // The surface rule of the settings with its runs of biome branches as switches (opt/surface), made on first use.
+    private final Supplier<SurfaceRules.RuleSource> surfaceRule;
     // One random state per level in practice; remembered so the router is searched once.
     private volatile VolcanicFieldLookup volcanicLookup;
     private volatile IslandFieldLookup islandLookup;
@@ -81,6 +85,7 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
         this.fluidLevels = Map.copyOf(fluidLevels);
         Supplier<Aquifer.FluidPicker> vanilla = this.globalFluidPicker;
         this.globalFluidPicker = Suppliers.memoize(() -> new RingFluidPicker(dimension, vanilla.get(), this.fluidLevels));
+        this.surfaceRule = Suppliers.memoize(() -> BiomeSwitches.of(settings.value().surfaceRule()));
     }
 
     private NoiseChunk createNoiseChunk(ChunkAccess chunk, StructureManager structureManager, Blender blender, RandomState random) {
@@ -190,7 +195,12 @@ public final class RingChunkGenerator extends NoiseBasedChunkGenerator {
     public void buildSurface(ChunkAccess chunk, WorldGenerationContext context, RandomState random, StructureManager structureManager,
                              BiomeManager biomeManager, Registry<Biome> biomes, Blender blender) {
         NoiseChunk noiseChunk = createNoiseChunk(chunk, structureManager, blender, random);
-        withSurfaceField(noiseChunk, random, () -> super.buildSurface(chunk, context, random, structureManager, biomeManager, biomes, blender));
+        // Vanilla's pass (super.buildSurface) with a cheaper biome lookup and the switched rule: the same blocks (opt/surface).
+        BiomeManager surfaceBiomes = new SurfaceBiomeManager(biomeManager, chunk.getPos().getMinBlockX(), chunk.getPos().getMinBlockZ(),
+                chunk.getMinBuildHeight(), chunk.getMaxBuildHeight());
+        boolean legacyRandom = generatorSettings().value().useLegacyRandomSource();
+        withSurfaceField(noiseChunk, random, () -> random.surfaceSystem().buildSurface(random, surfaceBiomes, biomes, legacyRandom, context,
+                chunk, noiseChunk, surfaceRule.get()));
     }
 
     @Override
