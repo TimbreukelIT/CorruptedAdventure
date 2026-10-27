@@ -15,8 +15,8 @@ import java.util.Map;
 /**
  * The gear tiers of phase 2, one per ring (fase-2-items.md §1.1): sunstone (ring 2) about netherite, then a step up per
  * ring. The tool side is this {@link Tier}, like vanilla's {@code Tiers}; the armour side lives in
- * {@code ModArmorMaterials} with the numbers below. Sunstone is set (§5.1: netherite that lasts longer); the other
- * stats are provisional (§4.3) and get tuned in waves 3–5.
+ * {@code ModArmorMaterials} with the numbers below. The curve is set (§6.1): sunstone is netherite that lasts longer,
+ * volcanite a steep step so netherite and sunstone fall behind in ring 3, tidesilver and nullite move up with it.
  *
  * <p>Mining gating: a tier drops every block except those in its {@link #incorrectForTool()} tag, which holds the
  * {@code needs_*_tool} tags of all higher tiers. The ores of ring N+1 are in the {@link #needsTool()} tag of ring N's
@@ -25,11 +25,11 @@ import java.util.Map;
 public enum GearTier implements Tier, StringRepresentable {
     SUNSTONE("sunstone", 2, 2200, 9.0F, 4.0F, 15, new int[]{3, 6, 8, 3, 11}, 3.0F, 0.1F, 40,
             ModTags.Blocks.NEEDS_SUNSTONE_TOOL, ModTags.Blocks.INCORRECT_FOR_SUNSTONE_TOOL, ModTags.Items.INGOTS_SUNSTONE),
-    VOLCANITE("volcanite", 3, 2500, 10.0F, 5.0F, 15, new int[]{4, 7, 9, 4, 12}, 3.5F, 0.1F, 42,
+    VOLCANITE("volcanite", 3, 2700, 10.0F, 5.5F, 15, new int[]{4, 7, 9, 4, 12}, 4.0F, 0.1F, 42,
             ModTags.Blocks.NEEDS_VOLCANITE_TOOL, ModTags.Blocks.INCORRECT_FOR_VOLCANITE_TOOL, ModTags.Items.INGOTS_VOLCANITE),
-    TIDESILVER("tidesilver", 4, 3000, 11.0F, 6.0F, 16, new int[]{4, 7, 10, 4, 13}, 4.0F, 0.15F, 47,
+    TIDESILVER("tidesilver", 4, 3200, 11.0F, 6.5F, 16, new int[]{4, 7, 10, 4, 13}, 4.5F, 0.15F, 47,
             ModTags.Blocks.NEEDS_TIDESILVER_TOOL, ModTags.Blocks.INCORRECT_FOR_TIDESILVER_TOOL, ModTags.Items.INGOTS_TIDESILVER),
-    NULLITE("nullite", 5, 3600, 12.0F, 7.0F, 18, new int[]{5, 8, 10, 5, 14}, 5.0F, 0.2F, 53,
+    NULLITE("nullite", 5, 3800, 12.0F, 7.5F, 18, new int[]{5, 8, 10, 5, 14}, 5.0F, 0.2F, 53,
             ModTags.Blocks.NEEDS_NULLITE_TOOL, ModTags.Blocks.INCORRECT_FOR_NULLITE_TOOL, ModTags.Items.INGOTS_NULLITE);
 
     private final String name;

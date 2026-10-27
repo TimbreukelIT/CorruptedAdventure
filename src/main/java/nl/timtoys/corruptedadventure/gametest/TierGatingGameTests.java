@@ -27,9 +27,9 @@ import java.util.Map;
 /**
  * Mining gating of the ring ores with the real tags (phase 2 wave 1, fase-2-items.md §4.3): every pickaxe on the
  * ladder stone → iron → diamond = netherite → sunstone → volcanite → tidesilver → nullite against every ore of ours in
- * {@code c:ores}, and against the metal and gem storage blocks of phase 2 (the salt block is not gated). Sunstone uses its
- * real pickaxe (golf 2); the tiers without tools yet use a netherite pickaxe with the tier's tool component
- * ({@link GearTier#createToolProperties}), exactly what a tier's pickaxe will carry. Run: {@code ./gradlew
+ * {@code c:ores}, and against the metal and gem storage blocks of phase 2 (the salt block is not gated). Sunstone,
+ * volcanite and tidesilver use their real pickaxes (golf 2–4); nullite, without tools yet, uses a netherite pickaxe with
+ * its tool component ({@link GearTier#createToolProperties}), exactly what its pickaxe will carry. Run: {@code ./gradlew
  * runGameTestServer} (or {@code /test runall} in a dev world).
  */
 @GameTestHolder(CorruptedAdventure.MOD_ID)
@@ -128,12 +128,11 @@ public final class TierGatingGameTests {
 
     /** The tier's real pickaxe once it exists; until then a netherite pickaxe with the tier's tool component. */
     private static ItemStack tierPickaxe(GearTier tier) {
-        if (tier == GearTier.SUNSTONE) {
-            return new ItemStack(ModItems.SUNSTONE_PICKAXE.get());
-        }
-        ItemStack stack = new ItemStack(Items.NETHERITE_PICKAXE);
-        stack.set(DataComponents.TOOL, tier.createToolProperties(BlockTags.MINEABLE_WITH_PICKAXE));
-        return stack;
+        return ModItems.gear(tier).map(set -> new ItemStack(set.pickaxe().get())).orElseGet(() -> {
+            ItemStack stack = new ItemStack(Items.NETHERITE_PICKAXE);
+            stack.set(DataComponents.TOOL, tier.createToolProperties(BlockTags.MINEABLE_WITH_PICKAXE));
+            return stack;
+        });
     }
 
     private static void pickaxe(Map<String, Integer> ranks, Map<String, ItemStack> stacks, String name, ItemStack stack, int rank) {

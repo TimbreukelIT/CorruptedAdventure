@@ -9,16 +9,17 @@ import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.registries.DeferredItem;
+import nl.timtoys.corruptedadventure.registry.GearSet;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * Item models of the gear tiers (golf 2: sunstone). Tools are handheld; armour is flat with vanilla's trim overrides
- * ({@code ItemModelGenerators.generateArmorTrims}), so a trimmed or coated piece shows the trim in the inventory too
- * (the coatings borrow a vanilla material's {@code item_model_index}, fase-2-items.md §4.4).
+ * Item models of the gear tier sets ({@link ModItems#GEAR_SETS}). Tools are handheld; armour is flat with vanilla's
+ * trim overrides ({@code ItemModelGenerators.generateArmorTrims}), so a trimmed or coated piece shows the trim in the
+ * inventory too (the coatings borrow a vanilla material's {@code item_model_index}, fase-2-items.md §4.4).
  */
 final class GearItemModels {
     /** Vanilla's trim materials and their {@code item_model_index}, ascending (the last matching override wins). */
@@ -43,13 +44,13 @@ final class GearItemModels {
     }
 
     static void build(ItemModelProvider models, ExistingFileHelper files) {
-        for (Item tool : List.of(ModItems.SUNSTONE_SWORD.get(), ModItems.SUNSTONE_AXE.get(), ModItems.SUNSTONE_PICKAXE.get(),
-                ModItems.SUNSTONE_SHOVEL.get(), ModItems.SUNSTONE_HOE.get())) {
-            models.handheldItem(tool);
-        }
-        for (ArmorItem armor : List.of(ModItems.SUNSTONE_HELMET.get(), ModItems.SUNSTONE_CHESTPLATE.get(),
-                ModItems.SUNSTONE_LEGGINGS.get(), ModItems.SUNSTONE_BOOTS.get())) {
-            trimmedArmor(models, files, armor);
+        for (GearSet set : ModItems.GEAR_SETS) {
+            for (DeferredItem<? extends Item> tool : set.tools()) {
+                models.handheldItem(tool.get());
+            }
+            for (DeferredItem<ArmorItem> armor : set.armor()) {
+                trimmedArmor(models, files, armor.get());
+            }
         }
     }
 

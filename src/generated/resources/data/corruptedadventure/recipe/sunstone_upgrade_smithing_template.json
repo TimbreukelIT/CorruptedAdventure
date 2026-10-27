@@ -5,7 +5,7 @@
     "C": {
       "item": "corruptedadventure:scorched_sandstone"
     },
-    "D": {
+    "I": {
       "item": "minecraft:diamond"
     },
     "S": {
@@ -13,9 +13,9 @@
     }
   },
   "pattern": [
-    "SDS",
+    "SIS",
     "SCS",
-    "SDS"
+    "SIS"
   ],
   "result": {
     "count": 1,

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_dew_crystal": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:dew_crystal"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:volcanite_upgrade_smithing_template"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_dew_crystal"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:volcanite_upgrade_smithing_template"
+    ]
+  }
+}

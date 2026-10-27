@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "corruptedadventure:volcanite_ingot"
+  },
+  "base": {
+    "item": "corruptedadventure:sunstone_axe"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:volcanite_axe"
+  },
+  "template": {
+    "item": "corruptedadventure:volcanite_upgrade_smithing_template"
+  }
+}

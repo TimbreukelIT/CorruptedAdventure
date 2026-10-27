@@ -28,6 +28,7 @@ import nl.timtoys.corruptedadventure.item.coating.CoatingTemplates;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * All items: the block items (registered by {@link ModBlocks}) and the standalone items below. Standalone items
@@ -122,12 +123,32 @@ public final class ModItems {
     public static final DeferredItem<Item> FIRE_CRYSTAL = ITEMS.registerSimpleItem("fire_crystal");
     /** Smelted from raw volcanite and its ores (phase 2 golf 1); the volcanite tier's ingot. Provisional name. */
     public static final DeferredItem<Item> VOLCANITE_INGOT = ITEMS.registerSimpleItem("volcanite_ingot");
-    /** Placeholder upgrade template to the volcanite tier (wave 1): recipe and source follow with the tier. */
+    /** Upgrades sunstone gear to volcanite; crafted from dew crystal (golf 3, §6.2), no copy recipe. */
     public static final DeferredItem<SmithingTemplateItem> VOLCANITE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
             UpgradeSmithingTemplates.itemName(GearTier.VOLCANITE), () -> UpgradeSmithingTemplates.create(GearTier.VOLCANITE));
     /** Coating against heat (applied with dew crystal). Where to find it: golf 3. */
     public static final DeferredItem<SmithingTemplateItem> HEAT_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "heat_coating_smithing_template", () -> CoatingTemplates.create(Coating.HEAT));
+
+    // The volcanite set (golf 3, §6.1–§6.2): fire resistant like sunstone; smithed from sunstone.
+    public static final DeferredItem<SwordItem> VOLCANITE_SWORD = ITEMS.registerItem("volcanite_sword",
+            properties -> GearItems.sword(GearTier.VOLCANITE, properties.fireResistant()));
+    public static final DeferredItem<AxeItem> VOLCANITE_AXE = ITEMS.registerItem("volcanite_axe",
+            properties -> GearItems.axe(GearTier.VOLCANITE, properties.fireResistant()));
+    public static final DeferredItem<PickaxeItem> VOLCANITE_PICKAXE = ITEMS.registerItem("volcanite_pickaxe",
+            properties -> GearItems.pickaxe(GearTier.VOLCANITE, properties.fireResistant()));
+    public static final DeferredItem<ShovelItem> VOLCANITE_SHOVEL = ITEMS.registerItem("volcanite_shovel",
+            properties -> GearItems.shovel(GearTier.VOLCANITE, properties.fireResistant()));
+    public static final DeferredItem<HoeItem> VOLCANITE_HOE = ITEMS.registerItem("volcanite_hoe",
+            properties -> GearItems.hoe(GearTier.VOLCANITE, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> VOLCANITE_HELMET = ITEMS.registerItem("volcanite_helmet",
+            properties -> GearItems.armor(GearTier.VOLCANITE, ArmorItem.Type.HELMET, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> VOLCANITE_CHESTPLATE = ITEMS.registerItem("volcanite_chestplate",
+            properties -> GearItems.armor(GearTier.VOLCANITE, ArmorItem.Type.CHESTPLATE, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> VOLCANITE_LEGGINGS = ITEMS.registerItem("volcanite_leggings",
+            properties -> GearItems.armor(GearTier.VOLCANITE, ArmorItem.Type.LEGGINGS, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> VOLCANITE_BOOTS = ITEMS.registerItem("volcanite_boots",
+            properties -> GearItems.armor(GearTier.VOLCANITE, ArmorItem.Type.BOOTS, properties.fireResistant()));
 
     // ---- Nether ring 3 ----
     /** Coating against the cold (applied with fire crystal). Where to find it: golf 4. */
@@ -155,12 +176,32 @@ public final class ModItems {
     public static final DeferredItem<Item> VERDANT_FRUIT = ITEMS.registerSimpleItem("verdant_fruit");
     /** Smelted from raw tidesilver and its ores (phase 2 golf 1); the tidesilver tier's ingot. Provisional name. */
     public static final DeferredItem<Item> TIDESILVER_INGOT = ITEMS.registerSimpleItem("tidesilver_ingot");
-    /** Placeholder upgrade template to the tidesilver tier (wave 1): recipe and source follow with the tier. */
+    /** Upgrades volcanite gear to tidesilver; crafted from primordial ice (golf 4, §6.5), no copy recipe. */
     public static final DeferredItem<SmithingTemplateItem> TIDESILVER_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
             UpgradeSmithingTemplates.itemName(GearTier.TIDESILVER), () -> UpgradeSmithingTemplates.create(GearTier.TIDESILVER));
     /** Coating against poison (applied with primordial ice). Where to find it: golf 4. */
     public static final DeferredItem<SmithingTemplateItem> POISON_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "poison_coating_smithing_template", () -> CoatingTemplates.create(Coating.POISON));
+
+    // The tidesilver set (golf 4, §6.1, §6.5): fire resistant like volcanite; smithed from volcanite.
+    public static final DeferredItem<SwordItem> TIDESILVER_SWORD = ITEMS.registerItem("tidesilver_sword",
+            properties -> GearItems.sword(GearTier.TIDESILVER, properties.fireResistant()));
+    public static final DeferredItem<AxeItem> TIDESILVER_AXE = ITEMS.registerItem("tidesilver_axe",
+            properties -> GearItems.axe(GearTier.TIDESILVER, properties.fireResistant()));
+    public static final DeferredItem<PickaxeItem> TIDESILVER_PICKAXE = ITEMS.registerItem("tidesilver_pickaxe",
+            properties -> GearItems.pickaxe(GearTier.TIDESILVER, properties.fireResistant()));
+    public static final DeferredItem<ShovelItem> TIDESILVER_SHOVEL = ITEMS.registerItem("tidesilver_shovel",
+            properties -> GearItems.shovel(GearTier.TIDESILVER, properties.fireResistant()));
+    public static final DeferredItem<HoeItem> TIDESILVER_HOE = ITEMS.registerItem("tidesilver_hoe",
+            properties -> GearItems.hoe(GearTier.TIDESILVER, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> TIDESILVER_HELMET = ITEMS.registerItem("tidesilver_helmet",
+            properties -> GearItems.armor(GearTier.TIDESILVER, ArmorItem.Type.HELMET, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> TIDESILVER_CHESTPLATE = ITEMS.registerItem("tidesilver_chestplate",
+            properties -> GearItems.armor(GearTier.TIDESILVER, ArmorItem.Type.CHESTPLATE, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> TIDESILVER_LEGGINGS = ITEMS.registerItem("tidesilver_leggings",
+            properties -> GearItems.armor(GearTier.TIDESILVER, ArmorItem.Type.LEGGINGS, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> TIDESILVER_BOOTS = ITEMS.registerItem("tidesilver_boots",
+            properties -> GearItems.armor(GearTier.TIDESILVER, ArmorItem.Type.BOOTS, properties.fireResistant()));
 
     // ---- Nether ring 4 ----
     /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */
@@ -192,7 +233,21 @@ public final class ModItems {
     public static final DeferredItem<SmithingTemplateItem> SILENCE_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "silence_coating_smithing_template", () -> CoatingTemplates.create(Coating.SILENCE));
 
+    /** The gear sets per tier, lowest first; nullite's follows in golf 5. */
+    public static final List<GearSet> GEAR_SETS = List.of(
+            new GearSet(GearTier.SUNSTONE, SUNSTONE_SWORD, SUNSTONE_AXE, SUNSTONE_PICKAXE, SUNSTONE_SHOVEL, SUNSTONE_HOE,
+                    SUNSTONE_HELMET, SUNSTONE_CHESTPLATE, SUNSTONE_LEGGINGS, SUNSTONE_BOOTS),
+            new GearSet(GearTier.VOLCANITE, VOLCANITE_SWORD, VOLCANITE_AXE, VOLCANITE_PICKAXE, VOLCANITE_SHOVEL,
+                    VOLCANITE_HOE, VOLCANITE_HELMET, VOLCANITE_CHESTPLATE, VOLCANITE_LEGGINGS, VOLCANITE_BOOTS),
+            new GearSet(GearTier.TIDESILVER, TIDESILVER_SWORD, TIDESILVER_AXE, TIDESILVER_PICKAXE, TIDESILVER_SHOVEL,
+                    TIDESILVER_HOE, TIDESILVER_HELMET, TIDESILVER_CHESTPLATE, TIDESILVER_LEGGINGS, TIDESILVER_BOOTS));
+
     private ModItems() {
+    }
+
+    /** The set of {@code tier}, if it has one yet. */
+    public static Optional<GearSet> gear(GearTier tier) {
+        return GEAR_SETS.stream().filter(set -> set.tier() == tier).findFirst();
     }
 
     public static void register(IEventBus modBus) {

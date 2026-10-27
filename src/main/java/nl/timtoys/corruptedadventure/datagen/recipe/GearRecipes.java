@@ -7,43 +7,75 @@ import net.minecraft.data.recipes.SmithingTransformRecipeBuilder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ItemLike;
+import net.neoforged.neoforge.registries.DeferredItem;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.item.GearTier;
+import nl.timtoys.corruptedadventure.registry.GearSet;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 
+import java.util.List;
+
 /**
- * The gear tier recipes (fase-2-items.md §5.1). Sunstone: a vanilla {@code smithing_transform} per piece, like the
- * netherite upgrade (diamond piece + template + ingot; enchantments and trim/coating carry over), and the template from
- * soul crystal. There is no copy recipe for the template: crafting it already is the copy.
+ * The gear tier recipes (fase-2-items.md §5.1, §6.2, §6.5). Every tier upgrades the gear of the one before with a vanilla
+ * {@code smithing_transform} per piece, like the netherite upgrade (piece + template + ingot; enchantments and
+ * trim/coating carry over): sunstone takes diamond gear. Each template is crafted from a material of the Nether ring
+ * before its ring (the loop overworld → Nether → ring), the ingot of the tier before (diamond for sunstone) and a stone
+ * of its own ring; there is no copy recipe for a template: crafting it already is the copy.
  */
 public final class GearRecipes extends RecipeSet {
+    /** Vanilla's diamond set, in the order of {@link GearSet#PIECES}. */
+    private static final List<Item> DIAMOND = List.of(Items.DIAMOND_SWORD, Items.DIAMOND_AXE, Items.DIAMOND_PICKAXE,
+            Items.DIAMOND_SHOVEL, Items.DIAMOND_HOE, Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE,
+            Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS);
+
     private GearRecipes() {
     }
 
     public static void build(RecipeOutput output) {
-        Item template = ModItems.SUNSTONE_UPGRADE_SMITHING_TEMPLATE.get();
-        Item ingot = ModItems.SUNSTONE_INGOT.get();
-        // The categories of vanilla's netherite upgrades.
-        upgrade(output, template, ingot, Items.DIAMOND_SWORD, RecipeCategory.COMBAT, ModItems.SUNSTONE_SWORD.get());
-        upgrade(output, template, ingot, Items.DIAMOND_AXE, RecipeCategory.TOOLS, ModItems.SUNSTONE_AXE.get());
-        upgrade(output, template, ingot, Items.DIAMOND_PICKAXE, RecipeCategory.TOOLS, ModItems.SUNSTONE_PICKAXE.get());
-        upgrade(output, template, ingot, Items.DIAMOND_SHOVEL, RecipeCategory.TOOLS, ModItems.SUNSTONE_SHOVEL.get());
-        upgrade(output, template, ingot, Items.DIAMOND_HOE, RecipeCategory.TOOLS, ModItems.SUNSTONE_HOE.get());
-        upgrade(output, template, ingot, Items.DIAMOND_HELMET, RecipeCategory.COMBAT, ModItems.SUNSTONE_HELMET.get());
-        upgrade(output, template, ingot, Items.DIAMOND_CHESTPLATE, RecipeCategory.COMBAT, ModItems.SUNSTONE_CHESTPLATE.get());
-        upgrade(output, template, ingot, Items.DIAMOND_LEGGINGS, RecipeCategory.COMBAT, ModItems.SUNSTONE_LEGGINGS.get());
-        upgrade(output, template, ingot, Items.DIAMOND_BOOTS, RecipeCategory.COMBAT, ModItems.SUNSTONE_BOOTS.get());
+        List<Item> previous = DIAMOND;
+        for (GearSet set : ModItems.GEAR_SETS) {
+            Item template = template(set.tier());
+            Item ingot = ingot(set.tier());
+            List<Item> pieces = set.pieces().stream().<Item>map(DeferredItem::get).toList();
+            for (int i = 0; i < pieces.size(); i++) {
+                upgrade(output, template, ingot, previous.get(i), category(i), pieces.get(i));
+            }
+            previous = pieces;
+        }
 
-        // Provisional shape (confirm at the test stop): soul crystal around a scorched sandstone heart, diamond top and bottom.
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, template)
-                .define('S', ModItems.SOUL_CRYSTAL.get())
-                .define('D', Items.DIAMOND)
-                .define('C', ModBlocks.SCORCHED_SANDSTONE)
-                .pattern("SDS")
-                .pattern("SCS")
-                .pattern("SDS")
-                .unlockedBy(getHasName(ModItems.SOUL_CRYSTAL.get()), has(ModItems.SOUL_CRYSTAL.get()))
-                .save(output, CorruptedAdventure.id(getItemName(template)));
+        // Provisional shapes (confirm at the test stop): six of the Nether material around a stone heart, the two
+        // ingots of the tier before top and bottom.
+        template(output, ModItems.SUNSTONE_UPGRADE_SMITHING_TEMPLATE.get(), ModItems.SOUL_CRYSTAL.get(), Items.DIAMOND,
+                ModBlocks.SCORCHED_SANDSTONE);
+        template(output, ModItems.VOLCANITE_UPGRADE_SMITHING_TEMPLATE.get(), ModItems.DEW_CRYSTAL.get(),
+                ModItems.SUNSTONE_INGOT.get(), ModBlocks.PUMICE);
+        template(output, ModItems.TIDESILVER_UPGRADE_SMITHING_TEMPLATE.get(), ModBlocks.PRIMORDIAL_ICE,
+                ModItems.VOLCANITE_INGOT.get(), ModBlocks.TIDESTONE);
+    }
+
+    private static Item template(GearTier tier) {
+        return switch (tier) {
+            case SUNSTONE -> ModItems.SUNSTONE_UPGRADE_SMITHING_TEMPLATE.get();
+            case VOLCANITE -> ModItems.VOLCANITE_UPGRADE_SMITHING_TEMPLATE.get();
+            case TIDESILVER -> ModItems.TIDESILVER_UPGRADE_SMITHING_TEMPLATE.get();
+            case NULLITE -> ModItems.NULLITE_UPGRADE_SMITHING_TEMPLATE.get();
+        };
+    }
+
+    private static Item ingot(GearTier tier) {
+        return switch (tier) {
+            case SUNSTONE -> ModItems.SUNSTONE_INGOT.get();
+            case VOLCANITE -> ModItems.VOLCANITE_INGOT.get();
+            case TIDESILVER -> ModItems.TIDESILVER_INGOT.get();
+            case NULLITE -> ModItems.NULLITE_INGOT.get();
+        };
+    }
+
+    /** The categories of vanilla's netherite upgrades: sword and armour combat, the other tools tools. */
+    private static RecipeCategory category(int piece) {
+        return piece == 0 || piece >= 5 ? RecipeCategory.COMBAT : RecipeCategory.TOOLS;
     }
 
     /** Vanilla's {@code netheriteSmithing} with our template and ingot, and the id in our namespace. */
@@ -53,5 +85,18 @@ public final class GearRecipes extends RecipeSet {
                         category, result)
                 .unlocks(getHasName(ingot), has(ingot))
                 .save(output, CorruptedAdventure.id(getItemName(result) + "_smithing"));
+    }
+
+    /** {@code SIS / SCS / SIS}: 6 {@code shell}, 2 {@code ingot}, 1 {@code core} → 1 template. */
+    private static void template(RecipeOutput output, Item template, ItemLike shell, ItemLike ingot, ItemLike core) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, template)
+                .define('S', shell)
+                .define('I', ingot)
+                .define('C', core)
+                .pattern("SIS")
+                .pattern("SCS")
+                .pattern("SIS")
+                .unlockedBy(getHasName(shell), has(shell))
+                .save(output, CorruptedAdventure.id(getItemName(template)));
     }
 }
