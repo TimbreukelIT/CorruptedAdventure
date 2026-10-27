@@ -89,9 +89,9 @@ final class ModBlockStateProvider extends BlockStateProvider {
     }
 
     /**
-     * Phase 2 golf 2 (stream M; textures: {@code Golf2MaterialTextures}, final ones by stream T). The inlaid sandstone
+     * Phase 2 golf 2 (stream M; textures: {@code Golf2Ring2Textures}, stream T). The inlaid sandstone
      * like cut sandstone (inlaid side, inlaid top on both ends); the salt lamp's block model is hand-written in
-     * {@code src/main/resources} (its Blockbench model), so only its blockstate comes from here.
+     * {@code src/main/resources} (stream T), so only its blockstate comes from here.
      */
     private void golf2Materials() {
         simpleBlock(ModBlocks.SOUL_CRYSTAL_BLOCK.get());

@@ -61,7 +61,7 @@ public final class Golf1MaterialTextures {
     }
 
     public static void main(String[] args) throws IOException {
-        ingot("item/sunstone_ingot", SUNSTONE);
+        // item/sunstone_ingot: final texture from Golf2SunstoneTextures (golf 2).
         ingot("item/volcanite_ingot", VOLCANITE);
         ingot("item/tidesilver_ingot", TIDESILVER);
         ingot("item/nullite_ingot", NULLITE);
