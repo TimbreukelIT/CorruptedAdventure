@@ -144,7 +144,7 @@ met ids in onze namespace. Code in `datagen/recipe/` (`WoodSetRecipes`, `StoneSe
   `bleached_netherrack`; de basisblokken zelf (kloofsteen, puimsteen, koude lava, tidestone, fossielsteen, witte steen)
   komen alleen uit de wereld, zoals tuf en basalt.
 ### 4.3 Tier-raamwerk (B)
-**Stats (voorlopig, afstemmen in golf 2–5).** Curve: zonnesteen ≈ netherite, daarna per ring een stap. Bron in de code:
+**Stats (voorlopig, afstemmen in golf 2–5).** Curve: zonnesteen ≈ netherite (sinds golf 2 iets meer: duurzaamheid 2200 en harnasfactor 40, §5.1), daarna per ring een stap. Bron in de code:
 `item/GearTier` (tools: `Tier`; harnas: `registry/ModArmorMaterials`). `GearTierTest` bewaakt de curve (elke tier strikt
 hoger op duurzaamheid, mijnsnelheid en schade, minstens gelijk op de rest; zonnesteen ≥ netherite op elke stat; volledig
 harnas binnen de vanilla-grenzen armor 30 en toughness 20).
@@ -152,7 +152,7 @@ harnas binnen de vanilla-grenzen armor 30 en toughness 20).
 | Tier (ring) | Duurzaamheid tools | Mijnsnelheid | Schade-bonus | Enchant | Armor laars/been/borst/helm (dier) | Toughness | Knockback-weerstand | Duurzaamheidsfactor harnas |
 |---|---|---|---|---|---|---|---|---|
 | netherite (ter vergelijking) | 2031 | 9 | 4 | 15 | 3/6/8/3 (11) | 3 | 0,1 | 37 |
-| zonnesteen (2) | 2031 | 9 | 4 | 15 | 3/6/8/3 (11) | 3 | 0,1 | 37 |
+| zonnesteen (2) | **2200** | 9 | 4 | 15 | 3/6/8/3 (11) | 3 | 0,1 | **40** |
 | vulkaniet (3) | 2500 | 10 | 5 | 15 | 4/7/9/4 (12) | 3,5 | 0,1 | 42 |
 | getijdezilver (4) | 3000 | 11 | 6 | 16 | 4/7/10/4 (13) | 4 | 0,15 | 47 |
 | nulliet (5) | 3600 | 12 | 7 | 18 | 5/8/10/5 (14) | 5 | 0,2 | 53 |
@@ -298,3 +298,16 @@ niet om.
 ### 5.7 Prestatiemeting
 De volledige 6-rondemeting (`perf.sh --areas tools/test/areas/perf-all.txt --warm 6 --cold 1 --max-min 130`) draait in
 een **aparte sessie**, gestart met `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`, buiten golf 2.
+
+### 5.8 Voorlopig (bevestigen bij de teststop)
+Keuzes die de stromen binnen §5 zelf maakten (bron: `docs/plans/fase-2/golf-2-{M,V,T}.md`):
+- **Zielkristalblok:** geen tier-eis (zoals amethist), geen licht, kaartkleur `DIAMOND`; in creative-tab 1 (Nether-ring 1 hoort in tab 1).
+- **Ingelegd zandsteen:** 8 scorched sandstone rond 1 turkoois → 8; trap 6 → 4, plaat 3 → 6, muur 6 → 6; steenzaag trap 1, plaat 2, muur 1; in `c:sandstone/blocks|slabs|stairs`.
+- **Zoutlamp:** fakkel boven op een zoutblok → 1 (zoals de jack o'lantern); volle kubus (gebruiker: optie A).
+- **Zielkristalblok-recept:** 2×2 zielkristal → 1.
+- **Uitdrogings-template:** `T S T / S C S / T S T` (turkoois, scorched sandstone, barrel cactus) → 1.
+- **Veldfles:** recept ` S ` / `LBL` / ` L ` (string als touw, leer, glazen fles) → 1 lege veldfles; gecraft leeg; in creative kost een slok niets; vullen ook aan waterlogged blokken (zoals een fles), de cauldron zakt een niveau; een volle veldfles drinkt in plaats van te vullen.
+- **Doses in creative/spectator:** een dosis die een meter verhoogt (jerky) doet daar niets.
+- **Cactussap:** shapeless barrel cactus + glazen fles → 1; drinkduur 32 ticks, ook met een volle hongerbalk.
+- **Gedroogd vlees:** shapeless zout + `#corruptedadventure:salted_jerky_meats` (`#c:foods/cooked_meat` + `#c:foods/cooked_fish`) → 2; NL-naam "Gezouten gedroogd vlees".
+- **Textures:** lege veldfles bleker met open hals en kurk aan een touwtje, volle met de kurk erin; `cooled`-icoon = koele druppel met rijpschittering (18 × 18).
