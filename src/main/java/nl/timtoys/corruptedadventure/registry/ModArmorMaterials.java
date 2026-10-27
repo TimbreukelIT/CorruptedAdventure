@@ -16,8 +16,8 @@ import java.util.Map;
 
 /**
  * One armour material per {@link GearTier} (stats there), like vanilla netherite: its equip sound and one layer
- * {@code corruptedadventure:<tier>} (the layer textures come with the armour pieces in waves 2–5). No armour items
- * yet. The durability factor is not part of an {@link ArmorMaterial}; the armour items take it from the tier.
+ * {@code corruptedadventure:<tier>} (the layer textures come with the armour pieces in waves 2–5; sunstone's in wave 2,
+ * see {@code GearItems}). The durability factor is not part of an {@link ArmorMaterial}; the armour items take it from the tier.
  */
 public final class ModArmorMaterials {
     private static final DeferredRegister<ArmorMaterial> ARMOR_MATERIALS =

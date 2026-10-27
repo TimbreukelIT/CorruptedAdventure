@@ -13,6 +13,8 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SmithingTemplateItem;
+import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.PlaceOnWaterBlockItem;
@@ -224,8 +226,9 @@ class ModBlocksTest {
                 ModBlocks.DEW_CRYSTAL_CLUSTER.asItem()), shown.subList(sprouts + 1, sprouts + 6));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem))
-                // The smithing templates of phase 2 close their ring sections; these checks are about the materials.
-                .filter(item -> !(item instanceof SmithingTemplateItem)).toList();
+                // The smithing templates and gear of phase 2 close their ring sections; these checks are about the materials.
+                .filter(item -> !(item instanceof SmithingTemplateItem) && !(item instanceof TieredItem)
+                        && !(item instanceof ArmorItem)).toList();
         assertEquals(List.of(ModItems.SALT.get(), ModItems.SUNSTONE_INGOT.get(), ModItems.TURQUOISE.get(),
                 ModItems.DEW_CRYSTAL.get()), standalone.subList(standalone.indexOf(ModItems.SALT.get()),
                 standalone.indexOf(ModItems.DEW_CRYSTAL.get()) + 1));
