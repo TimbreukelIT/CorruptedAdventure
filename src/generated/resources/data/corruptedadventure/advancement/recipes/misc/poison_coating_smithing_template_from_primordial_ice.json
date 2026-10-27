@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_jade": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:jade"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:poison_coating_smithing_template_from_primordial_ice"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_jade"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:poison_coating_smithing_template_from_primordial_ice"
+    ]
+  }
+}

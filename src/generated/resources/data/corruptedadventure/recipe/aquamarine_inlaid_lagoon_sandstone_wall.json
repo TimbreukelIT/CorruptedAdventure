@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "corruptedadventure:aquamarine_inlaid_lagoon_sandstone"
+    }
+  },
+  "pattern": [
+    "###",
+    "###"
+  ],
+  "result": {
+    "count": 6,
+    "id": "corruptedadventure:aquamarine_inlaid_lagoon_sandstone_wall"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": {
+      "item": "corruptedadventure:tidestone"
+    },
+    "X": {
+      "item": "corruptedadventure:jade"
+    }
+  },
+  "pattern": [
+    "###",
+    "#X#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "id": "corruptedadventure:jade_inlaid_tidestone"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "corruptedadventure:primordial_ice"
+    },
+    "J": {
+      "item": "corruptedadventure:jade"
+    },
+    "S": {
+      "item": "corruptedadventure:tidestone"
+    }
+  },
+  "pattern": [
+    "JSJ",
+    "SCS",
+    "JSJ"
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:poison_coating_smithing_template"
+  }
+}

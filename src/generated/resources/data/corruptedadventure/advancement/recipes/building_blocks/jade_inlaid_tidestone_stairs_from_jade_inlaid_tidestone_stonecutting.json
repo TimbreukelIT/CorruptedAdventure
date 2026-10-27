@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_jade_inlaid_tidestone": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:jade_inlaid_tidestone"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:jade_inlaid_tidestone_stairs_from_jade_inlaid_tidestone_stonecutting"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_jade_inlaid_tidestone"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:jade_inlaid_tidestone_stairs_from_jade_inlaid_tidestone_stonecutting"
+    ]
+  }
+}
