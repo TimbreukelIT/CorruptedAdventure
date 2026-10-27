@@ -58,9 +58,9 @@ Er wordt per ring gebouwd, in golven, en elke golf begint met een korte vragenro
 | Golf | Inhoud | Teststop |
 |---|---|---|
 | 1 — Basis | Creative-tabs per ring; recepten voor de bestaande blok- en houtsets (dood hout, kloofsteen, palm, druipzwam, verdant, zout, tidestone e.d.); smelten van de ruwe ertsen; het tier-raamwerk (tiers, `needs_*_tool`-tags, smithing-templates); het coatingsysteem (data component + smithing + `RateModifier`); het raamwerk voor verbruiksitems | — |
-| 2 — Ring 2 + Nether-1 | Zonnesteen-tier; de bescherming tegen uitdroging (coating + veldfles); nut voor turkoois en zout; zielkristal; ring 2-extra's | **Teststop na golf 1 + 2** |
+| 2 — Ring 2 + Nether-1 | Zonnesteen-tier; de bescherming tegen uitdroging (coating + veldfles); nut voor turkoois en zout; zielkristal; ring 2-extra's | — (vervallen 2026-10-27, zie §6) |
 | 3 — Ring 3 + Nether-2 | Vulkaniet-tier; hittebescherming met dauwkristal; zwavel (buskruit, vuur, brandstof, brandpijlen); vuurrobijn; druipzwam; ring 3-extra's | — |
-| 4 — Ring 4 + Nether-3 | Getijdezilver-tier; gifbescherming met oerijs-water; koubescherming; gifkristal (gifpijlen); jade, aquamarijn en veen; ring 4-extra's | **Teststop na golf 3 + 4** |
+| 4 — Ring 4 + Nether-3 | Getijdezilver-tier; gifbescherming met oerijs-water; koubescherming; gifkristal (gifpijlen); jade, aquamarijn en veen; ring 4-extra's | **Teststop na golf 1–4** |
 | 5 — Ring 5 + Nether-4/5 | Nulliet-tier; hemelglas (blok, lens); zuivering met de witte kern (void + stilte); glitchscherven; ring 5-extra's | **Eindtest fase 2** |
 
 Tussen de teststops test Claude zelf: build, runData, een server met 2 clients, en recepten en mijnbaarheid via een
