@@ -166,6 +166,7 @@ public final class DataGenerators {
         event.createProvider((output, lookup) -> new ModBiomeTagsProvider(output, lookup, event.getExistingFileHelper()));
         event.createProvider(ModDataMapProvider::new);
         event.createProvider((output, lookup) -> new ModDamageTypeTagsProvider(output, lookup, event.getExistingFileHelper()));
+        event.createProvider((output, lookup) -> new ModEntityTypeTagsProvider(output, lookup, event.getExistingFileHelper()));
 
         ExistingFileHelper files = event.getExistingFileHelper();
         // Models check that their textures exist in src/main/resources: run tools/textures/Ring1Textures.java first.

@@ -17,9 +17,11 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.condition.ConsumableDoses;
+import nl.timtoys.corruptedadventure.entity.ArrowEffect;
 import nl.timtoys.corruptedadventure.item.CanteenItem;
 import nl.timtoys.corruptedadventure.item.DoseDrinkItem;
 import nl.timtoys.corruptedadventure.item.DoseFoodItem;
+import nl.timtoys.corruptedadventure.item.EffectArrowItem;
 import nl.timtoys.corruptedadventure.item.GearItems;
 import nl.timtoys.corruptedadventure.item.GearTier;
 import nl.timtoys.corruptedadventure.item.UpgradeSmithingTemplates;
@@ -128,6 +130,9 @@ public final class ModItems {
     /** Coating against heat (applied with dew crystal). Where to find it: golf 3. */
     public static final DeferredItem<SmithingTemplateItem> HEAT_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "heat_coating_smithing_template", () -> CoatingTemplates.create(Coating.HEAT));
+    /** Sulfur and 4 arrows make 4 (golf 3, §6.4): the target burns 5 s; it lights no blocks. */
+    public static final DeferredItem<EffectArrowItem> FIRE_ARROW = ITEMS.registerItem("fire_arrow",
+            properties -> new EffectArrowItem(ArrowEffect.FIRE, properties));
 
     // ---- Nether ring 3 ----
     /** Coating against the cold (applied with fire crystal). Where to find it: golf 4. */
@@ -161,6 +166,9 @@ public final class ModItems {
     /** Coating against poison (applied with primordial ice). Where to find it: golf 4. */
     public static final DeferredItem<SmithingTemplateItem> POISON_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "poison_coating_smithing_template", () -> CoatingTemplates.create(Coating.POISON));
+    /** A toxic crystal shard and 4 arrows make 4 (golf 4, §6.7): Poison I for 5 s. */
+    public static final DeferredItem<EffectArrowItem> POISON_ARROW = ITEMS.registerItem("poison_arrow",
+            properties -> new EffectArrowItem(ArrowEffect.POISON, properties));
 
     // ---- Nether ring 4 ----
     /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */

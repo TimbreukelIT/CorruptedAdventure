@@ -4,6 +4,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import nl.timtoys.corruptedadventure.datagen.recipe.ArrowRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.CoatingRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.ConsumableRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.FloraRecipes;
@@ -31,5 +32,6 @@ final class ModRecipeProvider extends RecipeProvider {
         Golf2MaterialRecipes.build(output);
         ConsumableRecipes.build(output);
         GearRecipes.build(output);
+        ArrowRecipes.build(output);
     }
 }

@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.datagen.tags.ArrowItemTags;
 import nl.timtoys.corruptedadventure.datagen.tags.ConsumableItemTags;
 import nl.timtoys.corruptedadventure.datagen.tags.GearItemTags;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
@@ -130,6 +131,7 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         coatings();
         ConsumableItemTags.addTags(this::tag);
         GearItemTags.build(this::tag);
+        ArrowItemTags.build(this::tag);
     }
 
     /** Phase 2 golf 1 (stream D): the storage blocks' item tags, the ingots and the turquoise gem. */
