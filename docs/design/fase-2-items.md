@@ -298,3 +298,68 @@ niet om.
 ### 5.7 Prestatiemeting
 De volledige 6-rondemeting (`perf.sh --areas tools/test/areas/perf-all.txt --warm 6 --cold 1 --max-min 130`) draait in
 een **aparte sessie**, gestart met `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`, buiten golf 2.
+
+## 6. Golf 3 + 4 — ring 3 + Nether-2, ring 4 + Nether-3 (vragenronde 2026-10-27)
+Besloten door de gebruiker op 2026-10-27, direct na golf 2. Golf 3 en 4 worden samen gebouwd. **Er is één teststop na
+golf 1–4**: de stop na golf 1 + 2 vervalt (INT test elke golf automatisch).
+
+### 6.1 Tier-curve (vervangt de voorlopige stats van §4.3 voor ring 3–5)
+| Tier | Tools | Mijnsnelheid | Schade-bonus | Enchant | Armor l/b/b/h | Toughness | KB | Harnasfactor |
+|---|---|---|---|---|---|---|---|---|
+| zonnesteen | 2200 | 9 | 4 | 15 | 3/6/8/3 | 3 | 0,1 | 40 |
+| vulkaniet | **2700** | 10 | **5,5** | 15 | 4/7/9/4 | **4** | 0,1 | 42 |
+| getijdezilver | **3200** | 11 | **6,5** | 16 | 4/7/10/4 | **4,5** | 0,15 | 47 |
+| nulliet | **3800** | 12 | **7,5** | 18 | 5/8/10/5 | 5 | 0,2 | 53 |
+
+Vulkaniet is bewust steil, zodat netherite en zonnesteen in ring 3 echt zwak worden. Getijdezilver en nulliet schuiven
+mee.
+
+### 6.2 Vulkaniet (golf 3)
+- **Set:** `volcanite_{sword,axe,pickaxe,shovel,hoe,helmet,chestplate,leggings,boots}`, gesmeed uit **zonnesteen**-gear
+  + `volcanite_ingot` + template.
+- **Template:** 6 `dew_crystal` + 2 `sunstone_ingot` + 1 puimsteen → 1, zonder kopie-recept.
+- **Palet:** zwart basalt met gloeiende oranjerode aders (geen emissive).
+- **Gating:** de ring 4-ertsen worden met de vulkaniet-pickaxe mijnbaar (de tags bestaan al).
+
+### 6.3 Hitte (golf 3)
+- **"Verkoeld" (`cooled`) werkt ook tegen hitte:** een stijgende hitte ×0,5, net als bij uitdroging. Daardoor helpt de
+  veldfles ook in ring 3; de slok zelf haalt alleen uitdroging af.
+- **Dauwdrank:** dauwkristal + waterfles → −20 hitte + 45 s verkoeld; eenmalig, geeft de fles terug.
+- **Hitte-coating-template:** 4 `fire_ruby` + 4 puimsteen + 1 `dew_crystal` → 1. Het kopie-recept blijft.
+
+### 6.4 Ring 3-materialen en -extra's (golf 3)
+- **Zwavel:**
+  - buskruit: zwavel + houtskool → 2 buskruit;
+  - brandstof: zwavel brandt als kolen (8 items), `sulfur_block` (9 ↔ 1) als een kolenblok;
+  - **brandpijlen:** zwavel + 4 pijlen → 4; een geraakt doel brandt 5 s, ze steken geen blokken in brand.
+- **Vuurrobijn:** in het hitte-template (§6.3), plus de bouwset `fire_ruby_inlaid_pumice` (blok + trap/plaat/muur).
+- **Gloeibes:** een eigen bes-item van de `ember_berry_bush` (plukken geeft gloeibessen, die de struik planten),
+  voedsel zoals zoete bessen, plus 5 s vuurbestendigheid.
+- **Zwavellamp:** een lichtblok (licht 13, geelgroen) uit zwavel + glas.
+- **Puimsteen-vlotter (`pumice_raft`):** een dun plaatje zoals een lelieblad dat je alleen op lava plaatst en waarop je
+  kunt staan; 4 puimsteen → 2. Geen fysica.
+- **Dauwkristalblok:** 4 dauwkristal → 1 (zoals amethist).
+- **Druipzwamsoep:** druipzwamhoed + kom → soep (zoals paddenstoelensoep).
+- Niet: een zwavelbouwset, een vuurmaker.
+
+### 6.5 Getijdezilver (golf 4)
+- **Set:** `tidesilver_*` (9 stuks), gesmeed uit **vulkaniet**-gear + `tidesilver_ingot` + template.
+- **Template:** 6 oerijs + 2 `volcanite_ingot` + 1 tidestone → 1, zonder kopie-recept.
+- **Palet:** helder zilver met groene jade-inleg op gevesten en randen.
+- **Gating:** de ring 5- en Nether-5-ertsen worden met de getijdezilver-pickaxe mijnbaar.
+
+### 6.6 Gif en kou (golf 4)
+- **Zuiver water:** uit oerijs → −20 gif + 45 s effect **"gezuiverd"** (stijgend gif ×0,5); eenmalig, geeft de fles
+  terug.
+- **Handwarmer:** vuurkristal + leer; 4 ladingen, per lading −20 kou + 45 s effect **"verwarmd"** (stijgende kou ×0,5),
+  bij te vullen met vuurkristal.
+- Per conditie een eigen effect, op het raamwerk van §5.3. Bij een nieuwe dosis wint de langste resterende tijd.
+- **Gif- en kou-coating-templates:** een ringrecept volgens hetzelfde patroon (4 materiaal + 4 ringsteen + 1
+  kernmateriaal → 1; gif met jade, kou met vuurkristal). Het kopie-recept blijft.
+
+### 6.7 Ring 4-materialen en -extra's (golf 4)
+- **Gifpijlen:** gifkristalscherf + 4 pijlen → 4; Gif I (vanilla) 5 s. Hergebruik van de pijl-basis van de
+  brandpijlen.
+- **Ingelegde bouwsets:** `jade_inlaid_tidestone` en `aquamarine_inlaid_lagoon_sandstone` (elk met trap/plaat/muur).
+- **Veen** is brandstof.
+- Niet: de verdant-vrucht als voedsel (blijft in de backlog).

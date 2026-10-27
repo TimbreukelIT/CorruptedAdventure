@@ -1046,3 +1046,10 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-27 | textures | Palet zonnesteen: barnsteen-goud (amber, zongeel highlight, koperen schaduw, geen emissive); eerst één voorbeeld in Blockbench | Gebruiker; past bij de ertsgloed en verschilt van vanilla-goud |
 | 2026-10-27 | worldgen | De volledige perf-meting draait in een aparte sessie met `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`, buiten golf 2 | Gebruiker |
 | 2026-10-27 | items | Verkoeld is een eigen statuseffect `cooled` (de langste resterende tijd wint); de veldfles toont zijn slokken met 2 textures + een balkje + de tooltip | Gebruiker; de minste code, vanilla synct en bewaart het |
+| 2026-10-27 | items | Golf 3 + 4 worden samen gebouwd, met één teststop na golf 1–4 (de stop na 1 + 2 vervalt) | Gebruiker: één keer testen |
+| 2026-10-27 | items | Tier-curve steiler: vulkaniet 2700 / +5,5 / toughness 4; getijdezilver 3200 / +6,5 / 4,5; nulliet 3800 / +7,5 / 5 | Gebruiker; netherite/zonnesteen worden in ring 3 echt zwak |
+| 2026-10-27 | items | Upgrade-templates uit recepten: vulkaniet 6 dauwkristal + 2 zonnesteenstaaf + puimsteen; getijdezilver 6 oerijs + 2 vulkanietstaaf + tidestone | Gebruiker; consequent met zonnesteen |
+| 2026-10-27 | conditions | `cooled` vertraagt ook hitte; dauwdrank (−20 hitte + 45 s); zuiver water met "gezuiverd" (gif ×0,5); handwarmer (4 ladingen) met "verwarmd" (kou ×0,5) | Gebruiker |
+| 2026-10-27 | items | Zwavel: buskruit, brandstof + zwavelblok, brandpijlen; vuurrobijn in het hitte-template + ingelegde puimsteen; gloeibes, zwavellamp, puimsteen-vlotter, dauwkristalblok, druipzwamsoep | Gebruiker |
+| 2026-10-27 | items | Ring 4: gifpijlen, ingelegde jade/aquamarijn-bouwsets, gif-/kou-template uit een ringrecept, veen als brandstof; geen verdant-vrucht als voedsel | Gebruiker |
+| 2026-10-27 | textures | Palet vulkaniet: zwart basalt met gloeiende aders (geen emissive); getijdezilver: zilver met jade-accenten | Gebruiker |
