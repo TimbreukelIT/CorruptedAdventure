@@ -55,6 +55,7 @@ import nl.timtoys.corruptedadventure.block.VoidstoneBlock;
 import nl.timtoys.corruptedadventure.item.CanteenItem;
 import nl.timtoys.corruptedadventure.item.DoseDrinkItem;
 import nl.timtoys.corruptedadventure.item.DoseFoodItem;
+import nl.timtoys.corruptedadventure.item.EchoShellItem;
 import nl.timtoys.corruptedadventure.item.HandWarmerItem;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
 import org.junit.jupiter.api.Test;
@@ -923,7 +924,9 @@ class ModBlocksTest {
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem))
                 // The smithing templates of phase 2 close their ring sections; these checks are about the materials.
-                .filter(item -> !(item instanceof SmithingTemplateItem)).toList();
+                .filter(item -> !(item instanceof SmithingTemplateItem))
+                // So do the consumables of golf 5 (sky light, echo shell).
+                .filter(item -> !(item instanceof DoseDrinkItem || item instanceof EchoShellItem)).toList();
         int shard = standalone.indexOf(ModItems.PURITY_CRYSTAL_SHARD.get());
         assertEquals(List.of(ModItems.PURITY_CRYSTAL_SHARD.get(), ModItems.GLITCH_SHARD.get(), ModItems.RAW_NULLITE.get(),
                 ModItems.NULLITE_INGOT.get(), ModItems.WHITE_CORE.get()), standalone.subList(shard, standalone.size()));

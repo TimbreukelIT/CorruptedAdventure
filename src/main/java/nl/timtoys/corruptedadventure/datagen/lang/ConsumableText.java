@@ -4,10 +4,12 @@ import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModMobEffects;
 
 /**
- * The consumables against the conditions and their status effects (phase 2 golf 2 stream V, golf 3 + 4 stream C).
- * English is mandatory, Dutch welcome.
+ * The consumables against the conditions and their status effects (phase 2 golf 2 stream V, golf 3 + 4 and golf 5
+ * stream C). English is mandatory, Dutch welcome.
  */
 public final class ConsumableText {
+    private static final String ECHO_SHELL_SUBTITLE = "subtitles.corruptedadventure.item.echo_shell.blow";
+
     private ConsumableText() {
     }
 
@@ -24,6 +26,11 @@ public final class ConsumableText {
         lang.add(ModMobEffects.COOLED.get().getDescriptionId(), "Cooled");
         lang.add(ModMobEffects.CLEANSED.get().getDescriptionId(), "Cleansed");
         lang.add(ModMobEffects.WARMED.get().getDescriptionId(), "Warmed");
+        lang.addItem(ModItems.SKY_LIGHT_DRAUGHT, "Sky Light");
+        lang.addItem(ModItems.ECHO_SHELL, "Echo Shell");
+        lang.add(ECHO_SHELL_SUBTITLE, "Echo shell resounds");
+        lang.add(ModMobEffects.ANCHORED.get().getDescriptionId(), "Anchored");
+        lang.add(ModMobEffects.RESOUNDING.get().getDescriptionId(), "Resounding");
     }
 
     public static void addDutch(LangOutput lang) {
@@ -39,5 +46,10 @@ public final class ConsumableText {
         lang.add(ModMobEffects.COOLED.get().getDescriptionId(), "Verkoeld");
         lang.add(ModMobEffects.CLEANSED.get().getDescriptionId(), "Gezuiverd");
         lang.add(ModMobEffects.WARMED.get().getDescriptionId(), "Verwarmd");
+        lang.addItem(ModItems.SKY_LIGHT_DRAUGHT, "Hemellicht");
+        lang.addItem(ModItems.ECHO_SHELL, "Galmschelp");
+        lang.add(ECHO_SHELL_SUBTITLE, "Galmschelp galmt");
+        lang.add(ModMobEffects.ANCHORED.get().getDescriptionId(), "Verankerd");
+        lang.add(ModMobEffects.RESOUNDING.get().getDescriptionId(), "Galm");
     }
 }

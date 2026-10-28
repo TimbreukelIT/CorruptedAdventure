@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "corruptedadventure:purity_crystal_shard"
+    },
+    {
+      "item": "minecraft:glowstone_dust"
+    },
+    {
+      "type": "neoforge:components",
+      "components": {
+        "minecraft:potion_contents": {
+          "potion": "minecraft:water"
+        }
+      },
+      "items": "minecraft:potion"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:sky_light_draught"
+  }
+}

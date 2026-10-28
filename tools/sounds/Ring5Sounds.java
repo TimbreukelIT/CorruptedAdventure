@@ -15,7 +15,7 @@ import javax.sound.sampled.AudioSystem;
  * Synthesises the ring 5 and Nether ring 5 sounds from our own maths (package 98; pattern of {@code Ring4Sounds.java}):
  * no vanilla audio is read or copied. The three ring 5 weather loops (glitch storm, reverse rain, standstill), the void
  * drone of the outer band, the glitch one-shots, the silent "music" of the silent biomes and the
- * heartbeat at the top of the silence meter.
+ * heartbeat at the top of the silence meter; and the blow of the echo shell (phase 2 golf 5), a Nether ring 5 item.
  * Run from the repository root: {@code java tools/sounds/Ring5Sounds.java [path-to-ffmpeg]}; the ffmpeg path can also
  * come from the environment variable {@code FFMPEG}; {@code --wav-only} writes only the WAVs.
  *
@@ -53,7 +53,10 @@ public final class Ring5Sounds {
             // Nether ring 5 (98).
             new Sound("ambient/nether_ring_5/silence_loop_1", "silence", 1),
             new Sound("ambient/nether_ring_5/heartbeat_1", "heartbeat", 1),
-            new Sound("ambient/nether_ring_5/heartbeat_2", "heartbeat", 2));
+            new Sound("ambient/nether_ring_5/heartbeat_2", "heartbeat", 2),
+            // The echo shell (phase 2 golf 5).
+            new Sound("item/echo_shell/blow_1", "echo_shell", 1),
+            new Sound("item/echo_shell/blow_2", "echo_shell", 2));
 
     private Ring5Sounds() {
     }
@@ -76,6 +79,7 @@ public final class Ring5Sounds {
                 case "glitch" -> glitch(random, sound.index());
                 case "silence" -> silence(random);
                 case "heartbeat" -> heartbeat(random, sound.index());
+                case "echo_shell" -> echoShell(random, sound.index());
                 default -> throw new IllegalStateException(sound.variant());
             };
             check(sound, samples);
@@ -269,7 +273,67 @@ public final class Ring5Sounds {
         return normalise(out, 0.8);
     }
 
+    /**
+     * The echo shell's blow, 3.6 s: a low conch call (a breathy, horn-like tone that bends up into its pitch, with a slow
+     * vibrato) of about 1.4 s, then the same call coming back three times from far away, each softer and duller, in a
+     * hall-like tail: the "galm".
+     */
+    private static double[] echoShell(Random random, int index) {
+        int length = (int) (3.6 * RATE);
+        double pitch = index == 1 ? 174.6 : 164.8;
+        double call = 1.4;
+        double[] dry = new double[length];
+        double[] breath = band(white(random, length), 300, 2400);
+        double phase = 0;
+        for (int i = 0; i < (int) (call * RATE); i++) {
+            double t = i / (double) RATE;
+            double bend = 0.93 + 0.07 * Math.min(1, t / 0.14) - 0.02 * Math.max(0, (t - 1.0) / 0.4);
+            double vibrato = 1 + 0.004 * StrictMath.sin(2 * Math.PI * 4.8 * t);
+            phase += 2 * Math.PI * pitch * bend * vibrato / RATE;
+            double tone = 0;
+            for (int h = 1; h <= 9; h++) {
+                tone += (h % 2 == 1 ? 1.0 : 0.55) * StrictMath.sin(h * phase) / StrictMath.pow(h, 1.3);
+            }
+            double envelope = Math.min(1, t / 0.12) * (0.85 + 0.15 * Math.min(1, t / 0.6))
+                    * (t > call - 0.35 ? StrictMath.exp(-(t - (call - 0.35)) / 0.1) : 1);
+            dry[i] = envelope * (0.8 * tone + 0.25 * breath[i]);
+        }
+        double[] out = dry.clone();
+        double[] echo = dry;
+        double[] gains = {0.45, 0.25, 0.13};
+        for (int e = 0; e < gains.length; e++) {
+            echo = lowpass(echo, 2400 - e * 600);
+            int delay = (int) (0.55 * (e + 1) * RATE);
+            for (int i = 0; i + delay < length; i++) {
+                out[i + delay] += gains[e] * echo[i];
+            }
+        }
+        out = hall(out, 0.3);
+        out = lowpass(out, 6000);
+        fadeEnds(out, 0.01);
+        return normalise(out, 0.8);
+    }
+
     // ------------------------------------------------------------------ building blocks
+
+    /**
+     * A small hall: four parallel feedback combs (Schroeder) mixed in at {@code wet}; linear, not circular (one-shots with
+     * silence at the end only).
+     */
+    private static double[] hall(double[] in, double wet) {
+        double[] out = in.clone();
+        double[] delays = {0.0297, 0.0371, 0.0411, 0.0437};
+        for (double seconds : delays) {
+            int delay = (int) (seconds * RATE);
+            double[] comb = new double[in.length];
+            for (int i = 0; i < in.length; i++) {
+                comb[i] = in[i] + (i >= delay ? 0.82 * comb[i - delay] : 0);
+                out[i] += wet / delays.length * comb[i];
+            }
+        }
+        return out;
+    }
+
 
     private static double[] white(Random random, int length) {
         double[] out = new double[length];
