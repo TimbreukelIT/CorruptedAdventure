@@ -20,6 +20,12 @@ Bron van waarheid: `docs/design/fase-4-nightmares-concept.md`, secties "Fase 4-s
 - 20:05 gebruiker keurt de textures goed; verfijning: meer gloed op de aders van de hoorn (extra `U=FFC860`, meer
   `t`/`u` in de banden).
 
+- 20:40 "go I": textures-script gedraaid; build → 2 fouten in `ModBlocksTest` (materiaalvolgorde telde flits/hoorn mee) →
+  filter uitgebreid; runData; build groen (6m44s).
+- 21:02 GameTests 43/43 (batches `weakness_flash`, `weakness_horn`); 21:03 server-smoke `ismoke`: start zonder fouten,
+  GeckoLib geladen, `/effect give` dazzled + stunned op een husk via RCON: snelheid 0,0. Slot vrij. Commits `8d0e15d6`
+  (textures), `830af7c1` (generated + testfix). Daarna `/code-review low 7fff91ed..f4/items` (alleen eigen commits).
+
 ## Voorlopig (bevestigen bij de teststop)
 - **Effecten:** op elke `Mob` (ook een Nightmare): doelwit los bij start en elke tick, nieuwe doelwitten geannuleerd
   (`LivingChangeTargetEvent`). `stunned`: modifiers −100 % op `movement_speed`, `flying_speed`, `jump_strength`, pad stopt;
