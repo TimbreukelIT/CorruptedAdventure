@@ -32,5 +32,6 @@ final class ModEntityTypeTagsProvider extends EntityTypeTagsProvider {
         tag(Tags.EntityTypes.BOSSES).add(ModEntityTypes.THE_LOST_KEEPER.get());
         // Phase 4: The Lost Keeper is a sea serpent; it does not drown.
         tag(EntityTypeTags.CAN_BREATHE_UNDER_WATER).add(ModEntityTypes.THE_LOST_KEEPER.get());
+        tag(Tags.EntityTypes.BOSSES).add(ModEntityTypes.THE_UNFINISHED.get());
     }
 }

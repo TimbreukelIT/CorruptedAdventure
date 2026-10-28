@@ -56,6 +56,8 @@ public final class ServerConfig {
     public static final RisenConfig RISEN;
     /** {@code [nightmares.lost_keeper]}: the ring 4 Nightmare (phase 4). */
     public static final LostKeeperConfig LOST_KEEPER;
+    /** {@code [nightmares.unfinished]}: the ring 5 Nightmare (phase 4). */
+    public static final UnfinishedConfig UNFINISHED;
     /** {@code [nightmares.director]}: threat, roaming, arrival and return of all five Nightmares (phase 4 steps 2 and 3). */
     public static final NightmareDirectorConfig NIGHTMARE_DIRECTOR;
     /** {@code [weakness_items]}: the sunstone flash and the volcanite horn (phase 4, stream I). */
@@ -99,6 +101,7 @@ public final class ServerConfig {
         HOLLOW = new HollowConfig(builder);
         RISEN = new RisenConfig(builder);
         LOST_KEEPER = new LostKeeperConfig(builder);
+        UNFINISHED = new UnfinishedConfig(builder);
         NIGHTMARE_DIRECTOR = new NightmareDirectorConfig(builder);
         builder.pop();
         WEAKNESS_ITEMS = new WeaknessItemsConfig(builder);

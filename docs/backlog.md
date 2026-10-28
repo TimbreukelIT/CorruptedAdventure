@@ -614,3 +614,11 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [atmosphere] De mistbank van De Verloren Hoeder is alleen te zien als je erin of vlakbij bent (fog rond de camera); van ver zou je hem moeten zien "optrekken" (bijv. client-deeltjes of een mistwand aan de rand van de bank). (bron: R4)
 - [mobs] Koppeling van de mistbank van De Verloren Hoeder aan de mist-mobs van ring 4 (die bovengronds komen tijdens dikke mist). (bron: R4)
 - [mobs] Een spawn-ei of creative-tab-ingang voor De Verloren Hoeder ontbreekt bewust (stap 1: alleen `/summon`). (bron: R4)
+
+## Uit fase 4 De Onvoltooide stap 1 (R5, 2026-10-28)
+- [atmosphere] Eigen geluiden voor De Onvoltooide (klap, verspringen, grijpen, asregen, lokroep, void-trek, inladen door de lens, wegvallende graft); stap 1 gebruikt vanilla-geluiden met lage pitch (`entity/unfinished/UnfinishedEffects`). (bron: R5)
+- [mobs] Het litteken van De Onvoltooide (de grond opengescheurd tot in de void, alleen natuurlijke blokken, begrensd, uit te zetten in de config) volgt in stap 2 met de komst; stap 1 heeft alleen de meegesleepte void-poel in het model. (bron: R5)
+- [mobs] Asregen van De Onvoltooide is een eigen eenvoudige versie (lagen as = slowness); vervangen door de as van De Herrijzende (afslaan door medespelers, afgietsel) zodra R3 gemerged is. Idem verspringen (Holle), grijpen (Gelaagde) en lokroep (Hoeder): eigen versies in `entity/unfinished/`. (bron: R5)
+- [mobs] Spelers kunnen niet op De Onvoltooide klimmen (zijn delen botsen niet); "klimmen" in het gevecht = de wereld in (brok, brug, kasteelplateau) of een boog. Een beklimbaar lijf zou eigen botsing en meebewegen vragen. (bron: R5)
+- [mobs] De Onvoltooide loopt door bladeren en bouwsels heen (geen botsing, niets kapot) en staat op hun top; onder overhangen en in grotten komt hij niet. Bij de teststop bekijken of dat goed voelt. (bron: R5)
+- [items] Hemelglaspijlen of een andere afstandsvorm van de hemelglas-zwakte (de zwakke plek op de vleugel zit ~16 blokken hoog); nu laadt alleen de lens in en raak je hem met een gewone boog. (bron: R5)

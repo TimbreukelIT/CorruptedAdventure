@@ -14,6 +14,7 @@ import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
 import nl.timtoys.corruptedadventure.entity.risen.AshWalker;
 import nl.timtoys.corruptedadventure.entity.risen.TheRisen;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.TheLostKeeper;
+import nl.timtoys.corruptedadventure.entity.unfinished.TheUnfinished;
 
 /** Entity types. Their renderers register in {@code client/} (CLAUDE.md §7). */
 public final class ModEntityTypes {
@@ -58,6 +59,14 @@ public final class ModEntityTypes {
             "the_lost_keeper", () -> EntityType.Builder.<TheLostKeeper>of(TheLostKeeper::new, MobCategory.MONSTER)
                     .sized(2.6F, 2.5F).eyeHeight(1.25F).clientTrackingRange(12).build("the_lost_keeper"));
 
+    /**
+     * Phase 4: The Unfinished, the ring 5 Nightmare (~20 blocks). Main hitbox 5 x 14 (his torso); the rest of him are
+     * parts ({@code UnfinishedPart}). Fire cannot touch a void being; tracked from very far, he is seen over the land.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<TheUnfinished>> THE_UNFINISHED = ENTITY_TYPES.register(
+            "the_unfinished", () -> EntityType.Builder.<TheUnfinished>of(TheUnfinished::new, MobCategory.MONSTER)
+                    .sized(5.0F, 14.0F).eyeHeight(13.0F).fireImmune().clientTrackingRange(16).build("the_unfinished"));
+
     private ModEntityTypes() {
     }
 
@@ -71,6 +80,7 @@ public final class ModEntityTypes {
         event.put(THE_RISEN.get(), TheRisen.createAttributes().build());
         event.put(ASH_WALKER.get(), AshWalker.createAttributes().build());
         event.put(THE_LOST_KEEPER.get(), TheLostKeeper.createAttributes().build());
+        event.put(THE_UNFINISHED.get(), TheUnfinished.createAttributes().build());
     }
 
     /** Sized and tracked like vanilla's arrow. */

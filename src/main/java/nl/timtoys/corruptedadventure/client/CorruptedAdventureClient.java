@@ -16,6 +16,7 @@ import nl.timtoys.corruptedadventure.client.entity.hollow.TheHollowRenderer;
 import nl.timtoys.corruptedadventure.client.entity.risen.TheRisenRenderer;
 import nl.timtoys.corruptedadventure.client.entity.lostkeeper.KeeperMistFog;
 import nl.timtoys.corruptedadventure.client.entity.lostkeeper.TheLostKeeperRenderer;
+import nl.timtoys.corruptedadventure.client.entity.unfinished.TheUnfinishedRenderer;
 import nl.timtoys.corruptedadventure.client.fluid.ToxicPoolClientExtensions;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
 import nl.timtoys.corruptedadventure.client.item.ConsumableItemProperties;
@@ -91,6 +92,8 @@ public final class CorruptedAdventureClient {
         RiftOmenFlicker.register(NeoForge.EVENT_BUS);
         // Phase 4 (R3): The Risen and its ash walkers.
         modEventBus.addListener(TheRisenRenderer::onRegisterRenderers);
+        // Phase 4: The Unfinished (GeckoLib).
+        modEventBus.addListener(TheUnfinishedRenderer::onRegisterRenderers);
         // Phase 2 golf 5 (L): the sky glass lens's scope, outlines and damping.
         LensView.register(modEventBus, NeoForge.EVENT_BUS);
         // Phase 4 (I): the white-out of "dazzled".
