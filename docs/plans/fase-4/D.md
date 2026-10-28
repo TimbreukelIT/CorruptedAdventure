@@ -15,8 +15,10 @@ Categorie `mobs`; attachment-registratie apart als `infra:`.
 
 ## Voortgang
 - 2026-10-28 20:03 start; `setup.sh D 67`. User-lock aanwezig: geen JVM, code zonder compiler.
-- 20:25 interface `NightmareArrival`, `NightmareKind`, `DefaultNightmareArrival`, `NightmareSpots`, config
-  `[nightmares.director]` geschreven (niet gecompileerd).
+- 20:12 interface `NightmareArrival`, `NightmareKind`, `DefaultNightmareArrival`, `NightmareSpots`, config
+  `[nightmares.director]` geschreven (niet gecompileerd); commit 6bd33578, interface naar main.
+- 20:21 dreiging (attachment), regisseur (`SavedData`, staat, zwerven, doelkeuze), haken in `Nightmare`, `/ca nightmare`,
+  lang, 5 GameTests, unit test, `CODEBASE.md`; niet gecompileerd (wacht op vrijgave van de lock).
 
 ## Voorlopig (bevestigen bij de teststop)
 - Commando's onder de bestaande root **`/ca nightmare …`** (niet `/corruptedadventure …`): alle debugcommando's van de mod

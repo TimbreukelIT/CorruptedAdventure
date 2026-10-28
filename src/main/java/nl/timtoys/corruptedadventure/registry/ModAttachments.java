@@ -7,6 +7,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.condition.ConditionMeters;
+import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareThreat;
 
 /** Data attachments (per player and other holders). */
 public final class ModAttachments {
@@ -20,6 +21,14 @@ public final class ModAttachments {
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<ConditionMeters>> CONDITION_METERS =
             ATTACHMENT_TYPES.register("condition_meters",
                     () -> AttachmentType.builder(ConditionMeters::new).serialize(ConditionMeters.CODEC).build());
+
+    /**
+     * Phase 4: the Nightmare threat per ring of a player. Saved with the player and kept on death: dying does not make a
+     * Nightmare forget you.
+     */
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<NightmareThreat>> NIGHTMARE_THREAT =
+            ATTACHMENT_TYPES.register("nightmare_threat",
+                    () -> AttachmentType.builder(NightmareThreat::new).serialize(NightmareThreat.CODEC).copyOnDeath().build());
 
     private ModAttachments() {
     }
