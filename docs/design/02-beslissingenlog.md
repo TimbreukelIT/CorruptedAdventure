@@ -1131,3 +1131,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-28 | mobs | Holle-regels voor alle vijf, HP oplopend 300/450/600/800/1200; beloning XP + ringmateriaal | Fase 4-sparring |
 | 2026-10-28 | items | Zonnesteen-flits (ring 2) en versterkte ring 3-hoorn nu volledig maken; ring 5 gebruikt de bestaande hemelglaslens | Gebruiker: zwaktes meteen compleet |
 | 2026-10-28 | mobs | Open ontwerppunten per Nightmare: voorlopige invulling door de bouwstromen, bevestigen bij de teststop | Snelheid, zoals fase 2 |
+| 2026-10-28 | mobs | Nightmare-komst: dreigingsmeter per speler per ring (gem. 2–3 ingame-dagen → voortekens → komst); doelwit = hoogste dreiging; tussendoor alleen virtuele positie + sporen | Voorspelbaar eng, goedkoop, eerlijk in multiplayer |
