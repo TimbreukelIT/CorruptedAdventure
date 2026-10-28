@@ -85,6 +85,9 @@ Deze mod wordt samen ontworpen. Claude beslist ontwerpkeuzes nooit stilzwijgend.
 
 Een fase begint altijd met een sparringsessie (§3). Werk niet vooruit in een latere fase.
 
+**Volgorde (besluit gebruiker 2026-10-28):** na fase 2 komt **fase 4 (mobs en bosses) vóór fase 3**. Ringbewakers en bosses die een
+bewakersstructure of kasteel nodig hebben, krijgen in fase 4 een tijdelijke plek/arena; het echte gebouw volgt in fase 3.
+
 ---
 
 ## 6. Stack en architectuur

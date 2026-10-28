@@ -1116,3 +1116,6 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-28 | items | Golf 5-extra's: glitchscherfblok (9 ↔ 1), glitchpijl (mob teleporteert 1–5 blokken veilig); geen nullietlantaarn | Keuze gebruiker |
 | 2026-10-28 | textures | Nulliet-look: antraciet met paars-cyane glitchranden en een ontbrekende pixel, geen emissive | Keuze gebruiker |
 | 2026-10-28 | conditions | Galmschelp telt als geluid voor de stilte-regel (zoals een geitenhoorn: 10 s verlichting binnen 16 blokken, ook voor de blazer) bovenop de eigen dosis | Teamitem, consistent met de hoorn |
+| 2026-10-28 | items | Alle 34 voorlopige keuzes van fase 2 (golf 1–5, `docs/plans/fase-2/voorlopig-fase-2.md`) definitief akkoord | Gebruiker wil fase 2 afsluiten; tuning kan later via config/backlog |
+| 2026-10-28 | items | Tab 5: glitchpijl na de nulliet-set, zoals de pijlen in tab 3 en 4 | Consistentie |
+| 2026-10-28 | infra | Fasevolgorde: fase 4 (mobs en bosses) vóór fase 3 (structures); bewakers/bosses met een gebouw krijgen tijdelijk een plek/arena | Gebruiker wil met mobs en monsters beginnen |
