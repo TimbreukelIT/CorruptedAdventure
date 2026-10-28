@@ -5,7 +5,9 @@ param([string]$cmd, [int]$procId, [string]$arg = "")
 #   win.ps1 shot <pid> <out.png>    PrintWindow capture of the client area (works while the window is covered);
 #                                   exit 4 and a `blank ...` line when the image is one flat colour (see below)
 #   win.ps1 blank 0 <file.png>      exit 4 and `blank ...` when an existing image is one flat colour, else `ok`
-#   win.ps1 key <pid> <F1|F2|F3|ESC|T|ENTER>   post a key press to the window
+#   win.ps1 key <pid> <F1|F2|F3|ESC|T|ENTER|E|1..9>   post a key press to the window
+#   win.ps1 mouse <pid> <RDOWN|RUP|LCLICK|CORNER>  post a mouse button to the window (RDOWN holds "use" until RUP: spyglass,
+#                                   lens); CORNER moves the cursor to the top left (no tooltip in a screen shot)
 #   win.ps1 close <pid>             ask the window to close (WM_CLOSE)
 # Blank PrintWindow images (all white): PrintWindow copies what DWM composed for the window, and DWM composes nothing
 # while the display is off (the power plan turns it off after 15 min without input; the monitor then goes to standby
@@ -67,6 +69,11 @@ public static class CaWin {
       return String.Format("#{0:X2}{1:X2}{2:X2} ({3}x{4})", (r0 + r1) / 2, (g0 + g1) / 2, (b0 + b1) / 2, bmp.Width, bmp.Height);
     }
   }
+  // The message at the client area's centre (lParam = y << 16 | x); GLFW takes the button from the message alone.
+  public static void Mouse(IntPtr h, uint msg, uint wParam) {
+    RECT r; GetClientRect(h, out r);
+    PostMessage(h, msg, (IntPtr)wParam, (IntPtr)((((r.B - r.T) / 2) << 16) | ((r.R - r.L) / 2)));
+  }
   public static void Key(IntPtr h, uint vk) {
     uint sc = MapVirtualKey(vk, 0);
     PostMessage(h, 0x0100, (IntPtr)vk, (IntPtr)(1 | (sc << 16)));
@@ -83,7 +90,8 @@ if ($cmd -eq 'blank') {
 if ($procId -le 0) { throw "a process id is required" }
 $wins = [CaWin]::Windows([uint32]$procId)
 function Main() { foreach ($w in $wins) { if ($w[2] -ne "") { return $w[0] } }; throw "no window for pid $procId" }
-$keys = @{ F1 = 0x70; F2 = 0x71; F3 = 0x72; ESC = 0x1B; T = 0x54; ENTER = 0x0D }
+$keys = @{ F1 = 0x70; F2 = 0x71; F3 = 0x72; ESC = 0x1B; T = 0x54; ENTER = 0x0D; E = 0x45 }
+1..9 | ForEach-Object { $keys["$_"] = 0x30 + $_ }
 switch ($cmd) {
   'list'  { foreach ($w in $wins) { "{0} pid={1} title={2}" -f $w[0], $w[1], $w[2] } }
   'shot'  {
@@ -94,6 +102,17 @@ switch ($cmd) {
     "saved $arg"
   }
   'key'   { if (-not $keys.ContainsKey($arg)) { throw "unknown key $arg" }; [CaWin]::Key((Main), [uint32]$keys[$arg]); "key $arg" }
+  'mouse' {
+    $h = Main
+    switch ($arg) {
+      'RDOWN'  { [CaWin]::Mouse($h, 0x0204, 0x0002) }
+      'RUP'    { [CaWin]::Mouse($h, 0x0205, 0) }
+      'CORNER' { [void][CaWin]::PostMessage($h, 0x0200, [IntPtr]::Zero, [IntPtr]0x40004) }
+      'LCLICK' { [CaWin]::Mouse($h, 0x0201, 0x0001); Start-Sleep -Milliseconds 60; [CaWin]::Mouse($h, 0x0202, 0) }
+      default  { throw "unknown mouse action $arg" }
+    }
+    "mouse $arg"
+  }
   'close' { [void][CaWin]::PostMessage((Main), 0x0010, [IntPtr]::Zero, [IntPtr]::Zero); "close sent" }
-  default { throw "usage: win.ps1 list|shot|key|close <pid> [arg]" }
+  default { throw "usage: win.ps1 list|shot|key|mouse|close <pid> [arg]" }
 }

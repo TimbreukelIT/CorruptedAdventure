@@ -85,7 +85,8 @@ python tools/test/py/rcon.py "list" "/ca tpring 3"                          # RC
 bash tools/test/server.sh stop                                               # RCON stop, PID gone, RCON off, slot free
 bash tools/test/client.sh start [1|2]          # lock + slot (or the reserved one), quick play (127.0.0.1), waits until joined, then frees the lock
 bash tools/test/client.sh shot build/test/shots/x.png [1|2]   # PrintWindow; blank -> F2 fallback + warning; exit 4 if no F2 file
-bash tools/test/client.sh key F1 [1|2]         # F1 F2 F3 ESC T ENTER
+bash tools/test/client.sh key F1 [1|2]         # F1 F2 F3 ESC T ENTER E 1..9
+bash tools/test/client.sh mouse RDOWN [1|2]    # RDOWN (hold use: spyglass, lens) RUP LCLICK CORNER (cursor out of the way)
 bash tools/test/client.sh stop [1|2]
 ```
 

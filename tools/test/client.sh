@@ -15,7 +15,8 @@
 #                                      screenshot, run/screenshots) with a warning; exit 4 when no F2 file comes.
 #                                      CA_SHOT_F2=1: always F2 (walk 1: with the display off PrintWindow can also
 #                                      return the last composed frame again and again, not blank: a stale series).
-#   client.sh key <F1|F2|F3|ESC|T|ENTER> [1|2]
+#   client.sh key <F1|F2|F3|ESC|T|ENTER|E|1..9> [1|2]
+#   client.sh mouse <RDOWN|RUP|LCLICK|CORNER> [1|2]   RDOWN holds "use" (spyglass, lens) until RUP; CORNER: cursor top left
 #   client.sh stop [1|2]               close our client (WM_CLOSE, then the recorded PID only), free lock + slot
 #                                      (a reserved slot goes back to the running server instead)
 # Exit 3 when the user is playing (C:/Temp/ca-user-test.lock).
@@ -204,6 +205,9 @@ case "$cmd" in
     key)
         pick "$2"; pid="$(own_pid)"; [ -n "$pid" ] || ca_die "client $k is not running (or its PID is not ours)"
         win key "$pid" "$1" ;;
+    mouse)
+        pick "$2"; pid="$(own_pid)"; [ -n "$pid" ] || ca_die "client $k is not running (or its PID is not ours)"
+        win mouse "$pid" "$1" ;;
     list) pick "$1"; pid="$(own_pid)"; [ -n "$pid" ] && win list "$pid" ;;
     *) sed -n '2,/^source/p' "$0" | grep '^#' | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac
