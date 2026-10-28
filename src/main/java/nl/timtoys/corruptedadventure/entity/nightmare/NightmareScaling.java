@@ -1,8 +1,8 @@
-package nl.timtoys.corruptedadventure.entity.hollow;
+package nl.timtoys.corruptedadventure.entity.nightmare;
 
-/** The Hollow's max health per number of players in the fight: one player the base, every further one a part more. */
-public final class HollowScaling {
-    private HollowScaling() {
+/** A Nightmare's max health per number of players in the fight: one player the base, every further one a part more. */
+public final class NightmareScaling {
+    private NightmareScaling() {
     }
 
     /** The factor on top of the base health, for an {@code ADD_MULTIPLIED_BASE} modifier; 0 for zero or one fighter. */
