@@ -567,7 +567,8 @@ def main():
     Image.fromarray(glowmap, "RGBA").save(OUT_GLOW, optimize=True)
     Image.fromarray(overlay, "RGBA").save(OUT_CORR, optimize=True)
     with open(OUT_CORR + ".mcmeta", "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"animation": {"frametime": 3, "interpolate": False}}, f, indent=2)
+        # The frame size explicitly: the atlas is not square, and GeckoLib's animated texture assumes square frames.
+        json.dump({"animation": {"frametime": 3, "interpolate": False, "width": ATLAS_W, "height": atlas_h}}, f, indent=2)
         f.write("\n")
 
     write_geo(bones, faces, atlas_h)
