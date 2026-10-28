@@ -52,6 +52,8 @@ public final class ServerConfig {
     public static final Ring5WeatherEffects RING_5_WEATHER;
     /** {@code [nightmares.hollow]}: the ring 1 Nightmare (phase 4). */
     public static final HollowConfig HOLLOW;
+    /** {@code [weakness_items]}: the sunstone flash and the volcanite horn (phase 4, stream I). */
+    public static final WeaknessItemsConfig WEAKNESS_ITEMS;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
     /**
@@ -90,6 +92,7 @@ public final class ServerConfig {
         builder.comment("The Nightmares: one roaming boss per ring (phase 4).").push("nightmares");
         HOLLOW = new HollowConfig(builder);
         builder.pop();
+        WEAKNESS_ITEMS = new WeaknessItemsConfig(builder);
         SPEC = builder.build();
         ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds,
                 POISON.thresholds, VOID.thresholds, SILENCE.thresholds);

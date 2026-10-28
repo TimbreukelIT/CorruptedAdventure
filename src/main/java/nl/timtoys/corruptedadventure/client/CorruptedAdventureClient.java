@@ -7,6 +7,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.client.effect.DazzleOverlay;
 import nl.timtoys.corruptedadventure.client.ambient.SingingSandAmbience;
 import nl.timtoys.corruptedadventure.client.block.SignMaterials;
 import nl.timtoys.corruptedadventure.client.entity.EffectArrowRenderer;
@@ -76,6 +77,8 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(EffectArrowRenderer::onRegisterRenderers);
         // Phase 2 golf 5 (L): the sky glass lens's scope, outlines and damping.
         LensView.register(modEventBus, NeoForge.EVENT_BUS);
+        // Phase 4 (I): the white-out of "dazzled".
+        DazzleOverlay.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);
         NeoForge.EVENT_BUS.addListener(SingingSandAmbience::onClientTick);

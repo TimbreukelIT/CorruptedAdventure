@@ -9,6 +9,7 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.datagen.model.ArrowItemModels;
 import nl.timtoys.corruptedadventure.datagen.model.ConsumableItemModels;
+import nl.timtoys.corruptedadventure.datagen.model.WeaknessItemModels;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
@@ -117,6 +118,8 @@ final class ModItemModelProvider extends ItemModelProvider {
         // Phase 2 golf 5 (L): flat in the hand too (vanilla's 3D spyglass hangs on Items.SPYGLASS).
         basicItem(ModItems.SKY_GLASS_LENS.get());
         golf5SkyGlass();
+        // Phase 4 (I): the weakness items.
+        WeaknessItemModels.build(this);
     }
 
     /**

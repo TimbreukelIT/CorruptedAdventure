@@ -34,6 +34,8 @@ import nl.timtoys.corruptedadventure.item.SkyGlassLensItem;
 import nl.timtoys.corruptedadventure.item.UpgradeSmithingTemplates;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.item.coating.CoatingTemplates;
+import nl.timtoys.corruptedadventure.item.weakness.SunstoneFlashItem;
+import nl.timtoys.corruptedadventure.item.weakness.VolcaniteHornItem;
 
 import java.util.Collection;
 import java.util.List;
@@ -111,6 +113,10 @@ public final class ModItems {
             properties -> new DoseFoodItem(properties.food(new FoodProperties.Builder()
                     .nutrition(6).saturationModifier(1.2F).fast().build()), ConsumableDoses::saltedJerky));
 
+    /** Against The Layered (phase 4, I): a flash in the look direction dazzles; 64 flashes. */
+    public static final DeferredItem<SunstoneFlashItem> SUNSTONE_FLASH = ITEMS.registerItem("sunstone_flash",
+            properties -> new SunstoneFlashItem(properties.fireResistant()));
+
     // ---- Nether ring 2 ----
     /** Drop of the grown dew crystal. Placeholder: its use, recipes and balance follow in phase 2. */
     public static final DeferredItem<Item> DEW_CRYSTAL = ITEMS.registerSimpleItem("dew_crystal");
@@ -180,6 +186,10 @@ public final class ModItems {
     /** Sulfur and 4 arrows make 4 (golf 3, §6.4): the target burns 5 s; it lights no blocks. */
     public static final DeferredItem<EffectArrowItem> FIRE_ARROW = ITEMS.registerItem("fire_arrow",
             properties -> new EffectArrowItem(ArrowEffect.FIRE, properties));
+
+    /** Against The Risen (phase 4, I): blown like a goat horn, stuns the mobs round you; 32 blows. */
+    public static final DeferredItem<VolcaniteHornItem> VOLCANITE_HORN = ITEMS.registerItem("volcanite_horn",
+            properties -> new VolcaniteHornItem(properties.fireResistant()));
 
     // ---- Nether ring 3 ----
     /** Coating against the cold (applied with fire crystal). Where to find it: golf 4. */

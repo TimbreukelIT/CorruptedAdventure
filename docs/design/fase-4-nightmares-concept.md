@@ -163,6 +163,14 @@ Een groep **Nightmares**: één per ring (5 totaal), groter dan gewone mobs, bed
 
 **Open (ring 5):** of losgeslagen of uitgeschakelde delen tijdens het gevecht wegvallen; wat er gebeurt als hij terugkeert (nieuwe herinneringen erbij?); de rol van de kastelen; balans met ring 5-gear (nulliet); beloning.
 
+## Zwakte-items (stroom I, 2026-10-28) — voorlopig, bevestigen bij de teststop
+Categorie `items`. Twee statuseffecten vormen het contract met de Nightmares: zij reageren er zelf zwaar op, de items geven alleen het effect.
+- **Effecten:** `dazzled` ("Verblind") en `stunned` ("Verstijfd"), schadelijk, niet te brouwen. Op elke gewone mob: bij de start en elke tick verliest hij zijn doelwit en zolang het effect loopt kan hij geen nieuw nemen (dus ook niet aanvallen). `stunned` zet daarnaast loop-, vlieg- en springsnelheid op 0 en stopt het pad; zwaartekracht blijft. Een speler die `dazzled` is ziet een warm wit scherm dat over de laatste 2 s vervaagt (alleen beeld, net niet volledig dekkend).
+- **Zonnesteenflits (`sunstone_flash`, ring 2):** een geklonken spiegel van zonnesteen. Rechtsklik = direct één flits in de kijkrichting: alles wat leeft binnen 16 blokken, in een kegel van 30° rond de kijkrichting en in zicht, krijgt 3 s `dazzled`. Andere spelers alleen als je ze mag raken (pvp-instelling en teams). Duurzaamheid 64, cooldown 15 s, brandvrij. Recept ` S `/`SGS`/` T `: 3 zonnesteenstaven, glasruit, turkoois.
+- **Vulkanieten hoorn (`volcanite_horn`, ring 3):** een geitenhoorn met banden van vulkaniet, geblazen zoals een geitenhoorn (zelfde pose en game event). Elke mob waarvan de hitbox binnen 12 blokken komt (door muren heen) krijgt 2 s `stunned`; spelers nooit. Duurzaamheid 32, cooldown 30 s, brandvrij. Recept `VHV`/` R `: 2 vulkanietstaven, een geitenhoorn (elke variant), vuurrobijn. De vanilla-geitenhoorn geeft geen `stunned`.
+- **Getallen** in de SERVER-config `[weakness_items]`; de reactie van een Nightmare heeft eigen getallen in zijn eigen sectie.
+- **Tabs:** de flits in tab 2 na het gedroogde vlees, de hoorn in tab 3 na de brandpijl.
+
 ## Haalbaarheid in 1.21.1 / NeoForge
 - **Goed te doen:** grote modellen (4–6 blokken), bossbar (`ServerBossEvent`, multiplayer-proof), eigen AI-goals, positionele geluiden server-side (vanilla-events met pitch, zoals change 32), particles en client-effecten via payload.
 - **Lastig maar haalbaar:** pathfinding van grote mobs (vanilla-navigatie loopt vast in bossen en grotten → hitbox kleiner dan het model, of eigen beweging: kruipen, graven, zwemmen); de unieke, persistente Nightmare (virtuele positie in `SavedData`, pas materialiseren bij spelers); houdingwissel met hitbox (kruiphouding, zoals een zwemmende speler) plus eigen navigatie door 1×2.

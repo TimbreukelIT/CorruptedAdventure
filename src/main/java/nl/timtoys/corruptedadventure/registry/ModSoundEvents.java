@@ -119,6 +119,10 @@ public final class ModSoundEvents {
     // Items (phase 2): played by the server, so everyone nearby hears them.
     /** The echo shell's blow (golf 5): a low conch call that echoes; own audio from tools/sounds/Ring5Sounds.java. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ECHO_SHELL_BLOW = register("item.echo_shell.blow");
+    /** The sunstone flash (phase 4, I): a bright crystal ring, vanilla's amethyst resonance pitched up. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SUNSTONE_FLASH = register("item.sunstone_flash.flash");
+    /** The volcanite horn's blow (phase 4, I): a goat horn call, lower and heavier. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> VOLCANITE_HORN_BLOW = register("item.volcanite_horn.blow");
 
     private ModSoundEvents() {
     }
