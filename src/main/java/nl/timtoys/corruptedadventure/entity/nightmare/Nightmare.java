@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.entity.nightmare;
 
 import net.minecraft.core.Holder;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerBossEvent;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.NightmareConfig;
+import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -38,15 +40,29 @@ import java.util.List;
  * ({@code client/entity/nightmare/NightmareRenderer}).
  * <p>
  * A Nightmare adds its attacks as goals, its {@code registerControllers} (GeckoLib) and its attribute defaults through
- * {@link #nightmareAttributes}. Roaming, the arrival and the return come later as a shared system (steps 2 and 3).
+ * {@link #nightmareAttributes}.
+ * <p>
+ * Steps 2 and 3 (the director, {@code director/NightmareDirector}): one that a director sent ({@link #direct}) has a
+ * {@link #strength()} on its max health and attack damage, checks in with the director every second (a stale copy
+ * removes itself), and reports its retreat and its defeat. A {@code /summon}ed one has strength 1 and reports nothing.
+ * Attacks whose damage comes from their own config, not from {@code attack_damage}, multiply it by {@link #strength()}.
  */
 public abstract class Nightmare extends Monster implements GeoEntity {
     private static final ResourceLocation PLAYERS_MODIFIER = CorruptedAdventure.id("nightmare_players");
+    private static final ResourceLocation STRENGTH_MODIFIER = CorruptedAdventure.id("nightmare_strength");
+    private static final String STRENGTH_TAG = "NightmareStrength";
+    private static final String DIRECTED_TAG = "NightmareDirected";
     private static final int CHECK_TICKS = 20;
 
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     private final ServerBossEvent bossEvent;
     private int absentTicks;
+    /** Factor on max health and attack damage: 1, then +25% per defeat (the director's config). */
+    private float strength = 1.0F;
+    /** The director that sent it; null for one from {@code /summon} (or a spawn egg). */
+    @Nullable
+    private NightmareDirector director;
+    private boolean checkedIn;
 
     protected Nightmare(EntityType<? extends Nightmare> type, Level level, BossEvent.BossBarColor barColor) {
         super(type, level);
@@ -93,8 +109,40 @@ public abstract class Nightmare extends Monster implements GeoEntity {
         return fighters(config().fightRadius.get());
     }
 
+    /** Its strength (1 for a summoned one); attacks with their own damage numbers multiply by it. */
+    public float strength() {
+        return strength;
+    }
+
+    /** Whether a director sent it (and not {@code /summon}). */
+    public boolean isDirected() {
+        return director != null;
+    }
+
+    /**
+     * Called by the director right after the arrival spawned it: the strength onto its attributes at once, at full
+     * health, and from now on it checks in and reports its retreat and defeat.
+     */
+    public void direct(NightmareDirector director, float strength) {
+        this.director = director;
+        this.strength = Math.max(0.01F, strength);
+        checkedIn = true;
+        applyConfig();
+        setHealth(getMaxHealth());
+    }
+
     @Override
     public void tick() {
+        // A directed one checks in at its first tick (also after loading from a chunk) and then every second.
+        if (!level().isClientSide() && director != null && !isDeadOrDying()
+                && (!checkedIn || tickCount % CHECK_TICKS == 0)) {
+            checkedIn = true;
+            if (!director.isCurrent(this)) {
+                // A stale copy (its chunk unloaded and the director moved on): it goes without a trace or report.
+                discard();
+                return;
+            }
+        }
         super.tick();
         if (level().isClientSide()) {
             return;
@@ -120,14 +168,33 @@ public abstract class Nightmare extends Monster implements GeoEntity {
             maxHealth.addOrReplacePermanentModifier(
                     new AttributeModifier(PLAYERS_MODIFIER, extra, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
         }
+        applyStrength(maxHealth);
         float newMax = getMaxHealth();
         if (newMax != oldMax) {
             setHealth(ratio * newMax);
         }
         setBase(Attributes.ATTACK_DAMAGE, config.attackDamage.get());
+        applyStrength(getAttribute(Attributes.ATTACK_DAMAGE));
         setBase(Attributes.ATTACK_KNOCKBACK, config.attackKnockback.get());
         setBase(Attributes.MOVEMENT_SPEED, config.movementSpeed.get());
         setBase(Attributes.ARMOR, config.armor.get());
+    }
+
+    /** The strength as a factor on the total (on top of the player scaling); permanent like the player modifier. */
+    private void applyStrength(@Nullable AttributeInstance instance) {
+        if (instance == null) {
+            return;
+        }
+        double amount = strength - 1.0;
+        AttributeModifier current = instance.getModifier(STRENGTH_MODIFIER);
+        if (amount == 0.0) {
+            if (current != null) {
+                instance.removeModifier(STRENGTH_MODIFIER);
+            }
+        } else if (current == null || current.amount() != amount) {
+            instance.addOrReplacePermanentModifier(
+                    new AttributeModifier(STRENGTH_MODIFIER, amount, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        }
     }
 
     private void setBase(Holder<Attribute> attribute, double value) {
@@ -153,12 +220,43 @@ public abstract class Nightmare extends Monster implements GeoEntity {
         }
     }
 
-    /** Leaves without a drop ({@link #onRetreat} for its effects). Step 3 keeps it in SavedData and heals it. */
+    /** Leaves without a drop ({@link #onRetreat} for its effects); a directed one goes back to virtual, healed. */
     public void retreat() {
         if (level() instanceof ServerLevel serverLevel) {
             onRetreat(serverLevel);
+            if (director != null) {
+                director.retreated(this);
+            }
         }
         discard();
+    }
+
+    @Override
+    public void die(DamageSource source) {
+        boolean wasDead = dead;
+        super.die(source);
+        // Once, and only if the death went through (an event can cancel it).
+        if (!wasDead && dead && director != null && !level().isClientSide()) {
+            director.defeated(this);
+        }
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putFloat(STRENGTH_TAG, strength);
+        tag.putBoolean(DIRECTED_TAG, director != null);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains(STRENGTH_TAG)) {
+            strength = Math.max(0.01F, tag.getFloat(STRENGTH_TAG));
+        }
+        // Only the server's director saves and loads; it decides at the first tick whether this copy is still current.
+        director = tag.getBoolean(DIRECTED_TAG) ? NightmareDirector.server() : null;
+        checkedIn = false;
     }
 
     /** Sounds and particles of the retreat; nothing by default. */

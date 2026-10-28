@@ -113,7 +113,7 @@ final class LayeredGrabGoal extends Goal {
         if (target instanceof Player player && Nightmare.isFighter(player) && layered.inBiteReach(player)
                 && layered.grab(player)) {
             LayeredConfig settings = TheLayered.settings();
-            player.hurt(layered.damageSources().mobAttack(layered), settings.grabDamage.get().floatValue() * layered.strengthFactor());
+            player.hurt(layered.damageSources().mobAttack(layered), settings.grabDamage.get().floatValue() * layered.strength());
             LayeredEffects.grabbed((ServerLevel) layered.level(), layered);
             carrying = true;
             carryTicks = 0;
@@ -156,7 +156,7 @@ final class LayeredGrabGoal extends Goal {
     /** No wall near: it shakes the held player, and halfway through its hold throws them up and away. */
     private void shake(Player held, LayeredConfig settings) {
         if (carryTicks % SHAKE_TICKS == 0) {
-            held.hurt(layered.damageSources().mobAttack(layered), settings.shakeDamage.get().floatValue() * layered.strengthFactor());
+            held.hurt(layered.damageSources().mobAttack(layered), settings.shakeDamage.get().floatValue() * layered.strength());
             LayeredEffects.shake((ServerLevel) layered.level(), layered);
         }
         if (carryTicks >= settings.carrySeconds.get() * 10) {

@@ -57,7 +57,7 @@ public final class LayeredRockfall {
             if (count >= max) {
                 return count;
             }
-            if (loosen(level, pos, null, settings, layered.strengthFactor()) != null) {
+            if (loosen(level, pos, null, settings, layered.strength()) != null) {
                 count++;
             }
         }
@@ -69,7 +69,7 @@ public final class LayeredRockfall {
                     break;
                 }
                 Vec3 from = Vec3.atBottomCenterOf(pos);
-                if (loosen(level, pos, throwVelocity(from, target.position()), settings, layered.strengthFactor()) != null) {
+                if (loosen(level, pos, throwVelocity(from, target.position()), settings, layered.strength()) != null) {
                     count++;
                 }
             }
