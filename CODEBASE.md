@@ -1258,8 +1258,8 @@ Volgorde = creative-tab-volgorde. Properties via `ofFullCopy` van het vanilla-eq
 
 | Bestand | Inhoud |
 |---|---|
-| `gradle.properties` | MC 1.21.1, NeoForge 21.1.252, parchment 2024.11.17, `mod_id`, `mod_group_id=nl.timtoys.corruptedadventure`, versie |
-| `build.gradle` | ModDevGradle; runs: client (`--username Dev`, map `run`), **client2** (`runClient2`, `--username Dev2`, eigen map `run/client2`), server, gameTestServer, data (output naar `src/generated/resources`); **quick-play**: `-PquickPlay` (of `-PquickPlay=host:poort`, standaard `localhost:25565`) geeft beide clients `--quickPlayMultiplayer`, zodat ze na het opstarten zelf joinen; JUnit 5 via `neoForge.unitTest` (tests draaien in een FML-omgeving, Minecraft-classes bruikbaar); golf 3: `test` sluit JUnit-tag `stats` uit, `-PincludeStats` neemt hem mee |
+| `gradle.properties` | MC 1.21.1, NeoForge 21.1.252, parchment 2024.11.17, `mod_id`, `mod_group_id=nl.timtoys.corruptedadventure`, versie; fase 4: `geckolib_version` (4.9.3) |
+| `build.gradle` | ModDevGradle; runs: client (`--username Dev`, map `run`), **client2** (`runClient2`, `--username Dev2`, eigen map `run/client2`), server, gameTestServer, data (output naar `src/generated/resources`); **quick-play**: `-PquickPlay` (of `-PquickPlay=host:poort`, standaard `localhost:25565`) geeft beide clients `--quickPlayMultiplayer`, zodat ze na het opstarten zelf joinen; fase 4: GeckoLib-repo (cloudsmith, `exclusiveContent`) + `implementation geckolib-neoforge-1.21.1`, in `neoforge.mods.toml` `required` op `BOTH`; JUnit 5 via `neoForge.unitTest` (tests draaien in een FML-omgeving, Minecraft-classes bruikbaar); golf 3: `test` sluit JUnit-tag `stats` uit, `-PincludeStats` neemt hem mee |
 | `.github/workflows/build.yml` | CI-build uit de MDK |
 | `run/config/corruptedadventure-common.toml` | (niet in git) COMMON-config, ontstaat bij de eerste start |
 | `run/config/corruptedadventure-server.toml` | (niet in git) SERVER-config (balanswaarden), ontstaat bij de eerste serverstart; per wereld overschrijven via `<wereld>/serverconfig/` |

@@ -7,6 +7,11 @@ Technische architectuur en afspraken. De werkafspraken voor Claude Code staan in
 - Package: `nl.timtoys.corruptedadventure`
 - Registries via `DeferredRegister`; namen in snake_case (`scorched_sandstone`, `ash_ore`)
 - Assets en data zoveel mogelijk via **datagen** (blockstates, models, loot tables, tags, recipes, lang)
+- **GeckoLib 4** (fase 4, sparring 2026-10-28) voor de modellen en animaties van de Nightmares:
+  `software.bernie.geckolib:geckolib-neoforge-1.21.1` (versie `geckolib_version` in `gradle.properties`), repo
+  `https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/`. In `neoforge.mods.toml` `required` op `BOTH`: de
+  entities implementeren `GeoEntity` (ook op de server); renderers en `GeoModel`s staan alleen in `client/`.
+  Bestanden: `assets/corruptedadventure/geo/entity/*.geo.json`, `animations/entity/*.animation.json`.
 
 ## World preset
 - Eigen preset: `corruptedadventure:corrupted_world`
