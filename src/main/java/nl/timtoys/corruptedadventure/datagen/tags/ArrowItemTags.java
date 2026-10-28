@@ -9,14 +9,15 @@ import nl.timtoys.corruptedadventure.registry.ModItems;
 import java.util.function.Function;
 
 /**
- * Item tags of the fire and poison arrows (phase 2 golf 3 + 4, stream A), written by {@code ModItemTagsProvider}: the
- * bow and the crossbow take what is in {@code #minecraft:arrows}.
+ * Item tags of the fire, poison and glitch arrows (phase 2 golf 3 + 4 and 5, stream A), written by
+ * {@code ModItemTagsProvider}: the bow and the crossbow take what is in {@code #minecraft:arrows}.
  */
 public final class ArrowItemTags {
     private ArrowItemTags() {
     }
 
     public static void build(Function<TagKey<Item>, TagsProvider.TagAppender<Item>> tag) {
-        tag.apply(ItemTags.ARROWS).add(ModItems.FIRE_ARROW.getKey(), ModItems.POISON_ARROW.getKey());
+        tag.apply(ItemTags.ARROWS).add(ModItems.FIRE_ARROW.getKey(), ModItems.POISON_ARROW.getKey(),
+                ModItems.GLITCH_ARROW.getKey());
     }
 }

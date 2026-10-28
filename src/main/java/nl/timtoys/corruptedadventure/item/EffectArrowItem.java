@@ -17,7 +17,7 @@ import nl.timtoys.corruptedadventure.entity.EffectArrow;
 import javax.annotation.Nullable;
 
 /**
- * The fire and poison arrow items (fase-2-items.md §6.4, §6.7): ammo for the bow and the crossbow (through
+ * The fire, poison and glitch arrow items (fase-2-items.md §6.4, §6.7, §7.4): ammo for the bow and the crossbow (through
  * {@code #minecraft:arrows}) and, like vanilla's arrows, shot by a dispenser.
  */
 public final class EffectArrowItem extends ArrowItem {

@@ -264,6 +264,9 @@ public final class ModItems {
     /** Coating against the void (applied with white core). Where to find it: golf 5. */
     public static final DeferredItem<SmithingTemplateItem> VOID_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "void_coating_smithing_template", () -> CoatingTemplates.create(Coating.VOID));
+    /** A glitch shard and 4 arrows make 4 (golf 5, §7.4): the mob it hits hops 1–5 blocks to a safe spot. */
+    public static final DeferredItem<EffectArrowItem> GLITCH_ARROW = ITEMS.registerItem("glitch_arrow",
+            properties -> new EffectArrowItem(ArrowEffect.GLITCH, properties));
 
     // ---- Nether ring 5 ----
     /** Drop of the white core ore (one per ore, Fortune adds). Placeholder without behaviour in phase 1. */

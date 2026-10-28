@@ -11,7 +11,7 @@ import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Entity-type tags. The fire and poison arrows are in {@code #minecraft:arrows} like vanilla's arrows, so they count
+ * Entity-type tags. The fire, poison and glitch arrows are in {@code #minecraft:arrows} like vanilla's arrows, so they count
  * as impact projectiles too (they break pointed dripstone, chorus flowers and decorated pots).
  */
 final class ModEntityTypeTagsProvider extends EntityTypeTagsProvider {
@@ -22,6 +22,7 @@ final class ModEntityTypeTagsProvider extends EntityTypeTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        tag(EntityTypeTags.ARROWS).add(ModEntityTypes.FIRE_ARROW.get(), ModEntityTypes.POISON_ARROW.get());
+        tag(EntityTypeTags.ARROWS).add(ModEntityTypes.FIRE_ARROW.get(), ModEntityTypes.POISON_ARROW.get(),
+                ModEntityTypes.GLITCH_ARROW.get());
     }
 }
