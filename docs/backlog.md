@@ -589,3 +589,4 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [textures] Hemelzand en hemelglas lijken als item in de hotbar sterk op elkaar; bij een volgende texture-ronde meer contrast (bv. zandkorrel vs. glasrand). (bron: LIVE)
 - [atmosphere] De restruis van de glitchstorm-overlay valt bij het kijken door de hemelglaslens over de zwarte scope-rand (cosmetisch). (bron: LIVE)
 - [infra] Testscripts: pas naar survival wisselen als de speler op de grond staat, anders kickt de server ("Flying is not enabled"). (bron: LIVE)
+- [textures] Hemelglas-coating op het item-icoon leent nog de diamant-index (0,8, lichtblauw); amethist (1,0) past beter bij het nieuwe violet-blauwe palet (`CoatingMaterial.SKY_GLASS`). (bron: T, 2026-10-28)
