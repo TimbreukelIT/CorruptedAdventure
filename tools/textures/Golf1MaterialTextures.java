@@ -12,7 +12,7 @@ import java.util.Random;
 
 /**
  * Generates the phase 2 golf 1 material textures (stream D) from our own pixels: no vanilla pixels are read or copied.
- * The ingots and the turquoise gem ({@code item/}) and the storage blocks ({@code block/}): raw blocks, ingot blocks
+ * The turquoise gem ({@code item/}) and the storage blocks ({@code block/}): raw blocks, ingot blocks
  * and gem blocks. Run from the repository root: {@code java tools/textures/Golf1MaterialTextures.java}.
  *
  * <p>Placeholders: one shape per kind, coloured with the palette of the material's existing raw item or gem (sampled
@@ -30,28 +30,8 @@ public final class Golf1MaterialTextures {
     private static final int[] SUNSTONE = {0x5A1A06, 0x9A300C, 0xD15515, 0xE77C26, 0xF3A851};
     private static final int[] TURQUOISE = {0x0E3B3A, 0x1C6B66, 0x2E9C92, 0x4FC6B5, 0x8FE6D6};
     private static final int[] TIDESILVER = {0x2C3E4C, 0x48606E, 0x6E8896, 0x96B2BC, 0xBCD8DC};
-    private static final int[] NULLITE = {0x1A0E2A, 0x24143A, 0x301C4C, 0x42286A, 0x7444BC};
     private static final int[] FIRE_RUBY = {0x4E0A14, 0x82121E, 0xB21D2A, 0xD5353F, 0xF07164};
     private static final int[] JADE = {0x1C4A3C, 0x2E6A54, 0x44886C, 0x62A688, 0xC4E6D2};
-
-    /** An ingot seen from the front and top: o outline, s side, f front, t top, h highlight. */
-    private static final String[] INGOT = {
-            "................",
-            "................",
-            "................",
-            "................",
-            "....oooooooo....",
-            "...ohhhhttttso..",
-            "..ohhttttttttso.",
-            ".offffffffffffso",
-            ".ofhffffffffffso",
-            ".offffffffffffso",
-            ".offffffffffffo.",
-            "..oooooooooooo..",
-            "................",
-            "................",
-            "................",
-            "................"};
 
     private static final Map<String, BufferedImage> WRITTEN = new LinkedHashMap<>();
     private static final List<String> BLOCKS = new ArrayList<>();
@@ -60,44 +40,20 @@ public final class Golf1MaterialTextures {
     }
 
     public static void main(String[] args) throws IOException {
-        // item/{sunstone,volcanite,tidesilver}_ingot, block/{raw_,}volcanite_block: final textures from
-        // Golf2SunstoneTextures and Golf34*Textures.
-        ingot("item/nullite_ingot", NULLITE);
+        // item/*_ingot, block/{raw_,}{volcanite,nullite}_block: final textures from Golf2SunstoneTextures,
+        // Golf34*Textures and Golf5NulliteTextures.
         gem("item/turquoise", TURQUOISE);
 
         rawBlock("block/raw_sunstone_block", SUNSTONE);
         rawBlock("block/raw_turquoise_block", TURQUOISE);
         rawBlock("block/raw_tidesilver_block", TIDESILVER);
-        rawBlock("block/raw_nullite_block", NULLITE);
         metalBlock("block/sunstone_block", SUNSTONE);
         metalBlock("block/tidesilver_block", TIDESILVER);
-        metalBlock("block/nullite_block", NULLITE);
         gemBlock("block/turquoise_block", TURQUOISE);
         gemBlock("block/fire_ruby_block", FIRE_RUBY);
         gemBlock("block/jade_block", JADE);
 
         preview();
-    }
-
-    private static void ingot(String name, int[] palette) throws IOException {
-        Random random = random(name);
-        BufferedImage image = blank();
-        for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE; x++) {
-                int shade = switch (INGOT[y].charAt(x)) {
-                    case 'o' -> 0;
-                    case 's' -> 1;
-                    case 'f' -> random.nextInt(8) == 0 ? 3 : 2;
-                    case 't' -> random.nextInt(8) == 0 ? 4 : 3;
-                    case 'h' -> 4;
-                    default -> -1;
-                };
-                if (shade >= 0) {
-                    image.setRGB(x, y, opaque(palette[shade]));
-                }
-            }
-        }
-        write(name, image);
     }
 
     /** A cut gem: a rhombus with four facets, lit from the top left. */

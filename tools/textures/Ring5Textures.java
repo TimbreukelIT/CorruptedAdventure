@@ -112,7 +112,6 @@ public final class Ring5Textures {
     /** The pulse leans towards this tone and only tones lighter than it move: the rim and the glint, not the body. */
     private static final int NULLITE_DIM = 0x3A2260;
     private static final int NULLITE_GLOW = 0xD2B8FF;
-    private static final int[] RAW_NULLITE = {0x0A0612, 0x1A0E2A, 0x24143A, 0x301C4C, 0x42286A, 0x8A4FD8};
 
     // Nether ring 5 (90): white and cool, grey-blue shadows; calm faces with few tones (orde, stilte).
     private static final int[] CHALK = {0x9EA3AD, 0xB0B4BE, 0xC1C5CD, 0xD0D3DA, 0xDDE0E5, 0xE9EBEE};
@@ -231,7 +230,6 @@ public final class Ring5Textures {
         pulsing("block/nullite_ore_overlay", NULLITE_GLOW, NULLITE_DIM, Ring5Textures::nulliteOreOverlay);
         // INT3: the voidstone ore keeps voidstone's stars, minus the pixels its crystals cover (one more layer, no z-fight).
         twinklingGlowLayer("block/voidstone", "block/voidstone_nullite_ore_glow", STAR, "block/nullite_ore_overlay");
-        still("item/raw_nullite", Ring5Textures::rawNullite);
 
         // ---- 90: Nether ring 5 ----
         still("block/chalkrack", Ring5Textures::chalkrack);
@@ -1557,28 +1555,6 @@ public final class Ring5Textures {
         }
     }
 
-    /** Raw nullite: three angular nuggets, violet-black with a violet rim on their lit edges, matte; selective outline. */
-    private static void rawNullite(BufferedImage image, Random random) {
-        double[][] nuggets = {{10.0, 5.8, 3.3, 0.95, 1.1}, {5.8, 7.8, 4.1, 1.0, 0.85}, {9.8, 10.8, 3.5, 1.15, 0.9}};
-        for (double[] nugget : nuggets) {
-            nugget(image, nugget[0], nugget[1], nugget[2], nugget[3], nugget[4], RAW_NULLITE);
-        }
-        boolean[][] opaque = new boolean[SIZE][SIZE];
-        for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE; x++) {
-                opaque[x][y] = isOpaque(image, x, y);
-            }
-        }
-        for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE; x++) {
-                if (opaque[x][y] && (!isOpaqueIn(opaque, x - 1, y) || !isOpaqueIn(opaque, x, y - 1))) {
-                    set(image, x, y, NULLITE_RIM[1]);
-                }
-            }
-        }
-        outlineSelective(image, NULLITE_OUTLINE_LIGHT, NULLITE_OUTLINE);
-    }
-
     // ---- Nether ring 5 (90) ------------------------------------------------------------------------------------
 
     /**
@@ -2182,37 +2158,6 @@ public final class Ring5Textures {
                 }
             }
         }
-    }
-
-    /**
-     * One angular nugget centred on (cx, cy): an octagon (diamond and square blended) stretched by (sx, sy), with facet
-     * tones from {@code palette} [0..5] by the light from the top left, its lower right rim in the darkest tone and one
-     * glint on the lit corner.
-     */
-    private static void nugget(BufferedImage image, double cx, double cy, double radius, double sx, double sy, int[] palette) {
-        int glintX = -1;
-        int glintY = -1;
-        for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE; x++) {
-                double dx = (x + 0.5 - cx) / sx;
-                double dy = (y + 0.5 - cy) / sy;
-                double edge = Math.max(Math.abs(dx) + Math.abs(dy), 1.3 * Math.max(Math.abs(dx), Math.abs(dy))) / (1.3 * radius);
-                if (edge > 1) {
-                    continue;
-                }
-                double light = -(dx + dy) / radius;
-                int tone = light > 0.45 ? 4 : light > 0.0 ? 3 : light > -0.45 ? 2 : 1;
-                if (edge > 0.82 && dx + dy > 0) {
-                    tone = 0;
-                }
-                set(image, x, y, palette[tone]);
-                if (glintX < 0 || x + y < glintX + glintY) {
-                    glintX = x;
-                    glintY = y;
-                }
-            }
-        }
-        set(image, glintX + 1, glintY + 1, palette[5]);
     }
 
     private static void particle(BufferedImage image, String[] rows, int[] tones) {
