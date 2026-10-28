@@ -1,6 +1,6 @@
 # Fase 4 — Nightmares (concept)
 
-**Status:** concept uit een vooruitblik-sparring (2026-10-20). Er wordt niets gebouwd vóór fase 4; de fase 4-sparring maakt dit definitief. Scope: `mobs`.
+**Status:** concept uit een vooruitblik-sparring (2026-10-20); De Holle definitief gemaakt in de fase 4-sparring van 2026-10-28 (zie zijn sectie). Er wordt niets gebouwd vóór fase 4; de fase 4-sparring maakt dit definitief. Scope: `mobs`.
 
 ## Idee
 Een groep **Nightmares**: één per ring (5 totaal), groter dan gewone mobs, bedoeld om kippenvel te geven. Rondzwervende overworld-ringbosses, ingezet vanuit Herobrines legioen.
@@ -61,6 +61,16 @@ Een groep **Nightmares**: één per ring (5 totaal), groter dan gewone mobs, bed
 - **Lagen:** steen/mos (basis) · geanimeerde corruptie-overlay die omlaag schuift · emissive laag (ogen, zielresten, corruptieranden).
 - **Paletten:** steen `2E2D33 3E3D44 4F4E55 63626A 7A7980` · mos `3B4A26 4F6330 66803C` · corruptie `140E1A 2B1F38 45305C 6A4A8C 9C7AC4` · ziel `17758C 2DB8C8 5FE3E6 A8F7F4` (= zielkristal) · void `07050A` · glitch `F800F8`.
 - **Beweging en techniek:** hij beweegt via scheuren, wat het pathfinding-probleem van een reus oplost. De scheur is een eigen entity: de server bepaalt positie en levensduur, de client tekent hem.
+
+### Fase 4-sparring De Holle (2026-10-28) — definitief
+- **Animatie:** GeckoLib (voor alle vijf Nightmares). Dependency op client én server.
+- **Bouwvolgorde (stap-voor-stap):** stap 1 = lijf + gevecht (entity, model, textures, animaties, bossbar, aanvallen; op te roepen met `/summon`). Stap 2 = de scheur en de komst (voorbode, scheur-entity, zuigkracht, litteken). Stap 3 = rondzwerven (virtuele positie in `SavedData`), aftocht, terugkeer.
+- **Balans:** 300 HP (zoals de Wither), +50% HP per extra speler in de buurt; de reuzenarm slaat ~10 (5 harten). Getallen in de config.
+- **Wanneer:** **altijd**, dag en nacht; zonsopgang doet niets. Ring 1 is nergens echt veilig.
+- **Verslaan:** op 0 HP valt hij achterover zijn scheur in (= verslagen, beloning, terugkeertimer start). Sterven alle spelers in de buurt of lopen ze weg, dan trekt hij zich terug zonder beloning en geneest hij.
+- **Terugkeer:** na **3 ingame-dagen** kan hij weer komen, met +25% HP en schade per keer, tot maximaal 3 keer. In fase 5 kan de corruptie dit versnellen. Getallen in de config.
+- **Beloning:** voorlopig vanilla: veel XP, zielkristallen en een paar diamanten. Een uniek item (zoals zijn void-hart) komt later in `items` (backlog).
+- **Zwakte (zielkristal):** sla je hem met een zielkristal in je hand, dan is hij 4 s "vastgepind in fase": hij verspringt niet en is niet doorzichtig. Dit kost 1 kristal (in creative niet).
 
 ## Ring 2 — De Gelaagde (The Layered), de kloofkruiper (werktitel)
 *Sparring 2026-10-27, op basis van twee referentiebeelden van de gebruiker (een spinachtig kloofbeest en een driekoppige hellehond). Het zijn inspiratiebronnen, geen kopie.*
