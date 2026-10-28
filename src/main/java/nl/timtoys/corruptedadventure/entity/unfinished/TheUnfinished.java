@@ -427,11 +427,6 @@ public class TheUnfinished extends Nightmare {
         return ash;
     }
 
-    @Override
-    public boolean canBreatheUnderwater() {
-        return true;
-    }
-
     // ------------------------------------------------------------------------------------------------ Nightmare
 
     @Override
