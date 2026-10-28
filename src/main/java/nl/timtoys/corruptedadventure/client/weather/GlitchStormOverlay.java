@@ -58,7 +58,7 @@ final class GlitchStormOverlay {
         fedAt = gameTime;
         if (hiccupTicks > 0) {
             hiccupTicks--;
-        } else if (random.nextFloat() < HICCUP_CHANCE * amount) {
+        } else if (random.nextFloat() < HICCUP_CHANCE * amount * GlitchVisuals.scale()) {
             hiccupTicks = 1 + random.nextInt(MAX_HICCUP_TICKS);
             hiccupShift = random.nextInt(3) == 0 ? 0 : (random.nextBoolean() ? 1 : -1) * (4 + random.nextInt(12));
         }
@@ -78,10 +78,13 @@ final class GlitchStormOverlay {
         return amount;
     }
 
-    /** The noise's strength now: the storm's or the void meter's, whichever is stronger. */
+    /**
+     * The noise's strength now: the storm's or the void meter's, whichever is stronger, × what the sky glass lens leaves
+     * of it ({@link GlitchVisuals}).
+     */
     private static float noise(Minecraft minecraft) {
         float voidNow = minecraft.level == null || minecraft.level.getGameTime() - voidFedAt > 1L ? 0.0F : voidAmount;
-        return Math.max(current(minecraft), voidNow);
+        return Math.max(current(minecraft), voidNow) * GlitchVisuals.scale();
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {

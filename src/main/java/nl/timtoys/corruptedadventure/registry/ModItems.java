@@ -29,6 +29,7 @@ import nl.timtoys.corruptedadventure.item.EffectArrowItem;
 import nl.timtoys.corruptedadventure.item.GearItems;
 import nl.timtoys.corruptedadventure.item.GearTier;
 import nl.timtoys.corruptedadventure.item.HandWarmerItem;
+import nl.timtoys.corruptedadventure.item.SkyGlassLensItem;
 import nl.timtoys.corruptedadventure.item.UpgradeSmithingTemplates;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.item.coating.CoatingTemplates;
@@ -245,6 +246,9 @@ public final class ModItems {
     // ---- Nether ring 4 ----
     /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */
     public static final DeferredItem<Item> PURITY_CRYSTAL_SHARD = ITEMS.registerSimpleItem("purity_crystal_shard");
+    /** Shows the hidden glitches of ring 5 while you look through it (golf 5, §7.2); made before ring 5. */
+    public static final DeferredItem<SkyGlassLensItem> SKY_GLASS_LENS = ITEMS.registerItem("sky_glass_lens",
+            SkyGlassLensItem::new);
 
     // ---- Ring 5 ----
     static {
