@@ -40,6 +40,10 @@ public final class EchoShellItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         player.startUsingItem(hand);
+        // No pose (another item already in use, or a mod cancelled the start): no blow either.
+        if (!player.isUsingItem() || player.getUseItem() != stack) {
+            return InteractionResultHolder.fail(stack);
+        }
         if (player instanceof ServerPlayer serverPlayer) {
             blow(serverPlayer);
             serverPlayer.getCooldowns().addCooldown(this,

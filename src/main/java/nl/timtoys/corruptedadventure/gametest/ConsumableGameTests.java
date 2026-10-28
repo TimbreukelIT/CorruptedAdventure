@@ -227,7 +227,11 @@ public final class ConsumableGameTests {
                     new Dose("sky light", Condition.VOID, 20.0F, ModMobEffects.ANCHORED, 45,
                             p -> new ItemStack(ModItems.SKY_LIGHT_DRAUGHT.get()).finishUsingItem(p.level(), p)),
                     new Dose("echo shell blow", Condition.SILENCE, 20.0F, ModMobEffects.RESOUNDING, 45,
-                            p -> new ItemStack(ModItems.ECHO_SHELL.get()).use(p.level(), p, InteractionHand.MAIN_HAND)));
+                            p -> {
+                                p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.ECHO_SHELL.get()));
+                                p.getMainHandItem().use(p.level(), p, InteractionHand.MAIN_HAND);
+                                p.stopUsingItem();
+                            }));
             for (Dose dose : doses) {
                 int ticks = dose.seconds() * 20;
                 player.removeEffect(dose.effect());
@@ -294,6 +298,28 @@ public final class ConsumableGameTests {
             helper.assertValueEqual(PlayerConditions.get(player, Condition.COLD), 50.0F, "cold after an empty charge");
             helper.assertFalse(player.hasEffect(ModMobEffects.COOLED) || player.hasEffect(ModMobEffects.WARMED),
                     "no effect from an empty canteen or hand warmer");
+        } finally {
+            GameTestPlayers.remove(helper, player);
+        }
+        helper.succeed();
+    }
+
+    /** A blow needs the horn pose: with a shield already raised the shell does nothing. */
+    @GameTest(template = "gametest/empty")
+    public static void theEchoShellDoesNothingWhileAnotherItemIsInUse(GameTestHelper helper) {
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        try {
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.ECHO_SHELL.get()));
+            player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.SHIELD));
+            player.startUsingItem(InteractionHand.OFF_HAND);
+            PlayerConditions.set(player, Condition.SILENCE, 50.0F);
+            InteractionResult result = player.getMainHandItem().use(helper.getLevel(), player, InteractionHand.MAIN_HAND)
+                    .getResult();
+            helper.assertTrue(result == InteractionResult.FAIL, "a blow behind a raised shield: " + result);
+            helper.assertValueEqual(PlayerConditions.get(player, Condition.SILENCE), 50.0F, "silence, no dose");
+            helper.assertValueEqual(player.getMainHandItem().getDamageValue(), 0, "no wear");
+            helper.assertFalse(player.getCooldowns().isOnCooldown(ModItems.ECHO_SHELL.get()), "no cooldown");
+            helper.assertTrue(player.getUseItem().is(Items.SHIELD), "the shield stays up");
         } finally {
             GameTestPlayers.remove(helper, player);
         }

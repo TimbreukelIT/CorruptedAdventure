@@ -58,6 +58,21 @@ class LensScanTest {
     }
 
     @Test
+    void theNearestMissingChunksAreKeptWhenThereAreTooMany() {
+        // In loop order (far west first) round (8, 8), the middle of chunk (0, 0).
+        List<LensScanPayload.MissingChunk> found = new ArrayList<>();
+        for (int cx = -3; cx <= 3; cx++) {
+            found.add(new LensScanPayload.MissingChunk(cx, 0, -64, 0));
+        }
+        List<LensScanPayload.MissingChunk> kept = LensScan.nearestChunks(found, 8, 8, 3);
+        assertEquals(List.of(0, 1, -1), kept.stream().map(LensScanPayload.MissingChunk::chunkX).toList(),
+                "the chunk round the point first, then east (8 blocks away), then west (9)");
+        assertEquals(found, LensScan.nearestChunks(found, 8, 8, 7), "under the cap nothing changes");
+        assertEquals(0L, LensScan.footprintDistanceSqr(0, 0, 8, 8), "inside the footprint");
+        assertEquals(1L, LensScan.footprintDistanceSqr(1, 0, 15, 8), "one block to the next chunk");
+    }
+
+    @Test
     void aHoleIsMarkedAtTheLowestFloorNextToIt() {
         FakeGround ground = new FakeGround();
         // A hole of Ø 3 round (100, 50); the floor next to it at 4 (first air at 5), one side a little higher.

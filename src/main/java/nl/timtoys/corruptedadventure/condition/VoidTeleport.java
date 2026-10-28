@@ -1,7 +1,6 @@
 package nl.timtoys.corruptedadventure.condition;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.BlockGetter;
@@ -66,16 +65,8 @@ final class VoidTeleport {
 
         @Override
         public boolean allowsColumn(int x, int z) {
-            return level.dimension() == Level.OVERWORLD
-                    && level.getWorldBorder().isWithinBounds(x + 0.5, z + 0.5)
-                    && isLoaded(x - 1, z - 1) && isLoaded(x + 1, z - 1) && isLoaded(x - 1, z + 1) && isLoaded(x + 1, z + 1)
+            return level.dimension() == Level.OVERWORLD && VoidTeleportTarget.loadedInsideBorder(level, x, z)
                     && isInnerBand(x + 0.5, z + 0.5);
-        }
-
-        /** The chunk of this column is loaded (checking the 4 corners of a 3 × 3 covers every chunk it touches). */
-        private boolean isLoaded(int x, int z) {
-            return level.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(x),
-                    SectionPos.blockToSectionCoord(z)) != null;
         }
 
         /** Ring 5 (not the ring 4 side of the boundary, not the void rim) and its inner band. */
