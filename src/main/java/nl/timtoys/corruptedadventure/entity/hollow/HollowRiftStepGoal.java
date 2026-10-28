@@ -71,7 +71,7 @@ final class HollowRiftStepGoal extends Goal {
         warning = 0;
         nextStepTick = hollow.tickCount + cooldown();
         if (entry != null) {
-            entry.close();
+            entry.close(false);
             entry = null;
         }
     }

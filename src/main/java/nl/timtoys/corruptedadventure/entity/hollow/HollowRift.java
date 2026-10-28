@@ -17,19 +17,36 @@ import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
  * A dimension rift of The Hollow (phase 4 step 2): a ragged vertical wound of ~3 × 7 blocks into Herobrine's void.
  * The server decides where it is, which {@link RiftPhase} it is in and how long that lasts; the client draws it
  * ({@code client/entity/hollow/HollowRiftRenderer}) from the synced phase and its length, and makes the torches near an
- * omen flicker. The rift faces along its yaw (its plane is across it).
- * <p>
- * An arrival (also a plain {@code /summon}) runs the omens ({@link RiftOmens}), opens, shows the eyes, lets The Hollow
- * pull itself through and closes, leaving a scar ({@link HollowScar}). A rift step ({@link #step}) is a short open rift
- * without omens or scar. While fully open it pulls players and items toward it ({@link RiftSuction}).
+ * omen flicker. The rift faces along its yaw (its plane is across it). What it does depends on its {@link Kind}.
+ * While fully open it pulls players and items toward it ({@link RiftSuction}).
  */
 public class HollowRift extends Entity {
     private static final EntityDataAccessor<Integer> DATA_PHASE = SynchedEntityData.defineId(HollowRift.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_PHASE_TICKS = SynchedEntityData.defineId(HollowRift.class, EntityDataSerializers.INT);
     /** Ticks of the CLOSING phase of every rift. */
-    static final int CLOSING_TICKS = 30;
+    public static final int CLOSING_TICKS = 30;
+    /** Ticks a roaming trace (a hairline crack) hangs in the air. */
+    static final int TRACE_TICKS = 160;
+    /** Ticks a directed omen waits past its length for the director before it closes by itself. */
+    private static final int ORPHAN_TICKS = 1200;
 
-    private boolean arrival = true;
+    public enum Kind {
+        /** {@code /summon}: runs a whole arrival by itself, The Hollow included. */
+        SUMMONED,
+        /** The director's arrival ({@link HollowArrival}): holds its omen until {@link #open} brings The Hollow through. */
+        DIRECTED,
+        /** A rift step's way in or out: no omens, no scar, not saved. */
+        STEP,
+        /** A trace of its roaming: a hairline crack for a while, nothing else. */
+        TRACE;
+
+        boolean isArrival() {
+            return this == SUMMONED || this == DIRECTED;
+        }
+    }
+
+    private Kind kind = Kind.SUMMONED;
+    private boolean scars = true;
     private int phaseAge;
     private int openTicks;
     /** Client only: {@code tickCount} when the synced phase last changed. */
@@ -40,21 +57,34 @@ public class HollowRift extends Entity {
         noPhysics = true;
     }
 
-    /** An arrival of The Hollow at {@code feet}, facing {@code yaw}; starts with the omens. */
-    public static HollowRift arrival(ServerLevel level, Vec3 feet, float yaw) {
+    private static HollowRift create(ServerLevel level, Vec3 feet, float yaw, Kind kind) {
         HollowRift rift = new HollowRift(ModEntityTypes.HOLLOW_RIFT.get(), level);
         rift.moveTo(feet.x, feet.y, feet.z, yaw, 0.0F);
+        rift.kind = kind;
+        return rift;
+    }
+
+    /** The director's arrival at {@code feet}, facing {@code yaw}: a hairline crack that holds until {@link #open}. */
+    public static HollowRift directed(ServerLevel level, Vec3 feet, float yaw, int omenTicks) {
+        HollowRift rift = create(level, feet, yaw, Kind.DIRECTED);
+        rift.setPhase(RiftPhase.OMEN, omenTicks);
         level.addFreshEntity(rift);
         return rift;
     }
 
     /** A rift step's rift: opens in {@code openingTicks}, stays open {@code openTicks}, then closes; no omens, no scar. */
     public static HollowRift step(ServerLevel level, Vec3 feet, float yaw, int openingTicks, int openTicks) {
-        HollowRift rift = new HollowRift(ModEntityTypes.HOLLOW_RIFT.get(), level);
-        rift.moveTo(feet.x, feet.y, feet.z, yaw, 0.0F);
-        rift.arrival = false;
+        HollowRift rift = create(level, feet, yaw, Kind.STEP);
         rift.openTicks = openTicks;
         rift.setPhase(RiftPhase.OPENING, openingTicks);
+        level.addFreshEntity(rift);
+        return rift;
+    }
+
+    /** A trace of its roaming: a hairline crack hanging in the air for a while; no omens, no scar. */
+    public static HollowRift trace(ServerLevel level, Vec3 feet, float yaw) {
+        HollowRift rift = create(level, feet, yaw, Kind.TRACE);
+        rift.setPhase(RiftPhase.OMEN, TRACE_TICKS);
         level.addFreshEntity(rift);
         return rift;
     }
@@ -80,14 +110,34 @@ public class HollowRift extends Entity {
         return length <= 0 ? 1.0F : Math.min(1.0F, (tickCount - clientPhaseStart + partialTick) / length);
     }
 
-    public boolean isArrival() {
-        return arrival;
+    public Kind kind() {
+        return kind;
     }
 
     private void setPhase(RiftPhase phase, int ticks) {
         phaseAge = 0;
         entityData.set(DATA_PHASE, phase.ordinal());
         entityData.set(DATA_PHASE_TICKS, Math.max(1, ticks));
+    }
+
+    /** Ticks from {@link #open} until The Hollow comes through: the tearing open and the eyes. */
+    public static int ticksUntilEmerging() {
+        return ServerConfig.HOLLOW.riftOpeningTicks.get() + ServerConfig.HOLLOW.riftEyesTicks.get();
+    }
+
+    /** The director's arrival goes on: tears open, shows the eyes, then The Hollow (already waiting in it) comes out. */
+    public void open() {
+        if (phase() == RiftPhase.OMEN) {
+            setPhase(RiftPhase.OPENING, ServerConfig.HOLLOW.riftOpeningTicks.get());
+        }
+    }
+
+    /** Closes the rift; with {@code scar} false it leaves nothing behind (omens cancelled, a step done). */
+    public void close(boolean scar) {
+        scars &= scar;
+        if (phase() != RiftPhase.CLOSING) {
+            setPhase(RiftPhase.CLOSING, CLOSING_TICKS);
+        }
     }
 
     @Override
@@ -106,11 +156,11 @@ public class HollowRift extends Entity {
         }
         HollowConfig config = ServerConfig.HOLLOW;
         if (phaseTicks() == 0) {
-            // A fresh arrival (also from /summon): start with the omens.
+            // A fresh /summon: start with the omens.
             setPhase(RiftPhase.OMEN, config.omenSeconds.get() * 20);
         }
         RiftPhase phase = phase();
-        if (phase == RiftPhase.OMEN || phase == RiftPhase.OPENING && arrival) {
+        if (kind.isArrival() && (phase == RiftPhase.OMEN || phase == RiftPhase.OPENING)) {
             RiftOmens.tick(level, this, phaseAge);
         }
         if (phase.isOpen()) {
@@ -120,45 +170,34 @@ public class HollowRift extends Entity {
             return;
         }
         switch (phase) {
-            case OMEN -> setPhase(RiftPhase.OPENING, config.riftOpeningTicks.get());
+            case OMEN -> {
+                if (kind == Kind.SUMMONED) {
+                    setPhase(RiftPhase.OPENING, config.riftOpeningTicks.get());
+                } else if (kind != Kind.DIRECTED || phaseAge > phaseTicks() + ORPHAN_TICKS) {
+                    // A trace fades; a directed omen holds until the director opens it, unless nobody ever does.
+                    close(false);
+                }
+            }
             case OPENING -> {
-                if (arrival) {
+                if (kind.isArrival()) {
                     setPhase(RiftPhase.EYES, config.riftEyesTicks.get());
                 } else {
                     setPhase(RiftPhase.OPEN, openTicks);
                 }
             }
             case EYES -> {
-                emerge(level);
+                if (kind == Kind.SUMMONED) {
+                    HollowArrival.emergeFrom(level, this);
+                }
                 setPhase(RiftPhase.EMERGE, HollowAnimations.EMERGE_TICKS);
             }
-            case EMERGE, OPEN -> setPhase(RiftPhase.CLOSING, CLOSING_TICKS);
+            case EMERGE, OPEN -> close(true);
             case CLOSING -> {
-                if (arrival && config.scarEnabled.get()) {
+                if (kind.isArrival() && scars && config.scarEnabled.get()) {
                     HollowScar.place(level, blockPosition(), config.scarRadius.get(), random);
                 }
                 discard();
             }
-        }
-    }
-
-    /** The Hollow comes through: it stands in the rift, facing out, and the emerge animation pulls it free. */
-    private void emerge(ServerLevel level) {
-        TheHollow hollow = ModEntityTypes.THE_HOLLOW.get().create(level);
-        if (hollow == null) {
-            return;
-        }
-        hollow.moveTo(getX(), getY(), getZ(), getYRot(), 0.0F);
-        hollow.setYHeadRot(getYRot());
-        hollow.setYBodyRot(getYRot());
-        level.addFreshEntity(hollow);
-        hollow.startEmerging();
-    }
-
-    /** Closes a step rift early (the step is done). */
-    public void close() {
-        if (phase() != RiftPhase.CLOSING) {
-            setPhase(RiftPhase.CLOSING, CLOSING_TICKS);
         }
     }
 
@@ -174,14 +213,17 @@ public class HollowRift extends Entity {
 
     @Override
     public boolean shouldBeSaved() {
-        // A step rift is gone within seconds; only an arrival survives a save.
-        return arrival && super.shouldBeSaved();
+        // Steps and traces are gone within seconds; only an arrival survives a save.
+        return kind.isArrival() && super.shouldBeSaved();
     }
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
-        if (tag.contains("Arrival")) {
-            arrival = tag.getBoolean("Arrival");
+        if (tag.contains("Kind")) {
+            kind = Kind.values()[Math.floorMod(tag.getInt("Kind"), Kind.values().length)];
+        }
+        if (tag.contains("Scars")) {
+            scars = tag.getBoolean("Scars");
         }
         if (tag.contains("Phase")) {
             setPhase(RiftPhase.byId(tag.getInt("Phase")), tag.getInt("PhaseTicks"));
@@ -192,7 +234,8 @@ public class HollowRift extends Entity {
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
-        tag.putBoolean("Arrival", arrival);
+        tag.putInt("Kind", kind.ordinal());
+        tag.putBoolean("Scars", scars);
         if (phaseTicks() > 0) {
             tag.putInt("Phase", phase().ordinal());
             tag.putInt("PhaseTicks", phaseTicks());

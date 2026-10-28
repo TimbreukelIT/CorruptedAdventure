@@ -48,6 +48,8 @@ public class TheHollow extends Nightmare {
     private int phaseTicks;
     private int nextPhaseTick = -1;
     private int emergeTicks;
+    /** Waiting, unseen and untouchable, inside a rift that is still opening (the director's arrival). */
+    private int hiddenTicks;
 
     public TheHollow(EntityType<? extends TheHollow> type, Level level) {
         super(type, level, BossEvent.BossBarColor.PURPLE);
@@ -101,6 +103,21 @@ public class TheHollow extends Nightmare {
     public void startEmerging() {
         emergeTicks = HollowAnimations.EMERGE_TICKS;
         entityData.set(DATA_EMERGING, true);
+    }
+
+    /**
+     * Waits {@code ticks} unseen and untouchable inside a rift that is still tearing open, then emerges. The director
+     * needs the entity at once, while the rift shows its eyes first.
+     */
+    public void awaitRift(int ticks) {
+        hiddenTicks = ticks;
+        setInvisible(true);
+        setInvulnerable(true);
+    }
+
+    /** Arriving: waiting in its rift or pulling itself out of it. No attacks, no moving. */
+    public boolean isArriving() {
+        return hiddenTicks > 0 || isEmerging();
     }
 
     /** Out of phase for {@code ticks}: transparent and invulnerable. Refused while pinned. */
@@ -164,6 +181,11 @@ public class TheHollow extends Nightmare {
         if (pinnedTicks > 0) {
             pinnedTicks--;
         }
+        if (hiddenTicks > 0 && --hiddenTicks == 0) {
+            setInvisible(false);
+            setInvulnerable(false);
+            startEmerging();
+        }
         if (emergeTicks > 0 && --emergeTicks == 0) {
             entityData.set(DATA_EMERGING, false);
         }
@@ -172,7 +194,7 @@ public class TheHollow extends Nightmare {
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
-        if (isEmerging()) {
+        if (isArriving()) {
             return;
         }
         if (isPhased()) {

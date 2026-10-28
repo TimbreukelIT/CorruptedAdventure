@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.gametest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -12,16 +13,19 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.entity.hollow.HollowArrival;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowRift;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowScar;
+import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
+import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
 
 /**
  * The Hollow's rift (phase 4 step 2): an open rift pulls items toward it, a rift step's rift closes by itself and leaves
- * no scar, and the arrival's scar turns natural ground only. In the empty 9 × 7 × 9 {@code gametest/hollow_arena}, on a
- * grass floor the test lays at y 0. The full arrival (omens, eyes, The Hollow coming through) is checked in the client
- * test. Run like {@link TierGatingGameTests}.
+ * no scar, the arrival's scar turns natural ground only, the director's arrival ({@link HollowArrival}) brings The
+ * Hollow through and cancelled omens close the crack without a scar. In the empty 9 × 7 × 9 {@code gametest/hollow_arena}, on a
+ * grass floor the test lays at y 0. How it looks is checked in the client test. Run like {@link TierGatingGameTests}.
  */
 @GameTestHolder(CorruptedAdventure.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -72,6 +76,51 @@ public final class HollowRiftGameTests {
                 || helper.getBlockState(MIDDLE.below()).is(ModBlocks.GLITCH_BLOCK.get()), "into corruption");
         helper.assertEntityNotPresent(EntityType.ITEM);
         helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena", timeoutTicks = 400)
+    public static void theDirectedArrivalOpensTheRiftAndTheHollowComesThrough(GameTestHelper helper) {
+        floor(helper);
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        Vec3 at = helper.absoluteVec(new Vec3(4.5, 1.0, 0.5));
+        player.moveTo(at.x, at.y, at.z, 0.0F, 0.0F);
+        HollowArrival arrival = new HollowArrival();
+        BlockPos place = helper.absolutePos(MIDDLE);
+        arrival.omen(helper.getLevel(), player, place, 0);
+        Nightmare appeared = arrival.appear(helper.getLevel(), ModEntityTypes.THE_HOLLOW.get(), player, place, 1.0F);
+        helper.assertTrue(appeared instanceof TheHollow, "The Hollow appears");
+        TheHollow hollow = (TheHollow) appeared;
+        helper.assertTrue(hollow.isInvisible() && hollow.isArriving(), "it waits unseen in the rift");
+        int emerging = HollowRift.ticksUntilEmerging();
+        helper.startSequence()
+                .thenExecuteAfter(emerging + 5, () -> {
+                    helper.assertFalse(hollow.isInvisible(), "it comes through");
+                    helper.assertTrue(hollow.isEmerging(), "pulling itself out");
+                })
+                .thenExecuteAfter(HollowRift.CLOSING_TICKS + 70, () -> {
+                    helper.assertFalse(hollow.isArriving(), "it is through");
+                    helper.assertEntityNotPresent(ModEntityTypes.HOLLOW_RIFT.get());
+                    hollow.discard();
+                    GameTestPlayers.remove(helper, player);
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena", timeoutTicks = 100)
+    public static void cancelledOmensCloseTheCrackWithoutAScar(GameTestHelper helper) {
+        floor(helper);
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        HollowArrival arrival = new HollowArrival();
+        BlockPos place = helper.absolutePos(MIDDLE);
+        arrival.omen(helper.getLevel(), player, place, 0);
+        helper.assertEntityPresent(ModEntityTypes.HOLLOW_RIFT.get());
+        arrival.cancelled(helper.getLevel(), place);
+        helper.runAfterDelay(HollowRift.CLOSING_TICKS + 5, () -> {
+            helper.assertEntityNotPresent(ModEntityTypes.HOLLOW_RIFT.get());
+            helper.assertBlockPresent(Blocks.GRASS_BLOCK, MIDDLE.below());
+            GameTestPlayers.remove(helper, player);
+            helper.succeed();
+        });
     }
 
     /** Grass at y 0 under the whole arena. */

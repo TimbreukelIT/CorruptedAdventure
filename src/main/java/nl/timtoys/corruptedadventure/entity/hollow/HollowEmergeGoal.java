@@ -4,7 +4,7 @@ import net.minecraft.world.entity.ai.goal.Goal;
 
 import java.util.EnumSet;
 
-/** Holds The Hollow still while it pulls itself out of its arrival rift, so no attack or wandering starts. */
+/** Holds The Hollow still while it waits in or pulls itself out of its arrival rift, so no attack or wandering starts. */
 final class HollowEmergeGoal extends Goal {
     private final TheHollow hollow;
 
@@ -15,7 +15,7 @@ final class HollowEmergeGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return hollow.isEmerging();
+        return hollow.isArriving();
     }
 
     @Override
