@@ -57,7 +57,7 @@ public final class LayeredRockfall {
             if (count >= max) {
                 return count;
             }
-            if (loosen(level, pos, null, settings) != null) {
+            if (loosen(level, pos, null, settings, layered.strengthFactor()) != null) {
                 count++;
             }
         }
@@ -69,7 +69,7 @@ public final class LayeredRockfall {
                     break;
                 }
                 Vec3 from = Vec3.atBottomCenterOf(pos);
-                if (loosen(level, pos, throwVelocity(from, target.position()), settings) != null) {
+                if (loosen(level, pos, throwVelocity(from, target.position()), settings, layered.strengthFactor()) != null) {
                     count++;
                 }
             }
@@ -143,14 +143,16 @@ public final class LayeredRockfall {
     }
 
     @Nullable
-    private static FallingBlockEntity loosen(ServerLevel level, BlockPos pos, @Nullable Vec3 velocity, LayeredConfig settings) {
+    private static FallingBlockEntity loosen(ServerLevel level, BlockPos pos, @Nullable Vec3 velocity, LayeredConfig settings,
+                                             float strength) {
         BlockState state = level.getBlockState(pos);
         if (!canLoosen(level, pos, state)) {
             return null;
         }
         level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state));
         FallingBlockEntity rock = FallingBlockEntity.fall(level, pos, fallingState(state));
-        rock.setHurtsEntities(settings.rockfallDamagePerBlockFallen.get().floatValue(), settings.rockfallMaxDamage.get());
+        rock.setHurtsEntities(settings.rockfallDamagePerBlockFallen.get().floatValue() * strength,
+                Math.round(settings.rockfallMaxDamage.get() * strength));
         if (velocity != null) {
             rock.setDeltaMovement(velocity);
         }

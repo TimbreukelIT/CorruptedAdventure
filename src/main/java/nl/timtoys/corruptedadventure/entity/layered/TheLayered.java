@@ -484,6 +484,14 @@ public class TheLayered extends Nightmare {
         return from == null || from.y < getY() - BELLY_MARGIN;
     }
 
+    /**
+     * Factor on the damage of its own attacks that do not go through {@code attack_damage} (grab, shake, rock fall).
+     * Becomes the base's {@code strength()} (stronger after each return) once the director's hooks are merged.
+     */
+    float strengthFactor() {
+        return 1.0F;
+    }
+
     // --- rock fall budget -----------------------------------------------------------------------------------------------
 
     int rockfallLeft() {
