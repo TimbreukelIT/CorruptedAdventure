@@ -1,7 +1,7 @@
 {
   "type": "minecraft:smithing_trim",
   "addition": {
-    "item": "corruptedadventure:white_core"
+    "item": "corruptedadventure:sky_glass"
   },
   "base": {
     "tag": "minecraft:trimmable_armor"

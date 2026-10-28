@@ -8,16 +8,18 @@ import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 
 /**
- * The consumables against the conditions (fase-2-items.md §5.3–§5.4, §6.3, §6.6). The shapes are provisional (to confirm
- * at the test stop): the canteen is a leather pouch around a glass bottle, hung on a string (vanilla has no rope); the
- * crafted canteen is empty. One primordial ice fills four bottles, like a honey block. The hand warmer is a leather pouch
- * around a fire crystal, crafted empty like the canteen.
+ * The consumables against the conditions (fase-2-items.md §5.3–§5.4, §6.3, §6.6, §7.3). The shapes are provisional (to
+ * confirm at the test stop): the canteen is a leather pouch around a glass bottle, hung on a string (vanilla has no rope);
+ * the crafted canteen is empty. One primordial ice fills four bottles, like a honey block. The hand warmer is a leather
+ * pouch around a fire crystal, crafted empty like the canteen. The echo shell is fossil stone around a white core, in a
+ * plus.
  */
 public final class ConsumableRecipes extends RecipeSet {
     private ConsumableRecipes() {
@@ -45,8 +47,7 @@ public final class ConsumableRecipes extends RecipeSet {
                 .save(output);
         ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, ModItems.DEW_DRAUGHT.get())
                 .requires(ModItems.DEW_CRYSTAL.get())
-                .requires(DataComponentIngredient.of(false, DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER),
-                        Items.POTION))
+                .requires(waterBottle())
                 .unlockedBy(getHasName(ModItems.DEW_CRYSTAL.get()), has(ModItems.DEW_CRYSTAL.get()))
                 .save(output);
         ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, ModItems.PURIFIED_WATER.get(), 4)
@@ -61,5 +62,25 @@ public final class ConsumableRecipes extends RecipeSet {
                 .pattern(" L ")
                 .unlockedBy(getHasName(ModItems.FIRE_CRYSTAL.get()), has(ModItems.FIRE_CRYSTAL.get()))
                 .save(output);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, ModItems.SKY_LIGHT_DRAUGHT.get())
+                .requires(ModItems.PURITY_CRYSTAL_SHARD.get())
+                .requires(Items.GLOWSTONE_DUST)
+                .requires(waterBottle())
+                .unlockedBy(getHasName(ModItems.PURITY_CRYSTAL_SHARD.get()), has(ModItems.PURITY_CRYSTAL_SHARD.get()))
+                .save(output);
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, ModItems.ECHO_SHELL.get())
+                .define('F', ModBlocks.FOSSIL_STONE)
+                .define('W', ModItems.WHITE_CORE.get())
+                .pattern(" F ")
+                .pattern("FWF")
+                .pattern(" F ")
+                .unlockedBy(getHasName(ModItems.WHITE_CORE.get()), has(ModItems.WHITE_CORE.get()))
+                .save(output);
+    }
+
+    /** A water bottle only (a potion item with water in it), not any potion. */
+    private static Ingredient waterBottle() {
+        return DataComponentIngredient.of(false, DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER),
+                Items.POTION);
     }
 }

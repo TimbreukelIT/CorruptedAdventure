@@ -117,6 +117,7 @@ public final class ModTags {
         public static final TagKey<Block> STORAGE_BLOCKS_JADE = TagKey.create(Registries.BLOCK, common("storage_blocks/jade"));
         public static final TagKey<Block> STORAGE_BLOCKS_RAW_NULLITE = TagKey.create(Registries.BLOCK, common("storage_blocks/raw_nullite"));
         public static final TagKey<Block> STORAGE_BLOCKS_NULLITE = TagKey.create(Registries.BLOCK, common("storage_blocks/nullite"));
+        public static final TagKey<Block> STORAGE_BLOCKS_GLITCH_SHARD = TagKey.create(Registries.BLOCK, common("storage_blocks/glitch_shard"));
         // Gear tiers (phase 2, GearTier): needs_<tier>_tool = blocks that need at least that tier; incorrect_for_<tier>_tool
         // = the needs tags of all higher tiers (vanilla's incorrect_for_* tags get all of ours).
         public static final TagKey<Block> NEEDS_SUNSTONE_TOOL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("needs_sunstone_tool"));
@@ -211,6 +212,7 @@ public final class ModTags {
         public static final TagKey<Item> STORAGE_BLOCKS_JADE = TagKey.create(Registries.ITEM, common("storage_blocks/jade"));
         public static final TagKey<Item> STORAGE_BLOCKS_RAW_NULLITE = TagKey.create(Registries.ITEM, common("storage_blocks/raw_nullite"));
         public static final TagKey<Item> STORAGE_BLOCKS_NULLITE = TagKey.create(Registries.ITEM, common("storage_blocks/nullite"));
+        public static final TagKey<Item> STORAGE_BLOCKS_GLITCH_SHARD = TagKey.create(Registries.ITEM, common("storage_blocks/glitch_shard"));
         /** Convention tag {@code c:ingots/sunstone}; part of {@code c:ingots}. The sunstone tier repairs with it. */
         public static final TagKey<Item> INGOTS_SUNSTONE = TagKey.create(Registries.ITEM, common("ingots/sunstone"));
         /** Convention tag {@code c:ingots/volcanite}; part of {@code c:ingots}. The volcanite tier repairs with it. */

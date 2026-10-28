@@ -23,12 +23,16 @@ class SilenceConfigTest {
         assertPath("soundReliefSeconds", SILENCE.soundReliefSeconds);
         assertPath("soundFall", SILENCE.soundFall);
         assertPath("outsideFall", SILENCE.outsideFall);
+        assertPath("resoundingFactor", SILENCE.resoundingFactor);
+        assertPath("echoShellAmount", SILENCE.echoShellAmount);
+        assertPath("echoShellResoundingSeconds", SILENCE.echoShellResoundingSeconds);
+        assertPath("echoShellCooldownSeconds", SILENCE.echoShellCooldownSeconds);
         assertPath("darknessAmplifier", SILENCE.darknessAmplifier);
         assertPath("damage", SILENCE.damage);
         assertPath("damageInterval", SILENCE.damageInterval);
-        // threshold1..3 through ThresholdLevels; together 14 keys in the section.
+        // threshold1..3 through ThresholdLevels; together 18 keys in the section.
         UnmodifiableConfig section = ServerConfig.SPEC.getValues().get(List.of("conditions", "silence"));
-        assertEquals(14, section.size());
+        assertEquals(18, section.size());
     }
 
     @Test
@@ -41,6 +45,10 @@ class SilenceConfigTest {
         assertEquals(10, SILENCE.soundReliefSeconds.getDefault());
         assertEquals(2.0, SILENCE.soundFall.getDefault());
         assertEquals(1.0, SILENCE.outsideFall.getDefault());
+        assertEquals(0.5, SILENCE.resoundingFactor.getDefault());
+        assertEquals(20.0, SILENCE.echoShellAmount.getDefault());
+        assertEquals(45, SILENCE.echoShellResoundingSeconds.getDefault());
+        assertEquals(45, SILENCE.echoShellCooldownSeconds.getDefault());
         assertArrayEquals(new int[]{30, 60, 90}, SILENCE.thresholds.defaults());
         assertEquals(0, SILENCE.darknessAmplifier.getDefault());
         assertEquals(1.0, SILENCE.damage.getDefault());

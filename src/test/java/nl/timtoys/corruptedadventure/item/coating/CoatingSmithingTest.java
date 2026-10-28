@@ -65,8 +65,10 @@ class CoatingSmithingTest {
     }
 
     @Test
-    void voidAndSilenceShareTheWhiteCoreButStayApart() {
+    void voidTakesSkyGlassAndSilenceTheWhiteCore() {
+        // Golf 5 (fase-2-items.md §7.3): the void coating moved from the white core to sky glass.
         ItemStack voidCoated = trim(new ItemStack(Items.DIAMOND_CHESTPLATE), Coating.VOID);
+        assertTrue(voidCoated.get(DataComponents.TRIM).material().is(CoatingMaterial.SKY_GLASS.key()));
         ItemStack silence = trim(voidCoated, Coating.SILENCE);
         assertTrue(silence.get(DataComponents.TRIM).pattern().is(Coating.SILENCE.pattern()));
         assertTrue(silence.get(DataComponents.TRIM).material().is(CoatingMaterial.WHITE_CORE.key()));

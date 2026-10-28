@@ -88,6 +88,22 @@ final class ModBlockStateProvider extends BlockStateProvider {
         golf2Materials();
         golf3Ring3();
         golf4Materials();
+        golf5SkyGlass();
+    }
+
+    /**
+     * Phase 2 golf 5 (stream H; placeholder textures: {@code Golf5SkyGlassTextures}, stream T makes the final ones).
+     * Sand, glass and the glitch shard block {@code cube_all}, the pane like vanilla's; glass and pane translucent like
+     * stained glass, so a tinted texture works.
+     */
+    private void golf5SkyGlass() {
+        simpleBlock(ModBlocks.SKY_SAND.get());
+        simpleBlock(ModBlocks.SKY_GLASS.get(), models().cubeAll("sky_glass", blockTexture(ModBlocks.SKY_GLASS.get()))
+                .renderType("translucent"));
+        paneBlockWithRenderType(ModBlocks.SKY_GLASS_PANE.get(), blockTexture(ModBlocks.SKY_GLASS.get()),
+                modLoc("block/sky_glass_pane_top"), "translucent");
+        // The flicker is an animated texture (.mcmeta next to the png).
+        simpleBlock(ModBlocks.GLITCH_SHARD_BLOCK.get());
     }
 
     /**

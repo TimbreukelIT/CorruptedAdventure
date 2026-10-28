@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.datagen.lang.Golf1TierNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Golf2MaterialNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Golf3Ring3Names;
 import nl.timtoys.corruptedadventure.datagen.lang.Golf4MaterialNames;
+import nl.timtoys.corruptedadventure.datagen.lang.Golf5SkyGlassNames;
 import nl.timtoys.corruptedadventure.datagen.lang.CoatingText;
 import nl.timtoys.corruptedadventure.datagen.lang.ArrowText;
 import nl.timtoys.corruptedadventure.datagen.lang.LensText;
@@ -284,6 +285,8 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         Golf4MaterialNames.addDutch(this);
         // Phase 2 golf 3 + 4: one helper per stream.
         ArrowText.addDutch(this);
+        // Phase 2 golf 5: one helper per stream.
+        Golf5SkyGlassNames.addDutch(this);
         // Phase 2 golf 5 (stream L).
         LensText.addDutch(this);
 

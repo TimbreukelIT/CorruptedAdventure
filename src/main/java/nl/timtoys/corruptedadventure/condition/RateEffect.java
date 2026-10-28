@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 /**
  * A timed effect from a consumable that multiplies the <b>rising</b> rate of one or more conditions (fase-2-items.md
- * §5.3, §6.3, §6.6), carried as a vanilla status effect. Effects of the same kind do not stack: the longest remaining time
+ * §5.3, §6.3, §6.6, §7.3), carried as a vanilla status effect. Effects of the same kind do not stack: the longest remaining time
  * wins (vanilla's rule for one amplifier). The factors come from the SERVER config, read live.
  */
 public enum RateEffect {
@@ -23,7 +23,13 @@ public enum RateEffect {
             Condition.POISON, () -> ServerConfig.POISON.cleansedFactor.get().floatValue())),
     /** Hand warmer: the cold rises at {@code warmedFactor} (0.5). */
     WARMED(ModMobEffects.WARMED, Map.of(
-            Condition.COLD, () -> ServerConfig.COLD.warmedFactor.get().floatValue()));
+            Condition.COLD, () -> ServerConfig.COLD.warmedFactor.get().floatValue())),
+    /** Sky light: the void rises at {@code anchoredFactor} (0.5). */
+    ANCHORED(ModMobEffects.ANCHORED, Map.of(
+            Condition.VOID, () -> ServerConfig.VOID.anchoredFactor.get().floatValue())),
+    /** Echo shell: the silence rises at {@code resoundingFactor} (0.5). */
+    RESOUNDING(ModMobEffects.RESOUNDING, Map.of(
+            Condition.SILENCE, () -> ServerConfig.SILENCE.resoundingFactor.get().floatValue()));
 
     private final Holder<MobEffect> mobEffect;
     private final Map<Condition, Supplier<Float>> factors;

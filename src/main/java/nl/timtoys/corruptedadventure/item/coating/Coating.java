@@ -21,7 +21,7 @@ public enum Coating {
     HEAT(Condition.HEAT, CoatingMaterial.DEW_CRYSTAL, () -> ModItems.HEAT_COATING_SMITHING_TEMPLATE.get()),
     COLD(Condition.COLD, CoatingMaterial.FIRE_CRYSTAL, () -> ModItems.COLD_COATING_SMITHING_TEMPLATE.get()),
     POISON(Condition.POISON, CoatingMaterial.PRIMORDIAL_ICE, () -> ModItems.POISON_COATING_SMITHING_TEMPLATE.get()),
-    VOID(Condition.VOID, CoatingMaterial.WHITE_CORE, () -> ModItems.VOID_COATING_SMITHING_TEMPLATE.get()),
+    VOID(Condition.VOID, CoatingMaterial.SKY_GLASS, () -> ModItems.VOID_COATING_SMITHING_TEMPLATE.get()),
     SILENCE(Condition.SILENCE, CoatingMaterial.WHITE_CORE, () -> ModItems.SILENCE_COATING_SMITHING_TEMPLATE.get());
 
     private final Condition condition;

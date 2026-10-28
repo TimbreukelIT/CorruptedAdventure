@@ -160,6 +160,18 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         golf2Materials();
         golf3Ring3();
         golf4Materials();
+        golf5SkyGlass();
+    }
+
+    /**
+     * Phase 2 golf 5 (stream H): sand and glitch shard block drop themselves; glass and pane only with silk touch, like
+     * vanilla's.
+     */
+    private void golf5SkyGlass() {
+        dropSelf(ModBlocks.SKY_SAND.get());
+        dropWhenSilkTouch(ModBlocks.SKY_GLASS.get());
+        dropWhenSilkTouch(ModBlocks.SKY_GLASS_PANE.get());
+        dropSelf(ModBlocks.GLITCH_SHARD_BLOCK.get());
     }
 
     /** Phase 2 golf 3 (stream R3): every block drops itself, a double slab two. */

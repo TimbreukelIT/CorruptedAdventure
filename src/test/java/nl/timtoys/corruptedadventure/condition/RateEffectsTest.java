@@ -26,6 +26,11 @@ class RateEffectsTest {
         assertEquals(1.5F, modify(Condition.POISON, 3.0F, RateEffect.CLEANSED), 1.0E-6F);
         assertEquals(3.0F, modify(Condition.POISON, 3.0F, RateEffect.WARMED), "warmed leaves poison alone");
         assertEquals(0.21F, modify(Condition.COLD, 0.42F, RateEffect.WARMED), 1.0E-6F);
+        assertEquals(0.14F, modify(Condition.VOID, 0.28F, RateEffect.ANCHORED), 1.0E-6F);
+        assertEquals(-1.0F, modify(Condition.VOID, -1.0F, RateEffect.ANCHORED), "a lit void meter keeps falling");
+        assertEquals(0.33F, modify(Condition.SILENCE, 0.33F, RateEffect.ANCHORED), "anchored leaves the silence alone");
+        assertEquals(0.165F, modify(Condition.SILENCE, 0.33F, RateEffect.RESOUNDING), 1.0E-6F);
+        assertEquals(0.28F, modify(Condition.VOID, 0.28F, RateEffect.RESOUNDING), "resounding leaves the void alone");
     }
 
     @Test
@@ -33,6 +38,8 @@ class RateEffectsTest {
         assertSlows(RateEffect.COOLED, EnumSet.of(Condition.DEHYDRATION, Condition.HEAT));
         assertSlows(RateEffect.CLEANSED, EnumSet.of(Condition.POISON));
         assertSlows(RateEffect.WARMED, EnumSet.of(Condition.COLD));
+        assertSlows(RateEffect.ANCHORED, EnumSet.of(Condition.VOID));
+        assertSlows(RateEffect.RESOUNDING, EnumSet.of(Condition.SILENCE));
     }
 
     private static void assertSlows(RateEffect effect, Set<Condition> slowed) {
@@ -47,6 +54,8 @@ class RateEffectsTest {
         assertEquals(ModMobEffects.COOLED.get(), RateEffect.COOLED.mobEffect().value());
         assertEquals(ModMobEffects.CLEANSED.get(), RateEffect.CLEANSED.mobEffect().value());
         assertEquals(ModMobEffects.WARMED.get(), RateEffect.WARMED.mobEffect().value());
+        assertEquals(ModMobEffects.ANCHORED.get(), RateEffect.ANCHORED.mobEffect().value());
+        assertEquals(ModMobEffects.RESOUNDING.get(), RateEffect.RESOUNDING.mobEffect().value());
         for (RateEffect effect : RateEffect.values()) {
             assertEquals(MobEffectCategory.BENEFICIAL, effect.mobEffect().value().getCategory());
             for (RateEffect other : RateEffect.values()) {

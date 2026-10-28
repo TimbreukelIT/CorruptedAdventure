@@ -70,6 +70,23 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         golf2Materials();
         golf3Ring3();
         golf4Materials();
+        golf5SkyGlass();
+    }
+
+    /**
+     * Phase 2 golf 5 (stream H): the glass in the tags of vanilla glass (impermeable, {@code c:glass_blocks} /
+     * {@code c:glass_panes}, not the colorless ones: it is tinted); the sand with a shovel. The sand is a crafted
+     * intermediate like the bone sand, so not in {@code minecraft:sand} or {@code c:sands} (no glass from other recipes).
+     * The glitch shard block is a storage block with any pickaxe, like the glitch block its shards come from.
+     */
+    private void golf5SkyGlass() {
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.SKY_SAND.get());
+        tag(BlockTags.IMPERMEABLE).add(ModBlocks.SKY_GLASS.get());
+        tag(Tags.Blocks.GLASS_BLOCKS).add(ModBlocks.SKY_GLASS.get());
+        tag(Tags.Blocks.GLASS_PANES).add(ModBlocks.SKY_GLASS_PANE.get());
+        tag(ModTags.Blocks.STORAGE_BLOCKS_GLITCH_SHARD).add(ModBlocks.GLITCH_SHARD_BLOCK.get());
+        tag(Tags.Blocks.STORAGE_BLOCKS).addTag(ModTags.Blocks.STORAGE_BLOCKS_GLITCH_SHARD);
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.GLITCH_SHARD_BLOCK.get());
     }
 
     /**

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/template_glass_pane_side_alt",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "edge": "corruptedadventure:block/sky_glass_pane_top",
+    "pane": "corruptedadventure:block/sky_glass"
+  }
+}
