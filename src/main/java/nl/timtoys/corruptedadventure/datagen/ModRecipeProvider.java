@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.datagen.recipe.FloraRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.Golf2MaterialRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.Golf3Ring3Recipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.Golf4MaterialRecipes;
+import nl.timtoys.corruptedadventure.datagen.recipe.Golf5SkyGlassRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.GearRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.MaterialRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.StoneSetRecipes;
@@ -37,5 +38,6 @@ final class ModRecipeProvider extends RecipeProvider {
         ConsumableRecipes.build(output);
         GearRecipes.build(output);
         ArrowRecipes.build(output);
+        Golf5SkyGlassRecipes.build(output);
     }
 }
