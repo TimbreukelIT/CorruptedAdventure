@@ -4,7 +4,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -37,8 +39,9 @@ public final class UnfinishedGameTests {
         ServerPlayer player = GameTestPlayers.survival(helper);
         float full = boss.getHealth();
         helper.assertTrue(boss.hurt(playerAttack(helper, player), 20.0F), "a blow on his body lands");
-        double expected = full - 20.0 * ServerConfig.UNFINISHED.bodyDamageFactor.get();
-        helper.assertTrue(Math.abs(boss.getHealth() - expected) < 0.01, "health " + boss.getHealth() + ", expected " + expected);
+        float share = ServerConfig.UNFINISHED.bodyDamageFactor.get().floatValue();
+        double expected = full - afterArmor(boss, helper, player, 20.0F * share);
+        assertHealth(helper, boss, expected);
         GameTestPlayers.remove(helper, player);
         helper.succeed();
     }
@@ -55,8 +58,9 @@ public final class UnfinishedGameTests {
         boss.load(100);
         helper.assertTrue(boss.isLoaded(), "loaded");
         helper.assertTrue(weak.hurt(playerAttack(helper, player), 10.0F), "a loaded weak spot is hit");
-        double expected = full - 10.0 * ServerConfig.UNFINISHED.weakDamageFactor.get();
-        helper.assertTrue(Math.abs(boss.getHealth() - expected) < 0.01, "health " + boss.getHealth() + ", expected " + expected);
+        float factor = ServerConfig.UNFINISHED.weakDamageFactor.get().floatValue();
+        double expected = full - afterArmor(boss, helper, player, 10.0F * factor);
+        assertHealth(helper, boss, expected);
         GameTestPlayers.remove(helper, player);
         helper.succeed();
     }
@@ -68,11 +72,12 @@ public final class UnfinishedGameTests {
         UnfinishedPart weak = part(boss, "weak_hoeder");
         boss.load(100);
         double share = ServerConfig.UNFINISHED.graftBreakShare.get();
-        float blow = (float) (share * boss.getMaxHealth() / ServerConfig.UNFINISHED.weakDamageFactor.get()) - 1.0F;
-        weak.hurt(playerAttack(helper, player), blow);
-        helper.assertTrue(boss.hasGraft(Graft.HOEDER), "the tail holds just below the share");
+        // In blows that, after the factor and his armor, stay below and then pass the share of his max health.
+        float atShare = (float) (share * boss.getMaxHealth() / ServerConfig.UNFINISHED.weakDamageFactor.get());
+        weak.hurt(playerAttack(helper, player), atShare * 0.5F);
+        helper.assertTrue(boss.hasGraft(Graft.HOEDER), "the tail holds below the share");
         boss.invulnerableTime = 0;
-        weak.hurt(playerAttack(helper, player), 2.0F);
+        weak.hurt(playerAttack(helper, player), atShare * 0.8F);
         helper.assertFalse(boss.hasGraft(Graft.HOEDER), "the tail is torn off");
         helper.assertFalse(weak.isPickable(), "its weak spot is gone");
         helper.assertTrue(boss.hasGraft(Graft.HOLLE), "the other grafts stay");
@@ -105,6 +110,16 @@ public final class UnfinishedGameTests {
             }
         }
         throw new IllegalArgumentException(name);
+    }
+
+    private static void assertHealth(GameTestHelper helper, TheUnfinished boss, double expected) {
+        helper.assertTrue(Math.abs(boss.getHealth() - expected) < 0.01, "health " + boss.getHealth() + ", expected " + expected);
+    }
+
+    /** A blow as it lands after his armor. */
+    private static float afterArmor(TheUnfinished boss, GameTestHelper helper, ServerPlayer player, float damage) {
+        return CombatRules.getDamageAfterAbsorb(boss, damage, playerAttack(helper, player), boss.getArmorValue(),
+                (float) boss.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
     }
 
     private static DamageSource playerAttack(GameTestHelper helper, ServerPlayer player) {
