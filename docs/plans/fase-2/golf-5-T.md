@@ -19,6 +19,8 @@ Omlijning `#050507`; antraciet `#0D0E11` `#15161A` `#1E2025` `#282A31` `#34373F`
 ## Voortgang
 - 2026-10-28 16:00 — voorbeeld gemaakt en aan main gemeld (`build/t-preview/golf5-T-preview.png`); intussen door.
 - 2026-10-28 16:30 — alle textures + scripts; Java-uitvoer pixel-gelijk aan de kladversie (28 PNG's).
+- 2026-10-28 16:45 — main `e61453e1` (G, H pakket 1, C, A) ingevoegd, PNG's `--ours`; iconen in de effectkleuren van C;
+  coating-basis = H's `0x9CCAEC`.
 - 2026-10-28 — akkoord gebruiker op het voorbeeld (gat als ontbrekende pixel). H: glas en ruit renderen `translucent`;
   ik houd het goedgekeurde heldere midden (alpha 0/255), een tint kan later zonder codewijziging.
 
@@ -75,7 +77,8 @@ Omlijning `#050507`; antraciet `#0D0E11` `#15161A` `#1E2025` `#282A31` `#34373F`
 - `item/raw_nullite`: `Ring5Textures` → `Golf5NulliteTextures`.
 - `item/nullite_upgrade_smithing_template`: `Golf34NulliteTextures` (weg) → `Golf5NulliteTextures` (ongewijzigd).
 - `item/void_coating_smithing_template`: embleem in hemelglas i.p.v. witte kern (`CoatingTextures`).
-- Placeholders van G/H/C/A/L op dezelfde paden: mijn versie bij de merge (`--ours`).
+- Placeholders van G/H/C/A/L op dezelfde paden: mijn versie bij de merge (`--ours`); H's placeholder-script
+  `tools/textures/Golf5SkyGlassTextures.java` weg (vervangen door `Golf5BlockTextures`).
 
 ## Beslissingen
 - 2026-10-28, textures: voorbeeld nulliet (antraciet, korte cyaan/paarse chroma-split-randen, scheurlijn) en hemelglas
