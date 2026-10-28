@@ -185,7 +185,11 @@ public class TheHollow extends Monster implements GeoEntity {
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide() || isDeadOrDying()) {
+        if (level().isClientSide()) {
+            return;
+        }
+        bossEvent.setProgress(getHealth() / getMaxHealth());
+        if (isDeadOrDying()) {
             return;
         }
         if (pinnedTicks > 0) {
@@ -195,7 +199,6 @@ public class TheHollow extends Monster implements GeoEntity {
             applyConfig();
             checkPresence();
         }
-        bossEvent.setProgress(getHealth() / getMaxHealth());
     }
 
     @Override
@@ -276,8 +279,10 @@ public class TheHollow extends Monster implements GeoEntity {
 
     @Override
     public AABB getBoundingBoxForCulling() {
-        // The model is bigger than the hitbox: the giant arm hangs out in front, upright it is ~8 blocks tall.
-        return getBoundingBox().inflate(2.5, 3.0, 2.5);
+        // The model is bigger than the hitbox: the giant arm hangs out in front, upright it is ~8 blocks tall; dead, it
+        // lies full length behind its heels.
+        double reach = deathTime > 0 ? 7.0 : 2.5;
+        return getBoundingBox().inflate(reach, 3.0, reach);
     }
 
     @Override
