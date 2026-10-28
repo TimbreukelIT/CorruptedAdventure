@@ -23,6 +23,8 @@ Omlijning `#050507`; antraciet `#0D0E11` `#15161A` `#1E2025` `#282A31` `#34373F`
   coating-basis = H's `0x9CCAEC`.
 - 2026-10-28 17:50 — main `2a945ba5` (H pakket 2) ingevoegd: glitchscherfblok + `.mcmeta` `--ours`, `Golf5SkyGlassTextures`
   (ook H's glitchscherf-placeholder) weg, `CoatingTextures` gelijk aan H's regel (`sky_glass` 0x9CCAEC).
+- 2026-10-28 — na LIVE: void-coating violet-blauw met cyaan glans (`CoatingTextures` GLOSS), tooltip `0x8E90F2`;
+  vergelijkingsblad `build/t-preview/coating-palettes.png`.
 - 2026-10-28 — akkoord gebruiker op het voorbeeld (gat als ontbrekende pixel). H: glas en ruit renderen `translucent`;
   ik houd het goedgekeurde heldere midden (alpha 0/255), een tint kan later zonder codewijziging.
 
@@ -44,8 +46,10 @@ Omlijning `#050507`; antraciet `#0D0E11` `#15161A` `#1E2025` `#282A31` `#34373F`
 - Glitchpijl: glitchscherf-punt met zwart facet, veren gesplitst cyaan/magenta; entity in de vanilla 32 x 32-indeling.
 - Hemelglas-lens: getijdezilveren verrekijker met jade banden, hemelglas-lens bovenaan; scope-overlay = vanilla-
   indeling met een getijdezilveren rand (jade noppen) en vage hemelglas-ruiten (deels transparant, zoals vanilla).
-- Void-coating: materiaal `sky_glass` (basis `#9CCAEC`, de waarde van H) in `CoatingTextures`; het void-template toont het embleem nu in
-  hemelblauw. Pad `trims/color_palettes/sky_glass` (afspraak main; H bevestigt in pakket 2).
+- Void-coating: materiaal `sky_glass` in `CoatingTextures`, na LIVE een eigen tint (besluit gebruiker): koel violet-blauw
+  (basis `#6A6CDC`) waarvan de lichte tinten naar cyaan-wit `#B8F4FF` lopen (nieuwe `GLOSS`-map, standaard wit) i.p.v.
+  `#9CCAEC` (bijna gelijk aan oer-ijs). Tooltipkleur `CoatingMaterial.SKY_GLASS` `0x8E90F2`. Het void-template toont het
+  embleem in die tint. Pad `trims/color_palettes/sky_glass` (afspraak main; H bevestigt in pakket 2).
 
 ## W-checklist voor INT
 - Nulliet-items in hand/inventaris naast getijdezilver; layers 1 + 2 op een speler (ook alleen beenstukken); het gat
@@ -88,5 +92,7 @@ Omlijning `#050507`; antraciet `#0D0E11` `#15161A` `#1E2025` `#282A31` `#34373F`
 - 2026-10-28, textures: de "ontbrekende" pixel van nulliet is een echt gat (transparant); op dichte blokken zuiver zwart.
 
 ## Backlog
+- [items] `CoatingMaterial.SKY_GLASS` leent voor het item-model nog diamant (0.8F, lichtblauw); amethist (1.0F) past
+  beter bij de violet-blauwe void-tint (voorstel aan main, niet aangepast).
 - [blocks] Javadoc in `ModBlockStateProvider` (golf 5, stroom H) noemt nog `Golf5SkyGlassTextures` als placeholder-bron;
   de textures komen nu uit `Golf5BlockTextures` (Java buiten `tools/textures/`, niet door T aangepast; INT).

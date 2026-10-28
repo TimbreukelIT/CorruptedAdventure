@@ -25,7 +25,7 @@ public enum CoatingMaterial {
     /** The silence coating (the void coating took it until golf 5). */
     WHITE_CORE("white_core", "item", "white_core", 0xE6E4F2, 0.1F),
     /** The void coating (phase 2 golf 5, fase-2-items.md §7.3): sky glass; the item model borrows diamond's light blue. */
-    SKY_GLASS("sky_glass", "block", "sky_glass", 0xA8D4F0, 0.8F);
+    SKY_GLASS("sky_glass", "block", "sky_glass", 0x8E90F2, 0.8F);
 
     private final String name;
     private final ResourceLocation itemId;
