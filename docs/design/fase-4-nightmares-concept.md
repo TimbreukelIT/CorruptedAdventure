@@ -24,6 +24,12 @@ Een groep **Nightmares**: één per ring (5 totaal), groter dan gewone mobs, bed
 | 4 | **De Verloren Hoeder** (The Lost Keeper; was "Wat onder de bellen leeft") — gevallen mythische zeedraak, half parelwit, half gifgroen rot | bellen, het silhouet onder water, mist, zwevende eilanden, de zeewezen-fossielen van Nether-4 |
 | 5 | **De Onvoltooide** — kolossaal geënt mozaïek van herinneringen en van de vier verslagen Nightmares, klimt uit de void | herinneringen, void-scheuren, glitchblokken, stilstand-weer |
 
+## Fase 4-sparring alle Nightmares (2026-10-28)
+- **Omvang:** alle vijf eerst tot stap 1 (lijf + gevecht, op te roepen met `/summon`). Daarna komt stap 2+3 (komst, rondzwerven, aftocht, terugkeer) één keer als gedeeld systeem voor alle vijf.
+- **Gedeelde regels (die van De Holle), oplopend per ring:** HP 300 / 450 / 600 / 800 / 1200 (ring 1–5), +50% per extra speler in de buurt, 0 HP = verslagen, iedereen weg/dood = terugtrekken + genezen, terugkeer na 3 ingame-dagen met +25% (max. 3×). Beloning: XP plus het materiaal van zijn ring (ring 1 zielkristal/diamant, ring 2 zonnesteen, ring 3 vulkaniet, ring 4 getijdezilver, ring 5 nulliet); unieke items later. Alle getallen in de config.
+- **Zwaktes met een item worden nu volledig gemaakt** (categorie `items`, eigen stroom): de zonnesteen-flits (ring 2) en de versterkte ring 3-hoorn. Ring 5 gebruikt de bestaande hemelglaslens uit fase 2: kijk je erdoor, dan "laden" zijn onvoltooide delen in.
+- **Overige open punten per ring** (gedrag buiten het gevecht, mistgrootte, lokroep, teruggroeiende kroon, wegvallende delen enz.): de bouwstromen kiezen een voorlopige invulling, die de gebruiker bij de teststop bevestigt (zoals in fase 2).
+
 ## Ring 1 — De Holle, de ontzielde titaan (werktitel)
 *Herontwerp 2026-10-20: vervangt de eerste schets (uitgerekte nabootser). "Hol" betekent nu: zonder ziel.*
 
