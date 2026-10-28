@@ -54,6 +54,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.common.ItemAbilities;
 import nl.timtoys.corruptedadventure.block.ModWoodTypes;
 import nl.timtoys.corruptedadventure.block.VoidstoneBlock;
+import nl.timtoys.corruptedadventure.item.weakness.SunstoneFlashItem;
+import nl.timtoys.corruptedadventure.item.weakness.VolcaniteHornItem;
 import nl.timtoys.corruptedadventure.item.CanteenItem;
 import nl.timtoys.corruptedadventure.item.DoseDrinkItem;
 import nl.timtoys.corruptedadventure.item.DoseFoodItem;
@@ -245,6 +247,8 @@ class ModBlocksTest {
                         && !(item instanceof ArmorItem))
                 // So do the consumables of golf 2 (canteen, cactus juice, salted jerky).
                 .filter(item -> !(item instanceof CanteenItem || item instanceof DoseDrinkItem || item instanceof DoseFoodItem))
+                // And the weakness items of phase 4.
+                .filter(item -> !(item instanceof SunstoneFlashItem || item instanceof VolcaniteHornItem))
                 .toList();
         assertEquals(List.of(ModItems.SALT.get(), ModItems.SUNSTONE_INGOT.get(), ModItems.TURQUOISE.get(),
                 ModItems.DEW_CRYSTAL.get()), standalone.subList(standalone.indexOf(ModItems.SALT.get()),
@@ -632,7 +636,8 @@ class ModBlocksTest {
                 // about the materials.
                 .filter(item -> !(item instanceof SmithingTemplateItem) && !(item instanceof TieredItem)
                         && !(item instanceof ArmorItem) && !(item instanceof DoseDrinkItem)
-                        && !(item instanceof HandWarmerItem) && !(item instanceof EffectArrowItem)).toList();
+                        && !(item instanceof HandWarmerItem) && !(item instanceof EffectArrowItem)
+                        && !(item instanceof SunstoneFlashItem) && !(item instanceof VolcaniteHornItem)).toList();
         int fireCrystal = standalone.indexOf(ModItems.FIRE_CRYSTAL.get());
         assertEquals(List.of(ModItems.VOLCANITE_INGOT.get(), ModItems.RAW_TIDESILVER.get(), ModItems.JADE.get(),
                 ModItems.TOXIC_CRYSTAL_SHARD.get(), ModItems.AQUAMARINE_SHARD.get()), standalone.subList(fireCrystal + 1, fireCrystal + 6));

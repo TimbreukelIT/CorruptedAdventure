@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_sunstone_ingot": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:sunstone_ingot"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:sunstone_flash"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_sunstone_ingot"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:sunstone_flash"
+    ]
+  }
+}
