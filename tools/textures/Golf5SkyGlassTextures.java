@@ -6,8 +6,9 @@ import java.nio.file.Path;
 import java.util.Random;
 
 /**
- * Placeholder block textures of phase 2 golf 5, stream H (design §7.2): sky sand, sky glass and the sky glass pane's
- * edge. Stream T replaces them with the final ones on the same paths. Fixed seeds, so the output is reproducible. Run
+ * Placeholder block textures of phase 2 golf 5, stream H (design §7.2, §7.4): sky sand, sky glass, the sky glass pane's
+ * edge and the flickering glitch shard block (two frames stacked, animated by its hand-written {@code .png.mcmeta}).
+ * Stream T replaces them with the final ones on the same paths. Fixed seeds, so the output is reproducible. Run
  * from the repository root: {@code java tools/textures/Golf5SkyGlassTextures.java}.
  */
 public final class Golf5SkyGlassTextures {
@@ -21,6 +22,7 @@ public final class Golf5SkyGlassTextures {
         write("block/sky_sand", skySand());
         write("block/sky_glass", skyGlass());
         write("block/sky_glass_pane_top", paneTop());
+        write("block/glitch_shard_block", glitchShardBlock());
     }
 
     /** Grainy pale sky blue with lighter specks, like sand. */
@@ -57,6 +59,23 @@ public final class Golf5SkyGlassTextures {
         for (int y = 0; y < SIZE; y++) {
             image.setRGB(7, y, 0xFFB4D8F0);
             image.setRGB(8, y, 0xFF9CC8E6);
+        }
+        return image;
+    }
+
+    /** Magenta and cyan shard facets on near-black; the second frame swaps a few of them (the flicker). */
+    private static BufferedImage glitchShardBlock() {
+        int[] colors = {0xFF1A1024, 0xFF6A2A8C, 0xFFC04CE0, 0xFF3FD8E8};
+        BufferedImage image = new BufferedImage(SIZE, 2 * SIZE, BufferedImage.TYPE_INT_ARGB);
+        Random random = new Random(5_502L);
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                int roll = random.nextInt(100);
+                int color = roll < 45 ? 0 : roll < 75 ? 1 : roll < 92 ? 2 : 3;
+                int flicker = random.nextInt(100) < 15 ? (color + 2) % colors.length : color;
+                image.setRGB(x, y, colors[color]);
+                image.setRGB(x, y + SIZE, colors[flicker]);
+            }
         }
         return image;
     }

@@ -973,7 +973,8 @@ class ModBlocksTest {
                 ModBlocks.CORRUPTED_DOOR, ModBlocks.CORRUPTED_TRAPDOOR, ModBlocks.CORRUPTED_PRESSURE_PLATE,
                 ModBlocks.CORRUPTED_BUTTON, ModBlocks.CORRUPTED_SIGN, ModBlocks.CORRUPTED_HANGING_SIGN,
                 ModBlocks.CORRUPTED_LEAVES, ModBlocks.GLITCH_BLOCK, ModBlocks.VOIDSTONE, ModBlocks.NULLITE_ORE,
-                ModBlocks.VOIDSTONE_NULLITE_ORE, ModBlocks.RAW_NULLITE_BLOCK, ModBlocks.NULLITE_BLOCK)
+                ModBlocks.VOIDSTONE_NULLITE_ORE, ModBlocks.RAW_NULLITE_BLOCK, ModBlocks.NULLITE_BLOCK,
+                ModBlocks.GLITCH_SHARD_BLOCK)
                 .<Item>map(DeferredBlock::asItem).toList();
         assertEquals(ring5, shown.subList(lastNetherRing4 + 1, lastNetherRing4 + 1 + ring5.size()));
         List<Item> netherRing5 = Stream.of(ModBlocks.CHALKRACK, ModBlocks.WHITE_STONE, ModBlocks.WHITE_STONE_STAIRS,
