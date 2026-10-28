@@ -64,7 +64,8 @@ final class HollowSwapGoal extends Goal {
 
     @Override
     public void start() {
-        warning = ServerConfig.HOLLOW.swapWarningTicks.get();
+        // At least one tick, so tick() always gets to the swap (the config's minimum is 1 too).
+        warning = Math.max(1, ServerConfig.HOLLOW.swapWarningTicks.get());
         hollow.getNavigation().stop();
         hollow.triggerAnim(HollowAnimations.ACTION, HollowAnimations.SWAP);
         ServerLevel level = (ServerLevel) hollow.level();

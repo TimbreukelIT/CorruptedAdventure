@@ -57,20 +57,22 @@ public final class HollowArrival implements NightmareArrival {
         if (!level.hasChunkAt(place)) {
             return null;
         }
-        Vec3 feet = Vec3.atBottomCenterOf(place);
         HollowRift rift = find(level, place);
-        if (rift == null) {
-            rift = HollowRift.directed(level, feet, HollowRiftStepGoal.yawToward(feet, target.position()), 1);
-        }
+        Vec3 at = rift != null ? rift.position() : Vec3.atBottomCenterOf(place);
+        float yaw = rift != null ? rift.getYRot() : HollowRiftStepGoal.yawToward(at, target.position());
         Entity created = type.create(level);
         if (!(created instanceof TheHollow hollow)) {
             return null;
         }
-        hollow.moveTo(rift.getX(), rift.getY(), rift.getZ(), rift.getYRot(), 0.0F);
-        hollow.setYHeadRot(rift.getYRot());
-        hollow.setYBodyRot(rift.getYRot());
+        hollow.moveTo(at.x, at.y, at.z, yaw, 0.0F);
+        hollow.setYHeadRot(yaw);
+        hollow.setYBodyRot(yaw);
         if (!level.addFreshEntity(hollow)) {
             return null;
+        }
+        // Only once The Hollow is in the world: a failed spawn must not leave an unopened rift behind.
+        if (rift == null) {
+            rift = HollowRift.directed(level, at, yaw, 1);
         }
         hollow.awaitRift(HollowRift.ticksUntilEmerging());
         hollow.setTarget(target);

@@ -55,7 +55,8 @@ final class HollowRiftStepGoal extends Goal {
 
     @Override
     public void start() {
-        warning = ServerConfig.HOLLOW.riftStepWarningTicks.get();
+        // At least one tick, so tick() always gets to the step (the config's minimum is 1 too).
+        warning = Math.max(1, ServerConfig.HOLLOW.riftStepWarningTicks.get());
         hollow.getNavigation().stop();
         hollow.triggerAnim(HollowAnimations.ACTION, HollowAnimations.RIFT_STEP);
         ServerLevel level = (ServerLevel) hollow.level();
