@@ -22,10 +22,10 @@ Palettes: docs/design/fase-4-nightmares-concept.md (De Holle).
 """
 import base64
 import copy
-import io
 import json
 import math
 import os
+import random
 import sys
 
 import numpy as np
@@ -42,7 +42,6 @@ OUT_CORR = os.path.join(ASSETS, "textures/entity/the_hollow_corruption.png")
 
 ATLAS_W = 256
 FRAMES = 8
-FLOW_PERIOD = 8.0
 
 
 def hexes(*values):
@@ -225,155 +224,242 @@ def fbm(p, scale, seed, octaves=3):
     return total / norm
 
 
-def plates(p, cell, seed):
-    """Stone plates: 3D Voronoi on a jittered grid, squashed so the plates lie as horizontal slabs. Returns the cell
-    tone (0..1), the seam strength (1 on a seam) and whether the pixel is on the plate's upper rim (highlight)."""
-    q = p / np.asarray(cell)
-    base = np.floor(q).astype(np.int64)
-    best = np.full(len(p), 9e9)
-    second = np.full(len(p), 9e9)
-    tone = np.zeros(len(p))
-    best_y = np.zeros(len(p))
-    for dx in (-1, 0, 1):
-        for dy in (-1, 0, 1):
-            for dz in (-1, 0, 1):
-                c = base + np.array([dx, dy, dz])
-                jitter = np.stack([hash3(c[:, 0], c[:, 1], c[:, 2], seed + k) for k in range(3)], axis=1)
-                d = np.sum((c + jitter - q) ** 2, axis=1)
-                closer = d < best
-                second = np.where(closer, best, np.minimum(second, d))
-                tone = np.where(closer, hash3(c[:, 0], c[:, 1], c[:, 2], seed + 7), tone)
-                best_y = np.where(closer, (c[:, 1] + jitter[:, 1]) - q[:, 1], best_y)
-                best = np.minimum(best, d)
-    gap = np.sqrt(second) - np.sqrt(best)
-    return tone, gap, best_y
-
-
 # --- painting -------------------------------------------------------------------------------------------------------
+# Every face is painted in a "gravity canvas": its pixels turned so that row 0 is the highest edge in the world and rows
+# run downward. Plates then lie as horizontal courses with their light rim on top, and corruption drips run down, also
+# on the rotated arm and leg cubes. Few, flat shapes: plates of one tone, 1 px seams, line cracks, no pixel noise.
 
-def paint_face(world, normal, name, ancestors, mat, rng_seed):
-    """Colours (n, 3), glow mask (n,) and overlay strength (n,) for the texels at world points."""
-    n = len(world)
-    color = np.zeros((n, 3))
-    glow = np.zeros(n, dtype=bool)
-    corr_level = corruption_level(name, ancestors)
+def gravity_mode(fc):
+    u = fc["node"].dir_to_world(fc["u"][None, :])[0]
+    v = fc["node"].dir_to_world(fc["v"][None, :])[0]
+    gu = -u[1] / max(np.linalg.norm(u), 1e-9)
+    gv = -v[1] / max(np.linalg.norm(v), 1e-9)
+    if max(abs(gu), abs(gv)) < 0.35:
+        return "flat"
+    if abs(gv) >= abs(gu):
+        return "v+" if gv > 0 else "v-"
+    return "u+" if gu > 0 else "u-"
 
-    if mat == "void":
+
+def to_canvas(a, mode):
+    if mode == "v-":
+        return a[::-1]
+    if mode == "u+":
+        return a.swapaxes(0, 1)
+    if mode == "u-":
+        return a.swapaxes(0, 1)[::-1]
+    return a
+
+
+def from_canvas(a, mode):
+    if mode == "v-":
+        return a[::-1]
+    if mode == "u+":
+        return a.swapaxes(0, 1)
+    if mode == "u-":
+        return a[::-1].swapaxes(0, 1)
+    return a
+
+
+def face_rng(name, face):
+    return random.Random(f"{name}/{face}")
+
+
+def stone_canvas(h, w, world, rng, deep_bias):
+    """Courses of flat stone and deepslate plates: one tone per plate, a 1 px dark seam under and right of each plate,
+    a 1 px light rim on top, a chipped corner now and then. Tone index per pixel (0..4) and the seam mask."""
+    tone = np.zeros((h, w), dtype=int)
+    seam = np.zeros((h, w), dtype=bool)
+    r0 = -rng.randrange(5)
+    while r0 < h:
+        course = rng.randint(4, 6)
+        c0 = -rng.randrange(6)
+        while c0 < w:
+            pw = rng.randint(4, 10)
+            r_lo, r_hi = max(r0, 0), min(r0 + course, h)
+            c_lo, c_hi = max(c0, 0), min(c0 + pw, w)
+            if r_lo < r_hi and c_lo < c_hi:
+                deep = rng.random() < 0.3 + deep_bias
+                t = 1 if deep else 2 + (rng.random() < 0.35) - (rng.random() < 0.15)
+                # Grime: low on the body the plates are a tone darker.
+                if world[(r_lo + r_hi) // 2, (c_lo + c_hi) // 2, 1] < 26 and rng.random() < 0.7:
+                    t -= 1
+                tone[r_lo:r_hi, c_lo:c_hi] = t
+                if 0 <= r0 < h:
+                    tone[r0, c_lo:c_hi] = min(t + 1, 4)
+                if 0 <= r0 + course - 1 < h:
+                    seam[r0 + course - 1, c_lo:c_hi] = True
+                if 0 <= c0 + pw - 1 < w:
+                    seam[r_lo:r_hi, c0 + pw - 1] = True
+                if rng.random() < 0.35 and 0 <= r0 < h and 0 <= c0 + pw - 2 < w:
+                    seam[r0, c0 + pw - 2] = True
+            c0 += pw
+        r0 += course
+    return tone, seam
+
+
+def add_cracks(h, w, rng, count):
+    crack = np.zeros((h, w), dtype=bool)
+    for _ in range(count):
+        r, c = rng.randrange(h), rng.randrange(w)
+        for _ in range(rng.randint(3, 8)):
+            if 0 <= r < h and 0 <= c < w:
+                crack[r, c] = True
+            r += 1
+            c += rng.choice((-1, 0, 0, 1))
+    return crack
+
+
+def drips(h, w, rng, level):
+    """Corruption running down as a glossy liquid: a coat along the top that breaks up into separate drips, with stone
+    between them. Palette index per pixel (-1 = none), the specular pixels and the streams (column, width, length)."""
+    idx = np.full((h, w), -1, dtype=int)
+    spec = np.zeros((h, w), dtype=bool)
+    streams = []
+    if level <= 0.15:
+        return idx, spec, streams
+    c = rng.randrange(3)
+    while c < w:
+        if rng.random() < min(0.95, level * 1.15):
+            width = min(1 + (rng.random() < level) + (rng.random() < level * 0.6), w - c)
+            full = rng.random() < (level - 0.7) * 1.5
+            length = h if full else min(h, max(2, int(round(h * (0.25 + 0.75 * level * rng.random())))))
+            idx[:length, c:c + width] = 1
+            if width >= 3:
+                idx[:length, c + width - 1] = 0
+            # The gloss: a light line down the left of the drip, a bright spot a third of the way down.
+            idx[:length, c] = 3 if width >= 2 else 2
+            spot = length // 3
+            idx[spot, c] = 4
+            spec[spot, c] = True
+            if length < h:
+                # A rounded drop at the end, lit on its left.
+                tip = length - 1
+                idx[tip, c:c + width] = 2
+                idx[tip, c] = 4
+                spec[tip, c] = True
+                # The drop is a pixel wider than its trickle.
+                if c + width < w:
+                    idx[tip, c + width] = 1
+                if width >= 2 and tip + 1 < h:
+                    idx[tip + 1, c + 1] = 1
+            streams.append((c, width, length))
+            c += width
+        c += 1 + (rng.random() > level) + (rng.random() > level * 1.5)
+    # The coat at the top, thicker where there is more corruption.
+    coat = int(round(level * 2.5))
+    for col in range(w):
+        d = max(0, coat + rng.choice((-1, 0, 0, 1)))
+        for r in range(min(d, h)):
+            if idx[r, col] < 0:
+                idx[r, col] = 1
+        if d > 0 and idx[0, col] in (0, 1):
+            idx[0, col] = 2
+    return idx, spec, streams
+
+
+def noise2(world, a, b, scale, seed):
+    pts = np.stack([world[..., a], world[..., b], np.zeros(world.shape[:2])], -1).reshape(-1, 3)
+    return value_noise(pts, (scale, scale, 1.0), seed).reshape(world.shape[:2])
+
+
+def paint_face(fc, world_face, name, ancestors, mat):
+    """Colour (h, w, 3), glow (h, w) and overlay frames (FRAMES, h, w, 4) of one face, in face pixel order."""
+    mode = gravity_mode(fc)
+    world = to_canvas(world_face, mode)
+    h, w = world.shape[:2]
+    rng = face_rng(name, fc["face"])
+    color = np.zeros((h, w, 3))
+    glow = np.zeros((h, w), dtype=bool)
+    over = np.zeros((FRAMES, h, w, 4))
+    up = fc["world_normal"][1]
+
+    if mat in ("void", "hole"):
         color[:] = VOID
-        specks = value_noise(world, (2.0, 2.0, 2.0), 91) > 0.93
-        color[specks] = CORRUPTION[1]
-        return color, glow, np.zeros(n)
+        if name.startswith("crack_"):
+            # The corruption seeps out of the cracks.
+            seep = np.zeros((h, w), dtype=bool)
+            seep[rng.randrange(h)::max(2, h // 2), :] = True
+            color[seep] = CORRUPTION[3]
+            glow |= seep
+        return finish(color, glow, over, mode)
     if mat == "eye":
         color[:] = WHITE
         glow[:] = True
-        return color, glow, np.zeros(n)
+        return finish(color, glow, over, mode)
     if mat == "glitch":
         color[:] = GLITCH
         glow[:] = True
-        return color, glow, np.zeros(n)
+        return finish(color, glow, over, mode)
     if mat == "soul":
-        idx = np.clip((fbm(world, (1.3, 1.3, 1.3), 41) * 4.6 - 0.4).astype(int), 0, 3)
-        color[:] = SOUL[idx]
-        glow[:] = idx >= 1
-        return color, glow, np.zeros(n)
-    if mat == "hole":
-        color[:] = VOID
-        rim = value_noise(world, (1.5, 1.5, 1.5), 51) > 0.7
-        color[rim] = CORRUPTION[0]
-        if name.startswith("crack_"):
-            seep = value_noise(world, (1.0, 0.4, 1.0), 53) > 0.6
-            color[seep] = CORRUPTION[3]
-            glow[seep] = True
-        return color, glow, np.full(n, 0.6)
+        rows = np.linspace(3, 1, h).round().astype(int) if h > 1 else np.array([2])
+        color[:] = SOUL[rows][:, None, :]
+        glow[:] = True
+        return finish(color, glow, over, mode)
+
+    level = 1.0 if mat == "corruption" else corruption_level(name, ancestors)
+    # The corruption runs down from the chest: near the middle of the body, below its void.
+    if "body" in ancestors and float(np.mean(world[..., 1])) < 66:
+        level = max(level, float(np.max(np.exp(-((world[..., 0] / 7.0) ** 2)))) * 0.55)
+
     if mat == "corruption":
-        streak = fbm(world * np.array([1.0, 0.25, 1.0]), (0.9, 0.9, 0.9), 61)
-        idx = np.clip((streak * 5.5 - 0.6).astype(int), 0, 4)
-        color[:] = CORRUPTION[idx]
-        glow[:] = idx >= 3
-        pix = value_noise(world, (3.0, 3.0, 3.0), 63) > 0.95
-        color[pix] = GLITCH
-        glow |= pix
-        return color, glow, np.ones(n)
+        color[:] = CORRUPTION[1]
+    else:
+        tone, seam = stone_canvas(h, w, world, rng, 0.15 if any(a.startswith("leg") for a in ancestors) else 0.0)
+        color[:] = STONE[np.clip(tone, 0, 4)]
+        color[seam] = STONE[0] * 0.55
+        color[add_cracks(h, w, rng, (h * w) // 160)] = VOID
 
-    # Stone: flat slabs of stone and deepslate, cracked, chipped and filthy. Few, large shapes; noise stays low so the
-    # plates read at a distance instead of turning into speckle.
-    tone, gap, rel_y = plates(world, (9.0, 5.0, 9.0), 3)
-    deepslate = hash3((tone * 1e6).astype(np.int64), 0, 0, 5) < 0.35
-    grime = fbm(world, (0.12, 0.12, 0.12), 11)
-    shade = 1.3 + tone * 2.2 - deepslate * 1.0 + (grime - 0.5) * 1.1
-    # Within a plate: lighter toward its top, darker toward its foot.
-    shade += np.clip(-rel_y, -1.0, 1.0) * 0.5
-    # Top rims catch light, bottom rims sit in shadow: the plates read as ledges.
-    near_seam = gap < 0.2
-    upper_rim = near_seam & (rel_y < 0)
-    shade = np.where(upper_rim & (normal[:, 1] > -0.5), shade + 1.0, shade)
-    shade = np.where(near_seam & (rel_y >= 0), shade - 1.0, shade)
-    # Wear: grime collects low on the body.
-    shade -= np.clip((36.0 - world[:, 1]) / 36.0, 0, 1) * 0.8
-    pits = value_noise(world, (1.6, 1.6, 1.6), 19) > 0.95
-    shade = np.where(pits, shade - 1.5, shade)
-    idx = np.clip(np.round(shade), 0, 4).astype(int)
-    color[:] = STONE[idx]
-    seam = gap < 0.08
-    color[seam] = STONE[0] * 0.55
-    # A few deep cracks: thin dark lines where a stretched, slow noise crosses a level.
-    crack_field = fbm(world * np.array([1.0, 0.5, 1.0]), (0.22, 0.22, 0.22), 23, octaves=2)
-    crack = np.abs(crack_field - 0.5) < 0.012
-    color[crack] = VOID
-
-    # Moss on what faces up and on the high ledges, hanging a little down the sides.
     moss_w = moss_level(name, ancestors)
-    moss_field = fbm(world, (0.45, 0.45, 0.45), 29) + normal[:, 1] * 0.35 + (moss_w - 0.5) * 0.55
-    hanging = fbm(world * np.array([1.0, 0.3, 1.0]), (0.8, 0.8, 0.8), 31)
-    moss = (moss_field > 0.86) | ((moss_field > 0.7) & (hanging > 0.62) & (np.abs(normal[:, 1]) < 0.5))
-    midx = np.clip((fbm(world, (1.4, 1.4, 1.4), 37) * 3.6 - 0.4).astype(int), 0, 2)
-    color[moss] = MOSS[midx[moss]]
+    if mode == "flat" and up > 0.5 and moss_w >= 0.6:
+        # Moss in patches on what faces up.
+        moss = noise2(world, 0, 2, 0.22, 29) > 1.0 - moss_w * 0.75
+        color[moss] = MOSS[1]
+        color[moss & (noise2(world, 0, 2, 0.5, 31) > 0.6)] = MOSS[2]
+    elif mode != "flat" and moss_w >= 0.6:
+        # A fringe hanging over the top edge, here and there.
+        for col in range(w):
+            if rng.random() < moss_w * 0.55:
+                d = rng.randint(1, 3)
+                color[:d, col] = MOSS[1]
+                color[0, col] = MOSS[2]
+                if d < h and rng.random() < 0.3:
+                    color[d, col] = MOSS[0]
 
-    # Corruption that has set in: a dark liquid running down in streaks, thickest on the giant arm and below the chest.
-    streak = fbm(world * np.array([1.0, 0.15, 1.0]), (0.55, 0.55, 0.55), 43, octaves=2)
-    chest = np.exp(-((world[:, 0] / 7.0) ** 2)) * np.clip((64.0 - world[:, 1]) / 22.0, 0, 1) * 0.45
-    amount = corr_level + chest + (streak - 0.5) * 1.1
-    corrupt = amount > 0.62
-    body = fbm(world * np.array([1.0, 0.3, 1.0]), (0.5, 0.5, 0.5), 47, octaves=2)
-    cidx = np.clip((body * 3.6 - 1.0 + (amount - 0.62) * 0.6).astype(int), 0, 3)
-    cidx = np.where(cidx == 3, np.where(value_noise(world, (1.2, 0.4, 1.2), 48) > 0.75, 3, 2), cidx)
-    color[corrupt] = CORRUPTION[cidx[corrupt]]
-    # The brightest veins glow faintly in the dark.
-    glow |= corrupt & (cidx == 3) & (value_noise(world, (1.3, 1.3, 1.3), 45) > 0.5)
-    glitch = corrupt & (value_noise(world, (2.7, 2.7, 2.7), 49) > 0.965)
-    color[glitch] = GLITCH
-    glow |= glitch
-    overlay = np.clip((amount - 0.35) * 1.6, 0, 1)
-    return color, glow, overlay, corrupt
+    if mode == "flat":
+        if level >= 0.5 and up > 0.5:
+            pool = noise2(world, 0, 2, 0.3, 33) < level * 0.8
+            color[pool] = CORRUPTION[1]
+            color[pool & ~np.roll(pool, 1, axis=0)] = CORRUPTION[3]
+        elif level >= 0.5:
+            color[:] = CORRUPTION[1]
+        return finish(color, glow, over, mode)
+
+    idx, spec, streams = drips(h, w, rng, level)
+    liquid = idx >= 0
+    color[liquid] = CORRUPTION[np.clip(idx[liquid], 0, 4)]
+    glow |= spec
+    # A few glitch pixels, only at drip ends where the corruption is thick.
+    if level >= 0.6:
+        for c, width, length in streams:
+            if length < h and rng.random() < 0.12:
+                color[length - 1, c + width - 1] = GLITCH
+                glow[length - 1, c + width - 1] = True
+    # The overlay: a bright drop sliding down each longer drip, one loop over the frames.
+    for c, width, length in streams:
+        if length < 4:
+            continue
+        phase = rng.random()
+        for frame in range(FRAMES):
+            r = int(((frame / FRAMES + phase) % 1.0) * length)
+            over[frame, r, c] = (*CORRUPTION[4], 235)
+            if r > 0:
+                over[frame, r - 1, c] = (*CORRUPTION[3], 170)
+    return finish(color, glow, over, mode)
 
 
-def rims(corrupt, w, h):
-    """Corrupt texels with a clean 4-neighbour: the glowing edge of the corruption."""
-    grid = corrupt.reshape(h, w)
-    edge = np.zeros_like(grid)
-    for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
-        shifted = np.ones_like(grid)
-        ys = slice(max(dy, 0), h + min(dy, 0))
-        xs = slice(max(dx, 0), w + min(dx, 0))
-        yd = slice(max(-dy, 0), h + min(-dy, 0))
-        xd = slice(max(-dx, 0), w + min(-dx, 0))
-        shifted[yd, xd] = grid[ys, xs]
-        edge |= grid & ~shifted
-    return edge.reshape(-1)
-
-
-def flow(world, down_v, frame):
-    """The overlay's drips: columns of corruption sliding down in world space, periodic so the 8 frames loop."""
-    column = np.floor(world[:, 0] * 1.0) * 7 + np.floor(world[:, 2] * 1.0) * 13
-    phase = hash3(column.astype(np.int64), 0, 0, 71)
-    length = 0.2 + 0.25 * hash3(column.astype(np.int64), 1, 0, 73)
-    # Only some columns run at all, so the drips read as single trickles.
-    active = hash3(column.astype(np.int64), 2, 0, 75) > 0.6
-    t = frame * FLOW_PERIOD / FRAMES
-    pos = np.mod(world[:, 1] + phase * FLOW_PERIOD + t, FLOW_PERIOD) / FLOW_PERIOD
-    drip = active & (pos < length)
-    head = drip & (pos < 0.12)
-    return drip, head
+def finish(color, glow, over, mode):
+    return from_canvas(color, mode), from_canvas(glow, mode), np.stack([from_canvas(f, mode) for f in over])
 
 
 # --- atlas ----------------------------------------------------------------------------------------------------------
@@ -413,39 +499,21 @@ def main():
     for fc in faces:
         el = fc["element"]
         name = el["name"]
-        ancestors = fc["node"].ancestors()
-        mat = material(name)
         sw, sh = fc["sw"], fc["sh"]
         jj, ii = np.meshgrid(np.arange(sh), np.arange(sw), indexing="ij")
         uu = ((ii + 0.5) / sw).reshape(-1, 1)
         vv = ((jj + 0.5) / sh).reshape(-1, 1)
-        local = fc["corner"] + uu * fc["u"] + vv * fc["v"]
-        world = fc["node"].to_world(local)
-        normal = np.repeat(fc["node"].dir_to_world(fc["normal"][None, :]), len(world), axis=0)
-        painted = paint_face(world, normal, name, ancestors, mat, 0)
-        if len(painted) == 4:
-            color, glow, strength, corrupt = painted
-            edge = rims(corrupt, sw, sh)
-            color[edge] = CORRUPTION[3]
-            glow |= edge & (value_noise(world, (1.7, 1.7, 1.7), 59) > 0.45)
-        else:
-            color, glow, strength = painted
-        ys, xs = jj.reshape(-1) + fc["sy"], ii.reshape(-1) + fc["sx"]
+        world = fc["node"].to_world(fc["corner"] + uu * fc["u"] + vv * fc["v"]).reshape(sh, sw, 3)
+        fc["world_normal"] = fc["node"].dir_to_world(fc["normal"][None, :])[0]
+        color, glow, over = paint_face(fc, world, name, fc["node"].ancestors(), material(name))
+        ys, xs = slice(fc["sy"], fc["sy"] + sh), slice(fc["sx"], fc["sx"] + sw)
         base[ys, xs, :3] = np.clip(color, 0, 255).astype(np.uint8)
         base[ys, xs, 3] = 255
         glowmap[ys, xs, :3] = np.clip(color, 0, 255).astype(np.uint8)
         glowmap[ys, xs, 3] = np.where(glow, 255, 0)
-        if fc["face"] in ("up", "down"):
-            continue
         for frame in range(FRAMES):
-            drip, head = flow(world, None, frame)
-            alpha = np.where(drip, 170 + 85 * head, 0) * strength
-            tint = np.where(head[:, None], CORRUPTION[4], CORRUPTION[2])
-            glitchy = drip & (value_noise(world + frame * 1.7, (3.0, 3.0, 3.0), 77) > 0.97)
-            tint[glitchy] = GLITCH
-            oy = ys + frame * atlas_h
-            overlay[oy, xs, :3] = tint.astype(np.uint8)
-            overlay[oy, xs, 3] = np.clip(alpha, 0, 255).astype(np.uint8)
+            oy = slice(fc["sy"] + frame * atlas_h, fc["sy"] + frame * atlas_h + sh)
+            overlay[oy, xs] = np.clip(over[frame], 0, 255).astype(np.uint8)
         fc["uv"] = [fc["sx"], fc["sy"], fc["sx"] + fc["w"], fc["sy"] + fc["h"]]
 
     for fc in faces:
