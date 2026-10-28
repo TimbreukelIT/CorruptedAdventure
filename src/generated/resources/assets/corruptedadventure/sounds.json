@@ -417,6 +417,13 @@
     ],
     "subtitle": "subtitles.corruptedadventure.block.updraft.flow"
   },
+  "item.echo_shell.blow": {
+    "sounds": [
+      "corruptedadventure:item/echo_shell/blow_1",
+      "corruptedadventure:item/echo_shell/blow_2"
+    ],
+    "subtitle": "subtitles.corruptedadventure.item.echo_shell.blow"
+  },
   "weather.ring_2.sandstorm": {
     "sounds": [
       {

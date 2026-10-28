@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:echo_shell"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_white_core": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:white_core"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_white_core"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:echo_shell"
+    ]
+  }
+}

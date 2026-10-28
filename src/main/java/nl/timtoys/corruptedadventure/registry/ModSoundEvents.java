@@ -116,6 +116,10 @@ public final class ModSoundEvents {
     /** Heartbeat, the only sound left at the top of the silence meter. */
     public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_RING_5_HEARTBEAT = register("ambient.nether_ring_5.heartbeat");
 
+    // Items (phase 2): played by the server, so everyone nearby hears them.
+    /** The echo shell's blow (golf 5): a low conch call that echoes; own audio from tools/sounds/Ring5Sounds.java. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ECHO_SHELL_BLOW = register("item.echo_shell.blow");
+
     private ModSoundEvents() {
     }
 

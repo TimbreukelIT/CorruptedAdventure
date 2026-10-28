@@ -187,6 +187,10 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
                 .subtitle(subtitle("block.boiling_mud.bubble"))
                 .with(file("block/ring_3/boiling_mud_bubble_1"), file("block/ring_3/boiling_mud_bubble_2"),
                         file("block/ring_3/boiling_mud_bubble_3")));
+        // Item sounds (phase 2), played by the server at the player.
+        add(ModSoundEvents.ECHO_SHELL_BLOW, SoundDefinition.definition()
+                .subtitle(subtitle("item.echo_shell.blow"))
+                .with(file("item/echo_shell/blow_1"), file("item/echo_shell/blow_2")));
     }
 
     /** One of our own one-shots, {@code sounds/<path>.ogg}. */

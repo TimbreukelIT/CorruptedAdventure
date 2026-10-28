@@ -26,6 +26,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.condition.Condition;
 import nl.timtoys.corruptedadventure.condition.PlayerConditions;
 import nl.timtoys.corruptedadventure.item.CanteenItem;
+import nl.timtoys.corruptedadventure.item.EchoShellItem;
 import nl.timtoys.corruptedadventure.item.HandWarmerItem;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModDataComponents;
@@ -33,9 +34,10 @@ import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModMobEffects;
 
 /**
- * The consumables against the conditions (fase-2-items.md §5.3, §6.3, §6.6): filling the canteen at a water cauldron,
- * a dew source and a water source; what a sip, a cactus juice, a dew draught, a purified water and a hand warmer charge
- * do to their meter and effect; filling up the hand warmer with a fire crystal. Run like {@link TierGatingGameTests}.
+ * The consumables against the conditions (fase-2-items.md §5.3, §6.3, §6.6, §7.3): filling the canteen at a water
+ * cauldron, a dew source and a water source; what a sip, a cactus juice, a dew draught, a purified water, a hand warmer
+ * charge, a sky light and a blow on the echo shell do to their meter and effect; filling up the hand warmer with a fire
+ * crystal; the echo shell's wear and cooldown. Run like {@link TierGatingGameTests}.
  */
 @GameTestHolder(CorruptedAdventure.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -147,6 +149,32 @@ public final class ConsumableGameTests {
             helper.assertValueEqual(HandWarmerItem.charges(player.getInventory().getItem(0)), HandWarmerItem.MAX_CHARGES,
                     "charges after a fire crystal");
             helper.assertValueEqual(player.inventoryMenu.getCarried().getCount(), 1, "one crystal used");
+        } finally {
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/empty")
+    public static void skyLightAnchorsAndTheEchoShellResoundsWearsAndCoolsDown(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.getAbilities().instabuild = false;
+        try {
+            PlayerConditions.set(player, Condition.VOID, 50.0F);
+            ItemStack left = new ItemStack(ModItems.SKY_LIGHT_DRAUGHT.get()).finishUsingItem(helper.getLevel(), player);
+            helper.assertValueEqual(PlayerConditions.get(player, Condition.VOID), 30.0F, "void after a sky light");
+            helper.assertTrue(left.is(Items.GLASS_BOTTLE), "the sky light gives its bottle back");
+            helper.assertValueEqual(effectTicks(player, ModMobEffects.ANCHORED), 45 * 20, "anchored ticks");
+
+            PlayerConditions.set(player, Condition.SILENCE, 50.0F);
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.ECHO_SHELL.get()));
+            ItemStack shell = player.getMainHandItem().use(helper.getLevel(), player, InteractionHand.MAIN_HAND).getObject();
+            helper.assertValueEqual(PlayerConditions.get(player, Condition.SILENCE), 30.0F, "silence after a blow");
+            helper.assertValueEqual(effectTicks(player, ModMobEffects.RESOUNDING), 45 * 20, "resounding ticks");
+            helper.assertValueEqual(shell.getDamageValue(), 1, "one blow, one point of durability");
+            helper.assertValueEqual(shell.getMaxDamage(), EchoShellItem.DURABILITY, "durability");
+            helper.assertTrue(player.getCooldowns().isOnCooldown(ModItems.ECHO_SHELL.get()), "the shell cools down");
+            helper.assertTrue(player.isUsingItem(), "the horn pose");
         } finally {
             helper.getLevel().getServer().getPlayerList().remove(player);
         }

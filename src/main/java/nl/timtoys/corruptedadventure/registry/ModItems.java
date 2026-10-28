@@ -25,6 +25,7 @@ import nl.timtoys.corruptedadventure.entity.ArrowEffect;
 import nl.timtoys.corruptedadventure.item.CanteenItem;
 import nl.timtoys.corruptedadventure.item.DoseDrinkItem;
 import nl.timtoys.corruptedadventure.item.DoseFoodItem;
+import nl.timtoys.corruptedadventure.item.EchoShellItem;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
 import nl.timtoys.corruptedadventure.item.GearItems;
 import nl.timtoys.corruptedadventure.item.GearTier;
@@ -244,6 +245,9 @@ public final class ModItems {
     // ---- Nether ring 4 ----
     /** Drop of the purity crystal cluster; with bone sand the raw material of sky glass (phase 2). Placeholder. */
     public static final DeferredItem<Item> PURITY_CRYSTAL_SHARD = ITEMS.registerSimpleItem("purity_crystal_shard");
+    /** Against the void (phase 2 golf 5, §7.3): single use, anchors for a while, gives the glass bottle back. */
+    public static final DeferredItem<DoseDrinkItem> SKY_LIGHT_DRAUGHT = ITEMS.registerItem("sky_light_draught",
+            properties -> new DoseDrinkItem(properties.stacksTo(16), ConsumableDoses::skyLight));
 
     // ---- Ring 5 ----
     static {
@@ -293,6 +297,8 @@ public final class ModItems {
     /** Coating against the silence (applied with white core). Where to find it: golf 5. */
     public static final DeferredItem<SmithingTemplateItem> SILENCE_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "silence_coating_smithing_template", () -> CoatingTemplates.create(Coating.SILENCE));
+    /** Against the silence (phase 2 golf 5, §7.3): blown like a goat horn, heard by everyone nearby; 16 blows. */
+    public static final DeferredItem<EchoShellItem> ECHO_SHELL = ITEMS.registerItem("echo_shell", EchoShellItem::new);
 
     /** The gear sets per tier, lowest first. */
     public static final List<GearSet> GEAR_SETS = List.of(

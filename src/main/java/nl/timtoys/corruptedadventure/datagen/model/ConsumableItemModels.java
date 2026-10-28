@@ -23,6 +23,8 @@ public final class ConsumableItemModels {
         models.basicItem(ModItems.SALTED_JERKY.get());
         models.basicItem(ModItems.DEW_DRAUGHT.get());
         models.basicItem(ModItems.PURIFIED_WATER.get());
+        models.basicItem(ModItems.SKY_LIGHT_DRAUGHT.get());
+        models.basicItem(ModItems.ECHO_SHELL.get());
     }
 
     /** Model {@code name} shows texture {@code <name>_empty}; from {@code property} 1 on, {@code <name>_filled} shows
