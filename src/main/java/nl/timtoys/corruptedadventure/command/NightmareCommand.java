@@ -169,6 +169,7 @@ final class NightmareCommand {
             case NO_ENTITY -> "arrive.no_entity";
             case ALREADY_COMING -> "arrive.already_coming";
             case ALREADY_PRESENT -> "arrive.already_present";
+            case PEACEFUL -> "arrive.peaceful";
         };
         Component message = Component.translatable(KEY + key, name(kind), target.getGameProfile().getName());
         if (result != NightmareDirector.ArriveResult.COMING) {

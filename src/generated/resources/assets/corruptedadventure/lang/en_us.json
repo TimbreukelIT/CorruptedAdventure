@@ -518,6 +518,7 @@
   "commands.corruptedadventure.nightmare.arrive.coming": "%1$s is coming for %2$s",
   "commands.corruptedadventure.nightmare.arrive.no_entity": "%1$s does not exist yet",
   "commands.corruptedadventure.nightmare.arrive.not_overworld": "%1$s is not in the overworld",
+  "commands.corruptedadventure.nightmare.arrive.peaceful": "No Nightmares on Peaceful: %1$s stays away",
   "commands.corruptedadventure.nightmare.not_ring_world": "No Nightmares: this is not a ring world",
   "commands.corruptedadventure.nightmare.reset.done": "%1$s reset: roaming, never defeated",
   "commands.corruptedadventure.nightmare.status.coming": "coming for %1$s at %2$s %3$s %4$s (omen tick %5$s)",

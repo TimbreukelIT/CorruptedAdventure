@@ -24,6 +24,7 @@ public final class NightmareDirectorText {
         lang.add(KEY + "arrive.already_coming", "%1$s is already coming");
         lang.add(KEY + "arrive.already_present", "%1$s is already here");
         lang.add(KEY + "arrive.not_overworld", "%1$s is not in the overworld");
+        lang.add(KEY + "arrive.peaceful", "No Nightmares on Peaceful: %1$s stays away");
         lang.add(KEY + "reset.done", "%1$s reset: roaming, never defeated");
     }
 
@@ -44,6 +45,7 @@ public final class NightmareDirectorText {
         lang.add(KEY + "arrive.already_coming", "%1$s komt al");
         lang.add(KEY + "arrive.already_present", "%1$s is er al");
         lang.add(KEY + "arrive.not_overworld", "%1$s is niet in de overworld");
+        lang.add(KEY + "arrive.peaceful", "Geen Nightmares op Peaceful: %1$s blijft weg");
         lang.add(KEY + "reset.done", "%1$s gereset: zwervend, nooit verslagen");
     }
 }
