@@ -30,6 +30,12 @@ alleen. Protocol `"10"` → `"11"` (nieuwe payload).
 
 ## Voortgang
 - 2026-10-28 16:28 start; setup n = 61; ontwerp gelezen, plan.
+- 16:40 code af; build (incl. unit tests) groen (7 min, slot-wachttijd).
+- 17:45 commit `97f21903`; merge main (H pakket 1 + C, conflicten in `ModItems`, lang, item-modellen, `ModBlocksTest`
+  opgelost: lens achteraan Nether-4 na `sky_light_draught`), recept `LensRecipes` (` G `/` T `/` T `); runData groen,
+  output commit `99ee09a7`; build 2 + `/code-review low d55ff491..f2g5/lens` gestart.
+- 17:54 build 2 groen (incl. unit tests, `ClientIsolationTest`), GameTests 26/26 groen, server-smoke n = 61 groen
+  (Done in 8 s, geen client-class-fouten); server gestopt, slots vrij.
 
 ## Voorlopig (bevestigen bij de teststop)
 - Kleuren omlijning: glitchblokken violet `#B15CFF`, void-gaten cyaan `#4FE3F0`, ontbrekende chunks bleekwit
