@@ -1,7 +1,7 @@
 # Fase 2 — voorlopige keuzes (afsluitronde met de gebruiker)
 
 Ontdubbeld uit `golf-2-*.md`, `golf-34-*.md`, `golf-5-*.md` (ook de nog niet gemergde L en T), `fase-2-items.md` §5.8 en
-de tuningvragen van `teststop-golf-1-4.md` (X1, 2026-10-28). Per punt: **ok** of **anders, en hoe**.
+de tuningvragen van `eindtest-fase-2.md` (was `teststop-golf-1-4.md`; X1, 2026-10-28). Per punt: **ok** of **anders, en hoe**.
 
 ## Stats en kosten
 1. Tier-curve §6.1 (zonnesteen 2200/9/4 … nulliet 3800/12/7,5; harnas tot 5/8/10/5, toughness 5): vulkaniet bewust steil. Goed?

@@ -61,7 +61,7 @@ Er wordt per ring gebouwd, in golven, en elke golf begint met een korte vragenro
 | 2 — Ring 2 + Nether-1 | Zonnesteen-tier; de bescherming tegen uitdroging (coating + veldfles); nut voor turkoois en zout; zielkristal; ring 2-extra's | — (vervallen 2026-10-27, zie §6) |
 | 3 — Ring 3 + Nether-2 | Vulkaniet-tier; hittebescherming met dauwkristal; zwavel (buskruit, vuur, brandstof, brandpijlen); vuurrobijn; druipzwam; ring 3-extra's | — |
 | 4 — Ring 4 + Nether-3 | Getijdezilver-tier; gifbescherming met oerijs-water; koubescherming; gifkristal (gifpijlen); jade, aquamarijn en veen; ring 4-extra's | — (samengevoegd met de eindtest, 2026-10-28, zie §7) |
-| 5 — Ring 5 + Nether-4/5 | Nulliet-tier; hemelglas (blok, lens); zuivering met de witte kern (void + stilte); glitchscherven; ring 5-extra's | **Eindtest fase 2** (golf 1–5 in één speelsessie) |
+| 5 — Ring 5 + Nether-4/5 | Nulliet-tier; hemelglas (zand, glas, ruit, lens); void (hemelglas-coating, hemellicht) en stilte (witte kern-coating, galmschelp); glitchscherfblok en glitchpijl. Gebouwd 2026-10-28 (stromen H, G, C, A, L, T, X2; `docs/plans/fase-2/golf-5.md`) | **Eindtest fase 2** (golf 1–5 in één speelsessie, `docs/plans/fase-2/eindtest-fase-2.md`) |
 
 Tussen de teststops test Claude zelf: build, runData, een server met 2 clients, en recepten en mijnbaarheid via een
 testscript.
@@ -207,7 +207,8 @@ Gebouwd in fase 2 golf 1 (stroom C). Technische uitwerking van §1.3 en §4.
   - De itemmodellen van harnassen tonen bij een trim alleen het materiaal (niet het patroon), via vanilla's
     `item_model_index`. Elk materiaal leent de index van het vanilla-materiaal met de dichtste kleur, zodat de
     bestaande overlays werken zonder eigen itemmodellen: turkoois = smaragd (0,7), dauwkristal = diamant (0,8),
-    vuurkristal = koper (0,5), oerijs = ijzer (0,2), witte kern = kwarts (0,1). Op het lichaam zie je wel de eigen kleur.
+    vuurkristal = koper (0,5), oerijs = ijzer (0,2), witte kern = kwarts (0,1), hemelglas = diamant (0,8; golf 5, net
+    als dauwkristal). Op het lichaam zie je wel de eigen kleur.
 - **Atlas:** `assets/minecraft/atlases/armor_trims.json` (datagen, `CoatingAtlasProvider`) voegt per coating een
   `paletted_permutations`-bron toe met alleen het eigen materiaal en een eigen paletsleutel (8 grijzen), zodat de
   patroon-textures geen vanilla-pixels gebruiken. Een coating met een vreemd materiaal (alleen via commando's) heeft
@@ -389,7 +390,7 @@ mee.
 
 ## 7. Golf 5 — ring 5 + Nether-4/5 (vragenronde 2026-10-28)
 Besloten door de gebruiker op 2026-10-28. **Geen aparte teststop golf 1–4:** die gaat op in de eindtest fase 2 (één
-speelsessie over golf 1–5, checklist `docs/plans/fase-2/teststop-golf-1-4.md` + een deel golf 5).
+speelsessie over golf 1–5, checklist `docs/plans/fase-2/eindtest-fase-2.md`, was `teststop-golf-1-4.md`).
 
 ### 7.1 Nulliet (tier)
 - **Set:** `nullite_*` (9 stuks), gesmeed uit **getijdezilver**-gear + `nullite_ingot` + template; stats uit §6.1.
