@@ -584,3 +584,8 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [conditions] Damage type `corruptedadventure:silence` (97) heeft geen lang-keys `death.attack.corruptedadventure.silence(.player)`; de andere eigen damage types wel. Een dood door stilte toont nu de ruwe sleutel. (bron: fase 2 golf 5, INT)
 - [textures] Galmschelp: eventueel een eigen "tooting"-model zoals de geitenhoorn (nu `item/generated`); hemelglaslens in de hand: eventueel een 3D-model zoals de verrekijker (nu plat). (bron: fase 2 golf 5, C en L)
 - [textures] Definitieve textures golf 5 (nulliet-set en -blokken, hemelzand/-glas/-ruit, glitchscherfblok, hemellicht, galmschelp, `anchored`/`resounding`, glitchpijl, lens + scope, trim-palet hemelglas) zijn door T gemaakt; bij de eindtest beoordelen (`docs/plans/fase-2/eindtest-fase-2.md` deel Golf 5). (bron: fase 2 golf 5, T)
+
+## Uit de LIVE-eindtest fase 2 (2026-10-28, `docs/plans/fase-2/eindtest-live.md`)
+- [textures] Hemelzand en hemelglas lijken als item in de hotbar sterk op elkaar; bij een volgende texture-ronde meer contrast (bv. zandkorrel vs. glasrand). (bron: LIVE)
+- [atmosphere] De restruis van de glitchstorm-overlay valt bij het kijken door de hemelglaslens over de zwarte scope-rand (cosmetisch). (bron: LIVE)
+- [infra] Testscripts: pas naar survival wisselen als de speler op de grond staat, anders kickt de server ("Flying is not enabled"). (bron: LIVE)
