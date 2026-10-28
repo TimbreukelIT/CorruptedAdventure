@@ -7,6 +7,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.condition.RateEffectMobEffect;
+import nl.timtoys.corruptedadventure.effect.DazzledMobEffect;
+import nl.timtoys.corruptedadventure.effect.StunnedMobEffect;
 
 /** Status effects. */
 public final class ModMobEffects {
@@ -31,6 +33,14 @@ public final class ModMobEffects {
     /** Echo shell (golf 5): the silence rises slower while it lasts. Icon {@code mob_effect/resounding}. */
     public static final DeferredHolder<MobEffect, RateEffectMobEffect> RESOUNDING =
             MOB_EFFECTS.register("resounding", () -> new RateEffectMobEffect(0xB9A8F0));
+
+    // Weaknesses of the Nightmares (phase 4, stream I); the Nightmares react to them on top of the mob behaviour.
+    /** Sunstone flash (ring 2): a short white-out; mobs lose their target. Icon {@code mob_effect/dazzled}. */
+    public static final DeferredHolder<MobEffect, DazzledMobEffect> DAZZLED =
+            MOB_EFFECTS.register("dazzled", DazzledMobEffect::new);
+    /** Volcanite horn (ring 3): frozen stiff, no target. Icon {@code mob_effect/stunned}. */
+    public static final DeferredHolder<MobEffect, StunnedMobEffect> STUNNED =
+            MOB_EFFECTS.register("stunned", StunnedMobEffect::new);
 
     private ModMobEffects() {
     }

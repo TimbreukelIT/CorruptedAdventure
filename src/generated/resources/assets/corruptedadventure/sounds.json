@@ -424,6 +424,31 @@
     ],
     "subtitle": "subtitles.corruptedadventure.item.echo_shell.blow"
   },
+  "item.sunstone_flash.flash": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.amethyst_block.resonate",
+        "pitch": 1.5
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.item.sunstone_flash.flash"
+  },
+  "item.volcanite_horn.blow": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "item.goat_horn.sound.0",
+        "pitch": 0.7
+      },
+      {
+        "type": "event",
+        "name": "item.goat_horn.sound.5",
+        "pitch": 0.7
+      }
+    ],
+    "subtitle": "subtitles.corruptedadventure.item.volcanite_horn.blow"
+  },
   "weather.ring_2.sandstorm": {
     "sounds": [
       {

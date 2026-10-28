@@ -54,6 +54,8 @@ public final class ServerConfig {
     public static final HollowConfig HOLLOW;
     /** {@code [nightmares.director]}: threat, roaming, arrival and return of all five Nightmares (phase 4 steps 2 and 3). */
     public static final NightmareDirectorConfig NIGHTMARE_DIRECTOR;
+    /** {@code [weakness_items]}: the sunstone flash and the volcanite horn (phase 4, stream I). */
+    public static final WeaknessItemsConfig WEAKNESS_ITEMS;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
     /**
@@ -93,6 +95,7 @@ public final class ServerConfig {
         HOLLOW = new HollowConfig(builder);
         NIGHTMARE_DIRECTOR = new NightmareDirectorConfig(builder);
         builder.pop();
+        WEAKNESS_ITEMS = new WeaknessItemsConfig(builder);
         SPEC = builder.build();
         ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds,
                 POISON.thresholds, VOID.thresholds, SILENCE.thresholds);

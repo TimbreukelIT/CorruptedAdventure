@@ -22,6 +22,7 @@ import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
+import nl.timtoys.corruptedadventure.effect.WeakenedTargeting;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowArrival;
 import nl.timtoys.corruptedadventure.entity.nightmare.NightmareKind;
 import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
@@ -138,6 +139,8 @@ public final class CorruptedAdventure {
         NightmareDirector.register(NeoForge.EVENT_BUS);
         // Phase 4 step 2 (H1): The Hollow comes through its rift.
         NightmareKind.HOLLOW.arrival(new HollowArrival());
+        // Phase 4 (I): dazzled and stunned mobs take no target.
+        WeakenedTargeting.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

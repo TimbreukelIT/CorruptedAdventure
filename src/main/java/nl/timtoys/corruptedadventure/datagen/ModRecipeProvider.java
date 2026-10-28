@@ -7,6 +7,7 @@ import net.minecraft.data.recipes.RecipeProvider;
 import nl.timtoys.corruptedadventure.datagen.recipe.ArrowRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.CoatingRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.ConsumableRecipes;
+import nl.timtoys.corruptedadventure.datagen.recipe.WeaknessRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.FloraRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.Golf2MaterialRecipes;
 import nl.timtoys.corruptedadventure.datagen.recipe.Golf3Ring3Recipes;
@@ -41,5 +42,6 @@ final class ModRecipeProvider extends RecipeProvider {
         ArrowRecipes.build(output);
         Golf5SkyGlassRecipes.build(output);
         LensRecipes.build(output);
+        WeaknessRecipes.build(output);
     }
 }

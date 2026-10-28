@@ -191,6 +191,14 @@ final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
         add(ModSoundEvents.ECHO_SHELL_BLOW, SoundDefinition.definition()
                 .subtitle(subtitle("item.echo_shell.blow"))
                 .with(file("item/echo_shell/blow_1"), file("item/echo_shell/blow_2")));
+        // The weakness items (phase 4, I): vanilla samples through event entries.
+        add(ModSoundEvents.SUNSTONE_FLASH, SoundDefinition.definition()
+                .subtitle(subtitle("item.sunstone_flash.flash"))
+                .with(sound(SoundEvents.AMETHYST_BLOCK_RESONATE.getLocation(), SoundDefinition.SoundType.EVENT).pitch(1.5F)));
+        add(ModSoundEvents.VOLCANITE_HORN_BLOW, SoundDefinition.definition()
+                .subtitle(subtitle("item.volcanite_horn.blow"))
+                .with(sound(SoundEvents.GOAT_HORN_SOUND_VARIANTS.get(0).key().location(), SoundDefinition.SoundType.EVENT).pitch(0.7F),
+                        sound(SoundEvents.GOAT_HORN_SOUND_VARIANTS.get(5).key().location(), SoundDefinition.SoundType.EVENT).pitch(0.7F)));
     }
 
     /** One of our own one-shots, {@code sounds/<path>.ogg}. */
