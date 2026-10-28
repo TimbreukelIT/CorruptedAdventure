@@ -268,12 +268,9 @@ public final class ModItems {
     /** Upgrades tidesilver gear to nullite; crafted from sky glass (golf 5, §7.1), no copy recipe. */
     public static final DeferredItem<SmithingTemplateItem> NULLITE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
             UpgradeSmithingTemplates.itemName(GearTier.NULLITE), () -> UpgradeSmithingTemplates.create(GearTier.NULLITE));
-    /** Coating against the void (applied with white core). Where to find it: golf 5. */
+    /** Coating against the void (applied with sky glass); crafted from glitch shards, voidstone and sky glass (golf 5). */
     public static final DeferredItem<SmithingTemplateItem> VOID_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "void_coating_smithing_template", () -> CoatingTemplates.create(Coating.VOID));
-    /** A glitch shard and 4 arrows make 4 (golf 5, §7.4): the mob it hits hops 1–5 blocks to a safe spot. */
-    public static final DeferredItem<EffectArrowItem> GLITCH_ARROW = ITEMS.registerItem("glitch_arrow",
-            properties -> new EffectArrowItem(ArrowEffect.GLITCH, properties));
 
     // The nullite set (golf 5, §6.1, §7.1): fire resistant like tidesilver; smithed from tidesilver.
     public static final DeferredItem<SwordItem> NULLITE_SWORD = ITEMS.registerItem("nullite_sword",
@@ -295,10 +292,14 @@ public final class ModItems {
     public static final DeferredItem<ArmorItem> NULLITE_BOOTS = ITEMS.registerItem("nullite_boots",
             properties -> GearItems.armor(GearTier.NULLITE, ArmorItem.Type.BOOTS, properties.fireResistant()));
 
+    /** A glitch shard and 4 arrows make 4 (golf 5, §7.4): the mob it hits hops 1–5 blocks to a safe spot. */
+    public static final DeferredItem<EffectArrowItem> GLITCH_ARROW = ITEMS.registerItem("glitch_arrow",
+            properties -> new EffectArrowItem(ArrowEffect.GLITCH, properties));
+
     // ---- Nether ring 5 ----
     /** Drop of the white core ore (one per ore, Fortune adds). Placeholder without behaviour in phase 1. */
     public static final DeferredItem<Item> WHITE_CORE = ITEMS.registerSimpleItem("white_core");
-    /** Coating against the silence (applied with white core). Where to find it: golf 5. */
+    /** Coating against the silence (applied with white core); crafted from purity crystal, white stone and white core (golf 5). */
     public static final DeferredItem<SmithingTemplateItem> SILENCE_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "silence_coating_smithing_template", () -> CoatingTemplates.create(Coating.SILENCE));
     /** Against the silence (phase 2 golf 5, §7.3): blown like a goat horn, heard by everyone nearby; 16 blows. */
