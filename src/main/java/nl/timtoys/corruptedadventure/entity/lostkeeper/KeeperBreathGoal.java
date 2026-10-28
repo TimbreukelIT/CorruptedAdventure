@@ -116,7 +116,7 @@ final class KeeperBreathGoal extends Goal {
         }
         double range = config.breathRange.get();
         double cos = Math.cos(Math.toRadians(config.breathAngle.get()));
-        ConditionDose dose = ConditionDose.of(Condition.POISON, config.breathPoison.get().floatValue());
+        ConditionDose dose = ConditionDose.of(Condition.POISON, config.breathPoison.get().floatValue() * keeper.strengthFactor());
         for (Player player : keeper.fighters(range + 6.0)) {
             if (player instanceof ServerPlayer serverPlayer
                     && inCone(mouth, direction, player.getBoundingBox().getCenter(), range, cos) && keeper.hasLineOfSight(player)) {
