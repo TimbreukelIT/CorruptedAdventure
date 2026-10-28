@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.entity;
 
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettings;
@@ -16,11 +17,15 @@ class GlitchHopTest {
     private final RingLayout layout = new RingLayout(new RingSettings(CommonConfig.DEFAULT_OUTER_RADII, 10200, 96, 128,
             CommonConfig.DEFAULT_TRANSITION_WIDTH_OVERRIDES), RingLayout.noiseSeed(20260930L));
 
+    private boolean allows(ResourceKey<Level> dimension, int fromX, int fromZ, int x, int z) {
+        return GlitchHop.RingRule.of(layout, dimension, fromX, fromZ).allows(x, z);
+    }
+
     @Test
     void outsideRingFiveEveryDirectionIsAllowed() {
         assertEquals(Ring.RING_3, layout.sampleOverworld(5000.5, 0.5).ring());
-        assertTrue(GlitchHop.allowsRing(layout, Level.OVERWORLD, 5000, 0, 5005, 0));
-        assertTrue(GlitchHop.allowsRing(layout, Level.OVERWORLD, 5000, 0, 4995, 0));
+        assertTrue(allows(Level.OVERWORLD, 5000, 0, 5005, 0));
+        assertTrue(allows(Level.OVERWORLD, 5000, 0, 4995, 0));
     }
 
     @Test
@@ -32,8 +37,8 @@ class GlitchHopTest {
                 continue;
             }
             boolean outward = layout.effectiveDistance(x + 5.5, 0.5) > layout.effectiveDistance(x + 0.5, 0.5);
-            assertEquals(!outward, GlitchHop.allowsRing(layout, Level.OVERWORLD, x, 0, x + 5, 0), "x " + x);
-            assertEquals(outward, GlitchHop.allowsRing(layout, Level.OVERWORLD, x + 5, 0, x, 0), "x " + x);
+            assertEquals(!outward, allows(Level.OVERWORLD, x, 0, x + 5, 0), "x " + x);
+            assertEquals(outward, allows(Level.OVERWORLD, x + 5, 0, x, 0), "x " + x);
             checked++;
         }
         assertTrue(checked > 100, "enough of ring 5 checked: " + checked);
@@ -42,15 +47,15 @@ class GlitchHopTest {
     @Test
     void neverIntoTheVoid() {
         assertEquals(Ring.VOID, layout.sampleOverworld(10100.5, 0.5).ring());
-        assertFalse(GlitchHop.allowsRing(layout, Level.OVERWORLD, 10104, 0, 10100, 0), "not even inward within the void");
+        assertFalse(allows(Level.OVERWORLD, 10104, 0, 10100, 0), "not even inward within the void");
     }
 
     @Test
     void theNetherCountsInOverworldBlocks() {
         // Nether 2200 is overworld 8800 (ring 5); Nether 2525 is 10100 (the void).
         assertEquals(Ring.RING_5, layout.sample(Level.NETHER, 2200.5, 0.5).ring());
-        assertFalse(GlitchHop.allowsRing(layout, Level.NETHER, 2500, 0, 2525, 0));
+        assertFalse(allows(Level.NETHER, 2500, 0, 2525, 0));
         boolean outward = layout.effectiveDistance(2205.5 * 4, 2.0) > layout.effectiveDistance(2200.5 * 4, 2.0);
-        assertEquals(!outward, GlitchHop.allowsRing(layout, Level.NETHER, 2200, 0, 2205, 0));
+        assertEquals(!outward, allows(Level.NETHER, 2200, 0, 2205, 0));
     }
 }

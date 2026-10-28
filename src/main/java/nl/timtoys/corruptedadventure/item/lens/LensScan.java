@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.item.lens;
 
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
@@ -156,7 +157,7 @@ public final class LensScan {
         List<BlockPos> found = new ArrayList<>();
         LongSet seen = new LongOpenHashSet();
         LongArrayFIFOQueue queue = new LongArrayFIFOQueue();
-        List<Long> group = new ArrayList<>();
+        LongArrayList group = new LongArrayList();
         for (long start : open) {
             if (!seen.add(start)) {
                 continue;
@@ -188,7 +189,8 @@ public final class LensScan {
                 }
             }
             if (samples > 0) {
-                for (long column : group) {
+                for (int i = 0; i < group.size(); i++) {
+                    long column = group.getLong(i);
                     found.add(new BlockPos(ChunkPos.getX(column), floor - 1, ChunkPos.getZ(column)));
                 }
             }
@@ -277,22 +279,36 @@ public final class LensScan {
 
     /**
      * The clean missing chunks whose footprint comes within {@link #RADIUS} (horizontally) of (x, z), from the world's
-     * bottom to the ground the chunk lost. There is one per 20 × 20 chunks at most, so the cap is a safety net.
+     * bottom to the ground the chunk lost. There is one per 20 × 20 chunks at most, so the cap is a safety net; it keeps
+     * the nearest.
      */
     private static List<MissingChunk> missingChunks(ServerLevel level, Ring5World world, int x, int z) {
         List<MissingChunk> found = new ArrayList<>();
         for (int cx = (x - RADIUS) >> 4; cx <= (x + RADIUS) >> 4; cx++) {
             for (int cz = (z - RADIUS) >> 4; cz <= (z + RADIUS) >> 4; cz++) {
-                int nearX = Mth.clamp(x, cx << 4, (cx << 4) + 15);
-                int nearZ = Mth.clamp(z, cz << 4, (cz << 4) + 15);
-                long dx = nearX - x;
-                long dz = nearZ - z;
-                if (dx * dx + dz * dz <= (long) RADIUS * RADIUS && Ring5MissingChunks.missing(world, cx, cz)) {
+                if (footprintDistanceSqr(cx, cz, x, z) <= (long) RADIUS * RADIUS && Ring5MissingChunks.missing(world, cx, cz)) {
                     int top = world.top((cx << 4) + 8, (cz << 4) + 8) + 1;
                     found.add(new MissingChunk(cx, cz, level.getMinBuildHeight(), Math.max(top, level.getMinBuildHeight() + 1)));
                 }
             }
         }
-        return found.size() <= LensScanPayload.MAX_CHUNKS ? found : found.subList(0, LensScanPayload.MAX_CHUNKS);
+        return nearestChunks(found, x, z, LensScanPayload.MAX_CHUNKS);
+    }
+
+    /** The {@code max} chunks whose footprint is nearest to (x, z), nearest first. */
+    static List<MissingChunk> nearestChunks(List<MissingChunk> found, int x, int z, int max) {
+        if (found.size() <= max) {
+            return found;
+        }
+        return found.stream()
+                .sorted(Comparator.comparingLong(chunk -> footprintDistanceSqr(chunk.chunkX(), chunk.chunkZ(), x, z)))
+                .limit(max).toList();
+    }
+
+    /** The squared horizontal distance from (x, z) to the nearest column of chunk (cx, cz). */
+    static long footprintDistanceSqr(int cx, int cz, int x, int z) {
+        long dx = Mth.clamp(x, cx << 4, (cx << 4) + 15) - x;
+        long dz = Mth.clamp(z, cz << 4, (cz << 4) + 15) - z;
+        return dx * dx + dz * dz;
     }
 }

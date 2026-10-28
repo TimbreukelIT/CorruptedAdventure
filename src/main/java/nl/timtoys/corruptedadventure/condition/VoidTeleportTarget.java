@@ -2,6 +2,8 @@ package nl.timtoys.corruptedadventure.condition;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
@@ -58,6 +60,22 @@ public final class VoidTeleportTarget {
         default boolean fits(BlockPos feet) {
             return true;
         }
+    }
+
+    /**
+     * Whether column {@code x, z} of a real level lies inside the world border with its 8 neighbours loaded, so that
+     * reading their blocks never loads or generates a chunk ({@link Terrain#allowsColumn} on a level).
+     */
+    public static boolean loadedInsideBorder(ServerLevel level, int x, int z) {
+        return level.getWorldBorder().isWithinBounds(x + 0.5, z + 0.5)
+                && isLoaded(level, x - 1, z - 1) && isLoaded(level, x + 1, z - 1)
+                && isLoaded(level, x - 1, z + 1) && isLoaded(level, x + 1, z + 1);
+    }
+
+    /** The chunk of this column is loaded (checking the 4 corners of a 3 × 3 covers every chunk it touches). */
+    private static boolean isLoaded(ServerLevel level, int x, int z) {
+        return level.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(x),
+                SectionPos.blockToSectionCoord(z)) != null;
     }
 
     /**
