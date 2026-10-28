@@ -427,14 +427,6 @@ public class TheUnfinished extends Nightmare {
         return ash;
     }
 
-    /**
-     * How much stronger he came back: scales what his attacks do outside {@code attack_damage} (the void meter rise).
-     * 1 until the shared base's {@code strength()} arrives with f4/director; then this returns that.
-     */
-    float strengthFactor() {
-        return 1.0F;
-    }
-
     @Override
     public boolean canBreatheUnderwater() {
         return true;

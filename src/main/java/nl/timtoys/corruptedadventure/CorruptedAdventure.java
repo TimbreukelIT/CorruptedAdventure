@@ -22,6 +22,7 @@ import nl.timtoys.corruptedadventure.config.CommonConfig;
 import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
+import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
 import nl.timtoys.corruptedadventure.item.lens.LensWatch;
@@ -130,6 +131,9 @@ public final class CorruptedAdventure {
         Ring3StriderSpawns.register(NeoForge.EVENT_BUS);
         // Phase 2 golf 5 (L): the sky glass lens's scan round a looking player.
         LensWatch.register(NeoForge.EVENT_BUS);
+        // Phase 4 (D): the Nightmare director (threat, roaming, arrival, return). Ring streams sign up their arrival here:
+        // NightmareKind.X.arrival(new XArrival());
+        NightmareDirector.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

@@ -18,7 +18,7 @@ import java.util.UUID;
  * Naar de void trekken, his own attack (no graft): the void core in his crown swells and every player in the fight within
  * {@code voidPullRadius} is dragged toward the nearest void edge round them ({@link VoidEdge}; none within
  * {@code voidEdgeSearch}: toward him) for {@code voidPullTicks}, while their void meter (the ring 5 condition) rises by
- * {@code voidPullMeterPerSecond}. Sneaking resists the pull, not the meter; light does not help here.
+ * {@code voidPullMeterPerSecond} (x his strength). Sneaking resists the pull, not the meter; light does not help here.
  */
 final class UnfinishedVoidPullGoal extends UnfinishedAttackGoal {
     private final Map<UUID, Vec3> edges = new HashMap<>();
@@ -57,7 +57,7 @@ final class UnfinishedVoidPullGoal extends UnfinishedAttackGoal {
     @Override
     protected void act(ServerLevel level, LivingEntity target, int tick) {
         UnfinishedConfig config = ServerConfig.UNFINISHED;
-        float meter = (float) (config.voidPullMeterPerSecond.get() / 20.0) * boss.strengthFactor();
+        float meter = (float) (config.voidPullMeterPerSecond.get() / 20.0) * boss.strength();
         for (Player player : boss.fighters(config.voidPullRadius.get())) {
             Vec3 edge = edges.get(player.getUUID());
             if (edge == null) {
