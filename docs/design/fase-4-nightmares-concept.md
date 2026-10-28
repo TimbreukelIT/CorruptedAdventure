@@ -30,6 +30,12 @@ Een groep **Nightmares**: één per ring (5 totaal), groter dan gewone mobs, bed
 - **Zwaktes met een item worden nu volledig gemaakt** (categorie `items`, eigen stroom): de zonnesteen-flits (ring 2) en de versterkte ring 3-hoorn. Ring 5 gebruikt de bestaande hemelglaslens uit fase 2: kijk je erdoor, dan "laden" zijn onvoltooide delen in.
 - **Overige open punten per ring** (gedrag buiten het gevecht, mistgrootte, lokroep, teruggroeiende kroon, wegvallende delen enz.): de bouwstromen kiezen een voorlopige invulling, die de gebruiker bij de teststop bevestigt (zoals in fase 2).
 
+### Stap 2+3: gedeeld systeem (sparring 2026-10-28)
+- **Dreiging bouwt op:** per speler en per ring loopt een onzichtbare dreigingsmeter op zolang hij in die ring is. Na gemiddeld 2–3 ingame-dagen in die ring beginnen de voortekens (per Nightmare eigen), en een paar minuten later komt hij. Wie kort in een ring is, merkt niets. Getallen in de config.
+- **Doelwit:** de speler met de hoogste dreiging in die ring. Spelers in de buurt doen automatisch mee (HP-schaal).
+- **Tussendoor:** hij bestaat alleen als virtuele positie in `SavedData` en zwerft langzaam door zijn ring. Spelers vinden soms sporen van waar hij was (per Nightmare, stap 2). Hij materialiseert niet vanzelf als iemand bij die positie komt.
+- **Taakverdeling:** het gedeelde deel (dreiging, virtuele positie, doelkeuze, terugtrekken naar virtueel, verslagen-status, terugkeertimer, sterkte per terugkeer) is één systeem. De komst (voortekens + verschijnen + sporen) bouwt elke Nightmare zelf via een gedeelde interface.
+
 ## Ring 1 — De Holle, de ontzielde titaan (werktitel)
 *Herontwerp 2026-10-20: vervangt de eerste schets (uitgerekte nabootser). "Hol" betekent nu: zonder ziel.*
 

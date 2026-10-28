@@ -6,6 +6,7 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
+import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -34,7 +35,7 @@ final class HollowSwapGoal extends Goal {
         if (hollow.tickCount < nextSwapTick || hollow.getTarget() == null) {
             return false;
         }
-        List<Player> fighters = hollow.fighters(ServerConfig.HOLLOW.fightRadius.get());
+        List<Player> fighters = hollow.fighters();
         fighters.removeIf(player -> !(player instanceof ServerPlayer));
         if (fighters.size() < 2) {
             return false;
@@ -91,8 +92,8 @@ final class HollowSwapGoal extends Goal {
     }
 
     private boolean stillInFight(ServerPlayer player) {
-        double reach = ServerConfig.HOLLOW.fightRadius.get() * 1.5;
-        return TheHollow.isFighter(player) && !player.hasDisconnected() && player.level() == hollow.level()
+        double reach = ServerConfig.HOLLOW.common.fightRadius.get() * 1.5;
+        return Nightmare.isFighter(player) && !player.hasDisconnected() && player.level() == hollow.level()
                 && player.distanceToSqr(hollow) <= reach * reach;
     }
 
