@@ -38,6 +38,10 @@ final class NightmareLoot implements LootTableSubProvider {
         add(output, ModEntityTypes.THE_HOLLOW.get(), table(
                 drop(ModItems.SOUL_CRYSTAL.get(), 6, 10, 2),
                 drop(Items.DIAMOND, 2, 4, 0)));
+        // Ring 5: nullite, raw and smelted (Voorlopig, R5 plan).
+        add(output, ModEntityTypes.THE_UNFINISHED.get(), table(
+                drop(ModItems.RAW_NULLITE.get(), 6, 10, 2),
+                drop(ModItems.NULLITE_INGOT.get(), 2, 4, 0)));
     }
 
     private static void add(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> output, EntityType<?> type,

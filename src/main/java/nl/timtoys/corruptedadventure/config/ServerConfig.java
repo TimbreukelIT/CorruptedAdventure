@@ -52,6 +52,8 @@ public final class ServerConfig {
     public static final Ring5WeatherEffects RING_5_WEATHER;
     /** {@code [nightmares.hollow]}: the ring 1 Nightmare (phase 4). */
     public static final HollowConfig HOLLOW;
+    /** {@code [nightmares.unfinished]}: the ring 5 Nightmare (phase 4). */
+    public static final UnfinishedConfig UNFINISHED;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
     /**
@@ -89,6 +91,7 @@ public final class ServerConfig {
         RING_5_WEATHER = RING_WEATHER.get(Ring.RING_5).ring5Effects;
         builder.comment("The Nightmares: one roaming boss per ring (phase 4).").push("nightmares");
         HOLLOW = new HollowConfig(builder);
+        UNFINISHED = new UnfinishedConfig(builder);
         builder.pop();
         SPEC = builder.build();
         ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds,

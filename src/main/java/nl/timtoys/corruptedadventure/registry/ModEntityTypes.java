@@ -10,6 +10,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.EffectArrow;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
+import nl.timtoys.corruptedadventure.entity.unfinished.TheUnfinished;
 
 /** Entity types. Their renderers register in {@code client/} (CLAUDE.md §7). */
 public final class ModEntityTypes {
@@ -31,6 +32,14 @@ public final class ModEntityTypes {
             () -> EntityType.Builder.<TheHollow>of(TheHollow::new, MobCategory.MONSTER)
                     .sized(2.5F, 5.5F).eyeHeight(4.4F).clientTrackingRange(10).build("the_hollow"));
 
+    /**
+     * Phase 4: The Unfinished, the ring 5 Nightmare (~20 blocks). Main hitbox 5 x 14 (his torso); the rest of him are
+     * parts ({@code UnfinishedPart}). Fire cannot touch a void being; tracked from very far, he is seen over the land.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<TheUnfinished>> THE_UNFINISHED = ENTITY_TYPES.register(
+            "the_unfinished", () -> EntityType.Builder.<TheUnfinished>of(TheUnfinished::new, MobCategory.MONSTER)
+                    .sized(5.0F, 14.0F).eyeHeight(13.0F).fireImmune().clientTrackingRange(16).build("the_unfinished"));
+
     private ModEntityTypes() {
     }
 
@@ -41,6 +50,7 @@ public final class ModEntityTypes {
 
     private static void onAttributes(EntityAttributeCreationEvent event) {
         event.put(THE_HOLLOW.get(), TheHollow.createAttributes().build());
+        event.put(THE_UNFINISHED.get(), TheUnfinished.createAttributes().build());
     }
 
     /** Sized and tracked like vanilla's arrow. */
