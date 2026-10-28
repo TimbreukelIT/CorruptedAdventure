@@ -57,7 +57,7 @@ final class UnfinishedVoidPullGoal extends UnfinishedAttackGoal {
     @Override
     protected void act(ServerLevel level, LivingEntity target, int tick) {
         UnfinishedConfig config = ServerConfig.UNFINISHED;
-        float meter = (float) (config.voidPullMeterPerSecond.get() / 20.0);
+        float meter = (float) (config.voidPullMeterPerSecond.get() / 20.0) * boss.strengthFactor();
         for (Player player : boss.fighters(config.voidPullRadius.get())) {
             Vec3 edge = edges.get(player.getUUID());
             if (edge == null) {
