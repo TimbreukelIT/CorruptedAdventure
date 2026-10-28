@@ -24,10 +24,16 @@ Nog: `f4/r2` als laatste.
 - [ ] `docs/plans/fase-4/voorlopig-fase-4.md` (Voorlopig van alle stromen)
 - [ ] CODEBASE, design-doc, beslissingenlog één geheel
 - [x] flaky `adispensershootsglitcharrows` → backlog `[items]`
-- [ ] server-smoke + 2 clients: per Nightmare `/summon` + korte check; De Holle echte komst via `/ca nightmare threat` + `arrive`
+- [x] server-smoke + 2 clients: per Nightmare `/summon` + korte check; De Holle echte komst via `/ca nightmare threat` + `arrive`
 - [ ] `/code-review medium d03463e4..f4/int`
 
 ## Voortgang
+- 21:58 clienttest (server + Dev + Dev2, vers wereld `int1`, `build/int-client-test.sh`, niet in git; sheets in
+  `build/test/shots/int-report/`): De Holle via `/ca nightmare arrive 1 Dev` met twee survival-spelers: voortekens,
+  scheur 9 blokken achter Dev (0,5 62 21,5), max-HP 450 (1,5×), status "here", gevecht. De Herrijzende 600 HP, vliegt,
+  as-particles, vuurrode bossbar. De Hoeder 1024 (geplafonneerd, 1200 virtueel) in een meer: lokroep/grijpen trok Dev het
+  water in tot de bodem, schade 2 per keer, misselijkheid (gif); staart niet apart gezien. De Onvoltooide 1024 (geplafonneerd),
+  witte bossbar, lens-zicht werkt, beweegt naar de speler. Geen ERROR/Exception in server- of clientlogs.
 - 21:50 ronde 2 (r4, r5) groen: compileJava, runData, build, GameTests 67/67; protocol 12. Clienttest gestart.
 - 2026-10-28 21:42 ronde 1 groen: 4 merges, compileJava, runData, build, GameTests 58/58. CODEBASE fase 4 samengevoegd
   (gedeelde basis + regisseur, De Holle, I, R3), `voorlopig-fase-4.md` (35 punten, ronde 1).
