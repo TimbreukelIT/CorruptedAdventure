@@ -11,8 +11,11 @@ Merges in deze volgorde:
 3. `f4/items` b41ddc44 (I: zwakte-items): constructor, ServerConfig, lang-providers, beslissingenlog (union).
 4. `f4/r3` 0f6bff6e (R3: De Herrijzende): CODEBASE, backlog, constructor, client-entrypoint, lang-providers (union).
 
-## Ronde 2 (later)
-`f4/r2`, `f4/r4`, `f4/r5`; daarna `PROTOCOL_VERSION` "11" → "12" (`keeper_mist`).
+## Ronde 2 (2026-10-28)
+5. `f4/r4` 21b47fab (R4: De Verloren Hoeder): gedeelde bestanden (union); een javadoc die de union splitste hersteld.
+6. `f4/r5` 2d3e36d0 (R5: De Onvoltooide): gedeelde bestanden (union).
+Daarna `PROTOCOL_VERSION` "11" → "12" (`keeper_mist`), imports gesorteerd, runData (5621d39f), build, GameTests 67/67.
+Nog: `f4/r2` als laatste.
 
 ## Taken
 - [x] compileJava na elke merge (ronde 1: na items en r3)
@@ -25,5 +28,6 @@ Merges in deze volgorde:
 - [ ] `/code-review medium d03463e4..f4/int`
 
 ## Voortgang
+- 21:50 ronde 2 (r4, r5) groen: compileJava, runData, build, GameTests 67/67; protocol 12. Clienttest gestart.
 - 2026-10-28 21:42 ronde 1 groen: 4 merges, compileJava, runData, build, GameTests 58/58. CODEBASE fase 4 samengevoegd
   (gedeelde basis + regisseur, De Holle, I, R3), `voorlopig-fase-4.md` (35 punten, ronde 1).
