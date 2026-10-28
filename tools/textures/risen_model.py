@@ -438,7 +438,8 @@ def main():
     Image.fromarray(glowmap, "RGBA").save(OUT_GLOW, optimize=True)
     Image.fromarray(embers, "RGBA").save(OUT_EMBERS, optimize=True)
     with open(OUT_EMBERS + ".mcmeta", "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"animation": {"frametime": 3, "interpolate": True}}, f, indent=2)
+        # The frames are not square: give their size, or the game rejects the animation.
+        json.dump({"animation": {"frametime": 3, "interpolate": True, "width": ATLAS_W, "height": atlas_h}}, f, indent=2)
         f.write("\n")
 
     write_geo(bones, faces, atlas_h)
