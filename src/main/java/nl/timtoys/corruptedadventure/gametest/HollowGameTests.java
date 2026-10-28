@@ -13,8 +13,8 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
-import nl.timtoys.corruptedadventure.entity.hollow.HollowScaling;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmareScaling;
 import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 
@@ -38,8 +38,8 @@ public final class HollowGameTests {
     @GameTest(template = "gametest/hollow_arena", batch = "hollow_scale", timeoutTicks = 200)
     public static void itsHealthScalesWithThePlayersInTheFightAndKeepsItsRatio(GameTestHelper helper) {
         TheHollow hollow = helper.spawnWithNoFreeWill(ModEntityTypes.THE_HOLLOW.get(), MIDDLE);
-        double base = ServerConfig.HOLLOW.baseHealth.get();
-        double two = HollowScaling.maxHealth(base, ServerConfig.HOLLOW.healthPerExtraPlayer.get(), 2);
+        double base = ServerConfig.HOLLOW.common.baseHealth.get();
+        double two = NightmareScaling.maxHealth(base, ServerConfig.HOLLOW.common.healthPerExtraPlayer.get(), 2);
         ServerPlayer first = playerAt(helper, 1.5, 1.5);
         ServerPlayer[] second = new ServerPlayer[1];
         helper.startSequence()

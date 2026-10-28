@@ -1,23 +1,14 @@
 package nl.timtoys.corruptedadventure.entity.hollow;
 
-import net.minecraft.core.Holder;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -26,65 +17,46 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.HollowConfig;
+import nl.timtoys.corruptedadventure.config.NightmareConfig;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
+import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
 import nl.timtoys.corruptedadventure.registry.ModItems;
-import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * De Holle, the ring 1 Nightmare (phase 4 step 1: body and fight, summoned with {@code /summon}). A soulless stone
  * titan: slams with its giant arm, rift-steps behind its target, goes out of phase now and then (transparent and
- * invulnerable), swaps two players. A hit with a soul crystal pins it in phase. Its max health grows with the players in
- * the fight; with no player near for a while it retreats without a drop. Everything runs on the server; the client only
- * renders the synced out-of-phase state and the triggered animations. The rift entity, roaming and the return come in
- * steps 2 and 3.
+ * invulnerable), swaps two players. A hit with a soul crystal pins it in phase. Boss bar, health scaling, retreat and
+ * the rest of the shared rules come from {@link Nightmare}. The client renders the synced out-of-phase state and the
+ * triggered animations. The rift entity, roaming and the return come in steps 2 and 3.
  */
-public class TheHollow extends Monster implements GeoEntity {
+public class TheHollow extends Nightmare {
     private static final EntityDataAccessor<Boolean> DATA_PHASED =
             SynchedEntityData.defineId(TheHollow.class, EntityDataSerializers.BOOLEAN);
-    private static final ResourceLocation PLAYERS_MODIFIER = CorruptedAdventure.id("hollow_players");
-    private static final int CHECK_TICKS = 20;
 
-    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
-    private final ServerBossEvent bossEvent = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.PURPLE,
-            BossEvent.BossBarOverlay.PROGRESS);
     private int pinnedTicks;
     private int phaseTicks;
     private int nextPhaseTick = -1;
-    private int absentTicks;
 
-    public TheHollow(EntityType<? extends Monster> type, Level level) {
-        super(type, level);
-        xpReward = 0;
+    public TheHollow(EntityType<? extends TheHollow> type, Level level) {
+        super(type, level, BossEvent.BossBarColor.PURPLE);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        // The defaults of [nightmares.hollow]; the server config overrides them from the first tick.
-        return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 300.0)
-                .add(Attributes.ATTACK_DAMAGE, 10.0)
-                .add(Attributes.ATTACK_KNOCKBACK, 1.5)
-                .add(Attributes.MOVEMENT_SPEED, 0.26)
-                .add(Attributes.ARMOR, 4.0)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
-                .add(Attributes.FOLLOW_RANGE, 48.0)
-                .add(Attributes.STEP_HEIGHT, 1.0);
+        return nightmareAttributes(HollowConfig.DEFAULTS, 48.0).add(Attributes.STEP_HEIGHT, 1.0);
+    }
+
+    @Override
+    protected NightmareConfig config() {
+        return ServerConfig.HOLLOW.common;
     }
 
     @Override
@@ -105,22 +77,6 @@ public class TheHollow extends Monster implements GeoEntity {
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         // It is a dimension shifter: it finds you through walls.
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
-    }
-
-    /** A player who counts in the fight: health scaling, swaps. Creative and spectator players are onlookers. */
-    public static boolean isFighter(Player player) {
-        return player.isAlive() && !player.isSpectator() && !player.isCreative();
-    }
-
-    /** The fighters within {@code radius} blocks, a fresh list. */
-    public List<Player> fighters(double radius) {
-        List<Player> result = new ArrayList<>();
-        for (Player player : level().players()) {
-            if (isFighter(player) && player.distanceToSqr(this) <= radius * radius) {
-                result.add(player);
-            }
-        }
-        return result;
     }
 
     public boolean isPhased() {
@@ -185,17 +141,10 @@ public class TheHollow extends Monster implements GeoEntity {
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide() || isDeadOrDying()) {
-            return;
-        }
-        if (pinnedTicks > 0) {
+        // The pin runs out without AI too, so a pinned Hollow never stays pinned.
+        if (!level().isClientSide() && pinnedTicks > 0) {
             pinnedTicks--;
         }
-        if (tickCount % CHECK_TICKS == 0) {
-            applyConfig();
-            checkPresence();
-        }
-        bossEvent.setProgress(getHealth() / getMaxHealth());
     }
 
     @Override
@@ -216,56 +165,9 @@ public class TheHollow extends Monster implements GeoEntity {
         }
     }
 
-    /** The config's numbers onto the attributes, with the health scaled to the fighters (the ratio is kept). */
-    private void applyConfig() {
-        HollowConfig config = ServerConfig.HOLLOW;
-        float oldMax = getMaxHealth();
-        float ratio = oldMax > 0.0F ? getHealth() / oldMax : 1.0F;
-        AttributeInstance maxHealth = getAttribute(Attributes.MAX_HEALTH);
-        maxHealth.setBaseValue(config.baseHealth.get());
-        int fighters = fighters(config.fightRadius.get()).size();
-        double extra = HollowScaling.extraHealthFactor(config.healthPerExtraPlayer.get(), fighters);
-        AttributeModifier current = maxHealth.getModifier(PLAYERS_MODIFIER);
-        if (current == null || current.amount() != extra) {
-            maxHealth.addOrReplacePermanentModifier(
-                    new AttributeModifier(PLAYERS_MODIFIER, extra, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
-        }
-        float newMax = getMaxHealth();
-        if (newMax != oldMax) {
-            setHealth(ratio * newMax);
-        }
-        setBase(Attributes.ATTACK_DAMAGE, config.slamDamage.get());
-        setBase(Attributes.ATTACK_KNOCKBACK, config.slamKnockback.get());
-        setBase(Attributes.MOVEMENT_SPEED, config.movementSpeed.get());
-        setBase(Attributes.ARMOR, config.armor.get());
-    }
-
-    private void setBase(Holder<Attribute> attribute, double value) {
-        getAttribute(attribute).setBaseValue(value);
-    }
-
-    /** Nobody (spectators aside) within the retreat radius for too long: it retreats, without a drop. */
-    private void checkPresence() {
-        double radius = ServerConfig.HOLLOW.retreatRadius.get();
-        boolean someone = false;
-        for (Player player : level().players()) {
-            if (player.isAlive() && !player.isSpectator() && player.distanceToSqr(this) <= radius * radius) {
-                someone = true;
-                break;
-            }
-        }
-        absentTicks = someone ? 0 : absentTicks + CHECK_TICKS;
-        if (absentTicks >= ServerConfig.HOLLOW.retreatSeconds.get() * 20) {
-            retreat();
-        }
-    }
-
-    /** Leaves without a drop. Step 3 keeps its health in SavedData and lets it come back. */
-    public void retreat() {
-        if (level() instanceof ServerLevel serverLevel) {
-            HollowEffects.retreat(serverLevel, this);
-        }
-        discard();
+    @Override
+    protected void onRetreat(ServerLevel level) {
+        HollowEffects.retreat(level, this);
     }
 
     @Override
@@ -275,80 +177,20 @@ public class TheHollow extends Monster implements GeoEntity {
     }
 
     @Override
-    public AABB getBoundingBoxForCulling() {
-        // The model is bigger than the hitbox: the giant arm hangs out in front, upright it is ~8 blocks tall.
-        return getBoundingBox().inflate(2.5, 3.0, 2.5);
+    protected int deathTicks() {
+        return HollowAnimations.DEATH_TICKS;
     }
 
     @Override
-    protected void tickDeath() {
-        // Longer than vanilla's 20 ticks: it falls over backwards.
-        deathTime++;
-        if (deathTime >= HollowAnimations.DEATH_TICKS && !level().isClientSide() && !isRemoved()) {
-            level().broadcastEntityEvent(this, (byte) 60);
-            remove(Entity.RemovalReason.KILLED);
-        }
+    protected double modelOverhang() {
+        // The giant arm hangs out in front.
+        return 2.5;
     }
 
     @Override
-    protected int getBaseExperienceReward() {
-        return ServerConfig.HOLLOW.experience.get();
-    }
-
-    @Override
-    public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) {
-        return false;
-    }
-
-    @Override
-    public boolean isPushable() {
-        return false;
-    }
-
-    @Override
-    public void push(Entity entity) {
-    }
-
-    @Override
-    protected void doPush(Entity entity) {
-    }
-
-    @Override
-    public boolean isPushedByFluid() {
-        return false;
-    }
-
-    @Override
-    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
-        return false;
-    }
-
-    @Override
-    public boolean requiresCustomPersistence() {
-        return true;
-    }
-
-    @Override
-    public boolean canUsePortal(boolean allowPassengers) {
-        return false;
-    }
-
-    @Override
-    public void setCustomName(@Nullable Component name) {
-        super.setCustomName(name);
-        bossEvent.setName(getDisplayName());
-    }
-
-    @Override
-    public void startSeenByPlayer(ServerPlayer player) {
-        super.startSeenByPlayer(player);
-        bossEvent.addPlayer(player);
-    }
-
-    @Override
-    public void stopSeenByPlayer(ServerPlayer player) {
-        super.stopSeenByPlayer(player);
-        bossEvent.removePlayer(player);
+    protected double modelOverhangUp() {
+        // Upright it is ~8 blocks tall.
+        return 3.0;
     }
 
     @Override
@@ -368,10 +210,5 @@ public class TheHollow extends Monster implements GeoEntity {
             return state.setAndContinue(HollowAnimations.PHASE);
         }
         return state.setAndContinue(state.isMoving() ? HollowAnimations.WALK : HollowAnimations.IDLE);
-    }
-
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return geoCache;
     }
 }
