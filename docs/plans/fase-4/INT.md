@@ -17,6 +17,19 @@ Merges in deze volgorde:
 Daarna `PROTOCOL_VERSION` "11" → "12" (`keeper_mist`), imports gesorteerd, runData (5621d39f), build, GameTests 67/67.
 Nog: `f4/r2` als laatste.
 
+## Stand bij afronden (2026-10-28 22:00)
+- `f4/int` op f21c6b89: H1, D, I, R3, R4, R5 gemerged; protocol "12"; runData 5621d39f; compileJava, build en GameTests
+  67/67 groen; 2-clienttest gedaan (zie Voortgang 21:58). Geen eigen processen of slots meer.
+- Niet gedaan: merge `f4/r2`, korte check daarna, `/code-review medium`.
+
+## Volgende stappen
+1. R2 afmaken (door R2: de rockfall-GameTest faalt in `hollow_arena`; smoke, client, review).
+2. `f4/r2` mergen (union op de gedeelde bestanden; `strengthFactor()` → `strength()` nagaan), compileJava, runData
+   (+ commit), build, GameTests; R2 toevoegen aan `voorlopig-fase-4.md` en CODEBASE (één fase 4-geheel).
+3. Korte check: server + client, `/summon corruptedadventure:the_layered` + een korte gevechtscheck.
+4. `/code-review medium d03463e4..f4/int`, bevindingen fixen, build + GameTests.
+5. Overdracht aan main (niet zelf pushen of naar main mergen).
+
 ## Taken
 - [x] compileJava na elke merge (ronde 1: na items en r3)
 - [x] runData (+ commit 09d1b047), build, GameTests 58/58 na ronde 1
