@@ -93,7 +93,7 @@ final class KeeperWhipGoal extends Goal {
                 continue;
             }
             hit.add(player);
-            player.hurt(keeper.damageSources().mobAttack(keeper), config.whipDamage.get().floatValue() * keeper.strengthFactor());
+            player.hurt(keeper.damageSources().mobAttack(keeper), config.whipDamage.get().floatValue() * keeper.strength());
             // Thrown along the sweep: sideways to the tail, in the direction it swings.
             Vec3 arm = player.position().subtract(pivot).multiply(1.0, 0.0, 1.0);
             Vec3 along = new Vec3(-arm.z, 0.0, arm.x).scale(side);

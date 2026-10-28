@@ -304,14 +304,6 @@ public class TheLostKeeper extends Nightmare {
         }
     }
 
-    /**
-     * Factor on the attacks with their own damage in the config (squeeze, whip, poison breath and clouds); the bite goes
-     * through {@code attack_damage}. Placeholder: becomes the base's {@code strength()} after the merge of f4/director.
-     */
-    float strengthFactor() {
-        return 1.0F;
-    }
-
     /** It swims here: always in water, in the air only while it still has a branch on its crown. */
     public boolean canSwimHere() {
         return isInWater() || hasCrown();
@@ -591,7 +583,7 @@ public class TheLostKeeper extends Nightmare {
         }
         if (holdTicks % 20 == 0) {
             for (Entity entity : getPassengers()) {
-                entity.hurt(damageSources().mobAttack(this), config.squeezeDamage.get().floatValue() * strengthFactor());
+                entity.hurt(damageSources().mobAttack(this), config.squeezeDamage.get().floatValue() * strength());
             }
         }
     }
@@ -649,7 +641,7 @@ public class TheLostKeeper extends Nightmare {
         if (clouds.isEmpty() || !(level() instanceof ServerLevel serverLevel)) {
             return;
         }
-        float dose = keeperConfig().cloudPoison.get().floatValue() * strengthFactor();
+        float dose = keeperConfig().cloudPoison.get().floatValue() * strength();
         clouds.removeIf(cloud -> !cloud.tick(serverLevel, dose));
     }
 

@@ -15,8 +15,17 @@ Categorie `mobs`; attachment-registratie apart als `infra:`.
 
 ## Voortgang
 - 2026-10-28 20:03 start; `setup.sh D 67`. User-lock aanwezig: geen JVM, code zonder compiler.
-- 20:25 interface `NightmareArrival`, `NightmareKind`, `DefaultNightmareArrival`, `NightmareSpots`, config
-  `[nightmares.director]` geschreven (niet gecompileerd).
+- 20:12 interface `NightmareArrival`, `NightmareKind`, `DefaultNightmareArrival`, `NightmareSpots`, config
+  `[nightmares.director]` geschreven (niet gecompileerd); commit 6bd33578, interface naar main.
+- 20:21 dreiging (attachment), regisseur (`SavedData`, staat, zwerven, doelkeuze), haken in `Nightmare`, `/ca nightmare`,
+  lang, 5 GameTests, unit test, `CODEBASE.md`; niet gecompileerd (wacht op vrijgave van de lock).
+- 20:31 WIP gecommit (`ac812368` infra, `c4357145` mobs); wachten op "go D".
+- 20:40 go D. `compileJava` in één keer groen; `build` groen (unit tests: `NightmareDirectorLogicTest` 8/8,
+  `ClientIsolationTest` groen); `runData` → lang en/nl (`6865bcee`); `runGameTestServer` 46/46 (5 nieuw, batch
+  `nightmare_director` 3).
+- 20:54 server-smoke `dsmoke` (vers): start zonder fouten; via RCON `/ca nightmare status` (De Holle zwervend op 674 25 in
+  ring 1, de andere vier "no entity yet"), `arrive` zonder speler → nette fout, `reset 1` → volgende seconde één stap van
+  32 blokken; `corruptedadventure_nightmares.dat` geschreven; gestopt, slot vrij.
 
 ## Voorlopig (bevestigen bij de teststop)
 - Commando's onder de bestaande root **`/ca nightmare …`** (niet `/corruptedadventure …`): alle debugcommando's van de mod

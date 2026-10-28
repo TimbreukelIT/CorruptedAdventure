@@ -34,6 +34,7 @@ public final class CaCommand {
                 .then(LandmarkListCommand.build())
                 .then(FlatLandmarkListCommand.build())
                 .then(CastlesCommand.build())
-                .then(StudioCommand.build()));
+                .then(StudioCommand.build())
+                .then(NightmareCommand.build()));
     }
 }
