@@ -265,37 +265,66 @@ def face_rng(name, face):
     return random.Random(f"{name}/{face}")
 
 
+def plates(p, cell, seed):
+    """Irregular stone plates: 3D Voronoi on a jittered grid, squashed into flat slabs. Per point the plate's tone
+    (0..1), the distance to the nearest break line and whether the point lies in the upper part of its plate."""
+    q = p / np.asarray(cell)
+    base = np.floor(q).astype(np.int64)
+    best = np.full(len(p), 9e9)
+    second = np.full(len(p), 9e9)
+    tone = np.zeros(len(p))
+    rel_y = np.zeros(len(p))
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            for dz in (-1, 0, 1):
+                c = base + np.array([dx, dy, dz])
+                jitter = np.stack([hash3(c[:, 0], c[:, 1], c[:, 2], seed + k) for k in range(3)], axis=1)
+                d = np.sum((c + jitter - q) ** 2, axis=1)
+                closer = d < best
+                second = np.where(closer, best, np.minimum(second, d))
+                tone = np.where(closer, hash3(c[:, 0], c[:, 1], c[:, 2], seed + 7), tone)
+                rel_y = np.where(closer, (c[:, 1] + jitter[:, 1]) - q[:, 1], rel_y)
+                best = np.minimum(best, d)
+    return tone, np.sqrt(second) - np.sqrt(best), rel_y
+
+
+def unspeckle(tone, passes=2):
+    """Replaces every pixel that shares its tone with none of its 4 neighbours by the middle tone around it, so tones
+    come in clusters of a few pixels and never as single specks."""
+    h, w = tone.shape
+    if h < 2 or w < 2:
+        return tone
+    for _ in range(passes):
+        pad = np.pad(tone, 1, mode="edge")
+        around = np.stack([pad[1 + dy:1 + dy + h, 1 + dx:1 + dx + w] for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0))])
+        lonely = ~np.any(around == tone, axis=0)
+        tone = np.where(lonely, np.sort(around, axis=0)[2], tone)
+    return tone
+
+
 def stone_canvas(h, w, world, rng, deep_bias):
-    """Courses of flat stone and deepslate plates: one tone per plate, a 1 px dark seam under and right of each plate,
-    a 1 px light rim on top, a chipped corner now and then. Tone index per pixel (0..4) and the seam mask."""
-    tone = np.zeros((h, w), dtype=int)
-    seam = np.zeros((h, w), dtype=bool)
-    r0 = -rng.randrange(5)
-    while r0 < h:
-        course = rng.randint(4, 6)
-        c0 = -rng.randrange(6)
-        while c0 < w:
-            pw = rng.randint(4, 10)
-            r_lo, r_hi = max(r0, 0), min(r0 + course, h)
-            c_lo, c_hi = max(c0, 0), min(c0 + pw, w)
-            if r_lo < r_hi and c_lo < c_hi:
-                deep = rng.random() < 0.3 + deep_bias
-                t = 1 if deep else 2 + (rng.random() < 0.35) - (rng.random() < 0.15)
-                # Grime: low on the body the plates are a tone darker.
-                if world[(r_lo + r_hi) // 2, (c_lo + c_hi) // 2, 1] < 26 and rng.random() < 0.7:
-                    t -= 1
-                tone[r_lo:r_hi, c_lo:c_hi] = t
-                if 0 <= r0 < h:
-                    tone[r0, c_lo:c_hi] = min(t + 1, 4)
-                if 0 <= r0 + course - 1 < h:
-                    seam[r0 + course - 1, c_lo:c_hi] = True
-                if 0 <= c0 + pw - 1 < w:
-                    seam[r_lo:r_hi, c0 + pw - 1] = True
-                if rng.random() < 0.35 and 0 <= r0 < h and 0 <= c0 + pw - 2 < w:
-                    seam[r0, c0 + pw - 2] = True
-            c0 += pw
-        r0 += course
-    return tone, seam
+    """Weathered stone and deepslate, organic rather than masonry: tones flowing into each other in clusters of 2-4 px,
+    irregular break lines (Voronoi edges, never a grid) with a light lip above them, grime low on the body and stains
+    that shift the hue a little. Returns colours (h, w, 3)."""
+    flat = world.reshape(-1, 3)
+    plate_tone, gap, rel_y = plates(flat, (11.0, 6.0, 11.0), 3)
+    deep = (hash3((plate_tone * 1e6).astype(np.int64), 0, 0, 5) < 0.3 + deep_bias)
+    shade = (2.0 + (value_noise(flat, (0.3, 0.3, 0.3), 11) - 0.5) * 2.4 + (value_noise(flat, (0.12, 0.12, 0.12), 13) - 0.5) * 1.4
+             + (plate_tone - 0.5) * 1.2 - deep * 0.9)
+    shade = np.where((gap < 0.17) & (rel_y < 0), shade + 0.9, shade)
+    tone = unspeckle(np.clip(np.round(shade), 0, 4).astype(int).reshape(h, w))
+    color = STONE[tone]
+    color[(gap < 0.06).reshape(h, w)] = STONE[0] * 0.55
+    # Grime: darker toward the feet, smoothly.
+    low = np.clip((34.0 - world[..., 1]) / 34.0, 0, 1)[..., None]
+    color = color * (1.0 - 0.3 * low)
+    # Stains: greenish damp and a purple bruise of corruption, a few blocks across, stretched downward.
+    stretched = (world * np.array([1.0, 0.4, 1.0])).reshape(-1, 3)
+    damp = np.clip((value_noise(stretched, (0.2, 0.2, 0.2), 15) - 0.62) * 4.0, 0, 1).reshape(h, w, 1)
+    bruise = np.clip((value_noise(stretched, (0.17, 0.17, 0.17), 17) - 0.7) * 4.0, 0, 1).reshape(h, w, 1)
+    color = color * (1 - 0.3 * damp) + MOSS[0] * 0.3 * damp
+    color = color * (1 - 0.25 * bruise) + CORRUPTION[1] * 0.25 * bruise
+    return color
 
 
 def add_cracks(h, w, rng, count):
@@ -311,45 +340,53 @@ def add_cracks(h, w, rng, count):
 
 
 def drips(h, w, rng, level):
-    """Corruption running down as a glossy liquid: a coat along the top that breaks up into separate drips, with stone
-    between them. Palette index per pixel (-1 = none), the specular pixels and the streams (column, width, length)."""
+    """Corruption running down as a glossy liquid: a coat along the top that breaks up into drips of different widths
+    (1-4 px, swelling and thinning, wandering a pixel now and then), with stone between them. Palette index per pixel
+    (-1 = none), the specular pixels and the streams (column, width, length) for the overlay."""
     idx = np.full((h, w), -1, dtype=int)
     spec = np.zeros((h, w), dtype=bool)
     streams = []
     if level <= 0.15:
         return idx, spec, streams
-    c = rng.randrange(3)
+    c = rng.randrange(4)
     while c < w:
-        if rng.random() < min(0.95, level * 1.15):
-            width = min(1 + (rng.random() < level) + (rng.random() < level * 0.6), w - c)
+        if rng.random() < min(0.9, level * 1.05):
+            base = rng.choice((1, 1, 2, 2, 3, 4) if level > 0.6 else (1, 1, 1, 2, 2, 3))
             full = rng.random() < (level - 0.7) * 1.5
-            length = h if full else min(h, max(2, int(round(h * (0.25 + 0.75 * level * rng.random())))))
-            idx[:length, c:c + width] = 1
-            if width >= 3:
-                idx[:length, c + width - 1] = 0
-            # The gloss: a light line down the left of the drip, a bright spot a third of the way down.
-            idx[:length, c] = 3 if width >= 2 else 2
+            length = h if full else min(h, max(2, int(round(h * (0.2 + 0.8 * level * rng.random())))))
+            x = c
+            for r in range(length):
+                # Swells near the top, thins toward the end; drifts a pixel sideways now and then.
+                width = base + (1 if r < length * 0.3 and rng.random() < 0.5 else 0) - (1 if r > length * 0.6 and base > 1 else 0)
+                if r > 0 and rng.random() < 0.12:
+                    x += rng.choice((-1, 1))
+                lo, hi = max(0, x), min(w, x + max(1, width))
+                if lo >= hi:
+                    continue
+                idx[r, lo:hi] = 1
+                idx[r, lo] = 3 if hi - lo >= 2 else 2
+                if hi - lo >= 3:
+                    idx[r, hi - 1] = 0
             spot = length // 3
-            idx[spot, c] = 4
-            spec[spot, c] = True
+            if 0 <= x < w:
+                idx[spot, max(0, x)] = 4
+                spec[spot, max(0, x)] = True
             if length < h:
-                # A rounded drop at the end, lit on its left.
                 tip = length - 1
-                idx[tip, c:c + width] = 2
-                idx[tip, c] = 4
-                spec[tip, c] = True
-                # The drop is a pixel wider than its trickle.
-                if c + width < w:
-                    idx[tip, c + width] = 1
-                if width >= 2 and tip + 1 < h:
-                    idx[tip + 1, c + 1] = 1
-            streams.append((c, width, length))
-            c += width
-        c += 1 + (rng.random() > level) + (rng.random() > level * 1.5)
-    # The coat at the top, thicker where there is more corruption.
+                lo, hi = max(0, x), min(w, x + base + 1)
+                if lo < hi:
+                    idx[tip, lo:hi] = 2
+                    idx[tip, lo] = 4
+                    spec[tip, lo] = True
+                    if tip + 1 < h and hi - lo >= 2:
+                        idx[tip + 1, lo + 1] = 1
+            streams.append((max(0, min(w - 1, c)), base, length))
+            c += base
+        c += rng.randint(1, 4) if level < 0.8 else rng.randint(1, 3)
+    # The coat at the top, thicker where there is more corruption, ragged at its lower edge.
     coat = int(round(level * 2.5))
     for col in range(w):
-        d = max(0, coat + rng.choice((-1, 0, 0, 1)))
+        d = max(0, coat + rng.choice((-1, 0, 0, 1, 1)))
         for r in range(min(d, h)):
             if idx[r, col] < 0:
                 idx[r, col] = 1
@@ -405,26 +442,29 @@ def paint_face(fc, world_face, name, ancestors, mat):
     if mat == "corruption":
         color[:] = CORRUPTION[1]
     else:
-        tone, seam = stone_canvas(h, w, world, rng, 0.15 if any(a.startswith("leg") for a in ancestors) else 0.0)
-        color[:] = STONE[np.clip(tone, 0, 4)]
-        color[seam] = STONE[0] * 0.55
-        color[add_cracks(h, w, rng, (h * w) // 160)] = VOID
+        color[:] = stone_canvas(h, w, world, rng, 0.15 if any(a.startswith("leg") for a in ancestors) else 0.0)
+        color[add_cracks(h, w, rng, (h * w) // 220)] = VOID
 
     moss_w = moss_level(name, ancestors)
-    if mode == "flat" and up > 0.5 and moss_w >= 0.6:
-        # Moss in patches on what faces up.
-        moss = noise2(world, 0, 2, 0.22, 29) > 1.0 - moss_w * 0.75
-        color[moss] = MOSS[1]
-        color[moss & (noise2(world, 0, 2, 0.5, 31) > 0.6)] = MOSS[2]
-    elif mode != "flat" and moss_w >= 0.6:
-        # A fringe hanging over the top edge, here and there.
-        for col in range(w):
-            if rng.random() < moss_w * 0.55:
-                d = rng.randint(1, 3)
-                color[:d, col] = MOSS[1]
-                color[0, col] = MOSS[2]
-                if d < h and rng.random() < 0.3:
-                    color[d, col] = MOSS[0]
+    if mode == "flat" and up > 0.5 and moss_w >= 0.45:
+        # Moss in patches on what faces up, its tones in clusters.
+        moss = noise2(world, 0, 2, 0.2, 29) > 1.0 - moss_w * 0.9
+        mtone = unspeckle(np.clip((noise2(world, 0, 2, 0.45, 31) * 3.2 - 0.3).astype(int), 0, 2))
+        color[moss] = MOSS[mtone[moss]]
+    elif mode != "flat" and moss_w >= 0.45:
+        # A ragged fringe hanging over the top edge, in runs of a few columns.
+        col = 0
+        while col < w:
+            run = rng.randint(2, 5)
+            if rng.random() < moss_w * 0.7:
+                d = rng.randint(1, 4)
+                for c in range(col, min(col + run, w)):
+                    dd = max(1, d + rng.choice((-1, 0, 0, 1)))
+                    color[:dd, c] = MOSS[1]
+                    color[0, c] = MOSS[2]
+                    if dd < h and rng.random() < 0.4:
+                        color[dd, c] = MOSS[0]
+            col += run
 
     if mode == "flat":
         if level >= 0.5 and up > 0.5:
@@ -443,8 +483,9 @@ def paint_face(fc, world_face, name, ancestors, mat):
     if level >= 0.6:
         for c, width, length in streams:
             if length < h and rng.random() < 0.12:
-                color[length - 1, c + width - 1] = GLITCH
-                glow[length - 1, c + width - 1] = True
+                gc = min(w - 1, c + width - 1)
+                color[length - 1, gc] = GLITCH
+                glow[length - 1, gc] = True
     # The overlay: a bright drop sliding down each longer drip, one loop over the frames.
     for c, width, length in streams:
         if length < 4:
