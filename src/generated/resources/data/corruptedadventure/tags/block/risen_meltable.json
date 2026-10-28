@@ -1,0 +1,15 @@
+{
+  "values": [
+    "#minecraft:base_stone_overworld",
+    "#minecraft:dirt",
+    "#minecraft:sand",
+    "#corruptedadventure:ring_3_stones",
+    "#corruptedadventure:canyon_stones",
+    "minecraft:gravel",
+    "minecraft:smooth_basalt",
+    "minecraft:magma_block",
+    "corruptedadventure:smoldering_ash",
+    "corruptedadventure:smoldering_stone",
+    "corruptedadventure:cold_lava"
+  ]
+}
