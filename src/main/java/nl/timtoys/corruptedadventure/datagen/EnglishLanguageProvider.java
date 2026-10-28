@@ -14,6 +14,7 @@ import nl.timtoys.corruptedadventure.datagen.lang.Golf4MaterialNames;
 import nl.timtoys.corruptedadventure.datagen.lang.Golf5SkyGlassNames;
 import nl.timtoys.corruptedadventure.datagen.lang.CoatingText;
 import nl.timtoys.corruptedadventure.datagen.lang.ArrowText;
+import nl.timtoys.corruptedadventure.datagen.lang.LensText;
 import nl.timtoys.corruptedadventure.datagen.lang.ConsumableText;
 import nl.timtoys.corruptedadventure.datagen.lang.GearNames;
 import nl.timtoys.corruptedadventure.datagen.lang.LangOutput;
@@ -286,6 +287,8 @@ final class EnglishLanguageProvider extends LanguageProvider implements LangOutp
         ArrowText.addEnglish(this);
         // Phase 2 golf 5: one helper per stream.
         Golf5SkyGlassNames.addEnglish(this);
+        // Phase 2 golf 5 (stream L).
+        LensText.addEnglish(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s dried out");

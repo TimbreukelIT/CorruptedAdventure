@@ -14,7 +14,7 @@ public final class ModNetwork {
      * disconnect message. <b>Bump this on every change to a payload or its codec, and for every new payload</b>
      * (an older client does not know it).
      */
-    public static final String PROTOCOL_VERSION = "10";
+    public static final String PROTOCOL_VERSION = "11";
 
     private ModNetwork() {
     }
@@ -39,5 +39,7 @@ public final class ModNetwork {
                 ClientboundHandlers.forward(WindGustPayload.TYPE));
         registrar.playToClient(VolcanoPlumesPayload.TYPE, VolcanoPlumesPayload.STREAM_CODEC,
                 ClientboundHandlers.forward(VolcanoPlumesPayload.TYPE));
+        registrar.playToClient(LensScanPayload.TYPE, LensScanPayload.STREAM_CODEC,
+                ClientboundHandlers.forward(LensScanPayload.TYPE));
     }
 }

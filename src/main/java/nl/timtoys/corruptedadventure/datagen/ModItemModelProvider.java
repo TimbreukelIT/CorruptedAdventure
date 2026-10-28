@@ -114,6 +114,8 @@ final class ModItemModelProvider extends ItemModelProvider {
         ConsumableItemModels.build(this);
         golf4Materials();
         ArrowItemModels.build(this);
+        // Phase 2 golf 5 (L): flat in the hand too (vanilla's 3D spyglass hangs on Items.SPYGLASS).
+        basicItem(ModItems.SKY_GLASS_LENS.get());
         golf5SkyGlass();
     }
 

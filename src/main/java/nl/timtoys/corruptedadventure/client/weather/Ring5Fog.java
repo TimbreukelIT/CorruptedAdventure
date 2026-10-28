@@ -89,8 +89,9 @@ public final class Ring5Fog {
                 && event.getCamera().getEntity().level().dimension() == Level.OVERWORLD;
     }
 
+    /** Vanilla's "Screen Effect Scale" × what the sky glass lens leaves of the glitch visuals ({@link GlitchVisuals}). */
     private static float screenEffects() {
-        return Minecraft.getInstance().options.screenEffectScale().get().floatValue();
+        return Minecraft.getInstance().options.screenEffectScale().get().floatValue() * GlitchVisuals.scale();
     }
 
     private static void onRenderFog(ViewportEvent.RenderFog event) {

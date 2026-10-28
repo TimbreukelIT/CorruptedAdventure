@@ -13,7 +13,9 @@ import nl.timtoys.corruptedadventure.client.entity.EffectArrowRenderer;
 import nl.timtoys.corruptedadventure.client.fluid.ToxicPoolClientExtensions;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
 import nl.timtoys.corruptedadventure.client.item.ConsumableItemProperties;
+import nl.timtoys.corruptedadventure.client.item.LensView;
 import nl.timtoys.corruptedadventure.client.network.ConditionSyncHandler;
+import nl.timtoys.corruptedadventure.client.network.LensScanHandler;
 import nl.timtoys.corruptedadventure.client.network.RingLayoutHandler;
 import nl.timtoys.corruptedadventure.client.network.RingWeatherHandler;
 import nl.timtoys.corruptedadventure.client.network.VolcanoPlumesHandler;
@@ -41,6 +43,7 @@ import nl.timtoys.corruptedadventure.client.weather.SunderedFade;
 import nl.timtoys.corruptedadventure.client.weather.VolcanoPlumeRenderer;
 import nl.timtoys.corruptedadventure.network.ClientboundHandlers;
 import nl.timtoys.corruptedadventure.network.ConditionSyncPayload;
+import nl.timtoys.corruptedadventure.network.LensScanPayload;
 import nl.timtoys.corruptedadventure.network.RingLayoutPayload;
 import nl.timtoys.corruptedadventure.network.RingWeatherPayload;
 import nl.timtoys.corruptedadventure.network.VolcanoPlumesPayload;
@@ -61,6 +64,7 @@ public final class CorruptedAdventureClient {
         ClientboundHandlers.set(RingWeatherPayload.TYPE, RingWeatherHandler::handle);
         ClientboundHandlers.set(WindGustPayload.TYPE, WindGustHandler::handle);
         ClientboundHandlers.set(VolcanoPlumesPayload.TYPE, VolcanoPlumesHandler::handle);
+        ClientboundHandlers.set(LensScanPayload.TYPE, LensScanHandler::handle);
         modEventBus.addListener(ConditionHudLayer::onRegisterGuiLayers);
         modEventBus.addListener(CorruptedAdventureClient::onRegisterParticleProviders);
         modEventBus.addListener(ToxicPoolClientExtensions::onRegisterClientExtensions);
@@ -70,6 +74,8 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(ConsumableItemProperties::onClientSetup);
         // Phase 2 golf 3 + 4 and 5 (A): the fire, poison and glitch arrows.
         modEventBus.addListener(EffectArrowRenderer::onRegisterRenderers);
+        // Phase 2 golf 5 (L): the sky glass lens's scope, outlines and damping.
+        LensView.register(modEventBus, NeoForge.EVENT_BUS);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);
         NeoForge.EVENT_BUS.addListener(SingingSandAmbience::onClientTick);

@@ -30,6 +30,7 @@ import nl.timtoys.corruptedadventure.item.EffectArrowItem;
 import nl.timtoys.corruptedadventure.item.GearItems;
 import nl.timtoys.corruptedadventure.item.GearTier;
 import nl.timtoys.corruptedadventure.item.HandWarmerItem;
+import nl.timtoys.corruptedadventure.item.SkyGlassLensItem;
 import nl.timtoys.corruptedadventure.item.UpgradeSmithingTemplates;
 import nl.timtoys.corruptedadventure.item.coating.Coating;
 import nl.timtoys.corruptedadventure.item.coating.CoatingTemplates;
@@ -248,6 +249,9 @@ public final class ModItems {
     /** Against the void (phase 2 golf 5, §7.3): single use, anchors for a while, gives the glass bottle back. */
     public static final DeferredItem<DoseDrinkItem> SKY_LIGHT_DRAUGHT = ITEMS.registerItem("sky_light_draught",
             properties -> new DoseDrinkItem(properties.stacksTo(16), ConsumableDoses::skyLight));
+    /** Shows the hidden glitches of ring 5 while you look through it (golf 5, §7.2); made before ring 5. */
+    public static final DeferredItem<SkyGlassLensItem> SKY_GLASS_LENS = ITEMS.registerItem("sky_glass_lens",
+            SkyGlassLensItem::new);
 
     // ---- Ring 5 ----
     static {

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": {
+      "item": "corruptedadventure:sky_glass"
+    },
+    "T": {
+      "item": "corruptedadventure:tidesilver_ingot"
+    }
+  },
+  "pattern": [
+    " G ",
+    " T ",
+    " T "
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:sky_glass_lens"
+  }
+}

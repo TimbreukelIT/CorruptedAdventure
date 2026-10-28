@@ -24,6 +24,7 @@ import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
+import nl.timtoys.corruptedadventure.item.lens.LensWatch;
 import nl.timtoys.corruptedadventure.network.ModNetwork;
 import nl.timtoys.corruptedadventure.network.RingLayoutSync;
 import nl.timtoys.corruptedadventure.registry.ModArmorMaterials;
@@ -127,6 +128,8 @@ public final class CorruptedAdventure {
         SwampGasIgnition.register(NeoForge.EVENT_BUS);
         SuckingMudSuffocation.register(NeoForge.EVENT_BUS);
         Ring3StriderSpawns.register(NeoForge.EVENT_BUS);
+        // Phase 2 golf 5 (L): the sky glass lens's scan round a looking player.
+        LensWatch.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

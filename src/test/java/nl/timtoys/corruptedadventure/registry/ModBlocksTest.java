@@ -60,6 +60,7 @@ import nl.timtoys.corruptedadventure.item.DoseFoodItem;
 import nl.timtoys.corruptedadventure.item.EchoShellItem;
 import nl.timtoys.corruptedadventure.item.HandWarmerItem;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
+import nl.timtoys.corruptedadventure.item.SkyGlassLensItem;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -932,7 +933,9 @@ class ModBlocksTest {
                 .filter(item -> !(item instanceof SmithingTemplateItem) && !(item instanceof EffectArrowItem))
                 .filter(item -> !(item instanceof TieredItem) && !(item instanceof ArmorItem))
                 // So do the consumables of golf 5 (sky light, echo shell).
-                .filter(item -> !(item instanceof DoseDrinkItem || item instanceof EchoShellItem)).toList();
+                .filter(item -> !(item instanceof DoseDrinkItem || item instanceof EchoShellItem))
+                // Nor is the sky glass lens (golf 5), the tool that closes Nether ring 4.
+                .filter(item -> !(item instanceof SkyGlassLensItem)).toList();
         int shard = standalone.indexOf(ModItems.PURITY_CRYSTAL_SHARD.get());
         assertEquals(List.of(ModItems.PURITY_CRYSTAL_SHARD.get(), ModItems.GLITCH_SHARD.get(), ModItems.RAW_NULLITE.get(),
                 ModItems.NULLITE_INGOT.get(), ModItems.WHITE_CORE.get()), standalone.subList(shard, standalone.size()));
