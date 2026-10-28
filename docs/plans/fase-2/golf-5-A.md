@@ -27,6 +27,7 @@ blijft de bestaande `EffectArrowRenderer` in `client/`. Kleine aanpassingen buit
 - 2026-10-28 16:05 start; setup n = 68; basis `d55ff491`.
 - 16:27 code af; build gestart.
 - 16:35 build (incl. `GlitchHopTest`) + runData groen; 16:37 GameTests 25/25 groen; 16:38 server-smoke n = 68 groen (Done in 9 s, geen client-class-fouten).
+- 16:39 `/code-review low d55ff491..f2g5/arrows`: geen bevindingen.
 
 ## Voorlopig (bevestigen bij de teststop)
 - Receptvorm ` A ` / `AMA` / ` A ` → 4 (zoals brand- en gifpijl).
