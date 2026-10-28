@@ -18,7 +18,7 @@ import nl.timtoys.corruptedadventure.registry.ModItems;
 import java.util.List;
 
 /**
- * The gear tier recipes (fase-2-items.md §5.1, §6.2, §6.5). Every tier upgrades the gear of the one before with a vanilla
+ * The gear tier recipes (fase-2-items.md §5.1, §6.2, §6.5, §7.1). Every tier upgrades the gear of the one before with a vanilla
  * {@code smithing_transform} per piece, like the netherite upgrade (piece + template + ingot; enchantments and
  * trim/coating carry over): sunstone takes diamond gear. Each template is crafted from a material of the Nether ring
  * before its ring (the loop overworld → Nether → ring), the ingot of the tier before (diamond for sunstone) and a stone

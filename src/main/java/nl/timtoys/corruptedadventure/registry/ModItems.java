@@ -35,7 +35,6 @@ import nl.timtoys.corruptedadventure.item.coating.CoatingTemplates;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * All items: the block items (registered by {@link ModBlocks}) and the standalone items below. Standalone items
@@ -258,12 +257,32 @@ public final class ModItems {
     public static final DeferredItem<Item> RAW_NULLITE = ITEMS.registerSimpleItem("raw_nullite");
     /** Smelted from raw nullite and its ores (phase 2 golf 1); the nullite tier's ingot. Provisional name. */
     public static final DeferredItem<Item> NULLITE_INGOT = ITEMS.registerSimpleItem("nullite_ingot");
-    /** Placeholder upgrade template to the nullite tier (wave 1): recipe and source follow with the tier. */
+    /** Upgrades tidesilver gear to nullite; crafted from sky glass (golf 5, §7.1), no copy recipe. */
     public static final DeferredItem<SmithingTemplateItem> NULLITE_UPGRADE_SMITHING_TEMPLATE = ITEMS.register(
             UpgradeSmithingTemplates.itemName(GearTier.NULLITE), () -> UpgradeSmithingTemplates.create(GearTier.NULLITE));
     /** Coating against the void (applied with white core). Where to find it: golf 5. */
     public static final DeferredItem<SmithingTemplateItem> VOID_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "void_coating_smithing_template", () -> CoatingTemplates.create(Coating.VOID));
+
+    // The nullite set (golf 5, §6.1, §7.1): fire resistant like tidesilver; smithed from tidesilver.
+    public static final DeferredItem<SwordItem> NULLITE_SWORD = ITEMS.registerItem("nullite_sword",
+            properties -> GearItems.sword(GearTier.NULLITE, properties.fireResistant()));
+    public static final DeferredItem<AxeItem> NULLITE_AXE = ITEMS.registerItem("nullite_axe",
+            properties -> GearItems.axe(GearTier.NULLITE, properties.fireResistant()));
+    public static final DeferredItem<PickaxeItem> NULLITE_PICKAXE = ITEMS.registerItem("nullite_pickaxe",
+            properties -> GearItems.pickaxe(GearTier.NULLITE, properties.fireResistant()));
+    public static final DeferredItem<ShovelItem> NULLITE_SHOVEL = ITEMS.registerItem("nullite_shovel",
+            properties -> GearItems.shovel(GearTier.NULLITE, properties.fireResistant()));
+    public static final DeferredItem<HoeItem> NULLITE_HOE = ITEMS.registerItem("nullite_hoe",
+            properties -> GearItems.hoe(GearTier.NULLITE, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> NULLITE_HELMET = ITEMS.registerItem("nullite_helmet",
+            properties -> GearItems.armor(GearTier.NULLITE, ArmorItem.Type.HELMET, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> NULLITE_CHESTPLATE = ITEMS.registerItem("nullite_chestplate",
+            properties -> GearItems.armor(GearTier.NULLITE, ArmorItem.Type.CHESTPLATE, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> NULLITE_LEGGINGS = ITEMS.registerItem("nullite_leggings",
+            properties -> GearItems.armor(GearTier.NULLITE, ArmorItem.Type.LEGGINGS, properties.fireResistant()));
+    public static final DeferredItem<ArmorItem> NULLITE_BOOTS = ITEMS.registerItem("nullite_boots",
+            properties -> GearItems.armor(GearTier.NULLITE, ArmorItem.Type.BOOTS, properties.fireResistant()));
 
     // ---- Nether ring 5 ----
     /** Drop of the white core ore (one per ore, Fortune adds). Placeholder without behaviour in phase 1. */
@@ -272,21 +291,23 @@ public final class ModItems {
     public static final DeferredItem<SmithingTemplateItem> SILENCE_COATING_SMITHING_TEMPLATE = ITEMS.register(
             "silence_coating_smithing_template", () -> CoatingTemplates.create(Coating.SILENCE));
 
-    /** The gear sets per tier, lowest first; nullite's follows in golf 5. */
+    /** The gear sets per tier, lowest first. */
     public static final List<GearSet> GEAR_SETS = List.of(
             new GearSet(GearTier.SUNSTONE, SUNSTONE_SWORD, SUNSTONE_AXE, SUNSTONE_PICKAXE, SUNSTONE_SHOVEL, SUNSTONE_HOE,
                     SUNSTONE_HELMET, SUNSTONE_CHESTPLATE, SUNSTONE_LEGGINGS, SUNSTONE_BOOTS),
             new GearSet(GearTier.VOLCANITE, VOLCANITE_SWORD, VOLCANITE_AXE, VOLCANITE_PICKAXE, VOLCANITE_SHOVEL,
                     VOLCANITE_HOE, VOLCANITE_HELMET, VOLCANITE_CHESTPLATE, VOLCANITE_LEGGINGS, VOLCANITE_BOOTS),
             new GearSet(GearTier.TIDESILVER, TIDESILVER_SWORD, TIDESILVER_AXE, TIDESILVER_PICKAXE, TIDESILVER_SHOVEL,
-                    TIDESILVER_HOE, TIDESILVER_HELMET, TIDESILVER_CHESTPLATE, TIDESILVER_LEGGINGS, TIDESILVER_BOOTS));
+                    TIDESILVER_HOE, TIDESILVER_HELMET, TIDESILVER_CHESTPLATE, TIDESILVER_LEGGINGS, TIDESILVER_BOOTS),
+            new GearSet(GearTier.NULLITE, NULLITE_SWORD, NULLITE_AXE, NULLITE_PICKAXE, NULLITE_SHOVEL, NULLITE_HOE,
+                    NULLITE_HELMET, NULLITE_CHESTPLATE, NULLITE_LEGGINGS, NULLITE_BOOTS));
 
     private ModItems() {
     }
 
-    /** The set of {@code tier}, if it has one yet. */
-    public static Optional<GearSet> gear(GearTier tier) {
-        return GEAR_SETS.stream().filter(set -> set.tier() == tier).findFirst();
+    /** The set of {@code tier}; every tier has one. */
+    public static GearSet gear(GearTier tier) {
+        return GEAR_SETS.stream().filter(set -> set.tier() == tier).findFirst().orElseThrow();
     }
 
     public static void register(IEventBus modBus) {

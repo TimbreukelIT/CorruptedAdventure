@@ -31,9 +31,8 @@ class GearSetsTest {
     private static final double EPSILON = 1.0E-6;
 
     @Test
-    void theSetsAreSunstoneVolcaniteAndTidesilver() {
-        assertEquals(List.of(GearTier.SUNSTONE, GearTier.VOLCANITE, GearTier.TIDESILVER),
-                ModItems.GEAR_SETS.stream().map(GearSet::tier).toList());
+    void everyTierHasASetInLadderOrder() {
+        assertEquals(List.of(GearTier.values()), ModItems.GEAR_SETS.stream().map(GearSet::tier).toList());
         for (GearSet set : ModItems.GEAR_SETS) {
             for (int i = 0; i < GearSet.PIECES.size(); i++) {
                 assertEquals(set.tier().getSerializedName() + "_" + GearSet.PIECES.get(i),

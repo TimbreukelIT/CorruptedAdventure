@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The generated gear tier recipes (fase-2-items.md §5.1, §6.2, §6.5, after {@code runData}). */
+/** The generated gear tier recipes (fase-2-items.md §5.1, §6.2, §6.5, §7.1, after {@code runData}). */
 class GearRecipesTest {
     private static final String GENERATED = "src/generated/resources/data";
     private static final Path DATA = generated();
@@ -24,7 +24,8 @@ class GearRecipesTest {
             "leggings", "boots");
     /** Each tier with the material whose gear it upgrades, lowest first. */
     private static final List<List<String>> LADDER = List.of(List.of("sunstone", "minecraft:diamond"),
-            List.of("volcanite", "corruptedadventure:sunstone"), List.of("tidesilver", "corruptedadventure:volcanite"));
+            List.of("volcanite", "corruptedadventure:sunstone"), List.of("tidesilver", "corruptedadventure:volcanite"),
+            List.of("nullite", "corruptedadventure:tidesilver"));
 
     @Test
     void everyTierUpgradesThePiecesOfTheOneBefore() throws IOException {
