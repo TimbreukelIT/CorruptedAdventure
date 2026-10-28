@@ -1,8 +1,8 @@
 package nl.timtoys.corruptedadventure.weather;
 
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
@@ -11,7 +11,8 @@ import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
  * What a void teleport sounds and looks like (package 98, V98-8 A; the teleport itself is stream C's {@code VoidTeleport},
  * package 91): a short glitch at the spot the player leaves and at the spot he lands on, heard by everyone near (also the
  * player), and a burst of glitch pixels at both, so other players see him skip. Server-side; the sound and particles
- * reach the clients through vanilla's packets.
+ * reach the clients through vanilla's packets. Since phase 2 golf 5 also the hop of a mob hit by a glitch arrow
+ * ({@code entity/GlitchHop}).
  */
 public final class Ring5Glitches {
     static final float VOLUME = 0.8F;
@@ -20,9 +21,12 @@ public final class Ring5Glitches {
     private Ring5Glitches() {
     }
 
-    /** Called by {@code VoidTeleport} once it moves {@code player} from {@code from} to {@code to} (feet positions). */
-    public static void teleported(ServerPlayer player, Vec3 from, Vec3 to) {
-        ServerLevel level = player.serverLevel();
+    /**
+     * Called by {@code VoidTeleport} (and {@code GlitchHop}) once it moves {@code entity} from {@code from} to {@code to}
+     * (feet positions), on the server.
+     */
+    public static void teleported(Entity entity, Vec3 from, Vec3 to) {
+        ServerLevel level = (ServerLevel) entity.level();
         glitch(level, from);
         glitch(level, to);
     }

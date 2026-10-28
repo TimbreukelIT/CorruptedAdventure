@@ -18,6 +18,8 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<EffectArrow>> FIRE_ARROW = arrow("fire_arrow");
     /** Phase 2 golf 4 (§6.7): the arrow of {@code ArrowEffect.POISON}. */
     public static final DeferredHolder<EntityType<?>, EntityType<EffectArrow>> POISON_ARROW = arrow("poison_arrow");
+    /** Phase 2 golf 5 (§7.4): the arrow of {@code ArrowEffect.GLITCH}. */
+    public static final DeferredHolder<EntityType<?>, EntityType<EffectArrow>> GLITCH_ARROW = arrow("glitch_arrow");
 
     private ModEntityTypes() {
     }

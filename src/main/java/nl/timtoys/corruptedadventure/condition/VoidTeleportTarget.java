@@ -27,9 +27,10 @@ import java.util.Optional;
  *     {@link #MAX_DROP} blocks below the floor level and no fluid on the way down: no rift edge, no fall that hurts, no
  *     step into lava.</li>
  * </ul>
- * No safe spot after {@link #ATTEMPTS} directions: no teleport this time.
+ * No safe spot after {@link #ATTEMPTS} directions: no teleport this time. Also the glitch arrow's hop (phase 2 golf 5,
+ * {@code entity/GlitchHop}), with columns and a fit of its own.
  */
-final class VoidTeleportTarget {
+public final class VoidTeleportTarget {
     /** Directions tried per teleport. */
     static final int ATTEMPTS = 12;
     /** Feet levels tried per direction, from this far above the player's feet … */
@@ -43,7 +44,7 @@ final class VoidTeleportTarget {
     }
 
     /** What the search may look at. */
-    interface Terrain {
+    public interface Terrain {
         /** The blocks; only read inside columns that {@link #allowsColumn} accepted and their neighbours. */
         BlockGetter blocks();
 
@@ -52,13 +53,18 @@ final class VoidTeleportTarget {
          * with its 8 neighbours loaded (so reading their blocks never loads or generates a chunk).
          */
         boolean allowsColumn(int x, int z);
+
+        /** Whether what moves fits with its feet in {@code feet}, a spot already found safe for a player. */
+        default boolean fits(BlockPos feet) {
+            return true;
+        }
     }
 
     /**
      * A safe feet block {@code minBlocks}–{@code maxBlocks} blocks from the player's feet block (horizontally, between
      * block centres), or empty.
      */
-    static Optional<BlockPos> find(Terrain terrain, BlockPos feet, int minBlocks, int maxBlocks, RandomSource random) {
+    public static Optional<BlockPos> find(Terrain terrain, BlockPos feet, int minBlocks, int maxBlocks, RandomSource random) {
         PathTypeCache pathTypes = new PathTypeCache(); // fresh per search: never stale after a block change
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int attempt = 0; attempt < ATTEMPTS; attempt++) {
@@ -75,7 +81,7 @@ final class VoidTeleportTarget {
             }
             for (int y = feet.getY() + UP; y >= feet.getY() - DOWN; y--) {
                 pos.set(targetX, y, targetZ);
-                if (isSafe(terrain.blocks(), pathTypes, pos)) {
+                if (isSafe(terrain.blocks(), pathTypes, pos) && terrain.fits(pos)) {
                     return Optional.of(pos.immutable());
                 }
             }

@@ -11,7 +11,10 @@ import nl.timtoys.corruptedadventure.entity.EffectArrow;
 import java.util.EnumMap;
 import java.util.Map;
 
-/** Draws the fire and poison arrows like vanilla's arrow, each with {@code textures/entity/projectiles/<type>.png}. */
+/**
+ * Draws the fire, poison and glitch arrows like vanilla's arrow, each with
+ * {@code textures/entity/projectiles/<type>.png}.
+ */
 public final class EffectArrowRenderer extends ArrowRenderer<EffectArrow> {
     private final Map<ArrowEffect, ResourceLocation> textures = new EnumMap<>(ArrowEffect.class);
 

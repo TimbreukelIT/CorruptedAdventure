@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "corruptedadventure:nullite_ingot"
+  },
+  "base": {
+    "item": "corruptedadventure:tidesilver_leggings"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:nullite_leggings"
+  },
+  "template": {
+    "item": "corruptedadventure:nullite_upgrade_smithing_template"
+  }
+}
