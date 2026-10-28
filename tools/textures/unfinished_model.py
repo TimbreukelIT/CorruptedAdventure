@@ -524,7 +524,8 @@ def restructure(model):
                              new_bone(name + "_loaded", centre, (0, 0, 0), loaded)]
         find(torso, parent)["children"].append(entry)
         c = np.array(centre) / 16
-        print(f"{name}: left {c[0]:.2f}, centre up {c[1]:.2f}, forward {-c[2]:.2f} blocks")
+        # In game the model's +x is his right (GeckoLib mirrors Bedrock's x): left = -x.
+        print(f"{name}: left {-c[0]:.2f}, centre up {c[1]:.2f}, forward {-c[2]:.2f} blocks")
 
     root = group(template, "root", [0, 0, 0])
     root["uuid"] = ROOT_UUID
@@ -847,15 +848,15 @@ def glitch_overlay(world, frame):
     period = 48.0
     t = frame / FRAMES
     lane = np.floor(world[:, 1] / 3.0)
-    active = hash3(lane.astype(np.int64), frame, 0, 171) > 0.82
+    active = hash3(lane.astype(np.int64), frame, 0, 171) > 0.93
     tear = active & (np.mod(world[:, 0] + world[:, 2] + hash3(lane.astype(np.int64), 0, 1, 172) * period
                             + t * period, period) < 14.0)
-    dead = value_noise(world + frame * 3.1, (2.5, 2.5, 2.5), 173) > 0.985
+    dead = value_noise(world + frame * 3.1, (0.8, 0.8, 0.8), 173) > 0.992
     color = np.zeros((len(world), 3))
     alpha = np.zeros(len(world))
     pick = hash3(lane.astype(np.int64), frame, 2, 174) > 0.5
     color[tear] = np.where(pick[tear][:, None], GLITCH, CYAN)
-    alpha[tear] = 150
+    alpha[tear] = 110
     color[dead] = WHITE
     alpha[dead] = 230
     return color, alpha
