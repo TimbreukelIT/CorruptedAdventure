@@ -1,14 +1,20 @@
 package nl.timtoys.corruptedadventure.gametest;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -60,6 +66,8 @@ public final class TierGatingGameTests {
         REQUIRED.put(ModTags.Blocks.STORAGE_BLOCKS_RAW_NULLITE, 6);
         REQUIRED.put(ModTags.Blocks.STORAGE_BLOCKS_NULLITE, 6);
     }
+
+    private static final BlockPos ORE = BlockPos.ZERO;
 
     private TierGatingGameTests() {
     }
@@ -122,6 +130,72 @@ public final class TierGatingGameTests {
             helper.fail(failures.size() + " gating errors: " + String.join("; ", failures));
         }
         helper.succeed();
+    }
+
+    /**
+     * Every ring ore of ours really broken by a survival player (the server's {@code destroyBlock}: the harvest check and
+     * the loot table): the pickaxe of the rank below drops nothing, the pickaxe of its own rank drops something.
+     */
+    @GameTest(template = "gametest/empty", timeoutTicks = 200)
+    public static void breakingARingOreDropsOnlyWithTheRightPickaxe(GameTestHelper helper) {
+        Map<Integer, List<ItemStack>> byRank = new LinkedHashMap<>();
+        byRank.put(1, List.of(new ItemStack(Items.STONE_PICKAXE)));
+        byRank.put(2, List.of(new ItemStack(Items.IRON_PICKAXE)));
+        byRank.put(3, List.of(new ItemStack(Items.DIAMOND_PICKAXE), new ItemStack(Items.NETHERITE_PICKAXE)));
+        for (GearTier tier : GearTier.values()) {
+            byRank.put(tier.ordinal() + 4, List.of(new ItemStack(ModItems.gear(tier).pickaxe().get())));
+        }
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        List<String> failures = new ArrayList<>();
+        int ores = 0;
+        try {
+            for (Holder<Block> holder : BuiltInRegistries.BLOCK.getTagOrEmpty(Tags.Blocks.ORES)) {
+                Block ore = holder.value();
+                Integer required = requiredRank(ore);
+                if (!isOurs(ore) || required == null) {
+                    continue;
+                }
+                ores++;
+                String id = BuiltInRegistries.BLOCK.getKey(ore).getPath();
+                for (ItemStack pickaxe : byRank.get(required - 1)) {
+                    int drops = breakWith(helper, player, ore, pickaxe);
+                    if (drops != 0) {
+                        failures.add(id + " drops " + drops + " with " + pickaxe.getItem());
+                    }
+                }
+                for (ItemStack pickaxe : byRank.get(required)) {
+                    if (breakWith(helper, player, ore, pickaxe) == 0) {
+                        failures.add(id + " drops nothing with " + pickaxe.getItem());
+                    }
+                }
+            }
+        } finally {
+            GameTestPlayers.remove(helper, player);
+        }
+        if (ores < 26) {
+            failures.add("only " + ores + " ores broken");
+        }
+        helper.assertTrue(failures.isEmpty(), failures.size() + " drop errors: " + String.join("; ", failures));
+        helper.succeed();
+    }
+
+    /** Places {@code ore}, breaks it with a copy of {@code pickaxe} and returns the items dropped (then clears them). */
+    private static int breakWith(GameTestHelper helper, ServerPlayer player, Block ore, ItemStack pickaxe) {
+        helper.setBlock(ORE, ore);
+        BlockPos pos = helper.absolutePos(ORE);
+        player.setItemInHand(InteractionHand.MAIN_HAND, pickaxe.copy());
+        player.gameMode.destroyBlock(pos);
+        AABB around = new AABB(pos).inflate(2.0);
+        int count = 0;
+        for (ItemEntity item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, around)) {
+            count += item.getItem().getCount();
+            item.discard();
+        }
+        helper.getLevel().getEntitiesOfClass(ExperienceOrb.class, around).forEach(ExperienceOrb::discard);
+        if (!helper.getBlockState(ORE).isAir()) {
+            helper.fail(BuiltInRegistries.BLOCK.getKey(ore) + " was not broken");
+        }
+        return count;
     }
 
     private static void pickaxe(Map<String, Integer> ranks, Map<String, ItemStack> stacks, String name, ItemStack stack, int rank) {
