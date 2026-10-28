@@ -24,7 +24,11 @@ class ClientIsolationTest {
             "net.minecraft.client.",
             "com.mojang.blaze3d.",
             "net.neoforged.neoforge.client.",
-            "nl.timtoys.corruptedadventure.client.");
+            "nl.timtoys.corruptedadventure.client.",
+            // GeckoLib's renderers, models and baked geometry are client-only; GeoEntity and the animation classes are not.
+            "software.bernie.geckolib.renderer.",
+            "software.bernie.geckolib.model.",
+            "software.bernie.geckolib.cache.object.");
     private static final List<String> EXEMPT = List.of("client", "datagen");
 
     @Test
