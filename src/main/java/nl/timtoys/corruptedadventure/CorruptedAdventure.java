@@ -23,6 +23,7 @@ import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
 import nl.timtoys.corruptedadventure.effect.WeakenedTargeting;
+import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
 import nl.timtoys.corruptedadventure.entity.risen.RisenAshRain;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
@@ -136,6 +137,9 @@ public final class CorruptedAdventure {
         LensWatch.register(NeoForge.EVENT_BUS);
         // Phase 4 (I): dazzled and stunned mobs take no target.
         WeakenedTargeting.register(NeoForge.EVENT_BUS);
+        // Phase 4 (D): the Nightmare director (threat, roaming, arrival, return). Ring streams sign up their arrival here:
+        // NightmareKind.X.arrival(new XArrival());
+        NightmareDirector.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {
