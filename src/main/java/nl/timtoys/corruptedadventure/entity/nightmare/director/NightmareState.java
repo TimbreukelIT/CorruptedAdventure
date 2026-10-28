@@ -49,6 +49,7 @@ public final class NightmareState {
     private double z;
     private float heading;
     private long nextRoamTick;
+    private long nextSeekTick;
     @Nullable
     private UUID target;
     private BlockPos place = BlockPos.ZERO;
@@ -88,6 +89,11 @@ public final class NightmareState {
 
     public long nextRoamTick() {
         return nextRoamTick;
+    }
+
+    /** Before this game time it looks for no target (after an arrival that found no room). */
+    public long nextSeekTick() {
+        return nextSeekTick;
     }
 
     @Nullable
@@ -141,6 +147,10 @@ public final class NightmareState {
         nextRoamTick = tick;
     }
 
+    void nextSeekTick(long tick) {
+        nextSeekTick = tick;
+    }
+
     void roam() {
         phase = Phase.ROAMING;
         target = null;
@@ -189,6 +199,7 @@ public final class NightmareState {
     /** Forgets everything but the virtual position: roaming, never defeated. */
     void reset() {
         roam();
+        nextSeekTick = 0;
         defeats = 0;
         defeatedUntil = 0;
     }
@@ -201,6 +212,7 @@ public final class NightmareState {
         tag.putDouble("z", z);
         tag.putFloat("heading", heading);
         tag.putLong("next_roam", nextRoamTick);
+        tag.putLong("next_seek", nextSeekTick);
         if (target != null) {
             tag.putUUID("target", target);
         }
@@ -224,6 +236,7 @@ public final class NightmareState {
         state.z = tag.getDouble("z");
         state.heading = tag.getFloat("heading");
         state.nextRoamTick = tag.getLong("next_roam");
+        state.nextSeekTick = tag.getLong("next_seek");
         state.target = tag.hasUUID("target") ? tag.getUUID("target") : null;
         state.place = NbtUtils.readBlockPos(tag, "place").orElse(BlockPos.ZERO);
         state.omenTick = Math.max(0, tag.getInt("omen_tick"));

@@ -33,7 +33,8 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * The Nightmare director (phase 4 steps 2 and 3): the threat per player and ring, whom it comes for, defeat and return
- * with more strength, retreat and a missing entity back to virtual, and a stale directed copy removing itself. The
+ * with more strength, retreat and a missing entity back to virtual, a stale directed copy removing itself, and the cooldown
+ * after an arrival without room. The
  * GameTest world is no ring world, so each test drives a director of its own ({@link NightmareDirector#forTest}) whose
  * "ring 1" is exactly the test's bounds (everything outside is the void), with its own fresh data and an arrival of 3
  * ticks of omens that puts The Hollow, without free will, in the middle of the empty {@code gametest/hollow_arena}.
@@ -231,6 +232,41 @@ public final class NightmareDirectorGameTests {
         });
     }
 
+    @GameTest(template = "gametest/hollow_arena")
+    public static void withoutRoomItGivesUpAndWaitsTheCooldownBeforeNewOmens(GameTestHelper helper) {
+        NightmareDirectorConfig config = ServerConfig.NIGHTMARE_DIRECTOR;
+        float threshold = config.threatThreshold.get().floatValue();
+        int tries = config.appearRetrySeconds.get();
+        long cooldown = config.failedArrivalCooldownSeconds.get() * 20L;
+        NightmareDirectorData data = new NightmareDirectorData();
+        TestArrival arrival = new TestArrival(helper);
+        arrival.room = false;
+        NightmareDirector director = NightmareDirector.forTest(rings(helper), data, kind -> arrival);
+        ServerLevel level = helper.getLevel();
+        NightmareState state = data.get(NightmareKind.HOLLOW);
+        ServerPlayer player = playerAt(helper, 2.5, 2.5);
+        NightmareThreats.of(player).set(Ring.RING_1, threshold * 1.5F);
+
+        director.tick(level, 0);
+        helper.assertTrue(state.phase() == NightmareState.Phase.COMING, "coming");
+        long now = 1;
+        for (; now < 1 + OMEN_TICKS + tries * 20L && state.phase() == NightmareState.Phase.COMING; now++) {
+            director.tick(level, now);
+        }
+        helper.assertTrue(state.phase() == NightmareState.Phase.ROAMING, "gave up: " + state.phase());
+        helper.assertValueEqual(arrival.cancels, 1, "the omens were cancelled");
+        helper.assertTrue(NightmareThreats.of(player).get(Ring.RING_1) >= threshold, "the threat stays");
+        long nextSecond = (now / 20 + 1) * 20;
+        director.tick(level, nextSecond);
+        helper.assertTrue(state.phase() == NightmareState.Phase.ROAMING, "no new omens during the cooldown");
+        long after = ((state.nextSeekTick() + 19) / 20) * 20;
+        helper.assertTrue(after - nextSecond >= cooldown - 40, "cooldown " + (after - nextSecond));
+        director.tick(level, after);
+        helper.assertTrue(state.phase() == NightmareState.Phase.COMING, "after the cooldown it comes again: " + state.phase());
+        GameTestPlayers.remove(helper, player);
+        helper.succeed();
+    }
+
     /** Ticks the director from {@code from} until the Hollow is here; fails after a few seconds of game time. */
     private static Nightmare arriveFrom(GameTestHelper helper, NightmareDirector director, NightmareState state, long from) {
         ServerLevel level = helper.getLevel();
@@ -289,6 +325,8 @@ public final class NightmareDirectorGameTests {
     private static final class TestArrival implements NightmareArrival {
         private final GameTestHelper helper;
         int omens;
+        int cancels;
+        boolean room = true;
 
         TestArrival(GameTestHelper helper) {
             this.helper = helper;
@@ -308,7 +346,12 @@ public final class NightmareDirectorGameTests {
         @Nullable
         public Nightmare appear(ServerLevel level, EntityType<? extends Nightmare> type, ServerPlayer target,
                                 BlockPos place, float strength) {
-            return helper.spawnWithNoFreeWill(type, MIDDLE);
+            return room ? helper.spawnWithNoFreeWill(type, MIDDLE) : null;
+        }
+
+        @Override
+        public void cancelled(ServerLevel level, BlockPos place) {
+            cancels++;
         }
     }
 }
