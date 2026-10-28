@@ -80,3 +80,5 @@ Ring 5 (−6258 99 6257), 4 `glitch_block`s achter een stenen muur, `Dev` met de
 ## Opruimen
 Clients 1 en 2 en de server zijn gestopt (`client.sh stop`, `server.sh stop`). `slots.sh status`: geen slots of locks
 van LIVE meer.
+
+**Opgelost (2026-10-28):** de void-coating heeft een eigen violet-blauw palet (`3970debe`, besluit gebruiker); gif blijft ijsblauw.
