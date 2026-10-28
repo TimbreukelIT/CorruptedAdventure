@@ -36,6 +36,8 @@ alleen. Protocol `"10"` → `"11"` (nieuwe payload).
   output commit `99ee09a7`; build 2 + `/code-review low d55ff491..f2g5/lens` gestart.
 - 17:54 build 2 groen (incl. unit tests, `ClientIsolationTest`), GameTests 26/26 groen, server-smoke n = 61 groen
   (Done in 8 s, geen client-class-fouten); server gestopt, slots vrij.
+- 18:15 review (low) zonder bevindingen. Merge main (T: definitieve lens-PNG's, `--theirs`) `46d0c6f4`; runData schoon,
+  build 3 groen.
 
 ## Voorlopig (bevestigen bij de teststop)
 - Kleuren omlijning: glitchblokken violet `#B15CFF`, void-gaten cyaan `#4FE3F0`, ontbrekende chunks bleekwit
