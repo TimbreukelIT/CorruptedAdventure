@@ -9,8 +9,8 @@ import net.minecraft.world.entity.Entity;
 import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
 
 /**
- * The Hollow's sounds and particles, sent by the server to everyone near (vanilla events with a low pitch). Placeholders
- * for step 1: the real rift entity of step 2 replaces the rift-step bursts.
+ * The Hollow's sounds and particles, sent by the server to everyone near (vanilla events with a low pitch; own sounds
+ * are in the backlog).
  */
 final class HollowEffects {
     private HollowEffects() {
@@ -23,11 +23,10 @@ final class HollowEffects {
         burst(level, hollow, ModParticleTypes.GLITCH_PIXEL.get(), 24, 0.0);
     }
 
-    /** Where a rift step leaves and where it comes out: a column of portal haze and glitch pixels. */
+    /** Where a rift step leaves and where it comes out (the rifts themselves are {@link HollowRift}s). */
     static void riftBurst(ServerLevel level, Entity hollow) {
         level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 2.0F, 0.45F);
-        burst(level, hollow, ParticleTypes.REVERSE_PORTAL, 80, 0.05);
-        burst(level, hollow, ModParticleTypes.GLITCH_PIXEL.get(), 30, 0.0);
+        burst(level, hollow, ModParticleTypes.GLITCH_PIXEL.get(), 20, 0.0);
     }
 
     static void phaseOut(ServerLevel level, Entity hollow) {

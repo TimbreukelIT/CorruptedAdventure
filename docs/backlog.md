@@ -597,3 +597,4 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 ## Uit fase 4 De Holle stap 1 (H1, 2026-10-28)
 - [atmosphere] Eigen geluiden voor De Holle (kraak vóór het verspringen, slag, uit/in fase, wissel, aftocht, zielkristal-pin); stap 1 gebruikt vanilla-geluiden met lage pitch (`entity/hollow/HollowEffects`). (bron: H1)
 - [mobs] Een spawn-ei of creative-tab-ingang voor De Holle ontbreekt bewust (stap 1: alleen `/summon`); beslissen bij stap 3 (hij is uniek per server). (bron: H1)
+- [atmosphere] Echte omgekeerde geluiden voor de voortekens van De Holle (nu vanilla-geluiden op lage pitch in `entity/hollow/RiftOmens`); vraagt eigen `.ogg`-bestanden. (bron: H1 stap 2)
