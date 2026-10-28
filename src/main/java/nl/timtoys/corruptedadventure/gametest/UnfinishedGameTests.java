@@ -37,7 +37,7 @@ public final class UnfinishedGameTests {
     public static void hisBodyTakesOnlyAShareOfABlow(GameTestHelper helper) {
         TheUnfinished boss = helper.spawnWithNoFreeWill(ModEntityTypes.THE_UNFINISHED.get(), MIDDLE);
         ServerPlayer player = GameTestPlayers.survival(helper);
-        float full = boss.getHealth();
+        float full = boss.virtualHealth();
         helper.assertTrue(boss.hurt(playerAttack(helper, player), 20.0F), "a blow on his body lands");
         float share = ServerConfig.UNFINISHED.bodyDamageFactor.get().floatValue();
         double expected = full - afterArmor(boss, helper, player, 20.0F * share);
@@ -51,10 +51,10 @@ public final class UnfinishedGameTests {
         TheUnfinished boss = helper.spawnWithNoFreeWill(ModEntityTypes.THE_UNFINISHED.get(), MIDDLE);
         ServerPlayer player = GameTestPlayers.survival(helper);
         UnfinishedPart weak = part(boss, "weak_holle");
-        float full = boss.getHealth();
+        float full = boss.virtualHealth();
         helper.assertFalse(boss.isLoaded(), "not loaded at first");
         helper.assertFalse(weak.hurt(playerAttack(helper, player), 10.0F), "an unloaded weak spot is not there yet");
-        helper.assertValueEqual(boss.getHealth(), full, "health after a blow on an unloaded weak spot");
+        helper.assertValueEqual(boss.virtualHealth(), full, "health after a blow on an unloaded weak spot");
         boss.load(100);
         helper.assertTrue(boss.isLoaded(), "loaded");
         helper.assertTrue(weak.hurt(playerAttack(helper, player), 10.0F), "a loaded weak spot is hit");
@@ -73,7 +73,7 @@ public final class UnfinishedGameTests {
         boss.load(100);
         double share = ServerConfig.UNFINISHED.graftBreakShare.get();
         // In blows that, after the factor and his armor, stay below and then pass the share of his max health.
-        float atShare = (float) (share * boss.getMaxHealth() / ServerConfig.UNFINISHED.weakDamageFactor.get());
+        float atShare = (float) (share * boss.virtualMaxHealth() / ServerConfig.UNFINISHED.weakDamageFactor.get());
         weak.hurt(playerAttack(helper, player), atShare * 0.5F);
         helper.assertTrue(boss.hasGraft(Graft.HOEDER), "the tail holds below the share");
         boss.invulnerableTime = 0;
@@ -113,13 +113,15 @@ public final class UnfinishedGameTests {
     }
 
     private static void assertHealth(GameTestHelper helper, TheUnfinished boss, double expected) {
-        helper.assertTrue(Math.abs(boss.getHealth() - expected) < 0.01, "health " + boss.getHealth() + ", expected " + expected);
+        helper.assertTrue(Math.abs(boss.virtualHealth() - expected) < 0.05,
+                "health " + boss.virtualHealth() + ", expected " + expected);
     }
 
-    /** A blow as it lands after his armor. */
+    /** A blow as it lands on his virtual health: divided by the health scale, then his armor, then scaled back. */
     private static float afterArmor(TheUnfinished boss, GameTestHelper helper, ServerPlayer player, float damage) {
-        return CombatRules.getDamageAfterAbsorb(boss, damage, playerAttack(helper, player), boss.getArmorValue(),
-                (float) boss.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
+        float scale = boss.healthScale();
+        return scale * CombatRules.getDamageAfterAbsorb(boss, damage / scale, playerAttack(helper, player),
+                boss.getArmorValue(), (float) boss.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
     }
 
     private static DamageSource playerAttack(GameTestHelper helper, ServerPlayer player) {

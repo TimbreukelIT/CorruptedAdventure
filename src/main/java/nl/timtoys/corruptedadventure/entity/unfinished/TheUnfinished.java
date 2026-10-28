@@ -221,14 +221,14 @@ public class TheUnfinished extends Nightmare {
             }
             return false;
         }
-        float before = getHealth();
+        float before = virtualHealth();
         boolean hit = applyDamage(source, amount * ServerConfig.UNFINISHED.weakDamageFactor.get().floatValue());
         if (hit && level() instanceof ServerLevel serverLevel && spec.graft() != null) {
             UnfinishedEffects.weakHit(serverLevel, part.getBoundingBox().getCenter());
             Graft graft = spec.graft();
-            graftDamage[graft.ordinal()] += before - getHealth();
+            graftDamage[graft.ordinal()] += before - virtualHealth();
             double share = ServerConfig.UNFINISHED.graftBreakShare.get();
-            if (share > 0.0 && graftDamage[graft.ordinal()] >= share * getMaxHealth() && isAlive()) {
+            if (share > 0.0 && graftDamage[graft.ordinal()] >= share * virtualMaxHealth() && isAlive()) {
                 loseGraft(graft, part.getBoundingBox().getCenter());
             }
         }
@@ -239,13 +239,13 @@ public class TheUnfinished extends Nightmare {
         if (isSunken() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return false;
         }
-        float before = getHealth();
+        float before = virtualHealth();
         boolean hit = super.hurt(source, amount);
-        damageTaken += Math.max(0.0F, before - getHealth());
+        damageTaken += Math.max(0.0F, before - virtualHealth());
         return hit;
     }
 
-    /** Health he has lost in total since he came (for the grab, which a hard enough beating breaks). */
+    /** Virtual health he has lost in total since he came (for the grab, which a hard enough beating breaks). */
     float damageTaken() {
         return damageTaken;
     }
