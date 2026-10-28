@@ -234,7 +234,7 @@ Nieuwe wereld *Corrupted World*, cheats aan, creative. Handig: `/ca tpring 5` ·
 ## N. Glitch
 58. [ ] **Glitchscherfblok:** 9 glitchscherven ↔ 1 blok; 3 × 3 geplaatst flikkert het onregelmatig (niet te druk), geeft
     geen licht; elke pickaxe. Tab 5: na `nullite_block`.
-59. [ ] **Glitchpijl craften:** ` A ` / `AMA` / ` A ` (4 pijlen rond `glitch_shard`) → 4.
+59. [ ] **Glitchpijl craften:** ` A ` / `AMA` / ` A ` (4 pijlen rond `glitch_shard`) → 4. Tab 5: na de nulliet-set.
 60. [ ] **Schieten:** boog, kruisboog en dispenser; een geraakte mob springt 1–5 blokken naar een veilige plek (nooit in
     een muur, lava of over een rand), glitchgeluid + pixels op beide plekken; spoor in de vlucht. Een speler, baas of
     bereden mob springt niet; geen plek = niets. *[auto: `aGlitchArrowMakesAMobHopToASafeSpot`,

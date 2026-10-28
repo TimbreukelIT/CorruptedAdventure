@@ -303,7 +303,7 @@ niet om.
 De volledige 6-rondemeting (`perf.sh --areas tools/test/areas/perf-all.txt --warm 6 --cold 1 --max-min 130`) draait in
 een **aparte sessie**, gestart met `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`, buiten golf 2.
 
-### 5.8 Voorlopig (bevestigen bij de teststop)
+### 5.8 Bevestigd 2026-10-28 (was: voorlopig, bevestigen bij de teststop)
 Keuzes die de stromen binnen §5 zelf maakten (bron: `docs/plans/fase-2/golf-2-{S,M,V,T}.md`):
 - **Zonnesteen-template:** vorm `S D S / S C S / S D S` (zielkristal, diamant, scorched sandstone).
 - **Zonnesteen-set:** brandvrij zoals netherite; het smithing-recept neemt het item `sunstone_ingot`, niet `c:ingots/sunstone`; NL-namen bijvoeglijk ("Zonnestenen zwaard", … "kuras", "beenstukken", "laarzen").
@@ -427,3 +427,10 @@ speelsessie over golf 1–5, checklist `docs/plans/fase-2/eindtest-fase-2.md`, w
   1–5 blokken naar een veilige plek (server, nooit in of richting de void). Hergebruikt de pijl-basis van golf 3+4.
 - **Glitchscherf in recepten:** het kernmateriaal van het void-template (§7.3).
 - Niet: de nullietlantaarn.
+
+## 8. Afsluiting fase 2
+Op 2026-10-28 bevestigd door de gebruiker: **alle voorlopige keuzes van fase 2 zijn akkoord** (34 punten, ontdubbeld in
+`docs/plans/fase-2/voorlopig-fase-2.md`; ook §5.8 en de "Voorlopig"-lijsten in de stroomplannen). Enige wijziging bij de
+afsluiting: de glitchpijl staat in tab 5 ná de nulliet-set, zoals de pijlen in tab 3 en 4. De eindtest (golf 1–5) doet
+Claude: build, runData, GameTests (36/36), dedicated server + 2 clients; checklist met de automatisch bewezen punten in
+`docs/plans/fase-2/eindtest-fase-2.md`. Wat buiten fase 2 valt staat in `docs/backlog.md`.
