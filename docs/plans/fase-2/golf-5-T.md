@@ -21,6 +21,8 @@ Omlijning `#050507`; antraciet `#0D0E11` `#15161A` `#1E2025` `#282A31` `#34373F`
 - 2026-10-28 16:30 — alle textures + scripts; Java-uitvoer pixel-gelijk aan de kladversie (28 PNG's).
 - 2026-10-28 16:45 — main `e61453e1` (G, H pakket 1, C, A) ingevoegd, PNG's `--ours`; iconen in de effectkleuren van C;
   coating-basis = H's `0x9CCAEC`.
+- 2026-10-28 17:50 — main `2a945ba5` (H pakket 2) ingevoegd: glitchscherfblok + `.mcmeta` `--ours`, `Golf5SkyGlassTextures`
+  (ook H's glitchscherf-placeholder) weg, `CoatingTextures` gelijk aan H's regel (`sky_glass` 0x9CCAEC).
 - 2026-10-28 — akkoord gebruiker op het voorbeeld (gat als ontbrekende pixel). H: glas en ruit renderen `translucent`;
   ik houd het goedgekeurde heldere midden (alpha 0/255), een tint kan later zonder codewijziging.
 
@@ -86,4 +88,5 @@ Omlijning `#050507`; antraciet `#0D0E11` `#15161A` `#1E2025` `#282A31` `#34373F`
 - 2026-10-28, textures: de "ontbrekende" pixel van nulliet is een echt gat (transparant); op dichte blokken zuiver zwart.
 
 ## Backlog
-- (geen)
+- [blocks] Javadoc in `ModBlockStateProvider` (golf 5, stroom H) noemt nog `Golf5SkyGlassTextures` als placeholder-bron;
+  de textures komen nu uit `Golf5BlockTextures` (Java buiten `tools/textures/`, niet door T aangepast; INT).

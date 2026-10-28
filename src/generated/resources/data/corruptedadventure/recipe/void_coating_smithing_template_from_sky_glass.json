@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "corruptedadventure:glitch_shard"
+    },
+    "H": {
+      "item": "corruptedadventure:sky_glass"
+    },
+    "V": {
+      "item": "corruptedadventure:voidstone"
+    }
+  },
+  "pattern": [
+    "GVG",
+    "VHV",
+    "GVG"
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:void_coating_smithing_template"
+  }
+}

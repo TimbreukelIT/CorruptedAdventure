@@ -22,7 +22,10 @@ public enum CoatingMaterial {
     /** The cold coating: fire crystal, warmth against the cold. */
     FIRE_CRYSTAL("fire_crystal", "item", "fire_crystal", 0xE07A2A, 0.5F),
     PRIMORDIAL_ICE("primordial_ice", "block", "primordial_ice", 0xBAD8F0, 0.2F),
-    WHITE_CORE("white_core", "item", "white_core", 0xE6E4F2, 0.1F);
+    /** The silence coating (the void coating took it until golf 5). */
+    WHITE_CORE("white_core", "item", "white_core", 0xE6E4F2, 0.1F),
+    /** The void coating (phase 2 golf 5, fase-2-items.md §7.3): sky glass; the item model borrows diamond's light blue. */
+    SKY_GLASS("sky_glass", "block", "sky_glass", 0xA8D4F0, 0.8F);
 
     private final String name;
     private final ResourceLocation itemId;

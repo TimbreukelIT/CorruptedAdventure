@@ -1302,6 +1302,12 @@ public final class ModBlocks {
             () -> new Block(rawStorage(MapColor.COLOR_PURPLE)));
     public static final DeferredBlock<Block> NULLITE_BLOCK = register("nullite_block",
             () -> new Block(metalStorage(MapColor.COLOR_PURPLE)));
+    /**
+     * Nine glitch shards (phase 2 golf 5, fase-2-items.md §7.4): a gem storage block, no light; it flickers only through
+     * its animated texture.
+     */
+    public static final DeferredBlock<Block> GLITCH_SHARD_BLOCK = register("glitch_shard_block",
+            () -> new Block(gemStorage(MapColor.COLOR_MAGENTA)));
 
     // ---- Nether ring 5 ----
     // The white, silent Nether ring (contract ring 5 §3, package 90): chalkrack, the white stone set (like the fossil
