@@ -10,7 +10,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.Heightmap;
 import nl.timtoys.corruptedadventure.registry.ModTags;
 
 import java.util.ArrayList;
@@ -40,7 +39,10 @@ public final class RisenMeltPool {
         this.ground = ground;
     }
 
-    /** The surface blocks within {@code radius} of {@code centre} (the block it stands on) that may melt. */
+    /**
+     * The surface blocks within {@code radius} of {@code centre} (the block it stands on) that may melt: per column the
+     * highest meltable block with open air above, at most {@link #MAX_STEP} above or below the centre.
+     */
     public static RisenMeltPool plan(ServerLevel level, BlockPos centre, int radius) {
         List<BlockPos> ground = new ArrayList<>();
         for (int dx = -radius; dx <= radius; dx++) {
@@ -48,10 +50,13 @@ public final class RisenMeltPool {
                 if (dx * dx + dz * dz > radius * radius + radius) {
                     continue;
                 }
-                int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, centre.getX() + dx, centre.getZ() + dz) - 1;
-                BlockPos pos = new BlockPos(centre.getX() + dx, top, centre.getZ() + dz);
-                if (Math.abs(top - centre.getY()) <= MAX_STEP && meltable(level, pos)) {
-                    ground.add(pos);
+                // The highest meltable block with air above, near the centre's height (also under an overhang).
+                for (int dy = MAX_STEP; dy >= -MAX_STEP; dy--) {
+                    BlockPos pos = centre.offset(dx, dy, dz);
+                    if (meltable(level, pos)) {
+                        ground.add(pos);
+                        break;
+                    }
                 }
             }
         }
