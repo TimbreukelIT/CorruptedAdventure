@@ -17,6 +17,7 @@ import nl.timtoys.corruptedadventure.datagen.lang.ArrowText;
 import nl.timtoys.corruptedadventure.datagen.lang.LensText;
 import nl.timtoys.corruptedadventure.datagen.lang.NightmareDirectorText;
 import nl.timtoys.corruptedadventure.datagen.lang.NightmareText;
+import nl.timtoys.corruptedadventure.datagen.lang.RisenText;
 import nl.timtoys.corruptedadventure.datagen.lang.WeaknessText;
 import nl.timtoys.corruptedadventure.datagen.lang.ConsumableText;
 import nl.timtoys.corruptedadventure.datagen.lang.GearNames;
@@ -298,6 +299,8 @@ final class EnglishLanguageProvider extends LanguageProvider implements LangOutp
         NightmareDirectorText.addEnglish(this);
         // Phase 4 (stream I): the weakness items.
         WeaknessText.addEnglish(this);
+        // Phase 4 (stream R3): The Risen.
+        RisenText.addEnglish(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s dried out");

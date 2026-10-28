@@ -654,6 +654,11 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).add(ModBlocks.ASH_BLOCK.get(), ModBlocks.PUMICE.get(),
                 ModBlocks.SMOLDERING_STONE.get());
         tag(ModTags.Blocks.RING_3_STONES).add(Blocks.BASALT, Blocks.BLACKSTONE, ModBlocks.PUMICE.get(), ModBlocks.ASH_BLOCK.get());
+        // Phase 4: the natural ground The Risen melts and scars (not obsidian: players build portals with it).
+        tag(ModTags.Blocks.RISEN_MELTABLE).addTags(BlockTags.BASE_STONE_OVERWORLD, BlockTags.DIRT, BlockTags.SAND,
+                ModTags.Blocks.RING_3_STONES, ModTags.Blocks.CANYON_STONES).add(Blocks.GRAVEL, Blocks.SMOOTH_BASALT,
+                Blocks.MAGMA_BLOCK, ModBlocks.SMOLDERING_ASH.get(), ModBlocks.SMOLDERING_STONE.get(),
+                ModBlocks.COLD_LAVA.get());
         // Goats only spawn where a biome lists them (volcanic_peaks); this tag only says on what ground: the peak surface,
         // vanilla basalt, smooth basalt and blackstone (39b) plus pumice and ash (39c). Not smouldering stone (a heat source).
         tag(BlockTags.GOATS_SPAWNABLE_ON).add(Blocks.BASALT, Blocks.SMOOTH_BASALT, Blocks.BLACKSTONE,

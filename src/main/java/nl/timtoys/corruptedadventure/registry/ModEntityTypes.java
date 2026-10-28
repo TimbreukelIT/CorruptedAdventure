@@ -11,6 +11,8 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.EffectArrow;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowRift;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
+import nl.timtoys.corruptedadventure.entity.risen.AshWalker;
+import nl.timtoys.corruptedadventure.entity.risen.TheRisen;
 
 /** Entity types. Their renderers register in {@code client/} (CLAUDE.md §7). */
 public final class ModEntityTypes {
@@ -36,6 +38,18 @@ public final class ModEntityTypes {
             () -> EntityType.Builder.<HollowRift>of(HollowRift::new, MobCategory.MISC)
                     .sized(3.0F, 7.0F).clientTrackingRange(10).updateInterval(20).fireImmune().build("hollow_rift"));
 
+    /**
+     * Phase 4: The Risen, the ring 3 Nightmare. The hitbox is its body from talons to shoulders (3.5 x 8.5); wings and
+     * head are parts of their own ({@code RisenPart}). Fire immune; tracked from far and every other tick, it flies.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<TheRisen>> THE_RISEN = ENTITY_TYPES.register("the_risen",
+            () -> EntityType.Builder.<TheRisen>of(TheRisen::new, MobCategory.MONSTER).fireImmune()
+                    .sized(3.5F, 8.5F).eyeHeight(7.5F).clientTrackingRange(10).updateInterval(2).build("the_risen"));
+    /** Phase 4: an ash walker, a victim The Risen lets fall from its feathers. Placeholder (backlog): a zombie. */
+    public static final DeferredHolder<EntityType<?>, EntityType<AshWalker>> ASH_WALKER = ENTITY_TYPES.register("ash_walker",
+            () -> EntityType.Builder.<AshWalker>of(AshWalker::new, MobCategory.MONSTER).fireImmune()
+                    .sized(0.6F, 1.95F).eyeHeight(1.74F).clientTrackingRange(8).build("ash_walker"));
+
     private ModEntityTypes() {
     }
 
@@ -46,6 +60,8 @@ public final class ModEntityTypes {
 
     private static void onAttributes(EntityAttributeCreationEvent event) {
         event.put(THE_HOLLOW.get(), TheHollow.createAttributes().build());
+        event.put(THE_RISEN.get(), TheRisen.createAttributes().build());
+        event.put(ASH_WALKER.get(), AshWalker.createAttributes().build());
     }
 
     /** Sized and tracked like vanilla's arrow. */

@@ -52,6 +52,8 @@ public final class ServerConfig {
     public static final Ring5WeatherEffects RING_5_WEATHER;
     /** {@code [nightmares.hollow]}: the ring 1 Nightmare (phase 4). */
     public static final HollowConfig HOLLOW;
+    /** {@code [nightmares.risen]}: the ring 3 Nightmare (phase 4). */
+    public static final RisenConfig RISEN;
     /** {@code [nightmares.director]}: threat, roaming, arrival and return of all five Nightmares (phase 4 steps 2 and 3). */
     public static final NightmareDirectorConfig NIGHTMARE_DIRECTOR;
     /** {@code [weakness_items]}: the sunstone flash and the volcanite horn (phase 4, stream I). */
@@ -93,6 +95,7 @@ public final class ServerConfig {
         RING_5_WEATHER = RING_WEATHER.get(Ring.RING_5).ring5Effects;
         builder.comment("The Nightmares: one roaming boss per ring (phase 4).").push("nightmares");
         HOLLOW = new HollowConfig(builder);
+        RISEN = new RisenConfig(builder);
         NIGHTMARE_DIRECTOR = new NightmareDirectorConfig(builder);
         builder.pop();
         WEAKNESS_ITEMS = new WeaknessItemsConfig(builder);

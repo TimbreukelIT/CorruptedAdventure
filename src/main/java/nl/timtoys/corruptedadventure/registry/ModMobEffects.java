@@ -9,6 +9,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.condition.RateEffectMobEffect;
 import nl.timtoys.corruptedadventure.effect.DazzledMobEffect;
 import nl.timtoys.corruptedadventure.effect.StunnedMobEffect;
+import nl.timtoys.corruptedadventure.entity.risen.AshenMobEffect;
 
 /** Status effects. */
 public final class ModMobEffects {
@@ -33,6 +34,9 @@ public final class ModMobEffects {
     /** Echo shell (golf 5): the silence rises slower while it lasts. Icon {@code mob_effect/resounding}. */
     public static final DeferredHolder<MobEffect, RateEffectMobEffect> RESOUNDING =
             MOB_EFFECTS.register("resounding", () -> new RateEffectMobEffect(0xB9A8F0));
+
+    /** The Risen's ash rain (phase 4, ring 3): one level per layer of ash, held fast at six. Icon {@code mob_effect/ashen}. */
+    public static final DeferredHolder<MobEffect, AshenMobEffect> ASHEN = MOB_EFFECTS.register("ashen", AshenMobEffect::new);
 
     // Weaknesses of the Nightmares (phase 4, stream I); the Nightmares react to them on top of the mob behaviour.
     /** Sunstone flash (ring 2): a short white-out; mobs lose their target. Icon {@code mob_effect/dazzled}. */
