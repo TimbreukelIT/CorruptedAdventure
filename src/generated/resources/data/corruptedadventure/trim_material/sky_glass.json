@@ -1,7 +1,7 @@
 {
   "asset_name": "sky_glass",
   "description": {
-    "color": "#A8D4F0",
+    "color": "#8E90F2",
     "translate": "trim_material.corruptedadventure.sky_glass"
   },
   "ingredient": "corruptedadventure:sky_glass",

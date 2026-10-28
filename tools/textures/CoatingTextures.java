@@ -43,8 +43,11 @@ public final class CoatingTextures {
         MATERIALS.put("fire_crystal", 0xD06A22);
         MATERIALS.put("primordial_ice", 0xA6CCEA);
         MATERIALS.put("white_core", 0xD8D6E6);
-        MATERIALS.put("sky_glass", 0x9CCAEC);
+        MATERIALS.put("sky_glass", 0x6A6CDC);
     }
+
+    /** Material → the colour its light shades blend towards instead of white: a sheen of its own. */
+    private static final Map<String, Integer> GLOSS = Map.of("sky_glass", 0xB8F4FF);
 
     /** Coating → its material, band style and emblem. */
     private record Coating(String name, String material, Band band, String[] emblem) {
@@ -152,7 +155,7 @@ public final class CoatingTextures {
         Map<String, BufferedImage> written = new LinkedHashMap<>();
         written.put("trims/color_palettes/coating_palette", palette(KEY));
         for (Map.Entry<String, Integer> material : MATERIALS.entrySet()) {
-            written.put("trims/color_palettes/" + material.getKey(), palette(materialPalette(material.getValue())));
+            written.put("trims/color_palettes/" + material.getKey(), palette(materialPalette(material.getKey())));
         }
         for (Coating coating : COATINGS) {
             written.put("trims/models/armor/" + coating.name(), checkedPattern(layer1(coating)));
@@ -179,11 +182,13 @@ public final class CoatingTextures {
         return image;
     }
 
-    /** 8 shades: index 0 halfway to white, 3 the base, 7 at 35 % brightness. */
-    static int[] materialPalette(int base) {
+    /** 8 shades: index 0 halfway to white (or the material's gloss), 3 the base, 7 at 35 % brightness. */
+    static int[] materialPalette(String material) {
+        int base = MATERIALS.get(material);
+        int gloss = GLOSS.getOrDefault(material, 0xFFFFFF);
         int[] colors = new int[KEY.length];
         for (int i = 0; i < colors.length; i++) {
-            colors[i] = i <= 3 ? mix(base, 0xFFFFFF, (3 - i) / 6.0) : mix(base, 0x000000, (i - 3) * 0.1625);
+            colors[i] = i <= 3 ? mix(base, gloss, (3 - i) / 6.0) : mix(base, 0x000000, (i - 3) * 0.1625);
         }
         return colors;
     }
@@ -276,7 +281,7 @@ public final class CoatingTextures {
 
     private static BufferedImage template(Coating coating) {
         BufferedImage image = blank(16, 16);
-        int[] material = materialPalette(MATERIALS.get(coating.material()));
+        int[] material = materialPalette(coating.material());
         // The tablet: x 2-13, y 1-14, corners cut; rim light top/left, dark bottom/right, face in between.
         for (int y = 1; y <= 14; y++) {
             for (int x = 2; x <= 13; x++) {
@@ -365,7 +370,7 @@ public final class CoatingTextures {
         g.fillRect(0, 0, preview.getWidth(), preview.getHeight());
         for (int i = 0; i < COATINGS.size(); i++) {
             Coating coating = COATINGS.get(i);
-            int[] colors = materialPalette(MATERIALS.get(coating.material()));
+            int[] colors = materialPalette(coating.material());
             int y = i * rowHeight;
             draw(g, recolor(written.get("trims/models/armor/" + coating.name()), colors), 0, y, scale);
             draw(g, recolor(written.get("trims/models/armor/" + coating.name() + "_leggings"), colors),
