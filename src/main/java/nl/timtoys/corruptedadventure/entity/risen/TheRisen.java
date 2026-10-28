@@ -434,7 +434,7 @@ public class TheRisen extends Nightmare {
         }
         if (peckWindup > 0) {
             if (--peckWindup == 0 && target != null && inBeakReach(target)) {
-                target.hurt(damageSources().mobAttack(this), config.peckDamage.get().floatValue());
+                target.hurt(damageSources().mobAttack(this), config.peckDamage.get().floatValue() * strengthFactor());
             }
             return;
         }
@@ -477,7 +477,7 @@ public class TheRisen extends Nightmare {
         double radius = config.buffetRadius.get();
         RisenEffects.buffet(level, this, radius);
         for (Player player : fighters(radius)) {
-            player.hurt(damageSources().mobAttack(this), config.buffetDamage.get().floatValue());
+            player.hurt(damageSources().mobAttack(this), config.buffetDamage.get().floatValue() * strengthFactor());
             player.knockback(config.buffetKnockback.get(), getX() - player.getX(), getZ() - player.getZ());
             player.hurtMarked = true;
         }
@@ -541,6 +541,14 @@ public class TheRisen extends Nightmare {
             level.addFreshEntity(walker);
             RisenEffects.release(level, walker);
         }
+    }
+
+    /**
+     * Factor on the damage of its own config (beak, buffet); the dive goes through {@code attack_damage} and scales by
+     * itself. Becomes the base's {@code strength()} (stronger after each return) once f4/director is merged.
+     */
+    private float strengthFactor() {
+        return 1.0F;
     }
 
     private void steer(Vec3 point, double speed, double turn) {
