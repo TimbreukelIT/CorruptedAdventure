@@ -1115,3 +1115,4 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-28 | conditions | Galmschelp (4 fossielsteen + 1 witte kern): blazen −20 stilte + 45 s "Galm" (stilte ×0,5), hoorbaar voor anderen, duurzaamheid 16, cooldown 45 s | Geluid tegen stilte; witte kern spaarzaam |
 | 2026-10-28 | items | Golf 5-extra's: glitchscherfblok (9 ↔ 1), glitchpijl (mob teleporteert 1–5 blokken veilig); geen nullietlantaarn | Keuze gebruiker |
 | 2026-10-28 | textures | Nulliet-look: antraciet met paars-cyane glitchranden en een ontbrekende pixel, geen emissive | Keuze gebruiker |
+| 2026-10-28 | conditions | Galmschelp telt als geluid voor de stilte-regel (zoals een geitenhoorn: 10 s verlichting binnen 16 blokken, ook voor de blazer) bovenop de eigen dosis | Teamitem, consistent met de hoorn |
