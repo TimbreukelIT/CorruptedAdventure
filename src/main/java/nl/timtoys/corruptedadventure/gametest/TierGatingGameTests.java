@@ -1,11 +1,9 @@
 package nl.timtoys.corruptedadventure.gametest;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,10 +25,9 @@ import java.util.Map;
 /**
  * Mining gating of the ring ores with the real tags (phase 2 wave 1, fase-2-items.md §4.3): every pickaxe on the
  * ladder stone → iron → diamond = netherite → sunstone → volcanite → tidesilver → nullite against every ore of ours in
- * {@code c:ores}, and against the metal and gem storage blocks of phase 2 (the salt block is not gated). Sunstone,
- * volcanite and tidesilver use their real pickaxes (golf 2–4); nullite, without tools yet, uses a netherite pickaxe with
- * its tool component ({@link GearTier#createToolProperties}), exactly what its pickaxe will carry. Run: {@code ./gradlew
- * runGameTestServer} (or {@code /test runall} in a dev world).
+ * {@code c:ores}, and against the metal and gem storage blocks of phase 2 (the salt block is not gated). Every tier
+ * uses its real pickaxe ({@link ModItems#gear}). Run: {@code ./gradlew runGameTestServer} (or {@code /test runall} in
+ * a dev world).
  */
 @GameTestHolder(CorruptedAdventure.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -76,7 +73,8 @@ public final class TierGatingGameTests {
         pickaxe(pickaxes, stacks, "diamond", new ItemStack(Items.DIAMOND_PICKAXE), 3);
         pickaxe(pickaxes, stacks, "netherite", new ItemStack(Items.NETHERITE_PICKAXE), 3);
         for (GearTier tier : GearTier.values()) {
-            pickaxe(pickaxes, stacks, tier.getSerializedName(), tierPickaxe(tier), tier.ordinal() + 4);
+            pickaxe(pickaxes, stacks, tier.getSerializedName(), new ItemStack(ModItems.gear(tier).pickaxe().get()),
+                    tier.ordinal() + 4);
         }
 
         List<String> failures = new ArrayList<>();
@@ -124,15 +122,6 @@ public final class TierGatingGameTests {
             helper.fail(failures.size() + " gating errors: " + String.join("; ", failures));
         }
         helper.succeed();
-    }
-
-    /** The tier's real pickaxe once it exists; until then a netherite pickaxe with the tier's tool component. */
-    private static ItemStack tierPickaxe(GearTier tier) {
-        return ModItems.gear(tier).map(set -> new ItemStack(set.pickaxe().get())).orElseGet(() -> {
-            ItemStack stack = new ItemStack(Items.NETHERITE_PICKAXE);
-            stack.set(DataComponents.TOOL, tier.createToolProperties(BlockTags.MINEABLE_WITH_PICKAXE));
-            return stack;
-        });
     }
 
     private static void pickaxe(Map<String, Integer> ranks, Map<String, ItemStack> stacks, String name, ItemStack stack, int rank) {

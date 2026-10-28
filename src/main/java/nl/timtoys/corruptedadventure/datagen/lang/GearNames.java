@@ -16,13 +16,14 @@ public final class GearNames {
     }
 
     public static void addEnglish(LangOutput lang) {
-        add(lang, Map.of(GearTier.SUNSTONE, "Sunstone ", GearTier.VOLCANITE, "Volcanite ", GearTier.TIDESILVER, "Tidesilver "),
+        add(lang, Map.of(GearTier.SUNSTONE, "Sunstone ", GearTier.VOLCANITE, "Volcanite ", GearTier.TIDESILVER, "Tidesilver ",
+                        GearTier.NULLITE, "Nullite "),
                 List.of("Sword", "Axe", "Pickaxe", "Shovel", "Hoe", "Helmet", "Chestplate", "Leggings", "Boots"));
     }
 
     public static void addDutch(LangOutput lang) {
         add(lang, Map.of(GearTier.SUNSTONE, "Zonnestenen ", GearTier.VOLCANITE, "Vulkanieten ",
-                        GearTier.TIDESILVER, "Getijdezilveren "),
+                        GearTier.TIDESILVER, "Getijdezilveren ", GearTier.NULLITE, "Nullieten "),
                 List.of("zwaard", "bijl", "houweel", "schep", "schoffel", "helm", "kuras", "beenstukken", "laarzen"));
     }
 

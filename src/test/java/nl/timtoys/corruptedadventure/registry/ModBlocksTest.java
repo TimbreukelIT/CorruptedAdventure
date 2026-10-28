@@ -926,8 +926,10 @@ class ModBlocksTest {
         assertEquals(netherRing4, shown.subList(lastRing4 + 1, lastRing4 + 1 + netherRing4.size()));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem))
-                // The smithing templates and arrows of phase 2 close their ring sections; these checks are about the materials.
-                .filter(item -> !(item instanceof SmithingTemplateItem) && !(item instanceof EffectArrowItem)).toList();
+                // The smithing templates, arrows and gear sets of phase 2 close their ring sections; these checks are
+                // about the materials.
+                .filter(item -> !(item instanceof SmithingTemplateItem) && !(item instanceof EffectArrowItem))
+                .filter(item -> !(item instanceof TieredItem) && !(item instanceof ArmorItem)).toList();
         int shard = standalone.indexOf(ModItems.PURITY_CRYSTAL_SHARD.get());
         assertEquals(List.of(ModItems.PURITY_CRYSTAL_SHARD.get(), ModItems.GLITCH_SHARD.get(), ModItems.RAW_NULLITE.get(),
                 ModItems.NULLITE_INGOT.get(), ModItems.WHITE_CORE.get()), standalone.subList(shard, standalone.size()));
