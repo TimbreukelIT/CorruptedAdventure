@@ -92,7 +92,7 @@ final class ModBlockStateProvider extends BlockStateProvider {
     }
 
     /**
-     * Phase 2 golf 5 (stream H; placeholder textures: {@code Golf5SkyGlassTextures}, stream T makes the final ones).
+     * Phase 2 golf 5 (stream H; textures: {@code Golf5BlockTextures}, stream T).
      * Sand, glass and the glitch shard block {@code cube_all}, the pane like vanilla's; glass and pane translucent like
      * stained glass, so a tinted texture works.
      */

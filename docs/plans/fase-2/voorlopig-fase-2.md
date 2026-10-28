@@ -1,7 +1,10 @@
 # Fase 2 — voorlopige keuzes (afsluitronde met de gebruiker)
 
+**Bevestigd door de gebruiker op 2026-10-28: alles akkoord** (alle 34 punten definitief; bij punt 34 staat de
+glitchpijl in tab 5 nu ná de nulliet-set, zoals de pijlen in tab 3 en 4).
+
 Ontdubbeld uit `golf-2-*.md`, `golf-34-*.md`, `golf-5-*.md` (ook de nog niet gemergde L en T), `fase-2-items.md` §5.8 en
-de tuningvragen van `teststop-golf-1-4.md` (X1, 2026-10-28). Per punt: **ok** of **anders, en hoe**.
+de tuningvragen van `eindtest-fase-2.md` (was `teststop-golf-1-4.md`; X1, 2026-10-28). Per punt: **ok** of **anders, en hoe**.
 
 ## Stats en kosten
 1. Tier-curve §6.1 (zonnesteen 2200/9/4 … nulliet 3800/12/7,5; harnas tot 5/8/10/5, toughness 5): vulkaniet bewust steil. Goed?
@@ -45,4 +48,4 @@ de tuningvragen van `teststop-golf-1-4.md` (X1, 2026-10-28). Per punt: **ok** of
 31. Lens (L): omlijning violet / cyaan / bleekwit door de grond heen; dempt glitch-fog en vervorming naar 25 %, de glitchstorm niet; plafonds 512 blokken / 256 gaten / 16 chunks; plat item-model.
 32. Schoffel slaat bij elke tier voor 1; alle tiers brandvrij.
 33. Zielkristalblok zonder tier-eis en licht, in tab 1; gloeibesstruik zonder eigen item (gloeibessen in `c:foods/berry`, compost 0,3).
-34. Tabs: iconen en volgorde (in tab 5 staat de glitchpijl vóór de nulliet-set; in tab 3 en 4 staan de pijlen erna).
+34. Tabs: iconen en volgorde (de pijlen staan in tab 3, 4 en 5 na de gear-set; tab 5 sinds INT golf 5).
