@@ -43,6 +43,7 @@ public final class CoatingTextures {
         MATERIALS.put("fire_crystal", 0xD06A22);
         MATERIALS.put("primordial_ice", 0xA6CCEA);
         MATERIALS.put("white_core", 0xD8D6E6);
+        MATERIALS.put("sky_glass", 0x9CCAEC);
     }
 
     /** Coating → its material, band style and emblem. */
@@ -109,7 +110,7 @@ public final class CoatingTextures {
                             ".#+++#..",
                             "..###...",
                             "........"}),
-            new Coating("void_coating", "white_core",
+            new Coating("void_coating", "sky_glass",
                     // A broken strip: segments of 3 with a gap, the gap one row lower (a glitch).
                     (x, row) -> {
                         boolean gap = x % 4 == 3;

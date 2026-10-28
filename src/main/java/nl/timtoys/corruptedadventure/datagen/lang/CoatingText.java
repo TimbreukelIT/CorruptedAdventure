@@ -32,13 +32,15 @@ public final class CoatingText {
             CoatingMaterial.DEW_CRYSTAL, "Dew Crystal Material",
             CoatingMaterial.FIRE_CRYSTAL, "Fire Crystal Material",
             CoatingMaterial.PRIMORDIAL_ICE, "Primordial Ice Material",
-            CoatingMaterial.WHITE_CORE, "White Core Material");
+            CoatingMaterial.WHITE_CORE, "White Core Material",
+            CoatingMaterial.SKY_GLASS, "Sky Glass Material");
     private static final Map<CoatingMaterial, String> DUTCH_MATERIALS = Map.of(
             CoatingMaterial.TURQUOISE, "Materiaal: turkoois",
             CoatingMaterial.DEW_CRYSTAL, "Materiaal: dauwkristal",
             CoatingMaterial.FIRE_CRYSTAL, "Materiaal: vuurkristal",
             CoatingMaterial.PRIMORDIAL_ICE, "Materiaal: oerijs",
-            CoatingMaterial.WHITE_CORE, "Materiaal: witte kern");
+            CoatingMaterial.WHITE_CORE, "Materiaal: witte kern",
+            CoatingMaterial.SKY_GLASS, "Materiaal: hemelglas");
 
     private CoatingText() {
     }
