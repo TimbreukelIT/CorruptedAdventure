@@ -46,6 +46,11 @@ import java.util.List;
  * {@link #strength()} on its max health and attack damage, checks in with the director every second (a stale copy
  * removes itself), and reports its retreat and its defeat. A {@code /summon}ed one has strength 1 and reports nothing.
  * Attacks whose damage comes from their own config, not from {@code attack_damage}, multiply it by {@link #strength()}.
+ * <p>
+ * Vanilla caps {@code max_health} at 1024. Its full value (base × player scaling × strength, e.g. 1200 for ring 5)
+ * is {@link #virtualMaxHealth()}; above the cap every hit is divided by {@link #healthScale()}, so it takes exactly as
+ * many hits as the full value and the boss bar ratio stays right. Thresholds ("15% of its health") read
+ * {@link #virtualMaxHealth()} and {@link #virtualHealth()}.
  */
 public abstract class Nightmare extends Monster implements GeoEntity {
     private static final ResourceLocation PLAYERS_MODIFIER = CorruptedAdventure.id("nightmare_players");
@@ -107,6 +112,54 @@ public abstract class Nightmare extends Monster implements GeoEntity {
     /** The fighters within the config's fight radius. */
     public List<Player> fighters() {
         return fighters(config().fightRadius.get());
+    }
+
+    /**
+     * Its full max health: the {@code max_health} attribute before vanilla's cap of 1024 (base, player scaling, strength
+     * and any other modifier). Equal to {@link #getMaxHealth()} below the cap.
+     */
+    public float virtualMaxHealth() {
+        AttributeInstance instance = getAttribute(Attributes.MAX_HEALTH);
+        return instance == null ? getMaxHealth() : (float) Math.max(getMaxHealth(), uncapped(instance));
+    }
+
+    /** Its health on the scale of {@link #virtualMaxHealth()}. */
+    public float virtualHealth() {
+        return getHealth() * healthScale();
+    }
+
+    /** Virtual per real health point: 1 below the cap, else {@link #virtualMaxHealth()} / {@link #getMaxHealth()}. */
+    public float healthScale() {
+        float max = getMaxHealth();
+        return max > 0.0F ? Math.max(1.0F, virtualMaxHealth() / max) : 1.0F;
+    }
+
+    /** What {@code AttributeInstance} computes, without the attribute's range. */
+    private static double uncapped(AttributeInstance instance) {
+        double value = instance.getBaseValue();
+        for (AttributeModifier modifier : instance.getModifiers()) {
+            if (modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
+                value += modifier.amount();
+            }
+        }
+        double base = value;
+        for (AttributeModifier modifier : instance.getModifiers()) {
+            if (modifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE) {
+                value += base * modifier.amount();
+            }
+        }
+        for (AttributeModifier modifier : instance.getModifiers()) {
+            if (modifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
+                value *= 1.0 + modifier.amount();
+            }
+        }
+        return value;
+    }
+
+    /** Above the health cap a hit counts on the virtual scale (see the class comment). */
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        return super.hurt(source, amount / healthScale());
     }
 
     /** Its strength (1 for a summoned one); attacks with their own damage numbers multiply by it. */

@@ -92,6 +92,24 @@ class NightmareDirectorLogicTest {
     }
 
     @Test
+    void outsideItsRingItWalksHome() {
+        RandomSource random = RandomSource.create(5);
+        // Deep in ring 3, as if ring 2's Nightmare followed a player there.
+        NightmareRoaming.Spot spot = new NightmareRoaming.Spot(4700.0, 0.0, 90.0F);
+        assertEquals(Ring.RING_3, RINGS.ringAt(spot.x(), spot.z()));
+        int steps = 0;
+        while (RINGS.ringAt(spot.x(), spot.z()) != Ring.RING_2 && steps < 100) {
+            NightmareRoaming.Spot next = NightmareRoaming.step(spot, 64.0, Ring.RING_2, RINGS, random);
+            assertTrue(Math.hypot(next.x(), next.z()) < Math.hypot(spot.x(), spot.z()), "inward");
+            spot = next;
+            steps++;
+        }
+        assertEquals(Ring.RING_2, RINGS.ringAt(spot.x(), spot.z()), "home after " + steps + " steps");
+        assertEquals(new NightmareRoaming.Spot(0.0, 64.0, 0.0F),
+                NightmareRoaming.step(new NightmareRoaming.Spot(0.0, 0.0, 0.0F), 64.0, Ring.RING_2, RINGS, random));
+    }
+
+    @Test
     void compassPointsFollowTheYaw() {
         assertEquals("S", NightmareRoaming.compass(0.0F));
         assertEquals("W", NightmareRoaming.compass(90.0F));

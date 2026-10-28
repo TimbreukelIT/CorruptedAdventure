@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.entity.nightmare.director;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -120,12 +121,12 @@ public final class NightmareDirector {
                 case ROAMING -> {
                     if (second) {
                         roam(level, kind, state, now);
-                        seek(level, kind, state);
+                        seek(level, kind, state, now);
                         data.setDirty();
                     }
                 }
                 case COMING -> {
-                    come(level, kind, type.get(), state);
+                    come(level, kind, type.get(), state, now);
                     data.setDirty();
                 }
                 case PRESENT -> {
@@ -176,9 +177,9 @@ public final class NightmareDirector {
                 column.getZ()), column.getZ());
     }
 
-    private void seek(ServerLevel level, NightmareKind kind, NightmareState state) {
+    private void seek(ServerLevel level, NightmareKind kind, NightmareState state, long now) {
         NightmareDirectorConfig config = ServerConfig.NIGHTMARE_DIRECTOR;
-        if (!config.arrivals.get()) {
+        if (!config.arrivals.get() || isPeaceful(level) || now < state.nextSeekTick()) {
             return;
         }
         List<NightmareTargets.Candidate> candidates = new ArrayList<>();
@@ -198,10 +199,12 @@ public final class NightmareDirector {
         state.coming(target.getUUID(), arrivals.apply(kind).place(level, target), forced);
     }
 
-    private void come(ServerLevel level, NightmareKind kind, EntityType<? extends Nightmare> type, NightmareState state) {
+    private void come(ServerLevel level, NightmareKind kind, EntityType<? extends Nightmare> type, NightmareState state,
+                      long now) {
         NightmareArrival arrival = arrivals.apply(kind);
         ServerPlayer target = state.target() == null ? null : level.getServer().getPlayerList().getPlayer(state.target());
-        if (!canBeVisited(level, kind, target, state.forced())) {
+        // Peaceful would despawn it at once: the omens stop, nothing comes.
+        if (isPeaceful(level) || !canBeVisited(level, kind, target, state.forced())) {
             arrival.cancelled(level, state.place());
             state.roam();
             return;
@@ -224,6 +227,7 @@ public final class NightmareDirector {
             if (state.appearTries() >= ServerConfig.NIGHTMARE_DIRECTOR.appearRetrySeconds.get()) {
                 arrival.cancelled(level, state.place());
                 state.roam();
+                state.nextSeekTick(now + ServerConfig.NIGHTMARE_DIRECTOR.failedArrivalCooldownSeconds.get() * (long) SECOND);
             }
             return;
         }
@@ -234,6 +238,11 @@ public final class NightmareDirector {
         for (Player fighter : nightmare.fighters()) {
             NightmareThreats.of(fighter).reset(kind.ring());
         }
+    }
+
+    /** No Nightmares on Peaceful: vanilla would despawn a monster at once. */
+    public static boolean isPeaceful(ServerLevel level) {
+        return level.getDifficulty() == Difficulty.PEACEFUL;
     }
 
     /** The target is still there to visit: online, alive, here, and (unless forced) a fighter in the ring. */
@@ -299,7 +308,7 @@ public final class NightmareDirector {
 
     /** What {@link #arrive} answers. */
     public enum ArriveResult {
-        COMING, NO_ENTITY, ALREADY_COMING, ALREADY_PRESENT
+        COMING, NO_ENTITY, ALREADY_COMING, ALREADY_PRESENT, PEACEFUL
     }
 
     /**
@@ -309,6 +318,9 @@ public final class NightmareDirector {
     public ArriveResult arrive(ServerLevel level, NightmareKind kind, ServerPlayer target) {
         if (kind.type().isEmpty()) {
             return ArriveResult.NO_ENTITY;
+        }
+        if (isPeaceful(level)) {
+            return ArriveResult.PEACEFUL;
         }
         NightmareState state = data(level).get(kind);
         if (state.phase() == NightmareState.Phase.COMING) {

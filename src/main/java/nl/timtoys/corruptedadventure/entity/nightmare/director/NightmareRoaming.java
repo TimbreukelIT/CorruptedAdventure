@@ -45,8 +45,15 @@ public final class NightmareRoaming {
         return COMPASS[Math.floorMod(Math.round(Mth.wrapDegrees(heading) / 45.0F), COMPASS.length)];
     }
 
-    /** One step of {@code blocks} from {@code from}: the turned heading if it stays in {@code ring}, else a detour. */
+    /**
+     * One step of {@code blocks} from {@code from}: the turned heading if it stays in {@code ring}, else a detour. Outside
+     * its ring (it followed a player out before it went back to virtual) it walks straight back towards the middle of
+     * its band instead.
+     */
     public static Spot step(Spot from, double blocks, Ring ring, NightmareRings rings, RandomSource random) {
+        if (rings.ringAt(from.x(), from.z()) != ring) {
+            return homeward(from, blocks, ring, rings);
+        }
         float heading = from.heading() + (random.nextFloat() * 2.0F - 1.0F) * MAX_TURN;
         for (float detour : DETOURS) {
             float tried = Mth.wrapDegrees(heading + detour);
@@ -58,5 +65,19 @@ public final class NightmareRoaming {
             }
         }
         return from;
+    }
+
+    private static Spot homeward(Spot from, double blocks, Ring ring, NightmareRings rings) {
+        double middle = (rings.innerRadius(ring) + rings.outerRadius(ring)) / 2.0;
+        double radius = Math.sqrt(from.x() * from.x() + from.z() * from.z());
+        if (radius < 1.0e-6) {
+            // At the centre: any way out is the way home.
+            return new Spot(from.x(), from.z() + Math.min(blocks, middle), 0.0F);
+        }
+        double move = Math.min(blocks, Math.abs(middle - radius)) * Math.signum(middle - radius);
+        double x = from.x() + from.x() / radius * move;
+        double z = from.z() + from.z() / radius * move;
+        float heading = (float) Math.toDegrees(Math.atan2(-(x - from.x()), z - from.z()));
+        return new Spot(x, z, heading);
     }
 }
