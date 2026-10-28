@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.entity.hollow;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.phys.Vec3;
@@ -10,14 +11,19 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 /**
- * Verspringen: a crack warns, then The Hollow steps out of the world and comes out behind its target. Also how a giant
+ * Verspringen: a crack warns while a rift tears open where it stands, then The Hollow steps into it and comes out of a
+ * second rift behind its target. Also how a giant
  * gets past trees and caves its path finding cannot. Never while pinned; a pin during the warning cancels the step. No
  * room behind the target: the step fizzles and the cooldown starts anyway.
  */
 final class HollowRiftStepGoal extends Goal {
     private final TheHollow hollow;
+    /** Ticks the rift it comes out of stays open. */
+    private static final int EXIT_OPEN_TICKS = 12;
+
     private int warning;
     private int nextStepTick;
+    private HollowRift entry;
 
     HollowRiftStepGoal(TheHollow hollow) {
         this.hollow = hollow;
@@ -52,13 +58,22 @@ final class HollowRiftStepGoal extends Goal {
         warning = ServerConfig.HOLLOW.riftStepWarningTicks.get();
         hollow.getNavigation().stop();
         hollow.triggerAnim(HollowAnimations.ACTION, HollowAnimations.RIFT_STEP);
-        HollowEffects.riftCrack((ServerLevel) hollow.level(), hollow);
+        ServerLevel level = (ServerLevel) hollow.level();
+        HollowEffects.riftCrack(level, hollow);
+        // The rift it steps into tears open during the warning, facing its target.
+        LivingEntity target = hollow.getTarget();
+        float yaw = target == null ? hollow.getYRot() : yawToward(hollow.position(), target.position());
+        entry = HollowRift.step(level, hollow.position(), yaw, warning, 4);
     }
 
     @Override
     public void stop() {
         warning = 0;
         nextStepTick = hollow.tickCount + cooldown();
+        if (entry != null) {
+            entry.close();
+            entry = null;
+        }
     }
 
     @Override
@@ -78,12 +93,19 @@ final class HollowRiftStepGoal extends Goal {
         }
         HollowEffects.riftBurst(level, hollow);
         Vec3 to = spot.get();
+        // It comes out of a second rift behind its target, facing it.
+        HollowRift.step(level, to, yawToward(to, target.position()), 3, EXIT_OPEN_TICKS);
         hollow.teleportTo(to.x, to.y, to.z);
         hollow.resetFallDistance();
         hollow.lookAt(target, 360.0F, 360.0F);
         hollow.setYHeadRot(hollow.getYRot());
         hollow.setYBodyRot(hollow.getYRot());
         HollowEffects.riftBurst(level, hollow);
+    }
+
+    /** Minecraft's yaw (degrees) of the direction from {@code from} to {@code to}. */
+    static float yawToward(Vec3 from, Vec3 to) {
+        return (float) (Mth.atan2(to.z - from.z, to.x - from.x) * Mth.RAD_TO_DEG) - 90.0F;
     }
 
     private int cooldown() {

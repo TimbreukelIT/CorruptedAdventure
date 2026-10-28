@@ -26,6 +26,14 @@ public final class HollowConfig {
     public final ModConfigSpec.IntValue swapCooldown;
     public final ModConfigSpec.IntValue swapWarningTicks;
     public final ModConfigSpec.IntValue pinSeconds;
+    public final ModConfigSpec.IntValue omenSeconds;
+    public final ModConfigSpec.DoubleValue fleeRadius;
+    public final ModConfigSpec.IntValue riftOpeningTicks;
+    public final ModConfigSpec.IntValue riftEyesTicks;
+    public final ModConfigSpec.DoubleValue suctionRadius;
+    public final ModConfigSpec.DoubleValue suctionStrength;
+    public final ModConfigSpec.BooleanValue scarEnabled;
+    public final ModConfigSpec.DoubleValue scarRadius;
 
     HollowConfig(ModConfigSpec.Builder builder) {
         builder.comment("The Hollow, the ring 1 Nightmare (step 1: body and fight, summoned with /summon).",
@@ -58,6 +66,26 @@ public final class HollowConfig {
         pinSeconds = builder.comment("Seconds a hit with a soul crystal in the main hand pins The Hollow in phase (no rift",
                         "step, never transparent). Costs one crystal, not in creative.")
                 .defineInRange("pinSeconds", 4, 1, 60);
+        builder.comment("Its rift (step 2): the arrival and the rift steps.").push("rift");
+        omenSeconds = builder.comment("Seconds of omens before an arrival's rift opens: a hairline crack in the air, fleeing",
+                        "animals, flickering torches, sounds as if played backwards.")
+                .defineInRange("omenSeconds", 30, 1, 600);
+        fleeRadius = builder.comment("Blocks round the crack within which animals flee during the omens.")
+                .defineInRange("fleeRadius", 24.0, 0.0, 64.0);
+        riftOpeningTicks = builder.comment("Ticks the crack takes to tear open into the full rift.")
+                .defineInRange("riftOpeningTicks", 40, 1, 400);
+        riftEyesTicks = builder.comment("Ticks the open rift shows the two white eyes before the hand comes through.")
+                .defineInRange("riftEyesTicks", 50, 1, 400);
+        suctionRadius = builder.comment("Blocks within which an open rift pulls players and items toward it.")
+                .defineInRange("suctionRadius", 10.0, 0.0, 32.0);
+        suctionStrength = builder.comment("Pull per tick right at the rift (blocks/tick, fading to 0 at the radius); 0 = none.")
+                .defineInRange("suctionStrength", 0.05, 0.0, 0.5);
+        scarEnabled = builder.comment("Whether an arrival's rift leaves a permanent scar of ring 5 corruption on the ground",
+                        "(natural ground only: soil, stone, sand, gravel).")
+                .define("scarEnabled", true);
+        scarRadius = builder.comment("Radius in blocks of that scar; ragged toward its edge.")
+                .defineInRange("scarRadius", 2.5, 0.5, 4.0);
+        builder.pop();
         builder.pop();
     }
 

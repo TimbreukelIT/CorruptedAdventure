@@ -41,10 +41,13 @@ import software.bernie.geckolib.animation.PlayState;
 public class TheHollow extends Nightmare {
     private static final EntityDataAccessor<Boolean> DATA_PHASED =
             SynchedEntityData.defineId(TheHollow.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_EMERGING =
+            SynchedEntityData.defineId(TheHollow.class, EntityDataSerializers.BOOLEAN);
 
     private int pinnedTicks;
     private int phaseTicks;
     private int nextPhaseTick = -1;
+    private int emergeTicks;
 
     public TheHollow(EntityType<? extends TheHollow> type, Level level) {
         super(type, level, BossEvent.BossBarColor.PURPLE);
@@ -63,11 +66,13 @@ public class TheHollow extends Nightmare {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_PHASED, false);
+        builder.define(DATA_EMERGING, false);
     }
 
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
+        goalSelector.addGoal(0, new HollowEmergeGoal(this));
         goalSelector.addGoal(1, new HollowSwapGoal(this));
         goalSelector.addGoal(2, new HollowRiftStepGoal(this));
         goalSelector.addGoal(3, new HollowSlamGoal(this));
@@ -85,6 +90,17 @@ public class TheHollow extends Nightmare {
 
     public boolean isPinned() {
         return pinnedTicks > 0;
+    }
+
+    /** Pulling itself out of its arrival rift: no attacks, no moving; the emerge animation plays. */
+    public boolean isEmerging() {
+        return entityData.get(DATA_EMERGING);
+    }
+
+    /** Called by the arrival rift right after it put The Hollow in the world. */
+    public void startEmerging() {
+        emergeTicks = HollowAnimations.EMERGE_TICKS;
+        entityData.set(DATA_EMERGING, true);
     }
 
     /** Out of phase for {@code ticks}: transparent and invulnerable. Refused while pinned. */
@@ -141,15 +157,24 @@ public class TheHollow extends Nightmare {
     @Override
     public void tick() {
         super.tick();
-        // The pin runs out without AI too, so a pinned Hollow never stays pinned.
-        if (!level().isClientSide() && pinnedTicks > 0) {
+        if (level().isClientSide()) {
+            return;
+        }
+        // The pin and the emerging run out without AI too.
+        if (pinnedTicks > 0) {
             pinnedTicks--;
+        }
+        if (emergeTicks > 0 && --emergeTicks == 0) {
+            entityData.set(DATA_EMERGING, false);
         }
     }
 
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
+        if (isEmerging()) {
+            return;
+        }
         if (isPhased()) {
             if (--phaseTicks <= 0) {
                 endPhase();
@@ -205,6 +230,9 @@ public class TheHollow extends Nightmare {
     private PlayState bodyAnimation(AnimationState<TheHollow> state) {
         if (isDeadOrDying()) {
             return state.setAndContinue(HollowAnimations.DEATH);
+        }
+        if (isEmerging()) {
+            return state.setAndContinue(HollowAnimations.EMERGE_ANIM);
         }
         if (isPhased()) {
             return state.setAndContinue(HollowAnimations.PHASE);

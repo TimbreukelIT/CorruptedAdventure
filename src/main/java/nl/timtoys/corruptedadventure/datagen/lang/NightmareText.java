@@ -9,9 +9,11 @@ public final class NightmareText {
 
     public static void addEnglish(LangOutput lang) {
         lang.add(ModEntityTypes.THE_HOLLOW.get().getDescriptionId(), "The Hollow");
+        lang.add(ModEntityTypes.HOLLOW_RIFT.get().getDescriptionId(), "Rift of The Hollow");
     }
 
     public static void addDutch(LangOutput lang) {
         lang.add(ModEntityTypes.THE_HOLLOW.get().getDescriptionId(), "De Holle");
+        lang.add(ModEntityTypes.HOLLOW_RIFT.get().getDescriptionId(), "Scheur van De Holle");
     }
 }

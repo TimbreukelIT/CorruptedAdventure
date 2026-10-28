@@ -9,6 +9,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.EffectArrow;
+import nl.timtoys.corruptedadventure.entity.hollow.HollowRift;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
 
 /** Entity types. Their renderers register in {@code client/} (CLAUDE.md §7). */
@@ -30,6 +31,10 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<TheHollow>> THE_HOLLOW = ENTITY_TYPES.register("the_hollow",
             () -> EntityType.Builder.<TheHollow>of(TheHollow::new, MobCategory.MONSTER)
                     .sized(2.5F, 5.5F).eyeHeight(4.4F).clientTrackingRange(10).build("the_hollow"));
+    /** Phase 4 step 2: The Hollow's dimension rift (~3 × 7 blocks); {@code /summon} starts an arrival. */
+    public static final DeferredHolder<EntityType<?>, EntityType<HollowRift>> HOLLOW_RIFT = ENTITY_TYPES.register("hollow_rift",
+            () -> EntityType.Builder.<HollowRift>of(HollowRift::new, MobCategory.MISC)
+                    .sized(3.0F, 7.0F).clientTrackingRange(10).updateInterval(20).fireImmune().build("hollow_rift"));
 
     private ModEntityTypes() {
     }
