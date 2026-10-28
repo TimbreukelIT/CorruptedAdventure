@@ -35,8 +35,9 @@ class KeeperMotionTest {
         assertEquals(90.0F, KeeperMotion.yaw(new Vec3(-1.0, 0.0, 0.0)), 1.0E-4F);
         assertEquals(90.0F, KeeperMotion.pitch(new Vec3(0.0, -1.0, 0.0)), 1.0E-4F);
         Vec3 look = Vec3.directionFromRotation(30.0F, 120.0F);
-        assertEquals(120.0F, KeeperMotion.yaw(look), 1.0E-3F);
-        assertEquals(30.0F, KeeperMotion.pitch(look), 1.0E-3F);
+        // directionFromRotation uses Mth's sine table: a few thousandths of a degree off.
+        assertEquals(120.0F, KeeperMotion.yaw(look), 0.01F);
+        assertEquals(30.0F, KeeperMotion.pitch(look), 0.01F);
         Vec3 up = KeeperMotion.up(0.0F, 0.0F);
         assertEquals(1.0, up.y, 1.0E-6);
     }
