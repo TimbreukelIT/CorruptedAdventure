@@ -70,6 +70,8 @@ class ModCreativeTabsTest {
         assertEquals(4, ringOf(ModBlocks.JADE_BLOCK));
         assertEquals(5, ringOf(ModItems.WHITE_CORE));
         assertEquals(5, ringOf(ModBlocks.NULLITE_BLOCK));
+        assertEquals(4, ringOf(ModItems.SKY_LIGHT_DRAUGHT));
+        assertEquals(5, ringOf(ModItems.ECHO_SHELL));
     }
 
     @Test

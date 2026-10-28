@@ -23,15 +23,18 @@ class VoidConfigTest {
         assertPath("lightLevel", VOID.lightLevel);
         assertPath("lightFall", VOID.lightFall);
         assertPath("outsideFall", VOID.outsideFall);
+        assertPath("anchoredFactor", VOID.anchoredFactor);
+        assertPath("skyLightAmount", VOID.skyLightAmount);
+        assertPath("skyLightAnchoredSeconds", VOID.skyLightAnchoredSeconds);
         assertPath("teleportMinBlocks", VOID.teleportMinBlocks);
         assertPath("teleportMaxBlocks", VOID.teleportMaxBlocks);
         assertPath("teleportIntervalSeconds", VOID.teleportIntervalSeconds);
         assertPath("darknessAmplifier", VOID.darknessAmplifier);
         assertPath("damage", VOID.damage);
         assertPath("damageInterval", VOID.damageInterval);
-        // threshold1..3 through ThresholdLevels; together 17 keys in the section.
+        // threshold1..3 through ThresholdLevels; together 20 keys in the section.
         UnmodifiableConfig section = ServerConfig.SPEC.getValues().get(List.of("conditions", "void"));
-        assertEquals(17, section.size());
+        assertEquals(20, section.size());
     }
 
     @Test
@@ -44,6 +47,9 @@ class VoidConfigTest {
         assertEquals(12, VOID.lightLevel.getDefault());
         assertEquals(1.0, VOID.lightFall.getDefault());
         assertEquals(1.0, VOID.outsideFall.getDefault());
+        assertEquals(0.5, VOID.anchoredFactor.getDefault());
+        assertEquals(20.0, VOID.skyLightAmount.getDefault());
+        assertEquals(45, VOID.skyLightAnchoredSeconds.getDefault());
         assertArrayEquals(new int[]{30, 60, 90}, VOID.thresholds.defaults());
         assertEquals(1, VOID.teleportMinBlocks.getDefault());
         assertEquals(5, VOID.teleportMaxBlocks.getDefault());

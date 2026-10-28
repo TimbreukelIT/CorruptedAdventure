@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.GlowLichenBlock;
 import net.minecraft.world.level.block.HangingRootsBlock;
+import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
@@ -35,6 +36,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.TallFlowerBlock;
+import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.WallHangingSignBlock;
@@ -122,6 +124,8 @@ public final class ModBlocks {
     private static final int BONE_DUST_COLOR = 0xE3DCC6;
     /** Falling dust colour of the lagoon sand: white cream, lighter than the bone sand. */
     private static final int LAGOON_SAND_DUST_COLOR = 0xF2EEDC;
+    /** Falling dust colour of the sky sand: pale sky blue. */
+    private static final int SKY_SAND_DUST_COLOR = 0xC6DCEC;
     /** Ring 3 ores are this much harder than the vanilla ore of their host ("one step above ring 2"). */
     static final float RING_3_ORE_EXTRA_HARDNESS = 0.5F;
     /** Ring 4 ores are this much harder than the vanilla ore of their host (a step above ring 3; decision V3 golf 1). */
@@ -1192,6 +1196,16 @@ public final class ModBlocks {
     /** A crystal lamp: the crystal wall's behaviour with light 15. */
     public static final DeferredBlock<AmethystBlock> PURITY_CRYSTAL_LAMP = register("purity_crystal_lamp",
             () -> new AmethystBlock(Properties.ofFullCopy(Blocks.AMETHYST_BLOCK).mapColor(MapColor.SNOW).lightLevel(state -> 15)));
+    // Sky glass (phase 2 golf 5, fase-2-items.md §7.2): bone sand with purity crystal, smelted into glass.
+    /** Falls like sand, with a pale sky-blue dust. */
+    public static final DeferredBlock<ColoredFallingBlock> SKY_SAND = register("sky_sand",
+            () -> new ColoredFallingBlock(new ColorRGBA(SKY_SAND_DUST_COLOR),
+                    Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_LIGHT_BLUE)));
+    /** Vanilla glass: no drop without silk touch, no spawns, no suffocation, see-through. */
+    public static final DeferredBlock<TransparentBlock> SKY_GLASS = register("sky_glass",
+            () -> new TransparentBlock(Properties.ofFullCopy(Blocks.GLASS)));
+    public static final DeferredBlock<IronBarsBlock> SKY_GLASS_PANE = register("sky_glass_pane",
+            () -> new IronBarsBlock(Properties.ofFullCopy(Blocks.GLASS_PANE)));
 
     // ---- Ring 5 ----
     static {

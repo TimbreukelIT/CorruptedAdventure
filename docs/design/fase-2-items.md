@@ -416,7 +416,9 @@ speelsessie over golf 1–5, checklist `docs/plans/fase-2/teststop-golf-1-4.md` 
   **"Verankerd"** (`anchored`, stijgende void ×0,5); eenmalig, geeft de fles terug. Patroon van §6.3/§6.6.
 - **Galmschelp (`echo_shell`, stilte):** 4 `fossil_stone` + 1 `white_core` → 1. Blazen = een luide galm die medespelers
   horen; −20 stilte + 45 s effect **"Galm"** (`resounding`, stijgende stilte ×0,5). Herbruikbaar: duurzaamheid 16,
-  cooldown 45 s.
+  cooldown 45 s. Blazen telt ook als geluid voor de stilte-regel (zelfde game event als een geitenhoorn): iedereen
+  binnen 16 blokken, ook de blazer, krijgt de 10 s verlichting; de blazer krijgt daarbovenop de dosis (gebruiker,
+  2026-10-28).
 
 ### 7.4 Glitchscherven en ring 5-extra's
 - **Glitchscherfblok (`glitch_shard_block`):** 9 ↔ 1, flikkerende texture, geen licht.

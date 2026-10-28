@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "F": {
+      "item": "corruptedadventure:fossil_stone"
+    },
+    "W": {
+      "item": "corruptedadventure:white_core"
+    }
+  },
+  "pattern": [
+    " F ",
+    "FWF",
+    " F "
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:echo_shell"
+  }
+}

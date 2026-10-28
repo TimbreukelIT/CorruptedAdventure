@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "corruptedadventure:bone_sand"
+    },
+    {
+      "item": "corruptedadventure:bone_sand"
+    },
+    {
+      "item": "corruptedadventure:bone_sand"
+    },
+    {
+      "item": "corruptedadventure:bone_sand"
+    },
+    {
+      "item": "corruptedadventure:purity_crystal_shard"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "id": "corruptedadventure:sky_sand"
+  }
+}

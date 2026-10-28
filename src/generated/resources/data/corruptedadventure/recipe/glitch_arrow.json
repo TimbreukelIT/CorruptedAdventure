@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "minecraft:arrow"
+    },
+    "M": {
+      "item": "corruptedadventure:glitch_shard"
+    }
+  },
+  "pattern": [
+    " A ",
+    "AMA",
+    " A "
+  ],
+  "result": {
+    "count": 4,
+    "id": "corruptedadventure:glitch_arrow"
+  }
+}

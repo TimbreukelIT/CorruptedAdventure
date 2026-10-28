@@ -9,9 +9,9 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 
 /**
- * The fire and poison arrows (fase-2-items.md §6.4, §6.7): a plain arrow whose hit adds its {@link ArrowEffect}. One
- * class for both; the effect follows from the entity type, because {@link AbstractArrow}'s constructor already asks
- * for the pickup item, before a field of ours could be set.
+ * The fire, poison and glitch arrows (fase-2-items.md §6.4, §6.7, §7.4): a plain arrow whose hit adds its
+ * {@link ArrowEffect}. One class for all; the effect follows from the entity type, because {@link AbstractArrow}'s
+ * constructor already asks for the pickup item, before a field of ours could be set.
  */
 public final class EffectArrow extends AbstractArrow {
     public EffectArrow(EntityType<? extends EffectArrow> type, Level level) {

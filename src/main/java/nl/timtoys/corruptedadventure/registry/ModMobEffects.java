@@ -25,6 +25,12 @@ public final class ModMobEffects {
     /** Hand warmer (golf 4): the cold rises slower while it lasts. Icon {@code mob_effect/warmed}. */
     public static final DeferredHolder<MobEffect, RateEffectMobEffect> WARMED =
             MOB_EFFECTS.register("warmed", () -> new RateEffectMobEffect(0xFF9A3C));
+    /** Sky light (golf 5): the void rises slower while it lasts. Icon {@code mob_effect/anchored}. */
+    public static final DeferredHolder<MobEffect, RateEffectMobEffect> ANCHORED =
+            MOB_EFFECTS.register("anchored", () -> new RateEffectMobEffect(0xF4E6A6));
+    /** Echo shell (golf 5): the silence rises slower while it lasts. Icon {@code mob_effect/resounding}. */
+    public static final DeferredHolder<MobEffect, RateEffectMobEffect> RESOUNDING =
+            MOB_EFFECTS.register("resounding", () -> new RateEffectMobEffect(0xB9A8F0));
 
     private ModMobEffects() {
     }
