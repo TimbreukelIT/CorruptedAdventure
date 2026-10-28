@@ -14,7 +14,7 @@ public final class ModNetwork {
      * disconnect message. <b>Bump this on every change to a payload or its codec, and for every new payload</b>
      * (an older client does not know it).
      */
-    public static final String PROTOCOL_VERSION = "11";
+    public static final String PROTOCOL_VERSION = "12";
 
     private ModNetwork() {
     }

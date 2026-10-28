@@ -11,9 +11,9 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.EffectArrow;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowRift;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
+import nl.timtoys.corruptedadventure.entity.lostkeeper.TheLostKeeper;
 import nl.timtoys.corruptedadventure.entity.risen.AshWalker;
 import nl.timtoys.corruptedadventure.entity.risen.TheRisen;
-import nl.timtoys.corruptedadventure.entity.lostkeeper.TheLostKeeper;
 import nl.timtoys.corruptedadventure.entity.unfinished.TheUnfinished;
 
 /** Entity types. Their renderers register in {@code client/} (CLAUDE.md §7). */
