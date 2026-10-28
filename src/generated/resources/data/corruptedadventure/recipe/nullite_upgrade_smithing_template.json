@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "corruptedadventure:voidstone"
+    },
+    "I": {
+      "item": "corruptedadventure:tidesilver_ingot"
+    },
+    "S": {
+      "item": "corruptedadventure:sky_glass"
+    }
+  },
+  "pattern": [
+    "SIS",
+    "SCS",
+    "SIS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:nullite_upgrade_smithing_template"
+  }
+}

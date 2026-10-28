@@ -12,17 +12,19 @@ Bron: `docs/design/fase-2-items.md` §6.1, §7.1. Review: `/code-review low d55f
 3. 9 smithing-transforms getijdezilver-stuk + `nullite_upgrade_smithing_template` + `nullite_ingot` → nulliet-stuk
    (vanzelf via `GearRecipes`, ids `nullite_<stuk>_smithing`).
 4. Template-recept 6 `sky_glass` + 2 `tidesilver_ingot` + 1 `voidstone` (`SIS / SCS / SIS`) → 1, geen kopie-recept.
-   **Wacht op H pakket 1** (`sky_glass`).
+   Na de merge van H pakket 1 (main `8eee3c4d`) toegevoegd.
 5. Namen via `GearNames`: "Nullite …" / "Nullieten …"; tags (`GearItemTags`) en modellen met trim-overrides
    (`GearItemModels`) lopen vanzelf mee.
 6. Placeholder-PNG's (getijdezilver hergekleurd naar antraciet met paars-cyane accenten door een wegwerpscript buiten de
    repo): `item/nullite_{9 stukken}.png`, `models/armor/nullite_layer_{1,2}.png`. **T vervangt ze.**
-7. Tests: `GearSetsTest` (alle vier tiers hebben een set, in ladder-volgorde), `GearRecipesTest` (nulliet in de ladder;
-   template-assert na H), `ModBlocksTest` (materiaalvolgorde ring 5 filtert de gear eruit, zoals de templates).
+7. Tests: `GearSetsTest` (alle vier tiers hebben een set, in ladder-volgorde), `GearRecipesTest` (nulliet in de ladder
+   en het nulliet-template), `ModBlocksTest` (materiaalvolgorde ring 5 filtert de gear eruit, zoals de templates).
    `GearTierTest` hoefde niet te veranderen: de nulliet-rij van §6.1 stond er al exact in.
 
 ## Voortgang
-- 2026-10-28 16:19 start; code, placeholders en tests klaar 16:35; build + runData lopen.
+- 2026-10-28 16:19 start; code, placeholders en tests klaar 16:21; runData, build, 21/21 GameTests groen; commit
+  `95408f93` 16:29; server-smoke n 66 groen 16:31; `/code-review low` zonder bevindingen.
+- Na H pakket 1: `git merge main`, template-recept, runData, build + GameTests opnieuw.
 
 ## Voorlopig (bevestigen bij de teststop)
 - Nederlandse namen "Nullieten …" (bijvoeglijk, zoals de vorige tiers).

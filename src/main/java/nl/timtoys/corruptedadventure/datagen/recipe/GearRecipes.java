@@ -53,6 +53,8 @@ public final class GearRecipes extends RecipeSet {
                 ModItems.SUNSTONE_INGOT.get(), ModBlocks.PUMICE);
         template(output, ModItems.TIDESILVER_UPGRADE_SMITHING_TEMPLATE.get(), ModBlocks.PRIMORDIAL_ICE,
                 ModItems.VOLCANITE_INGOT.get(), ModBlocks.TIDESTONE);
+        template(output, ModItems.NULLITE_UPGRADE_SMITHING_TEMPLATE.get(), ModBlocks.SKY_GLASS,
+                ModItems.TIDESILVER_INGOT.get(), ModBlocks.VOIDSTONE);
     }
 
     private static Item template(GearTier tier) {

@@ -45,7 +45,10 @@ class GearRecipesTest {
         }
     }
 
-    /** Sunstone from soul crystal (§5.1), volcanite from dew crystal (§6.2), tidesilver from primordial ice (§6.5). */
+    /**
+     * Sunstone from soul crystal (§5.1), volcanite from dew crystal (§6.2), tidesilver from primordial ice (§6.5),
+     * nullite from sky glass (§7.1).
+     */
     @Test
     void theTemplatesComeFromTheNetherMaterialTheIngotBeforeAndARingStone() throws IOException {
         assertTemplate("sunstone", Map.of("corruptedadventure:soul_crystal", 6, "minecraft:diamond", 2,
@@ -54,6 +57,8 @@ class GearRecipesTest {
                 "corruptedadventure:pumice", 1));
         assertTemplate("tidesilver", Map.of("corruptedadventure:primordial_ice", 6,
                 "corruptedadventure:volcanite_ingot", 2, "corruptedadventure:tidestone", 1));
+        assertTemplate("nullite", Map.of("corruptedadventure:sky_glass", 6, "corruptedadventure:tidesilver_ingot", 2,
+                "corruptedadventure:voidstone", 1));
     }
 
     /** One template per craft and no copy recipe: crafting already is the copy. */
