@@ -9,7 +9,6 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.texture.AnimatableTexture;
-import software.bernie.geckolib.renderer.GeoRenderer;
 import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 import software.bernie.geckolib.util.Color;
 
@@ -20,8 +19,11 @@ import software.bernie.geckolib.util.Color;
 final class HollowCorruptionLayer extends GeoRenderLayer<TheHollow> {
     private static final ResourceLocation TEXTURE = CorruptedAdventure.id("textures/entity/the_hollow_corruption.png");
 
-    HollowCorruptionLayer(GeoRenderer<TheHollow> renderer) {
+    private final TheHollowRenderer hollowRenderer;
+
+    HollowCorruptionLayer(TheHollowRenderer renderer) {
         super(renderer);
+        this.hollowRenderer = renderer;
     }
 
     @Override
@@ -32,7 +34,7 @@ final class HollowCorruptionLayer extends GeoRenderLayer<TheHollow> {
         }
         AnimatableTexture.setAndUpdate(TEXTURE);
         RenderType corruption = RenderType.entityTranslucent(TEXTURE);
-        int colour = Color.ofRGBA(1.0F, 1.0F, 1.0F, TheHollowRenderer.alpha(hollow)).argbInt();
+        int colour = Color.ofRGBA(1.0F, 1.0F, 1.0F, hollowRenderer.alpha(hollow)).argbInt();
         getRenderer().reRender(bakedModel, poseStack, bufferSource, hollow, corruption, bufferSource.getBuffer(corruption),
                 partialTick, packedLight, packedOverlay, colour);
     }
