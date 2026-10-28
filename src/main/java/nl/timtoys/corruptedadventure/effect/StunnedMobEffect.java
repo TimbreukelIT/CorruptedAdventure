@@ -32,11 +32,20 @@ public final class StunnedMobEffect extends MobEffect {
     }
 
     @Override
+    public void onEffectStarted(LivingEntity entity, int amplifier) {
+        freeze(entity);
+    }
+
+    @Override
     public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        freeze(entity);
+        return true;
+    }
+
+    private static void freeze(LivingEntity entity) {
         if (!entity.level().isClientSide() && entity instanceof Mob mob) {
             mob.getNavigation().stop();
             WeakenedTargeting.dropTarget(mob);
         }
-        return true;
     }
 }

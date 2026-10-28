@@ -22,10 +22,19 @@ public final class DazzledMobEffect extends MobEffect {
     }
 
     @Override
+    public void onEffectStarted(LivingEntity entity, int amplifier) {
+        blind(entity);
+    }
+
+    @Override
     public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        blind(entity);
+        return true;
+    }
+
+    private static void blind(LivingEntity entity) {
         if (!entity.level().isClientSide() && entity instanceof Mob mob) {
             WeakenedTargeting.dropTarget(mob);
         }
-        return true;
     }
 }
