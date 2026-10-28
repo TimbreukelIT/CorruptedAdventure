@@ -1105,3 +1105,13 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-27 | mobs | Ring 5-Nightmare zwakte: hemelglas "laadt" zijn flikkerende, onvoltooide delen helemaal in, zodat ze te raken zijn | Geeft hemelglas (Nether-4, tegengif tegen void en glitches) een tweede doel |
 | 2026-10-27 | mobs | Ring 5-Nightmare komst: het ringweer "stilstand" valt in (regen en wolken bevriezen, geluid valt weg); in die stilte hoor je hem klimmen | Hergebruikt bestaand weer |
 | 2026-10-27 | mobs | Ring 5-Nightmare houdt de werktitel De Onvoltooide (The Unfinished) | Hij is nooit af en laadt nog steeds in |
+| 2026-10-28 | items | Geen aparte teststop golf 1–4: samen met de eindtest fase 2 (golf 1–5 in één speelsessie) | Gebruiker wil in één keer testen |
+| 2026-10-28 | items | Nulliet-template: 6 hemelglas + 2 getijdezilverstaaf + 1 voidsteen → 1, geen kopie-recept | Template uit de vorige Nether-ring (Nether-4) |
+| 2026-10-28 | items | Hemelglas: 4 bottenzand + 1 zuiverkristalscherf → 4 hemelzand, smelten → hemelglas; plus hemelglasruit | Beide grondstoffen uit fase 1 nodig |
+| 2026-10-28 | items | Hemelglas-lens: 1 hemelglas boven 2 getijdezilverstaven; zoom als verrekijker; zolang je kijkt omlijning (straal 32) van void-gaten, glitchblokken en ontbrekende chunks + gedempte glitch-visuals; server scant ~1×/s | Volledige functie uit §1.4; vóór ring 5 te maken |
+| 2026-10-28 | items | Void-coating krijgt hemelglas als materiaal (was witte kern); stilte blijft witte kern | Fase 1: void-bescherming op basis van hemelglas |
+| 2026-10-28 | items | Void-template `GVG / VHV / GVG` (glitchscherf, voidsteen, hemelglas); stilte-template `ZWZ / WKW / ZWZ` (zuiverkristal, witsteen, witte kern) | Ringrecept-patroon van golf 3+4 |
+| 2026-10-28 | conditions | Hemellicht (zuiverkristal + glowstone + waterfles): −20 void + 45 s "Verankerd" (void ×0,5), eenmalig | Patroon dauwdrank/zuiver water |
+| 2026-10-28 | conditions | Galmschelp (4 fossielsteen + 1 witte kern): blazen −20 stilte + 45 s "Galm" (stilte ×0,5), hoorbaar voor anderen, duurzaamheid 16, cooldown 45 s | Geluid tegen stilte; witte kern spaarzaam |
+| 2026-10-28 | items | Golf 5-extra's: glitchscherfblok (9 ↔ 1), glitchpijl (mob teleporteert 1–5 blokken veilig); geen nullietlantaarn | Keuze gebruiker |
+| 2026-10-28 | textures | Nulliet-look: antraciet met paars-cyane glitchranden en een ontbrekende pixel, geen emissive | Keuze gebruiker |

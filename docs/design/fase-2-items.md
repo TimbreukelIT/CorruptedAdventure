@@ -60,8 +60,8 @@ Er wordt per ring gebouwd, in golven, en elke golf begint met een korte vragenro
 | 1 — Basis | Creative-tabs per ring; recepten voor de bestaande blok- en houtsets (dood hout, kloofsteen, palm, druipzwam, verdant, zout, tidestone e.d.); smelten van de ruwe ertsen; het tier-raamwerk (tiers, `needs_*_tool`-tags, smithing-templates); het coatingsysteem (data component + smithing + `RateModifier`); het raamwerk voor verbruiksitems | — |
 | 2 — Ring 2 + Nether-1 | Zonnesteen-tier; de bescherming tegen uitdroging (coating + veldfles); nut voor turkoois en zout; zielkristal; ring 2-extra's | — (vervallen 2026-10-27, zie §6) |
 | 3 — Ring 3 + Nether-2 | Vulkaniet-tier; hittebescherming met dauwkristal; zwavel (buskruit, vuur, brandstof, brandpijlen); vuurrobijn; druipzwam; ring 3-extra's | — |
-| 4 — Ring 4 + Nether-3 | Getijdezilver-tier; gifbescherming met oerijs-water; koubescherming; gifkristal (gifpijlen); jade, aquamarijn en veen; ring 4-extra's | **Teststop na golf 1–4** |
-| 5 — Ring 5 + Nether-4/5 | Nulliet-tier; hemelglas (blok, lens); zuivering met de witte kern (void + stilte); glitchscherven; ring 5-extra's | **Eindtest fase 2** |
+| 4 — Ring 4 + Nether-3 | Getijdezilver-tier; gifbescherming met oerijs-water; koubescherming; gifkristal (gifpijlen); jade, aquamarijn en veen; ring 4-extra's | — (samengevoegd met de eindtest, 2026-10-28, zie §7) |
+| 5 — Ring 5 + Nether-4/5 | Nulliet-tier; hemelglas (blok, lens); zuivering met de witte kern (void + stilte); glitchscherven; ring 5-extra's | **Eindtest fase 2** (golf 1–5 in één speelsessie) |
 
 Tussen de teststops test Claude zelf: build, runData, een server met 2 clients, en recepten en mijnbaarheid via een
 testscript.
@@ -198,7 +198,8 @@ Gebouwd in fase 2 golf 1 (stroom C). Technische uitwerking van §1.3 en §4.
   en het vervangen doet vanilla.
 - **Materiaal = trim-materiaal:** elk coatingmateriaal is een eigen `trim_material` met een eigen kleurenpalet. Zo
   maakt vanilla's `smithing_trim`-recept het harnas, en tekent vanilla de coating in de kleur van het materiaal.
-  - hitte = dauwkristal, gif = oerijs, void én stilte = witte kern (zelfde materiaal, ander patroon);
+  - hitte = dauwkristal, gif = oerijs, stilte = witte kern; void = **hemelglas** (was witte kern; gewijzigd in golf 5,
+    2026-10-28, zie §7.3);
   - uitdroging = turkoois (de geslepen edelsteen `turquoise`), kou = vuurkristal (warmte tegen kou) (bevestigd door de gebruiker, 2026-10-25).
   - De materialen staan **niet** in `#minecraft:trim_materials`: vanilla-templates nemen ze niet (geen decoratieve
     dauwkristal-trim; bevestigd door de gebruiker, 2026-10-25), en per coating is er één recept dat precies zijn eigen materiaal neemt. Een `trim_material` is
@@ -385,3 +386,41 @@ mee.
 - **Ingelegde bouwsets:** `jade_inlaid_tidestone` en `aquamarine_inlaid_lagoon_sandstone` (elk met trap/plaat/muur).
 - **Veen** is brandstof.
 - Niet: de verdant-vrucht als voedsel (blijft in de backlog).
+
+## 7. Golf 5 — ring 5 + Nether-4/5 (vragenronde 2026-10-28)
+Besloten door de gebruiker op 2026-10-28. **Geen aparte teststop golf 1–4:** die gaat op in de eindtest fase 2 (één
+speelsessie over golf 1–5, checklist `docs/plans/fase-2/teststop-golf-1-4.md` + een deel golf 5).
+
+### 7.1 Nulliet (tier)
+- **Set:** `nullite_*` (9 stuks), gesmeed uit **getijdezilver**-gear + `nullite_ingot` + template; stats uit §6.1.
+- **Template:** 6 `sky_glass` + 2 `tidesilver_ingot` + 1 `voidstone` → 1 (vorm `S I S / S C S / S I S`), zonder
+  kopie-recept. Nether-4 levert het template, zoals elke tier uit de vorige Nether-ring komt.
+- **Palet:** diep antraciet/zwart met paars-cyane glitchranden en een enkele "ontbrekende" pixel; het template houdt de
+  void-ring uit golf 3+4. Geen emissive.
+
+### 7.2 Hemelglas (Nether-4)
+- **Hemelzand (`sky_sand`):** 4 `bone_sand` + 1 `purity_crystal_shard` (vormloos) → 4; valt zoals zand.
+- **Hemelglas (`sky_glass`):** smelten van hemelzand; plus **hemelglasruit** (`sky_glass_pane`, 6 → 16).
+- **Hemelglas-lens (`sky_glass_lens`):** verrekijkervorm, 1 hemelglas boven 2 `tidesilver_ingot` → 1 (geen glitchscherf,
+  zodat de lens vóór ring 5 te maken is, voor de bewaker 4→5).
+- **Gebruik:** rechtsklik ingedrukt houden = zoom zoals de verrekijker. Zolang je kijkt: een omlijning (straal 32) van
+  void-gaten onder de grond, glitchblokken en ontbrekende chunks, en de glitch-fog en de schermvervorming worden
+  gedempt. De **server** scant ~1× per seconde rond de kijkende speler en stuurt het resultaat alleen naar die speler;
+  de client tekent alleen.
+
+### 7.3 Void en stilte
+- **Void-coating:** trim-materiaal wordt **hemelglas** (was witte kern); stilte blijft witte kern.
+- **Coating-templates (ringrecept, kopie-recept blijft):** void `G V G / V H V / G V G` (glitchscherf, voidsteen,
+  hemelglas); stilte `Z W Z / W K W / Z W Z` (zuiverkristalscherf, witsteen, witte kern).
+- **Hemellicht (void-drank):** `purity_crystal_shard` + `glowstone_dust` + waterfles (vormloos) → −20 void + 45 s effect
+  **"Verankerd"** (`anchored`, stijgende void ×0,5); eenmalig, geeft de fles terug. Patroon van §6.3/§6.6.
+- **Galmschelp (`echo_shell`, stilte):** 4 `fossil_stone` + 1 `white_core` → 1. Blazen = een luide galm die medespelers
+  horen; −20 stilte + 45 s effect **"Galm"** (`resounding`, stijgende stilte ×0,5). Herbruikbaar: duurzaamheid 16,
+  cooldown 45 s.
+
+### 7.4 Glitchscherven en ring 5-extra's
+- **Glitchscherfblok (`glitch_shard_block`):** 9 ↔ 1, flikkerende texture, geen licht.
+- **Glitchpijl (`glitch_arrow`):** glitchscherf + 4 pijlen → 4 (vorm van de brandpijl); een geraakte mob teleporteert
+  1–5 blokken naar een veilige plek (server, nooit in of richting de void). Hergebruikt de pijl-basis van golf 3+4.
+- **Glitchscherf in recepten:** het kernmateriaal van het void-template (§7.3).
+- Niet: de nullietlantaarn.
