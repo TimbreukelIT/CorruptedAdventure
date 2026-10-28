@@ -7,10 +7,13 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
@@ -32,6 +35,10 @@ import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.registry.ModDataComponents;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModMobEffects;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * The consumables against the conditions (fase-2-items.md §5.3, §6.3, §6.6, §7.3): filling the canteen at a water
@@ -179,6 +186,168 @@ public final class ConsumableGameTests {
             helper.getLevel().getServer().getPlayerList().remove(player);
         }
         helper.succeed();
+    }
+
+    @GameTest(template = "gametest/empty")
+    public static void saltedJerkyFeedsAndMakesThirsty(GameTestHelper helper) {
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        try {
+            player.getFoodData().setFoodLevel(10);
+            PlayerConditions.set(player, Condition.DEHYDRATION, 20.0F);
+            ItemStack left = new ItemStack(ModItems.SALTED_JERKY.get(), 2).finishUsingItem(helper.getLevel(), player);
+            helper.assertValueEqual(player.getFoodData().getFoodLevel(), 16, "food after a jerky");
+            helper.assertValueEqual(PlayerConditions.get(player, Condition.DEHYDRATION), 28.0F, "dehydration after a jerky");
+            helper.assertValueEqual(left.getCount(), 1, "jerky left");
+        } finally {
+            GameTestPlayers.remove(helper, player);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * Every dose of a consumable, with its value and the length of its effect; then "the longest remaining time wins"
+     * (fase-2-items.md §5.3, §6.6): a dose does not cut a longer effect short, and lengthens a shorter one.
+     */
+    @GameTest(template = "gametest/empty")
+    public static void everyDoseLowersItsMeterAndTheLongestRemainingTimeWins(GameTestHelper helper) {
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        List<String> failures = new ArrayList<>();
+        try {
+            List<Dose> doses = List.of(
+                    new Dose("canteen sip", Condition.DEHYDRATION, 25.0F, ModMobEffects.COOLED, 45,
+                            p -> withSips(CanteenItem.MAX_SIPS).finishUsingItem(p.level(), p)),
+                    new Dose("cactus juice", Condition.DEHYDRATION, 15.0F, ModMobEffects.COOLED, 20,
+                            p -> new ItemStack(ModItems.CACTUS_JUICE.get()).finishUsingItem(p.level(), p)),
+                    new Dose("dew draught", Condition.HEAT, 20.0F, ModMobEffects.COOLED, 45,
+                            p -> new ItemStack(ModItems.DEW_DRAUGHT.get()).finishUsingItem(p.level(), p)),
+                    new Dose("purified water", Condition.POISON, 20.0F, ModMobEffects.CLEANSED, 45,
+                            p -> new ItemStack(ModItems.PURIFIED_WATER.get()).finishUsingItem(p.level(), p)),
+                    new Dose("hand warmer charge", Condition.COLD, 20.0F, ModMobEffects.WARMED, 45,
+                            p -> withCharges(HandWarmerItem.MAX_CHARGES).finishUsingItem(p.level(), p)),
+                    new Dose("sky light", Condition.VOID, 20.0F, ModMobEffects.ANCHORED, 45,
+                            p -> new ItemStack(ModItems.SKY_LIGHT_DRAUGHT.get()).finishUsingItem(p.level(), p)),
+                    new Dose("echo shell blow", Condition.SILENCE, 20.0F, ModMobEffects.RESOUNDING, 45,
+                            p -> new ItemStack(ModItems.ECHO_SHELL.get()).use(p.level(), p, InteractionHand.MAIN_HAND)));
+            for (Dose dose : doses) {
+                int ticks = dose.seconds() * 20;
+                player.removeEffect(dose.effect());
+                PlayerConditions.set(player, dose.condition(), 50.0F);
+                dose.consume().accept(player);
+                expect(failures, dose.name() + " meter", PlayerConditions.get(player, dose.condition()), 50.0F - dose.amount());
+                expect(failures, dose.name() + " ticks", effectTicks(player, dose.effect()), ticks);
+
+                player.removeEffect(dose.effect());
+                player.addEffect(new MobEffectInstance(dose.effect(), ticks + 600));
+                dose.consume().accept(player);
+                expect(failures, dose.name() + " on a longer effect", effectTicks(player, dose.effect()), ticks + 600);
+
+                player.removeEffect(dose.effect());
+                player.addEffect(new MobEffectInstance(dose.effect(), 100));
+                dose.consume().accept(player);
+                expect(failures, dose.name() + " on a shorter effect", effectTicks(player, dose.effect()), ticks);
+            }
+        } finally {
+            GameTestPlayers.remove(helper, player);
+        }
+        helper.assertTrue(failures.isEmpty(), String.join("; ", failures));
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/empty")
+    public static void aDrinkFromAStackPutsItsBottleInTheInventory(GameTestHelper helper) {
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        List<String> failures = new ArrayList<>();
+        try {
+            for (Item drink : List.of(ModItems.CACTUS_JUICE.get(), ModItems.DEW_DRAUGHT.get(),
+                    ModItems.PURIFIED_WATER.get(), ModItems.SKY_LIGHT_DRAUGHT.get())) {
+                player.getInventory().clearContent();
+                ItemStack left = new ItemStack(drink, 2).finishUsingItem(helper.getLevel(), player);
+                if (!left.is(drink) || left.getCount() != 1) {
+                    failures.add(drink + " leaves " + left);
+                }
+                if (player.getInventory().countItem(Items.GLASS_BOTTLE) != 1) {
+                    failures.add(drink + " puts no glass bottle in the inventory");
+                }
+            }
+        } finally {
+            GameTestPlayers.remove(helper, player);
+        }
+        helper.assertTrue(failures.isEmpty(), String.join("; ", failures));
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/empty")
+    public static void anEmptyCanteenAndAnEmptyHandWarmerDoNothing(GameTestHelper helper) {
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        try {
+            for (ItemStack empty : List.of(withSips(0), withCharges(0), new ItemStack(ModItems.HAND_WARMER.get()))) {
+                player.setItemInHand(InteractionHand.MAIN_HAND, empty);
+                InteractionResultHolder<ItemStack> result = empty.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+                helper.assertTrue(result.getResult() == InteractionResult.PASS, empty.getItem() + " empty: " + result.getResult());
+                helper.assertFalse(player.isUsingItem(), empty.getItem() + " empty is not used");
+            }
+            PlayerConditions.set(player, Condition.DEHYDRATION, 50.0F);
+            PlayerConditions.set(player, Condition.COLD, 50.0F);
+            withSips(0).finishUsingItem(helper.getLevel(), player);
+            withCharges(0).finishUsingItem(helper.getLevel(), player);
+            helper.assertValueEqual(PlayerConditions.get(player, Condition.DEHYDRATION), 50.0F, "dehydration after an empty sip");
+            helper.assertValueEqual(PlayerConditions.get(player, Condition.COLD), 50.0F, "cold after an empty charge");
+            helper.assertFalse(player.hasEffect(ModMobEffects.COOLED) || player.hasEffect(ModMobEffects.WARMED),
+                    "no effect from an empty canteen or hand warmer");
+        } finally {
+            GameTestPlayers.remove(helper, player);
+        }
+        helper.succeed();
+    }
+
+    /** Through the server's own use path, which refuses an item on cooldown; the 16th blow breaks the shell. */
+    @GameTest(template = "gametest/empty")
+    public static void theEchoShellWaitsForItsCooldownAndBreaksAfterSixteenBlows(GameTestHelper helper) {
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        try {
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.ECHO_SHELL.get()));
+            blow(helper, player);
+            helper.assertValueEqual(player.getMainHandItem().getDamageValue(), 1, "damage after one blow");
+            PlayerConditions.set(player, Condition.SILENCE, 50.0F);
+            InteractionResult again = blow(helper, player);
+            helper.assertTrue(again == InteractionResult.PASS, "a blow during the cooldown: " + again);
+            helper.assertValueEqual(player.getMainHandItem().getDamageValue(), 1, "damage after a blow during the cooldown");
+            helper.assertValueEqual(PlayerConditions.get(player, Condition.SILENCE), 50.0F, "silence after a blow during the cooldown");
+            for (int blows = 2; blows < EchoShellItem.DURABILITY; blows++) {
+                player.getCooldowns().removeCooldown(ModItems.ECHO_SHELL.get());
+                blow(helper, player);
+            }
+            helper.assertValueEqual(player.getMainHandItem().getDamageValue(), EchoShellItem.DURABILITY - 1, "damage after 15 blows");
+            player.getCooldowns().removeCooldown(ModItems.ECHO_SHELL.get());
+            blow(helper, player);
+            helper.assertTrue(player.getMainHandItem().isEmpty(), "the 16th blow breaks the shell: " + player.getMainHandItem());
+        } finally {
+            GameTestPlayers.remove(helper, player);
+        }
+        helper.succeed();
+    }
+
+    private static InteractionResult blow(GameTestHelper helper, ServerPlayer player) {
+        InteractionResult result = player.gameMode.useItem(player, helper.getLevel(), player.getMainHandItem(),
+                InteractionHand.MAIN_HAND);
+        player.stopUsingItem();
+        return result;
+    }
+
+    private static void expect(List<String> failures, String what, float actual, float expected) {
+        if (actual != expected) {
+            failures.add(what + ": " + actual + ", expected " + expected);
+        }
+    }
+
+    private static ItemStack withCharges(int charges) {
+        ItemStack stack = new ItemStack(ModItems.HAND_WARMER.get());
+        stack.set(ModDataComponents.CHARGES, charges);
+        return stack;
+    }
+
+    private record Dose(String name, Condition condition, float amount, Holder<MobEffect> effect, int seconds,
+                        Consumer<ServerPlayer> consume) {
     }
 
     private static int cooledTicks(ServerPlayer player) {
