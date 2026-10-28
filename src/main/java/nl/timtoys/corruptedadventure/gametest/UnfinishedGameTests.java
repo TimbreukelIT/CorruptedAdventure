@@ -97,8 +97,8 @@ public final class UnfinishedGameTests {
                 helper.assertTrue(part.position().distanceTo(expected) < 1.0E-6,
                         spec.name() + " at " + part.position() + ", expected " + expected);
             }
-            // Facing west (yaw 90), his left is south (+z): the Hollow's arm is south of him.
-            helper.assertTrue(part(boss, "arm").getZ() > boss.getZ() + 5.0, "the arm on his left");
+            // Facing west (yaw 90), his right is north (-z): the Hollow's arm (the model's +x) is north of him.
+            helper.assertTrue(part(boss, "arm").getZ() < boss.getZ() - 5.0, "the arm on his right");
             helper.succeed();
         });
     }

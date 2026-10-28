@@ -54,21 +54,24 @@ public class TheUnfinished extends Nightmare {
     private static final EntityDataAccessor<Boolean> DATA_STRIDING =
             SynchedEntityData.defineId(TheUnfinished.class, EntityDataSerializers.BOOLEAN);
 
-    /** Where his parts sit on the rest pose (blocks; tools/textures/unfinished_model.py, 16 units per block). */
+    /**
+     * Where his parts sit on the rest pose (blocks; tools/textures/unfinished_model.py, 16 units per block). The model's +x
+     * is his right (GeckoLib mirrors Bedrock's x), so {@code left} = -x / 16.
+     */
     static final List<UnfinishedPart.Spec> SPECS = List.of(
             new UnfinishedPart.Spec("chest", 0.0, 6.0, 3.8, 5.0F, 8.5F, null, false),
             new UnfinishedPart.Spec("crown", 0.0, 9.5, 6.2, 8.0F, 10.0F, null, false),
-            new UnfinishedPart.Spec("shoulder_r", 5.75, 11.0, 0.5, 5.5F, 3.5F, null, false),
-            new UnfinishedPart.Spec("shoulder_l", -5.6, 11.0, 0.4, 5.0F, 3.5F, null, false),
-            new UnfinishedPart.Spec("arm", 6.3, 0.0, 2.3, 3.5F, 11.0F, Graft.HOLLE, false),
-            new UnfinishedPart.Spec("legs_near", -6.0, 4.5, 0.5, 4.0F, 10.0F, Graft.GELAAGDE, false),
-            new UnfinishedPart.Spec("legs_far", -10.0, 0.0, 0.5, 5.0F, 14.0F, Graft.GELAAGDE, false),
-            new UnfinishedPart.Spec("wing_inner", 10.8, 14.5, 0.4, 4.0F, 4.5F, Graft.HERRIJZENDE, false),
-            new UnfinishedPart.Spec("wing_outer", 14.5, 12.5, 0.4, 4.5F, 6.0F, Graft.HERRIJZENDE, false),
-            new UnfinishedPart.Spec("weak_holle", 7.06, 3.0, 3.5, 2.4F, 2.4F, Graft.HOLLE, true),
-            new UnfinishedPart.Spec("weak_gelaagde", -10.0, 2.2, 3.3, 2.0F, 2.4F, Graft.GELAAGDE, true),
-            new UnfinishedPart.Spec("weak_herrijzende", 7.56, 15.6, -0.38, 2.2F, 2.2F, Graft.HERRIJZENDE, true),
-            new UnfinishedPart.Spec("weak_hoeder", 2.11, 4.0, -4.0, 2.4F, 2.4F, Graft.HOEDER, true));
+            new UnfinishedPart.Spec("shoulder_r", -5.75, 11.0, 0.5, 5.5F, 3.5F, null, false),
+            new UnfinishedPart.Spec("shoulder_l", 5.6, 11.0, 0.4, 5.0F, 3.5F, null, false),
+            new UnfinishedPart.Spec("arm", -6.3, 0.0, 2.3, 3.5F, 11.0F, Graft.HOLLE, false),
+            new UnfinishedPart.Spec("legs_near", 6.0, 4.5, 0.5, 4.0F, 10.0F, Graft.GELAAGDE, false),
+            new UnfinishedPart.Spec("legs_far", 10.0, 0.0, 0.5, 5.0F, 14.0F, Graft.GELAAGDE, false),
+            new UnfinishedPart.Spec("wing_inner", -10.8, 14.5, 0.4, 4.0F, 4.5F, Graft.HERRIJZENDE, false),
+            new UnfinishedPart.Spec("wing_outer", -14.5, 12.5, 0.4, 4.5F, 6.0F, Graft.HERRIJZENDE, false),
+            new UnfinishedPart.Spec("weak_holle", -7.06, 3.0, 3.5, 2.4F, 2.4F, Graft.HOLLE, true),
+            new UnfinishedPart.Spec("weak_gelaagde", 10.0, 2.2, 3.3, 2.0F, 2.4F, Graft.GELAAGDE, true),
+            new UnfinishedPart.Spec("weak_herrijzende", -7.56, 15.6, -0.38, 2.2F, 2.2F, Graft.HERRIJZENDE, true),
+            new UnfinishedPart.Spec("weak_hoeder", -2.11, 4.0, -4.0, 2.4F, 2.4F, Graft.HOEDER, true));
     /** A stride's speed: the movement speed attribute times this, in blocks per tick. */
     private static final double STRIDE_FACTOR = 0.4;
     /** Degrees per tick he turns; he only walks when he faces within {@link #WALK_CONE} of where he goes. */

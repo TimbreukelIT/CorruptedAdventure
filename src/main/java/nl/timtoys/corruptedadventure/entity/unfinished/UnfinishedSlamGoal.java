@@ -10,12 +10,12 @@ import nl.timtoys.corruptedadventure.config.UnfinishedConfig;
 
 /**
  * His main attack, with the grafted arm of The Hollow (or, once that fell away, his whole torso): he turns so that his
- * target stands where the fist lands, front-left of him ({@link #FIST_LEFT}, {@link #FIST_FORWARD}: the slam animation's
+ * target stands where the fist lands, front-right of him ({@link #FIST_LEFT}, {@link #FIST_FORWARD}: the slam animation's
  * landing spot), raises it for {@code slamWindupTicks} and brings it down. Everything within {@code slamRadius} of that
  * spot (and a few blocks up or down) takes the attack damage and is thrown away from it. Whoever stepped away is safe.
  */
 final class UnfinishedSlamGoal extends UnfinishedAttackGoal {
-    static final double FIST_LEFT = 6.0;
+    static final double FIST_LEFT = -6.0;
     static final double FIST_FORWARD = 6.5;
     private static final double MAX_DISTANCE = 13.0;
     private static final double REACH_UP = 4.0;

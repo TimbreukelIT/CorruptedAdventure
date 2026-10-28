@@ -17,8 +17,8 @@ import org.jetbrains.annotations.Nullable;
  * does losing the legs. Only players in the fight are grabbed.
  */
 final class UnfinishedGrabGoal extends UnfinishedAttackGoal {
-    /** The claw on the rest pose of the grab: front-right of him. */
-    private static final double CLAW_LEFT = -8.0;
+    /** The claw on the rest pose of the grab: front-left of him. */
+    private static final double CLAW_LEFT = 8.0;
     private static final double CLAW_FORWARD = 6.0;
     private static final double CLAW_START_UP = 3.0;
     /** Blocks from the closing claw within which the player is caught: the leg sweeps a wide arc. */
