@@ -25,6 +25,12 @@ gewoon `item/generated`.
 ## Voortgang
 - 2026-10-28 16:05 start; vraag naar main: telt blazen als geitenhoorn voor de stilte-regel (A aanbevolen: ja).
 - 16:30 code af met A; build loopt. Main: gebruiker kiest A.
+- 16:39 build (incl. unit tests; config-sleuteltests bijgewerkt) groen; 16:43 runData groen; 16:44 GameTests 22/22
+  groen; 16:45 server-smoke n=67 groen (geen client-class-fouten).
+- 16:47 commits `conditions:` (304872f1) en `items:` (18a55e6d); `/code-review low d55ff491..f2g5/consumables`: geen
+  bevindingen.
+- Daarna `git merge main` (A + G): conflict in het filter van `ModBlocksTest` opgelost (beide filters samen); runData
+  zonder wijzigingen, build groen.
 
 ## Voorlopig (bevestigen bij de teststop)
 - Hemellicht: shapeless zuiverkristalscherf + gloeisteenstof + waterfles (alleen water) → 1, stack 16, drinkduur 32
@@ -66,7 +72,7 @@ gewoon `item/generated`.
 - `ModItems`: `SKY_LIGHT_DRAUGHT` (Nether-ring 4, `DoseDrinkItem`, stack 16), `ECHO_SHELL` (Nether-ring 5).
 - Datagen: `ConsumableRecipes` (Hemellicht, Galmschelp; helper `waterBottle()` gedeeld met de dauwdrank),
   `ConsumableItemModels`, `ConsumableText`.
-- Tests: `RateEffectsTest` (anchored, resounding), `ModBlocksTest` (Nether-4/5-materiaalvolgorde filtert
+- Tests: `RateEffectsTest` (anchored, resounding), `VoidConfigTest`/`SilenceConfigTest` (nieuwe sleutels, 20 en 18), `ModBlocksTest` (Nether-4/5-materiaalvolgorde filtert
   `DoseDrinkItem` en `EchoShellItem`), `ModCreativeTabsTest` (tab 4 en 5); GameTest
   `ConsumableGameTests.skyLightAnchorsAndTheEchoShellResoundsWearsAndCoolsDown`.
 
