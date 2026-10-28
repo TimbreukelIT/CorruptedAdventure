@@ -598,3 +598,9 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [atmosphere] Eigen geluiden voor De Holle (kraak vóór het verspringen, slag, uit/in fase, wissel, aftocht, zielkristal-pin); stap 1 gebruikt vanilla-geluiden met lage pitch (`entity/hollow/HollowEffects`). (bron: H1)
 - [mobs] Een spawn-ei of creative-tab-ingang voor De Holle ontbreekt bewust (stap 1: alleen `/summon`); beslissen bij stap 3 (hij is uniek per server). (bron: H1)
 - [atmosphere] Echte omgekeerde geluiden voor de voortekens van De Holle (nu vanilla-geluiden op lage pitch in `entity/hollow/RiftOmens`); vraagt eigen `.ogg`-bestanden. (bron: H1 stap 2)
+
+## Uit fase 4 De Verloren Hoeder stap 1 (R4, 2026-10-28)
+- [atmosphere] Eigen geluiden voor De Verloren Hoeder (lokroep/zang, gifadem, uitval en beet, staartzwiep, brekende kroontak, gedoofde kroon, landing, aftocht); stap 1 gebruikt vanilla-placeholders (`entity/lostkeeper/KeeperEffects`). (bron: R4)
+- [atmosphere] De mistbank van De Verloren Hoeder is alleen te zien als je erin of vlakbij bent (fog rond de camera); van ver zou je hem moeten zien "optrekken" (bijv. client-deeltjes of een mistwand aan de rand van de bank). (bron: R4)
+- [mobs] Koppeling van de mistbank van De Verloren Hoeder aan de mist-mobs van ring 4 (die bovengronds komen tijdens dikke mist). (bron: R4)
+- [mobs] Een spawn-ei of creative-tab-ingang voor De Verloren Hoeder ontbreekt bewust (stap 1: alleen `/summon`). (bron: R4)

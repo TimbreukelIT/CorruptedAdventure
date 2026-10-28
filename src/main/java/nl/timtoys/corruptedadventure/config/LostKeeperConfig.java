@@ -83,7 +83,7 @@ public final class LostKeeperConfig {
         mistFade = builder.comment("Blocks beyond mistRadius over which the mist thins out to nothing.")
                 .defineInRange("mistFade", 24.0, 1.0, 256.0);
         mistVisibility = builder.comment("Blocks of view in the thickest mist (the fog's far plane).")
-                .defineInRange("mistVisibility", 14.0, 2.0, 256.0);
+                .defineInRange("mistVisibility", 32.0, 2.0, 256.0);
         mistSyncRange = builder.comment("Blocks within which players get its mist bank (beyond it they see clear air).")
                 .defineInRange("mistSyncRange", 192.0, 16.0, 512.0);
         builder.pop();
