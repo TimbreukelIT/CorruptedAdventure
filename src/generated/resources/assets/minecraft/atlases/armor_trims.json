@@ -48,7 +48,7 @@
       "type": "minecraft:paletted_permutations",
       "palette_key": "corruptedadventure:trims/color_palettes/coating_palette",
       "permutations": {
-        "white_core": "corruptedadventure:trims/color_palettes/white_core"
+        "sky_glass": "corruptedadventure:trims/color_palettes/sky_glass"
       },
       "textures": [
         "corruptedadventure:trims/models/armor/void_coating",

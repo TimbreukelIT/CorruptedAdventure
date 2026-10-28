@@ -117,11 +117,15 @@ final class ModItemModelProvider extends ItemModelProvider {
         golf5SkyGlass();
     }
 
-    /** Phase 2 golf 5 (stream H): sand and glass as blocks, the pane flat on the glass texture like vanilla's. */
+    /**
+     * Phase 2 golf 5 (stream H): sand, glass and glitch shard block as blocks, the pane flat on the glass texture like
+     * vanilla's.
+     */
     private void golf5SkyGlass() {
         blockItem(ModBlocks.SKY_SAND);
         blockItem(ModBlocks.SKY_GLASS);
         flatItem(ModBlocks.SKY_GLASS_PANE, "sky_glass");
+        blockItem(ModBlocks.GLITCH_SHARD_BLOCK);
     }
 
     /** Phase 2 golf 3 (stream R3): the blocks, the raft as a flat item, the ember berries and the dripshroom stew. */

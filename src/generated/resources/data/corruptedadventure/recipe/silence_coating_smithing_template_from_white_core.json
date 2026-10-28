@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "K": {
+      "item": "corruptedadventure:white_core"
+    },
+    "W": {
+      "item": "corruptedadventure:white_stone"
+    },
+    "Z": {
+      "item": "corruptedadventure:purity_crystal_shard"
+    }
+  },
+  "pattern": [
+    "ZWZ",
+    "WKW",
+    "ZWZ"
+  ],
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:silence_coating_smithing_template"
+  }
+}

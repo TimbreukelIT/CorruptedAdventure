@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_glitch_shard": {
+      "conditions": {
+        "items": [
+          {
+            "items": "corruptedadventure:glitch_shard"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "corruptedadventure:void_coating_smithing_template_from_sky_glass"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_glitch_shard"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "corruptedadventure:void_coating_smithing_template_from_sky_glass"
+    ]
+  }
+}

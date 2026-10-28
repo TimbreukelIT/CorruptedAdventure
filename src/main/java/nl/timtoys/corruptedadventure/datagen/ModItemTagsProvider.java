@@ -136,10 +136,12 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         golf5SkyGlass();
     }
 
-    /** Phase 2 golf 5 (stream H): the sky glass and its pane as glass items too. */
+    /** Phase 2 golf 5 (stream H): sky glass and pane as glass items too, the glitch shard block as a storage block. */
     private void golf5SkyGlass() {
         copy(Tags.Blocks.GLASS_BLOCKS, Tags.Items.GLASS_BLOCKS);
         copy(Tags.Blocks.GLASS_PANES, Tags.Items.GLASS_PANES);
+        copy(ModTags.Blocks.STORAGE_BLOCKS_GLITCH_SHARD, ModTags.Items.STORAGE_BLOCKS_GLITCH_SHARD);
+        tag(Tags.Items.STORAGE_BLOCKS).addTag(ModTags.Items.STORAGE_BLOCKS_GLITCH_SHARD);
     }
 
     /** Phase 2 golf 3 (stream R3): the sulfur block, the ember berries like sweet berries, the stew like mushroom stew. */
