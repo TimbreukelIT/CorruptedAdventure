@@ -103,14 +103,14 @@ public final class RisenAshRain {
         }
     }
 
-    /** A hit of another player on {@code target}: knocks ash off; false (a normal hit) when there is none. */
+    /** A hit of another player on {@code target}: knocks ash off; false (a normal hit) when none came off. */
     public static boolean knockOff(Player target) {
         int layers = layers(target);
         if (layers == 0) {
             return false;
         }
         setLayers(target, layers - ServerConfig.RISEN.ashKnockOff.get(), ServerConfig.RISEN);
-        return true;
+        return layers(target) < layers;
     }
 
     /** One more layer of ash, as from the rain. */
