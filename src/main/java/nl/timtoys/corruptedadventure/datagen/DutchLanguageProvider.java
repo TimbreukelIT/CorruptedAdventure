@@ -16,6 +16,7 @@ import nl.timtoys.corruptedadventure.datagen.lang.CoatingText;
 import nl.timtoys.corruptedadventure.datagen.lang.ArrowText;
 import nl.timtoys.corruptedadventure.datagen.lang.LensText;
 import nl.timtoys.corruptedadventure.datagen.lang.NightmareText;
+import nl.timtoys.corruptedadventure.datagen.lang.WeaknessText;
 import nl.timtoys.corruptedadventure.datagen.lang.ConsumableText;
 import nl.timtoys.corruptedadventure.datagen.lang.GearNames;
 import nl.timtoys.corruptedadventure.datagen.lang.LangOutput;
@@ -292,6 +293,8 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         LensText.addDutch(this);
         // Phase 4: the Nightmares.
         NightmareText.addDutch(this);
+        // Phase 4 (stream I): the weakness items.
+        WeaknessText.addDutch(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s is uitgedroogd");
