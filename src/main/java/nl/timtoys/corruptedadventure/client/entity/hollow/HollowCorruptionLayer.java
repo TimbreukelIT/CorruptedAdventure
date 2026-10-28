@@ -14,7 +14,8 @@ import software.bernie.geckolib.util.Color;
 
 /**
  * The corruption of ring 5 sliding down over The Hollow like a liquid: a translucent second pass of the model with
- * {@code the_hollow_corruption.png}, an 8-frame animated texture ({@code .mcmeta}) whose drips run down in world space.
+ * {@code the_hollow_corruption.png}, an 8-frame animated texture ({@code .mcmeta}) in which a bright drop slides down
+ * each longer drip of the base texture.
  */
 final class HollowCorruptionLayer extends GeoRenderLayer<TheHollow> {
     private static final ResourceLocation TEXTURE = CorruptedAdventure.id("textures/entity/the_hollow_corruption.png");
