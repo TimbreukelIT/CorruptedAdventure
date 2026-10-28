@@ -15,6 +15,7 @@ import nl.timtoys.corruptedadventure.datagen.lang.Golf5SkyGlassNames;
 import nl.timtoys.corruptedadventure.datagen.lang.CoatingText;
 import nl.timtoys.corruptedadventure.datagen.lang.ArrowText;
 import nl.timtoys.corruptedadventure.datagen.lang.LensText;
+import nl.timtoys.corruptedadventure.datagen.lang.NightmareDirectorText;
 import nl.timtoys.corruptedadventure.datagen.lang.NightmareText;
 import nl.timtoys.corruptedadventure.datagen.lang.ConsumableText;
 import nl.timtoys.corruptedadventure.datagen.lang.GearNames;
@@ -292,6 +293,8 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         LensText.addDutch(this);
         // Phase 4: the Nightmares.
         NightmareText.addDutch(this);
+        // Phase 4 (D): the director's test commands.
+        NightmareDirectorText.addDutch(this);
 
         // Death messages of the conditions (damage types: ConditionDamageTypes).
         add("death.attack.corruptedadventure.dehydration", "%1$s is uitgedroogd");
