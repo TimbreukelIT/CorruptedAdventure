@@ -26,6 +26,10 @@ Categorie `mobs`; attachment-registratie apart als `infra:`.
 - 20:54 server-smoke `dsmoke` (vers): start zonder fouten; via RCON `/ca nightmare status` (De Holle zwervend op 674 25 in
   ring 1, de andere vier "no entity yet"), `arrive` zonder speler → nette fout, `reset 1` → volgende seconde één stap van
   32 blokken; `corruptedadventure_nightmares.dat` geschreven; gestopt, slot vrij.
+- 21:10 review (deels, geen bevindingen) + eigen review-agent: 3 kleine punten. Eigen herlezing State/Roaming/Threats/
+  Targets: virtuele positie buiten de ring bleef daar steken → loopt nu naar huis.
+- 21:30 fixes `7c341fa7` (Peaceful, cooldown na komst zonder plek, naar huis) en `4eb1e1a5` (max-HP boven 1024 virtueel);
+  `build` groen (unit 9/9), `runData`, GameTests 48/48.
 
 ## Voorlopig (bevestigen bij de teststop)
 - Commando's onder de bestaande root **`/ca nightmare …`** (niet `/corruptedadventure …`): alle debugcommando's van de mod
