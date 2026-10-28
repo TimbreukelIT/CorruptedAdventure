@@ -1,0 +1,17 @@
+package nl.timtoys.corruptedadventure.datagen.lang;
+
+import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
+
+/** The Nightmares (phase 4): entity names, which the boss bars show too. English is mandatory, Dutch welcome. */
+public final class NightmareText {
+    private NightmareText() {
+    }
+
+    public static void addEnglish(LangOutput lang) {
+        lang.add(ModEntityTypes.THE_HOLLOW.get().getDescriptionId(), "The Hollow");
+    }
+
+    public static void addDutch(LangOutput lang) {
+        lang.add(ModEntityTypes.THE_HOLLOW.get().getDescriptionId(), "De Holle");
+    }
+}

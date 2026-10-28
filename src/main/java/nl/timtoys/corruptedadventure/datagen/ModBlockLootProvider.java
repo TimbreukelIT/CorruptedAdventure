@@ -49,7 +49,9 @@ final class ModBlockLootProvider extends BlockLootSubProvider {
         return new LootTableProvider(output, Set.of(),
                 List.of(new LootTableProvider.SubProviderEntry(ModBlockLootProvider::new, LootContextParamSets.BLOCK),
                         // 94: the abandoned camps' chests (one loot provider per pack: its name must be unique).
-                        new LootTableProvider.SubProviderEntry(Ring5ChestLoot::new, LootContextParamSets.CHEST)), lookup);
+                        new LootTableProvider.SubProviderEntry(Ring5ChestLoot::new, LootContextParamSets.CHEST),
+                        // Phase 4: the Nightmares' drops.
+                        new LootTableProvider.SubProviderEntry(HollowLoot::new, LootContextParamSets.ENTITY)), lookup);
     }
 
     @Override

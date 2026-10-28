@@ -593,3 +593,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 
 ## Uit de fase 4-sparring De Holle (2026-10-28)
 - [items] Uniek beloningsitem van De Holle (bijv. zijn void-hart); nu dropt hij alleen vanilla (XP, zielkristal, diamant). Zie `docs/design/fase-4-nightmares-concept.md`. (bron: sparring 2026-10-28)
+
+## Uit fase 4 De Holle stap 1 (H1, 2026-10-28)
+- [atmosphere] Eigen geluiden voor De Holle (kraak vóór het verspringen, slag, uit/in fase, wissel, aftocht, zielkristal-pin); stap 1 gebruikt vanilla-geluiden met lage pitch (`entity/hollow/HollowEffects`). (bron: H1)
+- [mobs] Een spawn-ei of creative-tab-ingang voor De Holle ontbreekt bewust (stap 1: alleen `/summon`); beslissen bij stap 3 (hij is uniek per server). (bron: H1)

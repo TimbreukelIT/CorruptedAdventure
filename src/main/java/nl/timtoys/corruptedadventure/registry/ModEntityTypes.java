@@ -4,10 +4,12 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.EffectArrow;
+import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
 
 /** Entity types. Their renderers register in {@code client/} (CLAUDE.md §7). */
 public final class ModEntityTypes {
@@ -21,11 +23,24 @@ public final class ModEntityTypes {
     /** Phase 2 golf 5 (§7.4): the arrow of {@code ArrowEffect.GLITCH}. */
     public static final DeferredHolder<EntityType<?>, EntityType<EffectArrow>> GLITCH_ARROW = arrow("glitch_arrow");
 
+    /**
+     * Phase 4: The Hollow, the ring 1 Nightmare. Hitbox 2.5 x 5.5 (the model is bigger, see its culling box); tracked
+     * from far, a boss is seen before it is near.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<TheHollow>> THE_HOLLOW = ENTITY_TYPES.register("the_hollow",
+            () -> EntityType.Builder.<TheHollow>of(TheHollow::new, MobCategory.MONSTER)
+                    .sized(2.5F, 5.5F).eyeHeight(4.4F).clientTrackingRange(10).build("the_hollow"));
+
     private ModEntityTypes() {
     }
 
     public static void register(IEventBus modBus) {
         ENTITY_TYPES.register(modBus);
+        modBus.addListener(ModEntityTypes::onAttributes);
+    }
+
+    private static void onAttributes(EntityAttributeCreationEvent event) {
+        event.put(THE_HOLLOW.get(), TheHollow.createAttributes().build());
     }
 
     /** Sized and tracked like vanilla's arrow. */

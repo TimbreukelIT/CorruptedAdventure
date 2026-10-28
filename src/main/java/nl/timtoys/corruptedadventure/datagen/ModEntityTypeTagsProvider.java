@@ -4,6 +4,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.EntityTypeTagsProvider;
 import net.minecraft.tags.EntityTypeTags;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
@@ -12,7 +13,8 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Entity-type tags. The fire, poison and glitch arrows are in {@code #minecraft:arrows} like vanilla's arrows, so they count
- * as impact projectiles too (they break pointed dripstone, chorus flowers and decorated pots).
+ * as impact projectiles too (they break pointed dripstone, chorus flowers and decorated pots). The Nightmares are in
+ * {@code #c:bosses}.
  */
 final class ModEntityTypeTagsProvider extends EntityTypeTagsProvider {
     ModEntityTypeTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup,
@@ -24,5 +26,7 @@ final class ModEntityTypeTagsProvider extends EntityTypeTagsProvider {
     protected void addTags(HolderLookup.Provider provider) {
         tag(EntityTypeTags.ARROWS).add(ModEntityTypes.FIRE_ARROW.get(), ModEntityTypes.POISON_ARROW.get(),
                 ModEntityTypes.GLITCH_ARROW.get());
+        // Phase 4: other mods treat the Nightmares as bosses (no capturing in mob nets and the like).
+        tag(Tags.EntityTypes.BOSSES).add(ModEntityTypes.THE_HOLLOW.get());
     }
 }
