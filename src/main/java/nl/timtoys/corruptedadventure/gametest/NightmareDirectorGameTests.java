@@ -33,8 +33,8 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * The Nightmare director (phase 4 steps 2 and 3): the threat per player and ring, whom it comes for, defeat and return
- * with more strength, retreat and a missing entity back to virtual, a stale directed copy removing itself, and the cooldown
- * after an arrival without room. The
+ * with more strength, retreat and a missing entity back to virtual, a stale directed copy removing itself, the cooldown
+ * after an arrival without room, and the health above vanilla's cap of 1024. The
  * GameTest world is no ring world, so each test drives a director of its own ({@link NightmareDirector#forTest}) whose
  * "ring 1" is exactly the test's bounds (everything outside is the void), with its own fresh data and an arrival of 3
  * ticks of omens that puts The Hollow, without free will, in the middle of the empty {@code gametest/hollow_arena}.
@@ -264,6 +264,29 @@ public final class NightmareDirectorGameTests {
         director.tick(level, after);
         helper.assertTrue(state.phase() == NightmareState.Phase.COMING, "after the cooldown it comes again: " + state.phase());
         GameTestPlayers.remove(helper, player);
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena", batch = BATCH, timeoutTicks = 100)
+    public static void aboveTheHealthCapItTakesTheHitsOfItsFullHealth(GameTestHelper helper) {
+        NightmareDirector director = NightmareDirector.forTest(rings(helper), new NightmareDirectorData(),
+                kind -> new TestArrival(helper));
+        Nightmare hollow = helper.spawnWithNoFreeWill(ModEntityTypes.THE_HOLLOW.get(), MIDDLE);
+        NightmareConfig config = ServerConfig.HOLLOW.common;
+        // 300 × 4 = 1200 with one fighter or none: above vanilla's cap of 1024.
+        hollow.direct(director, 4.0F);
+        double full = NightmareScaling.maxHealth(config.baseHealth.get(), config.healthPerExtraPlayer.get(),
+                hollow.fighters().size()) * 4.0;
+        helper.assertTrue(full > 1024.0, "the test needs a value above the cap: " + full);
+        helper.assertValueEqual(hollow.getMaxHealth(), 1024.0F, "the real attribute is capped");
+        helper.assertTrue(Math.abs(hollow.virtualMaxHealth() - full) < EPSILON, "virtual " + hollow.virtualMaxHealth());
+        helper.assertTrue(Math.abs(hollow.virtualHealth() - full) < 0.1, "full virtual health " + hollow.virtualHealth());
+        helper.assertTrue(hollow.hurt(helper.getLevel().damageSources().magic(), 120.0F), "the hit lands");
+        helper.assertTrue(Math.abs(hollow.virtualHealth() - (full - 120.0)) < 0.1,
+                "virtual health after 120 damage: " + hollow.virtualHealth());
+        double ratio = hollow.getHealth() / hollow.getMaxHealth();
+        helper.assertTrue(Math.abs(ratio - (full - 120.0) / full) < 1.0e-4, "the boss bar ratio: " + ratio);
+        hollow.discard();
         helper.succeed();
     }
 

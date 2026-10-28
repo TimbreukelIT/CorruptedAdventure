@@ -42,7 +42,18 @@ Categorie `mobs`; attachment-registratie apart als `infra:`.
   `fightRadius`.
 - Doelwit moet tijdens de voortekens in de ring blijven, online en levend zijn; anders stoppen de voortekens
   (`cancelled`), zwerft hij verder en blijft de dreiging staan (dus hij probeert het snel opnieuw).
-- Geen plek om te verschijnen: elke seconde opnieuw, max. 20 s, dan verder zwerven.
+- Geen plek om te verschijnen: elke seconde opnieuw, max. 20 s, dan verder zwerven en 180 s (`failedArrivalCooldownSeconds`)
+  niet zoeken (review: geen voortekens elke 31 s voor een speler in een boot). Eigen veld `nextSeekTick`, zodat het
+  zwerven gewoon doorloopt.
+- **Peaceful:** geen Nightmares. De dreiging blijft staan, de regisseur zoekt niet, lopende voortekens stoppen
+  (`cancelled`), `/ca nightmare arrive` weigert met een melding.
+- Een virtuele positie buiten zijn ring (hij volgde een speler naar buiten en ging daar terug naar virtueel) loopt in
+  rechte lijn terug naar het midden van zijn band, daarna zwerft hij weer binnen de ring.
+- **Max-HP boven 1024** (vanilla-plafond): de basis rekent met `virtualMaxHealth()` = basis × spelerschaal × sterkte (het
+  attribuut zonder plafond); de echte max-HP blijft ≤ 1024 en elke treffer wordt gedeeld door `healthScale()` (virtueel /
+  echt), zodat het aantal treffers en de bossbar-verhouding kloppen. Drempels lezen `virtualMaxHealth()`/`virtualHealth()`.
+- (Notitie, review punt 3) Een `/summon` met NBT `NightmareDirected:1b` (gekopieerd van een geregisseerde) verdwijnt bij
+  zijn eerste tick: hij is niet actueel bij de regisseur. Telt nooit mee; bewust zo gelaten.
 - Zwerven: elke 60 s een stap van 32 blokken; koers draait willekeurig ±45°; buiten zijn ring probeert hij andere
   richtingen, anders blijft hij staan. Start op een willekeurige hoek in het midden van zijn ringband.
 - Een aanwezige Nightmare die 15 s niet gevonden wordt of niet tickt (chunk ontladen, herstart zonder speler) gaat terug
