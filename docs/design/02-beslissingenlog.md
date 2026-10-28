@@ -1127,3 +1127,7 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-28 | mobs | De Holle: 300 HP, +50% per extra speler, ~10 schade; komt altijd (ook overdag); 0 HP = verslagen, iedereen weg/dood = terugtrekken + genezen | Fase 4-sparring |
 | 2026-10-28 | mobs | De Holle: terugkeer na 3 ingame-dagen, +25% HP/schade per keer (max 3×); beloning voorlopig vanilla (XP, zielkristal, diamant), uniek item later in `items` | Ring 1 voelt onveilig; mobs-scope blijft schoon |
 | 2026-10-28 | mobs | Zwakte De Holle: slaan met een zielkristal pint hem 4 s in fase (geen verspringen, niet doorzichtig), kost 1 kristal | Geeft Nether-1 een rol in het gevecht |
+| 2026-10-28 | mobs | Alle vijf Nightmares eerst tot stap 1 (lijf + gevecht); komst/rondzwerven/terugkeer daarna als gedeeld systeem | Minder dubbel werk, snel speelbaar |
+| 2026-10-28 | mobs | Holle-regels voor alle vijf, HP oplopend 300/450/600/800/1200; beloning XP + ringmateriaal | Fase 4-sparring |
+| 2026-10-28 | items | Zonnesteen-flits (ring 2) en versterkte ring 3-hoorn nu volledig maken; ring 5 gebruikt de bestaande hemelglaslens | Gebruiker: zwaktes meteen compleet |
+| 2026-10-28 | mobs | Open ontwerppunten per Nightmare: voorlopige invulling door de bouwstromen, bevestigen bij de teststop | Snelheid, zoals fase 2 |
