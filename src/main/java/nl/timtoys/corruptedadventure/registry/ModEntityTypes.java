@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.EffectArrow;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowRift;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
+import nl.timtoys.corruptedadventure.entity.lostkeeper.TheLostKeeper;
 
 /** Entity types. Their renderers register in {@code client/} (CLAUDE.md §7). */
 public final class ModEntityTypes {
@@ -36,6 +37,14 @@ public final class ModEntityTypes {
             () -> EntityType.Builder.<HollowRift>of(HollowRift::new, MobCategory.MISC)
                     .sized(3.0F, 7.0F).clientTrackingRange(10).updateInterval(20).fireImmune().build("hollow_rift"));
 
+    /**
+     * Phase 4: The Lost Keeper, the ring 4 Nightmare. The hitbox is its head (2.6 x 2.5, eyes at its centre); its ~24-block
+     * body is a chain of part hitboxes in {@code TheLostKeeper}. Tracked from far.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<TheLostKeeper>> THE_LOST_KEEPER = ENTITY_TYPES.register(
+            "the_lost_keeper", () -> EntityType.Builder.<TheLostKeeper>of(TheLostKeeper::new, MobCategory.MONSTER)
+                    .sized(2.6F, 2.5F).eyeHeight(1.25F).clientTrackingRange(12).build("the_lost_keeper"));
+
     private ModEntityTypes() {
     }
 
@@ -46,6 +55,7 @@ public final class ModEntityTypes {
 
     private static void onAttributes(EntityAttributeCreationEvent event) {
         event.put(THE_HOLLOW.get(), TheHollow.createAttributes().build());
+        event.put(THE_LOST_KEEPER.get(), TheLostKeeper.createAttributes().build());
     }
 
     /** Sized and tracked like vanilla's arrow. */

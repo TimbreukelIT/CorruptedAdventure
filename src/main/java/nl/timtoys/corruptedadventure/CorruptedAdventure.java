@@ -24,6 +24,7 @@ import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowArrival;
 import nl.timtoys.corruptedadventure.entity.nightmare.NightmareKind;
+import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperHoldRules;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
 import nl.timtoys.corruptedadventure.item.lens.LensWatch;
@@ -134,6 +135,8 @@ public final class CorruptedAdventure {
         LensWatch.register(NeoForge.EVENT_BUS);
         // Phase 4 step 2 (H1): The Hollow comes through its rift.
         NightmareKind.HOLLOW.arrival(new HollowArrival());
+        // Phase 4: a fighter The Lost Keeper holds cannot sneak off.
+        KeeperHoldRules.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

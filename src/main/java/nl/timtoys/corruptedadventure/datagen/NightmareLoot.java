@@ -38,6 +38,9 @@ final class NightmareLoot implements LootTableSubProvider {
         add(output, ModEntityTypes.THE_HOLLOW.get(), table(
                 drop(ModItems.SOUL_CRYSTAL.get(), 6, 10, 2),
                 drop(Items.DIAMOND, 2, 4, 0)));
+        // Ring 4: tide silver.
+        add(output, ModEntityTypes.THE_LOST_KEEPER.get(), table(
+                drop(ModItems.TIDESILVER_INGOT.get(), 6, 10, 2)));
     }
 
     private static void add(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> output, EntityType<?> type,

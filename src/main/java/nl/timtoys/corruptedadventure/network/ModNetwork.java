@@ -41,5 +41,8 @@ public final class ModNetwork {
                 ClientboundHandlers.forward(VolcanoPlumesPayload.TYPE));
         registrar.playToClient(LensScanPayload.TYPE, LensScanPayload.STREAM_CODEC,
                 ClientboundHandlers.forward(LensScanPayload.TYPE));
+        // Phase 4: The Lost Keeper's mist bank.
+        registrar.playToClient(KeeperMistPayload.TYPE, KeeperMistPayload.STREAM_CODEC,
+                ClientboundHandlers.forward(KeeperMistPayload.TYPE));
     }
 }

@@ -28,5 +28,8 @@ final class ModEntityTypeTagsProvider extends EntityTypeTagsProvider {
                 ModEntityTypes.GLITCH_ARROW.get());
         // Phase 4: other mods treat the Nightmares as bosses (no capturing in mob nets and the like).
         tag(Tags.EntityTypes.BOSSES).add(ModEntityTypes.THE_HOLLOW.get());
+        tag(Tags.EntityTypes.BOSSES).add(ModEntityTypes.THE_LOST_KEEPER.get());
+        // Phase 4: The Lost Keeper is a sea serpent; it does not drown.
+        tag(EntityTypeTags.CAN_BREATHE_UNDER_WATER).add(ModEntityTypes.THE_LOST_KEEPER.get());
     }
 }
