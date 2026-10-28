@@ -606,3 +606,6 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [atmosphere] Eigen geluiden voor De Herrijzende (koor, schreeuw, vleugelslag, duik, oprijzen); stap 1 gebruikt gestapelde vanilla-geluiden (`entity/risen/RisenEffects`). (bron: R3)
 - [items] Uniek beloningsitem van De Herrijzende; nu alleen XP en vulkanietstaven. (bron: R3)
 - [mobs] Explosies raken ook de deel-hitboxen van De Herrijzende (vleugels, kop) en tellen dan mogelijk dubbel; vastleggen of dat zo mag. (bron: R3)
+
+## Uit de integratie van fase 4 (INT, 2026-10-28)
+- [items] De GameTest `ArrowGameTests.aDispenserShootsGlitchArrows` is flaky (faalt soms in een volle run); oorzaak uitzoeken (waarschijnlijk hopt de glitchpijl of zijn doelwit uit het testgebied). (bron: INT)
