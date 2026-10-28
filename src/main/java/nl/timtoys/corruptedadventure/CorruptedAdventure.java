@@ -23,6 +23,7 @@ import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
 import nl.timtoys.corruptedadventure.effect.WeakenedTargeting;
+import nl.timtoys.corruptedadventure.entity.layered.LayeredGrip;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
 import nl.timtoys.corruptedadventure.item.lens.LensWatch;
@@ -133,6 +134,8 @@ public final class CorruptedAdventure {
         LensWatch.register(NeoForge.EVENT_BUS);
         // Phase 4 (I): dazzled and stunned mobs take no target.
         WeakenedTargeting.register(NeoForge.EVENT_BUS);
+        // Phase 4 (R2): a player in The Layered's beak cannot sneak off.
+        LayeredGrip.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

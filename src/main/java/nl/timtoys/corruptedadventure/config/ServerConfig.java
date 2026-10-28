@@ -54,6 +54,8 @@ public final class ServerConfig {
     public static final HollowConfig HOLLOW;
     /** {@code [nightmares.director]}: threat, roaming, arrival and return of all five Nightmares (phase 4 steps 2 and 3). */
     public static final NightmareDirectorConfig NIGHTMARE_DIRECTOR;
+    /** {@code [nightmares.layered]}: the ring 2 Nightmare (phase 4). */
+    public static final LayeredConfig LAYERED;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
     /**
@@ -92,6 +94,7 @@ public final class ServerConfig {
         builder.comment("The Nightmares: one roaming boss per ring (phase 4).").push("nightmares");
         HOLLOW = new HollowConfig(builder);
         NIGHTMARE_DIRECTOR = new NightmareDirectorConfig(builder);
+        LAYERED = new LayeredConfig(builder);
         builder.pop();
         SPEC = builder.build();
         ALL_THRESHOLDS = List.of(DEBUG.thresholds, DEHYDRATION.thresholds, HEAT.thresholds, COLD.thresholds,

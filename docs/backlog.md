@@ -598,3 +598,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [atmosphere] Eigen geluiden voor De Holle (kraak vóór het verspringen, slag, uit/in fase, wissel, aftocht, zielkristal-pin); stap 1 gebruikt vanilla-geluiden met lage pitch (`entity/hollow/HollowEffects`). (bron: H1)
 - [mobs] Een spawn-ei of creative-tab-ingang voor De Holle ontbreekt bewust (stap 1: alleen `/summon`); beslissen bij stap 3 (hij is uniek per server). (bron: H1)
 - [atmosphere] Echte omgekeerde geluiden voor de voortekens van De Holle (nu vanilla-geluiden op lage pitch in `entity/hollow/RiftOmens`); vraagt eigen `.ogg`-bestanden. (bron: H1 stap 2)
+
+## Uit fase 4 R2 — De Gelaagde (2026-10-28)
+- [mobs] De Gelaagde: eigen geluiden (nu vanilla spin/skelet met lage pitch). (bron: R2 stap 1)
+- [mobs] De Gelaagde: wandklim uitbreiden: ondersteboven onder overhangen kruipen, gericht een wand af klimmen, en een hitbox die het lijf op de wand volgt (nu hangt het achterlijf alleen in beeld onder de hitbox). (bron: R2 stap 1)

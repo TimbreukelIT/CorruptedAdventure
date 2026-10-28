@@ -12,6 +12,7 @@ import nl.timtoys.corruptedadventure.client.block.SignMaterials;
 import nl.timtoys.corruptedadventure.client.entity.EffectArrowRenderer;
 import nl.timtoys.corruptedadventure.client.entity.hollow.RiftOmenFlicker;
 import nl.timtoys.corruptedadventure.client.entity.hollow.TheHollowRenderer;
+import nl.timtoys.corruptedadventure.client.entity.layered.TheLayeredRenderer;
 import nl.timtoys.corruptedadventure.client.fluid.ToxicPoolClientExtensions;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
 import nl.timtoys.corruptedadventure.client.item.ConsumableItemProperties;
@@ -78,6 +79,8 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(EffectArrowRenderer::onRegisterRenderers);
         // Phase 4: The Hollow (GeckoLib).
         modEventBus.addListener(TheHollowRenderer::onRegisterRenderers);
+        // Phase 4: The Layered (GeckoLib).
+        modEventBus.addListener(TheLayeredRenderer::onRegisterRenderers);
         // Phase 4 step 2: torches gutter near the omen of The Hollow's arrival.
         RiftOmenFlicker.register(NeoForge.EVENT_BUS);
         // Phase 2 golf 5 (L): the sky glass lens's scope, outlines and damping.

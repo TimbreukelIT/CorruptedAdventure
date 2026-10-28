@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.EffectArrow;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowRift;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
+import nl.timtoys.corruptedadventure.entity.layered.TheLayered;
 
 /** Entity types. Their renderers register in {@code client/} (CLAUDE.md §7). */
 public final class ModEntityTypes {
@@ -36,6 +37,14 @@ public final class ModEntityTypes {
             () -> EntityType.Builder.<HollowRift>of(HollowRift::new, MobCategory.MISC)
                     .sized(3.0F, 7.0F).clientTrackingRange(10).updateInterval(20).fireImmune().build("hollow_rift"));
 
+    /**
+     * Phase 4: The Layered, the ring 2 Nightmare. Hitbox 2.5 x 2.5 (legs ~10 wide and its head are model only; the head
+     * has its own part hitbox); tracked from far.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<TheLayered>> THE_LAYERED = ENTITY_TYPES.register("the_layered",
+            () -> EntityType.Builder.<TheLayered>of(TheLayered::new, MobCategory.MONSTER)
+                    .sized(2.5F, 2.5F).eyeHeight(1.6F).clientTrackingRange(10).build("the_layered"));
+
     private ModEntityTypes() {
     }
 
@@ -46,6 +55,7 @@ public final class ModEntityTypes {
 
     private static void onAttributes(EntityAttributeCreationEvent event) {
         event.put(THE_HOLLOW.get(), TheHollow.createAttributes().build());
+        event.put(THE_LAYERED.get(), TheLayered.createAttributes().build());
     }
 
     /** Sized and tracked like vanilla's arrow. */
