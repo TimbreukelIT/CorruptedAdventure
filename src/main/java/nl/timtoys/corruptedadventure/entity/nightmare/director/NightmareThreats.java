@@ -16,7 +16,8 @@ import nl.timtoys.corruptedadventure.ring.RingWorld;
 /**
  * The server-side threat tick: once a second per player (on the player's own tick counter), only in the overworld of a
  * ring world, the threat of the ring the player stands in rises ({@link NightmareThreat#rise}). Only for players who
- * count in a fight ({@link Nightmare#isFighter}: alive, no creative, no spectator); fake players never.
+ * count in a fight ({@link Nightmare#isFighter}: alive, no creative, no spectator); fake players never; on Peaceful it
+ * stands still.
  */
 public final class NightmareThreats {
     static final int INTERVAL_TICKS = 20;
@@ -44,7 +45,7 @@ public final class NightmareThreats {
     private static void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity() instanceof ServerPlayer player && !(player instanceof FakePlayer)
                 && player.tickCount % INTERVAL_TICKS == 0 && Level.OVERWORLD.equals(player.level().dimension())
-                && RingWorld.isActive(player.server)) {
+                && RingWorld.isActive(player.server) && !NightmareDirector.isPeaceful(player.serverLevel())) {
             rise(player, ringAt(player.getX(), player.getZ()), 1);
         }
     }

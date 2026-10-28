@@ -95,7 +95,7 @@ public final class LostKeeperGameTests {
                     helper.assertFalse(keeper.hasCrown(), "the crown is dark");
                     helper.assertFalse(keeper.canSwimHere(), "no swimming in the air without it");
                     helper.assertTrue(keeper.isStunned(), "stunned after the landing");
-                    double landing = keeper.getMaxHealth() * ServerConfig.LOST_KEEPER.landingDamage.get();
+                    double landing = keeper.virtualMaxHealth() * ServerConfig.LOST_KEEPER.landingDamage.get() / keeper.healthScale();
                     helper.assertTrue(before[0] - keeper.getHealth() > landing * 0.3,
                             "the landing hurt: " + (before[0] - keeper.getHealth()));
                 })

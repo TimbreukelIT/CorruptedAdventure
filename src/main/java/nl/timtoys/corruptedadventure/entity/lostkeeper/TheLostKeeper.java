@@ -404,7 +404,8 @@ public class TheLostKeeper extends Nightmare {
                 stunTicks = config.stunSeconds.get() * 10;
             } else {
                 stunTicks = config.stunSeconds.get() * 20;
-                hurt(damageSources().fall(), getMaxHealth() * config.landingDamage.get().floatValue());
+                // A share of its virtual max health; hurt() brings it to the real scale.
+                hurt(damageSources().fall(), virtualMaxHealth() * config.landingDamage.get().floatValue());
             }
             if (level() instanceof ServerLevel serverLevel) {
                 KeeperEffects.landing(serverLevel, this, isInWater());

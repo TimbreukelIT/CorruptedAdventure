@@ -22,6 +22,7 @@ public final class NightmareDirectorConfig {
     public final ModConfigSpec.DoubleValue roamStepBlocks;
     public final ModConfigSpec.IntValue missingSeconds;
     public final ModConfigSpec.IntValue appearRetrySeconds;
+    public final ModConfigSpec.IntValue failedArrivalCooldownSeconds;
     public final ModConfigSpec.IntValue defaultOmenSeconds;
     public final ModConfigSpec.DoubleValue defaultArrivalDistance;
 
@@ -54,6 +55,9 @@ public final class NightmareDirectorConfig {
         appearRetrySeconds = builder.comment("Seconds the director keeps asking for room to appear after the omens, before it gives",
                         "up and roams on (the threat stays, so it comes again).")
                 .defineInRange("appearRetrySeconds", 20, 1, 600);
+        failedArrivalCooldownSeconds = builder.comment("Seconds after such a failed arrival before the Nightmare looks for a target",
+                        "again (no new omens every half minute for a player in a boat).")
+                .defineInRange("failedArrivalCooldownSeconds", 180, 0, 3600);
         defaultOmenSeconds = builder.comment("Seconds of omens of a Nightmare without its own arrival (the default one).")
                 .defineInRange("defaultOmenSeconds", 30, 1, 600);
         defaultArrivalDistance = builder.comment("Blocks behind its target where a Nightmare without its own arrival appears.")
