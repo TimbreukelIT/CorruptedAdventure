@@ -16,6 +16,7 @@ import nl.timtoys.corruptedadventure.datagen.lang.CoatingText;
 import nl.timtoys.corruptedadventure.datagen.lang.ArrowText;
 import nl.timtoys.corruptedadventure.datagen.lang.LensText;
 import nl.timtoys.corruptedadventure.datagen.lang.NightmareText;
+import nl.timtoys.corruptedadventure.datagen.lang.RisenText;
 import nl.timtoys.corruptedadventure.datagen.lang.WeaknessText;
 import nl.timtoys.corruptedadventure.datagen.lang.ConsumableText;
 import nl.timtoys.corruptedadventure.datagen.lang.GearNames;
@@ -293,6 +294,8 @@ final class DutchLanguageProvider extends LanguageProvider implements LangOutput
         LensText.addDutch(this);
         // Phase 4: the Nightmares.
         NightmareText.addDutch(this);
+        // Phase 4 (stream R3): The Risen.
+        RisenText.addDutch(this);
         // Phase 4 (stream I): the weakness items.
         WeaknessText.addDutch(this);
 

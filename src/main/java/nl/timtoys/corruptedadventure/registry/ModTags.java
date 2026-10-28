@@ -43,6 +43,8 @@ public final class ModTags {
         public static final TagKey<Block> WARMTH_SOURCES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("warmth_sources"));
         /** Host rocks of the ring 3 ores. */
         public static final TagKey<Block> RING_3_STONES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("ring_3_stones"));
+        /** Natural ground The Risen may melt to its lava pool and scar (phase 4); never what players build with. */
+        public static final TagKey<Block> RISEN_MELTABLE = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("risen_meltable"));
         /** Charred log, wood and their stripped variants; part of {@code #minecraft:logs}, deliberately not of {@code #logs_that_burn}. */
         public static final TagKey<Block> CHARRED_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("charred_logs"));
         /** Rimeshroom stem, hyphae and their stripped variants; part of {@code #minecraft:logs}. */

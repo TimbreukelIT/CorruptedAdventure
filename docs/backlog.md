@@ -597,3 +597,11 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 ## Uit fase 4 De Holle stap 1 (H1, 2026-10-28)
 - [atmosphere] Eigen geluiden voor De Holle (kraak vóór het verspringen, slag, uit/in fase, wissel, aftocht, zielkristal-pin); stap 1 gebruikt vanilla-geluiden met lage pitch (`entity/hollow/HollowEffects`). (bron: H1)
 - [mobs] Een spawn-ei of creative-tab-ingang voor De Holle ontbreekt bewust (stap 1: alleen `/summon`); beslissen bij stap 3 (hij is uniek per server). (bron: H1)
+
+## Uit fase 4 De Herrijzende stap 1 (R3, 2026-10-28)
+- [mobs] De aswandelaar (`corruptedadventure:ash_walker`) is een minimale placeholder: een zombie met de vanilla husk-renderer. De echte ring 3-mob (model, textures, gedrag, eigen spawning) staat nog open en moet afgestemd worden op "slachtoffers loslaten" van De Herrijzende. (bron: R3)
+- [mobs] Afgietsel bij je dood in de asregen: blijvend, in jouw houding (as- en smeulende-asblokken), met je naam (block entity), alleen op vrije ruimte. Hoort bij stap 2. (bron: R3)
+- [textures] Zichtbare as op spelers met `ashen` (render-laag die per laag dichter wordt); nu alleen as-particles en het effect-icoon. (bron: R3)
+- [atmosphere] Eigen geluiden voor De Herrijzende (koor, schreeuw, vleugelslag, duik, oprijzen); stap 1 gebruikt gestapelde vanilla-geluiden (`entity/risen/RisenEffects`). (bron: R3)
+- [items] Uniek beloningsitem van De Herrijzende; nu alleen XP en vulkanietstaven. (bron: R3)
+- [mobs] Explosies raken ook de deel-hitboxen van De Herrijzende (vleugels, kop) en tellen dan mogelijk dubbel; vastleggen of dat zo mag. (bron: R3)

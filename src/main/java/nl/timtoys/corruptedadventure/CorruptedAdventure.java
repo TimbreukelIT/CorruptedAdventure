@@ -23,6 +23,7 @@ import nl.timtoys.corruptedadventure.config.RingSettingsSnapshot;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
 import nl.timtoys.corruptedadventure.effect.WeakenedTargeting;
+import nl.timtoys.corruptedadventure.entity.risen.RisenAshRain;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
 import nl.timtoys.corruptedadventure.item.lens.LensWatch;
@@ -129,6 +130,8 @@ public final class CorruptedAdventure {
         SwampGasIgnition.register(NeoForge.EVENT_BUS);
         SuckingMudSuffocation.register(NeoForge.EVENT_BUS);
         Ring3StriderSpawns.register(NeoForge.EVENT_BUS);
+        // Phase 4 (R3): The Risen's ash layers fall off, break and are knocked off.
+        RisenAshRain.register(NeoForge.EVENT_BUS);
         // Phase 2 golf 5 (L): the sky glass lens's scan round a looking player.
         LensWatch.register(NeoForge.EVENT_BUS);
         // Phase 4 (I): dazzled and stunned mobs take no target.
