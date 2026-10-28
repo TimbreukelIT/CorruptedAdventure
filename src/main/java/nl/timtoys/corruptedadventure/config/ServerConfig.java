@@ -496,6 +496,9 @@ public final class ServerConfig {
         public final ModConfigSpec.IntValue lightLevel;
         public final ModConfigSpec.DoubleValue lightFall;
         public final ModConfigSpec.DoubleValue outsideFall;
+        public final ModConfigSpec.DoubleValue anchoredFactor;
+        public final ModConfigSpec.DoubleValue skyLightAmount;
+        public final ModConfigSpec.IntValue skyLightAnchoredSeconds;
         public final ThresholdLevels thresholds;
         public final ModConfigSpec.IntValue teleportMinBlocks;
         public final ModConfigSpec.IntValue teleportMaxBlocks;
@@ -528,6 +531,13 @@ public final class ServerConfig {
                     .defineInRange("lightFall", 1.0, 0.0, 100.0);
             outsideFall = builder.comment("Points per second outside ring 5 and the void rim (other rings, the Nether).")
                     .defineInRange("outsideFall", 1.0, 0.0, 100.0);
+            anchoredFactor = builder.comment("While anchored (sky light), a rising void rate is multiplied by this (0.5: rises",
+                            "half as fast, after the night and weather factor); a falling meter is left alone.")
+                    .defineInRange("anchoredFactor", 0.5, 0.0, 1.0);
+            skyLightAmount = builder.comment("Points removed per sky light drunk (phase 2 golf 5).")
+                    .defineInRange("skyLightAmount", 20.0, 0.0, 100.0);
+            skyLightAnchoredSeconds = builder.comment("Seconds of 'anchored' per sky light.")
+                    .defineInRange("skyLightAnchoredSeconds", 45, 0, 3600);
             thresholds = ThresholdLevels.define(builder, "conditions.void", new int[]{30, 60, 90},
                     "Glitch visuals from here (client only, no gameplay effect).",
                     "From here: in the inner band a short teleport every teleportIntervalSeconds while standing on solid"
@@ -569,6 +579,10 @@ public final class ServerConfig {
         public final ModConfigSpec.IntValue soundReliefSeconds;
         public final ModConfigSpec.DoubleValue soundFall;
         public final ModConfigSpec.DoubleValue outsideFall;
+        public final ModConfigSpec.DoubleValue resoundingFactor;
+        public final ModConfigSpec.DoubleValue echoShellAmount;
+        public final ModConfigSpec.IntValue echoShellResoundingSeconds;
+        public final ModConfigSpec.IntValue echoShellCooldownSeconds;
         public final ThresholdLevels thresholds;
         public final ModConfigSpec.IntValue darknessAmplifier;
         public final ModConfigSpec.DoubleValue damage;
@@ -576,8 +590,8 @@ public final class ServerConfig {
 
         private SilenceCondition(ModConfigSpec.Builder builder) {
             builder.comment("The silence in ring 5 of the Nether. Rises everywhere there; faster in open space (the hollow",
-                            "cathedral, on the white plateaus), slower with another player close by. A bell, goat horn, note block",
-                            "or jukebox nearby (also played by redstone) makes it fall for a while, whatever else holds.")
+                            "cathedral, on the white plateaus), slower with another player close by. A bell, goat horn, echo shell,",
+                            "note block or jukebox nearby (also played by redstone) makes it fall for a while, whatever else holds.")
                     .push("silence");
             rise = builder.comment("Points per second in the zone (0.33: 0 -> 100 in ~5 min).")
                     .defineInRange("rise", 0.33, 0.0, 100.0);
@@ -589,7 +603,8 @@ public final class ServerConfig {
             companionMultiplier = builder.comment("Factor on the rise with at least one other player within companionRadius;",
                             "more players do not stack (0.5: ~10 min, ~6.7 min in open space).")
                     .defineInRange("companionMultiplier", 0.5, 0.0, 1.0);
-            soundReliefRadius = builder.comment("Blocks from a bell, goat horn, note block or playing jukebox within which it counts.")
+            soundReliefRadius = builder.comment("Blocks from a bell, goat horn, echo shell, note block or playing jukebox within",
+                            "which it counts.")
                     .defineInRange("soundReliefRadius", 16, 1, 64);
             soundReliefSeconds = builder.comment("Seconds the meter keeps falling after the last such sound (a playing jukebox",
                             "sounds every second, so it keeps it falling).")
@@ -598,6 +613,16 @@ public final class ServerConfig {
                     .defineInRange("soundFall", 2.0, 0.0, 100.0);
             outsideFall = builder.comment("Points per second outside Nether ring 5 (other rings, the overworld).")
                     .defineInRange("outsideFall", 1.0, 0.0, 100.0);
+            resoundingFactor = builder.comment("While resounding (echo shell), a rising silence rate is multiplied by this (0.5:",
+                            "rises half as fast); a falling meter is left alone.")
+                    .defineInRange("resoundingFactor", 0.5, 0.0, 1.0);
+            echoShellAmount = builder.comment("Points removed from the one who blows the echo shell (phase 2 golf 5); those",
+                            "within soundReliefRadius hear it like a goat horn.")
+                    .defineInRange("echoShellAmount", 20.0, 0.0, 100.0);
+            echoShellResoundingSeconds = builder.comment("Seconds of 'resounding' per blow, for the one who blows it.")
+                    .defineInRange("echoShellResoundingSeconds", 45, 0, 3600);
+            echoShellCooldownSeconds = builder.comment("Seconds before the echo shell can be blown again.")
+                    .defineInRange("echoShellCooldownSeconds", 45, 1, 3600);
             thresholds = ThresholdLevels.define(builder, "conditions.silence", new int[]{30, 60, 90},
                     "Sound muffled from here (client only, no gameplay effect).",
                     "The HUD hidden from here, except the hotbar (client only, no gameplay effect).",

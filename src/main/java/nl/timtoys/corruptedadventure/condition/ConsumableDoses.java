@@ -3,8 +3,9 @@ package nl.timtoys.corruptedadventure.condition;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 
 /**
- * The doses of the consumables (fase-2-items.md §5.3–§5.4, §6.3, §6.6), from the section of their condition
- * ({@code [conditions.dehydration]}, {@code heat}, {@code poison}, {@code cold}), read live.
+ * The doses of the consumables (fase-2-items.md §5.3–§5.4, §6.3, §6.6, §7.3), from the section of their condition
+ * ({@code [conditions.dehydration]}, {@code heat}, {@code poison}, {@code cold}, {@code void}, {@code silence}), read
+ * live.
  */
 public final class ConsumableDoses {
     private ConsumableDoses() {
@@ -48,5 +49,19 @@ public final class ConsumableDoses {
         ServerConfig.ColdCondition config = ServerConfig.COLD;
         return ConditionDose.withEffect(Condition.COLD, -config.handWarmerAmount.get().floatValue(),
                 RateEffect.WARMED, config.handWarmerWarmedSeconds.get());
+    }
+
+    /** One sky light: −20 void and 45 s anchored. */
+    public static ConditionDose skyLight() {
+        ServerConfig.VoidCondition config = ServerConfig.VOID;
+        return ConditionDose.withEffect(Condition.VOID, -config.skyLightAmount.get().floatValue(),
+                RateEffect.ANCHORED, config.skyLightAnchoredSeconds.get());
+    }
+
+    /** One blow on the echo shell, for the one who blows it: −20 silence and 45 s resounding. */
+    public static ConditionDose echoShellBlow() {
+        ServerConfig.SilenceCondition config = ServerConfig.SILENCE;
+        return ConditionDose.withEffect(Condition.SILENCE, -config.echoShellAmount.get().floatValue(),
+                RateEffect.RESOUNDING, config.echoShellResoundingSeconds.get());
     }
 }

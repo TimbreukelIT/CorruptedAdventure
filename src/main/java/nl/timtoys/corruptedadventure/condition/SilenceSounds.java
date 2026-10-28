@@ -16,8 +16,9 @@ import java.util.WeakHashMap;
 import java.util.function.BooleanSupplier;
 
 /**
- * The sounds that break the silence (package 97): a note block, a goat horn (any instrument), a playing jukebox (vanilla
- * repeats its event every second while the disc plays) and a bell, also when redstone plays them. Heard through
+ * The sounds that break the silence (package 97): a note block, a goat horn (any instrument, and the echo shell, which
+ * sends the same event), a playing jukebox (vanilla repeats its event every second while the disc plays) and a bell, also
+ * when redstone plays them. Heard through
  * NeoForge's {@link VanillaGameEvent}, which every server-side game event fires before vanilla's listeners; nothing on
  * the client. Every player in the Nether within {@code soundReliefRadius} of the sound remembers when they last heard
  * one, in server ticks; {@link SilenceRule} asks whether that is at most {@code soundReliefSeconds} ago. In memory only,
