@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "corruptedadventure:nullite_ingot"
+  },
+  "base": {
+    "item": "corruptedadventure:tidesilver_axe"
+  },
+  "result": {
+    "count": 1,
+    "id": "corruptedadventure:nullite_axe"
+  },
+  "template": {
+    "item": "corruptedadventure:nullite_upgrade_smithing_template"
+  }
+}

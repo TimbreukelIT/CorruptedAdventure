@@ -7,6 +7,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ColoredFallingBlock;
+import net.minecraft.world.level.block.IronBarsBlock;
+import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -919,12 +921,16 @@ class ModBlocksTest {
                 ModBlocks.POLISHED_FOSSIL_STONE, ModBlocks.POLISHED_FOSSIL_STONE_STAIRS, ModBlocks.POLISHED_FOSSIL_STONE_SLAB,
                 ModBlocks.POLISHED_FOSSIL_STONE_WALL, ModBlocks.FOSSIL_STONE_BRICKS, ModBlocks.FOSSIL_STONE_BRICK_STAIRS,
                 ModBlocks.FOSSIL_STONE_BRICK_SLAB, ModBlocks.FOSSIL_STONE_BRICK_WALL, ModBlocks.PURITY_CRYSTAL_BLOCK,
-                ModBlocks.PURITY_CRYSTAL_CLUSTER, ModBlocks.PURITY_CRYSTAL_LAMP).<Item>map(DeferredBlock::asItem).toList();
+                ModBlocks.PURITY_CRYSTAL_CLUSTER, ModBlocks.PURITY_CRYSTAL_LAMP,
+                // The sky glass (phase 2 golf 5) ends the Nether ring 4 section.
+                ModBlocks.SKY_SAND, ModBlocks.SKY_GLASS, ModBlocks.SKY_GLASS_PANE).<Item>map(DeferredBlock::asItem).toList();
         assertEquals(netherRing4, shown.subList(lastRing4 + 1, lastRing4 + 1 + netherRing4.size()));
         List<Item> standalone = ModItems.entries().stream().<Item>map(DeferredHolder::get)
                 .filter(item -> !(item instanceof BlockItem))
-                // The smithing templates of phase 2 close their ring sections; these checks are about the materials.
-                .filter(item -> !(item instanceof SmithingTemplateItem))
+                // The smithing templates, arrows and gear sets of phase 2 close their ring sections; these checks are
+                // about the materials.
+                .filter(item -> !(item instanceof SmithingTemplateItem) && !(item instanceof EffectArrowItem))
+                .filter(item -> !(item instanceof TieredItem) && !(item instanceof ArmorItem))
                 // So do the consumables of golf 5 (sky light, echo shell).
                 .filter(item -> !(item instanceof DoseDrinkItem || item instanceof EchoShellItem)).toList();
         int shard = standalone.indexOf(ModItems.PURITY_CRYSTAL_SHARD.get());
@@ -940,6 +946,23 @@ class ModBlocksTest {
         assertFalse(ModBlocks.PURITY_CRYSTAL_CLUSTER.get().defaultBlockState().isRandomlyTicking());
     }
 
+    /** Phase 2 golf 5: the sky sand falls like sand; the sky glass and its pane keep vanilla glass's behaviour. */
+    @Test
+    void skyGlassBehavesLikeVanillaGlass() {
+        assertInstanceOf(ColoredFallingBlock.class, ModBlocks.SKY_SAND.get());
+        assertEquals(Blocks.SAND.defaultDestroyTime(), ModBlocks.SKY_SAND.get().defaultDestroyTime());
+        assertInstanceOf(TransparentBlock.class, ModBlocks.SKY_GLASS.get());
+        assertInstanceOf(IronBarsBlock.class, ModBlocks.SKY_GLASS_PANE.get());
+        Map<Block, Block> twins = Map.of(ModBlocks.SKY_GLASS.get(), Blocks.GLASS, ModBlocks.SKY_GLASS_PANE.get(), Blocks.GLASS_PANE);
+        twins.forEach((block, vanilla) -> {
+            String id = BuiltInRegistries.BLOCK.getKey(block).toString();
+            assertEquals(vanilla.defaultDestroyTime(), block.defaultDestroyTime(), id);
+            assertEquals(vanilla.getExplosionResistance(), block.getExplosionResistance(), id);
+            assertSame(vanilla.defaultBlockState().getSoundType(), block.defaultBlockState().getSoundType(), id);
+            assertEquals(vanilla.defaultBlockState().canOcclude(), block.defaultBlockState().canOcclude(), id);
+        });
+    }
+
     /**
      * Ring 5 follows Nether ring 4 directly (contract ring 5 §3): the nine corrupted variants and the wood set (each sign
      * item once: the wall signs place through it), then glitch, voidstone and nullite; Nether ring 5 ends the blocks.
@@ -947,7 +970,7 @@ class ModBlocksTest {
     @Test
     void ring5AndNetherRing5FollowNetherRing4InOrder() {
         List<Item> shown = blockItems().stream().distinct().toList();
-        int lastNetherRing4 = shown.indexOf(ModBlocks.PURITY_CRYSTAL_LAMP.asItem());
+        int lastNetherRing4 = shown.indexOf(ModBlocks.SKY_GLASS_PANE.asItem());
         List<Item> ring5 = Stream.of(ModBlocks.CORRUPTED_GRASS_BLOCK, ModBlocks.CORRUPTED_DIRT, ModBlocks.CORRUPTED_STONE,
                 ModBlocks.CORRUPTED_COBBLESTONE, ModBlocks.CORRUPTED_SAND, ModBlocks.CORRUPTED_LOG, ModBlocks.CORRUPTED_WOOD,
                 ModBlocks.STRIPPED_CORRUPTED_LOG, ModBlocks.STRIPPED_CORRUPTED_WOOD, ModBlocks.CORRUPTED_PLANKS,

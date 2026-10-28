@@ -68,7 +68,7 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(SignMaterials::onClientSetup);
         // Phase 2 golf 2 (V): the canteen's sips for its model.
         modEventBus.addListener(ConsumableItemProperties::onClientSetup);
-        // Phase 2 golf 3 + 4 (A): the fire and poison arrows.
+        // Phase 2 golf 3 + 4 and 5 (A): the fire, poison and glitch arrows.
         modEventBus.addListener(EffectArrowRenderer::onRegisterRenderers);
         NeoForge.EVENT_BUS.addListener(ClientRingLayout::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(RingDebugOverlay::onDebugText);

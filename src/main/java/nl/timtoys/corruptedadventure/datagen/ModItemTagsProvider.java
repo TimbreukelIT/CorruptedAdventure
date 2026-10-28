@@ -133,6 +133,13 @@ final class ModItemTagsProvider extends ItemTagsProvider {
         GearItemTags.build(this::tag);
         golf3Ring3();
         ArrowItemTags.build(this::tag);
+        golf5SkyGlass();
+    }
+
+    /** Phase 2 golf 5 (stream H): the sky glass and its pane as glass items too. */
+    private void golf5SkyGlass() {
+        copy(Tags.Blocks.GLASS_BLOCKS, Tags.Items.GLASS_BLOCKS);
+        copy(Tags.Blocks.GLASS_PANES, Tags.Items.GLASS_PANES);
     }
 
     /** Phase 2 golf 3 (stream R3): the sulfur block, the ember berries like sweet berries, the stew like mushroom stew. */
