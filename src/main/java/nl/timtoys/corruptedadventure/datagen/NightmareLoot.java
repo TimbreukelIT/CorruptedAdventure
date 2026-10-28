@@ -40,6 +40,9 @@ final class NightmareLoot implements LootTableSubProvider {
                 drop(Items.DIAMOND, 2, 4, 0)));
         // Ring 3: volcanite, the metal of its ring.
         add(output, ModEntityTypes.THE_RISEN.get(), table(drop(ModItems.VOLCANITE_INGOT.get(), 3, 6, 2)));
+        // Ring 4: tide silver.
+        add(output, ModEntityTypes.THE_LOST_KEEPER.get(), table(
+                drop(ModItems.TIDESILVER_INGOT.get(), 6, 10, 2)));
     }
 
     private static void add(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> output, EntityType<?> type,

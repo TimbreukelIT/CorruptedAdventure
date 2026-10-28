@@ -609,3 +609,8 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 
 ## Uit de integratie van fase 4 (INT, 2026-10-28)
 - [items] De GameTest `ArrowGameTests.aDispenserShootsGlitchArrows` is flaky (faalt soms in een volle run); oorzaak uitzoeken (waarschijnlijk hopt de glitchpijl of zijn doelwit uit het testgebied). (bron: INT)
+## Uit fase 4 De Verloren Hoeder stap 1 (R4, 2026-10-28)
+- [atmosphere] Eigen geluiden voor De Verloren Hoeder (lokroep/zang, gifadem, uitval en beet, staartzwiep, brekende kroontak, gedoofde kroon, landing, aftocht); stap 1 gebruikt vanilla-placeholders (`entity/lostkeeper/KeeperEffects`). (bron: R4)
+- [atmosphere] De mistbank van De Verloren Hoeder is alleen te zien als je erin of vlakbij bent (fog rond de camera); van ver zou je hem moeten zien "optrekken" (bijv. client-deeltjes of een mistwand aan de rand van de bank). (bron: R4)
+- [mobs] Koppeling van de mistbank van De Verloren Hoeder aan de mist-mobs van ring 4 (die bovengronds komen tijdens dikke mist). (bron: R4)
+- [mobs] Een spawn-ei of creative-tab-ingang voor De Verloren Hoeder ontbreekt bewust (stap 1: alleen `/summon`). (bron: R4)
