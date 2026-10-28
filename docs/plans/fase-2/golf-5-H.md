@@ -42,7 +42,9 @@ Client/server: alleen registraties en data; geen gameplaylogica, geen client-cod
 ## Voortgang
 - 2026-10-28 16:20 start (setup.sh H 69)
 - 2026-10-28 16:37 pakket 1: build (incl. unit tests) en runData groen; commit `fb1f490b`, gemeld aan main
-- 2026-10-28 16:55 pakket 2 gebouwd; palet-pad aan main gemeld; runData/build/GameTests lopen
+- 2026-10-28 16:55 pakket 2: build, runData, GameTests groen; commits `5a413d69` (blocks), `e6a1e231` (items); palet-pad aan main gemeld
+- 2026-10-28 /code-review low d55ff491..f2g5/skyglass: geen bevindingen
+- 2026-10-28 main (A + G) gemerged (`1c98ac13`, zonder conflicten); runData zonder diff, build en GameTests (25/25) groen
 
 ## Voorlopig (bevestigen bij de teststop)
 - Hemelglas en -ruit renderen `translucent` (zoals gekleurd glas), zodat T een getinte texture kan maken.
