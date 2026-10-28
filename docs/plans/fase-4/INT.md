@@ -15,13 +15,15 @@ Merges in deze volgorde:
 `f4/r2`, `f4/r4`, `f4/r5`; daarna `PROTOCOL_VERSION` "11" → "12" (`keeper_mist`).
 
 ## Taken
-- [ ] compileJava na elke merge (ronde 1: na items en r3)
-- [ ] runData (+ commit), build, GameTests na ronde 1
-- [ ] `strengthFactor()` → `strength()` overal
+- [x] compileJava na elke merge (ronde 1: na items en r3)
+- [x] runData (+ commit 09d1b047), build, GameTests 58/58 na ronde 1
+- [x] `strengthFactor()` → `strength()` overal (ronde 1: geen voorkomens; ronde 2 opnieuw nagaan)
 - [ ] `docs/plans/fase-4/voorlopig-fase-4.md` (Voorlopig van alle stromen)
 - [ ] CODEBASE, design-doc, beslissingenlog één geheel
-- [ ] flaky `adispensershootsglitcharrows` → backlog `[items]`
+- [x] flaky `adispensershootsglitcharrows` → backlog `[items]`
 - [ ] server-smoke + 2 clients: per Nightmare `/summon` + korte check; De Holle echte komst via `/ca nightmare threat` + `arrive`
 - [ ] `/code-review medium d03463e4..f4/int`
 
 ## Voortgang
+- 2026-10-28 21:42 ronde 1 groen: 4 merges, compileJava, runData, build, GameTests 58/58. CODEBASE fase 4 samengevoegd
+  (gedeelde basis + regisseur, De Holle, I, R3), `voorlopig-fase-4.md` (35 punten, ronde 1).
