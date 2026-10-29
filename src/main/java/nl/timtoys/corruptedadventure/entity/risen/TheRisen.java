@@ -331,6 +331,14 @@ public class TheRisen extends Nightmare {
     @Override
     protected void onStaggered() {
         ashRainTicks = 0;
+        // A scream or dive broken off does not come again the moment it has recovered.
+        RisenConfig config = settings();
+        if (state() == RisenState.SCREAMING) {
+            nextScream = tickCount + config.screamCooldownTicks(random.nextInt(1 << 16));
+        } else if (state() == RisenState.DIVING) {
+            nextDive = tickCount + config.diveCooldownTicks(random.nextInt(1 << 16));
+        }
+        breathe();
         if (state() == RisenState.LANDED) {
             peckWindup = 0;
             buffetWindup = 0;
@@ -691,6 +699,10 @@ public class TheRisen extends Nightmare {
 
     /** After a big attack the quick ones (dive, ash rain) wait a moment, so they do not follow it at once. */
     private void breathe() {
+        if (nextDive < 0) {
+            // Not in a fight yet: the first interval of everything is still to be drawn.
+            return;
+        }
         nextDive = Math.max(nextDive, tickCount + BREATHER);
         nextAshRain = Math.max(nextAshRain, tickCount + BREATHER);
     }
