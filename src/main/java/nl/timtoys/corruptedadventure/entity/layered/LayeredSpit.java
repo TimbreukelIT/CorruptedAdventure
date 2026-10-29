@@ -10,13 +10,14 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.config.LayeredConfig;
+import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
 
 import java.util.List;
 
 /**
  * One cloud of dust and bone splinters spat by a dead head ({@link LayeredSpitGoal}): it flies in a straight line at
  * {@code spitSpeed} for at most {@code spitRange} + 2 blocks and bursts on the first living thing within
- * {@code spitRadius} (not The Layered or a held player: {@code spitDamage} times its strength and {@code spitBlindSeconds}
+ * {@code spitRadius} (not a Nightmare or a held player: {@code spitDamage} times its strength and {@code spitBlindSeconds}
  * of blindness) or on a block. No entity of its own: The Layered keeps its clouds and moves them every tick
  * ({@link TheLayered#tick}); they are not saved. Server-side.
  */
@@ -75,7 +76,8 @@ public final class LayeredSpit {
     private static LivingEntity firstHit(ServerLevel level, TheLayered layered, Vec3 from, Vec3 to, double radius) {
         AABB sweep = new AABB(from, to).inflate(radius);
         List<LivingEntity> near = level.getEntitiesOfClass(LivingEntity.class, sweep,
-                other -> other != layered && other.isAlive() && !layered.hasPassenger(other) && !other.isSpectator());
+                other -> !(other instanceof Nightmare) && other.isAlive() && !layered.hasPassenger(other)
+                        && !other.isSpectator());
         LivingEntity first = null;
         double best = Double.MAX_VALUE;
         for (LivingEntity other : near) {

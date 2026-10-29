@@ -27,10 +27,10 @@ import java.util.List;
 
 /**
  * The Layered's life round: a stagger lets go of a held player, a hit on its belly from below is a hit on its weak spot,
- * under the sand nothing hurts it (and nothing of that is saved), it burrows only through sand and gravel, the blow of its pounce stays within its
- * radius, and the dead heads' spit blinds what it reaches but not through a wall (pigs as the targets of those two). Without free will, so it never
- * attacks the mock players itself. In the empty 9 × 7 × 9 {@code gametest/hollow_arena}. Run like
- * {@link TierGatingGameTests}.
+ * under the sand nothing hurts it (and nothing of that is saved), it burrows only through sand and gravel, the blow of
+ * its pounce stays within its radius and spares other Nightmares, and the dead heads' spit blinds what it reaches but
+ * not through a wall (pigs as the targets of those two). Without free will, so it never attacks the mock players
+ * itself. In the empty 9 × 7 × 9 {@code gametest/hollow_arena}. Run like {@link TierGatingGameTests}.
  */
 @GameTestHolder(CorruptedAdventure.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -136,6 +136,9 @@ public final class LayeredLifeGameTests {
         List<LivingEntity> hit = LayeredImpact.hit(helper.getLevel(), layered, radius, 6.0, 0.5, 0.3);
         helper.assertTrue(hit.contains(near), "the pig beside it is hit");
         helper.assertFalse(hit.contains(far), "the pig 4 blocks away (radius " + radius + ") is not");
+        TheLayered other = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LAYERED.get(), new BlockPos(4, 0, 5));
+        helper.assertFalse(LayeredImpact.hit(helper.getLevel(), layered, radius, 6.0, 0.5, 0.3).contains(other),
+                "another Nightmare beside it is not hit");
         helper.succeed();
     }
 

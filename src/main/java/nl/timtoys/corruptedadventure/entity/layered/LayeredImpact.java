@@ -6,14 +6,16 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
 
 import java.util.List;
 
 /**
  * A blow where The Layered stands: the landing of its pounce ({@link LayeredPounceGoal}) and bursting up out of the sand
  * ({@link LayeredBurrowGoal}). Everything living within {@code radius} of its feet (sideways, up to
- * {@link #REACH_UP} blocks above or below) except a held player takes the damage (times its strength) and is thrown
- * {@code outward} away from it and {@code lift} up. Server-side.
+ * {@link #REACH_UP} blocks above or below) takes the damage (times its strength) and is thrown {@code outward} away from
+ * it and {@code lift} up; not a held player, and no Nightmare (itself included: Nightmares do not hit each other).
+ * Server-side.
  */
 public final class LayeredImpact {
     private static final double REACH_UP = 2.0;
@@ -27,7 +29,7 @@ public final class LayeredImpact {
         Vec3 centre = layered.position();
         AABB area = new AABB(centre.x - radius, centre.y - REACH_UP, centre.z - radius,
                 centre.x + radius, centre.y + REACH_UP, centre.z + radius);
-        List<LivingEntity> near = level.getEntitiesOfClass(LivingEntity.class, area, other -> other != layered
+        List<LivingEntity> near = level.getEntitiesOfClass(LivingEntity.class, area, other -> !(other instanceof Nightmare)
                 && other.isAlive() && !layered.hasPassenger(other) && flatDistanceSqr(other, centre) <= radius * radius);
         float amount = (float) damage * layered.strength();
         return near.stream().filter(other -> {
