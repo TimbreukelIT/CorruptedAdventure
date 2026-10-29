@@ -1,6 +1,6 @@
 # INT — integratie fase 4
 
-Stroom `INT` (door H1), n = 61, worktree `P:/Projecten/Java/wt/f4-int`, branch `f4/int`, vanaf main `d03463e4`.
+Stroom `INT` (door H1), n = 61 (vanaf ronde 3: n = 68, want 61 botst met L1 = 71), worktree `P:/Projecten/Java/wt/f4-int`, branch `f4/int`, vanaf main `d03463e4`.
 Niet pushen, niet naar main mergen (dat doet main).
 
 ## Ronde 1 (2026-10-28)
@@ -17,15 +17,22 @@ Merges in deze volgorde:
 Daarna `PROTOCOL_VERSION` "11" → "12" (`keeper_mist`), imports gesorteerd, runData (5621d39f), build, GameTests 67/67.
 Nog: `f4/r2` als laatste.
 
+## Ronde 3 (2026-10-29): `f4/r2`
+7. `f4/r2` 0f73883e (R2: De Gelaagde) in `f4/int` 70e40552 → merge a1fc70b8. Conflicten (union): mod-constructor
+   (`LayeredGrip.register`), client-entrypoint (renderer), `ServerConfig` (`LAYERED`), `ModEntityTypes`, entity-tags,
+   `NightmareLoot`, `NightmareText`, taalproviders (alleen volgorde), CODEBASE (R2-blok na De Holle; R2's oudere
+   Holle-regel niet overgenomen), backlog; gegenereerde bestanden van `f4/int` gehouden en via runData opnieuw (9f480c61).
+   Design-doc en beslissingenlog zonder conflict (R2 voegde daar alleen het model toe).
+   `strengthFactor()`: geen voorkomens. Geen nieuwe payloads in R2 → `PROTOCOL_VERSION` blijft "12".
+
 ## Stand bij afronden (2026-10-28 22:00)
 - `f4/int` op f21c6b89: H1, D, I, R3, R4, R5 gemerged; protocol "12"; runData 5621d39f; compileJava, build en GameTests
   67/67 groen; 2-clienttest gedaan (zie Voortgang 21:58). Geen eigen processen of slots meer.
 - Niet gedaan: merge `f4/r2`, korte check daarna, `/code-review medium`.
 
 ## Volgende stappen
-1. R2 afmaken (door R2: de rockfall-GameTest faalt in `hollow_arena`; smoke, client, review).
-2. `f4/r2` mergen (union op de gedeelde bestanden; `strengthFactor()` → `strength()` nagaan), compileJava, runData
-   (+ commit), build, GameTests; R2 toevoegen aan `voorlopig-fase-4.md` en CODEBASE (één fase 4-geheel).
+1. ~~R2 afmaken~~ (R2, 2026-10-29).
+2. ~~`f4/r2` mergen~~ (ronde 3, 2026-10-29).
 3. Korte check: server + client, `/summon corruptedadventure:the_layered` + een korte gevechtscheck.
 4. `/code-review medium d03463e4..f4/int`, bevindingen fixen, build + GameTests.
 5. Overdracht aan main (niet zelf pushen of naar main mergen).
@@ -34,13 +41,18 @@ Nog: `f4/r2` als laatste.
 - [x] compileJava na elke merge (ronde 1: na items en r3)
 - [x] runData (+ commit 09d1b047), build, GameTests 58/58 na ronde 1
 - [x] `strengthFactor()` → `strength()` overal (ronde 1: geen voorkomens; ronde 2 opnieuw nagaan)
-- [ ] `docs/plans/fase-4/voorlopig-fase-4.md` (Voorlopig van alle stromen)
-- [ ] CODEBASE, design-doc, beslissingenlog één geheel
+- [x] `docs/plans/fase-4/voorlopig-fase-4.md` (Voorlopig van alle stromen, R2 erbij: 69 punten)
+- [x] CODEBASE, design-doc, beslissingenlog één geheel (ronde 3)
 - [x] flaky `adispensershootsglitcharrows` → backlog `[items]`
 - [x] server-smoke + 2 clients: per Nightmare `/summon` + korte check; De Holle echte komst via `/ca nightmare threat` + `arrive`
 - [ ] `/code-review medium d03463e4..f4/int`
 
 ## Voortgang
+- 2026-10-29 10:33 ronde 3 (`f4/r2`) klaar: compileJava, runData (9f480c61), build groen, elk in een eigen aanroep.
+  GameTests 70/71: alleen `theDirectedArrivalOpensTheRiftAndTheHollowComesThrough` faalt ("Did not expect hollow_rift
+  to exist"): bekend, L1 zoekt hem uit. Server-smoke (`server.sh start int-r2 --fresh`): start zonder fouten, GeckoLib
+  4.9.3 laadt, `/summon corruptedadventure:the_layered` werkt (450 HP, valt en tickt), 0 ERROR/Exception in het log.
+  Voorlopig van R2 in `voorlopig-fase-4.md` (punten 24–35, plus "worp zonder wand is hoog"); CODEBASE bijgewerkt.
 - 21:58 clienttest (server + Dev + Dev2, vers wereld `int1`, `build/int-client-test.sh`, niet in git; sheets in
   `build/test/shots/int-report/`): De Holle via `/ca nightmare arrive 1 Dev` met twee survival-spelers: voortekens,
   scheur 9 blokken achter Dev (0,5 62 21,5), max-HP 450 (1,5×), status "here", gevecht. De Herrijzende 600 HP, vliegt,
