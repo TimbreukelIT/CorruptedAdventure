@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.entity.nightmare;
 
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 
@@ -21,6 +22,10 @@ public final class NightmareSearchGoal extends Goal {
     private int repath;
     private int repaths;
     private int nextLook;
+    /** The place this walk goes to, and whether it had arrived; a new place or a fresh walk counts its repaths anew. */
+    @Nullable
+    private Vec3 heading;
+    private boolean arrived;
 
     public NightmareSearchGoal(Nightmare nightmare) {
         this.nightmare = nightmare;
@@ -37,6 +42,8 @@ public final class NightmareSearchGoal extends Goal {
         repath = 0;
         repaths = 0;
         nextLook = 0;
+        heading = nightmare.lastKnownPosition();
+        arrived = nightmare.hasArrivedAtSearch();
     }
 
     @Override
@@ -55,7 +62,15 @@ public final class NightmareSearchGoal extends Goal {
         if (place == null) {
             return;
         }
-        if (!nightmare.hasArrivedAtSearch()) {
+        boolean arrivedNow = nightmare.hasArrivedAtSearch();
+        if (!place.equals(heading) || (arrived && !arrivedNow)) {
+            // It heard its target mid-search: a fresh walk to the new place, else it would "arrive" at once.
+            heading = place;
+            repath = 0;
+            repaths = 0;
+        }
+        arrived = arrivedNow;
+        if (!arrivedNow) {
             double dx = place.x - nightmare.getX();
             double dz = place.z - nightmare.getZ();
             if (dx * dx + dz * dz <= ARRIVE_DISTANCE * ARRIVE_DISTANCE || repaths > MAX_REPATHS) {

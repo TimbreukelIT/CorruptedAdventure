@@ -6,6 +6,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -72,6 +73,51 @@ public final class NightmareReactionGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = ARENA, batch = "nightmare_reactions", timeoutTicks = 100)
+    public static void itsDeathEndsAStagger(GameTestHelper helper) {
+        TheHollow hollow = helper.spawnWithNoFreeWill(ModEntityTypes.THE_HOLLOW.get(), MIDDLE);
+        helper.assertTrue(hollow.stagger(), "it staggers");
+        hollow.kill();
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    helper.assertTrue(hollow.isDeadOrDying(), "dying");
+                    helper.assertFalse(hollow.isStaggered(), "no stagger through the death animation");
+                })
+                .thenSucceed();
+    }
+
+    /** The target by hand: a mock player outside the level's players is no fighter, so its target goal stays idle. */
+    @GameTest(template = ARENA, batch = "nightmare_rest_gap", timeoutTicks = 200)
+    public static void aRestWindowOutlastsAShortGapWithoutATarget(GameTestHelper helper) {
+        TheHollow hollow = helper.spawnWithNoFreeWill(ModEntityTypes.THE_HOLLOW.get(), MIDDLE);
+        Player player = mockPlayerAt(helper, 7.5, 4.5);
+        hollow.setTarget(player);
+        int burstMax = config().burstMaxAttacks.get();
+        for (int attacks = 0; !hollow.isResting() && attacks < burstMax; attacks++) {
+            hollow.countAttack();
+        }
+        helper.assertTrue(hollow.isResting(), "resting after a burst");
+        // The target goal lets go and picks again within half a second.
+        hollow.setTarget(null);
+        boolean[] resting = new boolean[3];
+        helper.startSequence()
+                .thenExecuteAfter(10, () -> {
+                    resting[0] = hollow.isResting();
+                    hollow.setTarget(player);
+                })
+                .thenExecuteAfter(2, () -> {
+                    resting[1] = hollow.isResting();
+                    hollow.setTarget(null);
+                })
+                .thenExecuteAfter(45, () -> resting[2] = hollow.isResting())
+                .thenExecute(() -> {
+                    helper.assertTrue(resting[0], "a short gap keeps the rest window");
+                    helper.assertTrue(resting[1], "and the fight goes on resting");
+                    helper.assertFalse(resting[2], "a long gap ends the fight and its rest window");
+                })
+                .thenSucceed();
+    }
+
     @GameTest(template = ARENA, batch = "nightmare_reactions", timeoutTicks = 400)
     public static void aBurstOfAttacksEndsInARestWindow(GameTestHelper helper) {
         TheHollow hollow = helper.spawnWithNoFreeWill(ModEntityTypes.THE_HOLLOW.get(), MIDDLE);
@@ -130,6 +176,43 @@ public final class NightmareReactionGameTests {
                 .thenSucceed();
     }
 
+    /**
+     * The targets by hand: mock players outside the level's players are no fighters, so its own target goal does not
+     * switch to the nearer one by itself, and nothing is left behind if an assertion fails.
+     */
+    @GameTest(template = ARENA, batch = "nightmare_search_switch", timeoutTicks = 400)
+    public static void aNewTargetIsNotSearchedForWhereTheOldOneWas(GameTestHelper helper) {
+        TheHollow hollow = helper.spawnWithNoFreeWill(ModEntityTypes.THE_HOLLOW.get(), new BlockPos(2, 0, 4));
+        Player old = mockPlayerAt(helper, 7.5, 1.5);
+        Player next = mockPlayerAt(helper, 1.5, 7.5);
+        hollow.setTarget(old);
+        int searchAfter = config().searchAfterSeconds.get() * 20;
+        boolean[] before = new boolean[2];
+        boolean[] after = new boolean[4];
+        helper.startSequence()
+                .thenExecuteAfter(10, () -> wall(helper, true))
+                .thenExecuteAfter(searchAfter + 10, () -> {
+                    before[0] = hollow.isSearching();
+                    hollow.arriveAtSearch();
+                    before[1] = hollow.hasArrivedAtSearch();
+                    hollow.setTarget(next);
+                    after[0] = hollow.isSearching();
+                    after[1] = hollow.hasArrivedAtSearch();
+                    after[2] = hollow.lastKnownPosition() == null;
+                    after[3] = hollow.mayStartAttack();
+                    wall(helper, false);
+                })
+                .thenExecute(() -> {
+                    helper.assertTrue(before[0], "out of sight it searches");
+                    helper.assertTrue(before[1], "and got there");
+                    helper.assertFalse(after[0], "the search was for the old target");
+                    helper.assertFalse(after[1], "nothing arrived for the new one");
+                    helper.assertTrue(after[2], "no place known yet for the new one");
+                    helper.assertTrue(after[3], "the gate is open for the new target");
+                })
+                .thenSucceed();
+    }
+
     @GameTest(template = ARENA, batch = "nightmare_target_hardest", timeoutTicks = 200)
     public static void itSwitchesToWhoeverHitsItHardest(GameTestHelper helper) {
         TheHollow hollow = helper.spawnWithNoFreeWill(ModEntityTypes.THE_HOLLOW.get(), MIDDLE);
@@ -182,6 +265,13 @@ public final class NightmareReactionGameTests {
 
     private static ServerPlayer playerAt(GameTestHelper helper, double x, double z) {
         ServerPlayer player = GameTestPlayers.survival(helper);
+        Vec3 at = helper.absoluteVec(new Vec3(x, 0.0, z));
+        player.moveTo(at.x, at.y, at.z, 0.0F, 0.0F);
+        return player;
+    }
+
+    private static Player mockPlayerAt(GameTestHelper helper, double x, double z) {
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         Vec3 at = helper.absoluteVec(new Vec3(x, 0.0, z));
         player.moveTo(at.x, at.y, at.z, 0.0F, 0.0F);
         return player;

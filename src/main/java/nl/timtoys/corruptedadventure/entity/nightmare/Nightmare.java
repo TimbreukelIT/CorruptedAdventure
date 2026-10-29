@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -31,6 +32,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
+import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.network.PacketDistributor;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.NightmareConfig;
@@ -44,6 +47,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntSupplier;
 
 /**
  * What every Nightmare shares (phase 4, fase-4-nightmares-concept.md "Fase 4-sparring alle Nightmares"): a boss bar for
@@ -62,15 +66,16 @@ import java.util.List;
  * Attacks whose damage comes from their own config, not from {@code attack_damage}, multiply it by {@link #strength()}.
  * <p>
  * Vanilla caps {@code max_health} at 1024. Its full value (base × player scaling × strength, e.g. 1200 for ring 5)
- * is {@link #virtualMaxHealth()}; above the cap every hit is divided by {@link #healthScale()}, so it takes exactly as
- * many hits as the full value and the boss bar ratio stays right. Thresholds ("15% of its health") read
+ * is {@link #virtualMaxHealth()}; above the cap every hit, after its armor, is divided by {@link #healthScale()}, so it
+ * takes exactly as many hits as the full value and the boss bar ratio stays right. Thresholds ("15% of its health") read
  * {@link #virtualMaxHealth()} and {@link #virtualHealth()}.
  * <p>
  * The shared reactions of the life round (fase-4-nightmares-concept.md "Leven-ronde"), all server-side:
  * <ul>
  *   <li><b>Stagger</b> ({@link #isStaggered()}, synced for the animation): much damage within a few seconds, or
  *   {@link #hitWeakSpot()}, and it staggers for a moment. At its start every running goal stops, goals that move,
- *   look or jump cannot start, and {@link #onStaggered()} breaks off the rest (grabs, flights, own state).</li>
+ *   look or jump cannot start, and {@link #onStaggered()} breaks off the rest (grabs, flights, own state); for a
+ *   stagger from inside {@link #hurt} that break-off waits for the start of its next tick.</li>
  *   <li><b>Gate</b> {@link #mayStartAttack()}: not staggered, not resting, not searching. Every attack checks it before
  *   it starts, then calls {@link #countAttack()}.</li>
  *   <li><b>Pace</b>: after a burst of attacks a rest window ({@link #isResting()}) in which it backs off or circles,
@@ -93,6 +98,11 @@ public abstract class Nightmare extends Monster implements GeoEntity {
     /** Radians a circling rest window moves on per new point. */
     private static final double CIRCLE_STEP = 0.5;
     private static final double MIN_CIRCLE_RADIUS = 4.0;
+    /**
+     * Ticks without a target before the rest window and the search are forgotten: longer than the target goal takes to
+     * pick someone again after it lets go.
+     */
+    private static final int FORGET_TICKS = 40;
     private static final EntityDataAccessor<Boolean> DATA_STAGGERED =
             SynchedEntityData.defineId(Nightmare.class, EntityDataSerializers.BOOLEAN);
 
@@ -109,6 +119,14 @@ public abstract class Nightmare extends Monster implements GeoEntity {
     private final NightmarePacing pacing = new NightmarePacing();
     private final NightmareSearch search = new NightmareSearch();
     private final NightmareAggro aggro = new NightmareAggro();
+    /** How deep in {@link #hurt} it is: a stagger from in there breaks off at the next tick ({@link #staggerPending}). */
+    private int hurtDepth;
+    /** A stagger has started whose break-off (goals, {@link #onStaggered()}, effects) waits for the next tick. */
+    private boolean staggerPending;
+    private int targetlessTicks;
+    /** The target the search state is about; a different one is searched for anew. */
+    @Nullable
+    private LivingEntity searchTarget;
 
     protected Nightmare(EntityType<? extends Nightmare> type, Level level, BossEvent.BossBarColor barColor) {
         super(type, level);
@@ -198,21 +216,46 @@ public abstract class Nightmare extends Monster implements GeoEntity {
     }
 
     /**
-     * Above the health cap a hit counts on the virtual scale (see the class comment). The damage it really took feeds
-     * the target choice and the stagger.
+     * Above the health cap a hit counts on the virtual scale (see the class comment and
+     * {@link #getDamageAfterMagicAbsorb}). The damage it really took, virtual and after armor, feeds the target choice
+     * and the stagger.
      */
     @Override
     public boolean hurt(DamageSource source, float amount) {
         float scale = healthScale();
         float before = getHealth();
-        boolean hurt = super.hurt(source, amount / scale);
-        if (hurt && !level().isClientSide() && !isDeadOrDying()) {
-            float dealt = (before - getHealth()) * scale;
-            if (dealt > 0.0F) {
-                tookDamage(source, dealt);
+        hurtDepth++;
+        try {
+            boolean hurt = super.hurt(source, amount);
+            if (hurt && !level().isClientSide() && !isDeadOrDying()) {
+                float dealt = (before - getHealth()) * scale;
+                if (dealt > 0.0F) {
+                    tookDamage(source, dealt);
+                }
             }
+            return hurt;
+        } finally {
+            hurtDepth--;
         }
-        return hurt;
+    }
+
+    /**
+     * Scales a hit to the health cap only after armor, enchantments and effects: vanilla's armor formula depends on the
+     * damage, so a hit scaled before it would lose more to high armor than the virtual health promises. NeoForge takes
+     * the damage from the container here, not from the return value.
+     */
+    @Override
+    protected float getDamageAfterMagicAbsorb(DamageSource source, float amount) {
+        float after = super.getDamageAfterMagicAbsorb(source, amount);
+        float scale = healthScale();
+        if (scale <= 1.0F) {
+            return after;
+        }
+        if (!damageContainers.isEmpty()) {
+            DamageContainer container = damageContainers.peek();
+            container.setNewDamage(container.getNewDamage() / scale);
+        }
+        return after / scale;
     }
 
     private void tookDamage(DamageSource source, float dealt) {
@@ -251,7 +294,9 @@ public abstract class Nightmare extends Monster implements GeoEntity {
     /**
      * Staggers it for {@code ticks}, unless it is already staggering, cooling down from the last one, dying, or
      * {@link #canStagger()} says no. Every running goal stops, {@link #onStaggered()} breaks off the rest. True if it
-     * staggers now.
+     * staggers now. From inside {@link #hurt} (e.g. thorns while its own attack goal ticks) it is staggered at once, but
+     * the break-off waits for the start of its next tick: stopped now, the ticking goal would go on and set its state
+     * (a grab) after it.
      */
     public boolean stagger(int ticks) {
         if (level().isClientSide() || ticks <= 0 || isDeadOrDying() || !stagger.isReady(tickCount) || !canStagger()) {
@@ -259,6 +304,15 @@ public abstract class Nightmare extends Monster implements GeoEntity {
         }
         stagger.start(tickCount, ticks, config().staggerCooldownSeconds.get() * 20);
         entityData.set(DATA_STAGGERED, true);
+        if (hurtDepth > 0) {
+            staggerPending = true;
+        } else {
+            breakOffForStagger();
+        }
+        return true;
+    }
+
+    private void breakOffForStagger() {
         getNavigation().stop();
         for (WrappedGoal goal : goalSelector.getAvailableGoals()) {
             if (goal.isRunning()) {
@@ -270,7 +324,6 @@ public abstract class Nightmare extends Monster implements GeoEntity {
         if (level() instanceof ServerLevel serverLevel) {
             staggerEffects(serverLevel);
         }
-        return true;
     }
 
     /**
@@ -283,9 +336,17 @@ public abstract class Nightmare extends Monster implements GeoEntity {
 
     private void endStagger() {
         stagger.end();
+        staggerPending = false;
         entityData.set(DATA_STAGGERED, false);
         updateControlFlags();
         onStaggerEnd();
+    }
+
+    /** Dying ends a stagger without {@link #onStaggerEnd()}: the death animation, not a recovery. */
+    private void clearStaggerOnDeath() {
+        stagger.end();
+        staggerPending = false;
+        entityData.set(DATA_STAGGERED, false);
     }
 
     /** While staggering, goals that move, look or jump stay off; vanilla resets the flags every 5 ticks. */
@@ -313,7 +374,8 @@ public abstract class Nightmare extends Monster implements GeoEntity {
             return;
         }
         NightmareConfig config = config();
-        int rest = NightmareConfig.ticksBetween(config.restMinSeconds, config.restMaxSeconds, random.nextInt(1 << 16));
+        IntSupplier rest = () -> NightmareConfig.ticksBetween(config.restMinSeconds, config.restMaxSeconds,
+                random.nextInt(1 << 16));
         if (pacing.count(random, config.burstMinAttacks.get(), config.burstMaxAttacks.get(), rest,
                 config.restBackOffChance.get())) {
             onRestStart(pacing.style());
@@ -396,13 +458,14 @@ public abstract class Nightmare extends Monster implements GeoEntity {
         }
         LivingEntity target = getTarget();
         if (target == null || !target.isAlive()) {
-            pacing.reset();
-            if (search.stop()) {
-                onSearchEnd();
+            // A short gap (the target goal lets go and picks again) keeps the rest window and the search.
+            if (targetlessTicks < FORGET_TICKS && ++targetlessTicks == FORGET_TICKS) {
+                pacing.reset();
+                forgetSearch();
             }
-            search.reset();
             return;
         }
+        targetlessTicks = 0;
         pacing.tick();
         if (tickCount % SIGHT_TICKS != 0) {
             return;
@@ -420,6 +483,26 @@ public abstract class Nightmare extends Monster implements GeoEntity {
             onSearchStart();
         } else if (wasSearching && !search.isSearching()) {
             onSearchEnd();
+        }
+    }
+
+    /** Nothing known about where a target is: a search on ends ({@link #onSearchEnd()}). */
+    private void forgetSearch() {
+        if (search.stop()) {
+            onSearchEnd();
+        }
+        search.reset();
+        searchTarget = null;
+    }
+
+    /** A different target than the one the search state is about: that state belongs to the other one. */
+    @Override
+    public void setTarget(@Nullable LivingEntity target) {
+        super.setTarget(target);
+        LivingEntity now = getTarget();
+        if (!level().isClientSide() && now != null && now != searchTarget) {
+            forgetSearch();
+            searchTarget = now;
         }
     }
 
@@ -504,12 +587,22 @@ public abstract class Nightmare extends Monster implements GeoEntity {
                 return;
             }
         }
+        if (staggerPending && !level().isClientSide()) {
+            staggerPending = false;
+            if (isStaggered() && !isDeadOrDying()) {
+                breakOffForStagger();
+            }
+        }
         super.tick();
         if (level().isClientSide()) {
             return;
         }
         bossEvent.setProgress(getHealth() / getMaxHealth());
         if (isDeadOrDying()) {
+            // Its reactions no longer tick, so a stagger would stay on through the death animation.
+            if (isStaggered()) {
+                clearStaggerOnDeath();
+            }
             return;
         }
         tickReactions();
@@ -693,6 +786,22 @@ public abstract class Nightmare extends Monster implements GeoEntity {
     @Override
     public boolean isPushedByFluid() {
         return false;
+    }
+
+    /**
+     * On Peaceful vanilla removes a monster without a word; this one retreats ({@link #retreat()}), so a directed one
+     * goes back to virtual instead of the director keeping it present.
+     */
+    @Override
+    public void checkDespawn() {
+        if (level().getDifficulty() == Difficulty.PEACEFUL && shouldDespawnInPeaceful() && !isDeadOrDying()) {
+            // The event may keep it (deny) or remove it itself (allow); removed, the director still has to hear it.
+            if (!EventHooks.checkMobDespawn(this) || isRemoved()) {
+                retreat();
+            }
+            return;
+        }
+        super.checkDespawn();
     }
 
     @Override

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /**
  * Where a Nightmare can appear: behind a target, on ground, with room for its whole hitbox, dry, loaded and inside the
- * world border. Tries the straight spot first, then fans out sideways and nearer/farther, and a few blocks up and down.
+ * world border. Tries the straight spot first, then fans out sideways and nearer/farther, and a few blocks down and up.
  * For arrivals; like The Hollow's rift step, but for a type instead of an entity that already exists.
  */
 public final class NightmareSpots {
@@ -43,8 +43,10 @@ public final class NightmareSpots {
         return Optional.empty();
     }
 
+    /** At the target's height first, then down, and only last up: scanning from above would pick a roof over it. */
     private static Optional<Vec3> standable(ServerLevel level, EntityType<?> type, double x, int baseY, double z) {
-        for (int dy = UP; dy >= -DOWN; dy--) {
+        for (int i = 0; i <= DOWN + UP; i++) {
+            int dy = i <= DOWN ? -i : i - DOWN;
             int y = baseY + dy;
             BlockPos below = BlockPos.containing(x, y - 1, z);
             if (!level.hasChunkAt(below) || !level.getWorldBorder().isWithinBounds(below)) {

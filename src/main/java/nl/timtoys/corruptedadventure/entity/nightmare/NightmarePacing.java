@@ -2,6 +2,8 @@ package nl.timtoys.corruptedadventure.entity.nightmare;
 
 import net.minecraft.util.RandomSource;
 
+import java.util.function.IntSupplier;
+
 /**
  * The tempo of a fight (fase-4-nightmares-concept.md "Leven-ronde"): a burst of attacks, then a rest window in which it
  * starts no attack and backs off or circles its target. Pure; {@link Nightmare} counts and ticks it.
@@ -36,14 +38,23 @@ public final class NightmarePacing {
      * of {@code restTicks} with a drawn style; true then.
      */
     boolean count(RandomSource random, int burstMin, int burstMax, int restTicks, double backOffChance) {
+        return count(random, burstMin, burstMax, () -> restTicks, backOffChance);
+    }
+
+    /** As {@link #count(RandomSource, int, int, int, double)}, with the rest length drawn only when a burst ends. */
+    boolean count(RandomSource random, int burstMin, int burstMax, IntSupplier restTicks, double backOffChance) {
         if (attacksLeft <= 0) {
             int lo = Math.max(1, burstMin);
             attacksLeft = lo + random.nextInt(Math.max(lo, burstMax) - lo + 1);
         }
-        if (--attacksLeft > 0 || restTicks <= 0) {
+        if (--attacksLeft > 0) {
             return false;
         }
-        this.restTicks = restTicks;
+        int rest = restTicks.getAsInt();
+        if (rest <= 0) {
+            return false;
+        }
+        this.restTicks = rest;
         style = random.nextDouble() < backOffChance ? Style.BACK_OFF : Style.CIRCLE;
         clockwise = random.nextBoolean();
         return true;
