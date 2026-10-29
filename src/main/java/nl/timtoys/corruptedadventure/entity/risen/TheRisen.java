@@ -245,13 +245,20 @@ public class TheRisen extends Nightmare {
         part.zOld = old.z;
     }
 
-    /** A hit on a part: the wings take {@code wingDamageFactor} of it. */
+    /**
+     * A hit on a part: the wings take {@code wingDamageFactor} of it. The head is its weak spot: a fighter's hit there
+     * staggers it (the shared stagger, with its cooldown); low in the ground fight it is within a sword's reach.
+     */
     boolean hurt(RisenPart part, DamageSource source, float amount) {
         // The client hits too (Player.attack); only the server judges, and only it reads the server config.
         if (level().isClientSide()) {
             return false;
         }
-        return hurt(source, part.isWing() ? amount * settings().wingDamageFactor.get().floatValue() : amount);
+        boolean hurt = hurt(source, part.isWing() ? amount * settings().wingDamageFactor.get().floatValue() : amount);
+        if (hurt && part == head && source.getEntity() instanceof Player player && isFighter(player)) {
+            hitWeakSpot();
+        }
+        return hurt;
     }
 
     // --- ticking -----------------------------------------------------------------------------------------------------

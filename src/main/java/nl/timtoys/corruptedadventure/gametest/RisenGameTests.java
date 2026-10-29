@@ -24,7 +24,8 @@ import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
  * the melt pool (only natural blocks, lava only where the pool holds it, nothing of it left once it has set) and its
  * wings taking less damage than its body; from the leven-ronde its burning ground (only on free ground, goes out by
  * itself, sets who stands in it alight, changes no block), its attacks restarting from circling when loaded, and the
- * shared stagger (in the air it sags, on the ground it reels where it stands, never while it rises). The
+ * shared stagger (in the air it sags, on the ground it reels where it stands, never while it rises; a player's hit on
+ * its head, its weak spot, staggers it). The
  * flight itself needs a client to judge (teststop). In the empty
  * 9 × 7 × 9 {@code gametest/hollow_arena}. Run like {@link TierGatingGameTests}.
  */
@@ -176,6 +177,20 @@ public final class RisenGameTests {
             helper.assertValueEqual(loaded.state(), restarts ? RisenState.CIRCLING : state, "loaded " + state);
             loaded.discard();
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena")
+    public static void aPlayersHitOnItsHeadStaggersItAndOnAWingDoesNot(GameTestHelper helper) {
+        TheRisen risen = helper.spawnWithNoFreeWill(ModEntityTypes.THE_RISEN.get(), MIDDLE);
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        PartEntity<?>[] parts = risen.getParts();
+        helper.assertTrue(parts[0].hurt(helper.getLevel().damageSources().playerAttack(player), 1.0F), "a wing hit lands");
+        helper.assertFalse(risen.isStaggered(), "a wing is no weak spot");
+        risen.invulnerableTime = 0;
+        helper.assertTrue(parts[2].hurt(helper.getLevel().damageSources().playerAttack(player), 1.0F), "a head hit lands");
+        helper.assertTrue(risen.isStaggered(), "the head is its weak spot");
+        GameTestPlayers.remove(helper, player);
         helper.succeed();
     }
 
