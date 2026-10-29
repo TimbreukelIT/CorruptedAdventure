@@ -238,3 +238,5 @@ design-doc of de beslissingenlog staat, staat hier niet. Per punt: **ok** of **a
 113. De duik na de overvlucht telt als eerste aanval (`countAttack`) en start de timers van het gevecht.
 114. Schaduw: vervaagt tussen 28 en 64 blok hoogte, max. alpha 0,85; alleen tijdens de overvlucht (`PASSING`).
 115. Koor = vanilla-stemmen (soul escape, elder guardian, aan het eind het volle koor); eigen geluiden in de backlog.
+116. (INT2-review) Onder bladeren of een hut (geen open lucht vanaf de ogen) maar zonder overdekte vloer 5–10 blok
+   vóór het doelwit: hij komt door de lucht (overvlucht en duik), niet uit een poel onder open lucht zonder lava.

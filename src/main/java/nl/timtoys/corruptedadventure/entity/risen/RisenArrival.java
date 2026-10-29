@@ -221,8 +221,8 @@ public final class RisenArrival implements NightmareArrival {
 
     /**
      * The floor block to rise from: ~{@code riseDistance} in front of its target (never so near that the pool reaches
-     * it), preferably one it can see, under the roof, with a pool of at least {@link #MIN_POOL} blocks; else the best
-     * found; null if there is no floor at all.
+     * it), under the roof, preferably one it can see with a pool of at least {@link #MIN_POOL} blocks; else the best
+     * roofed one found; null if there is no roofed floor at all (then it comes through the air).
      */
     @Nullable
     static BlockPos riseSpot(ServerLevel level, ServerPlayer target, RisenConfig config) {
@@ -232,22 +232,28 @@ public final class RisenArrival implements NightmareArrival {
         Vec3 eyes = target.getEyePosition();
         BlockPos best = null;
         int bestScore = -1;
+        double lastDistance = -1.0;
         for (int step : RISE_STEPS) {
             double distance = Math.max(radius + 2, config.riseDistance.get() + step);
+            // Near steps can clamp to the same distance: those floors were tried already.
+            if (distance == lastDistance) {
+                continue;
+            }
+            lastDistance = distance;
             for (int angle : RISE_ANGLES) {
                 float rad = (yaw + angle) * Mth.DEG_TO_RAD;
                 BlockPos floor = floorNear(level, target.getX() - Mth.sin(rad) * distance, target.getBlockY(),
                         target.getZ() + Mth.cos(rad) * distance);
-                if (floor == null) {
+                // Leaves or a hut over its target, open sky over the floor: a rise there would glow without lava.
+                if (floor == null || level.canSeeSky(floor.above())) {
                     continue;
                 }
                 boolean seen = sees(level, target, eyes, floor);
-                boolean roofed = !level.canSeeSky(floor.above());
                 int size = melts ? RisenMeltPool.plan(level, floor, radius, true).size() : 0;
-                if (seen && roofed && (!melts || size >= MIN_POOL)) {
+                if (seen && (!melts || size >= MIN_POOL)) {
                     return floor;
                 }
-                int score = (seen ? 2000 : 0) + (roofed ? 1000 : 0) + size;
+                int score = (seen ? 2000 : 0) + size;
                 if (score > bestScore) {
                     best = floor;
                     bestScore = score;

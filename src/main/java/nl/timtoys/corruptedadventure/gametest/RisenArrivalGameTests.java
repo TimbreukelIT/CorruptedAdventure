@@ -43,7 +43,7 @@ import java.util.List;
 @GameTestHolder(CorruptedAdventure.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RisenArrivalGameTests {
-    /** Its own batch: no player of another test is near enough to count in its fight. */
+    /** Its own batch: no player of another test is near enough to count in its fight (the two in it look up their own). */
     private static final String BATCH = "risen_arrival";
     /** Ticks for the light to settle after the test built its roof, or for forced chunks to start ticking. */
     private static final int LIGHT_TICKS = 20;
@@ -71,13 +71,13 @@ public final class RisenArrivalGameTests {
                     helper.assertTrue(risen.getTarget() == player, "its target");
                 })
                 .thenWaitUntil(() -> {
-                    TheRisen risen = risen(helper);
+                    TheRisen risen = risen(helper, player);
                     helper.assertTrue(risen.state() == RisenState.DIVING, "it dives: " + risen.state() + " at "
                             + risen.position().subtract(player.position()) + ", ticks " + risen.tickCount + ", ticking "
                             + helper.getLevel().isPositionEntityTicking(risen.blockPosition()));
                 })
                 .thenExecute(() -> {
-                    risen(helper).discard();
+                    risen(helper, player).discard();
                     GameTestPlayers.remove(helper, player);
                     forceChunks(helper, false);
                 })
@@ -116,7 +116,7 @@ public final class RisenArrivalGameTests {
                     helper.assertBlockPresent(Blocks.LAVA, centre);
                     helper.assertBlockPresent(Blocks.MAGMA_BLOCK, skyCell);
                     helper.assertBlockPresent(Blocks.OAK_PLANKS, plank);
-                    TheRisen risen = risen(helper);
+                    TheRisen risen = risen(helper, player);
                     helper.assertFalse(risen.isInvisible(), "it rises out of the pool");
                     // Gone before the pool set by itself: it sets now.
                     risen.discard();
@@ -188,7 +188,9 @@ public final class RisenArrivalGameTests {
     /** Ticks a director of its own through the omens (at once, like the command) until The Risen is here. */
     private static TheRisen arrive(GameTestHelper helper, ServerPlayer player) {
         NightmareDirectorData data = new NightmareDirectorData();
-        NightmareDirector director = NightmareDirector.forTest(rings(helper), data, kind -> new RisenArrival());
+        // One arrival for every tick, like the registered one: its casts are remembered per place.
+        RisenArrival arrival = new RisenArrival();
+        NightmareDirector director = NightmareDirector.forTest(rings(helper), data, kind -> arrival);
         ServerLevel level = helper.getLevel();
         helper.assertTrue(director.arrive(level, NightmareKind.RISEN, player) == NightmareDirector.ArriveResult.COMING,
                 "coming");
@@ -207,10 +209,11 @@ public final class RisenArrivalGameTests {
         throw new IllegalStateException();
     }
 
-    private static TheRisen risen(GameTestHelper helper) {
+    /** The Risen after {@code player}: the other test of the batch has its own, near enough to be found too. */
+    private static TheRisen risen(GameTestHelper helper, ServerPlayer player) {
         // By class: a lookup by type also finds its parts (their type is the Risen's).
         List<TheRisen> found = helper.getLevel().getEntitiesOfClass(TheRisen.class, helper.getBounds().inflate(128.0),
-                TheRisen::isAlive);
+                risen -> risen.isAlive() && risen.getTarget() == player);
         if (found.isEmpty()) {
             helper.fail("no Risen");
         }

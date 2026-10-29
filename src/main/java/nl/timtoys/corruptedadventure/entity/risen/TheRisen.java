@@ -139,6 +139,8 @@ public class TheRisen extends Nightmare {
     private Vec3 passAim = Vec3.ZERO;
     private Vec3 passDirection = Vec3.ZERO;
     private double passHeight;
+    /** The rush over its target played this pass (not saved: after a load it may play once more). */
+    private boolean passHeard;
 
     public TheRisen(EntityType<? extends TheRisen> type, Level level) {
         super(type, level, BossEvent.BossBarColor.RED);
@@ -470,6 +472,7 @@ public class TheRisen extends Nightmare {
         anchor = BlockPos.containing(aim);
         passAim = aim;
         passHeight = height;
+        passHeard = false;
         Vec3 flat = aim.subtract(position()).multiply(1.0, 0.0, 1.0);
         passDirection = flat.lengthSqr() < 1.0E-4 ? Vec3.directionFromRotation(0.0F, getYRot()).multiply(1.0, 0.0, 1.0).normalize()
                 : flat.normalize();
@@ -495,7 +498,9 @@ public class TheRisen extends Nightmare {
             RisenEffects.embers(level, this);
         }
         double along = position().subtract(passAim).dot(passDirection);
-        if (along > -2.0 && along <= -2.0 + speed) {
+        // Once, also when the pass starts within two blocks of its aim (right above its target).
+        if (!passHeard && along > -2.0) {
+            passHeard = true;
             RisenEffects.passOverhead(level, this, passAim);
         }
         if (along < config.passBeyond.get() && stateTicks < PASS_MAX_TICKS) {

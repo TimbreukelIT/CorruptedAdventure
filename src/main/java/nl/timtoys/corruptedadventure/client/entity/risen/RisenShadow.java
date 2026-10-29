@@ -69,7 +69,8 @@ final class RisenShadow {
                     continue;
                 }
                 double top = surface(level, pos.set(bx, level.getHeight(Heightmap.Types.WORLD_SURFACE, bx, bz) - 1, bz));
-                if (Double.isNaN(top)) {
+                // Flying through a hill (noPhysics): no shadow on ground above it.
+                if (Double.isNaN(top) || top > y) {
                     continue;
                 }
                 float rel = (float) (top - y) + LIFT;
