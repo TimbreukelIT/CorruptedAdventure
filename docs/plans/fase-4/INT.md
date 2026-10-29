@@ -25,6 +25,13 @@ Nog: `f4/r2` als laatste.
    Design-doc en beslissingenlog zonder conflict (R2 voegde daar alleen het model toe).
    `strengthFactor()`: geen voorkomens. Geen nieuwe payloads in R2 → `PROTOCOL_VERSION` blijft "12".
 
+## Ronde 4 (2026-10-29): leven-ronde deel 1 (L0, L4, L5)
+8. `f4/live-base` 0f423e03 (L0: gedeelde reactielaag) → 29663118: schoon.
+9. `f4/live-keeper` 4ce07a5a (L4) → ff5d6405: client-entrypoint (union: `keeper_current`-handler bij de Hoeder).
+10. `f4/live-unfinished` b0d1d0cf (L5) → 77c1f1cb: mod-constructor (`UnfinishedTempBlocks`), `NightmareText`
+    (`memory_shard`), backlog en beslissingenlog (union). `PROTOCOL_VERSION` "12" → "13" (`keeper_current`, L4).
+    CODEBASE: per Nightmare één blok (stap 1 + leven-ronde), D-infra bij D. runData: geen diff.
+
 ## Stand bij afronden (2026-10-28 22:00)
 - `f4/int` op f21c6b89: H1, D, I, R3, R4, R5 gemerged; protocol "12"; runData 5621d39f; compileJava, build en GameTests
   67/67 groen; 2-clienttest gedaan (zie Voortgang 21:58). Geen eigen processen of slots meer.
@@ -48,6 +55,11 @@ Nog: `f4/r2` als laatste.
 - [ ] `/code-review medium d03463e4..f4/int`
 
 ## Voortgang
+- 2026-10-29 11:00 ronde 4 klaar: compileJava, runData (geen diff), build groen, elk apart. GameTests 84/85: alleen
+  `theDirectedArrivalOpensTheRiftAndTheHollowComesThrough` (bekend, L1). Server-smoke (`int-live`, vers): start zonder
+  fouten, `/summon` van Hoeder, Onvoltooide en Gelaagde werkt, 0 ERROR/Exception. `voorlopig-fase-4.md` punten 70–82
+  (L0, L4, L5; wat al in design-doc/beslissingenlog staat weggelaten; achteraan gezet zodat 1–69 blijven staan).
+  Volgt: L1, L2, L3.
 - 2026-10-29 10:33 ronde 3 (`f4/r2`) klaar: compileJava, runData (9f480c61), build groen, elk in een eigen aanroep.
   GameTests 70/71: alleen `theDirectedArrivalOpensTheRiftAndTheHollowComesThrough` faalt ("Did not expect hollow_rift
   to exist"): bekend, L1 zoekt hem uit. Server-smoke (`server.sh start int-r2 --fresh`): start zonder fouten, GeckoLib

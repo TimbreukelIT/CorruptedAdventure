@@ -1,7 +1,8 @@
 # Fase 4 — voorlopige keuzes (teststop met de gebruiker)
 
 Ontdubbeld uit de "Voorlopig"-secties van `H1.md`, `D.md`, `I.md`, `R2.md`, `R3.md`, `R4.md` en `R5.md` (INT,
-2026-10-28; R2 op 2026-10-29). Per punt: **ok** of **anders, en hoe**. Alle getallen staan in de serverconfig
+2026-10-28; R2 op 2026-10-29) en van de leven-ronde `L0.md`, `L4.md`, `L5.md` (2026-10-29; L1–L3 volgen). Wat al in het
+design-doc of de beslissingenlog staat, staat hier niet. Per punt: **ok** of **anders, en hoe**. Alle getallen staan in de serverconfig
 (`[nightmares.<naam>]`, `[nightmares.director]`, `[weakness_items]`).
 
 ## Gedeeld (alle Nightmares)
@@ -115,3 +116,46 @@ Ontdubbeld uit de "Voorlopig"-secties van `H1.md`, `D.md`, `I.md`, `R2.md`, `R3.
 68. Vulkanieten hoorn: 3 s blazen, straal 12 door muren, 2 s `stunned`, nooit spelers. Duurzaamheid 32, cooldown 30 s.
 69. Recepten: flits ` S `/`SGS`/` T ` (zonnesteenstaaf, glasruit, turkoois); hoorn `VHV`/` R ` (vulkanietstaaf,
     geitenhoorn, vuurrobijn). Beide brandvrij; tab 2 resp. 3.
+
+## Leven-ronde — gedeelde reactielaag (L0)
+70. Wankelen: 6 % van de volle max-HP aan echt genomen schade binnen 4 s, of een treffer op de zwakke plek; 30 ticks
+   (1,5 s); daarna 10 s geen nieuw wankelen (ook niet via de zwakke plek: geen stun-lock). Geen extra schade tijdens het
+   wankelen (het open venster = hij valt niet aan en beweegt niet).
+71. Standaard wankel-effect: `RAVAGER_STUNNED` (toon 0,6) + crit-vonken, wiebel 5°; per Nightmare te vervangen
+   (`staggerEffects`, `staggerSway`, eigen animatie).
+72. Tempo: na 2–4 aanvallen een rustvenster van 3–5 s; 50 % afstand nemen (naar 10 blokken), anders cirkelen (straal
+   4–10, stap 0,5 rad per nieuw punt, richting per venster getrokken).
+73. Zoeken: 3 s uit het zicht → 10 s zoeken, daarna "snuffelt hij je op" (laatste plek = waar je nu bent) en jaagt hij
+   weer. Geraakt door het doelwit uit het zicht = gehoord: de plek wordt de schutter. Nooit gezien maar wel doelwit
+   (door muren gevonden): de plek is meteen bekend. Tijdens het zoeken start hij geen aanval.
+74. Doelwit: alleen spelers (vechters); score = schade van de laatste tijd (halfwaardetijd 10 s) + 15 als de speler
+   binnen 8 blokken is en ≤ 35 % HP heeft; zonder scores de dichtstbijzijnde. Wisselen alleen bij > 1,5× de score van
+   het huidige doelwit, daarna 5 s niet opnieuw. Andere aanvallers (wolven, golems) krijgen geen wraak meer.
+
+## Leven-ronde — De Verloren Hoeder (L4)
+75. Wankelen: de gedeelde standaard, de kroon als zwakke plek; tijdens het wankelen drijft hij stil (in de lucht met
+   kroon blijft hij zweven).
+76. Bellenval: elke 14–20 s, binnen 28 blokken, onder het doelwit + 1 andere vechter; 30 ticks bellen op een vaste plek
+   (straal 1,8); stroom 40 ticks (−0,08 b/t per tick), windstoot 1,5 b/t omhoog; 4 schade bij vangen. Aankondiging: hij
+   stopt en kijkt naar de plek (kop omlaag, kieuwen open, gegorgel).
+77. Omsingelen: elke 22–32 s, binnen 32 blokken; middelpunt = gemiddelde van de vechters binnen 8 blokken van het
+   doelwit; ≥ 9 van 12 proefpunten op de kring vrij; zwemt 1,4× en draait 2,2× zo snel. Op land is de staart 1,1 hoog,
+   in water steekt hij 0,1 boven het water uit; onder het lijf door kan bij ≥ 3 diep. Terugduw 0,55 b/t (max. 2×/s),
+   knijpen 0,9 omhoog. Niet in de lucht en niet kruipend (zonder kroon alleen in water).
+78. Duik en uitbarsting: elke 16–24 s, binnen 40 blokken; ≥ 4 diep water onder of binnen 4 blokken naast het doelwit;
+   duikt 6 blokken weg (max. 3 s), loert ≤ 6 diep onder het doelwit (≤ 2 s), 25 ticks borrelen op een vaste plek, barst
+   omhoog met 2,6× zwemsnelheid: straal 2,5, 12 schade, 1,4 omhoog + 0,35 opzij. Met kroon 7 blokken boven het water uit,
+   zonder 2.
+79. Aanvalskeuze: grijpen > uitbarsting/gifadem > omsingelen/lokroep > bellenval/staartzwiep > cirkelen, elk met een
+   eigen cooldown (de eerste keer na de halve). Op de oever en op land: bellenval omhoog, omsingelen alleen met kroon;
+   in de lucht alleen de bellenval.
+
+## Leven-ronde — De Onvoltooide (L5)
+80. Glitchsprong: op 10–30 blokken, 20 ticks bevriezen, 4–6 stappen van 3–5 blokken (±55° opzij), 4–10 ticks pauze, de
+   pilaar 6 ticks vooraf; cooldown 14–22 s.
+81. Brokken: op 8–32 blokken, 12 blokken per brok, 30 ticks opstijgen, inslag straal 3, 12 schade; cooldown 16–24 s.
+   Paletten: ring 1 aarde/bemoste kei/eik, ring 2 zandsteen/gebarsten klei, ring 3 basalt/blackstone/magma, ring 4
+   getijdensteen (geen zand of gras: niets valt of groeit).
+82. Ontladen grond: binnen 24 blokken, straal 3, 40 ticks waarschuwing, 80 ticks open, 16 lagen per tick, max. 6000
+   blokken; alleen hele natuurlijke kolommen zonder vloeistof ernaast, niet binnen 5 blokken van hem; uit te zetten
+   (`unloadEnabled`). Wie 12 blokken diep valt, vangt de void op (4 void-schade).
