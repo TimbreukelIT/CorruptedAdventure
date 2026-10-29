@@ -220,7 +220,16 @@ public class TheLayered extends Nightmare {
     }
 
     boolean isClinging() {
-        return isOnWall() && !knockedOff && (clingRequested || (zza == 0.0F && xxa == 0.0F));
+        return isOnWall() && !knockedOff && (clingRequested || (zza == 0.0F && xxa == 0.0F && !targetNotAbove()));
+    }
+
+    /**
+     * Its target is not above it while its beak is free: then it slides down the wall (slowly, as on a ladder) instead
+     * of hanging still beside or above it, where neither its bite nor its grab (only on the ground) can reach.
+     */
+    private boolean targetNotAbove() {
+        LivingEntity target = getTarget();
+        return target != null && !isVehicle() && target.getY() < getY() + 1.0;
     }
 
     @Override
