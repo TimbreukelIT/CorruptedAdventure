@@ -16,4 +16,10 @@ Niet pushen, niet naar main mergen (dat doet main).
 - [ ] 2-clienttest: per Nightmare een echte komst via `/ca nightmare arrive <ring> Dev`
 
 ## Voortgang
+- 2026-10-29 18:35 2-clienttest deel 1 (server + Dev + Dev2, verse wereld `int2`, `build/int2-client-test.sh`, niet in
+  git; shots `build/test/shots/int2-report/`; `run/config` tijdelijk `roamIntervalSeconds` 5, `roamStepBlocks` 12,
+  `traceChance` 1): De Gelaagde in ring 2 (`tpring 2`, zandstenen wand 8 blok west): stofgordijn op de wand, ontvouwd
+  aan de wand, daarna gevecht (Dev weggeslingerd). De Herrijzende in ring 3 (open lucht): door de lucht, duik, gevecht;
+  na reset 4 natuurlijke sporen (`risen_trace`, telling via RCON). Serverlog 0 ERROR/Exception; clientlogs alleen
+  logrotatie. Review-fixes De Herrijzende b325dfc8, GameTests 123/123.
 - 2026-10-29 18:15 A2 + A3 gemerged: compileJava, runData (geen diff), build groen, GameTests 123/123, elk apart.
