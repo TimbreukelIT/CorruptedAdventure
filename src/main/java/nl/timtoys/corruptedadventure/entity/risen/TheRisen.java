@@ -109,6 +109,7 @@ public class TheRisen extends Nightmare {
     private int buffetWindup;
     private int stompWindup;
     private int landAfter;
+    private boolean landAfterBurst;
     private int groundCooldown;
     private Vec3 diveTarget = Vec3.ZERO;
     private final Set<UUID> diveHits = new HashSet<>();
@@ -361,6 +362,13 @@ public class TheRisen extends Nightmare {
         RisenEffects.staggered(level, this);
     }
 
+    /** After a burst in the air it may land for a ground fight ({@code landChance}). */
+    @Override
+    protected void onRestStart(NightmarePacing.Style style) {
+        landAfterBurst = state() != RisenState.LANDED && state() != RisenState.STUNNED
+                && random.nextDouble() < settings().landChance.get();
+    }
+
     @Override
     protected void onSniff() {
         triggerAnim(RisenAnimations.ACTION, RisenAnimations.SEARCH);
@@ -491,6 +499,12 @@ public class TheRisen extends Nightmare {
             nextEmberRain = tickCount + config.emberRainCooldownTicks(random.nextInt(1 << 16));
             flightTicks = 0;
             landAfter = config.landIntervalTicks(random.nextInt(1 << 16));
+        }
+        if (landAfterBurst) {
+            // A burst of attacks is over: it comes down for a ground fight, its rest window is the walk there.
+            landAfterBurst = false;
+            startLanding(target);
+            return;
         }
         // The shared gate: no attack while it staggers, rests after a burst or searches.
         if (!mayStartAttack()) {
@@ -843,6 +857,7 @@ public class TheRisen extends Nightmare {
         steer(new Vec3(getX(), top, getZ()), 0.5, STEER);
         if (getY() >= top - 1.0 || stateTicks > 80) {
             flightTicks = 0;
+            landAfterBurst = false;
             landAfter = settings().landIntervalTicks(random.nextInt(1 << 16));
             setState(RisenState.CIRCLING);
         }

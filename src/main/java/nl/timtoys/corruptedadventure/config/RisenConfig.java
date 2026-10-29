@@ -19,6 +19,7 @@ public final class RisenConfig {
     public final ModConfigSpec.DoubleValue diveSpeed;
     public final ModConfigSpec.IntValue diveCooldownMin;
     public final ModConfigSpec.IntValue diveCooldownMax;
+    public final ModConfigSpec.DoubleValue landChance;
     public final ModConfigSpec.IntValue landIntervalMin;
     public final ModConfigSpec.IntValue landIntervalMax;
     public final ModConfigSpec.DoubleValue walkSpeed;
@@ -95,10 +96,13 @@ public final class RisenConfig {
         diveCooldownMin = builder.comment("Seconds between two dives, drawn between min and max.")
                 .defineInRange("diveCooldownMin", 8, 1, 600);
         diveCooldownMax = builder.defineInRange("diveCooldownMax", 14, 1, 600);
-        landIntervalMin = builder.comment("Seconds of flight before it lands beside its target for a ground fight (it walks",
-                        "after its target, stomps, pecks, beats its wings when surrounded), drawn between min and max.")
-                .defineInRange("landIntervalMin", 20, 1, 600);
-        landIntervalMax = builder.defineInRange("landIntervalMax", 35, 1, 600);
+        landChance = builder.comment("Chance that it lands beside its target for a ground fight (it walks after its target,",
+                        "stomps, pecks, beats its wings when surrounded) when a burst of attacks in the air is over.")
+                .defineInRange("landChance", 0.4, 0.0, 1.0);
+        landIntervalMin = builder.comment("Seconds of flight after which it lands for a ground fight anyway, drawn between min",
+                        "and max.")
+                .defineInRange("landIntervalMin", 40, 1, 600);
+        landIntervalMax = builder.defineInRange("landIntervalMax", 60, 1, 600);
         landedSeconds = builder.comment("Seconds a ground fight lasts before it takes off again.")
                 .defineInRange("landedSeconds", 15, 1, 120);
         walkSpeed = builder.comment("Factor on movementSpeed for its walk on the ground.")
