@@ -16,6 +16,8 @@ public final class RisenAnimations {
     public static final String PECK = "peck";
     public static final String BUFFET = "buffet";
     public static final String STOMP = "stomp";
+    public static final String STAGGER = "stagger";
+    public static final String SEARCH = "search";
     public static final String SWOOP_WINDUP = "swoop_windup";
     public static final String EMBER_RAIN = "ember_rain";
 
@@ -26,6 +28,7 @@ public final class RisenAnimations {
     static final RawAnimation STUNNED = RawAnimation.begin().thenLoop("animation.the_risen.stunned");
     static final RawAnimation GROUND = RawAnimation.begin().thenLoop("animation.the_risen.ground");
     static final RawAnimation STALK = RawAnimation.begin().thenLoop("animation.the_risen.stalk");
+    static final RawAnimation STAGGER_AIR = RawAnimation.begin().thenLoop("animation.the_risen.stagger_air");
     static final RawAnimation RISE = RawAnimation.begin().thenPlayAndHold("animation.the_risen.rise");
     static final RawAnimation DEATH = RawAnimation.begin().thenPlayAndHold("animation.the_risen.death");
     static final RawAnimation SCREAM_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.scream");
@@ -34,6 +37,8 @@ public final class RisenAnimations {
     static final RawAnimation PECK_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.peck");
     static final RawAnimation BUFFET_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.buffet");
     static final RawAnimation STOMP_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.stomp");
+    static final RawAnimation STAGGER_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.stagger");
+    static final RawAnimation SEARCH_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.search");
     static final RawAnimation SWOOP_WINDUP_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.swoop_windup");
     static final RawAnimation EMBER_RAIN_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.ember_rain");
 

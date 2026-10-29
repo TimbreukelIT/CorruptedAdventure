@@ -232,6 +232,20 @@ final class RisenEffects {
         }
     }
 
+    /** The shared stagger: the choir falters, embers burst from its chest. */
+    static void staggered(ServerLevel level, Entity risen) {
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.RAVAGER_STUNNED, SoundSource.HOSTILE, 2.0F, 0.5F);
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.BLAZE_HURT, SoundSource.HOSTILE, 2.5F, 0.4F);
+        burst(level, risen, ParticleTypes.LAVA, 12, 0.0);
+        burst(level, risen, ParticleTypes.CRIT, 30, 0.3);
+    }
+
+    /** Searching, it reached the last place it saw its prey: a low, questioning call while it looks around. */
+    static void sniff(ServerLevel level, Entity risen) {
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.PHANTOM_AMBIENT, SoundSource.HOSTILE, 3.0F, 0.4F);
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.SOUL_ESCAPE.value(), SoundSource.HOSTILE, 2.0F, 0.5F);
+    }
+
     /** Its choir: three low voices stacked. */
     private static void choir(ServerLevel level, double x, double y, double z, float volume, float pitch) {
         for (SoundEvent voice : new SoundEvent[]{SoundEvents.GHAST_SCREAM, SoundEvents.WARDEN_ROAR, SoundEvents.ELDER_GUARDIAN_CURSE}) {

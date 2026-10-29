@@ -16,8 +16,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -27,6 +25,8 @@ import nl.timtoys.corruptedadventure.config.NightmareConfig;
 import nl.timtoys.corruptedadventure.config.RisenConfig;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmarePacing;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmareTargetGoal;
 import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
 import nl.timtoys.corruptedadventure.registry.ModMobEffects;
 import org.jetbrains.annotations.Nullable;
@@ -71,6 +71,17 @@ public class TheRisen extends Nightmare {
     private static final double SKIM_HEIGHT = 1.0;
     /** After a big attack (swoop, ember rain) the quick ones wait at least this long. */
     private static final int BREATHER = 80;
+    /** A rest window that backs off: it circles this much wider and higher. */
+    private static final double REST_WIDEN = 1.5;
+    private static final double REST_CLIMB = 8.0;
+    /** Searching, it circles low and tight over the last known place; there it looks around. */
+    private static final double SEARCH_CIRCLE = 8.0;
+    private static final double SEARCH_HEIGHT = 0.6;
+    private static final double SEARCH_ARRIVE = 12.0;
+    /** Staggering in the air, it sags (blocks per tick) for this many ticks, but never below this above the ground. */
+    private static final double STAGGER_SAG = 0.18;
+    private static final int STAGGER_SAG_TICKS = 30;
+    private static final double STAGGER_FLOOR = 2.0;
 
     private final RisenPart wingLeft;
     private final RisenPart wingRight;
@@ -147,9 +158,8 @@ public class TheRisen extends Nightmare {
 
     @Override
     protected void registerGoals() {
-        // It moves itself (customServerAiStep); goals only pick the target, through walls: it sees from the sky.
-        targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
+        // It moves itself (customServerAiStep); the shared goal only picks the target, through walls: it sees from the sky.
+        targetSelector.addGoal(1, new NightmareTargetGoal(this));
     }
 
     public RisenState state() {
@@ -298,6 +308,59 @@ public class TheRisen extends Nightmare {
             case SOARING -> soaring(level);
             case SWOOPING -> swooping(level);
             case EMBER_RAIN -> emberRaining(level);
+            case STAGGERED -> staggeredInAir();
+        }
+    }
+
+    // --- reactions (leven-ronde, shared layer in Nightmare) ----------------------------------------------------------
+
+    @Override
+    protected boolean canStagger() {
+        RisenState state = state();
+        return state != RisenState.RISING && state != RisenState.STUNNED && !isStunned();
+    }
+
+    /** The running attack breaks off. On the ground it reels where it stands; in the air it sags, tumbling. */
+    @Override
+    protected void onStaggered() {
+        ashRainTicks = 0;
+        if (state() == RisenState.LANDED) {
+            peckWindup = 0;
+            buffetWindup = 0;
+            stompWindup = 0;
+            triggerAnim(RisenAnimations.ACTION, RisenAnimations.STAGGER);
+        } else {
+            setState(RisenState.STAGGERED);
+        }
+    }
+
+    @Override
+    protected void onStaggerEnd() {
+        if (state() == RisenState.STAGGERED) {
+            setState(RisenState.TAKING_OFF);
+        }
+    }
+
+    @Override
+    protected void staggerEffects(ServerLevel level) {
+        RisenEffects.staggered(level, this);
+    }
+
+    @Override
+    protected void onSniff() {
+        triggerAnim(RisenAnimations.ACTION, RisenAnimations.SEARCH);
+        if (level() instanceof ServerLevel level) {
+            RisenEffects.sniff(level, this);
+        }
+    }
+
+    /** Sagging a few blocks with the wings out of rhythm; the stagger's end ({@link #onStaggerEnd}) lifts it again. */
+    private void staggeredInAir() {
+        double floor = groundY(getX(), getZ()) + STAGGER_FLOOR;
+        double sink = stateTicks < STAGGER_SAG_TICKS && getY() > floor ? STAGGER_SAG : 0.0;
+        setDeltaMovement(0.0, -sink, 0.0);
+        if (getY() < floor) {
+            setPos(getX(), floor, getZ());
         }
     }
 
@@ -361,9 +424,16 @@ public class TheRisen extends Nightmare {
     private void circling(ServerLevel level) {
         RisenConfig config = settings();
         LivingEntity target = fightTarget();
-        Vec3 centre = target != null ? target.position() : anchor != null ? Vec3.atBottomCenterOf(anchor) : position();
+        Vec3 lastKnown = lastKnownPosition();
+        boolean searching = target != null && isSearching() && lastKnown != null;
+        // Out of sight it circles low over where it last saw its prey; resting after a burst it may pull wide and high.
+        Vec3 centre = searching ? lastKnown : target != null ? target.position()
+                : anchor != null ? Vec3.atBottomCenterOf(anchor) : position();
         boolean raining = ashRainTicks > 0;
-        double radius = raining ? ASH_RAIN_CIRCLE : config.circleRadius.get();
+        boolean backingOff = isResting() && restStyle() == NightmarePacing.Style.BACK_OFF;
+        double radius = raining ? ASH_RAIN_CIRCLE : searching ? SEARCH_CIRCLE
+                : config.circleRadius.get() * (backingOff ? REST_WIDEN : 1.0);
+        double height = config.flightHeight.get() * (searching ? SEARCH_HEIGHT : 1.0) + (backingOff ? REST_CLIMB : 0.0);
         double speed = config.flySpeed.get();
         if (stateTicks == 1) {
             orbitAngle = Math.atan2(getZ() - centre.z, getX() - centre.x);
@@ -371,8 +441,11 @@ public class TheRisen extends Nightmare {
         orbitAngle += speed / Math.max(radius, ASH_RAIN_CIRCLE * 2);
         double x = centre.x + Math.cos(orbitAngle) * radius;
         double z = centre.z + Math.sin(orbitAngle) * radius;
-        double y = Math.max(groundY(x, z), groundY(centre.x, centre.z)) + config.flightHeight.get();
+        double y = Math.max(groundY(x, z), groundY(centre.x, centre.z)) + height;
         steer(new Vec3(x, y, z), speed, STEER);
+        if (searching && position().subtract(lastKnown).horizontalDistanceSqr() < SEARCH_ARRIVE * SEARCH_ARRIVE) {
+            arriveAtSearch();
+        }
         flightTicks++;
         if (tickCount % 48 == 0) {
             RisenEffects.flap(level, this);
@@ -404,6 +477,11 @@ public class TheRisen extends Nightmare {
             flightTicks = 0;
             landAfter = config.landIntervalTicks(random.nextInt(1 << 16));
         }
+        // The shared gate: no attack while it staggers, rests after a burst or searches.
+        if (!mayStartAttack()) {
+            return;
+        }
+        boolean started = true;
         if (tickCount >= nextScream) {
             setState(RisenState.SCREAMING);
             triggerAnim(RisenAnimations.ACTION, RisenAnimations.SCREAM);
@@ -424,7 +502,12 @@ public class TheRisen extends Nightmare {
             startEmberRain(level, target);
         } else if (tickCount >= nextRelease) {
             nextRelease = tickCount + config.releaseCooldownTicks(random.nextInt(1 << 16));
-            release(level, target);
+            started = release(level, target);
+        } else {
+            started = false;
+        }
+        if (started) {
+            countAttack();
         }
     }
 
@@ -634,14 +717,25 @@ public class TheRisen extends Nightmare {
     private void landed(ServerLevel level) {
         RisenConfig config = settings();
         LivingEntity target = fightTarget();
+        if (isStaggered()) {
+            setDeltaMovement(getDeltaMovement().multiply(0.0, 1.0, 0.0));
+            return;
+        }
+        // Resting after a burst it walks off or around; out of sight it walks to where it last saw its prey.
+        Vec3 walkTo = target == null ? null : isResting() ? restPoint() : isSearching() ? lastKnownPosition()
+                : inBeakReach(target) ? null : target.position();
         boolean busy = peckWindup > 0 || buffetWindup > 0 || stompWindup > 0;
-        if (busy || target == null || inBeakReach(target)) {
+        if (busy || walkTo == null) {
             setDeltaMovement(getDeltaMovement().multiply(0.0, 1.0, 0.0));
             if (target != null) {
                 face(target.position());
             }
         } else {
-            getMoveControl().setWantedPosition(target.getX(), target.getY(), target.getZ(), config.walkSpeed.get());
+            getMoveControl().setWantedPosition(walkTo.x, walkTo.y, walkTo.z, config.walkSpeed.get());
+            Vec3 lastKnown = lastKnownPosition();
+            if (isSearching() && lastKnown != null && position().distanceToSqr(lastKnown) < 9.0) {
+                arriveAtSearch();
+            }
         }
         if (stompWindup > 0) {
             if (--stompWindup == 0) {
@@ -665,7 +759,7 @@ public class TheRisen extends Nightmare {
             setState(RisenState.TAKING_OFF);
             return;
         }
-        if (--groundCooldown > 0) {
+        if (--groundCooldown > 0 || !mayStartAttack()) {
             return;
         }
         if (fighters(config.buffetRadius.get() * 0.6).size() >= 2) {
@@ -682,7 +776,10 @@ public class TheRisen extends Nightmare {
             triggerAnim(RisenAnimations.ACTION, RisenAnimations.PECK);
             RisenEffects.peck(level, this);
             groundCooldown = GROUND_ATTACK_COOLDOWN;
+        } else {
+            return;
         }
+        countAttack();
     }
 
     private boolean inBeakReach(LivingEntity target) {
@@ -760,13 +857,13 @@ public class TheRisen extends Nightmare {
         }
     }
 
-    /** Figures fall from its feathers and walk as ash walkers. */
-    private void release(ServerLevel level, LivingEntity target) {
+    /** Figures fall from its feathers and walk as ash walkers; false if there are too many already. */
+    private boolean release(ServerLevel level, LivingEntity target) {
         RisenConfig config = settings();
         int walkers = level.getEntitiesOfClass(AshWalker.class, getBoundingBox().inflate(WALKER_SEARCH)).size();
         int count = Math.min(config.releaseCount.get(), config.maxWalkers.get() - walkers);
         if (count <= 0) {
-            return;
+            return false;
         }
         triggerAnim(RisenAnimations.ACTION, RisenAnimations.RELEASE);
         float yaw = getYRot() * Mth.DEG_TO_RAD;
@@ -781,6 +878,7 @@ public class TheRisen extends Nightmare {
             level.addFreshEntity(walker);
             RisenEffects.release(level, walker);
         }
+        return true;
     }
 
     private void steer(Vec3 point, double speed, double turn) {
@@ -908,6 +1006,8 @@ public class TheRisen extends Nightmare {
                 .triggerableAnim(RisenAnimations.PECK, RisenAnimations.PECK_ANIM)
                 .triggerableAnim(RisenAnimations.BUFFET, RisenAnimations.BUFFET_ANIM)
                 .triggerableAnim(RisenAnimations.STOMP, RisenAnimations.STOMP_ANIM)
+                .triggerableAnim(RisenAnimations.STAGGER, RisenAnimations.STAGGER_ANIM)
+                .triggerableAnim(RisenAnimations.SEARCH, RisenAnimations.SEARCH_ANIM)
                 .triggerableAnim(RisenAnimations.SWOOP_WINDUP, RisenAnimations.SWOOP_WINDUP_ANIM)
                 .triggerableAnim(RisenAnimations.EMBER_RAIN, RisenAnimations.EMBER_RAIN_ANIM));
     }
@@ -927,6 +1027,7 @@ public class TheRisen extends Nightmare {
             case LANDING, TAKING_OFF, SCREAMING, SOARING, EMBER_RAIN -> RisenAnimations.HOVER;
             case LANDED -> moving ? RisenAnimations.STALK : RisenAnimations.GROUND;
             case STUNNED -> RisenAnimations.STUNNED;
+            case STAGGERED -> RisenAnimations.STAGGER_AIR;
         };
     }
 }

@@ -23,7 +23,8 @@ import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
  * The Risen (phase 4 step 1): the ash layers (slower per layer, held fast at six, knocked off by another player's hit),
  * the melt pool (only natural blocks, lava only where the pool holds it, nothing of it left once it has set) and its
  * wings taking less damage than its body; from the leven-ronde its burning ground (only on free ground, goes out by
- * itself, sets who stands in it alight, changes no block) and its attacks restarting from circling when loaded. The
+ * itself, sets who stands in it alight, changes no block), its attacks restarting from circling when loaded, and the
+ * shared stagger (in the air it sags, on the ground it reels where it stands, never while it rises). The
  * flight itself needs a client to judge (teststop). In the empty
  * 9 × 7 × 9 {@code gametest/hollow_arena}. Run like {@link TierGatingGameTests}.
  */
@@ -171,9 +172,33 @@ public final class RisenGameTests {
             helper.assertTrue(loaded != null, "created");
             loaded.load(tag);
             boolean restarts = state == RisenState.DIVING || state == RisenState.LANDING || state == RisenState.SOARING
-                    || state == RisenState.SWOOPING || state == RisenState.EMBER_RAIN;
+                    || state == RisenState.SWOOPING || state == RisenState.EMBER_RAIN || state == RisenState.STAGGERED;
             helper.assertValueEqual(loaded.state(), restarts ? RisenState.CIRCLING : state, "loaded " + state);
             loaded.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena")
+    public static void aStaggerInTheAirMakesItSagAndOnTheGroundItReelsWhereItStands(GameTestHelper helper) {
+        TheRisen flying = helper.spawnWithNoFreeWill(ModEntityTypes.THE_RISEN.get(), MIDDLE);
+        helper.assertValueEqual(flying.state(), RisenState.CIRCLING, "summoned in the air state");
+        helper.assertTrue(flying.stagger(), "staggers");
+        helper.assertTrue(flying.isStaggered() && !flying.mayStartAttack(), "staggered: no attack");
+        helper.assertValueEqual(flying.state(), RisenState.STAGGERED, "in the air it sags");
+        CompoundTag tag = flying.saveWithoutId(new CompoundTag());
+        flying.discard();
+        for (RisenState state : new RisenState[]{RisenState.LANDED, RisenState.RISING}) {
+            tag.putByte("RisenState", (byte) state.ordinal());
+            TheRisen risen = ModEntityTypes.THE_RISEN.get().create(helper.getLevel());
+            helper.assertTrue(risen != null, "created");
+            risen.load(tag);
+            risen.moveTo(helper.absoluteVec(MIDDLE.getCenter()));
+            helper.getLevel().addFreshEntity(risen);
+            boolean staggered = risen.stagger();
+            helper.assertValueEqual(staggered, state == RisenState.LANDED, "staggers in " + state);
+            helper.assertValueEqual(risen.state(), state, "state after a stagger in " + state);
+            risen.discard();
         }
         helper.succeed();
     }

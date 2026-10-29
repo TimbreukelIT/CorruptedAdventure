@@ -26,7 +26,9 @@ public enum RisenState {
     /** The swoop: down a straight line it no longer steers, then skimming the ground with a trail of fire behind it. */
     SWOOPING(false),
     /** Hanging over an area while burning embers fall from its wings. */
-    EMBER_RAIN(false);
+    EMBER_RAIN(false),
+    /** Staggered in the air (the shared stagger): it sags a few blocks, tumbling, then takes off again. */
+    STAGGERED(false);
 
     private final boolean grounded;
 
@@ -44,7 +46,8 @@ public enum RisenState {
      * anew.
      */
     boolean restartsWhenLoaded() {
-        return this == DIVING || this == LANDING || this == SOARING || this == SWOOPING || this == EMBER_RAIN;
+        return this == DIVING || this == LANDING || this == SOARING || this == SWOOPING || this == EMBER_RAIN
+                || this == STAGGERED;
     }
 
     static RisenState byId(int id) {
