@@ -87,6 +87,11 @@ public final class ModParticleTypes {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> REVERSE_RAINDROP =
             PARTICLE_TYPES.register("reverse_raindrop", () -> new SimpleParticleType(false));
 
+    // Phase 4 step 2 (A5): The Unfinished's roaming trace.
+    /** Pale raindrop hanging still in mid-air where The Unfinished passed (sprites {@code still_raindrop_0..1}). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> STILL_RAINDROP =
+            PARTICLE_TYPES.register("still_raindrop", () -> new SimpleParticleType(false));
+
     private ModParticleTypes() {
     }
 

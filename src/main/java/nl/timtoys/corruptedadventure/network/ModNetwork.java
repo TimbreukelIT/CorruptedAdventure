@@ -47,5 +47,8 @@ public final class ModNetwork {
         // Phase 4 (L4): the current of The Lost Keeper's bubble trap.
         registrar.playToClient(KeeperCurrentPayload.TYPE, KeeperCurrentPayload.STREAM_CODEC,
                 ClientboundHandlers.forward(KeeperCurrentPayload.TYPE));
+        // Phase 4 step 2 (A5): the standstill round The Unfinished's arrival.
+        registrar.playToClient(UnfinishedStandstillPayload.TYPE, UnfinishedStandstillPayload.STREAM_CODEC,
+                ClientboundHandlers.forward(UnfinishedStandstillPayload.TYPE));
     }
 }

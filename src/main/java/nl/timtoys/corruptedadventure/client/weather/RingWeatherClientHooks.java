@@ -92,6 +92,8 @@ public final class RingWeatherClientHooks {
         gameBus.addListener(Ring5SoundDamping::onLoggingOut);
         gameBus.addListener(StandstillClouds::onClientTick);
         gameBus.addListener(StandstillClouds::onLoggingOut);
+        // Phase 4 step 2: the standstill round The Unfinished's arrival, felt through the renderer above.
+        LocalStandstill.register(gameBus);
     }
 
     /**
@@ -260,11 +262,40 @@ public final class RingWeatherClientHooks {
     }
 
     private static void forEachFelt(Level level, Vec3 position, BiConsumer<RingWeatherRenderer, Float> action) {
+        float local = LocalStandstill.strengthAt(level, position.x, position.z);
+        if (local > 0.0F) {
+            forEachFeltWithLocal(level, position, local, action);
+            return;
+        }
         for (RingWeatherMix.Share share : shares(level, position.x, position.z)) {
             RingWeatherRenderer renderer = RingWeatherRenderers.get(share.state().type());
             if (renderer != null && share.strength() > 0.0F) {
                 action.accept(renderer, share.strength());
             }
+        }
+    }
+
+    /**
+     * A {@link LocalStandstill} takes over: the standstill at the stronger of the ring's and the local one, every other
+     * weather held back by the local share.
+     */
+    private static void forEachFeltWithLocal(Level level, Vec3 position, float local,
+                                             BiConsumer<RingWeatherRenderer, Float> action) {
+        float standstill = local;
+        for (RingWeatherMix.Share share : shares(level, position.x, position.z)) {
+            if (share.state().type() == RingWeatherType.STANDSTILL) {
+                standstill = Math.max(standstill, share.strength());
+                continue;
+            }
+            RingWeatherRenderer renderer = RingWeatherRenderers.get(share.state().type());
+            float strength = share.strength() * (1.0F - local);
+            if (renderer != null && strength > 0.0F) {
+                action.accept(renderer, strength);
+            }
+        }
+        RingWeatherRenderer renderer = RingWeatherRenderers.get(RingWeatherType.STANDSTILL);
+        if (renderer != null) {
+            action.accept(renderer, Math.min(1.0F, standstill));
         }
     }
 }
