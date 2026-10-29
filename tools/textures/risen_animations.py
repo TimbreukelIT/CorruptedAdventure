@@ -5,7 +5,7 @@
 Writes src/main/resources/assets/corruptedadventure/animations/entity/the_risen.animation.json. Names and lengths match
 entity/risen/RisenAnimations and the server's timings: the scream sounds at 1.2 s (screamWindupTicks 24), the peck lands
 at 0.45 s (9 ticks), the wing buffet at 0.6 s (12 ticks), the rise lasts 5.0 s (glow 40 + rise 60 ticks), death 3.0 s
-(DEATH_TICKS 60).
+(DEATH_TICKS 60); the swoop's windup 1.5 s (swoopWindupTicks 30), the ember rain's shudder 1.0 s (triggered every second).
 
 Bedrock conventions (as for The Hollow, checked in Blockbench): a positive x rotation tips the top of a bone forward and
 swings a hanging part backward; z is as in Blockbench, so the left wing (at -x in the mockup) goes up with a negative z
@@ -283,6 +283,67 @@ def buffet():
     return {"animation_length": 1.1, "bones": bones}
 
 
+def swoop_windup():
+    """At the top of the climb, before the swoop (1.5 s = swoopWindupTicks 30): wings flung high and back, head down at
+    its prey, the furnace flaring and the feathers trembling; at the end the wings fold back into the dive."""
+    length = 1.5
+    tremble = [0.35 + i * 0.1 for i in range(9)]
+    bones = {
+        "root": channel(rotation=linear((0, (0, 0, 0)), (0.4, (22, 0, 0)), (1.25, (28, 0, 0)), (1.5, (60, 0, 0)))),
+        "neck": channel(rotation=linear((0, (0, 0, 0)), (0.4, (18, 0, 0)), (1.25, (22, 0, 0)), (1.5, (-30, 0, 0)))),
+        "head": channel(rotation=linear((0, (0, 0, 0)), (0.4, (20, 0, 0)), (1.25, (24, 0, 0)), (1.5, (-20, 0, 0)))),
+        "beak_lower": channel(rotation=linear((0, (0, 0, 0)), (0.3, (28, 0, 0)), (1.25, (28, 0, 0)), (1.5, (18, 0, 0)))),
+        "ribcage_choir": channel(scale=linear((0, (1, 1, 1)), (0.35, (1.2, 1.2, 1)),
+                                              *[(t, ((1.14, 1.14, 1) if i % 2 else (1.24, 1.24, 1)))
+                                                for i, t in enumerate(tremble)],
+                                              (1.5, (1.05, 1.05, 1)))),
+        "crest": channel(rotation=linear((0, (0, 0, 0)), (0.4, (-16, 0, 0)), (1.25, (-16, 0, 0)), (1.5, (0, 0, 0)))),
+        "leg_left": channel(rotation=linear((0, (0, 0, 0)), (0.5, (30, 0, 0)), (1.5, (-30, 0, 0)))),
+        "leg_right": channel(rotation=linear((0, (0, 0, 0)), (0.5, (30, 0, 0)), (1.5, (-30, 0, 0)))),
+    }
+    for side, sign in SIDES:
+        shake_keys = [(t, (0, -sign * 20, -sign * (55 + (3 if i % 2 else -3)))) for i, t in enumerate(tremble)]
+        bones[f"wing_{side}"] = channel(rotation=linear((0, (0, 0, 0)), (0.35, (0, -sign * 20, -sign * 55)), *shake_keys,
+                                                        (1.5, (0, -sign * 45, sign * 50))))
+        bones[f"wing_{side}_forearm"] = channel(rotation=linear((0, (0, 0, 0)), (0.35, (0, 0, -sign * 12)),
+                                                                (1.25, (0, 0, -sign * 12)), (1.5, (0, 0, sign * 25))))
+        bones[f"wing_{side}_hand"] = channel(rotation=linear((0, (0, 0, 0)), (0.35, (0, 0, -sign * 18)),
+                                                             (1.25, (0, 0, -sign * 18)), (1.5, (0, 0, sign * 20))))
+        for n in PRIMARIES[side]:
+            bones[primary(side, n)] = channel(rotation=linear(
+                (0, (0, 0, 0)), (0.35, (-12, 0, 0)),
+                *[(t, (-12 + (4 if (i + n) % 2 else -4), 0, 0)) for i, t in enumerate(tremble)],
+                (1.5, (20, 0, 0))))
+    return {"animation_length": length, "bones": bones}
+
+
+def ember_rain():
+    """Hanging over the ember rain (1.0 s, triggered every second): wings spread wide and shuddering, the burning
+    feathers shaking loose, the chest flaring."""
+    length = 1.0
+    steps = [0.15 + i * 0.07 for i in range(11)]
+    bones = {
+        "root": channel(rotation=linear((0, (14, 0, 0)), (0.15, (6, 0, 0)), (0.85, (6, 0, 0)), (1.0, (14, 0, 0)))),
+        "neck": channel(rotation=linear((0, (0, 0, 0)), (0.15, (14, 0, 0)), (0.85, (14, 0, 0)), (1.0, (0, 0, 0)))),
+        "ribcage_choir": channel(scale=linear((0, (1, 1, 1)), (0.15, (1.15, 1.15, 1)), (0.85, (1.15, 1.15, 1)),
+                                              (1.0, (1, 1, 1)))),
+    }
+    for side, sign in SIDES:
+        bones[f"wing_{side}"] = channel(rotation=linear(
+            (0, (0, 0, 0)),
+            *[(t, (0, sign * 4, -sign * (22 + (6 if i % 2 else -6)))) for i, t in enumerate(steps)],
+            (1.0, (0, 0, 0))))
+        for n in PRIMARIES[side]:
+            bones[primary(side, n)] = channel(rotation=linear(
+                (0, (0, 0, 0)), *[(t, (14 * (1 if (i + n) % 2 else -1), 0, 0)) for i, t in enumerate(steps)],
+                (1.0, (0, 0, 0))))
+        for n in SECONDARIES:
+            bones[secondary(side, n)] = channel(rotation=linear(
+                (0, (0, 0, 0)), *[(t, (10 * (1 if (i + n) % 2 else -1), 0, 0)) for i, t in enumerate(steps)],
+                (1.0, (0, 0, 0))))
+    return {"animation_length": length, "bones": bones}
+
+
 def death():
     """It falls, the wings fold in, and it crumbles: the feathers drop away into ash and the furnace goes dark."""
     bones = {
@@ -324,6 +385,8 @@ def main():
         "animation.the_risen.release": shake(0.8, 10, victims_only=True),
         "animation.the_risen.peck": peck(),
         "animation.the_risen.buffet": buffet(),
+        "animation.the_risen.swoop_windup": swoop_windup(),
+        "animation.the_risen.ember_rain": ember_rain(),
         "animation.the_risen.death": death(),
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
