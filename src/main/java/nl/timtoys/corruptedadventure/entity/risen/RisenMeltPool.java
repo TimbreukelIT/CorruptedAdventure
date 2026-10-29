@@ -14,6 +14,7 @@ import nl.timtoys.corruptedadventure.registry.ModTags;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -122,14 +123,22 @@ public final class RisenMeltPool {
         return set;
     }
 
-    /** The pool sets to its scar: lava still there becomes obsidian, basalt or magma; the glowing rim basalt or magma. */
-    public void set(ServerLevel level) {
+    /**
+     * The pool sets to its scar: lava still there becomes obsidian, basalt or magma; the glowing rim basalt or magma.
+     * With {@code loadChunks} false only in loaded chunks (no hitch on the tick); the rest stays pending
+     * ({@link #isSet()} false) for a next call.
+     */
+    public void set(ServerLevel level, boolean loadChunks) {
         if (set) {
             return;
         }
-        set = true;
         RandomSource random = level.getRandom();
-        for (BlockPos pos : ground) {
+        for (Iterator<BlockPos> it = ground.iterator(); it.hasNext(); ) {
+            BlockPos pos = it.next();
+            if (!loadChunks && !level.isLoaded(pos)) {
+                continue;
+            }
+            it.remove();
             BlockState state = level.getBlockState(pos);
             if (lava.contains(pos) && state.is(Blocks.LAVA)) {
                 float roll = random.nextFloat();
@@ -139,7 +148,10 @@ public final class RisenMeltPool {
                 level.setBlock(pos, Blocks.BASALT.defaultBlockState(), Block.UPDATE_ALL);
             }
         }
-        RisenEffects.poolSets(level, centre);
+        if (ground.isEmpty()) {
+            set = true;
+            RisenEffects.poolSets(level, centre);
+        }
     }
 
     CompoundTag save() {

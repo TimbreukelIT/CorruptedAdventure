@@ -83,7 +83,7 @@ public final class RisenGameTests {
         helper.assertBlockPresent(Blocks.LAVA, 4, 1, 4);
         helper.assertBlockPresent(Blocks.LAVA, 6, 1, 4);
         helper.assertBlockPresent(Blocks.MAGMA_BLOCK, 2, 1, 4);
-        pool.set(helper.getLevel());
+        pool.set(helper.getLevel(), true);
         helper.assertTrue(pool.isSet(), "set");
         for (int x = 0; x < 9; x++) {
             for (int z = 0; z < 9; z++) {

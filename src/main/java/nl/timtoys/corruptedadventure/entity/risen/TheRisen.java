@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -274,7 +275,11 @@ public class TheRisen extends Nightmare {
             return;
         }
         if (pool != null && !pool.isSet() && poolTicks > 0 && --poolTicks == 0) {
-            pool.set(serverLevel);
+            pool.set(serverLevel, false);
+            if (!pool.isSet()) {
+                // Part of it lies in unloaded chunks: that part sets a second later, once it is loaded again.
+                poolTicks = 20;
+            }
         }
         // Here and not in the AI step: falling embers still land and the fire burns on while it is stunned or dying.
         emberRain.tick(serverLevel, this, fire, settings());
@@ -303,6 +308,8 @@ public class TheRisen extends Nightmare {
         stateTicks++;
         if (state() != RisenState.STUNNED && state() != RisenState.RISING && isStunned() && tickCount >= stunImmuneUntil) {
             stunGraceTicks = 0;
+            // As a stagger: an ash rain broken off does not resume after it.
+            ashRainTicks = 0;
             setState(RisenState.STUNNED);
             RisenEffects.stunned(level, this);
         }
@@ -367,7 +374,9 @@ public class TheRisen extends Nightmare {
     /** After a burst in the air it may land for a ground fight ({@code landChance}). */
     @Override
     protected void onRestStart(NightmarePacing.Style style) {
-        landAfterBurst = state() != RisenState.LANDED && state() != RisenState.STUNNED
+        // Not when the burst ended on the ground or on the way down (a landing is itself the last attack).
+        RisenState state = state();
+        landAfterBurst = state != RisenState.LANDING && state != RisenState.LANDED && state != RisenState.STUNNED
                 && random.nextDouble() < settings().landChance.get();
     }
 
@@ -392,6 +401,15 @@ public class TheRisen extends Nightmare {
     /** The volcanite horn's effect (stream I); its general part already stops the target and the speed. */
     private boolean isStunned() {
         return hasEffect(ModMobEffects.STUNNED);
+    }
+
+    /** Immune after a stun: the horn's effect does not take at all, or it would still drop its target. */
+    @Override
+    public boolean canBeAffected(MobEffectInstance effect) {
+        if (effect.is(ModMobEffects.STUNNED) && tickCount < stunImmuneUntil) {
+            return false;
+        }
+        return super.canBeAffected(effect);
     }
 
     /** First tick: near the ground it rises from it, higher up it just flies. */
@@ -489,6 +507,8 @@ public class TheRisen extends Nightmare {
         }
         if (target == null) {
             nextDive = -1;
+            // A landing rolled in the last fight does not carry over to the next one.
+            landAfterBurst = false;
             return;
         }
         if (nextDive < 0) {
@@ -511,7 +531,7 @@ public class TheRisen extends Nightmare {
         if (!mayStartAttack()) {
             return;
         }
-        boolean started = true;
+        boolean attacked = true;
         if (tickCount >= nextScream) {
             setState(RisenState.SCREAMING);
             triggerAnim(RisenAnimations.ACTION, RisenAnimations.SCREAM);
@@ -532,11 +552,11 @@ public class TheRisen extends Nightmare {
             startEmberRain(level, target);
         } else if (tickCount >= nextRelease) {
             nextRelease = tickCount + config.releaseCooldownTicks(random.nextInt(1 << 16));
-            started = release(level, target);
+            attacked = release(level, target);
         } else {
-            started = false;
+            attacked = false;
         }
-        if (started) {
+        if (attacked) {
             countAttack();
         }
     }
@@ -964,9 +984,10 @@ public class TheRisen extends Nightmare {
 
     @Override
     public void remove(Entity.RemovalReason reason) {
-        // Dead or gone: its lava never stays behind. Unloaded with its chunk, the pool is saved with it.
+        // Dead or gone: its lava never stays behind, so this last time its chunks are loaded if they have to be.
+        // Unloaded with its chunk, the pool is saved with it.
         if (reason.shouldDestroy() && level() instanceof ServerLevel serverLevel && pool != null) {
-            pool.set(serverLevel);
+            pool.set(serverLevel, true);
         }
         fire.clear();
         emberRain.clear();

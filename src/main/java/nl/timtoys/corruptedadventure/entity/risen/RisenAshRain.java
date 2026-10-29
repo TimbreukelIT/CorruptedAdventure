@@ -85,7 +85,8 @@ public final class RisenAshRain {
             return;
         }
         MobEffectInstance ash = player.getEffect(ModMobEffects.ASHEN);
-        if (ash != null && ash.getDuration() <= 1) {
+        // An infinite one (-1, e.g. from /effect) is not a timer: it stays until removed.
+        if (ash != null && !ash.isInfiniteDuration() && ash.getDuration() <= 1) {
             int layers = ash.getAmplifier() + 1;
             setLayers(player, layers == MAX_LAYERS ? BROKEN_FREE_LAYERS : layers - 1, ServerConfig.RISEN);
         }
