@@ -246,6 +246,66 @@ final class RisenEffects {
         level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.SOUL_ESCAPE.value(), SoundSource.HOSTILE, 2.0F, 0.5F);
     }
 
+    // --- arrival (stap 2) ---------------------------------------------------------------------------------------------
+
+    /**
+     * The choir of the omens, {@code progress} 0 → 1: first a few distant moaning voices, ever louder; past the middle
+     * a deep moan joins in, at the end the whole choir.
+     */
+    static void omenChoir(ServerLevel level, double x, double y, double z, float progress) {
+        float volume = 0.5F + 2.5F * progress;
+        level.playSound(null, x, y, z, SoundEvents.SOUL_ESCAPE.value(), SoundSource.HOSTILE, volume,
+                0.45F + level.random.nextFloat() * 0.1F);
+        level.playSound(null, x, y, z, SoundEvents.SOUL_ESCAPE.value(), SoundSource.HOSTILE, volume * 0.8F,
+                0.6F + level.random.nextFloat() * 0.1F);
+        if (progress > 0.5F) {
+            level.playSound(null, x, y, z, SoundEvents.ELDER_GUARDIAN_AMBIENT, SoundSource.HOSTILE, volume * 0.6F, 0.5F);
+        }
+        if (progress > 0.85F) {
+            choir(level, x, y, z, 0.6F + progress, 0.5F);
+        }
+    }
+
+    /** The last seconds under the open sky: heavy wing beats somewhere high above. */
+    static void omenWingsAbove(ServerLevel level, double x, double y, double z) {
+        level.playSound(null, x, y, z, SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE, 3.0F, 0.4F);
+    }
+
+    /** The last seconds under a roof: the ground rumbles and hisses under the feet. */
+    static void omenRumble(ServerLevel level, double x, double y, double z) {
+        level.playSound(null, x, y, z, SoundEvents.WARDEN_DIG, SoundSource.HOSTILE, 2.0F, 0.5F);
+        level.playSound(null, x, y, z, SoundEvents.LAVA_AMBIENT, SoundSource.HOSTILE, 1.5F, 0.5F);
+    }
+
+    /** An ash cast near the target stirs: smoke and sparks rise from it, more as the choir swells. */
+    static void castStirs(ServerLevel level, BlockPos top, float progress) {
+        double x = top.getX() + 0.5;
+        double y = top.getY() + 1.0;
+        double z = top.getZ() + 0.5;
+        level.sendParticles(ParticleTypes.SMOKE, x, y, z, 2 + (int) (6 * progress), 0.2, 0.1, 0.2, 0.01);
+        if (level.random.nextFloat() < 0.35F + 0.55F * progress) {
+            level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, x, y, z, 1, 0.1, 0.0, 0.1, 0.01);
+        }
+        if (progress > 0.4F) {
+            level.sendParticles(ParticleTypes.LARGE_SMOKE, x, y, z, 1, 0.15, 0.1, 0.15, 0.01);
+        }
+        if (level.random.nextFloat() < 0.3F + 0.7F * progress) {
+            level.sendParticles(ParticleTypes.SMALL_FLAME, x, y - 0.4, z, 1 + (int) (3 * progress), 0.25, 0.4, 0.25, 0.01);
+        }
+        if (level.random.nextFloat() < 0.4F * progress) {
+            level.sendParticles(ParticleTypes.LAVA, x, y, z, 1, 0.1, 0.0, 0.1, 0.0);
+        }
+    }
+
+    /** It passes right over its target: the rush of its wings and ash raining from them. */
+    static void passOverhead(ServerLevel level, Entity risen, Vec3 under) {
+        level.playSound(null, under.x, under.y + 2.0, under.z, SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE, 5.0F, 0.35F);
+        level.playSound(null, under.x, under.y + 2.0, under.z, SoundEvents.PHANTOM_FLAP, SoundSource.HOSTILE, 3.0F, 0.4F);
+        double half = Math.max(1.0, (risen.getY() - under.y) * 0.5);
+        level.sendParticles(ParticleTypes.ASH, risen.getX(), under.y + half, risen.getZ(), 120, 6.0, half, 6.0, 0.0);
+        level.sendParticles(ParticleTypes.WHITE_ASH, risen.getX(), under.y + half, risen.getZ(), 40, 6.0, half, 6.0, 0.0);
+    }
+
     /** Its choir: three low voices stacked. */
     private static void choir(ServerLevel level, double x, double y, double z, float volume, float pitch) {
         for (SoundEvent voice : new SoundEvent[]{SoundEvents.GHAST_SCREAM, SoundEvents.WARDEN_ROAR, SoundEvents.ELDER_GUARDIAN_CURSE}) {

@@ -24,6 +24,7 @@ import java.util.Set;
  * of obsidian, basalt and magma. Only natural blocks ({@link ModTags.Blocks#RISEN_MELTABLE}) with open air (or a plant)
  * above, never a player's blocks; lava only where the pool holds it on every side and below, so it cannot run off.
  * The temporary lava always goes again: the scar replaces it when the pool sets, also when the Risen dies or leaves first.
+ * A sheltered pool (its arrival under a roof) puts no lava where the sky is open above: that part only glows.
  * Saved with the Risen. Server-side.
  */
 public final class RisenMeltPool {
@@ -33,11 +34,13 @@ public final class RisenMeltPool {
     private final BlockPos centre;
     private final List<BlockPos> ground;
     private final Set<BlockPos> lava = new HashSet<>();
+    private final boolean sheltered;
     private boolean set;
 
-    private RisenMeltPool(BlockPos centre, List<BlockPos> ground) {
+    private RisenMeltPool(BlockPos centre, List<BlockPos> ground, boolean sheltered) {
         this.centre = centre;
         this.ground = ground;
+        this.sheltered = sheltered;
     }
 
     /**
@@ -45,6 +48,11 @@ public final class RisenMeltPool {
      * highest meltable block with open air above, at most {@link #MAX_STEP} above or below the centre.
      */
     public static RisenMeltPool plan(ServerLevel level, BlockPos centre, int radius) {
+        return plan(level, centre, radius, false);
+    }
+
+    /** As {@link #plan(ServerLevel, BlockPos, int)}; {@code sheltered}: no lava under the open sky. */
+    public static RisenMeltPool plan(ServerLevel level, BlockPos centre, int radius, boolean sheltered) {
         List<BlockPos> ground = new ArrayList<>();
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
@@ -61,7 +69,7 @@ public final class RisenMeltPool {
                 }
             }
         }
-        return new RisenMeltPool(centre, ground);
+        return new RisenMeltPool(centre, ground, sheltered);
     }
 
     private static boolean meltable(ServerLevel level, BlockPos pos) {
@@ -72,6 +80,11 @@ public final class RisenMeltPool {
 
     public BlockPos centre() {
         return centre;
+    }
+
+    /** How many blocks of ground will melt (before the pool sets). */
+    public int size() {
+        return ground.size();
     }
 
     /** The ground glows and cracks: every pool block turns to magma, plants on it burn away. */
@@ -96,7 +109,7 @@ public final class RisenMeltPool {
             }
         }
         for (BlockPos pos : glowing) {
-            if (holds(level, pos, glowing)) {
+            if (holds(level, pos, glowing) && !(sheltered && level.canSeeSky(pos.above()))) {
                 lava.add(pos);
             }
         }
@@ -160,6 +173,7 @@ public final class RisenMeltPool {
         tag.put("ground", new LongArrayTag(ground.stream().mapToLong(BlockPos::asLong).toArray()));
         tag.put("lava", new LongArrayTag(lava.stream().mapToLong(BlockPos::asLong).toArray()));
         tag.putBoolean("set", set);
+        tag.putBoolean("sheltered", sheltered);
         return tag;
     }
 
@@ -168,7 +182,7 @@ public final class RisenMeltPool {
         for (long pos : tag.getLongArray("ground")) {
             ground.add(BlockPos.of(pos));
         }
-        RisenMeltPool pool = new RisenMeltPool(BlockPos.of(tag.getLong("centre")), ground);
+        RisenMeltPool pool = new RisenMeltPool(BlockPos.of(tag.getLong("centre")), ground, tag.getBoolean("sheltered"));
         if (tag.contains("lava", Tag.TAG_LONG_ARRAY)) {
             for (long pos : tag.getLongArray("lava")) {
                 pool.lava.add(BlockPos.of(pos));

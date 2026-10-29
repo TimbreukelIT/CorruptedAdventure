@@ -191,7 +191,8 @@ public final class RisenGameTests {
             helper.assertTrue(loaded != null, "created");
             loaded.load(tag);
             boolean restarts = state == RisenState.DIVING || state == RisenState.LANDING || state == RisenState.SOARING
-                    || state == RisenState.SWOOPING || state == RisenState.EMBER_RAIN || state == RisenState.STAGGERED;
+                    || state == RisenState.SWOOPING || state == RisenState.EMBER_RAIN || state == RisenState.STAGGERED
+                    || state == RisenState.PASSING;
             helper.assertValueEqual(loaded.state(), restarts ? RisenState.CIRCLING : state, "loaded " + state);
             loaded.discard();
         }
