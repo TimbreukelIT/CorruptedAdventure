@@ -50,7 +50,8 @@ final class KeeperWhipGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        return keeper.isAlive() && !keeper.isStunned() && (windup > 0 || sweep > 0);
+        // Reeling, falling or stunned, the tail goes limp: it hits nobody after that.
+        return keeper.canAttack() && (windup > 0 || sweep > 0);
     }
 
     @Override
@@ -76,6 +77,7 @@ final class KeeperWhipGoal extends Goal {
     @Override
     public void stop() {
         hit.clear();
+        keeper.stopWhip();
         nextTick = keeper.tickCount + TheLostKeeper.keeperConfig().whipCooldownTicks(keeper.getRandom().nextInt(1 << 16));
     }
 

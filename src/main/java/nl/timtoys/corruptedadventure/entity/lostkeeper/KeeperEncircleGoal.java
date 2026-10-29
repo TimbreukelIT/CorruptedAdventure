@@ -1,13 +1,16 @@
 package nl.timtoys.corruptedadventure.entity.lostkeeper;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import nl.timtoys.corruptedadventure.config.LostKeeperConfig;
 
 import java.util.EnumSet;
@@ -40,6 +43,8 @@ final class KeeperEncircleGoal extends Goal {
     private static final int RING_CLEAR = 9;
     private static final int WALL_HIT_TICKS = 10;
     private static final double SQUEEZE_UP = 0.9;
+    /** Blocks under a fighter's feet searched for the ground (a jump's height and a little more). */
+    private static final int GROUND_SEARCH = 3;
 
     private final TheLostKeeper keeper;
     private final Map<UUID, Integer> wallHits = new HashMap<>();
@@ -102,8 +107,7 @@ final class KeeperEncircleGoal extends Goal {
         } else if (footing == KeeperWater.Footing.AIR || !keeper.hasCrown()) {
             return null;
         } else {
-            // The ground it stands on, also mid-jump.
-            floor = Mth.floor(target.getY() + 0.01);
+            floor = groundUnder(target);
         }
         double x = 0.0;
         double z = 0.0;
@@ -117,6 +121,19 @@ final class KeeperEncircleGoal extends Goal {
             }
         }
         return count == 0 ? new Vec3(target.getX(), floor, target.getZ()) : new Vec3(x / count, floor, z / count);
+    }
+
+    /** The top of the ground the target stands on, also mid-jump: the first block with a collision under their feet. */
+    private static double groundUnder(Player target) {
+        Level level = target.level();
+        BlockPos.MutableBlockPos pos = BlockPos.containing(target.getX(), target.getY() + 0.01, target.getZ()).mutable();
+        for (int k = 0; k <= GROUND_SEARCH; k++, pos.move(Direction.DOWN)) {
+            VoxelShape shape = level.getBlockState(pos).getCollisionShape(level, pos);
+            if (!shape.isEmpty()) {
+                return pos.getY() + shape.max(Direction.Axis.Y);
+            }
+        }
+        return Mth.floor(target.getY() + 0.01);
     }
 
     /** Whether most of the ring at its head's height is free of blocks (water counts as free). */

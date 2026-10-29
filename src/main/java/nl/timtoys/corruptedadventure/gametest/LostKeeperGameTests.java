@@ -25,7 +25,8 @@ import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
 
 /**
  * The Lost Keeper (phase 4 step 1): its body chain and hitboxes, the crown (a hit breaks one branch and hurts more; the
- * last branch makes it fall, land hard and lie stunned), the hold (no sneaking off; damage sets free) and its poison
+ * last branch makes it fall, land hard and lie stunned, unless it already lies on the ground), the hold (no sneaking off;
+ * damage, a teleport or logging out sets free, and it stays in the world), the tail stopping at its death and its poison
  * cloud; from the life round where a fighter stands (water, shore, land, air), the launch out of a boat and the ring of
  * its body, and the shared stagger on a crown hit (lets go, opens the ring, closes the gate). Without free will it never
  * attacks the mock players; the fight's bookkeeping runs without AI. Its own batch: its 24-block body reaches into
@@ -87,6 +88,33 @@ public final class LostKeeperGameTests {
     @GameTest(template = ARENA, batch = BATCH, timeoutTicks = 300)
     public static void withTheLastBranchGoneItLandsHardAndLiesStunned(GameTestHelper helper) {
         helper.setBlock(MIDDLE.below(), Blocks.STONE);
+        // Hovering two blocks over the stone, so the last branch makes it fall.
+        TheLostKeeper keeper = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LOST_KEEPER.get(), MIDDLE.above(2));
+        int gap = ServerConfig.LOST_KEEPER.crownBreakCooldownTicks.get() + 1;
+        float[] before = new float[1];
+        var sequence = helper.startSequence();
+        for (int k = 0; k < TheLostKeeper.CROWN_BRANCHES; k++) {
+            sequence.thenExecuteAfter(gap, () -> {
+                before[0] = keeper.getHealth();
+                keeper.breakBranch();
+            });
+        }
+        sequence.thenExecuteAfter(1, () -> helper.assertTrue(keeper.isFalling(), "it falls"))
+                .thenExecuteAfter(20, () -> {
+                    helper.assertFalse(keeper.hasCrown(), "the crown is dark");
+                    helper.assertFalse(keeper.canSwimHere(), "no swimming in the air without it");
+                    helper.assertFalse(keeper.isFalling(), "landed");
+                    helper.assertTrue(keeper.isStunned(), "stunned after the landing");
+                    double landing = keeper.virtualMaxHealth() * ServerConfig.LOST_KEEPER.landingDamage.get() / keeper.healthScale();
+                    helper.assertTrue(before[0] - keeper.getHealth() > landing * 0.3,
+                            "the landing hurt: " + (before[0] - keeper.getHealth()));
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = ARENA, batch = BATCH, timeoutTicks = 300)
+    public static void lyingOnTheGroundTheLastBranchMakesItCrawlWithoutALanding(GameTestHelper helper) {
+        helper.setBlock(MIDDLE.below(), Blocks.STONE);
         TheLostKeeper keeper = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LOST_KEEPER.get(), MIDDLE);
         int gap = ServerConfig.LOST_KEEPER.crownBreakCooldownTicks.get() + 1;
         float[] before = new float[1];
@@ -99,11 +127,11 @@ public final class LostKeeperGameTests {
         }
         sequence.thenExecuteAfter(2, () -> {
                     helper.assertFalse(keeper.hasCrown(), "the crown is dark");
-                    helper.assertFalse(keeper.canSwimHere(), "no swimming in the air without it");
-                    helper.assertTrue(keeper.isStunned(), "stunned after the landing");
+                    helper.assertFalse(keeper.isFalling(), "nowhere to fall");
+                    helper.assertFalse(keeper.isStunned(), "no landing stun");
                     double landing = keeper.virtualMaxHealth() * ServerConfig.LOST_KEEPER.landingDamage.get() / keeper.healthScale();
-                    helper.assertTrue(before[0] - keeper.getHealth() > landing * 0.3,
-                            "the landing hurt: " + (before[0] - keeper.getHealth()));
+                    helper.assertTrue(before[0] - keeper.getHealth() < landing * 0.3,
+                            "no landing damage: " + (before[0] - keeper.getHealth()));
                 })
                 .thenSucceed();
     }
@@ -113,21 +141,65 @@ public final class LostKeeperGameTests {
         TheLostKeeper keeper = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LOST_KEEPER.get(), MIDDLE);
         ServerPlayer held = GameTestPlayers.survival(helper);
         ServerPlayer friend = GameTestPlayers.survival(helper);
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    helper.assertTrue(keeper.hold(held), "it coils round the fighter");
+                    helper.assertTrue(held.getVehicle() == keeper, "held");
+                    held.setShiftKeyDown(true);
+                    held.invulnerableTime = 10;
+                })
+                .thenExecuteAfter(2, () -> {
+                    helper.assertTrue(held.getVehicle() == keeper, "sneaking does not get them off");
+                    helper.assertFalse(held.isShiftKeyDown(), "the sneak key is let go of, not the fighter");
+                    // Player.rideTick skips the whole ride tick of a sneaking rider: then this would not count down.
+                    helper.assertTrue(held.invulnerableTime < 10, "the held fighter still ticks: " + held.invulnerableTime);
+                    float free = ServerConfig.LOST_KEEPER.freeDamage.get().floatValue();
+                    keeper.hurt(playerAttack(helper, friend), free + 1.0F);
+                    helper.assertFalse(keeper.isHolding(), "the friend's blow sets them free");
+                    helper.assertTrue(held.getVehicle() == null, "free");
+                    GameTestPlayers.remove(helper, held);
+                    GameTestPlayers.remove(helper, friend);
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = ARENA, batch = BATCH)
+    public static void aHeldFighterGetsOffByATeleportAndLogsOutFreeWhileTheKeeperStays(GameTestHelper helper) {
+        TheLostKeeper keeper = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LOST_KEEPER.get(), MIDDLE);
+        ServerPlayer jumper = GameTestPlayers.survival(helper);
+        ServerPlayer leaver = GameTestPlayers.survival(helper);
         helper.runAfterDelay(2, () -> {
-            helper.assertTrue(keeper.hold(held), "it coils round the fighter");
-            helper.assertTrue(held.getVehicle() == keeper, "held");
-            held.setShiftKeyDown(true);
-            held.stopRiding();
-            helper.assertTrue(held.getVehicle() == keeper, "sneaking does not get them off");
-            held.setShiftKeyDown(false);
-            float free = ServerConfig.LOST_KEEPER.freeDamage.get().floatValue();
-            keeper.hurt(playerAttack(helper, friend), free + 1.0F);
-            helper.assertFalse(keeper.isHolding(), "the friend's blow sets them free");
-            helper.assertTrue(held.getVehicle() == null, "free");
-            GameTestPlayers.remove(helper, held);
-            GameTestPlayers.remove(helper, friend);
+            helper.assertTrue(keeper.hold(jumper), "it holds the first");
+            jumper.setShiftKeyDown(true);
+            // Chorus fruit and an ender pearl take the rider off before they teleport, also while sneaking.
+            jumper.stopRiding();
+            helper.assertTrue(jumper.getVehicle() == null, "a teleport gets them off");
+            helper.assertTrue(keeper.hold(leaver), "it holds the second");
+            leaver.setShiftKeyDown(true);
+            // The real logout: PlayerList.remove saves the player and would take a vehicle with exactly one player.
+            GameTestPlayers.remove(helper, leaver);
+            helper.assertFalse(keeper.isRemoved(), "the keeper stays in the world");
+            helper.assertTrue(keeper.isAlive(), "alive");
+            helper.assertFalse(keeper.isHolding(), "it lets go");
+            helper.assertTrue(leaver.getVehicle() == null, "they leave free");
+            GameTestPlayers.remove(helper, jumper);
             helper.succeed();
         });
+    }
+
+    @GameTest(template = ARENA, batch = BATCH)
+    public static void itsTailStopsSwingingWhenItDies(GameTestHelper helper) {
+        TheLostKeeper keeper = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LOST_KEEPER.get(), MIDDLE.above(2));
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    keeper.startWhip(1);
+                    helper.assertTrue(keeper.isWhipping(), "the tail sweeps");
+                    keeper.kill();
+                    helper.assertTrue(keeper.isDeadOrDying(), "dead");
+                    helper.assertFalse(keeper.isWhipping(), "the sweep stops with its death");
+                })
+                .thenExecuteAfter(3, () -> helper.assertFalse(keeper.isWhipping(), "and stays stopped while it dies"))
+                .thenSucceed();
     }
 
     @GameTest(template = ARENA, batch = BATCH)

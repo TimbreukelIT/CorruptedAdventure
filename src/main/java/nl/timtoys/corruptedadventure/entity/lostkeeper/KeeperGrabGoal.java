@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.entity.lostkeeper;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,7 +13,11 @@ import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.config.LostKeeperConfig;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Pulling under water: it swims in, lunges ({@code grabWindupTicks}, its jaws wide) and snaps. If the target is still
@@ -156,17 +161,46 @@ final class KeeperGrabGoal extends Goal {
     }
 
     /**
-     * The lowest water block within {@code radius} round and below {@code around} (its centre), or null without water:
-     * where it dives with its catch.
+     * The lowest water block within {@code radius} round and below {@code around} that is connected through water to the
+     * water nearest {@code around} (its centre), or null without water: where it dives with its catch. Not a cave under
+     * the sea floor that it could never swim into.
      */
     @Nullable
     static Vec3 deepestWater(Level level, BlockPos around, int radius) {
-        BlockPos best = null;
-        for (BlockPos pos : BlockPos.betweenClosed(around.offset(-radius, -radius, -radius), around.offset(radius, 1, radius))) {
-            if (level.getFluidState(pos).is(FluidTags.WATER) && (best == null || pos.getY() < best.getY())) {
-                best = pos.immutable();
+        BlockPos min = around.offset(-radius, -radius, -radius);
+        BlockPos max = around.offset(radius, 1, radius);
+        BlockPos nearest = null;
+        for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
+            if (level.getFluidState(pos).is(FluidTags.WATER)
+                    && (nearest == null || pos.distSqr(around) < nearest.distSqr(around))) {
+                nearest = pos.immutable();
             }
         }
-        return best == null ? null : Vec3.atCenterOf(best);
+        if (nearest == null) {
+            return null;
+        }
+        BlockPos best = nearest;
+        Set<BlockPos> seen = new HashSet<>();
+        Deque<BlockPos> open = new ArrayDeque<>();
+        seen.add(nearest);
+        open.add(nearest);
+        while (!open.isEmpty()) {
+            BlockPos pos = open.poll();
+            if (pos.getY() < best.getY()) {
+                best = pos;
+            }
+            for (Direction direction : Direction.values()) {
+                BlockPos next = pos.relative(direction);
+                if (within(next, min, max) && seen.add(next) && level.getFluidState(next).is(FluidTags.WATER)) {
+                    open.add(next);
+                }
+            }
+        }
+        return Vec3.atCenterOf(best);
+    }
+
+    private static boolean within(BlockPos pos, BlockPos min, BlockPos max) {
+        return pos.getX() >= min.getX() && pos.getX() <= max.getX() && pos.getY() >= min.getY() && pos.getY() <= max.getY()
+                && pos.getZ() >= min.getZ() && pos.getZ() <= max.getZ();
     }
 }

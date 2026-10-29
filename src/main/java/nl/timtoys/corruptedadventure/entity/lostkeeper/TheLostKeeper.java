@@ -111,7 +111,6 @@ public class TheLostKeeper extends Nightmare {
     private int stunTicks;
     private int holdTicks;
     private float heldDamage;
-    private boolean releasing;
     private double turnScale = 1.0;
     private float damageTaken;
 
@@ -354,7 +353,8 @@ public class TheLostKeeper extends Nightmare {
             }
         }
         triggerAnim(KeeperAnimations.ACTION, KeeperAnimations.ROAR);
-        if (left == 0 && !isInWater()) {
+        // Lying on the ground already, it has nowhere to fall: no landing, it just crawls on.
+        if (left == 0 && !isInWater() && !onGround() && !standsOnBlock()) {
             falling = true;
         }
     }
@@ -596,6 +596,9 @@ public class TheLostKeeper extends Nightmare {
         if (!swimming) {
             // Without swimming power: gravity; in water it only sinks slowly.
             velocity = velocity.add(0.0, isInWater() ? -0.01 : -0.08, 0.0);
+            // Stored first: move() keeps the stored velocity (only clearing what collides), so gravity has to be in it
+            // to build up; otherwise it fell at a constant 0.08 blocks a tick.
+            setDeltaMovement(velocity);
         }
         move(MoverType.SELF, velocity);
         Vec3 after = getDeltaMovement();
@@ -620,11 +623,7 @@ public class TheLostKeeper extends Nightmare {
         return !getPassengers().isEmpty();
     }
 
-    boolean isReleasing() {
-        return releasing;
-    }
-
-    /** Coils round {@code player} (a passenger that cannot get off by sneaking: {@link KeeperHoldRules}). */
+    /** Coils round {@code player}: a passenger that cannot get off by sneaking (see {@link #tickHold}). */
     public boolean hold(Player player) {
         player.stopRiding();
         if (!player.startRiding(this, true)) {
@@ -637,19 +636,25 @@ public class TheLostKeeper extends Nightmare {
 
     /** Lets go of whoever it holds, with a push up and away. */
     public void release() {
+        release(0.6);
+    }
+
+    /** Lets go without the push: the fighter leaves the game ({@link KeeperHoldRules}). */
+    void dropHeld() {
+        release(0.0);
+    }
+
+    private void release(double push) {
         if (!isHolding()) {
             return;
         }
         List<Entity> held = List.copyOf(getPassengers());
-        releasing = true;
-        try {
-            ejectPassengers();
-        } finally {
-            releasing = false;
-        }
-        for (Entity entity : held) {
-            entity.setDeltaMovement(entity.getDeltaMovement().add(0.0, 0.6, 0.0));
-            entity.hurtMarked = true;
+        ejectPassengers();
+        if (push > 0.0) {
+            for (Entity entity : held) {
+                entity.setDeltaMovement(entity.getDeltaMovement().add(0.0, push, 0.0));
+                entity.hurtMarked = true;
+            }
         }
         holdTicks = 0;
     }
@@ -668,6 +673,21 @@ public class TheLostKeeper extends Nightmare {
                 entity.hurt(damageSources().mobAttack(this), config.squeezeDamage.get().floatValue() * strength());
             }
         }
+        // No sneaking off: Player.rideTick dismounts a sneaking rider and then skips its whole ride tick (no moving
+        // along, no ServerPlayer.tick, so no invulnerability countdown). The vehicle ticks before its riders, so
+        // clearing the key here keeps them riding normally; every other way off (teleport, logout) still works.
+        for (Entity entity : getPassengers()) {
+            entity.setShiftKeyDown(false);
+        }
+    }
+
+    /**
+     * Never saved as a player's vehicle: vanilla would store it in a logged-out holder's file and take it out of the
+     * world with them (and the world's copy would come back too after a crash). It stays in the world instead.
+     */
+    @Override
+    public boolean hasExactlyOnePlayerPassenger() {
+        return false;
     }
 
     @Override
@@ -705,11 +725,16 @@ public class TheLostKeeper extends Nightmare {
     // --- the tail whip -----------------------------------------------------------------------------------------------
 
     /** Starts the sweep of the rear half: {@code side} 1 swings from +x towards +z, -1 the other way. */
-    void startWhip(int side) {
+    public void startWhip(int side) {
         entityData.set(DATA_WHIP, (side >= 0 ? 1 : -1) * Math.max(1, keeperConfig().whipTicks.get()));
     }
 
-    boolean isWhipping() {
+    /** Stops the sweep where the tail is (synced: the client's chain stops swinging too). */
+    void stopWhip() {
+        entityData.set(DATA_WHIP, 0);
+    }
+
+    public boolean isWhipping() {
         return entityData.get(DATA_WHIP) != 0;
     }
 
@@ -726,7 +751,7 @@ public class TheLostKeeper extends Nightmare {
     protected void onStaggered() {
         release();
         uncoil();
-        entityData.set(DATA_WHIP, 0);
+        stopWhip();
         steer(null, 0.0);
         face(null);
         setTurnScale(1.0);
@@ -843,8 +868,10 @@ public class TheLostKeeper extends Nightmare {
     public void die(DamageSource source) {
         if (!level().isClientSide()) {
             release();
-            // Dead, its goals no longer stop: the body falls off the ring here.
+            // Dead, its goals no longer stop (and tick() no longer counts the whip down): the body falls off the ring
+            // and the tail stops here.
             uncoil();
+            stopWhip();
             sendMist(0.0F);
         }
         super.die(source);

@@ -32,6 +32,8 @@ final class KeeperBurstGoal extends Goal {
     private static final double DIVE_AWAY = 6.0;
     /** Its head's centre at most this deep under the surface while it lurks. */
     private static final double LURK_DEPTH = 6.0;
+    /** How deep under the surface its head must be to count as dived (shallower where the water is shallow). */
+    private static final double DIVED_DEPTH = 1.5;
     /** Blocks above the surface (and below it) within which the burst still hits. */
     private static final double HIT_ABOVE = 3.0;
     private static final double OUTWARD = 0.35;
@@ -50,6 +52,7 @@ final class KeeperBurstGoal extends Goal {
     private Vec3 spot = Vec3.ZERO;
     private Vec3 divePoint = Vec3.ZERO;
     private double lurkY;
+    private double divedY;
     private boolean struck;
     private boolean wasInWater;
 
@@ -134,6 +137,8 @@ final class KeeperBurstGoal extends Goal {
         spot = surface;
         double floor = surface.y - water.depth();
         lurkY = Math.max(floor + 1.4, surface.y - LURK_DEPTH);
+        // In shallow water (burstMinDepth 2) it lurks less than DIVED_DEPTH deep: halfway down to there counts too.
+        divedY = surface.y - Math.min(DIVED_DEPTH, (surface.y - lurkY) * 0.5);
     }
 
     @Override
@@ -157,7 +162,7 @@ final class KeeperBurstGoal extends Goal {
         switch (phase) {
             case DIVE -> {
                 keeper.steer(divePoint, 1.3);
-                if (keeper.headCentre().y <= spot.y - 1.5 && inWater) {
+                if (keeper.headCentre().y <= divedY && inWater) {
                     enter(Phase.LURK);
                 }
             }
