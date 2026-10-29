@@ -160,6 +160,22 @@ final class RisenEffects {
         level.sendParticles(ParticleTypes.FLAME, victim.getX(), victim.getY() + 1.0, victim.getZ(), 25, 0.5, 0.7, 0.5, 0.04);
     }
 
+    /** It rears up on one leg: a growl and cracks glowing in the ground around it, out to where the stomp reaches. */
+    static void stompWindup(ServerLevel level, Entity risen, double radius) {
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0F, 0.5F);
+        ring(level, risen.getX(), risen.getY() + 0.1, risen.getZ(), radius, ParticleTypes.SMALL_FLAME);
+    }
+
+    /** The stomp lands: a shock of smoke and flame through the ground around it. */
+    static void stomp(ServerLevel level, Entity risen, double radius) {
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.RAVAGER_STEP, SoundSource.HOSTILE, 5.0F, 0.3F);
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.5F, 0.6F);
+        for (double r = 1.5; r <= radius; r += 1.5) {
+            ring(level, risen.getX(), risen.getY() + 0.2, risen.getZ(), r, ParticleTypes.CAMPFIRE_COSY_SMOKE);
+        }
+        ring(level, risen.getX(), risen.getY() + 0.2, risen.getZ(), radius, ParticleTypes.FLAME);
+    }
+
     /** The rim of the ember rain's area smoulders before the embers fall. */
     static void emberRainRim(ServerLevel level, Vec3 centre, double radius) {
         level.playSound(null, centre.x, centre.y, centre.z, SoundEvents.FIRE_AMBIENT, SoundSource.HOSTILE, 3.0F, 0.6F);
@@ -220,6 +236,14 @@ final class RisenEffects {
     private static void choir(ServerLevel level, double x, double y, double z, float volume, float pitch) {
         for (SoundEvent voice : new SoundEvent[]{SoundEvents.GHAST_SCREAM, SoundEvents.WARDEN_ROAR, SoundEvents.ELDER_GUARDIAN_CURSE}) {
             level.playSound(null, x, y, z, voice, SoundSource.HOSTILE, volume, pitch * (0.5F + level.random.nextFloat() * 0.2F));
+        }
+    }
+
+    private static void ring(ServerLevel level, double x, double y, double z, double radius, ParticleOptions particle) {
+        int points = Math.max(10, (int) (radius * 5));
+        for (int i = 0; i < points; i++) {
+            double angle = Math.PI * 2.0 * i / points;
+            level.sendParticles(particle, x + Math.cos(angle) * radius, y, z + Math.sin(angle) * radius, 1, 0.1, 0.05, 0.1, 0.01);
         }
     }
 

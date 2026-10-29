@@ -15,6 +15,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
@@ -95,6 +96,8 @@ public class TheRisen extends Nightmare {
     private int stunGraceTicks;
     private int peckWindup;
     private int buffetWindup;
+    private int stompWindup;
+    private int landAfter;
     private int groundCooldown;
     private Vec3 diveTarget = Vec3.ZERO;
     private final Set<UUID> diveHits = new HashSet<>();
@@ -123,7 +126,8 @@ public class TheRisen extends Nightmare {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return nightmareAttributes(RisenConfig.DEFAULTS, 64.0);
+        // Walking on the ground in its ground fight, it steps up like a big mob.
+        return nightmareAttributes(RisenConfig.DEFAULTS, 64.0).add(Attributes.STEP_HEIGHT, 1.5);
     }
 
     private static RisenConfig settings() {
@@ -155,6 +159,10 @@ public class TheRisen extends Nightmare {
     private void setState(RisenState state) {
         entityData.set(DATA_STATE, (byte) state.ordinal());
         stateTicks = 0;
+        // A ground attack broken off (stun) does not land later.
+        peckWindup = 0;
+        buffetWindup = 0;
+        stompWindup = 0;
         applyPhysics(state);
         if (state.grounded()) {
             liftOutOfGround();
@@ -210,8 +218,10 @@ public class TheRisen extends Nightmare {
         double wingY = flying ? 5.0 : 6.0;
         place(wingLeft, sideX * span, wingY, sideZ * span);
         place(wingRight, -sideX * span, wingY, -sideZ * span);
-        double reach = flying ? 3.5 : 1.5;
-        place(head, forwardX * reach, flying ? 7.5 : 9.5, forwardZ * reach);
+        // In its ground fight it hunches, the head low and forward: within a sword's reach.
+        boolean hunched = state() == RisenState.LANDED;
+        double reach = flying ? 3.5 : hunched ? 3.0 : 1.5;
+        place(head, forwardX * reach, flying ? 7.5 : hunched ? 3.5 : 9.5, forwardZ * reach);
     }
 
     private void place(RisenPart part, double dx, double dy, double dz) {
@@ -392,12 +402,13 @@ public class TheRisen extends Nightmare {
             nextSwoop = tickCount + config.swoopCooldownTicks(random.nextInt(1 << 16));
             nextEmberRain = tickCount + config.emberRainCooldownTicks(random.nextInt(1 << 16));
             flightTicks = 0;
+            landAfter = config.landIntervalTicks(random.nextInt(1 << 16));
         }
         if (tickCount >= nextScream) {
             setState(RisenState.SCREAMING);
             triggerAnim(RisenAnimations.ACTION, RisenAnimations.SCREAM);
             RisenEffects.screamWindup(level, this);
-        } else if (flightTicks >= config.landInterval.get() * 20) {
+        } else if (flightTicks >= landAfter) {
             startLanding(target);
         } else if (tickCount >= nextSwoop) {
             startSwoop(level);
@@ -615,12 +626,28 @@ public class TheRisen extends Nightmare {
         }
     }
 
+    /**
+     * The ground fight (leven-ronde): it walks after its target, hunched with the head low; stomps when someone is
+     * close, pecks what is in front of it and beats its wings only when it is surrounded. Long windups: here it is the
+     * easiest to hit.
+     */
     private void landed(ServerLevel level) {
         RisenConfig config = settings();
-        setDeltaMovement(getDeltaMovement().multiply(0.0, 1.0, 0.0));
         LivingEntity target = fightTarget();
-        if (target != null) {
-            face(target.position());
+        boolean busy = peckWindup > 0 || buffetWindup > 0 || stompWindup > 0;
+        if (busy || target == null || inBeakReach(target)) {
+            setDeltaMovement(getDeltaMovement().multiply(0.0, 1.0, 0.0));
+            if (target != null) {
+                face(target.position());
+            }
+        } else {
+            getMoveControl().setWantedPosition(target.getX(), target.getY(), target.getZ(), config.walkSpeed.get());
+        }
+        if (stompWindup > 0) {
+            if (--stompWindup == 0) {
+                stomp(level);
+            }
+            return;
         }
         if (peckWindup > 0) {
             if (--peckWindup == 0 && target != null && inBeakReach(target)) {
@@ -641,10 +668,14 @@ public class TheRisen extends Nightmare {
         if (--groundCooldown > 0) {
             return;
         }
-        double near = config.buffetRadius.get() * 0.6;
-        if (fighters(near).size() >= 2 || !fighters(near).isEmpty() && random.nextInt(3) == 0) {
+        if (fighters(config.buffetRadius.get() * 0.6).size() >= 2) {
             buffetWindup = RisenAnimations.BUFFET_WINDUP_TICKS;
             triggerAnim(RisenAnimations.ACTION, RisenAnimations.BUFFET);
+            groundCooldown = GROUND_ATTACK_COOLDOWN * 2;
+        } else if (!fighters(config.stompRadius.get()).isEmpty() && random.nextInt(3) == 0) {
+            stompWindup = RisenAnimations.STOMP_WINDUP_TICKS;
+            triggerAnim(RisenAnimations.ACTION, RisenAnimations.STOMP);
+            RisenEffects.stompWindup(level, this, config.stompRadius.get());
             groundCooldown = GROUND_ATTACK_COOLDOWN * 2;
         } else if (inBeakReach(target)) {
             peckWindup = RisenAnimations.PECK_WINDUP_TICKS;
@@ -660,6 +691,24 @@ public class TheRisen extends Nightmare {
         Vec3 to = target.position().subtract(position()).multiply(1.0, 0.0, 1.0);
         return getBoundingBox().inflate(reach, 1.0, reach).intersects(target.getBoundingBox())
                 && (to.lengthSqr() < 1.0E-4 || look.dot(to.normalize()) > 0.3);
+    }
+
+    /** A shock through the ground around its feet: who stands on it is hurt and thrown up; a jump avoids it. */
+    private void stomp(ServerLevel level) {
+        RisenConfig config = settings();
+        double radius = config.stompRadius.get();
+        RisenEffects.stomp(level, this, radius);
+        for (Player player : fighters(radius)) {
+            if (!player.onGround() || Math.abs(player.getY() - getY()) > 1.5) {
+                continue;
+            }
+            if (player.hurt(damageSources().mobAttack(this), config.stompDamage.get().floatValue() * strength())) {
+                Vec3 away = player.position().subtract(position()).multiply(1.0, 0.0, 1.0);
+                Vec3 push = away.lengthSqr() < 1.0E-4 ? Vec3.ZERO : away.normalize().scale(0.4);
+                player.setDeltaMovement(player.getDeltaMovement().add(push.x, config.stompToss.get(), push.z));
+                player.hurtMarked = true;
+            }
+        }
     }
 
     private void buffet(ServerLevel level) {
@@ -678,6 +727,7 @@ public class TheRisen extends Nightmare {
         steer(new Vec3(getX(), top, getZ()), 0.5, STEER);
         if (getY() >= top - 1.0 || stateTicks > 80) {
             flightTicks = 0;
+            landAfter = settings().landIntervalTicks(random.nextInt(1 << 16));
             setState(RisenState.CIRCLING);
         }
     }
@@ -857,15 +907,16 @@ public class TheRisen extends Nightmare {
                 .triggerableAnim(RisenAnimations.RELEASE, RisenAnimations.RELEASE_ANIM)
                 .triggerableAnim(RisenAnimations.PECK, RisenAnimations.PECK_ANIM)
                 .triggerableAnim(RisenAnimations.BUFFET, RisenAnimations.BUFFET_ANIM)
+                .triggerableAnim(RisenAnimations.STOMP, RisenAnimations.STOMP_ANIM)
                 .triggerableAnim(RisenAnimations.SWOOP_WINDUP, RisenAnimations.SWOOP_WINDUP_ANIM)
                 .triggerableAnim(RisenAnimations.EMBER_RAIN, RisenAnimations.EMBER_RAIN_ANIM));
     }
 
     private PlayState bodyAnimation(AnimationState<TheRisen> animationState) {
-        return animationState.setAndContinue(bodyLoop());
+        return animationState.setAndContinue(bodyLoop(animationState.isMoving()));
     }
 
-    private RawAnimation bodyLoop() {
+    private RawAnimation bodyLoop(boolean moving) {
         if (isDeadOrDying()) {
             return RisenAnimations.DEATH;
         }
@@ -874,7 +925,7 @@ public class TheRisen extends Nightmare {
             case CIRCLING -> RisenAnimations.FLY;
             case DIVING, SWOOPING -> RisenAnimations.DIVE;
             case LANDING, TAKING_OFF, SCREAMING, SOARING, EMBER_RAIN -> RisenAnimations.HOVER;
-            case LANDED -> RisenAnimations.PERCHED;
+            case LANDED -> moving ? RisenAnimations.STALK : RisenAnimations.GROUND;
             case STUNNED -> RisenAnimations.STUNNED;
         };
     }

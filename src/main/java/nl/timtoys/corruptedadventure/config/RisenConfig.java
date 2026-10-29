@@ -19,7 +19,12 @@ public final class RisenConfig {
     public final ModConfigSpec.DoubleValue diveSpeed;
     public final ModConfigSpec.IntValue diveCooldownMin;
     public final ModConfigSpec.IntValue diveCooldownMax;
-    public final ModConfigSpec.IntValue landInterval;
+    public final ModConfigSpec.IntValue landIntervalMin;
+    public final ModConfigSpec.IntValue landIntervalMax;
+    public final ModConfigSpec.DoubleValue walkSpeed;
+    public final ModConfigSpec.DoubleValue stompDamage;
+    public final ModConfigSpec.DoubleValue stompRadius;
+    public final ModConfigSpec.DoubleValue stompToss;
     public final ModConfigSpec.IntValue landedSeconds;
     public final ModConfigSpec.DoubleValue peckDamage;
     public final ModConfigSpec.DoubleValue peckReach;
@@ -76,7 +81,8 @@ public final class RisenConfig {
 
     RisenConfig(ModConfigSpec.Builder builder) {
         builder.comment("The Risen, the ring 3 Nightmare (step 1: body and fight, summoned with /summon).",
-                "attackDamage and attackKnockback are its dive (talons). movementSpeed is unused: it flies.").push("risen");
+                "attackDamage and attackKnockback are its dive (talons). movementSpeed is its walk in a ground fight.")
+                .push("risen");
         common = new NightmareConfig(builder, DEFAULTS);
         flightHeight = builder.comment("Blocks above the ground (at its target) at which it circles.")
                 .defineInRange("flightHeight", 14.0, 4.0, 48.0);
@@ -89,10 +95,21 @@ public final class RisenConfig {
         diveCooldownMin = builder.comment("Seconds between two dives, drawn between min and max.")
                 .defineInRange("diveCooldownMin", 8, 1, 600);
         diveCooldownMax = builder.defineInRange("diveCooldownMax", 14, 1, 600);
-        landInterval = builder.comment("Seconds of flight before it lands beside its target (beak and wing buffet).")
-                .defineInRange("landInterval", 25, 1, 600);
-        landedSeconds = builder.comment("Seconds it stays on the ground before it takes off again.")
-                .defineInRange("landedSeconds", 8, 1, 120);
+        landIntervalMin = builder.comment("Seconds of flight before it lands beside its target for a ground fight (it walks",
+                        "after its target, stomps, pecks, beats its wings when surrounded), drawn between min and max.")
+                .defineInRange("landIntervalMin", 20, 1, 600);
+        landIntervalMax = builder.defineInRange("landIntervalMax", 35, 1, 600);
+        landedSeconds = builder.comment("Seconds a ground fight lasts before it takes off again.")
+                .defineInRange("landedSeconds", 15, 1, 120);
+        walkSpeed = builder.comment("Factor on movementSpeed for its walk on the ground.")
+                .defineInRange("walkSpeed", 0.8, 0.0, 3.0);
+        stompDamage = builder.comment("Damage (half hearts) of the stomp to everyone on the ground within stompRadius; a jump",
+                        "avoids it.")
+                .defineInRange("stompDamage", 8.0, 0.0, 100.0);
+        stompRadius = builder.comment("Blocks around it the stomp reaches.")
+                .defineInRange("stompRadius", 5.0, 1.0, 16.0);
+        stompToss = builder.comment("Upward speed the stomp throws players with.")
+                .defineInRange("stompToss", 0.5, 0.0, 2.0);
         peckDamage = builder.comment("Damage (half hearts) of the beak on the ground.")
                 .defineInRange("peckDamage", 9.0, 0.0, 100.0);
         peckReach = builder.comment("Blocks the beak reaches beyond its hitbox, in front of it.")
@@ -217,6 +234,10 @@ public final class RisenConfig {
 
     public int releaseCooldownTicks(int roll) {
         return NightmareConfig.ticksBetween(releaseCooldownMin, releaseCooldownMax, roll);
+    }
+
+    public int landIntervalTicks(int roll) {
+        return NightmareConfig.ticksBetween(landIntervalMin, landIntervalMax, roll);
     }
 
     public int swoopCooldownTicks(int roll) {
