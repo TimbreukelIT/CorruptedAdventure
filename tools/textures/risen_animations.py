@@ -4,8 +4,9 @@
 
 Writes src/main/resources/assets/corruptedadventure/animations/entity/the_risen.animation.json. Names and lengths match
 entity/risen/RisenAnimations and the server's timings: the scream sounds at 1.2 s (screamWindupTicks 24), the peck lands
-at 0.45 s (9 ticks), the wing buffet at 0.6 s (12 ticks), the rise lasts 5.0 s (glow 40 + rise 60 ticks), death 3.0 s
-(DEATH_TICKS 60).
+at 0.7 s (14 ticks), the stomp at 0.8 s (16 ticks), the wing buffet at 0.6 s (12 ticks), the rise lasts 5.0 s (glow 40 + rise 60 ticks), death 3.0 s
+(DEATH_TICKS 60); the swoop's windup 1.5 s (swoopWindupTicks 30), the ember rain's shudder 1.0 s (triggered every second), the
+stagger 1.5 s (staggerTicks 30).
 
 Bedrock conventions (as for The Hollow, checked in Blockbench): a positive x rotation tips the top of a bone forward and
 swings a hanging part backward; z is as in Blockbench, so the left wing (at -x in the mockup) goes up with a negative z
@@ -198,6 +199,82 @@ def stunned():
     return {"loop": True, "animation_length": length, "bones": bones}
 
 
+# Ground fight (leven-ronde): hunched like a vulture, the head low enough for a sword. The body tips forward over its
+# middle and the legs are turned back by as much, so the feet stay under it; the knees give a little.
+HUNCH_BODY = 42
+HUNCH_NECK = 48
+HUNCH_HEAD = 14
+
+
+def hunched(bones, length, sway=lambda p: 0.0, steps=4):
+    bones["root"] = channel(position=wave(length, steps, lambda p: (0, -10, 0)))
+    bones["body"] = channel(rotation=wave(length, steps, lambda p: (HUNCH_BODY + sway(p), 0, 0)))
+    bones["neck"] = channel(rotation=wave(length, steps, lambda p: (HUNCH_NECK - sway(p), 0, 0)))
+    bones["head"] = channel(rotation=wave(length, steps, lambda p: (HUNCH_HEAD, 0, 0)))
+
+
+def ground():
+    """Standing its ground between attacks: hunched, wings half spread like a mantle, the head low and searching, the
+    furnace breathing."""
+    length = 3.0
+    bones = {}
+    hunched(bones, length, sway=lambda p: 3 * math.sin(p * 2 * math.pi))
+    bones["head"] = channel(rotation=linear((0, (HUNCH_HEAD, 0, 0)), (0.9, (HUNCH_HEAD, 20, 6)), (1.1, (HUNCH_HEAD, 20, 6)),
+                                            (2.0, (HUNCH_HEAD, -20, -6)), (2.2, (HUNCH_HEAD, -20, -6)),
+                                            (3.0, (HUNCH_HEAD, 0, 0))))
+    bones["ribcage_choir"] = channel(scale=wave(length, 4, lambda p: (1 + 0.05 * math.sin(p * 2 * math.pi),) * 2 + (1,)))
+    for side in ("left", "right"):
+        bones[f"leg_{side}"] = channel(rotation=wave(length, 4, lambda p: (-HUNCH_BODY - 14, 0, 0)))
+        bones[f"leg_{side}_lower"] = channel(rotation=wave(length, 4, lambda p: (20, 0, 0)))
+    wings(bones, length, lambda p: -4 + 3 * math.sin(p * 2 * math.pi), y_of=lambda p: 10,
+          forearm=lambda p: 10, hand=lambda p: 6)
+    feathers(bones, length, 6, 3)
+    crest_flicker(bones, length)
+    return {"loop": True, "animation_length": length, "bones": bones}
+
+
+def stalk():
+    """Walking after its prey: heavy alternating strides, hunched, the head low and thrust forward with every step."""
+    length = 1.6
+    bones = {}
+    hunched(bones, length, sway=lambda p: 4 * math.sin(p * 4 * math.pi))
+    bones["body"] = channel(rotation=wave(length, 8, lambda p: (HUNCH_BODY + 4 * math.sin(p * 4 * math.pi), 0,
+                                                                6 * math.sin(p * 2 * math.pi))))
+    for side, phase in (("left", 0.0), ("right", 0.5)):
+        bones[f"leg_{side}"] = channel(rotation=wave(length, 8, lambda p, ph=phase: (
+            -HUNCH_BODY - 14 + 30 * math.sin((p + ph) * 2 * math.pi), 0, 0)))
+        bones[f"leg_{side}_lower"] = channel(rotation=wave(length, 8, lambda p, ph=phase: (
+            20 + 22 * max(0.0, math.sin((p + ph + 0.25) * 2 * math.pi)), 0, 0)))
+    wings(bones, length, lambda p: -2 + 4 * math.sin(p * 4 * math.pi), y_of=lambda p: 14,
+          forearm=lambda p: 12, hand=lambda p: 8, steps=8)
+    feathers(bones, length, 8, 5, speed=2)
+    crest_flicker(bones, length)
+    return {"loop": True, "animation_length": length, "bones": bones}
+
+
+def stomp():
+    """On the ground: it rears up on one leg (the warning), then stamps at 0.8 s (STOMP_WINDUP_TICKS 16): a shock
+    through the ground around it."""
+    length = 1.3
+    bones = {
+        "body": channel(rotation=linear((0, (HUNCH_BODY, 0, 0)), (0.6, (HUNCH_BODY - 30, 0, -8)), (0.8, (HUNCH_BODY + 10, 0, 4)),
+                                        (0.95, (HUNCH_BODY + 6, 0, 0)), (1.3, (HUNCH_BODY, 0, 0)))),
+        "neck": channel(rotation=linear((0, (HUNCH_NECK, 0, 0)), (0.6, (HUNCH_NECK - 30, 0, 0)), (0.8, (HUNCH_NECK + 6, 0, 0)),
+                                        (1.3, (HUNCH_NECK, 0, 0)))),
+        "beak_lower": channel(rotation=linear((0, (0, 0, 0)), (0.6, (30, 0, 0)), (0.8, (10, 0, 0)), (1.3, (0, 0, 0)))),
+        "leg_right": channel(rotation=linear((0, (-HUNCH_BODY - 14, 0, 0)), (0.6, (-HUNCH_BODY - 70, 0, 0)),
+                                             (0.8, (-HUNCH_BODY - 6, 0, 0)), (1.3, (-HUNCH_BODY - 14, 0, 0)))),
+        "leg_right_lower": channel(rotation=linear((0, (20, 0, 0)), (0.6, (70, 0, 0)), (0.8, (10, 0, 0)), (1.3, (20, 0, 0)))),
+        "leg_left": channel(rotation=linear((0, (-HUNCH_BODY - 14, 0, 0)), (0.6, (-HUNCH_BODY + 16, 0, 0)),
+                                            (0.8, (-HUNCH_BODY - 20, 0, 0)), (1.3, (-HUNCH_BODY - 14, 0, 0)))),
+        "ribcage_choir": channel(scale=linear((0, (1, 1, 1)), (0.6, (1.15, 1.15, 1)), (0.8, (1.2, 1.2, 1)), (1.3, (1, 1, 1)))),
+    }
+    for side, sign in SIDES:
+        bones[f"wing_{side}"] = channel(rotation=linear((0, (0, -sign * 10, -sign * 4)), (0.6, (0, -sign * 10, -sign * 40)),
+                                                        (0.8, (0, -sign * 10, sign * 10)), (1.3, (0, -sign * 10, -sign * 4))))
+    return {"animation_length": length, "bones": bones}
+
+
 # --- one-shots ---------------------------------------------------------------------------------------------------------
 
 def rise():
@@ -261,19 +338,24 @@ def shake(length, amp, victims_only=False):
 
 
 def peck():
-    """On the ground: the beak hacks down in front of it at 0.45 s."""
-    return {"animation_length": 0.8, "bones": {
-        "neck": channel(rotation=linear((0, (0, 0, 0)), (0.3, (-25, 0, 0)), (0.45, (40, 0, 0)), (0.55, (36, 0, 0)),
-                                        (0.8, (0, 0, 0)))),
-        "head": channel(rotation=linear((0, (0, 0, 0)), (0.3, (-15, 0, 0)), (0.45, (25, 0, 0)), (0.8, (0, 0, 0)))),
-        "beak_lower": channel(rotation=linear((0, (0, 0, 0)), (0.3, (30, 0, 0)), (0.45, (0, 0, 0)), (0.8, (0, 0, 0)))),
-        "body": channel(rotation=linear((0, (0, 0, 0)), (0.3, (-6, 0, 0)), (0.45, (12, 0, 0)), (0.8, (0, 0, 0)))),
+    """On the ground, hunched: the head draws back and up (the warning), hacks down in front of it at 0.7 s
+    (PECK_WINDUP_TICKS 14) and stays down a moment, the beak in the ground."""
+    b, n = HUNCH_BODY, HUNCH_NECK
+    return {"animation_length": 1.3, "bones": {
+        "body": channel(rotation=linear((0, (b, 0, 0)), (0.5, (b - 14, 0, 0)), (0.7, (b + 14, 0, 0)), (1.0, (b + 12, 0, 0)),
+                                        (1.3, (b, 0, 0)))),
+        "neck": channel(rotation=linear((0, (n, 0, 0)), (0.5, (n - 45, 0, 0)), (0.7, (n + 28, 0, 0)), (1.0, (n + 26, 0, 0)),
+                                        (1.3, (n, 0, 0)))),
+        "head": channel(rotation=linear((0, (HUNCH_HEAD, 0, 0)), (0.5, (HUNCH_HEAD - 25, 0, 0)), (0.7, (HUNCH_HEAD + 20, 0, 0)),
+                                        (1.0, (HUNCH_HEAD + 20, 0, 3)), (1.3, (HUNCH_HEAD, 0, 0)))),
+        "beak_lower": channel(rotation=linear((0, (0, 0, 0)), (0.5, (32, 0, 0)), (0.7, (0, 0, 0)), (1.3, (0, 0, 0)))),
     }}
 
 
 def buffet():
-    """On the ground: both wings up and then down and forward at 0.6 s, a blast that throws everyone back."""
-    bones = {"body": channel(rotation=linear((0, (0, 0, 0)), (0.45, (-8, 0, 0)), (0.6, (10, 0, 0)), (1.1, (0, 0, 0))))}
+    """On the ground, hunched: both wings up and then down and forward at 0.6 s, a blast that throws everyone back."""
+    b = HUNCH_BODY
+    bones = {"body": channel(rotation=linear((0, (b, 0, 0)), (0.45, (b - 18, 0, 0)), (0.6, (b + 6, 0, 0)), (1.1, (b, 0, 0))))}
     for side, sign in SIDES:
         bones[f"wing_{side}"] = channel(rotation=linear((0, (0, 0, 0)), (0.45, (0, sign * 20, -sign * 35)),
                                                         (0.6, (0, -sign * 30, sign * 55)), (0.8, (0, -sign * 20, sign * 45)),
@@ -281,6 +363,127 @@ def buffet():
         bones[f"wing_{side}_hand"] = channel(rotation=linear((0, (0, 0, 0)), (0.45, (0, 0, -sign * 20)),
                                                              (0.6, (0, 0, sign * 30)), (1.1, (0, 0, 0))))
     return {"animation_length": 1.1, "bones": bones}
+
+
+def swoop_windup():
+    """At the top of the climb, before the swoop (1.5 s = swoopWindupTicks 30): wings flung high and back, head down at
+    its prey, the furnace flaring and the feathers trembling; at the end the wings fold back into the dive."""
+    length = 1.5
+    tremble = [0.35 + i * 0.1 for i in range(9)]
+    bones = {
+        "root": channel(rotation=linear((0, (0, 0, 0)), (0.4, (22, 0, 0)), (1.25, (28, 0, 0)), (1.5, (60, 0, 0)))),
+        "neck": channel(rotation=linear((0, (0, 0, 0)), (0.4, (18, 0, 0)), (1.25, (22, 0, 0)), (1.5, (-30, 0, 0)))),
+        "head": channel(rotation=linear((0, (0, 0, 0)), (0.4, (20, 0, 0)), (1.25, (24, 0, 0)), (1.5, (-20, 0, 0)))),
+        "beak_lower": channel(rotation=linear((0, (0, 0, 0)), (0.3, (28, 0, 0)), (1.25, (28, 0, 0)), (1.5, (18, 0, 0)))),
+        "ribcage_choir": channel(scale=linear((0, (1, 1, 1)), (0.35, (1.2, 1.2, 1)),
+                                              *[(t, ((1.14, 1.14, 1) if i % 2 else (1.24, 1.24, 1)))
+                                                for i, t in enumerate(tremble)],
+                                              (1.5, (1.05, 1.05, 1)))),
+        "crest": channel(rotation=linear((0, (0, 0, 0)), (0.4, (-16, 0, 0)), (1.25, (-16, 0, 0)), (1.5, (0, 0, 0)))),
+        "leg_left": channel(rotation=linear((0, (0, 0, 0)), (0.5, (30, 0, 0)), (1.5, (-30, 0, 0)))),
+        "leg_right": channel(rotation=linear((0, (0, 0, 0)), (0.5, (30, 0, 0)), (1.5, (-30, 0, 0)))),
+    }
+    for side, sign in SIDES:
+        shake_keys = [(t, (0, -sign * 20, -sign * (55 + (3 if i % 2 else -3)))) for i, t in enumerate(tremble)]
+        bones[f"wing_{side}"] = channel(rotation=linear((0, (0, 0, 0)), (0.35, (0, -sign * 20, -sign * 55)), *shake_keys,
+                                                        (1.5, (0, -sign * 45, sign * 50))))
+        bones[f"wing_{side}_forearm"] = channel(rotation=linear((0, (0, 0, 0)), (0.35, (0, 0, -sign * 12)),
+                                                                (1.25, (0, 0, -sign * 12)), (1.5, (0, 0, sign * 25))))
+        bones[f"wing_{side}_hand"] = channel(rotation=linear((0, (0, 0, 0)), (0.35, (0, 0, -sign * 18)),
+                                                             (1.25, (0, 0, -sign * 18)), (1.5, (0, 0, sign * 20))))
+        for n in PRIMARIES[side]:
+            bones[primary(side, n)] = channel(rotation=linear(
+                (0, (0, 0, 0)), (0.35, (-12, 0, 0)),
+                *[(t, (-12 + (4 if (i + n) % 2 else -4), 0, 0)) for i, t in enumerate(tremble)],
+                (1.5, (20, 0, 0))))
+    return {"animation_length": length, "bones": bones}
+
+
+def ember_rain():
+    """Hanging over the ember rain (1.0 s, triggered every second): wings spread wide and shuddering, the burning
+    feathers shaking loose, the chest flaring."""
+    length = 1.0
+    steps = [0.15 + i * 0.07 for i in range(11)]
+    bones = {
+        "root": channel(rotation=linear((0, (14, 0, 0)), (0.15, (6, 0, 0)), (0.85, (6, 0, 0)), (1.0, (14, 0, 0)))),
+        "neck": channel(rotation=linear((0, (0, 0, 0)), (0.15, (14, 0, 0)), (0.85, (14, 0, 0)), (1.0, (0, 0, 0)))),
+        "ribcage_choir": channel(scale=linear((0, (1, 1, 1)), (0.15, (1.15, 1.15, 1)), (0.85, (1.15, 1.15, 1)),
+                                              (1.0, (1, 1, 1)))),
+    }
+    for side, sign in SIDES:
+        bones[f"wing_{side}"] = channel(rotation=linear(
+            (0, (0, 0, 0)),
+            *[(t, (0, sign * 4, -sign * (22 + (6 if i % 2 else -6)))) for i, t in enumerate(steps)],
+            (1.0, (0, 0, 0))))
+        for n in PRIMARIES[side]:
+            bones[primary(side, n)] = channel(rotation=linear(
+                (0, (0, 0, 0)), *[(t, (14 * (1 if (i + n) % 2 else -1), 0, 0)) for i, t in enumerate(steps)],
+                (1.0, (0, 0, 0))))
+        for n in SECONDARIES:
+            bones[secondary(side, n)] = channel(rotation=linear(
+                (0, (0, 0, 0)), *[(t, (10 * (1 if (i + n) % 2 else -1), 0, 0)) for i, t in enumerate(steps)],
+                (1.0, (0, 0, 0))))
+    return {"animation_length": length, "bones": bones}
+
+
+def stagger():
+    """The shared stagger on the ground (1.5 s = staggerTicks 30): it reels back out of its hunch, wings jerking open,
+    the head shaking, the furnace flickering."""
+    b, n = HUNCH_BODY, HUNCH_NECK
+    shakes = [0.2 + i * 0.1 for i in range(10)]
+    bones = {
+        "body": channel(rotation=linear((0, (b, 0, 0)), (0.2, (b - 26, 0, 6)), *[(t, (b - 22, 0, 6 if i % 2 else -6))
+                                                                               for i, t in enumerate(shakes)],
+                                        (1.5, (b, 0, 0)))),
+        "neck": channel(rotation=linear((0, (n, 0, 0)), (0.2, (n - 40, 0, 0)), (1.2, (n - 30, 0, 0)), (1.5, (n, 0, 0)))),
+        "head": channel(rotation=linear((0, (HUNCH_HEAD, 0, 0)), *[(t, (HUNCH_HEAD - 10, 0, 15 if i % 2 else -15))
+                                                                  for i, t in enumerate(shakes)],
+                                        (1.5, (HUNCH_HEAD, 0, 0)))),
+        "beak_lower": channel(rotation=linear((0, (0, 0, 0)), (0.2, (35, 0, 0)), (1.2, (30, 0, 0)), (1.5, (0, 0, 0)))),
+        "ribcage_choir": channel(scale=linear((0, (1, 1, 1)), *[(t, ((0.88, 0.88, 1) if i % 2 else (1.08, 1.08, 1)))
+                                                               for i, t in enumerate(shakes)],
+                                              (1.5, (1, 1, 1)))),
+    }
+    for side, sign in SIDES:
+        bones[f"wing_{side}"] = channel(rotation=linear(
+            (0, (0, -sign * 10, -sign * 4)), (0.2, (0, sign * 10, -sign * 35)),
+            *[(t, (0, sign * 10, -sign * (28 + (8 if (i + (side == "left")) % 2 else -8)))) for i, t in enumerate(shakes)],
+            (1.5, (0, -sign * 10, -sign * 4))))
+    return {"animation_length": 1.5, "bones": bones}
+
+
+def stagger_air():
+    """The shared stagger in the air (loop): it sags out of its flight, tumbling, the wings beating out of rhythm, the
+    head thrown back with the beak open."""
+    length = 0.75
+    bones = {
+        "root": channel(rotation=wave(length, 6, lambda p: (12 + 6 * math.sin(p * 2 * math.pi), 0,
+                                                            20 * math.sin(p * 2 * math.pi)))),
+        "neck": channel(rotation=wave(length, 4, lambda p: (-35, 0, 10 * math.sin(p * 4 * math.pi)))),
+        "head": channel(rotation=wave(length, 4, lambda p: (-30, 0, 14 * math.sin(p * 4 * math.pi)))),
+        "beak_lower": channel(rotation=wave(length, 2, lambda p: (35, 0, 0))),
+        "ribcage_choir": channel(scale=wave(length, 6, lambda p: (1 + 0.1 * math.sin(p * 6 * math.pi),) * 2 + (1,))),
+    }
+    for side, sign in SIDES:
+        phase = 0.0 if side == "left" else 0.5
+        bones[f"wing_{side}"] = channel(rotation=wave(length, 8, lambda p, s=sign, ph=phase: (
+            0, s * 10, s * (20 + 45 * math.sin((p + ph) * 2 * math.pi)))))
+        bones[f"wing_{side}_hand"] = channel(rotation=wave(length, 8, lambda p, s=sign, ph=phase: (
+            0, 0, s * 25 * math.sin((p + ph + 0.2) * 2 * math.pi))))
+    feathers(bones, length, 25, 14, speed=2, steps=6)
+    return {"loop": True, "animation_length": length, "bones": bones}
+
+
+def search():
+    """Searching, at the last place it saw its prey (2.0 s): the head turns slowly one way and the other, the beak
+    opens as if it scents the air."""
+    return {"animation_length": 2.0, "bones": {
+        "head": channel(rotation=linear((0, (0, 0, 0)), (0.6, (0, 40, 8)), (0.8, (0, 40, 8)), (1.5, (0, -40, -8)),
+                                        (1.7, (0, -40, -8)), (2.0, (0, 0, 0)))),
+        "beak_lower": channel(rotation=linear((0, (0, 0, 0)), (0.6, (14, 0, 0)), (0.8, (0, 0, 0)), (1.5, (14, 0, 0)),
+                                              (1.7, (0, 0, 0)), (2.0, (0, 0, 0)))),
+        "crest": channel(rotation=linear((0, (0, 0, 0)), (1.0, (-10, 0, 0)), (2.0, (0, 0, 0)))),
+    }}
 
 
 def death():
@@ -318,12 +521,20 @@ def main():
         "animation.the_risen.hover": hover(),
         "animation.the_risen.dive": dive(),
         "animation.the_risen.stunned": stunned(),
+        "animation.the_risen.ground": ground(),
+        "animation.the_risen.stalk": stalk(),
+        "animation.the_risen.stomp": stomp(),
         "animation.the_risen.rise": rise(),
         "animation.the_risen.scream": scream(),
         "animation.the_risen.ash_rain": shake(1.0, 6),
         "animation.the_risen.release": shake(0.8, 10, victims_only=True),
         "animation.the_risen.peck": peck(),
         "animation.the_risen.buffet": buffet(),
+        "animation.the_risen.swoop_windup": swoop_windup(),
+        "animation.the_risen.ember_rain": ember_rain(),
+        "animation.the_risen.stagger": stagger(),
+        "animation.the_risen.stagger_air": stagger_air(),
+        "animation.the_risen.search": search(),
         "animation.the_risen.death": death(),
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)

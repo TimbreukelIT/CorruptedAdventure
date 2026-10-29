@@ -147,7 +147,15 @@ Na de eerste blik in de game (gebruiker: "meer leven in de mechanics en de attac
 - **Afgietsel bij je dood:** blijvend, in jouw houding (as- en smeulende-asblokken), met je naam zichtbaar als iemand ernaar kijkt (klein block entity). Alleen op vrije ruimte, nooit over spelersblokken.
 - **Techniek (eerste inschatting):** vliegende boss met eigen vlucht-AI (zoals de enderdraak); grote vleugels met slagpennen als losse botten voor de animatie (GeckoLib ligt voor de hand, nog open); een hitbox op het lijf, de vleugels mogelijk als deel-hitbox.
 
-**Open (ring 3):** gedrag buiten het gevecht (cirkelt hij boven vulkanen?); hoe lang hij op de grond komt en of je hem omlaag moet halen; aftocht en terugkeer; beloning; balans met ring 3-gear (vulkaniet); de precieze werking van het verstijven (valt hij uit de lucht?).
+- **Leven-ronde (beslist 2026-10-29, gebruiker):**
+  - *Grondgevecht:* één grondmodus. De oude korte landing wordt het grondgevecht: hij landt na een reeks aanvallen en blijft ~15 s op de grond. Hij loopt gebogen achter zijn doel aan, stampt (schokgolf rond zijn poten, te ontspringen) en pikt. Een vleugelslag doet hij alleen als hij omsingeld is.
+  - *Melee op de grond:* zijn kop zakt binnen zwaardbereik (volle schade, langere windups); geen extra schadefactor.
+  - *Duikvlucht naast de korte duik:* de korte duik vanaf de cirkel blijft. De duikvlucht is de grote, aangekondigde duik: ~30 blokken omhoog, krijs, 1,5 s gloeien, dan een rechte vaste lijn die onderaan over de grond scheert met een vuurspoor.
+  - *Vuur:* geen vuurblokken, maar eigen tijdelijke vuurtegels op vrije grond (verdwijnen na ~6 s, verspreiden zich niet, maximum en aan/uit in de config). Dat geldt voor het vuurspoor en voor de sintelregen.
+  - *Zwakke plek:* de kop. In het grondgevecht is hij met melee te raken, in de lucht met pijlen; een treffer laat hem wankelen (gedeelde reactielaag).
+  - *Wankelen in de lucht:* hij zakt ~5 blokken tuimelend en herstelt dan. Neerstorten en blijven liggen blijft van de hoorn.
+
+**Open (ring 3):** gedrag buiten het gevecht (cirkelt hij boven vulkanen?); aftocht en terugkeer; beloning; balans met ring 3-gear (vulkaniet); de precieze werking van het verstijven (valt hij uit de lucht?).
 
 ## Ring 4 — De Verloren Hoeder (The Lost Keeper, werktitel)
 *Sparring 2026-10-27. Vervangt de werktitel "Wat onder de bellen leeft".*

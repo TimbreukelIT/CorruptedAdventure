@@ -20,7 +20,15 @@ public enum RisenState {
     /** Hanging still (or standing) while the choir draws breath, then the scream. */
     SCREAMING(false),
     /** The horn drowned out the choir: rigid; in the air it falls. */
-    STUNNED(true);
+    STUNNED(true),
+    /** Climbing high above its target for the swoop, then hanging there flaring: the warning. */
+    SOARING(false),
+    /** The swoop: down a straight line it no longer steers, then skimming the ground with a trail of fire behind it. */
+    SWOOPING(false),
+    /** Hanging over an area while burning embers fall from its wings. */
+    EMBER_RAIN(false),
+    /** Staggered in the air (the shared stagger): it sags a few blocks, tumbling, then takes off again. */
+    STAGGERED(false);
 
     private final boolean grounded;
 
@@ -31,6 +39,15 @@ public enum RisenState {
     /** Whether it has gravity and collides with blocks; in every other state it flies through them, like the dragon. */
     public boolean grounded() {
         return grounded;
+    }
+
+    /**
+     * An attack that only lives in the tick (its aim is not saved): loaded in it, it goes back to circling and picks
+     * anew.
+     */
+    boolean restartsWhenLoaded() {
+        return this == DIVING || this == LANDING || this == SOARING || this == SWOOPING || this == EMBER_RAIN
+                || this == STAGGERED;
     }
 
     static RisenState byId(int id) {

@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.gametest;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,14 +13,20 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.entity.risen.RisenAshRain;
+import nl.timtoys.corruptedadventure.entity.risen.RisenFire;
 import nl.timtoys.corruptedadventure.entity.risen.RisenMeltPool;
+import nl.timtoys.corruptedadventure.entity.risen.RisenState;
 import nl.timtoys.corruptedadventure.entity.risen.TheRisen;
 import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
 
 /**
  * The Risen (phase 4 step 1): the ash layers (slower per layer, held fast at six, knocked off by another player's hit),
  * the melt pool (only natural blocks, lava only where the pool holds it, nothing of it left once it has set) and its
- * wings taking less damage than its body. The flight itself needs a client to judge (teststop). In the empty
+ * wings taking less damage than its body; from the leven-ronde its burning ground (only on free ground, goes out by
+ * itself, sets who stands in it alight, changes no block), its attacks restarting from circling when loaded, and the
+ * shared stagger (in the air it sags, on the ground it reels where it stands, never while it rises; a player's hit on
+ * its head, its weak spot, staggers it). The
+ * flight itself needs a client to judge (teststop). In the empty
  * 9 × 7 × 9 {@code gametest/hollow_arena}. Run like {@link TierGatingGameTests}.
  */
 @GameTestHolder(CorruptedAdventure.MOD_ID)
@@ -101,6 +108,131 @@ public final class RisenGameTests {
         float head = full - wing - risen.getHealth();
         double factor = ServerConfig.RISEN.wingDamageFactor.get();
         helper.assertTrue(Math.abs(wing - head * factor) < 0.01, "wing " + wing + " vs head " + head + " x " + factor);
+        helper.succeed();
+    }
+
+    /** Up to the config's longest fire (60 s) and then some. */
+    private static final int FIRE_TIMEOUT = 60 * 20 + 40;
+
+    /** The fire tests check the fire itself: with it off (config) there is nothing to check. */
+    private static boolean fireOff(GameTestHelper helper) {
+        if (ServerConfig.RISEN.fire.get() && ServerConfig.RISEN.fireMaxTiles.get() >= 2) {
+            return false;
+        }
+        helper.succeed();
+        return true;
+    }
+
+    @GameTest(template = "gametest/hollow_arena", timeoutTicks = FIRE_TIMEOUT)
+    public static void itsFireLiesOnlyOnFreeGroundGoesOutByItselfAndChangesNoBlock(GameTestHelper helper) {
+        if (fireOff(helper)) {
+            return;
+        }
+        for (int x = 0; x < 9; x++) {
+            for (int z = 0; z < 9; z++) {
+                helper.setBlock(x, 1, z, Blocks.STONE);
+            }
+        }
+        helper.setBlock(4, 1, 4, Blocks.WATER);
+        helper.setBlock(6, 1, 6, Blocks.AIR);
+        helper.setBlock(2, 2, 6, Blocks.OAK_PLANKS);
+        RisenFire fire = new RisenFire();
+        var level = helper.getLevel();
+        var config = ServerConfig.RISEN;
+        helper.assertTrue(fire.light(level, helper.absolutePos(new BlockPos(2, 2, 2)), config), "free ground burns");
+        helper.assertTrue(fire.light(level, helper.absolutePos(new BlockPos(3, 2, 2)), config), "free ground burns");
+        helper.assertFalse(fire.light(level, helper.absolutePos(new BlockPos(4, 2, 4)), config), "not on water");
+        helper.assertFalse(fire.light(level, helper.absolutePos(new BlockPos(6, 2, 6)), config), "not over a hole");
+        helper.assertFalse(fire.light(level, helper.absolutePos(new BlockPos(2, 2, 6)), config), "not in a block");
+        helper.assertValueEqual(fire.size(), 2, "tiles");
+        // A block put on a tile puts it out.
+        helper.setBlock(3, 2, 2, Blocks.COBBLESTONE);
+        helper.onEachTick(() -> fire.tick(level, null, 1.0F, config));
+        helper.runAfterDelay(2, () -> helper.assertFalse(fire.isBurning(helper.absolutePos(new BlockPos(3, 2, 2))),
+                "covered tile is out"));
+        helper.runAfterDelay(config.fireSeconds.get() * 20 + 2, () -> {
+            helper.assertValueEqual(fire.size(), 0, "all out");
+            helper.assertBlockPresent(Blocks.AIR, 2, 2, 2);
+            helper.assertBlockPresent(Blocks.STONE, 2, 1, 2);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "gametest/hollow_arena")
+    public static void whoeverStandsInItsFireCatchesFire(GameTestHelper helper) {
+        if (fireOff(helper)) {
+            return;
+        }
+        for (int x = 0; x < 9; x++) {
+            for (int z = 0; z < 9; z++) {
+                helper.setBlock(x, 1, z, Blocks.STONE);
+            }
+        }
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        BlockPos tile = helper.absolutePos(MIDDLE);
+        player.moveTo(tile.getX() + 0.5, tile.getY(), tile.getZ() + 0.5);
+        RisenFire fire = new RisenFire();
+        helper.assertTrue(fire.light(helper.getLevel(), tile, ServerConfig.RISEN), "lit");
+        helper.onEachTick(() -> fire.tick(helper.getLevel(), null, 1.0F, ServerConfig.RISEN));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(player.isOnFire(), "on fire");
+            GameTestPlayers.remove(helper, player);
+        });
+    }
+
+    @GameTest(template = "gametest/hollow_arena")
+    public static void anAttackInProgressStartsAgainFromCirclingWhenLoaded(GameTestHelper helper) {
+        TheRisen risen = helper.spawnWithNoFreeWill(ModEntityTypes.THE_RISEN.get(), MIDDLE);
+        CompoundTag tag = risen.saveWithoutId(new CompoundTag());
+        risen.discard();
+        for (RisenState state : RisenState.values()) {
+            tag.putByte("RisenState", (byte) state.ordinal());
+            TheRisen loaded = ModEntityTypes.THE_RISEN.get().create(helper.getLevel());
+            helper.assertTrue(loaded != null, "created");
+            loaded.load(tag);
+            boolean restarts = state == RisenState.DIVING || state == RisenState.LANDING || state == RisenState.SOARING
+                    || state == RisenState.SWOOPING || state == RisenState.EMBER_RAIN || state == RisenState.STAGGERED;
+            helper.assertValueEqual(loaded.state(), restarts ? RisenState.CIRCLING : state, "loaded " + state);
+            loaded.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena")
+    public static void aPlayersHitOnItsHeadStaggersItAndOnAWingDoesNot(GameTestHelper helper) {
+        TheRisen risen = helper.spawnWithNoFreeWill(ModEntityTypes.THE_RISEN.get(), MIDDLE);
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        PartEntity<?>[] parts = risen.getParts();
+        helper.assertTrue(parts[0].hurt(helper.getLevel().damageSources().playerAttack(player), 1.0F), "a wing hit lands");
+        helper.assertFalse(risen.isStaggered(), "a wing is no weak spot");
+        risen.invulnerableTime = 0;
+        helper.assertTrue(parts[2].hurt(helper.getLevel().damageSources().playerAttack(player), 1.0F), "a head hit lands");
+        helper.assertTrue(risen.isStaggered(), "the head is its weak spot");
+        GameTestPlayers.remove(helper, player);
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena")
+    public static void aStaggerInTheAirMakesItSagAndOnTheGroundItReelsWhereItStands(GameTestHelper helper) {
+        TheRisen flying = helper.spawnWithNoFreeWill(ModEntityTypes.THE_RISEN.get(), MIDDLE);
+        helper.assertValueEqual(flying.state(), RisenState.CIRCLING, "summoned in the air state");
+        helper.assertTrue(flying.stagger(), "staggers");
+        helper.assertTrue(flying.isStaggered() && !flying.mayStartAttack(), "staggered: no attack");
+        helper.assertValueEqual(flying.state(), RisenState.STAGGERED, "in the air it sags");
+        CompoundTag tag = flying.saveWithoutId(new CompoundTag());
+        flying.discard();
+        for (RisenState state : new RisenState[]{RisenState.LANDED, RisenState.RISING}) {
+            tag.putByte("RisenState", (byte) state.ordinal());
+            TheRisen risen = ModEntityTypes.THE_RISEN.get().create(helper.getLevel());
+            helper.assertTrue(risen != null, "created");
+            risen.load(tag);
+            risen.moveTo(helper.absoluteVec(MIDDLE.getCenter()));
+            helper.getLevel().addFreshEntity(risen);
+            boolean staggered = risen.stagger();
+            helper.assertValueEqual(staggered, state == RisenState.LANDED, "staggers in " + state);
+            helper.assertValueEqual(risen.state(), state, "state after a stagger in " + state);
+            risen.discard();
+        }
         helper.succeed();
     }
 }
