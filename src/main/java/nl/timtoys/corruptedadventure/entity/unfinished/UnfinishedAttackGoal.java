@@ -55,7 +55,9 @@ abstract class UnfinishedAttackGoal extends Goal {
     @Override
     public boolean canUse() {
         LivingEntity target = boss.getTarget();
-        if (target == null || !target.isAlive() || !boss.canStartAttack() || (graft != null && !boss.hasGraft(graft))) {
+        // His own one-at-a-time gap and the shared gate (not staggered, resting or searching).
+        if (target == null || !target.isAlive() || !boss.canStartAttack() || !boss.mayStartAttack()
+                || (graft != null && !boss.hasGraft(graft))) {
             return false;
         }
         if (nextUseTick < 0) {
@@ -67,7 +69,7 @@ abstract class UnfinishedAttackGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         LivingEntity target = boss.getTarget();
-        return ticks < duration() && !finished() && target != null && target.isAlive() && (graft == null || boss.hasGraft(graft));
+        return ticks < duration() && !finished() && !boss.isStaggered() && target != null && target.isAlive() && (graft == null || boss.hasGraft(graft));
     }
 
     @Override
@@ -85,6 +87,7 @@ abstract class UnfinishedAttackGoal extends Goal {
         ticks = 0;
         boss.getNavigation().stop();
         boss.attackStarted();
+        boss.countAttack();
         begin((ServerLevel) boss.level(), boss.getTarget());
     }
 

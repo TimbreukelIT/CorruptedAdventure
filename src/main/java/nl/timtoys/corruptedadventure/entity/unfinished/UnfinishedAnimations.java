@@ -20,12 +20,15 @@ public final class UnfinishedAnimations {
     public static final String FLINCH = "flinch";
     public static final String THROW = "throw";
     public static final String UNLOAD = "unload";
+    public static final String SNIFF = "sniff";
 
     static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.the_unfinished.idle");
     static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.the_unfinished.walk");
     static final RawAnimation DEATH = RawAnimation.begin().thenPlayAndHold("animation.the_unfinished.death");
     /** The glitch step: picked by the body controller while it runs (the server moves him frame by frame). */
     static final RawAnimation GLITCH = RawAnimation.begin().thenLoop("animation.the_unfinished.glitch");
+    /** The shared stagger: picked by the body controller while it lasts (synced). */
+    static final RawAnimation STAGGER = RawAnimation.begin().thenLoop("animation.the_unfinished.stagger");
     static final RawAnimation SLAM_ANIM = RawAnimation.begin().thenPlay("animation.the_unfinished.slam");
     static final RawAnimation RIFT_SINK_ANIM = RawAnimation.begin().thenPlayAndHold("animation.the_unfinished.rift_sink");
     static final RawAnimation RIFT_RISE_ANIM = RawAnimation.begin().thenPlay("animation.the_unfinished.rift_rise");
@@ -36,6 +39,7 @@ public final class UnfinishedAnimations {
     static final RawAnimation FLINCH_ANIM = RawAnimation.begin().thenPlay("animation.the_unfinished.flinch");
     static final RawAnimation THROW_ANIM = RawAnimation.begin().thenPlay("animation.the_unfinished.throw");
     static final RawAnimation UNLOAD_ANIM = RawAnimation.begin().thenPlay("animation.the_unfinished.unload");
+    static final RawAnimation SNIFF_ANIM = RawAnimation.begin().thenPlay("animation.the_unfinished.sniff");
 
     /** Ticks of the death animation: he sinks back into his void, then the body is removed. */
     static final int DEATH_TICKS = 100;

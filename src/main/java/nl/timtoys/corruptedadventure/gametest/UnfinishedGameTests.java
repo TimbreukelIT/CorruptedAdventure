@@ -86,6 +86,21 @@ public final class UnfinishedGameTests {
     }
 
     @GameTest(template = "gametest/hollow_arena")
+    public static void aLoadedWeakSpotHitStaggersHim(GameTestHelper helper) {
+        TheUnfinished boss = helper.spawnWithNoFreeWill(ModEntityTypes.THE_UNFINISHED.get(), MIDDLE);
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        UnfinishedPart weak = part(boss, "weak_gelaagde");
+        helper.assertFalse(weak.hurt(playerAttack(helper, player), 4.0F), "unloaded: no hit");
+        helper.assertFalse(boss.isStaggered(), "and no stagger");
+        boss.load(100);
+        helper.assertTrue(weak.hurt(playerAttack(helper, player), 4.0F), "loaded: a hit");
+        helper.assertTrue(boss.isStaggered(), "a loaded weak spot hit staggers him");
+        helper.assertFalse(boss.mayStartAttack(), "and closes the gate");
+        GameTestPlayers.remove(helper, player);
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena")
     public static void hisPartsSitOnTheRestPoseAndTurnWithHim(GameTestHelper helper) {
         TheUnfinished boss = helper.spawnWithNoFreeWill(ModEntityTypes.THE_UNFINISHED.get(), MIDDLE);
         boss.setYRot(90.0F);

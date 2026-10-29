@@ -228,6 +228,26 @@ final class UnfinishedEffects {
         level.sendParticles(ModParticleTypes.VOID_MOTE.get(), at.x, at.y - 2.0, at.z, 40, radius * 0.6, 2.0, radius * 0.6, 0.0);
     }
 
+    // ------------------------------------------------------------------------------------------------ reactions
+
+    /** He staggers: his body fails to hold together, pixels burst from every seam. */
+    static void stagger(ServerLevel level, Entity boss) {
+        play(level, boss.position(), SoundEvents.RAVAGER_STUNNED, 3.0F, 0.4F);
+        play(level, boss.position(), ModSoundEvents.RING_5_GLITCH.get(), 3.0F, 0.4F);
+        silhouette(level, boss.position(), 80);
+    }
+
+    /** He lost sight of his target: a low questioning hum from the crown. */
+    static void searchStart(ServerLevel level, Entity boss) {
+        play(level, boss.position(), SoundEvents.WARDEN_AGITATED, 3.0F, 0.5F);
+    }
+
+    /** At the last place he saw it: the four heads scent the air. */
+    static void sniff(ServerLevel level, Entity boss) {
+        play(level, boss.position(), SoundEvents.WARDEN_SNIFF, 3.0F, 0.5F);
+        play(level, boss.position(), SoundEvents.RAVAGER_AMBIENT, 2.0F, 0.4F);
+    }
+
     private static void play(ServerLevel level, Vec3 at, SoundEvent sound, float volume, float pitch) {
         level.playSound(null, at.x, at.y, at.z, sound, SoundSource.HOSTILE, volume, pitch);
     }
