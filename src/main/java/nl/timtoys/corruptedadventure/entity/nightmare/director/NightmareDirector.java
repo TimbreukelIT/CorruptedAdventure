@@ -119,9 +119,7 @@ public final class NightmareDirector {
             NightmareState state = data.get(kind);
             switch (state.phase()) {
                 case ROAMING -> {
-                    if (second) {
-                        roam(level, kind, state, now);
-                        seek(level, kind, state, now);
+                    if (second && (roam(level, kind, state, now) | seek(level, kind, state, now))) {
                         data.setDirty();
                     }
                 }
@@ -146,25 +144,27 @@ public final class NightmareDirector {
         }
     }
 
-    private void roam(ServerLevel level, NightmareKind kind, NightmareState state, long now) {
+    /** Whether the state changed. */
+    private boolean roam(ServerLevel level, NightmareKind kind, NightmareState state, long now) {
         NightmareDirectorConfig config = ServerConfig.NIGHTMARE_DIRECTOR;
         long interval = config.roamIntervalSeconds.get() * (long) SECOND;
         if (!state.placed()) {
             NightmareRoaming.Spot start = NightmareRoaming.start(kind.ring(), rings, level.getRandom());
             state.moveTo(start.x(), start.z(), start.heading());
             state.nextRoamTick(now + interval);
-            return;
+            return true;
         }
         if (now < state.nextRoamTick()) {
-            return;
+            return false;
         }
         NightmareRoaming.Spot from = new NightmareRoaming.Spot(state.x(), state.z(), state.heading());
         NightmareRoaming.Spot to = NightmareRoaming.step(from, config.roamStepBlocks.get(), kind.ring(), rings, level.getRandom());
         state.moveTo(to.x(), to.z(), to.heading());
         state.nextRoamTick(now + interval);
-        if (to != from) {
+        if (to.x() != from.x() || to.z() != from.z()) {
             arrivals.apply(kind).roamed(level, surface(level, from.x(), from.z()), surface(level, to.x(), to.z()));
         }
+        return true;
     }
 
     /** The surface at x, z where the chunk is loaded, else the sea level (an unloaded heightmap reads as empty). */
@@ -177,10 +177,11 @@ public final class NightmareDirector {
                 column.getZ()), column.getZ());
     }
 
-    private void seek(ServerLevel level, NightmareKind kind, NightmareState state, long now) {
+    /** Whether a coming started. */
+    private boolean seek(ServerLevel level, NightmareKind kind, NightmareState state, long now) {
         NightmareDirectorConfig config = ServerConfig.NIGHTMARE_DIRECTOR;
         if (!config.arrivals.get() || isPeaceful(level) || now < state.nextSeekTick()) {
-            return;
+            return false;
         }
         List<NightmareTargets.Candidate> candidates = new ArrayList<>();
         for (ServerPlayer player : level.players()) {
@@ -189,9 +190,13 @@ public final class NightmareDirector {
                 candidates.add(new NightmareTargets.Candidate(player.getUUID(), NightmareThreats.of(player).get(kind.ring())));
             }
         }
-        NightmareTargets.choose(candidates, config.threatThreshold.get().floatValue())
-                .map(uuid -> level.getServer().getPlayerList().getPlayer(uuid))
-                .ifPresent(target -> startComing(level, kind, state, target, false));
+        ServerPlayer target = NightmareTargets.choose(candidates, config.threatThreshold.get().floatValue())
+                .map(uuid -> level.getServer().getPlayerList().getPlayer(uuid)).orElse(null);
+        if (target == null) {
+            return false;
+        }
+        startComing(level, kind, state, target, false);
+        return true;
     }
 
     private void startComing(ServerLevel level, NightmareKind kind, NightmareState state, ServerPlayer target,

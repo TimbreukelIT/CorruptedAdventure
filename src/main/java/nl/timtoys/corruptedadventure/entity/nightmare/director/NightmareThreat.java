@@ -89,7 +89,9 @@ public final class NightmareThreat {
                 CorruptedAdventure.LOGGER.warn("Dropping the Nightmare threat of unknown ring '{}'", name);
             } else {
                 result.set(ring, entry.threat());
-                result.days[ring.ordinal()] = Math.max(0.0F, entry.days());
+                // A NaN pace would never be redrawn and makes the threat NaN for good: treat it as unset (0).
+                float days = entry.days();
+                result.days[ring.ordinal()] = Float.isNaN(days) ? 0.0F : Math.max(0.0F, days);
             }
         });
         return result;
