@@ -7,7 +7,8 @@ match entity/unfinished/UnfinishedAnimations and the server's timings ([nightmar
 at 1.25 s (slamWindupTicks 25), the rift sink holds from 1.5 s (riftStepSinkTicks 30) until the rise, the grab closes at
 0.8 s (grabReachTicks 16) and lets go at 3.8 s (grabHoldTicks 60), the ash rain, the lure and the void pull last as long
 as their spells start them, death lasts 5.0 s (DEATH_TICKS 100). The life round (L5) adds the glitch step's loop, the
-throw (released at 1.5 s, throwRiseTicks 30) and the unloading (the patch opens at 2.0 s, unloadWarnTicks 40).
+throw (released at 1.5 s, throwRiseTicks 30), the unloading (the patch opens at 2.0 s, unloadWarnTicks 40), the
+stagger's loop and the sniff of a search (the shared reactions).
 
 Conventions as in hollow_animations.py (checked there in Blockbench): a negative x rotation swings a limb forward (toward
 the face, -z); a positive x rotation tips the top of a bone forward. Keyframes are linear; "stutter" keys 0.05 s apart make
@@ -288,6 +289,45 @@ def unload():
     }}
 
 
+def stagger():
+    length = 1.6
+    return {"loop": True, "animation_length": length, "bones": {
+        # Wankelen (the shared reaction): he sags to one side and fails to load himself back together; the crown's void
+        # core gutters, the heads loll, the grafts hang and twitch. Loops while the stagger lasts (the open window).
+        "torso": channel(rotation=[(0, (14, 0, 10)), (0.4, (18, 0, 14)), (0.8, (12, 0, 6)), (1.2, (18, 0, 12)), (1.6, (14, 0, 10))],
+                         position=[(0, (0, -14, 0)), (0.8, (0, -18, 0)), (1.6, (0, -14, 0))]),
+        "torso_upper": channel(rotation=[(0, (10, 0, 0)), (0.8, (14, 0, -4)), (1.6, (10, 0, 0))],
+                               position=stutter([0.3, 1.1], (6, -2, 0), length)),
+        "crown_core": channel(scale=[(0, (0.6, 0.6, 0.6)), (0.2, (1.1, 1.1, 1.1)), (0.25, (0.5, 0.5, 0.5)), (0.9, (0.7, 0.7, 0.7)),
+                                     (0.95, (1.2, 1.2, 1.2)), (1.0, (0.6, 0.6, 0.6)), (1.6, (0.6, 0.6, 0.6))]),
+        "head_holle": channel(rotation=[(0, (30, 0, 20)), (0.8, (36, 0, 26)), (1.6, (30, 0, 20))]),
+        "head_gelaagde": channel(rotation=[(0, (35, 0, -14)), (0.8, (28, 0, -20)), (1.6, (35, 0, -14))]),
+        "head_herrijzende": channel(rotation=[(0, (25, 0, 10)), (0.8, (32, 0, 16)), (1.6, (25, 0, 10))]),
+        "head_hoeder": channel(rotation=[(0, (28, 0, -20)), (0.8, (34, 0, -26)), (1.6, (28, 0, -20))]),
+        "graft_holle_arm": channel(rotation=[(0, (10, 0, 14)), (0.8, (14, 0, 18)), (1.6, (10, 0, 14))],
+                                   position=stutter([0.5], (4, 0, 0), length)),
+        "graft_herrijzende_wing": channel(rotation=[(0, (0, 20, -40)), (0.8, (0, 24, -46)), (1.6, (0, 20, -40))]),
+        "graft_hoeder_tail": channel(rotation=[(0, (14, 10, 0)), (0.8, (18, 14, 0)), (1.6, (14, 10, 0))]),
+        "graft_gelaagde_leg_1": channel(rotation=[(0, (0, 0, 16)), (0.8, (0, 0, 20)), (1.6, (0, 0, 16))]),
+        "rift": channel(scale=[(0, (1.3, 1, 1.3)), (0.8, (1.4, 1, 1.4)), (1.6, (1.3, 1, 1.3))]),
+        "unloaded_slice_2": channel(position=stutter([0.2, 0.7, 1.3], (-6, 2, -2), length)),
+    }}
+
+
+def sniff():
+    return {"animation_length": 2.4, "bones": {
+        # Zoeken: at the last place he saw his target, his four heads turn each their own way, scenting; the crown core
+        # swells as he listens.
+        "torso": channel(rotation=[(0, (0, 0, 0)), (0.4, (8, 0, 0)), (2.0, (8, 0, 0)), (2.4, (0, 0, 0))]),
+        "head_holle": channel(rotation=[(0, (0, 0, 0)), (0.5, (10, 40, 0)), (1.2, (10, -30, 0)), (1.8, (14, 20, 0)), (2.4, (0, 0, 0))]),
+        "head_gelaagde": channel(rotation=[(0, (0, 0, 0)), (0.6, (20, -40, 0)), (1.0, (25, -40, 0)), (1.05, (10, -40, 0)),
+                                           (1.6, (20, 30, 0)), (2.4, (0, 0, 0))]),
+        "head_herrijzende": channel(rotation=[(0, (0, 0, 0)), (0.7, (-20, 35, 0)), (1.5, (-20, -35, 0)), (2.4, (0, 0, 0))]),
+        "head_hoeder": channel(rotation=[(0, (0, 0, 0)), (0.5, (15, -30, 0)), (1.3, (15, 40, 0)), (2.4, (0, 0, 0))]),
+        "crown_core": channel(scale=[(0, (1, 1, 1)), (0.8, (1.3, 1.3, 1.3)), (1.6, (1.3, 1.3, 1.3)), (2.4, (1, 1, 1))]),
+    }}
+
+
 def death():
     return {"animation_length": 5.0, "bones": {
         # He stalls, everything stutters, the grafts sag, then he sinks back into his void, the crown last; the void
@@ -327,6 +367,8 @@ def main():
         "animation.the_unfinished.glitch": glitch(),
         "animation.the_unfinished.throw": throw(),
         "animation.the_unfinished.unload": unload(),
+        "animation.the_unfinished.stagger": stagger(),
+        "animation.the_unfinished.sniff": sniff(),
         "animation.the_unfinished.death": death(),
     }
     for anim in animations.values():
