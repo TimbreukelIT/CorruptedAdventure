@@ -1,8 +1,6 @@
 package nl.timtoys.corruptedadventure.entity.layered;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -13,15 +11,14 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
-import org.joml.Vector3f;
 
 /**
  * The Layered's sounds and particles, sent by the server to everyone near (vanilla events with a low pitch;
  * placeholders until its own sounds, backlog). Bone rattles and canyon dust: it is a thing of bone and stone.
  */
 final class LayeredEffects {
-    /** Big flakes of bone-pale dust: the spit has to be seen coming from across a canyon floor. */
-    private static final DustParticleOptions BONE_DUST = new DustParticleOptions(new Vector3f(0.86F, 0.80F, 0.66F), 2.5F);
+    // No coloured dust (DustParticleOptions): the client shifts each colour channel on its own, which turns sand and bone
+    // green and pink. Block particles keep the colours of the texture; poof clouds are a neutral white.
     private LayeredEffects() {
     }
 
@@ -147,8 +144,8 @@ final class LayeredEffects {
     static void trail(ServerLevel level, Vec3 at, Vec3 heading, BlockState ground, int tick) {
         BlockParticleOption grains = new BlockParticleOption(ParticleTypes.BLOCK, ground);
         BlockParticleOption dust = new BlockParticleOption(ParticleTypes.FALLING_DUST, ground);
-        // The bulge itself: big flakes in the colour of the ground, piled low over its back.
-        level.sendParticles(groundDust(level, at, ground), at.x, at.y + 0.25, at.z, 14, 0.7, 0.12, 0.7, 0.0);
+        // The bulge itself: a low, dense mound of grains of the ground over its back.
+        level.sendParticles(grains, at.x, at.y + 0.3, at.z, 40, 0.6, 0.15, 0.6, 0.0);
         level.sendParticles(grains, at.x, at.y + 0.15, at.z, 30, 0.8, 0.12, 0.8, 0.05);
         level.sendParticles(dust, at.x, at.y + 0.5, at.z, 10, 0.9, 0.3, 0.9, 0.0);
         Vec3 bow = at.add(heading.scale(1.3));
@@ -177,8 +174,8 @@ final class LayeredEffects {
                     0.15, 0.05, 0.15, 0.1);
         }
         level.sendParticles(grains, at.x, at.y + 0.2, at.z, 20, 0.5, 0.1, 0.5, 0.2 + grow * 0.5);
-        level.sendParticles(groundDust(level, at, ground), at.x, at.y + 0.2 + grow * 0.3, at.z, 10, radius * 0.5,
-                0.1 + grow * 0.2, radius * 0.5, 0.0);
+        level.sendParticles(grains, at.x, at.y + 0.3 + grow * 0.3, at.z, 24, radius * 0.5, 0.1 + grow * 0.2,
+                radius * 0.5, 0.0);
         level.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, ground), at.x, at.y + 0.8, at.z, 8,
                 radius * 0.6, 0.4, radius * 0.6, 0.0);
         if (tick % 5 == 0) {
@@ -204,7 +201,7 @@ final class LayeredEffects {
     /** Each tick of rearing back: dust gathering in a dead head's jaws. */
     static void spitGather(ServerLevel level, Vec3 mouth) {
         level.sendParticles(ParticleTypes.WHITE_ASH, mouth.x, mouth.y, mouth.z, 6, 0.4, 0.3, 0.4, 0.0);
-        level.sendParticles(BONE_DUST, mouth.x, mouth.y, mouth.z, 2, 0.2, 0.2, 0.2, 0.0);
+        level.sendParticles(ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, 1, 0.15, 0.15, 0.15, 0.0);
     }
 
     static void spit(ServerLevel level, Vec3 mouth) {
@@ -216,8 +213,7 @@ final class LayeredEffects {
     static void spitCloud(ServerLevel level, Vec3 at, double radius) {
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.BONE_BLOCK.defaultBlockState()), at.x, at.y,
                 at.z, 5, radius * 0.3, radius * 0.3, radius * 0.3, 0.05);
-        level.sendParticles(BONE_DUST, at.x, at.y, at.z, 6, radius * 0.35, radius * 0.35, radius * 0.35, 0.0);
-        level.sendParticles(ParticleTypes.POOF, at.x, at.y, at.z, 1, radius * 0.2, radius * 0.2, radius * 0.2, 0.0);
+        level.sendParticles(ParticleTypes.POOF, at.x, at.y, at.z, 4, radius * 0.3, radius * 0.3, radius * 0.3, 0.0);
         level.sendParticles(ParticleTypes.WHITE_ASH, at.x, at.y, at.z, 8, radius * 0.4, radius * 0.4, radius * 0.4, 0.02);
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, canyonStone()), at.x, at.y, at.z, 3,
                 radius * 0.3, radius * 0.3, radius * 0.3, 0.05);
@@ -230,7 +226,6 @@ final class LayeredEffects {
                 at.z, 16, 0.4, 0.4, 0.4, 0.15);
         level.sendParticles(ParticleTypes.WHITE_ASH, at.x, at.y, at.z, 30, 0.6, 0.6, 0.6, 0.05);
         level.sendParticles(ParticleTypes.POOF, at.x, at.y, at.z, 8, 0.4, 0.4, 0.4, 0.02);
-        level.sendParticles(BONE_DUST, at.x, at.y, at.z, 20, 0.6, 0.6, 0.6, 0.0);
     }
 
     private static void ring(ServerLevel level, Vec3 centre, BlockState ground, double radius, int count) {
@@ -240,13 +235,6 @@ final class LayeredEffects {
             level.sendParticles(particle, centre.x + Math.cos(angle) * radius, centre.y + 0.1,
                     centre.z + Math.sin(angle) * radius, 2, 0.1, 0.1, 0.1, 0.2);
         }
-    }
-
-    /** Big dust flakes in the map colour of the ground block (sand-yellow, gravel-grey). */
-    private static DustParticleOptions groundDust(ServerLevel level, Vec3 at, BlockState ground) {
-        int rgb = ground.getMapColor(level, BlockPos.containing(at).below()).col;
-        return new DustParticleOptions(new Vector3f(((rgb >> 16) & 0xFF) / 255.0F, ((rgb >> 8) & 0xFF) / 255.0F,
-                (rgb & 0xFF) / 255.0F), 3.0F);
     }
 
     private static BlockState canyonStone() {
