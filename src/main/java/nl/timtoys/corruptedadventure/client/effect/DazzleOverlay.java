@@ -41,8 +41,11 @@ public final class DazzleOverlay {
         if (dazzled == null) {
             return;
         }
-        float remaining = dazzled.getDuration() - deltaTracker.getGameTimeDeltaPartialTick(false);
-        float alpha = MAX_ALPHA * Math.clamp(remaining / FADE_TICKS, 0.0F, 1.0F);
+        float alpha = MAX_ALPHA;
+        if (!dazzled.isInfiniteDuration()) {
+            float remaining = dazzled.getDuration() - deltaTracker.getGameTimeDeltaPartialTick(false);
+            alpha *= Math.clamp(remaining / FADE_TICKS, 0.0F, 1.0F);
+        }
         if (alpha > 0.0F) {
             graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), Math.round(alpha * 255.0F) << 24 | COLOUR);
         }
