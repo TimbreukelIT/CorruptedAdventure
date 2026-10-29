@@ -812,6 +812,8 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
         tag(ModTags.Blocks.LAYERED_ROCKFALL).addTag(ModTags.Blocks.CANYON_STONES).addTag(BlockTags.SAND)
                 .addTag(BlockTags.BASE_STONE_OVERWORLD).add(ModBlocks.SCORCHED_SANDSTONE.get(), ModBlocks.LOOSE_SAND.get(),
                         ModBlocks.CRACKED_CLAY.get(), Blocks.SANDSTONE, Blocks.RED_SANDSTONE, Blocks.GRAVEL);
+        tag(ModTags.Blocks.LAYERED_BURROW).addTag(BlockTags.SAND).addTag(Tags.Blocks.GRAVELS)
+                .add(ModBlocks.LOOSE_SAND.get(), Blocks.GRAVEL);
     }
 
     private void ring2() {

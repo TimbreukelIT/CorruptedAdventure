@@ -20,7 +20,8 @@ import software.bernie.geckolib.cache.object.GeoBone;
  * {@link NightmareRenderer}, Herobrine's white eyes as the only glow. On a wall the whole model turns nose-up onto it
  * around {@link LayeredPose}'s pivot (smoothed by {@link TheLayered#wallTurn}), so its belly lies against the stone and
  * its back is a piece of the canyon wall. The living head follows where it looks; the two dead heads turn toward the
- * nearest player each at their own pace ({@link TheLayered#deadHeadYaw}), on top of their own lolling animation.
+ * nearest player each at their own pace ({@link TheLayered#deadHeadYaw}), on top of their own lolling animation. Under the
+ * sand ({@link TheLayered#isBurrowed}) it is not drawn.
  */
 public final class TheLayeredRenderer extends NightmareRenderer<TheLayered> {
     private static final String LIVING_HEAD = "head_alive";
@@ -32,6 +33,15 @@ public final class TheLayeredRenderer extends NightmareRenderer<TheLayered> {
 
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntityTypes.THE_LAYERED.get(), TheLayeredRenderer::new);
+    }
+
+    @Override
+    public void render(TheLayered layered, float entityYaw, float partialTick, PoseStack poseStack,
+                       MultiBufferSource bufferSource, int packedLight) {
+        // Under the sand only the moving sand shows (particles from the server).
+        if (!layered.isBurrowed()) {
+            super.render(layered, entityYaw, partialTick, poseStack, bufferSource, packedLight);
+        }
     }
 
     @Override

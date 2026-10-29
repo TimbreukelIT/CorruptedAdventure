@@ -45,7 +45,8 @@ final class LayeredGrabGoal extends Goal {
     @Override
     public boolean canUse() {
         if (!(layered.getTarget() instanceof Player player) || !Nightmare.isFighter(player) || !layered.canAct()
-                || layered.isVehicle() || layered.isOnWall() || player.isPassenger()) {
+                || layered.isVehicle() || layered.isOnWall() || player.isPassenger() || !layered.mayStartAttack()
+                || !layered.specialReady()) {
             return false;
         }
         if (nextGrabTick < 0) {
@@ -72,6 +73,7 @@ final class LayeredGrabGoal extends Goal {
 
     @Override
     public void start() {
+        layered.countAttack();
         done = false;
         carrying = false;
         windup = TheLayered.settings().biteWindupTicks.get();
@@ -88,6 +90,7 @@ final class LayeredGrabGoal extends Goal {
         carrying = false;
         wall = null;
         nextGrabTick = layered.tickCount + cooldown();
+        layered.specialEnded();
         layered.getNavigation().stop();
     }
 
