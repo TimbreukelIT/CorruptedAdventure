@@ -57,6 +57,7 @@ public class TheHollow extends Nightmare {
     /** Waiting, unseen and untouchable, inside a rift that is still opening (the director's arrival). */
     private int hiddenTicks;
     private HollowRiftStepGoal riftStep;
+    private HollowExtraAttackGoal extraAttacks;
 
     public TheHollow(EntityType<? extends TheHollow> type, Level level) {
         super(type, level, BossEvent.BossBarColor.PURPLE);
@@ -88,13 +89,19 @@ public class TheHollow extends Nightmare {
         goalSelector.addGoal(1, riftStep);
         goalSelector.addGoal(2, new NightmareSearchGoal(this));
         goalSelector.addGoal(2, new NightmarePaceGoal(this));
-        goalSelector.addGoal(2, new HollowExtraAttackGoal(this));
+        extraAttacks = new HollowExtraAttackGoal(this);
+        goalSelector.addGoal(2, extraAttacks);
         goalSelector.addGoal(3, new HollowSlamGoal(this));
         goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.8));
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 16.0F));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
         // It is a dimension shifter: it finds you through walls (the shared target goal does).
         targetSelector.addGoal(1, new NightmareTargetGoal(this));
+    }
+
+    /** Its extra attacks (ground slam, rift rain, sweep); GameTests drive the goal by hand. */
+    public HollowExtraAttackGoal extraAttacks() {
+        return extraAttacks;
     }
 
     public boolean isPhased() {

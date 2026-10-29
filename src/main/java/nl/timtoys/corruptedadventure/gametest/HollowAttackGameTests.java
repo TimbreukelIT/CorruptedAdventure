@@ -3,6 +3,7 @@ package nl.timtoys.corruptedadventure.gametest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Husk;
 import net.minecraft.world.level.block.Blocks;
@@ -10,6 +11,9 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
+import nl.timtoys.corruptedadventure.config.ServerConfig;
+import nl.timtoys.corruptedadventure.entity.hollow.HollowAttack;
+import nl.timtoys.corruptedadventure.entity.hollow.HollowExtraAttackGoal;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowShockwave;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowSweep;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowVoidClaw;
@@ -19,7 +23,8 @@ import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
 /**
  * The Hollow's extra attacks (life round): the ground slam's wave hits who stands on the ground and passes under a
  * jump, a void claw bites only after its crack and not at all when cancelled, the sweep hits in front and knocks away
- * but not behind, and none of them leaves anything behind. Husks stand in for players (a fresh mock player is
+ * but not behind, a stagger during the ground slam's windup means no shock wave, and none of them leaves anything
+ * behind. Husks stand in for players (a fresh mock player is
  * invulnerable after joining and never ticks). In the empty 9 × 7 × 9 {@code gametest/hollow_arena}, on a grass floor
  * the test lays at y 0. How they look is checked in the client test. Run like {@link TierGatingGameTests}.
  */
@@ -84,6 +89,43 @@ public final class HollowAttackGameTests {
         helper.assertTrue(front.getDeltaMovement().z > 0.5, "and knocked away: " + front.getDeltaMovement());
         helper.assertValueEqual(behind.getHealth(), behind.getMaxHealth(), "health of the one behind");
         helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena", timeoutTicks = 100)
+    public static void aStaggerDuringTheGroundSlamsWindupMeansNoShockWave(GameTestHelper helper) {
+        floor(helper);
+        TheHollow hollow = helper.spawnWithNoFreeWill(ModEntityTypes.THE_HOLLOW.get(), MIDDLE);
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        Vec3 at = helper.absoluteVec(new Vec3(4.5, 1.0, 1.5));
+        player.moveTo(at.x, at.y, at.z, 0.0F, 0.0F);
+        hollow.setTarget(player);
+        HollowExtraAttackGoal goal = hollow.extraAttacks();
+        goal.startNow(HollowAttack.GROUND_SLAM);
+        int windup = ServerConfig.HOLLOW.groundSlamWindupTicks.get();
+        // Without AI the test runs the goal itself, as the goal selector does: a tick per game tick until it may not go
+        // on, then stop. Halfway through the windup it staggers.
+        int[] ticks = {0};
+        boolean[] stopped = {false};
+        helper.onEachTick(() -> {
+            if (stopped[0]) {
+                return;
+            }
+            if (ticks[0]++ == windup / 2) {
+                helper.assertTrue(hollow.stagger(), "it staggers");
+            }
+            if (goal.canContinueToUse()) {
+                goal.tick();
+            } else {
+                goal.stop();
+                stopped[0] = true;
+            }
+        });
+        helper.runAfterDelay(windup + 20, () -> {
+            helper.assertTrue(stopped[0] && ticks[0] <= windup / 2 + 2, "the stagger broke the ground slam off at once");
+            helper.assertEntityNotPresent(ModEntityTypes.HOLLOW_SHOCKWAVE.get());
+            GameTestPlayers.remove(helper, player);
+            helper.succeed();
+        });
     }
 
     private static Husk husk(GameTestHelper helper, BlockPos at) {

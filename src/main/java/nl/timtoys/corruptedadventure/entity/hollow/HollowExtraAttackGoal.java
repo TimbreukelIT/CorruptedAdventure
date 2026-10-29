@@ -18,7 +18,7 @@ import java.util.List;
  * (the claws of the rift rain are the void's, they still bite). It waits for the gate of the shared reactions; broken
  * off early (a stagger stops every running goal), claws that have not come up close.
  */
-final class HollowExtraAttackGoal extends Goal {
+public final class HollowExtraAttackGoal extends Goal {
     /** Ticks it stays after the strike before it moves again. */
     private static final int RECOVERY_TICKS = 15;
 
@@ -66,7 +66,8 @@ final class HollowExtraAttackGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        return attack != null && age < endTick;
+        // Also checked here, not only through the base stopping every goal: a staggering Hollow never strikes.
+        return attack != null && age < endTick && !hollow.isStaggered();
     }
 
     @Override
@@ -130,6 +131,9 @@ final class HollowExtraAttackGoal extends Goal {
 
     @Override
     public void tick() {
+        if (attack == null || hollow.isStaggered()) {
+            return;
+        }
         age++;
         LivingEntity target = hollow.getTarget();
         if (attack == HollowAttack.SWEEP) {
@@ -164,6 +168,12 @@ final class HollowExtraAttackGoal extends Goal {
                 }
             }
         }
+    }
+
+    /** Starts {@code attack} at once, past the picker and the cooldown (GameTests drive the goal by hand with it). */
+    public void startNow(HollowAttack attack) {
+        this.attack = attack;
+        start();
     }
 
     private int cooldown() {

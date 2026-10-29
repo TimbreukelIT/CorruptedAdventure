@@ -5,7 +5,7 @@ package nl.timtoys.corruptedadventure.entity.hollow;
  * swap. Each has a windup with a clear warning (animation, sound, particles), a strike and a recovery; the name is its
  * triggered animation in {@link HollowAnimations}.
  */
-enum HollowAttack {
+public enum HollowAttack {
     /** Both arms come down on the ground: a shock wave runs out in a growing ring. Jump it or keep away. */
     GROUND_SLAM(HollowAnimations.GROUND_SLAM),
     /** The giant hand claws into the ground: purple cracks open round its target, then void claws shoot up. */
