@@ -30,6 +30,7 @@ import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperHoldRules;
 import nl.timtoys.corruptedadventure.entity.nightmare.NightmareKind;
 import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
 import nl.timtoys.corruptedadventure.entity.unfinished.UnfinishedTempBlocks;
+import nl.timtoys.corruptedadventure.entity.risen.RisenArrival;
 import nl.timtoys.corruptedadventure.entity.risen.RisenAshRain;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
@@ -148,6 +149,8 @@ public final class CorruptedAdventure {
         NightmareKind.HOLLOW.arrival(new HollowArrival());
         // Phase 4 step 2 (A2): The Layered comes loose from a canyon wall, or bursts up out of the ground.
         NightmareKind.LAYERED.arrival(new LayeredArrival());
+        // Phase 4 step 2 (A3): The Risen dives out of the sky or rises from molten ground.
+        NightmareKind.RISEN.arrival(new RisenArrival());
         // Phase 4 (I): dazzled and stunned mobs take no target.
         WeakenedTargeting.register(NeoForge.EVENT_BUS);
         // Phase 4: a fighter The Lost Keeper holds cannot sneak off.

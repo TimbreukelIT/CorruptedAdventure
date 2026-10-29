@@ -45,7 +45,7 @@ public final class RisenAnimations {
     /** Ticks of the death animation: it falls and crumbles, then the body is removed. */
     static final int DEATH_TICKS = 60;
     /** Ticks the ground glows before the lava opens and it starts to rise (the rise animation's first 2 s). */
-    static final int RISE_GLOW_TICKS = 40;
+    public static final int RISE_GLOW_TICKS = 40;
     /** Ticks it takes to rise out of the pool (the rise animation's last 3 s). */
     static final int RISE_TICKS = 60;
     /** The peck lands 14 ticks into its animation, the buffet 12, the stomp 16. */

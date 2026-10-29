@@ -20,6 +20,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.PartEntity;
 import nl.timtoys.corruptedadventure.config.NightmareConfig;
@@ -49,8 +50,9 @@ import java.util.UUID;
  * feathers as ash walkers. Summoned on the ground, it melts the ground and rises from the lava ({@link RisenMeltPool}).
  * The volcanite horn's effect {@code corruptedadventure:stunned} makes it rigid; in the air it falls. Its
  * wings and head are extra hitboxes ({@link RisenPart}). Boss bar, health scaling, retreat and the rest of the shared
- * rules come from {@link Nightmare}; its state ({@link RisenState}) is synced for the animations. Roaming, the arrival
- * from afar and the return come in steps 2 and 3; so does the cast a player held fast in ash leaves on death.
+ * rules come from {@link Nightmare}; its state ({@link RisenState}) is synced for the animations. Sent by the director
+ * it comes its own way ({@link RisenArrival}): a pass over its target and a dive, or a rise from molten ground under a
+ * roof. The cast a player held fast in ash leaves on death is still to come.
  */
 public class TheRisen extends Nightmare {
     private static final EntityDataAccessor<Byte> DATA_STATE =
@@ -85,6 +87,12 @@ public class TheRisen extends Nightmare {
     private static final double STAGGER_SAG = 0.18;
     private static final int STAGGER_SAG_TICKS = 30;
     private static final double STAGGER_FLOOR = 2.0;
+    /** A pass that never gets past its aim (blocked target, odd geometry) still turns to its dive after this. */
+    private static final int PASS_MAX_TICKS = 300;
+    /** How fast its height follows the ground on a pass, per tick. */
+    private static final double PASS_CLIMB = 0.1;
+    /** While it passes, its shadow lies on the ground up to this far below it: drawn even when it is out of view. */
+    private static final double SHADOW_REACH = 72.0;
 
     private final RisenPart wingLeft;
     private final RisenPart wingRight;
@@ -128,6 +136,9 @@ public class TheRisen extends Nightmare {
     @Nullable
     private Vec3 skimFrom;
     private Vec3 skimDirection = Vec3.ZERO;
+    private Vec3 passAim = Vec3.ZERO;
+    private Vec3 passDirection = Vec3.ZERO;
+    private double passHeight;
 
     public TheRisen(EntityType<? extends TheRisen> type, Level level) {
         super(type, level, BossEvent.BossBarColor.RED);
@@ -326,6 +337,7 @@ public class TheRisen extends Nightmare {
             case SWOOPING -> swooping(level);
             case EMBER_RAIN -> emberRaining(level);
             case STAGGERED -> staggeredInAir();
+            case PASSING -> passing(level);
         }
     }
 
@@ -421,15 +433,86 @@ public class TheRisen extends Nightmare {
             setState(RisenState.CIRCLING);
             return;
         }
-        BlockPos centre = BlockPos.containing(getX(), ground - 1, getZ());
+        beginRise(level, BlockPos.containing(getX(), ground - 1, getZ()), false);
+    }
+
+    /**
+     * Its arrival under a roof ({@link RisenArrival}): the floor block {@code ground} and the ground round it glow and
+     * melt, and it rises from there instead of from the surface above. Call once it is in the level, before its first
+     * tick (a failed spawn leaves no molten ground).
+     */
+    public void riseFrom(ServerLevel level, BlockPos ground) {
+        started = true;
+        anchor = ground.above();
+        setPos(ground.getX() + 0.5, ground.getY() + 1.0, ground.getZ() + 0.5);
+        beginRise(level, ground, true);
+    }
+
+    /** Under the ground below {@code centre} (the block it will stand on), the pool glowing over it. */
+    private void beginRise(ServerLevel level, BlockPos centre, boolean sheltered) {
         if (settings().meltPool.get()) {
-            pool = RisenMeltPool.plan(level, centre, settings().meltPoolRadius.get());
+            pool = RisenMeltPool.plan(level, centre, settings().meltPoolRadius.get(), sheltered);
             pool.glow(level);
         }
         setState(RisenState.RISING);
         setInvisible(true);
-        setPos(getX(), ground - RISE_DEPTH, getZ());
+        setPos(getX(), centre.getY() + 1.0 - RISE_DEPTH, getZ());
         setDeltaMovement(Vec3.ZERO);
+    }
+
+    /**
+     * Its arrival under the open sky ({@link RisenArrival}): from where it is now (high up, behind its target) a straight
+     * pass over {@code aim} at {@code height} above the ground, then a dive. Call once it is in the level, before its
+     * first tick.
+     */
+    public void passOver(Vec3 aim, double height) {
+        started = true;
+        anchor = BlockPos.containing(aim);
+        passAim = aim;
+        passHeight = height;
+        Vec3 flat = aim.subtract(position()).multiply(1.0, 0.0, 1.0);
+        passDirection = flat.lengthSqr() < 1.0E-4 ? Vec3.directionFromRotation(0.0F, getYRot()).multiply(1.0, 0.0, 1.0).normalize()
+                : flat.normalize();
+        float yaw = (float) (Mth.atan2(passDirection.z, passDirection.x) * Mth.RAD_TO_DEG) - 90.0F;
+        setYRot(yaw);
+        yBodyRot = yaw;
+        yHeadRot = yaw;
+        setState(RisenState.PASSING);
+    }
+
+    /** Straight on over its aim, its height following the ground; past it, it turns down on its target. */
+    private void passing(ServerLevel level) {
+        RisenConfig config = settings();
+        double speed = config.passSpeed.get();
+        double wanted = Math.max(groundY(getX(), getZ()), groundY(passAim.x, passAim.z)) + passHeight;
+        double climb = Mth.clamp((wanted - getY()) * PASS_CLIMB, -speed, speed);
+        setDeltaMovement(passDirection.x * speed, climb, passDirection.z * speed);
+        face(position().add(passDirection));
+        if (tickCount % 20 == 0) {
+            RisenEffects.flap(level, this);
+        }
+        if (tickCount % 5 == 0) {
+            RisenEffects.embers(level, this);
+        }
+        double along = position().subtract(passAim).dot(passDirection);
+        if (along > -2.0 && along <= -2.0 + speed) {
+            RisenEffects.passOverhead(level, this, passAim);
+        }
+        if (along < config.passBeyond.get() && stateTicks < PASS_MAX_TICKS) {
+            return;
+        }
+        LivingEntity target = fightTarget();
+        if (target == null) {
+            setState(RisenState.CIRCLING);
+            return;
+        }
+        // The arrival's dive is the first attack of the fight; the rest come an interval after it, as always.
+        startTimers(config);
+        countAttack();
+        diveTarget = target.position();
+        diveHits.clear();
+        setState(RisenState.DIVING);
+        RisenEffects.diveScreech(level, this);
     }
 
     private void rising(ServerLevel level) {
@@ -453,6 +536,18 @@ public class TheRisen extends Nightmare {
             poolTicks = settings().meltPoolSeconds.get() * 20;
             setState(RisenState.TAKING_OFF);
         }
+    }
+
+    /** The first of everything comes an interval into the fight, not at once. */
+    private void startTimers(RisenConfig config) {
+        nextDive = tickCount + config.diveCooldownTicks(random.nextInt(1 << 16));
+        nextAshRain = tickCount + config.ashRainIntervalTicks(random.nextInt(1 << 16));
+        nextScream = tickCount + config.screamCooldownTicks(random.nextInt(1 << 16));
+        nextRelease = tickCount + config.releaseCooldownTicks(random.nextInt(1 << 16));
+        nextSwoop = tickCount + config.swoopCooldownTicks(random.nextInt(1 << 16));
+        nextEmberRain = tickCount + config.emberRainCooldownTicks(random.nextInt(1 << 16));
+        flightTicks = 0;
+        landAfter = config.landIntervalTicks(random.nextInt(1 << 16));
     }
 
     @Nullable
@@ -512,15 +607,7 @@ public class TheRisen extends Nightmare {
             return;
         }
         if (nextDive < 0) {
-            // The first of everything comes an interval into the fight, not at once.
-            nextDive = tickCount + config.diveCooldownTicks(random.nextInt(1 << 16));
-            nextAshRain = tickCount + config.ashRainIntervalTicks(random.nextInt(1 << 16));
-            nextScream = tickCount + config.screamCooldownTicks(random.nextInt(1 << 16));
-            nextRelease = tickCount + config.releaseCooldownTicks(random.nextInt(1 << 16));
-            nextSwoop = tickCount + config.swoopCooldownTicks(random.nextInt(1 << 16));
-            nextEmberRain = tickCount + config.emberRainCooldownTicks(random.nextInt(1 << 16));
-            flightTicks = 0;
-            landAfter = config.landIntervalTicks(random.nextInt(1 << 16));
+            startTimers(config);
         }
         if (landAfterBurst) {
             // A burst of attacks is over: it comes down for a ground fight, its rest window is the walk there.
@@ -1011,6 +1098,13 @@ public class TheRisen extends Nightmare {
         return 7.0;
     }
 
+    /** Passing over at its arrival, its shadow on the ground far below must be drawn too. */
+    @Override
+    public AABB getBoundingBoxForCulling() {
+        AABB box = super.getBoundingBoxForCulling();
+        return state() == RisenState.PASSING ? box.expandTowards(0.0, -SHADOW_REACH, 0.0) : box;
+    }
+
     @Override
     protected double deadOverhang() {
         return 12.0;
@@ -1081,7 +1175,7 @@ public class TheRisen extends Nightmare {
         }
         return switch (state()) {
             case RISING -> RisenAnimations.RISE;
-            case CIRCLING -> RisenAnimations.FLY;
+            case CIRCLING, PASSING -> RisenAnimations.FLY;
             case DIVING, SWOOPING -> RisenAnimations.DIVE;
             case LANDING, TAKING_OFF, SCREAMING, SOARING, EMBER_RAIN -> RisenAnimations.HOVER;
             case LANDED -> moving ? RisenAnimations.STALK : RisenAnimations.GROUND;

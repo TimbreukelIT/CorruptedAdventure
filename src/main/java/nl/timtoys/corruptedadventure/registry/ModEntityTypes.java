@@ -17,6 +17,7 @@ import nl.timtoys.corruptedadventure.entity.layered.LayeredClawMarks;
 import nl.timtoys.corruptedadventure.entity.layered.TheLayered;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.TheLostKeeper;
 import nl.timtoys.corruptedadventure.entity.risen.AshWalker;
+import nl.timtoys.corruptedadventure.entity.risen.RisenTrace;
 import nl.timtoys.corruptedadventure.entity.risen.TheRisen;
 import nl.timtoys.corruptedadventure.entity.unfinished.MemoryShard;
 import nl.timtoys.corruptedadventure.entity.unfinished.TheUnfinished;
@@ -64,6 +65,10 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<AshWalker>> ASH_WALKER = ENTITY_TYPES.register("ash_walker",
             () -> EntityType.Builder.<AshWalker>of(AshWalker::new, MobCategory.MONSTER).fireImmune()
                     .sized(0.6F, 1.95F).eyeHeight(1.74F).clientTrackingRange(8).build("ash_walker"));
+    /** Phase 4 step 2: the smouldering trace The Risen leaves while it roams (particles only; never saved). */
+    public static final DeferredHolder<EntityType<?>, EntityType<RisenTrace>> RISEN_TRACE = ENTITY_TYPES.register("risen_trace",
+            () -> EntityType.Builder.<RisenTrace>of(RisenTrace::new, MobCategory.MISC)
+                    .sized(6.0F, 1.0F).clientTrackingRange(8).updateInterval(20).fireImmune().noSave().build("risen_trace"));
     /**
      * Phase 4: The Lost Keeper, the ring 4 Nightmare. The hitbox is its head (2.6 x 2.5, eyes at its centre); its ~24-block
      * body is a chain of part hitboxes in {@code TheLostKeeper}. Tracked from far.
