@@ -247,7 +247,8 @@ public class TheHollow extends Nightmare {
     @Override
     protected void onRestStart(NightmarePacing.Style style) {
         Vec3 point = restPoint();
-        if (style == NightmarePacing.Style.BACK_OFF && point != null
+        // Not right after a rift step that ended the burst: it would come out behind you and vanish at once.
+        if (style == NightmarePacing.Style.BACK_OFF && point != null && !riftStep.isStepping()
                 && random.nextDouble() < ServerConfig.HOLLOW.restRiftStepChance.get()) {
             riftStep.stepTo(point);
         }

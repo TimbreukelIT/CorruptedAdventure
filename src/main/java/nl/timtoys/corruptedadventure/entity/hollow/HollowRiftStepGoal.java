@@ -40,6 +40,11 @@ final class HollowRiftStepGoal extends Goal {
         nextStepTick = cooldown();
     }
 
+    /** Whether a step is under way (the warning runs). */
+    boolean isStepping() {
+        return warning > 0;
+    }
+
     /** A reaction: rift-step to near {@code point} as soon as it can (not while pinned, staggering or arriving). */
     void stepTo(Vec3 point) {
         requested = point;
