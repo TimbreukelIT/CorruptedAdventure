@@ -44,6 +44,7 @@ final class LayeredRockfallGoal extends Goal {
     public boolean canUse() {
         LayeredConfig settings = TheLayered.settings();
         if (!settings.rockfallEnabled.get() || !layered.canAct() || layered.isVehicle() || layered.rockfallLeft() <= 0
+                || !layered.mayStartAttack() || !layered.specialReady()
                 || !(layered.getTarget() instanceof Player player) || !Nightmare.isFighter(player)
                 || layered.distanceToSqr(player) > RANGE * RANGE) {
             return false;
@@ -76,6 +77,7 @@ final class LayeredRockfallGoal extends Goal {
 
     @Override
     public void start() {
+        layered.countAttack();
         done = false;
         ticks = 0;
         startY = layered.getY();
@@ -90,6 +92,7 @@ final class LayeredRockfallGoal extends Goal {
     @Override
     public void stop() {
         layered.requestCling(false);
+        layered.specialEnded();
         nextTick = layered.tickCount + cooldown();
         wall = null;
     }

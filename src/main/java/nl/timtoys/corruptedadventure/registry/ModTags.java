@@ -22,6 +22,8 @@ public final class ModTags {
         public static final TagKey<Block> CANYON_STONES = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("canyon_stones"));
         /** Natural stone and sand The Layered (ring 2 Nightmare) may break loose in its rock fall. */
         public static final TagKey<Block> LAYERED_ROCKFALL = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("layered_rockfall"));
+        /** Sand and gravel The Layered can burrow through (and burst up from); nothing changes in the world. */
+        public static final TagKey<Block> LAYERED_BURROW = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("layered_burrow"));
         /** Palm log, wood and their stripped variants; part of {@code #minecraft:logs_that_burn}. */
         public static final TagKey<Block> PALM_LOGS = TagKey.create(Registries.BLOCK, CorruptedAdventure.id("palm_logs"));
         /** Convention tag {@code c:ores/sunstone} (all host rocks); part of {@code c:ores}. */

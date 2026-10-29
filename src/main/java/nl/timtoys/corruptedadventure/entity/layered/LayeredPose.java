@@ -23,6 +23,10 @@ public final class LayeredPose {
     /** The tip of the beak: bites are measured from here. */
     public static final double BEAK_UP = 0.4;
     public static final double BEAK_FORWARD = 2.5;
+    /** The open jaws of the two dead heads, {@link #DEAD_MOUTH_SIDE} to either side: their spit comes from here. */
+    public static final double DEAD_MOUTH_UP = 1.1;
+    public static final double DEAD_MOUTH_FORWARD = 1.6;
+    public static final double DEAD_MOUTH_SIDE = 1.1;
     /** The feet of a held player, hanging in the beak. */
     public static final double HELD_UP = 0.35;
     public static final double HELD_FORWARD = 2.4;
@@ -46,6 +50,12 @@ public final class LayeredPose {
         double u = WALL_PIVOT_UP + ru * cos + rf * sin;
         double f = WALL_PIVOT_FORWARD + rf * cos - ru * sin;
         return horizontal(u, f, yaw);
+    }
+
+    /** {@link #offset(double, double, float, float)} plus {@code side} blocks to its left (negative: right). */
+    public static Vec3 offset(double up, double forward, double side, float yaw, float wall) {
+        float rad = yaw * Mth.DEG_TO_RAD;
+        return offset(up, forward, yaw, wall).add(Mth.cos(rad) * side, 0.0, Mth.sin(rad) * side);
     }
 
     /** The held player's feet: in the beak, and on a wall never inside the wall. */

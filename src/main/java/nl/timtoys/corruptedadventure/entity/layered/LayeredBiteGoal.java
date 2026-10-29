@@ -10,7 +10,7 @@ import java.util.EnumSet;
  * Chases the target (up walls too: {@code WallClimberNavigation}) and bites it with the beak. The bite has a windup (it
  * rears up, then stabs down) so a player can step out of reach; it only lands if the target is still within
  * {@code biteReach} of the beak's tip then. The grab ({@link LayeredGrabGoal}) is the same stab that holds on; it takes
- * over when its cooldown allows.
+ * over when its cooldown allows. It chases whenever it may; the bite itself waits for {@link TheLayered#mayStartAttack()}.
  */
 final class LayeredBiteGoal extends Goal {
     private static final int REPATH_TICKS = 10;
@@ -33,7 +33,8 @@ final class LayeredBiteGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        return canUse();
+        // A bite that has begun lands, even if it was the last of a burst (countAttack starts the rest window).
+        return windup > 0 || canUse();
     }
 
     @Override
@@ -74,8 +75,9 @@ final class LayeredBiteGoal extends Goal {
             }
             return;
         }
-        if (layered.inBiteReach(target) && layered.tickCount >= nextBiteTick) {
+        if (layered.inBiteReach(target) && layered.tickCount >= nextBiteTick && layered.mayStartAttack()) {
             layered.getNavigation().stop();
+            layered.countAttack();
             windup = TheLayered.settings().biteWindupTicks.get();
             layered.triggerAnim(LayeredAnimations.ACTION, LayeredAnimations.GRAB);
             LayeredEffects.biteWindup((ServerLevel) layered.level(), layered);

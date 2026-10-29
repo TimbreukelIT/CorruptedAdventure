@@ -24,8 +24,6 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WallClimberNavigation;
 import net.minecraft.world.entity.player.Player;
@@ -38,12 +36,18 @@ import nl.timtoys.corruptedadventure.config.LayeredConfig;
 import nl.timtoys.corruptedadventure.config.NightmareConfig;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmarePaceGoal;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmareSearchGoal;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmareTargetGoal;
 import nl.timtoys.corruptedadventure.registry.ModMobEffects;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.animation.PlayState;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * De Gelaagde, the ring 2 Nightmare (phase 4 step 1: body and fight, summoned with {@code /summon}). A canyon crawler of
@@ -58,11 +62,21 @@ import software.bernie.geckolib.animation.PlayState;
  * go, falls from the wall, takes {@code fallImpactDamage} and lies on its back for {@code fallenSeconds}. Its living head
  * is a {@link LayeredHeadPart}; hits there free a grabbed player. Boss bar, health scaling, retreat and the rest of the
  * shared rules come from {@link Nightmare}. Its arrival, roaming and return come in steps 2 and 3.
+ * <p>
+ * Life round: it also pounces from a wall or a ledge ({@link LayeredPounceGoal}), burrows through sand and gravel and
+ * bursts up under its target ({@link LayeredBurrowGoal}; hidden and untouchable meanwhile, synced {@code DATA_BURROWED}),
+ * and its dead heads spit dust and bone splinters ({@link LayeredSpitGoal}, {@link LayeredSpit}). After a grab, rock
+ * fall, pounce, burrow or spit the next of these waits {@code specialGapTicks}. The shared reactions: every attack passes
+ * {@link #mayStartAttack()}; a stagger lets go of a held player, and on a wall it falls (without the impact and the
+ * flip of a dazzle); a hit on its belly from below is a hit on its weak spot; in a rest window on a wall it hangs still
+ * (an ambush), elsewhere it walks and climbs to the rest point and the search.
  */
 public class TheLayered extends Nightmare {
     private static final EntityDataAccessor<Direction> DATA_SURFACE =
             SynchedEntityData.defineId(TheLayered.class, EntityDataSerializers.DIRECTION);
     private static final EntityDataAccessor<Boolean> DATA_FALLEN =
+            SynchedEntityData.defineId(TheLayered.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_BURROWED =
             SynchedEntityData.defineId(TheLayered.class, EntityDataSerializers.BOOLEAN);
     /** A hit counts as from below when the attacker's eyes are this far under its feet. */
     private static final double BELLY_MARGIN = 0.5;
@@ -75,6 +89,13 @@ public class TheLayered extends Nightmare {
     private boolean climbing;
     private boolean clingRequested;
     private boolean knockedOff;
+    /** Whether the fall from the wall ends with the impact and the flip (fire, dazzle) or not (a stagger). */
+    private boolean hardFall;
+    private boolean leaping;
+    /** Hanging still on a wall through a rest window ({@link #moveForReaction}). */
+    private boolean ambush;
+    private int nextSpecialTick;
+    private final List<LayeredSpit> spits = new ArrayList<>();
     private boolean releasing;
     private int fallenTicks;
     private int dazzleFlipAllowedTick;
@@ -113,19 +134,25 @@ public class TheLayered extends Nightmare {
         super.defineSynchedData(builder);
         builder.define(DATA_SURFACE, Direction.DOWN);
         builder.define(DATA_FALLEN, false);
+        builder.define(DATA_BURROWED, false);
     }
 
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
-        goalSelector.addGoal(1, new LayeredGrabGoal(this));
-        goalSelector.addGoal(2, new LayeredRockfallGoal(this));
-        goalSelector.addGoal(3, new LayeredBiteGoal(this));
-        goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.8));
-        goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 16.0F));
-        goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-        targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        goalSelector.addGoal(1, new NightmareSearchGoal(this));
+        goalSelector.addGoal(1, new NightmarePaceGoal(this));
+        // The attack choice: the first whose conditions hold (wall, sand, range) and whose cooldown is over.
+        goalSelector.addGoal(2, new LayeredGrabGoal(this));
+        goalSelector.addGoal(3, new LayeredPounceGoal(this));
+        goalSelector.addGoal(4, new LayeredBurrowGoal(this));
+        goalSelector.addGoal(5, new LayeredRockfallGoal(this));
+        goalSelector.addGoal(6, new LayeredSpitGoal(this));
+        goalSelector.addGoal(7, new LayeredBiteGoal(this));
+        goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.8));
+        goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 16.0F));
+        goalSelector.addGoal(10, new RandomLookAroundGoal(this));
+        targetSelector.addGoal(1, new NightmareTargetGoal(this));
     }
 
     @Override
@@ -205,9 +232,19 @@ public class TheLayered extends Nightmare {
         return knockedOff;
     }
 
-    /** It can attack and climb: not on its back, not falling, not dying. */
+    /** It can attack and climb: not on its back, not falling, not leaping, not under the sand, not dying. */
     public boolean canAct() {
-        return isAlive() && !isFallen() && !knockedOff;
+        return isAlive() && !isFallen() && !knockedOff && !leaping && !isBurrowed();
+    }
+
+    /** Under the sand ({@link LayeredBurrowGoal}): hidden, without collision, untouchable. */
+    public boolean isBurrowed() {
+        return entityData.get(DATA_BURROWED);
+    }
+
+    /** In the air on a pounce. */
+    public boolean isLeaping() {
+        return leaping;
     }
 
     public boolean isDazzled() {
@@ -220,7 +257,8 @@ public class TheLayered extends Nightmare {
     }
 
     boolean isClinging() {
-        return isOnWall() && !knockedOff && (clingRequested || (zza == 0.0F && xxa == 0.0F && !targetNotAbove()));
+        return isOnWall() && !knockedOff && !leaping
+                && (clingRequested || ambush || (zza == 0.0F && xxa == 0.0F && !targetNotAbove()));
     }
 
     /**
@@ -239,11 +277,11 @@ public class TheLayered extends Nightmare {
 
     @Override
     public void travel(Vec3 input) {
-        if (isClinging()) {
+        if (isClinging() || isBurrowed()) {
             setDeltaMovement(Vec3.ZERO);
             return;
         }
-        super.travel(isFallen() ? Vec3.ZERO : input);
+        super.travel(isFallen() || isStaggered() ? Vec3.ZERO : input);
     }
 
     @Override
@@ -254,6 +292,10 @@ public class TheLayered extends Nightmare {
                 tickGrip();
                 updateSurface();
             }
+            if (ambush && (!isResting() || !isOnWall())) {
+                ambush = false;
+            }
+            tickSpits();
         } else {
             tickVisuals();
         }
@@ -295,7 +337,7 @@ public class TheLayered extends Nightmare {
 
     /** Which surface it clings to: a wall while it climbs against it or holds on, else the ground. */
     private void updateSurface() {
-        if (knockedOff || isFallen() || isDeadOrDying()) {
+        if (knockedOff || isFallen() || isDeadOrDying() || leaping || isBurrowed()) {
             setSurface(Direction.DOWN);
             return;
         }
@@ -357,11 +399,17 @@ public class TheLayered extends Nightmare {
 
     /** Loses its grip on the wall: lets go of a held player and falls; {@link #land} when it hits the ground. */
     public void knockOff() {
+        knockOff(true);
+    }
+
+    /** {@code hard}: the landing hurts it and throws it on its back (fire, dazzle); else it just lands (a stagger). */
+    private void knockOff(boolean hard) {
         if (knockedOff) {
             return;
         }
         releaseHeld();
         knockedOff = true;
+        hardFall = hard;
         clingRequested = false;
         setSurface(Direction.DOWN);
         getNavigation().stop();
@@ -370,11 +418,14 @@ public class TheLayered extends Nightmare {
 
     private void land() {
         knockedOff = false;
+        LayeredEffects.land((ServerLevel) level(), this);
+        if (!hardFall) {
+            return;
+        }
         double impact = settings().fallImpactDamage.get();
         if (impact > 0.0) {
             hurt(damageSources().fall(), (float) impact);
         }
-        LayeredEffects.land((ServerLevel) level(), this);
         flip();
     }
 
@@ -457,8 +508,26 @@ public class TheLayered extends Nightmare {
             // Its own rock fall.
             return false;
         }
-        float factor = isBellyHit(source) ? 1.0F : settings().backDamageMultiplier.get().floatValue();
-        return super.hurt(source, amount * factor);
+        if (untouchableUnderground(source)) {
+            return false;
+        }
+        boolean belly = isBellyHit(source);
+        boolean hurt = super.hurt(source, amount * (belly ? 1.0F : settings().backDamageMultiplier.get().floatValue()));
+        if (hurt && belly && !level().isClientSide() && isHitFromBelow(source)) {
+            // Its soft belly, open because it crawls over you: its weak spot.
+            hitWeakSpot();
+        }
+        return hurt;
+    }
+
+    /** Under the sand nothing reaches it, except what bypasses invulnerability ({@code /kill}, the void). */
+    private boolean untouchableUnderground(DamageSource source) {
+        return isBurrowed() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY);
+    }
+
+    @Override
+    public boolean isPickable() {
+        return !isBurrowed() && super.isPickable();
     }
 
     /**
@@ -466,7 +535,7 @@ public class TheLayered extends Nightmare {
      * ({@code freeHitsByOthers}, or {@code freeHitsBySelf} for the held player).
      */
     boolean hurtHead(DamageSource source, float amount) {
-        if (source.is(DamageTypes.FALLING_BLOCK) || !super.hurt(source, amount)) {
+        if (source.is(DamageTypes.FALLING_BLOCK) || untouchableUnderground(source) || !super.hurt(source, amount)) {
             return false;
         }
         Player held = heldPlayer();
@@ -489,8 +558,19 @@ public class TheLayered extends Nightmare {
         if (isFallen() || source.is(DamageTypeTags.BYPASSES_ARMOR)) {
             return true;
         }
-        Vec3 from = source.getEntity() instanceof LivingEntity attacker ? attacker.getEyePosition() : source.getSourcePosition();
+        Vec3 from = hitFrom(source);
         return from == null || from.y < getY() - BELLY_MARGIN;
+    }
+
+    /** A hit that comes from under it (not one without a position, not one while it lies on its back). */
+    private boolean isHitFromBelow(DamageSource source) {
+        Vec3 from = hitFrom(source);
+        return !isFallen() && from != null && from.y < getY() - BELLY_MARGIN;
+    }
+
+    @Nullable
+    private static Vec3 hitFrom(DamageSource source) {
+        return source.getEntity() instanceof LivingEntity attacker ? attacker.getEyePosition() : source.getSourcePosition();
     }
 
     // --- rock fall budget -----------------------------------------------------------------------------------------------
@@ -520,13 +600,129 @@ public class TheLayered extends Nightmare {
     @Override
     public void die(DamageSource source) {
         releaseHeld();
+        emerge();
+        endLeap();
+        spits.clear();
         super.die(source);
     }
 
     @Override
     protected void onRetreat(ServerLevel level) {
         releaseHeld();
+        emerge();
         LayeredEffects.retreat(level, this);
+    }
+
+    // --- the shared reactions -------------------------------------------------------------------------------------------
+
+    @Override
+    protected boolean canStagger() {
+        // On its back, falling or under the sand it is already open, already falling, or out of reach.
+        return !isFallen() && !knockedOff && !isBurrowed();
+    }
+
+    /** Lets go of a held player; on a wall it loses its grip and falls (without the impact and the flip of a dazzle). */
+    @Override
+    protected void onStaggered() {
+        releaseHeld();
+        clingRequested = false;
+        endLeap();
+        if (isOnWall()) {
+            knockOff(false);
+        }
+    }
+
+    @Override
+    protected void staggerEffects(ServerLevel level) {
+        LayeredEffects.stagger(level, this);
+    }
+
+    @Override
+    protected void onSniff() {
+        triggerAnim(LayeredAnimations.ACTION, LayeredAnimations.SNIFF);
+        if (level() instanceof ServerLevel serverLevel) {
+            LayeredEffects.sniff(serverLevel, this);
+        }
+    }
+
+    /**
+     * Walks and climbs there; in a rest window on a wall it hangs still instead, an ambush ({@link #isClinging}). Only
+     * through the rest goal, so an attack that is still running in the window (a climb with a held player) climbs on.
+     */
+    @Override
+    protected void moveForReaction(Vec3 point, double speed) {
+        ambush = isOnWall() && isResting();
+        if (ambush) {
+            getNavigation().stop();
+            return;
+        }
+        super.moveForReaction(point, speed);
+    }
+
+    // --- attack state ---------------------------------------------------------------------------------------------------
+
+    /** Whether a grab, rock fall, pounce, burrow or spit may start: {@code specialGapTicks} after the last one ended. */
+    boolean specialReady() {
+        return tickCount >= nextSpecialTick;
+    }
+
+    void specialEnded() {
+        nextSpecialTick = tickCount + settings().specialGapTicks.get();
+    }
+
+    /** Off the wall into a pounce toward {@code landing}: no climbing, no clinging until {@link #endLeap}. */
+    void startLeap(Vec3 landing) {
+        leaping = true;
+        clingRequested = false;
+        setSurface(Direction.DOWN);
+        getNavigation().stop();
+        float yaw = (float) Math.toDegrees(Math.atan2(-(landing.x - getX()), landing.z - getZ()));
+        setYRot(yaw);
+        yBodyRot = yaw;
+        yHeadRot = yaw;
+    }
+
+    void endLeap() {
+        leaping = false;
+    }
+
+    /**
+     * Gone under the sand: hidden (no shadow either), without collision, untouchable; {@link #travel} keeps it still (no
+     * gravity) while the burrow moves it. Nothing of this is saved, so a Layered unloaded under the sand comes back on it.
+     */
+    public void submerge() {
+        entityData.set(DATA_BURROWED, true);
+        setInvisible(true);
+        noPhysics = true;
+        setDeltaMovement(Vec3.ZERO);
+        getNavigation().stop();
+    }
+
+    /** Moves its feet to {@code feet} under the sand (see {@link LayeredBurrow#step}). */
+    void moveUnderground(Vec3 feet) {
+        setPos(feet);
+    }
+
+    /** Back up out of the sand (also when a burrow is broken off). */
+    public void emerge() {
+        if (!isBurrowed()) {
+            return;
+        }
+        entityData.set(DATA_BURROWED, false);
+        setInvisible(false);
+        noPhysics = false;
+    }
+
+    /** A cloud of dust and bone splinters on its way; moved every tick until it bursts. */
+    void spit(LayeredSpit cloud) {
+        spits.add(cloud);
+    }
+
+    private void tickSpits() {
+        if (!spits.isEmpty()) {
+            ServerLevel level = (ServerLevel) level();
+            spits.removeIf(cloud -> !cloud.tick(level, this));
+        }
     }
 
     @Override
@@ -625,7 +821,13 @@ public class TheLayered extends Nightmare {
         controllers.add(new AnimationController<>(this, LayeredAnimations.ACTION, 2, state -> PlayState.STOP)
                 .triggerableAnim(LayeredAnimations.GRAB, LayeredAnimations.GRAB_ANIM)
                 .triggerableAnim(LayeredAnimations.ROCKFALL, LayeredAnimations.ROCKFALL_ANIM)
-                .triggerableAnim(LayeredAnimations.RELEASE, LayeredAnimations.RELEASE_ANIM));
+                .triggerableAnim(LayeredAnimations.RELEASE, LayeredAnimations.RELEASE_ANIM)
+                .triggerableAnim(LayeredAnimations.POUNCE, LayeredAnimations.POUNCE_ANIM)
+                .triggerableAnim(LayeredAnimations.POUNCE_LAND, LayeredAnimations.POUNCE_LAND_ANIM)
+                .triggerableAnim(LayeredAnimations.BURROW, LayeredAnimations.BURROW_ANIM)
+                .triggerableAnim(LayeredAnimations.ERUPT, LayeredAnimations.ERUPT_ANIM)
+                .triggerableAnim(LayeredAnimations.SPIT, LayeredAnimations.SPIT_ANIM)
+                .triggerableAnim(LayeredAnimations.SNIFF, LayeredAnimations.SNIFF_ANIM));
     }
 
     private PlayState bodyAnimation(AnimationState<TheLayered> state) {
@@ -634,6 +836,9 @@ public class TheLayered extends Nightmare {
         }
         if (isFallen()) {
             return state.setAndContinue(LayeredAnimations.FALLEN);
+        }
+        if (isStaggered()) {
+            return state.setAndContinue(LayeredAnimations.STAGGER);
         }
         // Climbing gives no limb swing (that only counts horizontal steps), so on a wall any movement counts.
         boolean moving = state.isMoving() || (isOnWall() && position().distanceToSqr(xo, yo, zo) > 1.0E-4);

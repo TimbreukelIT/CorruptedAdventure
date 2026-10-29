@@ -41,7 +41,7 @@ public final class LayeredHeadPart extends PartEntity<TheLayered> {
 
     @Override
     public boolean isPickable() {
-        return true;
+        return !getParent().isBurrowed();
     }
 
     @Nullable
