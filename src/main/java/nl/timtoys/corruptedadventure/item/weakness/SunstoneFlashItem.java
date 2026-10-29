@@ -24,8 +24,8 @@ import java.util.List;
 
 /**
  * The sunstone flash (ring 2, the weakness of The Layered): a polished sunstone mirror that throws one bright flash in
- * the look direction. Everything living in the cone and in sight gets "dazzled" ({@code [weakness_items]}); The Layered
- * reacts to that on its own. The server does the flash; one flash costs one point of {@link #DURABILITY}, the cooldown
+ * the look direction. Everything living in the cone and in sight (glass and ice let the light through) gets "dazzled"
+ * ({@code [weakness_items]}); The Layered reacts to that on its own. The server does the flash; one flash costs one point of {@link #DURABILITY}, the cooldown
  * reaches the client by vanilla's packet.
  */
 public final class SunstoneFlashItem extends Item {

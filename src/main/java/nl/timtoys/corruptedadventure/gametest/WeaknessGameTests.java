@@ -15,15 +15,16 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.item.weakness.SunstoneFlashItem;
 import nl.timtoys.corruptedadventure.item.weakness.VolcaniteHornItem;
+import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import nl.timtoys.corruptedadventure.registry.ModMobEffects;
 
 /**
  * The weakness items on ordinary mobs (phase 4, stream I): the sunstone flash dazzles the husk it faces and not the one
- * behind; the volcanite horn stuns the husks round it, never a player, and the stun wears off. A dazzled or stunned
- * husk drops its target and takes no new one. Each test has its own batch: the flash and the horn reach further than
- * the 9 × 7 × 9 {@code gametest/hollow_arena} and would touch the mobs of a test beside it. Run like
- * {@link TierGatingGameTests}.
+ * behind, and a large mob (The Layered) where it is aimed at its body; the volcanite horn stuns the husks round it,
+ * never a player, and the stun wears off. A dazzled or stunned husk drops its target and takes no new one. Each test
+ * has its own batch: the flash and the horn reach further than the 9 × 7 × 9 {@code gametest/hollow_arena} and would
+ * touch the mobs of a test beside it. Run like {@link TierGatingGameTests}.
  */
 @GameTestHolder(CorruptedAdventure.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -55,6 +56,24 @@ public final class WeaknessGameTests {
             helper.assertValueEqual(flash.getDamageValue(), 1, "one flash, one point of durability");
             helper.assertValueEqual(flash.getMaxDamage(), SunstoneFlashItem.DURABILITY, "durability");
             helper.assertTrue(player.getCooldowns().isOnCooldown(ModItems.SUNSTONE_FLASH.get()), "the flash cools down");
+        } finally {
+            GameTestPlayers.remove(helper, player);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena", batch = "weakness_flash_layered")
+    public static void theSunstoneFlashDazzlesTheLayeredAimedAtItsBodyNotItsEyes(GameTestHelper helper) {
+        ServerPlayer player = playerAt(helper, 4.5, 2.5);
+        try {
+            // Its hitbox runs from z 4.25: 40 degrees down the look meets its front low on the body, while its eyes
+            // and its centre lie more than the 30 degree cone off it.
+            player.setXRot(40.0F);
+            Mob layered = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LAYERED.get(), 4.5F, 0.0F, 5.5F);
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.SUNSTONE_FLASH.get()));
+            player.getMainHandItem().use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+
+            helper.assertTrue(layered.hasEffect(ModMobEffects.DAZZLED), "The Layered is dazzled where the flash meets its body");
         } finally {
             GameTestPlayers.remove(helper, player);
         }

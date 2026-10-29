@@ -18,6 +18,9 @@ public final class WeakenedTargeting {
 
     public static void register(IEventBus gameBus) {
         gameBus.addListener(WeakenedTargeting::onChangeTarget);
+        // Rides along here so the two effects keep one entry point on the game bus.
+        gameBus.addListener(StunnedMobEffect::hold);
+        gameBus.addListener(StunnedMobEffect::applicable);
     }
 
     /** Whether {@code entity} can take no target now. */
