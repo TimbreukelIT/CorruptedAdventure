@@ -11,12 +11,13 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Optional;
 
 /**
- * Where a rift step comes out: behind the target, on ground, with room for the whole hitbox, dry and inside the world
+ * Where a rift step comes out: behind the target (or near a point, for a reaction), on ground, with room for the whole hitbox, dry and inside the world
  * border. Tries the straight spot first, then fans out sideways and nearer/farther, and a few blocks up and down.
  */
 final class RiftStepTarget {
     private static final int[] ANGLES = {0, 30, -30, 60, -60, 90, -90};
     private static final double[] DISTANCE_STEPS = {0.0, 1.0, -1.0};
+    private static final double[] NEAR_DISTANCES = {0.0, 2.0, 4.0};
     private static final int UP = 3;
     private static final int DOWN = 4;
 
@@ -33,6 +34,21 @@ final class RiftStepTarget {
                 double x = target.getX() + Mth.sin(rad) * d;
                 double z = target.getZ() - Mth.cos(rad) * d;
                 Optional<Vec3> spot = standable(level, hollow, x, Mth.floor(target.getY()), z);
+                if (spot.isPresent()) {
+                    return spot;
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** Near {@code point}: the point itself, then rings of 2 and 4 blocks round it. */
+    static Optional<Vec3> near(ServerLevel level, Entity hollow, Vec3 point) {
+        for (double d : NEAR_DISTANCES) {
+            for (int angle = 0; angle < 360; angle += d == 0.0 ? 360 : 45) {
+                float rad = angle * Mth.DEG_TO_RAD;
+                Optional<Vec3> spot = standable(level, hollow, point.x + Mth.cos(rad) * d, Mth.floor(point.y),
+                        point.z + Mth.sin(rad) * d);
                 if (spot.isPresent()) {
                     return spot;
                 }

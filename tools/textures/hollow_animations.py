@@ -5,7 +5,10 @@
 Writes src/main/resources/assets/corruptedadventure/animations/entity/the_hollow.animation.json. Names and lengths match
 entity/hollow/HollowAnimations and the server's timings: the slam lands at 0.6 s (slamWindupTicks 12), the rift step goes
 at 1.0 s (riftStepWarningTicks 20), the swap at 0.75 s (swapWarningTicks 15), death and the emerging from the arrival
-rift last 3.0 s (DEATH_TICKS, EMERGE_TICKS 60).
+rift last 3.0 s (DEATH_TICKS, EMERGE_TICKS 60). The extra attacks (life round): the ground slam lands at 1.25 s
+(groundSlamWindupTicks 25), the rift rain's hand is in the ground at 1.0 s (riftRainWindupTicks 20) and comes out when the
+claws are up (+ riftRainWarningTicks 25), the sweep goes through at 0.75 s (sweepWindupTicks 15); each recovers in 0.75 s
+(RECOVERY_TICKS 15 in HollowExtraAttackGoal). The stagger is a loop the body controller plays while it staggers.
 
 Bedrock conventions (checked in Blockbench): a negative x rotation swings a limb forward (toward the face, -z); a positive x
 rotation tips the top of a bone forward. The root bone pivots on the heel line, so a negative x tips the whole body
@@ -143,6 +146,113 @@ def swap():
     }}
 
 
+def ground_slam():
+    """Both arms go up over its head (the giant one and the withered one together) while it rises and arches back, then
+    they come down on the ground in front of it at 1.25 s and the whole body drops with them."""
+    return {"animation_length": 2.0, "bones": {
+        "root": channel(position=[(0, (0, 0, 0)), (1.0, (0, 1, 0)), (1.2, (0, 1, 0)), (1.28, (0, -3, 0)), (1.6, (0, -2, 0)),
+                                  (2.0, (0, 0, 0))]),
+        "body": channel(rotation=[(0, (0, 0, 0)), (1.0, (-18, 0, 2)), (1.2, (-20, 0, 2)), (1.3, (26, 0, -2)), (1.6, (20, 0, 0)),
+                                  (2.0, (0, 0, 0))]),
+        "head": channel(rotation=[(0, (0, 0, 0)), (1.0, (-10, 0, -8)), (1.3, (12, 0, 16)), (1.4, (8, 0, 20)), (2.0, (0, 0, 0))]),
+        "arm_giant": channel(rotation=[(0, (0, 0, 0)), (0.6, (-120, 0, -10)), (1.05, (-165, 0, -16)), (1.2, (-170, 0, -16)),
+                                       (1.28, (8, 0, 2)), (1.6, (6, 0, 2)), (2.0, (0, 0, 0))]),
+        "arm_giant_lower": channel(rotation=[(0, (0, 0, 0)), (1.05, (-25, 0, 0)), (1.28, (0, 0, 0)), (2.0, (0, 0, 0))]),
+        "hand_giant": channel(rotation=[(0, (0, 0, 0)), (1.05, (-30, 0, 0)), (1.28, (25, 0, 0)), (1.7, (10, 0, 0)),
+                                        (2.0, (0, 0, 0))]),
+        "arm_thin": channel(rotation=[(0, (0, 0, 0)), (0.6, (-110, 0, 6)), (1.05, (-155, 0, 10)), (1.2, (-158, 0, 10)),
+                                      (1.28, (4, 0, 2)), (1.6, (4, 0, 2)), (2.0, (0, 0, 0))]),
+        "arm_thin_mid": channel(rotation=[(0, (0, 0, 0)), (1.05, (-20, 0, 0)), (1.28, (0, 0, 0)), (2.0, (0, 0, 0))]),
+        "leg_left": channel(rotation=[(0, (0, 0, 0)), (1.0, (-6, 0, 0)), (1.28, (-14, 0, 0)), (1.6, (-10, 0, 0)), (2.0, (0, 0, 0))]),
+        "leg_left_lower": channel(rotation=[(0, (0, 0, 0)), (1.28, (18, 0, 0)), (1.6, (12, 0, 0)), (2.0, (0, 0, 0))]),
+        "leg_right": channel(rotation=[(0, (0, 0, 0)), (1.0, (6, 0, 0)), (1.28, (-8, 0, 0)), (2.0, (0, 0, 0))]),
+        "leg_right_lower": channel(rotation=[(0, (0, 0, 0)), (1.28, (14, 0, 0)), (2.0, (0, 0, 0))]),
+        "chest_void": channel(scale=[(0, (1, 1, 1)), (1.2, (1.25, 1.25, 1)), (1.3, (0.9, 0.9, 1)), (2.0, (1, 1, 1))]),
+        "glitch_fx": channel(scale=[(0, (1, 1, 1)), (1.2, (1.8, 1.8, 1.8)), (1.3, (2.2, 2.2, 2.2)), (1.6, (1, 1, 1))]),
+    }}
+
+
+def rift_rain():
+    """The giant hand claws into the ground in front of it at 1.0 s and stays there, twitching, while the cracks open
+    round its target; when the claws come up (2.25 s) it rips the hand out and straightens."""
+    hold = [(1.0, (34, 0, 0)), (1.4, (32, 0, 1)), (1.45, (35, 0, -1)), (1.5, (32, 0, 1)), (1.9, (33, 0, 0)),
+            (1.95, (30, 0, 2)), (2.0, (33, 0, 0)), (2.25, (32, 0, 0))]
+    return {"animation_length": 3.0, "bones": {
+        "root": channel(position=[(0, (0, 0, 0)), (0.6, (0, -3, 0)), (1.0, (0, -6, 0)), (2.25, (0, -6, 0)),
+                                  (2.35, (0, -2, 0)), (3.0, (0, 0, 0))]),
+        "body": channel(rotation=[(0, (0, 0, 0)), (0.8, (30, 0, 0))] + hold + [(2.35, (10, 0, 0)), (3.0, (0, 0, 0))]),
+        "head": channel(rotation=[(0, (0, 0, 0)), (1.0, (15, 0, 18)), (1.6, (12, 0, 22)), (1.65, (18, 0, 8)),
+                                  (1.75, (12, 0, 20)), (2.35, (-8, 0, 10)), (3.0, (0, 0, 0))]),
+        "arm_giant": channel(rotation=[(0, (0, 0, 0)), (0.5, (-70, 0, -8)), (0.85, (-30, 0, -4)), (1.0, (-22, 0, -4)),
+                                       (1.7, (-22, 0, -4)), (1.75, (-25, 0, -2)), (1.8, (-22, 0, -4)), (2.25, (-22, 0, -4)),
+                                       (2.35, (-80, 0, -10)), (3.0, (0, 0, 0))]),
+        "arm_giant_lower": channel(rotation=[(0, (0, 0, 0)), (0.5, (-20, 0, 0)), (1.0, (6, 0, 0)), (2.25, (6, 0, 0)),
+                                             (2.35, (-15, 0, 0)), (3.0, (0, 0, 0))]),
+        "hand_giant": channel(rotation=[(0, (0, 0, 0)), (0.85, (-35, 0, 0)), (1.0, (20, 0, 0)), (2.25, (24, 0, 0)),
+                                        (2.35, (-40, 0, 0)), (3.0, (0, 0, 0))]),
+        "arm_thin": channel(rotation=[(0, (0, 0, 0)), (1.0, (-30, 0, 10)), (2.25, (-30, 0, 10)), (2.4, (-10, 0, 4)),
+                                      (3.0, (0, 0, 0))]),
+        "leg_left": channel(rotation=[(0, (0, 0, 0)), (1.0, (-20, 0, 0)), (2.25, (-20, 0, 0)), (3.0, (0, 0, 0))]),
+        "leg_left_lower": channel(rotation=[(0, (0, 0, 0)), (1.0, (35, 0, 0)), (2.25, (35, 0, 0)), (3.0, (0, 0, 0))]),
+        "leg_right": channel(rotation=[(0, (0, 0, 0)), (1.0, (-14, 0, 0)), (2.25, (-14, 0, 0)), (3.0, (0, 0, 0))]),
+        "leg_right_lower": channel(rotation=[(0, (0, 0, 0)), (1.0, (28, 0, 0)), (2.25, (28, 0, 0)), (3.0, (0, 0, 0))]),
+        # The void pours out of its chest into the ground while the hand is in it.
+        "chest_void": channel(scale=[(0, (1, 1, 1)), (1.0, (1.15, 1.15, 1)), (2.2, (1.3, 1.3, 1)), (2.35, (0.9, 0.9, 1)),
+                                     (3.0, (1, 1, 1))]),
+        "glitch_fx": channel(scale=[(0, (1, 1, 1)), (1.0, (1.6, 1.6, 1.6)), (2.25, (1.9, 1.9, 1.9)), (2.4, (1, 1, 1))],
+                             position=[(0, (0, 0, 0)), (1.2, (0, 0, 0)), (1.25, (1, -1, 0)), (1.3, (0, 0, 0)),
+                                       (1.85, (0, 0, 0)), (1.9, (-1, 1, 1)), (1.95, (0, 0, 0)), (3.0, (0, 0, 0))]),
+    }}
+
+
+def sweep():
+    """The giant arm is drawn back to its side and behind it, low, knuckles on the ground (0.55 s), tenses, then sweeps
+    across its whole front at 0.75 s with the body turning into it, and follows through to the other side."""
+    return {"animation_length": 1.5, "bones": {
+        "root": channel(rotation=[(0, (0, 0, 0)), (0.55, (0, 15, 0)), (0.7, (0, 17, 0)), (0.85, (0, -18, 0)),
+                                  (1.0, (0, -22, 0)), (1.5, (0, 0, 0))],
+                        position=[(0, (0, 0, 0)), (0.55, (0, -1.5, 0)), (0.85, (0, -2, 0)), (1.5, (0, 0, 0))]),
+        "body": channel(rotation=[(0, (0, 0, 0)), (0.55, (-6, 0, 4)), (0.7, (-8, 0, 5)), (0.85, (14, 0, -4)),
+                                  (1.0, (12, 0, -6)), (1.5, (0, 0, 0))]),
+        "head": channel(rotation=[(0, (0, 0, 0)), (0.55, (0, 0, -10)), (0.85, (6, 0, 18)), (1.0, (4, 0, 22)),
+                                  (1.5, (0, 0, 0))]),
+        "arm_giant": channel(rotation=[(0, (0, 0, 0)), (0.55, (-40, 110, 0)), (0.7, (-44, 116, 0)), (0.78, (-42, 40, 0)),
+                                       (0.85, (-40, -25, 0)), (1.0, (-34, -60, 0)), (1.5, (0, 0, 0))]),
+        "arm_giant_lower": channel(rotation=[(0, (0, 0, 0)), (0.55, (-15, 0, 0)), (0.85, (0, 0, 0)), (1.5, (0, 0, 0))]),
+        "hand_giant": channel(rotation=[(0, (0, 0, 0)), (0.55, (-20, 0, 0)), (0.85, (15, 0, 0)), (1.5, (0, 0, 0))]),
+        "arm_thin": channel(rotation=[(0, (0, 0, 0)), (0.55, (-20, 0, 10)), (0.85, (25, 0, -5)), (1.5, (0, 0, 0))]),
+        "leg_left": channel(rotation=[(0, (0, 0, 0)), (0.55, (10, 0, 0)), (0.85, (-12, 0, 0)), (1.5, (0, 0, 0))]),
+        "leg_right": channel(rotation=[(0, (0, 0, 0)), (0.55, (-10, 0, 0)), (0.85, (12, 0, 0)), (1.5, (0, 0, 0))]),
+        "glitch_fx": channel(scale=[(0, (1, 1, 1)), (0.7, (1.3, 1.3, 1.3)), (0.85, (2.0, 2.0, 2.0)), (1.1, (1, 1, 1))]),
+    }}
+
+
+def stagger():
+    """Wankelen (life round): it reels back on its heels, the giant arm hangs dead and drags, the knees buckle, the
+    broken head swings and the void in its chest flickers; a loop of 1.0 s for as long as it staggers."""
+    return {"loop": True, "animation_length": 1.0, "bones": {
+        "root": channel(rotation=[(0, (-6, 0, 3)), (0.3, (-10, 0, -2)), (0.55, (-4, 0, 4)), (0.8, (-9, 0, -1)), (1.0, (-6, 0, 3))],
+                        position=[(0, (0, -2, 0)), (0.3, (0, -3, 1)), (0.55, (0, -1.5, 0)), (0.8, (0, -3, 1)), (1.0, (0, -2, 0))]),
+        "body": channel(rotation=[(0, (-8, 0, 4)), (0.25, (-14, 0, -3)), (0.5, (-6, 0, 6)), (0.75, (-12, 0, -2)),
+                                  (1.0, (-8, 0, 4))]),
+        "head": channel(rotation=[(0, (-10, 0, 20)), (0.2, (8, 0, -6)), (0.25, (-12, 0, 26)), (0.6, (4, 0, 8)),
+                                  (0.65, (-14, 0, 24)), (1.0, (-10, 0, 20))]),
+        "arm_giant": channel(rotation=[(0, (14, 0, -6)), (0.4, (6, 0, -12)), (0.7, (16, 0, -4)), (1.0, (14, 0, -6))]),
+        "hand_giant": channel(rotation=[(0, (20, 0, 0)), (0.5, (28, 0, 0)), (1.0, (20, 0, 0))]),
+        "arm_thin": channel(rotation=[(0, (-40, 0, 25)), (0.3, (-55, 0, 35)), (0.6, (-35, 0, 20)), (1.0, (-40, 0, 25))]),
+        "arm_thin_lower": channel(rotation=[(0, (-20, 0, 0)), (0.5, (-35, 0, 0)), (1.0, (-20, 0, 0))]),
+        "leg_left": channel(rotation=[(0, (-14, 0, 0)), (0.3, (-20, 0, 0)), (0.6, (-10, 0, 0)), (1.0, (-14, 0, 0))]),
+        "leg_left_lower": channel(rotation=[(0, (26, 0, 0)), (0.3, (34, 0, 0)), (0.6, (20, 0, 0)), (1.0, (26, 0, 0))]),
+        "leg_right": channel(rotation=[(0, (-8, 0, 0)), (0.5, (-18, 0, 0)), (1.0, (-8, 0, 0))]),
+        "leg_right_lower": channel(rotation=[(0, (16, 0, 0)), (0.5, (30, 0, 0)), (1.0, (16, 0, 0))]),
+        "chest_void": channel(scale=[(0, (1, 1, 1)), (0.1, (0.6, 0.6, 1)), (0.15, (1.2, 1.2, 1)), (0.45, (1, 1, 1)),
+                                     (0.5, (0.5, 0.5, 1)), (0.55, (1.1, 1.1, 1)), (1.0, (1, 1, 1))]),
+        "glitch_fx": channel(position=[(0, (0, 0, 0)), (0.2, (2, -1, 0)), (0.25, (0, 0, 0)), (0.7, (-2, 1, 1)), (0.75, (0, 0, 0)),
+                                       (1.0, (0, 0, 0))],
+                             scale=[(0, (1.4, 1.4, 1.4)), (0.5, (1.9, 1.9, 1.9)), (1.0, (1.4, 1.4, 1.4))]),
+    }}
+
+
 def emerge():
     """The arrival (EMERGE_TICKS 60): the giant hand comes through the rift first and grips its edge, then The Hollow
     hauls itself out from behind the rift's plane (the root starts ~2 blocks back, hidden by the void) and straightens."""
@@ -199,6 +309,10 @@ def main():
         "animation.the_hollow.swap": swap(),
         "animation.the_hollow.death": death(),
         "animation.the_hollow.emerge": emerge(),
+        "animation.the_hollow.ground_slam": ground_slam(),
+        "animation.the_hollow.rift_rain": rift_rain(),
+        "animation.the_hollow.sweep": sweep(),
+        "animation.the_hollow.stagger": stagger(),
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:

@@ -1145,3 +1145,5 @@ Eén regel per beslissing: datum · categorie · beslissing · reden. Nieuwste o
 | 2026-10-29 | mobs | Herrijzende: duikvlucht komt naast de korte duik (hoog, krijs, 1,5 s gloeien, vaste lijn, vuurspoor) | Gebruiker (3a): meer variatie in de vlucht |
 | 2026-10-29 | mobs | Herrijzende: vuur als eigen tijdelijke tegels (geen vuurblokken, ~6 s, max. in config, uit te zetten) | Gebruiker: wereld brandt nooit blijvend af |
 | 2026-10-29 | mobs | Herrijzende: zwakke plek is de kop (melee in het grondgevecht, pijlen in de lucht); wankelen in de lucht = ~5 blokken tuimelend zakken, neerstorten blijft van de hoorn | Gebruiker (4a): bestaande hitbox, beloont melee |
+| 2026-10-29 | mobs | De Holle: scheurregen alleen rond het doelwit; void-klauwen als stenen/gecorrumpeerde handen met knokkels en haakklauwen (geen glazen kristallen); schokgolf en veegslag akkoord | Gebruiker na de L1-preview |
+| 2026-10-29 | textures | De Holle: void-klauw als stenen, door corruptie aangevreten hand (GeckoLib, knokkels, haakklauwen, emissive alleen in naden) goedgekeurd | Gebruiker na de tweede klauw-preview |

@@ -20,7 +20,8 @@ import nl.timtoys.corruptedadventure.registry.ModItems;
 
 /**
  * The Hollow (phase 4 step 1): its max health per player in the fight with the health ratio kept, its invulnerability
- * out of phase, and the soul crystal pin. The Hollow has no free will here, so it never attacks the mock players; the
+ * out of phase, and the soul crystal pin; from the life round: the soul crystal hit is its weak spot (it staggers) and a
+ * stagger ends a phase. The Hollow has no free will here, so it never attacks the mock players; the
  * fight bookkeeping (health scaling, the pin's countdown) runs without AI. The scaling test has its own batch: a player
  * of a test running beside it would count in its fight. In the empty 9 × 7 × 9 {@code gametest/hollow_arena}. Run like
  * {@link TierGatingGameTests}.
@@ -114,6 +115,28 @@ public final class HollowGameTests {
         helper.assertTrue(hollow.isPinned(), "pinned");
         helper.assertValueEqual(player.getMainHandItem().getCount(), 3, "crystals in creative");
         GameTestPlayers.remove(helper, player);
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena")
+    public static void aSoulCrystalHitIsItsWeakSpotAndStaggersIt(GameTestHelper helper) {
+        TheHollow hollow = helper.spawnWithNoFreeWill(ModEntityTypes.THE_HOLLOW.get(), MIDDLE);
+        ServerPlayer player = playerAt(helper, 1.5, 1.5);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.SOUL_CRYSTAL.get(), 3));
+        hollow.hurt(playerAttack(helper, player), 2.0F);
+        helper.assertTrue(hollow.isPinned(), "pinned");
+        helper.assertTrue(hollow.isStaggered(), "and staggering");
+        GameTestPlayers.remove(helper, player);
+        helper.succeed();
+    }
+
+    @GameTest(template = "gametest/hollow_arena")
+    public static void aStaggerEndsItsPhaseAndItCannotPhaseWhileStaggering(GameTestHelper helper) {
+        TheHollow hollow = helper.spawnWithNoFreeWill(ModEntityTypes.THE_HOLLOW.get(), MIDDLE);
+        helper.assertTrue(hollow.startPhase(200), "it goes out of phase");
+        helper.assertTrue(hollow.stagger(), "it staggers");
+        helper.assertFalse(hollow.isPhased(), "the stagger pulled it back into phase");
+        helper.assertFalse(hollow.startPhase(100), "no phasing while staggering");
         helper.succeed();
     }
 

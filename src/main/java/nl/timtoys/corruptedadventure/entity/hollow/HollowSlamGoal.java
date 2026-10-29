@@ -10,7 +10,8 @@ import java.util.EnumSet;
 /**
  * Chases the target and slams it with the giant arm. Unlike vanilla's melee goal the slam has a windup (the arm goes up,
  * then comes down) so a player can step out of reach; the hit only lands if the target is still in reach then. No new
- * slam while out of phase, and a windup that ends while out of phase hits nothing.
+ * slam while out of phase, and a windup that ends while out of phase hits nothing. A slam waits for the gate of the
+ * shared reactions (no slam while staggering, resting or searching).
  */
 final class HollowSlamGoal extends Goal {
     private static final int REPATH_TICKS = 10;
@@ -74,7 +75,9 @@ final class HollowSlamGoal extends Goal {
             }
             return;
         }
-        if (hollow.isWithinMeleeAttackRange(target) && hollow.tickCount >= nextSlamTick && !hollow.isPhased()) {
+        if (hollow.isWithinMeleeAttackRange(target) && hollow.tickCount >= nextSlamTick && !hollow.isPhased()
+                && hollow.mayStartAttack()) {
+            hollow.countAttack();
             hollow.getNavigation().stop();
             windup = ServerConfig.HOLLOW.slamWindupTicks.get();
             hollow.triggerAnim(HollowAnimations.ACTION, HollowAnimations.SLAM);

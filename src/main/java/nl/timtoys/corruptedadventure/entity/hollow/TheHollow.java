@@ -15,8 +15,6 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -24,7 +22,12 @@ import net.minecraft.world.phys.AABB;
 import nl.timtoys.corruptedadventure.config.HollowConfig;
 import nl.timtoys.corruptedadventure.config.NightmareConfig;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
+import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmarePaceGoal;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmarePacing;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmareSearchGoal;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmareTargetGoal;
 import nl.timtoys.corruptedadventure.registry.ModItems;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
@@ -34,7 +37,10 @@ import software.bernie.geckolib.animation.PlayState;
 /**
  * De Holle, the ring 1 Nightmare (phase 4 step 1: body and fight, summoned with {@code /summon}). A soulless stone
  * titan: slams with its giant arm, rift-steps behind its target, goes out of phase now and then (transparent and
- * invulnerable), swaps two players. A hit with a soul crystal pins it in phase. Boss bar, health scaling, retreat and
+ * invulnerable), swaps two players. Between those it uses its extra attacks ({@link HollowExtraAttackGoal}: ground
+ * slam, rift rain, sweep). The shared reactions of {@link Nightmare} (life round): every attack waits for the gate and
+ * counts toward the pace; a stagger breaks off the running attack and ends a phase, and a soul crystal hit is its weak
+ * spot. In a rest window or a search it walks, or now and then rift-steps there ({@link HollowRiftStepGoal#stepTo}). A hit with a soul crystal pins it in phase. Boss bar, health scaling, retreat and
  * the rest of the shared rules come from {@link Nightmare}. The client renders the synced out-of-phase state and the
  * triggered animations. The rift entity, roaming and the return come in steps 2 and 3.
  */
@@ -50,6 +56,8 @@ public class TheHollow extends Nightmare {
     private int emergeTicks;
     /** Waiting, unseen and untouchable, inside a rift that is still opening (the director's arrival). */
     private int hiddenTicks;
+    private HollowRiftStepGoal riftStep;
+    private HollowExtraAttackGoal extraAttacks;
 
     public TheHollow(EntityType<? extends TheHollow> type, Level level) {
         super(type, level, BossEvent.BossBarColor.PURPLE);
@@ -76,14 +84,24 @@ public class TheHollow extends Nightmare {
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(0, new HollowEmergeGoal(this));
         goalSelector.addGoal(1, new HollowSwapGoal(this));
-        goalSelector.addGoal(2, new HollowRiftStepGoal(this));
+        // Above the rest window and the search: a reaction's rift step takes over from walking there.
+        riftStep = new HollowRiftStepGoal(this);
+        goalSelector.addGoal(1, riftStep);
+        goalSelector.addGoal(2, new NightmareSearchGoal(this));
+        goalSelector.addGoal(2, new NightmarePaceGoal(this));
+        extraAttacks = new HollowExtraAttackGoal(this);
+        goalSelector.addGoal(2, extraAttacks);
         goalSelector.addGoal(3, new HollowSlamGoal(this));
         goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.8));
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 16.0F));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-        targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        // It is a dimension shifter: it finds you through walls.
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
+        // It is a dimension shifter: it finds you through walls (the shared target goal does).
+        targetSelector.addGoal(1, new NightmareTargetGoal(this));
+    }
+
+    /** Its extra attacks (ground slam, rift rain, sweep); GameTests drive the goal by hand. */
+    public HollowExtraAttackGoal extraAttacks() {
+        return extraAttacks;
     }
 
     public boolean isPhased() {
@@ -120,9 +138,9 @@ public class TheHollow extends Nightmare {
         return hiddenTicks > 0 || isEmerging();
     }
 
-    /** Out of phase for {@code ticks}: transparent and invulnerable. Refused while pinned. */
+    /** Out of phase for {@code ticks}: transparent and invulnerable. Refused while pinned or staggering. */
     public boolean startPhase(int ticks) {
-        if (isPinned() || isPhased()) {
+        if (isPinned() || isPhased() || isStaggered()) {
             return false;
         }
         phaseTicks = ticks;
@@ -163,6 +181,8 @@ public class TheHollow extends Nightmare {
                 if (!player.getAbilities().instabuild) {
                     hand.shrink(1);
                 }
+                // Its weak spot: pulled fully here, it reels.
+                hitWeakSpot();
             }
         }
         if (isPhased() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
@@ -207,8 +227,53 @@ public class TheHollow extends Nightmare {
         } else if (nextPhaseTick < 0) {
             // The first spell comes an interval after the fight starts, not at once.
             nextPhaseTick = tickCount + ServerConfig.HOLLOW.phaseIntervalTicks(random.nextInt(1 << 16));
-        } else if (tickCount >= nextPhaseTick && !isPinned()) {
+        } else if (tickCount >= nextPhaseTick && !isPinned() && !isStaggered()) {
             startPhase(ServerConfig.HOLLOW.phaseDurationTicks(random.nextInt(1 << 16)));
+        }
+    }
+
+    @Override
+    protected boolean canStagger() {
+        return !isArriving();
+    }
+
+    /** The running goals are already stopped: end a phase (the open window) and cut the attack's animation. */
+    @Override
+    protected void onStaggered() {
+        endPhase();
+        stopTriggeredAnim(HollowAnimations.ACTION, null);
+    }
+
+    @Override
+    protected void staggerEffects(ServerLevel level) {
+        super.staggerEffects(level);
+        HollowEffects.stagger(level, this);
+    }
+
+    /** A rest window that backs off: now and then it rift-steps away instead of walking. */
+    @Override
+    protected void onRestStart(NightmarePacing.Style style) {
+        Vec3 point = restPoint();
+        // Not right after a rift step that ended the burst: it would come out behind you and vanish at once.
+        if (style == NightmarePacing.Style.BACK_OFF && point != null && !riftStep.isStepping()
+                && random.nextDouble() < ServerConfig.HOLLOW.restRiftStepChance.get()) {
+            riftStep.stepTo(point);
+        }
+    }
+
+    /** It lost its target: now and then it rift-steps straight to the last place it knew. */
+    @Override
+    protected void onSearchStart() {
+        Vec3 point = lastKnownPosition();
+        if (point != null && random.nextDouble() < ServerConfig.HOLLOW.searchRiftStepChance.get()) {
+            riftStep.stepTo(point);
+        }
+    }
+
+    @Override
+    protected void onSniff() {
+        if (level() instanceof ServerLevel serverLevel) {
+            HollowEffects.sniff(serverLevel, this);
         }
     }
 
@@ -246,7 +311,10 @@ public class TheHollow extends Nightmare {
         controllers.add(new AnimationController<>(this, HollowAnimations.ACTION, 2, state -> PlayState.STOP)
                 .triggerableAnim(HollowAnimations.SLAM, HollowAnimations.SLAM_ANIM)
                 .triggerableAnim(HollowAnimations.RIFT_STEP, HollowAnimations.RIFT_STEP_ANIM)
-                .triggerableAnim(HollowAnimations.SWAP, HollowAnimations.SWAP_ANIM));
+                .triggerableAnim(HollowAnimations.SWAP, HollowAnimations.SWAP_ANIM)
+                .triggerableAnim(HollowAnimations.GROUND_SLAM, HollowAnimations.GROUND_SLAM_ANIM)
+                .triggerableAnim(HollowAnimations.RIFT_RAIN, HollowAnimations.RIFT_RAIN_ANIM)
+                .triggerableAnim(HollowAnimations.SWEEP, HollowAnimations.SWEEP_ANIM));
     }
 
     private PlayState bodyAnimation(AnimationState<TheHollow> state) {
@@ -255,6 +323,9 @@ public class TheHollow extends Nightmare {
         }
         if (isEmerging()) {
             return state.setAndContinue(HollowAnimations.EMERGE_ANIM);
+        }
+        if (isStaggered()) {
+            return state.setAndContinue(HollowAnimations.STAGGER);
         }
         if (isPhased()) {
             return state.setAndContinue(HollowAnimations.PHASE);

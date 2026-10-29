@@ -4,7 +4,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 
 /**
  * The Hollow's animations ({@code animations/entity/the_hollow.animation.json}). The body controller picks idle, walk,
- * the out-of-phase loop or death from the synced state; the server triggers the attacks on the action controller.
+ * the out-of-phase loop, the stagger or death from the synced state; the server triggers the attacks on the action controller.
  */
 public final class HollowAnimations {
     public static final String BODY = "body";
@@ -13,14 +13,21 @@ public final class HollowAnimations {
     public static final String RIFT_STEP = "rift_step";
     public static final String SWAP = "swap";
     public static final String EMERGE = "emerge";
+    public static final String GROUND_SLAM = "ground_slam";
+    public static final String RIFT_RAIN = "rift_rain";
+    public static final String SWEEP = "sweep";
 
     static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.the_hollow.idle");
     static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.the_hollow.walk");
     static final RawAnimation PHASE = RawAnimation.begin().thenLoop("animation.the_hollow.phase");
+    static final RawAnimation STAGGER = RawAnimation.begin().thenLoop("animation.the_hollow.stagger");
     static final RawAnimation DEATH = RawAnimation.begin().thenPlayAndHold("animation.the_hollow.death");
     static final RawAnimation SLAM_ANIM = RawAnimation.begin().thenPlay("animation.the_hollow.slam");
     static final RawAnimation RIFT_STEP_ANIM = RawAnimation.begin().thenPlay("animation.the_hollow.rift_step");
     static final RawAnimation SWAP_ANIM = RawAnimation.begin().thenPlay("animation.the_hollow.swap");
+    static final RawAnimation GROUND_SLAM_ANIM = RawAnimation.begin().thenPlay("animation.the_hollow.ground_slam");
+    static final RawAnimation RIFT_RAIN_ANIM = RawAnimation.begin().thenPlay("animation.the_hollow.rift_rain");
+    static final RawAnimation SWEEP_ANIM = RawAnimation.begin().thenPlay("animation.the_hollow.sweep");
     static final RawAnimation EMERGE_ANIM = RawAnimation.begin().thenPlay("animation.the_hollow.emerge");
 
     /** Ticks of the death animation: it falls backwards, then the body is removed. */

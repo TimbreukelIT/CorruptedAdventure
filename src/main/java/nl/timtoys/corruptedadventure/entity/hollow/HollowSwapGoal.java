@@ -32,7 +32,7 @@ final class HollowSwapGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (hollow.tickCount < nextSwapTick || hollow.getTarget() == null) {
+        if (hollow.tickCount < nextSwapTick || hollow.getTarget() == null || !hollow.mayStartAttack()) {
             return false;
         }
         List<Player> fighters = hollow.fighters();
@@ -66,6 +66,7 @@ final class HollowSwapGoal extends Goal {
     public void start() {
         // At least one tick, so tick() always gets to the swap (the config's minimum is 1 too).
         warning = Math.max(1, ServerConfig.HOLLOW.swapWarningTicks.get());
+        hollow.countAttack();
         hollow.getNavigation().stop();
         hollow.triggerAnim(HollowAnimations.ACTION, HollowAnimations.SWAP);
         ServerLevel level = (ServerLevel) hollow.level();

@@ -90,6 +90,9 @@ public final class HollowRiftGameTests {
         Nightmare appeared = arrival.appear(helper.getLevel(), ModEntityTypes.THE_HOLLOW.get(), player, place, 1.0F);
         helper.assertTrue(appeared instanceof TheHollow, "The Hollow appears");
         TheHollow hollow = (TheHollow) appeared;
+        // The arrival runs without AI. With it, once through it fights the mock player, and a rift step of its own (its
+        // cooldown is drawn at random) opens a new rift before the check: the test failed now and then.
+        hollow.setNoAi(true);
         helper.assertTrue(hollow.isInvisible() && hollow.isArriving(), "it waits unseen in the rift");
         int emerging = HollowRift.ticksUntilEmerging();
         helper.startSequence()
