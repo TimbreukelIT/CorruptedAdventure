@@ -1,7 +1,7 @@
 # Fase 4 — voorlopige keuzes (teststop met de gebruiker)
 
 Ontdubbeld uit de "Voorlopig"-secties van `H1.md`, `D.md`, `I.md`, `R2.md`, `R3.md`, `R4.md` en `R5.md` (INT,
-2026-10-28; R2 op 2026-10-29) en van de leven-ronde `L0.md`, `L2.md`, `L3.md`, `L4.md`, `L5.md` (2026-10-29; L1 volgt). Wat al in het
+2026-10-28; R2 op 2026-10-29) en van de leven-ronde `L0.md`–`L5.md` (2026-10-29). Wat al in het
 design-doc of de beslissingenlog staat, staat hier niet. Per punt: **ok** of **anders, en hoe**. Alle getallen staan in de serverconfig
 (`[nightmares.<naam>]`, `[nightmares.director]`, `[weakness_items]`).
 
@@ -187,3 +187,35 @@ design-doc of de beslissingenlog staat, staat hier niet. Per punt: **ok** of **a
 95. Grondgevecht: landen met kans 0,4 na een reeks aanvallen in de lucht, uiterlijk na 40–60 s vlucht; 15 s op de grond,
    loopsnelheid 0,8 × `movementSpeed`; stamp 8 schade in 5 blokken + 0,5 opgooien, pik 9 (windup 14 ticks). Een
    grondaanval die afbreekt (verstijven) komt later niet alsnog.
+
+## Leven-ronde — De Holle (L1)
+96. Aanvalskeuze: elke 6–10 s één extra aanval (naast slaan, verspringen en wisselen, met hun eigen cooldowns), gekozen op
+   afstand: veegslag tot hitbox + 4,5 blok, grondslag tot 7 blok (of als ≥ 2 vechters binnen de golf staan), scheurregen
+   van 5 tot 24 blok; willekeurig onder wat past, nooit twee keer dezelfde als er een andere past; de eerste na een
+   halve cooldown. Hij staat stil tijdens een aanval; uit fase start hij er geen.
+97. Grondslag: 25 ticks windup (beide armen omhoog, void-motes, warden-lading), dan een ring die 0,45 blok/tick groeit tot
+   11 blok; 8 schade + 0,6 omhoog en 0,5 weg; alleen wie op de grond staat binnen ±1 blok van zijn voethoogte (een richel
+   of kuil ontwijkt hem). Raakt iedereen één keer; uit fase op het moment van de klap: geen golf.
+98. Scheurregen: 20 ticks windup (hand de grond in), dan 7 klauwen: één onder het doelwit, zes in een ring van ~3 blok,
+   elk 2 ticks later; 25 ticks scheurtjes als waarschuwing, dan 6 schade + kleine worp omhoog. De klauwen bijten ook als
+   hij intussen uit fase gaat.
+99. Veegslag: 15 ticks windup (arm naar achter, slijpsteen-geluid), richting vast bij de start; boog van 150° tot hitbox +
+   4,5 blok, −1 tot +3,5 blok hoogte; 7 schade, 1,6 weg + 0,35 omhoog.
+100. Schade × `strength()`; zonder eigenaar (`/summon` van golf of klauw) gewone magic-schade. Nightmares, creative en
+   spectators worden nooit geraakt, andere mobs wel. Geluiden: vanilla-placeholders.
+101. Wankelen: de zielkristal-slag is de zwakke plek (pint en laat hem wankelen; de wankel-cooldown van L0 geldt). Wankelen
+   beëindigt een uit-fase en tijdens het wankelen begint er geen. Animatie: achterover op de hielen, reuzenarm slap,
+   knieën knikken, void in de borst flikkert; geluid deepslate-breuk + zielvlammetjes.
+102. Rust: 50 % een scheurstap weg naar het rustpunt, anders lopen; cirkelen loopt altijd. Zoeken: 50 % een scheurstap naar
+   de laatst bekende plek, anders lopen; snuffelen = warden-snuif (lage toon) + glitchpixels. Verspringen als aanval
+   telt mee in het tempo, als reactie niet (en negeert gate en cooldown).
+
+## Integratie (INT ronde 6, review)
+103. Verstijfd (`stunned`, hoorn): een mob staat zijwaarts stil, ook vliegers (die zakken of hangen), maar een treffer duwt
+   hem nog weg zolang hij ineenkrimpt (`hurtTime`). Een rijdier dat een speler bestuurt, wordt nooit verstijfd.
+104. De Verloren Hoeder: in water duurt zijn verdoving (na het neerstorten) half zo lang als op land (`stunSeconds`, "in
+   water: half").
+105. De Verloren Hoeder: zonder kroon valt hij nu versnellend zoals alles (eerst zakte hij met een vaste 0,08 blok/tick;
+   in water zakt hij zonder zwemkracht tot ~0,04 blok/tick).
+106. De Holle: een zielkristal op De Holle buiten fase pint hem (en beëindigt zo de fase); terwijl hij nog in zijn
+   komst-scheur verborgen is, kost een kristal niets en doet het niets.
