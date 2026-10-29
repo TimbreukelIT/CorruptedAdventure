@@ -7,7 +7,7 @@ entity/layered/LayeredAnimations and the server's timings: the bite of the grab 
 rock fall breaks loose at 0.7 s (rockfallWindupTicks 14), the release lets go at 0.15 s, death lasts 3.0 s (DEATH_TICKS
 60). Life round: the pounce leaps at 0.8 s (pounceWindupTicks 16), the burrow is under the sand at 1.5 s
 (burrowDigTicks 30), the dead heads spit at 0.9 and 1.1 s (spitWindupTicks 18, then 4 ticks); stagger loops while the
-synced stagger lasts (30 ticks). On a wall the renderer turns the whole model onto the wall, so walk doubles as the climb.
+synced stagger lasts (30 ticks). Step 2: unfold, its arrival on a wall, lasts 2.5 s (arrivalUnfoldTicks 50). On a wall the renderer turns the whole model onto the wall, so walk doubles as the climb.
 
 Bedrock conventions (as Blockbench shows them; the creature faces -z): a negative x rotation lifts the front of a bone
 that points forward and swings a hanging limb forward; on the hips of the -x ("left") legs a negative z lifts the leg and
@@ -365,6 +365,48 @@ def spit():
     return {"animation_length": 1.5, "bones": bones}
 
 
+def unfold():
+    """Its arrival on a wall (2.5 s, arrivalUnfoldTicks 50; LayeredEffects.unfold sounds at the same moments). It starts
+    folded flat against the stone: the body pressed into the wall, the legs lowered flat and swung back along it with the
+    shins folded into the rock, the heads tucked in, so only the banded back plates show, a piece of the wall. The plates
+    shift (0.4 s), the body pushes out (0.55-1.6 s), the front legs tear loose at 0.9 s, the mid legs at 1.2 s, the back
+    legs at 1.4 s, the heads rise with the beak agape at 1.8 s, and it settles into its pose at 2.5 s. Played on its own
+    controller without a blend, held at the end; in the wall frame "down" is into the wall."""
+    length = 2.5
+    press = -16
+    bones = {
+        "root": channel(position=[(0, (0, press, 0)), (0.4, (0, press, 0)), (0.55, (0, press + 3, 0)),
+                                  (0.9, (0, press + 6, 0)), (1.6, (0, -2, 0)), (2.0, (0, 1, 0)), (length, (0, 0, 0))]),
+        "body": channel(rotation=[(0, (0, 0, 0)), (0.4, (0, 0, 0)), (0.45, (2, 0, -2)), (0.55, (-1, 0, 2)),
+                                  (0.7, (0, 0, 0)), (length, (0, 0, 0))]),
+        "abdomen": channel(rotation=[(0, (4, 0, 0)), (0.4, (4, 0, 0)), (0.45, (0, 3, 0)), (0.55, (6, -3, 0)),
+                                     (0.7, (4, 0, 0)), (1.6, (4, 0, 0)), (2.1, (-3, 0, 0)), (length, (0, 0, 0))]),
+        "head_alive": channel(rotation=[(0, (34, 0, 0)), (1.75, (34, 0, 0)), (1.9, (-28, 0, 0)), (2.2, (-20, 6, 0)),
+                                        (length, (0, 0, 0))]),
+        "beak_lower": channel(rotation=[(0, (0, 0, 0)), (1.8, (0, 0, 0)), (1.9, (42, 0, 0)), (2.3, (38, 0, 0)),
+                                        (length, (0, 0, 0))]),
+        "head_dead_left": channel(rotation=[(0, (30, 0, -24)), (1.85, (30, 0, -24)), (2.0, (-10, -6, 6)),
+                                            (length, (0, 0, 0))]),
+        "head_dead_right": channel(rotation=[(0, (30, 0, 24)), (1.95, (30, 0, 24)), (2.1, (-8, 6, -6)),
+                                             (length, (0, 0, 0))]),
+        "jaw_left": channel(rotation=[(0, (0, 0, 0)), (1.9, (0, 0, 0)), (2.0, (30, 0, 0)), (length, (0, 0, 0))]),
+        "jaw_right": channel(rotation=[(0, (0, 0, 0)), (2.0, (0, 0, 0)), (2.1, (26, 0, 0)), (length, (0, 0, 0))]),
+    }
+    # Swung back along the body (front most), lowered flat, the shin folded in under it.
+    swing = {"front": -34, "mid": -26, "back": -14}
+    for pair, at in (("front", 0.9), ("mid", 1.2), ("back", 1.4)):
+        for side in ("left", "right"):
+            lift, fwd = side_sign(side)
+            folded = (0, swing[pair] * fwd, -52 * lift)
+            bones[f"leg_{pair}_{side}"] = channel(rotation=[
+                (0, folded), (at, folded), (at + 0.12, (0, 6 * fwd, 22 * lift)), (at + 0.3, (0, -2 * fwd, -6 * lift)),
+                (at + 0.5, (0, 0, 2 * lift)), (length, (0, 0, 0))])
+            bones[f"leg_{pair}_{side}_lower"] = channel(rotation=[
+                (0, (0, 0, -24 * lift)), (at, (0, 0, -24 * lift)), (at + 0.12, (0, 0, 14 * lift)),
+                (at + 0.35, (0, 0, -4 * lift)), (length, (0, 0, 0))])
+    return {"animation_length": length, "bones": bones}
+
+
 def main():
     animations = {
         "animation.the_layered.idle": idle(),
@@ -383,6 +425,7 @@ def main():
         "animation.the_layered.burrow": burrow(),
         "animation.the_layered.erupt": erupt(),
         "animation.the_layered.spit": spit(),
+        "animation.the_layered.unfold": unfold(),
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:
