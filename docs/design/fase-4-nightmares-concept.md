@@ -54,6 +54,13 @@ Na de eerste blik in de game (gebruiker: "meer leven in de mechanics en de attac
     - *Uitwerking (L5, gebruiker 2026-10-29, optie A op Q1–Q3):* **ontladen grond** opent tot de echte void (alleen hele natuurlijke kolommen, zonder block entity of vloeistof); wie ~1,5 s valt, wordt door de void teruggezet op vaste grond aan de rand, met void-meter +30 en wat void-schade. Daarna komt alles precies terug, ook na een chunk-unload of serverstop. De **glitchsprong** eindigt bij de laatste stap ~5 blokken van je af met een frame-klap (10 schade, straal 4, duw) op een vooraf gemarkeerde plek; wegstappen ontwijkt hem. **Brokken** blijven alleen op natuurlijke grond (of op elkaar) liggen; op een bouwsel, in vloeistof of op een bezette plek spatten ze uiteen. Ze liggen 10 s, glitchen dan weg en de plek wordt exact hersteld. Uithakken geeft geen drop; max. 48 tegelijk.
 - Getallen (schade, cooldowns, kansen) kiezen de stromen voorlopig, in de config; bevestigen bij de teststop.
 
+### Stap 2 voor ring 2–5: eigen komst en sporen (sparring 2026-10-29)
+Elke Nightmare krijgt zijn eigen `NightmareArrival` (voortekens, verschijnen, sporen tijdens het zwerven) in plaats van de standaardkomst. Wat de wereld blijvend verandert: alleen natuurlijke blokken, begrensd, uit te zetten in de config.
+- **De Gelaagde:** is er binnen ~16 blokken een natuurlijke wand, dan komt die wand los (ontwerp). Anders barst hij uit de bodem op zoals bij het ingraven, met dezelfde voortekens (vallend stof, ratelende botten, vluchtende dieren). *Spoor:* klauwkrassen in een kloofwand (tijdelijk, na een paar minuten weg).
+- **De Herrijzende:** het hangt af van de plek. Onder open lucht valt eerst zijn schaduw en duikt hij neer. Onder een dak, in een grot of in een kloof smelt de grond open tot een lavapoel met een blijvend litteken (ontwerp). Het koor zwelt bij beide aan. *Spoor:* een plek smeulende as met rook (tijdelijk).
+- **De Verloren Hoeder:** zijn mist rolt aan en zijn gloed schemert erdoor. Is er groot water binnen ~32 blokken, dan rijst hij daaruit op; anders zwemt hij door de mist door de lucht naar je toe. *Spoor:* een mistflard met een vage gloed op het water, die na een paar minuten optrekt.
+- **De Onvoltooide:** eerst valt de stilstand in (regen en wolken bevriezen, het geluid valt weg, je hoort hem klimmen). Dan scheurt hij de grond open en klimt eruit. Hij laat een kleine blijvende void-scheur achter (~3×5). *Spoor:* een plek waar de regen stilhangt in de lucht (particles).
+
 ## Ring 1 — De Holle, de ontzielde titaan (werktitel)
 *Herontwerp 2026-10-20: vervangt de eerste schets (uitgerekte nabootser). "Hol" betekent nu: zonder ziel.*
 
