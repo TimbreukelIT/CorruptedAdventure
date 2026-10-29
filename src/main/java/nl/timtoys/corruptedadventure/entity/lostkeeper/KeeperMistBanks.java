@@ -13,7 +13,7 @@ import nl.timtoys.corruptedadventure.network.KeeperMistPayload;
  */
 final class KeeperMistBanks {
     /** The mist that rolls in during the arrival's omens (one arrival at a time). */
-    static final int ARRIVAL = -1;
+    static final int ARRIVAL = KeeperMistPayload.ARRIVAL_BANK;
     /** The wisps while it roams: {@code TRACES - slot}. */
     static final int TRACES = -2;
 

@@ -22,6 +22,8 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 public record KeeperMistPayload(int keeperId, double x, double y, double z, float radius, float fade, float visibility,
                                 float strength) implements CustomPacketPayload {
     public static final Type<KeeperMistPayload> TYPE = new Type<>(CorruptedAdventure.id("keeper_mist"));
+    /** The bank id of the mist its arrival brings: denser and grey-white, it also hides the sky (the client's look). */
+    public static final int ARRIVAL_BANK = -1;
 
     public static final StreamCodec<ByteBuf, KeeperMistPayload> STREAM_CODEC = StreamCodec.of(
             (buffer, payload) -> {

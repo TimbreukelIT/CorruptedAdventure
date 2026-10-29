@@ -59,7 +59,11 @@ public final class KeeperMistTraces {
         }
         while (TRACES.size() >= config.maxTraces.get()) {
             Trace oldest = TRACES.remove(0);
-            oldest.send(level, 0.0F, config);
+            // Lifted where it hangs: its own level, not necessarily the new one's.
+            ServerLevel its = level.getServer().getLevel(oldest.dimension);
+            if (its != null) {
+                oldest.send(its, 0.0F, config);
+            }
         }
         TRACES.add(new Trace(level.dimension(), surface, KeeperMistBanks.TRACES - nextSlot, config.traceSeconds.get() * 20));
         nextSlot = (nextSlot + 1) % ID_SLOTS;
