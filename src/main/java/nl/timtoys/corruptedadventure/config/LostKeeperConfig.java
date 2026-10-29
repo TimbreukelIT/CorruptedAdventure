@@ -90,6 +90,7 @@ public final class LostKeeperConfig {
     public final ModConfigSpec.IntValue arrivalWaterSpread;
     public final ModConfigSpec.DoubleValue arrivalWaterShare;
     public final ModConfigSpec.DoubleValue arrivalMistDistance;
+    public final ModConfigSpec.DoubleValue arrivalMistVisibility;
     public final ModConfigSpec.DoubleValue arrivalGlowDistance;
     public final ModConfigSpec.DoubleValue arrivalAirDistance;
     public final ModConfigSpec.DoubleValue arrivalAirHeight;
@@ -292,11 +293,14 @@ public final class LostKeeperConfig {
                 .defineInRange("arrivalWaterShare", 0.6, 0.0, 1.0);
         arrivalMistDistance = builder.comment("Blocks from the arrival's place at which its mist bank starts rolling in.")
                 .defineInRange("arrivalMistDistance", 96.0, 0.0, 256.0);
+        arrivalMistVisibility = builder.comment("Blocks of view in the thickest mist of its arrival: thicker than its own mist",
+                        "(mistVisibility), so its glow shimmers through it.")
+                .defineInRange("arrivalMistVisibility", 20.0, 2.0, 256.0);
         arrivalGlowDistance = builder.comment("Blocks from the target at which its glow is first seen through the mist (never",
                         "nearer than where it appears).")
-                .defineInRange("arrivalGlowDistance", 28.0, 0.0, 128.0);
+                .defineInRange("arrivalGlowDistance", 20.0, 0.0, 128.0);
         arrivalAirDistance = builder.comment("Without big water: blocks from the target (ahead of them) where it appears in the air.")
-                .defineInRange("arrivalAirDistance", 20.0, 4.0, 96.0);
+                .defineInRange("arrivalAirDistance", 14.0, 4.0, 96.0);
         arrivalAirHeight = builder.comment("Blocks above the target's feet at which it appears in the air.")
                 .defineInRange("arrivalAirHeight", 6.0, 0.0, 32.0);
         arrivalRiseSpeed = builder.comment("Its swim speed as it rises from the water, times swimSpeed.")

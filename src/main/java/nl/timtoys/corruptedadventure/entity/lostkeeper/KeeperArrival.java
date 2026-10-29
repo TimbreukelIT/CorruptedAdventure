@@ -76,7 +76,7 @@ public final class KeeperArrival implements NightmareArrival {
             float roll = mistRoll(progress);
             Vec3 centre = end.add(away.scale(config.arrivalMistDistance.get() * (1.0 - roll)));
             KeeperMistBanks.send(level, KeeperMistBanks.ARRIVAL, centre, config.mistRadius.get(), config.mistFade.get(),
-                    config.mistVisibility.get(), roll, config.mistSyncRange.get());
+                    config.arrivalMistVisibility.get(), roll, config.mistSyncRange.get());
         }
         float glow = glowShare(progress, water);
         if (glow >= 0.0F && tick % GLOW_EVERY == 0) {
@@ -139,7 +139,7 @@ public final class KeeperArrival implements NightmareArrival {
         }
         // The arrival's bank holds round it a little longer (the client fades it once it stops coming), its own is full.
         KeeperMistBanks.send(level, KeeperMistBanks.ARRIVAL, keeper.headCentre(), config.mistRadius.get(),
-                config.mistFade.get(), config.mistVisibility.get(), 1.0F, config.mistSyncRange.get());
+                config.mistFade.get(), config.arrivalMistVisibility.get(), 1.0F, config.mistSyncRange.get());
         return keeper;
     }
 
@@ -148,7 +148,7 @@ public final class KeeperArrival implements NightmareArrival {
         LostKeeperConfig config = config();
         // The mist sinks again; who is out of range sees it fade once it stops coming.
         KeeperMistBanks.send(level, KeeperMistBanks.ARRIVAL, Vec3.atCenterOf(place), config.mistRadius.get(),
-                config.mistFade.get(), config.mistVisibility.get(), 0.0F, config.mistSyncRange.get());
+                config.mistFade.get(), config.arrivalMistVisibility.get(), 0.0F, config.mistSyncRange.get());
     }
 
     @Override

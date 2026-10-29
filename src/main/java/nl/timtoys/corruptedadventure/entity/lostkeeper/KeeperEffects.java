@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.entity.lostkeeper;
 
 import net.minecraft.core.particles.ColorParticleOption;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -10,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
+import org.joml.Vector3f;
 
 /**
  * The Lost Keeper's sounds and particles, sent by the server to everyone near (vanilla events with an odd pitch, as for
@@ -20,6 +22,8 @@ final class KeeperEffects {
     private static final ParticleOptions POISON = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.53F, 0.63F, 0.25F);
     /** The pastel glow of the mythical half. */
     private static final ParticleOptions GLOW = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.9F, 0.71F, 0.87F);
+    /** The same glow as a large haze: a white flash alone vanishes in its pale mist, this lilac keeps it apart. */
+    private static final ParticleOptions GLOW_HAZE = new DustParticleOptions(new Vector3f(0.86F, 0.6F, 0.95F), 3.5F);
 
     private KeeperEffects() {
     }
@@ -273,8 +277,9 @@ final class KeeperEffects {
 
     /**
      * Its glow shimmering through the mist on its way in: to every player within {@code range}, also far beyond the usual
-     * particle distance (the mist itself dims it). A soft, pulsing flash is the glow you see from afar; the sparks round
-     * it fill in as it comes closer ({@code near} 0–1). Sent every few ticks, so the flashes overlap.
+     * particle distance (the mist itself dims it). A soft, pulsing flash in a lilac haze is the glow you see from afar;
+     * the haze and the sparks round it fill in as it comes closer ({@code near} 0–1). Sent every few ticks, so the
+     * flashes overlap.
      */
     static void arrivalGlow(ServerLevel level, Vec3 at, float near, double range) {
         int count = 2 + Math.round(near * 6.0F);
@@ -284,6 +289,7 @@ final class KeeperEffects {
                 continue;
             }
             level.sendParticles(player, ParticleTypes.FLASH, true, at.x, at.y, at.z, 1, 0.0, 0.0, 0.0, 0.0);
+            level.sendParticles(player, GLOW_HAZE, true, at.x, at.y, at.z, count, spread * 0.7, spread * 0.5, spread * 0.7, 0.0);
             level.sendParticles(player, ParticleTypes.END_ROD, true, at.x, at.y, at.z, count, spread, spread * 0.6, spread, 0.02);
             level.sendParticles(player, ParticleTypes.GLOW, true, at.x, at.y, at.z, count, spread, spread * 0.6, spread, 0.0);
         }
