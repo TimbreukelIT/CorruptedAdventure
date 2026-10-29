@@ -242,12 +242,13 @@ final class LayeredEffects {
         Vec3 out = face.subtract(wall.getStepX() * 0.35, 0.0, wall.getStepZ() * 0.35);
         double alongX = wall.getAxis() == Direction.Axis.Z ? 1.6 : 0.1;
         double alongZ = wall.getAxis() == Direction.Axis.X ? 1.6 : 0.1;
-        level.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, stone), out.x, out.y + 1.5, out.z,
-                2 + (int) (progress * 6), alongX, 1.5, alongZ, 0.0);
-        if (random.nextFloat() < 0.25F + progress * 0.5F) {
-            // A pebble breaking off and tumbling down.
-            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, stone), out.x, out.y + 0.5 + random.nextDouble() * 2.5,
-                    out.z, 3, alongX * 0.6, 0.2, alongZ * 0.6, 0.05);
+        // Dust trickles down the face from above it, a curtain that thickens toward the end.
+        level.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, stone), out.x, out.y + 2.5, out.z,
+                8 + (int) (progress * 24), alongX, 2.5, alongZ, 0.0);
+        if (random.nextFloat() < 0.35F + progress * 0.6F) {
+            // Pebbles breaking off and tumbling down.
+            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, stone), out.x, out.y + 0.5 + random.nextDouble() * 3.0,
+                    out.z, 6 + (int) (progress * 10), alongX * 0.6, 0.3, alongZ * 0.6, 0.05);
         }
         if (random.nextFloat() < 0.08F + progress * 0.25F) {
             level.playSound(null, out.x, out.y, out.z, random.nextBoolean() ? SoundEvents.GRAVEL_FALL : SoundEvents.STONE_HIT,
