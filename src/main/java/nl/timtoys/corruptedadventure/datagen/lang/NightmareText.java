@@ -12,6 +12,7 @@ public final class NightmareText {
         lang.add(ModEntityTypes.HOLLOW_RIFT.get().getDescriptionId(), "Rift of The Hollow");
         lang.add(ModEntityTypes.THE_LOST_KEEPER.get().getDescriptionId(), "The Lost Keeper");
         lang.add(ModEntityTypes.THE_UNFINISHED.get().getDescriptionId(), "The Unfinished");
+        lang.add(ModEntityTypes.MEMORY_SHARD.get().getDescriptionId(), "Memory Shard");
     }
 
     public static void addDutch(LangOutput lang) {
@@ -19,5 +20,6 @@ public final class NightmareText {
         lang.add(ModEntityTypes.HOLLOW_RIFT.get().getDescriptionId(), "Scheur van De Holle");
         lang.add(ModEntityTypes.THE_LOST_KEEPER.get().getDescriptionId(), "De Verloren Hoeder");
         lang.add(ModEntityTypes.THE_UNFINISHED.get().getDescriptionId(), "De Onvoltooide");
+        lang.add(ModEntityTypes.MEMORY_SHARD.get().getDescriptionId(), "Herinneringsbrok");
     }
 }

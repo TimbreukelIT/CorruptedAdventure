@@ -42,6 +42,11 @@ abstract class UnfinishedAttackGoal extends Goal {
     protected void end(ServerLevel level) {
     }
 
+    /** Whether it is over before its full length (an attack whose length is not fixed). */
+    protected boolean finished() {
+        return false;
+    }
+
     /** Whether it may start before its cooldown is over (the rift step when its target runs far). */
     protected boolean urgent(LivingEntity target) {
         return false;
@@ -62,7 +67,7 @@ abstract class UnfinishedAttackGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         LivingEntity target = boss.getTarget();
-        return ticks < duration() && target != null && target.isAlive() && (graft == null || boss.hasGraft(graft));
+        return ticks < duration() && !finished() && target != null && target.isAlive() && (graft == null || boss.hasGraft(graft));
     }
 
     @Override

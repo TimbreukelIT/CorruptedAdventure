@@ -53,6 +53,8 @@ public class TheUnfinished extends Nightmare {
             SynchedEntityData.defineId(TheUnfinished.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Boolean> DATA_STRIDING =
             SynchedEntityData.defineId(TheUnfinished.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_GLITCHING =
+            SynchedEntityData.defineId(TheUnfinished.class, EntityDataSerializers.BOOLEAN);
 
     /**
      * Where his parts sit on the rest pose (blocks; tools/textures/unfinished_model.py, 16 units per block). The model's +x
@@ -120,18 +122,22 @@ public class TheUnfinished extends Nightmare {
         builder.define(DATA_LOADED, false);
         builder.define(DATA_LOST, (byte) 0);
         builder.define(DATA_STRIDING, false);
+        builder.define(DATA_GLITCHING, false);
     }
 
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(1, new UnfinishedVoidPullGoal(this));
         goalSelector.addGoal(2, new UnfinishedRiftStepGoal(this));
-        goalSelector.addGoal(3, new UnfinishedGrabGoal(this));
-        goalSelector.addGoal(4, new UnfinishedAshRainGoal(this));
-        goalSelector.addGoal(5, new UnfinishedLureGoal(this));
-        goalSelector.addGoal(6, new UnfinishedSlamGoal(this));
-        goalSelector.addGoal(7, new UnfinishedStrideGoal(this));
-        goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        goalSelector.addGoal(3, new UnfinishedGlitchStepGoal(this));
+        goalSelector.addGoal(4, new UnfinishedGrabGoal(this));
+        goalSelector.addGoal(5, new UnfinishedUnloadGoal(this));
+        goalSelector.addGoal(6, new UnfinishedThrowGoal(this));
+        goalSelector.addGoal(7, new UnfinishedAshRainGoal(this));
+        goalSelector.addGoal(8, new UnfinishedLureGoal(this));
+        goalSelector.addGoal(9, new UnfinishedSlamGoal(this));
+        goalSelector.addGoal(10, new UnfinishedStrideGoal(this));
+        goalSelector.addGoal(11, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         // He climbs out of the void toward whoever is in his ring; walls do not hide you.
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
@@ -380,6 +386,11 @@ public class TheUnfinished extends Nightmare {
         desiredYaw = Mth.wrapDegrees(yawTo(position(), target) - local);
     }
 
+    /** Turns (at his turning speed) to face {@code target}. */
+    void faceToward(Vec3 target) {
+        desiredYaw = yawTo(position(), target);
+    }
+
     void snapYaw(float yaw) {
         desiredYaw = yaw;
         setYRot(yaw);
@@ -400,6 +411,23 @@ public class TheUnfinished extends Nightmare {
         if (striding != isStriding()) {
             entityData.set(DATA_STRIDING, striding);
         }
+    }
+
+    /** Mid glitch step: he jumps frame by frame (the client does not smooth his moves) and comes apart at the seams. */
+    public boolean isGlitching() {
+        return entityData.get(DATA_GLITCHING);
+    }
+
+    void setGlitching(boolean glitching) {
+        if (glitching != isGlitching()) {
+            entityData.set(DATA_GLITCHING, glitching);
+        }
+    }
+
+    @Override
+    public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps) {
+        // A glitch step is a lag spike: no sliding between the frames.
+        super.lerpTo(x, y, z, yRot, xRot, isGlitching() ? 1 : steps);
     }
 
     /** Sunken in his void during a rift step: nothing hits him, his parts are gone, he does not settle. */
@@ -493,12 +521,17 @@ public class TheUnfinished extends Nightmare {
                 .triggerableAnim(UnfinishedAnimations.ASH_RAIN, UnfinishedAnimations.ASH_RAIN_ANIM)
                 .triggerableAnim(UnfinishedAnimations.LURE, UnfinishedAnimations.LURE_ANIM)
                 .triggerableAnim(UnfinishedAnimations.VOID_PULL, UnfinishedAnimations.VOID_PULL_ANIM)
-                .triggerableAnim(UnfinishedAnimations.FLINCH, UnfinishedAnimations.FLINCH_ANIM));
+                .triggerableAnim(UnfinishedAnimations.FLINCH, UnfinishedAnimations.FLINCH_ANIM)
+                .triggerableAnim(UnfinishedAnimations.THROW, UnfinishedAnimations.THROW_ANIM)
+                .triggerableAnim(UnfinishedAnimations.UNLOAD, UnfinishedAnimations.UNLOAD_ANIM));
     }
 
     private PlayState bodyAnimation(AnimationState<TheUnfinished> state) {
         if (isDeadOrDying()) {
             return state.setAndContinue(UnfinishedAnimations.DEATH);
+        }
+        if (isGlitching()) {
+            return state.setAndContinue(UnfinishedAnimations.GLITCH);
         }
         return state.setAndContinue(isStriding() ? UnfinishedAnimations.WALK : UnfinishedAnimations.IDLE);
     }

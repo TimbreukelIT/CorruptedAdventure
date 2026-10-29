@@ -622,3 +622,8 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [mobs] Spelers kunnen niet op De Onvoltooide klimmen (zijn delen botsen niet); "klimmen" in het gevecht = de wereld in (brok, brug, kasteelplateau) of een boog. Een beklimbaar lijf zou eigen botsing en meebewegen vragen. (bron: R5)
 - [mobs] De Onvoltooide loopt door bladeren en bouwsels heen (geen botsing, niets kapot) en staat op hun top; onder overhangen en in grotten komt hij niet. Bij de teststop bekijken of dat goed voelt. (bron: R5)
 - [items] Hemelglaspijlen of een andere afstandsvorm van de hemelglas-zwakte (de zwakke plek op de vleugel zit ~16 blokken hoog); nu laadt alleen de lens in en raak je hem met een gewone boog. (bron: R5)
+
+## Uit fase 4 De Onvoltooide leven-ronde (L5, 2026-10-29)
+- [mobs] `UnfinishedTempBlocks` (tijdelijke blokken met exact herstel, ook na chunk-unload en serverstop) is nu eigen aan De Onvoltooide; naar de gedeelde basis `entity/nightmare/` halen als andere Nightmares hem nodig hebben (ingraven, sintelregen). (bron: L5)
+- [mobs] Een zuiger kan een liggende herinneringsscherf verschuiven; dan blijft die als gewoon blok liggen (zeldzaam, niet afgevangen). (bron: L5)
+- [atmosphere] Eigen geluiden voor glitchsprong, brokken gooien en ontladen grond; nu vanilla-placeholders en `ambient.ring_5.glitch` (`UnfinishedEffects`). (bron: L5)

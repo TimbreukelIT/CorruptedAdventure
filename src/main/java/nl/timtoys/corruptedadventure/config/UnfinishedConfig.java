@@ -56,6 +56,44 @@ public final class UnfinishedConfig {
     public final ModConfigSpec.IntValue voidEdgeSearch;
     public final ModConfigSpec.IntValue voidPullCooldownMin;
     public final ModConfigSpec.IntValue voidPullCooldownMax;
+    public final ModConfigSpec.DoubleValue glitchMinRange;
+    public final ModConfigSpec.DoubleValue glitchMaxRange;
+    public final ModConfigSpec.IntValue glitchFreezeTicks;
+    public final ModConfigSpec.IntValue glitchStepsMin;
+    public final ModConfigSpec.IntValue glitchStepsMax;
+    public final ModConfigSpec.DoubleValue glitchStepMin;
+    public final ModConfigSpec.DoubleValue glitchStepMax;
+    public final ModConfigSpec.IntValue glitchPauseMin;
+    public final ModConfigSpec.IntValue glitchPauseMax;
+    public final ModConfigSpec.IntValue glitchTelegraphTicks;
+    public final ModConfigSpec.DoubleValue glitchStrikeDistance;
+    public final ModConfigSpec.DoubleValue glitchStrikeRadius;
+    public final ModConfigSpec.DoubleValue glitchStrikeDamage;
+    public final ModConfigSpec.IntValue glitchCooldownMin;
+    public final ModConfigSpec.IntValue glitchCooldownMax;
+    public final ModConfigSpec.DoubleValue throwMinRange;
+    public final ModConfigSpec.DoubleValue throwRange;
+    public final ModConfigSpec.IntValue throwPieces;
+    public final ModConfigSpec.IntValue throwRiseTicks;
+    public final ModConfigSpec.DoubleValue throwImpactRadius;
+    public final ModConfigSpec.DoubleValue throwDamage;
+    public final ModConfigSpec.IntValue throwLingerSeconds;
+    public final ModConfigSpec.IntValue throwMaxLyingBlocks;
+    public final ModConfigSpec.IntValue throwCooldownMin;
+    public final ModConfigSpec.IntValue throwCooldownMax;
+    public final ModConfigSpec.BooleanValue unloadEnabled;
+    public final ModConfigSpec.DoubleValue unloadRange;
+    public final ModConfigSpec.IntValue unloadRadius;
+    public final ModConfigSpec.IntValue unloadWarnTicks;
+    public final ModConfigSpec.IntValue unloadOpenTicks;
+    public final ModConfigSpec.IntValue unloadLayersPerTick;
+    public final ModConfigSpec.IntValue unloadMaxBlocks;
+    public final ModConfigSpec.IntValue unloadCatchDepth;
+    public final ModConfigSpec.DoubleValue unloadCatchMeter;
+    public final ModConfigSpec.DoubleValue unloadCatchDamage;
+    public final ModConfigSpec.IntValue unloadCooldownMin;
+    public final ModConfigSpec.IntValue unloadCooldownMax;
+    public final ModConfigSpec.IntValue tempRestorePerTick;
 
     UnfinishedConfig(ModConfigSpec.Builder builder) {
         builder.comment("The Unfinished, the ring 5 Nightmare (step 1: body and fight, summoned with /summon).",
@@ -157,6 +195,82 @@ public final class UnfinishedConfig {
         voidPullCooldownMin = builder.comment("Seconds between two void pulls, drawn between min and max.")
                 .defineInRange("voidPullCooldownMin", 30, 1, 600);
         voidPullCooldownMax = builder.defineInRange("voidPullCooldownMax", 40, 1, 600);
+
+        glitchMinRange = builder.comment("Glitch step (his own): blocks to his target from which he stutters toward it.")
+                .defineInRange("glitchMinRange", 10.0, 2.0, 64.0);
+        glitchMaxRange = builder.comment("Blocks to his target up to which he uses the glitch step.")
+                .defineInRange("glitchMaxRange", 30.0, 4.0, 128.0);
+        glitchFreezeTicks = builder.comment("Ticks he freezes and jerks before the first step (the warning).")
+                .defineInRange("glitchFreezeTicks", 20, 1, 100);
+        glitchStepsMin = builder.comment("Steps of one glitch step, drawn between min and max (the last one ends the run).")
+                .defineInRange("glitchStepsMin", 4, 1, 12);
+        glitchStepsMax = builder.defineInRange("glitchStepsMax", 6, 1, 12);
+        glitchStepMin = builder.comment("Blocks of one step, drawn between min and max.")
+                .defineInRange("glitchStepMin", 3.0, 0.5, 16.0);
+        glitchStepMax = builder.defineInRange("glitchStepMax", 5.0, 0.5, 16.0);
+        glitchPauseMin = builder.comment("Ticks between two steps, drawn between min and max: the stutter.")
+                .defineInRange("glitchPauseMin", 4, 1, 60);
+        glitchPauseMax = builder.defineInRange("glitchPauseMax", 10, 1, 60);
+        glitchTelegraphTicks = builder.comment("Ticks a pillar of glitch pixels marks the next spot before he is there.")
+                .defineInRange("glitchTelegraphTicks", 6, 0, 40);
+        glitchStrikeDistance = builder.comment("Blocks from his target where the last step lands.")
+                .defineInRange("glitchStrikeDistance", 5.0, 1.0, 16.0);
+        glitchStrikeRadius = builder.comment("Blocks round where the last step lands that its frame blow hits.")
+                .defineInRange("glitchStrikeRadius", 4.0, 0.0, 12.0);
+        glitchStrikeDamage = builder.comment("Damage of the frame blow (grows with his strength). 0 = none.")
+                .defineInRange("glitchStrikeDamage", 10.0, 0.0, 100.0);
+        glitchCooldownMin = builder.comment("Seconds between two glitch steps, drawn between min and max.")
+                .defineInRange("glitchCooldownMin", 14, 1, 600);
+        glitchCooldownMax = builder.defineInRange("glitchCooldownMax", 22, 1, 600);
+
+        throwMinRange = builder.comment("Throwing memories (his own): blocks to his target from which he throws.")
+                .defineInRange("throwMinRange", 8.0, 2.0, 64.0);
+        throwRange = builder.comment("Blocks to his target up to which he throws.")
+                .defineInRange("throwRange", 32.0, 4.0, 96.0);
+        throwPieces = builder.comment("Blocks (shards) in one thrown memory.")
+                .defineInRange("throwPieces", 12, 1, 27);
+        throwRiseTicks = builder.comment("Ticks the memory rises above his crown before the throw (the warning).")
+                .defineInRange("throwRiseTicks", 30, 1, 100);
+        throwImpactRadius = builder.comment("Blocks round where it comes down that the impact hits.")
+                .defineInRange("throwImpactRadius", 3.0, 0.5, 12.0);
+        throwDamage = builder.comment("Damage of the impact (grows with his strength).")
+                .defineInRange("throwDamage", 12.0, 0.0, 100.0);
+        throwLingerSeconds = builder.comment("Seconds a shard lies as a block before it flickers away (the spot is restored).")
+                .defineInRange("throwLingerSeconds", 10, 1, 120);
+        throwMaxLyingBlocks = builder.comment("Most shards lying as blocks at once in a level; the rest bursts into pixels. 0 =",
+                        "shards never lie (no world change).")
+                .defineInRange("throwMaxLyingBlocks", 48, 0, 512);
+        throwCooldownMin = builder.comment("Seconds between two throws, drawn between min and max.")
+                .defineInRange("throwCooldownMin", 16, 1, 600);
+        throwCooldownMax = builder.defineInRange("throwCooldownMax", 24, 1, 600);
+
+        unloadEnabled = builder.comment("Unloading ground (his own): a patch round his target flickers away down to the void",
+                        "and comes back exactly. Only whole natural columns (no block entities, fluids or built blocks).",
+                        "false = he never uses it.")
+                .define("unloadEnabled", true);
+        unloadRange = builder.comment("Blocks to his target within which he unloads the ground under it.")
+                .defineInRange("unloadRange", 24.0, 4.0, 64.0);
+        unloadRadius = builder.comment("Radius in blocks of the unloaded patch.")
+                .defineInRange("unloadRadius", 3, 1, 8);
+        unloadWarnTicks = builder.comment("Ticks the patch flickers (glitch blocks) before it opens: the time to step off.")
+                .defineInRange("unloadWarnTicks", 40, 5, 200);
+        unloadOpenTicks = builder.comment("Ticks the patch stays open before it loads back in, bottom first.")
+                .defineInRange("unloadOpenTicks", 80, 10, 600);
+        unloadLayersPerTick = builder.comment("Layers per tick the patch unloads downward (and spreads the work).")
+                .defineInRange("unloadLayersPerTick", 16, 1, 512);
+        unloadMaxBlocks = builder.comment("Most blocks one unloading may take away (columns beyond it stay).")
+                .defineInRange("unloadMaxBlocks", 6000, 1, 50000);
+        unloadCatchDepth = builder.comment("Blocks below the patch's surface at which the void catches a player who fell in.")
+                .defineInRange("unloadCatchDepth", 12, 1, 64);
+        unloadCatchMeter = builder.comment("Void meter points a caught player gets.")
+                .defineInRange("unloadCatchMeter", 30.0, 0.0, 100.0);
+        unloadCatchDamage = builder.comment("Void damage a caught player takes.")
+                .defineInRange("unloadCatchDamage", 4.0, 0.0, 100.0);
+        unloadCooldownMin = builder.comment("Seconds between two unloadings, drawn between min and max.")
+                .defineInRange("unloadCooldownMin", 24, 1, 600);
+        unloadCooldownMax = builder.defineInRange("unloadCooldownMax", 34, 1, 600);
+        tempRestorePerTick = builder.comment("Most blocks per tick per level that come back (unloaded ground, lying shards).")
+                .defineInRange("tempRestorePerTick", 1024, 16, 65536);
         builder.pop();
     }
 

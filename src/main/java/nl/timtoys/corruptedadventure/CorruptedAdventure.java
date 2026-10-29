@@ -27,6 +27,7 @@ import nl.timtoys.corruptedadventure.entity.hollow.HollowArrival;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperHoldRules;
 import nl.timtoys.corruptedadventure.entity.nightmare.NightmareKind;
 import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
+import nl.timtoys.corruptedadventure.entity.unfinished.UnfinishedTempBlocks;
 import nl.timtoys.corruptedadventure.entity.risen.RisenAshRain;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
@@ -147,6 +148,8 @@ public final class CorruptedAdventure {
         WeakenedTargeting.register(NeoForge.EVENT_BUS);
         // Phase 4: a fighter The Lost Keeper holds cannot sneak off.
         KeeperHoldRules.register(NeoForge.EVENT_BUS);
+        // Phase 4 (L5): what The Unfinished unloads or lets lie comes back exactly.
+        UnfinishedTempBlocks.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {
