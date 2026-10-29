@@ -5,7 +5,8 @@
 Writes src/main/resources/assets/corruptedadventure/animations/entity/the_lost_keeper.animation.json. Names and lengths
 match entity/lostkeeper/KeeperAnimations and the server's timings: the breath starts at 0.75 s (breathWindupTicks 15) and
 lasts until 3.0 s (+ breathTicks 45), the grab snaps at 0.5 s (grabWindupTicks 10), the tail whip strikes from 0.4 s to
-0.9 s, death lasts 3.0 s (DEATH_TICKS 60).
+0.9 s, death lasts 3.0 s (DEATH_TICKS 60). Life round: the bubble call goes off at 1.5 s (bubbleWarnTicks 30); the dive,
+the burst and the squeeze start with their moment on the server; the coil loops while the ring lasts.
 
 Only the head's parts, the wings and the tail fin move here. The segment bones (seg_01..seg_12) and neck_mount are laid
 along the body chain by the client every frame; an animation on them would be overwritten, so there is none.
@@ -212,6 +213,67 @@ def death():
     }}
 
 
+def bubble_call():
+    # 0–1.5 s (bubbleWarnTicks 30): the head sinks, the jaw opens slowly, the gills flare and the wings tremble low;
+    # at 1.5 s a jerk up as the trap goes off.
+    tremble = [(0.1 * k, (0, 4 if k % 2 else -4, -14 + (3 if k % 2 else -3))) for k in range(16)]
+    tremble_left = [(t, (x, -y, -z)) for t, (x, y, z) in tremble]
+    return {"animation_length": 2.0, "bones": {
+        "head": channel(rotation=[(0, (0, 0, 0)), (0.5, (24, 0, 0)), (1.4, (28, 0, 4)), (1.55, (-18, 0, 0)), (2.0, (0, 0, 0))]),
+        "jaw": channel(rotation=[(0, (0, 0, 0)), (1.4, (18, 0, 0)), (1.55, (26, 0, 0)), (2.0, (0, 0, 0))]),
+        "gill_fin_right": channel(rotation=[(0, (0, 0, 0)), (0.5, (0, -35, 0)), (1.5, (0, -35, 0)), (2.0, (0, 0, 0))]),
+        "gill_fin_left": channel(rotation=[(0, (0, 0, 0)), (0.5, (0, 35, 0)), (1.5, (0, 35, 0)), (2.0, (0, 0, 0))]),
+        "wing_right": channel(rotation=tremble + [(2.0, (0, 0, 0))]),
+        "wing_left": channel(rotation=tremble_left + [(2.0, (0, 0, 0))]),
+        "crown": channel(scale=[(0, (1, 1, 1)), (1.4, (1.08, 1.08, 1.08)), (2.0, (1, 1, 1))]),
+    }}
+
+
+def dive():
+    # The wings fold flat along the body, the head tips down into the dive, the tail fin flicks.
+    return {"animation_length": 1.5, "bones": {
+        "head": channel(rotation=[(0, (0, 0, 0)), (0.3, (20, 0, 0)), (1.2, (14, 0, 0)), (1.5, (0, 0, 0))]),
+        "jaw": channel(rotation=[(0, (0, 0, 0)), (0.3, (-6, 0, 0)), (1.5, (0, 0, 0))]),
+        "wing_right": channel(rotation=[(0, (0, 0, 0)), (0.3, (0, 35, 30)), (1.2, (0, 35, 30)), (1.5, (0, 0, 0))]),
+        "wing_left": channel(rotation=[(0, (0, 0, 0)), (0.3, (0, -35, -30)), (1.2, (0, -35, -30)), (1.5, (0, 0, 0))]),
+        "gill_fin_right": channel(rotation=[(0, (0, 0, 0)), (0.3, (0, 20, 0)), (1.5, (0, 0, 0))]),
+        "gill_fin_left": channel(rotation=[(0, (0, 0, 0)), (0.3, (0, -20, 0)), (1.5, (0, 0, 0))]),
+        "tail_fin": channel(rotation=[(0, (0, 0, 0)), (0.2, (0, 30, 0)), (0.4, (0, -30, 0)), (0.6, (0, 0, 0))]),
+    }}
+
+
+def burst():
+    # Out of the water: head thrown up, jaws wide, wings flung open and up, a shake at the top.
+    shake = [(0.5 + 0.1 * k, (-26 + (3 if k % 2 else -3), 0, 4 if k % 2 else -4)) for k in range(5)]
+    return {"animation_length": 1.6, "bones": merge(gills(1.6, 40), {
+        "head": channel(rotation=[(0, (0, 0, 0)), (0.2, (-34, 0, 0))] + shake + [(1.6, (0, 0, 0))]),
+        "jaw": channel(rotation=[(0, (0, 0, 0)), (0.2, (30, 0, 0)), (1.1, (28, 0, 0)), (1.6, (0, 0, 0))]),
+        "wing_right": channel(rotation=[(0, (0, 0, 0)), (0.2, (0, -20, 40)), (0.8, (0, -10, 25)), (1.6, (0, 0, 0))]),
+        "wing_left": channel(rotation=[(0, (0, 0, 0)), (0.2, (0, 20, -40)), (0.8, (0, 10, -25)), (1.6, (0, 0, 0))]),
+        "crown": channel(scale=[(0, (1, 1, 1)), (0.2, (1.12, 1.12, 1.12)), (1.6, (1, 1, 1))]),
+    })}
+
+
+def coil():
+    # Coiling the ring: the head low and turned in, jaw half open in a hiss, the wings pressed tight and quivering.
+    length = 1.0
+    return {"loop": True, "animation_length": length, "bones": merge(wings(length, 6, 22, 4), tail(length, 18), {
+        "head": channel(rotation=[(0, (10, -12, 0)), (0.5, (12, -14, 3)), (1.0, (10, -12, 0))]),
+        "jaw": channel(rotation=[(0, (14, 0, 0)), (0.25, (18, 0, 0)), (0.5, (14, 0, 0)), (0.75, (18, 0, 0)), (1.0, (14, 0, 0))]),
+        "gill_fin_right": channel(rotation=[(0, (0, -30, 0)), (1.0, (0, -30, 0))]),
+        "gill_fin_left": channel(rotation=[(0, (0, 30, 0)), (1.0, (0, 30, 0))])})}
+
+
+def squeeze():
+    # The ring closes: a snap of the head down and the jaw shut, then a roar up.
+    return {"animation_length": 1.2, "bones": {
+        "head": channel(rotation=[(0, (0, 0, 0)), (0.15, (22, 0, 0)), (0.35, (-24, 0, 0)), (0.9, (-20, 0, 0)), (1.2, (0, 0, 0))]),
+        "jaw": channel(rotation=[(0, (14, 0, 0)), (0.15, (-28, 0, 0)), (0.35, (26, 0, 0)), (0.9, (24, 0, 0)), (1.2, (0, 0, 0))]),
+        "wing_right": channel(rotation=[(0, (0, 0, 0)), (0.35, (0, -15, 30)), (1.2, (0, 0, 0))]),
+        "wing_left": channel(rotation=[(0, (0, 0, 0)), (0.35, (0, 15, -30)), (1.2, (0, 0, 0))]),
+    }}
+
+
 def main():
     animations = {
         "animation.the_lost_keeper.hover": hover(),
@@ -226,6 +288,11 @@ def main():
         "animation.the_lost_keeper.stunned": stunned(),
         "animation.the_lost_keeper.crawl": crawl(),
         "animation.the_lost_keeper.death": death(),
+        "animation.the_lost_keeper.bubble_call": bubble_call(),
+        "animation.the_lost_keeper.dive": dive(),
+        "animation.the_lost_keeper.burst": burst(),
+        "animation.the_lost_keeper.coil": coil(),
+        "animation.the_lost_keeper.squeeze": squeeze(),
     }
     for anim in animations.values():
         anim["bones"] = {bone: ch for bone, ch in anim["bones"].items() if ch}
