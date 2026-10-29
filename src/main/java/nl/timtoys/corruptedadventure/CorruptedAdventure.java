@@ -25,7 +25,9 @@ import nl.timtoys.corruptedadventure.datagen.DataGenerators;
 import nl.timtoys.corruptedadventure.effect.WeakenedTargeting;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowArrival;
 import nl.timtoys.corruptedadventure.entity.layered.LayeredGrip;
+import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperArrival;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperHoldRules;
+import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperMistTraces;
 import nl.timtoys.corruptedadventure.entity.nightmare.NightmareKind;
 import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
 import nl.timtoys.corruptedadventure.entity.unfinished.UnfinishedTempBlocks;
@@ -145,6 +147,9 @@ public final class CorruptedAdventure {
         NightmareDirector.register(NeoForge.EVENT_BUS);
         // Phase 4 step 2 (H1): The Hollow comes through its rift.
         NightmareKind.HOLLOW.arrival(new HollowArrival());
+        // Phase 4 step 2 (A4): The Lost Keeper comes out of its mist and leaves wisps of it while it roams.
+        NightmareKind.LOST_KEEPER.arrival(new KeeperArrival());
+        KeeperMistTraces.register(NeoForge.EVENT_BUS);
         // Phase 4 (I): dazzled and stunned mobs take no target.
         WeakenedTargeting.register(NeoForge.EVENT_BUS);
         // Phase 4: a fighter The Lost Keeper holds cannot sneak off.

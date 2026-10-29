@@ -614,6 +614,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [atmosphere] De mistbank van De Verloren Hoeder is alleen te zien als je erin of vlakbij bent (fog rond de camera); van ver zou je hem moeten zien "optrekken" (bijv. client-deeltjes of een mistwand aan de rand van de bank). (bron: R4)
 - [mobs] Koppeling van de mistbank van De Verloren Hoeder aan de mist-mobs van ring 4 (die bovengronds komen tijdens dikke mist). (bron: R4)
 - [mobs] Een spawn-ei of creative-tab-ingang voor De Verloren Hoeder ontbreekt bewust (stap 1: alleen `/summon`). (bron: R4)
+- [atmosphere] Eigen pastel gloed-particle voor de komst en de mistflarden van De Verloren Hoeder; nu vanilla `FLASH` (wit) met `END_ROD`/`GLOW`. (bron: A4)
 
 ## Uit fase 4 De Onvoltooide stap 1 (R5, 2026-10-28)
 - [atmosphere] Eigen geluiden voor De Onvoltooide (klap, verspringen, grijpen, asregen, lokroep, void-trek, inladen door de lens, wegvallende graft); stap 1 gebruikt vanilla-geluiden met lage pitch (`entity/unfinished/UnfinishedEffects`). (bron: R5)

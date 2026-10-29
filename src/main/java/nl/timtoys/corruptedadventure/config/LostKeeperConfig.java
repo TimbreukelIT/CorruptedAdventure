@@ -5,7 +5,8 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 /**
  * {@code [nightmares.lost_keeper]}: The Lost Keeper, the ring 4 Nightmare (phase 4, fase-4-nightmares-concept.md "Ring 4 —
  * De Verloren Hoeder"). The shared keys in {@link #common} (its main attack is the bite), then its own: swimming, the
- * crown, its mist bank and its seven attacks. Read live, so edits apply to a keeper that is already fighting.
+ * crown, its mist bank, its seven attacks, its arrival and its traces. Read live, so edits apply to a keeper that is
+ * already fighting.
  */
 public final class LostKeeperConfig {
     /** Also the attribute defaults of {@code TheLostKeeper}; movementSpeed is its crawl on land. */
@@ -83,6 +84,25 @@ public final class LostKeeperConfig {
     public final ModConfigSpec.DoubleValue burstRadius;
     public final ModConfigSpec.DoubleValue burstDamage;
     public final ModConfigSpec.DoubleValue burstLaunch;
+    public final ModConfigSpec.IntValue arrivalOmenSeconds;
+    public final ModConfigSpec.IntValue arrivalWaterSearch;
+    public final ModConfigSpec.IntValue arrivalWaterDepth;
+    public final ModConfigSpec.IntValue arrivalWaterSpread;
+    public final ModConfigSpec.DoubleValue arrivalWaterShare;
+    public final ModConfigSpec.DoubleValue arrivalMistDistance;
+    public final ModConfigSpec.DoubleValue arrivalGlowDistance;
+    public final ModConfigSpec.DoubleValue arrivalAirDistance;
+    public final ModConfigSpec.DoubleValue arrivalAirHeight;
+    public final ModConfigSpec.DoubleValue arrivalRiseSpeed;
+    public final ModConfigSpec.DoubleValue arrivalAirSpeed;
+    public final ModConfigSpec.IntValue arrivalMaxSeconds;
+    public final ModConfigSpec.DoubleValue traceChance;
+    public final ModConfigSpec.IntValue traceSeconds;
+    public final ModConfigSpec.IntValue maxTraces;
+    public final ModConfigSpec.IntValue traceWaterSearch;
+    public final ModConfigSpec.DoubleValue traceRadius;
+    public final ModConfigSpec.DoubleValue traceFade;
+    public final ModConfigSpec.DoubleValue traceVisibility;
 
     LostKeeperConfig(ModConfigSpec.Builder builder) {
         builder.comment("The Lost Keeper, the ring 4 Nightmare (step 1: body and fight, summoned with /summon).",
@@ -256,6 +276,53 @@ public final class LostKeeperConfig {
         burstLaunch = builder.comment("Upward speed of the launch (blocks/tick; 1.4 throws a player ~10 blocks up). A boat",
                         "goes up too and its rider falls out.")
                 .defineInRange("burstLaunch", 1.4, 0.0, 5.0);
+        builder.pop();
+
+        builder.comment("Its arrival for the director (out of the mist): its mist rolls in, its glow and its soft song come from",
+                "far to near; out of big water near the target it rises, otherwise it swims to them through the air.").push("arrival");
+        arrivalOmenSeconds = builder.comment("Seconds of omens (the mist rolling in, the glow coming closer) before it appears.")
+                .defineInRange("arrivalOmenSeconds", 30, 1, 600);
+        arrivalWaterSearch = builder.comment("Blocks round the target (horizontally) within which big water lets it rise from it.")
+                .defineInRange("arrivalWaterSearch", 32, 0, 64);
+        arrivalWaterDepth = builder.comment("Blocks of water it needs under the spot it rises from.")
+                .defineInRange("arrivalWaterDepth", 4, 2, 64);
+        arrivalWaterSpread = builder.comment("Blocks round that spot that are looked at to call the water big.")
+                .defineInRange("arrivalWaterSpread", 3, 1, 8);
+        arrivalWaterShare = builder.comment("Share of the columns round the spot that must be water at the surface for big water.")
+                .defineInRange("arrivalWaterShare", 0.6, 0.0, 1.0);
+        arrivalMistDistance = builder.comment("Blocks from the arrival's place at which its mist bank starts rolling in.")
+                .defineInRange("arrivalMistDistance", 96.0, 0.0, 256.0);
+        arrivalGlowDistance = builder.comment("Blocks from the target at which its glow is first seen through the mist (never",
+                        "nearer than where it appears).")
+                .defineInRange("arrivalGlowDistance", 28.0, 0.0, 128.0);
+        arrivalAirDistance = builder.comment("Without big water: blocks from the target (ahead of them) where it appears in the air.")
+                .defineInRange("arrivalAirDistance", 20.0, 4.0, 96.0);
+        arrivalAirHeight = builder.comment("Blocks above the target's feet at which it appears in the air.")
+                .defineInRange("arrivalAirHeight", 6.0, 0.0, 32.0);
+        arrivalRiseSpeed = builder.comment("Its swim speed as it rises from the water, times swimSpeed.")
+                .defineInRange("arrivalRiseSpeed", 2.0, 0.5, 8.0);
+        arrivalAirSpeed = builder.comment("Its swim speed as it comes through the air to the target, times swimSpeed.")
+                .defineInRange("arrivalAirSpeed", 1.2, 0.5, 8.0);
+        arrivalMaxSeconds = builder.comment("Seconds at most the rise or the swim to the target lasts before it fights.")
+                .defineInRange("arrivalMaxSeconds", 10, 1, 60);
+        builder.pop();
+
+        builder.comment("Its traces while it roams: a wisp of mist with a faint glow on the water near its virtual position.",
+                "Nothing stays: the wisp lifts after traceSeconds.").push("trace");
+        traceChance = builder.comment("Chance per roaming step that it leaves a wisp (0: none).")
+                .defineInRange("traceChance", 0.35, 0.0, 1.0);
+        traceSeconds = builder.comment("Seconds a wisp hangs before it has lifted.")
+                .defineInRange("traceSeconds", 180, 10, 1200);
+        maxTraces = builder.comment("Wisps at most at the same time (the oldest lifts at once for a new one).")
+                .defineInRange("maxTraces", 4, 1, 8);
+        traceWaterSearch = builder.comment("Blocks round its position within which the wisp looks for water (none: no wisp).")
+                .defineInRange("traceWaterSearch", 12, 0, 32);
+        traceRadius = builder.comment("Blocks round the wisp's centre where its mist is thickest.")
+                .defineInRange("traceRadius", 6.0, 0.0, 64.0);
+        traceFade = builder.comment("Blocks beyond traceRadius over which its mist thins out.")
+                .defineInRange("traceFade", 10.0, 1.0, 64.0);
+        traceVisibility = builder.comment("Blocks of view inside the wisp.")
+                .defineInRange("traceVisibility", 24.0, 2.0, 256.0);
         builder.pop();
         builder.pop();
     }

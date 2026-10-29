@@ -4,6 +4,7 @@ import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -266,6 +267,73 @@ final class KeeperEffects {
         sound(level, mouth, SoundEvents.BREEZE_INHALE, 2.0F, 0.6F);
         sound(level, mouth, SoundEvents.DOLPHIN_AMBIENT_WATER, 1.5F, 0.5F);
         level.sendParticles(ParticleTypes.BUBBLE_POP, mouth.x, mouth.y, mouth.z, 12, 0.6, 0.3, 0.6, 0.02);
+    }
+
+    // --- the arrival and its traces ----------------------------------------------------------------------------------
+
+    /**
+     * Its glow shimmering through the mist on its way in: to every player within {@code range}, also far beyond the usual
+     * particle distance (the mist itself dims it). A soft, pulsing flash is the glow you see from afar; the sparks round
+     * it fill in as it comes closer ({@code near} 0–1). Sent every few ticks, so the flashes overlap.
+     */
+    static void arrivalGlow(ServerLevel level, Vec3 at, float near, double range) {
+        int count = 2 + Math.round(near * 6.0F);
+        double spread = 1.8 - near * 0.6;
+        for (ServerPlayer player : level.players()) {
+            if (player.distanceToSqr(at) > range * range) {
+                continue;
+            }
+            level.sendParticles(player, ParticleTypes.FLASH, true, at.x, at.y, at.z, 1, 0.0, 0.0, 0.0, 0.0);
+            level.sendParticles(player, ParticleTypes.END_ROD, true, at.x, at.y, at.z, count, spread, spread * 0.6, spread, 0.02);
+            level.sendParticles(player, ParticleTypes.GLOW, true, at.x, at.y, at.z, count, spread, spread * 0.6, spread, 0.0);
+        }
+    }
+
+    /** Its soft song from where its glow is: louder as it comes closer (the range grows with the volume). */
+    static void arrivalSong(ServerLevel level, Vec3 at, double distance, int tick) {
+        float volume = (float) Math.max(1.0, distance / 12.0 + 1.0);
+        float pitch = 0.75F + 0.2F * (float) Math.sin(tick * 0.13);
+        sound(level, at, SoundEvents.AMETHYST_BLOCK_RESONATE, volume, pitch);
+        if (tick % 80 == 0) {
+            sound(level, at, SoundEvents.CONDUIT_AMBIENT_SHORT, volume, 1.3F);
+        }
+    }
+
+    /** The last seconds before it rises: the water churns and its glow sinks under the surface. */
+    static void arrivalChurn(ServerLevel level, Vec3 surface, int tick) {
+        burstWarn(level, surface, 3.0, tick);
+        level.sendParticles(GLOW, surface.x, surface.y - 0.5, surface.z, 4, 1.5, 0.3, 1.5, 0.0);
+    }
+
+    /** It breaks through the surface: a column of spray, its glow scattering, a long roar. No damage. */
+    static void riseFromWater(ServerLevel level, TheLostKeeper keeper, Vec3 at) {
+        burst(level, at, 3.0);
+        sound(level, at, SoundEvents.ELDER_GUARDIAN_AMBIENT, 3.0F, 0.6F);
+        level.sendParticles(GLOW, at.x, at.y + 1.0, at.z, 30, 1.5, 1.0, 1.5, 0.0);
+        level.sendParticles(ParticleTypes.END_ROD, at.x, at.y + 1.0, at.z, 15, 1.0, 1.0, 1.0, 0.05);
+    }
+
+    /** It takes shape where its glow was, in the air: a flare of pastel light and a chime. */
+    static void appearInAir(ServerLevel level, TheLostKeeper keeper) {
+        Vec3 head = keeper.headCentre();
+        sound(level, head, SoundEvents.AMETHYST_BLOCK_RESONATE, 4.0F, 0.6F);
+        sound(level, head, SoundEvents.ELDER_GUARDIAN_AMBIENT, 3.0F, 0.7F);
+        level.sendParticles(GLOW, head.x, head.y, head.z, 40, 2.0, 1.2, 2.0, 0.0);
+        level.sendParticles(ParticleTypes.END_ROD, head.x, head.y, head.z, 20, 1.5, 1.0, 1.5, 0.04);
+        level.sendParticles(ParticleTypes.CLOUD, head.x, head.y, head.z, 30, 2.5, 1.5, 2.5, 0.02);
+    }
+
+    /** A wisp of its mist on the water: low drifting cloud and spray, and now and then a faint glow under it. */
+    static void trace(ServerLevel level, Vec3 surface, double radius, float strength, int age) {
+        int mist = Math.max(1, Math.round(strength * 8.0F));
+        level.sendParticles(ParticleTypes.CLOUD, surface.x, surface.y + 0.5, surface.z, mist, radius * 0.6, 0.3, radius * 0.6, 0.005);
+        level.sendParticles(ModParticleTypes.WATERFALL_MIST.get(), surface.x, surface.y + 0.6, surface.z, mist,
+                radius * 0.6, 0.4, radius * 0.6, 0.0);
+        if (strength > 0.3F && age % 40 == 0) {
+            level.sendParticles(ParticleTypes.FLASH, surface.x, surface.y + 0.3, surface.z, 1, 0.0, 0.0, 0.0, 0.0);
+            level.sendParticles(ParticleTypes.GLOW, surface.x, surface.y + 0.2, surface.z, 3, radius * 0.3, 0.1, radius * 0.3, 0.0);
+            level.sendParticles(ParticleTypes.END_ROD, surface.x, surface.y + 0.3, surface.z, 1, radius * 0.3, 0.1, radius * 0.3, 0.01);
+        }
     }
 
     private static void sound(ServerLevel level, Vec3 at, SoundEvent sound, float volume, float pitch) {

@@ -11,7 +11,8 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
  * is within {@code mistSyncRange}; {@code strength} 0 when it leaves, dies or retreats. The server decides where and how
  * thick; the client only draws the fog ({@code client/entity/lostkeeper/KeeperMistFog}).
  *
- * @param keeperId   the keeper's entity id (one bank per keeper)
+ * @param keeperId   the bank's id: a keeper's entity id (one bank per keeper), or negative for the mist of its arrival and
+ *                   the wisps it leaves while it roams ({@code entity/lostkeeper/KeeperMistBanks})
  * @param x          the bank's centre (the keeper's head)
  * @param radius     blocks of thickest mist round the centre
  * @param fade       blocks beyond the radius over which it thins out
