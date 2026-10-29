@@ -45,7 +45,7 @@ Na de eerste blik in de game (gebruiker: "meer leven in de mechanics en de attac
   - *Zoeken:* kwijt uit het zicht → hij loopt naar je laatste plek, snuffelt en kijkt rond.
   - *Doelwit wisselen:* in multiplayer gaat hij af op wie hem het hardst raakt, of op wie dichtbij en zwak is.
 - **Extra aanvallen per Nightmare:**
-  - *De Holle:* grondslag (schokgolf in een ring, springen of afstand ontwijkt), scheurregen (paarse scheurtjes rond de speler, dan void-klauwen omhoog), veegslag (brede knokkelboog vóór hem, duwt weg).
+  - *De Holle:* grondslag (schokgolf in een ring, springen of afstand ontwijkt), scheurregen (paarse scheurtjes rond de speler, dan void-klauwen omhoog), veegslag (brede knokkelboog vóór hem, duwt weg). Na de preview (2026-10-29): scheurregen alleen rond het doelwit; de void-klauwen zijn stenen, door corruptie aangevreten handen met knokkels en haakklauwen die uit de scheur grijpen (donker en ruig, emissive alleen op randen en naden, niets doorschijnends); schokgolf en veegslag akkoord.
   - *De Gelaagde:* sprong van de wand (landt met een klap, kleine straal), ingraven (in zand/grind, barst onder een speler op; geen blijvend gat), dode koppen spuwen (stof en botsplinters: korte blindheid, wat schade op afstand).
   - *De Herrijzende:* duikvlucht (hoog op, rechte duik, vuurspoor op de grond), sintelregen (grond kort in vuur, niets blijvends), landen en vechten (een tijd op de grond: stampen en pikken, goed te raken met melee).
   - *De Verloren Hoeder:* bellenval (bellen als waarschuwing, dan een stroom die je de diepte in trekt of de lucht in gooit), omsingelen (kronkelt een krimpende kring om de spelers; zijn lijf is een muur), duik en uitbarsting (barst onder een speler of boot omhoog en lanceert die).

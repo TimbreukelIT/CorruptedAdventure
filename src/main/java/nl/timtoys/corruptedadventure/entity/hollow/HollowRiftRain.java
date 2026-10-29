@@ -50,8 +50,11 @@ public final class HollowRiftRain {
             }
             Optional<Vec3> ground = ground(level, x, target.getBlockY(), z);
             if (ground.isPresent()) {
-                claws.add(HollowVoidClaw.spawn(level, hollow, ground.get(), random.nextFloat() * 360.0F,
-                        warning + i * STAGGER_TICKS, damage));
+                // The hand hooks its fingers toward its target (the model's fingers curl against its yaw); the one under
+                // its feet any way.
+                float yaw = i == 0 ? random.nextFloat() * 360.0F
+                        : HollowRiftStepGoal.yawToward(ground.get(), target.position()) + 180.0F;
+                claws.add(HollowVoidClaw.spawn(level, hollow, ground.get(), yaw, warning + i * STAGGER_TICKS, damage));
             }
         }
         HollowEffects.riftRainCracks(level, target);

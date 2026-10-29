@@ -5,66 +5,51 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowVoidClaw;
+import software.bernie.geckolib.model.DefaultedEntityGeoModel;
+import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 /**
  * Draws a {@link HollowVoidClaw}. First the warning: purple cracks that run out over the ground from a growing hole of
- * void, pulsing faster toward the bite. Then the claw: four hooked talons of the End portal's starry void with a glowing
- * sheen of corruption shoot up out of the hole, stand, and sink back. The shape is fixed per claw (seeded by its id);
- * the synced warmup and the bite event time it.
+ * void, pulsing faster toward the bite. Then the hand (GeckoLib, {@code hollow_void_claw}: stone eaten by corruption,
+ * hooked void-black talons, emissive only in the seams) claws up out of the hole, clenches and sinks back; below the
+ * ground the terrain hides it. The cracks are fixed per claw (seeded by its id); the synced warmup times them.
  */
-public final class HollowVoidClawRenderer extends EntityRenderer<HollowVoidClaw> {
+public final class HollowVoidClawRenderer extends GeoEntityRenderer<HollowVoidClaw> {
     private static final int CRACKS = 6;
     private static final int CRACK_STEPS = 4;
-    private static final int TALONS = 4;
-    private static final int TALON_STEPS = 6;
-    private static final float TALON_HEIGHT = 2.1F;
-    private static final float SINK_TICKS = 6.0F;
-    private static final float SHEEN = 1.45F;
-    // The corruption palette: 2B1F38 bed, 45305C deep, F800F8 glitch; the glowing core a little more saturated.
+    // The corruption palette: 2B1F38 bed, F800F8 glitch; the glowing core a little more saturated than 9C7AC4.
     private static final int[] RIM = {0xB0, 0x60, 0xF0};
-    private static final int[] DEEP = {0x45, 0x30, 0x5C};
     private static final int[] BED = {0x2B, 0x1F, 0x38};
     private static final int[] GLITCH = {0xF8, 0x00, 0xF8};
 
     HollowVoidClawRenderer(EntityRendererProvider.Context context) {
-        super(context);
+        super(context, new DefaultedEntityGeoModel<>(CorruptedAdventure.id("hollow_void_claw")));
+        addRenderLayer(new AutoGlowingGeoLayer<>(this));
         shadowRadius = 0.0F;
     }
 
     @Override
     public void render(HollowVoidClaw claw, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers,
                        int packedLight) {
-        float sinceBite = claw.clientSinceBite(partialTick);
-        boolean open = sinceBite >= 0.0F;
+        boolean open = claw.clientSinceBite(partialTick) >= 0.0F;
         float warm = open ? 1.0F : Math.min(1.0F, (claw.tickCount + partialTick) / claw.warmup());
-        float rise = 0.0F;
-        if (open) {
-            float up = Math.min(1.0F, sinceBite / HollowVoidClaw.RISE_TICKS);
-            float down = Mth.clamp((HollowVoidClaw.LIFE_TICKS - sinceBite) / SINK_TICKS, 0.0F, 1.0F);
-            rise = Math.min(up * (2.0F - up), down);
-        }
         float time = claw.tickCount + partialTick;
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(-claw.getYRot()));
         PoseStack.Pose pose = poseStack.last();
-        RandomSource random = RandomSource.create(claw.getId() * 7349241L);
-        float[][] cracks = cracks(random, warm);
+        float[][] cracks = cracks(RandomSource.create(claw.getId() * 7349241L), warm);
         // A dark purple bed (blended), then a thin glowing core (additive): additive alone washes out to white on grass.
         drawCracks(buffers.getBuffer(RenderType.debugQuads()), pose, cracks, 2.4F, BED, (int) (150 + 80 * warm), time);
         float pulse = 0.5F + 0.5F * Mth.sin(time * (0.3F + 0.9F * warm));
         drawCracks(buffers.getBuffer(RenderType.lightning()), pose, cracks, 1.0F, RIM,
                 (int) (90 + 150 * (open ? 1.0F : pulse * warm)), time);
-        hole(buffers.getBuffer(RenderType.endPortal()), pose, 0.12F + 0.33F * warm);
-        if (rise > 0.0F) {
-            talons(buffers, pose, random, rise, time);
-        }
+        hole(buffers.getBuffer(RenderType.endPortal()), pose, 0.12F + 0.38F * warm);
         poseStack.popPose();
         super.render(claw, entityYaw, partialTick, poseStack, buffers, packedLight);
     }
@@ -139,97 +124,5 @@ public final class HollowVoidClawRenderer extends EntityRenderer<HollowVoidClaw>
                 }
             }
         }
-    }
-
-    /**
-     * Four hooked talons round the hole, curving out and then in over the middle, thinning to a point; {@code rise} 0..1
-     * is how far they are out of the ground (below it they are hidden). Starry void, with a faint glowing sheen.
-     */
-    private static void talons(MultiBufferSource buffers, PoseStack.Pose pose, RandomSource random, float rise, float time) {
-        float drop = (1.0F - rise) * TALON_HEIGHT;
-        float[][][] rings = new float[TALONS][][];
-        float[][] directions = new float[TALONS][];
-        for (int k = 0; k < TALONS; k++) {
-            float angle = (k + 0.5F) * Mth.TWO_PI / TALONS + (random.nextFloat() - 0.5F) * 0.6F;
-            float height = TALON_HEIGHT * (0.8F + random.nextFloat() * 0.35F);
-            float hook = 0.7F + random.nextFloat() * 0.25F;
-            float cos = Mth.cos(angle);
-            float sin = Mth.sin(angle);
-            directions[k] = new float[] {cos, sin};
-            rings[k] = new float[TALON_STEPS + 1][];
-            for (int step = 0; step <= TALON_STEPS; step++) {
-                float t = (float) step / TALON_STEPS;
-                float out = 0.34F + 0.55F * t - hook * t * t;
-                float w = 0.21F * (1.0F - 0.92F * t);
-                rings[k][step] = new float[] {cos * out, height * t - drop, sin * out, w};
-            }
-        }
-        VertexConsumer voidFill = buffers.getBuffer(RenderType.endPortal());
-        for (int k = 0; k < TALONS; k++) {
-            for (int step = 0; step < TALON_STEPS; step++) {
-                for (float[][] face : faces(rings[k][step], rings[k][step + 1], directions[k], 1.0F)) {
-                    for (int side = 0; side < 2; side++) {
-                        for (int v = 0; v < 4; v++) {
-                            float[] p = face[side == 0 ? v : 3 - v];
-                            voidFill.addVertex(pose, p[0], p[1], p[2]);
-                        }
-                    }
-                }
-            }
-        }
-        VertexConsumer glow = buffers.getBuffer(RenderType.lightning());
-        for (int k = 0; k < TALONS; k++) {
-            for (int step = 0; step < TALON_STEPS; step++) {
-                float t = (float) step / TALON_STEPS;
-                int alpha = Math.max(0, (int) ((70 + 50 * Mth.sin(time * 0.8F + k)) * (1.0F - t * 0.6F) * rise));
-                int[] colour = (k * 3 + step + (int) (time * 0.5F)) % 13 == 0 ? GLITCH : step == TALON_STEPS - 1 ? RIM : DEEP;
-                for (float[][] face : faces(rings[k][step], rings[k][step + 1], directions[k], SHEEN)) {
-                    for (int side = 0; side < 2; side++) {
-                        for (int v = 0; v < 4; v++) {
-                            int index = side == 0 ? v : 3 - v;
-                            float[] p = face[index];
-                            // Bright at the segment's foot, fading toward its top.
-                            int a = index < 2 ? alpha : alpha / 2;
-                            glow.addVertex(pose, p[0], p[1], p[2]).setColor(colour[0], colour[1], colour[2], a);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * The four side faces of one talon segment between two cross-sections {@code {x, y, z, half width}}: squares turned
-     * to the talon's direction {@code {cos, sin}}, widened by {@code grow}. Each face is foot, foot, top, top.
-     */
-    private static float[][][] faces(float[] a, float[] b, float[] direction, float grow) {
-        float[][] ca = corners(a, direction, grow);
-        float[][] cb = corners(b, direction, grow);
-        float[][][] faces = new float[4][][];
-        for (int f = 0; f < 4; f++) {
-            int g = (f + 1) % 4;
-            faces[f] = new float[][] {ca[f], ca[g], cb[g], cb[f]};
-        }
-        return faces;
-    }
-
-    private static float[][] corners(float[] c, float[] direction, float grow) {
-        float w = c[3] * grow;
-        // Across the talon (tangent) and along it (radial).
-        float tx = -direction[1] * w;
-        float tz = direction[0] * w;
-        float rx = direction[0] * w;
-        float rz = direction[1] * w;
-        return new float[][] {
-                {c[0] - tx - rx, c[1], c[2] - tz - rz},
-                {c[0] + tx - rx, c[1], c[2] + tz - rz},
-                {c[0] + tx + rx, c[1], c[2] + tz + rz},
-                {c[0] - tx + rx, c[1], c[2] - tz + rz}};
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public ResourceLocation getTextureLocation(HollowVoidClaw claw) {
-        return TextureAtlas.LOCATION_BLOCKS;
     }
 }
