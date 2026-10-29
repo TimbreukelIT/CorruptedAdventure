@@ -368,7 +368,8 @@ def spit():
 def unfold():
     """Its arrival on a wall (2.5 s, arrivalUnfoldTicks 50; LayeredEffects.unfold sounds at the same moments). It starts
     folded flat against the stone: the body pressed into the wall, the legs lowered flat and swung back along it with the
-    shins folded into the rock, the heads tucked in, so only the banded back plates show, a piece of the wall. The plates
+    shins folded into the rock, the legs sunk into the stone (moved in and drawn small, 0.55) and the heads pressed into
+    it, so only the banded back plates show, a piece of the wall (a cloud of its dust hides it until 0.9 s, server). The plates
     shift (0.4 s), the body pushes out (0.55-1.6 s), the front legs tear loose at 0.9 s, the mid legs at 1.2 s, the back
     legs at 1.4 s, the heads rise with the beak agape at 1.8 s, and it settles into its pose at 2.5 s. Played on its own
     controller without a blend, held at the end; in the wall frame "down" is into the wall."""
@@ -381,14 +382,17 @@ def unfold():
                                   (0.7, (0, 0, 0)), (length, (0, 0, 0))]),
         "abdomen": channel(rotation=[(0, (4, 0, 0)), (0.4, (4, 0, 0)), (0.45, (0, 3, 0)), (0.55, (6, -3, 0)),
                                      (0.7, (4, 0, 0)), (1.6, (4, 0, 0)), (2.1, (-3, 0, 0)), (length, (0, 0, 0))]),
-        "head_alive": channel(rotation=[(0, (34, 0, 0)), (1.75, (34, 0, 0)), (1.9, (-28, 0, 0)), (2.2, (-20, 6, 0)),
-                                        (length, (0, 0, 0))]),
+        "head_alive": channel(rotation=[(0, (62, 0, 0)), (1.75, (62, 0, 0)), (1.9, (-28, 0, 0)), (2.2, (-20, 6, 0)),
+                                        (length, (0, 0, 0))],
+                              position=[(0, (0, -8, 0)), (1.75, (0, -8, 0)), (1.9, (0, 0, 0)), (length, (0, 0, 0))]),
         "beak_lower": channel(rotation=[(0, (0, 0, 0)), (1.8, (0, 0, 0)), (1.9, (42, 0, 0)), (2.3, (38, 0, 0)),
                                         (length, (0, 0, 0))]),
-        "head_dead_left": channel(rotation=[(0, (30, 0, -24)), (1.85, (30, 0, -24)), (2.0, (-10, -6, 6)),
-                                            (length, (0, 0, 0))]),
-        "head_dead_right": channel(rotation=[(0, (30, 0, 24)), (1.95, (30, 0, 24)), (2.1, (-8, 6, -6)),
-                                             (length, (0, 0, 0))]),
+        "head_dead_left": channel(rotation=[(0, (58, 0, -30)), (1.85, (58, 0, -30)), (2.0, (-10, -6, 6)),
+                                            (length, (0, 0, 0))],
+                                  position=[(0, (0, -7, 0)), (1.85, (0, -7, 0)), (2.0, (0, 0, 0)), (length, (0, 0, 0))]),
+        "head_dead_right": channel(rotation=[(0, (58, 0, 30)), (1.95, (58, 0, 30)), (2.1, (-8, 6, -6)),
+                                             (length, (0, 0, 0))],
+                                   position=[(0, (0, -7, 0)), (1.95, (0, -7, 0)), (2.1, (0, 0, 0)), (length, (0, 0, 0))]),
         "jaw_left": channel(rotation=[(0, (0, 0, 0)), (1.9, (0, 0, 0)), (2.0, (30, 0, 0)), (length, (0, 0, 0))]),
         "jaw_right": channel(rotation=[(0, (0, 0, 0)), (2.0, (0, 0, 0)), (2.1, (26, 0, 0)), (length, (0, 0, 0))]),
     }
@@ -397,10 +401,13 @@ def unfold():
     for pair, at in (("front", 0.9), ("mid", 1.2), ("back", 1.4)):
         for side in ("left", "right"):
             lift, fwd = side_sign(side)
-            folded = (0, swing[pair] * fwd, -78 * lift)
-            bones[f"leg_{pair}_{side}"] = channel(rotation=[
-                (0, folded), (at, folded), (at + 0.12, (0, 6 * fwd, 22 * lift)), (at + 0.3, (0, -2 * fwd, -6 * lift)),
-                (at + 0.5, (0, 0, 2 * lift)), (length, (0, 0, 0))])
+            folded = (0, swing[pair] * fwd, -100 * lift)
+            sunk = 0.55
+            bones[f"leg_{pair}_{side}"] = channel(
+                rotation=[(0, folded), (at, folded), (at + 0.12, (0, 6 * fwd, 22 * lift)),
+                          (at + 0.3, (0, -2 * fwd, -6 * lift)), (at + 0.5, (0, 0, 2 * lift)), (length, (0, 0, 0))],
+                position=[(0, (0, -6, 0)), (at, (0, -6, 0)), (at + 0.12, (0, 0, 0)), (length, (0, 0, 0))],
+                scale=[(0, (sunk, sunk, sunk)), (at, (sunk, sunk, sunk)), (at + 0.12, (1, 1, 1)), (length, (1, 1, 1))])
             bones[f"leg_{pair}_{side}_lower"] = channel(rotation=[
                 (0, (0, 0, -24 * lift)), (at, (0, 0, -24 * lift)), (at + 0.12, (0, 0, 14 * lift)),
                 (at + 0.35, (0, 0, -4 * lift)), (length, (0, 0, 0))])
