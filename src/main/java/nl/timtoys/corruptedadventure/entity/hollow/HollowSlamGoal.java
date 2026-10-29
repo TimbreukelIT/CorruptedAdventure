@@ -54,6 +54,10 @@ final class HollowSlamGoal extends Goal {
 
     @Override
     public void stop() {
+        // Broken off mid-windup (a stagger): the slam still costs its cooldown.
+        if (windup > 0) {
+            nextSlamTick = hollow.tickCount + ServerConfig.HOLLOW.slamCooldownTicks.get();
+        }
         windup = 0;
         hollow.getNavigation().stop();
     }

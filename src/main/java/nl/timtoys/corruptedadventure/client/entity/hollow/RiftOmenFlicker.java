@@ -17,7 +17,7 @@ import nl.timtoys.corruptedadventure.entity.hollow.RiftPhase;
 import java.util.Set;
 
 /**
- * An omen of The Hollow's arrival, on the client only: torches and lanterns near a rift in its omen (or opening) phase
+ * An omen of The Hollow's arrival, on the client only: torches and lanterns near an arrival rift in its omen (or opening) phase
  * gutter, with smoke and now and then the hiss of a flame going out. The blocks themselves stay as they are.
  */
 public final class RiftOmenFlicker {
@@ -41,7 +41,7 @@ public final class RiftOmenFlicker {
             return;
         }
         for (HollowRift rift : level.getEntitiesOfClass(HollowRift.class, minecraft.player.getBoundingBox().inflate(SEEN_FROM))) {
-            if (rift.phase() == RiftPhase.OMEN || rift.phase() == RiftPhase.OPENING) {
+            if (rift.isArrival() && (rift.phase() == RiftPhase.OMEN || rift.phase() == RiftPhase.OPENING)) {
                 gutter(level, rift.blockPosition(), level.getRandom());
             }
         }

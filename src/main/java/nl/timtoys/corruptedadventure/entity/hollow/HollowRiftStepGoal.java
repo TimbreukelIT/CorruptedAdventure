@@ -24,6 +24,11 @@ final class HollowRiftStepGoal extends Goal {
     private final TheHollow hollow;
     /** Ticks the rift it comes out of stays open. */
     private static final int EXIT_OPEN_TICKS = 12;
+    /**
+     * Ticks a reaction's request waits for its turn: enough to outwait the attack that ended the burst (an extra attack
+     * runs ~3 s), after that the moment has passed.
+     */
+    private static final int REQUEST_TICKS = 60;
 
     private int warning;
     private int nextStepTick;
@@ -31,6 +36,7 @@ final class HollowRiftStepGoal extends Goal {
     /** Where a reaction wants it to go, or null for an attack step behind its target. */
     @Nullable
     private Vec3 requested;
+    private int requestedUntil;
     @Nullable
     private Vec3 destination;
 
@@ -48,6 +54,7 @@ final class HollowRiftStepGoal extends Goal {
     /** A reaction: rift-step to near {@code point} as soon as it can (not while pinned, staggering or arriving). */
     void stepTo(Vec3 point) {
         requested = point;
+        requestedUntil = hollow.tickCount + REQUEST_TICKS;
     }
 
     @Override
@@ -58,9 +65,13 @@ final class HollowRiftStepGoal extends Goal {
             return false;
         }
         if (requested != null) {
-            destination = requested;
+            Vec3 point = requested;
             requested = null;
-            return true;
+            // Dropped when held back too long (another goal had MOVE) or its rest window or search is already over.
+            if (hollow.tickCount <= requestedUntil && (hollow.isResting() || hollow.isSearching())) {
+                destination = point;
+                return true;
+            }
         }
         destination = null;
         return hollow.tickCount >= nextStepTick && hollow.mayStartAttack();

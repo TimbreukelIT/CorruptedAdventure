@@ -23,6 +23,7 @@ import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
 public class HollowRift extends Entity {
     private static final EntityDataAccessor<Integer> DATA_PHASE = SynchedEntityData.defineId(HollowRift.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_PHASE_TICKS = SynchedEntityData.defineId(HollowRift.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_ARRIVAL = SynchedEntityData.defineId(HollowRift.class, EntityDataSerializers.BOOLEAN);
     /** Ticks of the CLOSING phase of every rift. */
     public static final int CLOSING_TICKS = 30;
     /** Ticks a roaming trace (a hairline crack) hangs in the air. */
@@ -60,8 +61,13 @@ public class HollowRift extends Entity {
     private static HollowRift create(ServerLevel level, Vec3 feet, float yaw, Kind kind) {
         HollowRift rift = new HollowRift(ModEntityTypes.HOLLOW_RIFT.get(), level);
         rift.moveTo(feet.x, feet.y, feet.z, yaw, 0.0F);
-        rift.kind = kind;
+        rift.setKind(kind);
         return rift;
+    }
+
+    private void setKind(Kind kind) {
+        this.kind = kind;
+        entityData.set(DATA_ARRIVAL, kind.isArrival());
     }
 
     /** The director's arrival at {@code feet}, facing {@code yaw}: a hairline crack that holds until {@link #open}. */
@@ -93,6 +99,7 @@ public class HollowRift extends Entity {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(DATA_PHASE, RiftPhase.OMEN.ordinal());
         builder.define(DATA_PHASE_TICKS, 0);
+        builder.define(DATA_ARRIVAL, Kind.SUMMONED.isArrival());
     }
 
     public RiftPhase phase() {
@@ -112,6 +119,11 @@ public class HollowRift extends Entity {
 
     public Kind kind() {
         return kind;
+    }
+
+    /** Whether it brings The Hollow (and so runs omens); synced, unlike {@link #kind()}. */
+    public boolean isArrival() {
+        return entityData.get(DATA_ARRIVAL);
     }
 
     private void setPhase(RiftPhase phase, int ticks) {
@@ -220,7 +232,7 @@ public class HollowRift extends Entity {
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
         if (tag.contains("Kind")) {
-            kind = Kind.values()[Math.floorMod(tag.getInt("Kind"), Kind.values().length)];
+            setKind(Kind.values()[Math.floorMod(tag.getInt("Kind"), Kind.values().length)]);
         }
         if (tag.contains("Scars")) {
             scars = tag.getBoolean("Scars");

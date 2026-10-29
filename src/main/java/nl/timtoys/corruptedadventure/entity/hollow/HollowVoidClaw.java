@@ -42,6 +42,8 @@ public class HollowVoidClaw extends Entity implements GeoEntity {
     /** Half the claw's width and its height, in blocks: whoever's hitbox touches that box is hit. */
     private static final double HALF_WIDTH = 0.6;
     private static final double HEIGHT = 2.2;
+    /** How far out the renderer's warning cracks reach (up to 1.15 blocks, plus their width), for the culling box. */
+    private static final double CRACK_REACH = 1.3;
 
     @Nullable
     private TheHollow owner;
@@ -174,5 +176,11 @@ public class HollowVoidClaw extends Entity implements GeoEntity {
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
+    }
+
+    @Override
+    public AABB getBoundingBoxForCulling() {
+        double out = CRACK_REACH - HALF_WIDTH;
+        return getBoundingBox().inflate(out, 0.0, out);
     }
 }

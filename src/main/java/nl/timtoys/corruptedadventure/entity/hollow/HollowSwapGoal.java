@@ -32,7 +32,8 @@ final class HollowSwapGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (hollow.tickCount < nextSwapTick || hollow.getTarget() == null || !hollow.mayStartAttack()) {
+        if (hollow.tickCount < nextSwapTick || hollow.getTarget() == null || hollow.isPhased() || hollow.isArriving()
+                || !hollow.mayStartAttack()) {
             return false;
         }
         List<Player> fighters = hollow.fighters();

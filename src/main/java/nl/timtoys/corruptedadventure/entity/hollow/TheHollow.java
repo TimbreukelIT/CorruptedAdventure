@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.entity.hollow;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -49,6 +50,7 @@ public class TheHollow extends Nightmare {
             SynchedEntityData.defineId(TheHollow.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_EMERGING =
             SynchedEntityData.defineId(TheHollow.class, EntityDataSerializers.BOOLEAN);
+    private static final String HIDDEN_TAG = "HiddenTicks";
 
     private int pinnedTicks;
     private int phaseTicks;
@@ -175,8 +177,9 @@ public class TheHollow extends Nightmare {
         if (!level().isClientSide() && source.is(DamageTypes.PLAYER_ATTACK) && source.getEntity() instanceof Player player
                 && source.getDirectEntity() == player) {
             ItemStack hand = player.getMainHandItem();
-            // A crystal on an already pinned Hollow does nothing and costs nothing (no wasted crystals on spam clicks).
-            if (hand.is(ModItems.SOUL_CRYSTAL.get()) && !isPinned()) {
+            // A crystal on an already pinned Hollow does nothing and costs nothing (no wasted crystals on spam clicks),
+            // nor on one the hit cannot reach (hidden in its arrival rift). Out of phase it does land: the pin ends it.
+            if (hand.is(ModItems.SOUL_CRYSTAL.get()) && !isPinned() && hiddenTicks == 0 && !isInvulnerableTo(source)) {
                 pin(ServerConfig.HOLLOW.pinSeconds.get() * 20);
                 if (!player.getAbilities().instabuild) {
                     hand.shrink(1);
@@ -189,6 +192,24 @@ public class TheHollow extends Nightmare {
             return false;
         }
         return super.hurt(source, amount);
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        if (hiddenTicks > 0) {
+            tag.putInt(HIDDEN_TAG, hiddenTicks);
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        // Vanilla saves Invulnerable but not Invisible: back in its rift both again, or it would stay untouchable.
+        int hidden = tag.getInt(HIDDEN_TAG);
+        if (hidden > 0) {
+            awaitRift(hidden);
+        }
     }
 
     @Override
