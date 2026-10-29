@@ -8,7 +8,7 @@ at 1.0 s (riftStepWarningTicks 20), the swap at 0.75 s (swapWarningTicks 15), de
 rift last 3.0 s (DEATH_TICKS, EMERGE_TICKS 60). The extra attacks (life round): the ground slam lands at 1.25 s
 (groundSlamWindupTicks 25), the rift rain's hand is in the ground at 1.0 s (riftRainWindupTicks 20) and comes out when the
 claws are up (+ riftRainWarningTicks 25), the sweep goes through at 0.75 s (sweepWindupTicks 15); each recovers in 0.75 s
-(RECOVERY_TICKS 15 in HollowExtraAttackGoal).
+(RECOVERY_TICKS 15 in HollowExtraAttackGoal). The stagger is a loop the body controller plays while it staggers.
 
 Bedrock conventions (checked in Blockbench): a negative x rotation swings a limb forward (toward the face, -z); a positive x
 rotation tips the top of a bone forward. The root bone pivots on the heel line, so a negative x tips the whole body
@@ -227,6 +227,32 @@ def sweep():
     }}
 
 
+def stagger():
+    """Wankelen (life round): it reels back on its heels, the giant arm hangs dead and drags, the knees buckle, the
+    broken head swings and the void in its chest flickers; a loop of 1.0 s for as long as it staggers."""
+    return {"loop": True, "animation_length": 1.0, "bones": {
+        "root": channel(rotation=[(0, (-6, 0, 3)), (0.3, (-10, 0, -2)), (0.55, (-4, 0, 4)), (0.8, (-9, 0, -1)), (1.0, (-6, 0, 3))],
+                        position=[(0, (0, -2, 0)), (0.3, (0, -3, 1)), (0.55, (0, -1.5, 0)), (0.8, (0, -3, 1)), (1.0, (0, -2, 0))]),
+        "body": channel(rotation=[(0, (-8, 0, 4)), (0.25, (-14, 0, -3)), (0.5, (-6, 0, 6)), (0.75, (-12, 0, -2)),
+                                  (1.0, (-8, 0, 4))]),
+        "head": channel(rotation=[(0, (-10, 0, 20)), (0.2, (8, 0, -6)), (0.25, (-12, 0, 26)), (0.6, (4, 0, 8)),
+                                  (0.65, (-14, 0, 24)), (1.0, (-10, 0, 20))]),
+        "arm_giant": channel(rotation=[(0, (14, 0, -6)), (0.4, (6, 0, -12)), (0.7, (16, 0, -4)), (1.0, (14, 0, -6))]),
+        "hand_giant": channel(rotation=[(0, (20, 0, 0)), (0.5, (28, 0, 0)), (1.0, (20, 0, 0))]),
+        "arm_thin": channel(rotation=[(0, (-40, 0, 25)), (0.3, (-55, 0, 35)), (0.6, (-35, 0, 20)), (1.0, (-40, 0, 25))]),
+        "arm_thin_lower": channel(rotation=[(0, (-20, 0, 0)), (0.5, (-35, 0, 0)), (1.0, (-20, 0, 0))]),
+        "leg_left": channel(rotation=[(0, (-14, 0, 0)), (0.3, (-20, 0, 0)), (0.6, (-10, 0, 0)), (1.0, (-14, 0, 0))]),
+        "leg_left_lower": channel(rotation=[(0, (26, 0, 0)), (0.3, (34, 0, 0)), (0.6, (20, 0, 0)), (1.0, (26, 0, 0))]),
+        "leg_right": channel(rotation=[(0, (-8, 0, 0)), (0.5, (-18, 0, 0)), (1.0, (-8, 0, 0))]),
+        "leg_right_lower": channel(rotation=[(0, (16, 0, 0)), (0.5, (30, 0, 0)), (1.0, (16, 0, 0))]),
+        "chest_void": channel(scale=[(0, (1, 1, 1)), (0.1, (0.6, 0.6, 1)), (0.15, (1.2, 1.2, 1)), (0.45, (1, 1, 1)),
+                                     (0.5, (0.5, 0.5, 1)), (0.55, (1.1, 1.1, 1)), (1.0, (1, 1, 1))]),
+        "glitch_fx": channel(position=[(0, (0, 0, 0)), (0.2, (2, -1, 0)), (0.25, (0, 0, 0)), (0.7, (-2, 1, 1)), (0.75, (0, 0, 0)),
+                                       (1.0, (0, 0, 0))],
+                             scale=[(0, (1.4, 1.4, 1.4)), (0.5, (1.9, 1.9, 1.9)), (1.0, (1.4, 1.4, 1.4))]),
+    }}
+
+
 def emerge():
     """The arrival (EMERGE_TICKS 60): the giant hand comes through the rift first and grips its edge, then The Hollow
     hauls itself out from behind the rift's plane (the root starts ~2 blocks back, hidden by the void) and straightens."""
@@ -286,6 +312,7 @@ def main():
         "animation.the_hollow.ground_slam": ground_slam(),
         "animation.the_hollow.rift_rain": rift_rain(),
         "animation.the_hollow.sweep": sweep(),
+        "animation.the_hollow.stagger": stagger(),
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:
