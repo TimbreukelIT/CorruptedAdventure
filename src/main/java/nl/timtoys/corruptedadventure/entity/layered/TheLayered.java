@@ -13,7 +13,6 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -27,6 +26,7 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WallClimberNavigation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -80,6 +80,8 @@ public class TheLayered extends Nightmare {
             SynchedEntityData.defineId(TheLayered.class, EntityDataSerializers.BOOLEAN);
     /** A hit counts as from below when the attacker's eyes are this far under its feet. */
     private static final double BELLY_MARGIN = 0.5;
+    /** How much a projectile's hit test grows its target's box (vanilla {@code ProjectileUtil}). */
+    private static final double PROJECTILE_MARGIN = 0.3;
     /** Ticks the model takes to turn onto a wall or back (client only). */
     private static final float WALL_TURN_TICKS = 6.0F;
     private static final float DEAD_HEAD_RANGE = 24.0F;
@@ -96,7 +98,6 @@ public class TheLayered extends Nightmare {
     private boolean ambush;
     private int nextSpecialTick;
     private final List<LayeredSpit> spits = new ArrayList<>();
-    private boolean releasing;
     private int fallenTicks;
     private int dazzleFlipAllowedTick;
     private int rockfallUsed;
@@ -107,6 +108,8 @@ public class TheLayered extends Nightmare {
     private float wallTurnO;
     private final float[] deadHeadYaw = new float[2];
     private final float[] deadHeadPitch = new float[2];
+    private final float[] deadHeadYawO = new float[2];
+    private final float[] deadHeadPitchO = new float[2];
 
     public TheLayered(EntityType<? extends TheLayered> type, Level level) {
         super(type, level, BossEvent.BossBarColor.RED);
@@ -288,6 +291,7 @@ public class TheLayered extends Nightmare {
     public void tick() {
         super.tick();
         if (!level().isClientSide()) {
+            holdOn();
             if (isAlive()) {
                 tickGrip();
                 updateSurface();
@@ -402,14 +406,18 @@ public class TheLayered extends Nightmare {
         knockOff(true);
     }
 
-    /** {@code hard}: the landing hurts it and throws it on its back (fire, dazzle); else it just lands (a stagger). */
+    /**
+     * {@code hard}: the landing hurts it and throws it on its back (fire, dazzle), if it really hung on the wall; else it
+     * just lands (a stagger).
+     */
     private void knockOff(boolean hard) {
         if (knockedOff) {
             return;
         }
         releaseHeld();
         knockedOff = true;
-        hardFall = hard;
+        // Pushing against the foot of a wall it counts as on the wall, but it hangs from nothing: nothing to fall from.
+        hardFall = hard && !onGround();
         clingRequested = false;
         setSurface(Direction.DOWN);
         getNavigation().stop();
@@ -447,7 +455,7 @@ public class TheLayered extends Nightmare {
 
     // --- the held player ----------------------------------------------------------------------------------------------
 
-    /** Grabs a player in its beak: the player rides it and cannot get off by sneaking ({@link LayeredGrip}). */
+    /** Grabs a player in its beak: the player rides it and cannot get off by sneaking ({@link #holdOn}). */
     public boolean grab(Player player) {
         if (isVehicle() || !player.startRiding(this, true)) {
             return false;
@@ -467,21 +475,32 @@ public class TheLayered extends Nightmare {
         if (!isVehicle()) {
             return;
         }
-        releasing = true;
-        try {
-            ejectPassengers();
-        } finally {
-            releasing = false;
-        }
+        ejectPassengers();
         triggerAnim(LayeredAnimations.ACTION, LayeredAnimations.RELEASE);
         if (level() instanceof ServerLevel serverLevel) {
             LayeredEffects.release(serverLevel, this);
         }
     }
 
-    /** True while it lets go itself; a sneaking player is held on otherwise. */
-    public boolean isReleasing() {
-        return releasing;
+    /**
+     * Clears the held player's sneak before their ride tick (the vehicle ticks first), so vanilla's sneak dismount never
+     * fires. Refusing that dismount instead would skip their ride tick: a player who keeps sneaking would hang where they
+     * were grabbed on the server while it climbs on.
+     */
+    void holdOn() {
+        Player held = heldPlayer();
+        if (held != null && held.isShiftKeyDown()) {
+            held.setShiftKeyDown(false);
+        }
+    }
+
+    /**
+     * Never saved as a player's vehicle: an autosave would store it in a held player's file, and after a crash it would
+     * come back with them as well as in the world. It stays in its chunk instead.
+     */
+    @Override
+    public boolean hasExactlyOnePlayerPassenger() {
+        return false;
     }
 
     @Override
@@ -504,11 +523,7 @@ public class TheLayered extends Nightmare {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (source.is(DamageTypes.FALLING_BLOCK)) {
-            // Its own rock fall.
-            return false;
-        }
-        if (untouchableUnderground(source)) {
+        if (LayeredRockfall.isRock(source.getDirectEntity()) || untouchableUnderground(source)) {
             return false;
         }
         boolean belly = isBellyHit(source);
@@ -530,12 +545,19 @@ public class TheLayered extends Nightmare {
         return !isBurrowed() && super.isPickable();
     }
 
+    @Override
+    public boolean displayFireAnimation() {
+        // Invisible under the sand hides its model and shadow, but flames in its fur would still show where it is.
+        return !isBurrowed() && super.displayFireAnimation();
+    }
+
     /**
      * A hit on its living head (the head part): full damage, and a hit by a player counts toward freeing the held player
      * ({@code freeHitsByOthers}, or {@code freeHitsBySelf} for the held player).
      */
     boolean hurtHead(DamageSource source, float amount) {
-        if (source.is(DamageTypes.FALLING_BLOCK) || untouchableUnderground(source) || !super.hurt(source, amount)) {
+        if (LayeredRockfall.isRock(source.getDirectEntity()) || untouchableUnderground(source)
+                || !super.hurt(source, amount)) {
             return false;
         }
         Player held = heldPlayer();
@@ -551,26 +573,45 @@ public class TheLayered extends Nightmare {
     }
 
     /**
-     * The belly: on its back every hit; otherwise a hit from below it (the attacker's eyes, or the source's position
-     * without an attacker, under its feet), or damage without a position (fire, poison, the void).
+     * The belly: on its back every hit; otherwise a hit from below it ({@link #isHitFromBelow}), or damage without a
+     * position (fire, poison, the void).
      */
     boolean isBellyHit(DamageSource source) {
         if (isFallen() || source.is(DamageTypeTags.BYPASSES_ARMOR)) {
             return true;
         }
-        Vec3 from = hitFrom(source);
-        return from == null || from.y < getY() - BELLY_MARGIN;
+        boolean noPosition = !(source.getDirectEntity() instanceof Projectile) && hitFrom(source) == null;
+        return noPosition || isHitFromBelow(source);
     }
 
-    /** A hit that comes from under it (not one without a position, not one while it lies on its back). */
+    /**
+     * A hit that comes from under it (not one while it lies on its back): a projectile that strikes it under its feet
+     * (where it strikes, not where it was shot from), else the attacker's eyes (the source's position without an
+     * attacker) under its feet.
+     */
     private boolean isHitFromBelow(DamageSource source) {
+        if (isFallen()) {
+            return false;
+        }
+        if (source.getDirectEntity() instanceof Projectile projectile) {
+            return projectileImpact(projectile).y < getY();
+        }
         Vec3 from = hitFrom(source);
-        return !isFallen() && from != null && from.y < getY() - BELLY_MARGIN;
+        return from != null && from.y < getY() - BELLY_MARGIN;
     }
 
     @Nullable
     private static Vec3 hitFrom(DamageSource source) {
         return source.getEntity() instanceof LivingEntity attacker ? attacker.getEyePosition() : source.getSourcePosition();
+    }
+
+    /**
+     * Where a projectile strikes it. It is hurt before it moves this tick, so: where this tick's path enters its box (grown
+     * as the projectile's hit test grows it), or the projectile's own position if the path starts inside.
+     */
+    private Vec3 projectileImpact(Projectile projectile) {
+        Vec3 from = projectile.position();
+        return getBoundingBox().inflate(PROJECTILE_MARGIN).clip(from, from.add(projectile.getDeltaMovement())).orElse(from);
     }
 
     // --- rock fall budget -----------------------------------------------------------------------------------------------
@@ -789,6 +830,8 @@ public class TheLayered extends Nightmare {
                 pitch = Mth.clamp((float) (-Mth.atan2(to.y, to.horizontalDistance()) * Mth.RAD_TO_DEG), -30.0F, 30.0F);
             }
             float pace = i == 0 ? 0.12F : 0.07F;
+            deadHeadYawO[i] = deadHeadYaw[i];
+            deadHeadPitchO[i] = deadHeadPitch[i];
             deadHeadYaw[i] += (yaw - deadHeadYaw[i]) * pace;
             deadHeadPitch[i] += (pitch - deadHeadPitch[i]) * pace;
         }
@@ -799,13 +842,13 @@ public class TheLayered extends Nightmare {
         return Mth.lerp(partialTick, wallTurnO, wallTurn);
     }
 
-    /** Where dead head 0 (left) or 1 (right) looks, in degrees from straight ahead (client). */
-    public float deadHeadYaw(int index) {
-        return deadHeadYaw[index];
+    /** Where dead head 0 (left) or 1 (right) looks, in degrees from straight ahead, smoothed for rendering (client). */
+    public float deadHeadYaw(int index, float partialTick) {
+        return Mth.lerp(partialTick, deadHeadYawO[index], deadHeadYaw[index]);
     }
 
-    public float deadHeadPitch(int index) {
-        return deadHeadPitch[index];
+    public float deadHeadPitch(int index, float partialTick) {
+        return Mth.lerp(partialTick, deadHeadPitchO[index], deadHeadPitch[index]);
     }
 
     // --- animation ----------------------------------------------------------------------------------------------------

@@ -45,8 +45,8 @@ final class LayeredGrabGoal extends Goal {
     @Override
     public boolean canUse() {
         if (!(layered.getTarget() instanceof Player player) || !Nightmare.isFighter(player) || !layered.canAct()
-                || layered.isVehicle() || layered.isOnWall() || player.isPassenger() || !layered.mayStartAttack()
-                || !layered.specialReady()) {
+                || !layered.onGround() || layered.isVehicle() || layered.isOnWall() || player.isPassenger()
+                || !layered.mayStartAttack() || !layered.specialReady()) {
             return false;
         }
         if (nextGrabTick < 0) {

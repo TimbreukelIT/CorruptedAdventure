@@ -30,8 +30,8 @@ import java.util.List;
  * cobblestone and sandstone as loose sand; sand, gravel and loose sand fall as themselves.
  * <p>
  * First the undersides of overhangs above the target (one block per column, within {@link #RADIUS} blocks and 3 to
- * {@code rockfallReachUp} blocks above its feet); if that is not enough, blocks pried from the wall it clings to,
- * thrown at the target.
+ * {@code rockfallReachUp} blocks above its feet, not over a lower ceiling); if that is not enough, blocks pried from the
+ * wall it clings to, thrown at the target.
  */
 public final class LayeredRockfall {
     private static final int RADIUS = 2;
@@ -39,6 +39,8 @@ public final class LayeredRockfall {
     /** Ticks a thrown rock takes to reach the target (roughly: the falling block's drag is left out). */
     private static final double THROW_TICKS = 16.0;
     private static final double GRAVITY = 0.04;
+    /** Entity tag on the blocks of a rock fall: they do not hurt The Layered ({@link #isRock}). */
+    private static final String ROCK_TAG = "corruptedadventure.layered_rock";
 
     private LayeredRockfall() {
     }
@@ -85,9 +87,16 @@ public final class LayeredRockfall {
                 if (dx * dx + dz * dz > RADIUS * RADIUS + 1) {
                     continue;
                 }
-                for (int dy = MIN_UP; dy <= reachUp; dy++) {
+                for (int dy = 1; dy <= reachUp; dy++) {
                     BlockPos pos = feet.offset(dx, dy, dz);
                     BlockState state = level.getBlockState(pos);
+                    if (dy < MIN_UP) {
+                        if (!state.getCollisionShape(level, pos).isEmpty()) {
+                            // A low ceiling: what falls from above lands on it, not on the target.
+                            break;
+                        }
+                        continue;
+                    }
                     if (state.isAir()) {
                         continue;
                     }
@@ -151,12 +160,18 @@ public final class LayeredRockfall {
         }
         level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state));
         FallingBlockEntity rock = FallingBlockEntity.fall(level, pos, fallingState(state));
+        rock.addTag(ROCK_TAG);
         rock.setHurtsEntities(settings.rockfallDamagePerBlockFallen.get().floatValue() * strength,
                 Math.round(settings.rockfallMaxDamage.get() * strength));
         if (velocity != null) {
             rock.setDeltaMovement(velocity);
         }
         return rock;
+    }
+
+    /** Whether {@code entity} is a block of a Layered's rock fall (saved with it, so also after a reload). */
+    public static boolean isRock(@Nullable Entity entity) {
+        return entity instanceof FallingBlockEntity && entity.getTags().contains(ROCK_TAG);
     }
 
     /** A throw that lands near {@code to} after about {@link #THROW_TICKS} ticks under gravity. */

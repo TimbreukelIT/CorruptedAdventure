@@ -21,7 +21,7 @@ import software.bernie.geckolib.cache.object.GeoBone;
  * around {@link LayeredPose}'s pivot (smoothed by {@link TheLayered#wallTurn}), so its belly lies against the stone and
  * its back is a piece of the canyon wall. The living head follows where it looks; the two dead heads turn toward the
  * nearest player each at their own pace ({@link TheLayered#deadHeadYaw}), on top of their own lolling animation. Under the
- * sand ({@link TheLayered#isBurrowed}) it is not drawn.
+ * sand ({@link TheLayered#isBurrowed}) it is not drawn; it is invisible then, so the dispatcher draws no shadow either.
  */
 public final class TheLayeredRenderer extends NightmareRenderer<TheLayered> {
     private static final String LIVING_HEAD = "head_alive";
@@ -72,8 +72,8 @@ public final class TheLayeredRenderer extends NightmareRenderer<TheLayered> {
             addPitch = Mth.clamp(Mth.lerp(partialTick, layered.xRotO, layered.getXRot()), -30.0F, 30.0F);
         } else if (name.equals(DEAD_HEADS[0]) || name.equals(DEAD_HEADS[1])) {
             int index = name.equals(DEAD_HEADS[0]) ? 0 : 1;
-            addYaw = layered.deadHeadYaw(index);
-            addPitch = layered.deadHeadPitch(index);
+            addYaw = layered.deadHeadYaw(index, partialTick);
+            addPitch = layered.deadHeadPitch(index, partialTick);
         }
         if (addYaw == 0.0F && addPitch == 0.0F) {
             super.renderRecursively(poseStack, layered, bone, renderType, bufferSource, buffer, isReRender, partialTick,

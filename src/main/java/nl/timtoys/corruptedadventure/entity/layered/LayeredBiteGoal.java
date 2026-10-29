@@ -33,8 +33,13 @@ final class LayeredBiteGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        // A bite that has begun lands, even if it was the last of a burst (countAttack starts the rest window).
-        return windup > 0 || canUse();
+        if (windup == 0) {
+            return canUse();
+        }
+        // A bite that has begun lands, even if it was the last of a burst (countAttack starts the rest window); not
+        // once its target is gone or it lost its grip (stop() ends the windup).
+        LivingEntity target = layered.getTarget();
+        return target != null && target.isAlive() && layered.canAct();
     }
 
     @Override
