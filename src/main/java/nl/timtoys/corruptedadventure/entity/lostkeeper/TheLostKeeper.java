@@ -16,6 +16,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
+import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 import nl.timtoys.corruptedadventure.config.LostKeeperConfig;
@@ -46,11 +48,13 @@ import java.util.List;
  * six {@link KeeperPart hitboxes} and one on the crown. It swims through water and, while its crown of pearl and coral
  * holds, through the air between the islands; it brings its own mist bank. Attacks: the siren's call
  * ({@link KeeperLureGoal}), the poison breath ({@link KeeperBreathGoal}), pulling under water ({@link KeeperGrabGoal}) and
- * the tail whip ({@link KeeperWhipGoal}); between them it circles ({@link KeeperCircleGoal}). Every hit on the crown
- * breaks off a branch; with the last one gone it loses its swimming power in the air and falls.
+ * the tail whip ({@link KeeperWhipGoal}), and from the life round the bubble trap ({@link KeeperBubbleTrapGoal}), the
+ * shrinking ring of its body ({@link KeeperEncircleGoal}) and the dive and burst ({@link KeeperBurstGoal}); between them
+ * it circles ({@link KeeperCircleGoal}). Every hit on the crown breaks off a branch; with the last one gone it loses its
+ * swimming power in the air and falls.
  * <p>
  * Everything runs on the server; the client runs the same body chain from the head's movement and renders the model,
- * the synced {@link Mode} and crown, and the mist ({@link KeeperMistPayload}).
+ * the synced {@link Mode}, crown and ring, and the mist ({@link KeeperMistPayload}).
  */
 public class TheLostKeeper extends Nightmare {
     public static final int CROWN_BRANCHES = 6;
@@ -69,6 +73,10 @@ public class TheLostKeeper extends Nightmare {
     private static final int MIST_SYNC_TICKS = 20;
     private static final int MIST_RISE_TICKS = 100;
     private static final double LOOK_AHEAD = 5.0;
+    /** Per tick, how far the body nodes are drawn onto the ring while it coils (the rest of the way the next ticks). */
+    private static final double RING_GRIP = 0.35;
+    /** Height of each node's axis above the ring's floor while coiling: half the body's thickness there (blocks). */
+    private static final double[] RING_LIFT = ringLift();
 
     private static final EntityDataAccessor<Integer> DATA_CROWN =
             SynchedEntityData.defineId(TheLostKeeper.class, EntityDataSerializers.INT);
@@ -76,10 +84,15 @@ public class TheLostKeeper extends Nightmare {
             SynchedEntityData.defineId(TheLostKeeper.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Integer> DATA_WHIP =
             SynchedEntityData.defineId(TheLostKeeper.class, EntityDataSerializers.INT);
+    /** The ring it coils: its centre on the floor (water: a block under the surface) and the radius, signed by direction. */
+    private static final EntityDataAccessor<Vector3f> DATA_RING_CENTRE =
+            SynchedEntityData.defineId(TheLostKeeper.class, EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<Float> DATA_RING_RADIUS =
+            SynchedEntityData.defineId(TheLostKeeper.class, EntityDataSerializers.FLOAT);
 
     /** What the body does, for the looping animations (synced). */
     public enum Mode {
-        SWIM, LURE, HOLD, FALL, STUNNED, CRAWL
+        SWIM, LURE, HOLD, FALL, STUNNED, CRAWL, COIL
     }
 
     private final KeeperBody body = new KeeperBody();
@@ -100,6 +113,8 @@ public class TheLostKeeper extends Nightmare {
     private int holdTicks;
     private float heldDamage;
     private boolean releasing;
+    private double turnScale = 1.0;
+    private float damageTaken;
 
     public TheLostKeeper(EntityType<? extends TheLostKeeper> type, Level level) {
         super(type, level, BossEvent.BossBarColor.WHITE);
@@ -113,6 +128,14 @@ public class TheLostKeeper extends Nightmare {
         // The parts' ids follow the keeper's (as vanilla's ender dragon), so client and server agree on them.
         setId(ENTITY_COUNTER.getAndAdd(parts.length + 1) + 1);
         setNoGravity(true);
+        // Its pitch is where it swims (setFacing): vanilla's look control would level it every tick, so it could only
+        // ever climb or dive at one tick's turn (7°).
+        lookControl = new LookControl(this) {
+            @Override
+            protected boolean resetXRotOnTick() {
+                return false;
+            }
+        };
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -134,13 +157,18 @@ public class TheLostKeeper extends Nightmare {
         builder.define(DATA_CROWN, CROWN_FULL);
         builder.define(DATA_MODE, (byte) Mode.SWIM.ordinal());
         builder.define(DATA_WHIP, 0);
+        builder.define(DATA_RING_CENTRE, new Vector3f());
+        builder.define(DATA_RING_RADIUS, 0.0F);
     }
 
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(1, new KeeperGrabGoal(this));
+        goalSelector.addGoal(2, new KeeperBurstGoal(this));
         goalSelector.addGoal(2, new KeeperBreathGoal(this));
+        goalSelector.addGoal(3, new KeeperEncircleGoal(this));
         goalSelector.addGoal(3, new KeeperLureGoal(this));
+        goalSelector.addGoal(4, new KeeperBubbleTrapGoal(this));
         goalSelector.addGoal(4, new KeeperWhipGoal(this));
         goalSelector.addGoal(6, new KeeperCircleGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
@@ -227,6 +255,11 @@ public class TheLostKeeper extends Nightmare {
             int ticks = Math.max(1, keeperConfig().whipTicks.get());
             body.swing(WHIP_PIVOT, Math.signum(whip) * WHIP_RADIANS / ticks);
         }
+        float ring = entityData.get(DATA_RING_RADIUS);
+        if (ring != 0.0F) {
+            Vector3f centre = entityData.get(DATA_RING_CENTRE);
+            body.wrap(headCentre(), centre.x, centre.y, centre.z, Math.abs(ring), ring > 0.0F ? 1 : -1, RING_LIFT, RING_GRIP);
+        }
         if (isDeadOrDying() || !canSwimHere()) {
             body.settle(level(), 0.3, 0.6);
         }
@@ -246,6 +279,28 @@ public class TheLostKeeper extends Nightmare {
         part.yOld = part.yo;
         part.zOld = part.zo;
         part.setPos(x, y, z);
+    }
+
+    /** {@link #RING_LIFT}: the part sizes spread over the nodes, the neck a little thicker, the tail tip thinner. */
+    private static double[] ringLift() {
+        double[] lift = new double[KeeperBody.SEGMENTS + 1];
+        for (int i = 0; i <= KeeperBody.SEGMENTS; i++) {
+            double size;
+            if (i <= PART_NODES[0]) {
+                size = PART_SIZES[0];
+            } else if (i >= PART_NODES[PART_NODES.length - 1]) {
+                size = PART_SIZES[PART_SIZES.length - 1] - 0.1 * (i - PART_NODES[PART_NODES.length - 1]);
+            } else {
+                int k = 0;
+                while (PART_NODES[k + 1] < i) {
+                    k++;
+                }
+                double t = (i - PART_NODES[k]) / (double) (PART_NODES[k + 1] - PART_NODES[k]);
+                size = PART_SIZES[k] + (PART_SIZES[k + 1] - PART_SIZES[k]) * t;
+            }
+            lift[i] = size / 2.0;
+        }
+        return lift;
     }
 
     /** A hit on a part: the crown takes more and loses a branch; the body takes it as the head would. */
@@ -326,6 +381,16 @@ public class TheLostKeeper extends Nightmare {
         this.luring = luring;
     }
 
+    /** Its turning per tick times {@code scale} (the tight ring needs more than the open sea); 1 is the config's. */
+    void setTurnScale(double scale) {
+        turnScale = scale;
+    }
+
+    /** All damage it has taken while alive (only grows): an attack compares it with its value at the start. */
+    float damageTaken() {
+        return damageTaken;
+    }
+
     public boolean isStunned() {
         return stunTicks > 0;
     }
@@ -381,6 +446,9 @@ public class TheLostKeeper extends Nightmare {
         if (isHolding()) {
             return Mode.HOLD;
         }
+        if (isCoiling()) {
+            return Mode.COIL;
+        }
         if (luring) {
             return Mode.LURE;
         }
@@ -427,14 +495,15 @@ public class TheLostKeeper extends Nightmare {
         }
         Vec3 head = headCentre();
         Vec3 heading = getLookAngle();
-        double maxTurn = Math.toRadians(config.turnDegrees.get());
+        double maxTurn = Math.toRadians(config.turnDegrees.get() * turnScale);
         if (canSwimHere()) {
             Vec3 velocity;
             if (steerTarget != null && steerSpeed > 0.0) {
                 Vec3 to = steerTarget.subtract(head);
                 double distance = to.length();
                 Vec3 desired = distance > 1.0E-3 ? to.scale(1.0 / distance) : heading;
-                desired = avoid(head, desired);
+                // No need to look past the target: it may lie just above the sea floor (the burst's dive).
+                desired = avoid(head, desired, Math.min(LOOK_AHEAD, distance + 0.5));
                 heading = KeeperMotion.turn(heading, desired, maxTurn);
                 double speed = config.swimSpeed.get() * steerSpeed * Math.min(1.0, distance / 3.0 + 0.25);
                 velocity = heading.scale(speed);
@@ -467,9 +536,9 @@ public class TheLostKeeper extends Nightmare {
         }
     }
 
-    /** A heading that does not run its head into a block within {@link #LOOK_AHEAD}: up, then sideways, then down. */
-    private Vec3 avoid(Vec3 head, Vec3 desired) {
-        if (clear(head, desired)) {
+    /** A heading that does not run its head into a block within {@code ahead} blocks: up, then sideways, then down. */
+    private Vec3 avoid(Vec3 head, Vec3 desired, double ahead) {
+        if (clear(head, desired, ahead)) {
             return desired;
         }
         Vec3 side = desired.cross(new Vec3(0.0, 1.0, 0.0));
@@ -481,15 +550,15 @@ public class TheLostKeeper extends Nightmare {
                 new Vec3(0.0, 1.0, 0.0),
                 desired.add(0.0, -1.2, 0.0).normalize()};
         for (Vec3 attempt : tries) {
-            if (clear(head, attempt)) {
+            if (clear(head, attempt, ahead)) {
                 return attempt;
             }
         }
         return new Vec3(0.0, 1.0, 0.0);
     }
 
-    private boolean clear(Vec3 from, Vec3 direction) {
-        Vec3 to = from.add(direction.scale(LOOK_AHEAD));
+    private boolean clear(Vec3 from, Vec3 direction, double ahead) {
+        Vec3 to = from.add(direction.scale(ahead));
         return level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this)).getType()
                 == HitResult.Type.MISS;
     }
@@ -608,6 +677,9 @@ public class TheLostKeeper extends Nightmare {
     @Override
     public boolean hurt(DamageSource source, float amount) {
         boolean hurt = super.hurt(source, amount);
+        if (hurt && !level().isClientSide()) {
+            damageTaken += amount;
+        }
         if (hurt && !level().isClientSide() && isHolding()) {
             heldDamage += amount;
             if (heldDamage >= keeperConfig().freeDamage.get()) {
@@ -627,6 +699,31 @@ public class TheLostKeeper extends Nightmare {
 
     boolean isWhipping() {
         return entityData.get(DATA_WHIP) != 0;
+    }
+
+    // --- the ring of its body ----------------------------------------------------------------------------------------
+
+    /**
+     * Coils its body on a ring round {@code centre} (x, z; its y the floor: the ground, or a block under the water's
+     * surface) of {@code radius} blocks, swimming round in {@code direction} (1: angle growing, from +x towards +z).
+     * Synced, so the client lays its body on the same ring.
+     */
+    public void coil(Vec3 centre, double radius, int direction) {
+        entityData.set(DATA_RING_CENTRE, new Vector3f((float) centre.x, (float) centre.y, (float) centre.z));
+        entityData.set(DATA_RING_RADIUS, (float) (direction >= 0 ? radius : -radius));
+    }
+
+    public void uncoil() {
+        entityData.set(DATA_RING_RADIUS, 0.0F);
+    }
+
+    public boolean isCoiling() {
+        return entityData.get(DATA_RING_RADIUS) != 0.0F;
+    }
+
+    /** The height of a node's axis above the ring's floor while coiling. */
+    static double ringLift(int node) {
+        return RING_LIFT[node];
     }
 
     // --- poison clouds -----------------------------------------------------------------------------------------------
@@ -689,6 +786,8 @@ public class TheLostKeeper extends Nightmare {
     public void die(DamageSource source) {
         if (!level().isClientSide()) {
             release();
+            // Dead, its goals no longer stop: the body falls off the ring here.
+            uncoil();
             sendMist(0.0F);
         }
         super.die(source);
@@ -744,7 +843,11 @@ public class TheLostKeeper extends Nightmare {
                 .triggerableAnim(KeeperAnimations.BREATH, KeeperAnimations.BREATH_ANIM)
                 .triggerableAnim(KeeperAnimations.GRAB, KeeperAnimations.GRAB_ANIM)
                 .triggerableAnim(KeeperAnimations.TAIL_WHIP, KeeperAnimations.TAIL_WHIP_ANIM)
-                .triggerableAnim(KeeperAnimations.ROAR, KeeperAnimations.ROAR_ANIM));
+                .triggerableAnim(KeeperAnimations.ROAR, KeeperAnimations.ROAR_ANIM)
+                .triggerableAnim(KeeperAnimations.BUBBLE_CALL, KeeperAnimations.BUBBLE_CALL_ANIM)
+                .triggerableAnim(KeeperAnimations.DIVE, KeeperAnimations.DIVE_ANIM)
+                .triggerableAnim(KeeperAnimations.BURST, KeeperAnimations.BURST_ANIM)
+                .triggerableAnim(KeeperAnimations.SQUEEZE, KeeperAnimations.SQUEEZE_ANIM));
     }
 
     private PlayState bodyAnimation(AnimationState<TheLostKeeper> state) {
@@ -757,6 +860,7 @@ public class TheLostKeeper extends Nightmare {
             case FALL -> KeeperAnimations.FALL;
             case STUNNED -> KeeperAnimations.STUNNED;
             case CRAWL -> KeeperAnimations.CRAWL;
+            case COIL -> KeeperAnimations.COIL;
             case SWIM -> getDeltaMovement().lengthSqr() > 0.01 ? KeeperAnimations.SWIM : KeeperAnimations.HOVER;
         });
     }

@@ -13,6 +13,7 @@ import nl.timtoys.corruptedadventure.client.block.SignMaterials;
 import nl.timtoys.corruptedadventure.client.entity.EffectArrowRenderer;
 import nl.timtoys.corruptedadventure.client.entity.hollow.RiftOmenFlicker;
 import nl.timtoys.corruptedadventure.client.entity.hollow.TheHollowRenderer;
+import nl.timtoys.corruptedadventure.client.entity.lostkeeper.KeeperCurrentHandler;
 import nl.timtoys.corruptedadventure.client.entity.lostkeeper.KeeperMistFog;
 import nl.timtoys.corruptedadventure.client.entity.lostkeeper.TheLostKeeperRenderer;
 import nl.timtoys.corruptedadventure.client.entity.risen.TheRisenRenderer;
@@ -50,6 +51,7 @@ import nl.timtoys.corruptedadventure.client.weather.SunderedFade;
 import nl.timtoys.corruptedadventure.client.weather.VolcanoPlumeRenderer;
 import nl.timtoys.corruptedadventure.network.ClientboundHandlers;
 import nl.timtoys.corruptedadventure.network.ConditionSyncPayload;
+import nl.timtoys.corruptedadventure.network.KeeperCurrentPayload;
 import nl.timtoys.corruptedadventure.network.KeeperMistPayload;
 import nl.timtoys.corruptedadventure.network.LensScanPayload;
 import nl.timtoys.corruptedadventure.network.RingLayoutPayload;
@@ -88,6 +90,7 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(TheLostKeeperRenderer::onRegisterRenderers);
         ClientboundHandlers.set(KeeperMistPayload.TYPE, KeeperMistFog::handle);
         KeeperMistFog.register(NeoForge.EVENT_BUS);
+        ClientboundHandlers.set(KeeperCurrentPayload.TYPE, KeeperCurrentHandler::handle);
         // Phase 4 step 2: torches gutter near the omen of The Hollow's arrival.
         RiftOmenFlicker.register(NeoForge.EVENT_BUS);
         // Phase 4 (R3): The Risen and its ash walkers.

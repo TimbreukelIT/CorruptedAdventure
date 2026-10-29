@@ -44,5 +44,8 @@ public final class ModNetwork {
         // Phase 4: The Lost Keeper's mist bank.
         registrar.playToClient(KeeperMistPayload.TYPE, KeeperMistPayload.STREAM_CODEC,
                 ClientboundHandlers.forward(KeeperMistPayload.TYPE));
+        // Phase 4 (L4): the current of The Lost Keeper's bubble trap.
+        registrar.playToClient(KeeperCurrentPayload.TYPE, KeeperCurrentPayload.STREAM_CODEC,
+                ClientboundHandlers.forward(KeeperCurrentPayload.TYPE));
     }
 }

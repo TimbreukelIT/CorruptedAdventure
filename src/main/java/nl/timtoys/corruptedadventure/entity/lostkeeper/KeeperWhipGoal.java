@@ -34,7 +34,7 @@ final class KeeperWhipGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!keeper.canAttack() || keeper.getTarget() == null) {
+        if (!keeper.canAttack() || keeper.isCoiling() || keeper.getTarget() == null) {
             nextTick = -1;
             return false;
         }

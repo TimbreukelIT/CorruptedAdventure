@@ -112,6 +112,25 @@ public final class KeeperBody {
     }
 
     /**
+     * The ring of its body: every node from 1 on is drawn by {@code share} (0–1) towards its place on a circle of
+     * {@code radius} round ({@code cx}, {@code cz}), the arc length from the head behind it (against {@code direction},
+     * the way the head swims round), its axis {@code lift[i]} above the floor {@code floorY}. With the pull of
+     * {@link #follow} the chain then lies along the ring instead of cutting inside it.
+     */
+    public void wrap(Vec3 head, double cx, double floorY, double cz, double radius, int direction, double[] lift, double share) {
+        if (radius < 1.0E-3) {
+            return;
+        }
+        double angle = Math.atan2(head.z - cz, head.x - cx);
+        for (int i = 1; i <= SEGMENTS; i++) {
+            double at = angle - direction * (NECK + i * SEGMENT_LENGTH) / radius;
+            x[i] += (cx + Math.cos(at) * radius - x[i]) * share;
+            y[i] += (floorY + lift[i] - y[i]) * share;
+            z[i] += (cz + Math.sin(at) * radius - z[i]) * share;
+        }
+    }
+
+    /**
      * Without its swimming power (on land, or falling): every node from 1 on that has air below it sinks by up to
      * {@code fall} blocks, so the body comes to lie on the ground instead of floating. {@code radius} is half the body's
      * thickness there (blocks).

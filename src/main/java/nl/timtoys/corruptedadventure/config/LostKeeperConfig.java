@@ -5,7 +5,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 /**
  * {@code [nightmares.lost_keeper]}: The Lost Keeper, the ring 4 Nightmare (phase 4, fase-4-nightmares-concept.md "Ring 4 —
  * De Verloren Hoeder"). The shared keys in {@link #common} (its main attack is the bite), then its own: swimming, the
- * crown, its mist bank and its four attacks. Read live, so edits apply to a keeper that is already fighting.
+ * crown, its mist bank and its seven attacks. Read live, so edits apply to a keeper that is already fighting.
  */
 public final class LostKeeperConfig {
     /** Also the attribute defaults of {@code TheLostKeeper}; movementSpeed is its crawl on land. */
@@ -53,6 +53,36 @@ public final class LostKeeperConfig {
     public final ModConfigSpec.DoubleValue whipDamage;
     public final ModConfigSpec.DoubleValue whipKnockback;
     public final ModConfigSpec.DoubleValue whipReach;
+    public final ModConfigSpec.IntValue bubbleCooldownMin;
+    public final ModConfigSpec.IntValue bubbleCooldownMax;
+    public final ModConfigSpec.DoubleValue bubbleRange;
+    public final ModConfigSpec.IntValue bubbleSpots;
+    public final ModConfigSpec.IntValue bubbleWarnTicks;
+    public final ModConfigSpec.DoubleValue bubbleRadius;
+    public final ModConfigSpec.IntValue bubblePullTicks;
+    public final ModConfigSpec.DoubleValue bubblePull;
+    public final ModConfigSpec.DoubleValue bubbleLaunch;
+    public final ModConfigSpec.DoubleValue bubbleDamage;
+    public final ModConfigSpec.IntValue encircleCooldownMin;
+    public final ModConfigSpec.IntValue encircleCooldownMax;
+    public final ModConfigSpec.IntValue encircleTicks;
+    public final ModConfigSpec.DoubleValue encircleStartRadius;
+    public final ModConfigSpec.DoubleValue encircleEndRadius;
+    public final ModConfigSpec.DoubleValue encircleSpeed;
+    public final ModConfigSpec.DoubleValue encircleWallDamage;
+    public final ModConfigSpec.DoubleValue encircleWallPush;
+    public final ModConfigSpec.DoubleValue encircleBreakDamage;
+    public final ModConfigSpec.DoubleValue encircleSqueezeDamage;
+    public final ModConfigSpec.IntValue burstCooldownMin;
+    public final ModConfigSpec.IntValue burstCooldownMax;
+    public final ModConfigSpec.IntValue burstMinDepth;
+    public final ModConfigSpec.IntValue burstShoreReach;
+    public final ModConfigSpec.IntValue burstLurkTicks;
+    public final ModConfigSpec.IntValue burstWarnTicks;
+    public final ModConfigSpec.DoubleValue burstSpeed;
+    public final ModConfigSpec.DoubleValue burstRadius;
+    public final ModConfigSpec.DoubleValue burstDamage;
+    public final ModConfigSpec.DoubleValue burstLaunch;
 
     LostKeeperConfig(ModConfigSpec.Builder builder) {
         builder.comment("The Lost Keeper, the ring 4 Nightmare (step 1: body and fight, summoned with /summon).",
@@ -157,6 +187,76 @@ public final class LostKeeperConfig {
         whipReach = builder.comment("Blocks round the rear body parts that the sweep hits.")
                 .defineInRange("whipReach", 2.5, 0.0, 10.0);
         builder.pop();
+
+        builder.comment("The bubble trap: bubbles rise under a fighter as a warning (step aside), then a current pulls them",
+                "down into the deep (in or on water) or a gust throws them up (on land, an island or in the air).").push("bubble_trap");
+        bubbleCooldownMin = builder.comment("Seconds between two bubble traps, drawn between min and max.")
+                .defineInRange("bubbleCooldownMin", 14, 1, 600);
+        bubbleCooldownMax = builder.defineInRange("bubbleCooldownMax", 20, 1, 600);
+        bubbleRange = builder.comment("Blocks round its head within which it calls up bubbles under fighters.")
+                .defineInRange("bubbleRange", 28.0, 2.0, 96.0);
+        bubbleSpots = builder.comment("Fighters at most that get bubbles under them at once (its target first).")
+                .defineInRange("bubbleSpots", 2, 1, 16);
+        bubbleWarnTicks = builder.comment("Ticks the bubbles rise before the current or the gust: the time to step aside.")
+                .defineInRange("bubbleWarnTicks", 30, 1, 200);
+        bubbleRadius = builder.comment("Blocks round the spot (horizontally) that the current or the gust catches.")
+                .defineInRange("bubbleRadius", 1.8, 0.5, 8.0);
+        bubblePullTicks = builder.comment("Ticks the current pulls down; swimming out of the column sideways escapes it.")
+                .defineInRange("bubblePullTicks", 40, 1, 400);
+        bubblePull = builder.comment("Speed added downwards per tick by the current (blocks/tick; 0.08 sinks ~0.4 a tick).")
+                .defineInRange("bubblePull", 0.08, 0.0, 1.0);
+        bubbleLaunch = builder.comment("Upward speed of the gust (blocks/tick; 1.5 throws a player ~11 blocks up).")
+                .defineInRange("bubbleLaunch", 1.5, 0.0, 5.0);
+        bubbleDamage = builder.comment("Damage when the current or the gust catches someone (the fall is the gust's real damage).")
+                .defineInRange("bubbleDamage", 4.0, 0.0, 100.0);
+        builder.pop();
+
+        builder.comment("Encircling: it coils a shrinking ring round the fighters; its body is a wall (pushes back). Over the",
+                "thin tail, under it in deep water, or enough damage breaks the ring; inside at the end: squeezed.").push("encircle");
+        encircleCooldownMin = builder.comment("Seconds between two rings, drawn between min and max.")
+                .defineInRange("encircleCooldownMin", 22, 1, 600);
+        encircleCooldownMax = builder.defineInRange("encircleCooldownMax", 32, 1, 600);
+        encircleTicks = builder.comment("Ticks the ring shrinks from the start to the end radius.")
+                .defineInRange("encircleTicks", 120, 10, 1200);
+        encircleStartRadius = builder.comment("Blocks of the ring at the start (open: the body covers less than half).")
+                .defineInRange("encircleStartRadius", 8.0, 3.0, 32.0);
+        encircleEndRadius = builder.comment("Blocks of the ring at the end (3.5: the ~21-block body just closes it).")
+                .defineInRange("encircleEndRadius", 3.5, 2.0, 32.0);
+        encircleSpeed = builder.comment("Its swim speed while coiling, times swimSpeed.")
+                .defineInRange("encircleSpeed", 1.4, 0.1, 5.0);
+        encircleWallDamage = builder.comment("Damage when a fighter runs into its body (at most twice a second).")
+                .defineInRange("encircleWallDamage", 2.0, 0.0, 100.0);
+        encircleWallPush = builder.comment("Speed (blocks/tick) with which its body pushes a fighter back.")
+                .defineInRange("encircleWallPush", 0.55, 0.0, 5.0);
+        encircleBreakDamage = builder.comment("Damage it must take (from anyone) during the ring before it breaks it off.")
+                .defineInRange("encircleBreakDamage", 30.0, 0.0, 10000.0);
+        encircleSqueezeDamage = builder.comment("Damage to everyone still inside when the ring closes (they are thrown up too).")
+                .defineInRange("encircleSqueezeDamage", 6.0, 0.0, 100.0);
+        builder.pop();
+
+        builder.comment("Dive and burst: it dives away, the water churns under a fighter (or a boat), then it bursts up there",
+                "and launches them. Only where there is water under or beside the fighter (open water or a shore).").push("burst");
+        burstCooldownMin = builder.comment("Seconds between two bursts, drawn between min and max.")
+                .defineInRange("burstCooldownMin", 16, 1, 600);
+        burstCooldownMax = builder.defineInRange("burstCooldownMax", 24, 1, 600);
+        burstMinDepth = builder.comment("Blocks of water it needs under the burst spot to dive in.")
+                .defineInRange("burstMinDepth", 4, 2, 64);
+        burstShoreReach = builder.comment("Blocks beside a fighter on a shore within which water counts for a burst.")
+                .defineInRange("burstShoreReach", 4, 0, 16);
+        burstLurkTicks = builder.comment("Ticks at most it swims deep under the fighter before the warning.")
+                .defineInRange("burstLurkTicks", 40, 1, 400);
+        burstWarnTicks = builder.comment("Ticks the surface churns before it bursts up there: the time to get away.")
+                .defineInRange("burstWarnTicks", 25, 1, 200);
+        burstSpeed = builder.comment("Its swim speed as it bursts up, times swimSpeed.")
+                .defineInRange("burstSpeed", 2.6, 0.5, 8.0);
+        burstRadius = builder.comment("Blocks round the spot (horizontally) that the burst hits.")
+                .defineInRange("burstRadius", 2.5, 0.5, 10.0);
+        burstDamage = builder.comment("Damage of the burst.")
+                .defineInRange("burstDamage", 12.0, 0.0, 100.0);
+        burstLaunch = builder.comment("Upward speed of the launch (blocks/tick; 1.4 throws a player ~10 blocks up). A boat",
+                        "goes up too and its rider falls out.")
+                .defineInRange("burstLaunch", 1.4, 0.0, 5.0);
+        builder.pop();
         builder.pop();
     }
 
@@ -174,5 +274,17 @@ public final class LostKeeperConfig {
 
     public int whipCooldownTicks(int roll) {
         return NightmareConfig.ticksBetween(whipCooldownMin, whipCooldownMax, roll);
+    }
+
+    public int bubbleCooldownTicks(int roll) {
+        return NightmareConfig.ticksBetween(bubbleCooldownMin, bubbleCooldownMax, roll);
+    }
+
+    public int encircleCooldownTicks(int roll) {
+        return NightmareConfig.ticksBetween(encircleCooldownMin, encircleCooldownMax, roll);
+    }
+
+    public int burstCooldownTicks(int roll) {
+        return NightmareConfig.ticksBetween(burstCooldownMin, burstCooldownMax, roll);
     }
 }
