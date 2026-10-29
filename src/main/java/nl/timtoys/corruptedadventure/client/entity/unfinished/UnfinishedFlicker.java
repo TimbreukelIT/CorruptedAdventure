@@ -12,7 +12,8 @@ import java.util.Map;
  * {@link TheUnfinished#lostGrafts}). Unloaded, each weak spot's wire-frame variant and the loose unloaded bits (chest
  * wire, shard, slices, the wire leg) flicker: on most frames there, now and then gone, each on its own irregular beat,
  * and the Layered's front leg now and then swaps with its wire frame. Loaded, the flicker stops: the weak spots show their
- * solid variant (sky glass rims) and the loose bits are gone. A lost graft hides its whole limb. The beat hashes the
+ * solid variant (sky glass rims) and the loose bits are gone. A lost graft hides its whole limb. Mid glitch step
+ * ({@link TheUnfinished#isGlitching}) every frame flickers: limbs drop out and the unloaded bits are back, loaded or not. The beat hashes the
  * entity id and the tick, so two of them never flicker in step and nothing random is drawn.
  */
 final class UnfinishedFlicker {
@@ -34,22 +35,24 @@ final class UnfinishedFlicker {
     }
 
     static void apply(BakedGeoModel model, TheUnfinished boss) {
-        boolean loaded = boss.isLoaded();
+        // Mid glitch step he comes apart at the seams: every frame, limbs drop out and the unloaded bits are back.
+        boolean glitching = boss.isGlitching();
+        boolean loaded = boss.isLoaded() && !glitching;
         int lost = boss.lostGrafts();
         int seed = boss.getId();
-        int frame = boss.tickCount / BEAT;
+        int frame = glitching ? boss.tickCount : boss.tickCount / BEAT;
         int salt = 0;
         for (Graft graft : Graft.values()) {
             boolean gone = (lost & graft.bit()) != 0;
             for (String bone : GRAFT_BONES.get(graft)) {
-                show(model, bone, !gone);
+                show(model, bone, !gone && (!glitching || there(seed, ++salt, frame)));
             }
             String weak = WEAK_BONES.get(graft);
             show(model, weak + "_loaded", loaded);
             show(model, weak + "_unloaded", !loaded && there(seed, ++salt, frame));
         }
         for (String bone : LOOSE_BITS) {
-            show(model, bone, !loaded && there(seed, ++salt, frame));
+            show(model, bone, !loaded && (glitching || there(seed, ++salt, frame)));
         }
         boolean legs = (lost & Graft.GELAAGDE.bit()) == 0;
         boolean wire = legs && !loaded && swapped(seed, frame);
