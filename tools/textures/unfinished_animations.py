@@ -8,7 +8,8 @@ at 1.25 s (slamWindupTicks 25), the rift sink holds from 1.5 s (riftStepSinkTick
 0.8 s (grabReachTicks 16) and lets go at 3.8 s (grabHoldTicks 60), the ash rain, the lure and the void pull last as long
 as their spells start them, death lasts 5.0 s (DEATH_TICKS 100). The life round (L5) adds the glitch step's loop, the
 throw (released at 1.5 s, throwRiseTicks 30), the unloading (the patch opens at 2.0 s, unloadWarnTicks 40), the
-stagger's loop and the sniff of a search (the shared reactions).
+stagger's loop and the sniff of a search (the shared reactions). The arrival (A5) adds the climb out of the torn ground
+(5.0 s = climbTicks 100; up the shaft until 3.75 s, then over the rim).
 
 Conventions as in hollow_animations.py (checked there in Blockbench): a negative x rotation swings a limb forward (toward
 the face, -z); a positive x rotation tips the top of a bone forward. Keyframes are linear; "stutter" keys 0.05 s apart make
@@ -328,6 +329,43 @@ def sniff():
     }}
 
 
+def climb_out():
+    return {"animation_length": 5.0, "bones": {
+        # His arrival (A5): the server lifts him up the torn ground for 3.75 s (CLIMB_UP_SHARE 0.75 of climbTicks 100) and
+        # then over the rim; this is only the climb itself. The Hollow's arm reaches up, grips and hauls three times, the
+        # third time onto the rim; the Layered's legs claw in turn, the wing stays folded until he rears at the top, and the
+        # four heads look up the shaft until they snap round to the target.
+        "torso": channel(rotation=[(0, (20, 0, -6)), (0.6, (24, 0, -4)), (1.4, (10, 0, 4)), (1.8, (22, 0, -4)),
+                                   (2.6, (8, 0, 6)), (3.0, (24, 0, -2)), (3.6, (16, 0, 0)), (4.1, (-8, 0, 0)), (5.0, (0, 0, 0))],
+                         position=[(0, (0, 0, 0)), (1.4, (0, 6, 0)), (1.8, (0, 0, 0)), (2.6, (0, 6, 0)), (3.0, (0, 0, 0)),
+                                   (3.9, (0, 8, 0)), (5.0, (0, 0, 0))]),
+        "graft_holle_arm": channel(rotation=[(0, (-165, 0, -10)), (0.6, (-170, 0, -10)), (1.4, (-70, 0, 6)),
+                                             (1.8, (-170, 0, -10)), (2.6, (-80, 0, 6)), (3.0, (-165, 0, -10)),
+                                             (3.6, (-95, 0, 10)), (4.4, (-40, 0, 6)), (5.0, (0, 0, 0))]),
+        "graft_holle_hand": channel(rotation=[(0, (0, 0, 0)), (0.6, (30, 0, 0)), (1.6, (30, 0, 0)), (1.8, (0, 0, 0)),
+                                              (2.0, (30, 0, 0)), (2.8, (30, 0, 0)), (3.0, (0, 0, 0)), (3.6, (35, 0, 0)),
+                                              (4.6, (35, 0, 0)), (5.0, (0, 0, 0))]),
+        "graft_gelaagde_leg_1": channel(rotation=[(0, (0, 0, 0)), (0.8, (-60, -10, -25)), (1.6, (10, 0, 0)),
+                                                  (2.4, (-70, -10, -25)), (3.2, (10, 0, 0)), (3.9, (-50, 0, -15)),
+                                                  (5.0, (0, 0, 0))]),
+        "graft_gelaagde_leg_2": channel(rotation=[(0, (10, 0, 0)), (0.8, (10, 0, 0)), (1.6, (-60, 10, 25)),
+                                                  (2.4, (10, 0, 0)), (3.2, (-70, 10, 25)), (4.0, (-30, 0, 10)),
+                                                  (5.0, (0, 0, 0))]),
+        "graft_herrijzende_wing": channel(rotation=[(0, (0, 10, -25)), (3.6, (0, 10, -25)), (4.2, (0, -20, 35)),
+                                                    (5.0, (0, 0, 0))]),
+        "graft_hoeder_tail": channel(rotation=[(0, (0, 25, 0)), (1.2, (0, -25, 0)), (2.4, (0, 25, 0)), (3.6, (0, -25, 0)),
+                                               (5.0, (0, 0, 0))]),
+        "head_holle": channel(rotation=[(0, (-25, 10, 0)), (3.8, (-20, 10, 0)), (4.0, (12, 0, 0)), (5.0, (0, 0, 0))]),
+        "head_gelaagde": channel(rotation=[(0, (-20, -15, 0)), (3.85, (-20, -15, 0)), (4.05, (14, 0, 0)), (5.0, (0, 0, 0))]),
+        "head_herrijzende": channel(rotation=[(0, (-30, 15, 0)), (3.9, (-25, 15, 0)), (4.1, (10, 0, 0)), (5.0, (0, 0, 0))]),
+        "head_hoeder": channel(rotation=[(0, (-20, -10, 0)), (3.95, (-20, -10, 0)), (4.15, (12, 0, 0)), (5.0, (0, 0, 0))]),
+        "crown_core": channel(position=stutter([0.9, 2.1, 3.3], (5, -3, 0), 5.0),
+                              scale=[(0, (1, 1, 1)), (3.9, (1, 1, 1)), (4.2, (1.4, 1.4, 1.4)), (5.0, (1, 1, 1))]),
+        "rift": channel(scale=[(0, (1.6, 1, 1.6)), (3.75, (1.3, 1, 1.3)), (5.0, (1, 1, 1))]),
+        "debris": channel(position=[(0, (0, -200, 0)), (3.75, (0, 0, 0))]),
+    }}
+
+
 def death():
     return {"animation_length": 5.0, "bones": {
         # He stalls, everything stutters, the grafts sag, then he sinks back into his void, the crown last; the void
@@ -370,6 +408,7 @@ def main():
         "animation.the_unfinished.stagger": stagger(),
         "animation.the_unfinished.sniff": sniff(),
         "animation.the_unfinished.death": death(),
+        "animation.the_unfinished.climb_out": climb_out(),
     }
     for anim in animations.values():
         anim["bones"] = {bone: ch for bone, ch in anim["bones"].items() if ch}
