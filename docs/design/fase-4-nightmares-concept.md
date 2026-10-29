@@ -36,6 +36,22 @@ Een groep **Nightmares**: één per ring (5 totaal), groter dan gewone mobs, bed
 - **Tussendoor:** hij bestaat alleen als virtuele positie in `SavedData` en zwerft langzaam door zijn ring. Spelers vinden soms sporen van waar hij was (per Nightmare, stap 2). Hij materialiseert niet vanzelf als iemand bij die positie komt.
 - **Taakverdeling:** het gedeelde deel (dreiging, virtuele positie, doelkeuze, terugtrekken naar virtueel, verslagen-status, terugkeertimer, sterkte per terugkeer) is één systeem. De komst (voortekens + verschijnen + sporen) bouwt elke Nightmare zelf via een gedeelde interface.
 
+### Leven-ronde: variatie, beweging en reactie (sparring 2026-10-29)
+Na de eerste blik in de game (gebruiker: "meer leven in de mechanics en de attacks"). Meteen gebouwd, parallel per Nightmare.
+- **Eén fase:** geen fasewissel op lage HP; het leven komt uit variatie en reacties.
+- **Gedeelde reactielaag (alle vijf, in de basis `entity/nightmare/`):**
+  - *Wankelen:* na veel schade in korte tijd of een treffer op zijn zwakke plek wankelt hij 1–2 s (duidelijke animatie, open venster); de lopende aanval breekt af.
+  - *Tempo en afstand:* niet alleen recht op je af; hij cirkelt, neemt na een reeks aanvallen afstand en kiest zijn moment. Elke Nightmare vult dit in met zijn eigen beweging (lopen, klimmen, vliegen, zwemmen).
+  - *Zoeken:* kwijt uit het zicht → hij loopt naar je laatste plek, snuffelt en kijkt rond.
+  - *Doelwit wisselen:* in multiplayer gaat hij af op wie hem het hardst raakt, of op wie dichtbij en zwak is.
+- **Extra aanvallen per Nightmare:**
+  - *De Holle:* grondslag (schokgolf in een ring, springen of afstand ontwijkt), scheurregen (paarse scheurtjes rond de speler, dan void-klauwen omhoog), veegslag (brede knokkelboog vóór hem, duwt weg).
+  - *De Gelaagde:* sprong van de wand (landt met een klap, kleine straal), ingraven (in zand/grind, barst onder een speler op; geen blijvend gat), dode koppen spuwen (stof en botsplinters: korte blindheid, wat schade op afstand).
+  - *De Herrijzende:* duikvlucht (hoog op, rechte duik, vuurspoor op de grond), sintelregen (grond kort in vuur, niets blijvends), landen en vechten (een tijd op de grond: stampen en pikken, goed te raken met melee).
+  - *De Verloren Hoeder:* bellenval (bellen als waarschuwing, dan een stroom die je de diepte in trekt of de lucht in gooit), omsingelen (kronkelt een krimpende kring om de spelers; zijn lijf is een muur), duik en uitbarsting (barst onder een speler of boot omhoog en lanceert die).
+  - *De Onvoltooide:* glitchsprong (haperende stapjes naar je toe, beeld voor beeld), brokken gooien (zwevend herinneringsbrok wordt vallende blokken die even blijven liggen), ontladen grond (blokken flikkeren een paar seconden weg tot void en komen terug; niets blijvend).
+- Getallen (schade, cooldowns, kansen) kiezen de stromen voorlopig, in de config; bevestigen bij de teststop.
+
 ## Ring 1 — De Holle, de ontzielde titaan (werktitel)
 *Herontwerp 2026-10-20: vervangt de eerste schets (uitgerekte nabootser). "Hol" betekent nu: zonder ziel.*
 
