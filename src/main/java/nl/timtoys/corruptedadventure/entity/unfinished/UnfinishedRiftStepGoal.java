@@ -17,6 +17,7 @@ import java.util.OptionalDouble;
  */
 final class UnfinishedRiftStepGoal extends UnfinishedAttackGoal {
     private static final int[] ANGLES = {0, 40, -40, 80, -80, 120, -120, 160, -160};
+    private boolean stepped;
 
     UnfinishedRiftStepGoal(TheUnfinished boss) {
         super(boss, Graft.HOLLE);
@@ -48,6 +49,7 @@ final class UnfinishedRiftStepGoal extends UnfinishedAttackGoal {
     @Override
     protected void begin(ServerLevel level, LivingEntity target) {
         int sink = ServerConfig.UNFINISHED.riftStepSinkTicks.get();
+        stepped = false;
         boss.triggerAnim(UnfinishedAnimations.ACTION, UnfinishedAnimations.RIFT_SINK);
         // Once his head is under, nothing reaches him until he is half out again.
         boss.setSunkenWindow(boss.tickCount + sink / 2, boss.tickCount + sink + sink / 2);
@@ -59,6 +61,7 @@ final class UnfinishedRiftStepGoal extends UnfinishedAttackGoal {
         if (tick != ServerConfig.UNFINISHED.riftStepSinkTicks.get()) {
             return;
         }
+        stepped = true;
         UnfinishedEffects.riftBurst(level, boss);
         Vec3 spot = find(target);
         if (spot != null) {
@@ -67,6 +70,14 @@ final class UnfinishedRiftStepGoal extends UnfinishedAttackGoal {
         }
         boss.triggerAnim(UnfinishedAnimations.ACTION, UnfinishedAnimations.RIFT_RISE);
         UnfinishedEffects.riftBurst(level, boss);
+    }
+
+    @Override
+    protected void end(ServerLevel level) {
+        if (!stepped) {
+            // Broken off before the step (a stagger, a lost target): the window set ahead must not make him untouchable.
+            boss.setSunkenWindow(-1, -1);
+        }
     }
 
     private Vec3 find(LivingEntity target) {

@@ -43,6 +43,8 @@ public final class UnfinishedTempBlocks extends SavedData {
     public static final String FILE_NAME = CorruptedAdventure.MOD_ID + "_unfinished_blocks";
     /** No neighbour or shape updates: nothing next to it (a torch, sand, water) notices the block coming and going. */
     static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
+    /** Ticks between two looks at blocks that are due in a chunk that is not loaded. */
+    private static final int UNLOADED_RECHECK = 20;
 
     public enum Kind {
         GROUND, SHARD
@@ -62,7 +64,8 @@ public final class UnfinishedTempBlocks extends SavedData {
         private final BlockState original;
         private BlockState placed;
         private long restoreAt;
-        private final Kind kind;
+        /** What lies there now (a later swap takes over, the original stays): it decides how it goes back. */
+        private Kind kind;
 
         private Entry(BlockState original, BlockState placed, long restoreAt, Kind kind) {
             this.original = original;
@@ -74,6 +77,13 @@ public final class UnfinishedTempBlocks extends SavedData {
 
     private final Long2ObjectOpenHashMap<Entry> entries = new Long2ObjectOpenHashMap<>();
     private final List<Hole> holes = new ArrayList<>();
+    /**
+     * Unloadings whose attack broke off, finishing here. Not saved: after a restart mid-dig the pit is only shallower,
+     * and every block it took still comes back.
+     */
+    private final List<UnfinishedUnload.Dig> digs = new ArrayList<>();
+    /** No entry is due before this game time, so the tick skips the scan until then; not saved (a loaded file scans once). */
+    private long nextRestore = Long.MIN_VALUE;
 
     public static void register(IEventBus gameBus) {
         gameBus.addListener(UnfinishedTempBlocks::onLevelTick);
@@ -111,7 +121,9 @@ public final class UnfinishedTempBlocks extends SavedData {
         } else {
             entry.placed = placed;
             entry.restoreAt = restoreAt;
+            entry.kind = kind;
         }
+        nextRestore = Math.min(nextRestore, restoreAt);
         level.setBlock(pos, placed, FLAGS);
         setDirty();
         return true;
@@ -169,13 +181,23 @@ public final class UnfinishedTempBlocks extends SavedData {
         return holes;
     }
 
+    /** An unloading whose attack broke off: it goes on here, a few layers a tick, to the bottom of the world. */
+    void addDig(UnfinishedUnload.Dig dig) {
+        digs.add(dig);
+    }
+
     /** Every tracked block in a loaded chunk back now (the server stops; tests). */
     public void restoreAll(ServerLevel level) {
+        digs.clear();
         restoreDue(level, Long.MAX_VALUE, Integer.MAX_VALUE);
     }
 
     private void tick(ServerLevel level) {
         long now = level.getGameTime();
+        if (!digs.isEmpty()) {
+            int layers = ServerConfig.UNFINISHED.unloadLayersPerTick.get();
+            digs.removeIf(dig -> dig.step(level, layers));
+        }
         if (!holes.isEmpty()) {
             if (holes.removeIf(hole -> now >= hole.until())) {
                 setDirty();
@@ -184,17 +206,26 @@ public final class UnfinishedTempBlocks extends SavedData {
                 UnfinishedUnload.catchFallen(level, hole);
             }
         }
-        if (!entries.isEmpty()) {
+        if (!entries.isEmpty() && now >= nextRestore) {
             restoreDue(level, now, ServerConfig.UNFINISHED.tempRestorePerTick.get());
         }
     }
 
     private void restoreDue(ServerLevel level, long now, int max) {
         List<BlockPos> due = new ArrayList<>();
+        long next = Long.MAX_VALUE;
+        boolean waiting = false;
         for (Long2ObjectMap.Entry<Entry> entry : entries.long2ObjectEntrySet()) {
+            long at = entry.getValue().restoreAt;
+            if (at > now) {
+                next = Math.min(next, at);
+                continue;
+            }
             BlockPos pos = BlockPos.of(entry.getLongKey());
-            if (entry.getValue().restoreAt <= now && level.isLoaded(pos)) {
+            if (level.isLoaded(pos)) {
                 due.add(pos);
+            } else {
+                waiting = true;
             }
         }
         // Bottom first: a column fills from below, and sand never hangs.
@@ -202,6 +233,14 @@ public final class UnfinishedTempBlocks extends SavedData {
         for (int i = 0; i < due.size() && i < max; i++) {
             restore(level, due.get(i));
         }
+        long time = level.getGameTime();
+        if (due.size() > max) {
+            next = time + 1;
+        } else if (waiting) {
+            // Due in a chunk that is not loaded: looked at now and then, so it is mended soon after the chunk comes back.
+            next = Math.min(next, time + UNLOADED_RECHECK);
+        }
+        nextRestore = next;
     }
 
     /** A player inside a block that came back stands on it instead (as the column fills, it lifts him). */
@@ -230,14 +269,13 @@ public final class UnfinishedTempBlocks extends SavedData {
         }
     }
 
-    /** A tracked block gives nothing: it glitches back to what it was. */
+    /**
+     * A tracked block gives nothing: it glitches back to what it was. One a player put in a hole himself is only forgotten
+     * ({@link #restore} leaves it), and breaks as usual.
+     */
     private static void onBreak(BlockEvent.BreakEvent event) {
-        if (event.getLevel() instanceof ServerLevel level) {
-            UnfinishedTempBlocks data = of(level);
-            if (data.isTracked(event.getPos())) {
-                event.setCanceled(true);
-                data.restore(level, event.getPos());
-            }
+        if (event.getLevel() instanceof ServerLevel level && of(level).restore(level, event.getPos())) {
+            event.setCanceled(true);
         }
     }
 

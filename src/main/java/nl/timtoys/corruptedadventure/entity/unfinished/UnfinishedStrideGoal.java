@@ -37,11 +37,6 @@ final class UnfinishedStrideGoal extends Goal {
     }
 
     @Override
-    public void start() {
-        boss.setStriding(true);
-    }
-
-    @Override
     public void stop() {
         boss.setStriding(false);
     }
@@ -50,7 +45,8 @@ final class UnfinishedStrideGoal extends Goal {
     public void tick() {
         LivingEntity target = boss.getTarget();
         if (target != null) {
-            boss.setStriding(boss.strideToward(target.position()));
+            // Sets the striding flag itself: only for a tick he steps.
+            boss.strideToward(target.position());
         }
     }
 }

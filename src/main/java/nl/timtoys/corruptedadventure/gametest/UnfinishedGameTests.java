@@ -133,9 +133,9 @@ public final class UnfinishedGameTests {
     }
 
     /** A blow as it lands on his virtual health: divided by the health scale, then his armor, then scaled back. */
+    /** The virtual damage of a hit: armor works on the full hit, the cap scale comes after it (and cancels out). */
     private static float afterArmor(TheUnfinished boss, GameTestHelper helper, ServerPlayer player, float damage) {
-        float scale = boss.healthScale();
-        return scale * CombatRules.getDamageAfterAbsorb(boss, damage / scale, playerAttack(helper, player),
+        return CombatRules.getDamageAfterAbsorb(boss, damage, playerAttack(helper, player),
                 boss.getArmorValue(), (float) boss.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
     }
 

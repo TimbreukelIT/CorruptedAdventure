@@ -4,12 +4,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.config.UnfinishedConfig;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,9 +32,9 @@ final class UnfinishedUnloadGoal extends UnfinishedAttackGoal {
 
     private final List<UnfinishedUnload.Column> columns = new ArrayList<>();
     private final Set<BlockPos> flickering = new HashSet<>();
-    private int[] nextY = new int[0];
     private BlockPos centre = BlockPos.ZERO;
-    private long openUntil;
+    @Nullable
+    private UnfinishedUnload.Dig dig;
     private boolean done;
 
     UnfinishedUnloadGoal(TheUnfinished boss) {
@@ -74,13 +74,10 @@ final class UnfinishedUnloadGoal extends UnfinishedAttackGoal {
         done = false;
         flickering.clear();
         centre = target.blockPosition();
+        dig = null;
         columns.clear();
         columns.addAll(UnfinishedUnload.plan(level, centre, config.unloadRadius.get(), config.unloadMaxBlocks.get(),
                 boss.position(), OWN_CLEARANCE));
-        nextY = new int[columns.size()];
-        for (int i = 0; i < nextY.length; i++) {
-            nextY[i] = columns.get(i).top();
-        }
         if (columns.isEmpty()) {
             done = true;
             return;
@@ -105,20 +102,28 @@ final class UnfinishedUnloadGoal extends UnfinishedAttackGoal {
         }
         if (tick == warn) {
             settleFlicker(level);
-            openUntil = level.getGameTime() + config.unloadOpenTicks.get();
+            long openUntil = level.getGameTime() + config.unloadOpenTicks.get();
             int surface = columns.stream().mapToInt(UnfinishedUnload.Column::top).max().orElse(centre.getY()) + 1;
             UnfinishedTempBlocks.of(level).addHole(new UnfinishedTempBlocks.Hole(centre, config.unloadRadius.get(), surface,
                     openUntil + 20));
             UnfinishedEffects.unloadOpen(level, Vec3.atBottomCenterOf(centre.above()), config.unloadRadius.get());
+            dig = new UnfinishedUnload.Dig(columns, openUntil);
         }
-        unloadLayers(level, config.unloadLayersPerTick.get());
+        if (dig != null && dig.step(level, config.unloadLayersPerTick.get())) {
+            dig = null;
+            done = true;
+        }
     }
 
     @Override
     protected void end(ServerLevel level) {
         settleFlicker(level);
+        if (dig != null) {
+            // Broken off while unloading (a stagger, a lost target): the hole is open already, so it runs its course.
+            UnfinishedTempBlocks.of(level).addDig(dig);
+            dig = null;
+        }
         columns.clear();
-        nextY = new int[0];
         done = false;
     }
 
@@ -152,29 +157,5 @@ final class UnfinishedUnloadGoal extends UnfinishedAttackGoal {
             data.restore(level, pos);
         }
         flickering.clear();
-    }
-
-    /** Takes the next {@code layers} layers off every column; done once all reach the bottom of the world. */
-    private void unloadLayers(ServerLevel level, int layers) {
-        UnfinishedTempBlocks data = UnfinishedTempBlocks.of(level);
-        BlockState air = Blocks.AIR.defaultBlockState();
-        int bottom = level.getMinBuildHeight();
-        boolean left = false;
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int i = 0; i < columns.size(); i++) {
-            UnfinishedUnload.Column column = columns.get(i);
-            int stop = Math.max(bottom, nextY[i] - layers + 1);
-            for (int y = nextY[i]; y >= stop; y--) {
-                pos.set(column.x(), y, column.z());
-                if (!level.getBlockState(pos).isAir()) {
-                    data.swap(level, pos.immutable(), air, openUntil, UnfinishedTempBlocks.Kind.GROUND);
-                }
-            }
-            nextY[i] = stop - 1;
-            left |= nextY[i] >= bottom;
-        }
-        if (!left) {
-            done = true;
-        }
     }
 }

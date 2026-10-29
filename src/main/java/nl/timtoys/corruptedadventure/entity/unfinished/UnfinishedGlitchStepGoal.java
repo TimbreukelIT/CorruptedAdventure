@@ -48,7 +48,16 @@ final class UnfinishedGlitchStepGoal extends UnfinishedAttackGoal {
     @Override
     protected int duration() {
         UnfinishedConfig config = ServerConfig.UNFINISHED;
-        return config.glitchFreezeTicks.get() + config.glitchStepsMax.get() * (config.glitchPauseMax.get() + 1) + 1;
+        return config.glitchFreezeTicks.get() + stepsMax(config) * (pauseMax(config) + 1) + 1;
+    }
+
+    /** A max set below its min counts as the min (as {@code NightmareConfig.ticksBetween} does). */
+    private static int stepsMax(UnfinishedConfig config) {
+        return Math.max(config.glitchStepsMin.get(), config.glitchStepsMax.get());
+    }
+
+    private static int pauseMax(UnfinishedConfig config) {
+        return Math.max(config.glitchPauseMin.get(), config.glitchPauseMax.get());
     }
 
     @Override
@@ -68,7 +77,7 @@ final class UnfinishedGlitchStepGoal extends UnfinishedAttackGoal {
         UnfinishedConfig config = ServerConfig.UNFINISHED;
         RandomSource random = boss.getRandom();
         int min = config.glitchStepsMin.get();
-        stepsLeft = min + random.nextInt(Math.max(1, config.glitchStepsMax.get() - min + 1));
+        stepsLeft = min + random.nextInt(stepsMax(config) - min + 1);
         nextStep = config.glitchFreezeTicks.get();
         done = false;
         spot = null;
@@ -113,7 +122,7 @@ final class UnfinishedGlitchStepGoal extends UnfinishedAttackGoal {
         spot = null;
         UnfinishedConfig config = ServerConfig.UNFINISHED;
         int pauseMin = config.glitchPauseMin.get();
-        nextStep = tick + pauseMin + boss.getRandom().nextInt(Math.max(1, config.glitchPauseMax.get() - pauseMin + 1));
+        nextStep = tick + pauseMin + boss.getRandom().nextInt(pauseMax(config) - pauseMin + 1);
     }
 
     @Override

@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
@@ -33,6 +34,53 @@ public final class UnfinishedUnload {
 
     /** A column that may unload: its blocks from {@code top} down to the bottom of the world. */
     public record Column(int x, int z, int top) {
+    }
+
+    /** A patch unloading downward, a few layers a tick, until every column reaches the bottom of the world. */
+    static final class Dig {
+        private final List<Column> columns;
+        private final int[] nextY;
+        private final long openUntil;
+
+        Dig(List<Column> columns, long openUntil) {
+            this.columns = List.copyOf(columns);
+            this.nextY = new int[this.columns.size()];
+            for (int i = 0; i < nextY.length; i++) {
+                nextY[i] = this.columns.get(i).top();
+            }
+            this.openUntil = openUntil;
+        }
+
+        /** Takes the next {@code layers} layers off every column; true once all reach the bottom of the world. */
+        boolean step(ServerLevel level, int layers) {
+            UnfinishedTempBlocks data = UnfinishedTempBlocks.of(level);
+            BlockState air = Blocks.AIR.defaultBlockState();
+            int bottom = level.getMinBuildHeight();
+            boolean left = false;
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            for (int i = 0; i < columns.size(); i++) {
+                Column column = columns.get(i);
+                if (nextY[i] < bottom) {
+                    continue;
+                }
+                pos.set(column.x(), nextY[i], column.z());
+                if (!level.isLoaded(pos)) {
+                    // Its chunk went away meanwhile: the column stops where it is (reading it would load it again).
+                    nextY[i] = bottom - 1;
+                    continue;
+                }
+                int stop = Math.max(bottom, nextY[i] - layers + 1);
+                for (int y = nextY[i]; y >= stop; y--) {
+                    pos.setY(y);
+                    if (!level.getBlockState(pos).isAir()) {
+                        data.swap(level, pos.immutable(), air, openUntil, UnfinishedTempBlocks.Kind.GROUND);
+                    }
+                }
+                nextY[i] = stop - 1;
+                left |= nextY[i] >= bottom;
+            }
+            return !left;
+        }
     }
 
     private UnfinishedUnload() {
@@ -73,6 +121,12 @@ public final class UnfinishedUnload {
     private static int count(ServerLevel level, int x, int z) {
         if (!level.hasChunkAt(new BlockPos(x, 0, z))) {
             return -1;
+        }
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            // The fluid check beside it would load a neighbour chunk; ground we cannot see may not unload.
+            if (!level.hasChunkAt(new BlockPos(x + direction.getStepX(), 0, z + direction.getStepZ()))) {
+                return -1;
+            }
         }
         int top = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
         int count = 0;

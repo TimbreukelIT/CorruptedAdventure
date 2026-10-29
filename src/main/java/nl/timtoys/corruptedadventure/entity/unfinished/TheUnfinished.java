@@ -306,6 +306,11 @@ public class TheUnfinished extends Nightmare {
     }
 
     private void checkLens() {
+        if (isSunken()) {
+            // Sunken, nothing can hit him: a look now would load his weak spots for nothing.
+            updateLoaded();
+            return;
+        }
         UnfinishedConfig config = ServerConfig.UNFINISHED;
         List<Vec3> points = new ArrayList<>();
         Vec3 body = position().add(0.0, BODY_SIGHT, 0.0);
@@ -345,7 +350,8 @@ public class TheUnfinished extends Nightmare {
             setStriding(false);
         } else {
             reactionStep();
-            if (!attacking && !isStriding() && getTarget() != null) {
+            // Turning in place toward a reaction's point is not striding, but he must keep turning toward that point.
+            if (!attacking && !isStriding() && reactionPoint == null && getTarget() != null) {
                 desiredYaw = yawTo(position(), getTarget().position());
             }
             setYRot(Mth.approachDegrees(getYRot(), desiredYaw, TURN));
@@ -366,9 +372,8 @@ public class TheUnfinished extends Nightmare {
         }
         double dx = reactionPoint.x - getX();
         double dz = reactionPoint.z - getZ();
-        boolean moved = dx * dx + dz * dz > REACTION_ARRIVE * REACTION_ARRIVE && strideToward(reactionPoint);
-        setStriding(moved);
-        if (!moved) {
+        if (dx * dx + dz * dz <= REACTION_ARRIVE * REACTION_ARRIVE || !strideToward(reactionPoint)) {
+            setStriding(false);
             reactionPoint = null;
         }
     }
@@ -397,26 +402,31 @@ public class TheUnfinished extends Nightmare {
 
     /**
      * One tick of striding toward {@code goal}: turn toward it, and once he faces it, step {@code movementSpeed x 0.4}
-     * blocks. False when he cannot: the ground ahead is void or not loaded.
+     * blocks. Sets {@link #isStriding} only for a tick he steps (turning in place is not walking). False when he cannot go
+     * on: he is there, or the ground ahead is void or not loaded.
      */
     boolean strideToward(Vec3 goal) {
         double dx = goal.x - getX();
         double dz = goal.z - getZ();
         double length = Math.sqrt(dx * dx + dz * dz);
         if (length < 1.0E-3) {
+            setStriding(false);
             return false;
         }
         desiredYaw = yawTo(position(), goal);
         if (Math.abs(Mth.wrapDegrees(desiredYaw - getYRot())) > WALK_CONE) {
+            setStriding(false);
             return true;
         }
         double step = Math.min(getAttributeValue(Attributes.MOVEMENT_SPEED) * STRIDE_FACTOR, length);
         double x = getX() + dx / length * step;
         double z = getZ() + dz / length * step;
         if (UnfinishedGround.surface(level(), x, z).isEmpty()) {
+            setStriding(false);
             return false;
         }
         setPos(x, getY(), z);
+        setStriding(true);
         return true;
     }
 
