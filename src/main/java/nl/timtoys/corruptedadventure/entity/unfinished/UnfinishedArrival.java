@@ -18,6 +18,8 @@ import nl.timtoys.corruptedadventure.network.UnfinishedStandstillPayload;
 import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.OptionalDouble;
 
 /**
@@ -47,11 +49,11 @@ public final class UnfinishedArrival implements NightmareArrival {
     /** Blocks below the ground the first grip sounds from, above his climb's start. */
     private static final double FIRST_GRIP_DEPTH = 12.0;
 
-    /** The tear as the flicker showed it, so that it opens the same way round. */
-    @Nullable
-    private BlockPos plannedAt;
-    @Nullable
-    private UnfinishedTear.Plan planned;
+    /**
+     * The tear as the flicker showed it, per place of an arrival under way, so that it opens the same way round; one
+     * instance serves every arrival of his kind. Removed when the arrival appears or is cancelled.
+     */
+    private final Map<BlockPos, UnfinishedTear.Plan> planned = new HashMap<>();
 
     @Override
     public BlockPos place(ServerLevel level, ServerPlayer target) {
@@ -95,8 +97,9 @@ public final class UnfinishedArrival implements NightmareArrival {
         }
         UnfinishedArrivalConfig config = config();
         Vec3 centre = Vec3.atBottomCenterOf(place);
-        Vec3 toward = place.equals(plannedAt) && planned != null ? centre.add(planned.forward()) : target.position();
-        settleFlicker(level);
+        UnfinishedTear.Plan shown = planned.get(place);
+        Vec3 toward = shown != null ? centre.add(shown.forward()) : target.position();
+        settleFlicker(level, place);
         // Planned again now: the ground may have changed since the flicker (a block placed on it stays).
         UnfinishedTear.Plan plan = plan(level, place, toward, config);
         Vec3 forward = plan.forward();
@@ -125,7 +128,7 @@ public final class UnfinishedArrival implements NightmareArrival {
 
     @Override
     public void cancelled(ServerLevel level, BlockPos place) {
-        settleFlicker(level);
+        settleFlicker(level, place);
         UnfinishedStandstillPayload lift = new UnfinishedStandstillPayload(place.getX() + 0.5, place.getZ() + 0.5, 1.0F, 0,
                 seed(place));
         for (ServerPlayer player : level.players()) {
@@ -191,10 +194,8 @@ public final class UnfinishedArrival implements NightmareArrival {
 
     /** The last ticks: the tear's top blocks flicker as glitch blocks, more of them toward the end. */
     private void warn(ServerLevel level, ServerPlayer target, BlockPos place, int step, int span) {
-        if (!place.equals(plannedAt) || planned == null) {
-            planned = plan(level, place, target.position(), config());
-            plannedAt = place;
-        }
+        UnfinishedTear.Plan plan = planned.computeIfAbsent(place.immutable(),
+                at -> plan(level, at, target.position(), config()));
         Vec3 centre = Vec3.atBottomCenterOf(place);
         double length = config().tearLength.get();
         if (step % 20 == 0) {
@@ -209,7 +210,7 @@ public final class UnfinishedArrival implements NightmareArrival {
         float share = 0.25F + 0.6F * step / Math.max(1, span);
         BlockState glitch = ModBlocks.GLITCH_BLOCK.get().defaultBlockState();
         long until = level.getGameTime() + FLICKER_TICKS;
-        for (UnfinishedUnload.Column column : planned.columns()) {
+        for (UnfinishedUnload.Column column : plan.columns()) {
             BlockPos top = new BlockPos(column.x(), column.top(), column.z());
             if (random.nextFloat() < share && level.getBlockState(top).isSolidRender(level, top)) {
                 data.swap(level, top, glitch, until, UnfinishedTempBlocks.Kind.GROUND);
@@ -217,19 +218,18 @@ public final class UnfinishedArrival implements NightmareArrival {
         }
     }
 
-    /** The flickering glitch blocks back to their ground now (they would in a few ticks by themselves). */
-    private void settleFlicker(ServerLevel level) {
-        if (planned != null) {
+    /** The flickering glitch blocks of the arrival at {@code place} back to their ground now, and its plan forgotten. */
+    private void settleFlicker(ServerLevel level, BlockPos place) {
+        UnfinishedTear.Plan plan = planned.remove(place);
+        if (plan != null) {
             UnfinishedTempBlocks data = UnfinishedTempBlocks.of(level);
-            for (UnfinishedUnload.Column column : planned.columns()) {
+            for (UnfinishedUnload.Column column : plan.columns()) {
                 BlockPos top = new BlockPos(column.x(), column.top(), column.z());
                 if (data.isTracked(top) && level.getBlockState(top).is(ModBlocks.GLITCH_BLOCK.get())) {
                     data.restore(level, top);
                 }
             }
         }
-        planned = null;
-        plannedAt = null;
     }
 
     // ------------------------------------------------------------------------------------------------ the tear
@@ -279,7 +279,7 @@ public final class UnfinishedArrival implements NightmareArrival {
                 if (tearable && UnfinishedUnload.count(level, bx, bz) <= 0) {
                     continue;
                 }
-                return new BlockPos(bx, (int) ground.getAsDouble(), bz);
+                return new BlockPos(bx, Mth.floor(ground.getAsDouble()), bz);
             }
         }
         return null;
