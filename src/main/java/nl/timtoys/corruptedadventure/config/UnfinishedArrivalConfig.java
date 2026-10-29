@@ -5,7 +5,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 /**
  * {@code [nightmares.unfinished.arrival]}: how The Unfinished comes (phase 4 step 2, fase-4-nightmares-concept.md "Stap 2
  * voor ring 2–5"): the standstill falls round his target, you hear him climb, he tears the ground open down to the void and
- * climbs out, and a small void scar stays. While he roams, the rain hangs still where he passed.
+ * climbs out, and a small shallow void scar stays. While he roams, the rain hangs still where he passed.
  */
 public final class UnfinishedArrivalConfig {
     public final ModConfigSpec.IntValue omenSeconds;
@@ -22,6 +22,7 @@ public final class UnfinishedArrivalConfig {
     public final ModConfigSpec.BooleanValue scarEnabled;
     public final ModConfigSpec.IntValue scarLength;
     public final ModConfigSpec.IntValue scarWidth;
+    public final ModConfigSpec.IntValue scarDepth;
     public final ModConfigSpec.DoubleValue traceChance;
     public final ModConfigSpec.IntValue traceSeconds;
     public final ModConfigSpec.IntValue traceMax;
@@ -46,20 +47,23 @@ public final class UnfinishedArrivalConfig {
                 .defineInRange("tearLength", 9, 3, 17);
         tearWidth = builder.comment("Width in blocks of the tear, along his way to the target.")
                 .defineInRange("tearWidth", 5, 3, 9);
-        tearOpenSeconds = builder.comment("Seconds the tear stays open down to the void before it loads back in (all but",
-                        "the void scar).")
+        tearOpenSeconds = builder.comment("Seconds the tear stays open down to the void before it loads back in (its",
+                        "middle as the void scar).")
                 .defineInRange("tearOpenSeconds", 20, 2, 300);
         climbTicks = builder.comment("Ticks he climbs out of the tear; the first half nothing reaches him.")
                 .defineInRange("climbTicks", 100, 20, 400);
         climbDepth = builder.comment("Blocks below the ground where his climb starts.")
                 .defineInRange("climbDepth", 18, 4, 64);
-        scarEnabled = builder.comment("Whether a small void scar stays where he came: whole natural columns down to the",
-                        "void (no block entities, fluids or built blocks). false = the ground comes back whole.")
+        scarEnabled = builder.comment("Whether a small shallow void scar stays where he came, once the tear loads back in: a",
+                        "pit with a voidstone floor and a rim of voidstone and corrupted dirt, only in natural ground (no",
+                        "block entities, fluids or built blocks). false = the ground comes back whole.")
                 .define("scarEnabled", true);
         scarLength = builder.comment("Length in blocks of the void scar (across his way, like the tear).")
                 .defineInRange("scarLength", 5, 1, 9);
         scarWidth = builder.comment("Width in blocks of the void scar.")
                 .defineInRange("scarWidth", 3, 1, 5);
+        scarDepth = builder.comment("Depth in blocks of the void scar, down to its voidstone floor.")
+                .defineInRange("scarDepth", 4, 1, 8);
         traceChance = builder.comment("Chance per roaming step that the rain hangs still where he passed (only where loaded).")
                 .defineInRange("traceChance", 0.25, 0.0, 1.0);
         traceSeconds = builder.comment("Seconds a trace of hanging rain lasts.")

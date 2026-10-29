@@ -26,9 +26,9 @@ import java.util.OptionalDouble;
  * frozen rain and clouds, every sound drained away); after {@code silenceSeconds} you hear him climb, grips that come
  * faster and nearer. In the last {@code tearWarnTicks} the ground over the tear flickers. Then he tears it open down to
  * the void ({@link UnfinishedTear}, open for {@code tearOpenSeconds}; the void throws out whoever falls in) and climbs out,
- * over the rim toward his target ({@link TheUnfinished#climbOut}). A small void scar stays: whole natural columns only,
- * never a build. Cancelled omens lift the standstill; the flicker mends itself. While he roams, the rain hangs still where
- * he passed ({@link UnfinishedTraces}).
+ * over the rim toward his target ({@link TheUnfinished#climbOut}). When the tear loads back in, a small shallow void scar
+ * stays in its middle (voidstone floor and rim, natural ground only, never a build). Cancelled omens lift the standstill;
+ * the flicker mends itself. While he roams, the rain hangs still where he passed ({@link UnfinishedTraces}).
  */
 public final class UnfinishedArrival implements NightmareArrival {
     private static final int[] ANGLES = {0, 30, -30, 60, -60, 90, -90, 120, -120, 150, -150, 180};
@@ -209,7 +209,7 @@ public final class UnfinishedArrival implements NightmareArrival {
         float share = 0.25F + 0.6F * step / Math.max(1, span);
         BlockState glitch = ModBlocks.GLITCH_BLOCK.get().defaultBlockState();
         long until = level.getGameTime() + FLICKER_TICKS;
-        for (UnfinishedUnload.Column column : planned.all()) {
+        for (UnfinishedUnload.Column column : planned.columns()) {
             BlockPos top = new BlockPos(column.x(), column.top(), column.z());
             if (random.nextFloat() < share && level.getBlockState(top).isSolidRender(level, top)) {
                 data.swap(level, top, glitch, until, UnfinishedTempBlocks.Kind.GROUND);
@@ -221,7 +221,7 @@ public final class UnfinishedArrival implements NightmareArrival {
     private void settleFlicker(ServerLevel level) {
         if (planned != null) {
             UnfinishedTempBlocks data = UnfinishedTempBlocks.of(level);
-            for (UnfinishedUnload.Column column : planned.all()) {
+            for (UnfinishedUnload.Column column : planned.columns()) {
                 BlockPos top = new BlockPos(column.x(), column.top(), column.z());
                 if (data.isTracked(top) && level.getBlockState(top).is(ModBlocks.GLITCH_BLOCK.get())) {
                     data.restore(level, top);
@@ -240,19 +240,16 @@ public final class UnfinishedArrival implements NightmareArrival {
                 config.scarWidth.get());
     }
 
-    /** The tear opens down to the void for a while; the scar in it for good. */
+    /** The tear opens down to the void for a while and loads back in with the shallow scar in its middle. */
     private static void open(ServerLevel level, UnfinishedTear.Plan plan, UnfinishedArrivalConfig config) {
         if (plan.isEmpty()) {
             return;
         }
         UnfinishedTempBlocks data = UnfinishedTempBlocks.of(level);
         long openUntil = level.getGameTime() + config.tearOpenSeconds.get() * 20L;
-        if (!plan.tear().isEmpty()) {
-            data.addDig(new UnfinishedUnload.Dig(plan.tear(), openUntil));
-        }
-        if (!plan.scar().isEmpty()) {
-            data.addDig(UnfinishedUnload.Dig.permanent(plan.scar()));
-        }
+        UnfinishedUnload.RestoreAs restoreAs = plan.scar().isEmpty()
+                ? UnfinishedUnload.RestoreAs.SAME : plan.scarShape(config.scarDepth.get(), level.getMinBuildHeight());
+        data.addDig(new UnfinishedUnload.Dig(plan.columns(), openUntil, restoreAs));
         int radius = Mth.ceil(config.tearLength.get() / 2.0);
         data.addHole(new UnfinishedTempBlocks.Hole(plan.centre(), radius, plan.surface(), openUntil + 20));
     }

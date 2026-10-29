@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -25,13 +26,15 @@ import nl.timtoys.corruptedadventure.entity.unfinished.TheUnfinished;
 import nl.timtoys.corruptedadventure.entity.unfinished.UnfinishedArrival;
 import nl.timtoys.corruptedadventure.entity.unfinished.UnfinishedTempBlocks;
 import nl.timtoys.corruptedadventure.entity.unfinished.UnfinishedTraces;
+import nl.timtoys.corruptedadventure.registry.ModBlocks;
 import nl.timtoys.corruptedadventure.ring.Ring;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * The Unfinished's arrival (phase 4 step 2, A5) through a director of its own whose ring 5 is the test's bounds: he climbs
- * out of the torn ground over the rim toward his target, the tear comes back and a void scar stays, only in whole natural
- * columns (a build and a chest in it stay). The arrival's own omens run, but shortened to {@link #OMEN_TICKS} and with the
+ * out of the torn ground over the rim toward his target; the tear, open down to the void, loads back in with a shallow
+ * void scar in its middle (voidstone floor, a rim of voidstone or corrupted dirt), only in whole natural columns (a build
+ * and a chest in it stay). The arrival's own omens run, but shortened to {@link #OMEN_TICKS} and with the
  * place in the arena (its own place lies 24 blocks behind the target, outside the test's bounds). He has no free will
  * after he appears. In the empty {@code gametest/hollow_arena} (9 x 7 x 9) with a grass floor at y 0, without the barrier
  * roof (a column under a barrier may not tear).
@@ -45,7 +48,9 @@ public final class UnfinishedArrivalGameTests {
     private static final BlockPos PLACE = new BlockPos(4, 1, 2);
     private static final BlockPos SCAR_MIDDLE = new BlockPos(4, 0, 2);
     private static final BlockPos SCAR_EDGE = new BlockPos(2, 0, 1);
-    private static final BlockPos TEAR_ONLY = new BlockPos(7, 0, 2);
+    /** Just outside the scar along his way: its rim. */
+    private static final BlockPos RIM = new BlockPos(4, 0, 0);
+    private static final BlockPos TEAR_ONLY = new BlockPos(8, 0, 2);
     private static final BlockPos BUILD = new BlockPos(3, 1, 2);
     private static final BlockPos CHEST = new BlockPos(1, 1, 2);
 
@@ -53,7 +58,7 @@ public final class UnfinishedArrivalGameTests {
     }
 
     @GameTest(template = "gametest/hollow_arena", batch = BATCH, timeoutTicks = 1000, skyAccess = true)
-    public static void theDirectedArrivalTearsTheGroundAndLeavesAScarOnlyInNaturalGround(GameTestHelper helper) {
+    public static void theDirectedArrivalTearsTheGroundAndLeavesAShallowScarOnlyInNaturalGround(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         UnfinishedArrivalConfig config = ServerConfig.UNFINISHED.arrival;
         floor(helper);
@@ -81,7 +86,7 @@ public final class UnfinishedArrivalGameTests {
                     Vec3 rel = helper.relativeVec(boss.position());
                     helper.assertTrue(rel.z > PLACE.getZ() + 3.0, "over the rim toward the target: " + rel);
                     helper.assertTrue(rel.y > 0.99, "on the ground, not in the tear: " + rel);
-                    helper.assertBlockPresent(Blocks.AIR, TEAR_ONLY);
+                    assertOpenToTheVoid(helper, TEAR_ONLY);
                     assertOpenToTheVoid(helper, SCAR_MIDDLE);
                     helper.assertBlockPresent(Blocks.OAK_PLANKS, BUILD);
                     helper.assertBlockPresent(Blocks.GRASS_BLOCK, BUILD.below());
@@ -89,8 +94,11 @@ public final class UnfinishedArrivalGameTests {
                 })
                 .thenExecuteAfter(open + 40 - climb, () -> {
                     helper.assertBlockPresent(Blocks.GRASS_BLOCK, TEAR_ONLY);
-                    assertOpenToTheVoid(helper, SCAR_MIDDLE);
-                    assertOpenToTheVoid(helper, SCAR_EDGE);
+                    assertShallowScar(helper, SCAR_MIDDLE, config.scarDepth.get());
+                    assertShallowScar(helper, SCAR_EDGE, config.scarDepth.get());
+                    BlockState rim = helper.getBlockState(RIM);
+                    helper.assertTrue(rim.is(ModBlocks.VOIDSTONE.get()) || rim.is(ModBlocks.CORRUPTED_DIRT.get()),
+                            "the rim: " + rim);
                     helper.assertFalse(UnfinishedTempBlocks.of(level).isTracked(helper.absolutePos(TEAR_ONLY)),
                             "the tear is mended");
                     boss.discard();
@@ -161,6 +169,29 @@ public final class UnfinishedArrivalGameTests {
             BlockPos pos = top.atY(y);
             if (!level.getBlockState(pos).isAir()) {
                 helper.fail("the scar is not open at " + pos + ": " + level.getBlockState(pos));
+            }
+        }
+    }
+
+    /**
+     * The column at {@code rel} (its top on y 0) is a shallow scar: air down to its voidstone floor {@code depth} below
+     * the top (never below the bottom of the world), and the ground under that as it was.
+     */
+    private static void assertShallowScar(GameTestHelper helper, BlockPos rel, int depth) {
+        ServerLevel level = helper.getLevel();
+        BlockPos top = helper.absolutePos(rel);
+        int floor = Math.max(top.getY() - depth, level.getMinBuildHeight());
+        for (int y = top.getY(); y > floor; y--) {
+            if (!level.getBlockState(top.atY(y)).isAir()) {
+                helper.fail("the scar is not open at " + top.atY(y) + ": " + level.getBlockState(top.atY(y)));
+            }
+        }
+        if (!level.getBlockState(top.atY(floor)).is(ModBlocks.VOIDSTONE.get())) {
+            helper.fail("no voidstone floor at " + top.atY(floor) + ": " + level.getBlockState(top.atY(floor)));
+        }
+        for (int y = floor - 1; y >= level.getMinBuildHeight(); y--) {
+            if (level.getBlockState(top.atY(y)).isAir()) {
+                helper.fail("the scar is open to the void at " + top.atY(y));
             }
         }
     }

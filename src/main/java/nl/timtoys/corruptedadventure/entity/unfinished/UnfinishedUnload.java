@@ -37,32 +37,39 @@ public final class UnfinishedUnload {
     }
 
     /**
+     * What a block of a dig comes back as instead of what was there (the scar his arrival leaves); null = the block
+     * that was there.
+     */
+    @FunctionalInterface
+    interface RestoreAs {
+        RestoreAs SAME = (column, y, original) -> null;
+
+        @Nullable
+        BlockState at(Column column, int y, BlockState original);
+    }
+
+    /**
      * A patch unloading downward, a few layers a tick, until every column reaches the bottom of the world. Its blocks come
-     * back at {@code openUntil}, except for a {@link #permanent} dig (the void scar of his arrival), whose blocks are gone.
+     * back at {@code openUntil}, as they were or as {@link RestoreAs} says.
      */
     static final class Dig {
         private final List<Column> columns;
         private final int[] nextY;
         private final long openUntil;
-        private final boolean permanent;
+        private final RestoreAs restoreAs;
 
         Dig(List<Column> columns, long openUntil) {
-            this(columns, openUntil, false);
+            this(columns, openUntil, RestoreAs.SAME);
         }
 
-        private Dig(List<Column> columns, long openUntil, boolean permanent) {
+        Dig(List<Column> columns, long openUntil, RestoreAs restoreAs) {
             this.columns = List.copyOf(columns);
             this.nextY = new int[this.columns.size()];
             for (int i = 0; i < nextY.length; i++) {
                 nextY[i] = this.columns.get(i).top();
             }
             this.openUntil = openUntil;
-            this.permanent = permanent;
-        }
-
-        /** A dig whose blocks never come back: nothing tracks them. */
-        static Dig permanent(List<Column> columns) {
-            return new Dig(columns, Long.MAX_VALUE, true);
+            this.restoreAs = restoreAs;
         }
 
         /** Takes the next {@code layers} layers off every column; true once all reach the bottom of the world. */
@@ -87,23 +94,12 @@ public final class UnfinishedUnload {
                 for (int y = nextY[i]; y >= stop; y--) {
                     pos.setY(y);
                     BlockState state = level.getBlockState(pos);
-                    if (state.isAir()) {
-                        continue;
-                    }
-                    if (permanent) {
-                        // Planned a moment ago; a block placed since then stops the column (and stays).
-                        if (!data.isTracked(pos) && !UnfinishedNature.isGround(state) && !UnfinishedNature.isOpen(state)) {
-                            nextY[i] = bottom - 1;
-                            break;
-                        }
-                        level.setBlock(pos, air, UnfinishedTempBlocks.FLAGS);
-                    } else {
-                        data.swap(level, pos.immutable(), air, openUntil, UnfinishedTempBlocks.Kind.GROUND);
+                    if (!state.isAir()) {
+                        data.swap(level, pos.immutable(), air, openUntil, UnfinishedTempBlocks.Kind.GROUND,
+                                restoreAs.at(column, y, state));
                     }
                 }
-                if (nextY[i] >= bottom) {
-                    nextY[i] = stop - 1;
-                }
+                nextY[i] = stop - 1;
                 left |= nextY[i] >= bottom;
             }
             return !left;
