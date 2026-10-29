@@ -37,7 +37,13 @@ public final class NightmareTargetGoal extends Goal {
             return false;
         }
         nextChoice = nightmare.tickCount + CHOOSE_TICKS / 2;
-        candidate = nightmare.aggro().choose(nightmare, fighters(), null, nightmare.tickCount);
+        List<Player> fighters = fighters();
+        if (fighters.isEmpty()) {
+            // The fight is over: an old attacker does not win the next one.
+            nightmare.aggro().clear();
+            return false;
+        }
+        candidate = nightmare.aggro().choose(nightmare, fighters, null, nightmare.tickCount);
         return candidate != null;
     }
 

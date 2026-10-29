@@ -23,10 +23,6 @@ public final class NightmarePacing {
         return restTicks > 0;
     }
 
-    int restTicks() {
-        return restTicks;
-    }
-
     Style style() {
         return style;
     }

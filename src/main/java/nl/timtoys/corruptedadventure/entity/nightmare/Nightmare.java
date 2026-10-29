@@ -327,8 +327,8 @@ public abstract class Nightmare extends Monster implements GeoEntity {
     }
 
     /**
-     * Where a rest window heads now, at its own height (a flyer adds its altitude): away from the target to the rest
-     * distance, or on around it at the distance it has (at least 4 blocks, at most the rest distance). Null without a
+     * Where a rest window heads now, at its own height (a flyer adds its altitude): away from the target to at least the
+     * rest distance, or on around it at the distance it has (at least 4 blocks, at most the rest distance). Null without a
      * target. Ask again every so often; a circling point moves on.
      */
     @Nullable
@@ -346,8 +346,9 @@ public abstract class Nightmare extends Monster implements GeoEntity {
             distance = 1.0;
         }
         double restDistance = config().restDistance.get();
-        if (pacing.style() == NightmarePacing.Style.BACK_OFF && distance < restDistance - 1.0) {
-            double factor = restDistance / distance;
+        if (pacing.style() == NightmarePacing.Style.BACK_OFF) {
+            // Already farther away: it stays at that distance, it does not come closer.
+            double factor = Math.max(restDistance, distance) / distance;
             return new Vec3(target.getX() + ox * factor, getY(), target.getZ() + oz * factor);
         }
         double radius = Math.max(MIN_CIRCLE_RADIUS, Math.min(restDistance, distance));
@@ -583,6 +584,7 @@ public abstract class Nightmare extends Monster implements GeoEntity {
 
     /** Leaves without a drop ({@link #onRetreat} for its effects); a directed one goes back to virtual, healed. */
     public void retreat() {
+        aggro.clear();
         if (level() instanceof ServerLevel serverLevel) {
             onRetreat(serverLevel);
             if (director != null) {
@@ -596,6 +598,9 @@ public abstract class Nightmare extends Monster implements GeoEntity {
     public void die(DamageSource source) {
         boolean wasDead = dead;
         super.die(source);
+        if (dead) {
+            aggro.clear();
+        }
         // Once, and only if the death went through (an event can cancel it).
         if (!wasDead && dead && director != null && !level().isClientSide()) {
             director.defeated(this);
