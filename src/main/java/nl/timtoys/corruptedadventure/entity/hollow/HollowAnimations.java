@@ -4,7 +4,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 
 /**
  * The Hollow's animations ({@code animations/entity/the_hollow.animation.json}). The body controller picks idle, walk,
- * the out-of-phase loop or death from the synced state; the server triggers the attacks on the action controller.
+ * the out-of-phase loop, the stagger or death from the synced state; the server triggers the attacks on the action controller.
  */
 public final class HollowAnimations {
     public static final String BODY = "body";
@@ -20,6 +20,7 @@ public final class HollowAnimations {
     static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.the_hollow.idle");
     static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.the_hollow.walk");
     static final RawAnimation PHASE = RawAnimation.begin().thenLoop("animation.the_hollow.phase");
+    static final RawAnimation STAGGER = RawAnimation.begin().thenLoop("animation.the_hollow.stagger");
     static final RawAnimation DEATH = RawAnimation.begin().thenPlayAndHold("animation.the_hollow.death");
     static final RawAnimation SLAM_ANIM = RawAnimation.begin().thenPlay("animation.the_hollow.slam");
     static final RawAnimation RIFT_STEP_ANIM = RawAnimation.begin().thenPlay("animation.the_hollow.rift_step");

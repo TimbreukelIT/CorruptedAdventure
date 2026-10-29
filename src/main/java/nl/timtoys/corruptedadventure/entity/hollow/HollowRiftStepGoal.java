@@ -7,6 +7,8 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.EnumSet;
 import java.util.Optional;
 
@@ -14,7 +16,9 @@ import java.util.Optional;
  * Verspringen: a crack warns while a rift tears open where it stands, then The Hollow steps into it and comes out of a
  * second rift behind its target. Also how a giant
  * gets past trees and caves its path finding cannot. Never while pinned; a pin during the warning cancels the step. No
- * room behind the target: the step fizzles and the cooldown starts anyway.
+ * room behind the target: the step fizzles and the cooldown starts anyway. As an attack it waits for the gate of the
+ * shared reactions; as a reaction ({@link #stepTo}: away in a rest window, to the last known place in a search) it goes
+ * at once, past the gate and the cooldown.
  */
 final class HollowRiftStepGoal extends Goal {
     private final TheHollow hollow;
@@ -24,6 +28,11 @@ final class HollowRiftStepGoal extends Goal {
     private int warning;
     private int nextStepTick;
     private HollowRift entry;
+    /** Where a reaction wants it to go, or null for an attack step behind its target. */
+    @Nullable
+    private Vec3 requested;
+    @Nullable
+    private Vec3 destination;
 
     HollowRiftStepGoal(TheHollow hollow) {
         this.hollow = hollow;
@@ -31,10 +40,25 @@ final class HollowRiftStepGoal extends Goal {
         nextStepTick = cooldown();
     }
 
+    /** A reaction: rift-step to near {@code point} as soon as it can (not while pinned, staggering or arriving). */
+    void stepTo(Vec3 point) {
+        requested = point;
+    }
+
     @Override
     public boolean canUse() {
         LivingEntity target = hollow.getTarget();
-        return target != null && target.isAlive() && !hollow.isPinned() && hollow.tickCount >= nextStepTick;
+        if (target == null || !target.isAlive() || hollow.isPinned() || hollow.isArriving() || hollow.isStaggered()) {
+            requested = null;
+            return false;
+        }
+        if (requested != null) {
+            destination = requested;
+            requested = null;
+            return true;
+        }
+        destination = null;
+        return hollow.tickCount >= nextStepTick && hollow.mayStartAttack();
     }
 
     @Override
@@ -58,6 +82,9 @@ final class HollowRiftStepGoal extends Goal {
         // At least one tick, so tick() always gets to the step (the config's minimum is 1 too).
         warning = Math.max(1, ServerConfig.HOLLOW.riftStepWarningTicks.get());
         hollow.getNavigation().stop();
+        if (destination == null) {
+            hollow.countAttack();
+        }
         hollow.triggerAnim(HollowAnimations.ACTION, HollowAnimations.RIFT_STEP);
         ServerLevel level = (ServerLevel) hollow.level();
         HollowEffects.riftCrack(level, hollow);
@@ -70,6 +97,7 @@ final class HollowRiftStepGoal extends Goal {
     @Override
     public void stop() {
         warning = 0;
+        destination = null;
         nextStepTick = hollow.tickCount + cooldown();
         if (entry != null) {
             entry.close(false);
@@ -88,7 +116,8 @@ final class HollowRiftStepGoal extends Goal {
             return;
         }
         ServerLevel level = (ServerLevel) hollow.level();
-        Optional<Vec3> spot = RiftStepTarget.behind(level, hollow, target, ServerConfig.HOLLOW.riftStepDistance.get());
+        Optional<Vec3> spot = destination != null ? RiftStepTarget.near(level, hollow, destination)
+                : RiftStepTarget.behind(level, hollow, target, ServerConfig.HOLLOW.riftStepDistance.get());
         if (spot.isEmpty()) {
             return;
         }

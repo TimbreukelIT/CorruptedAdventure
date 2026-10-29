@@ -107,6 +107,20 @@ final class HollowEffects {
         }
     }
 
+    /** It staggers: stone cracking, soul light leaking from its chest (on top of the shared stun sound). */
+    static void stagger(ServerLevel level, Entity hollow) {
+        level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.DEEPSLATE_BREAK, SoundSource.HOSTILE, 2.5F, 0.45F);
+        level.sendParticles(ParticleTypes.SOUL, hollow.getX(), hollow.getY() + hollow.getBbHeight() * 0.65, hollow.getZ(), 12,
+                0.5, 0.4, 0.5, 0.02);
+    }
+
+    /** At the last place it knew its target: a low sniff and a few glitch pixels round its head. */
+    static void sniff(ServerLevel level, Entity hollow) {
+        level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.WARDEN_SNIFF, SoundSource.HOSTILE, 2.0F, 0.5F);
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), hollow.getX(), hollow.getY() + hollow.getBbHeight() * 0.85,
+                hollow.getZ(), 10, 0.6, 0.3, 0.6, 0.0);
+    }
+
     /** The warning on both players before a swap. */
     static void swapMark(ServerLevel level, Entity player) {
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ILLUSIONER_PREPARE_MIRROR, SoundSource.HOSTILE, 1.5F, 0.5F);

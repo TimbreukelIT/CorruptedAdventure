@@ -26,6 +26,8 @@ public final class HollowConfig {
     public final ModConfigSpec.IntValue swapCooldown;
     public final ModConfigSpec.IntValue swapWarningTicks;
     public final ModConfigSpec.IntValue pinSeconds;
+    public final ModConfigSpec.DoubleValue restRiftStepChance;
+    public final ModConfigSpec.DoubleValue searchRiftStepChance;
     public final ModConfigSpec.IntValue omenSeconds;
     public final ModConfigSpec.DoubleValue fleeRadius;
     public final ModConfigSpec.IntValue riftOpeningTicks;
@@ -86,6 +88,12 @@ public final class HollowConfig {
         pinSeconds = builder.comment("Seconds a hit with a soul crystal in the main hand pins The Hollow in phase (no rift",
                         "step, never transparent). Costs one crystal, not in creative.")
                 .defineInRange("pinSeconds", 4, 1, 60);
+        restRiftStepChance = builder.comment("Chance that a rest window that backs off (shared reactions) is a rift step away",
+                        "instead of walking.")
+                .defineInRange("restRiftStepChance", 0.5, 0.0, 1.0);
+        searchRiftStepChance = builder.comment("Chance that a search for a lost target starts with a rift step to the last",
+                        "place it knew, instead of walking there.")
+                .defineInRange("searchRiftStepChance", 0.5, 0.0, 1.0);
         builder.comment("Its rift (step 2): the arrival and the rift steps.").push("rift");
         omenSeconds = builder.comment("Seconds of omens before an arrival's rift opens: a hairline crack in the air, fleeing",
                         "animals, flickering torches, sounds as if played backwards.")

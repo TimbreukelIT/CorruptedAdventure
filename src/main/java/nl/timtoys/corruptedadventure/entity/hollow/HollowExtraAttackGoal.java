@@ -15,7 +15,8 @@ import java.util.List;
  * The Hollow's extra attacks (life round): every few seconds, between its slams, it picks one that fits its target's
  * distance ({@link HollowAttackPicker}) and plays it out: a windup with a clear warning, the strike, a short recovery.
  * It stands while doing so. Out of phase it starts none, and a strike of its arms while out of phase hits nothing
- * (the claws of the rift rain are the void's, they still bite). Broken off early, claws that have not come up close.
+ * (the claws of the rift rain are the void's, they still bite). It waits for the gate of the shared reactions; broken
+ * off early (a stagger stops every running goal), claws that have not come up close.
  */
 final class HollowExtraAttackGoal extends Goal {
     /** Ticks it stays after the strike before it moves again. */
@@ -45,7 +46,7 @@ final class HollowExtraAttackGoal extends Goal {
     public boolean canUse() {
         LivingEntity target = hollow.getTarget();
         if (target == null || !target.isAlive() || hollow.tickCount < nextAttackTick || hollow.isPhased()
-                || hollow.isArriving()) {
+                || hollow.isArriving() || !hollow.mayStartAttack()) {
             return false;
         }
         HollowConfig config = ServerConfig.HOLLOW;
@@ -82,6 +83,7 @@ final class HollowExtraAttackGoal extends Goal {
     public void start() {
         HollowConfig config = ServerConfig.HOLLOW;
         age = 0;
+        hollow.countAttack();
         hollow.getNavigation().stop();
         ServerLevel level = (ServerLevel) hollow.level();
         LivingEntity target = hollow.getTarget();
