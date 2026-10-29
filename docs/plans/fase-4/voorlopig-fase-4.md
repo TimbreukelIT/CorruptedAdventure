@@ -1,7 +1,7 @@
 # Fase 4 — voorlopige keuzes (teststop met de gebruiker)
 
 Ontdubbeld uit de "Voorlopig"-secties van `H1.md`, `D.md`, `I.md`, `R2.md`, `R3.md`, `R4.md` en `R5.md` (INT,
-2026-10-28; R2 op 2026-10-29) en van de leven-ronde `L0.md`, `L4.md`, `L5.md` (2026-10-29; L1–L3 volgen). Wat al in het
+2026-10-28; R2 op 2026-10-29) en van de leven-ronde `L0.md`, `L2.md`, `L3.md`, `L4.md`, `L5.md` (2026-10-29; L1 volgt). Wat al in het
 design-doc of de beslissingenlog staat, staat hier niet. Per punt: **ok** of **anders, en hoe**. Alle getallen staan in de serverconfig
 (`[nightmares.<naam>]`, `[nightmares.director]`, `[weakness_items]`).
 
@@ -69,7 +69,7 @@ design-doc of de beslissingenlog staat, staat hier niet. Per punt: **ok** of **a
     (vleugels × 0,5 schade).
 37. Litteken: basalt, magma en obsidiaan op natuurlijke blokken (tag `risen_meltable`); lava alleen waar hij niet wegstroomt;
     `meltPool` aan/uit + straal.
-38. Landen: na 25 s vliegen landt hij 8 s naast zijn doelwit (snavelhak 9, vleugelslag 6 + duw straal 7); de hoorn laat hem
+38. *(Vervangen door het grondgevecht uit de leven-ronde, besluit 1a; zie punt 95.)* Landen: na 25 s vliegen landt hij 8 s naast zijn doelwit (snavelhak 9, vleugelslag 6 + duw straal 7); de hoorn laat hem
     vallen.
 39. Asregen: effect `ashen` (max. 6 stapels, elk −1/6 snelheid en sprong; op 6 sta je vast); een medespeler slaat 2 stapels
     weg; buiten de regen −1 per 5 s; vast breek je na 6 s zelf los.
@@ -159,3 +159,31 @@ design-doc of de beslissingenlog staat, staat hier niet. Per punt: **ok** of **a
 82. Ontladen grond: binnen 24 blokken, straal 3, 40 ticks waarschuwing, 80 ticks open, 16 lagen per tick, max. 6000
    blokken; alleen hele natuurlijke kolommen zonder vloeistof ernaast, niet binnen 5 blokken van hem; uit te zetten
    (`unloadEnabled`). Wie 12 blokken diep valt, vangt de void op (4 void-schade).
+
+## Leven-ronde — De Gelaagde (L2)
+83. Wankelen kan niet op zijn rug, tijdens een val of onder het zand.
+84. Aanvalskeuze: grijpen > sprong > ingraven > steenslag > spuwen > beet, elk met eigen cooldown en voorwaarden; zoeken
+   en rust gaan voor; tussen speciale aanvallen 30 ticks (`specialGapTicks`).
+85. Sprong (naar de afzetplek): cooldown 8–12 s, windup 16 ticks, vanaf een rand ≥ 3 lager, bereik 3–14; inslag straal 3,
+   10 schade, wegslaan 0,8 (+0,35 omhoog); vlucht 10–24 ticks (1,2 tick per blok), boog 1,5 boven het hoogste eind,
+   daarna 12 ticks herstel.
+86. Ingraven: cooldown 18–26 s, 30 ticks ingraven, bereik 3–20, 0,3 blok/tick (iets sneller dan sprinten), max. 8 s, 1 blok
+   op/neer per stap; opkomen: 20 ticks golven, straal 2,5, 12 schade, 0,9 omhoog (hij springt zelf 0,45 op).
+87. Spuwen: cooldown 9–14 s, windup 18 ticks, afstand 5–16 (de wolk vliegt 2 verder en blijft op de oude plek), 1,2
+   blok/tick, straal 1, 3 schade per wolk + 3 s blindheid; de twee koppen mikken 0,6 uit elkaar.
+88. Rustvenster aan de wand: hij hangt stil (hinderlaag), de sprong van de wand volgt vanzelf; op de grond de standaard
+   (lopen of cirkelen).
+89. Geluiden: vanilla met lage toonhoogte (ravager-brul bij de sprong, warden-graven bij het ingraven, lamaspuug bij het
+   spuwen); eigen geluiden in de backlog.
+
+## Leven-ronde — De Herrijzende (L3)
+90. Vuurtegels: particles, in brand zetten en `fireDamage` per 0,5 s; niet opgeslagen (uitgeladen = uit).
+91. Duikvlucht elke 30–45 s, hoogte 28, windup 1,5 s, snelheid 2,0, 16 schade + 3 s in brand, scheren over 14 blokken.
+92. Sintelregen elke 22–32 s: straal 7, windup 1,5 s, 5 s lang, 2 sintels per 4 ticks, val 1 s, 4 schade.
+93. Na een grote aanval wachten duik en asregen ≥ 4 s; een aanval die alleen in de tick leeft (duik, landen, duikvlucht,
+   sintelregen) begint na het laden opnieuw bij cirkelen.
+94. Rustvenster: afstand nemen = een 1,5× bredere en 8 hogere cirkel, anders gewoon cirkelen. Zoeken: laag en krap boven
+   de laatst bekende plek, daar rondkijken (animatie + roep).
+95. Grondgevecht: landen met kans 0,4 na een reeks aanvallen in de lucht, uiterlijk na 40–60 s vlucht; 15 s op de grond,
+   loopsnelheid 0,8 × `movementSpeed`; stamp 8 schade in 5 blokken + 0,5 opgooien, pik 9 (windup 14 ticks). Een
+   grondaanval die afbreekt (verstijven) komt later niet alsnog.

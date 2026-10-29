@@ -32,6 +32,11 @@ Nog: `f4/r2` als laatste.
     (`memory_shard`), backlog en beslissingenlog (union). `PROTOCOL_VERSION` "12" → "13" (`keeper_current`, L4).
     CODEBASE: per Nightmare één blok (stap 1 + leven-ronde), D-infra bij D. runData: geen diff.
 
+## Ronde 5 (2026-10-29): leven-ronde deel 2 (L2, L3)
+11. `f4/live-layered` 2348df32 (L2) → 58b8e650: beslissingenlog (union).
+12. `f4/live-risen` e6a03058 (L3) → 1eddc05a: beslissingenlog (union). Geen nieuwe payloads (L2/L3: geen wijziging in
+    `network/`, 8 registraties in `ModNetwork` zoals ervoor) → protocol blijft "13". runData: geen diff.
+
 ## Stand bij afronden (2026-10-28 22:00)
 - `f4/int` op f21c6b89: H1, D, I, R3, R4, R5 gemerged; protocol "12"; runData 5621d39f; compileJava, build en GameTests
   67/67 groen; 2-clienttest gedaan (zie Voortgang 21:58). Geen eigen processen of slots meer.
@@ -55,6 +60,10 @@ Nog: `f4/r2` als laatste.
 - [ ] `/code-review medium d03463e4..f4/int`
 
 ## Voortgang
+- 2026-10-29 12:28 ronde 5 klaar: compileJava, runData (geen diff), build groen, elk apart. GameTests 97/97 (ook
+  `theDirectedArrival…`, die flaky is; de fix komt met L1 in ronde 6). Server-smoke (`int-live5`, vers): `/summon` van alle
+  vijf Nightmares werkt, 0 ERROR/Exception. `voorlopig-fase-4.md` punten 83–95 (L2, L3); punt 38 (landen, R3) gemarkeerd
+  als vervangen door het grondgevecht (besluit 1a). CODEBASE: koppen R2/R3 met L2/L3. Volgt: L1 (ronde 6).
 - 2026-10-29 11:00 ronde 4 klaar: compileJava, runData (geen diff), build groen, elk apart. GameTests 84/85: alleen
   `theDirectedArrivalOpensTheRiftAndTheHollowComesThrough` (bekend, L1). Server-smoke (`int-live`, vers): start zonder
   fouten, `/summon` van Hoeder, Onvoltooide en Gelaagde werkt, 0 ERROR/Exception. `voorlopig-fase-4.md` punten 70–82
