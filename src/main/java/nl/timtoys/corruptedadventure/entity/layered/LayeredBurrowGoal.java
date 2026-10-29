@@ -87,10 +87,13 @@ final class LayeredBurrowGoal extends Goal {
 
     @Override
     public void stop() {
-        if (phase != Phase.RECOVER) {
-            // Broken off before it burst up (it died, retreated or staggered while digging in): it comes back up.
+        if (layered.isBurrowed()) {
+            // Broken off under the sand (it died or retreated): it comes back up.
             layered.emerge();
             layered.triggerAnim(LayeredAnimations.ACTION, LayeredAnimations.ERUPT);
+        } else if (phase == Phase.DIG) {
+            // Broken off while digging in (a stagger): it stops sinking and stands where it is.
+            layered.stopTriggeredAnim(LayeredAnimations.ACTION, LayeredAnimations.BURROW);
         }
         phase = Phase.DIG;
         layered.specialEnded();
@@ -118,7 +121,8 @@ final class LayeredBurrowGoal extends Goal {
             }
             case TRAVEL -> travel(level, settings);
             case HEAVE -> {
-                LayeredEffects.heave(level, layered.position(), LayeredImpact.ground(level, layered), ticks);
+                LayeredEffects.heave(level, layered.position(), LayeredImpact.ground(level, layered), ticks,
+                        settings.burrowWarnTicks.get());
                 if (ticks >= settings.burrowWarnTicks.get()) {
                     erupt(level, settings);
                 }
@@ -153,9 +157,7 @@ final class LayeredBurrowGoal extends Goal {
         }
         layered.setYRot((float) Math.toDegrees(Math.atan2(-flat.x, flat.z)));
         layered.moveUnderground(next);
-        if (ticks % 2 == 0) {
-            LayeredEffects.trail(level, next, LayeredImpact.ground(level, layered), ticks);
-        }
+        LayeredEffects.trail(level, next, flat.normalize(), LayeredImpact.ground(level, layered), ticks);
     }
 
     private void startHeave() {

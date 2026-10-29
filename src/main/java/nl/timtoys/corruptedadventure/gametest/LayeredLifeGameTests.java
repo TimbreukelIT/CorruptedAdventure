@@ -2,6 +2,7 @@ package nl.timtoys.corruptedadventure.gametest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
@@ -26,7 +27,7 @@ import java.util.List;
 
 /**
  * The Layered's life round: a stagger lets go of a held player, a hit on its belly from below is a hit on its weak spot,
- * under the sand nothing hurts it, it burrows only through sand and gravel, the blow of its pounce stays within its
+ * under the sand nothing hurts it (and nothing of that is saved), it burrows only through sand and gravel, the blow of its pounce stays within its
  * radius, and the dead heads' spit blinds what it reaches but not through a wall (pigs as the targets of those two). Without free will, so it never
  * attacks the mock players itself. In the empty 9 × 7 × 9 {@code gametest/hollow_arena}. Run like
  * {@link TierGatingGameTests}.
@@ -83,6 +84,22 @@ public final class LayeredLifeGameTests {
         layered.invulnerableTime = 0;
         helper.assertTrue(layered.hurt(helper.getLevel().damageSources().playerAttack(player), 10.0F), "back up: hurt");
         GameTestPlayers.remove(helper, player);
+        helper.succeed();
+    }
+
+    @GameTest(template = ARENA)
+    public static void savedUnderTheSandItComesBackOnItWithItsGravity(GameTestHelper helper) {
+        TheLayered layered = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LAYERED.get(), MIDDLE);
+        layered.submerge();
+        helper.assertFalse(layered.isNoGravity(), "under the sand it keeps its gravity flag (it is saved)");
+        CompoundTag saved = layered.saveWithoutId(new CompoundTag());
+        TheLayered loaded = ModEntityTypes.THE_LAYERED.get().create(helper.getLevel());
+        helper.assertTrue(loaded != null, "created");
+        loaded.load(saved);
+        helper.assertFalse(loaded.isBurrowed(), "loaded: not under the sand");
+        helper.assertFalse(loaded.isNoGravity(), "loaded: it falls again");
+        helper.assertFalse(loaded.isInvisible(), "loaded: visible");
+        helper.assertFalse(loaded.noPhysics, "loaded: it collides again");
         helper.succeed();
     }
 

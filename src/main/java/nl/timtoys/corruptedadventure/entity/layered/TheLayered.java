@@ -686,12 +686,14 @@ public class TheLayered extends Nightmare {
         leaping = false;
     }
 
-    /** Gone under the sand: hidden (no shadow either), without collision or gravity, untouchable. */
+    /**
+     * Gone under the sand: hidden (no shadow either), without collision, untouchable; {@link #travel} keeps it still (no
+     * gravity) while the burrow moves it. Nothing of this is saved, so a Layered unloaded under the sand comes back on it.
+     */
     public void submerge() {
         entityData.set(DATA_BURROWED, true);
         setInvisible(true);
         noPhysics = true;
-        setNoGravity(true);
         setDeltaMovement(Vec3.ZERO);
         getNavigation().stop();
     }
@@ -709,7 +711,6 @@ public class TheLayered extends Nightmare {
         entityData.set(DATA_BURROWED, false);
         setInvisible(false);
         noPhysics = false;
-        setNoGravity(false);
     }
 
     /** A cloud of dust and bone splinters on its way; moved every tick until it bursts. */

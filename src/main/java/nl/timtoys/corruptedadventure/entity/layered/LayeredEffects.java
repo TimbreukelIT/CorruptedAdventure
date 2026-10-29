@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.entity.layered;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -139,21 +140,49 @@ final class LayeredEffects {
         play(level, layered, SoundEvents.SKELETON_STEP, 2.0F, 0.4F);
     }
 
-    /** The sand moving above it while it travels under the ground. */
-    static void trail(ServerLevel level, Vec3 at, BlockState ground, int tick) {
-        level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground), at.x, at.y + 0.1, at.z, 10, 0.7, 0.05,
-                0.7, 0.15);
-        if (tick % 6 == 0) {
-            level.playSound(null, at.x, at.y, at.z, ground.getSoundType().getStepSound(), SoundSource.HOSTILE, 1.5F, 0.5F);
+    /**
+     * The sand moving above it while it travels under the ground: a bulge as wide as its body (a dense mound of grains
+     * and dust of the ground block), with grains spraying up in front of it, sliding sand behind it and a hiss of sand.
+     */
+    static void trail(ServerLevel level, Vec3 at, Vec3 heading, BlockState ground, int tick) {
+        BlockParticleOption grains = new BlockParticleOption(ParticleTypes.BLOCK, ground);
+        BlockParticleOption dust = new BlockParticleOption(ParticleTypes.FALLING_DUST, ground);
+        // The bulge itself: big flakes in the colour of the ground, piled low over its back.
+        level.sendParticles(groundDust(level, at, ground), at.x, at.y + 0.25, at.z, 14, 0.7, 0.12, 0.7, 0.0);
+        level.sendParticles(grains, at.x, at.y + 0.15, at.z, 30, 0.8, 0.12, 0.8, 0.05);
+        level.sendParticles(dust, at.x, at.y + 0.5, at.z, 10, 0.9, 0.3, 0.9, 0.0);
+        Vec3 bow = at.add(heading.scale(1.3));
+        level.sendParticles(grains, bow.x, bow.y + 0.3, bow.z, 14, 0.4, 0.1, 0.4, 0.35);
+        Vec3 wake = at.subtract(heading.scale(1.2));
+        level.sendParticles(dust, wake.x, wake.y + 0.2, wake.z, 6, 0.6, 0.1, 0.6, 0.0);
+        if (tick % 4 == 0) {
+            level.playSound(null, at.x, at.y, at.z, SoundEvents.SAND_BREAK, SoundSource.HOSTILE, 1.5F, 0.5F);
+        }
+        if (tick % 8 == 0) {
+            level.playSound(null, at.x, at.y, at.z, SoundEvents.WARDEN_DIG, SoundSource.HOSTILE, 1.0F, 1.2F);
         }
     }
 
-    /** The sand heaves where it will burst up: a rumble and a growing fountain of grains. */
-    static void heave(ServerLevel level, Vec3 at, BlockState ground, int tick) {
-        level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground), at.x, at.y + 0.1, at.z, 6 + tick, 1.0,
-                0.1, 1.0, 0.3);
+    /**
+     * The sand heaves where it will burst up: a ring of churning sand that grows over the warning, grains spurting up
+     * higher and higher from the middle, and a rumble.
+     */
+    static void heave(ServerLevel level, Vec3 at, BlockState ground, int tick, int ticks) {
+        BlockParticleOption grains = new BlockParticleOption(ParticleTypes.BLOCK, ground);
+        double grow = Math.min(1.0, (tick + 1.0) / Math.max(1, ticks));
+        double radius = 0.8 + grow * 1.4;
+        for (int i = 0; i < 16; i++) {
+            double angle = i * Math.PI / 8.0 + tick * 0.25;
+            level.sendParticles(grains, at.x + Math.cos(angle) * radius, at.y + 0.15, at.z + Math.sin(angle) * radius, 2,
+                    0.15, 0.05, 0.15, 0.1);
+        }
+        level.sendParticles(grains, at.x, at.y + 0.2, at.z, 20, 0.5, 0.1, 0.5, 0.2 + grow * 0.5);
+        level.sendParticles(groundDust(level, at, ground), at.x, at.y + 0.2 + grow * 0.3, at.z, 10, radius * 0.5,
+                0.1 + grow * 0.2, radius * 0.5, 0.0);
+        level.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, ground), at.x, at.y + 0.8, at.z, 8,
+                radius * 0.6, 0.4, radius * 0.6, 0.0);
         if (tick % 5 == 0) {
-            level.playSound(null, at.x, at.y, at.z, SoundEvents.WARDEN_DIG, SoundSource.HOSTILE, 1.5F, 0.8F);
+            level.playSound(null, at.x, at.y, at.z, SoundEvents.WARDEN_DIG, SoundSource.HOSTILE, 2.0F, 0.7F);
         }
     }
 
@@ -211,6 +240,13 @@ final class LayeredEffects {
             level.sendParticles(particle, centre.x + Math.cos(angle) * radius, centre.y + 0.1,
                     centre.z + Math.sin(angle) * radius, 2, 0.1, 0.1, 0.1, 0.2);
         }
+    }
+
+    /** Big dust flakes in the map colour of the ground block (sand-yellow, gravel-grey). */
+    private static DustParticleOptions groundDust(ServerLevel level, Vec3 at, BlockState ground) {
+        int rgb = ground.getMapColor(level, BlockPos.containing(at).below()).col;
+        return new DustParticleOptions(new Vector3f(((rgb >> 16) & 0xFF) / 255.0F, ((rgb >> 8) & 0xFF) / 255.0F,
+                (rgb & 0xFF) / 255.0F), 3.0F);
     }
 
     private static BlockState canyonStone() {
