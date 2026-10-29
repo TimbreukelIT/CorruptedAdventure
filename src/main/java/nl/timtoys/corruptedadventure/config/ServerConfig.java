@@ -62,6 +62,8 @@ public final class ServerConfig {
     public static final NightmareDirectorConfig NIGHTMARE_DIRECTOR;
     /** {@code [weakness_items]}: the sunstone flash and the volcanite horn (phase 4, stream I). */
     public static final WeaknessItemsConfig WEAKNESS_ITEMS;
+    /** {@code [nightmares.layered]}: the ring 2 Nightmare (phase 4). */
+    public static final LayeredConfig LAYERED;
 
     private static final List<ThresholdLevels> ALL_THRESHOLDS;
     /**
@@ -103,6 +105,7 @@ public final class ServerConfig {
         LOST_KEEPER = new LostKeeperConfig(builder);
         UNFINISHED = new UnfinishedConfig(builder);
         NIGHTMARE_DIRECTOR = new NightmareDirectorConfig(builder);
+        LAYERED = new LayeredConfig(builder);
         builder.pop();
         WEAKNESS_ITEMS = new WeaknessItemsConfig(builder);
         SPEC = builder.build();

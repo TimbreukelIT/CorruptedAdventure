@@ -622,3 +622,7 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 - [mobs] Spelers kunnen niet op De Onvoltooide klimmen (zijn delen botsen niet); "klimmen" in het gevecht = de wereld in (brok, brug, kasteelplateau) of een boog. Een beklimbaar lijf zou eigen botsing en meebewegen vragen. (bron: R5)
 - [mobs] De Onvoltooide loopt door bladeren en bouwsels heen (geen botsing, niets kapot) en staat op hun top; onder overhangen en in grotten komt hij niet. Bij de teststop bekijken of dat goed voelt. (bron: R5)
 - [items] Hemelglaspijlen of een andere afstandsvorm van de hemelglas-zwakte (de zwakke plek op de vleugel zit ~16 blokken hoog); nu laadt alleen de lens in en raak je hem met een gewone boog. (bron: R5)
+
+## Uit fase 4 R2 — De Gelaagde (2026-10-28)
+- [mobs] De Gelaagde: eigen geluiden (nu vanilla spin/skelet met lage pitch). (bron: R2 stap 1)
+- [mobs] De Gelaagde: wandklim uitbreiden: ondersteboven onder overhangen kruipen, gericht een wand af klimmen, en een hitbox die het lijf op de wand volgt (nu hangt het achterlijf alleen in beeld onder de hitbox). (bron: R2 stap 1)

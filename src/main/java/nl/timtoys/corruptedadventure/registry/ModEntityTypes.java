@@ -11,6 +11,7 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.EffectArrow;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowRift;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
+import nl.timtoys.corruptedadventure.entity.layered.TheLayered;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.TheLostKeeper;
 import nl.timtoys.corruptedadventure.entity.risen.AshWalker;
 import nl.timtoys.corruptedadventure.entity.risen.TheRisen;
@@ -67,6 +68,14 @@ public final class ModEntityTypes {
             "the_unfinished", () -> EntityType.Builder.<TheUnfinished>of(TheUnfinished::new, MobCategory.MONSTER)
                     .sized(5.0F, 14.0F).eyeHeight(13.0F).fireImmune().clientTrackingRange(16).build("the_unfinished"));
 
+    /**
+     * Phase 4: The Layered, the ring 2 Nightmare. Hitbox 2.5 x 2.5 (legs ~10 wide and its head are model only; the head
+     * has its own part hitbox); tracked from far.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<TheLayered>> THE_LAYERED = ENTITY_TYPES.register("the_layered",
+            () -> EntityType.Builder.<TheLayered>of(TheLayered::new, MobCategory.MONSTER)
+                    .sized(2.5F, 2.5F).eyeHeight(1.6F).clientTrackingRange(10).build("the_layered"));
+
     private ModEntityTypes() {
     }
 
@@ -81,6 +90,7 @@ public final class ModEntityTypes {
         event.put(ASH_WALKER.get(), AshWalker.createAttributes().build());
         event.put(THE_LOST_KEEPER.get(), TheLostKeeper.createAttributes().build());
         event.put(THE_UNFINISHED.get(), TheUnfinished.createAttributes().build());
+        event.put(THE_LAYERED.get(), TheLayered.createAttributes().build());
     }
 
     /** Sized and tracked like vanilla's arrow. */

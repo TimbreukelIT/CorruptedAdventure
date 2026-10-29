@@ -61,6 +61,7 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
 
         tierGating();
         ring2();
+        layeredRockfall();
         netherRing2();
         ring3();
         netherRing3();
@@ -801,6 +802,16 @@ final class ModBlockTagsProvider extends BlockTagsProvider {
                 }
             }
         }
+    }
+
+    /**
+     * Phase 4: what The Layered's rock fall may break loose. Only natural stone and sand (no cut, polished or crafted
+     * variants), so a base built from crafted blocks is safe; the world damage it does is permanent (design decision).
+     */
+    private void layeredRockfall() {
+        tag(ModTags.Blocks.LAYERED_ROCKFALL).addTag(ModTags.Blocks.CANYON_STONES).addTag(BlockTags.SAND)
+                .addTag(BlockTags.BASE_STONE_OVERWORLD).add(ModBlocks.SCORCHED_SANDSTONE.get(), ModBlocks.LOOSE_SAND.get(),
+                        ModBlocks.CRACKED_CLAY.get(), Blocks.SANDSTONE, Blocks.RED_SANDSTONE, Blocks.GRAVEL);
     }
 
     private void ring2() {

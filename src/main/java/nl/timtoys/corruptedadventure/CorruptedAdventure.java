@@ -24,6 +24,7 @@ import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.datagen.DataGenerators;
 import nl.timtoys.corruptedadventure.effect.WeakenedTargeting;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowArrival;
+import nl.timtoys.corruptedadventure.entity.layered.LayeredGrip;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperHoldRules;
 import nl.timtoys.corruptedadventure.entity.nightmare.NightmareKind;
 import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
@@ -147,6 +148,8 @@ public final class CorruptedAdventure {
         WeakenedTargeting.register(NeoForge.EVENT_BUS);
         // Phase 4: a fighter The Lost Keeper holds cannot sneak off.
         KeeperHoldRules.register(NeoForge.EVENT_BUS);
+        // Phase 4 (R2): a player in The Layered's beak cannot sneak off.
+        LayeredGrip.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {
