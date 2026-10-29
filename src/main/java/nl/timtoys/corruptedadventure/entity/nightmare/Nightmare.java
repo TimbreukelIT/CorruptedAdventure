@@ -4,6 +4,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -30,12 +31,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.NightmareConfig;
 import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.network.packet.EntityAnimTriggerPacket;
+import software.bernie.geckolib.network.packet.StopTriggeredEntityAnimPacket;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.ArrayList;
@@ -727,5 +731,40 @@ public abstract class Nightmare extends Monster implements GeoEntity {
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return geoCache;
+    }
+
+    /**
+     * GeckoLib sends triggered animations to everyone tracking the entity, and NeoForge throws for a connection without
+     * GeckoLib's channel (a GameTest mock player). The trackers are exactly the boss bar's players, so send to those that
+     * have the channel.
+     */
+    @Override
+    public void triggerAnim(@Nullable String controllerName, String animName) {
+        if (level().isClientSide()) {
+            GeoEntity.super.triggerAnim(controllerName, animName);
+            return;
+        }
+        sendToGeckoLibTrackers(new EntityAnimTriggerPacket(getId(), false, orEmpty(controllerName), animName));
+    }
+
+    @Override
+    public void stopTriggeredAnim(@Nullable String controllerName, @Nullable String animName) {
+        if (level().isClientSide()) {
+            GeoEntity.super.stopTriggeredAnim(controllerName, animName);
+            return;
+        }
+        sendToGeckoLibTrackers(new StopTriggeredEntityAnimPacket(getId(), false, orEmpty(controllerName), orEmpty(animName)));
+    }
+
+    private void sendToGeckoLibTrackers(CustomPacketPayload packet) {
+        for (ServerPlayer player : bossEvent.getPlayers()) {
+            if (player.connection.hasChannel(packet.type())) {
+                PacketDistributor.sendToPlayer(player, packet);
+            }
+        }
+    }
+
+    private static String orEmpty(@Nullable String name) {
+        return name == null ? "" : name;
     }
 }
