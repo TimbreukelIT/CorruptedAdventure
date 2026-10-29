@@ -34,8 +34,11 @@ final class KeeperWhipGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!keeper.canAttack() || keeper.getTarget() == null) {
-            nextTick = -1;
+        if (!keeper.mayAttack() || keeper.isCoiling() || keeper.getTarget() == null) {
+            // Only a fight that is over restarts the cooldown; a rest window or a stagger keeps it.
+            if (keeper.getTarget() == null) {
+                nextTick = -1;
+            }
             return false;
         }
         LostKeeperConfig config = TheLostKeeper.keeperConfig();
@@ -57,6 +60,7 @@ final class KeeperWhipGoal extends Goal {
 
     @Override
     public void start() {
+        keeper.countAttack();
         LostKeeperConfig config = TheLostKeeper.keeperConfig();
         windup = config.whipWindupTicks.get();
         sweep = 0;

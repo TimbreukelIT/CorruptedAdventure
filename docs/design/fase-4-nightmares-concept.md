@@ -164,6 +164,12 @@ Na de eerste blik in de game (gebruiker: "meer leven in de mechanics en de attac
   - *Van het eiland slaan:* een staartzwiep langs een eiland of oever slaat spelers eraf (valschade of het water in).
 - **Zwakte (de kroon):** een kroon van gloeiend parelmoer en levend koraal die tussen en achter zijn hoorns groeit, het mooiste deel van de mythische helft. Bij elke treffer breekt er een tak af en dooft het licht. Raak hem daar en hij verliest zijn zwemkracht in de lucht en valt.
 
+- **Leven-ronde (beslist 2026-10-29, V1–V4 optie a):**
+  - *Bellenval:* bellen op een vaste plek onder een speler als waarschuwing (wegstappen ontwijkt). In of op water trekt een stroom je daarna 2 s de diepte in (zijwaarts wegzwemmen kan); op land, een eiland of in de lucht gooit een windstoot je ~10 blokken omhoog.
+  - *Omsingelen:* een krimpende kring om de spelers, van straal 8 naar 3,5 in ~6 s; eerst open (een gat bij kop en staart), dan gesloten. Zijn lijf is een muur: wie het raakt krijgt 2 schade en wordt teruggeduwd. Over de dunne staart springen (of in diep water eronderdoor) mag; 30 schade op hem breekt de kring open. Wie aan het eind nog binnen is, wordt geknepen (~6) en omhooggegooid.
+  - *Duik en uitbarsting:* alleen waar water is (open water, of naast de oever: hij barst naast de kant uit het water). In de lucht kiest hij hem niet. Een boot vliegt met de speler omhoog, de speler valt eruit, de boot blijft heel.
+  - Wankelen: een treffer op de kroon is zijn zwakke plek (gedeelde reactielaag); wankelend laat hij los en breekt hij de kring en de uitbarsting af.
+
 **Open (ring 4):** hoe groot de mistbank is en hoe lang die blijft; de lokroep precies (kracht, hoe je je verzet); of de kroon na zijn terugkeer teruggroeit; balans met ring 4-gear (getijdezilver); de link met de mist-mobs uit de backlog.
 
 ## Ring 5 — De Onvoltooide (The Unfinished, werktitel)

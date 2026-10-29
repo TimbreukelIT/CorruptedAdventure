@@ -131,6 +131,143 @@ final class KeeperEffects {
         level.sendParticles(ParticleTypes.CLOUD, head.x, head.y, head.z, 60, 2.0, 2.0, 2.0, 0.02);
     }
 
+    // --- the life round: bubble trap, dive and burst, the ring --------------------------------------------------------
+
+    /** It lowers its head and calls up its breath from the deep: a deep rumble and a gurgle. */
+    static void bubbleCall(ServerLevel level, TheLostKeeper keeper) {
+        Vec3 head = keeper.headCentre();
+        sound(level, head, SoundEvents.ELDER_GUARDIAN_AMBIENT, 2.5F, 0.45F);
+        sound(level, head, SoundEvents.BUBBLE_COLUMN_WHIRLPOOL_AMBIENT, 2.0F, 0.6F);
+        level.sendParticles(GLOW, head.x, head.y, head.z, 12, 1.0, 0.6, 1.0, 0.0);
+    }
+
+    /** The warning on a trap's spot: bubbles rise there (on land they burst out of the ground as small gusts). */
+    static void bubbleWarn(ServerLevel level, Vec3 spot, boolean water, double radius, int tick) {
+        double spread = radius * 0.6;
+        if (water) {
+            level.sendParticles(ParticleTypes.BUBBLE_COLUMN_UP, spot.x, spot.y - 1.5, spot.z, 6, spread, 0.8, spread, 0.05);
+            level.sendParticles(ParticleTypes.BUBBLE_POP, spot.x, spot.y + 0.1, spot.z, 4, spread, 0.05, spread, 0.02);
+            level.sendParticles(ParticleTypes.SPLASH, spot.x, spot.y + 0.1, spot.z, 3, spread, 0.05, spread, 0.0);
+        } else {
+            level.sendParticles(ParticleTypes.BUBBLE_POP, spot.x, spot.y + 0.1, spot.z, 5, spread, 0.05, spread, 0.03);
+            level.sendParticles(GLOW, spot.x, spot.y + 0.2, spot.z, 2, spread, 0.1, spread, 0.0);
+            if (tick % 4 == 0) {
+                level.sendParticles(ParticleTypes.SMALL_GUST, spot.x, spot.y + 0.3, spot.z, 1, spread, 0.1, spread, 0.0);
+            }
+        }
+        if (tick % 10 == 1) {
+            sound(level, spot, water ? SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT : SoundEvents.BREEZE_INHALE, 1.5F,
+                    0.6F + tick * 0.01F);
+        }
+    }
+
+    /** The current takes hold: a pull of water down into the deep. */
+    static void currentStart(ServerLevel level, Vec3 spot) {
+        sound(level, spot, SoundEvents.BUBBLE_COLUMN_WHIRLPOOL_INSIDE, 2.0F, 0.5F);
+        sound(level, spot, SoundEvents.PLAYER_SPLASH_HIGH_SPEED, 1.5F, 0.6F);
+        level.sendParticles(ParticleTypes.SPLASH, spot.x, spot.y + 0.1, spot.z, 30, 1.0, 0.1, 1.0, 0.1);
+    }
+
+    /** One tick of the current: the downward stream of the column. */
+    static void current(ServerLevel level, Vec3 spot, double bottom, double radius) {
+        double height = Math.max(1.0, spot.y - bottom);
+        double middle = (spot.y + bottom) / 2.0;
+        level.sendParticles(ParticleTypes.CURRENT_DOWN, spot.x, middle, spot.z, 8, radius * 0.5, height * 0.4, radius * 0.5, 0.0);
+        level.sendParticles(ParticleTypes.BUBBLE, spot.x, spot.y - 0.5, spot.z, 3, radius * 0.5, 0.3, radius * 0.5, 0.0);
+    }
+
+    /** On land: a gust bursts out of the ground. */
+    static void gust(ServerLevel level, Vec3 spot) {
+        sound(level, spot, SoundEvents.BREEZE_WIND_CHARGE_BURST.value(), 2.0F, 0.6F);
+        sound(level, spot, SoundEvents.BUBBLE_COLUMN_BUBBLE_POP, 2.0F, 0.5F);
+        level.sendParticles(ParticleTypes.GUST_EMITTER_SMALL, spot.x, spot.y + 0.5, spot.z, 1, 0.0, 0.0, 0.0, 0.0);
+        level.sendParticles(ParticleTypes.POOF, spot.x, spot.y + 0.3, spot.z, 20, 0.8, 0.2, 0.8, 0.08);
+    }
+
+    /** It plunges into the water. */
+    static void diveSplash(ServerLevel level, Vec3 at) {
+        sound(level, at, SoundEvents.GENERIC_SPLASH, 3.0F, 0.5F);
+        sound(level, at, SoundEvents.PLAYER_SPLASH_HIGH_SPEED, 2.0F, 0.5F);
+        level.sendParticles(ParticleTypes.SPLASH, at.x, at.y + 1.0, at.z, 50, 1.5, 0.3, 1.5, 0.2);
+    }
+
+    /** The surface churns where it will burst: ripples, rising bubbles and a growing rumble. */
+    static void burstWarn(ServerLevel level, Vec3 spot, double radius, int tick) {
+        double spread = radius * 0.5;
+        level.sendParticles(ParticleTypes.BUBBLE_COLUMN_UP, spot.x, spot.y - 1.5, spot.z, 8, spread, 0.8, spread, 0.08);
+        level.sendParticles(ParticleTypes.FISHING, spot.x, spot.y + 0.05, spot.z, 6, radius * 0.7, 0.0, radius * 0.7, 0.02);
+        level.sendParticles(ParticleTypes.SPLASH, spot.x, spot.y + 0.1, spot.z, 4, spread, 0.05, spread, 0.0);
+        if (tick % 8 == 1) {
+            sound(level, spot, SoundEvents.BUBBLE_COLUMN_UPWARDS_INSIDE, 2.0F, 0.5F + tick * 0.02F);
+            sound(level, spot, SoundEvents.ELDER_GUARDIAN_AMBIENT, 1.5F, 0.4F);
+        }
+    }
+
+    /** It bursts out of the water: a column of spray. */
+    static void burst(ServerLevel level, Vec3 spot, double radius) {
+        sound(level, spot, SoundEvents.GENERIC_SPLASH, 3.0F, 0.4F);
+        sound(level, spot, SoundEvents.ELDER_GUARDIAN_CURSE, 2.0F, 0.7F);
+        sound(level, spot, SoundEvents.TRIDENT_RIPTIDE_3.value(), 2.5F, 0.6F);
+        level.sendParticles(ParticleTypes.SPLASH, spot.x, spot.y + 0.5, spot.z, 120, radius * 0.6, 1.5, radius * 0.6, 0.4);
+        level.sendParticles(ParticleTypes.BUBBLE_COLUMN_UP, spot.x, spot.y - 1.0, spot.z, 40, radius * 0.5, 1.0, radius * 0.5, 0.2);
+        level.sendParticles(ParticleTypes.CLOUD, spot.x, spot.y + 1.0, spot.z, 20, radius * 0.5, 1.0, radius * 0.5, 0.05);
+    }
+
+    /** It starts the ring: a long hiss and a pastel ring of glow where its body will lie. */
+    static void ringCall(ServerLevel level, TheLostKeeper keeper, Vec3 centre, double radius) {
+        Vec3 head = keeper.headCentre();
+        sound(level, head, SoundEvents.ELDER_GUARDIAN_AMBIENT, 3.0F, 0.7F);
+        sound(level, head, SoundEvents.CONDUIT_ATTACK_TARGET, 2.0F, 0.5F);
+        for (int k = 0; k < 32; k++) {
+            double a = Math.PI * 2.0 * k / 32;
+            level.sendParticles(GLOW, centre.x + Math.cos(a) * radius, centre.y, centre.z + Math.sin(a) * radius, 2, 0.1, 0.2, 0.1, 0.0);
+        }
+    }
+
+    /** While it coils: a hiss now and then, scales on scales. */
+    static void ringHiss(ServerLevel level, TheLostKeeper keeper) {
+        Vec3 head = keeper.headCentre();
+        sound(level, head, SoundEvents.BREEZE_SLIDE, 1.5F, 0.5F);
+        sound(level, keeper.body().node(KeeperBody.SEGMENTS / 2), SoundEvents.ELDER_GUARDIAN_FLOP, 1.0F, 0.6F);
+    }
+
+    /** Hurt enough, it breaks off the ring. */
+    static void ringBreaks(ServerLevel level, TheLostKeeper keeper) {
+        Vec3 head = keeper.headCentre();
+        sound(level, head, SoundEvents.ELDER_GUARDIAN_HURT, 2.5F, 0.5F);
+        level.sendParticles(GLOW, head.x, head.y, head.z, 20, 1.0, 0.6, 1.0, 0.0);
+    }
+
+    /** The ring closes on whoever is still inside. */
+    static void squeeze(ServerLevel level, Vec3 centre, double radius) {
+        sound(level, centre, SoundEvents.EVOKER_FANGS_ATTACK, 2.0F, 0.5F);
+        sound(level, centre, SoundEvents.PLAYER_ATTACK_KNOCKBACK, 2.0F, 0.5F);
+        level.sendParticles(ParticleTypes.SWEEP_ATTACK, centre.x, centre.y, centre.z, 6, radius * 0.4, 0.3, radius * 0.4, 0.0);
+        level.sendParticles(ParticleTypes.SPLASH, centre.x, centre.y, centre.z, 40, radius * 0.5, 0.3, radius * 0.5, 0.2);
+    }
+
+    /** It reels: a pained, wavering cry, and its glow scatters off its crown. */
+    static void stagger(ServerLevel level, TheLostKeeper keeper) {
+        Vec3 head = keeper.headCentre();
+        sound(level, head, SoundEvents.ELDER_GUARDIAN_HURT, 2.5F, 0.45F);
+        sound(level, head, SoundEvents.RAVAGER_STUNNED, 1.5F, 0.7F);
+        level.sendParticles(GLOW, head.x, head.y + 1.0, head.z, 25, 0.8, 0.6, 0.8, 0.0);
+        level.sendParticles(ParticleTypes.CRIT, head.x, head.y + 0.5, head.z, 20, 1.0, 0.6, 1.0, 0.3);
+    }
+
+    /** It lost its target in the mist: a long, low call. */
+    static void searchCall(ServerLevel level, TheLostKeeper keeper) {
+        sound(level, keeper.headCentre(), SoundEvents.ELDER_GUARDIAN_AMBIENT, 3.0F, 0.55F);
+    }
+
+    /** At the last place it saw its target: it scents the water and the air. */
+    static void sniff(ServerLevel level, TheLostKeeper keeper) {
+        Vec3 mouth = keeper.mouth();
+        sound(level, mouth, SoundEvents.BREEZE_INHALE, 2.0F, 0.6F);
+        sound(level, mouth, SoundEvents.DOLPHIN_AMBIENT_WATER, 1.5F, 0.5F);
+        level.sendParticles(ParticleTypes.BUBBLE_POP, mouth.x, mouth.y, mouth.z, 12, 0.6, 0.3, 0.6, 0.02);
+    }
+
     private static void sound(ServerLevel level, Vec3 at, SoundEvent sound, float volume, float pitch) {
         level.playSound(null, at.x, at.y, at.z, sound, SoundSource.HOSTILE, volume, pitch);
     }
