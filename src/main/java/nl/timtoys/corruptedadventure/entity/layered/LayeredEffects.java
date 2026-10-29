@@ -284,7 +284,8 @@ final class LayeredEffects {
     /**
      * One tick of its unfolding from the wall ({@code age} of {@code total} ticks, the {@code unfold} animation of
      * {@code layered_animations.py}): the plates shift with a grind, then the front, mid and back legs tear loose one pair
-     * after the other in a burst of the wall's stone, and the heads rise with a roar. Dust falls off it all the while.
+     * after the other in a burst of the wall's stone, and the heads rise with a roar. Until the first legs tear loose a
+     * cloud of the wall's dust hides it; after that dust falls off it.
      */
     static void unfold(ServerLevel level, TheLayered layered, int age, int total) {
         BlockState stone = wallStone(level, layered);
@@ -314,10 +315,25 @@ final class LayeredEffects {
             play(level, layered, SoundEvents.RAVAGER_ROAR, 2.5F, 0.5F);
             play(level, layered, SoundEvents.SKELETON_AMBIENT, 2.0F, 0.4F);
         }
-        if (age % 2 == 0) {
+        if (next <= legs[0]) {
+            // Until the first legs tear loose a cloud of the wall's own dust hangs over it: first a piece of wall, then it.
+            dustCloud(level, layered, stone, age == 0 ? 160 : 45);
+        } else if (age % 2 == 0) {
             level.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, stone), layered.getX(),
                     layered.getY() + 1.0, layered.getZ(), 6, 1.4, 1.4, 1.4, 0.0);
         }
+    }
+
+    /** A cloud of the wall's dust and grit over its whole body, lying on the face of the wall. */
+    private static void dustCloud(ServerLevel level, TheLayered layered, BlockState stone, int count) {
+        Direction wall = layered.getSurface();
+        Vec3 at = layered.position().add(0.0, 1.25, 0.0).add(wall.getStepX() * 0.6, 0.0, wall.getStepZ() * 0.6);
+        double spreadX = wall.getAxis() == Direction.Axis.X ? 0.5 : 1.8;
+        double spreadZ = wall.getAxis() == Direction.Axis.Z ? 0.5 : 1.8;
+        level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, stone), at.x, at.y, at.z, count, spreadX, 1.8,
+                spreadZ, 0.02);
+        level.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, stone), at.x, at.y + 0.5, at.z, count / 3,
+                spreadX, 2.0, spreadZ, 0.0);
     }
 
     /** It hangs free on the wall: the last stone rattles off it. */
