@@ -373,7 +373,7 @@ def unfold():
     legs at 1.4 s, the heads rise with the beak agape at 1.8 s, and it settles into its pose at 2.5 s. Played on its own
     controller without a blend, held at the end; in the wall frame "down" is into the wall."""
     length = 2.5
-    press = -16
+    press = -20
     bones = {
         "root": channel(position=[(0, (0, press, 0)), (0.4, (0, press, 0)), (0.55, (0, press + 3, 0)),
                                   (0.9, (0, press + 6, 0)), (1.6, (0, -2, 0)), (2.0, (0, 1, 0)), (length, (0, 0, 0))]),
@@ -393,11 +393,11 @@ def unfold():
         "jaw_right": channel(rotation=[(0, (0, 0, 0)), (2.0, (0, 0, 0)), (2.1, (26, 0, 0)), (length, (0, 0, 0))]),
     }
     # Swung back along the body (front most), lowered flat, the shin folded in under it.
-    swing = {"front": -34, "mid": -26, "back": -14}
+    swing = {"front": -62, "mid": -48, "back": -30}
     for pair, at in (("front", 0.9), ("mid", 1.2), ("back", 1.4)):
         for side in ("left", "right"):
             lift, fwd = side_sign(side)
-            folded = (0, swing[pair] * fwd, -52 * lift)
+            folded = (0, swing[pair] * fwd, -78 * lift)
             bones[f"leg_{pair}_{side}"] = channel(rotation=[
                 (0, folded), (at, folded), (at + 0.12, (0, 6 * fwd, 22 * lift)), (at + 0.3, (0, -2 * fwd, -6 * lift)),
                 (at + 0.5, (0, 0, 2 * lift)), (length, (0, 0, 0))])
