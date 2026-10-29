@@ -13,6 +13,7 @@ import nl.timtoys.corruptedadventure.entity.hollow.HollowRift;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowShockwave;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowVoidClaw;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
+import nl.timtoys.corruptedadventure.entity.layered.LayeredClawMarks;
 import nl.timtoys.corruptedadventure.entity.layered.TheLayered;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.TheLostKeeper;
 import nl.timtoys.corruptedadventure.entity.risen.AshWalker;
@@ -93,6 +94,11 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<TheLayered>> THE_LAYERED = ENTITY_TYPES.register("the_layered",
             () -> EntityType.Builder.<TheLayered>of(TheLayered::new, MobCategory.MONSTER)
                     .sized(2.5F, 2.5F).eyeHeight(1.6F).clientTrackingRange(10).build("the_layered"));
+    /** Phase 4 step 2: claw marks of The Layered on a canyon wall (a trace of its roaming; never saved). */
+    public static final DeferredHolder<EntityType<?>, EntityType<LayeredClawMarks>> LAYERED_CLAW_MARKS = ENTITY_TYPES.register(
+            "layered_claw_marks", () -> EntityType.Builder.<LayeredClawMarks>of(LayeredClawMarks::new, MobCategory.MISC)
+                    .sized(LayeredClawMarks.SIZE, LayeredClawMarks.SIZE).clientTrackingRange(6).updateInterval(100)
+                    .fireImmune().noSave().build("layered_claw_marks"));
 
     private ModEntityTypes() {
     }

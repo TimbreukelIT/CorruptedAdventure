@@ -124,7 +124,7 @@ final class LayeredBurrowGoal extends Goal {
                 LayeredEffects.heave(level, layered.position(), LayeredImpact.ground(level, layered), ticks,
                         settings.burrowWarnTicks.get());
                 if (ticks >= settings.burrowWarnTicks.get()) {
-                    erupt(level, settings);
+                    erupt(level);
                 }
             }
             case RECOVER -> {
@@ -165,15 +165,21 @@ final class LayeredBurrowGoal extends Goal {
         ticks = 0;
     }
 
-    private void erupt(ServerLevel level, LayeredConfig settings) {
+    private void erupt(ServerLevel level) {
+        burstUp(level, layered);
+        phase = Phase.RECOVER;
+        ticks = 0;
+    }
+
+    /** It bursts up out of the ground where it is: the blow, the sand thrown up, a jump of its own (also its arrival). */
+    static void burstUp(ServerLevel level, TheLayered layered) {
+        LayeredConfig settings = TheLayered.settings();
         layered.emerge();
         double radius = settings.burrowRadius.get();
         LayeredImpact.hit(level, layered, radius, settings.burrowDamage.get(), OUTWARD, settings.burrowLaunch.get());
         LayeredEffects.erupt(level, layered, LayeredImpact.ground(level, layered), radius);
         layered.triggerAnim(LayeredAnimations.ACTION, LayeredAnimations.ERUPT);
         layered.setDeltaMovement(0.0, OWN_LIFT, 0.0);
-        phase = Phase.RECOVER;
-        ticks = 0;
     }
 
     private int cooldown() {

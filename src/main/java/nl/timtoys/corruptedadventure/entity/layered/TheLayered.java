@@ -70,6 +70,10 @@ import java.util.List;
  * {@link #mayStartAttack()}; a stagger lets go of a held player, and on a wall it falls (without the impact and the
  * flip of a dazzle); a hit on its belly from below is a hit on its weak spot; in a rest window on a wall it hangs still
  * (an ambush), elsewhere it walks and climbs to the rest point and the search.
+ * <p>
+ * Step 2: its own arrival ({@link LayeredArrival}): it unfolds from a canyon wall ({@link #startUnfolding}, synced
+ * {@code DATA_UNFOLDING}) or bursts up out of the ground ({@link #startBurst}); while it roams it leaves claw marks
+ * ({@link LayeredClawMarks}).
  */
 public class TheLayered extends Nightmare {
     private static final EntityDataAccessor<Direction> DATA_SURFACE =
@@ -77,6 +81,8 @@ public class TheLayered extends Nightmare {
     private static final EntityDataAccessor<Boolean> DATA_FALLEN =
             SynchedEntityData.defineId(TheLayered.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_BURROWED =
+            SynchedEntityData.defineId(TheLayered.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_UNFOLDING =
             SynchedEntityData.defineId(TheLayered.class, EntityDataSerializers.BOOLEAN);
     /** A hit counts as from below when the attacker's eyes are this far under its feet. */
     private static final double BELLY_MARGIN = 0.5;
@@ -103,6 +109,10 @@ public class TheLayered extends Nightmare {
     private int rockfallUsed;
     private int freeHitsByOthers;
     private int freeHitsBySelf;
+    // Its arrival (LayeredArrival), server only and not saved: unloaded halfway, it simply is on the wall or the ground.
+    private int unfoldTicks;
+    private int unfoldAge;
+    private int burstTicks;
     // Client only: how far the model has turned onto a wall, and where the dead heads look.
     private float wallTurn;
     private float wallTurnO;
@@ -138,6 +148,7 @@ public class TheLayered extends Nightmare {
         builder.define(DATA_SURFACE, Direction.DOWN);
         builder.define(DATA_FALLEN, false);
         builder.define(DATA_BURROWED, false);
+        builder.define(DATA_UNFOLDING, false);
     }
 
     @Override
@@ -235,9 +246,14 @@ public class TheLayered extends Nightmare {
         return knockedOff;
     }
 
-    /** It can attack and climb: not on its back, not falling, not leaping, not under the sand, not dying. */
+    /** It can attack and climb: not on its back, not falling, not leaping, not under the sand, not unfolding, not dying. */
     public boolean canAct() {
-        return isAlive() && !isFallen() && !knockedOff && !leaping && !isBurrowed();
+        return isAlive() && !isFallen() && !knockedOff && !leaping && !isBurrowed() && !isUnfolding();
+    }
+
+    /** Its arrival on a wall ({@link #startUnfolding}): folded flat against the stone, unfolding; it does not attack yet. */
+    public boolean isUnfolding() {
+        return entityData.get(DATA_UNFOLDING);
     }
 
     /** Under the sand ({@link LayeredBurrowGoal}): hidden, without collision, untouchable. */
@@ -261,7 +277,7 @@ public class TheLayered extends Nightmare {
 
     boolean isClinging() {
         return isOnWall() && !knockedOff && !leaping
-                && (clingRequested || ambush || (zza == 0.0F && xxa == 0.0F && !targetNotAbove()));
+                && (clingRequested || ambush || isUnfolding() || (zza == 0.0F && xxa == 0.0F && !targetNotAbove()));
     }
 
     /**
@@ -293,6 +309,7 @@ public class TheLayered extends Nightmare {
         if (!level().isClientSide()) {
             holdOn();
             if (isAlive()) {
+                tickArrival((ServerLevel) level());
                 tickGrip();
                 updateSurface();
             }
@@ -341,6 +358,9 @@ public class TheLayered extends Nightmare {
 
     /** Which surface it clings to: a wall while it climbs against it or holds on, else the ground. */
     private void updateSurface() {
+        if (isUnfolding()) {
+            return;
+        }
         if (knockedOff || isFallen() || isDeadOrDying() || leaping || isBurrowed()) {
             setSurface(Direction.DOWN);
             return;
@@ -415,6 +435,7 @@ public class TheLayered extends Nightmare {
             return;
         }
         releaseHeld();
+        stopUnfolding();
         knockedOff = true;
         // Pushing against the foot of a wall it counts as on the wall, but it hangs from nothing: nothing to fall from.
         hardFall = hard && !onGround();
@@ -641,6 +662,8 @@ public class TheLayered extends Nightmare {
     @Override
     public void die(DamageSource source) {
         releaseHeld();
+        stopUnfolding();
+        burstTicks = 0;
         emerge();
         endLeap();
         spits.clear();
@@ -650,6 +673,8 @@ public class TheLayered extends Nightmare {
     @Override
     protected void onRetreat(ServerLevel level) {
         releaseHeld();
+        stopUnfolding();
+        burstTicks = 0;
         emerge();
         LayeredEffects.retreat(level, this);
     }
@@ -754,6 +779,58 @@ public class TheLayered extends Nightmare {
         noPhysics = false;
     }
 
+    // --- its arrival ------------------------------------------------------------------------------------------------------
+
+    /**
+     * Its arrival on a wall ({@link LayeredArrival}): it lies folded flat against the wall on side {@code wall}, a piece of
+     * the canyon wall, and unfolds over {@code ticks} (the {@code unfold} animation, from the synced state); it hangs still
+     * and does not attack meanwhile, but can be hit. A fall from the wall (fire, the dazzle, a stagger) ends it.
+     */
+    void startUnfolding(Direction wall, int ticks) {
+        setSurface(wall);
+        float yaw = wall.toYRot();
+        setYRot(yaw);
+        yBodyRot = yaw;
+        yHeadRot = yaw;
+        unfoldTicks = Math.max(1, ticks);
+        unfoldAge = 0;
+        entityData.set(DATA_UNFOLDING, true);
+    }
+
+    private void stopUnfolding() {
+        unfoldTicks = 0;
+        if (isUnfolding()) {
+            entityData.set(DATA_UNFOLDING, false);
+        }
+    }
+
+    /**
+     * Its arrival out of the ground ({@link LayeredArrival}): hidden under it ({@link #submerge}) while the sand heaves
+     * for {@code ticks} more, then it bursts up as from a burrow ({@link LayeredBurrowGoal#burstUp}).
+     */
+    void startBurst(int ticks) {
+        submerge();
+        burstTicks = Math.max(1, ticks);
+    }
+
+    private void tickArrival(ServerLevel level) {
+        if (isUnfolding()) {
+            LayeredEffects.unfold(level, this, unfoldAge, unfoldAge + unfoldTicks);
+            unfoldAge++;
+            if (--unfoldTicks <= 0) {
+                stopUnfolding();
+                LayeredEffects.unfolded(level, this);
+            }
+        }
+        if (burstTicks > 0) {
+            int warn = settings().burrowWarnTicks.get();
+            LayeredEffects.heave(level, position(), LayeredImpact.ground(level, this), Math.max(0, warn - burstTicks), warn);
+            if (--burstTicks == 0) {
+                LayeredBurrowGoal.burstUp(level, this);
+            }
+        }
+    }
+
     /** A cloud of dust and bone splinters on its way; moved every tick until it bursts. */
     void spit(LayeredSpit cloud) {
         spits.add(cloud);
@@ -817,7 +894,8 @@ public class TheLayered extends Nightmare {
     private void tickVisuals() {
         wallTurnO = wallTurn;
         float goal = isOnWall() ? 1.0F : 0.0F;
-        wallTurn = Mth.approach(wallTurn, goal, 1.0F / WALL_TURN_TICKS);
+        // Unfolding it lay on the wall from the start: no turn onto it.
+        wallTurn = isUnfolding() ? goal : Mth.approach(wallTurn, goal, 1.0F / WALL_TURN_TICKS);
         // The dead heads turn to the nearest player, each at its own pace and never quite together.
         Player player = level().getNearestPlayer(this, DEAD_HEAD_RANGE);
         for (int i = 0; i < 2; i++) {
@@ -839,7 +917,7 @@ public class TheLayered extends Nightmare {
 
     /** 0 on the ground .. 1 flat on a wall, smoothed for rendering (client). */
     public float wallTurn(float partialTick) {
-        return Mth.lerp(partialTick, wallTurnO, wallTurn);
+        return isUnfolding() ? 1.0F : Mth.lerp(partialTick, wallTurnO, wallTurn);
     }
 
     /** Where dead head 0 (left) or 1 (right) looks, in degrees from straight ahead, smoothed for rendering (client). */
@@ -871,6 +949,9 @@ public class TheLayered extends Nightmare {
                 .triggerableAnim(LayeredAnimations.ERUPT, LayeredAnimations.ERUPT_ANIM)
                 .triggerableAnim(LayeredAnimations.SPIT, LayeredAnimations.SPIT_ANIM)
                 .triggerableAnim(LayeredAnimations.SNIFF, LayeredAnimations.SNIFF_ANIM));
+        // Last and without a blend: from its first frame it lies folded, over every bone the others move.
+        controllers.add(new AnimationController<>(this, LayeredAnimations.ARRIVAL, 0,
+                state -> isUnfolding() ? state.setAndContinue(LayeredAnimations.UNFOLD) : PlayState.STOP));
     }
 
     private PlayState bodyAnimation(AnimationState<TheLayered> state) {

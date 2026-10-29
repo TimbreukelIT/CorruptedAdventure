@@ -6,7 +6,8 @@ import net.neoforged.neoforge.common.ModConfigSpec;
  * {@code [nightmares.layered]}: The Layered, the ring 2 Nightmare (phase 4, fase-4-nightmares-concept.md "Ring 2 — De
  * Gelaagde"). The shared keys in {@link #common} (its main attack is the bite of its beak), then its own: the grab and
  * the climb with a player, the rock fall (it changes the world, so it can be switched off), the armoured back and the fall
- * from the wall; then those of the life round: the pounce from a wall, the burrow under the sand, the dead heads' spit. Read live, so edits apply to a Layered that is already fighting.
+ * from the wall; then those of the life round: the pounce from a wall, the burrow under the sand, the dead heads' spit; then its arrival and the claw marks it leaves
+ * while it roams (step 2). Read live, so edits apply to a Layered that is already fighting.
  */
 public final class LayeredConfig {
     /** Also the attribute defaults of {@code TheLayered}. */
@@ -69,6 +70,15 @@ public final class LayeredConfig {
     public final ModConfigSpec.DoubleValue spitRadius;
     public final ModConfigSpec.DoubleValue spitDamage;
     public final ModConfigSpec.IntValue spitBlindSeconds;
+    public final ModConfigSpec.IntValue arrivalOmenSeconds;
+    public final ModConfigSpec.IntValue arrivalWallRadius;
+    public final ModConfigSpec.IntValue arrivalUnfoldTicks;
+    public final ModConfigSpec.DoubleValue arrivalBurstDistance;
+    public final ModConfigSpec.DoubleValue arrivalFleeRadius;
+    public final ModConfigSpec.DoubleValue traceChance;
+    public final ModConfigSpec.IntValue traceSeconds;
+    public final ModConfigSpec.IntValue traceMax;
+    public final ModConfigSpec.IntValue traceWallRadius;
 
     LayeredConfig(ModConfigSpec.Builder builder) {
         builder.comment("The Layered, the ring 2 Nightmare (step 1: body and fight, summoned with /summon).",
@@ -194,6 +204,28 @@ public final class LayeredConfig {
                 .defineInRange("spitDamage", 3.0, 0.0, 100.0);
         spitBlindSeconds = builder.comment("Seconds of blindness from a cloud (0: none).")
                 .defineInRange("spitBlindSeconds", 3, 0, 60);
+        arrivalOmenSeconds = builder.comment("Its own arrival (step 2): seconds of omens before it comes. Pebbles and dust fall from",
+                        "the wall, bones rattle somewhere in the canyon, animals flee.")
+                .defineInRange("arrivalOmenSeconds", 20, 1, 600);
+        arrivalWallRadius = builder.comment("Blocks around its target where it looks for a natural wall to come loose from; without",
+                        "one it bursts up out of the ground.")
+                .defineInRange("arrivalWallRadius", 16, 4, 32);
+        arrivalUnfoldTicks = builder.comment("Ticks it takes to unfold from the wall before it can fight (the animation lasts 50).")
+                .defineInRange("arrivalUnfoldTicks", 50, 10, 200);
+        arrivalBurstDistance = builder.comment("Without a wall: blocks behind its target where it bursts up out of the ground (it hits",
+                        "like the burrow: burrowRadius, burrowDamage, burrowLaunch).")
+                .defineInRange("arrivalBurstDistance", 6.0, 2.0, 24.0);
+        arrivalFleeRadius = builder.comment("Blocks around where it comes from which animals flee during the omens.")
+                .defineInRange("arrivalFleeRadius", 24.0, 0.0, 64.0);
+        traceChance = builder.comment("While it roams: the chance per step that it leaves claw marks in a canyon wall near its",
+                        "virtual position (only where the chunks are loaded; not within 12 blocks of a player).")
+                .defineInRange("traceChance", 0.35, 0.0, 1.0);
+        traceSeconds = builder.comment("Seconds the claw marks stay before they have faded (never saved: unloaded, they are gone).")
+                .defineInRange("traceSeconds", 180, 10, 3600);
+        traceMax = builder.comment("Claw marks at most at once in the world (0: none).")
+                .defineInRange("traceMax", 6, 0, 64);
+        traceWallRadius = builder.comment("Blocks around its virtual position where it looks for a wall for its claw marks.")
+                .defineInRange("traceWallRadius", 10, 2, 24);
         builder.pop();
     }
 
