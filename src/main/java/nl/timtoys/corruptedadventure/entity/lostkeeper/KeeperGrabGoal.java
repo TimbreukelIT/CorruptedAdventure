@@ -42,7 +42,7 @@ final class KeeperGrabGoal extends Goal {
     @Override
     public boolean canUse() {
         LivingEntity target = keeper.getTarget();
-        if (!keeper.canAttack() || !(target instanceof Player player) || !TheLostKeeper.isFighter(player)
+        if (!keeper.mayAttack() || !(target instanceof Player player) || !TheLostKeeper.isFighter(player)
                 || player.isPassenger()) {
             if (target == null) {
                 nextTick = -1;
@@ -76,6 +76,7 @@ final class KeeperGrabGoal extends Goal {
 
     @Override
     public void start() {
+        keeper.countAttack();
         approachTicks = 0;
         windup = 0;
         snapped = false;

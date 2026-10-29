@@ -246,6 +246,28 @@ final class KeeperEffects {
         level.sendParticles(ParticleTypes.SPLASH, centre.x, centre.y, centre.z, 40, radius * 0.5, 0.3, radius * 0.5, 0.2);
     }
 
+    /** It reels: a pained, wavering cry, and its glow scatters off its crown. */
+    static void stagger(ServerLevel level, TheLostKeeper keeper) {
+        Vec3 head = keeper.headCentre();
+        sound(level, head, SoundEvents.ELDER_GUARDIAN_HURT, 2.5F, 0.45F);
+        sound(level, head, SoundEvents.RAVAGER_STUNNED, 1.5F, 0.7F);
+        level.sendParticles(GLOW, head.x, head.y + 1.0, head.z, 25, 0.8, 0.6, 0.8, 0.0);
+        level.sendParticles(ParticleTypes.CRIT, head.x, head.y + 0.5, head.z, 20, 1.0, 0.6, 1.0, 0.3);
+    }
+
+    /** It lost its target in the mist: a long, low call. */
+    static void searchCall(ServerLevel level, TheLostKeeper keeper) {
+        sound(level, keeper.headCentre(), SoundEvents.ELDER_GUARDIAN_AMBIENT, 3.0F, 0.55F);
+    }
+
+    /** At the last place it saw its target: it scents the water and the air. */
+    static void sniff(ServerLevel level, TheLostKeeper keeper) {
+        Vec3 mouth = keeper.mouth();
+        sound(level, mouth, SoundEvents.BREEZE_INHALE, 2.0F, 0.6F);
+        sound(level, mouth, SoundEvents.DOLPHIN_AMBIENT_WATER, 1.5F, 0.5F);
+        level.sendParticles(ParticleTypes.BUBBLE_POP, mouth.x, mouth.y, mouth.z, 12, 0.6, 0.3, 0.6, 0.02);
+    }
+
     private static void sound(ServerLevel level, Vec3 at, SoundEvent sound, float volume, float pitch) {
         level.playSound(null, at.x, at.y, at.z, sound, SoundSource.HOSTILE, volume, pitch);
     }

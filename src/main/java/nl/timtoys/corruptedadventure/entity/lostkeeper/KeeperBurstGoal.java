@@ -61,7 +61,7 @@ final class KeeperBurstGoal extends Goal {
     @Override
     public boolean canUse() {
         LivingEntity target = keeper.getTarget();
-        if (!keeper.canAttack() || keeper.isCoiling() || !keeper.canSwimHere() || !(target instanceof Player player)
+        if (!keeper.mayAttack() || keeper.isCoiling() || !keeper.canSwimHere() || !(target instanceof Player player)
                 || !TheLostKeeper.isFighter(player) || player.getVehicle() == keeper) {
             if (target == null) {
                 nextTick = -1;
@@ -116,6 +116,7 @@ final class KeeperBurstGoal extends Goal {
 
     @Override
     public void start() {
+        keeper.countAttack();
         hit.clear();
         struck = false;
         wasInWater = keeper.isInWater();

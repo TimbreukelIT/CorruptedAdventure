@@ -27,8 +27,9 @@ import nl.timtoys.corruptedadventure.registry.ModEntityTypes;
  * The Lost Keeper (phase 4 step 1): its body chain and hitboxes, the crown (a hit breaks one branch and hurts more; the
  * last branch makes it fall, land hard and lie stunned), the hold (no sneaking off; damage sets free) and its poison
  * cloud; from the life round where a fighter stands (water, shore, land, air), the launch out of a boat and the ring of
- * its body. Without free will it never attacks the mock players; the fight's bookkeeping runs without AI. Its own batch:
- * its 24-block body reaches into neighbouring tests. In {@code gametest/hollow_arena} (an empty 9 × 7 × 9 room).
+ * its body, and the shared stagger on a crown hit (lets go, opens the ring, closes the gate). Without free will it never
+ * attacks the mock players; the fight's bookkeeping runs without AI. Its own batch: its 24-block body reaches into
+ * neighbouring tests. In {@code gametest/hollow_arena} (an empty 9 × 7 × 9 room).
  */
 @GameTestHolder(CorruptedAdventure.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -227,6 +228,30 @@ public final class LostKeeperGameTests {
                     helper.assertTrue(Math.abs(r - radius) < 0.8, "the tail's hitbox is on the ring: " + r);
                     keeper.uncoil();
                     helper.assertFalse(keeper.isCoiling(), "uncoiled");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = ARENA, batch = BATCH)
+    public static void aBlowOnTheCrownMakesItReelLetGoAndOpenItsRing(GameTestHelper helper) {
+        TheLostKeeper keeper = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LOST_KEEPER.get(), MIDDLE.above(2));
+        ServerPlayer held = GameTestPlayers.survival(helper);
+        ServerPlayer friend = GameTestPlayers.survival(helper);
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    helper.assertTrue(keeper.hold(held), "it holds a fighter");
+                    keeper.coil(keeper.headCentre().add(-4.0, -1.3, 0.0), 4.0, 1);
+                    helper.assertTrue(keeper.mayStartAttack(), "the gate is open before");
+                    helper.assertTrue(keeper.crownPart().hurt(playerAttack(helper, friend), 1.0F), "the crown hit lands");
+                    helper.assertTrue(keeper.isStaggered(), "it reels");
+                    helper.assertFalse(keeper.mayStartAttack(), "no attack while it reels");
+                    helper.assertFalse(keeper.isHolding(), "it lets go");
+                    helper.assertFalse(keeper.isCoiling(), "the ring opens");
+                })
+                .thenExecuteAfter(2, () -> {
+                    helper.assertValueEqual(keeper.mode(), TheLostKeeper.Mode.STAGGER, "mode");
+                    GameTestPlayers.remove(helper, held);
+                    GameTestPlayers.remove(helper, friend);
                 })
                 .thenSucceed();
     }

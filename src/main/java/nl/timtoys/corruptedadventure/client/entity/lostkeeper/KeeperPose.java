@@ -15,11 +15,17 @@ import software.bernie.geckolib.cache.object.GeoBone;
  * position x is applied negated, its rotation is Rz·Ry·Rx round its pivot. So a world offset goes into model space by
  * the inverse yaw turn, and a segment pointing along unit {@code d} (its rest direction is +z) needs
  * Ry(atan2(d.x, d.z))·Rx(asin(−d.y)). The preview tool {@code tools/textures/lost_keeper_preview.py} uses the same rule.
+ * <p>
+ * While it staggers a shudder runs down the body: each segment rolls and sways a little, a beat later than the one
+ * before it (only the model; the hitboxes stay on the nodes).
  */
 final class KeeperPose {
     private static final String SEGMENT = "seg_";
     private static final String CORAL = "coral_";
     private static final String NECK = "neck_mount";
+    /** Radians of the stagger's roll and sway at their strongest. */
+    private static final float SHUDDER_ROLL = 0.35F;
+    private static final float SHUDDER_SWAY = 0.12F;
 
     private KeeperPose() {
     }
@@ -55,9 +61,16 @@ final class KeeperPose {
         bone.setPosX(-(float) (front.x - bone.getPivotX()));
         bone.setPosY((float) (front.y - bone.getPivotY()));
         bone.setPosZ((float) (front.z - bone.getPivotZ()));
+        float roll = 0.0F;
+        float sway = 0.0F;
+        if (keeper.isStaggered() && !keeper.isDeadOrDying()) {
+            float wave = (keeper.tickCount + partialTick) * 0.9F - index * 0.7F;
+            roll = SHUDDER_ROLL * Mth.sin(wave);
+            sway = SHUDDER_SWAY * Mth.sin(wave * 1.3F + 1.1F);
+        }
         bone.setRotX((float) Math.asin(Mth.clamp(-direction.y, -1.0, 1.0)));
-        bone.setRotY((float) Mth.atan2(direction.x, direction.z));
-        bone.setRotZ(0.0F);
+        bone.setRotY((float) Mth.atan2(direction.x, direction.z) + sway);
+        bone.setRotZ(roll);
     }
 
     /** A world offset (blocks) into model space (model units) for a body yaw in degrees. */

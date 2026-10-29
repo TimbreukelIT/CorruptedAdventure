@@ -20,6 +20,7 @@ public final class KeeperAnimations {
     public static final String DIVE = "dive";
     public static final String BURST = "burst";
     public static final String SQUEEZE = "squeeze";
+    public static final String SNIFF = "sniff";
 
     public static final RawAnimation HOVER = loop("hover");
     public static final RawAnimation SWIM = loop("swim");
@@ -29,6 +30,7 @@ public final class KeeperAnimations {
     public static final RawAnimation STUNNED = loop("stunned");
     public static final RawAnimation CRAWL = loop("crawl");
     public static final RawAnimation COIL = loop("coil");
+    public static final RawAnimation STAGGER = loop("stagger");
     public static final RawAnimation DEATH = RawAnimation.begin().thenPlayAndHold("animation.the_lost_keeper.death");
 
     public static final RawAnimation BREATH_ANIM = once(BREATH);
@@ -39,6 +41,7 @@ public final class KeeperAnimations {
     public static final RawAnimation DIVE_ANIM = once(DIVE);
     public static final RawAnimation BURST_ANIM = once(BURST);
     public static final RawAnimation SQUEEZE_ANIM = once(SQUEEZE);
+    public static final RawAnimation SNIFF_ANIM = once(SNIFF);
 
     private KeeperAnimations() {
     }

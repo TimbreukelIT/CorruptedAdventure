@@ -17,8 +17,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.control.LookControl;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -32,6 +30,7 @@ import nl.timtoys.corruptedadventure.config.LostKeeperConfig;
 import nl.timtoys.corruptedadventure.config.NightmareConfig;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmareTargetGoal;
 import nl.timtoys.corruptedadventure.network.KeeperMistPayload;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animation.AnimatableManager;
@@ -92,7 +91,7 @@ public class TheLostKeeper extends Nightmare {
 
     /** What the body does, for the looping animations (synced). */
     public enum Mode {
-        SWIM, LURE, HOLD, FALL, STUNNED, CRAWL, COIL
+        SWIM, LURE, HOLD, FALL, STUNNED, CRAWL, COIL, STAGGER
     }
 
     private final KeeperBody body = new KeeperBody();
@@ -171,9 +170,8 @@ public class TheLostKeeper extends Nightmare {
         goalSelector.addGoal(4, new KeeperBubbleTrapGoal(this));
         goalSelector.addGoal(4, new KeeperWhipGoal(this));
         goalSelector.addGoal(6, new KeeperCircleGoal(this));
-        targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        // It finds you in its mist without seeing you.
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
+        // Who hits it hardest, or who is near and weak (the shared choice); it finds you in its mist without seeing you.
+        targetSelector.addGoal(1, new NightmareTargetGoal(this));
     }
 
     @Override
@@ -311,6 +309,8 @@ public class TheLostKeeper extends Nightmare {
         boolean hurt = hurt(source, amount * keeperConfig().crownDamageMultiplier.get().floatValue());
         if (hurt && !level().isClientSide() && source.getEntity() != null) {
             breakBranch();
+            // A blow on its weak spot makes it reel (the shared stagger, unless its cooldown runs).
+            hitWeakSpot();
         }
         return hurt;
     }
@@ -399,9 +399,14 @@ public class TheLostKeeper extends Nightmare {
         return falling;
     }
 
-    /** Free to start an attack: alive, not stunned, not falling, not holding anyone. */
+    /** Free to go on with an attack: alive, not stunned or staggered, not falling, not holding anyone. */
     boolean canAttack() {
-        return isAlive() && !isStunned() && !falling && !isHolding();
+        return isAlive() && !isStunned() && !isStaggered() && !falling && !isHolding();
+    }
+
+    /** Free to start an attack: {@link #canAttack()} and the shared gate (not resting after a burst, not searching). */
+    boolean mayAttack() {
+        return canAttack() && mayStartAttack();
     }
 
     /** The fight's bookkeeping, also without AI: crown cooldown, whip, fall and stun, the hold, clouds, mist, mode. */
@@ -433,12 +438,19 @@ public class TheLostKeeper extends Nightmare {
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
+        if (isStaggered()) {
+            // Reeling: no swimming; it drifts to a stop where it is (hovering in water and, crowned, in the air).
+            return;
+        }
         swimOrCrawl();
     }
 
     private Mode currentMode() {
         if (isStunned()) {
             return Mode.STUNNED;
+        }
+        if (isStaggered()) {
+            return Mode.STAGGER;
         }
         if (falling) {
             return Mode.FALL;
@@ -701,6 +713,51 @@ public class TheLostKeeper extends Nightmare {
         return entityData.get(DATA_WHIP) != 0;
     }
 
+    // --- the shared reactions (stagger, rest, search) ----------------------------------------------------------------
+
+    @Override
+    protected boolean canStagger() {
+        // Falling without its crown or lying stunned is its own, longer open window.
+        return !falling && !isStunned();
+    }
+
+    /** Reeling breaks off what the goals do not: whoever it holds goes free, the ring opens, the tail stops. */
+    @Override
+    protected void onStaggered() {
+        release();
+        uncoil();
+        entityData.set(DATA_WHIP, 0);
+        steer(null, 0.0);
+        face(null);
+        setTurnScale(1.0);
+    }
+
+    @Override
+    protected void staggerEffects(ServerLevel level) {
+        KeeperEffects.stagger(level, this);
+    }
+
+    /** The rest window and the search swim there ({@link KeeperCircleGoal} reads them); also for the shared goals. */
+    @Override
+    protected void moveForReaction(Vec3 point, double speed) {
+        steer(point, speed);
+    }
+
+    @Override
+    protected void onSearchStart() {
+        if (level() instanceof ServerLevel serverLevel) {
+            KeeperEffects.searchCall(serverLevel, this);
+        }
+    }
+
+    @Override
+    protected void onSniff() {
+        triggerAnim(KeeperAnimations.ACTION, KeeperAnimations.SNIFF);
+        if (level() instanceof ServerLevel serverLevel) {
+            KeeperEffects.sniff(serverLevel, this);
+        }
+    }
+
     // --- the ring of its body ----------------------------------------------------------------------------------------
 
     /**
@@ -847,7 +904,8 @@ public class TheLostKeeper extends Nightmare {
                 .triggerableAnim(KeeperAnimations.BUBBLE_CALL, KeeperAnimations.BUBBLE_CALL_ANIM)
                 .triggerableAnim(KeeperAnimations.DIVE, KeeperAnimations.DIVE_ANIM)
                 .triggerableAnim(KeeperAnimations.BURST, KeeperAnimations.BURST_ANIM)
-                .triggerableAnim(KeeperAnimations.SQUEEZE, KeeperAnimations.SQUEEZE_ANIM));
+                .triggerableAnim(KeeperAnimations.SQUEEZE, KeeperAnimations.SQUEEZE_ANIM)
+                .triggerableAnim(KeeperAnimations.SNIFF, KeeperAnimations.SNIFF_ANIM));
     }
 
     private PlayState bodyAnimation(AnimationState<TheLostKeeper> state) {
@@ -861,6 +919,7 @@ public class TheLostKeeper extends Nightmare {
             case STUNNED -> KeeperAnimations.STUNNED;
             case CRAWL -> KeeperAnimations.CRAWL;
             case COIL -> KeeperAnimations.COIL;
+            case STAGGER -> KeeperAnimations.STAGGER;
             case SWIM -> getDeltaMovement().lengthSqr() > 0.01 ? KeeperAnimations.SWIM : KeeperAnimations.HOVER;
         });
     }

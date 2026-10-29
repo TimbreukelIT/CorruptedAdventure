@@ -28,6 +28,12 @@ public final class TheLostKeeperRenderer extends NightmareRenderer<TheLostKeeper
         event.registerEntityRenderer(ModEntityTypes.THE_LOST_KEEPER.get(), TheLostKeeperRenderer::new);
     }
 
+    /** No rock of the whole model: round its head that would swing the far tail off its hitboxes. KeeperPose ripples. */
+    @Override
+    protected float staggerSway(TheLostKeeper keeper) {
+        return 0.0F;
+    }
+
     @Override
     public void renderRecursively(PoseStack poseStack, TheLostKeeper keeper, GeoBone bone, RenderType renderType,
                                   MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick,

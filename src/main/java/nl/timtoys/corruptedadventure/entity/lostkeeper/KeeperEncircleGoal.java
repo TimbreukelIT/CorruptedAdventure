@@ -58,8 +58,11 @@ final class KeeperEncircleGoal extends Goal {
     @Override
     public boolean canUse() {
         LivingEntity target = keeper.getTarget();
-        if (!keeper.canAttack() || !(target instanceof Player player) || !TheLostKeeper.isFighter(player)) {
-            nextTick = -1;
+        if (!keeper.mayAttack() || !(target instanceof Player player) || !TheLostKeeper.isFighter(player)) {
+            // Only a fight that is over restarts the cooldown; a rest window or a stagger keeps it.
+            if (target == null) {
+                nextTick = -1;
+            }
             return false;
         }
         LostKeeperConfig config = TheLostKeeper.keeperConfig();
@@ -150,6 +153,7 @@ final class KeeperEncircleGoal extends Goal {
 
     @Override
     public void start() {
+        keeper.countAttack();
         coiling = false;
         ticks = 0;
         wallHits.clear();

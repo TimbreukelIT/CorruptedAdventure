@@ -57,8 +57,11 @@ final class KeeperBubbleTrapGoal extends Goal {
     @Override
     public boolean canUse() {
         LivingEntity target = keeper.getTarget();
-        if (!keeper.canAttack() || keeper.isCoiling() || !(target instanceof Player player) || !TheLostKeeper.isFighter(player)) {
-            nextTick = -1;
+        if (!keeper.mayAttack() || keeper.isCoiling() || !(target instanceof Player player) || !TheLostKeeper.isFighter(player)) {
+            // Only a fight that is over restarts the cooldown; a rest window or a stagger keeps it.
+            if (target == null) {
+                nextTick = -1;
+            }
             return false;
         }
         LostKeeperConfig config = TheLostKeeper.keeperConfig();
@@ -88,6 +91,7 @@ final class KeeperBubbleTrapGoal extends Goal {
 
     @Override
     public void start() {
+        keeper.countAttack();
         tick = 0;
         spots.clear();
         LostKeeperConfig config = TheLostKeeper.keeperConfig();
