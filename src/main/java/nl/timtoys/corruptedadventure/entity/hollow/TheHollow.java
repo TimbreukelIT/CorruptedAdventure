@@ -34,7 +34,8 @@ import software.bernie.geckolib.animation.PlayState;
 /**
  * De Holle, the ring 1 Nightmare (phase 4 step 1: body and fight, summoned with {@code /summon}). A soulless stone
  * titan: slams with its giant arm, rift-steps behind its target, goes out of phase now and then (transparent and
- * invulnerable), swaps two players. A hit with a soul crystal pins it in phase. Boss bar, health scaling, retreat and
+ * invulnerable), swaps two players. Between those it uses its extra attacks ({@link HollowExtraAttackGoal}: ground
+ * slam, rift rain, sweep). A hit with a soul crystal pins it in phase. Boss bar, health scaling, retreat and
  * the rest of the shared rules come from {@link Nightmare}. The client renders the synced out-of-phase state and the
  * triggered animations. The rift entity, roaming and the return come in steps 2 and 3.
  */
@@ -77,6 +78,7 @@ public class TheHollow extends Nightmare {
         goalSelector.addGoal(0, new HollowEmergeGoal(this));
         goalSelector.addGoal(1, new HollowSwapGoal(this));
         goalSelector.addGoal(2, new HollowRiftStepGoal(this));
+        goalSelector.addGoal(2, new HollowExtraAttackGoal(this));
         goalSelector.addGoal(3, new HollowSlamGoal(this));
         goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.8));
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 16.0F));
@@ -246,7 +248,10 @@ public class TheHollow extends Nightmare {
         controllers.add(new AnimationController<>(this, HollowAnimations.ACTION, 2, state -> PlayState.STOP)
                 .triggerableAnim(HollowAnimations.SLAM, HollowAnimations.SLAM_ANIM)
                 .triggerableAnim(HollowAnimations.RIFT_STEP, HollowAnimations.RIFT_STEP_ANIM)
-                .triggerableAnim(HollowAnimations.SWAP, HollowAnimations.SWAP_ANIM));
+                .triggerableAnim(HollowAnimations.SWAP, HollowAnimations.SWAP_ANIM)
+                .triggerableAnim(HollowAnimations.GROUND_SLAM, HollowAnimations.GROUND_SLAM_ANIM)
+                .triggerableAnim(HollowAnimations.RIFT_RAIN, HollowAnimations.RIFT_RAIN_ANIM)
+                .triggerableAnim(HollowAnimations.SWEEP, HollowAnimations.SWEEP_ANIM));
     }
 
     private PlayState bodyAnimation(AnimationState<TheHollow> state) {

@@ -20,10 +20,12 @@ public final class TheHollowRenderer extends NightmareRenderer<TheHollow> {
         addRenderLayer(new HollowCorruptionLayer(this));
     }
 
-    /** The Hollow and its rift. */
+    /** The Hollow, its rift, the shock wave of its ground slam and the void claws of its rift rain. */
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntityTypes.THE_HOLLOW.get(), TheHollowRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.HOLLOW_RIFT.get(), HollowRiftRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.HOLLOW_SHOCKWAVE.get(), HollowShockwaveRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.HOLLOW_VOID_CLAW.get(), HollowVoidClawRenderer::new);
     }
 
     @Override

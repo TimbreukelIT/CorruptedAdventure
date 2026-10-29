@@ -34,6 +34,26 @@ public final class HollowConfig {
     public final ModConfigSpec.DoubleValue suctionStrength;
     public final ModConfigSpec.BooleanValue scarEnabled;
     public final ModConfigSpec.DoubleValue scarRadius;
+    public final ModConfigSpec.IntValue extraAttackCooldownMin;
+    public final ModConfigSpec.IntValue extraAttackCooldownMax;
+    public final ModConfigSpec.IntValue groundSlamWindupTicks;
+    public final ModConfigSpec.DoubleValue groundSlamRange;
+    public final ModConfigSpec.DoubleValue groundSlamRadius;
+    public final ModConfigSpec.DoubleValue groundSlamWaveSpeed;
+    public final ModConfigSpec.DoubleValue groundSlamDamage;
+    public final ModConfigSpec.DoubleValue groundSlamLift;
+    public final ModConfigSpec.IntValue riftRainWindupTicks;
+    public final ModConfigSpec.IntValue riftRainWarningTicks;
+    public final ModConfigSpec.IntValue riftRainClaws;
+    public final ModConfigSpec.DoubleValue riftRainRadius;
+    public final ModConfigSpec.DoubleValue riftRainMinRange;
+    public final ModConfigSpec.DoubleValue riftRainMaxRange;
+    public final ModConfigSpec.DoubleValue riftRainDamage;
+    public final ModConfigSpec.IntValue sweepWindupTicks;
+    public final ModConfigSpec.DoubleValue sweepReach;
+    public final ModConfigSpec.DoubleValue sweepArcDegrees;
+    public final ModConfigSpec.DoubleValue sweepDamage;
+    public final ModConfigSpec.DoubleValue sweepPush;
 
     HollowConfig(ModConfigSpec.Builder builder) {
         builder.comment("The Hollow, the ring 1 Nightmare (step 1: body and fight, summoned with /summon).",
@@ -86,6 +106,49 @@ public final class HollowConfig {
         scarRadius = builder.comment("Radius in blocks of that scar; ragged toward its edge.")
                 .defineInRange("scarRadius", 2.5, 0.5, 4.0);
         builder.pop();
+        builder.comment("Its extra attacks (life round): the ground slam, the rift rain and the sweep. It picks one by",
+                "its target's distance, never the same twice in a row when another fits; they leave nothing in the world.",
+                "Damage is multiplied by its strength (a returning Hollow hits harder).").push("attacks");
+        extraAttackCooldownMin = builder.comment("Seconds between two extra attacks, drawn between min and max.")
+                .defineInRange("extraAttackCooldownMin", 6, 1, 600);
+        extraAttackCooldownMax = builder.defineInRange("extraAttackCooldownMax", 10, 1, 600);
+        groundSlamWindupTicks = builder.comment("Ground slam: ticks with both arms raised before they come down.")
+                .defineInRange("groundSlamWindupTicks", 25, 1, 100);
+        groundSlamRange = builder.comment("Ground slam: picked when its target is within this many blocks (or when two",
+                        "fighters are within its radius).")
+                .defineInRange("groundSlamRange", 7.0, 1.0, 32.0);
+        groundSlamRadius = builder.comment("Ground slam: blocks the shock wave runs out to.")
+                .defineInRange("groundSlamRadius", 11.0, 2.0, 32.0);
+        groundSlamWaveSpeed = builder.comment("Ground slam: blocks per tick the ring grows; a jump over it or distance dodges it.")
+                .defineInRange("groundSlamWaveSpeed", 0.45, 0.05, 2.0);
+        groundSlamDamage = builder.comment("Ground slam: damage of the wave to whoever stands on the ground where it passes.")
+                .defineInRange("groundSlamDamage", 8.0, 0.0, 100.0);
+        groundSlamLift = builder.comment("Ground slam: upward throw of the wave (blocks/tick).")
+                .defineInRange("groundSlamLift", 0.6, 0.0, 3.0);
+        riftRainWindupTicks = builder.comment("Rift rain: ticks the giant hand takes to claw into the ground.")
+                .defineInRange("riftRainWindupTicks", 20, 1, 100);
+        riftRainWarningTicks = builder.comment("Rift rain: ticks the purple cracks show before the void claws come up.")
+                .defineInRange("riftRainWarningTicks", 25, 5, 100);
+        riftRainClaws = builder.comment("Rift rain: claws round its target: one under its feet, the rest in a ring.")
+                .defineInRange("riftRainClaws", 7, 1, 16);
+        riftRainRadius = builder.comment("Rift rain: radius in blocks of the ring of claws round its target.")
+                .defineInRange("riftRainRadius", 3.0, 0.5, 8.0);
+        riftRainMinRange = builder.comment("Rift rain: picked when its target is between min and max blocks away.")
+                .defineInRange("riftRainMinRange", 5.0, 0.0, 64.0);
+        riftRainMaxRange = builder.defineInRange("riftRainMaxRange", 24.0, 1.0, 64.0);
+        riftRainDamage = builder.comment("Rift rain: damage of one claw.")
+                .defineInRange("riftRainDamage", 6.0, 0.0, 100.0);
+        sweepWindupTicks = builder.comment("Sweep: ticks the giant arm is drawn back before it sweeps.")
+                .defineInRange("sweepWindupTicks", 15, 1, 100);
+        sweepReach = builder.comment("Sweep: blocks the arc of its knuckles reaches beyond its hitbox; also when it is picked.")
+                .defineInRange("sweepReach", 4.5, 1.0, 12.0);
+        sweepArcDegrees = builder.comment("Sweep: width in degrees of the arc in front of it.")
+                .defineInRange("sweepArcDegrees", 150.0, 30.0, 360.0);
+        sweepDamage = builder.comment("Sweep: damage to everyone in the arc.")
+                .defineInRange("sweepDamage", 7.0, 0.0, 100.0);
+        sweepPush = builder.comment("Sweep: how far it knocks them away (blocks/tick, horizontal).")
+                .defineInRange("sweepPush", 1.6, 0.0, 5.0);
+        builder.pop();
         builder.pop();
     }
 
@@ -95,6 +158,10 @@ public final class HollowConfig {
 
     public int phaseIntervalTicks(int roll) {
         return NightmareConfig.ticksBetween(phaseIntervalMin, phaseIntervalMax, roll);
+    }
+
+    public int extraAttackCooldownTicks(int roll) {
+        return NightmareConfig.ticksBetween(extraAttackCooldownMin, extraAttackCooldownMax, roll);
     }
 
     public int phaseDurationTicks(int roll) {

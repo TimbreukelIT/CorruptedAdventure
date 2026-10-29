@@ -53,6 +53,60 @@ final class HollowEffects {
         level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.IRON_GOLEM_ATTACK, SoundSource.HOSTILE, 2.0F, 0.4F);
     }
 
+    /** Ground slam warning: both arms go up while the void gathers round them. */
+    static void groundSlamWindup(ServerLevel level, Entity hollow) {
+        level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 2.5F, 0.5F);
+        level.sendParticles(ModParticleTypes.VOID_MOTE.get(), hollow.getX(), hollow.getY() + hollow.getBbHeight() + 0.5,
+                hollow.getZ(), 30, 1.0, 0.6, 1.0, 0.0);
+    }
+
+    /** The arms hit the ground in front of it; the wave itself is a {@link HollowShockwave}. */
+    static void groundSlamImpact(ServerLevel level, Entity hollow) {
+        level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 2.5F, 0.5F);
+        level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.ANVIL_LAND, SoundSource.HOSTILE, 2.0F, 0.4F);
+        double[] ahead = HollowSweep.facing(hollow.getYRot());
+        level.sendParticles(ParticleTypes.EXPLOSION, hollow.getX() + ahead[0] * 2.5, hollow.getY() + 0.3,
+                hollow.getZ() + ahead[1] * 2.5, 3, 0.6, 0.1, 0.6, 0.0);
+    }
+
+    /** Rift rain warning: the giant hand claws into the ground. */
+    static void riftRainDig(ServerLevel level, Entity hollow) {
+        level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.WARDEN_DIG, SoundSource.HOSTILE, 2.0F, 0.9F);
+        double[] ahead = HollowSweep.facing(hollow.getYRot());
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), hollow.getX() + ahead[0] * 2.0, hollow.getY() + 0.3,
+                hollow.getZ() + ahead[1] * 2.0, 20, 0.6, 0.2, 0.6, 0.0);
+    }
+
+    /** The cracks of the rift rain open round its target (they are drawn by each {@link HollowVoidClaw}). */
+    static void riftRainCracks(ServerLevel level, Entity target) {
+        level.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.SCULK_BLOCK_SPREAD, SoundSource.HOSTILE, 2.0F, 0.5F);
+        level.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.DEEPSLATE_BREAK, SoundSource.HOSTILE, 1.5F, 0.4F);
+    }
+
+    static void clawBite(ServerLevel level, Entity claw) {
+        level.playSound(null, claw.getX(), claw.getY(), claw.getZ(), SoundEvents.EVOKER_FANGS_ATTACK, SoundSource.HOSTILE, 1.2F, 0.55F);
+    }
+
+    /** Sweep warning: the giant arm is drawn back, its knuckles grinding over the ground. */
+    static void sweepWindup(ServerLevel level, Entity hollow) {
+        level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.GRINDSTONE_USE, SoundSource.HOSTILE, 2.0F, 0.45F);
+        level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.RAVAGER_STUNNED, SoundSource.HOSTILE, 1.5F, 0.5F);
+    }
+
+    /** The knuckles' arc in front of it, {@code radius} blocks out, {@code arc} degrees wide round {@code yaw}. */
+    static void sweep(ServerLevel level, Entity hollow, float yaw, double radius, float arc) {
+        level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 2.5F, 0.4F);
+        level.playSound(null, hollow.getX(), hollow.getY(), hollow.getZ(), SoundEvents.IRON_GOLEM_ATTACK, SoundSource.HOSTILE, 2.0F, 0.5F);
+        int steps = 9;
+        for (int i = 0; i < steps; i++) {
+            double[] dir = HollowSweep.facing(yaw - arc * 0.5F + arc * i / (steps - 1));
+            double x = hollow.getX() + dir[0] * radius;
+            double z = hollow.getZ() + dir[1] * radius;
+            level.sendParticles(ParticleTypes.SWEEP_ATTACK, x, hollow.getY() + 1.0, z, 1, 0.0, 0.0, 0.0, 0.0);
+            level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), x, hollow.getY() + 0.4, z, 3, 0.3, 0.2, 0.3, 0.0);
+        }
+    }
+
     /** The warning on both players before a swap. */
     static void swapMark(ServerLevel level, Entity player) {
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ILLUSIONER_PREPARE_MIRROR, SoundSource.HOSTILE, 1.5F, 0.5F);

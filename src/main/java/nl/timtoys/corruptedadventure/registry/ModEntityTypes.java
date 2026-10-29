@@ -10,6 +10,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.entity.EffectArrow;
 import nl.timtoys.corruptedadventure.entity.hollow.HollowRift;
+import nl.timtoys.corruptedadventure.entity.hollow.HollowShockwave;
+import nl.timtoys.corruptedadventure.entity.hollow.HollowVoidClaw;
 import nl.timtoys.corruptedadventure.entity.hollow.TheHollow;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.TheLostKeeper;
 import nl.timtoys.corruptedadventure.entity.risen.AshWalker;
@@ -39,6 +41,14 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<HollowRift>> HOLLOW_RIFT = ENTITY_TYPES.register("hollow_rift",
             () -> EntityType.Builder.<HollowRift>of(HollowRift::new, MobCategory.MISC)
                     .sized(3.0F, 7.0F).clientTrackingRange(10).updateInterval(20).fireImmune().build("hollow_rift"));
+    /** Phase 4 life round: the shock wave of The Hollow's ground slam (a growing ring on the ground; never saved). */
+    public static final DeferredHolder<EntityType<?>, EntityType<HollowShockwave>> HOLLOW_SHOCKWAVE = ENTITY_TYPES.register("hollow_shockwave",
+            () -> EntityType.Builder.<HollowShockwave>of(HollowShockwave::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F).clientTrackingRange(8).updateInterval(20).fireImmune().noSave().build("hollow_shockwave"));
+    /** Phase 4 life round: a void claw of The Hollow's rift rain (crack, then the claw; never saved). */
+    public static final DeferredHolder<EntityType<?>, EntityType<HollowVoidClaw>> HOLLOW_VOID_CLAW = ENTITY_TYPES.register("hollow_void_claw",
+            () -> EntityType.Builder.<HollowVoidClaw>of(HollowVoidClaw::new, MobCategory.MISC)
+                    .sized(1.2F, 2.2F).clientTrackingRange(8).updateInterval(20).fireImmune().noSave().build("hollow_void_claw"));
 
     /**
      * Phase 4: The Risen, the ring 3 Nightmare. The hitbox is its body from talons to shoulders (3.5 x 8.5); wings and
