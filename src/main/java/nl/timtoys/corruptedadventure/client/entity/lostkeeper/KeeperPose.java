@@ -4,6 +4,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperBody;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.TheLostKeeper;
+import software.bernie.geckolib.animation.state.BoneSnapshot;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 /**
@@ -34,8 +35,10 @@ final class KeeperPose {
         String name = bone.getName();
         if (name.startsWith(SEGMENT)) {
             int index = parse(name, SEGMENT.length());
-            if (index >= 1 && index <= KeeperBody.SEGMENTS && keeper.body().isPlaced()) {
-                segment(keeper, bone, index, partialTick);
+            if (index >= 1 && index <= KeeperBody.SEGMENTS) {
+                if (!keeper.body().isPlaced() || !segment(keeper, bone, index, partialTick)) {
+                    rest(bone);
+                }
             }
         } else if (name.equals(NECK)) {
             // Pitch positive looks down; the head's forward is -z, so the bone tips by minus the pitch.
@@ -48,14 +51,15 @@ final class KeeperPose {
         }
     }
 
-    private static void segment(TheLostKeeper keeper, GeoBone bone, int index, float partialTick) {
+    /** @return false if the segment has no direction (its two nodes coincide) and the bone was left alone */
+    private static boolean segment(TheLostKeeper keeper, GeoBone bone, int index, float partialTick) {
         Vec3 origin = keeper.getPosition(partialTick);
         float yaw = Mth.rotLerp(partialTick, keeper.yBodyRotO, keeper.yBodyRot);
         Vec3 front = toModel(keeper.body().node(index - 1, partialTick).subtract(origin), yaw);
         Vec3 back = toModel(keeper.body().node(index, partialTick).subtract(origin), yaw);
         Vec3 direction = back.subtract(front);
         if (direction.lengthSqr() < 1.0E-6) {
-            return;
+            return false;
         }
         direction = direction.normalize();
         bone.setPosX(-(float) (front.x - bone.getPivotX()));
@@ -71,6 +75,18 @@ final class KeeperPose {
         bone.setRotX((float) Math.asin(Mth.clamp(-direction.y, -1.0, 1.0)));
         bone.setRotY((float) Mth.atan2(direction.x, direction.z) + sway);
         bone.setRotZ(roll);
+        return true;
+    }
+
+    /** The baked model is shared by every Keeper: a bone left alone would keep the pose of the last one drawn. */
+    private static void rest(GeoBone bone) {
+        BoneSnapshot initial = bone.getInitialSnapshot();
+        bone.setPosX(initial.getOffsetX());
+        bone.setPosY(initial.getOffsetY());
+        bone.setPosZ(initial.getOffsetZ());
+        bone.setRotX(initial.getRotX());
+        bone.setRotY(initial.getRotY());
+        bone.setRotZ(initial.getRotZ());
     }
 
     /** A world offset (blocks) into model space (model units) for a body yaw in degrees. */

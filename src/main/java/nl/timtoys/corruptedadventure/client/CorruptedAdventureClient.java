@@ -91,7 +91,6 @@ public final class CorruptedAdventureClient {
         // Phase 4: The Lost Keeper (GeckoLib) and its mist bank.
         modEventBus.addListener(TheLostKeeperRenderer::onRegisterRenderers);
         ClientboundHandlers.set(KeeperMistPayload.TYPE, KeeperMistFog::handle);
-        KeeperMistFog.register(NeoForge.EVENT_BUS);
         ClientboundHandlers.set(KeeperCurrentPayload.TYPE, KeeperCurrentHandler::handle);
         // Phase 4: The Layered (GeckoLib).
         modEventBus.addListener(TheLayeredRenderer::onRegisterRenderers);
@@ -133,6 +132,8 @@ public final class CorruptedAdventureClient {
         // ring 5 — A (98): sky and fog per band, the glitch fog, echo footsteps, Nether-5's white fog, the silence's and
         // the void meter's client effects.
         Ring5ClientAtmosphere.register(NeoForge.EVENT_BUS);
+        // The Lost Keeper's mist (phase 4): registered after the ring fogs, so at the same priority it runs after them.
+        KeeperMistFog.register(NeoForge.EVENT_BUS);
     }
 
     private static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {

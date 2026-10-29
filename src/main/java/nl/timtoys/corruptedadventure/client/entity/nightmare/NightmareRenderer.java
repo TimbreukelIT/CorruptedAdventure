@@ -1,6 +1,7 @@
 package nl.timtoys.corruptedadventure.client.entity.nightmare;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -9,6 +10,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
@@ -30,7 +32,7 @@ public class NightmareRenderer<T extends Nightmare> extends GeoEntityRenderer<T>
      */
     protected NightmareRenderer(EntityRendererProvider.Context context, ResourceLocation name, boolean turnsHead, float shadow) {
         super(context, new DefaultedEntityGeoModel<>(name, turnsHead));
-        addRenderLayer(new AutoGlowingGeoLayer<>(this));
+        addRenderLayer(new OpaqueGlowLayer<>(this));
         shadowRadius = shadow;
     }
 
@@ -78,5 +80,30 @@ public class NightmareRenderer<T extends Nightmare> extends GeoEntityRenderer<T>
     @Override
     public int getPackedOverlay(T nightmare, float u, float partialTick) {
         return OverlayTexture.pack(OverlayTexture.u(u), OverlayTexture.v(nightmare.hurtTime > 0 && !nightmare.isDeadOrDying()));
+    }
+
+    /**
+     * GeckoLib's glow layer re-renders with {@link NightmareRenderer#getRenderColor}, which carries
+     * {@link NightmareRenderer#alpha}; this one draws the glowmask fully opaque so the glow does not fade with the body.
+     */
+    private static final class OpaqueGlowLayer<T extends Nightmare> extends AutoGlowingGeoLayer<T> {
+        private static final int OPAQUE_WHITE = 0xFFFFFFFF;
+        /** The packed light GeckoLib's own glow pass uses. */
+        private static final int GLOW_LIGHT = 0xF00000;
+
+        private OpaqueGlowLayer(NightmareRenderer<T> renderer) {
+            super(renderer);
+        }
+
+        @Override
+        public void render(PoseStack poseStack, T nightmare, BakedGeoModel bakedModel, RenderType renderType,
+                           MultiBufferSource bufferSource, VertexConsumer buffer, float partialTick, int packedLight,
+                           int packedOverlay) {
+            RenderType glowType = getRenderType(nightmare);
+            if (glowType != null) {
+                getRenderer().reRender(bakedModel, poseStack, bufferSource, nightmare, glowType,
+                        bufferSource.getBuffer(glowType), partialTick, GLOW_LIGHT, packedOverlay, OPAQUE_WHITE);
+            }
+        }
     }
 }
