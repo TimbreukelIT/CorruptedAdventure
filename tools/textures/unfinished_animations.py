@@ -6,7 +6,9 @@ Writes src/main/resources/assets/corruptedadventure/animations/entity/the_unfini
 match entity/unfinished/UnfinishedAnimations and the server's timings ([nightmares.unfinished] defaults): the slam lands
 at 1.25 s (slamWindupTicks 25), the rift sink holds from 1.5 s (riftStepSinkTicks 30) until the rise, the grab closes at
 0.8 s (grabReachTicks 16) and lets go at 3.8 s (grabHoldTicks 60), the ash rain, the lure and the void pull last as long
-as their spells start them, death lasts 5.0 s (DEATH_TICKS 100).
+as their spells start them, death lasts 5.0 s (DEATH_TICKS 100). The life round (L5) adds the glitch step's loop, the
+throw (released at 1.5 s, throwRiseTicks 30), the unloading (the patch opens at 2.0 s, unloadWarnTicks 40), the
+stagger's loop and the sniff of a search (the shared reactions).
 
 Conventions as in hollow_animations.py (checked there in Blockbench): a negative x rotation swings a limb forward (toward
 the face, -z); a positive x rotation tips the top of a bone forward. Keyframes are linear; "stutter" keys 0.05 s apart make
@@ -218,6 +220,114 @@ def flinch():
     }}
 
 
+def glitch():
+    length = 1.0
+    return {"loop": True, "animation_length": length, "bones": {
+        # Glitchsprong: he has frozen mid-move and jerks in place, frame by frame; the heads and the crown skip on their
+        # own beat (stepped keys, no easing), as if the parts load at different speeds. The server moves him meanwhile.
+        "torso": channel(rotation=[(0, (4, 0, -3)), (0.15, (4, 0, -3)), (0.16, (-6, 8, 5)), (0.4, (-6, 8, 5)),
+                                   (0.41, (2, -10, 0)), (0.7, (2, -10, 0)), (0.71, (8, 4, -6)), (1.0, (4, 0, -3))],
+                         position=stutter([0.1, 0.35, 0.55, 0.8], (10, 0, -4), length)),
+        "torso_upper": channel(position=stutter([0.2, 0.62], (-6, 3, 2), length)),
+        "crown_core": channel(scale=[(0, (1, 1, 1)), (0.2, (1, 1, 1)), (0.21, (1.5, 0.6, 1.5)), (0.3, (1.5, 0.6, 1.5)),
+                                     (0.31, (1, 1, 1)), (0.65, (1, 1, 1)), (0.66, (0.6, 1.4, 0.6)), (0.75, (0.6, 1.4, 0.6)),
+                                     (0.76, (1, 1, 1)), (1.0, (1, 1, 1))]),
+        "head_holle": channel(position=stutter([0.05, 0.45, 0.85], (4, -2, 0), length)),
+        "head_gelaagde": channel(position=stutter([0.25, 0.6], (-4, 2, 2), length)),
+        "head_herrijzende": channel(position=stutter([0.15, 0.5, 0.9], (3, 3, 0), length)),
+        "head_hoeder": channel(position=stutter([0.3, 0.75], (-3, -3, 2), length)),
+        "graft_holle_arm": channel(position=stutter([0.12, 0.58], (6, 0, 4), length)),
+        "graft_herrijzende_wing": channel(position=stutter([0.32, 0.88], (-8, 4, 0), length)),
+        "graft_hoeder_tail": channel(position=stutter([0.42, 0.95], (0, 0, 8), length)),
+        "rift": channel(scale=[(0, (1.2, 1, 1.2)), (0.5, (1.2, 1, 1.2)), (0.51, (0.8, 1, 0.8)), (1.0, (1.2, 1, 1.2))]),
+    }}
+
+
+def throw():
+    return {"animation_length": 2.2, "bones": {
+        # Brokken gooien: a memory tears off his chest (0 s), he rears back and lifts it over his crown with his arm and
+        # wing (until 1.5 s, throwRiseTicks 30), then hurls himself forward and the arm swings through.
+        "torso": channel(rotation=[(0, (0, 0, 0)), (0.2, (6, 0, 0)), (1.3, (-16, 0, 4)), (1.5, (-18, 0, 4)), (1.65, (18, 0, -4)),
+                                   (2.2, (0, 0, 0))],
+                         position=[(0, (0, 0, 0)), (0.2, (0, 0, 0)), (0.25, (0, 0, 4)), (0.3, (0, 0, 0)), (2.2, (0, 0, 0))]),
+        "torso_upper": channel(rotation=[(0, (0, 0, 0)), (1.3, (-8, 0, 0)), (1.65, (10, 0, 0)), (2.2, (0, 0, 0))]),
+        "graft_holle_arm": channel(rotation=[(0, (0, 0, 0)), (0.5, (-110, 0, -20)), (1.3, (-175, 0, -15)), (1.5, (-178, 0, -15)),
+                                             (1.7, (-40, 0, 10)), (2.2, (0, 0, 0))]),
+        "graft_holle_arm_lower": channel(rotation=[(0, (0, 0, 0)), (1.3, (-30, 0, 0)), (1.7, (0, 0, 0)), (2.2, (0, 0, 0))]),
+        "graft_holle_hand": channel(rotation=[(0, (0, 0, 0)), (1.3, (-40, 0, 0)), (1.7, (30, 0, 0)), (2.2, (0, 0, 0))]),
+        "graft_herrijzende_wing": channel(rotation=[(0, (0, 0, 0)), (1.3, (0, -15, 40)), (1.7, (0, 10, -25)), (2.2, (0, 0, 0))]),
+        "crown_core": channel(scale=[(0, (1, 1, 1)), (0.1, (1.4, 1.4, 1.4)), (0.3, (1, 1, 1)), (1.5, (1.2, 1.2, 1.2)),
+                                     (1.6, (1, 1, 1))]),
+        "head_holle": channel(rotation=[(0, (0, 0, 0)), (1.3, (-30, 10, 0)), (1.65, (20, 0, 0)), (2.2, (0, 0, 0))]),
+        "head_gelaagde": channel(rotation=[(0, (0, 0, 0)), (1.3, (-30, -10, 0)), (1.65, (20, 0, 0)), (2.2, (0, 0, 0))]),
+        "head_herrijzende": channel(rotation=[(0, (0, 0, 0)), (1.3, (-40, 0, 0)), (1.65, (15, 0, 0)), (2.2, (0, 0, 0))]),
+        "head_hoeder": channel(rotation=[(0, (0, 0, 0)), (1.3, (-35, 0, 0)), (1.65, (20, 0, 0)), (2.2, (0, 0, 0))]),
+        "unloaded_slice_1": channel(position=stutter([0.1, 0.2], (8, 2, -4), 2.2)),
+    }}
+
+
+def unload():
+    return {"animation_length": 2.8, "bones": {
+        # Ontladen grond: he hunches over his target and plants the Hollow's palm on the ground (0.4 s); his void core
+        # shrinks as it pours into the ground; at 2.0 s (unloadWarnTicks 40) the patch gives way and he jerks back.
+        "torso": channel(rotation=[(0, (0, 0, 0)), (0.4, (16, 0, -4)), (1.9, (20, 0, -4)), (2.0, (20, 0, -4)), (2.1, (-8, 0, 4)),
+                                   (2.8, (0, 0, 0))],
+                         position=[(0, (0, 0, 0)), (0.4, (0, -6, 0)), (2.0, (0, -8, 0)), (2.1, (0, 2, 0)), (2.8, (0, 0, 0))]),
+        "graft_holle_arm": channel(rotation=[(0, (0, 0, 0)), (0.3, (-70, 0, -10)), (0.4, (-40, 0, 6)), (2.0, (-38, 0, 6)),
+                                             (2.2, (-80, 0, -10)), (2.8, (0, 0, 0))]),
+        "graft_holle_hand": channel(rotation=[(0, (0, 0, 0)), (0.4, (40, 0, 0)), (2.0, (40, 0, 0)), (2.8, (0, 0, 0))]),
+        "crown_core": channel(scale=[(0, (1, 1, 1)), (0.4, (0.8, 0.8, 0.8)), (1.9, (0.5, 0.5, 0.5)), (2.0, (1.6, 1.6, 1.6)),
+                                     (2.8, (1, 1, 1))],
+                              position=stutter([0.7, 1.1, 1.4, 1.7], (3, -3, 0), 2.8)),
+        "head_holle": channel(rotation=[(0, (0, 0, 0)), (0.4, (30, 0, 0)), (2.0, (30, 0, 0)), (2.1, (-25, 0, 0)), (2.8, (0, 0, 0))]),
+        "head_gelaagde": channel(rotation=[(0, (0, 0, 0)), (0.4, (35, 0, 0)), (2.0, (35, 0, 0)), (2.1, (-25, 0, 0)),
+                                           (2.8, (0, 0, 0))]),
+        "head_herrijzende": channel(rotation=[(0, (0, 0, 0)), (0.4, (25, 0, 0)), (2.0, (25, 0, 0)), (2.1, (-30, 0, 0)),
+                                              (2.8, (0, 0, 0))]),
+        "head_hoeder": channel(rotation=[(0, (0, 0, 0)), (0.4, (30, 0, 0)), (2.0, (30, 0, 0)), (2.1, (-20, 0, 0)), (2.8, (0, 0, 0))]),
+        "rift": channel(scale=[(0, (1, 1, 1)), (0.4, (1.3, 1, 1.3)), (2.0, (1.5, 1, 1.5)), (2.8, (1, 1, 1))]),
+    }}
+
+
+def stagger():
+    length = 1.6
+    return {"loop": True, "animation_length": length, "bones": {
+        # Wankelen (the shared reaction): he sags to one side and fails to load himself back together; the crown's void
+        # core gutters, the heads loll, the grafts hang and twitch. Loops while the stagger lasts (the open window).
+        "torso": channel(rotation=[(0, (14, 0, 10)), (0.4, (18, 0, 14)), (0.8, (12, 0, 6)), (1.2, (18, 0, 12)), (1.6, (14, 0, 10))],
+                         position=[(0, (0, -14, 0)), (0.8, (0, -18, 0)), (1.6, (0, -14, 0))]),
+        "torso_upper": channel(rotation=[(0, (10, 0, 0)), (0.8, (14, 0, -4)), (1.6, (10, 0, 0))],
+                               position=stutter([0.3, 1.1], (6, -2, 0), length)),
+        "crown_core": channel(scale=[(0, (0.6, 0.6, 0.6)), (0.2, (1.1, 1.1, 1.1)), (0.25, (0.5, 0.5, 0.5)), (0.9, (0.7, 0.7, 0.7)),
+                                     (0.95, (1.2, 1.2, 1.2)), (1.0, (0.6, 0.6, 0.6)), (1.6, (0.6, 0.6, 0.6))]),
+        "head_holle": channel(rotation=[(0, (30, 0, 20)), (0.8, (36, 0, 26)), (1.6, (30, 0, 20))]),
+        "head_gelaagde": channel(rotation=[(0, (35, 0, -14)), (0.8, (28, 0, -20)), (1.6, (35, 0, -14))]),
+        "head_herrijzende": channel(rotation=[(0, (25, 0, 10)), (0.8, (32, 0, 16)), (1.6, (25, 0, 10))]),
+        "head_hoeder": channel(rotation=[(0, (28, 0, -20)), (0.8, (34, 0, -26)), (1.6, (28, 0, -20))]),
+        "graft_holle_arm": channel(rotation=[(0, (10, 0, 14)), (0.8, (14, 0, 18)), (1.6, (10, 0, 14))],
+                                   position=stutter([0.5], (4, 0, 0), length)),
+        "graft_herrijzende_wing": channel(rotation=[(0, (0, 20, -40)), (0.8, (0, 24, -46)), (1.6, (0, 20, -40))]),
+        "graft_hoeder_tail": channel(rotation=[(0, (14, 10, 0)), (0.8, (18, 14, 0)), (1.6, (14, 10, 0))]),
+        "graft_gelaagde_leg_1": channel(rotation=[(0, (0, 0, 16)), (0.8, (0, 0, 20)), (1.6, (0, 0, 16))]),
+        "rift": channel(scale=[(0, (1.3, 1, 1.3)), (0.8, (1.4, 1, 1.4)), (1.6, (1.3, 1, 1.3))]),
+        "unloaded_slice_2": channel(position=stutter([0.2, 0.7, 1.3], (-6, 2, -2), length)),
+    }}
+
+
+def sniff():
+    return {"animation_length": 2.4, "bones": {
+        # Zoeken: at the last place he saw his target, his four heads turn each their own way, scenting; the crown core
+        # swells as he listens.
+        "torso": channel(rotation=[(0, (0, 0, 0)), (0.4, (8, 0, 0)), (2.0, (8, 0, 0)), (2.4, (0, 0, 0))]),
+        "head_holle": channel(rotation=[(0, (0, 0, 0)), (0.5, (10, 40, 0)), (1.2, (10, -30, 0)), (1.8, (14, 20, 0)), (2.4, (0, 0, 0))]),
+        "head_gelaagde": channel(rotation=[(0, (0, 0, 0)), (0.6, (20, -40, 0)), (1.0, (25, -40, 0)), (1.05, (10, -40, 0)),
+                                           (1.6, (20, 30, 0)), (2.4, (0, 0, 0))]),
+        "head_herrijzende": channel(rotation=[(0, (0, 0, 0)), (0.7, (-20, 35, 0)), (1.5, (-20, -35, 0)), (2.4, (0, 0, 0))]),
+        "head_hoeder": channel(rotation=[(0, (0, 0, 0)), (0.5, (15, -30, 0)), (1.3, (15, 40, 0)), (2.4, (0, 0, 0))]),
+        "crown_core": channel(scale=[(0, (1, 1, 1)), (0.8, (1.3, 1.3, 1.3)), (1.6, (1.3, 1.3, 1.3)), (2.4, (1, 1, 1))]),
+    }}
+
+
 def death():
     return {"animation_length": 5.0, "bones": {
         # He stalls, everything stutters, the grafts sag, then he sinks back into his void, the crown last; the void
@@ -254,6 +364,11 @@ def main():
         "animation.the_unfinished.lure": lure(),
         "animation.the_unfinished.void_pull": void_pull(),
         "animation.the_unfinished.flinch": flinch(),
+        "animation.the_unfinished.glitch": glitch(),
+        "animation.the_unfinished.throw": throw(),
+        "animation.the_unfinished.unload": unload(),
+        "animation.the_unfinished.stagger": stagger(),
+        "animation.the_unfinished.sniff": sniff(),
         "animation.the_unfinished.death": death(),
     }
     for anim in animations.values():

@@ -1,5 +1,6 @@
 package nl.timtoys.corruptedadventure.entity.unfinished;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -9,6 +10,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
+import nl.timtoys.corruptedadventure.registry.ModSoundEvents;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The Unfinished's sounds and particles, sent by the server to everyone near (vanilla events with a low pitch;
@@ -117,8 +120,141 @@ final class UnfinishedEffects {
         ground(level, boss, ParticleTypes.REVERSE_PORTAL, 200, 0.08);
     }
 
+    // ------------------------------------------------------------------------------------------------ throw
+
+    /** A memory tears off his chest: stone cracking, a burst of pixels where it comes loose. */
+    static void shardTear(ServerLevel level, Vec3 at) {
+        play(level, at, SoundEvents.DEEPSLATE_BREAK, 3.0F, 0.5F);
+        play(level, at, SoundEvents.ANCIENT_DEBRIS_BREAK, 3.0F, 0.4F);
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), at.x, at.y, at.z, 40, 1.5, 1.5, 1.5, 0.0);
+    }
+
+    /** The warning while it rises: a deep grinding hum from him. */
+    static void throwWindup(ServerLevel level, Entity boss) {
+        play(level, boss.position(), SoundEvents.WARDEN_ROAR, 3.0F, 0.5F);
+        play(level, boss.position(), SoundEvents.RESPAWN_ANCHOR_CHARGE, 3.0F, 0.4F);
+    }
+
+    static void throwRelease(ServerLevel level, Entity boss) {
+        play(level, boss.position(), SoundEvents.RAVAGER_ATTACK, 3.0F, 0.4F);
+        play(level, boss.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 3.0F, 0.4F);
+    }
+
+    /** The spot a memory will come down on: a ring of glitch pixels on the ground. */
+    static void shardMark(ServerLevel level, Vec3 at, double radius) {
+        int points = Math.max(8, (int) (radius * 8));
+        for (int i = 0; i < points; i++) {
+            double angle = Math.PI * 2.0 * i / points;
+            level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), at.x + Math.cos(angle) * radius, at.y + 0.2,
+                    at.z + Math.sin(angle) * radius, 1, 0.05, 0.05, 0.05, 0.0);
+        }
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL, at.x, at.y + 0.2, at.z, 4, radius * 0.4, 0.1, radius * 0.4, 0.0);
+    }
+
+    static void shardImpact(ServerLevel level, Vec3 at) {
+        play(level, at, SoundEvents.GENERIC_EXPLODE.value(), 2.5F, 0.6F);
+        play(level, at, SoundEvents.STONE_BREAK, 3.0F, 0.5F);
+        level.sendParticles(ParticleTypes.EXPLOSION, at.x, at.y + 0.5, at.z, 2, 1.0, 0.3, 1.0, 0.0);
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), at.x, at.y + 0.5, at.z, 50, 2.0, 0.6, 2.0, 0.0);
+    }
+
+    /** A shard with nowhere to lie bursts into pixels. */
+    static void shardShatter(ServerLevel level, Vec3 at) {
+        play(level, at, SoundEvents.AMETHYST_CLUSTER_BREAK, 1.0F, 0.5F);
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), at.x, at.y + 0.5, at.z, 10, 0.3, 0.3, 0.3, 0.0);
+    }
+
+    /** A lying shard (or ground that came back) flickers out. */
+    static void shardGone(ServerLevel level, BlockPos pos) {
+        play(level, Vec3.atCenterOf(pos), SoundEvents.AMETHYST_BLOCK_HIT, 0.6F, 0.5F);
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 6, 0.3,
+                0.3, 0.3, 0.0);
+    }
+
+    // ------------------------------------------------------------------------------------------------ glitch step
+
+    /** The warning: he freezes mid-move, a stuttering hum and pixels leaking from his seams. */
+    static void glitchFreeze(ServerLevel level, Entity boss) {
+        play(level, boss.position(), ModSoundEvents.RING_5_GLITCH.get(), 3.0F, 0.5F);
+        play(level, boss.position(), SoundEvents.BEACON_DEACTIVATE, 3.0F, 1.6F);
+        silhouette(level, boss.position(), 60);
+    }
+
+    /**
+     * Where the next frame will be: a pillar of glitch pixels his height. Before the last one, also a ring on the ground
+     * round where its frame blow lands.
+     */
+    static void glitchMark(ServerLevel level, Vec3 spot, @Nullable Vec3 strike, double radius) {
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), spot.x, spot.y + 7.0, spot.z, 24, 1.2, 4.0, 1.2, 0.0);
+        if (strike != null) {
+            shardMark(level, strike, radius);
+        }
+    }
+
+    /** A frame skipped: an after-image of pixels where he was, the glitch sound where he is. */
+    static void glitchJump(ServerLevel level, Vec3 from, Vec3 to) {
+        silhouette(level, from, 50);
+        play(level, to, ModSoundEvents.RING_5_GLITCH.get(), 2.5F, 0.6F + level.random.nextFloat() * 0.3F);
+        play(level, to, SoundEvents.ENDERMAN_TELEPORT, 2.0F, 0.4F);
+    }
+
+    static void glitchStrike(ServerLevel level, Vec3 at) {
+        play(level, at, SoundEvents.GENERIC_EXPLODE.value(), 2.0F, 0.8F);
+        play(level, at, SoundEvents.GLASS_BREAK, 3.0F, 0.5F);
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), at.x, at.y + 0.5, at.z, 60, 2.5, 0.5, 2.5, 0.0);
+        level.sendParticles(ParticleTypes.SONIC_BOOM, at.x, at.y + 1.0, at.z, 1, 0.0, 0.0, 0.0, 0.0);
+    }
+
+    // ------------------------------------------------------------------------------------------------ unloading
+
+    /** He presses his void into the ground: a low drone from him and from the patch. */
+    static void unloadWarn(ServerLevel level, Entity boss, Vec3 at) {
+        play(level, boss.position(), SoundEvents.WARDEN_SONIC_CHARGE, 3.0F, 0.5F);
+        play(level, at, ModSoundEvents.RING_5_GLITCH.get(), 2.5F, 0.4F);
+        play(level, at, SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), 2.5F, 0.5F);
+    }
+
+    /** Pixels rising off the flickering patch. */
+    static void unloadFlicker(ServerLevel level, Vec3 at, double radius) {
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), at.x, at.y + 0.3, at.z, 16, radius * 0.6, 0.2, radius * 0.6, 0.0);
+        level.sendParticles(ModParticleTypes.VOID_MOTE.get(), at.x, at.y + 0.3, at.z, 4, radius * 0.6, 0.2, radius * 0.6, 0.0);
+    }
+
+    /** The patch unloads: glass and stone giving way at once, the void breathing up out of the hole. */
+    static void unloadOpen(ServerLevel level, Vec3 at, double radius) {
+        play(level, at, SoundEvents.GLASS_BREAK, 3.0F, 0.3F);
+        play(level, at, SoundEvents.BEACON_DEACTIVATE, 3.0F, 0.4F);
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL, at.x, at.y, at.z, 120, radius * 0.6, 0.5, radius * 0.6, 0.05);
+        level.sendParticles(ModParticleTypes.VOID_MOTE.get(), at.x, at.y - 2.0, at.z, 40, radius * 0.6, 2.0, radius * 0.6, 0.0);
+    }
+
+    // ------------------------------------------------------------------------------------------------ reactions
+
+    /** He staggers: his body fails to hold together, pixels burst from every seam. */
+    static void stagger(ServerLevel level, Entity boss) {
+        play(level, boss.position(), SoundEvents.RAVAGER_STUNNED, 3.0F, 0.4F);
+        play(level, boss.position(), ModSoundEvents.RING_5_GLITCH.get(), 3.0F, 0.4F);
+        silhouette(level, boss.position(), 80);
+    }
+
+    /** He lost sight of his target: a low questioning hum from the crown. */
+    static void searchStart(ServerLevel level, Entity boss) {
+        play(level, boss.position(), SoundEvents.WARDEN_AGITATED, 3.0F, 0.5F);
+    }
+
+    /** At the last place he saw it: the four heads scent the air. */
+    static void sniff(ServerLevel level, Entity boss) {
+        play(level, boss.position(), SoundEvents.WARDEN_SNIFF, 3.0F, 0.5F);
+        play(level, boss.position(), SoundEvents.RAVAGER_AMBIENT, 2.0F, 0.4F);
+    }
+
     private static void play(ServerLevel level, Vec3 at, SoundEvent sound, float volume, float pitch) {
         level.playSound(null, at.x, at.y, at.z, sound, SoundSource.HOSTILE, volume, pitch);
+    }
+
+    /** His outline in pixels: a column his width and height. */
+    private static void silhouette(ServerLevel level, Vec3 at, int count) {
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), at.x, at.y + 7.0, at.z, count, 2.0, 4.5, 2.0, 0.0);
     }
 
     /** A burst over his void pool at his feet. */

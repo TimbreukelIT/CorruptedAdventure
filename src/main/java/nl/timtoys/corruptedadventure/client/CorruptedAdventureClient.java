@@ -18,6 +18,7 @@ import nl.timtoys.corruptedadventure.client.entity.lostkeeper.KeeperCurrentHandl
 import nl.timtoys.corruptedadventure.client.entity.lostkeeper.KeeperMistFog;
 import nl.timtoys.corruptedadventure.client.entity.lostkeeper.TheLostKeeperRenderer;
 import nl.timtoys.corruptedadventure.client.entity.risen.TheRisenRenderer;
+import nl.timtoys.corruptedadventure.client.entity.unfinished.MemoryShardRenderer;
 import nl.timtoys.corruptedadventure.client.entity.unfinished.TheUnfinishedRenderer;
 import nl.timtoys.corruptedadventure.client.fluid.ToxicPoolClientExtensions;
 import nl.timtoys.corruptedadventure.client.hud.ConditionHudLayer;
@@ -100,6 +101,7 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(TheRisenRenderer::onRegisterRenderers);
         // Phase 4: The Unfinished (GeckoLib).
         modEventBus.addListener(TheUnfinishedRenderer::onRegisterRenderers);
+        modEventBus.addListener(MemoryShardRenderer::onRegisterRenderers);
         // Phase 2 golf 5 (L): the sky glass lens's scope, outlines and damping.
         LensView.register(modEventBus, NeoForge.EVENT_BUS);
         // Phase 4 (I): the white-out of "dazzled".

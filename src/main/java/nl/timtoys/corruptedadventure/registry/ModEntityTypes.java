@@ -15,6 +15,7 @@ import nl.timtoys.corruptedadventure.entity.layered.TheLayered;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.TheLostKeeper;
 import nl.timtoys.corruptedadventure.entity.risen.AshWalker;
 import nl.timtoys.corruptedadventure.entity.risen.TheRisen;
+import nl.timtoys.corruptedadventure.entity.unfinished.MemoryShard;
 import nl.timtoys.corruptedadventure.entity.unfinished.TheUnfinished;
 
 /** Entity types. Their renderers register in {@code client/} (CLAUDE.md §7). */
@@ -67,6 +68,13 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<TheUnfinished>> THE_UNFINISHED = ENTITY_TYPES.register(
             "the_unfinished", () -> EntityType.Builder.<TheUnfinished>of(TheUnfinished::new, MobCategory.MONSTER)
                     .sized(5.0F, 14.0F).eyeHeight(13.0F).fireImmune().clientTrackingRange(16).build("the_unfinished"));
+    /**
+     * Phase 4 (L5): a block of a memory The Unfinished throws ({@code MemoryShard}); both sides fly it, the server steers
+     * it while it hovers. Never saved.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<MemoryShard>> MEMORY_SHARD = ENTITY_TYPES.register(
+            "memory_shard", () -> EntityType.Builder.<MemoryShard>of(MemoryShard::new, MobCategory.MISC)
+                    .sized(0.98F, 0.98F).fireImmune().noSummon().clientTrackingRange(10).updateInterval(2).build("memory_shard"));
 
     /**
      * Phase 4: The Layered, the ring 2 Nightmare. Hitbox 2.5 x 2.5 (legs ~10 wide and its head are model only; the head

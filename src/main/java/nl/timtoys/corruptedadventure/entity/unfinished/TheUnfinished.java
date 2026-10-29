@@ -13,9 +13,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.PartEntity;
@@ -23,6 +20,10 @@ import nl.timtoys.corruptedadventure.config.NightmareConfig;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
 import nl.timtoys.corruptedadventure.config.UnfinishedConfig;
 import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmarePaceGoal;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmareSearchGoal;
+import nl.timtoys.corruptedadventure.entity.nightmare.NightmareTargetGoal;
+import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.AnimationState;
@@ -53,6 +54,8 @@ public class TheUnfinished extends Nightmare {
             SynchedEntityData.defineId(TheUnfinished.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Boolean> DATA_STRIDING =
             SynchedEntityData.defineId(TheUnfinished.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_GLITCHING =
+            SynchedEntityData.defineId(TheUnfinished.class, EntityDataSerializers.BOOLEAN);
 
     /**
      * Where his parts sit on the rest pose (blocks; tools/textures/unfinished_model.py, 16 units per block). The model's +x
@@ -80,6 +83,8 @@ public class TheUnfinished extends Nightmare {
     private static final int LENS_CHECK_TICKS = 5;
     /** Height of his body's sight point for the lens (the middle of his torso). */
     private static final double BODY_SIGHT = 7.0;
+    /** Blocks from a reaction's point at which he is there. */
+    private static final double REACTION_ARRIVE = 2.0;
 
     private final UnfinishedPart[] parts;
     private final float[] graftDamage = new float[Graft.values().length];
@@ -91,6 +96,9 @@ public class TheUnfinished extends Nightmare {
     private int sunkenFrom = -1;
     private int sunkenUntil = -1;
     private float damageTaken;
+    /** Where the shared reactions (a rest window, a search) send him; he strides there himself. */
+    @Nullable
+    private Vec3 reactionPoint;
 
     public TheUnfinished(EntityType<? extends TheUnfinished> type, Level level) {
         super(type, level, BossEvent.BossBarColor.WHITE);
@@ -120,21 +128,27 @@ public class TheUnfinished extends Nightmare {
         builder.define(DATA_LOADED, false);
         builder.define(DATA_LOST, (byte) 0);
         builder.define(DATA_STRIDING, false);
+        builder.define(DATA_GLITCHING, false);
     }
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(1, new UnfinishedVoidPullGoal(this));
-        goalSelector.addGoal(2, new UnfinishedRiftStepGoal(this));
-        goalSelector.addGoal(3, new UnfinishedGrabGoal(this));
-        goalSelector.addGoal(4, new UnfinishedAshRainGoal(this));
-        goalSelector.addGoal(5, new UnfinishedLureGoal(this));
-        goalSelector.addGoal(6, new UnfinishedSlamGoal(this));
-        goalSelector.addGoal(7, new UnfinishedStrideGoal(this));
-        goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-        targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        // He climbs out of the void toward whoever is in his ring; walls do not hide you.
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
+        // The shared rest window and search come first; both send him through moveForReaction (his own stride).
+        goalSelector.addGoal(1, new NightmarePaceGoal(this));
+        goalSelector.addGoal(1, new NightmareSearchGoal(this));
+        goalSelector.addGoal(2, new UnfinishedVoidPullGoal(this));
+        goalSelector.addGoal(3, new UnfinishedRiftStepGoal(this));
+        goalSelector.addGoal(4, new UnfinishedGlitchStepGoal(this));
+        goalSelector.addGoal(5, new UnfinishedGrabGoal(this));
+        goalSelector.addGoal(6, new UnfinishedUnloadGoal(this));
+        goalSelector.addGoal(7, new UnfinishedThrowGoal(this));
+        goalSelector.addGoal(8, new UnfinishedAshRainGoal(this));
+        goalSelector.addGoal(9, new UnfinishedLureGoal(this));
+        goalSelector.addGoal(10, new UnfinishedSlamGoal(this));
+        goalSelector.addGoal(11, new UnfinishedStrideGoal(this));
+        goalSelector.addGoal(12, new RandomLookAroundGoal(this));
+        // Whoever hits him hardest, or is near and weak; walls do not hide you.
+        targetSelector.addGoal(1, new NightmareTargetGoal(this));
     }
 
     // ------------------------------------------------------------------------------------------------ parts
@@ -223,6 +237,10 @@ public class TheUnfinished extends Nightmare {
         }
         float before = virtualHealth();
         boolean hit = applyDamage(source, amount * ServerConfig.UNFINISHED.weakDamageFactor.get().floatValue());
+        if (hit) {
+            // A loaded weak spot hit is the shared stagger's weak-spot trigger.
+            hitWeakSpot();
+        }
         if (hit && level() instanceof ServerLevel serverLevel && spec.graft() != null) {
             UnfinishedEffects.weakHit(serverLevel, part.getBoundingBox().getCenter());
             Graft graft = spec.graft();
@@ -322,15 +340,43 @@ public class TheUnfinished extends Nightmare {
     protected void customServerAiStep() {
         super.customServerAiStep();
         setDeltaMovement(Vec3.ZERO);
-        if (!attacking && !isStriding() && getTarget() != null) {
-            desiredYaw = yawTo(position(), getTarget().position());
+        if (isStaggered()) {
+            // The open window: he sags where he stands, neither turning nor walking.
+            setStriding(false);
+        } else {
+            reactionStep();
+            if (!attacking && !isStriding() && getTarget() != null) {
+                desiredYaw = yawTo(position(), getTarget().position());
+            }
+            setYRot(Mth.approachDegrees(getYRot(), desiredYaw, TURN));
         }
-        setYRot(Mth.approachDegrees(getYRot(), desiredYaw, TURN));
         settle();
         if (tickCount % LENS_CHECK_TICKS == 0) {
             checkLens();
         }
         ash.tick((ServerLevel) level(), this);
+    }
+
+    /** A rest window or a search on its way: one stride toward its point, until he is there or cannot go on. */
+    private void reactionStep() {
+        boolean going = reactionPoint != null && (isResting() || isSearching() && !hasArrivedAtSearch());
+        if (!going) {
+            reactionPoint = null;
+            return;
+        }
+        double dx = reactionPoint.x - getX();
+        double dz = reactionPoint.z - getZ();
+        boolean moved = dx * dx + dz * dz > REACTION_ARRIVE * REACTION_ARRIVE && strideToward(reactionPoint);
+        setStriding(moved);
+        if (!moved) {
+            reactionPoint = null;
+        }
+    }
+
+    /** The shared reactions' walking: no path finding, his stride (each tick in {@link #reactionStep}). */
+    @Override
+    protected void moveForReaction(Vec3 point, double speed) {
+        reactionPoint = point;
     }
 
     /** Onto the ground under him, climbing at most {@code climbPerTick} a tick; over void he hangs where he is. */
@@ -380,6 +426,11 @@ public class TheUnfinished extends Nightmare {
         desiredYaw = Mth.wrapDegrees(yawTo(position(), target) - local);
     }
 
+    /** Turns (at his turning speed) to face {@code target}. */
+    void faceToward(Vec3 target) {
+        desiredYaw = yawTo(position(), target);
+    }
+
     void snapYaw(float yaw) {
         desiredYaw = yaw;
         setYRot(yaw);
@@ -400,6 +451,23 @@ public class TheUnfinished extends Nightmare {
         if (striding != isStriding()) {
             entityData.set(DATA_STRIDING, striding);
         }
+    }
+
+    /** Mid glitch step: he jumps frame by frame (the client does not smooth his moves) and comes apart at the seams. */
+    public boolean isGlitching() {
+        return entityData.get(DATA_GLITCHING);
+    }
+
+    void setGlitching(boolean glitching) {
+        if (glitching != isGlitching()) {
+            entityData.set(DATA_GLITCHING, glitching);
+        }
+    }
+
+    @Override
+    public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps) {
+        // A glitch step is a lag spike: no sliding between the frames.
+        super.lerpTo(x, y, z, yRot, xRot, isGlitching() ? 1 : steps);
     }
 
     /** Sunken in his void during a rift step: nothing hits him, his parts are gone, he does not settle. */
@@ -431,6 +499,40 @@ public class TheUnfinished extends Nightmare {
     }
 
     // ------------------------------------------------------------------------------------------------ Nightmare
+
+    /** Not while sunken in his void (mid rift step): nothing reaches him there. */
+    @Override
+    protected boolean canStagger() {
+        return !isSunken();
+    }
+
+    /** The running attack's goal has stopped (and dropped what it held); its animation stops too. */
+    @Override
+    protected void onStaggered() {
+        reactionPoint = null;
+        setStriding(false);
+        stopTriggeredAnim(UnfinishedAnimations.ACTION, null);
+    }
+
+    @Override
+    protected void staggerEffects(ServerLevel level) {
+        UnfinishedEffects.stagger(level, this);
+    }
+
+    @Override
+    protected void onSearchStart() {
+        if (level() instanceof ServerLevel serverLevel) {
+            UnfinishedEffects.searchStart(serverLevel, this);
+        }
+    }
+
+    @Override
+    protected void onSniff() {
+        triggerAnim(UnfinishedAnimations.ACTION, UnfinishedAnimations.SNIFF);
+        if (level() instanceof ServerLevel serverLevel) {
+            UnfinishedEffects.sniff(serverLevel, this);
+        }
+    }
 
     @Override
     protected void onRetreat(ServerLevel level) {
@@ -493,12 +595,21 @@ public class TheUnfinished extends Nightmare {
                 .triggerableAnim(UnfinishedAnimations.ASH_RAIN, UnfinishedAnimations.ASH_RAIN_ANIM)
                 .triggerableAnim(UnfinishedAnimations.LURE, UnfinishedAnimations.LURE_ANIM)
                 .triggerableAnim(UnfinishedAnimations.VOID_PULL, UnfinishedAnimations.VOID_PULL_ANIM)
-                .triggerableAnim(UnfinishedAnimations.FLINCH, UnfinishedAnimations.FLINCH_ANIM));
+                .triggerableAnim(UnfinishedAnimations.FLINCH, UnfinishedAnimations.FLINCH_ANIM)
+                .triggerableAnim(UnfinishedAnimations.THROW, UnfinishedAnimations.THROW_ANIM)
+                .triggerableAnim(UnfinishedAnimations.UNLOAD, UnfinishedAnimations.UNLOAD_ANIM)
+                .triggerableAnim(UnfinishedAnimations.SNIFF, UnfinishedAnimations.SNIFF_ANIM));
     }
 
     private PlayState bodyAnimation(AnimationState<TheUnfinished> state) {
         if (isDeadOrDying()) {
             return state.setAndContinue(UnfinishedAnimations.DEATH);
+        }
+        if (isStaggered()) {
+            return state.setAndContinue(UnfinishedAnimations.STAGGER);
+        }
+        if (isGlitching()) {
+            return state.setAndContinue(UnfinishedAnimations.GLITCH);
         }
         return state.setAndContinue(isStriding() ? UnfinishedAnimations.WALK : UnfinishedAnimations.IDLE);
     }

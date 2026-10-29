@@ -626,3 +626,8 @@ Zaken die buiten de scope van een change vielen. Format: `- [categorie] omschrij
 ## Uit fase 4 R2 — De Gelaagde (2026-10-28)
 - [mobs] De Gelaagde: eigen geluiden (nu vanilla spin/skelet met lage pitch). (bron: R2 stap 1)
 - [mobs] De Gelaagde: wandklim uitbreiden: ondersteboven onder overhangen kruipen, gericht een wand af klimmen, en een hitbox die het lijf op de wand volgt (nu hangt het achterlijf alleen in beeld onder de hitbox). (bron: R2 stap 1)
+
+## Uit fase 4 De Onvoltooide leven-ronde (L5, 2026-10-29)
+- [mobs] `UnfinishedTempBlocks` (tijdelijke blokken met exact herstel, ook na chunk-unload en serverstop) is nu eigen aan De Onvoltooide; naar de gedeelde basis `entity/nightmare/` halen als andere Nightmares hem nodig hebben (ingraven, sintelregen). (bron: L5)
+- [mobs] Een zuiger kan een liggende herinneringsscherf verschuiven; dan blijft die als gewoon blok liggen (zeldzaam, niet afgevangen). (bron: L5)
+- [atmosphere] Eigen geluiden voor glitchsprong, brokken gooien en ontladen grond; nu vanilla-placeholders en `ambient.ring_5.glitch` (`UnfinishedEffects`). (bron: L5)

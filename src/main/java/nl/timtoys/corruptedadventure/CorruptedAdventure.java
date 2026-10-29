@@ -28,6 +28,7 @@ import nl.timtoys.corruptedadventure.entity.layered.LayeredGrip;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperHoldRules;
 import nl.timtoys.corruptedadventure.entity.nightmare.NightmareKind;
 import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
+import nl.timtoys.corruptedadventure.entity.unfinished.UnfinishedTempBlocks;
 import nl.timtoys.corruptedadventure.entity.risen.RisenAshRain;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
@@ -150,6 +151,8 @@ public final class CorruptedAdventure {
         KeeperHoldRules.register(NeoForge.EVENT_BUS);
         // Phase 4 (R2): a player in The Layered's beak cannot sneak off.
         LayeredGrip.register(NeoForge.EVENT_BUS);
+        // Phase 4 (L5): what The Unfinished unloads or lets lie comes back exactly.
+        UnfinishedTempBlocks.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

@@ -29,6 +29,12 @@ public final class TheUnfinishedRenderer extends NightmareRenderer<TheUnfinished
         event.registerEntityRenderer(ModEntityTypes.THE_UNFINISHED.get(), TheUnfinishedRenderer::new);
     }
 
+    /** A colossus rocks less: a few degrees already sway his crown blocks wide. */
+    @Override
+    protected float staggerSway(TheUnfinished boss) {
+        return 2.5F;
+    }
+
     @Override
     public void preRender(PoseStack poseStack, TheUnfinished boss, BakedGeoModel model, @Nullable MultiBufferSource bufferSource,
                           @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight,
