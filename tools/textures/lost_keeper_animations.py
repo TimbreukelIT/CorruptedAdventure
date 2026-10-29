@@ -6,7 +6,8 @@ Writes src/main/resources/assets/corruptedadventure/animations/entity/the_lost_k
 match entity/lostkeeper/KeeperAnimations and the server's timings: the breath starts at 0.75 s (breathWindupTicks 15) and
 lasts until 3.0 s (+ breathTicks 45), the grab snaps at 0.5 s (grabWindupTicks 10), the tail whip strikes from 0.4 s to
 0.9 s, death lasts 3.0 s (DEATH_TICKS 60). Life round: the bubble call goes off at 1.5 s (bubbleWarnTicks 30); the dive,
-the burst and the squeeze start with their moment on the server; the coil loops while the ring lasts.
+the burst and the squeeze start with their moment on the server; the coil loops while the ring lasts; the stagger loops
+while it reels (the shared reaction, staggerTicks 30) and the sniff plays where its search arrives.
 
 Only the head's parts, the wings and the tail fin move here. The segment bones (seg_01..seg_12) and neck_mount are laid
 along the body chain by the client every frame; an animation on them would be overwritten, so there is none.
@@ -274,6 +275,35 @@ def squeeze():
     }}
 
 
+def stagger():
+    # Reeling (staggerTicks 30, looped while it lasts): head thrown back and to the side, jaw slack, the wings hang and
+    # twitch, the gills clamp shut, the crown dims. The body's shudder runs in KeeperPose (the segments are not bones here).
+    length = 0.8
+    shake = [(0, (-26, 6, 14)), (0.2, (-20, -4, -10)), (0.4, (-28, 5, 12)), (0.6, (-18, -6, -12)), (0.8, (-26, 6, 14))]
+    return {"loop": True, "animation_length": length, "bones": merge(wings(length, 12, 40, 6), tail(length, 30), {
+        "head": channel(rotation=shake),
+        "jaw": channel(rotation=[(0, (22, 0, 0)), (0.3, (28, 0, 4)), (0.8, (22, 0, 0))]),
+        "gill_fin_right": channel(rotation=[(0, (0, 30, 0)), (0.8, (0, 30, 0))]),
+        "gill_fin_left": channel(rotation=[(0, (0, -30, 0)), (0.8, (0, -30, 0))]),
+        "crown": channel(scale=[(0, (0.94, 0.94, 0.94)), (0.4, (0.9, 0.9, 0.9)), (0.8, (0.94, 0.94, 0.94))])})}
+
+
+def sniff():
+    # At the last place it saw its target: the head low, swinging left and right, the jaw working, the gills flaring.
+    return {"animation_length": 2.0, "bones": {
+        "head": channel(rotation=[(0, (0, 0, 0)), (0.3, (16, 20, 0)), (0.7, (14, -20, 0)), (1.1, (16, 18, 0)),
+                                  (1.5, (12, -14, 0)), (2.0, (0, 0, 0))]),
+        "jaw": channel(rotation=[(0, (0, 0, 0)), (0.2, (8, 0, 0)), (0.35, (2, 0, 0)), (0.5, (8, 0, 0)), (0.65, (2, 0, 0)),
+                                 (0.8, (8, 0, 0)), (2.0, (0, 0, 0))]),
+        "gill_fin_right": channel(rotation=[(0, (0, 0, 0)), (0.3, (0, -30, 0)), (0.6, (0, -5, 0)), (0.9, (0, -30, 0)),
+                                            (2.0, (0, 0, 0))]),
+        "gill_fin_left": channel(rotation=[(0, (0, 0, 0)), (0.3, (0, 30, 0)), (0.6, (0, 5, 0)), (0.9, (0, 30, 0)),
+                                           (2.0, (0, 0, 0))]),
+        "barbel_right": channel(rotation=[(0, (0, 0, 0)), (0.5, (14, 0, 6)), (1.0, (-6, 0, -4)), (2.0, (0, 0, 0))]),
+        "barbel_left": channel(rotation=[(0, (0, 0, 0)), (0.5, (14, 0, -6)), (1.0, (-6, 0, 4)), (2.0, (0, 0, 0))]),
+    }}
+
+
 def main():
     animations = {
         "animation.the_lost_keeper.hover": hover(),
@@ -293,6 +323,8 @@ def main():
         "animation.the_lost_keeper.burst": burst(),
         "animation.the_lost_keeper.coil": coil(),
         "animation.the_lost_keeper.squeeze": squeeze(),
+        "animation.the_lost_keeper.stagger": stagger(),
+        "animation.the_lost_keeper.sniff": sniff(),
     }
     for anim in animations.values():
         anim["bones"] = {bone: ch for bone, ch in anim["bones"].items() if ch}
