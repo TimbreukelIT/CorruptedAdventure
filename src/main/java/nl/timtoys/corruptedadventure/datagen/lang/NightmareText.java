@@ -15,6 +15,7 @@ public final class NightmareText {
         lang.add(ModEntityTypes.THE_LOST_KEEPER.get().getDescriptionId(), "The Lost Keeper");
         lang.add(ModEntityTypes.THE_UNFINISHED.get().getDescriptionId(), "The Unfinished");
         lang.add(ModEntityTypes.THE_LAYERED.get().getDescriptionId(), "The Layered");
+        lang.add(ModEntityTypes.LAYERED_CLAW_MARKS.get().getDescriptionId(), "Claw Marks of The Layered");
         lang.add(ModEntityTypes.MEMORY_SHARD.get().getDescriptionId(), "Memory Shard");
     }
 
@@ -26,6 +27,7 @@ public final class NightmareText {
         lang.add(ModEntityTypes.THE_LOST_KEEPER.get().getDescriptionId(), "De Verloren Hoeder");
         lang.add(ModEntityTypes.THE_UNFINISHED.get().getDescriptionId(), "De Onvoltooide");
         lang.add(ModEntityTypes.THE_LAYERED.get().getDescriptionId(), "De Gelaagde");
+        lang.add(ModEntityTypes.LAYERED_CLAW_MARKS.get().getDescriptionId(), "Klauwkrassen van De Gelaagde");
         lang.add(ModEntityTypes.MEMORY_SHARD.get().getDescriptionId(), "Herinneringsbrok");
     }
 }
