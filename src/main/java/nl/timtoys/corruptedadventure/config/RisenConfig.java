@@ -5,7 +5,8 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 /**
  * {@code [nightmares.risen]}: The Risen, the ring 3 Nightmare (phase 4, fase-4-nightmares-concept.md "Ring 3 — De
  * Herrijzende"). The shared keys in {@link #common} (its main attack is the dive with its talons), then its own: flight,
- * landing, ash rain, the choir's scream, released victims, the horn's stun and the melt pool. Read live.
+ * landing, ash rain, the choir's scream, released victims, the horn's stun, the melt pool, and from the leven-ronde the
+ * swoop, the ember rain and their burning ground. Read live.
  */
 public final class RisenConfig {
     /** Also the attribute defaults of {@code TheRisen}. Ring 3: 600 HP (design doc). */
@@ -50,6 +51,28 @@ public final class RisenConfig {
     public final ModConfigSpec.BooleanValue meltPool;
     public final ModConfigSpec.IntValue meltPoolRadius;
     public final ModConfigSpec.IntValue meltPoolSeconds;
+    public final ModConfigSpec.IntValue swoopCooldownMin;
+    public final ModConfigSpec.IntValue swoopCooldownMax;
+    public final ModConfigSpec.DoubleValue swoopHeight;
+    public final ModConfigSpec.IntValue swoopWindupTicks;
+    public final ModConfigSpec.DoubleValue swoopSpeed;
+    public final ModConfigSpec.DoubleValue swoopDamage;
+    public final ModConfigSpec.DoubleValue swoopKnockback;
+    public final ModConfigSpec.IntValue swoopSkimBlocks;
+    public final ModConfigSpec.IntValue emberRainCooldownMin;
+    public final ModConfigSpec.IntValue emberRainCooldownMax;
+    public final ModConfigSpec.IntValue emberRainWindupTicks;
+    public final ModConfigSpec.IntValue emberRainSeconds;
+    public final ModConfigSpec.DoubleValue emberRainRadius;
+    public final ModConfigSpec.IntValue emberRainVolleyTicks;
+    public final ModConfigSpec.IntValue emberRainPerVolley;
+    public final ModConfigSpec.IntValue emberFallTicks;
+    public final ModConfigSpec.DoubleValue emberDamage;
+    public final ModConfigSpec.BooleanValue fire;
+    public final ModConfigSpec.IntValue fireSeconds;
+    public final ModConfigSpec.IntValue fireMaxTiles;
+    public final ModConfigSpec.DoubleValue fireDamage;
+    public final ModConfigSpec.IntValue fireIgniteSeconds;
 
     RisenConfig(ModConfigSpec.Builder builder) {
         builder.comment("The Risen, the ring 3 Nightmare (step 1: body and fight, summoned with /summon).",
@@ -131,6 +154,52 @@ public final class RisenConfig {
                 .defineInRange("meltPoolRadius", 3, 1, 6);
         meltPoolSeconds = builder.comment("Seconds the pool stays lava after it has risen, before it sets.")
                 .defineInRange("meltPoolSeconds", 15, 1, 600);
+        swoopCooldownMin = builder.comment("Seconds between two swoops (it climbs high, flares, then drops on a straight line and",
+                        "skims the ground, leaving a trail of fire), drawn between min and max.")
+                .defineInRange("swoopCooldownMin", 30, 1, 600);
+        swoopCooldownMax = builder.defineInRange("swoopCooldownMax", 45, 1, 600);
+        swoopHeight = builder.comment("Blocks above its target's ground it climbs to before the swoop.")
+                .defineInRange("swoopHeight", 28.0, 8.0, 64.0);
+        swoopWindupTicks = builder.comment("Ticks it hangs flaring at the top before it drops: the warning. The line is aimed at",
+                        "where its target stands when it drops, and does not steer after.")
+                .defineInRange("swoopWindupTicks", 30, 5, 100);
+        swoopSpeed = builder.comment("Speed in blocks per tick of the swoop.")
+                .defineInRange("swoopSpeed", 2.0, 0.5, 4.0);
+        swoopDamage = builder.comment("Damage (half hearts) of the swoop to whoever it passes through; they also catch fire.")
+                .defineInRange("swoopDamage", 16.0, 0.0, 100.0);
+        swoopKnockback = builder.comment("Strength of the push of the swoop.")
+                .defineInRange("swoopKnockback", 1.5, 0.0, 5.0);
+        swoopSkimBlocks = builder.comment("Blocks it skims the ground after the drop, laying the fire trail (3 wide).")
+                .defineInRange("swoopSkimBlocks", 14, 0, 48);
+        emberRainCooldownMin = builder.comment("Seconds between two ember rains, drawn between min and max. It hangs over the area",
+                        "its target stood in, the rim smoulders, then embers fall; each marks its spot before it lands.")
+                .defineInRange("emberRainCooldownMin", 22, 1, 600);
+        emberRainCooldownMax = builder.defineInRange("emberRainCooldownMax", 32, 1, 600);
+        emberRainWindupTicks = builder.comment("Ticks the rim smoulders before the first embers fall.")
+                .defineInRange("emberRainWindupTicks", 30, 0, 100);
+        emberRainSeconds = builder.comment("Seconds the embers fall.")
+                .defineInRange("emberRainSeconds", 5, 1, 30);
+        emberRainRadius = builder.comment("Radius in blocks of the ember rain's area.")
+                .defineInRange("emberRainRadius", 7.0, 2.0, 20.0);
+        emberRainVolleyTicks = builder.comment("Ticks between two volleys of embers.")
+                .defineInRange("emberRainVolleyTicks", 4, 1, 40);
+        emberRainPerVolley = builder.comment("Embers per volley.")
+                .defineInRange("emberRainPerVolley", 2, 1, 10);
+        emberFallTicks = builder.comment("Ticks from an ember's mark on the ground to its landing: the time to step aside.")
+                .defineInRange("emberFallTicks", 20, 5, 60);
+        emberDamage = builder.comment("Damage (half hearts) of an ember to whoever stands within 1.5 blocks of where it lands.")
+                .defineInRange("emberDamage", 4.0, 0.0, 100.0);
+        fire = builder.comment("Whether the swoop and the ember rain leave burning ground. Never fire blocks: tiles of its own on",
+                        "free ground (air on a sturdy top face) that burn out by themselves and do not spread. Off: no fire.")
+                .define("fire", true);
+        fireSeconds = builder.comment("Seconds a tile of its fire burns.")
+                .defineInRange("fireSeconds", 6, 1, 60);
+        fireMaxTiles = builder.comment("Most tiles burning at once per Risen; the oldest go out first.")
+                .defineInRange("fireMaxTiles", 96, 0, 512);
+        fireDamage = builder.comment("Damage (half hearts) every half second to whoever stands in its fire.")
+                .defineInRange("fireDamage", 1.0, 0.0, 20.0);
+        fireIgniteSeconds = builder.comment("Seconds whoever stands in its fire, or is hit by an ember or the swoop, burns on.")
+                .defineInRange("fireIgniteSeconds", 3, 0, 30);
         builder.pop();
     }
 
@@ -148,5 +217,13 @@ public final class RisenConfig {
 
     public int releaseCooldownTicks(int roll) {
         return NightmareConfig.ticksBetween(releaseCooldownMin, releaseCooldownMax, roll);
+    }
+
+    public int swoopCooldownTicks(int roll) {
+        return NightmareConfig.ticksBetween(swoopCooldownMin, swoopCooldownMax, roll);
+    }
+
+    public int emberRainCooldownTicks(int roll) {
+        return NightmareConfig.ticksBetween(emberRainCooldownMin, emberRainCooldownMax, roll);
     }
 }

@@ -64,6 +64,12 @@ public class TheRisen extends Nightmare {
     private static final double LAND_DISTANCE = 5.0;
     private static final int WALKER_SEARCH = 48;
     private static final int GROUND_ATTACK_COOLDOWN = 20;
+    /** The swoop climbs to a point this far back from its target per block of height: a steep, readable line. */
+    private static final double SWOOP_SLANT = 0.6;
+    /** Height above the ground at which it skims after the swoop. */
+    private static final double SKIM_HEIGHT = 1.0;
+    /** After a big attack (swoop, ember rain) the quick ones wait at least this long. */
+    private static final int BREATHER = 80;
 
     private final RisenPart wingLeft;
     private final RisenPart wingRight;
@@ -93,6 +99,17 @@ public class TheRisen extends Nightmare {
     private Vec3 diveTarget = Vec3.ZERO;
     private final Set<UUID> diveHits = new HashSet<>();
     private Vec3 landingSpot = Vec3.ZERO;
+    private final RisenFire fire = new RisenFire();
+    private final RisenEmberRain emberRain = new RisenEmberRain();
+    private int nextSwoop;
+    private int nextEmberRain;
+    private boolean swoopWinding;
+    private int swoopWindupStart;
+    private Vec3 swoopAim = Vec3.ZERO;
+    private Vec3 swoopDirection = Vec3.ZERO;
+    @Nullable
+    private Vec3 skimFrom;
+    private Vec3 skimDirection = Vec3.ZERO;
 
     public TheRisen(EntityType<? extends TheRisen> type, Level level) {
         super(type, level, BossEvent.BossBarColor.RED);
@@ -223,9 +240,15 @@ public class TheRisen extends Nightmare {
     public void tick() {
         super.tick();
         placeParts();
-        if (level() instanceof ServerLevel serverLevel && pool != null && !pool.isSet() && poolTicks > 0 && --poolTicks == 0) {
+        if (!(level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        if (pool != null && !pool.isSet() && poolTicks > 0 && --poolTicks == 0) {
             pool.set(serverLevel);
         }
+        // Here and not in the AI step: falling embers still land and the fire burns on while it is stunned or dying.
+        emberRain.tick(serverLevel, this, fire, settings());
+        fire.tick(serverLevel, this, strength(), settings());
     }
 
     @Override
@@ -262,6 +285,9 @@ public class TheRisen extends Nightmare {
             case TAKING_OFF -> takingOff();
             case SCREAMING -> screaming(level);
             case STUNNED -> stunned();
+            case SOARING -> soaring(level);
+            case SWOOPING -> swooping(level);
+            case EMBER_RAIN -> emberRaining(level);
         }
     }
 
@@ -363,6 +389,8 @@ public class TheRisen extends Nightmare {
             nextAshRain = tickCount + config.ashRainIntervalTicks(random.nextInt(1 << 16));
             nextScream = tickCount + config.screamCooldownTicks(random.nextInt(1 << 16));
             nextRelease = tickCount + config.releaseCooldownTicks(random.nextInt(1 << 16));
+            nextSwoop = tickCount + config.swoopCooldownTicks(random.nextInt(1 << 16));
+            nextEmberRain = tickCount + config.emberRainCooldownTicks(random.nextInt(1 << 16));
             flightTicks = 0;
         }
         if (tickCount >= nextScream) {
@@ -371,6 +399,8 @@ public class TheRisen extends Nightmare {
             RisenEffects.screamWindup(level, this);
         } else if (flightTicks >= config.landInterval.get() * 20) {
             startLanding(target);
+        } else if (tickCount >= nextSwoop) {
+            startSwoop(level);
         } else if (tickCount >= nextDive) {
             diveTarget = target.position();
             diveHits.clear();
@@ -379,6 +409,8 @@ public class TheRisen extends Nightmare {
         } else if (tickCount >= nextAshRain) {
             ashRainTicks = config.ashRainSeconds.get() * 20;
             nextAshRain = tickCount + ashRainTicks + config.ashRainIntervalTicks(random.nextInt(1 << 16));
+        } else if (tickCount >= nextEmberRain) {
+            startEmberRain(level, target);
         } else if (tickCount >= nextRelease) {
             nextRelease = tickCount + config.releaseCooldownTicks(random.nextInt(1 << 16));
             release(level, target);
@@ -405,6 +437,164 @@ public class TheRisen extends Nightmare {
             setState(RisenState.CIRCLING);
         }
     }
+
+    // --- swoop (leven-ronde) ------------------------------------------------------------------------------------------
+
+    private void startSwoop(ServerLevel level) {
+        nextSwoop = tickCount + settings().swoopCooldownTicks(random.nextInt(1 << 16));
+        swoopWinding = false;
+        setState(RisenState.SOARING);
+        RisenEffects.swoopClimb(level, this);
+    }
+
+    /** Up to a point high above and behind its target, then hanging there flaring while it takes aim. */
+    private void soaring(ServerLevel level) {
+        RisenConfig config = settings();
+        LivingEntity target = fightTarget();
+        if (target != null) {
+            swoopAim = target.position();
+        } else if (!swoopWinding) {
+            setState(RisenState.CIRCLING);
+            return;
+        }
+        if (!swoopWinding) {
+            double height = config.swoopHeight.get();
+            Vec3 back = position().subtract(swoopAim).multiply(1.0, 0.0, 1.0);
+            back = back.lengthSqr() < 1.0E-4 ? new Vec3(1.0, 0.0, 0.0) : back.normalize();
+            double x = swoopAim.x + back.x * height * SWOOP_SLANT;
+            double z = swoopAim.z + back.z * height * SWOOP_SLANT;
+            Vec3 top = new Vec3(x, groundY(swoopAim.x, swoopAim.z) + height, z);
+            steer(top, config.flySpeed.get() * 1.2, STEER);
+            if (stateTicks % 24 == 0) {
+                RisenEffects.swoopClimb(level, this);
+            }
+            if (position().distanceToSqr(top) < 9.0 || stateTicks > 160) {
+                swoopWinding = true;
+                swoopWindupStart = stateTicks;
+                triggerAnim(RisenAnimations.ACTION, RisenAnimations.SWOOP_WINDUP);
+                RisenEffects.swoopWindup(level, this);
+            }
+            return;
+        }
+        setDeltaMovement(getDeltaMovement().scale(0.7));
+        face(swoopAim);
+        int held = stateTicks - swoopWindupStart;
+        if (held % 4 == 0) {
+            RisenEffects.swoopGlow(level, this);
+        }
+        if (held >= config.swoopWindupTicks.get()) {
+            // Aimed now, where its target stands; it no longer steers after this.
+            Vec3 line = swoopAim.subtract(position());
+            swoopDirection = line.lengthSqr() < 1.0E-4 ? new Vec3(0.0, -1.0, 0.0) : line.normalize();
+            skimFrom = null;
+            diveHits.clear();
+            setState(RisenState.SWOOPING);
+            RisenEffects.diveScreech(level, this);
+        }
+    }
+
+    /** Down the line, then along the ground a while with fire behind it; whoever it passes through is hit once. */
+    private void swooping(ServerLevel level) {
+        RisenConfig config = settings();
+        double speed = config.swoopSpeed.get();
+        if (skimFrom == null) {
+            setDeltaMovement(swoopDirection.scale(speed));
+            face(position().add(swoopDirection));
+            boolean past = position().subtract(swoopAim).dot(swoopDirection) >= 0.0;
+            if (getY() <= groundY(getX(), getZ()) + SKIM_HEIGHT + 0.5 || past || stateTicks > 100) {
+                startSkim(level);
+            }
+        } else {
+            double ground = groundY(getX(), getZ());
+            double climb = Mth.clamp((ground + SKIM_HEIGHT - getY()) * 0.5, -speed, speed);
+            Vec3 along = skimDirection.scale(speed * 0.75);
+            setDeltaMovement(along.x, climb, along.z);
+            face(position().add(skimDirection));
+            layTrail(level);
+            if (position().subtract(skimFrom).horizontalDistance() >= config.swoopSkimBlocks.get() || stateTicks > 160) {
+                breathe();
+                setState(RisenState.TAKING_OFF);
+                return;
+            }
+        }
+        for (Player player : fighters()) {
+            if (player.getBoundingBox().intersects(getBoundingBox().inflate(1.0)) && diveHits.add(player.getUUID())) {
+                if (player.hurt(damageSources().mobAttack(this), config.swoopDamage.get().floatValue() * strength())) {
+                    player.igniteForSeconds(config.fireIgniteSeconds.get());
+                    player.knockback(config.swoopKnockback.get(), -swoopDirection.x, -swoopDirection.z);
+                    player.hurtMarked = true;
+                    RisenEffects.swoopHit(level, player);
+                }
+            }
+        }
+    }
+
+    private void startSkim(ServerLevel level) {
+        skimFrom = position();
+        Vec3 flat = swoopDirection.multiply(1.0, 0.0, 1.0);
+        skimDirection = flat.lengthSqr() < 1.0E-4 ? Vec3.directionFromRotation(0.0F, getYRot()) : flat.normalize();
+        RisenEffects.swoopImpact(level, this);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                lightUnder(level, getX() + dx, getZ() + dz);
+            }
+        }
+    }
+
+    /** Three tiles wide across its path. */
+    private void layTrail(ServerLevel level) {
+        double sideX = -skimDirection.z;
+        double sideZ = skimDirection.x;
+        for (int i = -1; i <= 1; i++) {
+            lightUnder(level, getX() + sideX * i, getZ() + sideZ * i);
+        }
+    }
+
+    private void lightUnder(ServerLevel level, double x, double z) {
+        BlockPos tile = RisenFire.surfaceTile(level, x, z, getY(), 4.0);
+        if (tile != null && !fire.isBurning(tile)) {
+            fire.light(level, tile, settings());
+        }
+    }
+
+    // --- ember rain (leven-ronde) -------------------------------------------------------------------------------------
+
+    private void startEmberRain(ServerLevel level, LivingEntity target) {
+        nextEmberRain = tickCount + settings().emberRainCooldownTicks(random.nextInt(1 << 16));
+        emberRain.start(new Vec3(target.getX(), groundY(target.getX(), target.getZ()), target.getZ()));
+        setState(RisenState.EMBER_RAIN);
+        triggerAnim(RisenAnimations.ACTION, RisenAnimations.EMBER_RAIN);
+        RisenEffects.screamWindup(level, this);
+    }
+
+    /** It hangs over the area while the rim smoulders and the embers fall from its wings. */
+    private void emberRaining(ServerLevel level) {
+        RisenConfig config = settings();
+        Vec3 centre = emberRain.centre();
+        steer(new Vec3(centre.x, centre.y + config.flightHeight.get(), centre.z), config.flySpeed.get(), STEER);
+        LivingEntity target = fightTarget();
+        if (target != null) {
+            face(target.position());
+        }
+        emberRain.rain(level, stateTicks, config, random);
+        int windup = config.emberRainWindupTicks.get();
+        if (stateTicks > windup && (stateTicks - windup) % 20 == 1) {
+            triggerAnim(RisenAnimations.ACTION, RisenAnimations.EMBER_RAIN);
+            RisenEffects.emberRainShed(level, this);
+        }
+        if (stateTicks >= windup + config.emberRainSeconds.get() * 20) {
+            breathe();
+            setState(RisenState.CIRCLING);
+        }
+    }
+
+    /** After a big attack the quick ones (dive, ash rain) wait a moment, so they do not follow it at once. */
+    private void breathe() {
+        nextDive = Math.max(nextDive, tickCount + BREATHER);
+        nextAshRain = Math.max(nextAshRain, tickCount + BREATHER);
+    }
+
+    // --- landing -----------------------------------------------------------------------------------------------------
 
     private void startLanding(LivingEntity target) {
         Vec3 away = position().subtract(target.position()).multiply(1.0, 0.0, 1.0);
@@ -592,6 +782,8 @@ public class TheRisen extends Nightmare {
         if (reason.shouldDestroy() && level() instanceof ServerLevel serverLevel && pool != null) {
             pool.set(serverLevel);
         }
+        fire.clear();
+        emberRain.clear();
         super.remove(reason);
     }
 
@@ -639,9 +831,13 @@ public class TheRisen extends Nightmare {
         if (tag.contains("RisenState", Tag.TAG_BYTE)) {
             // Not setState: no world lookups while loading.
             RisenState state = RisenState.byId(tag.getByte("RisenState"));
+            boolean restart = state.restartsWhenLoaded();
+            if (restart) {
+                state = RisenState.CIRCLING;
+            }
             entityData.set(DATA_STATE, (byte) state.ordinal());
             applyPhysics(state);
-            stateTicks = tag.getInt("RisenStateTicks");
+            stateTicks = restart ? 0 : tag.getInt("RisenStateTicks");
         }
         anchor = tag.contains("RisenAnchor", Tag.TAG_LONG) ? BlockPos.of(tag.getLong("RisenAnchor")) : null;
         if (tag.contains("RisenPool", Tag.TAG_COMPOUND)) {
@@ -660,7 +856,9 @@ public class TheRisen extends Nightmare {
                 .triggerableAnim(RisenAnimations.ASH_RAIN, RisenAnimations.ASH_RAIN_ANIM)
                 .triggerableAnim(RisenAnimations.RELEASE, RisenAnimations.RELEASE_ANIM)
                 .triggerableAnim(RisenAnimations.PECK, RisenAnimations.PECK_ANIM)
-                .triggerableAnim(RisenAnimations.BUFFET, RisenAnimations.BUFFET_ANIM));
+                .triggerableAnim(RisenAnimations.BUFFET, RisenAnimations.BUFFET_ANIM)
+                .triggerableAnim(RisenAnimations.SWOOP_WINDUP, RisenAnimations.SWOOP_WINDUP_ANIM)
+                .triggerableAnim(RisenAnimations.EMBER_RAIN, RisenAnimations.EMBER_RAIN_ANIM));
     }
 
     private PlayState bodyAnimation(AnimationState<TheRisen> animationState) {
@@ -674,8 +872,8 @@ public class TheRisen extends Nightmare {
         return switch (state()) {
             case RISING -> RisenAnimations.RISE;
             case CIRCLING -> RisenAnimations.FLY;
-            case DIVING -> RisenAnimations.DIVE;
-            case LANDING, TAKING_OFF, SCREAMING -> RisenAnimations.HOVER;
+            case DIVING, SWOOPING -> RisenAnimations.DIVE;
+            case LANDING, TAKING_OFF, SCREAMING, SOARING, EMBER_RAIN -> RisenAnimations.HOVER;
             case LANDED -> RisenAnimations.PERCHED;
             case STUNNED -> RisenAnimations.STUNNED;
         };

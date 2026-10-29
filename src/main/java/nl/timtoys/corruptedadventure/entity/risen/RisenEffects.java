@@ -7,7 +7,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The Risen's sounds and particles, sent by the server to everyone near (vanilla events, low pitches; several at once
@@ -120,6 +123,97 @@ final class RisenEffects {
         choir(level, risen.getX(), risen.getY(), risen.getZ(), 2.0F, 0.5F);
         burst(level, risen, ParticleTypes.LARGE_SMOKE, 120, 0.05);
         burst(level, risen, ParticleTypes.LAVA, 20, 0.0);
+    }
+
+    // --- leven-ronde: swoop, ember rain, burning ground -----------------------------------------------------------------
+
+    /** It beats up into the sky for the swoop: heavy flaps and a trail of smoke. */
+    static void swoopClimb(ServerLevel level, Entity risen) {
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE, 4.0F, 0.45F);
+        level.sendParticles(ParticleTypes.LARGE_SMOKE, risen.getX(), risen.getY(), risen.getZ(), 12, 2.0, 0.5, 2.0, 0.01);
+    }
+
+    /** At the top, before it drops: the screech, the choir drawing breath, its wings flaring. */
+    static void swoopWindup(ServerLevel level, Entity risen) {
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.PHANTOM_SWOOP, SoundSource.HOSTILE, 6.0F, 0.3F);
+        choir(level, risen.getX(), risen.getY(), risen.getZ(), 3.0F, 0.7F);
+        burst(level, risen, ParticleTypes.FLAME, 50, 0.05);
+    }
+
+    /** Flames streaming from it during the windup, so it shows against the sky. */
+    static void swoopGlow(ServerLevel level, Entity risen) {
+        burst(level, risen, ParticleTypes.FLAME, 12, 0.03);
+        burst(level, risen, ParticleTypes.LAVA, 2, 0.0);
+    }
+
+    /** It hits the bottom of its swoop. */
+    static void swoopImpact(ServerLevel level, Entity risen) {
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.FIRECHARGE_USE, SoundSource.HOSTILE, 4.0F, 0.5F);
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.RAVAGER_STEP, SoundSource.HOSTILE, 4.0F, 0.4F);
+        level.sendParticles(ParticleTypes.FLAME, risen.getX(), risen.getY() + 0.5, risen.getZ(), 60, 2.5, 0.3, 2.5, 0.08);
+        level.sendParticles(ParticleTypes.LARGE_SMOKE, risen.getX(), risen.getY() + 0.5, risen.getZ(), 30, 2.5, 0.3, 2.5, 0.03);
+    }
+
+    static void swoopHit(ServerLevel level, Entity victim) {
+        level.playSound(null, victim.getX(), victim.getY(), victim.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.HOSTILE, 2.0F, 0.5F);
+        level.playSound(null, victim.getX(), victim.getY(), victim.getZ(), SoundEvents.FIRECHARGE_USE, SoundSource.HOSTILE, 1.5F, 0.7F);
+        level.sendParticles(ParticleTypes.FLAME, victim.getX(), victim.getY() + 1.0, victim.getZ(), 25, 0.5, 0.7, 0.5, 0.04);
+    }
+
+    /** The rim of the ember rain's area smoulders before the embers fall. */
+    static void emberRainRim(ServerLevel level, Vec3 centre, double radius) {
+        level.playSound(null, centre.x, centre.y, centre.z, SoundEvents.FIRE_AMBIENT, SoundSource.HOSTILE, 3.0F, 0.6F);
+        int points = Math.max(12, (int) (radius * 4));
+        for (int i = 0; i < points; i++) {
+            double angle = Math.PI * 2.0 * i / points;
+            double x = centre.x + Math.cos(angle) * radius;
+            double z = centre.z + Math.sin(angle) * radius;
+            double y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(x), Mth.floor(z)) + 0.1;
+            level.sendParticles(ParticleTypes.SMALL_FLAME, x, y, z, 1, 0.1, 0.0, 0.1, 0.005);
+            level.sendParticles(ParticleTypes.SMOKE, x, y + 0.2, z, 1, 0.1, 0.1, 0.1, 0.01);
+        }
+    }
+
+    /** The wings shed the embers. */
+    static void emberRainShed(ServerLevel level, Entity risen) {
+        level.playSound(null, risen.getX(), risen.getY(), risen.getZ(), SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 3.0F, 0.5F);
+        level.sendParticles(ParticleTypes.LAVA, risen.getX(), risen.getY() + risen.getBbHeight() * 0.5, risen.getZ(), 8,
+                5.0, 0.5, 5.0, 0.0);
+    }
+
+    /** An ember on its way: a glowing drop above its spot and smoke on the spot itself. */
+    static void emberFalling(ServerLevel level, BlockPos spot, long ticksLeft) {
+        double x = spot.getX() + 0.5;
+        double z = spot.getZ() + 0.5;
+        level.sendParticles(ParticleTypes.FLAME, x, spot.getY() + 0.1, z, 2, 0.25, 0.0, 0.25, 0.005);
+        level.sendParticles(ParticleTypes.SMOKE, x, spot.getY() + 0.3, z, 2, 0.2, 0.1, 0.2, 0.01);
+        level.sendParticles(ParticleTypes.FALLING_LAVA, x, spot.getY() + 1.0 + ticksLeft * 0.6, z, 2, 0.15, 0.3, 0.15, 0.0);
+    }
+
+    static void emberLands(ServerLevel level, BlockPos spot) {
+        double x = spot.getX() + 0.5;
+        double z = spot.getZ() + 0.5;
+        level.playSound(null, x, spot.getY(), z, SoundEvents.FIRECHARGE_USE, SoundSource.HOSTILE, 1.5F, 0.8F + level.random.nextFloat() * 0.3F);
+        level.sendParticles(ParticleTypes.LAVA, x, spot.getY() + 0.2, z, 4, 0.3, 0.1, 0.3, 0.0);
+        level.sendParticles(ParticleTypes.FLAME, x, spot.getY() + 0.2, z, 10, 0.4, 0.2, 0.4, 0.04);
+    }
+
+    /** A tile of its fire catches. */
+    static void fireCatches(ServerLevel level, BlockPos tile) {
+        level.sendParticles(ParticleTypes.FLAME, tile.getX() + 0.5, tile.getY() + 0.2, tile.getZ() + 0.5, 4, 0.35, 0.1, 0.35, 0.02);
+    }
+
+    /** A burning tile, on its beat; dying down, it only smokes. */
+    static void fireFlicker(ServerLevel level, BlockPos tile, boolean dying) {
+        double x = tile.getX() + 0.5;
+        double z = tile.getZ() + 0.5;
+        if (!dying) {
+            level.sendParticles(ParticleTypes.FLAME, x, tile.getY() + 0.25, z, 3, 0.3, 0.15, 0.3, 0.01);
+        }
+        level.sendParticles(dying ? ParticleTypes.SMOKE : ParticleTypes.LARGE_SMOKE, x, tile.getY() + 0.6, z, 1, 0.3, 0.2, 0.3, 0.01);
+        if (level.random.nextInt(12) == 0) {
+            level.playSound(null, x, tile.getY(), z, SoundEvents.FIRE_AMBIENT, SoundSource.HOSTILE, 0.8F, 0.8F + level.random.nextFloat() * 0.4F);
+        }
     }
 
     /** Its choir: three low voices stacked. */

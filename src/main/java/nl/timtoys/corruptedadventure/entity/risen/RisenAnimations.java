@@ -15,6 +15,8 @@ public final class RisenAnimations {
     public static final String RELEASE = "release";
     public static final String PECK = "peck";
     public static final String BUFFET = "buffet";
+    public static final String SWOOP_WINDUP = "swoop_windup";
+    public static final String EMBER_RAIN = "ember_rain";
 
     static final RawAnimation PERCHED = RawAnimation.begin().thenLoop("animation.the_risen.perched");
     static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.the_risen.fly");
@@ -28,6 +30,8 @@ public final class RisenAnimations {
     static final RawAnimation RELEASE_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.release");
     static final RawAnimation PECK_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.peck");
     static final RawAnimation BUFFET_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.buffet");
+    static final RawAnimation SWOOP_WINDUP_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.swoop_windup");
+    static final RawAnimation EMBER_RAIN_ANIM = RawAnimation.begin().thenPlay("animation.the_risen.ember_rain");
 
     /** Ticks of the death animation: it falls and crumbles, then the body is removed. */
     static final int DEATH_TICKS = 60;
