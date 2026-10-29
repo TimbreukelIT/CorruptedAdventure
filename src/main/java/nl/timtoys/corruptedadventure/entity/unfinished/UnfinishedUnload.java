@@ -36,19 +36,33 @@ public final class UnfinishedUnload {
     public record Column(int x, int z, int top) {
     }
 
-    /** A patch unloading downward, a few layers a tick, until every column reaches the bottom of the world. */
+    /**
+     * A patch unloading downward, a few layers a tick, until every column reaches the bottom of the world. Its blocks come
+     * back at {@code openUntil}, except for a {@link #permanent} dig (the void scar of his arrival), whose blocks are gone.
+     */
     static final class Dig {
         private final List<Column> columns;
         private final int[] nextY;
         private final long openUntil;
+        private final boolean permanent;
 
         Dig(List<Column> columns, long openUntil) {
+            this(columns, openUntil, false);
+        }
+
+        private Dig(List<Column> columns, long openUntil, boolean permanent) {
             this.columns = List.copyOf(columns);
             this.nextY = new int[this.columns.size()];
             for (int i = 0; i < nextY.length; i++) {
                 nextY[i] = this.columns.get(i).top();
             }
             this.openUntil = openUntil;
+            this.permanent = permanent;
+        }
+
+        /** A dig whose blocks never come back: nothing tracks them. */
+        static Dig permanent(List<Column> columns) {
+            return new Dig(columns, Long.MAX_VALUE, true);
         }
 
         /** Takes the next {@code layers} layers off every column; true once all reach the bottom of the world. */
@@ -72,11 +86,24 @@ public final class UnfinishedUnload {
                 int stop = Math.max(bottom, nextY[i] - layers + 1);
                 for (int y = nextY[i]; y >= stop; y--) {
                     pos.setY(y);
-                    if (!level.getBlockState(pos).isAir()) {
+                    BlockState state = level.getBlockState(pos);
+                    if (state.isAir()) {
+                        continue;
+                    }
+                    if (permanent) {
+                        // Planned a moment ago; a block placed since then stops the column (and stays).
+                        if (!data.isTracked(pos) && !UnfinishedNature.isGround(state) && !UnfinishedNature.isOpen(state)) {
+                            nextY[i] = bottom - 1;
+                            break;
+                        }
+                        level.setBlock(pos, air, UnfinishedTempBlocks.FLAGS);
+                    } else {
                         data.swap(level, pos.immutable(), air, openUntil, UnfinishedTempBlocks.Kind.GROUND);
                     }
                 }
-                nextY[i] = stop - 1;
+                if (nextY[i] >= bottom) {
+                    nextY[i] = stop - 1;
+                }
                 left |= nextY[i] >= bottom;
             }
             return !left;
@@ -118,7 +145,7 @@ public final class UnfinishedUnload {
     }
 
     /** The blocks the column at {@code x, z} would lose, or -1 when it may not unload (or is void already). */
-    private static int count(ServerLevel level, int x, int z) {
+    static int count(ServerLevel level, int x, int z) {
         if (!level.hasChunkAt(new BlockPos(x, 0, z))) {
             return -1;
         }
