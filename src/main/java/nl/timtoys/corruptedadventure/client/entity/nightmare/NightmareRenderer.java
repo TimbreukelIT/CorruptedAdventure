@@ -1,10 +1,13 @@
 package nl.timtoys.corruptedadventure.client.entity.nightmare;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import nl.timtoys.corruptedadventure.entity.nightmare.Nightmare;
 import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
@@ -45,6 +48,26 @@ public class NightmareRenderer<T extends Nightmare> extends GeoEntityRenderer<T>
     @Override
     public Color getRenderColor(T nightmare, float partialTick, int packedLight) {
         return Color.ofRGBA(1.0F, 1.0F, 1.0F, alpha(nightmare));
+    }
+
+    /**
+     * Degrees the whole body rocks sideways while it staggers ({@code Nightmare.isStaggered}), on top of any stagger
+     * animation of its own; 0 for none.
+     */
+    protected float staggerSway(T nightmare) {
+        return 5.0F;
+    }
+
+    @Override
+    protected void applyRotations(T nightmare, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick,
+                                  float nativeScale) {
+        super.applyRotations(nightmare, poseStack, ageInTicks, rotationYaw, partialTick, nativeScale);
+        float sway = nightmare.isStaggered() && !nightmare.isDeadOrDying() ? staggerSway(nightmare) : 0.0F;
+        if (sway != 0.0F) {
+            // A heavy, uneven rock: two sines, so it does not look like a metronome.
+            float rock = Mth.sin(ageInTicks * 0.7F) * 0.7F + Mth.sin(ageInTicks * 1.9F) * 0.3F;
+            poseStack.mulPose(Axis.ZP.rotationDegrees(sway * rock));
+        }
     }
 
     @Override
