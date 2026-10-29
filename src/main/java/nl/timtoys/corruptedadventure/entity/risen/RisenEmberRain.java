@@ -49,7 +49,7 @@ final class RisenEmberRain {
             }
             return;
         }
-        if ((tick - windup) % config.emberRainVolleyTicks.get() != 1) {
+        if (!isVolley(tick, windup, config.emberRainVolleyTicks.get())) {
             return;
         }
         for (int i = 0; i < config.emberRainPerVolley.get(); i++) {
@@ -61,6 +61,11 @@ final class RisenEmberRain {
                 falling.add(new Ember(spot, level.getGameTime() + config.emberFallTicks.get()));
             }
         }
+    }
+
+    /** Whether tick {@code tick} of the rain drops a volley: the first tick after the windup, then every {@code volley}. */
+    static boolean isVolley(int tick, int windup, int volley) {
+        return tick > windup && (tick - windup - 1) % volley == 0;
     }
 
     /** Every tick, also after the rain: warnings under the embers still falling, and the ones that land. */

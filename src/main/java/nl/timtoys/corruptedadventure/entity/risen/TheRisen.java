@@ -65,6 +65,8 @@ public class TheRisen extends Nightmare {
     private static final double LAND_DISTANCE = 5.0;
     private static final int WALKER_SEARCH = 48;
     private static final int GROUND_ATTACK_COOLDOWN = 20;
+    /** One in this many draws (one draw per ground cooldown) it stomps at someone near. */
+    private static final int STOMP_ODDS = 3;
     /** The swoop climbs to a point this far back from its target per block of height: a steep, readable line. */
     private static final double SWOOP_SLANT = 0.6;
     /** Height above the ground at which it skims after the swoop. */
@@ -502,7 +504,6 @@ public class TheRisen extends Nightmare {
         }
         if (landAfterBurst) {
             // A burst of attacks is over: it comes down for a ground fight, its rest window is the walk there.
-            landAfterBurst = false;
             startLanding(target);
             return;
         }
@@ -724,6 +725,8 @@ public class TheRisen extends Nightmare {
     // --- landing -----------------------------------------------------------------------------------------------------
 
     private void startLanding(LivingEntity target) {
+        // Cleared here and not on take-off: a swoop or a stagger ends in TAKING_OFF and must keep a landing it rolled.
+        landAfterBurst = false;
         Vec3 away = position().subtract(target.position()).multiply(1.0, 0.0, 1.0);
         Vec3 offset = away.lengthSqr() < 1.0E-4 ? new Vec3(LAND_DISTANCE, 0.0, 0.0) : away.normalize().scale(LAND_DISTANCE);
         double x = target.getX() + offset.x;
@@ -799,7 +802,7 @@ public class TheRisen extends Nightmare {
             buffetWindup = RisenAnimations.BUFFET_WINDUP_TICKS;
             triggerAnim(RisenAnimations.ACTION, RisenAnimations.BUFFET);
             groundCooldown = GROUND_ATTACK_COOLDOWN * 2;
-        } else if (!fighters(config.stompRadius.get()).isEmpty() && random.nextInt(3) == 0) {
+        } else if (!fighters(config.stompRadius.get()).isEmpty() && random.nextInt(STOMP_ODDS) == 0) {
             stompWindup = RisenAnimations.STOMP_WINDUP_TICKS;
             triggerAnim(RisenAnimations.ACTION, RisenAnimations.STOMP);
             RisenEffects.stompWindup(level, this, config.stompRadius.get());
@@ -810,6 +813,8 @@ public class TheRisen extends Nightmare {
             RisenEffects.peck(level, this);
             groundCooldown = GROUND_ATTACK_COOLDOWN;
         } else {
+            // Nothing this time (no one in reach, or the stomp's draw failed): the next draw waits a moment too.
+            groundCooldown = GROUND_ATTACK_COOLDOWN / 2;
             return;
         }
         countAttack();
@@ -857,7 +862,6 @@ public class TheRisen extends Nightmare {
         steer(new Vec3(getX(), top, getZ()), 0.5, STEER);
         if (getY() >= top - 1.0 || stateTicks > 80) {
             flightTicks = 0;
-            landAfterBurst = false;
             landAfter = settings().landIntervalTicks(random.nextInt(1 << 16));
             setState(RisenState.CIRCLING);
         }

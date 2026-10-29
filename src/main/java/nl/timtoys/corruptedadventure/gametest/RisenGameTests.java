@@ -111,8 +111,23 @@ public final class RisenGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "gametest/hollow_arena", timeoutTicks = 200)
+    /** Up to the config's longest fire (60 s) and then some. */
+    private static final int FIRE_TIMEOUT = 60 * 20 + 40;
+
+    /** The fire tests check the fire itself: with it off (config) there is nothing to check. */
+    private static boolean fireOff(GameTestHelper helper) {
+        if (ServerConfig.RISEN.fire.get() && ServerConfig.RISEN.fireMaxTiles.get() >= 2) {
+            return false;
+        }
+        helper.succeed();
+        return true;
+    }
+
+    @GameTest(template = "gametest/hollow_arena", timeoutTicks = FIRE_TIMEOUT)
     public static void itsFireLiesOnlyOnFreeGroundGoesOutByItselfAndChangesNoBlock(GameTestHelper helper) {
+        if (fireOff(helper)) {
+            return;
+        }
         for (int x = 0; x < 9; x++) {
             for (int z = 0; z < 9; z++) {
                 helper.setBlock(x, 1, z, Blocks.STONE);
@@ -145,6 +160,9 @@ public final class RisenGameTests {
 
     @GameTest(template = "gametest/hollow_arena")
     public static void whoeverStandsInItsFireCatchesFire(GameTestHelper helper) {
+        if (fireOff(helper)) {
+            return;
+        }
         for (int x = 0; x < 9; x++) {
             for (int z = 0; z < 9; z++) {
                 helper.setBlock(x, 1, z, Blocks.STONE);
