@@ -9,7 +9,7 @@
 
 ## Beslissingen (sparring 2026-11-03)
 1. **Identiteit:** oude zegelwachters van vóór de corruptie. Elk bewaakt het zegel van één grens (1→2, 2→3, 3→4, 4→5) en is half door de corruptie aangetast. Verslaan = het zegel breken; dat is lore-haak voor fase 5.
-2. **Thema en kracht:** de wachter houdt de **grensmuur van zijn grens** in stand en vecht met dat element: 1→2 dichte witte mist, 2→3 wervelende zandstorm, 3→4 zwarte aswolk met vonken, 4→5 groene gifdamp → glitchruis (zie tabel; open). Versla hem en de muur valt weg (per speler; de muur zelf bouwt fase 5).
+2. **Thema en kracht:** de wachter houdt de **grensmuur van zijn grens** in stand en vecht met dat element: 1→2 dichte witte mist, 2→3 wervelende zandstorm, 3→4 zwarte aswolk met vonken, 4→5 groene gifdamp die overgaat in glitchruis (bevestigd 2026-11-03). Versla hem en de muur valt weg (per speler; de muur zelf bouwt fase 5).
 3. **Art direction:** oud en edel, half aangetast. Kolossale, statige wachters van steen/metaal met zegelrunen, harnas of mantel; de corruptie breekt erdoorheen (scheuren met witte gloed, Herobrines witte ogen waar de corruptie het wint). Elden Ring-niveau zoals de Nightmares, maar "gevallen ridder/beeld" in plaats van monster. Nooit schattig of speelgoedachtig.
 4. **Slapen en wekken:** de wachter slaapt altijd in zijn tempel (als beeld). Hij ontwaakt via een **ritueel met 4 zegelsokkels** rond hem in de arena: in elke sokkel gaat één sleutelmateriaal van de Nether-ring van die ring (1→2 zielkristal, 2→3 dauwkristal, 3→4 oerijs, 4→5 hemelglas), dus 4 stuks; bij de vierde ontwaakt hij. Herbevechten kost opnieuw 4 stuks. De sokkels mogen in het gevecht meedoen.
 5. **Gevecht:** echte poortbaas met **2–3 fases** (fasewissel bij HP-drempels), en **de arena doet mee** (zuilen breken, element stijgt, vloer valt weg e.d.).
@@ -25,13 +25,23 @@
 | 1→2 | dichte witte mist | zielkristal (Nether-1) | overgangszone `withered_expanse` (verdorde vlakte, vanilla → droog) |
 | 2→3 | wervelende zandstorm | dauwkristal (Nether-2) | overgangszone `dry_riverbeds`; canyons → horizon-vulkanen, lucht slaat om naar asrood |
 | 3→4 | zwarte aswolk met vonken | oerijs (Nether-3) | overgangszone `steam_fens` (bovenrand, ring 3) + `verdant_falls` (afdaling, ring 4, hoefijzerkloven om de ~700 blokken; verving de klif op 2026-10-15): het gestolen water stort naar beneden |
-| 4→5 | volgens fase 1: groene gifdamp die overgaat in glitchruis (de "mistige afgrond" in beslissing 2 was een fout van main; keuze open) | hemelglas (Nether-4) | breukzone `sundered_reach` (~256 breed, ~75 % dichte grond, sinds V7-A geen afgrond meer): de wereld valt uit elkaar |
+| 4→5 | groene gifdamp die overgaat in glitchruis (zoals fase 1; bevestigd 2026-11-03) | hemelglas (Nether-4) | breukzone `sundered_reach` (~256 breed, ~75 % dichte grond, sinds V7-A geen afgrond meer): de wereld valt uit elkaar |
 
-## Open (na de schetsen)
-- Namen, uiterlijk en aanvallen per wachter; fases en arena-mechanics per tempel.
-- Plaatsingsregel per tempel (afstand, terreineisen, gegarandeerd bereikbaar), ook in de Nether? (Nether-grensmuur bestaat ook.)
-- Tempelopbouw rond de arena (alleen arena, of ook gangen/voorhof met vallen of mobs).
-- Hoe het "openen van de grens" in fase 4 wordt vastgelegd zonder het grenssysteem van fase 5 (voorstel: per speler een vlag `sealBroken[N]` als attachment, fase 5 leest die).
+## Beslissingen na de schetsen (2026-11-03)
+11. **Alle vier de schetsen goedgekeurd**, met naam: De Sluierwachter (`the_veil_warden`), De Zonnewachter (`sun_warden`), De Asgezworene (`ashsworn`), De Ontbonden Wachter (`unbound_warden`). Uiterlijk, ritueel, fases en tempel zoals op de platen.
+12. **Grensmuur 4→5** blijft zoals in fase 1: groene gifdamp die overgaat in glitchruis; de mantel van De Ontbonden Wachter volgt dat.
+13. **Arena-veranderingen met echte blokken**; de server zet de arena na het gevecht (winst, of iedereen weg/dood) terug vanuit een opgeslagen staat, zodat herbevechten altijd gelijk is.
+14. **Elke tempel brengt zijn eigen terrein mee** (geul, kloof, put) op een seed-plek op zijn grens; De Asgezworene zoekt de dichtstbijzijnde hoefijzerkloof van `verdant_falls` (om de ~700 blokken).
+
+## Voorlopig (bevestigen bij de teststop, zoals in fase 2/4)
+- Vallen in de put van De Ontbonden Wachter = uitworp naar het voorhof (geen dood, geen itemverlies, credit blijft); de put loopt tot de void.
+- Lage zwaartekracht in fase 2 (4→5) via het `gravity`-attribuut, server-side.
+- Aswolk (3→4) en mist (1→2) als echte client-fog binnen de arena (staat gesynct); bellen/zichtcirkels rond de sokkels zichtbaar.
+- Dauwgolf van een gevulde sokkel (2→3): één keer per sokkel per gevecht, zonder extra kosten.
+- Tempelopbouw: kort voorhof met de poort, geen vallen of mobs (de tocht is de uitdaging).
+- Geen tempels in de Nether; de Nether-grensmuur volgt dezelfde per-speler-vlag.
+- Grens openen in fase 4: per speler een vlag (attachment) "zegel N gebroken"; het grenssysteem van fase 5 leest die.
+- HP-drempels per fase, maten en bouwvoorstellen zoals op de platen; alle getallen in de config.
 
 ## Schetsen (2026-11-03)
 | Grens | Werktitel | Plaat | Kern |
