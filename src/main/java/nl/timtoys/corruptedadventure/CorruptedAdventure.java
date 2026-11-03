@@ -31,8 +31,10 @@ import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperHoldRules;
 import nl.timtoys.corruptedadventure.entity.lostkeeper.KeeperMistTraces;
 import nl.timtoys.corruptedadventure.entity.nightmare.NightmareKind;
 import nl.timtoys.corruptedadventure.entity.nightmare.director.NightmareDirector;
+import nl.timtoys.corruptedadventure.entity.unfinished.UnfinishedArrival;
 import nl.timtoys.corruptedadventure.entity.unfinished.UnfinishedTempBlocks;
 import nl.timtoys.corruptedadventure.entity.risen.RisenArrival;
+import nl.timtoys.corruptedadventure.entity.unfinished.UnfinishedTraces;
 import nl.timtoys.corruptedadventure.entity.risen.RisenAshRain;
 import nl.timtoys.corruptedadventure.fluid.ToxicPoolInteractions;
 import nl.timtoys.corruptedadventure.item.EffectArrowItem;
@@ -156,6 +158,8 @@ public final class CorruptedAdventure {
         // Phase 4 step 2 (A4): The Lost Keeper comes out of its mist and leaves wisps of it while it roams.
         NightmareKind.LOST_KEEPER.arrival(new KeeperArrival());
         KeeperMistTraces.register(NeoForge.EVENT_BUS);
+        // Phase 4 step 2 (A5): The Unfinished comes with the standstill and climbs out of the torn ground.
+        NightmareKind.UNFINISHED.arrival(new UnfinishedArrival());
         // Phase 4 (I): dazzled and stunned mobs take no target.
         WeakenedTargeting.register(NeoForge.EVENT_BUS);
         // Phase 4: a fighter The Lost Keeper holds cannot sneak off.
@@ -164,6 +168,8 @@ public final class CorruptedAdventure {
         LayeredGrip.register(NeoForge.EVENT_BUS);
         // Phase 4 (L5): what The Unfinished unloads or lets lie comes back exactly.
         UnfinishedTempBlocks.register(NeoForge.EVENT_BUS);
+        // Phase 4 step 2 (A5): the rain hangs still where The Unfinished roamed.
+        UnfinishedTraces.register(NeoForge.EVENT_BUS);
     }
 
     public static ResourceLocation id(String path) {

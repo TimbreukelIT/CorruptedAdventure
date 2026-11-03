@@ -40,8 +40,10 @@ import nl.timtoys.corruptedadventure.client.particle.IceGlintParticle;
 import nl.timtoys.corruptedadventure.client.particle.RisingBubbleParticle;
 import nl.timtoys.corruptedadventure.client.particle.SandGustParticle;
 import nl.timtoys.corruptedadventure.client.particle.SteamPuffParticle;
+import nl.timtoys.corruptedadventure.client.particle.StillRaindropParticle;
 import nl.timtoys.corruptedadventure.client.particle.WaterfallMistParticle;
 import nl.timtoys.corruptedadventure.client.weather.ColdBreath;
+import nl.timtoys.corruptedadventure.client.weather.LocalStandstill;
 import nl.timtoys.corruptedadventure.client.weather.NetherRing4Fog;
 import nl.timtoys.corruptedadventure.client.weather.Ring3Ambience;
 import nl.timtoys.corruptedadventure.client.weather.Ring4Ambience;
@@ -58,6 +60,7 @@ import nl.timtoys.corruptedadventure.network.KeeperMistPayload;
 import nl.timtoys.corruptedadventure.network.LensScanPayload;
 import nl.timtoys.corruptedadventure.network.RingLayoutPayload;
 import nl.timtoys.corruptedadventure.network.RingWeatherPayload;
+import nl.timtoys.corruptedadventure.network.UnfinishedStandstillPayload;
 import nl.timtoys.corruptedadventure.network.VolcanoPlumesPayload;
 import nl.timtoys.corruptedadventure.network.WindGustPayload;
 import nl.timtoys.corruptedadventure.registry.ModParticleTypes;
@@ -92,6 +95,8 @@ public final class CorruptedAdventureClient {
         modEventBus.addListener(TheLostKeeperRenderer::onRegisterRenderers);
         ClientboundHandlers.set(KeeperMistPayload.TYPE, KeeperMistFog::handle);
         ClientboundHandlers.set(KeeperCurrentPayload.TYPE, KeeperCurrentHandler::handle);
+        // Phase 4 step 2 (A5): the standstill round The Unfinished's arrival.
+        ClientboundHandlers.set(UnfinishedStandstillPayload.TYPE, LocalStandstill::handle);
         // Phase 4: The Layered (GeckoLib).
         modEventBus.addListener(TheLayeredRenderer::onRegisterRenderers);
         // Phase 4 step 2: torches gutter near the omen of The Hollow's arrival.
@@ -174,5 +179,7 @@ public final class CorruptedAdventureClient {
                 sprites -> new GlitchSpeckParticle.Provider(sprites, GlitchSpeckParticle.PIXEL));
         event.registerSpriteSet(ModParticleTypes.REVERSE_RAINDROP.get(),
                 sprites -> new RisingBubbleParticle.Provider(sprites, RisingBubbleParticle.REVERSE_RAINDROP));
+        // Phase 4 step 2 (A5): rain hanging still where The Unfinished passed.
+        event.registerSpriteSet(ModParticleTypes.STILL_RAINDROP.get(), StillRaindropParticle.Provider::new);
     }
 }

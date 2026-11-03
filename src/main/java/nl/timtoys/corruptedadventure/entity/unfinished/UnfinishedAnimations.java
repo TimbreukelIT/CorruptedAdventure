@@ -21,6 +21,7 @@ public final class UnfinishedAnimations {
     public static final String THROW = "throw";
     public static final String UNLOAD = "unload";
     public static final String SNIFF = "sniff";
+    public static final String CLIMB_OUT = "climb_out";
 
     static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.the_unfinished.idle");
     static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.the_unfinished.walk");
@@ -40,6 +41,8 @@ public final class UnfinishedAnimations {
     static final RawAnimation THROW_ANIM = RawAnimation.begin().thenPlay("animation.the_unfinished.throw");
     static final RawAnimation UNLOAD_ANIM = RawAnimation.begin().thenPlay("animation.the_unfinished.unload");
     static final RawAnimation SNIFF_ANIM = RawAnimation.begin().thenPlay("animation.the_unfinished.sniff");
+    /** His arrival: clawing up out of the torn ground (the server moves him; this is only his grip and heave). */
+    static final RawAnimation CLIMB_OUT_ANIM = RawAnimation.begin().thenPlay("animation.the_unfinished.climb_out");
 
     /** Ticks of the death animation: he sinks back into his void, then the body is removed. */
     static final int DEATH_TICKS = 100;

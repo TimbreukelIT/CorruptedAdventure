@@ -228,6 +228,49 @@ final class UnfinishedEffects {
         level.sendParticles(ModParticleTypes.VOID_MOTE.get(), at.x, at.y - 2.0, at.z, 40, radius * 0.6, 2.0, radius * 0.6, 0.0);
     }
 
+    // ------------------------------------------------------------------------------------------------ arrival
+
+    /**
+     * One grip of his climb, deep under {@code at}: stone giving under a claw, and every third grip the heave of his body.
+     * On {@code MASTER}: the standstill drains every other sound, and in that silence you hear him climb.
+     */
+    static void climbGrip(ServerLevel level, Vec3 at, boolean heave, float pitch) {
+        playUnmuted(level, at, SoundEvents.DEEPSLATE_HIT, 3.0F, 0.45F * pitch);
+        playUnmuted(level, at, SoundEvents.GRAVEL_BREAK, 2.0F, 0.5F * pitch);
+        if (heave) {
+            playUnmuted(level, at, SoundEvents.WARDEN_STEP, 3.0F, 0.45F * pitch);
+        }
+    }
+
+    /** The ground over the tear about to give: dust off the top, pixels and a low groan. */
+    static void tearWarn(ServerLevel level, Vec3 at, double length) {
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), at.x, at.y + 0.3, at.z, 10, length * 0.35, 0.2, length * 0.35, 0.0);
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL, at.x, at.y + 0.2, at.z, 12, length * 0.35, 0.1, length * 0.35, 0.02);
+    }
+
+    static void tearGroan(ServerLevel level, Vec3 at) {
+        playUnmuted(level, at, SoundEvents.WARDEN_DIG, 3.0F, 0.5F);
+        playUnmuted(level, at, ModSoundEvents.RING_5_GLITCH.get(), 2.5F, 0.4F);
+    }
+
+    /** The ground tears open down to the void and he comes up out of it. */
+    static void tearOpen(ServerLevel level, Vec3 at, double length) {
+        playUnmuted(level, at, SoundEvents.GENERIC_EXPLODE.value(), 3.0F, 0.4F);
+        playUnmuted(level, at, SoundEvents.GLASS_BREAK, 3.0F, 0.3F);
+        playUnmuted(level, at, SoundEvents.WARDEN_EMERGE, 4.0F, 0.6F);
+        level.sendParticles(ParticleTypes.EXPLOSION, at.x, at.y + 0.5, at.z, 6, length * 0.3, 0.3, length * 0.3, 0.0);
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL, at.x, at.y, at.z, 200, length * 0.35, 0.5, length * 0.35, 0.08);
+        level.sendParticles(ModParticleTypes.VOID_MOTE.get(), at.x, at.y - 2.0, at.z, 60, length * 0.3, 2.0, length * 0.3, 0.0);
+        level.sendParticles(ModParticleTypes.GLITCH_PIXEL.get(), at.x, at.y + 1.0, at.z, 80, length * 0.35, 1.0, length * 0.35, 0.0);
+    }
+
+    /** Over the rim: he rears up with a roar of four throats. */
+    static void climbedOut(ServerLevel level, Entity boss) {
+        playUnmuted(level, boss.position(), SoundEvents.RAVAGER_ROAR, 4.0F, 0.35F);
+        playUnmuted(level, boss.position(), SoundEvents.ENDER_DRAGON_GROWL, 3.0F, 0.5F);
+        silhouette(level, boss.position(), 60);
+    }
+
     // ------------------------------------------------------------------------------------------------ reactions
 
     /** He staggers: his body fails to hold together, pixels burst from every seam. */
@@ -250,6 +293,11 @@ final class UnfinishedEffects {
 
     private static void play(ServerLevel level, Vec3 at, SoundEvent sound, float volume, float pitch) {
         level.playSound(null, at.x, at.y, at.z, sound, SoundSource.HOSTILE, volume, pitch);
+    }
+
+    /** A sound the standstill does not drain (see {@link #climbGrip}). */
+    private static void playUnmuted(ServerLevel level, Vec3 at, SoundEvent sound, float volume, float pitch) {
+        level.playSound(null, at.x, at.y, at.z, sound, SoundSource.MASTER, volume, pitch);
     }
 
     /** His outline in pixels: a column his width and height. */
