@@ -11,7 +11,8 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
  * is within {@code mistSyncRange}; {@code strength} 0 when it leaves, dies or retreats. The server decides where and how
  * thick; the client only draws the fog ({@code client/entity/lostkeeper/KeeperMistFog}).
  *
- * @param keeperId   the keeper's entity id (one bank per keeper)
+ * @param keeperId   the bank's id: a keeper's entity id (one bank per keeper), or negative for the mist of its arrival and
+ *                   the wisps it leaves while it roams ({@code entity/lostkeeper/KeeperMistBanks})
  * @param x          the bank's centre (the keeper's head)
  * @param radius     blocks of thickest mist round the centre
  * @param fade       blocks beyond the radius over which it thins out
@@ -21,6 +22,8 @@ import nl.timtoys.corruptedadventure.CorruptedAdventure;
 public record KeeperMistPayload(int keeperId, double x, double y, double z, float radius, float fade, float visibility,
                                 float strength) implements CustomPacketPayload {
     public static final Type<KeeperMistPayload> TYPE = new Type<>(CorruptedAdventure.id("keeper_mist"));
+    /** The bank id of the mist its arrival brings: denser and grey-white, it also hides the sky (the client's look). */
+    public static final int ARRIVAL_BANK = -1;
 
     public static final StreamCodec<ByteBuf, KeeperMistPayload> STREAM_CODEC = StreamCodec.of(
             (buffer, payload) -> {

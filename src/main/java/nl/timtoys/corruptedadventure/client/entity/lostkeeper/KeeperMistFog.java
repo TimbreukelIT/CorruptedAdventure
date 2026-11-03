@@ -25,8 +25,10 @@ import java.util.Map;
  * The Lost Keeper's mist bank on the client: the banks the server sends ({@link KeeperMistPayload}), each eased in and
  * out, become fog round the camera: full within the bank's radius, thinning out over its fade distance, so the mist
  * thickens as it comes closer, also in clear weather. Far plane towards the bank's visibility, colour towards a pale
- * blue-white mist (dimmed at night). Runs after the ring weather and ring 4's own fog and only ever brings the planes
- * closer. Not under water, in lava or blind. A bank that stops coming (out of range) fades away. Client only.
+ * blue-white mist (dimmed at night). The mist of its arrival ({@link KeeperMistPayload#ARRIVAL_BANK}) is grey-white and
+ * closes over the sky too (sky fog at its visibility, the sun dimmed), so clear weather vanishes in it. Runs after the
+ * ring weather and ring 4's own fog and only ever brings the planes closer. Not under water, in lava or blind. A bank
+ * that stops coming (out of range) fades away. Client only.
  */
 public final class KeeperMistFog {
     /** Pale blue-white mist (concept plate, "mist"). */
@@ -37,6 +39,14 @@ public final class KeeperMistFog {
     private static final float MIN_LIGHT = 0.15F;
     /** The sky fog reaches this multiple of the mist's visibility: the sky overhead stays a bright haze. */
     private static final float SKY_FACTOR = 2.5F;
+    /** Its arrival's mist: grey-white, nearly all of the fog colour, and the sky as close as the ground. */
+    private static final float ARRIVAL_RED = 0xD2 / 255.0F;
+    private static final float ARRIVAL_GREEN = 0xD6 / 255.0F;
+    private static final float ARRIVAL_BLUE = 0xD8 / 255.0F;
+    private static final float ARRIVAL_COLOUR_SHARE = 0.95F;
+    private static final float ARRIVAL_SKY_FACTOR = 1.0F;
+    /** The sun and moon at the thickest of its arrival's mist (they draw without fog). */
+    private static final float ARRIVAL_MIN_SUN = 0.1F;
     /** Per tick the shown strength moves this much towards the server's. */
     private static final float EASE = 1.0F / 40.0F;
     /** Ticks without a payload before a bank fades out (the server sends one each second). */
@@ -70,6 +80,7 @@ public final class KeeperMistFog {
         bank.fade = Math.max(1.0F, payload.fade());
         bank.visibility = Math.max(2.0F, payload.visibility());
         bank.target = Mth.clamp(payload.strength(), 0.0F, 1.0F);
+        bank.arrival = payload.keeperId() == KeeperMistPayload.ARRIVAL_BANK;
         bank.lastSeen = level.getGameTime();
     }
 
@@ -95,18 +106,32 @@ public final class KeeperMistFog {
         }
     }
 
-    /** The thickest mist at {@code at}, 0–1, and the visibility of the bank that gives it (index 1). */
+    /**
+     * The thickest mist at {@code at}, 0–1, the visibility of the bank that gives it (index 1) and 1 if that bank is its
+     * arrival's (index 2).
+     */
     static float[] mistAt(Vec3 at) {
         float best = 0.0F;
         float visibility = Float.MAX_VALUE;
+        float arrival = 0.0F;
         for (Bank bank : BANKS.values()) {
             float amount = bank.shown * falloff((float) at.distanceTo(bank.centre), bank.radius, bank.fade);
             if (amount > best) {
                 best = amount;
                 visibility = bank.visibility;
+                arrival = bank.arrival ? 1.0F : 0.0F;
             }
         }
-        return new float[]{best, visibility};
+        return new float[]{best, visibility, arrival};
+    }
+
+    /** Factor on the sun's and moon's alpha: dimmed in its arrival's mist round the camera, else 1. */
+    public static float sunFactor() {
+        if (BANKS.isEmpty()) {
+            return 1.0F;
+        }
+        float[] mist = mistAt(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition());
+        return mist[2] > 0.0F ? Mth.lerp(mist[0], 1.0F, ARRIVAL_MIN_SUN) : 1.0F;
     }
 
     /** 1 within the radius, smoothly 0 at radius + fade. */
@@ -134,7 +159,8 @@ public final class KeeperMistFog {
         }
         boolean sky = event.getMode() == FogRenderer.FogMode.FOG_SKY;
         float far = event.getFarPlaneDistance();
-        float target = Math.min(far, mist[1] * (sky ? SKY_FACTOR : 1.0F));
+        float skyFactor = mist[2] > 0.0F ? ARRIVAL_SKY_FACTOR : SKY_FACTOR;
+        float target = Math.min(far, mist[1] * (sky ? skyFactor : 1.0F));
         float newFar = Mth.lerp(amount, far, target);
         float newNear = Math.min(event.getNearPlaneDistance(), Mth.lerp(amount, event.getNearPlaneDistance(), 0.0F));
         if (newFar >= far && newNear >= event.getNearPlaneDistance()) {
@@ -151,14 +177,16 @@ public final class KeeperMistFog {
                 || !(event.getCamera().getEntity().level() instanceof ClientLevel level)) {
             return;
         }
-        float amount = mistAt(event.getCamera().getPosition())[0] * COLOUR_SHARE;
+        float[] mist = mistAt(event.getCamera().getPosition());
+        boolean arrival = mist[2] > 0.0F;
+        float amount = mist[0] * (arrival ? ARRIVAL_COLOUR_SHARE : COLOUR_SHARE);
         if (amount <= 0.0F) {
             return;
         }
         float light = Math.max(MIN_LIGHT, level.getSkyDarken((float) event.getPartialTick()));
-        event.setRed(Mth.lerp(amount, event.getRed(), RED * light));
-        event.setGreen(Mth.lerp(amount, event.getGreen(), GREEN * light));
-        event.setBlue(Mth.lerp(amount, event.getBlue(), BLUE * light));
+        event.setRed(Mth.lerp(amount, event.getRed(), (arrival ? ARRIVAL_RED : RED) * light));
+        event.setGreen(Mth.lerp(amount, event.getGreen(), (arrival ? ARRIVAL_GREEN : GREEN) * light));
+        event.setBlue(Mth.lerp(amount, event.getBlue(), (arrival ? ARRIVAL_BLUE : BLUE) * light));
     }
 
     private static final class Bank {
@@ -169,5 +197,6 @@ public final class KeeperMistFog {
         private float target;
         private float shown;
         private long lastSeen;
+        private boolean arrival;
     }
 }
