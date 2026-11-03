@@ -118,6 +118,64 @@ public final class LayeredArrivalGameTests {
     }
 
     @GameTest(template = ARENA, timeoutTicks = 100)
+    public static void whenTheWallGoesWhileItUnfoldsItDrops(GameTestHelper helper) {
+        floor(helper, Blocks.STONE);
+        wall(helper);
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        Vec3 at = helper.absoluteVec(new Vec3(1.5, 1.0, 4.5));
+        player.moveTo(at.x, at.y, at.z, 0.0F, 0.0F);
+        LayeredArrival arrival = new LayeredArrival();
+        BlockPos place = arrival.place(level, player);
+        Nightmare appeared = arrival.appear(level, ModEntityTypes.THE_LAYERED.get(), player, place, 1.0F);
+        helper.assertTrue(appeared instanceof TheLayered, "The Layered appears");
+        TheLayered layered = (TheLayered) appeared;
+        layered.setNoAi(true);
+        helper.assertTrue(layered.isUnfolding() && layered.isOnWall(), "it unfolds on the wall");
+        for (int y = 1; y <= WALL_TOP; y++) {
+            for (int z = 0; z < 9; z++) {
+                helper.setBlock(WALL_X, y, z, Blocks.AIR);
+            }
+        }
+        helper.runAfterDelay(3, () -> {
+            helper.assertFalse(layered.isUnfolding(), "no longer unfolding");
+            helper.assertTrue(layered.getSurface() == Direction.DOWN, "off the wall: " + layered.getSurface());
+            layered.discard();
+            GameTestPlayers.remove(helper, player);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = ARENA, timeoutTicks = 100)
+    public static void withoutAWallItNeverBurstsUpUnderItsTarget(GameTestHelper helper) {
+        floor(helper, Blocks.SAND);
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = GameTestPlayers.survival(helper);
+        Vec3 at = helper.absoluteVec(new Vec3(4.5, 1.0, 4.5));
+        player.moveTo(at.x, at.y, at.z, 0.0F, 0.0F);
+        // Stone right round it up to head height: no room nearer than the ring's outer blocks.
+        for (int x = 3; x <= 5; x++) {
+            for (int z = 3; z <= 5; z++) {
+                if (x != 4 || z != 4) {
+                    helper.setBlock(x, 1, z, Blocks.STONE);
+                    helper.setBlock(x, 2, z, Blocks.STONE);
+                }
+            }
+        }
+        LayeredArrival arrival = new LayeredArrival();
+        BlockPos place = arrival.place(level, player);
+        double minimum = LayeredArrival.MIN_BURST_DISTANCE * LayeredArrival.MIN_BURST_DISTANCE;
+        helper.assertTrue(horizontal(place.getBottomCenter(), player) >= minimum - 1.0, "the place is not under it: " + place);
+        Nightmare appeared = arrival.appear(level, ModEntityTypes.THE_LAYERED.get(), player, place, 1.0F);
+        helper.assertTrue(appeared != null, "it comes");
+        appeared.setNoAi(true);
+        helper.assertTrue(horizontal(appeared.position(), player) >= minimum - 1.0, "nor where it comes: " + appeared.position());
+        appeared.discard();
+        GameTestPlayers.remove(helper, player);
+        helper.succeed();
+    }
+
+    @GameTest(template = ARENA, timeoutTicks = 100)
     public static void clawMarksGoOnAFlatNaturalWallAndFade(GameTestHelper helper) {
         floor(helper, Blocks.STONE);
         wall(helper);
@@ -174,6 +232,10 @@ public final class LayeredArrivalGameTests {
                 return 1.0;
             }
         };
+    }
+
+    private static double horizontal(Vec3 at, ServerPlayer player) {
+        return (at.x - player.getX()) * (at.x - player.getX()) + (at.z - player.getZ()) * (at.z - player.getZ());
     }
 
     private static void floor(GameTestHelper helper, Block block) {

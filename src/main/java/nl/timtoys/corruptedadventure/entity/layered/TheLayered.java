@@ -90,6 +90,8 @@ public class TheLayered extends Nightmare {
     private static final double PROJECTILE_MARGIN = 0.3;
     /** Ticks the model takes to turn onto a wall or back (client only). */
     private static final float WALL_TURN_TICKS = 6.0F;
+    /** Length of the {@code unfold} animation (layered_animations.py); {@code arrivalUnfoldTicks} is never shorter. */
+    public static final int UNFOLD_ANIMATION_TICKS = 50;
     private static final float DEAD_HEAD_RANGE = 24.0F;
 
     private final LayeredHeadPart head;
@@ -359,7 +361,11 @@ public class TheLayered extends Nightmare {
     /** Which surface it clings to: a wall while it climbs against it or holds on, else the ground. */
     private void updateSurface() {
         if (isUnfolding()) {
-            return;
+            if (touchesWall(getSurface())) {
+                return;
+            }
+            // The wall went (dug or blown away) while it unfolded: it drops, the arrival ends.
+            stopUnfolding();
         }
         if (knockedOff || isFallen() || isDeadOrDying() || leaping || isBurrowed()) {
             setSurface(Direction.DOWN);
@@ -815,7 +821,8 @@ public class TheLayered extends Nightmare {
 
     private void tickArrival(ServerLevel level) {
         if (isUnfolding()) {
-            LayeredEffects.unfold(level, this, unfoldAge, unfoldAge + unfoldTicks);
+            // Timed to the animation, which lasts UNFOLD_ANIMATION_TICKS; a longer unfolding holds its end.
+            LayeredEffects.unfold(level, this, unfoldAge, UNFOLD_ANIMATION_TICKS);
             unfoldAge++;
             if (--unfoldTicks <= 0) {
                 stopUnfolding();

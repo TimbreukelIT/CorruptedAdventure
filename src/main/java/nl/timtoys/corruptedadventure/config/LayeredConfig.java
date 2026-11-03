@@ -210,8 +210,9 @@ public final class LayeredConfig {
         arrivalWallRadius = builder.comment("Blocks around its target where it looks for a natural wall to come loose from; without",
                         "one it bursts up out of the ground.")
                 .defineInRange("arrivalWallRadius", 16, 4, 32);
-        arrivalUnfoldTicks = builder.comment("Ticks it takes to unfold from the wall before it can fight (the animation lasts 50).")
-                .defineInRange("arrivalUnfoldTicks", 50, 10, 200);
+        arrivalUnfoldTicks = builder.comment("Ticks it takes to unfold from the wall before it can fight; at least the 50 of the "
+                        + "animation (longer holds its last pose).")
+                .defineInRange("arrivalUnfoldTicks", 50, 50, 200);
         arrivalBurstDistance = builder.comment("Without a wall: blocks behind its target where it bursts up out of the ground (it hits",
                         "like the burrow: burrowRadius, burrowDamage, burrowLaunch).")
                 .defineInRange("arrivalBurstDistance", 6.0, 2.0, 24.0);
