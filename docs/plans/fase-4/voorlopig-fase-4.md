@@ -240,3 +240,31 @@ design-doc of de beslissingenlog staat, staat hier niet. Per punt: **ok** of **a
 115. Koor = vanilla-stemmen (soul escape, elder guardian, aan het eind het volle koor); eigen geluiden in de backlog.
 116. (INT2-review) Onder bladeren of een hut (geen open lucht vanaf de ogen) maar zonder overdekte vloer 5–10 blok
    vóór het doelwit: hij komt door de lucht (overvlucht en duik), niet uit een poel onder open lucht zonder lava.
+117. (INT2-review De Gelaagde) Zonder wand barst hij nooit dichter dan 4 blok bij het doelwit op (eerst
+   `arrivalBurstDistance` achter hem, anders in een kring op die afstand of op 4); is daar ook geen plek, dan komt hij
+   als de standaardkomst (rook achter het doelwit) en blijven de zandgolven weg. Verdwijnt de wand tijdens het
+   ontvouwen, dan valt hij eraf en is de komst voorbij. `arrivalUnfoldTicks` minimaal 50 (de animatie); langer houdt de
+   laatste pose vast.
+
+## Stap 2 — eigen komst De Verloren Hoeder (A4)
+118. Voortekens 30 s (`arrivalOmenSeconds`): de mist rolt de eerste helft aan (vanaf 96 blok) tot een zicht van 20 blok;
+   gloed vanaf 10 % op 20 blok van het doelwit; op water kolkt het oppervlak de laatste 15 %.
+119. Groot water: ≥ 4 diep, ≥ 60 % water aan hetzelfde oppervlak in 7 × 7 rond de kolom, oppervlak ±24 hoog t.o.v. het
+   doelwit, voorkeur ~12 blok van het doelwit; hij rijst verticaal op tot 6 boven het oppervlak.
+120. Zonder water: 14 blok vóór het doelwit (in de kijkrichting), 6 hoger; hij zwemt tot 8 blok van het doelwit.
+121. Tijdens de komst (≤ 10 s) geen aanvallen en geen wankelen; zijn eigen mist staat na een komst meteen vol.
+122. Komst-mist grijswit, sky-fog 1× het zicht, zon tot 10 % gedimd (vermenigvuldigd met de dimming van ring 5).
+123. Gloed = pastel-lila dust-waas + vanilla `FLASH` (wit, zacht pulserend) + `END_ROD`/`GLOW`; zang = amethist/conduit
+   (placeholders; eigen gloed-particle in de backlog).
+124. Spoor (mistflard): 35 % kans per zwerfstap, 3 min (5 s opkomen, 20 s optrekken), max. 4 tegelijk, alleen op water
+   binnen 12 blok (anders geen spoor), alleen in het geheugen (weg na een herstart).
+
+## Stap 2 — eigen komst De Onvoltooide (A5)
+125. Stilstand lokaal via de payload `unfinished_standstill` (ringweer en void-factor op de server ongemoeid, alleen beeld
+   en geluid); klimgeluid op `SoundSource.MASTER`, zodat de stilte het niet dempt.
+126. `[nightmares.unfinished.arrival]`: 30 s voortekens, de eerste 6 s alleen stilte; stilstand-straal 48 (vol tot ¾),
+   blijft 15 s na de komst; tijdelijke scheur 9 × 5, 20 s open; klimmen 5 s vanaf 18 diep.
+127. Komst 24 blok achter het doelwit (bij 14 kwam de kolos op de camera uit); hij stapt 5,5 blok voorbij het midden van
+   de scheur op de rand, richting het doelwit. Klim (`climb_out`, 5 s): 75 % recht omhoog, dan over de rand.
+128. Rand van de blijvende ondiepe scheur: voidsteen en corrupte aarde in een vast patroon (1 op 3 aarde).
+129. Spoor (stilhangende regen): kans 0,25 per zwerfstap, 120 s, max. 8 tegelijk.
