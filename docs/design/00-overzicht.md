@@ -32,8 +32,8 @@ Verhaallijn: het water uit ring 3 is gestolen en naar ring 4 gestroomd, waar het
 - **Uitzondering: shulker boxes blijven beschikbaar**, via een alternatieve bron voor shulker shells (zie Open vragen).
 
 ## Ringbewakers en grenzen
-- Er zijn 4 grenzen (1→2, 2→3, 3→4, 4→5). Elke grens heeft **4 bewakersstructures**, ongeveer in de vier windrichtingen, met per grens een seed-afhankelijke draaiing.
-- Een **bewakerskompas** (werktitel) wijst naar de dichtstbijzijnde bewakersstructure van de huidige ring. Het doel wordt server-side berekend.
+- Er zijn 4 grenzen (1→2, 2→3, 3→4, 4→5). Elke grens heeft **precies één tempel** met een zegelwachter (uniek ontwerp, seed-afhankelijke plek; besluit 2026-11-03, verving "4 bewakersstructures per grens"). Uitwerking: `fase-4-zegelwachters-concept.md`.
+- Een **bewakerskompas** (werktitel) wijst naar de tempel van de huidige ring. Het doel wordt server-side berekend.
 - Een grens is gesloten totdat de speler de bewaker van die grens heeft verslagen.
 - Bewakers zijn opnieuw te bevechten, opgeroepen bij hun structure. Iedereen die binnen een bepaalde straal meevecht krijgt de kill-credit.
 
@@ -69,7 +69,7 @@ Elke fase start met een sparringsessie (vragenrondes) in Claude Code; beslissing
 1. **Fase 1 — Wereld** (✅ afgerond 2026-10-25, change 100): world preset (overworld + Nether), `ringAt`, ringverdeling, terrein, biomes, grotten, ores, custom blocks, weer per ring, omgevingscondities per ring en de mechanics die daarbij horen
 2. **Fase 2 — Items en tools:** tools, gear, items en recipes per ring
 3. **Fase 3 — Structures:** structures per ring en Nether-ring, loot, bewakersstructures, kastelen, vaste structure-posities
-4. **Fase 4 — Mobs en bosses:** monsters per ring, ringbewakers, bosses, Nightmares (één rondzwervende boss per ring; concept in `fase-4-nightmares-concept.md`)
+4. **Fase 4 — Mobs en bosses:** monsters per ring, ringbewakers (zegelwachters + hun tempels, naar voren gehaald uit fase 3; `fase-4-zegelwachters-concept.md`), bosses, Nightmares (één rondzwervende boss per ring; concept in `fase-4-nightmares-concept.md`)
 5. **Fase 5 — Progressie en corruptie:** quests, grenssysteem, bewakerskompas, wereldcorruptie, horror-events, Herobrine, final battle, post-game
 
 Werkcategorieën (één per change): `worldgen`, `blocks`, `textures`, `atmosphere`, `conditions`, `items`, `structures`, `mobs`, `progression`, `corruption`, `infra`.
@@ -82,7 +82,7 @@ Werkcategorieën (één per change): `worldgen`, `blocks`, `textures`, `atmosphe
 - Minecraft 1.21.1, NeoForge; modnaam The Corrupted Adventure
 - Eigen world preset; multiplayer en dedicated servers zijn een must
 - Ringbreedtes zoals in de tabel (startwaarden; ring 3 verbreed naar 3.500–6.000 op 2026-10-06; ring 4 naar 6.000–8.000 en ring 5 naar 8.000–9.700 op 2026-10-10)
-- 4 bewakersstructures per grens, 4 kastelen in ring 5
+- 1 tempel met zegelwachter per grens (sinds 2026-11-03; was 4 bewakersstructures), 4 kastelen in ring 5
 - Progressie deels per speler, deels per server
 - Final battle één keer per server, één groep tegelijk
 - Na de overwinning: corruptie verdwijnt, kastelen worden ruïnes, post-game
