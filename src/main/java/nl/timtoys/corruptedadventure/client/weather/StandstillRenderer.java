@@ -46,7 +46,9 @@ final class StandstillRenderer implements RingWeatherRenderer {
         Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         RingWeatherClientHooks.felt(level, camera.x, camera.z, RingWeatherType.STANDSTILL)
                 .map(RingWeatherMix.Share::state)
-                .ifPresent(state -> frozenTime = frozenTime(state.seed()));
+                .ifPresentOrElse(state -> frozenTime = frozenTime(state.seed()),
+                        // Only a local standstill (The Unfinished's arrival) is felt here.
+                        () -> frozenTime = frozenTime(LocalStandstill.seed()));
     }
 
     @Override

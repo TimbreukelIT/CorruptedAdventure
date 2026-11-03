@@ -14,12 +14,14 @@ public final class RisenText {
     public static void addEnglish(LangOutput lang) {
         lang.add(ModEntityTypes.THE_RISEN.get().getDescriptionId(), "The Risen");
         lang.add(ModEntityTypes.ASH_WALKER.get().getDescriptionId(), "Ash Walker");
+        lang.add(ModEntityTypes.RISEN_TRACE.get().getDescriptionId(), "Smouldering Ash");
         lang.add(ModMobEffects.ASHEN.get().getDescriptionId(), "Ashen");
     }
 
     public static void addDutch(LangOutput lang) {
         lang.add(ModEntityTypes.THE_RISEN.get().getDescriptionId(), "De Herrijzende");
         lang.add(ModEntityTypes.ASH_WALKER.get().getDescriptionId(), "Aswandelaar");
+        lang.add(ModEntityTypes.RISEN_TRACE.get().getDescriptionId(), "Smeulende as");
         lang.add(ModMobEffects.ASHEN.get().getDescriptionId(), "Onder de as");
     }
 }

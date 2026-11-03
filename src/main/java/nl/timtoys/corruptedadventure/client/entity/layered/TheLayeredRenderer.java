@@ -33,6 +33,7 @@ public final class TheLayeredRenderer extends NightmareRenderer<TheLayered> {
 
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntityTypes.THE_LAYERED.get(), TheLayeredRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.LAYERED_CLAW_MARKS.get(), LayeredClawMarksRenderer::new);
     }
 
     @Override

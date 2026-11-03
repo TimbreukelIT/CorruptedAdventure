@@ -94,6 +94,7 @@ public final class UnfinishedConfig {
     public final ModConfigSpec.IntValue unloadCooldownMin;
     public final ModConfigSpec.IntValue unloadCooldownMax;
     public final ModConfigSpec.IntValue tempRestorePerTick;
+    public final UnfinishedArrivalConfig arrival;
 
     UnfinishedConfig(ModConfigSpec.Builder builder) {
         builder.comment("The Unfinished, the ring 5 Nightmare (step 1: body and fight, summoned with /summon).",
@@ -271,6 +272,7 @@ public final class UnfinishedConfig {
         unloadCooldownMax = builder.defineInRange("unloadCooldownMax", 34, 1, 600);
         tempRestorePerTick = builder.comment("Most blocks per tick per level that come back (unloaded ground, lying shards).")
                 .defineInRange("tempRestorePerTick", 1024, 16, 65536);
+        arrival = new UnfinishedArrivalConfig(builder);
         builder.pop();
     }
 

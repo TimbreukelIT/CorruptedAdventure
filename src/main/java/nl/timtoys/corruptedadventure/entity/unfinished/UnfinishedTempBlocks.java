@@ -24,6 +24,7 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import nl.timtoys.corruptedadventure.CorruptedAdventure;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -61,7 +62,7 @@ public final class UnfinishedTempBlocks extends SavedData {
     }
 
     private static final class Entry {
-        private final BlockState original;
+        private BlockState original;
         private BlockState placed;
         private long restoreAt;
         /** What lies there now (a later swap takes over, the original stays): it decides how it goes back. */
@@ -106,6 +107,11 @@ public final class UnfinishedTempBlocks extends SavedData {
      * False when the position is not loaded or the block there has a block entity.
      */
     public boolean swap(ServerLevel level, BlockPos pos, BlockState placed, long restoreAt, Kind kind) {
+        return swap(level, pos, placed, restoreAt, kind, null);
+    }
+
+    /** As {@link #swap(ServerLevel, BlockPos, BlockState, long, Kind)}, but it comes back as {@code restoreAs} if not null. */
+    boolean swap(ServerLevel level, BlockPos pos, BlockState placed, long restoreAt, Kind kind, @Nullable BlockState restoreAs) {
         if (!level.isLoaded(pos)) {
             return false;
         }
@@ -116,12 +122,15 @@ public final class UnfinishedTempBlocks extends SavedData {
             if (original.hasBlockEntity()) {
                 return false;
             }
-            entry = new Entry(original, placed, restoreAt, kind);
+            entry = new Entry(restoreAs != null ? restoreAs : original, placed, restoreAt, kind);
             entries.put(key, entry);
         } else {
             entry.placed = placed;
             entry.restoreAt = restoreAt;
             entry.kind = kind;
+            if (restoreAs != null) {
+                entry.original = restoreAs;
+            }
         }
         nextRestore = Math.min(nextRestore, restoreAt);
         level.setBlock(pos, placed, FLAGS);

@@ -1,11 +1,14 @@
 package nl.timtoys.corruptedadventure.entity.layered;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -226,6 +229,134 @@ final class LayeredEffects {
                 at.z, 16, 0.4, 0.4, 0.4, 0.15);
         level.sendParticles(ParticleTypes.WHITE_ASH, at.x, at.y, at.z, 30, 0.6, 0.6, 0.6, 0.05);
         level.sendParticles(ParticleTypes.POOF, at.x, at.y, at.z, 8, 0.4, 0.4, 0.4, 0.02);
+    }
+
+    // --- its arrival (step 2) -------------------------------------------------------------------------------------------
+
+    /**
+     * An omen on the wall it will come loose from: pebbles and dust trickle down its face, more and more often toward the
+     * end ({@code progress} 0..1). {@code face} is the middle of the stone its back lies against, {@code wall} the side of
+     * the wall seen from in front of it.
+     */
+    static void wallOmen(ServerLevel level, Vec3 face, Direction wall, BlockState stone, float progress, RandomSource random) {
+        Vec3 out = face.subtract(wall.getStepX() * 0.35, 0.0, wall.getStepZ() * 0.35);
+        double alongX = wall.getAxis() == Direction.Axis.Z ? 1.6 : 0.1;
+        double alongZ = wall.getAxis() == Direction.Axis.X ? 1.6 : 0.1;
+        // Dust trickles down the face from above it, a curtain that thickens toward the end.
+        level.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, stone), out.x, out.y + 2.5, out.z,
+                8 + (int) (progress * 24), alongX, 2.5, alongZ, 0.0);
+        if (random.nextFloat() < 0.35F + progress * 0.6F) {
+            // Pebbles breaking off and tumbling down.
+            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, stone), out.x, out.y + 0.5 + random.nextDouble() * 3.0,
+                    out.z, 6 + (int) (progress * 10), alongX * 0.6, 0.3, alongZ * 0.6, 0.05);
+        }
+        if (random.nextFloat() < 0.08F + progress * 0.25F) {
+            level.playSound(null, out.x, out.y, out.z, random.nextBoolean() ? SoundEvents.GRAVEL_FALL : SoundEvents.STONE_HIT,
+                    SoundSource.HOSTILE, 0.6F + progress, 0.5F + random.nextFloat() * 0.3F);
+        }
+    }
+
+    /**
+     * An omen without a wall: grains hop on the ground where it will burst up and dust rises a little, more toward the
+     * end; the heave of the burrow (see {@link #heave}) follows at the very end.
+     */
+    static void groundOmen(ServerLevel level, Vec3 at, BlockState ground, float progress, RandomSource random) {
+        level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground), at.x, at.y + 0.1, at.z,
+                2 + (int) (progress * 8), 1.2, 0.05, 1.2, 0.08);
+        if (random.nextFloat() < 0.06F + progress * 0.2F) {
+            level.playSound(null, at.x, at.y, at.z, ground.getSoundType().getStepSound(), SoundSource.HOSTILE,
+                    0.6F + progress, 0.5F);
+        }
+    }
+
+    /** Somewhere in the canyon bones rattle: a dry clatter, a skull knocking on stone. */
+    static void boneRattle(ServerLevel level, Vec3 at, RandomSource random) {
+        level.playSound(null, at.x, at.y, at.z, SoundEvents.SKELETON_STEP, SoundSource.HOSTILE, 2.0F, 0.4F + random.nextFloat() * 0.2F);
+        level.playSound(null, at.x, at.y, at.z, SoundEvents.SKELETON_AMBIENT, SoundSource.HOSTILE, 1.5F, 0.35F + random.nextFloat() * 0.15F);
+    }
+
+    /** The last seconds of the omens: deep in the rock something grinds. */
+    static void grind(ServerLevel level, Vec3 at) {
+        level.playSound(null, at.x, at.y, at.z, SoundEvents.GRINDSTONE_USE, SoundSource.HOSTILE, 1.5F, 0.4F);
+        level.playSound(null, at.x, at.y, at.z, SoundEvents.DRIPSTONE_BLOCK_BREAK, SoundSource.HOSTILE, 1.5F, 0.5F);
+    }
+
+    /**
+     * One tick of its unfolding from the wall ({@code age} of {@code total} ticks, the {@code unfold} animation of
+     * {@code layered_animations.py}): the plates shift with a grind, then the front, mid and back legs tear loose one pair
+     * after the other in a burst of the wall's stone, and the heads rise with a roar. Until the first legs tear loose a
+     * cloud of the wall's dust hides it; after that dust falls off it.
+     */
+    static void unfold(ServerLevel level, TheLayered layered, int age, int total) {
+        BlockState stone = wallStone(level, layered);
+        float t = (float) age / Math.max(1, total);
+        float next = (float) (age + 1) / Math.max(1, total);
+        if (age == 0) {
+            play(level, layered, SoundEvents.STONE_BREAK, 2.5F, 0.4F);
+            play(level, layered, SoundEvents.GRINDSTONE_USE, 2.0F, 0.35F);
+        }
+        if (crosses(t, next, 0.16F)) {
+            play(level, layered, SoundEvents.DRIPSTONE_BLOCK_BREAK, 2.5F, 0.4F);
+        }
+        float[] legs = {0.36F, 0.48F, 0.56F};
+        double[] forward = {1.2, 0.4, -0.6};
+        for (int i = 0; i < legs.length; i++) {
+            if (crosses(t, next, legs[i])) {
+                for (int side = -1; side <= 1; side += 2) {
+                    Vec3 leg = layered.position().add(LayeredPose.offset(1.0, forward[i], side * 1.8, layered.getYRot(), 1.0F));
+                    level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, stone), leg.x, leg.y, leg.z, 30, 0.5, 0.5,
+                            0.5, 0.15);
+                }
+                play(level, layered, SoundEvents.STONE_BREAK, 2.5F, 0.5F + i * 0.05F);
+                play(level, layered, SoundEvents.SKELETON_STEP, 2.0F, 0.4F);
+            }
+        }
+        if (crosses(t, next, 0.72F)) {
+            play(level, layered, SoundEvents.RAVAGER_ROAR, 2.5F, 0.5F);
+            play(level, layered, SoundEvents.SKELETON_AMBIENT, 2.0F, 0.4F);
+        }
+        if (next <= legs[0]) {
+            // Until the first legs tear loose a cloud of the wall's own dust hangs over it: first a piece of wall, then it.
+            dustCloud(level, layered, stone, age == 0 ? 160 : 45);
+        } else if (age % 2 == 0) {
+            level.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, stone), layered.getX(),
+                    layered.getY() + 1.0, layered.getZ(), 6, 1.4, 1.4, 1.4, 0.0);
+        }
+    }
+
+    /** A cloud of the wall's dust and grit over its whole body, lying on the face of the wall. */
+    private static void dustCloud(ServerLevel level, TheLayered layered, BlockState stone, int count) {
+        Direction wall = layered.getSurface();
+        Vec3 at = layered.position().add(0.0, 1.25, 0.0).add(wall.getStepX() * 0.6, 0.0, wall.getStepZ() * 0.6);
+        double spreadX = wall.getAxis() == Direction.Axis.X ? 0.5 : 1.8;
+        double spreadZ = wall.getAxis() == Direction.Axis.Z ? 0.5 : 1.8;
+        level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, stone), at.x, at.y, at.z, count, spreadX, 1.8,
+                spreadZ, 0.02);
+        level.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, stone), at.x, at.y + 0.5, at.z, count / 3,
+                spreadX, 2.0, spreadZ, 0.0);
+    }
+
+    /** It hangs free on the wall: the last stone rattles off it. */
+    static void unfolded(ServerLevel level, TheLayered layered) {
+        play(level, layered, SoundEvents.SPIDER_AMBIENT, 2.0F, 0.45F);
+        level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, wallStone(level, layered)), layered.getX(),
+                layered.getY() + 1.0, layered.getZ(), 40, 1.2, 1.2, 1.2, 0.1);
+    }
+
+    /** Claw marks shed a little dust now and then. */
+    static void clawDust(ServerLevel level, Vec3 at, BlockState stone) {
+        level.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, stone), at.x, at.y, at.z, 4, 0.6, 0.6, 0.6, 0.0);
+    }
+
+    /** The stone it lies against on its wall (for the particles); canyon stone where there is none. */
+    private static BlockState wallStone(ServerLevel level, TheLayered layered) {
+        BlockState stone = level.getBlockState(BlockPos.containing(layered.getX(), layered.getY() + 1.0, layered.getZ())
+                .relative(layered.getSurface(), 2));
+        return stone.isAir() || !layered.isOnWall() ? canyonStone() : stone;
+    }
+
+    private static boolean crosses(float from, float to, float mark) {
+        return from <= mark && to > mark;
     }
 
     private static void ring(ServerLevel level, Vec3 centre, BlockState ground, double radius, int count) {

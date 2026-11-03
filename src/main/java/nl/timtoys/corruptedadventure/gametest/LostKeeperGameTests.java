@@ -63,23 +63,29 @@ public final class LostKeeperGameTests {
         });
     }
 
-    @GameTest(template = ARENA, batch = BATCH)
+    /**
+     * One Keeper, in its own batch (it was flaky beside the others): first the body, then the crown, each hit with the
+     * hurt cooldown cleared, so nothing that touched it before (or a hit of a test beside it) can swallow a hit.
+     */
+    @GameTest(template = ARENA, batch = "lost_keeper_crown")
     public static void aHitOnTheCrownBreaksOneBranchAndHurtsMoreThanOnTheBody(GameTestHelper helper) {
-        TheLostKeeper crowned = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LOST_KEEPER.get(), MIDDLE);
-        TheLostKeeper other = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LOST_KEEPER.get(), MIDDLE.above(3));
+        TheLostKeeper keeper = helper.spawnWithNoFreeWill(ModEntityTypes.THE_LOST_KEEPER.get(), MIDDLE);
         ServerPlayer player = GameTestPlayers.survival(helper);
         helper.runAfterDelay(2, () -> {
-            float full = crowned.getHealth();
-            helper.assertTrue(crowned.crownPart().hurt(playerAttack(helper, player), 10.0F), "the crown hit lands");
-            helper.assertValueEqual(crowned.crownBranches(), TheLostKeeper.CROWN_BRANCHES - 1, "branches after one hit");
-            float crownLoss = full - crowned.getHealth();
-            helper.assertTrue(other.getParts()[2].hurt(playerAttack(helper, player), 10.0F), "the body hit lands");
-            float bodyLoss = full - other.getHealth();
+            float full = keeper.getHealth();
+            keeper.invulnerableTime = 0;
+            helper.assertTrue(keeper.getParts()[2].hurt(playerAttack(helper, player), 10.0F), "the body hit lands");
+            float bodyLoss = full - keeper.getHealth();
+            helper.assertValueEqual(keeper.crownBranches(), TheLostKeeper.CROWN_BRANCHES, "a body hit breaks nothing");
+            float before = keeper.getHealth();
+            keeper.invulnerableTime = 0;
+            helper.assertTrue(keeper.crownPart().hurt(playerAttack(helper, player), 10.0F), "the crown hit lands");
+            helper.assertValueEqual(keeper.crownBranches(), TheLostKeeper.CROWN_BRANCHES - 1, "branches after one hit");
+            float crownLoss = before - keeper.getHealth();
             helper.assertTrue(crownLoss > bodyLoss, "crown " + crownLoss + " > body " + bodyLoss);
-            helper.assertValueEqual(other.crownBranches(), TheLostKeeper.CROWN_BRANCHES, "a body hit breaks nothing");
-            crowned.invulnerableTime = 0;
-            crowned.crownPart().hurt(playerAttack(helper, player), 10.0F);
-            helper.assertValueEqual(crowned.crownBranches(), TheLostKeeper.CROWN_BRANCHES - 1, "no second branch within the cooldown");
+            keeper.invulnerableTime = 0;
+            keeper.crownPart().hurt(playerAttack(helper, player), 10.0F);
+            helper.assertValueEqual(keeper.crownBranches(), TheLostKeeper.CROWN_BRANCHES - 1, "no second branch within the cooldown");
             GameTestPlayers.remove(helper, player);
             helper.succeed();
         });

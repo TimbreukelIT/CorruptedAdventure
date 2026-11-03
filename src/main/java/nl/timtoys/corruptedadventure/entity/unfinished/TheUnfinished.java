@@ -44,8 +44,8 @@ import java.util.OptionalDouble;
  * over the land and climbs onto whatever is in the way, and steps through the void when his target is far.
  * <p>
  * Server-side: the parts' boxes (both sides, from the synced position and yaw), the lens state, the lost grafts and the
- * stride are synced; the client renders and swaps the loaded and unloaded parts. Roaming, his coming with the standstill
- * weather and the scar he tears in the ground come in steps 2 and 3.
+ * stride are synced; the client renders and swaps the loaded and unloaded parts. His coming (the standstill, the torn
+ * ground and the void scar) is {@link UnfinishedArrival}; while he climbs out ({@link #climbOut}) he does nothing else.
  */
 public class TheUnfinished extends Nightmare {
     private static final EntityDataAccessor<Boolean> DATA_LOADED =
@@ -83,6 +83,8 @@ public class TheUnfinished extends Nightmare {
     private static final int LENS_CHECK_TICKS = 5;
     /** Height of his body's sight point for the lens (the middle of his torso). */
     private static final double BODY_SIGHT = 7.0;
+    /** Share of his arrival's climb that goes straight up; the rest takes him over the rim. */
+    static final float CLIMB_UP_SHARE = 0.75F;
     /** Blocks from a reaction's point at which he is there. */
     private static final double REACTION_ARRIVE = 2.0;
 
@@ -96,6 +98,13 @@ public class TheUnfinished extends Nightmare {
     private int sunkenFrom = -1;
     private int sunkenUntil = -1;
     private float damageTaken;
+    /** His climb out of the torn ground at his arrival: from where, to where, from which tick, how long. */
+    @Nullable
+    private Vec3 climbFrom;
+    @Nullable
+    private Vec3 climbTo;
+    private int climbStart = -1;
+    private int climbTicks;
     /** Where the shared reactions (a rest window, a search) send him; he strides there himself. */
     @Nullable
     private Vec3 reactionPoint;
@@ -147,6 +156,8 @@ public class TheUnfinished extends Nightmare {
         goalSelector.addGoal(10, new UnfinishedSlamGoal(this));
         goalSelector.addGoal(11, new UnfinishedStrideGoal(this));
         goalSelector.addGoal(12, new RandomLookAroundGoal(this));
+        // His arrival's climb holds every goal that moves or attacks.
+        goalSelector.addGoal(0, new UnfinishedClimbOutGoal(this));
         // Whoever hits him hardest, or is near and weak; walls do not hide you.
         targetSelector.addGoal(1, new NightmareTargetGoal(this));
     }
@@ -333,6 +344,9 @@ public class TheUnfinished extends Nightmare {
     public void tick() {
         // No collision with the world: he stands on what UnfinishedGround says and climbs over the rest.
         noPhysics = true;
+        if (!level().isClientSide && climbFrom != null) {
+            climbStep();
+        }
         super.tick();
         // His body is one piece: body and head follow the synced yaw (the parts use it too).
         yBodyRot = getYRot();
@@ -345,6 +359,10 @@ public class TheUnfinished extends Nightmare {
     protected void customServerAiStep() {
         super.customServerAiStep();
         setDeltaMovement(Vec3.ZERO);
+        if (isClimbing()) {
+            // The climb places him (climbStep); no stride, turn or settling meanwhile.
+            return;
+        }
         if (isStaggered()) {
             // The open window: he sags where he stands, neither turning nor walking.
             setStriding(false);
@@ -382,6 +400,53 @@ public class TheUnfinished extends Nightmare {
     @Override
     protected void moveForReaction(Vec3 point, double speed) {
         reactionPoint = point;
+    }
+
+    // ------------------------------------------------------------------------------------------------ arrival
+
+    /**
+     * His arrival: he climbs from {@code from} (deep in the torn ground) up and over the rim to {@code to} in {@code ticks},
+     * facing {@code yaw}; the first half nothing reaches him. Moved each tick by {@link #climbStep}, with or without AI.
+     */
+    void climbOut(Vec3 from, Vec3 to, float yaw, int ticks) {
+        climbFrom = from;
+        climbTo = to;
+        climbStart = tickCount;
+        climbTicks = Math.max(1, ticks);
+        setPos(from.x, from.y, from.z);
+        snapYaw(yaw);
+        setSunkenWindow(tickCount, tickCount + climbTicks / 2);
+        triggerAnim(UnfinishedAnimations.ACTION, UnfinishedAnimations.CLIMB_OUT);
+    }
+
+    public boolean isClimbing() {
+        return climbFrom != null;
+    }
+
+    private void climbStep() {
+        float t = Math.min(1.0F, (tickCount - climbStart) / (float) climbTicks);
+        Vec3 at = climbPoint(climbFrom, climbTo, t);
+        setPos(at.x, at.y, at.z);
+        if (t >= 1.0F) {
+            climbFrom = null;
+            climbTo = null;
+            climbStart = -1;
+            UnfinishedEffects.climbedOut((ServerLevel) level(), this);
+        }
+    }
+
+    /**
+     * Where the climb is at {@code t} (0–1): straight up the tear for {@link #CLIMB_UP_SHARE} of it, slowing as he nears
+     * the top, then over the rim to {@code to}. Pure, for tests.
+     */
+    static Vec3 climbPoint(Vec3 from, Vec3 to, float t) {
+        if (t < CLIMB_UP_SHARE) {
+            float up = t / CLIMB_UP_SHARE;
+            double eased = 1.0 - (1.0 - up) * (1.0 - up);
+            return new Vec3(from.x, Mth.lerp(eased, from.y, to.y), from.z);
+        }
+        float over = (t - CLIMB_UP_SHARE) / (1.0F - CLIMB_UP_SHARE);
+        return new Vec3(Mth.lerp(over, from.x, to.x), to.y, Mth.lerp(over, from.z, to.z));
     }
 
     /** Onto the ground under him, climbing at most {@code climbPerTick} a tick; over void he hangs where he is. */
@@ -579,6 +644,12 @@ public class TheUnfinished extends Nightmare {
             damage.putFloat(graft.name().toLowerCase(Locale.ROOT), graftDamage[graft.ordinal()]);
         }
         tag.put("GraftDamage", damage);
+        if (climbTo != null) {
+            // Saved mid-climb: he is out when he loads again.
+            tag.putDouble("ClimbToX", climbTo.x);
+            tag.putDouble("ClimbToY", climbTo.y);
+            tag.putDouble("ClimbToZ", climbTo.z);
+        }
     }
 
     @Override
@@ -590,6 +661,9 @@ public class TheUnfinished extends Nightmare {
             graftDamage[graft.ordinal()] = damage.getFloat(graft.name().toLowerCase(Locale.ROOT));
         }
         desiredYaw = getYRot();
+        if (tag.contains("ClimbToX")) {
+            setPos(tag.getDouble("ClimbToX"), tag.getDouble("ClimbToY"), tag.getDouble("ClimbToZ"));
+        }
     }
 
     // ------------------------------------------------------------------------------------------------ GeckoLib
@@ -608,7 +682,8 @@ public class TheUnfinished extends Nightmare {
                 .triggerableAnim(UnfinishedAnimations.FLINCH, UnfinishedAnimations.FLINCH_ANIM)
                 .triggerableAnim(UnfinishedAnimations.THROW, UnfinishedAnimations.THROW_ANIM)
                 .triggerableAnim(UnfinishedAnimations.UNLOAD, UnfinishedAnimations.UNLOAD_ANIM)
-                .triggerableAnim(UnfinishedAnimations.SNIFF, UnfinishedAnimations.SNIFF_ANIM));
+                .triggerableAnim(UnfinishedAnimations.SNIFF, UnfinishedAnimations.SNIFF_ANIM)
+                .triggerableAnim(UnfinishedAnimations.CLIMB_OUT, UnfinishedAnimations.CLIMB_OUT_ANIM));
     }
 
     private PlayState bodyAnimation(AnimationState<TheUnfinished> state) {

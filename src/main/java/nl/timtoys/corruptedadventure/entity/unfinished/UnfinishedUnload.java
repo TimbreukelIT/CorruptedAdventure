@@ -36,19 +36,40 @@ public final class UnfinishedUnload {
     public record Column(int x, int z, int top) {
     }
 
-    /** A patch unloading downward, a few layers a tick, until every column reaches the bottom of the world. */
+    /**
+     * What a block of a dig comes back as instead of what was there (the scar his arrival leaves); null = the block
+     * that was there.
+     */
+    @FunctionalInterface
+    interface RestoreAs {
+        RestoreAs SAME = (column, y, original) -> null;
+
+        @Nullable
+        BlockState at(Column column, int y, BlockState original);
+    }
+
+    /**
+     * A patch unloading downward, a few layers a tick, until every column reaches the bottom of the world. Its blocks come
+     * back at {@code openUntil}, as they were or as {@link RestoreAs} says.
+     */
     static final class Dig {
         private final List<Column> columns;
         private final int[] nextY;
         private final long openUntil;
+        private final RestoreAs restoreAs;
 
         Dig(List<Column> columns, long openUntil) {
+            this(columns, openUntil, RestoreAs.SAME);
+        }
+
+        Dig(List<Column> columns, long openUntil, RestoreAs restoreAs) {
             this.columns = List.copyOf(columns);
             this.nextY = new int[this.columns.size()];
             for (int i = 0; i < nextY.length; i++) {
                 nextY[i] = this.columns.get(i).top();
             }
             this.openUntil = openUntil;
+            this.restoreAs = restoreAs;
         }
 
         /** Takes the next {@code layers} layers off every column; true once all reach the bottom of the world. */
@@ -72,8 +93,10 @@ public final class UnfinishedUnload {
                 int stop = Math.max(bottom, nextY[i] - layers + 1);
                 for (int y = nextY[i]; y >= stop; y--) {
                     pos.setY(y);
-                    if (!level.getBlockState(pos).isAir()) {
-                        data.swap(level, pos.immutable(), air, openUntil, UnfinishedTempBlocks.Kind.GROUND);
+                    BlockState state = level.getBlockState(pos);
+                    if (!state.isAir()) {
+                        data.swap(level, pos.immutable(), air, openUntil, UnfinishedTempBlocks.Kind.GROUND,
+                                restoreAs.at(column, y, state));
                     }
                 }
                 nextY[i] = stop - 1;
@@ -118,7 +141,7 @@ public final class UnfinishedUnload {
     }
 
     /** The blocks the column at {@code x, z} would lose, or -1 when it may not unload (or is void already). */
-    private static int count(ServerLevel level, int x, int z) {
+    static int count(ServerLevel level, int x, int z) {
         if (!level.hasChunkAt(new BlockPos(x, 0, z))) {
             return -1;
         }

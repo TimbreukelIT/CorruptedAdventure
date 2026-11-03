@@ -6,13 +6,15 @@ import software.bernie.geckolib.animation.RawAnimation;
  * The Layered's animations ({@code animations/entity/the_layered.animation.json}, written by
  * {@code tools/textures/layered_animations.py}). The body controller picks idle, walk (also the climb: the renderer turns
  * the model onto the wall), lying on its back, staggering or death from the synced state; the grip controller loops while it holds a
- * player; the heads controller never stops (the dead heads); the server triggers the attacks on the action controller.
+ * player; the heads controller never stops (the dead heads); the server triggers the attacks on the action controller;
+ * the arrival controller plays the unfolding from a wall while the synced state says so (its arrival, step 2).
  */
 public final class LayeredAnimations {
     public static final String BODY = "body";
     public static final String GRIP = "grip";
     public static final String HEADS = "heads";
     public static final String ACTION = "action";
+    public static final String ARRIVAL = "arrival";
     public static final String GRAB = "grab";
     public static final String ROCKFALL = "rockfall";
     public static final String RELEASE = "release";
@@ -39,6 +41,7 @@ public final class LayeredAnimations {
     static final RawAnimation ERUPT_ANIM = RawAnimation.begin().thenPlay("animation.the_layered.erupt");
     static final RawAnimation SPIT_ANIM = RawAnimation.begin().thenPlay("animation.the_layered.spit");
     static final RawAnimation SNIFF_ANIM = RawAnimation.begin().thenPlay("animation.the_layered.sniff");
+    static final RawAnimation UNFOLD = RawAnimation.begin().thenPlayAndHold("animation.the_layered.unfold");
 
     /** Ticks of the death animation: it sinks and curls its legs, then the body is removed. */
     static final int DEATH_TICKS = 60;

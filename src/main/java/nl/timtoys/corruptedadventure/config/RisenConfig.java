@@ -79,6 +79,16 @@ public final class RisenConfig {
     public final ModConfigSpec.IntValue fireMaxTiles;
     public final ModConfigSpec.DoubleValue fireDamage;
     public final ModConfigSpec.IntValue fireIgniteSeconds;
+    public final ModConfigSpec.IntValue omenSeconds;
+    public final ModConfigSpec.DoubleValue castRadius;
+    public final ModConfigSpec.DoubleValue passHeight;
+    public final ModConfigSpec.DoubleValue passDistance;
+    public final ModConfigSpec.DoubleValue passSpeed;
+    public final ModConfigSpec.DoubleValue passBeyond;
+    public final ModConfigSpec.IntValue riseDistance;
+    public final ModConfigSpec.DoubleValue traceChance;
+    public final ModConfigSpec.IntValue traceSeconds;
+    public final ModConfigSpec.IntValue traceMax;
 
     RisenConfig(ModConfigSpec.Builder builder) {
         builder.comment("The Risen, the ring 3 Nightmare (step 1: body and fight, summoned with /summon).",
@@ -221,6 +231,33 @@ public final class RisenConfig {
                 .defineInRange("fireDamage", 1.0, 0.0, 20.0);
         fireIgniteSeconds = builder.comment("Seconds whoever stands in its fire, or is hit by an ember or the swoop, burns on.")
                 .defineInRange("fireIgniteSeconds", 3, 0, 30);
+        builder.comment("Its arrival, sent by the Nightmare director: the choir swells, then under the open sky its shadow",
+                "falls over its target and it dives; under a roof the ground melts to a pool it rises from (meltPool).",
+                "And the traces it leaves while it roams.").push("arrival");
+        omenSeconds = builder.comment("Seconds of omens before it comes: a low choir swelling from the sky or the ground, smoke",
+                        "and sparks rising from ash casts near its target.")
+                .defineInRange("omenSeconds", 30, 1, 600);
+        castRadius = builder.comment("Blocks around its target in which ash casts smoke during the omens.")
+                .defineInRange("castRadius", 24.0, 0.0, 64.0);
+        passHeight = builder.comment("Blocks above its target's ground at which it flies over, under the open sky.")
+                .defineInRange("passHeight", 24.0, 8.0, 64.0);
+        passDistance = builder.comment("Blocks behind its target where it starts its pass (nearer if that is not loaded).")
+                .defineInRange("passDistance", 40.0, 0.0, 96.0);
+        passSpeed = builder.comment("Speed in blocks per tick of its pass.")
+                .defineInRange("passSpeed", 0.8, 0.2, 3.0);
+        passBeyond = builder.comment("Blocks past its target it flies on before it turns to dive.")
+                .defineInRange("passBeyond", 16.0, 0.0, 64.0);
+        riseDistance = builder.comment("Blocks in front of its target where the ground melts under a roof (never under it: at",
+                        "least meltPoolRadius + 2).")
+                .defineInRange("riseDistance", 6, 2, 16);
+        traceChance = builder.comment("Chance per roaming step (roamIntervalSeconds) that it leaves a trace where it passed: a",
+                        "patch of smouldering ash with smoke (particles only, no blocks), only in loaded chunks.")
+                .defineInRange("traceChance", 0.33, 0.0, 1.0);
+        traceSeconds = builder.comment("Seconds a trace smoulders.")
+                .defineInRange("traceSeconds", 180, 5, 1800);
+        traceMax = builder.comment("Most traces smouldering at once; 0 = none.")
+                .defineInRange("traceMax", 4, 0, 32);
+        builder.pop();
         builder.pop();
     }
 

@@ -1,7 +1,7 @@
 # Fase 4 — voorlopige keuzes (teststop met de gebruiker)
 
 Ontdubbeld uit de "Voorlopig"-secties van `H1.md`, `D.md`, `I.md`, `R2.md`, `R3.md`, `R4.md` en `R5.md` (INT,
-2026-10-28; R2 op 2026-10-29) en van de leven-ronde `L0.md`–`L5.md` (2026-10-29). Wat al in het
+2026-10-28; R2 op 2026-10-29) en van de leven-ronde `L0.md`–`L5.md` en stap 2 `A2.md`–`A5.md` (2026-10-29). Wat al in het
 design-doc of de beslissingenlog staat, staat hier niet. Per punt: **ok** of **anders, en hoe**. Alle getallen staan in de serverconfig
 (`[nightmares.<naam>]`, `[nightmares.director]`, `[weakness_items]`).
 
@@ -219,3 +219,52 @@ design-doc of de beslissingenlog staat, staat hier niet. Per punt: **ok** of **a
    in water zakt hij zonder zwemkracht tot ~0,04 blok/tick).
 106. De Holle: een zielkristal op De Holle buiten fase pint hem (en beëindigt zo de fase); terwijl hij nog in zijn
    komst-scheur verborgen is, kost een kristal niets en doet het niets.
+
+## Stap 2 — eigen komst De Gelaagde (A2)
+107. Wandkeuze: stralen vanuit het doelwit (24 richtingen, op 1,5/3/5 blok hoog), de dichtstbijzijnde geldige plek ≥ 4 blok
+   weg; plekken < 2 blok boven de grond tellen 3 blok verder. Natuurlijk = tag `layered_rockfall`, ≥ 65 % van de wand
+   achter zijn rug steen, geen bouwsel.
+108. Voortekens 20 s; botgeratel ~1× per 3,5 s op 8–16 blok van het doelwit; dieren vluchten binnen 24 blok; de laatste 3 s
+   gemaal.
+109. Klauwkrassen: kans 0,35 per zwerfstap, niet binnen 12 blok van een speler, max. 6 tegelijk, 180 s (de laatste 10 s
+   vervagen), op de dichtstbijzijnde vlakke natuurlijke wand binnen 10 blok van de virtuele positie; 3 × 3 blok, 16 px
+   per blok.
+110. Geluiden vanilla met lage pitch (gemaal: slijpsteen + druipsteen; brul: ravager).
+
+## Stap 2 — eigen komst De Herrijzende (A3)
+111. Getallen: `omenSeconds` 30, `passHeight` 24, `passDistance` 40, `passSpeed` 0,8, `passBeyond` 16, `riseDistance` 6,
+   `castRadius` 24, `traceChance` 0,33, `traceSeconds` 180, `traceMax` 4.
+112. Onder een dak blijft een poelcel die de lucht ziet magma (nooit lava onder open lucht).
+113. De duik na de overvlucht telt als eerste aanval (`countAttack`) en start de timers van het gevecht.
+114. Schaduw: vervaagt tussen 28 en 64 blok hoogte, max. alpha 0,85; alleen tijdens de overvlucht (`PASSING`).
+115. Koor = vanilla-stemmen (soul escape, elder guardian, aan het eind het volle koor); eigen geluiden in de backlog.
+116. (INT2-review) Onder bladeren of een hut (geen open lucht vanaf de ogen) maar zonder overdekte vloer 5–10 blok
+   vóór het doelwit: hij komt door de lucht (overvlucht en duik), niet uit een poel onder open lucht zonder lava.
+117. (INT2-review De Gelaagde) Zonder wand barst hij nooit dichter dan 4 blok bij het doelwit op (eerst
+   `arrivalBurstDistance` achter hem, anders in een kring op die afstand of op 4); is daar ook geen plek, dan komt hij
+   als de standaardkomst (rook achter het doelwit) en blijven de zandgolven weg. Verdwijnt de wand tijdens het
+   ontvouwen, dan valt hij eraf en is de komst voorbij. `arrivalUnfoldTicks` minimaal 50 (de animatie); langer houdt de
+   laatste pose vast.
+
+## Stap 2 — eigen komst De Verloren Hoeder (A4)
+118. Voortekens 30 s (`arrivalOmenSeconds`): de mist rolt de eerste helft aan (vanaf 96 blok) tot een zicht van 20 blok;
+   gloed vanaf 10 % op 20 blok van het doelwit; op water kolkt het oppervlak de laatste 15 %.
+119. Groot water: ≥ 4 diep, ≥ 60 % water aan hetzelfde oppervlak in 7 × 7 rond de kolom, oppervlak ±24 hoog t.o.v. het
+   doelwit, voorkeur ~12 blok van het doelwit; hij rijst verticaal op tot 6 boven het oppervlak.
+120. Zonder water: 14 blok vóór het doelwit (in de kijkrichting), 6 hoger; hij zwemt tot 8 blok van het doelwit.
+121. Tijdens de komst (≤ 10 s) geen aanvallen en geen wankelen; zijn eigen mist staat na een komst meteen vol.
+122. Komst-mist grijswit, sky-fog 1× het zicht, zon tot 10 % gedimd (vermenigvuldigd met de dimming van ring 5).
+123. Gloed = pastel-lila dust-waas + vanilla `FLASH` (wit, zacht pulserend) + `END_ROD`/`GLOW`; zang = amethist/conduit
+   (placeholders; eigen gloed-particle in de backlog).
+124. Spoor (mistflard): 35 % kans per zwerfstap, 3 min (5 s opkomen, 20 s optrekken), max. 4 tegelijk, alleen op water
+   binnen 12 blok (anders geen spoor), alleen in het geheugen (weg na een herstart).
+
+## Stap 2 — eigen komst De Onvoltooide (A5)
+125. Stilstand lokaal via de payload `unfinished_standstill` (ringweer en void-factor op de server ongemoeid, alleen beeld
+   en geluid); klimgeluid op `SoundSource.MASTER`, zodat de stilte het niet dempt.
+126. `[nightmares.unfinished.arrival]`: 30 s voortekens, de eerste 6 s alleen stilte; stilstand-straal 48 (vol tot ¾),
+   blijft 15 s na de komst; tijdelijke scheur 9 × 5, 20 s open; klimmen 5 s vanaf 18 diep.
+127. Komst 24 blok achter het doelwit (bij 14 kwam de kolos op de camera uit); hij stapt 5,5 blok voorbij het midden van
+   de scheur op de rand, richting het doelwit. Klim (`climb_out`, 5 s): 75 % recht omhoog, dan over de rand.
+128. Rand van de blijvende ondiepe scheur: voidsteen en corrupte aarde in een vast patroon (1 op 3 aarde).
+129. Spoor (stilhangende regen): kans 0,25 per zwerfstap, 120 s, max. 8 tegelijk.

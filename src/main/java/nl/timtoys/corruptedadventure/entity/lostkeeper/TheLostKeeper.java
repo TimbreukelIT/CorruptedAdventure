@@ -6,7 +6,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
@@ -25,7 +24,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import net.neoforged.neoforge.entity.PartEntity;
-import net.neoforged.neoforge.network.PacketDistributor;
 import nl.timtoys.corruptedadventure.config.LostKeeperConfig;
 import nl.timtoys.corruptedadventure.config.NightmareConfig;
 import nl.timtoys.corruptedadventure.config.ServerConfig;
@@ -113,6 +111,10 @@ public class TheLostKeeper extends Nightmare {
     private float heldDamage;
     private double turnScale = 1.0;
     private float damageTaken;
+    private boolean mistRisen;
+    @Nullable
+    private Vec3 arrivalPoint;
+    private int arrivalTicks;
 
     public TheLostKeeper(EntityType<? extends TheLostKeeper> type, Level level) {
         super(type, level, BossEvent.BossBarColor.WHITE);
@@ -161,6 +163,7 @@ public class TheLostKeeper extends Nightmare {
 
     @Override
     protected void registerGoals() {
+        goalSelector.addGoal(0, new KeeperArriveGoal(this));
         goalSelector.addGoal(1, new KeeperGrabGoal(this));
         goalSelector.addGoal(2, new KeeperBurstGoal(this));
         goalSelector.addGoal(2, new KeeperBreathGoal(this));
@@ -399,9 +402,36 @@ public class TheLostKeeper extends Nightmare {
         return falling;
     }
 
-    /** Free to go on with an attack: alive, not stunned or staggered, not falling, not holding anyone. */
+    /** Free to go on with an attack: alive, not arriving, stunned or staggered, not falling, not holding anyone. */
     boolean canAttack() {
-        return isAlive() && !isStunned() && !isStaggered() && !falling && !isHolding();
+        return isAlive() && !isArriving() && !isStunned() && !isStaggered() && !falling && !isHolding();
+    }
+
+    // --- the arrival -------------------------------------------------------------------------------------------------
+
+    /**
+     * Its arrival for the director ({@link KeeperArrival}): it swims to {@code point} first (up out of the water or through
+     * the air to its target), at most {@code ticks}, without attacking ({@link KeeperArriveGoal}); its mist is already
+     * there. Not saved: after a reload it just fights.
+     */
+    public void arrive(Vec3 point, int ticks) {
+        arrivalPoint = point;
+        arrivalTicks = Math.max(1, ticks);
+        mistRisen = true;
+    }
+
+    public boolean isArriving() {
+        return arrivalPoint != null;
+    }
+
+    @Nullable
+    Vec3 arrivalPoint() {
+        return arrivalPoint;
+    }
+
+    void endArrival() {
+        arrivalPoint = null;
+        arrivalTicks = 0;
     }
 
     /** Free to start an attack: {@link #canAttack()} and the shared gate (not resting after a burst, not searching). */
@@ -425,6 +455,10 @@ public class TheLostKeeper extends Nightmare {
         }
         if (stunTicks > 0) {
             stunTicks--;
+        }
+        // Also without AI: it never stays unable to attack.
+        if (arrivalTicks > 0 && --arrivalTicks == 0) {
+            endArrival();
         }
         tickFall();
         tickHold();
@@ -742,8 +776,8 @@ public class TheLostKeeper extends Nightmare {
 
     @Override
     protected boolean canStagger() {
-        // Falling without its crown or lying stunned is its own, longer open window.
-        return !falling && !isStunned();
+        // Falling without its crown or lying stunned is its own, longer open window; arriving it is not yet in the fight.
+        return !falling && !isStunned() && !isArriving();
     }
 
     /** Reeling breaks off what the goals do not: whoever it holds goes free, the ring opens, the tail stops. */
@@ -827,9 +861,12 @@ public class TheLostKeeper extends Nightmare {
 
     // --- the mist ----------------------------------------------------------------------------------------------------
 
-    /** 0–1: the mist rises over the first seconds after it appears. */
+    /** 0–1: the mist rises over the first seconds after it appears (at once after an arrival: it came in it). */
     private float mistStrength() {
-        return isDeadOrDying() ? 0.0F : Math.min(1.0F, tickCount / (float) MIST_RISE_TICKS);
+        if (isDeadOrDying()) {
+            return 0.0F;
+        }
+        return mistRisen ? 1.0F : Math.min(1.0F, tickCount / (float) MIST_RISE_TICKS);
     }
 
     /** Its mist bank to every player near enough (the client fades a bank that stops coming). */
@@ -838,16 +875,8 @@ public class TheLostKeeper extends Nightmare {
             return;
         }
         LostKeeperConfig config = keeperConfig();
-        double range = config.mistSyncRange.get();
-        Vec3 centre = headCentre();
-        KeeperMistPayload payload = new KeeperMistPayload(getId(), centre.x, centre.y, centre.z, config.mistRadius.get().floatValue(),
-                config.mistFade.get().floatValue(), config.mistVisibility.get().floatValue(), strength);
-        for (ServerPlayer player : serverLevel.players()) {
-            // A connection without our channel (a GameTest mock player) gets nothing.
-            if (player.distanceToSqr(centre) <= range * range && player.connection.hasChannel(KeeperMistPayload.TYPE)) {
-                PacketDistributor.sendToPlayer(player, payload);
-            }
-        }
+        KeeperMistBanks.send(serverLevel, getId(), headCentre(), config.mistRadius.get(), config.mistFade.get(),
+                config.mistVisibility.get(), strength, config.mistSyncRange.get());
     }
 
     @Override

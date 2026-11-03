@@ -42,5 +42,7 @@ final class ModParticleDescriptionProvider extends ParticleDescriptionProvider {
         spriteSet(ModParticleTypes.VOID_MOTE.get(), CorruptedAdventure.id("void_mote"), 4, false);
         spriteSet(ModParticleTypes.GLITCH_PIXEL.get(), CorruptedAdventure.id("glitch_pixel"), 4, false);
         spriteSet(ModParticleTypes.REVERSE_RAINDROP.get(), CorruptedAdventure.id("reverse_raindrop"), 2, false);
+        // Phase 4 step 2 (A5): The Unfinished's trace, 8×8 sprites from tools/textures/still_raindrop.py.
+        spriteSet(ModParticleTypes.STILL_RAINDROP.get(), CorruptedAdventure.id("still_raindrop"), 2, false);
     }
 }
