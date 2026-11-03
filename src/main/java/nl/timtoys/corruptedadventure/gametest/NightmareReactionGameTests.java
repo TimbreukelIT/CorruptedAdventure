@@ -109,7 +109,8 @@ public final class NightmareReactionGameTests {
                     resting[1] = hollow.isResting();
                     hollow.setTarget(null);
                 })
-                .thenExecuteAfter(45, () -> resting[2] = hollow.isResting())
+                // Well past the 40 ticks after which a gap ends the fight; while targetless the rest window does not run out.
+                .thenExecuteAfter(60, () -> resting[2] = hollow.isResting())
                 .thenExecute(() -> {
                     helper.assertTrue(resting[0], "a short gap keeps the rest window");
                     helper.assertTrue(resting[1], "and the fight goes on resting");
